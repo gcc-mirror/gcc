@@ -539,6 +539,7 @@ package Gen_IL.Fields is
       Extra_Constrained,
       Extra_Formal,
       Extra_Formals,
+      Extra_Formals_Known,
       Finalization_Collection,
       Finalization_Master_Node,
       Finalize_Storage_Only,

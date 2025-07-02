@@ -59,6 +59,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Res;        use Sem_Res;
@@ -2331,6 +2332,8 @@ package body Exp_Ch7 is
 
                Ensure_Freeze_Node (Fin_Id);
                Insert_After (Fin_Spec, Freeze_Node (Fin_Id));
+               Mutate_Ekind (Fin_Id, E_Procedure);
+               Freeze_Extra_Formals (Fin_Id);
                Set_Is_Frozen (Fin_Id);
 
                Append_To (Stmts, Fin_Body);
@@ -9448,8 +9451,15 @@ package body Exp_Ch7 is
    procedure Wrap_Transient_Expression (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Expr : Node_Id             := Relocate_Node (N);
-      Temp : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Typ  : constant Entity_Id  := Etype (N);
+
+      Temp : constant Entity_Id  := Make_Temporary (Loc, 'E',
+                                      Related_Node => Expr);
+      --  We link the temporary with its relocated expression to facilitate
+      --  locating the expression in the expanded code; this simplifies the
+      --  implementation of the function that searchs in the expanded code
+      --  for a function call that has been wrapped in a transient block
+      --  (see Get_Relocated_Function_Call).
 
    begin
       --  Generate:

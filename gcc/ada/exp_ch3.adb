@@ -942,10 +942,11 @@ package body Exp_Ch3 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Body_Stmts)));
 
-         Mutate_Ekind       (Proc_Id, E_Procedure);
-         Set_Is_Public      (Proc_Id, Is_Public (A_Type));
-         Set_Is_Internal    (Proc_Id);
-         Set_Has_Completion (Proc_Id);
+         Mutate_Ekind         (Proc_Id, E_Procedure);
+         Set_Is_Public        (Proc_Id, Is_Public (A_Type));
+         Set_Is_Internal      (Proc_Id);
+         Set_Has_Completion   (Proc_Id);
+         Freeze_Extra_Formals (Proc_Id);
 
          if not Debug_Generated_Code then
             Set_Debug_Info_Off (Proc_Id);
@@ -3204,6 +3205,7 @@ package body Exp_Ch3 is
          end if;
 
          Set_Parameter_Specifications (Proc_Spec_Node, Parameters);
+         Freeze_Extra_Formals (Proc_Id);
          Set_Specification (Body_Node, Proc_Spec_Node);
          Set_Declarations (Body_Node, Decls);
 
@@ -6570,17 +6572,16 @@ package body Exp_Ch3 is
       --  procedure, because a self-referential type might call one of these
       --  primitives in the body of the init_proc itself.
       --
-      --  This is not needed:
-      --    1) If expansion is disabled, because extra formals are only added
-      --       when we are generating code.
+      --  This is not needed when expansion is disabled, because extra formals
+      --  are only added when we are generating code.
       --
-      --    2) For types with foreign convention since primitives with foreign
-      --       convention don't have extra formals and AI95-117 requires that
-      --       all primitives of a tagged type inherit the convention.
+      --  Notice that for tagged types with foreign convention this is also
+      --  required because (although primitives with foreign convention don't
+      --  have extra formals), a tagged type with foreign convention may have
+      --  primitives with convention Ada.
 
       if Expander_Active
         and then Is_Tagged_Type (Typ)
-        and then not Has_Foreign_Convention (Typ)
       then
          declare
             Elmt : Elmt_Id;

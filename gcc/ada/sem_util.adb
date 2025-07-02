@@ -21373,6 +21373,18 @@ package body Sem_Util is
       return False;
    end Is_Unchecked_Conversion_Instance;
 
+   ---------------------------------
+   -- Is_Unchecked_Union_Equality --
+   ---------------------------------
+
+   function Is_Unchecked_Union_Equality (Id : Entity_Id) return Boolean is
+   begin
+      return Ekind (Id) = E_Function
+        and then Present (First_Formal (Id))
+        and then Is_Unchecked_Union (Etype (First_Formal (Id)))
+        and then Id = TSS (Etype (First_Formal (Id)), TSS_Composite_Equality);
+   end Is_Unchecked_Union_Equality;
+
    -------------------------------
    -- Is_Universal_Numeric_Type --
    -------------------------------

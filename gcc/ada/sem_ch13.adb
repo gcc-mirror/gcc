@@ -15887,6 +15887,8 @@ package body Sem_Ch13 is
          --  We may freeze Subp_Id immediately since Ent has just been frozen.
          --  This will help to shield us from potential late freezing issues.
 
+         Mutate_Ekind (Subp_Id, E_Procedure);
+         Freeze_Extra_Formals (Subp_Id);
          Set_Is_Frozen (Subp_Id);
 
       else

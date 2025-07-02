@@ -3020,6 +3020,8 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Full_Type_Declaration (N : Node_Id) is
+      use Deferred_Extra_Formals_Support;
+
       Def    : constant Node_Id   := Type_Definition (N);
       Def_Id : constant Entity_Id := Defining_Identifier (N);
       T      : Entity_Id;
@@ -3556,6 +3558,16 @@ package body Sem_Ch3 is
                end loop;
             end;
          end if;
+      end if;
+
+      --  If we have some subprogram, subprogram type, or entry, with deferred
+      --  addition of its extra formals (because the underlying type of this
+      --  type was not previously available), then try creating now its extra
+      --  formals. Create also the extra actuals of deferred calls to entities
+      --  with deferred extra formals.
+
+      if Has_Deferred_Extra_Formals (T) then
+         Add_Deferred_Extra_Params (T);
       end if;
 
       if Ekind (T) = E_Record_Type

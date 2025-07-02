@@ -277,6 +277,8 @@ package body Gen_IL.Internals is
             return "DT_Offset_To_Top_Func";
          when DT_Position =>
             return "DT_Position";
+         when Extra_Formals_Known =>
+            return "Extra_Formals_Known";
          when Forwards_OK =>
             return "Forwards_OK";
          when Has_First_Controlling_Parameter_Aspect =>

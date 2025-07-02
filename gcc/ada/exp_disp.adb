@@ -926,6 +926,8 @@ package body Exp_Disp is
          New_Formal  : Entity_Id;
          Last_Formal : Entity_Id := Empty;
 
+         use Deferred_Extra_Formals_Support;
+
       begin
          if Present (Old_Formal) then
             New_Formal := New_Copy (Old_Formal);
@@ -962,51 +964,21 @@ package body Exp_Disp is
          end if;
 
          --  Now that the explicit formals have been duplicated, any extra
-         --  formals needed by the subprogram must be duplicated; we know
-         --  that extra formals are available because they were added when
-         --  the tagged type was frozen (see Expand_Freeze_Record_Type).
+         --  formals needed by the subprogram must be added; we know that
+         --  extra formals are available because they were added when the
+         --  tagged type was frozen (see Expand_Freeze_Record_Type).
 
          pragma Assert (Is_Frozen (Typ));
 
-         --  Warning: The addition of the extra formals cannot be performed
-         --  here invoking Create_Extra_Formals since we must ensure that all
-         --  the extra formals of the pointer type and the target subprogram
-         --  match (and for functions that return a tagged type the profile of
-         --  the built subprogram type always returns a class-wide type, which
-         --  may affect the addition of some extra formals).
+         if Extra_Formals_Known (Subp) then
+            Create_Extra_Formals (Subp_Typ);
 
-         if Present (Last_Formal)
-           and then Present (Extra_Formal (Last_Formal))
-         then
-            Old_Formal := Extra_Formal (Last_Formal);
-            New_Formal := New_Copy (Old_Formal);
-            Set_Scope (New_Formal, Subp_Typ);
+         --  Extra formals were previously deferred
 
-            Set_Extra_Formal (Last_Formal, New_Formal);
-            Set_Extra_Formals (Subp_Typ, New_Formal);
-
-            if Ekind (Subp) = E_Function
-              and then Present (Extra_Accessibility_Of_Result (Subp))
-              and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
-            then
-               Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
-            end if;
-
-            Old_Formal := Extra_Formal (Old_Formal);
-            while Present (Old_Formal) loop
-               Set_Extra_Formal (New_Formal, New_Copy (Old_Formal));
-               New_Formal := Extra_Formal (New_Formal);
-               Set_Scope (New_Formal, Subp_Typ);
-
-               if Ekind (Subp) = E_Function
-                 and then Present (Extra_Accessibility_Of_Result (Subp))
-                 and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
-               then
-                  Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
-               end if;
-
-               Old_Formal := Extra_Formal (Old_Formal);
-            end loop;
+         else
+            pragma Assert (Is_Deferred_Extra_Formals_Entity (Subp));
+            Register_Deferred_Extra_Formals_Entity (Subp_Typ);
+            Register_Deferred_Extra_Formals_Call (Call_Node, Current_Scope);
          end if;
       end;
 
@@ -8345,13 +8317,15 @@ package body Exp_Disp is
                         Defining_Unit_Name       => IP,
                         Parameter_Specifications => Parms)));
 
-               Set_Init_Proc (Typ, IP);
-               Set_Is_Imported    (IP);
-               Set_Is_Constructor (IP);
-               Set_Interface_Name (IP, Interface_Name (E));
-               Set_Convention     (IP, Convention_CPP);
-               Set_Is_Public      (IP);
-               Set_Has_Completion (IP);
+               Set_Init_Proc   (Typ, IP);
+               Set_Is_Imported      (IP);
+               Set_Is_Constructor   (IP);
+               Set_Interface_Name   (IP, Interface_Name (E));
+               Set_Convention       (IP, Convention_CPP);
+               Set_Is_Public        (IP);
+               Set_Has_Completion   (IP);
+               Mutate_Ekind         (IP, E_Procedure);
+               Freeze_Extra_Formals (IP);
 
             --  Case 2: Constructor of a tagged type
 
@@ -8484,6 +8458,8 @@ package body Exp_Disp is
 
                   Discard_Node (IP_Body);
                   Set_Init_Proc (Typ, IP);
+                  Mutate_Ekind (IP, E_Procedure);
+                  Freeze_Extra_Formals (IP);
                end;
             end if;
 
@@ -8549,6 +8525,8 @@ package body Exp_Disp is
 
             Discard_Node (IP_Body);
             Set_Init_Proc (Typ, IP);
+            Mutate_Ekind (IP, E_Procedure);
+            Freeze_Extra_Formals (IP);
          end;
       end if;
 

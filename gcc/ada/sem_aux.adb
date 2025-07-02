@@ -453,15 +453,27 @@ package body Sem_Aux is
       Id  : Entity_Id;
 
    begin
+      --  Call using access to subprogram with explicit dereference
+
       if Nkind (Nam) = N_Explicit_Dereference then
          Id := Etype (Nam);
          pragma Assert (Ekind (Id) = E_Subprogram_Type);
 
+      --  Case of call to simple entry, where the Name is a selected component
+      --  whose prefix is the task or protected record, and whose selector name
+      --  is the entry name.
+
       elsif Nkind (Nam) = N_Selected_Component then
          Id := Entity (Selector_Name (Nam));
 
+      --  Case of call to member of entry family, where Name is an indexed
+      --  component, with the prefix being a selected component giving the
+      --  task and entry family name, and the index being the entry index.
+
       elsif Nkind (Nam) = N_Indexed_Component then
          Id := Entity (Selector_Name (Prefix (Nam)));
+
+      --  Normal case
 
       else
          Id := Entity (Nam);

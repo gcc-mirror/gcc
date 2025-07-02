@@ -3864,9 +3864,14 @@ package body Sem_Ch6 is
          Spec_Id := Build_Internal_Protected_Declaration (N);
       end if;
 
-      --  If a separate spec is present, then deal with freezing issues
+      --  Separate spec is not present
 
-      if Present (Spec_Id) then
+      if No (Spec_Id) then
+         Create_Extra_Formals (Body_Id);
+
+      --  Separate spec is present; deal with freezing issues
+
+      else
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
          Verify_Overriding_Indicator;
 
@@ -3882,6 +3887,8 @@ package body Sem_Ch6 is
            and then not Has_BIP_Formals (Spec_Id)
          then
             Create_Extra_Formals (Spec_Id);
+            pragma Assert (not Expander_Active
+              or else Extra_Formals_Known (Spec_Id));
             Compute_Returns_By_Ref (Spec_Id);
          end if;
 
@@ -8564,13 +8571,12 @@ package body Sem_Ch6 is
       --  without coordinating with CodePeer, which makes use of these to
       --  provide better messages.
 
+      --  A and B denote extra formals for unchecked unions equality. See
+      --  exp_ch3.Build_Variant_Record_Equality.
       --  O denotes the Constrained bit.
       --  L denotes the accessibility level.
       --  BIP_xxx denotes an extra formal for a build-in-place function. See
       --  the full list in exp_ch6.BIP_Formal_Kind.
-
-      function Has_Extra_Formals (E : Entity_Id) return Boolean;
-      --  Determines if E has its extra formals
 
       function Might_Need_BIP_Task_Actuals (E : Entity_Id) return Boolean;
       --  Determines if E is a function or an access to a function returning a
@@ -8610,14 +8616,6 @@ package body Sem_Ch6 is
          EF : Entity_Id;
 
       begin
-         --  A little optimization. Never generate an extra formal for the
-         --  _init operand of an initialization procedure, since it could
-         --  never be used.
-
-         if Chars (Formal) = Name_uInit then
-            return Empty;
-         end if;
-
          EF := Make_Defining_Identifier (Sloc (Assoc_Entity),
                  Chars => New_External_Name (Chars (Assoc_Entity),
                                              Suffix => Suffix));
@@ -8642,18 +8640,6 @@ package body Sem_Ch6 is
 
          return EF;
       end Add_Extra_Formal;
-
-      -----------------------
-      -- Has_Extra_Formals --
-      -----------------------
-
-      function Has_Extra_Formals (E : Entity_Id) return Boolean is
-      begin
-         return Present (Extra_Formals (E))
-           or else
-             (Ekind (E) = E_Function
-                and then Present (Extra_Accessibility_Of_Result (E)));
-      end Has_Extra_Formals;
 
       ---------------------------------
       -- Might_Need_BIP_Task_Actuals --
@@ -8792,10 +8778,12 @@ package body Sem_Ch6 is
                --  we have no direct way to climb to the corresponding parent
                --  subprogram but this internal entity has the extra formals
                --  (if any) required for the purpose of checking the extra
-               --  formals of Subp_Id.
+               --  formals of Subp_Id because its extra formals are shared
+               --  with its parent subprogram (see Sem_Ch3.Derive_Subprogram).
 
                else
                   pragma Assert (not Comes_From_Source (Ovr_E));
+                  Freeze_Extra_Formals (Ovr_E);
                end if;
 
             --  Use as our reference entity the ultimate renaming of the
@@ -8818,10 +8806,14 @@ package body Sem_Ch6 is
 
       --  Local variables
 
-      Formal_Type      : Entity_Id;
-      May_Have_Alias   : Boolean;
+      use Deferred_Extra_Formals_Support;
+
+      Can_Be_Deferred  : constant Boolean :=
+                           not Is_Unsupported_Extra_Formals_Entity (E);
       Alias_Formal     : Entity_Id := Empty;
       Alias_Subp       : Entity_Id := Empty;
+      Formal_Type      : Entity_Id;
+      May_Have_Alias   : Boolean;
       Parent_Formal    : Entity_Id := Empty;
       Parent_Subp      : Entity_Id := Empty;
       Ref_E            : Entity_Id;
@@ -8832,10 +8824,18 @@ package body Sem_Ch6 is
       pragma Assert (Is_Subprogram_Or_Entry (E)
         or else Ekind (E) in E_Subprogram_Type);
 
+      --  No action needed if extra formals were already handled. This
+      --  situation may arise because of a previous call to create the
+      --  extra formals, and also for subprogram types created as part
+      --  of dispatching calls (see Expand_Dispatching_Call).
+
+      if Extra_Formals_Known (E) then
+         return;
+
       --  We never generate extra formals if expansion is not active because we
       --  don't need them unless we are generating code.
 
-      if not Expander_Active then
+      elsif not Expander_Active then
          return;
 
       --  Enumeration literals have no extra formal; this case occurs when
@@ -8844,25 +8844,38 @@ package body Sem_Ch6 is
       elsif Ekind (E) = E_Function
         and then Ekind (Ultimate_Alias (E)) = E_Enumeration_Literal
       then
+         Freeze_Extra_Formals (E);
          return;
 
-      --  Extra formals of Initialization procedures are added by the function
-      --  Exp_Ch3.Init_Formals
+      --  Extra formals of init procs are added by Exp_Ch3.Init_Formals and
+      --  Set_CPP_Constructors when they are built, but we must handle here
+      --  aliased init procs.
 
       elsif Is_Init_Proc (E) then
+         pragma Assert (Present (Alias (E)));
+         pragma Assert (Extra_Formals_Known (Ultimate_Alias (E)));
+         Freeze_Extra_Formals (E);
          return;
 
       --  No need to generate extra formals in thunks whose target has no extra
       --  formals, but we can have two of them chained (interface and stack).
 
-      elsif Is_Thunk (E) and then No (Extra_Formals (Thunk_Target (E))) then
+      elsif Is_Thunk (E)
+        and then Extra_Formals_Known (Thunk_Target (E))
+        and then No (Extra_Formals (Thunk_Target (E)))
+      then
+         Freeze_Extra_Formals (E);
          return;
 
-      --  If Extra_Formals were already created, don't do it again. This
-      --  situation may arise for subprogram types created as part of
-      --  dispatching calls (see Expand_Dispatching_Call).
+      --  Handle alias of unchecked union equality with frozen extra formals
 
-      elsif Has_Extra_Formals (E) then
+      elsif Is_Overloadable (E)
+        and then Present (Alias (E))
+        and then Extra_Formals_Known (Ultimate_Alias (E))
+        and then Is_Unchecked_Union_Equality (Ultimate_Alias (E))
+      then
+         Set_Extra_Formals (E, Extra_Formals (Ultimate_Alias (E)));
+         Freeze_Extra_Formals (E);
          return;
 
       --  Extra formals of renamings of generic actual subprograms and
@@ -8880,6 +8893,8 @@ package body Sem_Ch6 is
            = Is_Generic_Instance (Ultimate_Alias (E)));
 
          Create_Extra_Formals (Ultimate_Alias (E));
+         pragma Assert (not Expander_Active
+           or else Extra_Formals_Known (Ultimate_Alias (E)));
 
          --  Share the extra formals
 
@@ -8891,16 +8906,71 @@ package body Sem_Ch6 is
          end if;
 
          pragma Assert (Extra_Formals_OK (E));
+         Freeze_Extra_Formals (E);
          return;
       end if;
 
-      --  Locate the last formal; required by Add_Extra_Formal.
+      --  Check if the addition of the extra formals must be deferred
 
       Formal := First_Formal (E);
       while Present (Formal) loop
-         Last_Extra := Formal;
+         if No (Underlying_Type (Etype (Formal)))
+           and then Can_Be_Deferred
+         then
+            Register_Deferred_Extra_Formals_Entity (E);
+            return;
+         end if;
+
          Next_Formal (Formal);
       end loop;
+
+      if Ekind (E) in E_Function
+                    | E_Subprogram_Type
+        and then No (Underlying_Type (Etype (E)))
+        and then Can_Be_Deferred
+      then
+         Register_Deferred_Extra_Formals_Entity (E);
+         return;
+      end if;
+
+      --  Here we start adding the extra formals
+
+      --  We we know that either the underlying type of all the formals and
+      --  returned results of E are known, or this is an special case where
+      --  some underlying type is still not available.
+
+      --  In the former case, we can already mark functions that return their
+      --  result by reference; in the latter case, we can mark them only if the
+      --  underlying return type is available (and it will be marked later).
+
+      if not Is_Unsupported_Extra_Formals_Entity (E)
+        or else (Ekind (E) in E_Function | E_Subprogram_Type
+                   and then Present (Underlying_Type (Etype (E))))
+      then
+         Compute_Returns_By_Ref (E);
+      end if;
+
+      --  Locate the last formal (required by Add_Extra_Formal)
+
+      if Present (First_Formal (E))
+        and then Is_Unchecked_Union (Etype (First_Formal (E)))
+        and then Present (Extra_Formals (E))
+        and then Has_Suffix (Extra_Formals (E), 'A')
+      then
+         --  An unchecked union equality has two extra formals per discriminant
+
+         First_Extra := Extra_Formals (E);
+         Last_Extra  := First_Extra;
+         while Present (Last_Extra) loop
+            pragma Assert (Has_Suffix (Last_Extra, 'A'));
+            Last_Extra := Extra_Formal (Last_Extra);
+
+            pragma Assert (Has_Suffix (Last_Extra, 'B'));
+            Last_Extra := Extra_Formal (Last_Extra);
+         end loop;
+      else
+         Last_Extra := Last_Formal (E);
+      end if;
 
       --  We rely on three entities to ensure consistency of extra formals of
       --  entity E:
@@ -8961,6 +9031,7 @@ package body Sem_Ch6 is
         or else (Present (Alias_Subp)
                    and then Has_Foreign_Convention (Alias_Subp))
       then
+         Freeze_Extra_Formals (E);
          return;
       end if;
 
@@ -9039,14 +9110,44 @@ package body Sem_Ch6 is
          --  Here we establish our priority for deciding on the extra
          --  formals: 1) Parent primitive 2) Aliased primitive 3) Identity
 
-         if Present (Parent_Formal) then
-            Formal_Type := Etype (Parent_Formal);
+         --  Common case: the underlying type of all the formals is known
+         --  to be available.
 
-         elsif Present (Alias_Formal) then
-            Formal_Type := Etype (Alias_Formal);
+         if Can_Be_Deferred then
+            if Present (Parent_Formal) then
+               Formal_Type := Underlying_Type (Etype (Parent_Formal));
+            elsif Present (Alias_Formal) then
+               Formal_Type := Underlying_Type (Etype (Alias_Formal));
+            else
+               Formal_Type := Underlying_Type (Etype (Formal));
+            end if;
+
+            pragma Assert (Present (Formal_Type));
+
+         --  Special case: The underlying type of some formal is not available.
+         --  We use the underlying type when present. More work needed here???
 
          else
-            Formal_Type := Etype (Formal);
+            if Present (Parent_Formal) then
+               Formal_Type := Etype (Parent_Formal);
+
+               if Present (Underlying_Type (Formal_Type)) then
+                  Formal_Type := Underlying_Type (Formal_Type);
+               end if;
+
+            elsif Present (Alias_Formal) then
+               Formal_Type := Etype (Alias_Formal);
+
+               if Present (Underlying_Type (Formal_Type)) then
+                  Formal_Type := Underlying_Type (Formal_Type);
+               end if;
+            else
+               Formal_Type := Etype (Formal);
+
+               if Present (Underlying_Type (Formal_Type)) then
+                  Formal_Type := Underlying_Type (Formal_Type);
+               end if;
+            end if;
          end if;
 
          --  Create extra formal for supporting the attribute 'Constrained.
@@ -9093,12 +9194,13 @@ package body Sem_Ch6 is
               and then (Is_Definite_Subtype (Formal_Type)
                          or else Is_Mutably_Tagged_Type (Formal_Type))
               and then (Ada_Version < Ada_2012
-                         or else No (Underlying_Type (Formal_Type))
+                         or else
+                           (not Can_Be_Deferred
+                             and then No (Underlying_Type (Formal_Type)))
                          or else not
                            (Is_Limited_Type (Formal_Type)
                              and then
-                               Is_Tagged_Type
-                                 (Underlying_Type (Formal_Type))))
+                               Is_Tagged_Type (Formal_Type)))
             then
                Set_Extra_Constrained
                  (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "O"));
@@ -9336,6 +9438,8 @@ package body Sem_Ch6 is
       if Is_Generic_Instance (E) and then Present (Alias (E)) then
          Set_Extra_Formals (Alias (E), Extra_Formals (E));
       end if;
+
+      Freeze_Extra_Formals (E);
 
       pragma Assert (No (Alias_Subp)
         or else Extra_Formals_Match_OK (E, Alias_Subp));
@@ -9648,6 +9752,19 @@ package body Sem_Ch6 is
 
             elsif Has_Suffix (Formal_1, 'O') then
                if not Has_Suffix (Formal_2, 'O') then
+                  return False;
+               end if;
+
+            --  Extra formals (A and B) of Unchecked_Unions (see Build_Variant_
+            --  Record_Equality)
+
+            elsif Has_Suffix (Formal_1, 'A') then
+               if not Has_Suffix (Formal_2, 'A') then
+                  return False;
+               end if;
+
+            elsif Has_Suffix (Formal_1, 'B') then
+               if not Has_Suffix (Formal_2, 'B') then
                   return False;
                end if;
 
@@ -10002,6 +10119,16 @@ package body Sem_Ch6 is
 
       return Empty;
    end Find_Corresponding_Spec;
+
+   --------------------------
+   -- Freeze_Extra_Formals --
+   --------------------------
+
+   procedure Freeze_Extra_Formals (E : Entity_Id) is
+   begin
+      pragma Assert (not Extra_Formals_Known (E));
+      Set_Extra_Formals_Known (E);
+   end Freeze_Extra_Formals;
 
    ----------------------
    -- Fully_Conformant --
@@ -10622,6 +10749,10 @@ package body Sem_Ch6 is
       Formal : Entity_Id := First_Formal_With_Extras (E);
 
    begin
+      --  It makes no sense to perform this check if the extra formals
+      --  have not been added.
+      pragma Assert (Extra_Formals_Known (E));
+
       while Present (Formal) loop
          if Is_Build_In_Place_Entity (Formal) then
             return True;
@@ -12794,6 +12925,530 @@ package body Sem_Ch6 is
             end if;
          end if;
    end New_Overloaded_Entity;
+
+   ------------------------------------
+   -- Deferred_Extra_Formals_Support --
+   ------------------------------------
+
+   package body Deferred_Extra_Formals_Support is
+      Calls_List       : Elist_Id := No_Elist;
+      Calls_Scope_List : Elist_Id := No_Elist;
+      --  Calls to subprograms or entries with some unknown underlying type
+      --  in their parameters or result type, and the scope where each call
+      --  is performed.
+
+      Entities_List    : Elist_Id := No_Elist;
+      --  Subprograms, entries, and subprogram types with some unknown
+      --  underlying type in their formals or result type.
+
+      Types_List       : Elist_Id := No_Elist;
+      --  Types with no underlying type
+
+      function Underlying_Types_Available (E : Entity_Id) return Boolean;
+      --  Determines if the underlying type of all the formals and result
+      --  type of the given subprogram, subprogram type, or entry are
+      --  available.
+
+      -------------------------------
+      -- Add_Deferred_Extra_Params --
+      -------------------------------
+
+      procedure Add_Deferred_Extra_Params (Typ : Entity_Id) is
+
+         procedure Check_Registered_Calls;
+         --  Check all the registered calls; for each registered call that
+         --  has the underlying type of all the parameters and result types
+         --  of the called entity available, call Create_Extra_Actuals, and
+         --  unregister the call.
+
+         procedure Check_Registered_Entities;
+         --  Check all the registered entities (subprograms, entries and
+         --  subprogram types); for each registered entity E that has all
+         --  its underlying types available, call Create_Extra_Formals,
+         --  and unregister E.
+
+         ----------------------------
+         -- Check_Registered_Calls --
+         ----------------------------
+
+         procedure Check_Registered_Calls is
+
+            function Get_Relocated_Function_Call (N : Node_Id) return Node_Id;
+            --  Given a node N that references a function call that has been
+            --  relocated to remove possible side effects of the call (see
+            --  Remove_Side_Effects) or to wrap the call in a transient scope
+            --  (see Wrap_Transient_Expression), search and return the function
+            --  call. Notice that this function does not use the Original_Node
+            --  field of N; it searchs for the actual call associated with N
+            --  in the expanded code (since we need to add to such call its
+            --  missing extra actuals).
+
+            ---------------------------------
+            -- Get_Relocated_Function_Call --
+            ---------------------------------
+
+            function Get_Relocated_Function_Call (N : Node_Id) return Node_Id
+            is
+               Current_Node : Node_Id;
+               Decl         : Node_Id;
+               Id           : Entity_Id;
+
+            begin
+               Current_Node := N;
+
+               while Nkind (Current_Node) /= N_Function_Call loop
+                  case Nkind (Current_Node) is
+                     when N_Identifier =>
+                        Id   := Entity (Current_Node);
+                        Decl := Parent (Id);
+
+                        if Nkind (Decl) = N_Object_Renaming_Declaration then
+                           Current_Node := Name (Decl);
+
+                        else
+                           pragma Assert (Nkind (Decl) = N_Object_Declaration);
+
+                           if Present (Expression (Decl)) then
+                              Current_Node := Expression (Decl);
+
+                           elsif Present (BIP_Initialization_Call (Id)) then
+                              Decl := BIP_Initialization_Call (Id);
+                              pragma Assert (Present (Expression (Decl)));
+                              Current_Node := Expression (Decl);
+
+                           elsif Present (Related_Expression (Id)) then
+                              Current_Node := Related_Expression (Id);
+
+                           else
+                              pragma Assert (False);
+                              raise Program_Error;
+                           end if;
+                        end if;
+
+                     when N_Explicit_Dereference | N_Reference =>
+                        Current_Node := Prefix (Current_Node);
+
+                     when others =>
+                        pragma Assert (False);
+                        raise Program_Error;
+                  end case;
+               end loop;
+
+               return Current_Node;
+            end Get_Relocated_Function_Call;
+
+            --  Local variables
+
+            Call_Node        : Node_Id;
+            Call_Id          : Entity_Id;
+            Elmt_Call        : Elmt_Id;
+            Elmt_Scope       : Elmt_Id;
+            Remove_Call      : Boolean;
+            Scop_Id          : Entity_Id;
+
+         --  Start of processing for Check_Registered_Calls
+
+         begin
+            --  Perform a single traversal of both lists simultaneously,
+            --  since they have the same number of elements with a 1-to-1
+            --  relationship.
+
+            Elmt_Scope := First_Elmt (Calls_Scope_List);
+            Elmt_Call  := First_Elmt (Calls_List);
+
+            while Present (Elmt_Scope) loop
+               Scop_Id     := Node (Elmt_Scope);
+               Remove_Call := False;
+
+               --  Check the enclosing scope of the call: if the underlying
+               --  type of some formal or return type of the enclosing scope
+               --  of this call is not available then we must skip processing
+               --  this call.
+
+               if Underlying_Types_Available (Scop_Id) then
+                  Call_Node := Node (Elmt_Call);
+
+                  if Nkind (Call_Node) in N_Entry_Call_Statement
+                                        | N_Function_Call
+                                        | N_Procedure_Call_Statement
+                  then
+                     Call_Id := Get_Called_Entity (Call_Node);
+
+                  --  Handle expanded function calls that could have side
+                  --  effects.
+
+                  else
+                     pragma Assert
+                       (Nkind (Original_Node (Call_Node)) = N_Function_Call);
+
+                     Call_Node := Get_Relocated_Function_Call (Call_Node);
+                     Call_Id := Get_Called_Entity (Call_Node);
+                  end if;
+
+                  --  If the underlying types of all the formal and return
+                  --  types of this called entity are available then create
+                  --  its extra actuals and remove it from the list of
+                  --  registered calls.
+
+                  if Underlying_Types_Available (Call_Id) then
+
+                     --  Given that the call is placed in the body of an
+                     --  internally built subprogram, ensure that the extra
+                     --  formals of the enclosing scope are available before
+                     --  adding the extra actuals of this call.
+
+                     Create_Extra_Formals (Scop_Id);
+                     Create_Extra_Formals (Call_Id);
+
+                     pragma Assert (Extra_Formals_Known (Scop_Id));
+                     pragma Assert (Extra_Formals_Known (Call_Id));
+
+                     --  Mark functions that return a result by reference
+
+                     Compute_Returns_By_Ref (Scop_Id);
+                     Compute_Returns_By_Ref (Call_Id);
+
+                     Push_Scope (Scop_Id);
+                     Create_Extra_Actuals (Call_Node);
+                     Pop_Scope;
+
+                     Remove_Call := True;
+                  end if;
+               end if;
+
+               --  In order to safely remove these elements from their
+               --  containing lists, remember these elements before moving
+               --  to the next list elements.
+
+               if Remove_Call then
+                  declare
+                     Removed_Call  : constant Elmt_Id := Elmt_Call;
+                     Removed_Scope : constant Elmt_Id := Elmt_Scope;
+
+                  begin
+                     Next_Elmt (Elmt_Scope);
+                     Next_Elmt (Elmt_Call);
+
+                     Remove_Elmt (Calls_List, Removed_Call);
+                     Remove_Elmt (Calls_Scope_List, Removed_Scope);
+                  end;
+               else
+                  Next_Elmt (Elmt_Scope);
+                  Next_Elmt (Elmt_Call);
+               end if;
+
+            end loop;
+         end Check_Registered_Calls;
+
+         -------------------------------
+         -- Check_Registered_Entities --
+         -------------------------------
+
+         procedure Check_Registered_Entities is
+            Elmt       : Elmt_Id;
+            Found_Elmt : Elmt_Id;
+            Id         : Entity_Id;
+
+         begin
+            Elmt := First_Elmt (Entities_List);
+
+            while Present (Elmt) loop
+               Id := Node (Elmt);
+
+               --  If the underlying type of some formal or return type of this
+               --  entity is not available then skip this element.
+
+               if not Underlying_Types_Available (Id) then
+                  Next_Elmt (Elmt);
+
+               --  Otherwise, create its extra formals and remove it from the
+               --  list of entities that require adding the extra formals.
+
+               else
+                  --  In order to safely remove this element from the list,
+                  --  temporarily remember this element, and move to the next
+                  --  element.
+
+                  Found_Elmt := Elmt;
+                  Next_Elmt (Elmt);
+
+                  --  Create the extra formals, and mark functions that return
+                  --  by reference (not be done before if the underying return
+                  --  type was previously unknown).
+
+                  Create_Extra_Formals (Id);
+                  Compute_Returns_By_Ref (Id);
+
+                  Remove_Elmt (Entities_List, Found_Elmt);
+
+                  --  For deferred entries and entry families, the expansion of
+                  --  their entry declaration was deferred, and must be done
+                  --  now (after adding their extra formals).
+
+                  if Ekind (Id) in E_Entry | E_Entry_Family then
+                     Expand_N_Entry_Declaration (Parent (Id),
+                       Was_Deferred => True);
+                  end if;
+               end if;
+            end loop;
+         end Check_Registered_Entities;
+
+      --  Start of processing for Add_Deferred_Extra_Params
+
+      begin
+         pragma Assert (Present (Underlying_Type (Typ)));
+
+         if Present (Entities_List) then
+            Check_Registered_Entities;
+         end if;
+
+         if Present (Calls_List) then
+            Check_Registered_Calls;
+         end if;
+
+         Remove (Types_List, Typ);
+      end Add_Deferred_Extra_Params;
+
+      --------------------------------
+      -- Has_Deferred_Extra_Formals --
+      --------------------------------
+
+      function Has_Deferred_Extra_Formals (Typ : Entity_Id) return Boolean is
+      begin
+         return Contains (Types_List, Typ);
+      end Has_Deferred_Extra_Formals;
+
+      --------------------------------------
+      -- Is_Deferred_Extra_Formals_Entity --
+      --------------------------------------
+
+      function Is_Deferred_Extra_Formals_Entity
+        (Id : Entity_Id) return Boolean is
+      begin
+         return Contains (Entities_List, Id);
+      end Is_Deferred_Extra_Formals_Entity;
+
+      ---------------------------------------
+      -- Is_Unsupported_Extra_Actuals_Call --
+      ---------------------------------------
+
+      --  Similarly to Is_Unsupported_Extra_Formals_Entity, we cannot
+      --  determine if the extra formals are needed when the underlying
+      --  type of some formal or result type is not available, and we are
+      --  compiling the body of a subprogram or package. However, for calls
+      --  we must also handle internal calls generated by the compiler as
+      --  part of compiling a package spec. For example, internal calls
+      --  performed in thunks of secondary dispatch table entries.
+      --
+      --  Example
+      --  -------
+      --  package P is
+      --     type T is tagged null record;
+      --  end;
+      --
+      --  limited with P;
+      --  package Q is
+      --     type Iface is interface;
+      --     procedure Prim (Self : Iface; Current : P.T) is abstract;
+      --  end;
+      --
+      --  limited with P;
+      --  with Q;
+      --  package R is
+      --     type Root is tagged null record;
+      --     type DT is new Root and Q.Iface with null record;
+      --
+      --     procedure Prim (Self : DT; Current : P.T);
+      --  end;
+      --
+      --  The initialization of the secondary dispatch table of tagged type
+      --  DT has an internally generated thunk that displaces the pointer to
+      --  the object and calls the primitive Prim (and the underlying type
+      --  of type T is not available).
+
+      function Is_Unsupported_Extra_Actuals_Call
+        (Call_Node : Node_Id; Id : Entity_Id) return Boolean
+      is
+         Comp_Unit : constant Entity_Id :=
+                       Cunit_Entity (Get_Source_Unit (Call_Node));
+      begin
+         return not Underlying_Types_Available (Id)
+           and then Is_Compilation_Unit (Comp_Unit)
+           and then Ekind (Comp_Unit) in E_Package
+                                       | E_Package_Body
+                                       | E_Subprogram_Body;
+      end Is_Unsupported_Extra_Actuals_Call;
+
+      -----------------------------------------
+      -- Is_Unsupported_Extra_Formals_Entity --
+      -----------------------------------------
+
+      --  We cannot determine if the extra formals are needed when the
+      --  underlying type of some formal or result type is not available,
+      --  and we are compiling the body of a subprogram or package. The
+      --  scenery for this case is a package spec that has a limited_with_
+      --  clause on unit Q, and its body has no regular with-clause on Q
+      --  (AI05-0151-1/08).
+
+      function Is_Unsupported_Extra_Formals_Entity
+        (Id : Entity_Id) return Boolean
+      is
+         Comp_Unit : constant Entity_Id :=
+                       Cunit_Entity (Get_Source_Unit (Id));
+      begin
+         return not Underlying_Types_Available (Id)
+           and then Is_Compilation_Unit (Comp_Unit)
+           and then Ekind (Comp_Unit) in E_Package_Body
+                                       | E_Subprogram_Body;
+      end Is_Unsupported_Extra_Formals_Entity;
+
+      --------------------------------------------
+      -- Register_Deferred_Extra_Formals_Entity --
+      --------------------------------------------
+
+      procedure Register_Deferred_Extra_Formals_Entity (Id : Entity_Id) is
+
+         procedure Register_Type (Typ : Entity_Id);
+         --  Register the given type in Types_List; for types visible though
+         --  limited_with_clauses, register their non-limited view.
+
+         -------------------
+         -- Register_Type --
+         -------------------
+
+         procedure Register_Type (Typ : Entity_Id) is
+         begin
+            --  Handle entities visible through limited_with_clauses
+
+            if Has_Non_Limited_View (Typ) then
+               Append_Unique_Elmt (Non_Limited_View (Typ), Types_List);
+            else
+               Append_Unique_Elmt (Typ, Types_List);
+            end if;
+         end Register_Type;
+
+         --  Local variables
+
+         Formal : Entity_Id;
+
+      --  Start of processing for Register_Deferred_Extra_Formals_Entity
+
+      begin
+         pragma Assert (Is_Subprogram_Or_Entry (Id)
+           or else Ekind (Id) in E_Subprogram_Type);
+
+         if not Is_Deferred_Extra_Formals_Entity (Id) then
+            if No (Types_List) then
+               Types_List := New_Elmt_List;
+            end if;
+
+            if No (Entities_List) then
+               Entities_List := New_Elmt_List;
+            end if;
+
+            --  Register all the types of the subprogram profile that are not
+            --  fully known.
+
+            Formal := First_Formal (Id);
+            while Present (Formal) loop
+
+               if No (Underlying_Type (Etype (Formal))) then
+                  Register_Type (Etype (Formal));
+               end if;
+
+               Next_Formal (Formal);
+            end loop;
+
+            if Ekind (Id) in E_Function | E_Subprogram_Type
+              and then No (Underlying_Type (Etype (Id)))
+            then
+               Register_Type (Etype (Id));
+            end if;
+
+            --  Register this subprogram
+
+            Append_Elmt (Id, Entities_List);
+         end if;
+      end Register_Deferred_Extra_Formals_Entity;
+
+      ------------------------------------------
+      -- Register_Deferred_Extra_Formals_Call --
+      ------------------------------------------
+
+      procedure Register_Deferred_Extra_Formals_Call
+        (Call_Node : Node_Id;
+         Scope_Id  : Entity_Id) is
+      begin
+         pragma Assert (Nkind (Call_Node) in N_Subprogram_Call
+                                           | N_Entry_Call_Statement);
+         if No (Calls_List) then
+            Calls_List := New_Elmt_List;
+            Calls_Scope_List := New_Elmt_List;
+         end if;
+
+         --  Avoid registering any call twice; this may occur in dispatching
+         --  calls with deferred extra actuals because Expand_Call_Helper
+         --  registers the call and invokes Expand_Dispatching_Call (which
+         --  tries again to register the expanded call).
+
+         if not Contains (Calls_List, Call_Node) then
+            Append_Elmt (Call_Node, Calls_List);
+            Append_Elmt (Scope_Id, Calls_Scope_List);
+         end if;
+      end Register_Deferred_Extra_Formals_Call;
+
+      --------------------------------
+      -- Underlying_Types_Available --
+      --------------------------------
+
+      function Underlying_Types_Available (E : Entity_Id) return Boolean is
+         Formal     : Entity_Id;
+         Formal_Typ : Entity_Id;
+         Func_Typ   : Entity_Id;
+
+      begin
+         --  If the extra formals are available, then the nonlimited view
+         --  of all the types referenced in the profile are available.
+
+         if Extra_Formals_Known (E) then
+            return True;
+         end if;
+
+         --  Check the return type
+
+         if Ekind (E) in E_Function | E_Subprogram_Type then
+            Func_Typ := Etype (E);
+
+            if Has_Non_Limited_View (Func_Typ) then
+               Func_Typ := Non_Limited_View (Func_Typ);
+            end if;
+
+            if No (Underlying_Type (Func_Typ)) then
+               return False;
+            end if;
+         end if;
+
+         --  Check the type of the formals
+
+         Formal := First_Formal (E);
+         while Present (Formal) loop
+            Formal_Typ := Etype (Formal);
+
+            if Has_Non_Limited_View (Formal_Typ) then
+               Formal_Typ := Non_Limited_View (Formal_Typ);
+            end if;
+
+            if No (Underlying_Type (Formal_Typ)) then
+               return False;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         return True;
+      end Underlying_Types_Available;
+
+   end Deferred_Extra_Formals_Support;
 
    ---------------------
    -- Process_Formals --

@@ -1578,7 +1578,7 @@ package Sem_Util is
    --  underlying type).
 
    function Has_Suffix (E : Entity_Id; Suffix : Character) return Boolean;
-   --  Returns true if the last character of E is Suffix. Used in Assertions.
+   --  Returns true if the last character of E is Suffix.
 
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) that is either
@@ -2448,6 +2448,10 @@ package Sem_Util is
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.
+
+   function Is_Unchecked_Union_Equality (Id : Entity_Id) return Boolean;
+   --  Determine whether an arbitrary entity denotes the predefined equality
+   --  function of an Unchecked_Union type (see Build_Variant_Record_Equality).
 
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of

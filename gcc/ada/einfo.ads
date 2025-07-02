@@ -1279,9 +1279,10 @@ package Einfo is
 --       that represents an activation record pointer is an extra formal.
 
 --    Extra_Formals
---       Applies to subprograms, subprogram types, entries, and entry
---       families. Returns first extra formal of the subprogram or entry.
---       Returns Empty if there are no extra formals.
+--       Applies to subprograms, subprogram types, entries, and entry families.
+--       Returns the first extra formal of the subprogram or entry. An entity
+--       has no extra formals when this attribute is Empty, and its attribute
+--       Extra_Formals_Known is True.
 
 --    Finalization_Collection [root type only]
 --       Defined in access-to-controlled or access-to-class-wide types. The
@@ -1640,11 +1641,6 @@ package Einfo is
 --       that this does not imply a representation with holes, since the rep
 --       clause may merely confirm the default 0..N representation.
 
---    Has_First_Controlling_Parameter_Aspect
---       Defined in tagged types, concurrent types and concurrent record types.
---       Set to indicate that the type has a First_Controlling_Parameter of
---       True (whether by an aspect_specification, a pragma, or inheritance).
-
 --    Has_Exit
 --       Defined in loop entities. Set if the loop contains an exit statement.
 
@@ -1653,6 +1649,12 @@ package Einfo is
 --       when a subprogram has a N_Contract node that has been expanded. The
 --       flag prevents double expansion of a contract when a construct is
 --       rewritten into something else and subsequently reanalyzed/expanded.
+
+--    Has_First_Controlling_Parameter_Aspect
+--       Defined in tagged types, concurrent types, and concurrent record
+--       types. Set to indicate that the type has a First_Controlling_Parameter
+--       of True (whether by an aspect_specification, a pragma, or
+--       inheritance).
 
 --    Has_Foreign_Convention (synthesized)
 --       Applies to all entities. Determines if the Convention for the entity
@@ -1667,6 +1669,12 @@ package Einfo is
 --       appearing in the same package because the placement requirements of
 --       the instance will conflict with the linear elaboration of front-end
 --       inlining.
+
+--    Extra_Formals_Known
+--       Defined in subprograms, subprogram types, entries, and entry families.
+--       Set when the extra formals have been determined. An entity has no
+--       extra formals when this attribute is True, and its attribute
+--       Extra_Formals is Empty.
 
 --    Has_Fully_Qualified_Name
 --       Defined in all entities. Set if the name in the Chars field has been
@@ -5393,11 +5401,12 @@ package Einfo is
    --    Scope_Depth_Value
    --    Protection_Object                    (protected kind)
    --    Contract_Wrapper
-   --    Extra_Formals
    --    Contract
    --    SPARK_Pragma                         (protected kind)
    --    Default_Expressions_Processed
    --    Entry_Accepted
+   --    Extra_Formals
+   --    Extra_Formals_Known
    --    Has_Yield_Aspect
    --    Has_Expanded_Contract
    --    Ignore_SPARK_Mode_Pragmas
@@ -5519,6 +5528,7 @@ package Einfo is
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
+   --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
@@ -5723,6 +5733,8 @@ package Einfo is
    --    Overridden_Operation
    --    Linker_Section_Pragma
    --    Contract
+   --    Extra_Formals
+   --    Extra_Formals_Known
    --    Import_Pragma
    --    LSP_Subprogram
    --    SPARK_Pragma
@@ -5877,6 +5889,7 @@ package Einfo is
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
+   --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
@@ -6104,6 +6117,7 @@ package Einfo is
    --    Last_Entity
    --    Scope_Depth_Value
    --    Extra_Formals
+   --    Extra_Formals_Known
    --    Anonymous_Collections
    --    Contract
    --    SPARK_Pragma
@@ -6117,6 +6131,7 @@ package Einfo is
    --    Extra_Accessibility_Of_Result
    --    Directly_Designated_Type
    --    Extra_Formals
+   --    Extra_Formals_Known
    --    Access_Subprogram_Wrapper
    --    First_Formal                         (synth)
    --    First_Formal_With_Extras             (synth)

@@ -101,6 +101,10 @@ package Exp_Ch6 is
    --  Adds Extra_Actual as a named parameter association for the formal
    --  Extra_Formal in Subprogram_Call.
 
+   procedure Create_Extra_Actuals (Call_Node : Node_Id);
+   --  Create the extra actuals of the given call and add them to its
+   --  actual parameters list.
+
    procedure Apply_CW_Accessibility_Check (Exp : Node_Id; Func : Entity_Id);
    --  Ada 2005 (AI95-344): If the result type is class-wide, insert a check
    --  that the level of the return expression's underlying type is not deeper
