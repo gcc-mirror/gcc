@@ -10061,16 +10061,19 @@ package body Sem_Util is
            and then not Has_Unknown_Discriminants (Utyp)
            and then not (Ekind (Utyp) = E_String_Literal_Subtype)
       then
-         --  Nothing to do if in spec expression (why not???)
+         --  If the type has no discriminants, there is no subtype to build,
+         --  even if the underlying type is discriminated.
 
-         if In_Spec_Expression then
+         if Is_Private_Type (Typ) and then not Has_Discriminants (Typ) then
             return Typ;
 
-         elsif Is_Private_Type (Typ) and then not Has_Discriminants (Typ) then
+         --  If we are performing preanalysis on a conjured-up copy of a name
+         --  (see calls to Preanalyze_Range in sem_ch5.adb) then we don't want
+         --  to freeze Atyp, now or ever. In this case, the tree we eventually
+         --  pass to the back end should contain no references to Atyp (and a
+         --  freeze node would contain such a reference).
 
-            --  If the type has no discriminants, there is no subtype to
-            --  build, even if the underlying type is discriminated.
-
+         elsif not Expander_Active then
             return Typ;
 
          --  Else build the actual subtype
@@ -10086,42 +10089,21 @@ package body Sem_Util is
 
             Atyp := Defining_Identifier (Decl);
 
-            --  If Build_Actual_Subtype generated a new declaration then use it
+            --  The actual subtype is an Itype, so analyze the declaration
+            --  after attaching it to the tree, to get the type defined.
 
-            if Atyp /= Typ then
+            Set_Parent (Decl, N);
+            Set_Is_Itype (Atyp);
+            Analyze (Decl, Suppress => All_Checks);
+            Set_Associated_Node_For_Itype (Atyp, N);
 
-               --  The actual subtype is an Itype, so analyze the declaration,
-               --  but do not attach it to the tree, to get the type defined.
+            --  We need to freeze the actual subtype immediately. This is
+            --  needed because otherwise this Itype will not get frozen
+            --  at all; it is always safe to freeze on creation because
+            --  any associated types must be frozen at this point.
 
-               Set_Parent (Decl, N);
-               Set_Is_Itype (Atyp);
-               Analyze (Decl, Suppress => All_Checks);
-               Set_Associated_Node_For_Itype (Atyp, N);
-               if Expander_Active then
-                  Set_Has_Delayed_Freeze (Atyp, False);
-
-                  --  We need to freeze the actual subtype immediately. This is
-                  --  needed because otherwise this Itype will not get frozen
-                  --  at all; it is always safe to freeze on creation because
-                  --  any associated types must be frozen at this point.
-
-                  --  On the other hand, if we are performing preanalysis on
-                  --  a conjured-up copy of a name (see calls to
-                  --  Preanalyze_Range in sem_ch5.adb) then we don't want
-                  --  to freeze Atyp, now or ever. In this case, the tree
-                  --  we eventually pass to the back end should contain no
-                  --  references to Atyp (and a freeze node would contain
-                  --  such a reference). That's why Expander_Active is tested.
-
-                  Freeze_Itype (Atyp, N);
-               end if;
-               return Atyp;
-
-            --  Otherwise we did not build a declaration, so return original
-
-            else
-               return Typ;
-            end if;
+            Freeze_Itype (Atyp, N);
+            return Atyp;
          end if;
 
       --  For all remaining cases, the actual subtype is the same as
