@@ -8021,14 +8021,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    ctx->global->put_value (new_ctx.object, new_ctx.ctor);
 	    ctx = &new_ctx;
 	  }
+
+	/* If the initializer is complex, evaluate it to initialize slot.  */
+	bool is_complex = target_expr_needs_replace (t);
+	if (is_complex)
+	  /* In case no initialization actually happens, clear out any
+	     void_node from a previous evaluation.  */
+	  ctx->global->put_value (slot, NULL_TREE);
+
 	/* Pass vc_prvalue because this indicates
 	   initialization of a temporary.  */
 	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1), vc_prvalue,
 					  non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  break;
-	/* If the initializer is complex, evaluate it to initialize slot.  */
-	bool is_complex = target_expr_needs_replace (t);
 	if (!is_complex)
 	  {
 	    r = unshare_constructor (r);
