@@ -4539,10 +4539,12 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
   info->ifn = gimple_call_internal_fn (call);
   info->decl = NULL_TREE;
   info->base = gimple_call_arg (call, 0);
-  info->offset = gimple_call_arg (call, 1);
+  info->offset = gimple_call_arg
+		  (call, internal_fn_offset_index (info->ifn));
   info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = NULL_TREE;
-  info->scale = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+  info->scale = TREE_INT_CST_LOW (gimple_call_arg
+				  (call, internal_fn_scale_index (info->ifn)));
   info->element_type = TREE_TYPE (vectype);
   info->memory_type = TREE_TYPE (DR_REF (dr));
 }
