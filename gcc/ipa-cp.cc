@@ -3341,10 +3341,10 @@ devirtualization_time_bonus (struct cgraph_node *node,
 
 /* Return time bonus incurred because of hints stored in ESTIMATES.  */
 
-static int
+static sreal
 hint_time_bonus (cgraph_node *node, const ipa_call_estimates &estimates)
 {
-  int result = 0;
+  sreal result = 0;
   ipa_hints hints = estimates.hints;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
     result += opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
@@ -3352,10 +3352,10 @@ hint_time_bonus (cgraph_node *node, const ipa_call_estimates &estimates)
   sreal bonus_for_one = opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
 
   if (hints & INLINE_HINT_loop_iterations)
-    result += (estimates.loops_with_known_iterations * bonus_for_one).to_int ();
+    result += estimates.loops_with_known_iterations * bonus_for_one;
 
   if (hints & INLINE_HINT_loop_stride)
-    result += (estimates.loops_with_known_strides * bonus_for_one).to_int ();
+    result += estimates.loops_with_known_strides * bonus_for_one;
 
   return result;
 }
@@ -3436,7 +3436,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 	 introduced.  This is likely almost always going to be true, since we
 	 already checked that time saved is large enough to be considered
 	 hot.  */
-      else if (evaluation.to_int () >= eval_threshold)
+      else if (evaluation >= (sreal)eval_threshold)
 	return true;
       /* If all call sites have profile known; we know we do not want t clone.
 	 If there are calls with unknown profile; try local heuristics.  */
@@ -3457,7 +3457,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 	     info->node_calling_single_call ? ", single_call" : "",
 	     evaluation.to_double (), eval_threshold);
 
-  return evaluation.to_int () >= eval_threshold;
+  return evaluation >= eval_threshold;
 }
 
 /* Grow vectors in AVALS and fill them with information about values of
@@ -3543,8 +3543,8 @@ perform_estimation_of_a_value (cgraph_node *node,
     time_benefit = 0;
   else
     time_benefit = (estimates.nonspecialized_time - estimates.time)
+      + hint_time_bonus (node, estimates)
       + (devirtualization_time_bonus (node, avals)
-	 + hint_time_bonus (node, estimates)
 	 + removable_params_cost + est_move_cost);
 
   int size = estimates.size;
