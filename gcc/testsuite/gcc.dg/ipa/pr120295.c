@@ -9,10 +9,10 @@ char c, k, g, e;
 short d[2] = {0};
 int *i = &j;
 
-volatile int glob;
+volatile int glob_;
 void __attribute__((noipa)) sth (const char *, int a)
 {
-  glob = a;
+  glob_ = a;
   return;
 }
 
