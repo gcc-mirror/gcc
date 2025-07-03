@@ -249,6 +249,8 @@ AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "mops")
 
 AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
+AARCH64_OPT_EXTENSION("cmpbr", CMPBR, (), (), (), "cmpbr")
+
 AARCH64_OPT_EXTENSION("lse128", LSE128, (LSE), (), (), "lse128")
 
 AARCH64_OPT_EXTENSION("d128", D128, (LSE128), (), (), "d128")

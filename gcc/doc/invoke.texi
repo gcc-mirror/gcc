@@ -22466,6 +22466,9 @@ Enable the FlagM2 flag conversion instructions.
 Enable the Pointer Authentication Extension.
 @item cssc
 Enable the Common Short Sequence Compression instructions.
+@item cmpbr
+Enable the shorter compare and branch instructions, @code{cbb}, @code{cbh} and
+@code{cb}.
 @item sme
 Enable the Scalable Matrix Extension.  This is only supported when SVE2 is also
 enabled.
