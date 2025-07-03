@@ -749,7 +749,8 @@
   ""
 )
 
-(define_insn "condjump"
+;; Emit `B<cond>`, assuming that the condition is already in the CC register.
+(define_insn "aarch64_bcond"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand 1 "cc_register")
 			     (const_int 0)])
@@ -789,7 +790,7 @@
 ;; 	sub	x0, x1, #(CST & 0xfff000)
 ;; 	subs	x0, x0, #(CST & 0x000fff)
 ;; 	b<ne,eq> .Label
-(define_insn_and_split "*compare_condjump<GPI:mode>"
+(define_insn_and_split "*aarch64_bcond_wide_imm<GPI:mode>"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
 			        (match_operand:GPI 1 "aarch64_imm24" "n"))
 			   (label_ref:P (match_operand 2))
@@ -809,12 +810,13 @@
     rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
     rtx cmp_rtx = gen_rtx_fmt_ee (<EQL:CMP>, <GPI:MODE>mode,
 				  cc_reg, const0_rtx);
-    emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, operands[2]));
+    emit_jump_insn (gen_aarch64_bcond (cmp_rtx, cc_reg, operands[2]));
     DONE;
   }
 )
 
-(define_insn "aarch64_cb<optab><mode>1"
+;; For an EQ/NE comparison against zero, emit `CBZ`/`CBNZ`
+(define_insn "aarch64_cbz<optab><mode>1"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
 			        (const_int 0))
 			   (label_ref (match_operand 1))
@@ -839,7 +841,8 @@
 		      (const_int 1)))]
 )
 
-(define_insn "*cb<optab><mode>1"
+;; For an LT/GE comparison against zero, emit `TBZ`/`TBNZ`
+(define_insn "*aarch64_tbz<optab><mode>1"
   [(set (pc) (if_then_else (LTGE (match_operand:ALLI 0 "register_operand" "r")
 			         (const_int 0))
 			   (label_ref (match_operand 1))
@@ -900,7 +903,7 @@
 					 operands[1]);
 })
 
-(define_insn "@aarch64_tb<optab><ALLI:mode><GPI:mode>"
+(define_insn "@aarch64_tbz<optab><ALLI:mode><GPI:mode>"
   [(set (pc) (if_then_else (EQL
 			     (zero_extract:GPI
 			       (match_operand:ALLI 0 "register_operand" "r")
@@ -1331,13 +1334,13 @@
       emit_insn (gen_subdi3_compare1 (gcs_now, gcs_old, gcs_now));
       rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
       rtx cmp_rtx = gen_rtx_fmt_ee (EQ, DImode, cc_reg, const0_rtx);
-      emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, done_label));
+      emit_jump_insn (gen_aarch64_bcond (cmp_rtx, cc_reg, done_label));
       emit_label (loop_label);
       emit_insn (gen_aarch64_gcspopm_xzr ());
       emit_insn (gen_adddi3_compare0 (gcs_now, gcs_now, GEN_INT (-8)));
       cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
       cmp_rtx = gen_rtx_fmt_ee (NE, DImode, cc_reg, const0_rtx);
-      emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, loop_label));
+      emit_jump_insn (gen_aarch64_bcond (cmp_rtx, cc_reg, loop_label));
       emit_label (done_label);
     }
   DONE;
@@ -8105,8 +8108,8 @@
 	     : gen_stack_protect_test_si) (operands[0], operands[1]));
 
   rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
-  emit_jump_insn (gen_condjump (gen_rtx_EQ (VOIDmode, cc_reg, const0_rtx),
-				cc_reg, operands[2]));
+  emit_jump_insn (gen_aarch64_bcond (gen_rtx_EQ (VOIDmode, cc_reg, const0_rtx),
+				     cc_reg, operands[2]));
   DONE;
 })
 
