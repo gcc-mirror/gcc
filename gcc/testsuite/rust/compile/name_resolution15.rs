@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
 #![feature(decl_macro)]
 
 pub mod foo {

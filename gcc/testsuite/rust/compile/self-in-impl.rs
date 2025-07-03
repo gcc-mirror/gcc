@@ -1,5 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
-
 // the error message here is what rustc >=1.66 emits
 // rustc <1.66 emits a "cycle detected" error when
 //   trying to calculate the impl type

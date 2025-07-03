@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
 mod frob {}
 
 use foo::bar::baz; // { dg-error "unresolved import .foo::bar::baz." }

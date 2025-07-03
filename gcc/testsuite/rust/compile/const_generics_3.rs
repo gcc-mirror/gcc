@@ -1,4 +1,4 @@
-// { dg-additional-options "-w -frust-name-resolution-2.0 -frust-compile-until=compilation" }
+// { dg-additional-options "-w -frust-compile-until=compilation" }
 
 #[lang = "sized"]
 trait Sized {}

@@ -1,5 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
-
 #![feature(optin_builtin_traits)]
 
 pub unsafe auto trait Send {}

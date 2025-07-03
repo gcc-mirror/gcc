@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
 // { dg-output "Value is 10\r*\n" }
 
 const BAZ: i32 = 10;

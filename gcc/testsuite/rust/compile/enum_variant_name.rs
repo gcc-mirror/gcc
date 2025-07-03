@@ -1,4 +1,4 @@
-// { dg-additional-options "-w -frust-name-resolution-2.0" }
+// { dg-additional-options "-w" }
 struct E1;
 
 enum Test {
