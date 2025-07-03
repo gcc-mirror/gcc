@@ -704,7 +704,19 @@
   [(set_attr "type" "branch")]
 )
 
+;; Maximum PC-relative positive/negative displacements for various branching
+;; instructions.
+(define_constants
+  [
+    ;; +/- 1MiB.  Used by B.<cond>, CBZ, CBNZ.
+    (BRANCH_LEN_P_1MiB  1048572)
+    (BRANCH_LEN_N_1MiB -1048576)
 
+    ;; +/- 32KiB.  Used by TBZ, TBNZ.
+    (BRANCH_LEN_P_32KiB  32764)
+    (BRANCH_LEN_N_32KiB -32768)
+  ]
+)
 
 ;; -------------------------------------------------------------------
 ;; Conditional jumps
@@ -769,13 +781,17 @@
   }
   [(set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 4)
 		      (const_int 8)))
    (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 0)
 		      (const_int 1)))]
 )
@@ -830,13 +846,17 @@
   }
   [(set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 1) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 4)
 		      (const_int 8)))
    (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 0)
 		      (const_int 1)))]
 )
@@ -870,13 +890,17 @@
   }
   [(set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -32768))
-			   (lt (minus (match_dup 1) (pc)) (const_int 32764)))
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_32KiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_32KiB)))
 		      (const_int 4)
 		      (const_int 8)))
    (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 1) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 0)
 		      (const_int 1)))]
 )
@@ -931,13 +955,17 @@
   }
   [(set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
-			   (lt (minus (match_dup 2) (pc)) (const_int 32764)))
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_32KiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_32KiB)))
 		      (const_int 4)
 		      (const_int 8)))
    (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
-			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
 		      (const_int 0)
 		      (const_int 1)))]
 
