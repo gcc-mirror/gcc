@@ -4004,7 +4004,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       tree op0, op1, op2;
       op0 = TREE_OPERAND (array, 0);
       op1 = TREE_OPERAND (array, 1);
-      op2 = TREE_OPERAND (array, 1);
+      op2 = TREE_OPERAND (array, 2);
       if (TREE_SIDE_EFFECTS (idx) || !tree_invariant_p (idx))
 	{
 	  /* If idx could possibly have some SAVE_EXPRs, turning
