@@ -22,9 +22,6 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// used for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -123,27 +120,15 @@ bool
 TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
 				      HIR::Trait **resolved) const
 {
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   NodeId ref;
-  bool ok;
-  if (flag_name_resolution_2_0)
+  if (auto ref_opt = nr_ctx.lookup (path.get_mappings ().get_nodeid ()))
     {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      auto ref_opt = nr_ctx.lookup (path.get_mappings ().get_nodeid ());
-
-      if ((ok = ref_opt.has_value ()))
-	ref = *ref_opt;
+      ref = *ref_opt;
     }
   else
-    {
-      auto path_nodeid = path.get_mappings ().get_nodeid ();
-      ok = resolver->lookup_resolved_type (path_nodeid, &ref)
-	   || resolver->lookup_resolved_name (path_nodeid, &ref)
-	   || resolver->lookup_resolved_macro (path_nodeid, &ref);
-    }
-
-  if (!ok)
     {
       rust_error_at (path.get_locus (), "Failed to resolve path to node-id");
       return false;

@@ -37,7 +37,6 @@ bool
 query_type (HirId reference, TyTy::BaseType **result)
 {
   auto &mappings = Analysis::Mappings::get ();
-  auto &resolver = *Resolver::get ();
   TypeCheckContext *context = TypeCheckContext::get ();
 
   if (context->lookup_type (reference, result))
@@ -103,18 +102,13 @@ query_type (HirId reference, TyTy::BaseType **result)
 	  NodeId ref_node_id = UNKNOWN_NODEID;
 	  NodeId ast_node_id = ty.get_mappings ().get_nodeid ();
 
-	  if (flag_name_resolution_2_0)
-	    {
-	      auto &nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
-			       .resolver ();
+	  auto &nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	      // assign the ref_node_id if we've found something
-	      nr_ctx.lookup (ast_node_id)
-		.map (
-		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
-	    }
-	  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
-	    resolver.lookup_resolved_type (ast_node_id, &ref_node_id);
+	  // assign the ref_node_id if we've found something
+	  nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
 
 	  if (ref_node_id != UNKNOWN_NODEID)
 	    {

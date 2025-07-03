@@ -28,8 +28,7 @@ namespace Rust {
 namespace Resolver {
 
 TypeCheckBase::TypeCheckBase ()
-  : mappings (Analysis::Mappings::get ()), resolver (Resolver::get ()),
-    context (TypeCheckContext::get ())
+  : mappings (Analysis::Mappings::get ()), context (TypeCheckContext::get ())
 {}
 
 void

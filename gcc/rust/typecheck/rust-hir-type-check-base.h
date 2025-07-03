@@ -69,7 +69,6 @@ protected:
 						 location_t locus);
 
   Analysis::Mappings &mappings;
-  Resolver *resolver;
   TypeCheckContext *context;
 };
 

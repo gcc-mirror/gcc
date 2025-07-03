@@ -22,9 +22,6 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -54,23 +51,13 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
   NodeId ref_node_id = UNKNOWN_NODEID;
   bool maybe_item = false;
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
-	{
-	  ref_node_id = *id;
-	  maybe_item = true;
-	}
-    }
-  else
+  if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
     {
-      maybe_item |= resolver->lookup_resolved_name (
-	pattern.get_mappings ().get_nodeid (), &ref_node_id);
-      maybe_item |= resolver->lookup_resolved_type (
-	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+      ref_node_id = *id;
+      maybe_item = true;
     }
 
   bool path_is_const_item = false;

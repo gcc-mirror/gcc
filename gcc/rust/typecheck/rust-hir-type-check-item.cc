@@ -33,9 +33,6 @@
 #include "rust-type-util.h"
 #include "rust-tyty-variance-analysis.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -195,24 +192,11 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   // get the path
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      path
-	= nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      path
-	= mappings
-	    .lookup_canonical_path (struct_decl.get_mappings ().get_nodeid ())
-	    .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, struct_decl.get_locus ()};
 
@@ -275,23 +259,11 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-      path
-	= nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      path
-	= mappings
-	    .lookup_canonical_path (struct_decl.get_mappings ().get_nodeid ())
-	    .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, struct_decl.get_locus ()};
 
@@ -362,26 +334,14 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 	}
     }
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   // get the path
-  tl::optional<CanonicalPath> canonical_path;
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (enum_decl.get_mappings ().get_nodeid ());
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path
-	= nr_ctx.to_canonical_path (enum_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	enum_decl.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, enum_decl.get_locus ()};
+  RustIdent ident{canonical_path, enum_decl.get_locus ()};
 
   // multi variant ADT
   auto *type
@@ -426,26 +386,14 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 			    ty_variant->get_field_type ());
     }
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   // get the path
-  tl::optional<CanonicalPath> canonical_path;
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (union_decl.get_mappings ().get_nodeid ());
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path
-	= nr_ctx.to_canonical_path (union_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	union_decl.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, union_decl.get_locus ()};
+  RustIdent ident{canonical_path, union_decl.get_locus ()};
 
   // there is only a single variant
   std::vector<TyTy::VariantDef *> variants;
@@ -602,21 +550,11 @@ TypeCheckItem::visit (HIR::Function &function)
 	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-      path = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      path = mappings
-	       .lookup_canonical_path (function.get_mappings ().get_nodeid ())
-	       .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, function.get_locus ()};
 

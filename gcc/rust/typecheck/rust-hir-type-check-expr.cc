@@ -34,9 +34,6 @@
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-compile-base.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -1460,26 +1457,11 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   // store the expected fntype
   context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
-			Resolver2_0::Definition (resolved_node_id));
-    }
-  // set up the resolved name on the path
-  else if (resolver->get_name_scope ().decl_was_declared_here (
-	     resolved_node_id))
-    {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
-  else
-    {
-      resolver->insert_resolved_misc (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
+  nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		    Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   infered = function_ret_tyty;
@@ -1821,19 +1803,12 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   // Resolve closure captures
 
   std::set<NodeId> captures;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      if (auto opt_cap = nr_ctx.mappings.lookup_captures (closure_node_id))
-	for (auto cap : opt_cap.value ())
-	  captures.insert (cap);
-    }
-  else
-    {
-      captures = resolver->get_captures (closure_node_id);
-    }
+  if (auto opt_cap = nr_ctx.mappings.lookup_captures (closure_node_id))
+    for (auto cap : opt_cap.value ())
+      captures.insert (cap);
 
   infered = new TyTy::ClosureType (ref, id, ident, closure_args, result_type,
 				   subst_refs, captures);
@@ -2141,19 +2116,11 @@ TypeCheckExpr::resolve_operator_overload (
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
 
   // set up the resolved name on the path
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
-			Resolver2_0::Definition (resolved_node_id));
-    }
-  else
-    {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
+  nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		    Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   infered = function_ret_tyty;
@@ -2346,32 +2313,15 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), fn);
 
   // set up the resolved name on the path
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      auto existing = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
-      if (existing)
-	rust_assert (*existing == resolved_node_id);
-      else
-	nr_ctx.map_usage (Resolver2_0::Usage (
-			    expr.get_mappings ().get_nodeid ()),
-			  Resolver2_0::Definition (resolved_node_id));
-    }
+  auto existing = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
+  if (existing)
+    rust_assert (*existing == resolved_node_id);
   else
-    {
-      NodeId existing = UNKNOWN_NODEID;
-      bool ok
-	= resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
-					  &existing);
-
-      if (ok)
-	rust_assert (existing == resolved_node_id);
-      else
-	resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-					resolved_node_id);
-    }
+    nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		      Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   *result = function_ret_tyty;

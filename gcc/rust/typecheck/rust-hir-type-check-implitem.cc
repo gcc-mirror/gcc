@@ -28,9 +28,6 @@
 #include "rust-tyty.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -338,25 +335,13 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  tl::optional<CanonicalPath> canonical_path;
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
 
-      canonical_path
-	= nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	function.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, function.get_locus ()};
+  RustIdent ident{canonical_path, function.get_locus ()};
   auto fnType = new TyTy::FnType (
     function.get_mappings ().get_hirid (),
     function.get_mappings ().get_defid (),
