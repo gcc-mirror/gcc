@@ -569,9 +569,7 @@
 ;; Attribute that specifies whether we are dealing with a branch to a
 ;; label that is far away, i.e. further away than the maximum/minimum
 ;; representable in a signed 21-bits number.
-;; 0 :=: no
-;; 1 :=: yes
-(define_attr "far_branch" "" (const_int 0))
+(define_attr "far_branch" "no,yes" (const_string "no"))
 
 ;; Attribute that specifies whether the alternative uses MOVPRFX.
 (define_attr "movprfx" "no,yes" (const_string "no"))
@@ -792,8 +790,8 @@
 			       (const_int BRANCH_LEN_N_1MiB))
 			   (lt (minus (match_dup 2) (pc))
 			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_int 0)
-		      (const_int 1)))]
+		      (const_string "no")
+		      (const_string "yes")))]
 )
 
 ;; For a 24-bit immediate CST we can optimize the compare for equality
@@ -857,8 +855,8 @@
 			       (const_int BRANCH_LEN_N_1MiB))
 			   (lt (minus (match_dup 2) (pc))
 			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_int 0)
-		      (const_int 1)))]
+		      (const_string "no")
+		      (const_string "yes")))]
 )
 
 ;; For an LT/GE comparison against zero, emit `TBZ`/`TBNZ`
@@ -872,7 +870,7 @@
   {
     if (get_attr_length (insn) == 8)
       {
-	if (get_attr_far_branch (insn) == 1)
+	if (get_attr_far_branch (insn) == FAR_BRANCH_YES)
 	  return aarch64_gen_far_branch (operands, 1, "Ltb",
 					 "<inv_tb>\\t%<w>0, <sizem1>, ");
 	else
@@ -901,8 +899,8 @@
 			       (const_int BRANCH_LEN_N_1MiB))
 			   (lt (minus (match_dup 1) (pc))
 			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_int 0)
-		      (const_int 1)))]
+		      (const_string "no")
+		      (const_string "yes")))]
 )
 
 ;; -------------------------------------------------------------------
@@ -966,8 +964,8 @@
 			       (const_int BRANCH_LEN_N_1MiB))
 			   (lt (minus (match_dup 2) (pc))
 			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_int 0)
-		      (const_int 1)))]
+		      (const_string "no")
+		      (const_string "yes")))]
 
 )
 
