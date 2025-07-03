@@ -12460,12 +12460,14 @@ proc check_effective_target_aarch64_gas_has_build_attributes { } {
 # Create functions to check that the AArch64 assembler supports the
 # various architecture extensions via the .arch_extension pseudo-op.
 
-foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
-			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64"
-			  "lut" "sme" "sme-i16i64" "sme2" "sve-b16b16"
-			  "sme-b16b16" "sme-f16f16" "sme2p1" "fp8" "fp8fma"
-			  "ssve-fp8fma" "fp8dot2" "ssve-fp8dot2" "fp8dot4"
-			  "ssve-fp8dot4"} {
+set exts {
+    "bf16" "cmpbr" "crc" "crypto" "dotprod" "f32mm" "f64mm" "fp" "fp8"
+    "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut" "sb" "simd"
+    "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1" "ssve-fp8dot2"
+    "ssve-fp8dot4" "ssve-fp8fma" "sve-b16b16" "sve" "sve2"
+}
+
+foreach { aarch64_ext } $exts {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
