@@ -9735,7 +9735,7 @@ namespace ranges
     end() requires (!(__detail::__simple_view<_Vs> && ...))
     {
       constexpr auto __n = sizeof...(_Vs);
-      if constexpr ((semiregular<iterator_t<_Vs>> && ...)
+      if constexpr (__detail::__all_forward<false, _Vs...>
 		    && common_range<_Vs...[__n - 1]>)
 	return _Iterator<false>(this, in_place_index<__n - 1>,
 				ranges::end(std::get<__n - 1>(_M_views)));
@@ -9747,7 +9747,7 @@ namespace ranges
     end() const requires (range<const _Vs> && ...) && __detail::__concatable<const _Vs...>
     {
       constexpr auto __n = sizeof...(_Vs);
-      if constexpr ((semiregular<iterator_t<const _Vs>> && ...)
+      if constexpr (__detail::__all_forward<true, _Vs...>
 		    && common_range<const _Vs...[__n - 1]>)
 	return _Iterator<true>(this, in_place_index<__n - 1>,
 			       ranges::end(std::get<__n - 1>(_M_views)));
