@@ -373,6 +373,8 @@
 		    (reg:DI SME_STATE_REGNUM)
 		    (reg:DI TPIDR2_SETUP_REGNUM)
 		    (reg:DI ZA_SAVED_REGNUM)] UNSPEC_RESTORE_ZA))
+   (set (reg:DI SME_STATE_REGNUM)
+	(unspec:DI [(reg:DI SME_STATE_REGNUM)] UNSPEC_TPIDR2_RESTORE))
    (clobber (reg:DI R0_REGNUM))
    (clobber (reg:DI R14_REGNUM))
    (clobber (reg:DI R15_REGNUM))
