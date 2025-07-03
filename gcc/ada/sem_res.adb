@@ -7270,7 +7270,9 @@ package body Sem_Res is
 
       if Restriction_Check_Required (No_Relative_Delay)
         and then Is_RTE (Nam, RE_Set_Handler)
-        and then Is_RTE (Etype (Next_Actual (First_Actual (N))), RE_Time_Span)
+        and then
+          Is_RTE
+            (Base_Type (Etype (Next_Actual (First_Actual (N)))), RE_Time_Span)
       then
          Check_Restriction (No_Relative_Delay, N);
       end if;
