@@ -10,4 +10,4 @@ f10_endbr (void)
 {
 }
 
-/* { dg-final { scan-assembler "\t\.cfi_startproc\n\tendbr(32|64)\n.*\.LPFE0:\n\tnop\n1:\tcall\t\[^\n\]*__fentry__\[^\n\]*\n\tret\n" } } */
+/* { dg-final { scan-assembler "\t\.cfi_startproc\n\tendbr(32|64)\n.*\.LPFE0:\n\tnop\n\tcall\t\[^\n\]*__fentry__\[^\n\]*\n\tret\n" } } */
