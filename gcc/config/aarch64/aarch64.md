@@ -714,14 +714,14 @@
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand:GPI 1 "register_operand")
 			     (match_operand:GPI 2 "aarch64_plus_operand")])
-			   (label_ref (match_operand 3 "" ""))
+			   (label_ref (match_operand 3))
 			   (pc)))]
   ""
-  "
-  operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
-					 operands[2]);
-  operands[2] = const0_rtx;
-  "
+  {
+    operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
+					   operands[2]);
+    operands[2] = const0_rtx;
+  }
 )
 
 (define_expand "cbranch<mode>4"
@@ -729,30 +729,31 @@
 		(match_operator 0 "aarch64_comparison_operator"
 		 [(match_operand:GPF_F16 1 "register_operand")
 		  (match_operand:GPF_F16 2 "aarch64_fp_compare_operand")])
-		(label_ref (match_operand 3 "" ""))
+		(label_ref (match_operand 3))
 		(pc)))]
   ""
-  "
-  operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
-					 operands[2]);
-  operands[2] = const0_rtx;
-  "
+  {
+    operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
+					   operands[2]);
+    operands[2] = const0_rtx;
+  }
 )
 
 (define_expand "cbranchcc4"
-  [(set (pc) (if_then_else
-	      (match_operator 0 "aarch64_comparison_operator"
-	       [(match_operand 1 "cc_register")
-	        (match_operand 2 "const0_operand")])
-	      (label_ref (match_operand 3 "" ""))
-	      (pc)))]
+  [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
+			    [(match_operand 1 "cc_register")
+			     (match_operand 2 "const0_operand")])
+			   (label_ref (match_operand 3))
+			   (pc)))]
   ""
-  "")
+  ""
+)
 
 (define_insn "condjump"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
-			    [(match_operand 1 "cc_register" "") (const_int 0)])
-			   (label_ref (match_operand 2 "" ""))
+			    [(match_operand 1 "cc_register")
+			     (const_int 0)])
+			   (label_ref (match_operand 2))
 			   (pc)))]
   ""
   {
@@ -789,10 +790,9 @@
 ;; 	subs	x0, x0, #(CST & 0x000fff)
 ;; 	b<ne,eq> .Label
 (define_insn_and_split "*compare_condjump<GPI:mode>"
-  [(set (pc) (if_then_else (EQL
-			      (match_operand:GPI 0 "register_operand" "r")
-			      (match_operand:GPI 1 "aarch64_imm24" "n"))
-			   (label_ref:P (match_operand 2 "" ""))
+  [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
+			        (match_operand:GPI 1 "aarch64_imm24" "n"))
+			   (label_ref:P (match_operand 2))
 			   (pc)))]
   "!aarch64_move_imm (INTVAL (operands[1]), <GPI:MODE>mode)
    && !aarch64_plus_operand (operands[1], <GPI:MODE>mode)
@@ -816,8 +816,8 @@
 
 (define_insn "aarch64_cb<optab><mode>1"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
-				(const_int 0))
-			   (label_ref (match_operand 1 "" ""))
+			        (const_int 0))
+			   (label_ref (match_operand 1))
 			   (pc)))]
   "!aarch64_track_speculation"
   {
@@ -841,8 +841,8 @@
 
 (define_insn "*cb<optab><mode>1"
   [(set (pc) (if_then_else (LTGE (match_operand:ALLI 0 "register_operand" "r")
-				 (const_int 0))
-			   (label_ref (match_operand 1 "" ""))
+			         (const_int 0))
+			   (label_ref (match_operand 1))
 			   (pc)))
    (clobber (reg:CC CC_REGNUM))]
   "!aarch64_track_speculation"
@@ -883,11 +883,11 @@
 ;; -------------------------------------------------------------------
 
 (define_expand "tbranch_<code><mode>3"
-  [(set (pc) (if_then_else
-	      (EQL (match_operand:SHORT 0 "register_operand")
-		   (match_operand 1 "const0_operand"))
-	      (label_ref (match_operand 2 ""))
-	      (pc)))]
+  [(set (pc) (if_then_else (EQL
+			     (match_operand:SHORT 0 "register_operand")
+			     (match_operand 1 "const0_operand"))
+			   (label_ref (match_operand 2 ""))
+			   (pc)))]
   ""
 {
   rtx bitvalue = gen_reg_rtx (<ZEROM>mode);
@@ -901,14 +901,14 @@
 })
 
 (define_insn "@aarch64_tb<optab><ALLI:mode><GPI:mode>"
-  [(set (pc) (if_then_else
-	      (EQL (zero_extract:GPI (match_operand:ALLI 0 "register_operand" "r")
-				     (const_int 1)
-				     (match_operand 1
-				       "aarch64_simd_shift_imm_<ALLI:mode>" "n"))
-		   (const_int 0))
-	     (label_ref (match_operand 2 "" ""))
-	     (pc)))
+  [(set (pc) (if_then_else (EQL
+			     (zero_extract:GPI
+			       (match_operand:ALLI 0 "register_operand" "r")
+			       (const_int 1)
+			       (match_operand 1 "aarch64_simd_shift_imm_<ALLI:mode>" "n"))
+			     (const_int 0))
+			   (label_ref (match_operand 2))
+			   (pc)))
    (clobber (reg:CC CC_REGNUM))]
   "!aarch64_track_speculation"
   {
