@@ -1,3 +1,28 @@
+2025-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/116055
+	* ipa-modref.cc (analyze_function): Do not ICE when flags regress.
+
+2025-07-02  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-06-24  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/106057
+	* tree-ssa-alias.cc (stmt_kills_ref_p): Check for external throw.
+
+2025-07-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* gimplify.cc (gimplify_asm_expr): Copy TREE_PURPOSE before
+	rewriting it for "+" processing.
+
 2025-06-25  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/i386.h (PTA_ALDERLAKE): Use PTA_GOLDMONT_PLUS
