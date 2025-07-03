@@ -1,3 +1,11 @@
+2025-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/gomp/omp_get_num_devices_initial_device.c: Fix.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device.f90: Likewise.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
