@@ -4838,11 +4838,12 @@ update_profiling_info (struct cgraph_node *orig_node,
       profile_count unexp = orig_node_count - new_sum - orig_nonrec_call_count;
 
       int limit_den = 2 * (orig_nonrec_calls + new_nonrec_calls);
-      profile_count new_part
-	= MAX(MIN (unexp.apply_scale (new_sum,
-				      new_sum + orig_nonrec_call_count),
-		   unexp.apply_scale (limit_den - 1, limit_den)),
-	      unexp.apply_scale (new_nonrec_calls, limit_den));
+      profile_count new_part = unexp.apply_scale (limit_den - 1, limit_den);
+      profile_count den = new_sum + orig_nonrec_call_count;
+      if (den.nonzero_p ())
+	new_part = MIN (unexp.apply_scale (new_sum, den), new_part);
+      new_part = MAX (new_part,
+		      unexp.apply_scale (new_nonrec_calls, limit_den));
       if (dump_file)
 	{
 	  fprintf (dump_file, "       Claiming ");
