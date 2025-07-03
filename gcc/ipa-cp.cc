@@ -554,6 +554,7 @@ cs_interesting_for_ipcp_p (cgraph_edge *e)
   /* If we have zero IPA profile, still consider edge for cloning
      in case we do partial training.  */
   if (e->count.ipa ().initialized_p ()
+      && e->count.ipa ().quality () != AFDO
       && !opt_for_fn (e->callee->decl,flag_profile_partial_training))
     return false;
   return true;
@@ -617,7 +618,9 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       return false;
     }
 
-  if (node->optimize_for_size_p ())
+  /* Do not use profile here since cold wrapper wrap
+     hot function.  */
+  if (opt_for_fn (node->decl, optimize_size))
     {
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; "
@@ -3391,9 +3394,10 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 			    int size_cost, bool called_without_ipa_profile)
 {
   gcc_assert (count_sum.ipa () == count_sum);
+  if (count_sum.quality () == AFDO)
+    count_sum = count_sum.force_nonzero ();
   if (time_benefit == 0
       || !opt_for_fn (node->decl, flag_ipa_cp_clone)
-      || node->optimize_for_size_p ()
       /* If there is no call which was executed in profiling or where
 	 profile is missing, we do not want to clone.  */
       || (!called_without_ipa_profile && !count_sum.nonzero_p ()))
