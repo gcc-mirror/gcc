@@ -959,6 +959,39 @@ svpattern_token (enum aarch64_svpattern pattern)
   gcc_unreachable ();
 }
 
+/* Return true if RHS is an operand suitable for a CB<cc> (immediate)
+   instruction.  OP_CODE determines the type of the comparison.  */
+bool
+aarch64_cb_rhs (rtx_code op_code, rtx rhs)
+{
+  if (!CONST_INT_P (rhs))
+    return REG_P (rhs);
+
+  HOST_WIDE_INT rhs_val = INTVAL (rhs);
+
+  switch (op_code)
+    {
+    case EQ:
+    case NE:
+    case GT:
+    case GTU:
+    case LT:
+    case LTU:
+      return IN_RANGE (rhs_val, 0, 63);
+
+    case GE:  /* CBGE:   signed greater than or equal */
+    case GEU: /* CBHS: unsigned greater than or equal */
+      return IN_RANGE (rhs_val, 1, 64);
+
+    case LE:  /* CBLE:   signed less than or equal */
+    case LEU: /* CBLS: unsigned less than or equal */
+      return IN_RANGE (rhs_val, -1, 62);
+
+    default:
+      return false;
+    }
+}
+
 /* Return the location of a piece that is known to be passed or returned
    in registers.  FIRST_ZR is the first unused vector argument register
    and FIRST_PR is the first unused predicate argument register.  */

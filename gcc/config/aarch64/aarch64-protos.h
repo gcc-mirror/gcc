@@ -1135,6 +1135,8 @@ bool aarch64_general_check_builtin_call (location_t, vec<location_t>,
 					 unsigned int, tree, unsigned int,
 					 tree *);
 
+bool aarch64_cb_rhs (rtx_code op_code, rtx rhs);
+
 namespace aarch64 {
   void report_non_ice (location_t, tree, unsigned int);
   void report_out_of_range (location_t, tree, unsigned int, HOST_WIDE_INT,

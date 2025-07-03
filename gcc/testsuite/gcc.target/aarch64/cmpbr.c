@@ -121,208 +121,167 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_eq_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	beq	.L([0-9]+)
+**	cbbeq	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u8_x0_ne_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	bne	.L([0-9]+)
+**	cbbne	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u8_x0_ult_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	bhi	.L([0-9]+)
+**	cbbhi	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u8_x0_ule_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	bcs	.L([0-9]+)
+**	cbbhs	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u8_x0_ugt_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	bcc	.L([0-9]+)
+**	cbblo	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u8_x0_uge_x1:
-**	and	(w[0-9]+), w1, 255
-**	cmp	\1, w0, uxtb
-**	bls	.L([0-9]+)
+**	cbbls	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_slt_x1:
-**	sxtb	(w[0-9]+), w1
-**	cmp	\1, w0, sxtb
-**	bgt	.L([0-9]+)
+**	cbbgt	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_sle_x1:
-**	sxtb	(w[0-9]+), w1
-**	cmp	\1, w0, sxtb
-**	bge	.L([0-9]+)
+**	cbbge	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_sgt_x1:
-**	sxtb	(w[0-9]+), w1
-**	cmp	\1, w0, sxtb
-**	blt	.L([0-9]+)
+**	cbblt	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_sge_x1:
-**	sxtb	(w[0-9]+), w1
-**	cmp	\1, w0, sxtb
-**	ble	.L([0-9]+)
+**	cbble	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_eq_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	beq	.L([0-9]+)
+**	cbheq	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_ne_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	bne	.L([0-9]+)
+**	cbhne	w0|w1, w1|w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_ult_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	bhi	.L([0-9]+)
+**	cbhhi	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_ule_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	bcs	.L([0-9]+)
+**	cbhhs	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_ugt_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	bcc	.L([0-9]+)
+**	cbhlo	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u16_x0_uge_x1:
-**	and	(w[0-9]+), w1, 65535
-**	cmp	\1, w0, uxth
-**	bls	.L([0-9]+)
+**	cbhls	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_slt_x1:
-**	sxth	(w[0-9]+), w1
-**	cmp	\1, w0, sxth
-**	bgt	.L([0-9]+)
+**	cbhgt	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_sle_x1:
-**	sxth	(w[0-9]+), w1
-**	cmp	\1, w0, sxth
-**	bge	.L([0-9]+)
+**	cbhge	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_sgt_x1:
-**	sxth	(w[0-9]+), w1
-**	cmp	\1, w0, sxth
-**	blt	.L([0-9]+)
+**	cbhlt	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_sge_x1:
-**	sxth	(w[0-9]+), w1
-**	cmp	\1, w0, sxth
-**	ble	.L([0-9]+)
+**	cbhle	w1, w0, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** u32_x0_eq_x1:
-**	cmp	w0, w1
-**	beq	.L([0-9]+)
+**	cbeq	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -330,8 +289,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ne_x1:
-**	cmp	w0, w1
-**	bne	.L([0-9]+)
+**	cbne	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -339,8 +297,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ult_x1:
-**	cmp	w0, w1
-**	bcc	.L([0-9]+)
+**	cblo	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -348,8 +305,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ule_x1:
-**	cmp	w0, w1
-**	bls	.L([0-9]+)
+**	cbls	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -357,8 +313,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ugt_x1:
-**	cmp	w0, w1
-**	bhi	.L([0-9]+)
+**	cbhi	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -366,8 +321,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_uge_x1:
-**	cmp	w0, w1
-**	bcs	.L([0-9]+)
+**	cbhs	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -375,8 +329,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_slt_x1:
-**	cmp	w0, w1
-**	blt	.L([0-9]+)
+**	cblt	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -384,8 +337,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sle_x1:
-**	cmp	w0, w1
-**	ble	.L([0-9]+)
+**	cble	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -393,8 +345,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sgt_x1:
-**	cmp	w0, w1
-**	bgt	.L([0-9]+)
+**	cbgt	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -402,8 +353,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sge_x1:
-**	cmp	w0, w1
-**	bge	.L([0-9]+)
+**	cbge	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -411,8 +361,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_eq_x1:
-**	cmp	x0, x1
-**	beq	.L([0-9]+)
+**	cbeq	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -420,8 +369,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ne_x1:
-**	cmp	x0, x1
-**	bne	.L([0-9]+)
+**	cbne	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -429,8 +377,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ult_x1:
-**	cmp	x0, x1
-**	bcc	.L([0-9]+)
+**	cblo	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -438,8 +385,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ule_x1:
-**	cmp	x0, x1
-**	bls	.L([0-9]+)
+**	cbls	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -447,8 +393,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ugt_x1:
-**	cmp	x0, x1
-**	bhi	.L([0-9]+)
+**	cbhi	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -456,8 +401,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_uge_x1:
-**	cmp	x0, x1
-**	bcs	.L([0-9]+)
+**	cbhs	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -465,8 +409,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_slt_x1:
-**	cmp	x0, x1
-**	blt	.L([0-9]+)
+**	cblt	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -474,8 +417,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sle_x1:
-**	cmp	x0, x1
-**	ble	.L([0-9]+)
+**	cble	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -483,8 +425,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sgt_x1:
-**	cmp	x0, x1
-**	bgt	.L([0-9]+)
+**	cbgt	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -492,8 +433,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sge_x1:
-**	cmp	x0, x1
-**	bge	.L([0-9]+)
+**	cbge	x0, x1, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -501,8 +441,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_eq_42:
-**	cmp	w0, 42
-**	beq	.L([0-9]+)
+**	cbeq	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -510,8 +449,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ne_42:
-**	cmp	w0, 42
-**	bne	.L([0-9]+)
+**	cbne	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -519,8 +457,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ult_42:
-**	cmp	w0, 41
-**	bls	.L([0-9]+)
+**	cbls	w0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -528,8 +465,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ule_42:
-**	cmp	w0, 42
-**	bls	.L([0-9]+)
+**	cbls	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -537,8 +473,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ugt_42:
-**	cmp	w0, 42
-**	bhi	.L([0-9]+)
+**	cbhi	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -546,8 +481,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_uge_42:
-**	cmp	w0, 41
-**	bhi	.L([0-9]+)
+**	cbhi	w0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -555,8 +489,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_slt_42:
-**	cmp	w0, 41
-**	ble	.L([0-9]+)
+**	cble	w0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -564,8 +497,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sle_42:
-**	cmp	w0, 42
-**	ble	.L([0-9]+)
+**	cble	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -573,8 +505,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sgt_42:
-**	cmp	w0, 42
-**	bgt	.L([0-9]+)
+**	cbgt	w0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -582,8 +513,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sge_42:
-**	cmp	w0, 41
-**	bgt	.L([0-9]+)
+**	cbgt	w0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -591,8 +521,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_eq_42:
-**	cmp	x0, 42
-**	beq	.L([0-9]+)
+**	cbeq	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -600,8 +529,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ne_42:
-**	cmp	x0, 42
-**	bne	.L([0-9]+)
+**	cbne	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -609,8 +537,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ult_42:
-**	cmp	x0, 41
-**	bls	.L([0-9]+)
+**	cbls	x0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -618,8 +545,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ule_42:
-**	cmp	x0, 42
-**	bls	.L([0-9]+)
+**	cbls	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -627,8 +553,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ugt_42:
-**	cmp	x0, 42
-**	bhi	.L([0-9]+)
+**	cbhi	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -636,8 +561,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_uge_42:
-**	cmp	x0, 41
-**	bhi	.L([0-9]+)
+**	cbhi	x0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -645,8 +569,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_slt_42:
-**	cmp	x0, 41
-**	ble	.L([0-9]+)
+**	cble	x0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -654,8 +577,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sle_42:
-**	cmp	x0, 42
-**	ble	.L([0-9]+)
+**	cble	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -663,8 +585,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sgt_42:
-**	cmp	x0, 42
-**	bgt	.L([0-9]+)
+**	cbgt	x0, 42, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -672,8 +593,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sge_42:
-**	cmp	x0, 41
-**	bgt	.L([0-9]+)
+**	cbgt	x0, 41, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -681,8 +601,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_eq_0:
-**	tst	w0, 255
-**	beq	.L([0-9]+)
+**	cbbeq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -690,8 +609,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ne_0:
-**	tst	w0, 255
-**	bne	.L([0-9]+)
+**	cbbne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -704,8 +622,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ule_0:
-**	tst	w0, 255
-**	beq	.L([0-9]+)
+**	cbbeq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -713,8 +630,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ugt_0:
-**	tst	w0, 255
-**	bne	.L([0-9]+)
+**	cbbne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -727,7 +643,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_slt_0:
-**	tbnz	w0, 7, .L([0-9]+)
+**	cbblt	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -735,27 +651,23 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sle_0:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 0
-**	ble	.L([0-9]+)
+**	cbble	w0, wzr, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_sgt_0:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 0
-**	bgt	.L([0-9]+)
+**	cbbgt	w0, wzr, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i8_x0_sge_0:
-**	tbz	w0, 7, .L([0-9]+)
+**	cbbge	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -763,8 +675,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_eq_0:
-**	tst	w0, 65535
-**	beq	.L([0-9]+)
+**	cbheq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -772,8 +683,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ne_0:
-**	tst	w0, 65535
-**	bne	.L([0-9]+)
+**	cbhne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -786,8 +696,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ule_0:
-**	tst	w0, 65535
-**	beq	.L([0-9]+)
+**	cbheq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -795,8 +704,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ugt_0:
-**	tst	w0, 65535
-**	bne	.L([0-9]+)
+**	cbhne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -809,7 +717,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_slt_0:
-**	tbnz	w0, 15, .L([0-9]+)
+**	cbhlt	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -817,27 +725,23 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sle_0:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 0
-**	ble	.L([0-9]+)
+**	cbhle	w0, wzr, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_sgt_0:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 0
-**	bgt	.L([0-9]+)
+**	cbhgt	w0, wzr, .L([0-9]+)
 **	b	not_taken
-** .L\2:
+** .L\1:
 **	b	taken
 */
 
 /*
 ** i16_x0_sge_0:
-**	tbz	w0, 15, .L([0-9]+)
+**	cbhge	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -845,7 +749,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_eq_0:
-**	cbz	w0, .L([0-9]+)
+**	cbeq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -853,7 +757,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ne_0:
-**	cbnz	w0, .L([0-9]+)
+**	cbne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -866,7 +770,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ule_0:
-**	cbz	w0, .L([0-9]+)
+**	cbeq	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -874,7 +778,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ugt_0:
-**	cbnz	w0, .L([0-9]+)
+**	cbne	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -895,8 +799,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sle_0:
-**	cmp	w0, 0
-**	ble	.L([0-9]+)
+**	cble	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -904,8 +807,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sgt_0:
-**	cmp	w0, 0
-**	bgt	.L([0-9]+)
+**	cbgt	w0, wzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -913,15 +815,15 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sge_0:
-**	tbz	w0, #31, .L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cblt	w0, wzr, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
 ** u64_x0_eq_0:
-**	cbz	x0, .L([0-9]+)
+**	cbeq	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -929,7 +831,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ne_0:
-**	cbnz	x0, .L([0-9]+)
+**	cbne	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -942,7 +844,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ule_0:
-**	cbz	x0, .L([0-9]+)
+**	cbeq	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -950,7 +852,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ugt_0:
-**	cbnz	x0, .L([0-9]+)
+**	cbne	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -971,8 +873,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sle_0:
-**	cmp	x0, 0
-**	ble	.L([0-9]+)
+**	cble	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -980,8 +881,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sgt_0:
-**	cmp	x0, 0
-**	bgt	.L([0-9]+)
+**	cbgt	x0, xzr, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -989,17 +889,16 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sge_0:
-**	tbz	x0, #63, .L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cblt	x0, xzr, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
 ** u8_x0_eq_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 42
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 42
+**	cbbeq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1007,9 +906,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ne_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 42
-**	bne	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbbne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1017,9 +915,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ult_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 41
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1027,9 +924,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ule_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 42
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1037,9 +933,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ugt_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 42
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1047,9 +942,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_uge_42:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 41
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1057,9 +951,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_slt_42:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 41
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1067,9 +960,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sle_42:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 42
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1077,9 +969,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sgt_42:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 42
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1087,9 +978,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sge_42:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 41
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1097,9 +987,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_eq_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 42
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 42
+**	cbheq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1107,9 +996,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ne_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 42
-**	bne	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbhne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1117,9 +1005,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ult_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 41
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1127,9 +1014,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ule_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 42
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1137,9 +1023,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ugt_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 42
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1147,9 +1032,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_uge_42:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 41
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1157,9 +1041,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_slt_42:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 41
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1167,9 +1050,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sle_42:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 42
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1177,9 +1059,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sgt_42:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 42
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 42
+**	cbhgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1187,9 +1068,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sge_42:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 41
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 41
+**	cbhgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1197,9 +1077,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_eq_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 64
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 64
+**	cbbeq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1207,9 +1086,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ne_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 64
-**	bne	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbbne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1217,9 +1095,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ult_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 63
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1227,9 +1104,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ule_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 64
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1237,9 +1113,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ugt_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 64
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1247,9 +1122,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_uge_64:
-**	and	(w[0-9]+), w0, 255
-**	cmp	\1, 63
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1257,9 +1131,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_slt_64:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 63
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1267,9 +1140,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sle_64:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 64
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1277,9 +1149,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sgt_64:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 64
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1287,9 +1158,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sge_64:
-**	sxtb	(w[0-9]+), w0
-**	cmp	\1, 63
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1297,9 +1167,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_eq_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 64
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 64
+**	cbheq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1307,9 +1176,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ne_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 64
-**	bne	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbhne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1317,9 +1185,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ult_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 63
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1327,9 +1194,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ule_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 64
-**	bls	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1337,9 +1203,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ugt_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 64
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1347,9 +1212,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_uge_64:
-**	and	(w[0-9]+), w0, 65535
-**	cmp	\1, 63
-**	bhi	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1357,9 +1221,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_slt_64:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 63
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1367,9 +1230,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sle_64:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 64
-**	ble	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1377,9 +1239,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sgt_64:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 64
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 64
+**	cbhgt	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1387,9 +1248,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sge_64:
-**	sxth	(w[0-9]+), w0
-**	cmp	\1, 63
-**	bgt	.L([0-9]+)
+**	mov	(w[0-9]+), 63
+**	cbhgt	w0, w1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1415,11 +1275,10 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ult_64:
-**	cmp	w0, 63
-**	bls	.L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cbhi	w0, 63, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
@@ -1451,11 +1310,10 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_slt_64:
-**	cmp	w0, 63
-**	ble	.L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cbgt	w0, 63, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
@@ -1505,11 +1363,10 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ult_64:
-**	cmp	x0, 63
-**	bls	.L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cbhi	x0, 63, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
@@ -1541,11 +1398,10 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_slt_64:
-**	cmp	x0, 63
-**	ble	.L([0-9]+)
-**	b	not_taken
-** .L\1:
+**	cbgt	x0, 63, .L([0-9]+)
 **	b	taken
+** .L\1:
+**	b	not_taken
 */
 
 /*
@@ -1577,9 +1433,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_eq_4098:
-**	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, uxth
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 4098
+**	cbheq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1588,8 +1443,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u16_x0_ne_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, uxth
-**	bne	.L([0-9]+)
+**	cbhne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1598,8 +1452,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u16_x0_ult_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	\1, w0, uxth
-**	bcs	.L([0-9]+)
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1608,8 +1461,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u16_x0_ule_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, uxth
-**	bcs	.L([0-9]+)
+**	cbhls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1618,8 +1470,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u16_x0_ugt_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, uxth
-**	bcc	.L([0-9]+)
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1628,8 +1479,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u16_x0_uge_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	\1, w0, uxth
-**	bcc	.L([0-9]+)
+**	cbhhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1638,8 +1488,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i16_x0_slt_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	\1, w0, sxth
-**	bge	.L([0-9]+)
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1648,8 +1497,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i16_x0_sle_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, sxth
-**	bge	.L([0-9]+)
+**	cbhle	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1658,8 +1506,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i16_x0_sgt_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	\1, w0, sxth
-**	blt	.L([0-9]+)
+**	cbhgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1668,8 +1515,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i16_x0_sge_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	\1, w0, sxth
-**	blt	.L([0-9]+)
+**	cbhgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1677,9 +1523,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_eq_4098:
-**	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	beq	.L([0-9]+)
+**	mov	w([0-9]+), 4098
+**	cbeq	w0, w\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1688,8 +1533,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u32_x0_ne_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	bne	.L([0-9]+)
+**	cbne	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1698,8 +1542,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u32_x0_ult_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	w0, \1
-**	bls	.L([0-9]+)
+**	cbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1708,8 +1551,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u32_x0_ule_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	bls	.L([0-9]+)
+**	cbls	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1718,8 +1560,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u32_x0_ugt_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	bhi	.L([0-9]+)
+**	cbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1728,8 +1569,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u32_x0_uge_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	w0, \1
-**	bhi	.L([0-9]+)
+**	cbhi	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1738,8 +1578,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i32_x0_slt_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	w0, \1
-**	ble	.L([0-9]+)
+**	cble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1748,8 +1587,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i32_x0_sle_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	ble	.L([0-9]+)
+**	cble	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1758,8 +1596,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i32_x0_sgt_4098:
 **	mov	(w[0-9]+), 4098
-**	cmp	w0, \1
-**	bgt	.L([0-9]+)
+**	cbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1768,8 +1605,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i32_x0_sge_4098:
 **	mov	(w[0-9]+), 4097
-**	cmp	w0, \1
-**	bgt	.L([0-9]+)
+**	cbgt	w0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1777,9 +1613,8 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_eq_4098:
-**	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	beq	.L([0-9]+)
+**	mov	x([0-9]+), 4098
+**	cbeq	x0, x\1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1788,8 +1623,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u64_x0_ne_4098:
 **	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	bne	.L([0-9]+)
+**	cbne	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1798,8 +1632,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u64_x0_ult_4098:
 **	mov	(x[0-9]+), 4097
-**	cmp	x0, \1
-**	bls	.L([0-9]+)
+**	cbls	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1808,8 +1641,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u64_x0_ule_4098:
 **	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	bls	.L([0-9]+)
+**	cbls	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1818,8 +1650,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u64_x0_ugt_4098:
 **	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	bhi	.L([0-9]+)
+**	cbhi	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1828,8 +1659,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** u64_x0_uge_4098:
 **	mov	(x[0-9]+), 4097
-**	cmp	x0, \1
-**	bhi	.L([0-9]+)
+**	cbhi	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1838,8 +1668,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i64_x0_slt_4098:
 **	mov	(x[0-9]+), 4097
-**	cmp	x0, \1
-**	ble	.L([0-9]+)
+**	cble	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1848,8 +1677,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i64_x0_sle_4098:
 **	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	ble	.L([0-9]+)
+**	cble	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1858,8 +1686,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i64_x0_sgt_4098:
 **	mov	(x[0-9]+), 4098
-**	cmp	x0, \1
-**	bgt	.L([0-9]+)
+**	cbgt	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1868,8 +1695,7 @@ FAR_BRANCH(u64, 42);
 /*
 ** i64_x0_sge_4098:
 **	mov	(x[0-9]+), 4097
-**	cmp	x0, \1
-**	bgt	.L([0-9]+)
+**	cbgt	x0, \1, .L([0-9]+)
 **	b	not_taken
 ** .L\2:
 **	b	taken
@@ -1878,10 +1704,10 @@ FAR_BRANCH(u64, 42);
 /*
 ** far_branch_u8_x0_eq_x1:
 **	sub	sp, sp, #16
-**	and	w([0-9]+), w1, 255
 **	str	wzr, \[sp, 12\]
-**	cmp	w\1, w0, uxtb
-**	bne	.L([0-9]+)
+**	cbbeq	w0|w1, w1|w0, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
@@ -1889,13 +1715,14 @@ FAR_BRANCH(u64, 42);
 **	add	sp, sp, 16
 **	b	taken
 */
+
 /*
 ** far_branch_u16_x0_eq_x1:
 **	sub	sp, sp, #16
-**	and	w([0-9]+), w1, 65535
 **	str	wzr, \[sp, 12\]
-**	cmp	w\1, w0, uxth
-**	bne	.L([0-9]+)
+**	cbheq	w0|w1, w1|w0, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
@@ -1908,12 +1735,13 @@ FAR_BRANCH(u64, 42);
 ** far_branch_u32_x0_eq_x1:
 **	sub	sp, sp, #16
 **	str	wzr, \[sp, 12\]
-**	cmp	w0|w1, w1|w0
-**	bne	.L([0-9]+)
+**	cbeq	w0, w1, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\1:
+** .L\2:
 **	add	sp, sp, 16
 **	b	taken
 */
@@ -1922,12 +1750,13 @@ FAR_BRANCH(u64, 42);
 ** far_branch_u64_x0_eq_x1:
 **	sub	sp, sp, #16
 **	str	wzr, \[sp, 12\]
-**	cmp	x0|x1, x1|x0
-**	bne	.L([0-9]+)
+**	cbeq	x0, x1, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\1:
+** .L\2:
 **	add	sp, sp, 16
 **	b	taken
 */
@@ -1935,14 +1764,15 @@ FAR_BRANCH(u64, 42);
 /*
 ** far_branch_u8_x0_eq_42:
 **	sub	sp, sp, #16
-**	and	w([0-9]+), w0, 255
+**	mov	w([0-9]+), 42
 **	str	wzr, \[sp, 12\]
-**	cmp	w\1, 42
-**	bne	.L([0-9]+)
+**	cbbeq	w0, w\1, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\2:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\2:
+** .L\3:
 **	add	sp, sp, 16
 **	b	taken
 */
@@ -1950,14 +1780,15 @@ FAR_BRANCH(u64, 42);
 /*
 ** far_branch_u16_x0_eq_42:
 **	sub	sp, sp, #16
-**	and	w([0-9]+), w0, 65535
+**	mov	w([0-9]+), 42
 **	str	wzr, \[sp, 12\]
-**	cmp	w\1, 42
-**	bne	.L([0-9]+)
+**	cbheq	w0, w\1, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\2:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\2:
+** .L\3:
 **	add	sp, sp, 16
 **	b	taken
 */
@@ -1966,12 +1797,13 @@ FAR_BRANCH(u64, 42);
 ** far_branch_u32_x0_eq_42:
 **	sub	sp, sp, #16
 **	str	wzr, \[sp, 12\]
-**	cmp	w0, 42
-**	bne	.L([0-9]+)
+**	cbeq	w0, 42, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\1:
+** .L\2:
 **	add	sp, sp, 16
 **	b	taken
 */
@@ -1980,12 +1812,13 @@ FAR_BRANCH(u64, 42);
 ** far_branch_u64_x0_eq_42:
 **	sub	sp, sp, #16
 **	str	wzr, \[sp, 12\]
-**	cmp	x0, 42
-**	bne	.L([0-9]+)
+**	cbeq	x0, 42, .L([0-9]+)
+**	b	.L([0-9]+)
+** .L\1:
 **	str	wzr, \[sp, 12\]
 **	...
 **	str	wzr, \[sp, 12\]
-** .L\1:
+** .L\2:
 **	add	sp, sp, 16
 **	b	taken
 */

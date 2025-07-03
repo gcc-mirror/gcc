@@ -713,6 +713,10 @@
     ;; +/- 32KiB.  Used by TBZ, TBNZ.
     (BRANCH_LEN_P_32KiB  32764)
     (BRANCH_LEN_N_32KiB -32768)
+
+    ;; +/- 1KiB.  Used by CBB<cond>, CBH<cond>, CB<cond>.
+    (BRANCH_LEN_P_1Kib  1020)
+    (BRANCH_LEN_N_1Kib -1024)
   ]
 )
 
@@ -720,7 +724,7 @@
 ;; Conditional jumps
 ;; -------------------------------------------------------------------
 
-(define_expand "cbranch<mode>4"
+(define_expand "cbranch<GPI:mode>4"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand:GPI 1 "register_operand")
 			     (match_operand:GPI 2 "aarch64_plus_operand")])
@@ -728,10 +732,27 @@
 			   (pc)))]
   ""
   {
-    operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
-					   operands[2]);
-    operands[2] = const0_rtx;
+    if (TARGET_CMPBR && aarch64_cb_rhs (GET_CODE (operands[0]), operands[2]))
+      {
+	/* The branch is supported natively.  */
+      }
+    else
+      {
+        operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]),
+					       operands[1], operands[2]);
+        operands[2] = const0_rtx;
+      }
   }
+)
+
+(define_expand "cbranch<SHORT:mode>4"
+  [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
+			    [(match_operand:SHORT 1 "register_operand")
+			     (match_operand:SHORT 2 "aarch64_reg_or_zero")])
+			   (label_ref (match_operand 3))
+			   (pc)))]
+  "TARGET_CMPBR"
+  ""
 )
 
 (define_expand "cbranch<mode>4"
@@ -757,6 +778,72 @@
 			   (pc)))]
   ""
   ""
+)
+
+;; Emit a `CB<cond> (register)` or `CB<cond> (immediate)` instruction.
+;; The immediate range depends on the comparison code.
+;; Comparisons against immediates outside this range fall back to
+;; CMP + B<cond>.
+(define_insn "aarch64_cb<INT_CMP:code><GPI:mode>"
+  [(set (pc) (if_then_else (INT_CMP
+			     (match_operand:GPI 0 "register_operand" "r")
+			     (match_operand:GPI 1 "nonmemory_operand"
+			       "r<INT_CMP:cmpbr_imm_constraint>"))
+			   (label_ref (match_operand 2))
+			   (pc)))]
+  "TARGET_CMPBR && aarch64_cb_rhs (<INT_CMP:CODE>, operands[1])"
+  {
+    return (get_attr_far_branch (insn) == FAR_BRANCH_NO)
+      ? "cb<INT_CMP:cmp_op>\\t%<w>0, %<w>1, %l2"
+      : aarch64_gen_far_branch (operands, 2, "L",
+          "cb<INT_CMP:inv_cmp_op>\\t%<w>0, %<w>1, ");
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1Kib))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1Kib)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1Kib))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1Kib)))
+		      (const_string "no")
+		      (const_string "yes")))]
+)
+
+;; Emit a `CBB<cond> (register)` or `CBH<cond> (register)` instruction.
+(define_insn "aarch64_cb<INT_CMP:code><SHORT:mode>"
+  [(set (pc) (if_then_else (INT_CMP
+			     (match_operand:SHORT 0 "register_operand" "r")
+			     (match_operand:SHORT 1 "aarch64_reg_or_zero" "rZ"))
+			   (label_ref (match_operand 2))
+			   (pc)))]
+  "TARGET_CMPBR"
+  {
+    return (get_attr_far_branch (insn) == FAR_BRANCH_NO)
+      ? "cb<SHORT:cmpbr_suffix><INT_CMP:cmp_op>\\t%<w>0, %<w>1, %l2"
+      : aarch64_gen_far_branch (operands, 2, "L",
+          "cb<SHORT:cmpbr_suffix><INT_CMP:inv_cmp_op>\\t%<w>0, %<w>1, ");
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1Kib))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1Kib)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1Kib))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1Kib)))
+		      (const_string "no")
+		      (const_string "yes")))]
 )
 
 ;; Emit `B<cond>`, assuming that the condition is already in the CC register.

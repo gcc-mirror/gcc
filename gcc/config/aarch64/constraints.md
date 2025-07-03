@@ -304,6 +304,24 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) ival <= 7")))
 
+(define_constraint "Uc0"
+  "@internal
+  A constraint that matches the integers 0...63."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 63)")))
+
+(define_constraint "Uc1"
+  "@internal
+  A constraint that matches the integers 1...64."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 1, 64)")))
+
+(define_constraint "Uc2"
+  "@internal
+  A constraint that matches the integers -1...62."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -1, 62)")))
+
 (define_constraint "Up3"
   "@internal
   A constraint that matches the integers 2^(0...4)."
