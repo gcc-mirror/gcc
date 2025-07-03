@@ -15224,7 +15224,7 @@ bool
 tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 {
   enum tree_code code;
-  if (t == error_mark_node)
+  if (error_operand_p (t))
     return false;
 
   code = TREE_CODE (t);
