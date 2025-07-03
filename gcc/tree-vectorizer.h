@@ -1655,6 +1655,14 @@ struct gather_scatter_info {
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
+#define GATHER_SCATTER_LEGACY_P(info) ((info).decl != NULL_TREE \
+				       && (info).ifn == IFN_LAST)
+#define GATHER_SCATTER_IFN_P(info) ((info).decl == NULL_TREE \
+				    && (info).ifn != IFN_LAST)
+#define GATHER_SCATTER_EMULATED_P(info) ((info).decl == NULL_TREE \
+					 && (info).ifn == IFN_LAST)
+
+
 /* Contains the scalar or vector costs for a vec_info.  */
 class vector_costs
 {

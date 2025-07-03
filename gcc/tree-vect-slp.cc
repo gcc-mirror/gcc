@@ -507,6 +507,8 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
 	      && (dtb == vect_external_def || dtb == vect_constant_def)));
 }
 
+#define GATHER_SCATTER_OFFSET (-3)
+
 static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
@@ -516,10 +518,10 @@ static const int arg1_arg4_arg5_map[] = { 3, 1, 4, 5 };
 static const int arg1_arg3_arg4_map[] = { 3, 1, 3, 4 };
 static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
-static const int off_map[] = { 1, -3 };
-static const int off_op0_map[] = { 2, -3, 0 };
-static const int off_arg2_arg3_map[] = { 3, -3, 2, 3 };
-static const int off_arg3_arg2_map[] = { 3, -3, 3, 2 };
+static const int off_map[] = { 1, GATHER_SCATTER_OFFSET };
+static const int off_op0_map[] = { 2, GATHER_SCATTER_OFFSET, 0 };
+static const int off_arg2_arg3_map[] = { 3, GATHER_SCATTER_OFFSET, 2, 3 };
+static const int off_arg3_arg2_map[] = { 3, GATHER_SCATTER_OFFSET, 3, 2 };
 static const int mask_call_maps[6][7] = {
   { 1, 1, },
   { 2, 1, 2, },
@@ -691,7 +693,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
     {
       oprnd_info = (*oprnds_info)[i];
       int opno = map ? map[i] : int (i);
-      if (opno == -3)
+      if (opno == GATHER_SCATTER_OFFSET)
 	{
 	  gcc_assert (STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 	  if (!is_a <loop_vec_info> (vinfo)

@@ -2455,7 +2455,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	 If that failed for some reason (e.g. because another pattern
 	 took priority), just handle cases in which the offset already
 	 has the right type.  */
-      else if (gs_info->ifn != IFN_LAST
+      else if (GATHER_SCATTER_IFN_P (*gs_info)
 	       && !is_gimple_call (stmt_info->stmt)
 	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
 					  TREE_TYPE (gs_info->offset_vectype)))
@@ -8104,7 +8104,8 @@ vectorizable_store (vec_info *vinfo,
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
 	       && (memory_access_type != VMAT_GATHER_SCATTER
-		   || (gs_info.decl && !VECTOR_BOOLEAN_TYPE_P (mask_vectype))))
+		   || (GATHER_SCATTER_LEGACY_P (gs_info)
+		       && !VECTOR_BOOLEAN_TYPE_P (mask_vectype))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8112,8 +8113,7 @@ vectorizable_store (vec_info *vinfo,
 	  return false;
 	}
       else if (memory_access_type == VMAT_GATHER_SCATTER
-	       && gs_info.ifn == IFN_LAST
-	       && !gs_info.decl)
+	       && GATHER_SCATTER_EMULATED_P (gs_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8838,7 +8838,7 @@ vectorizable_store (vec_info *vinfo,
 					       final_mask, vec_mask, gsi);
 	    }
 
-	  if (gs_info.ifn != IFN_LAST)
+	  if (GATHER_SCATTER_IFN_P (gs_info))
 	    {
 	      if (costing_p)
 		{
@@ -8901,7 +8901,7 @@ vectorizable_store (vec_info *vinfo,
 	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 	      new_stmt = call;
 	    }
-	   else if (gs_info.decl)
+	  else if (GATHER_SCATTER_LEGACY_P (gs_info))
 	    {
 	      /* The builtin decls path for scatter is legacy, x86 only.  */
 	      gcc_assert (nunits.is_constant ()
@@ -9812,8 +9812,7 @@ vectorizable_load (vec_info *vinfo,
 	  return false;
 	}
       else if (memory_access_type == VMAT_GATHER_SCATTER
-	       && gs_info.ifn == IFN_LAST
-	       && !gs_info.decl)
+	       && GATHER_SCATTER_EMULATED_P (gs_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10775,7 +10774,7 @@ vectorizable_load (vec_info *vinfo,
 
 	  /* 2. Create the vector-load in the loop.  */
 	  unsigned HOST_WIDE_INT align;
-	  if (gs_info.ifn != IFN_LAST)
+	  if (GATHER_SCATTER_IFN_P (gs_info))
 	    {
 	      if (costing_p)
 		{
@@ -10847,7 +10846,7 @@ vectorizable_load (vec_info *vinfo,
 	      new_stmt = call;
 	      data_ref = NULL_TREE;
 	    }
-	  else if (gs_info.decl)
+	  else if (GATHER_SCATTER_LEGACY_P (gs_info))
 	    {
 	      /* The builtin decls path for gather is legacy, x86 only.  */
 	      gcc_assert (!final_len && nunits.is_constant ());
