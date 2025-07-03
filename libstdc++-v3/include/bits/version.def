@@ -2031,7 +2031,7 @@ ftms = {
 };
 
 ftms = {
-  name = bitset  // ...construct from string_view
+  name = bitset;  // ...construct from string_view
   values = {
     v = 202306;
     cxxmin = 26;

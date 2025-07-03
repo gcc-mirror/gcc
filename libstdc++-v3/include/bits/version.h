@@ -2281,6 +2281,6 @@
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_bitset) && defined(__glibcxx_want_bitset) */
-#undef __glibcxx_bitset
+#undef __glibcxx_want_bitset
 
 #undef __glibcxx_want_all
