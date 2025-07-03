@@ -840,35 +840,6 @@ gnatlib-shared:
 	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" \
 	     $(GNATLIB_SHARED)
 
-# When building a SJLJ runtime for VxWorks, we need to ensure that the extra
-# linker options needed for ZCX are not passed to prevent the inclusion of
-# useless objects and potential troubles from the presence of extra symbols
-# and references in some configurations.  The inhibition is performed by
-# commenting the pragma instead of deleting the line, as the latter might
-# result in getting multiple blank lines, hence possible style check errors.
-gnatlib-sjlj:
-	$(MAKE) $(FLAGS_TO_PASS) \
-	     EH_MECHANISM="" \
-	     MULTISUBDIR="$(MULTISUBDIR)" \
-	     THREAD_KIND="$(THREAD_KIND)" \
-	     LN_S="$(LN_S)" \
-	     ../stamp-gnatlib1-$(RTSDIR)
-	sed \
-	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := True;/' \
-	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' \
-	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
-	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
-	$(MAKE) $(FLAGS_TO_PASS) \
-	     EH_MECHANISM="" \
-	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
-	     FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
-	     MULTISUBDIR="$(MULTISUBDIR)" \
-	     THREAD_KIND="$(THREAD_KIND)" \
-	     LN_S="$(LN_S)" \
-	     gnatlib
-
 gnatlib-zcx:
 	$(MAKE) $(FLAGS_TO_PASS) \
 	     EH_MECHANISM="-gcc" \
@@ -877,7 +848,6 @@ gnatlib-zcx:
 	     LN_S="$(LN_S)" \
 	     ../stamp-gnatlib1-$(RTSDIR)
 	sed \
-	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := False;/' \
 	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' \
 	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
