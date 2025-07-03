@@ -1950,7 +1950,7 @@ finish_lambda_function (tree body)
 {
   finish_function_body (body);
 
-  prune_lambda_captures (body);
+  prune_lambda_captures (cur_stmt_list);
 
   /* Finish the function and generate code for it if necessary.  */
   tree fn = finish_function (/*inline_p=*/true);
