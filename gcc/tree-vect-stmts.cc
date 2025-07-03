@@ -1803,6 +1803,9 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
       /* Logically the sum of DR_BASE_ADDRESS, DR_INIT and DR_OFFSET,
 	 but we don't need to store that here.  */
       gs_info->base = NULL_TREE;
+      gs_info->alias_ptr = build_int_cst
+	(reference_alias_ptr_type (DR_REF (dr)),
+	 get_object_alignment (DR_REF (dr)));
       gs_info->element_type = TREE_TYPE (vectype);
       gs_info->offset = fold_convert (offset_type, step);
       gs_info->offset_dt = vect_constant_def;
@@ -2106,7 +2109,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
        separated by the stride, until we have a complete vector.
        Fall back to scalar accesses if that isn't possible.  */
     *memory_access_type = VMAT_STRIDED_SLP;
-  else
+  else if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       int cmp = compare_step_with_zero (vinfo, stmt_info);
       if (cmp < 0)
@@ -2349,19 +2352,71 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
      allows us to use contiguous accesses.  */
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
+      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
       && single_element_p
       && SLP_TREE_LANES (slp_node) == 1
       && loop_vinfo
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 					     masked_p, gs_info, elsvals))
     *memory_access_type = VMAT_GATHER_SCATTER;
+  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    {
+      *memory_access_type = VMAT_GATHER_SCATTER;
+      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
+				      elsvals))
+	gcc_unreachable ();
+      /* When using internal functions, we rely on pattern recognition
+	 to convert the type of the offset to the type that the target
+	 requires, with the result being a call to an internal function.
+	 If that failed for some reason (e.g. because another pattern
+	 took priority), just handle cases in which the offset already
+	 has the right type.  */
+      else if (GATHER_SCATTER_IFN_P (*gs_info)
+	       && !is_gimple_call (stmt_info->stmt)
+	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
+					  TREE_TYPE (gs_info->offset_vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s offset requires a conversion\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
+      else if (!vect_is_simple_use (gs_info->offset, vinfo,
+				    &gs_info->offset_dt,
+				    &gs_info->offset_vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s index use not simple.\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
+      else if (GATHER_SCATTER_EMULATED_P (*gs_info))
+	{
+	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
+	      || !TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype).is_constant ()
+	      || VECTOR_BOOLEAN_TYPE_P (gs_info->offset_vectype)
+	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS
+					 (gs_info->offset_vectype),
+				       TYPE_VECTOR_SUBPARTS (vectype)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "unsupported vector types for emulated "
+				 "gather.\n");
+	      return false;
+	    }
+	}
+    }
 
   if (*memory_access_type == VMAT_CONTIGUOUS_DOWN
       || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
     *poffset = neg_ldst_offset;
 
-  if (*memory_access_type == VMAT_GATHER_SCATTER
-      || *memory_access_type == VMAT_ELEMENTWISE
+  if (*memory_access_type == VMAT_ELEMENTWISE
+      || (*memory_access_type == VMAT_GATHER_SCATTER
+	  && GATHER_SCATTER_LEGACY_P (*gs_info))
       || *memory_access_type == VMAT_STRIDED_SLP
       || *memory_access_type == VMAT_INVARIANT)
     {
@@ -2370,10 +2425,15 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   else
     {
-      *misalignment = dr_misalignment (first_dr_info, vectype, *poffset);
+      if (*memory_access_type == VMAT_GATHER_SCATTER
+	  && !first_dr_info)
+	*misalignment = DR_MISALIGNMENT_UNKNOWN;
+      else
+	*misalignment = dr_misalignment (first_dr_info, vectype, *poffset);
       *alignment_support_scheme
-	= vect_supportable_dr_alignment (vinfo, first_dr_info, vectype,
-					 *misalignment);
+	= vect_supportable_dr_alignment
+	   (vinfo, first_dr_info, vectype, *misalignment,
+	    *memory_access_type == VMAT_GATHER_SCATTER ? gs_info : nullptr);
     }
 
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
@@ -2443,58 +2503,12 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   *misalignment = DR_MISALIGNMENT_UNKNOWN;
   *poffset = 0;
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-    {
-      *memory_access_type = VMAT_GATHER_SCATTER;
-      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
-				      elsvals))
-	gcc_unreachable ();
-      /* When using internal functions, we rely on pattern recognition
-	 to convert the type of the offset to the type that the target
-	 requires, with the result being a call to an internal function.
-	 If that failed for some reason (e.g. because another pattern
-	 took priority), just handle cases in which the offset already
-	 has the right type.  */
-      else if (GATHER_SCATTER_IFN_P (*gs_info)
-	       && !is_gimple_call (stmt_info->stmt)
-	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
-					  TREE_TYPE (gs_info->offset_vectype)))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "%s offset requires a conversion\n",
-			     vls_type == VLS_LOAD ? "gather" : "scatter");
-	  return false;
-	}
-      slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
-      gs_info->offset_dt = SLP_TREE_DEF_TYPE (offset_node);
-      gs_info->offset_vectype = SLP_TREE_VECTYPE (offset_node);
-      if (gs_info->ifn == IFN_LAST && !gs_info->decl)
-	{
-	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
-	      || !TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype).is_constant ()
-	      || VECTOR_BOOLEAN_TYPE_P (gs_info->offset_vectype)
-	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS
-					 (gs_info->offset_vectype),
-				       TYPE_VECTOR_SUBPARTS (vectype)))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "unsupported vector types for emulated "
-				 "gather.\n");
-	      return false;
-	    }
-	}
-      /* Gather-scatter accesses perform only component accesses, alignment
-	 is irrelevant for them.  */
-      *alignment_support_scheme = dr_unaligned_supported;
-    }
-  else if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
-				       masked_p,
-				       vls_type, memory_access_type, poffset,
-				       alignment_support_scheme,
-				       misalignment, gs_info, lanes_ifn,
-				       elsvals))
+  if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
+				  masked_p,
+				  vls_type, memory_access_type, poffset,
+				  alignment_support_scheme,
+				  misalignment, gs_info, lanes_ifn,
+				  elsvals))
     return false;
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
@@ -2528,17 +2542,18 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			   "alignment. With non-contiguous memory vectorization"
 			   " could read out of bounds at %G ",
 			   STMT_VINFO_STMT (stmt_info));
-	if (inbounds)
-	  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
-	else
-	  return false;
+      if (inbounds)
+	LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+      else
+	return false;
     }
 
   /* If this DR needs alignment for correctness, we must ensure the target
      alignment is a constant power-of-two multiple of the amount read per
      vector iteration or force masking.  */
   if (dr_safe_speculative_read_required (stmt_info)
-      && *alignment_support_scheme == dr_aligned)
+      && (*alignment_support_scheme == dr_aligned
+	  && *memory_access_type != VMAT_GATHER_SCATTER))
     {
       /* We can only peel for loops, of course.  */
       gcc_checking_assert (loop_vinfo);
@@ -8178,7 +8193,6 @@ vectorizable_store (vec_info *vinfo,
 
       if (dump_enabled_p ()
 	  && memory_access_type != VMAT_ELEMENTWISE
-	  && memory_access_type != VMAT_GATHER_SCATTER
 	  && memory_access_type != VMAT_STRIDED_SLP
 	  && memory_access_type != VMAT_INVARIANT
 	  && alignment_support_scheme != dr_aligned)
@@ -8878,24 +8892,31 @@ vectorizable_store (vec_info *vinfo,
 		{
 		  if (VECTOR_TYPE_P (TREE_TYPE (vec_offset)))
 		    call = gimple_build_call_internal (
-			    IFN_MASK_LEN_SCATTER_STORE, 7, dataref_ptr,
+			    IFN_MASK_LEN_SCATTER_STORE, 8, dataref_ptr,
+			    gs_info.alias_ptr,
 			    vec_offset, scale, vec_oprnd, final_mask, final_len,
 			    bias);
 		  else
 		    /* Non-vector offset indicates that prefer to take
 		       MASK_LEN_STRIDED_STORE instead of the
-		       IFN_MASK_SCATTER_STORE with direct stride arg.  */
+		       IFN_MASK_SCATTER_STORE with direct stride arg.
+		       Similar to the gather case we have checked the
+		       alignment for a scatter already and assume
+		       that the strided store has the same requirements.  */
 		    call = gimple_build_call_internal (
 			    IFN_MASK_LEN_STRIDED_STORE, 6, dataref_ptr,
 			    vec_offset, vec_oprnd, final_mask, final_len, bias);
 		}
 	      else if (final_mask)
 		call = gimple_build_call_internal
-			     (IFN_MASK_SCATTER_STORE, 5, dataref_ptr,
+			     (IFN_MASK_SCATTER_STORE, 6, dataref_ptr,
+			      gs_info.alias_ptr,
 			      vec_offset, scale, vec_oprnd, final_mask);
 	      else
-		call = gimple_build_call_internal (IFN_SCATTER_STORE, 4,
-						   dataref_ptr, vec_offset,
+		call = gimple_build_call_internal (IFN_SCATTER_STORE, 5,
+						   dataref_ptr,
+						   gs_info.alias_ptr,
+						   vec_offset,
 						   scale, vec_oprnd);
 	      gimple_call_set_nothrow (call, true);
 	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
@@ -10362,7 +10383,6 @@ vectorizable_load (vec_info *vinfo,
       vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
     }
 
-  gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
        ? &LOOP_VINFO_MASKS (loop_vinfo)
@@ -10382,10 +10402,12 @@ vectorizable_load (vec_info *vinfo,
 
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
-     dr_aligned or dr_unaligned_supported for masked operations.  */
+     dr_aligned or dr_unaligned_supported for (non-length) masked
+     operations.  */
   gcc_assert ((memory_access_type != VMAT_LOAD_STORE_LANES
 	       && !mask
 	       && !loop_masks)
+	      || memory_access_type == VMAT_GATHER_SCATTER
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
@@ -10730,8 +10752,6 @@ vectorizable_load (vec_info *vinfo,
 
   if (memory_access_type == VMAT_GATHER_SCATTER)
     {
-      gcc_assert (alignment_support_scheme == dr_aligned
-		  || alignment_support_scheme == dr_unaligned_supported);
       gcc_assert (!grouped_load && !slp_perm);
 
       unsigned int inside_cost = 0, prologue_cost = 0;
@@ -10820,7 +10840,8 @@ vectorizable_load (vec_info *vinfo,
 		{
 		  if (VECTOR_TYPE_P (TREE_TYPE (vec_offset)))
 		    call = gimple_build_call_internal (IFN_MASK_LEN_GATHER_LOAD,
-						       8, dataref_ptr,
+						       9, dataref_ptr,
+						       gs_info.alias_ptr,
 						       vec_offset, scale, zero,
 						       final_mask, vec_els,
 						       final_len, bias);
@@ -10835,13 +10856,15 @@ vectorizable_load (vec_info *vinfo,
 		}
 	      else if (final_mask)
 		call = gimple_build_call_internal (IFN_MASK_GATHER_LOAD,
-						   6, dataref_ptr,
+						   7, dataref_ptr,
+						   gs_info.alias_ptr,
 						   vec_offset, scale,
 						   zero, final_mask, vec_els);
 	      else
-		call = gimple_build_call_internal (IFN_GATHER_LOAD, 4,
-						   dataref_ptr, vec_offset,
-						   scale, zero);
+		call = gimple_build_call_internal (IFN_GATHER_LOAD, 5,
+						   dataref_ptr,
+						   gs_info.alias_ptr,
+						   vec_offset, scale, zero);
 	      gimple_call_set_nothrow (call, true);
 	      new_stmt = call;
 	      data_ref = NULL_TREE;

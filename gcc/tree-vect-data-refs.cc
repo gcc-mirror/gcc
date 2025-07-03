@@ -4539,6 +4539,8 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
   info->ifn = gimple_call_internal_fn (call);
   info->decl = NULL_TREE;
   info->base = gimple_call_arg (call, 0);
+  info->alias_ptr = gimple_call_arg
+		     (call, internal_fn_alias_ptr_index (info->ifn));
   info->offset = gimple_call_arg
 		  (call, internal_fn_offset_index (info->ifn));
   info->offset_dt = vect_unknown_def_type;
@@ -4865,6 +4867,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   info->ifn = ifn;
   info->decl = decl;
   info->base = base;
+
+  info->alias_ptr = build_int_cst
+    (reference_alias_ptr_type (DR_REF (dr)),
+     get_object_alignment (DR_REF (dr)));
+
   info->offset = off;
   info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = offset_vectype;
@@ -7353,13 +7360,14 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
    alignment.
    If CHECK_ALIGNED_ACCESSES is TRUE, check if the access is supported even
    it is aligned, i.e., check if it is possible to vectorize it with different
-   alignment.  */
+   alignment.  If GS_INFO is passed we are dealing with a gather/scatter.  */
 
 enum dr_alignment_support
 vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
-			       tree vectype, int misalignment)
+			       tree vectype, int misalignment,
+			       gather_scatter_info *gs_info)
 {
-  data_reference *dr = dr_info->dr;
+  data_reference *dr = dr_info ? dr_info->dr : nullptr;
   stmt_vec_info stmt_info = dr_info->stmt;
   machine_mode mode = TYPE_MODE (vectype);
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -7370,14 +7378,6 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
     return dr_aligned;
   else if (dr_safe_speculative_read_required (stmt_info))
     return dr_unaligned_unsupported;
-
-  /* For now assume all conditional loads/stores support unaligned
-     access without any special code.  */
-  if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
-    if (gimple_call_internal_p (stmt)
-	&& (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
-	    || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
-      return dr_unaligned_supported;
 
   if (loop_vinfo)
     {
@@ -7448,7 +7448,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
         }
     } */
 
-  if (DR_IS_READ (dr))
+  if (dr && DR_IS_READ (dr))
     {
       if (can_implement_p (vec_realign_load_optab, mode)
 	  && (!targetm.vectorize.builtin_mask_for_load
@@ -7476,10 +7476,43 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 
   bool is_packed = false;
   tree type = TREE_TYPE (DR_REF (dr));
+  bool is_gather_scatter = gs_info != nullptr;
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
-    is_packed = not_size_aligned (DR_REF (dr));
+    {
+      if (!is_gather_scatter || dr != nullptr)
+	is_packed = not_size_aligned (DR_REF (dr));
+      else
+	{
+	  /* Gather-scatter accesses normally perform only component accesses
+	     so alignment is irrelevant for them.  Targets like riscv do care
+	     about scalar alignment in vector accesses, though, so check scalar
+	     alignment here.  We determined the alias pointer as well as the
+	     base alignment during pattern recognition and can re-use it here.
+
+	     As we do not have an analyzed dataref we only know the alignment
+	     of the reference itself and nothing about init, steps, etc.
+	     For now don't try harder to determine misalignment and
+	     just assume it is unknown.  We consider the type packed if its
+	     scalar alignment is lower than the natural alignment of a vector
+	     element's type.  */
+
+	  gcc_assert (!GATHER_SCATTER_LEGACY_P (*gs_info));
+	  gcc_assert (dr == nullptr);
+
+	  tree inner_vectype = TREE_TYPE (vectype);
+
+	  unsigned HOST_WIDE_INT scalar_align
+	    = tree_to_uhwi (gs_info->alias_ptr);
+	  unsigned HOST_WIDE_INT inner_vectype_sz
+	    = tree_to_uhwi (TYPE_SIZE (inner_vectype));
+
+	  bool is_misaligned = scalar_align < inner_vectype_sz;
+	  is_packed = scalar_align > 1 && is_misaligned;
+	}
+    }
   if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
-						     is_packed, false))
+						     is_packed,
+						     is_gather_scatter))
     return dr_unaligned_supported;
 
   /* Unsupported.  */

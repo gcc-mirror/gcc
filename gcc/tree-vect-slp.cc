@@ -511,11 +511,11 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
 
 static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
-static const int arg1_map[] = { 1, 1 };
+static const int arg2_map[] = { 1, 2 };
 static const int arg2_arg3_map[] = { 2, 2, 3 };
-static const int arg1_arg3_map[] = { 2, 1, 3 };
-static const int arg1_arg4_arg5_map[] = { 3, 1, 4, 5 };
-static const int arg1_arg3_arg4_map[] = { 3, 1, 3, 4 };
+static const int arg2_arg4_map[] = { 2, 2, 4 };
+static const int arg2_arg5_arg6_map[] = { 3, 2, 5, 6 };
+static const int arg2_arg4_arg5_map[] = { 3, 2, 4, 5 };
 static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
 static const int off_map[] = { 1, GATHER_SCATTER_OFFSET };
@@ -570,18 +570,18 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	    return gather_scatter_p ? off_arg2_arg3_map : arg2_arg3_map;
 
 	  case IFN_GATHER_LOAD:
-	    return arg1_map;
+	    return arg2_map;
 
 	  case IFN_MASK_GATHER_LOAD:
 	  case IFN_MASK_LEN_GATHER_LOAD:
-	    return arg1_arg4_arg5_map;
+	    return arg2_arg5_arg6_map;
 
 	  case IFN_SCATTER_STORE:
-	    return arg1_arg3_map;
+	    return arg2_arg4_map;
 
 	  case IFN_MASK_SCATTER_STORE:
 	  case IFN_MASK_LEN_SCATTER_STORE:
-	    return arg1_arg3_arg4_map;
+	    return arg2_arg4_arg5_map;
 
 	  case IFN_MASK_STORE:
 	    return gather_scatter_p ? off_arg3_arg2_map : arg3_arg2_map;

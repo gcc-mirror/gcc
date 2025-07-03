@@ -1557,6 +1557,10 @@ struct gather_scatter_info {
   /* The loop-invariant base value.  */
   tree base;
 
+  /* The TBBA alias pointer the value of which determines the alignment
+     of the scalar accesses.  */
+  tree alias_ptr;
+
   /* The original scalar offset, which is a non-loop-invariant SSA_NAME.  */
   tree offset;
 
@@ -2542,7 +2546,8 @@ extern bool ref_within_array_bound (gimple *, tree);
 /* In tree-vect-data-refs.cc.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-				   (vec_info *, dr_vec_info *, tree, int);
+				   (vec_info *, dr_vec_info *, tree, int,
+				     gather_scatter_info * = nullptr);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, tree);
 extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);
