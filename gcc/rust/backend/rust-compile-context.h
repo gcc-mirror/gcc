@@ -90,7 +90,6 @@ public:
     return type;
   }
 
-  Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
   Analysis::Mappings &get_mappings () { return mappings; }
 
@@ -391,7 +390,6 @@ public:
   }
 
 private:
-  Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings &mappings;
   Mangler mangler;

@@ -50,33 +50,21 @@ CompileItem::visit (HIR::StaticItem &var)
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
 
-  tl::optional<Resolver::CanonicalPath> canonical_path;
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path
-	= nr_ctx.to_canonical_path (var.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = ctx->get_mappings ().lookup_canonical_path (
-	var.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
+  Resolver::CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (var.get_mappings ().get_nodeid ());
 
   ctx->push_const_context ();
   tree value
     = compile_constant_item (var.get_mappings ().get_hirid (), expr_type,
-			     resolved_type, *canonical_path, const_value_expr,
+			     resolved_type, canonical_path, const_value_expr,
 			     var.get_locus (), const_value_expr.get_locus ());
   ctx->pop_const_context ();
 
-  std::string name = canonical_path->get ();
-  std::string asm_name = ctx->mangle_item (resolved_type, *canonical_path);
+  std::string name = canonical_path.get ();
+  std::string asm_name = ctx->mangle_item (resolved_type, canonical_path);
 
   bool is_external = false;
   bool is_hidden = false;
@@ -115,23 +103,12 @@ CompileItem::visit (HIR::ConstantItem &constant)
     const_value_expr.get_mappings ().get_hirid (), &expr_type);
   rust_assert (ok);
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   // canonical path
   Resolver::CanonicalPath canonical_path
-    = Resolver::CanonicalPath::create_empty ();
-
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path = nr_ctx.to_canonical_path (mappings.get_nodeid ());
-    }
-  else
-    {
-      canonical_path = ctx->get_mappings ()
-			 .lookup_canonical_path (mappings.get_nodeid ())
-			 .value ();
-    }
+    = nr_ctx.to_canonical_path (mappings.get_nodeid ());
 
   ctx->push_const_context ();
   tree const_expr
@@ -209,24 +186,11 @@ CompileItem::visit (HIR::Function &function)
 	}
     }
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   Resolver::CanonicalPath canonical_path
-    = Resolver::CanonicalPath::create_empty ();
-
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path
-	= nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      auto path = ctx->get_mappings ().lookup_canonical_path (
-	function.get_mappings ().get_nodeid ());
-
-      canonical_path = *path;
-    }
+    = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
 
   const std::string asm_name = ctx->mangle_item (fntype, canonical_path);
 

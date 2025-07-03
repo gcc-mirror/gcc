@@ -27,22 +27,11 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
   rust_assert (concrete != nullptr);
   TyTy::BaseType *resolved_type = concrete;
 
-  tl::optional<Resolver::CanonicalPath> canonical_path;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      canonical_path
-	= nr_ctx.to_canonical_path (constant.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = ctx->get_mappings ().lookup_canonical_path (
-	constant.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path);
+  Resolver::CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (constant.get_mappings ().get_nodeid ());
 
   HIR::Expr &const_value_expr = constant.get_expr ();
   TyTy::BaseType *expr_type = nullptr;
@@ -52,7 +41,7 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
 
   tree const_expr
     = compile_constant_item (constant.get_mappings ().get_hirid (), expr_type,
-			     resolved_type, *canonical_path, const_value_expr,
+			     resolved_type, canonical_path, const_value_expr,
 			     constant.get_locus (),
 			     const_value_expr.get_locus ());
   ctx->push_const (const_expr);
@@ -96,22 +85,11 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
       fntype->override_context ();
     }
 
-  tl::optional<Resolver::CanonicalPath> canonical_path;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      canonical_path
-	= nr_ctx.to_canonical_path (func.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = ctx->get_mappings ().lookup_canonical_path (
-	func.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path);
+  Resolver::CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (func.get_mappings ().get_nodeid ());
 
   // FIXME: How do we get the proper visibility here?
   auto vis = HIR::Visibility (HIR::Visibility::VisType::PUBLIC);
@@ -121,7 +99,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 			function.get_self (), function.get_function_params (),
 			function.get_qualifiers (), vis,
 			func.get_outer_attrs (), func.get_locus (),
-			&func.get_block_expr (), *canonical_path, fntype);
+			&func.get_block_expr (), canonical_path, fntype);
   reference = address_expression (fndecl, ref_locus);
 }
 

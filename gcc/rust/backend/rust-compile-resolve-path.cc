@@ -220,30 +220,17 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 
   // this can fail because it might be a Constructor for something
   // in that case the caller should attempt ResolvePathType::Compile
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
+  auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
 
-      if (!resolved)
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-
-      ref_node_id = *resolved;
-    }
-  else
-    {
-      if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
-						       &ref_node_id))
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-    }
+  if (!resolved)
+    return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						  expr_locus);
 
   return resolve_with_node_id (final_segment, mappings, expr_locus,
-			       is_qualified_path, ref_node_id);
+			       is_qualified_path, *resolved);
 }
 
 tree

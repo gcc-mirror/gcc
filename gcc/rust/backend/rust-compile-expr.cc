@@ -802,25 +802,16 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 
   if (expr.has_label ())
     {
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  if (auto id
-	      = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
-	    resolved_node_id = *id;
+      NodeId resolved_node_id;
+      if (auto id
+	  = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
+	{
+	  resolved_node_id = *id;
 	}
       else
-	{
-	  NodeId tmp = UNKNOWN_NODEID;
-	  if (ctx->get_resolver ()->lookup_resolved_label (
-		expr.get_label ().get_mappings ().get_nodeid (), &tmp))
-	    resolved_node_id = tmp;
-	}
-
-      if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (
 	    expr.get_label ().get_locus (),
@@ -864,26 +855,16 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
   tree label = ctx->peek_loop_begin_label ();
   if (expr.has_label ())
     {
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  if (auto id
-	      = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
-	    resolved_node_id = *id;
+      NodeId resolved_node_id;
+      if (auto id
+	  = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
+	{
+	  resolved_node_id = *id;
 	}
       else
-	{
-	  NodeId tmp = UNKNOWN_NODEID;
-
-	  if (ctx->get_resolver ()->lookup_resolved_label (
-		expr.get_label ().get_mappings ().get_nodeid (), &tmp))
-	    resolved_node_id = tmp;
-	}
-
-      if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (
 	    expr.get_label ().get_locus (),
@@ -2512,23 +2493,12 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   if (is_block_expr)
     {
       auto body_mappings = function_body.get_mappings ();
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
+      auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
 
-	  rust_assert (candidate.has_value ());
-	}
-      else
-	{
-	  Resolver::Rib *rib = nullptr;
-	  bool ok
-	    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-						   &rib);
-	  rust_assert (ok);
-	}
+      rust_assert (candidate.has_value ());
     }
 
   tree enclosing_scope = NULL_TREE;

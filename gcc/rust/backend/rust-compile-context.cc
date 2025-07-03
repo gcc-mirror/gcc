@@ -23,8 +23,7 @@ namespace Rust {
 namespace Compile {
 
 Context::Context ()
-  : resolver (Resolver::Resolver::get ()),
-    tyctx (Resolver::TypeCheckContext::get ()),
+  : tyctx (Resolver::TypeCheckContext::get ()),
     mappings (Analysis::Mappings::get ()), mangler (Mangler ())
 {
   setup_builtins ();
