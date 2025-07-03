@@ -68,7 +68,6 @@
 #include <bits/version.h>
 
 #include <tuple>
-#include <type_traits>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <bits/refwrap.h>	// std::reference_wrapper and _Mem_fn_traits
@@ -88,7 +87,8 @@
 # include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
 # include <compare>
 #endif
-#if __glibcxx_move_only_function || __glibcxx_copyable_function || __glibcxx_function_ref
+#if __glibcxx_move_only_function || __glibcxx_copyable_function || \
+    __glibcxx_function_ref
 # include <bits/funcwrap.h>
 #endif
 
@@ -922,6 +922,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_BoundArgs>(__args)...);
     }
 
+#if __cpp_lib_bind_front >= 202306L || __cpp_lib_bind_back >= 202306L
+  template <auto __fn>
+    struct _Bind_fn_t
+    {
+      using _Fn = const decltype(__fn)&;
+      template <typename... _Args>
+	constexpr static decltype(auto)
+	operator()(_Args... __args)
+	  noexcept(is_nothrow_invocable_v<_Fn, _Args...>)
+	  requires is_invocable_v<_Fn, _Args...>
+	{ return std::invoke(__fn, std::forward<_Args>(__args)...); }
+    };
+#endif
+
 #ifdef __cpp_lib_bind_front // C++ >= 20
   /** Create call wrapper by partial application of arguments to function.
    *
@@ -941,6 +955,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					  std::forward<_Args>(__args)...);
     }
+
+#if __cpp_lib_bind_front >= 202306L
+
+  /** Create call wrapper by partial application of arguments to function.
+   *
+   * The result of `std::bind_front<fn>(bind_args...)` is a function object
+   * that stores the bound arguments, `bind_args...`. When that function
+   * object is invoked with `call_args...` it returns the result of calling
+   * `fn(bind_args..., call_args...)`.
+   *
+   *  @since C++26
+   */
+  template<auto __fn, typename... _BindArgs>
+    constexpr decltype(auto)
+    bind_front(_BindArgs&&... __bind_args)
+      noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
+    {
+      using _Fn = decltype(__fn);
+      static_assert(
+	(is_constructible_v<decay_t<_BindArgs>, _BindArgs> && ...) &&
+	(is_move_constructible_v<decay_t<_BindArgs>> && ...));
+      if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
+	static_assert(__fn != nullptr);
+
+      if constexpr (sizeof...(_BindArgs) == 0)
+	return _Bind_fn_t<__fn>{};
+      else {
+	return [... __bound_args(std::forward<_BindArgs>(__bind_args))]
+	  <typename _Self, typename... _CallArgs>
+	  (this _Self&&, _CallArgs&&... __call_args)
+	    noexcept(is_nothrow_invocable_v<
+	      const _Fn&, __like_t<_Self, decay_t<_BindArgs>>..., _CallArgs...>)
+	    -> decltype(auto)
+	    requires is_invocable_v<
+	      const _Fn&, __like_t<_Self, decay_t<_BindArgs>>..., _CallArgs...>
+	  {
+	    return std::invoke(__fn,
+	      std::forward_like<_Self>(__bound_args)...,
+	      std::forward<_CallArgs>(__call_args)...);
+	  };
+      }
+    }
+
+#endif // __cpp_lib_bind_front  // C++26
 #endif // __cpp_lib_bind_front
 
 #ifdef __cpp_lib_bind_back // C++ >= 23
@@ -962,6 +1020,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Bind_back_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					 std::forward<_Args>(__args)...);
     }
+
+#if __cpp_lib_bind_back >= 202306L
+
+  /** Create call wrapper by partial application of arguments to function.
+   *
+   * The result of `std::bind_back<fn>(bind_args...)` is a function object
+   * that stores the arguments, `bind_args...`. When that function object
+   * is invoked with `call_args...` it returns the result of calling
+   * `fn(call_args..., bind_args...)`.
+   *
+   *  @since C++26
+   */
+  template<auto __fn, typename... _BindArgs>
+    constexpr decltype(auto)
+    bind_back(_BindArgs&&... __bind_args)
+      noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
+    {
+      using _Fn = decltype(__fn);
+      static_assert(
+	(is_constructible_v<decay_t<_BindArgs>, _BindArgs> && ...) &&
+	(is_move_constructible_v<decay_t<_BindArgs>> && ...));
+      if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
+	static_assert(__fn != nullptr);
+
+      if constexpr (sizeof...(_BindArgs) == 0)
+	return _Bind_fn_t<__fn>{};
+      else
+      {
+	// Capture arguments in a lambda and return that.
+	return [... __bound_args(std::forward<_BindArgs>(__bind_args))]
+	  <typename _Self, typename... _CallArgs>
+	  (this _Self&&, _CallArgs&&... __call_args)
+	    noexcept(is_nothrow_invocable_v<
+	      const _Fn&, _CallArgs..., __like_t<_Self, decay_t<_BindArgs>>...>)
+	    -> decltype(auto)
+	    requires is_invocable_v<
+	      const _Fn&, _CallArgs..., __like_t<_Self, decay_t<_BindArgs>>...>
+	  {
+	    return std::invoke(__fn,
+	      std::forward<_CallArgs>(__call_args)...,
+	      std::forward_like<_Self>(__bound_args)...);
+	  };
+      }
+    }
+
+#endif // __cpp_lib_bind_back  // C++26, nttp
 #endif // __cpp_lib_bind_back
 
 #if __cplusplus >= 201402L
@@ -1062,7 +1166,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
-#endif
+
+#if __cpp_lib_not_fn >= 202306L
+
+  /** Wrap a function type to create a function object that negates its result.
+   *
+   * The function template `std::not_fn` creates a "forwarding call wrapper",
+   * which is a function object that when called forwards its arguments to
+   * its invocable template argument.
+   *
+   * The result of invoking the wrapper is the negation (using `!`) of
+   * the wrapped function object.
+   *
+   *  @ingroup functors
+   *  @since C++26
+   */
+  template<auto __fn>
+    constexpr decltype(auto)
+    not_fn() noexcept
+    {
+      using _Fn = decltype(__fn);
+      if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
+	static_assert(__fn != nullptr);
+      return []<typename... _Args>(_Args... __args) static
+	  noexcept(noexcept(
+	    !std::invoke(__fn, std::forward<_Args>(__args)...) ))
+	  -> decltype(auto)
+	  requires requires {
+	    !std::invoke(__fn, std::forward<_Args>(__args)...); }
+	{ return !std::invoke(__fn, std::forward<_Args>(__args)...); };
+    };
+
+#endif // __cpp_lib_not_fn >= 202306L
+#endif // __cpp_lib_not_fn
 
 #if __cplusplus >= 201703L
   // Searchers

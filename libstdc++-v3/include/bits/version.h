@@ -521,7 +521,12 @@
 #undef __glibcxx_want_make_from_tuple
 
 #if !defined(__cpp_lib_not_fn)
-# if (__cplusplus >= 201703L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_not_fn 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_not_fn)
+#   define __cpp_lib_not_fn 202306L
+#  endif
+# elif (__cplusplus >= 201703L)
 #  define __glibcxx_not_fn 201603L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_not_fn)
 #   define __cpp_lib_not_fn 201603L
@@ -895,7 +900,12 @@
 #undef __glibcxx_want_atomic_value_initialization
 
 #if !defined(__cpp_lib_bind_front)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_bind_front 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_front)
+#   define __cpp_lib_bind_front 202306L
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_bind_front 201907L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_front)
 #   define __cpp_lib_bind_front 201907L
@@ -905,7 +915,12 @@
 #undef __glibcxx_want_bind_front
 
 #if !defined(__cpp_lib_bind_back)
-# if (__cplusplus >= 202100L) && (__cpp_explicit_this_parameter)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_bind_back 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_back)
+#   define __cpp_lib_bind_back 202306L
+#  endif
+# elif (__cplusplus >= 202100L) && (__cpp_explicit_this_parameter)
 #  define __glibcxx_bind_back 202202L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_back)
 #   define __cpp_lib_bind_back 202202L

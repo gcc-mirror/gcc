@@ -472,6 +472,10 @@ ftms = {
 ftms = {
   name = not_fn;
   values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+  values = {
     v = 201603;
     cxxmin = 17;
   };
@@ -803,6 +807,10 @@ ftms = {
 ftms = {
   name = bind_front;
   values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+  values = {
     v = 201907;
     cxxmin = 20;
   };
@@ -810,6 +818,10 @@ ftms = {
 
 ftms = {
   name = bind_back;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
   values = {
     v = 202202;
     cxxmin = 23;
