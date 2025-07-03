@@ -643,7 +643,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_slt_0:
-**	cbblt	w0, wzr, .L([0-9]+)
+**	tbnz	w0, #7, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -667,7 +667,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sge_0:
-**	cbbge	w0, wzr, .L([0-9]+)
+**	tbz	w0, #7, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -717,7 +717,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_slt_0:
-**	cbhlt	w0, wzr, .L([0-9]+)
+**	tbnz	w0, #15, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -741,7 +741,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sge_0:
-**	cbhge	w0, wzr, .L([0-9]+)
+**	tbz	w0, #15, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -749,7 +749,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_eq_0:
-**	cbeq	w0, wzr, .L([0-9]+)
+**	cbz	w0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -757,7 +757,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ne_0:
-**	cbne	w0, wzr, .L([0-9]+)
+**	cbnz	w0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -770,7 +770,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ule_0:
-**	cbeq	w0, wzr, .L([0-9]+)
+**	cbz	w0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -778,7 +778,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u32_x0_ugt_0:
-**	cbne	w0, wzr, .L([0-9]+)
+**	cbnz	w0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -815,15 +815,15 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i32_x0_sge_0:
-**	cblt	w0, wzr, .L([0-9]+)
-**	b	taken
-** .L\1:
+**	tbz	w0, #31, .L([0-9]+)
 **	b	not_taken
+** .L\1:
+**	b	taken
 */
 
 /*
 ** u64_x0_eq_0:
-**	cbeq	x0, xzr, .L([0-9]+)
+**	cbz	x0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -831,7 +831,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ne_0:
-**	cbne	x0, xzr, .L([0-9]+)
+**	cbnz	x0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -844,7 +844,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ule_0:
-**	cbeq	x0, xzr, .L([0-9]+)
+**	cbz	x0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -852,7 +852,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u64_x0_ugt_0:
-**	cbne	x0, xzr, .L([0-9]+)
+**	cbnz	x0, .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -889,10 +889,10 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i64_x0_sge_0:
-**	cblt	x0, xzr, .L([0-9]+)
-**	b	taken
-** .L\1:
+**	tbz	x0, #63, .L([0-9]+)
 **	b	not_taken
+** .L\1:
+**	b	taken
 */
 
 /*

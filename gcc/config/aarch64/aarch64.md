@@ -724,6 +724,19 @@
 ;; Conditional jumps
 ;; -------------------------------------------------------------------
 
+;; The order of the rules below is important.
+;; Higher priority rules are preferred because they can express larger
+;; displacements.
+;; 1) EQ/NE comparisons against zero are handled by CBZ/CBNZ.
+;; 2) LT/GE comparisons against zero are handled by TBZ/TBNZ.
+;; 3) When the CMPBR extension is enabled:
+;;   a) Comparisons between two registers are handled by
+;;      CBB<cond>/CBH<cond>/CB<cond>.
+;;   b) Comparisons between a GP register and an in range immediate are
+;;      handled by CB<cond> (immediate).
+;; 4) Otherwise, emit a CMP+B<cond> sequence.
+;; -------------------------------------------------------------------
+
 (define_expand "cbranch<GPI:mode>4"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand:GPI 1 "register_operand")
@@ -778,6 +791,80 @@
 			   (pc)))]
   ""
   ""
+)
+
+;; For an EQ/NE comparison against zero, emit `CBZ`/`CBNZ`
+(define_insn "aarch64_cbz<optab><mode>1"
+  [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
+				(const_int 0))
+			   (label_ref (match_operand 1))
+			   (pc)))]
+  "!aarch64_track_speculation"
+  {
+    if (get_attr_length (insn) == 8)
+      return aarch64_gen_far_branch (operands, 1, "Lcb", "<inv_cb>\\t%<w>0, ");
+    else
+      return "<cbz>\\t%<w>0, %l1";
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 2) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
+		      (const_string "no")
+		      (const_string "yes")))]
+)
+
+;; For an LT/GE comparison against zero, emit `TBZ`/`TBNZ`
+(define_insn "*aarch64_tbz<optab><mode>1"
+  [(set (pc) (if_then_else (LTGE (match_operand:ALLI 0 "register_operand" "r")
+				 (const_int 0))
+			   (label_ref (match_operand 1))
+			   (pc)))
+   (clobber (reg:CC CC_REGNUM))]
+  "!aarch64_track_speculation"
+  {
+    if (get_attr_length (insn) == 8)
+      {
+	if (get_attr_far_branch (insn) == FAR_BRANCH_YES)
+	  return aarch64_gen_far_branch (operands, 1, "Ltb",
+					 "<inv_tb>\\t%<w>0, <sizem1>, ");
+	else
+	  {
+	    char buf[64];
+	    uint64_t val = ((uint64_t) 1)
+		<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
+	    sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
+	    output_asm_insn (buf, operands);
+	    return "<bcond>\t%l1";
+	  }
+      }
+    else
+      return "<tbz>\t%<w>0, <sizem1>, %l1";
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_32KiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_32KiB)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_N_1MiB))
+			   (lt (minus (match_dup 1) (pc))
+			       (const_int BRANCH_LEN_P_1MiB)))
+		      (const_string "no")
+		      (const_string "yes")))]
 )
 
 ;; Emit a `CB<cond> (register)` or `CB<cond> (immediate)` instruction.
@@ -914,80 +1001,6 @@
     emit_jump_insn (gen_aarch64_bcond (cmp_rtx, cc_reg, operands[2]));
     DONE;
   }
-)
-
-;; For an EQ/NE comparison against zero, emit `CBZ`/`CBNZ`
-(define_insn "aarch64_cbz<optab><mode>1"
-  [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
-			        (const_int 0))
-			   (label_ref (match_operand 1))
-			   (pc)))]
-  "!aarch64_track_speculation"
-  {
-    if (get_attr_length (insn) == 8)
-      return aarch64_gen_far_branch (operands, 1, "Lcb", "<inv_cb>\\t%<w>0, ");
-    else
-      return "<cbz>\\t%<w>0, %l1";
-  }
-  [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_N_1MiB))
-			   (lt (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_int 4)
-		      (const_int 8)))
-   (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 2) (pc))
-			       (const_int BRANCH_LEN_N_1MiB))
-			   (lt (minus (match_dup 2) (pc))
-			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_string "no")
-		      (const_string "yes")))]
-)
-
-;; For an LT/GE comparison against zero, emit `TBZ`/`TBNZ`
-(define_insn "*aarch64_tbz<optab><mode>1"
-  [(set (pc) (if_then_else (LTGE (match_operand:ALLI 0 "register_operand" "r")
-			         (const_int 0))
-			   (label_ref (match_operand 1))
-			   (pc)))
-   (clobber (reg:CC CC_REGNUM))]
-  "!aarch64_track_speculation"
-  {
-    if (get_attr_length (insn) == 8)
-      {
-	if (get_attr_far_branch (insn) == FAR_BRANCH_YES)
-	  return aarch64_gen_far_branch (operands, 1, "Ltb",
-					 "<inv_tb>\\t%<w>0, <sizem1>, ");
-	else
-	  {
-	    char buf[64];
-	    uint64_t val = ((uint64_t) 1)
-		<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
-	    sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
-	    output_asm_insn (buf, operands);
-	    return "<bcond>\t%l1";
-	  }
-      }
-    else
-      return "<tbz>\t%<w>0, <sizem1>, %l1";
-  }
-  [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_N_32KiB))
-			   (lt (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_P_32KiB)))
-		      (const_int 4)
-		      (const_int 8)))
-   (set (attr "far_branch")
-	(if_then_else (and (ge (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_N_1MiB))
-			   (lt (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_P_1MiB)))
-		      (const_string "no")
-		      (const_string "yes")))]
 )
 
 ;; -------------------------------------------------------------------
