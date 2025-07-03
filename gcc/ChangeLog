@@ -1,3 +1,17 @@
+2025-07-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* tree-vect-loop.cc (vect_analyze_loop): Stop querying
+	further epilogues after one with partial vectors.
+
+2025-07-02  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Change
+	to AMX-FP8 for Diamond Rapids.
+
 2025-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
