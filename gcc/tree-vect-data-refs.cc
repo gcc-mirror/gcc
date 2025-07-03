@@ -1410,10 +1410,17 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
       /* We can only use base and misalignment information relative to
 	 an innermost loop if the misalignment stays the same throughout the
 	 execution of the loop.  As above, this is the case if the stride of
-	 the dataref evenly divides by the alignment.  */
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      step_preserves_misalignment_p
-	= multiple_p (drb->step_alignment * vf, vect_align_c);
+	 the dataref evenly divides by the alignment.  Make sure to check
+	 previous epilogues and the main loop.  */
+      step_preserves_misalignment_p = true;
+      auto lvinfo = loop_vinfo;
+      while (lvinfo)
+	{
+	  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (lvinfo);
+	  step_preserves_misalignment_p
+	    &= multiple_p (drb->step_alignment * vf, vect_align_c);
+	  lvinfo = LOOP_VINFO_ORIG_LOOP_INFO (lvinfo);
+	}
 
       if (!step_preserves_misalignment_p && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1480,6 +1487,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
       unsigned int max_alignment;
       tree base = get_base_for_alignment (drb->base_address, &max_alignment);
       if (max_alignment < vect_align_c
+	  || (loop_vinfo && LOOP_VINFO_EPILOGUE_P (loop_vinfo))
 	  || !vect_can_force_dr_alignment_p (base,
 					     vect_align_c * BITS_PER_UNIT))
 	{
