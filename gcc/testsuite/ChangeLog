@@ -1,3 +1,21 @@
+2025-07-02  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/riscv/mcpu-xt-c908.c: Disable for E ABI variants.
+	* gcc.target/riscv/mcpu-xt-c908v.c: Ditto.
+	* gcc.target/riscv/mcpu-xt-c910.c: Ditto.
+	* gcc.target/riscv/mcpu-xt-c910v2.c: Ditto.
+	* gcc.target/riscv/mcpu-xt-c920.c: Ditto.
+	* gcc.target/riscv/mcpu-xt-c920v2.c: Ditto.
+	* gcc.target/riscv/pr118241.c: Ditto.
+	* gcc.target/riscv/pr120223.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr119164.c: Disable for E ABI variants
+	and for 32-bit ISA.
+
+2025-07-02  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120356
+	* gcc.target/riscv/rvv/autovec/pr120356.c: New test.
+
 2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/ubsan/pointer-counted-by-bounds-2.c: New test.

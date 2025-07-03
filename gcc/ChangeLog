@@ -1,3 +1,30 @@
+2025-07-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* config/i386/i386.cc (legitimize_tls_address): Pass RDI to
+	gen_tls_global_dynamic_64.
+	* config/i386/i386.md (*tls_global_dynamic_64_<mode>): Add RDI
+	clobber and use it to generate LEA.
+	(@tls_global_dynamic_64_<mode>): Add a clobber.
+
+2025-07-02  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120356
+	* config/riscv/riscv-v.cc
+	(expand_const_vector_interleaved_stepped_npatterns):
+	Fix ASHIFT to LSHIFTRT insn.
+
+2025-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* tree-vect-loop.cc (vect_analyze_loop): Stop querying
+	further epilogues after one with partial vectors.
+
+2025-07-02  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Change
+	to AMX-FP8 for Diamond Rapids.
+
 2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
 
 	* tree-object-size.cc (access_with_size_object_size): Update comments

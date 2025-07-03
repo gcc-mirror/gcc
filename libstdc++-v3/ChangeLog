@@ -1,3 +1,19 @@
+2025-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator): Make all
+	non-member operators hidden friends, except ...
+	(operator<=>(__normal_iterator<I,C>, __normal_iterator<I,C>)):
+	Remove.
+	* src/c++11/string-inst.cc: Remove explicit instantiations of
+	operators that are no longer templates.
+	* src/c++23/std.cc.in (__gnu_cxx): Do not export operators for
+	__normal_iterator.
+
+2025-07-02  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119744
+	* include/std/ranges: View ctors become explicit.
+
 2025-07-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/120789
