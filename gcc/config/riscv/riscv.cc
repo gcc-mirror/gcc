@@ -10209,17 +10209,33 @@ riscv_fusion_enabled_p(enum riscv_fusion_pairs op)
 static bool
 riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 {
+  /* If fusion is not enabled, then there's nothing to do.  */
+  if (!riscv_macro_fusion_p ())
+    return false;
+
+  /* If PREV is already marked as fused, then we can't fuse CURR with PREV
+     and if we were to fuse them we'd end up with a blob of insns that
+     essentially are an atomic unit which is bad for scheduling.  */
+  if (SCHED_GROUP_P (prev))
+    return false;
+
   rtx prev_set = single_set (prev);
   rtx curr_set = single_set (curr);
   /* prev and curr are simple SET insns i.e. no flag setting or branching.  */
   bool simple_sets_p = prev_set && curr_set && !any_condjump_p (curr);
+  bool sched1 = can_create_pseudo_p ();
 
-  if (!riscv_macro_fusion_p ())
-    return false;
+  unsigned int prev_dest_regno = (REG_P (SET_DEST (prev_set))
+				  ? REGNO (SET_DEST (prev_set))
+				  : FIRST_PSEUDO_REGISTER);
+  unsigned int curr_dest_regno = (REG_P (SET_DEST (curr_set))
+				  ? REGNO (SET_DEST (curr_set))
+				  : FIRST_PSEUDO_REGISTER);
 
   if (simple_sets_p
       && (riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW)
-	  || riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS)))
+	  || riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS))
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (slli) == (set (reg:DI rD)
@@ -10233,8 +10249,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
 	  && REG_P (SET_DEST (prev_set))
 	  && REG_P (SET_DEST (curr_set))
-	  && REGNO (SET_DEST (prev_set)) == REGNO (SET_DEST (curr_set))
-	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO(SET_DEST (curr_set))
+	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == curr_dest_regno
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 	  && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 32
@@ -10245,7 +10260,8 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTH))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTH)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (slli) == (set (reg:DI rD)
@@ -10257,8 +10273,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
 	  && REG_P (SET_DEST (prev_set))
 	  && REG_P (SET_DEST (curr_set))
-	  && REGNO (SET_DEST (prev_set)) == REGNO (SET_DEST (curr_set))
-	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO(SET_DEST (curr_set))
+	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == curr_dest_regno
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 	  && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 48
@@ -10266,7 +10281,8 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDINDEXED))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDINDEXED)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (add) == (set (reg:DI rD)
@@ -10275,8 +10291,9 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 			      (mem:DI (reg:DI rD))) */
 
       if (MEM_P (SET_SRC (curr_set))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && REG_P (XEXP (SET_SRC (curr_set), 0))
-	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (prev_set))
+	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == prev_dest_regno
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && REG_P (XEXP (SET_SRC (prev_set), 1)))
@@ -10290,15 +10307,17 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       if ((GET_CODE (SET_SRC (curr_set)) == SIGN_EXTEND
 	   || (GET_CODE (SET_SRC (curr_set)) == ZERO_EXTEND))
 	  && MEM_P (XEXP (SET_SRC (curr_set), 0))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
-	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == REGNO (SET_DEST (prev_set))
+	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && REG_P (XEXP (SET_SRC (prev_set), 1)))
 	return true;
     }
 
-    if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDPREINCREMENT))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDPREINCREMENT)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (add) == (set (reg:DI rS)
@@ -10307,15 +10326,17 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 			      (mem:DI (reg:DI rS))) */
 
       if (MEM_P (SET_SRC (curr_set))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && REG_P (XEXP (SET_SRC (curr_set), 0))
-	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (prev_set))
+	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == prev_dest_regno
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1)))
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_ADDI))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_ADDI)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (lui)  == (set (reg:DI rD) (const_int UPPER_IMM_20))
@@ -10332,7 +10353,8 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_ADDI))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_ADDI)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (auipc) == (set (reg:DI rD) (unspec:DI [...] UNSPEC_AUIPC))
@@ -10353,35 +10375,45 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_LD))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_LD)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (lui)  == (set (reg:DI rD) (const_int UPPER_IMM_20))
 	   curr (ld)  == (set (reg:DI rD)
 			      (mem:DI (plus:DI (reg:DI rD) (const_int IMM12)))) */
 
+      /* A LUI_OPERAND accepts (const_int 0), but we won't emit that as LUI.  So
+	 reject that case explicitly.  */
       if (CONST_INT_P (SET_SRC (prev_set))
+	  && SET_SRC (prev_set) != CONST0_RTX (GET_MODE (SET_DEST (prev_set)))
 	  && LUI_OPERAND (INTVAL (SET_SRC (prev_set)))
 	  && MEM_P (SET_SRC (curr_set))
-	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS)
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
+	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS
+	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
 	return true;
 
       if (GET_CODE (SET_SRC (prev_set)) == HIGH
 	  && MEM_P (SET_SRC (curr_set))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == LO_SUM
-	  && REGNO (SET_DEST (prev_set)) == REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)))
+	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
 	return true;
 
       if (GET_CODE (SET_SRC (prev_set)) == HIGH
 	  && (GET_CODE (SET_SRC (curr_set)) == SIGN_EXTEND
 	      || GET_CODE (SET_SRC (curr_set)) == ZERO_EXTEND)
 	  && MEM_P (XEXP (SET_SRC (curr_set), 0))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && (GET_CODE (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == LO_SUM
-	      && REGNO (SET_DEST (prev_set)) == REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))))
+	      && (REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
+		  == prev_dest_regno)))
 	return true;
     }
 
-  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_LD))
+  if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_LD)
+      && (sched1 || prev_dest_regno == curr_dest_regno))
     {
       /* We are trying to match the following:
 	   prev (auipc) == (set (reg:DI rD) (unspec:DI [...] UNSPEC_AUIPC))
@@ -10391,6 +10423,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       if (GET_CODE (SET_SRC (prev_set)) == UNSPEC
 	  && XINT (prev_set, 1) == UNSPEC_AUIPC
 	  && MEM_P (SET_SRC (curr_set))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS)
 	return true;
     }
@@ -10405,6 +10438,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 
       if (MEM_P (SET_DEST (prev_set))
 	  && MEM_P (SET_DEST (curr_set))
+	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  /* We can probably relax this condition.  The documentation is a bit
 	     unclear about sub-word cases.  So we just model DImode for now.  */
 	  && GET_MODE (SET_DEST (curr_set)) == DImode
@@ -10415,43 +10449,32 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  extract_base_offset_in_addr (SET_DEST (prev_set), &base_prev, &offset_prev);
 	  extract_base_offset_in_addr (SET_DEST (curr_set), &base_curr, &offset_curr);
 
-	  /* Fail if we did not find both bases.  */
-	  if (base_prev == NULL_RTX || base_curr == NULL_RTX)
-	    return false;
+	  /* Proceed only if we find both bases, both bases are register and
+	     bases are the same register.  */
+	  if (base_prev != NULL_RTX && base_curr != NULL_RTX
+	      && REG_P (base_prev) && REG_P (base_curr)
+	      && REGNO (base_prev) != REGNO (base_curr)
+	      /* The alignment of hte base pointer is more useful than the
+		 alignment of the memory reference for determining if we're
+		 on opposite sides of a cache line.  */
+	      && REGNO_POINTER_ALIGN (ORIGINAL_REGNO (base_prev)) >= 128)
+	    {
+	      /* The two stores must be contained within opposite halves of the
+		 same 16 byte aligned block of memory.  We know the pointer
+		 has suitable alignment, so we just need to check the offsets
+		 of the two stores for suitable alignment.  */
 
-	  /* Fail if either base is not a register.  */
-	  if (!REG_P (base_prev) || !REG_P (base_curr))
-	    return false;
+	      /* Get the smaller offset into OFFSET_PREV.  */
+	      if (INTVAL (offset_prev) > INTVAL (offset_curr))
+		std::swap (offset_prev, offset_curr);
 
-	  /* Fail if the bases are not the same register.  */
-	  if (REGNO (base_prev) != REGNO (base_curr))
-	    return false;
-
-	  /* Originally the thought was to check MEM_ALIGN, but that was
-	     reporting incorrect alignments, even for SP/FP accesses, so we
-	     gave up on that approach.  Instead just check for stack/hfp
-	     which we know are aligned.  */
-	  if (REGNO (base_prev) != STACK_POINTER_REGNUM
-	      && REGNO (base_prev) != HARD_FRAME_POINTER_REGNUM)
-	    return false;
-
-	  /* The two stores must be contained within opposite halves of the
-	     same 16 byte aligned block of memory.  We know that the stack
-	     pointer and the frame pointer have suitable alignment.  So we
-	     just need to check the offsets of the two stores for suitable
-	     alignment.  */
-	  /* Get the smaller offset into OFFSET_PREV.  */
-	  if (INTVAL (offset_prev) > INTVAL (offset_curr))
-	    std::swap (offset_prev, offset_curr);
-
-	  /* If the smaller offset (OFFSET_PREV) is not 16 byte aligned,
-	     then fail.  */
-	  if ((INTVAL (offset_prev) % 16) != 0)
-	    return false;
-
-	  /* The higher offset must be 8 bytes more than the lower
-	     offset.  */
-	  return (INTVAL (offset_prev) + 8 == INTVAL (offset_curr));
+	      /* We have a match if the smaller offset (OFFSET_PREV) is 16
+		 byte aligned and the higher offset is 8 bytes more than the
+		 lower offset.  */
+	      if ((INTVAL (offset_prev) % 16) == 0
+		  && (INTVAL (offset_prev) + 8 == INTVAL (offset_curr)))
+		return true;
+	    }
 	}
     }
 
