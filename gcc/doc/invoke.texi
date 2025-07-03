@@ -340,7 +340,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
 -Walloc-size  -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
--Walloca  -Walloca-larger-than=@var{byte-size}
+-Walloca  -Walloca-larger-than=@var{byte-size}  -Wauto-profile
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare
@@ -8714,6 +8714,11 @@ larger.
 @opindex Walloca
 @item -Walloca
 This option warns on all uses of @code{alloca} in the source.
+
+@opindex Wno-auto-profile
+@opindex Wauto-profile
+@item -Wauto-profile
+Output warnings about auto-profile inconsistencies.
 
 @opindex Walloca-larger-than=
 @opindex Wno-alloca-larger-than
