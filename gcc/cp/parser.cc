@@ -6307,7 +6307,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	  /* Recognize the `this' keyword.  */
 	case RID_THIS:
 	  cp_lexer_consume_token (parser->lexer);
-	  if (parser->local_variables_forbidden_p & THIS_FORBIDDEN)
+	  if ((parser->local_variables_forbidden_p & THIS_FORBIDDEN)
+	      /* It's OK to refer to 'this' in an unevaluated operand in a
+		 lambda default argument (lambda-targ16.C).  */
+	      && !cp_unevaluated_operand)
 	    {
 	      error_at (token->location,
 			"%<this%> may not be used in this context");

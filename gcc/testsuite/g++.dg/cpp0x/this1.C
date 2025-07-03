@@ -8,10 +8,10 @@ struct S1 {
   void m3 () noexcept(noexcept(this->a)) { }
   void m4 () noexcept(noexcept(this)) { }
 
-  static auto m5 () -> decltype(this->a) { return 0; } // { dg-error ".this. may not be used in this context" }
-  static auto m6 () -> decltype(this) { return 0; } // { dg-error ".this. may not be used in this context" }
-  static void m7 () noexcept(noexcept(this->a)) { } // { dg-error ".this. may not be used in this context" }
-  static void m8 () noexcept(noexcept(this)) { } // { dg-error ".this. may not be used in this context" }
+  static auto m5 () -> decltype(this->a) { return 0; } // { dg-error ".this." }
+  static auto m6 () -> decltype(this) { return 0; } // { dg-error ".this." }
+  static void m7 () noexcept(noexcept(this->a)) { } // { dg-error ".this." }
+  static void m8 () noexcept(noexcept(this)) { } // { dg-error ".this." }
 };
 
 template <typename T>
@@ -41,6 +41,6 @@ test ()
 }
 
 struct S5 {
-  friend auto bar() -> decltype(this); // { dg-error ".this. may not be used in this context" }
+  friend auto bar() -> decltype(this); // { dg-error ".this." }
   auto bar2() -> decltype(this);
 };
