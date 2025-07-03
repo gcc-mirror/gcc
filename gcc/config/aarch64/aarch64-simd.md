@@ -9241,12 +9241,12 @@
 )
 
 (define_insn "bcaxq<mode>4"
-  [(set (match_operand:VQ_I 0 "register_operand" "=w")
-	(xor:VQ_I
-	 (and:VQ_I
-	  (not:VQ_I (match_operand:VQ_I 3 "register_operand" "w"))
-	  (match_operand:VQ_I 2 "register_operand" "w"))
-	 (match_operand:VQ_I 1 "register_operand" "w")))]
+  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
+	(xor:VDQ_I
+	 (and:VDQ_I
+	  (not:VDQ_I (match_operand:VDQ_I 3 "register_operand" "w"))
+	  (match_operand:VDQ_I 2 "register_operand" "w"))
+	 (match_operand:VDQ_I 1 "register_operand" "w")))]
   "TARGET_SHA3"
   "bcax\\t%0.16b, %1.16b, %2.16b, %3.16b"
   [(set_attr "type" "crypto_sha3")]
