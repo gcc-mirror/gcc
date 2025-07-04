@@ -1,3 +1,31 @@
+2025-07-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120369
+	* tree-complex.cc (gimple_expand_builtin_cabs): Return early
+	if the LHS of cabs is null.
+
+2025-07-03  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2025-06-23  Sam James  <sam@gentoo.org>
+		    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120795
+	* ext-dce.cc (ext_dce_try_optimize_insn): Enable rescan in
+	remove_reg_equal_equiv_notes call.
+
+2025-07-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120550
+	* ext-dce.cc (ext_dce_try_optimize_insn): Drop REG_EQUAL/REG_EQUIV
+	notes on modified insns.
+
 2025-07-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

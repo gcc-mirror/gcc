@@ -1,3 +1,59 @@
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (gnatlib-sjlj): Delete.
+	(gnatlib-zcx): Do not modify Frontend_Exceptions constant.
+	* libgnat/system-linux-loongarch.ads (Frontend_Exceptions): Delete.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (addressable_p): Add COMPG third parameter.
+	<COMPONENT_REF>: Do not return true out of alignment considerations
+	for non-strict-alignment targets if COMPG is set.
+	(Call_to_gnu): Pass true as COMPG in the call to the addressable_p
+	predicate if the called subprogram is an initialization procedure.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Allocator>: Allocate the
+	bounds alongside the data if the Is_Constr_Array_Subt_With_Bounds
+	flag is set on the designated type.
+	<N_Free_Statement>: Take into account the allocated bounds if the
+	Is_Constr_Array_Subt_With_Bounds flag is set on the designated type.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_component_type): Validate the
+	Component_Size like the size of a type only if the component type
+	is actually packed.
+
+2025-07-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Fix check.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not bail out for the
+	declarations of return objects.
+
+2025-07-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch7.adb (Make_Deep_Record_Body): Fix case of absent Initialize
+	primitive.
+
+2025-07-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Generate_Finalization_Actions): Stop assuming that
+	initialize primitive exists.
+
+2025-07-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around): Fix condition.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Handle_Changed_Representation): Alphabetize local
+	variables.  Set the No_Finalize_Actions flag on the assignment.
+
 2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/120705

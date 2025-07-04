@@ -1,3 +1,34 @@
+2025-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120940
+	* g++.dg/parse/pr120940.C: New test.
+	* g++.dg/warn/Wduplicated-branches9.C: New test.
+
+2025-07-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120369
+	* gcc.dg/torture/pr120369-1.c: New test.
+
+2025-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120684
+	PR c++/118856
+	* g++.dg/cpp23/range-for10.C: New test.
+
+2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120711
+	* gfortran.dg/asan/array_constructor_1.f90: New test.
+
 2025-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
