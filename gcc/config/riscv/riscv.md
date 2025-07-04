@@ -4402,7 +4402,7 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand 0 "prefetch_operand" "Q")
+  [(prefetch (match_operand 0 "prefetch_operand" "Qr")
              (match_operand 1 "imm5_operand" "i")
              (match_operand 2 "const_int_operand" "n"))]
   "TARGET_ZICBOP"
