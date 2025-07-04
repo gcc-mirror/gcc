@@ -19,6 +19,7 @@
 #include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-expr.h"
 #include "rust-hir-map.h"
 #include "rust-late-name-resolver-2.0.h"
 #include "rust-default-resolver.h"
@@ -206,6 +207,28 @@ Late::visit (AST::LetStmt &let)
   // ctx.scoped (Rib::Kind::Normal /* FIXME: Is that valid? */,
   // Namespace::Labels,
   //      let.get_node_id (), [] () {});
+}
+
+void
+Late::visit (AST::WhileLetLoopExpr &while_let)
+{
+  DefaultASTVisitor::visit_outer_attrs (while_let);
+
+  if (while_let.has_loop_label ())
+    visit (while_let.get_loop_label ());
+
+  // visit expression before pattern
+  // this makes variable shadowing work properly
+  visit (while_let.get_scrutinee_expr ());
+
+  ctx.bindings.enter (BindingSource::WhileLet);
+
+  for (auto &pattern : while_let.get_patterns ())
+    visit (pattern);
+
+  ctx.bindings.exit ();
+
+  visit (while_let.get_loop_block ());
 }
 
 static void

@@ -42,6 +42,7 @@ public:
 
   // some more label declarations
   void visit (AST::LetStmt &) override;
+  void visit (AST::WhileLetLoopExpr &) override;
   // TODO: Do we need this?
   // void visit (AST::Method &) override;
   void visit (AST::IdentifierPattern &) override;

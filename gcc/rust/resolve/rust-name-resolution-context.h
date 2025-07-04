@@ -198,6 +198,7 @@ enum class BindingSource
   Match,
   Let,
   IfLet,
+  WhileLet,
   For,
   /* Closure param or function param */
   Param
