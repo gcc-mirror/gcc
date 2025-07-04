@@ -1046,9 +1046,9 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_2 __n) { return __n; }
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
-  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_3
-  __size_to_integer(__GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
   __extension__ inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
+  __size_to_integer(__GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
+  __extension__ inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_3
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
 #endif
 
