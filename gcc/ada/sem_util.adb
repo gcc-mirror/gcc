@@ -10002,7 +10002,7 @@ package body Sem_Util is
          --  pass to the back end should contain no references to Atyp (and a
          --  freeze node would contain such a reference).
 
-         elsif not Expander_Active then
+         elsif not (Expander_Active or GNATprove_Mode) then
             return Typ;
 
          --  Else build the actual subtype
