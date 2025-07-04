@@ -398,6 +398,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __rev_prod(const _Extents& __exts, size_t __r) noexcept
       { return __exts_prod(__exts, __r + 1, __exts.rank()); }
 
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __size(const _Extents& __exts) noexcept
+      { return __fwd_prod(__exts, __exts.rank()); }
+
     template<typename _IndexType, size_t... _Counts>
       auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
 	-> extents<_IndexType, ((void) _Counts, dynamic_extent)...>;
@@ -591,7 +596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr index_type
       required_span_size() const noexcept
-      { return __mdspan::__fwd_prod(_M_extents, extents_type::rank()); }
+      { return __mdspan::__size(_M_extents); }
 
       template<__mdspan::__valid_index_type<index_type>... _Indices>
 	requires (sizeof...(_Indices) == extents_type::rank())
@@ -730,7 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr index_type
       required_span_size() const noexcept
-      { return __mdspan::__fwd_prod(_M_extents, extents_type::rank()); }
+      { return __mdspan::__size(_M_extents); }
 
       template<__mdspan::__valid_index_type<index_type>... _Indices>
 	requires (sizeof...(_Indices) == extents_type::rank())
@@ -986,8 +991,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if constexpr (!is_always_exhaustive())
 	  {
-	    constexpr auto __rank = extents_type::rank();
-	    auto __size = __mdspan::__fwd_prod(_M_extents, __rank);
+	    auto __size = __mdspan::__size(_M_extents);
 	    if(__size > 0)
 	      return __size == required_span_size();
 	  }
