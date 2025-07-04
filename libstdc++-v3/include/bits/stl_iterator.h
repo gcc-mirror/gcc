@@ -1211,7 +1211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
        // Forward iterator requirements
       template<typename _Iter>
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
 	_GLIBCXX_CONSTEXPR
 	bool
@@ -1220,7 +1220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() == __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       bool
@@ -1229,7 +1229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __lhs.base() == __rhs.base(); }
 
       template<typename _Iter>
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
 	_GLIBCXX_CONSTEXPR
 	bool
@@ -1238,7 +1238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() != __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       bool
@@ -1248,15 +1248,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Random access iterator requirements
       template<typename _Iter>
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
+	_GLIBCXX_CONSTEXPR
 	inline bool
 	operator<(const __normal_iterator& __lhs,
 		  const __normal_iterator<_Iter, _Container>& __rhs)
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() < __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX20_CONSTEXPR
       bool
@@ -1265,15 +1266,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __lhs.base() < __rhs.base(); }
 
       template<typename _Iter>
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
+	_GLIBCXX_CONSTEXPR
 	bool
 	operator>(const __normal_iterator& __lhs,
 		  const __normal_iterator<_Iter, _Container>& __rhs)
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() > __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       bool
@@ -1282,7 +1284,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __lhs.base() > __rhs.base(); }
 
       template<typename _Iter>
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
 	_GLIBCXX_CONSTEXPR
 	bool
@@ -1291,7 +1293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() <= __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       bool
@@ -1300,7 +1302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __lhs.base() <= __rhs.base(); }
 
       template<typename _Iter>
-	__attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+	_GLIBCXX_NODISCARD __attribute__((__always_inline__))
 	friend
 	_GLIBCXX_CONSTEXPR
 	bool
@@ -1309,7 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOEXCEPT
 	{ return __lhs.base() >= __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       bool
@@ -1341,7 +1343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	{ return __lhs.base() - __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       difference_type
@@ -1349,7 +1351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOEXCEPT
       { return __lhs.base() - __rhs.base(); }
 
-      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_NODISCARD __attribute__((__always_inline__))
       friend
       _GLIBCXX_CONSTEXPR
       __normal_iterator
