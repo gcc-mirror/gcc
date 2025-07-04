@@ -1242,12 +1242,30 @@ namespace pmr
     return pools;
   }
 
+  static inline size_t
+  choose_block_size(size_t bytes, size_t alignment)
+  {
+    if (bytes == 0) [[unlikely]]
+      return alignment;
+
+    // Use bit_ceil in case alignment is invalid (i.e. not a power of two).
+    size_t mask = std::__bit_ceil(alignment) - 1;
+    // Round up to a multiple of alignment.
+    size_t block_size = (bytes + mask) & ~mask;
+
+    if (block_size >= bytes) [[likely]]
+      return block_size;
+
+    // Wrapped around to zero, bytes must have been impossibly large.
+    return numeric_limits<size_t>::max();
+  }
+
   // Override for memory_resource::do_allocate
   void*
   synchronized_pool_resource::
   do_allocate(size_t bytes, size_t alignment)
   {
-    const auto block_size = std::max(bytes, alignment);
+    const auto block_size = choose_block_size(bytes, alignment);
     const pool_options opts = _M_impl._M_opts;
     if (block_size <= opts.largest_required_pool_block)
       {
@@ -1294,7 +1312,7 @@ namespace pmr
   synchronized_pool_resource::
   do_deallocate(void* p, size_t bytes, size_t alignment)
   {
-    size_t block_size = std::max(bytes, alignment);
+    size_t block_size = choose_block_size(bytes, alignment);
     if (block_size <= _M_impl._M_opts.largest_required_pool_block)
       {
 	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
@@ -1453,7 +1471,7 @@ namespace pmr
   void*
   unsynchronized_pool_resource::do_allocate(size_t bytes, size_t alignment)
   {
-    const auto block_size = std::max(bytes, alignment);
+    const auto block_size = choose_block_size(bytes, alignment);
     if (block_size <= _M_impl._M_opts.largest_required_pool_block)
       {
 	// Recreate pools if release() has been called:
@@ -1470,7 +1488,7 @@ namespace pmr
   unsynchronized_pool_resource::
   do_deallocate(void* p, size_t bytes, size_t alignment)
   {
-    size_t block_size = std::max(bytes, alignment);
+    size_t block_size = choose_block_size(bytes, alignment);
     if (block_size <= _M_impl._M_opts.largest_required_pool_block)
       {
 	if (auto pool = _M_find_pool(block_size))
