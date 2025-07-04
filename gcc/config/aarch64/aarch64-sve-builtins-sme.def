@@ -92,6 +92,11 @@ DEF_SME_FUNCTION (svstr_zt, str_zt, none, none)
 DEF_SME_FUNCTION (svzero_zt, inherent_zt, none, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 && AARCH64_FL_FAMINMAX)
+DEF_SME_FUNCTION_GS (svamin, binary_opt_single_n, all_float, x24, none)
+DEF_SME_FUNCTION_GS (svamax, binary_opt_single_n, all_float, x24, none)
+#undef REQUIRED_EXTENSIONS
+
 /* The d_za entries in this section just declare C _za64 overloads,
    which will then be resolved to either an integer function or a
    floating-point function.  They are needed because the integer and

@@ -930,6 +930,44 @@ public:
   unsigned int m_bits;
 };
 
+/* The same as cond_or_uncond_unspec_function but the intrinsics with vector
+   modes are SME2 extensions instead of SVE.  */
+class faminmaximpl : public function_base
+{
+public:
+  CONSTEXPR faminmaximpl (int cond_unspec, int uncond_unspec)
+    : m_cond_unspec (cond_unspec), m_uncond_unspec (uncond_unspec)
+    {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    if (e.group_suffix ().vectors_per_tuple > 1)
+      {
+	/* SME2+faminmax intrinsics.  */
+	gcc_assert (e.pred == PRED_none);
+	auto mode = e.tuple_mode (0);
+	auto icode = (code_for_aarch64_sme (m_uncond_unspec, mode));
+	return e.use_exact_insn (icode);
+      }
+    /* SVE+faminmax intrinsics.  */
+    else if (e.pred == PRED_none)
+      {
+	auto mode = e.tuple_mode (0);
+	auto icode = (e.mode_suffix_id == MODE_single
+		      ? code_for_aarch64_sve_single (m_uncond_unspec, mode)
+		      : code_for_aarch64_sve (m_uncond_unspec, mode));
+	return e.use_exact_insn (icode);
+      }
+    return e.map_to_unspecs (m_cond_unspec, m_cond_unspec, m_cond_unspec);
+  }
+
+  /* The unspecs for the conditional and unconditional instructions,
+     respectively.  */
+  int m_cond_unspec;
+  int m_uncond_unspec;
+};
+
 } /* end anonymous namespace */
 
 namespace aarch64_sve {
@@ -958,10 +996,8 @@ FUNCTION (svaesd, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesd))
 FUNCTION (svaese, fixed_insn_function, (CODE_FOR_aarch64_sve2_aese))
 FUNCTION (svaesimc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesimc))
 FUNCTION (svaesmc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesmc))
-FUNCTION (svamax, cond_or_uncond_unspec_function,
-	  (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
-FUNCTION (svamin, cond_or_uncond_unspec_function,
-	  (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
+FUNCTION (svamax, faminmaximpl, (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
+FUNCTION (svamin, faminmaximpl, (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
 FUNCTION (svandqv, reduction, (UNSPEC_ANDQV, UNSPEC_ANDQV, -1))
 FUNCTION (svbcax, CODE_FOR_MODE0 (aarch64_sve2_bcax),)
 FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, -1))
