@@ -10253,11 +10253,15 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 	  && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 32
-	  && (( INTVAL (XEXP (SET_SRC (curr_set), 1)) == 32
-		&& riscv_fusion_enabled_p(RISCV_FUSE_ZEXTW) )
-	      || ( INTVAL (XEXP (SET_SRC (curr_set), 1)) < 32
-		   && riscv_fusion_enabled_p(RISCV_FUSE_ZEXTWS))))
-	return true;
+	  && ((INTVAL (XEXP (SET_SRC (curr_set), 1)) == 32
+	       && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW) )
+	      || (INTVAL (XEXP (SET_SRC (curr_set), 1)) < 32
+		  && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS))))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_ZEXTWS\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTH)
@@ -10278,7 +10282,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 	  && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 48
 	  && INTVAL (XEXP (SET_SRC (curr_set), 1)) == 48)
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file,"RISCV_FUSE_ZEXTH\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDINDEXED)
@@ -10297,7 +10305,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && REG_P (XEXP (SET_SRC (prev_set), 1)))
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LDINDEXED\n");
+	  return true;
+	}
 
       /* We are trying to match the following:
 	   prev (add) == (set (reg:DI rD)
@@ -10313,7 +10325,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && REG_P (XEXP (SET_SRC (prev_set), 1)))
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LDINDEXED\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LDPREINCREMENT)
@@ -10332,7 +10348,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (prev_set), 0))
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1)))
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LDPREINCREMENT\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_ADDI)
@@ -10350,7 +10370,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && (GET_CODE (SET_SRC (prev_set)) == HIGH
 	      || (CONST_INT_P (SET_SRC (prev_set))
 		  && LUI_OPERAND (INTVAL (SET_SRC (prev_set))))))
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LUI_ADDI\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_ADDI)
@@ -10372,7 +10396,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 		  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 		  && SMALL_OPERAND (INTVAL (XEXP (SET_SRC (curr_set), 1))))))
 
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_AUIPC_ADDI\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_LUI_LD)
@@ -10392,14 +10420,22 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS
 	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LUI_LD\n");
+	  return true;
+	}
 
       if (GET_CODE (SET_SRC (prev_set)) == HIGH
 	  && MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == LO_SUM
 	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LUI_LD\n");
+	  return true;
+	}
 
       if (GET_CODE (SET_SRC (prev_set)) == HIGH
 	  && (GET_CODE (SET_SRC (curr_set)) == SIGN_EXTEND
@@ -10409,7 +10445,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && (GET_CODE (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == LO_SUM
 	      && (REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
 		  == prev_dest_regno)))
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_LUI_LD\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_AUIPC_LD)
@@ -10425,7 +10465,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS)
-	return true;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "RISCV_FUSE_AUIPC_LD\n");
+	  return true;
+	}
     }
 
   if (simple_sets_p && riscv_fusion_enabled_p (RISCV_FUSE_ALIGNED_STD))
@@ -10473,7 +10517,11 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 		 lower offset.  */
 	      if ((INTVAL (offset_prev) % 16) == 0
 		  && (INTVAL (offset_prev) + 8 == INTVAL (offset_curr)))
-		return true;
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "RISCV_FUSE_ALIGNED_STD\n");
+		  return true;
+		}
 	    }
 	}
     }
