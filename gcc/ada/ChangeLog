@@ -1,3 +1,20 @@
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (gnatlib-sjlj): Delete.
+	(gnatlib-zcx): Do not modify Frontend_Exceptions constant.
+	* libgnat/system-linux-loongarch.ads (Frontend_Exceptions): Delete.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_component_type): Validate the
+	Component_Size like the size of a type only if the component type
+	is actually packed.
+
+2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Handle_Changed_Representation): Alphabetize local
+	variables.  Set the No_Finalize_Actions flag on the assignment.
+
 2025-05-23  Release Manager
 
 	* GCC 14.3.0 released.

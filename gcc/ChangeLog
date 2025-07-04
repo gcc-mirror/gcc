@@ -1,3 +1,13 @@
+2025-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/120624
+	* config/aarch64/aarch64.md (SME_STATE_REGNUM): Expand on comments.
+	* config/aarch64/aarch64-sme.md (aarch64_restore_za): Also set
+	SME_STATE_REGNUM
+
 2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.cc (fold_const_aggregate_ref_1) <COMPONENT_REF>:
