@@ -1841,6 +1841,8 @@ namespace __format
 	      break;
 	    case _None:
 	      break;
+	    default:
+	      __builtin_unreachable();
 	    }
 	  return __res;
 	};
