@@ -441,6 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _IndexType __mult = 1;
 	    auto __update = [&, __pos = 0u](_IndexType __idx) mutable
 	      {
+		_GLIBCXX_DEBUG_ASSERT(cmp_less(__idx, __exts.extent(__pos)));
 		__res += __idx * __mult;
 		__mult *= __exts.extent(__pos);
 		++__pos;
@@ -651,6 +652,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __update = [&, __pos = __exts.rank()](_IndexType) mutable
 	      {
 		--__pos;
+		_GLIBCXX_DEBUG_ASSERT(cmp_less(__ind_arr[__pos],
+					       __exts.extent(__pos)));
 		__res += __ind_arr[__pos] * __mult;
 		__mult *= __exts.extent(__pos);
 	      };
@@ -822,6 +825,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    auto __update = [&, __pos = 0u](_IndexType __idx) mutable
 	      {
+		_GLIBCXX_DEBUG_ASSERT(cmp_less(__idx,
+					       __m.extents().extent(__pos)));
 		__res += __idx * __m.stride(__pos++);
 	      };
 	    (__update(__indices), ...);
