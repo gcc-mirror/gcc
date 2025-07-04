@@ -1,3 +1,36 @@
+2025-07-03  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/version.def: Fix typo.
+	* include/bits/version.h: Rebuilt.
+
+2025-07-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120934
+	* include/std/ranges (concat_view::end): Refine condition
+	for returning an iterator instead of default_sentinel as
+	per the updated P/R for LWG 4166.
+	* testsuite/std/ranges/concat/1.cc (test05): New test.
+
+2025-07-03  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119742
+	* include/bits/version.def: Add preprocessor symbol.
+	* include/bits/version.h: Add preprocessor symbol.
+	* include/std/bitset: Add constructor.
+	* testsuite/20_util/bitset/cons/1.cc: Fix.
+	* testsuite/20_util/bitset/cons/6282.cc: Fix.
+	* testsuite/20_util/bitset/cons/string_view.cc: Test new ctor.
+	* testsuite/20_util/bitset/cons/string_view_wide.cc: Test new ctor.
+
+2025-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120931
+	* include/bits/stl_uninitialized.h (__uninitialized_fill<true>):
+	Fix typo resulting in call to __do_uninit_copy instead of
+	__do_uninit_fill.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/120931.cc:
+	New test.
+
 2025-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (__normal_iterator): Make all

@@ -1,3 +1,228 @@
+2025-07-03  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_with_merge): Add size change cases.
+	(expand_perm_with_pack): New function.
+	(vectorize_vec_perm_const_1): Wire up new function.
+
+2025-07-03  Co-authored-by: Daniel Barboza  <dbarboza@ventanamicro.com>
+	    Co-authored-by: Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/118886
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Check
+	for fusion being disabled earlier.  If PREV is already fused,
+	then it can't be fused again.  Be more selective about fusing
+	when the destination registers do not match.  Don't fuse into
+	loads that aren't scalar integer modes.  Revamp store pair
+	commit support.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cbz<optab><mode>1): Move
+	above rules for CBB<cond>/CBH<cond>/CB<cond>.
+	(*aarch64_tbz<optab><mode>1): Likewise.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_cb_rhs): New function.
+	* config/aarch64/aarch64.cc (aarch64_cb_rhs): Likewise.
+	* config/aarch64/aarch64.md (cbranch<mode>4): Rename to ...
+	(cbranch<GPI:mode>4): ...here, and emit CMPBR if possible.
+	(cbranch<SHORT:mode>4): New expand rule.
+	(aarch64_cb<INT_CMP:code><GPI:mode>): New insn rule.
+	(aarch64_cb<INT_CMP:code><SHORT:mode>): Likewise.
+	* config/aarch64/constraints.md (Uc0): New constraint.
+	(Uc1): Likewise.
+	(Uc2): Likewise.
+	* config/aarch64/iterators.md (cmpbr_suffix): New mode attr.
+	(INT_CMP): New code iterator.
+	(cmpbr_imm_constraint): New code attr.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (cmpbr): New
+	option.
+	* config/aarch64/aarch64.h (TARGET_CMPBR): New macro.
+	* doc/invoke.texi (cmpbr): New option.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (far_branch): Replace 0/1 with
+	no/yes.
+	(aarch64_bcond): Handle rename.
+	(aarch64_cbz<optab><mode>1): Likewise.
+	(*aarch64_tbz<optab><mode>1): Likewise.
+	(@aarch64_tbz<optab><ALLI:mode><GPI:mode>): Likewise.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (BRANCH_LEN_P_1MiB): New constant.
+	(BRANCH_LEN_N_1MiB): Likewise.
+	(BRANCH_LEN_P_32KiB): Likewise.
+	(BRANCH_LEN_N_32KiB): Likewise.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (condjump): Rename to ...
+	(aarch64_bcond): ...here.
+	(*compare_condjump<GPI:mode>): Rename to ...
+	(*aarch64_bcond_wide_imm<GPI:mode>): ...here.
+	(aarch64_cb<optab><mode>): Rename to ...
+	(aarch64_cbz<optab><mode>1): ...here.
+	(*cb<optab><mode>1): Rename to ...
+	(*aarch64_tbz<optab><mode>1): ...here.
+	(@aarch64_tb<optab><ALLI:mode><GPI:mode>): Rename to ...
+	(@aarch64_tbz<optab><ALLI:mode><GPI:mode>): ...here.
+	(restore_stack_nonlocal): Handle rename.
+	(stack_protect_combined_test): Likewise.
+	* config/aarch64/aarch64-simd.md (cbranch<mode>4): Likewise.
+	* config/aarch64/aarch64-sme.md (aarch64_restore_za): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_gen_test_and_branch): Likewise.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (cbranch<mode>4): Reformat.
+	(cbranchcc4): Likewise.
+	(condjump): Likewise.
+	(*compare_condjump<GPI:mode>): Likewise.
+	(aarch64_cb<optab><mode>1): Likewise.
+	(*cb<optab><mode>1): Likewise.
+	(tbranch_<code><mode>3): Likewise.
+	(@aarch64_tb<optab><ALLI:mode><GPI:mode>): Likewise.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (condjump): Move.
+	(*compare_condjump<GPI:mode>): Likewise.
+	(aarch64_cb<optab><mode>1): Likewise.
+	(*cb<optab><mode>1): Likewise.
+	(tbranch_<code><mode>3): Likewise.
+	(@aarch64_tb<optab><ALLI:mode><GPI:mode>): Likewise.
+
+2025-07-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/120780
+	* tree-object-size.cc (inner_at_offset,
+	get_wholesize_for_memref): New functions.
+	(addr_object_size): Call get_wholesize_for_memref.
+
+2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120936
+	* config/i386/i386.cc (x86_print_call_or_nop): Add a label
+	argument and use it to print label.
+	(x86_function_profiler): Emit label only when __mcount_loc
+	section is used.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (get_combined_location): Handle negative
+	offsets; output better diagnostics.
+	(get_relative_location_for_locus): Reutrn -1 for unknown location.
+	(function_instance::get_cgraph_node): New member function.
+	(match_with_target): New function.
+	(dump_stmt): New function.
+	(function_instance::lookup_count): New function.
+	(mark_expr_locations): New function.
+	(function_instance::match): New function.
+	(autofdo_source_profile::offline_external_functions): Do
+	not repeat renaming; manage two worklists and do matching.
+	(autofdo_source_profile::offline_unrealized_inlines): Simplify.
+	(afdo_set_bb_count): do not look for lost discriminators.
+	(auto_profile): Do not ICE when profile reading failed.
+	* common.opt (Wauto-profile): New warning flag
+	* doc/invoke.texi (-Wauto-profile): Document.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.cc (analyze_function_body): For loop
+	heuristics use header count instead of preheader count.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (update_profiling_info): Watch for division by zero.
+
+2025-07-03  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-sve.md
+	(vec_load_lanes<mode><vsingle>): Expand else operand in
+	subvector mode, as per optab documentation.
+	(vec_mask_load_lanes<mode><vsingle>): Add missing mode for
+	operand 3.
+	* config/aarch64/predicates.md (aarch64_maskload_else_operand):
+	Remove const_int.
+
+2025-07-03  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/md.texi (Standard Names): Clarify mode of else operand for
+	vec_mask_load_lanesmn optab.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (cs_interesting_for_ipcp_p): Handle
+	correctly GLOBAL0 afdo counts.
+	(ipcp_cloning_candidate_p): Do not rule out nodes
+	!node->optimize_for_size_p ().
+	(good_cloning_opportunity_p): Handle afdo counts
+	as non-zero.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (hint_time_bonus): Return sreal and avoid
+	conversions to integer.
+	(good_cloning_opportunity_p): Avoid sreal to integer
+	conversions
+	(perform_estimation_of_a_value): Update.
+
+2025-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_hot_bb_threshod): New global
+	variable.
+	(maybe_hot_afdo_count_p): New function.
+	(autofdo_source_profile::read): Do not set up dump file;
+	set afdo_hot_bb_threshod.
+	(afdo_annotate_cfg): Handle partial training.
+	(afdo_callsite_hot_enough_for_early_inline):
+	Use maybe_hot_afdo_count_p.
+	(auto_profile_offline::execute): Read autofdo file.
+	* auto-profile.h (maybe_hot_afdo_count_p): Declare.
+	(afdo_hot_bb_threshold): Declare.
+	* coverage.cc (read_counts_file): Also set gcov_profile_info.
+	(coverage_init): Do not read autofdo file.
+	* opts.cc (enable_fdo_optimizations): Add autofdo parameter;
+	do not set flag_branch_probabilities and flag_profile_values
+	with it.
+	(common_handle_option): Update.
+	* passes.cc (finish_optimization_passes): Do not end branch
+	prob here.
+	(pass_manager::dump_profile_report): Also mark change after
+	autofdo pass.
+	* profile.cc: Include auto-profile.h
+	(gcov_profile_info): New global variable.
+	(struct afdo_fdo_record): New struture.
+	(compute_branch_probabilities): Record afdo profile.
+	(end_branch_prob): Dump afdo/fdo profile comparsion.
+	* profile.h (gcov_profile_info): Declarre.
+	* tree-profile.cc (tree_profiling): Call end_branch_prob
+	(pass_ipa_tree_profile::gate): Also enable with autoFDO
+
+2025-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118669
+	* tree-vect-stmts.cc (vectorizable_load): Emit loads
+	with proper (element) alignment.
+	(vectorizable_store): Likewise.
+
+2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* config/i386/i386.cc (legitimize_tls_address): Pass RDI to
+	gen_tls_local_dynamic_64.
+	* config/i386/i386.md (*tls_global_dynamic_64_largepic): Add
+	RDI clobber and use it to generate LEA.
+	(*tls_local_dynamic_64_<mode>): Likewise.
+	(*tls_local_dynamic_base_64_largepic): Likewise.
+	(@tls_local_dynamic_64_<mode>): Add a clobber.
+
 2025-07-02  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/120908

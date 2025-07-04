@@ -1,3 +1,88 @@
+2025-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120716
+	* g++.dg/cpp0x/lambda/lambda-constexpr3.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-constexpr3a.C: New test.
+
+2025-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120748
+	* g++.dg/cpp2a/lambda-targ16.C: New test.
+	* g++.dg/cpp0x/this1.C: Adjust diagnostics.
+
+2025-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120940
+	* g++.dg/parse/pr120940.C: New test.
+	* g++.dg/warn/Wduplicated-branches9.C: New test.
+
+2025-07-03  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-perm-merge-1.c: New test.
+	* gcc.target/s390/vector/vec-perm-pack-1.c: New test.
+
+2025-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/gomp/omp_get_num_devices_initial_device.c: Fix.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device.f90: Likewise.
+
+2025-07-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/pr120295.c (glob): Rename to glob_.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/cmpbr.c: Update tests.
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/cmpbr.c:
+
+2025-07-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* lib/target-supports.exp: Add `cmpbr` to the list of extensions.
+	* gcc.target/aarch64/cmpbr.c: New test.
+
+2025-07-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/120780
+	* gcc.dg/builtin-dynamic-object-size-pr120780.c: New test case.
+
+2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120936
+	* gcc.target/i386/pr120936-1.c: New test
+	* gcc.target/i386/pr120936-2.c: Likewise.
+	* gcc.target/i386/pr120936-3.c: Likewise.
+	* gcc.target/i386/pr120936-4.c: Likewise.
+	* gcc.target/i386/pr120936-5.c: Likewise.
+	* gcc.target/i386/pr120936-6.c: Likewise.
+	* gcc.target/i386/pr120936-7.c: Likewise.
+	* gcc.target/i386/pr120936-8.c: Likewise.
+	* gcc.target/i386/pr120936-9.c: Likewise.
+	* gcc.target/i386/pr120936-10.c: Likewise.
+	* gcc.target/i386/pr120936-11.c: Likewise.
+	* gcc.target/i386/pr120936-12.c: Likewise.
+	* gcc.target/i386/pr93492-3.c: Updated.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+
+2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* gfortran.dg/coarray/coindexed_6.f90: Enhance test to have
+	coarray components covered.
+
+2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* gcc.target/i386/pr120908.c: New test.
+
+2025-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120684
+	PR c++/118856
+	* g++.dg/cpp23/range-for10.C: New test.
+
 2025-07-02  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.target/riscv/mcpu-xt-c908.c: Disable for E ABI variants.

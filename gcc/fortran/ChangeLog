@@ -1,3 +1,9 @@
+2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* resolve.cc (resolve_operator): Remove conformability check,
+	because it is not in the standard.
+
 2025-07-01  Harald Anlauf  <anlauf@gmx.de>
 
 	* coarray.cc (check_add_new_component): Treat pure and elemental

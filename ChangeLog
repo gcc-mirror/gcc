@@ -1,3 +1,7 @@
+2025-07-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* MAINTAINERS: Add myself as an aarch64 port reviewer.
+
 2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/120106
