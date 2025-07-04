@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CP_CONTRACT_H
 #define GCC_CP_CONTRACT_H
 
+#include <cstdint>
+
 /* Contract levels approximate the complexity of the expression.  */
 
 enum contract_level
@@ -99,7 +101,7 @@ struct contract_role
 /* P2900 contract clasification */
 /* Must match relevant enums in <contracts> header  */
 
-enum constract_assertion_kind {
+enum constract_assertion_kind : uint16_t {
   CAK_INVALID = 0 ,
   CAK_PRE = 1 ,
   CAK_POST = 2 ,
@@ -108,8 +110,8 @@ enum constract_assertion_kind {
   CAK_CASSERT = 5,
 };
 
-/* Per P2900R11.  */
-enum contract_evaluation_semantic {
+/* Per P2900R14 + D3290R3 + extensions.  */
+enum contract_evaluation_semantic : uint16_t {
   CES_INVALID = 0,
   CES_IGNORE = 1,
   CES_OBSERVE = 2,
@@ -119,7 +121,7 @@ enum contract_evaluation_semantic {
   CES_NOEXCEPT_OBSERVE = 6
 };
 
-enum constract_detection_mode {
+enum contract_detection_mode : uint16_t {
   CDM_UNSPECIFIED = 0,
   CDM_PREDICATE_FALSE = 1,
   CDM_EVAL_EXCEPTION = 2

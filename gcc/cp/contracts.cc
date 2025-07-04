@@ -2057,32 +2057,32 @@ get_p9600_contract_violation_fields ()
 {
   tree fields = NULL_TREE;
   /* Must match <contracts>:
-     class contract_violation {
-	int version;
-	__vendor_ext* ext;
-	const char* _M_comment;
-	detection_mode _M_detection_mode;
-	assertion_kind _M_assertion_kind;
-	source_location _M_source_location;
-	evaluation_semantic _M_evaluation_semantic;
-     }
+  class contract_violation {
+    uint16_t _M_version;
+    assertion_kind _M_assertion_kind;
+    evaluation_semantic _M_evaluation_semantic;
+    detection_mode _M_detection_mode;
+    const char* _M_comment;
+    std::source_location _M_source_location;
+    __vendor_ext* _M_ext;
+  };
     If this changes, also update the initializer in
     build_contract_violation.  */
-  const tree types[] = { integer_type_node,
-			 nullptr_type_node,
+  const tree types[] = { uint16_type_node,
+			 uint16_type_node,
+			 uint16_type_node,
+			 uint16_type_node,
 			 const_string_type_node,
-			 integer_type_node,
-			 integer_type_node,
 			 get_contracts_source_location_type(),
 			 integer_type_node
 			};
- const char *names[] = { "version",
-			 "_M_ext",
-			 "_M_comment",
-			 "_M_detection_mode",
+ const char *names[] = { "_M_version",
 			 "_M_assertion_kind",
+			 "_M_evaluation_semantic",
+			 "_M_detection_mode",
+			 "_M_comment",
 			 "_M_source_location",
-			 "_M_evaluation_semantic"
+			 "_M_ext",
 			};
   unsigned n = 0;
   for (tree type : types)
@@ -2245,8 +2245,8 @@ get_contract_assertion_kind(tree contract)
 
 /* Get contract_evaluation_semantic of the specified contract.  */
 
-static int
-get_evaluation_semantic(tree contract)
+static uint16_t
+get_evaluation_semantic (tree contract)
 {
   contract_semantic semantic = get_contract_semantic (contract);
 
@@ -2277,27 +2277,28 @@ get_evaluation_semantic(tree contract)
     }
 }
 
-/* Build P2900R7 contract_violation layout compatible object. */
+/* Build a p2900 contract_violation layout compatible object. */
 
 static tree
 build_contract_violation_p2900 (tree contract, bool is_const)
 {
-  int assertion_kind = get_contract_assertion_kind (contract);
-  int evaluation_semantic = get_evaluation_semantic (contract);
+  uint16_t version = 1;
+  uint16_t assertion_kind = get_contract_assertion_kind (contract);
+  uint16_t evaluation_semantic = get_evaluation_semantic (contract);
 
   /* we hardcode CDM_PREDICATE_FALSE because that's all we support for now */
-  int detection_mode = CDM_PREDICATE_FALSE;
+  uint16_t detection_mode = contract_detection_mode::CDM_PREDICATE_FALSE;
 
   /* Must match the type layout in get_pseudo_contract_violation_type.  */
   tree ctor = build_constructor_va
     (get_pseudo_contract_violation_type (), 7,
-     NULL_TREE, build_int_cst (integer_type_node, 0), 		// version
-     NULL_TREE, build_int_cst (nullptr_type_node, 0),   // __vendor_ext
+     NULL_TREE, build_int_cst (uint16_type_node, version),
+     NULL_TREE, build_int_cst (uint16_type_node, assertion_kind),
+     NULL_TREE, build_int_cst (uint16_type_node, evaluation_semantic),
+     NULL_TREE, build_int_cst (uint16_type_node, detection_mode),
      NULL_TREE, CONTRACT_COMMENT (contract),
-     NULL_TREE, build_int_cst (integer_type_node, detection_mode),
-     NULL_TREE, build_int_cst (integer_type_node, assertion_kind),
      NULL_TREE, build_contracts_source_location (EXPR_LOCATION (contract)),
-     NULL_TREE, build_int_cst (integer_type_node, evaluation_semantic));
+     NULL_TREE, build_int_cst (nullptr_type_node, 0));  // __vendor_ext
 
   TREE_READONLY (ctor) = true;
   TREE_CONSTANT (ctor) = true;
@@ -2593,8 +2594,9 @@ build_contract_check_p2900 (tree contract)
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
       tree r  = build_class_member_access_expr (violation, memb, NULL_TREE,
 						false, tf_warning_or_error);
-      r = cp_build_init_expr (r, build_int_cst (integer_type_node,
-					    CDM_EVAL_EXCEPTION));
+      r = cp_build_init_expr (r,
+			      build_int_cst (uint16_type_node,
+					     CDM_EVAL_EXCEPTION));
       finish_expr_stmt (r);
       build_contract_handler_call (build_address (violation), noexcept_wrap);
 #else

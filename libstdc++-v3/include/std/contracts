@@ -42,8 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace contracts
 {
-
-// From P3290
+  // From D3290R3
   struct __location_info{
     std::source_location _M_source_location;
     explicit __location_info(std::source_location __location)
@@ -73,35 +72,39 @@ namespace contracts
       const std::source_location &__location = std::source_location::current()) noexcept;
 
 
-  // From P2900R11
-  enum class assertion_kind {
+  // From P2900R14 + D3290R3
+
+  enum class assertion_kind : uint16_t {
     pre = 1,
     post = 2,
     assert = 3,
-    // From P3290
+    // From D3290R3
     manual = 4,
-    cassert = 5
-    /* to be extended with implementation−defined values and by future extensions */
-    /* Implementation−defined values should have a minimum value of 1000. */
-    };
+    cassert = 5,
 
-  enum class evaluation_semantic {
-      ignore = 1,
-      observe = 2,
-      enforce = 3,
-      quick_enforce = 4
-	// not explicitly provided
-	// assume = 5
-	// expected as a future extension
-	/* to be extended with implementation−defined values and by future extensions */
-	/* Implementation−defined values should have a minimum value of 1000. */
+    /* Implementation−defined values should have a minimum value of 1000. */
   };
 
-  enum class detection_mode  {
-  // From P3290
+  enum class evaluation_semantic : uint16_t {
+    ignore = 1,
+    observe = 2,
+    enforce = 3,
+    quick_enforce = 4,
+
+    /* FIXME: Implementation−defined values should have a minimum value of 1000
+      but we cannot [currently] accommodate > 7.
+      Experimental only (no paper).  */
+    noexcept_enforce = 5,
+    noexcept_observe = 6,
+    force_quick = 7,
+  };
+
+  enum class detection_mode : uint16_t {
+    // From D3290R3
     unspecified = 0,
     predicate_false = 1,
-    evaluation_exception = 2
+    evaluation_exception = 2,
+    manual = 3
     /* to be extended with implementation−defined values and by future extensions
 	 Implementation−defined values should have a minimum value of 1000. */
   };
@@ -109,27 +112,22 @@ namespace contracts
   using __vendor_ext = void;
 
   class contract_violation {
-    int _M_version;
-    __vendor_ext* _M_ext;
-    const char* _M_comment;
-    detection_mode _M_detection_mode;
+    uint16_t _M_version;
     assertion_kind _M_assertion_kind;
-    std::source_location _M_source_location;
     evaluation_semantic _M_evaluation_semantic;
+    detection_mode _M_detection_mode;
+    const char* _M_comment;
+    std::source_location _M_source_location;
+    __vendor_ext* _M_ext;
 
     contract_violation(evaluation_semantic __semantic,
 		       const std::source_location &__location,
-		       const char* __comment):
-      _M_version(0),
-      _M_ext(nullptr),
-      _M_comment(__comment),
-      _M_detection_mode(detection_mode::unspecified),
-      _M_assertion_kind(assertion_kind::manual),
-      _M_source_location(__location),
-      _M_evaluation_semantic(__semantic)
-    {
-
-    }
+		       const char* __comment)
+      : _M_version(0), _M_assertion_kind(assertion_kind::manual),
+        _M_evaluation_semantic(__semantic),
+        _M_detection_mode(detection_mode::unspecified),
+        _M_comment(__comment), _M_source_location(__location),
+        _M_ext(nullptr) { }
 
     friend void handle_enforced_contract_violation(
 	const char*,
@@ -155,29 +153,28 @@ namespace contracts
 
   public:
     // cannot be copied or moved
-	contract_violation(const contract_violation&) = delete;
+    contract_violation(const contract_violation&) = delete;
 
-	// cannot be assigned to
-	contract_violation& operator=(const contract_violation&) = delete;
+    // cannot be assigned to
+    contract_violation& operator=(const contract_violation&) = delete;
 
-	const char* comment() const noexcept { return _M_comment; }
-	detection_mode mode() const noexcept { return _M_detection_mode; }
-	std::exception_ptr evaluation_exception () const noexcept {
-	  if (_M_detection_mode == std::contracts::detection_mode::evaluation_exception)
-	    return std::current_exception ();
-	  return nullptr;
-	}
-	bool is_terminating () const noexcept {
-	  return _M_evaluation_semantic == std::contracts::evaluation_semantic::enforce
-	        || _M_evaluation_semantic == std::contracts::evaluation_semantic::quick_enforce;
-	}
-	assertion_kind kind() const noexcept { return _M_assertion_kind; }
-	std::source_location location() const noexcept { return _M_source_location; }
-	evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
+    const char* comment() const noexcept { return _M_comment; }
+    detection_mode mode() const noexcept { return _M_detection_mode; }
+    std::exception_ptr evaluation_exception () const noexcept {
+      if (_M_detection_mode == std::contracts::detection_mode::evaluation_exception)
+	return std::current_exception ();
+      return nullptr;
+    }
+    bool is_terminating () const noexcept {
+      return _M_evaluation_semantic == std::contracts::evaluation_semantic::enforce
+	    || _M_evaluation_semantic == std::contracts::evaluation_semantic::quick_enforce;
+    }
+    assertion_kind kind() const noexcept { return _M_assertion_kind; }
+    std::source_location location() const noexcept { return _M_source_location; }
+    evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
   };
 
   void invoke_default_contract_violation_handler(const contract_violation&) noexcept;
-
 
 } // namespace contracts
 
