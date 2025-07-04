@@ -2,37 +2,12 @@
 #include <mdspan>
 
 #include <testsuite_hooks.h>
+#include "int_like.h"
 
 // Test construction from a custom integer-like object, that has
 // no copy/move ctor or copy/move assignment operator.
 
 constexpr size_t dyn = std::dynamic_extent;
-
-class IntLike
-{
-public:
-  explicit
-  IntLike(int i)
-  : _M_i(i)
-  { }
-
-  IntLike() = delete;
-  IntLike(const IntLike&) = delete;
-  IntLike(IntLike&&) = delete;
-
-  const IntLike&
-  operator=(const IntLike&) = delete;
-
-  const IntLike&
-  operator=(IntLike&&) = delete;
-
-  constexpr
-  operator int() const noexcept
-  { return _M_i; }
-
-private:
-  int _M_i;
-};
 
 static_assert(std::is_convertible_v<IntLike, int>);
 static_assert(std::is_nothrow_constructible_v<int, IntLike>);
