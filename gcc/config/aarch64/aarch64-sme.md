@@ -1269,8 +1269,8 @@
 ;; ---- Absolute minimum/maximum
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - svamin (SME2+faminmax)
-;; - svamin (SME2+faminmax)
+;; - FAMIN (SME2+FAMINMAX)
+;; - FAMAX (SME2+FAMINMAX)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sme_<faminmax_uns_op><mode>"
@@ -1278,7 +1278,7 @@
 	(unspec:SVE_Fx24 [(match_operand:SVE_Fx24 1 "register_operand" "%0")
 			  (match_operand:SVE_Fx24 2 "register_operand" "Uw<vector_count>")]
 	 FAMINMAX_UNS))]
-  "TARGET_SME2 && TARGET_FAMINMAX"
+  "TARGET_STREAMING_SME2 && TARGET_FAMINMAX"
   "<faminmax_uns_op>\t%0, %1, %2"
 )
 
