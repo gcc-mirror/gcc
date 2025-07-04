@@ -1,19 +1,18 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-final { check-function-bodies "**" "" } } */
-/* PR target/113042 */
 
-#pragma GCC target "+nocssc+nosve"
+#pragma GCC target "+nocssc+sve"
 
 /*
 ** h128:
 **	ldr	q([0-9]+), \[x0\]
-**	cnt	v([0-9]+).16b, v\1.16b
-**	addv	b([0-9]+), v\2.16b
-**	fmov	w0, s\3
+**	ptrue	p([0-9]+).b, vl16
+**	cnt	z([0-9]+).d, p\2/m, z\1.d
+**	addp	d([0-9]+), v\3.2d
+**	fmov	x0, d\4
 **	ret
 */
-
 
 unsigned h128 (const unsigned __int128 *a) {
 	  return __builtin_popcountg (a[0]);

@@ -5771,6 +5771,19 @@
    (match_operand:TI 1 "register_operand")]
   "TARGET_SIMD && !TARGET_CSSC"
 {
+  /* For SVE we can do popcount on DImode chunks of the TImode argument
+     and then use a cheap ADDP reduction.  The SVE CNT instruction requires
+     materializing a PTRUE so don't do this if optimizing for size.  */
+  if (TARGET_SVE && !optimize_function_for_size_p (cfun))
+    {
+      rtx v = gen_reg_rtx (V2DImode);
+      rtx v1 = gen_reg_rtx (V2DImode);
+      emit_move_insn (v, gen_lowpart (V2DImode, operands[1]));
+      rtx p = aarch64_ptrue_reg (VNx2BImode, 16);
+      emit_insn (gen_aarch64_pred_popcountv2di (v1, p, v));
+      emit_insn (gen_reduc_plus_scal_v2di (operands[0], v1));
+      DONE;
+    }
   rtx v = gen_reg_rtx (V16QImode);
   rtx v1 = gen_reg_rtx (V16QImode);
   emit_move_insn (v, gen_lowpart (V16QImode, operands[1]));
