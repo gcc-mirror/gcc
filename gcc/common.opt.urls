@@ -64,6 +64,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Warray-bounds)
 Warray-bounds=
 UrlSuffix(gcc/Warning-Options.html#index-Warray-bounds)
 
+Wauto-profile
+UrlSuffix(gcc/Warning-Options.html#index-Wauto-profile)
+
 Wuse-after-free
 UrlSuffix(gcc/Warning-Options.html#index-Wno-use-after-free)
 

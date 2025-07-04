@@ -547,7 +547,7 @@ Warn if an array is accessed out of bounds.
 
 Wauto-profile
 Common Var(warn_auto_profile) Warning
-Warn about problems with auto-profile data
+Warn about problems with auto-profile data.
 
 Wuse-after-free
 Common Var(warn_use_after_free) Warning
