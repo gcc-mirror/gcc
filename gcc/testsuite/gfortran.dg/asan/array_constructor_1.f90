@@ -9,6 +9,8 @@ program grow_type_array
     
     type(container), allocatable :: list(:)
 
+    allocate(list(0))
+
     list = [list, new_elem(5)]
 
     deallocate(list)
