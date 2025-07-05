@@ -4623,6 +4623,14 @@ verify_gimple_assign_single (gassign *stmt)
       return true;
     }
 
+  /* LHS can't be a constant or an address expression. */
+  if (CONSTANT_CLASS_P (lhs)|| TREE_CODE (lhs) == ADDR_EXPR)
+    {
+      error ("invalid LHS (%qs) for assignment: %qs",
+	     get_tree_code_name (TREE_CODE (lhs)), code_name);
+      return true;
+    }
+
   if (gimple_clobber_p (stmt)
       && !(DECL_P (lhs) || TREE_CODE (lhs) == MEM_REF))
     {
@@ -4745,6 +4753,11 @@ verify_gimple_assign_single (gassign *stmt)
 
 	  if (CONSTRUCTOR_NELTS (rhs1) == 0)
 	    return res;
+	  if (!is_gimple_reg (lhs))
+	    {
+	      error ("non-register as LHS with vector constructor");
+	      return true;
+	    }
 	  /* For vector CONSTRUCTORs we require that either it is empty
 	     CONSTRUCTOR, or it is a CONSTRUCTOR of smaller vector elements
 	     (then the element count must be correct to cover the whole
