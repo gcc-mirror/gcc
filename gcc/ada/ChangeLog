@@ -1,3 +1,28 @@
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (make_packable_type): Clear the TYPE_PACKED
+	flag in the case where the alignment is bumped.
+
+2025-07-04  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): Tweak search of Finalize primitive.
+	* exp_util.adb (Finalize_Address): Likewise.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Compile_Time_Size): Try harder to see whether
+	the bounds of array types are known at compile time.
+
+2025-07-04  Steve Baird  <baird@adacore.com>
+
+	* mutably_tagged.adb (Make_CW_Size_Compile_Check): Include the
+	value of the Size'Class limit in the message generated via a
+	Compile_Time_Error pragma.
+
+2025-07-04  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix error emission.
+
 2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (gnatlib-sjlj): Delete.
