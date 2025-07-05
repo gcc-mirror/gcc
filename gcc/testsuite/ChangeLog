@@ -1,3 +1,102 @@
+2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/118241
+	* gcc.target/riscv/pr118241-b.cc: New test.
+
+2025-07-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/sh/pr54236-2.c: Fix comments and expected output
+
+2025-07-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/118948
+	* gcc.dg/pr118948-1.c: New test.
+
+2025-07-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120575
+	PR c++/116064
+	* g++.dg/template/permissive-error3.C: New test.
+
+2025-07-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-07-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-i8.c: New test.
+
+2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120944
+	* gcc.dg/torture/pr120944.c: New testcase.
+
+2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* gcc.dg/vect/vect-pr120927.c: New testcase.
+	* gcc.dg/vect/vect-pr120927-2.c: Likewise.
+
+2025-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120837
+	* gcc.dg/ubsan/pr120837.c: New test.
+
+2025-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/120807
+	* gcc.c-torture/compile/pr120708.c: Rename to ...
+	* gcc.c-torture/compile/pr120807.c: ... here.
+
+2025-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.c-torture/compile/pr120708.c: New test.
+
+2025-07-04  panciyan  <panciyan@eswincomputing.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add signed scalar SAT_ADD IMM form2.
+	* gcc.target/riscv/sat/sat_s_add_imm-2-i16.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-2-i32.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-2-i64.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-2-i8.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-2-i16.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-2-i32.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-2-i64.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-2-i8.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-2-i16.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-2-i32.c: New test.
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-2-i8.c: New test.
+
 2025-07-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120716

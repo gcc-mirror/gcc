@@ -1,3 +1,7 @@
+2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Stop doing GCC 12 snapshots.
+
 2025-05-23  Richard Biener  <rguenther@suse.de>
 
 	* update_web_docs_git: Conditionalize libgdiagnostic processing

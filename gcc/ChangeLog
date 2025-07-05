@@ -1,3 +1,68 @@
+2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/118241
+	* config/riscv/riscv.md (prefetch): Add alternative "r".
+
+2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/predicates.md (prefetch_operand): mack 5 bits.
+
+2025-07-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/sh/predicates.md
+	(treg_set_expr_not_const01): call sh_recog_treg_set_expr_not_01
+	* config/sh/sh-protos.h
+	(sh_recog_treg_set_expr_not_01): New function
+	* config/sh/sh.cc (sh_recog_treg_set_expr_not_01): Likewise
+
+2025-07-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/118948
+	* fold-const.cc (tree_expr_nonnegative_warnv_p): Use
+	error_operand_p instead of checking for error_mark_node directly.
+
+2025-07-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case SS_PLUS.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op ss_plus.
+
+2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120944
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Gate optimizations
+	invalid when volatile is involved.
+
+2025-07-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt: Add period.
+	* common.opt.urls: Regenerate.
+
+2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* tree-vect-data-refs.cc (vect_compute_data_ref_alignment):
+	Do not force a DRs base alignment when analyzing an
+	epilog loop.  Check whether the step preserves alignment
+	for all VFs possibly involved sofar.
+
+2025-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (crc_combine): Avoid nested
+	subreg.
+
+2025-07-04  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Add basic
+	instrumentation to all cases where fusion is detected.  Fix
+	minor formatting goofs found in the process.
+
+2025-07-04  panciyan  <panciyan@eswincomputing.com>
+
+	* match.pd: Add signed scalar SAT_ADD IMM form2 matching.
+
 2025-07-03  Juergen Christ  <jchrist@linux.ibm.com>
 
 	* config/s390/s390.cc (expand_perm_with_merge): Add size change cases.

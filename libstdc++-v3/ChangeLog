@@ -1,3 +1,14 @@
+2025-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_duration::_S_spec_for):
+	Add default case to switch and use __builtin_unreachable.
+
+2025-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__size_to_integer): Move
+	misplaced unsigned keyword on __size_to_integer overloads for
+	__GLIBCXX_TYPE_INT_N_3 integer type.
+
 2025-07-03  Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/version.def: Fix typo.

@@ -1,3 +1,86 @@
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ACATSDIR): Change to acats-4.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (make_packable_type): Clear the TYPE_PACKED
+	flag in the case where the alignment is bumped.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Do not generate
+	a block-copy out for a null initialization procedure when the _Init
+	parameter is not passed in.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Only apply the
+	transformation to integer types.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Add guards.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): In the case of a
+	subprogram using the Copy-In/Copy-Out mechanism, deal specially with
+	the case of 2 parameters of differing sizes.
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): In the case of a
+	subprogram using the Copy-In/Copy-Out mechanism, make sure the types
+	are consistent on the two sides for all the parameters.
+
+2025-07-04  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Replace code for
+	detecting a similar case with a more comprehensive test.
+
+2025-07-04  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Short_Circuit_And_Or): Add more documentation.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming):
+	Disallow renamings.
+	* gnat_rm.texi: Regenerate.
+
+2025-07-04  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): Tweak search of Finalize primitive.
+	* exp_util.adb (Finalize_Address): Likewise.
+
+2025-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Compile_Time_Size): Try harder to see whether
+	the bounds of array types are known at compile time.
+
+2025-07-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.ads (First_Discriminant): Remove space before period.
+
+2025-07-04  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): In deciding
+	whether to generate a warning about a missing component clause, in
+	addition to calling Is_Unchecked_Union also call a new local
+	function, Unchecked_Union_Pragma_Pending, which checks for the
+	case of a not-yet-analyzed Unchecked_Union pragma occurring later
+	in the declaration list.
+
+2025-07-04  Steve Baird  <baird@adacore.com>
+
+	* mutably_tagged.adb (Make_CW_Size_Compile_Check): Include the
+	value of the Size'Class limit in the message generated via a
+	Compile_Time_Error pragma.
+
+2025-07-04  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): Remove obsolete bits.
+
+2025-07-04  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix error emission.
+
 2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (gnatlib-sjlj): Delete.

@@ -1,3 +1,11 @@
+2025-07-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* MAINTAINERS: Replace tabs with spaces.
+
+2025-07-04  Alex Coplan  <alex.coplan@arm.com>
+
+	* MAINTAINERS (Reviewers): Add myself for the aarch64 port.
+
 2025-07-03  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* MAINTAINERS: Add myself as an aarch64 port reviewer.

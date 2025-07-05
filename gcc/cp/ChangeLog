@@ -1,3 +1,10 @@
+2025-07-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120575
+	PR c++/116064
+	* parser.cc (cp_parser_abort_tentative_parse): Check seen_error
+	instead of errorcount.
+
 2025-07-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120716
