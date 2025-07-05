@@ -1,3 +1,22 @@
+2025-07-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-04-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Recognise PROJECT:ld-mmmm.nn.aa as an identifier
+	for Darwin's static linker.
+
+2025-07-04  Iain Sandoe  <iain@sandoe.co.uk>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119172
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_PLATFORM_ID): Add the option to
+	use -macos_version_min where available.
+	* configure: Regenerate.
+	* configure.ac: Check for ld64 support of -macos_version_min.
+
 2025-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from master:
