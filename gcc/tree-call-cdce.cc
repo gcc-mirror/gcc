@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "internal-fn.h"
 #include "tree-dfa.h"
+#include "tree-eh.h"
 
 
 /* This pass serves two closely-related purposes:
@@ -1222,8 +1223,20 @@ use_internal_fn (gcall *call)
     {
       /* Skip the call if LHS == LHS.  If we reach here, EDOM is the only
 	 valid errno value and it is used iff the result is NaN.  */
-      conds.quick_push (gimple_build_cond (EQ_EXPR, lhs, lhs,
-					   NULL_TREE, NULL_TREE));
+      /* In the case of non call exceptions, with signaling NaNs, EQ_EXPR
+	 can throw an exception and that can't be part of the GIMPLE_COND. */
+      if (flag_exceptions
+	  && cfun->can_throw_non_call_exceptions
+	  && operation_could_trap_p (EQ_EXPR, true, false, NULL_TREE))
+	{
+	  tree b = make_ssa_name (boolean_type_node);
+	  conds.quick_push (gimple_build_assign (b, EQ_EXPR, lhs, lhs));
+	  conds.quick_push (gimple_build_cond (NE_EXPR, b, boolean_false_node,
+					       NULL_TREE, NULL_TREE));
+	}
+      else
+	conds.quick_push (gimple_build_cond (EQ_EXPR, lhs, lhs,
+					     NULL_TREE, NULL_TREE));
       nconds++;
 
       /* Try replacing the original call with a direct assignment to
