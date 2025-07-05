@@ -34,6 +34,21 @@ along with GCC; see the file COPYING3.  If not see
 /* Common definitions first.                                   */
 /*-------------------------------------------------------------*/
 
+/* Default to 64 bits when the target is powerpc64*-wrs-vxworks*,
+   and to 32 bits otherwise.  */
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#if TARGET_VXWORKS64
+#define SUBTARGET_DRIVER_SELF_SPECS "%{!m64:%{!m32:-m64}}"
+#else
+#define SUBTARGET_DRIVER_SELF_SPECS "%{!m32:%{!m64:-m32}}"
+#endif
+
+/* Having used the build-time TARGET_VXWORKS64 to choose the default ABI above,
+   redefine it so that it matches whichever ABI is selected for each
+   compilation.  */
+#undef TARGET_VXWORKS64
+#define TARGET_VXWORKS64 TARGET_64BIT
+
 /* CPP predefined macros.  */
 
 #undef TARGET_OS_CPP_BUILTINS
