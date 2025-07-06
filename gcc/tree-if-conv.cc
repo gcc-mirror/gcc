@@ -3004,12 +3004,10 @@ combine_blocks (class loop *loop, bool loop_versioned)
 
   /* Reset flow-sensitive info before predicating stmts or PHIs we
      might fold.  */
-  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
   for (i = 0; i < orig_loop_num_nodes; i++)
     {
       bb = ifc_bbs[i];
-      predicated[i] = is_predicated (bb);
-      if (predicated[i])
+      if (is_predicated (bb))
 	{
 	  for (auto gsi = gsi_start_phis (bb);
 	       !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3211,7 +3209,6 @@ combine_blocks (class loop *loop, bool loop_versioned)
 
   free (ifc_bbs);
   ifc_bbs = NULL;
-  free (predicated);
 }
 
 /* Version LOOP before if-converting it; the original loop
