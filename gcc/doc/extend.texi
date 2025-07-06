@@ -15439,7 +15439,7 @@ are 128-bit.  Only supported on targets when 128-bit types are supported.
 Returns the calculated 8-bit bit-reversed CRC using the initial CRC (8-bit),
 data (8-bit) and the polynomial (8-bit).
 @var{crc} is the initial CRC, @var{data} is the data and
-@var{poly} is the polynomial without leading 1.
+@var{poly} is the polynomial without leading 1. @var{poly} is required to be a compile-time constant.
 Table-based or clmul-based CRC may be used for the
 calculation, depending on the target architecture.
 @enddefbuiltin
@@ -15494,7 +15494,7 @@ is 32-bit.
 Returns the calculated 8-bit bit-forward CRC using the initial CRC (8-bit),
 data (8-bit) and the polynomial (8-bit).
 @var{crc} is the initial CRC, @var{data} is the data and
-@var{poly} is the polynomial without leading 1.
+@var{poly} is the polynomial without leading 1. @var{poly} is required to be a compile-time constant.
 Table-based or clmul-based CRC may be used for the
 calculation, depending on the target architecture.
 @enddefbuiltin
