@@ -7799,11 +7799,17 @@ expand_builtin_crc_table_based (internal_fn fn, scalar_mode crc_mode,
 
   rtx op1 = expand_normal (rhs1);
   rtx op2 = expand_normal (rhs2);
-  gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
-  rtx op3 = gen_int_mode (TREE_INT_CST_LOW (rhs3), crc_mode);
+  rtx op3;
+  if (TREE_CODE (rhs3) != INTEGER_CST)
+    {
+      error ("third argument to %<crc%> builtins must be a constant");
+      op3 = const0_rtx;
+    }
+  else
+    op3 = convert_to_mode (crc_mode, expand_normal (rhs3), 0);
 
   if (CONST_INT_P (op2))
-    op2 = gen_int_mode (INTVAL (op2), crc_mode);
+    op2 = convert_to_mode (crc_mode, op2, 0);
 
   if (fn == IFN_CRC)
     expand_crc_table_based (target, op1, op2, op3, data_mode);

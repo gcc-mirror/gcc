@@ -4031,9 +4031,14 @@ expand_crc_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab)
   rtx dest = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx crc = expand_normal (rhs1);
   rtx data = expand_normal (rhs2);
-  gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
-  rtx polynomial = gen_rtx_CONST_INT (TYPE_MODE (result_type),
-				      TREE_INT_CST_LOW (rhs3));
+  rtx polynomial;
+  if (TREE_CODE (rhs3) != INTEGER_CST)
+    {
+      error ("third argument to %<crc%> builtins must be a constant");
+      polynomial = const0_rtx;
+    }
+  else
+    polynomial = convert_to_mode (TYPE_MODE (result_type), expand_normal (rhs3), 0);
 
   /* Use target specific expansion if it exists.
      Otherwise, generate table-based CRC.  */
