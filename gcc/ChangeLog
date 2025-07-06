@@ -1,3 +1,9 @@
+2025-07-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/rs6000/vxworks.h (SUBTARGET_DRIVER_SELF_SPECS):
+	Redefine to select word size matching TARGET_VXWORKS64.
+	(TARGET_VXWORKS64): Redefine in terms of TARGET_64BIT.
+
 2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
 
 	PR target/118241
