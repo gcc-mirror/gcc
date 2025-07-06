@@ -104,9 +104,9 @@ namespace contracts
     unspecified = 0,
     predicate_false = 1,
     evaluation_exception = 2,
-    manual = 3
-    /* to be extended with implementation−defined values and by future extensions
-	 Implementation−defined values should have a minimum value of 1000. */
+
+    /* To be extended with implementation−defined values and by future extensions
+       Implementation−defined values should have a minimum value of 1000. */
   };
 
   using __vendor_ext = void;
