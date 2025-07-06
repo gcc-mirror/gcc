@@ -1112,18 +1112,7 @@ public:
     }
 
   /* Make counter forcibly nonzero.  */
-  profile_count force_nonzero () const
-    {
-      if (!initialized_p ())
-	return *this;
-      profile_count ret = *this;
-      if (ret.m_val == 0)
-	{
-	  ret.m_val = 1;
-	  ret.m_quality = MIN (m_quality, ADJUSTED);
-	}
-      return ret;
-    }
+  profile_count force_nonzero () const;
 
   profile_count max (profile_count other) const
     {

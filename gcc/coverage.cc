@@ -238,6 +238,7 @@ read_counts_file (void)
 	  gcov_profile_info = profile_info = XCNEW (gcov_summary);
 	  profile_info->runs = gcov_read_unsigned ();
 	  profile_info->sum_max = gcov_read_unsigned ();
+	  profile_info->cutoff = 1;
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{

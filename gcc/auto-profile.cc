@@ -2522,6 +2522,7 @@ autofdo_source_profile::read ()
     afdo_count_scale
       = MAX (((gcov_type)1 << (profile_count::n_bits / 2))
 	     / afdo_profile_info->sum_max, 1);
+  afdo_profile_info->cutoff *= afdo_count_scale;
   afdo_hot_bb_threshod
     = hot_frac
       ? afdo_profile_info->sum_max * afdo_count_scale / hot_frac
@@ -2531,10 +2532,12 @@ autofdo_source_profile::read ()
     fprintf (dump_file, "Max count in profile %" PRIu64 "\n"
 			"Setting scale %" PRIu64 "\n"
 			"Scaled max count %" PRIu64 "\n"
+			"Cutoff %" PRIu64 "\n"
 			"Hot count threshold %" PRIu64 "\n\n",
 	     (int64_t)afdo_profile_info->sum_max,
 	     (int64_t)afdo_count_scale,
 	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale),
+	     (int64_t)afdo_profile_info->cutoff,
 	     (int64_t)afdo_hot_bb_threshod);
   afdo_profile_info->sum_max *= afdo_count_scale;
   return true;
@@ -3865,6 +3868,7 @@ read_autofdo_file (void)
   autofdo::afdo_profile_info = XNEW (gcov_summary);
   autofdo::afdo_profile_info->runs = 1;
   autofdo::afdo_profile_info->sum_max = 0;
+  autofdo::afdo_profile_info->cutoff = 1;
 
   /* Read the profile from the profile file.  */
   autofdo::read_profile ();

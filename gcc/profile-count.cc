@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "wide-int.h"
 #include "sreal.h"
+#include "profile.h"
 
 /* Names from profile_quality enum values.  */
 
@@ -569,4 +570,28 @@ profile_count
 profile_count::operator*= (const sreal &num)
 {
   return *this * num;
+}
+
+/* Make counter forcibly nonzero.  */
+profile_count
+profile_count::force_nonzero () const
+{
+  if (!initialized_p ())
+    return *this;
+  profile_count ret = *this;
+  /* Generally values are forced non-zero to handle inconsistent profile 
+     where count 0 needs to be scaled up to non-zero.
+
+     Use cutoff value here to avoid situation where profile has large
+     cutoff and we perform count = count * num / den where num is non-zero
+     and den is 0.   If profile was scaled by large factor, forcing value
+     to 1 would lead to large scale factor.  */
+  gcov_unsigned_t small = profile_info ? profile_info->cutoff / 2 + 1
+			  : 1;
+  if (ret.m_val < small)
+    {
+      ret.m_val = small;
+      ret.m_quality = MIN (m_quality, ADJUSTED);
+    }
+  return ret;
 }

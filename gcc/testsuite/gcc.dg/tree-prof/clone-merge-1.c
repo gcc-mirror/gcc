@@ -31,4 +31,4 @@ int main()
 }
 /* We will have profiles for test2 and test2.constprop.0 that will have to be
    merged,  */
-/* { dg-final-use-autofdo { scan-ipa-dump "Merging duplicate symbol test2" "afdo_offline"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Merging duplicate instance: test2" "afdo_offline"} } */

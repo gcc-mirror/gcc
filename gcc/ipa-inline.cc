@@ -2222,6 +2222,7 @@ inline_small_functions (void)
 
   gcc_assert (in_lto_p
 	      || !(max_count > 0)
+	      || flag_auto_profile
 	      || (profile_info && flag_branch_probabilities));
 
   while (!edge_heap.empty ())
