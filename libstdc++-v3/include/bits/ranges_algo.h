@@ -5218,6 +5218,7 @@ namespace ranges
 #endif // __glibcxx_ranges_fold
 } // namespace ranges
 
+#if __glibcxx_shift >= 201806L // C++ >= 20
   template<typename _ForwardIterator>
     constexpr _ForwardIterator
     shift_left(_ForwardIterator __first, _ForwardIterator __last,
@@ -5308,6 +5309,120 @@ namespace ranges
 	    }
 	}
     }
+#endif
+
+namespace ranges
+{
+#if __glibcxx_shift >= 202202L // C++ >= 23
+  struct __shift_left_fn
+  {
+    template<permutable _Iter, sentinel_for<_Iter> _Sent>
+      constexpr subrange<_Iter>
+      operator()(_Iter __first, _Sent __last, iter_difference_t<_Iter> __n) const
+      {
+	__glibcxx_assert(__n >= 0);
+	if (__n == 0)
+	  return {__first, ranges::next(__first, __last)};
+
+	auto __mid = ranges::next(__first, __n, __last);
+	if (__mid == __last)
+	  return {__first, __first};
+	return {__first, ranges::move(__mid, __last, __first).out};
+      }
+
+    template<forward_range _Range>
+      requires permutable<iterator_t<_Range>>
+      constexpr borrowed_subrange_t<_Range>
+      operator()(_Range&& __r, range_difference_t<_Range> __n) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), __n); }
+  };
+
+  inline constexpr __shift_left_fn shift_left{};
+
+  struct __shift_right_fn
+  {
+    template<permutable _Iter, sentinel_for<_Iter> _Sent>
+      constexpr subrange<_Iter>
+      operator()(_Iter __first, _Sent __last, iter_difference_t<_Iter> __n) const
+      {
+	__glibcxx_assert(__n >= 0);
+	if (__n == 0)
+	  return {__first, ranges::next(__first, __last)};
+
+	if constexpr (bidirectional_iterator<_Iter> && same_as<_Iter, _Sent>)
+	  {
+	    auto __mid = ranges::next(__last, -__n, __first);
+	    if (__mid == __first)
+	      return {__last, __last};
+
+	    return {ranges::move_backward(__first, __mid, __last).out, __last};
+	  }
+	else
+	  {
+	    auto __result = ranges::next(__first, __n, __last);
+	    if (__result == __last)
+	      return {__result, __result};
+
+	    auto __dest_head = __first, __dest_tail = __result;
+	    while (__dest_head != __result)
+	      {
+		if (__dest_tail == __last)
+		  {
+		    // If we get here, then we must have
+		    //     2*n >= distance(__first, __last)
+		    // i.e. we are shifting out at least half of the range.  In
+		    // this case we can safely perform the shift with a single
+		    // move.
+		    auto __lasti = ranges::move(__first, __dest_head, __result).out;
+		    // __glibcxx_assert(__lasti == __last);
+		    return {__result, __lasti};
+		  }
+		++__dest_head;
+		++__dest_tail;
+	      }
+
+	    for (;;)
+	      {
+		// At the start of each iteration of this outer loop, the range
+		// [__first, __result) contains those elements that after shifting
+		// the whole range right by __n, should end up in
+		// [__dest_head, __dest_tail) in order.
+
+		// The below inner loop swaps the elements of [__first, __result)
+		// and [__dest_head, __dest_tail), while simultaneously shifting
+		// the latter range by __n.
+		auto __cursor = __first;
+		while (__cursor != __result)
+		  {
+		    if (__dest_tail == __last)
+		      {
+			// At this point the ranges [__first, result) and
+			// [__dest_head, dest_tail) are disjoint, so we can safely
+			// move the remaining elements.
+			__dest_head = ranges::move(__cursor, __result, __dest_head).out;
+			auto __lasti = ranges::move(__first, __cursor, __dest_head).out;
+			// __glibcxx_assert(__lasti == __last);
+			return {__result, __lasti};
+		      }
+		    ranges::iter_swap(__cursor, __dest_head);
+		    ++__dest_head;
+		    ++__dest_tail;
+		    ++__cursor;
+		  }
+	      }
+	  }
+      }
+
+    template<forward_range _Range>
+      requires permutable<iterator_t<_Range>>
+      constexpr borrowed_subrange_t<_Range>
+      operator()(_Range&& __r, range_difference_t<_Range> __n) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), __n); }
+  };
+
+  inline constexpr __shift_right_fn shift_right{};
+#endif // C++23
+} // namespace ranges
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

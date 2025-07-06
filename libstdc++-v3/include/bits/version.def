@@ -1092,6 +1092,10 @@ ftms = {
 ftms = {
   name = shift;
   values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+  values = {
     v = 201806;
     cxxmin = 20;
   };

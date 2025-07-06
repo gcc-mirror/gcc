@@ -1224,7 +1224,12 @@
 #undef __glibcxx_want_constexpr_utility
 
 #if !defined(__cpp_lib_shift)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_shift 202202L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_shift)
+#   define __cpp_lib_shift 202202L
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_shift 201806L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_shift)
 #   define __cpp_lib_shift 201806L
