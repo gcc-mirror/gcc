@@ -3822,13 +3822,13 @@
 
 ;; Predicated floating-point unary arithmetic, merging with the first input.
 (define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 3)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	      (match_operand:SVE_F 2 "register_operand")]
 	     SVE_COND_FP_UNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -3870,15 +3870,15 @@
 ;; as earlyclobber helps to make the instruction more regular to the
 ;; register allocator.
 (define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	      (match_operand:SVE_F 2 "register_operand")]
 	     SVE_COND_FP_UNARY)
-	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[3])"
   {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
