@@ -98,10 +98,10 @@ struct contract_role
   contract_semantic axiom_semantic;
 };
 
-/* P2900 contract clasification */
+/* P2900+ contract clasification */
 /* Must match relevant enums in <contracts> header  */
 
-enum constract_assertion_kind : uint16_t {
+enum contract_assertion_kind : uint16_t {
   CAK_INVALID = 0 ,
   CAK_PRE = 1 ,
   CAK_POST = 2 ,
@@ -117,16 +117,18 @@ enum contract_evaluation_semantic : uint16_t {
   CES_OBSERVE = 2,
   CES_ENFORCE = 3,
   CES_QUICK = 4,
+
+  // These should start at 1000
   CES_NOEXCEPT_ENFORCE = 5,
-  CES_NOEXCEPT_OBSERVE = 6
+  CES_NOEXCEPT_OBSERVE = 6,
+  CES_FORCE_QUICK = 7,
 };
 
-enum contract_detection_mode : uint16_t {
+enum detection_mode : uint16_t {
   CDM_UNSPECIFIED = 0,
   CDM_PREDICATE_FALSE = 1,
   CDM_EVAL_EXCEPTION = 2
 };
-
 
 /* Information for configured contract semantics.  */
 

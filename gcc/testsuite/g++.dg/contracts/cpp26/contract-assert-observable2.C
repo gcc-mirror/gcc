@@ -10,4 +10,4 @@ int main(int ac, char *av[])
   return i;
 }
 
-// { dg-final { scan-tree-dump "__builtin_observable.*handle_contract_violation.*__builtin_observable" "gimple" } }
+// { dg-final { scan-tree-dump "__builtin_observable.*__tu_has_violation.*__builtin_observable" "gimple" } }

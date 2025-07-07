@@ -2074,7 +2074,7 @@ get_p9600_contract_violation_fields ()
 			 uint16_type_node,
 			 const_string_type_node,
 			 get_contracts_source_location_type(),
-			 integer_type_node
+			 nullptr_type_node
 			};
  const char *names[] = { "_M_version",
 			 "_M_assertion_kind",
@@ -2287,7 +2287,7 @@ build_contract_violation_p2900 (tree contract, bool is_const)
   uint16_t evaluation_semantic = get_evaluation_semantic (contract);
 
   /* we hardcode CDM_PREDICATE_FALSE because that's all we support for now */
-  uint16_t detection_mode = contract_detection_mode::CDM_PREDICATE_FALSE;
+  uint16_t detection_mode = CDM_PREDICATE_FALSE;
 
   /* Must match the type layout in get_pseudo_contract_violation_type.  */
   tree ctor = build_constructor_va
@@ -2298,7 +2298,7 @@ build_contract_violation_p2900 (tree contract, bool is_const)
      NULL_TREE, build_int_cst (uint16_type_node, detection_mode),
      NULL_TREE, CONTRACT_COMMENT (contract),
      NULL_TREE, build_contracts_source_location (EXPR_LOCATION (contract)),
-     NULL_TREE, build_int_cst (nullptr_type_node, 0));  // __vendor_ext
+     NULL_TREE, build_zero_cst (nullptr_type_node));  // __vendor_ext
 
   TREE_READONLY (ctor) = true;
   TREE_CONSTANT (ctor) = true;
@@ -2326,7 +2326,42 @@ build_contract_violation (tree contract, bool is_const)
   return build_contract_violation_cxx2a (contract);
 }
 
-/* Return handle_contract_violation(), declaring it if needed.  */
+/* Lookup a name in std::contracts/experimental, or inject it.  */
+static tree
+lookup_std_contracts_type (tree name_id)
+{
+  tree id_exp = NULL_TREE;
+  if (flag_contracts_nonattr)
+      id_exp = get_identifier ("contracts");
+  else
+      id_exp = get_identifier ("experimental");
+
+  tree ns_exp = lookup_qualified_name (std_node, id_exp);
+
+  tree res_type = error_mark_node;
+  if (TREE_CODE (ns_exp) == NAMESPACE_DECL)
+    res_type = lookup_qualified_name (ns_exp, name_id,
+				       LOOK_want::TYPE
+				       |LOOK_want::HIDDEN_FRIEND);
+
+  if (TREE_CODE (res_type) == TYPE_DECL)
+    res_type = TREE_TYPE (res_type);
+  else
+    {
+      push_nested_namespace (std_node);
+      push_namespace (id_exp, /*inline*/false);
+      res_type = make_class_type (RECORD_TYPE);
+      create_implicit_typedef (name_id, res_type);
+      DECL_SOURCE_LOCATION (TYPE_NAME (res_type)) = BUILTINS_LOCATION;
+      DECL_CONTEXT (TYPE_NAME (res_type)) = current_namespace;
+      pushdecl_namespace_level (TYPE_NAME (res_type), /*hidden*/true);
+      pop_namespace ();
+      pop_nested_namespace (std_node);
+    }
+  return res_type;
+}
+
+/* Return handle_contract_violation (), declaring it if needed.  */
 
 static tree
 declare_handle_contract_violation ()
@@ -2351,52 +2386,24 @@ declare_handle_contract_violation ()
 	    return f;
 	}
 
-  tree id_exp = NULL_TREE;
-
-  if (flag_contracts_nonattr)
-      id_exp = get_identifier ("contracts");
-  else
-      id_exp = get_identifier ("experimental");
-
-  tree ns_exp = lookup_qualified_name (std_node, id_exp);
-
-  tree violation = error_mark_node;
-  if (TREE_CODE (ns_exp) == NAMESPACE_DECL)
-    violation = lookup_qualified_name (ns_exp, viol_name,
-				       LOOK_want::TYPE
-				       |LOOK_want::HIDDEN_FRIEND);
-
-  if (TREE_CODE (violation) == TYPE_DECL)
-    violation = TREE_TYPE (violation);
-  else
-    {
-      push_nested_namespace (std_node);
-      push_namespace (id_exp, /*inline*/false);
-      violation = make_class_type (RECORD_TYPE);
-      create_implicit_typedef (viol_name, violation);
-      DECL_SOURCE_LOCATION (TYPE_NAME (violation)) = BUILTINS_LOCATION;
-      DECL_CONTEXT (TYPE_NAME (violation)) = current_namespace;
-      pushdecl_namespace_level (TYPE_NAME (violation), /*hidden*/true);
-      pop_namespace ();
-      pop_nested_namespace (std_node);
-    }
-
-  tree argtype = cp_build_qualified_type (violation, TYPE_QUAL_CONST);
-  argtype = cp_build_reference_type (argtype, /*rval*/false);
-  tree fntype = build_function_type_list (void_type_node, argtype, NULL_TREE);
+  tree violation = lookup_std_contracts_type (viol_name);
+  
+  tree fntype = NULL_TREE;
+  tree v_obj_ref = cp_build_qualified_type (violation, TYPE_QUAL_CONST);
+  v_obj_ref = cp_build_reference_type (v_obj_ref, /*rval*/false);
+  fntype = build_function_type_list (void_type_node, v_obj_ref, NULL_TREE);
 
   push_nested_namespace (global_namespace);
-  tree fndecl = build_cp_library_fn_ptr ("handle_contract_violation", fntype,
-				     ECF_COLD);
+  tree fndecl
+    = build_cp_library_fn_ptr ("handle_contract_violation", fntype, ECF_COLD);
   pushdecl_namespace_level (fndecl, /*hiding*/true);
   pop_nested_namespace (global_namespace);
 
-  /* Build the parameter.  */
-  tree parmdecl = cp_build_parm_decl (fndecl, NULL_TREE, argtype);
-  TREE_USED (parmdecl) = true;
-  DECL_READ_P (parmdecl) = true;
-  DECL_ARGUMENTS (fndecl) = parmdecl;
-
+  /* Build the parameter(s).  */
+  tree parms = cp_build_parm_decl (fndecl, NULL_TREE, v_obj_ref);
+  TREE_USED (parms) = true;
+  DECL_READ_P (parms) = true;
+  DECL_ARGUMENTS (fndecl) = parms;
   return fndecl;
 }
 
@@ -2468,9 +2475,64 @@ build_contract_check_cxx2a (tree contract)
   return do_poplevel (scope);
 }
 
-/* Expand a p200 CONTRACT tree.  This is called during genericization.  */
+/* Shared code between TU-local wrappers for the violation handler.  */
 
-tree
+static tree
+declare_one_violation_handler_wrapper (tree fn_name, tree fn_type,
+				       tree p1_type, tree p2_type)
+{
+  location_t loc = BUILTINS_LOCATION;
+  tree fn_decl = build_lang_decl_loc (loc, FUNCTION_DECL, fn_name, fn_type);
+  DECL_CONTEXT (fn_decl) = FROB_CONTEXT (global_namespace);
+  DECL_ARTIFICIAL (fn_decl) = true;
+  DECL_INITIAL (fn_decl) = error_mark_node;
+  /* Let the start function code fill in the result decl.  */
+  DECL_RESULT (fn_decl) = NULL_TREE;
+  /* Two args violation ref, dynamic info.  */
+  tree parms = cp_build_parm_decl (fn_decl, NULL_TREE, p1_type);
+  TREE_USED (parms) = true;
+  DECL_READ_P (parms) = true;
+  tree p2 = cp_build_parm_decl (fn_decl, NULL_TREE, p2_type);
+  TREE_USED (p2) = true;
+  DECL_READ_P (p2) = true;
+  DECL_CHAIN (parms) = p2;
+  DECL_ARGUMENTS (fn_decl) = parms;
+  /* Make this function internal.  */
+  TREE_PUBLIC (fn_decl) = false;
+  DECL_EXTERNAL (fn_decl) = false;
+  DECL_WEAK (fn_decl) = false;
+  return fn_decl;
+}
+
+static GTY(()) tree __tu_has_violation = NULL_TREE;
+static GTY(()) tree __tu_has_violation_exception = NULL_TREE;
+
+static void
+declare_violation_handler_wrappers ()
+{
+  if (__tu_has_violation && __tu_has_violation_exception)
+    return;
+
+  iloc_sentinel ils (input_location);
+  input_location = BUILTINS_LOCATION;
+  tree v_obj_type = get_pseudo_contract_violation_type ();
+  v_obj_type = cp_build_qualified_type (v_obj_type, TYPE_QUAL_CONST);
+  v_obj_type = cp_build_reference_type (v_obj_type, /*rval*/false);
+  tree fn_type = build_function_type_list (void_type_node, v_obj_type,
+					   uint16_type_node, NULL_TREE);
+  tree fn_name = get_identifier ("__tu_has_violation_exception");
+  __tu_has_violation_exception
+    = declare_one_violation_handler_wrapper (fn_name, fn_type, v_obj_type,
+					     uint16_type_node);
+  fn_name = get_identifier ("__tu_has_violation");
+  __tu_has_violation
+    = declare_one_violation_handler_wrapper (fn_name, fn_type, v_obj_type,
+					     uint16_type_node);
+}
+
+/* Expand a p2900 CONTRACT tree.  This is called during genericization.  */
+
+static tree
 build_contract_check_p2900 (tree contract)
 {
   uint16_t semantic = get_evaluation_semantic (contract);
@@ -2481,17 +2543,16 @@ build_contract_check_p2900 (tree contract)
   if (semantic == CES_IGNORE)
     return void_node;
 
+  location_t loc = EXPR_LOCATION (contract);
+
   remap_dummy_this (current_function_decl, &CONTRACT_CONDITION (contract));
   tree condition = CONTRACT_CONDITION (contract);
   if (condition == error_mark_node)
     return NULL_TREE;
 
-  location_t loc = EXPR_LOCATION (contract);
-
   /* When we are building a post condition in-line, we need to refer to the
      actual function return, not the user's placeholder variable.  */
-  if (!flag_contract_checks_outlined
-      && POSTCONDITION_P (contract))
+  if (!flag_contract_checks_outlined && POSTCONDITION_P (contract))
     {
       remap_retval (current_function_decl, contract);
       condition = CONTRACT_CONDITION (contract);
@@ -2499,167 +2560,63 @@ build_contract_check_p2900 (tree contract)
 	return NULL_TREE;
     }
 
-  /* Only wrap the contract check in a try-catch if it might throw.  */
-  if (!flag_exceptions || expr_noexcept_p (condition, tf_none))
-    {
-      tree if_stmt = begin_if_stmt ();
-      tree cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, condition, NULL_TREE,
-				    tf_warning_or_error);
-      finish_if_stmt_cond (cond, if_stmt);
-      if (semantic == CES_ENFORCE || semantic == CES_OBSERVE
-	  || semantic == CES_NOEXCEPT_ENFORCE
-	  || semantic == CES_NOEXCEPT_OBSERVE)
-	{
-	  tree violation = build_contract_violation (contract,
-						     /*is_const*/true);
-	  bool noexcept_wrap = (semantic == CES_NOEXCEPT_ENFORCE)
-				|| (semantic == CES_NOEXCEPT_OBSERVE);
-	  build_contract_handler_call (build_address (violation), noexcept_wrap);
-	}
+  bool check_might_throw = flag_exceptions
+			   && !expr_noexcept_p (condition, tf_none);
 
-      if (semantic == CES_QUICK)
-	{
-	  tree fn = builtin_decl_explicit (BUILT_IN_ABORT);
-	  releasing_vec vec;
-	  finish_expr_stmt (finish_call_expr (fn, &vec, false, false,
-					      tf_warning_or_error));
-	}
-      else if (semantic == CES_ENFORCE || semantic == CES_NOEXCEPT_ENFORCE)
-	/* FIXME: we should not call this when exceptions are disabled.  */
-	finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
-      finish_then_clause (if_stmt);
-      /* Finish the if stmt, but do not try to add it.  */
-      tree scope = IF_SCOPE (if_stmt);
-      IF_SCOPE (if_stmt) = NULL;
-      return do_poplevel (scope);
-  }
-
-  /* Build a statement expression to hold a contract check wrapped in a
-     try-catch expr.  */
+  /* Build a read-only violation object, with the contract settings.  */
+  tree violation = build_contract_violation (contract, /*is_const*/true);
+  /* Build a statement expression to hold a contract check, with the check
+     potentially wrapped in a try-catch expr.  */
   tree cc_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   BIND_EXPR_BODY (cc_bind) = push_stmt_list ();
-  /* An anonymous var.  */
-  tree cond_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
-  /* compiler-generated.  */
-  DECL_ARTIFICIAL (cond_) = true;
-  DECL_IGNORED_P (cond_) = true;
-  DECL_CONTEXT (cond_) = current_function_decl;
-  layout_decl (cond_, 0);
-  add_decl_expr (cond_);
 
-  /* We don't need to track whether we had an exception if there will be no
-     violation object or handler.  */
-  tree excp_ = NULL_TREE;
-  if (semantic == CES_ENFORCE || semantic == CES_OBSERVE
-      || semantic == CES_NOEXCEPT_ENFORCE
-      || semantic == CES_NOEXCEPT_OBSERVE)
-    {
-      excp_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
-      /* compiler-generated.  */
-      DECL_ARTIFICIAL (excp_) = true;
-      DECL_IGNORED_P (excp_) = true;
-      DECL_INITIAL (excp_) = boolean_false_node;
-      DECL_CONTEXT (excp_) = current_function_decl;
-      layout_decl (excp_, 0);
-      add_decl_expr (excp_);
-      TREE_CHAIN (cond_) = excp_;
-    }
-  BIND_EXPR_VARS (cc_bind) = cond_;
-
-  tree violation = NULL_TREE;
-  if (semantic == CES_ENFORCE || semantic == CES_OBSERVE
-      || semantic == CES_NOEXCEPT_ENFORCE
-      || semantic == CES_NOEXCEPT_OBSERVE)
-    violation = build_contract_violation (contract, /*is_const*/false);
-
-  /* Wrap the contract check in a try-catch.  */
-  tree check_try = begin_try_block ();
-  tree check_try_stmt = begin_compound_stmt (BCS_TRY_BLOCK);
-  finish_expr_stmt (cp_build_init_expr (cond_, condition));
-  finish_compound_stmt (check_try_stmt);
-  finish_try_block (check_try);
-
-  tree handler = begin_handler ();
-  finish_handler_parms (NULL_TREE, handler); /* catch (...) */
-  if (semantic == CES_ENFORCE || semantic == CES_OBSERVE
-      || semantic == CES_NOEXCEPT_ENFORCE
-      || semantic == CES_NOEXCEPT_OBSERVE)
-    {
-      bool noexcept_wrap = (semantic == CES_NOEXCEPT_ENFORCE)
-	  || (semantic == CES_NOEXCEPT_OBSERVE);
-#if 1
-      /* Update the violation object type.  */
-      tree v_type = get_pseudo_contract_violation_type ();
-      tree memb = lookup_member (v_type, get_identifier ("_M_detection_mode"),
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-      tree r  = build_class_member_access_expr (violation, memb, NULL_TREE,
-						false, tf_warning_or_error);
-      r = cp_build_init_expr (r,
-			      build_int_cst (uint16_type_node,
-					     CDM_EVAL_EXCEPTION));
-      finish_expr_stmt (r);
-      build_contract_handler_call (build_address (violation), noexcept_wrap);
-#else
-      uint16_t check_excp = old_detection_mode::CDM_EVAL_EXCEPTION;
-      tree dyn_type = get_dynamic_violation_data_type ();
-      tree f1 = TYPE_FIELDS (dyn_type);
-      tree f2 = DECL_CHAIN (f1);
-      tree ctor = build_constructor_va
-	(dyn_type, 2,
-	 f1, build_int_cst (uint16_type_node, semantic),
-	 f2, build_int_cst (uint16_type_node, check_excp));
-	TREE_READONLY (ctor) = true;
-	TREE_CONSTANT (ctor) = true;
-      tree dynamic_info = build_decl (loc, VAR_DECL, NULL_TREE, dyn_type);
-      DECL_SOURCE_LOCATION (dynamic_info) = loc;
-      DECL_CONTEXT (dynamic_info) = current_function_decl;
-      DECL_ARTIFICIAL (dynamic_info) = true;
-      DECL_INITIAL (dynamic_info) = ctor;
-      layout_decl (dynamic_info, 0);
-      add_decl_expr (dynamic_info);
-      build_contract_handler_call (build_address (violation), dynamic_info,
-				   noexcept_wrap);
-#endif
-      /* Note we had an exception.  */
-      finish_expr_stmt (cp_build_init_expr (excp_, boolean_true_node));
-    }
-  else if (semantic == CES_QUICK)
-   finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
-  /* Nevertheless, the contract check failed.  */
-  finish_expr_stmt (cp_build_init_expr (cond_, boolean_false_node));
-  finish_handler (handler);
-  finish_handler_sequence (check_try);
-
-  tree if_not_cond = begin_if_stmt ();
-  tree cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, cond_, NULL_TREE,
+  tree cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, condition, NULL_TREE,
 				tf_warning_or_error);
-  finish_if_stmt_cond (cond, if_not_cond);
-
-  if (semantic == CES_ENFORCE || semantic == CES_OBSERVE
-      || semantic == CES_NOEXCEPT_ENFORCE
-      || semantic == CES_NOEXCEPT_OBSERVE)
+  /* So now do we need a try-catch?  */
+  if (check_might_throw)
     {
-      tree if_not_excp = begin_if_stmt ();
-      cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, excp_, NULL_TREE,
-			       tf_warning_or_error);
-      finish_if_stmt_cond (cond, if_not_excp);
-      build_contract_handler_call (build_address (violation));
-      finish_then_clause (if_not_excp);
-      finish_if_stmt (if_not_excp);
+      /* This will hold the computed condition.  */
+      tree check_failed = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
+      DECL_ARTIFICIAL (check_failed) = true;
+      DECL_IGNORED_P (check_failed) = true;
+      DECL_CONTEXT (check_failed) = current_function_decl;
+      layout_decl (check_failed, 0);
+      add_decl_expr (check_failed);
+      /* This will let us check if we had an exception.  */
+      tree no_excp_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
+      DECL_ARTIFICIAL (no_excp_) = true;
+      DECL_IGNORED_P (no_excp_) = true;
+      DECL_CONTEXT (no_excp_) = current_function_decl;
+      DECL_INITIAL (no_excp_) = boolean_true_node;
+      layout_decl (no_excp_, 0);
+      add_decl_expr (no_excp_);
+      DECL_CHAIN (check_failed) = no_excp_;
+      BIND_EXPR_VARS (cc_bind) = check_failed;
+
+      tree check_try = begin_try_block ();
+      finish_expr_stmt (cp_build_init_expr (check_failed, cond));
+      finish_try_block (check_try);
+      tree handler = begin_handler ();
+      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
+      tree e = cp_build_modify_expr (loc, no_excp_, NOP_EXPR, boolean_false_node,
+				     tf_warning_or_error);
+      finish_expr_stmt (e);
+      finish_expr_stmt (build_call_n (__tu_has_violation_exception, 2,
+				      build_address (violation),
+				      build_int_cst (uint16_type_node, semantic)));
+      finish_handler (handler);
+      finish_handler_sequence (check_try);
+      cond = build2 (TRUTH_ANDIF_EXPR, boolean_type_node, check_failed, no_excp_);
     }
 
-  if (semantic == CES_QUICK)
-    {
-      tree fn = builtin_decl_explicit (BUILT_IN_ABORT);
-      releasing_vec vec;
-      finish_expr_stmt (finish_call_expr (fn, &vec, false, false,
-					  tf_warning_or_error));
-    }
-  else if (semantic == CES_ENFORCE || semantic == CES_NOEXCEPT_ENFORCE)
-    /* FIXME: we should not call this when exceptions are disabled.  */
-    finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
-  finish_then_clause (if_not_cond);
-  finish_if_stmt (if_not_cond);
+  tree do_check = begin_if_stmt ();
+  finish_if_stmt_cond (cond, do_check);
+  finish_expr_stmt (build_call_n (__tu_has_violation, 2,
+				  build_address (violation),
+				  build_int_cst (uint16_type_node, semantic)));
+  finish_then_clause (do_check);
+  finish_if_stmt (do_check);
+
   BIND_EXPR_BODY (cc_bind) = pop_stmt_list (BIND_EXPR_BODY (cc_bind));
   return cc_bind;
 }
@@ -2672,7 +2629,10 @@ tree
 build_contract_check (tree contract)
 {
   if (flag_contracts_nonattr)
-    return build_contract_check_p2900 (contract);
+    {
+      declare_violation_handler_wrappers ();
+      return build_contract_check_p2900 (contract);
+    }
   return build_contract_check_cxx2a (contract);
 }
 
@@ -2727,7 +2687,7 @@ emit_assertion (tree attr)
   contract_semantic semantic
     = get_contract_semantic (CONTRACT_STATEMENT (attr));
 
-  if (semantic == CCS_OBSERVE)
+  if (semantic == CCS_OBSERVE ||semantic == CCS_NOEXCEPT_OBSERVE)
     {
       /* Insert a std::observable () epoch marker.  */
       emit_builtin_observable();
@@ -3714,6 +3674,98 @@ emit_contract_wrapper_func (bool done)
     decl_wrapper_fn->empty ();
   gcc_checking_assert (!done || !more);
   return more;
+}
+
+void
+maybe_emit_violation_handler_wrappers ()
+{
+  if (!__tu_has_violation && !__tu_has_violation_exception)
+    return;
+
+  /* __tu_has_violation */
+  start_preparsed_function (__tu_has_violation, NULL_TREE,
+			    SF_DEFAULT | SF_PRE_PARSED);
+  tree body = begin_function_body ();
+  tree compound_stmt = begin_compound_stmt (BCS_FN_BODY);
+  tree v = DECL_ARGUMENTS (__tu_has_violation);
+  tree semantic = DECL_CHAIN (v);
+
+  /* We might be done.  */
+  tree cond = build2 (EQ_EXPR, uint16_type_node, semantic,
+		      build_int_cst (uint16_type_node, (uint16_t)CES_QUICK));
+  tree if_quick = begin_if_stmt ();
+  finish_if_stmt_cond (cond, if_quick);
+  finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
+  finish_then_clause (if_quick);
+  finish_if_stmt (if_quick);
+
+  /* We are going to call the handler.  */
+  cond = build2 (EQ_EXPR, uint16_type_node, semantic,
+		 build_int_cst (uint16_type_node, (uint16_t)CES_NOEXCEPT_ENFORCE));
+  cond = build2 (TRUTH_ORIF_EXPR, boolean_type_node, cond,
+		 build2 (EQ_EXPR, uint16_type_node, semantic,
+		 build_int_cst (uint16_type_node, (uint16_t)CES_NOEXCEPT_OBSERVE)));
+  tree if_noexcept = begin_if_stmt ();
+  finish_if_stmt_cond (cond, if_noexcept);
+  build_contract_handler_call (v, true);
+  finish_then_clause (if_noexcept);
+  begin_else_clause (if_noexcept);
+  build_contract_handler_call (v, false);
+  finish_else_clause (if_noexcept);
+  finish_if_stmt (if_noexcept);
+
+  tree if_observe = begin_if_stmt ();
+  /* if (observe) return; */
+  cond = build2 (EQ_EXPR, uint16_type_node, semantic,
+		 build_int_cst (uint16_type_node, (uint16_t)CES_OBSERVE));
+  cond = build2 (TRUTH_ORIF_EXPR, boolean_type_node, cond,
+		 build2 (EQ_EXPR, uint16_type_node, semantic,
+		 build_int_cst (uint16_type_node, (uint16_t)CES_NOEXCEPT_OBSERVE)));
+  finish_if_stmt_cond (cond, if_observe);
+  finish_return_stmt (NULL_TREE);
+  finish_then_clause (if_observe);
+  finish_if_stmt (if_observe);
+
+  /* else terminate.  */
+  finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
+  finish_compound_stmt (compound_stmt);
+  finish_function_body (body);
+  __tu_has_violation = finish_function (false);
+  expand_or_defer_fn (__tu_has_violation);
+
+  /* __tu_has_violation_exception */
+  start_preparsed_function (__tu_has_violation_exception, NULL_TREE,
+			    SF_DEFAULT | SF_PRE_PARSED);
+  body = begin_function_body ();
+  compound_stmt = begin_compound_stmt (BCS_FN_BODY);
+  v = DECL_ARGUMENTS (__tu_has_violation_exception);
+  semantic = DECL_CHAIN (v);
+  location_t loc = DECL_SOURCE_LOCATION (__tu_has_violation_exception);
+  tree a_type = strip_top_quals (non_reference (TREE_TYPE (v)));
+  tree v2 = build_decl (loc, VAR_DECL, NULL_TREE, a_type);
+  DECL_SOURCE_LOCATION (v2) = loc;
+  DECL_CONTEXT (v2) = current_function_decl;
+  DECL_ARTIFICIAL (v2) = true;
+  layout_decl (v2, 0);
+  v2 = pushdecl (v2);
+  add_decl_expr (v2);
+  tree r = cp_build_init_expr (v2, convert_from_reference (v));
+  finish_expr_stmt (r);
+  tree memb = lookup_member (a_type, get_identifier ("_M_detection_mode"),
+		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+  r = build_class_member_access_expr (v2, memb, NULL_TREE, false,
+				      tf_warning_or_error);
+  r = cp_build_modify_expr
+   (loc, r, NOP_EXPR,
+    build_int_cst (uint16_type_node, (uint16_t)CDM_EVAL_EXCEPTION),
+    tf_warning_or_error);
+  finish_expr_stmt (r);
+  finish_expr_stmt (build_call_n (__tu_has_violation, 2, build_address (v2), semantic));
+  finish_return_stmt (NULL_TREE);
+  finish_compound_stmt (compound_stmt);
+  finish_function_body (body);
+  __tu_has_violation_exception = finish_function (false);
+  expand_or_defer_fn (__tu_has_violation_exception);
 }
 
 #include "gt-cp-contracts.h"
