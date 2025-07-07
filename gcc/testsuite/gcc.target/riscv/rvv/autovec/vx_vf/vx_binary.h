@@ -311,6 +311,23 @@ DEF_SAT_S_ADD(int16_t, uint16_t, INT16_MIN, INT16_MAX)
 DEF_SAT_S_ADD(int32_t, uint32_t, INT32_MIN, INT32_MAX)
 DEF_SAT_S_ADD(int64_t, uint64_t, INT64_MIN, INT64_MAX)
 
+#define DEF_SAT_S_SUB(T, UT, MIN, MAX) \
+T                                      \
+test_##T##_sat_sub (T x, T y)          \
+{                                      \
+  T minus = (UT)x - (UT)y;             \
+  return (x ^ y) >= 0                  \
+    ? minus                            \
+    : (minus ^ x) >= 0                 \
+      ? minus                          \
+      : x < 0 ? MIN : MAX;             \
+}
+
+DEF_SAT_S_SUB(int8_t, uint8_t, INT8_MIN, INT8_MAX)
+DEF_SAT_S_SUB(int16_t, uint16_t, INT16_MIN, INT16_MAX)
+DEF_SAT_S_SUB(int32_t, uint32_t, INT32_MIN, INT32_MAX)
+DEF_SAT_S_SUB(int64_t, uint64_t, INT64_MIN, INT64_MAX)
+
 #define SAT_U_ADD_FUNC(T) test_##T##_sat_add
 #define SAT_U_ADD_FUNC_WRAP(T) SAT_U_ADD_FUNC(T)
 
@@ -319,6 +336,9 @@ DEF_SAT_S_ADD(int64_t, uint64_t, INT64_MIN, INT64_MAX)
 
 #define SAT_S_ADD_FUNC(T) test_##T##_sat_add
 #define SAT_S_ADD_FUNC_WRAP(T) SAT_S_ADD_FUNC(T)
+
+#define SAT_S_SUB_FUNC(T) test_##T##_sat_sub
+#define SAT_S_SUB_FUNC_WRAP(T) SAT_S_SUB_FUNC(T)
 
 #define TEST_BINARY_VX_SIGNED_0(T)                         \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                     \
@@ -335,6 +355,7 @@ DEF_SAT_S_ADD(int64_t, uint64_t, INT64_MIN, INT64_MAX)
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)    \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)    \
   DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_ADD_FUNC(T), sat_add) \
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_SUB_FUNC(T), sat_sub) \
 
 #define TEST_BINARY_VX_UNSIGNED_0(T)                       \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                     \
