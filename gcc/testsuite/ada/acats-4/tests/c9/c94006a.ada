@@ -28,6 +28,7 @@
 -- TBN  9/17/86
 -- PWN 01/31/95  REMOVED PRAGMA PRIORITY FOR ADA 9X.
 
+with Impdef;
 WITH REPORT; USE REPORT;
 WITH SYSTEM; USE SYSTEM;
 PROCEDURE C94006A IS
@@ -41,7 +42,7 @@ PROCEDURE C94006A IS
           SELECT
                ACCEPT E;
           OR
-               DELAY 30.0;
+               DELAY 30.0 * Impdef.One_Long_Second;
           END SELECT;
      END TT;
 

@@ -211,7 +211,7 @@ BEGIN
 
      BEGIN -- (E)
           WHILE NOT(OUT_TSK'TERMINATED) AND DELAY_COUNT < 60 LOOP
-               DELAY 1.0;
+               DELAY 1.0 * Impdef.One_Long_Second;
                DELAY_COUNT := DELAY_COUNT + 1;
           END LOOP;
           IF DELAY_COUNT = 60 THEN
@@ -254,7 +254,7 @@ BEGIN
 
      BEGIN
           WHILE NOT(OUT_TSK'TERMINATED) AND DELAY_COUNT < 60 LOOP
-               DELAY 1.0;
+               DELAY 1.0 * Impdef.One_Long_Second;
                DELAY_COUNT := DELAY_COUNT + 1;
           END LOOP;
           IF DELAY_COUNT = 60 THEN

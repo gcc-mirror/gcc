@@ -33,6 +33,7 @@
 -- JBG 8/29/86 ELIMINATED SHARED VARIABLES; ADDED GENERIC UNIT
 -- PWN 11/30/94 REMOVED PRAGMA PRIORITY INSTANCES FOR ADA 9X.
 
+with Impdef;
 WITH REPORT; USE REPORT;
 WITH SYSTEM; USE SYSTEM;
 PROCEDURE C94008C IS
@@ -198,10 +199,10 @@ BEGIN -- C94008C
                     OR WHEN ENTER_TERMINATE => TERMINATE;
                     END SELECT;
 
-                    DELAY 10.0;
+                    DELAY 10.0 * Impdef.One_Second;
 
                     IF TERMINATE_COUNT.GET /= 1 THEN
-                         DELAY 20.0;
+                         DELAY 20.0 * Impdef.One_Long_Second;
                     END IF;
 
                     IF TERMINATE_COUNT.GET /= 1 THEN
@@ -239,10 +240,10 @@ BEGIN -- C94008C
 
      BEGIN
 
-          DELAY 10.0; -- WAIT FOR T1, T2, AND T3 TO GET TO SELECT STMTS.
+          DELAY 10.0 * Impdef.One_Second; -- WAIT FOR T1, T2, AND T3 TO GET TO SELECT STMTS.
 
            IF TERMINATE_COUNT.GET /= 3 THEN
-                DELAY 20.0;
+                DELAY 20.0 * Impdef.One_Long_Second;
            END IF;
 
            IF TERMINATE_COUNT.GET /= 3 THEN

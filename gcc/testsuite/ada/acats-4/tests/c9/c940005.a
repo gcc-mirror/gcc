@@ -85,7 +85,7 @@ begin
       -- In reality one would expect a time of 5 to 10 seconds.  In
       -- the interests of speeding up the test suite a shorter time
       -- is used
-      Pulse_Time_Delta : constant duration := ImpDef.Switch_To_New_Task;
+      Pulse_Time_Delta : constant duration := ImpDef.Long_Switch_To_New_Task;
 
       -- control over stopping tasks
       protected Control is

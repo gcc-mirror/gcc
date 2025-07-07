@@ -278,14 +278,14 @@ begin
       -- Wait until the message is queued on the entry before starting
       -- the Credit_Task
       while not Hold.TC_Message_is_Queued loop
-         delay ImpDef.Minimum_Task_Switch;   
+         delay ImpDef.Long_Minimum_Task_Switch;   
       end loop;
       --
       Credit_Task.TC_Start;
 
       -- Ensure the first part of the test is complete before continuing
       while not (Credit_Message'terminated and Credit_Task'terminated) loop
-         delay ImpDef.Minimum_Task_Switch;   
+         delay ImpDef.Long_Minimum_Task_Switch;   
       end loop;
 
       --======================================================
@@ -298,12 +298,12 @@ begin
       -- for it to reach the accept statement and call Hold.Set_DB_Overload
       -- before starting Debit_Message
       --
-      delay ImpDef.Switch_To_New_Task;
+      delay ImpDef.Long_Switch_To_New_Task;
 
       Debit_Message.TC_Start;
 
       while not Debit_Task'terminated loop
-         delay ImpDef.Minimum_Task_Switch;   
+         delay ImpDef.Long_Minimum_Task_Switch;   
       end loop;    
   
       Hold.Clear_DB_Overload;  -- Allow completion 
