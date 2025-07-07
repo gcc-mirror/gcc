@@ -2888,11 +2888,9 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
   profile_count::adjust_for_ipa_scaling (&num, &den);
 
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
-    ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
-				ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
+    ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (num, den);
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
-    EXIT_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
-				ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
+    EXIT_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (num, den);
   if (src_cfun->eh)
     init_eh_for_function ();
 
