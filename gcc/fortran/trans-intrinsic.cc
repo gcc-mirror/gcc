@@ -13101,6 +13101,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
     }
   gfc_conv_expr_descriptor (&to_se, to_expr);
   gfc_conv_expr_descriptor (&from_se, from_expr);
+  gfc_add_block_to_block (&block, &to_se.pre);
+  gfc_add_block_to_block (&block, &from_se.pre);
 
   /* For coarrays, call SYNC ALL if TO is already deallocated as MOVE_ALLOC
      is an image control "statement", cf. IR F08/0040 in 12-006A.  */
@@ -13173,6 +13175,9 @@ conv_intrinsic_move_alloc (gfc_code *code)
     }
   if (fin_label)
     gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, fin_label));
+
+  gfc_add_block_to_block (&block, &to_se.post);
+  gfc_add_block_to_block (&block, &from_se.post);
 
   return gfc_finish_block (&block);
 }
