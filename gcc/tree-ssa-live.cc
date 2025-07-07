@@ -702,7 +702,10 @@ dump_scope_block (FILE *file, int indent, tree scope, dump_flags_t flags)
   if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (scope)) != UNKNOWN_LOCATION)
     {
       expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));
-      fprintf (file, " %s:%i", s.file, s.line);
+      fprintf (file, " %s:%i:%i", s.file, s.line, s.column);
+      if (has_discriminator (BLOCK_SOURCE_LOCATION (scope)))
+	fprintf (file, " discrim %i",
+		 get_discriminator_from_loc (BLOCK_SOURCE_LOCATION (scope)));
     }
   if (BLOCK_ABSTRACT_ORIGIN (scope))
     {
