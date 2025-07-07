@@ -494,6 +494,10 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
 static tree
 fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 {
+  /* Short cut the case where both rhs and lhs are the same. */
+  if (operand_equal_p (rhs, lhs))
+    return rhs;
+
   /* If COND is comparison r != 0 and r has boolean type, convert COND
      to SSA_NAME to accept by vect bool pattern.  */
   if (TREE_CODE (cond) == NE_EXPR)
