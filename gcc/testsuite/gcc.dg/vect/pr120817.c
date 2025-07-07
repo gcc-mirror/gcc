@@ -1,5 +1,6 @@
 /* { dg-additional-options "-O1" } */
-/* { dg-additional-options "-mcpu=neoverse-n2" { target aarch64*-*-* } } */
+/* { dg-require-effective-target aarch64_sve_hw { target aarch64*-*-* } } */
+/* { dg-additional-options "-march=armv8-a+sve -mtune=neoverse-n2" { target aarch64*-*-* } } */
 
 #include "tree-vect.h"
 
