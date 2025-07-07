@@ -43,4 +43,13 @@
 #endif
 
 #include <bits/c++config.h>
-#include <assert.h>
+#if defined NDEBUG || ! defined ASSERT_USES_CONTRACTS
+#include_next <assert.h>
+#else // ASSERT_USES_CONTRACTS
+#undef assert
+#  define assert(...)                                                   \
+     (void)((__VA_ARGS__)                                               \
+         ? (void)(true ? true : bool(__VA_ARGS__))                      \
+         : std::contracts::__handle_assert_contract_violation (#__VA_ARGS__))
+
+#endif

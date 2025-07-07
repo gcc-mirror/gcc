@@ -71,6 +71,9 @@ namespace contracts
       const char*,
       const std::source_location &__location = std::source_location::current()) noexcept;
 
+  [[noreturn]] void __handle_assert_contract_violation(
+      const char*,
+      const std::source_location &__location = std::source_location::current()) noexcept;
 
   // From P2900R14 + D3290R3
 
@@ -121,13 +124,19 @@ namespace contracts
     __vendor_ext* _M_ext;
 
     contract_violation(evaluation_semantic __semantic,
+		       assertion_kind __kind,
 		       const std::source_location &__location,
-		       const char* __comment)
-      : _M_version(0), _M_assertion_kind(assertion_kind::manual),
-        _M_evaluation_semantic(__semantic),
-        _M_detection_mode(detection_mode::unspecified),
-        _M_comment(__comment), _M_source_location(__location),
-        _M_ext(nullptr) { }
+		       const char* __comment):
+      _M_version(0),
+      _M_assertion_kind(__kind),
+	  _M_evaluation_semantic(__semantic),
+	  _M_detection_mode(detection_mode::unspecified),
+	  _M_comment(__comment),
+      _M_source_location(__location),
+	  _M_ext(nullptr)
+    {
+
+    }
 
     friend void handle_enforced_contract_violation(
 	const char*,
@@ -148,6 +157,10 @@ namespace contracts
 	const std::source_location &) noexcept;
 
     friend void handle_quick_enforced_contract_violation(
+	const char*,
+	const std::source_location &) noexcept;
+
+    friend void __handle_assert_contract_violation(
 	const char*,
 	const std::source_location &) noexcept;
 
