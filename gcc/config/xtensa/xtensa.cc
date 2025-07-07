@@ -423,12 +423,13 @@ xtensa_uimm8x4 (HOST_WIDE_INT v)
 }
 
 
-static bool
-xtensa_b4const (HOST_WIDE_INT v)
+bool
+xtensa_b4const_or_zero (HOST_WIDE_INT v)
 {
   switch (v)
     {
     case -1:
+    case 0:
     case 1:
     case 2:
     case 3:
@@ -447,15 +448,6 @@ xtensa_b4const (HOST_WIDE_INT v)
       return true;
     }
   return false;
-}
-
-
-bool
-xtensa_b4const_or_zero (HOST_WIDE_INT v)
-{
-  if (v == 0)
-    return true;
-  return xtensa_b4const (v);
 }
 
 
@@ -4512,7 +4504,8 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 	case COMPARE:
-	  if ((INTVAL (x) == 0) || xtensa_b4const (INTVAL (x)))
+	  if (xtensa_b4const_or_zero (INTVAL (x))
+	      || xtensa_b4constu (INTVAL (x)))
 	    {
 	      *total = 0;
 	      return true;
