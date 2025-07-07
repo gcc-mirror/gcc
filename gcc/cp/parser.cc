@@ -16919,6 +16919,15 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       /* Ensure DECL_VALUE_EXPR is created for all the decls but
 	 the underlying DECL.  */
       cp_finish_decomp (decl, &decomp);
+      if (decl_spec_seq_has_spec_p (decl_specifiers, ds_thread))
+	pedwarn (decl_specifiers->locations[ds_thread],
+		 0, "for-range-declaration cannot be %qs",
+		 decl_specifiers->gnu_thread_keyword_p
+		 ? "__thread" : "thread_local");
+      else if (decl_specifiers->storage_class == sc_static)
+	pedwarn (decl_specifiers->locations[ds_storage_class],
+		 0, "for-range-declaration cannot be %qs",
+		 "static");
     }
 
   if (pushed_scope)
@@ -24162,7 +24171,26 @@ cp_parser_init_declarator (cp_parser* parser,
 	  && token->type != CPP_SEMICOLON)
 	{
 	  if (maybe_range_for_decl && *maybe_range_for_decl != error_mark_node)
-	    range_for_decl_p = true;
+	    {
+	      range_for_decl_p = true;
+	      if (decl_spec_seq_has_spec_p (decl_specifiers, ds_thread))
+		pedwarn (decl_specifiers->locations[ds_thread],
+			 0, "for-range-declaration cannot be %qs",
+			 decl_specifiers->gnu_thread_keyword_p
+			 ? "__thread" : "thread_local");
+	      else if (decl_specifiers->storage_class == sc_static)
+		pedwarn (decl_specifiers->locations[ds_storage_class],
+			 0, "for-range-declaration cannot be %qs",
+			 "static");
+	      else if (decl_specifiers->storage_class == sc_extern)
+		pedwarn (decl_specifiers->locations[ds_storage_class],
+			 0, "for-range-declaration cannot be %qs",
+			 "extern");
+	      else if (decl_specifiers->storage_class == sc_register)
+		pedwarn (decl_specifiers->locations[ds_storage_class],
+			 0, "for-range-declaration cannot be %qs",
+			 "register");
+	    }
 	  else
 	    {
 	      if (!maybe_range_for_decl)
