@@ -39,7 +39,7 @@ enum class ParseLoopLabelError
   NOT_LOOP_LABEL,
   MISSING_COLON,
 };
-enum ParseSelfError
+enum class ParseSelfError
 {
   SELF_PTR,
   PARSING,

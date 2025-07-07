@@ -5604,7 +5604,8 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   // param
   auto initial_param = parse_self_param ();
 
-  if (!initial_param.has_value () && initial_param.error () != NOT_SELF)
+  if (!initial_param.has_value ()
+      && initial_param.error () != ParseSelfError::NOT_SELF)
     return nullptr;
 
   /* FIXME: ensure that self param doesn't accidently consume tokens for a
@@ -5803,7 +5804,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   // param
   auto initial_param = parse_self_param ();
 
-  if (!initial_param.has_value () && initial_param.error () != NOT_SELF)
+  if (!initial_param.has_value ()
+      && initial_param.error () != ParseSelfError::NOT_SELF)
     return nullptr;
 
   // FIXME: ensure that self param doesn't accidently consume tokens for a
