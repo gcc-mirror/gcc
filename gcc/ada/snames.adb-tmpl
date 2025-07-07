@@ -281,6 +281,8 @@ package body Snames is
             return Pragma_Storage_Size;
          when Name_Storage_Unit                     =>
             return Pragma_Storage_Unit;
+         when Name_Unsigned_Base_Range              =>
+            return Pragma_Unsigned_Base_Range;
          when First_Pragma_Name .. Last_Pragma_Name =>
             return Pragma_Id'Val (N - First_Pragma_Name);
          when others                                =>
@@ -508,7 +510,8 @@ package body Snames is
         or else N = Name_Priority
         or else N = Name_Secondary_Stack_Size
         or else N = Name_Storage_Size
-        or else N = Name_Storage_Unit;
+        or else N = Name_Storage_Unit
+        or else N = Name_Unsigned_Base_Range;
    end Is_Pragma_Name;
 
    ---------------------------------

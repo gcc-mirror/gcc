@@ -8883,6 +8883,7 @@ package body Exp_Attr is
          | Attribute_Type_Key
          | Attribute_Unconstrained_Array
          | Attribute_Universal_Literal_String
+         | Attribute_Unsigned_Base_Range
          | Attribute_Wchar_T_Size
          | Attribute_Word_Size
       =>

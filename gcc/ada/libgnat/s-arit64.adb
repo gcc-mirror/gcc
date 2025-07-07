@@ -34,7 +34,6 @@ with System.Arith_Double;
 package body System.Arith_64
   with SPARK_Mode
 is
-   subtype Uns64 is Interfaces.Unsigned_64;
    subtype Uns32 is Interfaces.Unsigned_32;
 
    use Interfaces;
@@ -61,5 +60,14 @@ is
       Q, R    : out Int64;
       Round   : Boolean)
      renames Impl.Double_Divide;
+
+   function Uns_Add_With_Ovflo_Check64 (X, Y : Uns64) return Uns64
+     renames Impl.Add_With_Ovflo_Check;
+
+   function Uns_Subtract_With_Ovflo_Check64 (X, Y : Uns64) return Uns64
+     renames Impl.Subtract_With_Ovflo_Check;
+
+   function Uns_Multiply_With_Ovflo_Check64 (X, Y : Uns64) return Uns64
+     renames Impl.Multiply_With_Ovflo_Check;
 
 end System.Arith_64;

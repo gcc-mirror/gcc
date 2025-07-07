@@ -28013,6 +28013,69 @@ package body Sem_Prag is
                Unreserve_All_Interrupts := True;
             end if;
 
+         --------------------------------
+         -- Pragma_Unsigned_Base_Range --
+         --------------------------------
+
+         when Pragma_Unsigned_Base_Range => Unsigned_Base_Range : declare
+            Arg       : Node_Id;
+            E         : Entity_Id := Empty;
+            Expr      : Node_Id := Empty;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments  (2);
+
+            Arg := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_Identifier (Arg);
+
+            Analyze (Arg);
+            E := Entity (Arg);
+
+            if Present (Arg2) then
+               Check_Arg_Is_OK_Static_Expression (Arg2, Standard_Boolean);
+               Expr := Get_Pragma_Arg (Arg2);
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+            end if;
+
+            if not Core_Extensions_Allowed then
+               Error_Msg_GNAT_Extension
+                 ("'Unsigned_'Base_'Range", Sloc (N),
+                  Is_Core_Extension => True);
+               return;
+
+            elsif not Is_Integer_Type (E)
+              or else Is_Modular_Integer_Type (E)
+            then
+               Error_Pragma_Arg
+                 ("cannot apply pragma %",
+                  "\& is not a signed integer type",
+                  Arg1);
+
+            elsif Is_Derived_Type (E) then
+               Error_Pragma_Arg
+                 ("pragma % cannot apply to derived type", Arg1);
+            end if;
+
+            Check_First_Subtype (Arg1);
+
+            --  Create the new unsigned integer base type entity, and apply
+            --  the constraint to create the first subtype of E.
+
+            Unsigned_Base_Range_Type_Declaration (E,
+              Def => Type_Definition (Parent (E)));
+
+            Set_Direct_Primitive_Operations (Base_Type (E), New_Elmt_List);
+            Set_Direct_Primitive_Operations (E,
+              Direct_Primitive_Operations (Base_Type (E)));
+            Ensure_Freeze_Node (Base_Type (E));
+            Set_First_Subtype_Link (Freeze_Node (Base_Type (E)), E);
+            Set_Has_Delayed_Freeze (E);
+
+            Set_Has_Unsigned_Base_Range_Aspect (Base_Type (E));
+         end Unsigned_Base_Range;
+
          ----------------
          -- Unsuppress --
          ----------------
@@ -34730,6 +34793,7 @@ package body Sem_Prag is
       Pragma_Unreferenced                   =>  0,
       Pragma_Unreferenced_Objects           =>  0,
       Pragma_Unreserve_All_Interrupts       =>  0,
+      Pragma_Unsigned_Base_Range            =>  0,
       Pragma_Unsuppress                     =>  0,
       Pragma_Unused                         =>  0,
       Pragma_Use_VADS_Size                  =>  0,

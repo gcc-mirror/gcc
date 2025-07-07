@@ -970,15 +970,61 @@ package body Checks is
          --  we use a different approach, expanding to:
 
          --    typ (xxx_With_Ovflo_Check (Integer_NN (x), Integer_NN (y)))
+         --  or
+         --    typ (xxx_With_Ovflo_Check (Unsigned_NN (x), Unsigned_NN (y)))
 
          --  where xxx is Add, Multiply or Subtract as appropriate
 
          --  Find check type if one exists
 
          if Dsiz <= System_Max_Integer_Size then
-            Ctyp := Integer_Type_For (Dsiz, Uns => False);
+            Ctyp := Integer_Type_For (Dsiz,
+                      Uns => Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)));
 
-         --  No check type exists, use runtime call
+         --  No check type exists, and the type has the unsigned base range
+         --  aspect; use runtime call.
+
+         elsif Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)) then
+            if System_Max_Integer_Size = 64 then
+               Ctyp := RTE (RE_Unsigned_64);
+            else
+               Ctyp := RTE (RE_Unsigned_128);
+            end if;
+
+            if Nkind (N) = N_Op_Add then
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Uns_Add_With_Ovflo_Check64;
+               else
+                  Cent := RE_Uns_Add_With_Ovflo_Check128;
+               end if;
+
+            elsif Nkind (N) = N_Op_Subtract then
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Uns_Subtract_With_Ovflo_Check64;
+               else
+                  Cent := RE_Uns_Subtract_With_Ovflo_Check128;
+               end if;
+
+            else pragma Assert (Nkind (N) = N_Op_Multiply);
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Uns_Multiply_With_Ovflo_Check64;
+               else
+                  Cent := RE_Uns_Multiply_With_Ovflo_Check128;
+               end if;
+            end if;
+
+            Rewrite (N,
+              OK_Convert_To (Typ,
+                Make_Function_Call (Loc,
+                  Name => New_Occurrence_Of (RTE (Cent), Loc),
+                  Parameter_Associations => New_List (
+                    OK_Convert_To (Ctyp, Left_Opnd  (N)),
+                    OK_Convert_To (Ctyp, Right_Opnd (N))))));
+
+            Analyze_And_Resolve (N, Typ);
+            return;
+
+         --  No check type exists, use runtime call (common case)
 
          else
             if System_Max_Integer_Size = 64 then
@@ -5492,7 +5538,9 @@ package body Checks is
          --  bound, because that means the result could wrap.
          --  Same applies for the lower bound if it is negative.
 
-         if Is_Modular_Integer_Type (Typ) then
+         if Is_Modular_Integer_Type (Typ)
+           and then not Has_Unsigned_Base_Range_Aspect (Btyp)
+         then
             if Lor > Lo and then Hir <= Hbound then
                Lo := Lor;
             end if;
@@ -6223,7 +6271,9 @@ package body Checks is
 
       --  Nothing to do for unsigned integer types, which do not overflow
 
-      elsif Is_Modular_Integer_Type (Typ) then
+      elsif Is_Modular_Integer_Type (Typ)
+        and then not Has_Unsigned_Base_Range_Aspect (Typ)
+      then
          return;
       end if;
 
@@ -8114,7 +8164,9 @@ package body Checks is
 
       elsif Nkind (Expr) = N_Selected_Component
         and then Present (Component_Clause (Entity (Selector_Name (Expr))))
-        and then Is_Modular_Integer_Type (Typ)
+        and then
+          (Is_Modular_Integer_Type (Typ)
+             and then not Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
         and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
       then
          return;

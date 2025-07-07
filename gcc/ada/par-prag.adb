@@ -1608,6 +1608,7 @@ begin
          | Pragma_Unreferenced
          | Pragma_Unreferenced_Objects
          | Pragma_Unreserve_All_Interrupts
+         | Pragma_Unsigned_Base_Range
          | Pragma_Unsuppress
          | Pragma_Unused
          | Pragma_Use_VADS_Size

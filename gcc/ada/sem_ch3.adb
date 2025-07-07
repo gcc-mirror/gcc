@@ -3191,9 +3191,29 @@ package body Sem_Ch3 is
          end if;
       end Check_Ops_From_Incomplete_Type;
 
+      --  Local variables
+
+      Is_Unsigned_Base_Range_Type_Decl : Boolean := False;
+
    --  Start of processing for Analyze_Full_Type_Declaration
 
    begin
+      if Present (Aspect_Specifications (Parent (Def))) then
+         declare
+            Asp : Node_Id;
+         begin
+            Asp := First (Aspect_Specifications (Parent (Def)));
+            while Present (Asp) loop
+               if Chars (Identifier (Asp)) = Name_Unsigned_Base_Range then
+                  Is_Unsigned_Base_Range_Type_Decl := True;
+                  exit;
+               end if;
+
+               Next (Asp);
+            end loop;
+         end;
+      end if;
+
       Prev := Find_Type_Name (N);
 
       --  The full view, if present, now points to the current type. If there
@@ -3329,7 +3349,11 @@ package body Sem_Ch3 is
                Ordinary_Fixed_Point_Type_Declaration (T, Def);
 
             when N_Signed_Integer_Type_Definition =>
-               Signed_Integer_Type_Declaration (T, Def);
+               if Is_Unsigned_Base_Range_Type_Decl then
+                  Unsigned_Base_Range_Type_Declaration (T, Def);
+               else
+                  Signed_Integer_Type_Declaration (T, Def);
+               end if;
 
             when N_Modular_Type_Definition =>
                Modular_Type_Declaration (T, Def);
@@ -8235,6 +8259,8 @@ package body Sem_Ch3 is
       if Is_Integer_Type (Parent_Type) then
          Set_Has_Shift_Operator
            (Implicit_Base, Has_Shift_Operator (Parent_Type));
+         Set_Has_Unsigned_Base_Range_Aspect
+           (Implicit_Base, Has_Unsigned_Base_Range_Aspect (Parent_Base));
       end if;
 
       --  The type of the bounds is that of the parent type, and they
@@ -23688,6 +23714,9 @@ package body Sem_Ch3 is
       --  Check bound to make sure it is integral and static. If not, post
       --  appropriate error message and set Errs flag
 
+      function Has_Pragma_Unsigned_Base_Range return Boolean;
+      --  Determine if type T has pragma Unsigned_Base_Range
+
       ---------------------
       -- Can_Derive_From --
       ---------------------
@@ -23731,6 +23760,39 @@ package body Sem_Ch3 is
             Fold_Uint (Expr, Expr_Value (Expr), True);
          end if;
       end Check_Bound;
+
+      ------------------------------------
+      -- Has_Pragma_Unsigned_Base_Range --
+      ------------------------------------
+
+      function Has_Pragma_Unsigned_Base_Range return Boolean is
+         Type_Decl  : constant Node_Id := Parent (Def);
+         Nod        : Node_Id := Next (Type_Decl);
+         Pragma_Arg : Node_Id;
+
+      begin
+         while Present (Nod) loop
+            if Nkind (Nod) = N_Pragma
+              and then Chars (Pragma_Identifier (Nod))
+                         = Name_Unsigned_Base_Range
+            then
+               Pragma_Arg := First (Pragma_Argument_Associations (Nod));
+
+               --  Given that we are processing the full type declaration
+               --  of T, we cannot analyze yet the reference to the type
+               --  given in the pragma because it would be reported as
+               --  premature usage. Hence we rely on the name of the type.
+
+               if Chars (Expression (Pragma_Arg)) = Chars (T) then
+                  return True;
+               end if;
+            end if;
+
+            Next (Nod);
+         end loop;
+
+         return False;
+      end Has_Pragma_Unsigned_Base_Range;
 
    --  Start of processing for Signed_Integer_Type_Declaration
 
@@ -23791,6 +23853,22 @@ package body Sem_Ch3 is
             Check_Restriction (No_Long_Long_Integers, Def);
             Base_Typ := Base_Type (Standard_Long_Long_Long_Integer);
 
+         --  For performance reasons, we defer checking pragma unsigned base
+         --  range until we have this case with bounds out of range (since
+         --  there is no need to perform this check for all signed integer
+         --  type declarations).
+
+         --  When the bounds of the integer type declaration are smaller,
+         --  and Unsigned_Base_Range is specified by means of a pragma, the
+         --  frontend handles the declaration as a regular signed integer
+         --  type declaration, and the base type is later adjusted (when the
+         --  pragma is processed); however, when the bounds are out of range
+         --  for the largest integer type we must handle it explicitly now.
+
+         elsif Has_Pragma_Unsigned_Base_Range then
+            Unsigned_Base_Range_Type_Declaration (T, Def);
+            return;
+
          else
             Base_Typ := Base_Type (Standard_Long_Long_Long_Integer);
             Error_Msg_N ("integer type definition bounds out of range", Def);
@@ -23829,6 +23907,170 @@ package body Sem_Ch3 is
       Set_RM_Size            (T, UI_From_Int (Minimum_Size (T)));
       Set_Is_Constrained     (T);
    end Signed_Integer_Type_Declaration;
+
+   ------------------------------------------
+   -- Unsigned_Base_Range_Type_Declaration --
+   ------------------------------------------
+
+   procedure Unsigned_Base_Range_Type_Declaration
+     (T   : Entity_Id;
+      Def : Node_Id)
+   is
+      Implicit_Base : Entity_Id;
+      Base_Typ      : Entity_Id;
+      Lo_Val        : Uint;
+      Hi_Val        : Uint;
+      Errs          : Boolean := False;
+      Lo            : Node_Id;
+      Hi            : Node_Id;
+
+      function Can_Derive_From (E : Entity_Id) return Boolean;
+      --  Determine whether given bounds allow derivation from specified type
+
+      procedure Check_Bound (Expr : Node_Id);
+      --  Check bound to make sure it is integral and static. If not, post
+      --  appropriate error message and set Errs flag
+
+      ---------------------
+      -- Can_Derive_From --
+      ---------------------
+
+      --  Note we check both bounds against both end values, to deal with
+      --  strange types like ones with a range of 0 .. -12341234.
+
+      function Can_Derive_From (E : Entity_Id) return Boolean is
+         Lo : constant Uint := Expr_Value (Type_Low_Bound (E));
+         Hi : constant Uint := Expr_Value (Type_High_Bound (E));
+      begin
+         return Lo <= Lo_Val and then Lo_Val <= Hi
+                  and then
+                Lo <= Hi_Val and then Hi_Val <= Hi;
+      end Can_Derive_From;
+
+      -----------------
+      -- Check_Bound --
+      -----------------
+
+      procedure Check_Bound (Expr : Node_Id) is
+      begin
+         --  If a range constraint is used as an integer type definition, each
+         --  bound of the range must be defined by a static expression of some
+         --  integer type, but the two bounds need not have the same integer
+         --  type (Negative bounds are allowed.) (RM 3.5.4)
+
+         if not Is_Integer_Type (Etype (Expr)) then
+            Error_Msg_N
+              ("integer type definition bounds must be of integer type", Expr);
+            Errs := True;
+
+         elsif not Is_OK_Static_Expression (Expr) then
+            Flag_Non_Static_Expr
+              ("non-static expression used for integer type bound!", Expr);
+            Errs := True;
+
+         --  Otherwise the bounds are folded into literals
+
+         elsif Is_Entity_Name (Expr) then
+            Fold_Uint (Expr, Expr_Value (Expr), True);
+         end if;
+      end Check_Bound;
+
+   --  Start of processing for Unsigned_Base_Range_Type_Declaration
+
+   begin
+      --  Create an anonymous base type
+
+      Implicit_Base :=
+        Create_Itype (E_Modular_Integer_Type, Parent (Def), T, 'B');
+
+      --  Analyze and check the bounds, they can be of any integer type
+
+      Lo := Low_Bound (Def);
+      Hi := High_Bound (Def);
+
+      --  Arbitrarily use Integer as the type if either bound had an error
+
+      if Hi = Error or else Lo = Error then
+         Base_Typ := Any_Integer;
+         Set_Error_Posted (T, True);
+         Errs := True;
+
+      --  Here both bounds are OK expressions
+
+      else
+         Analyze_And_Resolve (Lo, Any_Integer);
+         Analyze_And_Resolve (Hi, Any_Integer);
+
+         Check_Bound (Lo);
+         Check_Bound (Hi);
+
+         if Errs then
+            Hi := Type_High_Bound (Standard_Long_Long_Long_Integer);
+            Lo := Type_Low_Bound  (Standard_Long_Long_Long_Integer);
+         end if;
+
+         --  Find type to derive from
+
+         Lo_Val := Expr_Value (Lo);
+         Hi_Val := Expr_Value (Hi);
+
+         if Can_Derive_From (Standard_Short_Short_Unsigned) then
+            Base_Typ := Base_Type (Standard_Short_Short_Unsigned);
+
+         elsif Can_Derive_From (Standard_Short_Unsigned) then
+            Base_Typ := Base_Type (Standard_Short_Unsigned);
+
+         elsif Can_Derive_From (Standard_Unsigned) then
+            Base_Typ := Base_Type (Standard_Unsigned);
+
+         elsif Can_Derive_From (Standard_Long_Unsigned) then
+            Base_Typ := Base_Type (Standard_Long_Unsigned);
+
+         elsif Can_Derive_From (Standard_Long_Long_Unsigned) then
+            Base_Typ := Base_Type (Standard_Long_Long_Unsigned);
+
+         elsif Can_Derive_From (Standard_Long_Long_Long_Unsigned) then
+            Base_Typ := Base_Type (Standard_Long_Long_Long_Unsigned);
+
+         else
+            Base_Typ := Base_Type (Standard_Long_Long_Long_Unsigned);
+            Error_Msg_N ("unsigned type base range bounds out of range", Def);
+            Hi := Type_High_Bound (Standard_Long_Long_Long_Unsigned);
+            Lo := Type_Low_Bound  (Standard_Long_Long_Long_Unsigned);
+         end if;
+      end if;
+
+      --  Set the type of the bounds to the implicit base: we cannot set it to
+      --  the new type, because this would be a forward reference for the code
+      --  generator and, if the original type is user-defined, this could even
+      --  lead to spurious semantic errors. Furthermore we do not set it to be
+      --  universal, because this could make it much larger than needed here.
+
+      if not Errs then
+         Set_Etype (Lo, Implicit_Base);
+         Set_Etype (Hi, Implicit_Base);
+      end if;
+
+      --  Complete both implicit base and declared first subtype entities. The
+      --  inheritance of the rep item chain ensures that SPARK-related pragmas
+      --  are not clobbered when the signed integer type acts as a full view of
+      --  a private type.
+
+      Set_Etype          (Implicit_Base,                 Base_Typ);
+      Set_Size_Info      (Implicit_Base,                 Base_Typ);
+      Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
+      Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));
+      Set_Scalar_Range   (Implicit_Base, Scalar_Range   (Base_Typ));
+      Set_Modulus        (Implicit_Base, Modulus        (Base_Typ));
+
+      Mutate_Ekind           (T, E_Signed_Integer_Subtype);
+      Set_Etype              (T, Implicit_Base);
+      Set_Size_Info          (T, Implicit_Base);
+      Inherit_Rep_Item_Chain (T, Implicit_Base);
+      Set_Scalar_Range       (T, Def);
+      Set_RM_Size            (T, UI_From_Int (Minimum_Size (T)));
+      Set_Is_Constrained     (T);
+   end Unsigned_Base_Range_Type_Declaration;
 
    -------------------------------------
    -- Warn_On_Inherently_Limited_Type --

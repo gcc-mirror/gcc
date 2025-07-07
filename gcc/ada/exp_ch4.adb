@@ -7870,9 +7870,15 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Arithmetic overflow checks for signed integer/fixed point types
+      --  Arithmetic overflow checks for signed integer/fixed point types,
+      --  and signed integer types with unsigned base range aspect.
 
-      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
+      if Is_Signed_Integer_Type (Typ)
+        or else Is_Fixed_Point_Type (Typ)
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
@@ -9387,7 +9393,11 @@ package body Exp_Ch4 is
       end if;
 
       if not Backend_Overflow_Checks_On_Target
-         and then Is_Signed_Integer_Type (Typ)
+         and then
+           (Is_Signed_Integer_Type (Typ)
+              or else
+                (Is_Modular_Integer_Type (Typ)
+                   and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ))))
          and then Do_Overflow_Check (N)
       then
          --  Software overflow checking expands -expr into (0 - expr)
@@ -9811,7 +9821,11 @@ package body Exp_Ch4 is
 
       --  Non-fixed point cases, check software overflow checking required
 
-      elsif Is_Signed_Integer_Type (Etype (N)) then
+      elsif Is_Signed_Integer_Type (Etype (N))
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
 
@@ -10375,9 +10389,15 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Arithmetic overflow checks for signed integer/fixed point types
+      --  Arithmetic overflow checks for signed integer/fixed point types,
+      --  and signed integer types with unsigned base range aspect.
 
-      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
+      if Is_Signed_Integer_Type (Typ)
+        or else Is_Fixed_Point_Type (Typ)
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
 

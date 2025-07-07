@@ -497,6 +497,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Static_Predicate, Flag),
         Sm (Has_Static_Predicate_Aspect, Flag),
         Sm (Has_Unknown_Discriminants, Flag),
+        Sm (Has_Unsigned_Base_Range_Aspect, Flag,
+            Pre => "Is_Type (N)"),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Abstract_Type, Flag),
         Sm (Is_Actual_Subtype, Flag),

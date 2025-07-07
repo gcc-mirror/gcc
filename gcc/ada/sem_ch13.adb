@@ -5193,6 +5193,12 @@ package body Sem_Ch13 is
                      Analyze_Aspect_Static;
                      goto Continue;
 
+                  --  GNAT Core Extension: Checks for this aspect are performed
+                  --  when the corresponding pragma is analyzed.
+
+                  elsif A_Id = Aspect_Unsigned_Base_Range then
+                     null;
+
                   --  Ada 2022 (AI12-0279)
 
                   elsif A_Id = Aspect_Yield then

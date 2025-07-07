@@ -240,6 +240,7 @@ package Aspects is
       Aspect_Unmodified,                    -- GNAT
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
+      Aspect_Unsigned_Base_Range,           -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
       Aspect_Volatile_Full_Access,          -- GNAT
@@ -358,6 +359,7 @@ package Aspects is
       Aspect_Unmodified                 => True,
       Aspect_Unreferenced               => True,
       Aspect_Unreferenced_Objects       => True,
+      Aspect_Unsigned_Base_Range        => True,
       Aspect_User_Aspect                => True,
       Aspect_Value_Size                 => True,
       Aspect_Volatile_Full_Access       => True,
@@ -629,6 +631,7 @@ package Aspects is
       Aspect_Test_Case                    => False,
       Aspect_Type_Invariant               => False,
       Aspect_Unimplemented                => False,
+      Aspect_Unsigned_Base_Range          => True,
       Aspect_Unsuppress                   => False,
       Aspect_User_Aspect                  => False,
       Aspect_Value_Size                   => True,
@@ -852,6 +855,7 @@ package Aspects is
       Aspect_Unmodified                   => Name_Unmodified,
       Aspect_Unreferenced                 => Name_Unreferenced,
       Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
+      Aspect_Unsigned_Base_Range          => Name_Unsigned_Base_Range,
       Aspect_Unsuppress                   => Name_Unsuppress,
       Aspect_User_Aspect                  => Name_User_Aspect,
       Aspect_Value_Size                   => Name_Value_Size,
@@ -1145,6 +1149,7 @@ package Aspects is
       Aspect_Size                         => Rep_Aspect,
       Aspect_Small                        => Rep_Aspect,
       Aspect_Storage_Size                 => Rep_Aspect,
+      Aspect_Unsigned_Base_Range          => Rep_Aspect,
       Aspect_Value_Size                   => Rep_Aspect,
       Aspect_Volatile                     => Rep_Aspect,
       Aspect_Volatile_Components          => Rep_Aspect,

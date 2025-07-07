@@ -53,6 +53,10 @@ generic
 package System.Arith_Double
   with Pure, SPARK_Mode
 is
+   ----------------
+   -- Double_Int --
+   ----------------
+
    function Add_With_Ovflo_Check (X, Y : Double_Int) return Double_Int;
    --  Raises Constraint_Error if sum of operands overflows Double_Int,
    --  otherwise returns this sum of operands as Double_Int.
@@ -144,5 +148,37 @@ is
    --
    --  Double_Uns division is then performed, the result is rounded, its sign
    --  is corrected, and then returned.
+
+   ----------------
+   -- Double_Uns --
+   ----------------
+
+   function Add_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns;
+   --  Raises Constraint_Error if sum of operands overflows Double_Uns,
+   --  otherwise returns this sum of operands as Double_Uns.
+   --
+   --  The sum of ``X`` and ``Y`` is first computed. If the result is
+   --  lower than the first operand, then an overflow occurred and the
+   --  exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Subtract_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns;
+   --  Raises Constraint_Error if difference of operands overflows Double_Uns,
+   --  otherwise returns this difference of operands as Double_Int.
+   --
+   --  The subtraction of ``X`` and ``Y`` is first computed. If the result
+   --  is greater than the first operand, then an overflow occurred and the
+   --  exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Multiply_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns
+   with Convention => C;
+   --  Raises Constraint_Error if product of operands overflows Double_Uns,
+   --  otherwise returns this product of operands as Double_Uns. The code
+   --  generator may also generate direct calls to this routine.
+   --
+   --  The multiplication is done using pencil and paper algorithm applied to
+   --  Single_Uns, then the correct Double_Uns value is returned. Overflow
+   --  check is performed by looking at higher digits.
 
 end System.Arith_Double;

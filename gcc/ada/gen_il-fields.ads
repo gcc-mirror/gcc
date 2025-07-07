@@ -657,6 +657,7 @@ package Gen_IL.Fields is
       Has_Thunks,
       Has_Unchecked_Union,
       Has_Unknown_Discriminants,
+      Has_Unsigned_Base_Range_Aspect,
       Has_Visible_Refinement,
       Has_Volatile_Components,
       Has_Xref_Entry,

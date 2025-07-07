@@ -2174,6 +2174,11 @@ package Einfo is
 --       on the partial view, to ensure that discriminants are properly
 --       inherited in certain contexts.
 
+--    Has_Unsigned_Base_Range_Aspect [base type only]
+--       Defined in integer types. Set in the base type of an integer type for
+--       which the type has an Unsigned_Base_Range of True (whether by an
+--       aspect_specification, a pragma, or inheritance).
+
 --    Has_Visible_Refinement
 --       Defined in E_Abstract_State entities. Set when a state has at least
 --       one refinement constituent and analysis is in the region between
@@ -6130,6 +6135,7 @@ package Einfo is
    --    Static_Discrete_Predicate
    --    Has_Biased_Representation
    --    Has_Shift_Operator                   (base type only)
+   --    Has_Unsigned_Base_Range_Aspect       (base type only)
    --    No_Predicate_On_Actual
    --    No_Dynamic_Predicate_On_Actual
    --    Type_Low_Bound                       (synth)

@@ -337,4 +337,10 @@ package Sem_Ch3 is
    --  as referenced. Warnings on unused entities, if needed, go on the
    --  partial view.
 
+   procedure Unsigned_Base_Range_Type_Declaration
+     (T   : Entity_Id;
+      Def : Node_Id);
+   --  Create a new unsigned integer entity, and apply the constraint to obtain
+   --  the required first named subtype of this type.
+
 end Sem_Ch3;
