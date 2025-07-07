@@ -66,20 +66,6 @@ along with GCC; see the file COPYING3.  If not see
     walk back up, we check that they fit our constraints, and copy them
     into temporaries if not.  */
 
-
-/* Check whether TP is an address computation whose base is a call to
-   .ACCESS_WITH_SIZE.  */
-
-static bool
-is_address_with_access_with_size (tree tp)
-{
-  if (TREE_CODE (tp) == POINTER_PLUS_EXPR
-      && (TREE_CODE (TREE_OPERAND (tp, 0)) == INDIRECT_REF)
-      && (is_access_with_size_p (TREE_OPERAND (TREE_OPERAND (tp, 0), 0))))
-	return true;
-  return false;
-}
-
 /* Callback for c_genericize.  */
 
 static tree
@@ -135,20 +121,6 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
       walk_tree (&TREE_OPERAND (*tp, 1), ubsan_walk_array_refs_r, pset, pset);
       walk_tree (&TREE_OPERAND (*tp, 0), ubsan_walk_array_refs_r, pset, pset);
     }
-  else if (TREE_CODE (*tp) == INDIRECT_REF
-	   && is_address_with_access_with_size (TREE_OPERAND (*tp, 0)))
-    {
-      ubsan_maybe_instrument_array_ref (&TREE_OPERAND (*tp, 0), false);
-      /* Make sure ubsan_maybe_instrument_array_ref is not called again on
-	 the POINTER_PLUS_EXPR, so ensure it is not walked again and walk
-	 its subtrees manually.  */
-      tree aref = TREE_OPERAND (*tp, 0);
-      pset->add (aref);
-      *walk_subtrees = 0;
-      walk_tree (&TREE_OPERAND (aref, 0), ubsan_walk_array_refs_r, pset, pset);
-    }
-  else if (is_address_with_access_with_size (*tp))
-    ubsan_maybe_instrument_array_ref (tp, true);
   return NULL_TREE;
 }
 
