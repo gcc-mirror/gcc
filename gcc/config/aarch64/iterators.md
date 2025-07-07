@@ -463,6 +463,7 @@
 (define_mode_iterator VNx8SI_ONLY [VNx8SI])
 (define_mode_iterator VNx8SF_ONLY [VNx8SF])
 (define_mode_iterator VNx8DI_ONLY [VNx8DI])
+(define_mode_iterator VNx2SI_ONLY [VNx2SI])
 (define_mode_iterator VNx4SI_ONLY [VNx4SI])
 (define_mode_iterator VNx4SF_ONLY [VNx4SF])
 (define_mode_iterator VNx2DI_ONLY [VNx2DI])

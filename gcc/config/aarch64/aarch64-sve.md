@@ -9653,6 +9653,31 @@
   }
 )
 
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn_and_rewrite "*cond_<optab>_nontrunc<SVE_PARTIAL_F:mode><SVE_HSDI:mode>_relaxed"
+  [(set (match_operand:SVE_HSDI 0 "register_operand")
+	(unspec:SVE_HSDI
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand")
+	   (unspec:SVE_HSDI
+	     [(match_operand 4)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_PARTIAL_F 2 "register_operand")]
+	     SVE_COND_FCVTI)
+	   (match_operand:SVE_HSDI 3 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+  && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_PARTIAL_F:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ &w       , Upl , w , 0  ; *              ] fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_PARTIAL_F:Vetype>
+     [ &w       , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_HSDI:Vetype>, %1/z, %2.<SVE_HSDI:Vetype>\;fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_PARTIAL_F:Vetype>
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_PARTIAL_F:Vetype>
+  }
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+)
+
 (define_insn "*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_strict"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
 	(unspec:SVE_FULL_HSDI
@@ -9703,6 +9728,29 @@
      [ &w       , Upl , w , 0  ; *              ] fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
      [ &w       , Upl , w , Dz ; yes            ] movprfx\t%0.<VNx2DF_ONLY:Vetype>, %1/z, %2.<VNx2DF_ONLY:Vetype>\;fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
      [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+  }
+)
+
+(define_insn_and_rewrite "*cond_<optab>_trunc<VNx2DF_ONLY:mode><VNx2SI_ONLY:mode>_relaxed"
+  [(set (match_operand:VNx2SI_ONLY 0 "register_operand")
+	(unspec:VNx2SI_ONLY
+	  [(match_operand:VNx2BI 1 "register_operand")
+	   (unspec:VNx2SI_ONLY
+	     [(match_operand 4)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:VNx2DF_ONLY 2 "register_operand")]
+	     SVE_COND_FCVTI)
+	   (match_operand:VNx2SI_ONLY 3 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ &w       , Upl , w , 0  ; *              ] fcvtz<su>\t%0.<VNx2SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+     [ &w       , Upl , w , Dz ; yes            ] movprfx\t%0.<VNx2DF_ONLY:Vetype>, %1/z, %2.<VNx2DF_ONLY:Vetype>\;fcvtz<su>\t%0.<VNx2SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvtz<su>\t%0.<VNx2SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+  }
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
   }
 )
 
@@ -9850,6 +9898,31 @@
      [ &w       , Upl , w , 0  ; *              ] <su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
      [ &w       , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
      [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+  }
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+)
+
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn_and_rewrite "*cond_<optab>_nonextend<SVE_HSDI:mode><SVE_PARTIAL_F:mode>_relaxed"
+  [(set (match_operand:SVE_PARTIAL_F 0 "register_operand")
+	(unspec:SVE_PARTIAL_F
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand")
+	   (unspec:SVE_PARTIAL_F
+	     [(match_operand 4)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_HSDI 2 "register_operand")]
+	     SVE_COND_ICVTF)
+	   (match_operand:SVE_PARTIAL_F 3 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_PARTIAL_F:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ &w       , Upl , w , 0  ; *              ] <su>cvtf\t%0.<SVE_PARTIAL_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
+     [ &w       , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_HSDI:Vetype>, %1/z, %2.<SVE_HSDI:Vetype>\;<su>cvtf\t%0.<SVE_PARTIAL_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;<su>cvtf\t%0.<SVE_PARTIAL_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
   }
   "&& !rtx_equal_p (operands[1], operands[4])"
   {
@@ -10066,6 +10139,30 @@
   }
 )
 
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn_and_rewrite "*cond_<optab>_trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>"
+  [(set (match_operand:SVE_PARTIAL_HSF 0 "register_operand")
+	(unspec:SVE_PARTIAL_HSF
+	  [(match_operand:<SVE_SDF:VPRED> 1 "register_operand")
+	   (unspec:SVE_PARTIAL_HSF
+	     [(match_operand 4)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_SDF 2 "register_operand")]
+	     SVE_COND_FCVT)
+	   (match_operand:SVE_PARTIAL_HSF 3 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ w        , Upl , w , 0  ; *              ] fcvt\t%0.<SVE_PARTIAL_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>
+     [ ?&w      , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_SDF:Vetype>, %1/z, %2.<SVE_SDF:Vetype>\;fcvt\t%0.<SVE_PARTIAL_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvt\t%0.<SVE_PARTIAL_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>
+  }
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-FP] Packs (bfloat16)
 ;; -------------------------------------------------------------------------
@@ -10256,6 +10353,30 @@
      [ w        , Upl , w , 0  ; *              ] fcvt\t%0.<SVE_FULL_SDF:Vetype>, %1/m, %2.<SVE_FULL_HSF:Vetype>
      [ ?&w      , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_FULL_SDF:Vetype>, %1/z, %2.<SVE_FULL_SDF:Vetype>\;fcvt\t%0.<SVE_FULL_SDF:Vetype>, %1/m, %2.<SVE_FULL_HSF:Vetype>
      [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvt\t%0.<SVE_FULL_SDF:Vetype>, %1/m, %2.<SVE_FULL_HSF:Vetype>
+  }
+)
+
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn_and_rewrite "*cond_<optab>_nontrunc<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>_relaxed"
+  [(set (match_operand:SVE_SDF 0 "register_operand")
+	(unspec:SVE_SDF
+	  [(match_operand:<SVE_SDF:VPRED> 1 "register_operand")
+	   (unspec:SVE_SDF
+	     [(match_operand 4)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_PARTIAL_HSF 2 "register_operand")]
+	     SVE_COND_FCVT)
+	   (match_operand:SVE_SDF 3 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ w        , Upl , w , 0  ; *              ] fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_PARTIAL_HSF:Vetype>
+     [ ?&w      , Upl , w , Dz ; yes            ] movprfx\t%0.<SVE_SDF:Vetype>, %1/z, %2.<SVE_SDF:Vetype>\;fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_PARTIAL_HSF:Vetype>
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_PARTIAL_HSF:Vetype>
+  }
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
   }
 )
 
