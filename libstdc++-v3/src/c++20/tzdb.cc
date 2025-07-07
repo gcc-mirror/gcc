@@ -44,6 +44,12 @@
 # include <cstdlib>   // getenv
 #endif
 
+#if _GLIBCXX_HAVE_WINDOWS_H
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include <psapi.h>
+#endif
+
 #if defined __GTHREADS && ATOMIC_POINTER_LOCK_FREE == 2
 # define USE_ATOMIC_LIST_HEAD 1
 // TODO benchmark atomic<shared_ptr<>> vs mutex.
@@ -1144,6 +1150,34 @@ namespace std::chrono
 #ifdef _GLIBCXX_ZONEINFO_DIR
       else
 	path = _GLIBCXX_ZONEINFO_DIR;
+#endif
+#ifdef _GLIBCXX_HAVE_WINDOWS_H
+      if (path.empty())
+	{
+	  HMODULE dll_module;
+	  if (GetModuleHandleExA(
+		  GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+		      | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		  reinterpret_cast<const char *>(&zoneinfo_file), &dll_module))
+	    {
+	      char dll_path[MAX_PATH];
+	      if (GetModuleFileNameA(dll_module, dll_path, MAX_PATH) != 0)
+		{
+		  string_view dll_path_view = dll_path;
+		  auto pos = dll_path_view.find_last_of('\\');
+		  dll_path_view = dll_path_view.substr(0, pos);
+		  if (dll_path_view.ends_with("\\bin"))
+		    {
+		      constexpr string_view remaining_path = "share\\zoneinfo";
+		      dll_path_view.remove_suffix(3); // Remove bin
+		      path.reserve(dll_path_view.size()
+				   + remaining_path.size());
+		      path = dll_path_view;
+		      path += remaining_path;
+		    }
+		}
+	    }
+	}
 #endif
       if (!path.empty())
 	path.append(filename);
