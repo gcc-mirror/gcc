@@ -1,3 +1,50 @@
+2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: -mmcu= takes lower case MCU names.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr32da28S, avr32da32S, avr32da48S)
+	(avr64da28S, avr64da32S, avr64da48S avr64da64S)
+	(avr128da28S, avr128da32S, avr128da48S, avr128da64S): Add devices.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-07-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120951
+	* tree-call-cdce.cc (use_internal_fn): For non-call exceptions
+	with EQ_EXPR can throw for floating point types, then create
+	the EQ_EXPR seperately.
+
+2025-07-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120921
+	* tree-cfg.cc (verify_gimple_assign_single): Reject constant and address expression LHS.
+	For non-empty vector constructors, make sure the LHS is an is_gimple_reg.
+
+2025-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc
+	(autofdo_source_profile::read): Scale cutoff.
+	(read_autofdo_file): Initialize cutoff
+	* coverage.cc (read_counts_file): Initialize cutoff to 1.
+	* gcov-io.h (struct gcov_summary): Add cutoff field.
+	* ipa-inline.cc (inline_small_functions): mac_count can be non-zero
+	also with auto_profile.
+	* lto-cgraph.cc (output_profile_summary): Write cutoff
+	and sum_max.
+	(input_profile_summary): Read cutoff and sum max.
+	(merge_profile_summaries): Initialize and scale global cutoffs
+	and sum max.
+	* profile-count.cc: Include profile.h
+	(profile_count::force_nonzero): move here from ...; use cutoff.
+	* profile-count.h: (profile_count::force_nonzero): ... here.
+
+2025-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.cc (profile_count::operator*): fix overflow check.
+
 2025-07-05  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/rs6000/vxworks.h (SUBTARGET_DRIVER_SELF_SPECS):

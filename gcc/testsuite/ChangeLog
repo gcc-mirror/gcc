@@ -1,3 +1,12 @@
+2025-07-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120951
+	* gcc.dg/torture/pr120951-1.c: New test.
+
+2025-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/clone-merge-1.c:
+
 2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
 
 	PR target/118241
