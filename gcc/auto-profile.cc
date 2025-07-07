@@ -622,9 +622,11 @@ get_original_name (const char *name, bool alloc = true)
     }
   /* Suffixes of clones that compiler generates after auto-profile.  */
   const char *suffixes[] = {"isra", "constprop", "lto_priv", "part", "cold"};
-  for (unsigned i = 0; i < sizeof (suffixes); ++i)
+  for (unsigned i = 0; i < sizeof (suffixes) / sizeof (const char *); ++i)
     {
-      if (strncmp (next_dot + 1, suffixes[i], strlen (suffixes[i])) == 0)
+      int len = strlen (suffixes[i]);
+      if (len == last_dot - next_dot - 1
+	  && strncmp (next_dot + 1, suffixes[i], strlen (suffixes[i])) == 0)
 	{
 	  *next_dot = 0;
 	  return get_original_name (ret, false);
