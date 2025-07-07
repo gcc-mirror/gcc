@@ -1,3 +1,21 @@
+2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: -mmcu= takes lower case MCU names.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr32da28S, avr32da32S, avr32da48S)
+	(avr64da28S, avr64da32S, avr64da48S avr64da64S)
+	(avr128da28S, avr128da32S, avr128da48S, avr128da64S): Add devices.
+	* doc/avr-mmcu.texi: Rebuild.
+
 2025-07-03  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
