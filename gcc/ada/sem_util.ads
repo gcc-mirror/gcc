@@ -2131,7 +2131,7 @@ package Sem_Util is
    --  object as per RM C.6(8).
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
-   --  E is a subprogram. Return True is E is an implicit operation inherited
+   --  E is a subprogram. Return True if E is an implicit operation inherited
    --  by a derived type declaration.
 
    function Is_Inlinable_Expression_Function (Subp : Entity_Id) return Boolean;
@@ -2196,7 +2196,7 @@ package Sem_Util is
    --  the encapsulated expression is nontrivial.
 
    function Is_Null_Extension
-    (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
+     (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
    --  Given a tagged type, returns True if argument is a type extension
    --  that introduces no new components (discriminant or nondiscriminant).
    --  Ignore_Privacy should be True for use in implementing dynamic semantics.

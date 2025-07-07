@@ -5064,6 +5064,14 @@ package body Sem_Ch13 is
                         Check_Expr_Is_OK_Static_Expression (Expr, Any_Boolean);
                      end if;
 
+                     --  Record the No_Task_Parts aspects as a rep item so it
+                     --  can be consistently looked up on the full view of the
+                     --  type.
+
+                     if Is_Private_Type (E) then
+                        Record_Rep_Item (E, Aspect);
+                     end if;
+
                      goto Continue;
 
                   --  Ada 2022 (AI12-0075): static expression functions

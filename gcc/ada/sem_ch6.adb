@@ -8647,7 +8647,16 @@ package body Sem_Ch6 is
 
       function Might_Need_BIP_Task_Actuals (E : Entity_Id) return Boolean is
          Subp_Id  : Entity_Id;
-         Func_Typ : Entity_Id;
+         Original : Entity_Id;
+         Root     : Entity_Id;
+
+         function Has_No_Task_Parts_Enabled (E : Entity_Id) return Boolean
+         is (Has_Enabled_Aspect (E, Aspect_No_Task_Parts));
+
+         function Collect_Ancestors_With_No_Task_Parts is new
+           Collect_Types_In_Hierarchy (Predicate => Has_No_Task_Parts_Enabled);
+
+      --  Start of processing for Might_Need_BIP_Task_Actuals
 
       begin
          if Global_No_Tasking or else No_Run_Time_Mode then
@@ -8675,21 +8684,28 @@ package body Sem_Ch6 is
          then
             Subp_Id := Protected_Body_Subprogram (E);
 
-         else
+         --  For access to subprogram types we look at the return type of the
+         --  subprogram type itself, as it cannot be overridden or inherited.
+
+         elsif Ekind (E) = E_Subprogram_Type then
             Subp_Id := E;
+
+         --  Otherwise, we need to return the same value we would return for
+         --  the original corresponding operation.
+
+         else
+            Subp_Id := Original_Corresponding_Operation (E);
          end if;
 
-         --  We check the root type of the return type since the same
-         --  decision must be taken for all descendants overriding a
-         --  dispatching operation.
-
-         Func_Typ := Root_Type (Underlying_Type (Etype (Subp_Id)));
+         Original := Underlying_Type (Etype (Subp_Id));
+         Root := Underlying_Type (Root_Type (Original));
 
          return Ekind (Subp_Id) in E_Function | E_Subprogram_Type
-           and then not Has_Foreign_Convention (Func_Typ)
-           and then Is_Tagged_Type (Func_Typ)
-           and then Is_Limited_Type (Func_Typ)
-           and then not Has_Aspect (Func_Typ, Aspect_No_Task_Parts);
+           and then Is_Inherently_Limited_Type (Original)
+           and then not Has_Foreign_Convention (Root)
+           and then Is_Tagged_Type (Root)
+           and then Is_Empty_Elmt_List
+             (Collect_Ancestors_With_No_Task_Parts (Original));
       end Might_Need_BIP_Task_Actuals;
 
       -------------------------------------

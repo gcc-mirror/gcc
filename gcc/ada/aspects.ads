@@ -259,6 +259,7 @@ package Aspects is
                                  | Aspect_Iterator_Element
                                  | Aspect_Max_Entry_Queue_Length
                                  | Aspect_No_Controlled_Parts
+                                 | Aspect_No_Task_Parts
                                  | Aspect_Real_Literal
                                  | Aspect_String_Literal
                                  | Aspect_Variable_Indexing;

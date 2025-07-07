@@ -3706,6 +3706,7 @@ package body Sem_Util is
            Aspect_Aggregate,
            Aspect_Max_Entry_Queue_Length
            --  , Aspect_No_Controlled_Parts
+           --  , Aspect_No_Task_Parts
           );
 
       --  Note that none of these 8 aspects can be specified (for a type)
@@ -15017,6 +15018,7 @@ package body Sem_Util is
                | Aspect_Iterator_Element
                | Aspect_Max_Entry_Queue_Length
                | Aspect_No_Controlled_Parts
+               | Aspect_No_Task_Parts
             =>
                return;
          end case;
@@ -16276,8 +16278,9 @@ package body Sem_Util is
                  Names_Match (Assign_Indexed_1, Assign_Indexed_2);
             end;
 
-         --  Checking for this aspect is performed elsewhere during freezing
-         when Aspect_No_Controlled_Parts =>
+         --  Checking for these aspects is performed elsewhere during freezing
+         when Aspect_No_Controlled_Parts
+            | Aspect_No_Task_Parts =>
             return True;
 
          --  scalar-valued aspects; compare (static) values.

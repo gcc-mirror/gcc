@@ -2416,6 +2416,8 @@ package body Sem_Disp is
       Formal    : Entity_Id;
       Ctrl_Type : Entity_Id;
 
+   --  Start of processing for Find_Dispatching_Type
+
    begin
       if Ekind (Subp) in E_Function | E_Procedure
         and then Present (DTC_Entity (Subp))
