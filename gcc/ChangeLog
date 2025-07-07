@@ -1,3 +1,10 @@
+2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr32da28s, avr32da32s, avr32da48s)
+	(avr64da28s, avr64da32s, avr64da48s avr64da64s)
+	(avr128da28s, avr128da32s, avr128da48s, avr128da64s): Add devices.
+	* doc/avr-mmcu.texi: Rebuild.
+
 2025-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
