@@ -9432,61 +9432,55 @@ c_update_type_canonical (tree t)
     }
 }
 
-/* Verify the argument of the counted_by attribute of each of the
-   FIELDS_WITH_COUNTED_BY is a valid field of the containing structure,
-   STRUCT_TYPE, Report error and remove the corresponding attribute
-   when it's not.  */
+/* Verify the argument of the counted_by attribute of the flexible array
+   member FIELD_DECL is a valid field of the containing structure,
+   STRUCT_TYPE, Report error and remove this attribute when it's not.  */
 
 static void
-verify_counted_by_attribute (tree struct_type,
-			     auto_vec<tree> *fields_with_counted_by)
+verify_counted_by_attribute (tree struct_type, tree field_decl)
 {
-  for (tree field_decl : *fields_with_counted_by)
+  tree attr_counted_by = lookup_attribute ("counted_by",
+					   DECL_ATTRIBUTES (field_decl));
+
+  if (!attr_counted_by)
+    return;
+
+  /* If there is an counted_by attribute attached to the field,
+     verify it.  */
+
+  tree fieldname = TREE_VALUE (TREE_VALUE (attr_counted_by));
+
+  /* Verify the argument of the attrbute is a valid field of the
+     containing structure.  */
+
+  tree counted_by_field = lookup_field (struct_type, fieldname);
+
+  /* Error when the field is not found in the containing structure and
+     remove the corresponding counted_by attribute from the field_decl.  */
+  if (!counted_by_field)
     {
-      tree attr_counted_by = lookup_attribute ("counted_by",
-						DECL_ATTRIBUTES (field_decl));
+      error_at (DECL_SOURCE_LOCATION (field_decl),
+		"argument %qE to the %<counted_by%> attribute"
+		" is not a field declaration in the same structure"
+		" as %qD", fieldname, field_decl);
+      DECL_ATTRIBUTES (field_decl)
+	= remove_attribute ("counted_by", DECL_ATTRIBUTES (field_decl));
+    }
+  else
+  /* Error when the field is not with an integer type.  */
+    {
+      while (TREE_CHAIN (counted_by_field))
+	counted_by_field = TREE_CHAIN (counted_by_field);
+      tree real_field = TREE_VALUE (counted_by_field);
 
-      if (!attr_counted_by)
-	continue;
-
-      /* If there is an counted_by attribute attached to the field,
-	 verify it.  */
-
-      tree fieldname = TREE_VALUE (TREE_VALUE (attr_counted_by));
-
-      /* Verify the argument of the attrbute is a valid field of the
-	 containing structure.  */
-
-      tree counted_by_field = lookup_field (struct_type, fieldname);
-
-      /* Error when the field is not found in the containing structure and
-	 remove the corresponding counted_by attribute from the field_decl.  */
-      if (!counted_by_field)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (real_field)))
 	{
 	  error_at (DECL_SOURCE_LOCATION (field_decl),
 		    "argument %qE to the %<counted_by%> attribute"
-		    " is not a field declaration in the same structure"
-		    " as %qD", fieldname, field_decl);
+		    " is not a field declaration with an integer type",
+		    fieldname);
 	  DECL_ATTRIBUTES (field_decl)
 	    = remove_attribute ("counted_by", DECL_ATTRIBUTES (field_decl));
-	}
-      else
-      /* Error when the field is not with an integer type.  */
-	{
-	  while (TREE_CHAIN (counted_by_field))
-	    counted_by_field = TREE_CHAIN (counted_by_field);
-	  tree real_field = TREE_VALUE (counted_by_field);
-
-	  if (!INTEGRAL_TYPE_P (TREE_TYPE (real_field)))
-	    {
-	      error_at (DECL_SOURCE_LOCATION (field_decl),
-			"argument %qE to the %<counted_by%> attribute"
-			" is not a field declaration with an integer type",
-			fieldname);
-	      DECL_ATTRIBUTES (field_decl)
-		= remove_attribute ("counted_by",
-				    DECL_ATTRIBUTES (field_decl));
-	    }
 	}
     }
 }
@@ -9562,7 +9556,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
      until now.)  */
 
   bool saw_named_field = false;
-  auto_vec<tree> fields_with_counted_by;
+  tree counted_by_fam_field = NULL_TREE;
   for (x = fieldlist; x; x = DECL_CHAIN (x))
     {
       /* Whether this field is the last field of the structure or union.
@@ -9643,15 +9637,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	     record it here and do more verification later after the
 	     whole structure is complete.  */
 	  if (lookup_attribute ("counted_by", DECL_ATTRIBUTES (x)))
-	    fields_with_counted_by.safe_push (x);
+	    counted_by_fam_field = x;
 	}
-
-      if (TREE_CODE (TREE_TYPE (x)) == POINTER_TYPE)
-	/* If there is a counted_by attribute attached to this field,
-	   record it here and do more verification later after the
-	   whole structure is complete.  */
-	if (lookup_attribute ("counted_by", DECL_ATTRIBUTES (x)))
-	  fields_with_counted_by.safe_push (x);
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE
 	  && flexible_array_type_p (TREE_TYPE (x)))
@@ -9951,8 +9938,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	struct_parse_info->struct_types.safe_push (t);
      }
 
-  if (fields_with_counted_by.length () > 0)
-    verify_counted_by_attribute (t, &fields_with_counted_by);
+  if (counted_by_fam_field)
+    verify_counted_by_attribute (t, counted_by_fam_field);
 
   return t;
 }

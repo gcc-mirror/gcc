@@ -10,7 +10,7 @@ int x __attribute ((counted_by (size))); /* { dg-error "attribute is not allowed
 
 struct trailing {
   int count;
-  int field __attribute ((counted_by (count))); /* { dg-error "attribute is not allowed for a non-array or non-pointer field" } */
+  int field __attribute ((counted_by (count))); /* { dg-error "attribute is not allowed for a non-array field" } */
 };
 
 struct trailing_1 {
