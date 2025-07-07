@@ -6874,6 +6874,7 @@ package body Exp_Aggr is
                  and then not Is_Class_Wide_Type (It_Subt)
                then
                   declare
+                     Aggr_Base    : constant Entity_Id := Base_Type (Typ);
                      It_Base      : constant Entity_Id := Base_Type (It_Subt);
                      Empty_Formal : constant Entity_Id :=
                                       First_Formal (Entity (Empty_Subp));
@@ -6886,16 +6887,27 @@ package body Exp_Aggr is
                      --  generally have a Length function. User-defined
                      --  containers don't necessarily have such a function,
                      --  or it may be named differently, or it may have
-                     --  the wrong semantics. The base subtype is tested,
-                     --  since its Sloc will refer to the original container
-                     --  generic in the predefined library, even though it's
-                     --  declared in a package instantiation within the current
-                     --  library unit. Also, this is only done when Empty_Subp
-                     --  has a formal parameter (usually named Capacity), and
-                     --  not in the case of a parameterless Empty function.
+                     --  the wrong semantics. The base subtypes are tested,
+                     --  since their Sloc will refer to the original container
+                     --  generics in the predefined library, even though the
+                     --  types are declared in a package instantiation in some
+                     --  other unit. Also, this is only done when Empty_Subp
+                     --  has a formal parameter (generally named Capacity),
+                     --  and not in the case of a parameterless Empty function.
+                     --  Finally, we test for the container aggregate's type
+                     --  having a first discriminant with the name Capacity,
+                     --  since determining capacity via Length is only sensible
+                     --  for container types with that discriminant (bounded
+                     --  containers).
 
-                     if In_Predefined_Unit (It_Base)
-                       and then Present (Empty_Formal)
+                     if Present (Empty_Formal)
+                       and then In_Predefined_Unit (It_Base)
+                       and then In_Predefined_Unit (Aggr_Base)
+                       and then Has_Discriminants (Aggr_Base)
+                       and then
+                         Get_Name_String
+                           (Chars (First_Discriminant (Aggr_Base)))
+                           = "capacity"
                      then
                         --  Look for the container type's Length function in
                         --  the package where it's defined.
@@ -6907,11 +6919,11 @@ package body Exp_Aggr is
                         Pop_Scope;
 
                         --  If we found a Length function that has a single
-                        --  parameter of the container type, then expand a call
-                        --  to that, passing the container object named in the
-                        --  iterator_specification, and return that call, which
-                        --  will be used as the "size" of the current aggregate
-                        --  element association.
+                        --  parameter of the iterator object's container type,
+                        --  then expand a call to that, passing the object,
+                        --  and return that call, which will be used as the
+                        --  "size" of the current element association of the
+                        --  bounded container aggregate.
 
                         if Present (Length_Subp)
                           and then Ekind (Length_Subp) = E_Function
