@@ -509,7 +509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Layout, typename _Mapping>
       concept __mapping_of =
-	is_same_v<typename _Layout::mapping<typename _Mapping::extents_type>,
+	is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>,
 		  _Mapping>;
 
     template<typename _Mapping>
