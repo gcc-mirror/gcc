@@ -324,7 +324,7 @@ public:
   virtual void update_bitmask (const class irange_bitmask &) override;
   virtual irange_bitmask get_bitmask () const override;
 
-  virtual void verify_range () const;
+  virtual void verify_range () const override;
 protected:
   void maybe_resize (int needed);
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -422,7 +422,7 @@ public:
   bool contains_p (const wide_int &) const;
   wide_int lower_bound () const;
   wide_int upper_bound () const;
-  virtual void verify_range () const;
+  virtual void verify_range () const final override;
   irange_bitmask get_bitmask () const final override;
   void update_bitmask (const irange_bitmask &) final override;
 protected:
@@ -594,7 +594,7 @@ public:
   bool nan_signbit_p (bool &signbit) const;
   bool known_isnormal () const;
   bool known_isdenormal_or_zero () const;
-  virtual void verify_range () const;
+  virtual void verify_range () const override;
 protected:
   virtual bool contains_p (tree cst) const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
