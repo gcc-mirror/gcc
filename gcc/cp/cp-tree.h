@@ -9022,6 +9022,7 @@ extern tree maybe_contract_wrap_call	        (tree, tree);
 extern bool emit_contract_wrapper_func          (bool);
 extern tree extract_contract_attributes 	(tree);
 extern void set_contract_attributes 		(tree, tree);
+extern void maybe_emit_violation_handler_wrappers (void);
 
 /* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
 
