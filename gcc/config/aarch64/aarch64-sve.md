@@ -3762,12 +3762,28 @@
 
 ;; Unpredicated floating-point unary operations.
 (define_expand "<optab><mode>2"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_operand:SVE_F 1 "register_operand")]
+	  SVE_COND_FP_UNARY_OPTAB))]
+  "TARGET_SVE"
+  {
+    operands[2] = aarch64_sve_fp_pred (<MODE>mode, &operands[3]);
+  }
+)
+
+;; FABS and FNEG are non-trapping, so we can always expand with a <VPRED>
+;; predicate.  It doesn't matter whether the padding bits of a partial
+;; vector mode are active or inactive.
+(define_expand "<optab><mode>2"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_dup 2)
 	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_FULL_F 1 "register_operand")]
-	  SVE_COND_FP_UNARY_OPTAB))]
+	   (match_operand:SVE_F 1 "register_operand")]
+	  SVE_COND_FP_UNARY_BITWISE))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
@@ -3776,11 +3792,11 @@
 
 ;; Predicated floating-point unary operations.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	   (match_operand:SVE_F 2 "register_operand")]
 	  SVE_COND_FP_UNARY))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
