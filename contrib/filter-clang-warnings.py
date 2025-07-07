@@ -41,22 +41,43 @@ def skip_warning(filename, message):
                  '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
                  '-Wformat-security', '-Wundefined-internal',
                  '-Wunknown-warning-option', '-Wc++20-extensions',
-                 '-Wbitwise-instead-of-logical', 'egrep is obsolescent'],
+                 '-Wbitwise-instead-of-logical', 'egrep is obsolescent',
+                 '-Woverloaded-shift-op-parentheses',
+                 '-Wunused-function', '-Wunneeded-internal-declaration',
+                 '-Wvla-cxx-extension', '-Wunused-command-line-argument'],
+
+            'diagnostic-path-output.cc': ['m_logical_loc_mgr'],
+            'fold-const-call.cc': ['-Wreturn-type'],
+            'gimple-match': ['-Wunused-', '-Wtautological-compare'],
+            'generic-match': ['-Wunused-', '-Wtautological-compare'],
+            'genautomata.cc': ['-Wstring-plus-int'],
+            # Perhaps revisit when ATTR_FNSPEC_DECONST_WATERMARK ifdef case is
+            # made default or removed:
+            'ipa-strub.cc': ['-Wunused-but-set-variable'],
             'insn-modes.cc': ['-Wshift-count-overflow'],
             'insn-emit.cc': ['-Wtautological-compare'],
             'insn-attrtab.cc': ['-Wparentheses-equality'],
-            'gimple-match.cc': ['-Wunused-', '-Wtautological-compare'],
-            'generic-match.cc': ['-Wunused-', '-Wtautological-compare'],
+            'omp-builtins.def': ['-Wc++11-narrowing'],
+            'wide-int.h': ['-Wnontrivial-memcall'],
             'i386.md': ['-Wparentheses-equality', '-Wtautological-compare',
                         '-Wtautological-overlap-compare'],
             'sse.md': ['-Wparentheses-equality', '-Wtautological-compare',
                        '-Wconstant-logical-operand'],
             'mmx.md': ['-Wtautological-compare'],
-            'genautomata.cc': ['-Wstring-plus-int'],
-            'fold-const-call.cc': ['-Wreturn-type'],
-            'gfortran.texi': [''],
-            'libtool': [''],
             'lex.cc': ['-Wc++20-attribute-extensions'],
+            # Perhaps remove once PR 120960 is resolved:
+            'analyzer/ana-state-to-diagnostic-state.h': ['-Wunused-private-field'],
+            'analyzer/sm.cc': ['-Wunused-parameter'],
+            'c-family/c-format.cc': ['-Wunused-private-field'],
+            'm2/gm2-compiler-boot': ['-Wunused-'],
+            # Rust peopel promised to clean these warnings too
+            'rust/': ['-Wunused-private-field'],
+                 'libiberty/sha1.c': ['-Wc23-extensions'],
+            'avr-mmcu.texi': [''],
+            'gfortran.texi': [''],
+            'install.texi': [''],
+            'libgccjit.texi': [''],
+            'libtool': ['']
     }
 
     for name, ignore in ignores.items():
