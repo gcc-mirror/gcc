@@ -144,13 +144,13 @@ namespace __gnu_debug
       //std::swap(_M_this()->_M_version, __other._M_version);
       _Safe_iterator_base* __this_its = _M_this()->_M_iterators;
       _S_swap_aux(__other, __other._M_iterators,
-		  _M_this(), _M_this()->_M_iterators);
+		  *_M_this(), _M_this()->_M_iterators);
       _Safe_iterator_base* __this_const_its = _M_this()->_M_const_iterators;
       _S_swap_aux(__other, __other._M_const_iterators,
-		  _M_this(), _M_this()->_M_const_iterators);
-      _S_swap_aux(_M_this(), __this_its,
+		  *_M_this(), _M_this()->_M_const_iterators);
+      _S_swap_aux(*_M_this(), __this_its,
 		  __other, __other._M_iterators);
-      _S_swap_aux(_M_this(), __this_const_its,
+      _S_swap_aux(*_M_this(), __this_const_its,
 		  __other, __other._M_const_iterators);
     }
 
