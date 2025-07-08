@@ -2007,6 +2007,15 @@ ftms = {
 };
 
 ftms = {
+  name = smart_ptr_owner_equality;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = sstream_from_string_view;
   values = {
     v = 202306;
