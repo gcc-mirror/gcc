@@ -204,9 +204,10 @@ int volatile guality_attached;
    of this wrapping, guality_main may not have an empty argument
    list.  */
 
-extern int guality_main (int argc, char *argv[]);
+extern int __attribute__((noipa))
+guality_main (int argc, char *argv[]);
 
-static void __attribute__((noinline))
+static void __attribute__((noipa))
 guality_check (const char *name, gualchk_t value, int unknown_ok);
 
 /* Set things up, run guality_main, then print a summary and quit.  */
