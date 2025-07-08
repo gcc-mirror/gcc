@@ -628,7 +628,7 @@
 	(match_operand:SHORT 1 "memory_operand" "+A"))				;; memory
    (set (match_dup 1)
 	(unspec_volatile:SHORT [(match_operand:SHORT 2 "register_operand" "0")  ;; expected_val
-				(match_operand:SHORT 3 "register_operand" "rJ") ;; desired_val
+				(match_operand:SHORT 3 "reg_or_0_operand" "rJ") ;; desired_val
 				(match_operand:SI 4 "const_int_operand")	;; mod_s
 				(match_operand:SI 5 "const_int_operand")]	;; mod_f
 	 UNSPEC_COMPARE_AND_SWAP))]
