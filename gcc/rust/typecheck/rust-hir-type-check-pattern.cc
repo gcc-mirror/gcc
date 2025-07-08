@@ -636,8 +636,44 @@ TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 {
-  rust_sorry_at (pattern.get_locus (),
-		 "type checking qualified path patterns not supported");
+  auto resolved_parent = parent->destructure ();
+  TyTy::BaseType *parent_element_ty = nullptr;
+  switch (resolved_parent->get_kind ())
+    {
+    case TyTy::ARRAY:
+      {
+	// FIXME: implement compile-time size checks when ArrayType's capacity
+	// is updated to be evaluated in compile-time
+	// https://github.com/Rust-GCC/gccrs/issues/3882
+	auto &array_ty_ty = static_cast<TyTy::ArrayType &> (*parent);
+	parent_element_ty = array_ty_ty.get_element_type ();
+	break;
+      }
+    case TyTy::SLICE:
+      {
+	auto &array_ty_ty = static_cast<TyTy::SliceType &> (*parent);
+	parent_element_ty = array_ty_ty.get_element_type ();
+	break;
+      }
+    default:
+      {
+	rust_error_at (pattern.get_locus (), "expected %s, found slice",
+		       parent->as_string ().c_str ());
+	return;
+      }
+    }
+
+  rust_assert (parent_element_ty != nullptr);
+  // infered inherits array/slice typing from parent
+  infered = parent->clone ();
+  infered->set_ref (pattern.get_mappings ().get_hirid ());
+
+  // Type check every item in the SlicePattern against parent's element ty
+  // TODO update this after adding support for RestPattern in SlicePattern
+  for (const auto &item : pattern.get_items ())
+    {
+      TypeCheckPattern::Resolve (*item, parent_element_ty);
+    }
 }
 
 void
