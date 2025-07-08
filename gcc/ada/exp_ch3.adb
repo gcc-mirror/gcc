@@ -10663,11 +10663,9 @@ package body Exp_Ch3 is
                        or else (Is_Record_Type (Typ)
                                  and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-                     not Global_No_Tasking
-                       and then
-                     (Has_Task (Typ)
-                        or else (Is_Record_Type (Typ)
-                                   and then Is_Task_Record_Type (Typ)));
+                     Has_Task (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Task_Record_Type (Typ));
       Formals : List_Id;
 
    begin
