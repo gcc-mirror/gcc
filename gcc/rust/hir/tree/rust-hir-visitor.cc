@@ -370,7 +370,8 @@ DefaultHIRVisitor::walk (BlockExpr &expr)
 void
 DefaultHIRVisitor::walk (AnonConst &expr)
 {
-  expr.get_inner_expr ().accept_vis (*this);
+  if (!expr.is_deferred ())
+    expr.get_inner_expr ().accept_vis (*this);
 }
 
 void

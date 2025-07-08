@@ -1806,7 +1806,15 @@ protected:
 class AnonConst : public ExprWithBlock
 {
 public:
+  enum class Kind
+  {
+    Explicit,
+    DeferredInference
+  };
+
   AnonConst (Analysis::NodeMapping mappings, std::unique_ptr<Expr> &&expr,
+	     location_t locus = UNKNOWN_LOCATION);
+  AnonConst (Analysis::NodeMapping mappings,
 	     location_t locus = UNKNOWN_LOCATION);
   AnonConst (const AnonConst &other);
   AnonConst operator= (const AnonConst &other);
@@ -1822,12 +1830,25 @@ public:
   }
 
   location_t get_locus () const override { return locus; }
-  Expr &get_inner_expr () { return *expr; }
-  const Expr &get_inner_expr () const { return *expr; }
+
+  Expr &get_inner_expr ()
+  {
+    rust_assert (kind == Kind::Explicit);
+    return *expr.value ();
+  }
+
+  const Expr &get_inner_expr () const
+  {
+    rust_assert (kind == Kind::Explicit);
+    return *expr.value ();
+  }
+
+  bool is_deferred () const { return kind == Kind::DeferredInference; }
 
 private:
   location_t locus;
-  std::unique_ptr<Expr> expr;
+  Kind kind;
+  tl::optional<std::unique_ptr<Expr>> expr;
 
   AnonConst *clone_expr_with_block_impl () const override
   {

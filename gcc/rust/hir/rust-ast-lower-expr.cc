@@ -130,17 +130,24 @@ ASTLoweringExpr::visit (AST::BlockExpr &expr)
 void
 ASTLoweringExpr::visit (AST::AnonConst &expr)
 {
-  auto inner_expr = ASTLoweringExpr::translate (expr.get_inner_expr ());
-
   auto &mappings = Analysis::Mappings::get ();
   auto crate_num = mappings.get_current_crate ();
   auto mapping = Analysis::NodeMapping (crate_num, expr.get_node_id (),
 					mappings.get_next_hir_id (crate_num),
 					UNKNOWN_LOCAL_DEFID);
 
-  translated = new HIR::AnonConst (std::move (mapping),
-				   std::unique_ptr<Expr> (inner_expr),
-				   expr.get_locus ());
+  if (expr.is_deferred ())
+    {
+      translated = new HIR::AnonConst (std::move (mapping), expr.get_locus ());
+    }
+  else
+    {
+      auto inner_expr = ASTLoweringExpr::translate (expr.get_inner_expr ());
+
+      translated = new HIR::AnonConst (std::move (mapping),
+				       std::unique_ptr<Expr> (inner_expr),
+				       expr.get_locus ());
+    }
 }
 
 void

@@ -664,6 +664,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 void
 TypeCheckExpr::visit (HIR::AnonConst &expr)
 {
+  // FIXME: How do we typecheck a deferred inference const?
+
+  rust_assert (!expr.is_deferred ());
+
   infered = TypeCheckExpr::Resolve (expr.get_inner_expr ());
 }
 
