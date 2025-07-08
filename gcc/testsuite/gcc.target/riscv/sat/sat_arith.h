@@ -4,7 +4,9 @@
 #include <stdint-gcc.h>
 #include <stdbool.h>
 
-typedef __uint128_t uint128_t;
+#if __riscv_xlen == 64
+typedef unsigned __int128 uint128_t;
+#endif
 
 /******************************************************************************/
 /* Saturation Add (unsigned and signed)                                       */
