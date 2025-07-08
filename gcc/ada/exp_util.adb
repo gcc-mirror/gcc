@@ -13662,11 +13662,12 @@ package body Exp_Util is
    --  The above requirements should be documented in Sinfo ???
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean is
+      Pexp : constant Node_Id := Parent (Exp);
+
       Otyp   : Entity_Id;
       Ityp   : Entity_Id;
       Oalign : Uint;
       Ialign : Uint;
-      Pexp   : constant Node_Id := Parent (Exp);
 
    begin
       --  If the expression is the RHS of an assignment or object declaration
@@ -13684,18 +13685,12 @@ package body Exp_Util is
          return True;
 
       --  If the expression is the prefix of an N_Selected_Component we should
-      --  also be OK because GCC knows to look inside the conversion except if
-      --  the type is discriminated. We assume that we are OK anyway if the
-      --  type is not set yet or if it is controlled since we can't afford to
-      --  introduce a temporary in this case.
+      --  also be OK because GCC knows to look inside the conversion.
 
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         return No (Etype (Pexp))
-           or else not Is_Type (Etype (Pexp))
-           or else not Has_Discriminants (Etype (Pexp))
-           or else Is_Constrained (Etype (Pexp));
+         return True;
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
