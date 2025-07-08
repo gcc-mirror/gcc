@@ -1,5 +1,5 @@
 /* PR rtl-optimization/87600  */
-/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* powerpc*-*-* s390*-*-* x86_64-*-* } } */
+/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* loongarch*-*-* powerpc*-*-* s390*-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
 #include "pr87600.h"
