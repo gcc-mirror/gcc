@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O3 -mzarch -march=z16 -ftree-vectorize -fdump-tree-optimized" } */
 
 #define TEST(T1,T2,N)                                                   \
@@ -18,8 +18,6 @@
       res[i] = ((unsigned T2)a[i] + b[i] + 1) >> 1;                     \
   }
 
-TEST(char,short,16)
-TEST(short,int,8)
-TEST(int,long,4)
+TEST(long,__int128,2)
 
-/* { dg-final { scan-tree-dump-times "\.AVG_CEIL" 6 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.AVG_CEIL" 2 "optimized" } } */
