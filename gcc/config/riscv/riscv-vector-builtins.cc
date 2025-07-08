@@ -4977,6 +4977,12 @@ registered_function::overloaded_hash () const
   for (unsigned int i = 0; i < argument_types.length (); i++)
     {
       type = argument_types[i];
+
+      /* If we're passed something entirely unreasonable, just ignore here.
+	 We'll warn later anyway.  */
+      if (TREE_CODE_CLASS (TREE_CODE (type)) != tcc_type)
+	continue;
+
       unsigned_p = POINTER_TYPE_P (type) ? TYPE_UNSIGNED (TREE_TYPE (type))
 					 : TYPE_UNSIGNED (type);
       mode_p = POINTER_TYPE_P (type) ? TYPE_MODE (TREE_TYPE (type))
