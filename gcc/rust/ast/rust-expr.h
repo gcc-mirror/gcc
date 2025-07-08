@@ -395,6 +395,8 @@ public:
     return *main_or_left_expr;
   }
 
+  bool has_borrow_expr () const { return main_or_left_expr != nullptr; }
+
   bool get_is_mut () const { return mutability == Mutability::Mut; }
 
   Mutability get_mutability () const { return mutability; }

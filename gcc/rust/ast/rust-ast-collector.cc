@@ -870,7 +870,8 @@ TokenCollector::visit (BorrowExpr &expr)
 	push (Rust::Token::make (MUT, UNDEF_LOCATION));
     }
 
-  visit (expr.get_borrowed_expr ());
+  if (expr.has_borrow_expr ())
+    visit (expr.get_borrowed_expr ());
 }
 
 void
