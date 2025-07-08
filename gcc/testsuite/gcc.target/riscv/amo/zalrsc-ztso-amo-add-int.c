@@ -9,7 +9,7 @@
 
 /*
 ** atomic_add_fetch_int_relaxed:
-**	1:
+**...
 **	lr.w\t[atx][0-9]+, 0\(a0\)
 **	add\t[atx][0-9]+, [atx][0-9]+, a1
 **	sc.w\t[atx][0-9]+, [atx][0-9]+, 0\(a0\)
@@ -23,7 +23,7 @@ void atomic_add_fetch_int_relaxed (int* bar, int baz)
 
 /*
 ** atomic_add_fetch_int_acquire:
-**	1:
+**...
 **	lr.w\t[atx][0-9]+, 0\(a0\)
 **	add\t[atx][0-9]+, [atx][0-9]+, a1
 **	sc.w\t[atx][0-9]+, [atx][0-9]+, 0\(a0\)
@@ -37,7 +37,7 @@ void atomic_add_fetch_int_acquire (int* bar, int baz)
 
 /*
 ** atomic_add_fetch_int_release:
-**	1:
+**...
 **	lr.w\t[atx][0-9]+, 0\(a0\)
 **	add\t[atx][0-9]+, [atx][0-9]+, a1
 **	sc.w\t[atx][0-9]+, [atx][0-9]+, 0\(a0\)
@@ -51,7 +51,7 @@ void atomic_add_fetch_int_release (int* bar, int baz)
 
 /*
 ** atomic_add_fetch_int_acq_rel:
-**	1:
+**...
 **	lr.w\t[atx][0-9]+, 0\(a0\)
 **	add\t[atx][0-9]+, [atx][0-9]+, a1
 **	sc.w\t[atx][0-9]+, [atx][0-9]+, 0\(a0\)
@@ -65,7 +65,7 @@ void atomic_add_fetch_int_acq_rel (int* bar, int baz)
 
 /*
 ** atomic_add_fetch_int_seq_cst:
-**	1:
+**...
 **	lr.w.aqrl\t[atx][0-9]+, 0\(a0\)
 **	add\t[atx][0-9]+, [atx][0-9]+, a1
 **	sc.w.rl\t[atx][0-9]+, [atx][0-9]+, 0\(a0\)
