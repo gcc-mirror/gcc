@@ -1346,12 +1346,12 @@
 
 ;; Predicated B16B16 binary operations.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:VNx8BF_ONLY 0 "register_operand")
-	(unspec:VNx8BF_ONLY
-	  [(match_operand:<VPRED> 1 "register_operand")
+  [(set (match_operand:SVE_BF 0 "register_operand")
+	(unspec:SVE_BF
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
-	   (match_operand:VNx8BF_ONLY 2 "register_operand")
-	   (match_operand:VNx8BF_ONLY 3 "register_operand")]
+	   (match_operand:SVE_BF 2 "register_operand")
+	   (match_operand:SVE_BF 3 "register_operand")]
 	  SVE_COND_FP_BINARY_OPTAB))]
   "TARGET_SSVE_B16B16 && <supports_bf16>"
   {@ [ cons: =0 , 1   , 2 , 3 ; attrs: movprfx , is_rev ]
