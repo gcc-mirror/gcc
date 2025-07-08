@@ -16566,9 +16566,6 @@ s390_option_override_internal (struct gcc_options *opts,
   else
     SET_OPTION_IF_UNSET (opts, opts_set, param_vect_partial_vector_usage, 0);
 
-  /* Do not vectorize loops with a low trip count for now.  */
-  SET_OPTION_IF_UNSET (opts, opts_set, param_min_vect_loop_bound, 2);
-
   /* Set the default alignment.  */
   s390_default_align (opts);
 
