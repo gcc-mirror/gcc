@@ -9961,7 +9961,8 @@ proc check_effective_target_vect_logical_reduc { } {
 		   || [istarget amdgcn-*-*]
 		   || [check_effective_target_riscv_v]
 		   || [check_effective_target_loongarch_sx]
-		   || [check_effective_target_x86]}]
+		   || [check_effective_target_x86]
+		   || [check_effective_target_s390_vx]}]
 }
 
 # Return 1 if the target supports the fold_extract_last optab.
