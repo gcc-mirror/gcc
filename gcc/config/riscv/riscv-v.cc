@@ -408,7 +408,7 @@ emit_vlmax_insn_lra (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
   gcc_assert (!can_create_pseudo_p ());
   machine_mode mode = GET_MODE (ops[0]);
 
-  if (imm_avl_p (mode))
+  if (imm_avl_p (mode) && !TARGET_XTHEADVECTOR)
     {
       /* Even though VL is a real hardreg already allocated since
 	 it is post-RA now, we still gain benefits that we emit
