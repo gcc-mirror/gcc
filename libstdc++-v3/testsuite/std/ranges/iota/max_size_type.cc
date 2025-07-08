@@ -352,6 +352,9 @@ static_assert(numeric_limits<max_size_t>::is_specialized);
 static_assert(!numeric_limits<max_size_t>::is_signed);
 static_assert(numeric_limits<max_size_t>::is_integer);
 static_assert(numeric_limits<max_size_t>::is_exact);
+static_assert(numeric_limits<max_size_t>::is_bounded);
+static_assert(numeric_limits<max_size_t>::is_modulo);
+static_assert(numeric_limits<max_size_t>::radix == 2);
 // We can't unconditionally use numeric_limits here because __int128 is an
 // integral type only in GNU mode.
 #if __SIZEOF_INT128__
@@ -379,6 +382,9 @@ static_assert(numeric_limits<max_diff_t>::is_specialized);
 static_assert(numeric_limits<max_diff_t>::is_signed);
 static_assert(numeric_limits<max_diff_t>::is_integer);
 static_assert(numeric_limits<max_diff_t>::is_exact);
+static_assert(numeric_limits<max_diff_t>::is_bounded);
+static_assert(!numeric_limits<max_diff_t>::is_modulo);
+static_assert(numeric_limits<max_diff_t>::radix == 2);
 static_assert(numeric_limits<max_diff_t>::digits
 	      == numeric_limits<max_size_t>::digits - 1);
 static_assert(numeric_limits<max_diff_t>::digits10
@@ -399,6 +405,31 @@ static_assert(numeric_limits<max_diff_t>::lowest()
 static_assert(max_diff_t(max_size_t(1)
 			 << (numeric_limits<max_size_t>::digits-1))
 	      == numeric_limits<max_diff_t>::min());
+
+template <typename integer_class>
+constexpr bool verify_numeric_limits_values_not_meaningful_for = true
+	&& (numeric_limits<integer_class>::max_digits10 == 0)
+	&& (numeric_limits<integer_class>::min_exponent == 0)
+	&& (numeric_limits<integer_class>::min_exponent10 == 0)
+	&& (numeric_limits<integer_class>::max_exponent == 0)
+	&& (numeric_limits<integer_class>::max_exponent10 == 0)
+	&& !numeric_limits<integer_class>::is_iec559
+	&& !numeric_limits<integer_class>::has_infinity
+	&& !numeric_limits<integer_class>::has_quiet_NaN
+	&& !numeric_limits<integer_class>::has_signaling_NaN
+	&& !numeric_limits<integer_class>::has_denorm_loss
+	&& !numeric_limits<integer_class>::tinyness_before
+	&& (numeric_limits<integer_class>::has_denorm == std::denorm_absent)
+	&& (numeric_limits<integer_class>::round_style == std::round_toward_zero)
+	&& (numeric_limits<integer_class>::denorm_min() == 0)
+	&& (numeric_limits<integer_class>::epsilon() == 0)
+	&& (numeric_limits<integer_class>::round_error() == 0)
+	&& (numeric_limits<integer_class>::infinity() == 0)
+	&& (numeric_limits<integer_class>::quiet_NaN() == 0)
+	&& (numeric_limits<integer_class>::signaling_NaN() == 0);
+
+static_assert(verify_numeric_limits_values_not_meaningful_for<max_size_t>);
+static_assert(verify_numeric_limits_values_not_meaningful_for<max_diff_t>);
 
 // Verify that the types are structural types and can therefore be used
 // as NTTP types.

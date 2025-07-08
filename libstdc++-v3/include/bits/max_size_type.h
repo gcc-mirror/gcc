@@ -38,6 +38,7 @@
 #include <ext/numeric_traits.h>
 #include <bit> // __bit_width
 #include <numbers>
+#include <limits> // __glibcxx_integral_traps
 
 // This header implements unsigned and signed integer-class types (as per
 // [iterator.concept.winc]) that are one bit wider than the widest supported
@@ -775,10 +776,27 @@ namespace ranges
       static constexpr bool is_signed = false;
       static constexpr bool is_integer = true;
       static constexpr bool is_exact = true;
+      static constexpr bool is_bounded = true;
+      static constexpr bool is_modulo = true;
+      static constexpr bool traps = __glibcxx_integral_traps;
+      static constexpr int radix = 2;
       static constexpr int digits
 	= __gnu_cxx::__int_traits<_Sp::__rep>::__digits + 1;
       static constexpr int digits10
 	= static_cast<int>(digits * numbers::ln2 / numbers::ln10);
+      static constexpr int max_digits10 = 0;
+      static constexpr int min_exponent = 0;
+      static constexpr int min_exponent10 = 0;
+      static constexpr int max_exponent = 0;
+      static constexpr int max_exponent10 = 0;
+      static constexpr bool is_iec559 = false;
+      static constexpr bool has_infinity = false;
+      static constexpr bool has_quiet_NaN = false;
+      static constexpr bool has_signaling_NaN = false;
+      static constexpr bool has_denorm_loss = false;
+      static constexpr bool tinyness_before = false;
+      static constexpr float_denorm_style has_denorm = denorm_absent;
+      static constexpr float_round_style round_style = round_toward_zero;
 
       static constexpr _Sp
       min() noexcept
@@ -791,6 +809,30 @@ namespace ranges
       static constexpr _Sp
       lowest() noexcept
       { return min(); }
+
+      static constexpr _Sp
+      denorm_min() noexcept
+      { return 0; }
+
+      static constexpr _Sp
+      epsilon() noexcept
+      { return 0; }
+
+      static constexpr _Sp
+      round_error() noexcept
+      { return 0; }
+
+      static constexpr _Sp
+      infinity() noexcept
+      { return 0; }
+
+      static constexpr _Sp
+      quiet_NaN() noexcept
+      { return 0; }
+
+      static constexpr _Sp
+      signaling_NaN() noexcept
+      { return 0; }
     };
 
   template<>
@@ -802,9 +844,26 @@ namespace ranges
       static constexpr bool is_signed = true;
       static constexpr bool is_integer = true;
       static constexpr bool is_exact = true;
+      static constexpr bool is_bounded = true;
+      static constexpr bool is_modulo = false;
+      static constexpr bool traps = __glibcxx_integral_traps;
+      static constexpr int radix = 2;
       static constexpr int digits = numeric_limits<_Sp>::digits - 1;
       static constexpr int digits10
 	= static_cast<int>(digits * numbers::ln2 / numbers::ln10);
+      static constexpr int max_digits10 = 0;
+      static constexpr int min_exponent = 0;
+      static constexpr int min_exponent10 = 0;
+      static constexpr int max_exponent = 0;
+      static constexpr int max_exponent10 = 0;
+      static constexpr bool is_iec559 = false;
+      static constexpr bool has_infinity = false;
+      static constexpr bool has_quiet_NaN = false;
+      static constexpr bool has_signaling_NaN = false;
+      static constexpr bool has_denorm_loss = false;
+      static constexpr bool tinyness_before = false;
+      static constexpr float_denorm_style has_denorm = denorm_absent;
+      static constexpr float_round_style round_style = round_toward_zero;
 
       static constexpr _Dp
       min() noexcept
@@ -817,6 +876,30 @@ namespace ranges
       static constexpr _Dp
       lowest() noexcept
       { return min(); }
+
+      static constexpr _Dp
+      denorm_min() noexcept
+      { return 0; }
+
+      static constexpr _Dp
+      epsilon() noexcept
+      { return 0; }
+
+      static constexpr _Dp
+      round_error() noexcept
+      { return 0; }
+
+      static constexpr _Dp
+      infinity() noexcept
+      { return 0; }
+
+      static constexpr _Dp
+      quiet_NaN() noexcept
+      { return 0; }
+
+      static constexpr _Dp
+      signaling_NaN() noexcept
+      { return 0; }
     };
 
   template<>
