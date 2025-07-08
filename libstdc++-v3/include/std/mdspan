@@ -1057,6 +1057,291 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __p + __i; }
     };
 
+  namespace __mdspan
+  {
+    template<typename _Extents, typename _IndexType, size_t _Nm>
+      constexpr bool
+      __is_multi_index(const _Extents& __exts, span<_IndexType, _Nm> __indices)
+      {
+	static_assert(__exts.rank() == _Nm);
+	for (size_t __i = 0; __i < __exts.rank(); ++__i)
+	  if (__indices[__i] >= __exts.extent(__i))
+	    return false;
+	return true;
+      }
+  }
+
+  template<typename _ElementType, typename _Extents,
+	   typename _LayoutPolicy = layout_right,
+	   typename _AccessorPolicy = default_accessor<_ElementType>>
+    class mdspan
+    {
+      static_assert(!is_array_v<_ElementType>,
+	"ElementType must not be an array type");
+      static_assert(!is_abstract_v<_ElementType>,
+	"ElementType must not be an abstract class type");
+      static_assert(__mdspan::__is_extents<_Extents>,
+	"Extents must be a specialization of std::extents");
+      static_assert(is_same_v<_ElementType,
+			      typename _AccessorPolicy::element_type>);
+
+    public:
+      using extents_type = _Extents;
+      using layout_type = _LayoutPolicy;
+      using accessor_type = _AccessorPolicy;
+      using mapping_type = typename layout_type::template mapping<extents_type>;
+      using element_type = _ElementType;
+      using value_type = remove_cv_t<element_type>;
+      using index_type = typename extents_type::index_type;
+      using size_type = typename extents_type::size_type;
+      using rank_type = typename extents_type::rank_type;
+      using data_handle_type = typename accessor_type::data_handle_type;
+      using reference = typename accessor_type::reference;
+
+      static constexpr rank_type
+      rank() noexcept { return extents_type::rank(); }
+
+      static constexpr rank_type
+      rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
+
+      static constexpr size_t
+      static_extent(rank_type __r) noexcept
+      { return extents_type::static_extent(__r); }
+
+      constexpr index_type
+      extent(rank_type __r) const noexcept { return extents().extent(__r); }
+
+      constexpr
+      mdspan()
+      requires (rank_dynamic() > 0)
+          && is_default_constructible_v<data_handle_type>
+	  && is_default_constructible_v<mapping_type>
+	  && is_default_constructible_v<accessor_type>
+      : _M_accessor(), _M_mapping(), _M_handle()
+      { }
+
+      constexpr
+      mdspan(const mdspan& __other) = default;
+
+      constexpr
+      mdspan(mdspan&& __other) = default;
+
+      template<__mdspan::__valid_index_type<index_type>... _OIndexTypes>
+	requires (sizeof...(_OIndexTypes) == rank()
+		   || sizeof...(_OIndexTypes) == rank_dynamic())
+		 && is_constructible_v<mapping_type, extents_type>
+		 && is_default_constructible_v<accessor_type>
+	constexpr explicit
+	mdspan(data_handle_type __handle, _OIndexTypes... __exts)
+	: _M_accessor(),
+	  _M_mapping(_Extents(static_cast<index_type>(std::move(__exts))...)),
+	  _M_handle(std::move(__handle))
+	{ }
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType,
+	       size_t _Nm>
+	requires (_Nm == rank() || _Nm == rank_dynamic())
+		 && is_constructible_v<mapping_type, extents_type>
+		 && is_default_constructible_v<accessor_type>
+	constexpr explicit(_Nm != rank_dynamic())
+	mdspan(data_handle_type __handle, span<_OIndexType, _Nm> __exts)
+	: _M_accessor(), _M_mapping(extents_type(__exts)),
+	  _M_handle(std::move(__handle))
+	{ }
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType,
+	       size_t _Nm>
+	requires (_Nm == rank() || _Nm == rank_dynamic())
+		 && is_constructible_v<mapping_type, extents_type>
+		 && is_default_constructible_v<accessor_type>
+	constexpr explicit(_Nm != rank_dynamic())
+	mdspan(data_handle_type __handle, const array<_OIndexType, _Nm>& __exts)
+	: _M_accessor(), _M_mapping(extents_type(__exts)),
+	  _M_handle(std::move(__handle))
+	{ }
+
+      constexpr
+      mdspan(data_handle_type __handle, const extents_type& __exts)
+      requires is_constructible_v<mapping_type, const extents_type&>
+	       && is_default_constructible_v<accessor_type>
+      : _M_accessor(), _M_mapping(__exts), _M_handle(std::move(__handle))
+      { }
+
+      constexpr
+      mdspan(data_handle_type __handle, const mapping_type& __mapping)
+      requires is_default_constructible_v<accessor_type>
+      : _M_accessor(), _M_mapping(__mapping), _M_handle(std::move(__handle))
+      { }
+
+      constexpr
+      mdspan(data_handle_type __handle, const mapping_type& __mapping,
+	     const accessor_type& __accessor)
+      : _M_accessor(__accessor), _M_mapping(__mapping),
+        _M_handle(std::move(__handle))
+      { }
+
+      template<typename _OElementType, typename _OExtents, typename _OLayout,
+	       typename _OAccessor>
+	requires is_constructible_v<mapping_type,
+	      const typename _OLayout::mapping<_OExtents>&>
+	  && is_constructible_v<accessor_type, const _OAccessor&>
+	constexpr explicit(!is_convertible_v<
+	    const typename _OLayout::mapping<_OExtents>&, mapping_type>
+	  || !is_convertible_v<const _OAccessor&, accessor_type>)
+	mdspan(const mdspan<_OElementType, _OExtents, _OLayout, _OAccessor>&
+		 __other)
+	: _M_accessor(__other.accessor()), _M_mapping(__other.mapping()),
+	  _M_handle(__other.data_handle())
+	{
+	  static_assert(is_constructible_v<data_handle_type,
+	      const typename _OAccessor::data_handle_type&>);
+	  static_assert(is_constructible_v<extents_type, _OExtents>);
+	}
+
+      constexpr mdspan&
+      operator=(const mdspan& __other) = default;
+
+      constexpr mdspan&
+      operator=(mdspan&& __other) = default;
+
+      template<__mdspan::__valid_index_type<index_type>... _OIndexTypes>
+	requires (sizeof...(_OIndexTypes) == rank())
+	constexpr reference
+	operator[](_OIndexTypes... __indices) const
+	{
+	  auto __checked_call = [this](auto... __idxs) -> index_type
+	    {
+	      if constexpr (sizeof...(__idxs) > 0)
+		__glibcxx_assert(__mdspan::__is_multi_index(extents(),
+		  span<const index_type, sizeof...(__idxs)>({__idxs...})));
+	      return _M_mapping(__idxs...);
+	    };
+
+	  auto __index = __checked_call(
+	    static_cast<index_type>(std::move(__indices))...);
+	  return _M_accessor.access(_M_handle, __index);
+	}
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+	constexpr reference
+	operator[](span<_OIndexType, rank()> __indices) const
+	{
+	  auto __call = [&]<size_t... _Counts>(index_sequence<_Counts...>)
+	    -> reference
+	    { return (*this)[index_type(as_const(__indices[_Counts]))...]; };
+	  return __call(make_index_sequence<rank()>());
+	}
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+	constexpr reference
+	operator[](const array<_OIndexType, rank()>& __indices) const
+	{ return (*this)[span<const _OIndexType, rank()>(__indices)]; }
+
+      constexpr size_type
+      size() const noexcept
+      {
+	__glibcxx_assert(cmp_less_equal(_M_mapping.required_span_size(),
+					numeric_limits<size_t>::max()));
+	return size_type(__mdspan::__size(extents()));
+      }
+
+      [[nodiscard]]
+      constexpr bool
+      empty() const noexcept
+      {
+	return __mdspan::__empty(extents());
+      }
+
+      friend constexpr void
+      swap(mdspan& __x, mdspan& __y) noexcept
+      {
+	using std::swap;
+	swap(__x._M_mapping, __y._M_mapping);
+	swap(__x._M_accessor, __y._M_accessor);
+	swap(__x._M_handle, __y._M_handle);
+      }
+
+      constexpr const extents_type&
+      extents() const noexcept { return _M_mapping.extents(); }
+
+      constexpr const data_handle_type&
+      data_handle() const noexcept { return _M_handle; }
+
+      constexpr const mapping_type&
+      mapping() const noexcept { return _M_mapping; }
+
+      constexpr const accessor_type&
+      accessor() const noexcept { return _M_accessor; }
+
+      static constexpr bool
+      is_always_unique() { return mapping_type::is_always_unique(); }
+
+      static constexpr bool
+      is_always_exhaustive() { return mapping_type::is_always_exhaustive(); }
+
+      static constexpr bool
+      is_always_strided() { return mapping_type::is_always_strided(); }
+
+      constexpr bool
+      is_unique() const { return _M_mapping.is_unique(); }
+
+      constexpr bool
+      is_exhaustive() const { return _M_mapping.is_exhaustive(); }
+
+      constexpr bool
+      is_strided() const { return _M_mapping. is_strided(); }
+
+      constexpr index_type
+      stride(rank_type __r) const { return _M_mapping.stride(__r); }
+
+    private:
+      [[no_unique_address]] accessor_type _M_accessor;
+      [[no_unique_address]] mapping_type _M_mapping;
+      [[no_unique_address]] data_handle_type _M_handle;
+    };
+
+  template<typename _CArray>
+    requires is_array_v<_CArray> && (rank_v<_CArray> == 1)
+    mdspan(_CArray&)
+    -> mdspan<remove_all_extents_t<_CArray>,
+	      extents<size_t, extent_v<_CArray, 0>>>;
+
+  template<typename _Pointer>
+    requires is_pointer_v<remove_reference_t<_Pointer>>
+    mdspan(_Pointer&&)
+    -> mdspan<remove_pointer_t<remove_reference_t<_Pointer>>, extents<size_t>>;
+
+  template<typename _ElementType, typename... _Integrals>
+    requires (is_convertible_v<_Integrals, size_t> && ...)
+	      && (sizeof...(_Integrals) > 0)
+    explicit mdspan(_ElementType*, _Integrals...)
+    -> mdspan<_ElementType,
+	      extents<size_t, __mdspan::__dynamic_extent<_Integrals>()...>>;
+
+  template<typename _ElementType, typename _OIndexType, size_t _Nm>
+    mdspan(_ElementType*, span<_OIndexType, _Nm>)
+    -> mdspan<_ElementType, dextents<size_t, _Nm>>;
+
+  template<typename _ElementType, typename _OIndexType, size_t _Nm>
+    mdspan(_ElementType*, const array<_OIndexType, _Nm>&)
+    -> mdspan<_ElementType, dextents<size_t, _Nm>>;
+
+  template<typename _ElementType, typename _IndexType, size_t... _ExtentsPack>
+    mdspan(_ElementType*, const extents<_IndexType, _ExtentsPack...>&)
+    -> mdspan<_ElementType, extents<_IndexType, _ExtentsPack...>>;
+
+  template<typename _ElementType, typename _MappingType>
+    mdspan(_ElementType*, const _MappingType&)
+    -> mdspan<_ElementType, typename _MappingType::extents_type,
+	      typename _MappingType::layout_type>;
+
+  template<typename _MappingType, typename _AccessorType>
+    mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&,
+	   const _AccessorType&)
+    -> mdspan<typename _AccessorType::element_type,
+	      typename _MappingType::extents_type,
+	      typename _MappingType::layout_type, _AccessorType>;
+
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 #endif

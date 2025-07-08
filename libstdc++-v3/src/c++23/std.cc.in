@@ -1846,7 +1846,8 @@ export namespace std
   using std::layout_right;
   using std::layout_stride;
   using std::default_accessor;
-  // FIXME layout_left_padded, layout_right_padded, aligned_accessor and mdspan
+  using std::mdspan;
+  // FIXME layout_left_padded, layout_right_padded, aligned_accessor, mdsubspan
 }
 #endif
 
