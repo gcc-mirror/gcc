@@ -27,6 +27,11 @@
 #include "rust-macro-builtins.h"
 
 namespace Rust {
+
+// forward declarations for AttributeParser
+class MacroInvocLexer;
+template <typename ManagedTokenSource> class Parser;
+
 namespace AST {
 
 class MacroFragSpec
@@ -1116,16 +1121,14 @@ struct AttributeParser
 {
 private:
   // TODO: might as well rewrite to use lexer tokens
-  std::vector<std::unique_ptr<Token>> token_stream;
-  int stream_pos;
+  std::unique_ptr<MacroInvocLexer> lexer;
+  std::unique_ptr<Parser<MacroInvocLexer>> parser;
 
 public:
   AttributeParser (std::vector<std::unique_ptr<Token>> token_stream,
-		   int stream_start_pos = 0)
-    : token_stream (std::move (token_stream)), stream_pos (stream_start_pos)
-  {}
+		   int stream_start_pos = 0);
 
-  ~AttributeParser () = default;
+  ~AttributeParser ();
 
   std::vector<std::unique_ptr<MetaItemInner>> parse_meta_item_seq ();
 
@@ -1146,12 +1149,9 @@ private:
   std::unique_ptr<MetaItem> parse_path_meta_item ();
 
   // TODO: should this be const?
-  std::unique_ptr<Token> &peek_token (int i = 0)
-  {
-    return token_stream[stream_pos + i];
-  }
+  const_TokenPtr peek_token (int i = 0);
 
-  void skip_token (int i = 0) { stream_pos += 1 + i; }
+  void skip_token (int i = 0);
 };
 } // namespace AST
 } // namespace Rust

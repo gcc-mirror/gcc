@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-operators.h"
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
+#include "rust-macro-invoc-lexer.h"
 
 /* Compilation unit used for various AST-related functions that would make
  * the headers too long if they were defined inline and don't receive any
@@ -3508,6 +3509,17 @@ DelimTokenTree::parse_to_meta_item () const
   return new AttrInputMetaItemContainer (std::move (meta_items));
 }
 
+AttributeParser::AttributeParser (
+  std::vector<std::unique_ptr<Token>> token_stream, int stream_start_pos)
+  : lexer (new MacroInvocLexer (std::move (token_stream))),
+    parser (new Parser<MacroInvocLexer> (*lexer))
+{
+  if (stream_start_pos)
+    lexer->skip_token (stream_start_pos - 1);
+}
+
+AttributeParser::~AttributeParser () {}
+
 std::unique_ptr<MetaItemInner>
 AttributeParser::parse_meta_item_inner ()
 {
@@ -3549,7 +3561,7 @@ AttributeParser::parse_meta_item_inner ()
       return parse_path_meta_item ();
     }
 
-  auto ident = peek_token ()->as_string ();
+  auto ident = peek_token ()->get_str ();
   auto ident_locus = peek_token ()->get_locus ();
 
   if (is_end_meta_item_tok (peek_token (1)->get_id ()))
@@ -3566,17 +3578,14 @@ AttributeParser::parse_meta_item_inner ()
 	  && is_end_meta_item_tok (peek_token (3)->get_id ()))
 	{
 	  // meta name value str syntax
-	  auto &value_tok = peek_token (2);
-	  auto value = value_tok->as_string ();
+	  const_TokenPtr value_tok = peek_token (2);
+	  auto value = value_tok->get_str ();
 	  auto locus = value_tok->get_locus ();
 
 	  skip_token (2);
 
-	  // remove the quotes from the string value
-	  std::string raw_value = unquote_string (std::move (value));
-
 	  return std::unique_ptr<MetaNameValueStr> (
-	    new MetaNameValueStr (ident, ident_locus, std::move (raw_value),
+	    new MetaNameValueStr (ident, ident_locus, std::move (value),
 				  locus));
 	}
       else
@@ -3728,7 +3737,6 @@ AttributeParser::parse_path_meta_item ()
 std::vector<std::unique_ptr<MetaItemInner>>
 AttributeParser::parse_meta_item_seq ()
 {
-  int vec_length = token_stream.size ();
   std::vector<std::unique_ptr<MetaItemInner>> meta_items;
 
   if (peek_token ()->get_id () != LEFT_PAREN)
@@ -3739,7 +3747,8 @@ AttributeParser::parse_meta_item_seq ()
     }
   skip_token ();
 
-  while (stream_pos < vec_length && peek_token ()->get_id () != RIGHT_PAREN)
+  while (peek_token ()->get_id () != END_OF_FILE
+	 && peek_token ()->get_id () != RIGHT_PAREN)
     {
       std::unique_ptr<MetaItemInner> inner = parse_meta_item_inner ();
       if (inner == nullptr)
@@ -3788,33 +3797,32 @@ DelimTokenTree::to_token_stream () const
 Literal
 AttributeParser::parse_literal ()
 {
-  const std::unique_ptr<Token> &tok = peek_token ();
+  const_TokenPtr tok = peek_token ();
   switch (tok->get_id ())
     {
     case CHAR_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::CHAR, tok->get_type_hint ());
+      return Literal (tok->get_str (), Literal::CHAR, tok->get_type_hint ());
     case STRING_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::STRING,
-		      tok->get_type_hint ());
+      return Literal (tok->get_str (), Literal::STRING, tok->get_type_hint ());
     case BYTE_CHAR_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE, tok->get_type_hint ());
+      return Literal (tok->get_str (), Literal::BYTE, tok->get_type_hint ());
     case BYTE_STRING_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE_STRING,
+      return Literal (tok->get_str (), Literal::BYTE_STRING,
 		      tok->get_type_hint ());
     case RAW_STRING_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::RAW_STRING,
+      return Literal (tok->get_str (), Literal::RAW_STRING,
 		      tok->get_type_hint ());
     case INT_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::INT, tok->get_type_hint ());
+      return Literal (tok->get_str (), Literal::INT, tok->get_type_hint ());
     case FLOAT_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::FLOAT, tok->get_type_hint ());
+      return Literal (tok->get_str (), Literal::FLOAT, tok->get_type_hint ());
     case TRUE_LITERAL:
       skip_token ();
       return Literal ("true", Literal::BOOL, tok->get_type_hint ());
@@ -3872,12 +3880,12 @@ AttributeParser::parse_simple_path ()
 SimplePathSegment
 AttributeParser::parse_simple_path_segment ()
 {
-  const std::unique_ptr<Token> &tok = peek_token ();
+  const_TokenPtr tok = peek_token ();
   switch (tok->get_id ())
     {
     case IDENTIFIER:
       skip_token ();
-      return SimplePathSegment (tok->as_string (), tok->get_locus ());
+      return SimplePathSegment (tok->get_str (), tok->get_locus ());
     case SUPER:
       skip_token ();
       return SimplePathSegment ("super", tok->get_locus ());
@@ -3909,6 +3917,18 @@ AttributeParser::parse_meta_item_lit ()
   LiteralExpr lit_expr (parse_literal (), {}, locus);
   return std::unique_ptr<MetaItemLitExpr> (
     new MetaItemLitExpr (std::move (lit_expr)));
+}
+
+const_TokenPtr
+AttributeParser::peek_token (int i)
+{
+  return lexer->peek_token (i);
+}
+
+void
+AttributeParser::skip_token (int i)
+{
+  lexer->skip_token (i);
 }
 
 bool
