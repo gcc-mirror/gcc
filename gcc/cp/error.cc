@@ -810,6 +810,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_ws_string (pp,
 			 TYPENAME_IS_ENUM_P (t) ? "enum"
 			 : TYPENAME_IS_CLASS_P (t) ? "class"
+			 : TYPENAME_IS_UNION_P (t) ? "union"
 			 : "typename");
       dump_typename (pp, t, flags);
       break;

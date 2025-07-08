@@ -28,7 +28,7 @@ struct N::S s3;       // { dg-warning "-Wredundant-tags" }
 
 N::U u1;
 typename N::U u2;     // { dg-bogus "-Wredundant-tags" }
-                      // { dg-bogus "'class' tag used in naming 'union N::U" "pr93809" { xfail *-*-*} .-1 }
+                      // { dg-bogus "'class' tag used in naming 'union N::U" "pr93809" { target *-*-*} .-1 }
 union N::U u3;        // { dg-warning "-Wredundant-tags" }
 
 

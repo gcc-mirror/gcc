@@ -9619,6 +9619,8 @@ trees_out::type_node (tree type)
 	      tag_type = enum_type;
 	    else if (TYPENAME_IS_CLASS_P (type))
 	      tag_type = class_type;
+	    else if (TYPENAME_IS_UNION_P (type))
+	      tag_type = union_type;
 	    u (int (tag_type));
 	  }
 	}

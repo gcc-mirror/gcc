@@ -4370,6 +4370,7 @@ struct typename_info {
   tree template_id;
   bool enum_p;
   bool class_p;
+  bool union_p;
 };
 
 struct typename_hasher : ggc_ptr_hash<tree_node>
@@ -4408,7 +4409,8 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
 	    && TYPE_CONTEXT (t1) == t2->scope
 	    && TYPENAME_TYPE_FULLNAME (t1) == t2->template_id
 	    && TYPENAME_IS_ENUM_P (t1) == t2->enum_p
-	    && TYPENAME_IS_CLASS_P (t1) == t2->class_p);
+	    && TYPENAME_IS_CLASS_P (t1) == t2->class_p
+	    && TYPENAME_IS_UNION_P (t1) == t2->union_p);
   }
 };
 
@@ -4432,9 +4434,8 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.name = name;
   ti.template_id = fullname;
   ti.enum_p = tag_type == enum_type;
-  ti.class_p = (tag_type == class_type
-		|| tag_type == record_type
-		|| tag_type == union_type);
+  ti.class_p = (tag_type == class_type || tag_type == record_type);
+  ti.union_p = tag_type == union_type;
   hashval_t hash = typename_hasher::hash (&ti);
 
   /* See if we already have this type.  */
@@ -4450,6 +4451,7 @@ build_typename_type (tree context, tree name, tree fullname,
       TYPENAME_TYPE_FULLNAME (t) = ti.template_id;
       TYPENAME_IS_ENUM_P (t) = ti.enum_p;
       TYPENAME_IS_CLASS_P (t) = ti.class_p;
+      TYPENAME_IS_UNION_P (t) = ti.union_p;
 
       /* Build the corresponding TYPE_DECL.  */
       tree d = build_decl (input_location, TYPE_DECL, name, t);

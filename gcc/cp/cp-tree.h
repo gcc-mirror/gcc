@@ -506,6 +506,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_EXPR_STATIC_P (in LAMBDA_EXPR)
       TARGET_EXPR_ELIDING_P (in TARGET_EXPR)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
+      TYPENAME_IS_UNION_P (in TYPENAME_TYPE)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -2353,6 +2354,10 @@ enum languages { lang_c, lang_cplusplus };
 /* Nonzero if T is a class type but not a union.  */
 #define NON_UNION_CLASS_TYPE_P(T) \
   (TREE_CODE (T) == RECORD_TYPE && TYPE_LANG_FLAG_5 (T))
+
+/* Nonzero if T is a class type and is a union.  */
+#define UNION_TYPE_P(T) \
+  (TREE_CODE (T) == UNION_TYPE && TYPE_LANG_FLAG_5 (T))
 
 /* Keep these checks in ascending code order.  */
 #define RECORD_OR_UNION_CODE_P(T)	\
@@ -4485,10 +4490,13 @@ get_vec_init_expr (tree t)
 #define TYPENAME_IS_ENUM_P(NODE) \
   (TREE_LANG_FLAG_0 (TYPENAME_TYPE_CHECK (NODE)))
 
-/* True if a TYPENAME_TYPE was declared as a "class", "struct", or
-   "union".  */
+/* True if a TYPENAME_TYPE was declared as a "class" or "struct".  */
 #define TYPENAME_IS_CLASS_P(NODE) \
   (TREE_LANG_FLAG_1 (TYPENAME_TYPE_CHECK (NODE)))
+
+/* True if a TYPENAME_TYPE was declared as a "union".  */
+#define TYPENAME_IS_UNION_P(NODE) \
+  (TREE_LANG_FLAG_3 (TYPENAME_TYPE_CHECK (NODE)))
 
 /* True if a TYPENAME_TYPE is in the process of being resolved.  */
 #define TYPENAME_IS_RESOLVING_P(NODE) \

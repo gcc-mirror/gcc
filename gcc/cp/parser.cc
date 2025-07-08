@@ -35928,7 +35928,9 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
     return;
 
   bool seen_as_union = TREE_CODE (type) == UNION_TYPE;
-  if (seen_as_union != (class_key == union_type))
+  if (class_key != typename_type
+      && TREE_CODE (type) != TYPENAME_TYPE
+      && seen_as_union != (class_key == union_type))
     {
       auto_diagnostic_group d;
       if (permerror (input_location, "%qs tag used in naming %q#T",
