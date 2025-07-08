@@ -1179,10 +1179,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _OElementType, typename _OExtents, typename _OLayout,
 	       typename _OAccessor>
 	requires is_constructible_v<mapping_type,
-	      const typename _OLayout::mapping<_OExtents>&>
+	      const typename _OLayout::template mapping<_OExtents>&>
 	  && is_constructible_v<accessor_type, const _OAccessor&>
 	constexpr explicit(!is_convertible_v<
-	    const typename _OLayout::mapping<_OExtents>&, mapping_type>
+	    const typename _OLayout::template mapping<_OExtents>&, mapping_type>
 	  || !is_convertible_v<const _OAccessor&, accessor_type>)
 	mdspan(const mdspan<_OElementType, _OExtents, _OLayout, _OAccessor>&
 		 __other)
