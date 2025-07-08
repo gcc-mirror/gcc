@@ -19,7 +19,8 @@ test (A &b, B c)
 					// { dg-error "expected primary-expression before 'decltype'" "" { target c++11_down } .-2 }
   auto & & && & [ m, n, o ] = b;	// { dg-error "multiple ref-qualifiers" }
 					// { dg-warning "structured bindings only available with '-std=c..17' or '-std=gnu..17'" "" { target c++14_down } .-1 }
-  constexpr auto [ p ] = c;		// { dg-error "structured binding declaration cannot be 'constexpr'" }
+  constexpr B c2 = { 42 };
+  constexpr auto [ p ] = c2;		// { dg-warning "structured binding declaration can be 'constexpr' only with" "" { target c++23_down } }
 					// { dg-warning "structured bindings only available with '-std=c..17' or '-std=gnu..17'" "" { target c++14_down } .-1 }
   friend auto [ q ] = c;		// { dg-error "'friend' used outside of class" }
 					// { dg-warning "structured bindings only available with '-std=c..17' or '-std=gnu..17'" "" { target c++14_down } .-1 }

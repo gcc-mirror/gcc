@@ -16870,7 +16870,11 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  decl = error_mark_node;
 	}
       else
-	prev = decl2;
+	{
+	  prev = decl2;
+	  DECL_DECLARED_CONSTEXPR_P (decl2) = DECL_DECLARED_CONSTEXPR_P (decl);
+	  DECL_DECLARED_CONSTINIT_P (decl2) = DECL_DECLARED_CONSTINIT_P (decl);
+	}
       if (elt_pushed_scope)
 	pop_scope (elt_pushed_scope);
     }

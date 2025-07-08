@@ -63,6 +63,7 @@ foo (const S &&s)
   if (static auto [i, j, k] = t)		// { dg-warning "structured bindings in conditions only available with" "" { target c++23_down } }
     ;						// { dg-error "'static' invalid in condition" "" { target *-*-* } .-1 }
 						// { dg-warning "structured binding declaration can be 'static' only in" "" { target c++17_down } .-2 }
-  if (constexpr auto [i, j, k] = t)		// { dg-warning "structured bindings in conditions only available with" "" { target c++23_down } }
-    ;						// { dg-error "structured binding declaration cannot be 'constexpr'" "" { target *-*-* } .-1 }
+  constexpr T t2 = { 1, 2, 3 };
+  if (constexpr auto [i, j, k] = t2)		// { dg-warning "structured bindings in conditions only available with" "" { target c++23_down } }
+    ;						// { dg-warning "structured binding declaration can be 'constexpr' only with" "" { target c++23_down } .-1 }
 }

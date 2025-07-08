@@ -9174,6 +9174,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       if (decomp)
 	{
+	  if (DECL_DECLARED_CONSTINIT_P (decl) && cxx_dialect < cxx26)
+	    pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wc__26_extensions,
+		     "%<constinit%> can be applied to structured binding "
+		     "only with %<-std=c++2c%> or %<-std=gnu++2c%>");
 	  cp_maybe_mangle_decomp (decl, decomp);
 	  if (TREE_STATIC (decl) && !DECL_FUNCTION_SCOPE_P (decl))
 	    {
@@ -13621,9 +13625,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (typedef_p)
 	error_at (declspecs->locations[ds_typedef],
 		  "structured binding declaration cannot be %qs", "typedef");
-      if (constexpr_p && !concept_p)
-	error_at (declspecs->locations[ds_constexpr], "structured "
-		  "binding declaration cannot be %qs", "constexpr");
+      if (constexpr_p && !concept_p && cxx_dialect < cxx26)
+	pedwarn (declspecs->locations[ds_constexpr], OPT_Wc__26_extensions,
+		 "structured binding declaration can be %qs only with "
+		 "%<-std=c++2c%> or %<-std=gnu++2c%>", "constexpr");
       if (consteval_p)
 	error_at (declspecs->locations[ds_consteval], "structured "
 		  "binding declaration cannot be %qs", "consteval");
@@ -13634,8 +13639,11 @@ grokdeclarator (const cp_declarator *declarator,
 		 declspecs->gnu_thread_keyword_p
 		 ? "__thread" : "thread_local");
       if (concept_p)
-	error_at (declspecs->locations[ds_concept],
-		  "structured binding declaration cannot be %qs", "concept");
+	{
+	  error_at (declspecs->locations[ds_concept],
+		    "structured binding declaration cannot be %qs", "concept");
+	  constexpr_p = 0;
+	}
       /* [dcl.struct.bind] "A cv that includes volatile is deprecated."  */
       if (type_quals & TYPE_QUAL_VOLATILE)
 	warning_at (declspecs->locations[ds_volatile], OPT_Wvolatile,
@@ -13690,7 +13698,6 @@ grokdeclarator (const cp_declarator *declarator,
 		 "%<auto%> type %qT", type);
       inlinep = 0;
       typedef_p = 0;
-      constexpr_p = 0;
       consteval_p = 0;
       concept_p = 0;
       if (storage_class != sc_static)
