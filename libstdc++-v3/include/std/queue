@@ -105,7 +105,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_f.format(__a.c, __fc); }
 
     private:
-      // Standard uses formatter<ref_view<_Container>, _CharT>.
+      // Standard uses formatter<ref_view<_Container>, _CharT>, but range_formatter
+      // provides same behavior.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3881. Incorrect formatting of container adapters backed by std::string
       range_formatter<_Tp, _CharT> _M_f;
     };
 
@@ -136,7 +139,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_f.format(__a.c, __fc); }
 
     private:
-      // Standard uses formatter<ref_view<_Container>, _CharT>.
+      // Standard uses formatter<ref_view<_Container>, _CharT>, but range_formatter
+      // provides same behavior.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3881. Incorrect formatting of container adapters backed by std::string
       range_formatter<_Tp, _CharT> _M_f;
     };
 
