@@ -922,11 +922,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default
   // Fills [first, last) with value-initialized value_types.
   template<typename _ForwardIterator>
-    _GLIBCXX26_CONSTEXPR
+    _GLIBCXX20_CONSTEXPR
     inline void
     __uninitialized_default(_ForwardIterator __first,
 			    _ForwardIterator __last)
     {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return __uninitialized_default_1<false>::
+		 __uninit_default(__first, __last);
+#endif
+
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType;
       // trivial types can have deleted assignment
