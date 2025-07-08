@@ -2,8 +2,6 @@
 
 int a, c, e, f, h, j;
 long g, k;
-void *malloc(long);
-void free(void *);
 int b(int m) {
   if (m || a)
     return 1;
@@ -16,9 +14,9 @@ int i() {
 }
 void n() {
   long o;
-  int *p = malloc(sizeof(int));
+  int *p = __builtin_malloc(sizeof(int));
   k = 1 % j;
   for (; i() + f + h; o++)
     if (p[d(j + 6, (int)k + 1992695866) + h + f + j + (int)k - 1 + o])
-      free(p);
+      __builtin_free(p);
 }
