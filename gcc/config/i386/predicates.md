@@ -664,8 +664,9 @@
 ;; same segment as the GOT.  Unfortunately, the flexibility of linker
 ;; scripts means that we can't be sure of that in general, so assume
 ;; @GOTOFF is not valid on VxWorks, except with the large code model.
+;; The comments above seem to apply only to VxWorks releases before 7.
 (define_predicate "gotoff_operand"
-  (and (ior (not (match_test "TARGET_VXWORKS_RTP"))
+  (and (ior (not (match_test "TARGET_VXWORKS_VAROFF"))
             (match_test "ix86_cmodel == CM_LARGE")
             (match_test "ix86_cmodel == CM_LARGE_PIC"))
        (match_operand 0 "local_symbolic_operand")))

@@ -159,6 +159,18 @@ extern void vxworks_driver_init (unsigned int *, struct cl_decoded_option **);
    Earlier versions did not, not even for RTPS.  */
 #define VXWORKS_HAVE_TLS TARGET_VXWORKS7
 
+/* RTP segments could be loaded with varying offsets, so cross-segment offsets
+   could not be assumed to be constant.  This rules out some PC- and
+   GOT-relative addressing.  */
+#undef TARGET_VXWORKS_VAROFF
+#define TARGET_VXWORKS_VAROFF (!TARGET_VXWORKS7 && TARGET_VXWORKS_RTP)
+
+/* GOTT_BASE and GOTT_INDEX symbols are only used by some ports up to VxWorks6.
+   This macro is only used by i386 so far.  Other ports seem to keep on using
+   GOTTPIC from VxWorks7 on, but they don't test this macro.  */
+#undef TARGET_VXWORKS_GOTTPIC
+#define TARGET_VXWORKS_GOTTPIC (!TARGET_VXWORKS7)
+
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
    and its structure is fixed and does not depend on the arch.  We can thus
