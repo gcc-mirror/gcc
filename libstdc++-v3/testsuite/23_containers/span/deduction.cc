@@ -80,4 +80,7 @@ test01()
 
   std::span s12(const_cast<const std::span<int>&>(s5));
   static_assert( is_dynamic_span<int>(s12) );
+
+  std::span s13(a.data(), std::integral_constant<size_t, 3>{});
+  static_assert( is_static_span<long, 3>(s13));
 }

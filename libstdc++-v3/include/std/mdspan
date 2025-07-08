@@ -406,10 +406,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _IndexType, size_t... _Counts>
       auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
 	-> extents<_IndexType, ((void) _Counts, dynamic_extent)...>;
-
-    template<typename _Tp>
-      consteval size_t
-      __dynamic_extent() { return dynamic_extent; }
   }
 
   template<typename _IndexType, size_t _Rank>
@@ -419,7 +415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Integrals>
     requires (is_convertible_v<_Integrals, size_t> && ...)
     explicit extents(_Integrals...) ->
-      extents<size_t, __mdspan::__dynamic_extent<_Integrals>()...>;
+      extents<size_t, __detail::__maybe_static_ext<_Integrals>...>;
 
   struct layout_left
   {
@@ -1316,7 +1312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && (sizeof...(_Integrals) > 0)
     explicit mdspan(_ElementType*, _Integrals...)
     -> mdspan<_ElementType,
-	      extents<size_t, __mdspan::__dynamic_extent<_Integrals>()...>>;
+	      extents<size_t, __detail::__maybe_static_ext<_Integrals>...>>;
 
   template<typename _ElementType, typename _OIndexType, size_t _Nm>
     mdspan(_ElementType*, span<_OIndexType, _Nm>)

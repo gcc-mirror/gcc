@@ -246,6 +246,28 @@ test_from_pointer_and_shape()
 }
 
 constexpr bool
+test_from_pointer_and_integral_constant()
+{
+  std::array<double, 6> buffer{};
+  double * ptr = buffer.data();
+
+  auto verify = [ptr](auto actual, auto exts)
+    {
+      auto expected = std::mdspan<double, decltype(exts)>(ptr, exts);
+      static_assert(std::same_as<decltype(actual), decltype(expected)>);
+      VERIFY(actual.extents() == expected.extents());
+    };
+
+  auto c3 = std::integral_constant<int, 3>{};
+  auto c6 = std::integral_constant<int, 6>{};
+
+  verify(std::mdspan(ptr, 6), std::extents(6));
+  verify(std::mdspan(ptr, c6), std::extents(c6));
+  verify(std::mdspan(ptr, 2, c3), std::extents(2, c3));
+  return true;
+}
+
+constexpr bool
 test_from_extents()
 {
   constexpr size_t n = 3*5*7;
@@ -615,6 +637,9 @@ main()
 
   test_from_pointer_and_shape();
   static_assert(test_from_pointer_and_shape());
+
+  test_from_pointer_and_integral_constant();
+  static_assert(test_from_pointer_and_integral_constant());
 
   test_from_extents();
   static_assert(test_from_extents());
