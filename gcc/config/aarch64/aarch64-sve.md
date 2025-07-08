@@ -5621,14 +5621,14 @@
 
 ;; Predicated floating-point operations, merging with the first input.
 (define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -5664,14 +5664,14 @@
 
 ;; Same for operations that take a 1-bit constant.
 (define_insn_and_rewrite "*cond_<optab><mode>_2_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -5707,14 +5707,14 @@
 
 ;; Predicated floating-point operations, merging with the second input.
 (define_insn_and_rewrite "*cond_<optab><mode>_3_relaxed"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
@@ -5750,16 +5750,16 @@
 
 ;; Predicated floating-point operations, merging with an independent value.
 (define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
-	   (match_operand:SVE_FULL_F_B16B16 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && (<supports_bf16> || !<is_bf16>)
@@ -5832,16 +5832,16 @@
 
 ;; Same for operations that take a 1-bit constant.
 (define_insn_and_rewrite "*cond_<optab><mode>_any_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   {@ [ cons: =0 , 1   , 2 , 4   ]
@@ -5928,14 +5928,14 @@
 ;; Predicated floating-point addition of a constant, merging with the
 ;; first input.
 (define_insn_and_rewrite "*cond_add<mode>_2_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
 	     UNSPEC_COND_FADD)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -5976,16 +5976,16 @@
 ;; Predicated floating-point addition of a constant, merging with an
 ;; independent value.
 (define_insn_and_rewrite "*cond_add<mode>_any_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
 	     UNSPEC_COND_FADD)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   {@ [ cons: =0 , 1   , 2 , 3   , 4   ]
@@ -6243,14 +6243,14 @@
 ;; Predicated floating-point subtraction from a constant, merging with the
 ;; second input.
 (define_insn_and_rewrite "*cond_sub<mode>_3_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 4)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
-	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand")]
 	     UNSPEC_COND_FSUB)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
@@ -6287,16 +6287,16 @@
 ;; Predicated floating-point subtraction from a constant, merging with an
 ;; independent value.
 (define_insn_and_rewrite "*cond_sub<mode>_const_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
-	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand")]
 	     UNSPEC_COND_FSUB)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[3], operands[4])"
   {@ [ cons: =0 , 1   , 3 , 4   ]
