@@ -2519,7 +2519,7 @@ static cp_expr cp_parser_id_expression
 static cp_expr cp_parser_unqualified_id
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier_opt
-  (cp_parser *, bool, bool, bool, bool, bool = false);
+  (cp_parser *, bool, bool, bool, bool, bool = false, bool = false);
 static tree cp_parser_nested_name_specifier
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_qualifying_entity
@@ -7242,18 +7242,22 @@ check_template_keyword_in_nested_name_spec (tree name)
      nested-name-specifier template [opt] simple-template-id ::
 
    PARSER->SCOPE should be set appropriately before this function is
-   called.  TYPENAME_KEYWORD_P is TRUE if the `typename' keyword is in
-   effect.  TYPE_P is TRUE if we non-type bindings should be ignored
-   in name lookups.
+   called.  TYPENAME_KEYWORD_P is true if the `typename' keyword is in
+   effect.  TYPE_P is true if we non-type bindings should be ignored
+   in name lookups.  TEMPLATE_KEYWORD_P is true if the `template' keyword
+   was seen.  GLOBAL_P is true if `::' has already been parsed.
+   TODO: This function doesn't handle the C++14 change to make `::'
+   a nested-name-specifier by itself.  If it did, GLOBAL_P could probably
+   go.
 
    Sets PARSER->SCOPE to the class (TYPE) or namespace
    (NAMESPACE_DECL) specified by the nested-name-specifier, or leaves
    it unchanged if there is no nested-name-specifier.  Returns the new
    scope iff there is a nested-name-specifier, or NULL_TREE otherwise.
 
-   If CHECK_DEPENDENCY_P is FALSE, names are looked up in dependent scopes.
+   If CHECK_DEPENDENCY_P is false, names are looked up in dependent scopes.
 
-   If IS_DECLARATION is TRUE, the nested-name-specifier is known to be
+   If IS_DECLARATION is true, the nested-name-specifier is known to be
    part of a declaration and/or decl-specifier.  */
 
 static tree
@@ -7262,7 +7266,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 				     bool check_dependency_p,
 				     bool type_p,
 				     bool is_declaration,
-				     bool template_keyword_p /* = false */)
+				     bool template_keyword_p /* = false */,
+				     bool global_p /* = false */)
 {
   bool success = false;
   cp_token_position start = 0;
@@ -7310,8 +7315,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 
       /* Spot cases that cannot be the beginning of a
 	 nested-name-specifier.  On the second and subsequent times
-	 through the loop, we look for the `template' keyword.  */
-      if (success && token->keyword == RID_TEMPLATE)
+	 (or the first, if '::' has already been parsed) through the
+	 loop, we look for the `template' keyword.  */
+      if ((success || global_p) && token->keyword == RID_TEMPLATE)
 	;
       /* A template-id can start a nested-name-specifier.  */
       else if (token->type == CPP_TEMPLATE_ID)
@@ -7359,8 +7365,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       cp_parser_parse_tentatively (parser);
 
       /* Look for the optional `template' keyword, if this isn't the
-	 first time through the loop.  */
-      if (success)
+	 first time through the loop, or if we've already parsed '::';
+	 this is then the
+	   nested-name-specifier template [opt] simple-template-id ::
+	 production.  */
+      if (success || global_p)
 	{
 	  template_keyword_p = cp_parser_optional_template_keyword (parser);
 	  /* DR1710: "In a qualified-id used as the name in
@@ -21167,7 +21176,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 						/*typename_keyword_p=*/false,
 						/*check_dependency_p=*/true,
 						/*type_p=*/false,
-						/*is_declaration=*/false)
+						/*is_declaration=*/false,
+						/*template_keyword_p=*/false,
+						global_p)
 	   != NULL_TREE);
       /* If we have seen a nested-name-specifier, and the next token
 	 is `template', then we are using the template-id production.  */
