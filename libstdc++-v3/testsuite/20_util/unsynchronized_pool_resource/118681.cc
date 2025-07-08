@@ -39,7 +39,7 @@ test_alignment(std::pmr::memory_resource& res, bool dealloc)
 
       if (dealloc)
       {
-	res.deallocate(p2, size, alignment);
+	res.deallocate(p1, size, alignment);
 	res.deallocate(p2, size, alignment);
       }
     }
