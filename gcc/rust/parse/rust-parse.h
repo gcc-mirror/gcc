@@ -779,6 +779,10 @@ private:
     }
     ~InlineModuleStackScope () { parser.inline_module_stack.pop_back (); }
   };
+
+  // don't want to make things *only* AttributeParser uses public
+  // TODO: fold more of AttributeParser into Parser?
+  friend class ::Rust::AST::AttributeParser;
 };
 
 std::string extract_module_path (const AST::AttrVec &inner_attrs,

@@ -1137,21 +1137,10 @@ private:
   std::unique_ptr<MetaItemInner> parse_meta_item_inner ();
   // Returns whether token can end a meta item.
   bool is_end_meta_item_tok (TokenId id) const;
-  // Parses a simple path.
-  SimplePath parse_simple_path ();
-  // Parses a segment of a simple path (but not scope resolution operator).
-  SimplePathSegment parse_simple_path_segment ();
   // Parses a MetaItemLitExpr.
   std::unique_ptr<MetaItemLitExpr> parse_meta_item_lit ();
-  // Parses a literal.
-  Literal parse_literal ();
   // Parses a meta item that begins with a simple path.
   std::unique_ptr<MetaItem> parse_path_meta_item ();
-
-  // TODO: should this be const?
-  const_TokenPtr peek_token (int i = 0);
-
-  void skip_token (int i = 0);
 };
 } // namespace AST
 } // namespace Rust
