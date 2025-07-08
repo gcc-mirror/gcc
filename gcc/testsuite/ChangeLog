@@ -1,3 +1,183 @@
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/flex-array-counted-by.c: Update test.
+	* gcc.dg/pointer-counted-by-1.c: New test.
+	* gcc.dg/pointer-counted-by-2.c: New test.
+	* gcc.dg/pointer-counted-by-3.c: New test.
+	* gcc.dg/pointer-counted-by.c: New test.
+
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/pointer-counted-by-4-char.c: New test.
+	* gcc.dg/pointer-counted-by-4-float.c: New test.
+	* gcc.dg/pointer-counted-by-4-struct.c: New test.
+	* gcc.dg/pointer-counted-by-4-union.c: New test.
+	* gcc.dg/pointer-counted-by-4.c: New test.
+	* gcc.dg/pointer-counted-by-5.c: New test.
+	* gcc.dg/pointer-counted-by-6.c: New test.
+	* gcc.dg/pointer-counted-by-7.c: New test.
+
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/ubsan/pointer-counted-by-bounds-2.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-3.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-4.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-5.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds.c: New test.
+
+2025-07-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/120881
+	* lib/scanasm.exp (check-function-bodies): Allow "^[0-9]+:".
+
+2025-07-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120888
+	* gcc.target/xtensa/pr120888-1.c: New test.
+	* gcc.target/xtensa/pr120888-2.c: Likewise.
+
+2025-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/fminmax-1.c: New test.
+	* gcc.target/s390/fminmax-2.c: New test.
+
+2025-07-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: Add SVE HW check.
+
+2025-07-07  Alfie Richards  <alfie.richards@arm.com>
+
+	PR c++/119498
+	* g++.target/aarch64/pr119498.C: New test.
+
+2025-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120917
+	* g++.dg/concepts/auto7a.C: Add diagnostic.
+	* g++.dg/concepts/auto7b.C: New test.
+	* g++.dg/concepts/auto7c.C: New test.
+	* g++.dg/cpp1y/pr85076.C: Expect 'auto' error.
+	* g++.dg/concepts/pr67249.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-variadic.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67210.C: Likewise.
+	* g++.dg/concepts/pr67249a.C: New test.
+	* g++.dg/cpp1y/lambda-generic-variadic-a.C: New test.
+	* g++.dg/cpp2a/concepts-pr67210a.C: New test.
+
+2025-07-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/popcnt9.c: Add +nosve to target pragma.
+	* gcc.target/aarch64/popcnt13.c: New test.
+
+2025-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: New testcase.
+
+2025-07-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_arith_data.h: Add test data for
+	run test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u8-from-u128.c: New test.
+
+2025-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats-3/tests/c9/c94001c.ada: Tweak delay statements.
+	* ada/acats-4/tests/c9/c94001c.ada: Likewise.
+	* ada/acats-4/tests/c9/c94006a.ada: Likewise.
+	* ada/acats-4/tests/c9/c94008c.ada: Likewise.
+	* ada/acats-4/tests/c9/c951002.a: Likewise.
+	* ada/acats-4/tests/c9/c954a01.a: Likewise.
+	* ada/acats-4/tests/c9/c940005.a: Tweak duration constants.
+	* ada/acats-4/tests/c9/c940007.a: Likewise.
+	* ada/acats-4/tests/c9/c96001a.ada: Likewise.
+
+2025-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/pattern-avg-1.c: New test.
+	* gcc.target/s390/vector/pattern-mulh-1.c: New test.
+
+2025-07-07  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_fcm_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_fcm_2.c: Likewise.
+
+2025-07-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120670
+	PR target/120683
+	* gcc.target/i386/auto-init-padding-9.c: Updated.
+	* gcc.target/i386/memcpy-strategy-12.c: Likewise.
+	* gcc.target/i386/memset-strategy-25.c: Likewise.
+	* gcc.target/i386/memset-strategy-29.c: Likewise.
+	* gcc.target/i386/memset-strategy-30.c: Likewise.
+	* gcc.target/i386/memset-strategy-31.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-1.c: New test.
+	* gcc.target/i386/memcpy-pr120683-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-1.c: Likewise.
+	* gcc.target/i386/memset-pr120683-2.c: Likewise.
+	* gcc.target/i386/memset-pr120683-3.c: Likewise.
+	* gcc.target/i386/memset-pr120683-4.c: Likewise.
+	* gcc.target/i386/memset-pr120683-5.c: Likewise.
+	* gcc.target/i386/memset-pr120683-6.c: Likewise.
+	* gcc.target/i386/memset-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-8.c: Likewise.
+	* gcc.target/i386/memset-pr120683-9.c: Likewise.
+	* gcc.target/i386/memset-pr120683-10.c: Likewise.
+	* gcc.target/i386/memset-pr120683-11.c: Likewise.
+	* gcc.target/i386/memset-pr120683-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-14.c: Likewise.
+	* gcc.target/i386/memset-pr120683-15.c: Likewise.
+	* gcc.target/i386/memset-pr120683-16.c: Likewise.
+	* gcc.target/i386/memset-pr120683-17.c: Likewise.
+	* gcc.target/i386/memset-pr120683-18.c: Likewise.
+	* gcc.target/i386/memset-pr120683-19.c: Likewise.
+	* gcc.target/i386/memset-pr120683-20.c: Likewise.
+	* gcc.target/i386/memset-pr120683-21.c: Likewise.
+	* gcc.target/i386/memset-pr120683-22.c: Likewise.
+	* gcc.target/i386/memset-pr120683-23.c: Likewise.
+
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84009
+	* g++.dg/cpp0x/range-for40.C: New test.
+	* g++.dg/cpp0x/range-for41.C: New test.
+	* g++.dg/cpp0x/range-for42.C: New test.
+	* g++.dg/cpp0x/range-for43.C: New test.
+
+2025-07-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/move_alloc_20.f03: New test.
+
+2025-07-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120709
+	* gcc.dg/crc-non-cst-poly-1.c: New test.
+
 2025-07-06  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/120951

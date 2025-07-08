@@ -1,3 +1,7 @@
+2025-07-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* MAINTAINERS: Add myself to AArch64 pot.
+
 2025-07-04  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* MAINTAINERS: Replace tabs with spaces.

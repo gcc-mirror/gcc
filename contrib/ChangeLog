@@ -1,3 +1,18 @@
+2025-07-07  Martin Jambor  <mjambor@suse.cz>
+
+	* filter-clang-warnings.py (skip_warning): Also ignore
+	-Woverloaded-shift-op-parentheses, -Wunused-function,
+	-Wunneeded-internal-declaration, -Wvla-cxx-extension', and
+	-Wunused-command-line-argument everywhere and a warning about
+	m_logical_loc_mgr in diagnostic-path-output.cc.  Adjust gimple-match
+	and generic-match "filenames."  Ignore -Wnontrivial-memcall warnings
+	in wide-int.h, all warnings about unused stuff in files under
+	m2/gm2-compiler-boot, all -Wunused-private-field in rust FE, in
+	analyzer/ana-state-to-diagnostic-state.h and c-family/c-format.cc, all
+	Warnings in avr-mmcu.texi, install.texi and libgccjit.texi and all
+	-Wc23-extensions warnings in libiberty/sha1.c. Ignore
+	-Wunused-parameter in analyzer/sm.cc.  Reorder entries.
+
 2025-06-29  Filip Kastl  <fkastl@suse.cz>
 
 	* mklog.py: In 'main()', specify variable 'root' as global.

@@ -1,3 +1,37 @@
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_counted_by_attribute): Accept counted_by
+	attribute for pointer fields.
+
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-gimplify.cc (is_address_with_access_with_size): New function.
+	(ubsan_walk_array_refs_r): Instrument an INDIRECT_REF whose base
+	address is .ACCESS_WITH_SIZE or an address computation whose base
+	address is .ACCESS_WITH_SIZE.
+	* c-ubsan.cc (ubsan_instrument_bounds_pointer_address): New function.
+	(struct factor_t): New structure.
+	(get_factors_from_mul_expr): New function.
+	(get_index_from_offset): New function.
+	(get_index_from_pointer_addr_expr): New function.
+	(is_instrumentable_pointer_array_address): New function.
+	(ubsan_array_ref_instrumented_p): Change prototype.
+	Handle MEM_REF in addtional to ARRAY_REF.
+	(ubsan_maybe_instrument_array_ref): Handle MEM_REF in addtional
+	to ARRAY_REF.
+
+2025-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120917
+	* c.opt: Add -Wno-abbreviated-auto-in-template-arg.
+	* c.opt.urls: Regenerate.
+
 2025-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/120837

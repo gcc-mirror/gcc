@@ -1,3 +1,169 @@
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Extend counted_by attribute to pointer fields in
+	structures. Add one more requirement to pointers with counted_by
+	attribute.
+
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* tree-object-size.cc (access_with_size_object_size): Update comments
+	for pointers with .ACCESS_WITH_SIZE.
+	(collect_object_sizes_for): Propagate size info through GIMPLE_ASSIGN
+	for pointers with .ACCESS_WITH_SIZE.
+
+2025-07-07  Martin Jambor  <mjambor@suse.cz>
+
+	* value-range.h (class irange): Mark member function verify_range
+	with override.
+	(class prange): Mark member function verify_range with final override.
+	(class frange): Mark member function verify_range with override.
+
+2025-07-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120888
+	* config/xtensa/xtensa.cc (xtensa_promote_function_mode): New.
+	(TARGET_PROMOTE_FUNCTION_MODE): Use.
+	(TARGET_PROMOTE_PROTOTYPES): Removed.
+
+2025-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.md: Update UNSPECs
+	* config/s390/vector.md (fmax<mode>3): New expander.
+	(fmin<mode>3): New expander.
+	* config/s390/vx-builtins.md (*fmin<mode>): New insn.
+	(vfmin<mode>): Redefined to use new insn.
+	(*fmax<mode>): New insn.
+	(vfmax<mode>): Redefined to use new insn.
+
+2025-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120917
+	* doc/invoke.texi: Add -Wno-abbreviated-auto-in-template-arg.
+
+2025-07-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.md (popcountti2): Add TARGET_SVE path.
+
+2025-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120817
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Use
+	ao_ref_init_from_ptr_and_range with unknown size for
+	.MASK_STORE and .MASK_LEN_STORE.
+
+2025-07-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_usmul): Add new func
+	decl.
+	* config/riscv/riscv.cc (riscv_expand_xmode_usmul): Add new func
+	to expand Xmode SAT_MUL.
+	(riscv_expand_non_xmode_usmul): Ditto but for non-Xmode.
+	(riscv_expand_usmul): Add new func to implment SAT_MUL.
+	* config/riscv/riscv.md (usmul<mode>3): Add new pattern to match
+	standard name usmul.
+
+2025-07-07  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add new match pattern for unsigned SAT_MUL.
+	* tree-ssa-math-opts.cc (gimple_unsigned_integer_sat_mul):
+	new decl for pattern match func.
+	(match_unsigned_saturation_mul): Add new func to match unsigned
+	SAT_MUL.
+	(math_opts_dom_walker::after_dom_children): Try to match
+	unsigned SAT_MUL on NOP.
+
+2025-07-07  Pan Li  <pan2.li@intel.com>
+
+	* internal-fn.cc (commutative_binary_fn_p): Add new case
+	for SAT_MUL.
+	* internal-fn.def (SAT_MUL): Add new IFN_SAT_MUL.
+	* optabs.def (OPTAB_NL): Remove fixed point limitation.
+
+2025-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.md: Removed unused unspecs.
+	* config/s390/vector.md (avg<mode>3_ceil): New expander.
+	(uavg<mode>3_ceil): New expander.
+	(smul<mode>3_highpart): New expander.
+	(umul<mode>3_highpart): New expander.
+	* config/s390/vx-builtins.md (vec_umulh<mode>): Remove unspec.
+	(vec_smulh<mode>): Remove unspec.
+
+2025-07-07  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (vec_cmp<mode><vpred>): Extend
+	to handle partial FP modes.
+	(@aarch64_pred_fcm<cmp_op><mode>): Likewise.
+	(@aarch64_pred_fcmuo<mode>): Likewise.
+	(*one_cmpl<mode>3): Rename to...
+	(@aarch64_pred_one_cmpl<mode>_z): ... this.
+	* config/aarch64/aarch64.cc (aarch64_emit_sve_fp_cond): Allow the
+	target and governing predicates to have different modes.
+	(aarch64_emit_sve_or_fp_conds): Likewise.
+	(aarch64_emit_sve_invert_fp_cond): Likewise.
+	(aarch64_expand_sve_vec_cmp_float): Likewise.
+
+2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118891
+	* tree-vect-stmts.cc (supportable_widening_operation): Swap the
+	hi and lo internal functions on big-endian targets.
+
+2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ext-dce.cc (ext_dce_process_uses): Apply is_constant directly
+	to the subreg_lsb.
+
+2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_set_neonq_<mode>):
+	Use %Z instead of lowpart_subreg.  Tweak formatting.
+
+2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118891
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Fix the
+	ZIP1 operand order for big-endian targets.
+
+2025-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-live.cc (dump_scope_block): Print discriminators
+	of inlined functions.
+
+2025-07-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120670
+	PR target/120683
+	* config/i386/i386-expand.cc (expand_set_or_cpymem_via_loop):
+	Don't generate the loop if the loop count is 1.
+	(expand_cpymem_epilogue): Use move_by_pieces.
+	(setmem_epilogue_gen_val): New.
+	(expand_setmem_epilogue): Use store_by_pieces.
+	(expand_small_cpymem_or_setmem): Choose cpymem mode from MOVE_MAX.
+	For memset with vector and the size is smaller than the vector
+	size, first try the narrower vector, otherwise, use the scalar
+	value.
+	(promote_duplicated_reg): Duplicate the scalar value for vector.
+	(ix86_expand_set_or_cpymem): Always expand vector-version of
+	memset for vector_loop.  Use misaligned prologue if alignment
+	isn't needed and destination isn't aligned.  Always initialize
+	vec_promoted_val from the promoted scalar value for vector_loop.
+
+2025-07-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120709
+	* builtins.cc (expand_builtin_crc_table_based): Error out
+	instead of asserting the 3rd argument is an integer constant.
+	* internal-fn.cc (expand_crc_optab_fn): Likewise.
+	* doc/extend.texi (crc): Document requirement of the poly argument
+	being a constant.
+
 2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-mcus.def: -mmcu= takes lower case MCU names.

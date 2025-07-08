@@ -1,3 +1,44 @@
+2025-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120949
+	* include/bits/stl_iterator.h (__normal_iterator): Fix order of
+	always_inline and nodiscard attributes for Clang compatibility.
+
+2025-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_hooks.h (VERIFY): Define as variadic
+	macro.
+	* testsuite/ext/verify_neg.cc: New test.
+
+2025-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mdspan (__mapping_of): Add template keyword.
+
+2025-07-07  XU Kailiang  <xu2k3l4@outlook.com>
+	    Tomasz Kaminski  <tkaminsk@redhat.com>
+
+	PR libstdc++/117214
+	* include/bits/chrono_io.h (_ChronoSpec::_M_time_only): Remove.
+	(_ChronoSpec::_M_time_point): Define.
+	(__formatter_chrono::_M_parse): Use __parts to determine
+	interpretation of j.
+	(__formatter_chrono::_M_check_ok): Define.
+	(__formatter_chrono::_M_format_to): Invoke _M_check_ok.
+	(__formatter_chrono::_M_a_A, __formatter_chrono::_M_b_B): Move
+	exception throwing to _M_check_ok.
+	(__formatter_chrono::_M_j): Use _M_needs to define interpretation.
+	(__formatter_duration::_S_spec_for): Set _M_time_point.
+	* testsuite/std/time/format/format.cc: Test for exception for !ok()
+	months/weekday.
+	* testsuite/std/time/format/pr117214_custom_timeput.cc: New
+	test.
+
+2025-07-07  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120976
+	* include/std/format (formatter<__float128, _Char_T): Define if
+	_GLIBCXX_FORMAT_F128 == 2.
+
 2025-07-06  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h (shift_left, shift_right): Guard

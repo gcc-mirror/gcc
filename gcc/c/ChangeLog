@@ -1,3 +1,20 @@
+2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	Revert:
+	2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (verify_counted_by_attribute): Change the 2nd argument
+	to a vector of fields with counted_by attribute. Verify all fields
+	in this vector.
+	(finish_struct): Collect all the fields with counted_by attribute
+	to a vector and pass this vector to verify_counted_by_attribute.
+	* c-typeck.cc (build_counted_by_ref): Handle pointers with counted_by.
+	Add one more argument, issue error when the pointee type is a structure
+	or union including a flexible array member.
+	(build_access_with_size_for_counted_by): Handle pointers with counted_by.
+	(handle_counted_by_for_component_ref): Call build_counted_by_ref
+	with the new prototype.
+
 2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-decl.cc (verify_counted_by_attribute): Change the 2nd argument

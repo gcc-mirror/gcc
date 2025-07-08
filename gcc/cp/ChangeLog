@@ -1,3 +1,26 @@
+2025-07-07  Alfie Richards  <alfie.richards@arm.com>
+
+	PR c++/119498
+	* decl.cc (duplicate_decls): Change logic to not always exclude FMV
+	annotated functions in cases of return type non-ambiguation.
+
+2025-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120917
+	* parser.cc (cp_parser_simple_type_specifier): Attach
+	auto in targ in parameter to -Wabbreviated-auto-in-template-arg.
+	(cp_parser_placeholder_type_specifier): Diagnose constrained auto in
+	template arg.
+
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84009
+	* parser.cc (cp_parser_decomposition_declaration): Pedwarn
+	on thread_local, __thread or static in decl_specifiers for
+	for-range-declaration.
+	(cp_parser_init_declarator): Likewise, and also for extern
+	or register.
+
 2025-07-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120575
