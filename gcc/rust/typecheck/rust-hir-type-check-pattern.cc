@@ -563,8 +563,18 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::LiteralPattern &pattern)
 {
-  infered = resolve_literal (pattern.get_mappings (), pattern.get_literal (),
-			     pattern.get_locus ());
+  TyTy::BaseType *resolved
+    = resolve_literal (pattern.get_mappings (), pattern.get_literal (),
+		       pattern.get_locus ());
+  if (resolved->get_kind () == TyTy::TypeKind::ERROR)
+    {
+      infered = resolved;
+      return;
+    }
+
+  infered = unify_site (pattern.get_mappings ().get_hirid (),
+			TyTy::TyWithLocation (parent),
+			TyTy::TyWithLocation (resolved), pattern.get_locus ());
 }
 
 void
