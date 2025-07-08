@@ -6030,13 +6030,13 @@ namespace __format
 
       constexpr void
       set_separator(basic_string_view<_CharT> __sep) noexcept
-	requires (!_S_range_format_is_string)
+	requires (format_kind<_Rg> == range_format::sequence)
       { _M_under.set_separator(__sep); }
 
       constexpr void
       set_brackets(basic_string_view<_CharT> __open,
 		   basic_string_view<_CharT> __close) noexcept
-	requires (!_S_range_format_is_string)
+	requires (format_kind<_Rg> == range_format::sequence)
       { _M_under.set_brackets(__open, __close); }
 
       // We deviate from standard, that declares this as template accepting
