@@ -1,3 +1,11 @@
+2025-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libstdc++.exp: Remove additional flag handled
+	by Darwin specs.
+
 2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,24 @@
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2025-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120471
+	* typeck.cc (cp_build_array_ref) <case COND_EXPR>: If idx is not
+	INTEGER_CST, don't optimize the case (but cp_default_conversion on
+	array early if it has ARRAY_TYPE) or use
+	SAVE_EXPR <op0>, SAVE_EXPR <idx>, SAVE_EXPR <op0> as new op0 depending
+	on flag_strong_eval_order and whether op1 and op2 are arrays with
+	invariant address or tree invariant pointers.  Formatting fixes.
+
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2025-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120940
+	* typeck.cc (cp_build_array_ref): Fix a pasto.
+
 2025-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

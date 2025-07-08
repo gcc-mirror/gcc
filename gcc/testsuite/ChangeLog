@@ -1,3 +1,29 @@
+2025-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/g++.exp: Remove additional flag handled by Darwin specs.
+	* lib/obj-c++.exp: Likewise.
+
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120471
+	* g++.dg/ubsan/pr120471.C: New test.
+	* g++.dg/parse/pr120471.C: New test.
+
+2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2025-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120940
+	* g++.dg/parse/pr120940.C: New test.
+	* g++.dg/warn/Wduplicated-branches9.C: New test.
+
 2025-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
