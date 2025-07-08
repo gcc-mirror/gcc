@@ -3367,6 +3367,10 @@
 (define_int_iterator SVE_INT_UNARY [UNSPEC_REVB
 				    UNSPEC_REVH UNSPEC_REVW])
 
+;; This iterator is currently only used for estimation instructions,
+;; which are never generated automatically when -ftrapping-math is true.
+;; The iterator is therefore applied unconditionally to partial FP modes.
+;; This might need to be revisited if new operations are added in future.
 (define_int_iterator SVE_FP_UNARY [UNSPEC_FRECPE UNSPEC_RSQRTE])
 
 (define_int_iterator SVE_FP_UNARY_INT [(UNSPEC_FEXPA "TARGET_NON_STREAMING")])
@@ -3379,6 +3383,10 @@
 (define_int_iterator SVE_INT_BINARY_MULTI [UNSPEC_SQDMULH
 					   UNSPEC_SRSHL UNSPEC_URSHL])
 
+;; This iterator is currently only used for estimation instructions,
+;; which are never generated automatically when -ftrapping-math is true.
+;; The iterator is therefore applied unconditionally to partial FP modes.
+;; This might need to be revisited if new operations are added in future.
 (define_int_iterator SVE_FP_BINARY [UNSPEC_FRECPS UNSPEC_RSQRTS])
 
 (define_int_iterator SVE_FP_BINARY_INT [UNSPEC_FTSMUL UNSPEC_FTSSEL])

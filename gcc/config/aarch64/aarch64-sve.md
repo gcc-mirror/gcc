@@ -3752,9 +3752,9 @@
 
 ;; Unpredicated floating-point unary operations.
 (define_insn "@aarch64_sve_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
-	(unspec:SVE_FULL_F
-	  [(match_operand:SVE_FULL_F 1 "register_operand" "w")]
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:SVE_F 1 "register_operand" "w")]
 	  SVE_FP_UNARY))]
   "TARGET_SVE"
   "<sve_fp_op>\t%0.<Vetype>, %1.<Vetype>"
@@ -5561,10 +5561,10 @@
 
 ;; Unpredicated floating-point binary operations.
 (define_insn "@aarch64_sve_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
-	(unspec:SVE_FULL_F
-	  [(match_operand:SVE_FULL_F 1 "register_operand" "w")
-	   (match_operand:SVE_FULL_F 2 "register_operand" "w")]
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:SVE_F 1 "register_operand" "w")
+	   (match_operand:SVE_F 2 "register_operand" "w")]
 	  SVE_FP_BINARY))]
   "TARGET_SVE"
   "<sve_fp_op>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
@@ -5588,12 +5588,12 @@
 
 ;; Predicated floating-point binary operations that have no immediate forms.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_FULL_F 2 "register_operand")
-	   (match_operand:SVE_FULL_F 3 "register_operand")]
+	   (match_operand:SVE_F 2 "register_operand")
+	   (match_operand:SVE_F 3 "register_operand")]
 	  SVE_COND_FP_BINARY_REG))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 , 3 ; attrs: movprfx ]
@@ -6685,12 +6685,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "div<mode>3"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_FULL_F 1 "nonmemory_operand")
-	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	   (match_dup 4)
+	   (match_operand:SVE_F 1 "nonmemory_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
 	  UNSPEC_COND_FDIV))]
   "TARGET_SVE"
   {
@@ -6698,23 +6698,23 @@
       DONE;
 
     operands[1] = force_reg (<MODE>mode, operands[1]);
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+    operands[3] = aarch64_sve_fp_pred (<MODE>mode, &operands[4]);
   }
 )
 
 (define_expand "@aarch64_frecpe<mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:SVE_FULL_F 1 "register_operand")]
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:SVE_F 1 "register_operand")]
 	  UNSPEC_FRECPE))]
   "TARGET_SVE"
 )
 
 (define_expand "@aarch64_frecps<mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:SVE_FULL_F 1 "register_operand")
-	   (match_operand:SVE_FULL_F 2 "register_operand")]
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
 	  UNSPEC_FRECPS))]
   "TARGET_SVE"
 )
