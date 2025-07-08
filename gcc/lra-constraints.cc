@@ -2416,14 +2416,15 @@ process_alt_operands (int only_alternative)
 			if (curr_static_id->operand[nop].type == OP_INOUT
 			    || curr_static_id->operand[m].type == OP_INOUT)
 			  break;
-			/* Operands don't match.  If the operands are
-			   different user defined explicit hard
+			/* Operands don't match.  For asm if the operands
+			   are different user defined explicit hard
 			   registers, then we cannot make them match
 			   when one is early clobber operand.  */
 			if ((REG_P (*curr_id->operand_loc[nop])
 			     || SUBREG_P (*curr_id->operand_loc[nop]))
 			    && (REG_P (*curr_id->operand_loc[m])
-				|| SUBREG_P (*curr_id->operand_loc[m])))
+				|| SUBREG_P (*curr_id->operand_loc[m]))
+			    && INSN_CODE (curr_insn) < 0)
 			  {
 			    rtx nop_reg = *curr_id->operand_loc[nop];
 			    if (SUBREG_P (nop_reg))
@@ -3328,19 +3329,15 @@ process_alt_operands (int only_alternative)
 		  first_conflict_j = j;
 		last_conflict_j = j;
 		/* Both the earlyclobber operand and conflicting operand
-		   cannot both be user defined hard registers.  */
+		   cannot both be user defined hard registers for asm.
+		   Let curr_insn_transform diagnose it.  */
 		if (HARD_REGISTER_P (operand_reg[i])
 		    && REG_USERVAR_P (operand_reg[i])
 		    && operand_reg[j] != NULL_RTX
 		    && HARD_REGISTER_P (operand_reg[j])
-		    && REG_USERVAR_P (operand_reg[j]))
-		  {
-		    /* For asm, let curr_insn_transform diagnose it.  */
-		    if (INSN_CODE (curr_insn) < 0)
+		    && REG_USERVAR_P (operand_reg[j])
+		    && INSN_CODE (curr_insn) < 0)
 		      return false;
-		    fatal_insn ("unable to generate reloads for "
-				"impossible constraints:", curr_insn);
-		  }
 	      }
 	  if (last_conflict_j < 0)
 	    continue;
