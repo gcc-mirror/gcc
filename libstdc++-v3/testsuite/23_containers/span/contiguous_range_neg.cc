@@ -25,6 +25,7 @@ main()
 {
   std::deque<int> d{};
   std::span<int, std::dynamic_extent> myspan(d); // { dg-error "no match" }
+  (void) myspan;
 }
 
 // { dg-prune-output "data" }
