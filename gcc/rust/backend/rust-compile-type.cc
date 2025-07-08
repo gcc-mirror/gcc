@@ -121,6 +121,13 @@ TyTyResolveCompile::visit (const TyTy::InferType &type)
 
   if (orig == lookup)
     {
+      TyTy::BaseType *def = nullptr;
+      if (type.default_type (&def))
+	{
+	  translated = TyTyResolveCompile::compile (ctx, def);
+	  return;
+	}
+
       translated = error_mark_node;
       return;
     }
@@ -463,22 +470,7 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 {
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
-
-  ctx->push_const_context ();
-
-  HIR::Expr &hir_capacity_expr = type.get_capacity_expr ();
-  TyTy::BaseType *capacity_expr_ty = nullptr;
-  bool ok = ctx->get_tyctx ()->lookup_type (
-    hir_capacity_expr.get_mappings ().get_hirid (), &capacity_expr_ty);
-  rust_assert (ok);
-  tree capacity_expr = HIRCompileBase::compile_constant_expr (
-    ctx, hir_capacity_expr.get_mappings ().get_hirid (), capacity_expr_ty,
-    capacity_expr_ty, Resolver::CanonicalPath::create_empty (),
-    hir_capacity_expr, type.get_locus (), hir_capacity_expr.get_locus ());
-
-  ctx->pop_const_context ();
-
-  tree folded_capacity_expr = fold_expr (capacity_expr);
+  tree folded_capacity_expr = type.get_capacity ();
 
   // build_index_type takes the maximum index, which is one less than
   // the length.

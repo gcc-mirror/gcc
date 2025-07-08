@@ -29,6 +29,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
 #include "rust-system.h"
+#include "rust-compile-base.h"
 
 namespace Rust {
 namespace Resolver {
@@ -710,9 +711,14 @@ TypeCheckType::visit (HIR::ArrayType &type)
 	      type.get_size_expr ().get_locus ());
 
   TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
-  translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				    type.get_locus (), type.get_size_expr (),
-				    TyTy::TyVar (base->get_ref ()));
+
+  auto ctx = Compile::Context::get ();
+  tree capacity
+    = Compile::HIRCompileBase::query_compile_const_expr (ctx, capacity_type,
+							 type.get_size_expr ());
+  translated
+    = new TyTy::ArrayType (type.get_mappings ().get_hirid (), type.get_locus (),
+			   capacity, TyTy::TyVar (base->get_ref ()));
 }
 
 void

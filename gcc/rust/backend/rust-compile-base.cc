@@ -576,6 +576,25 @@ HIRCompileBase::compile_constant_expr (
 }
 
 tree
+HIRCompileBase::query_compile_const_expr (Context *ctx, TyTy::BaseType *expr_ty,
+					  HIR::Expr &const_value_expr)
+{
+  HIRCompileBase c (ctx);
+
+  ctx->push_const_context ();
+
+  HirId expr_id = const_value_expr.get_mappings ().get_hirid ();
+  location_t locus = const_value_expr.get_locus ();
+  tree capacity_expr = HIRCompileBase::compile_constant_expr (
+    ctx, expr_id, expr_ty, expr_ty, Resolver::CanonicalPath::create_empty (),
+    const_value_expr, locus, locus);
+
+  ctx->pop_const_context ();
+
+  return fold_expr (capacity_expr);
+}
+
+tree
 HIRCompileBase::indirect_expression (tree expr, location_t locus)
 {
   if (expr == error_mark_node)

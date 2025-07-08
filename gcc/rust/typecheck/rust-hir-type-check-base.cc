@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
+#include "rust-compile-base.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-trait-resolve.h"
@@ -287,9 +288,11 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 					       crate_num),
 					     UNKNOWN_LOCAL_DEFID);
 
+	auto ctx = Compile::Context::get ();
+	tree capacity = Compile::HIRCompileBase::query_compile_const_expr (
+	  ctx, expected_ty, *literal_capacity);
 	TyTy::ArrayType *array
-	  = new TyTy::ArrayType (array_mapping.get_hirid (), locus,
-				 *literal_capacity,
+	  = new TyTy::ArrayType (array_mapping.get_hirid (), locus, capacity,
 				 TyTy::TyVar (u8->get_ref ()));
 	context->insert_type (array_mapping, array);
 

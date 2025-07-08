@@ -681,6 +681,7 @@ Session::compile_crate (const char *filename)
   Resolver2_0::ImmutableNameResolutionContext::init (name_resolution_ctx);
 
   // type resolve
+  Compile::Context *ctx = Compile::Context::get ();
   Resolver::TypeResolution::Resolve (hir);
 
   Resolver::TypeCheckContext::get ()->get_variance_analysis_ctx ().solve ();
@@ -728,16 +729,15 @@ Session::compile_crate (const char *filename)
     return;
 
   // do compile to gcc generic
-  Compile::Context ctx;
-  Compile::CompileCrate::Compile (hir, &ctx);
+  Compile::CompileCrate::Compile (hir, ctx);
 
   // we can't do static analysis if there are errors to worry about
   if (!saw_errors ())
     {
       // lints
       Analysis::ScanDeadcode::Scan (hir);
-      Analysis::UnusedVariables::Lint (ctx);
-      Analysis::ReadonlyCheck::Lint (ctx);
+      Analysis::UnusedVariables::Lint (*ctx);
+      Analysis::ReadonlyCheck::Lint (*ctx);
 
       // metadata
       bool specified_emit_metadata
@@ -758,7 +758,7 @@ Session::compile_crate (const char *filename)
     }
 
   // pass to GCC middle-end
-  ctx.write_to_backend ();
+  ctx->write_to_backend ();
 }
 
 void

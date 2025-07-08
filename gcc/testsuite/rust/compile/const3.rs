@@ -3,5 +3,5 @@ fn size() -> usize {
 }
 
 fn main() {
-    let a = [15; size()]; // { dg-error "only functions marked as .const. are allowed to be called from constant contexts" }
+    let a = [15; size()]; // { dg-error "calls in constants are limited to constant functions, tuple structs and tuple variants" }
 }

@@ -1,4 +1,4 @@
-// { dg-additional-options "-w -frust-compile-until=compilation" }
+// { dg-additional-options "-w -frust-compile-until=typecheck" }
 
 #[lang = "sized"]
 trait Sized {}

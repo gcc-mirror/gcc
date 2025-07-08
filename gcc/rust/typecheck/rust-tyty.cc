@@ -30,9 +30,11 @@
 #include "rust-tyty-cmp.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
+#include "print-tree.h"
 
 #include "options.h"
 #include "rust-system.h"
+#include "tree.h"
 
 namespace Rust {
 namespace TyTy {
@@ -574,7 +576,7 @@ BaseType::monomorphized_clone () const
     {
       TyVar elm = arr->get_var_element_type ().monomorphized_clone ();
       return new ArrayType (arr->get_ref (), arr->get_ty_ref (), ident.locus,
-			    arr->get_capacity_expr (), elm,
+			    arr->get_capacity (), elm,
 			    arr->get_combined_refs ());
     }
   else if (auto slice = x->try_as<const SliceType> ())
@@ -2486,7 +2488,16 @@ ArrayType::accept_vis (TyConstVisitor &vis) const
 std::string
 ArrayType::as_string () const
 {
-  return "[" + get_element_type ()->as_string () + ":" + "CAPACITY" + "]";
+  std::string capacity_str = "<error>";
+  if (!error_operand_p (capacity))
+    {
+      unsigned HOST_WIDE_INT length = wi::to_wide (capacity).to_uhwi ();
+
+      char buf[64];
+      snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_UNSIGNED, length);
+      capacity_str = std::string (buf);
+    }
+  return "[" + get_element_type ()->as_string () + "; " + capacity_str + "]";
 }
 
 bool
@@ -2525,7 +2536,7 @@ ArrayType::get_var_element_type () const
 BaseType *
 ArrayType::clone () const
 {
-  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
+  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity,
 			element_type, get_combined_refs ());
 }
 

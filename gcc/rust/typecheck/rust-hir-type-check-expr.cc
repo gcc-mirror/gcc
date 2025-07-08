@@ -31,6 +31,7 @@
 #include "rust-hir-type-check-item.h"
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
+#include "rust-compile-base.h"
 
 // for flag_name_resolution_2_0
 #include "options.h"
@@ -1031,6 +1032,7 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 
   HIR::Expr *capacity_expr = nullptr;
   TyTy::BaseType *element_type = nullptr;
+  TyTy::BaseType *capacity_type = nullptr;
   switch (elements.get_array_expr_type ())
     {
     case HIR::ArrayElems::ArrayExprType::COPIED:
@@ -1039,7 +1041,7 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	  = static_cast<HIR::ArrayElemsCopied &> (elements);
 	element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
 
-	auto capacity_type
+	auto capacity_expr_ty
 	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
 
 	TyTy::BaseType *expected_ty = nullptr;
@@ -1048,13 +1050,14 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	context->insert_type (elems.get_num_copies_expr ().get_mappings (),
 			      expected_ty);
 
-	unify_site (expr.get_mappings ().get_hirid (),
-		    TyTy::TyWithLocation (expected_ty),
-		    TyTy::TyWithLocation (
-		      capacity_type, elems.get_num_copies_expr ().get_locus ()),
-		    expr.get_locus ());
+	unify_site (
+	  expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (expected_ty),
+	  TyTy::TyWithLocation (capacity_expr_ty,
+				elems.get_num_copies_expr ().get_locus ()),
+	  expr.get_locus ());
 
 	capacity_expr = &elems.get_num_copies_expr ();
+	capacity_type = expected_ty;
       }
       break;
 
@@ -1096,13 +1099,20 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	bool ok = context->lookup_builtin ("usize", &expected_ty);
 	rust_assert (ok);
 	context->insert_type (mapping, expected_ty);
+	capacity_type = expected_ty;
       }
       break;
     }
 
-  infered = new TyTy::ArrayType (expr.get_mappings ().get_hirid (),
-				 expr.get_locus (), *capacity_expr,
-				 TyTy::TyVar (element_type->get_ref ()));
+  rust_assert (capacity_expr);
+  rust_assert (capacity_type);
+  auto ctx = Compile::Context::get ();
+  tree capacity
+    = Compile::HIRCompileBase::query_compile_const_expr (ctx, capacity_type,
+							 *capacity_expr);
+  infered
+    = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), expr.get_locus (),
+			   capacity, TyTy::TyVar (element_type->get_ref ()));
 }
 
 // empty struct

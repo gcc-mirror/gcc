@@ -22,6 +22,16 @@
 namespace Rust {
 namespace Compile {
 
+Context *
+Context::get ()
+{
+  static Context *instance;
+  if (instance == nullptr)
+    instance = new Context ();
+
+  return instance;
+}
+
 Context::Context ()
   : tyctx (Resolver::TypeCheckContext::get ()),
     mappings (Analysis::Mappings::get ()), mangler (Mangler ())

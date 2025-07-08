@@ -29,6 +29,7 @@
 #include "rust-tyty-region.h"
 #include "rust-system.h"
 #include "rust-hir.h"
+#include "tree.h"
 
 namespace Rust {
 
@@ -1156,19 +1157,18 @@ class ArrayType : public BaseType
 public:
   static constexpr auto KIND = TypeKind::ARRAY;
 
-  ArrayType (HirId ref, location_t locus, HIR::Expr &capacity_expr, TyVar base,
+  ArrayType (HirId ref, location_t locus, tree capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      element_type (base), capacity_expr (capacity_expr)
+      element_type (base), capacity (capacity)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, location_t locus,
-	     HIR::Expr &capacity_expr, TyVar base,
-	     std::set<HirId> refs = std::set<HirId> ())
+  ArrayType (HirId ref, HirId ty_ref, location_t locus, tree capacity,
+	     TyVar base, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      element_type (base), capacity_expr (capacity_expr)
+      element_type (base), capacity (capacity)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1187,15 +1187,13 @@ public:
 
   BaseType *clone () const final override;
 
-  HIR::Expr &get_capacity_expr () const { return capacity_expr; }
+  tree get_capacity () const { return capacity; }
 
   ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   TyVar element_type;
-  // FIXME: I dont think this should be in tyty - tyty should already be const
-  // evaluated
-  HIR::Expr &capacity_expr;
+  tree capacity;
 };
 
 class SliceType : public BaseType

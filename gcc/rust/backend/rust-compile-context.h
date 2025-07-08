@@ -49,7 +49,7 @@ struct CustomDeriveInfo
 class Context
 {
 public:
-  Context ();
+  static Context *get ();
 
   void setup_builtins ();
 
@@ -390,6 +390,8 @@ public:
   }
 
 private:
+  Context ();
+
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings &mappings;
   Mangler mangler;

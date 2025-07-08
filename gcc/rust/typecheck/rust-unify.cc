@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unify.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -825,14 +826,24 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	  = resolve_subtype (TyTy::TyWithLocation (ltype->get_element_type ()),
 			     TyTy::TyWithLocation (type.get_element_type ()));
 
-	if (element_unify->get_kind () != TyTy::TypeKind::ERROR)
-	  {
-	    return new TyTy::ArrayType (type.get_ref (), type.get_ty_ref (),
-					type.get_ident ().locus,
-					type.get_capacity_expr (),
-					TyTy::TyVar (
-					  element_unify->get_ref ()));
-	  }
+	if (element_unify->get_kind () == TyTy::TypeKind::ERROR)
+	  return new TyTy::ErrorType (0);
+
+	// TODO infer capacity?
+	tree lcap = ltype->get_capacity ();
+	tree rcap = type.get_capacity ();
+	if (error_operand_p (lcap) || error_operand_p (rcap))
+	  return new TyTy::ErrorType (0);
+
+	auto lc = wi::to_wide (lcap).to_uhwi ();
+	auto rc = wi::to_wide (rcap).to_uhwi ();
+	if (lc != rc)
+	  return new TyTy::ErrorType (0);
+
+	return new TyTy::ArrayType (type.get_ref (), type.get_ty_ref (),
+				    type.get_ident ().locus,
+				    type.get_capacity (),
+				    TyTy::TyVar (element_unify->get_ref ()));
       }
       break;
 
