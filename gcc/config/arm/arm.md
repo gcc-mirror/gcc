@@ -8623,7 +8623,7 @@
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_internal (operands[0], operands[1],
-					   operands[2]);
+					   operands[2], const0_rtx);
 	emit_call_insn (pat);
       }
     else
@@ -8665,10 +8665,10 @@
 	      (clobber (reg:SI LR_REGNUM))])])
 
 (define_expand "nonsecure_call_internal"
-  [(parallel [(call (unspec:SI [(match_operand 0 "memory_operand")]
-			       UNSPEC_NONSECURE_MEM)
+  [(parallel [(call (match_operand 0 "memory_operand")
 		    (match_operand 1 "general_operand"))
 	      (use (match_operand 2 "" ""))
+	      (unspec:SI [(match_operand 3)] UNSPEC_NONSECURE_MEM)
 	      (clobber (reg:SI LR_REGNUM))])]
   "use_cmse"
   {
@@ -8745,7 +8745,8 @@
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_value_internal (operands[0], operands[1],
-						 operands[2], operands[3]);
+						 operands[2], operands[3],
+						 const0_rtx);
 	emit_call_insn (pat);
       }
     else
@@ -8779,10 +8780,10 @@
 
 (define_expand "nonsecure_call_value_internal"
   [(parallel [(set (match_operand       0 "" "")
-		   (call (unspec:SI [(match_operand 1 "memory_operand")]
-				    UNSPEC_NONSECURE_MEM)
+		   (call (match_operand 1 "memory_operand")
 			 (match_operand 2 "general_operand")))
 	      (use (match_operand 3 "" ""))
+	      (unspec:SI [(match_operand 4)] UNSPEC_NONSECURE_MEM)
 	      (clobber (reg:SI LR_REGNUM))])]
   "use_cmse"
   "

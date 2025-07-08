@@ -1874,10 +1874,10 @@
 )
 
 (define_insn "*nonsecure_call_reg_thumb1_v5"
-  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
-		    UNSPEC_NONSECURE_MEM)
+  [(call (mem:SI (reg:SI R4_REGNUM))
 	 (match_operand 0 "" ""))
    (use (match_operand 1 "" ""))
+   (unspec:SI [(match_operand 2)]UNSPEC_NONSECURE_MEM)
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB1 && use_cmse && !SIBLING_CALL_P (insn)"
   "bl\\t__gnu_cmse_nonsecure_call"
@@ -1919,11 +1919,10 @@
 
 (define_insn "*nonsecure_call_value_reg_thumb1_v5"
   [(set (match_operand 0 "" "")
-	(call (unspec:SI
-	       [(mem:SI (reg:SI R4_REGNUM))]
-	       UNSPEC_NONSECURE_MEM)
+	(call (mem:SI (reg:SI R4_REGNUM))
 	      (match_operand 1 "" "")))
    (use (match_operand 2 "" ""))
+   (unspec:SI [(match_operand 3)] UNSPEC_NONSECURE_MEM)
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB1 && use_cmse"
   "bl\\t__gnu_cmse_nonsecure_call"
