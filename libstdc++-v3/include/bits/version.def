@@ -1007,9 +1007,8 @@ ftms = {
 
 ftms = {
   name = mdspan;
-  no_stdname = true; // FIXME: remove
   values = {
-    v = 1; // FIXME: 202207
+    v = 202207;
     cxxmin = 23;
   };
 };
