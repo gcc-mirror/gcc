@@ -397,8 +397,7 @@ get_bound_from_access_with_size (tree call)
     return NULL_TREE;
 
   tree ref_to_size = CALL_EXPR_ARG (call, 1);
-  unsigned int class_of_size = TREE_INT_CST_LOW (CALL_EXPR_ARG (call, 2));
-  tree type = TREE_TYPE (CALL_EXPR_ARG (call, 3));
+  tree type = TREE_TYPE (TREE_TYPE (CALL_EXPR_ARG (call, 2)));
   tree size = fold_build2 (MEM_REF, type, unshare_expr (ref_to_size),
 			   build_int_cst (ptr_type_node, 0));
   /* If size is negative value, treat it as zero.  */
@@ -410,12 +409,7 @@ get_bound_from_access_with_size (tree call)
 			build_zero_cst (type), size);
   }
 
-  /* Only when class_of_size is 1, i.e, the number of the elements of
-     the object type, return the size.  */
-  if (class_of_size != 1)
-    return NULL_TREE;
-  else
-    size = fold_convert (sizetype, size);
+  size = fold_convert (sizetype, size);
 
   return size;
 }

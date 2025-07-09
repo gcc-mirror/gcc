@@ -852,17 +852,16 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 /* Compute __builtin_object_size for a CALL to .ACCESS_WITH_SIZE,
    OBJECT_SIZE_TYPE is the second argument from __builtin_object_size.
 
-   The 2nd, 3rd, 4th and 6th parameters of the call determine the size of
+   The 2nd, 3rd, and 4th parameters of the call determine the size of
    the CALL:
 
    2nd argument REF_TO_SIZE: The reference to the size of the object,
-   3rd argument CLASS_OF_SIZE: The size referenced by the REF_TO_SIZE represents
-     0: the number of bytes;
-     1: the number of the elements of the object type;
-   4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the
-    TYPE of the object referenced by REF_TO_SIZE
-   6th argument:  The TYPE_SIZE_UNIT of the element TYPE of the FAM when the
-    3rd argument is 1; NULL when the 3rd argument is 0.  */
+   3rd argument TYPE_OF_SIZE + ACCESS_MODE: An integer constant with a pointer
+     TYPE.
+     The pointee TYPE of this pointer TYPE is the TYPE of the object referenced
+	by REF_TO_SIZE.
+
+   4th argument:  The TYPE_SIZE_UNIT of the element TYPE of the array.  */
 
 static tree
 access_with_size_object_size (const gcall *call, int object_size_type)
@@ -873,15 +872,11 @@ access_with_size_object_size (const gcall *call, int object_size_type)
   gcc_assert (gimple_call_internal_p (call, IFN_ACCESS_WITH_SIZE));
 
   tree ref_to_size = gimple_call_arg (call, 1);
-  unsigned int class_of_size = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
-  tree type = TREE_TYPE (gimple_call_arg (call, 3));
+  tree type = TREE_TYPE (TREE_TYPE (gimple_call_arg (call, 2)));
 
-  /* The 6th argument is the TYPE_SIZE_UNIT for the element of the original
+  /* The 4th argument is the TYPE_SIZE_UNIT for the element of the original
      flexible array.  */
-  tree element_size = gimple_call_arg (call, 5);
-
-  gcc_assert ((class_of_size == 1 && element_size)
-	      || (class_of_size == 0 && !element_size));
+  tree element_size = gimple_call_arg (call, 3);
 
   tree size = fold_build2 (MEM_REF, type, ref_to_size,
 			   build_int_cst (ptr_type_node, 0));
@@ -895,12 +890,9 @@ access_with_size_object_size (const gcall *call, int object_size_type)
 			build_zero_cst (type), size);
   }
 
-  if (class_of_size == 1)
-    size = size_binop (MULT_EXPR,
-		       fold_convert (sizetype, size),
-		       fold_convert (sizetype, element_size));
-  else
-    size = fold_convert (sizetype, size);
+  size = size_binop (MULT_EXPR,
+		     fold_convert (sizetype, size),
+		     fold_convert (sizetype, element_size));
 
   if (!todo)
     todo = TODO_update_ssa_only_virtuals;
