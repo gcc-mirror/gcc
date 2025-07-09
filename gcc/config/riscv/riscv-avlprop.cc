@@ -508,7 +508,7 @@ pass_avlprop::execute (function *fn)
       simplify_replace_vlmax_avl (rinsn, prop.second);
     }
 
-  if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL)
+  if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL && !TARGET_XTHEADVECTOR)
     {
       /* Simplify VLMAX AVL into immediate AVL.
 	 E.g. Simplify this following case:
