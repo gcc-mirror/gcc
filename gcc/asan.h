@@ -242,9 +242,10 @@ asan_protect_stack_decl (tree decl)
    remove all flags mentioned in "no_sanitize" of DECL_ATTRIBUTES.  */
 
 inline bool
-sanitize_flags_p (unsigned int flag, const_tree fn = current_function_decl)
+sanitize_flags_p (sanitize_code_type flag,
+		  const_tree fn = current_function_decl)
 {
-  unsigned int result_flags = flag_sanitize & flag;
+  sanitize_code_type result_flags = flag_sanitize & flag;
   if (result_flags == 0)
     return false;
 

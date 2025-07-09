@@ -993,7 +993,8 @@ vec<const char *> help_option_arguments;
 /* Return the string name describing a sanitizer argument which has been
    provided on the command line and has set this particular flag.  */
 const char *
-find_sanitizer_argument (struct gcc_options *opts, unsigned int flags)
+find_sanitizer_argument (struct gcc_options *opts,
+			 sanitize_code_type flags)
 {
   for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
     {
@@ -1027,10 +1028,11 @@ find_sanitizer_argument (struct gcc_options *opts, unsigned int flags)
    set these flags.  */
 static void
 report_conflicting_sanitizer_options (struct gcc_options *opts, location_t loc,
-				      unsigned int left, unsigned int right)
+				      sanitize_code_type left,
+				      sanitize_code_type right)
 {
-  unsigned int left_seen = (opts->x_flag_sanitize & left);
-  unsigned int right_seen = (opts->x_flag_sanitize & right);
+  sanitize_code_type left_seen = (opts->x_flag_sanitize & left);
+  sanitize_code_type right_seen = (opts->x_flag_sanitize & right);
   if (left_seen && right_seen)
     {
       const char* left_arg = find_sanitizer_argument (opts, left_seen);
@@ -2168,9 +2170,9 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true, true),
   SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true, true),
   SANITIZER_OPT (shadow-call-stack, SANITIZE_SHADOW_CALL_STACK, false, false),
-  SANITIZER_OPT (all, ~0U, true, true),
+  SANITIZER_OPT (all, ~sanitize_code_type (0), true, true),
 #undef SANITIZER_OPT
-  { NULL, 0U, 0UL, false, false }
+  { NULL, sanitize_code_type (0), 0UL, false, false }
 };
 
 /* -fzero-call-used-regs= suboptions.  */
@@ -2241,7 +2243,7 @@ get_closest_sanitizer_option (const string_fragment &arg,
     {
       /* -fsanitize=all is not valid, so don't offer it.  */
       if (code == OPT_fsanitize_
-	  && opts[i].flag == ~0U
+	  && opts[i].flag == ~sanitize_code_type (0)
 	  && value)
 	continue;
 
@@ -2268,9 +2270,9 @@ get_closest_sanitizer_option (const string_fragment &arg,
    adjust previous FLAGS and return new ones.  If COMPLAIN is false,
    don't issue diagnostics.  */
 
-unsigned int
+sanitize_code_type
 parse_sanitizer_options (const char *p, location_t loc, int scode,
-			 unsigned int flags, int value, bool complain)
+			 sanitize_code_type flags, int value, bool complain)
 {
   enum opt_code code = (enum opt_code) scode;
 
@@ -2296,7 +2298,7 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	    && memcmp (p, sanitizer_opts[i].name, len) == 0)
 	  {
 	    /* Handle both -fsanitize and -fno-sanitize cases.  */
-	    if (value && sanitizer_opts[i].flag == ~0U)
+	    if (value && sanitizer_opts[i].flag == ~sanitize_code_type (0))
 	      {
 		if (code == OPT_fsanitize_)
 		  {
@@ -2377,10 +2379,10 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 /* Parse string values of no_sanitize attribute passed in VALUE.
    Values are separated with comma.  */
 
-unsigned int
+sanitize_code_type
 parse_no_sanitize_attribute (char *value)
 {
-  unsigned int flags = 0;
+  sanitize_code_type flags = 0;
   unsigned int i;
   char *q = strtok (value, ",");
 

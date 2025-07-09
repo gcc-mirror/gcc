@@ -6639,6 +6639,18 @@ tree_fits_poly_uint64_p (const_tree t)
 	  && wi::fits_uhwi_p (wi::to_widest (t)));
 }
 
+/* Return true if T is an INTEGER_CST whose numerical value (extended according
+   to TYPE_UNSIGNED) fits in a sanitize_code_type (uint64_t).  */
+
+bool
+tree_fits_sanitize_code_type_p (const_tree t)
+{
+  if (t == NULL_TREE)
+    return false;
+  return (TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_uhwi_p (wi::to_widest (t)));
+}
+
 /* T is an INTEGER_CST whose numerical value (extended according to
    TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  Return that
    HOST_WIDE_INT.  */
@@ -6658,6 +6670,17 @@ unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));
+  return TREE_INT_CST_LOW (t);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in a sanitize_code_type.  Return that
+   sanitize_code_type.  */
+
+sanitize_code_type
+tree_to_sanitize_code_type (const_tree t)
+{
+  gcc_assert (tree_fits_sanitize_code_type_p (t));
   return TREE_INT_CST_LOW (t);
 }
 

@@ -2822,7 +2822,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			      specs->constexpr_p, &richloc);
 		  /* A parameter is initialized, which is invalid.  Don't
 		     attempt to instrument the initializer.  */
-		  int flag_sanitize_save = flag_sanitize;
+		  sanitize_code_type flag_sanitize_save = flag_sanitize;
 		  if (nested && !empty_ok)
 		    flag_sanitize = 0;
 		  init = c_parser_expr_no_commas (parser, NULL);
@@ -2911,7 +2911,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			      specs->constexpr_p, &richloc);
 		  /* A parameter is initialized, which is invalid.  Don't
 		     attempt to instrument the initializer.  */
-		  int flag_sanitize_save = flag_sanitize;
+		  sanitize_code_type flag_sanitize_save = flag_sanitize;
 		  if (TREE_CODE (d) == PARM_DECL)
 		    flag_sanitize = 0;
 		  init = c_parser_initializer (parser, d);

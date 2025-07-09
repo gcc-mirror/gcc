@@ -1420,23 +1420,24 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 /* Add FLAGS for a function NODE to no_sanitize_flags in DECL_ATTRIBUTES.  */
 
 void
-add_no_sanitize_value (tree node, unsigned int flags)
+add_no_sanitize_value (tree node, sanitize_code_type flags)
 {
   tree attr = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (node));
   if (attr)
     {
-      unsigned int old_value = tree_to_uhwi (TREE_VALUE (attr));
+      sanitize_code_type old_value =
+	tree_to_sanitize_code_type (TREE_VALUE (attr));
       flags |= old_value;
 
       if (flags == old_value)
 	return;
 
-      TREE_VALUE (attr) = build_int_cst (unsigned_type_node, flags);
+      TREE_VALUE (attr) = build_int_cst (uint64_type_node, flags);
     }
   else
     DECL_ATTRIBUTES (node)
       = tree_cons (get_identifier ("no_sanitize"),
-		   build_int_cst (unsigned_type_node, flags),
+		   build_int_cst (uint64_type_node, flags),
 		   DECL_ATTRIBUTES (node));
 }
 
@@ -1447,7 +1448,7 @@ static tree
 handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
-  unsigned int flags = 0;
+  sanitize_code_type flags = 0;
   *no_add_attrs = true;
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -1484,7 +1485,7 @@ handle_no_sanitize_address_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_ADDRESS);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_ADDRESS);
 
   return NULL_TREE;
 }
@@ -1500,7 +1501,7 @@ handle_no_sanitize_thread_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_THREAD);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_THREAD);
 
   return NULL_TREE;
 }
@@ -1517,7 +1518,7 @@ handle_no_address_safety_analysis_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_ADDRESS);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_ADDRESS);
 
   return NULL_TREE;
 }

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rich-location.h"
 #include "obstack.h"
+#include "flag-types.h"
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
 enum cl_var_type {
@@ -432,10 +433,10 @@ extern char *write_langs (unsigned int mask);
 extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
 extern void handle_deferred_dump_options (void);
-unsigned int parse_sanitizer_options (const char *, location_t, int,
-				      unsigned int, int, bool);
+sanitize_code_type parse_sanitizer_options (const char *, location_t, int,
+					    sanitize_code_type, int, bool);
 
-unsigned int parse_no_sanitize_attribute (char *value);
+sanitize_code_type parse_no_sanitize_attribute (char *value);
 extern bool common_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
@@ -477,7 +478,7 @@ extern bool opt_enum_arg_to_value (size_t opt_index, const char *arg,
 extern const struct sanitizer_opts_s
 {
   const char *const name;
-  unsigned int flag;
+  sanitize_code_type flag;
   size_t len;
   bool can_recover;
   bool can_trap;

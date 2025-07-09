@@ -350,6 +350,9 @@ enum sanitize_code {
 				  | SANITIZE_BOUNDS_STRICT
 };
 
+/* Sanitizer flag type.  */
+typedef uint64_t sanitize_code_type;
+
 /* Different settings for zeroing subset of registers.  */
 namespace zero_regs_flags {
   const unsigned int UNSET = 0;
