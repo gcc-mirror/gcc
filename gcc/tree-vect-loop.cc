@@ -11079,7 +11079,7 @@ vect_get_loop_len (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
 	  factor = exact_div (nunits1, nunits2).to_constant ();
 	  tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
 	  gimple_seq seq = NULL;
-	  loop_len = gimple_build (&seq, RDIV_EXPR, iv_type, loop_len,
+	  loop_len = gimple_build (&seq, EXACT_DIV_EXPR, iv_type, loop_len,
 				   build_int_cst (iv_type, factor));
 	  if (seq)
 	    gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);

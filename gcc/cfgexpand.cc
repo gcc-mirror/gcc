@@ -5358,6 +5358,8 @@ expand_debug_expr (tree exp)
       return simplify_gen_binary (MULT, mode, op0, op1);
 
     case RDIV_EXPR:
+      gcc_assert (FLOAT_MODE_P (mode));
+      /* Fall through.  */
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (unsignedp)
