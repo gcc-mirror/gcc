@@ -18,6 +18,7 @@
 
 #include "rust-ast.h"
 #include "rust-expr.h"
+#include "rust-item.h"
 #include "rust-name-resolution-context.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-early-name-resolver-2.0.h"
@@ -32,7 +33,11 @@ class GlobbingVisitor : public AST::DefaultASTVisitor
 public:
   GlobbingVisitor (NameResolutionContext &ctx) : ctx (ctx) {}
 
-  void go (AST::Module *module);
+  void go (AST::Item *container);
+
+  void visit_module_container (AST::Module &module);
+  void visit_enum_container (AST::Enum &item);
+
   void visit (AST::Module &module) override;
   void visit (AST::MacroRulesDefinition &macro) override;
   void visit (AST::Function &function) override;

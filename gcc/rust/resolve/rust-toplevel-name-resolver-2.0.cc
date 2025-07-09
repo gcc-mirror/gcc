@@ -103,9 +103,9 @@ TopLevel::visit (AST::Module &module)
 {
   DefaultResolver::visit (module);
 
-  if (Analysis::Mappings::get ().lookup_ast_module (module.get_node_id ())
+  if (Analysis::Mappings::get ().lookup_glob_container (module.get_node_id ())
       == tl::nullopt)
-    Analysis::Mappings::get ().insert_ast_module (&module);
+    Analysis::Mappings::get ().insert_glob_container (&module);
 }
 
 void
@@ -339,6 +339,13 @@ TopLevel::visit (AST::Enum &enum_item)
 		       Namespace::Types);
 
   DefaultResolver::visit (enum_item);
+
+  // Since enums can be containers for imports, we need to insert them like we
+  // do for modules
+  if (Analysis::Mappings::get ().lookup_glob_container (
+	enum_item.get_node_id ())
+      == tl::nullopt)
+    Analysis::Mappings::get ().insert_glob_container (&enum_item);
 }
 
 void

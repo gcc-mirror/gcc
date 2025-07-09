@@ -83,15 +83,15 @@ public:
       return ImportData (Kind::Rebind, std::move (definitions));
     }
 
-    static ImportData Glob (Rib::Definition module)
+    static ImportData Glob (Rib::Definition container)
     {
-      return ImportData (Kind::Glob, module);
+      return ImportData (Kind::Glob, container);
     }
 
-    Rib::Definition module () const
+    Rib::Definition container () const
     {
       rust_assert (kind == Kind::Glob);
-      return glob_module;
+      return glob_container;
     }
 
     std::vector<std::pair<Rib::Definition, Namespace>> definitions () const
@@ -107,8 +107,8 @@ public:
       : kind (kind), resolved_definitions (std::move (definitions))
     {}
 
-    ImportData (Kind kind, Rib::Definition module)
-      : kind (kind), glob_module (module)
+    ImportData (Kind kind, Rib::Definition container)
+      : kind (kind), glob_container (container)
     {}
 
     // TODO: Should this be a union?
@@ -117,7 +117,7 @@ public:
     std::vector<std::pair<Rib::Definition, Namespace>> resolved_definitions;
 
     // For Glob
-    Rib::Definition glob_module;
+    Rib::Definition glob_container;
   };
 
   struct ImportPair

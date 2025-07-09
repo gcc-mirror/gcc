@@ -17,8 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-early-name-resolver-2.0.h"
+#include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-map.h"
+#include "rust-item.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-attributes.h"
 #include "rust-finalize-imports-2.0.h"
@@ -75,8 +78,9 @@ Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
   if (!resolved.has_value ())
     return false;
 
-  auto result
-    = Analysis::Mappings::get ().lookup_ast_module (resolved->get_node_id ());
+  auto result = Analysis::Mappings::get ().lookup_glob_container (
+    resolved->get_node_id ());
+
   if (!result)
     return false;
 
@@ -394,12 +398,12 @@ void
 Early::finalize_glob_import (NameResolutionContext &ctx,
 			     const Early::ImportPair &mapping)
 {
-  auto module = Analysis::Mappings::get ().lookup_ast_module (
-    mapping.data.module ().get_node_id ());
-  rust_assert (module);
+  auto container = Analysis::Mappings::get ().lookup_glob_container (
+    mapping.data.container ().get_node_id ());
 
-  GlobbingVisitor glob_visitor (ctx);
-  glob_visitor.go (module.value ());
+  rust_assert (container);
+
+  GlobbingVisitor (ctx).go (container.value ());
 }
 
 void

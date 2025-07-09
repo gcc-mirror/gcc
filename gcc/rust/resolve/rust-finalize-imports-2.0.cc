@@ -21,16 +21,41 @@
 #include "rust-hir-map.h"
 #include "rust-name-resolution-context.h"
 #include "rust-rib.h"
+#include "rust-system.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 
 namespace Rust {
 namespace Resolver2_0 {
 
 void
-GlobbingVisitor::go (AST::Module *module)
+GlobbingVisitor::go (AST::Item *container)
 {
-  for (auto &i : module->get_items ())
+  switch (container->get_item_kind ())
+    {
+    case AST::Item::Kind::Module:
+      visit_module_container (static_cast<AST::Module &> (*container));
+      break;
+    case AST::Item::Kind::Enum:
+      visit_enum_container (static_cast<AST::Enum &> (*container));
+      break;
+    default:
+      rust_unreachable ();
+    }
+}
+
+void
+GlobbingVisitor::visit_module_container (AST::Module &module)
+{
+  for (auto &i : module.get_items ())
     visit (i);
+}
+
+void
+GlobbingVisitor::visit_enum_container (AST::Enum &item)
+{
+  for (auto &variant : item.get_variants ())
+    ctx.insert_globbed (variant->get_identifier (), variant->get_node_id (),
+			Namespace::Types);
 }
 
 void
