@@ -3605,11 +3605,13 @@ finish_this_expr (void)
 {
   tree result = NULL_TREE;
 
-  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
+  if (current_class_ref && !LAMBDA_TYPE_P (TREE_TYPE (current_class_ref)))
+    result = current_class_ptr;
+  else if (current_class_type && LAMBDA_TYPE_P (current_class_type))
     result = (lambda_expr_this_capture
 	      (CLASSTYPE_LAMBDA_EXPR (current_class_type), /*add*/true));
-  else if (current_class_ptr)
-    result = current_class_ptr;
+  else
+    gcc_checking_assert (!current_class_ptr);
 
   if (result)
     /* The keyword 'this' is a prvalue expression.  */
