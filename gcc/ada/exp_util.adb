@@ -6189,23 +6189,12 @@ package body Exp_Util is
          if Is_Protected_Type (Btyp) then
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
-         else
-            declare
-               Root      : constant Entity_Id :=
-                 Underlying_Type (Root_Type (Btyp));
-               Prev_Utyp : Entity_Id := Empty;
-            begin
-               if Is_Protected_Type (Root) then
-                  Utyp := Corresponding_Record_Type (Root);
-               else
-                  while No (TSS (Utyp, TSS_Finalize_Address))
-                    and then Utyp /= Prev_Utyp
-                  loop
-                     Prev_Utyp := Utyp;
-                     Utyp := Underlying_Type (Base_Type (Etype (Utyp)));
-                  end loop;
-               end if;
-            end;
+         elsif Is_Implicit_Full_View (Utyp) then
+            Utyp := Underlying_Type (Root_Type (Btyp));
+
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
          end if;
       end if;
 
