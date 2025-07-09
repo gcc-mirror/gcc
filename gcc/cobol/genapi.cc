@@ -766,8 +766,9 @@ parser_call_target_convention( tree func )
 void
 parser_call_targets_dump()
   {
-    dbgmsg( "call targets for #" HOST_SIZE_T_PRINT_UNSIGNED,
+    dbgmsg( "call targets for #" HOST_SIZE_T_PRINT_UNSIGNED " NOT dumping",
             (fmt_size_t)current_program_index() );
+    return; // not currently working 
     for( const auto& elem : call_targets ) {
       const auto& k = elem.first;
       const auto& v = elem.second;
@@ -1034,14 +1035,13 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
     return NULL_TREE;
     }
 
-  char ach[32];
+  char ach[64];
   static int counter = 1;
   sprintf(ach, "_dcls_table_%d", counter++);
   tree retval =  array_of_long_long(ach, dcls);
   SHOW_IF_PARSE(nullptr)
     {
     SHOW_PARSE_HEADER
-    char ach[64];
     snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
              gb4(dcls.size()), as_voidp(retval));
     SHOW_PARSE_TEXT(ach);
@@ -1050,7 +1050,6 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
   TRACE1
     {
     TRACE1_HEADER
-    char ach[64];
     snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
              gb4(dcls.size()), as_voidp(retval));
     TRACE1_TEXT_ABC("", ach, "");
@@ -1588,7 +1587,7 @@ parser_initialize(const cbl_refer_t& refer, bool like_parser_symbol_add)
 
 static void
 get_binary_value_from_float(tree         value,
-                            cbl_refer_t &dest,
+                      const cbl_refer_t &dest,
                             cbl_field_t *source,
                             tree         source_offset
                             )
@@ -1682,6 +1681,7 @@ depending_on_value(tree depending_on, cbl_field_t *current_sizer)
 //  gg_assign(occurs_lower, build_int_cst_type(LONG, current_sizer->occurs.bounds.lower));
 //  gg_assign(occurs_upper, build_int_cst_type(LONG, current_sizer->occurs.bounds.upper));
 
+  gcc_assert(current_sizer);
   if( current_sizer->occurs.depending_on )
     {
     get_depending_on_value_from_odo(depending_on, current_sizer);
@@ -1825,16 +1825,12 @@ normal_normal_compare(bool debugging,
               NULL_TREE);
     }
 
-  bool needs_adjusting;
   if( !left_intermediate && !right_intermediate )
     {
     // Yay!  Both sides have fixed rdigit values.
 
-    // Flag needs_adjusting as false, because we are going to do it here:
-    needs_adjusting = false;
     int adjust =   get_scaled_rdigits(left_side_ref->field)
                  - get_scaled_rdigits(right_side_ref->field);
-
     if( adjust > 0 )
       {
       // We need to make right_side bigger to match the scale of left_side
@@ -1849,6 +1845,7 @@ normal_normal_compare(bool debugging,
   else
     {
     // At least one side is right_intermediate
+    bool needs_adjusting;
 
     tree adjust;
     if( !left_intermediate && right_intermediate )
@@ -2357,7 +2354,7 @@ cobol_compare(  tree return_int,
                 build_int_cst_type(INT, rightflags),
                 integer_zero_node,
                 NULL_TREE));
-    compared = true;
+    // compared = true;  // Commented out to quiet cppcheck
     }
 
 //  gg_printf("   result is %d\n", return_int, NULL_TREE);
@@ -2563,7 +2560,7 @@ get_string_from(cbl_field_t *field)
   }
 
 static char *
-combined_name(cbl_label_t *label)
+combined_name(const cbl_label_t *label)
   {
   // This routine returns a pointer to a static, so make sure you use the result
   // before calling the routine again
@@ -2578,7 +2575,7 @@ combined_name(cbl_label_t *label)
     if( label->parent )
       {
       // It's possible for implicit
-      cbl_label_t *section_label = cbl_label_of(symbol_at(label->parent));
+      const cbl_label_t *section_label = cbl_label_of(symbol_at(label->parent));
       sect_name = section_label->name;
       }
     }
@@ -3315,7 +3312,7 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
   char ach[256];
   if( label->type == LblParagraph )
     {
-    cbl_label_t *section_label = cbl_label_of(symbol_at(label->parent));
+    const cbl_label_t *section_label = cbl_label_of(symbol_at(label->parent));
     para_name = label->name;
     sect_name = section_label->name;
     sprintf(ach,
@@ -4339,67 +4336,182 @@ psa_FldBlob(struct cbl_field_t *var )
   }
 
 void
-parser_accept(  struct cbl_refer_t refer,
-                enum special_name_t special_e )
+parser_accept(struct cbl_refer_t tgt,
+              special_name_t special_e,
+              cbl_label_t *error,
+              cbl_label_t *not_error )
   {
-  Analyze();
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_REF(" ", refer);
+    if( error )
+      {
+      SHOW_PARSE_LABEL(" error ", error)
+      }
+    if( not_error )
+      {
+      SHOW_PARSE_LABEL(" not_error ", not_error)
+      }
     SHOW_PARSE_END
     }
-  TRACE1
-    {
-    TRACE1_HEADER
-    TRACE1_END
-    }
-
-  /*
-  enum special_name_t
-      {
-        SYSIN_e,
-        SYSIPT_e,
-        SYSOUT_e,
-        SYSLIST_e,
-        SYSLST_e,
-        SYSPUNCH_e,
-        SYSPCH_e,
-        CONSOLE_e,
-        C01_e, C02_e, C03_e, C04_e, C05_e, C06_e,
-        C07_e, C08_e, C09_e, C10_e, C11_e, C12_e,
-        CSP_e,
-        S01_e, S02_e, S03_e, S04_e, S05_e,
-        AFP_5A_e,
-  };
-  */
 
   // The ISO spec describes the valid special names for ACCEPT as implementation
   // dependent.  We are following IBM's lead.
 
   tree environment = build_int_cst_type(INT, special_e);
 
-  switch( special_e )
+  const char *function_to_call = NULL;
+
+  switch(special_e)
     {
+    case STDIN_e:
     case CONSOLE_e:
     case SYSIPT_e:
     case SYSIN_e:
-      break;
-    default:
-      dbgmsg("%s(): We don't know what to do with special_name_t %d,", __func__, special_e);
-      dbgmsg("%s(): so we are ignoring it.", __func__);
-      yywarn("unrecognized SPECIAL NAME ignored");
+      // This is ordinary input from from the stdin:
+      gg_call(VOID,
+              "__gg__accept",
+              environment,
+              gg_get_address_of(tgt.field->var_decl_node),
+              refer_offset(tgt),
+              refer_size_dest(tgt),
+              NULL_TREE);
       return;
       break;
-    }
 
-  gg_call(VOID,
-          "__gg__accept",
-          environment,
-          gg_get_address_of(refer.field->var_decl_node),
-          refer_offset(refer),
-          refer_size_dest(refer),
-          NULL_TREE);
+    case C01_e:
+    case C02_e:
+    case C03_e:
+    case C04_e:
+    case C05_e:
+    case C06_e:
+    case C07_e:
+    case C08_e:
+    case C09_e:
+    case C10_e:
+    case C11_e:
+    case C12_e:
+    case CSP_e:
+    case S01_e:
+    case S02_e:
+    case S03_e:
+    case S04_e:
+    case S05_e:
+    case AFP_5A_e:
+    case STDOUT_e:
+    case SYSOUT_e:
+    case SYSLIST_e:
+    case SYSLST_e:
+    case STDERR_e:
+    case SYSPUNCH_e:
+    case SYSPCH_e:
+    case SYSERR_e:
+      cbl_internal_error("Not valid for ACCEPT statement.");
+      break;
+
+    case ARG_NUM_e:
+      // This ACCEPT statement wants the number of argv values:
+      gg_call(VOID,
+              "__gg__get_argc",
+              gg_get_address_of(tgt.field->var_decl_node),
+              refer_offset(tgt),
+              refer_size_source(tgt),
+              NULL_TREE);
+       return;
+       break;
+
+    case ENV_NAME_e:
+      // This fetches the environment name set by DISPLAY... UPON ENV_NAME_e
+      gg_call(VOID,
+              "__gg__get_env_name",
+              gg_get_address_of(tgt.field->var_decl_node),
+              refer_offset(tgt),
+              refer_size_source(tgt),
+              NULL_TREE);
+       return;
+       break;
+
+    case ENV_VALUE_e:
+      // This fetches the environment value associated with the previously
+      // esablished name
+      function_to_call = "__gg__get_env_value";
+      break;
+
+    case ARG_VALUE_e:
+      // We are fetching the variable whose index was established by a prior
+      // DISPLAY UPON ARGUMENT-NUMBER.  After the fetch, the value will be 
+      // incremented by one.
+      function_to_call = "__gg__accept_arg_value";
+      break;
+    }
+  if( function_to_call )
+    {
+    tree erf = gg_define_int();
+    gg_assign(erf,
+              gg_call_expr(  INT,
+                            function_to_call,
+                            gg_get_address_of(tgt.field->var_decl_node),
+                            refer_offset(tgt),
+                            refer_size_dest(tgt),
+                            NULL_TREE));
+    if( error )
+      {
+      // There is an ON EXCEPTION phrase:
+      IF( erf, ne_op, integer_zero_node )
+        {
+        SHOW_PARSE
+          {
+          SHOW_PARSE_INDENT
+          SHOW_PARSE_TEXT("Laying down GOTO     error->INTO for_argv")
+          SHOW_PARSE_LABEL(" ", error)
+          }
+        gg_append_statement( error->structs.arith_error->into.go_to );
+        }
+      ELSE
+        {
+        }
+        ENDIF
+      }
+    if( not_error )
+      {
+      // There is an NOT ON EXCEPTION phrase:
+      IF( erf, eq_op, integer_zero_node )
+        {
+        SHOW_PARSE
+          {
+          SHOW_PARSE_INDENT
+          SHOW_PARSE_TEXT("Laying down GOTO not_error->INTO for_argv")
+          SHOW_PARSE_LABEL(" ", not_error)
+          }
+        gg_append_statement( not_error->structs.arith_error->into.go_to );
+        }
+      ELSE
+        {
+        }
+        ENDIF
+      }
+    if( error )
+      {
+      SHOW_PARSE
+        {
+        SHOW_PARSE_INDENT
+        SHOW_PARSE_TEXT("Laying down LABEL     error->bottom")
+        SHOW_PARSE_LABEL(" ", error)
+        }
+      gg_append_statement( error->structs.arith_error->bottom.label );
+      }
+    if( not_error )
+      {
+      SHOW_PARSE
+        {
+        SHOW_PARSE_INDENT
+        SHOW_PARSE_TEXT("Laying down LABEL not_error->bottom")
+        SHOW_PARSE_LABEL(" ", not_error)
+        SHOW_PARSE_END
+        }
+      gg_append_statement( not_error->structs.arith_error->bottom.label );
+      }
+    }
   }
 
 // TODO: update documentation.
@@ -5250,22 +5362,29 @@ parser_display_field(cbl_field_t *field)
                                 DISPLAY_NO_ADVANCE);
   }
 
-/*
- * The first parameter to parser_display is the "device" upon which to display
- * the data. Besides normal devices, these may include elements that define the
- * Unix command line and environment:
- *  1.  ARG_NUM_e, the ARGUMENT-NUMBER
- *  2.  ARG_VALUE_e, the ARGUMENT-VALUE
- *  3.  ENV_NAME_e, the ENVIRONMENT-NAME
- *  4.  ENV_VALUE_e, the ENVIRONMENT-VALUE
- * that need special care and feeding.
- */
 void
 parser_display( const struct cbl_special_name_t *upon,
-                struct cbl_refer_t refs[],
-                size_t n,
-                bool advance )
+                std::vector<cbl_refer_t> refs, 
+                bool advance, 
+                cbl_label_t *not_error, 
+                cbl_label_t *error )
   {
+  const size_t n = refs.size();
+  /*
+   * The first parameter to parser_display is the "device" upon which to display
+   * the data. Besides normal devices, these may include elements that define the
+   * Unix command line and environment:
+   *  1.  ARG_NUM_e, the ARGUMENT-NUMBER
+   *  2.  ARG_VALUE_e, the ARGUMENT-VALUE
+   *  3.  ENV_NAME_e, the ENVIRONMENT-NAME
+   *  4.  ENV_VALUE_e, the ENVIRONMENT-VALUE
+   * that need special care and feeding.
+   */
+
+  // At the present time, I am not sure what not_error and error are for
+  gcc_assert(!not_error);
+  gcc_assert(!error);
+
   Analyze();
   SHOW_PARSE
     {
@@ -5274,7 +5393,7 @@ parser_display( const struct cbl_special_name_t *upon,
     for(size_t i=0; i<n; i++)
       {
       SHOW_PARSE_INDENT
-      SHOW_PARSE_REF("", refs[i]);
+      SHOW_PARSE_REF("", refs.at(i));
       }
     if( advance )
       {
@@ -5306,23 +5425,81 @@ parser_display( const struct cbl_special_name_t *upon,
     {
     switch(upon->id)
       {
+      // See table 5 in the IBM Cobol For Linux x86 1.2 document.
+
+      case STDIN_e:
+      case SYSIN_e:
+      case SYSIPT_e:
+        cbl_internal_error("Attempting to send to an input device.");
+        break;
+
+      case C01_e:
+      case C02_e:
+      case C03_e:
+      case C04_e:
+      case C05_e:
+      case C06_e:
+      case C07_e:
+      case C08_e:
+      case C09_e:
+      case C10_e:
+      case C11_e:
+      case C12_e:
+      case CSP_e:
+      case S01_e:
+      case S02_e:
+      case S03_e:
+      case S04_e:
+      case S05_e:
+      case AFP_5A_e:
+      case ARG_VALUE_e:
+        cbl_internal_error("Not valid for DISPLAY statement.");
+        break;
+
       case STDOUT_e:
-      case SYSOUT_e:
-      case SYSLIST_e:
-      case SYSLST_e:
       case CONSOLE_e:
+        // These are inarguably stdout
         gg_assign(file_descriptor, integer_one_node);
         break;
 
       case STDERR_e:
-      case SYSPUNCH_e:
-      case SYSPCH_e:
+      case SYSERR_e:
+        // These are inarguably stderr
         gg_assign(file_descriptor, integer_two_node);
         break;
 
+      case SYSOUT_e:
+      case SYSLIST_e:
+      case SYSLST_e:
+      case SYSPUNCH_e:
+      case SYSPCH_e:
+        // In the 21st century, when there are no longer valid assumptions to
+        // be made about the existence of line printers, and where things
+        // formerly-ubiquitous card punches no longer exist, there is a need
+        // for the possibility of assigning these "devices" to externally-
+        // determined Unix gadgetry in /dev:
+        gg_assign(file_descriptor,
+                  gg_call_expr( INT,
+                                "__gg__get_file_descriptor",
+                                gg_string_literal(upon->os_filename),
+                                NULL_TREE));
+        needs_closing = true;
+        break;
+
+      case ARG_NUM_e:
+        // Set the index number for a subsequent ACCEPT FROM ARG_VALUE_e
+        gg_call(VOID,
+                "__gg__set_arg_num",
+                gg_get_address_of(refs[0].field->var_decl_node),
+                refer_offset(refs[0]),
+                refer_size_source(refs[0]),
+                NULL_TREE);
+         return;
+         break;
+
       case ENV_NAME_e:
-        // This Part I of the slightly absurd method of using DISPLAY...UPON
-        // to fetch, or set, environment variables.
+        // Establish the name of an environment variable for later use with
+        // in either DISPLAY UPON or ACCEPT FROM
         gg_call(VOID,
                 "__gg__set_env_name",
                 gg_get_address_of(refs[0].field->var_decl_node),
@@ -5332,19 +5509,16 @@ parser_display( const struct cbl_special_name_t *upon,
          return;
          break;
 
-      default:
-        if( upon->os_filename[0] )
-          {
-          tree topen = gg_open( gg_string_literal(upon->os_filename),
-                                build_int_cst_type(INT, O_APPEND|O_WRONLY));
-          gg_assign(file_descriptor, topen);
-          needs_closing = true;
-          }
-        else
-          {
-          fprintf(stderr, "We don't know what to do in parser_display\n");
-          gcc_unreachable();
-          }
+      case ENV_VALUE_e:
+        // Set the contents of the environment variable named with ENV_NAME_e
+        gg_call(VOID,
+                "__gg__set_env_value",
+                gg_get_address_of(refs[0].field->var_decl_node),
+                refer_offset(refs[0]),
+                refer_size_source(refs[0]),
+                NULL_TREE);
+         return;
+         break;
       }
     }
   else
@@ -5359,12 +5533,9 @@ parser_display( const struct cbl_special_name_t *upon,
     }
   CHECK_FIELD(refs[n-1].field);
   parser_display_internal(file_descriptor, refs[n-1], advance ? DISPLAY_ADVANCE : DISPLAY_NO_ADVANCE);
-
   if( needs_closing )
     {
-    tree tclose = gg_close(file_descriptor);
-    // We are ignoring the close() return value
-    gg_append_statement(tclose);
+    gg_close(file_descriptor);
     }
 
   cursor_at_sol = advance;
@@ -6240,12 +6411,12 @@ program_end_stuff(cbl_refer_t refer, ec_type_t ec)
 
       tree array_type = build_array_type_nelts(UCHAR,
                                     returner->data.capacity);
-      tree retval     =  gg_define_variable(array_type, vs_static);
-      gg_memcpy(gg_get_address_of(retval),
+      tree array     =  gg_define_variable(array_type, vs_static);
+      gg_memcpy(gg_get_address_of(array),
                 member(returner->var_decl_node, "data"),
                 member(returner->var_decl_node, "capacity"));
 
-      tree actual = gg_cast(COBOL_FUNCTION_RETURN_TYPE, gg_get_address_of(retval));
+      tree actual = gg_cast(COBOL_FUNCTION_RETURN_TYPE, gg_get_address_of(array));
 
       restore_local_variables();
       gg_return(actual);
@@ -6876,7 +7047,6 @@ parser_division(cbl_division_t division,
       // expected formal parameter and tacks it onto the end of the
       // function's arguments chain.
 
-      char ach[2*sizeof(cbl_name_t)];
       sprintf(ach, "_p_%s", args[i].refer.field->name);
 
       size_t nbytes = 0;
@@ -9947,8 +10117,8 @@ parser_file_start(struct cbl_file_t *file,
     // A key has a number of fields
     for(size_t ifield=0; ifield<file->keys[key_number].nfield; ifield++)
       {
-      size_t field_index = file->keys[key_number].fields[ifield];
-      cbl_field_t *field = cbl_field_of(symbol_at(field_index));
+      size_t nfield = file->keys[key_number].fields[ifield];
+      cbl_field_t *field = cbl_field_of(symbol_at(nfield));
       combined_length += field->data.capacity;
       }
     gg_assign(length, build_int_cst_type(SIZE_T, combined_length));
@@ -9975,7 +10145,7 @@ parser_file_start(struct cbl_file_t *file,
 
 static void
 inspect_tally(bool backward,
-              cbl_refer_t identifier_1,
+        const cbl_refer_t &identifier_1,
               cbl_inspect_opers_t& identifier_2)
   {
   Analyze();
@@ -10175,8 +10345,8 @@ inspect_tally(bool backward,
 
 static void
 inspect_replacing(int backward,
-                  cbl_refer_t identifier_1,
-                  cbl_inspect_opers_t& operations)
+            const cbl_refer_t &identifier_1,
+                  cbl_inspect_opers_t &operations)
   {
   Analyze();
   // This is an INSPECT FORMAT 2
@@ -13510,9 +13680,9 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
     // are also accessible by us.  Go find them.
     std::vector<const hier_node *>uncles;
     find_uncles(nodes[i], uncles);
-    for( size_t i=0; i<uncles.size(); i++ )
+    for( size_t j=0; j<uncles.size(); j++ )
       {
-      const hier_node *uncle = uncles[i];
+      const hier_node *uncle = uncles[j];
       if( map_of_sets[caller].find(uncle->name) == map_of_sets[caller].end() )
         {
         // We have a COMMON uncle or sibling we haven't seen before.
@@ -13550,7 +13720,6 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
       if( callers.find(caller) == callers.end() )
         {
         // We haven't seen this caller before
-        callers.insert(caller);
 
         char ach[3*sizeof(cbl_name_t)];
         tree names_table_type = build_array_type_nelts(CHAR_P, mol->second.size()+1);
@@ -13617,6 +13786,8 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
                 (fmt_size_t)caller);
         tree accessible_programs_decl = gg_trans_unit_var_decl(ach);
         gg_assign( accessible_programs_decl, gg_get_address_of(the_constructed_table) );
+
+        callers.insert(caller);
         }
       }
     }
@@ -13883,8 +14054,8 @@ conditional_abs(tree source, const cbl_field_t *field)
 
 static bool
 mh_identical(cbl_refer_t &destref,
-             cbl_refer_t &sourceref,
-             TREEPLET    &tsource)
+       const cbl_refer_t &sourceref,
+       const TREEPLET    &tsource)
   {
   // Check to see if the two variables are identical types, thus allowing
   // for a simple byte-for-byte copy of the data areas:
@@ -14224,7 +14395,7 @@ float_type_of(const cbl_field_t *field)
   }
 
 static tree
-float_type_of(cbl_refer_t *refer)
+float_type_of(const cbl_refer_t *refer)
   {
   return float_type_of(refer->field);
   }
@@ -14456,7 +14627,7 @@ picky_memset(tree &dest_p, unsigned char value, size_t length)
   }
 
 static void
-picky_memcpy(tree &dest_p, tree &source_p, size_t length)
+picky_memcpy(tree &dest_p, const tree &source_p, size_t length)
   {
   if( length )
     {
@@ -14476,8 +14647,8 @@ picky_memcpy(tree &dest_p, tree &source_p, size_t length)
 
 static bool
 mh_numeric_display( cbl_refer_t &destref,
-                    cbl_refer_t &sourceref,
-                    TREEPLET    &tsource,
+              const cbl_refer_t &sourceref,
+              const TREEPLET    &tsource,
                     tree size_error)
   {
   bool moved = false;
@@ -14965,8 +15136,8 @@ mh_numeric_display( cbl_refer_t &destref,
 
 static bool
 mh_little_endian( cbl_refer_t &destref,
-                  cbl_refer_t &sourceref,
-                  TREEPLET    &tsource,
+            const cbl_refer_t &sourceref,
+            const TREEPLET    &tsource,
                   bool check_for_error,
                   tree size_error)
   {
@@ -15037,8 +15208,8 @@ mh_little_endian( cbl_refer_t &destref,
 
 static bool
 mh_source_is_group( cbl_refer_t &destref,
-                    cbl_refer_t &sourceref,
-                    TREEPLET    &tsrc)
+              const cbl_refer_t &sourceref,
+              const TREEPLET    &tsrc)
   {
   bool retval = false;
   if( sourceref.field->type == FldGroup && !(destref.field->attr & rjust_e) )
@@ -15103,7 +15274,7 @@ move_helper(tree size_error,        // This is an INT
     {
     // We are creating a copy of the original destination in case we clobber it
     // and have to restore it because of a computational error.
-    bool first_time = true;
+    static bool first_time = true;
     static size_t stash_size = 1024;
     if( first_time )
       {
@@ -15341,7 +15512,7 @@ move_helper(tree size_error,        // This is an INT
       gg_attribute_bit_clear(destref.field, refmod_e);
       }
 
-    moved = true;
+    // moved = true; // commented out to quiet cppcheck
     }
 
   if( restore_on_error )

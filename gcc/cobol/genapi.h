@@ -52,10 +52,13 @@ void parser_division( cbl_division_t division,
 void parser_enter_program(const char *funcname, bool is_function, int *retval);
 void parser_leave_program();
 
-void parser_accept( cbl_refer_t refer, special_name_t special_e);
+void parser_accept( cbl_refer_t refer, special_name_t special_e, 
+                    cbl_label_t *error, cbl_label_t *not_error );
 void parser_accept_exception( cbl_label_t *name );
 void parser_accept_exception_end( cbl_label_t *name );
 
+void parser_accept_under_discussion(struct cbl_refer_t tgt, special_name_t special,
+                                    cbl_label_t *error, cbl_label_t *not_error );
 void parser_accept_envar( cbl_refer_t refer, cbl_refer_t envar,
                           cbl_label_t *error, cbl_label_t *not_error );
 void parser_set_envar( cbl_refer_t envar, cbl_refer_t refer );
@@ -263,8 +266,10 @@ void parser_exit_program(void); // exits back to COBOL only, else continue
 
 void
 parser_display( const struct cbl_special_name_t *upon,
-                struct cbl_refer_t args[], size_t n,
-                bool advance = DISPLAY_ADVANCE );
+                std::vector<cbl_refer_t> args, 
+                bool advance = DISPLAY_ADVANCE, 
+                cbl_label_t *not_error = nullptr,
+                cbl_label_t *compute_error = nullptr );
 
 void parser_display_field(cbl_field_t *fld);
 

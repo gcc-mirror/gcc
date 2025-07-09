@@ -356,6 +356,10 @@ static void level_found() {
   if( scanner_normal() ) parsing.need_level(false);
 }
 
+/*
+ * Trim the scanned location by the amount about to re-scanned. 
+ * Must be a macro because it expands yyless. 
+ */
 #define myless(N)				\
   do {						\
     auto n(N);					\

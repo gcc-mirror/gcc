@@ -10132,52 +10132,70 @@ __gg__classify( classify_t type,
   return retval;
   }
 
+static
+int
+accept_envar( cblc_field_t *tgt,
+              size_t        tgt_offset,
+              size_t        tgt_length,
+              const char   *psz_name)
+  {
+  int retval = 1; // 1 means we couldn't find it
+  if( psz_name )
+    {
+    tgt_length = tgt_length  ? tgt_length  : tgt->capacity;
+
+    // Pick up the environment variable name, which is in the internal codeset
+    char *env = strdup(psz_name);
+    massert(env);
+
+    // Get rid of leading and trailing internal_space characters:
+    char *trimmed_env = brute_force_trim(env);
+
+    // Convert the name to the console codeset:
+    __gg__internal_to_console_in_place(trimmed_env, strlen(trimmed_env));
+
+    // Pick up the environment variable, and convert it to the internal codeset
+    const char *p = getenv(trimmed_env);
+    if(p)
+      {
+      char *pp = strdup(p);
+      massert(pp);
+      console_to_internal(pp, strlen(pp));
+      retval = 0; // Okay
+      move_string(tgt, tgt_offset, tgt_length, pp);
+      free(pp);
+      }
+    free(env);
+    }
+
+  if( retval == 1 )
+    {
+    // Could't find it
+    exception_raise(ec_argument_imp_environment_e);
+    }
+
+  return retval;
+  }
+
 extern "C"
 int
 __gg__accept_envar( cblc_field_t *tgt,
                     size_t        tgt_offset,
                     size_t        tgt_length,
-                    cblc_field_t *name,
+              const cblc_field_t *name,
                     size_t        name_offset,
                     size_t        name_length)
   {
-  int retval;
-  tgt_length  = tgt_length  ? tgt_length  : tgt->capacity;
-  name_length = name_length ? name_length : name->capacity;
-
-  // Pick up the environment variable name, which is in teh internal codeset
-  static char   *env        = NULL;
-  static size_t  env_length = 0;
-  if( env_length < name_length+1 )
-    {
-    env_length = name_length+1;
-    env = static_cast<char *>(realloc(env, env_length));
-    }
-  memcpy(env, name->data + name_offset, name_length);
-  env[name_length] = '\0';
-
-  // Get rid of leading and trailing internal_space characters:
-  char *trimmed_env = brute_force_trim(env);
-
-  // Convert the name to the console codeset:
-  __gg__internal_to_console_in_place(trimmed_env, strlen(trimmed_env));
-
-  // Pick up the environment variable, and convert it to the internal codeset
-  const char *p = getenv(trimmed_env);
-  if(p)
-    {
-    char *pp = strdup(p);
-    console_to_internal(pp, strlen(pp));
-    retval = 0; // Okay
-    move_string(tgt, tgt_offset, tgt_length, pp);
-    free(pp);
-    }
-  else
-    {
-    retval = 1; // Could't find it
-    exception_raise(ec_argument_imp_environment_e);
-    }
-
+  //  We need the name to be nul-terminated:
+  char *p = static_cast<char *>(malloc(name_length + 1));
+  massert(p);
+  memcpy(p, name->data+name_offset, name_length);
+  p[name_length] = '\0';
+  int retval = accept_envar(tgt,
+                            tgt_offset,
+                            tgt_length,
+                            p);
+  free(p);
   return retval;
   }
 
@@ -11247,6 +11265,28 @@ match_declarative( bool enabled,
   return matches;
 }
 
+static
+void open_syslog(int option, int facility)
+{
+  static bool first_time = true;
+  if( first_time ) {
+#if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+  /* Declared in errno.h, when available.  */
+    static const char * const ident = program_invocation_short_name;
+#elif defined (HAVE_GETPROGNAME)
+  /* Declared in stdlib.h.  */
+    static const char * const ident = getprogname();
+#else
+  /* Avoid a NULL entry.  */
+    static const char * const ident = "unnamed_COBOL_program";
+#endif
+    // TODO: Program to set option in library via command-line and/or environment.
+    //       Library listens to program, not to the environment.
+    openlog(ident, option, facility);
+    first_time = false;
+  }
+}
+
 /*
  * The default exception handler is called if:
  *   1.  The EC is enabled and was not handled by a Declarative, or
@@ -11256,26 +11296,11 @@ match_declarative( bool enabled,
 static void
 default_exception_handler( ec_type_t ec )
 {
-#if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
-  /* Declared in errno.h, when available.  */
-  static const char * const ident = program_invocation_short_name;
-#elif defined (HAVE_GETPROGNAME)
-  /* Declared in stdlib.h.  */
-  static const char * const ident = getprogname();
-#else
-  /* Avoid a NULL entry.  */
-  static const char * const ident = "unnamed_COBOL_program";
-#endif
-  static bool first_time = true;
   static const int priority = LOG_INFO, option = LOG_PERROR, facility = LOG_USER;
+  open_syslog(option, facility);
+
   ec_disposition_t disposition = ec_category_fatal_e;
 
-  if( first_time ) {
-    // TODO: Program to set option in library via command-line and/or environment.
-    //       Library listens to program, not to the environment.
-    openlog(ident, option, facility);
-    first_time = false;
-  }
 
   if( ec != ec_none_e ) {
     auto pec = std::find_if( __gg__exception_table, __gg__exception_table_end,
@@ -13149,6 +13174,7 @@ operator<<( std::vector<cbl_declarative_t>& dcls,
 }
 
 // The first element of each array is the number of elements that follow
+// The first element of each array is the number of elements that follow
 extern "C"
 void
 __gg__set_exception_environment( uint64_t *ecs, uint64_t *dcls )
@@ -13207,11 +13233,40 @@ __gg__set_env_name( const cblc_field_t *var,
                     size_t              offset,
                     size_t              length )
   {
+  // implements DISPLAY UPON ENVIRONMENT-NAME
   free(sv_envname);
   sv_envname = static_cast<char *>(malloc(length+1));
   massert(sv_envname);
   memcpy(sv_envname, var->data+offset, length);
   sv_envname[length] = '\0';
+  }
+
+
+extern "C"
+void
+__gg__get_env_name( cblc_field_t *dest,
+                    size_t dest_offset,
+                    size_t dest_length)
+  {
+  // Implements ACCEPT FROM ENVIRONMENT-NAME
+  // It returns the value previously established by __gg__set_env_name.
+  if( sv_envname )
+    {
+    sv_envname = strdup("");
+    }
+  move_string(dest, dest_offset, dest_length, sv_envname);
+  }
+
+extern "C"
+int
+__gg__get_env_value(cblc_field_t *dest,
+                    size_t dest_offset,
+                    size_t dest_length)
+  {
+  return accept_envar(dest,
+                      dest_offset,
+                      dest_length,
+                      sv_envname);
   }
 
 extern "C"
@@ -13220,6 +13275,7 @@ __gg__set_env_value(const cblc_field_t *value,
                     size_t              offset,
                     size_t              length )
   {
+  // implements DISPLAY UPON ENVIRONMENT-VALUE
   size_t name_length  = strlen(sv_envname);
   size_t value_length = length;
 
@@ -13261,6 +13317,11 @@ __gg__set_env_value(const cblc_field_t *value,
 extern "C"
 void
 __gg__fprintf_stderr(const char *format_string, ...)
+  __attribute__ ((__format__ (__printf__, 1, 2)));
+
+extern "C"
+void
+__gg__fprintf_stderr(const char *format_string, ...)
   {
   /*  This routine allows the compiler to send stuff to stderr in a way
       that is straightforward to use..  */
@@ -13270,3 +13331,81 @@ __gg__fprintf_stderr(const char *format_string, ...)
   va_end(ap);
   }
 
+
+static int sv_argument_number = 0;
+
+extern "C"
+void
+__gg__set_arg_num( const cblc_field_t *index,
+                   size_t              index_offset,
+                   size_t              index_size )
+  {
+  // Implements DISPLAY UPON ARGUMENT-NUMBER.
+  int rdigits;
+  __int128 N = get_binary_value_local(&rdigits,
+                                      index,
+                                      index->data + index_offset,
+                                      index_size);
+  // If he gives us fractional digits, just truncate
+  N /= __gg__power_of_ten(rdigits);
+
+  // N is 1-based, per normal COBOL.  We have to decrement it here:
+  N -= 1;
+  sv_argument_number = static_cast<int>(N);
+  }
+
+extern "C"
+int
+__gg__accept_arg_value( cblc_field_t *dest,
+                        size_t dest_offset,
+                        size_t dest_length)
+  {
+  // Implements ACCEPT FROM ARGUMENT-VALUE
+  int retcode;
+  command_line_plan_b();
+  if( sv_argument_number >= stashed_argc || sv_argument_number < 0 )
+    {
+    exception_raise(ec_argument_imp_command_e);
+    retcode = 1;  // Error
+    }
+  else
+    {
+    char *retval = strdup(stashed_argv[sv_argument_number]);
+    console_to_internal(retval, strlen(retval));
+    move_string(dest, dest_offset, dest_length, retval);
+    free(retval);
+    retcode = 0;  // Okay
+
+    // The Fujitsu spec says bump this value by one.
+    sv_argument_number += 1;
+    }
+  return retcode;
+  }
+
+extern "C"
+int
+__gg__get_file_descriptor(const char *device)
+  {
+  int retval = open(device, O_WRONLY);
+  
+  if( retval == -1 )
+    {
+    char *msg;
+    int ec = asprintf(&msg,
+                      "Trying to open %s.  Got error %s",
+                      device,
+                      strerror(errno));
+    if( ec != -1 )
+      {
+      static const int priority = LOG_INFO,
+                         option = LOG_PERROR,
+                       facility = LOG_USER;
+      open_syslog(option, facility);
+      syslog(priority, "%s", msg);
+      }
+    
+    // Open a new handle to /dev/stdout, since our caller will be closing it
+    retval = open("/dev/stdout", O_WRONLY);
+    }
+  return retval;
+  }

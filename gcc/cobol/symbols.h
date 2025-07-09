@@ -1894,6 +1894,10 @@ const cbl_label_t * symbol_program_local( const char called[] );
 
 bool redefine_field( cbl_field_t *field );
 
+const cbl_field_t * 
+symbol_unresolved_file_key( const cbl_file_t * file,
+                            const cbl_name_t key_field_name );
+
 static inline struct cbl_section_t *
 cbl_section_of( struct symbol_elem_t *e ) {
   assert(e && e->type == SymDataSection);
@@ -2387,6 +2391,165 @@ enum cbl_call_convention_t {
   cbl_call_cobol_e = 'N', // native
 };
 
+int keyword_tok( const char * text, bool include_intrinsics = false );
+int redefined_token( const cbl_name_t name );
+
+class current_tokens_t {
+  class tokenset_t {
+    // token_names is initialized from a generated header file. 
+    std::vector<const char *>token_names;  // position indicates token value
+    std::map <std::string, int> tokens;    // aliases
+    std::set<std::string> cobol_words;  // Anything in COBOL-WORDS may appear only once. 
+  public:
+    static std::string
+    lowercase( const cbl_name_t name ) {
+      cbl_name_t lname;
+      std::transform(name, name + strlen(name) + 1, lname, ftolower);
+      return lname;
+    }
+    static std::string
+    uppercase( const cbl_name_t name ) {
+      cbl_name_t uname;
+      std::transform(name, name + strlen(name) + 1, uname, ftoupper);
+      return uname;
+    }
+
+  public:
+    tokenset_t();
+    int find( const cbl_name_t name, bool include_intrinsics );
+
+    bool equate( const YYLTYPE& loc, int token,
+                 const cbl_name_t name, const cbl_name_t verb = "EQUATE") {
+      auto lname( lowercase(name) );
+      auto cw = cobol_words.insert(lname);
+      if( ! cw.second ) {
+        error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
+        return false;
+      }
+      auto p = tokens.find(lowercase(name));
+      bool fOK = p == tokens.end();
+      if( fOK ) { // name not already in use
+        tokens[lname] = token;
+        dbgmsg("%s:%d: %d has alias %s", __func__, __LINE__, token, name);
+      } else {
+        error_msg(loc, "%s: %s already defined as a token", verb, name);
+      }
+      return fOK;
+    }
+    bool undefine( const YYLTYPE& loc,
+                   const cbl_name_t name, const cbl_name_t verb = "UNDEFINE" ) {
+      auto lname( lowercase(name) );
+      auto cw = cobol_words.insert(lname);
+      if( ! cw.second ) {
+        error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
+        return false;
+      }
+
+      // Do not erase generic, multi-type tokens COMPUTATIONAL and BINARY_INTEGER.
+      if( binary_integer_usage_of(name) ) {
+        dbgmsg("%s:%d: generic %s remains valid as a token", __func__, __LINE__, name);
+        return true;
+      }
+
+      auto p = tokens.find(lname);
+      bool fOK = p != tokens.end();
+      if( fOK ) { // name in use
+        tokens.erase(p);
+      } else {
+        error_msg(loc, "%s: %s not defined as a token", verb, name);
+      }
+      dbgmsg("%s:%d: %s removed as a valid token name", __func__, __LINE__, name);
+      return fOK;
+    }
+  
+    bool substitute( const YYLTYPE& loc,
+                     const cbl_name_t extant, int token, const cbl_name_t name ) {
+      return
+        equate( loc, token, name, "SUBSTITUTE" )
+        &&
+        undefine( loc, extant, "SUBSTITUTE" );
+    }
+    bool reserve( const YYLTYPE& loc, const cbl_name_t name ) {
+      auto lname( lowercase(name) );
+      auto cw = cobol_words.insert(lname);
+      if( ! cw.second ) {
+        error_msg(loc, "COBOL-WORDS RESERVE: %s may appear but once", name);
+        return false;
+      }
+      tokens[lname] = -42;
+      return true;
+    }
+    int redefined_as( const cbl_name_t name ) {
+      auto lname( lowercase(name) );
+      if( cobol_words.find(lname) != cobol_words.end() ) {
+        auto p = tokens.find(lname);
+        if( p != tokens.end() ) {
+          return p->second;
+        }
+      }
+      return 0;
+    }
+    const char * name_of( int tok ) const {
+      tok -= (255 + 3);
+      gcc_assert(0 <= tok && size_t(tok) < token_names.size());
+      return tok < 0? "???" : token_names[tok];
+    }
+  };
+
+  tokenset_t tokens;
+ public:
+  current_tokens_t() {}
+  int find( const cbl_name_t name, bool include_intrinsics ) {
+    return tokens.find(name, include_intrinsics);
+  }
+  bool equate( const YYLTYPE& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
+    int token; 
+    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
+      if( 0 == (token = keyword_tok(keyword)) ) {
+	error_msg(loc, "EQUATE %s: not a valid token", keyword);
+	return false;
+      }
+    }
+    auto name = keyword_alias_add(tokens.uppercase(keyword),
+				  tokens.uppercase(alias));
+    if( name != keyword ) {
+      error_msg(loc, "EQUATE: %s is already an alias for %s", alias, name.c_str());
+      return false;
+    } 
+    return tokens.equate(loc, token, alias);
+  }
+  bool undefine( const YYLTYPE& loc, cbl_name_t keyword ) {
+    return tokens.undefine(loc, keyword);
+  }
+  bool substitute( const YYLTYPE& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
+    int token; 
+    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
+      if( 0 == (token = keyword_tok(keyword)) ) {
+	error_msg(loc, "SUBSTITUTE %s: not a valid token", keyword);
+	return false;
+      }
+    }
+    auto name = keyword_alias_add(tokens.uppercase(keyword),
+				  tokens.uppercase(alias));
+    if( name != keyword ) {
+      error_msg(loc, "SUBSTITUTE: %s is already an alias for %s", alias, name.c_str());
+      return false;
+    } 
+
+    dbgmsg("%s:%d: %s (%d) will have alias %s", __func__, __LINE__, keyword, token, alias);
+    return tokens.substitute(loc, keyword, token, alias);
+  }
+  bool reserve( const YYLTYPE& loc, const cbl_name_t name ) {
+    return tokens.reserve(loc, name);
+  }
+  int redefined_as( const cbl_name_t name ) {
+    return tokens.redefined_as(name);
+  }
+  const char * name_of( int tok ) const {
+    return tokens.name_of(tok);
+  }
+};
+
 cbl_call_convention_t current_call_convention();
 
 cbl_call_convention_t
@@ -2432,9 +2595,6 @@ public:
 
   int line_number() const { return line; }
 };
-
-int keyword_tok( const char * text, bool include_intrinsics = false );
-int redefined_token( const cbl_name_t name );
 
 void procedure_definition_add( size_t program, const cbl_label_t *procedure );
 void procedure_reference_add( const char *sect, const char *para,

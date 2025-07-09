@@ -34,29 +34,32 @@
  * header files.
  */
 
-#include "cobol-system.h"
-#include "coretypes.h"
-#include "tree.h"
+#include <cobol-system.h>
+#include <coretypes.h>
+#include <tree.h>
 #undef yy_flex_debug
 
 #include <langinfo.h>
 
-#include "coretypes.h"
-#include "version.h"
-#include "demangle.h"
-#include "intl.h"
-#include "backtrace.h"
-#include "diagnostic.h"
-#include "diagnostic-color.h"
-#include "diagnostic-url.h"
-#include "diagnostic-metadata.h"
-#include "diagnostic-path.h"
-#include "edit-context.h"
-#include "selftest.h"
-#include "selftest-diagnostic.h"
-#include "opts.h"
+#include <coretypes.h>
+#include <version.h>
+#include <demangle.h>
+#include <intl.h>
+#include <backtrace.h>
+#include <diagnostic.h>
+#include <diagnostic-color.h>
+#include <diagnostic-url.h>
+#include <diagnostic-metadata.h>
+#include <diagnostic-path.h>
+#include <edit-context.h>
+#include <selftest.h>
+#include <selftest-diagnostic.h>
+#include <opts.h>
+
 #include "util.h"
+
 #include "cbldiag.h"
+#include "cdfval.h"
 #include "lexio.h"
 
 #include "../../libgcobol/ec.h"
@@ -111,6 +114,81 @@ gb4( size_t input ) {
   return input;
 }
   
+/*
+ * Most CDF Directives -- those that have state -- can be pushed and popped.
+ * This class maintains stacks of them, with each stack having a "default
+ * value" that may be updated, without push/pop, via a CDF directive or
+ * command-line option.  A push to a stack pushes the default value onto it; a
+ * pop copies the top of the stack to the default value.
+ *
+ * >>PUSH ALL calls the class's push() method. 
+ * >>POP ALL calls the class's pop() method. 
+ */
+class cdf_directives_t
+{
+  typedef std::map<std::string, cdfval_t> cdf_values_t;
+
+  template <typename T>
+  class cdf_stack_t : private std::stack<T> {
+    T default_value;
+   public:
+    void value( const T& value ) {
+      T& output( std::stack<T>::empty()? default_value : std::stack<T>::top() );
+      output = value;
+    }
+    T& value() {
+      return std::stack<T>::empty()? default_value : std::stack<T>::top();
+    }
+    void push() {
+      std::stack<T>::push(value());
+    }
+    void pop() {
+      if( std::stack<T>::empty() ) {
+        error_msg(YYLTYPE(), "CDF stack empty");
+        return;
+      }
+      default_value = std::stack<T>::top();
+      std::stack<T>::pop();
+    }
+  };
+
+ public:
+  cdf_stack_t<cbl_call_convention_t> call_convention;
+  cdf_stack_t<current_tokens_t> cobol_words;
+  cdf_stack_t<cdf_values_t> dictionary;   // DEFINE
+  cdf_stack_t<source_format_t> source_format;
+  cdf_stack_t<cbl_enabled_exceptions_t> enabled_exceptions;
+
+  cdf_directives_t() {
+    call_convention.value() = cbl_call_cobol_e;
+  }
+ 
+  void push() {
+    call_convention.push();
+    cobol_words.push();
+    dictionary.push();
+    source_format.push();
+    enabled_exceptions.push();
+  }
+  void pop() {
+    call_convention.pop();
+    cobol_words.pop();
+    dictionary.pop();
+    source_format.pop();
+    enabled_exceptions.pop();
+  }
+};
+static cdf_directives_t cdf_directives;
+
+void
+cobol_set_indicator_column( int column ) {
+  cdf_directives.source_format.value().indicator_column_set(column);
+}
+source_format_t& cdf_source_format() {
+  return cdf_directives.source_format.value();
+}
+
+
 const char *
 symbol_type_str( enum symbol_type_t type )
 {
@@ -1927,7 +2005,8 @@ location_t location_from_lineno() { return token_location; }
 template <typename LOC>
 static void
 gcc_location_set_impl( const LOC& loc ) {
-  token_location = linemap_line_start( line_table, loc.last_line, 80 );
+  // Set the position to the first line & column in the location. 
+  token_location = linemap_line_start( line_table, loc.first_line, 80 );
   token_location = linemap_position_for_column( line_table, loc.first_column);
   location_dump(__func__, __LINE__, "parser", loc);
 }
@@ -1972,6 +2051,11 @@ verify_format( const char gmsgid[] ) {
 static const diagnostic_option_id option_zero;
 size_t parse_error_inc();
 
+void gcc_location_dump() {
+    linemap_dump_location( line_table, token_location, stderr );
+}
+
+
 void ydferror( const char gmsgid[], ... ) ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
 void
@@ -2008,10 +2092,7 @@ class temp_loc_t {
     gcc_location_set(loc);
   }
   explicit temp_loc_t( const YDFLTYPE& loc) : orig(token_location) {
-    YYLTYPE lloc = {
-      loc.first_line, loc.first_column,
-      loc.last_line,  loc.last_column };
-    gcc_location_set(lloc);
+    gcc_location_set(loc);
   }
   ~temp_loc_t() {
     if( orig != token_location ) {
@@ -2055,6 +2136,17 @@ void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... )
 
 void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
+}
+
+void error_msg_direct( const char gmsgid[], ... ) {
+  verify_format(gmsgid);
+  parse_error_inc();
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  auto ret = emit_diagnostic_valist( DK_ERROR, token_location,
+                                     option_zero, gmsgid, &ap );
+  va_end (ap);
 }
 
 void

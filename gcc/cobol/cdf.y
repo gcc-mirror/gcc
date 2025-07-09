@@ -204,15 +204,15 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type   <file>		filename
 %type   <files>         filenames
 
-%token BY 478
+%token BY 482
 %token COPY 362
 %token CDF_DISPLAY 384    ">>DISPLAY"
-%token IN 597
+%token IN 601
 %token NAME 286
 %token NUMSTR 305    "numeric literal"
-%token OF 678
-%token PSEUDOTEXT 713
-%token REPLACING 735
+%token OF 682
+%token PSEUDOTEXT 717
+%token REPLACING 739
 %token LITERAL 298
 %token SUPPRESS 376
 
@@ -227,25 +227,25 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %token CDF_WHEN 389    ">>WHEN"
 %token CDF_END_EVALUATE 390    ">>END-EVALUATE"
 
-%token AS 460  CONSTANT 361  DEFINED 363
+%token AS 464  CONSTANT 361  DEFINED 363
 %type	<boolean>	     DEFINED
-%token OTHER 690  PARAMETER_kw 368    "PARAMETER"
-%token OFF 679  OVERRIDE 369
-%token THRU 931
-%token TRUE_kw 805    "True"
+%token OTHER 694  PARAMETER_kw 368    "PARAMETER"
+%token OFF 683  OVERRIDE 369
+%token THRU 935
+%token TRUE_kw 809    "True"
 
 %token CALL_COBOL 391    "CALL"
 %token CALL_VERBATIM 392    "CALL (as C)"
 
-%token TURN 807  CHECKING 488  LOCATION 641  ON 681  WITH 833
+%token TURN 811  CHECKING 492  LOCATION 645  ON 685  WITH 837
 
-%left OR 932
-%left AND 933
-%right NOT 934
-%left '<'  '>'  '='  NE 935  LE 936  GE 937
+%left OR 936
+%left AND 937
+%right NOT 938
+%left '<'  '>'  '='  NE 939  LE 940  GE 941
 %left '-'  '+'
 %left '*'  '/'
-%right NEG 939
+%right NEG 943
 
 %define api.prefix {ydf}
 %define api.token.prefix{YDF_}

@@ -504,7 +504,7 @@ symbol_match( size_t program, const std::list<const char *>& names ) {
     }
     auto inserted = output.insert(*p);
     if( ! inserted.second ) {
-      yyerror("%s is not a unique reference", key.name);
+      error_msg_direct("%s is not a unique reference", key.name);
     }
   }
   return output;

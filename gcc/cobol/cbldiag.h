@@ -82,6 +82,10 @@ struct YDFLTYPE
 void error_msg( const YYLTYPE& loc, const char gmsgid[], ... )
   ATTRIBUTE_GCOBOL_DIAG(2, 3);
 
+// an error that uses token_location, not yylloc
+void error_msg_direct( const char gmsgid[], ... )
+  ATTRIBUTE_GCOBOL_DIAG(1, 2);
+
 void dialect_error( const YYLTYPE& loc, const char term[], const char dialect[] );
 
 
@@ -104,16 +108,20 @@ void dbgmsg( const char fmt[], ... ) ATTRIBUTE_PRINTF_1;
 
 void gcc_location_set( const YYLTYPE& loc );
 
+void gcc_location_dump();
+
 // tree.h defines yy_flex_debug as a macro because options.h
 #if ! defined(yy_flex_debug)
 template <typename LOC>
 static void
 location_dump( const char func[], int line, const char tag[], const LOC& loc) {
   extern int yy_flex_debug; // cppcheck-suppress shadowVariable
-  if( yy_flex_debug && gcobol_getenv("update_location") )
+  if( yy_flex_debug && gcobol_getenv("update_location") ) {
     fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d)\n",
             func, line, tag,
             loc.first_line, loc.first_column, loc.last_line, loc.last_column);
+    gcc_location_dump();
+  }
 }
 #endif // defined(yy_flex_debug)
 

@@ -38,29 +38,24 @@
 
 extern int yy_flex_debug;
 
-static struct {
-  bool first_file, explicitly;
-  int column, right_margin;
-  bool inference_pending() {
-    bool tf = first_file && !explicitly;
-    first_file = false;
-    return tf;
+source_format_t& cdf_source_format();
+
+void
+source_format_t::infer( const char *bol, bool want_reference_format ) {
+  if( bol ) {
+    left = 7;
+    if( want_reference_format ) {
+      right = 73;
+    }
   }
-  inline bool is_fixed() const { return column == 7; }
-  inline bool is_reffmt() const { return is_fixed() && right_margin == 73; }
-  inline bool is_free() const { return ! is_fixed(); }
-  
-  const char * description() const {
-    if( is_reffmt() ) return "REFERENCE";
-    if( is_fixed() ) return "FIXED";
-    if( is_free() ) return "FREE";
-    gcc_unreachable();
-  }    
-} indicator = { true, false, 0, 0 };
+  dbgmsg("%s:%d: %s format detected", __func__, __LINE__,
+         description());
+}
+
 
 // public source format test functions
-bool is_fixed_format() { return indicator.is_fixed(); }
-bool is_reference_format() { return indicator.is_reffmt(); }
+bool is_fixed_format() { return cdf_source_format().is_fixed(); }
+bool is_reference_format() { return cdf_source_format().is_reffmt(); }
 
 static bool debug_mode = false;
 
@@ -76,11 +71,10 @@ static bool debug_mode = false;
 */
 
 static inline int left_margin() {
-  return indicator.column == 0? indicator.column : indicator.column - 1;
+  return cdf_source_format().left_margin();
 }
 static inline int right_margin() {
-  return indicator.right_margin == 0?
-    indicator.right_margin : indicator.right_margin - 1;
+  return cdf_source_format().right_margin();
 }
 
 /*
@@ -89,18 +83,9 @@ static inline int right_margin() {
  *   When setting back to 0 (free), the right margin is also reset to 0.
  */
 void
-cobol_set_indicator_column( int column )
-{
-  indicator.explicitly = true;
-  if( column == 0 ) indicator.right_margin = 0;
-  if( column < 0 ) {
-    column = -column;
-    indicator.right_margin = 73;
-  }
-  indicator.column = column;
-}
+cobol_set_indicator_column( int column );
 
-bool include_debug()      { return indicator.column == 7 && debug_mode; }
+bool include_debug()      { return is_fixed_format() && debug_mode; }
 bool set_debug( bool tf ) { return debug_mode = tf && is_fixed_format(); }
 
 static bool nonblank( const char ch ) { return !isblank(ch); }
@@ -114,7 +99,7 @@ start_of_line( char *bol, char *eol ) {
 
 static inline char *
 continues_at( char *bol, char *eol ) {
-  if( indicator.column == 0 ) return NULL;  // cannot continue in free format
+  if( cdf_source_format().is_free() ) return NULL;  // cannot continue in free format
   bol += left_margin();
   if( *bol != '-' ) return NULL; // not a continuation line
   return start_of_line(++bol, eol);
@@ -124,7 +109,7 @@ continues_at( char *bol, char *eol ) {
 // NULL means no indicator column or tested value not present.
 static inline char *
 indicated( char *bol, const char *eol, char ch = '\0' ) {
-  if( indicator.column == 0 && *bol != '*' ) {
+  if( cdf_source_format().left_margin() == 0 && *bol != '*' ) {
     return NULL;  // no indicator column in free format, except for comments
   }
   gcc_assert(bol != NULL);
@@ -365,9 +350,9 @@ check_source_format_directive( filespan_t& mfile ) {
 
     dbgmsg( "%s:%d: %s format set, on line " HOST_SIZE_T_PRINT_UNSIGNED,
             __func__, __LINE__,
-            indicator.column == 7? "FIXED" : "FREE",
+            cdf_source_format().description(), 
             (fmt_size_t)mfile.lineno() );
-    char *bol = indicator.is_fixed()? mfile.cur : const_cast<char*>(cm[0].first);
+    char *bol = cdf_source_format().is_fixed()? mfile.cur : const_cast<char*>(cm[0].first);
     erase_line(bol, const_cast<char*>(cm[0].second));
     mfile.cur = const_cast<char*>(cm[0].second);
   }
@@ -1695,17 +1680,11 @@ cdftext::free_form_reference_format( int input ) {
   /*
    * Infer source code format. 
    */
-  if( indicator.inference_pending()  ) {
+  if( cdf_source_format().inference_pending()  ) {
     const char *bol = valid_sequence_area(mfile.data, mfile.eodata);
     if( bol ) {
-      indicator.column = 7;
-      if( infer_reference_format(bol, mfile.eodata) ) {
-	indicator.right_margin = 73;
-      }
+      cdf_source_format().infer( bol, infer_reference_format(bol, mfile.eodata) );
     }
-
-    dbgmsg("%s:%d: %s format detected", __func__, __LINE__,
-           indicator.description());
   }
 
   while( mfile.next_line() ) {
