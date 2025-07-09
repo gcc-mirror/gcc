@@ -168,7 +168,22 @@ static __gthread_once_t tls_init_guard = __GTHREAD_ONCE_INIT;
 
 /* Internal routines.  */
 
-/* The task TCB has just been deleted.  Call the destructor
+/* The task deletion hooks for TLS handling have different prototypes
+   for kernel or rtp modes.  The RTP variant expects a TCB argument, which,
+   fortunately, we don't need to use.  */
+
+#ifdef __RTP__
+#define TLS_DELETE_HOOK_ARG_DECL TASK_ID tcb ATTRIBUTE_UNUSED
+#define TLS_DELETE_HOOK_ARG NULL
+#else
+#define TLS_DELETE_HOOK_ARG_DECL void
+#define TLS_DELETE_HOOK_ARG
+#endif
+
+STATUS tls_delete_hook (TLS_DELETE_HOOK_ARG_DECL);
+
+
+/* A task has just been deleted.  Call the destructor
    function for each TLS key that has both a destructor and
    a non-NULL specific value in this thread.
 
@@ -176,8 +191,8 @@ static __gthread_once_t tls_init_guard = __GTHREAD_ONCE_INIT;
    count protects us from calling a stale destructor.  It does
    need to read tls_keys.dtor[key] atomically.  */
 
-void
-tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
+STATUS
+tls_delete_hook (TLS_DELETE_HOOK_ARG_DECL)
 {
   struct tls_data *data;
   __gthread_key_t key;
@@ -202,6 +217,8 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
       VX_LEAVE_TLS_DTOR();
       VX_SET_TLS_DATA(NULL);
     }
+
+  return OK;
 }
 
 /* Initialize global data used by the TLS system.  */
@@ -217,11 +234,11 @@ tls_destructor (void)
 {
 #ifdef __RTP__
   /* All threads but this one should have exited by now.  */
-  tls_delete_hook (NULL);
+  tls_delete_hook (TLS_DELETE_HOOK_ARG);
 #endif
   /* Unregister the hook.  */
   if (delete_hook_installed)
-    taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
+    taskDeleteHookDelete (tls_delete_hook);
 
   if (tls_init_guard.done && __gthread_mutex_lock (&tls_lock) != ERROR)
     semDelete (tls_lock);
@@ -343,7 +360,7 @@ __gthread_setspecific (__gthread_key_t key, void *value)
 	    return ENOMEM;
 	  if (!delete_hook_installed)
 	    {
-	      taskDeleteHookAdd ((FUNCPTR)tls_delete_hook);
+	      taskDeleteHookAdd (tls_delete_hook);
 	      delete_hook_installed = 1;
 	    }
 	  __gthread_mutex_unlock (&tls_lock);
