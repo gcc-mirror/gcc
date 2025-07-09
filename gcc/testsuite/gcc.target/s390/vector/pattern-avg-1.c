@@ -22,4 +22,5 @@ TEST(char,short,16)
 TEST(short,int,8)
 TEST(int,long,4)
 
-/* { dg-final { scan-tree-dump-times "\.AVG_CEIL" 6 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.AVG_CEIL" 6 "optimized" { target lp64 } } } */
+/* { dg-final { scan-tree-dump-times "\.AVG_CEIL" 4 "optimized" { target { ! lp64 } } } } */

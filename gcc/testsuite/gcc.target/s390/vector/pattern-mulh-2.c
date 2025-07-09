@@ -21,6 +21,7 @@
         (((unsigned T2)l[i] * (unsigned T2)r[i]) >> S);                 \
   }
 
+TEST(int,long,4,32)
 TEST(long,__int128,2,64)
 
-/* { dg-final { scan-tree-dump-times "\.MULH" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.MULH" 4 "optimized" } } */

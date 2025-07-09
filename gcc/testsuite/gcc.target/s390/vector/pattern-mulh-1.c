@@ -23,6 +23,5 @@
 
 TEST(char,short,16,8)
 TEST(short,int,8,16)
-TEST(int,long,4,32)
 
-/* { dg-final { scan-tree-dump-times "\.MULH" 6 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.MULH" 4 "optimized" } } */
