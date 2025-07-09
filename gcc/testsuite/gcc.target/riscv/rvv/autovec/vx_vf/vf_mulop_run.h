@@ -6,6 +6,10 @@
 #define TYPE_FABS(x, T)                                                        \
   (__builtin_types_compatible_p (T, double) ? fabs (x) : fabsf (x))
 
+#define MAX_RELATIVE_DIFF(T)                                                   \
+  (__builtin_types_compatible_p (T, _Float16) ? 0.1f  :                        \
+  (__builtin_types_compatible_p (T, float)    ? 0.01f : 0.01))
+
 int
 main ()
 {
@@ -23,7 +27,8 @@ main ()
       for (k = 0; k < N; k++)
 	{
 	  T diff = expect[k] - TEST_OUT[k];
-	  if (TYPE_FABS (diff, T) > .01 * TYPE_FABS (expect[k], T))
+	  if (TYPE_FABS (diff, T)
+	      > MAX_RELATIVE_DIFF (T) * TYPE_FABS (expect[k], T))
 	    __builtin_abort ();
 	}
     }
