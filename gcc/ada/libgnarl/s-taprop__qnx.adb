@@ -766,6 +766,16 @@ package body System.Task_Primitives.Operations is
       function Thread_Body_Access is new
         Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
+      function Disable_Signals return Interfaces.C.int with
+        Import,
+        Convention    => C,
+        External_Name => "__gnat_disable_signals";
+
+      function Enable_Signals return Interfaces.C.int with
+        Import,
+        Convention    => C,
+        External_Name => "__gnat_enable_signals";
+
    begin
       Adjusted_Stack_Size :=
          Interfaces.C.size_t (Stack_Size + Alternate_Stack_Size);
@@ -840,10 +850,11 @@ package body System.Task_Primitives.Operations is
 
       pragma Assert (Result = 0);
 
-      --  Since the initial signal mask of a thread is inherited from the
-      --  creator, and the Environment task has all its signals masked, we
-      --  do not need to manipulate caller's signal mask at this point.
-      --  All tasks in RTS will have All_Tasks_Mask initially.
+      --  (QMS3263) lists PR 2894086. This defect causes a memory leak when
+      --  pthread_create is interrupted by a signal and later resumed. To avoid
+      --  avoid such a leak the document suggests to disable signals while
+      --  calling pthread_create. The signal mask of the calling thread is
+      --  restored after the call to pthread_create.
 
       --  The write to T.Common.LL.Thread is not racy with regard to the
       --  created thread because the created thread will not access it until
@@ -851,6 +862,8 @@ package body System.Task_Primitives.Operations is
       --  Restricted.Stages is used). One can verify that by inspecting the
       --  Task_Wrapper procedures.
 
+      Result := Disable_Signals;
+      pragma Assert (Result = 0);
       Result := pthread_create
         (T.Common.LL.Thread'Access,
          Attributes'Access,
@@ -859,6 +872,9 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = EAGAIN);
 
       Succeeded := Result = 0;
+
+      Result := Enable_Signals;
+      pragma Assert (Result = 0);
 
       Result := pthread_attr_destroy (Attributes'Access);
       pragma Assert (Result = 0);
