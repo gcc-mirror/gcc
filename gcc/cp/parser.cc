@@ -11838,6 +11838,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     bool auto_is_implicit_function_template_parm_p
         = parser->auto_is_implicit_function_template_parm_p;
     bool saved_omp_array_section_p = parser->omp_array_section_p;
+    bool saved_in_targ = parser->in_template_argument_list_p;
 
     parser->num_template_parameter_lists = 0;
     parser->in_statement = 0;
@@ -11847,6 +11848,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->implicit_template_scope = 0;
     parser->auto_is_implicit_function_template_parm_p = false;
     parser->omp_array_section_p = false;
+    parser->in_template_argument_list_p = false;
 
     /* Inside the lambda, outside unevaluated context do not apply.  */
     cp_evaluated ev;
@@ -11901,6 +11903,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->auto_is_implicit_function_template_parm_p
 	= auto_is_implicit_function_template_parm_p;
     parser->omp_array_section_p = saved_omp_array_section_p;
+    parser->in_template_argument_list_p = saved_in_targ;
   }
 
   /* This lambda shouldn't have any proxies left at this point.  */
