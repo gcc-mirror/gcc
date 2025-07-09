@@ -525,7 +525,7 @@ DEF_INTERNAL_FN (DEFERRED_INIT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* A function to associate the access size and access mode information
    with the corresponding reference to an object.  It only reads from the
-   2nd argument.  */
+   2nd and the 6th arguments.  */
 DEF_INTERNAL_FN (ACCESS_WITH_SIZE, ECF_PURE | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* DIM_SIZE and DIM_POS return the size of a particular compute

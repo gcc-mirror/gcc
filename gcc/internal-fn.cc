@@ -3443,7 +3443,7 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 
 /* Expand the IFN_ACCESS_WITH_SIZE function:
    ACCESS_WITH_SIZE (REF_TO_OBJ, REF_TO_SIZE, CLASS_OF_SIZE,
-		     TYPE_OF_SIZE, ACCESS_MODE)
+		     TYPE_OF_SIZE, ACCESS_MODE, TYPE_SIZE_UNIT for element)
    which returns the REF_TO_OBJ same as the 1st argument;
 
    1st argument REF_TO_OBJ: The reference to the object;
@@ -3451,16 +3451,16 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
    3rd argument CLASS_OF_SIZE: The size referenced by the REF_TO_SIZE represents
      0: the number of bytes.
      1: the number of the elements of the object type;
-   4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the TYPE
-    of the object referenced by REF_TO_SIZE
+   4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the
+    TYPE of the object referenced by REF_TO_SIZE
    5th argument ACCESS_MODE:
     -1: Unknown access semantics
      0: none
      1: read_only
      2: write_only
      3: read_write
-   6th argument: A constant 0 with the pointer TYPE to the original flexible
-     array type.
+   6th argument: The TYPE_SIZE_UNIT of the element TYPE of the FAM when the
+    3rd argument is 1; NULL when the 3rd argument is 0.
 
    Both the return type and the type of the first argument of this
    function have been converted from the incomplete array type to
