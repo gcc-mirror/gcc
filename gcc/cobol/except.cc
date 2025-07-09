@@ -84,8 +84,6 @@ cbl_enabled_exception_t::dump( int i ) const {
               file );
 }
 
-cbl_enabled_exceptions_t enabled_exceptions;
-
 void
 cbl_enabled_exceptions_t::dump() const {
   extern int yydebug;

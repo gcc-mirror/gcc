@@ -2551,8 +2551,9 @@ class current_tokens_t {
 };
 
 cbl_call_convention_t current_call_convention();
+current_tokens_t& cdf_current_tokens();
 
-cbl_call_convention_t
+void
 current_call_convention( cbl_call_convention_t convention);
 
 class procref_base_t {

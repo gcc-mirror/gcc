@@ -121,35 +121,76 @@ gb4( size_t input ) {
  * command-line option.  A push to a stack pushes the default value onto it; a
  * pop copies the top of the stack to the default value.
  *
+ * Supported:
+ *   CALL-CONVENTION
+ *   COBOL-WORDS
+ *   DEFINE
+ *   DISPLAY
+ *   IF
+ *   POP
+ *   PUSH
+ *   SOURCE FORMAT
+ *   TURN
+ * not supported
+ *   EVALUATE
+ *   FLAG-02
+ *   FLAG-14
+ *   LEAP-SECOND
+ *   LISTING
+ *   PAGE
+ *   PROPAGATE
+ *   REF-MOD-ZERO-LENGTH
+ * 
  * >>PUSH ALL calls the class's push() method. 
  * >>POP ALL calls the class's pop() method. 
  */
 class cdf_directives_t
 {
-  typedef std::map<std::string, cdfval_t> cdf_values_t;
-
   template <typename T>
   class cdf_stack_t : private std::stack<T> {
     T default_value;
+    const T& top() const { return std::stack<T>::top(); }
+    bool empty() const { return std::stack<T>::empty(); }
    public:
     void value( const T& value ) {
-      T& output( std::stack<T>::empty()? default_value : std::stack<T>::top() );
+      T& output( empty()? default_value : std::stack<T>::top() );
       output = value;
+      dbgmsg("cdf_directives_t::%s: %s", __func__, str(output).c_str());
     }
     T& value() {
-      return std::stack<T>::empty()? default_value : std::stack<T>::top();
+      return empty()? default_value : std::stack<T>::top();
     }
     void push() {
       std::stack<T>::push(value());
+      dbgmsg("cdf_directives_t::%s: %s", __func__, str(top()).c_str());
     }
     void pop() {
-      if( std::stack<T>::empty() ) {
+      if( empty() ) {
         error_msg(YYLTYPE(), "CDF stack empty");
         return;
       }
-      default_value = std::stack<T>::top();
+      default_value = top();
       std::stack<T>::pop();
+      dbgmsg("cdf_directives_t::%s: %s", __func__, str(default_value).c_str());
     }
+  protected:
+    static std::string str(cbl_call_convention_t arg) {
+      char output[2] = { static_cast<char>(arg) };
+      return std::string("call-convention ") + output;
+    }
+    static std::string str(current_tokens_t) {
+      return "<cobol-words>";
+    }
+    static std::string str(cdf_values_t) {
+      return "<dictionary>";
+    }
+    static std::string str(source_format_t arg) {
+      return arg.description();
+    }
+    static std::string str(cbl_enabled_exceptions_t) {
+      return "<enabled_exceptions>";
+    }
+                          
   };
 
  public:
@@ -181,6 +222,25 @@ class cdf_directives_t
 static cdf_directives_t cdf_directives;
 
 void
+current_call_convention( cbl_call_convention_t convention) {
+  cdf_directives.call_convention.value(convention);
+}
+cbl_call_convention_t
+current_call_convention() {
+  return cdf_directives.call_convention.value();
+}
+
+current_tokens_t&
+cdf_current_tokens() {
+  return cdf_directives.cobol_words.value();
+}
+
+cdf_values_t&
+cdf_dictionary() {
+  return cdf_directives.dictionary.value();
+}
+
+void
 cobol_set_indicator_column( int column ) {
   cdf_directives.source_format.value().indicator_column_set(column);
 }
@@ -188,6 +248,24 @@ source_format_t& cdf_source_format() {
   return cdf_directives.source_format.value();
 }
 
+cbl_enabled_exceptions_t&
+cdf_enabled_exceptions() {
+  return cdf_directives.enabled_exceptions.value();
+}
+
+void cdf_push() { cdf_directives.push(); }
+void cdf_push_call_convention() { cdf_directives.call_convention.push(); }
+void cdf_push_current_tokens() { cdf_directives.cobol_words.push(); }
+void cdf_push_dictionary() { cdf_directives.dictionary.push(); }
+void cdf_push_enabled_exceptions() { cdf_directives.enabled_exceptions.push(); }
+void cdf_push_source_format() { cdf_directives.source_format.push(); }
+
+void cdf_pop() { cdf_directives.pop(); }
+void cdf_pop_call_convention() { cdf_directives.call_convention.pop(); }
+void cdf_pop_current_tokens() { cdf_directives.cobol_words.pop(); }
+void cdf_pop_dictionary() { cdf_directives.dictionary.pop(); }
+void cdf_pop_enabled_exceptions() { cdf_directives.enabled_exceptions.pop(); }
+void cdf_pop_source_format() { cdf_directives.source_format.pop(); }
 
 const char *
 symbol_type_str( enum symbol_type_t type )

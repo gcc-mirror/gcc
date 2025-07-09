@@ -1166,7 +1166,7 @@ parser_statement_begin( const cbl_name_t statement_name,
   //  the execution time of a program doing two-billion simple adds in an inner
   //  loop dropped from 3.8 seconds to 0.175 seconds.
 
-  bool exception_processing = enabled_exceptions.size() ;
+  bool exception_processing = cdf_enabled_exceptions().size() ;
 
   if( !exception_processing )
     {
@@ -12236,6 +12236,8 @@ parser_file_merge(  cbl_file_t *workfile,
   ELSE
     ENDIF
 
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
+  
   for(size_t i=0; i<ninputs; i++)
     {
     if( process_this_exception(ec_sort_merge_file_open_e) )
@@ -13905,7 +13907,7 @@ parser_check_fatal_exception()
   // in its innermost loop had an execution time of 19.5 seconds.  By putting in
   // the if() statement, that was reduced to 3.8 seconds.
 
-  if( enabled_exceptions.size() || sv_is_i_o )
+  if( cdf_enabled_exceptions().size() || sv_is_i_o )
     {
     gg_call(VOID,
             "__gg__check_fatal_exception",

@@ -110,4 +110,19 @@ public:
   }
 }; 
 
+
+void cdf_push();
+void cdf_push_call_convention();
+void cdf_push_current_tokens();
+void cdf_push_dictionary();
+void cdf_push_enabled_exceptions();
+void cdf_push_source_format();
+
+void cdf_pop();
+void cdf_pop_call_convention();
+void cdf_pop_current_tokens();
+void cdf_pop_dictionary();
+void cdf_pop_source_format();
+void cdf_pop_enabled_exceptions();
+
 #endif

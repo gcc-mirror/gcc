@@ -86,18 +86,24 @@ namespace dts {
 #if __cpp_exceptions
       static const char msg[] = "input not NUL-terminated";
       throw std::domain_error( msg );
-#else
-      // eoinput terminates input
-      eoinput = strchr(input, '\0'); // cppcheck-suppress uselessAssignmentPtrArg
 #endif
     }
     auto ncm = re.size();
     cm.resize(ncm);
     std::vector <regmatch_t> cms(ncm);
 
-
     int erc = regexec( &re, input, ncm, cms.data(), 0 );
     if( erc != 0 ) return false;
+#if  __cpp_exceptions
+    // This is not correct at all, but current use depends on current behavior.
+    // The following line is excluded from the GCC build, which is compiled
+    // without __cpp_exceptions.  parse_copy_directive (for one) depends on
+    // regex_search returning true even if the match is beyond eoinput.
+    if( eoinput < cm[0].second ) return false;
+    // Correct behavior would return match only between input and eoinput.
+    // Because regex(3) uses a NUL terminator, it may match text between
+    // eoinput and the NUL.
+#endif
     std::transform( cms.begin(), cms.end(), cm.begin(),
                     [input]( const regmatch_t& m ) {
                       return csub_match( input, m );

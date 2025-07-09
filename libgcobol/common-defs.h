@@ -589,7 +589,7 @@ class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
   cbl_enabled_exceptions_t& operator=( const cbl_enabled_exceptions_t& ) = default;
 };
 
-extern cbl_enabled_exceptions_t enabled_exceptions;
+cbl_enabled_exceptions_t& cdf_enabled_exceptions();
 
 template <typename T>
 T enabled_exception_match( T beg, T end, ec_type_t type, size_t file ) {

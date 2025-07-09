@@ -386,7 +386,10 @@
 			CDF_EVALUATE ">>EVALUATE"
 			CDF_WHEN ">>WHEN"
 			CDF_END_EVALUATE ">>END-EVALUATE"
+                        CALL_CONVENTION ">>CALL-CONVENTION"
 			CALL_COBOL "CALL" CALL_VERBATIM "CALL (as C)"
+                        CDF_PUSH ">>PUSH" CDF_POP ">>POP"
+                        SOURCE_FORMAT ">>SOURCE FORMAT"
 
 			IF THEN ELSE
 			SENTENCE
@@ -1469,16 +1472,16 @@ cobol_words:	cobol_words1
 	|	cobol_words cobol_words1
 		;
 cobol_words1:	COBOL_WORDS EQUATE NAME[keyword] WITH NAME[name] {
-		  if( ! tokens.equate(@keyword, $keyword, $name) ) { YYERROR; }
+		  if( ! cdf_tokens.equate(@keyword, $keyword, $name) ) { YYERROR; }
 		}
 	|	COBOL_WORDS UNDEFINE NAME[keyword] {
-		  if( ! tokens.undefine(@keyword, $keyword) ) { YYERROR; }
+		  if( ! cdf_tokens.undefine(@keyword, $keyword) ) { YYERROR; }
 		}
 	|	COBOL_WORDS SUBSTITUTE NAME[keyword] BY NAME[name] {
-		  if( ! tokens.substitute(@keyword, $keyword, $name) ) { YYERROR; }
+		  if( ! cdf_tokens.substitute(@keyword, $keyword, $name) ) { YYERROR; }
 		}
 	|	COBOL_WORDS RESERVE NAME[name] {
-		  if( ! tokens.reserve(@name, $name) ) { YYERROR; }
+		  if( ! cdf_tokens.reserve(@name, $name) ) { YYERROR; }
 		}
 		;
 
@@ -4915,6 +4918,7 @@ by_value_arg:   scalar
 declaratives:   %empty
         |       DECLARATIVES '.'
                 <label>{
+		  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
                   current.enabled_exception_cache = enabled_exceptions;
                   enabled_exceptions.clear();
                   current.doing_declaratives(true);
@@ -4933,6 +4937,7 @@ declaratives:   %empty
                    * forward reference, because we haven't yet begun to parse
                    * nondeclarative procedures.
                    */
+		  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
                   parser_label_label($label);
                   enabled_exceptions = current.enabled_exception_cache;
                   current.enabled_exception_cache.clear();
@@ -11433,6 +11438,7 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, const cbl_refer_t& returnin
  */
 static bool
 possible_ec() {
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
   bool format_1 = current.declaratives.has_format_1();
       
   bool enabled = 0xFF < (current.declaratives.status()
@@ -11455,6 +11461,7 @@ possible_ec() {
  */
 static void
 statement_epilog( int token ) {
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
   if( possible_ec() && token != CONTINUE ) { 
     if( enabled_exceptions.size() ) {
       current.declaratives_evaluate();
@@ -11517,7 +11524,7 @@ keyword_str( int token ) {
     return ascii;
   }
 
-  return tokens.name_of(token);
+  return cdf_tokens.name_of(token);
 }
 
 bool iso_cobol_word( const std::string& name, bool include_context );
@@ -11589,7 +11596,7 @@ current_tokens_t::tokenset_t::find( const cbl_name_t name, bool include_intrinsi
 
 int
 keyword_tok( const char * text, bool include_intrinsics ) {
-  return tokens.find(text, include_intrinsics);
+  return cdf_tokens.find(text, include_intrinsics);
 }
 
 static inline size_t
@@ -13131,7 +13138,7 @@ cobol_dialect_set( cbl_dialect_t dialect ) {
     break;
   case dialect_gnu_e:
     if( 0 == (cbl_dialects & dialect) ) { // first time
-      tokens.equate(YYLTYPE(), "BINARY-DOUBLE", "BINARY-C-LONG");
+      cdf_tokens.equate(YYLTYPE(), "BINARY-DOUBLE", "BINARY-C-LONG");
     }
     break;
   }    
