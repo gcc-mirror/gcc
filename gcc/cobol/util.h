@@ -59,5 +59,55 @@ as_voidp( P p ) {
   return static_cast<const void *>(p);
 }
 
+/*
+ * The default source format, whether free or fixed, is determined
+ * heuristically by examining the PROGRAM-ID line, if it exists, in the first
+ * input file. If that file does not have such a line, the default is free
+ * format.  Else the format is set to fixed if anything appears on that line
+ * that would prohibit parsing it as free format,
+ */
+class source_format_t {
+  bool first_file, explicitly;
+  int left, right;
+public:
+  source_format_t()
+    : first_file(true), explicitly(false), left(0), right(0)
+  {}
+  void indicator_column_set( int column ) {
+    explicitly = true;
+    if( column == 0 ) right = 0;
+    if( column < 0 ) {
+      column = -column;
+      right = 73;
+    }
+    left = column;
+  }
+  
+  bool inference_pending() {
+    bool tf = first_file && !explicitly;
+    first_file = false;
+    return tf;
+  }
+
+  void infer( const char *bol, bool want_reference_format );
+  
+  inline bool is_fixed() const { return left == 7; }
+  inline bool is_reffmt() const { return is_fixed() && right == 73; }
+  inline bool is_free() const { return ! is_fixed(); }
+  
+  const char * description() const {
+    if( is_reffmt() ) return "REFERENCE";
+    if( is_fixed() ) return "FIXED";
+    if( is_free() ) return "FREE";
+    gcc_unreachable();
+  }    
+
+  inline int left_margin() {
+    return left == 0? left : left - 1;
+  }
+  inline int right_margin() {
+    return right == 0? right : right - 1;
+  }
+}; 
 
 #endif

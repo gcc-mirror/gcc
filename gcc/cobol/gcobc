@@ -125,25 +125,24 @@ $0 recognizes the following GnuCOBOL cobc compilation options:
         -std=mvs -std=mvs-strict
         -std=mf  -std=mf-strict
         -std=cobol85 -std=cobol2002 -std=cobol2014
- Options that are the same in gcobol and cobc are passed through verbatim.
- Options that have no analog in gcobol produce a warning message.
- To produce this message, use -HELP.
+Options that are the same in gcobol and cobc are passed through verbatim.
+Options that have no analog in gcobol produce a warning message.
+To produce this message, use -HELP.
 To see the constructed cobc command-line, use -echo.
 To override the default cobc, set the "cobc" environment variable.
 By default, gcobc invokes the gcobol the same directory the gcobc resides.
 To override, set the gcobol environment variable.
- EOF
- }
+EOF
+}
 
-dialect="gnu"
+dialect="mf gnu"
 out_set=""
 first=""
 
- #
- # Simply iterate over the command-line tokens.  We can't use getopts
- # here because it's not designed for single-dash words (e.g. -shared).
 #
-
+# Iterate over the command-line tokens.  We can't use getopts here
+# because it's not designed for single-dash words (e.g. -shared).
+#
 for opt in "$@"
 do
     if [ "$skip_arg" ]
@@ -441,11 +440,13 @@ do
         -std=mvs | -std=mvs-strict | -std=ibm | -std=ibm-strict) dialect=ibm
                   ;;
         -std=mf | -std=mf-strict)  dialect=mf
-                  ;;
-        -std=default)  dialect=gnu  # that's GnuCOBOL's default and GCC's dialect for GnuCOBOL
-                   ;;
-        -std=cobol*)    dialect=""   # GCC COBOL targets COBOL2024 "mostly backward to COBOL85"
-                   ;;
+                                   ;;
+                      # GnuCOBOL's default and GCC's dialect for GnuCOBOL
+        -std=default) dialect=gnu  
+                      ;;
+                      # GCC COBOL targets COBOL2024 "mostly backward to COBOL85"
+        -std=cobol*)  dialect="" 
+                      ;;
         -std=*)
             dialect=""
             warn "$opt (unkown dialect)"
@@ -480,7 +481,8 @@ do
            opts="$opts /dev/stdin"
            ;;
 
-        *) if [ -z "$output_name" ]  # first non-option argument is source file name
+           # First file name argument is default output filename.
+        *) if [ -z "$output_name" -a -e "$opt" ]  
            then
                output_name=$(basename "${opt%.*}")
                case $mode in
@@ -512,6 +514,11 @@ fi
 # To override the default gcobol, set the "gcobol" environment variable.
 gcobol="${gcobol:-${0%/*}/gcobol}"
 
+if [ "$dialect" ]
+then
+    dialect=$(echo $dialect | sed -E 's/[[:alnum:]]+/-dialect &/g')
+fi
+
 if [ "$echo" ]
 then
     echo $gcobol $mode $opts
@@ -523,4 +530,4 @@ then
     set -x
 fi
 
-exec $gcobol $mode $opts
+exec $gcobol $mode $dialect $opts

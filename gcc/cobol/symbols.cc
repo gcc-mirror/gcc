@@ -1768,8 +1768,8 @@ symbols_update( size_t first, bool parsed_ok ) {
         if( e == symbols_end() ) {
           // no field redefines the file's default record
           auto file = cbl_file_of(symbol_at(field->parent));
-          ERROR_FIELD(field, "line %d: %s lacks a file description",
-                      file->line, file->name);
+          ERROR_FIELD(field, "%s lacks a file description",
+                      file->name);
           return 0;
         }
       }
@@ -2180,14 +2180,22 @@ symbol_table_init(void) {
   }
 
   static symbol_elem_t environs[] = {
+    { symbol_elem_t{ 0, cbl_special_name_t{0, CONSOLE_e, "CONSOLE", 0, "/dev/stdout"}} }, // stdout in DISPLAY; stdin in ACCEPT
+
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDIN_e, "STDIN", 0, "/dev/stdin"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSIN_e, "SYSIN", 0, "/dev/stdin"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSIPT_e, "SYSIPT", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSIPT_e, "SYSIPT", 0, "/dev/stdin"}} },
+
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDOUT_e, "STDOUT", 0, "/dev/stdout"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSOUT_e, "SYSOUT", 0, "/dev/stdout"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSLIST_e, "SYSLIST", 0, "/dev/stdout"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSLST_e, "SYSLST", 0, "/dev/stdout"}} },
+
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSPUNCH_e, "SYSPUNCH", 0, "/dev/stderr"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, SYSPCH_e, "SYSPCH", 0, "/dev/stderr"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, CONSOLE_e, "CONSOLE", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDERR_e, "STDERR", 0, "/dev/stderr"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSERR_e, "SYSERR", 0, "/dev/stderr"}} },
+
     { symbol_elem_t{ 0, cbl_special_name_t{0, C01_e, "C01", 0, "/dev/null"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, C02_e, "C02", 0, "/dev/null"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, C03_e, "C03", 0, "/dev/null"}} },
@@ -2207,10 +2215,6 @@ symbol_table_init(void) {
     { symbol_elem_t{ 0, cbl_special_name_t{0, S04_e, "S04", 0, "/dev/null"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, S05_e, "S05", 0, "/dev/null"}} },
     { symbol_elem_t{ 0, cbl_special_name_t{0, AFP_5A_e, "AFP-5A", 0, "/dev/null"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, STDIN_e, "STDIN", 0, "/dev/stdin"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, STDOUT_e, "STDOUT", 0, "/dev/stdout"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, STDERR_e, "STDERR", 0, "/dev/stderr"}} },
-    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSERR_e, "SYSERR", 0, "/dev/stderr"}} },
   };
 
   struct symbol_elem_t *p = table.elems + table.nelem;
@@ -4345,6 +4349,26 @@ cbl_occurs_t::subscript_ok( const cbl_field_t *subscript ) const {
   return bounds.lower <= (size_t)sub && (size_t)sub <= bounds.upper;
 }
 
+const cbl_field_t * 
+symbol_unresolved_file_key( const cbl_file_t * file,
+                            const cbl_name_t key_field_name ) {
+  const symbol_elem_t *file_sym = symbol_elem_of(file);
+  size_t program = file_sym->program;
+  for( const symbol_elem_t *e = file_sym - 1; e->program == program; e-- ) {
+    if( e->type == SymFile ) break;
+    if( e->type == SymField ) {
+      auto f = cbl_field_of(e);
+      if( f->type == FldLiteralA ) break;
+      if( f->type == FldForward ) {
+        if( 0 == strcmp(key_field_name, f->name) ) {
+          return f;
+        }
+      }
+    }
+  }
+  return nullptr;
+}
+
 cbl_file_key_t::
 cbl_file_key_t( cbl_name_t name,
                 const std::list<cbl_field_t *>& fields,
@@ -4486,7 +4510,7 @@ cbl_file_key_t::deforward( size_t ifile ) {
                     if( ifield == fwd ) {
                       ERROR_FIELD(field, "line %d: %s of %s "
                                "is not defined",
-                               file->line, field->name, file->name);
+                               field->line, field->name, file->name);
                       return ifield;
                     }
 
@@ -4515,9 +4539,13 @@ cbl_file_key_t::deforward( size_t ifile ) {
                     // looked-up field must have same file as parent
                     if( ! (parent != NULL &&
                            symbol_index(symbol_elem_of(parent)) == ifile) ) {
-                      ERROR_FIELD(field, "line %d: %s of %s "
-                               "is not defined in file description",
-                               file->line, field->name, file->name);
+                      const cbl_field_t *undefined =
+                        symbol_unresolved_file_key(file, field->name);
+                      int lineno = undefined? undefined->line : file->line;
+                      ERROR_FIELD(undefined? undefined : field,
+                                  "line %d: %s of %s "
+                                  "is not defined in file description",
+                                  lineno, field->name, file->name);
                     }
                     return ifield;
                   } );

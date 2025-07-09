@@ -384,3 +384,23 @@ cobol.stagefeedback: stagefeedback-start
 selftest-cobol:
 
 lang_checks += check-cobol
+
+#
+# Front-end specific flags:  Originally done for the COBOL front end, this
+# scripting applies CXXFLAGS_FOR_COBOL only to compilations of source code in the
+# gcc/cobol source code tree.  Both forms can be used:
+#
+#         CXXFLAGS_FOR_COBOL=xxx ../configure --enable-languages=....
+# and
+#         make <gcc> CXXFLAGS_FOR_COBOL=yyy
+#
+# The second form overrides the first.
+#
+# To apply this feature to other front ends, look for and clone lines
+# containing "CXXFLAGS_FOR_COBOL" in configure.ac, Makefile.tbl, and Makefile.def.
+#
+
+cobol/%.o: cobol/%.cc
+	@echo $(COMPILE) $(CXXFLAGS_FOR_COBOL) $<
+	$(COMPILE) $(CXXFLAGS_FOR_COBOL) $<
+	$(POSTCOMPILE)

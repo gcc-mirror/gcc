@@ -34,7 +34,6 @@ start_condition_str( int sc ) {
   switch(sc) {
   case INITIAL: state = "INITIAL"; break;
   case addr_of: state = "addr_of"; break;
-  case author_state: state = "author_state"; break;
   case basis: state = "basis"; break;
   case bool_state: state = "bool_state"; break;
   case cdf_state: state = "cdf_state"; break;
