@@ -2857,7 +2857,9 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
 	 we set range information to make niters analyzer's life easier.
 	 Note the number of latch iteration value can be TYPE_MAX_VALUE so
 	 we have to represent the vector niter TYPE_MAX_VALUE + 1 / vf.  */
-      if (stmts != NULL && const_vf > 0)
+      if (stmts != NULL
+	  && const_vf > 0
+	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  if (niters_no_overflow)
 	    {
