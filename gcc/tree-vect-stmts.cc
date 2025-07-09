@@ -13368,6 +13368,14 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
+  if (PURE_SLP_STMT (stmt_info) && !node)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "handled only by SLP analysis\n");
+      return opt_result::success ();
+    }
+
   tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
   if (node)
     STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
@@ -13379,14 +13387,6 @@ vect_analyze_stmt (vec_info *vinfo,
 		  || gimple_code (stmt_info->stmt) == GIMPLE_COND
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
       *need_to_vectorize = true;
-    }
-
-  if (PURE_SLP_STMT (stmt_info) && !node)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "handled only by SLP analysis\n");
-      return opt_result::success ();
     }
 
   /* When we arrive here with a non-SLP statement and we are supposed

@@ -7822,7 +7822,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
         inside the loop body. The last operand is the reduction variable,
         which is defined by the loop-header-phi.  */
 
-  tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_out = SLP_TREE_VECTYPE (slp_for_stmt_info);
   STMT_VINFO_REDUC_VECTYPE (reduc_info) = vectype_out;
   STMT_VINFO_REDUC_VECTYPE_IN (reduc_info) = vectype_in;
 
