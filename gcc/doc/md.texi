@@ -8679,6 +8679,11 @@ the values were equal.
 If this pattern is not defined, then a plain compare pattern and
 conditional branch pattern is used.
 
+@cindex @code{tag_memory} instruction pattern
+This pattern tags an object that begins at the address specified by
+operand 0, has the byte size indicated by the operand 2, and uses the
+tag from operand 1.
+
 @cindex @code{clear_cache} instruction pattern
 @item @samp{clear_cache}
 This pattern, if defined, flushes the instruction cache for a region of
