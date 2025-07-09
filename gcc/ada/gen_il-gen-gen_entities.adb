@@ -505,6 +505,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Fixed_Lower_Bound_Array_Subtype, Flag),
         Sm (Is_Fixed_Lower_Bound_Index_Subtype, Flag),
         Sm (Is_Generic_Actual_Type, Flag),
+        Sm (Is_Implicit_Full_View, Flag),
         Sm (Is_Mutably_Tagged_Type, Flag),
         Sm (Is_Non_Static_Subtype, Flag),
         Sm (Is_Private_Composite, Flag),

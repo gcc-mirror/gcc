@@ -8387,15 +8387,17 @@ package body Sem_Ch3 is
          Set_Has_Private_Declaration (Full_Der);
          Set_Has_Private_Declaration (Derived_Type);
 
-         Set_Scope                (Full_Der, Scope (Derived_Type));
-         Set_Is_First_Subtype     (Full_Der, Is_First_Subtype (Derived_Type));
-         Set_Has_Size_Clause      (Full_Der, False);
-         Set_Has_Alignment_Clause (Full_Der, False);
-         Set_Has_Delayed_Freeze   (Full_Der);
-         Set_Is_Frozen            (Full_Der, False);
-         Set_Freeze_Node          (Full_Der, Empty);
-         Set_Depends_On_Private   (Full_Der, Has_Private_Component (Full_Der));
-         Set_Is_Public            (Full_Der, Is_Public (Derived_Type));
+         Set_Scope                 (Full_Der, Scope (Derived_Type));
+         Set_Is_First_Subtype      (Full_Der, Is_First_Subtype (Derived_Type));
+         Set_Has_Size_Clause       (Full_Der, False);
+         Set_Has_Alignment_Clause  (Full_Der, False);
+         Set_Has_Delayed_Freeze    (Full_Der);
+         Set_Is_Frozen             (Full_Der, False);
+         Set_Freeze_Node           (Full_Der, Empty);
+         Set_Depends_On_Private
+           (Full_Der, Has_Private_Component (Full_Der));
+         Set_Is_Public             (Full_Der, Is_Public (Derived_Type));
+         Set_Is_Implicit_Full_View (Full_Der);
 
          --  The convention on the base type may be set in the private part
          --  and not propagated to the subtype until later, so we obtain the

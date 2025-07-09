@@ -5598,7 +5598,10 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Present (Utyp) and then Is_Untagged_Derivation (Typ) then
+      if Present (Utyp)
+        and then Is_Untagged_Derivation (Typ)
+        and then Is_Implicit_Full_View (Utyp)
+      then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
          Set_Assignment_OK (Ref);
@@ -7906,16 +7909,12 @@ package body Exp_Ch7 is
       if Is_Untagged_Derivation (Typ) then
          if Is_Protected_Type (Typ) then
             Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+         elsif Is_Implicit_Full_View (Utyp) then
+            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
 
-         else
-            declare
-               Root : constant Entity_Id :=
-                 Underlying_Type (Root_Type (Base_Type (Typ)));
-            begin
-               if Is_Protected_Type (Root) then
-                  Utyp := Corresponding_Record_Type (Root);
-               end if;
-            end;
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
          end if;
 
          Ref := Unchecked_Convert_To (Utyp, Ref);
@@ -8480,7 +8479,10 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ) and then not Is_Conc then
+      if Is_Untagged_Derivation (Typ)
+        and then not Is_Conc
+        and then Is_Implicit_Full_View (Utyp)
+      then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
 
