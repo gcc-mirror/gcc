@@ -2,7 +2,7 @@
 /* { dg-additional-options "-O3" } */
 #include <limits.h>
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   while (n < ++l)
@@ -10,7 +10,7 @@ foo (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo_1 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned)
 {
   while (UINT_MAX - 64 < ++l)
@@ -18,7 +18,7 @@ foo_1 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo_2 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   l = UINT_MAX - 32;
@@ -27,7 +27,7 @@ foo_2 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo_3 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   while (n <= ++l)
@@ -35,7 +35,7 @@ foo_3 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo_4 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {  // infininate 
   while (0 <= ++l)
@@ -43,7 +43,7 @@ foo_4 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 foo_5 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   //no loop
@@ -53,7 +53,7 @@ foo_5 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 bar (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   while (--l < n)
@@ -61,7 +61,7 @@ bar (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 bar_1 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned)
 {
   while (--l < 64)
@@ -69,7 +69,7 @@ bar_1 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned)
   return l;
 }
 
-unsigned __attribute__ ((noinline))
+unsigned __attribute__ ((noipa))
 bar_2 (int *__restrict__ a, int *__restrict__ b, unsigned l, unsigned n)
 {
   l = 32;
