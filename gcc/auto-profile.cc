@@ -3613,9 +3613,13 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	  of hot basic blocks.  */
        if (max_count * scale > max_count_in_fn.guessed_local ())
 	 {
-	   fprintf (dump_file, "Scaling by %.16f produces max count ", scale.to_double ());
-	   (max_count * scale).dump (dump_file);
-	   fprintf (dump_file, " that exceeds max count in fn; capping\n");
+	   if (dump_file)
+	     {
+	       fprintf (dump_file, "Scaling by %.16f produces max count ",
+			scale.to_double ());
+	       (max_count * scale).dump (dump_file);
+	       fprintf (dump_file, " that exceeds max count in fn; capping\n");
+	     }
 	   scale = max_count_in_fn.guessed_local ().to_sreal_scale (max_count);
 	 }
        scale_bbs (bbs, scale);
