@@ -142,7 +142,10 @@ Late::visit (AST::ForLoopExpr &expr)
   ctx.bindings.exit ();
 
   visit (expr.get_iterator_expr ());
-  visit (expr.get_loop_label ());
+
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
+
   visit (expr.get_loop_block ());
 }
 
