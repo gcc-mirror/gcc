@@ -1501,16 +1501,16 @@
 	(plus:V_SI
 	  (vec_duplicate:V_SI
 	    (match_operand:SI 1 "gcn_alu_operand"))
-	  (match_operand:V_SI 2 "register_operand")))
+	  (match_operand:V_SI 2 "gcn_alu_operand")))
    (set (match_operand:DI 3 "register_operand")
-	(ltu:DI (plus:V_SI (vec_duplicate:V_SI (match_dup 2))
-			   (match_dup 1))
-		(vec_duplicate:V_SI (match_dup 2))))]
+	(ltu:DI (plus:V_SI (vec_duplicate:V_SI (match_dup 1))
+			   (match_dup 2))
+		(match_dup 2)))]
   ""
   {@ [cons: =0, 1, 2, =3; attrs: type, length]
-  [v,SvA,v,cV;vop2 ,4] v_add_co_u32\t%0, %3, %1, %2
-  [v,SvB,v,cV;vop2 ,8] ^
-  [v,SvA,v,Sg;vop3b,8] ^
+  [v,SvA,vA,cV;vop2 ,4] v_add_co_u32\t%0, %3, %1, %2
+  [v,SvB,vA,cV;vop2 ,8] ^
+  [v,SvA,vA,Sg;vop3b,8] ^
   })
 
 ; v_addc does not accept an SGPR because the VCC read already counts as an
@@ -1824,7 +1824,7 @@
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
 		  (match_dup 2))
-		(match_dup 1)))]
+		(match_dup 2)))]
   ""
   {@ [cons: =0, 1, 2, =3]
   [v,ASv,v,&Sg] #
@@ -1875,7 +1875,7 @@
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
 		    (match_dup 2))
-		  (match_dup 1))
+		  (match_dup 2))
 	  (match_dup 5)))]
   ""
   {@ [cons: =0, 1, 2, =3, 4, 5]
@@ -1929,7 +1929,7 @@
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (match_dup 1))
 		  (vec_duplicate:V_DI (match_dup 2)))
-		(match_dup 1)))]
+		(vec_duplicate:V_DI (match_dup 2))))]
   ""
   {@ [cons: =0, 1, 2, =3]
   [v,v,DbSv,&cV] #
@@ -1978,7 +1978,7 @@
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (match_dup 1))
 		    (vec_duplicate:V_DI (match_dup 2)))
-		  (match_dup 1))
+		  (vec_duplicate:V_DI (match_dup 2)))
 	  (match_dup 5)))]
   ""
   {@ [cons: =0, 1, 2, =3, 4, 5]
