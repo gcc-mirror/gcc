@@ -5981,6 +5981,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op! @1 @3) (op! @2 @4))))
 
+/* (@0 ? @2 : @3) lop (@1 ? @2 : @3)  -->  (@0 lop @1) ? @2 : @3.  */
+(for lop (bit_and bit_ior bit_xor)
+   (simplify
+   (lop
+      (vec_cond @0 integer_minus_onep@2 integer_zerop@3)
+      (vec_cond @1 @2 @3))
+      (if (target_supports_op_p (TREE_TYPE (@0), lop, optab_vector))
+   (vec_cond (lop @0 @1) @2 @3))))
+
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
  (simplify
   (op (vec_cond:s @0 @1 @2) @3)
