@@ -1628,7 +1628,7 @@
   "TARGET_SVE2"
   {@ [ cons: =0 , %1 , 2 ; attrs: movprfx ]
      [ w        , 0  , w ; *              ] nbsl\t%0.d, %0.d, %2.d, %0.d
-     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %0.d
+     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %1.d
   }
   "&& !CONSTANT_P (operands[3])"
   {
