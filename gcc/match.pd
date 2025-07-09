@@ -3716,6 +3716,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if ((TREE_CODE (@1) == INTEGER_CST
 	 && TREE_CODE (@2) == INTEGER_CST)
 	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+   || (VECTOR_TYPE_P (TREE_TYPE (@1))
+   && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, code2))
 	     || POINTER_TYPE_P (TREE_TYPE (@1)))
 	    && bitwise_equal_p (@1, @2)))
     (with
@@ -3754,27 +3756,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == EQ_EXPR && val) @3)
       (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
       (if (code1 == NE_EXPR && !val && allbits) @4)
-      (if (code1 == NE_EXPR
+      (if ((code1 == NE_EXPR
            && code2 == GE_EXPR
 	   && cmp == 0
 	   && allbits)
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, GT_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (gt @c0 (convert @1)))
-      (if (code1 == NE_EXPR
+      (if ((code1 == NE_EXPR
            && code2 == LE_EXPR
 	   && cmp == 0
 	   && allbits)
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, LT_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (lt @c0 (convert @1)))
       /* (a != (b+1)) & (a > b) -> a > (b+1) */
-      (if (code1 == NE_EXPR
+      (if ((code1 == NE_EXPR
            && code2 == GT_EXPR
 	   && one_after
 	   && allbits)
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, GT_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (gt @c0 (convert @1)))
       /* (a != (b-1)) & (a < b) -> a < (b-1) */
-      (if (code1 == NE_EXPR
+      (if ((code1 == NE_EXPR
            && code2 == LT_EXPR
 	   && one_before
 	   && allbits)
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, LT_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (lt @c0 (convert @1)))
      )
     )
@@ -3793,6 +3807,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if ((TREE_CODE (@1) == INTEGER_CST
 	&& TREE_CODE (@2) == INTEGER_CST)
        || ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       || (VECTOR_TYPE_P (TREE_TYPE (@1))
+       && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, code2))
 	    || POINTER_TYPE_P (TREE_TYPE (@1)))
 	   && operand_equal_p (@1, @2)))
    (with
@@ -3843,6 +3859,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if ((TREE_CODE (@1) == INTEGER_CST
 	 && TREE_CODE (@2) == INTEGER_CST)
 	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+   || (VECTOR_TYPE_P (TREE_TYPE (@1)))
 	    || POINTER_TYPE_P (TREE_TYPE (@1)))
 	    && bitwise_equal_p (@1, @2)))
     (with
@@ -3884,24 +3901,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == EQ_EXPR
            && code2 == GT_EXPR
 	   && cmp == 0
-	   && allbits)
+	   && allbits
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, GE_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (ge @c0 @2))
       (if (code1 == EQ_EXPR
            && code2 == LT_EXPR
 	   && cmp == 0
-	   && allbits)
+	   && allbits
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, LE_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (le @c0 @2))
       /* (a == (b-1)) | (a >= b) -> a >= (b-1) */
       (if (code1 == EQ_EXPR
            && code2 == GE_EXPR
 	   && one_before
-	   && allbits)
+	   && allbits
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, GE_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (ge @c0 (convert @1)))
       /* (a == (b+1)) | (a <= b) -> a <= (b-1) */
       (if (code1 == EQ_EXPR
            && code2 == LE_EXPR
 	   && one_after
-	   && allbits)
+	   && allbits
+      && ((VECTOR_BOOLEAN_TYPE_P (type)
+      && expand_vec_cmp_expr_p (TREE_TYPE (@1), type, LE_EXPR))
+      || !VECTOR_TYPE_P (TREE_TYPE (@1))))
        (le @c0 (convert @1)))
      )
     )
@@ -3966,7 +3995,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       rcmp (ne le gt ne lt ge)
   (simplify
    (op:c (cmp1:c @0 @1) (cmp2 @0 @1))
-   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      || POINTER_TYPE_P (TREE_TYPE (@0))
+      || (VECTOR_TYPE_P (TREE_TYPE (@1))
+      && expand_vec_cmp_expr_p (TREE_TYPE (@0), type, rcmp)))
     (rcmp @0 @1)))))
 
 /* Optimize (a CMP b) == (a CMP b)  */
@@ -3975,7 +4007,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      rcmp (eq gt le eq ge lt)
  (simplify
   (eq:c (cmp1:c @0 @1) (cmp2 @0 @1))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+		|| POINTER_TYPE_P (TREE_TYPE (@0))
+      || (VECTOR_TYPE_P (TREE_TYPE (@0))
+      && expand_vec_cmp_expr_p (TREE_TYPE (@0), type,  rcmp)))
     (rcmp @0 @1))))
 
 /* (type)([0,1]@a != 0) -> (type)a
