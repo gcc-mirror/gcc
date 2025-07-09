@@ -8684,17 +8684,18 @@ package body Sem_Ch6 is
          then
             Subp_Id := Protected_Body_Subprogram (E);
 
-         --  For access to subprogram types we look at the return type of the
+         --  For access-to-subprogram types we look at the return type of the
          --  subprogram type itself, as it cannot be overridden or inherited.
 
          elsif Ekind (E) = E_Subprogram_Type then
             Subp_Id := E;
 
          --  Otherwise, we need to return the same value we would return for
-         --  the original corresponding operation.
+         --  the original corresponding operation of the root of the aliased
+         --  chain.
 
          else
-            Subp_Id := Original_Corresponding_Operation (E);
+            Subp_Id := Original_Corresponding_Operation (Ultimate_Alias (E));
          end if;
 
          Original := Underlying_Type (Etype (Subp_Id));
