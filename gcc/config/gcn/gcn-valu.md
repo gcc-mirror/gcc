@@ -3792,9 +3792,9 @@
     /* Unsigned comparisons use the same patterns as signed comparisons,
        except that they use unsigned operators (e.g. LTU vs LT).
        The '%E1' directive then does the Right Thing.  */
-    emit_insn (gen_vec_cmpu<mode>di_exec (operands[0], operands[1],
-					  operands[2], operands[3],
-					  operands[4]));
+    emit_insn (gen_vec_cmp<mode>di_exec (operands[0], operands[1],
+					 operands[2], operands[3],
+					 operands[4]));
     DONE;
   })
 
