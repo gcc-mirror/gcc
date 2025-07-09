@@ -2260,78 +2260,6 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
   return opt_result::success ();
 }
 
-/* Look for SLP-only access groups and turn each individual access into its own
-   group.  */
-static void
-vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
-{
-  unsigned int i;
-  struct data_reference *dr;
-
-  DUMP_VECT_SCOPE ("vect_dissolve_slp_only_groups");
-
-  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    {
-      gcc_assert (DR_REF (dr));
-      stmt_vec_info stmt_info
-	= vect_stmt_to_vectorize (loop_vinfo->lookup_stmt (DR_STMT (dr)));
-
-      /* Check if the load is a part of an interleaving chain.  */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	{
-	  stmt_vec_info first_element = DR_GROUP_FIRST_ELEMENT (stmt_info);
-	  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_element);
-	  unsigned int group_size = DR_GROUP_SIZE (first_element);
-
-	  /* Check if SLP-only groups.  */
-	  if (!STMT_SLP_TYPE (stmt_info)
-	      && STMT_VINFO_SLP_VECT_ONLY (first_element))
-	    {
-	      /* Dissolve the group.  */
-	      STMT_VINFO_SLP_VECT_ONLY (first_element) = false;
-
-	      stmt_vec_info vinfo = first_element;
-	      while (vinfo)
-		{
-		  stmt_vec_info next = DR_GROUP_NEXT_ELEMENT (vinfo);
-		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
-		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-		  DR_GROUP_SIZE (vinfo) = 1;
-		  if (STMT_VINFO_STRIDED_P (first_element)
-		      /* We cannot handle stores with gaps.  */
-		      || DR_IS_WRITE (dr_info->dr))
-		    {
-		      STMT_VINFO_STRIDED_P (vinfo) = true;
-		      DR_GROUP_GAP (vinfo) = 0;
-		    }
-		  else
-		    DR_GROUP_GAP (vinfo) = group_size - 1;
-		  /* Duplicate and adjust alignment info, it needs to
-		     be present on each group leader, see dr_misalignment.  */
-		  if (vinfo != first_element)
-		    {
-		      dr_vec_info *dr_info2 = STMT_VINFO_DR_INFO (vinfo);
-		      dr_info2->target_alignment = dr_info->target_alignment;
-		      int misalignment = dr_info->misalignment;
-		      if (misalignment != DR_MISALIGNMENT_UNKNOWN)
-			{
-			  HOST_WIDE_INT diff
-			    = (TREE_INT_CST_LOW (DR_INIT (dr_info2->dr))
-			       - TREE_INT_CST_LOW (DR_INIT (dr_info->dr)));
-			  unsigned HOST_WIDE_INT align_c
-			    = dr_info->target_alignment.to_constant ();
-			  misalignment = (misalignment + diff) % align_c;
-			}
-		      dr_info2->misalignment = misalignment;
-		    }
-		  vinfo = next;
-		}
-	    }
-	}
-    }
-}
-
 /* Determine if operating on full vectors for LOOP_VINFO might leave
    some scalar iterations still to do.  If so, decide how we should
    handle those scalar iterations.  The possibilities are:
@@ -2686,9 +2614,6 @@ start_over:
 				   "unsupported SLP instances\n");
       goto again;
     }
-
-  /* Dissolve SLP-only groups.  */
-  vect_dissolve_slp_only_groups (loop_vinfo);
 
   /* For now, we don't expect to mix both masking and length approaches for one
      loop, disable it if both are recorded.  */
