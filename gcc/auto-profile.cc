@@ -3306,10 +3306,22 @@ cmp (const void *a, const void *b)
   return 0;
 }
 
+/* To scalle a connected component of graph we collect desired scales of
+   basic blocks on the boundary and then compute a robust average.  */
+
+struct scale
+{
+  /* Scale descired.  */
+  sreal scale;
+  /* Weight for averaging computed from execution count of the edge
+     scale originates from.  */
+  uint64_t weight;
+};
+
 /* Add scale ORIG/ANNOTATED to SCALES.  */
 
 static void
-add_scale (vec <sreal> *scales, profile_count annotated, profile_count orig)
+add_scale (vec <scale> *scales, profile_count annotated, profile_count orig)
 {
   if (dump_file)
     {
@@ -3318,15 +3330,15 @@ add_scale (vec <sreal> *scales, profile_count annotated, profile_count orig)
       annotated.dump (dump_file);
       fprintf (dump_file, "\n");
     }
-  if (orig.nonzero_p ())
+  if (orig.force_nonzero () == orig)
     {
       sreal scale
 	= annotated.guessed_local ()
 		.to_sreal_scale (orig);
       if (dump_file)
-	fprintf (dump_file, "    adding scale %.16f\n",
-		 scale.to_double ());
-      scales->safe_push (scale);
+	fprintf (dump_file, "    adding scale %.16f, weight %" PRId64 "\n",
+		 scale.to_double (), annotated.value () + 1);
+      scales->safe_push ({scale, annotated.value () + 1});
     }
 }
 
@@ -3372,7 +3384,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
   /* Basic blocks of connected component currently processed.  */
   auto_vec <basic_block, 20> bbs (n_basic_blocks_for_fn (cfun));
   /* Scale factors found.  */
-  auto_vec <sreal, 20> scales;
+  auto_vec <scale, 20> scales;
   auto_vec <basic_block, 20> stack (n_basic_blocks_for_fn (cfun));
 
   basic_block seed_bb;
@@ -3384,9 +3396,15 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
      >=2 is an id of the component BB belongs to.  */
   auto_vec <unsigned int, 20> component;
   component.safe_grow (last_basic_block_for_fn (cfun));
+  profile_count max_count_in_fn = profile_count::zero ();
   FOR_ALL_BB_FN (seed_bb, cfun)
-    component[seed_bb->index]
-	= is_bb_annotated (seed_bb, *annotated_bb) ? 1 : 0;
+    if (is_bb_annotated (seed_bb, *annotated_bb))
+      {
+	component[seed_bb->index] = 1;
+	max_count_in_fn = max_count_in_fn.max (seed_bb->count);
+      }
+    else
+      component[seed_bb->index] = 0;
   FOR_ALL_BB_FN (seed_bb, cfun)
    if (!component[seed_bb->index])
      {
@@ -3509,12 +3527,15 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 		 profile_count annotated_count = e->dest->count;
 		 profile_count out_count = profile_count::zero ();
 		 bool ok = true;
+
 		 for (edge e2: e->dest->preds)
 		   if (AFDO_EINFO (e2)->is_annotated ())
 		     annotated_count -= AFDO_EINFO (e2)->get_count ();
-		   else if (component[e->src->index] == component_id)
-		     out_count += e->count ();
-		   else if (e->probability.nonzero_p ())
+		   else if (component[e2->src->index] == component_id)
+		     out_count += e2->count ();
+		   else if (is_bb_annotated (e2->src, *annotated_bb))
+		     annotated_count -= e2->count ();
+		   else if (e2->probability.nonzero_p ())
 		     {
 		       ok = false;
 		       break;
@@ -3561,7 +3582,43 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	 }
        gcc_checking_assert (scales.length ());
        scales.qsort (cmp);
-       scale_bbs (bbs, scales[scales.length () / 2]);
+
+       uint64_t overall_weight = 0;
+       for (scale &e : scales)
+	 overall_weight += e.weight;
+
+       uint64_t cummulated = 0, weight_sum = 0;
+       sreal scale_sum = 0;
+       for (scale &e : scales)
+	 {
+	   uint64_t prev = cummulated;
+	   cummulated += e.weight;
+	   if (cummulated >= overall_weight / 4
+	       && prev <= 3 * overall_weight / 4)
+	     {
+	       scale_sum += e.scale * e.weight;
+	       weight_sum += e.weight;
+	       if (dump_file)
+		 fprintf (dump_file, "    accounting scale %.16f, weight %" PRId64 "\n",
+			  e.scale.to_double (), e.weight);
+	     }
+	   else if (dump_file)
+	     fprintf (dump_file, "    ignoring scale %.16f, weight %" PRId64 "\n",
+		      e.scale.to_double (), e.weight);
+	  }
+       sreal scale = scale_sum / (sreal)weight_sum;
+
+       /* Avoid scaled regions to have very large counts.
+	  Otherwise they may dominate ipa-profile's histogram computing cutoff
+	  of hot basic blocks.  */
+       if (max_count * scale > max_count_in_fn.guessed_local ())
+	 {
+	   fprintf (dump_file, "Scaling by %.16f produces max count ", scale.to_double ());
+	   (max_count * scale).dump (dump_file);
+	   fprintf (dump_file, " that exceeds max count in fn; capping\n");
+	   scale = max_count_in_fn.guessed_local ().to_sreal_scale (max_count);
+	 }
+       scale_bbs (bbs, scale);
      }
 }
 
