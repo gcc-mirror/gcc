@@ -1,3 +1,12 @@
+2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__size_to_integer): Move
+	misplaced unsigned keyword on __size_to_integer overloads for
+	__GLIBCXX_TYPE_INT_N_3 integer type.
+
 2025-07-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

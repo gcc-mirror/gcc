@@ -1,3 +1,19 @@
+2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120847
+	* gfortran.dg/coarray/coindexed_7.f90: New test.
+
+2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* gfortran.dg/coarray/coindexed_6.f90: New test.
+
 2025-07-04  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

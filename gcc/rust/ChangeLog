@@ -1,3 +1,8 @@
+2025-07-08  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::Late): False initialize the
+	funny_error field.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.
