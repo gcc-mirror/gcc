@@ -207,7 +207,7 @@ test5 (size_t sz)
 }
 
 int
-main (size_t sz)
+main (void)
 {
   test1 (sizeof (struct container));
   test1 (sizeof (struct container) - sizeof (int));
