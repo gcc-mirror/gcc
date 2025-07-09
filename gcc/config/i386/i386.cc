@@ -27202,9 +27202,9 @@ ix86_memtag_can_tag_addresses ()
   return ix86_lam_type != lam_none && TARGET_LP64;
 }
 
-/* Implement TARGET_MEMTAG_TAG_SIZE.  */
+/* Implement TARGET_MEMTAG_TAG_BITSIZE.  */
 unsigned char
-ix86_memtag_tag_size ()
+ix86_memtag_tag_bitsize ()
 {
   return IX86_HWASAN_TAG_SIZE;
 }
@@ -28178,8 +28178,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_MEMTAG_UNTAGGED_POINTER
 #define TARGET_MEMTAG_UNTAGGED_POINTER ix86_memtag_untagged_pointer
 
-#undef TARGET_MEMTAG_TAG_SIZE
-#define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
+#undef TARGET_MEMTAG_TAG_BITSIZE
+#define TARGET_MEMTAG_TAG_BITSIZE ix86_memtag_tag_bitsize
 
 #undef TARGET_GEN_CCMP_FIRST
 #define TARGET_GEN_CCMP_FIRST ix86_gen_ccmp_first

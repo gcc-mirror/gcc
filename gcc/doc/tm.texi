@@ -12881,7 +12881,7 @@ At preset, this feature does not support address spaces.  It also requires
 @code{Pmode} to be the same as @code{ptr_mode}.
 @end deftypefn
 
-@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_TAG_SIZE ()
+@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_TAG_BITSIZE ()
 Return the size of a tag (in bits) for this platform.
 
 The default returns 8.

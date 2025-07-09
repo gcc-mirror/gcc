@@ -2808,7 +2808,7 @@ default_memtag_can_tag_addresses ()
 }
 
 uint8_t
-default_memtag_tag_size ()
+default_memtag_tag_bitsize ()
 {
   return 8;
 }

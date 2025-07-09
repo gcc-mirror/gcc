@@ -103,7 +103,7 @@ extern hash_set <tree> *asan_used_labels;
    independently here.  */
 /* How many bits are used to store a tag in a pointer.
    The default version uses the entire top byte of a pointer (i.e. 8 bits).  */
-#define HWASAN_TAG_SIZE targetm.memtag.tag_size ()
+#define HWASAN_TAG_SIZE targetm.memtag.tag_bitsize ()
 /* Tag Granule of HWASAN shadow stack.
    This is the size in real memory that each byte in the shadow memory refers
    to.  I.e. if a variable is X bytes long in memory then its tag in shadow

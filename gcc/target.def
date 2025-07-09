@@ -7475,11 +7475,11 @@ At preset, this feature does not support address spaces.  It also requires\n\
  bool, (), default_memtag_can_tag_addresses)
 
 DEFHOOK
-(tag_size,
+(tag_bitsize,
  "Return the size of a tag (in bits) for this platform.\n\
 \n\
 The default returns 8.",
-  uint8_t, (), default_memtag_tag_size)
+  uint8_t, (), default_memtag_tag_bitsize)
 
 DEFHOOK
 (granule_size,
