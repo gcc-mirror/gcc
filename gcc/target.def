@@ -7577,7 +7577,9 @@ DEFHOOK
  "Return an RTX representing the value of @var{untagged} but with a\n\
 (possibly) random tag in it.\n\
 Put that value into @var{target} if it is convenient to do so.\n\
-This function is used to generate a tagged base for the current stack frame.",
+This function is used to generate a tagged base for the current stack frame.\n\
+It is also used by memtag-stack sanitizer to emit specific memory tagging\n\
+instructions.",
   rtx, (rtx untagged, rtx target), default_memtag_insert_random_tag)
 
 DEFHOOK
@@ -7589,7 +7591,7 @@ The resulting RTX must either be a valid memory address or be able to get\n\
 put into an operand with @code{force_operand}.\n\
 \n\
 Unlike other memtag hooks, this must return an expression and not emit any\n\
-RTL.",
+RTL.  In the case of memtag-stack sanitizer, this constraint is not enforced.",
   rtx, (rtx base, poly_int64 addr_offset, uint8_t tag_offset),
   default_memtag_add_tag)
 
@@ -7606,7 +7608,9 @@ DEFHOOK
 (extract_tag,
  "Return an RTX representing the tag stored in @var{tagged_pointer}.\n\
 Store the result in @var{target} if it is convenient.\n\
-The default represents the top byte of the original pointer.",
+The default represents the top byte of the original pointer.\n\
+In the case of memtag-stack sanitizer for targets that can process\n\
+tagged pointers (i.e. AArch64), this hook can return a tagged pointer.",
   rtx, (rtx tagged_pointer, rtx target), default_memtag_extract_tag)
 
 DEFHOOK

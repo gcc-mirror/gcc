@@ -383,7 +383,7 @@ align_local_variable (tree decl, bool really_expand)
   else
     align = LOCAL_DECL_ALIGNMENT (decl);
 
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     align = MAX (align, (unsigned) HWASAN_TAG_GRANULE_SIZE * BITS_PER_UNIT);
 
   if (TREE_CODE (decl) != SSA_NAME && really_expand)
@@ -1337,7 +1337,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
   gcc_assert (known_eq (offset, trunc_int_for_mode (offset, Pmode)));
 
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     x = targetm.memtag.add_tag (base, offset,
 				hwasan_current_frame_tag ());
   else
@@ -1472,14 +1472,14 @@ expand_stack_vars (bool (*pred) (unsigned), class stack_vars_data *data)
       if (pred && !pred (i))
 	continue;
 
-      base = (hwasan_sanitize_stack_p ()
+      base = (hwassist_sanitize_stack_p ()
 	      ? hwasan_frame_base ()
 	      : virtual_stack_vars_rtx);
       alignb = stack_vars[i].alignb;
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  poly_int64 hwasan_orig_offset;
-	  if (hwasan_sanitize_stack_p ())
+	  if (hwassist_sanitize_stack_p ())
 	    {
 	      /* There must be no tag granule "shared" between different
 		 objects.  This means that no HWASAN_TAG_GRANULE_SIZE byte
@@ -1578,7 +1578,7 @@ expand_stack_vars (bool (*pred) (unsigned), class stack_vars_data *data)
 	      offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
 	      base_align = crtl->max_used_stack_slot_alignment;
 
-	      if (hwasan_sanitize_stack_p ())
+	      if (hwassist_sanitize_stack_p ())
 		{
 		  /* Align again since the point of this alignment is to handle
 		     the "end" of the object (i.e. smallest address after the
@@ -1623,7 +1623,7 @@ expand_stack_vars (bool (*pred) (unsigned), class stack_vars_data *data)
 	  large_alloc = aligned_upper_bound (large_alloc, alignb);
 	  offset = large_alloc;
 	  large_alloc += stack_vars[i].size;
-	  if (hwasan_sanitize_stack_p ())
+	  if (hwassist_sanitize_stack_p ())
 	    {
 	      /* An object with a large alignment requirement means that the
 		 alignment requirement is greater than the required alignment
@@ -1654,7 +1654,7 @@ expand_stack_vars (bool (*pred) (unsigned), class stack_vars_data *data)
 	  expand_one_stack_var_at (stack_vars[j].decl,
 				   base, base_align, offset);
 	}
-      if (hwasan_sanitize_stack_p ())
+      if (hwassist_sanitize_stack_p ())
 	hwasan_increment_frame_tag ();
     }
 
@@ -1747,7 +1747,7 @@ expand_one_stack_var_1 (tree var)
   gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);
 
   rtx base;
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     {
       /* Allocate zero bytes to align the stack.  */
       poly_int64 hwasan_orig_offset
@@ -1775,7 +1775,7 @@ expand_one_stack_var_1 (tree var)
   expand_one_stack_var_at (var, base,
 			   crtl->max_used_stack_slot_alignment, offset);
 
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     hwasan_increment_frame_tag ();
 }
 
@@ -2379,7 +2379,7 @@ init_vars_expansion (void)
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
   has_short_buffer = false;
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     hwasan_record_frame_init ();
 }
 
@@ -2705,13 +2705,14 @@ expand_used_vars (bitmap forced_stack_vars)
       expand_stack_vars (NULL, &data);
     }
 
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     hwasan_emit_prologue ();
   if (asan_sanitize_allocas_p () && cfun->calls_alloca)
     var_end_seq = asan_emit_allocas_unpoison (virtual_stack_dynamic_rtx,
 					      virtual_stack_vars_rtx,
 					      var_end_seq);
-  else if (hwasan_sanitize_allocas_p () && cfun->calls_alloca)
+  else if ((hwasan_sanitize_allocas_p () || memtag_sanitize_p ())
+	   && cfun->calls_alloca)
     /* When using out-of-line instrumentation we only want to emit one function
        call for clearing the tags in a region of shadow stack.  When there are
        alloca calls in this frame we want to emit a call using the
@@ -2719,7 +2720,7 @@ expand_used_vars (bitmap forced_stack_vars)
        rtx we created in expand_stack_vars.  */
     var_end_seq = hwasan_emit_untag_frame (virtual_stack_dynamic_rtx,
 					   virtual_stack_vars_rtx);
-  else if (hwasan_sanitize_stack_p ())
+  else if (hwassist_sanitize_stack_p ())
     /* If no variables were stored on the stack, `hwasan_get_frame_extent`
        will return NULL_RTX and hence `hwasan_emit_untag_frame` will return
        NULL (i.e. an empty sequence).  */
@@ -7310,7 +7311,7 @@ pass_expand::execute (function *fun)
       emit_insn_after (var_ret_seq, after);
     }
 
-  if (hwasan_sanitize_stack_p ())
+  if (hwassist_sanitize_stack_p ())
     hwasan_maybe_emit_frame_base_init ();
 
   /* Zap the tree EH table.  */

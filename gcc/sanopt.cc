@@ -1330,7 +1330,7 @@ pass_sanopt::execute (function *fun)
       sanitize_asan_mark_poison ();
     }
 
-  if (asan_sanitize_stack_p () || hwasan_sanitize_stack_p ())
+  if (asan_sanitize_stack_p () || hwassist_sanitize_stack_p ())
     sanitize_rewrite_addressable_params (fun);
 
   bool use_calls = param_asan_instrumentation_with_call_threshold < INT_MAX

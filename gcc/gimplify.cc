@@ -1318,9 +1318,10 @@ asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
 
   /* It's necessary to have all stack variables aligned to ASAN granularity
      bytes.  */
-  gcc_assert (!hwasan_sanitize_p () || hwasan_sanitize_stack_p ());
+  gcc_assert (!hwassist_sanitize_p () || hwassist_sanitize_stack_p ());
   unsigned shadow_granularity
-    = hwasan_sanitize_p () ? HWASAN_TAG_GRANULE_SIZE : ASAN_SHADOW_GRANULARITY;
+    = (hwassist_sanitize_p ()
+       ? HWASAN_TAG_GRANULE_SIZE : ASAN_SHADOW_GRANULARITY);
   if (DECL_ALIGN_UNIT (decl) <= shadow_granularity)
     SET_DECL_ALIGN (decl, BITS_PER_UNIT * shadow_granularity);
 

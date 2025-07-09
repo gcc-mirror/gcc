@@ -762,14 +762,15 @@ static void
 handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
 {
   if (!iter
-      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()))
+      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()
+	   || memtag_sanitize_allocas_p ()))
     return;
 
   tree restored_stack = gimple_call_arg (call, 0);
 
   gimple *g;
 
-  if (hwasan_sanitize_allocas_p ())
+  if (hwasan_sanitize_allocas_p () || memtag_sanitize_allocas_p ())
     {
       enum internal_fn fn = IFN_HWASAN_ALLOCA_UNPOISON;
       /* There is only one piece of information `expand_HWASAN_ALLOCA_UNPOISON`
@@ -818,7 +819,8 @@ static void
 handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
 {
   if (!iter
-      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()))
+      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()
+	   || memtag_sanitize_allocas_p ()))
     return;
 
   gassign *g;
@@ -842,23 +844,31 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
       e = find_fallthru_edge (gsi_bb (*iter)->succs);
     }
 
-  if (hwasan_sanitize_allocas_p ())
+  if (hwasan_sanitize_allocas_p () || memtag_sanitize_allocas_p ())
     {
       gimple_seq stmts = NULL;
       location_t loc = gimple_location (gsi_stmt (*iter));
-      /*
-	 HWASAN needs a different expansion.
+      /* HWASAN and MEMTAG need a different expansion.
 
 	 addr = __builtin_alloca (size, align);
 
-	 should be replaced by
+	 in case of HWASAN, should be replaced by
 
 	 new_size = size rounded up to HWASAN_TAG_GRANULE_SIZE byte alignment;
 	 untagged_addr = __builtin_alloca (new_size, align);
 	 tag = __hwasan_choose_alloca_tag ();
 	 addr = ifn_HWASAN_SET_TAG (untagged_addr, tag);
 	 __hwasan_tag_memory (untagged_addr, tag, new_size);
-	*/
+
+	 in case of MEMTAG, should be replaced by
+
+	 new_size = size rounded up to HWASAN_TAG_GRANULE_SIZE byte alignment;
+	 untagged_addr = __builtin_alloca (new_size, align);
+	 addr = ifn_HWASAN_ALLOCA_POISON (untagged_addr, new_size);
+
+	 where a new tag is chosen and set on untagged_addr when
+	 HWASAN_ALLOCA_POISON is expanded.  */
+
       /* Ensure alignment at least HWASAN_TAG_GRANULE_SIZE bytes so we start on
 	 a tag granule.  */
       align = align > HWASAN_TAG_GRANULE_SIZE ? align : HWASAN_TAG_GRANULE_SIZE;
@@ -874,23 +884,30 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
 			as_combined_fn (BUILT_IN_ALLOCA_WITH_ALIGN), ptr_type,
 			new_size, build_int_cst (size_type_node, align));
 
-      /* Choose the tag.
-	 Here we use an internal function so we can choose the tag at expand
-	 time.  We need the decision to be made after stack variables have been
-	 assigned their tag (i.e. once the hwasan_frame_tag_offset variable has
-	 been set to one after the last stack variables tag).  */
-      tree tag = gimple_build (&stmts, loc, CFN_HWASAN_CHOOSE_TAG,
-			       unsigned_char_type_node);
+      tree addr;
 
-      /* Add tag to pointer.  */
-      tree addr
-	= gimple_build (&stmts, loc, CFN_HWASAN_SET_TAG, ptr_type,
-			untagged_addr, tag);
+      if (memtag_sanitize_p ())
+	addr = gimple_build (&stmts, loc, CFN_HWASAN_ALLOCA_POISON, ptr_type,
+			     untagged_addr, new_size);
+      else
+	{
+	  /* Choose the tag.
+	     Here we use an internal function so we can choose the tag at expand
+	     time.  We need the decision to be made after stack variables have been
+	     assigned their tag (i.e. once the hwasan_frame_tag_offset variable has
+	     been set to one after the last stack variables tag).  */
+	  tree tag = gimple_build (&stmts, loc, CFN_HWASAN_CHOOSE_TAG,
+				   unsigned_char_type_node);
 
-      /* Tag shadow memory.
-	 NOTE: require using `untagged_addr` here for libhwasan API.  */
-      gimple_build (&stmts, loc, as_combined_fn (BUILT_IN_HWASAN_TAG_MEM),
-		    void_type_node, untagged_addr, tag, new_size);
+	  /* Add tag to pointer.  */
+	  addr = gimple_build (&stmts, loc, CFN_HWASAN_SET_TAG, ptr_type,
+			       untagged_addr, tag);
+
+	  /* Tag shadow memory.
+	     NOTE: require using `untagged_addr` here for libhwasan API.  */
+	  gimple_build (&stmts, loc, as_combined_fn (BUILT_IN_HWASAN_TAG_MEM),
+			void_type_node, untagged_addr, tag, new_size);
+	}
 
       /* Insert the built up code sequence into the original instruction stream
 	 the iterator points to.  */
@@ -1104,7 +1121,7 @@ get_mem_refs_of_builtin_call (gcall *call,
 	 for now we choose to just ignore `strlen` calls.
 	 This decision was simply made because that means the special case is
 	 limited to this one case of this one function.  */
-      if (hwasan_sanitize_p ())
+      if (hwassist_sanitize_p ())
 	return false;
       source0 = gimple_call_arg (call, 0);
       len = gimple_call_lhs (call);
@@ -1886,6 +1903,83 @@ hwasan_memintrin (void)
   return (hwasan_sanitize_p () && param_hwasan_instrument_mem_intrinsics);
 }
 
+/* MEMoryTAGging sanitizer (MEMTAG) uses a hardware based capability known as
+   memory tagging to detect memory safety vulnerabilities.  Similar to HWASAN,
+   it is also a probabilistic method.
+
+   MEMTAG relies on the optional extension in armv8.5a known as MTE (Memory
+   Tagging Extension).  The extension is available in AArch64 only and
+   introduces two types of tags:
+     - Logical Address Tag - bits 56-59 (TARGET_MEMTAG_TAG_BITSIZE) of the
+       virtual address.
+     - Allocation Tag - 4 bits for each tag granule (TARGET_MEMTAG_GRANULE_SIZE
+       set to 16 bytes), stored separately.
+   Load / store instructions raise an exception if tags differ, thereby
+   providing a faster way (than HWASAN) to detect memory safety issues.
+   Further, new instructions are available in MTE to manipulate (generate,
+   update address with) tags.  Load / store instructions with SP base register
+   and immediate offset do not check tags.
+
+   PS: Currently, MEMTAG sanitizer is capable of stack (variable / memory)
+   tagging only.
+
+   In general, detecting stack-related memory bugs requires the compiler to:
+     - ensure that each tag granule is only used by one variable at a time.
+       This includes alloca.
+     - Tag/Color: put tags into each stack variable pointer.
+     - Untag: the function epilogue will retag the memory.
+
+   MEMTAG sanitizer is based off the HWASAN sanitizer implementation
+   internally.  Similar to HWASAN:
+     - Assigning an independently random tag to each variable is carried out by
+       keeping a tagged base pointer.  A tagged base pointer allows addressing
+       variables with (addr offset, tag offset).
+   */
+
+/* Returns whether we are tagging pointers and checking those tags on memory
+   access.  */
+bool
+memtag_sanitize_p ()
+{
+  return sanitize_flags_p (SANITIZE_MEMTAG);
+}
+
+/* Are we tagging the stack?  */
+bool
+memtag_sanitize_stack_p ()
+{
+  return (sanitize_flags_p (SANITIZE_MEMTAG_STACK));
+}
+
+/* Are we tagging alloca objects?  */
+bool
+memtag_sanitize_allocas_p (void)
+{
+  return (memtag_sanitize_stack_p () && param_memtag_instrument_allocas);
+}
+
+/* Are we taggin mem intrinsics?  */
+bool
+memtag_memintrin (void)
+{
+  return (memtag_sanitize_p () && param_memtag_instrument_mem_intrinsics);
+}
+
+/* Returns whether we are tagging pointers and checking those tags on memory
+   access.  */
+bool
+hwassist_sanitize_p ()
+{
+  return (hwasan_sanitize_p () || memtag_sanitize_p ());
+}
+
+/* Are we tagging stack objects for hwasan or memtag?  */
+bool
+hwassist_sanitize_stack_p ()
+{
+  return (hwasan_sanitize_stack_p () || memtag_sanitize_stack_p ());
+}
+
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
    directly, epilogue sequence returned.  BASE is the register holding the
    stack base, against which OFFSETS array offsets are relative to, OFFSETS
@@ -2416,7 +2510,7 @@ static tree
 report_error_func (bool is_store, bool recover_p, HOST_WIDE_INT size_in_bytes,
 		   int *nargs)
 {
-  gcc_assert (!hwasan_sanitize_p ());
+  gcc_assert (!hwassist_sanitize_p ());
 
   static enum built_in_function report[2][2][6]
     = { { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
@@ -2755,7 +2849,7 @@ build_check_stmt (location_t loc, tree base, tree len,
   if (is_scalar_access)
     flags |= ASAN_CHECK_SCALAR_ACCESS;
 
-  enum internal_fn fn = hwasan_sanitize_p ()
+  enum internal_fn fn = hwassist_sanitize_p ()
     ? IFN_HWASAN_CHECK
     : IFN_ASAN_CHECK;
 
@@ -2855,7 +2949,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	 access is inside a global variable, then there's no point adding
 	 instrumentation to check the access.  N.b. hwasan currently never
 	 sanitizes globals.  */
-      if ((hwasan_sanitize_p () || !param_asan_globals)
+      if ((hwassist_sanitize_p () || !param_asan_globals)
 	  && is_global_var (inner))
         return;
       if (!TREE_STATIC (inner))
@@ -2954,7 +3048,8 @@ instrument_mem_region_access (tree base, tree len,
 static bool
 instrument_builtin_call (gimple_stmt_iterator *iter)
 {
-  if (!(asan_memintrin () || hwasan_memintrin ()))
+  if (!(asan_memintrin () || hwasan_memintrin ()
+	|| memtag_memintrin ()))
     return false;
 
   bool iter_advanced_p = false;
@@ -3108,7 +3203,7 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	 `longjmp`, thread exit, and exceptions in a different way.  These
 	 problems must be handled externally to the compiler, e.g. in the
 	 language runtime.  */
-      if (! hwasan_sanitize_p ())
+      if (! hwassist_sanitize_p ())
 	{
 	  tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
 	  gimple *g = gimple_build_call (decl, 0);
@@ -3861,7 +3956,7 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
 
-  if (hwasan_sanitize_p ())
+  if (hwassist_sanitize_p ())
     {
       gcc_assert (param_hwasan_instrument_stack);
       gimple_seq stmts = NULL;
@@ -3959,7 +4054,7 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 bool
 asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 {
-  gcc_assert (!hwasan_sanitize_p ());
+  gcc_assert (!hwassist_sanitize_p ());
   gimple *g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
   bool recover_p;
@@ -4234,7 +4329,7 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
       int nargs;
       bool store_p = gimple_call_internal_p (use, IFN_ASAN_POISON_USE);
       gcall *call;
-      if (hwasan_sanitize_p ())
+      if (hwassist_sanitize_p ())
 	{
 	  tree fun = builtin_decl_implicit (BUILT_IN_HWASAN_TAG_MISMATCH4);
 	  /* NOTE: hwasan has no __hwasan_report_* functions like asan does.
@@ -4335,7 +4430,7 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 static unsigned int
 asan_instrument (void)
 {
-  if (hwasan_sanitize_p ())
+  if (hwassist_sanitize_p ())
     {
       initialize_sanitizer_builtins ();
       transform_statements ();
@@ -4381,7 +4476,7 @@ public:
   opt_pass * clone () final override { return new pass_asan (m_ctxt); }
   bool gate (function *) final override
   {
-    return gate_asan () || gate_hwasan ();
+    return gate_asan () || gate_hwasan () || gate_memtag ();
   }
   unsigned int execute (function *) final override
   {
@@ -4423,7 +4518,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return !optimize && (gate_asan () || gate_hwasan ());
+      return !optimize && (gate_asan () || gate_hwasan () || gate_memtag ());
     }
   unsigned int execute (function *) final override
   {
@@ -4676,19 +4771,41 @@ hwasan_emit_prologue ()
       gcc_assert (multiple_p (bot, HWASAN_TAG_GRANULE_SIZE));
       gcc_assert (multiple_p (size, HWASAN_TAG_GRANULE_SIZE));
 
-      rtx fn = init_one_libfunc ("__hwasan_tag_memory");
       rtx base_tag = targetm.memtag.extract_tag (cur.tagged_base, NULL_RTX);
-      rtx tag = plus_constant (QImode, base_tag, cur.tag_offset);
-      tag = hwasan_truncate_to_tag_size (tag, NULL_RTX);
 
       rtx bottom = convert_memory_address (ptr_mode,
 					   plus_constant (Pmode,
 							  cur.untagged_base,
 							  bot));
-      emit_library_call (fn, LCT_NORMAL, VOIDmode,
-			 bottom, ptr_mode,
-			 tag, QImode,
-			 gen_int_mode (size, ptr_mode), ptr_mode);
+      if (memtag_sanitize_p ())
+	{
+	  expand_operand ops[3];
+	  rtx tagged_addr = gen_reg_rtx (ptr_mode);
+
+	  /* Check if the required target instructions are present.  */
+	  gcc_assert (targetm.have_compose_tag ());
+	  gcc_assert (targetm.have_tag_memory ());
+
+	  /* The AArch64 has addg/subg instructions which are working directly
+	     on a tagged pointer.  */
+	  create_output_operand (&ops[0], tagged_addr, ptr_mode);
+	  create_input_operand (&ops[1], base_tag, ptr_mode);
+	  create_integer_operand (&ops[2], cur.tag_offset);
+	  expand_insn (targetm.code_for_compose_tag, 3, ops);
+
+	  emit_insn (targetm.gen_tag_memory (bottom, tagged_addr,
+					     gen_int_mode (size, ptr_mode)));
+	}
+      else
+	{
+	  rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+	  rtx tag = plus_constant (QImode, base_tag, cur.tag_offset);
+	  tag = hwasan_truncate_to_tag_size (tag, NULL_RTX);
+	  emit_library_call (fn, LCT_NORMAL, VOIDmode,
+			     bottom, ptr_mode,
+			     tag, QImode,
+			     gen_int_mode (size, ptr_mode), ptr_mode);
+	}
     }
   /* Clear the stack vars, we've emitted the prologue for them all now.  */
   hwasan_tagged_stack_vars.truncate (0);
@@ -4725,15 +4842,21 @@ hwasan_emit_untag_frame (rtx dynamic, rtx vars)
       bot_rtx = vars;
     }
 
-  rtx size_rtx = expand_simple_binop (ptr_mode, MINUS, top_rtx, bot_rtx,
-				      NULL_RTX, /* unsignedp = */0,
-				      OPTAB_DIRECT);
+  rtx size_rtx = simplify_gen_binary (MINUS, ptr_mode, top_rtx, bot_rtx);
+  if (!CONST_INT_P (size_rtx))
+    size_rtx = force_reg (ptr_mode, size_rtx);
 
-  rtx fn = init_one_libfunc ("__hwasan_tag_memory");
-  emit_library_call (fn, LCT_NORMAL, VOIDmode,
-		     bot_rtx, ptr_mode,
-		     HWASAN_STACK_BACKGROUND, QImode,
-		     size_rtx, ptr_mode);
+  if (memtag_sanitize_p ())
+    emit_insn (targetm.gen_tag_memory (bot_rtx, HWASAN_STACK_BACKGROUND,
+				       size_rtx));
+  else
+    {
+      rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
+			 bot_rtx, ptr_mode,
+			 HWASAN_STACK_BACKGROUND, QImode,
+			 size_rtx, ptr_mode);
+    }
 
   do_pending_stack_adjust ();
   return end_sequence ();
@@ -4917,6 +5040,12 @@ bool
 gate_hwasan ()
 {
   return hwasan_sanitize_p ();
+}
+
+bool
+gate_memtag ()
+{
+  return memtag_sanitize_p ();
 }
 
 #include "gt-asan.h"

@@ -57,6 +57,14 @@ extern bool hwasan_expand_check_ifn (gimple_stmt_iterator *, bool);
 extern bool hwasan_expand_mark_ifn (gimple_stmt_iterator *);
 extern bool gate_hwasan (void);
 
+extern bool memtag_sanitize_p (void);
+extern bool memtag_sanitize_stack_p (void);
+extern bool memtag_sanitize_allocas_p (void);
+extern bool gate_memtag (void);
+
+bool hwassist_sanitize_p (void);
+bool hwassist_sanitize_stack_p (void);
+
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
 
@@ -225,7 +233,7 @@ inline bool
 asan_sanitize_use_after_scope (void)
 {
   return (flag_sanitize_address_use_after_scope
-	  && (asan_sanitize_stack_p () || hwasan_sanitize_stack_p ()));
+	  && (asan_sanitize_stack_p () || hwassist_sanitize_stack_p ()));
 }
 
 /* Return true if DECL should be guarded on the stack.  */

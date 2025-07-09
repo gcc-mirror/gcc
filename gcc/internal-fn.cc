@@ -751,6 +751,54 @@ expand_HWASAN_CHECK (internal_fn, gcall *)
 }
 
 /* For hwasan stack tagging:
+   Tag memory which is dynamically allocated.  */
+static void
+expand_HWASAN_ALLOCA_POISON (internal_fn, gcall *gc)
+{
+  gcc_assert (ptr_mode == Pmode);
+  tree g_target = gimple_call_lhs (gc);
+  tree g_ptr = gimple_call_arg (gc, 0);
+  tree g_size = gimple_call_arg (gc, 1);
+
+  /* There is no target; this happens, usually, when we have an alloca of zero
+     size.  */
+  if (!g_target)
+    return;
+  rtx target = expand_normal (g_target);
+  rtx ptr = expand_normal (g_ptr);
+  rtx size = expand_normal (g_size);
+
+  /* No size, nothing to do.  */
+  if (size == const0_rtx)
+    return;
+
+  /* Get new tag for the alloca'd memory.
+     Doing a regular add_tag () like so:
+	rtx tag = targetm.memtag.add_tag (hwasan_frame_base (), 0,
+					  hwasan_current_frame_tag ());
+     gets a new tag, which can be used for tagging memory.  But for alloca, we
+     need both tagged memory and a tagged pointer to pass to consumers.  Invoke
+     insert_random_tag () instead to add a random tag to ptr to get a tagged
+     pointer that will work for both purposes.  */
+  rtx tagged_ptr
+    = force_reg (Pmode, targetm.memtag.insert_random_tag (ptr, NULL_RTX));
+  rtx tag = targetm.memtag.extract_tag (tagged_ptr, NULL_RTX);
+
+  if (memtag_sanitize_p ())
+    {
+      /* Need to put the tagged ptr into the `target` RTX for consumers
+	 of alloca'd memory.  */
+      if (tagged_ptr != target)
+	emit_move_insn (target, tagged_ptr);
+      /* Tag the memory.  */
+      emit_insn (targetm.gen_tag_memory (ptr, tag, size));
+      hwasan_increment_frame_tag ();
+    }
+  else
+    gcc_unreachable ();
+}
+
+/* For hwasan stack tagging:
    Clear tags on the dynamically allocated space.
    For use after an object dynamically allocated on the stack goes out of
    scope.  */
@@ -761,14 +809,22 @@ expand_HWASAN_ALLOCA_UNPOISON (internal_fn, gcall *gc)
   tree restored_position = gimple_call_arg (gc, 0);
   rtx restored_rtx = expand_expr (restored_position, NULL_RTX, VOIDmode,
 				  EXPAND_NORMAL);
-  rtx func = init_one_libfunc ("__hwasan_tag_memory");
   rtx off = expand_simple_binop (Pmode, MINUS, restored_rtx,
 				 stack_pointer_rtx, NULL_RTX, 0,
 				 OPTAB_WIDEN);
-  emit_library_call_value (func, NULL_RTX, LCT_NORMAL, VOIDmode,
-			   virtual_stack_dynamic_rtx, Pmode,
-			   HWASAN_STACK_BACKGROUND, QImode,
-			   off, Pmode);
+
+  if (memtag_sanitize_p ())
+    emit_insn (targetm.gen_tag_memory (virtual_stack_dynamic_rtx,
+				       HWASAN_STACK_BACKGROUND,
+				       off));
+  else
+    {
+      rtx func = init_one_libfunc ("__hwasan_tag_memory");
+      emit_library_call_value (func, NULL_RTX, LCT_NORMAL, VOIDmode,
+			       virtual_stack_dynamic_rtx, Pmode,
+			       HWASAN_STACK_BACKGROUND, QImode,
+			       off, Pmode);
+    }
 }
 
 /* For hwasan stack tagging:
@@ -822,9 +878,14 @@ expand_HWASAN_MARK (internal_fn, gcall *gc)
   tree len = gimple_call_arg (gc, 2);
   rtx r_len = expand_normal (len);
 
-  rtx func = init_one_libfunc ("__hwasan_tag_memory");
-  emit_library_call (func, LCT_NORMAL, VOIDmode, address, Pmode,
-		     tag, QImode, r_len, Pmode);
+  if (memtag_sanitize_p ())
+    emit_insn (targetm.gen_tag_memory (address, tag, r_len));
+  else
+    {
+      rtx func = init_one_libfunc ("__hwasan_tag_memory");
+      emit_library_call (func, LCT_NORMAL, VOIDmode, address, Pmode,
+			 tag, QImode, r_len, Pmode);
+    }
 }
 
 /* For hwasan stack tagging:

@@ -13001,6 +13001,8 @@ Return an RTX representing the value of @var{untagged} but with a
 (possibly) random tag in it.
 Put that value into @var{target} if it is convenient to do so.
 This function is used to generate a tagged base for the current stack frame.
+It is also used by memtag-stack sanitizer to emit specific memory tagging
+instructions.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_MEMTAG_ADD_TAG (rtx @var{base}, poly_int64 @var{addr_offset}, uint8_t @var{tag_offset})
@@ -13011,7 +13013,7 @@ The resulting RTX must either be a valid memory address or be able to get
 put into an operand with @code{force_operand}.
 
 Unlike other memtag hooks, this must return an expression and not emit any
-RTL.
+RTL.  In the case of memtag-stack sanitizer, this constraint is not enforced.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_MEMTAG_SET_TAG (rtx @var{untagged_base}, rtx @var{tag}, rtx @var{target})
@@ -13026,6 +13028,8 @@ The default of this hook is to set the top byte of @var{untagged_base} to
 Return an RTX representing the tag stored in @var{tagged_pointer}.
 Store the result in @var{target} if it is convenient.
 The default represents the top byte of the original pointer.
+In the case of memtag-stack sanitizer for targets that can process
+tagged pointers (i.e. AArch64), this hook can return a tagged pointer.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_MEMTAG_UNTAGGED_POINTER (rtx @var{tagged_pointer}, rtx @var{target})

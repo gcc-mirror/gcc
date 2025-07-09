@@ -10562,6 +10562,8 @@ sanitize_spec_function (int argc, const char **argv)
     return (flag_sanitize & SANITIZE_KERNEL_ADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "kernel-hwaddress") == 0)
     return (flag_sanitize & SANITIZE_KERNEL_HWADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "memtag-stack") == 0)
+    return (flag_sanitize & SANITIZE_MEMTAG_STACK) ? "" : NULL;
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
