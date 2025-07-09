@@ -1033,6 +1033,53 @@ resolve_counters (vec<counters> &cands)
 
 }
 
+/* Append statements to SEQ that update the decision counter referenced by
+   REF with the COUNTER.  Generate two separate 32-bit atomic bitwise-or
+   operations specified by ATOMIC_IOR_32 in the RELAXED memory order.  If a
+   32-bit part of COUNTER folds to a constant zero, then the atomic
+   bitwise-or operation for this part is a no-op and is omitted.  */
+static void
+split_update_decision_counter (gimple_seq *seq, tree ref, tree counter,
+			       tree atomic_ior_32, tree relaxed)
+{
+  ref = unshare_expr (ref);
+
+  /* Get the low and high addresses of the referenced counter.  */
+  tree addr_low = build_addr (ref);
+  tree four = build_int_cst (size_type_node, 4);
+  tree addr_high = gimple_build (seq, POINTER_PLUS_EXPR,
+				 TREE_TYPE (addr_low), addr_low, four);
+  if (WORDS_BIG_ENDIAN)
+    std::swap (addr_low, addr_high);
+
+  /* Get the low and high 32-bit parts of the counter.  Fold to a
+     constant if COUNTER is a compile-time constant, so that a part
+     which is known to be zero can be recognized below.  */
+  tree counter_low_32 = gimple_build (seq, NOP_EXPR, uint32_type_node,
+				      counter);
+  tree shift_32 = build_int_cst (integer_type_node, 32);
+  tree counter_high_64 = gimple_build (seq, RSHIFT_EXPR, gcov_type_node,
+				       counter, shift_32);
+  tree counter_high_32 = gimple_build (seq, NOP_EXPR, uint32_type_node,
+				       counter_high_64);
+
+  /* Atomically bitwise-or the low 32-bit counter parts.  */
+  if (!integer_zerop (counter_low_32))
+    {
+      gcall *call1 = gimple_build_call (atomic_ior_32, 3, addr_low,
+					counter_low_32, relaxed);
+      gimple_seq_add_stmt (seq, call1);
+    }
+
+  /* Atomically bitwise-or the high 32-bit counter parts.  */
+  if (!integer_zerop (counter_high_32))
+    {
+      gcall *call2 = gimple_build_call (atomic_ior_32, 3, addr_high,
+					counter_high_32, relaxed);
+      gimple_seq_add_stmt (seq, call2);
+    }
+}
+
 /* Add instrumentation to a decision subgraph.  EXPR should be the
    (topologically sorted) block of nodes returned by cov_blocks, MAPS the
    bitmaps returned by cov_maps, and MASKS the block of bitsets returned by
@@ -1138,11 +1185,17 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
   gcc_assert (xi == bitmap_count_bits (core));
 
   const tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
-  const bool atomic = flag_profile_update == PROFILE_UPDATE_ATOMIC;
+  const bool use_atomic_builtin
+    = counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN;
+  const bool use_atomic_split
+    = counter_update == COUNTER_UPDATE_ATOMIC_SPLIT
+      || counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL;
+  const tree atomic_ior_32
+    = builtin_decl_explicit (BUILT_IN_ATOMIC_FETCH_OR_4);
   const tree atomic_ior
-    = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
-			     ? BUILT_IN_ATOMIC_FETCH_OR_8
-			     : BUILT_IN_ATOMIC_FETCH_OR_4);
+    = TYPE_PRECISION (gcov_type_node) > 32
+      ? builtin_decl_explicit (BUILT_IN_ATOMIC_FETCH_OR_8)
+      : atomic_ior_32;
 
   /* Flush to the gcov accumulators.  */
   for (const basic_block b : expr)
@@ -1183,7 +1236,7 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 		continue;
 	      tree ref = tree_coverage_counter_ref (GCOV_COUNTER_CONDS,
 						    2 * condno + k);
-	      if (atomic)
+	      if (use_atomic_builtin)
 		{
 		  ref = unshare_expr (ref);
 		  gcall *flush = gimple_build_call (atomic_ior, 3,
@@ -1191,6 +1244,9 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 						    next[k], relaxed);
 		  gimple_seq_add_stmt (&seq, flush);
 		}
+	      else if (use_atomic_split)
+		split_update_decision_counter (&seq, ref, next[k],
+					       atomic_ior_32, relaxed);
 	      else
 		{
 		  tree get = emit_assign (&seq, ref);
