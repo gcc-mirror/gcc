@@ -1148,17 +1148,19 @@ Mappings::lookup_module_children (NodeId module)
 }
 
 void
-Mappings::insert_ast_module (AST::Module *module)
+Mappings::insert_glob_container (AST::Item *container)
 {
-  rust_assert (modules.find (module->get_node_id ()) == modules.end ());
-  modules[module->get_node_id ()] = module;
+  rust_assert (glob_containers.find (container->get_node_id ())
+	       == glob_containers.end ());
+
+  glob_containers[container->get_node_id ()] = container;
 }
 
-tl::optional<AST::Module *>
-Mappings::lookup_ast_module (NodeId id)
+tl::optional<AST::Item *>
+Mappings::lookup_glob_container (NodeId id)
 {
-  auto it = modules.find (id);
-  if (it == modules.end ())
+  auto it = glob_containers.find (id);
+  if (it == glob_containers.end ())
     return tl::nullopt;
 
   return {it->second};
