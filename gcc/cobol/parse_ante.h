@@ -935,11 +935,11 @@ teed_up_names() {
   return name_queue_t::namelist_of( name_queue.peek() );
 }
 
-current_tokens_t tokens;
+#define cdf_tokens cdf_current_tokens()
 
 int
 redefined_token( const cbl_name_t name ) {
-  return tokens.redefined_as(name);
+  return cdf_tokens.redefined_as(name);
 }
 
 struct file_list_t {
@@ -1321,7 +1321,6 @@ class prog_descr_t {
       }
     }
   } locale;
-  cbl_call_convention_t call_convention;
   cbl_options_t options;
 
   explicit prog_descr_t( size_t isymbol )
@@ -1330,9 +1329,7 @@ class prog_descr_t {
     , paragraph(NULL)
     , section(NULL)
     , collating_sequence(NULL)
-  {
-    call_convention = current_call_convention();
-  }
+  {}
 
  std::set<std::string> external_targets() {
    std::set<std::string> externals;
@@ -1421,24 +1418,13 @@ static cbl_label_t *  implicit_section();
 
 class program_stack_t : protected  std::stack<prog_descr_t> {
   struct pending_t {
-    cbl_call_convention_t call_convention;
     bool initial;
-    pending_t()
-      : call_convention(cbl_call_convention_t(0))
-      , initial(false)
-    {}
+    pending_t() : initial(false) {}
   } pending;
  public:
-  cbl_call_convention_t
-  pending_call_convention( cbl_call_convention_t convention ) {
-    return pending.call_convention = convention;
-  }
   bool pending_initial() { return pending.initial = true; }
 
   void push( prog_descr_t descr ) {
-    cbl_call_convention_t call_convention = cbl_call_cobol_e;
-    if( !empty() ) call_convention = top().call_convention;
-    descr.call_convention = call_convention;
     std::stack<prog_descr_t>& me(*this);
     me.push(descr);
   }
@@ -1464,9 +1450,6 @@ class program_stack_t : protected  std::stack<prog_descr_t> {
   }
 
   void apply_pending() {
-    if( size() == 1 && 0 != pending.call_convention ) {
-      top().call_convention = pending.call_convention;
-  }
     if( pending.initial ) {
       auto e = symbol_at(top().program_index);
       auto prog(cbl_label_of(e));
@@ -1873,19 +1856,6 @@ static class current_t {
     return programs.top().options.default_round = mode;
   }
 
-  cbl_call_convention_t
-  call_convention() {
-    return programs.empty()? cbl_call_cobol_e : programs.top().call_convention;
-  }
-  cbl_call_convention_t
-  call_convention( cbl_call_convention_t convention) {
-    if( programs.empty() ) {
-      return programs.pending_call_convention(convention);
-    }
-    auto& prog( programs.top() );
-    return prog.call_convention = convention;
-  }
-
   const char *
   locale() {
     return programs.empty()? NULL : programs.top().locale.os_name;
@@ -1983,6 +1953,7 @@ static class current_t {
    * ISO, in new_program.
    */
   std::set<std::string>  end_program() {
+    cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
     if( enabled_exceptions.size() ) {
       declaratives_evaluate();
     }
@@ -2272,15 +2243,6 @@ current_rounded_mode( cbl_round_t rounded) {
 }
 #endif
 static cbl_round_t current_rounded_mode( int token );
-
-cbl_call_convention_t
-current_call_convention() {
-  return current.call_convention();
-}
-cbl_call_convention_t
-current_call_convention( cbl_call_convention_t convention) {
-  return current.call_convention(convention);
-}
 
 size_t program_level() { return current.program_level(); }
 

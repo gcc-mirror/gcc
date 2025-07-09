@@ -126,4 +126,8 @@ cdf_value( const char name[] );
 bool
 cdf_value( const char name[], const cdfval_t& value );
 
+typedef std::map<std::string, cdfval_t> cdf_values_t;
+
+cdf_values_t& cdf_dictionary();
+
 #endif

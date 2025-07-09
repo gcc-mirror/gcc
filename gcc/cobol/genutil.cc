@@ -307,6 +307,8 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
                                     tree         reflen,  // LONG returned value
                                     cbl_refer_t &refer)
   {
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
+
   if( !enabled_exceptions.match(ec_bound_ref_mod_e) )
     {
     // This is normal operation -- no exception checking.  Thus, we won't
@@ -458,6 +460,7 @@ get_depending_on_value_from_odo(tree retval, cbl_field_t *odo)
       declarative with a RESUME NEXT STATEMENT, or before the default_condition
       processing can do a controlled exit.
       */
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
   cbl_field_t *depending_on;
   depending_on = cbl_field_of(symbol_at(odo->occurs.depending_on));
 
@@ -601,6 +604,7 @@ get_data_offset(cbl_refer_t &refer,
         }
       else
         {
+          cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
         if( !enabled_exceptions.match(ec_bound_subscript_e) )
           {
           // With no exception testing, just pick up the value
@@ -656,6 +660,8 @@ get_data_offset(cbl_refer_t &refer,
 
       // Although we strictly don't need to look at the ODO value at this point,
       // we do want it checked for the purposes of ec-bound-odo
+
+      cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
 
       if( enabled_exceptions.match(ec_bound_odo_e) )
         {
@@ -1669,6 +1675,7 @@ set_exception_code_func(ec_type_t ec, int /*line*/, int from_raise_statement)
 bool
 process_this_exception(ec_type_t ec)
   {
+  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
   bool retval;
   if( enabled_exceptions.match(ec) || !skip_exception_processing )
     {

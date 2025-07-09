@@ -2095,15 +2095,28 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*>>{OBLANK}TURN 	{ yy_push_state(exception); return TURN; }
   ^[ ]*>>{OBLANK}COBOL-WORDS	{ yy_push_state(cobol_words); return COBOL_WORDS; }
 
+  ^[ ]*>>{OBLANK}SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
+
+  ^[ ]*>>{OBLANK}PUSH 		{ return CDF_PUSH; }
+  ^[ ]*>>{OBLANK}POP 		{ return CDF_POP; }
+
   ^[ ]*>>{OBLANK}{NAME} 	{
 			  error_msg(yylloc, "unknown CDF token: %s", yytext);
 			}
+
 
   OTHER		{ return OTHER; }
   OVERRIDE	{ return OVERRIDE; }
   PARAMETER	{ return PARAMETER_kw; }
   THRU		{ return THRU; }
   TRUE		{ return TRUE_kw; }
+
+  ALL			{ return ALL; }
+  CALL-CONVENTION	{ return CALL_CONVENTION; }
+  COBOL-WORDS		{ return COBOL_WORDS; }
+  DEFINE		{ return CDF_DEFINE; }
+  SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
+
 }
 
 <cobol_words>{

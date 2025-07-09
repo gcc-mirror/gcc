@@ -587,6 +587,21 @@ statement, regardless of compile-time constants.
 ..
 .
 .Ss Implemented Exception Conditions
+By default, per ISO, no EC is enabled.  Implemented ECs may be enabled
+on the command line or via the
+.Sy TURN
+directive. Any attempt to enable an EC that is not implemented is
+treated as an error.
+.Pp
+An enabled EC not handled by a
+.Sy DECLARATIVE
+is written to the system log and to standard error.  (The authors
+intend to make that an option.)  A fatal EC not handled with
+.Sy RESUME
+ends with a call to
+.Xr abort 3
+and process termination. 
+.Pp
 Not all Exception Conditions are implemented.  Any attempt to enable
 an EC that that is not implemented produces a warning message.
 The following are implemented:
@@ -913,11 +928,90 @@ or
 has no effect; the two are interchangeable.
 ..
 .
-.Ss Compiler-Directing Facility (CDF)
+.Sh COMPILER-DIRECTING FACILITY
 The CDF should be used with caution because no comprehensive test
-suite has been identified.
+suite has been identified.  
 .
-.Ss Conditional Compilation
+.Ss CDF Text Manipulation
+.Bl -tag -width >>DEFINE
+.It Sy COPY Ar copybook Li Oo OF|BY Ar library Oc Oo Sy REPLACING ... Oc
+If
+.Ar copybook
+is a literal, it treated a literal filename, which either does or does not exist.  If
+.Ar copybook
+is a \*[lang] word,
+.Nm
+looks first for an environment variable named
+.Va copybook
+and, if found, uses the contents of that variable as the name of the
+copybook file.  If that file does not exist, it continues looking for
+a file named one of:
+.sp
+.Bl -bullet -compact -offset 5n
+.It
+.Pa copybook
+(literally)
+.It
+.Pa copybook.cpy
+.It
+.Pa copybook.CPY
+.It
+.Pa copybook.cbl
+.It
+.Pa copybook.CBL
+.It
+.Pa copybook.cob
+.It
+.Pa copybook.COB
+.El
+.sp
+in that order.  It looks first in the same directory as the source
+code file, and then in any
+.Ar copybook-path
+named with the
+.Fl I
+option.
+.
+.\" FIXME: need escape mechanism for directories with ':' in the name.
+.Ar copybook-path
+may (like the shell's
+.Ev PATH
+variable) be a colon-separated list.
+The
+.Fl I
+option may occur multiple times on the command line.  Each successive
+.Ar copybook-path
+is concatenated to previous ones.
+Relative paths (having no leading
+.Ql / Ns
+\&)
+are searched relative to the compiler's current working directory.
+.Pp
+For example,
+.D1 \&
+.D1 Fl I Li /usr/local/include:include
+.D1 \&
+searches first the directory where the \*[lang] program is found, next in
+.Pa /usr/local/include ,
+and finally in an
+.Pa include
+subdirectory of the directory from which
+.Nm
+was invoked.
+.Pp
+For the
+.Sy REPLACING
+phrase, both the modern pseudo-text and the \*[lang]/85 forms are
+recognized. (The older forms are used in the NIST CCVS/85 test suite.) 
+.It Sy REPLACE ...
+.Nm
+supports the full ISO
+.Sy REPLACE
+syntax.  
+.El
+.
+.Ss CDF Directives
+.\"Bl -tag -width >>PROPAGATE
 .Bl -tag -width >>DEFINE
 .It >> Ns Sy DEFINE Ar name Sy AS Bro Ar expression Li | Sy PARAMETER Brc Op Sy OVERRIDE
 Define
@@ -959,10 +1053,6 @@ is supported. Boolean literals are not supported.
 .
 .It >> Ns Sy EVALUATE
 Not implemented.
-.El
-.
-.Ss Other CDF Directives
-.Bl -tag -width >>PROPAGATE
 .It >> Ns Sy CALL-CONVENTION Ar convention
 .Ar convention
 may be one of:
@@ -1036,6 +1126,24 @@ Not implemented.
 Not implemented.
 .It >> Ns Sy PROPAGATE
 Not implemented.
+.It >> Ns Sy PUSH Ar directive
+.It >> Ns Sy POP  Ar directive
+With
+.Sy PUSH ,
+push CDF state onto a stack.
+With
+.Sy POP ,
+return to the prior pushed state.
+.Ar directive
+may be one of
+.Bl -tag -compact
+.It Sy CALL-CONVENTION
+.It Sy COBOL-WORDS
+.It Sy DEFINE
+.It Sy SOURCE FORMAT
+.It Sy TURN
+.El
+.
 .It >> Ns Sy TURN Oo
 .Ar ec Oo Ar file Li ... Oc ...
 .Oc Sy CHECKING Bro Oo Sy ON Oc Oo Oo Sy WITH Oc Sy LOCATION Oc | Sy OFF Brc
@@ -1086,76 +1194,6 @@ the directive must appear before
 .Pp
 To test a feature-set variable, use
 .Dl >>IF Ar feature Li DEFINED
-.
-.Ss Copybooks
-.Nm
-supports the CDF
-.Sy COPY
-statement, with or without its
-.Sy REPLACING
-component.  For any statement
-.sp
-.D1 COPY Ar copybook
-.sp
-.Nm
-looks first for an environment variable named
-.Va copybook
-and, if found, uses the contents of that variable as the name of the
-copybook file.  If that file does not exist, it continues looking for
-a file named one of:
-.sp
-.Bl -bullet -compact -offset 5n
-.It
-.Pa copybook
-(literally)
-.It
-.Pa copybook.cpy
-.It
-.Pa copybook.CPY
-.It
-.Pa copybook.cbl
-.It
-.Pa copybook.CBL
-.It
-.Pa copybook.cob
-.It
-.Pa copybook.COB
-.El
-.sp
-in that order.  It looks first in the same directory as the source
-code file, and then in any
-.Ar copybook-path
-named with the
-.Fl I
-option.
-.
-.\" FIXME: need escape mechanism for directories with ':' in the name.
-.Ar copybook-path
-may (like the shell's
-.Ev PATH
-variable) be a colon-separated list.
-.
-The
-.Fl I
-option may occur multiple times on the command line.  Each successive
-.Ar copybook-path
-is concatenated to previous ones.
-Relative paths (having no leading
-.Ql / Ns
-\&)
-are searched relative to the compiler's current working directory.
-.Pp
-For example,
-.D1 \&
-.D1 Fl I Li /usr/local/include:include
-.D1 \&
-searches first the directory where the \*[lang] program is found, next in
-.Pa /usr/local/include ,
-and finally in an
-.Pa include
-subdirectory of the directory from which
-.Nm
-was invoked.
 .
 .Ss Intrinsic functions
 .Nm

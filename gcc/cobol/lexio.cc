@@ -321,7 +321,69 @@ recognize_replacements( filespan_t mfile, std::list<replace_t>& pending_replacem
 }
 
 static void
+check_push_pop_directive( filespan_t& mfile ) {
+  char eol = '\0';
+  const char *p = std::find(mfile.cur, mfile.eol, '>');
+  if( ! (p < mfile.eol && p[1] == *p ) ) return;
+
+  const char pattern[] =
+    ">>[[:blank:]]*(push|pop)[[:blank:]]+"
+    "("
+      "all|"
+      "call-convention|"
+      "cobol-words|"
+      "define|"
+      "source[[:blank:]]+format|"
+      "turn"
+    ")";
+  static regex re(pattern, extended_icase);
+
+  // show contents of marked subexpressions within each match
+  cmatch cm;
+
+  std::swap(*mfile.eol, eol); // see implementation for excuses
+  bool ok = regex_search(p, const_cast<const char *>(mfile.eol), cm, re);
+  std::swap(*mfile.eol, eol);
+  
+  if( ok ) {
+    gcc_assert(cm.size() > 1);
+    bool push = TOUPPER(cm[1].first[1]) == 'U';
+    switch( TOUPPER(cm[2].first[0]) ) {
+    case 'A': // ALL
+      push? cdf_push() : cdf_pop();
+      break;
+    case 'C':
+      switch( TOUPPER(cm[2].first[1]) ) {
+      case 'A': // CALL-CONVENTION
+        push? cdf_push_call_convention() : cdf_pop_call_convention();
+        break;
+      case 'O': // COBOL-WORDS
+        push? cdf_push_current_tokens() : cdf_pop_current_tokens();
+        break;
+      default:
+        gcc_unreachable();
+      }
+      break;
+    case 'D': // DEFINE
+      push? cdf_push_dictionary() : cdf_pop_dictionary();
+      break;
+    case 'S': // SOURCE FORMAT
+      push? cdf_push_source_format() : cdf_pop_source_format();
+      break;
+    case 'T': // TURN
+      push? cdf_push_enabled_exceptions() : cdf_pop_enabled_exceptions();
+      break;
+    default:
+      gcc_unreachable();
+    }
+    erase_line(const_cast<char*>(cm[0].first),
+               const_cast<char*>(cm[0].second));
+  }
+}
+
+static void
 check_source_format_directive( filespan_t& mfile ) {
+  char eol = '\0';
   const char *p = std::find(mfile.cur, mfile.eol, '>');
   if( ! (p < mfile.eol && p[1] == *p ) ) return;
 
@@ -334,7 +396,12 @@ check_source_format_directive( filespan_t& mfile ) {
 
   // show contents of marked subexpressions within each match
   cmatch cm;
-  if( regex_search(p, const_cast<const char *>(mfile.eol), cm, re) ) {
+
+  std::swap(*mfile.eol, eol); // see implementation for excuses
+  bool ok = regex_search(p, const_cast<const char *>(mfile.eol), cm, re);
+  std::swap(*mfile.eol, eol);
+  
+  if( ok ) {
     gcc_assert(cm.size() > 1);
     switch( cm[3].length() ) {
     case 4:
@@ -353,8 +420,8 @@ check_source_format_directive( filespan_t& mfile ) {
             cdf_source_format().description(), 
             (fmt_size_t)mfile.lineno() );
     char *bol = cdf_source_format().is_fixed()? mfile.cur : const_cast<char*>(cm[0].first);
+    gcc_assert(cm[0].second <= mfile.eol);
     erase_line(bol, const_cast<char*>(cm[0].second));
-    mfile.cur = const_cast<char*>(cm[0].second);
   }
 }
 
@@ -1688,6 +1755,7 @@ cdftext::free_form_reference_format( int input ) {
   }
 
   while( mfile.next_line() ) {
+    check_push_pop_directive(mfile);
     check_source_format_directive(mfile);
     remove_inline_comment(mfile.cur, mfile.eol);
 
