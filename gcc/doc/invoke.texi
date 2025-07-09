@@ -17698,7 +17698,7 @@ When using stack instrumentation, decide tags for stack variables using a
 deterministic sequence beginning at a random tag for each frame.  With this
 parameter unset tags are chosen using the same sequence but beginning from 1.
 This is enabled by default for @option{-fsanitize=hwaddress} and unavailable
-for @option{-fsanitize=kernel-hwaddress}.
+for @option{-fsanitize=kernel-hwaddress} and @option{-fsanitize=memtag-stack}.
 To disable it use @option{--param hwasan-random-frame-tag=0}.
 
 @item hwasan-instrument-allocas
@@ -17730,6 +17730,11 @@ builtin functions is enabled by default for both @option{-fsanitize=hwaddress}
 and @option{-fsanitize=kernel-hwaddress}.
 To disable instrumentation of builtin functions use
 @option{--param hwasan-instrument-mem-intrinsics=0}.
+
+@item memtag-instrument-allocas
+Enable hardware-assisted memory tagging of dynamically sized stack-allocated
+variables.  This kind of code generation is enabled by default when using
+@option{-fsanitize=memtag-stack}.
 
 @item use-after-scope-direct-emission-threshold
 If the size of a local variable in bytes is smaller or equal to this
@@ -18683,6 +18688,13 @@ possible by specifying the command-line options
 @option{--param hwasan-instrument-stack=1} and
 @option{--param hwasan-instrument-allocas=1} respectively. Using a random frame
 tag is not implemented for kernel instrumentation.
+
+@opindex fsanitize=memtag-stack
+@item -fsanitize=memtag-stack
+Use Memory Tagging Extension instructions instead of instrumentation
+to allow the detection of memory errors.  Similar to HWASAN, it is
+also a probabilistic method.  This option is available only on those
+AArch64 architectures that support Memory Tagging Extensions.
 
 @opindex fsanitize=pointer-compare
 @item -fsanitize=pointer-compare

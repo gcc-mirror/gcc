@@ -98,6 +98,10 @@ Enable hwasan instrumentation of store operations.
 Common Joined UInteger Var(param_hwasan_instrument_mem_intrinsics) Init(1) IntegerRange(0, 1) Param Optimization
 Enable hwasan instrumentation of builtin functions.
 
+-param=memtag-instrument-allocas=
+Target Joined UInteger Var(param_memtag_instrument_allocas) Init(1) IntegerRange(0, 1) Param
+When sanitizing using MTE instructions, add checks for all stack allocas.
+
 -param=avg-loop-niter=
 Common Joined UInteger Var(param_avg_loop_niter) Init(10) IntegerRange(1, 65536) Param Optimization
 Average number of iterations of a loop.

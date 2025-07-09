@@ -257,6 +257,7 @@ along with GCC; see the file COPYING3.  If not see
 	       true, true, true, ATTRS, true, \
 	      (flag_sanitize & (SANITIZE_ADDRESS | SANITIZE_THREAD \
 				| SANITIZE_HWADDRESS \
+				| SANITIZE_MEMTAG_STACK \
 				| SANITIZE_UNDEFINED \
 				| SANITIZE_UNDEFINED_NONDEFAULT) \
 	       || flag_sanitize_coverage))
