@@ -1,3 +1,175 @@
+2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118681
+	* testsuite/20_util/unsynchronized_pool_resource/118681.cc: Fix
+	deallocate argument.
+
+2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118681
+	* src/c++17/memory_resource.cc (choose_block_size): New
+	function.
+	(synchronized_pool_resource::do_allocate): Use choose_block_size
+	to determine appropriate block size.
+	(synchronized_pool_resource::do_deallocate): Likewise
+	(unsynchronized_pool_resource::do_allocate): Likewise.
+	(unsynchronized_pool_resource::do_deallocate): Likewise
+	* testsuite/20_util/synchronized_pool_resource/118681.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/118681.cc: New
+	test.
+
+2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/forward_list (_Safe_forward_list<>::_M_swap):
+	Adapt to _M_this() signature change.
+
+2025-07-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119861
+	* include/std/format (formatter<_Rg, _CharT>::set_separator)
+	(formatter<_Rg, _CharT>::set_brackets): Constrain with
+	(format_kind<_Rg> == range_format::sequence).
+	* testsuite/std/format/ranges/pr119861_neg.cc: New test.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/120914
+	* include/std/span (span): Update CTAD to enable
+	integral constants [P3029R1].
+	* include/std/mdspan (extents): ditto.
+	(mdspan): ditto.
+	* testsuite/23_containers/span/deduction.cc: Test deduction
+	guide.
+	* testsuite/23_containers/mdspan/extents/misc.cc: ditto.
+	* testsuite/23_containers/mdspan/mdspan.cc: ditto.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/span/contiguous_range_neg.cc: Silence
+	warning about unused variable myspan.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/107761
+	* include/bits/version.def (mdspan): Set to 202207 and remove
+	no_stdname.
+	* include/bits/version.h: Regenerate.
+	* testsuite/23_containers/mdspan/version.cc: Test presence
+	of feature test macro.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/107761
+	* include/std/mdspan (mdspan): New class.
+	* src/c++23/std.cc.in (mdspan): Add.
+	* testsuite/23_containers/mdspan/class_mandate_neg.cc: New test.
+	* testsuite/23_containers/mdspan/mdspan.cc: New test.
+	* testsuite/23_containers/mdspan/layout_like.h: Add class
+	LayoutLike which models a user-defined layout.
+	* testsuite/23_containers/mdspan/out_of_bounds_neg.cc: New file.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__size): New function.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/extents/custom_integer.cc:
+	Delete IntLike and include "int_like.h".
+	* testsuite/23_containers/mdspan/extents/int_like.h: Add
+	IntLike.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (extents): Check prerequisite of the ctor that
+	static_extent(i) == dynamic_extent || extent(i) == other.extent(i).
+	* testsuite/23_containers/mdspan/extents/class_mandates_neg.cc:
+	Test the implemented prerequisite.
+	* testsuite/23_containers/mdspan/extents/extents_mismatch_neg.cc: New file.
+
+2025-07-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Check prerequisites of
+	layout_*::operator() with _GLIBCXX_DEBUG_ASSERTs.
+	* testsuite/23_containers/mdspan/layouts/debug/out_of_bounds_neg.cc:
+	Add tests for prerequisites.
+
+2025-07-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/queue (formatter<queue<_Tp, _Container>, _CharT>)
+	(formatter<priority_queue<_Tp, _Container, _Compare>, _CharT>):
+	Add _GLIBCXX_RESOLVE_LIB_DEFECTS comments.
+
+2025-07-08  François Dumont  <frs.dumont@gmail.com>
+
+	PR c++/116369
+	* config/abi/pre/gnu-versioned-namespace.ver: Use new const qualified symbols.
+	* config/abi/pre/gnu.ver: Add new const qualified symbols.
+	* include/debug/safe_base.h
+	(_Safe_iterator_base::_M_sequence): Declare as pointer-to-const.
+	(_Safe_iterator_base::_M_attach, _M_attach_single): New, take pointer-to-const
+	_Safe_sequence_base.
+	(_Safe_sequence_base::_M_detach_all, _M_detach_singular, _M_revalidate_singular)
+	(_M_swap, _M_get_mutex): New, const qualified.
+	(_Safe_sequence_base::_M_attach, _M_attach_single, _M_detach, _M_detach_single):
+	const qualify.
+	* include/debug/safe_container.h (_Safe_container<>::_M_cont): Add const qualifier.
+	(_Safe_container<>::_M_swap_base): New.
+	(_Safe_container(_Safe_container&&, const _Alloc&, std::false_type)):
+	Adapt to use latter.
+	(_Safe_container<>::operator=(_Safe_container&&)): Likewise.
+	(_Safe_container<>::_M_swap): Likewise and take parameter as const reference.
+	* include/debug/safe_unordered_base.h
+	(_Safe_local_iterator_base::_M_safe_container): New.
+	(_Safe_local_iterator_base::_Safe_local_iterator_base): Take
+	_Safe_unordered_container_base as pointer-to-const.
+	(_Safe_unordered_container_base::_M_attach, _M_attach_single): New, take
+	container as _Safe_unordered_container_base pointer-to-const.
+	(_Safe_unordered_container_base::_M_local_iterators, _M_const_local_iterators):
+	Add mutable.
+	(_Safe_unordered_container_base::_M_detach_all, _M_swap): New, const qualify.
+	(_Safe_unordered_container_base::_M_attach_local, _M_attach_local_single)
+	(_M_detach_local, _M_detach_local_single): Add const qualifier.
+	* include/debug/safe_unordered_container.h (_Safe_unordered_container::_M_self()): New.
+	* include/debug/safe_unordered_container.tcc
+	(_Safe_unordered_container::_M_invalidate_if, _M_invalidated_local_if): Use latter.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_attach, _M_attach_single):
+	Take _Safe_sequence_base as pointer-to-const.
+	(_Safe_iterator<>::_M_get_sequence): Add const_cast and comment about it.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>): Replace usages
+	of _M_sequence member by _M_safe_container().
+	(_Safe_local_iterator<>::_M_attach, _M_attach_single): Take
+	_Safe_unordered_container_base as pointer-to-const.
+	(_Safe_local_iterator<>::_M_get_sequence): Rename into...
+	(_Safe_local_iterator<>::_M_get_ucontainer): ...this. Add necessary const_cast and
+	comment to explain it.
+	(_Safe_local_iterator<>::_M_is_begin, _M_is_end): Adapt.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/safe_sequence.h
+	(_Safe_sequence<>::_M_invalidate_if, _M_transfer_from_if): Add const qualifier.
+	* include/debug/safe_sequence.tcc: Adapt.
+	* include/debug/deque (std::__debug::deque::erase): Adapt to use new const
+	qualified methods.
+	* include/debug/formatter.h: Adapt.
+	* include/debug/forward_list (_Safe_forward_list::_M_this): Add const
+	qualification and return pointer for consistency with 'this' keyword.
+	(_Safe_forward_list::_M_swap_aux): Rename into...
+	(_Safe_forward_list::_S_swap_aux): ...this and take sequence as const reference.
+	(forward_list<>::resize): Adapt to use const methods.
+	* include/debug/list (list<>::resize): Likewise.
+	* src/c++11/debug.cc: Adapt to const qualification.
+	* testsuite/util/testsuite_containers.h
+	(forward_members_unordered::forward_members_unordered): Add check on local_iterator
+	conversion to const_local_iterator.
+	(forward_members::forward_members): Add check on iterator conversion to
+	const_iterator.
+	* testsuite/23_containers/unordered_map/const_container.cc: New test case.
+	* testsuite/23_containers/unordered_multimap/const_container.cc: New test case.
+	* testsuite/23_containers/unordered_multiset/const_container.cc: New test case.
+	* testsuite/23_containers/unordered_set/const_container.cc: New test case.
+	* testsuite/23_containers/vector/debug/mutex_association.cc: Adapt.
+
 2025-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/120949

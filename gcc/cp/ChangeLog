@@ -1,3 +1,37 @@
+2025-07-08  Marek Polacek  <polacek@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/83469
+	PR c++/93809
+	* cp-tree.h (UNION_TYPE_P): Define.
+	(TYPENAME_IS_UNION_P): Define.
+	* decl.cc (struct typename_info): Add union_p field.
+	(struct typename_hasher::equal): Compare union_p field.
+	(build_typename_type): Use ti.union_p for union_type.  Set
+	TYPENAME_IS_UNION_P.
+	* error.cc (dump_type) <case TYPENAME_TYPE>: Handle
+	TYPENAME_IS_UNION_P.
+	* module.cc (trees_out::type_node): Likewise.
+	* parser.cc (cp_parser_check_class_key): Allow typename key for union
+	types and allow union keyword for typename types.
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Don't conflate unions with
+	class_type.  For TYPENAME_IS_CLASS_P, check NON_UNION_CLASS_TYPE_P
+	rather than CLASS_TYPE_P.  Add TYPENAME_IS_UNION_P handling.
+
+2025-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117784
+	* decl.cc: Implement part of C++26 P2686R4 - constexpr structured
+	bindings.
+	(cp_finish_decl): Pedwarn for C++23 and older on constinit on
+	structured bindings except for static/thread_local where it uses
+	earlier error.
+	(grokdeclarator): Pedwarn on constexpr structured bindings for
+	C++23 and older instead of emitting error always, don't clear
+	constexpr_p in that case.
+	* parser.cc (cp_parser_decomposition_declaration): Copy over
+	DECL_DECLARED_CONSTEXPR_P and DECL_DECLARED_CONSTINIT_P flags.
+
 2025-07-07  Alfie Richards  <alfie.richards@arm.com>
 
 	PR c++/119498

@@ -1,3 +1,7 @@
+2025-07-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* prepare-commit-msg: Force default git prefixes.
+
 2025-07-07  Martin Jambor  <mjambor@suse.cz>
 
 	* filter-clang-warnings.py (skip_warning): Also ignore

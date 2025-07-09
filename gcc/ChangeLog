@@ -1,3 +1,86 @@
+2025-07-08  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_b4const_or_zero):
+	Remove.
+	(xtensa_b4const): Add a case where the value is 0, and rename
+	to xtensa_b4const_or_zero.
+	(xtensa_rtx_costs): Fix to also consider the result of
+	xtensa_b4constu().
+
+2025-07-08  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (stack_protect_get_tpsi): New insn.
+	(stack_protect_get_tpdi): New insn.
+	(stack_protect_set): Use new insn.
+	(stack_protect_test): Use new insn.
+
+2025-07-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120461
+	* config/riscv/riscv-v.cc (emit_vlmax_insn_lra): Do not emit
+	vsetivli for XTHeadVector.
+
+2025-07-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/113829
+	* config/riscv/riscv-vector-builtins.cc (registered_function::overloaded_hash):
+	Skip non-type arguments.
+
+2025-07-08  Andreas Schwab  <schwab@suse.de>
+
+	PR target/120995
+	* config/riscv/sync.md (zacas_atomic_cas_value_strong<mode>):
+	Allow op3 to be zero.
+
+2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX512_MASKED_EPILOGUES):
+	New tunable, default on for m_ZNVER4 and m_ZNVER5.
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost): With
+	X86_TUNE_AVX512_MASKED_EPILOGUES and when the main loop
+	had a vectorization factor > 2 use a masked epilogue when
+	possible and when not obviously problematic.
+
+2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vector_costs::suggested_epilogue_mode):
+	Add masked output parameter and return m_masked_epilogue.
+	(vector_costs::m_masked_epilogue): New tristate flag.
+	(vector_costs::vector_costs): Initialize m_masked_epilogue.
+	* tree-vect-loop.cc (vect_analyze_loop_1): Pass in masked
+	flag to optionally initialize can_use_partial_vectors_p.
+	(vect_analyze_loop): For epilogues also get whether to use
+	a masked epilogue for this loop from the target and use
+	that for the first epilogue mode we try.
+
+2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120358
+	* tree-ssa-structalias.cc (get_constraint_for_1): Adjust
+	pruning of sub-variables according to the imprecise
+	known start offset.
+
+2025-07-08  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxworks-dummy.h (TARGET_VXWORKS_VAROFF): New.
+	(TARGET_VXWORKS_GOTTPIC): New.
+	* config/vxworks.h (TARGET_VXWORKS_VAROFF): Override.
+	(TARGET_VXWORKS_GOTTPIC): Likewise.
+	* config/i386/i386.cc (output_set_got): Disable VxWorks6 GOT
+	sequence on VxWorks7.
+	(legitimize_pic_address): Accept relative addressing of
+	labels on VxWorks7.
+	(ix86_delegitimize_address_1): Likewise.
+	(ix86_output_addr_diff_elt): Likewise.
+	* config/i386/i386.md (tablejump): Likewise.
+	(set_got, set_got_labelled): Set no-red-zone flag on VxWorks7.
+	* config/i386/predicates.md (gotoff_operand): Test
+	TARGET_VXWORKS_VAROFF.
+
+2025-07-08  Alexandre Oliva  <oliva@adacore.com>
+
+	* config.gcc (vxworks-dummy.h): Add to aarch64-*-* as well.
+
 2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	Revert:

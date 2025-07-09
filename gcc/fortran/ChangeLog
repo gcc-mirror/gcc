@@ -1,3 +1,9 @@
+2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120637
+	* class.cc (finalize_component): Return true, when a finalizable
+	component was detect and do not free it.
+
 2025-07-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Add pre and

@@ -1,3 +1,124 @@
+2025-07-08  Marek Polacek  <polacek@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/83469
+	PR c++/93809
+	* g++.dg/template/error45.C: Adjust dg-error.
+	* g++.dg/warn/Wredundant-tags-3.C: Remove xfail.
+	* g++.dg/parse/union1.C: New test.
+	* g++.dg/parse/union2.C: New test.
+	* g++.dg/parse/union3.C: New test.
+	* g++.dg/parse/union4.C: New test.
+	* g++.dg/parse/union5.C: New test.
+	* g++.dg/parse/union6.C: New test.
+
+2025-07-08  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/BGEUI-BLTUI-32k-64k.c: New.
+
+2025-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117784
+	* g++.dg/cpp1z/decomp3.C (test): For constexpr structured binding
+	initialize from constexpr var instead of non-constexpr and expect
+	just a pedwarn for C++23 and older instead of error always.
+	* g++.dg/cpp26/decomp9.C (foo): Likewise.
+	* g++.dg/cpp26/decomp22.C: New test.
+	* g++.dg/cpp26/decomp23.C: New test.
+	* g++.dg/cpp26/decomp24.C: New test.
+	* g++.dg/cpp26/decomp25.C: New test.
+
+2025-07-08  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/stack-protector-guard-tls-1.c: New test.
+
+2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/guality/guality.h (guality_main): Declare noipa.
+	(guality_check): Likewise.
+
+2025-07-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120461
+	* gcc.target/riscv/rvv/xtheadvector/pr120461.c: New test.
+
+2025-07-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/113829
+	* gcc.target/riscv/rvv/base/pr113829.c: New test.
+
+2025-07-08  Andreas Schwab  <schwab@suse.de>
+
+	PR target/120995
+	* gcc.target/riscv/amo/zabha-zacas-atomic-cas.c: New test.
+
+2025-07-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/lambda-generic-variadic.C: Change to 'compile'.
+
+2025-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/memcpy-pr120683-1.c (dg-options): Add
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.
+	* gcc.target/i386/memcpy-pr120683-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-1.c: Likewise.
+	* gcc.target/i386/memset-pr120683-10.c: Likewise.
+	* gcc.target/i386/memset-pr120683-11.c: Likewise.
+	* gcc.target/i386/memset-pr120683-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-14.c: Likewise.
+	* gcc.target/i386/memset-pr120683-15.c: Likewise.
+	* gcc.target/i386/memset-pr120683-16.c: Likewise.
+	* gcc.target/i386/memset-pr120683-17.c: Likewise.
+	* gcc.target/i386/memset-pr120683-18.c: Likewise.
+	* gcc.target/i386/memset-pr120683-19.c: Likewise.
+	* gcc.target/i386/memset-pr120683-2.c: Likewise.
+	* gcc.target/i386/memset-pr120683-20.c: Likewise.
+	* gcc.target/i386/memset-pr120683-21.c: Likewise.
+	* gcc.target/i386/memset-pr120683-22.c: Likewise.
+	* gcc.target/i386/memset-pr120683-23.c: Likewise.
+	* gcc.target/i386/memset-pr120683-3.c: Likewise.
+	* gcc.target/i386/memset-pr120683-4.c: Likewise.
+	* gcc.target/i386/memset-pr120683-5.c: Likewise.
+	* gcc.target/i386/memset-pr120683-6.c: Likewise.
+	* gcc.target/i386/memset-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-8.c: Likewise.
+	* gcc.target/i386/memset-pr120683-9.c: Likewise.
+
+2025-07-08  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/pattern-avg-1.c: Split test.
+	* gcc.target/s390/vector/pattern-mulh-1.c: Split test.
+	* gcc.target/s390/vector/pattern-avg-2.c: New test.
+	* gcc.target/s390/vector/pattern-mulh-2.c: New test.
+
+2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-mask-epilogue-1.c: New testcase.
+	* gcc.target/i386/vect-mask-epilogue-2.c: Likewise.
+	* gcc.target/i386/vect-epilogues-3.c: Adjust.
+
+2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120637
+	* gfortran.dg/asan/finalize_1.f90: New test.
+
+2025-07-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/torture/pr120654.c: Use __builtin variants of malloc and free.
+
+2025-07-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/amo/zalrsc-rvwmo-amo-add-int.c: Adjust expected
+	output.
+	* gcc.target/riscv/amo/zalrsc-ztso-amo-add-int.c: Likewise.
+
 2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	Revert:
