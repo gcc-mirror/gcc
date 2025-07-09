@@ -168,9 +168,8 @@ static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
    may already be set for general statements (not just data refs).  */
 
 static opt_result
-vect_determine_vf_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
-			      bool vectype_maybe_set_p,
-			      poly_uint64 *vf)
+vect_determine_vectype_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
+				   bool vectype_maybe_set_p)
 {
   gimple *stmt = stmt_info->stmt;
 
@@ -192,6 +191,12 @@ vect_determine_vf_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (stmt_vectype)
     {
+      if (known_le (TYPE_VECTOR_SUBPARTS (stmt_vectype), 1U))
+	return opt_result::failure_at (STMT_VINFO_STMT (stmt_info),
+				       "not vectorized: unsupported "
+				       "data-type in %G",
+				       STMT_VINFO_STMT (stmt_info));
+
       if (STMT_VINFO_VECTYPE (stmt_info))
 	/* The only case when a vectype had been already set is for stmts
 	   that contain a data ref, or for "pattern-stmts" (stmts generated
@@ -203,9 +208,6 @@ vect_determine_vf_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
 	STMT_VINFO_VECTYPE (stmt_info) = stmt_vectype;
     }
 
-  if (nunits_vectype)
-    vect_update_max_nunits (vf, nunits_vectype);
-
   return opt_result::success ();
 }
 
@@ -215,13 +217,12 @@ vect_determine_vf_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
    or false if something prevented vectorization.  */
 
 static opt_result
-vect_determine_vf_for_stmt (vec_info *vinfo,
-			    stmt_vec_info stmt_info, poly_uint64 *vf)
+vect_determine_vectype_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info)
 {
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: %G",
 		     stmt_info->stmt);
-  opt_result res = vect_determine_vf_for_stmt_1 (vinfo, stmt_info, false, vf);
+  opt_result res = vect_determine_vectype_for_stmt_1 (vinfo, stmt_info, false);
   if (!res)
     return res;
 
@@ -240,7 +241,7 @@ vect_determine_vf_for_stmt (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "==> examining pattern def stmt: %G",
 			     def_stmt_info->stmt);
-	  res = vect_determine_vf_for_stmt_1 (vinfo, def_stmt_info, true, vf);
+	  res = vect_determine_vectype_for_stmt_1 (vinfo, def_stmt_info, true);
 	  if (!res)
 	    return res;
 	}
@@ -249,7 +250,7 @@ vect_determine_vf_for_stmt (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "==> examining pattern statement: %G",
 			 stmt_info->stmt);
-      res = vect_determine_vf_for_stmt_1 (vinfo, stmt_info, true, vf);
+      res = vect_determine_vectype_for_stmt_1 (vinfo, stmt_info, true);
       if (!res)
 	return res;
     }
@@ -257,45 +258,23 @@ vect_determine_vf_for_stmt (vec_info *vinfo,
   return opt_result::success ();
 }
 
-/* Function vect_determine_vectorization_factor
+/* Function vect_set_stmts_vectype
 
-   Determine the vectorization factor (VF).  VF is the number of data elements
-   that are operated upon in parallel in a single iteration of the vectorized
-   loop.  For example, when vectorizing a loop that operates on 4byte elements,
-   on a target with vector size (VS) 16byte, the VF is set to 4, since 4
-   elements can fit in a single vector register.
-
-   We currently support vectorization of loops in which all types operated upon
-   are of the same size.  Therefore this function currently sets VF according to
-   the size of the types operated upon, and fails if there are multiple sizes
-   in the loop.
-
-   VF is also the factor by which the loop iterations are strip-mined, e.g.:
-   original loop:
-        for (i=0; i<N; i++){
-          a[i] = b[i] + c[i];
-        }
-
-   vectorized loop:
-        for (i=0; i<N; i+=VF){
-          a[i:VF] = b[i:VF] + c[i:VF];
-        }
-*/
+   Set STMT_VINFO_VECTYPE of all stmts.  */
 
 static opt_result
-vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
+vect_set_stmts_vectype (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned nbbs = loop->num_nodes;
-  poly_uint64 vectorization_factor = 1;
   tree scalar_type = NULL_TREE;
   gphi *phi;
   tree vectype;
   stmt_vec_info stmt_info;
   unsigned i;
 
-  DUMP_VECT_SCOPE ("vect_determine_vectorization_factor");
+  DUMP_VECT_SCOPE ("vect_set_stmts_vectype");
 
   for (i = 0; i < nbbs; i++)
     {
@@ -324,7 +303,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 				 scalar_type);
 
 	      vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
-	      if (!vectype)
+	      if (!vectype
+		  || known_le (TYPE_VECTOR_SUBPARTS (vectype), 1U))
 		return opt_result::failure_at (phi,
 					       "not vectorized: unsupported "
 					       "data-type %T\n",
@@ -334,15 +314,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n",
 				 vectype);
-
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
-		  dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (vectype));
-		  dump_printf (MSG_NOTE, "\n");
-		}
-
-	      vect_update_max_nunits (&vectorization_factor, vectype);
 	    }
 	}
 
@@ -353,25 +324,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    continue;
 	  stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  opt_result res
-	    = vect_determine_vf_for_stmt (loop_vinfo,
-					  stmt_info, &vectorization_factor);
+	    = vect_determine_vectype_for_stmt (loop_vinfo, stmt_info);
 	  if (!res)
 	    return res;
         }
     }
 
-  /* TODO: Analyze cost. Decide if worth while to vectorize.  */
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectorization factor = ");
-      dump_dec (MSG_NOTE, vectorization_factor);
-      dump_printf (MSG_NOTE, "\n");
-    }
-
-  if (known_le (vectorization_factor, 1U))
-    return opt_result::failure_at (vect_location,
-				   "not vectorized: unsupported data-type\n");
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
   return opt_result::success ();
 }
 
@@ -2002,89 +1960,6 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
 
 
 
-/* Scan the loop stmts and dependent on whether there are any (non-)SLP
-   statements update the vectorization factor.  */
-
-static void
-vect_update_vf_for_slp (loop_vec_info loop_vinfo)
-{
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-  int nbbs = loop->num_nodes;
-  poly_uint64 vectorization_factor;
-  int i;
-
-  DUMP_VECT_SCOPE ("vect_update_vf_for_slp");
-
-  vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  gcc_assert (known_ne (vectorization_factor, 0U));
-
-  /* If all the stmts in the loop can be SLPed, we perform only SLP, and
-     vectorization factor of the loop is the unrolling factor required by
-     the SLP instances.  If that unrolling factor is 1, we say, that we
-     perform pure SLP on loop - cross iteration parallelism is not
-     exploited.  */
-  bool only_slp_in_loop = true;
-  for (i = 0; i < nbbs; i++)
-    {
-      basic_block bb = bbs[i];
-      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-	{
-	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (si.phi ());
-	  if (!stmt_info)
-	    continue;
-	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
-	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-	      && !PURE_SLP_STMT (stmt_info))
-	    /* STMT needs both SLP and loop-based vectorization.  */
-	    only_slp_in_loop = false;
-	}
-      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-	{
-	  if (is_gimple_debug (gsi_stmt (si)))
-	    continue;
-	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  stmt_info = vect_stmt_to_vectorize (stmt_info);
-	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
-	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-	      && !PURE_SLP_STMT (stmt_info))
-	    /* STMT needs both SLP and loop-based vectorization.  */
-	    only_slp_in_loop = false;
-	}
-    }
-
-  if (only_slp_in_loop)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Loop contains only SLP stmts\n");
-      vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
-    }
-  else
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Loop contains SLP and non-SLP stmts\n");
-      /* Both the vectorization factor and unroll factor have the form
-	 GET_MODE_SIZE (loop_vinfo->vector_mode) * X for some rational X,
-	 so they must have a common multiple.  */
-      vectorization_factor
-	= force_common_multiple (vectorization_factor,
-				 LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
-    }
-
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "Updating vectorization factor to ");
-      dump_dec (MSG_NOTE, vectorization_factor);
-      dump_printf (MSG_NOTE, ".\n");
-    }
-}
-
 /* Return true if STMT_INFO describes a double reduction phi and if
    the other phi in the reduction is also relevant for vectorization.
    This rejects cases such as:
@@ -2206,24 +2081,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 					   "not vectorized: relevant phi not "
 					   "supported: %G",
 					   static_cast <gimple *> (phi));
-        }
-
-      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-        {
-	  gimple *stmt = gsi_stmt (si);
-	  if (!gimple_clobber_p (stmt)
-	      && !is_gimple_debug (stmt))
-	    {
-	      bool need_to_vectorize = false;
-	      opt_result res
-		= vect_analyze_stmt (loop_vinfo,
-				     loop_vinfo->lookup_stmt (stmt),
-				     &need_to_vectorize,
-				     NULL, NULL, NULL);
-	      if (!res)
-		return res;
-	    }
         }
     } /* bbs */
 
@@ -2839,19 +2696,18 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
     return opt_result::failure_at (vect_location, "bad data dependence.\n");
   LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo) = max_vf;
 
-  ok = vect_determine_vectorization_factor (loop_vinfo);
+  ok = vect_set_stmts_vectype (loop_vinfo);
   if (!ok)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "can't determine vectorization factor.\n");
+			 "cannot determine vector types.\n");
       return ok;
     }
 
   /* Compute the scalar iteration cost.  */
   vect_compute_single_scalar_iteration_cost (loop_vinfo);
 
-  poly_uint64 saved_vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   bool saved_can_use_partial_vectors_p
     = LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo);
 
@@ -2867,20 +2723,28 @@ start_over:
     return ok;
 
   /* If there are any SLP instances mark them as pure_slp.  */
-  if (vect_make_slp_decision (loop_vinfo))
+  if (!vect_make_slp_decision (loop_vinfo))
+    return opt_result::failure_at (vect_location, "no stmts to vectorize.\n");
+
+  /* Find stmts that need to be both vectorized and SLPed.  */
+  if (!vect_detect_hybrid_slp (loop_vinfo))
+    return opt_result::failure_at (vect_location, "needs non-SLP handling\n");
+
+  /* Determine the vectorization factor from the SLP decision.  */
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+    = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+  if (dump_enabled_p ())
     {
-      /* Find stmts that need to be both vectorized and SLPed.  */
-      vect_detect_hybrid_slp (loop_vinfo);
-
-      /* Update the vectorization factor based on the SLP decision.  */
-      vect_update_vf_for_slp (loop_vinfo);
-
-      /* Optimize the SLP graph with the vectorization factor fixed.  */
-      vect_optimize_slp (loop_vinfo);
-
-      /* Gather the loads reachable from the SLP graph entries.  */
-      vect_gather_slp_loads (loop_vinfo);
+      dump_printf_loc (MSG_NOTE, vect_location, "vectorization factor = ");
+      dump_dec (MSG_NOTE, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+      dump_printf (MSG_NOTE, "\n");
     }
+
+  /* Optimize the SLP graph with the vectorization factor fixed.  */
+  vect_optimize_slp (loop_vinfo);
+
+  /* Gather the loads reachable from the SLP graph entries.  */
+  vect_gather_slp_loads (loop_vinfo);
 
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
@@ -3272,8 +3136,8 @@ again:
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "re-trying with single-lane SLP\n");
 
-  /* Restore vectorization factor as it were without SLP.  */
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
+  /* Reset the vectorization factor.  */
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = 0;
   /* Free the SLP instances.  */
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), j, instance)
     vect_free_slp_instance (instance);

@@ -2689,7 +2689,7 @@ extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
 extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);
 extern bool vect_make_slp_decision (loop_vec_info);
-extern void vect_detect_hybrid_slp (loop_vec_info);
+extern bool vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);
 extern void vect_gather_slp_loads (vec_info *);
 extern tree vect_get_slp_scalar_def (slp_tree, unsigned);

@@ -7691,7 +7691,7 @@ maybe_push_to_hybrid_worklist (vec_info *vinfo,
 
 /* Find stmts that must be both vectorized and SLPed.  */
 
-void
+bool
 vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 {
   DUMP_VECT_SCOPE ("vect_detect_hybrid_slp");
@@ -7772,6 +7772,52 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 	  vect_detect_hybrid_slp (&gs_info.offset, &dummy, &wi);
 	}
     }
+
+  /* Determine if all the stmts in the loop can be SLPed.  */
+  for (unsigned i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; i++)
+    {
+      basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (si.phi ());
+	  if (!stmt_info)
+	    continue;
+	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
+	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !PURE_SLP_STMT (stmt_info))
+	    {
+	      /* STMT needs both SLP and loop-based vectorization.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Loop contains SLP and non-SLP stmts\n");
+	      return false;
+	    }
+	}
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  if (is_gimple_debug (gsi_stmt (si)))
+	    continue;
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
+	  stmt_info = vect_stmt_to_vectorize (stmt_info);
+	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
+	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !PURE_SLP_STMT (stmt_info))
+	    {
+	      /* STMT needs both SLP and loop-based vectorization.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Loop contains SLP and non-SLP stmts\n");
+	      return false;
+	    }
+	}
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Loop contains only SLP stmts\n");
+  return true;
 }
 
 

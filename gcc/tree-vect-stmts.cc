@@ -13392,8 +13392,16 @@ vect_analyze_stmt (vec_info *vinfo,
   /* When we arrive here with a non-SLP statement and we are supposed
      to use SLP for everything fail vectorization.  */
   if (!node)
-    return opt_result::failure_at (stmt_info->stmt,
-				   "needs non-SLP handling\n");
+    {
+      /* We leave is_simple_and_all_uses_invariant but live stmts
+	 around with no need to vectorize them.  */
+      if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	  && STMT_VINFO_LIVE_P (stmt_info)
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
+	return opt_result::success ();
+      return opt_result::failure_at (stmt_info->stmt,
+				     "needs non-SLP handling\n");
+    }
 
   ok = true;
   if (!bb_vinfo
