@@ -441,6 +441,16 @@
    ; must not operate on inactive inputs if doing so could induce a fault.
    (SVE_STRICT_GP 1)])
 
+;; These constants are used as a const_int in MTE instructions
+(define_constants
+  [; 0xf0ff...
+   ; Tag mask for the 4-bit tag stored in the top 8 bits of a pointer.
+   (MEMTAG_TAG_MASK -1080863910568919041)
+
+   ;  0x00ff...
+   ; Tag mask 56-bit address used by subp instruction.
+   (MEMTAG_ADDR_MASK 72057594037927935)])
+
 (include "constraints.md")
 (include "predicates.md")
 (include "iterators.md")
@@ -8530,7 +8540,7 @@
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(ior:DI
 	 (and:DI (match_operand:DI 1 "register_operand" "rk")
-		 (const_int -1080863910568919041)) ;; 0xf0ff...
+		 (const_int MEMTAG_TAG_MASK))
 	 (ashift:DI (unspec:QI [(match_operand:DI 2 "register_operand" "r")]
 		     UNSPEC_GEN_TAG_RND)
 		    (const_int 56))))]
@@ -8573,9 +8583,9 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI
 	  (and:DI (match_operand:DI 1 "register_operand" "rk")
-		  (const_int 72057594037927935)) ;; 0x00ff...
+		  (const_int MEMTAG_ADDR_MASK))
 	  (and:DI (match_operand:DI 2 "register_operand" "rk")
-		  (const_int 72057594037927935))))] ;; 0x00ff...
+		  (const_int MEMTAG_ADDR_MASK))))]
   "TARGET_MEMTAG"
   "subp\\t%0, %1, %2"
   [(set_attr "type" "memtag")]
@@ -8585,7 +8595,7 @@
 (define_insn "ldg"
   [(set (match_operand:DI 0 "register_operand" "+r")
 	(ior:DI
-	 (and:DI (match_dup 0) (const_int -1080863910568919041)) ;; 0xf0ff...
+	 (and:DI (match_dup 0) (const_int MEMTAG_TAG_MASK))
 	 (ashift:DI
 	  (mem:QI (unspec:DI
 	   [(and:DI (plus:DI (match_operand:DI 1 "register_operand" "rk")
