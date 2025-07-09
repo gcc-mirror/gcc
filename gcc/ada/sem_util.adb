@@ -26970,6 +26970,10 @@ package body Sem_Util is
       if Has_Relaxed_Finalization (From_Typ) then
          Set_Has_Relaxed_Finalization (Typ);
       end if;
+
+      if Deriv and then Has_Destructor (From_Typ) then
+         Set_Has_Destructor (Typ);
+      end if;
    end Propagate_Controlled_Flags;
 
    ------------------------------

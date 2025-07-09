@@ -6498,7 +6498,7 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      if Has_Controlled_Component (Typ) then
+      if Has_Controlled_Component (Typ) or else Has_Destructor (Typ) then
          Build_Controlling_Procs (Typ);
       end if;
 
@@ -12846,25 +12846,27 @@ package body Exp_Ch3 is
             Append_To (Res, Decl);
          end if;
 
-         Fin_Call := Empty;
-         Decl     := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
+         if not Has_Destructor (Tag_Typ) then
+            Fin_Call := Empty;
+            Decl := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
 
-         if Is_Controlled (Tag_Typ) then
-            Fin_Call :=
-              Make_Final_Call
-                (Obj_Ref => Make_Identifier (Loc, Name_V),
-                 Typ     => Tag_Typ);
+            if Is_Controlled (Tag_Typ) then
+               Fin_Call :=
+                 Make_Final_Call
+                   (Obj_Ref => Make_Identifier (Loc, Name_V), Typ => Tag_Typ);
+            end if;
+
+            if No (Fin_Call) then
+               Fin_Call := Make_Null_Statement (Loc);
+            end if;
+
+            Set_Handled_Statement_Sequence
+              (Decl,
+               Make_Handled_Sequence_Of_Statements
+                 (Loc, Statements => New_List (Fin_Call)));
+
+            Append_To (Res, Decl);
          end if;
-
-         if No (Fin_Call) then
-            Fin_Call := Make_Null_Statement (Loc);
-         end if;
-
-         Set_Handled_Statement_Sequence (Decl,
-           Make_Handled_Sequence_Of_Statements (Loc,
-             Statements => New_List (Fin_Call)));
-
-         Append_To (Res, Decl);
       end if;
 
       return Res;

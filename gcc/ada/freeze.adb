@@ -7231,6 +7231,35 @@ package body Freeze is
             end if;
 
             Inherit_Aspects_At_Freeze_Point (E);
+
+            --  Destructor legality check
+
+            if Present (Primitive_Operations (E)) then
+               declare
+                  Subp             : Entity_Id;
+                  Parent_Operation : Entity_Id;
+
+                  Elmt : Elmt_Id := First_Elmt (Primitive_Operations (E));
+
+               begin
+                  while Present (Elmt) loop
+                     Subp := Node (Elmt);
+
+                     if Present (Overridden_Operation (Subp)) then
+                        Parent_Operation := Overridden_Operation (Subp);
+
+                        if Ekind (Parent_Operation) = E_Procedure
+                          and then Is_Destructor (Parent_Operation)
+                        then
+                           Error_Msg_N ("cannot override destructor", Subp);
+                        end if;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
+
          end if;
 
          --  Case of array type

@@ -337,6 +337,13 @@ package body Sem_Ch13 is
    --  Resolve each one of the arguments specified in the specification of
    --  aspect Finalizable.
 
+   function Resolve_Finalization_Procedure
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   --  Resolve a procedure argument specified in the specification of one of
+   --  the finalization aspects, i.e. Finalizable and Destructor. Returns True
+   --  if successful, False otherwise.
+
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
       Cursor : Entity_Id;
@@ -4646,6 +4653,20 @@ package body Sem_Ch13 is
                         Aspect);
                      goto Continue;
                   end if;
+
+               when Aspect_Destructor =>
+                  if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
+
+                  elsif not Is_Type (E) then
+                     Error_Msg_N ("can only be specified for a type", Aspect);
+                     goto Continue;
+                  end if;
+
+                  Set_Has_Destructor (E);
+                  Set_Is_Controlled_Active (E);
 
                when Aspect_Storage_Model_Type =>
                   if not All_Extensions_Allowed then
@@ -11285,6 +11306,7 @@ package body Sem_Ch13 is
       --  the one available at at the freeze point.
 
       elsif A_Id in Aspect_Constructor
+                  | Aspect_Destructor
                   | Aspect_Input
                   | Aspect_Output
                   | Aspect_Read
@@ -11740,6 +11762,67 @@ package body Sem_Ch13 is
 
          when Aspect_Designated_Storage_Model =>
             Analyze (Expression (ASN));
+            return;
+
+         when Aspect_Destructor =>
+            if not Is_Record_Type (Entity (ASN)) then
+               Error_Msg_N
+                 ("aspect Destructor can only be specified for a "
+                  & "record type",
+                  ASN);
+               return;
+            end if;
+
+            Set_Has_Destructor (Entity (ASN));
+            Set_Is_Controlled_Active (Entity (ASN));
+
+            Analyze (Expression (ASN));
+
+            if not Resolve_Finalization_Procedure
+                     (Expression (ASN), Entity (ASN))
+            then
+               Error_Msg_N
+                 ("destructor must be local procedure whose only formal "
+                  & "parameter has mode `IN OUT` and is of the type the "
+                  & "destructor is for",
+                  Expression (ASN));
+            end if;
+
+            Set_Is_Destructor (Entity (Expression (ASN)));
+
+            declare
+               Proc  : constant Entity_Id := Entity (Expression (ASN));
+               Overr : constant Opt_N_Entity_Id :=
+                 Overridden_Inherited_Operation (Proc);
+               Orig  : constant Entity_Id :=
+                 (if Present (Overr) then Overr else Proc);
+
+               Decl : constant Node_Id :=
+                 Parent
+                   (if Nkind (Parent (Orig)) = N_Procedure_Specification
+                    then Parent (Orig)
+                    else Orig);
+
+               Encl : constant Node_Id := Parent (Decl);
+
+               Is_Private : constant Boolean :=
+                 Nkind (Encl) = N_Package_Specification
+                 and then Is_List_Member (Decl)
+                 and then List_Containing (Decl) = Private_Declarations (Encl);
+
+            begin
+
+               if Has_Private_Declaration (Entity (ASN))
+                 and then not Aspect_On_Partial_View (ASN)
+                 and then not Is_Private
+               then
+                  Error_Msg_N
+                    ("aspect Destructor on full view cannot denote public "
+                     & "primitive",
+                     ASN);
+               end if;
+            end;
+
             return;
 
          when Aspect_Storage_Model_Type =>
@@ -17344,6 +17427,35 @@ package body Sem_Ch13 is
       Typ : Entity_Id;
       Nam : Name_Id)
    is
+   begin
+      if Nam = Name_Relaxed_Finalization then
+         Resolve (N, Any_Boolean);
+
+         if Is_OK_Static_Expression (N) then
+            Set_Has_Relaxed_Finalization (Typ, Is_True (Static_Boolean (N)));
+
+         else
+            Flag_Non_Static_Expr
+              ("expression of aspect Finalizable must be static!", N);
+         end if;
+
+         return;
+      end if;
+
+      if Resolve_Finalization_Procedure (N, Typ) then
+         return;
+      end if;
+
+      Error_Msg_N
+        ("finalizable primitive must be local procedure whose only formal " &
+         "parameter has mode `IN OUT` and is of the finalizable type", N);
+   end Resolve_Finalizable_Argument;
+
+   function Resolve_Finalization_Procedure
+     (N   : Node_Id;
+      Typ : Entity_Id)
+      return Boolean
+   is
       function Is_Finalizable_Primitive (E : Entity_Id) return Boolean;
       --  Check whether E is a finalizable primitive for Typ
 
@@ -17361,29 +17473,15 @@ package body Sem_Ch13 is
            and then No (Next_Formal (First_Formal (E)));
       end Is_Finalizable_Primitive;
 
-   --  Start of processing for Resolve_Finalizable_Argument
+   --  Start of processing for Resolve_Finalization_Procedure
 
    begin
-      if Nam = Name_Relaxed_Finalization then
-         Resolve (N, Any_Boolean);
-
-         if Is_OK_Static_Expression (N) then
-            Set_Has_Relaxed_Finalization (Typ, Is_True (Static_Boolean (N)));
-
-         else
-            Flag_Non_Static_Expr
-              ("expression of aspect Finalizable must be static!", N);
-         end if;
-
-         return;
-      end if;
-
       if not Is_Entity_Name (N) then
          null;
 
       elsif not Is_Overloaded (N) then
          if Is_Finalizable_Primitive (Entity (N)) then
-            return;
+            return True;
          end if;
 
       else
@@ -17399,7 +17497,7 @@ package body Sem_Ch13 is
             while Present (It.Typ) loop
                if Is_Finalizable_Primitive (It.Nam) then
                   Set_Entity (N, It.Nam);
-                  return;
+                  return True;
                end if;
 
                Get_Next_Interp (I, It);
@@ -17407,10 +17505,8 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Error_Msg_N
-        ("finalizable primitive must be local procedure whose only formal " &
-         "parameter has mode `IN OUT` and is of the finalizable type", N);
-   end Resolve_Finalizable_Argument;
+      return False;
+   end Resolve_Finalization_Procedure;
 
    --------------------------------
    -- Resolve_Iterable_Operation --

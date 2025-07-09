@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jul 03, 2025
+GNAT Reference Manual , Jul 21, 2025
 
 AdaCore
 
@@ -931,6 +931,7 @@ Experimental Language Extensions
 * External_Initialization Aspect:: 
 * Finally construct:: 
 * Continue statement:: 
+* Destructors:: 
 
 Storage Model
 
@@ -31236,6 +31237,7 @@ Features activated via @code{-gnatX0} or
 * External_Initialization Aspect:: 
 * Finally construct:: 
 * Continue statement:: 
+* Destructors:: 
 
 @end menu
 
@@ -32588,7 +32590,7 @@ Abort/ATC (asynchronous transfer of control) cannot interrupt a finally block, n
 execution, that is the finally block must be executed in full even if the containing task is
 aborted, or if the control is transferred out of the block.
 
-@node Continue statement,,Finally construct,Experimental Language Extensions
+@node Continue statement,Destructors,Finally construct,Experimental Language Extensions
 @anchor{gnat_rm/gnat_language_extensions continue-statement}@anchor{472}
 @subsection Continue statement
 
@@ -32606,8 +32608,78 @@ statement in the sequence of statements of the specified loop_statement.
 Note that @code{continue} is a keyword but it is not a reserved word. This is a
 configuration that does not exist in standard Ada.
 
+@node Destructors,,Continue statement,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions destructors}@anchor{473}
+@subsection Destructors
+
+
+The @code{Destructor} aspect can be applied to any record type, tagged or not.
+It must denote a primitive of the type that is a procedure with one parameter
+of the type and of mode @code{in out}:
+
+@example
+type T is record
+   ...
+end record with Destructor => Foo;
+
+procedure Foo (X : in out T);
+@end example
+
+This is equivalent to the following code that uses @code{Finalizable}:
+
+@example
+type T is record
+   ...
+end record with Finalizable => (Finalize => Foo);
+
+procedure Foo (X : in out T);
+@end example
+
+Unlike @code{Finalizable}, however, @code{Destructor} can be specified on a derived
+type. And when it is, the effect of the aspect combines with the destructors of
+the parent type. Take, for example:
+
+@example
+type T1 is record
+   ...
+end record with Destructor => Foo;
+
+procedure Foo (X : in out T1);
+
+type T2 is new T1 with Destructor => Bar;
+
+procedure Bar (X : in out T2);
+@end example
+
+Here, when an object of type @code{T2} is finalized, a call to @code{Bar}
+will be performed and it will be followed by a call to @code{Foo}.
+
+The @code{Destructor} aspect comes with a legality rule: if a primitive procedure
+of a type is denoted by a @code{Destructor} aspect specification, it is illegal to
+override this procedure in a derived type. For example, the following is illegal:
+
+@example
+type T1 is record
+   ...
+end record with Destructor => Foo;
+
+procedure Foo (X : in out T1);
+
+type T2 is new T1;
+
+overriding
+procedure Foo (X : in out T2); -- Error here
+@end example
+
+It is possible to specify @code{Destructor} on the completion of a private type,
+but there is one more restriction in that case: the denoted primitive must
+be private to the enclosing package. This is necessary due to the previously
+mentioned legality rule, to prevent breaking the privacy of the type when
+imposing that rule on outside types that derive from the private view of the
+type.
+
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
-@anchor{gnat_rm/security_hardening_features doc}@anchor{473}@anchor{gnat_rm/security_hardening_features id1}@anchor{474}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
+@anchor{gnat_rm/security_hardening_features doc}@anchor{474}@anchor{gnat_rm/security_hardening_features id1}@anchor{475}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
 @chapter Security Hardening Features
 
 
@@ -32629,7 +32701,7 @@ change.
 @end menu
 
 @node Register Scrubbing,Stack Scrubbing,,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{475}
+@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{476}
 @section Register Scrubbing
 
 
@@ -32665,7 +32737,7 @@ programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 @c Stack Scrubbing:
 
 @node Stack Scrubbing,Hardened Conditionals,Register Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{476}
+@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{477}
 @section Stack Scrubbing
 
 
@@ -32809,7 +32881,7 @@ Bar_Callable_Ptr.
 @c Hardened Conditionals:
 
 @node Hardened Conditionals,Hardened Booleans,Stack Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{477}
+@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{478}
 @section Hardened Conditionals
 
 
@@ -32899,7 +32971,7 @@ be used with other programming languages supported by GCC.
 @c Hardened Booleans:
 
 @node Hardened Booleans,Control Flow Redundancy,Hardened Conditionals,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{478}
+@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{479}
 @section Hardened Booleans
 
 
@@ -32960,7 +33032,7 @@ and more details on that attribute, see @cite{Using the GNU Compiler Collection 
 @c Control Flow Redundancy:
 
 @node Control Flow Redundancy,,Hardened Booleans,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{479}
+@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{47a}
 @section Control Flow Redundancy
 
 
@@ -33128,7 +33200,7 @@ see @cite{Using the GNU Compiler Collection (GCC)}.  These options
 can be used with other programming languages supported by GCC.
 
 @node Obsolescent Features,Compatibility and Porting Guide,Security Hardening Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{47a}@anchor{gnat_rm/obsolescent_features id1}@anchor{47b}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{47b}@anchor{gnat_rm/obsolescent_features id1}@anchor{47c}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
 @chapter Obsolescent Features
 
 
@@ -33147,7 +33219,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{47c}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{47d}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{47d}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{47e}
 @section pragma No_Run_Time
 
 
@@ -33160,7 +33232,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{47e}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{47f}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{47f}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{480}
 @section pragma Ravenscar
 
 
@@ -33169,7 +33241,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{480}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{481}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{481}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{482}
 @section pragma Restricted_Run_Time
 
 
@@ -33179,7 +33251,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{482}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{483}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{483}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{484}
 @section pragma Task_Info
 
 
@@ -33205,7 +33277,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{484}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{485}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{485}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{486}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -33215,7 +33287,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{486}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{487}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{487}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{488}
 @chapter Compatibility and Porting Guide
 
 
@@ -33237,7 +33309,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{488}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{489}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{489}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{48a}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -33359,7 +33431,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{48b}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{48b}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{48c}
 @section Compatibility with Ada 83
 
 
@@ -33387,7 +33459,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{48c}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{48d}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{48d}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{48e}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -33487,7 +33559,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{48e}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{48f}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{48f}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{490}
 @subsection More deterministic semantics
 
 
@@ -33515,7 +33587,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{490}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{491}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{491}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{492}
 @subsection Changed semantics
 
 
@@ -33557,7 +33629,7 @@ covers only the restricted range.
 @end itemize
 
 @node Other language compatibility issues,,Changed semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{492}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{493}
+@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{493}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{494}
 @subsection Other language compatibility issues
 
 
@@ -33590,7 +33662,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{494}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{495}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{495}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{496}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -33662,7 +33734,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{497}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{497}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{498}
 @section Implementation-dependent characteristics
 
 
@@ -33685,7 +33757,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{498}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{499}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{499}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{49a}
 @subsection Implementation-defined pragmas
 
 
@@ -33707,7 +33779,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{49a}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{49b}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{49b}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{49c}
 @subsection Implementation-defined attributes
 
 
@@ -33721,7 +33793,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{49c}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{49d}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{49d}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{49e}
 @subsection Libraries
 
 
@@ -33750,7 +33822,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{49e}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{49f}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{49f}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{4a0}
 @subsection Elaboration order
 
 
@@ -33786,7 +33858,7 @@ pragmas either globally (as an effect of the `-gnatE' switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{4a0}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{4a1}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{4a1}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{4a2}
 @subsection Target-specific aspects
 
 
@@ -33799,10 +33871,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005, Ada 2012, and Ada 2022) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{4a2,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{4a3,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{4a3}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{4a4}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{4a4}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{4a5}
 @section Compatibility with Other Ada Systems
 
 
@@ -33845,7 +33917,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{4a5}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{4a2}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{4a6}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{4a3}
 @section Representation Clauses
 
 
@@ -33938,7 +34010,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4a6}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4a7}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4a7}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4a8}
 @section Compatibility with HP Ada 83
 
 
@@ -33968,7 +34040,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{4a8}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4a9}
+@anchor{share/gnu_free_documentation_license doc}@anchor{4a9}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4aa}
 @chapter GNU Free Documentation License
 
 

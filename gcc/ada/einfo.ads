@@ -1595,6 +1595,11 @@ package Einfo is
 --       set, signalling that Freeze.Inherit_Delayed_Rep_Aspects must be called
 --       at the freeze point of the derived type.
 
+--    Has_Destructor
+--       Defined in all type and subtype entities. Set only for record type
+--       entities for which at least one ancestor has the Destructor aspect
+--       specified.
+
 --    Has_DIC (synthesized)
 --       Defined in all type entities. Set for a private type and its full view
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
@@ -2523,11 +2528,12 @@ package Einfo is
 
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
---       i.e. has been declared with the Finalizable aspect or has inherited
---       the Finalizable aspect from an ancestor. Can only be set for record
---       types, tagged or untagged. System.Finalization_Root.Root_Controlled
---       is an example of the former case while Ada.Finalization.Controlled
---       and Ada.Finalization.Limited_Controlled are examples of the latter.
+--       i.e. has been declared with the Finalizable or the Destructor aspect
+--       or has inherited the this aspect from an ancestor. Can only be set for
+--       record types, tagged or untagged.
+--       System.Finalization_Root.Root_Controlled is an example of the former
+--       case while Ada.Finalization.Controlled and
+--       Ada.Finalization.Limited_Controlled are examples of the latter.
 
 --    Is_Controlled (synth) [base type only]
 --       Defined in all type entities. Set if Is_Controlled_Active is set for
@@ -2552,6 +2558,10 @@ package Einfo is
 --    Is_Descendant_Of_Address
 --       Defined in all entities. True if the entity is type System.Address,
 --       or (recursively) a subtype or derived type of System.Address.
+
+--    Is_Destructor
+--       Defined in procedure entities. True if the procedure is denoted by the
+--       Destructor aspect on some type.
 
 --    Is_DIC_Procedure
 --       Defined in functions and procedures. Set for a generated procedure
@@ -5932,6 +5942,7 @@ package Einfo is
    --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel
+   --    Is_Destructor                        (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id
