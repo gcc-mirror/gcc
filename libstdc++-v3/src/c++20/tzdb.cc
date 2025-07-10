@@ -48,6 +48,8 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include <psapi.h>
+
+# include <array>
 #endif
 
 #if defined __GTHREADS && ATOMIC_POINTER_LOCK_FREE == 2
@@ -1768,6 +1770,98 @@ namespace std::chrono
 
       return nullptr; // not found
     }
+
+#ifdef _GLIBCXX_HAVE_WINDOWS_H
+    string_view
+    detect_windows_zone() noexcept
+    {
+      DYNAMIC_TIME_ZONE_INFORMATION information{};
+      if (GetDynamicTimeZoneInformation(&information) == TIME_ZONE_ID_INVALID)
+	return {};
+
+      constexpr SYSTEMTIME all_zero_time{};
+      const wstring_view zone_name{ information.TimeZoneKeyName };
+      auto equal = [](const SYSTEMTIME &lhs, const SYSTEMTIME &rhs) noexcept
+	{ return memcmp(&lhs, &rhs, sizeof(SYSTEMTIME)) == 0; };
+      // The logic is copied from icu, couldn't find the source.
+      // Detect if DST is disabled.
+      if (information.DynamicDaylightTimeDisabled
+	  && equal(information.StandardDate, information.DaylightDate)
+	  && ((!zone_name.empty()
+	       && equal(information.StandardDate, all_zero_time))
+	      || (zone_name.empty()
+		  && !equal(information.StandardDate, all_zero_time))))
+	{
+	  if (information.Bias == 0)
+	    return "Etc/UTC";
+
+	  if (information.Bias % 60 != 0)
+	    // If the offset is not in full hours, we can't do anything really.
+	    return {};
+
+	  const auto raw_index = information.Bias / 60;
+
+	  // The bias added to the local time equals UTC. And GMT+X corresponds
+	  // to UTC-X, the sign is negated. Thus we can use the hourly bias as
+	  // an index into an array.
+	  if (raw_index < 0 && raw_index >= -14)
+	    {
+	      static constexpr array<string_view, 14> table{
+		"Etc/GMT-1",  "Etc/GMT-2",  "Etc/GMT-3",  "Etc/GMT-4",
+		"Etc/GMT-5",  "Etc/GMT-6",  "Etc/GMT-7",  "Etc/GMT-8",
+		"Etc/GMT-9",  "Etc/GMT-10", "Etc/GMT-11", "Etc/GMT-12",
+		"Etc/GMT-13", "Etc/GMT-14"
+	      };
+	      return table[-raw_index - 1];
+	    }
+	  else if (raw_index > 0 && raw_index <= 12)
+	    {
+	      static constexpr array<string_view, 12> table{
+		"Etc/GMT+1", "Etc/GMT+2",  "Etc/GMT+3",	 "Etc/GMT+4",
+		"Etc/GMT+5", "Etc/GMT+6",  "Etc/GMT+7",	 "Etc/GMT+8",
+		"Etc/GMT+9", "Etc/GMT+10", "Etc/GMT+11", "Etc/GMT+12"
+	      };
+	      return table[raw_index - 1];
+	    }
+	  return {};
+	}
+
+#include "windows_zones-map.h"
+#ifndef _GLIBCXX_WINDOWS_ZONES_MAP_COMPLETE
+# error "Invalid windows_zones map"
+#endif
+
+      const auto zone_range
+	  = ranges::equal_range(windows_zone_map, zone_name, {},
+				&windows_zone_map_entry::windows_name);
+
+      const auto size = ranges::size(zone_range);
+      if (size == 0)
+	// Unknown zone, we can't detect anything.
+	return {};
+
+      if (size == 1)
+	// Some zones have only one territory, use the quick path.
+	return zone_range.front().iana_name;
+
+      const auto geo_id = GetUserGeoID(GEOCLASS_NATION);
+      // We ask for a 2-letter country code plus the zero terminator. "001" is
+      // only contained in the zone map, not returned by GetGeoInfoW.
+      wchar_t territory[3] = {};
+      if (GetGeoInfoW(geo_id, GEO_ISO2, territory, 3, 0) == 0)
+	// Couldn't detect the territory, fallback to "001", which is the first
+	// entry.
+	return zone_range.front().iana_name;
+
+      const auto iter = ranges::lower_bound(
+	  zone_range, territory, {}, &windows_zone_map_entry::territory);
+      if (iter == zone_range.end() || iter->territory != territory)
+	// Territory not within the the map, use "001".
+	return zone_range.front().iana_name;
+
+      return iter->iana_name;
+    }
+#endif
   } // namespace
 
   // Implementation of std::chrono::tzdb::locate_zone(string_view).
@@ -1790,7 +1884,7 @@ namespace std::chrono
   {
     // TODO cache this function's result?
 
-#ifndef _AIX
+#if !defined(_AIX) && !defined(_GLIBCXX_HAVE_WINDOWS_H)
     // Repeat the preprocessor condition used by filesystem::read_symlink,
     // to avoid a dependency on src/c++17/fs_ops.o if it won't work anyway.
 #if defined(_GLIBCXX_HAVE_READLINK) && defined(_GLIBCXX_HAVE_SYS_STAT_H)
@@ -1847,7 +1941,11 @@ namespace std::chrono
 		  return tz;
 	      }
       }
-#else
+#elif defined(_GLIBCXX_HAVE_WINDOWS_H)
+    if (auto tz
+	= do_locate_zone(this->zones, this->links, detect_windows_zone()))
+      return tz;
+#else // defined(_AIX)
     // AIX stores current zone in $TZ in /etc/environment but the value
     // is typically a POSIX time zone name, not IANA zone.
     // https://developer.ibm.com/articles/au-aix-posix/
