@@ -1,3 +1,12 @@
+2025-07-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* resolve.cc (resolve_operator): Remove conformability check,
+	because it is not in the standard.
+
 2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:

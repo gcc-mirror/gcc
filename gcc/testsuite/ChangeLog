@@ -1,3 +1,45 @@
+2025-07-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* gfortran.dg/coarray/coindexed_6.f90: Enhance test to have
+	coarray components covered.
+
+2025-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-07-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: Add SVE HW check.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: New testcase.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* gcc.dg/vect/vect-pr120927.c: New testcase.
+	* gcc.dg/vect/vect-pr120927-2.c: Likewise.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120944
+	* gcc.dg/torture/pr120944.c: New testcase.
+
 2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:

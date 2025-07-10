@@ -1,3 +1,53 @@
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120358
+	* tree-ssa-structalias.cc (get_constraint_for_1): Adjust
+	pruning of sub-variables according to the imprecise
+	known start offset.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118669
+	* tree-vect-stmts.cc (vectorizable_load): Emit loads
+	with proper (element) alignment.
+	(vectorizable_store): Likewise.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120817
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Use
+	ao_ref_init_from_ptr_and_range with unknown size for
+	.MASK_STORE and .MASK_LEN_STORE.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120927
+	* tree-vect-data-refs.cc (vect_compute_data_ref_alignment):
+	Do not force a DRs base alignment when analyzing an
+	epilog loop.  Check whether the step preserves alignment
+	for all VFs possibly involved sofar.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120944
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Gate optimizations
+	invalid when volatile is involved.
+
 2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
