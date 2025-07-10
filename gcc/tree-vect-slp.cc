@@ -4067,7 +4067,12 @@ vect_build_slp_instance (vec_info *vinfo,
 		  for (unsigned i = 0; i < group_size; ++i)
 		    scalar_stmts.quick_push (next_info);
 		  slp_tree conv = vect_create_new_slp_node (scalar_stmts, 1);
-		  SLP_TREE_VECTYPE (conv) = STMT_VINFO_VECTYPE (next_info);
+		  SLP_TREE_VECTYPE (conv)
+		    = get_vectype_for_scalar_type (vinfo,
+						   TREE_TYPE
+						     (gimple_assign_lhs
+						       (scalar_def)),
+						   group_size);
 		  SLP_TREE_CHILDREN (conv).quick_push (node);
 		  SLP_INSTANCE_TREE (new_instance) = conv;
 		  /* We also have to fake this conversion stmt as SLP reduction
