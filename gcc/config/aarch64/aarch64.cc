@@ -17932,7 +17932,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
   /* Do one-time initialization based on the vinfo.  */
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
-  if (!m_analyzed_vinfo)
+  if (!m_analyzed_vinfo && !m_costing_for_scalar)
     {
       if (loop_vinfo)
 	analyze_loop_vinfo (loop_vinfo);
