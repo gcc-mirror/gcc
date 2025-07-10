@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	- Updating ix86_issue_rate and ix86_adjust_cost in i386.md
 	- possibly updating ia32_multipass_dfa_lookahead, ix86_sched_reorder
 	  and ix86_sched_init_global if those tricks are needed.
-    - Tunning the flags below. Those are split into sections and each
+    - tuning flags below; those are split into sections and each
       section is very roughly ordered by importance.  */
 
 /*****************************************************************************/

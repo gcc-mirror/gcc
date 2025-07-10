@@ -1185,7 +1185,7 @@ decide_unroll_stupid (class loop *loop, int flags)
 
   /* Do not unroll loops with branches inside -- it increases number
      of mispredicts.
-     TODO: this heuristic needs tunning; call inside the loop body
+     TODO: this heuristic needs tuning; call inside the loop body
      is also relatively good reason to not unroll.  */
   if (num_loop_branches (loop) > 1)
     {
