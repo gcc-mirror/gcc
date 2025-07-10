@@ -8,7 +8,7 @@
 
 DEF_VEC_SAT_U_SUB_FMT_6_WRAP(T)
 
-#define test_data          TEST_UNARY_DATA_WRAP(T, usub)
+#define test_data          TEST_UNARY_DATA_WRAP(T, ussub)
 #define RUN_VEC_SAT_BINARY(T, out, op_1, op_2, N) \
   RUN_VEC_SAT_U_SUB_FMT_6_WRAP(T, out, op_1, op_2, N)
 

@@ -6,10 +6,10 @@
 
 #define T                  uint64_t
 
-DEF_VEC_SAT_U_SUB_FMT_2_WRAP(T)
+DEF_VEC_SAT_U_SUB_FMT_12_WRAP(T)
 
 #define test_data          TEST_UNARY_DATA_WRAP(T, ussub)
 #define RUN_VEC_SAT_BINARY(T, out, op_1, op_2, N) \
-  RUN_VEC_SAT_U_SUB_FMT_2_WRAP(T, out, op_1, op_2, N)
+  RUN_VEC_SAT_U_SUB_FMT_12_WRAP(T, out, op_1, op_2, N)
 
 #include "vec_sat_binary_vvv_run.h"

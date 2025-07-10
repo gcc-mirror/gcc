@@ -744,7 +744,7 @@ uint64_t TEST_UNARY_DATA(uint64_t, sat_u_sub_imm)[][2][N] =
   },
 };
 
-uint8_t TEST_UNARY_DATA(uint8_t, usub)[][3][N] = {
+uint8_t TEST_UNARY_DATA(uint8_t, ussub)[][3][N] = {
   {
     {
       0, 0, 0, 0,
@@ -807,7 +807,7 @@ uint8_t TEST_UNARY_DATA(uint8_t, usub)[][3][N] = {
   },
 };
 
-uint16_t TEST_UNARY_DATA(uint16_t, usub)[][3][N] = {
+uint16_t TEST_UNARY_DATA(uint16_t, ussub)[][3][N] = {
   {
     {
       0, 0, 0, 0,
@@ -870,7 +870,7 @@ uint16_t TEST_UNARY_DATA(uint16_t, usub)[][3][N] = {
   },
 };
 
-uint32_t TEST_UNARY_DATA(uint32_t, usub)[][3][N] = {
+uint32_t TEST_UNARY_DATA(uint32_t, ussub)[][3][N] = {
   {
     {
       0, 0, 4, 0,
@@ -933,7 +933,7 @@ uint32_t TEST_UNARY_DATA(uint32_t, usub)[][3][N] = {
   },
 };
 
-uint64_t TEST_UNARY_DATA(uint64_t, usub)[][3][N] = {
+uint64_t TEST_UNARY_DATA(uint64_t, ussub)[][3][N] = {
   {
     {
       0, 9, 0, 0,
