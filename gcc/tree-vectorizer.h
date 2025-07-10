@@ -2506,8 +2506,7 @@ extern bool vect_transform_stmt (vec_info *, stmt_vec_info,
 				 slp_tree, slp_instance);
 extern void vect_remove_stores (vec_info *, stmt_vec_info);
 extern bool vect_nop_conversion_p (stmt_vec_info);
-extern opt_result vect_analyze_stmt (vec_info *, stmt_vec_info, bool *,
-				     slp_tree,
+extern opt_result vect_analyze_stmt (vec_info *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern void vect_get_load_cost (vec_info *, stmt_vec_info, slp_tree, int,
 				dr_alignment_support, int, bool,

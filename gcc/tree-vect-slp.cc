@@ -7898,8 +7898,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    slp_instance node_instance,
 				    stmt_vector_for_cost *cost_vec)
 {
-  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
-
   /* Calculate the number of vector statements to be created for the scalar
      stmts in this node.  It is the number of scalar elements in one scalar
      iteration (DR_GROUP_SIZE) multiplied by VF divided by the number of
@@ -7928,9 +7926,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
       return true;
     }
 
-  bool dummy;
-  return vect_analyze_stmt (vinfo, stmt_info, &dummy,
-			    node, node_instance, cost_vec);
+  return vect_analyze_stmt (vinfo, node, node_instance, cost_vec);
 }
 
 static int

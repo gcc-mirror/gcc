@@ -13186,37 +13186,27 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
    VEC_STMT_P is as for vectorizable_live_operation.  */
 
 static bool
-can_vectorize_live_stmts (vec_info *vinfo, stmt_vec_info stmt_info,
+can_vectorize_live_stmts (vec_info *vinfo,
 			  slp_tree slp_node, slp_instance slp_node_instance,
 			  bool vec_stmt_p,
 			  stmt_vector_for_cost *cost_vec)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  if (slp_node)
+  stmt_vec_info slp_stmt_info;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
     {
-      stmt_vec_info slp_stmt_info;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
-	{
-	  if (slp_stmt_info
-	      && (STMT_VINFO_LIVE_P (slp_stmt_info)
-		  || (loop_vinfo
-		      && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-		      && STMT_VINFO_DEF_TYPE (slp_stmt_info)
-		      == vect_induction_def))
-	      && !vectorizable_live_operation (vinfo, slp_stmt_info, slp_node,
-					       slp_node_instance, i,
-					       vec_stmt_p, cost_vec))
-	    return false;
-	}
+      if (slp_stmt_info
+	  && (STMT_VINFO_LIVE_P (slp_stmt_info)
+	      || (loop_vinfo
+		  && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+		  && STMT_VINFO_DEF_TYPE (slp_stmt_info)
+		  == vect_induction_def))
+	  && !vectorizable_live_operation (vinfo, slp_stmt_info, slp_node,
+					   slp_node_instance, i,
+					   vec_stmt_p, cost_vec))
+	return false;
     }
-  else if ((STMT_VINFO_LIVE_P (stmt_info)
-	    || (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-		&& STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def))
-	   && !vectorizable_live_operation (vinfo, stmt_info,
-					    slp_node, slp_node_instance, -1,
-					    vec_stmt_p, cost_vec))
-    return false;
 
   return true;
 }
@@ -13225,115 +13215,42 @@ can_vectorize_live_stmts (vec_info *vinfo, stmt_vec_info stmt_info,
 
 opt_result
 vect_analyze_stmt (vec_info *vinfo,
-		   stmt_vec_info stmt_info, bool *need_to_vectorize,
 		   slp_tree node, slp_instance node_instance,
 		   stmt_vector_for_cost *cost_vec)
 {
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
-  gimple_seq pattern_def_seq;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: %G",
 		     stmt_info->stmt);
 
   if (gimple_has_volatile_ops (stmt_info->stmt))
-    return opt_result::failure_at (stmt_info->stmt,
-				   "not vectorized:"
-				   " stmt has volatile operands: %G\n",
-				   stmt_info->stmt);
-
-  if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-      && node == NULL
-      && (pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info)))
     {
-      gimple_stmt_iterator si;
-
-      for (si = gsi_start (pattern_def_seq); !gsi_end_p (si); gsi_next (&si))
-	{
-	  stmt_vec_info pattern_def_stmt_info
-	    = vinfo->lookup_stmt (gsi_stmt (si));
-	  if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
-	      || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
-	    {
-	      /* Analyze def stmt of STMT if it's a pattern stmt.  */
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "==> examining pattern def statement: %G",
-				 pattern_def_stmt_info->stmt);
-
-	      opt_result res
-		= vect_analyze_stmt (vinfo, pattern_def_stmt_info,
-				     need_to_vectorize, node, node_instance,
-				     cost_vec);
-	      if (!res)
-		return res;
-	    }
-	}
+      /* ???  This shouldn't really happen, volatile stmts should
+	 not end up in the SLP graph.  */
+      return opt_result::failure_at (stmt_info->stmt,
+				     "not vectorized:"
+				     " stmt has volatile operands: %G\n",
+				     stmt_info->stmt);
     }
 
-  /* Skip stmts that do not need to be vectorized. In loops this is expected
-     to include:
-     - the COND_EXPR which is the loop exit condition
-     - any LABEL_EXPRs in the loop
-     - computations that are used only for array indexing or loop control.
-     In basic blocks we only analyze statements that are a part of some SLP
-     instance, therefore, all the statements are relevant.
-
-     Pattern statement needs to be analyzed instead of the original statement
-     if the original statement is not relevant.  Otherwise, we analyze both
-     statements.  In basic blocks we are called from some SLP instance
-     traversal, don't analyze pattern stmts instead, the pattern stmts
-     already will be part of SLP instance.  */
-
-  stmt_vec_info pattern_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+  /* Skip stmts that do not need to be vectorized.  */
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
       && !STMT_VINFO_LIVE_P (stmt_info))
     {
-      if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-	  && pattern_stmt_info
-	  && (STMT_VINFO_RELEVANT_P (pattern_stmt_info)
-	      || STMT_VINFO_LIVE_P (pattern_stmt_info)))
-        {
-          /* Analyze PATTERN_STMT instead of the original stmt.  */
-	  stmt_info = pattern_stmt_info;
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "==> examining pattern statement: %G",
-			     stmt_info->stmt);
-        }
-      else
-        {
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.\n");
-
-	  if (node)
-	    return opt_result::failure_at (stmt_info->stmt,
-					   "not vectorized:"
-					   " irrelevant stmt as SLP node %p "
-					   "representative.\n",
-					   (void *)node);
-          return opt_result::success ();
-        }
-    }
-  else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-	   && node == NULL
-	   && pattern_stmt_info
-	   && (STMT_VINFO_RELEVANT_P (pattern_stmt_info)
-	       || STMT_VINFO_LIVE_P (pattern_stmt_info)))
-    {
-      /* Analyze PATTERN_STMT too.  */
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "==> examining pattern statement: %G",
-			 pattern_stmt_info->stmt);
+	dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.\n");
 
-      opt_result res
-	= vect_analyze_stmt (vinfo, pattern_stmt_info, need_to_vectorize, node,
-			     node_instance, cost_vec);
-      if (!res)
-	return res;
+      /* ???  This shouldn't really happen, irrelevant stmts should
+	 not end up in the SLP graph.  */
+      return opt_result::failure_at (stmt_info->stmt,
+				     "not vectorized:"
+				     " irrelevant stmt as SLP node %p "
+				     "representative.\n",
+				     (void *)node);
     }
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
@@ -13368,17 +13285,8 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
-  if (PURE_SLP_STMT (stmt_info) && !node)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "handled only by SLP analysis\n");
-      return opt_result::success ();
-    }
-
   tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
-  if (node)
-    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
+  STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
@@ -13386,21 +13294,6 @@ vect_analyze_stmt (vec_info *vinfo,
       gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
 		  || gimple_code (stmt_info->stmt) == GIMPLE_COND
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
-      *need_to_vectorize = true;
-    }
-
-  /* When we arrive here with a non-SLP statement and we are supposed
-     to use SLP for everything fail vectorization.  */
-  if (!node)
-    {
-      /* We leave is_simple_and_all_uses_invariant but live stmts
-	 around with no need to vectorize them.  */
-      if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	  && STMT_VINFO_LIVE_P (stmt_info)
-	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
-	return opt_result::success ();
-      return opt_result::failure_at (stmt_info->stmt,
-				     "needs non-SLP handling\n");
     }
 
   ok = true;
@@ -13466,8 +13359,7 @@ vect_analyze_stmt (vec_info *vinfo,
 
     }
 
-  if (node)
-    STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
+  STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
 
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
@@ -13480,9 +13372,9 @@ vect_analyze_stmt (vec_info *vinfo,
   if (!bb_vinfo
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
       && STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
-      && (!node || !node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+      && (!node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
-				    stmt_info, node, node_instance,
+				    node, node_instance,
 				    false, cost_vec))
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
@@ -13654,7 +13546,7 @@ vect_transform_stmt (vec_info *vinfo,
     {
       /* Handle stmts whose DEF is used outside the loop-nest that is
 	 being vectorized.  */
-      done = can_vectorize_live_stmts (vinfo, stmt_info, slp_node,
+      done = can_vectorize_live_stmts (vinfo, slp_node,
 				       slp_node_instance, true, NULL);
       gcc_assert (done);
     }
