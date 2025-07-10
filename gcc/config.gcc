@@ -3167,6 +3167,8 @@ powerpc*-wrs-vxworks7r*)
 	tm_file="${tm_file} rs6000/sysv4.h rs6000/biarch64.h rs6000/default64.h rs6000/linux64.h"
 	tm_file="${tm_file} vx-common.h vxworks.h rs6000/vxworks.h"
 
+	tm_p_file="${tm_p_file} linux-protos.h"
+
 	extra_options="${extra_options} rs6000/sysv4.opt linux.opt rs6000/linux64.opt"
 
 	tmake_file="${tmake_file} t-linux rs6000/t-linux64 rs6000/t-fprules rs6000/t-ppccomm"
