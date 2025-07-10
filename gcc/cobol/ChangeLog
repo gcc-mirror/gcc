@@ -1,3 +1,81 @@
+2025-07-09  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120765
+	PR cobol/119337
+	PR cobol/120794
+	* Make-lang.in: Take control of the .cc.o rule.
+	* cbldiag.h (error_msg_direct): New declaration.
+	(gcc_location_dump): Forward declaration.
+	(location_dump): Use gcc_location_dump.
+	* cdf.y: Change some tokens.
+	* gcobc: Change dialect handling.
+	* genapi.cc (parser_call_targets_dump): Temporarily remove from service.
+	(parser_compile_dcls): Combine temporary arrays.
+	(get_binary_value_from_float): Apply const to one parameter.
+	(depending_on_value): Localize a boolean variable.
+	(normal_normal_compare): Likewise.
+	(cobol_compare): Eliminate cppcheck warning.
+	(combined_name): Apply const to an input parameter.
+	(parser_perform): Apply const to a variable.
+	(parser_accept): Improve handling of special_name_t parameter and
+	the exception conditions.
+	(parser_display): Improve handling of speciat_name_t parameter; use the
+	os_filename[] string when appropriate.
+	(program_end_stuff): Rename shadowing variable.
+	(parser_division): Consolidate temporary char[] arrays.
+	(parser_file_start): Apply const to a parameter.
+	(inspect_replacing): Likewise.
+	(parser_program_hierarchy): Rename shadowing variable.
+	(mh_identical): Apply const to parameters.
+	(float_type_of): Likewise.
+	(picky_memcpy): Likewise.
+	(mh_numeric_display): Likewise.
+	(mh_little_endian): Likewise.
+	(mh_source_is_group): Apply static to a variable it.
+	(move_helper): Quiet a cppcheck warning.
+	* genapi.h (parser_accept): Add exceptions to declaration.
+	(parser_accept_under_discussion): Add declaration.
+	(parser_display): Change to std::vector; add exceptions to declaration.
+	* lexio.cc (cdf_source_format): Improve source code location handling.
+	(source_format_t::infer): Likewise.
+	(is_fixed_format): Likewise.
+	(is_reference_format): Likewise.
+	(left_margin): Likewise.
+	(right_margin): Likewise.
+	(cobol_set_indicator_column): Likewise.
+	(include_debug): Likewise.
+	(continues_at): Likewise.
+	(indicated): Likewise.
+	(check_source_format_directive): Likewise.
+	(cdftext::free_form_reference_format): Likewise.
+	* parse.y: Tokens; program and function names; DISPLAY and ACCEPT
+	handling.
+	* parse_ante.h (class tokenset_t): Removed.
+	(class current_tokens_t): Removed.
+	(field_of): Removed.
+	* scan.l: Token handling.
+	* scan_ante.h (level_found): Comment.
+	* scan_post.h (start_condition_str): Remove cast author_state:.
+	* symbols.cc (symbols_update): Change error message.
+	(symbol_table_init): Correct and reorder entries.
+	(symbol_unresolved_file_key): New function definition.
+	(cbl_file_key_t::deforward): Change error message.
+	* symbols.h (symbol_unresolved_file_key): New declaration.
+	(keyword_tok): New function.
+	(redefined_token): New function.
+	(class current_tokens_t): New class.
+	* symfind.cc (symbol_match): Revise error message.
+	* token_names.h: Reorder and change numbers in comments.
+	* util.cc (class cdf_directives_t): New class.
+	(cobol_set_indicator_column): New function.
+	(cdf_source_format): New function.
+	(gcc_location_set_impl): Improve column handling in token_location.
+	(gcc_location_dump): New function.
+	(class temp_loc_t): Modify constructor.
+	(error_msg_direct): New function.
+	* util.h (class source_format_t): New class.
+
 2025-07-01  James K. Lowden  <jklowden@cobolworx.com>
 
 	* Make-lang.in: Use && instead of semicolon between commands.

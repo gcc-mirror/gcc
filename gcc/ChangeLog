@@ -1,3 +1,106 @@
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_simd_valid_imm): Account
+	for FLOAT_WORDS_BIG_ENDIAN when building a floating-point value.
+
+2025-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_adjust_guessed_profile): Add forgotten
+	if (dump_file) guard.
+
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_sve_index_series_p): New
+	function, split out from...
+	(aarch64_simd_valid_imm): ...here.  Account for the different
+	SVE and Advanced SIMD element orders on big-endian targets.
+	Check each vector in a structure mode.
+
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-rtl-function.cc (function_reader::read_rtx_operand_r): Use
+	hard_regno_nregs to work out REG_NREGS for hard registers.
+
+2025-07-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add
+	new case SS_MINUS.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op ss_minus.
+
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ext-dce.cc (ext_dce_process_uses): Apply is_constant directly
+	to the subreg_lsb.
+
+2025-07-09  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/109286
+	* config.gcc: Include elfos.h before h8300/h8300.h.
+	* config/h8300/h8300.h (INIT_SECTION_ASM_OP): Override
+	default version from elfos.h.
+	(FINI_SECTION_ASM_OP): Ditto.
+	(ASM_DECLARE_FUNCTION_NAME): Ditto.
+	(ASM_GENERATE_INTERNAL_LABEL): Macro removed because it was
+	being overridden in elfos.h anyway.
+	(ASM_OUTPUT_SKIP): Ditto.
+
+2025-07-09  Icen Zeyada  <Icen.Zeyada2@arm.com>
+
+	PR tree-optimization/119196
+	* match.pd: Allow scalar optimizations with bitwise AND/OR/XOR to apply to vectors.
+
+2025-07-09  Icen Zeyada  <Icen.Zeyada2@arm.com>
+
+	PR tree-optimization/119196
+	* match.pd: Merge multiple vec_cond_expr in a single one for
+	bit_and, bit_ior and bit_xor.
+
+2025-07-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120642
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Do not do
+	constant AVL propagation for xtheadvector.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Get the
+	output vector type from slp_for_stmt_info.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Bail out earlier
+	for PURE_SLP_STMT when doing loop stmt analysis.
+
+2025-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (struct scale): New structure.
+	(add_scale): Also record weights.
+	(afdo_adjust_guessed_profile): Compute robust average
+	of scales and cap by max count in function.
+
+2025-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-inline.cc (initialize_cfun): Use num and den for scaling.
+
+2025-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (get_original_name): Fix loop walking the
+	suffixes.
+
+2025-07-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_neon.h: Remove useless push/pop pragmas.
+
+2025-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120922
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Support range
+	for partial vectors.
+
+2025-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120922
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Don't set range
+	for partial vectors.
+
 2025-07-08  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc (xtensa_b4const_or_zero):

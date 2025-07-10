@@ -1,3 +1,25 @@
+2025-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121012
+	PR c++/120917
+	* parser.cc (cp_parser_lambda_expression): Clear
+	parser->in_template_argument_list_p.
+
+2025-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121008
+	PR c++/113563
+	* semantics.cc (finish_this_expr): Do check current_class_ref for
+	non-lambda.
+
+2025-07-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119838
+	* parser.cc (cp_parser_nested_name_specifier_opt): New global_p
+	parameter.  Look for "template" when global_p is true.
+	(cp_parser_simple_type_specifier): Pass global_p to
+	cp_parser_nested_name_specifier_opt.
+
 2025-07-08  Marek Polacek  <polacek@redhat.com>
 	    Andrew Pinski  <quic_apinski@quicinc.com>
 

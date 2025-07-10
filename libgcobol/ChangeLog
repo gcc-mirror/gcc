@@ -1,3 +1,19 @@
+2025-07-09  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* libgcobol.cc (__gg__accept_envar): ACCEPT/DISPLAY environment variables.
+	(accept_envar): Likewise.
+	(default_exception_handler): Refine system log entries.
+	(open_syslog): Likewise.
+	(__gg__set_env_name): ACCEPT/DISPLAY environment variables.
+	(__gg__get_env_name): ACCEPT/DISPLAY environment variables.
+	(__gg__get_env_value): ACCEPT/DISPLAY environment variables.
+	(__gg__set_env_value): ACCEPT/DISPLAY environment variables.
+	(__gg__fprintf_stderr): Adjust __attribute__ for printf.
+	(__gg__set_arg_num): ACCEPT/DISPLAY command-line arguments.
+	(__gg__accept_arg_value): ACCEPT/DISPLAY command-line arguments.
+	(__gg__get_file_descriptor): DISPLAY on os_filename[] /dev device.
+
 2025-06-20  James K. Lowden  <jklowden@cobolworx.com>
 
 	* LICENSE: New file.

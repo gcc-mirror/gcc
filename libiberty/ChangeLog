@@ -1,3 +1,9 @@
+2025-07-09  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* Makefile.in: Add new header.
+	* testsuite/Makefile.in: Add new test.
+	* testsuite/test-doubly-linked-list.c: New test.
+
 2025-05-13  Andreas Schwab  <schwab@suse.de>
 
 	* regex.c (regex_compile): Don't write beyond array bounds when

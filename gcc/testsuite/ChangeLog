@@ -1,3 +1,179 @@
+2025-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120243
+	* g++.dg/coroutines/torture/pr120243-unhandled-1.C: New test.
+	* g++.dg/coroutines/torture/pr120243-unhandled-2.C: New test.
+
+2025-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121012
+	PR c++/120917
+	* g++.dg/cpp2a/lambda-targ17.C: New test.
+
+2025-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121008
+	PR c++/113563
+	* g++.dg/cpp2a/lambda-uneval28.C: New test.
+
+2025-07-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119838
+	* g++.dg/parse/template32.C: New test.
+
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/rtl/aarch64/vec-series-1.c: New test.
+	* gcc.dg/rtl/aarch64/vec-series-2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/dupq_2.c: Fix expected
+	output for this big-endian test.
+	* gcc.target/aarch64/sve/acle/general/dupq_4.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_3.c: Restrict to little-endian
+	targets and add more tests.
+	* gcc.target/aarch64/sve/vec_init_4.c: New big-endian version
+	of vec_init_3.c.
+
+2025-07-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-07-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-i8.c: New test.
+
+2025-07-09  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop_run.h: Set
+	MAX_RELATIVE_DIFF depending on type.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f16.c: Enable zvfh.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f16.c: Likewise.
+
+2025-07-09  Ciyan Pan  <panciyan@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_arith.h: Add vec_sat_u_sub_fmt wrap define.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_data.h: Add vec_sat_u_sub test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-1-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-1-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-1-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-1-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-10-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-10-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-10-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-10-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-2-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-2-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-2-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-2-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-3-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-3-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-3-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-3-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-4-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-4-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-4-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-4-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-5-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-5-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-5-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-5-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-6-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-6-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-6-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-6-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-7-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-7-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-7-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-7-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-8-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-8-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-8-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-8-u8.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-9-u16.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-9-u32.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-9-u64.c: Remove test data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub-run-9-u8.c: Remove test data.
+
+2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr118348_1.c: Require fstack_protector.
+	* gcc.target/aarch64/pr118348_2.c: Likewise.
+
+2025-07-09  Icen Zeyada  <Icen.Zeyada2@arm.com>
+
+	* gcc.target/aarch64/vector-compare-5.c: Add new test for vector compare simplification.
+
+2025-07-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120642
+	* gcc.target/riscv/rvv/xtheadvector/pr120642.c: New test.
+
+2025-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/120093
+	* gcc.dg/vect/pr101145.c: Use noipa instead of noinline
+	attribute.
+
+2025-07-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/pattern-avg-1.c: Fix on -m31.
+	* gcc.target/s390/vector/pattern-mulh-1.c: Fix on -m31.
+	* gcc.target/s390/vector/pattern-mulh-2.c: Fix on -m31.
+
+2025-07-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/builtin-dynamic-object-size-pr120780.c: Fix 'main' function.
+
+2025-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120922
+	* gcc.dg/vect/pr120922.c: New test.
+
+2025-07-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add xlen check for
+	uint128_t.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u16-from-u128.c: Enable
+	run test for rv64 only.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u32-from-u128.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u64-from-u128.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u8-from-u128.c: Ditto.
+
 2025-07-08  Marek Polacek  <polacek@redhat.com>
 	    Andrew Pinski  <quic_apinski@quicinc.com>
 

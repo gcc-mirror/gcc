@@ -1,3 +1,67 @@
+2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (__uninitialized_default):
+	Do not use optimized implementation for constexpr case. Use
+	_GLIBCXX20_CONSTEXPR instead of _GLIBCXX26_CONSTEXPR.
+
+2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mdspan (mdspan): Add template keyword for
+	dependent name.
+
+2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120997
+	* include/std/span (span::first, span::last, span::subspan): Do
+	not use braced-init-list for return statements.
+	* testsuite/23_containers/span/120997.cc: New test.
+
+2025-07-09  Paul Keir  <pkeir@outlook.com>
+
+	PR libstdc++/117403
+	* include/bits/shared_ptr.h (shared_ptr::owner_equal)
+	(shared_ptr::owner_hash, weak_ptr::owner_equal)
+	(weak_ptr::owner_hash): Define new member functions.
+	* include/bits/shared_ptr_base.h (owner_equal, owner_hash):
+	Define new structs.
+	* include/bits/version.def (smart_ptr_owner_equality): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory: Added define for
+	__glibcxx_want_smart_ptr_owner_equality.
+	* testsuite/20_util/owner_equal/version.cc: New test.
+	* testsuite/20_util/owner_equal/cmp.cc: New test.
+	* testsuite/20_util/owner_equal/noexcept.cc: New test.
+	* testsuite/20_util/owner_hash/cmp.cc: New test.
+	* testsuite/20_util/owner_hash/noexcept.cc: New test.
+	* testsuite/20_util/shared_ptr/observers/owner_equal.cc: New
+	test.
+	* testsuite/20_util/shared_ptr/observers/owner_hash.cc:
+	New test.
+	* testsuite/20_util/weak_ptr/observers/owner_equal.cc: New test.
+	* testsuite/20_util/weak_ptr/observers/owner_hash.cc: New test.
+
+2025-07-09  Mateusz Zych  <mte.zych@gmail.com>
+
+	* include/bits/max_size_type.h (numeric_limits<__max_size_type>):
+	New members.
+	(numeric_limits<__max_diff_type>): Likewise.
+	* testsuite/std/ranges/iota/max_size_type.cc: New test cases.
+
+2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc: Adjust indentation of unnamed
+	namespaces.
+	(pool_sizes): Add comment.
+	(choose_block_size): Move outside preprocessor group for
+	gthreads targets.
+	* testsuite/20_util/synchronized_pool_resource/118681.cc:
+	Require gthreads.
+
+2025-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:
+	Updated.
+
 2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/118681
