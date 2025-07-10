@@ -3091,8 +3091,8 @@ static cp_token *cp_parser_require_keyword
   (cp_parser *, enum rid, required_token);
 static bool cp_parser_token_starts_function_definition_p
   (cp_token *);
-static bool cp_parser_next_token_starts_class_definition_p
-  (cp_parser *);
+static bool cp_parser_nth_token_starts_class_definition_p
+  (cp_parser *, size_t);
 static bool cp_parser_next_token_ends_template_argument_p
   (cp_parser *);
 static bool cp_parser_nth_token_starts_template_argument_list_p
@@ -22031,7 +22031,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
 	  bool template_p =
 	    (template_parm_lists_apply
-	     && (cp_parser_next_token_starts_class_definition_p (parser)
+	     && (cp_parser_nth_token_starts_class_definition_p (parser, 1)
 		 || cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)));
 	  /* An unqualified name was used to reference this type, so
 	     there were no qualifying templates.  */
@@ -28095,6 +28095,13 @@ cp_parser_class_property_specifier_seq_opt (cp_parser *parser)
 	break;
       if (id_equal (token->u.value, "final"))
 	{
+	  /* For C++98, quietly ignore final in e.g.
+	     struct S final = 24;  */
+	  if (cxx_dialect == cxx98
+	      && virt_specifiers == VIRT_SPEC_UNSPECIFIED
+	      && !cp_parser_nth_token_starts_class_definition_p (parser, 2)
+	      && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
+	    break;
 	  maybe_warn_cpp0x (CPP0X_OVERRIDE_CONTROLS);
 	  virt_specifier = VIRT_SPEC_FINAL;
 	}
@@ -28318,7 +28325,7 @@ cp_parser_class_head (cp_parser* parser,
      class-head, since a class-head only appears as part of a
      class-specifier.  We have to detect this situation before calling
      xref_tag, since that has irreversible side-effects.  */
-  if (!cp_parser_next_token_starts_class_definition_p (parser))
+  if (!cp_parser_nth_token_starts_class_definition_p (parser, 1))
     {
       cp_parser_error (parser, "expected %<{%> or %<:%>");
       type = error_mark_node;
@@ -35696,15 +35703,15 @@ cp_parser_token_starts_function_definition_p (cp_token* token)
 	  || token->keyword == RID_RETURN);
 }
 
-/* Returns TRUE iff the next token is the ":" or "{" beginning a class
+/* Returns TRUE iff the Nth token is the ":" or "{" beginning a class
    definition.  */
 
 static bool
-cp_parser_next_token_starts_class_definition_p (cp_parser *parser)
+cp_parser_nth_token_starts_class_definition_p (cp_parser *parser, size_t n)
 {
   cp_token *token;
 
-  token = cp_lexer_peek_token (parser->lexer);
+  token = cp_lexer_peek_nth_token (parser->lexer, n);
   return (token->type == CPP_OPEN_BRACE
 	  || (token->type == CPP_COLON
 	      && !parser->colon_doesnt_start_class_def_p));
