@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "auto-profile.h"
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
+#include "output.h"
 
 /* The following routines implements AutoFDO optimization.
 
@@ -430,7 +431,8 @@ public:
   void
   set_call_location (location_t l)
   {
-    gcc_checking_assert (call_location_ == UNKNOWN_LOCATION);
+    gcc_checking_assert (call_location_ == UNKNOWN_LOCATION
+			 && l != UNKNOWN_LOCATION);
     call_location_= l;
   }
 
@@ -685,6 +687,26 @@ dump_afdo_loc (FILE *f, unsigned loc)
     fprintf (f, "%i", loc >> 16);
 }
 
+/* Return assembler name as in symbol table and DW_AT_linkage_name.  */
+
+static const char *
+raw_symbol_name (const char *asmname)
+{
+  /* If we start supporting user_label_prefixes, add_linkage_attr will also
+     need to be fixed.  */
+  if (strlen (user_label_prefix))
+    sorry ("auto-profile is not supported for targets with user label prefix");
+  return asmname + (asmname[0] == '*');
+}
+
+/* Convenience wrapper that looks up assembler name.  */
+
+static const char *
+raw_symbol_name (tree decl)
+{
+  return raw_symbol_name (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+}
+
 /* Dump STACK to F.  */
 
 static void
@@ -695,7 +717,7 @@ dump_inline_stack (FILE *f, inline_stack *stack)
     {
       fprintf (f, "%s%s:",
 	       first ? "" : "; ",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.decl)));
+	       raw_symbol_name (p.decl));
       dump_afdo_loc (f, p.afdo_loc);
       first = false;
     }
@@ -817,7 +839,7 @@ string_table::get_index (const char *name) const
 int
 string_table::get_index_by_decl (tree decl) const
 {
-  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *name = raw_symbol_name (decl);
   int ret = get_index (name);
   if (ret != -1)
     return ret;
@@ -880,10 +902,9 @@ function_instance::~function_instance ()
 cgraph_node *
 function_instance::get_cgraph_node ()
 {
-  for (symtab_node *n = cgraph_node::get_for_asmname
-			    (get_identifier
-			       (afdo_string_table->get_name (name ())));
-       n; n = n->next_sharing_asm_name)
+  const char *sname = afdo_string_table->get_name (name ());
+  symtab_node *n = cgraph_node::get_for_asmname (get_identifier (sname));
+  for (;n; n = n->next_sharing_asm_name)
     if (cgraph_node *cn = dyn_cast <cgraph_node *> (n))
       if (cn->definition && cn->has_gimple_body_p ())
 	return cn;
@@ -921,10 +942,10 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
 	  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
 			   dump_user_location_t::from_location_t (location),
 			   "auto-profile has mismatched function name %s"
-			   " instaed of %s at loc %i:%i",
+			   " insteed of %s at loc %i:%i",
 			   afdo_string_table->get_name (iter.first.second),
-			   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-			   lineno << 16,
+			   raw_symbol_name (decl),
+			   lineno >> 16,
 			   lineno & 65535);
     }
 
@@ -1127,10 +1148,13 @@ function_instance::offline_if_in_set (name_index_set &seen,
    Return non-zero if it correspons and 2 if renaming was done.  */
 
 static int
-match_with_target (gimple *stmt, function_instance *inlined_fn, cgraph_node *n)
+match_with_target (cgraph_node *n,
+		   gimple *stmt,
+		   function_instance *inlined_fn,
+		   cgraph_node *orig_callee)
 {
-  const char *symbol_name = IDENTIFIER_POINTER
-			       (DECL_ASSEMBLER_NAME (n->decl));
+  cgraph_node *callee = orig_callee->ultimate_alias_target ();
+  const char *symbol_name = raw_symbol_name (callee->decl);
   const char *name = afdo_string_table->get_name (inlined_fn->name ());
   if (strcmp (name, symbol_name))
     {
@@ -1144,8 +1168,8 @@ match_with_target (gimple *stmt, function_instance *inlined_fn, cgraph_node *n)
 	    in_suffix = true;
 	}
       /* Accept dwarf names and stripped suffixes.  */
-      if (!strcmp (lang_hooks.dwarf_name (n->decl, 0),
-		   afdo_string_table->get_name (inlined_fn->name ()))
+      if (!strcmp (lang_hooks.dwarf_name (callee->decl, 0),
+		       afdo_string_table->get_name (inlined_fn->name ()))
 	  || (!name[i] && symbol_name[i] == '.')
 	  || in_suffix)
 	{
@@ -1159,10 +1183,14 @@ match_with_target (gimple *stmt, function_instance *inlined_fn, cgraph_node *n)
 	  inlined_fn->set_name (index);
 	  return 2;
 	}
-      warning_at (gimple_location (stmt), OPT_Wauto_profile,
-		  "auto-profile contains inlined "
-		  "function with symbol name %s instead of symbol name %s",
-		  name, symbol_name);
+      /* Only warn about declarations.  It is possible that the function is
+	 declared as alias in other module and we inlined cross-module.  */
+      if (callee->definition
+	  && warning (OPT_Wauto_profile,
+		      "auto-profile of %q+F contains inlined "
+		      "function with symbol name %s instead of symbol name %s",
+		      n->decl, name, symbol_name))
+	inform (gimple_location (stmt), "corresponding call");
       return 0;
     }
   return 1;
@@ -1205,13 +1233,14 @@ function_instance::lookup_count (location_t loc, inline_stack &stack,
   if (stack.length ())
     {
       int c = pos_counts.count (stack[0].afdo_loc);
-      if (c > 1)
-	warning_at (loc, OPT_Wauto_profile,
-		    "duplicated count information"
-		    " in auto-profile of %q+F"
-		    " with relative location %i discriminator %i",
-		    node->decl, stack[0].afdo_loc >> 16,
-		    stack[0].afdo_loc & 65535);
+      if (c > 1
+	  && warning (OPT_Wauto_profile,
+		      "duplicated count information"
+		      " in auto-profile of %q+F"
+		      " with relative location %i discriminator %i",
+		      node->decl, stack[0].afdo_loc >> 16,
+		      stack[0].afdo_loc & 65535))
+	  inform (loc, "corresponding source location");
       if (c)
 	return &pos_counts[stack[0].afdo_loc];
     }
@@ -1273,6 +1302,7 @@ function_instance::match (cgraph_node *node,
   hash_set<const count_info *> counts;
   hash_set<const count_info *> targets;
   hash_set<const function_instance *> functions;
+  hash_set<const function_instance *> functions_to_offline;
 
   /* We try to fill in lost disciminator if there is unique call
      with given line number.  This map is used to record them.  */
@@ -1376,20 +1406,23 @@ function_instance::match (cgraph_node *node,
 			  inlined_fn_nodisc = iter.second;
 			cnodis++;
 		      }
-		  if (c > 1 || cnodis > 1)
-		    warning_at (gimple_location (stmt), OPT_Wauto_profile,
-				"duplicated callsite in auto-profile of %q+F"
-				" with relative location %i, discriminator %i",
-				node->decl, stack[0].afdo_loc >> 16,
-				stack[0].afdo_loc & 65535);
-		  if (inlined_fn && info && info->targets.size ())
-		    warning_at (gimple_location (stmt), OPT_Wauto_profile,
-				"both call targets and inline callsite"
-				" information is present in auto-profile"
-				" of function %q+F with relative location"
-				" %i, discriminator %i",
-				node->decl, stack[0].afdo_loc >> 16,
-				stack[0].afdo_loc & 65535);
+		  if ((c > 1 || (!c && cnodis > 1))
+		      && warning (OPT_Wauto_profile,
+				  "duplicated callsite in auto-profile of %q+F"
+				  " with relative location %i,"
+				  " discriminator %i",
+				  node->decl, stack[0].afdo_loc >> 16,
+				  stack[0].afdo_loc & 65535))
+		    inform (gimple_location (stmt), "corresponding call");
+		  if (inlined_fn && info && info->targets.size ()
+		      && warning (OPT_Wauto_profile,
+				  "both call targets and inline callsite"
+				  " information is present in auto-profile"
+				  " of function %q+F with relative location"
+				  " %i, discriminator %i",
+				  node->decl, stack[0].afdo_loc >> 16,
+				  stack[0].afdo_loc & 65535))
+		    inform (gimple_location (stmt), "corresponding call");
 		  tree callee = gimple_call_fndecl (stmt);
 		  cgraph_node *callee_node;
 		  unsigned int loc = stack[0].afdo_loc;
@@ -1422,11 +1455,17 @@ function_instance::match (cgraph_node *node,
 		      if (lineno_to_call.get
 			      (stack[0].afdo_loc >> 16)->length () == 1)
 			{
-			  warning_at (gimple_location (stmt), OPT_Wauto_profile,
-				      "auto-profile of %q+F seem to contain"
-				      " lost discriminator %i for call at"
-				      " relative location %i",
-				      node->decl, loc & 65535, loc >> 16);
+			  if (warning (OPT_Wauto_profile,
+				       "auto-profile of %q+F seem to contain"
+				       " lost discriminator %i for"
+				       " call of %s at relative location %i",
+				       node->decl,
+				       loc & 65535,
+				       afdo_string_table->get_name
+					 (inlined_fn_nodisc->name ()),
+				       loc >> 16))
+			    inform (gimple_location (stmt),
+				    "corresponding call");
 			  inlined_fn = inlined_fn_nodisc;
 			  if (dump_file)
 			    fprintf (dump_file, "   Lost discriminator %i\n",
@@ -1437,11 +1476,10 @@ function_instance::match (cgraph_node *node,
 		    }
 		  if (callee && (callee_node = cgraph_node::get (callee)))
 		    {
-		      callee_node = callee_node->ultimate_alias_target ();
 		      if (inlined_fn)
 			{
 			  int old_name = inlined_fn->name ();
-			  int r = match_with_target (stmt, inlined_fn,
+			  int r = match_with_target (node, stmt, inlined_fn,
 						     callee_node);
 			  if (r == 2)
 			    {
@@ -1458,6 +1496,8 @@ function_instance::match (cgraph_node *node,
 			    }
 			  if (r)
 			    functions.add (inlined_fn);
+			  else
+			    functions_to_offline.add (inlined_fn);
 			}
 
 		      if (info && info->targets.size () > 1)
@@ -1475,19 +1515,24 @@ function_instance::match (cgraph_node *node,
 		    {
 		      if (inlined_fn
 			  && inlined_fn->get_call_location ()
-				  != UNKNOWN_LOCATION
-			  && warning_at (gimple_location (stmt),
-					 OPT_Wauto_profile,
-					 "%q+F contains two calls of the same"
-					 " relative location +%i,"
-					 " discrimnator %i,"
-					 " that leads to lost auto-profile",
-					 node->decl,
-					 loc << 16,
-					 loc & 65535))
+				  != UNKNOWN_LOCATION)
 			{
-			  inform (inlined_fn->get_call_location (),
-				  "location of the earlier call");
+			  if (warning (OPT_Wauto_profile,
+				       "function contains two calls of the same"
+				       " relative location +%i,"
+				       " discrimnator %i,"
+				       " that leads to lost auto-profile",
+				       loc >> 16,
+				       loc & 65535))
+			    {
+			      inform (gimple_location (stmt),
+				      "location of the first call");
+			      inform (inlined_fn->get_call_location (),
+				      "location of the second call");
+			    }
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "   Duplicated call location\n");
 			  inlined_fn = NULL;
 			}
 		      if (inlined_fn)
@@ -1561,11 +1606,18 @@ function_instance::match (cgraph_node *node,
     (DECL_STRUCT_FUNCTION (node->decl)->function_end_locus, node->decl);
   unsigned int start_location = get_combined_location
     (DECL_STRUCT_FUNCTION (node->decl)->function_start_locus, node->decl);
+  /* When outputting code to builtins location we use line number 0.
+     craeate_gcov is stupid and hapilly computes offsets across files.
+     Silently ignore it.  */
+  unsigned int zero_location
+	  = ((unsigned)(1-DECL_SOURCE_LINE (node->decl))) << 16;
   for (position_count_map::const_iterator iter = pos_counts.begin ();
        iter != pos_counts.end ();)
     if (!counts.contains (&iter->second))
       {
-	if (iter->first != end_location && iter->first != start_location
+	if (iter->first != end_location
+	    && iter->first != start_location
+	    && (iter->first & 65535) != zero_location
 	    && iter->first)
 	  {
 	    if (!warned)
@@ -1603,28 +1655,42 @@ function_instance::match (cgraph_node *node,
        iter != callsites.end ();)
     if (!functions.contains (iter->second))
       {
-	if (!warned)
-	  warned = warning_at (DECL_SOURCE_LOCATION (node->decl),
-			       OPT_Wauto_profile,
-			       "auto-profile of %q+F contains extra callsites",
-			       node->decl);
-	if (warned)
-	  inform (DECL_SOURCE_LOCATION (node->decl),
-		  "call of %s with relative location +%i, discriminator %i",
-		  afdo_string_table->get_name (iter->first.second),
-		  iter->first.first >> 16, iter->first.first & 65535);
-	if ((iter->first.first >> 16) > (end_location >> 16) && warned)
-	  inform (DECL_SOURCE_LOCATION (node->decl),
-		  "location is after end of function");
-	warned = true;
 	function_instance *f = iter->second;
-	if (dump_file)
+	/* If we did not see the corresponding statement, warn.  */
+	if (!functions_to_offline.contains (iter->second))
+	  {
+	    if (!warned)
+	      warned = warning_at (DECL_SOURCE_LOCATION (node->decl),
+				   OPT_Wauto_profile,
+				   "auto-profile of %q+F contains"
+				   " extra callsites",
+				   node->decl);
+	    if (warned)
+	      inform (DECL_SOURCE_LOCATION (node->decl),
+		      "call of %s with total count %" PRId64
+		      ", relative location +%i, discriminator %i",
+		      afdo_string_table->get_name (iter->first.second),
+		      iter->second->total_count (),
+		      iter->first.first >> 16, iter->first.first & 65535);
+	    if ((iter->first.first >> 16) > (end_location >> 16) && warned)
+	      inform (DECL_SOURCE_LOCATION (node->decl),
+		      "location is after end of function");
+	    if (dump_file)
+	      {
+		fprintf (dump_file,
+			 "Offlining inline with no corresponding gimple stmt ");
+		f->dump_inline_stack (dump_file);
+		fprintf (dump_file, "\n");
+	      }
+	  }
+	else if (dump_file)
 	  {
 	    fprintf (dump_file,
-		     "Offlining inline with no corresponding gimple stmt ");
+		     "Offlining mismatched inline ");
 	    f->dump_inline_stack (dump_file);
 	    fprintf (dump_file, "\n");
 	  }
+	warned = true;
 	callsites.erase (iter);
 	offline (f, new_functions);
 	iter = callsites.begin ();
@@ -1923,7 +1989,7 @@ autofdo_source_profile::offline_external_functions ()
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       const char *name
-	  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl));
+	  = raw_symbol_name (node->decl);
       const char *dwarf_name = lang_hooks.dwarf_name (node->decl, 0);
       int index = afdo_string_table->get_index (name);
 
@@ -2105,8 +2171,7 @@ walk_block (tree fn, function_instance *s, tree block)
 	      fprintf (dump_file, ":");
 	      dump_afdo_loc (dump_file, loc);
 	      fprintf (dump_file, " %s\n",
-		       IDENTIFIER_POINTER
-			 (DECL_ASSEMBLER_NAME (BLOCK_ABSTRACT_ORIGIN (block))));
+		       raw_symbol_name (BLOCK_ABSTRACT_ORIGIN (block)));
 	    }
 	  return;
 	}
@@ -2464,7 +2529,7 @@ autofdo_source_profile::get_callsite_total_count (
     {
       if (dump_file)
 	fprintf (dump_file, "Mismatched name of callee %s and profile %s\n",
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (edge->callee->decl)),
+		 raw_symbol_name (edge->callee->decl),
 		 afdo_string_table->get_name (s->name ()));
       return 0;
     }
@@ -2558,8 +2623,7 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
     {
       if (dump_file)
 	fprintf (dump_file, "No offline instance for %s\n",
-		 IDENTIFIER_POINTER
-		   (DECL_ASSEMBLER_NAME (stack[stack.length () - 1].decl)));
+		 raw_symbol_name (stack[stack.length () - 1].decl));
       return NULL;
     }
   function_instance *s = iter->second;
@@ -2581,8 +2645,7 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
 			      "auto-profile has no inlined function instance "
 			      "for inlined call of %s at relative "
 			      " locaction +%i, discriminator %i\n",
-			     IDENTIFIER_POINTER
-			      (DECL_ASSEMBLER_NAME (stack[i - 1].decl)),
+			     raw_symbol_name (stack[i - 1].decl),
 			     stack[i].afdo_loc >> 16,
 			     stack[i].afdo_loc & 65535);
 	  return NULL;
