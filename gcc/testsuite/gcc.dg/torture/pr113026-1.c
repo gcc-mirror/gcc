@@ -1,4 +1,6 @@
-/* { dg-do compile } */ 
+/* { dg-do compile } */
+/* When tracing the vector epilog we diagnose an unreachable access.  */
+/* { dg-skip-if "" { *-*-* } { "-ftracer" } { "" } } */
 /* { dg-additional-options "-Wall" } */
 
 char dst[16];

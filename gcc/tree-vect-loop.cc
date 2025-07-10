@@ -941,13 +941,6 @@ static bool
 vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 {
   unsigned HOST_WIDE_INT const_vf;
-  HOST_WIDE_INT max_niter
-    = likely_max_stmt_executions_int (LOOP_VINFO_LOOP (loop_vinfo));
-
-  unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
-  if (!th && LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo))
-    th = LOOP_VINFO_COST_MODEL_THRESHOLD (LOOP_VINFO_ORIG_LOOP_INFO
-					  (loop_vinfo));
 
   loop_vec_info main_loop_vinfo
     = (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
@@ -961,31 +954,23 @@ vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 	= LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo);
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
 	peel_niter += 1;
-      if (!multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo) - peel_niter,
-		       LOOP_VINFO_VECT_FACTOR (loop_vinfo)))
-	return true;
+      return !multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo) - peel_niter,
+			  LOOP_VINFO_VECT_FACTOR (loop_vinfo));
     }
-  else if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo)
-      /* ??? When peeling for gaps but not alignment, we could
-	 try to check whether the (variable) niters is known to be
-	 VF * N + 1.  That's something of a niche case though.  */
-      || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-      || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&const_vf)
-      || ((tree_ctz (LOOP_VINFO_NITERS (loop_vinfo))
-	   < (unsigned) exact_log2 (const_vf))
-	  /* In case of versioning, check if the maximum number of
-	     iterations is greater than th.  If they are identical,
-	     the epilogue is unnecessary.  */
-	  && (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
-	      || ((unsigned HOST_WIDE_INT) max_niter
-		  /* We'd like to use LOOP_VINFO_VERSIONING_THRESHOLD
-		     but that's only computed later based on our result.
-		     The following is the most conservative approximation.  */
-		  > (std::max ((unsigned HOST_WIDE_INT) th,
-			       const_vf) / const_vf) * const_vf))))
-    return true;
 
-  return false;
+  if (!LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo)
+      && !LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+      && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&const_vf))
+    {
+      /* When the number of iterations is a multiple of the vectorization
+	 factor and we are not doing prologue or forced epilogue peeling
+	 the epilogue isn't necessary.  */
+      if (tree_ctz (LOOP_VINFO_NITERS (loop_vinfo))
+	  >= (unsigned) exact_log2 (const_vf))
+	return false;
+    }
+
+  return true;
 }
 
 /* Each statement in LOOP_VINFO can be masked where necessary.  Check
