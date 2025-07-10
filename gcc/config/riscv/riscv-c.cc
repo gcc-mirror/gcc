@@ -34,77 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 
-struct pragma_intrinsic_flags
-{
-  int intrinsic_riscv_isa_flags;
-
-  int intrinsic_riscv_vector_elen_flags;
-  int intrinsic_riscv_zvl_subext;
-  int intrinsic_riscv_zvb_subext;
-  int intrinsic_riscv_zvk_subext;
-};
-
-static void
-riscv_pragma_intrinsic_flags_pollute (struct pragma_intrinsic_flags *flags)
-{
-  flags->intrinsic_riscv_isa_flags = riscv_isa_flags;
-  flags->intrinsic_riscv_vector_elen_flags = riscv_vector_elen_flags;
-  flags->intrinsic_riscv_zvl_subext = riscv_zvl_subext;
-  flags->intrinsic_riscv_zvb_subext = riscv_zvb_subext;
-  flags->intrinsic_riscv_zvk_subext = riscv_zvk_subext;
-
-  riscv_isa_flags = riscv_isa_flags
-    | MASK_VECTOR;
-
-  riscv_zvl_subext = riscv_zvl_subext
-    | MASK_ZVL32B
-    | MASK_ZVL64B
-    | MASK_ZVL128B
-    | MASK_ZVL256B
-    | MASK_ZVL512B
-    | MASK_ZVL1024B
-    | MASK_ZVL2048B
-    | MASK_ZVL4096B;
-
-  riscv_vector_elen_flags = riscv_vector_elen_flags
-    | MASK_VECTOR_ELEN_32
-    | MASK_VECTOR_ELEN_64
-    | MASK_VECTOR_ELEN_FP_16
-    | MASK_VECTOR_ELEN_FP_32
-    | MASK_VECTOR_ELEN_FP_64;
-
-  riscv_zvb_subext = riscv_zvb_subext
-    | MASK_ZVBB
-    | MASK_ZVBC
-    | MASK_ZVKB;
-
-  riscv_zvk_subext = riscv_zvk_subext
-    | MASK_ZVKG
-    | MASK_ZVKNED
-    | MASK_ZVKNHA
-    | MASK_ZVKNHB
-    | MASK_ZVKSED
-    | MASK_ZVKSH
-    | MASK_ZVKN
-    | MASK_ZVKNC
-    | MASK_ZVKNG
-    | MASK_ZVKS
-    | MASK_ZVKSC
-    | MASK_ZVKSG
-    | MASK_ZVKT;
-}
-
-static void
-riscv_pragma_intrinsic_flags_restore (struct pragma_intrinsic_flags *flags)
-{
-  riscv_isa_flags = flags->intrinsic_riscv_isa_flags;
-
-  riscv_vector_elen_flags = flags->intrinsic_riscv_vector_elen_flags;
-  riscv_zvl_subext = flags->intrinsic_riscv_zvl_subext;
-  riscv_zvb_subext = flags->intrinsic_riscv_zvb_subext;
-  riscv_zvk_subext = flags->intrinsic_riscv_zvk_subext;
-}
-
 static int
 riscv_ext_version_value (unsigned major, unsigned minor)
 {
@@ -278,20 +207,7 @@ riscv_pragma_intrinsic (cpp_reader *)
       || strcmp (name, "xtheadvector") == 0
       || strcmp (name, "xsfvcp") == 0)
     {
-      struct pragma_intrinsic_flags backup_flags;
-
-      riscv_pragma_intrinsic_flags_pollute (&backup_flags);
-
-      riscv_option_override ();
-      init_adjust_machine_modes ();
-      riscv_vector::reinit_builtins ();
       riscv_vector::handle_pragma_vector ();
-
-      riscv_pragma_intrinsic_flags_restore (&backup_flags);
-
-      /* Re-initialize after the flags are restored.  */
-      riscv_option_override ();
-      init_adjust_machine_modes ();
     }
   else
     error ("unknown %<#pragma riscv intrinsic%> option %qs", name);
