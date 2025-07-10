@@ -362,7 +362,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
-      return true;
+      return false;
     }
 
   auto it = adtFieldIndexToField.find (field_index);
