@@ -556,13 +556,12 @@ namespace ranges
     __destroy_fn::operator()(_Iter __first, _Sent __last) const noexcept
     {
       if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
-	return ranges::next(std::move(__first), __last);
-      else
-	{
-	  for (; __first != __last; ++__first)
-	    ranges::destroy_at(std::__addressof(*__first));
-	  return __first;
-	}
+	if (!is_constant_evaluated())
+	  return ranges::next(std::move(__first), __last);
+
+      for (; __first != __last; ++__first)
+	ranges::destroy_at(std::__addressof(*__first));
+      return __first;
     }
 
   template<__detail::__nothrow_input_range _Range>
@@ -581,13 +580,12 @@ namespace ranges
       operator()(_Iter __first, iter_difference_t<_Iter> __n) const noexcept
       {
 	if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
-	  return ranges::next(std::move(__first), __n);
-	else
-	  {
-	    for (; __n > 0; ++__first, (void)--__n)
-	      ranges::destroy_at(std::__addressof(*__first));
-	    return __first;
-	  }
+	  if (!is_constant_evaluated())
+	    return ranges::next(std::move(__first), __n);
+
+	for (; __n > 0; ++__first, (void)--__n)
+	  ranges::destroy_at(std::__addressof(*__first));
+	return __first;
       }
   };
 
