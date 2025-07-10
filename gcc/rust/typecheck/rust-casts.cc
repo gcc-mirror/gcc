@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-casts.h"
+#include "rust-tyty-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -28,15 +29,20 @@ TypeCastRules::TypeCastRules (location_t locus, TyTy::TyWithLocation from,
 
 TypeCoercionRules::CoercionResult
 TypeCastRules::resolve (location_t locus, TyTy::TyWithLocation from,
-			TyTy::TyWithLocation to)
+			TyTy::TyWithLocation to, bool emit_error)
 {
   TypeCastRules cast_rules (locus, from, to);
-  return cast_rules.check ();
+  return cast_rules.check (emit_error);
 }
 
 TypeCoercionRules::CoercionResult
-TypeCastRules::check ()
+TypeCastRules::check (bool emit_error)
 {
+  // try the simple cast rules
+  auto simple_cast = cast_rules ();
+  if (!simple_cast.is_error ())
+    return simple_cast;
+
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L565-L582
   auto possible_coercion
     = TypeCoercionRules::TryCoerce (from.get_ty (), to.get_ty (), locus,
@@ -51,13 +57,9 @@ TypeCastRules::check ()
 					true /*is_cast_site*/);
     }
 
-  // try the simple cast rules
-  auto simple_cast = cast_rules ();
-  if (!simple_cast.is_error ())
-    return simple_cast;
+  if (emit_error)
+    TypeCastRules::emit_cast_error (locus, from, to);
 
-  // failed to cast
-  emit_cast_error ();
   return TypeCoercionRules::CoercionResult::get_error ();
 }
 
@@ -329,7 +331,27 @@ TypeCastRules::check_ptr_ptr_cast ()
     }
   else if (from_is_ref && to_is_ref)
     {
-      // mutability must be coercedable
+      const auto &from_ref = *from.get_ty ()->as<TyTy::ReferenceType> ();
+      const auto &to_ref = *to.get_ty ()->as<TyTy::ReferenceType> ();
+
+      if (from_ref.is_dyn_object () != to_ref.is_dyn_object ())
+	{
+	  // this needs to be handled by coercion logic
+	  return TypeCoercionRules::CoercionResult::get_error ();
+	}
+
+      // are the underlying types safely simple castable?
+      const auto to_underly = to_ref.get_base ();
+      const auto from_underly = from_ref.get_base ();
+      auto res = resolve (locus, TyTy::TyWithLocation (from_underly),
+			  TyTy::TyWithLocation (to_underly), false);
+      if (res.is_error ())
+	{
+	  // this needs to be handled by coercion logic
+	  return TypeCoercionRules::CoercionResult::get_error ();
+	}
+
+      // mutability must be coerceable
       TyTy::ReferenceType &f
 	= static_cast<TyTy::ReferenceType &> (*from.get_ty ());
       TyTy::ReferenceType &t
@@ -346,7 +368,8 @@ TypeCastRules::check_ptr_ptr_cast ()
 }
 
 void
-TypeCastRules::emit_cast_error () const
+TypeCastRules::emit_cast_error (location_t locus, TyTy::TyWithLocation from,
+				TyTy::TyWithLocation to)
 {
   rich_location r (line_table, locus);
   r.add_range (from.get_locus ());
