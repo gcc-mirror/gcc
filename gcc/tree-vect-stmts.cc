@@ -2466,17 +2466,10 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			     vls_type == VLS_LOAD ? "gather" : "scatter");
 	  return false;
 	}
-      else if (!vect_is_simple_use (gs_info->offset, vinfo,
-				    &gs_info->offset_dt,
-				    &gs_info->offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "%s index use not simple.\n",
-			     vls_type == VLS_LOAD ? "gather" : "scatter");
-	  return false;
-	}
-      else if (gs_info->ifn == IFN_LAST && !gs_info->decl)
+      slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
+      gs_info->offset_dt = SLP_TREE_DEF_TYPE (offset_node);
+      gs_info->offset_vectype = SLP_TREE_VECTYPE (offset_node);
+      if (gs_info->ifn == IFN_LAST && !gs_info->decl)
 	{
 	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
 	      || !TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype).is_constant ()
