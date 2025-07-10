@@ -316,7 +316,8 @@ public:
   expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1, false);
-    return e.use_exact_insn (CODE_FOR_aarch64_gather_ld1q);
+    auto icode = code_for_aarch64_gather_ld1q (e.tuple_mode (0));
+    return e.use_exact_insn (icode);
   }
 };
 
@@ -722,7 +723,7 @@ public:
   expand (function_expander &e) const override
   {
     rtx data = e.args.last ();
-    e.args.last () = force_lowpart_subreg (VNx2DImode, data, GET_MODE (data));
+    e.args.last () = aarch64_sve_reinterpret (VNx2DImode, data);
     e.prepare_gather_address_operands (1, false);
     return e.use_exact_insn (CODE_FOR_aarch64_scatter_st1q);
   }

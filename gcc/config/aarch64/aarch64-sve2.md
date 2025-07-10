@@ -334,12 +334,21 @@
 ;; - LD1Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
-;; Model this as operating on the largest valid element size, which is DI.
-;; This avoids having to define move patterns & more for VNx1TI, which would
-;; be difficult without a non-gather form of LD1Q.
-(define_insn "aarch64_gather_ld1q"
-  [(set (match_operand:VNx2DI 0 "register_operand")
-	(unspec:VNx2DI
+;; For little-endian targets, it would be enough to use a single pattern,
+;; with a subreg to bitcast the result to whatever mode is needed.
+;; However, on big-endian targets, the bitcast would need to be an
+;; aarch64_sve_reinterpret instruction.  That would interact badly
+;; with the "&" and "?" constraints in this pattern: if the result
+;; of the reinterpret needs to be in the same register as the index,
+;; the RA would tend to prefer to allocate a separate register for the
+;; intermediate (uncast) result, even if the reinterpret prefers tying.
+;;
+;; The index is logically VNx1DI rather than VNx2DI, but introducing
+;; and using VNx1DI would just create more bitcasting.  The ACLE intrinsic
+;; uses svuint64_t, which corresponds to VNx2DI.
+(define_insn "@aarch64_gather_ld1q<mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand")
+	(unspec:SVE_FULL
 	  [(match_operand:VNx2BI 1 "register_operand")
 	   (match_operand:DI 2 "aarch64_reg_or_zero")
 	   (match_operand:VNx2DI 3 "register_operand")
