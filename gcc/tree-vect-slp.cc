@@ -1114,6 +1114,16 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       matches[0] = false;
       return false;
     }
+  if (is_a <bb_vec_info> (vinfo)
+      && known_le (TYPE_VECTOR_SUBPARTS (vectype), 1U))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: not using single lane "
+			 "vector type %T\n", vectype);
+      matches[0] = false;
+      return false;
+    }
   /* Record nunits required but continue analysis, producing matches[]
      as if nunits was not an issue.  This allows splitting of groups
      to happen.  */
