@@ -13393,13 +13393,19 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
       if (TYPE_LANG_SPECIFIC (type))
 	{
-	  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+	  if (!TYPE_POLYMORPHIC_P (type))
+	    SET_CLASSTYPE_LAMBDA_EXPR (type, lambda);
+	  else
+	    gcc_checking_assert (lambda == NULL_TREE);
 
 	  CLASSTYPE_MEMBER_VEC (type) = member_vec;
 	  CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
 	  CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
 
-	  CLASSTYPE_KEY_METHOD (type) = key_method;
+	  if (TYPE_POLYMORPHIC_P (type))
+	    SET_CLASSTYPE_KEY_METHOD (type, key_method);
+	  else
+	    gcc_checking_assert (key_method == NULL_TREE);
 
 	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
 

@@ -150,7 +150,7 @@ begin_lambda_type (tree lambda)
 
   /* Cross-reference the expression and the type.  */
   LAMBDA_EXPR_CLOSURE (lambda) = type;
-  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+  SET_CLASSTYPE_LAMBDA_EXPR (type, lambda);
 
   /* In C++17, assume the closure is literal; we'll clear the flag later if
      necessary.  */

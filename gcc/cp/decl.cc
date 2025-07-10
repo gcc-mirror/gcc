@@ -17289,7 +17289,7 @@ xref_tag (enum tag_types tag_code, tree name,
       if (IDENTIFIER_LAMBDA_P (name))
 	/* Mark it as a lambda type right now.  Our caller will
 	   correct the value.  */
-	CLASSTYPE_LAMBDA_EXPR (t) = error_mark_node;
+	SET_CLASSTYPE_LAMBDA_EXPR (t, error_mark_node);
       t = pushtag (name, t, how);
     }
   else

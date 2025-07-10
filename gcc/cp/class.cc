@@ -7452,7 +7452,7 @@ determine_key_method (tree type)
 	&& ! DECL_DECLARED_INLINE_P (method)
 	&& ! DECL_PURE_VIRTUAL_P (method))
       {
-	CLASSTYPE_KEY_METHOD (type) = method;
+	SET_CLASSTYPE_KEY_METHOD (type, method);
 	break;
       }
 

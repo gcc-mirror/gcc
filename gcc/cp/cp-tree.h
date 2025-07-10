@@ -2519,11 +2519,11 @@ struct GTY(()) lang_type {
   vec<tree, va_gc> *pure_virtuals;
   tree friend_classes;
   vec<tree, va_gc> * GTY((reorder ("resort_type_member_vec"))) members;
+  /* CLASSTYPE_KEY_METHOD for TYPE_POLYMORPHIC_P types, CLASSTYPE_LAMBDA_EXPR
+     otherwise.  */
   tree key_method;
   tree decl_list;
   tree befriending_classes;
-  /* FIXME reuse another field?  */
-  tree lambda_expr;
   union maybe_objc_info {
     /* If not c_dialect_objc, this part is not even allocated.  */
     char GTY((tag ("0"))) non_objc;
@@ -2646,7 +2646,13 @@ struct GTY(()) lang_type {
 /* The member function with which the vtable will be emitted:
    the first noninline non-pure-virtual member function.  NULL_TREE
    if there is no key function or if this is a class template */
-#define CLASSTYPE_KEY_METHOD(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->key_method)
+#define CLASSTYPE_KEY_METHOD(NODE) \
+  (TYPE_POLYMORPHIC_P (NODE)					\
+   ? LANG_TYPE_CLASS_CHECK (NODE)->key_method			\
+   : NULL_TREE)
+#define SET_CLASSTYPE_KEY_METHOD(NODE, VALUE) \
+  (gcc_checking_assert (TYPE_POLYMORPHIC_P (NODE)),		\
+   LANG_TYPE_CLASS_CHECK (NODE)->key_method = (VALUE))
 
 /* Vector of members.  During definition, it is unordered and only
    member functions are present.  After completion it is sorted and
@@ -2778,7 +2784,12 @@ struct GTY(()) lang_type {
 
 /* The associated LAMBDA_EXPR that made this class.  */
 #define CLASSTYPE_LAMBDA_EXPR(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->lambda_expr)
+  (TYPE_POLYMORPHIC_P (NODE)				\
+   ? NULL_TREE						\
+   : LANG_TYPE_CLASS_CHECK (NODE)->key_method)
+#define SET_CLASSTYPE_LAMBDA_EXPR(NODE, VALUE) \
+  (gcc_checking_assert (!TYPE_POLYMORPHIC_P (NODE)),	\
+   LANG_TYPE_CLASS_CHECK (NODE)->key_method = (VALUE))
 /* The extra mangling scope for this closure type.  */
 #define LAMBDA_TYPE_EXTRA_SCOPE(NODE) \
   (LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR (NODE)))
