@@ -7378,23 +7378,20 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
 	  if (lane_reducing_op_p (op.code))
 	    {
-	      enum vect_def_type dt;
-	      tree vectype_op;
-
 	      /* The last operand of lane-reducing operation is for
 		 reduction.  */
 	      gcc_assert (reduc_idx > 0 && reduc_idx == (int) op.num_ops - 1);
 
-	      if (!vect_is_simple_use (op.ops[0], loop_vinfo, &dt, &vectype_op))
-		return false;
-
+	      slp_tree op_node = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
+	      tree vectype_op = SLP_TREE_VECTYPE (op_node);
 	      tree type_op = TREE_TYPE (op.ops[0]);
-
 	      if (!vectype_op)
 		{
 		  vectype_op = get_vectype_for_scalar_type (loop_vinfo,
 							    type_op);
-		  if (!vectype_op)
+		  if (!vectype_op
+		      || !vect_maybe_update_slp_op_vectype (op_node,
+							    vectype_op))
 		    return false;
 		}
 
