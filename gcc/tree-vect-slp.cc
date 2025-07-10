@@ -5068,9 +5068,15 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	  tree args0 = gimple_cond_lhs (stmt);
 	  tree args1 = gimple_cond_rhs (stmt);
 
-	  /* These should be enforced by cond lowering.  */
-	  gcc_assert (gimple_cond_code (stmt) == NE_EXPR);
-	  gcc_assert (zerop (args1));
+	  /* These should be enforced by cond lowering, but if it failed
+	     bail.  */
+	  if (gimple_cond_code (stmt) != NE_EXPR
+	      || TREE_TYPE (args0) != boolean_type_node
+	      || !integer_zerop (args1))
+	    {
+	      roots.release ();
+	      continue;
+	    }
 
 	  /* An argument without a loop def will be codegened from vectorizing the
 	     root gcond itself.  As such we don't need to try to build an SLP tree
