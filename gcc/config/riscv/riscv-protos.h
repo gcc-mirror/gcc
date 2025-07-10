@@ -604,6 +604,7 @@ void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, unsigned, rtx *);
 void emit_nonvlmax_insn (unsigned, unsigned, rtx *, rtx);
+void emit_avltype_insn (unsigned, unsigned, rtx *, avl_type, rtx = nullptr);
 void emit_vlmax_insn_lra (unsigned, unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 rtx get_vlmax_rtx (machine_mode);
@@ -760,7 +761,7 @@ uint8_t get_sew (rtx_insn *);
 enum vlmul_type get_vlmul (rtx_insn *);
 int count_regno_occurrences (rtx_insn *, unsigned int);
 bool imm_avl_p (machine_mode);
-bool can_be_broadcasted_p (rtx);
+bool can_be_broadcast_p (rtx);
 bool gather_scatter_valid_offset_p (machine_mode);
 HOST_WIDE_INT estimated_poly_value (poly_int64, unsigned int);
 bool whole_reg_to_reg_move_p (rtx *, machine_mode, int);
@@ -813,6 +814,7 @@ extern const char *th_output_move (rtx, rtx);
 extern bool th_print_operand_address (FILE *, machine_mode, rtx);
 #endif
 
+extern bool strided_load_broadcast_p (void);
 extern bool riscv_use_divmod_expander (void);
 void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 extern bool

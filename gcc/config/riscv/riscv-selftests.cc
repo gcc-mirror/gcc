@@ -342,9 +342,13 @@ run_broadcast_selftests (void)
 	  expand_vector_broadcast (mode, mem);                                 \
 	  insn = get_last_insn ();                                             \
 	  src = SET_SRC (PATTERN (insn));                                      \
-	  ASSERT_TRUE (MEM_P (XEXP (src, 0)));                                 \
-	  ASSERT_TRUE (                                                        \
-	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));   \
+	  if (strided_load_broadcast_p ())                                     \
+	    {                                                                  \
+	      ASSERT_TRUE (MEM_P (XEXP (src, 0)));                             \
+	      ASSERT_TRUE (                                                    \
+		rtx_equal_p (src,                                              \
+			     gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));    \
+	    }                                                                  \
 	  end_sequence ();                                                     \
 	  /* Test vmv.v.x or vfmv.v.f.  */                                     \
 	  start_sequence ();                                                   \

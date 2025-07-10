@@ -306,6 +306,7 @@ struct riscv_tune_param
   bool vector_unaligned_access;
   bool use_divmod_expansion;
   bool overlap_op_by_pieces;
+  bool use_zero_stride_load;
   bool speculative_sched_vsetvl;
   unsigned int fusible_ops;
   const struct cpu_vector_cost *vec_costs;
@@ -469,6 +470,7 @@ static const struct riscv_tune_param generic_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
@@ -492,6 +494,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
@@ -515,6 +518,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
@@ -538,6 +542,7 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
@@ -561,6 +566,7 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
@@ -584,6 +590,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   false,					/* vector_unaligned_access */
   false,	/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
@@ -607,6 +614,7 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTH,          /* fusible_ops */
   NULL,						/* vector cost */
@@ -630,6 +638,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   true,						/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   true,						/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
@@ -653,6 +662,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   true,						/* vector_unaligned_access */
   true,						/* use_divmod_expansion */
   true,						/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
@@ -676,6 +686,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
@@ -699,6 +710,7 @@ static const struct riscv_tune_param mips_p8700_tune_info = {
   false,        /* vector_unaligned_access */
   true,         /* use_divmod_expansion */
   false,        /* overlap_op_by_pieces */
+  true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,				/* fusible_ops */
   NULL,         /* vector cost */
@@ -12763,6 +12775,14 @@ riscv_lshift_subword (machine_mode mode ATTRIBUTE_UNUSED, rtx value, rtx shift,
   emit_move_insn (value_reg, gen_lowpart (SImode, value));
   emit_move_insn (*shifted_value, gen_rtx_ASHIFT (SImode, value_reg,
 						  gen_lowpart (QImode, shift)));
+}
+
+/* Return TRUE if we should use the zero stride load, FALSE otherwise. */
+
+bool
+strided_load_broadcast_p ()
+{
+  return tune_param->use_zero_stride_load;
 }
 
 /* Return TRUE if we should use the divmod expander, FALSE otherwise.  This

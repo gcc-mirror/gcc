@@ -617,7 +617,7 @@
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
-  (match_test "riscv_vector::can_be_broadcasted_p (op)"))
+  (match_test "riscv_vector::can_be_broadcast_p (op)"))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"

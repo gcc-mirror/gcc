@@ -1580,8 +1580,22 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                   riscv_vector::UNARY_OP, operands);
+    if (!strided_load_broadcast_p ()
+	&& TARGET_ZVFHMIN && !TARGET_ZVFH && <VEL>mode == HFmode)
+      {
+	/* For Float16, reinterpret as HImode, broadcast and reinterpret
+	   back.  */
+	poly_uint64 nunits = GET_MODE_NUNITS (<MODE>mode);
+	machine_mode vmodehi
+	  = riscv_vector::get_vector_mode (HImode, nunits).require ();
+	rtx ops[] = {lowpart_subreg (vmodehi, operands[0], <MODE>mode),
+		     lowpart_subreg (HImode, operands[1], HFmode)};
+	riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (vmodehi),
+				       riscv_vector::UNARY_OP, ops);
+      }
+    else
+      riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
+				     riscv_vector::UNARY_OP, operands);
     DONE;
   }
   [(set_attr "type" "vector")]
@@ -2171,7 +2185,7 @@
 	}
     }
   else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)
-           && (immediate_operand (operands[3], Pmode)
+	   && (immediate_operand (operands[3], Pmode)
 	       || (CONST_POLY_INT_P (operands[3])
 	           && known_ge (rtx_to_poly_int64 (operands[3]), 0U)
 		   && known_le (rtx_to_poly_int64 (operands[3]), GET_MODE_SIZE (<MODE>mode)))))
@@ -2224,12 +2238,7 @@
   "(register_operand (operands[3], <VEL>mode)
   || CONST_POLY_INT_P (operands[3]))
   && GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)"
-  [(set (match_dup 0)
-	(if_then_else:V_VLSI (unspec:<VM> [(match_dup 1) (match_dup 4)
-	     (match_dup 5) (match_dup 6) (match_dup 7)
-	     (reg:SI VL_REGNUM) (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V_VLSI (match_dup 3))
-	  (match_dup 2)))]
+  [(const_int 0)]
   {
     gcc_assert (can_create_pseudo_p ());
     if (CONST_POLY_INT_P (operands[3]))
@@ -2238,12 +2247,6 @@
 	emit_move_insn (tmp, operands[3]);
 	operands[3] = tmp;
       }
-    rtx m = assign_stack_local (<VEL>mode, GET_MODE_SIZE (<VEL>mode),
-				GET_MODE_ALIGNMENT (<VEL>mode));
-    m = validize_mem (m);
-    emit_move_insn (m, operands[3]);
-    m = gen_rtx_MEM (<VEL>mode, force_reg (Pmode, XEXP (m, 0)));
-    operands[3] = m;
 
     /* For SEW = 64 in RV32 system, we expand vmv.s.x:
        andi a2,a2,1
@@ -2254,6 +2257,35 @@
 	operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
 	operands[1] = CONSTM1_RTX (<VM>mode);
       }
+
+    /* If the target doesn't want a strided-load broadcast we go with a regular
+       V1DImode load and a broadcast gather.  */
+    if (strided_load_broadcast_p ())
+      {
+	rtx mem = assign_stack_local (<VEL>mode, GET_MODE_SIZE (<VEL>mode),
+				      GET_MODE_ALIGNMENT (<VEL>mode));
+	mem = validize_mem (mem);
+	emit_move_insn (mem, operands[3]);
+	mem = gen_rtx_MEM (<VEL>mode, force_reg (Pmode, XEXP (mem, 0)));
+
+	emit_insn
+	  (gen_pred_broadcast<mode>
+	   (operands[0], operands[1], operands[2], mem,
+	    operands[4], operands[5], operands[6], operands[7]));
+      }
+    else
+      {
+	rtx tmp = gen_reg_rtx (V1DImode);
+	emit_move_insn (tmp, lowpart_subreg (V1DImode, operands[3],
+					     <VEL>mode));
+	tmp = lowpart_subreg (<MODE>mode, tmp, V1DImode);
+
+	emit_insn
+	  (gen_pred_gather<mode>_scalar
+	   (operands[0], operands[1], operands[2], tmp, CONST0_RTX (Pmode),
+	    operands[4], operands[5], operands[6], operands[7]));
+      }
+    DONE;
   }
   [(set_attr "type" "vimov,vimov,vlds,vlds,vlds,vlds,vimovxv,vimovxv")
    (set_attr "mode" "<MODE>")])
@@ -2293,9 +2325,9 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (vec_duplicate:V_VLSF_ZVFHMIN
-	    (match_operand:<VEL>        3 "direct_broadcast_operand"      "Wdm, Wdm, Wdm, Wdm"))
+	    (match_operand:<VEL>        3 "direct_broadcast_operand"      "  A,   A,   A,   A"))
 	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"          " vu,   0,  vu,   0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && strided_load_broadcast_p ()"
   "@
    vlse<sew>.v\t%0,%3,zero,%1.t
    vlse<sew>.v\t%0,%3,zero,%1.t
