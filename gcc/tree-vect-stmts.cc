@@ -724,14 +724,21 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 	  if (vect_stmt_relevant_p (phi_info, loop_vinfo, &relevant, &live_p))
 	    vect_mark_relevant (&worklist, phi_info, relevant, live_p);
 	}
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (si = gsi_after_labels (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  if (is_gimple_debug (gsi_stmt (si)))
+	  gimple *stmt = gsi_stmt (si);
+	  if (is_gimple_debug (stmt))
 	    continue;
-	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "init: stmt relevant? %G", stmt_info->stmt);
+			       "init: stmt relevant? %G", stmt);
+
+	  if (gimple_get_lhs (stmt) == NULL_TREE
+	      && !is_a <gcond *> (stmt)
+	      && !is_a <gcall *> (stmt))
+	    return opt_result::failure_at
+		(stmt, "not vectorized: irregular stmt: %G", stmt);
 
 	  if (vect_stmt_relevant_p (stmt_info, loop_vinfo, &relevant, &live_p))
 	    vect_mark_relevant (&worklist, stmt_info, relevant, live_p);
