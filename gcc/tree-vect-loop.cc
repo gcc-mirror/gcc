@@ -5001,7 +5001,7 @@ vect_is_emulated_mixed_dot_prod (stmt_vec_info stmt_info)
 
 static void
 vect_model_reduction_cost (loop_vec_info loop_vinfo,
-			   stmt_vec_info stmt_info, internal_fn reduc_fn,
+			   slp_tree node, internal_fn reduc_fn,
 			   vect_reduction_type reduction_type,
 			   int ncopies, stmt_vector_for_cost *cost_vec)
 {
@@ -5017,9 +5017,10 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
   if (reduction_type == COND_REDUCTION)
     ncopies *= 2;
 
-  vectype = STMT_VINFO_VECTYPE (stmt_info);
+  vectype = SLP_TREE_VECTYPE (node);
   mode = TYPE_MODE (vectype);
-  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+  stmt_vec_info orig_stmt_info
+    = vect_orig_stmt (SLP_TREE_REPRESENTATIVE (node));
 
   gimple_match_op op;
   if (!gimple_extract_op (orig_stmt_info->stmt, &op))
@@ -5037,16 +5038,16 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
       if (reduc_fn != IFN_LAST)
 	/* Count one reduction-like operation per vector.  */
 	inside_cost = record_stmt_cost (cost_vec, ncopies, vec_to_scalar,
-					stmt_info, 0, vect_body);
+					node, 0, vect_body);
       else
 	{
 	  /* Use NELEMENTS extracts and NELEMENTS scalar ops.  */
 	  unsigned int nelements = ncopies * vect_nunits_for_cost (vectype);
 	  inside_cost = record_stmt_cost (cost_vec, nelements,
-					  vec_to_scalar, stmt_info, 0,
+					  vec_to_scalar, node, 0,
 					  vect_body);
 	  inside_cost += record_stmt_cost (cost_vec, nelements,
-					   scalar_stmt, stmt_info, 0,
+					   scalar_stmt, node, 0,
 					   vect_body);
 	}
     }
@@ -5063,7 +5064,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 	/* We need the initial reduction value.  */
 	prologue_stmts = 1;
       prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
-					 scalar_to_vec, stmt_info, 0,
+					 scalar_to_vec, node, 0,
 					 vect_prologue);
     }
 
@@ -5080,24 +5081,24 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 	    {
 	      /* An EQ stmt and an COND_EXPR stmt.  */
 	      epilogue_cost += record_stmt_cost (cost_vec, 2,
-						 vector_stmt, stmt_info, 0,
+						 vector_stmt, node, 0,
 						 vect_epilogue);
 	      /* Reduction of the max index and a reduction of the found
 		 values.  */
 	      epilogue_cost += record_stmt_cost (cost_vec, 2,
-						 vec_to_scalar, stmt_info, 0,
+						 vec_to_scalar, node, 0,
 						 vect_epilogue);
 	      /* A broadcast of the max value.  */
 	      epilogue_cost += record_stmt_cost (cost_vec, 1,
-						 scalar_to_vec, stmt_info, 0,
+						 scalar_to_vec, node, 0,
 						 vect_epilogue);
 	    }
 	  else
 	    {
 	      epilogue_cost += record_stmt_cost (cost_vec, 1, vector_stmt,
-						 stmt_info, 0, vect_epilogue);
+						 node, 0, vect_epilogue);
 	      epilogue_cost += record_stmt_cost (cost_vec, 1,
-						 vec_to_scalar, stmt_info, 0,
+						 vec_to_scalar, node, 0,
 						 vect_epilogue);
 	    }
 	}
@@ -5107,12 +5108,12 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 	  /* Extraction of scalar elements.  */
 	  epilogue_cost += record_stmt_cost (cost_vec,
 					     2 * estimated_nunits,
-					     vec_to_scalar, stmt_info, 0,
+					     vec_to_scalar, node, 0,
 					     vect_epilogue);
 	  /* Scalar max reductions via COND_EXPR / MAX_EXPR.  */
 	  epilogue_cost += record_stmt_cost (cost_vec,
 					     2 * estimated_nunits - 3,
-					     scalar_stmt, stmt_info, 0,
+					     scalar_stmt, node, 0,
 					     vect_epilogue);
 	}
       else if (reduction_type == EXTRACT_LAST_REDUCTION
@@ -5138,10 +5139,10 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 		 Also requires scalar extract.  */
 	      epilogue_cost += record_stmt_cost (cost_vec,
 						 exact_log2 (nelements) * 2,
-						 vector_stmt, stmt_info, 0,
+						 vector_stmt, node, 0,
 						 vect_epilogue);
 	      epilogue_cost += record_stmt_cost (cost_vec, 1,
-						 vec_to_scalar, stmt_info, 0,
+						 vec_to_scalar, node, 0,
 						 vect_epilogue);
 	    }
 	  else
@@ -5149,7 +5150,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 	       elements, we have N extracts and N-1 reduction ops.  */
 	    epilogue_cost += record_stmt_cost (cost_vec,
 					       nelements + nelements - 1,
-					       vector_stmt, stmt_info, 0,
+					       vector_stmt, node, 0,
 					       vect_epilogue);
 	}
     }
@@ -8077,7 +8078,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	  return false;
 	}
 
-  vect_model_reduction_cost (loop_vinfo, stmt_info, reduc_fn,
+  vect_model_reduction_cost (loop_vinfo, slp_for_stmt_info, reduc_fn,
 			     reduction_type, ncopies, cost_vec);
   /* Cost the reduction op inside the loop if transformed via
      vect_transform_reduction for non-lane-reducing operation.  Otherwise
