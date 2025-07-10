@@ -2050,6 +2050,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = constexpr_exceptions;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+    extra_cond = "__cpp_constexpr_exceptions >= 202411L";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

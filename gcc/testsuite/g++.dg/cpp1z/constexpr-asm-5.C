@@ -18,7 +18,7 @@ struct H { short size () const { return 0; }
 	   constexpr const char *data () const { return ""; } };
 struct I { constexpr signed char size () const { return 0; }
 	   const char *data () const { return ""; } };
-struct J { constexpr int size () const { return j ? throw 1 : 0; }	// { dg-error "expression '<throw-expression>' is not a constant expression" }
+struct J { constexpr int size () const { return j ? throw 1 : 0; }	// { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_down } }
 	   constexpr const char *data () const { return ""; };
 	   constexpr J (int x) : j (x) {}
 	   int j; };
@@ -114,6 +114,7 @@ foo ()
 
   asm ((J (0)));
   asm ("" :: (J (1)) (1));	// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
   asm ((M {}));
 #if __cpp_constexpr_dynamic_alloc >= 201907L
   asm ((N {}));			// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } }
@@ -188,6 +189,7 @@ bar ()
 
   asm ((J (0)));
   asm ("" :: (J (1)) (1));	// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
   asm ((M {}));
 #if __cpp_constexpr_dynamic_alloc >= 201907L
   asm ((N {}));			// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } }
@@ -272,7 +274,7 @@ namespace NN
 #if __cplusplus >= 201402L
   struct J {
     static constexpr int size () { return 0; }
-    static constexpr const char *data (int x = 0) { if (x) return nullptr; else throw 1; } }; // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++14 } }
+    static constexpr const char *data (int x = 0) { if (x) return nullptr; else throw 1; } }; // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target { c++14 && c++23_down } } }
 #endif
 #if __cpp_if_consteval >= 202106L
   struct K {
@@ -284,12 +286,12 @@ namespace NN
     static constexpr const char *data () { if consteval { return "test"; } else { throw 1; } }
   };
   struct M {
-    static constexpr int size () { if consteval { throw 1; } else { return 4; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
+    static constexpr int size () { if consteval { throw 1; } else { return 4; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_only } }
     static constexpr const char *data () { return "test"; }
   };
   struct N {
     static constexpr int size () { return 4; }
-    static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
+    static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_only } }
   };
 #endif
   struct O { constexpr int operator () () const { return 12; } };
@@ -318,12 +320,15 @@ namespace NN
     asm ((I {}));
 #if __cplusplus >= 201402L
     asm ((J {}));		// { dg-error "constexpr string 'data\\\(\\\)' must be a core constant expression" "" { target c++14 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
 #endif
 #if __cpp_if_consteval >= 202106L
     asm ((K {}));
     asm ((L {}));
     asm ((M {}));		// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
     asm ((N {}));		// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
 #endif
     asm ((Q {}));
     asm ((R {}));
@@ -348,12 +353,15 @@ namespace NN
     asm ((I {}));
 #if __cplusplus >= 201402L
     asm ((J {}));		// { dg-error "constexpr string 'data\\\(\\\)' must be a core constant expression" "" { target c++14 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
 #endif
 #if __cpp_if_consteval >= 202106L
     asm ((K {}));
     asm ((L {}));
     asm ((M {}));		// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
     asm ((N {}));		// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-1 }
 #endif
     asm ((Q {}));
     asm ((R {}));

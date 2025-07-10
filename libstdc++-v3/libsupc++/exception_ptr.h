@@ -75,7 +75,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
   exception_ptr current_exception() _GLIBCXX_USE_NOEXCEPT;
 
   template<typename _Ex>
-  exception_ptr make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT;
+  _GLIBCXX26_CONSTEXPR exception_ptr make_exception_ptr(_Ex)
+  _GLIBCXX_USE_NOEXCEPT;
 
   /// Throw the object pointed to by the exception_ptr.
   void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
@@ -105,7 +106,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
     {
       void* _M_exception_object;
 
+#if __cplusplus >= 202400L
+      constexpr explicit exception_ptr(void* __e) noexcept
+      : _M_exception_object(__e)
+      {
+	if (_M_exception_object)
+	  {
+#if __cpp_if_consteval >= 202106L \
+  && _GLIBCXX_HAS_BUILTIN(__builtin_eh_ptr_adjust_ref)
+	    if consteval {
+	      __builtin_eh_ptr_adjust_ref(_M_exception_object, 1);
+	      return;
+	    }
+#endif
+	    _M_addref();
+	  }
+      }
+#else
       explicit exception_ptr(void* __e) _GLIBCXX_USE_NOEXCEPT;
+#endif
 
       void _M_addref() _GLIBCXX_USE_NOEXCEPT;
       void _M_release() _GLIBCXX_USE_NOEXCEPT;
@@ -115,7 +134,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
       friend exception_ptr std::current_exception() _GLIBCXX_USE_NOEXCEPT;
       friend void std::rethrow_exception(exception_ptr);
       template<typename _Ex>
-      friend exception_ptr std::make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT;
+      friend _GLIBCXX26_CONSTEXPR exception_ptr std::make_exception_ptr(_Ex)
+	_GLIBCXX_USE_NOEXCEPT;
 #if __cpp_lib_exception_ptr_cast >= 202506L
       template<typename _Ex>
       friend const _Ex* std::exception_ptr_cast(const exception_ptr&) noexcept;
@@ -125,16 +145,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	_GLIBCXX_USE_NOEXCEPT;
 
     public:
-      exception_ptr() _GLIBCXX_USE_NOEXCEPT;
+      _GLIBCXX26_CONSTEXPR exception_ptr() _GLIBCXX_USE_NOEXCEPT;
 
-      exception_ptr(const exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
+      _GLIBCXX26_CONSTEXPR exception_ptr(const exception_ptr&)
+	_GLIBCXX_USE_NOEXCEPT;
 
 #if __cplusplus >= 201103L
-      exception_ptr(nullptr_t) noexcept
+      _GLIBCXX26_CONSTEXPR exception_ptr(nullptr_t) noexcept
       : _M_exception_object(nullptr)
       { }
 
-      exception_ptr(exception_ptr&& __o) noexcept
+      _GLIBCXX26_CONSTEXPR exception_ptr(exception_ptr&& __o) noexcept
       : _M_exception_object(__o._M_exception_object)
       { __o._M_exception_object = nullptr; }
 #endif
@@ -146,11 +167,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
       exception_ptr(__safe_bool) _GLIBCXX_USE_NOEXCEPT;
 #endif
 
-      exception_ptr&
+      _GLIBCXX26_CONSTEXPR exception_ptr&
       operator=(const exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #if __cplusplus >= 201103L
-      exception_ptr&
+      _GLIBCXX26_CONSTEXPR exception_ptr&
       operator=(exception_ptr&& __o) noexcept
       {
         exception_ptr(static_cast<exception_ptr&&>(__o)).swap(*this);
@@ -158,9 +179,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       }
 #endif
 
-      ~exception_ptr() _GLIBCXX_USE_NOEXCEPT;
+      _GLIBCXX26_CONSTEXPR ~exception_ptr() _GLIBCXX_USE_NOEXCEPT;
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       swap(exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #ifdef _GLIBCXX_EH_PTR_COMPAT
@@ -172,13 +193,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 
 #if __cplusplus >= 201103L
-      explicit operator bool() const noexcept
+      _GLIBCXX26_CONSTEXPR explicit operator bool() const noexcept
       { return _M_exception_object; }
 #endif
 
 #if __cpp_impl_three_way_comparison >= 201907L \
       && ! defined _GLIBCXX_EH_PTR_RELOPS_COMPAT
-      friend bool
+      _GLIBCXX26_CONSTEXPR friend bool
       operator==(const exception_ptr&, const exception_ptr&) noexcept = default;
 #else
       friend _GLIBCXX_EH_PTR_USED bool
@@ -198,31 +219,49 @@ namespace std _GLIBCXX_VISIBILITY(default)
     };
 
     _GLIBCXX_EH_PTR_USED
-    inline
+    _GLIBCXX26_CONSTEXPR inline
     exception_ptr::exception_ptr() _GLIBCXX_USE_NOEXCEPT
     : _M_exception_object(0)
     { }
 
     _GLIBCXX_EH_PTR_USED
-    inline
+    _GLIBCXX26_CONSTEXPR inline
     exception_ptr::exception_ptr(const exception_ptr& __other)
     _GLIBCXX_USE_NOEXCEPT
     : _M_exception_object(__other._M_exception_object)
     {
       if (_M_exception_object)
-	_M_addref();
+	{
+#if __cpp_if_consteval >= 202106L \
+  && _GLIBCXX_HAS_BUILTIN(__builtin_eh_ptr_adjust_ref)
+	  if consteval {
+	    __builtin_eh_ptr_adjust_ref(_M_exception_object, 1);
+	    return;
+	  }
+#endif
+	  _M_addref();
+	}
     }
 
     _GLIBCXX_EH_PTR_USED
-    inline
+    _GLIBCXX26_CONSTEXPR inline
     exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
     {
       if (_M_exception_object)
-	_M_release();
+	{
+#if __cpp_if_consteval >= 202106L \
+  && _GLIBCXX_HAS_BUILTIN(__builtin_eh_ptr_adjust_ref)
+	  if consteval {
+	    __builtin_eh_ptr_adjust_ref(_M_exception_object, -1);
+	    return;
+	  }
+#endif
+	  _M_release();
+	}
     }
 
     _GLIBCXX_EH_PTR_USED
-    inline exception_ptr&
+    _GLIBCXX26_CONSTEXPR inline exception_ptr&
     exception_ptr::operator=(const exception_ptr& __other) _GLIBCXX_USE_NOEXCEPT
     {
       exception_ptr(__other).swap(*this);
@@ -230,7 +269,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     _GLIBCXX_EH_PTR_USED
-    inline void
+    _GLIBCXX26_CONSTEXPR inline void
     exception_ptr::swap(exception_ptr &__other) _GLIBCXX_USE_NOEXCEPT
     {
       void *__tmp = _M_exception_object;
@@ -239,7 +278,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     /// @relates exception_ptr
-    inline void
+    _GLIBCXX26_CONSTEXPR inline void
     swap(exception_ptr& __lhs, exception_ptr& __rhs)
     { __lhs.swap(__rhs); }
 
@@ -258,9 +297,21 @@ namespace std _GLIBCXX_VISIBILITY(default)
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
 #if (__cplusplus >= 201103L && __cpp_rtti) || __cpp_exceptions
   template<typename _Ex>
-    exception_ptr
+    _GLIBCXX26_CONSTEXPR exception_ptr
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
+#if __cplusplus >= 202400L
+      if consteval {
+	try
+	  {
+	    throw __ex;
+	  }
+	catch(...)
+	  {
+	    return current_exception();
+	  }
+      }
+#endif
 #if __cplusplus >= 201103L && __cpp_rtti
       using _Ex2 = typename decay<_Ex>::type;
       void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
@@ -293,7 +344,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   // instead of a working one compiled with RTTI and/or exceptions enabled.
   template<typename _Ex>
     __attribute__ ((__always_inline__))
-    inline exception_ptr
+    _GLIBCXX26_CONSTEXPR inline exception_ptr
     make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
     { return exception_ptr(); }
 #endif

@@ -452,6 +452,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
       PACK_INDEX_PARENTHESIZED_P (in PACK_INDEX_*)
+      MUST_NOT_THROW_NOEXCEPT_P (in MUST_NOT_THROW_EXPR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -472,6 +473,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BIND_EXPR_VEC_DTOR (in BIND_EXPR)
       ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
       STATIC_INIT_DECOMP_BASE_P (in the TREE_LIST for {static,tls}_aggregates)
+      MUST_NOT_THROW_THROW_P (in MUST_NOT_THROW_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -493,6 +495,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       STATIC_INIT_DECOMP_NONBASE_P (in the TREE_LIST
 				    for {static,tls}_aggregates)
+      MUST_NOT_THROW_CATCH_P (in MUST_NOT_THROW_EXPR)
    3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -3016,6 +3019,8 @@ struct GTY(()) lang_decl_min {
      In a lambda-capture proxy VAR_DECL, this is DECL_CAPTURED_VARIABLE.
      In a function-scope TREE_STATIC VAR_DECL or IMPLICIT_TYPEDEF_P TYPE_DECL,
      this is DECL_DISCRIMINATOR.
+     In constexpr exception artificial VAR_DECL, this is
+     DECL_EXCEPTION_REFCOUNT.
      In a DECL_LOCAL_DECL_P decl, this is the namespace decl it aliases.
      Otherwise, in a class-scope DECL, this is DECL_ACCESS.   */
   tree access;
@@ -4470,6 +4475,23 @@ get_vec_init_expr (tree t)
 #define MUST_NOT_THROW_COND(NODE) \
   TREE_OPERAND (MUST_NOT_THROW_EXPR_CHECK (NODE), 1)
 
+/* Reasons why MUST_NOT_THROW_EXPR has been created.  */
+
+/* Indicates MUST_NOT_THROW_EXPR has been created to wrap body of
+   a noexcept function.  */
+#define MUST_NOT_THROW_NOEXCEPT_P(NODE) \
+  TREE_LANG_FLAG_0 (MUST_NOT_THROW_EXPR_CHECK (NODE))
+
+/* Indicates MUST_NOT_THROW_EXPR has been created to wrap construction of
+   exception object during throw.  */
+#define MUST_NOT_THROW_THROW_P(NODE) \
+  TREE_LANG_FLAG_1 (MUST_NOT_THROW_EXPR_CHECK (NODE))
+
+/* Indicates MUST_NOT_THROW_EXPR has been created to wrap construction of
+   handler parameter during catch.  */
+#define MUST_NOT_THROW_CATCH_P(NODE) \
+  TREE_LANG_FLAG_2 (MUST_NOT_THROW_EXPR_CHECK (NODE))
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -4512,7 +4534,7 @@ get_vec_init_expr (tree t)
 #define TYPE_CONTAINS_VPTR_P(NODE)		\
   (TYPE_POLYMORPHIC_P (NODE) || CLASSTYPE_VBASECLASSES (NODE))
 
-/* Nonzero if NODE is a FUNCTION_DECL or VARIABLE_DECL (for a decl
+/* Nonzero if NODE is a FUNCTION_DECL or VAR_DECL (for a decl
    with namespace scope) declared in a local scope.  */
 #define DECL_LOCAL_DECL_P(NODE) \
   DECL_LANG_FLAG_0 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
@@ -5152,6 +5174,10 @@ get_vec_init_expr (tree t)
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
 #define DECL_ACCESS(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
+
+/* In artificial VAR_DECL created by cxa_allocate_exception
+   this is reference count.  */
+#define DECL_EXCEPTION_REFCOUNT(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* Nonzero if the FUNCTION_DECL is a global constructor.  */
 #define DECL_GLOBAL_CTOR_P(NODE) \
@@ -6813,6 +6839,7 @@ enum cp_built_in_function {
   CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
   CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
   CP_BUILT_IN_SOURCE_LOCATION,
+  CP_BUILT_IN_EH_PTR_ADJUST_REF,
   CP_BUILT_IN_LAST
 };
 
@@ -6993,6 +7020,7 @@ extern bool type_has_extended_temps		(tree);
 extern tree strip_top_quals			(tree);
 extern bool reference_related_p			(tree, tree);
 extern bool reference_compatible_p		(tree, tree);
+extern bool handler_match_for_exception_type	(tree, tree);
 extern int remaining_arguments			(tree);
 extern tree build_implicit_conv_flags		(tree, tree, int);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);

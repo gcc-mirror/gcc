@@ -4,13 +4,13 @@
 
 struct fixed_string {
   consteval int size(int n) const {
-    if (n < 0) throw; // { dg-error "not a constant" }
-    return n;
+    if (n < 0) throw; // { dg-error "not a constant" "" { target c++23_down } }
+    return n; // { dg-error "'void __cxa_rethrow\\\(\\\)' called with no caught exceptions active" "" { target c++26 } .-1 }
   }
 
   static consteval int size_static(int n) {
-    if (n < 0) throw; // { dg-error "not a constant" }
-    return n;
+    if (n < 0) throw; // { dg-error "not a constant" "" { target c++23_down } }
+    return n; // { dg-error "'void __cxa_rethrow\\\(\\\)' called with no caught exceptions active" "" { target c++26 } .-1 }
   }
 
   consteval void operator()() const { }

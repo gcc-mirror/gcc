@@ -488,6 +488,7 @@ builtin_valid_in_constant_expr_p (const_tree decl)
 	  case CP_BUILT_IN_SOURCE_LOCATION:
 	  case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
 	  case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+	  case CP_BUILT_IN_EH_PTR_ADJUST_REF:
 	    return true;
 	  default:
 	    break;

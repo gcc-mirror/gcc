@@ -61,19 +61,28 @@ namespace std _GLIBCXX_VISIBILITY(default)
   class exception
   {
   public:
-    exception() _GLIBCXX_NOTHROW { }
+    _GLIBCXX26_CONSTEXPR exception() _GLIBCXX_NOTHROW { }
+#if __cplusplus >= 202400L
+    constexpr virtual ~exception() _GLIBCXX_TXN_SAFE_DYN noexcept {}
+#else
     virtual ~exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
+#endif
 #if __cplusplus >= 201103L
-    exception(const exception&) = default;
-    exception& operator=(const exception&) = default;
-    exception(exception&&) = default;
-    exception& operator=(exception&&) = default;
+    _GLIBCXX26_CONSTEXPR exception(const exception&) = default;
+    _GLIBCXX26_CONSTEXPR exception& operator=(const exception&) = default;
+    _GLIBCXX26_CONSTEXPR exception(exception&&) = default;
+    _GLIBCXX26_CONSTEXPR exception& operator=(exception&&) = default;
 #endif
 
     /** Returns a C-style character string describing the general cause
      *  of the current error.  */
+#if __cplusplus >= 202400L
+    constexpr virtual const char*
+    what() const _GLIBCXX_TXN_SAFE_DYN noexcept { return "std::exception"; }
+#else
     virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
+#endif
   };
 
   /// @}

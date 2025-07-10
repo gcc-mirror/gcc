@@ -27,8 +27,8 @@ constexpr int fun(int n) {
   case 0:
     return 1;
   default:
-    throw; // { dg-error "not a constant expression" }
-  }
+    throw; // { dg-error "not a constant expression" "" { target c++23_down } }
+  } // { dg-error "'void __cxa_rethrow\\\(\\\)' called with no caught exceptions active" "" { target c++26 } .-1 }
 }
 
 static_assert(fun(0), "");

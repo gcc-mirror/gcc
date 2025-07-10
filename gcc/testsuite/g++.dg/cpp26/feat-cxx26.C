@@ -624,19 +624,25 @@
 #endif
 
 #ifndef __cpp_pack_indexing
-# error "__cpp_pack_indexing"
+#  error "__cpp_pack_indexing"
 #elif __cpp_pack_indexing != 202311
 #  error "__cpp_pack_indexing != 202311"
 #endif
 
 #ifndef __cpp_pp_embed
-# error "__cpp_pp_embed"
+#  error "__cpp_pp_embed"
 #elif __cpp_pp_embed != 202502
 #  error "__cpp_pp_embed != 202502"
 #endif
 
 #ifndef __cpp_constexpr_virtual_inheritance
-# error "__cpp_constexpr_virtual_inheritance"
+#  error "__cpp_constexpr_virtual_inheritance"
 #elif __cpp_constexpr_virtual_inheritance != 202506
 #  error "__cpp_constexpr_virtual_inheritance != 202506"
+#endif
+
+#ifndef __cpp_constexpr_exceptions
+#  error "__cpp_constexpr_exceptions"
+#elif __cpp_constexpr_exceptions != 202411
+#  error "__cpp_constexpr_exceptions != 202411"
 #endif

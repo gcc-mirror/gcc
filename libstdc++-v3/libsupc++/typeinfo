@@ -224,14 +224,23 @@ namespace std
   class bad_cast : public exception
   {
   public:
-    bad_cast() _GLIBCXX_USE_NOEXCEPT { }
+    _GLIBCXX26_CONSTEXPR bad_cast() _GLIBCXX_USE_NOEXCEPT { }
 
+#if __cplusplus >= 202400L
+    constexpr virtual ~bad_cast() noexcept {}
+
+    constexpr virtual const char* what() const noexcept
+    {
+      return "std::bad_cast";
+    }
+#else
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_cast() _GLIBCXX_USE_NOEXCEPT;
 
     // See comment in eh_exception.cc.
     virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
+#endif
   };
 
   /**
@@ -241,14 +250,23 @@ namespace std
   class bad_typeid : public exception
   {
   public:
-    bad_typeid () _GLIBCXX_USE_NOEXCEPT { }
+    _GLIBCXX26_CONSTEXPR bad_typeid () _GLIBCXX_USE_NOEXCEPT { }
 
+#if __cplusplus >= 202400L
+    constexpr virtual ~bad_typeid() noexcept {}
+
+    constexpr virtual const char* what() const noexcept
+    {
+      return "std::bad_typeid";
+    }
+#else
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_typeid() _GLIBCXX_USE_NOEXCEPT;
 
     // See comment in eh_exception.cc.
     virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
+#endif
   };
 } // namespace std
 

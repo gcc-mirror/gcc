@@ -1723,6 +1723,56 @@ involves_qualification_conversion_p (tree to, tree from)
   return false;
 }
 
+/* Return true if HANDLER is a match for exception object with EXCEPT_TYPE as
+   per [except.handle]/3.  */
+
+bool
+handler_match_for_exception_type (tree handler, tree except_type)
+{
+  tree handler_type = HANDLER_TYPE (handler);
+  if (handler_type == NULL_TREE)
+    return true; /* ... */
+  if (same_type_ignoring_top_level_qualifiers_p (handler_type, except_type))
+    return true;
+  if (CLASS_TYPE_P (except_type) && CLASS_TYPE_P (handler_type))
+    {
+      base_kind b_kind;
+      tree binfo = lookup_base (except_type, handler_type, ba_check, &b_kind,
+				tf_none);
+      if (binfo && binfo != error_mark_node)
+	return true;
+    }
+  if (TYPE_PTR_P (handler_type) || TYPE_PTRDATAMEM_P (handler_type))
+    {
+      if (TREE_CODE (except_type) == NULLPTR_TYPE)
+	return true;
+      if ((TYPE_PTR_P (handler_type) && TYPE_PTR_P (except_type))
+	  || (TYPE_PTRDATAMEM_P (handler_type)
+	      && TYPE_PTRDATAMEM_P (except_type)))
+	{
+	  conversion *conv
+	    = standard_conversion (handler_type, except_type, NULL_TREE,
+				   /*c_cast_p=*/false, 0, tf_none);
+	  if (conv && !conv->bad_p)
+	    {
+	      for (conversion *t = conv; t; t = next_conversion (t))
+		switch (t->kind)
+		  {
+		  case ck_ptr:
+		  case ck_fnptr:
+		  case ck_qual:
+		  case ck_identity:
+		    break;
+		  default:
+		    return false;
+		  }
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* A reference of the indicated TYPE is being bound directly to the
    expression represented by the implicit conversion sequence CONV.
    Return a conversion sequence for this binding.  */

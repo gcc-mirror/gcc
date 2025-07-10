@@ -51,7 +51,7 @@ static_assert (true, H {});	// { dg-warning "'static_assert' with non-string mes
 struct I { constexpr signed char size () const { return 0; }
 	   const char *data () const { return ""; } };
 static_assert (true, I {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-struct J { constexpr int size () const { return j ? throw 1 : 0; }	// { dg-error "expression '<throw-expression>' is not a constant expression" }
+struct J { constexpr int size () const { return j ? throw 1 : 0; }	// { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_down } }
 	   constexpr const char *data () const { return ""; };
 	   constexpr J (int x) : j (x) {}
 	   int j; };
@@ -60,6 +60,7 @@ static_assert (false, J (0));	// { dg-warning "'static_assert' with non-string m
 				// { dg-error "static assertion failed" "" { target *-*-* } .-1 }
 static_assert (false, J (1));	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
 				// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target *-*-* } .-1 }
+				// { dg-error "uncaught exception '1'" "" { target c++26 } .-2 }
 struct K { constexpr operator int () { return 4; } };
 struct L { constexpr operator const char * () { return "test"; } };
 struct M { constexpr K size () const { return {}; }
@@ -261,10 +262,11 @@ namespace NN
 #if __cplusplus >= 201402L
   struct J {
     static constexpr int size () { return 0; }
-    static constexpr const char *data (int x = 0) { if (x) return nullptr; else throw 1; } }; // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++14 } }
+    static constexpr const char *data (int x = 0) { if (x) return nullptr; else throw 1; } }; // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target { c++14 && c++23_down } } }
   static_assert (true, J{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++14 && c++23_down } } }
   static_assert (false, J{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++14 && c++23_down } } }
 					// { dg-error "constexpr string 'data\\\(\\\)' must be a core constant expression" "" { target c++14 } .-1 }
+					// { dg-error "uncaught exception '1'" "" { target c++26 } .-2 }
 #endif
 #if __cpp_if_consteval >= 202106L
   struct K {
@@ -282,19 +284,21 @@ namespace NN
   static_assert (false, L{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
 					// { dg-error "static assertion failed: test" "" { target c++23 } .-1 }
   struct M {
-    static constexpr int size () { if consteval { throw 1; } else { return 4; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
+    static constexpr int size () { if consteval { throw 1; } else { return 4; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_only } }
     static constexpr const char *data () { return "test"; }
   };
   static_assert (true, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
 					// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "uncaught exception '1'" "" { target c++26 } .-2 }
   struct N {
     static constexpr int size () { return 4; }
-    static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
+    static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23_only } }
   };
   static_assert (true, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
 					// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "uncaught exception '1'" "" { target c++26 } .-2 }
 #endif
   struct O { constexpr int operator () () const { return 12; } };
   struct P { constexpr const char *operator () () const { return "another test"; } };

@@ -4,6 +4,22 @@
 
 // From clang's constant-expression-cxx2a.cpp.
 
+#if __cpp_constexpr_exceptions >= 202411L
+namespace std {
+  struct exception {
+    constexpr exception () noexcept {}
+    constexpr virtual ~exception () noexcept {}
+    constexpr exception (const exception &) = default;
+    constexpr exception &operator= (const exception &) = default;
+    constexpr virtual const char *what () const noexcept { return "std::exception"; }
+  };
+  struct bad_cast : public exception {
+    constexpr virtual ~bad_cast () noexcept {}
+    constexpr virtual const char *what () const noexcept { return "std::bad_cast"; }
+  };
+}
+#endif
+
 struct A2 { virtual void a2(); };
 struct A : A2 { virtual void a(); };
 struct B : A {}; 
@@ -26,31 +42,36 @@ static_assert(dynamic_cast<const A*>(static_cast<const C2*>(&g)) == nullptr);
 static_assert(g.f == (void*)(F*)&g);
 static_assert(dynamic_cast<const void*>(static_cast<const D*>(&g)) == &g);
 
-constexpr int d_a = (dynamic_cast<const A&>(static_cast<const D&>(g)), 0); // { dg-error "reference .dynamic_cast. failed" }
-// { dg-message ".A. is an ambiguous base class of dynamic type .G." "" { target *-*-* } .-1 }
-
+constexpr int d_a = (dynamic_cast<const A&>(static_cast<const D&>(g)), 0); // { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } }
+// { dg-message ".A. is an ambiguous base class of dynamic type .G." "" { target c++23_down } .-1 }
+// { dg-error "uncaught exception" "" { target c++26 } .-2 }
 // Can navigate from A2 to its A...
 static_assert(&dynamic_cast<A&>((A2&)(B&)g) == &(A&)(B&)g);
 // ... and from B to its A ...
 static_assert(&dynamic_cast<A&>((B&)g) == &(A&)(B&)g);
 // ... but not from D.
-static_assert(&dynamic_cast<A&>((D&)g) == &(A&)(B&)g); // { dg-error "non-constant condition for static assertion|reference .dynamic_cast. failed" }
-// { dg-message ".A. is an ambiguous base class of dynamic type .G." "" { target *-*-* } .-1 }
-
+static_assert(&dynamic_cast<A&>((D&)g) == &(A&)(B&)g); // { dg-error "non-constant condition for static assertion" }
+// { dg-message ".A. is an ambiguous base class of dynamic type .G." "" { target c++23_down } .-1 }
+// { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } .-2 }
+// { dg-error "uncaught exception" "" { target c++26 } .-3 }
 // Can cast from A2 to sibling class D.
 static_assert(&dynamic_cast<D&>((A2&)(B&)g) == &(D&)g);
 
 // Cannot cast from private base E to derived class F.
-constexpr int e_f = (dynamic_cast<F&>((E&)g), 0); // { dg-error "reference .dynamic_cast. failed" }
-// { dg-message "static type .const E. of its operand is a non-public base class of dynamic type .G." "" { target *-*-* } .-1 }
+constexpr int e_f = (dynamic_cast<F&>((E&)g), 0); // { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } }
+// { dg-message "static type .const E. of its operand is a non-public base class of dynamic type .G." "" { target c++23_down } .-1 }
+// { dg-error "uncaught exception" "" { target c++26 } .-2 }
 
 // Cannot cast from B to private sibling E.
-constexpr int b_e = (dynamic_cast<E&>((B&)g), 0); // { dg-error "reference .dynamic_cast. failed" }
-// { dg-message "dynamic type .G. of its operand does not have an unambiguous public base class .E." "" { target *-*-* } .-1 }
+constexpr int b_e = (dynamic_cast<E&>((B&)g), 0); // { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } }
+// { dg-message "dynamic type .G. of its operand does not have an unambiguous public base class .E." "" { target c++23_down } .-1 }
+// { dg-error "uncaught exception" "" { target c++26 } .-2 }
 
 struct Unrelated { virtual void unrelated(); };
 
-constexpr int b_unrelated = (dynamic_cast<Unrelated&>((B&)g), 0); // { dg-error "reference .dynamic_cast. failed" }
-// { dg-message "dynamic type .G. of its operand does not have an unambiguous public base class .Unrelated." "" { target *-*-* } .-1 }
-constexpr int e_unrelated = (dynamic_cast<Unrelated&>((E&)g), 0); // { dg-error "reference .dynamic_cast. failed" }
-// { dg-message "static type .const E. of its operand is a non-public base class of dynamic type .G." "" { target *-*-* } .-1 }
+constexpr int b_unrelated = (dynamic_cast<Unrelated&>((B&)g), 0); // { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } }
+// { dg-message "dynamic type .G. of its operand does not have an unambiguous public base class .Unrelated." "" { target c++23_down } .-1 }
+// { dg-error "uncaught exception" "" { target c++26 } .-2 }
+constexpr int e_unrelated = (dynamic_cast<Unrelated&>((E&)g), 0); // { dg-error "reference .dynamic_cast. failed" "" { target c++23_down } }
+// { dg-message "static type .const E. of its operand is a non-public base class of dynamic type .G." "" { target c++23_down } .-1 }
+// { dg-error "uncaught exception" "" { target c++26 } .-2 }
