@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
       final assembler is generated.  This is done in the following way. Note
       that with link time optimization the process is split into three
       stages (compile time, linktime analysis and parallel linktime as
-      indicated bellow).
+      indicated below).
 
       Compile time:
 

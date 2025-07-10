@@ -1,5 +1,5 @@
 /* Essentially this test checks that debug info are generated for globals
-   locals and functions, including type info. The comment bellow is used
+   locals and functions, including type info. The comment below is used
    as fake code (does not affect the test, use for manual debugging). */
 /*
 int a_global_for_test_debuginfo;

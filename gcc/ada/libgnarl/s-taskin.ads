@@ -390,7 +390,7 @@ package System.Tasking is
    System_Domain : Dispatching_Domain_Access;
    --  All processors belong to default system dispatching domain at start up.
    --  We use a pointer which creates the actual variable for the reasons
-   --  explained bellow in Dispatching_Domain_Tasks.
+   --  explained below in Dispatching_Domain_Tasks.
 
    Dispatching_Domains_Frozen : Boolean := False;
    --  True when the main procedure has been called. Hence, no new dispatching

@@ -1763,7 +1763,7 @@ add_type_duplicate (odr_type val, tree type)
 	      }
 	    /* One base is polymorphic and the other not.
 	       This ought to be diagnosed earlier, but do not ICE in the
-	       checking bellow.  */
+	       checking below.  */
 	    else if (TYPE_BINFO (type1)
 		     && polymorphic_type_binfo_p (TYPE_BINFO (type1))
 		        != polymorphic_type_binfo_p (TYPE_BINFO (type2)))

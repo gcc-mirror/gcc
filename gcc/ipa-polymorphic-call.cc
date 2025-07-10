@@ -1353,7 +1353,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 
   /* If we found a constructor of type that is not polymorphic or
      that may contain the type in question as a field (not as base),
-     restrict to the inner class first to make type matching bellow
+     restrict to the inner class first to make type matching below
      happier.  */
   if (type
       && (offset

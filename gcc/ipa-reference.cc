@@ -732,7 +732,7 @@ get_read_write_all_from_node (struct cgraph_node *node,
 /* Skip edges from and to nodes without ipa_reference enabled.
    Ignore not available symbols.  This leave
    them out of strongly connected components and makes them easy to skip in the
-   propagation loop bellow.  */
+   propagation loop below.  */
 
 static bool
 ignore_edge_p (cgraph_edge *e)

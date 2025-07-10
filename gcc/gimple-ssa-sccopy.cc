@@ -78,7 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 
    To find all three types of copy statements we use an algorithm based on
    strongly-connected components (SCCs) in dataflow graph.  The algorithm was
-   introduced in an article from 2013[1]. We describe the algorithm bellow.
+   introduced in an article from 2013[1]. We describe the algorithm below.
 
    To identify SCCs we implement the Robert Tarjan's SCC algorithm.  For the
    SCC computation we wrap potential copy statements in the 'vertex' struct.

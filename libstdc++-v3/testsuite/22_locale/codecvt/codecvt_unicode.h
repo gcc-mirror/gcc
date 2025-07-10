@@ -1439,7 +1439,7 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // make the trailing surrogate a BMP char
     {5, 10, 3, 6, u'z', 4},
 
-    // don't replace anything in the test cases bellow, just show the surrogate
+    // don't replace anything in the test cases below, just show the surrogate
     // pair (fourth CP) fully or partially
     {5, 10, 3, 6, u'b', 0},
     {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
@@ -2072,7 +2072,7 @@ utf16_to_ucs2_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
     // make the trailing surrogate a BMP char
     {10, 5, 6, 3, u'z', 4},
 
-    // don't replace anything in the test cases bellow, just show the surrogate
+    // don't replace anything in the test cases below, just show the surrogate
     // pair (fourth CP) fully or partially (just the first surrogate)
     {10, 5, 6, 3, u'b', 0},
     {8, 5, 6, 3, u'b', 0},

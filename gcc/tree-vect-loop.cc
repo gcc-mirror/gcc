@@ -11141,7 +11141,7 @@ scale_profile_for_vect_loop (class loop *loop, edge exit_e, unsigned vf, bool fl
   profile_count entry_count = loop_preheader_edge (loop)->count ();
 
   /* If we have unreliable loop profile avoid dropping entry
-     count bellow header count.  This can happen since loops
+     count below header count.  This can happen since loops
      has unrealistically low trip counts.  */
   while (vf > 1
 	 && loop->header->count > entry_count

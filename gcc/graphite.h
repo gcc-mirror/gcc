@@ -155,7 +155,7 @@ struct poly_dr
      The OpenScop access function is printed as follows:
 
      | 1  # The number of disjunct components in a union of access functions.
-     | R C O I L P  # Described bellow.
+     | R C O I L P  # Described below.
      | a  s0  s1   i   j   k   1
      | 1   0   0   0   0   0  -5     =  0
      | 0   1   0  -1   0   0   0     =  0

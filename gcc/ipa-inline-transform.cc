@@ -331,7 +331,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   int estimated_growth = 0;
   if (! update_overall_summary)
     estimated_growth = estimate_edge_growth (e);
-  /* This is used only for assert bellow.  */
+  /* This is used only for assert below.  */
 #if 0
   bool predicated = inline_edge_summary (e)->predicate != NULL;
 #endif

@@ -597,7 +597,7 @@ public:
      There are two exceptions - edges leading to noreturn edges and edges
      predicted by number of iterations heuristics are predicted well.  This macro
      should be able to distinguish those, but at the moment it simply check for
-     noreturn heuristic that is only one giving probability over 99% or bellow
+     noreturn heuristic that is only one giving probability over 99% or below
      1%.  In future we might want to propagate reliability information across the
      CFG if we find this information useful on multiple places.   */
   bool probably_reliable_p () const

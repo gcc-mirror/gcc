@@ -83,7 +83,7 @@ procedure Load is
    --  withed units and the second round handles Ada 2005 limited-withed units.
    --  This is required to allow the low-level circuitry that detects circular
    --  dependencies of units the correct notification of errors (see comment
-   --  bellow). This variable is used to indicate that the second round is
+   --  below). This variable is used to indicate that the second round is
    --  required.
 
    function Same_File_Name_Except_For_Case

@@ -12,7 +12,7 @@ C Date: Wed, 17 Dec 1997 23:20:29 +0000
 C From: Joao Cardoso <jcardoso@inescn.pt>
 C To: egcs-bugs@cygnus.com
 C Subject: egcs-1.0 f77 bug on OSR5
-C When trying to compile the Fortran file that I enclose bellow,
+C When trying to compile the Fortran file that I enclose below,
 C I got an assembler error:
 C 
 C ./g77 -B./ -fpic -O -c scaleg.f

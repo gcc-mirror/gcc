@@ -1783,7 +1783,7 @@
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "SI")])
 
-;; This pattern use to combine bellow two insns and then further remove
+;; This pattern use to combine below two insns and then further remove
 ;; unnecessary sign_extend operations:
 ;;   (set (reg:DI 134 [ _1 ])
 ;;        (unspec:DI [
