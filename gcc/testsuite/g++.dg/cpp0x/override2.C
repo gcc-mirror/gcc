@@ -23,9 +23,9 @@ struct D5 : B3<D5> {};
 
 struct D6 : B4<D6> {}; // { dg-error "cannot derive from 'final' base" }
 
-struct B6 final final {}; // { dg-error "duplicate virt-specifier" }
+struct B6 final final {}; // { dg-error "duplicate 'final' specifier" }
 
-struct B7 override {}; // { dg-error "cannot specify 'override' for a class" }
+struct B7 override {}; // { dg-error "variable 'B7 override' has initializer but incomplete type" }
 
 namespace N
 {
@@ -45,7 +45,7 @@ int main()
   struct B2 final; // { dg-error "redeclaration" }
   struct B2 override; // { dg-message "previously declared here" }
   struct B2 final {}; // { dg-error "redefinition" }
-  struct B2 override {}; // { dg-error "cannot specify 'override' for a class" }
+  struct B2 override {}; // { dg-error "redeclaration of 'main\\\(\\\)::B2 override'" }
   B2 override{}; // { dg-error "redeclaration" }
   struct foo final {}; // { dg-message "previous definition" }
   struct foo final {}; // { dg-error "redefinition" }

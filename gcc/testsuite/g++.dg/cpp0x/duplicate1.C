@@ -6,7 +6,7 @@ struct A
   virtual void foo() const;
 };
 
-struct B final final : A  /* { dg-error "duplicate virt-specifier" }
+struct B final final : A  /* { dg-error "duplicate 'final' specifier" }
   { dg-begin-multiline-output "" }
  struct B final final : A
                 ^~~~~
