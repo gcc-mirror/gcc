@@ -7983,10 +7983,14 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
      address.  But we only have r0-r3 and ip in that class.  If r0-r3 all hold
      function arguments, then we can only use IP.  But IP may be needed in the
      epilogue (for PAC validation), or for passing the static chain.  We have
-     to disable the tail call if nothing is available.  */
-  if (!decl
-      && ((CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
-	  || arm_current_function_pac_enabled_p()))
+     to disable the tail call if nothing is available.  Long-calls are
+     effectively handled as indirect calls, so handle that as well.  */
+  if ((!decl
+       && ((CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
+	   || arm_current_function_pac_enabled_p ()))
+      || (decl && arm_is_long_call_p (decl)
+	  && (CALL_EXPR_STATIC_CHAIN (exp)
+	      || arm_current_function_pac_enabled_p ())))
     {
       tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
       CUMULATIVE_ARGS cum;
