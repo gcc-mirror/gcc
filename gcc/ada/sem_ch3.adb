@@ -9595,6 +9595,8 @@ package body Sem_Ch3 is
            (New_Decl, Parent_Base, New_Base,
             Is_Completion => False, Derive_Subps => False);
 
+         Set_Is_Implicit_Full_View (New_Base);
+
          --  ??? This needs re-examination to determine whether the
          --  following call can simply be replaced by a call to Analyze.
 
