@@ -1136,14 +1136,13 @@
   [(set (match_operand:SI 0 "register_operand"         "= Sg, Sg, Sg,   v")
         (plus:SI (match_operand:SI 1 "gcn_alu_operand" "%SgA,  0,SgA,   v")
 		 (match_operand:SI 2 "gcn_alu_operand" " SgA,SgJ,  B,vBSv")))
-   (clobber (match_scratch:BI 3			       "= cs, cs, cs,   X"))
-   (clobber (match_scratch:DI 4			       "=  X,  X,  X,  cV"))]
+   (clobber (match_scratch:BI 3			       "= cs, cs, cs,   X"))]
   ""
   "@
    s_add_i32\t%0, %1, %2
    s_addk_i32\t%0, %2
    s_add_i32\t%0, %1, %2
-   v_add_co_u32\t%0, vcc, %2, %1"
+   {v_add_u32|v_add_nc_u32}\t%0, %2, %1"
   [(set_attr "type" "sop2,sopk,sop2,vop2")
    (set_attr "length" "4,4,8,8")])
 
@@ -1151,8 +1150,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand")
 		   (plus:SI (match_operand:SI 1 "gcn_alu_operand")
 			    (match_operand:SI 2 "gcn_alu_operand")))
-	      (clobber (reg:BI SCC_REG))
-	      (clobber (scratch:DI))])]
+	      (clobber (reg:BI SCC_REG))])]
   ""
   {})
 
@@ -1332,14 +1330,13 @@
   [(set (match_operand:SI 0 "register_operand"          "=Sg, Sg,    v,   v")
 	(minus:SI (match_operand:SI 1 "gcn_alu_operand" "SgA,SgA,    v,vBSv")
 		  (match_operand:SI 2 "gcn_alu_operand" "SgA,  B, vBSv,   v")))
-   (clobber (match_scratch:BI 3				"=cs, cs,    X,   X"))
-   (clobber (match_scratch:DI 4				"= X,  X,   cV,  cV"))]
+   (clobber (match_scratch:BI 3				"=cs, cs,    X,   X"))]
   ""
   "@
    s_sub_i32\t%0, %1, %2
    s_sub_i32\t%0, %1, %2
-   v_subrev_co_u32\t%0, vcc, %2, %1
-   v_sub_co_u32\t%0, vcc, %1, %2"
+   {v_subrev_u32|v_subrev_nc_u32}\t%0, %2, %1
+   {v_sub_u32|v_sub_nc_u32}\t%0, %1, %2"
   [(set_attr "type" "sop2,sop2,vop2,vop2")
    (set_attr "length" "4,8,8,8")])
 
@@ -1569,8 +1566,7 @@
 	(mult:DI (match_operand:DI 1 "register_operand" "%Sg, Sg,  v, v")
 		 (match_operand:DI 2 "nonmemory_operand" "Sg,  i,vSv, A")))
    (clobber (match_scratch:SI 3 "=&Sg,&Sg,&v,&v"))
-   (clobber (match_scratch:BI 4  "=cs, cs, X, X"))
-   (clobber (match_scratch:DI 5   "=X,  X,cV,cV"))]
+   (clobber (match_scratch:BI 4  "=cs, cs, X, X"))]
   ""
   "#"
   "reload_completed"
@@ -1585,15 +1581,13 @@
     emit_insn (gen_umulsidi3 (operands[0], op1lo, op2lo));
     emit_insn (gen_mulsi3 (tmp, op1lo, op2hi));
     rtx add = gen_rtx_SET (dsthi, gen_rtx_PLUS (SImode, dsthi, tmp));
-    rtx clob1 = gen_rtx_CLOBBER (VOIDmode, operands[4]);
-    rtx clob2 = gen_rtx_CLOBBER (VOIDmode, operands[5]);
-    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, add, clob1, clob2));
+    rtx clob = gen_rtx_CLOBBER (VOIDmode, operands[4]);
+    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, add, clob));
     emit_insn (add);
     emit_insn (gen_mulsi3 (tmp, op1hi, op2lo));
     add = gen_rtx_SET (dsthi, gen_rtx_PLUS (SImode, dsthi, tmp));
-    clob1 = gen_rtx_CLOBBER (VOIDmode, operands[4]);
-    clob2 = gen_rtx_CLOBBER (VOIDmode, operands[5]);
-    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, add, clob1, clob2));
+    clob = gen_rtx_CLOBBER (VOIDmode, operands[4]);
+    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, add, clob));
     emit_insn (add);
     DONE;
   })
