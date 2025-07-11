@@ -2277,6 +2277,18 @@ get_evaluation_semantic (tree contract)
     }
 }
 
+/* Insert a BUILT_IN_OBSERVABLE epoch marker.  */
+
+static void
+emit_builtin_observable ()
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+  releasing_vec vec;
+  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  finish_expr_stmt (fn);
+
+}
+
 /* Build a p2900 contract_violation layout compatible object. */
 
 static tree
@@ -2570,6 +2582,9 @@ build_contract_check_p2900 (tree contract)
   tree cc_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   BIND_EXPR_BODY (cc_bind) = push_stmt_list ();
 
+  if (!flag_contract_disable_check_epochs
+      && TREE_CODE (contract) == ASSERTION_STMT)
+    emit_builtin_observable ();
   tree cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, condition, NULL_TREE,
 				tf_warning_or_error);
   /* So now do we need a try-catch?  */
@@ -2636,18 +2651,6 @@ build_contract_check (tree contract)
   return build_contract_check_cxx2a (contract);
 }
 
-/* Insert a BUILT_IN_OBSERVABLE epoch marker.  */
-
-static void
-emit_builtin_observable ()
-{
-  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
-  releasing_vec vec;
-  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  finish_expr_stmt (fn);
-
-}
-
 /* Add the contract statement CONTRACT to the current block if valid.  */
 
 static bool
@@ -2679,19 +2682,7 @@ emit_contract_attr (tree attr)
 void
 emit_assertion (tree attr)
 {
-  /* Insert a std::observable () epoch marker.  */
-  emit_builtin_observable();
-
   emit_contract_attr (attr);
-
-  contract_semantic semantic
-    = get_contract_semantic (CONTRACT_STATEMENT (attr));
-
-  if (semantic == CCS_OBSERVE ||semantic == CCS_NOEXCEPT_OBSERVE)
-    {
-      /* Insert a std::observable () epoch marker.  */
-      emit_builtin_observable();
-    }
 }
 
 /* We're compiling the pre/postcondition function CONDFN; remap any FN
@@ -2711,10 +2702,6 @@ remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
 	  remap_contract (fn, condfn, contract, /*duplicate_p=*/false);
 	  if (!emit_contract_statement (contract))
 	    continue;
-	  if (flag_contract_disable_check_epochs)
-	    continue;
-	  /* Insert a std::observable () epoch marker.  */
-	  emit_builtin_observable();
 	}
     }
 }
@@ -3722,6 +3709,8 @@ maybe_emit_violation_handler_wrappers ()
 		 build2 (EQ_EXPR, uint16_type_node, semantic,
 		 build_int_cst (uint16_type_node, (uint16_t)CES_NOEXCEPT_OBSERVE)));
   finish_if_stmt_cond (cond, if_observe);
+  if (!flag_contract_disable_check_epochs)
+    emit_builtin_observable ();
   finish_return_stmt (NULL_TREE);
   finish_then_clause (if_observe);
   finish_if_stmt (if_observe);
