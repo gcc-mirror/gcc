@@ -1645,6 +1645,20 @@
   }
 )
 
+(define_insn "*aarch64_sve2_unpred_nor<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(and:VDQ_I
+	  (not:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand"))
+	  (not:VDQ_I
+	    (match_operand:VDQ_I 2 "register_operand"))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , %1 , 2 ; attrs: movprfx ]
+     [ w        , 0  , w ; *              ] nbsl\t%Z0.d, %Z0.d, %Z2.d, %Z0.d
+     [ ?&w      , w  , w ; yes            ] movprfx\t%Z0, %Z1\;nbsl\t%Z0.d, %Z0.d, %Z2.d, %Z1.d
+  }
+)
+
 ;; Use NBSL for vector NAND.
 (define_insn_and_rewrite "*aarch64_sve2_nand<mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand")
@@ -1664,6 +1678,21 @@
   "&& !CONSTANT_P (operands[3])"
   {
     operands[3] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+;; Same as above but unpredicated and including Advanced SIMD modes.
+(define_insn "*aarch64_sve2_nand_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(ior:VDQ_I
+	  (not:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand"))
+	  (not:VDQ_I
+	    (match_operand:VDQ_I 2 "register_operand"))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , %1 , 2 ; attrs: movprfx ]
+     [ w        , 0  , w ; *              ] nbsl\t%Z0.d, %Z0.d, %Z2.d, %Z2.d
+     [ ?&w      , w  , w ; yes            ] movprfx\t%Z0, %Z1\;nbsl\t%Z0.d, %Z0.d, %Z2.d, %Z2.d
   }
 )
 
