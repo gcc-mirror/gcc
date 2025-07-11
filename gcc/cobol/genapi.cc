@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "cobol-system.h"
 
 #include "coretypes.h"
@@ -190,6 +191,9 @@ const char *gv_trace_switch = NULL;
 char const *bTRACE1 = NULL;
 tree trace_handle;
 tree trace_indent;
+
+// This variable is set to true when the output cursor is known to be at the
+// start-of-line.
 bool cursor_at_sol = true;
 
 static void
@@ -361,8 +365,11 @@ level_88_helper(size_t parent_capacity,
                 size_t &returned_size)
   {
   // We return a MALLOCed return value, which the caller must free.
-  char *retval  = (char *)xmalloc(parent_capacity + 64);
-  char *builder = (char *)xmalloc(parent_capacity + 64);
+  char *retval  = static_cast<char *>(xmalloc(parent_capacity + 64));
+  gcc_assert(retval);
+  char *builder = static_cast<char *>(xmalloc(parent_capacity + 64));
+  gcc_assert(builder);
+  
   size_t nbuild = 0;
 
   cbl_figconst_t figconst = cbl_figconst_of( elem.name());
@@ -403,7 +410,8 @@ level_88_helper(size_t parent_capacity,
 
     // Pick up the string
     size_t first_name_length  = elem.size();
-    char *first_name = (char *)xmalloc(first_name_length + 1);
+    char *first_name = static_cast<char *>(xmalloc(first_name_length + 1));
+    gcc_assert(first_name);
     memcpy(first_name, elem.name(), first_name_length);
     first_name[first_name_length] = '\0';
 
@@ -480,7 +488,7 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
   // Numerics are converted to strings, and handled as above
 
   size_t retval_capacity = 64;
-  char *retval = (char *)xmalloc(retval_capacity);
+  char *retval = static_cast<char *>(xmalloc(retval_capacity));
   size_t output_index = 0;
 
   // Loop through the provided domains:
@@ -497,8 +505,9 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
     if( output_index + stream_len > retval_capacity )
       {
       retval_capacity *= 2;
-      retval = (char *)xrealloc(retval, retval_capacity);
+      retval = static_cast<char *>(xrealloc(retval, retval_capacity));
       }
+    gcc_assert(retval);
     memcpy(retval + output_index, stream, stream_len);
     output_index += stream_len;
     returned_size += stream_len;
@@ -509,8 +518,9 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
     if( output_index + stream_len > retval_capacity )
       {
       retval_capacity *= 2;
-      retval = (char *)xrealloc(retval, retval_capacity);
+      retval = static_cast<char *>(xrealloc(retval, retval_capacity));
       }
+    gcc_assert(retval);
     memcpy(retval + output_index, stream, stream_len);
     output_index += stream_len;
     returned_size += stream_len;
@@ -608,13 +618,8 @@ get_class_condition_string(cbl_field_t *var)
       // Since the first.name is a single character, we can do this as
       // a single-character pair.
 
-      // Keep in mind that the single character might be a two-byte UTF-8
-      // codepoint
-        uint8_t ch1 = domain->first.name()[0];
-        uint8_t ch2 = domain->last.name()[0];
-
-        gcc_assert(first_name_length <= 2);
-        gcc_assert(last_name_length <= 2);
+      uint8_t ch1;
+      uint8_t ch2;
 
       char *p2;
       size_t one;
@@ -768,7 +773,8 @@ parser_call_targets_dump()
   {
     dbgmsg( "call targets for #" HOST_SIZE_T_PRINT_UNSIGNED " NOT dumping",
             (fmt_size_t)current_program_index() );
-    return; // not currently working 
+#if 0 // A change to call_targets rendered this routine useless.  Until we get
+      // around to repairing it, this code is left for reference.
     for( const auto& elem : call_targets ) {
       const auto& k = elem.first;
       const auto& v = elem.second;
@@ -782,6 +788,7 @@ parser_call_targets_dump()
       }
       fprintf(stderr, " ]\n");
     }
+#endif    
   }
 
 size_t
@@ -986,14 +993,13 @@ parser_compile_ecs( const std::vector<uint64_t>& ecs )
     return NULL_TREE;
     }
 
-  char ach[32];
+  char ach[64];
   static int counter = 1;
   sprintf(ach, "_ecs_table_%d", counter++);
   tree retval =  array_of_long_long(ach, ecs);
   SHOW_IF_PARSE(nullptr)
     {
     SHOW_PARSE_HEADER
-    char ach[64];
     snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
              gb4(ecs.size()), as_voidp(retval));
     SHOW_PARSE_TEXT(ach)
@@ -1002,7 +1008,6 @@ parser_compile_ecs( const std::vector<uint64_t>& ecs )
   TRACE1
     {
     TRACE1_HEADER
-    char ach[64];
     snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
              gb4(ecs.size()), as_voidp(retval));
     TRACE1_TEXT_ABC("", ach, "");
@@ -1209,10 +1214,9 @@ initialize_variable_internal( cbl_refer_t refer,
             // gg_string_literal(refer.field->name),
             // NULL_TREE);
   cbl_field_t *parsed_var = refer.field;
-
-  if( parsed_var->type == FldLiteralA )
+  if( !parsed_var )
     {
-    return;
+    cbl_internal_error("%s should not be null", "parsed_var");
     }
 
   if( parsed_var->is_key_name() )
@@ -1228,7 +1232,7 @@ initialize_variable_internal( cbl_refer_t refer,
     return;
     }
 
-  if( parsed_var && parsed_var->type == FldBlob )
+  if( parsed_var->type == FldBlob )
     {
     return;
     }
@@ -1345,8 +1349,6 @@ initialize_variable_internal( cbl_refer_t refer,
       }
     SHOW_PARSE_END
     }
-
-  CHECK_FIELD(parsed_var);
 
   // When initializing a variable, we have to ignore any DEPENDING ON clause
   // that might otherwise apply
@@ -2374,6 +2376,8 @@ move_tree(  cbl_field_t  *dest,
     SHOW_PARSE_END
     }
 
+  CHECK_FIELD(dest);
+
   bool moved = true;
 
   tree source_length = gg_define_size_t();
@@ -2457,7 +2461,7 @@ move_tree(  cbl_field_t  *dest,
               psz_source,
               min_length,
               member(dest->var_decl_node, "picture"),
-              NULL);
+              NULL_TREE);
       break;
       }
 
@@ -2585,7 +2589,7 @@ combined_name(const cbl_label_t *label)
     }
 
   static size_t retval_size = 256;
-  static char *retval= (char *)xmalloc(retval_size);
+  static char *retval= static_cast<char *>(xmalloc(retval_size));
 
   char *paragraph             = cobol_name_mangler(para_name);
   char *section         = cobol_name_mangler(sect_name);
@@ -2597,8 +2601,9 @@ combined_name(const cbl_label_t *label)
                   + 24 )
     {
     retval_size *= 2;
-    retval = (char *)xrealloc(retval, retval_size);
+    retval = static_cast<char *>(xrealloc(retval, retval_size));
     }
+  gcc_assert(retval);
 
   *retval = '\0';
   char ach[24];
@@ -2645,8 +2650,9 @@ assembler_label(const char *label)
     {
     length = strlen(label) + strlen(local_text) + 1;
     free(build);
-    build = (char *)xmalloc(length);
+    build = static_cast<char *>(xmalloc(length));
     }
+  gcc_assert(build);
 
   strcpy(build, label);
   strcat(build, local_text);
@@ -2948,7 +2954,9 @@ find_procedure(cbl_label_t *label)
     static int counter=1;
 
     // This is a new section or paragraph; we need to create its values:
-    retval = (struct cbl_proc_t *)xmalloc(sizeof(struct cbl_proc_t));
+    retval = static_cast<struct cbl_proc_t *>
+                                          (xmalloc(sizeof(struct cbl_proc_t)));
+    gcc_assert(retval);
     retval->label = label;
 
     gg_create_goto_pair(&retval->top.go_to,
@@ -3254,16 +3262,20 @@ parser_goto( cbl_refer_t value_ref, size_t narg, cbl_label_t * const labels[] )
 void
 parser_perform(cbl_label_t *label, bool suppress_nexting)
   {
-  label->used = yylineno;
   Analyze();
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
     char ach[32];
-    sprintf(ach, " label is at %p", (void*)label);
+    sprintf(ach, " label is at %p", static_cast<void*>(label));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
+    if( label )
+      {
+      sprintf(ach, 
+              " label->proc is %p",
+              static_cast<void*>(label->structs.proc));
+      }
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -3276,6 +3288,7 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     }
 
   CHECK_LABEL(label);
+  label->used = yylineno;
 
   struct cbl_proc_t *procedure = find_procedure(label);
 
@@ -3312,9 +3325,9 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
   char ach[256];
   if( label->type == LblParagraph )
     {
-    const cbl_label_t *section_label = cbl_label_of(symbol_at(label->parent));
+    const cbl_label_t *sec_label = cbl_label_of(symbol_at(label->parent));
     para_name = label->name;
-    sect_name = section_label->name;
+    sect_name = sec_label->name;
     sprintf(ach,
             "%s PERFORM %s of %s of %s (" HOST_SIZE_T_PRINT_DEC ")",
             ASM_COMMENT_START,
@@ -3374,9 +3387,9 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
     SHOW_PARSE_REF(" ", count)
     SHOW_PARSE_TEXT(" TIMES")
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
+    sprintf(ach, " proc_1 is at %p", static_cast<void*>(proc_1));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
+    sprintf(ach, " proc_1->proc is %p", static_cast<void*>(proc_1->structs.proc));
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -3427,17 +3440,22 @@ internal_perform_through( cbl_label_t *proc_1,
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", proc_1);
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
+    sprintf(ach, " proc_1 is at %p", static_cast<void*>(proc_1));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
+    if( proc_1 )
+      {
+      sprintf(ach,
+              " proc_1->proc is %p",
+              static_cast<void*>(proc_1->structs.proc));
+      }
     SHOW_PARSE_TEXT(ach)
     if( proc_2 )
       {
       SHOW_PARSE_INDENT
-      SHOW_PARSE_LABEL("", proc_2);
-      sprintf(ach, " proc_2 is at %p", (void*)proc_2);
+      SHOW_PARSE_LABEL_OK("", proc_2);
+      sprintf(ach, " proc_2 is at %p", static_cast<void*>(proc_2));
       SHOW_PARSE_TEXT(ach)
-      sprintf(ach, " proc_2->proc is %p", (void*)proc_2->structs.proc);
+      sprintf(ach, " proc_2->proc is %p", static_cast<void*>(proc_2->structs.proc));
       SHOW_PARSE_TEXT(ach)
       }
     SHOW_PARSE_END
@@ -3450,13 +3468,11 @@ internal_perform_through( cbl_label_t *proc_1,
 
   CHECK_LABEL(proc_1);
 
-  if(!proc_2)
+  if( !proc_2 )
     {
     parser_perform(proc_1, suppress_nexting);
     return;
     }
-
-  CHECK_LABEL(proc_2);
 
   struct cbl_proc_t *proc1 = find_procedure(proc_1);
   struct cbl_proc_t *proc2 = find_procedure(proc_2);
@@ -3512,17 +3528,22 @@ internal_perform_through_times(   cbl_label_t *proc_1,
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", proc_1);
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
+    sprintf(ach, " proc_1 is at %p", static_cast<void*>(proc_1));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
+    if( proc_1 )
+      {
+      sprintf(ach,
+              " proc_1->proc is %p",
+              static_cast<void*>(proc_1->structs.proc));
+      }
     SHOW_PARSE_TEXT(ach)
     if( proc_2 )
       {
       SHOW_PARSE_INDENT
-      SHOW_PARSE_LABEL("", proc_2);
-      sprintf(ach, " proc_2 is at %p", (void*)proc_2);
+      SHOW_PARSE_LABEL_OK("", proc_2);
+      sprintf(ach, " proc_2 is at %p", static_cast<void*>(proc_2));
       SHOW_PARSE_TEXT(ach)
-      sprintf(ach, " proc_2->proc is %p", (void*)proc_2->structs.proc);
+      sprintf(ach, " proc_2->proc is %p", static_cast<void*>(proc_2->structs.proc));
       SHOW_PARSE_TEXT(ach)
       }
     SHOW_PARSE_REF(" ", count);
@@ -4107,6 +4128,8 @@ psa_FldLiteralN(struct cbl_field_t *field )
   // We are constructing a completely static constant structure, based on the
   // text string in .initial
 
+  CHECK_FIELD(field);
+
   FIXED_WIDE_INT(128) value = 0;
 
   do
@@ -4299,6 +4322,8 @@ psa_FldBlob(struct cbl_field_t *var )
     SHOW_PARSE_END
     }
 
+  CHECK_FIELD(var);
+
   // We are constructing a completely static constant structure.  We know the
   // capacity.  We'll create it from the data.initial.  The var_decl_node will
   // be a pointer to the data
@@ -4463,7 +4488,7 @@ parser_accept(struct cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO     error->INTO for_argv")
-          SHOW_PARSE_LABEL(" ", error)
+          SHOW_PARSE_LABEL_OK(" ", error)
           }
         gg_append_statement( error->structs.arith_error->into.go_to );
         }
@@ -4481,7 +4506,7 @@ parser_accept(struct cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO not_error->INTO for_argv")
-          SHOW_PARSE_LABEL(" ", not_error)
+          SHOW_PARSE_LABEL_OK(" ", not_error)
           }
         gg_append_statement( not_error->structs.arith_error->into.go_to );
         }
@@ -4496,7 +4521,7 @@ parser_accept(struct cbl_refer_t tgt,
         {
         SHOW_PARSE_INDENT
         SHOW_PARSE_TEXT("Laying down LABEL     error->bottom")
-        SHOW_PARSE_LABEL(" ", error)
+        SHOW_PARSE_LABEL_OK(" ", error)
         }
       gg_append_statement( error->structs.arith_error->bottom.label );
       }
@@ -4506,7 +4531,7 @@ parser_accept(struct cbl_refer_t tgt,
         {
         SHOW_PARSE_INDENT
         SHOW_PARSE_TEXT("Laying down LABEL not_error->bottom")
-        SHOW_PARSE_LABEL(" ", not_error)
+        SHOW_PARSE_LABEL_OK(" ", not_error)
         SHOW_PARSE_END
         }
       gg_append_statement( not_error->structs.arith_error->bottom.label );
@@ -4523,7 +4548,6 @@ parser_accept_exception( cbl_label_t *accept_label )
 
   // We are entering either SIZE ERROR or NOT SIZE ERROR code
   RETURN_IF_PARSE_ONLY;
-  set_up_on_exception_label(accept_label);
 
   SHOW_PARSE
     {
@@ -4535,6 +4559,9 @@ parser_accept_exception( cbl_label_t *accept_label )
     SHOW_PARSE_LABEL(" ", accept_label)
     SHOW_PARSE_END
     }
+
+  CHECK_LABEL(accept_label);
+  set_up_on_exception_label(accept_label);
 
   // Jump over the [NOT] ON EXCEPTION code that is about to be laid down
   gg_append_statement( accept_label->structs.arith_error->over.go_to );
@@ -4561,6 +4588,8 @@ parser_accept_exception_end( cbl_label_t *accept_label )
     SHOW_PARSE_LABEL(" ", accept_label)
     SHOW_PARSE_END
     }
+
+  CHECK_LABEL(accept_label);
 
   // Jump to the end of the arithmetic code:
   gg_append_statement( accept_label->structs.arith_error->bottom.go_to );
@@ -4612,7 +4641,7 @@ parser_accept_command_line( cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO     error->INTO for_command_line")
-          SHOW_PARSE_LABEL(" ", error)
+          SHOW_PARSE_LABEL_OK(" ", error)
           }
         gg_append_statement( error->structs.arith_error->into.go_to );
         }
@@ -4630,7 +4659,7 @@ parser_accept_command_line( cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO not_error->INTO for command_line")
-          SHOW_PARSE_LABEL(" ", not_error)
+          SHOW_PARSE_LABEL_OK(" ", not_error)
           }
         gg_append_statement( not_error->structs.arith_error->into.go_to );
         }
@@ -4662,7 +4691,7 @@ parser_accept_command_line( cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO     error->INTO for_argv")
-          SHOW_PARSE_LABEL(" ", error)
+          SHOW_PARSE_LABEL_OK(" ", error)
           }
         gg_append_statement( error->structs.arith_error->into.go_to );
         }
@@ -4680,7 +4709,7 @@ parser_accept_command_line( cbl_refer_t tgt,
           {
           SHOW_PARSE_INDENT
           SHOW_PARSE_TEXT("Laying down GOTO not_error->INTO for_argv")
-          SHOW_PARSE_LABEL(" ", not_error)
+          SHOW_PARSE_LABEL_OK(" ", not_error)
           }
         gg_append_statement( not_error->structs.arith_error->into.go_to );
         }
@@ -4696,7 +4725,7 @@ parser_accept_command_line( cbl_refer_t tgt,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT("Laying down LABEL     error->bottom")
-      SHOW_PARSE_LABEL(" ", error)
+      SHOW_PARSE_LABEL_OK(" ", error)
       }
     gg_append_statement( error->structs.arith_error->bottom.label );
     }
@@ -4706,7 +4735,7 @@ parser_accept_command_line( cbl_refer_t tgt,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT("Laying down LABEL not_error->bottom")
-      SHOW_PARSE_LABEL(" ", not_error)
+      SHOW_PARSE_LABEL_OK(" ", not_error)
       SHOW_PARSE_END
       }
     gg_append_statement( not_error->structs.arith_error->bottom.label );
@@ -4804,7 +4833,7 @@ parser_accept_envar(struct cbl_refer_t tgt,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT("Laying down LABEL     error->bottom")
-      SHOW_PARSE_LABEL(" ", error)
+      SHOW_PARSE_LABEL_OK(" ", error)
       }
     gg_append_statement( error->structs.arith_error->bottom.label );
     }
@@ -4814,7 +4843,7 @@ parser_accept_envar(struct cbl_refer_t tgt,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT("Laying down LABEL not_error->bottom")
-      SHOW_PARSE_LABEL(" ", not_error)
+      SHOW_PARSE_LABEL_OK(" ", not_error)
       SHOW_PARSE_END
       }
     gg_append_statement( not_error->structs.arith_error->bottom.label );
@@ -5224,7 +5253,6 @@ parser_display_internal(tree file_descriptor,
             build_int_cst_type(SIZE_T, refer.field->data.capacity),
             advance ? integer_one_node : integer_zero_node,
             NULL_TREE );
-    cursor_at_sol = advance;
     }
   else if( refer.field->type == FldLiteralN )
     {
@@ -5262,50 +5290,50 @@ parser_display_internal(tree file_descriptor,
         *p = 'E';
         if( exp < 0 && exp >= -9 )
           {
-            p[1] = '-';
-            p[2] = '0';
-            p[3] = '0' - exp;
-            p[4] = '\0';
+          p[1] = '-';
+          p[2] = '0';
+          p[3] = '0' - exp;
+          p[4] = '\0';
           }
         else if( exp >= 0 && exp <= 9 )
           {
-            p[1] = '+';
-            p[2] = '0';
-            p[3] = '0' + exp;
-            p[4] = '\0';
+          p[1] = '+';
+          p[2] = '0';
+          p[3] = '0' + exp;
+          p[4] = '\0';
           }
         }
       else if (exp == 0)
         {
-          p[-1] = '\0';
+        p[-1] = '\0';
         }
       else if (exp < 0)
         {
-          p[-1] = '\0';
-          char *q = strchr (ach, '.');
-          char dig = q[-1];
-          q[-1] = '\0';
-          char tem[132];
-          snprintf (tem, 132, "%s0.%0*u%c%s", ach, -exp - 1, 0, dig, q + 1);
-          strcpy (ach, tem);
+        p[-1] = '\0';
+        char *q = strchr (ach, '.');
+        char dig = q[-1];
+        q[-1] = '\0';
+        char tem[132];
+        snprintf (tem, 132, "%s0.%0*d%c%s", ach, -exp - 1, 0, dig, q + 1);
+        strcpy (ach, tem);
         }
-      else if (exp > 0)
+      else // if (exp > 0)
         {
-          p[-1] = '\0';
-          char *q = strchr (ach, '.');
-          for (int i = 0; i != exp; ++i)
-            q[i] = q[i + 1];
-          q[exp] = '.';
+        p[-1] = '\0';
+        char *q = strchr (ach, '.');
+        for (int i = 0; i != exp; ++i)
+          q[i] = q[i + 1];
+        q[exp] = '.';
         }
       __gg__remove_trailing_zeroes(ach);
       }
 
     if( symbol_decimal_point() == ',' )
       {
-      char *p = strchr(ach, '.' );
-      if( p )
+      char *pdot = strchr(ach, '.' );
+      if( pdot )
         {
-        *p = symbol_decimal_point();
+        *pdot = symbol_decimal_point();
         }
       }
 
@@ -5366,8 +5394,8 @@ void
 parser_display( const struct cbl_special_name_t *upon,
                 std::vector<cbl_refer_t> refs, 
                 bool advance, 
-                cbl_label_t *not_error, 
-                cbl_label_t *error )
+          const cbl_label_t *not_error, 
+          const cbl_label_t *error )
   {
   const size_t n = refs.size();
   /*
@@ -5813,12 +5841,12 @@ parser_assign( size_t nC, cbl_num_result_t *C,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT(" Laying down on_error GOTO into")
-      SHOW_PARSE_LABEL(" ", on_error)
+      SHOW_PARSE_LABEL_OK(" ", on_error)
       }
     IF( gg_bitwise_or(error_flag,
                       compute_error->structs.compute_error->compute_error_code),
-        ne_op,
-        integer_zero_node )
+                      ne_op,
+                      integer_zero_node )
       {
       gg_append_statement( on_error->structs.arith_error->into.go_to );
       }
@@ -5844,7 +5872,7 @@ parser_assign( size_t nC, cbl_num_result_t *C,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT(" Laying down not_error GOTO into")
-      SHOW_PARSE_LABEL(" ", not_error)
+      SHOW_PARSE_LABEL_OK(" ", not_error)
       }
     IF( compute_error->structs.compute_error->compute_error_code, eq_op, integer_zero_node )
       {
@@ -5860,7 +5888,7 @@ parser_assign( size_t nC, cbl_num_result_t *C,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT(" Laying down on_error LABEL BOTTOM:")
-      SHOW_PARSE_LABEL(" ", on_error)
+      SHOW_PARSE_LABEL_OK(" ", on_error)
       }
     gg_append_statement( on_error->structs.arith_error->bottom.label );
     }
@@ -5871,7 +5899,7 @@ parser_assign( size_t nC, cbl_num_result_t *C,
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT(" Laying down not_error LABEL BOTTOM:")
-      SHOW_PARSE_LABEL(" ", not_error)
+      SHOW_PARSE_LABEL_OK(" ", not_error)
       }
     gg_append_statement( not_error->structs.arith_error->bottom.label );
     }
@@ -6146,10 +6174,18 @@ parser_initialize_table(size_t nelem,
     }
   typedef size_t span_t[2];
   static_assert(sizeof(spans[0]) == sizeof(span_t), "pair size wrong");
-  static tree tspans = gg_define_variable(SIZE_T_P, "..pit_v1", vs_file_static);
-  static tree ttbls  = gg_define_variable(SIZE_T_P, "..pit_v2", vs_file_static);
-  gg_assign(tspans, build_array_of_size_t(2*nspan, (const size_t *)spans));
-  gg_assign(ttbls,  build_array_of_size_t(2*ntbl,  (const size_t *)tbls));
+  static tree tspans = gg_define_variable(SIZE_T_P,
+                                          "..pit_v1",
+                                          vs_file_static);
+  static tree ttbls  = gg_define_variable(SIZE_T_P,
+                                          "..pit_v2",
+vs_file_static);
+  gg_assign(tspans,
+            build_array_of_size_t(2*nspan,
+                                  reinterpret_cast<const size_t *>(spans)));
+  gg_assign(ttbls,
+            build_array_of_size_t(2*ntbl,
+                                  reinterpret_cast<const size_t *>(tbls)));
 
   gg_call(VOID,
           "__gg__mirror_range",
@@ -6672,7 +6708,6 @@ parser_arith_error(cbl_label_t *arithmetic_label)
 
   // We are entering either SIZE ERROR or NOT SIZE ERROR code
   RETURN_IF_PARSE_ONLY;
-  set_up_on_exception_label(arithmetic_label);
 
   SHOW_PARSE
     {
@@ -6684,6 +6719,10 @@ parser_arith_error(cbl_label_t *arithmetic_label)
     SHOW_PARSE_LABEL(" ", arithmetic_label)
     SHOW_PARSE_END
     }
+
+  CHECK_LABEL(arithmetic_label);
+
+  set_up_on_exception_label(arithmetic_label);
 
   // Jump over the [NOT] ON EXCEPTION code that is about to be laid down
   gg_append_statement( arithmetic_label->structs.arith_error->over.go_to );
@@ -6710,6 +6749,8 @@ parser_arith_error_end(cbl_label_t *arithmetic_label)
     SHOW_PARSE_LABEL(" ", arithmetic_label)
     SHOW_PARSE_END
     }
+
+  CHECK_LABEL(arithmetic_label);
 
   // Jump to the end of the arithmetic code:
   gg_append_statement( arithmetic_label->structs.arith_error->bottom.go_to );
@@ -7066,14 +7107,13 @@ parser_division(cbl_division_t division,
       chain_parameter_to_function(current_function->function_decl, par_type, ach);
       }
 
-    bool check_for_parameter_count = false;
-
     if( nusing )
       {
       // During the call, we saved the parameter_count and an array of variable
       // lengths.  We need to look at those values if, and only if, one or more
       // of our USING arguments has an OPTIONAL flag or if one of our targets is
       // marked as VARYING.
+      bool check_for_parameter_count = false;
       for(size_t i=0; i<nusing; i++)
         {
         if( args[i].optional )
@@ -7269,7 +7309,6 @@ parser_division(cbl_division_t division,
           // If so, we have to give var2::data_pointer the same value as
           // var1::data_pointer
           //
-          cbl_field_t *next_var;
           size_t our_index = symbol_index(symbol_elem_of(new_var));
           size_t next_index  = our_index + 1;
           // Look ahead in the symbol table for the next LEVEL01/77
@@ -7280,7 +7319,7 @@ parser_division(cbl_division_t division,
               {
               break;
               }
-            next_var = cbl_field_of(e);
+            cbl_field_t *next_var = cbl_field_of(e);
             if( !next_var )
               {
               break;
@@ -7799,7 +7838,9 @@ label_fetch(struct cbl_label_t *label)
   if( !label->structs.goto_trees )
     {
     label->structs.goto_trees
-      = (cbl_label_addresses_t *)xmalloc(sizeof(struct cbl_label_addresses_t) );
+      = static_cast<cbl_label_addresses_t *>
+        (xmalloc(sizeof(struct cbl_label_addresses_t)));
+    gcc_assert(label->structs.goto_trees);
 
     gg_create_goto_pair(&label->structs.goto_trees->go_to,
                         &label->structs.goto_trees->label);
@@ -7817,14 +7858,17 @@ parser_label_label(struct cbl_label_t *label)
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL("", label)
     char ach[32];
-    sprintf(ach, " label is at %p", (void*)label);
+    sprintf(ach, " label is at %p", static_cast<void*>(label));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
+    if( label )
+      {
+      sprintf(ach,
+              " label->proc is %p",
+              static_cast<void*>(label->structs.proc));
+      }
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
-
-  CHECK_LABEL(label);
 
   TRACE1
     {
@@ -7832,6 +7876,8 @@ parser_label_label(struct cbl_label_t *label)
     TRACE1_LABEL("Establish label: ", label, "")
     TRACE1_END
     }
+
+  CHECK_LABEL(label);
 
   if(strcmp(label->name, "_end_declaratives") == 0 )
     {
@@ -7844,20 +7890,24 @@ void
 parser_label_goto(struct cbl_label_t *label)
   {
   label->used = yylineno;
+
   Analyze();
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
     char ach[32];
-    sprintf(ach, " label is at %p", (void*)label);
+    sprintf(ach, " label is at %p", static_cast<void*>(label));
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
+    if( label )
+      {
+      sprintf(ach,
+              " label->proc is %p",
+              static_cast<void*>(label->structs.proc));
+      }
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
-
-  CHECK_LABEL(label);
 
   TRACE1
     {
@@ -7866,7 +7916,9 @@ parser_label_goto(struct cbl_label_t *label)
     TRACE1_END
     }
 
-  if(strcmp(label->name, "_end_declaratives") == 0 )
+  CHECK_LABEL(label);
+
+  if( strcmp(label->name, "_end_declaratives") == 0 )
     {
     suppress_cobol_entry_point = true;
     }
@@ -8068,7 +8120,7 @@ parser_perform_start( struct cbl_perform_tgt_t *tgt )
       {
       SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
       char ach[32];
-      sprintf(ach, " %p", (void*)tgt);
+      sprintf(ach, " %p", static_cast<void*>(tgt));
       SHOW_PARSE_TEXT(ach);
       SHOW_PARSE_LABEL(" ", tgt->from())
       if( tgt->to() )
@@ -8129,7 +8181,7 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", (void*)tgt);
+    sprintf(ach, " %p", static_cast<void*>(tgt));
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -8179,7 +8231,7 @@ parser_perform_conditional_end( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", (void*)tgt);
+    sprintf(ach, " %p", static_cast<void*>(tgt));
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -9103,7 +9155,7 @@ parser_perform_until(   struct cbl_perform_tgt_t *tgt,
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", (void*)tgt);
+    sprintf(ach, " %p", static_cast<void*>(tgt));
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_LABEL(" ", tgt->from())
     if( tgt->to() )
@@ -9938,13 +9990,19 @@ void
 parser_file_delete( struct cbl_file_t *file, bool /*sequentially*/ )
   {
   Analyze();
+
+  if( !file )
+    {
+    cbl_internal_error("The file pointer should not be null");
+    abort();  // Because cppcheck doesn't recognize [[noerror]]
+    }
+
   bool sequentially =    file->access == file_access_seq_e
                       || file->org    == file_sequential_e
                       || file->org    == file_line_sequential_e;
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    if(file)
       {
       SHOW_PARSE_TEXT(" ");
       SHOW_PARSE_TEXT(file->name);
@@ -9956,10 +10014,6 @@ parser_file_delete( struct cbl_file_t *file, bool /*sequentially*/ )
         {
         SHOW_PARSE_TEXT(" sequentially")
         }
-      }
-    else
-      {
-      SHOW_PARSE_TEXT(" *file is NULL")
       }
     SHOW_PARSE_END
     }
@@ -10711,7 +10765,9 @@ parser_intrinsic_subst( cbl_field_t *f,
 
   sv_is_i_o = true;
   store_location_stuff("SUBSTITUTE");
-  unsigned char *control_bytes = (unsigned char *)xmalloc(argc * sizeof(unsigned char));
+  unsigned char *control_bytes =
+           static_cast<unsigned char *>(xmalloc(argc * sizeof(unsigned char)));
+  gcc_assert(control_bytes);
   std::vector<cbl_refer_t> arg1(argc);
   std::vector<cbl_refer_t> arg2(argc);
 
@@ -11148,7 +11204,9 @@ static void
 create_lsearch_address_pairs(struct cbl_label_t *name)
   {
   // Create the lsearch structure
-  name->structs.lsearch = (cbl_lsearch_t *)xmalloc(sizeof(cbl_lsearch_t));
+  name->structs.lsearch =
+                  static_cast<cbl_lsearch_t *>(xmalloc(sizeof(cbl_lsearch_t)));
+  gcc_assert(name->structs.lsearch);
   cbl_lsearch_t *lsearch = name->structs.lsearch;
 
   gg_create_goto_pair(&lsearch->addresses.at_exit.go_to,
@@ -11398,7 +11456,9 @@ parser_bsearch_start(   cbl_label_t* name,
     }
 
   // We need a cbl_bsearch_t structure:
-  name->structs.bsearch = (cbl_bsearch_t *)xmalloc(sizeof(cbl_bsearch_t));
+  name->structs.bsearch =
+                  static_cast<cbl_bsearch_t *>(xmalloc(sizeof(cbl_bsearch_t)));
+  gcc_assert(name->structs.bsearch);
   cbl_bsearch_t *bsearch = name->structs.bsearch;
 
   // Create the address/label pairs we need
@@ -11430,6 +11490,8 @@ parser_bsearch_start(   cbl_label_t* name,
       }
     current = parent_of(current);
     }
+
+  CHECK_FIELD(current);
 
   // There are a number of things we learn from the field "current"
 
@@ -11543,7 +11605,6 @@ is_ascending_key(const cbl_refer_t& key)
   bool retval = true;
 
   cbl_field_t *family_tree = key.field;
-  gcc_assert(family_tree);
   while( family_tree )
     {
     if( family_tree->occurs.nkey )
@@ -11552,7 +11613,10 @@ is_ascending_key(const cbl_refer_t& key)
       }
     family_tree = parent_of(family_tree);
     }
+
+  CHECK_FIELD(family_tree);
   gcc_assert(family_tree->occurs.nkey);
+
   for(size_t i=0; i<family_tree->occurs.nkey; i++)
     {
     for(size_t j=0; j<family_tree->occurs.keys[i].field_list.nfield; j++)
@@ -11712,8 +11776,12 @@ parser_sort(cbl_refer_t tableref,
                                          return n + key.fields.size();
                                        } );
   typedef const cbl_field_t * const_field_t;
-  const_field_t *flattened_fields = (const_field_t *)xmalloc(total_keys * sizeof(cbl_field_t *));
-  size_t *flattened_ascending       = (size_t *)xmalloc(total_keys * sizeof(size_t));
+  const_field_t *flattened_fields =
+     static_cast<const_field_t *>(xmalloc(total_keys * sizeof(cbl_field_t *)));
+  gcc_assert(flattened_fields);
+  size_t *flattened_ascending =
+                   static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
+  gcc_assert(flattened_ascending);
 
   size_t key_index = 0;
   for( size_t i=0; i<keys.size(); i++ )
@@ -11849,8 +11917,12 @@ parser_file_sort(   cbl_file_t *workfile,
                                          return n + key.fields.size();
                                        } );
   typedef const cbl_field_t * const_field_t;
-  auto flattened_fields = (const_field_t *)xmalloc(total_keys * sizeof(cbl_field_t *));
-  size_t *flattened_ascending    = (size_t *)      xmalloc(total_keys * sizeof(size_t));
+  auto flattened_fields
+   = static_cast<const_field_t *>(xmalloc(total_keys * sizeof(cbl_field_t *)));
+  gcc_assert(flattened_fields);
+  size_t *flattened_ascending =
+                   static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
+  gcc_assert(flattened_ascending);
 
   size_t key_index = 0;
   for( size_t i=0; i<keys.size(); i++ )
@@ -12009,7 +12081,9 @@ parser_return_start( cbl_file_t *workfile, cbl_refer_t into )
 
   // We assume that workfile is open.
 
-  workfile->addresses = (cbl_sortreturn_t *)xmalloc(sizeof(cbl_sortreturn_t));
+  workfile->addresses = static_cast<cbl_sortreturn_t *>
+                                          (xmalloc(sizeof(cbl_sortreturn_t)));
+  gcc_assert(workfile->addresses);
   gg_create_goto_pair(&workfile->addresses->at_end.go_to,
                       &workfile->addresses->at_end.label);
   gg_create_goto_pair(&workfile->addresses->not_at_end.go_to,
@@ -12195,9 +12269,13 @@ parser_file_merge(  cbl_file_t *workfile,
                                          return i + key.fields.size();
                                        } );
   typedef const cbl_field_t * const_field_t;
-  const_field_t *flattened_fields = (const_field_t *)xmalloc(total_keys * sizeof(cbl_field_t *));
+  const_field_t *flattened_fields
+                 = static_cast<const_field_t *>
+                   (xmalloc(total_keys * sizeof(cbl_field_t *)));
+  gcc_assert(flattened_fields);
   size_t *flattened_ascending
-            = (size_t *)xmalloc(total_keys * sizeof(size_t));
+            = static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
+  gcc_assert(flattened_ascending);
 
   size_t key_index = 0;
   for( size_t i=0; i<keys.size(); i++ )
@@ -12211,8 +12289,9 @@ parser_file_merge(  cbl_file_t *workfile,
     }
 
   // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_array_of_field_pointers(total_keys,
-                                             const_cast<cbl_field_t**>(flattened_fields));
+  tree all_keys = gg_array_of_field_pointers(
+                                 total_keys,
+                                 const_cast<cbl_field_t**>(flattened_fields));
 
   // Create the array of integers that are the flags for ASCENDING:
   tree ascending = gg_array_of_size_t(total_keys, flattened_ascending);
@@ -12395,7 +12474,8 @@ parser_string_overflow( cbl_label_t *name )
    */
 
   name->structs.unstring
-    = (cbl_unstring_t *)xmalloc(sizeof(struct cbl_unstring_t) );
+    = static_cast<cbl_unstring_t *>(xmalloc(sizeof(struct cbl_unstring_t)));
+  gcc_assert(name->structs.unstring);
 
   // Set up the address pairs for this clause
   gg_create_goto_pair(&name->structs.unstring->over.go_to,
@@ -12454,8 +12534,8 @@ parser_unstring(cbl_refer_t src,
     }
 
   std::vector<cbl_refer_t> delims(ndelimited);
-  char *alls = (char *)xmalloc(ndelimited+1);
-
+  char *alls = static_cast<char *>(xmalloc(ndelimited+1));
+  gcc_assert(alls);
   for(size_t i=0; i<ndelimited; i++)
     {
     delims[i] = delimiteds[i];
@@ -12546,7 +12626,8 @@ parser_string(const cbl_refer_t& tgt,
     }
 
   // We need an array of nsource+1 integers:
-  size_t *integers = (size_t *)xmalloc((nsource+1)*sizeof(size_t));
+  size_t *integers = static_cast<size_t *>(xmalloc((nsource+1)*sizeof(size_t)));
+  gcc_assert(integers);
 
   // Count up how many treeplets we are going to need:
   size_t cblc_count = 2;  // tgt and pointer
@@ -12637,8 +12718,9 @@ parser_call_exception( cbl_label_t *name )
     }
 
   name->structs.call_exception
-    = (cbl_call_exception_t *)xmalloc(sizeof(struct cbl_call_exception_t) );
-
+    = static_cast<cbl_call_exception_t *>
+                                (xmalloc(sizeof(struct cbl_call_exception_t)));
+  gcc_assert(name->structs.call_exception);
   // Set up the address pairs for this clause
   gg_create_goto_pair(&name->structs.call_exception->over.go_to,
                       &name->structs.call_exception->over.label);
@@ -12698,8 +12780,10 @@ create_and_call(size_t narg,
 
   if(narg)
     {
-    arguments = (tree *)xmalloc(2*narg * sizeof(tree));
-    allocated = (int * )xmalloc(narg * sizeof(int));
+    arguments = static_cast<tree *>(xmalloc(2*narg * sizeof(tree)));
+    gcc_assert(arguments);
+    allocated = static_cast<int *>(xmalloc(narg * sizeof(int)));
+    gcc_assert(allocated);
     }
 
   // Put the arguments onto the "stack" of calling parameters:
@@ -14079,7 +14163,7 @@ mh_identical(cbl_refer_t &destref,
       )
     {
     // The source and destination are identical in type
-    if( (sourceref.field->attr & intermediate_e) || !symbol_find_odo(sourceref.field) )
+    if( !symbol_find_odo(sourceref.field) )
       {
       Analyze();
       // Source doesn't have a depending_on clause
@@ -15301,7 +15385,7 @@ move_helper(tree size_error,        // This is an INT
     //goto dont_be_clever; this will go through to the default.
     }
 
-  if( !moved )
+  // if( !moved ) // commented out to quiet cppcheck
     {
     moved = mh_source_is_group(destref, sourceref, tsource);
     }
@@ -15370,8 +15454,9 @@ move_helper(tree size_error,        // This is an INT
     if( buffer_size < source_length )
       {
       buffer_size = source_length;
-      buffer = (char *)xrealloc(buffer, buffer_size);
+      buffer = static_cast<char *>(xrealloc(buffer, buffer_size));
       }
+    gcc_assert(buffer);
 
     if( figconst )
       {
@@ -15645,7 +15730,8 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
   FIXED_WIDE_INT(128) i
     = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
 
-  retval = (char *)xmalloc(field->data.capacity);
+  retval = static_cast<char *>(xmalloc(field->data.capacity));
+  gcc_assert(retval);
   switch(field->data.capacity)
     {
       tree type;
@@ -15656,7 +15742,7 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
     case 16:
       type = build_nonstandard_integer_type ( field->data.capacity
                                               * BITS_PER_UNIT, 0);
-      native_encode_wide_int (type, i, (unsigned char *)retval,
+      native_encode_wide_int (type, i, PTRCAST(unsigned char, retval),
                               field->data.capacity);
       break;
     default:
@@ -15786,7 +15872,8 @@ initial_from_initial(cbl_field_t *field)
       }
     if( set_return )
       {
-      retval = (char *)xmalloc(field->data.capacity+1);
+      retval = static_cast<char *>(xmalloc(field->data.capacity+1));
+      gcc_assert(retval);
       memset(retval, const_char, field->data.capacity);
       retval[field->data.capacity] = '\0';
       return retval;
@@ -15856,7 +15943,8 @@ initial_from_initial(cbl_field_t *field)
 
     case FldNumericDisplay:
       {
-      retval = (char *)xmalloc(field->data.capacity);
+      retval = static_cast<char *>(xmalloc(field->data.capacity));
+      gcc_assert(retval);
       char *pretval = retval;
       char ach[128];
 
@@ -15936,7 +16024,8 @@ initial_from_initial(cbl_field_t *field)
 
     case FldPacked:
       {
-      retval = (char *)xmalloc(field->data.capacity);
+      retval = static_cast<char *>(xmalloc(field->data.capacity));
+      gcc_assert(retval);
       char *pretval = retval;
       char ach[128];
 
@@ -16003,7 +16092,8 @@ initial_from_initial(cbl_field_t *field)
       {
       if( field->data.initial )
         {
-        retval = (char *)xmalloc(field->data.capacity+1);
+        retval = static_cast<char *>(xmalloc(field->data.capacity+1));
+        gcc_assert(retval);
         if( field->attr & hex_encoded_e)
           {
           memcpy(retval, field->data.initial, field->data.capacity);
@@ -16011,7 +16101,7 @@ initial_from_initial(cbl_field_t *field)
         else
           {
           size_t buffer_size = 0;
-          size_t length = (size_t)field->data.capacity;
+          size_t length = field->data.capacity;
           memset(retval, internal_space, length);
           raw_to_internal(&retval, &buffer_size, field->data.initial, length);
           if( strlen(field->data.initial) < length )
@@ -16027,7 +16117,8 @@ initial_from_initial(cbl_field_t *field)
 
     case FldNumericEdited:
       {
-      retval = (char *)xmalloc(field->data.capacity+1);
+      retval = static_cast<char *>(xmalloc(field->data.capacity+1));
+      gcc_assert(retval);
       if( field->data.initial && field->attr & quoted_e )
         {
         // What the programmer says the value is, the value becomes, no
@@ -16062,7 +16153,6 @@ initial_from_initial(cbl_field_t *field)
         char ach[128];
         memset(ach, 0, sizeof(ach));
         memset(retval, 0, field->data.capacity);
-        size_t ndigits = field->data.capacity;
 
         if( (field->attr & blank_zero_e) && real_iszero (&value) )
           {
@@ -16070,6 +16160,7 @@ initial_from_initial(cbl_field_t *field)
           }
         else
           {
+          size_t ndigits = field->data.capacity;
           digits_from_float128(ach, field, ndigits, rdigits, value);
           /* ???  This resides in libgcobol valconv.cc.  */
           __gg__string_to_numeric_edited( retval,
@@ -16084,23 +16175,24 @@ initial_from_initial(cbl_field_t *field)
 
     case FldFloat:
       {
-      retval = (char *)xmalloc(field->data.capacity);
+      retval = static_cast<char *>(xmalloc(field->data.capacity));
+      gcc_assert(retval);
       switch( field->data.capacity )
         {
         case 4:
           value = real_value_truncate (TYPE_MODE (FLOAT), value);
           native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT), &value,
-                              (unsigned char *)retval, 4, 0);
+                              PTRCAST(unsigned char, retval), 4, 0);
           break;
         case 8:
           value = real_value_truncate (TYPE_MODE (DOUBLE), value);
           native_encode_real (SCALAR_FLOAT_TYPE_MODE (DOUBLE), &value,
-                              (unsigned char *)retval, 8, 0);
+                              PTRCAST(unsigned char, retval), 8, 0);
           break;
         case 16:
           value = real_value_truncate (TYPE_MODE (FLOAT128), value);
           native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT128), &value,
-                              (unsigned char *)retval, 16, 0);
+                              PTRCAST(unsigned char, retval), 16, 0);
           break;
         }
       break;
@@ -16486,12 +16578,13 @@ psa_FldLiteralA(struct cbl_field_t *field )
 
   // First make room
   static size_t buffer_size = 1024;
-  static char *buffer = (char *)xmalloc(buffer_size);
+  static char *buffer = static_cast<char *>(xmalloc(buffer_size));
   if( buffer_size < field->data.capacity+1 )
     {
     buffer_size = field->data.capacity+1;
-    buffer = (char *)xrealloc(buffer, buffer_size);
+    buffer = static_cast<char *>(xrealloc(buffer, buffer_size));
     }
+  gcc_assert(buffer);
 
   cbl_figconst_t figconst = cbl_figconst_of( field->data.initial );
   gcc_assert(figconst == normal_value_e);
@@ -16590,6 +16683,8 @@ parser_local_add(struct cbl_field_t *new_var )
     SHOW_PARSE_END
     }
 
+  CHECK_FIELD(new_var);
+
   IF( member(new_var->var_decl_node, "data"),
       ne_op,
       gg_cast(UCHAR_P, null_pointer_node) )
@@ -16646,8 +16741,8 @@ parser_symbol_add(struct cbl_field_t *new_var )
       }
     while(0);
 
-    fprintf(stderr, " %2.2d %s<%s> off:" HOST_SIZE_T_PRINT_DEC " "
-                    "msiz:%d cap:%d dig:%d rdig:%d attr:0x" HOST_SIZE_T_PRINT_HEX_PURE " loc:%p",
+    fprintf(stderr, " %2.2u %s<%s> off:" HOST_SIZE_T_PRINT_UNSIGNED " "
+                    "msiz:%u cap:%u dig:%u rdig:%d attr:0x" HOST_SIZE_T_PRINT_HEX_PURE " loc:%p",
             new_var->level,
             new_var->name,
             cbl_field_type_str(new_var->type),
@@ -16657,7 +16752,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
             new_var->data.digits,
             new_var->data.rdigits,
             (fmt_size_t)new_var->attr,
-            (void*)new_var);
+            static_cast<void*>(new_var));
 
     if( is_table(new_var) )
       {
@@ -16697,7 +16792,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       {
       fprintf(stderr,
               " redefines:(%p)%s",
-              (void*)symbol_redefines(new_var),
+              static_cast<void*>(symbol_redefines(new_var)),
               symbol_redefines(new_var)->name);
       }
 
@@ -16797,10 +16892,12 @@ parser_symbol_add(struct cbl_field_t *new_var )
       TRACE1_TEXT_ABC(" (", cbl_field_type_str(new_var->type) ,")")
       if( new_var->type == FldLiteralN)
         {
+        const void *p1 = (new_var->data.initial);
+        const long *pldata = static_cast<const long *>(p1);
+        long ldata = *pldata;
         gg_fprintf( trace_handle,
                     1, " [%ld]",
-                    build_int_cst_type(LONG,
-                                        *(const long *)new_var->data.initial));
+                    build_int_cst_type(LONG, ldata));
         }
       TRACE1_END
       }

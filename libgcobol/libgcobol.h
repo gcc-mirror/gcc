@@ -47,13 +47,6 @@ extern void __gg__mabort();
 // malloc().
 #define massert(p) if(!p){__gg__mabort();abort();}
 
-// This was part of an exercise to make cppcheck shut up about invalid
-// pointer type conversions.
-// It was also to avoid having reinterpret_cast<> all over the place.
-// So, instead of                 reinterpret_cast<char *>(VALUE)
-// I sometimes use                PTRCAST(char, VALUE)
-#define PTRCAST(TYPE, VALUE) static_cast<TYPE *>(static_cast<void *>(VALUE))
-
 extern "C" __int128 __gg__power_of_ten(int n);
 
 extern "C" __int128 __gg__dirty_to_binary_source( const char *dirty,

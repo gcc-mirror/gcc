@@ -2448,6 +2448,8 @@ cbl_internal_error(const char *gmsgid, ...) {
   va_start(ap, gmsgid);
   emit_diagnostic_valist( DK_ICE, token_location, option_zero, gmsgid, &ap );
   va_end(ap);
+  abort();  // This unnecessary statement is needed so that [[noreturn]]
+  //        // doesn't cause a warning.
 }
 
 void

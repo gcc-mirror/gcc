@@ -84,6 +84,14 @@
 
 #define MINIMUM_ALLOCATION_SIZE 16
 
+// This was part of an exercise to make cppcheck shut up about invalid
+// pointer type conversions.
+// It was also to avoid having reinterpret_cast<> all over the place.
+// So, instead of                 reinterpret_cast<char *>(VALUE)
+// I sometimes use                PTRCAST(char, VALUE)
+// Note that "(char *)" is implied by "PTRCAST(char, VALUE)"
+#define PTRCAST(TYPE, VALUE) static_cast<TYPE *>(static_cast<void *>(VALUE))
+
 /*
  * User-defined names in IBM COBOL can have at most 30 characters.
  * For DBCS, the maximum is 14.
