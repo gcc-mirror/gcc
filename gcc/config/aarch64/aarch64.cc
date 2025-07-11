@@ -26960,12 +26960,23 @@ aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
 {
-  unsigned HOST_WIDE_INT nelt;
+  if (!d->one_vector_p)
+    {
+      /* aarch64_expand_sve_vec_perm does not yet handle variable-length
+	 vectors.  */
+      if (!d->perm.length ().is_constant ())
+	return false;
 
-  /* Permuting two variable-length vectors could overflow the
-     index range.  */
-  if (!d->one_vector_p && !d->perm.length ().is_constant (&nelt))
-    return false;
+      /* This permutation reduces to the vec_perm optab if the elements are
+	 large enough to hold all selector indices.  Do not handle that case
+	 here, since the general TBL+SUB+TBL+ORR sequence is too expensive to
+	 be considered a "native" constant permutation.
+
+	 Not doing this would undermine code that queries can_vec_perm_const_p
+	 with allow_variable_p set to false.  See PR121027.  */
+      if (selector_fits_mode_p (d->vmode, d->perm))
+	return false;
+    }
 
   if (d->testing_p)
     return true;
