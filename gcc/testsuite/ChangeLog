@@ -1,3 +1,18 @@
+2025-07-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-07-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/builtin-dynamic-object-size-pr120780.c: Fix 'main' function.
+
+2025-07-10  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-07-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/120780
+	* gcc.dg/builtin-dynamic-object-size-pr120780.c: New test case.
+
 2025-07-09  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:

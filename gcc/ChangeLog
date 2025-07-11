@@ -1,3 +1,22 @@
+2025-07-10  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-07-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/120780
+	* tree-object-size.cc (inner_at_offset,
+	get_wholesize_for_memref): New functions.
+	(addr_object_size): Call get_wholesize_for_memref.
+
+2025-07-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-06-30  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (gb10): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
 2025-07-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
