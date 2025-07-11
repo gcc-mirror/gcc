@@ -2053,7 +2053,7 @@ ftms = {
 ftms = {
   name = constexpr_exceptions;
   values = {
-    v = 202502;
+    v = 202411;
     cxxmin = 26;
     extra_cond = "__cpp_constexpr_exceptions >= 202411L";
   };
