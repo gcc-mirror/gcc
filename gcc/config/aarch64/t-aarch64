@@ -210,6 +210,15 @@ aarch64-sched-dispatch.o: $(srcdir)/config/aarch64/aarch64-sched-dispatch.cc \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-sched-dispatch.cc
 
+aarch64-json-tunings-printer.o: $(srcdir)/config/aarch64/aarch64-json-tunings-printer.cc \
+    $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
+    $(PRETTY_PRINT_H) json.h \
+    $(srcdir)/config/aarch64/aarch64-json-tunings-printer.h \
+    $(srcdir)/config/aarch64/aarch64-protos.h \
+    $(srcdir)/config/arm/aarch-common-protos.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/aarch64/aarch64-json-tunings-printer.cc
+
 comma=,
 MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
 MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))

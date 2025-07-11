@@ -193,6 +193,10 @@ mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
 Generate code that conforms to the specified ABI.
 
+fdump-tuning-model=
+Target Undocumented RejectNegative Negative(fdump-tuning-model=) Joined Var(fdump_tuning_model)
+-fdump-tuning-model=<filename> Dump current tuning model to a JSON file.
+
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string) Save
 -moverride=<string>	Power users only! Override CPU optimization parameters.

@@ -99,6 +99,7 @@
 #include "ipa-fnsummary.h"
 #include "hash-map.h"
 #include "aarch64-sched-dispatch.h"
+#include "aarch64-json-tunings-printer.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -19174,6 +19175,9 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   if (opts->x_aarch64_stp_policy_param)
     aarch64_tune_params.stp_policy_model = opts->x_aarch64_stp_policy_param;
+
+  if (opts->x_fdump_tuning_model)
+    aarch64_print_tune_params (aarch64_tune_params, opts->x_fdump_tuning_model);
 
   /* This target defaults to strict volatile bitfields.  */
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
