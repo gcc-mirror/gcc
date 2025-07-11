@@ -289,6 +289,30 @@ object::print (pretty_printer *pp, bool formatted) const
   pp_character (pp, '}');
 }
 
+std::unique_ptr<value>
+object::clone () const
+{
+  return clone_as_object ();
+}
+
+std::unique_ptr<object>
+object::clone_as_object () const
+{
+  auto result = std::make_unique<object> ();
+
+  /* Iterate in the order that the keys were inserted.  */
+  unsigned i;
+  const char *key;
+  FOR_EACH_VEC_ELT (m_keys, i, key)
+    {
+      map_t &mut_map = const_cast<map_t &> (m_map);
+      value *value = *mut_map.get (key);
+      result->set (key, value->clone ());
+    }
+
+  return result;
+}
+
 /* Set the json::value * for KEY, taking ownership of V
    (and taking a copy of KEY if necessary).  */
 
@@ -443,6 +467,17 @@ array::print (pretty_printer *pp, bool formatted) const
   pp_character (pp, ']');
 }
 
+std::unique_ptr<value>
+array::clone () const
+{
+  auto result = std::make_unique<array> ();
+  unsigned i;
+  value *v;
+  FOR_EACH_VEC_ELT (m_elements, i, v)
+    result->append (v->clone ());
+  return result;
+}
+
 /* Append non-NULL value V to a json::array, taking ownership of V.  */
 
 void
@@ -473,6 +508,12 @@ float_number::print (pretty_printer *pp,
   pp_string (pp, tmp);
 }
 
+std::unique_ptr<value>
+float_number::clone () const
+{
+  return std::make_unique<float_number> (m_value);
+}
+
 /* class json::integer_number, a subclass of json::value, wrapping a long.  */
 
 /* Implementation of json::value::print for json::integer_number.  */
@@ -486,6 +527,11 @@ integer_number::print (pretty_printer *pp,
   pp_string (pp, tmp);
 }
 
+std::unique_ptr<value>
+integer_number::clone () const
+{
+  return std::make_unique<integer_number> (m_value);
+}
 
 /* class json::string, a subclass of json::value.  */
 
@@ -516,6 +562,12 @@ string::print (pretty_printer *pp,
   print_escaped_json_string (pp, m_utf8, m_len);
 }
 
+std::unique_ptr<value>
+string::clone () const
+{
+  return std::make_unique<string> (m_utf8, m_len);
+}
+
 /* class json::literal, a subclass of json::value.  */
 
 /* Implementation of json::value::print for json::literal.  */
@@ -538,6 +590,12 @@ literal::print (pretty_printer *pp,
     default:
       gcc_unreachable ();
     }
+}
+
+std::unique_ptr<value>
+literal::clone () const
+{
+  return std::make_unique<literal> (m_kind);
 }
 
 
@@ -924,6 +982,56 @@ test_strcmp ()
   ASSERT_EQ (strcmp (str.get_string (), "foo"), 0);
 }
 
+static void
+test_cloning ()
+{
+  // Objects
+  {
+    object obj;
+    obj.set_string ("foo", "bar");
+
+    auto obj_clone = obj.clone ();
+    ASSERT_JSON_EQ (obj, *obj_clone);
+  }
+
+  // Arrays
+  {
+    array arr;
+    arr.append (std::make_unique<string> ("foo"));
+
+    auto arr_clone = arr.clone ();
+    ASSERT_JSON_EQ (arr, *arr_clone);
+  }
+
+  // float_number
+  {
+    float_number f_one (1.0);
+    auto f_clone = f_one.clone ();
+    ASSERT_JSON_EQ (f_one, *f_clone);
+  }
+
+  // integer_number
+  {
+    integer_number num (42);
+    auto num_clone = num.clone ();
+    ASSERT_JSON_EQ (num, *num_clone);
+  }
+
+  // string
+  {
+    string str ("foo");
+    auto str_clone = str.clone ();
+    ASSERT_JSON_EQ (str, *str_clone);
+  }
+
+  // literal
+  {
+    literal lit (JSON_TRUE);
+    auto lit_clone = lit.clone ();
+    ASSERT_JSON_EQ (lit, *lit_clone);
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -939,6 +1047,7 @@ json_cc_tests ()
   test_formatting ();
   test_comparisons ();
   test_strcmp ();
+  test_cloning ();
 }
 
 } // namespace selftest
