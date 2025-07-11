@@ -2985,15 +2985,18 @@ struct contract_modifier {
 static contract_modifier cp_parser_function_contract_modifier_opt
   (cp_parser *);
 
+static bool cp_parser_should_constify_contract
+  (const contract_modifier&);
+
+static tree cp_parser_contract_assert
+  (cp_parser *parser, cp_token *token);
+
 static tree cp_parser_function_contract_specifier
   (cp_parser *);
 static tree cp_parser_function_contract_specifier_seq
   (cp_parser *);
 static void cp_parser_late_contracts
   (cp_parser *, tree);
-
-static bool cp_parser_should_constify_contract
-  (const contract_modifier&);
 
 enum pragma_context {
   pragma_external,
@@ -13264,72 +13267,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  statement = cp_parser_transaction_cancel (parser);
 	  break;
 	case RID_CONTASSERT:
-	  if (flag_contracts_nonattr && flag_contracts)
-	    {
-	      tree cont_assert = token->u.value;
-
-	      cp_token *token = cp_lexer_consume_token (parser->lexer);
-	      location_t loc = token->location;
-	      contract_modifier modifier
-		= cp_parser_function_contract_modifier_opt (parser);
-
-	      matching_parens parens;
-	      parens.require_open (parser);
-	      /* Enable location wrappers when parsing contracts.  */
-	      auto suppression = make_temp_override (suppress_location_wrappers,
-						     0);
-
-	      /* Do we have an override for const-ification?  */
-	      bool should_constify
-		= cp_parser_should_constify_contract (modifier);
-
-	      /* If we have a current class object, see if we need to consider
-		 it const when processing the contract condition.  */
-	      tree current_class_ref_copy = current_class_ref;
-	      if (should_constify && current_class_ref_copy)
-		current_class_ref = view_as_const (current_class_ref_copy);
-
-	      /* Parse the condition.  */
-	      tree contract = error_mark_node;
-	      begin_scope (sk_contract, current_function_decl);
-	      bool old_pc = processing_postcondition;
-	      bool old_const = should_constify_contract;
-	      processing_postcondition = false;
-	      should_constify_contract = should_constify;
-	      cp_expr condition = cp_parser_conditional_expression (parser);
-	      gcc_checking_assert (scope_chain && scope_chain->bindings
-				  && scope_chain->bindings->kind == sk_contract);
-	      /* Build the contract.  */
-	      contract
-		= grok_contract (cont_assert, /*mode*/NULL_TREE,
-				 /*result*/NULL_TREE, condition, loc);
-	      processing_postcondition = old_pc;
-	      should_constify_contract = old_const;
-	      pop_bindings_and_leave_scope ();
-
-	      /* Revert (any) constification of the current class object.  */
-	      current_class_ref = current_class_ref_copy;
-
-	      parens.require_close (parser);
-
-	      if (contract != error_mark_node)
-		set_contract_const (contract, should_constify);
-	      std_attrs = finish_contract_attribute (cont_assert, contract);
-
-	      /* If there are errors in the contract, we do not create the
-		 attribute tree. This assumes no attributes on
-		 'contract_assert'.  */
-	      if (std_attrs == error_mark_node)
-		 std_attrs = NULL_TREE;
-	      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-		cp_parser_error (parser, "expected semicolon");
-	    }
-	  else
-	    error_at (
-		token->location,
-		"%<contract_assertions%> are only available with %<-fcontracts%> and %<-fcontracts-nonattr%>");
+	  statement = cp_parser_contract_assert (parser, token);
 	  break;
-
 	default:
 	  /* It might be a keyword like `int' that can start a
 	   declaration-statement.  */
@@ -32003,6 +31942,73 @@ cp_parser_should_constify_contract (const contract_modifier& modifier)
     should_constify = true;
 
   return should_constify;
+}
+
+static tree
+cp_parser_contract_assert (cp_parser *parser, cp_token *token)
+{
+  if (!flag_contracts || !flag_contracts_nonattr)
+    {
+      error_at (token->location, "%qs are only available with %qs and "
+		"%qs", "contract_assertions", "-fcontracts",
+		"-fcontracts-nonattr");
+      cp_parser_skip_to_end_of_statement (parser);
+      return error_mark_node;
+    }
+
+  tree cont_assert = token->u.value;
+
+  token = cp_lexer_consume_token (parser->lexer);
+  location_t loc = token->location;
+  contract_modifier modifier
+    = cp_parser_function_contract_modifier_opt (parser);
+
+  matching_parens parens;
+  parens.require_open (parser);
+  /* Enable location wrappers when parsing contracts.  */
+  auto suppression = make_temp_override (suppress_location_wrappers, 0);
+
+  /* Do we have an override for const-ification?  */
+  bool should_constify = cp_parser_should_constify_contract (modifier);
+
+  /* If we have a current class object, see if we need to consider
+     it const when processing the contract condition.  */
+  tree current_class_ref_copy = current_class_ref;
+  if (should_constify && current_class_ref_copy)
+    current_class_ref = view_as_const (current_class_ref_copy);
+
+  /* Parse the condition.  */
+  begin_scope (sk_contract, current_function_decl);
+  bool old_pc = processing_postcondition;
+  bool old_const = should_constify_contract;
+  processing_postcondition = false;
+  should_constify_contract = should_constify;
+  cp_expr condition = cp_parser_conditional_expression (parser);
+  gcc_checking_assert (scope_chain && scope_chain->bindings
+		       && scope_chain->bindings->kind == sk_contract);
+  /* Build the contract.  */
+  tree contract = grok_contract (cont_assert, /*mode*/NULL_TREE,
+			    /*result*/NULL_TREE, condition, loc);
+  processing_postcondition = old_pc;
+  should_constify_contract = old_const;
+  pop_bindings_and_leave_scope ();
+
+  /* Revert (any) constification of the current class object.  */
+  current_class_ref = current_class_ref_copy;
+
+  parens.require_close (parser);
+
+  if (!contract || contract == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      return error_mark_node;
+    }
+
+  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    return error_mark_node;
+
+  add_stmt (contract);
+  return contract;
 }
 
 /* Parse a natural syntax contract specifier seq.

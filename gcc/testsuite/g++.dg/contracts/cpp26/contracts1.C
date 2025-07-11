@@ -28,9 +28,8 @@ int main()
   contract_assert ( x < 0 ? true : false );
 
   contract_assert ( x = 0 ); // { dg-error {expected '\)' before '=' token} }
- // { dg-error {expected semicolon before '=' token} "" { target *-*-* } .-1 }
+ // { dg-error {expected .;. before '=' token} "" { target *-*-* } .-1 }
  // { dg-error {expected primary-expression before '=' token} "" { target *-*-* } .-2 }
- // { dg-error {contract assertion on a non empty statement} "" { target *-*-* } .-3 }
 
   contract_assert ( y == 0 ); // { dg-error ".y. was not declared in this scope" }
 

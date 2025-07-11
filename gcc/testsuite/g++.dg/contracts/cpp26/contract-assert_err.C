@@ -37,11 +37,11 @@ int main()
 
     contract_assert( y == 0); // { dg-error ".y. was not declared in this scope" }
 
-    contract_assert(true)
-    int k = 4; // { dg-error  "expected semicolon before .int." }
+    contract_assert(true) // { dg-error  "expected .;. before .int." }
+    int k = 4;
 
-    contract_assert(true) // { dg-error  "contract assertion on a non empty statement" }
-    g(); // { dg-error  "expected semicolon before .g." }
+    contract_assert(true) // { dg-error  "expected .;. before .g." }
+    g();
 
     return 0;
 }
