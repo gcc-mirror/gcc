@@ -7316,17 +7316,17 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   unsigned reduc_chain_length = 0;
   bool only_slp_reduc_chain = true;
   stmt_info = NULL;
-  slp_tree slp_for_stmt_info = slp_node_instance->root;
+  slp_tree slp_for_stmt_info = NULL;
+  slp_tree vdef_slp = slp_node_instance->root;
   /* For double-reductions we start SLP analysis at the inner loop LC PHI
      which is the def of the outer loop live stmt.  */
   if (STMT_VINFO_DEF_TYPE (reduc_info) == vect_double_reduction_def)
-    slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
+    vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[0];
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
       stmt_vec_info vdef = vect_stmt_to_vectorize (def);
       int reduc_idx = STMT_VINFO_REDUC_IDX (vdef);
-
       if (reduc_idx == -1)
 	{
 	  if (dump_enabled_p ())
@@ -7343,14 +7343,9 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 the SLP node with live lane zero the other live lanes also
 	 need to be identified as part of a reduction to be able
 	 to skip code generation for them.  */
-      if (slp_for_stmt_info)
-	{
-	  for (auto s : SLP_TREE_SCALAR_STMTS (slp_for_stmt_info))
-	    if (STMT_VINFO_LIVE_P (s))
-	      STMT_VINFO_REDUC_DEF (vect_orig_stmt (s)) = phi_info;
-	}
-      else if (STMT_VINFO_LIVE_P (vdef))
-	STMT_VINFO_REDUC_DEF (def) = phi_info;
+      for (auto s : SLP_TREE_SCALAR_STMTS (vdef_slp))
+	if (STMT_VINFO_LIVE_P (s))
+	  STMT_VINFO_REDUC_DEF (vect_orig_stmt (s)) = phi_info;
       gimple_match_op op;
       if (!gimple_extract_op (vdef->stmt, &op))
 	{
@@ -7369,12 +7364,16 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 				 "conversion in the reduction chain.\n");
 	      return false;
 	    }
+	  vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[0];
 	}
       else
 	{
 	  /* First non-conversion stmt.  */
 	  if (!stmt_info)
-	    stmt_info = vdef;
+	    {
+	      stmt_info = vdef;
+	      slp_for_stmt_info = vdef_slp;
+	    }
 
 	  if (lane_reducing_op_p (op.code))
 	    {
@@ -7382,7 +7381,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 		 reduction.  */
 	      gcc_assert (reduc_idx > 0 && reduc_idx == (int) op.num_ops - 1);
 
-	      slp_tree op_node = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
+	      slp_tree op_node = SLP_TREE_CHILDREN (vdef_slp)[0];
 	      tree vectype_op = SLP_TREE_VECTYPE (op_node);
 	      tree type_op = TREE_TYPE (op.ops[0]);
 	      if (!vectype_op)
@@ -7413,14 +7412,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 		       < GET_MODE_SIZE (SCALAR_TYPE_MODE (type_op))))
 		vectype_in = vectype_op;
 	    }
-	  else
+	  else if (!vectype_in)
 	    vectype_in = STMT_VINFO_VECTYPE (phi_info);
+	  if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
+	    vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
 	}
 
       reduc_def = op.ops[reduc_idx];
       reduc_chain_length++;
-      if (!stmt_info)
-	slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
     }
   /* PHIs should not participate in patterns.  */
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
