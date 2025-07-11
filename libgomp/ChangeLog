@@ -1,3 +1,7 @@
+2025-07-11  Release Manager
+
+	* GCC 12.5.0 released.
+
 2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

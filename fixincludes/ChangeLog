@@ -1,3 +1,7 @@
+2025-07-11  Release Manager
+
+	* GCC 12.5.0 released.
+
 2025-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
