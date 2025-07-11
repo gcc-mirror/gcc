@@ -3930,6 +3930,16 @@ process_address_1 (int nop, bool check_only_p,
       enum reg_class cl;
       rtx set;
       rtx_insn *insns, *last_insn;
+
+      cl = base_reg_class (ad.mode, ad.as, ad.base_outer_code,
+			   get_index_code (&ad), curr_insn);
+
+      if (REG_P (*ad.base_term)
+	  && ira_class_subset_p[get_reg_class (REGNO (*ad.base_term))][cl])
+	/* It seems base reg is already in the base reg class and changing it
+	   does not make a progress.  So reload the whole inner address.  */
+	goto reload_inner_addr;
+
       /* Try to reload base into register only if the base is invalid
          for the address but with valid offset, case (4) above.  */
       start_sequence ();
@@ -3975,8 +3985,6 @@ process_address_1 (int nop, bool check_only_p,
 	    {
 	      *ad.base_term = XEXP (SET_SRC (set), 0);
 	      *ad.disp_term = XEXP (SET_SRC (set), 1);
-	      cl = base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-				   get_index_code (&ad), curr_insn);
 	      regno = REGNO (*ad.base_term);
 	      if (regno >= FIRST_PSEUDO_REGISTER
 		  && cl != lra_get_allocno_class (regno))
@@ -4019,11 +4027,11 @@ process_address_1 (int nop, bool check_only_p,
     }
   else
     {
-      enum reg_class cl = base_reg_class (ad.mode, ad.as,
-					  SCRATCH, SCRATCH,
-					  curr_insn);
-      rtx addr = *ad.inner;
-
+      enum reg_class cl;
+      rtx addr;
+    reload_inner_addr:
+      cl = base_reg_class (ad.mode, ad.as, SCRATCH, SCRATCH, curr_insn);
+      addr = *ad.inner;
       new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
       /* addr => new_base.  */
       lra_emit_move (new_reg, addr);
@@ -4044,14 +4052,21 @@ process_address (int nop, bool check_only_p,
 		 rtx_insn **before, rtx_insn **after)
 {
   bool res = false;
-
-  while (process_address_1 (nop, check_only_p, before, after))
+  /* Use enough iterations to process all address parts:  */
+  for (int i = 0; i < 10; i++)
     {
-      if (check_only_p)
-	return true;
-      res = true;
+      if (!process_address_1 (nop, check_only_p, before, after))
+	{
+	  return res;
+	}
+      else
+	{
+	  if (check_only_p)
+	    return true;
+	  res = true;
+	}
     }
-  return res;
+  fatal_insn ("unable to reload address in ", curr_insn);
 }
 
 /* Override the generic address_reload_context in order to
