@@ -1165,6 +1165,9 @@ c_common_post_options (const char **pfilename)
       warn_cxx20_compat = 0;
       cpp_opts->cpp_warn_cxx20_compat = 0;
     }
+  if (cxx_dialect >= cxx26)
+    /* Don't warn about C++26 compatibility changes in C++26 or later.  */
+    warn_cxx26_compat = 0;
 
   /* C++17 has stricter evaluation order requirements; let's use some of them
      for earlier C++ as well, so chaining works as expected.  */

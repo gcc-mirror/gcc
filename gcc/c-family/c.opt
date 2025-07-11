@@ -497,6 +497,10 @@ Wc++20-compat
 C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0) CPP(cpp_warn_cxx20_compat) CppReason(CPP_W_CXX20_COMPAT)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
+Wc++26-compat
+C++ ObjC++ Var(warn_cxx26_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0)
+Warn about C++ constructs whose meaning differs between ISO C++ 2023 and ISO C++ 2026.
+
 Wc++11-extensions
 C++ ObjC++ Var(warn_cxx11_extensions) Warning Init(1)
 Warn about C++11 constructs in code compiled with an older standard.

@@ -3205,6 +3205,9 @@ diagnose_trait_expr (tree expr, tree args)
       else
 	inform (loc, "  %qT is not nothrow invocable by %qE", t1, t2);
       break;
+    case CPTK_IS_NOTHROW_RELOCATABLE:
+      inform (loc, "  %qT is not nothrow relocatable", t1);
+      break;
     case CPTK_IS_OBJECT:
       inform (loc, "  %qT is not an object type", t1);
       break;
@@ -3223,6 +3226,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_REFERENCE:
       inform (loc, "  %qT is not a reference", t1);
+      break;
+    case CPTK_IS_REPLACEABLE:
+      inform (loc, "  %qT is not replaceable", t1);
       break;
     case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
@@ -3250,6 +3256,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_TRIVIALLY_DESTRUCTIBLE:
       inform (loc, "  %qT is not trivially destructible", t1);
+      break;
+    case CPTK_IS_TRIVIALLY_RELOCATABLE:
+      inform (loc, "  %qT is not trivially relocatable", t1);
       break;
     case CPTK_IS_UNBOUNDED_ARRAY:
       inform (loc, "  %qT is not an unbounded array", t1);

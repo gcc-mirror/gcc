@@ -190,6 +190,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wc_002b_002b17-compat)
 Wc++20-compat
 UrlSuffix(gcc/Warning-Options.html#index-Wc_002b_002b20-compat)
 
+Wc++26-compat
+UrlSuffix(gcc/Warning-Options.html#index-Wc_002b_002b26-compat)
+
 Wc++11-extensions
 UrlSuffix(gcc/Warning-Options.html#index-Wc_002b_002b11-extensions)
 

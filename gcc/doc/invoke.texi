@@ -353,7 +353,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
 -Wc11-c23-compat  -Wc23-c2y-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
--Wc++20-compat
+-Wc++20-compat  -Wc++26-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
 -Wcalloc-transposed-args
@@ -9689,6 +9689,12 @@ and ISO C++ 2017.  This warning is enabled by @option{-Wall}.
 @item -Wc++20-compat @r{(C++ and Objective-C++ only)}
 Warn about C++ constructs whose meaning differs between ISO C++ 2017
 and ISO C++ 2020.  This warning is enabled by @option{-Wall}.
+
+@opindex Wc++26-compat
+@opindex Wno-c++26-compat
+@item -Wc++26-compat @r{(C++ and Objective-C++ only)}
+Warn about C++ constructs whose meaning differs between ISO C++ 2023
+and upcoming ISO C++ 2026.  This warning is enabled by @option{-Wall}.
 
 @opindex Wc++11-extensions
 @opindex Wno-c++11-extensions
