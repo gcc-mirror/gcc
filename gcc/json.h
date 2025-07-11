@@ -189,6 +189,9 @@ class object : public value
  public:
   ~object ();
 
+  typedef hash_map <char *, value *,
+    simple_hashmap_traits<nofree_string_hash, value *> > map_t;
+
   enum kind get_kind () const final override { return JSON_OBJECT; }
   void print (pretty_printer *pp, bool formatted) const final override;
   std::unique_ptr<value> clone () const final override;
@@ -214,6 +217,7 @@ class object : public value
   }
 
   value *get (const char *key) const;
+  const map_t &get_map () const { return m_map; }
 
   void set_string (const char *key, const char *utf8_value);
   void set_integer (const char *key, long v);
@@ -243,8 +247,6 @@ class object : public value
   std::unique_ptr<object> clone_as_object () const;
 
  private:
-  typedef hash_map <char *, value *,
-    simple_hashmap_traits<nofree_string_hash, value *> > map_t;
   map_t m_map;
 
   /* Keep track of order in which keys were inserted.  */
@@ -495,6 +497,26 @@ inline bool
 is_a_helper <const json::string *>::test (const  json::value *jv)
 {
   return jv->get_kind () == json::JSON_STRING;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper<json::literal *>::test (json::value *jv)
+{
+  return (jv->get_kind () == json::JSON_TRUE
+	  || jv->get_kind () == json::JSON_FALSE
+	  || jv->get_kind () == json::JSON_NULL);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper<const json::literal *>::test (const json::value *jv)
+{
+  return (jv->get_kind () == json::JSON_TRUE
+	  || jv->get_kind () == json::JSON_FALSE
+	  || jv->get_kind () == json::JSON_NULL);
 }
 
 #if CHECKING_P
