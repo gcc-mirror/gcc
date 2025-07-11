@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-logical-location.h"
 #include "analyzer/program-state.h"
 #include "analyzer/event-loc-info.h"
+#include "diagnostic-digraphs.h"
 
 namespace ana {
 
@@ -128,11 +129,11 @@ public:
   virtual bool is_function_entry_p () const  { return false; }
   virtual bool is_return_p () const  { return false; }
 
+  std::unique_ptr<diagnostics::digraphs::digraph>
+  maybe_make_diagnostic_state_graph (bool debug) const final override;
+
   virtual const program_state *
   get_program_state () const { return nullptr; }
-
-  std::unique_ptr<xml::document>
-  maybe_make_xml_state (bool debug) const final override;
 
   /* For use with %@.  */
   const diagnostic_event_id_t *get_id_ptr () const

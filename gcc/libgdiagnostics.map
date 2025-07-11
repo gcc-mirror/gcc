@@ -90,3 +90,26 @@ LIBGDIAGNOSTICS_ABI_2 {
     diagnostic_manager_add_sink_from_spec;
     diagnostic_manager_set_analysis_target;
 } LIBGDIAGNOSTICS_ABI_1;
+
+# Add hooks needed for diagnostic_graph support.
+LIBGDIAGNOSTICS_ABI_3 {
+  global:
+    diagnostic_manager_new_graph;
+    diagnostic_manager_take_global_graph;
+    diagnostic_take_graph;
+    diagnostic_graph_release;
+    diagnostic_graph_set_description;
+    diagnostic_graph_add_node;
+    diagnostic_graph_add_edge;
+    diagnostic_graph_get_node_by_id;
+    diagnostic_graph_get_edge_by_id;
+    diagnostic_node_set_label;
+    diagnostic_node_set_location;
+    diagnostic_node_set_logical_location;
+
+    # Private hooks used by sarif-replay
+    private_diagnostic_execution_path_add_event_2;
+    private_diagnostic_graph_set_property_bag;
+    private_diagnostic_node_set_property_bag;
+    private_diagnostic_edge_set_property_bag;
+} LIBGDIAGNOSTICS_ABI_2;

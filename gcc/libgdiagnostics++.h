@@ -34,6 +34,9 @@ class execution_path;
 class group;
 class manager;
 class diagnostic;
+class graph;
+class node;
+class edge;
 
 /* Wrapper around a borrowed diagnostic_text_sink *.  */
 
@@ -246,6 +249,9 @@ public:
   take_execution_path (execution_path path);
 
   void
+  take_graph (graph g);
+
+  void
   finish (const char *fmt, ...)
     LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
     LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING (2, 3);
@@ -395,8 +401,97 @@ public:
   void
   set_analysis_target (file f);
 
+  void
+  take_global_graph (graph g);
+
   diagnostic_manager *m_inner;
   bool m_owned;
+};
+
+class graph
+{
+public:
+  graph () : m_inner (nullptr), m_owned (false) {}
+
+  graph (diagnostic_graph *graph)
+  : m_inner (graph), m_owned (true)
+  {}
+
+  graph (const diagnostic_graph *graph)
+  : m_inner (const_cast<diagnostic_graph *> (graph)),
+    m_owned (false)
+  {}
+
+  graph (const graph &other) = delete;
+  graph &operator= (const graph &other) = delete;
+
+  graph (graph &&other)
+  : m_inner (other.m_inner),
+    m_owned (other.m_owned)
+  {
+    other.m_inner = nullptr;
+    other.m_owned = false;
+  }
+
+  graph &operator= (graph &&other)
+  {
+    m_inner = other.m_inner;
+    m_owned = other.m_owned;
+    other.m_inner = nullptr;
+    other.m_owned = false;
+    return *this;
+  }
+
+  ~graph ()
+  {
+    if (m_owned)
+      diagnostic_graph_release (m_inner);
+  }
+
+  void
+  set_description (const char *);
+
+  node
+  get_node_by_id (const char *id) const;
+
+  edge
+  get_edge_by_id (const char *id) const;
+
+  edge
+  add_edge (const char *id, node src_node, node dst_node, const char *label);
+
+  diagnostic_graph *m_inner;
+  bool m_owned;
+};
+
+// Borrowed pointer to a diagnostic_node.
+
+class node
+{
+public:
+  node () : m_inner (nullptr) {}
+  node (diagnostic_node *node_) : m_inner (node_) {}
+
+  void
+  set_label (const char *);
+
+  void
+  set_location (physical_location loc);
+
+  void
+  set_logical_location (logical_location loc);
+
+  diagnostic_node *m_inner;
+};
+
+// Borrowed edge to a diagnostic_edge.
+
+class edge
+{
+public:
+  edge (diagnostic_edge *edge_) : m_inner (edge_) {}
+
+  diagnostic_edge *m_inner;
 };
 
 // Implementation
@@ -593,6 +688,14 @@ diagnostic::take_execution_path (execution_path path)
 }
 
 inline void
+diagnostic::take_graph (graph g)
+{
+  diagnostic_take_graph (m_inner,
+			 g.m_inner);
+  g.m_owned = false;
+}
+
+inline void
 diagnostic::finish (const char *fmt, ...)
 {
   va_list ap;
@@ -700,6 +803,66 @@ inline void
 manager::set_analysis_target (file f)
 {
   diagnostic_manager_set_analysis_target (m_inner, f.m_inner);
+}
+
+inline void
+manager::take_global_graph (graph g)
+{
+  diagnostic_manager_take_global_graph (m_inner,
+					g.m_inner);
+  g.m_owned = false;
+}
+
+// class graph
+
+inline void
+graph::set_description (const char *desc)
+{
+  diagnostic_graph_set_description (m_inner, desc);
+}
+
+inline node
+graph::get_node_by_id (const char *id) const
+{
+  return node (diagnostic_graph_get_node_by_id (m_inner, id));
+}
+
+inline edge
+graph::get_edge_by_id (const char *id) const
+{
+  return edge (diagnostic_graph_get_edge_by_id (m_inner, id));
+}
+
+inline edge
+graph::add_edge (const char *id,
+		 node src_node, node dst_node,
+		 const char *label)
+{
+  return edge (diagnostic_graph_add_edge (m_inner,
+					  id,
+					  src_node.m_inner,
+					  dst_node.m_inner,
+					  label));
+}
+
+// class node
+
+inline void
+node::set_label (const char *label)
+{
+  diagnostic_node_set_label (m_inner, label);
+}
+
+inline void
+node::set_location (physical_location loc)
+{
+  diagnostic_node_set_location (m_inner, loc.m_inner);
+}
+
+inline void
+node::set_logical_location (logical_location loc)
+{
+  diagnostic_node_set_logical_location (m_inner, loc.m_inner);
 }
 
 } // namespace libgdiagnostics

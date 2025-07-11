@@ -26,6 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic-core.h"
 
+namespace diagnostics {
+  namespace digraphs {
+    class lazy_digraph;
+  } // namespace digraphs
+} // namespace diagnostics
+
 namespace text_art
 {
   class theme;
@@ -615,6 +621,11 @@ public:
 
   bool report_diagnostic (diagnostic_info *);
   void report_verbatim (text_info &);
+
+  /* Report a directed graph associated with the run as a whole
+     to any sinks that support directed graphs.  */
+  void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &);
 
   diagnostic_t
   classify_diagnostic (diagnostic_option_id option_id,

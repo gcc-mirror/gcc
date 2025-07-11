@@ -70,6 +70,12 @@ public:
 
   void update_printer () override;
 
+  void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &) final override
+  {
+    // no-op for text
+  }
+
   /* Helpers for writing lang-specific starters/finalizers for text output.  */
   char *build_prefix (const diagnostic_info &) const;
   void report_current_module (location_t where);

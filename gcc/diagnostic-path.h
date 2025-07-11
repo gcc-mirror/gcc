@@ -30,6 +30,12 @@ namespace xml { class document; }
 class sarif_builder;
 class sarif_object;
 
+namespace diagnostics {
+namespace digraphs {
+  class digraph;
+} // namespace digraphs
+} //namespace diagnostics
+
 /* A diagnostic_path is an optional additional piece of metadata associated
    with a diagnostic (via its rich_location).
 
@@ -173,9 +179,9 @@ class diagnostic_event
   }
 
   /* Hook for capturing state at this event, potentially for visualizing
-     in HTML output.  */
-  virtual std::unique_ptr<xml::document>
-  maybe_make_xml_state (bool debug) const;
+     in HTML output, or for adding to SARIF.  */
+  virtual std::unique_ptr<diagnostics::digraphs::digraph>
+  maybe_make_diagnostic_state_graph (bool debug) const;
 
   label_text get_desc (pretty_printer &ref_pp) const;
 };

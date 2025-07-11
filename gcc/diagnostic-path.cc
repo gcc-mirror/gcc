@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostic-path.h"
-#include "xml.h"
+#include "diagnostic-state-graphs.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics for the print
    calls below.  */
@@ -156,12 +156,12 @@ diagnostic_event::get_desc (pretty_printer &ref_pp) const
   return label_text::take (xstrdup (pp_formatted_text (pp.get ())));
 }
 
-// Base implementation of diagnostic_event::maybe_make_xml_state
+// Base implementation of diagnostic_event::maybe_make_diagnostic_state_graph
 
-std::unique_ptr<xml::document>
-diagnostic_event::maybe_make_xml_state (bool) const
+std::unique_ptr<diagnostics::digraphs::digraph>
+diagnostic_event::maybe_make_diagnostic_state_graph (bool) const
 {
-  // Don't attempt to make a state document:
+  // Don't attempt to make a state graph:
   return nullptr;
 }
 

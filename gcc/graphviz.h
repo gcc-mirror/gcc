@@ -311,6 +311,16 @@ struct node_id : public ast_node
       m_port = std::make_unique<port> (*other.m_port);
   }
 
+  node_id &operator= (const node_id &other)
+  {
+    m_id = other.m_id;
+    if (other.m_port)
+      m_port = std::make_unique<port> (*other.m_port);
+    else
+      m_port = nullptr;
+    return *this;
+  }
+
   void print (writer &w) const final override;
 
   id m_id;

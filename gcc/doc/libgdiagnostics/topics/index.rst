@@ -35,5 +35,6 @@ Topic reference
    execution-paths.rst
    text-output.rst
    sarif.rst
+   graphs.rst
    ux.rst
    compatibility.rst

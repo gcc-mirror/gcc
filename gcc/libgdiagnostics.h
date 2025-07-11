@@ -765,6 +765,140 @@ diagnostic_manager_set_analysis_target (diagnostic_manager *mgr,
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
 
+/* Directed graphs.  */
+
+typedef struct diagnostic_graph diagnostic_graph;
+typedef struct diagnostic_node diagnostic_node;
+typedef struct diagnostic_edge diagnostic_edge;
+
+/* Create a new graph.
+   This is owned by the caller and must have one of
+   diagnostic_manager_take_global_graph, diagnostic_take_graph,
+   or diagnostic_graph_release called on it.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern diagnostic_graph *
+diagnostic_manager_new_graph (diagnostic_manager *manager)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+/* Report this graph "globally", taking ownership of it.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_manager_take_global_graph (diagnostic_manager *manager,
+				      diagnostic_graph *graph)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
+
+/* Add this graph to DIAG, transferring ownership to it.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_take_graph (diagnostic *diag,
+		      diagnostic_graph *graph)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
+
+/* Release this graph.  Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_graph_release (diagnostic_graph *graph)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (1);
+
+/* Set the description of GRAPH for use
+   in the value of the SARIF "description" property
+   (SARIF v2.1.0 section 3.39.2).
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_graph_set_description (diagnostic_graph *graph,
+				 const char *description)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2);
+
+/* Create and add a new node within GRAPH.
+   NODE_ID must be unique within nodes in GRAPH.
+   The new node is owned by GRAPH.
+   PARENT_NODE can be NULL (for a top-level node in the graph),
+   or non-null for a child node.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern diagnostic_node *
+diagnostic_graph_add_node (diagnostic_graph *graph,
+			   const char *node_id,
+			   diagnostic_node *parent_node)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (3);
+
+/* Create and add a new edge within GRAPH.
+
+   If non-null, then EDGE_ID must be unique within edges in GRAPH;
+   if EDGE_ID is null then a unique id of the form "edge0", "edge1", etc
+   will be used automatically.
+
+   The new edge is owned by GRAPH.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern diagnostic_edge *
+diagnostic_graph_add_edge (diagnostic_graph *graph,
+			   const char *edge_id,
+			   diagnostic_node *src_node,
+			   diagnostic_node *dst_node,
+			   const char *label)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (3)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (4)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (5);
+
+/* Get the node in GRAPH with the given id, or null.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern diagnostic_node *
+diagnostic_graph_get_node_by_id (diagnostic_graph *graph,
+				 const char *node_id)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
+
+/* Get the edge in GRAPH with the given id, or null.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern diagnostic_edge *
+diagnostic_graph_get_edge_by_id (diagnostic_graph *graph,
+				 const char *edge_id)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
+
+/* Set the label of NODE for use
+   in the value of the SARIF "label" property
+   (SARIF v2.1.0 section 3.40.3).
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_node_set_label (diagnostic_node *node,
+			   const char *label)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2);
+
+/* Set the physical location of NODE.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_node_set_location (diagnostic_node *node,
+			      const diagnostic_physical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2);
+
+/* Set the logical location of NODE.
+   Added in LIBGDIAGNOSTICS_ABI_3.  */
+
+extern void
+diagnostic_node_set_logical_location (diagnostic_node *node,
+				      const diagnostic_logical_location *logical_loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2);
+
 /* DEFERRED:
    - thread-safety
    - plural forms

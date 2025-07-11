@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format.h"
 #include "diagnostic-format-html.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-format-sarif.h"
 #include "diagnostic-output-file.h"
 #include "diagnostic-buffer.h"
 #include "diagnostic-path.h"
@@ -41,7 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "xml.h"
 #include "xml-printer.h"
-#include "diagnostic-state.h"
+#include "diagnostic-digraphs.h"
+#include "diagnostic-state-graphs.h"
 #include "graphviz.h"
 #include "json.h"
 #include "selftest-xml.h"
@@ -52,8 +54,8 @@ html_generation_options::html_generation_options ()
 : m_css (true),
   m_javascript (true),
   m_show_state_diagrams (false),
-  m_show_state_diagram_xml (false),
-  m_show_state_diagram_dot_src (false)
+  m_show_state_diagrams_sarif (false),
+  m_show_state_diagrams_dot_src (false)
 {
 }
 
@@ -119,6 +121,8 @@ public:
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_html_format_buffer *buffer);
   void emit_diagram (const diagnostic_diagram &diagram);
+  void emit_global_graph (const diagnostics::digraphs::lazy_digraph &);
+
   void end_group ();
 
   std::unique_ptr<xml::element> take_current_diagnostic ()
@@ -172,6 +176,10 @@ private:
   void
   pop_nesting_level ();
 
+  void
+  add_graph (const diagnostics::digraphs::digraph &dg,
+	     xml::element &parent_element);
+
   diagnostic_context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
@@ -181,6 +189,7 @@ private:
   std::unique_ptr<xml::document> m_document;
   xml::element *m_head_element;
   xml::element *m_title_element;
+  xml::element *m_body_element;
   xml::element *m_diagnostics_element;
   std::unique_ptr<xml::element> m_cur_diagnostic_element;
   std::vector<xml::element *> m_cur_nesting_levels;
@@ -401,6 +410,7 @@ html_builder::html_builder (diagnostic_context &context,
   m_logical_loc_mgr (nullptr),
   m_head_element (nullptr),
   m_title_element (nullptr),
+  m_body_element (nullptr),
   m_diagnostics_element (nullptr),
   m_next_diag_id (0),
   m_last_location (UNKNOWN_LOCATION),
@@ -447,6 +457,7 @@ html_builder::html_builder (diagnostic_context &context,
 
     {
       xml::auto_print_element body (xp, "body");
+      m_body_element = xp.get_insertion_point ();
       {
 	auto diagnostics_element = make_div ("gcc-diagnostic-list");
 	m_diagnostics_element = diagnostics_element.get ();
@@ -599,39 +610,45 @@ html_builder::maybe_make_state_diagram (const diagnostic_event &event)
   if (!m_html_gen_opts.m_show_state_diagrams)
     return nullptr;
 
-  /* Get XML state document; if we're going to print it later, also request
+  if (!m_logical_loc_mgr)
+    return nullptr;
+
+  /* Get state graph; if we're going to print it later, also request
      the debug version.  */
-  auto xml_state
-    = event.maybe_make_xml_state (m_html_gen_opts.m_show_state_diagram_xml);
-  if (!xml_state)
+  auto state_graph
+    = event.maybe_make_diagnostic_state_graph
+	(m_html_gen_opts.m_show_state_diagrams_sarif);
+  if (!state_graph)
     return nullptr;
 
   // Convert it to .dot AST
-  auto graph = make_dot_graph_from_xml_state (*xml_state);
-  gcc_assert (graph);
+  auto dot_graph
+    = diagnostics::state_graphs::make_dot_graph (*state_graph,
+						 *m_logical_loc_mgr);
+  gcc_assert (dot_graph);
 
   auto wrapper = std::make_unique<xml::element> ("div", false);
   xml::printer xp (*wrapper);
 
-  if (m_html_gen_opts.m_show_state_diagram_xml)
+  if (m_html_gen_opts.m_show_state_diagrams_sarif)
     {
-      // For debugging, show the XML src inline:
+      // For debugging, show the SARIF src inline:
       pretty_printer pp;
-      xml_state->write_as_xml (&pp, 0, true);
+      state_graph->make_json_sarif_graph ()->print (&pp, true);
       print_pre_source (xp, pp_formatted_text (&pp));
     }
 
-  if (m_html_gen_opts.m_show_state_diagram_dot_src)
+  if (m_html_gen_opts.m_show_state_diagrams_dot_src)
     {
       // For debugging, show the dot src inline:
       pretty_printer pp;
       dot::writer w (pp);
-      graph->print (w);
+      dot_graph->print (w);
       print_pre_source (xp, pp_formatted_text (&pp));
     }
 
   // Turn the .dot into SVG and splice into place
-  auto svg = dot::make_svg_from_graph (*graph);
+  auto svg = dot::make_svg_from_graph (*dot_graph);
   if (svg)
     xp.append (std::move (svg));
 
@@ -1125,6 +1142,15 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
 
+  // Try to display any per-diagnostic graphs
+  if (diagnostic.metadata)
+    if (auto ldg = diagnostic.metadata->get_lazy_digraphs ())
+      {
+	auto &digraphs = ldg->get_or_create_digraphs ();
+	for (auto &dg : digraphs)
+	  add_graph (*dg, *xp.get_insertion_point ());
+      }
+
   if (auto patch_element = make_element_for_patch (diagnostic))
     {
       xp.push_tag ("div");
@@ -1219,6 +1245,35 @@ html_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
   gcc_assert (m_cur_diagnostic_element);
 
   // TODO: currently a no-op
+}
+
+void
+html_builder::add_graph (const diagnostics::digraphs::digraph &dg,
+			 xml::element &parent_element)
+{
+  if (auto dot_graph = dg.make_dot_graph ())
+    if (auto svg_element = dot::make_svg_from_graph (*dot_graph))
+      {
+	auto div = std::make_unique<xml::element> ("div", false);
+	div->set_attr ("class", "gcc-directed-graph");
+	xml::printer xp (*div);
+	if (const char *description = dg.get_description ())
+	  {
+	    xp.push_tag ("h2", true);
+	    xp.add_text (description);
+	    xp.pop_tag ("h2");
+	  }
+	xp.append (std::move (svg_element));
+	parent_element.add_child (std::move (div));
+      }
+}
+
+void
+html_builder::emit_global_graph (const diagnostics::digraphs::lazy_digraph &ldg)
+{
+  auto &dg = ldg.get_or_create_digraph ();
+  gcc_assert (m_body_element);
+  add_graph (dg, *m_body_element);
 }
 
 /* Implementation of "end_group_cb" for HTML output.  */
@@ -1332,6 +1387,12 @@ public:
 
     /* Update the builder to use the new printer.  */
     m_builder.set_printer (*get_printer ());
+  }
+
+  void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg) final override
+  {
+    m_builder.emit_global_graph (ldg);
   }
 
   const xml::document &get_document () const

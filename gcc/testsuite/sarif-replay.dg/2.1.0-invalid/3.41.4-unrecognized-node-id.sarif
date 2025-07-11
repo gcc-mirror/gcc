@@ -1,0 +1,16 @@
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": { "driver": { "name": "example" } },
+           "results": [],
+           "graphs": [{"nodes": [],
+                       "edges": [{"id": "edge0",
+                                  "sourceNodeId": "this-does-not-exist", /* { dg-error "no node with id 'this-does-not-exist' in graph \\\[SARIF v2.1.0 §3.41.4\\\]" } */
+                                  "targetNodeId": "neither-does-this"}]}]}]}
+
+/* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/graphs/0/edges/0/sourceNodeId':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+    7 |                                   "sourceNodeId": "this-does-not-exist",
+      |                                                   ^~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" }  */

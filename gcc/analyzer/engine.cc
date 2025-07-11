@@ -1580,9 +1580,9 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	  state->dump (eg.get_ext_state (), true);
 	  return;
 	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_xml", 0))
+      else if (is_special_named_call_p (call, "__analyzer_dump_sarif", 0))
 	{
-	  state->dump_xml (eg.get_ext_state ());
+	  state->dump_sarif (eg.get_ext_state ());
 	  return;
 	}
       else if (is_special_named_call_p (call, "__analyzer_dump_dot", 0))

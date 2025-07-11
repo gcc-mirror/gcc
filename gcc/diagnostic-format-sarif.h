@@ -101,7 +101,7 @@ struct sarif_generation_options
   sarif_generation_options ();
 
   enum sarif_version m_version;
-  bool m_xml_state;
+  bool m_state_graph;
 };
 
 extern std::unique_ptr<diagnostic_output_format>
@@ -112,6 +112,14 @@ make_sarif_sink (diagnostic_context &context,
 		 diagnostic_output_file output_file);
 
 class sarif_builder;
+class sarif_location_manager;
+
+namespace diagnostics {
+namespace digraphs {
+  class digraph;
+  class node;
+  class edge;
+}}
 
 /* Concrete subclass of json::object for SARIF property bags
    (SARIF v2.1.0 section 3.8).  */
@@ -122,6 +130,10 @@ public:
   void set_logical_location (const char *property_name,
 			     sarif_builder &,
 			     logical_location logical_loc);
+  void set_graph (const char *property_name,
+		  sarif_builder &,
+		  sarif_location_manager *sarif_location_mgr,
+		  const diagnostics::digraphs::digraph &g);
 };
 
 /* Concrete subclass of json::object for SARIF objects that can
@@ -135,5 +147,40 @@ class sarif_object : public json::object
 public:
   sarif_property_bag &get_or_create_properties ();
 };
+
+/* Subclass of sarif_object for SARIF "graph" objects
+   (SARIF v2.1.0 section 3.39).  */
+
+class sarif_graph : public sarif_object
+{
+};
+
+/* Subclass of sarif_object for SARIF "node" objects
+   (SARIF v2.1.0 section 3.40).  */
+
+class sarif_node : public sarif_object
+{
+};
+
+/* Subclass of sarif_object for SARIF "edge" objects
+   (SARIF v2.1.0 section 3.41).  */
+
+class sarif_edge : public sarif_object
+{
+};
+
+extern std::unique_ptr<sarif_graph>
+make_sarif_graph (const diagnostics::digraphs::digraph &g,
+		  sarif_builder *builder,
+		  sarif_location_manager *sarif_location_mgr);
+
+extern std::unique_ptr<sarif_node>
+make_sarif_node (const diagnostics::digraphs::node &n,
+		 sarif_builder *builder,
+		 sarif_location_manager *sarif_location_mgr);
+
+extern std::unique_ptr<sarif_edge>
+make_sarif_edge (const diagnostics::digraphs::edge &e,
+		 sarif_builder *builder);
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_SARIF_H */

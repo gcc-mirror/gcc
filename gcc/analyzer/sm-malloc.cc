@@ -436,9 +436,9 @@ public:
       const extrinsic_state &ext_state) const;
 
   void
-  add_state_to_xml (xml_state &out_xml,
-		    const svalue &sval,
-		    state_machine::state_t state) const final override;
+  add_state_to_state_graph (analyzer_state_graph &out_state_graph,
+			    const svalue &sval,
+			    state_machine::state_t state) const final override;
 
   standard_deallocator_set m_free;
   standard_deallocator_set m_scalar_delete;
@@ -2735,27 +2735,57 @@ malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
   smap->set_state (model, new_ptr_sval, m_free.m_nonnull, nullptr, ext_state);
 }
 
+static enum diagnostics::state_graphs::node_dynalloc_state
+get_dynalloc_state_for_state (enum resource_state rs)
+{
+  switch (rs)
+    {
+    default:
+      gcc_unreachable ();
+    case RS_START:
+    case RS_NULL:
+    case RS_NON_HEAP:
+    case RS_STOP:
+      return diagnostics::state_graphs::node_dynalloc_state::unknown;
+
+    case RS_ASSUMED_NON_NULL:
+      return diagnostics::state_graphs::node_dynalloc_state::nonnull;
+
+    case RS_UNCHECKED:
+      return diagnostics::state_graphs::node_dynalloc_state::unchecked;
+    case RS_NONNULL:
+      return diagnostics::state_graphs::node_dynalloc_state::nonnull;
+    case RS_FREED:
+      return diagnostics::state_graphs::node_dynalloc_state::freed;
+    }
+}
+
 void
-malloc_state_machine::add_state_to_xml (xml_state &out_xml,
-					const svalue &sval,
-					state_machine::state_t state) const
+malloc_state_machine::
+add_state_to_state_graph (analyzer_state_graph &out_state_graph,
+			  const svalue &sval,
+			  state_machine::state_t state) const
 {
   if (const region *reg = sval.maybe_get_region ())
     {
-      auto &reg_element = out_xml.get_or_create_element (*reg);
+      auto reg_node = out_state_graph.get_or_create_state_node (*reg);
       auto alloc_state = as_a_allocation_state (state);
       gcc_assert (alloc_state);
 
-      reg_element.set_attr ("dynamic-alloc-state", state->get_name ());
+      reg_node.set_dynalloc_state
+	(get_dynalloc_state_for_state (alloc_state->m_rs));
       if (alloc_state->m_deallocators)
 	{
 	  pretty_printer pp;
 	  alloc_state->m_deallocators->dump_to_pp (&pp);
-	  reg_element.set_attr ("expected-deallocators", pp_formatted_text (&pp));
+	  reg_node.m_node.set_attr (STATE_NODE_PREFIX,
+				    "expected-deallocators",
+				    pp_formatted_text (&pp));
 	}
       if (alloc_state->m_deallocator)
-	reg_element.set_attr ("deallocator",
-			      alloc_state->m_deallocator->m_name);
+	reg_node.m_node.set_attr (STATE_NODE_PREFIX,
+				  "deallocator",
+				  alloc_state->m_deallocator->m_name);
     }
 }
 

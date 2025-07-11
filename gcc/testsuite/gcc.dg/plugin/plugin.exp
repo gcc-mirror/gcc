@@ -107,6 +107,10 @@ set plugin_test_list [list \
 	  diagnostic-test-metadata.c \
 	  diagnostic-test-metadata-html.c \
 	  diagnostic-test-metadata-sarif.c } \
+    { diagnostic_plugin_test_graphs.cc
+	  diagnostic-test-graphs.c \
+	  diagnostic-test-graphs-html.c \
+	  diagnostic-test-graphs-sarif.c } \
     { diagnostic_plugin_test_nesting.cc \
 	  diagnostic-test-nesting-text-plain.c \
 	  diagnostic-test-nesting-text-indented.c \

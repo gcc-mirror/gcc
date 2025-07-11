@@ -6143,10 +6143,10 @@ end-users, and subject to change or removal without notice:
 
 @table @gcctabopt
 
-@item xml-state=@r{[}yes@r{|}no@r{]}
+@item state-graphs=@r{[}yes@r{|}no@r{]}
 This is a debugging feature and defaults to @code{no}.
-If @code{xml-state=yes}, then attempt to capture detailed state information
-from @option{-fanalyzer} in the generated SARIF.
+If @code{state-graphs=yes}, then attempt to capture detailed state
+information from @option{-fanalyzer} in the generated SARIF.
 
 @end table
 
@@ -6194,11 +6194,11 @@ then if @code{show-state-diagrams=yes},
 the generated state diagrams will also show the .dot source input to
 GraphViz used for the diagram.
 
-@item show-state-diagrams-xml=@r{[}yes@r{|}no@r{]}
+@item show-state-diagrams-sarif=@r{[}yes@r{|}no@r{]}
 This is a debugging feature and defaults to @code{no}.
-If @code{show-state-diagrams-xml=yes}
+If @code{show-state-diagrams-sarif=yes}
 then if @code{show-state-diagrams=yes}, the generated state diagrams will
-also show an XML representation of the state.
+also show a SARIF representation of the state.
 
 @end table
 

@@ -1624,6 +1624,14 @@ diagnostic_context::report_verbatim (text_info &text)
     }
 }
 
+void
+diagnostic_context::
+report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg)
+{
+  for (auto sink : m_output_sinks)
+    sink->report_global_digraph (ldg);
+}
+
 /* Get the number of digits in the decimal representation of VALUE.  */
 
 int

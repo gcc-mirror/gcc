@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "inlining-iterator.h"
 #include "tree-logical-location.h"
 #include "diagnostic-format-sarif.h"
-#include "xml.h"
+#include "diagnostic-state-graphs.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -225,8 +225,8 @@ checker_event::prepare_for_emission (checker_path *path,
   print_desc (*pp.get ());
 }
 
-std::unique_ptr<xml::document>
-checker_event::maybe_make_xml_state (bool debug) const
+std::unique_ptr<diagnostics::digraphs::digraph>
+checker_event::maybe_make_diagnostic_state_graph (bool debug) const
 {
   const program_state *state = get_program_state ();
   if (!state)
@@ -235,14 +235,16 @@ checker_event::maybe_make_xml_state (bool debug) const
   gcc_assert (m_path);
   const extrinsic_state &ext_state = m_path->get_ext_state ();
 
-  auto result = state->make_xml (ext_state);
+  auto result = state->make_diagnostic_state_graph (ext_state);
 
   if (debug)
     {
       pretty_printer pp;
       text_art::theme *theme = global_dc->get_diagram_theme ();
       text_art::dump_to_pp (*state, theme, &pp);
-      result->add_comment (pp_formatted_text (&pp));
+      result->set_attr (STATE_GRAPH_PREFIX,
+			"analyzer/program_state/",
+			pp_formatted_text (&pp));
     }
 
   return result;

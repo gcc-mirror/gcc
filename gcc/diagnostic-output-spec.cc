@@ -183,7 +183,7 @@ public:
 private:
   static sarif_generation_options
   make_sarif_gen_opts (enum sarif_version version,
-		       bool xml_state);
+		       bool state_graph);
 
   static std::unique_ptr<sarif_serialization_format>
   make_sarif_serialization_object (enum sarif_serialization_kind);
@@ -431,7 +431,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
   enum sarif_serialization_kind serialization_kind
     = sarif_serialization_kind::json;
   enum sarif_version version = sarif_version::v2_1_0;
-  bool xml_state = false;
+  bool state_graph = false;
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
@@ -469,10 +469,10 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 	    return nullptr;
 	  continue;
 	}
-      if (key == "xml-state")
+      if (key == "state-graphs")
 	{
 	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 xml_state))
+				 state_graph))
 	    return nullptr;
 	  continue;
 	}
@@ -481,8 +481,8 @@ sarif_scheme_handler::make_sink (const context &ctxt,
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("file");
       known_keys.safe_push ("serialization");
+      known_keys.safe_push ("state-graphs");
       known_keys.safe_push ("version");
-      known_keys.safe_push ("xml-state");
       ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
 			       known_keys);
       return nullptr;
@@ -513,7 +513,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
   if (!output_file)
     return nullptr;
 
-  auto sarif_gen_opts = make_sarif_gen_opts (version, xml_state);
+  auto sarif_gen_opts = make_sarif_gen_opts (version, state_graph);
 
   auto serialization_obj = make_sarif_serialization_object (serialization_kind);
 
@@ -527,11 +527,11 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 
 sarif_generation_options
 sarif_scheme_handler::make_sarif_gen_opts (enum sarif_version version,
-					   bool xml_state)
+					   bool state_graph)
 {
   sarif_generation_options sarif_gen_opts;
   sarif_gen_opts.m_version = version;
-  sarif_gen_opts.m_xml_state = xml_state;
+  sarif_gen_opts.m_state_graph = state_graph;
   return sarif_gen_opts;
 }
 
@@ -561,8 +561,8 @@ html_scheme_handler::make_sink (const context &ctxt,
   label_text filename;
   bool javascript = true;
   bool show_state_diagrams = false;
-  bool show_state_diagram_xml = false;
-  bool show_state_diagram_dot_src = false;
+  bool show_state_diagrams_sarif = false;
+  bool show_state_diagrams_dot_src = false;
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
@@ -593,17 +593,17 @@ html_scheme_handler::make_sink (const context &ctxt,
 	    return nullptr;
 	  continue;
 	}
-      if (key == "show-state-diagram-dot-src")
+      if (key == "show-state-diagrams-dot-src")
 	{
 	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 show_state_diagram_dot_src))
+				 show_state_diagrams_dot_src))
 	    return nullptr;
 	  continue;
 	}
-      if (key == "show-state-diagram-xml")
+      if (key == "show-state-diagrams-sarif")
 	{
 	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 show_state_diagram_xml))
+				 show_state_diagrams_sarif))
 	    return nullptr;
 	  continue;
 	}
@@ -615,7 +615,7 @@ html_scheme_handler::make_sink (const context &ctxt,
       known_keys.safe_push ("javascript");
       known_keys.safe_push ("show-state-diagrams");
       known_keys.safe_push ("show-state-diagram-dot-src");
-      known_keys.safe_push ("show-state-diagram-xml");
+      known_keys.safe_push ("show-state-diagram-sarif");
       ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
 			       known_keys);
       return nullptr;
@@ -649,8 +649,8 @@ html_scheme_handler::make_sink (const context &ctxt,
   html_gen_opts.m_css = css;
   html_gen_opts.m_javascript = javascript;
   html_gen_opts.m_show_state_diagrams = show_state_diagrams;
-  html_gen_opts.m_show_state_diagram_xml = show_state_diagram_xml;
-  html_gen_opts.m_show_state_diagram_dot_src = show_state_diagram_dot_src;
+  html_gen_opts.m_show_state_diagrams_sarif = show_state_diagrams_sarif;
+  html_gen_opts.m_show_state_diagrams_dot_src = show_state_diagrams_dot_src;
 
   auto sink = make_html_sink (dc,
 			      *ctxt.get_affected_location_mgr (),

@@ -29,10 +29,24 @@ def get_result_by_index(sarif, idx):
     results = run['results']
     return results[idx]
     
-def get_xml_state(events, event_idx):
-    xml_src = events[event_idx]['properties']['gcc/diagnostic_event/xml_state']
+def get_state_graph(events, event_idx):
+    graph = events[event_idx]['properties']['gcc/diagnostic_event/state_graph']
     if 0:
-        print(xml_src)
-    xml = ET.fromstring(xml_src)
-    assert xml.tag == 'state-diagram'
-    return xml    
+        print(graph)
+    assert graph is not None
+    return graph
+
+def get_state_node_attr(obj, attr_name):
+    return obj['properties']['gcc/diagnostic_state_node/%s' % attr_name]
+
+def get_state_node_kind(obj):
+    return get_state_node_attr(obj, 'kind')
+
+def get_state_node_name(obj):
+    return get_state_node_attr(obj, 'name')
+
+def get_state_node_type(obj):
+    return get_state_node_attr(obj, 'type')
+
+def get_state_node_value(obj):
+    return get_state_node_attr(obj, 'value')

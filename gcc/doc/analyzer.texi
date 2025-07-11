@@ -624,17 +624,17 @@ which writes out the diagnostics in HTML form, and generates SVG state
 diagrams visualizing the state of memory at each event (inspired by the
 "ddd" debugger).  These can be seen by pressing 'j' and 'k' to single-step
 forward and backward through events.  Note that these SVG diagrams are
-created from an intermediate XML representation generated from
-@code{program_state} objects.  The XML representation can be easier to
+created from an intermediate SARIF directed graph representation generated from
+@code{program_state} objects.  The SARIF representation can be easier to
 read - for example, rather than storing the contents of memory via byte
 offsets, it uses fields for structs and element indexes for arrays,
 recursively.  However it is a different representation, and thus bugs could
 be hidden by this transformation.  Generating the SVG diagrams requires
 an invocation of "dot" per event, so it noticeably slows down diagnostic
-emission, hence the opt-in command-line flag.  The XML and ``dot''
+emission, hence the opt-in command-line flag.  The SARIF and ``dot''
 representations can be seen by @code{__analyzer_dump_xml} and
 @code{__analyzer_dump_dot} below (writing them to stderr), or by adding
-@code{show-state-diagrams-xml=yes} and
+@code{show-state-diagrams-sarif=yes} and
 @code{show-state-diagrams-dot-src=yes} to the html sink, which shows
 them within the generated HTML next to the generated SVG.
 
@@ -792,9 +792,9 @@ will emit a warning describing the state of the 2nd argument
 a name matching the 1st argument (which must be a string literal).
 This is for use when debugging, and may be of use in DejaGnu tests.
 
-@item __analyzer_dump_xml
+@item __analyzer_dump_sarif
 @smallexample
-__analyzer_dump_xml ();
+__analyzer_dump_sarif ();
 @end smallexample
 
 will dump the copious information about the analyzer's state each time it

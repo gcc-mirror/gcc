@@ -188,3 +188,34 @@ supporting command-line options and SARIF playback:
   * :func:`diagnostic_manager_add_sink_from_spec`
 
   * :func:`diagnostic_manager_set_analysis_target`
+
+.. _LIBGDIAGNOSTICS_ABI_3:
+
+``LIBGDIAGNOSTICS_ABI_3``
+-------------------------
+``LIBGDIAGNOSTICS_ABI_3`` covers the addition of these functions for
+working with directed graphs:
+
+  * :func:`diagnostic_manager_new_graph`
+
+  * :func:`diagnostic_manager_take_global_graph`
+
+  * :func:`diagnostic_take_graph`
+
+  * :func:`diagnostic_graph_release`
+
+  * :func:`diagnostic_graph_set_description`
+
+  * :func:`diagnostic_graph_add_node`
+
+  * :func:`diagnostic_graph_add_edge`
+
+  * :func:`diagnostic_graph_get_node_by_id`
+
+  * :func:`diagnostic_graph_get_edge_by_id`
+
+  * :func:`diagnostic_node_set_label`
+
+  * :func:`diagnostic_node_set_location`
+
+  * :func:`diagnostic_node_set_logical_location`

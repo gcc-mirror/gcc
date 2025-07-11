@@ -130,6 +130,7 @@ class value
   void DEBUG_FUNCTION dump () const;
 
   virtual object *dyn_cast_object () { return nullptr; }
+  virtual string *dyn_cast_string () { return nullptr; }
 
   static int compare (const json::value &val_a, const json::value &val_b);
 
@@ -183,6 +184,9 @@ class object : public value
   void set_bool (const char *key, bool v);
 
   static int compare (const json::object &obj_a, const json::object &obj_b);
+
+  size_t get_num_keys () const { return m_keys.length (); }
+  const char *get_key (size_t i) const { return m_keys[i]; }
 
   std::unique_ptr<object> clone_as_object () const;
 
@@ -284,6 +288,7 @@ class string : public value
   enum kind get_kind () const final override { return JSON_STRING; }
   void print (pretty_printer *pp, bool formatted) const final override;
   std::unique_ptr<value> clone () const final override;
+  string *dyn_cast_string () final override { return this; }
 
   const char *get_string () const { return m_utf8; }
   size_t get_length () const { return m_len; }

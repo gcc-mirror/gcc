@@ -1,0 +1,23 @@
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": { "driver": { "name": "example" } },
+           "results": [],
+           "graphs": [{"nodes": [{"id": "a", /* { dg-message "'a' already used as node id within graph here" } */
+                                  "children": [{"id": "a"}]}], /* { dg-error "duplicate node id 'a' within graph \\\[SARIF v2.1.0 §3.40.2\\\]" } */
+                       "edges": []}]}]}
+
+/* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/graphs/0/nodes/0/children/0/id':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+    6 |                                   "children": [{"id": "a"}]}],
+      |                                                       ^~~
+   { dg-end-multiline-output "" }  */
+
+/* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/graphs/0/nodes/0/id':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+    5 |            "graphs": [{"nodes": [{"id": "a",
+      |                                         ^~~
+   { dg-end-multiline-output "" } */

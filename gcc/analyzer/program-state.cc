@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "digraph.h"
 #include "diagnostic-event-id.h"
-#include "diagnostic-state.h"
+#include "diagnostic-state-graphs.h"
 #include "graphviz.h"
 
 #include "text-art/tree-widget.h"
@@ -1230,8 +1230,14 @@ program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
 void
 program_state::dump_dot (const extrinsic_state &ext_state) const
 {
-  auto doc = make_xml (ext_state);
-  auto graph = make_dot_graph_from_xml_state (*doc);
+  auto state_graph = make_diagnostic_state_graph (ext_state);
+
+  gcc_assert (global_dc);
+  auto logical_loc_mgr = global_dc->get_logical_location_manager ();
+  gcc_assert (logical_loc_mgr);
+
+  auto graph = diagnostics::state_graphs::make_dot_graph (*state_graph,
+							  *logical_loc_mgr);
 
   pretty_printer pp;
   dot::writer w (pp);

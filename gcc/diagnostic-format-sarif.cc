@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostic-metadata.h"
+#include "diagnostic-digraphs.h"
+#include "diagnostic-state-graphs.h"
 #include "diagnostic-path.h"
 #include "diagnostic-format.h"
 #include "diagnostic-buffer.h"
@@ -776,6 +778,9 @@ public:
   void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
+  void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &);
+
   std::unique_ptr<sarif_result> take_current_result ()
   {
     return std::move (m_cur_group_result);
@@ -789,7 +794,7 @@ public:
 		      const diagnostic_info &diagnostic,
 		      enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_location>
-  make_location_object (sarif_location_manager &loc_mgr,
+  make_location_object (sarif_location_manager *loc_mgr,
 			const rich_location &rich_loc,
 			logical_location logical_loc,
 			enum diagnostic_artifact_role role);
@@ -973,6 +978,8 @@ private:
   hash_set <int_hash <int, 0, 1> > m_cwe_id_set;
 
   std::unique_ptr<sarif_array_of_unique<sarif_logical_location>> m_cached_logical_locs;
+
+  std::unique_ptr<sarif_array_of_unique<sarif_graph>> m_run_graphs;
 
   int m_tabstop;
 
@@ -1305,7 +1312,7 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
      sometimes these will related to current_function_decl, but
      often they won't.  */
   auto location_obj
-    = builder.make_location_object (*this, *diagnostic.richloc,
+    = builder.make_location_object (this, *diagnostic.richloc,
 				    logical_location (),
 				    diagnostic_artifact_role::result_file);
   auto message_obj
@@ -1663,6 +1670,8 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_rules_arr (new json::array ()),
   m_cached_logical_locs
     (std::make_unique<sarif_array_of_unique<sarif_logical_location>> ()),
+  m_run_graphs
+    (std::make_unique<sarif_array_of_unique<sarif_graph>> ()),
   m_tabstop (context.m_tabstop),
   m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
@@ -1895,6 +1904,17 @@ sarif_builder::end_group ()
     }
 }
 
+void
+sarif_builder::
+report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg)
+{
+  auto &dg = ldg.get_or_create_digraph ();
+
+  /* Presumably the location manager must be nullptr; see
+     https://github.com/oasis-tcs/sarif-spec/issues/712  */
+  m_run_graphs->append (make_sarif_graph (dg, this, nullptr));
+}
+
 /* Create a top-level object, and add it to all the results
    (and other entities) we've seen so far, moving ownership
    to the object.  */
@@ -2049,6 +2069,19 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
       result_obj->set<json::array> ("codeFlows", std::move (code_flows_arr));
     }
 
+  // "graphs" property (SARIF v2.1.0 section 3.27.19).  */
+  if (diagnostic.metadata)
+    if (auto ldg = diagnostic.metadata->get_lazy_digraphs ())
+      {
+	auto &digraphs = ldg->get_or_create_digraphs ();
+	auto graphs_arr = std::make_unique<json::array> ();
+	for (auto &iter : digraphs)
+	  graphs_arr->append (make_sarif_graph (*iter, this,
+						result_obj.get ()));
+	if (graphs_arr->size () > 0)
+	  result_obj->set<json::array> ("graphs", std::move (graphs_arr));
+      }
+
   /* The "relatedLocations" property (SARIF v2.1.0 section 3.27.22) is
      set up later, if any nested diagnostics occur within this diagnostic
      group.  */
@@ -2176,7 +2209,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
     logical_loc = client_data_hooks->get_current_logical_location ();
 
   auto location_obj
-    = make_location_object (loc_mgr, *diagnostic.richloc, logical_loc, role);
+    = make_location_object (&loc_mgr, *diagnostic.richloc, logical_loc, role);
   /* Don't add entirely empty location objects to the array.  */
   if (!location_obj->is_empty ())
     locations_arr->append<sarif_location> (std::move (location_obj));
@@ -2210,10 +2243,12 @@ set_any_logical_locs_arr (sarif_location &location_obj,
 /* Make a "location" object (SARIF v2.1.0 section 3.28) for RICH_LOC
    and LOGICAL_LOC.
    Use LOC_MGR for any locations that need "id" values, and for
-   any worklist items.  */
+   any worklist items.
+   Note that we might not always have a LOC_MGR; see
+   https://github.com/oasis-tcs/sarif-spec/issues/712  */
 
 std::unique_ptr<sarif_location>
-sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
+sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
 				     const rich_location &rich_loc,
 				     logical_location logical_loc,
 				     enum diagnostic_artifact_role role)
@@ -2309,8 +2344,8 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 
 	/* Add related locations for any secondary locations in RICH_LOC
 	   that don't have labels (and thus aren't added to "annotations"). */
-	if (i > 0 && !handled)
-	  loc_mgr.add_relationship_to_worklist
+	if (loc_mgr && i > 0 && !handled)
+	  loc_mgr->add_relationship_to_worklist
 	    (*location_obj.get (),
 	     sarif_location_manager::worklist_item::kind::unlabelled_secondary_location,
 	     range->m_loc);
@@ -2321,7 +2356,8 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 				      std::move (annotations_arr));
   }
 
-  add_any_include_chain (loc_mgr, *location_obj.get (), loc);
+  if (loc_mgr)
+    add_any_include_chain (*loc_mgr, *location_obj.get (), loc);
 
   /* A flag for hinting that the diagnostic involves issues at the
      level of character encodings (such as homoglyphs, or misleading
@@ -2799,6 +2835,142 @@ sarif_property_bag::set_logical_location (const char *property_name,
      builder.make_minimal_sarif_logical_location (logical_loc));
 }
 
+static void
+copy_any_property_bag (const diagnostics::digraphs::object &input_obj,
+		       sarif_object &output_obj)
+{
+  if (input_obj.get_property_bag ())
+    {
+      const json::object &old_bag = *input_obj.get_property_bag ();
+      sarif_property_bag &new_bag = output_obj.get_or_create_properties ();
+      for (size_t i = 0; i < old_bag.get_num_keys (); ++i)
+	{
+	  const char *key = old_bag.get_key (i);
+	  json::value *val = old_bag.get (key);
+	  new_bag.set (key, val->clone ());
+	}
+    }
+}
+
+std::unique_ptr<sarif_graph>
+make_sarif_graph (const diagnostics::digraphs::digraph &g,
+		  sarif_builder *builder,
+		  sarif_location_manager *sarif_location_mgr)
+{
+  auto result = std::make_unique<sarif_graph> ();
+
+  // 3.39.2 description property
+  if (const char *desc = g.get_description ())
+    if (builder)
+      result->set<sarif_message> ("description",
+				  builder->make_message_object (desc));
+
+  copy_any_property_bag (g, *result);
+
+  // 3.39.3 nodes property
+  auto nodes_arr = std::make_unique<json::array> ();
+  const int num_nodes = g.get_num_nodes ();
+  for (int i = 0; i < num_nodes; ++i)
+    nodes_arr->append (make_sarif_node (g.get_node (i),
+					builder,
+					sarif_location_mgr));
+  result->set ("nodes", std::move (nodes_arr));
+
+  // 3.39.4 edges property
+  auto edges_arr = std::make_unique<json::array> ();
+  const int num_edges = g.get_num_edges ();
+  for (int i = 0; i < num_edges; ++i)
+    edges_arr->append (make_sarif_edge (g.get_edge (i), builder));
+  result->set ("edges", std::move (edges_arr));
+
+  return result;
+}
+
+std::unique_ptr<sarif_node>
+make_sarif_node (const diagnostics::digraphs::node &n,
+		 sarif_builder *builder,
+		 sarif_location_manager *sarif_location_mgr)
+{
+  auto result = std::make_unique<sarif_node> ();
+
+  // 3.40.2 id property
+  result->set_string ("id", n.get_id ().c_str ());
+
+  copy_any_property_bag (n, *result);
+
+  // 3.40.3 label property
+  if (const char *label = n.get_label ())
+    if (builder)
+      result->set<sarif_message> ("label",
+				  builder->make_message_object (label));
+
+  // 3.40.4 location property
+  if (n.get_logical_loc ()
+      || n.get_physical_loc () != UNKNOWN_LOCATION)
+    if (builder)
+      {
+	rich_location rich_loc
+	  (line_table, n.get_physical_loc ());
+	auto loc_obj
+	  = builder->make_location_object
+	      (sarif_location_mgr,
+	       rich_loc,
+	       n.get_logical_loc (),
+	       diagnostic_artifact_role::scanned_file);
+	result->set<sarif_location> ("location",
+				     std::move (loc_obj));
+    }
+
+  // 3.40.5 children property
+  if (const int num_children = n.get_num_children ())
+    {
+      auto children_arr = std::make_unique<json::array> ();
+      for (int i = 0; i < num_children; ++i)
+	children_arr->append (make_sarif_node (n.get_child (i),
+					       builder,
+					       sarif_location_mgr));
+      result->set ("children", std::move (children_arr));
+    }
+
+  return result;
+}
+
+std::unique_ptr<sarif_edge>
+make_sarif_edge (const diagnostics::digraphs::edge &e,
+		 sarif_builder *builder)
+{
+  auto result = std::make_unique<sarif_edge> ();
+
+  // 3.41.2 id property
+  result->set_string ("id", e.get_id ().c_str ());
+
+  copy_any_property_bag (e, *result);
+
+  // 3.41.3 label property
+  if (const char *label = e.get_label ())
+    if (builder)
+      result->set<sarif_message> ("label",
+				  builder->make_message_object (label));
+
+  // 3.41.4 sourceNodeId property
+  result->set_string ("sourceNodeId", e.get_src_node ().get_id ().c_str ());
+
+  // 3.41.5 targetNodeId property
+  result->set_string ("targetNodeId", e.get_dst_node ().get_id ().c_str ());
+
+  return result;
+}
+
+void
+sarif_property_bag::set_graph (const char *property_name,
+			       sarif_builder &builder,
+			       sarif_location_manager *sarif_location_mgr,
+			       const diagnostics::digraphs::digraph &g)
+{
+  set<sarif_graph> (property_name,
+		    make_sarif_graph (g, &builder, sarif_location_mgr));
+}
+
 /* Ensure that m_cached_logical_locs has a "logicalLocation" object
    (SARIF v2.1.0 section 3.33) for K, and return its index within the
    array.  */
@@ -2960,17 +3132,21 @@ populate_thread_flow_location_object (sarif_result &result,
      via a property bag.  */
   ev.maybe_add_sarif_properties (*this, tfl_obj);
 
-  if (get_opts ().m_xml_state)
-    if (auto xml_state = ev.maybe_make_xml_state (true))
+  if (get_opts ().m_state_graph)
+    if (auto state_graph = ev.maybe_make_diagnostic_state_graph (true))
       {
 	sarif_property_bag &props = tfl_obj.get_or_create_properties ();
 
-	pretty_printer pp;
-	xml_state->write_as_xml (&pp, 0, true);
-
 #define PROPERTY_PREFIX "gcc/diagnostic_event/"
-	props.set_string (PROPERTY_PREFIX "xml_state",
-			  pp_formatted_text (&pp));
+	props.set_graph (PROPERTY_PREFIX "state_graph",
+			 *this,
+			 /* Use RESULT for any related locations in the graph's
+			    nodes.
+			    It's not clear if this is correct; see:
+			    https://github.com/oasis-tcs/sarif-spec/issues/712
+			 */
+			 &result,
+			 *state_graph);
 #undef PROPERTY_PREFIX
       }
 
@@ -3233,6 +3409,11 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
       run_obj->set<json::array> ("logicalLocations",
 				 std::move (m_cached_logical_locs));
     }
+
+  // "graphs" property (SARIF v2.1.0 3.14.20)
+  if (m_run_graphs->size () > 0)
+    run_obj->set<json::array> ("graphs",
+			       std::move (m_run_graphs));
 
   return run_obj;
 }
@@ -3739,6 +3920,12 @@ public:
     /* No-op.  */
   }
 
+  void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &lazy_digraph) final override
+  {
+    m_builder.report_global_digraph (lazy_digraph);
+  }
+
   sarif_builder &get_builder () { return m_builder; }
 
   size_t num_results () const { return m_builder.num_results (); }
@@ -4117,7 +4304,7 @@ make_sarif_sink (diagnostic_context &context,
 
 sarif_generation_options::sarif_generation_options ()
 : m_version (sarif_version::v2_1_0),
-  m_xml_state (false)
+  m_state_graph (false)
 {
 }
 
@@ -4299,7 +4486,7 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
 
   std::unique_ptr<sarif_location> location_obj
     = builder.make_location_object
-	(result, richloc, logical_location (),
+	(&result, richloc, logical_location (),
 	 diagnostic_artifact_role::analysis_target);
   ASSERT_NE (location_obj, nullptr);
 

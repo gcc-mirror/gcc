@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fdiagnostics-add-output=sarif:xml-state=yes" } */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif:state-graphs=yes" } */
 
 #include "analyzer-decls.h"
 

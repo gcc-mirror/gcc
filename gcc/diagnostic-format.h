@@ -72,6 +72,9 @@ public:
      Subclasses should update their m_printer accordingly.  */
   virtual void update_printer () = 0;
 
+  virtual void
+  report_global_digraph (const diagnostics::digraphs::lazy_digraph &) = 0;
+
   diagnostic_context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer.get (); }
 

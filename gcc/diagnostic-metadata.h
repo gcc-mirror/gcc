@@ -23,11 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 
 class sarif_object;
 
+namespace diagnostics {
+  namespace digraphs {
+    class lazy_digraphs;
+  } // namespace digraphs
+} // namespace diagnostics
+
 /* A bundle of additional metadata that can be associated with a
    diagnostic.
 
    This supports an optional CWE identifier, and zero or more
-   "rules".  */
+   "rules".
+
+   Additionally, this provides a place to associate a diagnostic
+   with zero or more directed graphs.  */
 
 class diagnostic_metadata
 {
@@ -64,7 +73,7 @@ class diagnostic_metadata
     const char *m_url;
   };
 
-  diagnostic_metadata () : m_cwe (0) {}
+  diagnostic_metadata () : m_cwe (0), m_lazy_digraphs (nullptr) {}
   virtual ~diagnostic_metadata () {}
 
   /* Hook for SARIF output to allow for adding diagnostic-specific
@@ -87,9 +96,25 @@ class diagnostic_metadata
   unsigned get_num_rules () const { return m_rules.length (); }
   const rule &get_rule (unsigned idx) const { return *(m_rules[idx]); }
 
+  void
+  set_lazy_digraphs (const diagnostics::digraphs::lazy_digraphs *lazy_digraphs)
+  {
+    m_lazy_digraphs = lazy_digraphs;
+  }
+
+  const diagnostics::digraphs::lazy_digraphs *
+  get_lazy_digraphs () const
+  {
+    return m_lazy_digraphs;
+  }
+
  private:
   int m_cwe;
   auto_vec<const rule *> m_rules;
+
+  /* An optional way to create directed graphs associated with the
+     diagnostic, for the sinks that support this (e.g. SARIF).  */
+  const diagnostics::digraphs::lazy_digraphs *m_lazy_digraphs;
 };
 
 #endif /* ! GCC_DIAGNOSTIC_METADATA_H */
