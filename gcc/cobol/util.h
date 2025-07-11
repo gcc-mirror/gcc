@@ -33,7 +33,7 @@
 
 void cbl_message(int fd, const char *format_string, ...)
   ATTRIBUTE_PRINTF_2;
-void cbl_internal_error(const char *format_string, ...)
+[[noreturn]] void cbl_internal_error(const char *format_string, ...)
   ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
 void cbl_err(const char *format_string, ...) ATTRIBUTE_GCOBOL_DIAG(1, 2);

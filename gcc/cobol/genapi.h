@@ -268,8 +268,8 @@ void
 parser_display( const struct cbl_special_name_t *upon,
                 std::vector<cbl_refer_t> args, 
                 bool advance = DISPLAY_ADVANCE, 
-                cbl_label_t *not_error = nullptr,
-                cbl_label_t *compute_error = nullptr );
+          const cbl_label_t *not_error = nullptr,
+          const cbl_label_t *compute_error = nullptr );
 
 void parser_display_field(cbl_field_t *fld);
 

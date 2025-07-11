@@ -3058,7 +3058,7 @@ gg_call_expr(tree return_type, const char *function_name, ...)
 
     tree arg = va_arg(ap, tree);
 
-    if( !arg )
+    if( arg == NULL_TREE )
       {
       break;
       }
@@ -3114,7 +3114,7 @@ gg_call(tree return_type, const char *function_name,  ...)
 
     tree arg = va_arg(ap, tree);
 
-    if( !arg )
+    if( arg == NULL_TREE )
       {
       break;
       }

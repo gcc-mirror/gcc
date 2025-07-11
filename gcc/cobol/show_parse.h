@@ -176,8 +176,18 @@ extern bool cursor_at_sol;
                 } \
             else \
                 { \
-		fprintf(stderr, " %p:%s (%s)", (void*)b, b->name, b->type_str()); \
+                fprintf(stderr, " %p:%s (%s)", static_cast<void*>(b), b->name, b->type_str()); \
                 } \
+            show_parse_sol = false; \
+            } while(0);
+
+// Use this version when b is known to be valid.  This is necessary to quiet
+// cppcheck nullPointerRedundantCheck warnings
+#define SHOW_PARSE_LABEL_OK(a, b) \
+        do \
+            { \
+            fprintf(stderr, "%s", a); \
+            fprintf(stderr, " %p:%s (%s)", static_cast<void*>(b), b->name, b->type_str()); \
             show_parse_sol = false; \
             } while(0);
 
@@ -211,6 +221,7 @@ extern bool cursor_at_sol;
 #define TRACE1_FIELD_VALUE(a, field, b) \
         do \
             { \
+            gcc_assert(field); \
             cursor_at_sol=false; \
             if ( field->type == FldConditional ) \
               {                                       \
@@ -423,13 +434,39 @@ extern bool cursor_at_sol;
     } while(0);
 
 // Use CHECK_FIELD when a should be non-null, and a->var_decl_node also should
-// by non-null:
+// by non-null.  (The useless calls to abort() are because cppcheck doesn't
+// understand that gcc_unreachable doesn't return);
+
+// Use this after doing any SHOW_PARSE stuff, to avoid cppcheck complaints
+// about nullPointerRedundantCheck 
 #define CHECK_FIELD(a)                                                  \
-        do {                                                                  \
+        do {                                                            \
         if(!a)                                                          \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is NULL", __func__);        \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
             gcc_unreachable();                                          \
+            abort();                                                    \
+            }                                                           \
+        if( !a->var_decl_node )                                         \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is variable "              \
+                   "%s<%s> with NULL %<var_decl_node%>",                \
+                __func__,                                               \
+                a->name,                                                \
+                cbl_field_type_str(a->type) );                          \
+            gcc_unreachable();                                          \
+            abort();                                                    \
+            }                                                           \
+        } while(0);
+
+// This version is a bit more lax, for special cases
+#define CHECK_FIELD2(a)                                                  \
+        do {                                                            \
+        if(!a)                                                          \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
+            gcc_unreachable();                                          \
+            abort();                                                    \
             }                                                           \
         if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA) \
             {                                                           \
@@ -439,8 +476,10 @@ extern bool cursor_at_sol;
                 a->name,                                                \
                 cbl_field_type_str(a->type) );                          \
             gcc_unreachable();                                          \
+            abort();                                                    \
             }                                                           \
         } while(0);
+
 
 #define CHECK_LABEL(a)                                                  \
         do{                                                             \
@@ -448,6 +487,7 @@ extern bool cursor_at_sol;
             {                                                           \
             yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
             gcc_unreachable();                                          \
+            abort();                                                    \
             }                                                           \
         }while(0);
 
@@ -504,6 +544,7 @@ class ANALYZE
       }
   };
 #else
+// cppcheck-suppress ctuOneDefinitionRuleViolation
 class ANALYZE
   {
   public:
