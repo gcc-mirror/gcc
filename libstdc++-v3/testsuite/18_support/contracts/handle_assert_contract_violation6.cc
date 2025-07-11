@@ -18,7 +18,6 @@
 
 #define NDEBUG
 #define ASSERT_USES_CONTRACTS
-#include <contracts>
 #include <exception>
 #include <cstdlib>
 #include <cassert>

@@ -16,7 +16,6 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
 // { dg-do run { target c++2a } }
 
-#include <contracts>
 #include <exception>
 #include <cstdlib>
 #define ASSERT_USES_CONTRACTS
@@ -38,6 +37,6 @@ int main()
   // We should not get here
   return 1;
 }
-// { dg-output "contract violation in function int main.* at .*:37: i == 4.*" }
+// { dg-output "contract violation in function int main.* at .*:36: i == 4.*" }
 // { dg-output "assertion_kind: cassert, semantic: enforce, mode: unspecified, terminating: yes" }
 

@@ -17,7 +17,6 @@
 // { dg-do run { target c++2a } }
 
 #define NDEBUG
-#include <contracts>
 #include <exception>
 #include <cstdlib>
 #include <cassert>
