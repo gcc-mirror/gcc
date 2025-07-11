@@ -501,9 +501,10 @@ string::string (const char *utf8)
 string::string (const char *utf8, size_t len)
 {
   gcc_assert (utf8);
-  m_utf8 = XNEWVEC (char, len);
+  m_utf8 = XNEWVEC (char, len + 1);
   m_len = len;
   memcpy (m_utf8, utf8, len);
+  m_utf8[len] = '\0';
 }
 
 /* Implementation of json::value::print for json::string.  */
@@ -914,6 +915,15 @@ test_comparisons ()
   ASSERT_JSON_NE (arr_1, arr_2);
 }
 
+/* Ensure that json::string's get_string is usable as a C-style string.  */
+
+static void
+test_strcmp ()
+{
+  string str ("foobar", 3);
+  ASSERT_EQ (strcmp (str.get_string (), "foo"), 0);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -928,6 +938,7 @@ json_cc_tests ()
   test_writing_literals ();
   test_formatting ();
   test_comparisons ();
+  test_strcmp ();
 }
 
 } // namespace selftest
