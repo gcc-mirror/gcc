@@ -3605,11 +3605,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
       unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
       unsigned cvt6_prec = TYPE_PRECISION (TREE_TYPE (@6));
-      unsigned hw_int_prec = sizeof (HOST_WIDE_INT) * 8;
       wide_int c2 = wi::to_wide (@2);
       wide_int max = wi::mask (prec, false, widen_prec);
       bool c2_is_max_p = wi::eq_p (c2, max);
-      bool widen_mult_p = cvt5_prec == cvt6_prec && hw_int_prec == cvt5_prec;
+      bool widen_mult_p = cvt5_prec == cvt6_prec && widen_prec == cvt6_prec * 2;
      }
      (if (widen_prec > prec && c2_is_max_p && widen_mult_p)))))
 )
