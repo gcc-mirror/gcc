@@ -30,13 +30,13 @@ struct A { int a; };
 struct B : A {};
 struct C : B {};
 struct D {};
-struct E : virtual C { int e; virtual ~E () {} };
+struct E : virtual C { int e; constexpr virtual ~E () {} };
 struct F : virtual E, virtual C { int f; };
 struct G : virtual F, virtual C, virtual E {
-  G () : g (4) { a = 1; e = 2; f = 3; } int g;
+  constexpr G () : g (4) { a = 1; e = 2; f = 3; } int g;
 };
 
-void test01()
+constexpr bool test01(bool x)
 {
   auto a = std::make_exception_ptr(C{ 42 });
   auto b = std::exception_ptr_cast<C>(a);
@@ -73,9 +73,20 @@ void test01()
       auto n = std::exception_ptr_cast<G>(a);
       VERIFY( n == nullptr );
     }
+  if (x)
+    throw 1;
+  return true;
 }
+
+static_assert(test01(false));
 
 int main()
 {
-  test01();
+  try
+    {
+      test01(true);
+    }
+  catch (...)
+    {
+    }
 }

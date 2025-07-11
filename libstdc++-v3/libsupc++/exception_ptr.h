@@ -83,7 +83,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 #if __cpp_lib_exception_ptr_cast >= 202506L
   template<typename _Ex>
-  const _Ex* exception_ptr_cast(const exception_ptr&) noexcept;
+  constexpr const _Ex* exception_ptr_cast(const exception_ptr&) noexcept;
   template<typename _Ex>
   void exception_ptr_cast(const exception_ptr&&) = delete;
 #endif
@@ -138,7 +138,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	_GLIBCXX_USE_NOEXCEPT;
 #if __cpp_lib_exception_ptr_cast >= 202506L
       template<typename _Ex>
-      friend const _Ex* std::exception_ptr_cast(const exception_ptr&) noexcept;
+      friend constexpr const _Ex* std::exception_ptr_cast(const exception_ptr&)
+	noexcept;
 #endif
 
       const void* _M_exception_ptr_cast(const type_info&) const
@@ -352,11 +353,33 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #if __cpp_lib_exception_ptr_cast >= 202506L
   template<typename _Ex>
     [[__gnu__::__always_inline__]]
-    inline const _Ex* exception_ptr_cast(const exception_ptr& __p) noexcept
+    constexpr const _Ex* exception_ptr_cast(const exception_ptr& __p) noexcept
     {
+      static_assert(!std::is_const_v<_Ex>);
+      static_assert(!std::is_reference_v<_Ex>);
+      static_assert(std::is_object_v<_Ex>);
+      static_assert(!std::is_array_v<_Ex>);
+      static_assert(!std::is_pointer_v<_Ex>);
+      static_assert(!std::is_member_pointer_v<_Ex>);
 #ifdef __cpp_rtti
-      const type_info &__id = typeid(const _Ex&);
-      return static_cast<const _Ex*>(__p._M_exception_ptr_cast(__id));
+      if consteval {
+	if (__p._M_exception_object)
+	  try
+	    {
+	      std::rethrow_exception(__p);
+	    }
+	  catch (const _Ex& __exc)
+	    {
+	      return &__exc;
+	    }
+	  catch (...)
+	    {
+	    }
+	return nullptr;
+      } else {
+	const type_info &__id = typeid(const _Ex&);
+	return static_cast<const _Ex*>(__p._M_exception_ptr_cast(__id));
+      }
 #else
       return nullptr;
 #endif
