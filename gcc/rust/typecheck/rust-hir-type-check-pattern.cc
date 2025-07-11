@@ -652,11 +652,25 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
     {
     case TyTy::ARRAY:
       {
-	// FIXME: implement compile-time size checks when ArrayType's capacity
-	// is updated to be evaluated in compile-time
-	// https://github.com/Rust-GCC/gccrs/issues/3882
 	auto &array_ty_ty = static_cast<TyTy::ArrayType &> (*parent);
 	parent_element_ty = array_ty_ty.get_element_type ();
+	tree cap = array_ty_ty.get_capacity ();
+	if (error_operand_p (cap))
+	  {
+	    rust_error_at (parent->get_locus (),
+			   "capacity of array %qs is not known at compile time",
+			   array_ty_ty.get_name ().c_str ());
+	    break;
+	  }
+	auto cap_wi = wi::to_wide (cap).to_uhwi ();
+	if (cap_wi != pattern.get_items ().size ())
+	  {
+	    rust_error_at (pattern.get_locus (), ErrorCode::E0527,
+			   "pattern requires %lu elements but array has %lu",
+			   (unsigned long) pattern.get_items ().size (),
+			   (unsigned long) cap_wi);
+	    break;
+	  }
 	break;
       }
     case TyTy::SLICE:
