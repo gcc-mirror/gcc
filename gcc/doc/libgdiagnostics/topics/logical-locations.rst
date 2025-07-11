@@ -120,7 +120,7 @@ source location
    "equal" input values on the same :type:`diagnostic_manager` will return
    the same instance of :type:`diagnostic_logical_location`.  "Equal" here
    includes different string buffers that compare as equal with
-   :func:``strcmp`.
+   :func:`strcmp`.
 
 .. function:: void diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_mgr, \
                                                                    const diagnostic_logical_location *loc, \
@@ -147,8 +147,9 @@ Accessors
 
 The following functions can be used to access the data that was passed to a
 :type:`diagnostic_logical_location` when it was created.  In each case, the
-``loc`` parameter must be non-NULL.  :type:`const char *` values will point
-at copies of the original buffer.
+``loc`` parameter must be non-NULL.  The return values will point
+at *copies* of the original buffer owned by the
+:type:`diagnostic_logical_location`, or be null.
 
 .. function:: enum diagnostic_logical_location_kind_t diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
 

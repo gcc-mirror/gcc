@@ -178,6 +178,8 @@ acccessing values within a :type:`diagnostic_logical_location`:
 
   * :func:`diagnostic_logical_location_get_decorated_name`
 
+.. _LIBGDIAGNOSTICS_ABI_2:
+
 ``LIBGDIAGNOSTICS_ABI_2``
 -------------------------
 ``LIBGDIAGNOSTICS_ABI_2`` covers the addition of these functions for

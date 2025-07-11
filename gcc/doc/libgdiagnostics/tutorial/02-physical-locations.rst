@@ -112,10 +112,10 @@ leading to output like this::
    foo.c:17: error: can't find 'foo.h'"
       17 | #include <foo.h>
 
-where libgdiagnostics will attempt to load the source file and
+where libgdiagnostics will attempt to load ``foo.c`` and
 quote the pertinent line.
 
-If libgdiagnostics cannot open the file, it will merely print::
+If libgdiagnostics cannot open ``foo.c``, it will merely print::
 
    foo.c:17: error: can't find 'foo.h'
 
@@ -160,14 +160,15 @@ On compiling and running the program, we should get this output::
       17 | #include <foo.h>
          |           ^~~~~
 
-where libgdiagnostics will attempt to load the source file and
+where libgdiagnostics will attempt to load ``foo.c`` and
 underling the pertinent part of the given line.
 
-If libgdiagnostics cannot open the file, it will merely print::
+If libgdiagnostics cannot open ``foo.c``, it will merely print::
 
    foo.c:17:8: error: can't find 'foo.h'
 
-A range can span multiple lines within the same file.
+A range can span multiple lines within the same file, but cannot
+span multiple files.
 
 As before, you can use :func:`diagnostic_manager_debug_dump_location` to
 dump the locations.  For the above example::
