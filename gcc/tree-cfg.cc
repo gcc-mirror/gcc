@@ -114,43 +114,6 @@ struct replace_decls_d
   tree to_context;
 };
 
-/* Hash table to store last discriminator assigned for each locus.  */
-struct locus_discrim_map
-{
-  int location_line;
-  int discriminator;
-};
-
-/* Hashtable helpers.  */
-
-struct locus_discrim_hasher : free_ptr_hash <locus_discrim_map>
-{
-  static inline hashval_t hash (const locus_discrim_map *);
-  static inline bool equal (const locus_discrim_map *,
-			    const locus_discrim_map *);
-};
-
-/* Trivial hash function for a location_t.  ITEM is a pointer to
-   a hash table entry that maps a location_t to a discriminator.  */
-
-inline hashval_t
-locus_discrim_hasher::hash (const locus_discrim_map *item)
-{
-  return item->location_line;
-}
-
-/* Equality function for the locus-to-discriminator map.  A and B
-   point to the two hash table entries to compare.  */
-
-inline bool
-locus_discrim_hasher::equal (const locus_discrim_map *a,
-			     const locus_discrim_map *b)
-{
-  return a->location_line == b->location_line;
-}
-
-static hash_table<locus_discrim_hasher> *discriminator_per_locus;
-
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
 
@@ -168,7 +131,6 @@ static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
 static inline bool stmt_starts_bb_p (gimple *, gimple *);
 static bool gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
-static gimple *first_non_label_nondebug_stmt (basic_block);
 static bool verify_gimple_transaction (gtransaction *);
 static bool call_can_make_abnormal_goto (gimple *);
 
@@ -247,12 +209,9 @@ build_gimple_cfg (gimple_seq seq)
   group_case_labels ();
 
   /* Create the edges of the flowgraph.  */
-  discriminator_per_locus = new hash_table<locus_discrim_hasher> (13);
   make_edges ();
   assign_discriminators ();
   cleanup_dead_labels ();
-  delete discriminator_per_locus;
-  discriminator_per_locus = NULL;
 }
 
 /* Look for ANNOTATE calls with loop annotation kind in BB; if found, remove
@@ -1120,77 +1079,41 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Find the next available discriminator value for LOCUS.  The
-   discriminator distinguishes among several basic blocks that
-   share a common locus, allowing for more accurate sample-based
-   profiling.  */
-
-static int
-next_discriminator_for_locus (int line)
+/* Auto-profile needs discriminator to distinguish statements with same line
+   number (file name is ignored) which are in different basic block.  This
+   map keeps track of current discriminator for a given line number.  */
+struct discrim_entry
 {
-  struct locus_discrim_map item;
-  struct locus_discrim_map **slot;
+  /* ID of basic block we saw line number last time.  */
+  unsigned int bb_id;
+  /* Discriminator we used.  */
+  unsigned int discrim;
+};
 
-  item.location_line = line;
-  item.discriminator = 0;
-  slot = discriminator_per_locus->find_slot_with_hash (&item, line, INSERT);
-  gcc_assert (slot);
-  if (*slot == HTAB_EMPTY_ENTRY)
+/* Return updated LOC with discriminator for use in basic block BB_ID.
+   MAP keeps track of current values.  */
+
+location_t
+assign_discriminator (location_t loc, unsigned int bb_id,
+		      hash_map<int_hash <int64_t, -1, -2>, discrim_entry> &map)
+{
+  bool existed;
+  discrim_entry &e = map.get_or_insert (LOCATION_LINE (loc), &existed);
+  gcc_checking_assert (!has_discriminator (loc));
+  if (!existed)
     {
-      *slot = XNEW (struct locus_discrim_map);
-      gcc_assert (*slot);
-      (*slot)->location_line = line;
-      (*slot)->discriminator = 0;
+      e.bb_id = bb_id;
+      e.discrim = 0;
+      return loc;
     }
-  (*slot)->discriminator++;
-  return (*slot)->discriminator;
-}
-
-/* Return TRUE if LOCUS1 and LOCUS2 refer to the same source line.  */
-
-static bool
-same_line_p (location_t locus1, expanded_location *from, location_t locus2)
-{
-  expanded_location to;
-
-  if (locus1 == locus2)
-    return true;
-
-  to = expand_location (locus2);
-
-  if (from->line != to.line)
-    return false;
-  if (from->file == to.file)
-    return true;
-  return (from->file != NULL
-          && to.file != NULL
-          && filename_cmp (from->file, to.file) == 0);
-}
-
-/* Assign a unique discriminator value to all statements in block bb that
-   have the same line number as locus. */
-
-static void
-assign_discriminator (location_t locus, basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-  int discriminator;
-
-  if (locus == UNKNOWN_LOCATION)
-    return;
-
-  expanded_location locus_e = expand_location (locus);
-
-  discriminator = next_discriminator_for_locus (locus_e.line);
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  if (e.bb_id != bb_id)
     {
-      gimple *stmt = gsi_stmt (gsi);
-      location_t stmt_locus = gimple_location (stmt);
-      if (same_line_p (locus, &locus_e, stmt_locus))
-	gimple_set_location (stmt,
-	    location_with_discriminator (stmt_locus, discriminator));
+      e.bb_id = bb_id;
+      e.discrim++;
     }
+  if (e.discrim)
+    return location_with_discriminator (loc, e.discrim);
+  return loc;
 }
 
 /* Assign discriminators to statement locations.  */
@@ -1198,92 +1121,54 @@ assign_discriminator (location_t locus, basic_block bb)
 static void
 assign_discriminators (void)
 {
+  hash_map<int_hash <int64_t, -1, -2>, discrim_entry> map (13);
+  unsigned int bb_id = 0;
   basic_block bb;
-
   FOR_EACH_BB_FN (bb, cfun)
     {
-      edge e;
-      edge_iterator ei;
-      gimple_stmt_iterator gsi;
-      location_t curr_locus = UNKNOWN_LOCATION;
-      expanded_location curr_locus_e = {};
-      int curr_discr = 0;
-
+      location_t prev_loc = UNKNOWN_LOCATION, prev_replacement = UNKNOWN_LOCATION;
       /* Traverse the basic block, if two function calls within a basic block
 	are mapped to the same line, assign a new discriminator because a call
 	stmt could be a split point of a basic block.  */
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-
-	  /* Don't allow debug stmts to affect discriminators, but
-	     allow them to take discriminators when they're on the
-	     same line as the preceding nondebug stmt.  */
-	  if (is_gimple_debug (stmt))
+	  location_t loc = gimple_location (stmt);
+	  if (loc == UNKNOWN_LOCATION)
+	    continue;
+	  if (loc == prev_loc)
+	    gimple_set_location (stmt, prev_replacement);
+	  else
 	    {
-	      if (curr_locus != UNKNOWN_LOCATION
-		  && same_line_p (curr_locus, &curr_locus_e,
-				  gimple_location (stmt)))
-		{
-		  location_t loc = gimple_location (stmt);
-		  location_t dloc = location_with_discriminator (loc,
-								 curr_discr);
-		  gimple_set_location (stmt, dloc);
-		}
-	      continue;
+	      prev_loc = loc;
+	      prev_replacement = assign_discriminator (loc, bb_id, map);
+	      gimple_set_location (stmt, prev_replacement);
 	    }
-	  if (curr_locus == UNKNOWN_LOCATION)
-	    {
-	      curr_locus = gimple_location (stmt);
-	      curr_locus_e = expand_location (curr_locus);
-	    }
-	  else if (!same_line_p (curr_locus, &curr_locus_e, gimple_location (stmt)))
-	    {
-	      curr_locus = gimple_location (stmt);
-	      curr_locus_e = expand_location (curr_locus);
-	      curr_discr = 0;
-	    }
-	  else if (curr_discr != 0)
-	    {
-	      location_t loc = gimple_location (stmt);
-	      location_t dloc = location_with_discriminator (loc, curr_discr);
-	      gimple_set_location (stmt, dloc);
-	    }
-	  /* Allocate a new discriminator for CALL stmt.  */
+	  /* Break basic blocks after each call.  This is requires so each
+	     call site has unque discriminator.
+	     More correctly, we can break after each statement that can possibly
+	     terinate execution of the basic block, but for auto-profile this
+	     precision is probably not useful.  */
 	  if (gimple_code (stmt) == GIMPLE_CALL)
-	    curr_discr = next_discriminator_for_locus (curr_locus_e.line);
-	}
-
-      gimple *last = last_nondebug_stmt (bb);
-      location_t locus = last ? gimple_location (last) : UNKNOWN_LOCATION;
-      if (locus == UNKNOWN_LOCATION)
-	continue;
-
-      expanded_location locus_e = expand_location (locus);
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  gimple *first = first_non_label_nondebug_stmt (e->dest);
-	  gimple *last = last_nondebug_stmt (e->dest);
-
-	  gimple *stmt_on_same_line = NULL;
-	  if (first && same_line_p (locus, &locus_e,
-				     gimple_location (first)))
-	    stmt_on_same_line = first;
-	  else if (last && same_line_p (locus, &locus_e,
-					gimple_location (last)))
-	    stmt_on_same_line = last;
-
-	  if (stmt_on_same_line)
 	    {
-	      if (has_discriminator (gimple_location (stmt_on_same_line))
-		  && !has_discriminator (locus))
-		assign_discriminator (locus, bb);
-	      else
-		assign_discriminator (locus, e->dest);
+	      prev_loc = UNKNOWN_LOCATION;
+	      bb_id++;
 	    }
 	}
+      /* IF basic block has multiple sucessors, consdier every edge as a separate
+	 block.  */
+      if (!single_succ_p (bb))
+	bb_id++;
+      for (edge e : bb->succs)
+	if (e->goto_locus != UNKNOWN_LOCATION)
+	  {
+	    e->goto_locus = assign_discriminator (e->goto_locus, bb_id, map);
+	    bb_id++;
+	  }
+      bb_id++;
     }
+
 }
 
 /* Create the edges for a GIMPLE_COND starting at block BB.  */
@@ -2946,16 +2831,6 @@ first_stmt (basic_block bb)
       stmt = NULL;
     }
   return stmt;
-}
-
-/* Return the first non-label/non-debug statement in basic block BB.  */
-
-static gimple *
-first_non_label_nondebug_stmt (basic_block bb)
-{
-  gimple_stmt_iterator i;
-  i = gsi_start_nondebug_after_labels_bb (bb);
-  return !gsi_end_p (i) ? gsi_stmt (i) : NULL;
 }
 
 /* Return the last statement in basic block BB.  */
