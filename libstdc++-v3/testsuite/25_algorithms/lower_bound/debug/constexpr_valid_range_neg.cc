@@ -46,5 +46,5 @@ test2()
 
 static_assert(test2()); // { dg-error "" }
 
-// { dg-prune-output "_Error_formatter::_M_error()" }
+// { dg-prune-output "_Error_formatter::(_M_error|_S_at)" }
 

@@ -33,7 +33,7 @@ test1()
 }
 
 static_assert(test1()); // { dg-error "non-constant condition" }
-// { dg-error "_Error_formatter::_M_error()" "" { target *-*-* } 0 }
+// { dg-error "_Error_formatter::(_M_error|_S_at)" "" { target *-*-* } 0 }
 
 constexpr bool
 test2()
