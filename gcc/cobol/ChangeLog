@@ -1,3 +1,62 @@
+2025-07-10  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120765
+	* cdf.y: Extend grammar for new CDF syntax, relocate dictionary.
+	* cdfval.h (cdf_dictionary): Use new CDF dictionary.
+	* dts.h: Remove useless assignment, note incorrect behavior.
+	* except.cc: Remove obsolete EC state.
+	* gcobol.1: Document CDF in its own section.
+	* genapi.cc (parser_statement_begin): Use new EC state function.
+	(parser_file_merge): Same.
+	(parser_check_fatal_exception): Same.
+	* genutil.cc (get_and_check_refstart_and_reflen): Same.
+	(get_depending_on_value_from_odo): Same.
+	(get_data_offset): Same.
+	(process_this_exception): Same.
+	* lexio.cc (check_push_pop_directive): New function.
+	(check_source_format_directive): Restrict regex search to 1 line.
+	(cdftext::free_form_reference_format): Use new function.
+	* parse.y: Define new CDF tokens, use new CDF state.
+	* parse_ante.h (cdf_tokens): Use new CDF state.
+	(redefined_token): Same.
+	(class prog_descr_t): Remove obsolete CDF state.
+	(class program_stack_t): Same.
+	(current_call_convention): Same.
+	* scan.l: Recognize new CDF tokens.
+	* scan_post.h (is_cdf_token): Same.
+	* symbols.h (cdf_current_tokens): Change current_call_convention to return void.
+	* token_names.h: Regenerate.
+	* udf/stored-char-length.cbl: Use new PUSH/POP CDF functionality.
+	* util.cc (class cdf_directives_t): Define cdf_directives_t.
+	(current_call_convention): Same.
+	(cdf_current_tokens): Same.
+	(cdf_dictionary): Same.
+	(cdf_enabled_exceptions): Same.
+	(cdf_push): Same.
+	(cdf_push_call_convention): Same.
+	(cdf_push_current_tokens): Same.
+	(cdf_push_dictionary): Same.
+	(cdf_push_enabled_exceptions): Same.
+	(cdf_push_source_format): Same.
+	(cdf_pop): Same.
+	(cdf_pop_call_convention): Same.
+	(cdf_pop_current_tokens): Same.
+	(cdf_pop_dictionary): Same.
+	(cdf_pop_enabled_exceptions): Same.
+	(cdf_pop_source_format): Same.
+	* util.h (cdf_push): Declare cdf_directives_t.
+	(cdf_push_call_convention): Same.
+	(cdf_push_current_tokens): Same.
+	(cdf_push_dictionary): Same.
+	(cdf_push_enabled_exceptions): Same.
+	(cdf_push_source_format): Same.
+	(cdf_pop): Same.
+	(cdf_pop_call_convention): Same.
+	(cdf_pop_current_tokens): Same.
+	(cdf_pop_dictionary): Same.
+	(cdf_pop_source_format): Same.
+	(cdf_pop_enabled_exceptions): Same.
+
 2025-07-09  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

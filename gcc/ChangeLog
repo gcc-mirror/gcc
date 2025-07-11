@@ -1,3 +1,205 @@
+2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Guard VF-based costing with !m_costing_for_scalar.
+
+2025-07-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	* internal-fn.cc (expand_ACCESS_WITH_SIZE): Update comments.
+	* internal-fn.def (ACCESS_WITH_SIZE): Update comments.
+	* tree-object-size.cc (access_with_size_object_size): Update comments.
+	Adjust the arguments per the new design.
+
+2025-07-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/121000
+	* internal-fn.cc (expand_ACCESS_WITH_SIZE): Update comments.
+	* internal-fn.def (ACCESS_WITH_SIZE): Update comments.
+	* tree-object-size.cc (access_with_size_object_size): Update comments.
+	Get the element_size from the 6th argument directly.
+
+2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (aarch64_gather_ld1q): Replace with...
+	(@aarch64_gather_ld1q<mode>): ...this, parameterizing based on mode.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svld1q_gather_impl::expand): Update accordingly.
+	(svst1q_scatter_impl::expand): Use aarch64_sve_reinterpret
+	instead of force_lowpart_subreg.
+
+2025-07-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc: Include output.h.
+	(function_instance::set_call_location): Also sanity check
+	that location is known.
+	(raw_symbol_name): Two new static functions.
+	(dump_inline_stack): Use it.
+	(string_table::get_index_by_decl): Likewise.
+	(function_instance::get_cgraph_node): Likewise.
+	(function_instance::get_function_instance_by_decl): Fix typo
+	in warning; use raw names; fix lineno decoding.
+	(match_with_target): Add containing funciton parameter;
+	correctly output function and call location in warning.
+	(function_instance::lookup_count): Fix warning locations.
+	(function_instance::match): Fix warning locations; avoid
+	crash with mismatched callee; do not warn about broken callsites
+	twice.
+	(autofdo_source_profile::offline_external_functions): Use
+	raw_assembler_name.
+	(walk_block): Use raw_assembler_name.
+
+2025-07-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121014
+	* cfgexpand.cc (expand_debug_expr): Assert FLOAT_MODE_P.
+	* optabs-tree.cc (optab_for_tree_code): Assert FLOAT_TYPE_P.
+	* tree-vect-loop.cc (vect_get_loop_len): Use EXACT_DIV_EXPR.
+
+2025-07-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118734
+	* config/riscv/constraints.md (Wdm): Use tunable for Wdm
+	constraint.
+	* config/riscv/riscv-protos.h (emit_avltype_insn): Declare.
+	(can_be_broadcasted_p): Rename to...
+	(can_be_broadcast_p): ...this.
+	* config/riscv/predicates.md: Use renamed function.
+	(strided_load_broadcast_p): Declare.
+	* config/riscv/riscv-selftests.cc (run_broadcast_selftests):
+	Only run broadcast selftest if strided broadcasts are OK.
+	* config/riscv/riscv-v.cc (emit_avltype_insn): New function.
+	(sew64_scalar_helper): Only emit a pred_broadcast if the new
+	tunable says so.
+	(can_be_broadcasted_p): Rename to...
+	(can_be_broadcast_p): ...this and use new tunable.
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add strided
+	broad tunable.
+	(strided_load_broadcast_p): Implement.
+	* config/riscv/vector.md: Use strided_load_broadcast_p () and
+	work around 64-bit broadcast on rv32 targets.
+
+2025-07-10  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_fusion_pairs): Add new cases.
+	(riscv_set_is_add): New function.
+	(riscv_set_is_addi, riscv_set_is_adduw, riscv_set_is_shNadd): Likewise.
+	(riscv_set_is_shNadduw): Likewise.
+	(riscv_macro_fusion_pair_p): Add new fusion cases.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Fail for non-canonical
+	gconds.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Do not use
+	SLP_TREE_VECTYPE to determine the conversion back to the
+	reduction IV.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Avoid
+	vect_is_simple_use and record a vector type if we come
+	up with one.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_load_store_type): Do not use
+	vect_is_simple_use to fill gather/scatter offset operand
+	vectype and dt.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_model_reduction_cost): Get SLP
+	node instead of stmt_info and use that when recording costs.
+
+2025-07-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/120999
+	* config/aarch64/aarch64-sve2.md (*aarch64_sve2_nor<mode>):
+	Adjust movprfx alternative.
+
+2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (aarch64_sve2_hw, aarch64_sve2p1_hw): Document.
+	* config/aarch64/aarch64.cc (aarch64_evpc_hvla): Extend to
+	BYTES_BIG_ENDIAN.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_analyze_stmt): Remove stmt-info
+	and need_to_vectorize arguments.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1):
+	Adjust.
+	* tree-vect-stmts.cc (can_vectorize_live_stmts): Remove
+	stmt_info argument and remove non-SLP path.
+	(vect_analyze_stmt): Remove stmt_info and need_to_vectorize
+	argument and prune paths no longer reachable.
+	(vect_transform_stmt): Adjust.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/x86-tune.def: Change "Tunning the" to "tuning" in
+	comment and use semicolon instead of dot in comment.
+	* loop-unroll.cc (decide_unroll_stupid): Comment spelling fix,
+	tunning -> tuning.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-loop.cc (scale_profile_for_vect_loop): Comment
+	spelling fix: bellow -> below.
+	* ipa-polymorphic-call.cc (record_known_type): Likewise.
+	* config/i386/x86-tune.def: Likewise.
+	* config/riscv/vector.md (*vsetvldi_no_side_effects_si_extend):
+	Likewise.
+	* tree-scalar-evolution.cc (iv_can_overflow_p): Likewise.
+	* ipa-devirt.cc (add_type_duplicate): Likewise.
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Likewise.
+	* gimple-ssa-sccopy.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* graphite.h (struct poly_dr): Likewise.
+	* ipa-reference.cc (ignore_edge_p): Likewise.
+	* tree-ssa-alias.cc (ao_compare::compare_ao_refs): Likewise.
+	* profile-count.h (profile_probability::probably_reliable_p):
+	Likewise.
+	* ipa-inline-transform.cc (inline_call): Likewise.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_dissolve_slp_only_groups): Remove.
+	(vect_analyze_loop_2): Do not call it.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_active_double_reduction_p): Remove.
+	(vect_analyze_loop_operations): Remove.
+	(vect_analyze_loop_2): Do not call it.
+
+2025-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_determine_vf_for_stmt_1): Rename
+	to ...
+	(vect_determine_vectype_for_stmt_1): ... this and only set
+	STMT_VINFO_VECTYPE.  Fail for single-element vector types.
+	(vect_determine_vf_for_stmt): Rename to ...
+	(vect_determine_vectype_for_stmt): ... this and only set
+	STMT_VINFO_VECTYPE. Fail for single-element vector types.
+	(vect_determine_vectorization_factor): Rename to ...
+	(vect_set_stmts_vectype): ... this and only set STMT_VINFO_VECTYPE.
+	(vect_update_vf_for_slp): Remove.
+	(vect_analyze_loop_operations): Remove walk over stmts.
+	(vect_analyze_loop_2): Call vect_set_stmts_vectype instead of
+	vect_determine_vectorization_factor.  Set vectorization factor
+	from LOOP_VINFO_SLP_UNROLLING_FACTOR.  Fail if vect_detect_hybrid_slp
+	detects hybrid stmts or when vect_make_slp_decision finds
+	nothing to SLP.
+	* tree-vect-slp.cc (vect_detect_hybrid_slp): Move check
+	whether we have any hybrid stmts here from vect_update_vf_for_slp
+	* tree-vect-stmts.cc (vect_analyze_stmt): Remove loop over
+	stmts.
+	* tree-vectorizer.h (vect_detect_hybrid_slp): Update.
+
 2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_simd_valid_imm): Account

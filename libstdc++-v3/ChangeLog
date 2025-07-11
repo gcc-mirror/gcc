@@ -1,3 +1,69 @@
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117785
+	* include/bits/version.def (constexpr_exceptions): New.
+	* include/bits/version.h: Regenerate.
+	* libsupc++/exception (std::bad_exception::bad_exception): Add
+	_GLIBCXX26_CONSTEXPR.
+	(std::bad_exception::~bad_exception, std::bad_exception::what): For
+	C++26 add constexpr and define inline.
+	* libsupc++/exception.h (std::exception::exception,
+	std::exception::operator=): Add _GLIBCXX26_CONSTEXPR.
+	(std::exception::~exception, std::exception::what): For C++26 add
+	constexpr and define inline.
+	* libsupc++/exception_ptr.h (std::make_exception_ptr): Add
+	_GLIBCXX26_CONSTEXPR.  For if consteval use just throw with
+	current_exception() in catch.
+	(std::exception_ptr::exception_ptr(void*)): For C++26 add constexpr
+	and define inline.
+	(std::exception_ptr::exception_ptr()): Add _GLIBCXX26_CONSTEXPR.
+	(std::exception_ptr::exception_ptr(const exception_ptr&)): Likewise.
+	Use __builtin_eh_ptr_adjust_ref if consteval and compiler has it
+	instead of _M_addref.
+	(std::exception_ptr::exception_ptr(nullptr_t)): Add
+	_GLIBCXX26_CONSTEXPR.
+	(std::exception_ptr::exception_ptr(exception_ptr&&)): Likewise.
+	(std::exception_ptr::operator=): Likewise.
+	(std::exception_ptr::~exception_ptr): Likewise.  Use
+	__builtin_eh_ptr_adjust_ref if consteval and compiler has it
+	instead of _M_release.
+	(std::exception_ptr::swap): Add _GLIBCXX26_CONSTEXPR.
+	(std::exception_ptr::operator bool): Likewise.
+	(std::exception_ptr::operator==): Likewise.
+	* libsupc++/nested_exception.h
+	(std::nested_exception::nested_exception): Add _GLIBCXX26_CONSTEXPR.
+	(std::nested_exception::operator=): Likewise.
+	(std::nested_exception::~nested_exception): For C++26 add constexpr
+	and define inline.
+	(std::nested_exception::rethrow_if_nested): Add _GLIBCXX26_CONSTEXPR.
+	(std::nested_exception::nested_ptr): Likewise.
+	(std::_Nested_exception::_Nested_exception): Likewise.
+	(std::throw_with_nested, std::rethrow_if_nested): Likewise.
+	* libsupc++/new (std::bad_alloc::bad_alloc): Likewise.
+	(std::bad_alloc::operator=): Likewise.
+	(std::bad_alloc::~bad_alloc): For C++26 add constexpr and define
+	inline.
+	(std::bad_alloc::what): Likewise.
+	(std::bad_array_new_length::bad_array_new_length): Add
+	_GLIBCXX26_CONSTEXPR.
+	(std::bad_array_new_length::~bad_array_new_length): For C++26 add
+	constexpr and define inline.
+	(std::bad_array_new_length::what): Likewise.
+	* libsupc++/typeinfo (std::bad_cast::bad_cast): Add
+	_GLIBCXX26_CONSTEXPR.
+	(std::bad_cast::~bad_cast): For C++26 add constexpr and define inline.
+	(std::bad_cast::what): Likewise.
+	(std::bad_typeid::bad_typeid): Add _GLIBCXX26_CONSTEXPR.
+	(std::bad_typeid::~bad_typeid): For C++26 add constexpr and define
+	inline.
+	(std::bad_typeid::what): Likewise.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/22_locale/codecvt/codecvt_unicode.h
+	(ucs2_to_utf8_out_error): Comment spelling fix: bellow -> below.
+	(utf16_to_ucs2_in_error): Likewise.
+
 2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_uninitialized.h (__uninitialized_default):

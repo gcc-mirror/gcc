@@ -1,3 +1,14 @@
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117785
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_constexpr_exceptions=202411L for C++26.
+
+2025-07-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-ubsan.cc (get_bound_from_access_with_size): Adjust the position
+	of the arguments per the new design.
+
 2025-07-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	Revert:

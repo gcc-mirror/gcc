@@ -1,3 +1,224 @@
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct lang_type): Add comment before key_method.
+	Remove lambda_expr.
+	(CLASSTYPE_KEY_METHOD): Give NULL_TREE if not TYPE_POLYMORPHIC_P.
+	(SET_CLASSTYPE_KEY_METHOD): Define.
+	(CLASSTYPE_LAMBDA_EXPR): Give NULL_TREE if TYPE_POLYMORPHIC_P.
+	Use key_method member instead of lambda_expr.
+	(SET_CLASSTYPE_LAMBDA_EXPR): Define.
+	* class.cc (determine_key_method): Use SET_CLASSTYPE_KEY_METHOD
+	macro.
+	* decl.cc (xref_tag): Use SET_CLASSTYPE_LAMBDA_EXPR macro.
+	* lambda.cc (begin_lambda_type): Likewise.
+	* module.cc (trees_in::read_class_def): Use SET_CLASSTYPE_LAMBDA_EXPR
+	and SET_CLASSTYPE_KEY_METHOD macros, assert lambda is NULL if
+	TYPE_POLYMORPHIC_P and otherwise assert key_method is NULL.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120628
+	* parser.cc (cp_parser_elaborated_type_specifier): Use
+	cp_parser_nth_token_starts_class_definition_p with extra argument 1
+	instead of cp_parser_next_token_starts_class_definition_p.
+	(cp_parser_class_property_specifier_seq_opt): For final conditional
+	keyword in C++98 check if the token after it isn't
+	cp_parser_nth_token_starts_class_definition_p nor CPP_NAME and in
+	that case break without consuming it nor warning.
+	(cp_parser_class_head): Use
+	cp_parser_nth_token_starts_class_definition_p with extra argument 1
+	instead of cp_parser_next_token_starts_class_definition_p.
+	(cp_parser_next_token_starts_class_definition_p): Renamed to ...
+	(cp_parser_nth_token_starts_class_definition_p): ... this.  Add N
+	argument.  Use cp_lexer_peek_nth_token instead of cp_lexer_peek_token.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120569
+	* parser.cc (cp_parser_class_property_specifier_seq_opt): New
+	function.
+	(cp_parser_class_head): Use it instead of
+	cp_parser_property_specifier_seq_opt.  Don't diagnose
+	VIRT_SPEC_OVERRIDE here.  Formatting fix.
+
+2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117785
+	* constexpr.cc: Implement C++26 P3068R5 - constexpr exceptions.
+	(class constexpr_global_ctx): Add caught_exceptions and
+	uncaught_exceptions members.
+	(constexpr_global_ctx::constexpr_global_ctx): Initialize
+	uncaught_exceptions.
+	(returns, breaks, continues, switches): Move earlier.
+	(throws): New function.
+	(exception_what_str, diagnose_std_terminate,
+	diagnose_uncaught_exception): New functions.
+	(enum cxa_builtin): New type.
+	(cxx_cxa_builtin_fn_p, cxx_eval_cxa_builtin_fn): New functions.
+	(cxx_eval_builtin_function_call): Add jump_target argument.  Call
+	cxx_eval_cxa_builtin_fn for __builtin_eh_ptr_adjust_ref.  Adjust
+	cxx_eval_constant_expression calls, if it results in jmp_target,
+	set *jump_target to it and return.
+	(cxx_bind_parameters_in_call): Add jump_target argument.  Pass
+	it through to cxx_eval_constant_expression.  If it sets *jump_target,
+	break.
+	(fold_operand): Adjust cxx_eval_constant_expression caller.
+	(cxx_eval_assert): Likewise.  If it set jmp_target, return true.
+	(cxx_eval_internal_function): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression.  Return early if *jump_target
+	after recursing on args.
+	(cxx_eval_dynamic_cast_fn): Likewise.  Don't set reference_p for
+	C++26 with -fexceptions.
+	(cxx_eval_thunk_call): Add jump_target argument.  Pass it through
+	to cxx_eval_constant_expression.
+	(cxx_set_object_constness): Likewise.  Don't set TREE_READONLY if
+	throws (jump_target).
+	(cxx_eval_call_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_internal_function, cxx_eval_builtin_function_call,
+	cxx_eval_thunk_call, cxx_eval_dynamic_cast_fn and
+	cxx_set_object_constness.  Pass it through also
+	cxx_eval_constant_expression on arguments, cxx_bind_parameters_in_call
+	and cxx_fold_indirect_ref and for those cases return early
+	if *jump_target.  Call cxx_eval_cxa_builtin_fn for cxx_cxa_builtin_fn_p
+	functions.  For cxx_eval_constant_expression on body, pass address of
+	cleared jmp_target automatic variable, if it throws propagate
+	to *jump_target and make it non-cacheable.  For C++26 don't diagnose
+	calls to non-constexpr functions before cxx_bind_parameters_in_call
+	could report some argument throwing an exception.
+	(cxx_eval_unary_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression and return early
+	if *jump_target after the call.
+	(cxx_fold_pointer_plus_expression): Likewise.
+	(cxx_eval_binary_expression): Likewise and similarly for
+	cxx_fold_pointer_plus_expression call.
+	(cxx_eval_conditional_expression): Pass jump_target to
+	cxx_eval_constant_expression on first operand and return early
+	if *jump_target after the call.
+	(cxx_eval_vector_conditional_expression): Add jump_target argument.
+	Pass it through to cxx_eval_constant_expression for all 3 arguments
+	and return early if *jump_target after any of those calls.
+	(get_array_or_vector_nelts): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression.
+	(eval_and_check_array_index): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression calls and return early after
+	each of them if *jump_target.
+	(cxx_eval_array_reference): Likewise.
+	(cxx_eval_component_reference): Likewise.
+	(cxx_eval_bit_field_ref): Likewise.
+	(cxx_eval_bit_cast): Likewise.  Assert CHECKING_P call doesn't
+	throw or return.
+	(cxx_eval_logical_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression calls and return early after
+	each of them if *jump_target.
+	(cxx_eval_bare_aggregate): Likewise.
+	(cxx_eval_vec_init_1): Add jump_target argument.  Pass it through
+	to cxx_eval_bare_aggregate and recursive call.  Pass it through
+	to get_array_or_vector_nelts and cxx_eval_constant_expression
+	and return early after it if *jump_target.
+	(cxx_eval_vec_init): Add jump_target argument.  Pass it through
+	to cxx_eval_constant_expression and cxx_eval_vec_init_1.
+	(cxx_union_active_member): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression and return early after it
+	if *jump_target.
+	(cxx_fold_indirect_ref_1): Add jump_target argument.  Pass it
+	through to cxx_union_active_member and recursive calls.
+	(cxx_eval_indirect_ref): Add jump_target argument.  Pass it through
+	to cxx_fold_indirect_ref_1 calls and to recursive call, in which
+	case return early after it if *jump_target.
+	(cxx_fold_indirect_ref): Add jump_target argument.  Pass it through
+	to cxx_fold_indirect_ref and cxx_eval_constant_expression calls and
+	return early after those if *jump_target.
+	(cxx_eval_trinary_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression calls and return early after
+	those if *jump_target.
+	(cxx_eval_store_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression and eval_and_check_array_index
+	calls and return early after those if *jump_target.
+	(cxx_eval_increment_expression): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression calls and return early after
+	those if *jump_target.
+	(label_matches): Handle VAR_DECL case.
+	(cxx_eval_statement_list): Remove local_target variable and
+	!jump_target handling.  Handle throws (jump_target) like returns or
+	breaks.
+	(cxx_eval_loop_expr): Remove local_target variable and !jump_target
+	handling.  Pass it through to cxx_eval_constant_expression.  Handle
+	throws (jump_target) like returns.
+	(cxx_eval_switch_expr): Pass jump_target through to
+	cxx_eval_constant_expression on cond, return early after it
+	if *jump_target.
+	(build_new_constexpr_heap_type): Add jump_target argument.  Pass it
+	through to cxx_eval_constant_expression calls, return early after
+	those if *jump_target.
+	(merge_jump_target): New function.
+	(cxx_eval_constant_expression): Make jump_target argument no longer
+	defaulted, don't test jump_target for NULL.  Pass jump_target
+	through to recursive calls, cxx_eval_call_expression,
+	cxx_eval_store_expression, cxx_eval_indirect_ref,
+	cxx_eval_unary_expression, cxx_eval_binary_expression,
+	cxx_eval_logical_expression, cxx_eval_array_reference,
+	cxx_eval_component_reference, cxx_eval_bit_field_ref,
+	cxx_eval_vector_conditional_expression, cxx_eval_bare_aggregate,
+	cxx_eval_vec_init, cxx_eval_trinary_expression, cxx_fold_indirect_ref,
+	build_new_constexpr_heap_type, cxx_eval_increment_expression,
+	cxx_eval_bit_cast and return earlyu after some of those
+	if *jump_target as needed.
+	(cxx_eval_constant_expression) <case TARGET_EXPR>: For C++26 push
+	also CLEANUP_EH_ONLY cleanups, with NULL_TREE marker after them.
+	(cxx_eval_constant_expression) <case RETURN_EXPR>: Don't
+	override *jump_target if throws (jump_target).
+	(cxx_eval_constant_expression) <case TRY_CATCH_EXPR, case TRY_BLOCK,
+	case MUST_NOT_THROW_EXPR, case TRY_FINALLY_EXPR, case CLEANUP_STMT>:
+	Handle C++26 constant expressions.
+	(cxx_eval_constant_expression) <case CLEANUP_POINT_EXPR>: For C++26
+	with throws (jump_target) evaluate the CLEANUP_EH_ONLY cleanups as
+	well, and if not throws (jump_target) skip those.  Set *jump_target
+	if some of the cleanups threw.
+	(cxx_eval_constant_expression) <case THROW_EXPR>: Recurse on operand
+	for C++26.
+	(cxx_eval_outermost_constant_expr): Diagnose uncaught exceptions both
+	from main expression and cleanups, diagnose also
+	break/continue/returns from the main expression.  Handle
+	CLEANUP_EH_ONLY cleanup markers.  Don't diagnose mutable poison stuff
+	if non_constant_p.  Use different diagnostics for non-deleted heap
+	allocations if they were allocated by __cxa_allocate_exception.
+	(callee_might_throw): New function.
+	(struct check_for_return_continue_data): Add could_throw field.
+	(check_for_return_continue): Handle AGGR_INIT_EXPR and CALL_EXPR and
+	set d->could_throw if they could throw.
+	(potential_constant_expression_1): For CALL_EXPR allow
+	cxx_dynamic_cast_fn_p calls.  For C++26 set *jump_target to void_node
+	for calls that could throw.  For C++26 if call to non-constexpr call
+	is seen, try to evaluate arguments first and if they could throw,
+	don't diagnose call to non-constexpr function nor return false.
+	Adjust check_for_return_continue_data initializers and
+	set *jump_target to void_node if data.could_throw_p.  For C++26
+	recurse on THROW_EXPR argument.  Add comment explaining TRY_BLOCK
+	handling with C++26 exceptions.  Handle throws like returns in some
+	cases.
+	* cp-tree.h (MUST_NOT_THROW_NOEXCEPT_P, MUST_NOT_THROW_THROW_P,
+	MUST_NOT_THROW_CATCH_P, DECL_EXCEPTION_REFCOUNT): Define.
+	(DECL_LOCAL_DECL_P): Fix comment typo, VARIABLE_DECL -> VAR_DECL.
+	(enum cp_built_in_function): Add CP_BUILT_IN_EH_PTR_ADJUST_REF,
+	(handler_match_for_exception_type): Declare.
+	* call.cc (handler_match_for_exception_type): New function.
+	* except.cc (initialize_handler_parm): Set MUST_NOT_THROW_CATCH_P
+	on newly created MUST_NOT_THROW_EXPR.
+	(begin_eh_spec_block): Set MUST_NOT_THROW_NOEXCEPT_P.
+	(wrap_cleanups_r): Set MUST_NOT_THROW_THROW_P.
+	(build_throw): Add another TARGET_EXPR whose scope spans
+	until after the __cxa_throw call and copy pointer value from ptr
+	to it and use it in __cxa_throw argument.
+	* tree.cc (builtin_valid_in_constant_expr_p): Handle
+	CP_BUILT_IN_EH_PTR_ADJUST_REF.
+	* decl.cc (cxx_init_decl_processing): Initialize
+	__builtin_eh_ptr_adjust_ref FE builtin.
+	* pt.cc (tsubst_stmt) <case MUST_NOT_THROW_EXPR>: Copy the
+	MUST_NOT_THROW_NOEXCEPT_P, MUST_NOT_THROW_THROW_P and
+	MUST_NOT_THROW_CATCH_P flags.
+	* cp-gimplify.cc (cp_gimplify_expr) <case CALL_EXPR>: Error on
+	non-folded CP_BUILT_IN_EH_PTR_ADJUST_REF calls.
+
 2025-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121012

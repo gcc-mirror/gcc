@@ -1,3 +1,9 @@
+2025-07-10  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/116363
+	* libgcc2.c (__fixunssfDI): Fix SFtype to UDWtype conversion for targets
+	without LIBGCC2_HAS_DF_MODE defined
+
 2025-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/t-softfp (softfp_bid_list): Don't guard with
