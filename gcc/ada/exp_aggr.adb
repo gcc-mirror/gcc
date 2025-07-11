@@ -4349,6 +4349,7 @@ package body Exp_Aggr is
         and then Is_Limited_Type (Typ)
       then
          Target_Expr := New_Copy_Tree (Name (Parent_Node));
+         Ensure_Defined (Typ, Parent_Node);
          Insert_Actions (Parent_Node,
            Build_Record_Aggr_Code (N, Typ, Target_Expr));
          Rewrite (Parent_Node, Make_Null_Statement (Loc));
@@ -4374,6 +4375,7 @@ package body Exp_Aggr is
 
             if Nkind (N) in N_Aggregate | N_Extension_Aggregate then
                Target_Expr := New_Copy_Tree (Lhs);
+               Ensure_Defined (Typ, Parent_Node);
                Insert_Actions (Parent_Node,
                  Build_Record_Aggr_Code (N, Typ, Target_Expr));
                Rewrite (Parent_Node, Make_Null_Statement (Loc));
