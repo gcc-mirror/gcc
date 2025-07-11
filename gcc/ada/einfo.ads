@@ -2529,7 +2529,7 @@ package Einfo is
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
 --       i.e. has been declared with the Finalizable or the Destructor aspect
---       or has inherited the this aspect from an ancestor. Can only be set for
+--       or has inherited the aspect from an ancestor. Can only be set for
 --       record types, tagged or untagged.
 --       System.Finalization_Root.Root_Controlled is an example of the former
 --       case while Ada.Finalization.Controlled and
