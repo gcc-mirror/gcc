@@ -10316,8 +10316,8 @@ intrinsic:      function_udf
                   if( p != NULL ) {
 		    auto loc = symbol_field_location(field_index(p->field));
                     error_msg(loc, "FUNCTION %qs has "
-                              "inconsistent parameter type %zu (%qs)",
-                              keyword_str($1), p - args.data(), name_of(p->field) );
+                              "inconsistent parameter type %ld (%qs)",
+                              keyword_str($1), (long)(p - args.data()), name_of(p->field) );
                     YYERROR;
                   }
                   $$ = is_numeric(args[0].field)?
