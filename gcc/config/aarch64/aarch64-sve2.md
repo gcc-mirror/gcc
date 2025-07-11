@@ -1956,6 +1956,40 @@
   }
 )
 
+;; Vector EON (~(x, y)) using BSL2N.
+(define_insn_and_rewrite "*aarch64_sve2_bsl2n_eon<mode>"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
+	  [(match_operand 3)
+	   (not:SVE_FULL_I
+	     (xor:SVE_FULL_I
+		(match_operand:SVE_FULL_I 1 "register_operand")
+		(match_operand:SVE_FULL_I 2 "register_operand")))]
+	    UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  {@ [ cons: =0, 1, 2 ; attrs: movprfx ]
+     [ w  ,      0, w ; *              ] bsl2n\t%0.d, %0.d, %0.d, %2.d
+     [ ?&w,      w, w ; yes            ] movprfx\t%0, %1\;bsl2n\t%0.d, %0.d, %1.d, %2.d
+  }
+  "&& !CONSTANT_P (operands[3])"
+  {
+    operands[3] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn "*aarch64_sve2_eon_bsl2n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+       (not:VDQ_I
+         (xor:VDQ_I
+           (match_operand:VDQ_I 1 "register_operand")
+           (match_operand:VDQ_I 2 "register_operand"))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0, 1, 2 ; attrs: movprfx ]
+     [ w  ,      0, w ; *              ] bsl2n\t%Z0.d, %Z0.d, %Z0.d, %Z2.d
+     [ ?&w,      w, w ; yes            ] movprfx\t%Z0, %Z1\;bsl2n\t%Z0.d, %Z0.d, %Z1.d, %Z2.d
+  }
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Shift-and-accumulate operations
 ;; -------------------------------------------------------------------------
