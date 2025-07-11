@@ -83,9 +83,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 #if __cpp_lib_exception_ptr_cast >= 202506L
   template<typename _Ex>
-  constexpr const _Ex* exception_ptr_cast(const exception_ptr&) noexcept;
+    constexpr const _Ex* exception_ptr_cast(const exception_ptr&) noexcept;
   template<typename _Ex>
-  void exception_ptr_cast(const exception_ptr&&) = delete;
+    void exception_ptr_cast(const exception_ptr&&) = delete;
 #endif
 
   namespace __exception_ptr
@@ -138,8 +138,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	_GLIBCXX_USE_NOEXCEPT;
 #if __cpp_lib_exception_ptr_cast >= 202506L
       template<typename _Ex>
-      friend constexpr const _Ex* std::exception_ptr_cast(const exception_ptr&)
-	noexcept;
+	friend constexpr const _Ex*
+	std::exception_ptr_cast(const exception_ptr&) noexcept;
 #endif
 
       const void* _M_exception_ptr_cast(const type_info&) const
@@ -296,40 +296,41 @@ namespace std _GLIBCXX_VISIBILITY(default)
   using __exception_ptr::swap; // So that std::swap(exp1, exp2) finds it.
 
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
-#if (__cplusplus >= 201103L && __cpp_rtti) || __cpp_exceptions
   template<typename _Ex>
+#if !(__cplusplus >= 201103L && __cpp_rtti) && !__cpp_exceptions
+    // This is always_inline so the linker will never use a useless definition
+    // instead of a working one compiled with RTTI and/or exceptions enabled.
+    __attribute__ ((__always_inline__)) inline
+#endif
     _GLIBCXX26_CONSTEXPR exception_ptr
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-#if __cplusplus >= 202400L
-      if consteval {
-	try
-	  {
-	    throw __ex;
-	  }
-	catch(...)
-	  {
-	    return current_exception();
-	  }
-      }
-#endif
 #if __cplusplus >= 201103L && __cpp_rtti
-      using _Ex2 = typename decay<_Ex>::type;
-      void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
-      (void) __cxxabiv1::__cxa_init_primary_exception(
-	  __e, const_cast<std::type_info*>(&typeid(_Ex)),
-	  __exception_ptr::__dest_thunk<_Ex2>);
-      __try
+      // For runtime calls with -frtti enabled we can avoid try-catch overhead.
+      // We can't use this for C++98 because it relies on std::decay.
+#ifdef __glibcxx_constexpr_exceptions
+      if ! consteval
+#endif
 	{
-	  ::new (__e) _Ex2(__ex);
-	  return exception_ptr(__e);
+	  using _Ex2 = typename decay<_Ex>::type;
+	  void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
+	  (void) __cxxabiv1::__cxa_init_primary_exception(
+	      __e, const_cast<std::type_info*>(&typeid(_Ex)),
+	      __exception_ptr::__dest_thunk<_Ex2>);
+	  __try
+	    {
+	      ::new (__e) _Ex2(__ex);
+	      return exception_ptr(__e);
+	    }
+	  __catch(...)
+	    {
+	      __cxxabiv1::__cxa_free_exception(__e);
+	      return current_exception();
+	    }
 	}
-      __catch(...)
-	{
-	  __cxxabiv1::__cxa_free_exception(__e);
-	  return current_exception();
-	}
-#else
+#endif
+
+#ifdef __cpp_exceptions
       try
 	{
           throw __ex;
@@ -339,21 +340,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	  return current_exception();
 	}
 #endif
+      return exception_ptr();
     }
-#else // no RTTI and no exceptions
-  // This is always_inline so the linker will never use this useless definition
-  // instead of a working one compiled with RTTI and/or exceptions enabled.
-  template<typename _Ex>
-    __attribute__ ((__always_inline__))
-    _GLIBCXX26_CONSTEXPR inline exception_ptr
-    make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
-    { return exception_ptr(); }
-#endif
 
 #if __cpp_lib_exception_ptr_cast >= 202506L
   template<typename _Ex>
     [[__gnu__::__always_inline__]]
-    constexpr const _Ex* exception_ptr_cast(const exception_ptr& __p) noexcept
+    constexpr const _Ex*
+    exception_ptr_cast(const exception_ptr& __p) noexcept
     {
       static_assert(!std::is_const_v<_Ex>);
       static_assert(!std::is_reference_v<_Ex>);
@@ -361,28 +355,31 @@ namespace std _GLIBCXX_VISIBILITY(default)
       static_assert(!std::is_array_v<_Ex>);
       static_assert(!std::is_pointer_v<_Ex>);
       static_assert(!std::is_member_pointer_v<_Ex>);
+
 #ifdef __cpp_rtti
-      if consteval {
-	if (__p._M_exception_object)
-	  try
-	    {
-	      std::rethrow_exception(__p);
-	    }
-	  catch (const _Ex& __exc)
-	    {
-	      return &__exc;
-	    }
-	  catch (...)
-	    {
-	    }
-	return nullptr;
-      } else {
+      // For runtime calls with -frtti enabled we can avoid try-catch overhead.
+      if ! consteval {
 	const type_info &__id = typeid(const _Ex&);
 	return static_cast<const _Ex*>(__p._M_exception_ptr_cast(__id));
       }
-#else
-      return nullptr;
 #endif
+
+#ifdef __cpp_exceptions
+      if (__p._M_exception_object)
+	try
+	  {
+	    std::rethrow_exception(__p);
+	  }
+	catch (const _Ex& __exc)
+	  {
+	    return &__exc;
+	  }
+	catch (...)
+	  {
+	  }
+#endif
+
+      return nullptr;
     }
 #endif
 
