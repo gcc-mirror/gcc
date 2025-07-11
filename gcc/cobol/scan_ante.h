@@ -149,7 +149,7 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
     }
     auto nx = std::count_if(input, p, fisdigit);
     if( 36 < nx ) {
-      error_msg(yylloc, "significand of %s has more than 36 digits (%zu)", input, nx);
+      error_msg(yylloc, "significand of %s has more than 36 digits (%ld)", input, (long)nx);
       return NO_CONDITION;
     }
 
