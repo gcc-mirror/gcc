@@ -6793,6 +6793,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
   gfc_namespace *ns;
   gfc_symtree *st;
   gfc_symbol *old_sym;
+  bool imported;
 
   for (ns = siblings; ns; ns = ns->sibling)
     {
@@ -6808,6 +6809,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 	goto fixup_contained;
 
       old_sym = st->n.sym;
+      imported = old_sym->attr.imported == 1;
       if (old_sym->ns == ns
 	    && !old_sym->attr.contained
 
@@ -6834,7 +6836,8 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 	  /* Replace it with the symbol from the parent namespace.  */
 	  st->n.sym = sym;
 	  sym->refs++;
-
+	  if (imported)
+	    sym->attr.imported = 1;
 	  gfc_release_symbol (old_sym);
 	}
 

@@ -2188,6 +2188,7 @@ typedef struct gfc_symtree
     gfc_omp_udr *omp_udr;
   }
   n;
+  unsigned import_only:1;
 }
 gfc_symtree;
 
@@ -2214,6 +2215,17 @@ typedef struct gfc_was_finalized {
   struct gfc_was_finalized *next;
 }
 gfc_was_finalized;
+
+
+  /* Flag F2018 import status */
+enum importstate
+{ IMPORT_NOT_SET = 0,	/* Default condition.  */
+  IMPORT_F2008,		/* Old style IMPORT.  */
+  IMPORT_ONLY,		/* Import list used.  */
+  IMPORT_NONE,		/* No host association.  Unique in scoping unit.  */
+  IMPORT_ALL		/* Must be unique in the scoping unit.  */
+};
+
 
 /* A namespace describes the contents of procedure, module, interface block
    or BLOCK construct.  */
@@ -2327,6 +2339,10 @@ typedef struct gfc_namespace
 
   /* Set to 1 if namespace is an interface body with "IMPORT" used.  */
   unsigned has_import_set:1;
+
+  /* Flag F2018 import status */
+  ENUM_BITFIELD (importstate) import_state :3;
+
 
   /* Set to 1 if the namespace uses "IMPLICIT NONE (export)".  */
   unsigned has_implicit_none_export:1;

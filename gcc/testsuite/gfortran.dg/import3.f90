@@ -1,6 +1,8 @@
 ! { dg-do compile }
+! { dg-options "-std=f2008" }
 ! { dg-shouldfail "Invalid use of IMPORT" }
 ! Test invalid uses of import
+! Wording of some error messages change for -std>=F2018 but all are caught.
 ! PR fortran/29601
 
 subroutine test()
