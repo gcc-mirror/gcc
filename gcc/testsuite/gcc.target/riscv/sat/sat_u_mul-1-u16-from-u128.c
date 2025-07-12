@@ -9,3 +9,4 @@
 DEF_SAT_U_MUL_FMT_1_WRAP(NT, WT)
 
 /* { dg-final { scan-tree-dump-times ".SAT_MUL" 1 "optimized" } } */
+/* { dg-final { scan-assembler-not "\.L\[0-9\]+" } } */
