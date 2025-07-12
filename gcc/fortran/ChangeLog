@@ -1,3 +1,30 @@
+2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106135
+	* decl.cc (build_sym): Emit an error if a symbol associated by
+	an IMPORT, ONLY or IMPORT, all statement is being redeclared.
+	(gfc_match_import): Parse and check the F2018 versions of the
+	IMPORT statement. For scopes other than and interface body, if
+	the symbol cannot be found in the host scope, generate it and
+	set it up such that gfc_fixup_sibling_symbols can transfer its
+	'imported attribute' if it turnes out to be a not yet parsed
+	procedure. Test for violations of C897-8100.
+	* gfortran.h : Add 'import_only' to the gfc_symtree structure.
+	Add the enum, 'importstate', which is used for values the new
+	field 'import_state' in gfc_namespace.
+	* parse.cc (gfc_fixup_sibling_symbols): Transfer the attribute
+	'imported' to the new symbol.
+	* resolve.cc (check_sym_import_status, check_import_status):
+	New functions to test symbols and expressions for violations of
+	F2018:C8102.
+	(resolve_call): Test the 'resolved_sym' against C8102 by a call
+	to 'check_sym_import_status'.
+	(gfc_resolve_expr): If the expression is OK and an IMPORT
+	statement has been registered in the current scope, test C102
+	by calling 'check_import_status'.
+	(resolve_select_type): Test the declared derived type in TYPE
+	IS and CLASS IS statements.
+
 2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/120637

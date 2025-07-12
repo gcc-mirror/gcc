@@ -1,3 +1,8 @@
+2025-07-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py: Stop updating gcc-12
+	branch.
+
 2025-07-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* prepare-commit-msg: Force default git prefixes.

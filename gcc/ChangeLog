@@ -1,3 +1,346 @@
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc: Include "diagnostic-format-sarif.h",
+	Replace include of "diagnostic-state.h" with includes of
+	"diagnostic-digraphs.h" and "diagnostic-state-graphs.h".
+	(html_generation_options::html_generation_options): Update for
+	field renaming.
+	(html_builder::m_body_element): New field.
+	(html_builder::html_builder): Initialize m_body_element.
+	(html_builder::maybe_make_state_diagram): Port from XML
+	implementation to state graph implementation.
+	(html_builder::make_element_for_diagnostic): Add any
+	per-diagnostic graphs.
+	(html_builder::add_graph): New.
+	(html_builder::emit_global_graph): New.
+	(html_output_format::report_global_digraph): New.
+	* diagnostic-format-html.h
+	(html_generation_options::m_show_state_diagram_xml): Replace
+	with...
+	(html_generation_options::m_show_state_diagrams_sarif): ...this.
+	(html_generation_options::m_show_state_diagram_dot_src): Rename
+	to...
+	(html_generation_options::m_show_state_diagrams_dot_src): ...this.
+	* diagnostic-format-sarif.cc: Include "diagnostic-digraphs.h" and
+	"diagnostic-state-graphs.h".
+	(sarif_builder::m_run_graphs): New field.
+	(sarif_result::on_nested_diagnostic): Update call to
+	make_location_object to pass arg by pointer.
+	(sarif_builder::sarif_builder): Initialize m_run_graphs.
+	(sarif_builder::report_global_digraph): New.
+	(sarif_builder::make_result_object): Add any graphs to
+	the result object.
+	(sarif_builder::make_locations_arr): Update call to
+	make_location_object to pass arg by pointer.
+	(sarif_builder::make_location_object): Pass param "loc_mgr" by
+	pointer rather than by reference so that it can be null, and
+	handle this case.
+	(copy_any_property_bag): New.
+	(make_sarif_graph): New.
+	(make_sarif_node): New.
+	(make_sarif_edge): New.
+	(sarif_property_bag::set_graph): New.
+	(populate_thread_flow_location_object): Port from XML
+	implementation to state graph implementation.
+	(make_run_object): Store any graphs.
+	(sarif_output_format::report_global_digraph): New.
+	(sarif_generation_options::sarif_generation_options): Rename
+	m_xml_state to m_state_graph.
+	(selftest::test_make_location_object): Update for change to
+	make_location_object.
+	* diagnostic-format-sarif.h:
+	(sarif_generation_options::m_xml_state): Replace with...
+	(sarif_generation_options::m_state_graph): ...this.
+	(class sarif_location_manager): Add forward decl.
+	(diagnostics::digraphs::digraph): New forward decl.
+	(diagnostics::digraphs::node): New forward decl.
+	(diagnostics::digraphs::edge): New forward decl.
+	(sarif_property_bag::set_graph): New decl.
+	(class sarif_graph): New.
+	(class sarif_node): New.
+	(class sarif_edge): New.
+	(make_sarif_graph): New decl.
+	(make_sarif_node): New decl.
+	(make_sarif_edge): New decl.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::report_global_digraph): New.
+	* diagnostic-format.h
+	(diagnostic_output_format::report_global_digraph): New vfunc.
+	* diagnostic-digraphs.cc: New file.
+	* diagnostic-digraphs.h: New file.
+	* diagnostic-metadata.h (diagnostics::digraphs::lazy_digraphs):
+	New forward decl.
+	(diagnostic_metadata::diagnostic_metadata): Initialize
+	m_lazy_digraphs.
+	(diagnostic_metadata::set_lazy_digraphs): New.
+	(diagnostic_metadata::get_lazy_digraphs): New.
+	(diagnostic_metadata::m_lazy_digraphs): New field.
+	* diagnostic-output-spec.cc (sarif_scheme_handler::make_sink):
+	Update for XML to state graph changes.
+	(sarif_scheme_handler::make_sarif_gen_opts): Likewise.
+	(html_scheme_handler::make_sink): Rename "show-state-diagram-xml"
+	to "show-state-diagrams-sarif" and use pluralization consistently.
+	* diagnostic-path.cc: Replace include of "xml.h" with
+	"diagnostic-state-graphs.h".
+	(diagnostic_event::maybe_make_xml_state): Replace with...
+	(diagnostic_event::maybe_make_diagnostic_state_graph): ...this.
+	* diagnostic-path.h (diagnostics::digraphs::digraph): New forward
+	decl.
+	(diagnostic_event::maybe_make_xml_state): Replace with...
+	(diagnostic_event::maybe_make_diagnostic_state_graph): ...this.
+	* diagnostic-state-graphs.cc: New file.
+	* diagnostic-state-graphs.h: New file.
+	* diagnostic-state-to-dot.cc: Port implementation from XML to
+	state graphs.
+	* diagnostic-state.h: Deleted file.
+	* diagnostic.cc (diagnostic_context::report_global_digraph): New.
+	* diagnostic.h (diagnostics::digraphs::lazy_digraph): New forward
+	decl.
+	(diagnostic_context::report_global_digraph): New decl.
+	* doc/analyzer.texi (Debugging the Analyzer): Update to reflect
+	change from XML to state graphs.
+	* doc/invoke.texi ("sarif" diagnostics sink): Replace "xml-state"
+	with "state-graphs".
+	("experimental-html" diagnostics sink): Replace
+	"show-state-diagrams-xml" with "show-state-diagrams-sarif"
+	* doc/libgdiagnostics/topics/compatibility.rst
+	(LIBGDIAGNOSTICS_ABI_3): New.
+	* doc/libgdiagnostics/topics/graphs.rst: New file.
+	* doc/libgdiagnostics/topics/index.rst: Add graphs.rst.
+	* graphviz.h (node_id::operator=): New.
+	* json.h (json::value::dyn_cast_string): New.
+	(json::object::get_num_keys): New accessor.
+	(json::object::get_key): New accessor.
+	(json::string::dyn_cast_string): New.
+	* libgdiagnostics++.h (class libgdiagnostics::graph): New.
+	(class libgdiagnostics::node): New.
+	(class libgdiagnostics::edge): New.
+	(class libgdiagnostics::diagnostic::take_graph): New.
+	(class libgdiagnostics::manager::take_global_graph): New.
+	(class libgdiagnostics::graph::set_description): New.
+	(class libgdiagnostics::graph::get_node_by_id): New.
+	(class libgdiagnostics::graph::get_edge_by_id): New.
+	(class libgdiagnostics::graph::add_edge): New.
+	(class libgdiagnostics::node::set_label): New.
+	(class libgdiagnostics::node::set_location): New.
+	(class libgdiagnostics::node::set_logical_location): New.
+	* libgdiagnostics-private.h: New file.
+	* libgdiagnostics.cc: Define INCLUDE_STRING.  Include
+	"diagnostic-digraphs.h", "diagnostic-state-graphs.h", and
+	"libgdiagnostics-private.h".
+	(struct diagnostic_graph): New.
+	(struct diagnostic_node): New.
+	(struct diagnostic_edge): New.
+	(libgdiagnostics_path_event::libgdiagnostics_path_event): Add
+	state_graph param.
+	(libgdiagnostics_path_event::maybe_make_diagnostic_state_graph):
+	New.
+	(libgdiagnostics_path_event::m_state_graph): New field.
+	(diagnostic_execution_path::add_event_va): Add state_graph param.
+	(class prebuilt_digraphs): New.
+	(diagnostic::diagnostic): Use m_graphs in m_metadata.
+	(diagnostic::take_graph): New.
+	(diagnostic::get_graphs): New accessor.
+	(diagnostic::m_graphs): New field.
+	(diagnostic_manager::take_global_graph): New.
+	(diagnostic_execution_path_add_event): Update for new param to
+	add_event_va.
+	(diagnostic_execution_path_add_event_va): Likewise.
+	(diagnostic_graph::add_node_with_id): New public entrypoint.
+	(diagnostic_graph::add_edge_with_label): New public entrypoint.
+	(diagnostic_manager_new_graph): New public entrypoint.
+	(diagnostic_manager_take_global_graph): New public entrypoint.
+	(diagnostic_take_graph): New public entrypoint.
+	(diagnostic_graph_release): New public entrypoint.
+	(diagnostic_graph_set_description): New public entrypoint.
+	(diagnostic_graph_add_node): New public entrypoint.
+	(diagnostic_graph_add_edge): New public entrypoint.
+	(diagnostic_graph_get_node_by_id): New public entrypoint.
+	(diagnostic_graph_get_edge_by_id): New public entrypoint.
+	(diagnostic_node_set_location): New public entrypoint.
+	(diagnostic_node_set_label): New public entrypoint.
+	(diagnostic_node_set_logical_location): New public entrypoint.
+	(private_diagnostic_execution_path_add_event_2): New private
+	entrypoint.
+	(private_diagnostic_graph_set_property_bag): New private
+	entrypoint.
+	(private_diagnostic_node_set_property_bag): New private
+	entrypoint.
+	(private_diagnostic_edge_set_property_bag): New private
+	entrypoint.
+	* libgdiagnostics.h (diagnostic_graph): New typedef.
+	(diagnostic_node): New typedef.
+	(diagnostic_edge): New typedef.
+	(diagnostic_manager_new_graph): New decl.
+	(diagnostic_manager_take_global_graph): New decl.
+	(diagnostic_take_graph): New decl.
+	(diagnostic_graph_release): New decl.
+	(diagnostic_graph_set_description): New decl.
+	(diagnostic_graph_add_node): New decl.
+	(diagnostic_graph_add_edge): New decl.
+	(diagnostic_graph_get_node_by_id): New decl.
+	(diagnostic_graph_get_edge_by_id): New decl.
+	(diagnostic_node_set_label): New decl.
+	(diagnostic_node_set_location): New decl.
+	(diagnostic_node_set_logical_location): New decl.
+	* libgdiagnostics.map (LIBGDIAGNOSTICS_ABI_3): New.
+	* libsarifreplay.cc: Include "libgdiagnostics-private.h".
+	(id_map): New "using".
+	(sarif_replayer::report_invalid_sarif): Update for change to
+	report_problem params.
+	(sarif_replayer::report_unhandled_sarif): Likewise.
+	(sarif_replayer::report_note): New.
+	(sarif_replayer::report_problem): Pass param "ref" by
+	pointer rather than reference and handle it being null.
+	(sarif_replayer::maybe_get_property_bag): New.
+	(sarif_replayer::maybe_get_property_bag_value): New.
+	(sarif_replayer::handle_run_obj): Handle run-level "graphs" as per
+	§3.14.20.
+	(sarif_replayer::handle_result_obj): Handle result-level "graphs"
+	as per §3.27.19.
+	(handle_thread_flow_location_object): Optionally handle graphs
+	stored in property "gcc/diagnostic_event/state_graph" as state
+	graphs.
+	(sarif_replayer::handle_graph_object): New.
+	(sarif_replayer::handle_node_object): New.
+	(sarif_replayer::handle_edge_object): New.
+	(sarif_replayer::get_graph_node_by_id_property): New.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::diagnostic_graph_cc_tests and
+	selftest::diagnostic_state_graph_cc_tests.
+	* selftest.h (selftest::diagnostic_graph_cc_tests): New decl.
+	(selftest::diagnostic_state_graph_cc_tests): New decl.
+
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-digraphs.o and
+	diagnostic-state-graphs.o.
+
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (json::object::clone): New.
+	(json::object::clone_as_object): New.
+	(json::array::clone): New.
+	(json::float_number::clone): New.
+	(json::integer_number::clone): New.
+	(json::string::clone): New.
+	(json::literal::clone): New.
+	(selftest::test_cloning): New test.
+	(selftest::json_cc_tests): Call it.
+	* json.h (json::value::clone): New vfunc.
+	(json::object::clone): New decl.
+	(json::object::clone_as_object): New decl.
+	(json::array::clone): New decl.
+	(json::float_number::clone): New decl.
+	(json::integer_number::clone): New decl.
+	(json::string::clone): New decl.
+	(json::literal::clone): New decl.
+
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (string::string): When constructing from pointer and
+	length, ensure the new buffer is null-terminated.
+	(selftest::test_strcmp): New.
+	(selftest::json_cc_tests): Likewise.
+
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/topics/compatibility.rst
+	(_LIBGDIAGNOSTICS_ABI_2): Add missing anchor.
+	* doc/libgdiagnostics/topics/diagnostic-manager.rst
+	(diagnostic_manager_add_sink_from_spec): Add links to GCC's
+	documentation of "-fdiagnostics-add-output=".  Fix parameter
+	markup.
+	(diagnostic_manager_set_analysis_target): Fix parameter markup.
+	Add link to SARIF spec.
+	* doc/libgdiagnostics/topics/logical-locations.rst: Markup fix.
+	* doc/libgdiagnostics/tutorial/02-physical-locations.rst: Clarify
+	wording of what "the source file" means, and that a range can't
+	have multiple files.
+
+2025-07-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (process_address_1): When changing base reg
+	on a reg of the base class, fall back to reload of whole inner address.
+	(process_address): Constrain the iteration number.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* doc/invoke.texi (Wc++26-compat): Document.
+
+2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* config/aarch64/aarch64.cc (aarch64_evpc_sve_tbl): Punt on 2-input
+	operations that can be handled by vec_perm.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (*eor3qdi4): New
+	define_insn_and_split.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (*bcaxqdi4): New
+	define_insn_and_split.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (eor3q<mode>4): Use VDQ_I mode
+	iterator.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (bcaxq<mode>4): Use VDQ_I mode
+	iterator.
+
+2025-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121034
+	* tree-vect-loop.cc (vectorizable_reduction): Cleanup
+	reduction chain following code.
+
+2025-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.cc (finish_options): Enable debug_nonbind_markers_p for
+	auto-profile.
+	* tree-cfg.cc (struct locus_discrim_map): Remove.
+	(struct locus_discrim_hasher): Remove.
+	(locus_discrim_hasher::hash): Remove.
+	(locus_discrim_hasher::equal): Remove.
+	(first_non_label_nondebug_stmt): Remove.
+	(build_gimple_cfg): Do not allocate discriminator tables.
+	(next_discriminator_for_locus): Remove.
+	(same_line_p): Remove.
+	(struct discrim_entry): New structure.
+	(assign_discriminator): Rewrite.
+	(assign_discriminators): Rewrite.
+
+2025-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114790
+	* cgraph.cc (cgraph_update_edges_for_call_stmt_node): Resolve devirtualization
+	if call statement was optimized out or turned to direct call.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/121023
+	* ipa-fnsummary.cc (compute_fn_summary): Disallow signature changes
+	on cfun->has_musttail functions.
+
+2025-07-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/91384
+	* config/i386/i386.md: Add new peeophole2 for optimize *negsi_1
+	followed by *cmpsi_ccno_1 with APX_F.
+
+2025-07-11  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Use
+	the LHS of a scalar stmt to determine mode and whether it is FP.
+
 2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):

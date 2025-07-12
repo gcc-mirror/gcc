@@ -1,3 +1,114 @@
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/state-diagram-1-sarif.py (test_xml_state):
+	Rename to...
+	(test_state_graph): ...this.  Port from XML to SARIF graphs.
+	* gcc.dg/analyzer/state-diagram-1.c: Update sink option
+	from "sarif:xml-state=yes" to "sarif:state-graphs=yes".
+	* gcc.dg/analyzer/state-diagram-5-sarif.c: Likewise.
+	* gcc.dg/analyzer/state-diagram-5-sarif.py: Drop import of ET.
+	(test_nested_types_in_xml_state): Rename to...
+	(test_nested_types_in_state_graph): ...this.  Port from XML to
+	SARIF graphs.
+	* gcc.dg/plugin/diagnostic-test-graphs-html.c: New test.
+	* gcc.dg/plugin/diagnostic-test-graphs-html.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-graphs-sarif.c: New test.
+	* gcc.dg/plugin/diagnostic-test-graphs-sarif.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-graphs.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+	* lib/sarif.py (get_xml_state): Delete.
+	(get_state_graph): New.
+	(def get_state_node_attr): New.
+	(get_state_node_kind): New.
+	(get_state_node_name): New.
+	(get_state_node_type): New.
+	(get_state_node_value): New.
+	* sarif-replay.dg/2.1.0-invalid/3.40.2-duplicate-node-id.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.41.4-unrecognized-node-id.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-valid/graphs-check-html.py: New test
+	script.
+	* sarif-replay.dg/2.1.0-valid/graphs-check-sarif-roundtrip.py: New
+	test script.
+	* sarif-replay.dg/2.1.0-valid/graphs.sarif: New test.
+
+2025-07-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/powerpc/pr121007.c: New.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* g++.dg/cpp26/feat-cxx26.C: Add test for
+	__cpp_trivial_relocatability.
+	* g++.dg/cpp26/trivially-relocatable1.C: New test.
+	* g++.dg/cpp26/trivially-relocatable2.C: New test.
+	* g++.dg/cpp26/trivially-relocatable3.C: New test.
+	* g++.dg/cpp26/trivially-relocatable4.C: New test.
+	* g++.dg/cpp26/trivially-relocatable5.C: New test.
+	* g++.dg/cpp26/trivially-relocatable6.C: New test.
+	* g++.dg/cpp26/trivially-relocatable7.C: New test.
+	* g++.dg/cpp26/trivially-relocatable8.C: New test.
+	* g++.dg/cpp26/trivially-relocatable9.C: New test.
+	* g++.dg/cpp26/trivially-relocatable10.C: New test.
+	* g++.dg/cpp26/trivially-relocatable11.C: New test.
+
+2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* gcc.target/aarch64/sve/acle/general/perm_1.c: New test.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/eor3_d.c: Add tests for DImode operands.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/bcax_d.c: Add tests for DImode arguments.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/eor3_d.c: New test.
+
+2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/bcax_d.c: New test.
+
+2025-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121034
+	* gcc.dg/vect/pr121034.c: New testcase.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120954
+	* c-c++-common/Warray-bounds-11.c: New test.
+
+2025-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr114790_0.C: New test.
+	* g++.dg/lto/pr114790_1.C: New test.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/121023
+	* c-c++-common/musttail32.c: New test.
+
+2025-07-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/91384
+	* gcc.target/i386/pr91384-1.c: New test.
+
+2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106135
+	* gfortran.dg/import3.f90: Use -std=f2008 and comment on change
+	in error message texts with f2018.
+	* gfortran.dg/import12.f90: New test.
+
 2025-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/120628

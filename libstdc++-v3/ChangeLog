@@ -1,3 +1,56 @@
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libsupc++/exception_ptr.h: Implement C++26 P3748R0 - Inspecting
+	exception_ptr should be constexpr.
+	(std::exception_ptr_cast): Make constexpr, remove inline keyword.  Add
+	static_asserts for Mandates.  For if consteval use std::rethrow_exception,
+	catch it and return its address or nullptr.
+	* testsuite/18_support/exception_ptr/exception_ptr_cast.cc (E::~E): Add
+	constexpr.
+	(G::G): Likewise.
+	(test01): Likewise.  Return bool and take bool argument, throw if the
+	argument is true.  Add static_assert(test01(false)).
+	(main): Call test01(true) in try.
+
+2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__is_floating<__float128>):
+	Do not depend on __STRICT_ANSI__.
+	* include/bits/stl_algobase.h (__size_to_integer(__float128)):
+	Likewise.
+	* include/std/type_traits (__is_floating_point_helper<__float128>):
+	Likewise.
+
+2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96710
+	* include/bits/cpp_type_traits.h (__is_integer): Define explicit
+	specializations for __int128.
+	(__memcpyable_integer): Remove explicit specializations for
+	__int128.
+	* include/bits/iterator_concepts.h (incrementable_traits):
+	Likewise.
+	(__is_signed_int128, __is_unsigned_int128, __is_int128): Remove.
+	(__is_integer_like, __is_signed_integer_like): Remove check for
+	__int128.
+	* include/bits/max_size_type.h: Remove all uses of __is_int128
+	in constraints.
+	* include/bits/ranges_base.h (__to_unsigned_like): Remove
+	overloads for __int128.
+	(ranges::ssize): Remove special case for __int128.
+	* include/bits/stl_algobase.h (__size_to_integer): Define
+	__int128 overloads for strict modes.
+	* include/ext/numeric_traits.h (__is_integer_nonstrict): Remove
+	explicit specializations for __int128.
+	* include/std/charconv (to_chars): Define overloads for
+	__int128.
+	* include/std/format (__format::make_unsigned_t): Remove.
+	(__format::to_chars): Remove.
+	* include/std/limits (numeric_limits): Define explicit
+	specializations for __int128.
+	* include/std/type_traits (__is_integral_helper): Likewise.
+	(__make_unsigned, __make_signed): Likewise.
+
 2025-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117785

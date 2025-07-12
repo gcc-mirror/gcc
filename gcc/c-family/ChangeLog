@@ -1,3 +1,13 @@
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* c.opt (Wc++26-compat): New option.
+	* c.opt.urls: Regenerate.
+	* c-opts.cc (c_common_post_options): Clear warn_cxx26_compat for
+	C++26 or later.
+	* c-cppbuiltin.cc (c_cpp_builtins): For C++26 predefine
+	__cpp_trivial_relocatability=202502L.
+
 2025-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117785

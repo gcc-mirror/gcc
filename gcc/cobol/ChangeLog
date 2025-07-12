@@ -1,3 +1,12 @@
+2025-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/120621
+	* lexio.cc (parse_replace_pairs): Cast mfile.lineno() to fmt_size_t.
+	* parse.y (intrinsic): Print ptrdiff_t using %ld, cast arg to long.
+	* scan_ante.h (numstr_of): Print nx using %ld, cast arg to long.
+	* util.cc (cbl_field_t::report_invalid_initial_value): Print
+	ptrdiff_t using %ld, cast arg to long.
+
 2025-07-10  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/120765

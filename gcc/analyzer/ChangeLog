@@ -1,3 +1,41 @@
+2025-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc: Reimplement, replacing
+	XML-based implementation with one based on state graphs.
+	* ana-state-to-diagnostic-state.h: Likewise.
+	* checker-event.cc: Replace include of "xml.h" with include of
+	"diagnostic-state-graphs.h".
+	(checker_event::maybe_make_xml_state): Replace with...
+	(checker_event::maybe_make_diagnostic_state_graph): ...this.
+	* checker-event.h: Add include of "diagnostic-digraphs.h".
+	(checker_event::maybe_make_xml_state): Replace decl with...
+	(checker_event::maybe_make_diagnostic_state_graph): ...this.
+	* engine.cc (exploded_node::on_stmt_pre): Replace
+	"_analyzer_dump_xml" with "__analyzer_dump_sarif".
+	* program-state.cc: Replace include of "diagnostic-state.h" with
+	"diagnostic-state-graphs.h".
+	(program_state::dump_dot): Port from XML to state graphs.
+	* program-state.h: Drop reduntant forward decl of xml::document.
+	(program_state::make_xml): Replace decl with...
+	(program_state::make_diagnostic_state_graph): ...this.
+	(program_state::dump_xml_to_pp): Drop decl.
+	(program_state::dump_xml_to_file): Drop decl.
+	(program_state::dump_xml): Drop decl.
+	(program_state::dump_dump_sarif): New decl.
+	* sm-malloc.cc (get_dynalloc_state_for_state): New.
+	(malloc_state_machine::add_state_to_xml): Replace with...
+	(malloc_state_machine::add_state_to_state_graph): ...this.
+	* sm.cc (state_machine::add_state_to_xml): Replace with...
+	(state_machine::add_state_to_state_graph): ...this.
+	(state_machine::add_global_state_to_xml): Replace with...
+	(state_machine::add_global_state_to_state_graph): ...this.
+	* sm.h (class xml_state): Drop forward decl.
+	(class analyzer_state_graph): New forward decl.
+	(state_machine::add_state_to_xml): Replace decl with...
+	(state_machine::add_state_to_state_graph): ...this.
+	(state_machine::add_global_state_to_xml): Replace decl with...
+	(state_machine::add_global_state_to_state_graph): ...this.
+
 2025-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* access-diagram.cc: Use nullptr rather than NULL where
