@@ -8895,15 +8895,21 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	if (list == OMP_LIST_MAP
 	    && n->sym->attr.flavor == FL_PARAMETER)
 	  {
+	    /* OpenACC since 3.4 permits for Fortran named constants, but
+	       permits removing then as optimization is not needed and such
+	       ignore them. Likewise below for FIRSTPRIVATE.  */
 	    if (openacc)
-	      gfc_error ("Object %qs is not a variable at %L; parameters"
-			 " cannot be and need not be copied", n->sym->name,
-			 &n->where);
+	      gfc_warning (OPT_Wsurprising, "Clause for object %qs at %L is "
+			   "ignored as parameters need not be copied",
+			   n->sym->name, &n->where);
 	    else
 	      gfc_error ("Object %qs is not a variable at %L; parameters"
 			 " cannot be and need not be mapped", n->sym->name,
 			 &n->where);
 	  }
+	else if (openacc && n->sym->attr.flavor == FL_PARAMETER)
+	  gfc_warning (OPT_Wsurprising, "Clause for object %qs at %L is ignored"
+		       " as it is a parameter", n->sym->name, &n->where);
 	else if (list != OMP_LIST_USES_ALLOCATORS)
 	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
 		     &n->where);
@@ -12756,9 +12762,21 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 		&& (n->sym->attr.flavor != FL_PROCEDURE
 		    || n->sym->result != n->sym))
 	      {
-		gfc_error ("Object %qs is not a variable at %L",
-			   n->sym->name, &oc->loc);
-		continue;
+		if (n->sym->attr.flavor != FL_PARAMETER)
+		  {
+		    gfc_error ("Object %qs is not a variable at %L",
+			       n->sym->name, &oc->loc);
+		    continue;
+		  }
+		/* Note that OpenACC 3.4 permits name constants, but the
+		   implementation is permitted to ignore the clause;
+		   as semantically, device_resident kind of makes sense
+		   (and the wording with it is a bit odd), the warning
+		   is suppressed.  */
+		if (list != OMP_LIST_DEVICE_RESIDENT)
+		  gfc_warning (OPT_Wsurprising, "Object %qs at %L is ignored as"
+			       " parameters need not be copied", n->sym->name,
+			       &oc->loc);
 	      }
 
 	    if (n->expr && n->expr->ref->type == REF_ARRAY)

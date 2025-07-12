@@ -1170,6 +1170,10 @@ A @code{CHARACTER} variable is declared with negative length.
 With @option{-fopenmp}, for fixed-form source code, when an @code{omx}
 vendor-extension sentinel is encountered. (The equivalent @code{ompx},
 used in free-form source code, is diagnosed by default.)
+
+@item
+With @option{-fopenacc}, when using named constances with clauses that
+take a variable as doing so has no effect.
 @end itemize
 
 @opindex Wtabs

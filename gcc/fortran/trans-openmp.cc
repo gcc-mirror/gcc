@@ -2792,8 +2792,13 @@ gfc_trans_omp_variable_list (enum omp_clause_code code,
 			     gfc_omp_namelist *namelist, tree list,
 			     bool declare_simd)
 {
+  /* PARAMETER (named constants) are excluded as OpenACC 3.4 permits them now
+     as 'var' but permits compilers to ignore them.  In expressions, it should
+     have been replaced by the value (and this function should not be called
+     anyway) and for var-using clauses, they should just be skipped.  */
   for (; namelist != NULL; namelist = namelist->next)
-    if (namelist->sym->attr.referenced || declare_simd)
+    if ((namelist->sym->attr.referenced || declare_simd)
+	&& namelist->sym->attr.flavor != FL_PARAMETER)
       {
 	tree t = gfc_trans_omp_variable (namelist->sym, declare_simd);
 	if (t != error_mark_node)
@@ -4029,7 +4034,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_MAP:
 	  for (; n != NULL; n = n->next)
 	    {
-	      if (!n->sym->attr.referenced)
+	      if (!n->sym->attr.referenced
+		  || n->sym->attr.flavor == FL_PARAMETER)
 		continue;
 
 	      location_t map_loc = gfc_get_location (&n->where);
@@ -4986,7 +4992,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_CACHE:
 	  for (; n != NULL; n = n->next)
 	    {
-	      if (!n->sym->attr.referenced)
+	      if (!n->sym->attr.referenced
+		  && n->sym->attr.flavor != FL_PARAMETER)
 		continue;
 
 	      switch (list)
