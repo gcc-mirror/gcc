@@ -329,7 +329,7 @@
 
 (define_expand "mov<mode>"
   [(set (match_operand:V_32 0 "nonimmediate_operand")
-	(match_operand:V_32 1 "nonimmediate_operand"))]
+	(match_operand:V_32 1 "nonimm_or_0_operand"))]
   ""
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -339,7 +339,7 @@
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:V_32 0 "nonimmediate_operand"
     "=r ,m ,v,v,v,m,r,v")
-	(match_operand:V_32 1 "general_operand"
+	(match_operand:V_32 1 "nonimm_or_0_operand"
     "rmC,rC,C,v,m,v,v,r"))]
   "!(MEM_P (operands[0]) && MEM_P (operands[1]))
    && ix86_hardreg_mov_ok (operands[0], operands[1])"
@@ -457,7 +457,7 @@
 
 (define_expand "movv2qi"
   [(set (match_operand:V2QI 0 "nonimmediate_operand")
-	(match_operand:V2QI 1 "nonimmediate_operand"))]
+	(match_operand:V2QI 1 "nonimm_or_0_operand"))]
   ""
 {
   ix86_expand_vector_move (V2QImode, operands);
@@ -467,9 +467,10 @@
 (define_insn "*movv2qi_internal"
   [(set (match_operand:V2QI 0 "nonimmediate_operand"
     "=r,r,r,m ,v,v,v,jm,m,r,v")
-	(match_operand:V2QI 1 "general_operand"
+	(match_operand:V2QI 1 "nonimm_or_0_operand"
     "r ,C,m,rC,C,v,m,x,v,v,r"))]
-  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
