@@ -89,6 +89,9 @@ public:
   static constexpr auto &TEST = "test";
 
   static constexpr auto &SIMD_TEST = "simd_test";
+
+  static constexpr auto &RUSTC_ARGS_REQUIRED_CONST
+    = "rustc_args_required_const";
 };
 } // namespace Values
 } // namespace Rust
