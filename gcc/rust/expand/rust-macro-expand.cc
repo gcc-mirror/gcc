@@ -961,7 +961,8 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   auto &lexer = parser.get_token_source ();
   auto start = lexer.get_offs ();
 
-  auto expr = parser.parse_expr ();
+  auto attrs = parser.parse_outer_attributes ();
+  auto expr = parser.parse_expr (std::move (attrs));
   if (expr == nullptr)
     return AST::Fragment::create_error ();
 

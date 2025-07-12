@@ -212,6 +212,11 @@ public:
   std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation (AST::AttrVec outer_attrs);
 
+  /*
+   * This has to be public for parsing expressions with outer attributes
+   */
+  AST::AttrVec parse_outer_attributes ();
+
 private:
   void skip_after_semicolon ();
   void skip_after_end ();
@@ -228,7 +233,6 @@ private:
 
   // AST-related stuff - maybe move or something?
   AST::Attribute parse_inner_attribute ();
-  AST::AttrVec parse_outer_attributes ();
   AST::Attribute parse_outer_attribute ();
   std::unique_ptr<AST::AttrInput> parse_attr_input ();
   std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, location_t>
