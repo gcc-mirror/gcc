@@ -1040,6 +1040,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 #if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4294. bitset(const CharT*) constructor needs to be constrained
       /**
        *  Construct from a character %array.
        *  @param  __str  An %array of characters `__zero` and `__one`.
@@ -1049,7 +1051,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @throw  std::invalid_argument If a character appears in the string
        *                                which is neither `__zero` nor `__one`.
        */
-      template<typename _CharT>
+      template<typename _CharT,
+	       typename = _Require<is_trivially_copyable<_CharT>,
+				   is_standard_layout<_CharT>,
+				   is_trivially_default_constructible<_CharT>,
+				   __not_<is_array<_CharT>>>>
 	[[__gnu__::__nonnull__]]
 	_GLIBCXX23_CONSTEXPR
         explicit
