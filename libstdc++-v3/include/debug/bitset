@@ -179,7 +179,13 @@ namespace __debug
       bitset(const _Base& __x) : _Base(__x) { }
 
 #if __cplusplus >= 201103L
-      template<typename _CharT>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4294. bitset(const CharT*) constructor needs to be constrained
+      template<typename _CharT,
+	       typename = _Require<is_trivially_copyable<_CharT>,
+				   is_standard_layout<_CharT>,
+				   is_trivially_default_constructible<_CharT>,
+				   __not_<is_array<_CharT>>>>
 	_GLIBCXX23_CONSTEXPR
         explicit
         bitset(const _CharT* __str,
