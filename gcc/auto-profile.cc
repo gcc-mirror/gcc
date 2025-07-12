@@ -240,6 +240,8 @@ public:
   /* Add new name and return its index.  */
   int add_name (char *);
 
+  /* Return cgraph node corresponding to given name index.  */
+  cgraph_node *get_cgraph_node (int);
 private:
   typedef std::map<const char *, unsigned, string_compare> string_index_map;
   string_vector vector_;
@@ -445,7 +447,6 @@ public:
   /* Lookup count and warn about duplicates.  */
   count_info *lookup_count (location_t loc, inline_stack &stack,
 			    cgraph_node *node);
-
 private:
   /* Callsite, represented as (decl_lineno, callee_function_name_index).  */
   typedef std::pair<unsigned, unsigned> callsite;
@@ -888,6 +889,29 @@ string_table::read ()
   return true;
 }
 
+/* Return cgraph node corresponding to given NAME_INDEX,
+   NULL if unavailable.  */
+cgraph_node *
+string_table::get_cgraph_node (int name_index)
+{
+  const char *sname = get_name (name_index);
+
+  symtab_node *n = cgraph_node::get_for_asmname (get_identifier (sname));
+  for (;n; n = n->next_sharing_asm_name)
+    if (cgraph_node *cn = dyn_cast <cgraph_node *> (n))
+      if (cn->definition && cn->has_gimple_body_p ())
+	return cn;
+  return NULL;
+}
+
+/* Return corresponding cgraph node.  */
+
+cgraph_node *
+function_instance::get_cgraph_node ()
+{
+  return afdo_string_table->get_cgraph_node (name ());
+}
+
 /* Member functions for function_instance.  */
 
 function_instance::~function_instance ()
@@ -896,19 +920,6 @@ function_instance::~function_instance ()
   for (callsite_map::iterator iter = callsites.begin ();
        iter != callsites.end (); ++iter)
     delete iter->second;
-}
-
-/* Return corresponding cgraph node, NULL if unavailable.  */
-cgraph_node *
-function_instance::get_cgraph_node ()
-{
-  const char *sname = afdo_string_table->get_name (name ());
-  symtab_node *n = cgraph_node::get_for_asmname (get_identifier (sname));
-  for (;n; n = n->next_sharing_asm_name)
-    if (cgraph_node *cn = dyn_cast <cgraph_node *> (n))
-      if (cn->definition && cn->has_gimple_body_p ())
-	return cn;
-  return NULL;
 }
 
 /* Traverse callsites of the current function_instance to find one at the
@@ -1169,7 +1180,7 @@ match_with_target (cgraph_node *n,
 	}
       /* Accept dwarf names and stripped suffixes.  */
       if (!strcmp (lang_hooks.dwarf_name (callee->decl, 0),
-		       afdo_string_table->get_name (inlined_fn->name ()))
+		   afdo_string_table->get_name (inlined_fn->name ()))
 	  || (!name[i] && symbol_name[i] == '.')
 	  || in_suffix)
 	{
@@ -1183,8 +1194,8 @@ match_with_target (cgraph_node *n,
 	  inlined_fn->set_name (index);
 	  return 2;
 	}
-      /* Only warn about declarations.  It is possible that the function is
-	 declared as alias in other module and we inlined cross-module.  */
+      /* Only warn about declarations.  It is possible that the function
+	 is declared as alias in other module and we inlined cross-module.  */
       if (callee->definition
 	  && warning (OPT_Wauto_profile,
 		      "auto-profile of %q+F contains inlined "
@@ -1491,8 +1502,8 @@ function_instance::match (cgraph_node *node,
 						      == inlined_fn);
 			      callsite key2 = {stack[0].afdo_loc,
 						inlined_fn->name ()};
-			      callsites[key2] = inlined_fn;
 			      callsites.erase (iter);
+			      callsites[key2] = inlined_fn;
 			    }
 			  if (r)
 			    functions.add (inlined_fn);
@@ -1554,10 +1565,10 @@ function_instance::match (cgraph_node *node,
 			      callsite key2 = {stack[0].afdo_loc,
 					       newn ? *newn
 					       : inlined_fn->name ()};
+			      callsites.erase (iter);
 			      callsites[key2] = inlined_fn;
 			      inlined_fn->set_name (newn ? *newn
 						    : inlined_fn->name ());
-			      callsites.erase (iter);
 			    }
 			  functions.add (inlined_fn);
 			}
@@ -1690,7 +1701,6 @@ function_instance::match (cgraph_node *node,
 	    f->dump_inline_stack (dump_file);
 	    fprintf (dump_file, "\n");
 	  }
-	warned = true;
 	callsites.erase (iter);
 	offline (f, new_functions);
 	iter = callsites.begin ();
@@ -1752,9 +1762,9 @@ function_instance::remove_external_functions
       auto iter = callsites.find (key);
       callsite key2 = key;
       key2.second = *to_symbol_name.get (key.second);
-      callsites[key2] = iter->second;
       iter->second->set_name (key2.second);
       callsites.erase (iter);
+      callsites[key2] = iter->second;
     }
   auto_vec <int, 20> target_to_rename;
   for (auto &iter : pos_counts)
@@ -1951,6 +1961,7 @@ autofdo_source_profile::offline_external_functions ()
   cgraph_node *node;
   name_index_set seen;
   name_index_map to_symbol_name;
+  size_t last_name;
 
   /* Add renames erasing suffixes produced by late clones, such as
      .isra, .ipcp.  */
@@ -1986,10 +1997,10 @@ autofdo_source_profile::offline_external_functions ()
 	index = afdo_string_table->add_name (n2);
       to_symbol_name.put (i, index);
     }
+  last_name = afdo_string_table->num_entries ();
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      const char *name
-	  = raw_symbol_name (node->decl);
+      const char *name = raw_symbol_name (node->decl);
       const char *dwarf_name = lang_hooks.dwarf_name (node->decl, 0);
       int index = afdo_string_table->get_index (name);
 
@@ -2026,11 +2037,17 @@ autofdo_source_profile::offline_external_functions ()
 	{
 	  if (dump_file)
 	    {
-	      fprintf (dump_file,
-		       "Node %s not in auto profile (%s neither %s)\n",
-		       node->dump_name (),
-		       name,
-		       dwarf_name);
+	      if (dwarf_name && strcmp (dwarf_name, name))
+		fprintf (dump_file,
+			 "Node %s not in auto profile (%s neither %s)\n",
+			 node->dump_name (),
+			 name,
+			 dwarf_name);
+	      else
+		fprintf (dump_file,
+			 "Node %s (symbol %s) not in auto profile\n",
+			 node->dump_name (),
+			 name);
 	    }
 	}
     }
@@ -2074,72 +2091,87 @@ autofdo_source_profile::offline_external_functions ()
      should be done on unmodified profile and merging works better if
      mismatches are already resolved both in source and destination.  */
   while (fns.length () || fns2.length ())
-    if (fns.length ())
-      {
-	function_instance *f = fns.pop ();
-	if (f->get_location () == UNKNOWN_LOCATION)
-	  {
-	    int index = f->name ();
-	    int *newn = to_symbol_name.get (index);
-	    if (newn)
-	      {
-		f->set_name (*newn);
-		if (map_.count (index)
-		    && map_[index] == f)
-		  map_.erase (index);
-		if (!map_.count (*newn))
-		  map_[*newn] = f;
-	      }
-	    if (cgraph_node *n = f->get_cgraph_node ())
-	      {
-		gcc_checking_assert (seen.contains (f->name ()));
-		f->match (n, fns, to_symbol_name);
-	      }
-	  }
-	fns2.safe_push (f);
-      }
-    else
-      {
-	function_instance *f = fns2.pop ();
-	int index = f->name ();
-	gcc_checking_assert (f->in_worklist_p ());
+    {
+      /* In case renaming introduced new name, keep seen up to date.  */
+      for (; last_name < afdo_string_table->num_entries (); last_name++)
+	{
+	  const char *name = afdo_string_table->get_name (last_name);
+	  symtab_node *n
+	    = afdo_string_table->get_cgraph_node (last_name);
+	  if (dump_file)
+	    fprintf (dump_file, "New name %s %s\n", name,
+		     n ? "wth corresponding definition"
+		     : "with no corresponding definition");
+	  if (n)
+	    seen.add (last_name);
+	}
+      if (fns.length ())
+	{
+	  function_instance *f = fns.pop ();
+	  if (f->get_location () == UNKNOWN_LOCATION)
+	    {
+	      int index = f->name ();
+	      int *newn = to_symbol_name.get (index);
+	      if (newn)
+		{
+		  f->set_name (*newn);
+		  if (map_.count (index)
+		      && map_[index] == f)
+		    map_.erase (index);
+		  if (!map_.count (*newn))
+		    map_[*newn] = f;
+		}
+	      if (cgraph_node *n = f->get_cgraph_node ())
+		{
+		  gcc_checking_assert (seen.contains (f->name ()));
+		  f->match (n, fns, to_symbol_name);
+		}
+	    }
+	  fns2.safe_push (f);
+	}
+      else
+	{
+	  function_instance *f = fns2.pop ();
+	  int index = f->name ();
+	  gcc_checking_assert (f->in_worklist_p ());
 
-	/* If map has different function_instance of same name, then
-	   this is a duplicated entry which needs to be merged.  */
-	if (map_.count (index) && map_[index] != f)
-	  {
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Merging duplicate instance: ");
-		f->dump_inline_stack (dump_file);
-		fprintf (dump_file, "\n");
-	      }
-	    map_[index]->merge (f, fns);
-	    gcc_checking_assert (!f->inlined_to ());
-	    f->clear_in_worklist ();
-	    delete f;
-	  }
-	/* If name was not seen in the symbol table, remove it.  */
-	else if (!seen.contains (index))
-	  {
-	    f->offline_if_in_set (seen, fns);
-	    f->clear_in_worklist ();
-	    if (dump_file)
-	      fprintf (dump_file, "Removing external %s\n",
-		       afdo_string_table->get_name (f->name ()));
-	    if (map_.count (index) && map_[index] == f)
-	      map_.erase (f->name ());
-	    delete f;
-	  }
-	/* If this is offline function instance seen in this
-	   translation unit offline external inlines and possibly
-	   rename from dwarf name.  */
-	else
-	  {
-	    f->remove_external_functions (seen, to_symbol_name, fns);
-	    f->clear_in_worklist ();
-	  }
-      }
+	  /* If map has different function_instance of same name, then
+	     this is a duplicated entry which needs to be merged.  */
+	  if (map_.count (index) && map_[index] != f)
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Merging duplicate instance: ");
+		  f->dump_inline_stack (dump_file);
+		  fprintf (dump_file, "\n");
+		}
+	      map_[index]->merge (f, fns);
+	      gcc_checking_assert (!f->inlined_to ());
+	      f->clear_in_worklist ();
+	      delete f;
+	    }
+	  /* If name was not seen in the symbol table, remove it.  */
+	  else if (!seen.contains (index))
+	    {
+	      f->offline_if_in_set (seen, fns);
+	      f->clear_in_worklist ();
+	      if (dump_file)
+		fprintf (dump_file, "Removing external %s\n",
+			 afdo_string_table->get_name (f->name ()));
+	      if (map_.count (index) && map_[index] == f)
+		map_.erase (f->name ());
+	      delete f;
+	    }
+	  /* If this is offline function instance seen in this
+	     translation unit offline external inlines and possibly
+	     rename from dwarf name.  */
+	  else
+	    {
+	      f->remove_external_functions (seen, to_symbol_name, fns);
+	      f->clear_in_worklist ();
+	    }
+	}
+    }
   if (dump_file)
     for (auto const &iter : map_)
       {
@@ -2288,7 +2320,7 @@ autofdo_source_profile::offline_unrealized_inlines ()
 
 function_instance *
 function_instance::read_function_instance (function_instance_stack *stack,
-                                           gcov_type head_count)
+					   gcov_type head_count)
 {
   unsigned name = gcov_read_unsigned ();
   unsigned num_pos_counts = gcov_read_unsigned ();
@@ -2311,10 +2343,10 @@ function_instance::read_function_instance (function_instance_stack *stack,
         (*stack)[j]->total_count_ += count;
       for (unsigned j = 0; j < num_targets; j++)
         {
-          /* Only indirect call target histogram is supported now.  */
-          gcov_read_unsigned ();
-          gcov_type target_idx = gcov_read_counter ();
-          s->pos_counts[offset].targets[target_idx] = gcov_read_counter ();
+	  /* Only indirect call target histogram is supported now.  */
+	  gcov_read_unsigned ();
+	  gcov_type target_idx = gcov_read_counter ();
+	  s->pos_counts[offset].targets[target_idx] = gcov_read_counter ();
         }
     }
   for (unsigned i = 0; i < num_callsites; i++)
