@@ -1,3 +1,48 @@
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120954
+	* c-c++-common/Warray-bounds-11.c: New test.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/121023
+	* c-c++-common/musttail32.c: New test.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120628
+	* g++.dg/cpp0x/final1.C: New test.
+	* g++.dg/cpp0x/final2.C: New test.
+	* g++.dg/cpp0x/override6.C: New test.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120569
+	* g++.dg/cpp0x/override2.C: Expect different diagnostics with
+	override.
+	* g++.dg/cpp0x/override5.C: New test.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120837
+	* gcc.dg/ubsan/pr120837.c: New test.
+
 2025-07-10  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

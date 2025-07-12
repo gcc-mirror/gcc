@@ -1,3 +1,13 @@
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/121023
+	* ipa-fnsummary.cc (compute_fn_summary): Disallow signature changes
+	on cfun->has_musttail functions.
+
 2025-07-10  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:

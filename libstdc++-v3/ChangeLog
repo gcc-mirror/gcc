@@ -1,3 +1,41 @@
+2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119754
+	* include/bits/stl_uninitialized.h (__uninitialized_default):
+	Do not use optimized implementation for constexpr case. Use
+	_GLIBCXX20_CONSTEXPR instead of _GLIBCXX26_CONSTEXPR.
+
+2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120997
+	* include/std/span (span::first, span::last, span::subspan): Do
+	not use braced-init-list for return statements.
+	* testsuite/23_containers/span/120997.cc: New test.
+
+2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118681
+	* src/c++17/memory_resource.cc (choose_block_size): New
+	function.
+	(synchronized_pool_resource::do_allocate): Use choose_block_size
+	to determine appropriate block size.
+	(synchronized_pool_resource::do_deallocate): Likewise
+	(unsynchronized_pool_resource::do_allocate): Likewise.
+	(unsynchronized_pool_resource::do_deallocate): Likewise
+	* testsuite/20_util/synchronized_pool_resource/118681.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/118681.cc: New
+	test.
+
 2025-07-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,35 @@
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120628
+	* parser.cc (cp_parser_elaborated_type_specifier): Use
+	cp_parser_nth_token_starts_class_definition_p with extra argument 1
+	instead of cp_parser_next_token_starts_class_definition_p.
+	(cp_parser_class_property_specifier_seq_opt): For final conditional
+	keyword in C++98 check if the token after it isn't
+	cp_parser_nth_token_starts_class_definition_p nor CPP_NAME and in
+	that case break without consuming it nor warning.
+	(cp_parser_class_head): Use
+	cp_parser_nth_token_starts_class_definition_p with extra argument 1
+	instead of cp_parser_next_token_starts_class_definition_p.
+	(cp_parser_next_token_starts_class_definition_p): Renamed to ...
+	(cp_parser_nth_token_starts_class_definition_p): ... this.  Add N
+	argument.  Use cp_lexer_peek_nth_token instead of cp_lexer_peek_token.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120569
+	* parser.cc (cp_parser_class_property_specifier_seq_opt): New
+	function.
+	(cp_parser_class_head): Use it instead of
+	cp_parser_property_specifier_seq_opt.  Don't diagnose
+	VIRT_SPEC_OVERRIDE here.  Formatting fix.
+
 2025-07-04  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
