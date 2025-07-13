@@ -29,7 +29,7 @@ __brick_uninitialized_move(_ForwardIterator __first, _ForwardIterator __last, _O
                            /*vector=*/std::false_type) noexcept
 {
     using _ValueType = typename std::iterator_traits<_OutputIterator>::value_type;
-    for (; __first != __last; ++__first, ++__result)
+    for (; __first != __last; ++__first, (void) ++__result)
     {
         ::new (std::addressof(*__result)) _ValueType(std::move(*__first));
     }
@@ -80,7 +80,7 @@ __brick_uninitialized_copy(_ForwardIterator __first, _ForwardIterator __last, _O
                            /*vector=*/std::false_type) noexcept
 {
     using _ValueType = typename std::iterator_traits<_OutputIterator>::value_type;
-    for (; __first != __last; ++__first, ++__result)
+    for (; __first != __last; ++__first, (void) ++__result)
     {
         ::new (std::addressof(*__result)) _ValueType(*__first);
     }
