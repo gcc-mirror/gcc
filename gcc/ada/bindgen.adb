@@ -490,7 +490,9 @@ package body Bindgen is
       WBI ("");
       WBI ("   begin");
 
-      if not CodePeer_Mode then
+      if not CodePeer_Mode
+        and not Suppress_Standard_Library_On_Target
+      then
          WBI ("      if not Is_Elaborated then");
          WBI ("         return;");
          WBI ("      end if;");
