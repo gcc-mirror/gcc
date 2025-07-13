@@ -476,7 +476,10 @@ package body Bindgen is
       --  but False for mains in other languages.) We do not want to do this if
       --  we're binding a library.
 
-      if not Bind_For_Library and not CodePeer_Mode then
+      if not Bind_For_Library
+        and not CodePeer_Mode
+        and not Suppress_Standard_Library_On_Target
+      then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (Ada, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -505,7 +508,9 @@ package body Bindgen is
       --  on whether this is the main program or a library.
 
       if not CodePeer_Mode then
-         if not Bind_For_Library then
+         if not Bind_For_Library
+           and not Suppress_Standard_Library_On_Target
+         then
             WBI ("      s_stalib_adafinal;");
          elsif Lib_Final_Built then
             WBI ("      finalize_library;");
