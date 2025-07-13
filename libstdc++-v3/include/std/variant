@@ -1387,6 +1387,8 @@ namespace __detail::__variant
     noexcept(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2766. Swapping non-swappable types
   template<typename... _Types>
     enable_if_t<!((is_move_constructible_v<_Types> && ...)
 		   && (is_swappable_v<_Types> && ...))>
