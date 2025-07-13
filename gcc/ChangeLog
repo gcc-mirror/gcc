@@ -1,3 +1,32 @@
+2025-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::~function_instance):
+	Move down in source.
+	(string_table::get_cgraph_node): New member function with
+	logic broken out from ...
+	(function_instance::get_cgraph_node): ... here.
+	(match_with_target): Fix formating.
+	(function_instance::match): Fix formating; do not use iterators
+	after modifying map; remove incorrect set of warned flag.
+	(autofdo_source_profile::offline_external_functions): Keep
+	seen set up to date.
+	(function_instance::read_function_instance): Fix formating.
+
+2025-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mov<V_32:mode>):
+	Use nonimm_or_0_operand predicate for operand 1.
+	(*mov<V_32:mode>_internal): Ditto.
+	(movv2qi): Ditto.
+	(*movv2qi_internal): Ditto.  Use ix86_hardreg_mov_ok
+	in insn condition.
+
+2025-07-12  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/120983
+	* lra-constraints.cc (process_alt_operands): Allow reloading
+	user hard registers unless the insn is an asm.
+
 2025-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-format-html.cc: Include "diagnostic-format-sarif.h",

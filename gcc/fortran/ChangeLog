@@ -1,3 +1,12 @@
+2025-07-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* invoke.texi (-Wsurprising): Note about OpenACC warning
+	related to PARAMATER.
+	* openmp.cc (resolve_omp_clauses, gfc_resolve_oacc_declare):
+	Accept PARAMETER for OpenACC but add surprising warning.
+	* trans-openmp.cc (gfc_trans_omp_variable_list,
+	gfc_trans_omp_clauses): Ignore PARAMETER inside clauses.
+
 2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/106135

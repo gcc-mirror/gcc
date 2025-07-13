@@ -1,3 +1,18 @@
+2025-07-12  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/87600
+	PR rtl-optimization/120983
+	* gcc.dg/pr87600.h [__loongarch__]: Define REG0 and REG1.
+	* gcc.dg/pr87600-1.c (dg-do): Add loongarch.
+	* gcc.dg/pr87600-2.c (dg-do): Likewise.
+
+2025-07-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/goacc/parameter.f95: Add -Wsurprising flag
+	and update expected diagnostic.
+	* gfortran.dg/goacc/parameter-3.f90: New test.
+	* gfortran.dg/goacc/parameter-4.f90: New test.
+
 2025-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/state-diagram-1-sarif.py (test_xml_state):
