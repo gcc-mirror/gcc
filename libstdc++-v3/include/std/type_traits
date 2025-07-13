@@ -1992,8 +1992,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __make_unsigned_selector_base
     {
       // With -fshort-enums, an enum may be as small as a char.
+      __extension__
       using _UInts = _List<unsigned char, unsigned short, unsigned int,
-			   unsigned long, unsigned long long>;
+			   unsigned long, unsigned long long
+#ifdef __SIZEOF_INT128__
+			   , unsigned __int128
+#endif
+			  >;
 
       using __unsigned_type = typename __select<sizeof(_Tp), _UInts>::__type;
 
