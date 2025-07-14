@@ -6705,7 +6705,6 @@ vectorizable_operation (vec_info *vinfo,
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
-  int vec_num;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
@@ -6877,7 +6876,7 @@ vectorizable_operation (vec_info *vinfo,
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  */
-  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  auto vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
   /* Reject attempts to combine mask types with nonmask types, e.g. if
      we have an AND between a (nonmask) boolean loaded from memory and
@@ -7229,7 +7228,7 @@ vectorizable_operation (vec_info *vinfo,
 	      && code == BIT_AND_EXPR
 	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0, 1 }))
+	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0, vec_num }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num, vectype, i);
@@ -7238,7 +7237,7 @@ vectorizable_operation (vec_info *vinfo,
 					   vop0, gsi);
 		}
 
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1, 1 }))
+	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1, vec_num }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num, vectype, i);
