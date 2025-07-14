@@ -1,3 +1,8 @@
+2025-07-13  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (PTRCAST): Moved here from libgcobol.h.
+	* libgcobol.h (PTRCAST): Deleted.
+
 2025-07-10  James K. Lowden  <jklowden@cobolworx.com>
 
 	* common-defs.h (cdf_enabled_exceptions): Use new CDF state.

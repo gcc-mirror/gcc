@@ -1,3 +1,12 @@
+2025-07-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120866
+	* tree.cc: Add include to tm_p.h.
+
+2025-07-13  Benjamin Wu  <bwu25@cs.washington.edu>
+
+	* gimple.h (GTMA_DOES_GO_IRREVOCABLE): Fix typo.
+
 2025-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* auto-profile.cc (function_instance::~function_instance):

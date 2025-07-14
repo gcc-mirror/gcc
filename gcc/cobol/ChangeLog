@@ -1,3 +1,73 @@
+2025-07-13  Robert Dubner  <rdubner@symas.com>
+
+	* Make-lang.in: Eliminate the .cc.o override.
+	* genapi.cc (level_88_helper): Eliminate cppcheck warning.
+	(get_level_88_domain): Likewise.
+	(get_class_condition_string): Likewise.
+	(parser_call_targets_dump): Likewise.
+	(parser_compile_ecs): Likewise.
+	(initialize_variable_internal): Likewise.
+	(move_tree): Likewise.
+	(combined_name): Likewise.
+	(assembler_label): Likewise.
+	(find_procedure): Likewise.
+	(parser_perform): Likewise.
+	(parser_perform_times): Likewise.
+	(internal_perform_through): Likewise.
+	(internal_perform_through_times): Likewise.
+	(psa_FldLiteralN): Likewise.
+	(psa_FldBlob): Likewise.
+	(parser_accept): Likewise.
+	(parser_accept_exception): Likewise.
+	(parser_accept_exception_end): Likewise.
+	(parser_accept_command_line): Likewise.
+	(parser_accept_envar): Likewise.
+	(parser_display_internal): Likewise.
+	(parser_display): Likewise.
+	(parser_assign): Likewise.
+	(parser_initialize_table): Likewise.
+	(parser_arith_error): Likewise.
+	(parser_arith_error_end): Likewise.
+	(parser_division): Likewise.
+	(label_fetch): Likewise.
+	(parser_label_label): Likewise.
+	(parser_label_goto): Likewise.
+	(parser_perform_start): Likewise.
+	(parser_perform_conditional): Likewise.
+	(parser_perform_conditional_end): Likewise.
+	(parser_perform_until): Likewise.
+	(parser_file_delete): Likewise.
+	(parser_intrinsic_subst): Likewise.
+	(create_lsearch_address_pairs): Likewise.
+	(parser_bsearch_start): Likewise.
+	(is_ascending_key): Likewise.
+	(parser_sort): Likewise.
+	(parser_file_sort): Likewise.
+	(parser_return_start): Likewise.
+	(parser_file_merge): Likewise.
+	(parser_string_overflow): Likewise.
+	(parser_unstring): Likewise.
+	(parser_string): Likewise.
+	(parser_call_exception): Likewise.
+	(create_and_call): Likewise.
+	(mh_identical): Likewise.
+	(move_helper): Likewise.
+	(binary_initial_from_float128): Likewise.
+	(initial_from_initial): Likewise.
+	(psa_FldLiteralA): Likewise.
+	(parser_local_add): Likewise.
+	(parser_symbol_add): Likewise.
+	* genapi.h (parser_display): Likewise.
+	* gengen.cc (gg_call_expr): Explict check for NULL_TREE.
+	(gg_call): Likewise.
+	* show_parse.h (SHOW_PARSE_LABEL_OK): Likewise.
+	(TRACE1_FIELD_VALUE): Likewise.
+	(CHECK_FIELD): Likewise.
+	(CHECK_FIELD2): Likewise.
+	(CHECK_LABEL): Likewise.
+	* util.cc (cbl_internal_error): Apply [[noreturn]] attribute.
+	* util.h (cbl_internal_error): Likewise.
+
 2025-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR cobol/120621
