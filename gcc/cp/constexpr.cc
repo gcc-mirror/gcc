@@ -10329,11 +10329,14 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	{
 	  if (cxx_dialect < cxx20)
 	    return t;
-	  if (TREE_CODE (t) != CALL_EXPR && TREE_CODE (t) != AGGR_INIT_EXPR)
+	  /* We could have a COMPOUND_EXPR here coming from
+	     keep_unused_object_arg.  */
+	  tree x = extract_call_expr (t);
+	  if (x == NULL_TREE || x == error_mark_node)
 	    return t;
 	  /* Calls to immediate functions returning void need to be
 	     evaluated.  */
-	  tree fndecl = cp_get_callee_fndecl_nofold (t);
+	  tree fndecl = cp_get_callee_fndecl_nofold (x);
 	  if (fndecl == NULL_TREE || !DECL_IMMEDIATE_FUNCTION_P (fndecl))
 	    return t;
 	  else

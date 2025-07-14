@@ -453,6 +453,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
       PACK_INDEX_PARENTHESIZED_P (in PACK_INDEX_*)
       MUST_NOT_THROW_NOEXCEPT_P (in MUST_NOT_THROW_EXPR)
+      CONSTEVAL_BLOCK_P (in STATIC_ASSERT)
+      LAMBDA_EXPR_CONSTEVAL_BLOCK_P (in LAMBDA_EXPR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1433,6 +1435,10 @@ struct GTY (()) tree_deferred_noexcept {
 #define STATIC_ASSERT_SOURCE_LOCATION(NODE) \
   (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->location)
 
+/* True if this static assert represents a C++26 consteval block.  */
+#define CONSTEVAL_BLOCK_P(NODE) \
+  TREE_LANG_FLAG_0 (STATIC_ASSERT_CHECK (NODE))
+
 struct GTY (()) tree_static_assert {
   struct tree_base base;
   tree condition;
@@ -1546,6 +1552,10 @@ enum cp_lambda_default_capture_mode_type {
    capture proxy for that node.  */
 #define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
+
+/* True iff this lambda was created for a consteval block.  */
+#define LAMBDA_EXPR_CONSTEVAL_BLOCK_P(NODE) \
+  TREE_LANG_FLAG_0 (LAMBDA_EXPR_CHECK (NODE))
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
@@ -8243,7 +8253,7 @@ extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
 extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
-						 bool, bool);
+						 bool, bool, bool = false);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
@@ -8268,7 +8278,7 @@ extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, int);
 extern void maybe_generic_this_capture		(tree, tree);
 extern tree maybe_resolve_dummy			(tree, bool);
-extern tree current_nonlambda_function		(void);
+extern tree current_nonlambda_function		(bool = false);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(bool = false);
 extern tree current_lambda_expr			(void);

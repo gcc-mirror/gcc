@@ -3992,9 +3992,15 @@ finish_compound_literal (tree type, tree compound_literal,
 tree
 finish_fname (tree id)
 {
-  tree decl;
-
-  decl = fname_decl (input_location, C_RID_CODE (id), id);
+  tree decl = fname_decl (input_location, C_RID_CODE (id), id);
+  /* [expr.prim.lambda.closure]/16 "Unless the compound-statement is that
+     of a consteval-block-declaration, a variable __func__ is implicitly
+     defined...".  We could be in a consteval block in a function, though,
+     and then we shouldn't warn.  */
+  if (current_function_decl
+      && !current_nonlambda_function (/*only_skip_consteval_block_p=*/true))
+    pedwarn (input_location, 0, "%qD is not defined outside of function scope",
+	     decl);
   if (processing_template_decl && current_function_decl
       && decl != error_mark_node)
     decl = DECL_NAME (decl);
@@ -12598,11 +12604,14 @@ cexpr_str::extract (location_t location, const char * & msg, int &len)
    CONDITION and the message text MESSAGE.  LOCATION is the location
    of the static assertion in the source code.  When MEMBER_P, this
    static assertion is a member of a class.  If SHOW_EXPR_P is true,
-   print the condition (because it was instantiation-dependent).  */
+   print the condition (because it was instantiation-dependent).
+   If CONSTEVAL_BLOCK_P is true, this static assertion represents
+   a consteval block.  */
 
 void
 finish_static_assert (tree condition, tree message, location_t location,
-		      bool member_p, bool show_expr_p)
+		      bool member_p, bool show_expr_p,
+		      bool consteval_block_p/*=false*/)
 {
   tsubst_flags_t complain = tf_warning_or_error;
 
@@ -12630,6 +12639,7 @@ finish_static_assert (tree condition, tree message, location_t location,
       STATIC_ASSERT_CONDITION (assertion) = orig_condition;
       STATIC_ASSERT_MESSAGE (assertion) = cstr.message;
       STATIC_ASSERT_SOURCE_LOCATION (assertion) = location;
+      CONSTEVAL_BLOCK_P (assertion) = consteval_block_p;
 
       if (member_p)
         maybe_add_class_template_decl_list (current_class_type,
@@ -12638,6 +12648,13 @@ finish_static_assert (tree condition, tree message, location_t location,
       else
         add_stmt (assertion);
 
+      return;
+    }
+
+  /* Evaluate the consteval { }.  This must be done only once.  */
+  if (consteval_block_p)
+    {
+      cxx_constant_value (condition);
       return;
     }
 

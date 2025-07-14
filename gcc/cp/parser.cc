@@ -2576,11 +2576,11 @@ static cp_expr cp_parser_constant_expression
 static cp_expr cp_parser_builtin_offsetof
   (cp_parser *);
 static cp_expr cp_parser_lambda_expression
-  (cp_parser *);
+  (cp_parser *, bool = false);
 static void cp_parser_lambda_introducer
   (cp_parser *, tree);
 static bool cp_parser_lambda_declarator_opt
-  (cp_parser *, tree);
+  (cp_parser *, tree, bool = false);
 static void cp_parser_lambda_body
   (cp_parser *, tree);
 
@@ -11744,10 +11744,14 @@ cp_parser_trait (cp_parser* parser, const cp_trait* trait)
      lambda-introducer < template-parameter-list > requires-clause [opt]
        lambda-declarator [opt] compound-statement
 
+   If CONSTEVAL_BLOCK_P is true, we are parsing a consteval block, which
+   is syntactic sugar for a consteval lambda.
+
    Returns a representation of the expression.  */
 
 static cp_expr
-cp_parser_lambda_expression (cp_parser* parser)
+cp_parser_lambda_expression (cp_parser* parser,
+			     bool consteval_block_p/*=false*/)
 {
   tree lambda_expr = build_lambda_expr ();
   tree type;
@@ -11756,6 +11760,7 @@ cp_parser_lambda_expression (cp_parser* parser)
   cp_token_position start = 0;
 
   LAMBDA_EXPR_LOCATION (lambda_expr) = token->location;
+  LAMBDA_EXPR_CONSTEVAL_BLOCK_P (lambda_expr) = consteval_block_p;
 
   if (cxx_dialect >= cxx20)
     {
@@ -11799,9 +11804,12 @@ cp_parser_lambda_expression (cp_parser* parser)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
-  cp_parser_lambda_introducer (parser, lambda_expr);
-  if (cp_parser_error_occurred (parser))
-    return error_mark_node;
+  if (!consteval_block_p)
+    {
+      cp_parser_lambda_introducer (parser, lambda_expr);
+      if (cp_parser_error_occurred (parser))
+	return error_mark_node;
+    }
 
   {
     /* OK, this is a bit tricksy.  cp_parser_requires_expression sets
@@ -11873,7 +11881,8 @@ cp_parser_lambda_expression (cp_parser* parser)
     if (cp_parser_start_tentative_firewall (parser))
       start = token;
 
-    ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr);
+    ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr,
+					   consteval_block_p);
 
     if (ok && cp_parser_error_occurred (parser))
       ok = false;
@@ -12256,10 +12265,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
      decl-specifier-seq [opt] noexcept-specifier [opt]
        attribute-specifier-seq [opt] trailing-return-type [opt]
 
-   LAMBDA_EXPR is the current representation of the lambda expression.  */
+   LAMBDA_EXPR is the current representation of the lambda expression.
+   If CONSTEVAL_BLOCK_P is true, we are parsing a consteval block, which
+   is syntactic sugar for a consteval lambda.  */
 
 static bool
-cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
+cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
+				 bool consteval_block_p/*=false*/)
 {
   /* 5.1.1.4 of the standard says:
        If a lambda-expression does not include a lambda-declarator, it is as if
@@ -12361,6 +12373,18 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     cp_parser_decl_specifier_seq (parser,
 				  CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
 				  &lambda_specs, &declares_class_or_enum);
+
+  /* [dcl.pre] For a consteval-block-declaration D, the expression E
+     corresponding to D is:
+       [] -> void static consteval compound-statement ()
+     Make it so.  */
+  if (consteval_block_p)
+    {
+      return_type = void_type_node;
+      lambda_specs.storage_class = sc_static;
+      set_and_check_decl_spec_loc (&lambda_specs, ds_consteval,
+				   cp_lexer_peek_token (parser->lexer));
+    }
 
   if (omitted_parms_loc && lambda_specs.any_specifiers_p)
     {
@@ -16300,6 +16324,56 @@ cp_parser_toplevel_declaration (cp_parser* parser)
     cp_parser_declaration (parser, NULL_TREE);
 }
 
+/* Build an empty string for static_assert.  */
+
+static tree
+build_empty_string ()
+{
+  tree message = build_string (1, "");
+  TREE_TYPE (message) = char_array_type_node;
+  fix_string_type (message);
+  return message;
+}
+
+/* Return true iff the next tokens start a C++26 consteval block.  */
+
+static bool
+cp_parser_next_tokens_are_consteval_block_p (cp_parser *parser)
+{
+  return (cxx_dialect >= cxx26
+	  && cp_lexer_next_token_is_keyword (parser->lexer, RID_CONSTEVAL)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_BRACE));
+}
+
+/* Parse a consteval-block-declaration.
+
+   consteval-block-declaration:
+     consteval compound-statement
+
+   If MEMBER_P, this consteval block is a member declaration.  */
+
+static void
+cp_parser_consteval_block (cp_parser *parser, bool member_p)
+{
+  const location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  /* Consume the 'consteval'.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  /* We know the next token is '{'.  Let cp_parser_lambda_body handle it.  */
+  cp_expr lam = cp_parser_lambda_expression (parser,
+					     /*consteval_block_p=*/true);
+  if (!cp_parser_error_occurred (parser))
+    {
+      releasing_vec args;
+      tree call = finish_call_expr (lam, &args,
+				    /*disallow_virtual=*/false,
+				    /*koenig_p=*/false,
+				    tf_warning_or_error);
+      finish_static_assert (call, build_empty_string (), loc, member_p,
+			    /*show_expr_p=*/false, /*consteval_block_p=*/true);
+    }
+}
+
 /* Parse a block-declaration.
 
    block-declaration:
@@ -16307,17 +16381,17 @@ cp_parser_toplevel_declaration (cp_parser* parser)
      asm-definition
      namespace-alias-definition
      using-declaration
+     using-enum-declaration
      using-directive
+     static_assert-declaration
+     consteval-block-declaration
+     alias-declaration
+     opaque-enum-declaration
 
    GNU Extension:
 
    block-declaration:
      __extension__ block-declaration
-
-   C++0x Extension:
-
-   block-declaration:
-     static_assert-declaration
 
    If STATEMENT_P is TRUE, then this block-declaration is occurring as
    part of a declaration-statement.  */
@@ -16396,6 +16470,8 @@ cp_parser_block_declaration (cp_parser *parser,
   /* If the next token is `static_assert' we have a static assertion.  */
   else if (token1->keyword == RID_STATIC_ASSERT)
     cp_parser_static_assert (parser, /*member_p=*/false);
+  else if (cp_parser_next_tokens_are_consteval_block_p (parser))
+    cp_parser_consteval_block (parser, /*member_p=*/false);
   else
     {
       size_t attr_idx = cp_parser_skip_std_attribute_spec_seq (parser, 1);
@@ -17699,9 +17775,7 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
 		 "only available with %<-std=c++17%> or %<-std=gnu++17%>");
       /* Eat the ')'  */
       cp_lexer_consume_token (parser->lexer);
-      message = build_string (1, "");
-      TREE_TYPE (message) = char_array_type_node;
-      fix_string_type (message);
+      message = build_empty_string ();
     }
   else
     {
@@ -28831,12 +28905,20 @@ cp_parser_member_specification_opt (cp_parser* parser)
 /* Parse a member-declaration.
 
    member-declaration:
-     decl-specifier-seq [opt] member-declarator-list [opt] ;
-     function-definition ; [opt]
-     :: [opt] nested-name-specifier template [opt] unqualified-id ;
+     attribute-specifier-seq [opt] decl-specifier-seq [opt]
+       member-declarator-list [opt] ;
+     function-definition
+     friend-type-declaration
      using-declaration
+     using-enum-declaration
+     static_assert-declaration
+     consteval-block-declaration
      template-declaration
+     explicit-specialization
+     deduction-guide
      alias-declaration
+     opaque-enum-declaration
+     empty-declaration
 
    member-declarator-list:
      member-declarator
@@ -28855,12 +28937,7 @@ cp_parser_member_specification_opt (cp_parser* parser)
    member-declarator:
      declarator attributes [opt] pure-specifier [opt]
      declarator attributes [opt] constant-initializer [opt]
-     identifier [opt] attributes [opt] : constant-expression
-
-   C++0x Extensions:
-
-   member-declaration:
-     static_assert-declaration  */
+     identifier [opt] attributes [opt] : constant-expression  */
 
 static void
 cp_parser_member_declaration (cp_parser* parser)
@@ -28957,6 +29034,12 @@ cp_parser_member_declaration (cp_parser* parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_STATIC_ASSERT))
     {
       cp_parser_static_assert (parser, /*member_p=*/true);
+      return;
+    }
+
+  if (cp_parser_next_tokens_are_consteval_block_p (parser))
+    {
+      cp_parser_consteval_block (parser, /*member_p=*/true);
       return;
     }
 

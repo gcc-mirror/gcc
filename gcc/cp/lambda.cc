@@ -1038,13 +1038,19 @@ maybe_generic_this_capture (tree object, tree fns)
       }
 }
 
-/* Returns the innermost non-lambda function.  */
+/* Returns the innermost non-lambda function.  If ONLY_SKIP_CONSTEVAL_BLOCK_P,
+   we only skip lambda functions that represent consteval blocks.  */
 
 tree
-current_nonlambda_function (void)
+current_nonlambda_function (bool only_skip_consteval_block_p/*=false*/)
 {
   tree fn = current_function_decl;
-  while (fn && LAMBDA_FUNCTION_P (fn))
+  tree lam;
+  while (fn && LAMBDA_FUNCTION_P (fn)
+	 && (!only_skip_consteval_block_p
+	     /* Only keep going if FN represents a consteval block.  */
+	     || ((lam = CLASSTYPE_LAMBDA_EXPR (CP_DECL_CONTEXT (fn)))
+		 && LAMBDA_EXPR_CONSTEVAL_BLOCK_P (lam))))
     fn = decl_function_context (fn);
   return fn;
 }

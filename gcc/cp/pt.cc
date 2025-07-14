@@ -19601,7 +19601,8 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	finish_static_assert (condition, message,
                               STATIC_ASSERT_SOURCE_LOCATION (t),
-			      /*member_p=*/false, /*show_expr_p=*/true);
+			      /*member_p=*/false, /*show_expr_p=*/true,
+			      CONSTEVAL_BLOCK_P (t));
       }
       break;
 
