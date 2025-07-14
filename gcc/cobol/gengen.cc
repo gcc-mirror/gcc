@@ -140,7 +140,7 @@ struct cbl_translation_unit_t gg_trans_unit;
 // the compiler when a source code module makes that mistake.
 static std::unordered_set<std::string> names_we_have_seen;
 
-// This vector is used to process the function_decls at the point we leave 
+// This vector is used to process the function_decls at the point we leave
 // the file.
 static std::vector<tree> finalized_function_decls;
 
@@ -893,7 +893,7 @@ gg_create_assembler_name(const char *cobol_name)
 static char *
 gg_unique_in_function(const char *var_name, gg_variable_scope_t vs_scope)
   {
-  char *retval = (char *)xmalloc(strlen(var_name)+32);
+  char *retval = static_cast<char *>(xmalloc(strlen(var_name)+32));
   if( (vs_scope == vs_stack || vs_scope == vs_static) )
     {
     sprintf(retval, "%s." HOST_SIZE_T_PRINT_DEC, var_name,
@@ -1028,10 +1028,7 @@ gg_declare_variable(tree type_decl,
       break;
     }
   DECL_INITIAL(var_decl) = initial_value;
-  if( unique_name )
-    {
-    free(unique_name);
-    }
+  free(unique_name);
   return var_decl;
   }
 
@@ -2521,12 +2518,12 @@ gg_peek_fn_decl(const char *funcname, tree fndecl_type)
     }
   return retval;
   }
-  
+
 tree
 gg_build_fn_decl(const char *funcname, tree fndecl_type)
   {
   tree function_decl;
-  
+
   std::string key = function_decl_key(funcname, fndecl_type);
   std::unordered_map<std::string, tree>::const_iterator it =
           map_of_function_decls.find(key);
@@ -2617,13 +2614,13 @@ gg_define_function( tree return_type,
     }
   va_end(params);
 
+  char ach[32];
   std::unordered_set<std::string>::const_iterator it =
           names_we_have_seen.find(funcname);
   if( it != names_we_have_seen.end() )
     {
     static int bum_counter = 1;
     // We have seen this name before.  Replace it with something unique:
-    char ach[32];
     sprintf(ach, "..no_dupes.%d", bum_counter++);
     funcname = ach;
     }

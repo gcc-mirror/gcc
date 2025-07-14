@@ -500,13 +500,13 @@ symbol_elem_cmp( const void *K, const void *E )
       }
       return strcasecmp(key.name, elem.name);
     }
-    break;
+    // break; // This break not needed if all options do a return.
   case SymSpecial:
     return special_pair_cmp(k->elem.special, e->elem.special)? 0 : 1;
-    break;
+    // break; // This break not needed after return.
   case SymAlphabet:
     return strcasecmp(k->elem.alphabet.name, e->elem.alphabet.name);
-    break;
+    // break; // This break not needed after return.
   case SymFile:
     // If the key is global, so must be the found element.
     if( (cbl_file_of(k)->attr & global_e) == global_e &&
@@ -514,7 +514,7 @@ symbol_elem_cmp( const void *K, const void *E )
       return 1;
     }
     return strcasecmp(k->elem.file.name, e->elem.file.name);
-    break;
+    // break; // This break not needed after return.
   }
   assert(k->type == SymField);
 
@@ -672,7 +672,7 @@ symbol_special( size_t program, const char name[] )
 struct symbol_elem_t *
 symbol_alphabet( size_t program, const char name[] )
 {
-  cbl_alphabet_t alphabet(YYLTYPE(), custom_encoding_e);
+  cbl_alphabet_t alphabet(YYLTYPE(), custom_encoding_e); // cppcheck-suppress syntaxError
   assert(strlen(name) < sizeof alphabet.name);
   strcpy(alphabet.name, name);
 
@@ -931,7 +931,7 @@ end_of_group( size_t igroup ) {
       if( e->program != group->program ) return isym;
       if( e->type == SymLabel ) return isym; // end of data division
       if( e->type == SymField ) {
-        const auto f = cbl_field_of(e);
+        const cbl_field_t * f = cbl_field_of(e);
         if( f->level == LEVEL77 || f->level == 66 ) return isym;
         if( f->level == 1 && f->parent != igroup ) {
           return isym;
@@ -1174,7 +1174,7 @@ static struct symbol_elem_t *
         // If an 01 record exists for the FD/SD, use its capacity as the
         // default_record capacity.
         if( p != symbols_end() ) {
-          const auto record = cbl_field_of(p);
+          const cbl_field_t * record = cbl_field_of(p);
           assert(record->level == 1);
           e = calculate_capacity(p);
           auto record_size = std::max(record->data.memsize,
@@ -1262,7 +1262,7 @@ static struct symbol_elem_t *
 
     // If group has a parent that is a record area, expand it, too.
     if( 0 < group->parent ) {
-      auto redefined = symbol_redefines(group);
+      redefined = symbol_redefines(group);
       if( redefined && is_record_area(redefined) ) {
         if( redefined->data.capacity < group->data.memsize ) {
           redefined->data.capacity = group->data.memsize;
@@ -1434,11 +1434,11 @@ cbl_field_t::attr_str( const std::vector<cbl_field_attr_t>& attrs ) const
   const char *sep = "";
   char *out = NULL;
 
-  for( auto attr : attrs ) {
+  for( auto attr_l : attrs ) {
     char *part = out;
-    if( has_attr(attr) ) {
+    if( has_attr(attr_l) ) {
       int erc = asprintf(&out, "%s%s%s",
-                         part? part : "", sep, cbl_field_attr_str(attr));
+                         part? part : "", sep, cbl_field_attr_str(attr_l));
       if( -1 == erc ) return part;
       free(part);
       sep = ", ";
@@ -1745,7 +1745,7 @@ symbols_update( size_t first, bool parsed_ok ) {
 
     bool size_invalid = field->data.memsize > 0 && symbol_redefines(field);
     if( size_invalid ) { // redefine of record area is ok
-      const auto redefined = symbol_redefines(field);
+      const cbl_field_t * redefined = symbol_redefines(field);
       size_invalid = ! is_record_area(redefined);
     }
     if( !field->is_valid() || size_invalid )
@@ -1828,7 +1828,7 @@ symbols_update( size_t first, bool parsed_ok ) {
     }
 
     // Verify REDEFINing field has no ODO components
-    const auto parent = symbol_redefines(field);
+    const cbl_field_t * parent = symbol_redefines(field);
     if( parent && !is_record_area(parent) && is_variable_length(field) ) {
       ERROR_FIELD(field, "line %d: REDEFINES field %s cannot be variable length",
                field->line, field->name);
@@ -2470,7 +2470,7 @@ symbol_typedef_add( size_t program, struct cbl_field_t *field ) {
   auto e = symbols_end() - 1;
   assert( symbols_begin() < e );
   if( e->type == SymField ) {
-    const auto f = cbl_field_of(e);
+    const cbl_field_t * f = cbl_field_of(e);
     if( f == field ) return e;
   }
 
@@ -2520,7 +2520,8 @@ symbol_field_add( size_t program, struct cbl_field_t *field )
     if( is_numeric(parent->usage) && parent->data.capacity > 0 ) {
       field->type = parent->usage;
       field->data = parent->data;
-      field->data = 0;
+      field->data = 0;  // cppcheck-suppress redundantAssignment
+      //                // cppcheck doesn't understand multiple overloaded operator=
       field->data.initial = NULL;
     }
   }
@@ -3144,7 +3145,6 @@ static cbl_field_t *
 new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr )
 {
   extern int yylineno;
-  static int nstack, nliteral;
   static const struct cbl_field_t empty_alpha = {
                                 0, FldAlphanumeric, FldInvalid,
                                 intermediate_e, 0, 0, 0, nonarray, 0, "",
@@ -3213,8 +3213,10 @@ new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr 
 
   f->line = yylineno;
   if( is_literal(type) ) {
+    static int nliteral = 0;
     snprintf(f->name, sizeof(f->name), "_literal%d",++nliteral);
   } else {
+    static int nstack = 0;
     snprintf(f->name, sizeof(f->name), "_stack%d",++nstack);
   }
 
@@ -3728,6 +3730,12 @@ symbol_label_add( size_t program, cbl_label_t *input )
 bool
 symbol_label_section_exists( size_t eval_label_index ) {
   auto eval = symbols_begin(eval_label_index);
+  /*  cppcheck warns that the following statement depends on the order of
+      evaluation of side effects.  Since this isn't my code, and since I don't
+      think the warning can be eliminated without rewriting it, I am just
+      supprressing it.
+      -- Bob Dubner, 2025-07-14 */
+  // cppcheck-suppress unknownEvaluationOrder
   bool has_section = std::any_of( ++eval, symbols_end(),
                                [program = eval->program]( const auto& sym ) {
                                  if( program == sym.program && sym.type == SymLabel ) {
@@ -4187,7 +4195,7 @@ symbol_program_callables( size_t program ) {
     if( e->type != SymLabel ) continue;
     if( e->elem.label.type != LblProgram ) continue;
 
-    const auto prog = cbl_label_of(e);
+    const cbl_label_t * prog = cbl_label_of(e);
     if( program == symbol_index(e) && !prog->recursive ) continue;
 
     if( (self->parent == prog->parent && prog->common) ||
@@ -4658,9 +4666,11 @@ file_status_status_of( file_status_t status ) {
   size_t n = COUNT_OF(file_status_fields);
   const file_status_field_t *fs, key { status };
 
-  fs = (file_status_field_t*)lfind( &key, file_status_fields,
-                                    &n, sizeof(*fs), cbl_file_status_cmp );
-
+  fs = static_cast<file_status_field_t*>(lfind( &key,
+                                                file_status_fields,
+                                                &n,
+                                                sizeof(*fs),
+                                                cbl_file_status_cmp ));
   return fs? (long)fs->status : -1;
 }
 

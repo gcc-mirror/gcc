@@ -529,7 +529,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   // cl_decoded_option
 
   size_t new_option_count = new_opt.size();
-  struct cl_decoded_option *new_options = XNEWVEC (struct cl_decoded_option, new_option_count);
+  struct cl_decoded_option *new_options = XNEWVEC (struct cl_decoded_option,
+                                                    new_option_count);
 
   for(size_t i=0; i<new_option_count; i++)
     {
@@ -539,7 +540,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #ifdef NOISY
   verbose = true;
 #endif
-  if( verbose && new_options != original_options )
+  if( verbose && new_options != original_options ) // cppcheck-suppress knownConditionTrueFalse
     {
     fprintf(stderr, _("Driving: (" HOST_SIZE_T_PRINT_DEC ")\n"),
             (fmt_size_t)new_option_count);

@@ -490,7 +490,8 @@ trim_location( int nkeep) {
          (fmt_size_t)nline, (fmt_size_t)rescan.size());
   if( nline ) {
     gcc_assert( yylloc.first_line + nline <= yylloc.last_line );
-    yylloc.last_line =- int(nline);
+    yylloc.last_line -= int(nline);
+    gcc_assert( yylloc.first_line <= yylloc.last_line );
     char *p = static_cast<char*>(memrchr(rescan.p, '\n', rescan.size()));
     yylloc.last_column = rescan.pend - ++p;
     return;

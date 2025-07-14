@@ -52,7 +52,8 @@ set_up_on_exception_label(cbl_label_t *arithmetic_label)
     if( !arithmetic_label->structs.arith_error )
       {
       arithmetic_label->structs.arith_error
-        = (cbl_arith_error_t *)xmalloc(sizeof(struct cbl_arith_error_t) );
+        = static_cast<cbl_arith_error_t *>
+                                  (xmalloc(sizeof(struct cbl_arith_error_t)));
       // Set up the address pairs for this clause
       gg_create_goto_pair(&arithmetic_label->structs.arith_error->over.go_to,
                           &arithmetic_label->structs.arith_error->over.label);
@@ -72,8 +73,8 @@ set_up_compute_error_label(cbl_label_t *compute_label)
     if( !compute_label->structs.compute_error )
       {
       compute_label->structs.compute_error
-        = (cbl_compute_error_t *)
-          xmalloc(sizeof(struct cbl_compute_error_t) );
+        = static_cast<cbl_compute_error_t *>
+          (xmalloc(sizeof(struct cbl_compute_error_t)));
       compute_label->structs.compute_error->compute_error_code
         = gg_define_int(0);
       }
@@ -112,7 +113,6 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
     {
     TRACE1_HEADER
     TRACE1_TEXT_ABC("calling ", operation, "")
-    TRACE1_END
     for(size_t ii=0; ii<nA; ii++)
       {
       TRACE1_INDENT
@@ -129,7 +129,6 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
                   build_int_cst_type(SIZE_T, ii));
       TRACE1_REFER("", B[ii], "");
       }
-    TRACE1_END
     }
 
   // We need to split up cbl_num_result_t into two arrays, one for the refer_t
@@ -223,7 +222,6 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
     {
     for(size_t ii=0; ii<nC; ii++)
       {
-      break;  // Breaks on ADD 1 SUB2 GIVING SUB4 both PIC S9(3) COMP
       TRACE1_INDENT
       gg_fprintf( trace_handle,
                   1, "result: C[%ld]: ",
@@ -663,8 +661,10 @@ fast_divide(size_t nC, cbl_num_result_t *C,
       // We now either divide into C[n] or assign dividend/divisor to C[n]:
       for(size_t i=0; i<nC; i++ )
         {
-        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity, 0);
-        tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node, "data"),
+        tree dest_type =
+                       tree_type_from_size(C[i].refer.field->data.capacity, 0);
+        tree dest_addr = gg_add(member( C[i].refer.field->var_decl_node,
+                                        "data"),
                                 refer_offset(C[i].refer));
         tree ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
         if( nB )
@@ -680,16 +680,15 @@ fast_divide(size_t nC, cbl_num_result_t *C,
           }
 
         // This is where we handle any remainder, keeping in mind that for
-        // nB != 0, the actual dividend is in the value we have named "divisor".
-        //
-        // And, yes, I hate comments like that, too.
+        // nB != 0, the actual dividend is in the value we have named
+        // "divisor".
 
         // We calculate the remainder by calculating
         //    dividend minus quotient * divisor
         if( remainder.field )
           {
-          tree dest_addr = gg_add(member(remainder.field->var_decl_node, "data"),
-                                  refer_offset(remainder));
+          dest_addr = gg_add( member(remainder.field->var_decl_node, "data"),
+                              refer_offset(remainder));
           dest_type = tree_type_from_size(remainder.field->data.capacity, 0);
           ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
 

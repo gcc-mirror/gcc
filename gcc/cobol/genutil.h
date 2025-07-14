@@ -118,7 +118,7 @@ void      set_exception_code_func(ec_type_t ec,
                                   int line,
                                   int from_raise_statement=0);
 #define set_exception_code(ec) set_exception_code_func(ec, __LINE__)
-bool      process_this_exception(ec_type_t ec);
+bool      process_this_exception(const ec_type_t ec);
 #define   CHECK_FOR_FRACTIONAL_DIGITS true
 void      get_integer_value(tree value,  // This is always a LONG
                             cbl_field_t *field,
@@ -130,7 +130,7 @@ void      copy_little_endian_into_place(cbl_field_t *dest,
                                         tree value,
                                         int rhs_rdigits,
                                         bool check_for_error,
-                                        tree &size_error);
+                                  const tree &size_error);
 tree      build_array_of_size_t( size_t  N,
                                  const size_t *values);
 void      parser_display_internal_field(tree file_descriptor,
@@ -138,7 +138,7 @@ void      parser_display_internal_field(tree file_descriptor,
                                         bool advance=DISPLAY_NO_ADVANCE);
 char     *get_literal_string(cbl_field_t *field);
 
-bool      refer_is_clean(cbl_refer_t &refer);
+bool      refer_is_clean(const cbl_refer_t &refer);
 
 tree      refer_offset(cbl_refer_t &refer,
                        int *pflags=NULL);

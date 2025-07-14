@@ -12315,7 +12315,8 @@ parser_file_merge(  cbl_file_t *workfile,
   ELSE
     ENDIF
 
-  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
+  const cbl_enabled_exceptions_t&
+                                enabled_exceptions( cdf_enabled_exceptions() );
   
   for(size_t i=0; i<ninputs; i++)
     {

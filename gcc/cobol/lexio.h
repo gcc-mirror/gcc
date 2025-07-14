@@ -244,8 +244,8 @@ struct span_t {
     return span_t(output, eout);
   }
   const char * has_nul() const {
-    auto p = std::find(this->p, pend, '\0');
-    return p != pend? p : NULL;
+    auto p_l = std::find(this->p, pend, '\0');
+    return p_l != pend? p_l : NULL;
   }
 
   bool at_eol() const {

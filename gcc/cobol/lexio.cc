@@ -344,7 +344,7 @@ check_push_pop_directive( filespan_t& mfile ) {
   std::swap(*mfile.eol, eol); // see implementation for excuses
   bool ok = regex_search(p, const_cast<const char *>(mfile.eol), cm, re);
   std::swap(*mfile.eol, eol);
-  
+
   if( ok ) {
     gcc_assert(cm.size() > 1);
     bool push = TOUPPER(cm[1].first[1]) == 'U';
@@ -400,7 +400,7 @@ check_source_format_directive( filespan_t& mfile ) {
   std::swap(*mfile.eol, eol); // see implementation for excuses
   bool ok = regex_search(p, const_cast<const char *>(mfile.eol), cm, re);
   std::swap(*mfile.eol, eol);
-  
+
   if( ok ) {
     gcc_assert(cm.size() > 1);
     switch( cm[3].length() ) {
@@ -417,7 +417,7 @@ check_source_format_directive( filespan_t& mfile ) {
 
     dbgmsg( "%s:%d: %s format set, on line " HOST_SIZE_T_PRINT_UNSIGNED,
             __func__, __LINE__,
-            cdf_source_format().description(), 
+            cdf_source_format().description(),
             (fmt_size_t)mfile.lineno() );
     char *bol = cdf_source_format().is_fixed()? mfile.cur : const_cast<char*>(cm[0].first);
     gcc_assert(cm[0].second <= mfile.eol);
@@ -941,7 +941,7 @@ location_in( const filespan_t& mfile, const csub_match& cm ) {
   gcc_assert(mfile.cur <= cm.first && cm.second <= mfile.eodata);
   auto nline = std::count(cm.first, cm.second, '\n');
   if( nline ) {
-    gcc_assert(loc.first_line < nline);
+    gcc_assert(nline < loc.first_line);
     loc.first_line -= nline;
     auto p = static_cast<const char*>(memrchr(cm.first, '\n', cm.length()));
     loc.last_column = (cm.second) - p;
@@ -1379,13 +1379,13 @@ lexer_input( char buf[], int max_size, FILE *input ) {
   for( auto p = mfile.cur; p < next; *output.pos++ = *p++ ) {
     static bool at_bol = false;
     if( at_bol ) {
-      auto nonblank = std::find_if( p, next,
+      auto nonblank_l = std::find_if( p, next,
                                     []( char ch ) {
                                       return !isblank(ch); } );
-      if( nonblank + 1 < next ) {
-        if( *nonblank == '\r' ) nonblank++; // Windows
-        if( *nonblank == '\n' ) {
-          p = nonblank;
+      if( nonblank_l + 1 < next ) {
+        if( *nonblank_l == '\r' ) nonblank_l++; // Windows
+        if( *nonblank_l == '\n' ) {
+          p = nonblank_l;
           continue;
         }
       }
@@ -1513,7 +1513,6 @@ cdftext::lex_open( const char filename[] ) {
 
   // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
-    int input;
     if( -1 == (input = open(name, O_RDONLY)) ) {
       yyerrorvl(1, "", "cannot open -include file %s", name);
       continue;
@@ -1686,7 +1685,7 @@ bool lexio_dialect_mf();
  */
 static const char *
 valid_sequence_area( const char *data, const char *eodata ) {
-  
+
   for( const char *p = data;
        (p = std::find_if(p, eodata, is_p)) != eodata;
        p++ )
@@ -1709,7 +1708,7 @@ valid_sequence_area( const char *data, const char *eodata ) {
       }
     }
   }
-  return nullptr;  
+  return nullptr;
 }
 
 /*
@@ -1745,7 +1744,7 @@ cdftext::free_form_reference_format( int input ) {
   } current( mfile.data );
 
   /*
-   * Infer source code format. 
+   * Infer source code format.
    */
   if( cdf_source_format().inference_pending()  ) {
     const char *bol = valid_sequence_area(mfile.data, mfile.eodata);
@@ -1983,15 +1982,15 @@ cdftext::segment_line( filespan_t& mfile ) {
     struct { unsigned long ante, post; } lineno = {
       gb4(mfile.lineno()), gb4(mfile.lineno() + segment.after.nlines())
     };
-    char *directive = lineno.ante == lineno.post?
+    const char *directive = lineno.ante == lineno.post?
       nullptr : xasprintf("\n#line %lu \"%s\"\n",
                           lineno.ante, cobol_filename());
 
-    if( directive ) 
+    if( directive )
       output.push_back( span_t(strlen(directive), directive) );
     output.push_back( span_t(mfile.cur, segment.before.p) );
     output.push_back( span_t(segment.after.p, segment.after.pend ) );
-    if( directive ) 
+    if( directive )
       output.push_back( span_t(strlen(directive), directive) );
 
     mfile.cur = const_cast<char*>(segment.before.pend);

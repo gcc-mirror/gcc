@@ -96,7 +96,7 @@ cbl_enabled_exceptions_t::dump() const {
     return;
   }
   int i = 1;
-  for( auto& elem : *this ) {
+  for( auto& elem : *this ) { // cppcheck-suppress constVariableReference
     dbgmsg("cbl_enabled_exceptions_t: %2d  {%s, %s, %lu}",
            i++,
            elem.location? "with location" : "  no location", 
