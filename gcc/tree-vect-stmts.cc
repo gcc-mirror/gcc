@@ -6978,16 +6978,6 @@ vectorizable_operation (vec_info *vinfo,
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	}
-      else if (loop_vinfo
-	       && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-	       && code == BIT_AND_EXPR
-	       && VECTOR_BOOLEAN_TYPE_P (vectype)
-	       /* We cannot always record a mask since that will disable
-		  len-based partial vectors, but there should be already
-		  one mask producer stmt which should require loop
-		  masking.  */
-	       && !masks->is_empty ())
-	vect_record_loop_mask (loop_vinfo, masks, vec_num, vectype, NULL);
 
       /* Put types on constant and invariant SLP children.  */
       if (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
