@@ -1186,13 +1186,6 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
   expr = maybe_undo_parenthesized_ref (expr);
 
-  expr = mark_discarded_use (expr);
-  if (implicit == ICV_CAST)
-    /* An explicit cast to void avoids all -Wunused-but-set* warnings.  */
-    mark_exp_read (expr);
-
-  if (!TREE_TYPE (expr))
-    return expr;
   if (invalid_nonstatic_memfn_p (loc, expr, complain))
     return error_mark_node;
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
@@ -1209,6 +1202,12 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
+
+  expr = mark_discarded_use (expr);
+  if (implicit == ICV_CAST)
+    /* An explicit cast to void avoids all -Wunused-but-set* warnings.  */
+    mark_exp_read (expr);
+
   switch (TREE_CODE (expr))
     {
     case COND_EXPR:

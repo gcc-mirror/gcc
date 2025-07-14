@@ -3028,7 +3028,7 @@ cp_fold (tree x, fold_flags_t flags)
     case CLEANUP_POINT_EXPR:
       /* Strip CLEANUP_POINT_EXPR if the expression doesn't have side
 	 effects.  */
-      r = cp_fold_rvalue (TREE_OPERAND (x, 0), flags);
+      r = cp_fold (TREE_OPERAND (x, 0), flags);
       if (!TREE_SIDE_EFFECTS (r))
 	x = r;
       break;
@@ -3223,7 +3223,8 @@ cp_fold (tree x, fold_flags_t flags)
 	  && (VAR_P (op0) || TREE_CODE (op0) == PARM_DECL)
 	  && !DECL_READ_P (op0))
 	clear_decl_read = true;
-      op1 = cp_fold_rvalue (TREE_OPERAND (x, 1), flags);
+      op1 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 1),
+				  code != COMPOUND_EXPR, flags);
       if (clear_decl_read)
 	DECL_READ_P (op0) = 0;
 
