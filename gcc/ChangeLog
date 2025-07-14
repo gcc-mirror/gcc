@@ -1,3 +1,22 @@
+2025-07-13  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	Backported from master:
+	2025-07-02  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120356
+	* config/riscv/riscv-v.cc
+	(expand_const_vector_interleaved_stepped_npatterns):
+	Fix ASHIFT to LSHIFTRT insn.
+
+2025-07-13  Andreas Schwab  <schwab@suse.de>
+
+	Backported from master:
+	2025-07-08  Andreas Schwab  <schwab@suse.de>
+
+	PR target/120995
+	* config/riscv/sync.md (zacas_atomic_cas_value_strong<mode>):
+	Allow op3 to be zero.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

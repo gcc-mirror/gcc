@@ -1,3 +1,19 @@
+2025-07-13  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	Backported from master:
+	2025-07-02  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120356
+	* gcc.target/riscv/rvv/autovec/pr120356.c: New test.
+
+2025-07-13  Andreas Schwab  <schwab@suse.de>
+
+	Backported from master:
+	2025-07-08  Andreas Schwab  <schwab@suse.de>
+
+	PR target/120995
+	* gcc.target/riscv/amo/zabha-zacas-atomic-cas.c: New test.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
