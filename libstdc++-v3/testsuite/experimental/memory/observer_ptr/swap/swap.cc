@@ -25,7 +25,7 @@ using std::experimental::observer_ptr;
 struct B {};
 struct D : B {};
 
-void test01()
+constexpr void test01()
 {
   observer_ptr<int> a, b;
   VERIFY(a == b);
@@ -33,7 +33,7 @@ void test01()
   VERIFY(a == b);
 }
 
-void test02()
+constexpr void test02()
 {
   int x{};
   observer_ptr<int> a;
@@ -45,7 +45,7 @@ void test02()
   VERIFY(!b);
 }
 
-void test03()
+constexpr void test03()
 {
   int x[2]{1,2};
   observer_ptr<int> a{&x[0]};
@@ -57,10 +57,16 @@ void test03()
   VERIFY(*b == 1);
 }
 
-
 int main()
 {
-  test01();
-  test02();
-  test03();
+  auto tests = [] {
+    test01();
+    test02();
+    test03();
+    return true;
+  };
+  tests();
+#if __cpp_lib_constexpr_algorithms >= 201806L // >= C++20
+  static_assert( tests(), "LWG 4295 - swap should be constexpr" );
+#endif
 }

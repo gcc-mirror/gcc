@@ -22,13 +22,13 @@
 
 using std::experimental::observer_ptr;
 
-void test01()
+constexpr void test01()
 {
   observer_ptr<int> a, b;
   VERIFY(a == b);
 }
 
-void test02()
+constexpr void test02()
 {
   int x[2]{};
   observer_ptr<int> a{&x[0]};
@@ -40,7 +40,7 @@ void test02()
   VERIFY(b > a);
 }
 
-void test03()
+constexpr void test03()
 {
   int x{};
   observer_ptr<int> a{&x};
@@ -48,9 +48,10 @@ void test03()
   VERIFY(a == b);
 }
 
-void test04()
+int x[2]{};
+
+constexpr void test04()
 {
-  static constexpr int x[2]{};
   constexpr observer_ptr<const int> a{&x[0]};
   constexpr observer_ptr<const int> b{&x[1]};
   VERIFY(a != b);
@@ -60,20 +61,25 @@ void test04()
   VERIFY(b > a);
 }
 
-void test05()
+constexpr void test05()
 {
-  static constexpr int x{};
-  constexpr observer_ptr<const int> a{&x};
-  constexpr observer_ptr<const int> b{&x};
+  constexpr observer_ptr<const int> a{&x[0]};
+  constexpr observer_ptr<const int> b{&x[0]};
   VERIFY(a == b);
 }
 
-
-int main()
+constexpr bool all_tests()
 {
   test01();
   test02();
   test03();
   test04();
   test05();
+  return true;
+}
+
+int main()
+{
+  all_tests();
+  static_assert( all_tests(), "LWG 4295 - relops should be constexpr" );
 }

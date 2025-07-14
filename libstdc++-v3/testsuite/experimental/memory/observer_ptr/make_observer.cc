@@ -20,12 +20,19 @@
 #include <experimental/memory>
 #include <testsuite_hooks.h>
 
-int main()
+constexpr bool test()
 {
   const int i = 42;
   auto o = std::experimental::make_observer(&i);
   static_assert( std::is_same<decltype(o),
-                 std::experimental::observer_ptr<const int>>(), "" );
+		   std::experimental::observer_ptr<const int>>(), "" );
   VERIFY( o && *o == 42 );
   VERIFY( o.get() == &i );
+  return true;
+}
+
+int main()
+{
+  test();
+  static_assert( test(), "LWG 4295 - make_observer should be constexpr" );
 }
