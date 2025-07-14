@@ -8382,7 +8382,7 @@ static bool
 loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
 {
   int i;
-  rtx target, op0, op1, sel, tmp;
+  rtx target, op0, op1;
   rtx rperm[MAX_VECT_LEN];
 
   if (GET_MODE_SIZE (d->vmode) == 16)
@@ -8401,47 +8401,23 @@ loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
       for (i = 0; i < d->nelt; i += 1)
 	  rperm[i] = GEN_INT (d->perm[i]);
 
-      if (d->vmode == E_V2DFmode)
-	{
-	  sel = gen_rtx_CONST_VECTOR (E_V2DImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = simplify_gen_subreg (E_V2DImode, d->target, d->vmode, 0);
-	  emit_move_insn (tmp, sel);
-	}
-      else if (d->vmode == E_V4SFmode)
-	{
-	  sel = gen_rtx_CONST_VECTOR (E_V4SImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = simplify_gen_subreg (E_V4SImode, d->target, d->vmode, 0);
-	  emit_move_insn (tmp, sel);
-	}
-      else
-	{
-	  sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt, rperm));
-	  emit_move_insn (d->target, sel);
-	}
+      machine_mode sel_mode = related_int_vector_mode (d->vmode)
+	.require ();
+      rtvec sel_v = gen_rtvec_v (d->nelt, rperm);
 
-      switch (d->vmode)
-	{
-	case E_V2DFmode:
-	  emit_insn (gen_lsx_vshuf_d_f (target, target, op1, op0));
-	  break;
-	case E_V2DImode:
-	  emit_insn (gen_lsx_vshuf_d (target, target, op1, op0));
-	  break;
-	case E_V4SFmode:
-	  emit_insn (gen_lsx_vshuf_w_f (target, target, op1, op0));
-	  break;
-	case E_V4SImode:
-	  emit_insn (gen_lsx_vshuf_w (target, target, op1, op0));
-	  break;
-	case E_V8HImode:
-	  emit_insn (gen_lsx_vshuf_h (target, target, op1, op0));
-	  break;
-	case E_V16QImode:
-	  emit_insn (gen_lsx_vshuf_b (target, op1, op0, target));
-	  break;
-	default:
-	  break;
-	}
+      /* Despite vshuf.* (except vshuf.b) needs sel == target, we cannot
+	 load sel into target right now: here we are dealing with
+	 pseudo regs, and target may be the same pseudo as one of op0
+	 or op1.  Then we'd clobber the input.  Instead, we use a new
+	 pseudo reg here.  The reload pass will look at the constraint
+	 of vshuf.* and move sel into target first if needed.  */
+      rtx sel = force_reg (sel_mode,
+			   gen_rtx_CONST_VECTOR (sel_mode, sel_v));
+
+      if (d->vmode == E_V16QImode)
+	emit_insn (gen_lsx_vshuf_b (target, op1, op0, sel));
+      else
+	emit_insn (gen_lsx_vshuf (d->vmode, target, sel, op1, op0));
 
       return true;
     }
@@ -9437,7 +9413,7 @@ loongarch_expand_vec_perm_const (struct expand_vec_perm_d *d)
   bool flag = false;
   unsigned int i;
   unsigned char idx;
-  rtx target, op0, op1, sel, tmp;
+  rtx target, op0, op1;
   rtx rperm[MAX_VECT_LEN];
   unsigned int remapped[MAX_VECT_LEN];
   unsigned char perm2[MAX_VECT_LEN];
@@ -9617,63 +9593,23 @@ loongarch_expand_vec_perm_const (struct expand_vec_perm_d *d)
 expand_perm_const_end:
       if (flag)
 	{
-	  /* Copy selector vector from memory to vector register for later insn
-	     gen function.
-	     If vector's element in floating point value, we cannot fit
-	     selector argument into insn gen function directly, because of the
-	     insn template definition.  As a solution, generate a integral mode
-	     subreg of target, then copy selector vector (that is in integral
-	     mode) to this subreg.  */
-	  switch (d->vmode)
-	    {
-	    case E_V4DFmode:
-	      sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (d->nelt,
-								   rperm));
-	      tmp = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
-	      emit_move_insn (tmp, sel);
-	      break;
-	    case E_V8SFmode:
-	      sel = gen_rtx_CONST_VECTOR (E_V8SImode, gen_rtvec_v (d->nelt,
-								   rperm));
-	      tmp = simplify_gen_subreg (E_V8SImode, d->target, d->vmode, 0);
-	      emit_move_insn (tmp, sel);
-	      break;
-	    default:
-	      sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt,
-								 rperm));
-	      emit_move_insn (d->target, sel);
-	      break;
-	    }
-
 	  target = d->target;
 	  op0 = d->op0;
 	  op1 = d->one_vector_p ? d->op0 : d->op1;
 
-	  /* We FINALLY can generate xvshuf.* insn.  */
-	  switch (d->vmode)
-	    {
-	    case E_V4DFmode:
-	      emit_insn (gen_lasx_xvshuf_d_f (target, target, op1, op0));
-	      break;
-	    case E_V4DImode:
-	      emit_insn (gen_lasx_xvshuf_d (target, target, op1, op0));
-	      break;
-	    case E_V8SFmode:
-	      emit_insn (gen_lasx_xvshuf_w_f (target, target, op1, op0));
-	      break;
-	    case E_V8SImode:
-	      emit_insn (gen_lasx_xvshuf_w (target, target, op1, op0));
-	      break;
-	    case E_V16HImode:
-	      emit_insn (gen_lasx_xvshuf_h (target, target, op1, op0));
-	      break;
-	    case E_V32QImode:
-	      emit_insn (gen_lasx_xvshuf_b (target, op1, op0, target));
-	      break;
-	    default:
-	      gcc_unreachable ();
-	      break;
-	    }
+	  machine_mode sel_mode = related_int_vector_mode (d->vmode)
+	    .require ();
+	  rtvec sel_v = gen_rtvec_v (d->nelt, rperm);
+
+	  /* See the comment in loongarch_expand_lsx_shuffle for why
+	     we don't simply use a SUBREG to pun target.  */
+	  rtx sel = force_reg (sel_mode,
+			       gen_rtx_CONST_VECTOR (sel_mode, sel_v));
+
+	  if (d->vmode == E_V32QImode)
+	    emit_insn (gen_lasx_xvshuf_b (target, op1, op0, sel));
+	  else
+	    emit_insn (gen_lasx_xvshuf (d->vmode, target, sel, op1, op0));
 
 	  return true;
 	}

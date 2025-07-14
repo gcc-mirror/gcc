@@ -535,9 +535,9 @@
   DONE;
 })
 
-(define_insn "lsx_vshuf_<lsxfmt_f>"
+(define_insn "@lsx_vshuf_<lsxfmt_f>"
   [(set (match_operand:LSX_DWH 0 "register_operand" "=f")
-	(unspec:LSX_DWH [(match_operand:LSX_DWH 1 "register_operand" "0")
+	(unspec:LSX_DWH [(match_operand:<VIMODE> 1 "register_operand" "0")
 			 (match_operand:LSX_DWH 2 "register_operand" "f")
 			 (match_operand:LSX_DWH 3 "register_operand" "f")]
 			UNSPEC_LSX_VSHUF))]
