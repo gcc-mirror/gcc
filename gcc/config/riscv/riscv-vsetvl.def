@@ -79,7 +79,7 @@ DEF_SEW_LMUL_RULE (sew_only, sew_only, sew_only, sew_eq_p, sew_eq_p, nop)
 DEF_SEW_LMUL_RULE (sew_only, ge_sew, sew_only,
 		   sew_ge_and_prev_sew_le_next_max_sew_p, sew_ge_p, nop)
 DEF_SEW_LMUL_RULE (
-  sew_only, ratio_and_ge_sew, sew_lmul,
+  sew_only, ratio_and_ge_sew, ratio_and_ge_sew,
   sew_ge_and_prev_sew_le_next_max_sew_and_next_ratio_valid_for_prev_sew_p,
   always_false, modify_lmul_with_next_ratio)
 
@@ -104,9 +104,9 @@ DEF_SEW_LMUL_RULE (ratio_and_ge_sew, sew_lmul, sew_lmul,
 DEF_SEW_LMUL_RULE (ratio_and_ge_sew, ratio_only, ratio_and_ge_sew, ratio_eq_p,
 		   ratio_eq_p, use_max_sew_and_lmul_with_prev_ratio)
 DEF_SEW_LMUL_RULE (
-  ratio_and_ge_sew, sew_only, sew_only,
+  ratio_and_ge_sew, sew_only, ratio_and_ge_sew,
   sew_le_and_next_sew_le_prev_max_sew_and_prev_ratio_valid_for_next_sew_p,
-  always_false, use_next_sew_with_prev_ratio)
+  sew_eq_p, use_next_sew_with_prev_ratio)
 DEF_SEW_LMUL_RULE (ratio_and_ge_sew, ge_sew, ratio_and_ge_sew,
 		   max_sew_overlap_and_prev_ratio_valid_for_next_sew_p,
 		   sew_ge_p, use_max_sew_and_lmul_with_prev_ratio)
