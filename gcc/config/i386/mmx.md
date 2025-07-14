@@ -81,12 +81,13 @@
 ;; 4-byte and 2-byte QImode vector modes
 (define_mode_iterator VI1_16_32 [V4QI V2QI])
 
-;; All 2-byte, 4-byte and 8-byte vector modes with more than 1 element
+;; All 2-byte, 4-byte and 8-byte vector modes.
 (define_mode_iterator V_16_32_64
-   [V2QI V4QI V2HI V2HF
+   [V2QI V4QI V2HI V1SI V2HF V2BF
     (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT")
     (V4HF "TARGET_64BIT") (V4BF "TARGET_64BIT")
-    (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")])
+    (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")
+    (V1DI "TARGET_64BIT")])
 
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
@@ -107,6 +108,7 @@
   [(V8QI "DI") (V4QI "SI") (V2QI "HI")
    (V4HI "DI") (V2HI "SI")
    (V2SI "DI")
+   (V1DI "DI") (V1SI "SI")
    (V4HF "DI") (V2HF "SI")
    (V4BF "DI") (V2BF "SI")
    (V2SF "DI")])
@@ -407,22 +409,6 @@
 	   ]
 	   (symbol_ref "true")))])
 
-;; 16-bit, 32-bit and 64-bit constant vector stores.  After reload,
-;; convert them to immediate integer stores.
-(define_insn_and_split "*mov<mode>_imm"
-  [(set (match_operand:V_16_32_64 0 "memory_operand" "=m")
-	(match_operand:V_16_32_64 1 "x86_64_const_vector_operand" "i"))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0) (match_dup 1))]
-{
-  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (operands[1],
-							    <MODE>mode);
-  operands[1] = GEN_INT (val);
-  operands[0] = lowpart_subreg (<mmxinsnmode>mode, operands[0], <MODE>mode);
-})
-
 ;; For TARGET_64BIT we always round up to 8 bytes.
 (define_insn "*push<mode>2_rex64"
   [(set (match_operand:V_32 0 "push_operand" "=X,X")
@@ -587,6 +573,42 @@
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
+
+(define_split
+  [(set (match_operand:V_16_32_64 0 "general_reg_operand")
+	(match_operand:V_16_32_64 1 "memory_operand"))]
+  "reload_completed
+   && SYMBOL_REF_P (XEXP (operands[1], 0))
+   && CONSTANT_POOL_ADDRESS_P (XEXP (operands[1], 0))"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  rtx op1 = avoid_constant_pool_reference (operands[1]);
+
+  if (!CONST_VECTOR_P (op1))
+    FAIL;
+
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (op1, <MODE>mode);
+
+  operands[0] = lowpart_subreg (<mmxinsnmode>mode, operands[0], <MODE>mode);
+  operands[1] = GEN_INT (val);
+})
+
+;; 16-bit, 32-bit and 64-bit constant vector stores.  After reload,
+;; convert them to immediate integer stores.
+(define_insn_and_split "*mov<mode>_imm"
+  [(set (match_operand:V_16_32_64 0 "memory_operand" "=m")
+	(match_operand:V_16_32_64 1 "x86_64_const_vector_operand" "i"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  rtx op1 = operands[1];
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (op1, <MODE>mode);
+
+  operands[0] = adjust_address (operands[0], <mmxinsnmode>mode, 0);
+  operands[1] = GEN_INT (val);
+})
 
 ;; We always round up to UNITS_PER_WORD bytes.
 (define_insn "*pushv2qi2"

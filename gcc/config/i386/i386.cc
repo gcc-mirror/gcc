@@ -16703,6 +16703,10 @@ ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
 	  val = wi::insert (val, wv, innermode_bits * i, innermode_bits);
 	}
       break;
+    case E_V1SImode:
+    case E_V1DImode:
+      op = CONST_VECTOR_ELT (op, 0);
+      return INTVAL (op);
     case E_V2HFmode:
     case E_V2BFmode:
     case E_V4HFmode:
