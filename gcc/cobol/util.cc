@@ -93,7 +93,7 @@ static inline char *
 get_current_dir_name ()
 {
   /* Use libiberty's allocator here.  */
-  char *buf = (char *) xmalloc (PATH_MAX);
+  char *buf = static_cast<char *>(xmalloc (PATH_MAX));
   return getcwd (buf, PATH_MAX);
 }
 #endif
@@ -101,7 +101,7 @@ get_current_dir_name ()
 /*
  * For printing messages, usually the size of the thing is some kind of string
  * length, and doesn't really need a size_t.  For message formatting, use a
- * simple unsigned long, and warn if that's no good.  "gb4" here stands for 
+ * simple unsigned long, and warn if that's no good.  "gb4" here stands for
  * "4 Gigabytes".
  */
 unsigned long
@@ -113,7 +113,7 @@ gb4( size_t input ) {
   }
   return input;
 }
-  
+
 /*
  * Most CDF Directives -- those that have state -- can be pushed and popped.
  * This class maintains stacks of them, with each stack having a "default
@@ -140,20 +140,20 @@ gb4( size_t input ) {
  *   PAGE
  *   PROPAGATE
  *   REF-MOD-ZERO-LENGTH
- * 
- * >>PUSH ALL calls the class's push() method. 
- * >>POP ALL calls the class's pop() method. 
+ *
+ * >>PUSH ALL calls the class's push() method.
+ * >>POP ALL calls the class's pop() method.
  */
 class cdf_directives_t
 {
   template <typename T>
-  class cdf_stack_t : private std::stack<T> {
+  class cdf_stack_t : private std::stack<T> { // cppcheck-suppress noConstructor
     T default_value;
     const T& top() const { return std::stack<T>::top(); }
     bool empty() const { return std::stack<T>::empty(); }
    public:
     void value( const T& value ) {
-      T& output( empty()? default_value : std::stack<T>::top() );
+      T& output( empty()? default_value : std::stack<T>::top() ); // cppcheck-suppress constVariableReference
       output = value;
       dbgmsg("cdf_directives_t::%s: %s", __func__, str(output).c_str());
     }
@@ -166,7 +166,7 @@ class cdf_directives_t
     }
     void pop() {
       if( empty() ) {
-        error_msg(YYLTYPE(), "CDF stack empty");
+        error_msg(YYLTYPE(), "CDF stack empty"); // cppcheck-suppress syntaxError
         return;
       }
       default_value = top();
@@ -190,7 +190,6 @@ class cdf_directives_t
     static std::string str(cbl_enabled_exceptions_t) {
       return "<enabled_exceptions>";
     }
-                          
   };
 
  public:
@@ -203,7 +202,7 @@ class cdf_directives_t
   cdf_directives_t() {
     call_convention.value() = cbl_call_cobol_e;
   }
- 
+
   void push() {
     call_convention.push();
     cobol_words.push();
@@ -995,7 +994,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
         // 8 or more, we need do no further testing because we assume
         // everything fits.
         if( data.capacity < 8 ) {
-          const auto p = strchr(data.initial, symbol_decimal_point());
+          const char *p = strchr(data.initial, symbol_decimal_point());
           if( p && atoll(p+1) != 0 ) {
             error_msg(loc, "integer type %s VALUE '%s' "
                      "requires integer VALUE",
@@ -1141,7 +1140,7 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
                            pdim++;
                            return ! occurs.subscript_ok(r.field);
                          } );
-  isub = psub - r.subscripts.begin(); 
+  isub = psub - r.subscripts.begin();
   return psub == r.subscripts.end()? NULL : dims[isub];
 }
 
@@ -1154,12 +1153,12 @@ cbl_refer_t::subscripts_set( const std::list<cbl_refer_t>& subs ) {
 
 const char *
 cbl_refer_t::str() const {
-  static char subscripts[64];
-  sprintf(subscripts, "(%u of " HOST_SIZE_T_PRINT_UNSIGNED " dimensions)",
+  static char subscripts_l[64];
+  sprintf(subscripts_l, "(%u of " HOST_SIZE_T_PRINT_UNSIGNED " dimensions)",
           nsubscript(), (fmt_size_t)dimensions(field));
   char *output = xasprintf("%s %s %s",
                            field? field_str(field) : "(none)",
-                           0 < dimensions(field)? subscripts : "",
+                           0 < dimensions(field)? subscripts_l : "",
                            is_refmod_reference()? "(refmod)" : "" );
   return output;
 }
@@ -1861,12 +1860,13 @@ date_time_fmt( const char input[] ) {
     { regex_t(), 'd', "^(" DATE_FMT_B "|" DATE_FMT_E ")$" },
     { regex_t(), 't', "^(" TIME_FMT_B "|" TIME_FMT_E ")$" },
   };
-  int erc, cflags = REG_EXTENDED | REG_ICASE, eflags=0;
+  int cflags = REG_EXTENDED | REG_ICASE, eflags=0;
   regmatch_t m[5];
   char result = 0;
 
   if( ! compiled ) {
     for( auto& fmt : fmts ) {
+      int erc;
       if( (erc = regcomp(&fmt.reg, fmt.pattern, cflags)) != 0 ) {
         char msg[80];
         regerror(erc, &fmt.reg, msg, sizeof(msg));
@@ -1924,7 +1924,7 @@ class unique_stack : public std::stack<input_file_t>
   friend void cobol_set_pp_option(int opt);
   bool option_m;
   std::set<std::string> all_names;
-  
+
   const char *
   no_wd( const char *wd, const char *name ) {
     int i;
@@ -1935,7 +1935,7 @@ class unique_stack : public std::stack<input_file_t>
 
  public:
   unique_stack() : option_m(false) {}
-  
+
   bool push( const value_type& value ) {
     auto ok = std::none_of( c.cbegin(), c.cend(),
                             [value]( const auto& that ) {
@@ -1969,8 +1969,8 @@ class unique_stack : public std::stack<input_file_t>
   const input_file_t& peek( size_t n ) const {
     gcc_assert( n < size() );
     return c.at(size() - ++n);
-  } 
-  
+  }
+
   void option( int opt ) { // capture other preprocessor options eventually
     assert(opt == 'M');
     option_m = true;
@@ -1983,7 +1983,7 @@ class unique_stack : public std::stack<input_file_t>
     std::string input( top().name );
     printf( "%s: ", input.c_str() );
     for( const auto& name : all_names ) {
-      if( name != input ) 
+      if( name != input )
 	printf( "\\\n\t%s ", name.c_str() );
     }
     printf("\n");
@@ -2000,7 +2000,7 @@ void cobol_set_pp_option(int opt) {
   assert(opt == 'M');
   input_filenames.option_m = true;
 }
-				  
+
 /*
  * Maintain a stack of input filenames.  Ensure the files are unique (by
  * inode), to prevent copybook cycles. Before pushing a new name, Record the
@@ -2011,7 +2011,7 @@ void cobol_set_pp_option(int opt) {
  * to enforce uniqueness, and the scanner to maintain line numbers.
  */
 bool cobol_filename( const char *name, ino_t inode ) {
-  const line_map *lines = NULL;
+  //const line_map *lines = NULL;
   if( inode == 0 ) {
     auto p = old_filenames.find(name);
     if( p == old_filenames.end() ) {
@@ -2021,8 +2021,10 @@ bool cobol_filename( const char *name, ino_t inode ) {
       }
       cbl_errx( "logic error: missing inode for %s", name);
     }
-    inode = p->second;
-    assert(inode != 0);
+    else {
+      inode = p->second;
+      assert(inode != 0);
+    }
   }
   linemap_add(line_table, LC_ENTER, sysp, name, 1);
   input_filename_vestige = name;
@@ -2071,7 +2073,7 @@ cobol_filename_restore() {
   input_filenames.pop();
   if( input_filenames.empty() ) return;
 
-  auto& input = input_filenames.top();
+  const auto& input = input_filenames.top();
 
   linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 }
@@ -2083,7 +2085,7 @@ location_t location_from_lineno() { return token_location; }
 template <typename LOC>
 static void
 gcc_location_set_impl( const LOC& loc ) {
-  // Set the position to the first line & column in the location. 
+  // Set the position to the first line & column in the location.
   token_location = linemap_line_start( line_table, loc.first_line, 80 );
   token_location = linemap_position_for_column( line_table, loc.first_column);
   location_dump(__func__, __LINE__, "parser", loc);
@@ -2144,8 +2146,8 @@ ydferror( const char gmsgid[], ... ) {
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, token_location);
-  bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_zero,
-                                         gmsgid, &ap, DK_ERROR);
+  /*bool ret =*/ global_dc->diagnostic_impl (&richloc, nullptr, option_zero,
+                                             gmsgid, &ap, DK_ERROR);
   va_end (ap);
 }
 
@@ -2222,8 +2224,8 @@ void error_msg_direct( const char gmsgid[], ... ) {
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  auto ret = emit_diagnostic_valist( DK_ERROR, token_location,
-                                     option_zero, gmsgid, &ap );
+  /*auto ret = */emit_diagnostic_valist( DK_ERROR, token_location,
+                                         option_zero, gmsgid, &ap );
   va_end (ap);
 }
 
@@ -2236,8 +2238,11 @@ yyerror( const char gmsgid[], ... ) {
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, token_location);
-  bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_zero,
-                                         gmsgid, &ap, DK_ERROR);
+  /*bool ret =*/ global_dc->diagnostic_impl ( &richloc,
+                                              nullptr,
+                                              option_zero,
+                                              gmsgid,
+                                              &ap, DK_ERROR);
   va_end (ap);
   global_dc->end_group();
 }
@@ -2483,8 +2488,8 @@ cbl_unimplemented_at( const YYLTYPE& loc, const char *gmsgid, ... ) {
   va_end(ap);
 }
 
-/* 
- * analogs to err(3) and errx(3). 
+/*
+ * analogs to err(3) and errx(3).
  */
 
 #pragma GCC diagnostic push
@@ -2619,7 +2624,7 @@ static const std::set<std::string> reserved_words = {
   "VOLATILE",
   "XML",
   "END-START",
-  
+
   // ISO 2023 keywords
   "ACCEPT",
   "ACCESS",

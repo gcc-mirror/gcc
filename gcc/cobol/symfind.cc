@@ -48,7 +48,7 @@ extern int yydebug;
 static bool
 is_data_field( symbol_elem_t& e ) {
   if( e.type != SymField ) return false;
-  const auto f = cbl_field_of(&e);
+  const cbl_field_t *f = cbl_field_of(&e);
   if( f->name[0] == '\0' ) return false;
   if( is_filler(f) ) return false;
 
@@ -129,7 +129,7 @@ finalize_symbol_map2() {
   for( auto& elem : symbol_map2 ) {
     auto& fields( elem.second );
     fields.remove_if( []( auto isym ) {
-			const auto f = cbl_field_of(symbol_at(isym));
+			const cbl_field_t *f = cbl_field_of(symbol_at(isym));
 			return f->type == FldInvalid;
 		      } );
     if( fields.empty() ) empties.insert(elem.first);
@@ -316,9 +316,9 @@ public:
       if( p != item.second.end() ) {
         // Preserve symbol's index at front of ancestor list.
         symbol_map_t::mapped_type shorter(1 + ancestors->size());
-        auto p = shorter.begin();
-        *p = item.second.front();
-        shorter.insert( ++p, ancestors->begin(), ancestors->end() );
+        auto p_l = shorter.begin();
+        *p_l = item.second.front();
+        shorter.insert( ++p_l, ancestors->begin(), ancestors->end() );
         return make_pair(item.first, shorter);
       }
     }
@@ -341,7 +341,7 @@ class in_scope {
   size_t program;
 
   static size_t prog_of( size_t program ) {
-    const auto L = cbl_label_of(symbol_at(program));
+    const cbl_label_t *L = cbl_label_of(symbol_at(program));
     return L->parent;
   }
 
@@ -430,7 +430,7 @@ symbol_match2( size_t program,
   auto plist = symbol_map2.find(key);
   if( plist != symbol_map2.end() ) {
     for( auto candidate : plist->second ) {
-      const auto e = symbol_at(candidate);
+      const symbol_elem_t *e = symbol_at(candidate);
       if( name_has_names( e, names, local ) ) {
         fields.push_back( symbol_index(e) );
       }

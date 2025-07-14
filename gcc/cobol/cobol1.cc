@@ -357,7 +357,7 @@ cobol_langhook_handle_option (size_t scode,
             return true;
 
         case OPT_M:
-	    cobol_set_pp_option('M');
+            cobol_set_pp_option('M');
             return true;
 
         case OPT_fstatic_call:
@@ -368,16 +368,18 @@ cobol_langhook_handle_option (size_t scode,
             wsclear(cobol_default_byte);
             return true;
 
-        case OPT_fflex_debug:
+        case OPT_fflex_debug: // cppcheck-suppress syntaxError // The need for this is a mystery
             yy_flex_debug = 1;
             cobol_set_debugging( true, yy_debug == 1, cobol_trace_debug == 1 );
             return true;
+
         case OPT_fyacc_debug:
             yy_debug = 1;
             cobol_set_debugging(yy_flex_debug == 1,
                                 true,
                                 cobol_trace_debug == 1 );
             return true;
+
         case OPT_ftrace_debug:
             cobol_set_debugging( yy_flex_debug == 1, yy_debug == 1, true );
             return true;
@@ -406,11 +408,13 @@ cobol_langhook_handle_option (size_t scode,
         case OPT_fsyntax_only:
           mode_syntax_only(identification_div_e);
           break;
+
         case OPT_preprocess:
           if( ! preprocess_filter_add(arg) ) {
             cbl_errx( "could not execute preprocessor %s", arg);
           }
           return true;
+
         case OPT_include:
           if( ! include_file_add(arg) ) {
             cbl_errx( "could not include %s", arg);
