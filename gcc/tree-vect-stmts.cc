@@ -6869,7 +6869,7 @@ vectorizable_operation (vec_info *vinfo,
   poly_uint64 nunits_out;
   tree vectype_out;
   unsigned int ncopies;
-  int vec_num;
+  unsigned vec_num;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
@@ -7440,8 +7440,8 @@ vectorizable_operation (vec_info *vinfo,
 	      && code == BIT_AND_EXPR
 	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
-								 ncopies}))
+	      if (loop_vinfo->scalar_cond_masked_set.contains
+						   ({ op0, vec_num * ncopies}))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num * ncopies, vectype, i);
@@ -7450,8 +7450,8 @@ vectorizable_operation (vec_info *vinfo,
 					   vop0, gsi);
 		}
 
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1,
-								 ncopies }))
+	      if (loop_vinfo->scalar_cond_masked_set.contains
+						  ({ op1, vec_num * ncopies }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num * ncopies, vectype, i);
