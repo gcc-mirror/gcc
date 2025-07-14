@@ -2060,9 +2060,9 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvshuf_<lasxfmt_f>"
+(define_insn "@lasx_xvshuf_<lasxfmt_f>"
   [(set (match_operand:LASX_DWH 0 "register_operand" "=f")
-	(unspec:LASX_DWH [(match_operand:LASX_DWH 1 "register_operand" "0")
+	(unspec:LASX_DWH [(match_operand:<VIMODE> 1 "register_operand" "0")
 			  (match_operand:LASX_DWH 2 "register_operand" "f")
 			  (match_operand:LASX_DWH 3 "register_operand" "f")]
 			UNSPEC_LASX_XVSHUF))]
