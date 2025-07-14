@@ -879,10 +879,17 @@ namespace ranges
       {
 	if constexpr (sized_sentinel_for<_Sent, _It>)
 	  {
-	    const auto __diff = __bound - __it;
+	    const iter_difference_t<_It> __diff = __bound - __it;
 
 	    if (__diff == 0)
-	      return __n;
+	      {
+		// inline any possible side effects of advance(it, bound)
+		if constexpr (assignable_from<_It&, _Sent>)
+		  __it = std::move(__bound);
+		else if constexpr (random_access_iterator<_It>)
+		  __it += 0;
+		return __n;
+	      }
 	    else if (__diff > 0 ? __n >= __diff : __n <= __diff)
 	      {
 		(*this)(__it, __bound);
@@ -897,9 +904,14 @@ namespace ranges
 		return 0;
 	      }
 	    else
-	      return 0;
+	      {
+		// inline any possible side effects of advance(it, n)
+		if constexpr (random_access_iterator<_It>)
+		  __it += 0;
+		return 0;
+	      }
 	  }
-	else if (__it == __bound || __n == 0)
+	else if (__n == 0 || __it == __bound)
 	  return __n;
 	else if (__n > 0)
 	  {
