@@ -10692,6 +10692,7 @@ package body Sem_Ch4 is
 
               or else
                 (Has_Unknown_Discriminants (Typ)
+                  and then Is_Record_Type (Base_Type (Obj_Type))
                   and then Typ = Underlying_Record_View (Base_Type (Obj_Type)))
 
                --  Prefix can be dereferenced
