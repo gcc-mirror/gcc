@@ -7299,10 +7299,10 @@
 	  (plus_minus:VWEXTF
 	    (mult:VWEXTF
 	      (float_extend:VWEXTF
-	        (vec_duplicate:<V_DOUBLE_TRUNC>
-	          (match_operand:<VSUBEL> 3 "register_operand"       "    f")))
-	      (float_extend:VWEXTF
-	        (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr")))
+	        (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr"))
+	      (vec_duplicate:VWEXTF
+	        (float_extend:<VEL>
+	          (match_operand:<VSUBEL> 3 "register_operand"       "    f"))))
 	    (match_operand:VWEXTF 2 "register_operand"               "    0"))
 	  (match_dup 2)))]
   "TARGET_VECTOR"

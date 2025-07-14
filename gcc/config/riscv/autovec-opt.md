@@ -1725,6 +1725,8 @@
 ;; - vfmsac.vf
 ;; - vfnmacc.vf
 ;; - vfnmsac.vf
+;; - vfwmacc.vf
+;; - vfwmsac.vf
 ;; =============================================================================
 
 ;; vfmadd.vf, vfmsub.vf, vfmacc.vf, vfmsac.vf
@@ -1795,4 +1797,50 @@
     DONE;
   }
   [(set_attr "type" "vfmuladd")]
+)
+
+;; vfwmacc.vf, vfwmsac.vf
+(define_insn_and_split "*vfwmacc_vf_<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+    (plus_minus:VWEXTF
+	    (mult:VWEXTF
+	      (float_extend:VWEXTF
+	        (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	      (vec_duplicate:VWEXTF
+	        (float_extend:<VEL>
+		  (match_operand:<VSUBEL> 2 "register_operand"))))
+	    (match_operand:VWEXTF 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3]};
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_scalar (<CODE>, <MODE>mode),
+				   riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, ops);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")]
+)
+
+;; Intermediate pattern for vfwmacc.vf and vfwmsac.vf used by combine
+(define_insn_and_split "*extend_vf_<mode>"
+ [(set (match_operand:VWEXTF 0 "register_operand")
+    (vec_duplicate:VWEXTF
+      (float_extend:<VEL>
+        (match_operand:<VSUBEL> 1 "register_operand"))))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx tmp = gen_reg_rtx (<VEL>mode);
+    emit_insn (gen_extend<vsubel><vel>2(tmp, operands[1]));
+
+    rtx ops[] = {operands[0], tmp};
+    riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
+                                   riscv_vector::UNARY_OP, ops);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")]
 )

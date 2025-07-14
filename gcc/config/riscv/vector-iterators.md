@@ -2418,6 +2418,47 @@
   (RVVM1x2DF "rvvm1df")
 ])
 
+(define_mode_attr vsubel [
+  (RVVM8HI "qi") (RVVM4HI "qi") (RVVM2HI "qi") (RVVM1HI "qi") (RVVMF2HI "qi") (RVVMF4HI "qi")
+
+  (RVVM8SI "hi") (RVVM4SI "hi") (RVVM2SI "hi") (RVVM1SI "hi") (RVVMF2SI "hi")
+
+  (RVVM8SF "hf") (RVVM4SF "hf") (RVVM2SF "hf") (RVVM1SF "hf") (RVVMF2SF "hf")
+
+  (RVVM8DI "si") (RVVM4DI "si") (RVVM2DI "si") (RVVM1DI "si")
+
+  (RVVM8DF "sf") (RVVM4DF "sf") (RVVM2DF "sf") (RVVM1DF "sf")
+
+  ;; VLS modes.
+  (V1HI "qi") (V2HI "qi") (V4HI "qi") (V8HI "qi") (V16HI "qi") (V32HI "qi") (V64HI "qi") (V128HI "qi") (V256HI "qi")
+  (V512HI "qi") (V1024HI "qi") (V2048HI "qi")
+  (V1SI "hi") (V2SI "hi") (V4SI "hi") (V8SI "hi") (V16SI "hi") (V32SI "hi") (V64SI "hi") (V128SI "hi") (V256SI "hi")
+  (V512SI "hi") (V1024SI "hi")
+  (V1DI "si") (V2DI "si") (V4DI "si") (V8DI "si") (V16DI "si") (V32DI "si") (V64DI "si") (V128DI "si") (V256DI "si") (V512DI "si")
+
+  (V1SF "hf")
+  (V2SF "hf")
+  (V4SF "hf")
+  (V8SF "hf")
+  (V16SF "hf")
+  (V32SF "hf")
+  (V64SF "hf")
+  (V128SF "hf")
+  (V256SF "hf")
+  (V512SF "hf")
+  (V1024SF "hf")
+  (V1DF "sf")
+  (V2DF "sf")
+  (V4DF "sf")
+  (V8DF "sf")
+  (V16DF "sf")
+  (V32DF "sf")
+  (V64DF "sf")
+  (V128DF "sf")
+  (V256DF "sf")
+  (V512DF "sf")
+])
+
 (define_mode_attr VSUBEL [
   (RVVM8HI "QI") (RVVM4HI "QI") (RVVM2HI "QI") (RVVM1HI "QI") (RVVMF2HI "QI") (RVVMF4HI "QI")
 

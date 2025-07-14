@@ -11,3 +11,6 @@
 /* { dg-final { scan-assembler-not {vfmsac.vf} } } */
 /* { dg-final { scan-assembler-not {vfnmacc.vf} } } */
 /* { dg-final { scan-assembler-not {vfnmsac.vf} } } */
+/* { dg-final { scan-assembler-not {vfwmacc.vf} } } */
+/* { dg-final { scan-assembler-not {vfwmsac.vf} } } */
+/* { dg-final { scan-assembler {fcvt.s.h} } } */
