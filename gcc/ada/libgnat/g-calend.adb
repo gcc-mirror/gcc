@@ -344,6 +344,8 @@ package body GNAT.Calendar is
       sec   : aliased C.Extensions.long_long;
       usec  : aliased C.long;
 
+      pragma Unsuppress (Overflow_Check);
+
    begin
       timeval_to_duration (T, sec'Access, usec'Access);
       pragma Annotate (CodePeer, Modified, sec);
@@ -369,13 +371,28 @@ package body GNAT.Calendar is
       sec    : C.Extensions.long_long;
       usec   : C.long;
 
+      pragma Unsuppress (Overflow_Check);
+
    begin
       if D = 0.0 then
          sec  := 0;
          usec := 0;
+
+      elsif D < 0.0 then
+         sec := C.Extensions.long_long (D + 0.5);
+         if D = Duration (sec) then
+            usec := 0;
+         else
+            usec := C.long ((D - Duration (sec)) * Micro + 0.5);
+         end if;
+
       else
-         sec  := C.Extensions.long_long (D - 0.5);
-         usec := C.long ((D - Duration (sec)) * Micro - 0.5);
+         sec := C.Extensions.long_long (D - 0.5);
+         if D = Duration (sec) then
+            usec := 0;
+         else
+            usec := C.long ((D - Duration (sec)) * Micro - 0.5);
+         end if;
       end if;
 
       duration_to_timeval (sec, usec, Result'Access);

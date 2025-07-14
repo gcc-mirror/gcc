@@ -1068,19 +1068,28 @@ is
          tv_nsec : out Long_Integer)
       is
          pragma Unsuppress (Overflow_Check);
-         Secs      : Duration;
-         Nano_Secs : Duration;
 
       begin
-         --  Seconds extraction, avoid potential rounding errors
+         if D = 0.0 then
+            tv_sec  := 0;
+            tv_nsec := 0;
 
-         Secs   := D - 0.5;
-         tv_sec := Long_Long_Integer (Secs);
+         elsif D < 0.0 then
+            tv_sec := Long_Long_Integer (D + 0.5);
+            if D = Duration (tv_sec) then
+               tv_nsec := 0;
+            else
+               tv_nsec := Long_Integer ((D - Duration (tv_sec)) * Nano + 0.5);
+            end if;
 
-         --  Nanoseconds extraction
-
-         Nano_Secs := D - Duration (tv_sec);
-         tv_nsec := Long_Integer (Nano_Secs * Nano);
+         else
+            tv_sec := Long_Long_Integer (D - 0.5);
+            if D = Duration (tv_sec) then
+               tv_nsec := 0;
+            else
+               tv_nsec := Long_Integer ((D - Duration (tv_sec)) * Nano - 0.5);
+            end if;
+         end if;
       end To_Struct_Timespec_64;
 
       ------------------
