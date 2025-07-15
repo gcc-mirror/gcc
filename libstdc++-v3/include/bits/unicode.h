@@ -86,6 +86,25 @@ namespace __unicode
       { return *__it == iter_value_t<_It>{}; }
   };
 
+  // An iterator over an input range of FromFmt code units that yields either
+  // UTF-8, UTF-16, or UTF-32, as a range of ToFmt code units.
+  // The code units from the input range are interpreted as Unicode code points
+  // and the iterator produces the individual code unit for each code point.
+  // Invalid sequences in the input are replaced with U+FFDD so that the result
+  // is always valid UTF-8, UTF-16, or UTF-32.
+  //
+  // The iterator knows the bounds of the underlying input range and will not
+  // read outside those bounds (incrementing or decrementing at the boundary
+  // is erroneously idempotent).
+  //
+  // On construction, the iterator attemps to decode a single code point from
+  // the input range and then encode it into an internal buffer in the output
+  // format, e.g. if the input is UTF-8 and the output is UTF-16, it might read
+  // three char8_t code units from the input and store two char16_t code units
+  // in its buffer. Incrementing the iterator will first iterate over buffer,
+  // yielding each code unit in turn, and then extract another code point from
+  // the input. Failure to extract a valid code point from the input will store
+  // U+FFFD in the buffer, encoded as the appropriate code units of type ToFmt.
   template<typename _FromFmt, typename _ToFmt,
 	   input_iterator _Iter, sentinel_for<_Iter> _Sent = _Iter,
 	   typename _ErrorHandler = _Repl>
@@ -162,17 +181,20 @@ namespace __unicode
       constexpr _Utf_iterator&
       operator++()
       {
-	if (_M_buf_index + 1 == _M_buf_last && _M_curr() != _M_last)
+	if (_M_buf_index + 1 < _M_buf_last)
+	  ++_M_buf_index; // Move to the next code unit in the buffer.
+	else if (_M_curr() != _M_last)
 	  {
+	    // Advance past the current code point (for non-forward iterators
+	    // we already moved there after decoding the last code point).
 	    if constexpr (forward_iterator<_Iter>)
 	      std::advance(_M_curr(), _M_to_increment);
 	    if (_M_curr() == _M_last)
 	      _M_buf_index = 0;
-	    else
+	    else // Decode next code point from the input and update buffer.
 	      _M_read();
 	  }
-	else if (_M_buf_index + 1 < _M_buf_last)
-	  ++_M_buf_index;
+	// else erroneous, but ignored for now.
 	return *this;
       }
 
@@ -487,8 +509,10 @@ namespace __unicode
       constexpr _Iter
       _M_curr() const { return _M_first_and_curr._M_curr; }
 
+      // Buffer holding the individual code units of the current code point.
       array<value_type, 4 / sizeof(_ToFmt)> _M_buf;
 
+      // _M_first is not needed for non-bidirectional ranges.
       template<typename _It>
 	struct _First_and_curr
 	{
@@ -502,6 +526,8 @@ namespace __unicode
 	    _First_and_curr(const _First_and_curr<_It2>& __other)
 	    : _M_curr(__other._M_curr) { }
 
+	  // First code unit of the current code point for forward iterators,
+	  // past-the-end of the current code point for input iterators.
 	  _It _M_curr;
 	};
 
@@ -519,16 +545,19 @@ namespace __unicode
 	    _First_and_curr(const _First_and_curr<_It2>& __other)
 	    : _M_first(__other._M_first), _M_curr(__other._M_curr) { }
 
-	  _It _M_first;
-	  _It _M_curr;
+	  _It _M_first; // Start of the underlying range.
+	  _It _M_curr;  // First code unit of the current code point.
 	};
 
+      // Iterators pointing to the start of the underlying range and to the
+      // start (or end, for non-forward iterators) of the current code point.
       _First_and_curr<_Iter> _M_first_and_curr;
 
-      uint8_t _M_buf_index = 0;
-      uint8_t _M_buf_last = 0;
-      uint8_t _M_to_increment = 0;
+      uint8_t _M_buf_index = 0;    // Index of current code unit in the buffer.
+      uint8_t _M_buf_last = 0;     // Number of code units in the buffer.
+      uint8_t _M_to_increment = 0; // How far to advance _M_curr on increment.
 
+      // The end of the underlying input range.
       [[no_unique_address]] _Sent _M_last;
 
       template<typename _FromFmt2, typename _ToFmt2,
