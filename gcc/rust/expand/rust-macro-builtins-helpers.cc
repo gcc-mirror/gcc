@@ -111,9 +111,9 @@ std::unique_ptr<AST::LiteralExpr>
 try_extract_string_literal_from_fragment (const location_t &parent_locus,
 					  std::unique_ptr<AST::Expr> &node)
 {
-  auto maybe_lit = static_cast<AST::LiteralExpr *> (node.get ());
   if (!node || !node->is_literal ()
-      || maybe_lit->get_lit_type () != AST::Literal::STRING)
+      || static_cast<AST::LiteralExpr &> (*node).get_lit_type ()
+	   != AST::Literal::STRING)
     {
       rust_error_at (parent_locus, "argument must be a string literal");
       if (node)
