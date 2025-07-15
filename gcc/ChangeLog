@@ -1,3 +1,120 @@
+2025-07-14  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (vec_cmpu<mode>di_exec): Call gen_vec_cmp*,
+	not gen_vec_cmpu*.
+
+2025-07-14  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2025-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121059
+	* tree-vect-stmts.cc (vectorizable_operation): Record a
+	loop mask for mask AND operations.
+
+2025-07-14  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md (reduc_plus_scal_<mode>): Implement.
+	(reduc_plus_scal_v2df): Implement.
+	(reduc_plus_scal_v4sf): Implement.
+	(REDUC_FMINMAX): New int iterator.
+	(reduc_fminmax_name): New int attribute.
+	(reduc_minmax): New code iterator.
+	(reduc_minmax_name): New code attribute.
+	(reduc_<reduc_fminmax_name>_scal_v2df): Implement.
+	(reduc_<reduc_fminmax_name>_scal_v4sf): Implement.
+	(reduc_<reduc_minmax_name>_scal_v2df): Implement.
+	(reduc_<reduc_minmax_name>_scal_v4sf): Implement.
+	(REDUCBIN): New code iterator.
+	(reduc_bin_insn): New code attribute.
+	(reduc_<reduc_bin_insn>_scal_v2di): Implement.
+	(reduc_<reduc_bin_insn>_scal_v4si): Implement.
+	(reduc_<reduc_bin_insn>_scal_v8hi): Implement.
+	(reduc_<reduc_bin_insn>_scal_v16qi): Implement.
+
+2025-07-14  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_option_override_internal): Remove override.
+
+2025-07-14  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3<exec_clobber>): Rename ...
+	(add<mode>3<exec>): ... to this, remove the clobber, and change the
+	instruction from v_add_co_u32 to v_add_u32.
+	(add<mode>3_dup<exec_clobber>): Rename ...
+	(add<mode>3_dup<exec>): ... to this, and likewise.
+	(sub<mode>3<exec_clobber>): Rename ...
+	(sub<mode>3<exec>): ... to this, and likewise
+	* config/gcn/gcn.md (addsi3): Remove the DI clobber, and change the
+	instruction from v_add_co_u32 to v_add_u32.
+	(addsi3_scc): Likewise.
+	(subsi3): Likewise, but for v_sub_co_u32.
+	(muldi3): Likewise.
+
+2025-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121059
+	* tree-vect-stmts.cc (vectorizable_operation): Record a
+	loop mask for mask AND operations.
+
+2025-07-14  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Make sure widen mul has twice bitsize
+	of the inputs in SAT_MUL pattern.
+
+2025-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/121015
+	* config/i386/i386-features.cc (ix86_broadcast_inner): Check all
+	0s/1s vectors with standard_sse_constant_p.
+
+2025-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120881
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac: Add --enable-x86-64-mfentry.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Enable __fentry__ in 64-bit mode if ENABLE_X86_64_MFENTRY is set
+	to 1.  Warn -pg without -mfentry with shrink wrapping enabled.
+	* doc/install.texi: Document --enable-x86-64-mfentry.
+
+2025-07-14  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/120645
+	* config/darwin-driver.cc: Account for latest macOS numbering
+	scheme.
+
+2025-07-14  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*vfwmacc_vf_<mode>): New pattern to
+	handle both vfwmacc and vfwmsac.
+	(*extend_vf_<mode>): New pattern that serves as an intermediate combine
+	step.
+	* config/riscv/vector-iterators.md (vsubel): New mode attribute. This is
+	just the lower-case version of VSUBEL.
+	* config/riscv/vector.md (@pred_widen_mul_<optab><mode>_scalar): Reorder
+	and swap operands to match the RTL emitted by expand, i.e. first
+	float_extend then vec_duplicate.
+
+2025-07-14  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_<faminmax_uns_op><mode>):
+	New patterns.
+	* config/aarch64/aarch64-sve-builtins-sme.def (svamin): New intrinsics.
+	(svamax): New intrinsics.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (class faminmaximpl): New
+	class.
+	(svamin): New function.
+	(svamax): New function.
+
+2025-07-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_PANTHERLAKE): Revmoe KL and WIDEKL.
+	(PTA_CLEARWATERFOREST): Ditto.
+	* doc/invoke.texi: Revise documentation.
+
 2025-07-13  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/120866

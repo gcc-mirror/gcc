@@ -1,3 +1,9 @@
+2025-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/121056
+	* sem_ch4.adb (Try_Object_Operation.Try_Primitive_Operation): Add
+	test on Is_Record_Type before accessing Underlying_Record_View.
+
 2025-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* par-load.adb: Comment spelling fix: bellow -> below.

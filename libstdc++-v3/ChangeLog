@@ -1,3 +1,51 @@
+2025-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (swap): Add comment to deleted
+	overload.
+	* include/bits/unique_ptr.h (swap): Likewise.
+	* include/std/array (swap): Likewise.
+	* include/std/optional (swap): Likewise.
+	* include/std/tuple (swap): Likewise.
+	* include/std/variant (swap): Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
+2025-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/pstl/algorithm_impl.h (__for_each_n_it_serial):
+	Protect against overloaded comma operator.
+	(__brick_walk2): Likewise.
+	(__brick_walk2_n): Likewise.
+	(__brick_walk3): Likewise.
+	(__brick_move_destroy::operator()): Likewise.
+	(__brick_calc_mask_1): Likewise.
+	(__brick_copy_by_mask): Likewise.
+	(__brick_partition_by_mask): Likewise.
+	(__brick_calc_mask_2): Likewise.
+	(__brick_reverse): Likewise.
+	(__pattern_partial_sort_copy): Likewise.
+	* include/pstl/memory_impl.h (__brick_uninitialized_move):
+	Likewise.
+	(__brick_uninitialized_copy): Likewise.
+	* include/pstl/numeric_impl.h (__brick_transform_scan):
+	Likewise.
+
+2025-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117785
+	* include/bits/version.def (constexpr_exceptions): Define
+	correct value.
+	* include/bits/version.h: Regenerate.
+	* libsupc++/exception: Check correct value.
+	* testsuite/18_support/exception/version.cc: New test.
+
+2025-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception_ptr.h (make_exception_ptr): Return null
+	for consteval when -fno-exceptions is used.
+	(exception_ptr_cast): Likewise. Allow consteval path to work
+	with -fno-rtti.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* libsupc++/exception_ptr.h: Implement C++26 P3748R0 - Inspecting
