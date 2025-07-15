@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-std=c99 -O3" } */
+/* { dg-additional-options "-std=c99 -O3 -Wno-pedantic" } */
 
 #include "avg.h"
 #include "avg_data.h"

@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+#if __riscv_xlen == 64
+typedef unsigned __int128 uint128_t;
+typedef signed __int128 int128_t;
+#endif
+
 #define DEF_AVG_0(NT, WT, NAME)                                 \
 __attribute__((noinline))                                       \
 void                                                            \

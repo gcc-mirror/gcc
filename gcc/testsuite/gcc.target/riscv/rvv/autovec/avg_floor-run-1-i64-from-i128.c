@@ -1,11 +1,11 @@
-/* { dg-do run { target { riscv_v } } } */
+/* { dg-do run { target { riscv_v && rv64 } } } */
 /* { dg-additional-options "-std=c99 -O3 -Wno-pedantic" } */
 
 #include "avg.h"
 #include "avg_data.h"
 
-#define WT   int32_t
-#define NT   int8_t
+#define WT   int128_t
+#define NT   int64_t
 #define NAME avg_floor
 
 DEF_AVG_0_WRAP(NT, WT, NAME)
