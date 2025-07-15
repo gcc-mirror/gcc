@@ -4510,8 +4510,8 @@ build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
 void
 update_pointer_to (tree old_type, tree new_type)
 {
-  tree ptr = TYPE_POINTER_TO (old_type);
-  tree ref = TYPE_REFERENCE_TO (old_type);
+  const tree old_ptr = TYPE_POINTER_TO (old_type);
+  const tree old_ref = TYPE_REFERENCE_TO (old_type);
   tree t;
 
   /* If this is the main variant, process all the other variants first.  */
@@ -4520,7 +4520,7 @@ update_pointer_to (tree old_type, tree new_type)
       update_pointer_to (t, new_type);
 
   /* If no pointers and no references, we are done.  */
-  if (!ptr && !ref)
+  if (!old_ptr && !old_ref)
     return;
 
   /* Merge the old type qualifiers in the new type.
@@ -4554,12 +4554,13 @@ update_pointer_to (tree old_type, tree new_type)
   if (TREE_CODE (new_type) != UNCONSTRAINED_ARRAY_TYPE)
     {
       tree new_ptr, new_ref;
+      tree ptr, ref;
 
       /* If pointer or reference already points to new type, nothing to do.
 	 This can happen as update_pointer_to can be invoked multiple times
 	 on the same couple of types because of the type variants.  */
-      if ((ptr && TREE_TYPE (ptr) == new_type)
-	  || (ref && TREE_TYPE (ref) == new_type))
+      if ((old_ptr && TREE_TYPE (old_ptr) == new_type)
+	  || (old_ref && TREE_TYPE (old_ref) == new_type))
 	return;
 
       /* Chain PTR and its variants at the end.  */
@@ -4568,13 +4569,13 @@ update_pointer_to (tree old_type, tree new_type)
 	{
 	  while (TYPE_NEXT_PTR_TO (new_ptr))
 	    new_ptr = TYPE_NEXT_PTR_TO (new_ptr);
-	  TYPE_NEXT_PTR_TO (new_ptr) = ptr;
+	  TYPE_NEXT_PTR_TO (new_ptr) = old_ptr;
 	}
       else
-	TYPE_POINTER_TO (new_type) = ptr;
+	TYPE_POINTER_TO (new_type) = old_ptr;
 
       /* Now adjust them.  */
-      for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
+      for (ptr = old_ptr; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
 	for (t = TYPE_MAIN_VARIANT (ptr); t; t = TYPE_NEXT_VARIANT (t))
 	  {
 	    TREE_TYPE (t) = new_type;
@@ -4589,13 +4590,13 @@ update_pointer_to (tree old_type, tree new_type)
 	{
 	  while (TYPE_NEXT_REF_TO (new_ref))
 	    new_ref = TYPE_NEXT_REF_TO (new_ref);
-	  TYPE_NEXT_REF_TO (new_ref) = ref;
+	  TYPE_NEXT_REF_TO (new_ref) = old_ref;
 	}
       else
-	TYPE_REFERENCE_TO (new_type) = ref;
+	TYPE_REFERENCE_TO (new_type) = old_ref;
 
       /* Now adjust them.  */
-      for (; ref; ref = TYPE_NEXT_REF_TO (ref))
+      for (ref = old_ref; ref; ref = TYPE_NEXT_REF_TO (ref))
 	for (t = TYPE_MAIN_VARIANT (ref); t; t = TYPE_NEXT_VARIANT (t))
 	  {
 	    TREE_TYPE (t) = new_type;
@@ -4614,20 +4615,20 @@ update_pointer_to (tree old_type, tree new_type)
     {
       tree new_ptr = TYPE_POINTER_TO (new_type);
 
-      gcc_assert (TYPE_IS_FAT_POINTER_P (ptr));
+      gcc_assert (TYPE_IS_FAT_POINTER_P (old_ptr));
 
       /* If PTR already points to NEW_TYPE, nothing to do.  This can happen
 	 since update_pointer_to can be invoked multiple times on the same
 	 couple of types because of the type variants.  */
-      if (TYPE_UNCONSTRAINED_ARRAY (ptr) == new_type)
+      if (TYPE_UNCONSTRAINED_ARRAY (old_ptr) == new_type)
 	return;
 
       update_pointer_to
-	(TREE_TYPE (TREE_TYPE (TYPE_FIELDS (ptr))),
+	(TREE_TYPE (TREE_TYPE (TYPE_FIELDS (old_ptr))),
 	 TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))));
 
       update_pointer_to
-	(TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (ptr)))),
+	(TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (old_ptr)))),
 	 TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (new_ptr)))));
 
       update_pointer_to (TYPE_OBJECT_RECORD_TYPE (old_type),
