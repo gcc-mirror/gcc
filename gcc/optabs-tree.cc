@@ -82,7 +82,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	return unknown_optab;
       /* FALLTHRU */
     case RDIV_EXPR:
-      gcc_assert (FLOAT_TYPE_P (type));
+      gcc_assert (FLOAT_TYPE_P (type)
+		  || ALL_FIXED_POINT_MODE_P (TYPE_MODE (type)));
       /* FALLTHRU */
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
