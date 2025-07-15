@@ -1,0 +1,73 @@
+/* Pairs of AArch64 builtins that can be folded into each other.
+   Copyright (C) 2025 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Pairs of single and half integer modes.  */
+#define LO_HI_PAIR_V_HSI(T, LO, HI) \
+  LO_HI_PAIR (T##_##LO##v2si, T##_##HI##v4si) \
+  LO_HI_PAIR (T##_##LO##v4hi, T##_##HI##v8hi)
+
+#define LO_HI_PAIR_V_US_HSI(T, LO, HI) \
+  LO_HI_PAIR_V_HSI (T, s##LO, s##HI) \
+  LO_HI_PAIR_V_HSI (T##U, u##LO, u##HI)
+
+/* Pairs of widenable integer modes.  */
+#define LO_HI_PAIR_V_WI(T, LO, HI) \
+  LO_HI_PAIR_V_HSI (T, LO, HI) \
+  LO_HI_PAIR (T##_##LO##v8qi, T##_##HI##v16qi)
+
+#define LO_HI_PAIR_V_US_WI(T, LO, HI) \
+  LO_HI_PAIR_V_WI (T, s##LO, s##HI) \
+  LO_HI_PAIR_V_WI (T##U, u##LO, u##HI)
+
+#define UNOP_LONG_LH_PAIRS \
+  LO_HI_PAIR (UNOP_sxtlv8hi,  UNOP_vec_unpacks_hi_v16qi) \
+  LO_HI_PAIR (UNOP_sxtlv4si,  UNOP_vec_unpacks_hi_v8hi) \
+  LO_HI_PAIR (UNOP_sxtlv2di,  UNOP_vec_unpacks_hi_v4si) \
+  LO_HI_PAIR (UNOPU_uxtlv8hi, UNOPU_vec_unpacku_hi_v16qi) \
+  LO_HI_PAIR (UNOPU_uxtlv4si, UNOPU_vec_unpacku_hi_v8hi) \
+  LO_HI_PAIR (UNOPU_uxtlv2di, UNOPU_vec_unpacku_hi_v4si)
+
+#define BINOP_LONG_LH_PAIRS \
+  LO_HI_PAIR_V_US_WI (BINOP,  addl, addl2) \
+  LO_HI_PAIR_V_US_WI (BINOP,  subl, subl2) \
+  LO_HI_PAIR_V_US_WI (BINOP,  abdl, abdl2) \
+  LO_HI_PAIR_V_WI (BINOP,  intrinsic_vec_smult_lo_, vec_widen_smult_hi_) \
+  LO_HI_PAIR_V_WI (BINOPU, intrinsic_vec_umult_lo_, vec_widen_umult_hi_) \
+  LO_HI_PAIR_V_HSI (BINOP,  sqdmull, sqdmull2) \
+  LO_HI_PAIR (BINOPP_pmullv8qi, BINOPP_pmull_hiv16qi)
+
+#define BINOP_LONG_N_LH_PAIRS \
+  LO_HI_PAIR_V_US_HSI (BINOP,  mull_n, mull_hi_n) \
+  LO_HI_PAIR_V_HSI (BINOP,  sqdmull_n, sqdmull2_n)
+
+#define BINOP_WIDE_LH_PAIRS \
+  LO_HI_PAIR_V_US_WI (BINOP,  subw, subw2) \
+  LO_HI_PAIR_V_US_WI (BINOP,  addw, addw2)
+
+#define TERNOP_LONG_LH_PAIRS \
+  LO_HI_PAIR_V_US_WI (TERNOP,  mlal, mlal_hi) \
+  LO_HI_PAIR_V_US_WI (TERNOP,  mlsl, mlsl_hi) \
+  LO_HI_PAIR_V_US_WI (TERNOP,  abal, abal2) \
+  LO_HI_PAIR_V_HSI (TERNOP, sqdmlal, sqdmlal2) \
+  LO_HI_PAIR_V_HSI (TERNOP, sqdmlsl, sqdmlsl2)
+
+#define TERNOP_LONG_N_LH_PAIRS \
+  LO_HI_PAIR_V_US_HSI (TERNOP,  mlal_n, mlal_hi_n) \
+  LO_HI_PAIR_V_US_HSI (TERNOP,  mlsl_n, mlsl_hi_n) \
+  LO_HI_PAIR_V_HSI (TERNOP,  sqdmlal_n, sqdmlal2_n)

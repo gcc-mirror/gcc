@@ -49,6 +49,8 @@
 #include "attribs.h"
 #include "gimple-fold.h"
 #include "builtins.h"
+#include "tree-pass.h"
+#include "tree-vector-builder.h"
 #include "aarch64-builtins.h"
 
 using namespace aarch64;
@@ -737,6 +739,16 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VGET_HIGH_BUILTIN(u32) \
   VGET_HIGH_BUILTIN(u64) \
   VGET_HIGH_BUILTIN(bf16)
+
+#include "aarch64-builtin-pairs.def"
+
+#define LO_HI_PAIRINGS \
+  UNOP_LONG_LH_PAIRS \
+  BINOP_LONG_LH_PAIRS \
+  BINOP_LONG_N_LH_PAIRS \
+  BINOP_WIDE_LH_PAIRS \
+  TERNOP_LONG_LH_PAIRS \
+  TERNOP_LONG_N_LH_PAIRS
 
 typedef struct
 {
@@ -5004,6 +5016,167 @@ aarch64_gimple_fold_pragma_builtin
     }
 }
 
+/* Return the fndecl of the builtin paired with FCODE_LO if one
+   exists (see aarch64-builtin-pairs.def), or NULL_TREE if not.  */
+static inline tree
+aarch64_get_highpart_builtin (unsigned int fcode_lo)
+{
+#undef LO_HI_PAIR
+#define LO_HI_PAIR(A, B) case AARCH64_SIMD_BUILTIN_##A:   \
+  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##B];
+
+  switch (fcode_lo)
+    {
+      LO_HI_PAIRINGS
+      default:
+	return NULL_TREE;
+    }
+}
+
+/* If REF describes the high half of a 128-bit vector, return this
+   vector.  Otherwise, return NULL_TREE.  */
+static tree
+aarch64_v128_highpart_ref (const_tree ref)
+{
+  if (TREE_CODE (ref) != SSA_NAME)
+    return NULL_TREE;
+
+  gassign *stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (ref));
+  if (!stmt || gimple_assign_rhs_code (stmt) != BIT_FIELD_REF)
+    return NULL_TREE;
+
+  /* Look for a BIT_FIELD_REF that denotes the most significant 64
+     bits of a 128-bit vector.  */
+  tree bf_ref = gimple_assign_rhs1 (stmt);
+  unsigned int offset = BYTES_BIG_ENDIAN ? 0 : 64;
+
+  if (maybe_ne (bit_field_size (bf_ref), 64u)
+      || maybe_ne (bit_field_offset (bf_ref), offset))
+    return NULL_TREE;
+
+  tree obj = TREE_OPERAND (bf_ref, 0);
+  tree type = TREE_TYPE (obj);
+
+  if (VECTOR_TYPE_P (type) && tree_fits_uhwi_p (TYPE_SIZE (type))
+      && tree_to_uhwi (TYPE_SIZE (type)) == 128)
+    return obj;
+
+  return NULL_TREE;
+}
+
+/* Build and return a new VECTOR_CST of type OUT_TY, using repeated
+   copies of the elements of VEC_IN.  */
+static tree
+aarch64_build_vector_cst (const_tree vec_in, tree out_ty)
+{
+  gcc_assert (TREE_CODE (vec_in) == VECTOR_CST
+	      && VECTOR_TYPE_P (out_ty));
+  unsigned HOST_WIDE_INT nelts
+    = VECTOR_CST_NELTS (vec_in).to_constant ();
+
+  tree_vector_builder vec_out (out_ty, nelts, 1);
+  for (unsigned i = 0; i < nelts; i++)
+    vec_out.quick_push (VECTOR_CST_ELT (vec_in, i));
+
+  return vec_out.build ();
+}
+
+/* Try to fold STMT, a call to to a lowpart-operating builtin, to
+   it's highpart-operating equivalent if doing so would save
+   unnecessary data movement instructions.
+
+   Return the new call if so, otherwise nullptr.  */
+static gcall *
+aarch64_fold_lo_call_to_hi (unsigned int fcode, gcall *stmt,
+			    gimple_stmt_iterator *gsi)
+{
+  /* Punt until as late as possible:
+    1) By folding away BIT_FIELD_REFs we remove information about the
+    operands that may be useful to other optimizers.
+
+    2) For simplicity, we'd like the expression
+
+	x = BIT_FIELD_REF<a, x, y>
+
+    to imply that A is not a VECTOR_CST.  This assumption is unlikely
+    to hold before constant prop/folding.  */
+  if (!(cfun->curr_properties & PROP_last_full_fold))
+    return nullptr;
+
+  tree builtin_hi = aarch64_get_highpart_builtin (fcode);
+  gcc_assert (builtin_hi != NULL_TREE);
+
+  /* Prefer to use the highpart builtin when at least one vector
+     argument is a reference to the high half of a 128b vector, and
+     all others are VECTOR_CSTs that we can extend to 128b.  */
+  auto_vec<unsigned int, 2> vec_constants;
+  auto_vec<unsigned int, 2> vec_highparts;
+  /* The arguments and signature of the new call.  */
+  auto_vec<tree, 4> call_args;
+  auto_vec<tree, 4> call_types;
+
+  /* The interesting args are those that differ between the lo/hi
+     builtins.  Walk the function signatures to find these.  */
+  tree types_hi = TYPE_ARG_TYPES (TREE_TYPE (builtin_hi));
+  tree types_lo = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
+  unsigned int argno = 0;
+  while (types_lo != void_list_node && types_hi != void_list_node)
+    {
+      tree type_lo = TREE_VALUE (types_lo);
+      tree type_hi = TREE_VALUE (types_hi);
+      tree arg = gimple_call_arg (stmt, argno);
+      if (!types_compatible_p (type_lo, type_hi))
+	{
+	  /* Check our assumptions about this pair.  */
+	  gcc_assert (wi::to_widest (TYPE_SIZE (type_lo)) == 64
+		      && wi::to_widest (TYPE_SIZE (type_hi)) == 128);
+
+	  tree vq = aarch64_v128_highpart_ref (arg);
+	  if (vq && is_gimple_reg (vq))
+	    {
+	      vec_highparts.safe_push (argno);
+	      arg = vq;
+	    }
+	  else if (TREE_CODE (arg) == VECTOR_CST)
+	    vec_constants.safe_push (argno);
+	  else
+	    return nullptr;
+	}
+      call_args.safe_push (arg);
+      call_types.safe_push (type_hi);
+
+      argno++;
+      types_hi = TREE_CHAIN (types_hi);
+      types_lo = TREE_CHAIN (types_lo);
+    }
+  gcc_assert (types_lo == void_list_node && types_hi == void_list_node);
+
+  if (vec_highparts.is_empty ())
+    return nullptr;
+
+  /* Build and return a new call to BUILTIN_HI.  */
+  for (auto i : vec_constants)
+    call_args[i] = aarch64_build_vector_cst (call_args[i], call_types[i]);
+
+  for (auto i : vec_highparts)
+    if (!types_compatible_p (TREE_TYPE (call_args[i]), call_types[i]))
+      {
+	tree vce_ssa = make_ssa_name (call_types[i]);
+	tree vce_expr = build1 (VIEW_CONVERT_EXPR,
+				call_types[i], call_args[i]);
+	gsi_insert_before (gsi, gimple_build_assign (vce_ssa, vce_expr),
+			   GSI_SAME_STMT);
+	call_args[i] = vce_ssa;
+      }
+
+  gcall *new_call = gimple_build_call_vec (builtin_hi, call_args);
+  gimple_call_set_lhs (new_call, gimple_call_lhs (stmt));
+  return new_call;
+}
+
+#undef LO_HI_PAIR
+#define LO_HI_PAIR(A, B) case AARCH64_SIMD_BUILTIN_##A:
+
 /* Try to fold STMT, given that it's a call to the built-in function with
    subcode FCODE.  Return the new statement on success and null on
    failure.  */
@@ -5190,6 +5363,9 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	    }
 	  break;
 	}
+    LO_HI_PAIRINGS
+      new_stmt = aarch64_fold_lo_call_to_hi (fcode, stmt, gsi);
+      break;
     case AARCH64_SIMD_BUILTIN_LANE_CHECK:
       if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
 	{
