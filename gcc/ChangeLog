@@ -1,3 +1,9 @@
+2025-07-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_PANTHERLAKE): Revmoe KL and WIDEKL.
+	(PTA_CLEARWATERFOREST): Ditto.
+	* doc/invoke.texi: Revise documentation.
+
 2025-07-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-mcus.def (avr32da28s, avr32da32s, avr32da48s)
