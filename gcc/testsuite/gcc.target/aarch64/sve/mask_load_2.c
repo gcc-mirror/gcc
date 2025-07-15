@@ -19,5 +19,5 @@ int loop(Array **pp, int len, int idx) {
     return nRet;
 }
 
-// { dg-final { scan-assembler-times {ld1w\tz[0-9]+\.d, p[0-7]/z} 0 } }
-// { dg-final { scan-assembler-times {add\tz[0-9]+\.s, p[0-7]/m}  0 } }
+// { dg-final { scan-assembler-times {ld1w\tz[0-9]+\.d, p[0-7]/z} 1 } }
+// { dg-final { scan-assembler-times {add\tz[0-9]+\.s, p[0-7]/m}  1 } }

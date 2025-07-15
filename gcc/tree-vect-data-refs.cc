@@ -4667,25 +4667,18 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (off == NULL_TREE)
     off = size_zero_node;
 
-  /* If base is not loop invariant, either off is 0, then we start with just
-     the constant offset in the loop invariant BASE and continue with base
-     as OFF, otherwise give up.
-     We could handle that case by gimplifying the addition of base + off
-     into some SSA_NAME and use that as off, but for now punt.  */
+  /* BASE must be loop invariant.  If it is not invariant, but OFF is, then we
+   * can fix that by swapping BASE and OFF.  */
   if (!expr_invariant_in_loop_p (loop, base))
     {
-      if (!integer_zerop (off))
+      if (!expr_invariant_in_loop_p (loop, off))
 	return false;
-      off = base;
-      base = size_int (pbytepos);
+
+      std::swap (base, off);
     }
-  /* Otherwise put base + constant offset into the loop invariant BASE
-     and continue with OFF.  */
-  else
-    {
-      base = fold_convert (sizetype, base);
-      base = size_binop (PLUS_EXPR, base, size_int (pbytepos));
-    }
+
+  base = fold_convert (sizetype, base);
+  base = size_binop (PLUS_EXPR, base, size_int (pbytepos));
 
   /* OFF at this point may be either a SSA_NAME or some tree expression
      from get_inner_reference.  Try to peel off loop invariants from it
@@ -4863,6 +4856,9 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
       /* The offset vector type will be read from DECL when needed.  */
       offset_vectype = NULL_TREE;
     }
+
+  gcc_checking_assert (expr_invariant_in_loop_p (loop, base));
+  gcc_checking_assert (!expr_invariant_in_loop_p (loop, off));
 
   info->ifn = ifn;
   info->decl = decl;
