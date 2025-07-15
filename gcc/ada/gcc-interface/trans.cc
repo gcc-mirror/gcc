@@ -1250,6 +1250,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      no order-of-elaboration issue here.  */
   if (Is_Subprogram (gnat_entity))
     gnu_result_type = NULL_TREE;
+  else if (Nkind (Original_Node (gnat_node)) == N_Explicit_Dereference
+	   && Is_Extended_Access_Type
+	      (Etype (Prefix (Original_Node (gnat_node)))))
+    gnu_result_type = get_unpadded_extended_type (gnat_result_type);
   else
     gnu_result_type = get_unpadded_type (gnat_result_type);
 
@@ -2033,7 +2037,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	      tree gnu_ptr_type
 		= TREE_TYPE (gnat_to_gnu (Prefix (gnat_prefix)));
 
-	      if (TYPE_IS_FAT_OR_THIN_POINTER_P (gnu_ptr_type))
+	      if (TYPE_IS_FAT_OR_THIN_POINTER_P (gnu_ptr_type)
+		  || TYPE_IS_EXTENDED_POINTER_P (gnu_ptr_type))
 		gnu_type
 		  = build_unc_object_type_from_ptr (gnu_ptr_type,
 						    gnu_actual_obj_type,
@@ -6974,7 +6979,12 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Explicit_Dereference:
       /* Make sure the designated type is complete before dereferencing.  */
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      if (Is_Extended_Access_Type (Etype (Prefix (gnat_node)))
+	  && !Is_Constrained (Etype (gnat_node)))
+        gnu_result_type = get_unpadded_extended_type (Etype (gnat_node));
+      else
+        gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
       gnu_result = gnat_to_gnu (Prefix (gnat_node));
       gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
 

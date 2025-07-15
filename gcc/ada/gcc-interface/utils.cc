@@ -392,7 +392,6 @@ static tree fold_bit_position (const_tree);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, machine_mode);
-static tree convert_to_fat_pointer (tree, tree);
 static unsigned int scale_by_factor_of (tree, unsigned int);
 
 /* Linked list used as a queue to defer the initialization of the DECL_CONTEXT
@@ -614,6 +613,59 @@ build_dummy_unc_pointer_types (Entity_Id gnat_desig_type, tree gnu_desig_type)
   TYPE_POINTER_TO (gnu_desig_type) = gnu_fat_type;
   TYPE_REFERENCE_TO (gnu_desig_type) = gnu_fat_type;
   TYPE_OBJECT_RECORD_TYPE (gnu_desig_type) = gnu_object_type;
+}
+
+/* Build dummy extended access types whose designated type is specified by
+   GNAT_DESIG_TYPE/GNU_DESIG_TYPE and attach them to the latter.  */
+
+tree
+build_dummy_unc_pointer_types_ext (Entity_Id gnat_desig_type, tree gnu_desig_type)
+{
+  tree gnu_template_type, gnu_array_type, gnu_ptr_array;
+  tree gnu_ext_acc_type = make_node (RECORD_TYPE);
+  tree fields, dummy = NULL_TREE;
+
+  gnu_template_type = make_node (RECORD_TYPE);
+  TYPE_NAME (gnu_template_type) = create_concat_name (gnat_desig_type, "XUBEA");
+  TYPE_DUMMY_P (gnu_template_type) = 1;
+
+  /* This will also set TYPE_POINTER_TO field for the template type, even if
+     we don't need it here. */
+  build_pointer_type (gnu_template_type);
+
+  /* The following call only builds the template record, but other dependent
+     types or other more complex expressions for bounds are NOT created.
+     This allows the size of an extended access to be computed, but it must be
+     completed later. */
+  build_template_type (gnat_desig_type, gnu_template_type, NULL_TREE, NULL,
+		       dummy, false);
+
+  TYPE_CONTEXT (gnu_template_type) = gnu_ext_acc_type;
+
+  gnu_array_type = make_node (ENUMERAL_TYPE);
+  TYPE_NAME (gnu_array_type) = create_concat_name (gnat_desig_type, "XUAEA");
+  TYPE_DUMMY_P (gnu_array_type) = 1;
+  gnu_ptr_array = build_pointer_type (gnu_array_type);
+
+  /* Build a stub DECL to trigger the special processing for fat pointer types
+     in gnat_pushdecl.  */
+  TYPE_NAME (gnu_ext_acc_type)
+    = create_type_stub_decl (create_concat_name (gnat_desig_type, "XUPEA"),
+			     gnu_ext_acc_type);
+  fields = create_field_decl (get_identifier ("P_ARRAY"), gnu_ptr_array,
+			      gnu_ext_acc_type, NULL_TREE, NULL_TREE, 0, 1);
+  DECL_CHAIN (fields)
+    = create_field_decl (get_identifier ("BOUNDS"), gnu_template_type,
+			 gnu_ext_acc_type, NULL_TREE, NULL_TREE, 0, 1);
+  finish_extended_pointer_type (gnu_ext_acc_type, fields);
+  SET_TYPE_UNCONSTRAINED_ARRAY (gnu_ext_acc_type, gnu_desig_type);
+
+  /* Suppress debug info until after the type is completed.  */
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_ext_acc_type)) = 1;
+
+  SET_TYPE_DUMMY_EXT_POINTER_TO (gnu_desig_type, gnu_ext_acc_type);
+
+  return gnu_ext_acc_type;
 }
 
 /* Return true if we are in the global binding level.  */
@@ -937,11 +989,13 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     }
 
 /* Pointer types aren't named types in the C sense so we need to generate a
-   typedef in DWARF for them.  Also do that for fat pointer types because,
-   even though they are named types in the C sense, they are still the XUP
-   types created for the base array type at this point.  */
-#define TYPE_IS_POINTER_P(NODE) \
-  (TREE_CODE (NODE) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (NODE))
+   typedef in DWARF for them.  Also do that for fat and extended pointer types
+   because, even though they are named types in the C sense, they are still
+   the XUP[EA] types created for the base array type at this point.  */
+#define TYPE_IS_POINTER_P(NODE)                                                \
+  (TREE_CODE (NODE) == POINTER_TYPE                                            \
+   || TYPE_IS_FAT_POINTER_P (NODE)                                             \
+   || TYPE_IS_EXTENDED_POINTER_P (NODE))
 
   /* For the declaration of a type, set its name either if it isn't already
      set or if the previous type name was not derived from a source name.
@@ -973,8 +1027,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	    DECL_ORIGINAL_TYPE (decl) = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
 	  else
 	    DECL_ORIGINAL_TYPE (decl) = t;
-	  /* Remark the canonical fat pointer type as artificial.  */
-	  if (TYPE_IS_FAT_POINTER_P (t))
+	  /* Remark the canonical fat or extended pointer type as artificial.  */
+	  if (TYPE_IS_FAT_POINTER_P (t) || TYPE_IS_EXTENDED_POINTER_P (t))
 	    TYPE_ARTIFICIAL (t) = 1;
 	  t = NULL_TREE;
 	}
@@ -1725,6 +1779,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align > 0
       && RECORD_OR_UNION_TYPE_P (type)
       && !TYPE_IS_FAT_POINTER_P (type)
+      && !TYPE_IS_EXTENDED_POINTER_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TYPE_BY_REFERENCE_P (type)
       && TREE_CODE (orig_size) == INTEGER_CST
@@ -2119,6 +2174,25 @@ finish_fat_pointer_type (tree record_type, tree field_list)
   TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
 }
 
+/* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
+   finish constructing the record type as an extended access type.  */
+
+void
+finish_extended_pointer_type (tree record_type, tree field_list)
+{
+  /* Show what it really is.  */
+  TYPE_EXTENDED_POINTER_P (record_type) = 1;
+
+  /* Do not emit debug info for it since the types of its fields may still be
+     incomplete at this point.  */
+  finish_record_type (record_type, field_list, 0, false);
+
+  /* Force type_contains_placeholder_p to return true on it.  Although the
+     PLACEHOLDER_EXPRs are referenced only indirectly, this isn't a pointer
+     type but the representation of the unconstrained array.  */
+  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
+}
+
 /* Clear DECL_BIT_FIELD flag and associated markers on FIELD, which is a field
    of aggregate type TYPE.  */
 
@@ -2219,6 +2293,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 
       if (RECORD_OR_UNION_TYPE_P (type)
 	  && !TYPE_FAT_POINTER_P (type)
+	  && !TYPE_EXTENDED_POINTER_P (type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (type)
 	  && TYPE_ADA_SIZE (type))
 	this_ada_size = TYPE_ADA_SIZE (type);
@@ -2355,6 +2430,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
     {
       /* Now set any of the values we've just computed that apply.  */
       if (!TYPE_FAT_POINTER_P (record_type)
+	  && !TYPE_EXTENDED_POINTER_P (record_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (record_type))
 	SET_TYPE_ADA_SIZE (record_type, ada_size);
     }
@@ -4483,20 +4559,23 @@ build_unc_object_type (tree template_type, tree object_type, tree name,
   return type;
 }
 
-/* Same, taking a thin or fat pointer type instead of a template type. */
+/* Same, taking a pointer type instead of a template type.  */
 
 tree
-build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
-				tree name, bool debug_info_p)
+build_unc_object_type_from_ptr (tree ptr_type, tree object_type, tree name,
+				bool debug_info_p)
 {
   tree template_type;
 
-  gcc_assert (TYPE_IS_FAT_OR_THIN_POINTER_P (thin_fat_ptr_type));
-
-  template_type
-    = (TYPE_IS_FAT_POINTER_P (thin_fat_ptr_type)
-       ? TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (thin_fat_ptr_type))))
-       : TREE_TYPE (TYPE_FIELDS (TREE_TYPE (thin_fat_ptr_type))));
+  if (TYPE_IS_EXTENDED_POINTER_P (ptr_type))
+    template_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (ptr_type)));
+  else if (TYPE_IS_FAT_POINTER_P (ptr_type))
+    template_type
+      = TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (ptr_type))));
+  else if (TYPE_IS_THIN_POINTER_P (ptr_type))
+    template_type = TREE_TYPE (TYPE_FIELDS (TREE_TYPE (ptr_type)));
+  else
+    gcc_unreachable ();
 
   return
     build_unc_object_type (template_type, object_type, name, true,
@@ -4652,6 +4731,9 @@ convert_to_fat_pointer (tree type, tree expr)
   vec<constructor_elt, va_gc> *v;
   vec_alloc (v, 2);
 
+  /* We don't allow conversion from extended to fat pointers.  */
+  gcc_assert (!TYPE_IS_EXTENDED_POINTER_P (etype));
+
   /* If EXPR is null, make a fat pointer that contains a null pointer to the
      array (compare_fat_pointers ensures that this is the full discriminant)
      and a valid pointer to the bounds.  This latter property is necessary
@@ -4740,6 +4822,101 @@ convert_to_fat_pointer (tree type, tree expr)
      will only refer to the provided TEMPLATE_TYPE in this case.  */
   CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type), convert (p_array_type, expr));
   CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)), template_addr);
+  return gnat_build_constructor (type, v);
+}
+
+/* Convert EXPR, a pointer to a constrained array, into a pointer to an
+   unconstrained one using an extended access.  This involves making or
+   finding a template. */
+
+static tree
+convert_to_extended_pointer (tree type, tree expr)
+{
+  tree template_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
+  tree p_array_type = TREE_TYPE (TYPE_FIELDS (type));
+  tree etype = TREE_TYPE (expr);
+  tree template_val;
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, 2);
+
+  /* If EXPR is null, make a fat pointer that contains a null pointer to the
+     array (compare_fat_pointers ensures that this is the full discriminant)
+     and a valid pointer to the bounds.  This latter property is necessary
+     since the compiler can hoist the load of the bounds done through it.  */
+  if (integer_zerop (expr))
+    {
+      tree template_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
+      tree null_bounds, t;
+
+      null_bounds = build_constructor (template_type, NULL);
+      TREE_CONSTANT (null_bounds) = TREE_STATIC (null_bounds) = 1;
+
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+			      fold_convert (p_array_type, null_pointer_node));
+      CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)) , null_bounds);
+      t = build_constructor (type, v);
+      /* Do not set TREE_CONSTANT so as to force T to static memory.  */
+      TREE_CONSTANT (t) = 0;
+      TREE_STATIC (t) = 1;
+
+      return t;
+    }
+
+  /* If EXPR is a thin pointer, make template and data from the record.  */
+  if (TYPE_IS_THIN_POINTER_P (etype))
+    {
+      tree field = TYPE_FIELDS (TREE_TYPE (etype));
+
+      expr = gnat_protect_expr (expr);
+
+      /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
+	 the thin pointer value has been shifted so we shift it back to get
+	 the template address.  */
+      if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
+	{
+	  tree template_addr
+	    = fold_convert (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type))), expr);
+	  template_val = build_unary_op (INDIRECT_REF, NULL_TREE, template_addr);
+	}
+
+      /* Otherwise we explicitly take the address of the fields.  */
+      else
+	{
+	  expr = build_unary_op (INDIRECT_REF, NULL_TREE, expr);
+
+	  template_val = build_component_ref (expr, field, true);
+
+	  expr = build_unary_op (ADDR_EXPR, NULL_TREE,
+				 build_component_ref (expr, DECL_CHAIN (field),
+						      false));
+	}
+    }
+
+  else if (TYPE_IS_FAT_POINTER_P (etype))
+    template_val
+      = build_unary_op (INDIRECT_REF, NULL_TREE,
+			build_component_ref (expr,
+					     DECL_CHAIN (TYPE_FIELDS (etype)),
+					     false));
+
+  /* Otherwise, build the constructor for the template.  */
+  else
+    template_val = build_template (template_type, TREE_TYPE (etype), expr);
+
+  /* The final result is a constructor for the extended pointer.
+
+     If EXPR is an argument of a foreign convention subprogram, the type it
+     points to is directly the component type.  In this case, the expression
+     type may not match the corresponding FIELD_DECL type at this point, so we
+     call "convert" here to fix that up if necessary.  This type consistency is
+     required, for instance because it ensures that possible later folding of
+     COMPONENT_REFs against this constructor always yields something of the
+     same type as the initial reference.
+
+     Note that the call to "build_template" above is still fine because it
+     will only refer to the provided TEMPLATE_TYPE in this case.  */
+  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type), convert (p_array_type, expr));
+  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)), template_val);
   return gnat_build_constructor (type, v);
 }
 
@@ -5122,6 +5299,8 @@ convert (tree type, tree expr)
   /* Check for converting to a pointer to an unconstrained array.  */
   if (TYPE_IS_FAT_POINTER_P (type) && !TYPE_IS_FAT_POINTER_P (etype))
     return convert_to_fat_pointer (type, expr);
+  if (TYPE_IS_EXTENDED_POINTER_P (type) && !TYPE_IS_EXTENDED_POINTER_P (etype))
+    return convert_to_extended_pointer (type, expr);
 
   /* If we are converting between two aggregate or vector types that are mere
      variants, just make a VIEW_CONVERT_EXPR.  Likewise when we are converting
@@ -5264,7 +5443,7 @@ convert (tree type, tree expr)
 
       /* If converting fat pointer to normal or thin pointer, get the pointer
 	 to the array and then convert it.  */
-      if (TYPE_IS_FAT_POINTER_P (etype))
+      if (TYPE_IS_FAT_POINTER_P (etype) || TYPE_IS_EXTENDED_POINTER_P (etype))
 	expr = build_component_ref (expr, TYPE_FIELDS (etype), false);
 
       return fold (convert_to_pointer (type, expr));
@@ -5328,20 +5507,30 @@ convert (tree type, tree expr)
 	}
 
       /* If EXPR is a constrained array, take its address, convert it to a
-	 fat pointer, and then dereference it.  Likewise if EXPR is a
-	 record containing both a template and a constrained array.
-	 Note that a record representing a justified modular type
-	 always represents a packed constrained array.  */
+	 fat or extended pointer, and then dereference it.  Likewise if
+	 EXPR is a record containing both a template and a constrained
+	 array.  Note that a record representing a justified modular type
+	 always represents a packed constrained array. */
       if (ecode == ARRAY_TYPE
 	  || (ecode == INTEGER_TYPE && TYPE_HAS_ACTUAL_BOUNDS_P (etype))
 	  || (ecode == RECORD_TYPE && TYPE_CONTAINS_TEMPLATE_P (etype))
 	  || (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype)))
-	return
-	  build_unary_op
-	    (INDIRECT_REF, NULL_TREE,
-	     convert_to_fat_pointer (TREE_TYPE (type),
-				     build_unary_op (ADDR_EXPR,
-						     NULL_TREE, expr)));
+	{
+	  if (TYPE_IS_EXTENDED_POINTER_P (TREE_TYPE (type)))
+	    return
+	      build_unary_op
+	      (INDIRECT_REF, NULL_TREE,
+	       convert_to_extended_pointer (TREE_TYPE (type),
+					    build_unary_op (ADDR_EXPR,
+							    NULL_TREE, expr)));
+	  else
+	    return
+	      build_unary_op
+	      (INDIRECT_REF, NULL_TREE,
+	       convert_to_fat_pointer (TREE_TYPE (type),
+				       build_unary_op (ADDR_EXPR,
+						       NULL_TREE, expr)));
+	}
 
       /* Do something very similar for converting one unconstrained
 	 array to another.  */

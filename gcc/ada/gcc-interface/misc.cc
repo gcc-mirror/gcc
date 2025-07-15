@@ -531,7 +531,9 @@ gnat_print_type (FILE *file, tree node, int indent)
       break;
 
     case RECORD_TYPE:
-      if (TYPE_FAT_POINTER_P (node) || TYPE_CONTAINS_TEMPLATE_P (node))
+      if (TYPE_EXTENDED_POINTER_P (node)
+	  || TYPE_FAT_POINTER_P (node)
+	  || TYPE_CONTAINS_TEMPLATE_P (node))
 	print_node (file, "unconstrained array",
 		    TYPE_UNCONSTRAINED_ARRAY (node), indent + 4);
       else

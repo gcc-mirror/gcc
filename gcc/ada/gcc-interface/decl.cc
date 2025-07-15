@@ -201,6 +201,7 @@ static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static int adjust_packed (tree, tree, int);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
+static tree get_extended_unconstrained_array (Entity_Id, tree);
 static enum inline_status_t inline_status_for_subprog (Entity_Id);
 static Entity_Id Gigi_Cloned_Subtype (Entity_Id);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
@@ -278,6 +279,13 @@ is_artificial (Entity_Id gnat_entity)
    If GNAT_ENTITY is a variable or a constant declaration, GNU_EXPR gives its
    initial value (in GCC tree form).  This is optional for a variable.  For
    a renamed entity, GNU_EXPR gives the object being renamed.
+
+   If GNAT_ENTITY is an array type and GNU_EXPR is NULL_TREE, a GCC tree for a
+   regular fat pointer will be generated.  However, if GNU_EXPR is not
+   NULL_TREE, it's an existing GCC tree for the fat pointer, and a GCC tree for
+   the extended pointer will be created instead.  The caller must clear the
+   association between GNAT_ENTITY and GNU_EXPR before calling
+   gnat_to_gnu_entity with a non-NULL GNU_EXPR and restore it after the call.
 
    DEFINITION is true if this call is intended for a definition.  This is used
    for separate compilation where it is necessary to know whether an external
@@ -441,7 +449,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      must be specified unless it was specified by the programmer.  Exceptions
      are for access-to-protected-subprogram types and all access subtypes, as
      another GNAT type is used to lay out the GCC type for them, as well as
-     access-to-subprogram types if front-end unnesting is enabled.  */
+     access-to-subprogram types if front-end unnesting is enabled, and also
+     extended access types.  */
   gcc_assert (!is_type
 	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
@@ -454,6 +463,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			   || kind == E_Anonymous_Access_Subprogram_Type)
 			  && Unnest_Subprogram_Mode)
 		      || kind == E_Access_Subtype
+		      || Is_Extended_Access_Type (gnat_entity)
 		      || type_annotate_only)));
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
@@ -1254,7 +1264,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   initialize it to NULL, unless the object is declared imported as
 	   per RM B.1(24).  */
 	if (definition
-	    && (POINTER_TYPE_P (gnu_type) || TYPE_IS_FAT_POINTER_P (gnu_type))
+	    && (POINTER_TYPE_P (gnu_type)
+                || TYPE_IS_FAT_POINTER_P (gnu_type)
+                || TYPE_IS_EXTENDED_POINTER_P (gnu_type))
 	    && !gnu_expr
 	    && !Is_Imported (gnat_entity))
 	  gnu_expr = null_pointer_node;
@@ -2165,21 +2177,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 have are pointers to that type.  In addition to the type node itself,
 	 4 other types associated with it are built in the process:
 
-	   1. the array type (suffix XUA) containing the actual data,
+	   1. the array type (suffix XUA for fat pointer, XUAEA for extended
+	      access) containing the actual data,
 
-	   2. the template type (suffix XUB) containing the bounds,
+	   2. the template type (suffix XUB for fat pointer, XUBEA for extended
+	      access) containing the bounds,
 
 	   3. the fat pointer type (suffix XUP) representing a pointer or a
 	      reference to the unconstrained array type:
 		XUP = struct { XUA *, XUB * }
 
-	   4. the object record type (suffix XUT) containing bounds and data:
-		XUT = struct { XUB, XUA }
+	      or the extended access type (suffix XUPEA) representing a pointer
+	      or a reference to the unconstrained array type:
+		XUPEA = struct { XUAEA *, XUBEA }
+
+	   4. the object record type (suffix XUT for fat pointer, XUTEA for
+	      extended access) containing bounds and data:
+		XUT[EA] = struct { XUB[EA], XUA[EA] }
 
 	 The bounds of the array type XUA (de)reference the XUB * field of a
 	 PLACEHOLDER_EXPR for the fat pointer type XUP, so the array type XUA
 	 is to be interpreted in the context of the fat pointer type XUB for
-	 debug info purposes.  */
+	 debug info purposes.  Likewise for the extended access case.  */
 
     case E_Array_Type:
       {
@@ -2187,14 +2206,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	const Entity_Id PAT = Packed_Array_Impl_Type (gnat_entity);
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
+	const bool extended_access_p = gnu_expr != NULL_TREE;
 	const int ndim = Number_Dimensions (gnat_entity);
 	tree gnu_fat_type, gnu_template_type, gnu_ptr_template;
-	tree gnu_template_reference, gnu_template_fields;
+	tree gnu_template_reference;
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
-	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
 	tree gnu_max_size = size_one_node;
 	tree comp_type, fld, tem, obj;
-	Entity_Id gnat_index;
 	alias_set_type ptr_set = -1;
 	int index;
 
@@ -2214,7 +2232,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   better debugging information in DWARF by leveraging the support for
 	   incomplete declarations of "tagged" types in the DWARF back-end.  */
 	gnu_type = get_dummy_type (gnat_entity);
-	if (gnu_type && TYPE_POINTER_TO (gnu_type))
+	if (gnu_type && TYPE_POINTER_TO (gnu_type) && !extended_access_p)
 	  {
 	    gnu_fat_type = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (gnu_type));
 	    TYPE_NAME (gnu_fat_type) = NULL_TREE;
@@ -2229,10 +2247,42 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    DECL_CHAIN (TYPE_FIELDS (TYPE_POINTER_TO (gnu_type)))
 	      = copy_node (DECL_CHAIN (TYPE_FIELDS (gnu_fat_type)));
 	  }
+
+        /* We complete an existing dummy for extended access, but we haven't
+           created a specific tree yet for the array type.  The extended access
+           type is stored directly in the original unconstrained array type,
+           where we will store the new array type later.  */
+        else if (gnu_type
+		 && TYPE_DUMMY_EXT_POINTER_TO (gnu_type)
+		 && extended_access_p)
+	  {
+	    gnu_ptr_template = NULL_TREE;
+	    tree gnu_ext_acc_type = TYPE_DUMMY_EXT_POINTER_TO (gnu_type);
+	    gnu_fat_type = TYPE_MAIN_VARIANT (gnu_ext_acc_type);
+	    TYPE_NAME (gnu_fat_type) = NULL_TREE;
+
+	    /* The dummy types has a XUBEA that was only used to get the size of
+	       the extended pointer. We now drop this type and use the XUB type
+	       from the regular fat pointer instead.  */
+	    gnu_template_type
+	      = TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr)))));
+
+	    DECL_CHAIN (TYPE_FIELDS (gnu_fat_type))
+	      = create_field_decl (get_identifier ("BOUNDS"),
+				   gnu_template_type, gnu_fat_type,
+				   NULL_TREE, NULL_TREE, 0, 1);
+	  }
+
 	else
 	  {
 	    gnu_fat_type = make_node (RECORD_TYPE);
-	    gnu_template_type = make_node (RECORD_TYPE);
+
+	    if (extended_access_p)
+	      gnu_template_type
+		= TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr)))));
+	    else
+	      gnu_template_type = make_node (RECORD_TYPE);
+
 	    gnu_ptr_template = build_pointer_type (gnu_template_type);
 	  }
 
@@ -2264,7 +2314,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   Var are also built later with the fields of the final type, the
 	   aliasing machinery may consider that the accesses are distinct
 	   if the FIELD_DECLs are distinct as objects.  */
-	if (COMPLETE_TYPE_P (gnu_fat_type))
+	if (COMPLETE_TYPE_P (gnu_fat_type) && !extended_access_p)
 	  {
 	    fld = TYPE_FIELDS (gnu_fat_type);
 	    if (TYPE_ALIAS_SET_KNOWN_P (TYPE_CANONICAL (TREE_TYPE (fld))))
@@ -2275,6 +2325,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    for (tree t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
 	      SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
 	  }
+
+	else if (COMPLETE_TYPE_P (gnu_fat_type) && extended_access_p)
+	  {
+	    fld = TYPE_FIELDS (gnu_fat_type);
+	    if (TYPE_ALIAS_SET_KNOWN_P (TYPE_CANONICAL (TREE_TYPE (fld))))
+	      ptr_set = TYPE_ALIAS_SET (TYPE_CANONICAL (TREE_TYPE (fld)));
+	    TREE_TYPE (fld) = ptr_type_node;
+	    /* For extended access, we leave the BOUNDS field alone.   */
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
+	    for (tree t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
+	      SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
+	  }
+
+	else if (extended_access_p)
+	  {
+	    /* We make the fields addressable for the sake of compatibility
+	       with languages for which the regular fields are addressable.  */
+	    fld
+	      = create_field_decl (get_identifier ("P_ARRAY"),
+				   ptr_type_node, gnu_fat_type,
+				   NULL_TREE, NULL_TREE, 0, 1);
+	    /* At this step, gnu_template_type is an empty RECORD to be
+	       be populated later.  */
+	    DECL_CHAIN (fld)
+	      = create_field_decl (get_identifier ("BOUNDS"),
+				   gnu_template_type, gnu_fat_type,
+				   NULL_TREE, NULL_TREE, 0, 1);
+	    /* Too early to finish the record, but set the fields so that
+	       they are available through the type.  */
+	    TYPE_FIELDS (gnu_fat_type) = fld;
+	    SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
+	  }
+
 	else
 	  {
 	    /* We make the fields addressable for the sake of compatibility
@@ -2302,135 +2385,56 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    : gnat_entity;
 	tree xup_name
 	  = gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
-	    ? create_concat_name (gnat_name, "XUP")
+	    ? create_concat_name (gnat_name,
+				  extended_access_p ? "XUPEA" : "XUP")
 	    : gnu_entity_name;
 	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
 			  gnat_entity, false);
 
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
-	   is the fat pointer.  This will be used to access the individual
-	   fields once we build them.  */
-	tem = build3 (COMPONENT_REF, gnu_ptr_template,
-		      build0 (PLACEHOLDER_EXPR, gnu_fat_type),
-		      DECL_CHAIN (fld), NULL_TREE);
-	gnu_template_reference
-	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
-	TREE_READONLY (gnu_template_reference) = 1;
-	TREE_THIS_NOTRAP (gnu_template_reference) = 1;
-
-	/* Now create the GCC type for each index and add the fields for that
-	   index to the template.  */
-	for (index = (convention_fortran_p ? ndim - 1 : 0),
-	     gnat_index = First_Index (gnat_entity);
-	     IN_RANGE (index, 0, ndim - 1);
-	     index += (convention_fortran_p ? - 1 : 1),
-	     gnat_index = Next_Index (gnat_index))
+	   is the extended/fat pointer.  This will be used to access the
+	   individual fields once we build them.  */
+	if (extended_access_p)
 	  {
-	    const Entity_Id gnat_index_type = Etype (gnat_index);
-	    const bool is_flb
-	      = Is_Fixed_Lower_Bound_Index_Subtype (gnat_index_type);
-	    tree gnu_index_type = get_unpadded_type (gnat_index_type);
-	    tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
-	    tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
-	    tree gnu_index_base_type = get_base_type (gnu_index_type);
-	    tree gnu_lb_field, gnu_hb_field;
-	    tree gnu_min, gnu_max, gnu_high;
-	    char field_name[16];
-
-	    /* Update the maximum size of the array in elements.  */
-	    if (gnu_max_size)
-	      gnu_max_size
-		= update_n_elem (gnu_max_size, gnu_orig_min, gnu_orig_max);
-
-	    /* Now build the self-referential bounds of the index type.  */
-	    gnu_index_type = maybe_character_type (gnu_index_type);
-	    gnu_index_base_type = maybe_character_type (gnu_index_base_type);
-
-	    /* Make the FIELD_DECLs for the low and high bounds of this
-	       type and then make extractions of these fields from the
-	       template.  */
-	    sprintf (field_name, "LB%d", index);
-	    gnu_lb_field = create_field_decl (get_identifier (field_name),
-					      gnu_index_type,
-					      gnu_template_type, NULL_TREE,
-					      NULL_TREE, 0, 0);
-	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
-	    DECL_DISCRIMINANT_NUMBER (gnu_lb_field) = integer_minus_one_node;
-	    Sloc_to_locus (Sloc (gnat_entity),
-			   &DECL_SOURCE_LOCATION (gnu_lb_field));
-
-	    field_name[0] = 'U';
-	    gnu_hb_field = create_field_decl (get_identifier (field_name),
-					      gnu_index_type,
-					      gnu_template_type, NULL_TREE,
-					      NULL_TREE, 0, 0);
-	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
-	    DECL_DISCRIMINANT_NUMBER (gnu_hb_field) = integer_minus_one_node;
-	    Sloc_to_locus (Sloc (gnat_entity),
-			   &DECL_SOURCE_LOCATION (gnu_hb_field));
-
-	    gnu_temp_fields[index] = chainon (gnu_lb_field, gnu_hb_field);
-
-	    /* We can't use build_component_ref here since the template type
-	       isn't complete yet.  */
-	    if (!is_flb)
-	      {
-		gnu_orig_min = build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
-				       gnu_template_reference, gnu_lb_field,
-				       NULL_TREE);
-		TREE_READONLY (gnu_orig_min) = 1;
-	      }
-
-	    gnu_orig_max = build3 (COMPONENT_REF, TREE_TYPE (gnu_hb_field),
-				   gnu_template_reference, gnu_hb_field,
-				   NULL_TREE);
-	    TREE_READONLY (gnu_orig_max) = 1;
-
-	    gnu_min = convert (sizetype, gnu_orig_min);
-	    gnu_max = convert (sizetype, gnu_orig_max);
-
-	    /* Compute the size of this dimension.  See the E_Array_Subtype
-	       case below for the rationale.  */
-	    if (is_flb
-		&& Nkind (gnat_index) == N_Subtype_Indication
-	        && flb_cannot_be_superflat (gnat_index))
-	      gnu_high = gnu_max;
-
-	    else
-	      gnu_high
-		= build3 (COND_EXPR, sizetype,
-			  build2 (GE_EXPR, boolean_type_node,
-				  gnu_orig_max, gnu_orig_min),
-			  gnu_max,
-			  TREE_CODE (gnu_min) == INTEGER_CST
-			  ? int_const_binop (MINUS_EXPR, gnu_min, size_one_node)
-			  : size_binop (MINUS_EXPR, gnu_min, size_one_node));
-
-	    /* Make a range type with the new range in the Ada base type.
-	       Then make an index type with the size range in sizetype.  */
-	    gnu_index_types[index]
-	      = create_index_type (gnu_min, gnu_high,
-				   create_range_type (gnu_index_base_type,
-						      gnu_orig_min,
-						      gnu_orig_max),
-				   gnat_entity);
-
-	    TYPE_NAME (gnu_index_types[index])
-	      = create_concat_name (gnat_entity, field_name);
+	    /* Extended pointers reference the template directly through the
+	       BOUNDS field, which is the second field.  */
+	    gnu_template_reference
+	      = build3 (COMPONENT_REF, gnu_template_type,
+			build0 (PLACEHOLDER_EXPR, gnu_fat_type),
+			DECL_CHAIN (fld), NULL_TREE);
+	    TREE_READONLY (gnu_template_reference) = 1;
+	  }
+	else
+	  {
+	    /* Fat pointers reference the template indirectly through the
+	       P_BOUNDS field, which is the second field.  */
+	    tem = build3 (COMPONENT_REF, gnu_ptr_template,
+			  build0 (PLACEHOLDER_EXPR, gnu_fat_type),
+			  DECL_CHAIN (fld), NULL_TREE);
+	    gnu_template_reference
+	      = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
+	    TREE_READONLY (gnu_template_reference) = 1;
+	    TREE_THIS_NOTRAP (gnu_template_reference) = 1;
 	  }
 
-	/* Install all the fields into the template.  */
-	TYPE_NAME (gnu_template_type)
-	  = create_concat_name (gnat_entity, "XUB");
-	TYPE_NAMELESS (gnu_template_type)
-	  = gnat_encodings != DWARF_GNAT_ENCODINGS_ALL;
-	gnu_template_fields = NULL_TREE;
-	for (index = 0; index < ndim; index++)
-	  gnu_template_fields
-	    = chainon (gnu_template_fields, gnu_temp_fields[index]);
-	finish_record_type (gnu_template_type, gnu_template_fields, 0,
-			    debug_info_p);
-	TYPE_CONTEXT (gnu_template_type) = gnu_fat_type;
+	if (!extended_access_p)
+	  {
+	    /* Build the template type.  */
+	    TYPE_NAME (gnu_template_type)
+	      = create_concat_name (gnat_entity, "XUB");
+	  }
+
+	build_template_type (gnat_entity, gnu_template_type,
+			     gnu_template_reference, gnu_index_types,
+			     gnu_max_size, debug_info_p);
+
+        if (!extended_access_p)
+	  TYPE_CONTEXT (gnu_template_type) = gnu_fat_type;
+
+	/* Now that the template type has been created, the record type for
+	   extended access can be finished.  */
+	if (extended_access_p)
+	  finish_extended_pointer_type (gnu_fat_type, fld);
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
@@ -2510,9 +2514,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  TYPE_ARRAY_MAX_SIZE (tem) = gnu_max_size;
 
 	/* See the above description for the rationale.  */
+	tree xua_name
+	  = create_concat_name (gnat_entity,
+				extended_access_p ? "XUAEA" : "XUA");
 	tree gnu_tmp_decl
-	  = create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
-			      true, debug_info_p, gnat_entity);
+	  = create_type_decl (xua_name, tem, true, debug_info_p, gnat_entity);
 	TYPE_CONTEXT (tem) = gnu_fat_type;
 	TYPE_CONTEXT (TYPE_POINTER_TO (tem)) = gnu_fat_type;
 
@@ -2524,7 +2530,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   If the GNAT encodings are used, give it a name.  */
 	tree xut_name
 	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
-	    ? create_concat_name (gnat_name, "XUT")
+	    ? create_concat_name (gnat_name,
+				  extended_access_p ? "XUTEA" : "XUT")
 	    : gnu_entity_name;
 	obj = build_unc_object_type (gnu_template_type, tem, xut_name,
 				     artificial_p, debug_info_p);
@@ -2542,7 +2549,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* If this is a packed type implemented specially, then process the
 	   implementation type so it is elaborated in the proper scope.  */
-	if (Present (PAT))
+	if (Present (PAT) && !extended_access_p)
 	  {
 	    /* Save the XUA type as our equivalent temporarily for the call
 	       to gnat_to_gnu_type on the OAT below.  */
@@ -3951,7 +3958,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Access-to-unconstrained-array types need a special treatment.  */
-	if (Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep))
+	if (Is_Array_Type (gnat_desig_rep)
+	    && !Is_Constrained (gnat_desig_rep)
+	    && !Is_Extended_Access_Type (gnat_entity))
 	  {
 	    /* If the processing above got something that has a pointer, then
 	       we are done.  This could have happened either because the type
@@ -3960,6 +3969,26 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
 
 	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
+	  }
+
+	else if (Is_Array_Type (gnat_desig_rep)
+		 && !Is_Constrained (gnat_desig_rep)
+		 && Is_Extended_Access_Type (gnat_entity))
+	  {
+	    if (TYPE_IS_DUMMY_P (gnu_desig_type))
+	      gnu_type
+		= build_dummy_unc_pointer_types_ext (gnat_desig_rep,
+						     gnu_desig_type);
+	    else
+	      {
+		tree gnu_extended_type
+		  = get_extended_unconstrained_array (gnat_desig_rep,
+						      gnu_desig_type);
+
+		/* We should not get a dummy type.  */
+		gnu_type = TYPE_POINTER_TO (gnu_extended_type);
+		gcc_assert (gnu_type);
+	      }
 	  }
 
 	/* If we haven't done it yet, build the pointer type the usual way.  */
@@ -4560,7 +4589,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      if (gnu_size)
 		size = gnu_size;
 	      else if (RECORD_OR_UNION_TYPE_P (gnu_type)
-		       && !TYPE_FAT_POINTER_P (gnu_type))
+		       && !TYPE_FAT_POINTER_P (gnu_type)
+		       && !TYPE_EXTENDED_POINTER_P (gnu_type))
 		size = rm_size (gnu_type);
 	      else
 	        size = TYPE_SIZE (gnu_type);
@@ -5137,6 +5167,22 @@ get_unpadded_type (Entity_Id gnat_entity)
   return type;
 }
 
+/* Similar, but GNAT_ENTITY is assumed to refer to a GNAT type.  Return
+   the extended version of the GCC type corresponding to that entity.  */
+
+tree
+get_unpadded_extended_type (Entity_Id gnat_entity)
+{
+  tree type = gnat_to_gnu_type (gnat_entity);
+
+  tree extended_type = get_extended_unconstrained_array (gnat_entity, type);
+
+  if (TYPE_IS_PADDING_P (extended_type))
+    extended_type = TREE_TYPE (TYPE_FIELDS (extended_type));
+
+  return extended_type;
+}
+
 /* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
    a C++ imported method or equivalent.
 
@@ -5242,6 +5288,43 @@ is_cplusplus_method (Entity_Id gnat_entity)
     }
 
   return false;
+}
+
+/* Get the UNCONSTRAINED_ARRAY_TYPE tree used for extended access handling,
+   for the unconstrained array type GNAT_ENTITY.
+
+   GNU_TYPE is the UNCONSTRAINED_ARRAY_TYPE tree used for the regular
+   fat/thin pointers.  */
+
+static tree
+get_extended_unconstrained_array (Entity_Id gnat_entity, tree gnu_type)
+{
+  gcc_assert (Is_Array_Type (gnat_entity)
+	      && TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
+
+  tree gnu_extended_type = TYPE_EXTENDED_UNCONSTRAINED_ARRAY (gnu_type);
+
+  /* Building the extended type is achieved by translating the array type
+     a second time using a special processing.  */
+  if (!gnu_extended_type)
+    {
+      /* To have gnat_to_gnu_entity trigger the special processing for extended
+	 access types, we pass GNU_TYPE as second parameter, we backup the
+	 existing association for GNAT_ENTITY and clear it before the call.  */
+      tree gnu_decl = get_gnu_tree (gnat_entity);
+      save_gnu_tree (gnat_entity, NULL_TREE, false);
+
+      gnu_extended_type
+	= TREE_TYPE (gnat_to_gnu_entity (gnat_entity, gnu_type, false));
+      gcc_assert (gnu_extended_type);
+      SET_TYPE_EXTENDED_UNCONSTRAINED_ARRAY (gnu_type, gnu_extended_type);
+
+      /* And finally, we restore the original association for GNAT_ENTITY.  */
+      save_gnu_tree (gnat_entity, NULL_TREE, false);
+      save_gnu_tree (gnat_entity, gnu_decl, false);
+    }
+
+  return gnu_extended_type;
 }
 
 /* Return the inlining status of the GNAT subprogram SUBPROG.  */
@@ -5466,6 +5549,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && !Strict_Alignment (gnat_type)
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
+      && !TYPE_EXTENDED_POINTER_P (gnu_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
     {
       tree gnu_packable_type = make_packable_type (gnu_type, false, max_align);
@@ -7157,6 +7241,155 @@ elaborate_entity (Entity_Id gnat_entity)
     }
 }
 
+/* Build the template type GNU_TEMPLATE_TYPE for the array type GNAT_ENTITY.
+   GNU_TEMPLATE_REFERENCE is an expression to access the template value from
+   the pointer type.  If GNU_INDEX_TYPES is not null, it's an array where the
+   index types whose bounds are the values of the template are to be stored.
+   If GNU_MAX_SIZE is not NULL_TREE, it's a tree where the maximum size of
+   the array type is computed.  DEBUG_INFO_P is true if debug info needs to
+   be output for this type.  */
+
+void
+build_template_type (Entity_Id gnat_entity, tree gnu_template_type,
+		     tree gnu_template_reference,
+		     tree *gnu_index_types, tree &gnu_max_size,
+		     bool debug_info_p)
+{
+  const bool convention_fortran_p
+    = (Convention (gnat_entity) == Convention_Fortran);
+  const int ndim = Number_Dimensions (gnat_entity);
+  tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
+  Entity_Id gnat_index;
+  int index;
+
+  tree template_fields = TYPE_FIELDS (gnu_template_type);
+  const bool template_exists_p = template_fields != NULL_TREE;
+
+  /* Now create the GCC type for each index and add the fields for that
+     index to the template.  */
+  for (index = (convention_fortran_p ? ndim - 1 : 0),
+       gnat_index = First_Index (gnat_entity);
+       IN_RANGE (index, 0, ndim - 1);
+       index += (convention_fortran_p ? - 1 : 1),
+       gnat_index = Next_Index (gnat_index))
+    {
+      const Entity_Id gnat_index_type = Etype (gnat_index);
+      const bool is_flb = Is_Fixed_Lower_Bound_Index_Subtype (gnat_index_type);
+      tree gnu_index_type = get_unpadded_type (gnat_index_type);
+      tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
+      tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
+      tree gnu_index_base_type = get_base_type (gnu_index_type);
+      tree gnu_lb_field, gnu_hb_field;
+      tree gnu_min, gnu_max, gnu_high;
+      char field_name[16];
+
+      /* Update the maximum size of the array in elements.  */
+      if (gnu_max_size)
+	gnu_max_size
+	  = update_n_elem (gnu_max_size, gnu_orig_min, gnu_orig_max);
+
+      /* Now build the self-referential bounds of the index type.  */
+      gnu_index_type = maybe_character_type (gnu_index_type);
+      gnu_index_base_type = maybe_character_type (gnu_index_base_type);
+
+      if (template_fields != NULL_TREE)
+	{
+	  gnu_lb_field = template_fields;
+	  template_fields = DECL_CHAIN (template_fields);
+	  gnu_hb_field = template_fields;
+	  template_fields = DECL_CHAIN (template_fields);
+	}
+      else
+	{
+	  /* Make the FIELD_DECLs for the low and high bounds of this
+	     type and then make extractions of these fields from the
+	     template.  */
+	  sprintf (field_name, "LB%d", index);
+	  gnu_lb_field = create_field_decl (get_identifier (field_name),
+					    gnu_index_type,
+					    gnu_template_type, NULL_TREE,
+					    NULL_TREE, 0, 0);
+	  /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	  DECL_DISCRIMINANT_NUMBER (gnu_lb_field) = integer_minus_one_node;
+	  Sloc_to_locus (Sloc (gnat_entity), &DECL_SOURCE_LOCATION (gnu_lb_field));
+
+	  field_name[0] = 'U';
+	  gnu_hb_field = create_field_decl (get_identifier (field_name),
+					    gnu_index_type,
+					    gnu_template_type, NULL_TREE,
+					    NULL_TREE, 0, 0);
+	  /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	  DECL_DISCRIMINANT_NUMBER (gnu_hb_field) = integer_minus_one_node;
+	  Sloc_to_locus (Sloc (gnat_entity), &DECL_SOURCE_LOCATION (gnu_hb_field));
+
+	  gnu_temp_fields[index] = chainon (gnu_lb_field, gnu_hb_field);
+	}
+
+      if (gnu_index_types)
+	{
+	  /* We can't use build_component_ref here since the template type
+	     isn't complete yet.  */
+	  if (!is_flb)
+	    {
+	      gnu_orig_min
+		= build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
+			  gnu_template_reference, gnu_lb_field,
+			  NULL_TREE);
+	      TREE_READONLY (gnu_orig_min) = 1;
+	    }
+
+	  gnu_orig_max = build3 (COMPONENT_REF, TREE_TYPE (gnu_hb_field),
+				 gnu_template_reference, gnu_hb_field,
+				 NULL_TREE);
+	  TREE_READONLY (gnu_orig_max) = 1;
+
+	  gnu_min = convert (sizetype, gnu_orig_min);
+	  gnu_max = convert (sizetype, gnu_orig_max);
+
+	  /* Compute the size of this dimension.  See the E_Array_Subtype
+	     case of gnat_to_gnu_entity for the rationale.  */
+	  if (is_flb
+	      && Nkind (gnat_index) == N_Subtype_Indication
+	      && flb_cannot_be_superflat (gnat_index))
+	    gnu_high = gnu_max;
+
+	  else
+	    gnu_high
+	      = build3 (COND_EXPR, sizetype,
+			build2 (GE_EXPR, boolean_type_node,
+				gnu_orig_max, gnu_orig_min),
+			gnu_max,
+			TREE_CODE (gnu_min) == INTEGER_CST
+			? int_const_binop (MINUS_EXPR, gnu_min, size_one_node)
+			: size_binop (MINUS_EXPR, gnu_min, size_one_node));
+
+	  /* Make a range type with the new range in the Ada base type.
+	     Then make an index type with the size range in sizetype.  */
+	  gnu_index_types[index]
+	    = create_index_type (gnu_min, gnu_high,
+				 create_range_type (gnu_index_base_type,
+						    gnu_orig_min,
+						    gnu_orig_max),
+				 gnat_entity);
+
+	  TYPE_NAME (gnu_index_types[index])
+	    = create_concat_name (gnat_entity, field_name);
+	}
+    }
+
+  if (!template_exists_p)
+    {
+      TYPE_NAMELESS (gnu_template_type)
+	= gnat_encodings != DWARF_GNAT_ENCODINGS_ALL;
+
+      tree gnu_template_fields = NULL_TREE;
+      for (index = 0; index < ndim; index++)
+	gnu_template_fields
+	  = chainon (gnu_template_fields, gnu_temp_fields[index]);
+      finish_record_type (gnu_template_type, gnu_template_fields, 0, debug_info_p);
+    }
+}
+
 /* Prepend to ATTR_LIST an entry for an attribute with provided TYPE,
    NAME, ARGS and ERROR_POINT.  */
 
@@ -7778,6 +8011,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (!needs_strict_alignment
       && RECORD_OR_UNION_TYPE_P (gnu_field_type)
       && !TYPE_FAT_POINTER_P (gnu_field_type)
+      && !TYPE_EXTENDED_POINTER_P (gnu_field_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type))
       && (packed == 1
 	  || is_bitfield
@@ -7975,6 +8209,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       if (!needs_strict_alignment
 	  && RECORD_OR_UNION_TYPE_P (gnu_field_type)
 	  && !TYPE_FAT_POINTER_P (gnu_field_type)
+	  && !TYPE_EXTENDED_POINTER_P (gnu_field_type)
 	  && TYPE_MODE (gnu_field_type) == BLKmode
 	  && is_bitfield)
 	gnu_field_type = make_packable_type (gnu_field_type, true, 1);
@@ -9701,7 +9936,9 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 
   /* If this is an access type or a fat pointer, the minimum size is that given
      by the default pointer mode.  */
-  if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
+  if (TREE_CODE (gnu_type) == POINTER_TYPE
+      || TYPE_IS_FAT_POINTER_P (gnu_type)
+      || TYPE_IS_EXTENDED_POINTER_P (gnu_type))
     old_size = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
 
   /* Issue an error either if the default size of the object isn't a constant
@@ -9817,7 +10054,8 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 
   /* ...or the Ada size for record and union types.  */
   else if (RECORD_OR_UNION_TYPE_P (gnu_type)
-	   && !TYPE_FAT_POINTER_P (gnu_type))
+	   && !TYPE_FAT_POINTER_P (gnu_type)
+	   && !TYPE_EXTENDED_POINTER_P (gnu_type))
     SET_TYPE_ADA_SIZE (gnu_type, size);
 }
 
@@ -10621,6 +10859,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 	    gnu_size = DECL_SIZE (gnu_old_field);
 	    if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 		&& !TYPE_FAT_POINTER_P (gnu_field_type)
+		&& !TYPE_EXTENDED_POINTER_P (gnu_field_type)
 		&& tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type)))
 	      gnu_field_type = make_packable_type (gnu_field_type, true, 0);
 	  }
@@ -10993,6 +11232,7 @@ rm_size (tree gnu_type)
   /* For record or union types, we store the size explicitly.  */
   if (RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
+      && !TYPE_EXTENDED_POINTER_P (gnu_type)
       && TYPE_ADA_SIZE (gnu_type))
     return TYPE_ADA_SIZE (gnu_type);
 
