@@ -2,12 +2,9 @@
 /* { dg-do compile } */
 /* { dg-options "-Wunused" } */
 
-
 void g(void)
 {
-  int i = 0;
-  volatile int x;
-  (x, i++);	/* { dg-bogus "set but not used" } */
+  int i = 0;		/* { dg-warning "variable 'i' set but not used" } */
+  volatile int x;	/* { dg-bogus "variable 'x' set but not used" } */
+  (x, i++);
 }
-
-

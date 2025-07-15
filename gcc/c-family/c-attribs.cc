@@ -5858,8 +5858,7 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 	     order.  */
 	  vblist = tree_cons (NULL_TREE, argvbs, vblist);
 
-	  unsigned nelts = 0;
-	  for (tree vb = argvbs; vb; vb = TREE_CHAIN (vb), ++nelts)
+	  for (tree vb = argvbs; vb; vb = TREE_CHAIN (vb))
 	    {
 	      tree bound = TREE_VALUE (vb);
 	      if (const unsigned *psizpos = arg2pos.get (bound))

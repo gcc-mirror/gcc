@@ -11124,8 +11124,7 @@ trees_in::fn_parms_fini (int tag, tree fn, tree existing, bool is_defn)
 {
   tree existing_parm = existing ? DECL_ARGUMENTS (existing) : NULL_TREE;
   tree parms = DECL_ARGUMENTS (fn);
-  unsigned ix = 0;
-  for (tree parm = parms; parm; parm = DECL_CHAIN (parm), ix++)
+  for (tree parm = parms; parm; parm = DECL_CHAIN (parm))
     {
       if (existing_parm)
 	{

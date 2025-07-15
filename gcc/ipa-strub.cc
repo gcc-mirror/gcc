@@ -3059,6 +3059,8 @@ pass_ipa_strub::execute (function *)
 			 TYPE_ATTRIBUTES (TREE_TYPE (nnode->decl)));
 	}
     }
+#else
+    (void) named_args;
 #endif
 
     {

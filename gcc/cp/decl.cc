@@ -747,11 +747,11 @@ poplevel (int keep, int reverse, int functionbody)
 	      {
 		if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
 		  warning_at (DECL_SOURCE_LOCATION (decl),
-			      OPT_Wunused_but_set_variable, "structured "
+			      OPT_Wunused_but_set_variable_, "structured "
 			      "binding declaration set but not used");
 		else
 		  warning_at (DECL_SOURCE_LOCATION (decl),
-			      OPT_Wunused_but_set_variable,
+			      OPT_Wunused_but_set_variable_,
 			      "variable %qD set but not used", decl);
 		unused_but_set_errorcount = errorcount;
 	      }
@@ -19496,14 +19496,14 @@ finish_function (bool inline_p)
 	    && !DECL_READ_P (decl)
 	    && DECL_NAME (decl)
 	    && !DECL_ARTIFICIAL (decl)
-	    && !warning_suppressed_p (decl,OPT_Wunused_but_set_parameter)
+	    && !warning_suppressed_p (decl, OPT_Wunused_but_set_parameter_)
 	    && !DECL_IN_SYSTEM_HEADER (decl)
 	    && TREE_TYPE (decl) != error_mark_node
 	    && !TYPE_REF_P (TREE_TYPE (decl))
 	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
 	        || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
 	  warning_at (DECL_SOURCE_LOCATION (decl),
-		      OPT_Wunused_but_set_parameter,
+		      OPT_Wunused_but_set_parameter_,
 		      "parameter %qD set but not used", decl);
       unused_but_set_errorcount = errorcount;
     }

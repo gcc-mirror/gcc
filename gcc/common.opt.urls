@@ -272,7 +272,13 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unused)
 Wunused-but-set-parameter
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-but-set-parameter)
 
+Wunused-but-set-parameter=
+UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-but-set-parameter)
+
 Wunused-but-set-variable
+UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-but-set-variable)
+
+Wunused-but-set-variable=
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-but-set-variable)
 
 Wunused-function

@@ -7680,7 +7680,18 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
       if (val != 0)
 	goto return_build_unary_op;
 
-      arg = mark_lvalue_use (arg);
+      tree stripped_arg;
+      stripped_arg = tree_strip_any_location_wrapper (arg);
+      if ((VAR_P (stripped_arg) || TREE_CODE (stripped_arg) == PARM_DECL)
+	  && !DECL_READ_P (stripped_arg)
+	  && (VAR_P (stripped_arg) ? warn_unused_but_set_variable
+				   : warn_unused_but_set_parameter) > 1)
+	{
+	  arg = mark_lvalue_use (arg);
+	  DECL_READ_P (stripped_arg) = 0;
+	}
+      else
+	arg = mark_lvalue_use (arg);
 
       /* Increment or decrement the real part of the value,
 	 and don't change the imaginary part.  */
@@ -9796,7 +9807,22 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  {
 	    auto_diagnostic_group d;
 	    rhs = stabilize_expr (rhs, &init);
+	    bool clear_decl_read = false;
+	    tree stripped_lhs = tree_strip_any_location_wrapper (lhs);
+	    if ((VAR_P (stripped_lhs) || TREE_CODE (stripped_lhs) == PARM_DECL)
+		&& !DECL_READ_P (stripped_lhs)
+		&& (VAR_P (stripped_lhs) ? warn_unused_but_set_variable
+					 : warn_unused_but_set_parameter) > 2
+		&& !CLASS_TYPE_P (TREE_TYPE (lhs))
+		&& !CLASS_TYPE_P (TREE_TYPE (rhs)))
+	      {
+		mark_exp_read (rhs);
+		if (!DECL_READ_P (stripped_lhs))
+		  clear_decl_read = true;
+	      }
 	    newrhs = cp_build_binary_op (loc, modifycode, lhs, rhs, complain);
+	    if (clear_decl_read)
+	      DECL_READ_P (stripped_lhs) = 0;
 	    if (newrhs == error_mark_node)
 	      {
 		if (complain & tf_error)

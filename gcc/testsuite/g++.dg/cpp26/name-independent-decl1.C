@@ -70,7 +70,7 @@ foo ()
       ++_;
     }
     {
-      static int _ = 3;
+      static int _ = 3;		// { dg-warning "variable '_' set but not used" }
       ++_;
     }
     {

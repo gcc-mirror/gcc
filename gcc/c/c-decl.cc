@@ -1363,7 +1363,7 @@ pop_scope (void)
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
 	  if ((!TREE_USED (p) || !DECL_READ_P (p))
-	      && !warning_suppressed_p (p, OPT_Wunused_but_set_variable)
+	      && !warning_suppressed_p (p, OPT_Wunused_but_set_variable_)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
@@ -1377,7 +1377,7 @@ pop_scope (void)
 		}
 	      else if (DECL_CONTEXT (p) == current_function_decl)
 		warning_at (DECL_SOURCE_LOCATION (p),
-			    OPT_Wunused_but_set_variable,
+			    OPT_Wunused_but_set_variable_,
 			    "variable %qD set but not used", p);
 	    }
 
@@ -11465,9 +11465,9 @@ finish_function (location_t end_loc)
 	    && !DECL_READ_P (decl)
 	    && DECL_NAME (decl)
 	    && !DECL_ARTIFICIAL (decl)
-	    && !warning_suppressed_p (decl, OPT_Wunused_but_set_parameter))
+	    && !warning_suppressed_p (decl, OPT_Wunused_but_set_parameter_))
 	  warning_at (DECL_SOURCE_LOCATION (decl),
-		      OPT_Wunused_but_set_parameter,
+		      OPT_Wunused_but_set_parameter_,
 		      "parameter %qD set but not used", decl);
     }
 

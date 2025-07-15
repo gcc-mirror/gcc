@@ -18,9 +18,9 @@ f1 ()
 }
 
 void
-f2 (int x)
+f2 (int x)	// { dg-warning "parameter 'x' set but not used" }
 {
-  int a = 0;
+  int a = 0;	// { dg-warning "variable 'a' set but not used" }
   x++;
   ++a;
 }

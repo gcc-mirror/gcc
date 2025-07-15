@@ -5987,12 +5987,11 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
   const Typed_identifier_list* parameters = fntype->parameters();
   if (parameters != NULL)
     {
-      size_t i = 0;
       bool is_varargs = fntype->is_varargs();
       bool first = true;
       for (Typed_identifier_list::const_iterator p = parameters->begin();
 	   p != parameters->end();
-	   ++p, ++i)
+	   ++p)
 	{
 	  if (first)
 	    first = false;

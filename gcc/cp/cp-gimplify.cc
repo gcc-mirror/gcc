@@ -3217,7 +3217,15 @@ cp_fold (tree x, fold_flags_t flags)
 
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
+      bool clear_decl_read;
+      clear_decl_read = false;
+      if (code == MODIFY_EXPR
+	  && (VAR_P (op0) || TREE_CODE (op0) == PARM_DECL)
+	  && !DECL_READ_P (op0))
+	clear_decl_read = true;
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1), flags);
+      if (clear_decl_read)
+	DECL_READ_P (op0) = 0;
 
       /* decltype(nullptr) has only one value, so optimize away all comparisons
 	 with that type right away, keeping them in the IL causes troubles for

@@ -72,9 +72,9 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
     case OPT_Wstrict_aliasing:
     case OPT_Wunused:
     case OPT_Wunused_function:
-    case OPT_Wunused_but_set_variable:
+    case OPT_Wunused_but_set_variable_:
     case OPT_Wunused_variable:
-    case OPT_Wunused_but_set_parameter:
+    case OPT_Wunused_but_set_parameter_:
       m_bits = NW_LEXICAL;
       break;
 

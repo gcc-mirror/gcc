@@ -3741,6 +3741,11 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   if (!(complain & tf_warning))
     return result;
 
+  /* These will never fold into a constant, so no need to check for
+     overflow for them.  */
+  if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
+    return result;
+
   tree result_ovl = result;
   tree expr_ovl = expr;
 

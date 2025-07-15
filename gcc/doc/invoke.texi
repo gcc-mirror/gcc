@@ -433,7 +433,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunsuffixed-float-constants
 -Wunterminated-string-initialization
 -Wunused
--Wunused-but-set-parameter  -Wunused-but-set-variable
+-Wunused-but-set-parameter  -Wunused-but-set-parameter=@var{n}
+-Wunused-but-set-variable  -Wunused-but-set-variable=@var{n}
 -Wunused-const-variable  -Wunused-const-variable=@var{n}
 -Wunused-function  -Wunused-label  -Wunused-local-typedefs
 -Wunused-macros
@@ -7921,27 +7922,89 @@ statement.
 @opindex Wunused-but-set-parameter
 @opindex Wno-unused-but-set-parameter
 @item -Wunused-but-set-parameter
+@option{-Wunused-but-set-parameter} is the same as
+@option{-Wunused-but-set-parameter=3} and
+@option{-Wno-unused-but-set-parameter} is the same as
+@option{-Wunused-but-set-parameter=0}.
+
+@opindex Wunused-but-set-parameter=
+@item -Wunused-but-set-parameter=@var{n}
 Warn whenever a function parameter is assigned to, but otherwise unused
 (aside from its declaration).
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
-This warning is also enabled by @option{-Wunused} together with
-@option{-Wextra}.
+@option{-Wunused-but-set-parameter=0} disables the warning.
+With @option{-Wunused-but-set-parameter=1} all uses except initialization
+and left hand side of assignment which is not further used disable the
+warning.
+With @option{-Wunused-but-set-parameter=2} additionally uses of parameter
+in @code{++} and @code{--} operators don't count as uses.
+And finally with @option{-Wunused-but-set-parameter=3} additionally
+uses in @var{parm} @code{@var{@@}=} @var{rhs} outside of @var{rhs} don't
+count as uses.  See @option{-Wunused-but-set-variable=@var{n}} option for
+examples.
+
+This @option{-Wunused-but-set-parameter=3} warning is also enabled by
+@option{-Wunused} together with @option{-Wextra}.
 
 @opindex Wunused-but-set-variable
 @opindex Wno-unused-but-set-variable
 @item -Wunused-but-set-variable
+@option{-Wunused-but-set-variable} is the same as
+@option{-Wunused-but-set-variable=3} and
+@option{-Wno-unused-but-set-variable} is the same as
+@option{-Wunused-but-set-variable=0}.
+
+@opindex Wunused-but-set-variable=
+@item -Wunused-but-set-variable=@var{n}
 Warn whenever a local variable is assigned to, but otherwise unused
 (aside from its declaration).
-This warning is enabled by @option{-Wall}.
+This @option{-Wunused-but-set-variable=3} warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
-This warning is also enabled by @option{-Wunused}, which is enabled
-by @option{-Wall}.
+@option{-Wunused-but-set-variable=0} disables the warning.
+With @option{-Wunused-but-set-variable=1} all uses except initialization
+and left hand side of assignment which is not further used disable the
+warning.
+With @option{-Wunused-but-set-variable=2} additionally uses of variable
+in @code{++} and @code{--} operators don't count as uses.
+And finally with @option{-Wunused-but-set-variable=3} additionally
+uses in @var{parm} @code{@var{@@}=} @var{rhs} outside of @var{rhs} don't
+count as uses.
+
+This @option{-Wunused-but-set-variable=3} warning is also enabled by
+@option{-Wunused}, which is enabled by @option{-Wall}.
+
+@smallexample
+void foo (void)
+@{
+  int a = 1; // @option{-Wunused-variable} warning
+  int b = 0; // Warning for @var{n} >= 1
+  b = 1; b = 2;
+  int c = 0; // Warning for @var{n} >= 2
+  ++c; c--; --c; c++;
+  int d = 0; // Warning for @var{n} >= 3
+  d += 4;
+  int e = 0; // No warning, cast to void
+  (void) e;
+  int f = 0; // No warning, f used
+  int g = f = 5;
+  (void) g;
+  int h = 0; // No warning, preincrement used
+  int i = ++h;
+  (void) i;
+  int j = 0; // No warning, postdecrement used
+  int k = j--;
+  (void) k;
+  int l = 0; // No warning, l used
+  int m = l |= 2;
+  (void) m;
+@}
+@end smallexample
 
 @opindex Wunused-function
 @opindex Wno-unused-function

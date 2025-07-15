@@ -17,9 +17,10 @@ struct SX
 const struct SX sx = { 0x1221 };
 const char sx_rep[] = { };
 
-void test_find (void)
+int test_find (void)
 {
   int n = 0, nb = (const char*)&sx.a - (const char*)&sx;
   const char *p = (const char*)&sx, *q = sx_rep;
   n += p + 1 == memchr (p, q[1], nb);
+  return n;
 }

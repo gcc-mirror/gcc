@@ -142,9 +142,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int n_infiles = 0;
   int n_outfiles = 0;
 
-  // The number of input files when the language is "none" or "cobol"
-  int n_cobol_files = 0;
-
   // saw_OPT_no_main means "don't expect -main"
   bool saw_OPT_no_main = false;
 
@@ -234,11 +231,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       case OPT_SPECIAL_input_file:
         no_files_error = false;
         n_infiles += 1;
-        if(    strcmp(language, "none")  == 0
-            || strcmp(language, "cobol") == 0 )
-          {
-          n_cobol_files += 1;
-          }
         if( strstr(decoded_options[i].orig_option_with_args_text, "libgcobol.a") )
           {
           // We have been given an explicit libgcobol.a.  We need to note that.

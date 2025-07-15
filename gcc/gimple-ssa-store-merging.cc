@@ -644,9 +644,7 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 
 	  /* Mask.  */
 	  uint64_t mask = 0;
-	  uint64_t tmp = (1 << BITS_PER_UNIT) - 1;
-	  for (unsigned i = 0; i < bitsize / BITS_PER_UNIT;
-	       i++, tmp <<= BITS_PER_UNIT)
+	  for (unsigned i = 0; i < bitsize / BITS_PER_UNIT; i++)
 	    mask |= (uint64_t) MARKER_MASK << (i * BITS_PER_MARKER);
 	  n->n &= mask;
 

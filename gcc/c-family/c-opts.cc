@@ -1226,6 +1226,17 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       flag_range_for_ext_temps, cxx_dialect >= cxx23);
 
+  /* EnabledBy unfortunately can't specify value to use if set and
+     LangEnabledBy can't specify multiple options with &&.  For -Wunused
+     or -Wunused -Wextra we want these to default to 3 unless user specified
+     some other level explicitly.  */
+  if (warn_unused_but_set_parameter == 1)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 warn_unused_but_set_parameter, 3);
+  if (warn_unused_but_set_variable == 1)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 warn_unused_but_set_variable, 3);
+
   /* -fimmediate-escalation has no effect when immediate functions are not
      supported.  */
   if (flag_immediate_escalation && cxx_dialect < cxx20)

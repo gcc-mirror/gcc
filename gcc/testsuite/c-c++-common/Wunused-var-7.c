@@ -24,7 +24,7 @@ foo (void)
 void
 bar (void)
 {
-  int a;
+  int a;		/* { dg-warning "set but not used" } */
   int b;
   int c;		/* { dg-warning "set but not used" } */
   a = 1;
@@ -36,7 +36,7 @@ bar (void)
 void
 baz (void)
 {
-  int a;
+  int a;		/* { dg-warning "set but not used" } */
   int b;
   int c;
   int d;
