@@ -3022,7 +3022,8 @@ namespace views::__adaptor
 	  { _M_satisfy(); }
 
 	  [[no_unique_address]]
-	    __detail::__maybe_present_t<forward_range<_Base>, _Outer_iter> _M_outer;
+	    __detail::__maybe_present_t<forward_range<_Base>, _Outer_iter> _M_outer
+	      = decltype(_M_outer)();
 	  optional<_Inner_iter> _M_inner;
 	  _Parent* _M_parent = nullptr;
 
@@ -3376,7 +3377,8 @@ namespace views::__adaptor
 
 	  [[no_unique_address]]
 	    __detail::__maybe_present_t<forward_range<_Vp>,
-					iterator_t<_Base>> _M_current;
+					iterator_t<_Base>> _M_current
+	      = decltype(_M_current)();
 	  bool _M_trailing_empty = false;
 
 	public:
@@ -7400,7 +7402,8 @@ namespace views::__adaptor
 
     _Parent* _M_parent = nullptr;
     [[no_unique_address]]
-      __detail::__maybe_present_t<forward_range<_Base>, _OuterIter> _M_outer_it;
+      __detail::__maybe_present_t<forward_range<_Base>, _OuterIter> _M_outer_it
+	= decltype(_M_outer_it)();
     variant<_PatternIter, _InnerIter> _M_inner_it;
 
     constexpr _OuterIter&
