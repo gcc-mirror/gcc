@@ -9703,11 +9703,12 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 	{
 	  gfc_symtree *proc_st;
 	  gfc_find_sym_tree (variant_proc_name, gfc_current_ns, 1, &proc_st);
-	  variant_proc_sym = proc_st->n.sym;
+	  variant_proc_sym = proc_st ? proc_st->n.sym : NULL;
 	}
       if (variant_proc_sym == NULL)
 	{
-	  gfc_error ("Cannot find symbol %qs", variant_proc_name);
+	  gfc_error ("Cannot find symbol %qs at %L", variant_proc_name,
+						     &odv->where);
 	  continue;
 	}
       set_selectors = omp_check_context_selector
