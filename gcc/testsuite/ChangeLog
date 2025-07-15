@@ -1,3 +1,54 @@
+2025-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-07-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/120999
+	* gcc.target/aarch64/sve2/pr120999.c: New test.
+
+2025-07-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120242
+	PR rtl-optimization/120627
+	PR rtl-optimization/120736
+	PR rtl-optimization/120813
+	* gcc.dg/torture/pr120242.c: New test.
+	* gcc.dg/torture/pr120627.c: Likewise.
+	* gcc.dg/torture/pr120736.c: Likewise.
+	* gcc.dg/torture/pr120813.c: Likewise.
+
+2025-07-14  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/118241
+	* gcc.target/riscv/pr118241-b.cc: New test.
+
+2025-07-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* gcc.target/riscv/pr118241.c: New test.
+
+2025-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/deref4.adb: New test.
+	* gnat.dg/deref4_pkg.ads: New helper.
+
+2025-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* gcc.target/i386/pr120908.c: New test.
+
 2025-07-13  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 
 	Backported from master:

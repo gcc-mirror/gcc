@@ -1,3 +1,136 @@
+2025-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-07-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/120999
+	* config/aarch64/aarch64-sve2.md (*aarch64_sve2_nor<mode>):
+	Adjust movprfx alternative.
+
+2025-07-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-05-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_<optab><mode>): Move
+	commutative marker to the cons specification.
+	(add<mode>3): Likewise.
+	(@aarch64_pred_<su>abd<mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(*cond_<optab><mode>_z): Likewise.
+	(<optab><mode>3): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(*aarch64_pred_abd<mode>_relaxed): Likewise.
+	(*aarch64_pred_abd<mode>_strict): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(@aarch64_pred_fma<mode>): Likewise.
+	(@aarch64_pred_fnma<mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_<su>clamp<mode>): Move
+	commutative marker to the cons specification.
+	(*aarch64_sve_<su>clamp<mode>_x): Likewise.
+	(@aarch64_sve_fclamp<mode>): Likewise.
+	(*aarch64_sve_fclamp<mode>_x): Likewise.
+	(*aarch64_sve2_nor<mode>): Likewise.
+	(*aarch64_sve2_nand<mode>): Likewise.
+	(*aarch64_pred_faminmax_fused): Likewise.
+	* config/aarch64/aarch64.md (*loadwb_pre_pair_<ldst_sz>): Move the
+	early-clobber marker to the relevant alternative.
+	(*storewb_pre_pair_<ldst_sz>): Likewise.
+	(*add<mode>3_aarch64): Move commutative marker to the cons
+	specification.
+	(*addsi3_aarch64_uxtw): Likewise.
+	(*add<mode>3_poly_1): Likewise.
+	(add<mode>3_compare0): Likewise.
+	(*addsi3_compare0_uxtw): Likewise.
+	(*add<mode>3nr_compare0): Likewise.
+	(<optab><mode>3): Likewise.
+	(*<optab>si3_uxtw): Likewise.
+	(*and<mode>3_compare0): Likewise.
+	(*andsi3_compare0_uxtw): Likewise.
+	(@aarch64_and<mode>3nr_compare0): Likewise.
+
+2025-07-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120242
+	PR rtl-optimization/120627
+	PR rtl-optimization/120736
+	PR rtl-optimization/120813
+	* ext-dce.cc (ext_dce_process_uses): Remove some cases where we
+	unnecessarily expanded live sets for promoted subregs.
+	(expand_changed_pseudos): New function.
+	(reset_subreg_promoted_p): Use it.
+
+2025-07-14  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/118241
+	* config/riscv/riscv.md (prefetch): Add alternative "r".
+
+2025-07-14  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2025-07-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/predicates.md (prefetch_operand): mack 5 bits.
+
+2025-07-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* config/riscv/predicates.md: Fix comment typo in recent change.
+
+2025-07-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* config/riscv/predicates.md (prefetch_operand): New predicate.
+	* config/riscv/constraints.md (Q): New constraint.
+	* config/riscv/riscv.md (prefetch): Use new predicate and constraint.
+	(riscv_prefetchi_<mode>): Similarly.
+
+2025-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* config/i386/i386.cc (legitimize_tls_address): Pass RDI to
+	gen_tls_local_dynamic_64.
+	* config/i386/i386.md (*tls_global_dynamic_64_largepic): Add
+	RDI clobber and use it to generate LEA.
+	(*tls_local_dynamic_64_<mode>): Likewise.
+	(*tls_local_dynamic_base_64_largepic): Likewise.
+	(@tls_local_dynamic_64_<mode>): Add a clobber.
+
+2025-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120908
+	* config/i386/i386.cc (legitimize_tls_address): Pass RDI to
+	gen_tls_global_dynamic_64.
+	* config/i386/i386.md (*tls_global_dynamic_64_<mode>): Add RDI
+	clobber and use it to generate LEA.
+	(@tls_global_dynamic_64_<mode>): Add a clobber.
+
+2025-07-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_PANTHERLAKE): Revmoe KL and WIDEKL.
+	(PTA_CLEARWATERFOREST): Ditto.
+	* doc/invoke.texi: Revise documentation.
+
 2025-07-13  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 
 	Backported from master:
