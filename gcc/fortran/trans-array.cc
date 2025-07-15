@@ -6800,8 +6800,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   else
       gfc_add_expr_to_block (&se->pre, set_descriptor);
 
-  expr->symtree->n.sym->allocated_in_scope = 1;
-
   return true;
 }
 
@@ -11495,13 +11493,60 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
       && !expr2->value.function.isym)
     expr2->ts.u.cl->backend_decl = rss->info->string_length;
 
-  gfc_start_block (&fblock);
-
   /* Since the lhs is allocatable, this must be a descriptor type.
      Get the data and array size.  */
   desc = linfo->descriptor;
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)));
   array1 = gfc_conv_descriptor_data_get (desc);
+
+  /* If the data is null, set the descriptor bounds and offset.  This suppresses
+     the maybe used uninitialized warning.  Note that the always false variable
+     prevents this block from ever being executed, and makes sure that the
+     optimizers are able to remove it.  Component references are not subject to
+     the warnings, so we don't uselessly complicate the generated code for them.
+     */
+  for (ref = expr1->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      break;
+
+  if (!ref)
+    {
+      stmtblock_t unalloc_init_block;
+      gfc_init_block (&unalloc_init_block);
+      tree guard = gfc_create_var (logical_type_node, "unallocated_init_guard");
+      gfc_add_modify (&unalloc_init_block, guard, logical_false_node);
+
+      gfc_start_block (&loop_pre_block);
+      for (n = 0; n < expr1->rank; n++)
+	{
+	  gfc_conv_descriptor_lbound_set (&loop_pre_block, desc,
+					  gfc_rank_cst[n],
+					  gfc_index_one_node);
+	  gfc_conv_descriptor_ubound_set (&loop_pre_block, desc,
+					  gfc_rank_cst[n],
+					  gfc_index_zero_node);
+	  gfc_conv_descriptor_stride_set (&loop_pre_block, desc,
+					  gfc_rank_cst[n],
+					  gfc_index_zero_node);
+	}
+
+      tmp = gfc_conv_descriptor_offset (desc);
+      gfc_add_modify (&loop_pre_block, tmp, gfc_index_zero_node);
+
+      tmp = fold_build2_loc (input_location, EQ_EXPR,
+			     logical_type_node, array1,
+			     build_int_cst (TREE_TYPE (array1), 0));
+      tmp = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			     logical_type_node, tmp, guard);
+      tmp = build3_v (COND_EXPR, tmp,
+		      gfc_finish_block (&loop_pre_block),
+		      build_empty_stmt (input_location));
+      gfc_prepend_expr_to_block (&loop->pre, tmp);
+      gfc_prepend_expr_to_block (&loop->pre,
+				 gfc_finish_block (&unalloc_init_block));
+    }
+
+  gfc_start_block (&fblock);
 
   if (expr2)
     desc2 = rss->info->data.array.descriptor;
@@ -11614,45 +11659,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   cond_null = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
 			 array1, build_int_cst (TREE_TYPE (array1), 0));
   cond_null= gfc_evaluate_now (cond_null, &fblock);
-
-  /* If the data is null, set the descriptor bounds and offset. This suppresses
-     the maybe used uninitialized warning and forces the use of malloc because
-     the size is zero in all dimensions. Note that this block is only executed
-     if the lhs is unallocated and is only applied once in any namespace.
-     Component references are not subject to the warnings.  */
-  for (ref = expr1->ref; ref; ref = ref->next)
-    if (ref->type == REF_COMPONENT)
-      break;
-
-  if (!expr1->symtree->n.sym->allocated_in_scope && !ref)
-    {
-      gfc_start_block (&loop_pre_block);
-      for (n = 0; n < expr1->rank; n++)
-	{
-	  gfc_conv_descriptor_lbound_set (&loop_pre_block, desc,
-					  gfc_rank_cst[n],
-					  gfc_index_one_node);
-	  gfc_conv_descriptor_ubound_set (&loop_pre_block, desc,
-					  gfc_rank_cst[n],
-					  gfc_index_zero_node);
-	  gfc_conv_descriptor_stride_set (&loop_pre_block, desc,
-					  gfc_rank_cst[n],
-					  gfc_index_zero_node);
-	}
-
-      tmp = gfc_conv_descriptor_offset (desc);
-      gfc_add_modify (&loop_pre_block, tmp, gfc_index_zero_node);
-
-      tmp = fold_build2_loc (input_location, EQ_EXPR,
-			     logical_type_node, array1,
-			     build_int_cst (TREE_TYPE (array1), 0));
-      tmp = build3_v (COND_EXPR, tmp,
-		      gfc_finish_block (&loop_pre_block),
-		      build_empty_stmt (input_location));
-      gfc_prepend_expr_to_block (&loop->pre, tmp);
-
-      expr1->symtree->n.sym->allocated_in_scope = 1;
-    }
 
   tmp = build3_v (COND_EXPR, cond_null,
 		  build1_v (GOTO_EXPR, jump_label1),
