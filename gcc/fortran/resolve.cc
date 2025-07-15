@@ -11014,16 +11014,16 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	 that does precisely this here (instead of using the
 	 'global' one).  */
 
-	/* First check the derived type import status.  */
-	if (gfc_current_ns->import_state != IMPORT_NOT_SET
-	    && (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS))
-	  {
-	    st = gfc_find_symtree (gfc_current_ns->sym_root,
-				   c->ts.u.derived->name);
-	    if (!check_sym_import_status (c->ts.u.derived, st, NULL, old_code,
-					  gfc_current_ns))
-	      error++;
-	  }
+      /* First check the derived type import status.  */
+      if (gfc_current_ns->import_state != IMPORT_NOT_SET
+	  && (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS))
+	{
+	  st = gfc_find_symtree (gfc_current_ns->sym_root,
+				 c->ts.u.derived->name);
+	  if (!check_sym_import_status (c->ts.u.derived, st, NULL, old_code,
+					gfc_current_ns))
+	    error++;
+	}
 
       const char * var_name = gfc_var_name_for_select_type_temp (orig_expr1);
       if (c->ts.type == BT_CLASS)
