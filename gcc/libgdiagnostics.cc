@@ -39,6 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "edit-context.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
+#include "pretty-print-format-impl.h"
+#include "pretty-print-markup.h"
+#include "auto-obstack.h"
 
 class owned_nullable_string
 {
@@ -246,6 +249,97 @@ private:
   diagnostic_source_printing_options m_source_printing;
 };
 
+/* A token_printer that makes a deep copy of the pp_token_list
+   into another obstack.  */
+
+class copying_token_printer : public token_printer
+{
+public:
+  copying_token_printer (obstack &dst_obstack,
+			 pp_token_list &dst_token_list)
+  : m_dst_obstack (dst_obstack),
+    m_dst_token_list (dst_token_list)
+  {
+  }
+
+  void
+  print_tokens (pretty_printer *,
+		const pp_token_list &tokens) final override
+  {
+    for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+      switch (iter->m_kind)
+	{
+	default:
+	  gcc_unreachable ();
+
+	case pp_token::kind::text:
+	  {
+	    const pp_token_text *sub = as_a <const pp_token_text *> (iter);
+	    /* Copy the text, with null terminator.  */
+	    obstack_grow (&m_dst_obstack, sub->m_value.get (),
+			  strlen (sub->m_value.get ()) + 1);
+	    m_dst_token_list.push_back_text
+	      (label_text::borrow (XOBFINISH (&m_dst_obstack,
+					      const char *)));
+	  }
+	  break;
+
+	case pp_token::kind::begin_color:
+	  {
+	    pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	    /* Copy the color, with null terminator.  */
+	    obstack_grow (&m_dst_obstack, sub->m_value.get (),
+			  strlen (sub->m_value.get ()) + 1);
+	    m_dst_token_list.push_back<pp_token_begin_color>
+	      (label_text::borrow (XOBFINISH (&m_dst_obstack,
+					      const char *)));
+	  }
+	  break;
+	case pp_token::kind::end_color:
+	  m_dst_token_list.push_back<pp_token_end_color> ();
+	  break;
+
+	case pp_token::kind::begin_quote:
+	  m_dst_token_list.push_back<pp_token_begin_quote> ();
+	  break;
+	case pp_token::kind::end_quote:
+	  m_dst_token_list.push_back<pp_token_end_quote> ();
+	  break;
+
+	case pp_token::kind::begin_url:
+	  {
+	    pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
+	    /* Copy the URL, with null terminator.  */
+	    obstack_grow (&m_dst_obstack, sub->m_value.get (),
+			  strlen (sub->m_value.get ()) + 1);
+	    m_dst_token_list.push_back<pp_token_begin_url>
+	      (label_text::borrow (XOBFINISH (&m_dst_obstack,
+					      const char *)));
+	  }
+	  break;
+	case pp_token::kind::end_url:
+	  m_dst_token_list.push_back<pp_token_end_url> ();
+	  break;
+
+	case pp_token::kind::event_id:
+	  {
+	    pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	    m_dst_token_list.push_back<pp_token_event_id> (sub->m_event_id);
+	  }
+	  break;
+
+	case pp_token::kind::custom_data:
+	  /* These should have been eliminated by replace_custom_tokens.  */
+	  gcc_unreachable ();
+	  break;
+	}
+  }
+
+private:
+  obstack &m_dst_obstack;
+  pp_token_list &m_dst_token_list;
+};
+
 class sarif_sink : public sink
 {
 public:
@@ -253,6 +347,107 @@ public:
 	      FILE *dst_stream,
 	      const diagnostic_file *main_input_file,
 	      const sarif_generation_options &sarif_gen_opts);
+};
+
+struct diagnostic_message_buffer
+{
+  diagnostic_message_buffer ()
+  : m_tokens (m_obstack)
+  {
+  }
+
+  diagnostic_message_buffer (const char *gmsgid,
+			     va_list *args)
+  : m_tokens (m_obstack)
+  {
+    text_info text (gmsgid, args, errno);
+    pretty_printer pp;
+    pp.set_output_stream (nullptr);
+    copying_token_printer tok_printer (m_obstack, m_tokens);
+    pp.set_token_printer (&tok_printer);
+    pp_format (&pp, &text);
+    pp_output_formatted_text (&pp, nullptr);
+  }
+
+
+  std::string to_string () const;
+
+  auto_obstack m_obstack;
+  pp_token_list m_tokens;
+};
+
+/* A pp_element subclass that replays the saved tokens in a
+   diagnostic_message_buffer.  */
+
+class pp_element_message_buffer : public pp_element
+{
+public:
+  pp_element_message_buffer (diagnostic_message_buffer &msg_buf)
+    : m_msg_buf (msg_buf)
+  {
+  }
+
+  void add_to_phase_2 (pp_markup::context &ctxt) final override
+  {
+    /* Convert to text, possibly with colorization, URLs, etc.  */
+    for (auto iter = m_msg_buf.m_tokens.m_first; iter; iter = iter->m_next)
+      switch (iter->m_kind)
+	{
+	default:
+	  gcc_unreachable ();
+
+	case pp_token::kind::text:
+	  {
+	    pp_token_text *sub = as_a <pp_token_text *> (iter);
+	    pp_string (&ctxt.m_pp, sub->m_value.get ());
+	    ctxt.push_back_any_text ();
+	  }
+	  break;
+
+	case pp_token::kind::begin_color:
+	  {
+	    pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	    ctxt.begin_highlight_color (sub->m_value.get ());
+	  }
+	  break;
+	case pp_token::kind::end_color:
+	  ctxt.end_highlight_color ();
+	  break;
+
+	case pp_token::kind::begin_quote:
+	  ctxt.begin_quote ();
+	  break;
+	case pp_token::kind::end_quote:
+	  ctxt.end_quote ();
+	  break;
+
+	case pp_token::kind::begin_url:
+	  {
+	    pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
+	    ctxt.begin_url (sub->m_value.get ());
+	  }
+	  break;
+	case pp_token::kind::end_url:
+	  ctxt.end_url ();
+	  break;
+
+	case pp_token::kind::event_id:
+	  {
+	    pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	    gcc_assert (sub->m_event_id.known_p ());
+	    ctxt.add_event_id (sub->m_event_id);
+	  }
+	  break;
+
+	case pp_token::kind::custom_data:
+	  /* We don't have a way of handling custom_data tokens here.  */
+	  gcc_unreachable ();
+	  break;
+	}
+  }
+
+private:
+  diagnostic_message_buffer &m_msg_buf;
 };
 
 /* Helper for the linemap code.  */
@@ -508,8 +703,14 @@ public:
     m_sinks.push_back (std::move (sink));
   }
 
-  void emit (diagnostic &diag, const char *msgid, va_list *args)
+  void emit_va (diagnostic &diag, const char *msgid, va_list *args)
     LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING(3, 0);
+
+  void emit (diagnostic &diag, const char *msgid, ...)
+    LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING(3, 4);
+
+  void emit_msg_buf (diagnostic &diag,
+		     diagnostic_message_buffer &msg_buf);
 
   diagnostic_file *
   new_file (const char *name,
@@ -755,10 +956,10 @@ struct diagnostic_graph : public diagnostics::digraphs::digraph
   diagnostic_graph (diagnostic_manager &) {}
 
   diagnostic_node *
-  add_node_with_id (std::string id,
+  add_node_with_id (std::string node_id,
 		    diagnostic_node *parent_node);
   diagnostic_edge *
-  add_edge_with_label (const char *id,
+  add_edge_with_label (const char *edge_id,
 		       diagnostic_node &src_node,
 		       diagnostic_node &dst_node,
 		       const char *label);
@@ -791,15 +992,14 @@ public:
 			      const diagnostic_logical_location *logical_loc,
 			      unsigned stack_depth,
 			      std::unique_ptr<diagnostic_graph> state_graph,
-			      const char *gmsgid,
-			      va_list *args)
+			      std::unique_ptr<diagnostic_message_buffer> msg_buf)
   : m_physical_loc (physical_loc),
     m_logical_loc (logical_loc),
     m_stack_depth (stack_depth),
-    m_state_graph (std::move (state_graph))
+    m_state_graph (std::move (state_graph)),
+    m_msg_buf (std::move (msg_buf))
   {
-    m_desc_uncolored = make_desc (gmsgid, args, false);
-    m_desc_colored = make_desc (gmsgid, args, true);
+    gcc_assert (m_msg_buf);
   }
 
   /* diagnostic_event vfunc implementations.  */
@@ -816,10 +1016,11 @@ public:
 
   void print_desc (pretty_printer &pp) const final override
   {
-    if (pp_show_color (&pp))
-      pp_string (&pp, m_desc_colored.get ());
-    else
-      pp_string (&pp, m_desc_uncolored.get ());
+    if (m_msg_buf)
+      {
+	pp_element_message_buffer e_msg_buf (*m_msg_buf);
+	pp_printf (&pp, "%e", &e_msg_buf);
+      }
   }
 
   logical_location get_logical_location () const final override
@@ -877,8 +1078,7 @@ private:
   const diagnostic_logical_location *m_logical_loc;
   unsigned m_stack_depth;
   std::unique_ptr<diagnostic_graph> m_state_graph;
-  label_text m_desc_uncolored;
-  label_text m_desc_colored;
+  std::unique_ptr<diagnostic_message_buffer> m_msg_buf;
 };
 
 class libgdiagnostics_path_thread : public diagnostic_thread
@@ -912,13 +1112,30 @@ struct diagnostic_execution_path : public diagnostic_path
 		const char *gmsgid,
 		va_list *args)
   {
+    auto msg_buf = std::make_unique<diagnostic_message_buffer> (gmsgid, args);
+
     m_events.push_back
       (std::make_unique<libgdiagnostics_path_event> (physical_loc,
 						     logical_loc,
 						     stack_depth,
 						     std::move (state_graph),
-						     gmsgid,
-						     args));
+						     std::move (msg_buf)));
+    return m_events.size () - 1;
+  }
+
+  diagnostic_event_id_t
+  add_event_via_msg_buf (const diagnostic_physical_location *physical_loc,
+			 const diagnostic_logical_location *logical_loc,
+			 unsigned stack_depth,
+			 std::unique_ptr<diagnostic_graph> state_graph,
+			 std::unique_ptr<diagnostic_message_buffer> msg_buf)
+  {
+    m_events.push_back
+      (std::make_unique<libgdiagnostics_path_event> (physical_loc,
+						     logical_loc,
+						     stack_depth,
+						     std::move (state_graph),
+						     std::move (msg_buf)));
     return m_events.size () - 1;
   }
 
@@ -1035,6 +1252,19 @@ public:
   {
     std::unique_ptr<range_label> label
       = std::make_unique <impl_range_label> (text);
+    m_rich_loc.add_range (as_location_t (loc),
+			  SHOW_RANGE_WITHOUT_CARET,
+			  label.get ());
+    m_labels.push_back (std::move (label));
+  }
+
+  void
+  add_location_with_label (const diagnostic_physical_location *loc,
+			   std::unique_ptr<diagnostic_message_buffer> msg_buf)
+  {
+    std::string str = msg_buf->to_string ();
+    std::unique_ptr<range_label> label
+      = std::make_unique <impl_range_label> (str.c_str ());
     m_rich_loc.add_range (as_location_t (loc),
 			  SHOW_RANGE_WITHOUT_CARET,
 			  label.get ());
@@ -1290,6 +1520,64 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
   mgr.get_dc ().add_sink (std::move (inner_sink));
 }
 
+// struct diagnostic_message_buffer
+
+std::string
+diagnostic_message_buffer::to_string () const
+{
+  std::string result;
+
+  /* Convert to text, dropping colorization, URLs, etc.  */
+  for (auto iter = m_tokens.m_first; iter; iter = iter->m_next)
+    switch (iter->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+
+      case pp_token::kind::text:
+	{
+	  pp_token_text *sub = as_a <pp_token_text *> (iter);
+	  result += sub->m_value.get ();
+	}
+	break;
+
+      case pp_token::kind::begin_color:
+      case pp_token::kind::end_color:
+	// Skip
+	break;
+
+      case pp_token::kind::begin_quote:
+	result += open_quote;
+	break;
+
+      case pp_token::kind::end_quote:
+	result += close_quote;
+	break;
+
+      case pp_token::kind::begin_url:
+      case pp_token::kind::end_url:
+	// Skip
+	break;
+
+      case pp_token::kind::event_id:
+	{
+	  pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	  gcc_assert (sub->m_event_id.known_p ());
+	  result += '(';
+	  result += std::to_string (sub->m_event_id.one_based ());
+	  result += ')';
+	}
+	break;
+
+      case pp_token::kind::custom_data:
+	/* We don't have a way of handling custom_data tokens here.  */
+	gcc_unreachable ();
+	break;
+      }
+
+  return result;
+}
+
 /* struct diagnostic_manager.  */
 
 void
@@ -1302,7 +1590,7 @@ diagnostic_manager::write_patch (FILE *dst_stream)
 }
 
 void
-diagnostic_manager::emit (diagnostic &diag, const char *msgid, va_list *args)
+diagnostic_manager::emit_va (diagnostic &diag, const char *msgid, va_list *args)
 {
   set_line_table_global ();
 
@@ -1329,6 +1617,24 @@ GCC_DIAGNOSTIC_POP
 
   m_prev_diag_logical_loc = diag.get_logical_location ();
   m_current_diag = nullptr;
+}
+
+void
+diagnostic_manager::emit (diagnostic &diag, const char *msgid, ...)
+{
+  va_list args;
+  va_start (args, msgid);
+  emit_va (diag, msgid, &args);
+  va_end (args);
+}
+
+void
+diagnostic_manager::emit_msg_buf (diagnostic &diag,
+				  diagnostic_message_buffer &msg_buf)
+{
+
+  pp_element_message_buffer e_msg_buf (msg_buf);
+  emit (diag, "%e", &e_msg_buf);
 }
 
 diagnostic_execution_path *
@@ -1365,10 +1671,10 @@ diagnostic_manager::take_global_graph (std::unique_ptr<diagnostic_graph> graph)
 /* Error-checking at the API boundary.  */
 
 #define FAIL_IF_NULL(PTR_ARG) \
-  do {						    \
-    volatile const void *p = (PTR_ARG);		    \
-    if (!p) {					    \
-      fprintf (stderr, "%s: %s must be non-NULL\n",   \
+  do {							    \
+    volatile const void *ptr_arg = (PTR_ARG);		    \
+    if (!ptr_arg) {					    \
+      fprintf (stderr, "%s: %s must be non-NULL\n",	    \
 	       __func__, #PTR_ARG);		      \
       abort ();					      \
     }						    \
@@ -2044,7 +2350,7 @@ diagnostic_finish_va (diagnostic *diag, const char *gmsgid, va_list *args)
   else
     progname = "progname";
   auto_diagnostic_group d;
-  diag->get_manager ().emit (*diag, gmsgid, args);
+  diag->get_manager ().emit_va (*diag, gmsgid, args);
   delete diag;
 }
 
@@ -2165,13 +2471,14 @@ diagnostic_manager_set_analysis_target (diagnostic_manager *mgr,
   mgr->get_dc ().set_main_input_filename (file->get_name ());
 }
 
-// struct diagnostic_graph : public diagnostics::digraphs::graph<foo_traits>
+/* Public entrypoint.  */
 
 diagnostic_node *
-diagnostic_graph::add_node_with_id (std::string id,
+diagnostic_graph::add_node_with_id (std::string node_id,
 				    diagnostic_node *parent_node)
 {
-  auto node_up = std::make_unique<diagnostic_node> (*this, std::move (id));
+  auto node_up
+    = std::make_unique<diagnostic_node> (*this, std::move (node_id));
   diagnostic_node *new_node = node_up.get ();
   if (parent_node)
     parent_node->add_child (std::move (node_up));
@@ -2180,14 +2487,16 @@ diagnostic_graph::add_node_with_id (std::string id,
   return new_node;
 }
 
+/* Public entrypoint.  */
+
 diagnostic_edge *
-diagnostic_graph::add_edge_with_label (const char *id,
+diagnostic_graph::add_edge_with_label (const char *edge_id,
 				       diagnostic_node &src_node,
 				       diagnostic_node &dst_node,
 				       const char *label)
 {
   auto edge_up
-    = std::make_unique<diagnostic_edge> (*this, id,
+    = std::make_unique<diagnostic_edge> (*this, edge_id,
 					 src_node, dst_node);
   diagnostic_edge *new_edge = edge_up.get ();
   if (label)
@@ -2247,22 +2556,24 @@ diagnostic_graph_set_description (diagnostic_graph *graph,
   graph->set_description (desc);
 }
 
+/* Public entrypoint.  */
+
 diagnostic_node *
 diagnostic_graph_add_node (diagnostic_graph *graph,
-			   const char *id,
+			   const char *node_id,
 			   diagnostic_node *parent_node)
 {
   FAIL_IF_NULL (graph);
-  FAIL_IF_NULL (id);
+  FAIL_IF_NULL (node_id);
 
-  return graph->add_node_with_id (id, parent_node);
+  return graph->add_node_with_id (node_id, parent_node);
 }
 
 /* Public entrypoint.  */
 
 diagnostic_edge *
 diagnostic_graph_add_edge (diagnostic_graph *graph,
-			   const char *id,
+			   const char *edge_id,
 			   diagnostic_node *src_node,
 			   diagnostic_node *dst_node,
 			   const char *label)
@@ -2271,31 +2582,31 @@ diagnostic_graph_add_edge (diagnostic_graph *graph,
   FAIL_IF_NULL (src_node);
   FAIL_IF_NULL (dst_node);
 
-  return graph->add_edge_with_label (id, *src_node, *dst_node, label);
+  return graph->add_edge_with_label (edge_id, *src_node, *dst_node, label);
 }
 
 /* Public entrypoint.  */
 
 diagnostic_node *
 diagnostic_graph_get_node_by_id (diagnostic_graph *graph,
-				 const char *id)
+				 const char *node_id)
 {
   FAIL_IF_NULL (graph);
-  FAIL_IF_NULL (id);
+  FAIL_IF_NULL (node_id);
 
-  return static_cast<diagnostic_node *> (graph->get_node_by_id (id));
+  return static_cast<diagnostic_node *> (graph->get_node_by_id (node_id));
 }
 
 /* Public entrypoint.  */
 
 diagnostic_edge *
 diagnostic_graph_get_edge_by_id (diagnostic_graph *graph,
-				 const char *id)
+				 const char *edge_id)
 {
   FAIL_IF_NULL (graph);
-  FAIL_IF_NULL (id);
+  FAIL_IF_NULL (edge_id);
 
-  return static_cast<diagnostic_edge *> (graph->get_edge_by_id (id));
+  return static_cast<diagnostic_edge *> (graph->get_edge_by_id (edge_id));
 }
 
 /* Public entrypoint.  */
@@ -2320,6 +2631,8 @@ diagnostic_node_set_label (diagnostic_node *node,
   node->set_label (label);
 }
 
+/* Public entrypoint.  */
+
 void
 diagnostic_node_set_logical_location (diagnostic_node *node,
 				      const diagnostic_logical_location *logical_loc)
@@ -2328,34 +2641,6 @@ diagnostic_node_set_logical_location (diagnostic_node *node,
 
   node->set_logical_loc
     (impl_logical_location_manager::key_from_ptr (logical_loc));
-}
-
-/* Private entrypoint.  */
-
-diagnostic_event_id
-private_diagnostic_execution_path_add_event_2 (diagnostic_execution_path *path,
-					       const diagnostic_physical_location *physical_loc,
-					       const diagnostic_logical_location *logical_loc,
-					       unsigned stack_depth,
-					       diagnostic_graph *state_graph,
-					       const char *gmsgid, ...)
-
-{
-  FAIL_IF_NULL (path);
-  FAIL_IF_NULL (gmsgid);
-
-  va_list args;
-  va_start (args, gmsgid);
-  diagnostic_event_id_t result
-    = path->add_event_va (physical_loc,
-			  logical_loc,
-			  stack_depth,
-			  std::unique_ptr <diagnostic_graph> (state_graph),
-			  gmsgid, &args);
-  va_end (args);
-
-  return as_diagnostic_event_id (result);
-
 }
 
 /* Private entrypoint.  */
@@ -2383,4 +2668,286 @@ private_diagnostic_edge_set_property_bag (diagnostic_edge &edge,
 					  std::unique_ptr<json::object> properties)
 {
   edge.set_property_bag (std::move (properties));
+}
+
+/* Public entrypoint.  */
+
+diagnostic_message_buffer *
+diagnostic_message_buffer_new ()
+{
+  return new diagnostic_message_buffer ();
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_release (diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (msg_buf);
+  delete msg_buf;
+}
+
+void
+diagnostic_message_buffer_append_str (diagnostic_message_buffer *msg_buf,
+				      const char *p)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (p);
+  msg_buf->m_tokens.push_back_text (label_text::take (xstrdup (p)));
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_append_text (diagnostic_message_buffer *msg_buf,
+				       const char *p,
+				       size_t len)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (p);
+  msg_buf->m_tokens.push_back_text (label_text::take (xstrndup (p, len)));
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_append_byte (diagnostic_message_buffer *msg_buf,
+				       char ch)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back_byte (ch);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_append_printf (diagnostic_message_buffer *msg_buf,
+					 const char *fmt, ...)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (fmt);
+
+  va_list args;
+  va_start (args, fmt);
+
+  char *formatted_buf = xvasprintf (fmt, args);
+
+  va_end (args);
+
+  msg_buf->m_tokens.push_back_text (label_text::take (formatted_buf));
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_append_event_id (diagnostic_message_buffer *msg_buf,
+					   diagnostic_event_id event_id)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back<pp_token_event_id> (event_id);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_begin_url (diagnostic_message_buffer *msg_buf,
+				     const char *url)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (url);
+  msg_buf->m_tokens.push_back<pp_token_begin_url>
+    (label_text::take (xstrdup (url)));
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_end_url (diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back<pp_token_end_url> ();
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_begin_quote (diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back<pp_token_begin_quote> ();
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_end_quote (diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back<pp_token_end_quote> ();
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_begin_color (diagnostic_message_buffer *msg_buf,
+				       const char *color)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (color);
+  msg_buf->m_tokens.push_back<pp_token_begin_color>
+    (label_text::take (xstrdup (color)));
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_end_color (diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (msg_buf);
+  msg_buf->m_tokens.push_back<pp_token_end_color> ();
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_message_buffer_dump (const diagnostic_message_buffer *msg_buf,
+				FILE *outf)
+{
+  FAIL_IF_NULL (msg_buf);
+  FAIL_IF_NULL (outf);
+
+  msg_buf->m_tokens.dump (outf);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_finish_via_msg_buf (diagnostic *diag,
+			       diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (diag);
+  FAIL_IF_NULL (msg_buf);
+
+  if (const char *tool_name
+      = diag->get_manager ().get_client_version_info ()->m_name.get_str ())
+    progname = tool_name;
+  else
+    progname = "progname";
+  auto_diagnostic_group d;
+  diag->get_manager ().emit_msg_buf (*diag, *msg_buf);
+  delete diag;
+  delete msg_buf;
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_add_location_with_label_via_msg_buf (diagnostic *diag,
+						const diagnostic_physical_location *loc,
+						diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (diag);
+  diag->get_manager ().assert_valid_diagnostic_physical_location (loc);
+  FAIL_IF_NULL (msg_buf);
+
+  std::unique_ptr<diagnostic_message_buffer> msg_buf_up (msg_buf);
+  diag->add_location_with_label (loc, std::move (msg_buf_up));
+}
+
+/* Public entrypoint.  */
+
+diagnostic_event_id
+diagnostic_execution_path_add_event_via_msg_buf (diagnostic_execution_path *path,
+						 const diagnostic_physical_location *physical_loc,
+						 const diagnostic_logical_location *logical_loc,
+						 unsigned stack_depth,
+						 diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (path);
+  FAIL_IF_NULL (msg_buf);
+
+  std::unique_ptr<diagnostic_message_buffer> msg_buf_up (msg_buf);
+  diagnostic_event_id_t result
+    = path->add_event_via_msg_buf (physical_loc,
+				   logical_loc,
+				   stack_depth,
+				   nullptr,
+				   std::move (msg_buf_up));
+  return as_diagnostic_event_id (result);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_graph_set_description_via_msg_buf (diagnostic_graph *graph,
+					      diagnostic_message_buffer *desc)
+{
+  FAIL_IF_NULL (graph);
+
+  if (desc)
+    graph->set_description (desc->to_string ());
+  else
+    graph->set_description (nullptr);
+}
+
+/* Public entrypoint.  */
+
+diagnostic_edge *
+diagnostic_graph_add_edge_via_msg_buf (diagnostic_graph *graph,
+				       const char *edge_id,
+				       diagnostic_node *src_node,
+				       diagnostic_node *dst_node,
+				       diagnostic_message_buffer *label)
+{
+  FAIL_IF_NULL (graph);
+  FAIL_IF_NULL (src_node);
+  FAIL_IF_NULL (dst_node);
+
+  if (label)
+    {
+      std::string label_str (label->to_string ());
+      return graph->add_edge_with_label (edge_id, *src_node, *dst_node,
+					 label_str.c_str ());
+    }
+  else
+    return graph->add_edge_with_label (edge_id, *src_node, *dst_node,
+				       nullptr);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_node_set_label_via_msg_buf (diagnostic_node *node,
+				       diagnostic_message_buffer *label)
+{
+  FAIL_IF_NULL (node);
+
+  if (label)
+    node->set_label (label->to_string ());
+  else
+    node->set_label (nullptr);
+}
+
+/* Private entrypoint.  */
+
+diagnostic_event_id
+private_diagnostic_execution_path_add_event_3 (diagnostic_execution_path *path,
+					       const diagnostic_physical_location *physical_loc,
+					       const diagnostic_logical_location *logical_loc,
+					       unsigned stack_depth,
+					       diagnostic_graph *state_graph,
+					       diagnostic_message_buffer *msg_buf)
+{
+  FAIL_IF_NULL (path);
+  FAIL_IF_NULL (msg_buf);
+
+  diagnostic_event_id_t result
+    = path->add_event_via_msg_buf
+	(physical_loc,
+	 logical_loc,
+	 stack_depth,
+	 std::unique_ptr <diagnostic_graph> (state_graph),
+	 std::unique_ptr <diagnostic_message_buffer> (msg_buf));
+
+  return as_diagnostic_event_id (result);
 }

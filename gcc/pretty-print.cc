@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-highlight-colors.h"
+#include "auto-obstack.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -714,7 +715,7 @@ static int
 decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
 static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
 
-static void
+extern void
 default_token_printer (pretty_printer *pp,
 		       const pp_token_list &tokens);
 
@@ -1324,6 +1325,15 @@ pp_token_list::push_back_text (label_text &&text)
   if (text.get ()[0] == '\0')
     return; // pushing empty string is a no-op
   push_back<pp_token_text> (std::move (text));
+}
+
+void
+pp_token_list::push_back_byte (char ch)
+{
+  char buf[2];
+  buf[0] = ch;
+  buf[1] = '\0';
+  push_back_text (label_text::take (xstrdup (buf)));
 }
 
 void
@@ -2177,38 +2187,6 @@ format_phase_2 (pretty_printer *pp,
       gcc_assert (!formatters[argno]);
 }
 
-struct auto_obstack
-{
-  auto_obstack ()
-  {
-    obstack_init (&m_obstack);
-  }
-
-  ~auto_obstack ()
-  {
-    obstack_free (&m_obstack, NULL);
-  }
-
-  operator obstack & () { return m_obstack; }
-
-  void grow (const void *src, size_t length)
-  {
-    obstack_grow (&m_obstack, src, length);
-  }
-
-  void *object_base () const
-  {
-    return m_obstack.object_base;
-  }
-
-  size_t object_size () const
-  {
-    return obstack_object_size (&m_obstack);
-  }
-
-  obstack m_obstack;
-};
-
 /* Phase 3 of formatting a message (phases 1 and 2 done by pp_format).
 
    Pop a pp_formatted_chunks from chunk_obstack, collecting all the tokens from
@@ -2261,7 +2239,7 @@ pp_output_formatted_text (pretty_printer *pp,
 
 /* Default implementation of token printing.  */
 
-static void
+void
 default_token_printer (pretty_printer *pp,
 		       const pp_token_list &tokens)
 {
@@ -3186,6 +3164,29 @@ pp_markup::context::end_highlight_color ()
 
   push_back_any_text ();
   m_formatted_token_list->push_back<pp_token_end_color> ();
+}
+
+void
+pp_markup::context::begin_url (const char *url)
+{
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_begin_url>
+    (label_text::take (xstrdup (url)));
+}
+
+void
+pp_markup::context::end_url ()
+{
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_end_url> ();
+}
+
+void
+pp_markup::context::add_event_id (diagnostic_event_id_t event_id)
+{
+  gcc_assert (event_id.known_p ());
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_event_id> (event_id);
 }
 
 void

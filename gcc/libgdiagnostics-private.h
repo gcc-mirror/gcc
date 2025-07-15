@@ -31,20 +31,6 @@ extern "C" {
 
 /* Entrypoints added in LIBGDIAGNOSTICS_ABI_3.  */
 
-extern diagnostic_event_id
-private_diagnostic_execution_path_add_event_2 (diagnostic_execution_path *path,
-					       const diagnostic_physical_location *physical_loc,
-					       const diagnostic_logical_location *logical_loc,
-					       unsigned stack_depth,
-					       diagnostic_graph *state_graph,
-					       const char *fmt, ...)
-  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
-  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2)
-  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (3)
-  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (5)
-  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (6)
-  LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING (6, 7);
-
 extern void
 private_diagnostic_graph_set_property_bag (diagnostic_graph &graph,
 					   std::unique_ptr<json::object> properties);
@@ -56,6 +42,21 @@ private_diagnostic_node_set_property_bag (diagnostic_node &node,
 extern void
 private_diagnostic_edge_set_property_bag (diagnostic_edge &edge,
 					  std::unique_ptr<json::object> properties);
+
+/* Entrypoint added in LIBGDIAGNOSTICS_ABI_4.  */
+
+extern diagnostic_event_id
+private_diagnostic_execution_path_add_event_3 (diagnostic_execution_path *path,
+					       const diagnostic_physical_location *physical_loc,
+					       const diagnostic_logical_location *logical_loc,
+					       unsigned stack_depth,
+					       diagnostic_graph *state_graph,
+					       diagnostic_message_buffer *msg_buf)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (3)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (5)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (6);
 
 } // extern "C"
 

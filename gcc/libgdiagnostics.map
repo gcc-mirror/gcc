@@ -69,6 +69,7 @@ LIBGDIAGNOSTICS_ABI_0
     diagnostic_finish;
     diagnostic_finish_va;
 
+
     diagnostic_physical_location_get_file;
 
   local: *;
@@ -108,8 +109,35 @@ LIBGDIAGNOSTICS_ABI_3 {
     diagnostic_node_set_logical_location;
 
     # Private hooks used by sarif-replay
-    private_diagnostic_execution_path_add_event_2;
     private_diagnostic_graph_set_property_bag;
     private_diagnostic_node_set_property_bag;
     private_diagnostic_edge_set_property_bag;
 } LIBGDIAGNOSTICS_ABI_2;
+
+# Add diagnostic_message_buffer
+LIBGDIAGNOSTICS_ABI_4 {
+  global:
+    diagnostic_message_buffer_new;
+    diagnostic_message_buffer_release;
+    diagnostic_message_buffer_append_str;
+    diagnostic_message_buffer_append_text;
+    diagnostic_message_buffer_append_byte;
+    diagnostic_message_buffer_append_printf;
+    diagnostic_message_buffer_append_event_id;
+    diagnostic_message_buffer_begin_url;
+    diagnostic_message_buffer_end_url;
+    diagnostic_message_buffer_begin_quote;
+    diagnostic_message_buffer_end_quote;
+    diagnostic_message_buffer_begin_color;
+    diagnostic_message_buffer_end_color;
+    diagnostic_message_buffer_dump;
+    diagnostic_finish_via_msg_buf;
+    diagnostic_add_location_with_label_via_msg_buf;
+    diagnostic_execution_path_add_event_via_msg_buf;
+    diagnostic_graph_set_description_via_msg_buf;
+    diagnostic_graph_add_edge_via_msg_buf;
+    diagnostic_node_set_label_via_msg_buf;
+
+    # Private hook used by sarif-replay
+    private_diagnostic_execution_path_add_event_3;
+} LIBGDIAGNOSTICS_ABI_3;

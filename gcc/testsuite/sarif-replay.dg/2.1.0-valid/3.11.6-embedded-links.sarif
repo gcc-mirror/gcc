@@ -1,3 +1,6 @@
+/* { dg-additional-options "-fdiagnostics-add-output=experimental-html:file=3.11.6-embedded-links.sarif.html,javascript=no" } */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif:file=3.11.6-embedded-links.sarif.roundtrip.sarif" } */
+
 {"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
  "version": "2.1.0",
  "runs": [{"tool": {"driver": {"name": "hand-written"}},
@@ -16,10 +19,24 @@ hand-written: warning: 002: Prohibited term used in [para\[0\]\\spans\[2\](1).
                        
                        /* With the fix from https://github.com/oasis-tcs/sarif-spec/issues/656 */
                        {"message": {"text": "003: Prohibited term used in [para\\[0\\]\\\\spans\\[2\\]](1)."},
-	   	        "locations": []}
+	   	        "locations": []},
 /* { dg-begin-multiline-output "" }
 hand-written: warning: 003: Prohibited term used in para[0]\spans[2].
    { dg-end-multiline-output "" } */
 
+                       {"message": {"text": "004: This is a [link](http://www.example.com)."},
+	   	        "locations": []}
+/* { dg-begin-multiline-output "" }
+hand-written: warning: 004: This is a link.
+   { dg-end-multiline-output "" } */
+
 ]}]}
+
+/* Use a Python script to verify various properties about the generated
+   .html file:
+   { dg-final { run-html-pytest 3.11.6-embedded-links.sarif "2.1.0-valid/embedded-links-check-html.py" } } */
+
+/* Use a Python script to verify various properties about the *generated*
+   .sarif file:
+   { dg-final { run-sarif-pytest 3.11.6-embedded-links.sarif.roundtrip "2.1.0-valid/embedded-links-check-sarif-roundtrip.py" } } */
 

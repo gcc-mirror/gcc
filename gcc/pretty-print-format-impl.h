@@ -334,6 +334,7 @@ public:
     push_back (std::move (tok));
   }
   void push_back_text (label_text &&text);
+  void push_back_byte (char ch);
   void push_back (std::unique_ptr<pp_token> tok);
   void push_back_list (pp_token_list &&list);
 

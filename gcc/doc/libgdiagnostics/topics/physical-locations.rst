@@ -284,3 +284,23 @@ This diagnostic has three locations
             |   ~~ ^ ~~~~~
             |   |    |
             |   int  const char *
+
+.. function:: void diagnostic_add_location_with_label_via_msg_buf (diagnostic *diag, \
+						const diagnostic_physical_location *loc, \
+						diagnostic_message_buffer *msg_buf)
+
+   This is equivalent to :func:`diagnostic_add_location_with_label` but
+   using a message buffer rather than a text string.
+
+   ``diag`` and ``msg_buf`` must both be non-NULL.
+
+   Calling this function transfers ownership of ``msg_buf`` to the
+   diagnostic - do not call :func:`diagnostic_message_buffer_release` on
+   it.
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_3`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_message_buffer

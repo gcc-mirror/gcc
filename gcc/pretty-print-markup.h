@@ -45,6 +45,11 @@ public:
   void begin_highlight_color (const char *color_name);
   void end_highlight_color ();
 
+  void begin_url (const char *url);
+  void end_url ();
+
+  void add_event_id (diagnostic_event_id_t event_id);
+
   void push_back_any_text ();
 
   pretty_printer &m_pp;

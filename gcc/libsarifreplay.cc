@@ -282,14 +282,14 @@ class annotation
 {
 public:
   annotation (libgdiagnostics::physical_location phys_loc,
-	      label_text label)
+	      libgdiagnostics::message_buffer label)
   : m_phys_loc (phys_loc),
     m_label (std::move (label))
   {
   }
 
   libgdiagnostics::physical_location m_phys_loc;
-  label_text m_label;
+  libgdiagnostics::message_buffer m_label;
 };
 
 using id_map = std::map<std::string, const json::string *>;
@@ -333,7 +333,7 @@ private:
 
   enum status emit_sarif_as_diagnostics (const json::value &jv);
 
-  label_text
+  libgdiagnostics::message_buffer
   make_plain_text_within_result_message (const json::object *tool_component_obj,
 					 const json::object &message_obj,
 					 const json::object *rule_obj);
@@ -1181,12 +1181,12 @@ sarif_replayer::get_level_from_level_str (const json::string &level_str)
 
 static void
 add_any_annotations (libgdiagnostics::diagnostic &diag,
-		     const std::vector<annotation> &annotations)
+		     std::vector<annotation> &annotations)
 {
   for (auto &annotation : annotations)
-    if (annotation.m_label.get ())
+    if (annotation.m_label.m_inner)
       diag.add_location_with_label (annotation.m_phys_loc,
-				    annotation.m_label.get ());
+				    std::move (annotation.m_label));
     else
       diag.add_location (annotation.m_phys_loc);
 }
@@ -1249,13 +1249,13 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
     }
 
   // §3.27.11 "message" property
-  label_text text;
+  libgdiagnostics::message_buffer msg_buf;
   if (auto message_obj
 	= get_optional_property<json::object> (result_obj, PROP_result_message))
-    text = make_plain_text_within_result_message (nullptr, // TODO: tool_component_obj,
-						  *message_obj,
-						  rule_obj);
-  if (!text.get ())
+    msg_buf = make_plain_text_within_result_message (nullptr, // TODO: tool_component_obj,
+						     *message_obj,
+						     rule_obj);
+  if (!msg_buf.m_inner)
     return status::err_invalid_sarif;
 
   // §3.27.12 "locations" property
@@ -1368,7 +1368,8 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
     }
 
   // §3.27.22 relatedLocations property
-  std::vector<std::pair<libgdiagnostics::diagnostic, label_text>> notes;
+  std::vector<std::pair<libgdiagnostics::diagnostic,
+			libgdiagnostics::message_buffer>> notes;
   const property_spec_ref prop_related_locations
     ("result", "relatedLocations", "3.27.22");
   if (auto related_locations_arr
@@ -1400,18 +1401,18 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 						     prop_message))
 	    {
 	      /* Treat related locations with a message as a "note".  */
-	      label_text text
+	      libgdiagnostics::message_buffer msg_buf
 		(make_plain_text_within_result_message
 		 (tool_component_obj,
 		  *message_obj,
 		  rule_obj));
-	      if (!text.get ())
+	      if (!msg_buf.m_inner)
 		return status::err_invalid_sarif;
 	      auto note (m_output_mgr.begin_diagnostic (DIAGNOSTIC_LEVEL_NOTE));
 	      note.set_location (physical_loc);
 	      note.set_logical_location (logical_loc);
 	      add_any_annotations (note, annotations);
-	      notes.push_back ({std::move (note), std::move (text)});
+	      notes.push_back ({std::move (note), std::move (msg_buf)});
 	    }
 	  else
 	    {
@@ -1434,14 +1435,14 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	  handle_fix_object (err, *fix_obj);
     }
 
-  err.finish ("%s", text.get ());
+  err.finish_via_msg_buf (std::move (msg_buf));
 
   // Flush any notes
   for (auto &iter : notes)
     {
       auto &note = iter.first;
-      auto &text = iter.second;
-      note.finish ("%s", text.get ());
+      auto &msg_buf = iter.second;
+      note.finish_via_msg_buf (std::move (msg_buf));
     }
 
   return status::ok;
@@ -1569,13 +1570,10 @@ maybe_consume_embedded_link (const char *&iter_src)
    and substitute for any placeholders (§3.11.5) and handle any
    embedded links (§3.11.6).
 
-   Limitations:
-   - we don't preserve destinations within embedded links
-
    MESSAGE_OBJ is "theMessage"
    RULE_OBJ is "theRule".  */
 
-label_text
+libgdiagnostics::message_buffer
 sarif_replayer::
 make_plain_text_within_result_message (const json::object *tool_component_obj,
 				       const json::object &message_obj,
@@ -1588,7 +1586,7 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 					       rule_obj,
 					       js_str);
   if (!original_text)
-    return label_text::borrow (nullptr);
+    return libgdiagnostics::message_buffer ();
 
   gcc_assert (js_str);
 
@@ -1598,7 +1596,7 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
     = get_optional_property<json::array> (message_obj, arguments_prop);
 
   /* Duplicate original_text, substituting any placeholders.  */
-  std::string accum;
+  libgdiagnostics::message_buffer result (diagnostic_message_buffer_new ());
 
   const char *iter_src = original_text;
   while (char ch = *iter_src)
@@ -1614,7 +1612,7 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 		 " but message object has no %qs property",
 		 (int)arg_idx,
 		 arguments_prop.get_property_name ());
-	      return label_text::borrow (nullptr);
+	      return libgdiagnostics::message_buffer ();
 	    }
 	  if (arg_idx >= arguments->length ())
 	    {
@@ -1625,20 +1623,20 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 		 arguments_prop.get_property_name (),
 		 (int)arg_idx);
 	      // TODO: might be nice to add a note showing the args
-	      return label_text::borrow (nullptr);
+	      return libgdiagnostics::message_buffer ();
 	    }
 	  auto replacement_jstr
 	    = require_string (*arguments->get (arg_idx), arguments_prop);
 	  if (!replacement_jstr)
-	    return label_text::borrow (nullptr);
-	  accum += replacement_jstr->get_string ();
+	    return libgdiagnostics::message_buffer ();
+	  result += replacement_jstr->get_string ();
 	}
       else if (ch == '{' || ch == '}')
 	{
 	  /* '{' and '}' are escaped by repeating them.  */
 	  if (iter_src[1] == ch)
 	    {
-	      accum += ch;
+	      result += ch;
 	      iter_src += 2;
 	    }
 	  else
@@ -1648,24 +1646,25 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 	      report_invalid_sarif (*js_str, msgs_with_placeholders,
 				    "unescaped '%c' within message string",
 				    ch);
-	      return label_text::borrow (nullptr);
+	      return libgdiagnostics::message_buffer ();
 	    }
 	}
       else if (auto link = maybe_consume_embedded_link (iter_src))
 	{
-	  accum += link->text;
-	  /* TODO: use the destination.  */
+	  result.begin_url (link->destination.c_str ());
+	  result += link->text.c_str ();
+	  result.end_url ();
 	  /* TODO: potentially could try to convert
 	     intra-sarif links into event ids.  */
 	}
       else
 	{
-	  accum += ch;
+	  result += ch;
 	  iter_src++;
 	}
     }
 
-  return label_text::take (xstrdup (accum.c_str ()));
+  return result;
 }
 
 /* Handle a value that should be a multiformatMessageString object (§3.12).
@@ -1799,7 +1798,7 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
 {
   libgdiagnostics::physical_location physical_loc;
   libgdiagnostics::logical_location logical_loc;
-  label_text message;
+  libgdiagnostics::message_buffer msg_buf;
   int stack_depth = 0;
 
   const property_spec_ref location_prop
@@ -1821,7 +1820,7 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
 	  = get_optional_property<json::object> (*location_obj,
 						 location_message))
 	{
-	  message = make_plain_text_within_result_message
+	  msg_buf = make_plain_text_within_result_message
 	    (nullptr,
 	     *message_obj,
 	     nullptr/* TODO.  */);
@@ -1874,21 +1873,18 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
 	return s;
     }
 
-  if (message.get ())
-    private_diagnostic_execution_path_add_event_2 (path.m_inner,
-						   physical_loc.m_inner,
-						   logical_loc.m_inner,
-						   stack_depth,
-						   state_graph.m_inner,
-						   "%s", message.get ());
-  else
-    private_diagnostic_execution_path_add_event_2 (path.m_inner,
-						   physical_loc.m_inner,
-						   logical_loc.m_inner,
-						   stack_depth,
-						   state_graph.m_inner,
-						   "");
+  if (!msg_buf.m_inner)
+    msg_buf.m_inner = diagnostic_message_buffer_new ();
+
+  private_diagnostic_execution_path_add_event_3 (path.m_inner,
+						 physical_loc.m_inner,
+						 logical_loc.m_inner,
+						 stack_depth,
+						 state_graph.m_inner,
+						 msg_buf.m_inner);
+
   state_graph.m_owned = false;
+  msg_buf.m_inner = nullptr;
 
   return status::ok;
 }
@@ -1967,7 +1963,7 @@ handle_location_object (const json::object &location_obj,
 	  if (s != status::ok)
 	    return s;
 
-	  label_text label;
+	  libgdiagnostics::message_buffer label;
 
 	  // §3.30.14 message property
 	  {
@@ -2304,13 +2300,13 @@ sarif_replayer::handle_graph_object (const json::object &graph_json_obj,
   if (auto description_obj
       = get_optional_property<json::object> (graph_json_obj, description_prop))
     {
-      label_text text
+      auto msg_buf
 	= make_plain_text_within_result_message (&run_obj,
 						 *description_obj,
 						 nullptr);
-      if (!text.get ())
+      if (!msg_buf.m_inner)
 	return status::err_invalid_sarif;
-      out_graph.set_description (text.get ());
+      out_graph.set_description (std::move (msg_buf));
     }
 
   // §3.39.3: MAY contain a "nodes" property
@@ -2403,13 +2399,13 @@ sarif_replayer::handle_node_object (const json::object &node_json_obj,
   if (auto label_obj
       = get_optional_property<json::object> (node_json_obj, label_prop))
     {
-      label_text text
+      auto msg_buf
 	= make_plain_text_within_result_message (&run_obj,
 						 *label_obj,
 						 nullptr);
-      if (!text.get ())
+      if (!msg_buf.m_inner)
 	return nullptr;
-      new_node.set_label (text.get ());
+      new_node.set_label (std::move (msg_buf));
     }
 
   // §3.40.4 "location" property
@@ -2484,7 +2480,7 @@ sarif_replayer::handle_edge_object (const json::object &edge_json_obj,
   edge_id_map[id] = id_str;
 
   // §3.41.3 "label" property
-  label_text label;
+  libgdiagnostics::message_buffer label;
   const property_spec_ref label_prop
     ("edge", "label", "3.41.3");
   if (auto label_obj
@@ -2493,7 +2489,7 @@ sarif_replayer::handle_edge_object (const json::object &edge_json_obj,
       label = make_plain_text_within_result_message (nullptr,
 						     *label_obj,
 						     nullptr);
-      if (!label.get ())
+      if (!label.m_inner)
 	return nullptr;
     }
 
@@ -2513,7 +2509,7 @@ sarif_replayer::handle_edge_object (const json::object &edge_json_obj,
   if (!dst_node.m_inner)
     return nullptr;
 
-  auto result = graph.add_edge (id, src_node, dst_node, label.get ());
+  auto result = graph.add_edge (id, src_node, dst_node, std::move (label));
 
   if (auto properties = maybe_get_property_bag (edge_json_obj))
     private_diagnostic_edge_set_property_bag (*result.m_inner,

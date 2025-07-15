@@ -28,6 +28,7 @@ Topic reference
    diagnostic-manager.rst
    diagnostics.rst
    message-formatting.rst
+   message-buffers.rst
    physical-locations.rst
    logical-locations.rst
    metadata.rst

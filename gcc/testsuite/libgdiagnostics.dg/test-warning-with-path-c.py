@@ -101,7 +101,7 @@ def test_sarif_output_for_warning_with_path(sarif):
         == '    PyList_Append(list, item);\n'
     assert tfl_2_loc['logicalLocations'] == location['logicalLocations']
     assert tfl_2_loc['message']['text'] \
-        == "when calling 'PyList_Append', passing NULL from (1) as argument 1"
+        == "when calling 'PyList_Append', passing NULL from [(1)](sarif:/runs/0/results/0/codeFlows/0/threadFlows/0/locations/0) as argument 1"
     assert tfl_2['nestingLevel'] == 0
     assert tfl_2['executionOrder'] == 3
 

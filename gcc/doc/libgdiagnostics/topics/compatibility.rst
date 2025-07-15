@@ -193,6 +193,7 @@ supporting command-line options and SARIF playback:
 
 ``LIBGDIAGNOSTICS_ABI_3``
 -------------------------
+
 ``LIBGDIAGNOSTICS_ABI_3`` covers the addition of these functions for
 working with directed graphs:
 
@@ -219,3 +220,45 @@ working with directed graphs:
   * :func:`diagnostic_node_set_location`
 
   * :func:`diagnostic_node_set_logical_location`
+
+.. _LIBGDIAGNOSTICS_ABI_4:
+
+``LIBGDIAGNOSTICS_ABI_4``
+-------------------------
+
+``LIBGDIAGNOSTICS_ABI_4`` covers the addition of these functions for
+working with :type:`diagnostic_message_buffer`.
+
+  * :func:`diagnostic_message_buffer_new`
+
+  * :func:`diagnostic_message_buffer_release`
+
+  * :func:`diagnostic_message_buffer_append_str`
+
+  * :func:`diagnostic_message_buffer_append_text`
+
+  * :func:`diagnostic_message_buffer_append_byte`
+
+  * :func:`diagnostic_message_buffer_append_printf`
+
+  * :func:`diagnostic_message_buffer_append_event_id`
+
+  * :func:`diagnostic_message_buffer_begin_url`
+
+  * :func:`diagnostic_message_buffer_end_url`
+
+  * :func:`diagnostic_message_buffer_begin_quote`
+
+  * :func:`diagnostic_message_buffer_end_quote`
+
+  * :func:`diagnostic_message_buffer_begin_color`
+
+  * :func:`diagnostic_message_buffer_end_color`
+
+  * :func:`diagnostic_message_buffer_dump`
+
+  * :func:`diagnostic_finish_via_msg_buf`
+
+  * :func:`diagnostic_add_location_with_label_via_msg_buf`
+
+  * :func:`diagnostic_execution_path_add_event_via_msg_buf`

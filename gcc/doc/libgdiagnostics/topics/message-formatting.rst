@@ -23,6 +23,11 @@ Message formatting
 Various libgdiagnostics entrypoints take a format string and
 variadic arguments.
 
+.. note::
+
+   See also :type:`diagnostic_message_buffer`, which offers an
+   alternative way to build up messages.
+
 The format strings take codes prefixed by ``%``, or ``%q`` to put
 the result in quotes.  For example::
 

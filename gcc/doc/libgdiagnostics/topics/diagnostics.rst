@@ -105,6 +105,24 @@ Diagnostics are
 
    All three parameters must be non-NULL.
 
+.. function:: void diagnostic_finish_via_msg_buf (diagnostic *diag, \
+			       diagnostic_message_buffer *msg_buf)
+
+   This is equivalent to :func:`diagnostic_finish`, but using a message
+   buffer rather than a format string and variadic arguments.
+
+   ``diag`` and ``msg_buf`` must both be non-NULL.
+
+   Calling this function transfers ownership of ``msg_buf`` to the
+   diagnostic - do not call :func:`diagnostic_message_buffer_release` on
+   it.
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_3`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_message_buffer
 
 Diagnostic groups
 *****************

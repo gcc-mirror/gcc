@@ -30,3 +30,4 @@ The following tutorial gives an overview of how to use libgdiagnostics.
    05-warnings.rst
    06-fix-it-hints.rst
    07-execution-paths.rst
+   08-message-buffers.rst

@@ -88,6 +88,28 @@ cross-references between events.  In particular FIXME
    Equivalent to :func:`diagnostic_execution_path_add_event`, but using a
    :type:`va_list` rather than directly taking variadic arguments.
 
+.. function:: diagnostic_event_id diagnostic_execution_path_add_event_via_msg_buf (diagnostic_execution_path *path, \
+						 const diagnostic_physical_location *physical_loc, \
+						 const diagnostic_logical_location *logical_loc, \
+						 unsigned stack_depth,
+						 diagnostic_message_buffer *msg_buf)
+
+   This is equivalent to :func:`diagnostic_execution_path_add_event` but
+   using a message buffer rather than a format string and variadic
+   arguments.
+
+   ``path`` and ``msg_buf`` must both be non-NULL.
+
+   Calling this function transfers ownership of ``msg_buf`` to the
+   path - do not call :func:`diagnostic_message_buffer_release` on it.
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_3`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_message_buffer
+
 Paths are printed to text sinks, and for SARIF sinks each path is added as
 a ``codeFlow`` object (see SARIF 2.1.0
 `§3.36 codeFlow object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790990>`_).

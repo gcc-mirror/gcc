@@ -109,6 +109,11 @@ class digraph : public object
     else
       m_description = nullptr;
   }
+  void
+  set_description (std::string desc)
+  {
+    m_description = std::make_unique<std::string> (std::move (desc));
+  }
 
   node *
   get_node_by_id (const char *id) const
@@ -239,6 +244,11 @@ class node : public object
       m_label = std::make_unique<std::string> (label);
     else
       m_label = nullptr;
+  }
+  void
+  set_label (std::string label)
+  {
+    m_label = std::make_unique<std::string> (std::move (label));
   }
 
   size_t
