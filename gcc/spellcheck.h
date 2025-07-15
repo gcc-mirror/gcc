@@ -39,13 +39,13 @@ find_closest_string (const char *target,
    class best_match.
    Specializations should provide the implementations of the following:
 
-     static size_t get_length (TYPE);
-     static const char *get_string (TYPE);
+     static size_t get_length (StringlikeType);
+     static const char *get_string (StringlikeType);
 
    get_string should return a non-NULL ptr, which does not need to be
    0-terminated.  */
 
-template <typename TYPE>
+template <typename StringlikeType>
 struct edit_distance_traits {};
 
 /* Specialization of edit_distance_traits for C-style strings.  */
@@ -74,23 +74,23 @@ extern edit_distance_t get_edit_distance_cutoff (size_t goal_len,
    string-like types (const char *, frontend identifiers, and preprocessor
    macros).
 
-   This type accumulates the best possible match against GOAL_TYPE for
-   a sequence of elements of CANDIDATE_TYPE, whilst minimizing the
+   This type accumulates the best possible match against GoalType for
+   a sequence of elements of CandidateType, whilst minimizing the
    number of calls to get_edit_distance and to
    edit_distance_traits<T>::get_length.  */
 
-template <typename GOAL_TYPE, typename CANDIDATE_TYPE>
+template <typename GoalType, typename CandidateType>
 class best_match
 {
  public:
-  typedef GOAL_TYPE goal_t;
-  typedef CANDIDATE_TYPE candidate_t;
+  typedef GoalType goal_t;
+  typedef CandidateType candidate_t;
   typedef edit_distance_traits<goal_t> goal_traits;
   typedef edit_distance_traits<candidate_t> candidate_traits;
 
   /* Constructor.  */
 
-  best_match (GOAL_TYPE goal,
+  best_match (goal_t goal,
 	      edit_distance_t best_distance_so_far = MAX_EDIT_DISTANCE)
   : m_goal (goal_traits::get_string (goal)),
     m_goal_len (goal_traits::get_length (goal)),
@@ -163,7 +163,7 @@ class best_match
      m_best_candidate, update (without recomputing the edit distance to
      the goal).  */
 
-  void set_best_so_far (CANDIDATE_TYPE best_candidate,
+  void set_best_so_far (candidate_t best_candidate,
 			edit_distance_t best_distance,
 			size_t best_candidate_len)
   {
