@@ -482,6 +482,8 @@
 ;; clobber for SVE predicates.
 (define_attr "pred_clobber" "any,no,yes" (const_string "any"))
 
+(define_attr "enable_ldapur" "any,no,yes" (const_string "any"))
+
 ;; [For compatibility with Arm in pipeline models]
 ;; Attribute that specifies whether or not the instruction touches fp
 ;; registers.
@@ -506,7 +508,14 @@
 	  (eq_attr "pred_clobber" "yes")
 	  (match_test "TARGET_SVE_PRED_CLOBBER"))
 	(eq_attr "pred_clobber" "any"))
-
+      (ior
+	(and
+	  (eq_attr "enable_ldapur" "yes")
+	  (match_test "TARGET_ENABLE_LDAPUR"))
+	(and
+	  (eq_attr "enable_ldapur" "no")
+	  (match_test "!TARGET_ENABLE_LDAPUR"))
+	(eq_attr "enable_ldapur" "any"))
       (ior
 	(eq_attr "arch" "any")
 

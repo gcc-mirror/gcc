@@ -679,13 +679,16 @@
 )
 
 (define_insn "aarch64_atomic_load<mode>_rcpc"
-  [(set (match_operand:ALLI 0 "register_operand" "=r")
+  [(set (match_operand:ALLI 0 "register_operand")
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 1 "aarch64_sync_memory_operand" "Q")
+      [(match_operand:ALLI 1 "aarch64_rcpc_memory_operand")
        (match_operand:SI 2 "const_int_operand")]			;; model
       UNSPECV_LDAP))]
   "TARGET_RCPC"
-  "ldapr<atomic_sfx>\t%<w>0, %1"
+  {@ [ cons: =0 , 1   ; attrs: enable_ldapur  ]
+     [ r        , Q   ; any                   ] ldapr<atomic_sfx>\t%<w>0, %1
+     [ r        , Ust ; yes                   ] ldapur<atomic_sfx>\t%<w>0, %1
+  }
 )
 
 (define_insn "aarch64_atomic_load<mode>"
@@ -705,21 +708,24 @@
 )
 
 (define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_zext"
-  [(set (match_operand:SD_HSDI 0 "register_operand" "=r")
+  [(set (match_operand:SD_HSDI 0 "register_operand")
     (zero_extend:SD_HSDI
       (unspec_volatile:ALLX
-        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+        [(match_operand:ALLX 1 "aarch64_rcpc_memory_operand")
          (match_operand:SI 2 "const_int_operand")]			;; model
        UNSPECV_LDAP)))]
   "TARGET_RCPC && (<SD_HSDI:sizen> > <ALLX:sizen>)"
-  "ldapr<ALLX:atomic_sfx>\t%w0, %1"
+  {@ [ cons: =0 , 1   ; attrs: enable_ldapur ]
+     [ r        , Q   ; any                  ] ldapr<ALLX:atomic_sfx>\t%w0, %1
+     [ r        , Ust ; yes                  ] ldapur<ALLX:atomic_sfx>\t%w0, %1
+  }
 )
 
 (define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_sext"
   [(set (match_operand:GPI  0 "register_operand" "=r")
     (sign_extend:GPI
       (unspec_volatile:ALLX
-        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+        [(match_operand:ALLX 1 "aarch64_rcpc_memory_operand" "Ust")
          (match_operand:SI 2 "const_int_operand")]			;; model
        UNSPECV_LDAP)))]
   "TARGET_RCPC2 && (<GPI:sizen> > <ALLX:sizen>)"

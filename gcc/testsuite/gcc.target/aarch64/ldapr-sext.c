@@ -33,7 +33,7 @@ TEST(s8_s64, s8, long long)
 /*
 **test_s16_s64:
 **...
-**	ldapursh	x0, \[x[0-9]+\]
+**	ldapursh	x0, \[x[0-9]+, [0-9]+\]
 **	ret
 */
 
@@ -42,7 +42,7 @@ TEST(s16_s64, s16, long long)
 /*
 **test_s32_s64:
 **...
-**	ldapursw	x0, \[x[0-9]+\]
+**	ldapursw	x0, \[x[0-9]+, [0-9]+\]
 **	ret
 */
 
@@ -60,7 +60,7 @@ TEST(s8_s32, s8, int)
 /*
 **test_s16_s32:
 **...
-**	ldapursh	w0, \[x[0-9]+\]
+**	ldapursh	w0, \[x[0-9]+, [0-9]+\]
 **	ret
 */
 

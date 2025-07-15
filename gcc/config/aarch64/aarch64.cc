@@ -18793,6 +18793,8 @@ aarch64_adjust_generic_arch_tuning (struct tune_params &current_tune)
   if (TARGET_SVE2)
     current_tune.extra_tuning_flags
       &= ~AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS;
+  if (!AARCH64_HAVE_ISA(V8_8A))
+    aarch64_tune_params.extra_tuning_flags |= AARCH64_EXTRA_TUNE_AVOID_LDAPUR;
 }
 
 static void
@@ -18857,7 +18859,10 @@ aarch64_override_options_internal (struct gcc_options *opts)
   /* Make a copy of the tuning parameters attached to the core, which
      we may later overwrite.  */
   aarch64_tune_params = *(tune->tune);
-  if (tune->tune == &generic_tunings)
+
+  if (tune->tune == &generic_tunings
+      || tune->tune == &generic_armv8_a_tunings
+      || tune->tune == &generic_armv9_a_tunings)
     aarch64_adjust_generic_arch_tuning (aarch64_tune_params);
 
   if (opts->x_aarch64_override_tune_string)

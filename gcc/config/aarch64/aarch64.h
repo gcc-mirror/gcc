@@ -493,6 +493,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
   (bool (aarch64_tune_params.extra_tuning_flags \
 	 & AARCH64_EXTRA_TUNE_CHEAP_FPMR_WRITE))
 
+/* Enable folding address computation into LDAPUR when RCPC2 is available.  */
+#define TARGET_ENABLE_LDAPUR (TARGET_RCPC2 \
+			      && !(aarch64_tune_params.extra_tuning_flags \
+				   & AARCH64_EXTRA_TUNE_AVOID_LDAPUR))
+
 /* Combinatorial tests.  */
 
 #define TARGET_SVE2_OR_SME2 \
