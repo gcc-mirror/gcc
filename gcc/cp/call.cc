@@ -412,6 +412,7 @@ build_call_a (tree function, int n, tree *argarray)
 	      /* We're disconnecting the initializer from its target,
 		 don't create a temporary.  */
 	      arg = TARGET_EXPR_INITIAL (arg);
+	    suppress_warning (arg, OPT_Wunused_result);
 	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
 	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
 	    CALL_EXPR_ARG (function, i) = arg;

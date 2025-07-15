@@ -690,6 +690,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		    && (REFERENCE_CLASS_P (op1) || DECL_P (op1)))
 		  op1 = build_fold_addr_expr (op1);
 
+		suppress_warning (op1, OPT_Wunused_result);
 		gimplify_and_add (op1, pre_p);
 	      }
 	    gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,

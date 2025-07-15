@@ -7305,6 +7305,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       && !(TREE_ADDRESSABLE (TREE_TYPE (*from_p))
 	   && TREE_CODE (*from_p) == CALL_EXPR))
     {
+      suppress_warning (*from_p, OPT_Wunused_result);
       gimplify_stmt (from_p, pre_p);
       gimplify_stmt (to_p, pre_p);
       *expr_p = NULL_TREE;

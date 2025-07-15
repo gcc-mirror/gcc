@@ -9849,6 +9849,8 @@ do_warn_unused_result (gimple_seq seq)
 	    break;
 	  if (gimple_call_internal_p (g))
 	    break;
+	  if (warning_suppressed_p (g, OPT_Wunused_result))
+	    break;
 
 	  /* This is a naked call, as opposed to a GIMPLE_CALL with an
 	     LHS.  All calls whose value is ignored should be
