@@ -3420,6 +3420,23 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 }
 
 
+/* Given an array descriptor expression DESCR and its data pointer DATA, decide
+   whether to either save the data pointer to a variable and use the variable or
+   use the data pointer expression directly without any intermediary variable.
+   */
+
+static bool
+save_descriptor_data (tree descr, tree data)
+{
+  return !(DECL_P (data)
+	   || (TREE_CODE (data) == ADDR_EXPR
+	       && DECL_P (TREE_OPERAND (data, 0)))
+	   || (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (descr))
+	       && TREE_CODE (descr) == COMPONENT_REF
+	       && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (descr, 0)))));
+}
+
+
 /* Translate expressions for the descriptor and data pointer of a SS.  */
 /*GCC ARRAYS*/
 
@@ -3466,17 +3483,14 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
          Otherwise we must evaluate it now to avoid breaking dependency
 	 analysis by pulling the expressions for elemental array indices
 	 inside the loop.  */
-      if (!(DECL_P (tmp)
-	    || (TREE_CODE (tmp) == ADDR_EXPR
-		&& DECL_P (TREE_OPERAND (tmp, 0)))
-	    || (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr))
-		&& TREE_CODE (se.expr) == COMPONENT_REF
-		&& GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (se.expr, 0))))))
+      if (save_descriptor_data (se.expr, tmp) && !ss->is_alloc_lhs)
 	tmp = gfc_evaluate_now (tmp, block);
       info->data = tmp;
 
       tmp = gfc_conv_array_offset (se.expr);
-      info->offset = gfc_evaluate_now (tmp, block);
+      if (!ss->is_alloc_lhs)
+	tmp = gfc_evaluate_now (tmp, block);
+      info->offset = tmp;
 
       /* Make absolutely sure that the saved_offset is indeed saved
 	 so that the variable is still accessible after the loops
@@ -4769,12 +4783,11 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 
 static void
 evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
-		tree desc, int dim, bool lbound, bool deferred)
+		tree desc, int dim, bool lbound, bool deferred, bool save_value)
 {
   gfc_se se;
   gfc_expr * input_val = values[dim];
   tree *output = &bounds[dim];
-
 
   if (input_val)
     {
@@ -4801,7 +4814,8 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
       *output = lbound ? gfc_conv_array_lbound (desc, dim) :
 			 gfc_conv_array_ubound (desc, dim);
     }
-  *output = gfc_evaluate_now (*output, block);
+  if (save_value)
+    *output = gfc_evaluate_now (*output, block);
 }
 
 
@@ -4834,18 +4848,18 @@ gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
 	      || ar->dimen_type[dim] == DIMEN_THIS_IMAGE);
   desc = info->descriptor;
   stride = ar->stride[dim];
-
+  bool save_value = !ss->is_alloc_lhs;
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
   evaluate_bound (block, info->start, ar->start, desc, dim, true,
-		  ar->as->type == AS_DEFERRED);
+		  ar->as->type == AS_DEFERRED, save_value);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
   evaluate_bound (block, info->end, ar->end, desc, dim, false,
-		  ar->as->type == AS_DEFERRED);
+		  ar->as->type == AS_DEFERRED, save_value);
 
 
   /* Calculate the stride.  */
@@ -4856,7 +4870,11 @@ gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, stride, gfc_array_index_type);
       gfc_add_block_to_block (block, &se.pre);
-      info->stride[dim] = gfc_evaluate_now (se.expr, block);
+      tree value = se.expr;
+      if (save_value)
+	info->stride[dim] = gfc_evaluate_now (value, block);
+      else
+	info->stride[dim] = value;
     }
 }
 
@@ -5991,7 +6009,10 @@ gfc_set_delta (gfc_loopinfo *loop)
 				     gfc_array_index_type,
 				     info->start[dim], tmp);
 
-	      info->delta[dim] = gfc_evaluate_now (tmp, &outer_loop->pre);
+	      if (ss->is_alloc_lhs)
+		info->delta[dim] = tmp;
+	      else
+		info->delta[dim] = gfc_evaluate_now (tmp, &outer_loop->pre);
 	    }
 	}
     }
@@ -8470,7 +8491,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  gcc_assert (n == codim - 1);
 	  evaluate_bound (&loop.pre, info->start, ar->start,
 			  info->descriptor, n + ndim, true,
-			  ar->as->type == AS_DEFERRED);
+			  ar->as->type == AS_DEFERRED, true);
 	  loop.from[n + loop.dimen] = info->start[n + ndim];
 	}
       else
@@ -11206,6 +11227,9 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
   gfc_ref * ref;
   gfc_symbol *sym;
 
+  if (!flag_realloc_lhs)
+    return false;
+
   if (!expr->ref)
     return false;
 
@@ -11330,6 +11354,55 @@ concat_str_length (gfc_expr* expr)
 }
 
 
+/* Among the scalarization chain of LOOP, find the element associated with an
+   allocatable array on the lhs of an assignment and evaluate its fields
+   (bounds, offset, etc) to new variables, putting the new code in BLOCK.  This
+   function is to be called after putting the reallocation code in BLOCK and
+   before the beginning of the scalarization loop body.
+
+   The fields to be saved are expected to hold on entry to the function
+   expressions referencing the array descriptor.  Especially the expressions
+   shouldn't be already temporary variable references as the value saved before
+   reallocation would be incorrect after reallocation.
+   At the end of the function, the expressions have been replaced with variable
+   references.  */
+
+static void
+update_reallocated_descriptor (stmtblock_t *block, gfc_loopinfo *loop)
+{
+  for (gfc_ss *s = loop->ss; s != gfc_ss_terminator; s = s->loop_chain)
+    {
+      if (!s->is_alloc_lhs)
+	continue;
+
+      gcc_assert (s->info->type == GFC_SS_SECTION);
+      gfc_array_info *info = &s->info->data.array;
+
+#define SAVE_VALUE(value) \
+	      do \
+		{ \
+		  value = gfc_evaluate_now (value, block); \
+		} \
+	      while (0)
+
+      if (save_descriptor_data (info->descriptor, info->data))
+	SAVE_VALUE (info->data);
+      SAVE_VALUE (info->offset);
+      info->saved_offset = info->offset;
+      for (int i = 0; i < s->dimen; i++)
+	{
+	  int dim = s->dim[i];
+	  SAVE_VALUE (info->start[dim]);
+	  SAVE_VALUE (info->end[dim]);
+	  SAVE_VALUE (info->stride[dim]);
+	  SAVE_VALUE (info->delta[dim]);
+	}
+
+#undef SAVE_VALUE
+    }
+}
+
+
 /* Allocate the lhs of an assignment to an allocatable array, otherwise
    reallocate it.  */
 
@@ -11368,7 +11441,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree lbd;
   tree class_expr2 = NULL_TREE;
   int n;
-  int dim;
   gfc_array_spec * as;
   bool coarray = (flag_coarray == GFC_FCOARRAY_LIB
 		  && gfc_caf_attr (expr1, true).codimension);
@@ -11736,21 +11808,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
      running offset.  Use the saved_offset instead.  */
   tmp = gfc_conv_descriptor_offset (desc);
   gfc_add_modify (&fblock, tmp, offset);
-  if (linfo->saved_offset
-      && VAR_P (linfo->saved_offset))
-    gfc_add_modify (&fblock, linfo->saved_offset, tmp);
-
-  /* Now set the deltas for the lhs.  */
-  for (n = 0; n < expr1->rank; n++)
-    {
-      tmp = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
-      dim = lss->dim[n];
-      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			     gfc_array_index_type, tmp,
-			     loop->from[dim]);
-      if (linfo->delta[dim] && VAR_P (linfo->delta[dim]))
-	gfc_add_modify (&fblock, linfo->delta[dim], tmp);
-    }
 
   /* Take into account _len of unlimited polymorphic entities, so that span
      for array descriptors and allocation sizes are computed correctly.  */
@@ -11972,18 +12029,18 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tmp = build3_v (COND_EXPR, cond_null, alloc_expr, realloc_expr);
   gfc_add_expr_to_block (&fblock, tmp);
 
-  /* Make sure that the scalarizer data pointer is updated.  */
-  if (linfo->data && VAR_P (linfo->data))
-    {
-      tmp = gfc_conv_descriptor_data_get (desc);
-      gfc_add_modify (&fblock, linfo->data, tmp);
-    }
-
   /* Add the label for same shape lhs and rhs.  */
   tmp = build1_v (LABEL_EXPR, jump_label2);
   gfc_add_expr_to_block (&fblock, tmp);
 
-  return gfc_finish_block (&fblock);
+  tree realloc_code = gfc_finish_block (&fblock);
+
+  stmtblock_t result_block;
+  gfc_init_block (&result_block);
+  gfc_add_expr_to_block (&result_block, realloc_code);
+  update_reallocated_descriptor (&result_block, loop);
+
+  return gfc_finish_block (&result_block);
 }
 
 
