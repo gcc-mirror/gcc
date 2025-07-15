@@ -1,6 +1,6 @@
 // C++26 P2686R4 - constexpr structured bindings
 // { dg-do compile { target c++11 } }
-// { dg-options "" }
+// { dg-options "-fno-implicit-constexpr" }
 
 namespace std {
   template <typename T> struct tuple_size;
