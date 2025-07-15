@@ -543,6 +543,12 @@
 ;; elements.
 (define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
 
+;; Like SVE_FULL_HSF, but selectively enables those modes that are valid
+;; for the variant of the SVE2 FP8 FDOT instruction associated with that
+;; mode.
+(define_mode_iterator SVE_FULL_HSF_FP8_FDOT [(VNx4SF "TARGET_SSVE_FP8DOT4")
+					     (VNx8HF "TARGET_SSVE_FP8DOT2")])
+
 ;; Partial SVE floating-point vector modes that have 16-bit or 32-bit
 ;; elements.
 (define_mode_iterator SVE_PARTIAL_HSF [VNx2HF VNx4HF VNx2SF])
