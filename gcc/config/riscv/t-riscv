@@ -194,7 +194,8 @@ RISCV_EXT_DEFS = \
   $(srcdir)/config/riscv/riscv-ext.def \
   $(srcdir)/config/riscv/riscv-ext-sifive.def \
   $(srcdir)/config/riscv/riscv-ext-thead.def \
-  $(srcdir)/config/riscv/riscv-ext-ventana.def
+  $(srcdir)/config/riscv/riscv-ext-ventana.def \
+  $(srcdir)/config/riscv/riscv-ext-mips.def
 
 $(srcdir)/config/riscv/riscv-ext.opt: $(RISCV_EXT_DEFS)
 

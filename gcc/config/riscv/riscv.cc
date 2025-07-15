@@ -87,6 +87,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "riscv-vector-costs.h"
 #include "riscv-subset.h"
 
+/* Target variants that support full conditional move.  */
+#define	TARGET_COND_MOV						\
+   (TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_XMIPSCMOV)
+
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
   (GET_CODE (X) == UNSPEC					\
@@ -4169,7 +4173,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case IF_THEN_ELSE:
-      if ((TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+      if (TARGET_COND_MOV
 	  && reg_or_0_operand (XEXP (x, 1), mode)
 	  && sfb_alu_operand (XEXP (x, 2), mode)
 	  && comparison_operator (XEXP (x, 0), VOIDmode))
@@ -5487,6 +5491,68 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
   emit_jump_insn (gen_condjump (condition, label));
 }
 
+/* canonicalization of the comparands.  */
+void
+canonicalize_comparands (rtx_code code, rtx *op0, rtx *op1)
+{
+  /* An integer comparison must be comparing WORD_MODE objects.
+     Extend the comparison arguments as necessary.  */
+  if ((INTEGRAL_MODE_P (GET_MODE (*op0)) && GET_MODE (*op0) != word_mode)
+      || (INTEGRAL_MODE_P (GET_MODE (*op1)) && GET_MODE (*op1) != word_mode))
+    riscv_extend_comparands (code, op0, op1);
+
+  /* We might have been handed back a SUBREG.  Just to make things
+     easy, force it into a REG.  */
+  if (!REG_P (*op0) && !CONST_INT_P (*op0))
+    *op0 = force_reg (word_mode, *op0);
+  if (!REG_P (*op1) && !CONST_INT_P (*op1))
+    *op1 = force_reg (word_mode, *op1);
+}
+
+/* Emit target specific conditional move like TARGET_XMIPSCMOV etc.  */
+bool
+riscv_target_conditional_move (rtx dest, rtx op0, rtx op1, rtx_code code,
+				rtx cons, rtx alt)
+{
+  machine_mode dst_mode = GET_MODE (dest);
+  rtx target;
+
+  /* force the operands to the register.  */
+  cons = force_reg (dst_mode, cons);
+  alt = force_reg (dst_mode, alt);
+
+  if (TARGET_XMIPSCMOV)
+    {
+      if (code == EQ || code == NE)
+	{
+	  op0 = riscv_zero_if_equal (op0, op1);
+	  op1 = const0_rtx;
+	}
+      else
+	{
+	  target = gen_reg_rtx (GET_MODE (op0));
+	  riscv_emit_int_order_test (code, 0, target, op0, op1);
+	  op0 = target;
+	  op1 = const0_rtx;
+	  code = NE;
+	}
+      riscv_emit_int_compare (&code, &op0, &op1);
+      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+      emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (dst_mode,
+							   cond, cons, alt)));
+      return true;
+    }
+  /* TARGET_SFB_ALU || TARGET_XTHEADCONDMOV.  */
+  else
+   {
+     riscv_emit_int_compare (&code, &op0, &op1, !TARGET_SFB_ALU);
+     rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+     emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (dst_mode, cond,
+							 cons, alt)));
+     return true;
+   }
+}
+
 /* Emit a cond move: If OP holds, move CONS to DEST; else move ALT to DEST.
    Return 0 if expansion failed.  */
 
@@ -5539,34 +5605,22 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       /* If we need more special cases, add them here.  */
     }
 
+
   if (((TARGET_ZICOND_LIKE
 	|| (arith_operand (cons, dst_mode) && arith_operand (alt, dst_mode)))
        && GET_MODE_CLASS (dst_mode) == MODE_INT
        && GET_MODE_CLASS (cond_mode) == MODE_INT)
-      || TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+       || TARGET_COND_MOV)
     {
       machine_mode mode0 = GET_MODE (op0);
-      machine_mode mode1 = GET_MODE (op1);
 
-      /* An integer comparison must be comparing WORD_MODE objects.
-	 Extend the comparison arguments as necessary.  */
-      if ((INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
-	  || (INTEGRAL_MODE_P (mode1) && mode1 != word_mode))
-	riscv_extend_comparands (code, &op0, &op1);
-
-      /* We might have been handed back a SUBREG.  Just to make things
-	 easy, force it into a REG.  */
-      if (!REG_P (op0) && !CONST_INT_P (op0))
-	op0 = force_reg (word_mode, op0);
-      if (!REG_P (op1) && !CONST_INT_P (op1))
-	op1 = force_reg (word_mode, op1);
+      canonicalize_comparands (code,&op0,&op1);
 
       /* In the fallback generic case use DST_MODE rather than WORD_MODE
 	 for the output of the SCC instruction, to match the mode of the NEG
 	 operation below.  The output of SCC is 0 or 1 boolean, so it is
 	 valid for input in any scalar integer mode.  */
-      rtx tmp = gen_reg_rtx ((TARGET_ZICOND_LIKE
-			      || TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+      rtx tmp = gen_reg_rtx ((TARGET_ZICOND_LIKE || TARGET_COND_MOV)
 			     ? word_mode : dst_mode);
       bool invert = false;
 
@@ -5603,25 +5657,12 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  op0 = XEXP (op, 0);
 	  op1 = XEXP (op, 1);
 	}
-      else if (!TARGET_ZICOND_LIKE && !TARGET_SFB_ALU && !TARGET_XTHEADCONDMOV)
+      else if (!TARGET_ZICOND_LIKE && !TARGET_COND_MOV)
 	riscv_expand_int_scc (tmp, code, op0, op1, &invert);
 
-      if (TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
-	{
-	  riscv_emit_int_compare (&code, &op0, &op1, !TARGET_SFB_ALU);
-	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+      if (TARGET_COND_MOV)
+	return riscv_target_conditional_move (dest, op0, op1, code, cons, alt);
 
-	  /* The expander is a bit loose in its specification of the true
-	     arm of the conditional move.  That allows us to support more
-	     cases for extensions which are more general than SFB.  But
-	     does mean we need to force CONS into a register at this point.  */
-	  cons = force_reg (dst_mode, cons);
-	  /* With XTheadCondMov we need to force ALT into a register too.  */
-	  alt = force_reg (dst_mode, alt);
-	  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (dst_mode, cond,
-							      cons, alt)));
-	  return true;
-	}
       else if (!TARGET_ZICOND_LIKE)
 	{
 	  if (invert)

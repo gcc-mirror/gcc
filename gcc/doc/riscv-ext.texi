@@ -714,4 +714,8 @@
 @tab 1.0
 @tab Ventana integer conditional operations extension
 
+@item xmipscmov
+@tab 1.0
+@tab Mips conditional move extension
+
 @end multitable

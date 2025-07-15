@@ -169,7 +169,6 @@ RISCV_CORE("xiangshan-kunminghu",   "rv64imafdcbvh_sdtrig_sha_shcounterenw_"
 			      "zvfhmin_zvkt_zvl128b_zvl32b_zvl64b",
 			      "xiangshan-kunminghu")
 
-RISCV_CORE("mips-p8700",     	"rv64imafd_zicsr_zmmul_"
-			      "zaamo_zalrsc_zba_zbb",
+RISCV_CORE("mips-p8700",      "rv64imfd_zicsr_zifencei_zalrsc_zba_zbb",
 			      "mips-p8700")
 #undef RISCV_CORE
