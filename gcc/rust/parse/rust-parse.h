@@ -227,7 +227,7 @@ private:
 
   // Path-related
   AST::SimplePath parse_simple_path ();
-  AST::SimplePathSegment parse_simple_path_segment ();
+  AST::SimplePathSegment parse_simple_path_segment (int base_peek = 0);
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
   AST::PathIdentSegment parse_path_ident_segment ();
