@@ -638,6 +638,23 @@ package body Exp_Util is
                end if;
 
             else
+               --  For GNAT objects with indefinite nominal subtypes will have
+               --  an itype constrained by their initialization expression
+               --  (except for class-wide type). For GNATprove, those objects
+               --  will keep their nominal subtype unconstrained, while
+               --  actually those objects are constrained; see call from
+               --  Analyze_Object_Declaration to Expand_Subtype_From_Expr.
+
+               if Ekind (Ent) in E_Constant | E_Variable
+                  and then not Is_Definite_Subtype (Etype (Ent))
+                  and then not Is_Class_Wide_Type (Etype (Ent))
+                  and then No (Renamed_Object (Ent))
+               then
+                  pragma Assert
+                    (GNATprove_Mode
+                     and then Present (Expression (Parent (Ent))));
+                  return True;
+               end if;
 
                --  If the prefix is not a variable or is aliased, then
                --  definitely true; if it's a formal parameter without an
