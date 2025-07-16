@@ -509,9 +509,6 @@ namespace __unicode
       constexpr _Iter
       _M_curr() const { return _M_first_and_curr._M_curr; }
 
-      // Buffer holding the individual code units of the current code point.
-      array<value_type, 4 / sizeof(_ToFmt)> _M_buf;
-
       // _M_first is not needed for non-bidirectional ranges.
       template<typename _It>
 	struct _First_and_curr
@@ -553,12 +550,15 @@ namespace __unicode
       // start (or end, for non-forward iterators) of the current code point.
       _First_and_curr<_Iter> _M_first_and_curr;
 
+      // The end of the underlying input range.
+      [[no_unique_address]] _Sent _M_last;
+
+      // Buffer holding the individual code units of the current code point.
+      array<value_type, 4 / sizeof(_ToFmt)> _M_buf;
+
       uint8_t _M_buf_index = 0;    // Index of current code unit in the buffer.
       uint8_t _M_buf_last = 0;     // Number of code units in the buffer.
       uint8_t _M_to_increment = 0; // How far to advance _M_curr on increment.
-
-      // The end of the underlying input range.
-      [[no_unique_address]] _Sent _M_last;
 
       template<typename _FromFmt2, typename _ToFmt2,
 	       input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
