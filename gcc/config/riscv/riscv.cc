@@ -9077,7 +9077,7 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, temp1,
+			plus_constant (Pmode, temp2,
 				       initial_cfa_offset + rounded_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
