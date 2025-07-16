@@ -2773,16 +2773,17 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
   bitmap exprset = value_expressions[lookfor];
   bitmap_iterator bi;
   unsigned int i;
-  EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
-    {
-      pre_expr temp = expression_for_id (i);
-      /* We cannot insert random REFERENCE expressions at arbitrary
-	 places.  We can insert NARYs which eventually re-materializes
-	 its operand values.  */
-      if (temp->kind == NARY)
-	return create_expression_by_pieces (block, temp, stmts,
-					    TREE_TYPE (op));
-    }
+  if (exprset)
+    EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
+      {
+	pre_expr temp = expression_for_id (i);
+	/* We cannot insert random REFERENCE expressions at arbitrary
+	   places.  We can insert NARYs which eventually re-materializes
+	   its operand values.  */
+	if (temp->kind == NARY)
+	  return create_expression_by_pieces (block, temp, stmts,
+					      TREE_TYPE (op));
+      }
 
   /* Defer.  */
   return NULL_TREE;
