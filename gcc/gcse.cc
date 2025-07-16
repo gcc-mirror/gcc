@@ -4238,8 +4238,15 @@ execute_hardreg_pre (void)
     {
       int changed;
       current_hardreg_regno = regnos[i];
+      if (!df_regs_ever_live_p (current_hardreg_regno))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Skipping hardreg PRE for regno %d, which is never live\n",
+		     current_hardreg_regno);
+	  continue;
+	}
       if (dump_file)
-	fprintf(dump_file, "Entering hardreg PRE for regno %d\n",
+	fprintf (dump_file, "Entering hardreg PRE for regno %d\n",
 		current_hardreg_regno);
       delete_unreachable_blocks ();
       df_analyze ();
