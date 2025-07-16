@@ -40,6 +40,12 @@
    - either they are defined as ENOENT (vx7r2);
    - or the corresponding system includes are not provided (Helix Cert).  */
 
+#if __has_include ("strings.h")
+/* On VxWorks6, FD_ZERO uses bzero, and index is also declared in strings.h,
+   but since it's not a standard header, don't require it.  */
+#include "strings.h"
+#endif
+
 #if __has_include ("dosFsLib.h")
 /* On helix-cert, this include is only provided for RTPs.  */
 #include "dosFsLib.h"
