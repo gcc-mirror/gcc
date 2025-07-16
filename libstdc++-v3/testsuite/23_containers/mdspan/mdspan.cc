@@ -2,7 +2,7 @@
 #include <mdspan>
 
 #include <testsuite_hooks.h>
-#include "extents/int_like.h"
+#include "int_like.h"
 #include "layout_like.h"
 
 constexpr auto dyn = std::dynamic_extent;
@@ -317,32 +317,50 @@ test_from_accessor()
   return true;
 }
 
-void
-test_from_int_like()
-{
-  constexpr size_t n = 3*5*7;
-  std::array<double, n> storage{};
+template<typename MDSpan, typename Pointer, typename... Ints>
+  concept has_pack_ctor = requires
+  {
+    { MDSpan(Pointer{}, Ints(0)...) } -> std::same_as<MDSpan>;
+  };
 
-  auto verify = [&](auto md)
-    {
-      VERIFY(md.data_handle() == storage.data());
-      VERIFY(md.extent(0) == 3);
-      VERIFY(md.extent(1) == 5);
-      VERIFY(md.extent(2) == 7);
+template<typename CustomInt, bool ValidForPacks, bool ValidForArrays>
+  constexpr bool
+  test_from_int_like()
+  {
+    constexpr size_t n = 3*5*7;
+    std::array<double, n> storage{};
 
-      VERIFY((md[IntLike(0), 0, IntLike(0)]) == 0.0);
-      auto zero = std::array{IntLike(0), IntLike(0), IntLike(0)};
-      auto zero_view = std::span<IntLike, 3>{zero};
-      VERIFY((md[zero]) == 0.0);
-      VERIFY((md[zero_view]) == 0.0);
-    };
+    auto verify = [&](auto md)
+      {
+	VERIFY(md.data_handle() == storage.data());
+	VERIFY(md.extent(0) == 3);
+	VERIFY(md.extent(1) == 5);
+	VERIFY(md.extent(2) == 7);
+      };
 
-  auto shape = std::array{IntLike(3), IntLike(5), IntLike(7)};
-  auto shape_view = std::span<IntLike, 3>{shape};
-  verify(std::mdspan(storage.data(), IntLike(3), 5, IntLike(7)));
-  verify(std::mdspan(storage.data(), shape));
-  verify(std::mdspan(storage.data(), shape_view));
-}
+    static_assert(has_pack_ctor<std::mdspan<float, std::dextents<int, 3>>,
+	float*, CustomInt, int, CustomInt> == ValidForPacks);
+
+    static_assert(std::is_constructible_v<
+	std::mdspan<float, std::dextents<int, 3>>, float*,
+	std::span<CustomInt, 3>> == ValidForArrays);
+
+    static_assert(std::is_constructible_v<
+	std::mdspan<float, std::dextents<int, 3>>, float*,
+	std::array<CustomInt, 3>> == ValidForArrays);
+
+    if constexpr (ValidForPacks)
+      verify(std::mdspan(storage.data(), CustomInt(3), 5, CustomInt(7)));
+
+    if constexpr (ValidForArrays)
+      {
+	auto shape = std::array{CustomInt(3), CustomInt(5), CustomInt(7)};
+	auto shape_view = std::span<CustomInt, 3>{shape};
+	verify(std::mdspan(storage.data(), shape));
+	verify(std::mdspan(storage.data(), shape_view));
+      }
+    return true;
+  }
 
 template<typename T, bool NothrowConstructible = true,
 	 bool NothrowAssignable = true>
@@ -491,32 +509,53 @@ test_empty_all()
   return true;
 }
 
-constexpr bool
-test_access()
+template<typename MDSpan, typename... Args>
+concept indexable = requires (MDSpan md, Args... args)
 {
-  using Extents = std::extents<int, 3, 5, 7>;
-  auto exts = Extents{};
+  { md[args...] } -> std::same_as<typename MDSpan::reference>;
+};
 
-  auto mapping = std::layout_left::mapping(exts);
-  constexpr size_t n = mapping.required_span_size();
-  std::array<double, n> storage{};
+template<typename Int, bool ValidForPacks, bool ValidForArrays>
+  constexpr bool
+  test_access()
+  {
+    using Extents = std::extents<int, 3, 5, 7>;
+    auto exts = Extents{};
 
-  auto md = std::mdspan(storage.data(), mapping);
-  static_assert(std::__mdspan::__mapping_alike<decltype(md)>);
+    auto mapping = std::layout_left::mapping(exts);
+    constexpr size_t n = mapping.required_span_size();
+    std::array<double, n> storage{};
 
-  for(int i = 0; i < exts.extent(0); ++i)
-    for(int j = 0; j < exts.extent(1); ++j)
-      for(int k = 0; k < exts.extent(2); ++k)
-	{
-	  std::array<int, 3> ijk{i, j, k};
-	  storage[mapping(i, j, k)] = 1.0;
-	  VERIFY((md[i, j, k]) == 1.0);
-	  VERIFY((md[ijk]) == 1.0);
-	  VERIFY((md[std::span(ijk)]) == 1.0);
-	  storage[mapping(i, j, k)] = 0.0;
-	}
-  return true;
-}
+    auto md = std::mdspan(storage.data(), mapping);
+    using MDSpan = decltype(md);
+
+    for(int i = 0; i < exts.extent(0); ++i)
+      for(int j = 0; j < exts.extent(1); ++j)
+	for(int k = 0; k < exts.extent(2); ++k)
+	  {
+	    storage[mapping(i, j, k)] = 1.0;
+	    if constexpr (ValidForPacks)
+	      VERIFY((md[Int(i), Int(j), Int(k)]) == 1.0);
+
+	    if constexpr (ValidForArrays)
+	      {
+		std::array<Int, 3> ijk{Int(i), Int(j), Int(k)};
+		VERIFY((md[ijk]) == 1.0);
+		VERIFY((md[std::span(ijk)]) == 1.0);
+	      }
+	    storage[mapping(i, j, k)] = 0.0;
+	  }
+
+    if constexpr (!ValidForPacks)
+      static_assert(!indexable<MDSpan, Int, int, Int>);
+
+    if constexpr (!ValidForArrays)
+      {
+	static_assert(!indexable<MDSpan, std::array<Int, 3>>);
+	static_assert(!indexable<MDSpan, std::span<Int, 3>>);
+      }
+    return true;
+  }
 
 constexpr bool
 test_swap()
@@ -650,14 +689,20 @@ main()
   test_from_accessor();
   static_assert(test_from_accessor());
 
-  test_from_int_like();
+  test_from_int_like<int, true, true>();
+  static_assert(test_from_int_like<int, true, true>());
+  test_from_int_like<IntLike, true, true>();
+  test_from_int_like<ThrowingInt, false, false>();
+
   test_from_opaque_accessor();
   test_from_base_class_accessor();
   test_from_mapping_like();
   static_assert(test_from_mapping_like());
 
-  test_access();
-  static_assert(test_access());
+  test_access<int, true, true>();
+  static_assert(test_access<int, true, true>());
+  test_access<IntLike, true, true>();
+  test_access<ThrowingInt, false, false>();
 
   test_swap();
   static_assert(test_swap());

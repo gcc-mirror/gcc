@@ -1,6 +1,7 @@
 // { dg-do run { target c++23 } }
 #include <mdspan>
 
+#include "../int_like.h"
 #include <cstdint>
 #include <testsuite_hooks.h>
 
@@ -59,14 +60,13 @@ template<typename Mapping, size_t N>
     return ret;
   }
 
-template<typename Mapping, typename... Indices>
+template<typename Int, typename Mapping, typename... Indices>
   constexpr void
   test_linear_index(const Mapping& m, Indices... i)
   {
     using index_type = typename Mapping::index_type;
     index_type expected = linear_index(m, std::array{index_type(i)...});
-    VERIFY(m(i...) == expected);
-    VERIFY(m(uint8_t(i)...) == expected);
+    VERIFY(m(Int(i)...) == expected);
   }
 
 template<typename Layout>
@@ -77,26 +77,26 @@ template<typename Layout>
     VERIFY(m() == 0);
   }
 
-template<typename Layout>
+template<typename Layout, typename Int>
   constexpr void
   test_linear_index_1d()
   {
     typename Layout::mapping<std::extents<int, 5>> m;
-    test_linear_index(m, 0);
-    test_linear_index(m, 1);
-    test_linear_index(m, 4);
+    test_linear_index<Int>(m, 0);
+    test_linear_index<Int>(m, 1);
+    test_linear_index<Int>(m, 4);
   }
 
-template<typename Layout>
+template<typename Layout, typename Int>
   constexpr void
   test_linear_index_2d()
   {
     typename Layout::mapping<std::extents<int, 3, 256>> m;
-    test_linear_index(m, 0, 0);
-    test_linear_index(m, 1, 0);
-    test_linear_index(m, 0, 1);
-    test_linear_index(m, 1, 1);
-    test_linear_index(m, 2, 4);
+    test_linear_index<Int>(m, 0, 0);
+    test_linear_index<Int>(m, 1, 0);
+    test_linear_index<Int>(m, 0, 1);
+    test_linear_index<Int>(m, 1, 1);
+    test_linear_index<Int>(m, 2, 4);
   }
 
 template<typename Layout>
@@ -141,44 +141,34 @@ template<>
       }
   };
 
-template<typename Layout>
+template<typename Layout, typename Int>
   constexpr void
   test_linear_index_3d()
   {
     auto m = MappingFactory<Layout>::create(std::extents(3, 5, 7));
-    test_linear_index(m, 0, 0, 0);
-    test_linear_index(m, 1, 0, 0);
-    test_linear_index(m, 0, 1, 0);
-    test_linear_index(m, 0, 0, 1);
-    test_linear_index(m, 1, 1, 0);
-    test_linear_index(m, 2, 4, 6);
+    test_linear_index<Int>(m, 0, 0, 0);
+    test_linear_index<Int>(m, 1, 0, 0);
+    test_linear_index<Int>(m, 0, 1, 0);
+    test_linear_index<Int>(m, 0, 0, 1);
+    test_linear_index<Int>(m, 1, 1, 0);
+    test_linear_index<Int>(m, 2, 4, 6);
   }
 
-struct IntLikeA
-{
-  operator int()
-  { return 0; }
-};
-
-struct IntLikeB
-{
-  operator int() noexcept
-  { return 0; }
-};
-
-struct NotIntLike
-{ };
+template<typename Mapping, typename... Ints>
+  concept has_linear_index = requires (Mapping m)
+  {
+    { m(Ints(0)...) } -> std::same_as<typename Mapping::index_type>;
+  };
 
 template<typename Layout>
   constexpr void
   test_has_linear_index_0d()
   {
     using Mapping = typename Layout::mapping<std::extents<int>>;
-    static_assert(std::invocable<Mapping>);
-    static_assert(!std::invocable<Mapping, int>);
-    static_assert(!std::invocable<Mapping, IntLikeA>);
-    static_assert(!std::invocable<Mapping, IntLikeB>);
-    static_assert(!std::invocable<Mapping, NotIntLike>);
+    static_assert(has_linear_index<Mapping>);
+    static_assert(!has_linear_index<Mapping, int>);
+    static_assert(!has_linear_index<Mapping, IntLike>);
+    static_assert(!has_linear_index<Mapping, NotIntLike>);
   }
 
 template<typename Layout>
@@ -186,12 +176,13 @@ template<typename Layout>
   test_has_linear_index_1d()
   {
     using Mapping = typename Layout::mapping<std::extents<int, 3>>;
-    static_assert(std::invocable<Mapping, int>);
-    static_assert(!std::invocable<Mapping>);
-    static_assert(!std::invocable<Mapping, IntLikeA>);
-    static_assert(std::invocable<Mapping, IntLikeB>);
-    static_assert(!std::invocable<Mapping, NotIntLike>);
-    static_assert(std::invocable<Mapping, double>);
+    static_assert(!has_linear_index<Mapping>);
+    static_assert(has_linear_index<Mapping, int>);
+    static_assert(has_linear_index<Mapping, double>);
+    static_assert(has_linear_index<Mapping, IntLike>);
+    static_assert(!has_linear_index<Mapping, ThrowingInt>);
+    static_assert(!has_linear_index<Mapping, NotIntLike>);
+    static_assert(!has_linear_index<Mapping, int, int>);
   }
 
 template<typename Layout>
@@ -199,22 +190,23 @@ template<typename Layout>
   test_has_linear_index_2d()
   {
     using Mapping = typename Layout::mapping<std::extents<int, 3, 5>>;
-    static_assert(std::invocable<Mapping, int, int>);
-    static_assert(!std::invocable<Mapping, int>);
-    static_assert(!std::invocable<Mapping, IntLikeA, int>);
-    static_assert(std::invocable<Mapping, IntLikeB, int>);
-    static_assert(!std::invocable<Mapping, NotIntLike, int>);
-    static_assert(std::invocable<Mapping, double, double>);
+    static_assert(!has_linear_index<Mapping, int>);
+    static_assert(has_linear_index<Mapping, int, int>);
+    static_assert(has_linear_index<Mapping, double, double>);
+    static_assert(has_linear_index<Mapping, IntLike, int>);
+    static_assert(!has_linear_index<Mapping, ThrowingInt, int>);
+    static_assert(!has_linear_index<Mapping, NotIntLike, int>);
+    static_assert(!has_linear_index<Mapping, int, int, int>);
   }
 
-template<typename Layout>
+template<typename Layout, typename Int>
   constexpr bool
   test_linear_index_all()
   {
     test_linear_index_0d<Layout>();
-    test_linear_index_1d<Layout>();
-    test_linear_index_2d<Layout>();
-    test_linear_index_3d<Layout>();
+    test_linear_index_1d<Layout, Int>();
+    test_linear_index_2d<Layout, Int>();
+    test_linear_index_3d<Layout, Int>();
     test_has_linear_index_0d<Layout>();
     test_has_linear_index_1d<Layout>();
     test_has_linear_index_2d<Layout>();
@@ -527,7 +519,13 @@ template<typename Layout>
   constexpr bool
   test_mapping_all()
   {
-    test_linear_index_all<Layout>();
+    test_linear_index_all<Layout, uint8_t>();
+    test_linear_index_all<Layout, int>();
+    if !consteval
+      {
+	test_linear_index_all<Layout, IntLike>();
+      }
+
     test_required_span_size_all<Layout>();
     test_stride_all<Layout>();
 

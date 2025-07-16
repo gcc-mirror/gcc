@@ -1,6 +1,7 @@
 // { dg-do run { target c++23 } }
 #include <mdspan>
 
+#include "../int_like.h"
 #include <testsuite_hooks.h>
 
 constexpr size_t dyn = std::dynamic_extent;
@@ -42,21 +43,6 @@ test_ctor_default_stride_all()
   return true;
 }
 
-struct IntLikeA
-{
-  operator int()
-  { return 0; }
-};
-
-struct IntLikeB
-{
-  operator int() noexcept
-  { return 0; }
-};
-
-struct NotIntLike
-{ };
-
 template<typename E, typename E_arg, typename T, size_t N, bool Expected>
 constexpr void
 test_stride_constructible()
@@ -77,8 +63,8 @@ test_stride_constructible_all()
   using E2 = std::extents<int, dyn>;
 
   test_stride_constructible<E0, E0, int, 0, true>();
-  test_stride_constructible<E0, E0, IntLikeA, 0, false>();
-  test_stride_constructible<E0, E0, IntLikeB, 0, true>();
+  test_stride_constructible<E0, E0, IntLike, 0, true>();
+  test_stride_constructible<E0, E0, ThrowingInt, 0, false>();
   test_stride_constructible<E0, E0, NotIntLike, 0, false>();
   test_stride_constructible<E1, E1, int, 1, true>();
   test_stride_constructible<E2, E1, int, 1, true>();
