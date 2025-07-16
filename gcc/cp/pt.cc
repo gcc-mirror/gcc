@@ -17986,9 +17986,7 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
     return decl;
 
   /* Handle OpenMP iterators.  */
-  if (TREE_CODE (decl) == TREE_LIST
-      && TREE_PURPOSE (decl)
-      && TREE_CODE (TREE_PURPOSE (decl)) == TREE_VEC)
+  if (OMP_ITERATOR_DECL_P (decl))
     {
       tree ret;
       if (iterator_cache[0] == TREE_PURPOSE (decl))

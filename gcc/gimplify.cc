@@ -9527,9 +9527,7 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
       {
 	tree t = OMP_CLAUSE_DECL (c);
-	if (TREE_CODE (t) == TREE_LIST
-		    && TREE_PURPOSE (t)
-		    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	if (OMP_ITERATOR_DECL_P (t))
 	  {
 	    if (TREE_VALUE (t) == null_pointer_node)
 	      continue;
@@ -9634,6 +9632,155 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
   return;
 }
 
+/* Returns a tree expression containing the total iteration count of the
+   OpenMP iterator IT.  */
+
+static tree
+compute_omp_iterator_count (tree it, gimple_seq *pre_p)
+{
+  tree tcnt = size_one_node;
+  for (; it; it = TREE_CHAIN (it))
+    {
+      if (gimplify_expr (&TREE_VEC_ELT (it, 1), pre_p, NULL,
+			 is_gimple_val, fb_rvalue) == GS_ERROR
+	  || gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
+			    is_gimple_val, fb_rvalue) == GS_ERROR
+	  || gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+			    is_gimple_val, fb_rvalue) == GS_ERROR
+	  || (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
+			     is_gimple_val, fb_rvalue) == GS_ERROR))
+	return NULL_TREE;
+      tree var = TREE_VEC_ELT (it, 0);
+      tree begin = TREE_VEC_ELT (it, 1);
+      tree end = TREE_VEC_ELT (it, 2);
+      tree step = TREE_VEC_ELT (it, 3);
+      tree orig_step = TREE_VEC_ELT (it, 4);
+      tree type = TREE_TYPE (var);
+      tree stype = TREE_TYPE (step);
+      location_t loc = DECL_SOURCE_LOCATION (var);
+      tree endmbegin;
+      /* Compute count for this iterator as
+	 orig_step > 0
+	 ? (begin < end ? (end - begin + (step - 1)) / step : 0)
+	 : (begin > end ? (end - begin + (step + 1)) / step : 0)
+	 and compute product of those for the entire clause.  */
+      if (POINTER_TYPE_P (type))
+	endmbegin = fold_build2_loc (loc, POINTER_DIFF_EXPR, stype, end, begin);
+      else
+	endmbegin = fold_build2_loc (loc, MINUS_EXPR, type, end, begin);
+      tree stepm1 = fold_build2_loc (loc, MINUS_EXPR, stype, step,
+				     build_int_cst (stype, 1));
+      tree stepp1 = fold_build2_loc (loc, PLUS_EXPR, stype, step,
+				     build_int_cst (stype, 1));
+      tree pos = fold_build2_loc (loc, PLUS_EXPR, stype,
+				  unshare_expr (endmbegin), stepm1);
+      pos = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype, pos, step);
+      tree neg = fold_build2_loc (loc, PLUS_EXPR, stype, endmbegin, stepp1);
+      if (TYPE_UNSIGNED (stype))
+	{
+	  neg = fold_build1_loc (loc, NEGATE_EXPR, stype, neg);
+	  step = fold_build1_loc (loc, NEGATE_EXPR, stype, step);
+	}
+      neg = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype, neg, step);
+      step = NULL_TREE;
+      tree cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, begin, end);
+      pos = fold_build3_loc (loc, COND_EXPR, stype, cond, pos,
+			     build_int_cst (stype, 0));
+      cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, end, begin);
+      neg = fold_build3_loc (loc, COND_EXPR, stype, cond, neg,
+			     build_int_cst (stype, 0));
+      tree osteptype = TREE_TYPE (orig_step);
+      cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node, orig_step,
+			      build_int_cst (osteptype, 0));
+      tree cnt = fold_build3_loc (loc, COND_EXPR, stype, cond, pos, neg);
+      cnt = fold_convert_loc (loc, sizetype, cnt);
+      if (gimplify_expr (&cnt, pre_p, NULL, is_gimple_val,
+			 fb_rvalue) == GS_ERROR)
+	return NULL_TREE;
+      tcnt = size_binop_loc (loc, MULT_EXPR, tcnt, cnt);
+    }
+  if (gimplify_expr (&tcnt, pre_p, NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+    return NULL_TREE;
+
+  return tcnt;
+}
+
+/* Build loops iterating over the space defined by the OpenMP iterator IT.
+   Returns a pointer to the BIND_EXPR_BODY in the innermost loop body.
+   LAST_BIND is set to point to the BIND_EXPR containing the whole loop.  */
+
+static tree *
+build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
+{
+  if (*last_bind)
+    gimplify_and_add (*last_bind, pre_p);
+  tree block = TREE_VEC_ELT (it, 5);
+  *last_bind = build3 (BIND_EXPR, void_type_node,
+		       BLOCK_VARS (block), NULL, block);
+  TREE_SIDE_EFFECTS (*last_bind) = 1;
+  tree *p = &BIND_EXPR_BODY (*last_bind);
+  for (; it; it = TREE_CHAIN (it))
+    {
+      tree var = TREE_VEC_ELT (it, 0);
+      tree begin = TREE_VEC_ELT (it, 1);
+      tree end = TREE_VEC_ELT (it, 2);
+      tree step = TREE_VEC_ELT (it, 3);
+      tree orig_step = TREE_VEC_ELT (it, 4);
+      tree type = TREE_TYPE (var);
+      location_t loc = DECL_SOURCE_LOCATION (var);
+      /* Emit:
+	 var = begin;
+	 goto cond_label;
+	 beg_label:
+	 ...
+	 var = var + step;
+	 cond_label:
+	 if (orig_step > 0) {
+	   if (var < end) goto beg_label;
+	 } else {
+	   if (var > end) goto beg_label;
+	 }
+	 for each iterator, with inner iterators added to
+	 the ... above.  */
+      tree beg_label = create_artificial_label (loc);
+      tree cond_label = NULL_TREE;
+      tree tem = build2_loc (loc, MODIFY_EXPR, void_type_node, var, begin);
+      append_to_statement_list_force (tem, p);
+      tem = build_and_jump (&cond_label);
+      append_to_statement_list_force (tem, p);
+      tem = build1 (LABEL_EXPR, void_type_node, beg_label);
+      append_to_statement_list (tem, p);
+      tree bind = build3 (BIND_EXPR, void_type_node, NULL_TREE,
+			  NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      SET_EXPR_LOCATION (bind, loc);
+      append_to_statement_list_force (bind, p);
+      if (POINTER_TYPE_P (type))
+	tem = build2_loc (loc, POINTER_PLUS_EXPR, type,
+			  var, fold_convert_loc (loc, sizetype, step));
+      else
+	tem = build2_loc (loc, PLUS_EXPR, type, var, step);
+      tem = build2_loc (loc, MODIFY_EXPR, void_type_node, var, tem);
+      append_to_statement_list_force (tem, p);
+      tem = build1 (LABEL_EXPR, void_type_node, cond_label);
+      append_to_statement_list (tem, p);
+      tree cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, var, end);
+      tree pos = fold_build3_loc (loc, COND_EXPR, void_type_node, cond,
+				  build_and_jump (&beg_label), void_node);
+      cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node, var, end);
+      tree neg = fold_build3_loc (loc, COND_EXPR, void_type_node, cond,
+				  build_and_jump (&beg_label), void_node);
+      tree osteptype = TREE_TYPE (orig_step);
+      cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node, orig_step,
+			      build_int_cst (osteptype, 0));
+      tem = fold_build3_loc (loc, COND_EXPR, void_type_node, cond, pos, neg);
+      append_to_statement_list_force (tem, p);
+      p = &BIND_EXPR_BODY (bind);
+    }
+
+  return p;
+}
+
 /* If *LIST_P contains any OpenMP depend clauses with iterators,
    lower all the depend clauses by populating corresponding depend
    array.  Returns 0 if there are no such depend clauses, or
@@ -9678,89 +9825,13 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	tree t = OMP_CLAUSE_DECL (c);
 	if (first_loc == UNKNOWN_LOCATION)
 	  first_loc = OMP_CLAUSE_LOCATION (c);
-	if (TREE_CODE (t) == TREE_LIST
-	    && TREE_PURPOSE (t)
-	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	if (OMP_ITERATOR_DECL_P (t))
 	  {
 	    if (TREE_PURPOSE (t) != last_iter)
 	      {
-		tree tcnt = size_one_node;
-		for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
-		  {
-		    if (gimplify_expr (&TREE_VEC_ELT (it, 1), pre_p, NULL,
-				       is_gimple_val, fb_rvalue) == GS_ERROR
-			|| gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
-					  is_gimple_val, fb_rvalue) == GS_ERROR
-			|| gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
-					  is_gimple_val, fb_rvalue) == GS_ERROR
-			|| (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
-					   is_gimple_val, fb_rvalue)
-			    == GS_ERROR))
-		      return 2;
-		    tree var = TREE_VEC_ELT (it, 0);
-		    tree begin = TREE_VEC_ELT (it, 1);
-		    tree end = TREE_VEC_ELT (it, 2);
-		    tree step = TREE_VEC_ELT (it, 3);
-		    tree orig_step = TREE_VEC_ELT (it, 4);
-		    tree type = TREE_TYPE (var);
-		    tree stype = TREE_TYPE (step);
-		    location_t loc = DECL_SOURCE_LOCATION (var);
-		    tree endmbegin;
-		    /* Compute count for this iterator as
-		       orig_step > 0
-		       ? (begin < end ? (end - begin + (step - 1)) / step : 0)
-		       : (begin > end ? (end - begin + (step + 1)) / step : 0)
-		       and compute product of those for the entire depend
-		       clause.  */
-		    if (POINTER_TYPE_P (type))
-		      endmbegin = fold_build2_loc (loc, POINTER_DIFF_EXPR,
-						   stype, end, begin);
-		    else
-		      endmbegin = fold_build2_loc (loc, MINUS_EXPR, type,
-						   end, begin);
-		    tree stepm1 = fold_build2_loc (loc, MINUS_EXPR, stype,
-						   step,
-						   build_int_cst (stype, 1));
-		    tree stepp1 = fold_build2_loc (loc, PLUS_EXPR, stype, step,
-						   build_int_cst (stype, 1));
-		    tree pos = fold_build2_loc (loc, PLUS_EXPR, stype,
-						unshare_expr (endmbegin),
-						stepm1);
-		    pos = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype,
-					   pos, step);
-		    tree neg = fold_build2_loc (loc, PLUS_EXPR, stype,
-						endmbegin, stepp1);
-		    if (TYPE_UNSIGNED (stype))
-		      {
-			neg = fold_build1_loc (loc, NEGATE_EXPR, stype, neg);
-			step = fold_build1_loc (loc, NEGATE_EXPR, stype, step);
-		      }
-		    neg = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype,
-					   neg, step);
-		    step = NULL_TREE;
-		    tree cond = fold_build2_loc (loc, LT_EXPR,
-						 boolean_type_node,
-						 begin, end);
-		    pos = fold_build3_loc (loc, COND_EXPR, stype, cond, pos,
-					   build_int_cst (stype, 0));
-		    cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node,
-					    end, begin);
-		    neg = fold_build3_loc (loc, COND_EXPR, stype, cond, neg,
-					   build_int_cst (stype, 0));
-		    tree osteptype = TREE_TYPE (orig_step);
-		    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
-					    orig_step,
-					    build_int_cst (osteptype, 0));
-		    tree cnt = fold_build3_loc (loc, COND_EXPR, stype,
-						cond, pos, neg);
-		    cnt = fold_convert_loc (loc, sizetype, cnt);
-		    if (gimplify_expr (&cnt, pre_p, NULL, is_gimple_val,
-				       fb_rvalue) == GS_ERROR)
-		      return 2;
-		    tcnt = size_binop_loc (loc, MULT_EXPR, tcnt, cnt);
-		  }
-		if (gimplify_expr (&tcnt, pre_p, NULL, is_gimple_val,
-				   fb_rvalue) == GS_ERROR)
+		tree tcnt = compute_omp_iterator_count (TREE_PURPOSE (t),
+							pre_p);
+		if (!tcnt)
 		  return 2;
 		last_iter = TREE_PURPOSE (t);
 		last_count = tcnt;
@@ -9914,91 +9985,13 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	    gcc_unreachable ();
 	  }
 	tree t = OMP_CLAUSE_DECL (c);
-	if (TREE_CODE (t) == TREE_LIST
-	    && TREE_PURPOSE (t)
-	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	if (OMP_ITERATOR_DECL_P (t))
 	  {
 	    if (TREE_PURPOSE (t) != last_iter)
 	      {
-		if (last_bind)
-		  gimplify_and_add (last_bind, pre_p);
-		tree block = TREE_VEC_ELT (TREE_PURPOSE (t), 5);
-		last_bind = build3 (BIND_EXPR, void_type_node,
-				    BLOCK_VARS (block), NULL, block);
-		TREE_SIDE_EFFECTS (last_bind) = 1;
+		last_body = build_omp_iterator_loop (TREE_PURPOSE (t), pre_p,
+						     &last_bind);
 		SET_EXPR_LOCATION (last_bind, OMP_CLAUSE_LOCATION (c));
-		tree *p = &BIND_EXPR_BODY (last_bind);
-		for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
-		  {
-		    tree var = TREE_VEC_ELT (it, 0);
-		    tree begin = TREE_VEC_ELT (it, 1);
-		    tree end = TREE_VEC_ELT (it, 2);
-		    tree step = TREE_VEC_ELT (it, 3);
-		    tree orig_step = TREE_VEC_ELT (it, 4);
-		    tree type = TREE_TYPE (var);
-		    location_t loc = DECL_SOURCE_LOCATION (var);
-		    /* Emit:
-		       var = begin;
-		       goto cond_label;
-		       beg_label:
-		       ...
-		       var = var + step;
-		       cond_label:
-		       if (orig_step > 0) {
-			 if (var < end) goto beg_label;
-		       } else {
-			 if (var > end) goto beg_label;
-		       }
-		       for each iterator, with inner iterators added to
-		       the ... above.  */
-		    tree beg_label = create_artificial_label (loc);
-		    tree cond_label = NULL_TREE;
-		    tem = build2_loc (loc, MODIFY_EXPR, void_type_node,
-				      var, begin);
-		    append_to_statement_list_force (tem, p);
-		    tem = build_and_jump (&cond_label);
-		    append_to_statement_list_force (tem, p);
-		    tem = build1 (LABEL_EXPR, void_type_node, beg_label);
-		    append_to_statement_list (tem, p);
-		    tree bind = build3 (BIND_EXPR, void_type_node, NULL_TREE,
-					NULL_TREE, NULL_TREE);
-		    TREE_SIDE_EFFECTS (bind) = 1;
-		    SET_EXPR_LOCATION (bind, loc);
-		    append_to_statement_list_force (bind, p);
-		    if (POINTER_TYPE_P (type))
-		      tem = build2_loc (loc, POINTER_PLUS_EXPR, type,
-					var, fold_convert_loc (loc, sizetype,
-							       step));
-		    else
-		      tem = build2_loc (loc, PLUS_EXPR, type, var, step);
-		    tem = build2_loc (loc, MODIFY_EXPR, void_type_node,
-				      var, tem);
-		    append_to_statement_list_force (tem, p);
-		    tem = build1 (LABEL_EXPR, void_type_node, cond_label);
-		    append_to_statement_list (tem, p);
-		    tree cond = fold_build2_loc (loc, LT_EXPR,
-						 boolean_type_node,
-						 var, end);
-		    tree pos
-		      = fold_build3_loc (loc, COND_EXPR, void_type_node,
-					 cond, build_and_jump (&beg_label),
-					 void_node);
-		    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
-					    var, end);
-		    tree neg
-		      = fold_build3_loc (loc, COND_EXPR, void_type_node,
-					 cond, build_and_jump (&beg_label),
-					 void_node);
-		    tree osteptype = TREE_TYPE (orig_step);
-		    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
-					    orig_step,
-					    build_int_cst (osteptype, 0));
-		    tem = fold_build3_loc (loc, COND_EXPR, void_type_node,
-					   cond, pos, neg);
-		    append_to_statement_list_force (tem, p);
-		    p = &BIND_EXPR_BODY (bind);
-		  }
-		last_body = p;
 	      }
 	    last_iter = TREE_PURPOSE (t);
 	    if (TREE_CODE (TREE_VALUE (t)) == COMPOUND_EXPR)

@@ -902,9 +902,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "affinity(");
       {
 	tree t = OMP_CLAUSE_DECL (clause);
-	if (TREE_CODE (t) == TREE_LIST
-	    && TREE_PURPOSE (t)
-	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	if (OMP_ITERATOR_DECL_P (t))
 	  {
 	    dump_omp_iterators (pp, TREE_PURPOSE (t), spc, flags);
 	    pp_colon (pp);
@@ -944,9 +942,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	}
       {
 	tree t = OMP_CLAUSE_DECL (clause);
-	if (TREE_CODE (t) == TREE_LIST
-	    && TREE_PURPOSE (t)
-	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	if (OMP_ITERATOR_DECL_P (t))
 	  {
 	    dump_omp_iterators (pp, TREE_PURPOSE (t), spc, flags);
 	    pp_colon (pp);
