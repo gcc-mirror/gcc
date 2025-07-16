@@ -4548,6 +4548,33 @@ widening_fn_p (code_helper code)
     }
 }
 
+/* Return true if this CODE describes an internal_fn that returns a vector with
+   elements twice as wide as the element size of the input vectors and operates
+   on even/odd parts of the input.  */
+
+bool
+widening_evenodd_fn_p (code_helper code)
+{
+  if (!code.is_fn_code ())
+    return false;
+
+  if (!internal_fn_p ((combined_fn) code))
+    return false;
+
+  internal_fn fn = as_internal_fn ((combined_fn) code);
+  switch (fn)
+    {
+    #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T) \
+    case IFN_##NAME##_EVEN:					  \
+    case IFN_##NAME##_ODD:					  \
+      return true;
+    #include "internal-fn.def"
+
+    default:
+      return false;
+    }
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool
