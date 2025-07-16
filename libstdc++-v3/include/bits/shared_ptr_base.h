@@ -224,9 +224,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       long
       _M_get_use_count() const noexcept
       {
+	// If long is wider than _Atomic_word then we can treat _Atomic_word
+	// as unsigned, and so double its usable range. If the widths are the
+	// same then casting to unsigned and then to long is a no-op.
+	using _Up = typename make_unsigned<_Atomic_word>::type;
+
         // No memory barrier is used here so there is no synchronization
         // with other threads.
-        return __atomic_load_n(&_M_use_count, __ATOMIC_RELAXED);
+	return (_Up) __atomic_load_n(&_M_use_count, __ATOMIC_RELAXED);
       }
 
     private:
@@ -237,6 +242,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Atomic_word  _M_weak_count;    // #weak + (#shared != 0)
     };
 
+  // We use __atomic_add_single and __exchange_and_add_single in the _S_single
+  // member specializations because they use unsigned arithmetic and so avoid
+  // undefined overflow.
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_add_ref_copy()
+    { __gnu_cxx::__atomic_add_single(&_M_use_count, 1); }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_weak_release() noexcept
+    {
+      if (__gnu_cxx::__exchange_and_add_single(&_M_weak_count, -1) == 1)
+	_M_destroy();
+    }
+
+  template<>
+    inline long
+    _Sp_counted_base<_S_single>::_M_get_use_count() const noexcept
+    {
+      using _Up = typename make_unsigned<_Atomic_word>::type;
+      return (_Up) _M_use_count;
+    }
+
+
   template<>
     inline bool
     _Sp_counted_base<_S_single>::
@@ -244,7 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_use_count == 0)
 	return false;
-      ++_M_use_count;
+      _M_add_ref_copy();
       return true;
     }
 
@@ -284,18 +314,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     inline void
-    _Sp_counted_base<_S_single>::_M_add_ref_copy()
-    { ++_M_use_count; }
-
-  template<>
-    inline void
     _Sp_counted_base<_S_single>::_M_release() noexcept
     {
-      if (--_M_use_count == 0)
+      if (__gnu_cxx::__exchange_and_add_single(&_M_use_count, -1) == 1)
         {
-          _M_dispose();
-          if (--_M_weak_count == 0)
-            _M_destroy();
+	  _M_dispose();
+	  _M_weak_release();
         }
     }
 
@@ -363,25 +387,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #pragma GCC diagnostic pop
     }
-
-  template<>
-    inline void
-    _Sp_counted_base<_S_single>::_M_weak_add_ref() noexcept
-    { ++_M_weak_count; }
-
-  template<>
-    inline void
-    _Sp_counted_base<_S_single>::_M_weak_release() noexcept
-    {
-      if (--_M_weak_count == 0)
-        _M_destroy();
-    }
-
-  template<>
-    inline long
-    _Sp_counted_base<_S_single>::_M_get_use_count() const noexcept
-    { return _M_use_count; }
-
 
   // Forward declarations.
   template<typename _Tp, _Lock_policy _Lp = __default_lock_policy>
