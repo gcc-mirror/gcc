@@ -21295,8 +21295,8 @@ package body Sem_Ch3 is
       --  On entry, the current scope is the composite type.
 
       --  The discriminants are initially entered into the scope of the type
-      --  via Enter_Name with the default Ekind of E_Void to prevent premature
-      --  use, as explained at the end of this procedure.
+      --  via Enter_Name with Is_Not_Self_Hidden set to False to prevent
+      --  premature use, as explained at the end of this procedure.
 
       Discr := First (Discriminant_Specifications (N));
       while Present (Discr) loop
@@ -21569,12 +21569,12 @@ package body Sem_Ch3 is
       --  expressions of a discriminant part if the specification of the
       --  discriminant is itself given in the discriminant part. (RM 3.7.1)
 
-      --  To detect this, the discriminant names are entered initially with an
-      --  Ekind of E_Void (which is the default Ekind given by Enter_Name). Any
-      --  attempt to use a void entity (for example in an expression that is
-      --  type-checked) produces the error message: premature usage. Now after
-      --  completing the semantic analysis of the discriminant part, we can set
-      --  the Ekind of all the discriminants appropriately.
+      --  To detect this, the discriminant names are entered initially with
+      --  Is_Not_Self_Hidden set to False. Any attempt to use a self-hidden
+      --  entity (for example in an expression that is type-checked) produces
+      --  the error message: premature usage. Now after completing the semantic
+      --  analysis of the discriminant part, we can set Is_Not_Self_Hidden on
+      --  all the discriminants appropriately.
 
       Discr := First (Discriminant_Specifications (N));
       Discr_Number := Uint_1;
