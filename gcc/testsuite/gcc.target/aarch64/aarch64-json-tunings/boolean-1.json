@@ -1,0 +1,9 @@
+{
+  "tune_params": {
+    "insn_extra_cost": {
+      "alu": {
+        "non_exec_costs_exec": false
+      }
+    }
+  }
+}

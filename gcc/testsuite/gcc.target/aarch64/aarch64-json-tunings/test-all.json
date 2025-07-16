@@ -1,0 +1,39 @@
+{
+  "tune_params": {
+    "insn_extra_cost": {
+      "alu": {
+        "arith": 0,
+        "logical": 0,
+        "shift": 0,
+        "arith_shift": 4
+      },
+      "mult": [
+        {
+          "simple": 4,
+          "idiv": 24
+        }
+      ],
+      "ldst": {
+        "load": 12,
+        "store": 0,
+        "loadf": 16,
+        "storef": 0
+      }
+    },
+    "regmove_cost": { 
+      "GP2GP": 1, 
+      "GP2FP": 5, 
+      "FP2GP": 5, 
+      "FP2FP": 2 
+    },
+    "issue_rate": 3,
+    "fusible_ops": 48,
+    "function_align": "32:16",
+    "autoprefetcher_model": "AUTOPREFETCHER_WEAK",
+    "ldp_policy_model": "AARCH64_LDP_STP_POLICY_ALWAYS",
+    "stp_policy_model": "AARCH64_LDP_STP_POLICY_ALWAYS",
+    "prefetch": {
+      "prefetch_dynamic_strides": true
+    }
+  }
+}

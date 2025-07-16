@@ -1,0 +1,7 @@
+{
+  "tune_params": {
+    "function_align": "16",
+    "jump_align": "2",
+    "loop_align": "8"
+  }
+}

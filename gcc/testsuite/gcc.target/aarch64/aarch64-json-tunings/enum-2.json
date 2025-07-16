@@ -1,0 +1,7 @@
+{
+  "tune_params": {
+    "autoprefetcher_model": "null",
+    "ldp_policy_model": "null",
+    "stp_policy_model": "AARCH64_LDP_STP_POLICY_DEFAULT"
+  }
+}
