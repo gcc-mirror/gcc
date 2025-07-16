@@ -1,3 +1,35 @@
+2025-07-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2/iso/fail/badarray3.mod: New test.
+
+2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR fortran/104428
+	* gfortran.dg/gomp/pr104428.f90: New.
+
+2025-07-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120637
+	* gfortran.dg/asan/finalize_1.f90: New test.
+
+2025-07-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-07-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120709
+	* gcc.dg/crc-non-cst-poly-1.c: New test.
+
 2025-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

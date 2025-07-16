@@ -1,3 +1,21 @@
+2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR fortran/104428
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Check that proc_st
+	is non-NULL before dereferencing.  Add line number to error message.
+
+2025-07-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120637
+	* class.cc (finalize_component): Return true, when a finalizable
+	component was detect and do not free it.
+
 2025-07-09  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,15 @@
+2025-07-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-07-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120709
+	* builtins.cc (expand_builtin_crc_table_based): Error out
+	instead of asserting the 3rd argument is an integer constant.
+	* internal-fn.cc (expand_crc_optab_fn): Likewise.
+	* doc/extend.texi (crc): Document requirement of the poly argument
+	being a constant.
+
 2025-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
