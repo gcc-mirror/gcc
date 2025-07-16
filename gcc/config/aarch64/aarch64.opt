@@ -197,6 +197,10 @@ fdump-tuning-model=
 Target Undocumented RejectNegative Negative(fdump-tuning-model=) Joined Var(fdump_tuning_model)
 -fdump-tuning-model=<filename> Dump current tuning model to a JSON file.
 
+muser-provided-CPU=
+Target Undocumented RejectNegative Negative(muser-provided-CPU=) Joined Var(muser_provided_CPU)
+-muser-provided-CPU=<json-tuning-file> User specific CPU tunings.
+
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string) Save
 -moverride=<string>	Power users only! Override CPU optimization parameters.

@@ -100,6 +100,7 @@
 #include "hash-map.h"
 #include "aarch64-sched-dispatch.h"
 #include "aarch64-json-tunings-printer.h"
+#include "aarch64-json-tunings-parser.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -19170,6 +19171,21 @@ aarch64_override_options_internal (struct gcc_options *opts)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
 				   &aarch64_tune_params);
 
+  /* We need to parse the JSON file only once per program execution.  */
+  if (opts->x_muser_provided_CPU)
+    {
+      static bool json_parsed = false;
+      static struct tune_params aarch64_json_params;
+      if (!json_parsed)
+	{
+	  aarch64_json_params = *(tune->tune);
+	  aarch64_load_tuning_params_from_json (opts->x_muser_provided_CPU,
+						&aarch64_json_params);
+	  json_parsed = true;
+	}
+      aarch64_tune_params = aarch64_json_params;
+    }
+
   if (opts->x_aarch64_ldp_policy_param)
     aarch64_tune_params.ldp_policy_model = opts->x_aarch64_ldp_policy_param;
 
@@ -32425,6 +32441,8 @@ aarch64_test_sve_folding ()
     }
 }
 
+extern void aarch64_json_tunings_tests ();
+
 /* Run all target-specific selftests.  */
 
 static void
@@ -32434,6 +32452,7 @@ aarch64_run_selftests (void)
   aarch64_test_fractional_cost ();
   aarch64_test_sysreg_encoding_clashes ();
   aarch64_test_sve_folding ();
+  aarch64_json_tunings_tests ();
 }
 
 } // namespace selftest
