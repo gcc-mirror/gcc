@@ -2532,6 +2532,19 @@
   }
 )
 
+(define_expand "avg<mode>3_ceil"
+ [(match_operand:V_VLSI_D 0 "register_operand")
+  (match_operand:V_VLSI_D 1 "register_operand")
+  (match_operand:V_VLSI_D 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
+				   operands);
+    DONE;
+  }
+)
+
 ;; csrwi vxrm, 2
 ;; vaaddu.vv vd, vs2, vs1
 (define_expand "uavg<mode>3_floor"
