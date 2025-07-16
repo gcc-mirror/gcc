@@ -1297,7 +1297,10 @@
       std::swap (operands[0], operands[1]);
       std::swap (operands[2], operands[3]);
     }
-})
+}
+  [(set_attr "type"	"move,move,load,load,store")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"6,12,6,6,6")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
@@ -1643,7 +1646,10 @@
       std::swap (operands[0], operands[1]);
       std::swap (operands[2], operands[3]);
     }
-})
+}
+  [(set_attr "type"	"move,load,move,load,load,store")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"6,6,12,6,6,6")])
 
 ;; Block moves
 
