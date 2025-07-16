@@ -226,6 +226,7 @@ FROM M2Options IMPORT NilChecking,
                       GenerateLineDebug, Exceptions,
                       Profiling, Coding, Optimizing,
                       UninitVariableChecking,
+                      StrictTypeAssignment,
                       ScaffoldDynamic, ScaffoldStatic, cflag,
                       ScaffoldMain, SharedFlag, WholeProgram,
                       GetDumpDir, GetM2DumpFilter,
@@ -258,8 +259,10 @@ FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitRotateCheck,
                     InitShiftCheck,
                     InitTypesAssignmentCheck,
+                    InitTypesIndrXCheck,
                     InitTypesExpressionCheck,
                     InitTypesParameterCheck,
+                    InitTypesReturnTypeCheck,
                     InitForLoopBeginRangeCheck,
                     InitForLoopToRangeCheck,
                     InitForLoopEndRangeCheck,
@@ -284,7 +287,6 @@ IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 758 ;
    DebugTokPos = FALSE ;
 
 TYPE
@@ -397,6 +399,7 @@ VAR
                                       (* in order.                               *)
    NoOfQuads            : CARDINAL ;  (* Number of used quadruples.              *)
    Head                 : CARDINAL ;  (* Head of the list of quadruples.         *)
+   BreakQuad            : CARDINAL ;  (* Stop when BreakQuad is created.         *)
 
 
 (*
@@ -1485,22 +1488,6 @@ BEGIN
    ELSE
    END
 END AddQuadInformation ;
-
-
-PROCEDURE stop ; BEGIN END stop ;
-
-
-(*
-   CheckBreak - check whether QuadNo = BreakAtQuad and if so call stop.
-*)
-
-PROCEDURE CheckBreak (QuadNo: CARDINAL) ;
-BEGIN
-   IF QuadNo = BreakAtQuad
-   THEN
-      stop
-   END
-END CheckBreak ;
 
 
 (*
@@ -3888,6 +3875,10 @@ BEGIN
       THEN
          MetaErrorT1 (combinedtok, 'combined {%1Oad}', Des)
       END ;
+      IF StrictTypeAssignment
+      THEN
+         BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp))
+      END ;
       IF (GetSType (Des) # NulSym) AND (NOT IsSet (GetDType (Des)))
       THEN
          (* Tell code generator to test runtime values of assignment so ensure we
@@ -5628,7 +5619,7 @@ VAR
    proctok,
    paramtok    : CARDINAL ;
    n1, n2      : Name ;
-   ParamCheckId,   
+   ParamCheckId,
    Dim,
    Actual,
    FormalI,
@@ -5770,42 +5761,46 @@ VAR
    CheckedProcedure: CARDINAL ;
    e               : Error ;
 BEGIN
-   n := NoOfParamAny (ProcType) ;
    IF IsVar(call) OR IsTemporary(call) OR IsParameter(call)
    THEN
       CheckedProcedure := GetDType(call)
    ELSE
       CheckedProcedure := call
    END ;
-   IF n # NoOfParamAny (CheckedProcedure)
+   IF ProcType # CheckedProcedure
    THEN
-      e := NewError(GetDeclaredMod(ProcType)) ;
-      n1 := GetSymName(call) ;
-      n2 := GetSymName(ProcType) ;
-      ErrorFormat2(e, 'procedure (%a) is a parameter being passed as variable (%a) but they are declared with different number of parameters',
-                   n1, n2) ;
-      e := ChainError(GetDeclaredMod(call), e) ;
-      t := NoOfParamAny (CheckedProcedure) ;
-      IF n<2
+      n := NoOfParamAny (ProcType) ;
+      (* We need to check the formal parameters between the procedure and proc type.  *)
+      IF n # NoOfParamAny (CheckedProcedure)
       THEN
-         ErrorFormat3(e, 'procedure (%a) is being called incorrectly with (%d) parameter, declared with (%d)',
-                      n1, n, t)
-      ELSE
-         ErrorFormat3(e, 'procedure (%a) is being called incorrectly with (%d) parameters, declared with (%d)',
-                      n1, n, t)
-      END
-   ELSE
-      i := 1 ;
-      WHILE i<=n DO
-         IF IsVarParamAny (ProcType, i) # IsVarParamAny (CheckedProcedure, i)
+         e := NewError(GetDeclaredMod(ProcType)) ;
+         n1 := GetSymName(call) ;
+         n2 := GetSymName(ProcType) ;
+         ErrorFormat2(e, 'procedure (%a) is a parameter being passed as variable (%a) but they are declared with different number of parameters',
+                      n1, n2) ;
+         e := ChainError(GetDeclaredMod(call), e) ;
+         t := NoOfParamAny (CheckedProcedure) ;
+         IF n<2
          THEN
-            MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', ProcType, GetNth (ProcType, i), i) ;
-            MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', call, GetNth (call, i), i)
-         END ;
-         BuildRange (InitTypesParameterCheck (tokno, CheckedProcedure, i,
-                                              GetNthParamAnyClosest (CheckedProcedure, i, GetCurrentModule ()),
-                                              GetParam (ProcType, i), ParamCheckId)) ;
-         INC(i)
+            ErrorFormat3(e, 'procedure (%a) is being called incorrectly with (%d) parameter, declared with (%d)',
+                         n1, n, t)
+         ELSE
+            ErrorFormat3(e, 'procedure (%a) is being called incorrectly with (%d) parameters, declared with (%d)',
+                         n1, n, t)
+         END
+      ELSE
+         i := 1 ;
+         WHILE i<=n DO
+            IF IsVarParamAny (ProcType, i) # IsVarParamAny (CheckedProcedure, i)
+            THEN
+               MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', ProcType, GetNth (ProcType, i), i) ;
+               MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', call, GetNth (call, i), i)
+            END ;
+            BuildRange (InitTypesParameterCheck (tokno, CheckedProcedure, i,
+                                                 GetNthParamAnyClosest (CheckedProcedure, i, GetCurrentModule ()),
+                                                 GetParam (ProcType, i), ParamCheckId)) ;
+            INC(i)
+         END
       END
    END
 END CheckProcTypeAndProcedure ;
@@ -6272,21 +6267,24 @@ END ExpectVariable ;
    doIndrX - perform des = *exp with a conversion if necessary.
 *)
 
-PROCEDURE doIndrX (tok: CARDINAL;
-                   des, exp: CARDINAL) ;
+PROCEDURE doIndrX (tok: CARDINAL; des, exp: CARDINAL) ;
 VAR
    t: CARDINAL ;
 BEGIN
-   IF GetDType(des)=GetDType(exp)
+   IF GetDType (des) = GetDType (exp)
    THEN
       GenQuadOtok (tok, IndrXOp, des, GetSType (des), exp, TRUE,
                    tok, tok, tok)
    ELSE
+      IF StrictTypeAssignment
+      THEN
+         BuildRange (InitTypesIndrXCheck (tok, des, exp))
+      END ;
       t := MakeTemporary (tok, RightValue) ;
       PutVar (t, GetSType (exp)) ;
       GenQuadOtok (tok, IndrXOp, t, GetSType (exp), exp, TRUE,
                    tok, tok, tok) ;
-      GenQuadOtok (tok, BecomesOp, des, NulSym, doVal (GetSType(des), t), TRUE,
+      GenQuadOtok (tok, BecomesOp, des, NulSym, doVal (GetSType (des), t), TRUE,
                    tok, UnknownTokenNo, tok)
    END
 END doIndrX ;
@@ -11295,7 +11293,7 @@ BEGIN
                    n1, n2)
    ELSE
       (* this checks the types are compatible, not the data contents.  *)
-      BuildRange (InitTypesAssignmentCheck (tokno, currentProc, actualVal))
+      BuildRange (InitTypesReturnTypeCheck (tokno, currentProc, actualVal))
    END
 END CheckReturnType ;
 
@@ -16061,12 +16059,55 @@ END StressStack ;
 
 
 (*
+   gdbhook - a debugger convenience hook.
+*)
+
+PROCEDURE gdbhook ;
+END gdbhook ;
+
+
+(*
+   BreakWhenQuadCreated - to be called interactively by gdb.
+*)
+
+PROCEDURE BreakWhenQuadCreated (quad: CARDINAL) ;
+BEGIN
+   BreakQuad := quad
+END BreakWhenQuadCreated ;
+
+
+(*
+   CheckBreak - if quad = BreakQuad then call gdbhook.
+*)
+
+PROCEDURE CheckBreak (quad: CARDINAL) ;
+BEGIN
+   IF quad = BreakQuad
+   THEN
+      gdbhook
+   END
+END CheckBreak ;
+
+
+(*
    Init - initialize the M2Quads module, all the stacks, all the lists
           and the quads list.
 *)
 
 PROCEDURE Init ;
 BEGIN
+   BreakWhenQuadCreated (0) ;  (* Disable the intereactive quad watch.  *)
+   (* To examine the quad table when a quad is created run cc1gm2 from gdb
+      and set a break point on gdbhook.
+      (gdb) break gdbhook
+      (gdb) run
+      Now below interactively call BreakWhenQuadCreated with the quad
+      under investigation.  *)
+   gdbhook ;
+   (* Now is the time to interactively call gdb, for example:
+      (gdb) print BreakWhenQuadCreated (1234)
+      (gdb) cont
+      and you will arrive at gdbhook when this quad is created.  *)
    LogicalOrTok := MakeKey('_LOR') ;
    LogicalAndTok := MakeKey('_LAND') ;
    LogicalXorTok := MakeKey('_LXOR') ;

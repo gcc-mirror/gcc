@@ -681,7 +681,7 @@ BEGIN
    IfGreOp            : CodeIfGre (q) |
    IfInOp             : CodeIfIn (q) |
    IfNotInOp          : CodeIfNotIn (q) |
-   IndrXOp            : CodeIndrX (q, op1, op2, op3) |
+   IndrXOp            : CodeIndrX (q) |
    XIndrOp            : CodeXIndr (q) |
    CallOp             : CodeCall (CurrentQuadToken, op3) |
    ParamOp            : CodeParam (q) |
@@ -3004,7 +3004,7 @@ BEGIN
                 despos, op2pos, exprpos) ;
    Assert (op2pos = UnknownTokenNo) ;
    IF StrictTypeChecking AND
-      (NOT AssignmentTypeCompatible (despos, "", des, expr))
+      (NOT AssignmentTypeCompatible (despos, "", des, expr, TRUE))
    THEN
       MetaErrorT2 (MakeVirtualTok (becomespos, despos, exprpos),
                    'assignment check caught mismatch between {%1Ead} and {%2ad}',
@@ -3233,7 +3233,7 @@ BEGIN
       IF SkipType(GetTypeMode(op1))#SkipType(GetTypeMode(op3))
       THEN
          DescribeTypeError (tokenno, op1, op3) ;
-         (* Assigning an errant op3 might ICE, therefore it is safer to return op1.  *)         
+         (* Assigning an errant op3 might ICE, therefore it is safer to return op1.  *)
          RETURN( Mod2Gcc (op1) )
       END
    END ;
@@ -3550,7 +3550,7 @@ BEGIN
    location := TokenToLocation (virtpos) ;
 
    IF StrictTypeChecking AND
-      (NOT AssignmentTypeCompatible (virtpos, "", des, expr))
+      (NOT AssignmentTypeCompatible (virtpos, "", des, expr, TRUE))
    THEN
       ErrorMessageDecl (virtpos,
                         'assignment check caught mismatch between {%1Ead} and {%2ad}',
@@ -3918,8 +3918,6 @@ END NoWalkProcedure ;
 
 PROCEDURE CheckBinaryExpressionTypes (quad: CARDINAL; p: WalkAction) : BOOLEAN ;
 VAR
-   lefttype,
-   righttype,
    des, left, right: CARDINAL ;
    typeChecking,
    constExpr,
@@ -3937,28 +3935,13 @@ BEGIN
    IF typeChecking AND (op # LogicalRotateOp) AND (op # LogicalShiftOp)
    THEN
       subexprpos := MakeVirtualTok (operatorpos, leftpos, rightpos) ;
-      lefttype := GetType (left) ;
-      righttype := GetType (right) ;
       IF StrictTypeChecking AND
-         (NOT ExpressionTypeCompatible (subexprpos, "", lefttype, righttype,
+         (NOT ExpressionTypeCompatible (subexprpos, "", left, right,
                                         StrictTypeChecking, FALSE))
       THEN
          MetaErrorT2 (subexprpos,
                       'expression mismatch between {%1Etad} and {%2tad}',
                       left, right) ;
-         NoChange := FALSE ;
-         SubQuad (quad) ;
-         p (des) ;
-         RETURN FALSE
-      END ;
-      (* --fixme-- the ExpressionTypeCompatible above should be enough
-         and the code below can be removed once ExpressionTypeCompatible
-         is bug free.  *)
-      IF NOT IsExpressionCompatible (lefttype, righttype)
-      THEN
-         ErrorMessageDecl (subexprpos,
-                           'expression mismatch between {%1Etad} and {%2tad}',
-                           left, right, TRUE) ;
          NoChange := FALSE ;
          SubQuad (quad) ;
          p (des) ;
@@ -3978,7 +3961,6 @@ END CheckBinaryExpressionTypes ;
 
 PROCEDURE CheckElementSetTypes (quad: CARDINAL) : BOOLEAN ;
 VAR
-   lefttype,
    righttype,
    ignore, left, right: CARDINAL ;
    constExpr,
@@ -3995,13 +3977,9 @@ BEGIN
                 overflowChecking, constExpr,
                 leftpos, rightpos, ignorepos) ;
    subexprpos := MakeVirtualTok (operatorpos, leftpos, rightpos) ;
-   lefttype := GetType (left) ;
    righttype := GetType (right) ;
-   (* --fixme-- the ExpressionTypeCompatible below does not always catch
-      type errors, it needs to be fixed and then some of the subsequent tests
-      can be removed (and/or this procedure function rewritten).  *)
    IF StrictTypeChecking AND
-      (NOT ExpressionTypeCompatible (subexprpos, "", lefttype, righttype,
+      (NOT ExpressionTypeCompatible (subexprpos, "", left, right,
                                      StrictTypeChecking, TRUE))
    THEN
       MetaErrorT2 (subexprpos,
@@ -4016,17 +3994,6 @@ BEGIN
       MetaErrorT1 (rightpos,
                    'an {%kIN} expression is expecting {%1Etad} to be a {%kSET} type',
                    right) ;
-      NoChange := FALSE ;
-      SubQuad (quad) ;
-      RETURN FALSE
-   END ;
-   righttype := GetType (SkipType (righttype)) ;
-   (* Now fall though and compare the set element left against the type of set righttype.  *)
-   IF NOT IsExpressionCompatible (lefttype, righttype)
-   THEN
-      ErrorMessageDecl (subexprpos,
-                        'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
-                        left, right, TRUE) ;
       NoChange := FALSE ;
       SubQuad (quad) ;
       RETURN FALSE
@@ -8174,25 +8141,52 @@ END CodeIfNotIn ;
    (op2 is the type of the data being indirectly copied)
 *)
 
-PROCEDURE CodeIndrX (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeIndrX (quad: CARDINAL) ;
 VAR
-   location: location_t ;
+   constExpr,
+   overflowChecking: BOOLEAN ;
+   op              : QuadOperator ;
+   tokenno,
+   left,
+   type,
+   right,
+   leftpos,
+   rightpos,
+   typepos,
+   indrxpos        : CARDINAL ;
+   length,
+   newstr          : tree ;
+   location        : location_t ;
 BEGIN
-   location := TokenToLocation (CurrentQuadToken) ;
+   GetQuadOtok (quad, indrxpos, op, left, type, right,
+                overflowChecking, constExpr,
+                leftpos, typepos, rightpos) ;
+   tokenno := MakeVirtualTok (indrxpos, leftpos, rightpos) ;
+   location := TokenToLocation (tokenno) ;
 
    (*
       Follow the Quadruple rules:
    *)
-   DeclareConstant (CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
-   DeclareConstructor (CurrentQuadToken, quad, op3) ;
-   IF IsConstString (op3)
+   DeclareConstant (rightpos, right) ;  (* Checks to see whether it is a constant
+                                           and if necessary declare it.  *)
+   DeclareConstructor (rightpos, quad, right) ;
+   IF IsConstString (right)
    THEN
       InternalError ('not expecting to index through a constant string')
+   ELSIF StrictTypeChecking AND
+      (NOT AssignmentTypeCompatible (indrxpos, "", left, GetType (right), TRUE))
+   THEN
+      MetaErrorT2 (tokenno,
+                   'assignment check caught mismatch between {%1Ead} and {%2ad}',
+                   left, right) ;
+      SubQuad (quad)
    ELSE
+
       (*
          Mem[op1] := Mem[Mem[op3]]
       *)
-      BuildAssignmentStatement (location, Mod2Gcc (op1), BuildIndirect (location, Mod2Gcc (op3), Mod2Gcc (op2)))
+      BuildAssignmentStatement (location, Mod2Gcc (left),
+                                BuildIndirect (location, Mod2Gcc (right), Mod2Gcc (type)))
    END
 END CodeIndrX ;
 
@@ -8230,7 +8224,7 @@ BEGIN
    DeclareConstant (rightpos, right) ;
    DeclareConstructor (rightpos, quad, right) ;
    IF StrictTypeChecking AND
-      (NOT AssignmentTypeCompatible (xindrpos, "", GetType (left), right))
+      (NOT AssignmentTypeCompatible (xindrpos, "", GetType (left), right, TRUE))
    THEN
       MetaErrorT2 (tokenno,
                    'assignment check caught mismatch between {%1Ead} and {%2ad}',
