@@ -1251,10 +1251,10 @@ the smaller of @var{computed} and @code{BIGGEST_ALIGNMENT}
 
 @defmac MAX_FIXED_MODE_SIZE
 An integer expression for the size in bits of the largest integer
-machine mode that should actually be used.  All integer machine modes of
-this size or smaller can be used for structures and unions with the
-appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
-(DImode)} is assumed.
+machine mode that should actually be used by GCC internally.
+All integer machine modes of this size or smaller can be used for
+structures and unions with the appropriate sizes.  If this macro is
+undefined, @code{MAX (BITS_PER_WORD * 2, 64)} is assumed.
 @end defmac
 
 @defmac STACK_SAVEAREA_MODE (@var{save_level})
