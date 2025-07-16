@@ -2,7 +2,7 @@
 /* { dg-require-profiling "-p" } */
 /* { dg-options "-O2 -p" } */
 /* { dg-options "-O2 -p -static" { target hppa*-*-hpux* } } */
-/* { dg-additional-options "-mfentry -fno-pic" { target i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-mfentry -fno-pic" { target i?86-*-gnu* x86_64-*-gnu* } } */
 /* { dg-error "profiler" "No profiler support" { target xstormy16-*-* } 0 } */
 /* { dg-message "" "consider using `-pg' instead of `-p' with gprof(1)" { target *-*-freebsd* } 0 } */
 

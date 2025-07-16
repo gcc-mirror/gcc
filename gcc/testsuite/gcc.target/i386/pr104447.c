@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-profiling "-pg" } */
-/* { dg-options "-O2 -pg -mfentry -fno-pic" } */
+/* { dg-options "-O2 -pg" } */
+/* { dg-additional-options "-mfentry -fno-pic" { target *-*-gnu* } } */
 
 int
 bar (int x)

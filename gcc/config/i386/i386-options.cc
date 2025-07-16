@@ -2852,12 +2852,16 @@ ix86_option_override_internal (bool main_args_p,
 	sorry ("%<-mno-fentry%> isn%'t compatible with SEH");
     }
 
+#ifdef OPTION_GLIBC_P
+  /* -mfentry is supported only on glibc targets.  */
   if (!opts->x_flag_fentry
+      && OPTION_GLIBC_P (opts)
       && (TARGET_64BIT_P (opts->x_ix86_isa_flags) || !opts->x_flag_pic)
       && opts->x_flag_shrink_wrap
       && opts->x_profile_flag)
     warning (0, "%<-pg%> without %<-mfentry%> may be unreliable with "
 	     "shrink wrapping");
+#endif
 
   if (TARGET_SEH && TARGET_CALL_MS2SYSV_XLOGUES)
     sorry ("%<-mcall-ms2sysv-xlogues%> isn%'t currently supported with SEH");
