@@ -78,9 +78,7 @@ class state_diagram : public dot::graph
 public:
   state_diagram (const diagnostics::digraphs::digraph &input_state_graph,
 		 const logical_location_manager &logical_loc_mgr)
-  : m_logical_loc_mgr (logical_loc_mgr),
-    // m_next_id (0),
-    m_show_tags (false)
+  : m_logical_loc_mgr (logical_loc_mgr)
   {
     // "node [shape=plaintext]\n"
     {
@@ -541,8 +539,6 @@ private:
 
   std::map<diagnostics::digraphs::node *, dot::node_id> m_src_node_to_port_id;
   std::map<diagnostics::digraphs::node *, dot::node_id> m_dst_node_to_port_id;
-
-  bool m_show_tags;
 };
 
 std::unique_ptr<dot::graph>
