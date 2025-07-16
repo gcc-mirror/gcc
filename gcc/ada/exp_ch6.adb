@@ -899,10 +899,31 @@ package body Exp_Ch6 is
       Constrained_Subtype : constant Entity_Id :=
         Constraint_Bearing_Subtype_If_Any (Exp);
    begin
+      --  ??? Do not generate a check if version is Ada 95 (or earlier).
+      --  It is unclear whether this is really correct, or is just a stopgap
+      --  measure. Investigation is needed to decide how post-Ada-95 binding
+      --  interpretation changes in RM 3.10.2 should interact with Ada 95's
+      --  return-by-reference model for functions with limited result types
+      --  (which was abandoned in Ada 2005).
+
+      if Ada_Version <= Ada_95 then
+         return;
+      end if;
+
       --  If we are returning a function call then that function will
       --  perform the needed check.
 
       if Nkind (Unqualify (Exp)) = N_Function_Call then
+         return;
+      end if;
+
+     --  ??? Cope with the consequences of the Disable_Tagged_Cases flag
+     --  in accessibility.adb (which can cause the extra formal parameter
+     --  needed for the check(s) generated here to be missing in the case
+     --  of a tagged result type); this is a workaround and can
+     --  prevent generation of a required check.
+
+      if No (Extra_Accessibility_Of_Result (Func)) then
          return;
       end if;
 
