@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Increment the use count (used when the count is greater than zero).
       void
       _M_add_ref_copy()
-      { __gnu_cxx::__atomic_add_dispatch(&_M_use_count, 1); }
+      { _S_chk(__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1)); }
 
       // Increment the use count if it is non-zero, throw otherwise.
       void
@@ -200,7 +200,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Increment the weak count.
       void
       _M_weak_add_ref() noexcept
-      { __gnu_cxx::__atomic_add_dispatch(&_M_weak_count, 1); }
+      {
+	// _M_weak_count can always use negative values because it cannot be
+	// observed by users (unlike _M_use_count). See _S_chk for details.
+	constexpr _Atomic_word __max = -1;
+	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, 1) == __max)
+	  [[__unlikely__]] __builtin_trap();
+      }
 
       // Decrement the weak count.
       void
@@ -238,6 +244,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Sp_counted_base(_Sp_counted_base const&) = delete;
       _Sp_counted_base& operator=(_Sp_counted_base const&) = delete;
 
+      // Called when incrementing _M_use_count to cause a trap on overflow.
+      // This should be passed the value of the counter before the increment.
+      static void
+      _S_chk(_Atomic_word __count)
+      {
+	// __max is the maximum allowed value for the shared reference count.
+	// All valid reference count values need to fit into [0,LONG_MAX)
+	// because users can observe the count via shared_ptr::use_count().
+	//
+	// When long is wider than _Atomic_word, _M_use_count can go negative
+	// and the cast in _Sp_counted_base::use_count() will turn it into a
+	// positive value suitable for returning to users. The implementation
+	// only cares whether _M_use_count reaches zero after a decrement,
+	// so negative values are not a problem internally.
+	// So when possible, use -1 for __max (incrementing past that would
+	// overflow _M_use_count to 0, which means an empty shared_ptr).
+	//
+	// When long is not wider than _Atomic_word, __max is just the type's
+	// maximum positive value. We cannot use negative counts because they
+	// would not fit in [0,LONG_MAX) after casting to an unsigned type,
+	// which would cause use_count() to return bogus values.
+	constexpr _Atomic_word __max
+	  = sizeof(long) > sizeof(_Atomic_word)
+	      ? -1 : __gnu_cxx::__int_traits<_Atomic_word>::__max;
+
+	if (__count == __max) [[__unlikely__]]
+	  __builtin_trap();
+      }
+
       _Atomic_word  _M_use_count;     // #shared
       _Atomic_word  _M_weak_count;    // #weak + (#shared != 0)
     };
@@ -248,7 +283,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     inline void
     _Sp_counted_base<_S_single>::_M_add_ref_copy()
-    { __gnu_cxx::__atomic_add_single(&_M_use_count, 1); }
+    {
+      _S_chk(_M_use_count);
+      __gnu_cxx::__atomic_add_single(&_M_use_count, 1);
+    }
 
   template<>
     inline void
@@ -284,8 +322,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_add_ref_lock_nothrow() noexcept
     {
       __gnu_cxx::__scoped_lock sentry(*this);
-      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
+      if (auto __c = __gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1))
+	_S_chk(__c);
+      else
 	{
+	  // Count was zero, so we cannot lock it to get a shared_ptr.
+	  // Reset to zero. This isn't racy, because there are no shared_ptr
+	  // objects using this count and any other weak_ptr objects using it
+	  // must call this function to modify _M_use_count, so would be
+	  // synchronized by the mutex.
 	  _M_use_count = 0;
 	  return false;
 	}
@@ -309,6 +354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (!__atomic_compare_exchange_n(&_M_use_count, &__count, __count + 1,
 					  true, __ATOMIC_ACQ_REL,
 					  __ATOMIC_RELAXED));
+      _S_chk(__count);
       return true;
     }
 
