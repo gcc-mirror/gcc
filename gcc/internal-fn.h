@@ -219,6 +219,7 @@ extern bool commutative_ternary_fn_p (internal_fn);
 extern int first_commutative_argument (internal_fn);
 extern bool associative_binary_fn_p (internal_fn);
 extern bool widening_fn_p (code_helper);
+extern bool widening_evenodd_fn_p (code_helper);
 
 extern bool set_edom_supported_p (void);
 
