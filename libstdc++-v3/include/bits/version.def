@@ -2052,8 +2052,10 @@ ftms = {
 
 ftms = {
   name = constexpr_exceptions;
+  // TODO Remove when PR121114 is resolved
+  no_stdname = true;
   values = {
-    v = 202411;
+    v = 1; // TODO 202411;
     cxxmin = 26;
     extra_cond = "__cpp_constexpr_exceptions >= 202411L";
   };
