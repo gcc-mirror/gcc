@@ -5979,7 +5979,7 @@ symbolic_reference_mentioned_p (rtx op)
   const char *fmt;
   int i;
 
-  if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
+  if (SYMBOL_REF_P (op) || GET_CODE (op) == LABEL_REF)
     return true;
 
   fmt = GET_RTX_FORMAT (GET_CODE (op));
@@ -10724,8 +10724,7 @@ split_stack_prologue_scratch_regno (void)
 
 static GTY(()) rtx split_stack_fn;
 
-/* A SYMBOL_REF for the more stack function when using the large
-   model.  */
+/* A SYMBOL_REF for the more stack function when using the large model.  */
 
 static GTY(()) rtx split_stack_fn_large;
 
@@ -11413,7 +11412,7 @@ ix86_force_load_from_GOT_p (rtx x, bool call_p)
 	  && (!flag_pic || this_is_asm_operands)
 	  && ix86_cmodel != CM_LARGE
 	  && ix86_cmodel != CM_LARGE_PIC
-	  && GET_CODE (x) == SYMBOL_REF
+	  && SYMBOL_REF_P (x)
 	  && ((!call_p
 	       && (!ix86_direct_extern_access
 		   || (SYMBOL_REF_DECL (x)
@@ -11459,15 +11458,15 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	  case UNSPEC_TPOFF:
 	  case UNSPEC_NTPOFF:
 	    x = XVECEXP (x, 0, 0);
-	    return (GET_CODE (x) == SYMBOL_REF
+	    return (SYMBOL_REF_P (x)
 		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_EXEC);
 	  case UNSPEC_DTPOFF:
 	    x = XVECEXP (x, 0, 0);
-	    return (GET_CODE (x) == SYMBOL_REF
+	    return (SYMBOL_REF_P (x)
 		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC);
 	  case UNSPEC_SECREL32:
 	    x = XVECEXP (x, 0, 0);
-	    return GET_CODE (x) == SYMBOL_REF;
+	    return SYMBOL_REF_P (x);
 	  default:
 	    return false;
 	  }
@@ -11475,7 +11474,7 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
       /* We must have drilled down to a symbol.  */
       if (GET_CODE (x) == LABEL_REF)
 	return true;
-      if (GET_CODE (x) != SYMBOL_REF)
+      if (!SYMBOL_REF_P (x))
 	return false;
       /* FALLTHRU */
 
@@ -11602,11 +11601,11 @@ legitimate_pic_operand_p (rtx x)
 	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	    x = XVECEXP (inner, 0, 0);
-	    return (GET_CODE (x) == SYMBOL_REF
+	    return (SYMBOL_REF_P (x)
 		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_EXEC);
 	  case UNSPEC_SECREL32:
 	    x = XVECEXP (inner, 0, 0);
-	    return GET_CODE (x) == SYMBOL_REF;
+	    return SYMBOL_REF_P (x);
 	  case UNSPEC_MACHOPIC_OFFSET:
 	    return legitimate_pic_address_disp_p (x);
 	  default:
@@ -11666,7 +11665,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	  if (GET_CODE (op0) == UNSPEC
 	      && XINT (op0, 1) == UNSPEC_PCREL)
 	    return true;
-	  if (GET_CODE (op0) != SYMBOL_REF)
+	  if (!SYMBOL_REF_P (op0))
 	    break;
 	  /* FALLTHRU */
 
@@ -11731,7 +11730,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	      && XINT (disp, 1) != UNSPEC_PLTOFF))
 	return false;
 
-      if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
+      if (!SYMBOL_REF_P (XVECEXP (disp, 0, 0))
 	  && GET_CODE (XVECEXP (disp, 0, 0)) != LABEL_REF)
 	return false;
       return true;
@@ -11760,13 +11759,13 @@ legitimate_pic_address_disp_p (rtx disp)
       /* We need to check for both symbols and labels because VxWorks loads
 	 text labels with @GOT rather than @GOTOFF.  See gotoff_operand for
 	 details.  */
-      return (GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF
+      return (SYMBOL_REF_P (XVECEXP (disp, 0, 0))
 	      || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF);
     case UNSPEC_GOTOFF:
       /* Refuse GOTOFF in 64bit mode since it is always 64bit when used.
 	 While ABI specify also 32bit relocation but we don't produce it in
 	 small PIC model at all.  */
-      if ((GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF
+      if ((SYMBOL_REF_P (XVECEXP (disp, 0, 0))
 	   || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF)
 	  && !TARGET_64BIT)
         return !TARGET_PECOFF && gotoff_operand (XVECEXP (disp, 0, 0), Pmode);
@@ -11777,19 +11776,19 @@ legitimate_pic_address_disp_p (rtx disp)
       if (saw_plus)
 	return false;
       disp = XVECEXP (disp, 0, 0);
-      return (GET_CODE (disp) == SYMBOL_REF
+      return (SYMBOL_REF_P (disp)
 	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_INITIAL_EXEC);
     case UNSPEC_NTPOFF:
       disp = XVECEXP (disp, 0, 0);
-      return (GET_CODE (disp) == SYMBOL_REF
+      return (SYMBOL_REF_P (disp)
 	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_EXEC);
     case UNSPEC_DTPOFF:
       disp = XVECEXP (disp, 0, 0);
-      return (GET_CODE (disp) == SYMBOL_REF
+      return (SYMBOL_REF_P (disp)
 	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_DYNAMIC);
     case UNSPEC_SECREL32:
       disp = XVECEXP (disp, 0, 0);
-      return GET_CODE (disp) == SYMBOL_REF;
+      return SYMBOL_REF_P (disp);
     }
 
   return false;
@@ -12135,7 +12134,7 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
 	       && !CONST_INT_P (disp)
 	       && (GET_CODE (disp) != CONST
 		   || !ix86_legitimate_constant_p (Pmode, disp))
-	       && (GET_CODE (disp) != SYMBOL_REF
+	       && (!SYMBOL_REF_P (disp)
 		   || !ix86_legitimate_constant_p (Pmode, disp)))
 	/* Displacement is not constant.  */
 	return false;
@@ -12242,7 +12241,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       else
 	new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
     }
-  else if ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (addr) == 0)
+  else if ((SYMBOL_REF_P (addr) && SYMBOL_REF_TLS_MODEL (addr) == 0)
 	   /* We can't always use @GOTOFF for text labels
 	      on VxWorks, see gotoff_operand.  */
 	   || (TARGET_VXWORKS_VAROFF && GET_CODE (addr) == LABEL_REF))
@@ -12380,7 +12379,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 		  /* For %rip addressing, we have to use
 		     just disp32, not base nor index.  */
 		  if (TARGET_64BIT
-		      && (GET_CODE (base) == SYMBOL_REF
+		      && (SYMBOL_REF_P (base)
 			  || GET_CODE (base) == LABEL_REF))
 		    base = force_reg (mode, base);
 		  if (GET_CODE (new_rtx) == PLUS
@@ -12883,12 +12882,12 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
   bool changed = false;
   unsigned log;
 
-  log = GET_CODE (x) == SYMBOL_REF ? SYMBOL_REF_TLS_MODEL (x) : 0;
+  log = SYMBOL_REF_P (x) ? SYMBOL_REF_TLS_MODEL (x) : 0;
   if (log)
     return legitimize_tls_address (x, (enum tls_model) log, false);
   if (GET_CODE (x) == CONST
       && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && SYMBOL_REF_P (XEXP (XEXP (x, 0), 0))
       && (log = SYMBOL_REF_TLS_MODEL (XEXP (XEXP (x, 0), 0))))
     {
       rtx t = legitimize_tls_address (XEXP (XEXP (x, 0), 0),
@@ -13305,7 +13304,7 @@ ix86_delegitimize_tls_address (rtx orig_x)
   if (GET_CODE (unspec) != UNSPEC || XINT (unspec, 1) != UNSPEC_NTPOFF)
     return orig_x;
   x = XVECEXP (unspec, 0, 0);
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  gcc_assert (SYMBOL_REF_P (x));
   if (unspec != XEXP (addr.disp, 0))
     x = gen_rtx_PLUS (Pmode, x, XEXP (XEXP (addr.disp, 0), 1));
   if (addr.index)
@@ -14699,7 +14698,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      if (ASSEMBLER_DIALECT == ASM_ATT)
 		putc ('$', file);
 	    }
-	  else if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF
+	  else if (GET_CODE (x) == CONST || SYMBOL_REF_P (x)
 		   || GET_CODE (x) == LABEL_REF)
 	    {
 	      if (ASSEMBLER_DIALECT == ASM_ATT)
@@ -14796,7 +14795,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	symbol = XEXP (XEXP (disp, 0), 0);
 
       if (GET_CODE (symbol) == LABEL_REF
-	  || (GET_CODE (symbol) == SYMBOL_REF
+	  || (SYMBOL_REF_P (symbol)
 	      && SYMBOL_REF_TLS_MODEL (symbol) == 0))
 	base = pc_rtx;
     }
@@ -17680,7 +17679,7 @@ ix86_rip_relative_addr_p (struct ix86_address *parts)
 	    symbol = XEXP (symbol, 0);
 
 	  if (GET_CODE (symbol) == LABEL_REF
-	      || (GET_CODE (symbol) == SYMBOL_REF
+	      || (SYMBOL_REF_P (symbol)
 		  && SYMBOL_REF_TLS_MODEL (symbol) == 0)
 	      || (GET_CODE (symbol) == UNSPEC
 		  && (XINT (symbol, 1) == UNSPEC_GOTPCREL
@@ -26798,7 +26797,7 @@ ix86_reloc_rw_mask (void)
 static bool
 symbolic_base_address_p (rtx addr)
 {
-  if (GET_CODE (addr) == SYMBOL_REF)
+  if (SYMBOL_REF_P (addr))
     return true;
 
   if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_GOTOFF)

@@ -2953,7 +2953,7 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
 
 		  /* Also generate ENDBRANCH for non-tail call which
 		     may return via indirect branch.  */
-		  if (GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		  if (SYMBOL_REF_P (XEXP (fnaddr, 0)))
 		    fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
 		  if (fndecl == NULL_TREE)
 		    fndecl = MEM_EXPR (fnaddr);

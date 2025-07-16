@@ -387,7 +387,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
       tmp = XEXP (op1, 0);
 
       if (GET_CODE (tmp) != PLUS
-	  || GET_CODE (XEXP (tmp, 0)) != SYMBOL_REF)
+	  || !SYMBOL_REF_P (XEXP (tmp, 0)))
 	break;
 
       op1 = XEXP (tmp, 0);
@@ -6378,7 +6378,7 @@ ix86_split_long_move (rtx operands[])
 	 fp moves, that force all constants to memory to allow combining.  */
 
       if (MEM_P (operands[1])
-	  && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
+	  && SYMBOL_REF_P (XEXP (operands[1], 0))
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (operands[1], 0)))
 	operands[1] = get_pool_constant (XEXP (operands[1], 0));
       if (push_operand (operands[0], VOIDmode))
@@ -10245,7 +10245,7 @@ construct_plt_address (rtx symbol)
 {
   rtx tmp, unspec;
 
-  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+  gcc_assert (SYMBOL_REF_P (symbol));
   gcc_assert (ix86_cmodel == CM_LARGE_PIC && !TARGET_PECOFF);
   gcc_assert (Pmode == DImode);
 
@@ -10279,7 +10279,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   tree fndecl;
   bool call_no_callee_saved_registers = false;
 
-  if (GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+  if (SYMBOL_REF_P (XEXP (fnaddr, 0)))
     {
       fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
       if (fndecl)
@@ -10316,7 +10316,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   if (TARGET_MACHO && !TARGET_64BIT)
     {
 #if TARGET_MACHO
-      if (flag_pic && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+      if (flag_pic && SYMBOL_REF_P (XEXP (fnaddr, 0)))
 	fnaddr = machopic_indirect_call_target (fnaddr);
 #endif
     }
@@ -10326,7 +10326,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	 check if PLT was explicitly avoided via no-plt or "noplt" attribute, making
 	 it an indirect call.  */
       if (flag_pic
-	  && GET_CODE (addr) == SYMBOL_REF
+	  && SYMBOL_REF_P (addr)
 	  && ix86_call_use_plt_p (addr))
 	{
 	  if (flag_plt
@@ -10400,7 +10400,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   if (ix86_cmodel == CM_LARGE_PIC
       && !TARGET_PECOFF
       && MEM_P (fnaddr)
-      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
+      && SYMBOL_REF_P (XEXP (fnaddr, 0))
       && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
   /* Since x32 GOT slot is 64 bit with zero upper 32 bits, indirect
@@ -10503,7 +10503,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     }
 
   if (TARGET_MACHO && TARGET_64BIT && !sibcall
-      && ((GET_CODE (addr) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (addr))
+      && ((SYMBOL_REF_P (addr) && !SYMBOL_REF_LOCAL_P (addr))
 	  || !fndecl || TREE_PUBLIC (fndecl)))
     {
       /* We allow public functions defined in a TU to bind locally for PIC
@@ -25670,7 +25670,7 @@ ix86_notrack_prefixed_insn_p (rtx_insn *insn)
 
       /* Do not emit 'notrack' if it's not an indirect call.  */
       if (MEM_P (addr)
-	  && GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
+	  && SYMBOL_REF_P (XEXP (addr, 0)))
 	return false;
       else
 	return find_reg_note (insn, REG_CALL_NOCF_CHECK, 0);

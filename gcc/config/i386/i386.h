@@ -1842,7 +1842,7 @@ typedef struct ix86_args {
 #define STRIP_UNARY(X) (UNARY_P (X) ? XEXP (X, 0) : X)
 
 #define SYMBOLIC_CONST(X)	\
-  (GET_CODE (X) == SYMBOL_REF						\
+  (SYMBOL_REF_P (X)							\
    || GET_CODE (X) == LABEL_REF						\
    || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
