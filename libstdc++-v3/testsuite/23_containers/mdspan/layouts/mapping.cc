@@ -527,6 +527,7 @@ template<typename Layout>
       {
 	test_linear_index_all<Layout, IntLike>();
 	test_linear_index_all<Layout, MutatingInt>();
+	test_linear_index_all<Layout, RValueInt>();
       }
 
     test_required_span_size_all<Layout>();

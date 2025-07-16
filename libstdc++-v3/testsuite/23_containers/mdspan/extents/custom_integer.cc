@@ -85,9 +85,12 @@ main()
   test_shape_all<IntLike, true>();
   test_shape_all<ThrowingInt, false>();
   test_shape_all<MutatingInt, false>();
+  test_shape_all<RValueInt, false>();
 
   test_pack_all<int, true>();
   test_pack_all<IntLike, true>();
   test_pack_all<ThrowingInt, false>();
+  test_pack_all<MutatingInt, true>();
+  test_pack_all<RValueInt, true>();
   return 0;
 }

@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  || sizeof...(_OIndexTypes) == rank_dynamic())
 	constexpr explicit extents(_OIndexTypes... __exts) noexcept
 	: _M_exts(span<const _IndexType, sizeof...(_OIndexTypes)>(
-	    initializer_list{_S_storage::_S_int_cast(__exts)...}))
+	    initializer_list{static_cast<_IndexType>(std::move(__exts))...}))
 	{ }
 
       template<typename _OIndexType, size_t _Nm>
@@ -602,7 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_Indices... __indices) const noexcept
 	{
 	  return __mdspan::__linear_index_left(_M_extents,
-	    static_cast<index_type>(__indices)...);
+	    static_cast<index_type>(std::move(__indices))...);
 	}
 
       static constexpr bool
@@ -741,7 +741,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_Indices... __indices) const noexcept
 	{
 	  return __mdspan::__linear_index_right(
-	    _M_extents, static_cast<index_type>(__indices)...);
+	    _M_extents, static_cast<index_type>(std::move(__indices))...);
 	}
 
       static constexpr bool
@@ -963,7 +963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_Indices... __indices) const noexcept
 	{
 	  return __mdspan::__linear_index_strides(*this,
-	    static_cast<index_type>(__indices)...);
+	    static_cast<index_type>(std::move(__indices))...);
 	}
 
       static constexpr bool
