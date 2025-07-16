@@ -5272,13 +5272,15 @@ gfc_match_import (void)
       switch (m)
 	{
 	case MATCH_YES:
-	  if (gfc_current_ns->parent !=  NULL
+	  if (gfc_current_ns->parent != NULL
 	      && gfc_find_symbol (name, gfc_current_ns->parent, 1, &sym))
 	    {
 	       gfc_error ("Type name %qs at %C is ambiguous", name);
 	       return MATCH_ERROR;
 	    }
-	  else if (!sym && gfc_current_ns->proc_name->ns->parent !=  NULL
+	  else if (!sym
+		   && gfc_current_ns->proc_name
+		   && gfc_current_ns->proc_name->ns->parent
 		   && gfc_find_symbol (name,
 				       gfc_current_ns->proc_name->ns->parent,
 				       1, &sym))
@@ -5289,7 +5291,8 @@ gfc_match_import (void)
 
 	  if (sym == NULL)
 	    {
-	      if (gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY)
+	      if (gfc_current_ns->proc_name
+		  && gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY)
 		{
 		  gfc_error ("Cannot IMPORT %qs from host scoping unit "
 			     "at %C - does not exist.", name);
