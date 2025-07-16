@@ -693,6 +693,7 @@ main()
   static_assert(test_from_int_like<int, true, true>());
   test_from_int_like<IntLike, true, true>();
   test_from_int_like<ThrowingInt, false, false>();
+  test_from_int_like<MutatingInt, true, false>();
 
   test_from_opaque_accessor();
   test_from_base_class_accessor();
@@ -703,6 +704,7 @@ main()
   static_assert(test_access<int, true, true>());
   test_access<IntLike, true, true>();
   test_access<ThrowingInt, false, false>();
+  test_access<MutatingInt, true, false>();
 
   test_swap();
   static_assert(test_swap());

@@ -288,15 +288,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    initializer_list{_S_storage::_S_int_cast(__exts)...}))
 	{ }
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType, size_t _Nm>
-	requires (_Nm == rank() || _Nm == rank_dynamic())
+      template<typename _OIndexType, size_t _Nm>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
+	  && (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(span<_OIndexType, _Nm> __exts) noexcept
 	: _M_exts(span<const _OIndexType, _Nm>(__exts))
 	{ }
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType, size_t _Nm>
-	requires (_Nm == rank() || _Nm == rank_dynamic())
+      template<typename _OIndexType, size_t _Nm>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
+	  && (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(const array<_OIndexType, _Nm>& __exts) noexcept
 	: _M_exts(span<const _OIndexType, _Nm>(__exts))
@@ -878,7 +880,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr
       mapping(const mapping&) noexcept = default;
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+      template<typename _OIndexType>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
 	constexpr
 	mapping(const extents_type& __exts,
 		span<_OIndexType, extents_type::rank()> __strides) noexcept
@@ -888,7 +891,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_strides[__i] = index_type(as_const(__strides[__i]));
 	}
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+      template<typename _OIndexType>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
 	constexpr
 	mapping(const extents_type& __exts,
 		const array<_OIndexType, extents_type::rank()>& __strides)
@@ -1134,9 +1138,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_handle(std::move(__handle))
 	{ }
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType,
-	       size_t _Nm>
-	requires (_Nm == rank() || _Nm == rank_dynamic())
+      template<typename _OIndexType, size_t _Nm>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
+		 && (_Nm == rank() || _Nm == rank_dynamic())
 		 && is_constructible_v<mapping_type, extents_type>
 		 && is_default_constructible_v<accessor_type>
 	constexpr explicit(_Nm != rank_dynamic())
@@ -1145,9 +1149,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_handle(std::move(__handle))
 	{ }
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType,
-	       size_t _Nm>
-	requires (_Nm == rank() || _Nm == rank_dynamic())
+      template<typename _OIndexType, size_t _Nm>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
+		 && (_Nm == rank() || _Nm == rank_dynamic())
 		 && is_constructible_v<mapping_type, extents_type>
 		 && is_default_constructible_v<accessor_type>
 	constexpr explicit(_Nm != rank_dynamic())
@@ -1218,7 +1222,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _M_accessor.access(_M_handle, __index);
 	}
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+      template<typename _OIndexType>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
 	constexpr reference
 	operator[](span<_OIndexType, rank()> __indices) const
 	{
@@ -1228,7 +1233,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __call(make_index_sequence<rank()>());
 	}
 
-      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+      template<typename _OIndexType>
+	requires __mdspan::__valid_index_type<const _OIndexType&, index_type>
 	constexpr reference
 	operator[](const array<_OIndexType, rank()>& __indices) const
 	{ return (*this)[span<const _OIndexType, rank()>(__indices)]; }

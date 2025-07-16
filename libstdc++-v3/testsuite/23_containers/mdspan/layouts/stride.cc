@@ -65,6 +65,7 @@ test_stride_constructible_all()
   test_stride_constructible<E0, E0, int, 0, true>();
   test_stride_constructible<E0, E0, IntLike, 0, true>();
   test_stride_constructible<E0, E0, ThrowingInt, 0, false>();
+  test_stride_constructible<E0, E0, MutatingInt, 0, false>();
   test_stride_constructible<E0, E0, NotIntLike, 0, false>();
   test_stride_constructible<E1, E1, int, 1, true>();
   test_stride_constructible<E2, E1, int, 1, true>();

@@ -84,6 +84,7 @@ main()
   test_shape_all<int, true>();
   test_shape_all<IntLike, true>();
   test_shape_all<ThrowingInt, false>();
+  test_shape_all<MutatingInt, false>();
 
   test_pack_all<int, true>();
   test_pack_all<IntLike, true>();

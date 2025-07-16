@@ -180,6 +180,7 @@ template<typename Layout>
     static_assert(has_linear_index<Mapping, int>);
     static_assert(has_linear_index<Mapping, double>);
     static_assert(has_linear_index<Mapping, IntLike>);
+    static_assert(has_linear_index<Mapping, MutatingInt>);
     static_assert(!has_linear_index<Mapping, ThrowingInt>);
     static_assert(!has_linear_index<Mapping, NotIntLike>);
     static_assert(!has_linear_index<Mapping, int, int>);
@@ -194,6 +195,7 @@ template<typename Layout>
     static_assert(has_linear_index<Mapping, int, int>);
     static_assert(has_linear_index<Mapping, double, double>);
     static_assert(has_linear_index<Mapping, IntLike, int>);
+    static_assert(has_linear_index<Mapping, MutatingInt, int>);
     static_assert(!has_linear_index<Mapping, ThrowingInt, int>);
     static_assert(!has_linear_index<Mapping, NotIntLike, int>);
     static_assert(!has_linear_index<Mapping, int, int, int>);
@@ -524,6 +526,7 @@ template<typename Layout>
     if !consteval
       {
 	test_linear_index_all<Layout, IntLike>();
+	test_linear_index_all<Layout, MutatingInt>();
       }
 
     test_required_span_size_all<Layout>();

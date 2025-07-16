@@ -5,6 +5,7 @@ enum class CustomIndexKind
 {
   Const,
   Throwing,
+  Mutating,
 };
 
 template<CustomIndexKind Kind>
@@ -36,12 +37,18 @@ template<CustomIndexKind Kind>
     requires (Kind == CustomIndexKind::Throwing)
     { return _M_i; }
 
+    constexpr
+    operator int() noexcept
+    requires (Kind == CustomIndexKind::Mutating)
+    { return _M_i; }
+
   private:
     int _M_i;
   };
 
 using IntLike = CustomIndexType<CustomIndexKind::Const>;
 using ThrowingInt = CustomIndexType<CustomIndexKind::Throwing>;
+using MutatingInt = CustomIndexType<CustomIndexKind::Mutating>;
 
 struct NotIntLike
 { };
