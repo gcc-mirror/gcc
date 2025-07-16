@@ -7542,6 +7542,12 @@ package body Sem_Ch12 is
                     or else not Same_Instantiated_Function (E1, E2));
             end if;
 
+         --  No check is needed if this is the body of a subprogram that is
+         --  implicitly created in the case of class-wide predefined functions.
+
+         elsif Ekind (E1) = E_Subprogram_Body then
+            null;
+
          else
             raise Program_Error;
          end if;
