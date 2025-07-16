@@ -193,7 +193,6 @@ AWK = @AWK@
 GCC_FOR_TARGET = $(CC)
 LIPO = @LIPO@
 LIPO_FOR_TARGET = $(LIPO)
-MACHMODE_H = machmode.h mode-classes.def insn-modes.h
 NM = @NM@
 NM_FOR_TARGET = $(NM)
 RANLIB_FOR_TARGET = $(RANLIB)
@@ -220,7 +219,6 @@ export INSTALL_DATA
 export LIB1ASMSRC
 export LIBGCC2_CFLAGS
 export LIPO_FOR_TARGET
-export MACHMODE_H
 export NM_FOR_TARGET
 export STRIP_FOR_TARGET
 export RANLIB_FOR_TARGET
