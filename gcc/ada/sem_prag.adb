@@ -5761,7 +5761,7 @@ package body Sem_Prag is
 
             begin
                if Pname = Name_Pre_Class then
-                  if Is_Ignored (N) then
+                  if Is_Ignored_In_Codegen (N) then
                      Set_Ignored_Class_Preconditions (Subp_Id,
                        New_Copy_Tree (Expr));
                   else
@@ -5769,7 +5769,7 @@ package body Sem_Prag is
                   end if;
 
                else
-                  if Is_Ignored (N) then
+                  if Is_Ignored_In_Codegen (N) then
                      Set_Ignored_Class_Postconditions (Subp_Id,
                        New_Copy_Tree (Expr));
                   else
@@ -14868,18 +14868,9 @@ package body Sem_Prag is
                   Set_Is_Ignored (N, False);
 
                else
-                  --  In CodePeer mode and GNATprove mode, we need to
-                  --  consider all assertions, unless they are disabled,
-                  --  because transformations of the AST may depend on
-                  --  assertions being checked.
+                  Set_Is_Checked (N, False);
+                  Set_Is_Ignored (N, True);
 
-                  if CodePeer_Mode or GNATprove_Mode then
-                     Set_Is_Checked (N, True);
-                     Set_Is_Ignored (N, False);
-                  else
-                     Set_Is_Checked (N, False);
-                     Set_Is_Ignored (N, True);
-                  end if;
                end if;
             end Handle_Dynamic_Predicate_Check;
 
@@ -15043,7 +15034,7 @@ package body Sem_Prag is
             --  False at compile time, and we do not want to delete this
             --  warning when we delete the if statement.
 
-            if Expander_Active and Is_Ignored (N) then
+            if Expander_Active and Is_Ignored_In_Codegen (N) then
                Eloc := Sloc (Expr);
 
                Rewrite (N,
@@ -16242,10 +16233,10 @@ package body Sem_Prag is
             Cond :=
               New_Occurrence_Of
                 (Boolean_Literals
-                  (Expander_Active and then not Is_Ignored (N)),
+                  (Expander_Active and then not Is_Ignored_In_Codegen (N)),
                  Loc);
 
-            if not Is_Ignored (N) then
+            if not Is_Ignored_In_Codegen (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
@@ -32188,20 +32179,8 @@ package body Sem_Prag is
                   when Name_Ignore
                      | Name_Off
                   =>
-                     --  In CodePeer mode and GNATprove mode, we need to
-                     --  consider all assertions, unless they are disabled.
-                     --  Force Is_Checked on ignored assertions, in particular
-                     --  because transformations of the AST may depend on
-                     --  assertions being checked (e.g. the translation of
-                     --  attribute 'Loop_Entry).
-
-                     if CodePeer_Mode or GNATprove_Mode then
-                        Set_Is_Checked (N, True);
-                        Set_Is_Ignored (N, False);
-                     else
-                        Set_Is_Checked (N, False);
-                        Set_Is_Ignored (N, True);
-                     end if;
+                     Set_Is_Checked (N, False);
+                     Set_Is_Ignored (N, True);
 
                   when Name_Check
                      | Name_On

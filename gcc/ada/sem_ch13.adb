@@ -4799,7 +4799,7 @@ package body Sem_Ch13 is
                     and then not Is_Ignored_Ghost_Entity (E)
                   then
                      if A_Id = Aspect_Pre then
-                        if Is_Ignored (Aspect) then
+                        if Is_Ignored_In_Codegen (Aspect) then
                            Set_Ignored_Class_Preconditions (E,
                              New_Copy_Tree (Expr));
                         else
@@ -4813,7 +4813,7 @@ package body Sem_Ch13 is
                      elsif No (Class_Postconditions (E))
                        and then No (Ignored_Class_Postconditions (E))
                      then
-                        if Is_Ignored (Aspect) then
+                        if Is_Ignored_In_Codegen (Aspect) then
                            Set_Ignored_Class_Postconditions (E,
                              New_Copy_Tree (Expr));
                         else
@@ -10448,7 +10448,7 @@ package body Sem_Ch13 is
             --  which is needed to generate the corresponding predicate
             --  function.
 
-            if Is_Ignored_Ghost_Pragma (Prag) then
+            if Is_Ignored_Ghost_Pragma_In_Codegen (Prag) then
                Add_Condition (New_Occurrence_Of (Standard_True, Sloc (Prag)));
 
             else
@@ -10489,7 +10489,8 @@ package body Sem_Ch13 is
 
                   --  "and"-in the Arg2 condition to evolving expression
 
-                  if not Is_Ignored_Ghost_Pragma (Prag) then
+                  if not Is_Ignored_Ghost_Pragma_In_Codegen (Prag)
+                  then
                      Add_Condition (Arg2_Copy);
                   end if;
                end;

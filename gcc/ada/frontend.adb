@@ -477,7 +477,7 @@ begin
             --  executable. This action must be performed very late because it
             --  heavily alters the tree.
 
-            if Operating_Mode = Generate_Code or else GNATprove_Mode then
+            if Operating_Mode = Generate_Code and not CodePeer_Mode then
                Remove_Ignored_Ghost_Code;
             end if;
 

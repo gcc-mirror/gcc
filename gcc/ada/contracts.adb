@@ -2714,10 +2714,11 @@ package body Contracts is
 
       procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id) is
       begin
-         --  Do not chain ignored or disabled pragmas
+         --  Do not chain ignored or disabled pragmas. Note that disabled
+         --  pragmas are also considered ignored.
 
          if Nkind (Item) = N_Pragma
-           and then (Is_Ignored (Item) or else Is_Disabled (Item))
+           and then Is_Ignored_In_Codegen (Item)
          then
             null;
 

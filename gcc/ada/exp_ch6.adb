@@ -8099,7 +8099,7 @@ package body Exp_Ch6 is
               Get_Class_Wide_Pragma (Id, Pragma_Precondition);
 
          begin
-            if No (Prag) or else Is_Ignored (Prag) then
+            if No (Prag) or else Is_Ignored_In_Codegen (Prag) then
                return;
             end if;
 

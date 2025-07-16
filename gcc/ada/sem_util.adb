@@ -12472,6 +12472,41 @@ package body Sem_Util is
       end if;
    end Is_Extended_Access_Type;
 
+   ----------------------------------------
+   -- Is_Ignored_Ghost_Entity_In_Codegen --
+   ----------------------------------------
+
+   function Is_Ignored_Ghost_Entity_In_Codegen (N : Entity_Id) return Boolean
+   is
+   begin
+      return
+        Is_Ignored_Ghost_Entity (N)
+        and then not GNATprove_Mode
+        and then not CodePeer_Mode;
+   end Is_Ignored_Ghost_Entity_In_Codegen;
+
+   ----------------------------------------
+   -- Is_Ignored_Ghost_Pragma_In_Codegen --
+   ----------------------------------------
+
+   function Is_Ignored_Ghost_Pragma_In_Codegen (N : Node_Id) return Boolean is
+   begin
+      return
+        Is_Ignored_Ghost_Pragma (N)
+        and then not GNATprove_Mode
+        and then not CodePeer_Mode;
+   end Is_Ignored_Ghost_Pragma_In_Codegen;
+
+   ---------------------------
+   -- Is_Ignored_In_Codegen --
+   ---------------------------
+
+   function Is_Ignored_In_Codegen (N : Node_Id) return Boolean is
+   begin
+      return
+        Is_Ignored (N) and then not GNATprove_Mode and then not CodePeer_Mode;
+   end Is_Ignored_In_Codegen;
+
    ---------------------------------
    -- Side_Effect_Free_Statements --
    ---------------------------------
@@ -26438,16 +26473,6 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  In CodePeer mode and GNATprove mode, we need to consider all
-      --  assertions, unless they are disabled. Force Name_Check on
-      --  ignored assertions.
-
-      if Kind in Name_Ignore | Name_Off
-        and then (CodePeer_Mode or GNATprove_Mode)
-      then
-         Kind := Name_Check;
-      end if;
-
       return Kind;
    end Policy_In_Effect;
 
@@ -26481,9 +26506,11 @@ package body Sem_Util is
 
    function Predicate_Enabled (Typ : Entity_Id) return Boolean is
    begin
-      return Present (Predicate_Function (Typ))
-        and then not Predicates_Ignored (Typ)
-        and then not Predicate_Checks_Suppressed (Empty);
+      return
+        Present (Predicate_Function (Typ))
+        and then (GNATprove_Mode
+                  or else (not Predicates_Ignored (Typ)
+                           and then not Predicate_Checks_Suppressed (Empty)));
    end Predicate_Enabled;
 
    ----------------------------------

@@ -1729,7 +1729,7 @@ package body Lib.Xref is
             --  entity because neither the entity nor its references will
             --  appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Ent) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Ent) then
                goto Orphan_Continue;
             end if;
 
@@ -2190,7 +2190,7 @@ package body Lib.Xref is
                --  entity because neither the entity nor its references will
                --  appear in the final tree.
 
-               if Is_Ignored_Ghost_Entity (Ent) then
+               if Is_Ignored_Ghost_Entity_In_Codegen (Ent) then
                   goto Continue;
                end if;
 

@@ -1903,7 +1903,7 @@ package body Exp_Util is
       begin
          --  The DIC pragma is ignored, nothing left to do
 
-         if Is_Ignored (DIC_Prag) then
+         if Is_Ignored_In_Codegen (DIC_Prag) then
             null;
 
          --  Otherwise the DIC expression must be checked at run time.
@@ -3235,7 +3235,7 @@ package body Exp_Util is
       begin
          --  The invariant is ignored, nothing left to do
 
-         if Is_Ignored (Prag) then
+         if Is_Ignored_In_Codegen (Prag) then
             null;
 
          --  Otherwise the invariant is checked. Build a pragma Check to verify

@@ -905,7 +905,7 @@ package body Lib.Writ is
             --  Do not generate a with line for an ignored Ghost unit because
             --  the unit does not have an ALI file.
 
-            if Is_Ignored_Ghost_Entity (Cunit_Entity (Unum)) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Cunit_Entity (Unum)) then
                goto Next_With_Line;
             end if;
 

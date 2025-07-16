@@ -2079,6 +2079,18 @@ package Sem_Util is
    --  . machine_emax = 2**14
    --  . machine_emin = 3 - machine_emax
 
+   function Is_Ignored_Ghost_Entity_In_Codegen (N : Node_Id) return Boolean;
+   --  True if N Is_Ignored_Ghost_Entity and GNATProve_mode and Codepeer_Mode
+   --  are not active.
+
+   function Is_Ignored_Ghost_Pragma_In_Codegen (N : Node_Id) return Boolean;
+   --  True if N Is_Ignored_Ghost_Pragma and GNATProve_mode and Codepeer_Mode
+   --  are not active.
+
+   function Is_Ignored_In_Codegen (N : Node_Id) return Boolean;
+   --  True if N Is_Ignored and GNATProve_mode and Codepeer_Mode are not
+   --  active.
+
    function Is_EVF_Expression (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a reference to a formal parameter of
    --  a specific tagged type whose related subprogram is subject to pragma
