@@ -12756,7 +12756,7 @@
 	     lo insns have =m and 0C constraints.  */
 	  : (operands[2] != const0_rtx
 	     || (!rtx_equal_p (dest, operands[3])
-		 && GET_CODE (operands[3]) != CONST_VECTOR))))
+		 && !CONST_VECTOR_P (operands[3])))))
     dest = gen_reg_rtx (<ssehalfvecmode>mode);
   switch (INTVAL (operands[2]))
     {

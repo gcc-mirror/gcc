@@ -14669,7 +14669,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
       /* We have patterns that allow zero sets of memory, for instance.
 	 In 64-bit mode, we should probably support all 8-byte vectors,
 	 since we can in fact encode that into an immediate.  */
-      if (GET_CODE (x) == CONST_VECTOR)
+      if (CONST_VECTOR_P (x))
 	{
 	  if (x != CONST0_RTX (GET_MODE (x)))
 	    output_operand_lossage ("invalid vector immediate");

@@ -1145,7 +1145,7 @@
   unsigned n_elts;
   op = avoid_constant_pool_reference (op);
 
-  if (GET_CODE (op) != CONST_VECTOR)
+  if (!CONST_VECTOR_P (op))
     return false;
 
   n_elts = CONST_VECTOR_NUNITS (op);
@@ -1173,7 +1173,7 @@
   if (MEM_P (op))
     {
       op = get_pool_constant (XEXP (op, 0));
-      if (GET_CODE (op) != CONST_VECTOR)
+      if (!CONST_VECTOR_P (op))
 	return false;
 
       if (GET_MODE (op) != mode

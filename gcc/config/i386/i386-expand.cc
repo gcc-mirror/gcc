@@ -1396,11 +1396,11 @@ ix86_expand_vector_logical_operator (enum rtx_code code, machine_mode mode,
      to cast them temporarily to integer vectors.  */
   if (op1
       && !TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
-      && (SUBREG_P (op2) || GET_CODE (op2) == CONST_VECTOR)
+      && (SUBREG_P (op2) || CONST_VECTOR_P (op2))
       && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op1))) == MODE_VECTOR_FLOAT
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1))) == GET_MODE_SIZE (mode)
       && SUBREG_BYTE (op1) == 0
-      && (GET_CODE (op2) == CONST_VECTOR
+      && (CONST_VECTOR_P (op2)
 	  || (GET_MODE (SUBREG_REG (op1)) == GET_MODE (SUBREG_REG (op2))
 	      && SUBREG_BYTE (op2) == 0))
       && can_create_pseudo_p ())
@@ -1415,7 +1415,7 @@ ix86_expand_vector_logical_operator (enum rtx_code code, machine_mode mode,
 	case E_V4DFmode:
 	case E_V8DFmode:
 	  dst = gen_reg_rtx (GET_MODE (SUBREG_REG (op1)));
-	  if (GET_CODE (op2) == CONST_VECTOR)
+	  if (CONST_VECTOR_P (op2))
 	    {
 	      op2 = gen_lowpart (GET_MODE (dst), op2);
 	      op2 = force_reg (GET_MODE (dst), op2);
@@ -4918,7 +4918,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	case LEU:
 	  /* x <= cst can be handled as x < cst + 1 unless there is
 	     wrap around in cst + 1.  */
-	  if (GET_CODE (cop1) == CONST_VECTOR
+	  if (CONST_VECTOR_P (cop1)
 	      && GET_MODE_INNER (mode) != TImode)
 	    {
 	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
@@ -4962,7 +4962,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	case GEU:
 	  /* x >= cst can be handled as x > cst - 1 unless there is
 	     wrap around in cst - 1.  */
-	  if (GET_CODE (cop1) == CONST_VECTOR
+	  if (CONST_VECTOR_P (cop1)
 	      && GET_MODE_INNER (mode) != TImode)
 	    {
 	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
@@ -5033,9 +5033,9 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    }
 	}
 
-      if (GET_CODE (cop0) == CONST_VECTOR)
+      if (CONST_VECTOR_P (cop0))
 	cop0 = force_reg (mode, cop0);
-      else if (GET_CODE (cop1) == CONST_VECTOR)
+      else if (CONST_VECTOR_P (cop1))
 	cop1 = force_reg (mode, cop1);
 
       rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
@@ -5234,7 +5234,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
   if (*negate)
     std::swap (op_true, op_false);
 
-  if (GET_CODE (cop1) == CONST_VECTOR)
+  if (CONST_VECTOR_P (cop1))
     cop1 = force_reg (mode, cop1);
 
   /* Allow the comparison to be done in one mode, but the movcc to
@@ -6188,7 +6188,7 @@ ix86_extract_perm_from_pool_constant (int* perm, rtx mem)
 
   rtx constant = get_pool_constant (XEXP (mem, 0));
 
-  if (GET_CODE (constant) != CONST_VECTOR)
+  if (!CONST_VECTOR_P (constant))
     return false;
 
   /* There could be some rtx like
@@ -6198,7 +6198,7 @@ ix86_extract_perm_from_pool_constant (int* perm, rtx mem)
     {
       constant = simplify_subreg (mode, constant, GET_MODE (constant), 0);
 
-      if (constant == nullptr || GET_CODE (constant) != CONST_VECTOR)
+      if (constant == nullptr || !CONST_VECTOR_P (constant))
 	return false;
     }
 
@@ -6244,7 +6244,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
       return size;
     }
 
-  if (GET_CODE (operand) == CONST_VECTOR)
+  if (CONST_VECTOR_P (operand))
     {
       scalar_int_mode imode = int_mode_for_mode (mode).require ();
       /* Caution: if we looked through a constant pool memory above,
@@ -25327,7 +25327,7 @@ const_vector_equal_evenodd_p (rtx op)
 {
   machine_mode mode = GET_MODE (op);
   int i, nunits = GET_MODE_NUNITS (mode);
-  if (GET_CODE (op) != CONST_VECTOR
+  if (!CONST_VECTOR_P (op)
       || nunits != CONST_VECTOR_NUNITS (op))
     return false;
   for (i = 0; i < nunits; i += 2)
@@ -26487,8 +26487,8 @@ do_mem_operand:
       if (rtx_equal_p (op, args[2]))
 	return 0xaa;
       /* Check if CONST_VECTOR is the ones-complement of args[2].  */
-      if (GET_CODE (op) == CONST_VECTOR
-	  && GET_CODE (args[2]) == CONST_VECTOR
+      if (CONST_VECTOR_P (op)
+	  && CONST_VECTOR_P (args[2])
 	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
 							  op, GET_MODE (op)),
 			  args[2]))
@@ -26501,8 +26501,8 @@ do_mem_operand:
       if (rtx_equal_p (op, args[0]))
 	return 0xf0;
       /* Check if CONST_VECTOR is the ones-complement of args[0].  */
-      if (GET_CODE (op) == CONST_VECTOR
-	  && GET_CODE (args[0]) == CONST_VECTOR
+      if (CONST_VECTOR_P (op)
+	  && CONST_VECTOR_P (args[0])
 	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
 							  op, GET_MODE (op)),
 			  args[0]))
@@ -26515,8 +26515,8 @@ do_mem_operand:
       if (rtx_equal_p (op, args[1]))
 	return 0xcc;
       /* Check if CONST_VECTOR is the ones-complement of args[1].  */
-      if (GET_CODE (op) == CONST_VECTOR
-	  && GET_CODE (args[1]) == CONST_VECTOR
+      if (CONST_VECTOR_P (op)
+	  && CONST_VECTOR_P (args[1])
 	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
 							  op, GET_MODE (op)),
 			  args[1]))
