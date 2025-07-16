@@ -1,0 +1,37 @@
+/* AArch64 tuning parameter enum definitions.
+   Copyright The GNU Toolchain Authors.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file contains the enum definitions for AArch64 tuning parameters
+   that are used in both the JSON parser/printer and the tuning structures.  */
+
+#ifdef AARCH64_AUTOPREFETCH_MODE
+AARCH64_AUTOPREFETCH_MODE("AUTOPREFETCHER_OFF", AUTOPREFETCHER_OFF)
+AARCH64_AUTOPREFETCH_MODE("AUTOPREFETCHER_WEAK", AUTOPREFETCHER_WEAK)
+AARCH64_AUTOPREFETCH_MODE("AUTOPREFETCHER_STRONG", AUTOPREFETCHER_STRONG)
+#endif
+
+#ifdef AARCH64_LDP_STP_POLICY
+AARCH64_LDP_STP_POLICY("AARCH64_LDP_STP_POLICY_DEFAULT", AARCH64_LDP_STP_POLICY_DEFAULT)
+AARCH64_LDP_STP_POLICY("AARCH64_LDP_STP_POLICY_ALIGNED", AARCH64_LDP_STP_POLICY_ALIGNED)
+AARCH64_LDP_STP_POLICY("AARCH64_LDP_STP_POLICY_ALWAYS", AARCH64_LDP_STP_POLICY_ALWAYS)
+AARCH64_LDP_STP_POLICY("AARCH64_LDP_STP_POLICY_NEVER", AARCH64_LDP_STP_POLICY_NEVER)
+#endif
+
+#undef AARCH64_AUTOPREFETCH_MODE
+#undef AARCH64_LDP_STP_POLICY

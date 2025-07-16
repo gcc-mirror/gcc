@@ -568,9 +568,8 @@ struct tune_params
 
   enum aarch64_autoprefetch_model
   {
-    AUTOPREFETCHER_OFF,
-    AUTOPREFETCHER_WEAK,
-    AUTOPREFETCHER_STRONG
+#define AARCH64_AUTOPREFETCH_MODE(NAME, ENUM_VALUE) ENUM_VALUE,
+#include "aarch64-tuning-enums.def"
   } autoprefetcher_model;
 
   unsigned int extra_tuning_flags;

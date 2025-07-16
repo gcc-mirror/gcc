@@ -47,6 +47,12 @@ else
 endif
 	$(STAMP) s-aarch64-tune-md
 
+# Regenerate the JSON tuning files if the schema has changed
+$(srcdir)/config/aarch64/aarch64-json-tunings-%-generated.inc: \
+$(srcdir)/config/aarch64/aarch64-json-schema.h \
+$(srcdir)/config/aarch64/aarch64-generate-json-tuning-routines.py
+	$(PYTHON) $(srcdir)/config/aarch64/aarch64-generate-json-tuning-routines.py --generate-only $*
+
 s-mddeps: s-aarch64-tune-md
 
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.cc $(CONFIG_H) \
@@ -214,6 +220,7 @@ aarch64-json-tunings-printer.o: $(srcdir)/config/aarch64/aarch64-json-tunings-pr
     $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
     $(PRETTY_PRINT_H) json.h \
     $(srcdir)/config/aarch64/aarch64-json-tunings-printer.h \
+    $(srcdir)/config/aarch64/aarch64-json-tunings-printer-generated.inc \
     $(srcdir)/config/aarch64/aarch64-protos.h \
     $(srcdir)/config/arm/aarch-common-protos.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -224,6 +231,7 @@ aarch64-json-tunings-parser.o: $(srcdir)/config/aarch64/aarch64-json-tunings-par
     json-parsing.h \
     $(srcdir)/config/aarch64/aarch64-json-schema.h \
     $(srcdir)/config/aarch64/aarch64-json-tunings-parser.h \
+    $(srcdir)/config/aarch64/aarch64-json-tunings-parser-generated.inc \
     $(srcdir)/config/aarch64/aarch64-protos.h \
     $(srcdir)/config/arm/aarch-common-protos.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

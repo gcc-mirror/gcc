@@ -142,10 +142,8 @@ enum aarch64_autovec_preference_enum {
    - LDP_STP_POLICY_ALWAYS: Emit ldp/stp regardless of alignment.
    - LDP_STP_POLICY_NEVER: Do not emit ldp/stp.  */
 enum aarch64_ldp_stp_policy {
-  AARCH64_LDP_STP_POLICY_DEFAULT,
-  AARCH64_LDP_STP_POLICY_ALIGNED,
-  AARCH64_LDP_STP_POLICY_ALWAYS,
-  AARCH64_LDP_STP_POLICY_NEVER
+#define AARCH64_LDP_STP_POLICY(NAME, ENUM_VALUE) ENUM_VALUE,
+#include "aarch64-tuning-enums.def"
 };
 
 /* An enum specifying when the early-ra pass should be run:
