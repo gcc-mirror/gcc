@@ -1843,7 +1843,7 @@ typedef struct ix86_args {
 
 #define SYMBOLIC_CONST(X)	\
   (SYMBOL_REF_P (X)							\
-   || GET_CODE (X) == LABEL_REF						\
+   || LABEL_REF_P (X)							\
    || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
 /* Max number of args passed in registers.  If this is more than 3, we will

@@ -574,7 +574,7 @@
     case CONST:
       op = XEXP (op, 0);
       if (SYMBOL_REF_P (op)
-	  || GET_CODE (op) == LABEL_REF
+	  || LABEL_REF_P (op)
 	  || (GET_CODE (op) == UNSPEC
 	      && (XINT (op, 1) == UNSPEC_GOT
 		  || XINT (op, 1) == UNSPEC_GOTOFF
@@ -587,7 +587,7 @@
 
       op = XEXP (op, 0);
       if (SYMBOL_REF_P (op)
-	  || GET_CODE (op) == LABEL_REF)
+	  || LABEL_REF_P (op))
 	return true;
       /* Only @GOTOFF gets offsets.  */
       if (GET_CODE (op) != UNSPEC
@@ -596,7 +596,7 @@
 
       op = XVECEXP (op, 0, 0);
       if (SYMBOL_REF_P (op)
-	  || GET_CODE (op) == LABEL_REF)
+	  || LABEL_REF_P (op))
 	return true;
       return false;
 
@@ -614,7 +614,7 @@
       && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
     op = XEXP (XEXP (op, 0), 0);
 
-  if (GET_CODE (op) == LABEL_REF)
+  if (LABEL_REF_P (op))
     return true;
 
   if (!SYMBOL_REF_P (op))
@@ -1423,7 +1423,7 @@
       if (TARGET_64BIT
 	  && flag_pic
 	  && (SYMBOL_REF_P (disp)
-	      || GET_CODE (disp) == LABEL_REF))
+	      || LABEL_REF_P (disp)))
 	return false;
     }
 

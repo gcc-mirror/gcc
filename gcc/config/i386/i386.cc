@@ -5979,7 +5979,7 @@ symbolic_reference_mentioned_p (rtx op)
   const char *fmt;
   int i;
 
-  if (SYMBOL_REF_P (op) || GET_CODE (op) == LABEL_REF)
+  if (SYMBOL_REF_P (op) || LABEL_REF_P (op))
     return true;
 
   fmt = GET_RTX_FORMAT (GET_CODE (op));
@@ -11472,7 +11472,7 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	  }
 
       /* We must have drilled down to a symbol.  */
-      if (GET_CODE (x) == LABEL_REF)
+      if (LABEL_REF_P (x))
 	return true;
       if (!SYMBOL_REF_P (x))
 	return false;
@@ -11656,7 +11656,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	  if (INTVAL (op1) >= 16*1024*1024
 	      || INTVAL (op1) < -16*1024*1024)
 	    break;
-	  if (GET_CODE (op0) == LABEL_REF)
+	  if (LABEL_REF_P (op0))
 	    return true;
 	  if (GET_CODE (op0) == CONST
 	      && GET_CODE (XEXP (op0, 0)) == UNSPEC
@@ -11731,7 +11731,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	return false;
 
       if (!SYMBOL_REF_P (XVECEXP (disp, 0, 0))
-	  && GET_CODE (XVECEXP (disp, 0, 0)) != LABEL_REF)
+	  && !LABEL_REF_P (XVECEXP (disp, 0, 0)))
 	return false;
       return true;
     }
@@ -11760,13 +11760,13 @@ legitimate_pic_address_disp_p (rtx disp)
 	 text labels with @GOT rather than @GOTOFF.  See gotoff_operand for
 	 details.  */
       return (SYMBOL_REF_P (XVECEXP (disp, 0, 0))
-	      || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF);
+	      || LABEL_REF_P (XVECEXP (disp, 0, 0)));
     case UNSPEC_GOTOFF:
       /* Refuse GOTOFF in 64bit mode since it is always 64bit when used.
 	 While ABI specify also 32bit relocation but we don't produce it in
 	 small PIC model at all.  */
       if ((SYMBOL_REF_P (XVECEXP (disp, 0, 0))
-	   || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF)
+	   || LABEL_REF_P (XVECEXP (disp, 0, 0)))
 	  && !TARGET_64BIT)
         return !TARGET_PECOFF && gotoff_operand (XVECEXP (disp, 0, 0), Pmode);
       return false;
@@ -12130,7 +12130,7 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
 	     that never results in lea, this seems to be easier and
 	     correct fix for crash to disable this test.  */
 	}
-      else if (GET_CODE (disp) != LABEL_REF
+      else if (!LABEL_REF_P (disp)
 	       && !CONST_INT_P (disp)
 	       && (GET_CODE (disp) != CONST
 		   || !ix86_legitimate_constant_p (Pmode, disp))
@@ -12244,7 +12244,7 @@ legitimize_pic_address (rtx orig, rtx reg)
   else if ((SYMBOL_REF_P (addr) && SYMBOL_REF_TLS_MODEL (addr) == 0)
 	   /* We can't always use @GOTOFF for text labels
 	      on VxWorks, see gotoff_operand.  */
-	   || (TARGET_VXWORKS_VAROFF && GET_CODE (addr) == LABEL_REF))
+	   || (TARGET_VXWORKS_VAROFF && LABEL_REF_P (addr)))
     {
 #if TARGET_PECOFF
       rtx tmp = legitimize_pe_coff_symbol (addr, true);
@@ -12380,7 +12380,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 		     just disp32, not base nor index.  */
 		  if (TARGET_64BIT
 		      && (SYMBOL_REF_P (base)
-			  || GET_CODE (base) == LABEL_REF))
+			  || LABEL_REF_P (base)))
 		    base = force_reg (mode, base);
 		  if (GET_CODE (new_rtx) == PLUS
 		      && CONSTANT_P (XEXP (new_rtx, 1)))
@@ -14699,7 +14699,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		putc ('$', file);
 	    }
 	  else if (GET_CODE (x) == CONST || SYMBOL_REF_P (x)
-		   || GET_CODE (x) == LABEL_REF)
+		   || LABEL_REF_P (x))
 	    {
 	      if (ASSEMBLER_DIALECT == ASM_ATT)
 		putc ('$', file);
@@ -14794,7 +14794,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	  && CONST_INT_P (XEXP (XEXP (disp, 0), 1)))
 	symbol = XEXP (XEXP (disp, 0), 0);
 
-      if (GET_CODE (symbol) == LABEL_REF
+      if (LABEL_REF_P (symbol)
 	  || (SYMBOL_REF_P (symbol)
 	      && SYMBOL_REF_TLS_MODEL (symbol) == 0))
 	base = pc_rtx;
@@ -14883,7 +14883,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	    {
 	      if (flag_pic)
 		output_pic_addr_const (file, disp, 0);
-	      else if (GET_CODE (disp) == LABEL_REF)
+	      else if (LABEL_REF_P (disp))
 		output_asm_label (disp);
 	      else
 		output_addr_const (file, disp);
@@ -14919,7 +14919,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 
 	      if (flag_pic)
 		output_pic_addr_const (file, disp, 0);
-	      else if (GET_CODE (disp) == LABEL_REF)
+	      else if (LABEL_REF_P (disp))
 		output_asm_label (disp);
 	      else if (CONST_INT_P (disp))
 		offset = disp;
@@ -17678,7 +17678,7 @@ ix86_rip_relative_addr_p (struct ix86_address *parts)
 	      && CONST_INT_P (XEXP (symbol, 1)))
 	    symbol = XEXP (symbol, 0);
 
-	  if (GET_CODE (symbol) == LABEL_REF
+	  if (LABEL_REF_P (symbol)
 	      || (SYMBOL_REF_P (symbol)
 		  && SYMBOL_REF_TLS_MODEL (symbol) == 0)
 	      || (GET_CODE (symbol) == UNSPEC
