@@ -45,9 +45,9 @@ constexpr int test5() {
   union {
     int data[1];
   } u;
-  std::construct_at(u.data, 0);  // { dg-message "in .constexpr. expansion" }
+  std::construct_at(u.data, 0);  // { dg-bogus "in .constexpr. expansion" }
   return 0;
 }
-constexpr int x5 = test5();  // { dg-message "in .constexpr. expansion" }
+constexpr int x5 = test5();  // { dg-bogus "in .constexpr. expansion" }
 
 // { dg-error "accessing (uninitialized member|.* member instead of)" "" { target *-*-* } 0 }

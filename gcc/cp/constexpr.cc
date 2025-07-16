@@ -7736,13 +7736,24 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (*valp), first, NULL_TREE);
 
       /* Check for implicit change of active member for a union.  */
+
+      /* LWG3436, CWG2675, c++/121068: The array object model is confused.  For
+	 now allow initializing an array element to activate the array.  */
+      auto only_array_refs = [](const releasing_vec &refs)
+      {
+	for (unsigned i = 1; i < refs->length(); i += 3)
+	  if (TREE_CODE ((*refs)[i]) != INTEGER_CST)
+	    return false;
+	return true;
+      };
+
       if (code == UNION_TYPE
 	  && (CONSTRUCTOR_NELTS (*valp) == 0
 	      || CONSTRUCTOR_ELT (*valp, 0)->index != index)
 	  /* An INIT_EXPR of the last member in an access chain is always OK,
 	     but still check implicit change of members earlier on; see
 	     cpp2a/constexpr-union6.C.  */
-	  && !(TREE_CODE (t) == INIT_EXPR && refs->is_empty ()))
+	  && !(TREE_CODE (t) == INIT_EXPR && only_array_refs (refs)))
 	{
 	  bool has_active_member = CONSTRUCTOR_NELTS (*valp) != 0;
 	  tree inner = strip_array_types (reftype);
