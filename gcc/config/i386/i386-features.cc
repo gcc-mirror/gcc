@@ -2141,7 +2141,7 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
 
   gcc_assert (GET_CODE (src) == COMPARE);
 
-  if (GET_CODE (dst) != REG
+  if (!REG_P (dst)
       || REGNO (dst) != FLAGS_REG
       || GET_MODE (dst) != CCZmode)
     return false;

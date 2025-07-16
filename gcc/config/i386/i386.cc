@@ -23086,7 +23086,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  /* Make (subreg:V4SI (not:V16QI (reg:V16QI ..)) 0)
 	     cost the same as register.
 	     This is used by avx_cmp<mode>3_ltint_not.  */
-	  if (GET_CODE (unsop0) == SUBREG)
+	  if (SUBREG_P (unsop0))
 	    unsop0 = XEXP (unsop0, 0);
 	  if (GET_CODE (unsop0) == NOT)
 	    unsop0 = XEXP (unsop0, 0);

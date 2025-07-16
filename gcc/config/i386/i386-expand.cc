@@ -487,7 +487,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		op1 = machopic_legitimize_pic_address (op1, mode,
 						       tmp == op1 ? 0 : tmp);
 	    }
-	  if (op0 != op1 && GET_CODE (op0) != MEM)
+	  if (op0 != op1 && !MEM_P (op0))
 	    {
 	      rtx insn = gen_rtx_SET (op0, op1);
 	      emit_insn (insn);
@@ -12612,7 +12612,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 static rtx
 ix86_erase_embedded_rounding (rtx pat)
 {
-  if (GET_CODE (pat) == INSN)
+  if (NONJUMP_INSN_P (pat))
     pat = PATTERN (pat);
 
   gcc_assert (GET_CODE (pat) == SET);
