@@ -1,1 +1,2 @@
-static _X: () = loop {}; // { dg-error "loop iteration count exceeds limit" }
+static _X : ()
+	    = loop{}; // { dg-error "'loop' is not allowed in const context" }

@@ -682,6 +682,15 @@ void
 CompileExpr::visit (HIR::LoopExpr &expr)
 {
   TyTy::BaseType *block_tyty = nullptr;
+  fncontext fnctx = ctx->peek_fn ();
+  if (ctx->const_context_p () && !DECL_DECLARED_CONSTEXPR_P (fnctx.fndecl))
+    {
+      rich_location r (line_table, expr.get_locus ());
+      rust_error_at (r, ErrorCode::E0658,
+		     "%<loop%> is not allowed in const context");
+      return;
+    }
+
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 				       &block_tyty))
     {
@@ -689,7 +698,6 @@ CompileExpr::visit (HIR::LoopExpr &expr)
       return;
     }
 
-  fncontext fnctx = ctx->peek_fn ();
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
