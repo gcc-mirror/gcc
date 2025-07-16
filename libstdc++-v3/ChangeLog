@@ -1,3 +1,105 @@
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (swap): Replace enable_if with concepts
+	when available, and with __enable_if_t alias otherwise.
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::advance(i, n, bound)):
+	Ensure that observable side effects on iterators match what is
+	specified in the standard.
+
+2025-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119962
+	* include/std/ranges (join_view::_Iterator::_M_outer): Initialize.
+	(lazy_split_view::_OuterIter::_M_current): Initialize.
+	(join_with_view::_Iterator::_M_outer_it): Initialize.
+	* testsuite/std/ranges/adaptors/join.cc (test15): New test.
+	* testsuite/std/ranges/adaptors/join_with/1.cc (test05): New test.
+	* testsuite/std/ranges/adaptors/lazy_split.cc (test13): New test.
+
+2025-07-15  Björn Schäpers  <bjoern@hazardy.de>
+
+	PR libstdc++/108409
+	* scripts/gen_windows_zones_map.py: New file, generates
+	windows_zones-map.h.
+	* src/c++20/windows_zones-map.h: New file, contains the look up
+	table.
+	* src/c++20/tzdb.cc (tzdb::current_zone): Add Windows code path.
+
+2025-07-15  Björn Schäpers  <bjoern@hazardy.de>
+
+	* src/c++20/tzdb.cc (zoneinfo_file): On Windows look relative
+	from the DLL path for the time zone information.
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc:
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc:
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc:
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc:
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc:
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc:
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc:
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc:
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc:
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121024
+	* include/bits/ranges_uninitialized.h (ranges::destroy): Do not
+	optimize away trivial destructors during constant evaluation.
+	(ranges::destroy_n): Likewise.
+	* testsuite/20_util/specialized_algorithms/destroy/121024.cc:
+	New test.
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/memory (swap, make_observer_ptr): Add
+	constexpr.
+	(operator==, operator!=, operator<, operator>, operator<=)
+	(operator>=): Likewise.
+	* testsuite/experimental/memory/observer_ptr/make_observer.cc:
+	Checks for constant evaluation.
+	* testsuite/experimental/memory/observer_ptr/relops/relops.cc:
+	Likewise.
+	* testsuite/experimental/memory/observer_ptr/swap/swap.cc:
+	Likewise.
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__make_unsigned_selector): Add
+	unsigned __int128 to type list.
+	* testsuite/20_util/make_unsigned/int128.cc: New test.
+
+2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96710
+	* include/bits/functional_hash.h (hash<__int128>): Define for
+	strict modes.
+	(hash<unsigned __int128>): Likewise.
+	* testsuite/20_util/hash/int128.cc: New test.
+
+2025-07-15  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/110739
+	* include/bits/chrono_io.h (__formatter_chrono::_S_weekdays)
+	(__formatter_chrono::_S_months, __formatter_chrono::_S_fill_ampm):
+	Define.
+	(__formatter_chrono::_M_format_to): Do not pass context parameter
+	to functions listed below.
+	(__formatter_chrono::_M_a_A, __formatter_chrono::_M_b_B): Implement
+	using harcoded list of names, and remove format context parameter.
+	(__formatter_chrono::_M_p, __formatter_chrono::_M_r): Implement
+	using _S_fill_ampm.
+	(__formatter_chrono::_M_c): Removed format context parameter.
+	(__formatter_chrono::_M_subsecs): Call __ctx.locale() directly,
+	instead of _M_locale and do not compare with locale::classic().
+	Add [[unlikely]] attributes.
+	(__formatter_chrono::_M_locale): Move to __formatter_duration.
+	(__formatter_duration::_M_locale): Moved from __formatter_chrono.
+
 2025-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_pair.h (swap): Add comment to deleted

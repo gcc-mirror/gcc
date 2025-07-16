@@ -1,3 +1,254 @@
+2025-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* spellcheck.cc: Define INCLUDE_ALGORITHM.
+	(CASE_COST, BASE_COST): Convert to...
+	(case_cost, base_cost): ...these, in an anonymous namespace.
+	(get_edit_distance): Update for above.  Use std::min rather than
+	MIN.
+	(get_edit_distance_cutoff): Likewise.  Use std::max rather than
+	MAX.
+	(selftest::test_edit_distances): Update for BASE_COST renaming.
+	(selftest::get_old_cutoff): Likewise.  Use std::max.
+	(selftest::assert_not_suggested_for): Use nullptr.
+	(selftest::test_find_closest_string): Likewise.
+	* spellcheck.h: Replace TYPE with StringLikeType in templates,
+	and use CamelCase.
+
+2025-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/120792
+	* auto-obstack.h: New file, based on material taken from
+	pretty-print.cc.
+	* diagnostic-digraphs.h
+	(diagnostics::digraphs::digraph::set_description): New.
+	(diagnostics::digraphs::node::set_label): New.
+	* doc/libgdiagnostics/topics/compatibility.rst: Add
+	LIBGDIAGNOSTICS_ABI_4.
+	* doc/libgdiagnostics/topics/diagnostics.rst
+	(diagnostic_finish_via_msg_buf): Document new entrypoint.
+	* doc/libgdiagnostics/topics/execution-paths.rst
+	(diagnostic_execution_path_add_event_via_msg_buf): Document new
+	entrypoint.
+	* doc/libgdiagnostics/topics/index.rst: Add message-buffers.rst.
+	* doc/libgdiagnostics/topics/message-buffers.rst: New file.
+	* doc/libgdiagnostics/topics/message-formatting.rst: Add note
+	about message buffers.
+	* doc/libgdiagnostics/topics/physical-locations.rst
+	(diagnostic_add_location_with_label_via_msg_buf): Add.
+	* doc/libgdiagnostics/tutorial/07-execution-paths.rst: Link to
+	next section.
+	* doc/libgdiagnostics/tutorial/08-message-buffers.rst: New file.
+	* doc/libgdiagnostics/tutorial/index.rst: Add
+	08-message-buffers.rst.
+	* libgdiagnostics++.h (libgdiagnostics::message_buffer): New
+	class.
+	(libgdiagnostics::execution_path::add_event_via_msg_buf): New.
+	(libgdiagnostics::diagnostic::add_location_with_label): New.
+	(libgdiagnostics::diagnostic::finish_via_msg_buf): New.
+	(libgdiagnostics::graph::set_description): New overload.
+	(libgdiagnostics::graph::add_edge): New overload.
+	(libgdiagnostics::node::set_label): New overload.
+	* libgdiagnostics-private.h
+	(private_diagnostic_execution_path_add_event_2): Drop decl.
+	(private_diagnostic_execution_path_add_event_3): New decl.
+	* libgdiagnostics.cc:  Include "pretty-print-format-impl.h",
+	"pretty-print-markup.h", and "auto-obstack.h".
+	(class copying_token_printer): New.
+	(struct diagnostic_message_buffer): New.
+	(class pp_element_message_buffer): New.
+	(libgdiagnostics_path_event::libgdiagnostics_path_event): Replace
+	params "gmsgid" and "args" with "msg_buf".
+	(libgdiagnostics_path_event::print_desc): Reimplement using
+	pp_element_message_buffer to replay m_msg_buf into "pp".
+	(libgdiagnostics_path_event::m_desc_uncolored): Drop field.
+	(libgdiagnostics_path_event::m_desc_colored): Drop field.
+	(libgdiagnostics_path_event::msg_buf): New field.
+	(diagnostic_execution_path::add_event_va): Reimplement.
+	(diagnostic_execution_path::add_event_via_msg_buf): New.
+	(diagnostic::add_location_with_label): New overload, using
+	msg_buf.
+	(diagnostic_manager::emit): Reimplement with...
+	(diagnostic_manager::emit_va): ...this.
+	(diagnostic_manager::emit_msg_buf): New.
+	(FAIL_IF_NULL): Rename "p" to "ptr_arg".
+	(diagnostic_finish_va): Update to use diagnostic_manager::emit_va.
+	(diagnostic_graph::add_node_with_id): Rename "id" to "node_id".
+	(diagnostic_graph_add_node): Likewise.
+	(diagnostic_graph_add_edge): Rename "id" to "edge_id".
+	(diagnostic_graph_get_node_by_id): Rename "id" to "node_id".
+	(diagnostic_graph_get_edge_by_id): Rename "id" to "edge_id".
+	(private_diagnostic_execution_path_add_event_2): Delete.
+	(diagnostic_message_buffer_new): New public entrypoint.
+	(diagnostic_message_buffer_release): Likewise.
+	(diagnostic_message_buffer_append_str): Likewise.
+	(diagnostic_message_buffer_append_text): Likewise.
+	(diagnostic_message_buffer_append_byte): Likewise.
+	(diagnostic_message_buffer_append_printf): Likewise.
+	(diagnostic_message_buffer_append_event_id): Likewise.
+	(diagnostic_message_buffer_begin_url): Likewise.
+	(diagnostic_message_buffer_end_url): Likewise.
+	(diagnostic_message_buffer_begin_quote): Likewise.
+	(diagnostic_message_buffer_end_quote): Likewise.
+	(diagnostic_message_buffer_begin_color): Likewise.
+	(diagnostic_message_buffer_end_color): Likewise.
+	(diagnostic_message_buffer_dump): Likewise.
+	(diagnostic_finish_via_msg_buf): Likewise.
+	(diagnostic_add_location_with_label_via_msg_buf): Likewise.
+	(diagnostic_execution_path_add_event_via_msg_buf): Likewise.
+	(diagnostic_graph_set_description_via_msg_buf): Likewise.
+	(diagnostic_graph_add_edge_via_msg_buf): Likewise.
+	(diagnostic_node_set_label_via_msg_buf): Likewise.
+	(private_diagnostic_execution_path_add_event_3): New private
+	entrypoint.
+	* libgdiagnostics.h (LIBGDIAGNOSTICS_PARAM_FORMAT_STRING): New macro.
+	(LIBGDIAGNOSTICS_PARAM_PRINTF_FORMAT_STRING): New macro.
+	(diagnostic_message_buffer): New typedef.
+	(LIBDIAGNOSTICS_HAVE_diagnostic_message_buffer): New define.
+	(diagnostic_message_buffer_new): New decl.
+	(diagnostic_message_buffer_release): New decl.
+	(diagnostic_message_buffer_append_str): New decl.
+	(diagnostic_message_buffer_append_text): New decl.
+	(diagnostic_message_buffer_append_byte): New decl.
+	(diagnostic_message_buffer_append_printf): New decl.
+	(diagnostic_message_buffer_append_event_id): New decl.
+	(diagnostic_message_buffer_begin_url): New decl.
+	(diagnostic_message_buffer_end_url): New decl.
+	(diagnostic_message_buffer_begin_quote): New decl.
+	(diagnostic_message_buffer_end_quote): New decl.
+	(diagnostic_message_buffer_begin_color): New decl.
+	(diagnostic_message_buffer_end_color): New decl.
+	(diagnostic_message_buffer_dump): New decl.
+	(diagnostic_finish_via_msg_buf): New decl.
+	(diagnostic_add_location_with_label_via_msg_buf): New decl.
+	(diagnostic_execution_path_add_event_via_msg_buf): New decl.
+	(diagnostic_graph_set_description_via_msg_buf): New decl.
+	(diagnostic_graph_add_edge_via_msg_buf): New decl.
+	(diagnostic_node_set_label_via_msg_buf): New decl.
+	* libgdiagnostics.map (LIBGDIAGNOSTICS_ABI_3): Drop
+	private_diagnostic_execution_path_add_event_2.
+	(LIBGDIAGNOSTICS_ABI_4): New.
+	* libsarifreplay.cc (class annotation): Use
+	libgdiagnostics::message_buffer rather than label_text.
+	(add_any_annotations): Likewise.
+	(sarif_replayer::handle_result_obj): Likewise.
+	(make_plain_text_within_result_message): Likewise.
+	(handle_thread_flow_location_object): Likewise.
+	(handle_location_object): Likewise.
+	(sarif_replayer::handle_graph_object): Likewise.
+	(sarif_replayer::handle_node_object): Likewise.
+	(sarif_replayer::handle_edge_object): Likewise.
+	* pretty-print-format-impl.h (pp_token_list::push_back_byte): New
+	decl.
+	* pretty-print-markup.h (pp_markup::context::begin_url): New decl.
+	(pp_markup::context::end_url): New decl.
+	(pp_markup::context::add_event_id): New decl.
+	* pretty-print.cc: Include "auto-obstack.h".
+	(pp_token_list::push_back_byte): New.
+	(struct auto_obstack): Move to auto-obstack.h.
+	(default_token_printer): Make non-static.
+	(pp_markup::context::begin_url): New.
+	(pp_markup::context::end_url): New.
+	(pp_markup::context::add_event_id): New.
+
+2025-07-15  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/riscv-cores.def (RISCV_CORE): Updated the supported march.
+	* config/riscv/riscv-ext-mips.def (DEFINE_RISCV_EXT):
+	New file added for mips conditional mov extension.
+	* config/riscv/riscv-ext.def: Likewise.
+	* config/riscv/t-riscv: Generates riscv-ext.opt
+	* config/riscv/riscv-ext.opt: Generated file.
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Updated for mips cmov
+	and outlined some code that handle arch cond move.
+	* config/riscv/riscv.md (mov<mode>cc): updated expand for MIPS CCMOV.
+	* config/riscv/mips-insn.md: New file for mips-p8700 ccmov insn.
+	* doc/riscv-ext.texi: Updated for mips cmov.
+
+2025-07-15  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* avoid-store-forwarding.cc (generate_bit_insert_sequence):
+	Remove adjustment of bitfield insertion's starting position
+	when BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN.
+	(process_store_forwarding): Update offset check in base reg
+	initialization to take into account the target's endianness.
+
+2025-07-15  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add AVOID_LDAPUR tuning flag.
+	* config/aarch64/aarch64.cc (aarch64_adjust_generic_arch_tuning):
+	Set AVOID_LDAPUR for architectures before armv8.8-a.
+	(aarch64_override_options_internal): Apply generic tuning adjustments
+	to generic_armv8_a_tunings and generic_armv9_a_tunings.
+	* config/aarch64/aarch64.h (TARGET_ENABLE_LDAPUR): New macro to
+	control LDAPUR usage based on RCPC2 and tuning flags.
+	* config/aarch64/aarch64.md: Add enable_ldapur attribute.
+	* config/aarch64/atomics.md (aarch64_atomic_load<mode>_rcpc): Modify
+	to emit LDAPUR for cores with RCPC2.
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_zext): Likewise.
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_sext): Update constraint to Ust.
+	* config/aarch64/tuning_models/cortexx925.h: Add AVOID_LDAPUR flag.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+
+2025-07-15  Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/121059
+	* tree-vect-stmts.cc (vectorizable_operation): Query
+	scalar_cond_masked_set with the correct number of masks.
+
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* common.opt (Wunused-but-set-parameter=, Wunused-but-set-variable=):
+	New options.
+	(Wunused-but-set-parameter, Wunused-but-set-variable): Turn into
+	aliases.
+	* common.opt.urls: Regenerate.
+	* diagnostic-spec.cc (nowarn_spec_t::nowarn_spec_t): Use
+	OPT_Wunused_but_set_variable_ instead of OPT_Wunused_but_set_variable
+	and OPT_Wunused_but_set_parameter_ instead of
+	OPT_Wunused_but_set_parameter.
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop_1): Remove unused
+	but set variable tmp.
+	* ipa-strub.cc (pass_ipa_strub::execute): Cast named_args to
+	(void) if ATTR_FNSPEC_DECONST_WATERMARK is not defined.
+	* doc/invoke.texi (Wunused-but-set-parameter=,
+	Wunused-but-set-variable=): Document new options.
+	(Wunused-but-set-parameter, Wunused-but-set-variable): Adjust
+	documentation now that they are just aliases.
+
+2025-07-15  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_<faminmax_uns_op><mode>):
+	Change gating and comment.
+
+2025-07-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (*eor3qdi4): New
+	define_insn_and_split.
+
+2025-07-15  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*fcm<cmp_op><mode>_and_combine):
+	Extend from SVE_FULL_F to SVE_F.
+	(*fcmuo<mode>_and_combine): Likewise.
+	(*fcm<cmp_op><mode>_bic_combine): Likewise.
+	(*fcm<cmp_op><mode>_nor_combine): Likewise.
+	(*fcmuo<mode>_bic_combine): Likewise.
+	(*fcmuo<mode>_nor_combine): Likewise.  Move the comment here to
+	above fcmuo<mode>_bic_combine, since it applies to both patterns.
+
+2025-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* tree.cc: Include memmodel.h.
+
 2025-07-14  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/gcn-valu.md (vec_cmpu<mode>di_exec): Call gen_vec_cmp*,

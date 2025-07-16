@@ -1,3 +1,22 @@
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* c-parser.cc (c_parser_unary_expression): Clear DECL_READ_P
+	after default_function_array_read_conversion for
+	-Wunused-but-set-{parameter,variable}={2,3} on
+	PRE{IN,DE}CREMENT_EXPR argument.
+	(c_parser_postfix_expression_after_primary): Similarly for
+	POST{IN,DE}CREMENT_EXPR.
+	* c-decl.cc (pop_scope): Use OPT_Wunused_but_set_variable_
+	instead of OPT_Wunused_but_set_variable.
+	(finish_function): Use OPT_Wunused_but_set_parameter_
+	instead of OPT_Wunused_but_set_parameter.
+	* c-typeck.cc (mark_exp_read): Handle {PRE,POST}{IN,DE}CREMENT_EXPR
+	and don't handle it when cast to void.
+	(build_modify_expr): Clear DECL_READ_P after build_binary_op
+	for -Wunused-but-set-{parameter,variable}=3.
+
 2025-07-10  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-typeck.cc (build_access_with_size_for_counted_by): Update comments.

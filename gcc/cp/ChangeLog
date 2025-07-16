@@ -1,3 +1,45 @@
+2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44677
+	* cp-gimplify.cc (cp_fold) [CLEANUP_POINT_EXPR]: Don't force rvalue.
+	[COMPOUND_EXPR]: Likewise.
+	* cvt.cc (convert_to_void): Call mark_exp_read later.
+	* expr.cc (mark_use): Turn off read_p for any void argument.
+	(mark_exp_read): Return early for void argument.
+
+2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120577
+	* constexpr.cc (cxx_eval_call_expression): Set
+	CONSTRUCTOR_NO_CLEARING on initial value for ctor.
+	(cxx_eval_component_reference): Make value-initialization
+	of an aggregate member explicit.
+
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* cp-gimplify.cc (cp_fold): Clear DECL_READ_P on lhs of MODIFY_EXPR
+	after cp_fold_rvalue if it wasn't set before.
+	* decl.cc (poplevel): Use OPT_Wunused_but_set_variable_
+	instead of OPT_Wunused_but_set_variable.
+	(finish_function): Use OPT_Wunused_but_set_parameter_
+	instead of OPT_Wunused_but_set_parameter.
+	* expr.cc (mark_use): Clear read_p for {PRE,POST}{IN,DE}CREMENT_EXPR
+	cast to void on {VAR,PARM}_DECL for
+	-Wunused-but-set-{parameter,variable}={2,3}.
+	(mark_exp_read): Handle {PRE,POST}{IN,DE}CREMENT_EXPR and don't handle
+	it when cast to void.
+	* module.cc (trees_in::fn_parms_fini): Remove unused but set variable
+	ix.
+	* semantics.cc (finish_unary_op_expr): Return early for
+	PRE{IN,DE}CREMENT_EXPR.
+	* typeck.cc (cp_build_unary_op): Clear DECL_READ_P
+	after mark_lvalue_use for -Wunused-but-set-{parameter,variable}={2,3}
+	on PRE{IN,DE}CREMENT_EXPR argument.
+	(cp_build_modify_expr): Clear DECL_READ_P after cp_build_binary_op
+	for -Wunused-but-set-{parameter,variable}=3.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/119064

@@ -1,3 +1,8 @@
+2025-07-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* bid_binarydecimal.c (__mul_10x256_to_256): Mark c3 as being
+	used.
+
 2025-05-15  liuhongt  <hongtao.liu@intel.com>
 
 	* bid128_string.c (MIN_DIGITS): New macro.

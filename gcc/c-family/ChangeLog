@@ -1,3 +1,13 @@
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* c-opts.cc (c_common_post_options): Change
+	warn_unused_but_set_parameter and warn_unused_but_set_variable
+	from 1 to 3 if they were set only implicitly.
+	* c-attribs.cc (build_attr_access_from_parms): Remove unused
+	but set variable nelts.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/119064

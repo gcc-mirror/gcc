@@ -1,3 +1,52 @@
+2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR fortran/104428
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Check that proc_st
+	is non-NULL before dereferencing.  Add line number to error message.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_symbol): Remove field allocated_in_scope.
+	* trans-array.cc (gfc_array_allocate): Don't set it.
+	(gfc_alloc_allocatable_for_assignment): Likewise.
+	Generate the unallocated descriptor bounds initialisation
+	before the opening of the reallocation code block.  Create a
+	variable and use it as additional condition to the unallocated
+	descriptor bounds initialisation.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_ss_descriptor): Don't evaluate
+	offset and data to a variable if is_alloc_lhs is set.  Move the
+	existing evaluation decision condition for data...
+	(save_descriptor_data): ... here as a new predicate.
+	(evaluate_bound): Add argument save_value.  Omit the evaluation
+	of the value to a variable if that argument isn't set.
+	(gfc_conv_expr_descriptor): Update caller.
+	(gfc_conv_section_startstride): Update caller.  Set save_value
+	if is_alloc_lhs is not set.  Omit the evaluation of stride to a
+	variable if save_value isn't set.
+	(gfc_set_delta): Omit the evaluation of delta to a variable
+	if is_alloc_lhs is set.
+	(gfc_is_reallocatable_lhs): Return false if flag_realloc_lhs
+	isn't set.
+	(gfc_alloc_allocatable_for_assignment): Don't update
+	the variables that may be stored in saved_offset, delta, and
+	data.  Call instead...
+	(update_reallocated_descriptor): ... this new procedure.
+	* trans-expr.cc (gfc_trans_assignment_1): Don't omit setting the
+	is_alloc_lhs flag if the right hand side is an intrinsic
+	function.  Clear the flag if the right hand side is scalar.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.cc (gfc_trans_assignment_1): Generate array
+	reallocation code before entering the scalarisation loops.
+
+2025-07-15  Filip Kastl  <fkastl@suse.cz>
+
+	* resolve.cc (resolve_select_type): Fix indentation.
+
 2025-07-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* invoke.texi (-Wsurprising): Note about OpenACC warning

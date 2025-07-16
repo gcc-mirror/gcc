@@ -1,3 +1,98 @@
+2025-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/120792
+	* libgdiagnostics.dg/sarif.py: Delete duplicate script.
+	* libgdiagnostics.dg/test-message-buffer-c.py: New test script.
+	* libgdiagnostics.dg/test-message-buffer.c: New test.
+	* libgdiagnostics.dg/test-warning-with-path-c.py: Update expected
+	output to reflect that SARIF for event messages now contains JSON
+	pointers when referring to other events by ID.
+	* sarif-replay.dg/2.1.0-valid/3.11.6-embedded-links.sarif: Add
+	HTML and SARIF output, and call out to Python scripts to verify
+	the output.  Add example of a result with a link in its message.
+	* sarif-replay.dg/2.1.0-valid/embedded-links-check-html.py: New
+	test script.
+	* sarif-replay.dg/2.1.0-valid/embedded-links-check-sarif-roundtrip.py:
+	New test script.
+
+2025-07-15  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* gcc.target/riscv/mipscondmov.c: Test file for mips.ccmov insn.
+
+2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120577
+	* g++.dg/cpp2a/constexpr-union9.C: New test.
+
+2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117784
+	* g++.dg/cpp26/decomp25.C: Add -fno-implicit-constexpr.
+
+2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR fortran/104428
+	* gfortran.dg/gomp/pr104428.f90: New.
+
+2025-07-15  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* gcc.target/aarch64/avoid-store-forwarding-be.c: New test.
+
+2025-07-15  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/ldapr-sext.c: Update expected output to include
+	offsets.
+	* gcc.target/aarch64/ldapur.c: New test for LDAPUR.
+	* gcc.target/aarch64/ldapur_avoid.c: New test for AVOID_LDAPUR flag.
+
+2025-07-15  Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/121059
+	* gcc.dg/vect/pr121059.c: New testcase.
+
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* c-c++-common/Wunused-parm-1.c: New test.
+	* c-c++-common/Wunused-parm-2.c: New test.
+	* c-c++-common/Wunused-parm-3.c: New test.
+	* c-c++-common/Wunused-parm-4.c: New test.
+	* c-c++-common/Wunused-parm-5.c: New test.
+	* c-c++-common/Wunused-parm-6.c: New test.
+	* c-c++-common/Wunused-var-7.c (bar, baz): Expect warning on a.
+	* c-c++-common/Wunused-var-19.c: New test.
+	* c-c++-common/Wunused-var-20.c: New test.
+	* c-c++-common/Wunused-var-21.c: New test.
+	* c-c++-common/Wunused-var-22.c: New test.
+	* c-c++-common/Wunused-var-23.c: New test.
+	* c-c++-common/Wunused-var-24.c: New test.
+	* g++.dg/cpp26/name-independent-decl1.C (foo): Expect one
+	set but not used warning.
+	* g++.dg/warn/Wunused-parm-12.C: New test.
+	* g++.dg/warn/Wunused-parm-13.C: New test.
+	* g++.dg/warn/Wunused-var-2.C (f2): Expect set but not used warning
+	on parameter x and variable a.
+	* g++.dg/warn/Wunused-var-40.C: New test.
+	* g++.dg/warn/Wunused-var-41.C: New test.
+	* gcc.dg/memchr-3.c (test_find): Change return type from void to int,
+	and add return n; statement.
+	* gcc.dg/unused-9.c (g): Move dg-bogus to the correct line and expect
+	a warning on i.
+
+2025-07-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2025-07-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/eor3_d.c: Add tests for DImode operands.
+
+2025-07-15  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_fcm_combines_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_fcm_combines_2.c: Likewise.
+
 2025-07-14  Richard Biener  <rguenther@suse.de>
 
 	Revert:

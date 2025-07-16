@@ -1,3 +1,10 @@
+2025-07-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c/44677
+	* gofrontend/gogo.cc (Function::export_func_with_type): Remove
+	unused but set variable i.
+
 2025-02-05  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/118746
