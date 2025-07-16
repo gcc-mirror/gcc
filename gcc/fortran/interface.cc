@@ -4622,6 +4622,13 @@ matching_typebound_op (gfc_expr** tb_base,
 		gfc_actual_arglist* argcopy;
 		bool matches;
 
+		/* If expression matching comes here during parsing, eg. when
+		   parsing ASSOCIATE, generic TBPs have not yet been resolved
+		   and g->specific will not have been set. Wait for expression
+		   resolution by returning NULL.  */
+		if (!g->specific && !gfc_current_ns->resolved)
+		  return NULL;
+
 		gcc_assert (g->specific);
 		if (g->specific->error)
 		  continue;
