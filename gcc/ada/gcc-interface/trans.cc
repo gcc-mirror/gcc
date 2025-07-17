@@ -8753,7 +8753,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
   /* Set the location information on the result if it's not a simple name
      or something that contains a simple name, for example a tag, because
-     we don"t want all the references to get the location of the first use.
+     we don't want all the references to get the location of the first use.
      Note that we may have no result if we tried to build a CALL_EXPR node
      to a procedure with no side-effects and optimization is enabled.  */
   else if (kind != N_Identifier
