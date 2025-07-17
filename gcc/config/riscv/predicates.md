@@ -518,6 +518,10 @@
 
 (define_predicate "vector_broadcast_mask_operand"
   (ior (match_operand 0 "vector_least_significant_set_mask_operand")
+       (match_operand 0 "vector_all_trues_mask_operand")))
+
+(define_predicate "strided_broadcast_mask_operand"
+  (ior (match_operand 0 "vector_least_significant_set_mask_operand")
     (ior (match_operand 0 "register_operand")
          (match_operand 0 "vector_all_trues_mask_operand"))))
 
@@ -618,6 +622,15 @@
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
   (match_test "riscv_vector::can_be_broadcast_p (op)"))
+
+;; A strided broadcast is just a fallback pattern that loads from
+;; memory.
+(define_predicate "strided_broadcast_operand"
+  (match_test "riscv_vector::strided_broadcast_p (op)"))
+
+(define_predicate "any_broadcast_operand"
+  (ior (match_operand 0 "direct_broadcast_operand")
+       (match_operand 0 "strided_broadcast_operand")))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"

@@ -4753,7 +4753,10 @@ function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
 }
 
 /* Implement the call using instruction ICODE, with a 1:1 mapping between
-   arguments and input operands.  */
+   arguments and input operands.
+   There are operands that cannot be broadcast using v[f]mv.  In that case
+   we switch to a strided broadcast.  */
+
 rtx
 function_expander::use_widen_ternop_insn (insn_code icode)
 {
@@ -4794,7 +4797,10 @@ function_expander::use_widen_ternop_insn (insn_code icode)
 }
 
 /* Implement the call using instruction ICODE, with a 1:1 mapping between
-   arguments and input operands.  */
+   arguments and input operands.
+   There are operands that cannot be broadcast using v[f]mv.  In that case
+   we switch to a strided broadcast.  */
+
 rtx
 function_expander::use_scalar_move_insn (insn_code icode)
 {
@@ -4811,6 +4817,37 @@ function_expander::use_scalar_move_insn (insn_code icode)
 
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
     add_input_operand (argno);
+
+  if (!can_be_broadcast_p (m_ops[3].value))
+    icode = code_for_pred_strided_broadcast (vector_mode ());
+
+  add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+  return generate_insn (icode);
+}
+
+/* Implement the call using instruction ICODE, with a 1:1 mapping between
+   arguments and input operands.  */
+rtx
+function_expander::use_scalar_broadcast_insn (insn_code icode)
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Record the offset to get the argument.  */
+  int arg_offset = 0;
+  add_all_one_mask_operand (mask_mode ());
+
+  if (use_real_merge_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_vundef_operand (mode);
+
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    add_input_operand (argno);
+
+  if (!can_be_broadcast_p (m_ops[3].value))
+    icode = code_for_pred_strided_broadcast (vector_mode ());
 
   add_input_operand (Pmode, get_tail_policy_for_pred (pred));
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));

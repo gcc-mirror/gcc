@@ -23,4 +23,3 @@ vuint64m2_t f3(vuint64m2_t var_17, uint64_t var_60, size_t vl)
 
 /* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*0,\s*e64,\s*m2,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*1,\s*e64,\s*m2,\s*t[au],\s*m[au]} 1 } } */
-/* { dg-final { scan-assembler-times {sgtu} 1 } } */

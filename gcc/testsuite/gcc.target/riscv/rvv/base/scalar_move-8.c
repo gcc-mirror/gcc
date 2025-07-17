@@ -175,9 +175,8 @@ void foo12 (void *base, void *out, size_t vl)
 /*
 ** foo13:
 ** ...
-** vmv.v.x\tv[0-9]+,\s*[a-x0-9]+
+** vlse64.v\tv[0-9]+,0\([a-x0-9]+\),zero
 ** ...
-** ret
 */
 void foo13 (void *base, void *out, size_t vl)
 {
@@ -189,7 +188,7 @@ void foo13 (void *base, void *out, size_t vl)
 /*
 ** foo14:
 ** ...
-** vmv.v.x\tv[0-9]+,\s*[a-x0-9]+
+** vlse64.v\tv[0-9]+,0\([a-x0-9]+\),zero
 ** ...
 */
 void foo14 (void *base, void *out, size_t vl)

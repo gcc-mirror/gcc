@@ -1359,9 +1359,7 @@
   if (operands[2] == const0_rtx)
     {
       rtx ops[] = {operands[0], operands[0], operands[1]};
-      riscv_vector::emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-					riscv_vector::SCALAR_MOVE_MERGED_OP_TU,
-					ops, CONST1_RTX (Pmode));
+      riscv_vector::expand_set_first_tu (<MODE>mode, ops);
     }
   else
     {
@@ -1385,8 +1383,7 @@
 	 VL we need for the slide.  */
       rtx tmp = gen_reg_rtx (<MODE>mode);
       rtx ops1[] = {tmp, operands[1]};
-      emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                           riscv_vector::UNARY_OP, ops1, length);
+      riscv_vector::expand_broadcast (<MODE>mode, ops1, length);
 
       /* Slide exactly one element up leaving the tail elements
 	 unchanged.  */

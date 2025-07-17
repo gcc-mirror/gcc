@@ -6,9 +6,9 @@
 
 /*
 ** foo:
-** addi\t[a-x0-9]+,\s*[a-x0-9]+,100
+** ...
 ** vsetvli\tzero,a2,e64,m2,t[au],m[au]
-** vlse64.v\tv[0-9]+,0\([a-x0-9]+\),zero
+** vmv\.v\.x\tv[0-9]+,\s*a[0-9]+
 ** vs2r.v\tv[0-9]+,0\([a-x0-9]+\)
 ** ret
 */
@@ -37,7 +37,7 @@ void foo2 (void *base, void *out, size_t vl)
 /*
 ** foo3:
 ** ...
-** vlse64.v\tv[0-9]+,0\([a-x0-9]+\),zero
+** vmv\.v\.x\tv[0-9]+,\s*a[0-9]+
 ** ...
 ** ret
 */

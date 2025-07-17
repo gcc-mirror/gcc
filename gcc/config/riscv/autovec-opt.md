@@ -1900,8 +1900,7 @@
     emit_insn (gen_extend<vsubel><vel>2(tmp, operands[1]));
 
     rtx ops[] = {operands[0], tmp};
-    riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                   riscv_vector::UNARY_OP, ops);
+    riscv_vector::expand_broadcast (<MODE>mode, ops);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")]

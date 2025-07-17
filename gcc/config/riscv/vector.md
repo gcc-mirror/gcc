@@ -1551,20 +1551,44 @@
 (define_expand "vec_duplicate<mode>"
   [(set (match_operand:V_VLS 0 "register_operand")
         (vec_duplicate:V_VLS
-          (match_operand:<VEL> 1 "direct_broadcast_operand")))]
+          (match_operand:<VEL> 1 "any_broadcast_operand")))]
   "TARGET_VECTOR"
   {
-    /* Early expand DImode broadcast in RV32 system to avoid RA reload
-       generate (set (reg) (vec_duplicate:DI)).  */
+    /* Don't keep a DImode broadcast for RV32 in the vec_duplicate form.
+       Otherwise combine or late combine could end up doing
+	      "64-bit broadcast" (!= vmv.v.x)
+            + vadd.vv
+	    = vadd.vx
+       which would be invalid.  */
     bool gt_p = maybe_gt (GET_MODE_SIZE (<VEL>mode), GET_MODE_SIZE (Pmode));
     if (!FLOAT_MODE_P (<VEL>mode) && gt_p)
       {
-        riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-				       riscv_vector::UNARY_OP, operands);
-	DONE;
+        riscv_vector::emit_vlmax_insn
+	  (code_for_pred_strided_broadcast
+	    (<MODE>mode), riscv_vector::UNARY_OP, operands);
+       DONE;
       }
-    /* Otherwise, allow it fall into general vec_duplicate pattern
-       which allow us to have vv->vx combine optimization in later pass.  */
+
+    /* Even though we can eventually broadcast any permissible
+       constant by moving it into a register we need to force
+       any non-immediate one into a register here.
+       If we didn't do that we couldn't fwprop/late-combine
+	      vec_duplicate 123.45f
+	    + vfadd.vv
+	    = vfadd.vf
+       because the constant is valid for vec_duplicate but not
+       for vfadd.vf.  Therefore we need to do
+	      fa0 = 123.45f
+	      vec_duplicate fa0
+	    + vfadd.vv
+	    = vfadd.vf  */
+    if (!satisfies_constraint_P (operands[1])
+	&& !satisfies_constraint_J (operands[1])
+	&& !rtx_equal_p (operands[1], CONST0_RTX (<VEL>mode))
+	&& !memory_operand (operands[1], <VEL>mode))
+      operands[1] = force_reg (<VEL>mode, operands[1]);
+
+    /* Otherwise keep the vec_duplicate pattern until split.  */
   })
 
 ;; According to GCC internal:
@@ -1574,28 +1598,20 @@
 (define_insn_and_split "*vec_duplicate<mode>"
   [(set (match_operand:V_VLS 0 "register_operand")
         (vec_duplicate:V_VLS
-          (match_operand:<VEL> 1 "direct_broadcast_operand")))]
+          (match_operand:<VEL> 1 "any_broadcast_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
   {
-    if (!strided_load_broadcast_p ()
-	&& TARGET_ZVFHMIN && !TARGET_ZVFH && <VEL>mode == HFmode)
-      {
-	/* For Float16, reinterpret as HImode, broadcast and reinterpret
-	   back.  */
-	poly_uint64 nunits = GET_MODE_NUNITS (<MODE>mode);
-	machine_mode vmodehi
-	  = riscv_vector::get_vector_mode (HImode, nunits).require ();
-	rtx ops[] = {lowpart_subreg (vmodehi, operands[0], <MODE>mode),
-		     lowpart_subreg (HImode, operands[1], HFmode)};
-	riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (vmodehi),
-				       riscv_vector::UNARY_OP, ops);
-      }
-    else
+    if (riscv_vector::can_be_broadcast_p (operands[1]))
       riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
 				     riscv_vector::UNARY_OP, operands);
+    else
+      riscv_vector::emit_vlmax_insn (code_for_pred_strided_broadcast
+				     (<MODE>mode), riscv_vector::UNARY_OP,
+				     operands);
+
     DONE;
   }
   [(set_attr "type" "vector")]
@@ -2141,69 +2157,45 @@
 	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
-  /* Transform vmv.v.x/vfmv.v.f (avl = 1) into vmv.s.x since vmv.s.x/vfmv.s.f
-     has better chances to do vsetvl fusion in vsetvl pass.  */
   bool wrap_vec_dup = true;
   rtx vec_cst = NULL_RTX;
-  if (riscv_vector::splat_to_scalar_move_p (operands))
-    {
-      operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
-      operands[3] = force_reg (<VEL>mode, operands[3]);
-    }
-  else if (immediate_operand (operands[3], <VEL>mode)
-	   && (vec_cst = gen_const_vec_duplicate (<MODE>mode, operands[3]))
-	   && (/* -> pred_broadcast<mode>_zero */
-	       (vector_least_significant_set_mask_operand (operands[1],
-							   <VM>mode)
-		&& vector_const_0_operand (vec_cst, <MODE>mode))
-	       || (/* pred_broadcast<mode>_imm */
-		   vector_all_trues_mask_operand (operands[1], <VM>mode)
-		   && vector_const_int_or_double_0_operand (vec_cst,
-							    <MODE>mode))))
+  if (immediate_operand (operands[3], <VEL>mode)
+      && (vec_cst = gen_const_vec_duplicate (<MODE>mode, operands[3]))
+      && (/* -> pred_broadcast<mode>_zero */
+	  (vector_least_significant_set_mask_operand (operands[1],
+						      <VM>mode)
+	   && vector_const_0_operand (vec_cst, <MODE>mode))
+	  || (/* pred_broadcast<mode>_imm */
+	      vector_all_trues_mask_operand (operands[1], <VM>mode)
+	      && vector_const_int_or_double_0_operand (vec_cst,
+						       <MODE>mode))))
     {
       operands[3] = vec_cst;
       wrap_vec_dup = false;
     }
-  /* Handle vmv.s.x instruction (Wb1 mask) which has memory scalar.  */
-  else if (satisfies_constraint_Wdm (operands[3]))
-    {
-      if (satisfies_constraint_Wb1 (operands[1]))
-	{
-	  /* Case 1: vmv.s.x (TA, x == memory) ==> vlse.v (TA)  */
-	  if (satisfies_constraint_vu (operands[2]))
-	    operands[1] = CONSTM1_RTX (<VM>mode);
-	  else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode))
-	    {
-	      /* Case 2: vmv.s.x (TU, x == memory) ==>
-			   vl = 0 or 1; + vlse.v (TU) in RV32 system  */
-	      operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
-	      operands[1] = CONSTM1_RTX (<VM>mode);
-	    }
-	  else
-	    /* Case 3: load x (memory) to register.  */
-	    operands[3] = force_reg (<VEL>mode, operands[3]);
-	}
-    }
-  else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)
-	   && (immediate_operand (operands[3], Pmode)
+  else if (GET_MODE_SIZE (<VEL>mode) > UNITS_PER_WORD
+	   && satisfies_constraint_Wb1 (operands[1])
+	   && (immediate_operand (operands[3], Xmode)
 	       || (CONST_POLY_INT_P (operands[3])
 	           && known_ge (rtx_to_poly_int64 (operands[3]), 0U)
-		   && known_le (rtx_to_poly_int64 (operands[3]), GET_MODE_SIZE (<MODE>mode)))))
+		   && known_le (rtx_to_poly_int64 (operands[3]),
+				GET_MODE_SIZE (<MODE>mode)))))
     {
       rtx tmp = gen_reg_rtx (Pmode);
       poly_int64 value = rtx_to_poly_int64 (operands[3]);
-      emit_move_insn (tmp, gen_int_mode (value, Pmode));
+      emit_move_insn (tmp, gen_int_mode (value, Xmode));
       operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode, tmp);
     }
-  /* Never load (const_int 0) into a register, that's silly.  */
-  else if (operands[3] == CONST0_RTX (<VEL>mode))
+
+  /* For a vmv.v.x never load (const_int 0) or valid immediate operands
+     into a register, because we can use vmv.v.i.  */
+  else if (satisfies_constraint_Wc1 (operands[1])
+      && (satisfies_constraint_P (operands[3])
+	  || operands[3] == CONST0_RTX (<VEL>mode)))
     ;
-  /* If we're broadcasting [-16..15] across more than just
-     element 0, then we can use vmv.v.i directly, thus avoiding
-     the load of the constant into a GPR.  */
-  else if (CONST_INT_P (operands[3])
-	   && IN_RANGE (INTVAL (operands[3]), -16, 15)
-	   && !satisfies_constraint_Wb1 (operands[1]))
+  /* For vmv.s.x we have vmv.s.x v1, zero.  */
+  else if (satisfies_constraint_Wb1 (operands[1])
+	   && operands[3] == CONST0_RTX (<VEL>mode))
     ;
   else
     operands[3] = force_reg (<VEL>mode, operands[3]);
@@ -2211,129 +2203,66 @@
     operands[3] = gen_rtx_VEC_DUPLICATE (<MODE>mode, operands[3]);
 })
 
-(define_insn_and_split "*pred_broadcast<mode>"
-  [(set (match_operand:V_VLSI 0 "register_operand"                 "=vr, vr, vd, vd, vr, vr, vr, vr")
+(define_insn_and_rewrite "*pred_broadcast<mode>"
+  [(set (match_operand:V_VLSI 0 "register_operand"                 "=vr, vr, vr, vr")
 	(if_then_else:V_VLSI
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1, vm, vm,Wc1,Wc1,Wb1,Wb1")
-	     (match_operand 4 "vector_length_operand"              "rvl,rvl,rvl,rvl,rvl,rvl,rvl,rvl")
-	     (match_operand 5 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
-	     (match_operand 6 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
-	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
+	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1,Wb1,Wb1")
+	     (match_operand 4 "vector_length_operand"		   "rvl,rvl,rvl,rvl")
+	     (match_operand 5 "const_int_operand"                  "  i,  i,  i,  i")
+	     (match_operand 6 "const_int_operand"                  "  i,  i,  i,  i")
+	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (vec_duplicate:V_VLSI
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"       "rP,rP,Wdm,Wdm,Wdm,Wdm, rJ, rJ"))
-	  (match_operand:V_VLSI 2 "vector_merge_operand"            "vu, 0, vu,  0, vu,  0, vu,  0")))]
+	    (match_operand:<VEL> 3 "direct_broadcast_operand"      " rP, rP, rJ, rJ"))
+	  (match_operand:V_VLSI 2 "vector_merge_operand"           " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
    vmv.v.%o3\t%0,%3
    vmv.v.%o3\t%0,%3
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero
-   vlse<sew>.v\t%0,%3,zero
    vmv.s.x\t%0,%z3
    vmv.s.x\t%0,%z3"
-  "(register_operand (operands[3], <VEL>mode)
-  || CONST_POLY_INT_P (operands[3]))
-  && GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)"
-  [(const_int 0)]
-  {
-    gcc_assert (can_create_pseudo_p ());
-    if (CONST_POLY_INT_P (operands[3]))
-      {
-	rtx tmp = gen_reg_rtx (<VEL>mode);
-	emit_move_insn (tmp, operands[3]);
-	operands[3] = tmp;
-      }
-
-    /* For SEW = 64 in RV32 system, we expand vmv.s.x:
-       andi a2,a2,1
-       vsetvl zero,a2,e64
-       vlse64.v  */
-    if (satisfies_constraint_Wb1 (operands[1]))
-      {
-	operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
-	operands[1] = CONSTM1_RTX (<VM>mode);
-      }
-
-    /* If the target doesn't want a strided-load broadcast we go with a regular
-       V1DImode load and a broadcast gather.  */
-    if (strided_load_broadcast_p ())
-      {
-	rtx mem = assign_stack_local (<VEL>mode, GET_MODE_SIZE (<VEL>mode),
-				      GET_MODE_ALIGNMENT (<VEL>mode));
-	mem = validize_mem (mem);
-	emit_move_insn (mem, operands[3]);
-	mem = gen_rtx_MEM (<VEL>mode, force_reg (Pmode, XEXP (mem, 0)));
-
-	emit_insn
-	  (gen_pred_broadcast<mode>
-	   (operands[0], operands[1], operands[2], mem,
-	    operands[4], operands[5], operands[6], operands[7]));
-      }
-    else
-      {
-	rtx tmp = gen_reg_rtx (V1DImode);
-	emit_move_insn (tmp, lowpart_subreg (V1DImode, operands[3],
-					     <VEL>mode));
-	tmp = lowpart_subreg (<MODE>mode, tmp, V1DImode);
-
-	emit_insn
-	  (gen_pred_gather<mode>_scalar
-	   (operands[0], operands[1], operands[2], tmp, CONST0_RTX (Pmode),
-	    operands[4], operands[5], operands[6], operands[7]));
-      }
-    DONE;
-  }
-  [(set_attr "type" "vimov,vimov,vlds,vlds,vlds,vlds,vimovxv,vimovxv")
+  "&& (operands[1] == CONSTM1_RTX (<VM>mode)
+       && operands[4] == CONST1_RTX (Pmode)
+       && (register_operand (operands[3], <VEL>mode)
+           || satisfies_constraint_J (operands[3])))"
+{
+  /* A broadcast of a single element is just a vmv.s.x.  */
+  operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
+}
+  [(set_attr "type" "vimov,vimov,vimovxv,vimovxv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*pred_broadcast<mode>_zvfh"
-  [(set (match_operand:V_VLSF    0 "register_operand"              "=vr,  vr,  vr,  vr")
+(define_insn_and_rewrite "pred_broadcast<mode>_zvfh"
+  [(set (match_operand:V_VLSF    0 "register_operand"              "=vr, vr, vr, vr")
 	(if_then_else:V_VLSF
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1, Wc1, Wb1, Wb1")
-	     (match_operand      4 "vector_length_operand"         "rvl, rvl, rvl, rvl")
-	     (match_operand      5 "const_int_operand"             "  i,   i,   i,   i")
-	     (match_operand      6 "const_int_operand"             "  i,   i,   i,   i")
-	     (match_operand      7 "const_int_operand"             "  i,   i,   i,   i")
+	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1,Wb1,Wb1")
+	     (match_operand      4 "vector_length_operand"	   "rvl,rvl,rvl,rvl")
+	     (match_operand      5 "const_int_operand"             "  i,  i,  i,  i")
+	     (match_operand      6 "const_int_operand"             "  i,  i,  i,  i")
+	     (match_operand      7 "const_int_operand"             "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (vec_duplicate:V_VLSF
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"      "  f,   f,   f,   f"))
-	  (match_operand:V_VLSF  2 "vector_merge_operand"          " vu,   0,  vu,   0")))]
+	    (match_operand:<VEL> 3 "direct_broadcast_operand"      "  f,  f,  f,  f"))
+	  (match_operand:V_VLSF  2 "vector_merge_operand"          " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
    vfmv.v.f\t%0,%3
    vfmv.v.f\t%0,%3
    vfmv.s.f\t%0,%3
    vfmv.s.f\t%0,%3"
+  "&& (operands[1] == CONSTM1_RTX (<VM>mode)
+       && operands[4] == CONST1_RTX (Pmode)
+       && (register_operand (operands[3], <VEL>mode)
+           || satisfies_constraint_J (operands[3])))"
+{
+  /* A broadcast of a single element is just a vfmv.s.f.  */
+  operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
+}
   [(set_attr "type" "vfmov,vfmov,vfmovfv,vfmovfv")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "*pred_broadcast<mode>_zvfhmin"
-  [(set (match_operand:V_VLSF_ZVFHMIN   0 "register_operand"              "=vr,  vr,  vr,  vr")
-	(if_then_else:V_VLSF_ZVFHMIN
-	  (unspec:<VM>
-	    [(match_operand:<VM>        1 "vector_broadcast_mask_operand" " vm,  vm, Wc1, Wc1")
-	     (match_operand             4 "vector_length_operand"         "rvl, rvl, rvl, rvl")
-	     (match_operand             5 "const_int_operand"             "  i,   i,   i,   i")
-	     (match_operand             6 "const_int_operand"             "  i,   i,   i,   i")
-	     (match_operand             7 "const_int_operand"             "  i,   i,   i,   i")
-	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V_VLSF_ZVFHMIN
-	    (match_operand:<VEL>        3 "direct_broadcast_operand"      "  A,   A,   A,   A"))
-	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"          " vu,   0,  vu,   0")))]
-  "TARGET_VECTOR && strided_load_broadcast_p ()"
-  "@
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero
-   vlse<sew>.v\t%0,%3,zero"
-  [(set_attr "type" "vlds,vlds,vlds,vlds")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_broadcast<mode>_extended_scalar"
@@ -2397,6 +2326,117 @@
   "vmv.v.i\t%0,%v3"
   [(set_attr "type" "vimov,vimov")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "@pred_strided_broadcast<mode>"
+  [(set (match_operand:V_VLS 0 "register_operand")
+	(if_then_else:V_VLS
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "strided_broadcast_mask_operand")
+	     (match_operand 4 "vector_length_operand")
+	     (match_operand 5 "const_int_operand")
+	     (match_operand 6 "const_int_operand")
+	     (match_operand 7 "const_int_operand")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (vec_duplicate:V_VLS
+	    (match_operand:<VEL> 3 "strided_broadcast_operand"))
+	  (match_operand:V_VLS 2 "vector_merge_operand")))]
+  "TARGET_VECTOR"
+{
+  if (satisfies_constraint_Wb1 (operands[1]))
+    {
+      /* If we're asked to set a single element (like vmv.s.x but we
+	 need to go via memory here) and the tail policy is agnostic
+	 we can overwrite all elements.
+	 Thus, set the mask to broadcast.  */
+      operands[1] = CONSTM1_RTX (<VM>mode);
+      if (!satisfies_constraint_vu (operands[2])
+	  && GET_MODE_SIZE (<VEL>mode) > UNITS_PER_WORD)
+	{
+	  /* Case 2: vmv.s.x (TU, x == memory) ==>
+	     vl = 0 or 1; + vlse.v (TU) in RV32 system  */
+	  /* In this case we must not overwrite the residual elements,
+	     so set the vector length to 0/1.  */
+	  operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
+	}
+    }
+})
+
+(define_insn_and_split "*pred_strided_broadcast<mode>"
+  [(set (match_operand:V_VLSI 0 "register_operand"                  "=vd, vd, vr, vr")
+	(if_then_else:V_VLSI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "strided_broadcast_mask_operand" " vm, vm,Wc1,Wc1")
+	     (match_operand 4 "vector_length_operand"               "rvl,rvl,rvl,rvl")
+	     (match_operand 5 "const_int_operand"                   "  i,  i,  i,  i")
+	     (match_operand 6 "const_int_operand"                   "  i,  i,  i,  i")
+	     (match_operand 7 "const_int_operand"                   "  i,  i,  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (vec_duplicate:V_VLSI
+	    (match_operand:<VEL> 3 "strided_broadcast_operand"	    "  A,  A,  A,  A"))
+	  (match_operand:V_VLSI 2 "vector_merge_operand"            " vu,  0, vu,  0")))]
+  "TARGET_VECTOR"
+  "@
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero
+   vlse<sew>.v\t%0,%3,zero"
+  "&& !strided_load_broadcast_p () && can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    rtx tmp = gen_reg_rtx (V1DImode);
+    emit_move_insn (tmp, gen_lowpart (V1DImode, operands[3]));
+    tmp = lowpart_subreg (<MODE>mode, tmp, V1DImode);
+
+    emit_insn
+      (gen_pred_gather<mode>_scalar
+       (operands[0], operands[1], operands[2], tmp, CONST0_RTX (Pmode),
+	operands[4], operands[5], operands[6], operands[7]));
+    DONE;
+  }
+  [(set_attr "type" "vlds,vlds,vlds,vlds")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn_and_split "*pred_strided_broadcast<mode>_zvfhmin"
+  [(set (match_operand:V_VLSF_ZVFHMIN   0 "register_operand"               "=vr,  vr,  vr,  vr")
+	(if_then_else:V_VLSF_ZVFHMIN
+	  (unspec:<VM>
+	    [(match_operand:<VM>        1 "strided_broadcast_mask_operand" " vm,  vm, Wc1, Wc1")
+	     (match_operand             4 "vector_length_operand"          "rvl, rvl, rvl, rvl")
+	     (match_operand             5 "const_int_operand"              "  i,   i,   i,   i")
+	     (match_operand             6 "const_int_operand"              "  i,   i,   i,   i")
+	     (match_operand             7 "const_int_operand"              "  i,   i,   i,   i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (vec_duplicate:V_VLSF_ZVFHMIN
+	    (match_operand:<VEL>        3 "strided_broadcast_operand"	   "  A,   A,   A,   A"))
+	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"           " vu,   0,  vu,   0")))]
+  "TARGET_VECTOR"
+  "@
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero
+   vlse<sew>.v\t%0,%3,zero"
+  "&& !strided_load_broadcast_p ()
+   && <VEL>mode == HFmode
+   && can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    poly_uint64 nunits = GET_MODE_NUNITS (<MODE>mode);
+    machine_mode vmodehi
+      = riscv_vector::get_vector_mode (HImode, nunits).require ();
+    rtx ops[] = {gen_lowpart (vmodehi, operands[0]),
+		 gen_lowpart (HImode, operands[3])};
+    riscv_vector::emit_avltype_insn (code_for_pred_broadcast (vmodehi),
+				     riscv_vector::UNARY_OP, ops,
+				     (riscv_vector::avl_type) INTVAL (operands[7]),
+				     operands[4]);
+    DONE;
+  }
+  [(set_attr "type" "vlds,vlds,vlds,vlds")
+   (set_attr "mode" "<MODE>")])
+
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated Strided loads/stores

@@ -1190,6 +1190,59 @@ expand_vector_init_trailing_same_elem (rtx target,
   return false;
 }
 
+/* Helper function to emit a vmv.vx/vi and float variants.
+   If VL is not given a VLMAX insn will be emitted, otherwise
+   a non-VLMAX insn with length VL.
+   If the value to be broadcast is not suitable for vmv.vx
+   fall back to a vlse with zero stride.  This itself has a
+   fallback if the uarch prefers not to use a strided load
+   for broadcast.  */
+
+void
+expand_broadcast (machine_mode mode, rtx *ops, rtx vl)
+{
+  rtx elt = ops[1];
+  avl_type type = vl ? NONVLMAX : VLMAX;
+  if (can_be_broadcast_p (elt))
+    emit_avltype_insn (code_for_pred_broadcast (mode), UNARY_OP, ops,
+		       type, vl);
+  else
+    emit_avltype_insn (code_for_pred_strided_broadcast (mode),
+		       UNARY_OP, ops, type, vl);
+}
+
+/* Similar to expand_broadcast but emits a vmv.s.x/vfmv.s.f instead.  */
+
+void
+expand_set_first (machine_mode mode, rtx *ops, rtx vl)
+{
+  rtx elt = ops[1];
+  avl_type type = vl ? NONVLMAX : VLMAX;
+  if (can_be_broadcast_p (elt))
+    emit_avltype_insn (code_for_pred_broadcast (mode),
+			SCALAR_MOVE_OP, ops, type, vl);
+  else
+    emit_avltype_insn (code_for_pred_strided_broadcast (mode),
+			SCALAR_MOVE_OP, ops, type, vl);
+}
+
+/* Similar to expand_set_first but keeping the tail elements
+   unchanged (TU) */
+
+void
+expand_set_first_tu (machine_mode mode, rtx *ops, rtx vl)
+{
+  rtx elt = ops[2];
+  if (!vl)
+    vl = const1_rtx;
+  if (can_be_broadcast_p (elt))
+    emit_nonvlmax_insn (code_for_pred_broadcast (mode),
+			SCALAR_MOVE_MERGED_OP_TU, ops, vl);
+  else
+    emit_nonvlmax_insn (code_for_pred_strided_broadcast (mode),
+			SCALAR_MOVE_MERGED_OP_TU, ops, vl);
+}
+
 static void
 expand_const_vec_duplicate (rtx target, rtx src, rtx elt)
 {
@@ -1226,7 +1279,7 @@ expand_const_vec_duplicate (rtx target, rtx src, rtx elt)
       if (lra_in_progress)
 	{
 	  rtx ops[] = {result, elt};
-	  emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
+	  expand_broadcast (mode, ops);
 	}
       else
 	{
@@ -1278,8 +1331,7 @@ expand_const_vector_duplicate_repeating (rtx target, rvv_builder *builder)
     {
       dup = gen_reg_rtx (builder->new_mode ());
       rtx ops[] = {dup, ele};
-      emit_vlmax_insn (code_for_pred_broadcast (builder->new_mode ()),
-		       UNARY_OP, ops);
+      expand_broadcast (builder->new_mode (), ops);
     }
   else
     dup = expand_vector_broadcast (builder->new_mode (), ele);
@@ -1322,8 +1374,7 @@ expand_const_vector_duplicate_default (rtx target, rvv_builder *builder)
 
   rtx tmp1 = gen_reg_rtx (builder->mode ());
   rtx dup_ops[] = {tmp1, builder->elt (0)};
-  emit_vlmax_insn (code_for_pred_broadcast (builder->mode ()), UNARY_OP,
-		   dup_ops);
+  expand_broadcast (builder->mode (), dup_ops);
 
   for (unsigned int i = 1; i < builder->npatterns (); i++)
     {
@@ -2136,18 +2187,32 @@ has_vi_variant_p (rtx_code code, rtx x)
     }
 }
 
+/* This is a helper for binary ops with DImode scalar operands that are
+   broadcast (like vadd.vx v1, a1).
+   Instead of having similar code for all the expanders this function
+   unifies the handling.  For 64-bit targets all we do is choose
+   between the vi variant (if available) and the register variant.
+   For 32-bit targets we either create the sign-extending variant
+   of vop.vx (when the immediate fits 32 bits) or emit a vector
+   broadcast of the 64-bit register/immediate and switch to a
+   vop.vv (replacing the scalar op with the broadcast vector.  */
+
 bool
 sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
 		     machine_mode vector_mode, bool has_vi_variant_p,
 		     void (*emit_vector_func) (rtx *, rtx), enum avl_type type)
 {
   machine_mode scalar_mode = GET_MODE_INNER (vector_mode);
+
+  /* If the scalar broadcast op fits an immediate, use the
+     vop.vi variant if there is one.  */
   if (has_vi_variant_p)
     {
       *scalar_op = force_reg (scalar_mode, *scalar_op);
       return false;
     }
 
+  /* On a 64-bit target we can always use the vop.vx variant.  */
   if (TARGET_64BIT)
     {
       if (!rtx_equal_p (*scalar_op, const0_rtx))
@@ -2155,6 +2220,8 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
       return false;
     }
 
+  /* For 32 bit and if there is no vop.vi variant for a 32-bit immediate
+     we need to use the sign-extending (SI -> DI) vop.vx variants.  */
   if (immediate_operand (*scalar_op, Pmode))
     {
       if (!rtx_equal_p (*scalar_op, const0_rtx))
@@ -2164,40 +2231,29 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
       return false;
     }
 
-  bool avoid_strided_broadcast = false;
+  /* Now we're left with a 64-bit immediate or a register.
+     We cannot use a vop.vx variant but must broadcast the value first
+     and switch to a vop.vv variant.
+     Broadcast can either be done via vlse64.v v1, reg, zero
+     or by loading one 64-bit element (vle64.v) and using a
+     broadcast vrgather.vi.  This is decided when splitting
+     the strided broadcast insn.  */
+  gcc_assert (!TARGET_64BIT
+	      && (CONST_INT_P (*scalar_op)
+		  || register_operand (*scalar_op, scalar_mode)));
+
   if (CONST_INT_P (*scalar_op))
     {
       if (maybe_gt (GET_MODE_SIZE (scalar_mode), GET_MODE_SIZE (Pmode)))
-	{
-	  if (strided_load_broadcast_p ())
-	    *scalar_op = force_const_mem (scalar_mode, *scalar_op);
-	  else
-	    avoid_strided_broadcast = true;
-	}
+	*scalar_op = force_const_mem (scalar_mode, *scalar_op);
       else
 	*scalar_op = force_reg (scalar_mode, *scalar_op);
     }
 
   rtx tmp = gen_reg_rtx (vector_mode);
-  if (!avoid_strided_broadcast)
-    {
-      rtx ops[] = {tmp, *scalar_op};
-      emit_avltype_insn (code_for_pred_broadcast (vector_mode), UNARY_OP, ops,
-			 type, vl);
-    }
-  else
-    {
-      /* Load scalar as V1DI and broadcast via vrgather.vi.  */
-      rtx tmp1 = gen_reg_rtx (V1DImode);
-      emit_move_insn (tmp1, lowpart_subreg (V1DImode, *scalar_op,
-					    scalar_mode));
-      tmp1 = lowpart_subreg (vector_mode, tmp1, V1DImode);
-
-      rtx ops[] = {tmp, tmp1, CONST0_RTX (Pmode)};
-      emit_vlmax_insn (code_for_pred_gather_scalar (vector_mode),
-		       BINARY_OP, ops);
-    }
-
+  rtx ops[] = {tmp, *scalar_op};
+  emit_avltype_insn (code_for_pred_strided_broadcast (vector_mode),
+		     UNARY_OP, ops, type, vl);
   emit_vector_func (operands, tmp);
 
   return true;
@@ -2591,8 +2647,7 @@ expand_vector_init_merge_repeating_sequence (rtx target,
 
   /* Step 1: Broadcast the first pattern.  */
   rtx ops[] = {target, force_reg (builder.inner_mode (), builder.elt (0))};
-  emit_vlmax_insn (code_for_pred_broadcast (builder.mode ()),
-		    UNARY_OP, ops);
+  expand_broadcast (builder.mode (), ops);
   /* Step 2: Merge the rest iteration of pattern.  */
   for (unsigned int i = 1; i < builder.npatterns (); i++)
     {
@@ -2605,8 +2660,7 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       if (full_nelts <= builder.inner_bits_size ()) /* vmv.s.x.  */
 	{
 	  rtx ops[] = {dup, merge_mask};
-	  emit_nonvlmax_insn (code_for_pred_broadcast (GET_MODE (dup)),
-			       SCALAR_MOVE_OP, ops, CONST1_RTX (Pmode));
+	  expand_set_first (GET_MODE (dup), ops);
 	}
       else /* vmv.v.x.  */
 	{
@@ -2614,8 +2668,7 @@ expand_vector_init_merge_repeating_sequence (rtx target,
 		       force_reg (GET_MODE_INNER (mask_int_mode), merge_mask)};
 	  rtx vl = gen_int_mode (CEIL (full_nelts, builder.inner_bits_size ()),
 				 Pmode);
-	  emit_nonvlmax_insn (code_for_pred_broadcast (mask_int_mode), UNARY_OP,
-			       ops, vl);
+	  expand_broadcast (mask_int_mode, ops, vl);
 	}
 
       emit_move_insn (mask, gen_lowpart (mask_bit_mode, dup));
@@ -4706,20 +4759,20 @@ expand_reduction (unsigned unspec, unsigned unspec_for_vl0_safe,
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
-  insn_code icode = code_for_pred_broadcast (m1_mode);
   if (need_mask_operand_p (insn_flags))
     {
       if (need_vl0_safe)
-	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, const1_rtx);
+	expand_set_first (m1_mode, scalar_move_ops, const1_rtx);
       else
-	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, vl_op);
+	expand_set_first (m1_mode, scalar_move_ops, vl_op);
     }
   else
-    emit_vlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops);
+    expand_set_first (m1_mode, scalar_move_ops);
 
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
   rtx reduc_ops[] = {m1_tmp2, vector_src, m1_tmp};
 
+  insn_code icode;
   if (need_vl0_safe)
     icode = code_for_pred (unspec_for_vl0_safe, vmode);
   else
@@ -5808,25 +5861,84 @@ count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
   return count;
 }
 
-/* Return true if the OP can be directly broadcast.  */
+/* Return true if the OP can be broadcast with a
+   v[f]mv.v.[xif] instruction.  */
+
 bool
 can_be_broadcast_p (rtx op)
 {
   machine_mode mode = GET_MODE (op);
-  /* We don't allow RA (register allocation) reload generate
-    (vec_duplicate:DI reg) in RV32 system wheras we allow
-    (vec_duplicate:DI mem) in RV32 system.  */
-  if (!can_create_pseudo_p () && !FLOAT_MODE_P (mode)
-      && maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (Pmode))
-      && !satisfies_constraint_Wdm (op))
-    return false;
 
-  if (satisfies_constraint_K (op) || register_operand (op, mode)
-      || (strided_load_broadcast_p () && satisfies_constraint_Wdm (op))
-      || rtx_equal_p (op, CONST0_RTX (mode)))
+  /* Zero always works and we can always put an immediate into a
+     register.
+     What's tricky is that for an immediate we don't know the
+     register's mode it will end up in, i.e. what element size
+     we want to broadcast.  So even if the immediate is small it might
+     still end up in a DImode register that we cannot broadcast.
+     vmv.s.x, i.e. a single-element set can handle this, though,
+     because it implicitly sign-extends to SEW.  */
+  if (rtx_equal_p (op, CONST0_RTX (mode))
+      || const_int_operand (op, Xmode))
     return true;
 
-  return can_create_pseudo_p () && nonmemory_operand (op, mode);
+  /* Do not accept DImode broadcasts on !TARGET_64BIT.  Those
+     are handled by strided broadcast.  */
+  if (INTEGRAL_MODE_P (mode)
+      && maybe_gt (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+    return false;
+
+  /* Non-register operands that can be forced into a register we can
+     handle.  These don't need to use strided broadcast. */
+  if (INTEGRAL_MODE_P (mode)
+      && (memory_operand (op, mode) || CONST_POLY_INT_P (op))
+      && can_create_pseudo_p ())
+    return true;
+
+  /* Likewise, do not accept HFmode broadcast if we don't have
+     vfmv.v.f for 16-bit registers available.  */
+  if (mode == HFmode && !TARGET_ZVFH)
+    return false;
+
+  /* Same for float, just that we can always handle 64-bit doubles
+     even on !TARGET_64BIT.  We have ruled out 16-bit HF already
+     above.  */
+  if (FLOAT_MODE_P (mode)
+      && (memory_operand (op, mode) || CONSTANT_P (op))
+      && can_create_pseudo_p ())
+    return true;
+
+  /* After excluding all the cases we cannot handle the register types
+     that remain can always be broadcast.  */
+  if (register_operand (op, mode))
+    return true;
+
+  return false;
+}
+
+/* Returns true for all operands that cannot use vmv.vx, vfmv.vf,
+   vmv.s.x, or vfmv.s.f but rather need to go via memory.  */
+
+bool
+strided_broadcast_p (rtx op)
+{
+  machine_mode mode = GET_MODE (op);
+  if (!memory_operand (op, mode)
+      && !register_operand (op, mode)
+      && !rtx_equal_p (op, CONST0_RTX (mode))
+      && !const_int_operand (op, mode))
+    return false;
+
+  /* !TARGET64_BIT does not have a vmv.v.x/vmv.s.x for 64-bit
+     DImode elements.  */
+  if (INTEGRAL_MODE_P (mode)
+      && maybe_gt (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+    return true;
+
+  /* Zvfhmin does not have a vfmv.v.f/vfmv.s.f.  for 16-bit elements.  */
+  if (!TARGET_ZVFH && mode == HFmode)
+    return true;
+
+  return false;
 }
 
 void
@@ -5941,7 +6053,10 @@ whole_reg_to_reg_move_p (rtx *ops, machine_mode mode, int avl_type_index)
   return false;
 }
 
-/* Return true if we can transform vmv.v.x/vfmv.v.f to vmv.s.x/vfmv.s.f.  */
+/* Return true if we can transform vmv.v.x/vfmv.v.f to vmv.s.x/vfmv.s.f.
+   That's the case if we're dealing with a scalar broadcast that
+   has VL = 1.  */
+
 bool
 splat_to_scalar_move_p (rtx *ops)
 {
