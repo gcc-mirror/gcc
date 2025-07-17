@@ -498,7 +498,7 @@ DefaultHIRVisitor::walk (IfExpr &expr)
 void
 DefaultHIRVisitor::walk (IfExprConseqElse &expr)
 {
-  reinterpret_cast<IfExpr &> (expr).accept_vis (*this);
+  expr.IfExpr::accept_vis (*this);
   expr.get_else_block ().accept_vis (*this);
 }
 
@@ -749,7 +749,7 @@ DefaultHIRVisitor::walk (EnumItem &item)
 void
 DefaultHIRVisitor::walk (EnumItemTuple &item_tuple)
 {
-  reinterpret_cast<EnumItem &> (item_tuple).accept_vis (*this);
+  item_tuple.EnumItem::accept_vis (*this);
   for (auto &field : item_tuple.get_tuple_fields ())
     field.get_field_type ().accept_vis (*this);
 }
@@ -757,7 +757,7 @@ DefaultHIRVisitor::walk (EnumItemTuple &item_tuple)
 void
 DefaultHIRVisitor::walk (EnumItemStruct &item_struct)
 {
-  reinterpret_cast<EnumItem &> (item_struct).accept_vis (*this);
+  item_struct.EnumItem::accept_vis (*this);
   for (auto &field : item_struct.get_struct_fields ())
     field.get_field_type ().accept_vis (*this);
 }
@@ -765,7 +765,7 @@ DefaultHIRVisitor::walk (EnumItemStruct &item_struct)
 void
 DefaultHIRVisitor::walk (EnumItemDiscriminant &item)
 {
-  reinterpret_cast<EnumItem &> (item).accept_vis (*this);
+  item.EnumItem::accept_vis (*this);
   item.get_discriminant_expression ().accept_vis (*this);
 }
 
