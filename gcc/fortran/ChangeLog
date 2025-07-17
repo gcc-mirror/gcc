@@ -1,3 +1,12 @@
+2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121060
+	* interface.cc (matching_typebound_op): Defer determination of
+	specific procedure until resolution by returning NULL.
+
 2025-05-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
