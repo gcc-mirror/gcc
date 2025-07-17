@@ -897,7 +897,8 @@ DefaultHIRVisitor::walk (ImplBlock &impl)
   visit_outer_attrs (impl);
   for (auto &generic : impl.get_generic_params ())
     generic->accept_vis (*this);
-  impl.get_trait_ref ().accept_vis (*this);
+  if (impl.has_trait_ref ())
+    impl.get_trait_ref ().accept_vis (*this);
   impl.get_type ().accept_vis (*this);
   if (impl.has_where_clause ())
     visit_where_clause (impl.get_where_clause ());
