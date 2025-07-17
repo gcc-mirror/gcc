@@ -39,7 +39,7 @@
 
 using namespace pointer_analysis;
 
-/* Used for predecessor bitmaps. */
+/* Used for predecessor bitmaps.  */
 static bitmap_obstack predbitmap_obstack;
 
 /* Used for per-solver-iteration bitmaps.  */
@@ -56,7 +56,7 @@ struct constraint_graph
      nodes in the variable map.  */
   unsigned int size;
 
-  /* Explicit successors of each node. */
+  /* Explicit successors of each node.  */
   bitmap *succs;
 
   /* Implicit predecessors of each node (Used for variable
@@ -71,7 +71,7 @@ struct constraint_graph
   int *indirect_cycles;
 
   /* Representative node for a node.  rep[a] == a unless the node has
-     been unified. */
+     been unified.  */
   unsigned int *rep;
 
   /* Equivalence class representative for a label.  This is used for
@@ -330,7 +330,7 @@ constraint_equal (const constraint &a, const constraint &b)
     && constraint_expr_equal (a.rhs, b.rhs);
 }
 
-/* Find a constraint LOOKFOR in the sorted constraint vector VEC */
+/* Find a constraint LOOKFOR in the sorted constraint vector VEC.  */
 
 static constraint_t
 constraint_vec_find (vec<constraint_t> vec,
@@ -430,8 +430,8 @@ solution_set_expand (bitmap set, bitmap *expanded)
    process.  */
 
 static bool
-set_union_with_increment  (bitmap to, bitmap delta, HOST_WIDE_INT inc,
-			   bitmap *expanded_delta)
+set_union_with_increment (bitmap to, bitmap delta, HOST_WIDE_INT inc,
+			  bitmap *expanded_delta)
 {
   bool changed = false;
   bitmap_iterator bi;
@@ -510,7 +510,7 @@ insert_into_complex (constraint_graph_t graph,
 
 
 /* Condense two variable nodes into a single variable node, by moving
-   all associated info from FROM to TO. Returns true if TO node's
+   all associated info from FROM to TO.  Returns true if TO node's
    constraint set changes after the merge.  */
 
 static bool
@@ -523,7 +523,7 @@ merge_node_constraints (constraint_graph_t graph, unsigned int to,
 
   gcc_checking_assert (find (from) == to);
 
-  /* Move all complex constraints from src node into to node  */
+  /* Move all complex constraints from src node into to node.  */
   FOR_EACH_VEC_ELT (graph->complex[from], i, c)
     {
       /* In complex constraints for node FROM, we may have either
@@ -998,7 +998,7 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	bitmap_set_bit (changed, to);
     }
 
-  /* Mark TO as changed if FROM was changed. If TO was already marked
+  /* Mark TO as changed if FROM was changed.  If TO was already marked
      as changed, decrease the changed count.  */
 
   if (update_changed
@@ -1211,7 +1211,7 @@ do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
 
 	      t = find (v->id);
 
-	      if (solve_add_graph_edge  (graph, t, rhs))
+	      if (solve_add_graph_edge (graph, t, rhs))
 		bitmap_set_bit (changed, t);
 	    }
 
@@ -1281,7 +1281,7 @@ scc_info::scc_info (size_t size) :
     node_mapping[i] = i;
 }
 
-/* Free an SCC info structure pointed to by SI */
+/* Free an SCC info structure pointed to by SI.  */
 
 scc_info::~scc_info ()
 {
@@ -1304,7 +1304,7 @@ find_indirect_cycles (constraint_graph_t graph)
   unsigned int size = graph->size;
   scc_info si (size);
 
-  for (i = 0; i < MIN (LAST_REF_NODE, size); i ++ )
+  for (i = 0; i < MIN (LAST_REF_NODE, size); i++)
     if (!bitmap_bit_p (si.visited, i) && find (i) == i)
       scc_visit (graph, &si, i);
 }
@@ -1401,7 +1401,7 @@ static hash_table<equiv_class_hasher> *pointer_equiv_class_table;
    classes.  */
 static hash_table<equiv_class_hasher> *location_equiv_class_table;
 
-/* Hash function for a equiv_class_label_t */
+/* Hash function for a equiv_class_label_t.  */
 
 inline hashval_t
 equiv_class_hasher::hash (const equiv_class_label *ecl)
@@ -1454,7 +1454,7 @@ equiv_class_lookup_or_add (hash_table<equiv_class_hasher> *table,
    static cycles, and single entry subgraphs, in the constraint graph.
 
    The technique is described in "Exploiting Pointer and Location
-   Equivalence to Optimize Pointer Analysis. In the 14th International
+   Equivalence to Optimize Pointer Analysis.  In the 14th International
    Static Analysis Symposium (SAS), August 2007."  It is known as the
    "HU" algorithm, and is equivalent to value numbering the collapsed
    constraint graph including evaluating unions.
@@ -1657,7 +1657,7 @@ label_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
       if (!bitmap_bit_p (si->visited, w))
 	label_visit (graph, si, w);
 
-      /* Skip unused edges  */
+      /* Skip unused edges.  */
       if (w == n || graph->pointer_label[w] == 0)
 	continue;
 
@@ -1787,7 +1787,8 @@ dump_pred_graph (class scc_info *si, FILE *file)
 	  if (from < FIRST_REF_NODE)
 	    fprintf (file, "\"%s\"", get_varinfo (from)->name);
 	  else
-	    fprintf (file, "\"*%s\"", get_varinfo (from - FIRST_REF_NODE)->name);
+	    fprintf (file, "\"*%s\"",
+		     get_varinfo (from - FIRST_REF_NODE)->name);
 	  fprintf (file, " -> ");
 	  if (i < FIRST_REF_NODE)
 	    fprintf (file, "\"%s\"", get_varinfo (i)->name);
@@ -1834,7 +1835,7 @@ perform_var_substitution (constraint_graph_t graph)
     }
 
   bitmap_clear (si->visited);
-  /* Actually the label the nodes for pointer equivalences  */
+  /* Actually the label the nodes for pointer equivalences.  */
   for (i = 1; i < FIRST_REF_NODE; i++)
     if (!bitmap_bit_p (si->visited, si->node_mapping[i]))
       label_visit (graph, si, si->node_mapping[i]);
@@ -2144,7 +2145,7 @@ eliminate_indirect_cycles (unsigned int node)
 
       /* We can't touch the solution set and call unify_nodes
 	 at the same time, because unify_nodes is going to do
-	 bitmap unions into it. */
+	 bitmap unions into it.  */
 
       EXECUTE_IF_SET_IN_BITMAP (get_varinfo (node)->solution, 0, i, bi)
 	{
@@ -2263,7 +2264,7 @@ solve_graph (constraint_graph_t graph)
 	      solution = vi->solution;
 	      solution_empty = bitmap_empty_p (solution);
 
-	      /* Process the complex constraints */
+	      /* Process the complex constraints.  */
 	      hash_set<constraint_t> *cvisited = nullptr;
 	      if (flag_checking)
 		cvisited = new hash_set<constraint_t>;
@@ -2529,7 +2530,7 @@ solve_constraints (void)
   find_indirect_cycles (graph);
 
   /* Implicit nodes and predecessors are no longer necessary at this
-     point. */
+     point.  */
   remove_preds_and_fake_succs (graph);
 
   if (dump_file && (dump_flags & TDF_GRAPH))

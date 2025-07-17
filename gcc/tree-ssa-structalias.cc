@@ -250,7 +250,7 @@ first_vi_for_offset (varinfo_t start, unsigned HOST_WIDE_INT offset)
       /* We may not find a variable in the field list with the actual
 	 offset when we have glommed a structure to a variable.
 	 In that case, however, offset should still be within the size
-	 of the variable. */
+	 of the variable.  */
       if (offset >= start->offset
 	  && (offset - start->offset) < start->size)
 	return start;
@@ -329,7 +329,7 @@ debug_constraint (constraint_t c)
   fprintf (stderr, "\n");
 }
 
-/* Print out all constraints to FILE */
+/* Print out all constraints to FILE.  */
 
 void
 dump_constraints (FILE *file, int from)

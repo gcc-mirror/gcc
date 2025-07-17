@@ -51,7 +51,7 @@ struct constraint_expr
      variables it ends up referring to.
 
      IOW, in a deref constraint, we would deref, get the result set,
-     then add OFFSET to each member.   */
+     then add OFFSET to each member.  */
   HOST_WIDE_INT offset;
 };
 typedef struct constraint_expr ce_s;
@@ -71,7 +71,7 @@ typedef struct constraint *constraint_t;
 
 struct variable_info
 {
-  /* ID of this variable  */
+  /* ID of this variable.  */
   unsigned int id;
 
   /* True if this is a variable created by the constraint analysis, such as
@@ -126,7 +126,7 @@ struct variable_info
   /* The ID of the variable for the first field in this structure.  */
   unsigned head;
 
-  /* Offset of this variable, in bits, from the base variable  */
+  /* Offset of this variable, in bits, from the base variable.  */
   unsigned HOST_WIDE_INT offset;
 
   /* Size of the variable, in bits.  */
@@ -140,7 +140,7 @@ struct variable_info
      function recursively.  Zero if none is needed.  */
   unsigned int shadow_var_uid;
 
-  /* Name of this variable */
+  /* Name of this variable.  */
   const char *name;
 
   /* Tree that this variable is associated with.  */
@@ -177,7 +177,7 @@ extern vec<constraint_t> constraints;
 extern unsigned int *var_rep;
 
 
-/* Return the varmap element N */
+/* Return the varmap element N.  */
 
 inline varinfo_t
 get_varinfo (unsigned int n)
