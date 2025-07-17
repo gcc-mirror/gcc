@@ -7586,20 +7586,25 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   hash_set<slp_tree> visited;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
-      /* FORNOW: SLP if you can.  */
+      slp_tree root = SLP_INSTANCE_TREE (instance);
+
       /* All unroll factors have the form:
 
 	   GET_MODE_SIZE (vinfo->vector_mode) * X
 
 	 for some rational X, so they must have a common multiple.  */
-      vect_update_slp_vf_for_node (SLP_INSTANCE_TREE (instance),
-				   unrolling_factor, visited);
+      vect_update_slp_vf_for_node (root, unrolling_factor, visited);
 
       /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
 	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and
 	 loop-based vectorization.  Such stmts will be marked as HYBRID.  */
-      vect_mark_slp_stmts (loop_vinfo, SLP_INSTANCE_TREE (instance));
-      decided_to_slp++;
+      vect_mark_slp_stmts (loop_vinfo, root);
+
+      /* If all instances ended up with vector(1) T roots make sure to
+	 not vectorize.  RVV for example relies on loop vectorization
+	 when some instances are essentially kept scalar.  See PR121048.  */
+      if (known_gt (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (root)), 1U))
+	decided_to_slp++;
     }
 
   LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo) = unrolling_factor;

@@ -191,12 +191,6 @@ vect_determine_vectype_for_stmt_1 (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (stmt_vectype)
     {
-      if (known_le (TYPE_VECTOR_SUBPARTS (stmt_vectype), 1U))
-	return opt_result::failure_at (STMT_VINFO_STMT (stmt_info),
-				       "not vectorized: unsupported "
-				       "data-type in %G",
-				       STMT_VINFO_STMT (stmt_info));
-
       if (STMT_VINFO_VECTYPE (stmt_info))
 	/* The only case when a vectype had been already set is for stmts
 	   that contain a data ref, or for "pattern-stmts" (stmts generated
@@ -303,8 +297,7 @@ vect_set_stmts_vectype (loop_vec_info loop_vinfo)
 				 scalar_type);
 
 	      vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
-	      if (!vectype
-		  || known_le (TYPE_VECTOR_SUBPARTS (vectype), 1U))
+	      if (!vectype)
 		return opt_result::failure_at (phi,
 					       "not vectorized: unsupported "
 					       "data-type %T\n",
