@@ -1,3 +1,11 @@
+2025-07-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_AVX512_SET): Do not set AVX10.2.
+	(OPTION_MASK_ISA2_AVX10_2_UNSET): Remove AMX-AVX512 unset.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Unset AMX-AVX512.
+	(ix86_handle_option): Imply AVX512F for AMX-AVX512.
+
 2025-07-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

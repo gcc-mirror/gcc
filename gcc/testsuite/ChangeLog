@@ -1,3 +1,40 @@
+2025-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120497
+	* gm2/pim/pass/ReturnType.mod: New test.
+	* gm2/pim/pass/ReturnType2.mod: New test.
+
+2025-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2/pim/fail/testcharint.mod: New test.
+	* gm2/pim/fail/testindrx.mod: New test.
+	* gm2/pim/pass/testxindr.mod: New test.
+	* gm2/pim/pass/testxindr2.mod: New test.
+	* gm2/pim/pass/testxindr3.mod: New test.
+
+2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121060
+	* gfortran.dg/associate_75.f90: New test.
+
+2025-07-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amxavx512-cvtrowd2ps-2.c: Add -mavx512fp16 to
+	use FP16 related intrins for convert.
+	* gcc.target/i386/amxavx512-cvtrowps2bf16-2.c: Ditto.
+	* gcc.target/i386/amxavx512-cvtrowps2ph-2.c: Ditto.
+	* gcc.target/i386/amxavx512-movrow-2.c: Ditto.
+
 2025-07-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
