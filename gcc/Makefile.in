@@ -1796,6 +1796,7 @@ OBJS = \
 	tree-ssa-sink.o \
 	tree-ssa-strlen.o \
 	tree-ssa-structalias.o \
+	pta-andersen.o \
 	tree-ssa-tail-merge.o \
 	tree-ssa-ter.o \
 	tree-ssa-threadbackward.o \
