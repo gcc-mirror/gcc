@@ -1,3 +1,7 @@
+2025-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add directory "gcc/text-art".
+
 2025-07-11  Richard Biener  <rguenther@suse.de>
 
 	* gcc-changelog/git_update_version.py: Stop updating gcc-12

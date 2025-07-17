@@ -1,3 +1,22 @@
+2025-07-16  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* pt.cc (tsubst_omp_clause_decl): Use OMP_ITERATOR_DECL_P.
+	* semantics.cc (handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Likewise.
+
+2025-07-16  Alfie Richards  <alfie.richards@arm.com>
+
+	* class.cc (add_method): Remove argument.
+	* cp-tree.h (maybe_version_functions): Ditto.
+	* decl.cc (decls_match): Ditto.
+	(maybe_version_functions): Ditto.
+
+2025-07-16  Jeremy Rifkin  <jeremy@rifkin.dev>
+
+	PR c/82134
+	* call.cc (build_call_a): Add suppress_warning
+	* cp-gimplify.cc (cp_gimplify_expr): Add suppress_warning
+
 2025-07-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44677

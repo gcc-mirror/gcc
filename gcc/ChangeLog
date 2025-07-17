@@ -1,3 +1,242 @@
+2025-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-state-to-dot.cc (state_diagram::m_show_tags): Drop
+	unused field.
+
+2025-07-16  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gimplify.cc (gimplify_omp_affinity): Use OMP_ITERATOR_DECL_P.
+	(compute_omp_iterator_count): New.
+	(build_omp_iterator_loop): New.
+	(gimplify_omp_depend): Use OMP_ITERATOR_DECL_P,
+	compute_omp_iterator_count and build_omp_iterator_loop.
+	* tree-inline.cc (copy_tree_body_r): Use OMP_ITERATOR_DECL_P.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+	* tree.h (OMP_ITERATOR_DECL_P): New macro.
+
+2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/121062
+	* config/i386/i386.cc (ix86_convert_const_vector_to_integer):
+	Handle E_V1SImode and E_V1DImode.
+	* config/i386/mmx.md (V_16_32_64): Add V1SI, V2BF and V1DI.
+	(mmxinsnmode): Add V1DI and V1SI.
+	Add V_16_32_64 splitter for constant vector loads from constant
+	vector pool.
+	(V_16_32_64:*mov<mode>_imm): Moved after V_16_32_64 splitter.
+	Replace lowpart_subreg with adjust_address.
+
+2025-07-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120881
+	PR testsuite/121078
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Warn -pg without -mfentry only on glibc targets.
+
+2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move):
+	Use MEM_P predicate instead of open coding it.
+	(ix86_erase_embedded_rounding):
+	Use NONJUMP_INSN_P predicate instead of open coding it.
+	* config/i386/i386-features.cc (convertible_comparison_p):
+	Use REG_P predicate instead of open coding it.
+	* config/i386/i386.cc (ix86_rtx_costs):
+	Use SUBREG_P predicate instead of open coding it.
+
+2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (symbolic_reference_mentioned_p):
+	Use LABEL_REF_P predicate instead of open coding it.
+	(ix86_legitimate_constant_p): Ditto.
+	(legitimate_pic_address_disp_p): Ditto.
+	(ix86_legitimate_address_p): Ditto.
+	(legitimize_pic_address): Ditto.
+	(ix86_print_operand): Ditto.
+	(ix86_print_operand_address_as): Ditto.
+	(ix86_rip_relative_addr_p): Ditto.
+	* config/i386/i386.h (SYMBOLIC_CONST): Ditto.
+	* config/i386/i386.md (*anddi_1 to *andsi_1_zext splitter): Ditto.
+	* config/i386/predicates.md (symbolic_operand): Ditto.
+	(local_symbolic_operand): Ditto.
+	(vsib_address_operand): Ditto.
+
+2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move):
+	Use SYMBOL_REF_P predicate instead of open coding it.
+	(ix86_split_long_move): Ditto.
+	(construct_plt_address): Ditto.
+	(ix86_expand_call): Ditto.
+	(ix86_notrack_prefixed_insn_p): Ditto.
+	* config/i386/i386-features.cc
+	(rest_of_insert_endbr_and_patchable_area): Ditto.
+	* config/i386/i386.cc (symbolic_reference_mentioned_p): Ditto.
+	(ix86_force_load_from_GOT_p): Ditto.
+	(ix86_legitimate_constant_p): Ditto.
+	(legitimate_pic_operand_p): Ditto.
+	(legitimate_pic_address_disp_p): Ditto.
+	(ix86_legitimate_address_p): Ditto.
+	(legitimize_pic_address): Ditto.
+	(ix86_legitimize_address): Ditto.
+	(ix86_delegitimize_tls_address): Ditto.
+	(ix86_print_operand): Ditto.
+	(ix86_print_operand_address_as): Ditto.
+	(ix86_rip_relative_addr_p): Ditto.
+	(symbolic_base_address_p): Ditto.
+	* config/i386/i386.h (SYMBOLIC_CONST): Ditto.
+	* config/i386/i386.md (*anddi_1 to *andsi_1_zext splitter): Ditto.
+	* config/i386/predicates.md (symbolic_operand): Ditto.
+	(local_symbolic_operand): Ditto.
+	(local_func_symbolic_operand): Ditto.
+
+2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vector_logical_operator):
+	Use CONST_VECTOR_P instead of open coding it.
+	(ix86_expand_int_sse_cmp): Ditto.
+	(ix86_extract_perm_from_pool_constant): Ditto.
+	(ix86_split_to_parts): Ditto.
+	(const_vector_equal_evenodd_p): Ditto.
+	* config/i386/i386.cc (ix86_print_operand): Ditto.
+	* config/i386/predicates.md (zero_extended_scalar_load_operand): Ditto.
+	(float_vector_all_ones_operand): Ditto.
+	* config/i386/sse.md (avx512vl_vextractf128<mode>): Ditto.
+
+2025-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121049
+	* internal-fn.h (widening_evenodd_fn_p): Declare.
+	* internal-fn.cc (widening_evenodd_fn_p): New function.
+	* tree-vect-stmts.cc (vectorizable_conversion): When using
+	an even/odd widening function disable loop masking.
+
+2025-07-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119920
+	PR tree-optimization/112324
+	PR tree-optimization/110015
+	* tree-if-conv.cc (find_different_opnum): New function.
+	(factor_out_operators): New function.
+	(predicate_scalar_phi): Call factor_out_operators when
+	there is only 2 elements of a phi.
+
+2025-07-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-if-conv.cc (fold_build_cond_expr): Return early if lhs and rhs
+	are the same.
+
+2025-07-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-if-conv.cc (combine_blocks): Remove predicated
+	dynamic array.
+
+2025-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121116
+	* tree-vect-loop.cc (vectorizable_induction): Use the
+	step vector element type for further processing.
+
+2025-07-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_vcc_dup<exec_vcc>): Change
+	operand 2 to allow gcn_alu_operand.  Swap the operands in the VCC
+	update RTL.
+	(add<mode>3_vcc_zext_dup): Likewise.
+	(add<mode>3_vcc_zext_dup_exec): Likewise.
+	(add<mode>3_vcc_zext_dup2): Likewise.
+	(add<mode>3_vcc_zext_dup2_exec): Likewise.
+
+2025-07-16  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/117850
+	* config/aarch64/aarch64-builtins.cc (LO_HI_PAIRINGS): New, group the
+	lo/hi pairs from aarch64-builtin-pairs.def.
+	(aarch64_get_highpart_builtin): New function.
+	(aarch64_v128_highpart_ref): New function, helper to look for vector
+	highparts.
+	(aarch64_build_vector_cst): New function, helper to build duplicated
+	VECTOR_CSTs.
+	(aarch64_fold_lo_call_to_hi): New function.
+	(aarch64_general_gimple_fold_builtin): Add cases for the lo builtins
+	in aarch64-builtin-pairs.def.
+	* config/aarch64/aarch64-builtin-pairs.def: New file, declare the
+	parirs of lowpart-operating and highpart-operating builtins.
+
+2025-07-16  Alfie Richards  <alfie.richards@arm.com>
+
+	* tree.cc (get_clone_versions): New function.
+	(get_clone_attr_versions): New function.
+	(get_version): New function.
+	* tree.h (get_clone_versions): New function.
+	(get_clone_attr_versions): New function.
+	(get_target_version): New function.
+
+2025-07-16  Alfie Richards  <alfie.richards@arm.com>
+
+	* attribs.cc (make_attribute): Change arguments.
+	* attribs.h (make_attribute): Change arguments.
+
+2025-07-16  Alfie Richards  <alfie.richards@arm.com>
+
+	* pretty-print.cc (format_phase_2): Add support for string_slice.
+	* vec.cc (string_slice::tokenize): New static method.
+	(string_slice::strcmp): New static method.
+	(string_slice::strip): New method.
+	(test_string_slice_initializers): New test.
+	(test_string_slice_tokenize): Ditto.
+	(test_string_slice_strcmp): Ditto.
+	(test_string_slice_equality): Ditto.
+	(test_string_slice_inequality): Ditto.
+	(test_string_slice_invalid): Ditto.
+	(test_string_slice_strip): Ditto.
+	(vec_cc_tests): Add new tests.
+	* vec.h (class string_slice): New class.
+
+2025-07-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/121065
+	* cfgexpand.cc (expand_debug_expr): Allow fixed-point modes for
+	RDIV_EXPR.
+	* optabs-tree.cc (optab_for_tree_code): Ditto.
+
+2025-07-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120297
+	* config/riscv/riscv-vsetvl.def: Do not forget ratio demand of
+	previous vsetvl.
+
+2025-07-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-sve2.md (*aarch64_sve2_bsl2n_eon<mode>):
+	New pattern.
+	(*aarch64_sve2_eon_bsl2n_unpred<mode>): Likewise.
+
+2025-07-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-sve2.md (*aarch64_sve2_unpred_nor<mode>):
+	New define_insn.
+	(*aarch64_sve2_nand_unpred<mode>): Likewise.
+
+2025-07-16  Jeremy Rifkin  <jeremy@rifkin.dev>
+
+	PR c/82134
+	* gimplify.cc (gimplify_modify_expr): Add suppress_warning
+	* tree-cfg.cc (do_warn_unused_result): Check warning_suppressed_p
+
+2025-07-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_AVX512_SET): Do not set AVX10.2.
+	(OPTION_MASK_ISA2_AVX10_2_UNSET): Remove AMX-AVX512 unset.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Unset AMX-AVX512.
+	(ix86_handle_option): Imply AVX512F for AMX-AVX512.
+
+2025-07-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<mode>3_floor): Add new
+	pattern of avg3_floor for rvv DImode.
+
 2025-07-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* spellcheck.cc: Define INCLUDE_ALGORITHM.

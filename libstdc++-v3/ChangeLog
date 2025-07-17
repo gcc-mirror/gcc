@@ -1,3 +1,17 @@
+2025-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (__bitset::__string) [__cpp_lib_bitset]:
+	Change alias to refer to basic_string_view instead.
+
+2025-07-16  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121114
+	* include/bits/version.def (constexpr_exceptions): Add no_stdname
+	and changed value.
+	* include/bits/version.h: Regenerated.
+	* testsuite/18_support/exception/version.cc: Test that macro is
+	not exported.
+
 2025-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/move.h (swap): Replace enable_if with concepts

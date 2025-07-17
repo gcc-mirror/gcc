@@ -1,3 +1,7 @@
+2025-07-16  John Ericson  <git@JohnEricson.me>
+
+	* Makefile.in:  Delete dead `MACHMODE_H` variable
+
 2025-07-10  Jan Dubiec  <jdx@o2.pl>
 
 	PR target/116363
