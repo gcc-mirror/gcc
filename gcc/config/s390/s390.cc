@@ -3862,7 +3862,21 @@ s390_register_move_cost (machine_mode mode,
 {
   /* On s390, copy between fprs and gprs is expensive.  */
 
-  /* It becomes somewhat faster having ldgr/lgdr.  */
+  /* With vector extensions any GPR<->VR load up to 8 bytes is supported.  */
+  if (TARGET_VX && GET_MODE_SIZE (mode) <= 8)
+    {
+      /* ldgr/vlvgg take one cycle and vlvg[bhf] take two cycles. */
+      if (reg_classes_intersect_p (from, GENERAL_REGS)
+	  && reg_classes_intersect_p (to, VEC_REGS))
+	return GET_MODE_SIZE (mode) == 8 ? 1 : 2;
+      /* lgdr/vlgv[fg] take three cycles and vlgv[bh] take five cycles. */
+      if (reg_classes_intersect_p (to, GENERAL_REGS)
+	  && reg_classes_intersect_p (from, VEC_REGS))
+	return GET_MODE_SIZE (mode) >= 4 ? 3 : 4;
+    }
+
+  /* Without vector extensions it still becomes somewhat faster having
+     ldgr/lgdr.  */
   if (TARGET_Z10 && GET_MODE_SIZE (mode) == 8)
     {
       /* ldgr is single cycle. */
