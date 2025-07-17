@@ -1157,6 +1157,11 @@ Nested <code>result_type</code> and <code>argument_type</code> removed from
 Deprecated the non-standard overload of <code>std::fabs</code> for
 <code>std::complex</code> arguments.
 </para>
+
+<para>
+Made <code>std::is_integral_v&lt;__int128&gt;</code> true for strict
+<code>-std</code> dialects.
+</para>
 </section>
 
 </section>
