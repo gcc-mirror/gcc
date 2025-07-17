@@ -46,6 +46,7 @@ public:
   void visit (HIR::TupleStructPattern &) override;
   void visit (HIR::TuplePattern &) override;
   void visit (HIR::IdentifierPattern &) override;
+  void visit (HIR::SlicePattern &) override;
 
   // Always succeeds
   void visit (HIR::WildcardPattern &) override
@@ -55,7 +56,6 @@ public:
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::QualifiedPathInExpression &) override {}
-  void visit (HIR::SlicePattern &) override {}
 
   CompilePatternCheckExpr (Context *ctx, tree match_scrutinee_expr)
     : HIRCompileBase (ctx), match_scrutinee_expr (match_scrutinee_expr),
@@ -95,6 +95,7 @@ public:
   void visit (HIR::ReferencePattern &pattern) override;
   void visit (HIR::IdentifierPattern &) override;
   void visit (HIR::TuplePattern &pattern) override;
+  void visit (HIR::SlicePattern &) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::AltPattern &) override {}
@@ -102,7 +103,6 @@ public:
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
   void visit (HIR::RangePattern &) override {}
-  void visit (HIR::SlicePattern &) override {}
   void visit (HIR::WildcardPattern &) override {}
 
 protected:

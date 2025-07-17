@@ -176,6 +176,9 @@ tree char_constant_expression (char c);
 // Get a char literal
 tree wchar_constant_expression (wchar_t c);
 
+// Get a size literal
+tree size_constant_expression (size_t val);
+
 // Return an expression for the boolean value VAL.
 tree boolean_constant_expression (bool val);
 

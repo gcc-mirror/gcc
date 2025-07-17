@@ -514,6 +514,53 @@ CompilePatternCheckExpr::visit (HIR::IdentifierPattern &pattern)
     }
 }
 
+void
+CompilePatternCheckExpr::visit (HIR::SlicePattern &pattern)
+{
+  check_expr = boolean_true_node;
+
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (pattern.get_mappings ().get_hirid (),
+				      &lookup);
+  rust_assert (ok);
+
+  // pattern must either be ArrayType or SliceType, should be already confirmed
+  // by type checking
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE);
+
+  size_t array_element_index = 0;
+  switch (lookup->get_kind ())
+    {
+    case TyTy::TypeKind::ARRAY:
+      for (auto &pattern_member : pattern.get_items ())
+	{
+	  tree array_index_tree
+	    = Backend::size_constant_expression (array_element_index++);
+	  tree element_expr
+	    = Backend::array_index_expression (match_scrutinee_expr,
+					       array_index_tree,
+					       pattern.get_locus ());
+	  tree check_expr_sub
+	    = CompilePatternCheckExpr::Compile (*pattern_member, element_expr,
+						ctx);
+	  check_expr = Backend::arithmetic_or_logical_expression (
+	    ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	    check_expr_sub, pattern.get_locus ());
+	}
+      break;
+    case TyTy::TypeKind::SLICE:
+      rust_sorry_at (
+	pattern.get_locus (),
+	"SlicePattern matching against slices are not yet supported");
+      break;
+    default:
+      rust_unreachable ();
+    }
+}
+
 // setup the bindings
 
 void
@@ -834,6 +881,44 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
       {
 	rust_unreachable ();
       }
+    }
+}
+
+void
+CompilePatternBindings::visit (HIR::SlicePattern &pattern)
+{
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (pattern.get_mappings ().get_hirid (),
+				      &lookup);
+  rust_assert (ok);
+
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE);
+
+  size_t array_element_index = 0;
+  switch (lookup->get_kind ())
+    {
+    case TyTy::TypeKind::ARRAY:
+      for (auto &pattern_member : pattern.get_items ())
+	{
+	  tree array_index_tree
+	    = Backend::size_constant_expression (array_element_index++);
+	  tree element_expr
+	    = Backend::array_index_expression (match_scrutinee_expr,
+					       array_index_tree,
+					       pattern.get_locus ());
+	  CompilePatternBindings::Compile (*pattern_member, element_expr, ctx);
+	}
+      break;
+    case TyTy::TypeKind::SLICE:
+      rust_sorry_at (
+	pattern.get_locus (),
+	"SlicePattern matching against slices are not yet supported");
+      break;
+    default:
+      rust_unreachable ();
     }
 }
 

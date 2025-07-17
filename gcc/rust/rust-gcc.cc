@@ -818,6 +818,12 @@ char_constant_expression (char c)
   return build_int_cst (char_type_node, c);
 }
 
+tree
+size_constant_expression (size_t val)
+{
+  return size_int (val);
+}
+
 // Make a constant boolean expression.
 
 tree
