@@ -149,13 +149,13 @@
 
 ; The instruction suffix for integer instructions and instructions
 ; which do not care about whether it is floating point or integer.
-(define_mode_attr bhfgq[(V1QI "b") (V2QI "b") (V4QI "b") (V8QI "b") (V16QI "b")
-			(V1HI "h") (V2HI "h") (V4HI "h") (V8HI "h")
-			(V1SI "f") (V2SI "f") (V4SI "f")
-			(V1DI "g") (V2DI "g")
+(define_mode_attr bhfgq[(V1QI "b") (V2QI "b") (V4QI "b") (V8QI "b") (V16QI "b") (QI "b")
+			(V1HI "h") (V2HI "h") (V4HI "h") (V8HI "h") (HI "h")
+			(V1SI "f") (V2SI "f") (V4SI "f") (SI "f")
+			(V1DI "g") (V2DI "g") (DI "g")
 			(V1TI "q") (TI "q")
-			(V1SF "f") (V2SF "f") (V4SF "f")
-			(V1DF "g") (V2DF "g")
+			(V1SF "f") (V2SF "f") (V4SF "f") (SF "f")
+			(V1DF "g") (V2DF "g") (DF "g")
 			(V1TF "q") (TF "q")])
 
 ; This is for vmalhw. It gets an 'w' attached to avoid confusion with
@@ -500,6 +500,54 @@
   [(set_attr "op_type" "RRE,RX,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,VRI,
                         SIL,SIL,RI,RI,RRE,RRE,RIL,RR,RXY,RXY,RIL")])
 
+
+; Instructions vlgvb, vlgvh, vlgvf zero all remaining bits of a GPR, i.e.,
+; an implicit zero extend is done.
+
+(define_insn "*movdi<mode>_zero_extend_A"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(zero_extend:DI (match_operand:SINT 1 "register_operand" "v")))]
+  "TARGET_VX"
+  "vlgv<bhfgq>\t%0,%v1,0"
+  [(set_attr "op_type" "VRS")])
+
+(define_insn "*movsi<mode>_zero_extend_A"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (match_operand:HQI 1 "register_operand" "v")))]
+  "TARGET_VX"
+  "vlgv<bhfgq>\t%0,%v1,0"
+  [(set_attr "op_type" "VRS")])
+
+(define_mode_iterator VLGV_DI [V1QI V2QI V4QI V8QI V16QI
+			       V1HI V2HI V4HI V8HI
+			       V1SI V2SI V4SI])
+(define_insn "*movdi<mode>_zero_extend_B"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(zero_extend:DI (vec_select:<non_vec>
+			  (match_operand:VLGV_DI 1 "register_operand" "v")
+			  (parallel [(match_operand:SI 2 "const_int_operand" "n")]))))]
+  "TARGET_VX"
+{
+  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
+  return "vlgv<bhfgq>\t%0,%v1,%Y2";
+}
+  [(set_attr "op_type" "VRS")
+   (set_attr "mnemonic" "vlgv<bhfgq>")])
+
+(define_mode_iterator VLGV_SI [V1QI V2QI V4QI V8QI V16QI
+			       V1HI V2HI V4HI V8HI])
+(define_insn "*movsi<mode>_zero_extend_B"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (vec_select:<non_vec>
+			  (match_operand:VLGV_SI 1 "register_operand" "v")
+			  (parallel [(match_operand:SI 2 "const_int_operand" "n")]))))]
+  "TARGET_VX"
+{
+  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
+  return "vlgv<bhfgq>\t%0,%v1,%Y2";
+}
+  [(set_attr "op_type" "VRS")
+   (set_attr "mnemonic" "vlgv<bhfgq>")])
 
 ; vec_load_lanes?
 
