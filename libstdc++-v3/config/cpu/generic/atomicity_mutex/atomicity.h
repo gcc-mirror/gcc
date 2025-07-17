@@ -44,10 +44,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     __gnu_cxx::__scoped_lock sentry(get_atomic_mutex());
-    _Atomic_word __result;
-    __result = *__mem;
-    *__mem += __val;
-    return __result;
+    return __gnu_cxx::__exchange_and_add_single(__mem, __val);
   }
 
   void

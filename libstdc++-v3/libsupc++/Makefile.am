@@ -132,6 +132,11 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
+atomicity.lo: atomicity.cc
+	$(LTCOMPILE) -fwrapv -c $<
+atomicity.o: atomicity.cc
+	$(CXXCOMPILE) -fwrapv -c $<
+
 if OS_IS_DARWIN
 # See PR 112397
 new_opvnt.lo: new_opvnt.cc
