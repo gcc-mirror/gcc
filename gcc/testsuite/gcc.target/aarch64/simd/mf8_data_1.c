@@ -1016,7 +1016,12 @@ mfloat8x8_t test_set_lane3(mfloat8x8_t a, const mfloat8_t *ptr)
 
 /*
 ** test_set_lane4:
+**	(
 **	ins	v0.b\[6\], wzr
+**	|
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
+**	ins	v0.b\[6\], v(\1).b\[0\]
+**	)
 **	ret
 */
 mfloat8x8_t test_set_lane4(mfloat8x8_t a)
@@ -1056,7 +1061,12 @@ mfloat8x16_t test_setq_lane3(mfloat8x16_t a, const mfloat8_t *ptr)
 
 /*
 ** test_setq_lane4:
+**	(
 **	ins	v0.b\[14\], wzr
+**	|
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
+**	ins	v0.b\[14\], v(\1).b\[0\]
+**	)
 **	ret
 */
 mfloat8x16_t test_setq_lane4(mfloat8x16_t a)

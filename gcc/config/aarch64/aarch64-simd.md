@@ -1190,13 +1190,16 @@
   [(set_attr "type" "neon_ins<q>, neon_from_gp<q>, neon_load1_one_lane<q>")]
 )
 
+;; Inserting from the zero register into a vector lane is treated as an
+;; expensive GP->FP move on all CPUs.  Avoid it when optimizing for speed.
 (define_insn "aarch64_simd_vec_set_zero<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(vec_merge:VALL_F16
 	    (match_operand:VALL_F16 1 "register_operand" "0")
 	    (match_operand:VALL_F16 3 "aarch64_simd_imm_zero" "")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
-  "TARGET_SIMD && aarch64_exact_log2_inverse (<nunits>, operands[2]) >= 0"
+  "TARGET_SIMD && aarch64_exact_log2_inverse (<nunits>, operands[2]) >= 0
+   && optimize_function_for_size_p (cfun)"
   {
     int elt = ENDIAN_LANE_N (<nunits>,
 			     aarch64_exact_log2_inverse (<nunits>,
