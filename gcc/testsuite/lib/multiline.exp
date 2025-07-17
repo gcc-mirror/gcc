@@ -153,6 +153,9 @@ proc handle-multiline-outputs { text } {
     # If dg-enable-nn-line-numbers was provided, then obscure source-margin
     # line numbers by converting them to "NN" form.
     set text [maybe-handle-nn-line-numbers $text]
+
+    # Remove Windows .exe suffix
+    regsub -all "(as|cc1|cc1plus|collect2|f951|ld|lto-wrapper)\.exe?:" $text {\1:} text
     
     set index 0
     foreach entry $multiline_expected_outputs {
