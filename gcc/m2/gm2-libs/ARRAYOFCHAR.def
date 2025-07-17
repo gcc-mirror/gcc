@@ -30,8 +30,7 @@ FROM FIO IMPORT File ;
 
 
 (*
-   Description: provides write and read procedures for
-                ARRAY OF CHAR.
+   Description: provides write procedures for ARRAY OF CHAR.
 *)
 
 PROCEDURE Write (f: File; str: ARRAY OF CHAR) ;
