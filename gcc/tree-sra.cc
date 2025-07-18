@@ -2889,7 +2889,10 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   for (child = root->first_child; child; child = child->next_sibling)
     {
-      hole |= covered_to < child->offset;
+      if (totally)
+	covered_to = child->offset;
+      else
+	hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
 					     allow_replacements && !scalar
 					     && !root->grp_partial_lhs,
@@ -2900,6 +2903,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	covered_to += child->size;
       else
 	hole = true;
+      if (totally && !hole)
+	covered_to = limit;
     }
 
   if (allow_replacements && scalar && !root->first_child
@@ -2972,7 +2977,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_total_scalarization = 0;
     }
 
-  if (!hole || totally)
+  if (!hole)
     root->grp_covered = 1;
   else if (root->grp_write || comes_initialized_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */
