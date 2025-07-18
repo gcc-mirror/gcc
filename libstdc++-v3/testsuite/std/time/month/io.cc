@@ -24,6 +24,9 @@ test_ostream()
   ss.imbue(std::locale(ISO_8859(15,fr_FR)));
   ss << month(1);
   VERIFY( ss.str() == "janv." );
+  ss.str("");
+  ss << month(0) << '|' << month(13);
+  VERIFY( ss.str() == "0 is not a valid month|13 is not a valid month" );
 }
 
 void
@@ -66,6 +69,10 @@ test_format()
   VERIFY( s == "Jan" );
   s = std::format(loc_fr, "{:L%b}", month(1));
   VERIFY( s == "janv." );
+  s = std::format(loc_fr, "{:L}", month(0));
+  VERIFY( s == "0 is not a valid month" );
+  s = std::format(loc_fr, "{:L}", month(13));
+  VERIFY( s == "13 is not a valid month" );
 
   std::string_view specs = "aAbBcCdDeFgGhHIjmMpqQrRSTuUVwWxXyYzZ";
   std::string_view my_specs = "bBhm";

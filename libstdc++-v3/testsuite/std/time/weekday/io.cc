@@ -69,6 +69,8 @@ test_format()
   VERIFY( s == "Mon" );
   s = std::format(loc_fr, "{:L%a}", weekday(1));
   VERIFY( s == "lun." );
+  s = std::format(loc_fr, "{:L}", weekday(25));
+  VERIFY( s == "25 is not a valid weekday" );
 
   std::string_view specs = "aAbBcCdDeFgGhHIjmMpqQrRSTuUVwWxXyYzZ";
   std::string_view my_specs = "aAuw";
