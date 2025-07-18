@@ -214,7 +214,8 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
-  rust_assert (ok);
+  if (!ok)
+    return error_mark_node;
 
   // need to look up the reference for this identifier
 
