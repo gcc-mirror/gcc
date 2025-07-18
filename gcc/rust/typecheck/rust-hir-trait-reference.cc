@@ -432,7 +432,13 @@ TraitReference::trait_has_generics () const
   return !trait_substs.empty ();
 }
 
-std::vector<TyTy::SubstitutionParamMapping>
+std::vector<TyTy::SubstitutionParamMapping> &
+TraitReference::get_trait_substs ()
+{
+  return trait_substs;
+}
+
+const std::vector<TyTy::SubstitutionParamMapping> &
 TraitReference::get_trait_substs () const
 {
   return trait_substs;

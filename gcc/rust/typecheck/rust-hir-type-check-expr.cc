@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "optional.h"
+#include "rust-common.h"
 #include "rust-hir-expr.h"
 #include "rust-system.h"
 #include "rust-tyty-call.h"
@@ -56,6 +57,19 @@ TypeCheckExpr::Resolve (HIR::Expr &expr)
   resolver.infered->set_ref (ref);
   resolver.context->insert_type (expr.get_mappings (), resolver.infered);
 
+  return resolver.infered;
+}
+
+TyTy::BaseType *
+TypeCheckExpr::ResolveOpOverload (LangItem::Kind lang_item_type,
+				  HIR::OperatorExprMeta expr,
+				  TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+				  HIR::PathIdentSegment specified_segment)
+{
+  TypeCheckExpr resolver;
+
+  resolver.resolve_operator_overload (lang_item_type, expr, lhs, rhs,
+				      specified_segment);
   return resolver.infered;
 }
 
@@ -1885,7 +1899,16 @@ TypeCheckExpr::resolve_operator_overload (
   // probe for the lang-item
   if (!lang_item_defined)
     return false;
+
   DefId &respective_lang_item_id = lang_item_defined.value ();
+  auto def_lookup = mappings.lookup_defid (respective_lang_item_id);
+  rust_assert (def_lookup.has_value ());
+
+  HIR::Item *def_item = def_lookup.value ();
+  rust_assert (def_item->get_item_kind () == HIR::Item::ItemKind::Trait);
+  HIR::Trait &trait = *static_cast<HIR::Trait *> (def_item);
+  TraitReference *defid_trait_reference = TraitResolver::Resolve (trait);
+  rust_assert (!defid_trait_reference->is_error ());
 
   // we might be in a static or const context and unknown is fine
   TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();
@@ -1929,15 +1952,49 @@ TypeCheckExpr::resolve_operator_overload (
 
   if (selected_candidates.size () > 1)
     {
-      // mutliple candidates
-      rich_location r (line_table, expr.get_locus ());
-      for (auto &c : resolved_candidates)
-	r.add_range (c.candidate.locus);
+      auto infer
+	= TyTy::TyVar::get_implicit_infer_var (expr.get_locus ()).get_tyty ();
+      auto trait_subst = defid_trait_reference->get_trait_substs ();
+      rust_assert (trait_subst.size () > 0);
 
-      rust_error_at (
-	r, "multiple candidates found for possible operator overload");
+      TyTy::TypeBoundPredicate pred (respective_lang_item_id, trait_subst,
+				     BoundPolarity::RegularBound,
+				     expr.get_locus ());
 
-      return false;
+      std::vector<TyTy::SubstitutionArg> mappings;
+      auto &self_param_mapping = trait_subst[0];
+      mappings.push_back (TyTy::SubstitutionArg (&self_param_mapping, lhs));
+
+      if (rhs != nullptr)
+	{
+	  rust_assert (trait_subst.size () == 2);
+	  auto &rhs_param_mapping = trait_subst[1];
+	  mappings.push_back (TyTy::SubstitutionArg (&rhs_param_mapping, lhs));
+	}
+
+      std::map<std::string, TyTy::BaseType *> binding_args;
+      binding_args["Output"] = infer;
+
+      TyTy::SubstitutionArgumentMappings arg_mappings (mappings, binding_args,
+						       TyTy::RegionParamList (
+							 trait_subst.size ()),
+						       expr.get_locus ());
+      pred.apply_argument_mappings (arg_mappings, false);
+
+      infer->inherit_bounds ({pred});
+      DeferredOpOverload defer (expr.get_mappings ().get_hirid (),
+				lang_item_type, specified_segment, pred, expr);
+      context->insert_deferred_operator_overload (std::move (defer));
+
+      if (rhs != nullptr)
+	lhs = unify_site (expr.get_mappings ().get_hirid (),
+			  TyTy::TyWithLocation (lhs),
+			  TyTy::TyWithLocation (rhs), expr.get_locus ());
+
+      infered = unify_site (expr.get_mappings ().get_hirid (),
+			    TyTy::TyWithLocation (lhs),
+			    TyTy::TyWithLocation (infer), expr.get_locus ());
+      return true;
     }
 
   // Get the adjusted self

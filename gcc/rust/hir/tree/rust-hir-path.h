@@ -41,11 +41,15 @@ public:
     : segment_name (std::move (segment_name))
   {}
 
-  /* TODO: insert check in constructor for this? Or is this a semantic error
-   * best handled then? */
+  PathIdentSegment (const PathIdentSegment &other)
+    : segment_name (other.segment_name)
+  {}
 
-  /* TODO: does this require visitor? pretty sure this isn't polymorphic, but
-   * not entirely sure */
+  PathIdentSegment &operator= (PathIdentSegment const &other)
+  {
+    segment_name = other.segment_name;
+    return *this;
+  }
 
   // Creates an error PathIdentSegment.
   static PathIdentSegment create_error () { return PathIdentSegment (""); }

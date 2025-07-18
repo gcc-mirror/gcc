@@ -27,6 +27,7 @@
 #include "rust-hir-attrs.h"
 #include "rust-expr.h"
 #include "rust-hir-map.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 namespace HIR {
@@ -2892,6 +2893,22 @@ public:
 
   OperatorExprMeta (HIR::ComparisonExpr &expr);
 
+  OperatorExprMeta (const OperatorExprMeta &other)
+    : node_mappings (other.node_mappings),
+      lvalue_mappings (other.lvalue_mappings),
+      rvalue_mappings (other.rvalue_mappings), locus (other.locus)
+  {}
+
+  OperatorExprMeta &operator= (const OperatorExprMeta &other)
+  {
+    node_mappings = other.node_mappings;
+    lvalue_mappings = other.lvalue_mappings;
+    rvalue_mappings = other.rvalue_mappings;
+    locus = other.locus;
+
+    return *this;
+  }
+
   const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
 
   const Analysis::NodeMapping &get_lvalue_mappings () const
@@ -2899,11 +2916,22 @@ public:
     return lvalue_mappings;
   }
 
+  const Analysis::NodeMapping &get_rvalue_mappings () const
+  {
+    return rvalue_mappings;
+  }
+
+  bool has_rvalue_mappings () const
+  {
+    return rvalue_mappings.get_hirid () != UNKNOWN_HIRID;
+  }
+
   location_t get_locus () const { return locus; }
 
 private:
-  const Analysis::NodeMapping node_mappings;
-  const Analysis::NodeMapping lvalue_mappings;
+  Analysis::NodeMapping node_mappings;
+  Analysis::NodeMapping lvalue_mappings;
+  Analysis::NodeMapping rvalue_mappings;
   location_t locus;
 };
 

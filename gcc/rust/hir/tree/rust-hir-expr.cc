@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-expr.h"
+#include "rust-hir-map.h"
 #include "rust-operators.h"
 #include "rust-hir-stmt.h"
 
@@ -1321,37 +1322,40 @@ AsyncBlockExpr::operator= (AsyncBlockExpr const &other)
 OperatorExprMeta::OperatorExprMeta (HIR::CompoundAssignmentExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_expr ().get_mappings ()),
-    locus (expr.get_locus ())
+    rvalue_mappings (expr.get_rhs ().get_mappings ()), locus (expr.get_locus ())
 {}
 
 OperatorExprMeta::OperatorExprMeta (HIR::ArithmeticOrLogicalExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_expr ().get_mappings ()),
-    locus (expr.get_locus ())
+    rvalue_mappings (expr.get_rhs ().get_mappings ()), locus (expr.get_locus ())
 {}
 
 OperatorExprMeta::OperatorExprMeta (HIR::NegationExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_expr ().get_mappings ()),
+    rvalue_mappings (Analysis::NodeMapping::get_error ()),
     locus (expr.get_locus ())
 {}
 
 OperatorExprMeta::OperatorExprMeta (HIR::DereferenceExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_expr ().get_mappings ()),
+    rvalue_mappings (Analysis::NodeMapping::get_error ()),
     locus (expr.get_locus ())
 {}
 
 OperatorExprMeta::OperatorExprMeta (HIR::ArrayIndexExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_array_expr ().get_mappings ()),
+    rvalue_mappings (expr.get_index_expr ().get_mappings ()),
     locus (expr.get_locus ())
 {}
 
 OperatorExprMeta::OperatorExprMeta (HIR::ComparisonExpr &expr)
   : node_mappings (expr.get_mappings ()),
     lvalue_mappings (expr.get_expr ().get_mappings ()),
-    locus (expr.get_locus ())
+    rvalue_mappings (expr.get_rhs ().get_mappings ()), locus (expr.get_locus ())
 {}
 
 InlineAsmOperand::In::In (

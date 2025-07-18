@@ -31,6 +31,11 @@ class TypeCheckExpr : private TypeCheckBase, private HIR::HIRExpressionVisitor
 public:
   static TyTy::BaseType *Resolve (HIR::Expr &expr);
 
+  static TyTy::BaseType *
+  ResolveOpOverload (LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr,
+		     TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+		     HIR::PathIdentSegment specified_segment);
+
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::TupleExpr &expr) override;
   void visit (HIR::ReturnExpr &expr) override;
