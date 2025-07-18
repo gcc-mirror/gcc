@@ -1225,7 +1225,8 @@ VAR
    Sym,
    Type     : CARDINAL ;
    name     : Name ;
-   tokno    : CARDINAL ;
+   nametokno,
+   typetokno: CARDINAL ;
 BEGIN
    (*
       Two cases
@@ -1234,8 +1235,8 @@ BEGIN
       - when type with a name that is different to Name. In which case
         we create a new type.
    *)
-   PopTtok(Type, tokno) ;
-   PopT(name) ;
+   PopTtok (Type, typetokno) ;
+   PopTtok (name, nametokno) ;
    IF Debugging
    THEN
       n1 := GetSymName(GetCurrentModule()) ;
@@ -1264,11 +1265,11 @@ BEGIN
 
       *)
       (* WriteString('Blank name type') ; WriteLn ; *)
-      PushTFtok(Type, name, tokno) ;
+      PushTFtok(Type, name, typetokno) ;
       Annotate("%1s(%1d)|%2n|%3d||type|type name|token no")
    ELSIF IsError(Type)
    THEN
-      PushTFtok(Type, name, tokno) ;
+      PushTFtok(Type, name, typetokno) ;
       Annotate("%1s(%1d)|%2n|%3d||error type|error type name|token no")
    ELSIF GetSymName(Type)=name
    THEN
@@ -1276,7 +1277,7 @@ BEGIN
       IF isunknown OR
          (NOT IsDeclaredIn(GetCurrentScope(), Type))
       THEN
-         Sym := MakeType(tokno, name) ;
+         Sym := MakeType (typetokno, name) ;
          IF NOT IsError(Sym)
          THEN
             IF Sym=Type
@@ -1295,19 +1296,23 @@ BEGIN
                CheckForEnumerationInCurrentModule(Type)
             END
          END ;
-         PushTFtok(Sym, name, tokno) ;
+         PushTFtok(Sym, name, typetokno) ;
          Annotate("%1s(%1d)|%2n|%3d||type|type name|token no")
       ELSE
-         PushTFtok(Type, name, tokno) ;
+         PushTFtok(Type, name, typetokno) ;
          Annotate("%1s(%1d)|%2n|%3d||type|type name|token no")
       END
    ELSE
       (* example   TYPE a = CARDINAL *)
-      Sym := MakeType(tokno, name) ;
-      PutType(Sym, Type) ;
-      CheckForExportedImplementation(Sym) ;   (* May be an exported hidden type *)
-      PushTFtok(Sym, name, tokno) ;
-      Annotate("%1s(%1d)|%2n|%3d||type|type name|token no")
+      Sym := MakeType (nametokno, name) ;
+      PutType (Sym, Type) ;
+      CheckForExportedImplementation (Sym) ;   (* May be an exported hidden type *)
+      PushTFtok (Sym, name, nametokno) ;
+      Annotate ("%1s(%1d)|%2n|%3d||type|type name|token no") ;
+      IF Debugging
+      THEN
+         MetaErrorT1 (nametokno, 'type pos {%1Wa}', Sym)
+      END
    END
 END BuildType ;
 
