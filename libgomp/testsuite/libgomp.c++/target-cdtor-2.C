@@ -93,14 +93,19 @@ int main()
   return 0;
 }
 
-/* Verify '__cxa_atexit' calls.
+/* Verify '__cxa_atexit' calls (or '__aeabi_atexit', per 'targetm.cxx.use_aeabi_atexit').
 
    For the host, there are four expected calls:
-   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, } 4 optimized { target cxa_atexit } } }
-   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sH1, \&__dso_handle>} 1 optimized { target cxa_atexit } } }
-   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sHD1, \&__dso_handle>} 1 optimized { target cxa_atexit } } }
-   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZNSt6vectorI1SSaIS0_EED1Ev, \&svHD1, \&__dso_handle>} 1 optimized { target cxa_atexit } } }
-   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sH2, \&__dso_handle>} 1 optimized { target cxa_atexit } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, } 4 optimized { target { cxa_atexit && { ! arm_eabi } } } } }
+     { dg-final { scan-tree-dump-times {gimple_call <__aeabi_atexit, } 4 optimized { target { cxa_atexit && arm_eabi } } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sH1, \&__dso_handle>} 1 optimized { target { cxa_atexit && { ! arm_eabi } } } } }
+     { dg-final { scan-tree-dump-times {gimple_call <__aeabi_atexit, NULL, \&sH1, _ZN1SD1Ev, \&__dso_handle>} 1 optimized { target { cxa_atexit && arm_eabi } } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sHD1, \&__dso_handle>} 1 optimized { target { cxa_atexit && { ! arm_eabi } } } } }
+     { dg-final { scan-tree-dump-times {gimple_call <__aeabi_atexit, NULL, \&sHD1, _ZN1SD1Ev, \&__dso_handle>} 1 optimized { target { cxa_atexit && arm_eabi } } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZNSt6vectorI1SSaIS0_EED1Ev, \&svHD1, \&__dso_handle>} 1 optimized { target { cxa_atexit && { ! arm_eabi } } } } }
+     { dg-final { scan-tree-dump-times {gimple_call <__aeabi_atexit, NULL, \&svHD1, _ZNSt6vectorI1SSaIS0_EED1Ev, \&__dso_handle>} 1 optimized { target { cxa_atexit && arm_eabi } } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__cxa_atexit, NULL, _ZN1SD1Ev, \&sH2, \&__dso_handle>} 1 optimized { target { cxa_atexit && { ! arm_eabi } } } } }
+     { dg-final { scan-tree-dump-times {gimple_call <__aeabi_atexit, NULL, \&sH2, _ZN1SD1Ev, \&__dso_handle>} 1 optimized { target { cxa_atexit && arm_eabi } } } }
 
    For the device, there are two expected calls:
    { dg-final { scan-offload-tree-dump-times {gimple_call <__cxa_atexit, } 2 optimized { target cxa_atexit } } }
