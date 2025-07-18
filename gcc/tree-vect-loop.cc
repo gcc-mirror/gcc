@@ -10279,9 +10279,8 @@ vectorizable_induction (loop_vec_info loop_vinfo,
    helper function for vectorizable_live_operation.  */
 
 static tree
-vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
-			       stmt_vec_info stmt_info, basic_block exit_bb,
-			       tree vectype, int ncopies, slp_tree slp_node,
+vectorizable_live_operation_1 (loop_vec_info loop_vinfo, basic_block exit_bb,
+			       tree vectype, slp_tree slp_node,
 			       tree bitsize, tree bitstart, tree vec_lhs,
 			       tree lhs_type, gimple_stmt_iterator *exit_gsi)
 {
@@ -10312,8 +10311,7 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
 	 where VEC_LHS is the vectorized live-out result and MASK is
 	 the loop mask for the final iteration.  */
-      gcc_assert (ncopies == 1
-		  && (!slp_node || SLP_TREE_LANES (slp_node) == 1));
+      gcc_assert (SLP_TREE_LANES (slp_node) == 1);
       gimple_seq tem = NULL;
       gimple_stmt_iterator gsi = gsi_last (tem);
       tree len = vect_get_loop_len (loop_vinfo, &gsi,
@@ -10348,8 +10346,8 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
 	 where VEC_LHS is the vectorized live-out result and MASK is
 	 the loop mask for the final iteration.  */
-      gcc_assert (!slp_node || SLP_TREE_LANES (slp_node) == 1);
-      tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
+      gcc_assert (SLP_TREE_LANES (slp_node) == 1);
+      tree scalar_type = TREE_TYPE (vectype);
       gimple_seq tem = NULL;
       gimple_stmt_iterator gsi = gsi_last (tem);
       tree mask = vect_get_loop_mask (loop_vinfo, &gsi,
@@ -10395,11 +10393,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   imm_use_iterator imm_iter;
   tree lhs, lhs_type, bitsize;
-  tree vectype = (slp_node
-		  ? SLP_TREE_VECTYPE (slp_node)
-		  : STMT_VINFO_VECTYPE (stmt_info));
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  int ncopies;
   gimple *use_stmt;
   use_operand_p use_p;
   auto_vec<tree> vec_oprnds;
@@ -10418,7 +10413,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	return true;
       /* For SLP reductions we vectorize the epilogue for all involved stmts
 	 together.  */
-      if (slp_node && !REDUC_GROUP_FIRST_ELEMENT (stmt_info) && slp_index != 0)
+      if (!REDUC_GROUP_FIRST_ELEMENT (stmt_info) && slp_index != 0)
 	return true;
       stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
       gcc_assert (reduc_info->is_reduc_info);
@@ -10436,7 +10431,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	 block, but we have to find an alternate exit first.  */
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
-	  slp_tree phis_node = slp_node ? slp_node_instance->reduc_phis : NULL;
+	  slp_tree phis_node = slp_node_instance->reduc_phis;
 	  for (auto exit : get_loop_exit_edges (LOOP_VINFO_LOOP (loop_vinfo)))
 	    if (exit != LOOP_VINFO_IV_EXIT (loop_vinfo))
 	      {
@@ -10467,32 +10462,24 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       return true;
     }
 
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+  gcc_assert (slp_index >= 0);
 
-  if (slp_node)
+  /* Get the last occurrence of the scalar index from the concatenation of
+     all the slp vectors. Calculate which slp vector it is and the index
+     within.  */
+  int num_scalar = SLP_TREE_LANES (slp_node);
+  int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
+
+  /* Calculate which vector contains the result, and which lane of
+     that vector we need.  */
+  if (!can_div_trunc_p (pos, nunits, &vec_entry, &vec_index))
     {
-      gcc_assert (slp_index >= 0);
-
-      /* Get the last occurrence of the scalar index from the concatenation of
-	 all the slp vectors. Calculate which slp vector it is and the index
-	 within.  */
-      int num_scalar = SLP_TREE_LANES (slp_node);
-      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-      poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
-
-      /* Calculate which vector contains the result, and which lane of
-	 that vector we need.  */
-      if (!can_div_trunc_p (pos, nunits, &vec_entry, &vec_index))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Cannot determine which vector holds the"
-			     " final result.\n");
-	  return false;
-	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Cannot determine which vector holds the"
+			 " final result.\n");
+      return false;
     }
 
   if (!vec_stmt_p)
@@ -10500,7 +10487,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       /* No transformation required.  */
       if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
-	  if (slp_node && SLP_TREE_LANES (slp_node) != 1)
+	  if (SLP_TREE_LANES (slp_node) != 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10509,8 +10496,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				 "the loop.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
-	  else if (ncopies > 1
-		   || (slp_node && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1))
+	  else if (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10520,8 +10506,6 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	    }
 	  else
 	    {
-	      gcc_assert (ncopies == 1
-			  && (!slp_node || SLP_TREE_LANES (slp_node) == 1));
 	      if (direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
 						  OPTIMIZE_FOR_SPEED))
 		vect_record_loop_mask (loop_vinfo,
@@ -10563,40 +10547,21 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
   bitsize = vector_element_bits_tree (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
-  tree vec_lhs, vec_lhs0, bitstart;
-  gimple *vec_stmt, *vec_stmt0;
-  if (slp_node)
-    {
-      gcc_assert (!loop_vinfo
-		  || ((!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
-		       && !LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
-		      || SLP_TREE_LANES (slp_node) == 1));
+  gcc_assert (!loop_vinfo
+	      || ((!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+		   && !LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+		  || SLP_TREE_LANES (slp_node) == 1));
 
-      /* Get the correct slp vectorized stmt.  */
-      vec_lhs = SLP_TREE_VEC_DEFS (slp_node)[vec_entry];
-      vec_stmt = SSA_NAME_DEF_STMT (vec_lhs);
+  /* Get the correct slp vectorized stmt.  */
+  tree vec_lhs = SLP_TREE_VEC_DEFS (slp_node)[vec_entry];
+  gimple *vec_stmt = SSA_NAME_DEF_STMT (vec_lhs);
 
-      /* In case we need to early break vectorize also get the first stmt.  */
-      vec_lhs0 = SLP_TREE_VEC_DEFS (slp_node)[0];
-      vec_stmt0 = SSA_NAME_DEF_STMT (vec_lhs0);
+  /* In case we need to early break vectorize also get the first stmt.  */
+  tree vec_lhs0 = SLP_TREE_VEC_DEFS (slp_node)[0];
 
-      /* Get entry to use.  */
-      bitstart = bitsize_int (vec_index);
-      bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
-    }
-  else
-    {
-      /* For multiple copies, get the last copy.  */
-      vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info).last ();
-      vec_lhs = gimple_get_lhs (vec_stmt);
-
-      /* In case we need to early break vectorize also get the first stmt.  */
-      vec_stmt0 = STMT_VINFO_VEC_STMTS (stmt_info)[0];
-      vec_lhs0 = gimple_get_lhs (vec_stmt0);
-
-      /* Get the last lane in the vector.  */
-      bitstart = int_const_binop (MULT_EXPR, bitsize, bitsize_int (nunits - 1));
-    }
+  /* Get entry to use.  */
+  tree bitstart = bitsize_int (vec_index);
+  bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
 
   if (loop_vinfo)
     {
@@ -10645,8 +10610,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 
 	      gimple_stmt_iterator exit_gsi;
 	      tree new_tree
-		= vectorizable_live_operation_1 (loop_vinfo, stmt_info,
-						 e->dest, vectype, ncopies,
+		= vectorizable_live_operation_1 (loop_vinfo,
+						 e->dest, vectype,
 						 slp_node, bitsize,
 						 tmp_bitstart, tmp_vec_lhs,
 						 lhs_type, &exit_gsi);
