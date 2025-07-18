@@ -231,20 +231,39 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 
   int move_to_front = -1;
   int total_cost = 0;
+  int base_offset_index = -1;
+
+  /* Find the last store that has the same offset the load, in the case that
+     we're eliminating the load.  We will try to use it as a base register
+     to avoid bit inserts (see second loop below).  We want the last one, as
+     it will be wider and we don't want to overwrite the base register if
+     there are many of them.  */
+  if (load_elim)
+    {
+      FOR_EACH_VEC_ELT_REVERSE (stores, i, it)
+	{
+	  const bool has_base_offset
+	    = known_eq (poly_uint64 (it->offset),
+			subreg_size_lowpart_offset (MEM_SIZE (it->store_mem),
+						    load_size));
+	  if (has_base_offset)
+	    {
+	      base_offset_index = i;
+	      break;
+	    }
+	}
+    }
 
   /* Check if we can emit bit insert instructions for all forwarded stores.  */
   FOR_EACH_VEC_ELT (stores, i, it)
     {
       it->mov_reg = gen_reg_rtx (GET_MODE (it->store_mem));
       rtx_insn *insns = NULL;
-      const bool has_base_offset
-	= known_eq (poly_uint64 (it->offset),
-		    subreg_size_lowpart_offset (MEM_SIZE (it->store_mem),
-						load_size));
 
-      /* If we're eliminating the load then find the store with zero offset
-	 and use it as the base register to avoid a bit insert if possible.  */
-      if (load_elim && has_base_offset)
+      /* Check if this is a store with base offset, if we're eliminating the
+	 load, and use it as the base register to avoid a bit insert if
+	 possible.  Load elimination is implied by base_offset_index != -1.  */
+      if (i == (unsigned) base_offset_index)
 	{
 	  start_sequence ();
 
