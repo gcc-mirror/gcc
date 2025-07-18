@@ -23,7 +23,7 @@
 
 struct pru_ctable_entry {
     bool valid;
-    unsigned HOST_WIDE_INT base;
+    HOST_WIDE_INT base;
 };
 
 extern struct pru_ctable_entry pru_ctable[32];
@@ -66,9 +66,9 @@ pru_regno_ok_for_index_p (int regno, bool strict_p)
   return pru_regno_ok_for_base_p (regno, strict_p);
 }
 
-extern int pru_get_ctable_exact_base_index (unsigned HOST_WIDE_INT caddr);
-extern int pru_get_ctable_base_index (unsigned HOST_WIDE_INT caddr);
-extern int pru_get_ctable_base_offset (unsigned HOST_WIDE_INT caddr);
+extern int pru_get_ctable_exact_base_index (HOST_WIDE_INT caddr);
+extern int pru_get_ctable_base_index (HOST_WIDE_INT caddr);
+extern int pru_get_ctable_base_offset (HOST_WIDE_INT caddr);
 
 extern int pru_symref2ioregno (rtx op);
 

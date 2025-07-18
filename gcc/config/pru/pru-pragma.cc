@@ -46,21 +46,24 @@ pru_pragma_ctable_entry (cpp_reader *)
   enum cpp_ttype type;
 
   type = pragma_lex (&ctable_index);
-  if (type == CPP_NUMBER && tree_fits_uhwi_p (ctable_index))
+  if (type == CPP_NUMBER && tree_fits_shwi_p (ctable_index))
     {
       type = pragma_lex (&base_addr);
-      if (type == CPP_NUMBER  && tree_fits_uhwi_p (base_addr))
+      if (type == CPP_NUMBER && tree_fits_shwi_p (base_addr))
 	{
-	  unsigned HOST_WIDE_INT i = tree_to_uhwi (ctable_index);
-	  unsigned HOST_WIDE_INT base = tree_to_uhwi (base_addr);
+	  HOST_WIDE_INT i = tree_to_shwi (ctable_index);
+	  HOST_WIDE_INT base = sext_hwi (tree_to_shwi (base_addr),
+					 POINTER_SIZE);
 
 	  type = pragma_lex (&base_addr);
 	  if (type != CPP_EOF)
 	    error ("junk at end of %<#pragma CTABLE_ENTRY%>");
-	  else if (i >= ARRAY_SIZE (pru_ctable))
+	  else if (!IN_RANGE (i, 0, ARRAY_SIZE (pru_ctable) - 1))
 	    error ("%<CTABLE_ENTRY%> index %wd is not valid", i);
 	  else if (pru_ctable[i].valid && pru_ctable[i].base != base)
 	    error ("redefinition of %<CTABLE_ENTRY %wd%>", i);
+	  else if (!IN_RANGE (base, INT32_MIN, INT32_MAX))
+	    error ("%<CTABLE_ENTRY%> base address does not fit in 32-bits");
 	  else
 	    {
 	      if (base & 0xff)
