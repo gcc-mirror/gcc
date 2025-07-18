@@ -1,3 +1,18 @@
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	PR modula2/117203
+	* libm2pim/Makefile.am (M2MODS): Add ARRAYOFCHAR,
+	CHAR.mod, StringFileSysOp.mod and String.mod.
+	(M2DEFS): Add ARRAYOFCHAR, CHAR.mod,
+	StringFileSysOp.mod and String.mod.
+	(libm2pim_la_SOURCES): Add CFileSysOp.c.
+	* libm2pim/Makefile.in: Regenerate.
+	* libm2pim/CFileSysOp.cc: New file.
+
 2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

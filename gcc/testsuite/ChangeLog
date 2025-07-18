@@ -1,3 +1,47 @@
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120606
+	* gm2/pim/pass/forarray.mod: New test.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	* gm2/iso/fail/CHAR.mod: New test.
+	* gm2/iso/run/pass/CHAR.mod: New test.
+	* gm2/iso/run/pass/importself.mod: New test.
+	* gm2/pimlib/run/pass/testwrite.mod: New test.
+	* gm2/pimlib/run/pass/testwritechar.mod: New test.
+
+2025-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87097
+	* g++.dg/cpp0x/constexpr-array29.C: New test.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120542
+	* gm2/iso/fail/badreturn.mod: New test.
+	* gm2/iso/fail/badreturn2.mod: New test.
+	* gm2/iso/pass/modulereturn.mod: New test.
+	* gm2/iso/pass/modulereturn2.mod: New test.
+
+2025-07-17  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/120807
+	* gcc.c-torture/compile/pr120807.c: New test.
+
 2025-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
