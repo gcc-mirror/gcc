@@ -13378,7 +13378,8 @@ vect_analyze_stmt (vec_info *vinfo,
       need extra handling, except for vectorizable reductions.  */
   if (!bb_vinfo
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
-      && STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
+      && (STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
+	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
       && (!node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
 				    node, node_instance,
