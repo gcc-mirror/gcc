@@ -130,6 +130,28 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __distance(_OutputIterator, _OutputIterator, output_iterator_tag) = delete;
 #endif
 
+#ifdef __glibcxx_concepts
+namespace __detail
+{
+  // Satisfied if ITER_TRAITS(Iter)::iterator_category is valid and is
+  // at least as strong as ITER_TRAITS(Iter)::iterator_concept.
+  template<typename _Iter>
+    concept __iter_category_converts_to_concept
+      = convertible_to<typename __iter_traits<_Iter>::iterator_category,
+		       typename __iter_traits<_Iter>::iterator_concept>;
+
+  // Satisfied if the type is a C++20 iterator that defines iterator_concept,
+  // and its iterator_concept is stronger than its iterator_category (if any).
+  // Used by std::distance and std::advance to detect iterators which should
+  // dispatch based on their C++20 concept not their C++17 category.
+  template<typename _Iter>
+    concept __promotable_iterator
+      = input_iterator<_Iter>
+	  && requires { typename __iter_traits<_Iter>::iterator_concept; }
+	  && ! __iter_category_converts_to_concept<_Iter>;
+} // namespace __detail
+#endif
+
   /**
    *  @brief A generalization of pointer arithmetic.
    *  @param  __first  An input iterator.
@@ -149,6 +171,24 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     typename iterator_traits<_InputIterator>::difference_type
     distance(_InputIterator __first, _InputIterator __last)
     {
+#ifdef __glibcxx_concepts
+      // A type which satisfies the C++20 random_access_iterator concept might
+      // have input_iterator_tag as its iterator_category type, which would
+      // mean we select the O(n) __distance. Or a C++20 std::input_iterator
+      // that is not a Cpp17InputIterator might have output_iterator_tag as
+      // its iterator_category type and then calling __distance with
+      // std::__iterator_category(__first) would be ill-formed.
+      // So for C++20 iterator types we can just choose to do the right thing.
+      if constexpr (__detail::__promotable_iterator<_InputIterator>)
+	{
+	  if constexpr (random_access_iterator<_InputIterator>)
+	    return __last - __first;
+	  else
+	    return std::__distance(std::move(__first), std::move(__last),
+				   input_iterator_tag());
+	}
+      else // assume it meets the Cpp17InputIterator requirements:
+#endif
       // concept requirements -- taken care of in __distance
       return std::__distance(__first, __last,
 			     std::__iterator_category(__first));
@@ -221,9 +261,31 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     inline _GLIBCXX17_CONSTEXPR void
     advance(_InputIterator& __i, _Distance __n)
     {
-      // concept requirements -- taken care of in __advance
-      typename iterator_traits<_InputIterator>::difference_type __d = __n;
-      std::__advance(__i, __d, std::__iterator_category(__i));
+#ifdef __glibcxx_concepts
+      // A type which satisfies the C++20 bidirectional_iterator concept might
+      // have input_iterator_tag as its iterator_category type, which would
+      // mean we select the __advance overload which cannot move backwards.
+      // A C++20 random_access_iterator we might select the O(n) __advance
+      // if it doesn't meet the Cpp17RandomAccessIterator requirements.
+      // So for C++20 iterator types we can just choose to do the right thing.
+      if constexpr (__detail::__promotable_iterator<_InputIterator>
+		      && ranges::__detail::__is_integer_like<_Distance>)
+	{
+	  auto __d = static_cast<iter_difference_t<_InputIterator>>(__n);
+	  if constexpr (random_access_iterator<_InputIterator>)
+	    std::__advance(__i, __d, random_access_iterator_tag());
+	  else if constexpr (bidirectional_iterator<_InputIterator>)
+	    std::__advance(__i, __d, bidirectional_iterator_tag());
+	  else
+	    std::__advance(__i, __d, input_iterator_tag());
+	}
+      else // assume it meets the Cpp17InputIterator requirements:
+#endif
+	{
+	  // concept requirements -- taken care of in __advance
+	  typename iterator_traits<_InputIterator>::difference_type __d = __n;
+	  std::__advance(__i, __d, std::__iterator_category(__i));
+	}
     }
 
 #if __cplusplus >= 201103L
