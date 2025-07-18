@@ -1362,7 +1362,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     {
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr1);
-      images = argse.expr;
+      images = gfc_trans_force_lval (&argse.pre, argse.expr);
+      gfc_add_block_to_block (&se.pre, &argse.pre);
     }
 
   if (code->expr2)
@@ -1372,6 +1373,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr2);
       stat = argse.expr;
+      gfc_add_block_to_block (&se.pre, &argse.pre);
     }
   else
     stat = null_pointer_node;
@@ -1384,8 +1386,9 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       argse.want_pointer = 1;
       gfc_conv_expr (&argse, code->expr3);
       gfc_conv_string_parameter (&argse);
-      errmsg = gfc_build_addr_expr (NULL, argse.expr);
+      errmsg = argse.expr;
       errmsglen = fold_convert (size_type_node, argse.string_length);
+      gfc_add_block_to_block (&se.pre, &argse.pre);
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB)
     {

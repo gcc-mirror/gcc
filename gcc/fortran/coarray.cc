@@ -696,17 +696,23 @@ check_add_new_component (gfc_symbol *type, gfc_expr *e, gfc_symbol *add_data)
 	    check_add_new_component (type, actual->expr, add_data);
 	  break;
 	case EXPR_FUNCTION:
-	  if (!e->symtree->n.sym->attr.pure
-	      && !e->symtree->n.sym->attr.elemental
-	      && !(e->value.function.isym
-		   && (e->value.function.isym->pure
-		       || e->value.function.isym->elemental)))
-	    /* Treat non-pure/non-elemental functions.  */
-	    check_add_new_comp_handle_array (e, type, add_data);
+	  if ((e->symtree->n.sym->attr.pure
+	       && e->symtree->n.sym->attr.elemental)
+	      || (e->value.function.isym && e->value.function.isym->pure
+		  && e->value.function.isym->elemental))
+	    {
+	      /* Only allow pure and elemental function calls in a coarray
+		 accessor, because all other may have side effects or access
+		 pointers, which may not be possible in the accessor running on
+		 another host.  */
+	      for (gfc_actual_arglist *actual = e->value.function.actual;
+		   actual; actual = actual->next)
+		check_add_new_component (type, actual->expr, add_data);
+	    }
 	  else
-	    for (gfc_actual_arglist *actual = e->value.function.actual; actual;
-		 actual = actual->next)
-	      check_add_new_component (type, actual->expr, add_data);
+	    /* Extract the expression, evaluate it and add a temporary with its
+	       value to the helper structure.  */
+	    check_add_new_comp_handle_array (e, type, add_data);
 	  break;
 	case EXPR_VARIABLE:
 	    check_add_new_comp_handle_array (e, type, add_data);

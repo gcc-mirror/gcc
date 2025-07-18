@@ -58,12 +58,29 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
-cafexeclib_LTLIBRARIES = libcaf_single.la
+libcaf_shared_DEPS = caf/libcaf.h caf/caf_error.h
+libcaf_shared_SRCS = caf/caf_error.c
+
+cafexeclib_LTLIBRARIES = libcaf_single.la libcaf_shmem.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libcaf_single_la_SOURCES = caf/single.c
+libcaf_single_la_SOURCES = caf/single.c $(libcaf_shared_SRCS)
 libcaf_single_la_LDFLAGS = -static
-libcaf_single_la_DEPENDENCIES = caf/libcaf.h
+libcaf_single_la_DEPENDENCIES = $(libcaf_shared_DEPS)
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+
+libcaf_shmem_la_SOURCES = $(libcaf_shared_SRCS) \
+	caf/shmem.c caf/shmem/alloc.c caf/shmem/allocator.c \
+	caf/shmem/collective_subroutine.c caf/shmem/counter_barrier.c \
+	caf/shmem/hashmap.c caf/shmem/shared_memory.c caf/shmem/supervisor.c \
+	caf/shmem/sync.c caf/shmem/teams_mgmt.c caf/shmem/thread_support.c
+
+libcaf_shmem_la_LDFLAGS = -static
+libcaf_shmem_la_DEPENDENCIES = $(libcaf_shared_DEPS) caf/shmem/alloc.h \
+	caf/shmem/allocator.h caf/shmem/collective_subroutine.h \
+	caf/shmem/counter_barrier.h caf/shmem/hashmap.h \
+	caf/shmem/shared_memory.h caf/shmem/supervisor.h caf/shmem/sync.h \
+	caf/shmem/teams_mgmt.h caf/shmem/thread_support.h
+libcaf_shmem_la_LINK = $(LINK) $(libcaf_shmem_la_LDFLAGS)
 
 if IEEE_SUPPORT
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude

@@ -104,6 +104,7 @@ one is not the default.
 * Interoperability Options::  Options for interoperability with other
                               languages.
 * Environment Variables:: Environment variables that affect @command{gfortran}.
+* Shared Memory Coarrays:: Multi process shared memory coarray support.
 @end menu
 
 @node Option Summary
@@ -2279,4 +2280,57 @@ variables.
 
 @xref{Runtime}, for environment variables that affect the
 run-time behavior of programs compiled with GNU Fortran.
+@c man end
+
+@node Shared Memory Coarrays
+@section Shared Memory Coarrays
+
+@c man begin SHARED MEMORY COARRAYS
+
+@command{gfortran} supplies a runtime library for running coarray enabled
+programs using a shared memory multi process approach.  The library is supplied
+as a static link library with the @command{libgfortran} library and is fully
+compatible with the ABI enabled when @command{gfortran} is called with
+@code{-fcoarray=lib}.  The shared memory coarray library then just needs to be
+linked to the executable produced by @command{gfortran} using
+@code{-lcaf_shmem}.
+
+The library @code{caf_shmem} can only be used on architectures that allow
+multiple processes to use the same memory at the same virtual memory address in
+each process' memory space.  This is the case on most Unix and Windows based
+systems.
+
+The resulting executable can be started without any driver and does not provide
+any additional command line options.  Limited control is possible by
+environment variables:
+
+@env{GFORTRAN_NUM_IMAGES}: The number of images to spawn when running the
+executable.  Note, there will always be one additional supervisor process, which
+does not participate in the computation, but is only responsible for starting
+the images and catching any (ab-)normal termination.  When the environment
+variable is not set, then the number of hardware threads reported by the OS will
+be taken. Over-provisioning is possible.  The number of images is limited only
+by the OS and the size of an integer variable on the architecture the program is
+to be run on.
+
+@env{GFORTRAN_SHARED_MEMORY_SIZE}: The size of the shared memory segment made
+available to all images is fixed and needs to be set at program start.  It can
+not grow or shrink.  The size can be given in bytes (no suffix), kilobytes
+(@code{k} or @code{K} suffix), megabytes (@code{m} or @code{M}) or gigabytes
+(@code{g} or @code{G}).  If the variable is not set, or not parseable, then on
+32-bit architectures 2^28 bytes and on 64-bit 2^34 bytes are choosen.  Note,
+although the size is set, most modern systems do not allocate the memory at
+program start.  This allows to choose a shared memory size larger than available
+memory.
+
+Warning: Choosing a large shared memory size may produce large coredumps!
+
+The shared memory coarray library internally uses some additional environment
+variables, which will be overwritten without notice or may result in failure to
+start.  These are: @code{GFORTRAN_IMAGE_NUM}, @code{GFORTRAN_SHMEM_PID} and
+@code{GFORTRAN_SHMEM_BASE}.  It is strongly discouraged to use these variables.
+Special care needs to be taken, when one coarray program starts another coarray
+program as a child process.  In this case it is the spawning process'
+responsibility to remove above variables from the environment.
+
 @c man end

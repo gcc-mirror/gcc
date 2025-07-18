@@ -90,6 +90,8 @@ static tree
 get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 {
   enum gfc_array_kind akind;
+  tree *lbound = NULL, *ubound = NULL;
+  int codim = 0;
 
   if (attr.pointer)
     akind = GFC_ARRAY_POINTER_CONT;
@@ -100,8 +102,16 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 
   if (POINTER_TYPE_P (TREE_TYPE (scalar)))
     scalar = TREE_TYPE (scalar);
-  return gfc_get_array_type_bounds (TREE_TYPE (scalar), 0, 0, NULL, NULL, 1,
-				    akind, !(attr.pointer || attr.target));
+  if (TYPE_LANG_SPECIFIC (TREE_TYPE (scalar)))
+    {
+      struct lang_type *lang_specific = TYPE_LANG_SPECIFIC (TREE_TYPE (scalar));
+      codim = lang_specific->corank;
+      lbound = lang_specific->lbound;
+      ubound = lang_specific->ubound;
+    }
+  return gfc_get_array_type_bounds (TREE_TYPE (scalar), 0, codim, lbound,
+				    ubound, 1, akind,
+				    !(attr.pointer || attr.target));
 }
 
 tree
@@ -760,11 +770,43 @@ gfc_get_vptr_from_expr (tree expr)
   return NULL_TREE;
 }
 
+static void
+copy_coarray_desc_part (stmtblock_t *block, tree dest, tree src)
+{
+  tree src_type = TREE_TYPE (src);
+  if (TYPE_LANG_SPECIFIC (src_type) && TYPE_LANG_SPECIFIC (src_type)->corank)
+    {
+      struct lang_type *lang_specific = TYPE_LANG_SPECIFIC (src_type);
+      for (int c = 0; c < lang_specific->corank; ++c)
+	{
+	  int dim = lang_specific->rank + c;
+	  tree codim = gfc_rank_cst[dim];
+
+	  if (lang_specific->lbound[dim])
+	    gfc_conv_descriptor_lbound_set (block, dest, codim,
+					    lang_specific->lbound[dim]);
+	  else
+	    gfc_conv_descriptor_lbound_set (
+	      block, dest, codim, gfc_conv_descriptor_lbound_get (src, codim));
+	  if (dim + 1 < lang_specific->corank)
+	    {
+	      if (lang_specific->ubound[dim])
+		gfc_conv_descriptor_ubound_set (block, dest, codim,
+						lang_specific->ubound[dim]);
+	      else
+		gfc_conv_descriptor_ubound_set (
+		  block, dest, codim,
+		  gfc_conv_descriptor_ubound_get (src, codim));
+	    }
+	}
+    }
+}
+
 void
 gfc_class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
 			     bool lhs_type)
 {
-  tree tmp, tmp2, type;
+  tree lhs_dim, rhs_dim, type;
 
   gfc_conv_descriptor_data_set (block, lhs_desc,
 				gfc_conv_descriptor_data_get (rhs_desc));
@@ -775,15 +817,18 @@ gfc_class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
 		  gfc_conv_descriptor_dtype (rhs_desc));
 
   /* Assign the dimension as range-ref.  */
-  tmp = gfc_get_descriptor_dimension (lhs_desc);
-  tmp2 = gfc_get_descriptor_dimension (rhs_desc);
+  lhs_dim = gfc_get_descriptor_dimension (lhs_desc);
+  rhs_dim = gfc_get_descriptor_dimension (rhs_desc);
 
-  type = lhs_type ? TREE_TYPE (tmp) : TREE_TYPE (tmp2);
-  tmp = build4_loc (input_location, ARRAY_RANGE_REF, type, tmp,
-		    gfc_index_zero_node, NULL_TREE, NULL_TREE);
-  tmp2 = build4_loc (input_location, ARRAY_RANGE_REF, type, tmp2,
-		     gfc_index_zero_node, NULL_TREE, NULL_TREE);
-  gfc_add_modify (block, tmp, tmp2);
+  type = lhs_type ? TREE_TYPE (lhs_dim) : TREE_TYPE (rhs_dim);
+  lhs_dim = build4_loc (input_location, ARRAY_RANGE_REF, type, lhs_dim,
+			gfc_index_zero_node, NULL_TREE, NULL_TREE);
+  rhs_dim = build4_loc (input_location, ARRAY_RANGE_REF, type, rhs_dim,
+			gfc_index_zero_node, NULL_TREE, NULL_TREE);
+  gfc_add_modify (block, lhs_dim, rhs_dim);
+
+  /* The corank dimensions are not copied by the ARRAY_RANGE_REF.  */
+  copy_coarray_desc_part (block, lhs_desc, rhs_desc);
 }
 
 /* Takes a derived type expression and returns the address of a temporary
@@ -899,6 +944,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym,
 						    gfc_expr_attr (e));
 	      gfc_add_modify (&parmse->pre, gfc_conv_descriptor_dtype (ctree),
 			      gfc_get_dtype (type));
+	      copy_coarray_desc_part (&parmse->pre, ctree, parmse->expr);
 	      if (optional)
 		parmse->expr = build3_loc (input_location, COND_EXPR,
 					   TREE_TYPE (parmse->expr),

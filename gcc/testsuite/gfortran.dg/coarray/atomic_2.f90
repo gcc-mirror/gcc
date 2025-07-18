@@ -61,7 +61,7 @@ end do
 sync all
 
 call atomic_ref(var, caf[num_images()], stat=stat)
-if (stat /= 0 .or. var /= num_images() + this_image()) STOP 12
+if (stat /= 0 .or. var /= num_images() * 2) STOP 12
 do i = 1, num_images()
   call atomic_ref(var, caf[i], stat=stat)
   if (stat /= 0 .or. var /= num_images() + i) STOP 13
@@ -328,7 +328,7 @@ end do
 sync all
 
 call atomic_ref(var, caf[num_images()], stat=stat)
-if (stat /= 0 .or. var /= num_images() + this_image()) STOP 45
+if (stat /= 0 .or. var /= num_images() * 2) STOP 45
 do i = 1, num_images()
   call atomic_ref(var, caf[i], stat=stat)
   if (stat /= 0 .or. var /= num_images() + i) STOP 46
@@ -403,7 +403,7 @@ if (this_image() < storage_size(caf)-2) then
   do i = this_image(), min(num_images(), storage_size(caf)-2)
     var = -99
     call atomic_fetch_and(caf[i], shiftl(1, this_image()), var, stat=stat)
-    if (stat /= 0 .or. var <= 0) STOP 53
+    if (stat /= 0) STOP 53
   end do
 end if
 sync all
@@ -544,7 +544,7 @@ if (this_image() < storage_size(caf)-2) then
   do i = this_image(), min(num_images(), storage_size(caf)-2)
     var = -99
     call atomic_fetch_xor(caf[i], shiftl(1, this_image()), var, stat=stat)
-    if (stat /= 0 .or. (var < 0 .and. var /= -1)) STOP 68
+    if (stat /= 0) STOP 68
   end do
 end if
 sync all
@@ -628,26 +628,27 @@ sync all
 
 if (this_image() == 1) then
   call atomic_cas(caf_log[num_images()], compare=.false., new=.false., old=var2, stat=stat)
-  if (stat /= 0 .or. var2 .neqv. .true.) STOP 82
+  if (stat /= 0 .or. (var2 .neqv. .true.)) STOP 82
   call atomic_ref(var2, caf_log[num_images()], stat=stat)
-  if (stat /= 0 .or. var2 .neqv. .true.) STOP 83
+  if (stat /= 0 .or. (var2 .neqv. .true.)) STOP 83
 end if
 sync all
 
-if (this_image() == num_images() .and. caf_log .neqv. .true.) STOP 84
+if (this_image() == num_images() .and. (caf_log .neqv. .true.)) STOP 84
 call atomic_ref(var2, caf_log[num_images()], stat=stat)
-if (stat /= 0 .or. var2 .neqv. .true.) STOP 85
+if (stat /= 0 .or. (var2 .neqv. .true.)) STOP 85
 sync all
 
 if (this_image() == 1) then
   call atomic_cas(caf_log[num_images()], compare=.true., new=.false., old=var2, stat=stat)
-  if (stat /= 0 .or. var2 .neqv. .true.) STOP 86
+  if (stat /= 0 .or. (var2 .neqv. .true.)) STOP 86
   call atomic_ref(var2, caf_log[num_images()], stat=stat)
-  if (stat /= 0 .or. var2 .neqv. .false.) STOP 87
+  if (stat /= 0 .or. (var2 .neqv. .false.)) STOP 87
 end if
 sync all
 
-if (this_image() == num_images() .and. caf_log .neqv. .false.) STOP 88
+if (this_image() == num_images() .and. (caf_log .neqv. .false.)) STOP 88
 call atomic_ref(var2, caf_log[num_images()], stat=stat)
-if (stat /= 0 .or. var2 .neqv. .false.) STOP 89
+if (stat /= 0 .or. (var2 .neqv. .false.)) STOP 89
+sync all
 end

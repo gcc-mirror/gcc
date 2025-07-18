@@ -58,6 +58,8 @@ if (stat /= 0) STOP 9
 UNLOCK(lock3(4), stat=stat)
 if (stat /= 0) STOP 10
 
+! Ensure all other (/=1) images have released the locks.
+sync all
 if (this_image() == 1) then
   acquired = .false.
   LOCK (lock1[this_image()], acquired_lock=acquired)

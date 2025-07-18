@@ -8,7 +8,7 @@ program test_stopped_images_1
   integer :: i
 
   gi = stopped_images()         ! OK
-  gi = stopped_images(TEAM=1)   ! { dg-error "'team' argument of 'stopped_images' intrinsic at \\(1\\) not yet supported" }
+  gi = stopped_images(TEAM=1)   ! { dg-error "'team' argument of 'stopped_images' intrinsic at \\(1\\) shall be of type 'team_type' from the intrinsic module 'ISO_FORTRAN_ENV'" }
   gi = stopped_images(KIND=1)   ! OK
   gi = stopped_images(KIND=4)   ! OK
   gi = stopped_images(KIND=0)   ! { dg-error "'kind' argument of 'stopped_images' intrinsic at \\\(1\\\) must be positive" }

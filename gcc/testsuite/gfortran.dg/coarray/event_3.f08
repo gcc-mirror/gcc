@@ -11,8 +11,8 @@ program global_event
   contains
     subroutine exchange
       integer :: cnt
-      event post(x[1])
-      event post(x[1])
+      event post(x[this_image()])
+      event post(x[this_image()])
       call event_query(x, cnt)
       if (cnt /= 2) error stop 1
       event wait(x, until_count=2)

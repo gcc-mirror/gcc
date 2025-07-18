@@ -19,7 +19,7 @@ if (lcobound(a, dim=1) /= 1 .or. ucobound(a,dim=1) /= num_images()) &
 deallocate(a)
 
 allocate(a[4:*])
-a[this_image ()] = 8 - 2*this_image ()
+a[this_image () + 3] = 8 - 2*this_image ()
 
 if (lcobound(a, dim=1) /= 4 .or. ucobound(a,dim=1) /= 3 + num_images()) &
   STOP 4
@@ -30,6 +30,7 @@ n3 = 3
 allocate (B[n1:n2, n3:*])
 if (any (lcobound(b) /= [-1, 3]) .or. lcobound(B, dim=2) /= n3) &
   STOP 5
+sync all
 call sub(A, B)
 
 if (allocated (a)) STOP 6
@@ -47,7 +48,8 @@ contains
       STOP 8
     if (lcobound(x, dim=1) /= 4 .or. ucobound(x,dim=1) /= 3 + num_images()) &
       STOP 9
-    if (x[this_image ()] /= 8 - 2*this_image ()) STOP 3
+    if (x[this_image () + 3] /= 8 - 2*this_image ()) STOP 10
+    sync all
     deallocate(x)
   end subroutine sub
 
@@ -56,12 +58,13 @@ contains
     integer, allocatable, SAVE :: a[:]
 
     if (init) then
-      if (allocated(a)) STOP 10
+      if (allocated(a)) STOP 11
       allocate(a[*])
       a = 45
    else
-      if (.not. allocated(a)) STOP 11
-      if (a /= 45) STOP 12
+      if (.not. allocated(a)) STOP 12
+      if (a /= 45) STOP 13
+      sync all
       deallocate(a)
     end if
   end subroutine two
