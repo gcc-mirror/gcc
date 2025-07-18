@@ -174,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(is_nothrow_copy_assignable_v<_Tp>
 		 && is_nothrow_copy_constructible_v<_Tp>)
       {
-	if (addressof(__other) != this) [[likely]]
+	if (std::addressof(__other) != this) [[likely]]
 	  assign(__other.begin(), __other.end());
 	return *this;
       }
@@ -191,7 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(is_nothrow_move_assignable_v<_Tp>
 		 && is_nothrow_move_constructible_v<_Tp>)
       {
-	if (addressof(__other) != this) [[likely]]
+	if (std::addressof(__other) != this) [[likely]]
 	  assign(std::make_move_iterator(__other.begin()),
 		 std::make_move_iterator(__other.end()));
 	return *this;
