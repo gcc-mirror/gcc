@@ -11,8 +11,18 @@ IMPORT IOChan, SFIO, RTio ;
 
 PROCEDURE GetFileName (c: IOChan.ChanId) : String ;
 BEGIN
-   RETURN SFIO.GetFileName (RTio.GetFile (c))
+   RETURN SFIO.GetFileName (GetFile (c))
 END GetFileName ;
+
+
+(*
+   GetFile - returns the FIO.File associated with ChanId c.
+*)
+
+PROCEDURE GetFile (c: IOChan.ChanId) : File ;
+BEGIN
+   RETURN RTio.GetFile (c)
+END GetFile ;
 
 
 END IOChanUtils.
