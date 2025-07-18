@@ -1,3 +1,228 @@
+2025-07-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/121095
+	* gcse.cc (execute_hardreg_pre): Skip if the hardreg which is never live.
+
+2025-07-17  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-ssa-structalias.cc (lookup_vi_for_tree): Fix GNU style.
+	(process_constraint): Fix GNU style.
+	(get_constraint_for_component_ref): Fix GNU style.
+	(get_constraint_for_1): Fix GNU style.
+	(get_function_part_constraint): Fix GNU style.
+	(handle_lhs_call): Fix GNU style.
+	(find_func_aliases_for_builtin_call): Fix GNU style.
+	(find_func_aliases): Fix GNU style.
+	(find_func_clobbers): Fix GNU style.
+	(struct shared_bitmap_hasher): Fix GNU style.
+	(shared_bitmap_hasher::hash): Fix GNU style.
+	(pt_solution_includes_global): Fix GNU style.
+	(init_base_vars): Fix GNU style.
+	(visit_loadstore): Fix GNU style.
+	(compute_dependence_clique): Fix GNU style.
+	(struct pt_solution): Fix GNU style.
+	(ipa_pta_execute): Fix GNU style.
+
+2025-07-17  Filip Kastl  <fkastl@suse.cz>
+
+	* pta-andersen.cc (struct constraint_graph): Fix GNU style.
+	(constraint_equal): Fix GNU style.
+	(set_union_with_increment): Fix GNU style.
+	(insert_into_complex): Fix GNU style.
+	(merge_node_constraints): Fix GNU style.
+	(unify_nodes): Fix GNU style.
+	(do_ds_constraint): Fix GNU style.
+	(scc_info::scc_info): Fix GNU style.
+	(find_indirect_cycles): Fix GNU style.
+	(equiv_class_lookup_or_add): Fix GNU style.
+	(label_visit): Fix GNU style.
+	(dump_pred_graph): Fix GNU style.
+	(perform_var_substitution): Fix GNU style.
+	(eliminate_indirect_cycles): Fix GNU style.
+	(solve_graph): Fix GNU style.
+	(solve_constraints): Fix GNU style.
+	* tree-ssa-structalias.cc (first_vi_for_offset): Fix GNU style.
+	(debug_constraint): Fix GNU style.
+	* tree-ssa-structalias.h (struct constraint_expr): Fix GNU
+	style.
+	(struct variable_info): Fix GNU style.
+
+2025-07-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_ternlog): Don't change
+	mode for XOR.
+
+2025-07-17  Filip Kastl  <fkastl@suse.cz>
+
+	* Makefile.in: Add pta-andersen.o.
+	* tree-ssa-structalias.cc (create_variable_info_for): Just move
+	around.
+	(unify_nodes): Move to pta-andersen.cc.
+	(struct constraint): Move to tree-ssa-structalias.h.
+	(EXECUTE_IF_IN_NONNULL_BITMAP): Move to pta-andersen.cc.
+	(struct variable_info): Move to tree-ssa-structalias.h.
+	(struct constraint_stats): Move to tree-ssa-structalias.h.
+	(first_vi_for_offset): External linkage, move to namespace
+	pointer_analysis.
+	(first_or_preceding_vi_for_offset): External linkage, move to namespace
+	pointer_analysis.
+	(dump_constraint): External linkage, move to namespace
+	pointer_analysis.
+	(debug_constraint): External linkage, move to namespace
+	pointer_analysis.
+	(dump_constraints): External linkage, move to namespace
+	pointer_analysis.
+	(debug_constraints): External linkage, move to namespace
+	pointer_analysis.
+	(lookup_vi_for_tree): Move around inside tree-ssa-structalias.cc.
+	(type_can_have_subvars): Move around inside tree-ssa-structalias.cc.
+	(make_param_constraints): Move around inside tree-ssa-structalias.cc.
+	(dump_solution_for_var): External linkage, move to namespace
+	pointer_analysis.  find (...) -> var_rep[...].
+	(get_varinfo): Move to tree-ssa-structalias.h.
+	(debug_solution_for_var): External linkage, move to namespace
+	pointer_analysis.
+	(vi_next): Move to tree-ssa-structalias.h.
+	(dump_sa_stats): External linkage, move to namespace pointer_analysis.
+	(new_var_info): Just move around.
+	(dump_sa_points_to_info): External linkage, move to namespace
+	pointer_analysis.
+	(debug_sa_points_to_info): External linkage, move to namespace
+	pointer_analysis.
+	(get_call_vi): Just move around.
+	(dump_varinfo): External linkage, move to namespace pointer_analysis.
+	(lookup_call_use_vi): Just move around.
+	(lookup_call_clobber_vi): Just move around.
+	(get_call_use_vi): Just move around.
+	(get_call_clobber_vi): Just move around.
+	(enum constraint_expr_type): Move to tree-ssa-structalias.h.
+	(struct constraint_expr): Move to tree-ssa-structalias.h.
+	(UNKNOWN_OFFSET): Move to tree-ssa-structalias.h.
+	(get_constraint_for_1): Just move around.
+	(get_constraint_for): Just move around.
+	(get_constraint_for_rhs): Just move around.
+	(do_deref): Just move around.
+	(constraint_pool): Just move around.
+	(struct constraint_graph): Move to pta-andersen.h.
+	(FIRST_REF_NODE): Move to pta-andersen.cc.
+	(LAST_REF_NODE): Move to pta-andersen.cc.
+	(find): Move to pta-andersen.cc.
+	(unite): Move to pta-andersen.cc.
+	(new_constraint): Just move around.
+	(debug_constraint_graph): External linkage, move to namespace
+	pointer_analysis.
+	(debug_varinfo): External linkage, move to namespace pointer_analysis.
+	(debug_varmap): External linkage, move to namespace pointer_analysis.
+	(dump_constraint_graph): External linkage, move to namespace
+	pointer_analysis.
+	(constraint_expr_equal): Move to pta-andersen.cc.
+	(constraint_expr_less): Move to pta-andersen.cc.
+	(constraint_less): Move to pta-andersen.cc.
+	(constraint_equal): Move to pta-andersen.cc.
+	(constraint_vec_find): Move to pta-andersen.cc.
+	(constraint_set_union): Move to pta-andersen.cc.
+	(solution_set_expand): Move to pta-andersen.cc.
+	(set_union_with_increment): Move to pta-andersen.cc.
+	(insert_into_complex): Move to pta-andersen.cc.
+	(merge_node_constraints): Move to pta-andersen.cc.
+	(clear_edges_for_node): Move to pta-andersen.cc.
+	(merge_graph_nodes): Move to pta-andersen.cc.
+	(add_implicit_graph_edge): Move to pta-andersen.cc.
+	(add_pred_graph_edge): Move to pta-andersen.cc.
+	(add_graph_edge): Move to pta-andersen.cc.
+	(init_graph): Move to pta-andersen.cc.  Initialize
+	predbitmap_obstack here.
+	(build_pred_graph): Move to pta-andersen.cc.
+	(build_succ_graph): Move to pta-andersen.cc.
+	(class scc_info): Move to pta-andersen.cc.
+	(scc_visit): Move to pta-andersen.cc.
+	(solve_add_graph_edge): Move to pta-andersen.cc.
+	(do_sd_constraint): Move to pta-andersen.cc.
+	(do_ds_constraint): Move to pta-andersen.cc.
+	(do_complex_constraint): Move to pta-andersen.cc.
+	(scc_info::scc_info): Move to pta-andersen.cc.
+	(scc_info::~scc_info): Move to pta-andersen.cc.
+	(find_indirect_cycles): Move to pta-andersen.cc.
+	(topo_visit): Move to pta-andersen.cc.
+	(compute_topo_order): Move to pta-andersen.cc.
+	(struct equiv_class_hasher): Move to pta-andersen.cc.
+	(equiv_class_hasher::hash): Move to pta-andersen.cc.
+	(equiv_class_hasher::equal): Move to pta-andersen.cc.
+	(equiv_class_lookup_or_add): Move to pta-andersen.cc.
+	(condense_visit): Move to pta-andersen.cc.
+	(label_visit): Move to pta-andersen.cc.
+	(dump_pred_graph): External linkage, move to namespace
+	pointer_analysis.
+	(dump_varmap): External linkage, move to namespace pointer_analysis.
+	(perform_var_substitution): Move to pta-andersen.cc.
+	(free_var_substitution_info): Move to pta-andersen.cc.
+	(find_equivalent_node): Move to pta-andersen.cc.
+	(unite_pointer_equivalences): Move to pta-andersen.cc.
+	(move_complex_constraints): Move to pta-andersen.cc.
+	(rewrite_constraints): Move to pta-andersen.cc.
+	(eliminate_indirect_cycles): Move to pta-andersen.cc.
+	(solve_graph): Move to pta-andersen.cc.
+	(set_uids_in_ptset): find (...) -> var_rep[...].
+	(find_what_var_points_to): find (...) -> var_rep[...].
+	(init_alias_vars): Don't initialize predbitmap_obstack here.
+	(remove_preds_and_fake_succs): Move to pta-andersen.cc.
+	(solve_constraints): Move to pta-andersen.cc.  Call
+	delete_graph() at the end.
+	(delete_points_to_sets): Don't delete graph here.  Delete var_rep here.
+	(visit_loadstore): find (...) -> var_rep[...].
+	(compute_dependence_clique): find (...) -> var_rep[...].
+	(ipa_pta_execute): find (...) -> var_rep[...].
+	* pta-andersen.cc: New file.
+	* pta-andersen.h: New file.
+	* tree-ssa-structalias.h: New file.
+
+2025-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* doc/sourcebuild.texi (aarch64_sme_hw): Document.
+
+2025-07-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (signbit_tdc): Rename expander.
+	(signbit<mode>2): New expander.
+	(signbit<mode>2_z10): New expander.
+
+2025-07-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_register_move_cost): Add costing for
+	vlvg/vlgv.
+
+2025-07-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (bhfgq): Add scalar modes.
+	(*movdi<mode>_zero_extend_A): New insn.
+	(*movsi<mode>_zero_extend_A): New insn.
+	(*movdi<mode>_zero_extend_B): New insn.
+	(*movsi<mode>_zero_extend_B): New insn.
+
+2025-07-17  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121064
+	* config/loongarch/lsx.md (lsx_vshuf_<lsxfmt_f>): Add '@' to
+	generate a mode-aware helper.  Use <VIMODE> as the mode of the
+	operand 1 (selector).
+	* config/loongarch/lasx.md (lasx_xvshuf_<lasxfmt_f>): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_try_expand_lsx_vshuf_const): Create a new pseudo for
+	the selector.  Use the mode-aware helper to simplify the code.
+	(loongarch_expand_vec_perm_const): Likewise.
+
+2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Reject
+	single-lane vector types.
+
+2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121035
+	* tree-ssa-pre.cc (find_or_generate_expression): Handle
+	values without expression.
+
 2025-07-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-state-to-dot.cc (state_diagram::m_show_tags): Drop

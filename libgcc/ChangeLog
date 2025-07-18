@@ -1,3 +1,10 @@
+2025-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state):
+	If a signal was raised while there was an uncommitted lazy save,
+	commit the save as part of the unwind process.
+
 2025-07-16  John Ericson  <git@JohnEricson.me>
 
 	* Makefile.in:  Delete dead `MACHMODE_H` variable

@@ -1,3 +1,13 @@
+2025-07-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119692
+	* testsuite/libgomp.c++/pr119692-1-4.C: '{ dg-timeout 10 { target offload_device } }'.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+
 2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (acc_attach, acc_detach): Update for Fortran

@@ -1,3 +1,70 @@
+2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96710
+	* doc/xml/manual/evolution.xml: Document change or __int128.
+	* doc/html/manual/api.html: Regenerate.
+
+2025-07-17  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/121061
+	* include/std/mdspan (extents::extents): Perform conversion to
+	index_type of an r-value reference.
+	(layout_left::mapping::operator()): Ditto.
+	(layout_right::mapping::operator()): Ditto.
+	(layout_stride::mapping::operator()): Ditto.
+	* testsuite/23_containers/mdspan/extents/custom_integer.cc: Add
+	tests for RValueInt and MutatingInt.
+	* testsuite/23_containers/mdspan/int_like.h (RValueInt): Add.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Test with
+	RValueInt.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+
+2025-07-17  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/121061
+	* include/std/mdspan (extents::extents): Fix constraint to
+	prevent non-const conversion to index_type.
+	(layout_stride::mapping::mapping): Ditto.
+	(mdspan::mdspan): Ditto.
+	(mdspan::operator[]): Ditto.
+	* testsuite/23_containers/mdspan/extents/custom_integer.cc: Add
+	test for MutatingInt.
+	* testsuite/23_containers/mdspan/int_like.h (MutatingInt): Add.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Add test for
+	MutatingInt.
+	* testsuite/23_containers/mdspan/layouts/stride.cc: Ditto.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+
+2025-07-17  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/121061
+	* testsuite/23_containers/mdspan/extents/custom_integer.cc:
+	Enable checking with different custom integers. Improve
+	checking non-existence of overloads for incompatible custom
+	integers.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: ditto. Also
+	improve reuse of int_like.h.
+	* testsuite/23_containers/mdspan/layouts/stride.cc: ditto.
+	* testsuite/23_containers/mdspan/mdspan.cc: ditto.
+	* testsuite/23_containers/mdspan/extents/int_like.h: Rename (old
+	name).
+	* testsuite/23_containers/mdspan/int_like.h: Rename (new name).
+	(ThrowingInt): Add.
+	(NotIntLike): Add.
+
+2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__unicode::_Utf_iterator): Add
+	comments.
+	(__unicode:_Utf_iterator::operator++()): Check whether to
+	iterate over the buffer first.
+
+2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121097
+	* include/c_global/cmath (hypot): Use __promote_3 instead of
+	__promoted.
+
 2025-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/bitset (__bitset::__string) [__cpp_lib_bitset]:

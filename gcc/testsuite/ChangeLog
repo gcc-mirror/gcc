@@ -1,3 +1,46 @@
+2025-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87097
+	* g++.dg/cpp0x/constexpr-array29.C: New test.
+
+2025-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* lib/target-supports.exp (add_options_for_aarch64_sme)
+	(check_effective_target_aarch64_sme_hw): New procedures.
+	* g++.target/aarch64/sme/sme_throw_1.C: New test.
+	* g++.target/aarch64/sme/sme_throw_2.C: Likewise.
+
+2025-07-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-2.c: Adapt
+	scan assembler directives.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-3.c: Ditto.
+	* gcc.target/s390/signbit-1.c: New test.
+	* gcc.target/s390/signbit-2.c: New test.
+	* gcc.target/s390/signbit-3.c: New test.
+	* gcc.target/s390/signbit-4.c: New test.
+	* gcc.target/s390/signbit-5.c: New test.
+	* gcc.target/s390/signbit.h: New test.
+
+2025-07-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vlgv-zero-extend-1.c: New test.
+
+2025-07-17  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121064
+	* gcc.target/loongarch/pr121064.c: New test.
+
+2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-39.c: Adjust.
+
+2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121035
+	* gcc.dg/pr121035.c: New testcase.
+
 2025-07-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/121062
