@@ -115,6 +115,12 @@ package System.OS_Lib is
    --  these have Intrinsic convention, so for example it is not permissible
    --  to create accesses to any of these functions.
 
+   function To_Ada (Time : Long_Long_Integer) return OS_Time;
+   --  Convert Long_Long_Integer to OS_Time
+
+   function To_C (Time : OS_Time) return Long_Long_Integer;
+   --  Convert OS_Time to Long_Long_Integer
+
    subtype Year_Type   is Integer range 1900 .. 2099;
    subtype Month_Type  is Integer range    1 ..   12;
    subtype Day_Type    is Integer range    1 ..   31;
@@ -160,27 +166,6 @@ package System.OS_Lib is
    --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
    --  component parts to be interpreted in the local time zone, and returns
    --  an OS_Time. Returns Invalid_Time if the creation fails.
-
-   ------------------
-   -- Time_t Stuff --
-   ------------------
-
-   --  Note: Do not use time_t in the compiler and host-based tools; instead
-   --  use OS_Time.
-
-   subtype time_t is Long_Long_Integer;
-   --  C time_t can be either long or long long, so we choose the Ada
-   --  equivalent of the latter because eventually that will be the
-   --  type used out of necessity. This may affect some user code on 32-bit
-   --  targets that have not yet migrated to the Posix 2008 standard,
-   --  particularly pre version 5 32-bit Linux. Do not change this
-   --  declaration without coordinating it with conversions in Ada.Calendar.
-
-   function To_C (Time : OS_Time) return time_t;
-   --  Convert OS_Time to C time_t type
-
-   function To_Ada (Time : time_t) return OS_Time;
-   --  Convert C time_t type to OS_Time
 
    ----------------
    -- File Stuff --
@@ -1126,8 +1111,8 @@ private
    pragma Import (Intrinsic, ">");
    pragma Import (Intrinsic, "<=");
    pragma Import (Intrinsic, ">=");
-   pragma Inline (To_C);
    pragma Inline (To_Ada);
+   pragma Inline (To_C);
 
    type Process_Id is new Integer;
    Invalid_Pid : constant Process_Id := -1;

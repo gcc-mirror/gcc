@@ -41,9 +41,9 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
+with System.C_Time;
 with System.OS_Constants;
 with System.OS_Locks;
-with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -213,24 +213,16 @@ package System.OS_Interface is
    Time_Slice_Supported : constant Boolean := True;
    --  Indicates whether time slicing is supported
 
-   type timespec is private;
-
    type clockid_t is new int;
 
    function clock_gettime
-     (clock_id : clockid_t; tp : access timespec) return int;
+     (clock_id : clockid_t; tp : access C_Time.timespec) return int;
    pragma Import (C, clock_gettime, "clock_gettime");
 
    function clock_getres
      (clock_id : clockid_t;
-      res      : access timespec) return int;
+      res      : access C_Time.timespec) return int;
    pragma Import (C, clock_getres, "clock_getres");
-
-   function To_Duration (TS : timespec) return Duration;
-   pragma Inline (To_Duration);
-
-   function To_Timespec (D : Duration) return timespec;
-   pragma Inline (To_Timespec);
 
    -------------------------
    -- Priority Scheduling --
@@ -418,7 +410,7 @@ package System.OS_Interface is
    function pthread_cond_timedwait
      (cond    : access pthread_cond_t;
       mutex   : access pthread_mutex_t;
-      abstime : access timespec) return int;
+      abstime : access C_Time.timespec) return int;
    pragma Import (C, pthread_cond_timedwait, "pthread_cond_timedwait");
 
    --------------------------
@@ -571,15 +563,6 @@ private
    for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pid_t is new int;
-
-   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
-     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
-
-   type timespec is record
-      tv_sec  : time_t;
-      tv_nsec : long;
-   end record;
-   pragma Convention (C, timespec);
 
    type unsigned_long_long_t is mod 2 ** 64;
    --  Local type only used to get the alignment of this type below

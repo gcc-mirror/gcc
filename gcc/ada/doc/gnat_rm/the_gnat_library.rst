@@ -663,6 +663,18 @@ sequences for various UCS input formats.
 General routines for swapping the bytes in 2-, 4-, and 8-byte quantities.
 Machine-specific implementations are available in some cases.
 
+.. _`GNAT.C_Time_(g-c_time.ads)`:
+
+``GNAT.C_Time`` (:file:`g-c_time.ads`)
+======================================
+
+.. index:: GNAT.C_Time (g-c_time.ads)
+
+.. index:: Time
+
+Provides the time_t, timeval and timespec types corresponding to the C
+types defined by the OS, as well as various conversion functions.
+
 .. _`GNAT.Calendar_(g-calend.ads)`:
 
 ``GNAT.Calendar`` (:file:`g-calend.ads`)
@@ -674,8 +686,6 @@ Machine-specific implementations are available in some cases.
 
 Extends the facilities provided by ``Ada.Calendar`` to include handling
 of days of the week, an extended ``Split`` and ``Time_Of`` capability.
-Also provides conversion of ``Ada.Calendar.Time`` values to and from the
-C ``timeval`` format.
 
 .. _`GNAT.Calendar.Time_IO_(g-catiio.ads)`:
 

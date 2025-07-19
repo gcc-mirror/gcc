@@ -415,6 +415,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-busorg$(objext) \
   g-byorma$(objext) \
   g-bytswa$(objext) \
+  g-c_time$(objext) \
   g-calend$(objext) \
   g-casuti$(objext) \
   g-catiio$(objext) \
@@ -535,6 +536,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-boarop$(objext) \
   s-boustr$(objext) \
   s-bytswa$(objext) \
+  s-c_time$(objext) \
   s-carsi8$(objext) \
   s-carun8$(objext) \
   s-casi16$(objext) \
@@ -1418,7 +1420,6 @@ ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__android.adb \
   s-osinte.ads<libgnarl/s-osinte__android.ads \
-  s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.adb<libgnat/s-parame__aarch64-linux.adb \
@@ -1531,7 +1532,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-osinte.adb<libgnarl/s-osinte__solaris.adb \
   s-osinte.ads<libgnarl/s-osinte__solaris.ads \
   s-oslock.ads<libgnat/s-oslock__solaris.ads \
-  s-osprim.adb<libgnat/s-osprim__solaris.adb \
+  s-osprim.adb<libgnat/s-osprim__unix.adb \
   s-taprop.adb<libgnarl/s-taprop__solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf__solaris.adb \
   s-tasinf.ads<libgnarl/s-tasinf__solaris.ads \
@@ -1580,7 +1581,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   s-osinte.adb<libgnarl/s-osinte__solaris.adb \
   s-osinte.ads<libgnarl/s-osinte__solaris.ads \
   s-oslock.ads<libgnat/s-oslock__solaris.ads \
-  s-osprim.adb<libgnat/s-osprim__solaris.adb \
+  s-osprim.adb<libgnat/s-osprim__unix.adb \
   s-taprop.adb<libgnarl/s-taprop__solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf__solaris.adb \
   s-tasinf.ads<libgnarl/s-tasinf__solaris.ads \
@@ -2146,7 +2147,6 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
 
   ifeq ($(strip $(filter-out lynxos178e,$(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
-    s-parame.ads<libgnat/s-parame__posix2008.ads \
     s-osinte.ads<libgnarl/s-osinte__lynxos178e.ads \
     s-osprim.adb<libgnat/s-osprim__posix2008.adb \
     s-tracon.adb<hie/s-tracon__ppc-eabi.adb
@@ -2173,7 +2173,6 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__rtems.adb \
   s-parame.adb<libgnat/s-parame__rtems.adb \
-  s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__rtems.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
@@ -2942,13 +2941,11 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
-  s-linux.ads<libgnarl/s-linux__x32.ads \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__x32.adb \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
-  s-osprim.adb<libgnat/s-osprim__x32.adb \
-  s-parame.ads<libgnat/s-parame__posix2008.ads \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
@@ -3195,7 +3192,7 @@ LIBGNAT_TARGET_PAIRS += \
 # library.  LIBGNAT_OBJS is the list of object files for libgnat.
 # thread.c is special as put into GNATRTL_TASKING_OBJS
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
-  cal.o cio.o cstreams.o ctrl_c.o					\
+  cio.o cstreams.o ctrl_c.o						\
   env.o errno.o exit.o expect.o final.o rtfinal.o rtinit.o		\
   init.o initialize.o locales.o mkdir.o					\
   raise.o seh_init.o socket.o sysdep.o					\

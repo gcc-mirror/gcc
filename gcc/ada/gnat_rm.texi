@@ -755,6 +755,7 @@ The GNAT Library
 * GNAT.Bubble_Sort_G (g-busorg.ads): GNAT Bubble_Sort_G g-busorg ads. 
 * GNAT.Byte_Order_Mark (g-byorma.ads): GNAT Byte_Order_Mark g-byorma ads. 
 * GNAT.Byte_Swapping (g-bytswa.ads): GNAT Byte_Swapping g-bytswa ads. 
+* GNAT.C_Time (g-c_time.ads): GNAT C_Time g-c_time ads. 
 * GNAT.Calendar (g-calend.ads): GNAT Calendar g-calend ads. 
 * GNAT.Calendar.Time_IO (g-catiio.ads): GNAT Calendar Time_IO g-catiio ads. 
 * GNAT.CRC32 (g-crc32.ads): GNAT CRC32 g-crc32 ads. 
@@ -23522,6 +23523,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Bubble_Sort_G (g-busorg.ads): GNAT Bubble_Sort_G g-busorg ads. 
 * GNAT.Byte_Order_Mark (g-byorma.ads): GNAT Byte_Order_Mark g-byorma ads. 
 * GNAT.Byte_Swapping (g-bytswa.ads): GNAT Byte_Swapping g-bytswa ads. 
+* GNAT.C_Time (g-c_time.ads): GNAT C_Time g-c_time ads. 
 * GNAT.Calendar (g-calend.ads): GNAT Calendar g-calend ads. 
 * GNAT.Calendar.Time_IO (g-catiio.ads): GNAT Calendar Time_IO g-catiio ads. 
 * GNAT.CRC32 (g-crc32.ads): GNAT CRC32 g-crc32 ads. 
@@ -24261,7 +24263,7 @@ see whether it is one of the standard byte order marks (BOM’s) which signal
 the encoding of the string. The routine includes detection of special XML
 sequences for various UCS input formats.
 
-@node GNAT Byte_Swapping g-bytswa ads,GNAT Calendar g-calend ads,GNAT Byte_Order_Mark g-byorma ads,The GNAT Library
+@node GNAT Byte_Swapping g-bytswa ads,GNAT C_Time g-c_time ads,GNAT Byte_Order_Mark g-byorma ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-byte-swapping-g-bytswa-ads}@anchor{34a}@anchor{gnat_rm/the_gnat_library id45}@anchor{34b}
 @section @code{GNAT.Byte_Swapping} (@code{g-bytswa.ads})
 
@@ -24275,8 +24277,20 @@ sequences for various UCS input formats.
 General routines for swapping the bytes in 2-, 4-, and 8-byte quantities.
 Machine-specific implementations are available in some cases.
 
-@node GNAT Calendar g-calend ads,GNAT Calendar Time_IO g-catiio ads,GNAT Byte_Swapping g-bytswa ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-calendar-g-calend-ads}@anchor{34c}@anchor{gnat_rm/the_gnat_library id46}@anchor{34d}
+@node GNAT C_Time g-c_time ads,GNAT Calendar g-calend ads,GNAT Byte_Swapping g-bytswa ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library gnat-c-time-g-c-time-ads}@anchor{34c}@anchor{gnat_rm/the_gnat_library id46}@anchor{34d}
+@section @code{GNAT.C_Time} (@code{g-c_time.ads})
+
+
+@geindex GNAT.C_Time (g-c_time.ads)
+
+@geindex Time
+
+Provides the time_t, timeval and timespec types corresponding to the C
+types defined by the OS, as well as various conversion functions.
+
+@node GNAT Calendar g-calend ads,GNAT Calendar Time_IO g-catiio ads,GNAT C_Time g-c_time ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library gnat-calendar-g-calend-ads}@anchor{34e}@anchor{gnat_rm/the_gnat_library id47}@anchor{34f}
 @section @code{GNAT.Calendar} (@code{g-calend.ads})
 
 
@@ -24286,11 +24300,9 @@ Machine-specific implementations are available in some cases.
 
 Extends the facilities provided by @code{Ada.Calendar} to include handling
 of days of the week, an extended @code{Split} and @code{Time_Of} capability.
-Also provides conversion of @code{Ada.Calendar.Time} values to and from the
-C @code{timeval} format.
 
 @node GNAT Calendar Time_IO g-catiio ads,GNAT CRC32 g-crc32 ads,GNAT Calendar g-calend ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-calendar-time-io-g-catiio-ads}@anchor{34e}@anchor{gnat_rm/the_gnat_library id47}@anchor{34f}
+@anchor{gnat_rm/the_gnat_library gnat-calendar-time-io-g-catiio-ads}@anchor{350}@anchor{gnat_rm/the_gnat_library id48}@anchor{351}
 @section @code{GNAT.Calendar.Time_IO} (@code{g-catiio.ads})
 
 
@@ -24301,7 +24313,7 @@ C @code{timeval} format.
 @geindex GNAT.Calendar.Time_IO (g-catiio.ads)
 
 @node GNAT CRC32 g-crc32 ads,GNAT Case_Util g-casuti ads,GNAT Calendar Time_IO g-catiio ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-crc32-g-crc32-ads}@anchor{350}@anchor{gnat_rm/the_gnat_library id48}@anchor{351}
+@anchor{gnat_rm/the_gnat_library gnat-crc32-g-crc32-ads}@anchor{352}@anchor{gnat_rm/the_gnat_library id49}@anchor{353}
 @section @code{GNAT.CRC32} (@code{g-crc32.ads})
 
 
@@ -24318,7 +24330,7 @@ of this algorithm see
 Aug. 1988.  Sarwate, D.V.
 
 @node GNAT Case_Util g-casuti ads,GNAT CGI g-cgi ads,GNAT CRC32 g-crc32 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-case-util-g-casuti-ads}@anchor{352}@anchor{gnat_rm/the_gnat_library id49}@anchor{353}
+@anchor{gnat_rm/the_gnat_library gnat-case-util-g-casuti-ads}@anchor{354}@anchor{gnat_rm/the_gnat_library id50}@anchor{355}
 @section @code{GNAT.Case_Util} (@code{g-casuti.ads})
 
 
@@ -24333,7 +24345,7 @@ without the overhead of the full casing tables
 in @code{Ada.Characters.Handling}.
 
 @node GNAT CGI g-cgi ads,GNAT CGI Cookie g-cgicoo ads,GNAT Case_Util g-casuti ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-cgi-g-cgi-ads}@anchor{354}@anchor{gnat_rm/the_gnat_library id50}@anchor{355}
+@anchor{gnat_rm/the_gnat_library gnat-cgi-g-cgi-ads}@anchor{356}@anchor{gnat_rm/the_gnat_library id51}@anchor{357}
 @section @code{GNAT.CGI} (@code{g-cgi.ads})
 
 
@@ -24348,7 +24360,7 @@ builds a table whose index is the key and provides some services to deal
 with this table.
 
 @node GNAT CGI Cookie g-cgicoo ads,GNAT CGI Debug g-cgideb ads,GNAT CGI g-cgi ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-cgi-cookie-g-cgicoo-ads}@anchor{356}@anchor{gnat_rm/the_gnat_library id51}@anchor{357}
+@anchor{gnat_rm/the_gnat_library gnat-cgi-cookie-g-cgicoo-ads}@anchor{358}@anchor{gnat_rm/the_gnat_library id52}@anchor{359}
 @section @code{GNAT.CGI.Cookie} (@code{g-cgicoo.ads})
 
 
@@ -24363,7 +24375,7 @@ Common Gateway Interface (CGI).  It exports services to deal with Web
 cookies (piece of information kept in the Web client software).
 
 @node GNAT CGI Debug g-cgideb ads,GNAT Command_Line g-comlin ads,GNAT CGI Cookie g-cgicoo ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-cgi-debug-g-cgideb-ads}@anchor{358}@anchor{gnat_rm/the_gnat_library id52}@anchor{359}
+@anchor{gnat_rm/the_gnat_library gnat-cgi-debug-g-cgideb-ads}@anchor{35a}@anchor{gnat_rm/the_gnat_library id53}@anchor{35b}
 @section @code{GNAT.CGI.Debug} (@code{g-cgideb.ads})
 
 
@@ -24375,7 +24387,7 @@ This is a package to help debugging CGI (Common Gateway Interface)
 programs written in Ada.
 
 @node GNAT Command_Line g-comlin ads,GNAT Compiler_Version g-comver ads,GNAT CGI Debug g-cgideb ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-command-line-g-comlin-ads}@anchor{35a}@anchor{gnat_rm/the_gnat_library id53}@anchor{35b}
+@anchor{gnat_rm/the_gnat_library gnat-command-line-g-comlin-ads}@anchor{35c}@anchor{gnat_rm/the_gnat_library id54}@anchor{35d}
 @section @code{GNAT.Command_Line} (@code{g-comlin.ads})
 
 
@@ -24388,7 +24400,7 @@ including the ability to scan for named switches with optional parameters
 and expand file names using wildcard notations.
 
 @node GNAT Compiler_Version g-comver ads,GNAT Ctrl_C g-ctrl_c ads,GNAT Command_Line g-comlin ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-compiler-version-g-comver-ads}@anchor{35c}@anchor{gnat_rm/the_gnat_library id54}@anchor{35d}
+@anchor{gnat_rm/the_gnat_library gnat-compiler-version-g-comver-ads}@anchor{35e}@anchor{gnat_rm/the_gnat_library id55}@anchor{35f}
 @section @code{GNAT.Compiler_Version} (@code{g-comver.ads})
 
 
@@ -24406,7 +24418,7 @@ of the compiler if a consistent tool set is used to compile all units
 of a partition).
 
 @node GNAT Ctrl_C g-ctrl_c ads,GNAT Current_Exception g-curexc ads,GNAT Compiler_Version g-comver ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-ctrl-c-g-ctrl-c-ads}@anchor{35e}@anchor{gnat_rm/the_gnat_library id55}@anchor{35f}
+@anchor{gnat_rm/the_gnat_library gnat-ctrl-c-g-ctrl-c-ads}@anchor{360}@anchor{gnat_rm/the_gnat_library id56}@anchor{361}
 @section @code{GNAT.Ctrl_C} (@code{g-ctrl_c.ads})
 
 
@@ -24417,7 +24429,7 @@ of a partition).
 Provides a simple interface to handle Ctrl-C keyboard events.
 
 @node GNAT Current_Exception g-curexc ads,GNAT Debug_Pools g-debpoo ads,GNAT Ctrl_C g-ctrl_c ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-current-exception-g-curexc-ads}@anchor{360}@anchor{gnat_rm/the_gnat_library id56}@anchor{361}
+@anchor{gnat_rm/the_gnat_library gnat-current-exception-g-curexc-ads}@anchor{362}@anchor{gnat_rm/the_gnat_library id57}@anchor{363}
 @section @code{GNAT.Current_Exception} (@code{g-curexc.ads})
 
 
@@ -24434,7 +24446,7 @@ This is particularly useful in simulating typical facilities for
 obtaining information about exceptions provided by Ada 83 compilers.
 
 @node GNAT Debug_Pools g-debpoo ads,GNAT Debug_Utilities g-debuti ads,GNAT Current_Exception g-curexc ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-debug-pools-g-debpoo-ads}@anchor{362}@anchor{gnat_rm/the_gnat_library id57}@anchor{363}
+@anchor{gnat_rm/the_gnat_library gnat-debug-pools-g-debpoo-ads}@anchor{364}@anchor{gnat_rm/the_gnat_library id58}@anchor{365}
 @section @code{GNAT.Debug_Pools} (@code{g-debpoo.ads})
 
 
@@ -24451,7 +24463,7 @@ problems.
 See @code{The GNAT Debug_Pool Facility} section in the @cite{GNAT User’s Guide}.
 
 @node GNAT Debug_Utilities g-debuti ads,GNAT Decode_String g-decstr ads,GNAT Debug_Pools g-debpoo ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-debug-utilities-g-debuti-ads}@anchor{364}@anchor{gnat_rm/the_gnat_library id58}@anchor{365}
+@anchor{gnat_rm/the_gnat_library gnat-debug-utilities-g-debuti-ads}@anchor{366}@anchor{gnat_rm/the_gnat_library id59}@anchor{367}
 @section @code{GNAT.Debug_Utilities} (@code{g-debuti.ads})
 
 
@@ -24464,7 +24476,7 @@ to and from string images of address values. Supports both C and Ada formats
 for hexadecimal literals.
 
 @node GNAT Decode_String g-decstr ads,GNAT Decode_UTF8_String g-deutst ads,GNAT Debug_Utilities g-debuti ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-decode-string-g-decstr-ads}@anchor{366}@anchor{gnat_rm/the_gnat_library id59}@anchor{367}
+@anchor{gnat_rm/the_gnat_library gnat-decode-string-g-decstr-ads}@anchor{368}@anchor{gnat_rm/the_gnat_library id60}@anchor{369}
 @section @code{GNAT.Decode_String} (@code{g-decstr.ads})
 
 
@@ -24488,7 +24500,7 @@ Useful in conjunction with Unicode character coding. Note there is a
 preinstantiation for UTF-8. See next entry.
 
 @node GNAT Decode_UTF8_String g-deutst ads,GNAT Directory_Operations g-dirope ads,GNAT Decode_String g-decstr ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-decode-utf8-string-g-deutst-ads}@anchor{368}@anchor{gnat_rm/the_gnat_library id60}@anchor{369}
+@anchor{gnat_rm/the_gnat_library gnat-decode-utf8-string-g-deutst-ads}@anchor{36a}@anchor{gnat_rm/the_gnat_library id61}@anchor{36b}
 @section @code{GNAT.Decode_UTF8_String} (@code{g-deutst.ads})
 
 
@@ -24509,7 +24521,7 @@ preinstantiation for UTF-8. See next entry.
 A preinstantiation of GNAT.Decode_Strings for UTF-8 encoding.
 
 @node GNAT Directory_Operations g-dirope ads,GNAT Directory_Operations Iteration g-diopit ads,GNAT Decode_UTF8_String g-deutst ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-directory-operations-g-dirope-ads}@anchor{36a}@anchor{gnat_rm/the_gnat_library id61}@anchor{36b}
+@anchor{gnat_rm/the_gnat_library gnat-directory-operations-g-dirope-ads}@anchor{36c}@anchor{gnat_rm/the_gnat_library id62}@anchor{36d}
 @section @code{GNAT.Directory_Operations} (@code{g-dirope.ads})
 
 
@@ -24522,7 +24534,7 @@ the current directory, making new directories, and scanning the files in a
 directory.
 
 @node GNAT Directory_Operations Iteration g-diopit ads,GNAT Dynamic_HTables g-dynhta ads,GNAT Directory_Operations g-dirope ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-directory-operations-iteration-g-diopit-ads}@anchor{36c}@anchor{gnat_rm/the_gnat_library id62}@anchor{36d}
+@anchor{gnat_rm/the_gnat_library gnat-directory-operations-iteration-g-diopit-ads}@anchor{36e}@anchor{gnat_rm/the_gnat_library id63}@anchor{36f}
 @section @code{GNAT.Directory_Operations.Iteration} (@code{g-diopit.ads})
 
 
@@ -24534,7 +24546,7 @@ A child unit of GNAT.Directory_Operations providing additional operations
 for iterating through directories.
 
 @node GNAT Dynamic_HTables g-dynhta ads,GNAT Dynamic_Tables g-dyntab ads,GNAT Directory_Operations Iteration g-diopit ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-dynamic-htables-g-dynhta-ads}@anchor{36e}@anchor{gnat_rm/the_gnat_library id63}@anchor{36f}
+@anchor{gnat_rm/the_gnat_library gnat-dynamic-htables-g-dynhta-ads}@anchor{370}@anchor{gnat_rm/the_gnat_library id64}@anchor{371}
 @section @code{GNAT.Dynamic_HTables} (@code{g-dynhta.ads})
 
 
@@ -24552,7 +24564,7 @@ dynamic instances of the hash table, while an instantiation of
 @code{GNAT.HTable} creates a single instance of the hash table.
 
 @node GNAT Dynamic_Tables g-dyntab ads,GNAT Encode_String g-encstr ads,GNAT Dynamic_HTables g-dynhta ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-dynamic-tables-g-dyntab-ads}@anchor{370}@anchor{gnat_rm/the_gnat_library id64}@anchor{371}
+@anchor{gnat_rm/the_gnat_library gnat-dynamic-tables-g-dyntab-ads}@anchor{372}@anchor{gnat_rm/the_gnat_library id65}@anchor{373}
 @section @code{GNAT.Dynamic_Tables} (@code{g-dyntab.ads})
 
 
@@ -24572,7 +24584,7 @@ dynamic instances of the table, while an instantiation of
 @code{GNAT.Table} creates a single instance of the table type.
 
 @node GNAT Encode_String g-encstr ads,GNAT Encode_UTF8_String g-enutst ads,GNAT Dynamic_Tables g-dyntab ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-encode-string-g-encstr-ads}@anchor{372}@anchor{gnat_rm/the_gnat_library id65}@anchor{373}
+@anchor{gnat_rm/the_gnat_library gnat-encode-string-g-encstr-ads}@anchor{374}@anchor{gnat_rm/the_gnat_library id66}@anchor{375}
 @section @code{GNAT.Encode_String} (@code{g-encstr.ads})
 
 
@@ -24594,7 +24606,7 @@ encoding method. Useful in conjunction with Unicode character coding.
 Note there is a preinstantiation for UTF-8. See next entry.
 
 @node GNAT Encode_UTF8_String g-enutst ads,GNAT Exception_Actions g-excact ads,GNAT Encode_String g-encstr ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-encode-utf8-string-g-enutst-ads}@anchor{374}@anchor{gnat_rm/the_gnat_library id66}@anchor{375}
+@anchor{gnat_rm/the_gnat_library gnat-encode-utf8-string-g-enutst-ads}@anchor{376}@anchor{gnat_rm/the_gnat_library id67}@anchor{377}
 @section @code{GNAT.Encode_UTF8_String} (@code{g-enutst.ads})
 
 
@@ -24615,7 +24627,7 @@ Note there is a preinstantiation for UTF-8. See next entry.
 A preinstantiation of GNAT.Encode_Strings for UTF-8 encoding.
 
 @node GNAT Exception_Actions g-excact ads,GNAT Exception_Traces g-exctra ads,GNAT Encode_UTF8_String g-enutst ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-exception-actions-g-excact-ads}@anchor{376}@anchor{gnat_rm/the_gnat_library id67}@anchor{377}
+@anchor{gnat_rm/the_gnat_library gnat-exception-actions-g-excact-ads}@anchor{378}@anchor{gnat_rm/the_gnat_library id68}@anchor{379}
 @section @code{GNAT.Exception_Actions} (@code{g-excact.ads})
 
 
@@ -24628,7 +24640,7 @@ for specific exceptions, or when any exception is raised. This
 can be used for instance to force a core dump to ease debugging.
 
 @node GNAT Exception_Traces g-exctra ads,GNAT Exceptions g-except ads,GNAT Exception_Actions g-excact ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-exception-traces-g-exctra-ads}@anchor{378}@anchor{gnat_rm/the_gnat_library id68}@anchor{379}
+@anchor{gnat_rm/the_gnat_library gnat-exception-traces-g-exctra-ads}@anchor{37a}@anchor{gnat_rm/the_gnat_library id69}@anchor{37b}
 @section @code{GNAT.Exception_Traces} (@code{g-exctra.ads})
 
 
@@ -24642,7 +24654,7 @@ Provides an interface allowing to control automatic output upon exception
 occurrences.
 
 @node GNAT Exceptions g-except ads,GNAT Expect g-expect ads,GNAT Exception_Traces g-exctra ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-except-ads}@anchor{37a}@anchor{gnat_rm/the_gnat_library id69}@anchor{37b}
+@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-except-ads}@anchor{37c}@anchor{gnat_rm/the_gnat_library id70}@anchor{37d}
 @section @code{GNAT.Exceptions} (@code{g-except.ads})
 
 
@@ -24663,7 +24675,7 @@ predefined exceptions, and for example allows raising
 @code{Constraint_Error} with a message from a pure subprogram.
 
 @node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-except ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-expect-g-expect-ads}@anchor{37c}@anchor{gnat_rm/the_gnat_library id70}@anchor{37d}
+@anchor{gnat_rm/the_gnat_library gnat-expect-g-expect-ads}@anchor{37e}@anchor{gnat_rm/the_gnat_library id71}@anchor{37f}
 @section @code{GNAT.Expect} (@code{g-expect.ads})
 
 
@@ -24679,7 +24691,7 @@ It is not implemented for cross ports, and in particular is not
 implemented for VxWorks or LynxOS.
 
 @node GNAT Expect TTY g-exptty ads,GNAT Float_Control g-flocon ads,GNAT Expect g-expect ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-expect-tty-g-exptty-ads}@anchor{37e}@anchor{gnat_rm/the_gnat_library id71}@anchor{37f}
+@anchor{gnat_rm/the_gnat_library gnat-expect-tty-g-exptty-ads}@anchor{380}@anchor{gnat_rm/the_gnat_library id72}@anchor{381}
 @section @code{GNAT.Expect.TTY} (@code{g-exptty.ads})
 
 
@@ -24691,7 +24703,7 @@ ports. It is not implemented for cross ports, and
 in particular is not implemented for VxWorks or LynxOS.
 
 @node GNAT Float_Control g-flocon ads,GNAT Formatted_String g-forstr ads,GNAT Expect TTY g-exptty ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-float-control-g-flocon-ads}@anchor{380}@anchor{gnat_rm/the_gnat_library id72}@anchor{381}
+@anchor{gnat_rm/the_gnat_library gnat-float-control-g-flocon-ads}@anchor{382}@anchor{gnat_rm/the_gnat_library id73}@anchor{383}
 @section @code{GNAT.Float_Control} (@code{g-flocon.ads})
 
 
@@ -24705,7 +24717,7 @@ library calls may cause this mode to be modified, and the Reset procedure
 in this package can be used to reestablish the required mode.
 
 @node GNAT Formatted_String g-forstr ads,GNAT Generic_Fast_Math_Functions g-gfmafu ads,GNAT Float_Control g-flocon ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-formatted-string-g-forstr-ads}@anchor{382}@anchor{gnat_rm/the_gnat_library id73}@anchor{383}
+@anchor{gnat_rm/the_gnat_library gnat-formatted-string-g-forstr-ads}@anchor{384}@anchor{gnat_rm/the_gnat_library id74}@anchor{385}
 @section @code{GNAT.Formatted_String} (@code{g-forstr.ads})
 
 
@@ -24720,7 +24732,7 @@ derived from Integer, Float or enumerations as values for the
 formatted string.
 
 @node GNAT Generic_Fast_Math_Functions g-gfmafu ads,GNAT Heap_Sort g-heasor ads,GNAT Formatted_String g-forstr ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-generic-fast-math-functions-g-gfmafu-ads}@anchor{384}@anchor{gnat_rm/the_gnat_library id74}@anchor{385}
+@anchor{gnat_rm/the_gnat_library gnat-generic-fast-math-functions-g-gfmafu-ads}@anchor{386}@anchor{gnat_rm/the_gnat_library id75}@anchor{387}
 @section @code{GNAT.Generic_Fast_Math_Functions} (@code{g-gfmafu.ads})
 
 
@@ -24738,7 +24750,7 @@ have a vector implementation that can be automatically used by the
 compiler when auto-vectorization is enabled.
 
 @node GNAT Heap_Sort g-heasor ads,GNAT Heap_Sort_A g-hesora ads,GNAT Generic_Fast_Math_Functions g-gfmafu ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-heap-sort-g-heasor-ads}@anchor{386}@anchor{gnat_rm/the_gnat_library id75}@anchor{387}
+@anchor{gnat_rm/the_gnat_library gnat-heap-sort-g-heasor-ads}@anchor{388}@anchor{gnat_rm/the_gnat_library id76}@anchor{389}
 @section @code{GNAT.Heap_Sort} (@code{g-heasor.ads})
 
 
@@ -24752,7 +24764,7 @@ access-to-procedure values.  The algorithm used is a modified heap sort
 that performs approximately N*log(N) comparisons in the worst case.
 
 @node GNAT Heap_Sort_A g-hesora ads,GNAT Heap_Sort_G g-hesorg ads,GNAT Heap_Sort g-heasor ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-heap-sort-a-g-hesora-ads}@anchor{388}@anchor{gnat_rm/the_gnat_library id76}@anchor{389}
+@anchor{gnat_rm/the_gnat_library gnat-heap-sort-a-g-hesora-ads}@anchor{38a}@anchor{gnat_rm/the_gnat_library id77}@anchor{38b}
 @section @code{GNAT.Heap_Sort_A} (@code{g-hesora.ads})
 
 
@@ -24768,7 +24780,7 @@ This differs from @code{GNAT.Heap_Sort} in having a less convenient
 interface, but may be slightly more efficient.
 
 @node GNAT Heap_Sort_G g-hesorg ads,GNAT HTable g-htable ads,GNAT Heap_Sort_A g-hesora ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-heap-sort-g-g-hesorg-ads}@anchor{38a}@anchor{gnat_rm/the_gnat_library id77}@anchor{38b}
+@anchor{gnat_rm/the_gnat_library gnat-heap-sort-g-g-hesorg-ads}@anchor{38c}@anchor{gnat_rm/the_gnat_library id78}@anchor{38d}
 @section @code{GNAT.Heap_Sort_G} (@code{g-hesorg.ads})
 
 
@@ -24782,7 +24794,7 @@ if the procedures can be inlined, at the expense of duplicating code for
 multiple instantiations.
 
 @node GNAT HTable g-htable ads,GNAT IO g-io ads,GNAT Heap_Sort_G g-hesorg ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-htable-g-htable-ads}@anchor{38c}@anchor{gnat_rm/the_gnat_library id78}@anchor{38d}
+@anchor{gnat_rm/the_gnat_library gnat-htable-g-htable-ads}@anchor{38e}@anchor{gnat_rm/the_gnat_library id79}@anchor{38f}
 @section @code{GNAT.HTable} (@code{g-htable.ads})
 
 
@@ -24795,7 +24807,7 @@ data.  Provides two approaches, one a simple static approach, and the other
 allowing arbitrary dynamic hash tables.
 
 @node GNAT IO g-io ads,GNAT IO_Aux g-io_aux ads,GNAT HTable g-htable ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-io-g-io-ads}@anchor{38e}@anchor{gnat_rm/the_gnat_library id79}@anchor{38f}
+@anchor{gnat_rm/the_gnat_library gnat-io-g-io-ads}@anchor{390}@anchor{gnat_rm/the_gnat_library id80}@anchor{391}
 @section @code{GNAT.IO} (@code{g-io.ads})
 
 
@@ -24811,7 +24823,7 @@ Standard_Input, and writing characters, strings and integers to either
 Standard_Output or Standard_Error.
 
 @node GNAT IO_Aux g-io_aux ads,GNAT Lock_Files g-locfil ads,GNAT IO g-io ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-io-aux-g-io-aux-ads}@anchor{390}@anchor{gnat_rm/the_gnat_library id80}@anchor{391}
+@anchor{gnat_rm/the_gnat_library gnat-io-aux-g-io-aux-ads}@anchor{392}@anchor{gnat_rm/the_gnat_library id81}@anchor{393}
 @section @code{GNAT.IO_Aux} (@code{g-io_aux.ads})
 
 
@@ -24825,7 +24837,7 @@ Provides some auxiliary functions for use with Text_IO, including a test
 for whether a file exists, and functions for reading a line of text.
 
 @node GNAT Lock_Files g-locfil ads,GNAT MBBS_Discrete_Random g-mbdira ads,GNAT IO_Aux g-io_aux ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-lock-files-g-locfil-ads}@anchor{392}@anchor{gnat_rm/the_gnat_library id81}@anchor{393}
+@anchor{gnat_rm/the_gnat_library gnat-lock-files-g-locfil-ads}@anchor{394}@anchor{gnat_rm/the_gnat_library id82}@anchor{395}
 @section @code{GNAT.Lock_Files} (@code{g-locfil.ads})
 
 
@@ -24839,7 +24851,7 @@ Provides a general interface for using files as locks.  Can be used for
 providing program level synchronization.
 
 @node GNAT MBBS_Discrete_Random g-mbdira ads,GNAT MBBS_Float_Random g-mbflra ads,GNAT Lock_Files g-locfil ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-mbbs-discrete-random-g-mbdira-ads}@anchor{394}@anchor{gnat_rm/the_gnat_library id82}@anchor{395}
+@anchor{gnat_rm/the_gnat_library gnat-mbbs-discrete-random-g-mbdira-ads}@anchor{396}@anchor{gnat_rm/the_gnat_library id83}@anchor{397}
 @section @code{GNAT.MBBS_Discrete_Random} (@code{g-mbdira.ads})
 
 
@@ -24851,7 +24863,7 @@ The original implementation of @code{Ada.Numerics.Discrete_Random}.  Uses
 a modified version of the Blum-Blum-Shub generator.
 
 @node GNAT MBBS_Float_Random g-mbflra ads,GNAT MD5 g-md5 ads,GNAT MBBS_Discrete_Random g-mbdira ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-mbbs-float-random-g-mbflra-ads}@anchor{396}@anchor{gnat_rm/the_gnat_library id83}@anchor{397}
+@anchor{gnat_rm/the_gnat_library gnat-mbbs-float-random-g-mbflra-ads}@anchor{398}@anchor{gnat_rm/the_gnat_library id84}@anchor{399}
 @section @code{GNAT.MBBS_Float_Random} (@code{g-mbflra.ads})
 
 
@@ -24863,7 +24875,7 @@ The original implementation of @code{Ada.Numerics.Float_Random}.  Uses
 a modified version of the Blum-Blum-Shub generator.
 
 @node GNAT MD5 g-md5 ads,GNAT Memory_Dump g-memdum ads,GNAT MBBS_Float_Random g-mbflra ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-md5-g-md5-ads}@anchor{398}@anchor{gnat_rm/the_gnat_library id84}@anchor{399}
+@anchor{gnat_rm/the_gnat_library gnat-md5-g-md5-ads}@anchor{39a}@anchor{gnat_rm/the_gnat_library id85}@anchor{39b}
 @section @code{GNAT.MD5} (@code{g-md5.ads})
 
 
@@ -24876,7 +24888,7 @@ the HMAC-MD5 message authentication function as described in RFC 2104 and
 FIPS PUB 198.
 
 @node GNAT Memory_Dump g-memdum ads,GNAT Most_Recent_Exception g-moreex ads,GNAT MD5 g-md5 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-memory-dump-g-memdum-ads}@anchor{39a}@anchor{gnat_rm/the_gnat_library id85}@anchor{39b}
+@anchor{gnat_rm/the_gnat_library gnat-memory-dump-g-memdum-ads}@anchor{39c}@anchor{gnat_rm/the_gnat_library id86}@anchor{39d}
 @section @code{GNAT.Memory_Dump} (@code{g-memdum.ads})
 
 
@@ -24889,7 +24901,7 @@ standard output or standard error files. Uses GNAT.IO for actual
 output.
 
 @node GNAT Most_Recent_Exception g-moreex ads,GNAT OS_Lib g-os_lib ads,GNAT Memory_Dump g-memdum ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-most-recent-exception-g-moreex-ads}@anchor{39c}@anchor{gnat_rm/the_gnat_library id86}@anchor{39d}
+@anchor{gnat_rm/the_gnat_library gnat-most-recent-exception-g-moreex-ads}@anchor{39e}@anchor{gnat_rm/the_gnat_library id87}@anchor{39f}
 @section @code{GNAT.Most_Recent_Exception} (@code{g-moreex.ads})
 
 
@@ -24903,7 +24915,7 @@ various logging purposes, including duplicating functionality of some
 Ada 83 implementation dependent extensions.
 
 @node GNAT OS_Lib g-os_lib ads,GNAT Perfect_Hash_Generators g-pehage ads,GNAT Most_Recent_Exception g-moreex ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-os-lib-g-os-lib-ads}@anchor{39e}@anchor{gnat_rm/the_gnat_library id87}@anchor{39f}
+@anchor{gnat_rm/the_gnat_library gnat-os-lib-g-os-lib-ads}@anchor{3a0}@anchor{gnat_rm/the_gnat_library id88}@anchor{3a1}
 @section @code{GNAT.OS_Lib} (@code{g-os_lib.ads})
 
 
@@ -24919,7 +24931,7 @@ including a portable spawn procedure, and access to environment variables
 and error return codes.
 
 @node GNAT Perfect_Hash_Generators g-pehage ads,GNAT Random_Numbers g-rannum ads,GNAT OS_Lib g-os_lib ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-perfect-hash-generators-g-pehage-ads}@anchor{3a0}@anchor{gnat_rm/the_gnat_library id88}@anchor{3a1}
+@anchor{gnat_rm/the_gnat_library gnat-perfect-hash-generators-g-pehage-ads}@anchor{3a2}@anchor{gnat_rm/the_gnat_library id89}@anchor{3a3}
 @section @code{GNAT.Perfect_Hash_Generators} (@code{g-pehage.ads})
 
 
@@ -24937,7 +24949,7 @@ hashcode are in the same order. These hashing functions are very
 convenient for use with realtime applications.
 
 @node GNAT Random_Numbers g-rannum ads,GNAT Regexp g-regexp ads,GNAT Perfect_Hash_Generators g-pehage ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-random-numbers-g-rannum-ads}@anchor{3a2}@anchor{gnat_rm/the_gnat_library id89}@anchor{3a3}
+@anchor{gnat_rm/the_gnat_library gnat-random-numbers-g-rannum-ads}@anchor{3a4}@anchor{gnat_rm/the_gnat_library id90}@anchor{3a5}
 @section @code{GNAT.Random_Numbers} (@code{g-rannum.ads})
 
 
@@ -24951,7 +24963,7 @@ however NOT suitable for situations requiring cryptographically secure
 randomness.
 
 @node GNAT Regexp g-regexp ads,GNAT Registry g-regist ads,GNAT Random_Numbers g-rannum ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-regexp-g-regexp-ads}@anchor{279}@anchor{gnat_rm/the_gnat_library id90}@anchor{3a4}
+@anchor{gnat_rm/the_gnat_library gnat-regexp-g-regexp-ads}@anchor{279}@anchor{gnat_rm/the_gnat_library id91}@anchor{3a6}
 @section @code{GNAT.Regexp} (@code{g-regexp.ads})
 
 
@@ -24967,7 +24979,7 @@ simplest of the three pattern matching packages provided, and is particularly
 suitable for ‘file globbing’ applications.
 
 @node GNAT Registry g-regist ads,GNAT Regpat g-regpat ads,GNAT Regexp g-regexp ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-registry-g-regist-ads}@anchor{3a5}@anchor{gnat_rm/the_gnat_library id91}@anchor{3a6}
+@anchor{gnat_rm/the_gnat_library gnat-registry-g-regist-ads}@anchor{3a7}@anchor{gnat_rm/the_gnat_library id92}@anchor{3a8}
 @section @code{GNAT.Registry} (@code{g-regist.ads})
 
 
@@ -24981,7 +24993,7 @@ registry API, but at a lower level of abstraction, refer to the Win32.Winreg
 package provided with the Win32Ada binding
 
 @node GNAT Regpat g-regpat ads,GNAT Rewrite_Data g-rewdat ads,GNAT Registry g-regist ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-regpat-g-regpat-ads}@anchor{3a7}@anchor{gnat_rm/the_gnat_library id92}@anchor{3a8}
+@anchor{gnat_rm/the_gnat_library gnat-regpat-g-regpat-ads}@anchor{3a9}@anchor{gnat_rm/the_gnat_library id93}@anchor{3aa}
 @section @code{GNAT.Regpat} (@code{g-regpat.ads})
 
 
@@ -24996,7 +25008,7 @@ from the original V7 style regular expression library written in C by
 Henry Spencer (and binary compatible with this C library).
 
 @node GNAT Rewrite_Data g-rewdat ads,GNAT Secondary_Stack_Info g-sestin ads,GNAT Regpat g-regpat ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-rewrite-data-g-rewdat-ads}@anchor{3a9}@anchor{gnat_rm/the_gnat_library id93}@anchor{3aa}
+@anchor{gnat_rm/the_gnat_library gnat-rewrite-data-g-rewdat-ads}@anchor{3ab}@anchor{gnat_rm/the_gnat_library id94}@anchor{3ac}
 @section @code{GNAT.Rewrite_Data} (@code{g-rewdat.ads})
 
 
@@ -25010,7 +25022,7 @@ full content to be processed is not loaded into memory all at once. This makes
 this interface usable for large files or socket streams.
 
 @node GNAT Secondary_Stack_Info g-sestin ads,GNAT Semaphores g-semaph ads,GNAT Rewrite_Data g-rewdat ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-secondary-stack-info-g-sestin-ads}@anchor{3ab}@anchor{gnat_rm/the_gnat_library id94}@anchor{3ac}
+@anchor{gnat_rm/the_gnat_library gnat-secondary-stack-info-g-sestin-ads}@anchor{3ad}@anchor{gnat_rm/the_gnat_library id95}@anchor{3ae}
 @section @code{GNAT.Secondary_Stack_Info} (@code{g-sestin.ads})
 
 
@@ -25022,7 +25034,7 @@ Provides the capability to query the high water mark of the current task’s
 secondary stack.
 
 @node GNAT Semaphores g-semaph ads,GNAT Serial_Communications g-sercom ads,GNAT Secondary_Stack_Info g-sestin ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-semaphores-g-semaph-ads}@anchor{3ad}@anchor{gnat_rm/the_gnat_library id95}@anchor{3ae}
+@anchor{gnat_rm/the_gnat_library gnat-semaphores-g-semaph-ads}@anchor{3af}@anchor{gnat_rm/the_gnat_library id96}@anchor{3b0}
 @section @code{GNAT.Semaphores} (@code{g-semaph.ads})
 
 
@@ -25033,7 +25045,7 @@ secondary stack.
 Provides classic counting and binary semaphores using protected types.
 
 @node GNAT Serial_Communications g-sercom ads,GNAT SHA1 g-sha1 ads,GNAT Semaphores g-semaph ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-serial-communications-g-sercom-ads}@anchor{3af}@anchor{gnat_rm/the_gnat_library id96}@anchor{3b0}
+@anchor{gnat_rm/the_gnat_library gnat-serial-communications-g-sercom-ads}@anchor{3b1}@anchor{gnat_rm/the_gnat_library id97}@anchor{3b2}
 @section @code{GNAT.Serial_Communications} (@code{g-sercom.ads})
 
 
@@ -25045,7 +25057,7 @@ Provides a simple interface to send and receive data over a serial
 port. This is only supported on GNU/Linux and Windows.
 
 @node GNAT SHA1 g-sha1 ads,GNAT SHA224 g-sha224 ads,GNAT Serial_Communications g-sercom ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sha1-g-sha1-ads}@anchor{3b1}@anchor{gnat_rm/the_gnat_library id97}@anchor{3b2}
+@anchor{gnat_rm/the_gnat_library gnat-sha1-g-sha1-ads}@anchor{3b3}@anchor{gnat_rm/the_gnat_library id98}@anchor{3b4}
 @section @code{GNAT.SHA1} (@code{g-sha1.ads})
 
 
@@ -25058,7 +25070,7 @@ and RFC 3174, and the HMAC-SHA1 message authentication function as described
 in RFC 2104 and FIPS PUB 198.
 
 @node GNAT SHA224 g-sha224 ads,GNAT SHA256 g-sha256 ads,GNAT SHA1 g-sha1 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sha224-g-sha224-ads}@anchor{3b3}@anchor{gnat_rm/the_gnat_library id98}@anchor{3b4}
+@anchor{gnat_rm/the_gnat_library gnat-sha224-g-sha224-ads}@anchor{3b5}@anchor{gnat_rm/the_gnat_library id99}@anchor{3b6}
 @section @code{GNAT.SHA224} (@code{g-sha224.ads})
 
 
@@ -25071,7 +25083,7 @@ and the HMAC-SHA224 message authentication function as described
 in RFC 2104 and FIPS PUB 198.
 
 @node GNAT SHA256 g-sha256 ads,GNAT SHA384 g-sha384 ads,GNAT SHA224 g-sha224 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sha256-g-sha256-ads}@anchor{3b5}@anchor{gnat_rm/the_gnat_library id99}@anchor{3b6}
+@anchor{gnat_rm/the_gnat_library gnat-sha256-g-sha256-ads}@anchor{3b7}@anchor{gnat_rm/the_gnat_library id100}@anchor{3b8}
 @section @code{GNAT.SHA256} (@code{g-sha256.ads})
 
 
@@ -25084,7 +25096,7 @@ and the HMAC-SHA256 message authentication function as described
 in RFC 2104 and FIPS PUB 198.
 
 @node GNAT SHA384 g-sha384 ads,GNAT SHA512 g-sha512 ads,GNAT SHA256 g-sha256 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sha384-g-sha384-ads}@anchor{3b7}@anchor{gnat_rm/the_gnat_library id100}@anchor{3b8}
+@anchor{gnat_rm/the_gnat_library gnat-sha384-g-sha384-ads}@anchor{3b9}@anchor{gnat_rm/the_gnat_library id101}@anchor{3ba}
 @section @code{GNAT.SHA384} (@code{g-sha384.ads})
 
 
@@ -25097,7 +25109,7 @@ and the HMAC-SHA384 message authentication function as described
 in RFC 2104 and FIPS PUB 198.
 
 @node GNAT SHA512 g-sha512 ads,GNAT Signals g-signal ads,GNAT SHA384 g-sha384 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sha512-g-sha512-ads}@anchor{3b9}@anchor{gnat_rm/the_gnat_library id101}@anchor{3ba}
+@anchor{gnat_rm/the_gnat_library gnat-sha512-g-sha512-ads}@anchor{3bb}@anchor{gnat_rm/the_gnat_library id102}@anchor{3bc}
 @section @code{GNAT.SHA512} (@code{g-sha512.ads})
 
 
@@ -25110,7 +25122,7 @@ and the HMAC-SHA512 message authentication function as described
 in RFC 2104 and FIPS PUB 198.
 
 @node GNAT Signals g-signal ads,GNAT Sockets g-socket ads,GNAT SHA512 g-sha512 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-signals-g-signal-ads}@anchor{3bb}@anchor{gnat_rm/the_gnat_library id102}@anchor{3bc}
+@anchor{gnat_rm/the_gnat_library gnat-signals-g-signal-ads}@anchor{3bd}@anchor{gnat_rm/the_gnat_library id103}@anchor{3be}
 @section @code{GNAT.Signals} (@code{g-signal.ads})
 
 
@@ -25122,7 +25134,7 @@ Provides the ability to manipulate the blocked status of signals on supported
 targets.
 
 @node GNAT Sockets g-socket ads,GNAT Source_Info g-souinf ads,GNAT Signals g-signal ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sockets-g-socket-ads}@anchor{3bd}@anchor{gnat_rm/the_gnat_library id103}@anchor{3be}
+@anchor{gnat_rm/the_gnat_library gnat-sockets-g-socket-ads}@anchor{3bf}@anchor{gnat_rm/the_gnat_library id104}@anchor{3c0}
 @section @code{GNAT.Sockets} (@code{g-socket.ads})
 
 
@@ -25137,7 +25149,7 @@ on all native GNAT ports and on VxWorks cross ports.  It is not implemented for
 the LynxOS cross port.
 
 @node GNAT Source_Info g-souinf ads,GNAT Spelling_Checker g-speche ads,GNAT Sockets g-socket ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-source-info-g-souinf-ads}@anchor{3bf}@anchor{gnat_rm/the_gnat_library id104}@anchor{3c0}
+@anchor{gnat_rm/the_gnat_library gnat-source-info-g-souinf-ads}@anchor{3c1}@anchor{gnat_rm/the_gnat_library id105}@anchor{3c2}
 @section @code{GNAT.Source_Info} (@code{g-souinf.ads})
 
 
@@ -25151,7 +25163,7 @@ subprograms yielding the date and time of the current compilation (like the
 C macros @code{__DATE__} and @code{__TIME__})
 
 @node GNAT Spelling_Checker g-speche ads,GNAT Spelling_Checker_Generic g-spchge ads,GNAT Source_Info g-souinf ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spelling-checker-g-speche-ads}@anchor{3c1}@anchor{gnat_rm/the_gnat_library id105}@anchor{3c2}
+@anchor{gnat_rm/the_gnat_library gnat-spelling-checker-g-speche-ads}@anchor{3c3}@anchor{gnat_rm/the_gnat_library id106}@anchor{3c4}
 @section @code{GNAT.Spelling_Checker} (@code{g-speche.ads})
 
 
@@ -25163,7 +25175,7 @@ Provides a function for determining whether one string is a plausible
 near misspelling of another string.
 
 @node GNAT Spelling_Checker_Generic g-spchge ads,GNAT Spitbol Patterns g-spipat ads,GNAT Spelling_Checker g-speche ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spelling-checker-generic-g-spchge-ads}@anchor{3c3}@anchor{gnat_rm/the_gnat_library id106}@anchor{3c4}
+@anchor{gnat_rm/the_gnat_library gnat-spelling-checker-generic-g-spchge-ads}@anchor{3c5}@anchor{gnat_rm/the_gnat_library id107}@anchor{3c6}
 @section @code{GNAT.Spelling_Checker_Generic} (@code{g-spchge.ads})
 
 
@@ -25176,7 +25188,7 @@ determining whether one string is a plausible near misspelling of another
 string.
 
 @node GNAT Spitbol Patterns g-spipat ads,GNAT Spitbol g-spitbo ads,GNAT Spelling_Checker_Generic g-spchge ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spitbol-patterns-g-spipat-ads}@anchor{3c5}@anchor{gnat_rm/the_gnat_library id107}@anchor{3c6}
+@anchor{gnat_rm/the_gnat_library gnat-spitbol-patterns-g-spipat-ads}@anchor{3c7}@anchor{gnat_rm/the_gnat_library id108}@anchor{3c8}
 @section @code{GNAT.Spitbol.Patterns} (@code{g-spipat.ads})
 
 
@@ -25192,7 +25204,7 @@ the SNOBOL4 dynamic pattern construction and matching capabilities, using the
 efficient algorithm developed by Robert Dewar for the SPITBOL system.
 
 @node GNAT Spitbol g-spitbo ads,GNAT Spitbol Table_Boolean g-sptabo ads,GNAT Spitbol Patterns g-spipat ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spitbol-g-spitbo-ads}@anchor{3c7}@anchor{gnat_rm/the_gnat_library id108}@anchor{3c8}
+@anchor{gnat_rm/the_gnat_library gnat-spitbol-g-spitbo-ads}@anchor{3c9}@anchor{gnat_rm/the_gnat_library id109}@anchor{3ca}
 @section @code{GNAT.Spitbol} (@code{g-spitbo.ads})
 
 
@@ -25207,7 +25219,7 @@ useful for constructing arbitrary mappings from strings in the style of
 the SNOBOL4 TABLE function.
 
 @node GNAT Spitbol Table_Boolean g-sptabo ads,GNAT Spitbol Table_Integer g-sptain ads,GNAT Spitbol g-spitbo ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-boolean-g-sptabo-ads}@anchor{3c9}@anchor{gnat_rm/the_gnat_library id109}@anchor{3ca}
+@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-boolean-g-sptabo-ads}@anchor{3cb}@anchor{gnat_rm/the_gnat_library id110}@anchor{3cc}
 @section @code{GNAT.Spitbol.Table_Boolean} (@code{g-sptabo.ads})
 
 
@@ -25222,7 +25234,7 @@ for type @code{Standard.Boolean}, giving an implementation of sets of
 string values.
 
 @node GNAT Spitbol Table_Integer g-sptain ads,GNAT Spitbol Table_VString g-sptavs ads,GNAT Spitbol Table_Boolean g-sptabo ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-integer-g-sptain-ads}@anchor{3cb}@anchor{gnat_rm/the_gnat_library id110}@anchor{3cc}
+@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-integer-g-sptain-ads}@anchor{3cd}@anchor{gnat_rm/the_gnat_library id111}@anchor{3ce}
 @section @code{GNAT.Spitbol.Table_Integer} (@code{g-sptain.ads})
 
 
@@ -25239,7 +25251,7 @@ for type @code{Standard.Integer}, giving an implementation of maps
 from string to integer values.
 
 @node GNAT Spitbol Table_VString g-sptavs ads,GNAT SSE g-sse ads,GNAT Spitbol Table_Integer g-sptain ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-vstring-g-sptavs-ads}@anchor{3cd}@anchor{gnat_rm/the_gnat_library id111}@anchor{3ce}
+@anchor{gnat_rm/the_gnat_library gnat-spitbol-table-vstring-g-sptavs-ads}@anchor{3cf}@anchor{gnat_rm/the_gnat_library id112}@anchor{3d0}
 @section @code{GNAT.Spitbol.Table_VString} (@code{g-sptavs.ads})
 
 
@@ -25256,7 +25268,7 @@ a variable length string type, giving an implementation of general
 maps from strings to strings.
 
 @node GNAT SSE g-sse ads,GNAT SSE Vector_Types g-ssvety ads,GNAT Spitbol Table_VString g-sptavs ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sse-g-sse-ads}@anchor{3cf}@anchor{gnat_rm/the_gnat_library id112}@anchor{3d0}
+@anchor{gnat_rm/the_gnat_library gnat-sse-g-sse-ads}@anchor{3d1}@anchor{gnat_rm/the_gnat_library id113}@anchor{3d2}
 @section @code{GNAT.SSE} (@code{g-sse.ads})
 
 
@@ -25268,7 +25280,7 @@ targets.  It exposes vector component types together with a general
 introduction to the binding contents and use.
 
 @node GNAT SSE Vector_Types g-ssvety ads,GNAT String_Hash g-strhas ads,GNAT SSE g-sse ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-sse-vector-types-g-ssvety-ads}@anchor{3d1}@anchor{gnat_rm/the_gnat_library id113}@anchor{3d2}
+@anchor{gnat_rm/the_gnat_library gnat-sse-vector-types-g-ssvety-ads}@anchor{3d3}@anchor{gnat_rm/the_gnat_library id114}@anchor{3d4}
 @section @code{GNAT.SSE.Vector_Types} (@code{g-ssvety.ads})
 
 
@@ -25277,7 +25289,7 @@ introduction to the binding contents and use.
 SSE vector types for use with SSE related intrinsics.
 
 @node GNAT String_Hash g-strhas ads,GNAT Strings g-string ads,GNAT SSE Vector_Types g-ssvety ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-string-hash-g-strhas-ads}@anchor{3d3}@anchor{gnat_rm/the_gnat_library id114}@anchor{3d4}
+@anchor{gnat_rm/the_gnat_library gnat-string-hash-g-strhas-ads}@anchor{3d5}@anchor{gnat_rm/the_gnat_library id115}@anchor{3d6}
 @section @code{GNAT.String_Hash} (@code{g-strhas.ads})
 
 
@@ -25289,7 +25301,7 @@ Provides a generic hash function working on arrays of scalars. Both the scalar
 type and the hash result type are parameters.
 
 @node GNAT Strings g-string ads,GNAT String_Split g-strspl ads,GNAT String_Hash g-strhas ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-strings-g-string-ads}@anchor{3d5}@anchor{gnat_rm/the_gnat_library id115}@anchor{3d6}
+@anchor{gnat_rm/the_gnat_library gnat-strings-g-string-ads}@anchor{3d7}@anchor{gnat_rm/the_gnat_library id116}@anchor{3d8}
 @section @code{GNAT.Strings} (@code{g-string.ads})
 
 
@@ -25299,7 +25311,7 @@ Common String access types and related subprograms. Basically it
 defines a string access and an array of string access types.
 
 @node GNAT String_Split g-strspl ads,GNAT Table g-table ads,GNAT Strings g-string ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-string-split-g-strspl-ads}@anchor{3d7}@anchor{gnat_rm/the_gnat_library id116}@anchor{3d8}
+@anchor{gnat_rm/the_gnat_library gnat-string-split-g-strspl-ads}@anchor{3d9}@anchor{gnat_rm/the_gnat_library id117}@anchor{3da}
 @section @code{GNAT.String_Split} (@code{g-strspl.ads})
 
 
@@ -25313,7 +25325,7 @@ to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
 @node GNAT Table g-table ads,GNAT Task_Lock g-tasloc ads,GNAT String_Split g-strspl ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-table-g-table-ads}@anchor{3d9}@anchor{gnat_rm/the_gnat_library id117}@anchor{3da}
+@anchor{gnat_rm/the_gnat_library gnat-table-g-table-ads}@anchor{3db}@anchor{gnat_rm/the_gnat_library id118}@anchor{3dc}
 @section @code{GNAT.Table} (@code{g-table.ads})
 
 
@@ -25333,7 +25345,7 @@ while an instantiation of @code{GNAT.Dynamic_Tables} creates a type that can be
 used to define dynamic instances of the table.
 
 @node GNAT Task_Lock g-tasloc ads,GNAT Time_Stamp g-timsta ads,GNAT Table g-table ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-task-lock-g-tasloc-ads}@anchor{3db}@anchor{gnat_rm/the_gnat_library id118}@anchor{3dc}
+@anchor{gnat_rm/the_gnat_library gnat-task-lock-g-tasloc-ads}@anchor{3dd}@anchor{gnat_rm/the_gnat_library id119}@anchor{3de}
 @section @code{GNAT.Task_Lock} (@code{g-tasloc.ads})
 
 
@@ -25350,7 +25362,7 @@ single global task lock.  Appropriate for use in situations where contention
 between tasks is very rarely expected.
 
 @node GNAT Time_Stamp g-timsta ads,GNAT Threads g-thread ads,GNAT Task_Lock g-tasloc ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-time-stamp-g-timsta-ads}@anchor{3dd}@anchor{gnat_rm/the_gnat_library id119}@anchor{3de}
+@anchor{gnat_rm/the_gnat_library gnat-time-stamp-g-timsta-ads}@anchor{3df}@anchor{gnat_rm/the_gnat_library id120}@anchor{3e0}
 @section @code{GNAT.Time_Stamp} (@code{g-timsta.ads})
 
 
@@ -25365,7 +25377,7 @@ represents the current date and time in ISO 8601 format. This is a very simple
 routine with minimal code and there are no dependencies on any other unit.
 
 @node GNAT Threads g-thread ads,GNAT Traceback g-traceb ads,GNAT Time_Stamp g-timsta ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-threads-g-thread-ads}@anchor{3df}@anchor{gnat_rm/the_gnat_library id120}@anchor{3e0}
+@anchor{gnat_rm/the_gnat_library gnat-threads-g-thread-ads}@anchor{3e1}@anchor{gnat_rm/the_gnat_library id121}@anchor{3e2}
 @section @code{GNAT.Threads} (@code{g-thread.ads})
 
 
@@ -25382,7 +25394,7 @@ further details if your program has threads that are created by a non-Ada
 environment which then accesses Ada code.
 
 @node GNAT Traceback g-traceb ads,GNAT Traceback Symbolic g-trasym ads,GNAT Threads g-thread ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-traceback-g-traceb-ads}@anchor{3e1}@anchor{gnat_rm/the_gnat_library id121}@anchor{3e2}
+@anchor{gnat_rm/the_gnat_library gnat-traceback-g-traceb-ads}@anchor{3e3}@anchor{gnat_rm/the_gnat_library id122}@anchor{3e4}
 @section @code{GNAT.Traceback} (@code{g-traceb.ads})
 
 
@@ -25394,7 +25406,7 @@ Provides a facility for obtaining non-symbolic traceback information, useful
 in various debugging situations.
 
 @node GNAT Traceback Symbolic g-trasym ads,GNAT UTF_32 g-utf_32 ads,GNAT Traceback g-traceb ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-traceback-symbolic-g-trasym-ads}@anchor{3e3}@anchor{gnat_rm/the_gnat_library id122}@anchor{3e4}
+@anchor{gnat_rm/the_gnat_library gnat-traceback-symbolic-g-trasym-ads}@anchor{3e5}@anchor{gnat_rm/the_gnat_library id123}@anchor{3e6}
 @section @code{GNAT.Traceback.Symbolic} (@code{g-trasym.ads})
 
 
@@ -25403,7 +25415,7 @@ in various debugging situations.
 @geindex Trace back facilities
 
 @node GNAT UTF_32 g-utf_32 ads,GNAT UTF_32_Spelling_Checker g-u3spch ads,GNAT Traceback Symbolic g-trasym ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-utf-32-g-utf-32-ads}@anchor{3e5}@anchor{gnat_rm/the_gnat_library id123}@anchor{3e6}
+@anchor{gnat_rm/the_gnat_library gnat-utf-32-g-utf-32-ads}@anchor{3e7}@anchor{gnat_rm/the_gnat_library id124}@anchor{3e8}
 @section @code{GNAT.UTF_32} (@code{g-utf_32.ads})
 
 
@@ -25422,7 +25434,7 @@ lower case to upper case fold routine corresponding to
 the Ada 2005 rules for identifier equivalence.
 
 @node GNAT UTF_32_Spelling_Checker g-u3spch ads,GNAT Wide_Spelling_Checker g-wispch ads,GNAT UTF_32 g-utf_32 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-utf-32-spelling-checker-g-u3spch-ads}@anchor{3e7}@anchor{gnat_rm/the_gnat_library id124}@anchor{3e8}
+@anchor{gnat_rm/the_gnat_library gnat-utf-32-spelling-checker-g-u3spch-ads}@anchor{3e9}@anchor{gnat_rm/the_gnat_library id125}@anchor{3ea}
 @section @code{GNAT.UTF_32_Spelling_Checker} (@code{g-u3spch.ads})
 
 
@@ -25435,7 +25447,7 @@ near misspelling of another wide wide string, where the strings are represented
 using the UTF_32_String type defined in System.Wch_Cnv.
 
 @node GNAT Wide_Spelling_Checker g-wispch ads,GNAT Wide_String_Split g-wistsp ads,GNAT UTF_32_Spelling_Checker g-u3spch ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-wide-spelling-checker-g-wispch-ads}@anchor{3e9}@anchor{gnat_rm/the_gnat_library id125}@anchor{3ea}
+@anchor{gnat_rm/the_gnat_library gnat-wide-spelling-checker-g-wispch-ads}@anchor{3eb}@anchor{gnat_rm/the_gnat_library id126}@anchor{3ec}
 @section @code{GNAT.Wide_Spelling_Checker} (@code{g-wispch.ads})
 
 
@@ -25447,7 +25459,7 @@ Provides a function for determining whether one wide string is a plausible
 near misspelling of another wide string.
 
 @node GNAT Wide_String_Split g-wistsp ads,GNAT Wide_Wide_Spelling_Checker g-zspche ads,GNAT Wide_Spelling_Checker g-wispch ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-wide-string-split-g-wistsp-ads}@anchor{3eb}@anchor{gnat_rm/the_gnat_library id126}@anchor{3ec}
+@anchor{gnat_rm/the_gnat_library gnat-wide-string-split-g-wistsp-ads}@anchor{3ed}@anchor{gnat_rm/the_gnat_library id127}@anchor{3ee}
 @section @code{GNAT.Wide_String_Split} (@code{g-wistsp.ads})
 
 
@@ -25461,7 +25473,7 @@ to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
 @node GNAT Wide_Wide_Spelling_Checker g-zspche ads,GNAT Wide_Wide_String_Split g-zistsp ads,GNAT Wide_String_Split g-wistsp ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-wide-wide-spelling-checker-g-zspche-ads}@anchor{3ed}@anchor{gnat_rm/the_gnat_library id127}@anchor{3ee}
+@anchor{gnat_rm/the_gnat_library gnat-wide-wide-spelling-checker-g-zspche-ads}@anchor{3ef}@anchor{gnat_rm/the_gnat_library id128}@anchor{3f0}
 @section @code{GNAT.Wide_Wide_Spelling_Checker} (@code{g-zspche.ads})
 
 
@@ -25473,7 +25485,7 @@ Provides a function for determining whether one wide wide string is a plausible
 near misspelling of another wide wide string.
 
 @node GNAT Wide_Wide_String_Split g-zistsp ads,Interfaces C Extensions i-cexten ads,GNAT Wide_Wide_Spelling_Checker g-zspche ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-wide-wide-string-split-g-zistsp-ads}@anchor{3ef}@anchor{gnat_rm/the_gnat_library id128}@anchor{3f0}
+@anchor{gnat_rm/the_gnat_library gnat-wide-wide-string-split-g-zistsp-ads}@anchor{3f1}@anchor{gnat_rm/the_gnat_library id129}@anchor{3f2}
 @section @code{GNAT.Wide_Wide_String_Split} (@code{g-zistsp.ads})
 
 
@@ -25487,7 +25499,7 @@ to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
 @node Interfaces C Extensions i-cexten ads,Interfaces C Streams i-cstrea ads,GNAT Wide_Wide_String_Split g-zistsp ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id129}@anchor{3f1}@anchor{gnat_rm/the_gnat_library interfaces-c-extensions-i-cexten-ads}@anchor{3f2}
+@anchor{gnat_rm/the_gnat_library id130}@anchor{3f3}@anchor{gnat_rm/the_gnat_library interfaces-c-extensions-i-cexten-ads}@anchor{3f4}
 @section @code{Interfaces.C.Extensions} (@code{i-cexten.ads})
 
 
@@ -25498,7 +25510,7 @@ for use with either manually or automatically generated bindings
 to C libraries.
 
 @node Interfaces C Streams i-cstrea ads,Interfaces Packed_Decimal i-pacdec ads,Interfaces C Extensions i-cexten ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id130}@anchor{3f3}@anchor{gnat_rm/the_gnat_library interfaces-c-streams-i-cstrea-ads}@anchor{3f4}
+@anchor{gnat_rm/the_gnat_library id131}@anchor{3f5}@anchor{gnat_rm/the_gnat_library interfaces-c-streams-i-cstrea-ads}@anchor{3f6}
 @section @code{Interfaces.C.Streams} (@code{i-cstrea.ads})
 
 
@@ -25511,7 +25523,7 @@ This package is a binding for the most commonly used operations
 on C streams.
 
 @node Interfaces Packed_Decimal i-pacdec ads,Interfaces VxWorks i-vxwork ads,Interfaces C Streams i-cstrea ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id131}@anchor{3f5}@anchor{gnat_rm/the_gnat_library interfaces-packed-decimal-i-pacdec-ads}@anchor{3f6}
+@anchor{gnat_rm/the_gnat_library id132}@anchor{3f7}@anchor{gnat_rm/the_gnat_library interfaces-packed-decimal-i-pacdec-ads}@anchor{3f8}
 @section @code{Interfaces.Packed_Decimal} (@code{i-pacdec.ads})
 
 
@@ -25526,7 +25538,7 @@ from a packed decimal format compatible with that used on IBM
 mainframes.
 
 @node Interfaces VxWorks i-vxwork ads,Interfaces VxWorks IO i-vxwoio ads,Interfaces Packed_Decimal i-pacdec ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id132}@anchor{3f7}@anchor{gnat_rm/the_gnat_library interfaces-vxworks-i-vxwork-ads}@anchor{3f8}
+@anchor{gnat_rm/the_gnat_library id133}@anchor{3f9}@anchor{gnat_rm/the_gnat_library interfaces-vxworks-i-vxwork-ads}@anchor{3fa}
 @section @code{Interfaces.VxWorks} (@code{i-vxwork.ads})
 
 
@@ -25540,7 +25552,7 @@ mainframes.
 This package provides a limited binding to the VxWorks API.
 
 @node Interfaces VxWorks IO i-vxwoio ads,System Address_Image s-addima ads,Interfaces VxWorks i-vxwork ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id133}@anchor{3f9}@anchor{gnat_rm/the_gnat_library interfaces-vxworks-io-i-vxwoio-ads}@anchor{3fa}
+@anchor{gnat_rm/the_gnat_library id134}@anchor{3fb}@anchor{gnat_rm/the_gnat_library interfaces-vxworks-io-i-vxwoio-ads}@anchor{3fc}
 @section @code{Interfaces.VxWorks.IO} (@code{i-vxwoio.ads})
 
 
@@ -25563,7 +25575,7 @@ function codes. A particular use of this package is
 to enable the use of Get_Immediate under VxWorks.
 
 @node System Address_Image s-addima ads,System Assertions s-assert ads,Interfaces VxWorks IO i-vxwoio ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id134}@anchor{3fb}@anchor{gnat_rm/the_gnat_library system-address-image-s-addima-ads}@anchor{3fc}
+@anchor{gnat_rm/the_gnat_library id135}@anchor{3fd}@anchor{gnat_rm/the_gnat_library system-address-image-s-addima-ads}@anchor{3fe}
 @section @code{System.Address_Image} (@code{s-addima.ads})
 
 
@@ -25579,7 +25591,7 @@ function that gives an (implementation dependent)
 string which identifies an address.
 
 @node System Assertions s-assert ads,System Atomic_Counters s-atocou ads,System Address_Image s-addima ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id135}@anchor{3fd}@anchor{gnat_rm/the_gnat_library system-assertions-s-assert-ads}@anchor{3fe}
+@anchor{gnat_rm/the_gnat_library id136}@anchor{3ff}@anchor{gnat_rm/the_gnat_library system-assertions-s-assert-ads}@anchor{400}
 @section @code{System.Assertions} (@code{s-assert.ads})
 
 
@@ -25595,7 +25607,7 @@ by an run-time assertion failure, as well as the routine that
 is used internally to raise this assertion.
 
 @node System Atomic_Counters s-atocou ads,System Memory s-memory ads,System Assertions s-assert ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id136}@anchor{3ff}@anchor{gnat_rm/the_gnat_library system-atomic-counters-s-atocou-ads}@anchor{400}
+@anchor{gnat_rm/the_gnat_library id137}@anchor{401}@anchor{gnat_rm/the_gnat_library system-atomic-counters-s-atocou-ads}@anchor{402}
 @section @code{System.Atomic_Counters} (@code{s-atocou.ads})
 
 
@@ -25609,7 +25621,7 @@ on most targets, including all Alpha, AARCH64, ARM, ia64, PowerPC, SPARC V9,
 x86, and x86_64 platforms.
 
 @node System Memory s-memory ads,System Multiprocessors s-multip ads,System Atomic_Counters s-atocou ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id137}@anchor{401}@anchor{gnat_rm/the_gnat_library system-memory-s-memory-ads}@anchor{402}
+@anchor{gnat_rm/the_gnat_library id138}@anchor{403}@anchor{gnat_rm/the_gnat_library system-memory-s-memory-ads}@anchor{404}
 @section @code{System.Memory} (@code{s-memory.ads})
 
 
@@ -25627,7 +25639,7 @@ calls to this unit may be made for low level allocation uses (for
 example see the body of @code{GNAT.Tables}).
 
 @node System Multiprocessors s-multip ads,System Multiprocessors Dispatching_Domains s-mudido ads,System Memory s-memory ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id138}@anchor{403}@anchor{gnat_rm/the_gnat_library system-multiprocessors-s-multip-ads}@anchor{404}
+@anchor{gnat_rm/the_gnat_library id139}@anchor{405}@anchor{gnat_rm/the_gnat_library system-multiprocessors-s-multip-ads}@anchor{406}
 @section @code{System.Multiprocessors} (@code{s-multip.ads})
 
 
@@ -25640,7 +25652,7 @@ in GNAT we also make it available in Ada 95 and Ada 2005 (where it is
 technically an implementation-defined addition).
 
 @node System Multiprocessors Dispatching_Domains s-mudido ads,System Partition_Interface s-parint ads,System Multiprocessors s-multip ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id139}@anchor{405}@anchor{gnat_rm/the_gnat_library system-multiprocessors-dispatching-domains-s-mudido-ads}@anchor{406}
+@anchor{gnat_rm/the_gnat_library id140}@anchor{407}@anchor{gnat_rm/the_gnat_library system-multiprocessors-dispatching-domains-s-mudido-ads}@anchor{408}
 @section @code{System.Multiprocessors.Dispatching_Domains} (@code{s-mudido.ads})
 
 
@@ -25653,7 +25665,7 @@ in GNAT we also make it available in Ada 95 and Ada 2005 (where it is
 technically an implementation-defined addition).
 
 @node System Partition_Interface s-parint ads,System Pool_Global s-pooglo ads,System Multiprocessors Dispatching_Domains s-mudido ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id140}@anchor{407}@anchor{gnat_rm/the_gnat_library system-partition-interface-s-parint-ads}@anchor{408}
+@anchor{gnat_rm/the_gnat_library id141}@anchor{409}@anchor{gnat_rm/the_gnat_library system-partition-interface-s-parint-ads}@anchor{40a}
 @section @code{System.Partition_Interface} (@code{s-parint.ads})
 
 
@@ -25666,7 +25678,7 @@ is used primarily in a distribution context when using Annex E
 with @code{PolyORB}.
 
 @node System Pool_Global s-pooglo ads,System Pool_Local s-pooloc ads,System Partition_Interface s-parint ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id141}@anchor{409}@anchor{gnat_rm/the_gnat_library system-pool-global-s-pooglo-ads}@anchor{40a}
+@anchor{gnat_rm/the_gnat_library id142}@anchor{40b}@anchor{gnat_rm/the_gnat_library system-pool-global-s-pooglo-ads}@anchor{40c}
 @section @code{System.Pool_Global} (@code{s-pooglo.ads})
 
 
@@ -25683,7 +25695,7 @@ declared. It uses malloc/free to allocate/free and does not attempt to
 do any automatic reclamation.
 
 @node System Pool_Local s-pooloc ads,System Restrictions s-restri ads,System Pool_Global s-pooglo ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id142}@anchor{40b}@anchor{gnat_rm/the_gnat_library system-pool-local-s-pooloc-ads}@anchor{40c}
+@anchor{gnat_rm/the_gnat_library id143}@anchor{40d}@anchor{gnat_rm/the_gnat_library system-pool-local-s-pooloc-ads}@anchor{40e}
 @section @code{System.Pool_Local} (@code{s-pooloc.ads})
 
 
@@ -25700,7 +25712,7 @@ a list of allocated blocks, so that all storage allocated for the pool can
 be freed automatically when the pool is finalized.
 
 @node System Restrictions s-restri ads,System Rident s-rident ads,System Pool_Local s-pooloc ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id143}@anchor{40d}@anchor{gnat_rm/the_gnat_library system-restrictions-s-restri-ads}@anchor{40e}
+@anchor{gnat_rm/the_gnat_library id144}@anchor{40f}@anchor{gnat_rm/the_gnat_library system-restrictions-s-restri-ads}@anchor{410}
 @section @code{System.Restrictions} (@code{s-restri.ads})
 
 
@@ -25716,7 +25728,7 @@ compiler determined information on which restrictions
 are violated by one or more packages in the partition.
 
 @node System Rident s-rident ads,System Strings Stream_Ops s-ststop ads,System Restrictions s-restri ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id144}@anchor{40f}@anchor{gnat_rm/the_gnat_library system-rident-s-rident-ads}@anchor{410}
+@anchor{gnat_rm/the_gnat_library id145}@anchor{411}@anchor{gnat_rm/the_gnat_library system-rident-s-rident-ads}@anchor{412}
 @section @code{System.Rident} (@code{s-rident.ads})
 
 
@@ -25732,7 +25744,7 @@ since the necessary instantiation is included in
 package System.Restrictions.
 
 @node System Strings Stream_Ops s-ststop ads,System Unsigned_Types s-unstyp ads,System Rident s-rident ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id145}@anchor{411}@anchor{gnat_rm/the_gnat_library system-strings-stream-ops-s-ststop-ads}@anchor{412}
+@anchor{gnat_rm/the_gnat_library id146}@anchor{413}@anchor{gnat_rm/the_gnat_library system-strings-stream-ops-s-ststop-ads}@anchor{414}
 @section @code{System.Strings.Stream_Ops} (@code{s-ststop.ads})
 
 
@@ -25748,7 +25760,7 @@ stream attributes are applied to string types, but the subprograms in this
 package can be used directly by application programs.
 
 @node System Unsigned_Types s-unstyp ads,System Wch_Cnv s-wchcnv ads,System Strings Stream_Ops s-ststop ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id146}@anchor{413}@anchor{gnat_rm/the_gnat_library system-unsigned-types-s-unstyp-ads}@anchor{414}
+@anchor{gnat_rm/the_gnat_library id147}@anchor{415}@anchor{gnat_rm/the_gnat_library system-unsigned-types-s-unstyp-ads}@anchor{416}
 @section @code{System.Unsigned_Types} (@code{s-unstyp.ads})
 
 
@@ -25761,7 +25773,7 @@ also contains some related definitions for other specialized types
 used by the compiler in connection with packed array types.
 
 @node System Wch_Cnv s-wchcnv ads,System Wch_Con s-wchcon ads,System Unsigned_Types s-unstyp ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id147}@anchor{415}@anchor{gnat_rm/the_gnat_library system-wch-cnv-s-wchcnv-ads}@anchor{416}
+@anchor{gnat_rm/the_gnat_library id148}@anchor{417}@anchor{gnat_rm/the_gnat_library system-wch-cnv-s-wchcnv-ads}@anchor{418}
 @section @code{System.Wch_Cnv} (@code{s-wchcnv.ads})
 
 
@@ -25782,7 +25794,7 @@ encoding method.  It uses definitions in
 package @code{System.Wch_Con}.
 
 @node System Wch_Con s-wchcon ads,,System Wch_Cnv s-wchcnv ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id148}@anchor{417}@anchor{gnat_rm/the_gnat_library system-wch-con-s-wchcon-ads}@anchor{418}
+@anchor{gnat_rm/the_gnat_library id149}@anchor{419}@anchor{gnat_rm/the_gnat_library system-wch-con-s-wchcon-ads}@anchor{41a}
 @section @code{System.Wch_Con} (@code{s-wchcon.ads})
 
 
@@ -25794,7 +25806,7 @@ in ordinary strings.  These definitions are used by
 the package @code{System.Wch_Cnv}.
 
 @node Interfacing to Other Languages,Specialized Needs Annexes,The GNAT Library,Top
-@anchor{gnat_rm/interfacing_to_other_languages doc}@anchor{419}@anchor{gnat_rm/interfacing_to_other_languages id1}@anchor{41a}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-other-languages}@anchor{11}
+@anchor{gnat_rm/interfacing_to_other_languages doc}@anchor{41b}@anchor{gnat_rm/interfacing_to_other_languages id1}@anchor{41c}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-other-languages}@anchor{11}
 @chapter Interfacing to Other Languages
 
 
@@ -25812,7 +25824,7 @@ provided.
 @end menu
 
 @node Interfacing to C,Interfacing to C++,,Interfacing to Other Languages
-@anchor{gnat_rm/interfacing_to_other_languages id2}@anchor{41b}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-c}@anchor{41c}
+@anchor{gnat_rm/interfacing_to_other_languages id2}@anchor{41d}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-c}@anchor{41e}
 @section Interfacing to C
 
 
@@ -25952,7 +25964,7 @@ of the length corresponding to the @code{type'Size} value in Ada.
 @end itemize
 
 @node Interfacing to C++,Interfacing to COBOL,Interfacing to C,Interfacing to Other Languages
-@anchor{gnat_rm/interfacing_to_other_languages id3}@anchor{49}@anchor{gnat_rm/interfacing_to_other_languages id4}@anchor{41d}
+@anchor{gnat_rm/interfacing_to_other_languages id3}@anchor{49}@anchor{gnat_rm/interfacing_to_other_languages id4}@anchor{41f}
 @section Interfacing to C++
 
 
@@ -26169,7 +26181,7 @@ builds an opaque @code{Type_Info_Ptr} to reference a @code{std::type_info}
 object at a given @code{System.Address}.
 
 @node Interfacing to COBOL,Interfacing to Fortran,Interfacing to C++,Interfacing to Other Languages
-@anchor{gnat_rm/interfacing_to_other_languages id5}@anchor{41e}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-cobol}@anchor{41f}
+@anchor{gnat_rm/interfacing_to_other_languages id5}@anchor{420}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-cobol}@anchor{421}
 @section Interfacing to COBOL
 
 
@@ -26177,7 +26189,7 @@ Interfacing to COBOL is achieved as described in section B.4 of
 the Ada Reference Manual.
 
 @node Interfacing to Fortran,Interfacing to non-GNAT Ada code,Interfacing to COBOL,Interfacing to Other Languages
-@anchor{gnat_rm/interfacing_to_other_languages id6}@anchor{420}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-fortran}@anchor{421}
+@anchor{gnat_rm/interfacing_to_other_languages id6}@anchor{422}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-fortran}@anchor{423}
 @section Interfacing to Fortran
 
 
@@ -26187,7 +26199,7 @@ multi-dimensional array causes the array to be stored in column-major
 order as required for convenient interface to Fortran.
 
 @node Interfacing to non-GNAT Ada code,,Interfacing to Fortran,Interfacing to Other Languages
-@anchor{gnat_rm/interfacing_to_other_languages id7}@anchor{422}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-non-gnat-ada-code}@anchor{423}
+@anchor{gnat_rm/interfacing_to_other_languages id7}@anchor{424}@anchor{gnat_rm/interfacing_to_other_languages interfacing-to-non-gnat-ada-code}@anchor{425}
 @section Interfacing to non-GNAT Ada code
 
 
@@ -26211,7 +26223,7 @@ values or simple record types without variants, or simple array
 types with fixed bounds.
 
 @node Specialized Needs Annexes,Implementation of Specific Ada Features,Interfacing to Other Languages,Top
-@anchor{gnat_rm/specialized_needs_annexes doc}@anchor{424}@anchor{gnat_rm/specialized_needs_annexes id1}@anchor{425}@anchor{gnat_rm/specialized_needs_annexes specialized-needs-annexes}@anchor{12}
+@anchor{gnat_rm/specialized_needs_annexes doc}@anchor{426}@anchor{gnat_rm/specialized_needs_annexes id1}@anchor{427}@anchor{gnat_rm/specialized_needs_annexes specialized-needs-annexes}@anchor{12}
 @chapter Specialized Needs Annexes
 
 
@@ -26249,7 +26261,7 @@ in Ada 2005) is fully implemented.
 @end table
 
 @node Implementation of Specific Ada Features,Implementation of Ada 2022 Features,Specialized Needs Annexes,Top
-@anchor{gnat_rm/implementation_of_specific_ada_features doc}@anchor{426}@anchor{gnat_rm/implementation_of_specific_ada_features id1}@anchor{427}@anchor{gnat_rm/implementation_of_specific_ada_features implementation-of-specific-ada-features}@anchor{13}
+@anchor{gnat_rm/implementation_of_specific_ada_features doc}@anchor{428}@anchor{gnat_rm/implementation_of_specific_ada_features id1}@anchor{429}@anchor{gnat_rm/implementation_of_specific_ada_features implementation-of-specific-ada-features}@anchor{13}
 @chapter Implementation of Specific Ada Features
 
 
@@ -26268,7 +26280,7 @@ facilities.
 @end menu
 
 @node Machine Code Insertions,GNAT Implementation of Tasking,,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features id2}@anchor{428}@anchor{gnat_rm/implementation_of_specific_ada_features machine-code-insertions}@anchor{181}
+@anchor{gnat_rm/implementation_of_specific_ada_features id2}@anchor{42a}@anchor{gnat_rm/implementation_of_specific_ada_features machine-code-insertions}@anchor{181}
 @section Machine Code Insertions
 
 
@@ -26436,7 +26448,7 @@ according to normal visibility rules. In particular if there is no
 qualification is required.
 
 @node GNAT Implementation of Tasking,GNAT Implementation of Shared Passive Packages,Machine Code Insertions,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features gnat-implementation-of-tasking}@anchor{429}@anchor{gnat_rm/implementation_of_specific_ada_features id3}@anchor{42a}
+@anchor{gnat_rm/implementation_of_specific_ada_features gnat-implementation-of-tasking}@anchor{42b}@anchor{gnat_rm/implementation_of_specific_ada_features id3}@anchor{42c}
 @section GNAT Implementation of Tasking
 
 
@@ -26452,7 +26464,7 @@ to compliance with the Real-Time Systems Annex.
 @end menu
 
 @node Mapping Ada Tasks onto the Underlying Kernel Threads,Ensuring Compliance with the Real-Time Annex,,GNAT Implementation of Tasking
-@anchor{gnat_rm/implementation_of_specific_ada_features id4}@anchor{42b}@anchor{gnat_rm/implementation_of_specific_ada_features mapping-ada-tasks-onto-the-underlying-kernel-threads}@anchor{42c}
+@anchor{gnat_rm/implementation_of_specific_ada_features id4}@anchor{42d}@anchor{gnat_rm/implementation_of_specific_ada_features mapping-ada-tasks-onto-the-underlying-kernel-threads}@anchor{42e}
 @subsection Mapping Ada Tasks onto the Underlying Kernel Threads
 
 
@@ -26521,7 +26533,7 @@ support this functionality when the parent contains more than one task.
 @geindex Forking a new process
 
 @node Ensuring Compliance with the Real-Time Annex,Support for Locking Policies,Mapping Ada Tasks onto the Underlying Kernel Threads,GNAT Implementation of Tasking
-@anchor{gnat_rm/implementation_of_specific_ada_features ensuring-compliance-with-the-real-time-annex}@anchor{42d}@anchor{gnat_rm/implementation_of_specific_ada_features id5}@anchor{42e}
+@anchor{gnat_rm/implementation_of_specific_ada_features ensuring-compliance-with-the-real-time-annex}@anchor{42f}@anchor{gnat_rm/implementation_of_specific_ada_features id5}@anchor{430}
 @subsection Ensuring Compliance with the Real-Time Annex
 
 
@@ -26572,7 +26584,7 @@ placed at the end.
 @c Support_for_Locking_Policies
 
 @node Support for Locking Policies,,Ensuring Compliance with the Real-Time Annex,GNAT Implementation of Tasking
-@anchor{gnat_rm/implementation_of_specific_ada_features support-for-locking-policies}@anchor{42f}
+@anchor{gnat_rm/implementation_of_specific_ada_features support-for-locking-policies}@anchor{431}
 @subsection Support for Locking Policies
 
 
@@ -26606,7 +26618,7 @@ then ceiling locking is used.
 Otherwise, the @code{Ceiling_Locking} policy is ignored.
 
 @node GNAT Implementation of Shared Passive Packages,Code Generation for Array Aggregates,GNAT Implementation of Tasking,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features gnat-implementation-of-shared-passive-packages}@anchor{430}@anchor{gnat_rm/implementation_of_specific_ada_features id6}@anchor{431}
+@anchor{gnat_rm/implementation_of_specific_ada_features gnat-implementation-of-shared-passive-packages}@anchor{432}@anchor{gnat_rm/implementation_of_specific_ada_features id6}@anchor{433}
 @section GNAT Implementation of Shared Passive Packages
 
 
@@ -26704,7 +26716,7 @@ This is used to provide the required locking
 semantics for proper protected object synchronization.
 
 @node Code Generation for Array Aggregates,The Size of Discriminated Records with Default Discriminants,GNAT Implementation of Shared Passive Packages,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features code-generation-for-array-aggregates}@anchor{432}@anchor{gnat_rm/implementation_of_specific_ada_features id7}@anchor{433}
+@anchor{gnat_rm/implementation_of_specific_ada_features code-generation-for-array-aggregates}@anchor{434}@anchor{gnat_rm/implementation_of_specific_ada_features id7}@anchor{435}
 @section Code Generation for Array Aggregates
 
 
@@ -26735,7 +26747,7 @@ component values and static subtypes also lead to simpler code.
 @end menu
 
 @node Static constant aggregates with static bounds,Constant aggregates with unconstrained nominal types,,Code Generation for Array Aggregates
-@anchor{gnat_rm/implementation_of_specific_ada_features id8}@anchor{434}@anchor{gnat_rm/implementation_of_specific_ada_features static-constant-aggregates-with-static-bounds}@anchor{435}
+@anchor{gnat_rm/implementation_of_specific_ada_features id8}@anchor{436}@anchor{gnat_rm/implementation_of_specific_ada_features static-constant-aggregates-with-static-bounds}@anchor{437}
 @subsection Static constant aggregates with static bounds
 
 
@@ -26782,7 +26794,7 @@ Zero2: constant two_dim := (others => (others => 0));
 @end example
 
 @node Constant aggregates with unconstrained nominal types,Aggregates with static bounds,Static constant aggregates with static bounds,Code Generation for Array Aggregates
-@anchor{gnat_rm/implementation_of_specific_ada_features constant-aggregates-with-unconstrained-nominal-types}@anchor{436}@anchor{gnat_rm/implementation_of_specific_ada_features id9}@anchor{437}
+@anchor{gnat_rm/implementation_of_specific_ada_features constant-aggregates-with-unconstrained-nominal-types}@anchor{438}@anchor{gnat_rm/implementation_of_specific_ada_features id9}@anchor{439}
 @subsection Constant aggregates with unconstrained nominal types
 
 
@@ -26797,7 +26809,7 @@ Cr_Unc : constant One_Unc := (12,24,36);
 @end example
 
 @node Aggregates with static bounds,Aggregates with nonstatic bounds,Constant aggregates with unconstrained nominal types,Code Generation for Array Aggregates
-@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-with-static-bounds}@anchor{438}@anchor{gnat_rm/implementation_of_specific_ada_features id10}@anchor{439}
+@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-with-static-bounds}@anchor{43a}@anchor{gnat_rm/implementation_of_specific_ada_features id10}@anchor{43b}
 @subsection Aggregates with static bounds
 
 
@@ -26825,7 +26837,7 @@ end loop;
 @end example
 
 @node Aggregates with nonstatic bounds,Aggregates in assignment statements,Aggregates with static bounds,Code Generation for Array Aggregates
-@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-with-nonstatic-bounds}@anchor{43a}@anchor{gnat_rm/implementation_of_specific_ada_features id11}@anchor{43b}
+@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-with-nonstatic-bounds}@anchor{43c}@anchor{gnat_rm/implementation_of_specific_ada_features id11}@anchor{43d}
 @subsection Aggregates with nonstatic bounds
 
 
@@ -26836,7 +26848,7 @@ have to be applied to sub-arrays individually, if they do not have statically
 compatible subtypes.
 
 @node Aggregates in assignment statements,,Aggregates with nonstatic bounds,Code Generation for Array Aggregates
-@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-in-assignment-statements}@anchor{43c}@anchor{gnat_rm/implementation_of_specific_ada_features id12}@anchor{43d}
+@anchor{gnat_rm/implementation_of_specific_ada_features aggregates-in-assignment-statements}@anchor{43e}@anchor{gnat_rm/implementation_of_specific_ada_features id12}@anchor{43f}
 @subsection Aggregates in assignment statements
 
 
@@ -26878,7 +26890,7 @@ a temporary (created either by the front-end or the code generator) and then
 that temporary will be copied onto the target.
 
 @node The Size of Discriminated Records with Default Discriminants,Image Values For Nonscalar Types,Code Generation for Array Aggregates,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features id13}@anchor{43e}@anchor{gnat_rm/implementation_of_specific_ada_features the-size-of-discriminated-records-with-default-discriminants}@anchor{43f}
+@anchor{gnat_rm/implementation_of_specific_ada_features id13}@anchor{440}@anchor{gnat_rm/implementation_of_specific_ada_features the-size-of-discriminated-records-with-default-discriminants}@anchor{441}
 @section The Size of Discriminated Records with Default Discriminants
 
 
@@ -26958,7 +26970,7 @@ say) must be consistent, so it is imperative that the object, once created,
 remain invariant.
 
 @node Image Values For Nonscalar Types,Strict Conformance to the Ada Reference Manual,The Size of Discriminated Records with Default Discriminants,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features id14}@anchor{440}@anchor{gnat_rm/implementation_of_specific_ada_features image-values-for-nonscalar-types}@anchor{441}
+@anchor{gnat_rm/implementation_of_specific_ada_features id14}@anchor{442}@anchor{gnat_rm/implementation_of_specific_ada_features image-values-for-nonscalar-types}@anchor{443}
 @section Image Values For Nonscalar Types
 
 
@@ -26978,7 +26990,7 @@ control of image text is required for some type T, then T’Put_Image should be
 explicitly specified.
 
 @node Strict Conformance to the Ada Reference Manual,,Image Values For Nonscalar Types,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features id15}@anchor{442}@anchor{gnat_rm/implementation_of_specific_ada_features strict-conformance-to-the-ada-reference-manual}@anchor{443}
+@anchor{gnat_rm/implementation_of_specific_ada_features id15}@anchor{444}@anchor{gnat_rm/implementation_of_specific_ada_features strict-conformance-to-the-ada-reference-manual}@anchor{445}
 @section Strict Conformance to the Ada Reference Manual
 
 
@@ -27005,7 +27017,7 @@ behavior (although at the cost of a significant performance penalty), so
 infinite and NaN values are properly generated.
 
 @node Implementation of Ada 2022 Features,GNAT language extensions,Implementation of Specific Ada Features,Top
-@anchor{gnat_rm/implementation_of_ada_2022_features doc}@anchor{444}@anchor{gnat_rm/implementation_of_ada_2022_features id1}@anchor{445}@anchor{gnat_rm/implementation_of_ada_2022_features implementation-of-ada-2022-features}@anchor{14}
+@anchor{gnat_rm/implementation_of_ada_2022_features doc}@anchor{446}@anchor{gnat_rm/implementation_of_ada_2022_features id1}@anchor{447}@anchor{gnat_rm/implementation_of_ada_2022_features implementation-of-ada-2022-features}@anchor{14}
 @chapter Implementation of Ada 2022 Features
 
 
@@ -30424,7 +30436,7 @@ RM references: 3.02.04 (31/5) 4.06 (51.1/5)
 @end itemize
 
 @node GNAT language extensions,Security Hardening Features,Implementation of Ada 2022 Features,Top
-@anchor{gnat_rm/gnat_language_extensions doc}@anchor{446}@anchor{gnat_rm/gnat_language_extensions gnat-language-extensions}@anchor{447}@anchor{gnat_rm/gnat_language_extensions id1}@anchor{448}
+@anchor{gnat_rm/gnat_language_extensions doc}@anchor{448}@anchor{gnat_rm/gnat_language_extensions gnat-language-extensions}@anchor{449}@anchor{gnat_rm/gnat_language_extensions id1}@anchor{44a}
 @chapter GNAT language extensions
 
 
@@ -30456,7 +30468,7 @@ These features might be removed or heavily modified at any time.
 @end menu
 
 @node How to activate the extended GNAT Ada superset,Curated Extensions,,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions how-to-activate-the-extended-gnat-ada-superset}@anchor{449}
+@anchor{gnat_rm/gnat_language_extensions how-to-activate-the-extended-gnat-ada-superset}@anchor{44b}
 @section How to activate the extended GNAT Ada superset
 
 
@@ -30497,7 +30509,7 @@ for use in playground experiments.
 @end cartouche
 
 @node Curated Extensions,Experimental Language Extensions,How to activate the extended GNAT Ada superset,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions curated-extensions}@anchor{44a}@anchor{gnat_rm/gnat_language_extensions curated-language-extensions}@anchor{6a}
+@anchor{gnat_rm/gnat_language_extensions curated-extensions}@anchor{44c}@anchor{gnat_rm/gnat_language_extensions curated-language-extensions}@anchor{6a}
 @section Curated Extensions
 
 
@@ -30520,7 +30532,7 @@ Features activated via @code{-gnatX} or
 @end menu
 
 @node Local Declarations Without Block,Deep delta Aggregates,,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions local-declarations-without-block}@anchor{44b}
+@anchor{gnat_rm/gnat_language_extensions local-declarations-without-block}@anchor{44d}
 @subsection Local Declarations Without Block
 
 
@@ -30613,7 +30625,7 @@ And as such the second `@w{`}A`@w{`} declaration is hiding the first one.
 @end cartouche
 
 @node Deep delta Aggregates,Fixed lower bounds for array types and subtypes,Local Declarations Without Block,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions deep-delta-aggregates}@anchor{44c}
+@anchor{gnat_rm/gnat_language_extensions deep-delta-aggregates}@anchor{44e}
 @subsection Deep delta Aggregates
 
 
@@ -30635,7 +30647,7 @@ The syntax of delta aggregates in the extended version is the following:
 @end menu
 
 @node Syntax,Legality Rules,,Deep delta Aggregates
-@anchor{gnat_rm/gnat_language_extensions syntax}@anchor{44d}
+@anchor{gnat_rm/gnat_language_extensions syntax}@anchor{44f}
 @subsubsection Syntax
 
 
@@ -30681,7 +30693,7 @@ array_subcomponent_choice ::=
 @end example
 
 @node Legality Rules,Dynamic Semantics,Syntax,Deep delta Aggregates
-@anchor{gnat_rm/gnat_language_extensions legality-rules}@anchor{44e}
+@anchor{gnat_rm/gnat_language_extensions legality-rules}@anchor{450}
 @subsubsection Legality Rules
 
 
@@ -30718,7 +30730,7 @@ the object denoted by the base_expression, prior to any update.]
 @end enumerate
 
 @node Dynamic Semantics,Examples,Legality Rules,Deep delta Aggregates
-@anchor{gnat_rm/gnat_language_extensions dynamic-semantics}@anchor{44f}
+@anchor{gnat_rm/gnat_language_extensions dynamic-semantics}@anchor{451}
 @subsubsection Dynamic Semantics
 
 
@@ -30775,7 +30787,7 @@ and assigned to the corresponding subcomponent of the anonymous object.
 @end itemize
 
 @node Examples,,Dynamic Semantics,Deep delta Aggregates
-@anchor{gnat_rm/gnat_language_extensions examples}@anchor{450}
+@anchor{gnat_rm/gnat_language_extensions examples}@anchor{452}
 @subsubsection Examples
 
 
@@ -30803,7 +30815,7 @@ end;
 @end example
 
 @node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Deep delta Aggregates,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{451}
+@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{453}
 @subsection Fixed lower bounds for array types and subtypes
 
 
@@ -30854,7 +30866,7 @@ lower bound of unconstrained array formals when the formal’s subtype has index
 ranges with static fixed lower bounds.
 
 @node Prefixed-view notation for calls to primitive subprograms of untagged types,Expression defaults for generic formal functions,Fixed lower bounds for array types and subtypes,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{452}
+@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{454}
 @subsection Prefixed-view notation for calls to primitive subprograms of untagged types
 
 
@@ -30904,7 +30916,7 @@ pragma Assert (V.Nth_Element(1) = 42);
 @end example
 
 @node Expression defaults for generic formal functions,String interpolation,Prefixed-view notation for calls to primitive subprograms of untagged types,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{453}
+@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{455}
 @subsection Expression defaults for generic formal functions
 
 
@@ -30935,7 +30947,7 @@ If the default is used (i.e. there is no actual corresponding to Copy),
 then calls to Copy in the instance will simply return Item.
 
 @node String interpolation,Constrained attribute for generic objects,Expression defaults for generic formal functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{454}
+@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{456}
 @subsection String interpolation
 
 
@@ -31102,7 +31114,7 @@ a double quote is " and an open brace is @{
 @end example
 
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{455}
+@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{457}
 @subsection Constrained attribute for generic objects
 
 
@@ -31110,7 +31122,7 @@ The @code{Constrained} attribute is permitted for objects of generic types. The
 result indicates whether the corresponding actual is constrained.
 
 @node Static aspect on intrinsic functions,First Controlling Parameter,Constrained attribute for generic objects,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{456}
+@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{458}
 @subsection @code{Static} aspect on intrinsic functions
 
 
@@ -31119,7 +31131,7 @@ and the compiler will evaluate some of these intrinsics statically, in
 particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @node First Controlling Parameter,Unsigned_Base_Range aspect,Static aspect on intrinsic functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions first-controlling-parameter}@anchor{457}
+@anchor{gnat_rm/gnat_language_extensions first-controlling-parameter}@anchor{459}
 @subsection First Controlling Parameter
 
 
@@ -31219,7 +31231,7 @@ The result of a function is never a controlling result.
 @end itemize
 
 @node Unsigned_Base_Range aspect,Generalized Finalization,First Controlling Parameter,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions unsigned-base-range-aspect}@anchor{458}
+@anchor{gnat_rm/gnat_language_extensions unsigned-base-range-aspect}@anchor{45a}
 @subsection @code{Unsigned_Base_Range} aspect
 
 
@@ -31245,7 +31257,7 @@ It ensures that arithmetic operations of type @code{Uns_64} are carried
 out using 64 bits.
 
 @node Generalized Finalization,,Unsigned_Base_Range aspect,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{459}
+@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{45b}
 @subsection Generalized Finalization
 
 
@@ -31316,7 +31328,7 @@ in this case.
 
 @item 
 The @code{Adjust} and @code{Finalize} procedures are automatically considered as
-having the @ref{45a,,No_Raise aspect} specified for them. In particular, the
+having the @ref{45c,,No_Raise aspect} specified for them. In particular, the
 compiler has permission to enforce none of the guarantees specified by the
 RM 7.6.1 (14/1) and subsequent subclauses.
 @end itemize
@@ -31377,7 +31389,7 @@ end P;
 @end menu
 
 @node Finalizable tagged types,Composite types,,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions finalizable-tagged-types}@anchor{45b}
+@anchor{gnat_rm/gnat_language_extensions finalizable-tagged-types}@anchor{45d}
 @subsubsection Finalizable tagged types
 
 
@@ -31387,7 +31399,7 @@ dispatching whenever it makes sense, i.e. when the object in question is of a
 class-wide type and the class includes at least one finalizable tagged type.
 
 @node Composite types,Interoperability with controlled types,Finalizable tagged types,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{45c}
+@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{45e}
 @subsubsection Composite types
 
 
@@ -31397,7 +31409,7 @@ in order to call the primitives of their components. The dynamic semantics is
 the same as for controlled components of composite types.
 
 @node Interoperability with controlled types,,Composite types,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{45d}
+@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{45f}
 @subsubsection Interoperability with controlled types
 
 
@@ -31407,7 +31419,7 @@ versa, but the stricter dynamic semantics, in other words that of controlled
 types, is applied in this case.
 
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6b}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{45e}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6b}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{460}
 @section Experimental Language Extensions
 
 
@@ -31432,7 +31444,7 @@ Features activated via @code{-gnatX0} or
 @end menu
 
 @node Conditional when constructs,Implicit With,,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{45f}
+@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{461}
 @subsection Conditional when constructs
 
 
@@ -31501,7 +31513,7 @@ end;
 @end example
 
 @node Implicit With,Storage Model,Conditional when constructs,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions implicit-with}@anchor{460}
+@anchor{gnat_rm/gnat_language_extensions implicit-with}@anchor{462}
 @subsection Implicit With
 
 
@@ -31518,7 +31530,7 @@ end;
 @end example
 
 @node Storage Model,Attribute Super,Implicit With,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{461}
+@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{463}
 @subsection Storage Model
 
 
@@ -31535,7 +31547,7 @@ memory models, in particular to support interactions with GPU.
 @end menu
 
 @node Aspect Storage_Model_Type,Aspect Designated_Storage_Model,,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{462}
+@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{464}
 @subsubsection Aspect Storage_Model_Type
 
 
@@ -31669,7 +31681,7 @@ end CUDA_Memory;
 @end example
 
 @node Aspect Designated_Storage_Model,Legacy Storage Pools,Aspect Storage_Model_Type,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{463}
+@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{465}
 @subsubsection Aspect Designated_Storage_Model
 
 
@@ -31747,7 +31759,7 @@ begin
 @end example
 
 @node Legacy Storage Pools,,Aspect Designated_Storage_Model,Storage Model
-@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{464}
+@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{466}
 @subsubsection Legacy Storage Pools
 
 
@@ -31798,7 +31810,7 @@ type Acc is access Integer_Array with Storage_Pool => My_Pool;
 can still be accepted as a shortcut for the new syntax.
 
 @node Attribute Super,Simpler Accessibility Model,Storage Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{465}
+@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{467}
 @subsection Attribute Super
 
 
@@ -31833,7 +31845,7 @@ end;
 @end example
 
 @node Simpler Accessibility Model,Case pattern matching,Attribute Super,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{466}
+@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{468}
 @subsection Simpler Accessibility Model
 
 
@@ -31864,7 +31876,7 @@ All of the refined rules are compatible with the [use of anonymous access types 
 @end menu
 
 @node Stand-alone objects,Subprogram parameters,,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{467}
+@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{469}
 @subsubsection Stand-alone objects
 
 
@@ -31912,7 +31924,7 @@ of the RM 4.6 rule “The accessibility level of the operand type shall not be
 statically deeper than that of the target type …”.
 
 @node Subprogram parameters,Function results,Stand-alone objects,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{468}
+@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{46a}
 @subsubsection Subprogram parameters
 
 
@@ -32005,7 +32017,7 @@ end;
 @end example
 
 @node Function results,,Subprogram parameters,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{469}
+@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{46b}
 @subsubsection Function results
 
 
@@ -32133,7 +32145,7 @@ end;
 @end example
 
 @node Case pattern matching,Mutably Tagged Types with Size’Class Aspect,Simpler Accessibility Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{46a}
+@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{46c}
 @subsection Case pattern matching
 
 
@@ -32263,7 +32275,7 @@ message generated in such cases is usually “Capacity exceeded in compiling
 case statement with composite selector type”.
 
 @node Mutably Tagged Types with Size’Class Aspect,No_Raise aspect,Case pattern matching,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{46b}
+@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{46d}
 @subsection Mutably Tagged Types with Size’Class Aspect
 
 
@@ -32434,7 +32446,7 @@ parameter exists (that is, before leaving the corresponding callable construct).
 This is analogous to the RM 6.4.1(18) rule about discriminated parameters.
 
 @node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions id3}@anchor{46c}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{45a}
+@anchor{gnat_rm/gnat_language_extensions id3}@anchor{46e}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{45c}
 @subsection No_Raise aspect
 
 
@@ -32444,7 +32456,7 @@ be raised during the execution of the subprogram, it is caught at the end of
 this execution and @code{Program_Error} is propagated to the caller.
 
 @node Inference of Dependent Types in Generic Instantiations,External_Initialization Aspect,No_Raise aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{46d}
+@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{46f}
 @subsection Inference of Dependent Types in Generic Instantiations
 
 
@@ -32521,7 +32533,7 @@ package Int_Array_Operations is new Array_Operations
 @end example
 
 @node External_Initialization Aspect,Finally construct,Inference of Dependent Types in Generic Instantiations,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{46e}
+@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{470}
 @subsection External_Initialization Aspect
 
 
@@ -32562,7 +32574,7 @@ The maximum size of loaded files is limited to 2@w{^31} bytes.
 @end cartouche
 
 @node Finally construct,Continue statement,External_Initialization Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions finally-construct}@anchor{46f}
+@anchor{gnat_rm/gnat_language_extensions finally-construct}@anchor{471}
 @subsection Finally construct
 
 
@@ -32579,7 +32591,7 @@ This feature is similar to the one with the same name in other languages such as
 @end menu
 
 @node Syntax<2>,Legality Rules<2>,,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id4}@anchor{470}
+@anchor{gnat_rm/gnat_language_extensions id4}@anchor{472}
 @subsubsection Syntax
 
 
@@ -32594,7 +32606,7 @@ handled_sequence_of_statements ::=
 @end example
 
 @node Legality Rules<2>,Dynamic Semantics<2>,Syntax<2>,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id5}@anchor{471}
+@anchor{gnat_rm/gnat_language_extensions id5}@anchor{473}
 @subsubsection Legality Rules
 
 
@@ -32604,7 +32616,7 @@ to be transferred outside the finally part are forbidden.
 Goto & exit where the target is outside of the finally’s @code{sequence_of_statements} are forbidden
 
 @node Dynamic Semantics<2>,,Legality Rules<2>,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id6}@anchor{472}
+@anchor{gnat_rm/gnat_language_extensions id6}@anchor{474}
 @subsubsection Dynamic Semantics
 
 
@@ -32619,7 +32631,7 @@ execution, that is the finally block must be executed in full even if the contai
 aborted, or if the control is transferred out of the block.
 
 @node Continue statement,Destructors,Finally construct,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions continue-statement}@anchor{473}
+@anchor{gnat_rm/gnat_language_extensions continue-statement}@anchor{475}
 @subsection Continue statement
 
 
@@ -32637,7 +32649,7 @@ Note that @code{continue} is a keyword but it is not a reserved word. This is a
 configuration that does not exist in standard Ada.
 
 @node Destructors,,Continue statement,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions destructors}@anchor{474}
+@anchor{gnat_rm/gnat_language_extensions destructors}@anchor{476}
 @subsection Destructors
 
 
@@ -32707,7 +32719,7 @@ imposing that rule on outside types that derive from the private view of the
 type.
 
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
-@anchor{gnat_rm/security_hardening_features doc}@anchor{475}@anchor{gnat_rm/security_hardening_features id1}@anchor{476}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
+@anchor{gnat_rm/security_hardening_features doc}@anchor{477}@anchor{gnat_rm/security_hardening_features id1}@anchor{478}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
 @chapter Security Hardening Features
 
 
@@ -32729,7 +32741,7 @@ change.
 @end menu
 
 @node Register Scrubbing,Stack Scrubbing,,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{477}
+@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{479}
 @section Register Scrubbing
 
 
@@ -32765,7 +32777,7 @@ programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 @c Stack Scrubbing:
 
 @node Stack Scrubbing,Hardened Conditionals,Register Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{478}
+@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{47a}
 @section Stack Scrubbing
 
 
@@ -32909,7 +32921,7 @@ Bar_Callable_Ptr.
 @c Hardened Conditionals:
 
 @node Hardened Conditionals,Hardened Booleans,Stack Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{479}
+@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{47b}
 @section Hardened Conditionals
 
 
@@ -32999,7 +33011,7 @@ be used with other programming languages supported by GCC.
 @c Hardened Booleans:
 
 @node Hardened Booleans,Control Flow Redundancy,Hardened Conditionals,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{47a}
+@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{47c}
 @section Hardened Booleans
 
 
@@ -33060,7 +33072,7 @@ and more details on that attribute, see @cite{Using the GNU Compiler Collection 
 @c Control Flow Redundancy:
 
 @node Control Flow Redundancy,,Hardened Booleans,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{47b}
+@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{47d}
 @section Control Flow Redundancy
 
 
@@ -33228,7 +33240,7 @@ see @cite{Using the GNU Compiler Collection (GCC)}.  These options
 can be used with other programming languages supported by GCC.
 
 @node Obsolescent Features,Compatibility and Porting Guide,Security Hardening Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{47c}@anchor{gnat_rm/obsolescent_features id1}@anchor{47d}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{47e}@anchor{gnat_rm/obsolescent_features id1}@anchor{47f}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
 @chapter Obsolescent Features
 
 
@@ -33247,7 +33259,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{47e}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{47f}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{480}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{481}
 @section pragma No_Run_Time
 
 
@@ -33260,7 +33272,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{480}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{481}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{482}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{483}
 @section pragma Ravenscar
 
 
@@ -33269,7 +33281,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{482}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{483}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{484}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{485}
 @section pragma Restricted_Run_Time
 
 
@@ -33279,7 +33291,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{484}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{485}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{486}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{487}
 @section pragma Task_Info
 
 
@@ -33305,7 +33317,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{486}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{487}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{488}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{489}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -33315,7 +33327,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{488}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{489}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{48b}
 @chapter Compatibility and Porting Guide
 
 
@@ -33337,7 +33349,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{48b}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{48c}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{48d}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -33459,7 +33471,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{48c}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{48d}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{48e}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{48f}
 @section Compatibility with Ada 83
 
 
@@ -33487,7 +33499,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{48e}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{48f}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{490}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{491}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -33587,7 +33599,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{490}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{491}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{492}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{493}
 @subsection More deterministic semantics
 
 
@@ -33615,7 +33627,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{492}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{493}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{494}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{495}
 @subsection Changed semantics
 
 
@@ -33657,7 +33669,7 @@ covers only the restricted range.
 @end itemize
 
 @node Other language compatibility issues,,Changed semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{494}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{495}
+@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{497}
 @subsection Other language compatibility issues
 
 
@@ -33690,7 +33702,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{497}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{498}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{499}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -33762,7 +33774,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{498}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{499}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{49a}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{49b}
 @section Implementation-dependent characteristics
 
 
@@ -33785,7 +33797,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{49a}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{49b}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{49c}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{49d}
 @subsection Implementation-defined pragmas
 
 
@@ -33807,7 +33819,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{49c}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{49d}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{49e}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{49f}
 @subsection Implementation-defined attributes
 
 
@@ -33821,7 +33833,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{49e}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{49f}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{4a0}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{4a1}
 @subsection Libraries
 
 
@@ -33850,7 +33862,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{4a0}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{4a1}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{4a2}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{4a3}
 @subsection Elaboration order
 
 
@@ -33886,7 +33898,7 @@ pragmas either globally (as an effect of the `-gnatE' switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{4a2}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{4a3}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{4a4}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{4a5}
 @subsection Target-specific aspects
 
 
@@ -33899,10 +33911,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005, Ada 2012, and Ada 2022) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{4a4,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{4a6,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{4a5}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{4a6}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{4a7}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{4a8}
 @section Compatibility with Other Ada Systems
 
 
@@ -33945,7 +33957,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{4a7}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{4a4}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{4a9}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{4a6}
 @section Representation Clauses
 
 
@@ -34038,7 +34050,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4a8}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4a9}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4aa}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4ab}
 @section Compatibility with HP Ada 83
 
 
@@ -34068,7 +34080,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{4aa}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4ab}
+@anchor{share/gnu_free_documentation_license doc}@anchor{4ac}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4ad}
 @chapter GNU Free Documentation License
 
 
