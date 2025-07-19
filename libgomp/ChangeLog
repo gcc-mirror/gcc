@@ -1,3 +1,10 @@
+2025-07-18  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/121156
+	* config/gcn/bar.c (gomp_team_barrier_wait_end): Remove unused
+	"generation" variable.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+
 2025-07-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119692

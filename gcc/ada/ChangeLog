@@ -1,3 +1,58 @@
+2025-07-18  Steve Baird  <baird@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Cope with the case
+	where the ancestor type for a formal derived type is declared in
+	an earlier formal package but Get_Instance_Of does not return the
+	corresponding type from the corresponding actual package.
+
+2025-07-18  Bob Duff  <duff@adacore.com>
+
+	* tbuild.adb (Unchecked_Convert_To): Back out
+	change.
+
+2025-07-18  Marc Poulhiès  <poulhies@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
+
+	* exp_ch6.adb (Convert): Do not call Expand_Inlined_Call for
+	unsupported cases.
+	* inline.adb (Expand_Inlined_Call): Add assert to catch unsupported
+	case.
+
+2025-07-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads: Document new field Overridden_Inherited_Operation and
+	list it as a field for the entity kinds that it applies to.
+	* gen_il-fields.ads (type Opt_Field_Enum): Add new literal
+	Overridden_Inherited_Operation to the type.
+	* gen_il-gen-gen_entities.adb: Add Overridden_Inherited_Operation as
+	a field of entities of kinds E_Enumeration_Literal and Subprogram_Kind.
+	* sem_ch4.adb (Is_Callable_Private_Overriding): Change name (was
+	Is_Private_Overriding). Replace Is_Hidden test on Overridden_Operation
+	with test of Is_Hidden on the new field Overridden_Inherited_Operation.
+	* sem_ch6.adb (New_Overloaded_Entity): Set the new field
+	Overridden_Inherited_Operation on an operation derived from
+	an interface to refer to the inherited operation of a private
+	extension that's overridden by the derived operation. Also set
+	that field in the more common cases of an explicit subprogram
+	that overrides, to refer to the inherited subprogram that is
+	overridden. (Contrary to its name, the Overridden_Operation
+	field of the overriding subprogram, which is also set in these
+	places, refers to the *parent* subprogram from which the inherited
+	subprogram is derived.) Also, remove a redundant Present (Alias (S))
+	test in an if_statement and the dead "else" part of that statement.
+
+2025-07-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Build_Elaboration_Entity): Set ghost mode to none
+	before creating the elaboration entity; restore the ghost mode
+	afterwards.
+
+2025-07-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Gen_Assign): Code cleanup.
+	(Initialize_Component): Do not adjust the tag when the type of
+	the aggregate components is a mutably tagged type.
+
 2025-07-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121056

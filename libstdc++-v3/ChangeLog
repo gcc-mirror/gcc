@@ -1,3 +1,102 @@
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h (__any_input_iterator):
+	Only define when __cpp_lib_concepts is defined.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Remove Paolo from
+	list of maintainers to contact about contributing.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Document that
+	windows_zones-map.h is a generated file.
+	* doc/html/manual/appendix_porting.html: Regenerate.
+
+2025-07-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* include/std/inplace_vector (inplace_vector::operator=):
+	Qualify call to std::addressof.
+
+2025-07-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121154
+	* include/bits/chrono_io.h (_ChronoSpec::_M_time_point): Remove.
+	(_ChronoSpec::_M_needs_ok_check): Define
+	(__formatter_chrono::_M_parse): Set _M_needs_ok_check.
+	(__formatter_chrono::_M_check_ok): Check values also for debug mode,
+	and return __string_view.
+	(__formatter_chrono::_M_format_to): Handle results of _M_check_ok.
+	(__formatter_chrono::_M_wi, __formatter_chrono::_M_a_A)
+	(__formatter_chrono::_M_b_B, __formatter_chrono::_M_C_y_Y)
+	(__formatter_chrono::_M_d_e, __formatter_chrono::_M_F):
+	Removed handling of _M_debug.
+	(__formatter_chrono::__M_m): Print zero unpadded in _M_debug mode.
+	(__formatter_duration::_S_spec_for): Remove _M_time_point refernce.
+	(__formatter_duration::_M_parse): Override _M_needs_ok_check.
+	* testsuite/std/time/month/io.cc: Test for localized !ok() values.
+	* testsuite/std/time/weekday/io.cc: Test for localized !ok() values.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121150
+	* testsuite/20_util/hash/int128.cc: Cast expected values to
+	size_t.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_iterator::operator--): Reorder
+	conditions and update position after reading a code unit.
+	(_Utf_iterator::_M_read_reverse): Define.
+	(_Utf_iterator::_M_read_utf8): Return extracted code point.
+	(_Utf_iterator::_M_read_reverse_utf8): Define.
+	(_Utf_iterator::_M_read_reverse_utf16): Define.
+	(_Utf_iterator::_M_read_reverse_utf32): Define.
+	* testsuite/ext/unicode/view.cc: Add checks for reversed views
+	and reverse iteration.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_iterator): Reorder data members
+	to be more compact.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* doc/doxygen/user.cfg.in (INPUT): Add new header.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/stl_iterator_base_types.h (__any_input_iterator):
+	Define.
+	* include/bits/version.def (inplace_vector): Define.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* src/c++23/std.cc.in: Export contents if new header.
+	* include/std/inplace_vector: New file.
+	* testsuite/23_containers/inplace_vector/access/capacity.cc: New file.
+	* testsuite/23_containers/inplace_vector/access/elem.cc: New file.
+	* testsuite/23_containers/inplace_vector/access/elem_neg.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/1.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/from_range.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/throws.cc: New file.
+	* testsuite/23_containers/inplace_vector/copy.cc: New file.
+	* testsuite/23_containers/inplace_vector/erasure.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/erase.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	New file.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert.cc:
+	New file.
+	* testsuite/23_containers/inplace_vector/move.cc: New file.
+	* testsuite/23_containers/inplace_vector/relops.cc: New file.
+	* testsuite/23_containers/inplace_vector/version.cc: New file.
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper::base):
+	Define.
+
 2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/96710

@@ -1,3 +1,50 @@
+2025-07-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<mode>3_ceil): Add new pattern
+	of avg3_ceil for RVV DImode
+
+2025-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117423
+	* tree-sra.cc (analyze_access_subtree): Fix computation of grp_covered
+	flag.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121126
+	* tree-vect-stmts.cc (vect_analyze_stmt): Analyze the
+	live lane extract for LC PHIs that are vect_internal_def.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation_1):
+	Remove stmt_info and ncopies parameters.  Remove !slp_node
+	paths.
+	(vectorizable_live_operation): Remove !slp_node paths.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120924
+	* params.opt (uninit-max-chain-len): Up from 8 to 12.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121048
+	* tree-vect-loop.cc (vect_determine_vectype_for_stmt_1):
+	Remove rejecting vector(1) vector types.
+	(vect_set_stmts_vectype): Likewise.
+	* tree-vect-slp.cc (vect_make_slp_decision): Only
+	count instances with non-vector(1) root towards whether
+	we have any interesting instances to vectorize.
+
+2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121131
+	* gimple-fold.cc (fold_nonarray_ctor_reference): Use
+	TREE_INT_CST_LOW (TYPE_SIZE ()) instead of
+	GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE ()) for BLKmode BITINT_TYPEs.
+	Don't compute encoding_size at all for little endian targets.
+
 2025-07-17  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/121095

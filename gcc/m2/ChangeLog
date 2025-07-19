@@ -1,3 +1,9 @@
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2-libs/ARRAYOFCHAR.mod (Write): Rename 2nd parameter
+	name a to str.
+
 2025-07-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120912

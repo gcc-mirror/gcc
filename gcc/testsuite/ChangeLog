@@ -1,3 +1,40 @@
+2025-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121145
+	* gfortran.dg/pointer_check_15.f90: New test.
+
+2025-07-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/121153
+	* gcc.dg/vect/vect-reduc-cond-1.c: Require vect_condition.
+	* gcc.dg/vect/vect-reduc-cond-2.c: Likewise.
+
+2025-07-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/avg_data.h: Adjust the test data.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i64-from-i128.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i64-from-i128.c: New test.
+
+2025-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117423
+	* gcc.dg/tree-ssa/pr117423.c: New test.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121126
+	* gcc.dg/vect/pr121126.c: New testcase.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120924
+	* gcc.dg/uninit-pr120924.c: New testcase.
+
+2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121131
+	* gcc.dg/bitint-124.c: New test.
+
 2025-07-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87097
