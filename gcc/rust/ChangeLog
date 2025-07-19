@@ -1,3 +1,27 @@
+2025-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* checks/errors/borrowck/rust-borrow-checker-diagnostics.cc
+	(BorrowCheckerDiagnostics::get_loan): Type cast loan to uint32_t.
+
+2025-07-18  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	Backported from master:
+	2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-place.h
+	(IndexVec::size_type): Add.
+	(IndexVec::MAX_INDEX): Add.
+	(IndexVec::size): Change the return type to the type of the
+	internal value used by the index type.
+	(PlaceDB::lookup_or_add_variable): Use the return value from the
+	PlaceDB::add_place call.
+	* checks/errors/borrowck/rust-bir.h
+	(struct BasicBlockId): Move this definition before the
+	definition of the struct Function.
+
 2025-07-08  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* resolve/rust-late-name-resolver-2.0.cc (Late::Late): False initialize the

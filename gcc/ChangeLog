@@ -1,3 +1,58 @@
+2025-07-18  Hans-Peter Nilsson  <hp@bitrange.com>
+	    Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR middle-end/120935
+	* config/mmix/mmix.h (MAX_FIXED_MODE_SIZE): Define.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120924
+	* params.opt (uninit-max-chain-len): Up from 8 to 12.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-15  Richard Biener  <rguenther@suse.de>
+		    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/121059
+	* tree-vect-stmts.cc (vectorizable_operation): Query
+	scalar_cond_masked_set with the correct number of masks.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121049
+	* internal-fn.h (widening_evenodd_fn_p): Declare.
+	* internal-fn.cc (widening_evenodd_fn_p): New function.
+	* tree-vect-stmts.cc (vectorizable_conversion): When using
+	an even/odd widening function disable loop masking.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121035
+	* tree-ssa-pre.cc (find_or_generate_expression): Handle
+	values without expression.
+
+2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121131
+	* gimple-fold.cc (fold_nonarray_ctor_reference): Use
+	TREE_INT_CST_LOW (TYPE_SIZE ()) instead of
+	GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE ()) for BLKmode BITINT_TYPEs.
+	Don't compute encoding_size at all for little endian targets.
+
 2025-07-17  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:

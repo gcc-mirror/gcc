@@ -1,3 +1,90 @@
+2025-07-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-04-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/119508
+	* rust/compile/nr2/compile.exp: Disable parallel testing.
+
+2025-07-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-04-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR cobol/119818
+	* cobol.dg/group2/FUNCTION_DATE___TIME_OMNIBUS.cob:
+	'dg-set-target-env-var TZ UTC0'.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120924
+	* gcc.dg/uninit-pr120924.c: New testcase.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-15  Richard Biener  <rguenther@suse.de>
+		    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/121059
+	* gcc.dg/vect/pr121059.c: New testcase.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121049
+	* gcc.dg/vect/pr121049.c: New testcase.
+
+2025-07-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121035
+	* gcc.dg/pr121035.c: New testcase.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117203
+	* gm2/isolib/run/pass/testdelete2.mod: New test.
+	* gm2/pimlib/logitech/run/pass/testdelete2.mod: New test.
+	* gm2/pimlib/run/pass/testdelete.mod: New test.
+
+2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121131
+	* gcc.dg/bitint-124.c: New test.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120731
+	* gm2/pimlib/logitech/run/pass/teststrings.mod: New test.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120673
+	* gm2/pim/fail/badmodvar.mod: New test.
+	* gm2/pim/fail/cyclictypes.mod: New test.
+	* gm2/pim/fail/cyclictypes2.mod: New test.
+	* gm2/pim/fail/cyclictypes4.mod: New test.
+
 2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
