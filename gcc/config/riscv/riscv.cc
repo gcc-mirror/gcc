@@ -10359,10 +10359,10 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   bool simple_sets_p = prev_set && curr_set && !any_condjump_p (curr);
   bool sched1 = can_create_pseudo_p ();
 
-  unsigned int prev_dest_regno = (REG_P (SET_DEST (prev_set))
+  unsigned int prev_dest_regno = (prev_set && REG_P (SET_DEST (prev_set))
 				  ? REGNO (SET_DEST (prev_set))
 				  : FIRST_PSEUDO_REGISTER);
-  unsigned int curr_dest_regno = (REG_P (SET_DEST (curr_set))
+  unsigned int curr_dest_regno = (curr_set && REG_P (SET_DEST (curr_set))
 				  ? REGNO (SET_DEST (curr_set))
 				  : FIRST_PSEUDO_REGISTER);
 
