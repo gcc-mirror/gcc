@@ -13,6 +13,8 @@ DEF_VF_MULOP_ACC_CASE_0 (_Float16, +, -, nacc)
 DEF_VF_MULOP_ACC_CASE_0 (_Float16, -, -, nsac)
 DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, +, +, acc)
 DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, +, sac)
+DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, +, -, nacc)
+DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, -, nsac)
 
 /* { dg-final { scan-assembler-times {vfmadd.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmsub.vf} 1 } } */
@@ -24,3 +26,5 @@ DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, +, sac)
 /* { dg-final { scan-assembler-times {vfnmsac.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfwmacc.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfwmsac.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfwnmacc.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfwnmsac.vf} 1 } } */
