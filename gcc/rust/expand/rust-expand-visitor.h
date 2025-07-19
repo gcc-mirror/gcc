@@ -105,7 +105,7 @@ public:
    */
   template <typename T, typename U>
   void expand_macro_children (MacroExpander::ContextType ctx, T &values,
-			      std::function<U (AST::SingleASTNode)> extractor)
+			      U (AST::SingleASTNode::*extractor) (void))
   {
     expander.push_context (ctx);
 
@@ -121,7 +121,7 @@ public:
    */
   template <typename T, typename U>
   void expand_macro_children (T &values,
-			      std::function<U (AST::SingleASTNode)> extractor)
+			      U (AST::SingleASTNode::*extractor) (void))
   {
     for (auto it = values.begin (); it != values.end ();)
       {
@@ -138,7 +138,7 @@ public:
 	    it = values.erase (it);
 	    for (auto &node : final_fragment.get_nodes ())
 	      {
-		U new_node = extractor (node);
+		U new_node = (node.*extractor) ();
 		if (new_node != nullptr)
 		  {
 		    it = values.insert (it, std::move (new_node));

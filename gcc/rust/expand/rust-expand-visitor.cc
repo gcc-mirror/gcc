@@ -233,10 +233,7 @@ ExpandVisitor::expand_inner_items (
 	}
     }
 
-  std::function<std::unique_ptr<AST::Item> (AST::SingleASTNode)> extractor
-    = [] (AST::SingleASTNode node) { return node.take_item (); };
-
-  expand_macro_children (items, extractor);
+  expand_macro_children (items, &AST::SingleASTNode::take_item);
 
   expander.pop_context ();
 }
@@ -324,10 +321,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
   if (!expr.has_tail_expr ())
     expr.normalize_tail_expr ();
 
-  std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
-    = [] (AST::SingleASTNode node) { return node.take_stmt (); };
-
-  expand_macro_children (stmts, extractor);
+  expand_macro_children (stmts, &AST::SingleASTNode::take_stmt);
 
   expander.pop_context ();
 }
@@ -866,12 +860,9 @@ ExpandVisitor::visit (AST::Trait &trait)
 
   expander.push_context (MacroExpander::ContextType::TRAIT);
 
-  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
-    extractor
-    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
-
   expand_macro_children (MacroExpander::ContextType::TRAIT,
-			 trait.get_trait_items (), extractor);
+			 trait.get_trait_items (),
+			 &AST::SingleASTNode::take_assoc_item);
 
   expander.pop_context ();
 }
@@ -894,12 +885,9 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
-    extractor
-    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
-
   expand_macro_children (MacroExpander::ContextType::IMPL,
-			 impl.get_impl_items (), extractor);
+			 impl.get_impl_items (),
+			 &AST::SingleASTNode::take_assoc_item);
 }
 
 void
@@ -922,12 +910,9 @@ ExpandVisitor::visit (AST::TraitImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
-    extractor
-    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
-
   expand_macro_children (MacroExpander::ContextType::TRAIT_IMPL,
-			 impl.get_impl_items (), extractor);
+			 impl.get_impl_items (),
+			 &AST::SingleASTNode::take_assoc_item);
 }
 
 void
@@ -944,12 +929,10 @@ void
 ExpandVisitor::visit (AST::ExternBlock &block)
 {
   visit_inner_attrs (block);
-  std::function<std::unique_ptr<AST::ExternalItem> (AST::SingleASTNode)>
-    extractor
-    = [] (AST::SingleASTNode node) { return node.take_external_item (); };
 
   expand_macro_children (MacroExpander::ContextType::EXTERN,
-			 block.get_extern_items (), extractor);
+			 block.get_extern_items (),
+			 &AST::SingleASTNode::take_external_item);
 }
 
 void
