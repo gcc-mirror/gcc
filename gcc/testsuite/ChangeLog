@@ -1,3 +1,11 @@
+2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121131
+	* gcc.dg/bitint-124.c: New test.
+
 2025-07-17  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
