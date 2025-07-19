@@ -2489,7 +2489,8 @@
       (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
       (sign_extend:VWEXTI
-       (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))))))]
+       (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
+     (const_int 1))))]
   "TARGET_VECTOR"
   {
     insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
@@ -2522,7 +2523,8 @@
 	(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
        (sign_extend:VWEXTI
 	(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
-      (const_int 1)))))]
+      (const_int 1))
+     (const_int 1))))]
   "TARGET_VECTOR"
   {
     insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
