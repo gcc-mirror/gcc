@@ -1,3 +1,37 @@
+2025-07-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/121124
+	* config/pru/pru-pragma.cc (pru_pragma_ctable_entry): Handle the
+	ctable base address as signed 32-bit value, and sign-extend to
+	HOST_WIDE_INT.
+	* config/pru/pru-protos.h (struct pru_ctable_entry): Store the
+	ctable base address as signed.
+	(pru_get_ctable_exact_base_index): Pass base address as signed.
+	(pru_get_ctable_base_index): Ditto.
+	(pru_get_ctable_base_offset): Ditto.
+	* config/pru/pru.cc (pru_get_ctable_exact_base_index): Ditto.
+	(pru_get_ctable_base_index): Ditto.
+	(pru_get_ctable_base_offset): Ditto.
+	(pru_print_operand_address): Ditto.
+
+2025-07-19  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*vfwnmacc_vf_<mode>): New pattern.
+	(*vfwnmsac_vf_<mode>): New pattern.
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Add support for a
+	vec_duplicate in a neg.
+
+2025-07-19  Artemiy Volkov  <artemiyv@acm.org>
+
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Protect
+	from a NULL PREV_SET or CURR_SET.
+
+2025-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-passes.cc (avr_optimize_casesi): Fuse
+	get_insns() with end_sequence().
+
 2025-07-18  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md (avg<mode>3_ceil): Add new pattern
