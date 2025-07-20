@@ -675,8 +675,21 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
       }
     case TyTy::SLICE:
       {
-	auto &array_ty_ty = static_cast<TyTy::SliceType &> (*parent);
-	parent_element_ty = array_ty_ty.get_element_type ();
+	auto &slice_ty_ty = static_cast<TyTy::SliceType &> (*parent);
+	parent_element_ty = slice_ty_ty.get_element_type ();
+	break;
+      }
+    case TyTy::REF:
+      {
+	auto &ref_ty_ty = static_cast<TyTy::ReferenceType &> (*parent);
+	const TyTy::SliceType *slice = nullptr;
+	if (!ref_ty_ty.is_dyn_slice_type (&slice))
+	  {
+	    rust_error_at (pattern.get_locus (), "expected %s, found slice",
+			   parent->as_string ().c_str ());
+	    return;
+	  }
+	parent_element_ty = slice->get_element_type ();
 	break;
       }
     default:

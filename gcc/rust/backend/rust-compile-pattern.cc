@@ -529,7 +529,8 @@ CompilePatternCheckExpr::visit (HIR::SlicePattern &pattern)
   // pattern must either be ArrayType or SliceType, should be already confirmed
   // by type checking
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
-	       || lookup->get_kind () == TyTy::TypeKind::SLICE);
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE
+	       || lookup->get_kind () == TyTy::REF);
 
   size_t array_element_index = 0;
   switch (lookup->get_kind ())
@@ -895,7 +896,8 @@ CompilePatternBindings::visit (HIR::SlicePattern &pattern)
   rust_assert (ok);
 
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
-	       || lookup->get_kind () == TyTy::TypeKind::SLICE);
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE
+	       || lookup->get_kind () == TyTy::REF);
 
   size_t array_element_index = 0;
   switch (lookup->get_kind ())
