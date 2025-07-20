@@ -1,3 +1,11 @@
+2025-07-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:
+	Updated.
+
 2025-07-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
