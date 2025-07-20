@@ -329,11 +329,18 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  rust_assert (lookup->is<TyTy::FnType> ());
 	  auto fn = lookup->as<TyTy::FnType> ();
 	  rust_assert (fn->get_num_type_params () > 0);
-	  auto &self = fn->get_substs ().at (0);
-	  auto receiver = self.get_param_ty ();
+	  TyTy::SubstitutionParamMapping &self = fn->get_substs ().at (0);
+	  TyTy::ParamType *receiver = self.get_param_ty ();
+	  TyTy::BaseType *r = receiver;
+	  if (!receiver->can_resolve ())
+	    {
+	      bool ok
+		= ctx->get_tyctx ()->lookup_type (receiver->get_ref (), &r);
+	      rust_assert (ok);
+	    }
+
 	  auto candidates
-	    = Resolver::PathProbeImplTrait::Probe (receiver, final_segment,
-						   trait_ref);
+	    = Resolver::PathProbeImplTrait::Probe (r, final_segment, trait_ref);
 	  if (candidates.size () == 0)
 	    {
 	      // this means we are defaulting back to the trait_item if
