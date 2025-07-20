@@ -1850,12 +1850,15 @@ export namespace std
 export namespace std
 {
   using std::extents;
+  using std::dextents;
   using std::layout_left;
   using std::layout_right;
   using std::layout_stride;
   using std::default_accessor;
   using std::mdspan;
-  // FIXME layout_left_padded, layout_right_padded, aligned_accessor, mdsubspan
+  // FIXME layout_left_padded, layout_right_padded, aligned_accessor,
+  // strided_slice, submdspan_mapping_result, full_extent_t, full_extent,
+  // submdspan_extents, mdsubspan
 }
 #endif
 
