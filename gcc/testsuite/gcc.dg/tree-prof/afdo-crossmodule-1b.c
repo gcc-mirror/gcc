@@ -1,3 +1,8 @@
+/* { dg-require-effective-target lto } */
+/* { dg-additional-sources "afdo-crossmodule-1.c" } */
+/* { dg-options "-O3 -flto -fdump-ipa-afdo_offline -fdump-tree-einline-details" } */
+/* { dg-require-profiling "-fauto-profile" } */
+
 extern int foo2 ();
 
 int bar (int (*fooptr) (int (*)()))
