@@ -1815,6 +1815,10 @@ backend_init_target (void)
 static void
 backend_init (void)
 {
+#if CHECKING_P
+  verify_reg_names_in_constraints ();
+#endif
+
   init_emit_once ();
 
   init_rtlanal ();

@@ -200,6 +200,8 @@ static const char indep_constraints[] = ",=+%*?!^$#&g";
 static class constraint_data *
 constraints_by_letter_table[1 << CHAR_BIT];
 
+static hash_set<free_string_hash> used_reg_names;
+
 static int mdep_constraint_len (const char *, file_location, int);
 static void note_constraint (md_rtx_info *);
 
@@ -1156,6 +1158,45 @@ main (int argc, const char **argv)
   output_insn_data ();
   output_get_insn_name ();
 
+  /* Since genoutput has no information about hard register names we cannot
+     statically verify hard register names in constraints of the machine
+     description.  Therefore, we have to do it at runtime.  Although
+     verification shouldn't be too expensive, restrict it to checking builds.
+   */
+  printf ("\n\n#if CHECKING_P\n");
+  if (used_reg_names.is_empty ())
+    printf ("void verify_reg_names_in_constraints () { }\n");
+  else
+    {
+      size_t max_len = 0;
+      for (auto it = used_reg_names.begin (); it != used_reg_names.end (); ++it)
+	{
+	  size_t len = strlen (*it);
+	  if (len > max_len)
+	    max_len = len;
+	}
+      printf ("void\nverify_reg_names_in_constraints ()\n{\n");
+      printf ("  static const char hregnames[%zu][%zu] = {\n",
+	      used_reg_names.elements (), max_len + 1);
+      auto it = used_reg_names.begin ();
+      while (it != used_reg_names.end ())
+	{
+	  printf ("    \"%s\"", *it);
+	  ++it;
+	  if (it != used_reg_names.end ())
+	    printf (",");
+	  printf ("\n");
+	}
+      printf ("  };\n");
+      printf ("  for (size_t i = 0; i < %zu; ++i)\n",
+	      used_reg_names.elements ());
+      printf ("    if (decode_reg_name (hregnames[i]) < 0)\n");
+      printf ("      internal_error (\"invalid register %%qs used in "
+	      "constraint of machine description\", hregnames[i]);\n");
+      printf ("}\n");
+    }
+  printf ("#endif\n");
+
   fflush (stdout);
   return (ferror (stdout) != 0 || have_error
 	? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
@@ -1294,6 +1335,11 @@ mdep_constraint_len (const char *s, file_location loc, int opno)
       ptrdiff_t len = end - s;
       if (*end == '}' && len > 1 && len < 31)
 	{
+	  char *regname = new char[len];
+	  memcpy (regname, s + 1, len - 1);
+	  regname[len - 1] = '\0';
+	  if (used_reg_names.add (regname))
+	    delete[] regname;
 	  return len + 1;
 	}
     }
