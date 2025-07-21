@@ -114,6 +114,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stmt.h"
 #include "predict.h"
 #include "df.h"
 #include "memmodel.h"
@@ -2168,6 +2169,7 @@ process_alt_operands (int only_alternative)
   bool costly_p;
   enum reg_class cl;
   const HARD_REG_SET *cl_filter;
+  HARD_REG_SET hard_reg_constraint;
 
   /* Calculate some data common for all alternatives to speed up the
      function.	*/
@@ -2544,6 +2546,17 @@ process_alt_operands (int only_alternative)
 		  cl = GENERAL_REGS;
 		  cl_filter = nullptr;
 		  goto reg;
+
+		case '{':
+		    {
+		      int regno = decode_hard_reg_constraint (p);
+		      gcc_assert (regno >= 0);
+		      cl = REGNO_REG_CLASS (regno);
+		      CLEAR_HARD_REG_SET (hard_reg_constraint);
+		      SET_HARD_REG_BIT (hard_reg_constraint, regno);
+		      cl_filter = &hard_reg_constraint;
+		      goto reg;
+		    }
 
 		default:
 		  cn = lookup_constraint (p);

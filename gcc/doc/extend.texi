@@ -12775,6 +12775,7 @@ the two, as explained in the sections below.
 @menu
 * Global Register Variables::   Variables declared at global scope.
 * Local Register Variables::    Variables declared within a function.
+* Hard Register Constraints::   Operands forced into specific machine registers.
 @end menu
 
 @node Global Register Variables
@@ -12979,6 +12980,167 @@ On the MIPS platform, there is related use for local register variables
 with slightly different characteristics (@pxref{MIPS Coprocessors,, 
 Defining coprocessor specifics for MIPS targets, gccint, 
 GNU Compiler Collection (GCC) Internals}).
+
+@node Hard Register Constraints
+@subsubsection Hard Register Constraints
+
+Similar to register @code{asm} but still distinct, hard register constraints
+are another way to force operands of inline @code{asm} into specific machine
+registers.  In contrast to register @code{asm} where a variable is bound to a
+machine register, a hard register constraint binds an @code{asm} operand to a
+machine register.  Assume in the following that @code{r4} is a general-purpose
+register, @code{f5} a floating-point register, and @code{v6} a vector register
+for some target.
+
+@smallexample
+int x;
+int y __attribute__ ((vector_size (16)));
+@dots{}
+asm ("some instructions"
+     : "=@{r4@}" (x)
+     : "@{f5@}" (42.0), "@{v6@}" (y));
+@end smallexample
+
+For the inline @code{asm}, variable @code{x} is bound to register @code{r4},
+and @code{y} is loaded to @code{v6}.  Furthermore, constant @code{42.0} is
+loaded into floating-point register @code{f5}.
+
+A key difference between register @code{asm} and hard register constraints is
+that the latter are specified at the point where they are supposed to
+materialize, namely at inline @code{asm}, which may lead to more readable code.
+
+@subsubheading Usage
+
+Each input operand is loaded into the register specified by its corresponding
+hard register constraint.  Furthermore, each hard register must be used at most
+once among an alternative for inputs.  This renders hard register constraints
+more strict compared to register @code{asm} where multiple inputs may share a
+register as for example in
+
+@smallexample
+int x;
+register int y asm ("0") = @dots{};
+asm ("" : "=r" (x) : "r" (y), "r" (y));
+@end smallexample
+
+or even
+
+@smallexample
+register int x asm ("0") = 42;
+register int y asm ("0") = 24;
+asm ("" : "=r" (x) : "r" (x), "r" (y));
+@end smallexample
+
+The analogue for hard register constraints is invalid in order to prevent
+subtle bugs.
+
+Likewise, two outputs must not share a register among an alternative.  That
+means, the following example is invalid
+
+@smallexample
+int x, y;
+asm ("" : "=@{r4@}" (x), "=@{r4@}" (y));  // invalid
+@end smallexample
+
+which also aligns with register @code{asm}.  Despite that, each output must
+refer to a distinct object if a hard register constraint is involved.  For
+example, in the following, object @code{x} is assigned two registers.
+
+@smallexample
+int x;
+asm ("" : "=r" (x), "=r" (x));
+@end smallexample
+
+This is not allowed for hard register constraints in order to prevent subtle
+bugs.  Even if only one output operand has a hard register constraint, the code
+is rejected since the allocation for the object is still ambiguous.
+
+@smallexample
+int x;
+asm ("" : "=r" (x), "=@{1@}" (x));  // invalid
+@end smallexample
+
+The type of an operand must be supported by the corresponding machine register.
+
+A hard register constraint may refer to any general, floating-point, or vector
+register except a fixed register as e.g.@: the stack-pointer register.  The set
+of allowed registers is target dependent analogue to register @code{asm}.
+Furthermore, the referenced register must be a valid register name of the
+target.  Note, on some targets, a single register may be referred to by
+different names where each name specifies the length of the register.  For
+example, on x86_64 the register names @code{rcx}, @code{ecx}, and @code{cx} all
+refer to the same register but in different sizes.  If any of those names is
+used for a hard register constraint, the actual size of a register is
+determined by its corresponding operand.  For example
+
+@smallexample
+long x;
+asm ("mov\t$42, %0" : "=@{ecx@}" (x));
+@end smallexample
+
+Although the hard register constraint refers to register @code{ecx}, the actual
+register will be @code{rcx} since on x86_64 a @code{long} is 8 byte in total.
+This aligns with register @code{asm} where you could have
+
+@smallexample
+register long x asm ("ecx");
+@end smallexample
+
+@subsubheading Interaction with Register @code{asm}
+
+A mixture of both constructs as for example
+
+@smallexample
+register int x asm ("r4") = 42;
+int y;
+asm ("" : "=@{r5@}" (y) : "r" (x));
+@end smallexample
+
+is valid.
+
+If an operand is a register @code{asm} and the corresponding constraint a hard
+register, then both must refer to the same register.  That means
+
+@smallexample
+register int x asm ("r4");
+asm ("" : "=@{r4@}" (x));
+@end smallexample
+
+is valid and
+
+@smallexample
+register int x asm ("r4");
+asm ("" : "=@{r5@}" (x));  // invalid
+@end smallexample
+
+is invalid.
+
+Note, register @code{asm} may not only be clobbered by function calls but also
+by inline @code{asm} in conjunction with hard register constraints.  For
+example, in the following
+
+@smallexample
+register int x asm ("r5") = 42;
+int y;
+asm ("" : "=@{r5@}" (y));
+asm ("" : "+r" (x));
+@end smallexample
+
+variable @code{x} materializes before the very first inline @code{asm} which
+writes to register @code{r5} and therefore clobbers @code{x} which in turn is
+read by the subsequent inline @code{asm}.
+
+@subsubheading Limitations
+
+At the moment fixed registers are not supported for hard register constraints.
+Thus, idioms like
+
+@smallexample
+register void *x asm ("rsp");
+asm ("" : "=r" (x));
+@end smallexample
+
+are not supported for hard register constraints.  This might be lifted.
 
 @node Size of an asm
 @subsection Size of an @code{asm}

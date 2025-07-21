@@ -1366,6 +1366,12 @@ as for @samp{<} apply.
 A register operand is allowed provided that it is in a general
 register.
 
+@cindex hard registers in constraint
+@item @samp{@{r@}}
+An operand is bound to hard register @samp{r} which may be any general,
+floating-point, or vector register except a fixed register like a stack pointer
+register.  The set of fixed registers is target dependent.
+
 @cindex constants in constraints
 @cindex @samp{i} in constraint
 @item @samp{i}

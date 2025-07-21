@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 #include "cfgexpand.h"
+#include "output.h"
 
 
 /* Functions and data structures for expanding case statements.  */
@@ -175,6 +176,32 @@ expand_label (tree label)
     maybe_set_first_label_num (label_r);
 }
 
+/* Parse a hard register constraint and return its number or -1 in case of an
+   error.  BEGIN should point to a string of the form `{regname}`.  For the
+   sake of simplicity assume that a register name is not longer than 31
+   characters, if not error out.  */
+
+int
+decode_hard_reg_constraint (const char *begin)
+{
+  if (*begin != '{')
+    return -1;
+  ++begin;
+  const char *end = begin;
+  while (*end != '}' && *end != '\0')
+    ++end;
+  if (*end != '}' || end == begin)
+    return -1;
+  ptrdiff_t len = end - begin;
+  if (len >= 31)
+    return -1;
+  char regname[32];
+  memcpy (regname, begin, len);
+  regname[len] = '\0';
+  int regno = decode_reg_name (regname);
+  return regno;
+}
+
 /* Parse the output constraint pointed to by *CONSTRAINT_P.  It is the
    OPERAND_NUMth output operand, indexed from zero.  There are NINPUTS
    inputs and NOUTPUTS outputs to this extended-asm.  Upon return,
@@ -293,6 +320,12 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	  *allows_reg = true;
 	  *allows_mem = true;
 	  break;
+
+	case '{':
+	  {
+	    *allows_reg = true;
+	    break;
+	  }
 
 	default:
 	  if (!ISALPHA (*p))
@@ -428,6 +461,12 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	*allows_reg = true;
 	*allows_mem = true;
 	break;
+
+      case '{':
+	{
+	  *allows_reg = true;
+	  break;
+	}
 
       default:
 	if (! ISALPHA (constraint[j]))

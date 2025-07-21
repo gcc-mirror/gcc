@@ -2113,6 +2113,87 @@ ira_get_dup_out_num (int op_num, alternative_mask alts,
 
 
 
+/* Return true if a replacement of SRC by DEST does not lead to unsatisfiable
+   asm.  A replacement is valid if SRC or DEST are not constrained in asm
+   inputs of a single asm statement.  See match_asm_constraints_2() for more
+   details.  TODO: As in match_asm_constraints_2() consider alternatives more
+   precisely.  */
+
+static bool
+valid_replacement_for_asm_input_p_1 (const_rtx asmops, const_rtx src, const_rtx dest)
+{
+  int ninputs = ASM_OPERANDS_INPUT_LENGTH (asmops);
+  rtvec inputs = ASM_OPERANDS_INPUT_VEC (asmops);
+  for (int i = 0; i < ninputs; ++i)
+    {
+      rtx input_src = RTVEC_ELT (inputs, i);
+      const char *constraint_src
+	= ASM_OPERANDS_INPUT_CONSTRAINT (asmops, i);
+      if (rtx_equal_p (input_src, src)
+	  && strchr (constraint_src, '{') != nullptr)
+	for (int j = 0; j < ninputs; ++j)
+	  {
+	    rtx input_dest = RTVEC_ELT (inputs, j);
+	    const char *constraint_dest
+	      = ASM_OPERANDS_INPUT_CONSTRAINT (asmops, j);
+	    if (rtx_equal_p (input_dest, dest)
+		&& strchr (constraint_dest, '{') != nullptr)
+	      return false;
+	  }
+    }
+  return true;
+}
+
+/* Return true if a replacement of SRC by DEST does not lead to unsatisfiable
+   asm.  A replacement is valid if SRC or DEST are not constrained in asm
+   inputs of a single asm statement.  The final check is done in function
+   valid_replacement_for_asm_input_p_1.  */
+
+static bool
+valid_replacement_for_asm_input_p (const_rtx src, const_rtx dest)
+{
+  /* Bail out early if there is no asm statement.  */
+  if (!crtl->has_asm_statement)
+    return true;
+  for (df_ref use = DF_REG_USE_CHAIN (REGNO (src));
+       use;
+       use = DF_REF_NEXT_REG (use))
+    {
+      struct df_insn_info *use_info = DF_REF_INSN_INFO (use);
+      /* Only check real uses, not artificial ones.  */
+      if (use_info)
+	{
+	  rtx_insn *insn = DF_REF_INSN (use);
+	  rtx pat = PATTERN (insn);
+	  if (asm_noperands (pat) <= 0)
+	    continue;
+	  if (GET_CODE (pat) == SET)
+	    {
+	      if (!valid_replacement_for_asm_input_p_1 (SET_SRC (pat), src, dest))
+		return false;
+	    }
+	  else if (GET_CODE (pat) == PARALLEL)
+	    for (int i = 0, len = XVECLEN (pat, 0); i < len; ++i)
+	      {
+		rtx asmops = XVECEXP (pat, 0, i);
+		if (GET_CODE (asmops) == SET)
+		  asmops = SET_SRC (asmops);
+		if (GET_CODE (asmops) == ASM_OPERANDS
+		    && !valid_replacement_for_asm_input_p_1 (asmops, src, dest))
+		  return false;
+	      }
+	  else if (GET_CODE (pat) == ASM_OPERANDS)
+	    {
+	      if (!valid_replacement_for_asm_input_p_1 (pat, src, dest))
+		return false;
+	    }
+	  else
+	    gcc_unreachable ();
+	}
+    }
+  return true;
+}
+
 /* Search forward to see if the source register of a copy insn dies
    before either it or the destination register is modified, but don't
    scan past the end of the basic block.  If so, we can replace the
@@ -2162,7 +2243,8 @@ decrease_live_ranges_number (void)
 	       auto-inc memory reference, so we must disallow this
 	       optimization on them.  */
 	    || sregno == STACK_POINTER_REGNUM
-	    || dregno == STACK_POINTER_REGNUM)
+	    || dregno == STACK_POINTER_REGNUM
+	    || !valid_replacement_for_asm_input_p (src, dest))
 	  continue;
 
 	dest_death = NULL_RTX;

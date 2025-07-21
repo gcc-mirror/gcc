@@ -3711,9 +3711,11 @@ cris_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
   /* Determine if the source using MOF.  If it is, automatically
      clobbering MOF would cause it to have impossible constraints.  */
 
-  /* Look for a use of the MOF constraint letter: h.  */
+  /* Look for a use of the MOF constraint letter h or a hard register
+     constraint.  */
   for (unsigned i = 0, n = constraints.length(); i < n; ++i)
-    if (strchr (constraints[i], 'h') != NULL)
+    if (strchr (constraints[i], 'h') != NULL
+	|| strstr (constraints[i], "{mof}") != NULL)
       return NULL;
 
   /* Look for an output or an input that touches MOF.  */

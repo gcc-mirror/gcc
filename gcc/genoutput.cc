@@ -1284,6 +1284,20 @@ mdep_constraint_len (const char *s, file_location loc, int opno)
       if (!strncmp (s, p->name, p->namelen))
 	return p->namelen;
 
+  if (*s == '{')
+    {
+      const char *end = s + 1;
+      while (*end != '}' && *end != '"' && *end != '\0')
+	++end;
+      /* Similarly as in decode_hreg_constraint(), consider any hard register
+	 name longer than a few characters as an error.  */
+      ptrdiff_t len = end - s;
+      if (*end == '}' && len > 1 && len < 31)
+	{
+	  return len + 1;
+	}
+    }
+
   error_at (loc, "error: undefined machine-specific constraint "
 	    "at this point: \"%s\"", s);
   message_at (loc, "note:  in operand %d", opno);

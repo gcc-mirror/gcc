@@ -1150,7 +1150,7 @@ write_insn_constraint_len (void)
   unsigned int i;
 
   puts ("static inline size_t\n"
-	"insn_constraint_len (char fc, const char *str ATTRIBUTE_UNUSED)\n"
+	"insn_constraint_len (char fc, const char *str)\n"
 	"{\n"
 	"  switch (fc)\n"
 	"    {");
@@ -1183,6 +1183,8 @@ write_insn_constraint_len (void)
 
   puts ("    default: break;\n"
 	"    }\n"
+	"  if (str[0] == '{')\n"
+	"      return ((const char *) rawmemchr (str + 1, '}') - str) + 1;\n"
 	"  return 1;\n"
 	"}\n");
 }

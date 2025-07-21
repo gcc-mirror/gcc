@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stmt.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -2363,7 +2364,8 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    {
 	    case CT_REGISTER:
 	      if (!result
-		  && reg_class_for_constraint (cn) != NO_REGS
+		  && (reg_class_for_constraint (cn) != NO_REGS
+		      || constraint[0] == '{')
 		  && GET_MODE (op) != BLKmode
 		  && register_operand (op, VOIDmode))
 		result = 1;
@@ -3301,6 +3303,13 @@ constrain_operands (int strict, alternative_mask alternatives)
 		      win = true;
 		  }
 		else if (strict < 0 || general_operand (op, mode))
+		  win = true;
+		break;
+
+	      case '{':
+		if ((REG_P (op) && HARD_REGISTER_P (op)
+		     && (int) REGNO (op) == decode_hard_reg_constraint (p))
+		    || !reload_completed)
 		  win = true;
 		break;
 

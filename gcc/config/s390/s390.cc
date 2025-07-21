@@ -17843,9 +17843,11 @@ f_constraint_p (const char *constraint)
   for (size_t i = 0, c_len = strlen (constraint); i < c_len;
        i += CONSTRAINT_LEN (constraint[i], constraint + i))
     {
-      if (constraint[i] == 'f')
+      if (constraint[i] == 'f'
+	  || (constraint[i] == '{' && constraint[i + 1] == 'f'))
 	seen_f_p = true;
-      if (constraint[i] == 'v')
+      if (constraint[i] == 'v'
+	  || (constraint[i] == '{' && constraint[i + 1] == 'v'))
 	seen_v_p = true;
     }
 
