@@ -1163,11 +1163,11 @@ protected:
 // Value array elements
 class ArrayElemsValues : public ArrayElems
 {
-  std::vector<std::unique_ptr<Expr> > values;
+  std::vector<std::unique_ptr<Expr>> values;
   location_t locus;
 
 public:
-  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems, location_t locus)
+  ArrayElemsValues (std::vector<std::unique_ptr<Expr>> elems, location_t locus)
     : ArrayElems (), values (std::move (elems)), locus (locus)
   {}
 
@@ -1200,11 +1200,11 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_values () const
+  const std::vector<std::unique_ptr<Expr>> &get_values () const
   {
     return values;
   }
-  std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
+  std::vector<std::unique_ptr<Expr>> &get_values () { return values; }
 
   size_t get_num_values () const { return values.size (); }
 
@@ -1481,7 +1481,7 @@ class TupleExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
-  std::vector<std::unique_ptr<Expr> > tuple_elems;
+  std::vector<std::unique_ptr<Expr>> tuple_elems;
   location_t locus;
 
   // TODO: find another way to store this to save memory?
@@ -1501,7 +1501,7 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  TupleExpr (std::vector<std::unique_ptr<Expr> > tuple_elements,
+  TupleExpr (std::vector<std::unique_ptr<Expr>> tuple_elements,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)),
@@ -1552,14 +1552,11 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const
+  const std::vector<std::unique_ptr<Expr>> &get_tuple_elems () const
   {
     return tuple_elems;
   }
-  std::vector<std::unique_ptr<Expr> > &get_tuple_elems ()
-  {
-    return tuple_elems;
-  }
+  std::vector<std::unique_ptr<Expr>> &get_tuple_elems () { return tuple_elems; }
 
   bool is_unit () const { return tuple_elems.size () == 0; }
 
@@ -1983,7 +1980,7 @@ protected:
 class StructExprStructFields : public StructExprStruct
 {
   // std::vector<StructExprField> fields;
-  std::vector<std::unique_ptr<StructExprField> > fields;
+  std::vector<std::unique_ptr<StructExprField>> fields;
 
   // bool has_struct_base;
   StructBase struct_base;
@@ -1996,8 +1993,8 @@ public:
   // Constructor for StructExprStructFields when no struct base is used
   StructExprStructFields (
     PathInExpression struct_path,
-    std::vector<std::unique_ptr<StructExprField> > expr_fields,
-    location_t locus, StructBase base_struct = StructBase::error (),
+    std::vector<std::unique_ptr<StructExprField>> expr_fields, location_t locus,
+    StructBase base_struct = StructBase::error (),
     std::vector<Attribute> inner_attribs = std::vector<Attribute> (),
     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : StructExprStruct (std::move (struct_path), std::move (inner_attribs),
@@ -2034,11 +2031,11 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<StructExprField> > &get_fields ()
+  std::vector<std::unique_ptr<StructExprField>> &get_fields ()
   {
     return fields;
   }
-  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
+  const std::vector<std::unique_ptr<StructExprField>> &get_fields () const
   {
     return fields;
   }
@@ -2095,7 +2092,7 @@ class CallExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> function;
-  std::vector<std::unique_ptr<Expr> > params;
+  std::vector<std::unique_ptr<Expr>> params;
   location_t locus;
 
 public:
@@ -2104,7 +2101,7 @@ public:
   std::string as_string () const override;
 
   CallExpr (std::unique_ptr<Expr> function_expr,
-	    std::vector<std::unique_ptr<Expr> > function_params,
+	    std::vector<std::unique_ptr<Expr>> function_params,
 	    std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)),
       function (std::move (function_expr)),
@@ -2161,11 +2158,11 @@ public:
   bool is_marked_for_strip () const override { return function == nullptr; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_params () const
+  const std::vector<std::unique_ptr<Expr>> &get_params () const
   {
     return params;
   }
-  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
+  std::vector<std::unique_ptr<Expr>> &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_function_expr ()
@@ -2201,7 +2198,7 @@ class MethodCallExpr : public ExprWithoutBlock
   std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
-  std::vector<std::unique_ptr<Expr> > params;
+  std::vector<std::unique_ptr<Expr>> params;
   location_t locus;
 
 public:
@@ -2209,7 +2206,7 @@ public:
 
   MethodCallExpr (std::unique_ptr<Expr> call_receiver,
 		  PathExprSegment method_path,
-		  std::vector<std::unique_ptr<Expr> > method_params,
+		  std::vector<std::unique_ptr<Expr>> method_params,
 		  std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)),
       receiver (std::move (call_receiver)),
@@ -2265,11 +2262,11 @@ public:
   bool is_marked_for_strip () const override { return receiver == nullptr; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_params () const
+  const std::vector<std::unique_ptr<Expr>> &get_params () const
   {
     return params;
   }
-  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
+  std::vector<std::unique_ptr<Expr>> &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_receiver_expr ()
@@ -2596,7 +2593,7 @@ class BlockExpr : public ExprWithBlock
 {
   std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
-  std::vector<std::unique_ptr<Stmt> > statements;
+  std::vector<std::unique_ptr<Stmt>> statements;
   std::unique_ptr<Expr> expr;
   tl::optional<LoopLabel> label;
   location_t start_locus;
@@ -2612,7 +2609,7 @@ public:
   // Returns whether the block contains a final expression.
   bool has_tail_expr () const { return expr != nullptr; }
 
-  BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
+  BlockExpr (std::vector<std::unique_ptr<Stmt>> block_statements,
 	     std::unique_ptr<Expr> block_expr,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs,
@@ -2691,11 +2688,11 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<Stmt> > &get_statements () const
+  const std::vector<std::unique_ptr<Stmt>> &get_statements () const
   {
     return statements;
   }
-  std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
+  std::vector<std::unique_ptr<Stmt>> &get_statements () { return statements; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_tail_expr ()
@@ -4081,14 +4078,14 @@ protected:
 class WhileLetLoopExpr : public BaseLoopExpr
 {
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
   std::unique_ptr<Expr> scrutinee;
 
 public:
   std::string as_string () const override;
 
   // Constructor with a loop label
-  WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
+  WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
 		    std::unique_ptr<Expr> scrutinee,
 		    std::unique_ptr<BlockExpr> loop_block, location_t locus,
 		    tl::optional<LoopLabel> loop_label = tl::nullopt,
@@ -4142,11 +4139,11 @@ public:
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return match_arm_patterns;
   }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
   {
     return match_arm_patterns;
   }
@@ -4429,7 +4426,7 @@ protected:
 class IfLetExpr : public ExprWithBlock
 {
   std::vector<Attribute> outer_attrs;
-  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
   std::unique_ptr<Expr> value;
   std::unique_ptr<BlockExpr> if_block;
   location_t locus;
@@ -4437,7 +4434,7 @@ class IfLetExpr : public ExprWithBlock
 public:
   std::string as_string () const override;
 
-  IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
+  IfLetExpr (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
 	     std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)),
@@ -4531,11 +4528,11 @@ public:
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return match_arm_patterns;
   }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
   {
     return match_arm_patterns;
   }
@@ -4575,11 +4572,11 @@ class IfLetExprConseqElse : public IfLetExpr
 public:
   std::string as_string () const override;
 
-  IfLetExprConseqElse (
-    std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-    std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-    std::unique_ptr<ExprWithBlock> else_block,
-    std::vector<Attribute> outer_attrs, location_t locus)
+  IfLetExprConseqElse (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+		       std::unique_ptr<Expr> value,
+		       std::unique_ptr<BlockExpr> if_block,
+		       std::unique_ptr<ExprWithBlock> else_block,
+		       std::vector<Attribute> outer_attrs, location_t locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
 		 std::move (if_block), std::move (outer_attrs), locus),
       else_block (std::move (else_block))
@@ -4632,7 +4629,7 @@ struct MatchArm
 private:
   std::vector<Attribute> outer_attrs;
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
 
   // bool has_match_arm_guard;
   // inlined from MatchArmGuard
@@ -4645,7 +4642,7 @@ public:
   bool has_match_arm_guard () const { return guard_expr != nullptr; }
 
   // Constructor for match arm with a guard expression
-  MatchArm (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
+  MatchArm (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
 	    location_t locus, std::unique_ptr<Expr> guard_expr = nullptr,
 	    std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)),
@@ -4697,7 +4694,7 @@ public:
   static MatchArm create_error ()
   {
     location_t locus = UNDEF_LOCATION;
-    return MatchArm (std::vector<std::unique_ptr<Pattern> > (), locus);
+    return MatchArm (std::vector<std::unique_ptr<Pattern>> (), locus);
   }
 
   std::string as_string () const;
@@ -4719,11 +4716,11 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return match_arm_patterns;
   }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
   {
     return match_arm_patterns;
   }
