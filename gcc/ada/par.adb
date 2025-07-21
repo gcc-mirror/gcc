@@ -227,6 +227,69 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --   that there is a missing body, but it seems more reasonable to let the
    --   later semantic checking discover this.
 
+   --------------------------------------------
+   -- Handling IS Used in Place of Semicolon --
+   --------------------------------------------
+
+   --  This is a somewhat trickier situation, and we can't catch it in all
+   --  cases, but we do our best to detect common situations resulting from
+   --  a "cut and paste" operation which forgets to change the IS to semicolon.
+   --  Consider the following example:
+
+   --    package body X is
+   --      procedure A;
+   --      procedure B is -- Error: IS should be semicolon
+   --      procedure C;
+   --      ...
+   --      procedure D is
+   --      begin
+   --         ...
+   --      end;
+   --    begin
+   --      ...
+   --    end; -- end of B?
+
+   --  The trouble is that the section of text from PROCEDURE B through the
+   --  END; marked "-- end of B?" constitutes a valid procedure body, and the
+   --  danger is that we find out far too late that something is wrong.
+
+   --  We have two approaches to helping to control this situation. First we
+   --  make every attempt to avoid swallowing the last END; if we can be sure
+   --  that some error will result from doing so. In particular, we won't
+   --  accept the END; unless it is exactly correct (in particular it must not
+   --  have incorrect name tokens), and we won't accept it if it is immediately
+   --  followed by end of file, WITH or SEPARATE (tokens that unmistakeably
+   --  signal the start of a compilation unit, and which therefore allow us to
+   --  reserve the END; for the outer level.) For more details on this aspect
+   --  of the handling, see package Par.Endh.
+
+   --  If we can avoid eating up the END; then the result in the absence of
+   --  any additional steps would be to post a missing END referring back to
+   --  the subprogram with the bogus IS. Similarly, if the enclosing package
+   --  has no BEGIN, then the result is a missing BEGIN message, which again
+   --  refers back to the subprogram header.
+
+   --  Such an error message is not too bad, but it's not ideal, because
+   --  the declarations following the IS have been absorbed into the wrong
+   --  scope. In the above case, this could result for example in a bogus
+   --  complaint that the body of D was missing from the package.
+
+   --  To catch at least some of these cases, we take the following additional
+   --  steps. First, a subprogram body is marked as having a suspicious IS if
+   --  the declaration line is followed by a line that starts with a symbol
+   --  that can start a declaration in the same column, or to the left of the
+   --  column in which the FUNCTION or PROCEDURE starts (normal style is to
+   --  indent any declarations that really belong a subprogram). If such a
+   --  subprogram encounters a missing BEGIN or missing END, then we decide
+   --  that the IS should have been a semicolon, and the subprogram body node
+   --  is marked (by setting the Bad_Is_Detected flag true. Note that we do
+   --  not do this for library level procedures, only for nested procedures,
+   --  since for library level procedures, we must have a body.
+
+   --  The processing for a declarative part checks to see if the last
+   --  declaration scanned is marked in this way, and if it is, the tree
+   --  is modified to reflect the IS being interpreted as a semicolon.
+
    ----------------------------------------------------
    -- Handling of Reserved Words Used as Identifiers --
    ----------------------------------------------------
@@ -293,71 +356,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       C_Vertical_Bar_Arrow);
       --  Consider as identifier if followed by | or =>
-
-   --------------------------------------------
-   -- Handling IS Used in Place of Semicolon --
-   --------------------------------------------
-
-   --  This is a somewhat trickier situation, and we can't catch it in all
-   --  cases, but we do our best to detect common situations resulting from
-   --  a "cut and paste" operation which forgets to change the IS to semicolon.
-   --  Consider the following example:
-
-   --    package body X is
-   --      procedure A;
-   --      procedure B is
-   --      procedure C;
-   --      ...
-   --      procedure D is
-   --      begin
-   --         ...
-   --      end;
-   --    begin
-   --      ...
-   --    end;
-
-   --  The trouble is that the section of text from PROCEDURE B through END;
-   --  constitutes a valid procedure body, and the danger is that we find out
-   --  far too late that something is wrong (indeed most compilers will behave
-   --  uncomfortably on the above example).
-
-   --  We have two approaches to helping to control this situation. First we
-   --  make every attempt to avoid swallowing the last END; if we can be sure
-   --  that some error will result from doing so. In particular, we won't
-   --  accept the END; unless it is exactly correct (in particular it must not
-   --  have incorrect name tokens), and we won't accept it if it is immediately
-   --  followed by end of file, WITH or SEPARATE (all tokens that unmistakeably
-   --  signal the start of a compilation unit, and which therefore allow us to
-   --  reserve the END; for the outer level.) For more details on this aspect
-   --  of the handling, see package Par.Endh.
-
-   --  If we can avoid eating up the END; then the result in the absence of
-   --  any additional steps would be to post a missing END referring back to
-   --  the subprogram with the bogus IS. Similarly, if the enclosing package
-   --  has no BEGIN, then the result is a missing BEGIN message, which again
-   --  refers back to the subprogram header.
-
-   --  Such an error message is not too bad (it's already a big improvement
-   --  over what many parsers do), but it's not ideal, because the declarations
-   --  following the IS have been absorbed into the wrong scope. In the above
-   --  case, this could result for example in a bogus complaint that the body
-   --  of D was missing from the package.
-
-   --  To catch at least some of these cases, we take the following additional
-   --  steps. First, a subprogram body is marked as having a suspicious IS if
-   --  the declaration line is followed by a line which starts with a symbol
-   --  that can start a declaration in the same column, or to the left of the
-   --  column in which the FUNCTION or PROCEDURE starts (normal style is to
-   --  indent any declarations which really belong a subprogram). If such a
-   --  subprogram encounters a missing BEGIN or missing END, then we decide
-   --  that the IS should have been a semicolon, and the subprogram body node
-   --  is marked (by setting the Bad_Is_Detected flag true. Note that we do
-   --  not do this for library level procedures, only for nested procedures,
-   --  since for library level procedures, we must have a body.
-
-   --  The processing for a declarative part checks to see if the last
-   --  declaration scanned is marked in this way, and if it is, the tree
-   --  is modified to reflect the IS being interpreted as a semicolon.
 
    ---------------------------------------------------
    -- Parser Type Definitions and Control Variables --
@@ -1449,6 +1447,47 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Issues a warning if Warn_On_Standard_Redefinition is set True, and
       --  the Node N (which is a Defining_Identifier node with the Chars field
       --  set) is a renaming of an entity in package Standard.
+
+      -----------------------------------
+      -- Multiple defining identifiers --
+      -----------------------------------
+
+      --  RM-3.3.1(7) says:
+      --
+      --    Any declaration that includes a defining_identifier_list with
+      --    more than one defining_identifier is equivalent to a series of
+      --    declarations each containing one defining_identifier from the list,
+      --    with the rest of the text of the declaration copied for each
+      --    declaration in the series, in the same order as the list.
+      --
+      --  We parse such declarations by first calling P_Def_Ids (see below).
+      --  Then, if there are multiple identifiers, we repeatedly scan the
+      --  type and initialization expression information by resetting the
+      --  scan pointer (so that we get completely separate trees for each
+      --  occurrence).
+
+      --  Defining_Identifiers is a sequence of identifiers parsed by
+      --  P_Def_Ids. Idents holds the identifiers, and Num_Idents
+      --  points to the last-used array elements. The upper bound
+      --  is intended to be essentially infinite, so we don't bother
+      --  giving a good error message when it is exceeded -- we
+      --  simply raise an exception.
+
+      type Defining_Identifiers_Array is
+        array (Pos range 1 .. 4096) of Entity_Id;
+
+      type Defining_Identifiers is record
+         Num_Idents : Nat := 0;
+         Idents     : Defining_Identifiers_Array;
+      end record;
+
+      procedure Append
+        (Def_Ids : in out Defining_Identifiers; Def_Id : Entity_Id);
+      --  Append one defining identifier onto Def_Ids.
+
+      procedure P_Def_Ids (Def_Ids : out Defining_Identifiers);
+      --  Parse a defining_identifier_list, appending the identifiers
+      --  onto Def_Ids, which should be initially empty.
 
    end Util;
 

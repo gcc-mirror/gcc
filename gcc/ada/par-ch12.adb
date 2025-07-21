@@ -420,32 +420,17 @@ package body Ch12 is
 
    procedure P_Formal_Object_Declarations (Decls : List_Id) is
       Decl_Node        : Node_Id;
-      Ident            : Pos;
       Not_Null_Present : Boolean := False;
-      Num_Idents       : Pos;
       Scan_State       : Saved_Scan_State;
 
-      Idents : array (Pos range 1 .. 4096) of Entity_Id;
-      --  This array holds the list of defining identifiers. The upper bound
-      --  of 4096 is intended to be essentially infinite, and we do not even
-      --  bother to check for it being exceeded.
+      Def_Ids : Defining_Identifiers;
+      Ident   : Pos;
 
    begin
-      Idents (1) := P_Defining_Identifier (C_Comma_Colon);
-      Num_Idents := 1;
-      while Comma_Present loop
-         Num_Idents := Num_Idents + 1;
-         Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
-      end loop;
-
+      P_Def_Ids (Def_Ids);
       T_Colon;
 
-      --  If there are multiple identifiers, we repeatedly scan the
-      --  type and initialization expression information by resetting
-      --  the scan pointer (so that we get completely separate trees
-      --  for each occurrence).
-
-      if Num_Idents > 1 then
+      if Def_Ids.Num_Idents > 1 then
          Save_Scan_State (Scan_State);
       end if;
 
@@ -454,7 +439,7 @@ package body Ch12 is
       Ident := 1;
       Ident_Loop : loop
          Decl_Node := New_Node (N_Formal_Object_Declaration, Token_Ptr);
-         Set_Defining_Identifier (Decl_Node, Idents (Ident));
+         Set_Defining_Identifier (Decl_Node, Def_Ids.Idents (Ident));
          P_Mode (Decl_Node);
 
          Not_Null_Present := P_Null_Exclusion;  --  Ada 2005 (AI-423)
@@ -488,13 +473,13 @@ package body Ch12 is
             Set_Prev_Ids (Decl_Node, True);
          end if;
 
-         if Ident < Num_Idents then
+         if Ident < Def_Ids.Num_Idents then
             Set_More_Ids (Decl_Node, True);
          end if;
 
          Append (Decl_Node, Decls);
 
-         exit Ident_Loop when Ident = Num_Idents;
+         exit Ident_Loop when Ident = Def_Ids.Num_Idents;
          Ident := Ident + 1;
          Restore_Scan_State (Scan_State);
       end loop Ident_Loop;
