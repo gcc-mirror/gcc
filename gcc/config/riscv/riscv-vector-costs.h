@@ -91,7 +91,10 @@ private:
   typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
   hash_set <tree_pair_hash> memrefs;
 
+  hash_map <stmt_vec_info, slp_tree> vinfo_slp_map;
+
   void analyze_loop_vinfo (loop_vec_info);
+  void record_lmul_spills (loop_vec_info loop_vinfo);
   void record_potential_vls_unrolling (loop_vec_info);
   bool prefer_unrolled_loop () const;
 
@@ -102,6 +105,19 @@ private:
      V_REGS spills according to the analysis.  */
   bool m_has_unexpected_spills_p = false;
   void record_potential_unexpected_spills (loop_vec_info);
+
+  void compute_local_program_points (vec_info *,
+				     hash_map<basic_block, vec<stmt_point>> &);
+  void update_local_live_ranges (vec_info *,
+				 hash_map<basic_block, vec<stmt_point>> &,
+				 hash_map<basic_block, hash_map<tree, pair>> &,
+				 machine_mode *);
+  machine_mode compute_local_live_ranges
+    (loop_vec_info, const hash_map<basic_block, vec<stmt_point>> &,
+     hash_map<basic_block, hash_map<tree, pair>> &);
+
+  bool has_unexpected_spills_p (loop_vec_info);
+  bool need_additional_vector_vars_p (stmt_vec_info, slp_tree);
 
   void adjust_vect_cost_per_loop (loop_vec_info);
   unsigned adjust_stmt_cost (enum vect_cost_for_stmt kind,
