@@ -103,7 +103,7 @@ void input_file_status_notify();
         }                                                               \
       location_dump("parse.c", __LINE__, "current", (Current));         \
       input_file_status_notify();                                       \
-      gcc_location_set( location_set(Current) );                        \
+      location_set(Current);                                            \
   } while (0)
 
 int yylex(void);
@@ -3493,18 +3493,18 @@ goodnight_gracie() {
 
 // false after USE statement, to enter Declarative with EC intact. 
 static bool statement_cleanup = true;
+static YYLTYPE current_location;
 
 static void statement_epilog( int token );
 
 const char * keyword_str( int token );
 
-static YYLTYPE current_location;
-
 const YYLTYPE& cobol_location() { return current_location; }
 
-static inline YYLTYPE
+static inline void
 location_set( const YYLTYPE& loc ) {
-  return current_location = loc;
+  current_location = loc;
+  gcc_location_set(loc);
 }
 
 static void statement_begin( const YYLTYPE& loc, int token );

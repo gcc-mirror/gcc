@@ -52,20 +52,26 @@ void parser_division( cbl_division_t division,
 void parser_enter_program(const char *funcname, bool is_function, int *retval);
 void parser_leave_program();
 
-void parser_accept( cbl_refer_t refer, special_name_t special_e, 
-                    cbl_label_t *error, cbl_label_t *not_error );
+void parser_accept( const cbl_refer_t &refer,
+                    special_name_t special_e,
+                    cbl_label_t *error,
+                    cbl_label_t *not_error );
 void parser_accept_exception( cbl_label_t *name );
 void parser_accept_exception_end( cbl_label_t *name );
 
 void parser_accept_under_discussion(struct cbl_refer_t tgt, special_name_t special,
                                     cbl_label_t *error, cbl_label_t *not_error );
-void parser_accept_envar( cbl_refer_t refer, cbl_refer_t envar,
-                          cbl_label_t *error, cbl_label_t *not_error );
-void parser_set_envar( cbl_refer_t envar, cbl_refer_t refer );
+void parser_accept_envar( const cbl_refer_t &refer,
+                          const cbl_refer_t &envar,
+                          cbl_label_t *error,
+                          cbl_label_t *not_error );
+void parser_set_envar( const cbl_refer_t &envar, const cbl_refer_t &refer );
 
-void parser_accept_command_line( cbl_refer_t tgt, cbl_refer_t src,
-                          cbl_label_t *error, cbl_label_t *not_error );
-void parser_accept_command_line_count( cbl_refer_t tgt );
+void parser_accept_command_line(const cbl_refer_t &tgt,
+                                const cbl_refer_t &src,
+                                cbl_label_t *error,
+                                cbl_label_t *not_error );
+void parser_accept_command_line_count( const cbl_refer_t &tgt );
 
 void parser_accept_date_yymmdd( cbl_field_t *tgt );
 void parser_accept_date_yyyymmdd( cbl_field_t *tgt );
@@ -89,8 +95,7 @@ parser_add( size_t nC, cbl_num_result_t *C,
             size_t nA, cbl_refer_t *A,
             cbl_arith_format_t format,
             cbl_label_t *error,
-            cbl_label_t *not_error,
-            void *compute_error = NULL);  // This has to be cast to a tree pointer to int
+            cbl_label_t *not_error,            void *compute_error = NULL);  // This has to be cast to a tree pointer to int
 
 void parser_arith_error( cbl_label_t *name );
 void parser_arith_error_end( cbl_label_t *name );
@@ -177,7 +182,8 @@ parser_bitwise_op(struct cbl_field_t *tgt,
 
 void
 parser_classify( struct cbl_field_t *tgt,
-                 struct cbl_refer_t  srca,  enum classify_t type );
+           const struct cbl_refer_t &srca,
+                 enum                classify_t type );
 
 void
 parser_op( struct cbl_refer_t cref,
@@ -256,7 +262,7 @@ parser_program_hierarchy( const struct cbl_prog_hier_t& hier );
 void
 parser_end_program(const char *name=NULL);
 
-void parser_sleep(cbl_refer_t seconds);
+void parser_sleep(const cbl_refer_t &seconds);
 
 void parser_exit( const cbl_refer_t& refer, ec_type_t = ec_none_e );
 void parser_exit_section(void);
@@ -265,9 +271,12 @@ void parser_exit_perform( struct cbl_perform_tgt_t *tgt, bool cycle );
 void parser_exit_program(void); // exits back to COBOL only, else continue
 
 void
+parser_exhibit( bool changed, bool named,
+                const std::vector<cbl_refer_t> &args );
+void
 parser_display( const struct cbl_special_name_t *upon,
-                std::vector<cbl_refer_t> args, 
-                bool advance = DISPLAY_ADVANCE, 
+                const std::vector<cbl_refer_t> &args,
+                bool advance = DISPLAY_ADVANCE,
           const cbl_label_t *not_error = nullptr,
           const cbl_label_t *compute_error = nullptr );
 
@@ -305,7 +314,7 @@ void
 parser_initialize(const cbl_refer_t& refer, bool like_parser_symbol_add=false);
 
 void
-parser_initialize_programs(size_t nprog, struct cbl_refer_t *progs);
+parser_initialize_programs(size_t nprog, const struct cbl_refer_t *progs);
 
 void
 parser_label_label( struct cbl_label_t *label );
@@ -452,7 +461,7 @@ parser_intrinsic_numval_c( cbl_field_t *f,
 
 void
 parser_intrinsic_subst( cbl_field_t *f,
-                        cbl_refer_t& ref1,
+                  const cbl_refer_t& ref1,
                         size_t argc,
                         cbl_substitute_t * argv );
 

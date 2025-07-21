@@ -89,6 +89,7 @@ EOL  \r?\n
 BLANK_EOL   [[:blank:]]*{EOL}
 BLANK_OEOL  [[:blank:]]*{EOL}?
 
+PICTURE   [^[:space:]]+
 
 DOTSEP    [.]+[[:space:]]
 DOTEOL    [[:blank:]]*[.]{BLANK_EOL}
@@ -176,7 +177,7 @@ SIZE_ERROR (ON[[[:space:]]+)?SIZE[[:space:]]+ERROR
 VARTYPE  NUMERIC|ALPHABETIC|ALPHABETIC_LOWER|ALPHABETIC_UPPER|DBCS|KANJI
 NAMTYP   {NAME}|{VARTYPE}
 
-NL       [[:blank:]]*\r?\n[[:blank:]]*
+NL       [[:blank:]]*{EOL}[[:blank:]]*
 
 PUSH_FILE \f?[#]FILE{SPC}PUSH{SPC}[^\f]+\f
 POP_FILE  \f?[#]FILE{SPC}POP\f
@@ -965,7 +966,9 @@ USE({SPC}FOR)?		{ return USE; }
                               return NUMSTR;
                            }
 
-  PIC(TURE)?({SPC}IS)?[[:space:]]{BLANK_OEOL} {
+  PIC(TURE)?({SPC}IS)?{SPC}{PICTURE} {
+				  auto pos = validate_picture();
+				  myless(pos);
 				  yy_push_state(picture); return PIC; }
 
   ANY				{ return ANY; }
@@ -1147,7 +1150,7 @@ USE({SPC}FOR)?		{ return USE; }
 	    		  yy_push_state(hex_state); }
   N?X{nonseq}		{ dbgmsg("invalid hexadecimal value: %s", yytext);
 			  return NO_CONDITION; }
-  [[:blank:]]*\r?\n     {}
+  [[:blank:]]*{EOL}     {}
 
   WORKING-STORAGE{SPC}SECTION { return WORKING_STORAGE_SECT; }
   LOCAL-STORAGE{SPC}SECTION   { return LOCAL_STORAGE_SECT; }
@@ -1217,7 +1220,7 @@ USE({SPC}FOR)?		{ return USE; }
   {NP}V?/[,.]?     { yylval.number = ndigit(yyleng);     return picset(PIC_P); }
   {N9}*V/{N9}*     { yylval.number = ndigit(yyleng - 1); return picset(NINEV); }
   {N9}/{N9}*[,.]?  { yylval.number = ndigit(yyleng);     return picset(NINES); }
-  P+/[,.]?\r?\n    { yylval.number = yyleng;             return picset(PIC_P); }
+  P+/[,.]?{EOL}    { yylval.number = yyleng;             return picset(PIC_P); }
 
   1{1,31}/({COUNT}|[(]{NAME}[)]) {
                          yy_push_state(picture_count);
@@ -1316,7 +1319,7 @@ USE({SPC}FOR)?		{ return USE; }
   [""]{SPC}[&]{SPC}[""''] {
 		        if( yytext[yyleng - 1] == '\'' ) BEGIN(quoted1);
 		      }
-  [""]-{OSPC}(\r?\n{OSPC})+[""] /* continue ...  */
+  [""]-{OSPC}({EOL}{OSPC})+[""] /* continue ...  */
   [""]                {
       			char *s = xstrdup(tmpstring? tmpstring : "\0");
                         yylval.literal.set_data(strlen(s), s);
@@ -1333,7 +1336,7 @@ USE({SPC}FOR)?		{ return USE; }
   ['']{SPC}[&]{SPC}[""''] {
 		        if( yytext[yyleng - 1] == '"' ) BEGIN(quoted2);
 		      }
-  ['']-{OSPC}(\r?\n{OSPC})+[''] /* continue ...  */
+  ['']-{OSPC}({EOL}{OSPC})+[''] /* continue ...  */
   ['']                {
       			char *s = xstrdup(tmpstring? tmpstring : "\0");
                         yylval.literal.set_data(strlen(s), s);
@@ -2040,7 +2043,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 		  return symbol_file(PROGRAM, yytext)? FILENAME : NAME;
 		}
   [[:blank:]]+
-  \r?\n		{ yy_pop_state(); }
+  {EOL}		{ yy_pop_state(); }
 }
 
 <raising>{
@@ -2169,7 +2172,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <*>{DOTSEP}			{ return '.'; }
 <*>[().=*/+&-]			{ return *yytext; }
 <*>[[:blank:]]+
-<*>\r?\n
+<*>{EOL}
 
 <*>{
   {COMMA}

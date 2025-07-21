@@ -305,7 +305,7 @@ static
 void
 get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
                                     tree         reflen,  // LONG returned value
-                                    cbl_refer_t &refer)
+                              const cbl_refer_t &refer)
   {
   const cbl_enabled_exceptions_t&
                                 enabled_exceptions( cdf_enabled_exceptions() );
@@ -542,8 +542,8 @@ get_depending_on_value(tree retval, const cbl_refer_t &refer)
 
 static
 tree
-get_data_offset(cbl_refer_t &refer,
-                int *pflags = NULL)
+get_data_offset(const cbl_refer_t &refer,
+                      int *pflags = NULL)
   {
   Analyze();
   // This routine returns a tree which is the size_t offset to the data in the
@@ -1974,7 +1974,7 @@ refer_is_clean(const cbl_refer_t &refer)
     */
 static
 tree  // size_t
-refer_refmod_length(cbl_refer_t &refer)
+refer_refmod_length(const cbl_refer_t &refer)
   {
   Analyze();
   REFER("refstart and reflen");
@@ -2017,8 +2017,8 @@ refer_fill_depends(const cbl_refer_t &refer)
   }
 
 tree  // size_t
-refer_offset(cbl_refer_t &refer,
-                    int *pflags)
+refer_offset(const cbl_refer_t &refer,
+                   int *pflags)
   {
   // This routine calculates the effect of a refer offset on the
   // refer.field->data location.  When there are subscripts, the data location
@@ -2045,7 +2045,7 @@ refer_offset(cbl_refer_t &refer,
 
 static
 tree   // size_t
-refer_size(cbl_refer_t &refer, refer_type_t refer_type)
+refer_size(const cbl_refer_t &refer, refer_type_t refer_type)
   {
   Analyze();
   static tree retval = gg_define_variable(SIZE_T, "..rs_retval", vs_file_static);
@@ -2086,13 +2086,13 @@ refer_size(cbl_refer_t &refer, refer_type_t refer_type)
   }
 
 tree  // size_t
-refer_size_dest(cbl_refer_t &refer)
+refer_size_dest(const cbl_refer_t &refer)
   {
   return refer_size(refer, refer_dest);
   }
 
 tree  // size_t
-refer_size_source(cbl_refer_t &refer)
+refer_size_source(const cbl_refer_t &refer)
   {
   /*  There are oddities involved with refer_size_source and refer_size_dest.
       See the comments in refer_has_depends for some explanation.  There are
@@ -2129,7 +2129,7 @@ refer_size_source(cbl_refer_t &refer)
   }
 
 tree
-qualified_data_location(cbl_refer_t &refer)
+qualified_data_location(const cbl_refer_t &refer)
   {
   return gg_add(member(refer.field->var_decl_node, "data"),
                 refer_offset(refer));

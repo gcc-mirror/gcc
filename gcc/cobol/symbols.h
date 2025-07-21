@@ -2613,7 +2613,7 @@ symbol_field_same_as( cbl_field_t *tgt, const cbl_field_t *src );
 size_t symbol_file_same_record_area( std::list<cbl_file_t*>& files );
 
 bool symbol_currency_add( const char symbol[], const char sign[] = NULL );
-const char * symbol_currency( char symbol );
+const char * symbol_currency( char symbol = '\0' );
 
 const char * symbol_type_str( enum symbol_type_t type );
 const char * cbl_field_type_str( enum cbl_field_type_t type );

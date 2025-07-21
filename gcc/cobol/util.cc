@@ -2078,16 +2078,45 @@ cobol_filename_restore() {
   linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 }
 
-static location_t token_location;
+static int first_line_minus_1 = 0;
+static location_t token_location_minus_1 = 0;
+static location_t token_location = 0;
 
-location_t location_from_lineno() { return token_location; }
+location_t current_token_location() { return token_location; }
+location_t current_location_minus_one() { return token_location_minus_1; }
+void current_location_minus_one_clear()
+  {
+  first_line_minus_1 = 0;
+  }
 
 template <typename LOC>
 static void
 gcc_location_set_impl( const LOC& loc ) {
   // Set the position to the first line & column in the location.
+  if( getenv("KILROY") )
+    {
+    fprintf(stderr, "********** KILROY %d\n", loc.first_line);
+    }
+
+ static location_t loc_m_1 = 0;
+
   token_location = linemap_line_start( line_table, loc.first_line, 80 );
   token_location = linemap_position_for_column( line_table, loc.first_column);
+
+  if( loc.first_line > first_line_minus_1 )
+    {
+    // In order for GDB-COBOL to be able to step through COBOL code properly,
+    // it is sometimes necessary for the code at the beginning of a COBOL
+    // line to be using the location_t of the previous line.  This is true, for
+    // example, when laying down the infrastructure code between the last
+    // statement of a paragraph and the code created at the beginning of the
+    // following paragragh.  This code assumes that token_location values of
+    // interest are monotonic, and stores that prior value.
+    first_line_minus_1 = loc.first_line;
+    token_location_minus_1 = loc_m_1;
+    loc_m_1 = token_location;
+    }
+
   location_dump(__func__, __LINE__, "parser", loc);
 }
 
@@ -2216,6 +2245,20 @@ void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... )
 
 void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
+}
+
+bool
+warn_msg( const YYLTYPE& loc, const char gmsgid[], ... ) {
+  temp_loc_t looker(loc);
+  verify_format(gmsgid);
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  rich_location richloc (line_table, token_location);
+  auto ret = emit_diagnostic_valist( DK_WARNING, token_location,
+                                     option_zero, gmsgid, &ap );
+  va_end (ap);
+  return ret;
 }
 
 void error_msg_direct( const char gmsgid[], ... ) {

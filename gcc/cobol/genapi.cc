@@ -118,7 +118,7 @@ typedef struct TREEPLET
 
 static
 void
-treeplet_fill_source(TREEPLET &treeplet, cbl_refer_t &refer)
+treeplet_fill_source(TREEPLET &treeplet, const cbl_refer_t &refer)
   {
   treeplet.pfield = gg_get_address_of(refer.field->var_decl_node);
   treeplet.offset = refer_offset(refer);
@@ -233,6 +233,13 @@ trace1_init()
     }
   }
 
+static
+void
+insert_nop(int n)
+  {
+  gg_assign(var_decl_nop, build_int_cst_type(INT, n));
+  }
+
 static void
 create_cblc_string_variable(const char *var_name, const char *var_contents)
   {
@@ -269,8 +276,6 @@ build_main_that_calls_something(const char *something)
     SHOW_PARSE_TEXT(something)
     SHOW_PARSE_END
     }
-
-  gg_set_current_line_number(DEFAULT_LINE_NUMBER);
 
   tree function_decl = gg_define_function( INT,
                                            "main",
@@ -325,7 +330,6 @@ build_main_that_calls_something(const char *something)
                                        argc,
                                        argv,
                                        NULL_TREE)));
-  strncpy(ach_cobol_entry_point, psz, sizeof(ach_cobol_entry_point)-1);
   free(psz);
   gg_finalize_function();
   }
@@ -369,7 +373,7 @@ level_88_helper(size_t parent_capacity,
   gcc_assert(retval);
   char *builder = static_cast<char *>(xmalloc(parent_capacity + 64));
   gcc_assert(builder);
-  
+
   size_t nbuild = 0;
 
   cbl_figconst_t figconst = cbl_figconst_of( elem.name());
@@ -788,7 +792,7 @@ parser_call_targets_dump()
       }
       fprintf(stderr, " ]\n");
     }
-#endif    
+#endif
   }
 
 size_t
@@ -816,8 +820,8 @@ parser_call_target_update( size_t caller,
   }
 
 static tree
-function_pointer_from_name(cbl_refer_t &name,
-                          tree function_return_type)
+function_pointer_from_name(const cbl_refer_t &name,
+                           tree function_return_type)
   {
   Analyze();
 
@@ -893,7 +897,8 @@ function_pointer_from_name(cbl_refer_t &name,
   }
 
 void
-parser_initialize_programs(size_t nprogs, struct cbl_refer_t *progs)
+parser_initialize_programs( size_t nprogs,
+                            const struct cbl_refer_t *progs)
   {
   Analyze();
   SHOW_PARSE
@@ -1178,14 +1183,6 @@ parser_statement_begin( const cbl_name_t statement_name,
     exception_processing = file_ops.find(statement_name) != file_ops.end();
     }
 
-  if( gg_get_current_line_number() == DEFAULT_LINE_NUMBER )
-    {
-    // This code is intended to prevert GDB anomalies when the first line of a
-    // program is a PERFORM <proc> ... TEST AFTER ... UNTIL ...
-    gg_set_current_line_number(CURRENT_LINE_NUMBER-1);
-    gg_assign(var_decl_nop, build_int_cst_type(INT, 106));
-    }
-
   // At this point, if any exception is enabled, we store the location stuff.
   // Each file I-O routine calls store_location_stuff explicitly, because
   // those exceptions can't be defeated.
@@ -1194,8 +1191,6 @@ parser_statement_begin( const cbl_name_t statement_name,
     {
     store_location_stuff(statement_name);
     }
-
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
 
   if( exception_processing )
     {
@@ -2666,8 +2661,6 @@ section_label(struct cbl_proc_t *procedure)
   // With nested programs, you can have multiple program/section pairs with the
   // the same names; we use a deconflictor to avoid collisions
 
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
-
   size_t deconflictor = symbol_label_id(procedure->label);
 
   cbl_label_t *label = procedure->label;
@@ -2692,7 +2685,7 @@ section_label(struct cbl_proc_t *procedure)
     }
   assembler_label(psz2);
   free(psz2);
-  gg_assign(var_decl_nop, build_int_cst_type(INT, 108));
+  insert_nop(108);
   }
 
 static void
@@ -2706,8 +2699,6 @@ paragraph_label(struct cbl_proc_t *procedure)
   //   2) paragraph names can be duplicated in a section, provided that they
   //      are not referenced by the program.  We provide a deconflictor to
   //      separate such labels.
-
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
 
   cbl_label_t *paragraph  = procedure->label;
   cbl_label_t *section    = nullptr;
@@ -2730,6 +2721,9 @@ paragraph_label(struct cbl_proc_t *procedure)
           section_name ? section_name: "(null)" ,
           current_function->our_unmangled_name ? current_function->our_unmangled_name: "" ,
           (fmt_size_t)deconflictor );
+
+  // (0) is wrong, so back up one
+
   gg_insert_into_assembler(psz1);
 
   SHOW_PARSE
@@ -2746,7 +2740,25 @@ paragraph_label(struct cbl_proc_t *procedure)
                           combined_name(procedure->label));
   assembler_label(psz2);
   free(psz2);
-  gg_assign(var_decl_nop, build_int_cst_type(INT, 109));
+
+  // We are inserting a NOP after having created a label for the procedure.
+  // This means that when using GDC_COBOL to step into a procedure, the
+  // execution will stop there and show "123 para-name." at the stopped point.
+  //
+  // Note that because there is no user-specified executable code at that point
+  // the user can't set a working breakpoint with "break 123".  But because
+  // GDB will pick up the psz2 text and set a breakpoint there (which is the
+  // location of the NOP) "break para-name" will actually stop and show line
+  // 123.
+  //
+  // This really only makes sense when you look at the assembly language. Keep
+  // in mind as you read it that issuing a "break 123" causes GDB to set a
+  // breakpoint at the first executable machine language code following the
+  // first ".loc 123" directive.
+  //
+  // Yes, trying to understand this causes headaches for many people who read
+  // this.  Take an aspirin.
+  insert_nop(109);
   }
 
 static void
@@ -2790,6 +2802,7 @@ pseudo_return_pop(cbl_proc_t *procedure)
               NULL_TREE);
     }
 
+  token_location_override(current_location_minus_one());
   IF( var_decl_exit_address, eq_op, procedure->exit.addr )
     {
     TRACE1
@@ -2799,11 +2812,13 @@ pseudo_return_pop(cbl_proc_t *procedure)
     // The top of the stack is us!
 
     // Pick up the return address from the pseudo_return stack:
+    token_location_override(current_location_minus_one());
     gg_assign(current_function->void_star_temp,
               gg_call_expr( VOID_P,
                             "__gg__pseudo_return_pop",
                             NULL_TREE));
     // And do the return:
+    token_location_override(current_location_minus_one());
     gg_goto(current_function->void_star_temp);
     }
   ELSE
@@ -2837,6 +2852,7 @@ leave_procedure(struct cbl_proc_t *procedure, bool /*section*/)
     // procedure->bottom.label);
     // Procedure can be null, for example at the beginning of a
     // new program, or after somebody else has cleared it out.
+
     gg_append_statement(procedure->exit.label);
 
     char *psz;
@@ -3012,6 +3028,8 @@ parser_enter_section(cbl_label_t *label)
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
+    SHOW_PARSE_INDENT
+    linemap_dump_location( line_table, current_token_location(), stderr );
     SHOW_PARSE_END
     }
 
@@ -3019,8 +3037,7 @@ parser_enter_section(cbl_label_t *label)
 
   // This NOP is needed to give GDB a line number for the entry point of
   // paragraphs
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
-  gg_assign(var_decl_nop, build_int_cst_type(INT, 101));
+  insert_nop(101);
 
   struct cbl_proc_t *procedure = find_procedure(label);
   gg_append_statement(procedure->top.label);
@@ -3047,6 +3064,8 @@ parser_enter_paragraph(cbl_label_t *label)
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
+    SHOW_PARSE_INDENT
+    linemap_dump_location( line_table, current_token_location(), stderr );
     SHOW_PARSE_END
     }
 
@@ -3272,7 +3291,7 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     SHOW_PARSE_TEXT(ach)
     if( label )
       {
-      sprintf(ach, 
+      sprintf(ach,
               " label->proc is %p",
               static_cast<void*>(label->structs.proc));
       }
@@ -3770,6 +3789,22 @@ parser_leave_file()
     {
     // We are leaving the top-level file, which means this compilation is
     // done, done, done.
+
+    // There is, however, one thing left to do.  If the command line says
+    // that this module needs a main entry point, then this is where
+    // we create a main() function.  We build it at the end, so that all of
+    // the .loc directives associated with it appear at the end of the
+    // source code.  We used to create the main() entry point at the beginning,
+    // but that created confusion for GDB when trying to debug the generated
+    // executable.
+    if( main_entry_point )
+      {
+      next_program_is_main = false;
+      build_main_that_calls_something(main_entry_point);
+      free(main_entry_point);
+      main_entry_point = NULL;
+      }
+
     gg_leaving_the_source_code_file();
     }
   }
@@ -3879,17 +3914,8 @@ parser_enter_program( const char *funcname_,
   // The first thing we have to do is mangle this name.  This is safe even
   // though the end result will be mangled again, because the mangler doesn't
   // change a mangled name.
-   
-  char *mangled_name;
- 
-  if( current_call_convention() == cbl_call_cobol_e )
-    {
-    mangled_name = cobol_name_mangler(funcname_);
-    }
-  else
-    {
-    mangled_name = xstrdup(funcname_);
-    }
+
+  char *mangled_name = cobol_name_mangler(funcname_);
 
   size_t parent_index = current_program_index();
   char *funcname;
@@ -3917,27 +3943,24 @@ parser_enter_program( const char *funcname_,
 
   if( !is_function && !parent_index )
     {
-    // This is a top_level program, and not a function
+    // This is a top_level program-id, and not a function
     if( next_program_is_main )
       {
+      // This is the first top-level program-id.
       next_program_is_main = false;
-      if(main_entry_point)
+      if( !main_entry_point )
         {
-        build_main_that_calls_something(main_entry_point);
-        free(main_entry_point);
-        main_entry_point = NULL;
-        }
-      else
-        {
-        build_main_that_calls_something(funcname);
+        // Because no explicit main_entry_point was specified, this program-id,
+        // the first in the file, becomes the target of the main() function
+        // that will be created at parser_leave_file time.
+        main_entry_point = xstrdup(funcname);
+
+        char *psz = cobol_name_mangler(main_entry_point);
+        strncpy(ach_cobol_entry_point, psz, sizeof(ach_cobol_entry_point)-1);
+        free(psz);
         }
       }
     }
-
-  // Call this after build_main_that_calls_something, because it manipulates
-  // the current line number to DEFAULT_LINE_NUMBER.  We have to manipulate it
-  // back afterward.
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
 
   if( strcmp(funcname_, "main") == 0 && this_module_has_main )
     {
@@ -4361,7 +4384,7 @@ psa_FldBlob(struct cbl_field_t *var )
   }
 
 void
-parser_accept(struct cbl_refer_t tgt,
+parser_accept(const struct cbl_refer_t &tgt,
               special_name_t special_e,
               cbl_label_t *error,
               cbl_label_t *not_error )
@@ -4464,7 +4487,7 @@ parser_accept(struct cbl_refer_t tgt,
 
     case ARG_VALUE_e:
       // We are fetching the variable whose index was established by a prior
-      // DISPLAY UPON ARGUMENT-NUMBER.  After the fetch, the value will be 
+      // DISPLAY UPON ARGUMENT-NUMBER.  After the fetch, the value will be
       // incremented by one.
       function_to_call = "__gg__accept_arg_value";
       break;
@@ -4600,8 +4623,8 @@ parser_accept_exception_end( cbl_label_t *accept_label )
   }
 
 void
-parser_accept_command_line( cbl_refer_t tgt,
-                            cbl_refer_t source,
+parser_accept_command_line( const cbl_refer_t &tgt,
+                            const cbl_refer_t &source,
                             cbl_label_t *error,
                             cbl_label_t *not_error )
   {
@@ -4743,7 +4766,7 @@ parser_accept_command_line( cbl_refer_t tgt,
   }
 
 void
-parser_accept_command_line_count( cbl_refer_t tgt )
+parser_accept_command_line_count( const cbl_refer_t &tgt )
   {
   Analyze();
   SHOW_PARSE
@@ -4765,10 +4788,10 @@ parser_accept_command_line_count( cbl_refer_t tgt )
   }
 
 void
-parser_accept_envar(struct cbl_refer_t tgt,
-                    struct cbl_refer_t envar,
-                    cbl_label_t *error,
-                    cbl_label_t *not_error )
+parser_accept_envar(const struct cbl_refer_t &tgt,
+                    const struct cbl_refer_t &envar,
+                          cbl_label_t *error,
+                          cbl_label_t *not_error )
   {
   Analyze();
 
@@ -4851,7 +4874,8 @@ parser_accept_envar(struct cbl_refer_t tgt,
   }
 
 void
-parser_set_envar( struct cbl_refer_t name, struct cbl_refer_t value )
+parser_set_envar( const struct cbl_refer_t &name,
+                  const struct cbl_refer_t &value )
   {
   Analyze();
   SHOW_PARSE
@@ -5392,9 +5416,9 @@ parser_display_field(cbl_field_t *field)
 
 void
 parser_display( const struct cbl_special_name_t *upon,
-                std::vector<cbl_refer_t> refs, 
-                bool advance, 
-          const cbl_label_t *not_error, 
+          const std::vector<cbl_refer_t> &refs,
+                bool advance,
+          const cbl_label_t *not_error,
           const cbl_label_t *error )
   {
   const size_t n = refs.size();
@@ -5567,6 +5591,106 @@ parser_display( const struct cbl_special_name_t *upon,
     }
 
   cursor_at_sol = advance;
+  }
+
+static
+bool  // Returns false for literals; true for named variables
+get_exhibit_name(tree file_descriptor, const cbl_refer_t &arg)
+  {
+  bool retval;
+  if( is_literal(arg.field) )
+    {
+    // If something is a literal, we just display the literal value
+    parser_display_internal(file_descriptor,
+                            arg,
+                            DISPLAY_NO_ADVANCE);
+    retval = false;
+    }
+  else
+    {
+    // It's not a literal, so we show its name, and the names or literal
+    // values) of any qualifier subscripts or refmods
+    gg_write( file_descriptor,
+              gg_string_literal(arg.field->name),
+              build_int_cst_type(SIZE_T, strlen(arg.field->name)) );
+
+    if( arg.subscripts.size() )
+      {
+      // This refer has subscripts:
+      gg_write( file_descriptor,
+                gg_string_literal("("),
+                integer_one_node );
+      for(size_t i=0; i<arg.subscripts.size(); i++)
+        {
+        if( i > 0 )
+          {
+          gg_write( file_descriptor,
+                    gg_string_literal(","),
+                    integer_one_node );
+          }
+        get_exhibit_name(file_descriptor, arg.subscripts[i]);
+        }
+      gg_write( file_descriptor,
+                gg_string_literal(")"),
+                integer_one_node );
+      }
+    if( arg.refmod.from || arg.refmod.len )
+      {
+      gg_write( file_descriptor,
+                gg_string_literal("("),
+                integer_one_node );
+      if( arg.refmod.from )
+        {
+        get_exhibit_name(file_descriptor, *(arg.refmod.from));
+        }
+      gg_write( file_descriptor,
+                gg_string_literal(":"),
+                integer_one_node );
+      if( arg.refmod.len )
+        {
+        get_exhibit_name(file_descriptor, *(arg.refmod.len));
+        }
+      gg_write( file_descriptor,
+                gg_string_literal(")"),
+                integer_one_node );
+      }
+    retval = true;
+    }
+  return retval;
+  }
+
+void
+parser_exhibit( bool /*changed*/, bool /*named*/,
+                const std::vector<cbl_refer_t> &args )
+  {
+  tree file_descriptor = gg_define_int();
+  gg_assign(file_descriptor, integer_one_node);   // stdout is file descriptor 1.
+
+  for(size_t i=0; i<args.size(); i++)
+    {
+    CHECK_FIELD(args[i].field);
+    if(i > 0)
+      {
+      // When there more than one argument, the second through Nth get a space
+      // in front of them.
+      gg_write( file_descriptor,
+                gg_string_literal(" "),
+                integer_one_node);
+      }
+    if( get_exhibit_name(file_descriptor, args[i]) )
+      {
+      gg_write( file_descriptor,
+                gg_string_literal("="),
+                integer_one_node);
+      parser_display_internal(file_descriptor,
+                              args[i],
+                              DISPLAY_NO_ADVANCE);
+      }
+    }
+  gg_write( file_descriptor,
+            gg_string_literal("\n"),
+            integer_one_node);
+  cursor_at_sol = true;
   }
 
 static tree
@@ -6344,7 +6468,7 @@ is_valuable( cbl_field_type_t type ) {
   return false;
 }
 
-void parser_sleep(cbl_refer_t seconds)
+void parser_sleep(const cbl_refer_t &seconds)
   {
   if( seconds.field )
     {
@@ -6364,7 +6488,7 @@ void parser_sleep(cbl_refer_t seconds)
     // This is a naked place-holding CONTINUE.  Generate some do-nothing
     // code that will stick some .LOC information into the assembly language,
     // so that GDB-COBOL can display the CONTINUE statement.
-    gg_assign(var_decl_nop, build_int_cst_type(INT, 103));
+    insert_nop(103);
     }
   }
 
@@ -6935,8 +7059,6 @@ parser_division(cbl_division_t division,
     SHOW_PARSE_END
     }
 
-  gg_set_current_line_number(CURRENT_LINE_NUMBER);
-
   if( division == data_div_e )
     {
     Analyze();
@@ -7394,6 +7516,11 @@ parser_division(cbl_division_t division,
         ENDIF
       }
       ENDIF
+    // The first token_location that the parser establishes is caused by the
+    // parser scanning all of the lines in the source code.  This messes up the
+    // logic for backing up one line, which is needed to correctly step through
+    // COBOL code with GDB-COBOL.  So, we clear it here.
+    current_location_minus_one_clear();
     }
   }
 
@@ -8002,7 +8129,7 @@ parser_setop( struct cbl_field_t *tgt,
 
 void
 parser_classify(    cbl_field_t *tgt,
-                    cbl_refer_t  candidate,
+               const cbl_refer_t  &candidate,
                     enum classify_t type )
   {
   Analyze();
@@ -8099,14 +8226,6 @@ create_iline_address_pairs(struct cbl_perform_tgt_t *tgt)
 
   gg_create_goto_pair(&tgt->addresses.setup.go_to,
                       &tgt->addresses.setup.label);
-
-  // Even in -O0 compilations, the compiler does some elementary optimizations
-  // around JMP instructions.  We have the SETUP code for in-line performats
-  // in an island at the end of the loop code.  With this intervention, NEXTing
-  // through the code shows you the final statement of the loop before the
-  // loop actually starts.
-
-  tgt->addresses.line_number_of_setup_code = gg_get_current_line_number();
   }
 
 void
@@ -8169,7 +8288,7 @@ parser_perform_start( struct cbl_perform_tgt_t *tgt )
   // Give GDB-COBOL something to chew on when NEXTing.  This instruction will
   // get the line number of the PERFORM N TIMES code.
   gg_append_statement(tgt->addresses.top.label);
-  gg_assign(var_decl_nop, build_int_cst_type(INT, 104));
+  insert_nop(104);
   }
 
 void
@@ -8726,8 +8845,6 @@ perform_inline_until(   struct cbl_perform_tgt_t *tgt,
                   GOTO TOP
       EXIT:
   */
-  gg_set_current_line_number(cobol_location().last_line);
-
   gg_append_statement(tgt->addresses.test.label);
 
   // Go to where the conditional is recalculated....
@@ -8841,8 +8958,6 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
     {
     parser_move(varys[i].varying, varys[i].from);
     }
-
-  gg_set_current_line_number(cobol_location().last_line);
 
   // Lay down the testing cycle:
   for(size_t i=0; i<N; i++)
@@ -9165,9 +9280,6 @@ parser_perform_until(   struct cbl_perform_tgt_t *tgt,
     SHOW_PARSE_END
     }
 
-  gg_set_current_line_number(cobol_location().last_line);
-  gg_assign(var_decl_nop, build_int_cst_type(INT, 105));
-
   if( tgt->from()->type != LblLoop )
     {
     perform_outofline( tgt, test_before, N, varys);
@@ -9234,10 +9346,6 @@ parser_perform_inline_times(struct cbl_perform_tgt_t *tgt,
   gg_append_statement( tgt->addresses.testA.label );
   gg_append_statement( tgt->addresses.test.label );
 
-  // AT this point, we want to set the line_number to the location of the
-  // END-PERFORM statement.
-  gg_set_current_line_number(cobol_location().last_line);
-
   gg_decrement(counter);
   // Do the test:
   IF( counter, gt_op, gg_cast(LONG, integer_zero_node) )
@@ -9268,8 +9376,6 @@ parser_perform_inline_times(struct cbl_perform_tgt_t *tgt,
     SHOW_PARSE_END
     }
 
-  int stash = gg_get_current_line_number();
-  gg_set_current_line_number(tgt->addresses.line_number_of_setup_code);
   gg_append_statement( tgt->addresses.setup.label );
 
   // Get the count:
@@ -9299,8 +9405,6 @@ parser_perform_inline_times(struct cbl_perform_tgt_t *tgt,
   ELSE
     gg_append_statement( tgt->addresses.exit.go_to );
     ENDIF
-
-  gg_set_current_line_number(stash);
 
   SHOW_PARSE
     {
@@ -10740,7 +10844,7 @@ parser_intrinsic_numval_c( cbl_field_t *f,
 
 void
 parser_intrinsic_subst( cbl_field_t *f,
-                        cbl_refer_t& ref1,
+                  const cbl_refer_t& ref1,
                         size_t argc,
                         cbl_substitute_t * argv )
   {
@@ -12317,7 +12421,7 @@ parser_file_merge(  cbl_file_t *workfile,
 
   const cbl_enabled_exceptions_t&
                                 enabled_exceptions( cdf_enabled_exceptions() );
-  
+
   for(size_t i=0; i<ninputs; i++)
     {
     if( process_this_exception(ec_sort_merge_file_open_e) )
@@ -13016,7 +13120,7 @@ create_and_call(size_t narg,
     // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
     tree function_decl = gg_build_fn_decl(funcname, fndecl_type);
     set_call_convention(function_decl, current_call_convention());
-    
+
     // Take the address of the function decl:
     tree address_of_function = gg_get_address_of(function_decl);
 
@@ -13028,7 +13132,7 @@ create_and_call(size_t narg,
     parser_call_target( funcname, assigment );
 
     // Create the call_expr from that address
-    call_expr = build_call_array_loc( location_from_lineno(),
+    call_expr = build_call_array_loc( gg_token_location(),
                                       returned_value_type,
                                       address_of_function,
                                       narg,
@@ -14140,9 +14244,9 @@ conditional_abs(tree source, const cbl_field_t *field)
   }
 
 static bool
-mh_identical(cbl_refer_t &destref,
-       const cbl_refer_t &sourceref,
-       const TREEPLET    &tsource)
+mh_identical(const cbl_refer_t &destref,
+             const cbl_refer_t &sourceref,
+             const TREEPLET    &tsource)
   {
   // Check to see if the two variables are identical types, thus allowing
   // for a simple byte-for-byte copy of the data areas:
@@ -14733,10 +14837,10 @@ picky_memcpy(tree &dest_p, const tree &source_p, size_t length)
   }
 
 static bool
-mh_numeric_display( cbl_refer_t &destref,
-              const cbl_refer_t &sourceref,
-              const TREEPLET    &tsource,
-                    tree size_error)
+mh_numeric_display( const cbl_refer_t &destref,
+                    const cbl_refer_t &sourceref,
+                    const TREEPLET    &tsource,
+                          tree size_error)
   {
   bool moved = false;
 
@@ -15222,11 +15326,11 @@ mh_numeric_display( cbl_refer_t &destref,
   }
 
 static bool
-mh_little_endian( cbl_refer_t &destref,
-            const cbl_refer_t &sourceref,
-            const TREEPLET    &tsource,
-                  bool check_for_error,
-                  tree size_error)
+mh_little_endian( const cbl_refer_t &destref,
+                  const cbl_refer_t &sourceref,
+                  const TREEPLET    &tsource,
+                        bool check_for_error,
+                        tree size_error)
   {
   bool moved = false;
 
@@ -15294,9 +15398,9 @@ mh_little_endian( cbl_refer_t &destref,
   }
 
 static bool
-mh_source_is_group( cbl_refer_t &destref,
-              const cbl_refer_t &sourceref,
-              const TREEPLET    &tsrc)
+mh_source_is_group( const cbl_refer_t &destref,
+                    const cbl_refer_t &sourceref,
+                    const TREEPLET    &tsrc)
   {
   bool retval = false;
   if( sourceref.field->type == FldGroup && !(destref.field->attr & rjust_e) )
@@ -16640,7 +16744,7 @@ psa_FldLiteralA(struct cbl_field_t *field )
                                                   vs_file_static);
     }
   else
-#endif    
+#endif
     {
     // We have not seen that string before
     static int nvar = 0;
