@@ -4811,6 +4811,8 @@ package body Freeze is
                  and then Convention (F_Type) = Convention_Ada
                  and then not Has_Warnings_Off (F_Type)
                  and then not Has_Size_Clause (F_Type)
+                 and then Present (Esize (F_Type))
+                 and then Esize (F_Type) = 8
                then
                   Error_Msg_N
                     ("& is an 8-bit Ada Boolean?x?", Formal);
