@@ -1125,7 +1125,12 @@
 #undef __glibcxx_want_span
 
 #if !defined(__cpp_lib_mdspan)
-# if (__cplusplus >= 202100L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_mdspan 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_mdspan)
+#   define __cpp_lib_mdspan 202406L
+#  endif
+# elif (__cplusplus >= 202100L)
 #  define __glibcxx_mdspan 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_mdspan)
 #   define __cpp_lib_mdspan 202207L

@@ -159,6 +159,13 @@ static_assert(std::extents<int, 1, dyn>::static_extent(1) == dyn);
 static_assert(std::extents<int, dyn, dyn>::static_extent(0) == dyn);
 static_assert(std::extents<int, dyn, dyn>::static_extent(1) == dyn);
 
+// dims
+#if __glibcxx_mdspan >= 202406L
+static_assert(std::is_same_v<std::dims<0>, std::dextents<size_t, 0>>);
+static_assert(std::is_same_v<std::dims<3>, std::dextents<size_t, 3>>);
+static_assert(std::is_same_v<std::dims<3, int>, std::dextents<int, 3>>);
+#endif
+
 // extent
 template<typename Extent>
   constexpr void

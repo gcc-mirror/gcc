@@ -1008,6 +1008,10 @@ ftms = {
 ftms = {
   name = mdspan;
   values = {
+    v = 202406;
+    cxxmin = 26;
+  };
+  values = {
     v = 202207;
     cxxmin = 23;
   };

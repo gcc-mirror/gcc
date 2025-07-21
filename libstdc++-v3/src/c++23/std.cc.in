@@ -1858,6 +1858,9 @@ export namespace std
 {
   using std::extents;
   using std::dextents;
+#if __glibcxx_mdspan >= 202406L
+  using std::dims;
+#endif
   using std::layout_left;
   using std::layout_right;
   using std::layout_stride;
