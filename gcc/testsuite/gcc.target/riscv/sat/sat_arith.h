@@ -73,6 +73,22 @@ sat_u_add_##WT##_##T##_fmt_7(T x, T y) \
 }
 #define DEF_SAT_U_ADD_FMT_7_WRAP(WT, T) DEF_SAT_U_ADD_FMT_7(WT, T)
 
+#define DEF_SAT_U_ADD_FMT_8(T)                \
+T __attribute__((noinline))                   \
+sat_u_add_##T##_fmt_8(T x, T y)               \
+{                                             \
+  return x <= (T)(x + y) ? (x + y) : -1;      \
+}
+#define DEF_SAT_U_ADD_FMT_8_WRAP(T) DEF_SAT_U_ADD_FMT_8(T)
+
+#define DEF_SAT_U_ADD_FMT_9(T)               \
+T __attribute__((noinline))                  \
+sat_u_add_##T##_fmt_9(T x, T y)              \
+{                                            \
+  return x > (T)(x + y) ? -1 : (x + y);      \
+}
+#define DEF_SAT_U_ADD_FMT_9_WRAP(T) DEF_SAT_U_ADD_FMT_9(T)
+
 #define RUN_SAT_U_ADD_FMT_1(T, x, y) sat_u_add_##T##_fmt_1(x, y)
 #define RUN_SAT_U_ADD_FMT_1_WRAP(T, x, y) RUN_SAT_U_ADD_FMT_1(T, x, y)
 #define RUN_SAT_U_ADD_FMT_2(T, x, y) sat_u_add_##T##_fmt_2(x, y)
@@ -97,6 +113,10 @@ sat_u_add_##WT##_##T##_fmt_7(T x, T y) \
   sat_u_add_uint64_t_##T##_fmt_7(x, y)
 #define RUN_SAT_U_ADD_FMT_7_FROM_U64_WRAP(T, x, y) \
   RUN_SAT_U_ADD_FMT_7_FROM_U64(T, x, y)
+#define RUN_SAT_U_ADD_FMT_8(T, x, y) sat_u_add_##T##_fmt_8(x, y)
+#define RUN_SAT_U_ADD_FMT_8_WRAP(T, x, y) RUN_SAT_U_ADD_FMT_8(T, x, y)
+#define RUN_SAT_U_ADD_FMT_9(T, x, y) sat_u_add_##T##_fmt_9(x, y)
+#define RUN_SAT_U_ADD_FMT_9_WRAP(T, x, y) RUN_SAT_U_ADD_FMT_9(T, x, y)
 
 #define DEF_SAT_U_ADD_IMM_FMT_1(T, IMM)      \
 T __attribute__((noinline))                  \
