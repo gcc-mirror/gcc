@@ -19,3 +19,4 @@ TEST_BINARY_VX_UNSIGNED_0(T)
 /* { dg-final { scan-assembler-times {vminu.vx} 2 } } */
 /* { dg-final { scan-assembler-times {vsaddu.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vssubu.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vaaddu.vx} 1 { target { no-opts "-O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m2" "-O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m4" } } } } */
