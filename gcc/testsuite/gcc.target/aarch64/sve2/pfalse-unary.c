@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target elf } */
-/* { dg-options "-O2 -march=armv9.2-a+sve+sme" } */
+/* { dg-options "-O2 -march=armv9.2-a+sve+sme -funwind-tables" } */
 
 #include "../pfalse-unary_0.h"
 
