@@ -650,6 +650,21 @@ test_nothrow_movable_all()
   test_nothrow_movable<false, false>();
 }
 
+template<typename Layout, bool Expected>
+  constexpr void
+  test_nothrow_is_methods()
+  {
+    using Extents = std::extents<int, dyn>;
+    using MDSpan = std::mdspan<double, Extents, Layout>;
+    static_assert(noexcept(MDSpan::is_always_unique()) == Expected);
+    static_assert(noexcept(MDSpan::is_always_exhaustive()) == Expected);
+    static_assert(noexcept(MDSpan::is_always_strided()) == Expected);
+
+    static_assert(noexcept(std::declval<MDSpan>().is_unique()) == Expected);
+    static_assert(noexcept(std::declval<MDSpan>().is_exhaustive()) == Expected);
+    static_assert(noexcept(std::declval<MDSpan>().is_strided()) == Expected);
+  }
+
 int
 main()
 {
@@ -713,5 +728,7 @@ main()
   test_swap_adl();
 
   test_nothrow_movable_all();
+  test_nothrow_is_methods<std::layout_right, true>();
+  test_nothrow_is_methods<ThrowingLayout, false>();
   return 0;
 }
