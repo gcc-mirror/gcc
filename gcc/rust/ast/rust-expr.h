@@ -1,6 +1,7 @@
 #ifndef RUST_AST_EXPR_H
 #define RUST_AST_EXPR_H
 
+#include "optional.h"
 #include "rust-ast.h"
 #include "rust-common.h"
 #include "rust-path.h"
@@ -2759,24 +2760,42 @@ protected:
 class AnonConst : public ExprWithBlock
 {
 public:
-  AnonConst (std::unique_ptr<Expr> &&expr, location_t locus = UNKNOWN_LOCATION)
-    : ExprWithBlock (), locus (locus), expr (std::move (expr))
+  enum class Kind
   {
-    rust_assert (this->expr);
+    Explicit,
+    DeferredInference,
+  };
+
+  AnonConst (std::unique_ptr<Expr> &&expr, location_t locus = UNKNOWN_LOCATION)
+    : ExprWithBlock (), locus (locus), kind (Kind::Explicit),
+      expr (std::move (expr))
+  {
+    rust_assert (this->expr.value ());
   }
+
+  AnonConst (location_t locus = UNKNOWN_LOCATION)
+    : ExprWithBlock (), locus (locus), kind (Kind::DeferredInference),
+      expr (tl::nullopt)
+  {}
 
   AnonConst (const AnonConst &other)
   {
     node_id = other.node_id;
     locus = other.locus;
-    expr = other.expr->clone_expr ();
+    kind = other.kind;
+
+    if (other.expr)
+      expr = other.expr.value ()->clone_expr ();
   }
 
   AnonConst operator= (const AnonConst &other)
   {
     node_id = other.node_id;
     locus = other.locus;
-    expr = other.expr->clone_expr ();
+    kind = other.kind;
+
+    if (other.expr)
+      expr = other.expr.value ()->clone_expr ();
 
     return *this;
   }
@@ -2786,7 +2805,13 @@ public:
   Expr::Kind get_expr_kind () const override { return Expr::Kind::ConstExpr; }
 
   location_t get_locus () const override { return locus; }
-  Expr &get_inner_expr () { return *expr; }
+
+  Expr &get_inner_expr ()
+  {
+    rust_assert (expr.has_value ());
+    return *expr.value ();
+  }
+
   NodeId get_node_id () const override { return node_id; }
 
   /* FIXME: AnonConst are always "internal" and should not have outer attributes
@@ -2807,9 +2832,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  bool is_deferred () const { return kind == Kind::DeferredInference; }
+
 private:
   location_t locus;
-  std::unique_ptr<Expr> expr;
+  Kind kind;
+  tl::optional<std::unique_ptr<Expr>> expr;
 
   AnonConst *clone_expr_with_block_impl () const override
   {

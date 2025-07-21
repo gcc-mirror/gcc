@@ -464,7 +464,8 @@ DefaultASTVisitor::visit (AST::ConstBlock &expr)
 void
 DefaultASTVisitor::visit (AST::AnonConst &expr)
 {
-  visit (expr.get_inner_expr ());
+  if (!expr.is_deferred ())
+    visit (expr.get_inner_expr ());
 }
 
 void

@@ -22,10 +22,13 @@
 /* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
  * This is also the reason why there are no include guards. */
 
+#include "expected.h"
+#include "rust-ast.h"
 #include "rust-common.h"
 #include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-common.h"
+#include "rust-parse.h"
 #include "rust-token.h"
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
@@ -7272,6 +7275,27 @@ Parser<ManagedTokenSource>::parse_block_expr (
 			std::move (label), locus, end_locus));
 }
 
+/* Parse an anonymous const expression. This can be a regular const expression
+ * or an underscore for deferred const inference */
+template <typename ManagedTokenSource>
+tl::expected<AST::AnonConst, AnonConstError>
+Parser<ManagedTokenSource>::parse_anon_const ()
+{
+  auto current = lexer.peek_token ();
+  auto locus = current->get_locus ();
+
+  // Special case deferred inference constants
+  if (maybe_skip_token (UNDERSCORE))
+    return AST::AnonConst (locus);
+
+  auto expr = parse_expr ();
+
+  if (!expr)
+    return tl::make_unexpected (AnonConstError::InvalidSizeExpr);
+
+  return AST::AnonConst (std::move (expr), locus);
+}
+
 /* Parse a "const block", a block preceded by the `const` keyword whose
  * statements can be const evaluated and used in constant contexts */
 template <typename ManagedTokenSource>
@@ -9848,8 +9872,9 @@ Parser<ManagedTokenSource>::parse_slice_or_array_type ()
 	lexer.skip_token ();
 
 	// parse required array size expression
-	std::unique_ptr<AST::Expr> size = parse_expr ();
-	if (size == nullptr)
+	auto size = parse_anon_const ();
+
+	if (!size)
 	  {
 	    Error error (lexer.peek_token ()->get_locus (),
 			 "failed to parse size expression in array type");
@@ -9864,7 +9889,8 @@ Parser<ManagedTokenSource>::parse_slice_or_array_type ()
 	  }
 
 	return std::unique_ptr<AST::ArrayType> (
-	  new AST::ArrayType (std::move (inner_type), std::move (size), locus));
+	  new AST::ArrayType (std::move (inner_type), std::move (*size),
+			      locus));
       }
     default:
       // error

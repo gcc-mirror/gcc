@@ -1281,7 +1281,14 @@ BlockExpr::as_string () const
 std::string
 AnonConst::as_string () const
 {
-  return "AnonConst: " + expr->as_string ();
+  std::string str = "AnonConst: ";
+
+  if (kind == AnonConst::Kind::DeferredInference)
+    str += "_";
+  else
+    str += expr.value ()->as_string ();
+
+  return str;
 }
 
 std::string
@@ -2768,7 +2775,7 @@ std::string
 ArrayType::as_string () const
 {
   // TODO: rewrite to work with non-linearisable types and exprs
-  return "[" + elem_type->as_string () + "; " + size->as_string () + "]";
+  return "[" + elem_type->as_string () + "; " + size.as_string () + "]";
 }
 
 std::string

@@ -34,11 +34,18 @@ class ParseLifetimeParamError
 class ParseLifetimeError
 {
 };
+
+enum class AnonConstError
+{
+  InvalidSizeExpr,
+};
+
 enum class ParseLoopLabelError
 {
   NOT_LOOP_LABEL,
   MISSING_COLON,
 };
+
 enum class ParseSelfError
 {
   SELF_PTR,
@@ -165,6 +172,8 @@ public:
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
+
+  tl::expected<AST::AnonConst, AnonConstError> parse_anon_const ();
 
   std::unique_ptr<AST::ConstBlock>
   parse_const_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
