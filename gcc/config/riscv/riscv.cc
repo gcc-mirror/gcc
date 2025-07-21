@@ -3967,9 +3967,20 @@ get_vector_binary_rtx_cost (rtx x, int scalar2vr_cost)
 {
   gcc_assert (riscv_v_ext_mode_p (GET_MODE (x)));
 
-  rtx op_0 = XEXP (x, 0);
-  rtx op_1 = XEXP (x, 1);
   rtx neg;
+  rtx op_0;
+  rtx op_1;
+
+  if (GET_CODE (x) == UNSPEC)
+    {
+      op_0 = XVECEXP (x, 0, 0);
+      op_1 = XVECEXP (x, 0, 1);
+    }
+  else
+    {
+      op_0 = XEXP (x, 0);
+      op_1 = XEXP (x, 1);
+    }
 
   if (GET_CODE (op_0) == VEC_DUPLICATE
       || GET_CODE (op_1) == VEC_DUPLICATE)
@@ -4023,6 +4034,20 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		    case SS_PLUS:
 		    case SS_MINUS:
 		      *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
+		      break;
+		    case UNSPEC:
+		      {
+			switch (XINT (op, 1))
+			  {
+			  case UNSPEC_VAADDU:
+			    *total
+			      = get_vector_binary_rtx_cost (op, scalar2vr_cost);
+			    break;
+			  default:
+			    *total = COSTS_N_INSNS (1);
+			    break;
+			  }
+		      }
 		      break;
 		    default:
 		      *total = COSTS_N_INSNS (1);

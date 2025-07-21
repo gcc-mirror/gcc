@@ -1714,6 +1714,68 @@
   }
   [(set_attr "type" "vialu")])
 
+(define_insn_and_split "*uavg_floor_vx_<mode>"
+ [(set (match_operand:V_VLSI   0 "register_operand")
+   (if_then_else:V_VLSI
+    (unspec:<VM>
+     [(match_operand:<VM>      1 "vector_mask_operand")
+      (match_operand           5 "vector_length_operand")
+      (match_operand           6 "const_int_operand")
+      (match_operand           7 "const_int_operand")
+      (match_operand           8 "const_int_operand")
+      (match_operand           9 "const_int_operand")
+      (reg:SI VL_REGNUM)
+      (reg:SI VTYPE_REGNUM)
+      (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
+    (unspec:V_VLSI
+     [(match_operand:V_VLSI    3 "register_operand")
+      (vec_duplicate:V_VLSI
+       (match_operand:<VEL>    4 "register_operand"))] UNSPEC_VAADDU)
+    (unspec:V_VLSI
+     [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code code = code_for_pred_scalar (UNSPEC_VAADDU, <MODE>mode);
+    rtx ops[] = {operands[0], operands[3], operands[4]};
+    riscv_vector::emit_vlmax_insn (code, riscv_vector::BINARY_OP_VXRM_RDN, ops);
+    DONE;
+  }
+  [(set_attr "type" "vaalu")])
+
+(define_insn_and_split "*uavg_floor_vx_<mode>"
+ [(set (match_operand:V_VLSI   0 "register_operand")
+   (if_then_else:V_VLSI
+    (unspec:<VM>
+     [(match_operand:<VM>      1 "vector_mask_operand")
+      (match_operand           5 "vector_length_operand")
+      (match_operand           6 "const_int_operand")
+      (match_operand           7 "const_int_operand")
+      (match_operand           8 "const_int_operand")
+      (match_operand           9 "const_int_operand")
+      (reg:SI VL_REGNUM)
+      (reg:SI VTYPE_REGNUM)
+      (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
+    (unspec:V_VLSI
+     [(vec_duplicate:V_VLSI
+       (match_operand:<VEL>    4 "register_operand"))
+      (match_operand:V_VLSI    3 "register_operand")] UNSPEC_VAADDU)
+    (unspec:V_VLSI
+     [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code code = code_for_pred_scalar (UNSPEC_VAADDU, <MODE>mode);
+    rtx ops[] = {operands[0], operands[3], operands[4]};
+    riscv_vector::emit_vlmax_insn (code, riscv_vector::BINARY_OP_VXRM_RDN, ops);
+    DONE;
+  }
+  [(set_attr "type" "vaalu")])
+
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
 ;; Include
