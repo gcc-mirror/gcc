@@ -240,9 +240,9 @@ test_from_pointer_and_shape()
     assert_deduced_typedefs<double, std::dextents<size_t, 2>>(md);
     VERIFY(md.rank() == 2);
     VERIFY(md.rank_dynamic() == 2);
-    VERIFY((md[0, 0]) == data[0]);
-    VERIFY((md[0, 1]) == data[1]);
-    VERIFY((md[1, 0]) == data[3]);
+    VERIFY(md[0, 0] == data[0]);
+    VERIFY(md[0, 1] == data[1]);
+    VERIFY(md[1, 0] == data[3]);
   };
 
   verify(std::mdspan(data.data(), shape[0], shape[1]));
@@ -462,10 +462,10 @@ test_from_opaque_accessor()
   using MDSpan = decltype(md);
   static_assert(std::same_as<MDSpan::accessor_type, decltype(a)>);
 
-  VERIFY((md[0, 0, 0]) == 0.0);
+  VERIFY(md[0, 0, 0] == 0.0);
   VERIFY(md.accessor().access_count == 1);
 
-  VERIFY((md[2, 4, 6]) == 0.0);
+  VERIFY(md[2, 4, 6] == 0.0);
   VERIFY(md.accessor().access_count == 2);
 }
 
@@ -514,8 +514,8 @@ test_from_base_class_accessor()
   using MDSpan = decltype(md);
   static_assert(std::same_as<MDSpan::accessor_type, decltype(a)>);
   static_assert(std::same_as<decltype(md[0, 0, 0]), Base&>);
-  VERIFY((md[0, 0, 0].value) == 1.0);
-  VERIFY((md[2, 4, 6].value) == 1.0);
+  VERIFY(md[0, 0, 0].value == 1.0);
+  VERIFY(md[2, 4, 6].value == 1.0);
 }
 
 constexpr bool
@@ -524,8 +524,8 @@ test_from_mapping_like()
   double data = 1.1;
   auto m = LayoutLike::mapping<std::extents<int, 1, 2, 3>>{};
   auto md = std::mdspan(&data, m);
-  VERIFY((md[0, 0, 0]) == data);
-  VERIFY((md[0, 1, 2]) == data);
+  VERIFY(md[0, 0, 0] == data);
+  VERIFY(md[0, 1, 2] == data);
   return true;
 }
 
@@ -569,13 +569,13 @@ template<typename Int, bool ValidForPacks, bool ValidForArrays>
 	  {
 	    storage[mapping(i, j, k)] = 1.0;
 	    if constexpr (ValidForPacks)
-	      VERIFY((md[Int(i), Int(j), Int(k)]) == 1.0);
+	      VERIFY(md[Int(i), Int(j), Int(k)] == 1.0);
 
 	    if constexpr (ValidForArrays)
 	      {
 		std::array<Int, 3> ijk{Int(i), Int(j), Int(k)};
-		VERIFY((md[ijk]) == 1.0);
-		VERIFY((md[std::span(ijk)]) == 1.0);
+		VERIFY(md[ijk] == 1.0);
+		VERIFY(md[std::span(ijk)] == 1.0);
 	      }
 	    storage[mapping(i, j, k)] = 0.0;
 	  }
