@@ -4639,8 +4639,8 @@
 ;; Handle GET_MODE_INNER (mode) = DImode. We need to split them since
 ;; we need to deal with SEW = 64 in RV32 system.
 (define_expand "@pred_<sat_op><mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand")
-	(if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand")
+	(if_then_else:V_VLSI_D
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand")
 	     (match_operand 5 "vector_length_operand")
@@ -4651,10 +4651,10 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:VI_D
-	    [(match_operand:VI_D 3 "register_operand")
+	  (unspec:V_VLSI_D
+	    [(match_operand:V_VLSI_D 3 "register_operand")
 	     (match_operand:<VEL> 4 "reg_or_int_operand")] VSAT_ARITH_OP)
-	  (match_operand:VI_D 2 "vector_merge_operand")))]
+	  (match_operand:V_VLSI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
   if (riscv_vector::sew64_scalar_helper (
@@ -4673,8 +4673,8 @@
 })
 
 (define_insn "*pred_<sat_op><mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr, vd, vr")
-	(if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"         "=vd, vr, vd, vr")
+	(if_then_else:V_VLSI_D
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, vm,Wc1,Wc1")
 	     (match_operand 5 "vector_length_operand"    "rvl,rvl,rvl,rvl")
@@ -4685,18 +4685,18 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:VI_D
-	    [(match_operand:VI_D 3 "register_operand"    " vr, vr, vr, vr")
+	  (unspec:V_VLSI_D
+	    [(match_operand:V_VLSI_D 3 "register_operand"    " vr, vr, vr, vr")
 	     (match_operand:<VEL> 4 "reg_or_0_operand"   " rJ, rJ, rJ, rJ")] VSAT_ARITH_OP)
-	  (match_operand:VI_D 2 "vector_merge_operand"   " vu,  0, vu,  0")))]
+	  (match_operand:V_VLSI_D 2 "vector_merge_operand"   " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "v<sat_op>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<sat_insn_type>")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_<sat_op><mode>_extended_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"            "=vd, vr, vd, vr")
-	(if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"            "=vd, vr, vd, vr")
+	(if_then_else:V_VLSI_D
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand"    " vm, vm,Wc1,Wc1")
 	     (match_operand 5 "vector_length_operand"       "rvl,rvl,rvl,rvl")
@@ -4707,11 +4707,11 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:VI_D
-	    [(match_operand:VI_D 3 "register_operand"       " vr, vr, vr, vr")
+	  (unspec:V_VLSI_D
+	    [(match_operand:V_VLSI_D 3 "register_operand"       " vr, vr, vr, vr")
 	     (sign_extend:<VEL>
 	       (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ, rJ, rJ"))] VSAT_ARITH_OP)
-	  (match_operand:VI_D 2 "vector_merge_operand"      " vu,  0, vu,  0")))]
+	  (match_operand:V_VLSI_D 2 "vector_merge_operand"      " vu,  0, vu,  0")))]
   "TARGET_VECTOR && !TARGET_64BIT"
   "v<sat_op>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<sat_insn_type>")
