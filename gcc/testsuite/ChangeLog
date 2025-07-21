@@ -1,3 +1,27 @@
+2025-07-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/120859
+	* gcc.dg/tree-prof/afdo-crossmodule-1b.c: Add some dg-*
+	commands like what is in afdo-crossmodule-1.c
+
+2025-07-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i16-from-i32.c:
+	Leverage DEF_AVG_0_WRAP to generate the correct func name.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i16-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i32-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i64-from-i128.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i16-from-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i16-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i32-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i64-from-i128.c: Ditto.
+
 2025-07-19  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR target/121124

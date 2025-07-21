@@ -1,3 +1,9 @@
+2025-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121174
+	* src/c++23/std.cc.in (std::dextents): Export.  Add to FIXME comments
+	other not yet implemented nor exported <mdspan> entities.
+
 2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator_base_types.h (__any_input_iterator):

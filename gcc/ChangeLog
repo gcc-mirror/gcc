@@ -1,3 +1,8 @@
+2025-07-20  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Add (const_int 1) as the op2 of
+	ashiftrt.
+
 2025-07-19  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR target/121124
