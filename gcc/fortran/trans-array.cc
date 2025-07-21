@@ -3437,6 +3437,148 @@ save_descriptor_data (tree descr, tree data)
 }
 
 
+/* Type of the DATA argument passed to walk_tree by substitute_subexpr_in_expr
+   and used by maybe_substitute_expr.  */
+
+typedef struct
+{
+  tree target, repl;
+}
+substitute_t;
+
+
+/* Check if the expression in *TP is equal to the substitution target provided
+   in DATA->TARGET and replace it with DATA->REPL in that case.   This is a
+   callback function for use with walk_tree.  */
+
+static tree
+maybe_substitute_expr (tree *tp, int *walk_subtree, void *data)
+{
+  substitute_t *subst = (substitute_t *) data;
+  if (*tp == subst->target)
+    {
+      *tp = subst->repl;
+      *walk_subtree = 0;
+    }
+
+  return NULL_TREE;
+}
+
+
+/* Substitute in EXPR any occurence of TARGET with REPLACEMENT.  */
+
+static void
+substitute_subexpr_in_expr (tree target, tree replacement, tree expr)
+{
+  substitute_t subst;
+  subst.target = target;
+  subst.repl = replacement;
+
+  walk_tree (&expr, maybe_substitute_expr, &subst, nullptr);
+}
+
+
+/* Save the descriptor reference VALUE to storage pointed by DESC_PTR.  Before
+   that, try to factor subexpressions of VALUE to variables, adding extra code
+   to BLOCK.
+
+   The candidate references to factoring are dereferenced pointers because they
+   are cheap to copy and array descriptors because they are often the base of
+   multiple subreferences.  */
+
+static void
+set_factored_descriptor_value (tree *desc_ptr, tree value, stmtblock_t *block)
+{
+  /* As the reference is processed from outer to inner, variable definitions
+     will be generated in reversed order, so can't be put directly in BLOCK.
+     We use TMP_BLOCK instead.  */
+  stmtblock_t tmp_block;
+  tree accumulated_code = NULL_TREE;
+
+  gfc_init_block (&tmp_block);
+
+  /* The current candidate to factoring.  */
+  tree saveable_ref = NULL_TREE;
+
+  /* The root expressions in which we look for subexpressions to replace with
+     variables.  */
+  auto_vec<tree> replacement_roots;
+  replacement_roots.safe_push (value);
+
+  tree data_ref = value;
+  tree next_ref = NULL_TREE;
+
+  /* If the candidate reference is not followed by a subreference, it can't be
+     saved to a variable as it may be reallocatable, and we have to keep the
+     parent reference to be able to store the new pointer value in case of
+     reallocation.  */
+  bool maybe_reallocatable = true;
+
+  while (true)
+    {
+      if (!maybe_reallocatable
+	  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (data_ref)))
+	saveable_ref = data_ref;
+
+      if (TREE_CODE (data_ref) == INDIRECT_REF)
+	{
+	  next_ref = TREE_OPERAND (data_ref, 0);
+
+	  if (!maybe_reallocatable)
+	    {
+	      /* Don't evaluate the pointer to a variable yet; do it only if the
+	         variable would be significantly more simple than the reference
+		 it replaces.  That is if the reference contains anything
+		 different from NOPs, COMPONENTs and DECLs.  */
+	      saveable_ref = next_ref;
+	    }
+	}
+      else if (TREE_CODE (data_ref) == COMPONENT_REF)
+	{
+	  maybe_reallocatable = false;
+	  next_ref = TREE_OPERAND (data_ref, 0);
+	}
+      else if (TREE_CODE (data_ref) == NOP_EXPR)
+	next_ref = TREE_OPERAND (data_ref, 0);
+      else
+	{
+	  if (DECL_P (data_ref))
+	    break;
+
+	  if (TREE_CODE (data_ref) == ARRAY_REF)
+	    {
+	      maybe_reallocatable = false;
+	      next_ref = TREE_OPERAND (data_ref, 0);
+	    }
+
+	  if (saveable_ref != NULL_TREE)
+	    {
+	      /* We have seen a reference worth saving.  Do it now.  */
+	      tree var = gfc_evaluate_now (saveable_ref, &tmp_block);
+	      gfc_add_expr_to_block (&tmp_block, accumulated_code);
+	      accumulated_code = gfc_finish_block (&tmp_block);
+
+	      unsigned i;
+	      tree repl_root;
+	      FOR_EACH_VEC_ELT (replacement_roots, i, repl_root)
+		substitute_subexpr_in_expr (saveable_ref, var, repl_root);
+
+	      replacement_roots.safe_push (saveable_ref);
+	      saveable_ref = NULL_TREE;
+	    }
+
+	  if (TREE_CODE (data_ref) != ARRAY_REF)
+	    break;
+	}
+
+      data_ref = next_ref;
+    }
+
+  *desc_ptr = value;
+  gfc_add_expr_to_block (block, accumulated_code);
+}
+
+
 /* Translate expressions for the descriptor and data pointer of a SS.  */
 /*GCC ARRAYS*/
 
@@ -3457,7 +3599,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   se.descriptor_only = 1;
   gfc_conv_expr_lhs (&se, ss_info->expr);
   gfc_add_block_to_block (block, &se.pre);
-  info->descriptor = se.expr;
+  set_factored_descriptor_value (&info->descriptor, se.expr, block);
   ss_info->string_length = se.string_length;
   ss_info->class_container = se.class_container;
 
