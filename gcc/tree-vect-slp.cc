@@ -9570,14 +9570,13 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
   slp_instance instance;
   int i;
-  poly_uint64 min_vf = 2;
 
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
 
   /* Analyze the data references.  */
 
-  if (!vect_analyze_data_refs (bb_vinfo, &min_vf, NULL))
+  if (!vect_analyze_data_refs (bb_vinfo, NULL))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

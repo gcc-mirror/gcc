@@ -2373,7 +2373,6 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   opt_result ok = opt_result::success ();
   int res;
   unsigned int max_vf = MAX_VECTORIZATION_FACTOR;
-  poly_uint64 min_vf = 2;
   loop_vec_info orig_loop_vinfo = NULL;
 
   /* If we are dealing with an epilogue then orig_loop_vinfo points to the
@@ -2420,7 +2419,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo, &min_vf, &fatal);
+  ok = vect_analyze_data_refs (loop_vinfo, &fatal);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -2485,9 +2484,6 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
 			 "bad data dependence.\n");
       return ok;
     }
-  if (max_vf != MAX_VECTORIZATION_FACTOR
-      && maybe_lt (max_vf, min_vf))
-    return opt_result::failure_at (vect_location, "bad data dependence.\n");
   LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo) = max_vf;
 
   ok = vect_set_stmts_vectype (loop_vinfo);

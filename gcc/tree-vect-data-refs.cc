@@ -5056,7 +5056,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 */
 
 opt_result
-vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
+vect_analyze_data_refs (vec_info *vinfo, bool *fatal)
 {
   class loop *loop = NULL;
   unsigned int i;
@@ -5075,7 +5075,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       enum { SG_NONE, GATHER, SCATTER } gatherscatter = SG_NONE;
-      poly_uint64 vf;
 
       gcc_assert (DR_REF (dr));
       stmt_vec_info stmt_info = vinfo->lookup_stmt (DR_STMT (dr));
@@ -5266,11 +5265,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 			     "got vectype for stmt: %G%T\n",
 			     stmt_info->stmt, vectype);
 	}
-
-      /* Adjust the minimal vectorization factor according to the
-	 vector type.  */
-      vf = TYPE_VECTOR_SUBPARTS (vectype);
-      *min_vf = upper_bound (*min_vf, vf);
 
       /* Leave the BB vectorizer to pick the vector type later, based on
 	 the final dataref group size and SLP node size.  */
