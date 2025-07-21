@@ -449,8 +449,13 @@ DefaultASTVisitor::visit (AST::BlockExpr &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+
+  if (expr.has_label ())
+    visit (expr.get_label ());
+
   for (auto &stmt : expr.get_statements ())
     visit (stmt);
+
   if (expr.has_tail_expr ())
     visit (expr.get_tail_expr ());
 }
