@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlittle-endian" } */
+/* { dg-options "-O2 -mbig-endian" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 typedef char v16qi __attribute__ ((vector_size (16)));
@@ -12,7 +12,7 @@ typedef long long v2di __attribute__ ((vector_size (16)));
 
 /*
 ** f_v16qi:
-**	index	z0\.b, #0, #1
+**	index	z0\.b, #15, #-1
 **	ret
 */
 v16qi
@@ -23,7 +23,7 @@ f_v16qi (void)
 
 /*
 ** f_v8qi:
-**	index	z0\.b, #0, #1
+**	index	z0\.b, #7, #-1
 **	ret
 */
 v8qi
@@ -34,7 +34,7 @@ f_v8qi (void)
 
 /*
 ** f_v8hi:
-**	index	z0\.h, #0, #1
+**	index	z0\.h, #7, #-1
 **	ret
 */
 v8hi
@@ -45,7 +45,7 @@ f_v8hi (void)
 
 /*
 ** f_v4hi:
-**	index	z0\.h, #0, #1
+**	index	z0\.h, #3, #-1
 **	ret
 */
 v4hi
@@ -56,7 +56,7 @@ f_v4hi (void)
 
 /*
 ** f_v4si:
-**	index	z0\.s, #0, #1
+**	index	z0\.s, #3, #-1
 **	ret
 */
 v4si
@@ -67,7 +67,7 @@ f_v4si (void)
 
 /*
 ** f_v2si:
-**	index	z0\.s, #0, #1
+**	index	z0\.s, #1, #-1
 **	ret
 */
 v2si
@@ -78,7 +78,7 @@ f_v2si (void)
 
 /*
 ** f_v2di:
-**	index	z0\.d, #0, #1
+**	index	z0\.d, #1, #-1
 **	ret
 */
 v2di
@@ -89,7 +89,7 @@ f_v2di (void)
 
 /*
 ** g_v4si:
-**	index	z0\.s, #3, #-4
+**	index	z0\.s, #-9, #4
 **	ret
 */
 v4si
@@ -106,7 +106,7 @@ g_v4si (void)
 v4si
 g_min_1 (void)
 {
-  return (v4si){ -16, -15, -14, -13 };
+  return (v4si){ -13, -14, -15, -16 };
 }
 
 /*
@@ -117,7 +117,7 @@ g_min_1 (void)
 v4si
 g_min_min (void)
 {
-  return (v4si){ -16, -32, -48, -64 };
+  return (v4si){ -64, -48, -32, -16 };
 }
 
 /*
@@ -128,7 +128,7 @@ g_min_min (void)
 v4si
 g_min_max (void)
 {
-  return (v4si){ -16, -1, 14, 29 };
+  return (v4si){ 29, 14, -1, -16 };
 }
 
 /*
@@ -139,7 +139,7 @@ g_min_max (void)
 v4si
 g_max_1 (void)
 {
-  return (v4si){ 15, 16, 17, 18 };
+  return (v4si){ 18, 17, 16, 15 };
 }
 
 /*
@@ -150,7 +150,7 @@ g_max_1 (void)
 v4si
 g_max_min (void)
 {
-  return (v4si){ 15, -1, -17, -33 };
+  return (v4si){ -33, -17, -1, 15 };
 }
 
 /*
@@ -161,7 +161,7 @@ g_max_min (void)
 v4si
 g_max_max (void)
 {
-  return (v4si){ 15, 30, 45, 60 };
+  return (v4si){ 60, 45, 30, 15 };
 }
 
 /*
@@ -172,7 +172,7 @@ g_max_max (void)
 v4si
 g_ob_1 (void)
 {
-  return (v4si){ -17, -16, -15, -14 };
+  return (v4si){ -14, -15, -16, -17 };
 }
 
 /*
@@ -183,7 +183,7 @@ g_ob_1 (void)
 v4si
 g_ob_2 (void)
 {
-  return (v4si){ 16, 17, 18, 19 };
+  return (v4si){ 19, 18, 17, 16 };
 }
 
 /*
@@ -194,7 +194,7 @@ g_ob_2 (void)
 v4si
 g_ob_3 (void)
 {
-  return (v4si){ 0, -17, -34, -51 };
+  return (v4si){ -51, -34, -17, 0 };
 }
 
 /*
@@ -205,5 +205,5 @@ g_ob_3 (void)
 v4si
 g_ob_4 (void)
 {
-  return (v4si){ 0, 16, 32, 48 };
+  return (v4si){ 48, 32, 16, 0 };
 }
