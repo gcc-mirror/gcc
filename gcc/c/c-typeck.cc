@@ -12646,7 +12646,8 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
       oconstraints[i] = constraint;
 
       if (parse_output_constraint (&constraint, i, ninputs, noutputs,
-				   &allows_mem, &allows_reg, &is_inout))
+				   &allows_mem, &allows_reg, &is_inout,
+				   nullptr))
 	{
 	  /* If the operand is going to end up in memory,
 	     mark it addressable.  */
@@ -12707,7 +12708,8 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
       input = TREE_VALUE (tail);
 
       if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				  oconstraints, &allows_mem, &allows_reg))
+				  oconstraints, &allows_mem, &allows_reg,
+				  nullptr))
 	{
 	  /* If the operand is going to end up in memory,
 	     mark it addressable.  */

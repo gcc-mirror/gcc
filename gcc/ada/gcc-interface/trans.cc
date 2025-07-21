@@ -8476,7 +8476,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	      oconstraints[i] = constraint;
 
 	      if (parse_output_constraint (&constraint, i, ninputs, noutputs,
-					   &allows_mem, &allows_reg, &fake))
+					   &allows_mem, &allows_reg, &fake,
+					   nullptr))
 		{
 		  /* If the operand is going to end up in memory,
 		     mark it addressable.  Note that we don't test
@@ -8504,9 +8505,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	      constraint
 		= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
 
-	      if (parse_input_constraint (&constraint, i, ninputs, noutputs,
-					  0, oconstraints,
-					  &allows_mem, &allows_reg))
+	      if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+					  oconstraints, &allows_mem,
+					  &allows_reg, nullptr))
 		{
 		  /* If the operand is going to end up in memory,
 		     mark it addressable.  */

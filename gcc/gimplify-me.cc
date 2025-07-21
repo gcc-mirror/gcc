@@ -194,7 +194,7 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	    constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
 	    oconstraints[i] = constraint;
 	    parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
-				     &allows_reg, &is_inout);
+				     &allows_reg, &is_inout, nullptr);
 	    gimplify_expr (&TREE_VALUE (op), &pre, NULL,
 			   is_inout ? is_gimple_min_lval : is_gimple_lvalue,
 			   fb_lvalue | fb_mayfail);
@@ -204,7 +204,8 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	    tree op = gimple_asm_input_op (asm_stmt, i);
 	    constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
 	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-				    oconstraints, &allows_mem, &allows_reg);
+				    oconstraints, &allows_mem, &allows_reg,
+				    nullptr);
 	    if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (op))) && allows_mem)
 	      allows_reg = 0;
 	    if (!allows_reg && allows_mem)

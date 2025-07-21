@@ -171,7 +171,8 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 	 no point in going further.  */
       constraint = constraints[i];
       if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
-				    &allows_mem, &allows_reg, &is_inout))
+				    &allows_mem, &allows_reg, &is_inout,
+				    nullptr))
 	{
 	  if (logger)
 	    logger->log ("error parsing constraint for output %i: %qs",
@@ -204,8 +205,8 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
       const char *constraint = constraints[i + noutputs];
       bool allows_reg, allows_mem;
       if (! parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				    constraints.address (),
-				    &allows_mem, &allows_reg))
+				    constraints.address (), &allows_mem,
+				    &allows_reg, nullptr))
 	{
 	  if (logger)
 	    logger->log ("error parsing constraint for input %i: %qs",

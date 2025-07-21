@@ -1734,7 +1734,8 @@ assemble_asm (tree asm_str)
 	  constraints[i]
 	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
 	  if (!parse_output_constraint (&constraints[i], i, ninputs, noutputs,
-					&allows_mem, &allows_reg, &is_inout))
+					&allows_mem, &allows_reg, &is_inout,
+					nullptr))
 	    goto done;
 	  if (is_inout)
 	    {
@@ -1776,7 +1777,7 @@ assemble_asm (tree asm_str)
 	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
 	  if (!parse_input_constraint (&constraints[i + noutputs], i,
 				       ninputs, noutputs, 0, constraints,
-				       &allows_mem, &allows_reg))
+				       &allows_mem, &allows_reg, nullptr))
 	    goto done;
 	  if (strchr (constraints[i], '%'))
 	    {

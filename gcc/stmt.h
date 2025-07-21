@@ -20,11 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_STMT_H
 #define GCC_STMT_H
 
+class gimplify_reg_info;
+
 extern void expand_label (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
-				     bool *, bool *, bool *);
+				     bool *, bool *, bool *,
+				     gimplify_reg_info *);
 extern bool parse_input_constraint (const char **, int, int, int, int,
-				    const char * const *, bool *, bool *);
+				    const char * const *, bool *, bool *,
+				    gimplify_reg_info *);
 extern int decode_hard_reg_constraint (const char *);
 extern tree resolve_asm_operand_names (tree, tree, tree, tree);
 #ifdef HARD_CONST

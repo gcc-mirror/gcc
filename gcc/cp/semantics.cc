@@ -2338,7 +2338,8 @@ finish_asm_stmt (location_t loc, int volatile_p, tree string,
 	  oconstraints[i] = constraint;
 
 	  if (parse_output_constraint (&constraint, i, ninputs, noutputs,
-				       &allows_mem, &allows_reg, &is_inout))
+				       &allows_mem, &allows_reg, &is_inout,
+				       nullptr))
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
@@ -2397,7 +2398,8 @@ finish_asm_stmt (location_t loc, int volatile_p, tree string,
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  bool constraint_parsed
 	    = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				      oconstraints, &allows_mem, &allows_reg);
+				      oconstraints, &allows_mem, &allows_reg,
+				      nullptr);
 	  /* If the operand is going to end up in memory, don't call
 	     decay_conversion.  */
 	  if (constraint_parsed && !allows_reg && allows_mem)

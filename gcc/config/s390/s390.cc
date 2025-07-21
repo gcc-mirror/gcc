@@ -17937,7 +17937,8 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 	continue;
       bool allows_mem, allows_reg, is_inout;
       bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
-					 &allows_mem, &allows_reg, &is_inout);
+					 &allows_mem, &allows_reg, &is_inout,
+					 nullptr);
       gcc_assert (ok);
       if (!f_constraint_p (constraint))
 	/* Long double with a constraint other than "=f" - nothing to do.  */
@@ -17982,7 +17983,7 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       bool allows_mem, allows_reg;
       bool ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
 					constraints.address (), &allows_mem,
-					&allows_reg);
+					&allows_reg, nullptr);
       gcc_assert (ok);
       if (!f_constraint_p (constraint))
 	/* Long double with a constraint other than "f" (or "=f" for inout

@@ -3068,7 +3068,7 @@ find_func_aliases (struct function *fn, gimple *origt)
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
 	  oconstraints[i] = constraint;
 	  parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
-				   &allows_reg, &is_inout);
+				   &allows_reg, &is_inout, nullptr);
 
 	  /* A memory constraint makes the address of the operand escape.  */
 	  if (!allows_reg && allows_mem)
@@ -3101,7 +3101,7 @@ find_func_aliases (struct function *fn, gimple *origt)
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
 
 	  parse_input_constraint (&constraint, 0, 0, noutputs, 0, oconstraints,
-				  &allows_mem, &allows_reg);
+				  &allows_mem, &allows_reg, nullptr);
 
 	  /* A memory constraint makes the address of the operand escape.  */
 	  if (!allows_reg && allows_mem)

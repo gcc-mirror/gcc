@@ -3275,44 +3275,6 @@ expand_asm_loc (tree string, int vol, location_t locus)
   emit_insn (body);
 }
 
-/* Return the number of times character C occurs in string S.  */
-static int
-n_occurrences (int c, const char *s)
-{
-  int n = 0;
-  while (*s)
-    n += (*s++ == c);
-  return n;
-}
-
-/* A subroutine of expand_asm_operands.  Check that all operands have
-   the same number of alternatives.  Return true if so.  */
-
-static bool
-check_operand_nalternatives (const vec<const char *> &constraints)
-{
-  unsigned len = constraints.length();
-  if (len > 0)
-    {
-      int nalternatives = n_occurrences (',', constraints[0]);
-
-      if (nalternatives + 1 > MAX_RECOG_ALTERNATIVES)
-	{
-	  error ("too many alternatives in %<asm%>");
-	  return false;
-	}
-
-      for (unsigned i = 1; i < len; ++i)
-	if (n_occurrences (',', constraints[i]) != nalternatives)
-	  {
-	    error ("operand constraints for %<asm%> differ "
-		   "in number of alternatives");
-	    return false;
-	  }
-    }
-  return true;
-}
-
 /* Check for overlap between registers marked in CLOBBERED_REGS and
    anything inappropriate in T.  Emit error and return the register
    variable definition for error, NULL_TREE for ok.  */
@@ -3478,10 +3440,6 @@ expand_asm_stmt (gasm *stmt)
 	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
     }
 
-  /* ??? Diagnose during gimplification?  */
-  if (! check_operand_nalternatives (constraints))
-    return;
-
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
   auto_vec<rtx> clobber_rvec;
@@ -3555,7 +3513,8 @@ expand_asm_stmt (gasm *stmt)
 	 no point in going further.  */
       constraint = constraints[i];
       if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
-				    &allows_mem, &allows_reg, &is_inout))
+				    &allows_mem, &allows_reg, &is_inout,
+				    nullptr))
 	return;
 
       /* If the output is a hard register, verify it doesn't conflict with
@@ -3633,8 +3592,8 @@ expand_asm_stmt (gasm *stmt)
 
       constraint = constraints[i + noutputs];
       if (! parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				    constraints.address (),
-				    &allows_mem, &allows_reg))
+				    constraints.address (), &allows_mem,
+				    &allows_reg, nullptr))
 	return;
 
       if (! allows_reg && allows_mem)
@@ -3664,7 +3623,7 @@ expand_asm_stmt (gasm *stmt)
 
       ok = parse_output_constraint (&constraints[i], i, ninputs,
 				    noutputs, &allows_mem, &allows_reg,
-				    &is_inout);
+				    &is_inout, nullptr);
       gcc_assert (ok);
 
       /* If an output operand is not a decl or indirect ref and our constraint
@@ -3769,7 +3728,7 @@ expand_asm_stmt (gasm *stmt)
       constraint = constraints[i + noutputs];
       ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
 				   constraints.address (),
-				   &allows_mem, &allows_reg);
+				   &allows_mem, &allows_reg, nullptr);
       gcc_assert (ok);
 
       /* EXPAND_INITIALIZER will not generate code for valid initializer
