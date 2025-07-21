@@ -1,3 +1,11 @@
+2025-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121145
+	* gfortran.dg/pointer_check_15.f90: New test.
+
 2025-07-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

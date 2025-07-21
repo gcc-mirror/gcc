@@ -1,3 +1,12 @@
+2025-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121145
+	* trans-expr.cc (gfc_conv_procedure_call): Do not create pointer
+	check for proc-pointer actual passed to optional dummy.
+
 2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
