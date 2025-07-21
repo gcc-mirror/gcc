@@ -651,9 +651,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 
 	  /* ?!? How much of this should mirror SET handling, potentially
 	     being shared?   */
-	  if (SUBREG_P (dst) && SUBREG_BYTE (dst).is_constant ())
+	  if (SUBREG_P (dst) && subreg_lsb (dst).is_constant (&bit))
 	    {
-	      bit = subreg_lsb (dst).to_constant ();
 	      if (bit >= HOST_BITS_PER_WIDE_INT)
 		bit = HOST_BITS_PER_WIDE_INT - 1;
 	      dst = SUBREG_REG (dst);
