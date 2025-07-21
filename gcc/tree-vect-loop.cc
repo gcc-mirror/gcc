@@ -8759,6 +8759,18 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
 			 "incompatible vector types for invariants\n");
       return false;
     }
+
+  /* ???  This can happen with data vs. mask uses of boolean.  */
+  if (!useless_type_conversion_p (SLP_TREE_VECTYPE (slp_node),
+				  SLP_TREE_VECTYPE
+				    (SLP_TREE_CHILDREN (slp_node)[0])))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "missed mask promotion\n");
+      return false;
+    }
+
   STMT_VINFO_TYPE (stmt_info) = lc_phi_info_type;
   return true;
 }
