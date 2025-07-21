@@ -49,7 +49,7 @@ void cobol_set_pp_option(int opt);
 
 void cobol_filename_restore();
 const char * cobol_lineno( int );
-int cobol_lineno();
+int cobol_lineno(void);
 
 unsigned long gb4( size_t input );
 

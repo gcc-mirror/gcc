@@ -525,11 +525,11 @@ extern tree gg_indirect(tree pointer, tree byte_offset = NULL_TREE);
 extern tree gg_string_literal(const char *string);
 
 #define CURRENT_LINE_NUMBER (cobol_location().first_line)
-extern location_t location_from_lineno();
-
-// When set to true, use UNKNOWN_LOCATION instead of CURRENT_LINE_NUMBER
-extern void gg_set_current_line_number(int line_number);
-extern int  gg_get_current_line_number();
+extern location_t gg_token_location();
+extern location_t current_token_location();
+extern location_t current_location_minus_one();
+extern void current_location_minus_one_clear();
+extern void token_location_override(location_t loc);
 
 extern tree gg_trans_unit_var_decl(const char *var_name);
 

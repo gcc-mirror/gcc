@@ -801,6 +801,7 @@
 %type   <boolean>       io_invalid  read_eof  write_eop
                         global is_global anycase backward
                         end_display
+                        exh_changed exh_named
 %type   <number>        mistake globally first_last
 %type   <io_mode>   io_mode
 
@@ -1012,7 +1013,9 @@
 %right                  IF THEN ELSE
                         SENTENCE
                         ACCEPT ADD ALTER CALL CANCEL CLOSE COMPUTE CONTINUE
-                        DELETE DISPLAY DIVIDE EVALUATE END EOP EXIT FILLER_kw
+                        DELETE DISPLAY DIVIDE
+                        EVALUATE END EOP EXIT
+                        FILLER_kw
                         GOBACK GOTO
                         INITIALIZE INSPECT
                         MERGE MOVE MULTIPLY OPEN OVERFLOW_kw PARAGRAPH PERFORM
@@ -5052,6 +5055,7 @@ statement:      error {
         |       divide          { $$ =  DIVIDE; }
         |       entry           { $$ =  ENTRY; }
         |       evaluate        { $$ =  EVALUATE; }
+        |       exhibit_stmt    { $$ =  EXHIBIT; }
         |       exit            { $$ =  EXIT; }
         |       free            { $$ =  FREE; }
         |       go_to           { $$ =  GOTO; }
@@ -5685,6 +5689,20 @@ disp_upon:    	device_name {
 		    symbol_elem_t *e = symbol_special_add(PROGRAM, &special);
 		    $$ = cbl_special_name_of(e);
                 }
+                ;
+
+exhibit_stmt:   EXHIBIT exh_changed exh_named vargs {
+                  statement_begin(@1, EXHIBIT);
+                  std::vector<cbl_refer_t> args( $vargs->args.begin(),
+                                                 $vargs->args.end() );
+                  parser_exhibit( $exh_changed, $exh_named, args );
+                }
+                ;
+exh_changed:    %empty  { $$ = false; }
+        |       CHANGED { $$ = true; }
+                ;
+exh_named:      %empty  { $$ = false; }
+        |       NAMED   { $$ = true; }
                 ;
 
 divide:         divide_impl end_divide { ast_divide($1); }
@@ -7636,6 +7654,7 @@ perform_cond:   UNTIL { parser_perform_conditional( &perform_current()->tgt); }
 perform_inline: perform_start statements END_PERFORM
                 {
 		  location_set(@END_PERFORM);
+		  parser_sleep(*cbl_refer_t::empty());
 		  $$ = perform_current();
 		  if( $perform_start == LOCATION ) {
 		    error_msg(@1, "LOCATION not valid with PERFORM Format 2");
@@ -7644,6 +7663,7 @@ perform_inline: perform_start statements END_PERFORM
         |       perform_start END_PERFORM
                 {
 		  location_set(@END_PERFORM);
+		  parser_sleep(*cbl_refer_t::empty());
 		  $$ = perform_current();
 		  if( $perform_start == LOCATION ) {
 		    error_msg(@1, "LOCATION not valid with PERFORM Format 2");
@@ -11788,7 +11808,7 @@ label_add( const YYLTYPE& loc,
                 name, cbl_label_of(p)->name, cbl_label_of(p)->line);
     }
   }
-  struct cbl_label_t label = { type, parent, loc.last_line };
+  struct cbl_label_t label = { type, parent, loc.first_line };
 
   if( !namcpy(loc, label.name, name) ) return NULL;
   auto p =  symbol_label_add(PROGRAM, &label);

@@ -4249,6 +4249,11 @@ symbol_currency( char sign ) {
   if( currencies.size() == 0 ) {
     currencies['$'] = "$";
   }
+  if( sign == '\0' ) { // default
+    auto result = currencies.begin();
+    gcc_assert(result != currencies.end());
+    return result->second;
+  }
   auto result = currencies.find(sign);
   return result == currencies.end()? NULL : result->second;
 }

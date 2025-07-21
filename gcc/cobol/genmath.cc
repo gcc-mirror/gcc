@@ -610,7 +610,7 @@ static bool
 fast_divide(size_t nC, cbl_num_result_t *C,
             size_t nA, cbl_refer_t *A,
             size_t nB, cbl_refer_t *B,
-            cbl_refer_t             remainder)
+      const cbl_refer_t             &remainder)
   {
   bool retval = false;
   if( all_results_binary(nC, C) )
