@@ -2697,6 +2697,14 @@ proc remove_options_for_riscv_zvbb { flags } {
     return [add_options_for_riscv_z_ext zvbb $flags]
 }
 
+proc add_options_for_riscv_zvfh { flags } {
+    return [add_options_for_riscv_z_ext zvfh $flags]
+}
+
+proc remove_options_for_riscv_zvfh { flags } {
+    return [add_options_for_riscv_z_ext zvfh $flags]
+}
+
 # Return 1 if the target is ia32 or x86_64.
 
 proc check_effective_target_x86 { } {
