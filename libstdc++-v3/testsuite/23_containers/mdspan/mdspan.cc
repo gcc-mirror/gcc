@@ -4,6 +4,7 @@
 #include <testsuite_hooks.h>
 #include "int_like.h"
 #include "layout_like.h"
+#include <stdexcept>
 
 constexpr auto dyn = std::dynamic_extent;
 
@@ -114,6 +115,27 @@ test_class_properties_all()
   return true;
 }
 
+template<typename T>
+  class ThrowingDefaultAccessor
+  {
+  public:
+    using element_type = T;
+    using reference = element_type&;
+    using data_handle_type = element_type*;
+    using offset_policy = ThrowingDefaultAccessor;
+
+    ThrowingDefaultAccessor() noexcept(false)
+    { }
+
+    reference
+    access(data_handle_type p, size_t i) const
+    { return p[i]; }
+
+    typename offset_policy::data_handle_type
+    offset(data_handle_type p, size_t i) const
+    { return p + i; }
+  };
+
 constexpr bool
 test_default_ctor()
 {
@@ -129,6 +151,18 @@ test_default_ctor()
   VERIFY(md.empty());
   return true;
 }
+
+template<template<typename T> typename Accessor, bool Expected>
+  constexpr void
+  test_nothrow_default_ctor()
+  {
+    using Extents = std::extents<int, dyn>;
+    using Layout = std::layout_left;
+    using MDSpan = std::mdspan<double, Extents, Layout, Accessor<double>>;
+
+    static_assert(std::is_default_constructible_v<MDSpan>);
+    static_assert(std::is_nothrow_default_constructible_v<MDSpan> == Expected);
+  }
 
 constexpr bool
 test_from_other()
@@ -682,6 +716,9 @@ main()
 
   test_default_ctor();
   static_assert(test_default_ctor());
+
+  test_nothrow_default_ctor<std::default_accessor, true>();
+  test_nothrow_default_ctor<ThrowingDefaultAccessor, false>();
 
   test_from_other();
   static_assert(test_from_other());
