@@ -499,7 +499,8 @@ package body Styleg is
                   if Is_Box_Comment
                     or else Style_Check_Comments_Spacing = 1
                   then
-                     Error_Space_Required (Scan_Ptr + 2);
+                     Error_Msg -- CODEFIX
+                       ("(style) space required?c?", Scan_Ptr + 2);
                   else
                      Error_Msg -- CODEFIX
                        ("(style) two spaces required?c?", Scan_Ptr + 2);
@@ -526,7 +527,8 @@ package body Styleg is
          --  box comment.
 
          elsif not Is_Box_Comment then
-            Error_Space_Required (Scan_Ptr + 3);
+            Error_Msg -- CODEFIX
+              ("(style) space required?c?", Scan_Ptr + 3);
          end if;
       end if;
    end Check_Comment;
