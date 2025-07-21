@@ -26,42 +26,12 @@ namespace AST {
 DesugarQuestionMark::DesugarQuestionMark () {}
 
 void
-DesugarQuestionMark::go (AST::Crate &crate)
+DesugarQuestionMark::go (std::unique_ptr<Expr> &ptr)
 {
-  DesugarQuestionMark::visit (crate);
-}
+  auto original = static_cast<ErrorPropagationExpr &> (*ptr);
+  auto desugared = DesugarQuestionMark ().desugar (original);
 
-void
-DesugarQuestionMark::visit (ExprStmt &stmt)
-{
-  if (stmt.get_expr ().get_expr_kind () == Expr::Kind::ErrorPropagation)
-    desugar_and_replace (stmt.get_expr_ptr ());
-
-  DefaultASTVisitor::visit (stmt);
-}
-
-void
-DesugarQuestionMark::visit (CallExpr &call)
-{
-  if (call.get_function_expr ().get_expr_kind ()
-      == Expr::Kind::ErrorPropagation)
-    desugar_and_replace (call.get_function_expr_ptr ());
-
-  for (auto &arg : call.get_params ())
-    if (arg->get_expr_kind () == Expr::Kind::ErrorPropagation)
-      desugar_and_replace (arg);
-
-  DefaultASTVisitor::visit (call);
-}
-
-void
-DesugarQuestionMark::visit (LetStmt &stmt)
-{
-  if (stmt.has_init_expr ()
-      && stmt.get_init_expr ().get_expr_kind () == Expr::Kind::ErrorPropagation)
-    desugar_and_replace (stmt.get_init_expr_ptr ());
-
-  DefaultASTVisitor::visit (stmt);
+  ptr = std::move (desugared);
 }
 
 MatchArm
@@ -99,6 +69,12 @@ ok_case (Builder &builder)
 MatchCase
 err_case (Builder &builder)
 {
+  // TODO: We need to handle the case where there is an enclosing `try {}`
+  // block, as that will create an additional block label that we can break to.
+  // This allows try blocks to use the question mark operator without having the
+  // offending statement early return from the enclosing function
+  // FIXME: How to mark that there is an enclosing block label?
+
   auto val = builder.identifier_pattern ("err");
 
   auto patterns = std::vector<std::unique_ptr<Pattern>> ();
@@ -152,15 +128,6 @@ DesugarQuestionMark::desugar (ErrorPropagationExpr &expr)
   return std::unique_ptr<MatchExpr> (new MatchExpr (std::move (call),
 						    std::move (cases), {}, {},
 						    expr.get_locus ()));
-}
-
-void
-DesugarQuestionMark::desugar_and_replace (std::unique_ptr<Expr> &ptr)
-{
-  auto original = static_cast<ErrorPropagationExpr &> (*ptr);
-  auto desugared = desugar (original);
-
-  ptr = std::move (desugared);
 }
 
 } // namespace AST

@@ -22,6 +22,7 @@
 #include "rust-desugar-question-mark.h"
 #include "rust-desugar-apit.h"
 #include "rust-diagnostics.h"
+#include "rust-expression-yeast.h"
 #include "rust-hir-pattern-analysis.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-unsafe-checker.h"
@@ -985,8 +986,9 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
   // handle AST desugaring
   if (!saw_errors ())
     {
+      AST::ExpressionYeast ().go (crate);
+
       AST::DesugarForLoops ().go (crate);
-      AST::DesugarQuestionMark ().go (crate);
       AST::DesugarApit ().go (crate);
 
       // HACK: we may need a final TopLevel pass

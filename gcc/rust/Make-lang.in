@@ -242,9 +242,11 @@ GRS_OBJS = \
 	rust/rust-expand-format-args.o \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \
+	rust/rust-expression-yeast.o \
 	rust/rust-desugar-for-loops.o \
 	rust/rust-desugar-question-mark.o \
 	rust/rust-desugar-apit.o \
+	# rust/rust-desugar-try-block.o \
     $(END)
 # removed object files from here
 
