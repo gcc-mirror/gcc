@@ -26518,7 +26518,6 @@ aarch64_evpc_hvla (struct expand_vec_perm_d *d)
   machine_mode vmode = d->vmode;
   if (!TARGET_SVE2p1
       || !TARGET_NON_STREAMING
-      || BYTES_BIG_ENDIAN
       || d->vec_flags != VEC_SVE_DATA
       || GET_MODE_UNIT_BITSIZE (vmode) > 64)
     return false;
