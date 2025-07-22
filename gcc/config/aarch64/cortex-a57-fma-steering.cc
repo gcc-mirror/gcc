@@ -948,6 +948,11 @@ func_fma_steering::analyze ()
 
 	  /* Search the chain where this instruction is (one of) the root.  */
 	  dest_op_info = insn_rr[INSN_UID (insn)].op_info;
+
+	  /* Register rename could fail. */
+	  if (!dest_op_info)
+	    continue;
+
 	  dest_regno = REGNO (SET_DEST (PATTERN (insn)));
 	  for (i = 0; i < dest_op_info->n_chains; i++)
 	    {
