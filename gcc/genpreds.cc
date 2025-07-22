@@ -1184,7 +1184,12 @@ write_insn_constraint_len (void)
   puts ("    default: break;\n"
 	"    }\n"
 	"  if (str[0] == '{')\n"
-	"      return ((const char *) rawmemchr (str + 1, '}') - str) + 1;\n"
+	"    {\n"
+	"      size_t len = 1;\n"
+	"      while (str[len] != '}' && str[len] != '\\0')\n"
+	"        ++len;\n"
+	"      return len + 1;\n"
+	"    }\n"
 	"  return 1;\n"
 	"}\n");
 }
