@@ -245,6 +245,7 @@ GRS_OBJS = \
 	rust/rust-collect-lang-items.o \
 	rust/rust-expression-yeast.o \
 	rust/rust-desugar-for-loops.o \
+	rust/rust-desugar-while-let.o \
 	rust/rust-desugar-question-mark.o \
 	rust/rust-desugar-apit.o \
 	rust/rust-desugar-try-block.o \

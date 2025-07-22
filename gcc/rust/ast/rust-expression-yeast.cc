@@ -22,6 +22,7 @@
 #include "rust-desugar-try-block.h"
 #include "rust-desugar-for-loops.h"
 #include "rust-ast-full.h"
+#include "rust-desugar-while-let.h"
 #include "rust-expr.h"
 #include "rust-stmt.h"
 
@@ -44,9 +45,10 @@ ExpressionYeast::dispatch_loops (std::unique_ptr<Expr> &loop_expr)
     case BaseLoopExpr::Kind::For:
       DesugarForLoops::go (loop_expr);
       break;
-    case BaseLoopExpr::Kind::Loop:
-    case BaseLoopExpr::Kind::While:
     case BaseLoopExpr::Kind::WhileLet:
+      DesugarWhileLet::go (loop_expr);
+      break;
+    default:
       break;
     }
 }
