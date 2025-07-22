@@ -28,6 +28,8 @@ DesugarTryBlock::DesugarTryBlock () {}
 void
 DesugarTryBlock::go (std::unique_ptr<Expr> &ptr)
 {
+  rust_assert (ptr->get_expr_kind () == Expr::Kind::Try);
+
   auto original = static_cast<TryExpr &> (*ptr);
   auto desugared = DesugarTryBlock ().desugar (original);
 

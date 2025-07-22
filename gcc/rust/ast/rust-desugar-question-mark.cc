@@ -18,7 +18,6 @@
 
 #include "rust-desugar-question-mark.h"
 #include "rust-ast-builder.h"
-#include "rust-ast-visitor.h"
 
 namespace Rust {
 namespace AST {
@@ -28,6 +27,8 @@ DesugarQuestionMark::DesugarQuestionMark () {}
 void
 DesugarQuestionMark::go (std::unique_ptr<Expr> &ptr)
 {
+  rust_assert (ptr->get_expr_kind () == Expr::Kind::ErrorPropagation);
+
   auto original = static_cast<ErrorPropagationExpr &> (*ptr);
   auto desugared = DesugarQuestionMark ().desugar (original);
 
