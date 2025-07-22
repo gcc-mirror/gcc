@@ -7909,21 +7909,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  se->ss->info->class_container = arg1_cntnr;
 	}
 
+      /* Obtain the character length of an assumed character length procedure
+	 from the typespec of the actual argument.  */
+      if (e
+	  && parmse.string_length == NULL_TREE
+	  && e->ts.type == BT_PROCEDURE
+	  && e->symtree->n.sym->ts.type == BT_CHARACTER
+	  && e->symtree->n.sym->ts.u.cl->length != NULL
+	  && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_conv_const_charlen (e->symtree->n.sym->ts.u.cl);
+	  parmse.string_length = e->symtree->n.sym->ts.u.cl->backend_decl;
+	}
+
       if (fsym && e)
 	{
-	  /* Obtain the character length of an assumed character length
-	     length procedure from the typespec.  */
-	  if (fsym->ts.type == BT_CHARACTER
-	      && parmse.string_length == NULL_TREE
-	      && e->ts.type == BT_PROCEDURE
-	      && e->symtree->n.sym->ts.type == BT_CHARACTER
-	      && e->symtree->n.sym->ts.u.cl->length != NULL
-	      && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    {
-	      gfc_conv_const_charlen (e->symtree->n.sym->ts.u.cl);
-	      parmse.string_length = e->symtree->n.sym->ts.u.cl->backend_decl;
-	    }
-
 	  /* Obtain the character length for a NULL() actual with a character
 	     MOLD argument.  Otherwise substitute a suitable dummy length.
 	     Here we handle non-optional dummies of non-bind(c) procedures.  */
