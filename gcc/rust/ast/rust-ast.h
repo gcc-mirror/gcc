@@ -1318,6 +1318,7 @@ public:
     TypeCast,
     Assignment,
     CompoundAssignment,
+    Try,
   };
 
   virtual Kind get_expr_kind () const = 0;

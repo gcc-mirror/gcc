@@ -3792,7 +3792,7 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Expr::Kind get_expr_kind () const override { return Expr::Kind::Return; }
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Try; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
