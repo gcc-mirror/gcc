@@ -99,10 +99,10 @@ package body System.Stack_Usage is
    --  Now the implementation of the services offered by this unit, on top of
    --  the Stack_Slots abstraction above.
 
-   Index_Str       : constant String  := "Index";
-   Task_Name_Str   : constant String  := "Task Name";
-   Stack_Size_Str  : constant String  := "Stack Size";
-   Actual_Size_Str : constant String  := "Stack usage";
+   Index_Str       : constant String := "Index";
+   Task_Name_Str   : constant String := "Task Name";
+   Stack_Size_Str  : constant String := "Stack Size";
+   Actual_Size_Str : constant String := "Stack usage";
 
    procedure Output_Result
      (Result_Id          : Natural;
@@ -128,9 +128,7 @@ package body System.Stack_Usage is
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
         [others =>
-           (Task_Name   => [others => ASCII.NUL],
-            Value       => 0,
-            Stack_Size  => 0)];
+           (Task_Name => [others => ASCII.NUL], Value => 0, Stack_Size => 0)];
 
       --  Set the Is_Enabled flag to true, so that the task wrapper knows that
       --  it has to handle dynamic stack analysis
@@ -151,11 +149,13 @@ package body System.Stack_Usage is
          begin
             My_Stack_Size := System.CRTL.atoi (Stack_Size_Chars) * 1024;
 
+            --  Approximate Stack_Base with the topmost stack address that is
+            --  known here.
             Initialize_Analyzer
               (Environment_Task_Analyzer,
                "ENVIRONMENT TASK",
                My_Stack_Size,
-               0,
+               Stack_Size_Chars'Address,
                My_Stack_Size);
 
             Fill_Stack (Environment_Task_Analyzer);
@@ -207,8 +207,8 @@ package body System.Stack_Usage is
             --  Reduce pattern size to prevent local frame overwrite
 
             Analyzer.Pattern_Size :=
-              Integer (To_Stack_Address (Current_Stack_Level'Address) - Guard
-                         - To_Stack_Address (Analyzer.Pattern_Limit));
+              Integer (To_Stack_Address (Current_Stack_Level'Address) - Guard -
+                       To_Stack_Address (Analyzer.Pattern_Limit));
          end if;
 
          Analyzer.Pattern_Overlay_Address := Analyzer.Pattern_Limit;
@@ -267,22 +267,21 @@ package body System.Stack_Usage is
    -------------------------
 
    procedure Initialize_Analyzer
-     (Analyzer         : in out Stack_Analyzer;
-      Task_Name        : String;
-      Stack_Size       : Natural;
-      Stack_Base       : System.Address;
-      Pattern_Size     : Natural;
-      Pattern          : Interfaces.Unsigned_32 := 16#DEAD_BEEF#)
-   is
+     (Analyzer     : in out Stack_Analyzer;
+      Task_Name    : String;
+      Stack_Size   : Natural;
+      Stack_Base   : System.Address;
+      Pattern_Size : Natural;
+      Pattern      : Interfaces.Unsigned_32 := 16#DEAD_BEEF#) is
    begin
       --  Initialize the analyzer fields
 
-      Analyzer.Stack_Base    := Stack_Base;
-      Analyzer.Stack_Size    := Stack_Size;
-      Analyzer.Pattern_Size  := Pattern_Size;
-      Analyzer.Pattern       := Pattern;
-      Analyzer.Result_Id     := Next_Id;
-      Analyzer.Task_Name     := [others => ' '];
+      Analyzer.Stack_Base   := Stack_Base;
+      Analyzer.Stack_Size   := Stack_Size;
+      Analyzer.Pattern_Size := Pattern_Size;
+      Analyzer.Pattern      := Pattern;
+      Analyzer.Result_Id    := Next_Id;
+      Analyzer.Task_Name    := [others => ' '];
 
       --  Compute the task name, and truncate if bigger than Task_Name_Length
 
@@ -290,10 +289,12 @@ package body System.Stack_Usage is
          Analyzer.Task_Name (1 .. Task_Name'Length) := Task_Name;
       else
          Analyzer.Task_Name :=
-           Task_Name (Task_Name'First ..
-                      Task_Name'First + Task_Name_Length - 1);
+           Task_Name
+             (Task_Name'First .. Task_Name'First + Task_Name_Length - 1);
       end if;
 
+      --  Next_Id does not need any explicit protection against race conditions
+      --  because Initialize_Analyzer is called holding the runtime lock.
       Next_Id := Next_Id + 1;
    end Initialize_Analyzer;
 
@@ -302,9 +303,7 @@ package body System.Stack_Usage is
    ----------------
 
    function Stack_Size
-     (SP_Low  : Stack_Address;
-      SP_High : Stack_Address) return Natural
-   is
+     (SP_Low : Stack_Address; SP_High : Stack_Address) return Natural is
    begin
       if SP_Low > SP_High then
          return Natural (SP_Low - SP_High);
@@ -379,16 +378,16 @@ package body System.Stack_Usage is
       Stack_Size_Str : constant String := Natural'Image (Result.Stack_Size);
       Actual_Use_Str : constant String := Natural'Image (Result.Value);
 
-      Result_Id_Blanks  : constant
-        String (1 .. Index_Str'Length - Result_Id_Str'Length)    :=
+      Result_Id_Blanks :
+        constant String (1 .. Index_Str'Length - Result_Id_Str'Length) :=
           (others => ' ');
 
-      Stack_Size_Blanks : constant
-        String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
+      Stack_Size_Blanks :
+        constant String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
           (others => ' ');
 
-      Actual_Use_Blanks : constant
-        String (1 .. Max_Actual_Use_Len - Actual_Use_Str'Length) :=
+      Actual_Use_Blanks :
+        constant String (1 .. Max_Actual_Use_Len - Actual_Use_Str'Length) :=
           (others => ' ');
 
    begin
@@ -412,10 +411,9 @@ package body System.Stack_Usage is
       Max_Stack_Usage                        : Natural := 0;
       Max_Stack_Size_Len, Max_Actual_Use_Len : Natural := 0;
 
-      Task_Name_Blanks : constant
-                           String
-                             (1 .. Task_Name_Length - Task_Name_Str'Length) :=
-                               (others => ' ');
+      Task_Name_Blanks :
+        constant String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
+          (others => ' ');
 
    begin
       Set_Output (Standard_Error);
@@ -431,6 +429,7 @@ package body System.Stack_Usage is
          --  in order to do correct column alignment.
 
          for J in Result_Array'Range loop
+            --  Slots at Next_Id or higher haven't been allocated to tasks
             exit when J >= Next_Id;
 
             if Result_Array (J).Value > Max_Stack_Usage then
@@ -450,15 +449,15 @@ package body System.Stack_Usage is
          --  labels if needed.
 
          declare
-            Stack_Size_Blanks  : constant
-                                   String (1 .. Max_Stack_Size_Len -
-                                                  Stack_Size_Str'Length) :=
-                                      [others => ' '];
+            Stack_Size_Blanks :
+              constant String
+                         (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
+                [others => ' '];
 
-            Stack_Usage_Blanks : constant
-                                   String (1 .. Max_Actual_Use_Len -
-                                                  Actual_Size_Str'Length) :=
-                                      [others => ' '];
+            Stack_Usage_Blanks :
+              constant String
+                         (1 .. Max_Actual_Use_Len - Actual_Size_Str'Length) :=
+                [others => ' '];
 
          begin
             if Stack_Size_Str'Length > Max_Stack_Size_Len then
@@ -480,6 +479,7 @@ package body System.Stack_Usage is
          --  Now display the individual results
 
          for J in Result_Array'Range loop
+            --  Slots at Next_Id or higher haven't been allocated to tasks
             exit when J >= Next_Id;
             Output_Result
               (J, Result_Array (J), Max_Stack_Size_Len, Max_Actual_Use_Len);
@@ -489,8 +489,14 @@ package body System.Stack_Usage is
 
       else
          Put
-           (Index_Str & " | " & Task_Name_Str & Task_Name_Blanks & " | "
-            & Stack_Size_Str & " | " & Actual_Size_Str);
+           (Index_Str
+            & " | "
+            & Task_Name_Str
+            & Task_Name_Blanks
+            & " | "
+            & Stack_Size_Str
+            & " | "
+            & Actual_Size_Str);
          New_Line;
       end if;
    end Output_Results;
@@ -500,9 +506,10 @@ package body System.Stack_Usage is
    -------------------
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
-      Result : Task_Result := (Task_Name  => Analyzer.Task_Name,
-                               Stack_Size => Analyzer.Stack_Size,
-                               Value      => 0);
+      Result : Task_Result :=
+        (Task_Name  => Analyzer.Task_Name,
+         Stack_Size => Analyzer.Stack_Size,
+         Value      => 0);
    begin
       if Analyzer.Pattern_Size = 0 then
 
@@ -513,8 +520,9 @@ package body System.Stack_Usage is
 
       else
          Result.Value :=
-           Stack_Size (To_Stack_Address (Analyzer.Topmost_Touched_Mark),
-                       To_Stack_Address (Analyzer.Stack_Base));
+           Stack_Size
+             (To_Stack_Address (Analyzer.Topmost_Touched_Mark),
+              To_Stack_Address (Analyzer.Stack_Base));
       end if;
 
       if Analyzer.Result_Id in Result_Array'Range then
@@ -528,9 +536,9 @@ package body System.Stack_Usage is
 
          declare
             Result_Str_Len : constant Natural :=
-                               Natural'Image (Result.Value)'Length;
+              Natural'Image (Result.Value)'Length;
             Size_Str_Len   : constant Natural :=
-                               Natural'Image (Analyzer.Stack_Size)'Length;
+              Natural'Image (Analyzer.Stack_Size)'Length;
 
             Max_Stack_Size_Len : Natural;
             Max_Actual_Use_Len : Natural;

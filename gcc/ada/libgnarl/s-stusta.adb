@@ -51,14 +51,18 @@ package body System.Stack_Usage.Tasking is
    --  Compute the stack usage for a given task and saves it in the precise
    --  slot in System.Stack_Usage.Result_Array;
 
-   procedure Report_Impl (All_Tasks : Boolean; Do_Print : Boolean);
+   procedure Report_Impl
+     (All_Tasks   : Boolean;
+      Do_Print    : Boolean;
+      Result_Data : out Stack_Usage_Result_Array);
    --  Report the stack usage of either all tasks (All_Tasks = True) or of the
    --  current task (All_Task = False). If Print is True, then results are
-   --  printed on stderr
+   --  printed on stderr. Otherwise, we fill the referred structure with the
+   --  stack information for later processing. We do this copy to avoid reading
+   --  System.Stack_Usage.Result_Array without locking the runtime.
 
    procedure Convert
-     (TS  : System.Stack_Usage.Task_Result;
-      Res : out Stack_Usage_Result);
+     (TS : System.Stack_Usage.Task_Result; Res : out Stack_Usage_Result);
    --  Convert an object of type System.Stack_Usage in a Stack_Usage_Result
 
    -------------
@@ -66,8 +70,7 @@ package body System.Stack_Usage.Tasking is
    -------------
 
    procedure Convert
-     (TS  : System.Stack_Usage.Task_Result;
-      Res : out Stack_Usage_Result) is
+     (TS : System.Stack_Usage.Task_Result; Res : out Stack_Usage_Result) is
    begin
       Res := TS;
    end Convert;
@@ -77,9 +80,38 @@ package body System.Stack_Usage.Tasking is
    ---------------------
 
    procedure Report_For_Task (Id : System.Tasking.Task_Id) is
+      use type System.Tasking.Task_Id;
    begin
-      System.Stack_Usage.Compute_Result (Id.Common.Analyzer);
-      System.Stack_Usage.Report_Result (Id.Common.Analyzer);
+      --  Special treatment of the environment task that uses a Stack_Analyzer
+      --  object that is not part of its ATCB.
+      if Id = System.Task_Primitives.Operations.Environment_Task then
+
+         --  Check whether we are tracking stack usage for the environment task
+         if Compute_Environment_Task then
+            Compute_Result (Environment_Task_Analyzer);
+            Report_Result (Environment_Task_Analyzer);
+
+         else
+            Put_Line
+              ("Stack usage for environment task needs GNAT_STACK_LIMIT");
+         end if;
+
+      --  Regular task
+
+      else
+         declare
+            Name_Length : constant Natural :=
+              Natural'Min (Id.Common.Task_Image_Len, Task_Name_Length);
+         begin
+            --  Skip the task if it hasn't initialized the stack pattern yet
+            if Id.Common.Task_Image (1 .. Name_Length) =
+               Id.Common.Analyzer.Task_Name (1 .. Name_Length)
+            then
+               System.Stack_Usage.Compute_Result (Id.Common.Analyzer);
+               System.Stack_Usage.Report_Result (Id.Common.Analyzer);
+            end if;
+         end;
+      end if;
    end Report_For_Task;
 
    -----------------------
@@ -103,6 +135,9 @@ package body System.Stack_Usage.Tasking is
             exit when Id = null;
 
             --  Calculate the task usage for a given task
+
+            --  Skip if the task is terminated because the ATCB can be already
+            --  destroyed.
 
             if not System.Tasking.Stages.Terminated (Id) then
                Report_For_Task (Id);
@@ -133,10 +168,13 @@ package body System.Stack_Usage.Tasking is
    -- Report_Impl --
    -----------------
 
-   procedure Report_Impl (All_Tasks : Boolean; Do_Print : Boolean) is
+   procedure Report_Impl
+     (All_Tasks   : Boolean;
+      Do_Print    : Boolean;
+      Result_Data : out Stack_Usage_Result_Array) is
    begin
 
-      --  Lock the runtime
+      --  Lock the runtime to compute and display stack usage
 
       System.Task_Primitives.Operations.Lock_RTS;
 
@@ -148,9 +186,22 @@ package body System.Stack_Usage.Tasking is
          Compute_Current_Task;
       end if;
 
-      --  Output results
+      --  Output results, either printing it or in the out parameter
+
       if Do_Print then
          System.Stack_Usage.Output_Results;
+
+      else
+         --  Extract data from the snapshot in System.Stack_Usage.Result_Array
+
+         pragma Assert
+           (System.Stack_Usage.Result_Array = null or else
+            (System.Stack_Usage.Result_Array'First = Result_Data'First and then
+             System.Stack_Usage.Result_Array'Last = Result_Data'Last));
+
+         for J in Result_Data'Range loop
+            Convert (System.Stack_Usage.Result_Array (J), Result_Data (J));
+         end loop;
       end if;
 
       --  Unlock the runtime
@@ -164,8 +215,9 @@ package body System.Stack_Usage.Tasking is
    ----------------------
 
    procedure Report_All_Tasks is
+      Empty_Result_Array : Stack_Usage_Result_Array (1 .. 0);
    begin
-      Report_Impl (True, True);
+      Report_Impl (True, True, Empty_Result_Array);
    end Report_All_Tasks;
 
    -------------------------
@@ -185,13 +237,11 @@ package body System.Stack_Usage.Tasking is
 
    function Get_All_Tasks_Usage return Stack_Usage_Result_Array is
       Res : Stack_Usage_Result_Array
-        (1 .. System.Stack_Usage.Result_Array'Length);
+        (1 ..
+           (if System.Stack_Usage.Result_Array = null then 0
+            else System.Stack_Usage.Result_Array'Length));
    begin
-      Report_Impl (True, False);
-
-      for J in Res'Range loop
-         Convert (System.Stack_Usage.Result_Array (J), Res (J));
-      end loop;
+      Report_Impl (True, False, Res);
 
       return Res;
    end Get_All_Tasks_Usage;
@@ -201,31 +251,70 @@ package body System.Stack_Usage.Tasking is
    ----------------------------
 
    function Get_Current_Task_Usage return Stack_Usage_Result is
-      Res : Stack_Usage_Result;
-      Original : System.Stack_Usage.Task_Result;
-      Found : Boolean := False;
+      use type System.Tasking.Task_Id;
+
+      Self_ID     : constant System.Tasking.Task_Id := System.Tasking.Self;
+      Is_Env_Task : constant Boolean :=
+        Self_ID = System.Task_Primitives.Operations.Environment_Task;
+
+      Res_Array : Stack_Usage_Result_Array
+        (1 ..
+           (if System.Stack_Usage.Result_Array = null then 0
+            else System.Stack_Usage.Result_Array'Length));
+      Res       : Stack_Usage_Result;
+      Found     : Boolean := False;
+
    begin
+      Report_Impl (False, False, Res_Array);
 
-      Report_Impl (False, False);
+      --  Look for the task info in the copy of System.Stack_Usage.Result_Array
+      --  (the search is based on task name).
 
-      --  Look for the task info in System.Stack_Usage.Result_Array;
-      --  the search is based on task name
-
-      for T in System.Stack_Usage.Result_Array'Range loop
-         if System.Stack_Usage.Result_Array (T).Task_Name =
-           System.Tasking.Self.Common.Analyzer.Task_Name
+      for Stack_Usage of Res_Array loop
+         if Stack_Usage.Task_Name = Self_ID.Common.Analyzer.Task_Name or else
+           (Is_Env_Task and then
+            Stack_Usage.Task_Name (1 .. 16) = "ENVIRONMENT TASK")
          then
-            Original := System.Stack_Usage.Result_Array (T);
+            Res := Stack_Usage;
             Found := True;
             exit;
          end if;
       end loop;
 
-      --  Be sure a task has been found
+      if not Found then
+         --  Not found because the task is not part of those for which we store
+         --  the results. Hence we need to compute now.
 
-      pragma Assert (Found);
+         --  Environment task
+         if Is_Env_Task then
+            Res.Task_Name :=
+              "ENVIRONMENT TASK" & (1 .. Task_Name_Length - 16 => ASCII.NUL);
 
-      Convert (Original, Res);
+            if Compute_Environment_Task then
+               Res.Stack_Size := Environment_Task_Analyzer.Stack_Size;
+               Res.Value :=
+                 Stack_Size
+                   (To_Stack_Address
+                      (Environment_Task_Analyzer.Topmost_Touched_Mark),
+                    To_Stack_Address (Environment_Task_Analyzer.Stack_Base));
+            else
+               Res.Stack_Size := 0;
+               Res.Value := 0;
+            end if;
+
+         --  Other tasks
+
+         else
+            Res.Task_Name := Self_ID.Common.Analyzer.Task_Name;
+            Res.Stack_Size := Self_ID.Common.Analyzer.Stack_Size;
+            Res.Value :=
+              Stack_Size
+                (To_Stack_Address
+                   (Self_ID.Common.Analyzer.Topmost_Touched_Mark),
+                 To_Stack_Address (Self_ID.Common.Analyzer.Stack_Base));
+         end if;
+      end if;
+
       return Res;
    end Get_Current_Task_Usage;
 
@@ -248,11 +337,14 @@ package body System.Stack_Usage.Tasking is
 
       declare
          T_Name : constant String :=
-                    Obj.Task_Name (Obj.Task_Name'First .. Pos);
+           Obj.Task_Name (Obj.Task_Name'First .. Pos);
       begin
+         --  Notify when we don't know stack usage
          Put_Line
-           ("| " & T_Name & " | " & Natural'Image (Obj.Stack_Size) &
-            Natural'Image (Obj.Value));
+           ("| " & T_Name & "|" &
+            (if Obj.Stack_Size = 0 then " NA | NA"
+             else Natural'Image (Obj.Stack_Size) & " |" &
+                  Natural'Image (Obj.Value)));
       end;
    end Print;
 
