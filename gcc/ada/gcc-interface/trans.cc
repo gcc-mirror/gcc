@@ -319,7 +319,7 @@ gigi (Node_Id gnat_root,
 {
   Node_Id gnat_iter;
   Entity_Id gnat_literal;
-  tree t, ftype, int64_type;
+  tree t, ftype;
   struct elab_info *info;
   int i;
 
@@ -466,7 +466,7 @@ gigi (Node_Id gnat_root,
 			   false, NULL, Empty);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
-  int64_type = gnat_type_for_size (64, 0);
+  tree int64_type = gnat_type_for_size (64, 0);
   mulv64_decl
     = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
 			   build_function_type_list (int64_type, int64_type,
@@ -474,6 +474,15 @@ gigi (Node_Id gnat_root,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
   strub_make_callable (mulv64_decl);
+
+  tree uint64_type = gnat_type_for_size (64, 1);
+  uns_mulv64_decl
+    = create_subprog_decl (get_identifier ("__gnat_uns_mulv64"), NULL_TREE,
+			   build_function_type_list (uint64_type, uint64_type,
+						     uint64_type, NULL_TREE),
+			   NULL_TREE, is_default, true, true, true, false,
+			   false, NULL, Empty);
+  strub_make_callable (uns_mulv64_decl);
 
   if (Enable_128bit_Types)
     {
@@ -487,6 +496,17 @@ gigi (Node_Id gnat_root,
 			       NULL_TREE, is_default, true, true, true, false,
 			       false, NULL, Empty);
       strub_make_callable (mulv128_decl);
+
+      tree uint128_type = gnat_type_for_size (128, 1);
+      uns_mulv128_decl
+	= create_subprog_decl (get_identifier ("__gnat_uns_mulv128"), NULL_TREE,
+			       build_function_type_list (uint128_type,
+							 uint128_type,
+							 uint128_type,
+							 NULL_TREE),
+			       NULL_TREE, is_default, true, true, true, false,
+			       false, NULL, Empty);
+      strub_make_callable (uns_mulv128_decl);
     }
 
   /* Name of the _Parent field in tagged record types.  */
@@ -7504,12 +7524,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnu_max_shift = convert (gnu_type, gnu_max_shift);
 	  }
 
-	/* For signed integer addition, subtraction and multiplication, do an
+	/* For integer addition, subtraction and multiplication, perform an
 	   overflow check if required.  */
-	if (Do_Overflow_Check (gnat_node)
-	    && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
-	    && !TYPE_UNSIGNED (gnu_type)
-	    && !FLOAT_TYPE_P (gnu_type))
+	if ((code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
+	    && !FLOAT_TYPE_P (gnu_type)
+	    && Do_Overflow_Check (gnat_node))
 	  gnu_result
 	    = build_binary_op_trapv (code, gnu_type, gnu_lhs, gnu_rhs,
 				     gnat_node);
@@ -7590,11 +7609,11 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-      /* For signed integer negation and absolute value, do an overflow check
+      /* For integer negation and absolute value, perform an overflow check
 	 if required.  */
-      if (Do_Overflow_Check (gnat_node)
-	  && !TYPE_UNSIGNED (gnu_result_type)
-	  && !FLOAT_TYPE_P (gnu_result_type))
+      if ((gnu_codes[kind] == NEGATE_EXPR || gnu_codes[kind] == ABS_EXPR)
+	  && !FLOAT_TYPE_P (gnu_result_type)
+	  && Do_Overflow_Check (gnat_node))
 	gnu_result
 	  = build_unary_op_trapv (gnu_codes[kind], gnu_result_type, gnu_expr,
 				  gnat_node);
@@ -9959,12 +9978,25 @@ build_unary_op_trapv (enum tree_code code, tree gnu_type, tree operand,
 {
   gcc_assert (code == NEGATE_EXPR || code == ABS_EXPR);
 
+  tree gnu_expr, check;
+
   operand = gnat_protect_expr (operand);
 
-  return emit_check (build_binary_op (EQ_EXPR, boolean_type_node,
-				      operand, TYPE_MIN_VALUE (gnu_type)),
-		     build_unary_op (code, gnu_type, operand),
-		     CE_Overflow_Check_Failed, gnat_node);
+  gnu_expr = build_unary_op (code, gnu_type, operand);
+
+  if (TYPE_UNSIGNED (gnu_type))
+    {
+      if (code == ABS_EXPR)
+	return gnu_expr;
+      else
+	check = build_binary_op (NE_EXPR, boolean_type_node,
+				 operand, TYPE_MIN_VALUE (gnu_type));
+    }
+  else
+    check = build_binary_op (EQ_EXPR, boolean_type_node,
+			     operand, TYPE_MIN_VALUE (gnu_type));
+
+  return emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 }
 
 /* Make a binary operation of kind CODE using build_binary_op, but guard
@@ -10017,21 +10049,29 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       /* Never inline a 64-bit mult for a 32-bit target, it's way too long.  */
       if (code == MULT_EXPR && precision == 64 && BITS_PER_WORD < 64)
 	{
-	  tree int64 = gnat_type_for_size (64, 0);
+	  tree int64 = gnat_type_for_size (64, TYPE_UNSIGNED (gnu_type));
 	  Check_Restriction_No_Dependence_On_System (Name_Arith_64, gnat_node);
-	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
-						       convert (int64, lhs),
-						       convert (int64, rhs)));
+	  return
+	    convert (gnu_type, build_call_n_expr (TYPE_UNSIGNED (gnu_type)
+						  ? uns_mulv64_decl
+						  : mulv64_decl,
+						  2,
+						  convert (int64, lhs),
+						  convert (int64, rhs)));
 	}
 
       /* Likewise for a 128-bit mult and a 64-bit target.  */
       else if (code == MULT_EXPR && precision == 128 && BITS_PER_WORD < 128)
 	{
-	  tree int128 = gnat_type_for_size (128, 0);
+	  tree int128 = gnat_type_for_size (128, TYPE_UNSIGNED (gnu_type));
 	  Check_Restriction_No_Dependence_On_System (Name_Arith_128, gnat_node);
-	  return convert (gnu_type, build_call_n_expr (mulv128_decl, 2,
-						       convert (int128, lhs),
-						       convert (int128, rhs)));
+	  return
+	    convert (gnu_type, build_call_n_expr (TYPE_UNSIGNED (gnu_type)
+						  ? uns_mulv128_decl
+						  : mulv128_decl,
+						  2,
+						  convert (int128, lhs),
+						  convert (int128, rhs)));
 	}
 
       enum internal_fn icode;
@@ -10065,7 +10105,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
    }
 
   /* If one operand is a constant, we expose the overflow condition to enable
-     a subsequent simplication or even elimination.  */
+     a subsequent simplification or even elimination.  */
   switch (code)
     {
     case PLUS_EXPR:
@@ -10085,21 +10125,24 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       break;
 
     case MINUS_EXPR:
-      if (TREE_CODE (lhs) == INTEGER_CST)
+      if (TREE_CODE (lhs) == INTEGER_CST && TYPE_UNSIGNED (gnu_type))
+	/* In the unsigned case, overflow when rhs > lhs - type_min.  */
+	check = build_binary_op (GT_EXPR, boolean_type_node, rhs,
+				 build_binary_op (MINUS_EXPR, gnu_type,
+						  lhs, type_min));
+      else if (TREE_CODE (lhs) == INTEGER_CST)
 	{
 	  sgn = tree_int_cst_sgn (lhs);
-	  if (sgn > 0)
-	    /* When lhs > 0, overflow when rhs < lhs - type_max.  */
+	  if (sgn >= 0)
+	    /* When lhs >= 0, overflow when rhs < lhs - type_max.  */
 	    check = build_binary_op (LT_EXPR, boolean_type_node, rhs,
 				     build_binary_op (MINUS_EXPR, gnu_type,
 						      lhs, type_max));
-	  else if (sgn < 0)
+	  else
 	    /* When lhs < 0, overflow when rhs > lhs - type_min.  */
 	    check = build_binary_op (GT_EXPR, boolean_type_node, rhs,
 				     build_binary_op (MINUS_EXPR, gnu_type,
 						      lhs, type_min));
-	  else
-	    return gnu_expr;
 	}
       else
 	{

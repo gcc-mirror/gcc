@@ -388,11 +388,13 @@ enum standard_datatypes
   /* Function declaration node for run-time reallocation function.  */
   ADT_realloc_decl,
 
-  /* Function decl node for 64-bit multiplication with overflow checking.  */
+  /* Function decl nodes for 64-bit multiplication with overflow checking.  */
   ADT_mulv64_decl,
+  ADT_uns_mulv64_decl,
 
-  /* Function decl node for 128-bit multiplication with overflow checking.  */
+  /* Function decl nodes for 128-bit multiplication with overflow checking.  */
   ADT_mulv128_decl,
+  ADT_uns_mulv128_decl,
 
   /* Identifier for the name of the _Parent field in tagged record types.  */
   ADT_parent_name_id,
@@ -455,7 +457,9 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
 #define realloc_decl gnat_std_decls[(int) ADT_realloc_decl]
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
+#define uns_mulv64_decl gnat_std_decls[(int) ADT_uns_mulv64_decl]
 #define mulv128_decl gnat_std_decls[(int) ADT_mulv128_decl]
+#define uns_mulv128_decl gnat_std_decls[(int) ADT_uns_mulv128_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
 #define not_handled_by_others_name_id \
 	  gnat_std_decls[(int) ADT_not_handled_by_others_name_id]
