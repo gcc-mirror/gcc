@@ -246,7 +246,7 @@ GRS_OBJS = \
 	rust/rust-desugar-for-loops.o \
 	rust/rust-desugar-question-mark.o \
 	rust/rust-desugar-apit.o \
-	# rust/rust-desugar-try-block.o \
+	rust/rust-desugar-try-block.o \
     $(END)
 # removed object files from here
 

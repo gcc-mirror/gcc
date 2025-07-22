@@ -19,6 +19,7 @@
 #include "rust-expression-yeast.h"
 #include "rust-ast-visitor.h"
 #include "rust-desugar-question-mark.h"
+#include "rust-desugar-try-block.h"
 #include "rust-ast-full.h"
 
 namespace Rust {
@@ -38,6 +39,9 @@ ExpressionYeast::dispatch (std::unique_ptr<Expr> &expr)
       // TODO: Handle try-blocks
     case Expr::Kind::ErrorPropagation:
       DesugarQuestionMark::go (expr);
+      break;
+    case Expr::Kind::Try:
+      DesugarTryBlock::go (expr);
       break;
 
     default:
