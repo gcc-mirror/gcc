@@ -40,6 +40,9 @@ package body Table is
       Min : constant Int := Int (Table_Low_Bound);
       --  Subscript of the minimum entry in the currently allocated table
 
+      Max : Int := Min + (Table_Initial * Table_Factor) - 1;
+      --  Subscript of the maximum entry in the currently allocated table
+
       Length : Int := 0;
       --  Number of entries in currently allocated table. The value of zero
       --  ensures that we initially allocate the table.
