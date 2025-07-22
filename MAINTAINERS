@@ -282,6 +282,7 @@ callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
 CTF, BTF, bpf port      David Faust             <david.faust@oracle.com>
+c++                     Patrick Palka           <ppalka@gcc.gnu.org>
 dataflow                Paolo Bonzini           <bonzini@gnu.org>
 dataflow                Seongbae Park           <seongbae.park@gmail.com>
 dataflow                Kenneth Zadeck          <zadeck@naturalbridge.com>
