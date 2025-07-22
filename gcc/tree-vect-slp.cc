@@ -11370,7 +11370,11 @@ vect_schedule_slp_node (vec_info *vinfo,
 		  && !SSA_NAME_IS_DEFAULT_DEF (def))
 		{
 		  gimple *stmt = SSA_NAME_DEF_STMT (def);
-		  if (!last_stmt)
+		  if (gimple_uid (stmt) == -1u)
+		    /* If the stmt is not inside the region do not
+		       use it as possible insertion point.  */
+		    ;
+		  else if (!last_stmt)
 		    last_stmt = stmt;
 		  else if (vect_stmt_dominates_stmt_p (last_stmt, stmt))
 		    last_stmt = stmt;
