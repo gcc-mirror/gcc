@@ -17976,6 +17976,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
       /* Check if we've seen an SVE gather/scatter operation and which size.  */
       if (kind == scalar_load
+	  && vectype
 	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
 	  && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
 	{
