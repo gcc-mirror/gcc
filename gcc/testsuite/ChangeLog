@@ -1,3 +1,111 @@
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* gcc.target/aarch64/sve/acle/general/perm_1.c: New test.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pfalse-binary.c: Add -funwind-tables.
+	* gcc.target/aarch64/sve/pfalse-binary_int_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binary_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binary_opt_single_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binary_rotate.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binary_uint64_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binary_uint_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-binaryxn.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-clast.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-compare_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-compare_wide_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-count_pred.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-fold_left.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_ext.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_ext_gather_index.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_ext_gather_offset.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_gather_sv.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_gather_vs.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-load_replicate.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-prefetch.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-prefetch_gather_index.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-prefetch_gather_offset.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-ptest.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-rdffr.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-reduction.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-reduction_wide.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-shift_right_imm.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-store.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-store_scatter_index.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-store_scatter_offset.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-storexn.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-ternary_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-ternary_rotate.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary_convert_narrowt.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary_convertxn.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary_n.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary_pred.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unary_to_uint.c: Likewise.
+	* gcc.target/aarch64/sve/pfalse-unaryxn.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_int_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_int_opt_single_n.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_opt_single_n.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_to_uint.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_uint_opt_n.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-binary_wide.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-compare.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-load_ext_gather_index_restricted.c,
+	* gcc.target/aarch64/sve2/pfalse-load_ext_gather_offset_restricted.c,
+	* gcc.target/aarch64/sve2/pfalse-load_gather_sv_restricted.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-load_gather_vs.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-shift_left_imm_to_uint.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-shift_right_imm.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-store_scatter_index_restricted.c,
+	* gcc.target/aarch64/sve2/pfalse-store_scatter_offset_restricted.c,
+	* gcc.target/aarch64/sve2/pfalse-unary.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-unary_convert.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-unary_convert_narrowt.c: Likewise.
+	* gcc.target/aarch64/sve2/pfalse-unary_to_int.c: Likewise.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_sve2p1_hw):
+	New proc.
+	* gcc.target/aarch64/sve2/dupq_1.c: Extend to big-endian.  Add
+	noipa attributes.
+	* gcc.target/aarch64/sve2/extq_1.c: Likewise.
+	* gcc.target/aarch64/sve2/uzpq_1.c: Likewise.
+	* gcc.target/aarch64/sve2/zipq_1.c: Likewise.
+	* gcc.target/aarch64/sve2/dupq_1_run.c: New test.
+	* gcc.target/aarch64/sve2/extq_1_run.c: Likewise.
+	* gcc.target/aarch64/sve2/uzpq_1_run.c: Likewise.
+	* gcc.target/aarch64/sve2/zipq_1_run.c: Likewise.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/rtl/aarch64/vec-series-1.c: New test.
+	* gcc.dg/rtl/aarch64/vec-series-2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/dupq_2.c: Fix expected
+	output for this big-endian test.
+	* gcc.target/aarch64/sve/acle/general/dupq_4.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_3.c: Restrict to little-endian
+	targets and add more tests.
+	* gcc.target/aarch64/sve/vec_init_4.c: New big-endian version
+	of vec_init_3.c.
+
 2025-07-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

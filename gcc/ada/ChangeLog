@@ -1,3 +1,8 @@
+2025-07-21  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/121184
+	* styleg.adb (Check_Comment): Use consistent warning message.
+
 2025-07-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121056

@@ -1,3 +1,102 @@
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* config/aarch64/aarch64.cc (aarch64_evpc_sve_tbl): Punt on 2-input
+	operations that can be handled by vec_perm.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (aarch64_gather_ld1q): Replace with...
+	(@aarch64_gather_ld1q<mode>): ...this, parameterizing based on mode.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svld1q_gather_impl::expand): Update accordingly.
+	(svst1q_scatter_impl::expand): Use aarch64_sve_reinterpret
+	instead of force_lowpart_subreg.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (aarch64_sve2_hw, aarch64_sve2p1_hw): Document.
+	* config/aarch64/aarch64.cc (aarch64_evpc_hvla): Extend to
+	BYTES_BIG_ENDIAN.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_simd_valid_imm): Account
+	for FLOAT_WORDS_BIG_ENDIAN when building a floating-point value.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_sve_index_series_p): New
+	function, split out from...
+	(aarch64_simd_valid_imm): ...here.  Account for the different
+	SVE and Advanced SIMD element orders on big-endian targets.
+	Check each vector in a structure mode.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-rtl-function.cc (function_reader::read_rtx_operand_r): Use
+	hard_regno_nregs to work out REG_NREGS for hard registers.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ext-dce.cc (ext_dce_process_uses): Apply is_constant directly
+	to the subreg_lsb.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118891
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Fix the
+	ZIP1 operand order for big-endian targets.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_set_neonq_<mode>):
+	Use %Z instead of lowpart_subreg.  Tweak formatting.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ext-dce.cc (ext_dce_process_uses): Apply is_constant directly
+	to the subreg_lsb.
+
+2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118891
+	* tree-vect-stmts.cc (supportable_widening_operation): Swap the
+	hi and lo internal functions on big-endian targets.
+
 2025-07-18  Hans-Peter Nilsson  <hp@bitrange.com>
 	    Pietro Monteiro  <pietro@sociotechnical.xyz>
 
