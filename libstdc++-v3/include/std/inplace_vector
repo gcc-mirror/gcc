@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto __in = ranges::begin(__rg);
 	      auto __end = ranges::end(__rg);
 	      size_type __n = 0;
-	      for (; __n < _Nm && __in != __end; ++__in)
+	      for (; __n < _M_size && __in != __end; ++__in)
 		_M_elems[__n++] = *__in;
 
 	      if (__in == __end)
