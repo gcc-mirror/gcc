@@ -70,7 +70,7 @@ do_test_it()
 #endif
 }
 
-bool
+constexpr bool
 test_iterators()
 {
   using namespace __gnu_test;
@@ -131,7 +131,7 @@ do_test_r()
 #endif
 }
 
-bool
+constexpr bool
 test_ranges()
 {
   using namespace __gnu_test;
@@ -152,9 +152,9 @@ test_ranges()
 
   // Not lvalue-convertible to int
   struct C {
-    C(int v) : val(v) { }
-    operator int() && { return val; }
-    bool operator==(int b) const { return b == val; }
+    constexpr C(int v) : val(v) { }
+    constexpr operator int() && { return val; }
+    constexpr bool operator==(int b) const { return b == val; }
     int val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
@@ -163,22 +163,15 @@ test_ranges()
   return true;
 }
 
-constexpr bool
-test_constexpr()
-{
-  // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  std::initializer_list<int> il{1, 2, 3, 4};
-  std::inplace_vector<int, 6> v(il.begin(), il.end());
-  eq<int>(v, il);
-
-  do_test_r<std::span<short>>();
-  return true;
-}
-
 int main()
 {
-  test_iterators();
-  test_ranges();
-  static_assert( test_constexpr() );
+  auto test_all = [] {
+    test_iterators();
+    test_ranges();
+    return true;
+  };
+
+  test_all();
+  static_assert( test_all() );
 }
 

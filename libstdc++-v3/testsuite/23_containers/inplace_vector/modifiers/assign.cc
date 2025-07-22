@@ -204,14 +204,10 @@ template<size_t N, typename T>
 constexpr void
 test_assign_empty()
 {
-  // TODO make test iterators consteval
-  if !consteval
-  {
-    using namespace __gnu_test;
-    test_assign_empty_it<N, T, input_iterator_wrapper>();
-    test_assign_empty_it<N, T, forward_iterator_wrapper>();
-    test_assign_empty_it<N, T, random_access_iterator_wrapper>();
-  }
+  using namespace __gnu_test;
+  test_assign_empty_it<N, T, input_iterator_wrapper>();
+  test_assign_empty_it<N, T, forward_iterator_wrapper>();
+  test_assign_empty_it<N, T, random_access_iterator_wrapper>();
 
   test_assign_empty_other<N, T>;
 }
@@ -339,23 +335,20 @@ constexpr void
 test_assigns()
 {
   using namespace __gnu_test;
-  // TODO make test iterators consteval
-  if !consteval {
-    test_assign_range<test_forward_range<int>>();
-    test_assign_range<test_sized_range_sized_sent<int, forward_iterator_wrapper>>();
+  test_assign_range<test_forward_range<int>>();
+  test_assign_range<test_sized_range_sized_sent<int, forward_iterator_wrapper>>();
 
-    test_assign_range<test_input_range<int>>();
-    test_assign_range<test_input_sized_range<int>>();
-    test_assign_range<test_sized_range_sized_sent<int, input_iterator_wrapper>>();
+  test_assign_range<test_input_range<int>>();
+  test_assign_range<test_input_sized_range<int>>();
+  test_assign_range<test_sized_range_sized_sent<int, input_iterator_wrapper>>();
 
-    test_assign_range<test_range<int, input_iterator_wrapper_nocopy>>();
-    test_assign_range<test_sized_range<int, input_iterator_wrapper_nocopy>>();
-    test_assign_range<test_sized_range_sized_sent<int, input_iterator_wrapper_nocopy>>();
+  test_assign_range<test_range<int, input_iterator_wrapper_nocopy>>();
+  test_assign_range<test_sized_range<int, input_iterator_wrapper_nocopy>>();
+  test_assign_range<test_sized_range_sized_sent<int, input_iterator_wrapper_nocopy>>();
 
-    test_assign_iterators<T, input_iterator_wrapper>();
-    test_assign_iterators<T, forward_iterator_wrapper>();
-    test_assign_iterators<T, random_access_iterator_wrapper>();
-  }
+  test_assign_iterators<T, input_iterator_wrapper>();
+  test_assign_iterators<T, forward_iterator_wrapper>();
+  test_assign_iterators<T, random_access_iterator_wrapper>();
 
   test_assign_initializer_list<T>();
   test_assign_repeated<T>();

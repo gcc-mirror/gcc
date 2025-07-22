@@ -227,12 +227,10 @@ constexpr void
 test_add_to_full()
 {
   using namespace __gnu_test;
-  // TODO make test iterators consteval
-  if !consteval {
-    test_add_to_full_it<N, T, input_iterator_wrapper>();
-    test_add_to_full_it<N, T, forward_iterator_wrapper>();
-    test_add_to_full_it<N, T, random_access_iterator_wrapper>();
-  }
+  test_add_to_full_it<N, T, input_iterator_wrapper>();
+  test_add_to_full_it<N, T, forward_iterator_wrapper>();
+  test_add_to_full_it<N, T, random_access_iterator_wrapper>();
+
   test_add_to_full_other<N, T>();
 }
 
@@ -566,34 +564,31 @@ constexpr void
 test_inserts()
 {
   using namespace __gnu_test;
-  // TODO make test iterators consteval
-  if !consteval {
-    do_test_ranges<test_forward_range<int>>();
-    do_test_ranges<test_sized_range_sized_sent<int, forward_iterator_wrapper>>();
+  do_test_ranges<test_forward_range<int>>();
+  do_test_ranges<test_sized_range_sized_sent<int, forward_iterator_wrapper>>();
 
-    do_test_ranges<test_input_range<int>>();
-    do_test_ranges<test_input_sized_range<int>>();
-    do_test_ranges<test_sized_range_sized_sent<int, input_iterator_wrapper>>();
+  do_test_ranges<test_input_range<int>>();
+  do_test_ranges<test_input_sized_range<int>>();
+  do_test_ranges<test_sized_range_sized_sent<int, input_iterator_wrapper>>();
 
-    do_test_ranges<test_range<int, input_iterator_wrapper_nocopy>>();
-    do_test_ranges<test_sized_range<int, input_iterator_wrapper_nocopy>>();
-    do_test_ranges<test_sized_range_sized_sent<int, input_iterator_wrapper_nocopy>>();
+  do_test_ranges<test_range<int, input_iterator_wrapper_nocopy>>();
+  do_test_ranges<test_sized_range<int, input_iterator_wrapper_nocopy>>();
+  do_test_ranges<test_sized_range_sized_sent<int, input_iterator_wrapper_nocopy>>();
 
-    test_insert_iterators<T, input_iterator_wrapper>();
-    test_insert_iterators<T, forward_iterator_wrapper>();
-    test_insert_iterators<T, random_access_iterator_wrapper>();
-  }
+  test_insert_iterators<T, input_iterator_wrapper>();
+  test_insert_iterators<T, forward_iterator_wrapper>();
+  test_insert_iterators<T, random_access_iterator_wrapper>();
 
-  test_insert_initializer_list<T>();
-  test_insert_repeated<T>();
+test_insert_initializer_list<T>();
+test_insert_repeated<T>();
 }
 
 int main()
 {
-  auto test_all = []{
-    test_add_to_full<0, int>();
-    test_add_to_full<0, X>();
-    test_add_to_full<4, int>();
+auto test_all = []{
+  test_add_to_full<0, int>();
+  test_add_to_full<0, X>();
+  test_add_to_full<4, int>();
 
     test_inserts<int>();
 #ifdef __cpp_lib_constexpr_inplace_vector

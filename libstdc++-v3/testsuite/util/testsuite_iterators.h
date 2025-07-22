@@ -61,10 +61,12 @@ namespace __gnu_test
       T* first;
       T* last;
 
+      _GLIBCXX_CONSTEXPR
       BoundsContainer(T* _first, T* _last) : first(_first), last(_last)
       { }
 
-      std::size_t size() const { return last - first; }
+      _GLIBCXX_CONSTEXPR std::size_t
+      size() const { return last - first; }
     };
 
   // Simple container for holding state of a set of output iterators.
@@ -74,11 +76,13 @@ namespace __gnu_test
       T* incrementedto;
       bool* writtento;
 
+      _GLIBCXX20_CONSTEXPR
       OutputContainer(T* _first, T* _last)
       : BoundsContainer<T>(_first, _last), incrementedto(_first),
 	writtento(new bool[this->size()]())
       { }
 
+      _GLIBCXX20_CONSTEXPR
       ~OutputContainer()
       { delete[] writtento; }
     };
@@ -92,12 +96,14 @@ namespace __gnu_test
     public:
       OutputContainer<T>* SharedInfo;
 
+      _GLIBCXX_CONSTEXPR
       WritableObject(T* ptr_in, OutputContainer<T>* SharedInfo_in):
 	ptr(ptr_in), SharedInfo(SharedInfo_in)
       { }
 
 #if __cplusplus >= 201103L
       template<class U>
+      _GLIBCXX14_CONSTEXPR
       typename std::enable_if<std::is_assignable<T&, U>::value>::type
       operator=(U&& new_val) const
       {
@@ -107,6 +113,7 @@ namespace __gnu_test
       }
 #else
       template<class U>
+      _GLIBCXX14_CONSTEXPR
       void
       operator=(const U& new_val)
       {
@@ -128,6 +135,7 @@ namespace __gnu_test
   struct output_iterator_wrapper
   {
   protected:
+    _GLIBCXX_CONSTEXPR
     output_iterator_wrapper() : ptr(0), SharedInfo(0)
     { }
 
@@ -142,6 +150,7 @@ namespace __gnu_test
     T* ptr;
     ContainerType* SharedInfo;
 
+    _GLIBCXX14_CONSTEXPR
     output_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : ptr(_ptr), SharedInfo(SharedInfo_in)
     {
@@ -155,6 +164,7 @@ namespace __gnu_test
     operator=(const output_iterator_wrapper&) = default;
 #endif
 
+    _GLIBCXX14_CONSTEXPR
     WritableObject<T>
     operator*() const
     {
@@ -163,6 +173,7 @@ namespace __gnu_test
       return WritableObject<T>(ptr, SharedInfo);
     }
 
+    _GLIBCXX14_CONSTEXPR
     output_iterator_wrapper&
     operator++()
     {
@@ -173,6 +184,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     output_iterator_wrapper
     operator++(int)
     {
@@ -224,13 +236,19 @@ namespace __gnu_test
       struct deref_proxy
       {
 	T* ptr;
-	operator const T&() const { return *ptr; }
+
+	_GLIBCXX_CONSTEXPR
+	operator const T&() const
+	{ return *ptr; }
       } p;
 
-      deref_proxy operator*() const { return p; }
+      _GLIBCXX_CONSTEXPR
+      deref_proxy operator*() const
+      { return p; }
     };
 
   protected:
+    _GLIBCXX_CONSTEXPR
     input_iterator_wrapper() : ptr(0), SharedInfo(0)
     { }
 
@@ -245,6 +263,7 @@ namespace __gnu_test
     T* ptr;
     ContainerType* SharedInfo;
 
+    _GLIBCXX14_CONSTEXPR
     input_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : ptr(_ptr), SharedInfo(SharedInfo_in)
     { ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last); }
@@ -256,6 +275,7 @@ namespace __gnu_test
     operator=(const input_iterator_wrapper&) = default;
 #endif
 
+    _GLIBCXX14_CONSTEXPR
     bool
     operator==(const input_iterator_wrapper& in) const
     {
@@ -264,32 +284,34 @@ namespace __gnu_test
       return ptr == in.ptr;
     }
 
+    _GLIBCXX14_CONSTEXPR
     bool
     operator!=(const input_iterator_wrapper& in) const
     {
       return !(*this == in);
     }
 
-    T*
-    base() const
+    _GLIBCXX_CONSTEXPR
+    T* base() const
     {
       return ptr;
     }
 
-    T&
-    operator*() const
+    _GLIBCXX14_CONSTEXPR
+    T& operator*() const
     {
       ITERATOR_VERIFY(SharedInfo && ptr < SharedInfo->last);
       ITERATOR_VERIFY(ptr >= SharedInfo->first);
       return *ptr;
     }
 
-    T*
-    operator->() const
+    _GLIBCXX14_CONSTEXPR
+    T* operator->() const
     {
       return &**this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     input_iterator_wrapper&
     operator++()
     {
@@ -300,6 +322,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     post_inc_proxy
     operator++(int)
     {
@@ -340,10 +363,12 @@ namespace __gnu_test
     typedef BoundsContainer<T> ContainerType;
     typedef std::forward_iterator_tag iterator_category;
 
+    _GLIBCXX14_CONSTEXPR
     forward_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : input_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
+    _GLIBCXX14_CONSTEXPR
     forward_iterator_wrapper()
     { }
 
@@ -354,17 +379,18 @@ namespace __gnu_test
     operator=(const forward_iterator_wrapper&) = default;
 #endif
 
-    T&
-    operator*() const
+    _GLIBCXX14_CONSTEXPR
+    T& operator*() const
     {
       ITERATOR_VERIFY(this->SharedInfo && this->ptr < this->SharedInfo->last);
       return *(this->ptr);
     }
 
-    T*
-    operator->() const
+    _GLIBCXX14_CONSTEXPR
+    T* operator->() const
     { return &**this; }
 
+    _GLIBCXX14_CONSTEXPR
     forward_iterator_wrapper&
     operator++()
     {
@@ -373,6 +399,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     forward_iterator_wrapper
     operator++(int)
     {
@@ -382,8 +409,8 @@ namespace __gnu_test
     }
 
 #if __cplusplus >= 201402L
-    bool
-    operator==(const forward_iterator_wrapper& it) const noexcept
+    constexpr
+    bool operator==(const forward_iterator_wrapper& it) const noexcept
     {
       // Since C++14 value-initialized forward iterators are comparable.
       if (this->SharedInfo == nullptr || it.SharedInfo == nullptr)
@@ -394,8 +421,8 @@ namespace __gnu_test
       return base_this == base_that;
     }
 
-    bool
-    operator!=(const forward_iterator_wrapper& it) const noexcept
+    constexpr
+    bool operator!=(const forward_iterator_wrapper& it) const noexcept
     {
       return !(*this == it);
     }
@@ -415,10 +442,12 @@ namespace __gnu_test
     typedef BoundsContainer<T> ContainerType;
     typedef std::bidirectional_iterator_tag iterator_category;
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : forward_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper()
     : forward_iterator_wrapper<T>()
     { }
@@ -431,6 +460,7 @@ namespace __gnu_test
     operator=(const bidirectional_iterator_wrapper&) = default;
 #endif
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper&
     operator++()
     {
@@ -439,6 +469,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper
     operator++(int)
     {
@@ -447,6 +478,7 @@ namespace __gnu_test
       return tmp;
     }
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper&
     operator--()
     {
@@ -455,6 +487,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     bidirectional_iterator_wrapper
     operator--(int)
     {
@@ -478,10 +511,12 @@ namespace __gnu_test
     typedef BoundsContainer<T> ContainerType;
     typedef std::random_access_iterator_tag iterator_category;
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : bidirectional_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper()
     : bidirectional_iterator_wrapper<T>()
     { }
@@ -494,6 +529,7 @@ namespace __gnu_test
     operator=(const random_access_iterator_wrapper&) = default;
 #endif
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper&
     operator++()
     {
@@ -502,6 +538,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper
     operator++(int)
     {
@@ -510,6 +547,7 @@ namespace __gnu_test
       return tmp;
     }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper&
     operator--()
     {
@@ -518,6 +556,7 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper
     operator--(int)
     {
@@ -526,6 +565,7 @@ namespace __gnu_test
       return tmp;
     }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper&
     operator+=(std::ptrdiff_t n)
     {
@@ -542,10 +582,12 @@ namespace __gnu_test
       return *this;
     }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper&
     operator-=(std::ptrdiff_t n)
     { return *this += -n; }
 
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper
     operator-(std::ptrdiff_t n) const
     {
@@ -553,6 +595,7 @@ namespace __gnu_test
       return tmp -= n;
     }
 
+    _GLIBCXX14_CONSTEXPR
     std::ptrdiff_t
     operator-(const random_access_iterator_wrapper<T>& in) const
     {
@@ -560,42 +603,44 @@ namespace __gnu_test
       return this->ptr - in.ptr;
     }
 
-    T&
-    operator[](std::ptrdiff_t n) const
+    _GLIBCXX14_CONSTEXPR
+    T& operator[](std::ptrdiff_t n) const
     { return *(*this + n); }
 
-    bool
-    operator<(const random_access_iterator_wrapper<T>& in) const
+    _GLIBCXX14_CONSTEXPR
+    bool operator<(const random_access_iterator_wrapper<T>& in) const
     {
       ITERATOR_VERIFY(this->SharedInfo == in.SharedInfo);
       return this->ptr < in.ptr;
     }
 
-    bool
-    operator>(const random_access_iterator_wrapper<T>& in) const
+    _GLIBCXX14_CONSTEXPR
+    bool operator>(const random_access_iterator_wrapper<T>& in) const
     {
       return in < *this;
     }
 
-    bool
-    operator>=(const random_access_iterator_wrapper<T>& in) const
+    _GLIBCXX14_CONSTEXPR
+    bool operator>=(const random_access_iterator_wrapper<T>& in) const
     {
       return !(*this < in);
     }
 
-    bool
-    operator<=(const random_access_iterator_wrapper<T>& in) const
+    _GLIBCXX14_CONSTEXPR
+    bool operator<=(const random_access_iterator_wrapper<T>& in) const
     {
       return !(*this > in);
     }
   };
 
   template<typename T>
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper<T>
     operator+(random_access_iterator_wrapper<T> it, std::ptrdiff_t n)
     { return it += n; }
 
   template<typename T>
+    _GLIBCXX14_CONSTEXPR
     random_access_iterator_wrapper<T>
     operator+(std::ptrdiff_t n, random_access_iterator_wrapper<T> it)
     { return it += n; }
@@ -613,14 +658,17 @@ namespace __gnu_test
   {
     typename ItType<T>::ContainerType bounds;
 
+    _GLIBCXX_CONSTEXPR
     test_container(T* _first, T* _last) : bounds(_first, _last)
     { }
 
     template<std::size_t N>
       explicit
+      _GLIBCXX_CONSTEXPR
       test_container(T (&arr)[N]) : bounds(arr, arr+N)
       { }
 
+    _GLIBCXX14_CONSTEXPR
     ItType<T>
     it(int pos)
     {
@@ -628,6 +676,7 @@ namespace __gnu_test
       return ItType<T>(bounds.first + pos, &bounds);
     }
 
+    _GLIBCXX14_CONSTEXPR
     ItType<T>
     it(T* pos)
     {
@@ -635,18 +684,22 @@ namespace __gnu_test
       return ItType<T>(pos, &bounds);
     }
 
+    _GLIBCXX_CONSTEXPR
     const T&
     val(int pos)
     { return (bounds.first)[pos]; }
 
+    _GLIBCXX14_CONSTEXPR
     ItType<T>
     begin()
     { return it(bounds.first); }
 
+    _GLIBCXX14_CONSTEXPR
     ItType<T>
     end()
     { return it(bounds.last); }
 
+    _GLIBCXX_CONSTEXPR
     std::size_t
     size() const
     { return bounds.size(); }
@@ -686,6 +739,7 @@ namespace __gnu_test
       // Use an integer-class type to try and break the library code.
       using difference_type = std::ranges::__detail::__max_diff_type;
 
+      constexpr
       contiguous_iterator_wrapper&
       operator++()
       {
@@ -693,6 +747,7 @@ namespace __gnu_test
 	return *this;
       }
 
+      constexpr
       contiguous_iterator_wrapper&
       operator--()
       {
@@ -700,6 +755,7 @@ namespace __gnu_test
 	return *this;
       }
 
+      constexpr
       contiguous_iterator_wrapper
       operator++(int)
       {
@@ -708,6 +764,7 @@ namespace __gnu_test
 	return tmp;
       }
 
+      constexpr
       contiguous_iterator_wrapper
       operator--(int)
       {
@@ -716,6 +773,7 @@ namespace __gnu_test
 	return tmp;
       }
 
+      constexpr
       contiguous_iterator_wrapper&
       operator+=(difference_type n)
       {
@@ -724,23 +782,28 @@ namespace __gnu_test
 	return *this;
       }
 
-      friend contiguous_iterator_wrapper
+      friend constexpr
+      contiguous_iterator_wrapper
       operator+(contiguous_iterator_wrapper iter, difference_type n)
       { return iter += n; }
 
-      friend contiguous_iterator_wrapper
+      friend constexpr
+      contiguous_iterator_wrapper
       operator+(difference_type n, contiguous_iterator_wrapper iter)
       { return iter += n; }
 
+      constexpr
       contiguous_iterator_wrapper&
       operator-=(difference_type n)
       { return *this += -n; }
 
-      friend contiguous_iterator_wrapper
+      friend constexpr
+      contiguous_iterator_wrapper
       operator-(contiguous_iterator_wrapper iter, difference_type n)
       { return iter -= n; }
 
-      friend difference_type
+      friend constexpr
+      difference_type
       operator-(contiguous_iterator_wrapper l, contiguous_iterator_wrapper r)
       {
 	const random_access_iterator_wrapper<T>& lbase = l;
@@ -748,6 +811,7 @@ namespace __gnu_test
 	return static_cast<difference_type>(lbase - rbase);
       }
 
+      constexpr
       decltype(auto) operator[](difference_type n) const
       {
 	auto d = static_cast<std::ptrdiff_t>(n);
@@ -765,6 +829,7 @@ namespace __gnu_test
     {
       using input_iterator_wrapper<T>::input_iterator_wrapper;
 
+      constexpr
       input_iterator_wrapper_nocopy()
 	: input_iterator_wrapper<T>(nullptr, nullptr)
       { }
@@ -779,6 +844,7 @@ namespace __gnu_test
 
       using input_iterator_wrapper<T>::operator++;
 
+      constexpr
       input_iterator_wrapper_nocopy&
       operator++()
       {
@@ -795,6 +861,7 @@ namespace __gnu_test
 
       using input_iterator_wrapper<T>::operator++;
 
+      constexpr
       input_iterator_wrapper_rval&
       operator++()
       {
@@ -802,8 +869,8 @@ namespace __gnu_test
 	return *this;
       }
 
-      T&&
-      operator*() const
+      constexpr
+      T&& operator*() const
       { return std::move(input_iterator_wrapper<T>::operator*()); }
     };
 
@@ -821,7 +888,9 @@ namespace __gnu_test
 
 	using Iter<T>::operator++;
 
-	iterator& operator++() { Iter<T>::operator++(); return *this; }
+	constexpr
+	iterator& operator++()
+       	{ Iter<T>::operator++(); return *this; }
       };
 
       template<typename I>
@@ -829,21 +898,24 @@ namespace __gnu_test
 	{
 	  T* end;
 
-	  friend bool operator==(const sentinel& s, const I& i) noexcept
+	  friend constexpr bool
+	  operator==(const sentinel& s, const I& i) noexcept
 	  { return s.end == i.ptr; }
 
-	  friend auto operator-(const sentinel& s, const I& i) noexcept
+	  friend constexpr
+	  auto operator-(const sentinel& s, const I& i) noexcept
 	    requires std::random_access_iterator<I>
 	  { return std::iter_difference_t<I>(s.end - i.ptr); }
 
-	  friend auto operator-(const I& i, const sentinel& s) noexcept
+	  friend constexpr auto
+	  operator-(const I& i, const sentinel& s) noexcept
 	    requires std::random_access_iterator<I>
 	  { return std::iter_difference_t<I>(i.ptr - s.end); }
 	};
 
     protected:
-      auto
-      get_iterator(T* p)
+      constexpr
+      auto get_iterator(T* p)
       {
 	if constexpr (std::default_initializable<Iter<T>>)
 	  return Iter<T>(p, &bounds);
@@ -852,17 +924,19 @@ namespace __gnu_test
       }
 
     public:
+      constexpr
       test_range(T* first, T* last) : bounds(first, last)
       { }
 
       template<std::size_t N>
-	explicit
+	explicit constexpr
 	test_range(T (&arr)[N]) : test_range(arr, arr+N)
 	{ }
 
-      auto begin() & { return get_iterator(bounds.first); }
+      constexpr auto begin() &
+      { return get_iterator(bounds.first); }
 
-      auto end() &
+      constexpr auto end() &
       {
 	using I = decltype(get_iterator(bounds.last));
 	return sentinel<I>{bounds.last};
@@ -875,7 +949,9 @@ namespace __gnu_test
   template<typename T, template<typename> class Iter>
     struct test_range_nocopy : test_range<T, Iter>
     {
-      test_range_nocopy(T* first, T* last) : test_range<T, Iter>(first, last)
+      constexpr
+      test_range_nocopy(T* first, T* last)
+      : test_range<T, Iter>(first, last)
       {}
 
       test_range_nocopy(test_range_nocopy&&) = default;
@@ -910,6 +986,7 @@ namespace __gnu_test
     {
       using test_range<T, Iter>::test_range;
 
+      constexpr
       std::size_t size() const noexcept
       { return this->bounds.size(); }
     };
@@ -945,18 +1022,22 @@ namespace __gnu_test
 	{
 	  T* end;
 
-	  friend bool operator==(const sentinel& s, const I& i) noexcept
+	  friend constexpr
+	  bool operator==(const sentinel& s, const I& i) noexcept
 	  { return s.end == i.ptr; }
 
-	  friend std::iter_difference_t<I>
+	  friend constexpr
+	  std::iter_difference_t<I>
 	  operator-(const sentinel& s, const I& i) noexcept
 	  { return std::iter_difference_t<I>(s.end - i.ptr); }
 
-	  friend std::iter_difference_t<I>
+	  friend constexpr
+	  std::iter_difference_t<I>
 	  operator-(const I& i, const sentinel& s) noexcept
 	  { return std::iter_difference_t<I>(i.ptr - s.end); }
 	};
 
+      constexpr
       auto end() &
       {
 	using I = decltype(this->get_iterator(this->bounds.last));
