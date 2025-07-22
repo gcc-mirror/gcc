@@ -7179,10 +7179,23 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 			  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
 	      /* DR 1188 says we don't have to deal with this.  */
 	      if (!ctx->quiet)
-		error_at (cp_expr_loc_or_input_loc (t),
-			  "accessing value of %qE through a %qT glvalue in a "
-			  "constant expression", build_fold_indirect_ref (sub),
-			  TREE_TYPE (t));
+		{
+		  auto_diagnostic_group d;
+		  error_at (cp_expr_loc_or_input_loc (t),
+			    "accessing value of %qT object through a %qT "
+			    "glvalue in a constant expression",
+			    TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t));
+		  tree ob = build_fold_indirect_ref (sub);
+		  if (DECL_P (ob))
+		    {
+		      if (DECL_ARTIFICIAL (ob))
+			inform (DECL_SOURCE_LOCATION (ob),
+				"%qT object created here", TREE_TYPE (ob));
+		      else
+			inform (DECL_SOURCE_LOCATION (ob),
+				"%q#D declared here", ob);
+		    }
+		}
 	      *non_constant_p = true;
 	      return t;
 	    }
