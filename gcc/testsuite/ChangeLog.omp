@@ -1,3 +1,19 @@
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_61.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march=sm_61.c: New.
+
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=5.0.c: New.
+
 2025-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

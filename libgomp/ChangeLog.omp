@@ -1,3 +1,35 @@
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-07-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119692
+	* testsuite/libgomp.c++/pr119692-1-4.C: '{ dg-timeout 10 { target offload_device } }'.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm61.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* testsuite/libgomp.c++/target-cdtor-1.C: Adjust for
+	'targetm.cxx.use_aeabi_atexit'.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
 2025-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
