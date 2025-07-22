@@ -1,3 +1,8 @@
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* region-model-asm.cc (region_model::on_asm_stmt): Pass null
+	pointer to parse_{input,output}_constraint().
+
 2025-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ana-state-to-diagnostic-state.cc: Reimplement, replacing

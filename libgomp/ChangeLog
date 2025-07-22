@@ -1,3 +1,11 @@
+2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* testsuite/libgomp.c++/target-cdtor-1.C: Adjust for
+	'targetm.cxx.use_aeabi_atexit'.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
 2025-07-18  Andrew Stubbs  <ams@baylibre.com>
 
 	PR target/121156

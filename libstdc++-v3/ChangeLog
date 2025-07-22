@@ -1,3 +1,23 @@
+2025-07-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (mdspan::mdspan): Make default ctor
+	conditionally noexcept.
+	* testsuite/23_containers/mdspan/mdspan.cc: Add tests.
+
+2025-07-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (mdspan::is_always_unique): Make
+	conditionally noexcept.
+	(mdspan::is_always_exhaustive): Ditto.
+	(mdspan::is_always_strided): Ditto.
+	(mdspan::is_unique): Ditto.
+	(mdspan::is_exhaustive): Ditto.
+	(mdspan::is_strided): Ditto.
+	* testsuite/23_containers/mdspan/layout_like.h: Make noexcept
+	configurable. Add ThrowingLayout.
+	* testsuite/23_containers/mdspan/mdspan.cc: Add tests for
+	noexcept.
+
 2025-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/121174

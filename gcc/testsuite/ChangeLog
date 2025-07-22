@@ -1,3 +1,128 @@
+2025-07-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/110949
+	PR tree-optimization/95906
+	* gcc.dg/tree-ssa/cmp-2.c: New test.
+	* gcc.dg/tree-ssa/max-bitcmp-1.c: New test.
+
+2025-07-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-1-u64.c: New test.
+
+2025-07-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-07-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-1-u8.c: New test.
+
+2025-07-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/mf8_data_1.c (test_set_lane4,
+	test_setq_lane4): Relax allowed assembly.
+	* gcc.target/aarch64/vec-set-zero.c: Use -Os in flags.
+	* gcc.target/aarch64/inszero_split_1.c: New test.
+
+2025-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121194
+	* gcc.dg/torture/pr121194.c: New testcase.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/pr87600-2.c: Split test into two files since errors for
+	functions test{0,1} are thrown during expand, and for
+	test{2,3} during gimplification.
+	* lib/scanasm.exp: On s390, skip lines beginning with #.
+	* gcc.dg/asm-hard-reg-error-1.c: New test.
+	* gcc.dg/asm-hard-reg-error-2.c: New test.
+	* gcc.dg/asm-hard-reg-error-3.c: New test.
+	* gcc.dg/asm-hard-reg-error-4.c: New test.
+	* gcc.dg/asm-hard-reg-error-5.c: New test.
+	* gcc.dg/pr87600-3.c: New test.
+	* gcc.target/aarch64/asm-hard-reg-2.c: New test.
+	* gcc.target/s390/asm-hard-reg-7.c: New test.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/asm-hard-reg-1.c: New test.
+	* gcc.dg/asm-hard-reg-2.c: New test.
+	* gcc.dg/asm-hard-reg-3.c: New test.
+	* gcc.dg/asm-hard-reg-4.c: New test.
+	* gcc.dg/asm-hard-reg-5.c: New test.
+	* gcc.dg/asm-hard-reg-6.c: New test.
+	* gcc.dg/asm-hard-reg-7.c: New test.
+	* gcc.dg/asm-hard-reg-8.c: New test.
+	* gcc.target/aarch64/asm-hard-reg-1.c: New test.
+	* gcc.target/i386/asm-hard-reg-1.c: New test.
+	* gcc.target/i386/asm-hard-reg-2.c: New test.
+	* gcc.target/s390/asm-hard-reg-1.c: New test.
+	* gcc.target/s390/asm-hard-reg-2.c: New test.
+	* gcc.target/s390/asm-hard-reg-3.c: New test.
+	* gcc.target/s390/asm-hard-reg-4.c: New test.
+	* gcc.target/s390/asm-hard-reg-5.c: New test.
+	* gcc.target/s390/asm-hard-reg-6.c: New test.
+	* gcc.target/s390/asm-hard-reg-longdouble.h: New test.
+
+2025-07-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-127.c: New testcase.
+
+2025-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119106
+	* gfortran.dg/array_constructor_58.f90: New test.
+
+2025-07-21  panciyan  <panciyan@eswincomputing.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Unsigned testcase form8 form9.
+	* gcc.target/riscv/sat/sat_u_add-8-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-8-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-8-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-8-u8.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-9-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-9-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-9-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-9-u8.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-8-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-8-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-8-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-8-u8.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-9-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-9-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-9-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-9-u8.c: New test.
+
 2025-07-20  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/120859

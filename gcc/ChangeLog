@@ -1,3 +1,166 @@
+2025-07-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/mips-p8700.md: Add support for "ghost" insn types.
+	* config/riscv/xiangshan.md: Add support for "sf_vc" and "sf_vc_se"
+	insn types.
+
+2025-07-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/110949
+	PR tree-optimization/95906
+	* match.pd (cmp - 1): New pattern.
+
+2025-07-21  Andreas Schwab  <schwab@suse.de>
+
+	PR target/121121
+	* config/riscv/riscv.cc (riscv_allocate_and_probe_stack_space):
+	Use temp2 instead of temp1 for the CFA note.
+
+2025-07-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Allow VLS DImode for sat_op vx pattern.
+
+2025-07-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*uavg_floor_vx_<mode>): Add
+	pattern for vaaddu.vx combine.
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Add UNSPEC
+	handling for UNSPEC_VAADDU.
+	(riscv_rtx_costs): Ditto.
+
+2025-07-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set_zero<mode>):
+	Enable only when optimizing for size.
+
+2025-07-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Add extra_cost values
+	only when speed is true for CONST_VECTOR, VEC_DUPLICATE, VEC_SELECT
+	cases.
+	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs,
+	thunderx_extra_costs, thunderx2t99_extra_costs,
+	thunderx3t110_extra_costs, tsv110_extra_costs, a64fx_extra_costs,
+	ampere1_extra_costs, ampere1a_extra_costs, ampere1b_extra_costs):
+	Reduce cost of movi, dup, extract fields by COSTS_N_INSNS (1).
+	* config/arm/aarch-cost-tables.h (generic_extra_costs,
+	cortexa53_extra_costs, cortexa57_extra_costs, cortexa76_extra_costs,
+	exynosm1_extra_costs, xgene1_extra_costs): Likewise.
+
+2025-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121194
+	* tree-vect-loop.cc (vectorizable_lc_phi): Verify
+	vector types are compatible.
+
+2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.
+	(scatter_store<mode><vndi>): New.
+	(mask_gather_load<mode><vndi>): New.
+	(mask_scatter_store<mode><vndi>): New.
+	* config/gcn/gcn.cc (gcn_expand_scaled_offsets): Support DImode.
+
+2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (GEN_VNM_NOEXEC): Use USE_QHF.
+	(GEN_VNM): Likewise, and call for new ashl and mul variants.
+
+2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_dup): New.
+	(add<mode>3_dup_exec): New.
+	(<su>mul<mode>3_highpart_dup<exec>): New.
+	(mul<mode>3_dup): Move the vec_duplicate to operand 1.
+	(mul<mode>3_dup_exec): New.
+	(vec_series<mode>): Adjust call to gen_mul<mode>3_dup.
+	* config/gcn/gcn.cc (gcn_expand_vector_init): Likewise.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* genoutput.cc (main): Emit function
+	verify_reg_names_in_constraints() for run-time validation.
+	(mdep_constraint_len): Deal with hard register constraints.
+	* output.h (verify_reg_names_in_constraints): New function
+	declaration.
+	* toplev.cc (backend_init): If checking is enabled, call into
+	verify_reg_names_in_constraints().
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* cfgexpand.cc (n_occurrences): Move this ...
+	(check_operand_nalternatives): and this ...
+	(expand_asm_stmt): and the call to gimplify.cc.
+	* config/s390/s390.cc (s390_md_asm_adjust): Pass null pointer to
+	parse_{input,output}_constraint().
+	* gimple-walk.cc (walk_gimple_asm): Pass null pointer to
+	parse_{input,output}_constraint().
+	(walk_stmt_load_store_addr_ops): Ditto.
+	* gimplify-me.cc (gimple_regimplify_operands): Ditto.
+	* gimplify.cc (num_occurrences): Moved from cfgexpand.cc.
+	(num_alternatives): Ditto.
+	(gimplify_asm_expr): Deal with hard register constraints.
+	* stmt.cc (eliminable_regno_p): New helper.
+	(hardreg_ok_p): Perform a similar check as done in
+	make_decl_rtl().
+	(parse_output_constraint): Add parameter for gimplify_reg_info
+	and validate hard register constrained operands.
+	(parse_input_constraint): Ditto.
+	* stmt.h (class gimplify_reg_info): Forward declaration.
+	(parse_output_constraint): Add parameter.
+	(parse_input_constraint): Ditto.
+	* tree-ssa-operands.cc
+	(operands_scanner::get_asm_stmt_operands): Pass null pointer
+	to parse_{input,output}_constraint().
+	* tree-ssa-structalias.cc (find_func_aliases): Pass null pointer
+	to parse_{input,output}_constraint().
+	* varasm.cc (assemble_asm): Pass null pointer to
+	parse_{input,output}_constraint().
+	* gimplify_reg_info.h: New file.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/cris/cris.cc (cris_md_asm_adjust): Deal with hard
+	register constraint.
+	* config/i386/i386.cc (map_egpr_constraints): Ditto.
+	* config/s390/s390.cc (f_constraint_p): Ditto.
+	* doc/extend.texi: Document hard register constraints.
+	* doc/md.texi: Ditto.
+	* function.cc (match_asm_constraints_2): Have a unique pseudo
+	for each operand with a hard register constraint.
+	(pass_match_asm_constraints::execute): Calling into new helper
+	match_asm_constraints_2().
+	* genoutput.cc (mdep_constraint_len): Return the length of a
+	hard register constraint.
+	* genpreds.cc (write_insn_constraint_len): Support hard register
+	constraints for insn_constraint_len().
+	* ira.cc (valid_replacement_for_asm_input_p_1): New helper.
+	(valid_replacement_for_asm_input_p): New helper.
+	(decrease_live_ranges_number): Similar to
+	match_asm_constraints_2() ensure that each operand has a unique
+	pseudo if constrained by a hard register.
+	* lra-constraints.cc (process_alt_operands): Install hard
+	register filter according to constraint.
+	* recog.cc (asm_operand_ok): Accept register type for hard
+	register constrained asm operands.
+	(constrain_operands): Validate hard register constraints.
+	* stmt.cc (decode_hard_reg_constraint): Parse a hard register
+	constraint into the corresponding register number or bail out.
+	(parse_output_constraint): Parse hard register constraint and
+	set *ALLOWS_REG.
+	(parse_input_constraint): Ditto.
+	* stmt.h (decode_hard_reg_constraint): Declaration of new
+	function.
+
+2025-07-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_analyze_data_refs): Remove min_vf
+	output.
+	* tree-vect-data-refs.cc (vect_analyze_data_refs): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Remove early
+	out based on bogus min_vf.
+	* tree-vect-slp.cc (vect_slp_analyze_bb_1): Adjust.
+
 2025-07-20  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md: Add (const_int 1) as the op2 of

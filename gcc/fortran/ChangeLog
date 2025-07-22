@@ -1,3 +1,25 @@
+2025-07-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Fix indentation.
+
+2025-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119106
+	* expr.cc (simplify_constructor): Do not simplify constants.
+	(gfc_simplify_expr): Continue to simplify expression when an
+	iterator is present.
+
+2025-07-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_ss_descriptor): Move the descriptor
+	expression initialisation...
+	(set_factored_descriptor_value): ... to this new function.
+	Before initialisation, walk the reference expression passed as
+	argument and save some of its subexpressions to a variable.
+	(substitute_t): New struct.
+	(maybe_substitute_expr): New function.
+	(substitute_subexpr_in_expr): New function.
+
 2025-07-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121145

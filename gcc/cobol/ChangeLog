@@ -1,3 +1,138 @@
+2025-07-21  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120402
+	* Make-lang.in: Elminate commented-out scripting.
+	* cbldiag.h (_CBLDIAG_H): Change #if 0 to #if GCOBOL_GETENV
+	(warn_msg): Add printf attributes.
+	(location_dump): Add debugging message.
+	* cdf.y: Improved linemap tracking.
+	* genapi.cc (treeplet_fill_source): const attribute for formal parameter.
+	(insert_nop): Created to consolidate var_decl_nop writes.
+	(build_main_that_calls_something): Move generation to the end of executable.
+	(level_88_helper): Formatting.
+	(parser_call_targets_dump): Formatting.
+	(function_pointer_from_name): const attribute for formal parameter.
+	(parser_initialize_programs): const attribute for formal parameter.
+	(parser_statement_begin): Improved linemap handling.
+	(section_label):  Improved linemap handling.
+	(paragraph_label): Improved linemap handling.
+	(pseudo_return_pop): Improved linemap handling.
+	(leave_procedure): Formatting.
+	(parser_enter_section):  Improved linemap handling.
+	(parser_enter_paragraph): Improved linemap handling.
+	(parser_perform): Formatting.
+	(parser_leave_file): Move creation of main() to this routine.
+	(parser_enter_program): Move creation of main from here to leave_file.
+	(parser_accept): Formatting. const attribute for formal parameter.
+	(parser_accept_command_line): const attribute for formal parameter.
+	(parser_accept_command_line_count): const attribute for formal parameter.
+	(parser_accept_envar): Likewise.
+	(parser_set_envar): Likewise.
+	(parser_display): Likewise.
+	(get_exhibit_name): Implement EXHIBIT verb.
+	(parser_exhibit): Likewise.
+	(parser_sleep): const attribute for formal parameter.
+	(parser_division): Improved linemap handling.
+	(parser_classify): const attribute for formal parameter.
+	(create_iline_address_pairs): Improved linemap handling.
+	(parser_perform_start): Likewise.
+	(perform_inline_until): Likewise.
+	(perform_inline_testbefore_varying): Likewise.
+	(parser_perform_until): Likewise.
+	(parser_perform_inline_times): Likewise.
+	(parser_intrinsic_subst): const attribute for formal parameter.
+	(parser_file_merge): Formatting.
+	(create_and_call): Improved linemap handling.
+	(mh_identical): const attribute for formal parameter.
+	(mh_numeric_display): const attribute for formal parameter.
+	(mh_little_endian): Likewise.
+	(mh_source_is_group): Likewise.
+	(psa_FldLiteralA): Formatting.
+	* genapi.h (parser_accept): const attribute for formal parameter.
+	(parser_accept_envar): Likewise.
+	(parser_set_envar): Likewise.
+	(parser_accept_command_line): Likewise.
+	(parser_accept_command_line_count): Likewise.
+	(parser_add): Likewise.
+	(parser_classify): Likewise.
+	(parser_sleep): Likewise.
+	(parser_exhibit): Likewise.
+	(parser_display): Likewise.
+	(parser_initialize_programs): Likewise.
+	(parser_intrinsic_subst): Likewise.
+	* gengen.cc (gg_assign): Improved linemap handling.
+	(gg_add_field_to_structure): Likewise.
+	(gg_define_from_declaration): Likewise.
+	(gg_build_relational_expression): Likewise.
+	(gg_goto_label_decl): Likewise.
+	(gg_goto): Likewise.
+	(gg_printf): Likewise.
+	(gg_fprintf): Likewise.
+	(gg_memset): Likewise.
+	(gg_memchr): Likewise.
+	(gg_memcpy): Likewise.
+	(gg_memmove): Likewise.
+	(gg_strcpy): Likewise.
+	(gg_strcmp): Likewise.
+	(gg_strncmp): Likewise.
+	(gg_return): Likewise.
+	(chain_parameter_to_function): Likewise.
+	(gg_define_function): Likewise.
+	(gg_get_function_decl): Likewise.
+	(gg_call_expr): Likewise.
+	(gg_call): Likewise.
+	(gg_call_expr_list): Likewise.
+	(gg_exit): Likewise.
+	(gg_abort): Likewise.
+	(gg_strlen): Likewise.
+	(gg_strdup): Likewise.
+	(gg_malloc): Likewise.
+	(gg_realloc): Likewise.
+	(gg_free): Likewise.
+	(gg_set_current_line_number): Likewise.
+	(gg_get_current_line_number): Likewise.
+	(gg_insert_into_assembler): Likewise.
+	(token_location_override): Likewise.
+	(gg_token_location): Likewise.
+	* gengen.h (location_from_lineno): Likewise.
+	(gg_set_current_line_number): Likewise.
+	(gg_get_current_line_number): Likewise.
+	(gg_token_location): Likewise.
+	(current_token_location): Likewise.
+	(current_location_minus_one): Likewise.
+	(current_location_minus_one_clear): Likewise.
+	(token_location_override): Likewise.
+	* genmath.cc (fast_divide):  const attribute for formal parameter.
+	* genutil.cc (get_and_check_refstart_and_reflen): Likewise.
+	(get_data_offset): Likewise.
+	(refer_refmod_length): Likewise.
+	(refer_offset): Likewise.
+	(refer_size): Likewise.
+	(refer_size_dest): Likewise.
+	(refer_size_source): Likewise.
+	(qualified_data_location): Likewise.
+	* genutil.h (refer_offset): Likewise.
+	(refer_size_source): Likewise.
+	(refer_size_dest): Likewise.
+	(qualified_data_location): Likewise.
+	* parse.y: EVALUATE token; Implement EXHIBIT verb;
+	Improved linemap handling.
+	* parse_ante.h (input_file_status_notify): Improved linemap handling.
+	(location_set): Likewise.
+	* scan.l: PICTURE string validation.
+	* scan_ante.h (class picture_t): PICTURE string validation.
+	(validate_picture): Likewise.
+	* symbols.cc (symbol_currency): Revised default currency handling.
+	* symbols.h (symbol_currency): Likewise.
+	* util.cc (location_from_lineno): Improved linemap handling.
+	(current_token_location): Improved linemap handling.
+	(current_location_minus_one): Improved linemap handling.
+	(current_location_minus_one_clear): Improved linemap handling.
+	(gcc_location_set_impl): Improved linemap handling.
+	(warn_msg): Improved linemap handling.
+	* util.h (cobol_lineno): Improved linemap handling.
+
 2025-07-15  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

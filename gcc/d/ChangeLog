@@ -1,3 +1,8 @@
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* toir.cc: Pass null pointer to
+	parse_{input,output}_constraint().
+
 2025-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/103044

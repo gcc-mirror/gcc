@@ -1,3 +1,13 @@
+2025-07-21  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/121184
+	* styleg.adb (Check_Comment): Use consistent warning message.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Pass null pointer to
+	parse_{input,output}_constraint().
+
 2025-07-18  Steve Baird  <baird@adacore.com>
 
 	* sem_ch12.adb (Validate_Derived_Type_Instance): Cope with the case
