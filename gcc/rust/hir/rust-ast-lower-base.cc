@@ -47,6 +47,27 @@ ASTLoweringBase::visit (AST::ErrorPropagationExpr &expr)
 }
 
 void
+ASTLoweringBase::visit (AST::TryExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for try-blocks");
+  rust_unreachable ();
+}
+
+void
+ASTLoweringBase::visit (AST::ForLoopExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for for-loops");
+  rust_unreachable ();
+}
+
+void
+ASTLoweringBase::visit (AST::WhileLetLoopExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for while-let loops");
+  rust_unreachable ();
+}
+
+void
 ASTLoweringBase::visit (AST::Token &)
 {}
 void
@@ -242,9 +263,6 @@ void
 ASTLoweringBase::visit (AST::ReturnExpr &)
 {}
 void
-ASTLoweringBase::visit (AST::TryExpr &)
-{}
-void
 ASTLoweringBase::visit (AST::UnsafeBlockExpr &)
 {}
 void
@@ -252,12 +270,6 @@ ASTLoweringBase::visit (AST::LoopExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::WhileLoopExpr &)
-{}
-void
-ASTLoweringBase::visit (AST::WhileLetLoopExpr &)
-{}
-void
-ASTLoweringBase::visit (AST::ForLoopExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::IfExpr &)

@@ -21,6 +21,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -110,7 +111,6 @@ public:
   void visit (AST::FieldAccessExpr &expr) override;
   void visit (AST::LoopExpr &expr) override;
   void visit (AST::WhileLoopExpr &expr) override;
-  void visit (AST::ForLoopExpr &expr) override;
   void visit (AST::BreakExpr &expr) override;
   void visit (AST::ContinueExpr &expr) override;
   void visit (AST::BorrowExpr &expr) override;

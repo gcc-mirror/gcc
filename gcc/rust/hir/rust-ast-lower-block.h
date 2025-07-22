@@ -213,8 +213,6 @@ public:
 
   void visit (AST::WhileLoopExpr &expr) override;
 
-  void visit (AST::ForLoopExpr &expr) override;
-
   void visit (AST::MatchExpr &expr) override;
 
 private:

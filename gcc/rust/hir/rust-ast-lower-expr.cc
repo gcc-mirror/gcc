@@ -635,12 +635,6 @@ ASTLoweringExpr::visit (AST::WhileLoopExpr &expr)
 }
 
 void
-ASTLoweringExpr::visit (AST::ForLoopExpr &expr)
-{
-  rust_unreachable ();
-}
-
-void
 ASTLoweringExpr::visit (AST::BreakExpr &expr)
 {
   tl::optional<HIR::Lifetime> break_label = tl::nullopt;

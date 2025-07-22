@@ -65,6 +65,9 @@ public:
   // Special casing nodes that should never reach the HIR lowering stage
   virtual void visit (AST::MacroInvocation &) override final;
   virtual void visit (AST::ErrorPropagationExpr &) override final;
+  virtual void visit (AST::ForLoopExpr &) override final;
+  virtual void visit (AST::TryExpr &) override final;
+  virtual void visit (AST::WhileLetLoopExpr &) override final;
 
   // visitor impl
   // rust-ast.h
@@ -146,12 +149,9 @@ public:
   virtual void visit (AST::RangeToInclExpr &expr) override;
   virtual void visit (AST::BoxExpr &expr) override;
   virtual void visit (AST::ReturnExpr &expr) override;
-  virtual void visit (AST::TryExpr &expr) override;
   virtual void visit (AST::UnsafeBlockExpr &expr) override;
   virtual void visit (AST::LoopExpr &expr) override;
   virtual void visit (AST::WhileLoopExpr &expr) override;
-  virtual void visit (AST::WhileLetLoopExpr &expr) override;
-  virtual void visit (AST::ForLoopExpr &expr) override;
   virtual void visit (AST::IfExpr &expr) override;
   virtual void visit (AST::IfExprConseqElse &expr) override;
   virtual void visit (AST::IfLetExpr &expr) override;
