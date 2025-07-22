@@ -13206,6 +13206,8 @@ constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
 	     of the expected type and size.  */
 	  if (!initsize)
 	    initsize = integer_zero_node;
+	  else if (!tree_fits_uhwi_p (initsize))
+	    return NULL_TREE;
 
 	  unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
 	  if (size > (unsigned HOST_WIDE_INT) INT_MAX)
