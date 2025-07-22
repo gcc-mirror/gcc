@@ -988,7 +988,6 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
     {
       AST::ExpressionYeast ().go (crate);
 
-      AST::DesugarForLoops ().go (crate);
       AST::DesugarApit ().go (crate);
 
       // HACK: we may need a final TopLevel pass

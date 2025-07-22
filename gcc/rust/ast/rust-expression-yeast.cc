@@ -20,7 +20,10 @@
 #include "rust-ast-visitor.h"
 #include "rust-desugar-question-mark.h"
 #include "rust-desugar-try-block.h"
+#include "rust-desugar-for-loops.h"
 #include "rust-ast-full.h"
+#include "rust-expr.h"
+#include "rust-stmt.h"
 
 namespace Rust {
 namespace AST {
@@ -32,16 +35,35 @@ ExpressionYeast::go (AST::Crate &crate)
 }
 
 void
+ExpressionYeast::dispatch_loops (std::unique_ptr<Expr> &loop_expr)
+{
+  auto &loop = static_cast<BaseLoopExpr &> (*loop_expr.get ());
+
+  switch (loop.get_loop_kind ())
+    {
+    case BaseLoopExpr::Kind::For:
+      DesugarForLoops::go (loop_expr);
+      break;
+    case BaseLoopExpr::Kind::Loop:
+    case BaseLoopExpr::Kind::While:
+    case BaseLoopExpr::Kind::WhileLet:
+      break;
+    }
+}
+
+void
 ExpressionYeast::dispatch (std::unique_ptr<Expr> &expr)
 {
   switch (expr->get_expr_kind ())
     {
-      // TODO: Handle try-blocks
     case Expr::Kind::ErrorPropagation:
       DesugarQuestionMark::go (expr);
       break;
     case Expr::Kind::Try:
       DesugarTryBlock::go (expr);
+      break;
+    case Expr::Kind::Loop:
+      dispatch_loops (expr);
       break;
 
     default:
@@ -72,10 +94,13 @@ void
 ExpressionYeast::visit (BlockExpr &block)
 {
   for (auto &stmt : block.get_statements ())
-    DefaultASTVisitor::visit (stmt);
+    if (stmt->get_stmt_kind () == Stmt::Kind::Expr)
+      dispatch (static_cast<ExprStmt &> (*stmt).get_expr_ptr ());
 
   if (block.has_tail_expr ())
     dispatch (block.get_tail_expr_ptr ());
+
+  DefaultASTVisitor::visit (block);
 }
 
 void

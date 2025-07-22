@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-desugar-for-loops.h"
-#include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-hir-map.h"
 #include "rust-path.h"
@@ -30,19 +29,6 @@ namespace Rust {
 namespace AST {
 
 DesugarForLoops::DesugarForLoops () {}
-
-void
-DesugarForLoops::go (AST::Crate &crate)
-{
-  DefaultASTVisitor::visit (crate);
-}
-
-static void
-replace_for_loop (std::unique_ptr<Expr> &for_loop,
-		  std::unique_ptr<Expr> &&expanded)
-{
-  for_loop = std::move (expanded);
-}
 
 MatchArm
 DesugarForLoops::DesugarCtx::make_match_arm (std::unique_ptr<Pattern> &&path)
@@ -98,7 +84,7 @@ DesugarForLoops::DesugarCtx::statementify (std::unique_ptr<Expr> &&expr)
 }
 
 std::unique_ptr<Expr>
-DesugarForLoops::desugar (AST::ForLoopExpr &expr)
+DesugarForLoops::desugar (ForLoopExpr &expr)
 {
   auto ctx = DesugarCtx (expr.get_locus ());
 
@@ -170,34 +156,18 @@ DesugarForLoops::desugar (AST::ForLoopExpr &expr)
 }
 
 void
-DesugarForLoops::maybe_desugar_expr (std::unique_ptr<Expr> &expr)
+DesugarForLoops::go (std::unique_ptr<Expr> &ptr)
 {
-  if (expr->get_expr_kind () == AST::Expr::Kind::Loop)
-    {
-      auto &loop = static_cast<AST::BaseLoopExpr &> (*expr);
+  rust_assert (ptr->get_expr_kind () == Expr::Kind::Loop);
 
-      if (loop.get_loop_kind () == AST::BaseLoopExpr::Kind::For)
-	{
-	  auto &for_loop = static_cast<AST::ForLoopExpr &> (loop);
+  auto &loop = static_cast<BaseLoopExpr &> (*ptr);
 
-	  auto desugared = desugar (for_loop);
+  rust_assert (loop.get_loop_kind () == BaseLoopExpr::Kind::For);
 
-	  replace_for_loop (expr, std::move (desugared));
-	}
-    }
-}
+  auto &for_loop = static_cast<ForLoopExpr &> (loop);
+  auto desugared = DesugarForLoops ().desugar (for_loop);
 
-void
-DesugarForLoops::visit (AST::BlockExpr &block)
-{
-  for (auto &stmt : block.get_statements ())
-    if (stmt->get_stmt_kind () == AST::Stmt::Kind::Expr)
-      maybe_desugar_expr (static_cast<AST::ExprStmt &> (*stmt).get_expr_ptr ());
-
-  if (block.has_tail_expr ())
-    maybe_desugar_expr (block.get_tail_expr_ptr ());
-
-  DefaultASTVisitor::visit (block);
+  ptr = std::move (desugared);
 }
 
 } // namespace AST

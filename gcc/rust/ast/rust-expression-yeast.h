@@ -38,6 +38,7 @@ public:
 private:
   // Dispatch to the proper desugar
   void dispatch (std::unique_ptr<Expr> &expr);
+  void dispatch_loops (std::unique_ptr<Expr> &loop_expr);
 
   void visit (AST::ExprStmt &) override;
   void visit (AST::CallExpr &) override;
