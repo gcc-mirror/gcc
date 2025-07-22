@@ -49,6 +49,7 @@ public:
   void visit (AST::ForLoopExpr &expr) override;
   virtual void visit_if_let_patterns (AST::IfLetExpr &expr);
   void visit (AST::IfLetExpr &expr) override;
+  void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::Trait &) override;
   // used to handle Self insertion in TopLevel
   virtual void maybe_insert_big_self (AST::Impl &) {}

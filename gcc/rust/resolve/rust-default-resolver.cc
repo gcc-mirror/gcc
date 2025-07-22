@@ -111,6 +111,13 @@ DefaultResolver::visit (AST::IfLetExpr &expr)
 }
 
 void
+DefaultResolver::visit (AST::IfLetExprConseqElse &expr)
+{
+  DefaultResolver::visit (static_cast<AST::IfLetExpr &> (expr));
+  visit (expr.get_else_block ());
+}
+
+void
 DefaultResolver::visit (AST::Trait &trait)
 {
   visit_outer_attrs (trait);
