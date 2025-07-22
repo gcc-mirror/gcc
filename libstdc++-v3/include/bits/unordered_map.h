@@ -91,9 +91,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @tparam  _Key    Type of key objects.
    *  @tparam  _Tp     Type of mapped objects.
-   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Key>.
    *  @tparam  _Pred   Predicate function object type, defaults
-   *                   to equal_to<_Value>.
+   *                   to equal_to<_Key>.
    *  @tparam  _Alloc  Allocator type, defaults to
    *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
@@ -1360,9 +1360,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @tparam  _Key    Type of key objects.
    *  @tparam  _Tp     Type of mapped objects.
-   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Key>.
    *  @tparam  _Pred   Predicate function object type, defaults
-   *                   to equal_to<_Value>.
+   *                   to equal_to<_Key>.
    *  @tparam  _Alloc  Allocator type, defaults to
    *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
