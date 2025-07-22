@@ -83,10 +83,8 @@ private:
     Builder builder;
     location_t loc;
 
-    MatchArm make_match_arm (std::unique_ptr<Pattern> &&pattern);
     MatchCase make_break_arm ();
     MatchCase make_continue_arm ();
-    std::unique_ptr<Stmt> statementify (std::unique_ptr<Expr> &&expr);
 
     constexpr static const char *continue_pattern_id = "#val";
     constexpr static const char *next_value_id = "#__next";

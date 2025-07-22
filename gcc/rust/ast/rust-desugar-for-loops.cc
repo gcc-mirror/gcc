@@ -30,19 +30,10 @@ namespace AST {
 
 DesugarForLoops::DesugarForLoops () {}
 
-MatchArm
-DesugarForLoops::DesugarCtx::make_match_arm (std::unique_ptr<Pattern> &&path)
-{
-  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
-  patterns.emplace_back (std::move (path));
-
-  return MatchArm (std::move (patterns), loc);
-}
-
 MatchCase
 DesugarForLoops::DesugarCtx::make_break_arm ()
 {
-  auto arm = make_match_arm (std::unique_ptr<Pattern> (new PathInExpression (
+  auto arm = builder.match_arm (std::unique_ptr<Pattern> (new PathInExpression (
     builder.path_in_expression (LangItem::Kind::OPTION_NONE))));
 
   auto break_expr
@@ -65,7 +56,7 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
     builder.path_in_expression (LangItem::Kind::OPTION_SOME),
     std::move (pattern_item)));
 
-  auto val_arm = make_match_arm (std::move (pattern));
+  auto val_arm = builder.match_arm (std::move (pattern));
 
   auto next = builder.identifier (DesugarCtx::next_value_id);
 
@@ -75,12 +66,6 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
 			{}, loc));
 
   return MatchCase (std::move (val_arm), std::move (assignment));
-}
-
-std::unique_ptr<Stmt>
-DesugarForLoops::DesugarCtx::statementify (std::unique_ptr<Expr> &&expr)
-{
-  return std::unique_ptr<Stmt> (new ExprStmt (std::move (expr), loc, true));
 }
 
 std::unique_ptr<Expr>
@@ -126,10 +111,10 @@ DesugarForLoops::desugar (ForLoopExpr &expr)
 
   auto loop_stmts = std::vector<std::unique_ptr<Stmt>> ();
   loop_stmts.emplace_back (std::move (let_next));
-  loop_stmts.emplace_back (ctx.statementify (std::move (match_next)));
+  loop_stmts.emplace_back (ctx.builder.statementify (std::move (match_next)));
   loop_stmts.emplace_back (std::move (let_pat));
   loop_stmts.emplace_back (
-    ctx.statementify (expr.get_loop_block ().clone_expr ()));
+    ctx.builder.statementify (expr.get_loop_block ().clone_expr ()));
 
   // loop {
   //     <let_next>;
