@@ -1504,6 +1504,34 @@ array_index_expression (tree array_tree, tree index_tree, location_t location)
   return ret;
 }
 
+// Return an expression representing SLICE[INDEX]
+
+tree
+slice_index_expression (tree slice_tree, tree index_tree, location_t location)
+{
+  if (error_operand_p (slice_tree) || error_operand_p (index_tree))
+    return error_mark_node;
+
+  // A slice is created in TyTyResolvecompile::create_slice_type_record
+  // For example:
+  //   &[i32] is turned directly into a struct { i32* data, usize len };
+  //   [i32] is also turned into struct { i32* data, usize len }
+
+  // it should have RS_DST_FLAG set to 1
+  rust_assert (RS_DST_FLAG_P (TREE_TYPE (slice_tree)));
+
+  tree data_field = struct_field_expression (slice_tree, 0, location);
+  tree data_field_deref = build_fold_indirect_ref_loc (location, data_field);
+
+  tree element_type = TREE_TYPE (data_field_deref);
+  tree data_pointer = TREE_OPERAND (data_field_deref, 0);
+  rust_assert (POINTER_TYPE_P (TREE_TYPE (data_pointer)));
+  tree data_offset_expr
+    = Rust::pointer_offset_expression (data_pointer, index_tree, location);
+
+  return build1_loc (location, INDIRECT_REF, element_type, data_offset_expr);
+}
+
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
 call_expression (tree fn, const std::vector<tree> &fn_args, tree chain_expr,

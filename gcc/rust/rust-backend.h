@@ -245,6 +245,10 @@ tree array_initializer (tree, tree, tree, tree, tree, tree *, location_t);
 // fixed-length array, not a slice.
 tree array_index_expression (tree array, tree index, location_t);
 
+// Return an expresison for SLICE[INDEX] as an l-value.  SLICE is represented
+// with a DST.
+tree slice_index_expression (tree slice, tree index, location_t);
+
 // Create an expression for a call to FN with ARGS, taking place within
 // caller CALLER.
 tree call_expression (tree fn, const std::vector<tree> &args, tree static_chain,

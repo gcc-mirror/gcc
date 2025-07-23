@@ -555,7 +555,38 @@ CompilePatternCheckExpr::visit (HIR::SlicePattern &pattern)
     case TyTy::TypeKind::SLICE:
       rust_sorry_at (
 	pattern.get_locus (),
-	"SlicePattern matching against slices are not yet supported");
+	"SlicePattern matching against non-ref slices are not yet supported");
+      break;
+    case TyTy::TypeKind::REF:
+      {
+	rust_assert (RS_DST_FLAG_P (TREE_TYPE (match_scrutinee_expr)));
+	tree size_field
+	  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+					      pattern.get_locus ());
+
+	// First compare the size
+	check_expr = Backend::comparison_expression (
+	  ComparisonOperator::EQUAL, size_field,
+	  build_int_cst (size_type_node, pattern.get_items ().size ()),
+	  pattern.get_locus ());
+
+	// Then compare each element in the slice pattern
+	for (auto &pattern_member : pattern.get_items ())
+	  {
+	    tree slice_index_tree
+	      = Backend::size_constant_expression (array_element_index++);
+	    tree element_expr
+	      = Backend::slice_index_expression (match_scrutinee_expr,
+						 slice_index_tree,
+						 pattern.get_locus ());
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pattern_member, element_expr,
+						  ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pattern.get_locus ());
+	  }
+      }
       break;
     default:
       rust_unreachable ();
@@ -917,8 +948,23 @@ CompilePatternBindings::visit (HIR::SlicePattern &pattern)
     case TyTy::TypeKind::SLICE:
       rust_sorry_at (
 	pattern.get_locus (),
-	"SlicePattern matching against slices are not yet supported");
+	"SlicePattern matching against non-ref slices are not yet supported");
       break;
+    case TyTy::TypeKind::REF:
+      {
+	for (auto &pattern_member : pattern.get_items ())
+	  {
+	    tree slice_index_tree
+	      = Backend::size_constant_expression (array_element_index++);
+	    tree element_expr
+	      = Backend::slice_index_expression (match_scrutinee_expr,
+						 slice_index_tree,
+						 pattern.get_locus ());
+	    CompilePatternBindings::Compile (*pattern_member, element_expr,
+					     ctx);
+	  }
+	break;
+      }
     default:
       rust_unreachable ();
     }
