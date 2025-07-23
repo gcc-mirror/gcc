@@ -63,14 +63,14 @@ do_test()
 }
 
 template<typename Range>
-void
+constexpr void
 do_test_a()
 {
   do_test<Range, std::allocator<int>>();
   do_test<Range, __gnu_test::SimpleAllocator<int>>();
 }
 
-bool
+constexpr bool
 test_ranges()
 {
   using namespace __gnu_test;
@@ -92,9 +92,9 @@ test_ranges()
 
   // Not lvalue-convertible to int
   struct C {
-    C(int v) : val(v) { }
-    operator int() && { return val; }
-    bool operator==(int b) const { return b == val; }
+    constexpr C(int v) : val(v) { }
+    constexpr operator int() && { return val; }
+    constexpr bool operator==(int b) const { return b == val; }
     int val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
@@ -103,16 +103,8 @@ test_ranges()
   return true;
 }
 
-constexpr bool
-test_constexpr()
-{
-  // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<short>, std::allocator<int>>();
-  return true;
-}
-
 int main()
 {
   test_ranges();
-  static_assert( test_constexpr() );
+  static_assert( test_ranges() );
 }
