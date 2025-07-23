@@ -1,3 +1,16 @@
+2025-07-22  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (floatti<mode>2, floatunsti<mode>2,
+	fix_trunc<mode>ti2): Add guard TARGET_FLOAT128_HW.
+	* config/rs6000/vsx.md (xsxexpqp_<IEEE128:mode>_<V2DI_DI:mode>,
+	xsxsigqp_<IEEE128:mode>_<VEC_TI:mode>, xsiexpqpf_<mode>,
+	xsiexpqp_<IEEE128:mode>_<V2DI_DI:mode>, xscmpexpqp_<code>_<mode>,
+	*xscmpexpqp, xststdcnegqp_<mode>): Replace guard TARGET_P9_VECTOR
+	with TARGET_FLOAT128_HW.
+
 2025-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

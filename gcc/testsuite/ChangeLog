@@ -1,3 +1,11 @@
+2025-07-22  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/float128-cmp2-runnable.c: Replace
+	ppc_float128_sw with ppc_float128_hw and remove p9vector_hw.
+
 2025-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
