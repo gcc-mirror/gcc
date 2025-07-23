@@ -4482,6 +4482,66 @@
   [(set_attr "type" "<su>div")]
 )
 
+;; umax (a, add (a, b)) => [sum, ovf] = adds (a, b); !ovf ? sum : a
+;; umin (a, add (a, b)) => [sum, ovf] = adds (a, b); !ovf ? a : sum
+;; ... and the commutated versions:
+;; umax (a, add (b, a)) => [sum, ovf] = adds (b, a); !ovf ? sum : a
+;; umin (a, add (b, a)) => [sum, ovf] = adds (b, a); !ovf ? a : sum
+(define_insn_and_split "*aarch64_plus_within_<optab><mode>3_<ovf_commutate>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(UMAXMIN:GPI
+	  (plus:GPI (match_operand:GPI 1 "register_operand" "r")
+		    (match_operand:GPI 2 "register_operand" "r"))
+	  (match_dup ovf_commutate)))
+   (clobber (match_scratch:GPI 3 "=r"))]
+  "!TARGET_CSSC"
+  "#"
+  "&& 1"
+  [(parallel
+      [(set (reg:CC_C CC_REGNUM)
+	    (compare:CC_C (plus:GPI (match_dup ovf_commutate)
+				    (match_dup <ovf_comm_opp>))
+			  (match_dup ovf_commutate)))
+       (set (match_dup 3) (plus:GPI (match_dup ovf_commutate)
+				    (match_dup <ovf_comm_opp>)))])
+   (set (match_dup 0)
+	(if_then_else:GPI (<ovf_add_cmp> (reg:CC_C CC_REGNUM)
+					 (const_int 0))
+			  (match_dup 3)
+			  (match_dup ovf_commutate)))]
+  {
+    if (GET_CODE (operands[3]) == SCRATCH)
+      operands[3] = gen_reg_rtx (<MODE>mode);
+  }
+)
+
+;; umax (a, sub (a, b)) => [diff, udf] = subs (a, b); udf ? diff : a
+;; umin (a, sub (a, b)) => [diff, udf] = subs (a, b); udf ? a : diff
+(define_insn_and_split "*aarch64_minus_within_<optab><mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(UMAXMIN:GPI
+	  (minus:GPI (match_operand:GPI 1 "register_operand" "r")
+		     (match_operand:GPI 2 "register_operand" "r"))
+	  (match_dup 1)))
+   (clobber (match_scratch:GPI 3 "=r"))]
+  "!TARGET_CSSC"
+  "#"
+  "&& 1"
+  [(parallel
+      [(set (reg:CC CC_REGNUM)
+	    (compare:CC (match_dup 1) (match_dup 2)))
+       (set (match_dup 3) (minus:GPI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	    (if_then_else:GPI (<udf_sub_cmp> (reg:CC CC_REGNUM)
+						(const_int 0))
+			      (match_dup 3)
+			      (match_dup 1)))]
+  {
+    if (GET_CODE (operands[3]) == SCRATCH)
+      operands[3] = gen_reg_rtx (<MODE>mode);
+  }
+)
+
 ;; -------------------------------------------------------------------
 ;; Comparison insns
 ;; -------------------------------------------------------------------

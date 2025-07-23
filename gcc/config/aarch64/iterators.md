@@ -2853,6 +2853,8 @@
 
 (define_code_iterator FMAXMIN [smax smin])
 
+(define_code_iterator UMAXMIN [umax umin])
+
 ;; Signed and unsigned max operations.
 (define_code_iterator USMAX [smax umax])
 
@@ -3140,6 +3142,9 @@
 			  (umin "min")])
 
 (define_code_attr maxminand [(smax "bic") (smin "and")])
+
+(define_code_attr ovf_add_cmp [(umax "geu") (umin "ltu")])
+(define_code_attr udf_sub_cmp [(umax "ltu") (umin "geu")])
 
 ;; MLA/MLS attributes.
 (define_code_attr as [(ss_plus "a") (ss_minus "s")])
@@ -5164,3 +5169,7 @@
    (UNSPEC_F2CVT "f2cvt")
    (UNSPEC_F1CVTLT "f1cvtlt")
    (UNSPEC_F2CVTLT "f2cvtlt")])
+
+;; Operand numbers for commutative operations
+(define_int_iterator ovf_commutate [1 2])
+(define_int_attr ovf_comm_opp [(1 "2") (2 "1")])
