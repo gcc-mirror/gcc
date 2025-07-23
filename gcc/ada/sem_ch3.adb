@@ -4386,8 +4386,7 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Prev_Entity       : Entity_Id := Empty;
@@ -5475,7 +5474,7 @@ package body Sem_Ch3 is
          Check_No_Hidden_State (Id);
       end if;
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -21707,8 +21706,7 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Full_Indic  : Node_Id;
@@ -22401,7 +22399,7 @@ package body Sem_Ch3 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Process_Full_View;
 
    -----------------------------------

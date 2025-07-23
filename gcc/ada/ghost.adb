@@ -447,7 +447,7 @@ package body Ghost is
          --  The context is Ghost when it appears within a Ghost package or
          --  subprogram.
 
-         if Ghost_Mode > None then
+         if Ghost_Config.Ghost_Mode > None then
             return True;
 
          --  Routine Expand_Record_Extension creates a parent subtype without
@@ -719,7 +719,7 @@ package body Ghost is
       --  The context is ghost when it appears within a Ghost package or
       --  subprogram.
 
-      if Ghost_Mode > None then
+      if Ghost_Config.Ghost_Mode > None then
          return;
 
       --  The context is ghost if Formal is explicitly marked as ghost
@@ -1130,22 +1130,22 @@ package body Ghost is
       --  The context is already within an ignored Ghost region. Maintain the
       --  start of the outermost ignored Ghost region.
 
-      if Present (Ignored_Ghost_Region) then
+      if Present (Ghost_Config.Ignored_Ghost_Region) then
          null;
 
       --  The current region is the outermost ignored Ghost region. Save its
       --  starting node.
 
       elsif Present (N) and then Mode = Ignore then
-         Ignored_Ghost_Region := N;
+         Ghost_Config.Ignored_Ghost_Region := N;
 
       --  Otherwise the current region is not ignored, nothing to save
 
       else
-         Ignored_Ghost_Region := Empty;
+         Ghost_Config.Ignored_Ghost_Region := Empty;
       end if;
 
-      Ghost_Mode := Mode;
+      Ghost_Config.Ghost_Mode := Mode;
    end Install_Ghost_Region;
 
    procedure Install_Ghost_Region (Mode : Name_Id; N : Node_Id) is
@@ -1504,10 +1504,10 @@ package body Ghost is
       --  A body declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      elsif Ghost_Mode = Check then
+      elsif Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
 
-      elsif Ghost_Mode = Ignore then
+      elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
 
       --  Inherit the "ghostness" of the previous declaration when the body
@@ -1553,10 +1553,10 @@ package body Ghost is
       --  A completion elaborated in a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Ghost_Mode = Check then
+      if Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
 
-      elsif Ghost_Mode = Ignore then
+      elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
 
       --  The completion becomes Ghost when its initial declaration is also
@@ -1603,10 +1603,10 @@ package body Ghost is
       --  A declaration elaborated in a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      elsif Ghost_Mode = Check then
+      elsif Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
 
-      elsif Ghost_Mode = Ignore then
+      elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
 
       --  A child package or subprogram declaration becomes Ghost when its
@@ -1698,10 +1698,10 @@ package body Ghost is
       --  An instantiation declaration within a Ghost region is automatically
       --  Ghost (SPARK RM 6.9(2)).
 
-      elsif Ghost_Mode = Check then
+      elsif Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
 
-      elsif Ghost_Mode = Ignore then
+      elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
 
       --  Inherit the "ghostness" of the generic unit, but the current Ghost
@@ -2018,10 +2018,9 @@ package body Ghost is
    -- Restore_Ghost_Region --
    --------------------------
 
-   procedure Restore_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id) is
+   procedure Restore_Ghost_Region (Config : Ghost_Config_Type) is
    begin
-      Ghost_Mode           := Mode;
-      Ignored_Ghost_Region := N;
+      Ghost_Config := Config;
    end Restore_Ghost_Region;
 
    --------------------

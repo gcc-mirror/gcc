@@ -385,8 +385,7 @@ package body Sem_Ch5 is
 
       --  Local variables
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       T1 : Entity_Id;
@@ -1193,7 +1192,7 @@ package body Sem_Ch5 is
       Analyze_Dimension (N);
 
    <<Leave>>
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       --  If the right-hand side contains target names, expansion has been
       --  disabled to prevent expansion that might move target names out of
@@ -2108,7 +2107,7 @@ package body Sem_Ch5 is
       --  A label declared within a Ghost region becomes Ghost (SPARK RM
       --  6.9(2)).
 
-      if Ghost_Mode > None then
+      if Ghost_Config.Ghost_Mode > None then
          Set_Is_Ghost_Entity (Id);
       end if;
    end Analyze_Implicit_Label_Declaration;

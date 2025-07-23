@@ -10282,8 +10282,7 @@ package body Sem_Ch13 is
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Expr : Node_Id;
@@ -11090,7 +11089,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       if Restore_Scope then
          Pop_Scope;
@@ -11110,8 +11109,7 @@ package body Sem_Ch13 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Func_Decl : Node_Id;
@@ -11192,7 +11190,7 @@ package body Sem_Ch13 is
       Insert_After (Parent (Typ), Func_Decl);
       Analyze (Func_Decl);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       return Func_Decl;
    end Build_Predicate_Function_Declaration;

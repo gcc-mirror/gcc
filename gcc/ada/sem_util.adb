@@ -1963,8 +1963,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
    --  Start of processing for Build_Elaboration_Entity
@@ -2060,7 +2059,7 @@ package body Sem_Util is
       Set_Has_Qualified_Name       (Elab_Ent);
       Set_Has_Fully_Qualified_Name (Elab_Ent);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Build_Elaboration_Entity;
 
    --------------------------------
@@ -22574,7 +22573,7 @@ package body Sem_Util is
          --  Mark the Ghost and SPARK mode in effect
 
          if Modes then
-            if Ghost_Mode = Ignore then
+            if Ghost_Config.Ghost_Mode = Ignore then
                Set_Is_Ignored_Ghost_Node (N);
             end if;
 

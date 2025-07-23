@@ -104,8 +104,7 @@ package body Sem is
    --  Ghost mode.
 
    procedure Analyze (N : Node_Id) is
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
    begin
@@ -842,7 +841,7 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1440,8 +1439,7 @@ package body Sem is
       --  the Ghost mode.
 
       procedure Do_Analyze is
-         Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-         Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+         Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
          Saved_ISMP : constant Boolean        :=
                         Ignore_SPARK_Mode_Pragmas_In_Instance;
          --  Save Ghost and SPARK mode-related data to restore on exit
@@ -1489,7 +1487,7 @@ package body Sem is
          Style_Max_Line_Length := Saved_ML;
          Style_Check_Max_Line_Length := Saved_CML;
 
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_Ghost_Region (Saved_Ghost_Config);
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
       end Do_Analyze;
 

@@ -84,8 +84,7 @@ package body Expander is
    --  Ghost mode.
 
    procedure Expand (N : Node_Id) is
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
    begin
@@ -559,7 +558,7 @@ package body Expander is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Expand;
 
    ---------------------------
