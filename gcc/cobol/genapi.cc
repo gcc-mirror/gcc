@@ -2858,6 +2858,7 @@ leave_procedure(struct cbl_proc_t *procedure, bool /*section*/)
     char *psz;
     psz = xasprintf("_procret." HOST_SIZE_T_PRINT_DEC ":",
                     (fmt_size_t)symbol_label_id(procedure->label));
+    token_location_override(current_location_minus_one());
     gg_insert_into_assembler(psz);
     free(psz);
     pseudo_return_pop(procedure);
@@ -3445,6 +3446,7 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler(ach);
   }
 
@@ -3598,6 +3600,7 @@ internal_perform_through_times(   cbl_label_t *proc_1,
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler( ach );
   }
 
@@ -8440,6 +8443,7 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler( ach );
   }
 
@@ -8503,6 +8507,7 @@ perform_outofline_after_until(struct cbl_perform_tgt_t *tgt,
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler( ach );
   }
 
@@ -8623,6 +8628,7 @@ perform_outofline_testafter_varying(struct cbl_perform_tgt_t *tgt,
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler( ach );
   }
 
@@ -8766,6 +8772,7 @@ perform_outofline_before_varying(   struct cbl_perform_tgt_t *tgt,
   sprintf(ach,
           "_procretb." HOST_SIZE_T_PRINT_DEC ":",
           (fmt_size_t)our_pseudo_label);
+  token_location_override(current_location_minus_one());
   gg_insert_into_assembler( ach );
   }
 
