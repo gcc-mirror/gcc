@@ -1,3 +1,81 @@
+2025-07-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r): Also
+	walk external functions that are declare inline (and have a
+	DECL_SAVED_TREE).
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-06-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/mkoffload.cc (process): Use an 'auto_vec' for
+	'file_idx'.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* tree-nrv.cc (pass_nrv::execute): Defuse 'RESULT_DECL' check.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* lto-streamer-out.cc (hash_tree): Don't handle 'TYPE_EMPTY_P' for
+	'lto_stream_offload_p'.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields):
+	Likewise.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields):
+	Likewise.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '61'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_61, -march-map=sm_62):
+	Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_61'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_5_0'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_5_0): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'5.0' for 'PTX_VERSION_5_0'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=5.0'.
+
+2025-07-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Properly
+	switch sections.
+
 2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

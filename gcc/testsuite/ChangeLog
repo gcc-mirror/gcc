@@ -1,3 +1,28 @@
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* gcc.target/nvptx/abi-struct-arg.c: Add empty structure testing.
+	* gcc.target/nvptx/abi-struct-ret.c: Likewise.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_61.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march=sm_61.c: New.
+
+2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=5.0.c: New.
+
 2025-07-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

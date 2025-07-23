@@ -1,3 +1,40 @@
+2025-07-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gen_il-fields.ads (Is_Implicit_Full_View): New field.
+	* gen_il-gen-gen_entities.adb (Type_Kind): Use new field.
+	* einfo.ads (Is_Implicit_Full_View): Document new field.
+	* exp_ch7.adb (Make_Adjust_Call, Make_Init_Call, Make_Final_Call): Use
+	new field.
+	* exp_util.adb (Finalize_Address): Likewise.
+	* sem_ch3.adb (Copy_And_Build): Set new field.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (May_Generate_Large_Temp): Delete.
+	* exp_util.adb (May_Generate_Large_Temp): Likewise.
+	(Safe_Unchecked_Type_Conversion): Do not take stack checking into
+	account to compute the result.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Safe_Unchecked_Type_Conversion): Always return True
+	if the expression is the prefix of an N_Selected_Component.
+
+2025-07-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Do the same for GCC and GNATprove
+	backends.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Only create a new subtype when
+	the expander is active.  Remove a useless test of type inequality,
+	as well as a useless call to Set_Has_Delayed_Freeze on the subtype.
+
+2025-07-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_util.adb (Finalize_Address): Prevent infinite loop
+
 2025-07-21  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/121184
