@@ -212,22 +212,22 @@
     type init4 = svld1_ ## su ## sz (cmp ## sz, mem); \
 	\
     type res_init1 = func_ ## type ## _init1 (); \
-    svbool_t cmp = svcmpne_ ## su ## sz (all_true, init1, res_init1); \
+    svbool_t cmp = svcmpne_ ## su ## sz (cmp ## sz, init1, res_init1); \
     if (svptest_any (all_true, cmp)) \
       __builtin_abort (); \
 	\
     type res_init2 = func_ ## type ## _init2 (); \
-    cmp = svcmpne_ ## su ## sz (all_true, init2, res_init2); \
+    cmp = svcmpne_ ## su ## sz (cmp ## sz, init2, res_init2); \
     if (svptest_any (all_true, cmp)) \
       __builtin_abort (); \
 	\
     type res_init3 = func_ ## type ## _init3 (); \
-    cmp = svcmpne_ ## su ## sz (all_true, init3, res_init3); \
+    cmp = svcmpne_ ## su ## sz (cmp ## sz, init3, res_init3); \
     if (svptest_any (all_true, cmp)) \
       __builtin_abort (); \
 	\
     type res_init4 = func_ ## type ## _init4 (); \
-    cmp = svcmpne_ ## su ## sz (all_true, init4, res_init4); \
+    cmp = svcmpne_ ## su ## sz (cmp ## sz, init4, res_init4); \
     if (svptest_any (all_true, cmp)) \
       __builtin_abort (); \
   }
