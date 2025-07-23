@@ -1,3 +1,38 @@
+2025-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* g++.dg/cpp2a/constexpr-union6.C: Expect x5 to work.
+	* g++.dg/cpp26/constexpr-new4.C: New test.
+
+2025-07-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wmismatched-new-delete-5.C: Fix allocation.
+
+2025-07-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/109267
+	* lib/target-supports.exp (check_effective_target_trap): New proc.
+	* g++.dg/missing-return.C: Update testcase for the !trap case.
+	* gcc.dg/pr109267-1.c: New test.
+	* gcc.dg/pr109267-2.c: New test.
+
+2025-07-22  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sve/mask_load_2.c: Update tests.
+
+2025-07-22  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sve/mask_load_2.c: New test.
+
+2025-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121202
+	* gcc.dg/pr121202.c: New testcase.
+
+2025-07-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-28.c: Adjust.
+
 2025-07-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/110949

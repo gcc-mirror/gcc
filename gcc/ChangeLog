@@ -1,3 +1,52 @@
+2025-07-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/109267
+	* tree-cfgcleanup.cc (execute_cleanup_cfg_post_optimizing): If the first
+	non debug statement in the first (and only) basic block is a call
+	to __builtin_unreachable change it to a call to __builtin_trap or an
+	infinite loop.
+
+2025-07-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_is_insn_L32R_p):
+	Rewrite to capture insns that could be L32R machine instructions
+	wherever possible.
+	(xtensa_rtx_costs): Fix to consider that moves larger than a
+	natural word can take multiple L32R machine instructions.
+	(constantpool_address_p): Cosmetics.
+	* config/xtensa/xtensa.md (movdi_internal, movdf_internal):
+	Add missing insn attributes.
+
+2025-07-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md
+	(movsi_internal, movhi_internal, movsf_internal):
+	Change the value of the "type" attribute from "move" to "load"
+	when the source operand constraint is "Y".
+
+2025-07-22  Karl Meakin  <karl.meakin@arm.com>
+
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Swap
+	`base` and `off` in more scenarios. Also assert at the end of
+	the function that `base` and `off` are loop-invariant and not
+	loop-invariant respectively.
+
+2025-07-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/generic-vector-ooo.md: Restrict insn reservations to
+	generic_ooo and generic tuning models.
+
+2025-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121202
+	* tree-vect-slp.cc (vect_schedule_slp_node): Do not take
+	an out-of-region stmt as "last".
+
+2025-07-22  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* genpreds.cc (write_insn_constraint_len): Replace rawmemchr by
+	a loop.
+
 2025-07-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/mips-p8700.md: Add support for "ghost" insn types.

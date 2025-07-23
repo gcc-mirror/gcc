@@ -1,3 +1,33 @@
+2025-07-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* testsuite/23_containers/inplace_vector/cons/from_range.cc: Run
+	iterators and range test at compile-time.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	Likewise.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::BoundsContainer)
+	(__gnu_test::OutputContainer, __gnu_test::WritableObject)
+	(__gnu_test::output_iterator_wrapper, __gnu_test::input_iterator_wrapper)
+	(__gnu_test::forward_iterator_wrapper)
+	(__gnu_test::bidirectional_iterator_wrapper)
+	(__gnu_test::random_access_iterator_wrapper)
+	(__gnu_test::test_container): Add appropriate _GLIBCXXNN_CONSTEXPR
+	macros to member functions.
+	(__gnu_test::contiguous_iterator_wrapper)
+	(__gnu_test::input_iterator_wrapper_rval)
+	(__gnu_test::test_range, __gnu_test::test_range_nocopy)
+	(__gnu_test::test_sized_range_sized_sent)
+	(__gnu_test::test_sized_range): Add constexpr specifier to member
+	functions.
+
+2025-07-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* include/std/inplace_vector (inplace_vector::assign_range):
+	Replace _Nm with _M_size in the assigment loop.
+
 2025-07-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* include/std/mdspan (mdspan::mdspan): Make default ctor

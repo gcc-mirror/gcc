@@ -1,3 +1,7 @@
+2025-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	* MAINTAINERS: Add myself as C++ front end reviewer.
+
 2025-07-07  Tamar Christina  <tamar.christina@arm.com>
 
 	* MAINTAINERS: Add myself to AArch64 pot.

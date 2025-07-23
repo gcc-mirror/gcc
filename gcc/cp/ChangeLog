@@ -1,3 +1,9 @@
+2025-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* constexpr.cc (cxx_eval_store_expression): Allow ARRAY_REFs
+	when activating an array member of a union.
+
 2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* semantics.cc (finish_asm_stmt): Pass null pointer to

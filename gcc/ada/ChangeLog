@@ -1,3 +1,275 @@
+2025-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb (End_Use_Type): Add a test for there not being an earlier
+	use_type_clause for the same type as an additional criterion for turning
+	off In_Use and Current_Use_Clause.
+
+2025-07-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Only fold array attributes when prefix
+	is static or at least safe to evaluate
+
+2025-07-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* einfo.ads (Is_Controlled_Active): Fix pasto in comment.
+	* sem_util.ads (Propagate_Controlled_Flags): Update comment for
+	Destructor aspect.
+
+2025-07-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Document new extension.
+	* snames.ads-tmpl: Add name for new aspect.
+	* gen_il-fields.ads (Has_Destructor, Is_Destructor): Add new fields.
+	* gen_il-gen-gen_entities.adb (E_Procedure, Type_Kind): Add new fields.
+	* einfo.ads (Has_Destructor, Is_Destructor): Document new fields.
+	* aspects.ads: Add new aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specifications,
+	Check_Aspect_At_Freeze_Point, Check_Aspect_At_End_Of_Declarations):
+	Add semantic analysis for new aspect.
+	(Resolve_Finalization_Procedure): New function.
+	(Resolve_Finalizable_Argument): Use new function above.
+	* sem_util.adb (Propagate_Controlled_Flags): Extend for new field.
+	* freeze.adb (Freeze_Entity): Add legality check for new aspect.
+	* exp_ch3.adb (Expand_Freeze_Record_Type, Predefined_Primitive_Bodies):
+	Use new field.
+	* exp_ch7.adb (Build_Finalize_Statements): Add expansion for
+	destructors.
+	(Make_Final_Call, Build_Record_Deep_Procs): Adapt to new Has_Destructor
+	field.
+	(Build_Adjust_Statements): Tweak to handle cases of empty lists.
+	* gnat_rm.texi: Regenerate.
+
+2025-07-22  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_ch6.adb (Might_Need_BIP_Task_Actuals): Before retrieving the original corresponding
+	operation we retrieve first the root of the aliased chain.
+
+2025-07-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gen_il-fields.ads (Is_Implicit_Full_View): New field.
+	* gen_il-gen-gen_entities.adb (Type_Kind): Use new field.
+	* einfo.ads (Is_Implicit_Full_View): Document new field.
+	* exp_ch7.adb (Make_Adjust_Call, Make_Init_Call, Make_Final_Call): Use
+	new field.
+	* exp_util.adb (Finalize_Address): Likewise.
+	* sem_ch3.adb (Copy_And_Build): Set new field.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (May_Generate_Large_Temp): Delete.
+	* exp_util.adb (May_Generate_Large_Temp): Likewise.
+	(Safe_Unchecked_Type_Conversion): Do not take stack checking into
+	account to compute the result.
+
+2025-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* sinfo.ads (Is_Expanded_Dispatching_Call): New flag.
+	(Tag_Propagated): New flag.
+	* exp_ch6.adb (Expand_Call_Helper): Propagate the tag when
+	the dispatching call is placed in conditionl expressions or
+	case-expressions.
+	* sem_ch5.adb (Analyze_Assignment): For assignment of tag-
+	indeterminate expression, do not propagate the tag if
+	previously done.
+	* sem_disp.adb (Is_Tag_Indeterminate): Add missing support
+	for conditional expression and case expression.
+	* exp_disp.ads (Is_Expanded_Dispatching_Call): Removed. Function
+	replaced by a new flag in the nodes.
+	* exp_disp.adb (Expand_Dispatching_Call): Set a flag in the
+	call node to remember that the call has been expanded.
+	(Is_Expanded_Dispatching_Call): Function removed.
+	* gen_il-fields.ads (Tag_Propagated): New flag.
+	(Is_Expanded_Dispatching_Call): New flag.
+	* gen_il-gen-gen_nodes.adb (Tag_Propagated): New flag.
+	(Is_Expanded_Dispatching_Call): New flag.
+
+2025-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnat/a-cbhama.ads (Empty): Add missing default to Capacity formal.
+	* libgnat/a-cbhama.adb (Empty): Add missing default to Capacity formal.
+	* exp_aggr.adb (Build_Size_Expr): Test for presence of Capacity
+	discriminant as additional criterion for generating the call to
+	the Length function. Update comments.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Safe_Unchecked_Type_Conversion): Always return True
+	if the expression is the prefix of an N_Selected_Component.
+
+2025-07-22  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_ch6.adb (Might_Need_BIP_Task_Actuals): Check whether No_Task_Parts is enabled in any
+	of the derived types, or interfaces, from the user-defined primitive return type.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add No_Task_Parts and No_Controlled_Parts to
+	the representation chain to be visible in the full view of private types.
+	* aspects.ads (Nonoverridable_Aspect_Id): As per GNAT RM, No_Task_Parts is nonoverridable.
+	* sem_util.adb (Check_Inherited_Nonoverridable_Aspects): Likewise.
+	* sem_util.ads: Fix typo and style.
+	* sem_disp.adb: Missing comment.
+
+2025-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Extra_Formals): Complete documentation.
+	(Has_First_Controlling_Parameter_Aspect): Place it in alphabetical order.
+	(Has_Frozen_Extra_Formals): New attribute.
+	* gen_il-fields.ads (Has_Frozen_Extra_Formals): New entity field.
+	* gen_il-gen-gen_entities.adb (Has_Frozen_Extra_Formals): Adding new
+	entity flag to subprograms, subprogram types, and and entries.
+	* gen_il-internals.adb (Image): Adding Has_Frozen_Extra_Formals.
+	* exp_ch3.adb (Build_Array_Init_Proc): Freeze its extra formals.
+	(Build_Init_Procedure): Freeze its extra formals.
+	(Expand_Freeze_Record_Type): For tagged types with foreign convention
+	create the extra formals of primitives with convention Ada.
+	* exp_ch6.ads (Create_Extra_Actuals): New subprogram.
+	* exp_ch6.adb (Check_BIP_Actuals): Adding assertions.
+	(Create_Extra_Actuals): New subprogram that factorizes code from
+	Expand_Call_Helper.
+	(Expand_Call_Helper): Adding support to defer the addition of extra
+	actuals. Move the code that adds the extra actuals to a new subprogram.
+	(Is_Unchecked_Union_Equality): Renamed as Is_Unchecked_Union_Predefined_
+	Equality_Call.
+	* exp_ch7.adb (Create_Finalizer): Freeze its extra formals.
+	(Wrap_Transient_Expression): Link the temporary with its relocated
+	expression to facilitate locating the expression in the expanded code.
+	* exp_ch9.ads (Expand_N_Entry_Declaration): Adding one formal.
+	* exp_ch9.adb (Expand_N_Entry_Declaration): Defer the expansion of
+	the entry if the extra formals are not available; analyze the built
+	declarations for the record type that holds all the parameters if
+	the expansion of the entry declaration was deferred.
+	* exp_disp.adb (Expand_Dispatching_Call): Handle deferred extra formals.
+	(Set_CPP_Constructors): Freeze its extra formals.
+	* freeze.adb (Freeze_Entity): Create the extra actuals of acccess to
+	subprograms whose designated type is a subprogram type.
+	(Freeze_Subprogram): Adjust assertion to support deferred extra formals,
+	and freeze extra formals of non-dispatching subprograms with foreign
+	convention. Added assertion to check matching of formals in thunks.
+	* sem_aux.adb (Get_Called_Entity): Adding documentation.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Create the extra formals
+	of deferred subprograms, subprogram types and entries; create also the
+	extra actuals of deferred calls.
+	* sem_ch6.ads (Freeze_Extra_Formals): New subprogram.
+	(Deferred_Extra_Formals_Support): New package.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Create the extra formals
+	of subprograms without separate spec.
+	(Add_Extra_Formal): Add documentation.
+	(Has_Extra_Formals): Removed.
+	(Parent_Subprogram): Adding documentation.
+	(Create_Extra_Formals): Defer adding extra formals if the underlying_type
+	of some formal type or return type is not available.
+	(Extra_Formals_Match_OK): Add missing check on the extra formals of
+	unchecked unions.
+	(Freeze_Extra_Formals): New subprogram.
+	(Deferred_Extra_Formals_Support): New package.
+	* sem_ch9.adb (Analyze_Entry_Declaration): Freeze its extra formals.
+	* sem_ch13.adb (New_Put_Image_Subprogram): ditto.
+	* sem_util.ads (Is_Unchecked_Union_Equality): New subprogram.
+	* sem_util.adb (Is_Unchecked_Union_Equality): ditto.
+
+2025-07-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Do the same for GCC and GNATprove
+	backends.
+
+2025-07-22  Martin Clochard  <clochard@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK): Add expansion of continue statements.
+	(Expand_SPARK_N_Continue_Statement): Expand continue statements resolved
+	as procedure calls into said procedure calls.
+
+2025-07-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Look at the base type of actual parameter
+	when checking call to Set_Handler.
+
+2025-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Only create a new subtype when
+	the expander is active.  Remove a useless test of type inequality,
+	as well as a useless call to Set_Has_Delayed_Freeze on the subtype.
+
+2025-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Size_Expr): Change test of "not Present (...)"
+	to "No (...)".
+
+2025-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Size_Expr): Determine the length of a container
+	aggregate association in the case where it's an iteration over an
+	object of a container type coming from an instantiation of a predefined
+	container generic. Minor updates to existing comments.
+
+2025-07-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_util.adb (Finalize_Address): Prevent infinite loop
+
+2025-07-22  Steve Baird  <baird@adacore.com>
+
+	* sem_aux.ads: Declare new function Unique_Component_Name.
+	* sem_aux.adb: Implement new function Unique_Component_Name.
+
+2025-07-22  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations):
+	Ensure the Expression_Copy always has a parent before
+	calling any analyze.
+
+2025-07-22  Steve Baird  <baird@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code.Gen_Assign): In the case of
+	an aggregate component where the component type is mutably tagged
+	and the component value is provided by a qualified aggregate (and
+	qualified with a specific type), avoid incorrectly rejecting the
+	inner aggregate for violating the rule that the type of an
+	aggregate shall not be class-wide.
+	* exp_attr.adb: For a predefined streaming operation (i.e., Read,
+	Write, Input, or Output) of a class-wide type, the external name
+	of the tag of the value is normally written out by Output and read
+	in by Input. In the case of a mutably tagged type, this is instead
+	done in Write and Read.
+	* exp_ch4.adb (Expand_Composite_Equality): In the case of an
+	equality comparison for a type having a mutably tagged component,
+	we want the component comparison to compare two values of the
+	mutably tagged type, not two values of the corresponding
+	array-of-bytes-ish representation type. Even if there are no
+	user-defined equality functions anywhere in sight, comparing the
+	array values still doesn't work because undefined bits may end up
+	participating in the comparison (resulting in an incorrect result
+	of False).
+	* exp_put_image.adb: In the case of a class-wide type, the
+	predefined Image attribute includes the name of the specific type
+	(and a "'" character, to follow qualified expression syntax) to
+	indicate the tag of the value. With the introduction of mutably
+	tagged types, this case can now arise in the case of a component
+	(of either an enclosing array or an enclosing record), not just
+	for a top-level object. So we factor the code to do this into a
+	new procedure, Put_Specific_Type_Name_Qualifier, so that it can be
+	called from more than one place. This reorganization also involves
+	replacing the procedure Put_String_Exp with a new procedure,
+	Put_String_Exp_To_Buffer, declared in a less nested scope. For
+	mutably tagged components (at the source level) the component type
+	(at the GNAT tree level) is an array of bytes (actually a two
+	field record containing an array of bytes, but that's a detail).
+	Appropriate conversions need to be generated so that we don't end
+	up generating an image for an array of bytes; this is done at the
+	same places where Put_Specific_Type_Name_Qualifier is called
+	(for components) by calling Make_Mutably_Tagged_Conversion.
+	* exp_strm.adb (Make_Field_Attribute): Add
+	Make_Mutably_Tagged_Conversion call where we construct a
+	Selected_Component node and the corresponding component type is
+	the internal representation type for a mutably tagged type.
+	(Stream_Base_Type): Return the mutably
+	tagged type if given the corresponding internal representation type.
+	* sem_ch3.adb (Array_Type_Declaration): In the case where the
+	source-level component type of an array type is mutably tagged,
+	set the Component_Type field of the base type of the declared
+	array type (as opposed to that of the first subtype of the array
+	type) to the corresponding internal representation type.
+	* sem_ch4.adb (Analyze_Selected_Component): In the case of a
+	selected component name which references a component whose type is
+	the internal representation type of a mutably tagged type,
+	generate a conversion to the mutably tagged type.
+
 2025-07-21  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/121184
