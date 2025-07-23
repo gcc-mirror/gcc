@@ -126,7 +126,7 @@ BEGIN
    PopT(NameStart) ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat2('inconsistant definition module was named (%a) and concluded as (%a)',
+      WriteFormat2('inconsistent definition module was named (%a) and concluded as (%a)',
                    NameStart, NameEnd)
    END ;
    M2Error.LeaveErrorScope

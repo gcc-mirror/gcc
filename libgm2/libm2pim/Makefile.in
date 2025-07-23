@@ -564,6 +564,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@  -fm2-pathname=m2pim -I. -I$(GM2_SRC)/gm2-libs \
 @BUILD_PIMLIB_TRUE@  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_PIMLIB_TRUE@  -fm2-g -g -Wcase-enum -Wreturn-type \
+@BUILD_PIMLIB_TRUE@  -Wall \
 @BUILD_PIMLIB_TRUE@  -fcase -fm2-prefix=m2pim
 
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags =  \
