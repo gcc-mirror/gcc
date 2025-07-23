@@ -2908,7 +2908,7 @@ assemble_name_resolve (const char *name)
       ultimate_transparent_alias_target (&id);
       if (id != id_orig)
 	name = IDENTIFIER_POINTER (id);
-      gcc_assert (! TREE_CHAIN (id));
+      gcc_assert (!IDENTIFIER_TRANSPARENT_ALIAS (id));
     }
 
   return name;
