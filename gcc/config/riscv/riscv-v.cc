@@ -351,9 +351,12 @@ public:
       add_rounding_mode_operand (FRM_RNE);
     else if (m_insn_flags & VXRM_RNU_P)
       add_rounding_mode_operand (VXRM_RNU);
+    else if (m_insn_flags & VXRM_RNE_P)
+      add_rounding_mode_operand (VXRM_RNE);
     else if (m_insn_flags & VXRM_RDN_P)
       add_rounding_mode_operand (VXRM_RDN);
-
+    else if (m_insn_flags & VXRM_ROD_P)
+      add_rounding_mode_operand (VXRM_ROD);
 
     if (insn_data[(int) icode].n_operands != m_opno)
       internal_error ("invalid number of operands for insn %s, "
@@ -5648,6 +5651,80 @@ expand_vx_binary_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2,
 
   rtx ops[] = {op_0, op_1, op_2};
   emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+}
+
+static enum insn_type
+get_insn_type_by_vxrm_val (int vxrm_val)
+{
+  enum insn_type itype;
+
+  switch (vxrm_val)
+    {
+    case VXRM_RNU:
+      itype = BINARY_OP_VXRM_RNU;
+      break;
+    case VXRM_RNE:
+      itype = BINARY_OP_VXRM_RNE;
+      break;
+    case VXRM_RDN:
+      itype = BINARY_OP_VXRM_RDN;
+      break;
+    case VXRM_ROD:
+      itype = BINARY_OP_VXRM_ROD;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return itype;
+}
+
+/* Expand the binary vx combine with the format like v2 = vop(v1, vec_dup(x))
+   and its' vxrm value.  Aka the second op comes from the vec_duplicate,
+   and the first op is the vector reg.  */
+
+void
+expand_vx_binary_vxrm_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2, int unspec,
+				   int vxrm_val, machine_mode mode)
+{
+  enum insn_code icode;
+  enum insn_type itype = get_insn_type_by_vxrm_val (vxrm_val);
+  rtx ops[] = {op_0, op_1, op_2};
+
+  switch (unspec)
+    {
+    case UNSPEC_VAADDU:
+      icode = code_for_pred_scalar (unspec, mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_vlmax_insn (icode, itype, ops);
+}
+
+/* Expand the binary vx combine with the format like v2 = vop(vec_dup(x), v1)
+   and its' vxrm value.  Aka the second op comes from the vec_duplicate,
+   and the first op is the vector reg.  */
+
+void
+expand_vx_binary_vxrm_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2, int unspec,
+				   int vxrm_val, machine_mode mode)
+{
+  enum insn_code icode;
+  enum insn_type itype = get_insn_type_by_vxrm_val (vxrm_val);
+  rtx ops[] = {op_0, op_1, op_2};
+
+  switch (unspec)
+    {
+    case UNSPEC_VAADDU:
+      icode = code_for_pred_scalar (unspec, mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_vlmax_insn (icode, itype, ops);
 }
 
 /* Expand the binary vx combine with the format like v2 = vop(v1, vec_dup(x)).

@@ -4013,6 +4013,14 @@
 			      UNSPEC_VASUBU UNSPEC_VASUB UNSPEC_VSMUL
 			      UNSPEC_VSSRL UNSPEC_VSSRA])
 
+(define_int_iterator VSAT_VX_OP_V_VDUP [
+  UNSPEC_VAADDU
+])
+
+(define_int_iterator VSAT_VX_OP_VDUP_V [
+  UNSPEC_VAADDU
+])
+
 (define_int_iterator VSAT_ARITH_OP [UNSPEC_VAADDU UNSPEC_VAADD
 			      	    UNSPEC_VASUBU UNSPEC_VASUB UNSPEC_VSMUL])
 (define_int_iterator VSAT_SHIFT_OP [UNSPEC_VSSRL UNSPEC_VSSRA])
@@ -4046,6 +4054,14 @@
 			 	(UNSPEC_VSMUL "vsmul") (UNSPEC_VSSRL "vsshift")
 			 	(UNSPEC_VSSRA "vsshift") (UNSPEC_VNCLIP "vnclip")
 				(UNSPEC_VNCLIPU "vnclip")])
+
+(define_int_attr sat_op_v_vdup [
+  (UNSPEC_VAADDU "aaddu")
+])
+
+(define_int_attr sat_op_vdup_v [
+  (UNSPEC_VAADDU "aaddu")
+])
 
 (define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")
 			  (UNSPEC_VFRSQRT7 "rsqrt7")])

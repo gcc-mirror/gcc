@@ -1714,7 +1714,7 @@
   }
   [(set_attr "type" "vialu")])
 
-(define_insn_and_split "*uavg_floor_vx_<mode>"
+(define_insn_and_split "*<sat_op_v_vdup>_vx_<mode>"
  [(set (match_operand:V_VLSI   0 "register_operand")
    (if_then_else:V_VLSI
     (unspec:<VM>
@@ -1730,7 +1730,7 @@
     (unspec:V_VLSI
      [(match_operand:V_VLSI    3 "register_operand")
       (vec_duplicate:V_VLSI
-       (match_operand:<VEL>    4 "register_operand"))] UNSPEC_VAADDU)
+       (match_operand:<VEL>    4 "reg_or_int_operand"))] VSAT_VX_OP_V_VDUP)
     (unspec:V_VLSI
      [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
@@ -1738,14 +1738,17 @@
   "&& 1"
   [(const_int 0)]
   {
-    insn_code code = code_for_pred_scalar (UNSPEC_VAADDU, <MODE>mode);
-    rtx ops[] = {operands[0], operands[3], operands[4]};
-    riscv_vector::emit_vlmax_insn (code, riscv_vector::BINARY_OP_VXRM_RDN, ops);
+    int vxrm_val = INTVAL (operands[9]);
+    riscv_vector::expand_vx_binary_vxrm_vec_vec_dup (operands[0], operands[3],
+						     operands[4],
+						     <VSAT_VX_OP_V_VDUP>,
+						     vxrm_val, <MODE>mode);
+
     DONE;
   }
   [(set_attr "type" "vaalu")])
 
-(define_insn_and_split "*uavg_floor_vx_<mode>"
+(define_insn_and_split "*<sat_op_vdup_v>_vx_<mode>"
  [(set (match_operand:V_VLSI   0 "register_operand")
    (if_then_else:V_VLSI
     (unspec:<VM>
@@ -1760,8 +1763,8 @@
       (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
     (unspec:V_VLSI
      [(vec_duplicate:V_VLSI
-       (match_operand:<VEL>    4 "register_operand"))
-      (match_operand:V_VLSI    3 "register_operand")] UNSPEC_VAADDU)
+       (match_operand:<VEL>    4 "reg_or_int_operand"))
+      (match_operand:V_VLSI    3 "register_operand")] VSAT_VX_OP_VDUP_V)
     (unspec:V_VLSI
      [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
@@ -1769,9 +1772,12 @@
   "&& 1"
   [(const_int 0)]
   {
-    insn_code code = code_for_pred_scalar (UNSPEC_VAADDU, <MODE>mode);
-    rtx ops[] = {operands[0], operands[3], operands[4]};
-    riscv_vector::emit_vlmax_insn (code, riscv_vector::BINARY_OP_VXRM_RDN, ops);
+    int vxrm_val = INTVAL (operands[9]);
+    riscv_vector::expand_vx_binary_vxrm_vec_dup_vec (operands[0], operands[3],
+						     operands[4],
+						     <VSAT_VX_OP_VDUP_V>,
+						     vxrm_val, <MODE>mode);
+
     DONE;
   }
   [(set_attr "type" "vaalu")])
