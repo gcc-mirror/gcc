@@ -3696,6 +3696,7 @@ build_min_non_dep_op_overload (enum tree_code op,
   int nargs, expected_nargs;
   tree fn, call, obj = NULL_TREE;
 
+  bool negated = (TREE_CODE (non_dep) == TRUTH_NOT_EXPR);
   non_dep = extract_call_expr (non_dep);
 
   nargs = call_expr_nargs (non_dep);
@@ -3753,6 +3754,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
 
+  if (negated)
+    call = build_min (TRUTH_NOT_EXPR, boolean_type_node, call);
   if (obj)
     return keep_unused_object_arg (call, obj, overload);
   return call;

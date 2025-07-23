@@ -7536,7 +7536,9 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	  if (cand->rewritten ())
 	    {
 	      /* FIXME build_min_non_dep_op_overload can't handle rewrites.  */
-	      if (overload)
+	      if (code == NE_EXPR && !cand->reversed ())
+		/* It can handle != rewritten to == though.  */;
+	      else if (overload)
 		*overload = NULL_TREE;
 	      switch (code)
 		{

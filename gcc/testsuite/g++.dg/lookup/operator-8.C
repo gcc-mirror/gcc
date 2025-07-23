@@ -16,7 +16,8 @@ struct A {
 template<class T>
 void f() {
   A a;
-  (void)(a != 0, 0 != a); // { dg-bogus "deleted" "" { xfail *-*-* } }
+  (void)(a != 0);         // We only handle this simple case, after PR121179
+  (void)(0 != a);         // { dg-bogus "deleted" "" { xfail *-*-* } }
   (void)(a < 0, 0 < a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
   (void)(a <= 0, 0 <= a); // { dg-bogus "deleted" "" { xfail *-*-* } }
   (void)(a > 0, 0 > a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
@@ -30,5 +31,11 @@ bool operator<(A, int) = delete;
 bool operator<=(A, int) = delete;
 bool operator>(A, int) = delete;
 bool operator>=(A, int) = delete;
+
+bool operator!=(int, A) = delete;
+bool operator<(int, A) = delete;
+bool operator<=(int, A) = delete;
+bool operator>(int, A) = delete;
+bool operator>=(int, A) = delete;
 
 template void f<int>();
