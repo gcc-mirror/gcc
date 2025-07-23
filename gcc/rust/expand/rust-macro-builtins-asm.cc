@@ -819,6 +819,11 @@ expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 		  }
 		  break;
 		case Fmt::ffi::Position::Tag::ArgumentIs:
+		  {
+		    auto idx = next_argument.position.argument_is._0;
+		    transformed_template_str += "%" + std::to_string (idx);
+		    break;
+		  }
 		case Fmt::ffi::Position::Tag::ArgumentNamed:
 		  rust_sorry_at (inline_asm.get_locus (),
 				 "unhandled argument position specifier");
