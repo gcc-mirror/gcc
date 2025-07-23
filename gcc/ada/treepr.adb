@@ -1600,19 +1600,17 @@ package body Treepr is
          --  If this is a discrete expression whose value is known, print that
          --  value.
 
-         if Nkind (N) in N_Subexpr
+         if ((Is_Entity_Name (N) -- e.g. enumeration literal
+               and then Present (Entity (N)))
+              or else Nkind (N) in N_Integer_Literal
+                                 | N_Character_Literal
+                                 | N_Unchecked_Type_Conversion)
            and then Compile_Time_Known_Value (N)
            and then Present (Etype (N))
            and then Is_Discrete_Type (Etype (N))
          then
-            if Is_Entity_Name (N) -- e.g. enumeration literal
-              or else Nkind (N) in N_Integer_Literal
-                                 | N_Character_Literal
-                                 | N_Unchecked_Type_Conversion
-            then
-               Print_Str (" val = ");
-               UI_Write (Expr_Value (N));
-            end if;
+            Print_Str (" val = ");
+            UI_Write (Expr_Value (N));
          end if;
 
          if Nkind (N) in N_Entity then
