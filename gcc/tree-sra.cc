@@ -2504,6 +2504,12 @@ sort_and_splice_var_accesses (tree var)
 		}
 	      unscalarizable_region = true;
 	    }
+	  /* If there the same place is accessed with two incompatible
+	     aggregate types, trying to base total scalarization on either of
+	     them can be wrong.  */
+	  if (!first_scalar && !types_compatible_p (access->type, ac2->type))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (access->base));
 
 	  if (grp_same_access_path
 	      && (!ac2->grp_same_access_path
