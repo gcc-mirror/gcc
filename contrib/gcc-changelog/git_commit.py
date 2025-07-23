@@ -152,6 +152,7 @@ ignored_prefixes = {
     'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
+    'zlib/',
     }
 
 wildcard_prefixes = {
