@@ -5879,11 +5879,9 @@ vectorizable_assignment (vec_info *vinfo,
   tree vec_dest;
   tree scalar_dest;
   tree op;
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   tree new_temp;
   enum vect_def_type dt[1] = {vect_unknown_def_type};
   int ndts = 1;
-  int ncopies;
   int i;
   vec<tree> vec_oprnds = vNULL;
   tree vop;
@@ -5916,18 +5914,8 @@ vectorizable_assignment (vec_info *vinfo,
 	|| CONVERT_EXPR_CODE_P (code)))
     return false;
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
-  gcc_assert (ncopies >= 1);
 
   slp_tree slp_op;
   if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &op, &slp_op,
@@ -5989,8 +5977,7 @@ vectorizable_assignment (vec_info *vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (slp_node
-	  && !vect_maybe_update_slp_op_vectype (slp_op, vectype_in))
+      if (!vect_maybe_update_slp_op_vectype (slp_op, vectype_in))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6000,7 +5987,7 @@ vectorizable_assignment (vec_info *vinfo,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
       if (!vect_nop_conversion_p (stmt_info))
-	vect_model_simple_cost (vinfo, ncopies, dt, ndts, slp_node, cost_vec);
+	vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
       return true;
     }
 
@@ -6012,7 +5999,7 @@ vectorizable_assignment (vec_info *vinfo,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Handle use.  */
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies, op, &vec_oprnds);
+  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op, &vec_oprnds);
 
   /* Arguments are ready. create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
@@ -6024,13 +6011,8 @@ vectorizable_assignment (vec_info *vinfo,
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds.release ();
   return true;
