@@ -3242,22 +3242,10 @@ vectorizable_bswap (vec_info *vinfo,
 {
   tree op, vectype;
   gcall *stmt = as_a <gcall *> (stmt_info->stmt);
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  unsigned ncopies;
 
   op = gimple_call_arg (stmt, 0);
-  vectype = STMT_VINFO_VECTYPE (stmt_info);
+  vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
-  gcc_assert (ncopies >= 1);
 
   if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype))
     {
@@ -3290,8 +3278,7 @@ vectorizable_bswap (vec_info *vinfo,
 
   if (! vec_stmt)
     {
-      if (slp_node
-	  && !vect_maybe_update_slp_op_vectype (slp_op[0], vectype_in))
+      if (!vect_maybe_update_slp_op_vectype (slp_op[0], vectype_in))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3304,8 +3291,7 @@ vectorizable_bswap (vec_info *vinfo,
       record_stmt_cost (cost_vec,
 			1, vector_stmt, stmt_info, 0, vect_prologue);
       record_stmt_cost (cost_vec,
-			slp_node
-			? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies,
+			SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
 			vec_perm, stmt_info, 0, vect_body);
       return true;
     }
@@ -3314,8 +3300,7 @@ vectorizable_bswap (vec_info *vinfo,
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		     op, &vec_oprnds);
+  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op, &vec_oprnds);
   /* Arguments are ready. create the new vector stmt.  */
   unsigned i;
   tree vop;
@@ -3334,14 +3319,8 @@ vectorizable_bswap (vec_info *vinfo,
       new_stmt = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
 						   vectype, tem2));
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds.release ();
   return true;
