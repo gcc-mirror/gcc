@@ -24,6 +24,7 @@
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-system.h"
@@ -1053,6 +1054,13 @@ ASTLoweringExpr::visit (AST::FormatArgs &fmt)
 {
   rust_sorry_at (fmt.get_locus (),
 		 "FormatArgs lowering is not implemented yet");
+}
+
+void
+ASTLoweringExpr::visit (AST::OffsetOf &offset_of)
+{
+  // FIXME: Implement HIR::OffsetOf node and const evaluation
+  rust_unreachable ();
 }
 
 } // namespace HIR

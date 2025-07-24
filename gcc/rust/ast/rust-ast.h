@@ -1307,6 +1307,7 @@ public:
     LlvmInlineAsm,
     Identifier,
     FormatArgs,
+    OffsetOf,
     MacroInvocation,
     Borrow,
     Dereference,

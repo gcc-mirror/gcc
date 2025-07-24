@@ -238,6 +238,7 @@ public:
 
   // special AST nodes for certain builtin macros such as `asm!()`
   virtual void visit (FormatArgs &fmt) = 0;
+  virtual void visit (OffsetOf &fmt) = 0;
 
   // TODO: rust-cond-compilation.h visiting? not currently used
 };
@@ -408,6 +409,7 @@ public:
   virtual void visit (AST::FunctionParam &param) override;
   virtual void visit (AST::VariadicParam &param) override;
   virtual void visit (AST::FormatArgs &fmt) override;
+  virtual void visit (AST::OffsetOf &fmt) override;
 
   template <typename T> void visit (T &node) { node.accept_vis (*this); }
 

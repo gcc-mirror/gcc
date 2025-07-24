@@ -20,6 +20,8 @@
 #define RUST_AST_LOWER_BASE
 
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
+#include "rust-expr.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -262,6 +264,7 @@ public:
   virtual void visit (AST::SelfParam &param) override;
 
   virtual void visit (AST::FormatArgs &fmt) override;
+  virtual void visit (AST::OffsetOf &offset_of) override;
 
 protected:
   ASTLoweringBase ()

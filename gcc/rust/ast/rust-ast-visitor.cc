@@ -19,6 +19,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-ast-full-decls.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-path.h"
 #include "rust-token.h"
 #include "rust-expr.h"
@@ -1487,6 +1488,12 @@ void
 DefaultASTVisitor::visit (AST::FormatArgs &)
 {
   // FIXME: Do we have anything to do? any subnodes to visit? Probably, right?
+}
+
+void
+DefaultASTVisitor::visit (AST::OffsetOf &offset_of)
+{
+  visit (offset_of.get_type ());
 }
 
 void

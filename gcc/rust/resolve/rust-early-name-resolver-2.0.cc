@@ -18,7 +18,7 @@
 
 #include "rust-early-name-resolver-2.0.h"
 #include "optional.h"
-#include "rust-ast-full.h"
+#include "options.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-item.h"

@@ -5088,11 +5088,23 @@ FormatArgs::accept_vis (ASTVisitor &vis)
   vis.visit (*this);
 }
 
+void
+OffsetOf::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
 std::string
 FormatArgs::as_string () const
 {
   // FIXME(Arthur): Improve
   return "FormatArgs";
+}
+
+std::string
+OffsetOf::as_string () const
+{
+  return "OffsetOf(" + type->as_string () + ", " + field.as_string () + ")";
 }
 
 location_t
@@ -5137,6 +5149,24 @@ FormatArgs::clone_expr_impl () const
   std::cerr << "[ARTHUR] cloning FormatArgs! " << std::endl;
 
   return new FormatArgs (*this);
+}
+
+std::vector<Attribute> &
+OffsetOf::get_outer_attrs ()
+{
+  rust_unreachable ();
+}
+
+void
+OffsetOf::set_outer_attrs (std::vector<Attribute>)
+{
+  rust_unreachable ();
+}
+
+Expr *
+OffsetOf::clone_expr_impl () const
+{
+  return new OffsetOf (*this);
 }
 
 } // namespace AST

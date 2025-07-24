@@ -675,5 +675,9 @@ void
 ResolverBase::visit (AST::FormatArgs &fmt)
 {}
 
+void
+ResolverBase::visit (AST::OffsetOf &offset_of)
+{}
+
 } // namespace Resolver
 } // namespace Rust

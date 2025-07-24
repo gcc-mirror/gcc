@@ -225,6 +225,59 @@ protected:
   virtual Expr *clone_expr_impl () const override;
 };
 
+/**
+ * The node associated with the builtin offset_of!() macro
+ */
+class OffsetOf : public Expr
+{
+public:
+  OffsetOf (std::unique_ptr<Type> &&type, Identifier field, location_t loc)
+    : type (std::move (type)), field (field), loc (loc)
+  {}
+
+  OffsetOf (const OffsetOf &other)
+    : type (other.type->clone_type ()), field (other.field), loc (other.loc),
+      marked_for_strip (other.marked_for_strip)
+  {}
+
+  OffsetOf &operator= (const OffsetOf &other)
+  {
+    type = other.type->clone_type ();
+    field = other.field;
+    loc = other.loc;
+    marked_for_strip = other.marked_for_strip;
+
+    return *this;
+  }
+
+  void accept_vis (AST::ASTVisitor &vis) override;
+
+  virtual location_t get_locus () const override { return loc; }
+  const Type &get_type () const { return *type; }
+  Type &get_type () { return *type; }
+  const Identifier &get_field () const { return field; }
+
+  bool is_expr_without_block () const override { return false; }
+
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  std::string as_string () const override;
+
+  std::vector<Attribute> &get_outer_attrs () override;
+  void set_outer_attrs (std::vector<Attribute>) override;
+  Expr *clone_expr_impl () const override;
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::OffsetOf; }
+
+private:
+  std::unique_ptr<Type> type;
+  Identifier field;
+
+  location_t loc;
+  bool marked_for_strip = false;
+};
+
 } // namespace AST
 } // namespace Rust
 

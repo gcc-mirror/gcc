@@ -21,6 +21,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-expr.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
@@ -211,6 +212,7 @@ public:
   void visit (AST::SelfParam &param);
 
   void visit (AST::FormatArgs &fmt);
+  void visit (AST::OffsetOf &offset_of);
 
 protected:
   ResolverBase ()

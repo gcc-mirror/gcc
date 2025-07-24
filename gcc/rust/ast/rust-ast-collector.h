@@ -403,6 +403,7 @@ public:
   void visit (BareFunctionType &type);
 
   void visit (FormatArgs &fmt);
+  void visit (OffsetOf &offset_of);
 };
 } // namespace AST
 

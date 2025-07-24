@@ -18,6 +18,7 @@
 
 #include "rust-ast-collector.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-diagnostics.h"
 #include "rust-expr.h"
 #include "rust-item.h"
@@ -2980,6 +2981,24 @@ TokenCollector::visit (AST::FormatArgs &fmt)
 {
   rust_sorry_at (fmt.get_locus (), "%s:%u: unimplemented FormatArgs visitor",
 		 __FILE__, __LINE__);
+}
+
+void
+TokenCollector::visit (AST::OffsetOf &offset_of)
+{
+  auto loc = offset_of.get_locus ();
+
+  push (Rust::Token::make_identifier (loc, "offset_of"));
+  push (Rust::Token::make (EXCLAM, loc));
+  push (Rust::Token::make (LEFT_PAREN, loc));
+
+  visit (offset_of.get_type ());
+
+  push (Rust::Token::make (COMMA, loc));
+
+  push (Rust::Token::make_identifier (offset_of.get_field ()));
+
+  push (Rust::Token::make (RIGHT_PAREN, loc));
 }
 
 } // namespace AST

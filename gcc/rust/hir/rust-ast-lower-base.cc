@@ -560,6 +560,10 @@ void
 ASTLoweringBase::visit (AST::FormatArgs &fmt)
 {}
 
+void
+ASTLoweringBase::visit (AST::OffsetOf &offset_of)
+{}
+
 HIR::Lifetime
 ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime,
 				 bool default_to_static_lifetime)

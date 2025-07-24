@@ -126,8 +126,9 @@ public:
   void visit (AST::InlineAsm &expr) override;
   void visit (AST::LlvmInlineAsm &expr) override;
 
-  // Extra visitor for FormatArgs nodes
+  // Extra visitor for builtin macro nodes
   void visit (AST::FormatArgs &fmt) override;
+  void visit (AST::OffsetOf &offset_of) override;
 
 private:
   ASTLoweringExpr ();
