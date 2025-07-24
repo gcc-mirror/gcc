@@ -8958,14 +8958,10 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_first_order_recurrence)
     return false;
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned ncopies;
-  if (slp_node)
-    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
+  unsigned ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   poly_int64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  unsigned dist = slp_node ? SLP_TREE_LANES (slp_node) : 1;
+  unsigned dist = SLP_TREE_LANES (slp_node);
   /* We need to be able to make progress with a single vector.  */
   if (maybe_gt (dist * 2, nunits))
     {
@@ -8989,42 +8985,24 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 				 indices))
 	return false;
 
-      if (slp_node)
-	{
-	  /* We eventually need to set a vector type on invariant
-	     arguments.  */
-	  unsigned j;
-	  slp_tree child;
-	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
-	    if (!vect_maybe_update_slp_op_vectype
-		  (child, SLP_TREE_VECTYPE (slp_node)))
-	      {
-		if (dump_enabled_p ())
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "incompatible vector types for "
-				   "invariants\n");
-		return false;
-	      }
-	}
+      /* We eventually need to set a vector type on invariant
+	 arguments.  */
+      unsigned j;
+      slp_tree child;
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
+	if (!vect_maybe_update_slp_op_vectype (child, vectype))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector types for "
+			       "invariants\n");
+	    return false;
+	  }
 
       /* Verify we have set up compatible types.  */
       edge le = loop_latch_edge (LOOP_VINFO_LOOP (loop_vinfo));
-      tree latch_vectype = NULL_TREE;
-      if (slp_node)
-	{
-	  slp_tree latch_def = SLP_TREE_CHILDREN (slp_node)[le->dest_idx];
-	  latch_vectype = SLP_TREE_VECTYPE (latch_def);
-	}
-      else
-	{
-	  tree latch_def = PHI_ARG_DEF_FROM_EDGE (phi, le);
-	  if (TREE_CODE (latch_def) == SSA_NAME)
-	    {
-	      stmt_vec_info latch_def_info = loop_vinfo->lookup_def (latch_def);
-	      latch_def_info = vect_stmt_to_vectorize (latch_def_info);
-	      latch_vectype = STMT_VINFO_VECTYPE (latch_def_info);
-	    }
-	}
+      slp_tree latch_def = SLP_TREE_CHILDREN (slp_node)[le->dest_idx];
+      tree latch_vectype = SLP_TREE_VECTYPE (latch_def);
       if (!types_compatible_p (latch_vectype, vectype))
 	return false;
 
@@ -9032,9 +9010,6 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 	 for each copy.  With SLP the prologue value is explicitly
 	 represented and costed separately.  */
       unsigned prologue_cost = 0;
-      if (!slp_node)
-	prologue_cost = record_stmt_cost (cost_vec, 1, scalar_to_vec,
-					  stmt_info, 0, vect_prologue);
       unsigned inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
 					       stmt_info, 0, vect_body);
       if (dump_enabled_p ())
@@ -9086,14 +9061,9 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 				 NULL, perm);
       vect_finish_stmt_generation (loop_vinfo, stmt_info, vperm, &gsi2);
 
-      if (slp_node)
-	slp_node->push_vec_def (vperm);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (vperm);
+      slp_node->push_vec_def (vperm);
     }
 
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
   return true;
 }
 
