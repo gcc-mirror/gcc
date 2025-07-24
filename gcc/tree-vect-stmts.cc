@@ -11846,8 +11846,6 @@ vectorizable_condition (vec_info *vinfo,
     = {vect_unknown_def_type, vect_unknown_def_type,
        vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 4;
-  int ncopies;
-  int vec_num;
   enum tree_code code, cond_code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
@@ -11877,7 +11875,7 @@ vectorizable_condition (vec_info *vinfo,
     = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)) != NULL;
   if (for_reduction)
     {
-      if (slp_node && SLP_TREE_LANES (slp_node) > 1)
+      if (SLP_TREE_LANES (slp_node) > 1)
 	return false;
       reduc_info = info_for_reduction (vinfo, stmt_info);
       reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
@@ -11891,23 +11889,10 @@ vectorizable_condition (vec_info *vinfo,
 	return false;
     }
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
 
-  if (slp_node)
-    {
-      ncopies = 1;
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-    }
-  else
-    {
-      ncopies = vect_get_num_copies (loop_vinfo, vectype);
-      vec_num = 1;
-    }
-
-  gcc_assert (ncopies >= 1);
-  if (for_reduction && ncopies > 1)
-    return false; /* FORNOW */
+  int vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
   cond_expr = gimple_assign_rhs1 (stmt);
   gcc_assert (! COMPARISON_CLASS_P (cond_expr));
@@ -11970,9 +11955,8 @@ vectorizable_condition (vec_info *vinfo,
 	}
       /* ???  The vectorized operand query below doesn't allow swapping
 	 this way for SLP.  */
-      if (slp_node)
-	return false;
-      std::swap (then_clause, else_clause);
+      return false;
+      /* std::swap (then_clause, else_clause); */
     }
 
   if (!masked && VECTOR_BOOLEAN_TYPE_P (comp_vectype))
@@ -12057,14 +12041,13 @@ vectorizable_condition (vec_info *vinfo,
 		       || !expand_vec_cond_expr_p (vectype, vec_cmp_type))))
 	return false;
 
-      if (slp_node
-	  && (!vect_maybe_update_slp_op_vectype
-		 (SLP_TREE_CHILDREN (slp_node)[0], comp_vectype)
-	      || (op_adjust == 1
-		  && !vect_maybe_update_slp_op_vectype
-			(SLP_TREE_CHILDREN (slp_node)[1], comp_vectype))
-	      || !vect_maybe_update_slp_op_vectype (then_slp_node, vectype)
-	      || !vect_maybe_update_slp_op_vectype (else_slp_node, vectype)))
+      if (!vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
+					     comp_vectype)
+	  || (op_adjust == 1
+	      && !vect_maybe_update_slp_op_vectype
+			      (SLP_TREE_CHILDREN (slp_node)[1], comp_vectype))
+	  || !vect_maybe_update_slp_op_vectype (then_slp_node, vectype)
+	  || !vect_maybe_update_slp_op_vectype (else_slp_node, vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12081,11 +12064,11 @@ vectorizable_condition (vec_info *vinfo,
 						  vectype, OPTIMIZE_FOR_SPEED))
 		vect_record_loop_len (loop_vinfo,
 				      &LOOP_VINFO_LENS (loop_vinfo),
-				      ncopies * vec_num, vectype, 1);
+				      vec_num, vectype, 1);
 	      else
 		vect_record_loop_mask (loop_vinfo,
 				       &LOOP_VINFO_MASKS (loop_vinfo),
-				       ncopies * vec_num, vectype, NULL);
+				       vec_num, vectype, NULL);
 	    }
 	  /* Extra inactive lanes should be safe for vect_nested_cycle.  */
 	  else if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_nested_cycle)
@@ -12099,7 +12082,7 @@ vectorizable_condition (vec_info *vinfo,
 	}
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      vect_model_simple_cost (vinfo, ncopies, dts, ndts, slp_node,
+      vect_model_simple_cost (vinfo, 1, dts, ndts, slp_node,
 			      cost_vec, kind);
       return true;
     }
@@ -12129,7 +12112,7 @@ vectorizable_condition (vec_info *vinfo,
 	masks = &LOOP_VINFO_MASKS (loop_vinfo);
       else
 	{
-	  scalar_cond_masked_key cond (cond_expr, ncopies);
+	  scalar_cond_masked_key cond (cond_expr, 1);
 	  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
 	    masks = &LOOP_VINFO_MASKS (loop_vinfo);
 	  else
@@ -12164,13 +12147,13 @@ vectorizable_condition (vec_info *vinfo,
 
   /* Handle cond expr.  */
   if (masked)
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		       cond_expr, comp_vectype, &vec_oprnds0,
 		       then_clause, vectype, &vec_oprnds2,
 		       reduction_type != EXTRACT_LAST_REDUCTION
 		       ? else_clause : NULL, vectype, &vec_oprnds3);
   else
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		       cond_expr0, comp_vectype, &vec_oprnds0,
 		       cond_expr1, comp_vectype, &vec_oprnds1,
 		       then_clause, vectype, &vec_oprnds2,
@@ -12292,7 +12275,7 @@ vectorizable_condition (vec_info *vinfo,
 	      if (lens)
 		{
 		  len = vect_get_loop_len (loop_vinfo, gsi, lens,
-					   vec_num * ncopies, vectype, i, 1);
+					   vec_num, vectype, i, 1);
 		  signed char biasval
 		    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
 		  bias = build_int_cst (intQI_type_node, biasval);
@@ -12306,7 +12289,7 @@ vectorizable_condition (vec_info *vinfo,
 	  if (masks)
 	    {
 	      tree loop_mask
-		= vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num * ncopies,
+		= vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num,
 				      vectype, i);
 	      tree tmp2 = make_ssa_name (vec_cmp_type);
 	      gassign *g
@@ -12358,14 +12341,8 @@ vectorizable_condition (vec_info *vinfo,
 					  vec_then_clause, vec_else_clause);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	}
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
