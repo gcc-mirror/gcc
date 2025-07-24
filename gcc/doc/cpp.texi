@@ -3252,7 +3252,7 @@ helps people match the @samp{#endif} to the corresponding @samp{#ifdef}.
 Older programs sometimes put @var{MACRO} directly after the
 @samp{#endif} without enclosing it in a comment.  This is invalid code
 according to the C standard.  CPP accepts it with a warning.  It
-never affects which @samp{#ifndef} the @samp{#endif} matches.
+never affects which @samp{#ifdef} the @samp{#endif} matches.
 
 @findex #ifndef
 Sometimes you wish to use some code if a macro is @emph{not} defined.
