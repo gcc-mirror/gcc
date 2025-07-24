@@ -1313,6 +1313,12 @@ for (i = 0; i < n_opts; i++) {
 		# offloading is enabled.
 		if (flag_set_p("Target", flags[i]))
 			var_target_opt[n_opt_val] = 1;
+
+		# These options should not be passed from host to target, but
+		# are not actually target specific.
+		if (flag_set_p("NoOffload", flags[i]))
+			var_target_opt[n_opt_val] = 2;
+
 		n_opt_val++;
 	}
 }
@@ -1393,7 +1399,7 @@ for (i = 0; i < n_opt_val; i++) {
 		# Do not stream out target-specific opts if offloading is
 		# enabled.
 		if (var_target_opt[i])
-			print "  if (!lto_stream_offload_p)"
+			print "  if (!lto_stream_offload_p) {"
 		# If applicable, encode the streamed value.
 		if (var_opt_optimize_init[i]) {
 			print "  if (" var_opt_optimize_init[i] " > (" var_opt_val_type[i] ") 10)";
@@ -1403,6 +1409,8 @@ for (i = 0; i < n_opt_val; i++) {
 		} else {
 			print "  bp_pack_var_len_" sgn " (bp, ptr->" name");";
 		}
+		if (var_target_opt[i])
+			print "}"
 	}
 }
 print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
@@ -1418,9 +1426,13 @@ print "                           struct cl_optimization *ptr ATTRIBUTE_UNUSED)"
 print "{";
 for (i = 0; i < n_opt_val; i++) {
 	name = var_opt_val[i]
-        if (var_target_opt[i]) {
+        if (var_target_opt[i] == 1) {
 		print "#ifdef ACCEL_COMPILER"
 		print "#error accel compiler cannot define Optimization attribute for target-specific option " name;
+		print "#else"
+	} else if (var_target_opt[i] == 2) {
+		print "#ifdef ACCEL_COMPILER"
+		print "  ptr->" name " = global_options." name ";"
 		print "#else"
 	}
 	otype = var_opt_val_type[i];
@@ -1487,6 +1499,9 @@ for (i = 0; i < n_opts; i++) {
 	# We do not want to compare warning-related options, since they
 	# might have been modified by a #pragma GCC diagnostic.
 	if (flag_set_p("Warning", flags[i]))
+		continue;
+
+	if (flag_set_p("NoOffload", flags[i]))
 		continue;
 
 	if (name in checked_options)
