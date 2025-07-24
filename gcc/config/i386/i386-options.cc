@@ -3639,7 +3639,7 @@ ix86_handle_cconv_attribute (tree *node, tree name, tree args, int,
 
       if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (*node)))
 	{
-	  error ("regparam and thiscall attributes are not compatible");
+	  error ("regparm and thiscall attributes are not compatible");
 	}
 
       cst = TREE_VALUE (args);
