@@ -4930,7 +4930,10 @@ curr_insn_transform (bool check_only_p)
       if (asm_noperands (PATTERN (curr_insn)) >= 0
 	  && ++curr_id->asm_reloads_num >= FIRST_PSEUDO_REGISTER)
 	/* Most probably there are no enough registers to satisfy asm insn: */
-	lra_asm_insn_error (curr_insn);
+	{
+	  lra_asm_insn_error (curr_insn);
+	  return change_p;
+	}
     }
   if (goal_alt_out_sp_reload_p)
     {
