@@ -7954,7 +7954,6 @@ vectorizable_store (vec_info *vinfo,
   bool costing_p = cost_vec;
   if (costing_p) /* transformation not required.  */
     {
-      STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
       SLP_TREE_MEMORY_ACCESS_TYPE (slp_node) = memory_access_type;
 
       if (loop_vinfo
@@ -7985,7 +7984,7 @@ vectorizable_store (vec_info *vinfo,
 
       SLP_TREE_TYPE (slp_node) = store_vec_info_type;
     }
-  gcc_assert (memory_access_type == SLP_TREE_MEMORY_ACCESS_TYPE (stmt_info));
+  gcc_assert (memory_access_type == SLP_TREE_MEMORY_ACCESS_TYPE (slp_node));
 
   /* Transform.  */
 

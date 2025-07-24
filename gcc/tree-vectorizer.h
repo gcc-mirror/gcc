@@ -1438,10 +1438,6 @@ public:
   /* For both loads and stores.  */
   unsigned simd_lane_access_p : 3;
 
-  /* Classifies how the load or store is going to be implemented
-     for loop vectorization.  */
-  vect_memory_access_type memory_access_type;
-
   /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
   tree induc_cond_initial_val;
 
@@ -1584,7 +1580,6 @@ struct gather_scatter_info {
 #define STMT_VINFO_DATA_REF(S)             ((S)->dr_aux.dr + 0)
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
 #define STMT_VINFO_STRIDED_P(S)	   	   (S)->strided_p
-#define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
 #define STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT(S) (S)->reduc_epilogue_adjustment
@@ -2831,18 +2826,6 @@ inline bool
 vect_is_reduction (stmt_vec_info stmt_info)
 {
   return STMT_VINFO_REDUC_IDX (stmt_info) >= 0;
-}
-
-/* Returns the memory acccess type being used to vectorize the statement.  If
-   SLP this is read from NODE, otherwise it's read from the STMT_VINFO.  */
-
-inline vect_memory_access_type
-vect_mem_access_type (stmt_vec_info stmt_info, slp_tree node)
-{
-  if (node)
-    return SLP_TREE_MEMORY_ACCESS_TYPE (node);
-  else
-    return STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info);
 }
 
 /* If STMT_INFO describes a reduction, return the vect_reduction_type

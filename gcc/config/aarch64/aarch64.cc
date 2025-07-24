@@ -17193,8 +17193,8 @@ aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
       && STMT_VINFO_DATA_REF (stmt_info))
     {
       stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      if (stmt_info
-	  && vect_mem_access_type (stmt_info, node) == VMAT_LOAD_STORE_LANES)
+      if (node
+	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_LOAD_STORE_LANES)
 	return DR_GROUP_SIZE (stmt_info);
     }
   return 0;
@@ -17466,7 +17466,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      cost by the number of elements in the vector.  */
   if (kind == scalar_load
       && sve_costs
-      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+      && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     {
       unsigned int nunits = vect_nunits_for_cost (vectype);
       /* Test for VNx2 modes, which have 64-bit containers.  */
@@ -17479,7 +17479,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      in a scatter operation.  */
   if (kind == scalar_store
       && sve_costs
-      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+      && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     return sve_costs->scatter_store_elt_cost;
 
   /* Detect cases in which vec_to_scalar represents an in-loop reduction.  */
@@ -17735,7 +17735,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
   if (stmt_info
       && kind == vec_to_scalar
       && (m_vec_flags & VEC_ADVSIMD)
-      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+      && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     {
       auto dr = STMT_VINFO_DATA_REF (stmt_info);
       tree dr_ref = DR_REF (dr);
@@ -17850,7 +17850,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
   if (stmt_info
       && sve_issue
       && (kind == scalar_load || kind == scalar_store)
-      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+      && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     {
       unsigned int pairs = CEIL (count, 2);
       ops->pred_ops += sve_issue->gather_scatter_pair_pred_ops * pairs;
@@ -18005,9 +18005,10 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
       /* Check if we've seen an SVE gather/scatter operation and which size.  */
       if (kind == scalar_load
+	  && !m_costing_for_scalar
 	  && vectype
 	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
-	  && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
 	{
 	  const sve_vec_cost *sve_costs = aarch64_tune_params.vec_costs->sve;
 	  if (sve_costs)
