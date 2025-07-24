@@ -5848,9 +5848,12 @@ package body Sem_Prag is
          --  For Ada 2022, pre/postconditions can appear on formal subprograms
 
          elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
-            and then Ada_Version >= Ada_2022
          then
-            null;
+            if Ada_Version < Ada_2022 then
+               Error_Msg_Ada_2022_Feature
+                 ("pre/postcondition on formal subprogram", Loc);
+               raise Pragma_Exit;
+            end if;
 
          --  An access-to-subprogram type can have pre/postconditions, which
          --  are both analyzed when attached to the type and copied to the
