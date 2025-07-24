@@ -12580,48 +12580,17 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 
   auto code = gimple_cond_code (STMT_VINFO_STMT (stmt_info));
 
-  tree vectype = NULL_TREE;
-  slp_tree slp_op0;
-  tree op0;
-  enum vect_def_type dt0;
-
-  /* Early break gcond kind SLP trees can be root only and have no children,
-     for instance in the case where the argument is an external.  If that's
-     the case there is no operand to analyse use of.  */
-  if ((!slp_node || !SLP_TREE_CHILDREN (slp_node).is_empty ())
-      && !vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &op0, &slp_op0, &dt0,
-			      &vectype))
-    {
-      if (dump_enabled_p ())
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "use not simple.\n");
-	return false;
-    }
-
   /* For SLP we don't want to use the type of the operands of the SLP node, when
      vectorizing using SLP slp_node will be the children of the gcond and we
      want to use the type of the direct children which since the gcond is root
      will be the current node, rather than a child node as vect_is_simple_use
      assumes.  */
-  if (slp_node)
-    vectype = SLP_TREE_VECTYPE (slp_node);
-
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   if (!vectype)
     return false;
 
   machine_mode mode = TYPE_MODE (vectype);
-  int ncopies, vec_num;
-
-  if (slp_node)
-    {
-      ncopies = 1;
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-    }
-  else
-    {
-      ncopies = vect_get_num_copies (loop_vinfo, vectype);
-      vec_num = 1;
-    }
+  int vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
@@ -12663,18 +12632,6 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	  return false;
 	}
 
-      if (ncopies > 1
-	  && direct_optab_handler (ior_optab, mode) == CODE_FOR_nothing)
-	{
-	  if (dump_enabled_p ())
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "can't vectorize early exit because the "
-			       "target does not support boolean vector IOR "
-			       "for type %T.\n",
-			       vectype);
-	  return false;
-	}
-
       if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
 				      vec_stmt, slp_node, cost_vec))
 	return false;
@@ -12683,11 +12640,9 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  if (direct_internal_fn_supported_p (IFN_VCOND_MASK_LEN, vectype,
 					      OPTIMIZE_FOR_SPEED))
-	    vect_record_loop_len (loop_vinfo, lens, ncopies * vec_num,
-				  vectype, 1);
+	    vect_record_loop_len (loop_vinfo, lens, vec_num, vectype, 1);
 	  else
-	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-				   vectype, NULL);
+	    vect_record_loop_mask (loop_vinfo, masks, vec_num, vectype, NULL);
 	}
 
       return true;
@@ -12707,28 +12662,13 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
      vectorized.  It's not very clean to do this here, But the masking code below is
      complex and this keeps it all in one place to ease fixes and backports.  Once we
      drop the non-SLP loop vect or split vectorizable_* this can be simplified.  */
-  if (!slp_node)
-    {
-      if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
-				      vec_stmt, slp_node, cost_vec))
-	gcc_unreachable ();
-    }
 
   gimple *stmt = STMT_VINFO_STMT (stmt_info);
   basic_block cond_bb = gimple_bb (stmt);
   gimple_stmt_iterator  cond_gsi = gsi_last_bb (cond_bb);
 
   auto_vec<tree> stmts;
-
-  if (slp_node)
-    stmts.safe_splice (SLP_TREE_VEC_DEFS (slp_node));
-  else
-    {
-      auto vec_stmts = STMT_VINFO_VEC_STMTS (stmt_info);
-      stmts.reserve_exact (vec_stmts.length ());
-      for (auto stmt : vec_stmts)
-	stmts.quick_push (gimple_assign_lhs (stmt));
-    }
+  stmts.safe_splice (SLP_TREE_VEC_DEFS (slp_node));
 
   /* If we're comparing against a previous forall we need to negate the resullts
      before we do the final comparison or reduction.  */
@@ -12767,7 +12707,7 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	for (unsigned i = 0; i < stmts.length (); i++)
 	  {
 	    tree stmt_mask
-	      = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies * vec_num,
+	      = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num,
 				    vectype, i);
 	    stmt_mask
 	      = prepare_vec_mask (loop_vinfo, TREE_TYPE (stmt_mask), stmt_mask,
@@ -12778,7 +12718,7 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	for (unsigned i = 0; i < stmts.length (); i++)
 	  {
 	    tree len_mask = vect_gen_loop_len_mask (loop_vinfo, gsi, &cond_gsi,
-						    lens, ncopies * vec_num,
+						    lens, vec_num,
 						    vectype, stmts[i], i, 1);
 
 	    workset.quick_push (len_mask);
@@ -12803,13 +12743,13 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
       if (masked_loop_p)
 	{
 	  tree mask
-	    = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies, vectype, 0);
+	    = vect_get_loop_mask (loop_vinfo, gsi, masks, 1, vectype, 0);
 	  new_temp = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 				       new_temp, &cond_gsi);
 	}
       else if (len_loop_p)
 	new_temp = vect_gen_loop_len_mask (loop_vinfo, gsi, &cond_gsi, lens,
-					   ncopies, vectype, new_temp, 0, 1);
+					   1, vectype, new_temp, 0, 1);
     }
 
   gcc_assert (new_temp);
@@ -12817,13 +12757,8 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
   gimple_cond_set_condition (cond_stmt, NE_EXPR, new_temp, cst);
   update_stmt (orig_stmt);
 
-  if (slp_node)
-    SLP_TREE_VEC_DEFS (slp_node).truncate (0);
-   else
-    STMT_VINFO_VEC_STMTS (stmt_info).truncate (0);
-
-  if (!slp_node)
-    *vec_stmt = orig_stmt;
+  /* ??? */
+  SLP_TREE_VEC_DEFS (slp_node).truncate (0);
 
   return true;
 }
