@@ -1140,8 +1140,7 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
 	{
 	  op2 = vect_recog_temp_ssa_var (type, NULL);
 	  gimple* nop_stmt = gimple_build_assign (op2, NOP_EXPR, match[2]);
-	  append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt,
-				  get_vectype_for_scalar_type (vinfo, type));
+	  append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt);
 	}
     }
 
@@ -1150,11 +1149,10 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
   temp = vect_recog_temp_ssa_var (type, NULL);
   cond_stmt = gimple_build_assign (temp, build3 (COND_EXPR, type, match[3],
 						 op1, op2));
-  append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt,
-			  get_vectype_for_scalar_type (vinfo, type));
+  append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt);
   new_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
   pattern_stmt = gimple_build_assign (new_lhs, code, temp);
-  *type_out = STMT_VINFO_VECTYPE (stmt_vinfo);
+  *type_out = NULL_TREE;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
