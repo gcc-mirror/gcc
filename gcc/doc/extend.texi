@@ -5658,8 +5658,8 @@ void f (void) __attribute__ ((interrupt ("user")));
 @end smallexample
 
 Permissible values for this parameter are @code{user}, @code{supervisor},
-and @code{machine}.  If there is no parameter, then it defaults to
-@code{machine}.
+@code{machine}, and @code{rnmi}.  If there is no parameter, then it
+defaults to @code{machine}.
 
 @cindex @code{riscv_vector_cc} function attribute, RISC-V
 @item riscv_vector_cc
