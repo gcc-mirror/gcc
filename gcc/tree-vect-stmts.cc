@@ -6062,7 +6062,6 @@ vectorizable_shift (vec_info *vinfo,
   tree op0, op1 = NULL;
   tree vec_oprnd1 = NULL_TREE;
   tree vectype;
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   enum tree_code code;
   machine_mode vec_mode;
   tree new_temp;
@@ -6075,7 +6074,6 @@ vectorizable_shift (vec_info *vinfo,
   poly_uint64 nunits_out;
   tree vectype_out;
   tree op1_vectype;
-  int ncopies;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
@@ -6108,7 +6106,7 @@ vectorizable_shift (vec_info *vinfo,
     return false;
 
   scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  vectype_out = SLP_TREE_VECTYPE (slp_node);
   if (!type_has_mode_precision_p (TREE_TYPE (scalar_dest)))
     {
       if (dump_enabled_p ())
@@ -6156,23 +6154,13 @@ vectorizable_shift (vec_info *vinfo,
       return false;
     }
 
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
-  gcc_assert (ncopies >= 1);
-
   /* Determine whether the shift amount is a vector, or scalar.  If the
      shift/rotate amount is a vector, use the vector/vector shift optabs.  */
 
   if ((dt[1] == vect_internal_def
        || dt[1] == vect_induction_def
        || dt[1] == vect_nested_cycle)
-      && (!slp_node || SLP_TREE_LANES (slp_node) == 1))
+      && SLP_TREE_LANES (slp_node) == 1)
     scalar_shift_arg = false;
   else if (dt[1] == vect_constant_def
 	   || dt[1] == vect_external_def
@@ -6181,29 +6169,26 @@ vectorizable_shift (vec_info *vinfo,
       /* In SLP, need to check whether the shift count is the same,
 	 in loops if it is a constant or invariant, it is always
 	 a scalar shift.  */
-      if (slp_node)
-	{
-	  vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-	  stmt_vec_info slpstmt_info;
+      vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+      stmt_vec_info slpstmt_info;
 
-	  FOR_EACH_VEC_ELT (stmts, k, slpstmt_info)
-	    if (slpstmt_info)
-	      {
-		gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
-		if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
-		  scalar_shift_arg = false;
-	      }
+      FOR_EACH_VEC_ELT (stmts, k, slpstmt_info)
+	if (slpstmt_info)
+	  {
+	    gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
+	    if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
+	      scalar_shift_arg = false;
+	  }
 
-	  /* For internal SLP defs we have to make sure we see scalar stmts
-	     for all vector elements.
-	     ???  For different vectors we could resort to a different
-	     scalar shift operand but code-generation below simply always
-	     takes the first.  */
-	  if (dt[1] == vect_internal_def
-	      && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
-			   stmts.length ()))
-	    scalar_shift_arg = false;
-	}
+      /* For internal SLP defs we have to make sure we see scalar stmts
+	 for all vector elements.
+	 ???  For different vectors we could resort to a different
+	 scalar shift operand but code-generation below simply always
+	 takes the first.  */
+      if (dt[1] == vect_internal_def
+	  && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+		       stmts.length ()))
+	scalar_shift_arg = false;
 
       /* If the shift amount is computed by a pattern stmt we cannot
          use the scalar amount directly thus give up and use a vector
@@ -6237,8 +6222,7 @@ vectorizable_shift (vec_info *vinfo,
 			TYPE_VECTOR_SUBPARTS (vectype))
 	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype));
       if (incompatible_op1_vectype_p
-	  && (!slp_node
-	      || SLP_TREE_DEF_TYPE (slp_op1) != vect_constant_def
+	  && (SLP_TREE_DEF_TYPE (slp_op1) != vect_constant_def
 	      || slp_op1->refcnt != 1))
 	{
 	  if (dump_enabled_p ())
@@ -6321,14 +6305,13 @@ vectorizable_shift (vec_info *vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (slp_node
-	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
-	      || ((!scalar_shift_arg || dt[1] == vect_internal_def)
-		  && (!incompatible_op1_vectype_p
-		      || dt[1] == vect_constant_def)
-		  && !vect_maybe_update_slp_op_vectype
-			(slp_op1,
-			 incompatible_op1_vectype_p ? vectype : op1_vectype))))
+      if (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
+	  || ((!scalar_shift_arg || dt[1] == vect_internal_def)
+	      && (!incompatible_op1_vectype_p
+		  || dt[1] == vect_constant_def)
+	      && !vect_maybe_update_slp_op_vectype
+			 (slp_op1,
+			  incompatible_op1_vectype_p ? vectype : op1_vectype)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6336,23 +6319,20 @@ vectorizable_shift (vec_info *vinfo,
 	  return false;
 	}
       /* Now adjust the constant shift amount in place.  */
-      if (slp_node
-	  && incompatible_op1_vectype_p
+      if (incompatible_op1_vectype_p
 	  && dt[1] == vect_constant_def)
-	{
-	  for (unsigned i = 0;
-	       i < SLP_TREE_SCALAR_OPS (slp_op1).length (); ++i)
-	    {
-	      SLP_TREE_SCALAR_OPS (slp_op1)[i]
-		= fold_convert (TREE_TYPE (vectype),
-				SLP_TREE_SCALAR_OPS (slp_op1)[i]);
-	      gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (slp_op1)[i])
-			   == INTEGER_CST));
-	    }
-	}
+	for (unsigned i = 0;
+	     i < SLP_TREE_SCALAR_OPS (slp_op1).length (); ++i)
+	  {
+	    SLP_TREE_SCALAR_OPS (slp_op1)[i]
+	      = fold_convert (TREE_TYPE (vectype),
+			      SLP_TREE_SCALAR_OPS (slp_op1)[i]);
+	    gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (slp_op1)[i])
+			 == INTEGER_CST));
+	  }
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
-      vect_model_simple_cost (vinfo, ncopies, dt,
+      vect_model_simple_cost (vinfo, 1, dt,
 			      scalar_shift_arg ? 1 : ndts, slp_node, cost_vec);
       return true;
     }
@@ -6362,15 +6342,6 @@ vectorizable_shift (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "transform binary/unary operation.\n");
-
-  if (incompatible_op1_vectype_p && !slp_node)
-    {
-      gcc_assert (!scalar_shift_arg && was_scalar_shift_arg);
-      op1 = fold_convert (TREE_TYPE (vectype), op1);
-      if (dt[1] != vect_constant_def)
-	op1 = vect_init_vector (vinfo, stmt_info, op1,
-				TREE_TYPE (vectype), NULL);
-    }
 
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -6388,7 +6359,7 @@ vectorizable_shift (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "operand 1 using scalar mode.\n");
 	  vec_oprnd1 = op1;
-	  vec_oprnds1.create (slp_node ? slp_node->vec_stmts_size : ncopies);
+	  vec_oprnds1.create (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node));
 	  vec_oprnds1.quick_push (vec_oprnd1);
 	      /* Store vec_oprnd1 for every vector stmt to be created.
 		 We check during the analysis that all the shift arguments
@@ -6396,11 +6367,11 @@ vectorizable_shift (vec_info *vinfo,
 		 TODO: Allow different constants for different vector
 		 stmts generated for an SLP instance.  */
 	  for (k = 0;
-	       k < (slp_node ? slp_node->vec_stmts_size - 1 : ncopies - 1); k++)
+	       k < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) - 1; k++)
 	    vec_oprnds1.quick_push (vec_oprnd1);
 	}
     }
-  else if (!scalar_shift_arg && slp_node && incompatible_op1_vectype_p)
+  else if (!scalar_shift_arg && incompatible_op1_vectype_p)
     {
       if (was_scalar_shift_arg)
 	{
@@ -6428,7 +6399,7 @@ vectorizable_shift (vec_info *vinfo,
   /* vec_oprnd1 is available if operand 1 should be of a scalar-type
      (a special case for certain kind of vector shifts); otherwise,
      operand 1 should be of a vector type (the usual case).  */
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		     op0, &vec_oprnds0,
 		     vec_oprnd1 ? NULL_TREE : op1, &vec_oprnds1);
 
@@ -6456,14 +6427,8 @@ vectorizable_shift (vec_info *vinfo,
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
