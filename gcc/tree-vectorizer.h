@@ -1398,11 +1398,6 @@ public:
      pattern statement.  */
   gimple_seq pattern_def_seq;
 
-  /* Selected SIMD clone's function info.  First vector element
-     is SIMD clone's function decl, followed by a pair of trees (base + step)
-     for linear arguments (pair of NULLs for other arguments).  */
-  vec<tree> simd_clone_info;
-
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
 
@@ -1618,7 +1613,6 @@ struct gather_scatter_info {
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
-#define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
 #define STMT_VINFO_GROUPED_ACCESS(S) \
   ((S)->dr_aux.dr && DR_GROUP_FIRST_ELEMENT(S))

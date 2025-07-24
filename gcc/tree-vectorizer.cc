@@ -790,7 +790,6 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 
   stmt_info->reduc_initial_values.release ();
   stmt_info->reduc_scalar_results.release ();
-  STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
 }

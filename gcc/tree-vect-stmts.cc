@@ -3965,7 +3965,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 {
   tree vec_dest;
   tree scalar_dest;
-  tree op, type;
+  tree op;
   tree vec_oprnd0 = NULL_TREE;
   tree vectype;
   poly_uint64 nunits;
@@ -3977,7 +3977,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   auto_vec<simd_call_arg_info> arginfo;
   vec<tree> vargs = vNULL;
   size_t i, nargs;
-  tree lhs, rtype, ratype;
+  tree rtype, ratype;
   vec<constructor_elt, va_gc> *ret_ctor_elts = NULL;
   int masked_call_offset = 0;
 
@@ -4016,7 +4016,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
-  vectype = STMT_VINFO_VECTYPE (stmt_info);
+  vectype = SLP_TREE_VECTYPE (slp_node);
 
   if (loop_vinfo && nested_in_vect_loop_p (loop, stmt_info))
     return false;
@@ -4028,8 +4028,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if (nargs == 0)
     return false;
 
-  vec<tree>& simd_clone_info = (slp_node ? SLP_TREE_SIMD_CLONE_INFO (slp_node)
-				: STMT_VINFO_SIMD_CLONE_INFO (stmt_info));
+  vec<tree>& simd_clone_info = SLP_TREE_SIMD_CLONE_INFO (slp_node);
   if (!vec_stmt)
     simd_clone_info.truncate (0);
   arginfo.reserve (nargs, true);
@@ -4046,9 +4045,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       thisarginfo.op = NULL_TREE;
       thisarginfo.simd_lane_linear = false;
 
-      int op_no = i + masked_call_offset;
-      if (slp_node)
-	op_no = vect_slp_child_index_for_operand (stmt, op_no, false);
+      int op_no = vect_slp_child_index_for_operand (stmt,
+						    i + masked_call_offset,
+						    false);
       if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
 			       op_no, &op, &slp_op[i],
 			       &thisarginfo.dt, &thisarginfo.vectype)
@@ -4068,7 +4067,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	     vect_maybe_update_slp_op_vectype.  At transform time
 	     we have a vector type recorded for SLP.  */
 	  gcc_assert (!vec_stmt
-		      || !slp_node
 		      || thisarginfo.vectype != NULL_TREE);
 	  if (!vec_stmt)
 	    thisarginfo.vectype = get_vectype_for_scalar_type (vinfo,
@@ -4135,7 +4133,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     }
 
   poly_uint64 vf = loop_vinfo ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
-  unsigned group_size = slp_node ? SLP_TREE_LANES (slp_node) : 1;
+  unsigned group_size = SLP_TREE_LANES (slp_node);
   unsigned int badness = 0;
   struct cgraph_node *bestn = NULL;
   if (vec_stmt)
@@ -4165,7 +4163,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	if (n->simdclone->inbranch)
 	  this_badness += 8192;
 
-	/* If STMT_VINFO_VECTYPE has not been set yet pass the general vector
+	/* If SLP_TREE_VECTYPE has not been set yet pass the general vector
 	   mode,  which for targets that use it will determine what ISA we can
 	   vectorize this code with.  */
 	machine_mode vector_mode = vinfo->vector_mode;
@@ -4350,10 +4348,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
-  if (slp_node)
-    ncopies = vector_unroll_factor (vf * group_size, nunits);
-  else
-    ncopies = vector_unroll_factor (vf, nunits);
+  ncopies = vector_unroll_factor (vf * group_size, nunits);
 
   /* If the function isn't const, only allow it in simd loops where user
      has asserted that at least nunits consecutive iterations can be
@@ -4368,15 +4363,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (slp_node)
-	for (unsigned i = 0; i < nargs; ++i)
-	  if (!vect_maybe_update_slp_op_vectype (slp_op[i], arginfo[i].vectype))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "incompatible vector types for invariants\n");
-	      return false;
-	    }
+      for (unsigned i = 0; i < nargs; ++i)
+	if (!vect_maybe_update_slp_op_vectype (slp_op[i], arginfo[i].vectype))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector types for invariants\n");
+	    return false;
+	  }
       /* When the original call is pure or const but the SIMD ABI dictates
 	 an aggregate return we will have to use a virtual definition and
 	 in a loop eventually even need to add a virtual PHI.  That's
@@ -4388,7 +4382,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       /* ???  For SLP code-gen we end up inserting after the last
 	 vector argument def rather than at the original call position
 	 so automagic virtual operand updating doesn't work.  */
-      if (gimple_vuse (stmt) && slp_node)
+      if (gimple_vuse (stmt))
 	vinfo->any_known_not_updated_vssa = true;
       simd_clone_info.safe_push (bestn->decl);
       for (i = 0; i < bestn->simdclone->nargs; i++)
@@ -4462,13 +4456,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   auto_vec<vec<tree> > vec_oprnds;
   auto_vec<unsigned> vec_oprnds_i;
   vec_oprnds_i.safe_grow_cleared (nargs, true);
-  if (slp_node)
-    {
-      vec_oprnds.reserve_exact (nargs);
-      vect_get_slp_defs (vinfo, slp_node, &vec_oprnds);
-    }
-  else
-    vec_oprnds.safe_grow_cleared (nargs, true);
+  vec_oprnds.reserve_exact (nargs);
+  vect_get_slp_defs (vinfo, slp_node, &vec_oprnds);
   for (j = 0; j < ncopies; ++j)
     {
       poly_uint64 callee_nelements;
@@ -4503,10 +4492,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      gcc_assert ((k & (k - 1)) == 0);
 		      if (m == 0)
 			{
-			  if (!slp_node)
-			    vect_get_vec_defs_for_operand (vinfo, stmt_info,
-							   ncopies * o / k, op,
-							   &vec_oprnds[i]);
 			  vec_oprnds_i[i] = 0;
 			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
 			}
@@ -4543,11 +4528,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			{
 			  if (m == 0 && l == 0)
 			    {
-			      if (!slp_node)
-				vect_get_vec_defs_for_operand (vinfo, stmt_info,
-							       k * o * ncopies,
-							       op,
-							       &vec_oprnds[i]);
 			      vec_oprnds_i[i] = 0;
 			      vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
 			    }
@@ -4611,14 +4591,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			  /* The SIMD clone function has the same number of
 			     elements as the current function.  */
 			  if (m == 0)
-			    {
-			      if (!slp_node)
-				vect_get_vec_defs_for_operand (vinfo, stmt_info,
-							       o * ncopies,
-							       op,
-							       &vec_oprnds[i]);
-			      vec_oprnds_i[i] = 0;
-			    }
+			    vec_oprnds_i[i] = 0;
 			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
 			  if (loop_vinfo
 			      && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
@@ -4669,14 +4642,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  for (m = j * o; m < (j + 1) * o; m++)
 		    {
 		      if (m == 0)
-			{
-			  if (!slp_node)
-			    vect_get_vec_defs_for_operand (vinfo, stmt_info,
-							   o * ncopies,
-							   op,
-							   &vec_oprnds[i]);
-			  vec_oprnds_i[i] = 0;
-			}
+			vec_oprnds_i[i] = 0;
 		      if (maybe_lt (atype_subparts,
 				    TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 			{
@@ -4913,11 +4879,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
 		  if (j == 0 && l == 0)
 		    *vec_stmt = new_stmt;
-		  if (slp_node)
-		    SLP_TREE_VEC_DEFS (slp_node)
-		      .quick_push (gimple_assign_lhs (new_stmt));
-		  else
-		    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+		  SLP_TREE_VEC_DEFS (slp_node)
+		    .quick_push (gimple_assign_lhs (new_stmt));
 		}
 
 	      if (ratype)
@@ -4962,11 +4925,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
 	      if ((unsigned) j == k - 1)
 		*vec_stmt = new_stmt;
-	      if (slp_node)
-		SLP_TREE_VEC_DEFS (slp_node)
-		  .quick_push (gimple_assign_lhs (new_stmt));
-	      else
-		STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	      SLP_TREE_VEC_DEFS (slp_node)
+		.quick_push (gimple_assign_lhs (new_stmt));
 	      continue;
 	    }
 	  else if (ratype)
@@ -4989,10 +4949,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       if (j == 0)
 	*vec_stmt = new_stmt;
-      if (slp_node)
-	SLP_TREE_VEC_DEFS (slp_node).quick_push (gimple_get_lhs (new_stmt));
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      SLP_TREE_VEC_DEFS (slp_node).quick_push (gimple_get_lhs (new_stmt));
     }
 
   for (i = 0; i < nargs; ++i)
@@ -5004,26 +4961,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   /* Mark the clone as no longer being a candidate for GC.  */
   bestn->gc_candidate = false;
-
-  /* The call in STMT might prevent it from being removed in dce.
-     We however cannot remove it here, due to the way the ssa name
-     it defines is mapped to the new definition.  So just replace
-     rhs of the statement with something harmless.  */
-
-  if (slp_node)
-    return true;
-
-  gimple *new_stmt;
-  if (scalar_dest)
-    {
-      type = TREE_TYPE (scalar_dest);
-      lhs = gimple_call_lhs (vect_orig_stmt (stmt_info)->stmt);
-      new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
-    }
-  else
-    new_stmt = gimple_build_nop ();
-  vinfo->replace_stmt (gsi, vect_orig_stmt (stmt_info), new_stmt);
-  unlink_stmt_vdef (stmt);
 
   return true;
 }
