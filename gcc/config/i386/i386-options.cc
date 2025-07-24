@@ -3731,6 +3731,10 @@ ix86_handle_cconv_attribute (tree *node, tree name, tree args, int,
 	{
 	  error ("cdecl and thiscall attributes are not compatible");
 	}
+      if (lookup_attribute ("regparm", TYPE_ATTRIBUTES (*node)))
+	{
+	  error ("regparm and thiscall attributes are not compatible");
+	}
     }
 
   /* Can combine sseregparm with all attributes.  */
