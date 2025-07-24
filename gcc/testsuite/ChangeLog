@@ -1,3 +1,18 @@
+2025-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117423
+	* gcc.dg/tree-ssa/pr117423.c: New test.
+
+2025-07-23  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-07-23  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/vect/pr116125.c (mem_overlap): Expand A to 10 members.
+
 2025-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:
