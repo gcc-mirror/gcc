@@ -54,6 +54,7 @@
 #include "gimple.h"
 #include "cgraph.h"
 #include "case-cfn-macros.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -183,6 +184,11 @@ gcn_option_override (void)
 
   if (flag_sram_ecc == HSACO_ATTR_DEFAULT)
     flag_sram_ecc = gcn_devices[gcn_arch].sramecc_default;
+
+  /* TODO: This seems to produce tighter loops, but the testsuites expects it
+     to be set to '2', so I'll leave it default for now.
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_vect_partial_vector_usage, 1);  */
 }
 
 /* }}}  */
