@@ -470,7 +470,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 ////        break;
 ////#endif
       case OPT_static:
+#if defined (HAVE_LD_STATIC_DYNAMIC)
+        append_arg(decoded_options[i]);
         static_in_general = true;
+#endif        
         break;
 
       default:
@@ -498,17 +501,23 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     need_libgcobol = false;
     }
 
+  if( static_in_general )
+    {
+    // These two options interfere with each other.
+    static_libgcobol = false;
+    }
+
   if( need_libgcobol )
     {
     add_arg_lib(COBOL_LIBRARY, static_libgcobol);
     }
   if( need_libdl )
     {
-    add_arg_lib(DL_LIBRARY, static_in_general);
+    add_arg_lib(DL_LIBRARY, false);
     }
   if( need_libstdc )
     {
-    add_arg_lib(STDCPP_LIBRARY, static_in_general);
+    add_arg_lib(STDCPP_LIBRARY, false);
     }
 
   if( prior_main )

@@ -1,7 +1,7 @@
        *> { dg-do run }
        *> { dg-options "-static" }
-       *> { dg-output-file "group2/_-static__compilation.out" }
-
+       *> { dg-prune-output {warning} }
+       *> { dg-output {hello, world} }
        IDENTIFICATION DIVISION.
        PROGRAM-ID. prog.
        PROCEDURE DIVISION.
