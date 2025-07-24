@@ -823,8 +823,6 @@ typedef struct {
 
 #define CASE_VECTOR_MODE Pmode
 
-#define CASE_VECTOR_SHORTEN_MODE(MIN, MAX, BODY) Pmode
-
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #ifndef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 1
