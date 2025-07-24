@@ -229,4 +229,8 @@ frust-overflow-checks
 Rust Var(flag_overflow_checks) Init(1)
 Enable the overflow checks in code generation
 
+frust-assume-builtin-offset-of
+Rust Var(flag_assume_builtin_offset_of)
+Define a built-in offset_of macro in the compiler and assume it is present
+
 ; This comment is to ensure we retain the blank line above.

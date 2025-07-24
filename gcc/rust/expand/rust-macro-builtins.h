@@ -19,6 +19,7 @@
 #ifndef RUST_MACRO_BUILTINS_H
 #define RUST_MACRO_BUILTINS_H
 
+#include "optional.h"
 #include "rust-ast.h"
 #include "rust-builtin-ast-nodes.h"
 #include "rust-ast-fragment.h"
@@ -187,6 +188,9 @@ public:
   static tl::optional<AST::Fragment>
   format_args_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
 		       AST::InvocKind semicolon, AST::FormatArgs::Newline nl);
+
+  static tl::optional<AST::Fragment>
+  offset_of_handler (location_t, AST::MacroInvocData &, AST::InvocKind);
 
   static tl::optional<AST::Fragment> sorry (location_t invoc_locus,
 					    AST::MacroInvocData &invoc,

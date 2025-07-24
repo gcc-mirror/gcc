@@ -115,6 +115,7 @@ GRS_OBJS = \
     rust/rust-macro-builtins-log-debug.o \
     rust/rust-macro-builtins-test-bench.o \
     rust/rust-macro-builtins-format-args.o \
+    rust/rust-macro-builtins-offset-of.o \
     rust/rust-macro-builtins-location.o \
     rust/rust-macro-builtins-include.o \
     rust/rust-token-tree-desugar.o \

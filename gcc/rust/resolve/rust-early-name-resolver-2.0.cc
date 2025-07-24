@@ -256,6 +256,11 @@ Early::visit (AST::MacroInvocation &invoc)
 {
   auto &path = invoc.get_invoc_data ().get_path ();
 
+  // We special case the `offset_of!()` macro if the flag is here, otherwise
+  // we accept whatever `offset_of!()` definition we resolved to.
+  auto resolve_offset_of
+    = flag_assume_builtin_offset_of && (path.as_string () == "offset_of");
+
   if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
     for (auto &pending_invoc : invoc.get_pending_eager_invocations ())
       pending_invoc->accept_vis (*this);
@@ -279,12 +284,14 @@ Early::visit (AST::MacroInvocation &invoc)
   if (!definition.has_value ())
     definition = ctx.resolve_path (path, Namespace::Macros);
 
-  // if the definition still does not have a value, then it's an error
+  // if the definition still does not have a value, then it's an error - unless
+  // we should automatically resolve offset_of!() calls
   if (!definition.has_value ())
     {
-      collect_error (Error (invoc.get_locus (), ErrorCode::E0433,
-			    "could not resolve macro invocation %qs",
-			    path.as_string ().c_str ()));
+      if (!resolve_offset_of)
+	collect_error (Error (invoc.get_locus (), ErrorCode::E0433,
+			      "could not resolve macro invocation %qs",
+			      path.as_string ().c_str ()));
       return;
     }
 

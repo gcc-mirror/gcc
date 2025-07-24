@@ -162,6 +162,9 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"Ord", MacroBuiltin::proc_macro_builtin},
     {"PartialOrd", MacroBuiltin::proc_macro_builtin},
     {"Hash", MacroBuiltin::proc_macro_builtin},
+    /* offset_of is not declared in Rust 1.49 but still needed for
+       Rust-for-Linux, so we still create a transcriber and warn the user */
+    {"offset_of", MacroBuiltin::offset_of_handler},
 };
 
 tl::optional<BuiltinMacro>

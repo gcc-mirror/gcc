@@ -19,6 +19,7 @@
 #include "rust-macro-expand.h"
 #include "optional.h"
 #include "rust-ast-fragment.h"
+#include "rust-macro-builtins.h"
 #include "rust-macro-substitute-ctx.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -286,6 +287,26 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
 
   // lookup the rules
   auto rules_def = mappings.lookup_macro_invocation (invoc);
+
+  // We special case the `offset_of!()` macro if the flag is here and manually
+  // resolve to the builtin transcriber we have specified
+  auto assume_builtin_offset_of
+    = flag_assume_builtin_offset_of
+      && (invoc.get_invoc_data ().get_path ().as_string () == "offset_of")
+      && !rules_def;
+
+  // TODO: This is *massive hack* which should be removed as we progress to
+  // Rust 1.71 when offset_of gets added to core
+  if (assume_builtin_offset_of)
+    {
+      fragment = MacroBuiltin::offset_of_handler (invoc.get_locus (),
+						  invoc_data, semicolon)
+		   .value_or (AST::Fragment::create_empty ());
+
+      set_expanded_fragment (std::move (fragment));
+
+      return;
+    }
 
   // If there's no rule associated with the invocation, we can simply return
   // early. The early name resolver will have already emitted an error.
