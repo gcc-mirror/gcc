@@ -35106,6 +35106,14 @@ package body Sem_Prag is
             Reset_Analyzed_Flags (T.Prag);
             if Nkind (T.Prag) = N_Pragma then
                Validate_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            else
+               pragma Assert (Nkind (Original_Node (T.Prag)) = N_Pragma);
+
+               --  The pragma was likely removed in ignored ghost code. Check
+               --  the original node instead.
+
+               Validate_Compile_Time_Warning_Or_Error
+                 (Original_Node (T.Prag), T.Eloc);
             end if;
             Unset_Scope (T.Scope);
          end;
