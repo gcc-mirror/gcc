@@ -12370,11 +12370,9 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
   tree vec_rhs1 = NULL_TREE, vec_rhs2 = NULL_TREE;
   tree new_temp;
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   enum vect_def_type dts[2] = {vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 2;
   poly_uint64 nunits;
-  int ncopies;
   enum tree_code bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
@@ -12391,13 +12389,6 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 
   mask_type = vectype;
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
-  gcc_assert (ncopies >= 1);
 
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return false;
@@ -12498,9 +12489,8 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	}
 
       /* Put types on constant and invariant SLP children.  */
-      if (slp_node
-	  && (!vect_maybe_update_slp_op_vectype (slp_rhs1, vectype)
-	      || !vect_maybe_update_slp_op_vectype (slp_rhs2, vectype)))
+      if (!vect_maybe_update_slp_op_vectype (slp_rhs1, vectype)
+	  || !vect_maybe_update_slp_op_vectype (slp_rhs2, vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12508,7 +12498,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	  return false;
 	}
 
-      vect_model_simple_cost (vinfo, ncopies * (1 + (bitop2 != NOP_EXPR)),
+      vect_model_simple_cost (vinfo, 1 + (bitop2 != NOP_EXPR),
 			      dts, ndts, slp_node, cost_vec);
       return true;
     }
@@ -12520,7 +12510,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   if (lhs)
     mask = vect_create_destination_var (lhs, mask_type);
 
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		     rhs1, vectype, &vec_oprnds0,
 		     rhs2, vectype, &vec_oprnds1);
   if (swap_p)
@@ -12561,14 +12551,8 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    }
 	}
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
@@ -12603,7 +12587,7 @@ vectorizable_comparison (vec_info *vinfo,
     return false;
 
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
 				  vec_stmt, slp_node, cost_vec))
     return false;
