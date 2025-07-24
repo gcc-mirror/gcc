@@ -3368,7 +3368,7 @@ vectorizable_call (vec_info *vinfo,
   tree vec_dest;
   tree scalar_dest;
   tree op;
-  tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
+  tree vec_oprnd0 = NULL_TREE;
   tree vectype_out, vectype_in;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
@@ -3381,11 +3381,9 @@ vectorizable_call (vec_info *vinfo,
   tree vectypes[ARRAY_SIZE (dt)] = {};
   slp_tree slp_op[ARRAY_SIZE (dt)] = {};
   int ndts = ARRAY_SIZE (dt);
-  int ncopies, j;
   auto_vec<tree, 8> vargs;
   enum { NARROW, NONE, WIDEN } modifier;
   size_t i, nargs;
-  tree lhs;
   tree clz_ctz_arg1 = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
@@ -3412,7 +3410,7 @@ vectorizable_call (vec_info *vinfo,
 
   gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  vectype_out = SLP_TREE_VECTYPE (slp_node);
 
   /* Process function arguments.  */
   rhs_type = NULL_TREE;
@@ -3511,13 +3509,14 @@ vectorizable_call (vec_info *vinfo,
       return false;
     }
 
-  if (vect_emulated_vector_p (vectype_in) || vect_emulated_vector_p (vectype_out))
-  {
+  if (vect_emulated_vector_p (vectype_in)
+      || vect_emulated_vector_p (vectype_out))
+    {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "use emulated vector type for call\n");
       return false;
-  }
+    }
 
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
@@ -3572,7 +3571,7 @@ vectorizable_call (vec_info *vinfo,
   if (ifn == IFN_LAST && !fndecl)
     {
       if (cfn == CFN_GOMP_SIMD_LANE
-	  && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
+	  && SLP_TREE_LANES (slp_node) == 1
 	  && loop_vinfo
 	  && LOOP_VINFO_LOOP (loop_vinfo)->simduid
 	  && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
@@ -3599,17 +3598,6 @@ vectorizable_call (vec_info *vinfo,
 	}
     }
 
-  if (slp_node)
-    ncopies = 1;
-  else if (modifier == NARROW && ifn == IFN_LAST)
-    ncopies = vect_get_num_copies (loop_vinfo, vectype_out);
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
-
-  /* Sanity check: make sure that at least one copy of the vectorized stmt
-     needs to be generated.  */
-  gcc_assert (ncopies >= 1);
-
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
   internal_fn cond_fn = get_conditional_internal_fn (ifn);
   internal_fn cond_len_fn = get_len_internal_fn (ifn);
@@ -3618,23 +3606,19 @@ vectorizable_call (vec_info *vinfo,
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (slp_node)
-	for (i = 0; i < nargs; ++i)
-	  if (!vect_maybe_update_slp_op_vectype (slp_op[i],
-						 vectypes[i]
-						 ? vectypes[i] : vectype_in))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "incompatible vector types for invariants\n");
-	      return false;
-	    }
+      for (i = 0; i < nargs; ++i)
+	if (!vect_maybe_update_slp_op_vectype (slp_op[i],
+					       vectypes[i]
+					       ? vectypes[i] : vectype_in))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector types for invariants\n");
+	    return false;
+	  }
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_call");
-      vect_model_simple_cost (vinfo, ncopies, dt, ndts, slp_node, cost_vec);
-      if (ifn != IFN_LAST && modifier == NARROW && !slp_node)
-	record_stmt_cost (cost_vec, ncopies / 2,
-			  vec_promote_demote, stmt_info, 0, vect_body);
+      vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
@@ -3656,10 +3640,7 @@ vectorizable_call (vec_info *vinfo,
 	    }
 	  else
 	    {
-	      unsigned int nvectors
-		= (slp_node
-		   ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node)
-		   : ncopies);
+	      unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	      tree scalar_mask = NULL_TREE;
 	      if (mask_opno >= 0)
 		scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
@@ -3712,220 +3693,112 @@ vectorizable_call (vec_info *vinfo,
       tree prev_res = NULL_TREE;
       vargs.safe_grow (vect_nargs, true);
       auto_vec<vec<tree> > vec_defs (nargs);
-      for (j = 0; j < ncopies; ++j)
+
+      /* Build argument list for the vectorized call.  */
+      if (cfn == CFN_GOMP_SIMD_LANE)
 	{
-	  /* Build argument list for the vectorized call.  */
-	  if (slp_node)
+	  for (i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++i)
 	    {
-	      if (cfn == CFN_GOMP_SIMD_LANE)
-		{
-		  for (i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++i)
-		    {
-		      /* ???  For multi-lane SLP we'd need to build
-			 { 0, 0, .., 1, 1, ... }.  */
-		      tree cst = build_index_vector (vectype_out,
-						     i * nunits_out, 1);
-		      tree new_var
-			  = vect_get_new_ssa_name (vectype_out, vect_simple_var,
-						   "cst_");
-		      gimple *init_stmt = gimple_build_assign (new_var, cst);
-		      vect_init_vector_1 (vinfo, stmt_info, init_stmt, NULL);
-		      new_temp = make_ssa_name (vec_dest);
-		      gimple *new_stmt
-			= gimple_build_assign (new_temp, new_var);
-		      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
-						   gsi);
-		      slp_node->push_vec_def (new_stmt);
-		    }
-		  continue;
-		}
-
-	      vec<tree> vec_oprnds0;
-	      vect_get_slp_defs (vinfo, slp_node, &vec_defs);
-	      vec_oprnds0 = vec_defs[0];
-
-	      /* Arguments are ready.  Create the new vector stmt.  */
-	      FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_oprnd0)
-		{
-		  int varg = 0;
-		  if (masked_loop_p && reduc_idx >= 0)
-		    {
-		      unsigned int vec_num = vec_oprnds0.length ();
-		      /* Always true for SLP.  */
-		      gcc_assert (ncopies == 1);
-		      vargs[varg++] = vect_get_loop_mask (loop_vinfo,
-							  gsi, masks, vec_num,
-							  vectype_out, i);
-		    }
-		  size_t k;
-		  for (k = 0; k < nargs; k++)
-		    {
-		      vec<tree> vec_oprndsk = vec_defs[k];
-		      vargs[varg++] = vec_oprndsk[i];
-		    }
-		  if (masked_loop_p && reduc_idx >= 0)
-		    vargs[varg++] = vargs[reduc_idx + 1];
-		  if (clz_ctz_arg1)
-		    vargs[varg++] = clz_ctz_arg1;
-
-		  gimple *new_stmt;
-		  if (modifier == NARROW)
-		    {
-		      /* We don't define any narrowing conditional functions
-			 at present.  */
-		      gcc_assert (mask_opno < 0);
-		      tree half_res = make_ssa_name (vectype_in);
-		      gcall *call
-			= gimple_build_call_internal_vec (ifn, vargs);
-		      gimple_call_set_lhs (call, half_res);
-		      gimple_call_set_nothrow (call, true);
-		      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-		      if ((i & 1) == 0)
-			{
-			  prev_res = half_res;
-			  continue;
-			}
-		      new_temp = make_ssa_name (vec_dest);
-		      new_stmt = vect_gimple_build (new_temp, convert_code,
-						    prev_res, half_res);
-		      vect_finish_stmt_generation (vinfo, stmt_info,
-						   new_stmt, gsi);
-		    }
-		  else
-		    {
-		      if (len_opno >= 0 && len_loop_p)
-			{
-			  unsigned int vec_num = vec_oprnds0.length ();
-			  /* Always true for SLP.  */
-			  gcc_assert (ncopies == 1);
-			  tree len
-			    = vect_get_loop_len (loop_vinfo, gsi, lens, vec_num,
-						 vectype_out, i, 1);
-			  signed char biasval
-			    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-			  tree bias = build_int_cst (intQI_type_node, biasval);
-			  vargs[len_opno] = len;
-			  vargs[len_opno + 1] = bias;
-			}
-		      else if (mask_opno >= 0 && masked_loop_p)
-			{
-			  unsigned int vec_num = vec_oprnds0.length ();
-			  /* Always true for SLP.  */
-			  gcc_assert (ncopies == 1);
-			  tree mask = vect_get_loop_mask (loop_vinfo,
-							  gsi, masks, vec_num,
-							  vectype_out, i);
-			  vargs[mask_opno] = prepare_vec_mask
-			    (loop_vinfo, TREE_TYPE (mask), mask,
-			     vargs[mask_opno], gsi);
-			}
-
-		      gcall *call;
-		      if (ifn != IFN_LAST)
-			call = gimple_build_call_internal_vec (ifn, vargs);
-		      else
-			call = gimple_build_call_vec (fndecl, vargs);
-		      new_temp = make_ssa_name (vec_dest, call);
-		      gimple_call_set_lhs (call, new_temp);
-		      gimple_call_set_nothrow (call, true);
-		      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-		      new_stmt = call;
-		    }
-		  slp_node->push_vec_def (new_stmt);
-		}
-	      continue;
-	    }
-
-	  int varg = 0;
-	  if (masked_loop_p && reduc_idx >= 0)
-	    vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies,
-						vectype_out, j);
-	  for (i = 0; i < nargs; i++)
-	    {
-	      op = gimple_call_arg (stmt, i);
-	      if (j == 0)
-		{
-		  vec_defs.quick_push (vNULL);
-		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
-						 op, &vec_defs[i],
-						 vectypes[i]);
-		}
-	      vargs[varg++] = vec_defs[i][j];
-	    }
-	  if (masked_loop_p && reduc_idx >= 0)
-	    vargs[varg++] = vargs[reduc_idx + 1];
-	  if (clz_ctz_arg1)
-	    vargs[varg++] = clz_ctz_arg1;
-
-	  if (len_opno >= 0 && len_loop_p)
-	    {
-	      tree len = vect_get_loop_len (loop_vinfo, gsi, lens, ncopies,
-					    vectype_out, j, 1);
-	      signed char biasval
-		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-	      tree bias = build_int_cst (intQI_type_node, biasval);
-	      vargs[len_opno] = len;
-	      vargs[len_opno + 1] = bias;
-	    }
-	  else if (mask_opno >= 0 && masked_loop_p)
-	    {
-	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies,
-					      vectype_out, j);
-	      vargs[mask_opno]
-		= prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
-				    vargs[mask_opno], gsi);
-	    }
-
-	  gimple *new_stmt;
-	  if (cfn == CFN_GOMP_SIMD_LANE)
-	    {
-	      tree cst = build_index_vector (vectype_out, j * nunits_out, 1);
+	      /* ???  For multi-lane SLP we'd need to build
+		 { 0, 0, .., 1, 1, ... }.  */
+	      tree cst = build_index_vector (vectype_out,
+					     i * nunits_out, 1);
 	      tree new_var
 		= vect_get_new_ssa_name (vectype_out, vect_simple_var, "cst_");
 	      gimple *init_stmt = gimple_build_assign (new_var, cst);
 	      vect_init_vector_1 (vinfo, stmt_info, init_stmt, NULL);
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, new_var);
+	      gimple *new_stmt = gimple_build_assign (new_temp, new_var);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      slp_node->push_vec_def (new_stmt);
 	    }
-	  else if (modifier == NARROW)
-	    {
-	      /* We don't define any narrowing conditional functions at
-		 present.  */
-	      gcc_assert (mask_opno < 0);
-	      tree half_res = make_ssa_name (vectype_in);
-	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
-	      gimple_call_set_lhs (call, half_res);
-	      gimple_call_set_nothrow (call, true);
-	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-	      if ((j & 1) == 0)
-		{
-		  prev_res = half_res;
-		  continue;
-		}
-	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = vect_gimple_build (new_temp, convert_code, prev_res,
-					    half_res);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	    }
-	  else
-	    {
-	      gcall *call;
-	      if (ifn != IFN_LAST)
-		call = gimple_build_call_internal_vec (ifn, vargs);
-	      else
-		call = gimple_build_call_vec (fndecl, vargs);
-	      new_temp = make_ssa_name (vec_dest, call);
-	      gimple_call_set_lhs (call, new_temp);
-	      gimple_call_set_nothrow (call, true);
-	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-	      new_stmt = call;
-	    }
-
-	  if (j == (modifier == NARROW ? 1 : 0))
-	    *vec_stmt = new_stmt;
-	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
+      else
+	{
+	  vec<tree> vec_oprnds0;
+	  vect_get_slp_defs (vinfo, slp_node, &vec_defs);
+	  vec_oprnds0 = vec_defs[0];
+
+	  /* Arguments are ready.  Create the new vector stmt.  */
+	  FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_oprnd0)
+	    {
+	      int varg = 0;
+	      if (masked_loop_p && reduc_idx >= 0)
+		{
+		  unsigned int vec_num = vec_oprnds0.length ();
+		  vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi, masks,
+						      vec_num, vectype_out, i);
+		}
+	      size_t k;
+	      for (k = 0; k < nargs; k++)
+		{
+		  vec<tree> vec_oprndsk = vec_defs[k];
+		  vargs[varg++] = vec_oprndsk[i];
+		}
+	      if (masked_loop_p && reduc_idx >= 0)
+		vargs[varg++] = vargs[reduc_idx + 1];
+	      if (clz_ctz_arg1)
+		vargs[varg++] = clz_ctz_arg1;
+
+	      gimple *new_stmt;
+	      if (modifier == NARROW)
+		{
+		  /* We don't define any narrowing conditional functions
+		     at present.  */
+		  gcc_assert (mask_opno < 0);
+		  tree half_res = make_ssa_name (vectype_in);
+		  gcall *call = gimple_build_call_internal_vec (ifn, vargs);
+		  gimple_call_set_lhs (call, half_res);
+		  gimple_call_set_nothrow (call, true);
+		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+		  if ((i & 1) == 0)
+		    {
+		      prev_res = half_res;
+		      continue;
+		    }
+		  new_temp = make_ssa_name (vec_dest);
+		  new_stmt = vect_gimple_build (new_temp, convert_code,
+						prev_res, half_res);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		}
+	      else
+		{
+		  if (len_opno >= 0 && len_loop_p)
+		    {
+		      unsigned int vec_num = vec_oprnds0.length ();
+		      tree len = vect_get_loop_len (loop_vinfo, gsi, lens,
+						    vec_num, vectype_out, i, 1);
+		      signed char biasval
+			= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+		      tree bias = build_int_cst (intQI_type_node, biasval);
+		      vargs[len_opno] = len;
+		      vargs[len_opno + 1] = bias;
+		    }
+		  else if (mask_opno >= 0 && masked_loop_p)
+		    {
+		      unsigned int vec_num = vec_oprnds0.length ();
+		      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+						      vec_num, vectype_out, i);
+		      vargs[mask_opno]
+			= prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
+					    vargs[mask_opno], gsi);
+		    }
+
+		  gcall *call;
+		  if (ifn != IFN_LAST)
+		    call = gimple_build_call_internal_vec (ifn, vargs);
+		  else
+		    call = gimple_build_call_vec (fndecl, vargs);
+		  new_temp = make_ssa_name (vec_dest, call);
+		  gimple_call_set_lhs (call, new_temp);
+		  gimple_call_set_nothrow (call, true);
+		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+		  new_stmt = call;
+		}
+	      slp_node->push_vec_def (new_stmt);
+	    }
+	}
+
       for (i = 0; i < nargs; i++)
 	{
 	  vec<tree> vec_oprndsi = vec_defs[i];
@@ -3937,72 +3810,35 @@ vectorizable_call (vec_info *vinfo,
       auto_vec<vec<tree> > vec_defs (nargs);
       /* We don't define any narrowing conditional functions at present.  */
       gcc_assert (mask_opno < 0);
-      for (j = 0; j < ncopies; ++j)
+
+      /* Build argument list for the vectorized call.  */
+      vargs.create (nargs * 2);
+
+      vect_get_slp_defs (vinfo, slp_node, &vec_defs);
+      vec<tree> vec_oprnds0 = vec_defs[0];
+
+      /* Arguments are ready.  Create the new vector stmt.  */
+      for (i = 0; vec_oprnds0.iterate (i, &vec_oprnd0); i += 2)
 	{
-	  /* Build argument list for the vectorized call.  */
-	  if (j == 0)
-	    vargs.create (nargs * 2);
+	  size_t k;
+	  vargs.truncate (0);
+	  for (k = 0; k < nargs; k++)
+	    {
+	      vec<tree> vec_oprndsk = vec_defs[k];
+	      vargs.quick_push (vec_oprndsk[i]);
+	      vargs.quick_push (vec_oprndsk[i + 1]);
+	    }
+	  gcall *call;
+	  if (ifn != IFN_LAST)
+	    call = gimple_build_call_internal_vec (ifn, vargs);
 	  else
-	    vargs.truncate (0);
-
-	  if (slp_node)
-	    {
-	      vec<tree> vec_oprnds0;
-
-	      vect_get_slp_defs (vinfo, slp_node, &vec_defs);
-	      vec_oprnds0 = vec_defs[0];
-
-	      /* Arguments are ready.  Create the new vector stmt.  */
-	      for (i = 0; vec_oprnds0.iterate (i, &vec_oprnd0); i += 2)
-		{
-		  size_t k;
-		  vargs.truncate (0);
-		  for (k = 0; k < nargs; k++)
-		    {
-		      vec<tree> vec_oprndsk = vec_defs[k];
-		      vargs.quick_push (vec_oprndsk[i]);
-		      vargs.quick_push (vec_oprndsk[i + 1]);
-		    }
-		  gcall *call;
-		  if (ifn != IFN_LAST)
-		    call = gimple_build_call_internal_vec (ifn, vargs);
-		  else
-		    call = gimple_build_call_vec (fndecl, vargs);
-		  new_temp = make_ssa_name (vec_dest, call);
-		  gimple_call_set_lhs (call, new_temp);
-		  gimple_call_set_nothrow (call, true);
-		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-		  slp_node->push_vec_def (call);
-		}
-	      continue;
-	    }
-
-	  for (i = 0; i < nargs; i++)
-	    {
-	      op = gimple_call_arg (stmt, i);
-	      if (j == 0)
-		{
-		  vec_defs.quick_push (vNULL);
-		  vect_get_vec_defs_for_operand (vinfo, stmt_info, 2 * ncopies,
-						 op, &vec_defs[i], vectypes[i]);
-		}
-	      vec_oprnd0 = vec_defs[i][2*j];
-	      vec_oprnd1 = vec_defs[i][2*j+1];
-
-	      vargs.quick_push (vec_oprnd0);
-	      vargs.quick_push (vec_oprnd1);
-	    }
-
-	  gcall *new_stmt = gimple_build_call_vec (fndecl, vargs);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_call_set_lhs (new_stmt, new_temp);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-
-	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	    call = gimple_build_call_vec (fndecl, vargs);
+	  new_temp = make_ssa_name (vec_dest, call);
+	  gimple_call_set_lhs (call, new_temp);
+	  gimple_call_set_nothrow (call, true);
+	  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+	  slp_node->push_vec_def (call);
 	}
-
-      if (!slp_node)
-	*vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
       for (i = 0; i < nargs; i++)
 	{
@@ -4015,21 +3851,6 @@ vectorizable_call (vec_info *vinfo,
     return false;
 
   vargs.release ();
-
-  /* The call in STMT might prevent it from being removed in dce.
-     We however cannot remove it here, due to the way the ssa name
-     it defines is mapped to the new definition.  So just replace
-     rhs of the statement with something harmless.  */
-
-  if (slp_node)
-    return true;
-
-  stmt_info = vect_orig_stmt (stmt_info);
-  lhs = gimple_get_lhs (stmt_info->stmt);
-
-  gassign *new_stmt
-    = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
-  vinfo->replace_stmt (gsi, stmt_info, new_stmt);
 
   return true;
 }
