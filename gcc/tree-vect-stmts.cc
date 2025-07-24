@@ -7696,17 +7696,16 @@ check_scan_store (vec_info *vinfo, stmt_vec_info stmt_info, tree vectype,
 
 static bool
 vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
-			 slp_tree slp_node, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt, int ncopies)
+			 slp_tree slp_node, gimple_stmt_iterator *gsi)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   tree ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "transform scan store. ncopies = %d\n", ncopies);
+		     "transform scan store.\n");
 
   gimple *stmt = STMT_VINFO_STMT (stmt_info);
   tree rhs = gimple_assign_rhs1 (stmt);
@@ -7818,7 +7817,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	 of the store - for SLP we have to use the proper SLP node for the
 	 lookup, which should be the single child of the scan store.  */
       vect_get_vec_defs (vinfo, stmt_info, SLP_TREE_CHILDREN (slp_node)[0],
-			 ncopies, rhs1, &vec_oprnds2, rhs2, &vec_oprnds3);
+			 1, rhs1, &vec_oprnds2, rhs2, &vec_oprnds3);
       /* ???  For SLP we do not key the def on 'rhs1' or 'rhs2' but get
 	 them in SLP child order.  So we have to swap here with logic
 	 similar to above.  */
@@ -7832,7 +7831,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  std::swap (vec_oprnds2[i], vec_oprnds3[i]);;
     }
   else
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		       rhs2, &vec_oprnds3);
   for (unsigned j = 0; j < vec_oprnds3.length (); j++)
     {
@@ -7853,11 +7852,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  vect_copy_ref_info (data_ref, DR_REF (load1_dr_info->dr));
 	  gimple *g = gimple_build_assign (vec_oprnd2, data_ref);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	  if (! slp_node)
-	    {
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
-	      *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
-	    }
 	}
 
       tree v = vec_oprnd2;
@@ -7871,11 +7865,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 					   ? zero_vec : vec_oprnd1, v,
 					   perms[i]);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	  if (! slp_node)
-	    {
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
-	      *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
-	    }
 
 	  if (zero_vec && use_whole_vector[i] == scan_store_kind_lshift_cond)
 	    {
@@ -7892,8 +7881,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 				       new_temp, vec_oprnd1);
 	      vect_finish_stmt_generation (vinfo, stmt_info,
 							   g, gsi);
-	      if (! slp_node)
-		STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 	      new_temp = new_temp2;
 	    }
 
@@ -7911,8 +7898,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  tree new_temp2 = make_ssa_name (vectype);
 	  g = gimple_build_assign (new_temp2, code, v, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	  if (! slp_node)
-	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 
 	  v = new_temp2;
 	}
@@ -7920,8 +7905,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
       tree new_temp = make_ssa_name (vectype);
       gimple *g = gimple_build_assign (new_temp, code, orig, v);
       vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-      if (! slp_node)
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 
       tree last_perm_arg = new_temp;
       /* For exclusive scan, new_temp computed above is the exclusive scan
@@ -7932,16 +7915,12 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  last_perm_arg = make_ssa_name (vectype);
 	  g = gimple_build_assign (last_perm_arg, code, new_temp, vec_oprnd2);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	  if (! slp_node)
-	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 	}
 
       orig = make_ssa_name (vectype);
       g = gimple_build_assign (orig, VEC_PERM_EXPR, last_perm_arg,
 			       last_perm_arg, perms[units_log2]);
       vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-      if (! slp_node)
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 
       if (!inscan_var_store)
 	{
@@ -7951,8 +7930,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  vect_copy_ref_info (data_ref, DR_REF (dr_info->dr));
 	  g = gimple_build_assign (data_ref, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	  if (! slp_node)
-	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
 	}
     }
 
@@ -7968,8 +7945,6 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	vect_copy_ref_info (data_ref, DR_REF (dr_info->dr));
 	gimple *g = gimple_build_assign (data_ref, orig);
 	vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
-	if (! slp_node)
-	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (g);
       }
   return true;
 }
@@ -8240,8 +8215,7 @@ vectorizable_store (vec_info *vinfo,
 
 	  return true;
 	}
-      return vectorizable_scan_store (vinfo, stmt_info, slp_node,
-				      gsi, vec_stmt, 1);
+      return vectorizable_scan_store (vinfo, stmt_info, slp_node, gsi);
     }
 
   /* FORNOW */
