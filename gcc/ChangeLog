@@ -1,3 +1,110 @@
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_2_relaxed):
+	Extend from SVE_FULL_F to SVE_F.
+	(*cond_<optab><mode>_any_relaxed): Likewise.
+
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<optab><mode>2): Replace use of
+	aarch64_ptrue_reg with aarch64_sve_fp_pred.
+	(@aarch64_pred_<optab><mode>): Extend from SVE_FULL_F to SVE_F,
+	and use aarch64_predicate_operand.
+	* config/aarch64/iterators.md: Split FABS/FNEG out of
+	SVE_COND_FP_UNARY (into new SVE_COND_FP_UNARY_BITWISE).
+
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md
+	(*cond_<optab>_nontrunc<SVE_PARTIAL_F:mode><SVE_HSDI:mode>_relaxed):
+	New FCVT/SEL combiner pattern.
+	(*cond_<optab>_trunc<VNx2DF_ONLY:mode><VNx2SI_ONLY:mode>_relaxed):
+	New FCVTZ{S,U}/SEL combiner pattern.
+	(*cond_<optab>_nonextend<SVE_HSDI:mode><SVE_PARTIAL_F:mode>_relaxed):
+	New {S,U}CVTF/SEL combiner pattern.
+	(*cond_<optab>_trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>):
+	New FCVT/SEL combiner pattern.
+	(*cond_<optab>_nontrunc<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>_relaxed):
+	New FCVTZ{S,U}/SEL combiner pattern.
+	* config/aarch64/iterators.md: New mode iterator for VNx2SI.
+
+2025-07-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121073
+	* config/riscv/autovec-opt.md: Use new helpers.
+	* config/riscv/autovec.md: Ditto.
+	* config/riscv/predicates.md (strided_broadcast_mask_operand):
+	New predicate.
+	(strided_broadcast_operand): Ditto.
+	(any_broadcast_operand): Ditto.
+	* config/riscv/riscv-protos.h (expand_broadcast): Declare.
+	(expand_set_first): Ditto.
+	(expand_set_first_tu): Ditto.
+	(strided_broadcast_p): Ditto.
+	* config/riscv/riscv-string.cc (expand_vec_setmem): Use new
+	helpers.
+	* config/riscv/riscv-v.cc (expand_broadcast): New functionk.
+	(expand_set_first): Ditto.
+	(expand_set_first_tu): Ditto.
+	(expand_const_vec_duplicate): Use new helpers.
+	(expand_const_vector_duplicate_repeating): Ditto.
+	(expand_const_vector_duplicate_default): Ditto.
+	(sew64_scalar_helper): Ditto.
+	(expand_vector_init_merge_repeating_sequence): Ditto.
+	(expand_reduction): Ditto.
+	(strided_broadcast_p): New function.
+	(whole_reg_to_reg_move_p): Use new helpers.
+	* config/riscv/riscv-vector-builtins-bases.cc: Use either
+	broadcast or strided broadcast.
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_ternop_insn):
+	Ditto.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	(function_expander::use_scalar_broadcast_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.h: Declare scalar
+	broadcast.
+	* config/riscv/vector.md (*pred_broadcast<mode>): Split into
+	regular and strided broadcast.
+	(*pred_broadcast<mode>_zvfh): Split.
+	(pred_broadcast<mode>_zvfh): Ditto.
+	(*pred_broadcast<mode>_zvfhmin): Ditto.
+	(@pred_strided_broadcast<mode>): Ditto.
+	(*pred_strided_broadcast<mode>): Ditto.
+	(*pred_strided_broadcast<mode>_zvfhmin): Ditto.
+
+2025-07-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120119
+	* config/aarch64/cortex-a57-fma-steering.cc (func_fma_steering::analyze):
+	Skip if renaming fails.
+
+2025-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121220
+	* tree-ssa-sink.cc (statement_sink_location): For stores
+	handle sinking to paths ending in a store.  Skip loads
+	that do not use the store.
+
+2025-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/119085
+	* tree-sra.cc (sort_and_splice_var_accesses): Prevent total
+	scalarization if two incompatible aggregates access the same place.
+
+2025-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc <sparc*-*-solaris2*> (with_cpu): Default to ultrasparc3.
+
+2025-07-23  Richard Biener  <rguenther@suse.de>
+
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Check vectype is non-NULL before accessing it.
+
+2025-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/121216
+	* expr.cc (constant_byte_string): Check the string type
+	size fits an uhwi before converting to uhwi.
+
 2025-07-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/109267

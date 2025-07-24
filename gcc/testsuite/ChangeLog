@@ -1,3 +1,131 @@
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_cond_fabs_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_fneg_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frinta_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frinta_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frinti_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frintm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frintp_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frintx_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frintz_1.c: Likewise.
+
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_fabs_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_fneg_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frinta_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frinta_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frinti_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frinti_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintm_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintp_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintp_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintx_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintx_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintz_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintz_2.c: Likewise.
+
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_cond_cvtf_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_fcvt_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fcvtz_1.c: Likewise.
+
+2025-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121203
+	* gfortran.dg/function_charlen_4.f90: New test.
+
+2025-07-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121073
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-6.c: Adjust test
+	expectation.
+	* gcc.target/riscv/rvv/base/scalar_move-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-9.c: Ditto.
+	* gcc.target/riscv/rvv/pr121073.c: New test.
+
+2025-07-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f16.c:
+	Add zvfh requirements and options.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwmacc-run-1-f16.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwmsac-run-1-f16.c:
+	Ditto.
+	* lib/target-supports.exp: Add zvfh options.
+
+2025-07-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120119
+	* g++.dg/torture/pr120119-1.C: New test.
+
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121179
+	* g++.dg/lookup/operator-8.C: Strengthen test and remove one
+	XFAIL.
+
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121055
+	* g++.dg/ext/is_invocable5.C: New test.
+
+2025-07-23  Spencer Abson  <spencer.abson@arm.com>
+
+	* lib/gcc-defs.exp (aarch64-arg-dg-options): Split add_tune into
+	add_tune and add_override, so that specifying -moverride does not
+	change the baseline tuning from the testuite's default (generic).
+
+2025-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121220
+	* gcc.dg/tree-ssa/ssa-sink-23.c: New testcase.
+
+2025-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/119085
+	* gcc.dg/tree-ssa/pr119085.c: New test.
+
+2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2/switches/pedantic-params/fail/arrayofchar.def: New test.
+	* gm2/switches/pedantic-params/fail/arrayofchar.mod: New test.
+
+2025-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/121216
+	* gcc.dg/pr121216.c: New testcase.
+
+2025-07-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/120101
+	* gcc.dg/tree-ssa/pr81627.c (fn1): Mark as noinline.
+
+2025-07-23  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/vect/pr116125.c (mem_overlap): Expand A to 10 members.
+
 2025-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121068

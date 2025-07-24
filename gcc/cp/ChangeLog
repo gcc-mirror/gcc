@@ -1,3 +1,16 @@
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121179
+	* call.cc (build_new_op): Don't clear *overload for a simple
+	!= to == rewrite.
+	* tree.cc (build_min_non_dep_op_overload): Handle TRUTH_NOT_EXPR
+	appearing in a rewritten operator expression.
+
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121055
+	* method.cc (build_invoke): Correct reference_wrapper handling.
+
 2025-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121068

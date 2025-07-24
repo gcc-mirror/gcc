@@ -1,3 +1,28 @@
+2025-07-23  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/accessors/default.cc: Delete.
+	* testsuite/23_containers/mdspan/accessors/generic.cc: Slightly
+	generalize the test code previously in default.cc.
+
+2025-07-23  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/extents/ctor_ints.cc: Remove
+	superfluous parens.
+	* testsuite/23_containers/mdspan/extents/ctor_shape.cc: Ditto.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+
+2025-07-23  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* testsuite/23_containers/inplace_vector/access/elem.cc: Cover
+	front and back methods and const calls.
+	* testsuite/23_containers/inplace_vector/access/elem_neg.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/erase_neg.cc:
+	New test.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert_neg.cc:
+	New test.
+
 2025-07-22  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/119137

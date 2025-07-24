@@ -1,3 +1,10 @@
+2025-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121203
+	* trans-expr.cc (gfc_conv_procedure_call): Obtain the character
+	length of an assumed character length procedure from the typespec
+	of the actual argument even if there is no explicit interface.
+
 2025-07-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-decl.cc (gfc_trans_deferred_vars): Fix indentation.

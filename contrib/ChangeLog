@@ -1,3 +1,8 @@
+2025-07-23  Sam James  <sam@gentoo.org>
+
+	PR other/105404
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add zlib/.
+
 2025-07-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.doxy (INPUT): Add directory "gcc/text-art".
