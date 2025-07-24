@@ -8650,7 +8650,7 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_gcond
 	      && !vectorizable_early_exit (vinfo,
 					   SLP_INSTANCE_ROOT_STMTS (instance)[0],
-					   NULL, NULL,
+					   NULL,
 					   SLP_INSTANCE_TREE (instance),
 					   &cost_vec)))
         {
@@ -11681,10 +11681,9 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
       auto root_stmt_info = instance->root_stmts[0];
       auto last_stmt = STMT_VINFO_STMT (vect_orig_stmt (root_stmt_info));
       gimple_stmt_iterator rgsi = gsi_for_stmt (last_stmt);
-      gimple *vec_stmt = NULL;
       gcc_assert (!SLP_TREE_VEC_DEFS (node).is_empty ());
       bool res = vectorizable_early_exit (vinfo, root_stmt_info, &rgsi,
-					  &vec_stmt, node, NULL);
+					  node, NULL);
       gcc_assert (res);
       return;
     }

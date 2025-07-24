@@ -8804,7 +8804,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
 
 bool
 vectorizable_phi (vec_info *,
-		  stmt_vec_info stmt_info, gimple **vec_stmt,
+		  stmt_vec_info stmt_info,
 		  slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   if (!is_a <gphi *> (stmt_info->stmt) || !slp_node)
@@ -8815,7 +8815,7 @@ vectorizable_phi (vec_info *,
 
   tree vectype = SLP_TREE_VECTYPE (slp_node);
 
-  if (!vec_stmt) /* transformation not required.  */
+  if (cost_vec) /* transformation not required.  */
     {
       slp_tree child;
       unsigned i;
@@ -8946,8 +8946,7 @@ vectorizable_phi (vec_info *,
 
 bool
 vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
-		     gimple **vec_stmt, slp_tree slp_node,
-		     stmt_vector_for_cost *cost_vec)
+		     slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   if (!loop_vinfo || !is_a<gphi *> (stmt_info->stmt))
     return false;
@@ -8979,7 +8978,7 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     sel.quick_push (nunits - dist + i);
   vec_perm_indices indices (sel, 2, nunits);
 
-  if (!vec_stmt) /* transformation not required.  */
+  if (cost_vec) /* transformation not required.  */
     {
       if (!can_vec_perm_const_p (TYPE_MODE (vectype), TYPE_MODE (vectype),
 				 indices))
@@ -9375,7 +9374,7 @@ vect_update_nonlinear_iv (gimple_seq* stmts, tree vectype,
 static bool
 vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 				  stmt_vec_info stmt_info,
-				  gimple **vec_stmt, slp_tree slp_node,
+				  slp_tree slp_node,
 				  stmt_vector_for_cost *cost_vec)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -9531,7 +9530,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       gcc_unreachable ();
     }
 
-  if (!vec_stmt) /* transformation not required.  */
+  if (cost_vec) /* transformation not required.  */
     {
       unsigned inside_cost = 0, prologue_cost = 0;
       /* loop cost for vec_loop. Neg induction doesn't have any
@@ -9686,8 +9685,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 bool
 vectorizable_induction (loop_vec_info loop_vinfo,
 			stmt_vec_info stmt_info,
-			gimple **vec_stmt, slp_tree slp_node,
-			stmt_vector_for_cost *cost_vec)
+			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   bool nested_in_vect_loop = false;
@@ -9721,7 +9719,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   /* Handle nonlinear induction in a separate place.  */
   if (induction_type != vect_step_op_add)
     return vectorizable_nonlinear_induction (loop_vinfo, stmt_info,
-					     vec_stmt, slp_node, cost_vec);
+					     slp_node, cost_vec);
 
   tree vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -9825,7 +9823,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	}
     }
 
-  if (!vec_stmt) /* transformation not required.  */
+  if (cost_vec) /* transformation not required.  */
     {
       unsigned inside_cost = 0, prologue_cost = 0;
       /* We eventually need to set a vector type on invariant
