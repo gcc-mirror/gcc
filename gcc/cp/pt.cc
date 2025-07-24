@@ -14916,6 +14916,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       argvec = NULL_TREE;
     }
 
+  /* Make sure tsubst_decl substitutes all the parameters.  */
+  cp_evaluated ev;
+
   tree closure = (lambda_fntype ? TYPE_METHOD_BASETYPE (lambda_fntype)
 		  : NULL_TREE);
   tree ctx = closure ? closure : DECL_CONTEXT (t);
@@ -31214,14 +31217,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  /* Substitute the deduced arguments plus the rewritten template
 	     parameters into f to get g.  This covers the type, copyness,
 	     guideness, and explicit-specifier.  */
-	  tree g;
-	    {
-	      /* Parms are to have DECL_CHAIN tsubsted, which would be skipped
-		 if cp_unevaluated_operand.  */
-	      cp_evaluated ev;
-	      g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain,
+	  tree g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain,
 			       /*use_spec_table=*/false);
-	    }
 	  if (g == error_mark_node)
 	    continue;
 	  DECL_NAME (g) = name;
