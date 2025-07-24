@@ -34263,113 +34263,123 @@ package body Sem_Prag is
      (N     : Node_Id;
       Eloc  : Source_Ptr)
    is
-      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
-      Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
-      Arg2  : constant Node_Id := Next (Arg1);
+      Arg1    : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1x   : constant Node_Id := Get_Pragma_Arg (Arg1);
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (N);
 
-      Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
-      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
+      procedure Emit_Compile_Time_Message (Msg_Arg : Node_Id);
+      --  Emit the pragma a as diagnostic message. New_Line characters are
+      --  considered separators for those messages where the following lines
+      --  are considered as continuation messages for the same diagnostic.
+
+      -------------------------------
+      -- Emit_Compile_Time_Message --
+      -------------------------------
+
+      procedure Emit_Compile_Time_Message (Msg_Arg : Node_Id) is
+         --  We have already verified that the Msg_Arg is a static
+         --  string expression. Its string value must be retrieved
+         --  explicitly if it is a declared constant, otherwise it has
+         --  been constant-folded previously.
+
+         Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+         Str     : constant String_Id :=
+           Strval (Expr_Value_S (Get_Pragma_Arg (Msg_Arg)));
+         Str_Len : constant Nat := String_Length (Str);
+
+         Force : constant Boolean :=
+           Prag_Id = Pragma_Compile_Time_Warning
+           and then Is_Spec_Name (Unit_Name (Current_Sem_Unit))
+           and then (Ekind (Cent) /= E_Package
+                     or else not In_Private_Part (Cent));
+         --  Set True if this is the warning case, and we are in the
+         --  visible part of a package spec, or in a subprogram spec,
+         --  in which case we want to force the client to see the
+         --  warning, even though it is not in the main unit.
+
+         Msg_Ctrl : Bounded_String (6);
+         --  Control characters for the message.
+         --  The longest value contains 6 characters: "\<<~!!"
+
+         C    : Character;
+         CC   : Char_Code;
+         Cont : Boolean;
+         Ptr  : Nat;
+
+      begin
+         --  Loop through segments of message separated by line feeds.
+         --  We output these segments as separate messages with
+         --  continuation marks for all but the first.
+
+         Cont := False;
+         Ptr := 1;
+         loop
+            Error_Msg_Strlen := 0;
+            Msg_Ctrl.Length := 0;
+
+            --  Loop to copy characters from argument to error message
+            --  string buffer.
+
+            loop
+               exit when Ptr > Str_Len;
+               CC := Get_String_Char (Str, Ptr);
+               Ptr := Ptr + 1;
+
+               --  Ignore wide chars ??? else store character
+
+               if In_Character_Range (CC) then
+                  C := Get_Character (CC);
+                  exit when C = ASCII.LF;
+                  Error_Msg_Strlen := Error_Msg_Strlen + 1;
+                  Error_Msg_String (Error_Msg_Strlen) := C;
+               end if;
+            end loop;
+
+            --  Here with one line ready to go
+
+            Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
+
+            if Cont then
+               Append (Msg_Ctrl, "\");
+            end if;
+
+            Append (Msg_Ctrl, "<<~");
+
+            --  If this is a warning in a spec, then we want clients
+            --  to see the warning, so mark the message with the
+            --  special sequence !! to force the warning. In the case
+            --  of a package spec, we do not force this if we are in
+            --  the private part of the spec.
+
+            if Force then
+               Append (Msg_Ctrl, "!!");
+            end if;
+
+            --  Error, rather than warning, or in a body, so we do not
+            --  need to force visibility for client (error will be
+            --  output in any case, and this is the situation in which
+            --  we do not want a client to get a warning, since the
+            --  warning is in the body or the spec private part).
+
+            Error_Msg
+              (To_String (Msg_Ctrl), Eloc, N, Is_Compile_Time_Pragma => True);
+
+            --  The next lines are considered continuation messages
+
+            Cont := True;
+
+            exit when Ptr > Str_Len;
+         end loop;
+      end Emit_Compile_Time_Message;
+
+   --  Start of processing for Validate_Compile_Time_Warning_Or_Error
 
    begin
       Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
       if Compile_Time_Known_Value (Arg1x) then
          if Is_True (Expr_Value (Arg1x)) then
-
-            --  We have already verified that the second argument is a static
-            --  string expression. Its string value must be retrieved
-            --  explicitly if it is a declared constant, otherwise it has
-            --  been constant-folded previously.
-
-            declare
-               Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-               Str     : constant String_Id :=
-                           Strval (Expr_Value_S (Get_Pragma_Arg (Arg2)));
-               Str_Len : constant Nat       := String_Length (Str);
-
-               Force : constant Boolean :=
-                         Prag_Id = Pragma_Compile_Time_Warning
-                           and then Is_Spec_Name (Unit_Name (Current_Sem_Unit))
-                           and then (Ekind (Cent) /= E_Package
-                                      or else not In_Private_Part (Cent));
-               --  Set True if this is the warning case, and we are in the
-               --  visible part of a package spec, or in a subprogram spec,
-               --  in which case we want to force the client to see the
-               --  warning, even though it is not in the main unit.
-
-               C    : Character;
-               CC   : Char_Code;
-               Cont : Boolean;
-               Ptr  : Nat;
-
-            begin
-               --  Loop through segments of message separated by line feeds.
-               --  We output these segments as separate messages with
-               --  continuation marks for all but the first.
-
-               Cont := False;
-               Ptr  := 1;
-               loop
-                  Error_Msg_Strlen := 0;
-
-                  --  Loop to copy characters from argument to error message
-                  --  string buffer.
-
-                  loop
-                     exit when Ptr > Str_Len;
-                     CC := Get_String_Char (Str, Ptr);
-                     Ptr := Ptr + 1;
-
-                     --  Ignore wide chars ??? else store character
-
-                     if In_Character_Range (CC) then
-                        C := Get_Character (CC);
-                        exit when C = ASCII.LF;
-                        Error_Msg_Strlen := Error_Msg_Strlen + 1;
-                        Error_Msg_String (Error_Msg_Strlen) := C;
-                     end if;
-                  end loop;
-
-                  --  Here with one line ready to go
-
-                  Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
-
-                  --  If this is a warning in a spec, then we want clients
-                  --  to see the warning, so mark the message with the
-                  --  special sequence !! to force the warning. In the case
-                  --  of a package spec, we do not force this if we are in
-                  --  the private part of the spec.
-
-                  if Force then
-                     if Cont = False then
-                        Error_Msg
-                           ("<<~!!", Eloc, N, Is_Compile_Time_Pragma => True);
-                        Cont := True;
-                     else
-                        Error_Msg
-                           ("\<<~!!", Eloc, N, Is_Compile_Time_Pragma => True);
-                     end if;
-
-                  --  Error, rather than warning, or in a body, so we do not
-                  --  need to force visibility for client (error will be
-                  --  output in any case, and this is the situation in which
-                  --  we do not want a client to get a warning, since the
-                  --  warning is in the body or the spec private part).
-
-                  else
-                     if Cont = False then
-                        Error_Msg
-                           ("<<~", Eloc, N, Is_Compile_Time_Pragma => True);
-                        Cont := True;
-                     else
-                        Error_Msg
-                           ("\<<~", Eloc, N, Is_Compile_Time_Pragma => True);
-                     end if;
-                  end if;
-
-                  exit when Ptr > Str_Len;
-               end loop;
-            end;
+            Emit_Compile_Time_Message (Next (Arg1));
          end if;
 
       --  Arg1x is not known at compile time, so possibly issue an error
@@ -35094,7 +35104,9 @@ package body Sem_Prag is
          begin
             Set_Scope (T.Scope);
             Reset_Analyzed_Flags (T.Prag);
-            Validate_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            if Nkind (T.Prag) = N_Pragma then
+               Validate_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            end if;
             Unset_Scope (T.Scope);
          end;
       end loop;
