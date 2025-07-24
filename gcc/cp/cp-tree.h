@@ -2508,7 +2508,9 @@ struct GTY(()) lang_type {
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
-     so, make sure to copy it in instantiate_class_template!  */
+     so, make sure to copy it in instantiate_class_template!
+
+     Also make sure new flags here are streamed in module.cc.  */
 
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or

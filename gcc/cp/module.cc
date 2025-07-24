@@ -6158,7 +6158,7 @@ trees_out::lang_type_bools (tree t, bits_out& bits)
   WB (lang->declared_class);
   WB (lang->diamond_shaped);
   WB (lang->repeated_base);
-  gcc_assert (!lang->being_defined);
+  gcc_checking_assert (!lang->being_defined);
   // lang->debug_requested
   WB (lang->fields_readonly);
   WB (lang->ptrmemfunc_flag);
@@ -6184,6 +6184,14 @@ trees_out::lang_type_bools (tree t, bits_out& bits)
   WB (lang->has_constexpr_ctor);
   WB (lang->unique_obj_representations);
   WB (lang->unique_obj_representations_set);
+  gcc_checking_assert (!lang->erroneous);
+  WB (lang->non_pod_aggregate);
+  WB (lang->non_aggregate_pod);
+  WB (lang->trivially_relocatable);
+  WB (lang->trivially_relocatable_computed);
+
+  WB (lang->replaceable);
+  WB (lang->replaceable_computed);
 #undef WB
 }
 
@@ -6228,8 +6236,8 @@ trees_in::lang_type_bools (tree t, bits_in& bits)
   RB (lang->declared_class);
   RB (lang->diamond_shaped);
   RB (lang->repeated_base);
-  gcc_assert (!lang->being_defined);
-  gcc_assert (!lang->debug_requested);
+  gcc_checking_assert (!lang->being_defined);
+  gcc_checking_assert (!lang->debug_requested);
   RB (lang->fields_readonly);
   RB (lang->ptrmemfunc_flag);
 
@@ -6254,6 +6262,14 @@ trees_in::lang_type_bools (tree t, bits_in& bits)
   RB (lang->has_constexpr_ctor);
   RB (lang->unique_obj_representations);
   RB (lang->unique_obj_representations_set);
+  gcc_checking_assert (!lang->erroneous);
+  RB (lang->non_pod_aggregate);
+  RB (lang->non_aggregate_pod);
+  RB (lang->trivially_relocatable);
+  RB (lang->trivially_relocatable_computed);
+
+  RB (lang->replaceable);
+  RB (lang->replaceable_computed);
 #undef RB
   return !get_overrun ();
 }
