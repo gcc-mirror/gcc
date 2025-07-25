@@ -1854,13 +1854,13 @@ OBJS = \
 # no target dependencies.
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-global-context.o \
-	diagnostic-macro-unwinding.o \
 	diagnostics/digraphs.o \
 	diagnostics/edit-context.o \
 	diagnostics/output-spec.o \
 	diagnostics/html-sink.o \
 	diagnostics/sarif-sink.o \
 	diagnostics/text-sink.o \
+	diagnostics/macro-unwinding.o \
 	diagnostics/paths.o \
 	diagnostics/paths-output.o \
 	diagnostics/source-printing.o \

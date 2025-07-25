@@ -17,13 +17,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_MACRO_UNWINDING_H
-#define GCC_DIAGNOSTIC_MACRO_UNWINDING_H
+#ifndef GCC_DIAGNOSTICS_MACRO_UNWINDING_H
+#define GCC_DIAGNOSTICS_MACRO_UNWINDING_H
 
-void virt_loc_aware_diagnostic_finalizer (diagnostics::text_sink &,
-					  const diagnostic_info *);
+namespace diagnostics {
 
-extern void maybe_unwind_expanded_macro_loc (diagnostics::text_sink &,
+extern void virt_loc_aware_text_finalizer (text_sink &,
+					   const diagnostic_info *);
+
+extern void maybe_unwind_expanded_macro_loc (text_sink &,
 					     location_t where);
 
-#endif /* ! GCC_DIAGNOSTIC_MACRO_UNWINDING_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_MACRO_UNWINDING_H */

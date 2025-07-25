@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "diagnostic-macro-unwinding.h"
+#include "diagnostics/macro-unwinding.h"
 #include "intl.h"
 #include "diagnostics/paths.h"
 #include "gcc-rich-location.h"

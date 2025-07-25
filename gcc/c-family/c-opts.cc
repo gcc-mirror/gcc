@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "diagnostic-macro-unwinding.h" /* for virt_loc_aware_diagnostic_finalizer */
+#include "diagnostics/macro-unwinding.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
 #include "incpath.h"
@@ -182,7 +182,7 @@ c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 			 diagnostic->richloc, diagnostic->kind, pp);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
-  virt_loc_aware_diagnostic_finalizer (text_output, diagnostic);
+  diagnostics::virt_loc_aware_text_finalizer (text_output, diagnostic);
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);
 }

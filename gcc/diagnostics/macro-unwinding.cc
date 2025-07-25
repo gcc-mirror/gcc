@@ -22,9 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "diagnostic.h"
-#include "diagnostic-macro-unwinding.h"
+#include "diagnostics/macro-unwinding.h"
 #include "diagnostics/text-sink.h"
 #include "intl.h"
+
+namespace diagnostics {
 
 /* This is a pair made of a location and the line map it originated
    from.  It's used in the maybe_unwind_expanded_macro_loc function
@@ -73,7 +75,7 @@ struct loc_map_pair
    function.  */
 
 void
-maybe_unwind_expanded_macro_loc (diagnostics::text_sink &text_output,
+maybe_unwind_expanded_macro_loc (text_sink &text_output,
                                  location_t where)
 {
   const struct line_map *map;
@@ -215,8 +217,11 @@ maybe_unwind_expanded_macro_loc (diagnostics::text_sink &text_output,
     that is similar to what is done for function call stacks, or
     template instantiation contexts.  */
 void
-virt_loc_aware_diagnostic_finalizer (diagnostics::text_sink &text_output,
-				     const diagnostic_info *diagnostic)
+virt_loc_aware_text_finalizer (text_sink &text_output,
+			       const diagnostic_info *diagnostic)
 {
-  maybe_unwind_expanded_macro_loc (text_output, diagnostic_location (diagnostic));
+  maybe_unwind_expanded_macro_loc (text_output,
+				   diagnostic_location (diagnostic));
 }
+
+} // namespace diagnostics
