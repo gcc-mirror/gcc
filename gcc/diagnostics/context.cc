@@ -126,10 +126,12 @@ diagnostic_set_caret_max_width (diagnostics::context *context, int value)
   context->m_source_printing.max_width = value;
 }
 
+namespace diagnostics {
+
 /* Initialize the diagnostic message outputting machinery.  */
 
 void
-diagnostics::context::initialize (int n_opts)
+context::initialize (int n_opts)
 {
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
@@ -160,12 +162,12 @@ diagnostics::context::initialize (int n_opts)
   m_max_errors = 0;
   m_internal_error = nullptr;
   m_adjust_diagnostic_info = nullptr;
-  m_text_callbacks.m_begin_diagnostic = diagnostics::default_text_starter;
+  m_text_callbacks.m_begin_diagnostic = default_text_starter;
   m_text_callbacks.m_text_start_span
-    = diagnostics::default_start_span_fn<to_text>;
+    = default_start_span_fn<to_text>;
   m_text_callbacks.m_html_start_span
-    = diagnostics::default_start_span_fn<to_html>;
-  m_text_callbacks.m_end_diagnostic = diagnostics::default_text_finalizer;
+    = default_start_span_fn<to_html>;
+  m_text_callbacks.m_end_diagnostic = default_text_finalizer;
   m_option_mgr = nullptr;
   m_urlifier_stack = new auto_vec<urlifier_stack_node> ();
   m_last_location = UNKNOWN_LOCATION;
@@ -197,7 +199,7 @@ diagnostics::context::initialize (int n_opts)
   m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
   m_diagnostic_groups.m_inhibiting_notes_from = 0;
-  m_sinks.safe_push (new diagnostics::text_sink (*this, nullptr, true));
+  m_sinks.safe_push (new text_sink (*this, nullptr, true));
   m_set_locations_cb = nullptr;
   m_client_data_hooks = nullptr;
   m_diagrams.m_theme = nullptr;
@@ -221,7 +223,7 @@ diagnostics::context::initialize (int n_opts)
    without a VALUE, it initializes with DIAGNOSTICS_COLOR_DEFAULT.  */
 
 void
-diagnostics::context::color_init (int value)
+context::color_init (int value)
 {
   /* value == -1 is the default value.  */
   if (value < 0)
@@ -252,7 +254,7 @@ diagnostics::context::color_init (int value)
    handling "auto".  */
 
 void
-diagnostics::context::urls_init (int value)
+context::urls_init (int value)
 {
   /* value == -1 is the default value.  */
   if (value < 0)
@@ -283,9 +285,8 @@ diagnostics::context::urls_init (int value)
 /* Create the file_cache, if not already created, and tell it how to
    translate files on input.  */
 void
-diagnostics::context::
-initialize_input_context (diagnostic_input_charset_callback ccb,
-			  bool should_skip_bom)
+context::initialize_input_context (diagnostic_input_charset_callback ccb,
+				   bool should_skip_bom)
 {
   m_file_cache->initialize_input_context (ccb, should_skip_bom);
 }
@@ -293,7 +294,7 @@ initialize_input_context (diagnostic_input_charset_callback ccb,
 /* Do any cleaning up required after the last diagnostic is emitted.  */
 
 void
-diagnostics::context::finish ()
+context::finish ()
 {
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
@@ -352,7 +353,7 @@ diagnostics::context::finish ()
 /* Dump state of this diagnostics::context to OUT, for debugging.  */
 
 void
-diagnostics::context::dump (FILE *out) const
+context::dump (FILE *out) const
 {
   fprintf (out, "diagnostics::context:\n");
   m_diagnostic_counters.dump (out, 2);
@@ -385,7 +386,7 @@ diagnostics::context::dump (FILE *out) const
    we ought to exit with a non-zero exit code.  */
 
 bool
-diagnostics::context::execution_failed_p () const
+context::execution_failed_p () const
 {
   /* Equivalent to (seen_error () || werrorcount), but on
      this context, rather than global_dc.  */
@@ -395,21 +396,21 @@ diagnostics::context::execution_failed_p () const
 }
 
 void
-diagnostics::context::remove_all_output_sinks ()
+context::remove_all_output_sinks ()
 {
   while (!m_sinks.is_empty ())
     delete m_sinks.pop ();
 }
 
 void
-diagnostics::context::set_sink (std::unique_ptr<diagnostics::sink> sink_)
+context::set_sink (std::unique_ptr<sink> sink_)
 {
   remove_all_output_sinks ();
   m_sinks.safe_push (sink_.release ());
 }
 
-diagnostics::sink &
-diagnostics::context::get_sink (size_t idx) const
+sink &
+context::get_sink (size_t idx) const
 {
   gcc_assert (idx < m_sinks.length ());
   gcc_assert (m_sinks[idx]);
@@ -417,7 +418,7 @@ diagnostics::context::get_sink (size_t idx) const
 }
 
 void
-diagnostics::context::add_sink (std::unique_ptr<diagnostics::sink> sink_)
+context::add_sink (std::unique_ptr<sink> sink_)
 {
   m_sinks.safe_push (sink_.release ());
 }
@@ -425,7 +426,7 @@ diagnostics::context::add_sink (std::unique_ptr<diagnostics::sink> sink_)
 /* Return true if there are no machine-readable formats writing to stderr.  */
 
 bool
-diagnostics::context::supports_fnotice_on_stderr_p () const
+context::supports_fnotice_on_stderr_p () const
 {
   for (auto sink_ : m_sinks)
     if (sink_->machine_readable_stderr_p ())
@@ -434,15 +435,14 @@ diagnostics::context::supports_fnotice_on_stderr_p () const
 }
 
 void
-diagnostics::context::set_main_input_filename (const char *filename)
+context::set_main_input_filename (const char *filename)
 {
   for (auto sink_ : m_sinks)
     sink_->set_main_input_filename (filename);
 }
 
 void
-diagnostics::context::
-set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks)
+context::set_client_data_hooks (std::unique_ptr<client_data_hooks> hooks)
 {
   delete m_client_data_hooks;
   /* Ideally the field would be a std::unique_ptr here.  */
@@ -450,7 +450,7 @@ set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks)
 }
 
 void
-diagnostics::context::set_original_argv (unique_argv original_argv)
+context::set_original_argv (unique_argv original_argv)
 {
   /* Ideally we'd use a unique_argv for m_original_argv, but
      diagnostics::context doesn't yet have a ctor/dtor pair.  */
@@ -463,9 +463,8 @@ diagnostics::context::set_original_argv (unique_argv original_argv)
 }
 
 void
-diagnostics::context::
-set_option_manager (std::unique_ptr<diagnostics::option_manager> mgr,
-		    unsigned lang_mask)
+context::set_option_manager (std::unique_ptr<option_manager> mgr,
+			     unsigned lang_mask)
 {
   delete m_option_mgr;
   m_option_mgr = mgr.release ();
@@ -473,7 +472,7 @@ set_option_manager (std::unique_ptr<diagnostics::option_manager> mgr,
 }
 
 void
-diagnostics::context::push_owned_urlifier (std::unique_ptr<urlifier> ptr)
+context::push_owned_urlifier (std::unique_ptr<urlifier> ptr)
 {
   gcc_assert (m_urlifier_stack);
   const urlifier_stack_node node = { ptr.release (), true };
@@ -481,7 +480,7 @@ diagnostics::context::push_owned_urlifier (std::unique_ptr<urlifier> ptr)
 }
 
 void
-diagnostics::context::push_borrowed_urlifier (const urlifier &loan)
+context::push_borrowed_urlifier (const urlifier &loan)
 {
   gcc_assert (m_urlifier_stack);
   const urlifier_stack_node node = { const_cast <urlifier *> (&loan), false };
@@ -489,7 +488,7 @@ diagnostics::context::push_borrowed_urlifier (const urlifier &loan)
 }
 
 void
-diagnostics::context::pop_urlifier ()
+context::pop_urlifier ()
 {
   gcc_assert (m_urlifier_stack);
   gcc_assert (m_urlifier_stack->length () > 0);
@@ -499,8 +498,8 @@ diagnostics::context::pop_urlifier ()
     delete node.m_urlifier;
 }
 
-const diagnostics::logical_locations::manager *
-diagnostics::context::get_logical_location_manager () const
+const logical_locations::manager *
+context::get_logical_location_manager () const
 {
   if (!m_client_data_hooks)
     return nullptr;
@@ -508,7 +507,7 @@ diagnostics::context::get_logical_location_manager () const
 }
 
 const urlifier *
-diagnostics::context::get_urlifier () const
+context::get_urlifier () const
 {
   if (!m_urlifier_stack)
     return nullptr;
@@ -522,7 +521,7 @@ diagnostics::context::get_urlifier () const
    Refresh all output sinks.  */
 
 void
-diagnostics::context::set_pretty_printer (std::unique_ptr<pretty_printer> pp)
+context::set_pretty_printer (std::unique_ptr<pretty_printer> pp)
 {
   delete m_reference_printer;
   m_reference_printer = pp.release ();
@@ -532,7 +531,7 @@ diagnostics::context::set_pretty_printer (std::unique_ptr<pretty_printer> pp)
 /* Give all output sinks a chance to rebuild their pretty_printer.  */
 
 void
-diagnostics::context::refresh_output_sinks ()
+context::refresh_output_sinks ()
 {
   for (auto sink_ : m_sinks)
     sink_->update_printer ();
@@ -542,7 +541,7 @@ diagnostics::context::refresh_output_sinks ()
    of all output sinks.  */
 
 void
-diagnostics::context::set_format_decoder (printer_fn format_decoder)
+context::set_format_decoder (printer_fn format_decoder)
 {
   pp_format_decoder (m_reference_printer) = format_decoder;
   for (auto sink_ : m_sinks)
@@ -550,7 +549,7 @@ diagnostics::context::set_format_decoder (printer_fn format_decoder)
 }
 
 void
-diagnostics::context::set_show_highlight_colors (bool val)
+context::set_show_highlight_colors (bool val)
 {
   pp_show_highlight_colors (m_reference_printer) = val;
   for (auto sink_ : m_sinks)
@@ -559,7 +558,7 @@ diagnostics::context::set_show_highlight_colors (bool val)
 }
 
 void
-diagnostics::context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
+context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
 {
   pp_prefixing_rule (m_reference_printer) = rule;
   for (auto sink_ : m_sinks)
@@ -568,12 +567,14 @@ diagnostics::context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
 }
 
 void
-diagnostics::context::initialize_fixits_change_set ()
+context::initialize_fixits_change_set ()
 {
   delete m_fixits_change_set;
   gcc_assert (m_file_cache);
-  m_fixits_change_set = new diagnostics::changes::change_set (*m_file_cache);
+  m_fixits_change_set = new changes::change_set (*m_file_cache);
 }
+
+} // namespace diagnostics
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
    translated.  */
@@ -637,8 +638,6 @@ get_color_for_kind (enum kind kind)
   return diagnostic_kind_color[static_cast<int> (kind)];
 }
 
-} // namespace diagnostics
-
 /* Given an expanded_location, convert the column (which is in 1-based bytes)
    to the requested units, without converting the origin.
    Return -1 if the column is invalid (<= 0).  */
@@ -668,7 +667,7 @@ convert_column_unit (file_cache &fc,
     }
 }
 
-diagnostics::column_policy::column_policy (const diagnostics::context &dc)
+column_policy::column_policy (const context &dc)
 : m_file_cache (dc.get_file_cache ()),
   m_column_unit (dc.m_column_unit),
   m_column_origin (dc.m_column_origin),
@@ -680,7 +679,7 @@ diagnostics::column_policy::column_policy (const diagnostics::context &dc)
    to the requested units and origin.  Return -1 if the column is
    invalid (<= 0).  */
 int
-diagnostics::column_policy::converted_column (expanded_location s) const
+column_policy::converted_column (expanded_location s) const
 {
   int one_based_col = convert_column_unit (m_file_cache,
 					   m_column_unit, m_tabstop, s);
@@ -692,9 +691,9 @@ diagnostics::column_policy::converted_column (expanded_location s) const
 /* Return a string describing a location e.g. "foo.c:42:10".  */
 
 label_text
-diagnostics::column_policy::get_location_text (const expanded_location &s,
-					       bool show_column,
-					       bool colorize) const
+column_policy::get_location_text (const expanded_location &s,
+				  bool show_column,
+				  bool colorize) const
 {
   const char *locus_cs = colorize_start (colorize, "locus");
   const char *locus_ce = colorize_stop (colorize);
@@ -708,25 +707,27 @@ diagnostics::column_policy::get_location_text (const expanded_location &s,
 	col = converted_column (s);
     }
 
-  const char *line_col = diagnostics::maybe_line_and_column (line, col);
+  const char *line_col = maybe_line_and_column (line, col);
   return label_text::take (build_message_string ("%s%s%s:%s", locus_cs, file,
 						 line_col, locus_ce));
 }
 
-diagnostics::location_print_policy::
-location_print_policy (const diagnostics::context &dc)
+location_print_policy::
+location_print_policy (const context &dc)
 : m_column_policy (dc),
   m_show_column (dc.m_show_column)
 {
 }
 
-diagnostics::location_print_policy::
-location_print_policy (const diagnostics::text_sink &text_output)
+location_print_policy::
+location_print_policy (const text_sink &text_output)
 :
   m_column_policy (text_output.get_context ()),
   m_show_column (text_output.get_context ().m_show_column)
 {
 }
+
+} // namespace diagnostics
 
 /* Functions at which to stop the backtrace print.  It's not
    particularly helpful to print the callers of these functions.  */
@@ -752,10 +753,10 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
   if (filename == nullptr && function == nullptr)
     return 0;
 
-  /* Skip functions in diagnostic.cc.  */
+  /* Skip functions in context.cc.  */
   if (*pcount == 0
       && filename != nullptr
-      && strcmp (lbasename (filename), "diagnostic.cc") == 0)
+      && strcmp (lbasename (filename), "context.cc") == 0)
     return 0;
 
   /* Print up to 20 functions.  We could make this a --param, but
@@ -821,12 +822,14 @@ bt_err_callback (void *data ATTRIBUTE_UNUSED, const char *msg, int errnum)
 	   errnum == 0 ? "" : xstrerror (errnum));
 }
 
+namespace diagnostics {
+
 /* Check if we've met the maximum error limit, and if so fatally exit
    with a message.
    FLUSH indicates whether a diagnostics::context::finish call is needed.  */
 
 void
-diagnostics::context::check_max_errors (bool flush)
+context::check_max_errors (bool flush)
 {
   if (!m_max_errors)
     return;
@@ -850,7 +853,7 @@ diagnostics::context::check_max_errors (bool flush)
    is written out.  This function does not always return.  */
 
 void
-diagnostics::context::action_after_output (enum kind diag_kind)
+context::action_after_output (enum kind diag_kind)
 {
   switch (diag_kind)
     {
@@ -927,7 +930,7 @@ diagnostics::context::action_after_output (enum kind diag_kind)
    its future children if any.  */
 
 void
-diagnostics::context::inhibit_notes_in_group (bool inhibit)
+context::inhibit_notes_in_group (bool inhibit)
 {
   int curr_depth = (m_diagnostic_groups.m_group_nesting_depth
 		    + m_diagnostic_groups.m_diagnostic_nesting_level);
@@ -957,7 +960,7 @@ diagnostics::context::inhibit_notes_in_group (bool inhibit)
 /* Return whether notes must be inhibited in the current diagnostic_group.  */
 
 bool
-diagnostics::context::notes_inhibited_in_group () const
+context::notes_inhibited_in_group () const
 {
   if (m_diagnostic_groups.m_inhibiting_notes_from
       && (m_diagnostic_groups.m_group_nesting_depth
@@ -972,7 +975,7 @@ diagnostics::context::notes_inhibited_in_group () const
 /* Return true iff this is a function or method.  */
 
 bool
-diagnostics::logical_locations::manager::function_p (key k) const
+logical_locations::manager::function_p (key k) const
 {
   switch (get_kind (k))
     {
@@ -1083,7 +1086,7 @@ print_parseable_fixits (file_cache &fc,
 /* Update the inlining info in this context for a DIAGNOSTIC.  */
 
 void
-diagnostics::context::get_any_inlining_info (diagnostic_info *diagnostic)
+context::get_any_inlining_info (diagnostic_info *diagnostic)
 {
   auto &ilocs = diagnostic->m_iinfo.m_ilocs;
 
@@ -1115,7 +1118,7 @@ get_cwe_url (int cwe)
    as appropriate for #pragma GCC diagnostic and -Werror=foo.  */
 
 bool
-diagnostics::context::diagnostic_enabled (diagnostic_info *diagnostic)
+context::diagnostic_enabled (diagnostic_info *diagnostic)
 {
   /* Update the inlining stack for this diagnostic.  */
   get_any_inlining_info (diagnostic);
@@ -1159,8 +1162,8 @@ diagnostics::context::diagnostic_enabled (diagnostic_info *diagnostic)
 /* Returns whether warning OPT_ID is enabled at LOC.  */
 
 bool
-diagnostics::context::warning_enabled_at (location_t loc,
-					  diagnostics::option_id opt_id)
+context::warning_enabled_at (location_t loc,
+			     option_id opt_id)
 {
   if (!diagnostic_report_warnings_p (this, loc))
     return false;
@@ -1177,12 +1180,11 @@ diagnostics::context::warning_enabled_at (location_t loc,
 /* Emit a diagnostic within a diagnostic group on this context.  */
 
 bool
-diagnostics::context::
-emit_diagnostic_with_group (enum kind kind,
-			    rich_location &richloc,
-			    const diagnostics::metadata *metadata,
-			    diagnostics::option_id opt_id,
-			    const char *gmsgid, ...)
+context::emit_diagnostic_with_group (enum kind kind,
+				     rich_location &richloc,
+				     const metadata *metadata,
+				     option_id opt_id,
+				     const char *gmsgid, ...)
 {
   begin_group ();
 
@@ -1200,12 +1202,11 @@ emit_diagnostic_with_group (enum kind kind,
 /* As above, but taking a va_list *.  */
 
 bool
-diagnostics::context::
-emit_diagnostic_with_group_va (enum kind kind,
-			       rich_location &richloc,
-			       const diagnostics::metadata *metadata,
-			       diagnostics::option_id opt_id,
-			       const char *gmsgid, va_list *ap)
+context::emit_diagnostic_with_group_va (enum kind kind,
+					rich_location &richloc,
+					const metadata *metadata,
+					option_id opt_id,
+					const char *gmsgid, va_list *ap)
 {
   begin_group ();
 
@@ -1224,7 +1225,7 @@ emit_diagnostic_with_group_va (enum kind kind,
    Return true if a diagnostic was printed, false otherwise.  */
 
 bool
-diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
+context::report_diagnostic (diagnostic_info *diagnostic)
 {
   enum kind orig_diag_kind = diagnostic->m_kind;
 
@@ -1420,7 +1421,7 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
 }
 
 void
-diagnostics::context::report_verbatim (text_info &text)
+context::report_verbatim (text_info &text)
 {
   va_list *orig_args = text.m_args_ptr;
   for (auto sink_ : m_sinks)
@@ -1434,8 +1435,7 @@ diagnostics::context::report_verbatim (text_info &text)
 }
 
 void
-diagnostics::context::
-report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg)
+context::report_global_digraph (const digraphs::lazy_digraph &ldg)
 {
   for (auto sink_ : m_sinks)
     sink_->report_global_digraph (ldg);
@@ -1461,6 +1461,8 @@ num_digits (int value)
     }
   return digits;
 }
+
+} // namespace diagnostics
 
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
@@ -1492,15 +1494,17 @@ trim_filename (const char *name)
   return p;
 }
 
+namespace diagnostics {
+
 /* Implement emit_diagnostic, inform, warning, warning_at, pedwarn,
    permerror, error, error_at, error_at, sorry, fatal_error, internal_error,
    and internal_error_no_backtrace, as documented and defined below.  */
 bool
-diagnostics::context::diagnostic_impl (rich_location *richloc,
-				     const diagnostics::metadata *metadata,
-				     diagnostics::option_id opt_id,
-				     const char *gmsgid,
-				     va_list *ap, enum kind kind)
+context::diagnostic_impl (rich_location *richloc,
+			  const metadata *metadata,
+			  option_id opt_id,
+			  const char *gmsgid,
+			  va_list *ap, enum kind kind)
 {
   diagnostic_info diagnostic;
   if (kind == kind::permerror)
@@ -1522,13 +1526,13 @@ diagnostics::context::diagnostic_impl (rich_location *richloc,
 /* Implement inform_n, warning_n, and error_n, as documented and
    defined below.  */
 bool
-diagnostics::context::diagnostic_n_impl (rich_location *richloc,
-				       const diagnostics::metadata *metadata,
-				       diagnostics::option_id opt_id,
-				       unsigned HOST_WIDE_INT n,
-				       const char *singular_gmsgid,
-				       const char *plural_gmsgid,
-				       va_list *ap, enum kind kind)
+context::diagnostic_n_impl (rich_location *richloc,
+			    const metadata *metadata,
+			    option_id opt_id,
+			    unsigned HOST_WIDE_INT n,
+			    const char *singular_gmsgid,
+			    const char *plural_gmsgid,
+			    va_list *ap, enum kind kind)
 {
   diagnostic_info diagnostic;
   unsigned long gtn;
@@ -1553,7 +1557,7 @@ diagnostics::context::diagnostic_n_impl (rich_location *richloc,
 /* Emit DIAGRAM to this context, respecting the output format.  */
 
 void
-diagnostics::context::emit_diagram (const diagnostics::diagram &diag)
+context::emit_diagram (const diagram &diag)
 {
   if (m_diagrams.m_theme == nullptr)
     return;
@@ -1568,7 +1572,7 @@ diagnostics::context::emit_diagram (const diagnostics::diagram &diag)
    This mustn't use internal_error, that will cause infinite recursion.  */
 
 void
-diagnostics::context::error_recursion ()
+context::error_recursion ()
 {
   if (m_lock < 3)
     pp_newline_and_flush (m_reference_printer);
@@ -1584,6 +1588,8 @@ diagnostics::context::error_recursion ()
      and therefore would cause infinite recursion.  */
   real_abort ();
 }
+
+} // namespace diagnostics
 
 /* Report an internal compiler error in a friendly manner.  This is
    the function that gets called upon use of abort() in the source
@@ -1627,16 +1633,18 @@ fancy_abort (const char *file, int line, const char *function)
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
+namespace diagnostics {
+
 /* class diagnostics::context.  */
 
 void
-diagnostics::context::begin_group ()
+context::begin_group ()
 {
   m_diagnostic_groups.m_group_nesting_depth++;
 }
 
 void
-diagnostics::context::end_group ()
+context::end_group ()
 {
   if (--m_diagnostic_groups.m_group_nesting_depth == 0)
     {
@@ -1653,13 +1661,13 @@ diagnostics::context::end_group ()
 }
 
 void
-diagnostics::context::push_nesting_level ()
+context::push_nesting_level ()
 {
   ++m_diagnostic_groups.m_diagnostic_nesting_level;
 }
 
 void
-diagnostics::context::pop_nesting_level ()
+context::pop_nesting_level ()
 {
   --m_diagnostic_groups.m_diagnostic_nesting_level;
   /* We're popping one level, so might need to stop inhibiting notes.  */
@@ -1667,29 +1675,29 @@ diagnostics::context::pop_nesting_level ()
 }
 
 void
-diagnostics::sink::dump (FILE *out, int indent) const
+sink::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*sprinter:\n", indent, "");
   m_printer->dump (out, indent + 2);
 }
 
 void
-diagnostics::sink::on_report_verbatim (text_info &)
+sink::on_report_verbatim (text_info &)
 {
   /* No-op.  */
 }
 
-/* Set the output format for CONTEXT to FORMAT, using BASE_FILE_NAME for
+/* Set the output format for DC to FORMAT, using BASE_FILE_NAME for
    file-based output formats.  */
 
 void
-diagnostics::output_format_init (diagnostics::context &context,
-				 const char *main_input_filename_,
-				 const char *base_file_name,
-				 enum diagnostics_output_format format,
-				 bool json_formatting)
+output_format_init (context &dc,
+		    const char *main_input_filename_,
+		    const char *base_file_name,
+		    enum diagnostics_output_format format,
+		    bool json_formatting)
 {
-  diagnostics::sink *new_sink = nullptr;
+  sink *new_sink = nullptr;
   switch (format)
     {
     default:
@@ -1699,16 +1707,16 @@ diagnostics::output_format_init (diagnostics::context &context,
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
-      new_sink = &diagnostics::init_sarif_stderr (context,
-						  line_table,
-						  json_formatting);
+      new_sink = &init_sarif_stderr (dc,
+				     line_table,
+				     json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
-      new_sink = &diagnostics::init_sarif_file (context,
-						line_table,
-						json_formatting,
-						base_file_name);
+      new_sink = &init_sarif_file (dc,
+				   line_table,
+				   json_formatting,
+				   base_file_name);
       break;
     }
   if (new_sink)
@@ -1720,8 +1728,7 @@ diagnostics::output_format_init (diagnostics::context &context,
    (or nullptr for "no diagrams").  */
 
 void
-diagnostics::context::
-set_text_art_charset (enum diagnostic_text_art_charset charset)
+context::set_text_art_charset (enum diagnostic_text_art_charset charset)
 {
   delete m_diagrams.m_theme;
   switch (charset)
@@ -1749,13 +1756,13 @@ set_text_art_charset (enum diagnostic_text_art_charset charset)
 
 /* struct diagnostics::counters.  */
 
-diagnostics::counters::counters ()
+counters::counters ()
 {
   clear ();
 }
 
 void
-diagnostics::counters::dump (FILE *out, int indent) const
+counters::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*scounts:\n", indent, "");
   bool none = true;
@@ -1773,7 +1780,7 @@ diagnostics::counters::dump (FILE *out, int indent) const
 }
 
 void
-diagnostics::counters::move_to (diagnostics::counters &dest)
+counters::move_to (counters &dest)
 {
   for (int i = 0; i < static_cast<int> (kind::last_diagnostic_kind); i++)
     dest.m_count_for_kind[i] += m_count_for_kind[i];
@@ -1781,29 +1788,23 @@ diagnostics::counters::move_to (diagnostics::counters &dest)
 }
 
 void
-diagnostics::counters::clear ()
+counters::clear ()
 {
   memset (&m_count_for_kind, 0, sizeof m_count_for_kind);
-}
-
-/* Really call the system 'abort'.  This has to go right at the end of
-   this file, so that there are no functions after it that call abort
-   and get the system abort instead of our macro.  */
-#undef abort
-static void
-real_abort (void)
-{
-  abort ();
 }
 
 #if CHECKING_P
 
 namespace selftest {
 
+using line_table_test = ::selftest::line_table_test;
+using temp_source_file = ::selftest::temp_source_file;
+
 /* Helper function for test_print_escaped_string.  */
 
 static void
-assert_print_escaped_string (const location &loc, const char *expected_output,
+assert_print_escaped_string (const ::selftest::location &loc,
+			     const char *expected_output,
 			     const char *input)
 {
   pretty_printer pp;
@@ -2102,10 +2103,14 @@ test_num_digits ()
   ASSERT_EQ (8, num_digits (99999999));
 }
 
-/* Run all of the selftests within this file.  */
+/* Run all of the selftests within this file.
+
+   According to https://gcc.gnu.org/pipermail/gcc/2021-November/237703.html
+   there are some language-specific assumptions within these tests, so only
+   run them from C/C++.  */
 
 void
-c_diagnostic_cc_tests ()
+context_cc_tests ()
 {
   test_print_escaped_string ();
   test_print_parseable_fixits_none ();
@@ -2117,10 +2122,23 @@ c_diagnostic_cc_tests ()
   test_num_digits ();
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
 
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop
 #endif
+
+static void real_abort (void) ATTRIBUTE_NORETURN;
+
+/* Really call the system 'abort'.  This has to go right at the end of
+   this file, so that there are no functions after it that call abort
+   and get the system abort instead of our macro.  */
+#undef abort
+static void
+real_abort (void)
+{
+  abort ();
+}

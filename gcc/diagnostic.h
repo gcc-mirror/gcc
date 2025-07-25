@@ -383,9 +383,6 @@ diagnostic_same_line (const diagnostics::context *context,
 
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
-/* Compute the number of digits in the decimal representation of an integer.  */
-extern int num_digits (int);
-
 inline bool
 warning_enabled_at (location_t loc, diagnostics::option_id opt_id)
 {
@@ -398,11 +395,13 @@ option_unspecified_p (diagnostics::option_id opt_id)
   return global_dc->option_unspecified_p (opt_id);
 }
 
-extern char *get_cwe_url (int cwe);
-
 namespace diagnostics {
 
-const char *maybe_line_and_column (int line, int col);
+/* Compute the number of digits in the decimal representation of an integer.  */
+extern int num_digits (int);
+
+extern char *get_cwe_url (int cwe);
+extern const char *maybe_line_and_column (int line, int col);
 
 } // namespace diagnostics
 

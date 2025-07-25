@@ -1524,10 +1524,10 @@ dump_location_info (FILE *stream)
 	      if (max_col > line_text.length ())
 		max_col = line_text.length () + 1;
 
-	      int len_lnum = num_digits (exploc.line);
+	      int len_lnum = diagnostics::num_digits (exploc.line);
 	      if (len_lnum < 3)
 		len_lnum = 3;
-	      int len_loc = num_digits (loc);
+	      int len_loc = diagnostics::num_digits (loc);
 	      if (len_loc < 5)
 		len_loc = 5;
 

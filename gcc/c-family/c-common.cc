@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print-markup.h"
 #include "gcc-rich-location.h"
 #include "gcc-urlifier.h"
+#include "diagnostics/diagnostics-selftests.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -9963,8 +9964,11 @@ c_family_tests (void)
   c_indentation_cc_tests ();
   c_pretty_print_cc_tests ();
   c_spellcheck_cc_tests ();
-  c_diagnostic_cc_tests ();
   c_opt_problem_cc_tests ();
+
+  /* According to https://gcc.gnu.org/pipermail/gcc/2021-November/237703.html
+     this has some language-specific assumptions, so we run it here.  */
+  diagnostics::selftest::context_cc_tests ();
 }
 
 } // namespace selftest

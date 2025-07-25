@@ -1736,10 +1736,10 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
   if (filename == nullptr && function == nullptr)
     return 0;
 
-  /* Skip functions in diagnostic.cc or diagnostic-global-context.cc.  */
+  /* Skip functions in context.cc or diagnostic-global-context.cc.  */
   if (closure->m_frames_arr->size () == 0
       && filename != nullptr
-      && (strcmp (lbasename (filename), "diagnostic.cc") == 0
+      && (strcmp (lbasename (filename), "context.cc") == 0
 	  || strcmp (lbasename (filename),
 		     "diagnostic-global-context.cc") == 0))
     return 0;

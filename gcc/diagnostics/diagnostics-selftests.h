@@ -34,6 +34,7 @@ extern void run_diagnostics_selftests ();
 
 extern void changes_cc_tests ();
 extern void color_cc_tests ();
+extern void context_cc_tests ();
 extern void digraphs_cc_tests ();
 extern void html_sink_cc_tests ();
 extern void lazy_paths_cc_tests ();

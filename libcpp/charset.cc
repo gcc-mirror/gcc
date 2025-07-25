@@ -2420,7 +2420,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	{
 	  encoding_rich_location rich_loc (pfile);
 
-	  /* diagnostic.cc does not support "%03o".  When it does, this
+	  /* pretty-print.cc does not support "%03o".  When it does, this
 	     code can use %03o directly in the diagnostic again.  */
 	  char buf[32];
 	  sprintf(buf, "%03o", (int) c);

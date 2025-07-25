@@ -30,7 +30,11 @@ namespace diagnostics {
 
 namespace selftest {
 
-/* Run all diagnostics-specific selftests.  */
+/* Run all diagnostics-specific selftests,
+   apart from context_cc_tests, which according to
+   https://gcc.gnu.org/pipermail/gcc/2021-November/237703.html
+   has some language-specific assumptions, and thus is run from
+   c_family_tests instead.  */
 
 void
 run_diagnostics_selftests ()

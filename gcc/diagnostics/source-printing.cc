@@ -2176,7 +2176,7 @@ layout::calculate_linenum_width ()
   int highest_line = last_span->m_last_line;
   if (highest_line < 0)
     highest_line = 0;
-  m_linenum_width = num_digits (highest_line);
+  m_linenum_width = diagnostics::num_digits (highest_line);
   /* If we're showing jumps in the line-numbering, allow at least 3 chars.  */
   if (m_line_spans.length () > 1)
     m_linenum_width = MAX (m_linenum_width, 3);
@@ -2283,7 +2283,7 @@ layout_printer<Sink>::print_source_line (linenum_type row,
   if (m_layout.m_options.show_line_numbers_p)
     {
       m_sink.push_html_tag_with_class ("td", "linenum", true);
-      int width = num_digits (row);
+      int width = diagnostics::num_digits (row);
       for (int i = 0; i < m_layout.get_linenum_width () - width; i++)
 	m_sink.add_space ();
       char buf[20];

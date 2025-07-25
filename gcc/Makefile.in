@@ -1851,11 +1851,12 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o \
+OBJS-libcommon = \
 	diagnostic-global-context.o \
 	diagnostics/buffering.o \
 	diagnostics/changes.o \
 	diagnostics/color.o \
+	diagnostics/context.o \
 	diagnostics/digraphs.o \
 	diagnostics/output-spec.o \
 	diagnostics/html-sink.o \
