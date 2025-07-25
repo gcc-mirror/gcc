@@ -19,8 +19,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef DIAGNOSTIC_SPEC_H_INCLUDED
-#define DIAGNOSTIC_SPEC_H_INCLUDED
+#ifndef GCC_DIAGNOSTIC_SPEC_H_INCLUDED
+#define GCC_DIAGNOSTIC_SPEC_H_INCLUDED
 
 #include "hash-map.h"
 
@@ -146,4 +146,4 @@ typedef hash_map<location_hash, nowarn_spec_t> nowarn_map_t;
 /* A mapping from a 'location_t' to the warning spec set for it.  */
 extern GTY(()) nowarn_map_t *nowarn_map;
 
-#endif // DIAGNOSTIC_SPEC_H_INCLUDED
+#endif // GCC_DIAGNOSTIC_SPEC_H_INCLUDED

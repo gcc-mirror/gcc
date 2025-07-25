@@ -28,7 +28,7 @@
 #include "gimple.h"
 #include "cgraph.h"
 #include "hash-map.h"
-#include "diagnostic-spec.h"
+#include "gcc-diagnostic-spec.h"
 
 /* Return the no-warning bit for EXPR.  */
 

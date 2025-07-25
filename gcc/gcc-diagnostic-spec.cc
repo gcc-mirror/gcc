@@ -27,7 +27,7 @@
 #include "tree.h"
 #include "cgraph.h"
 #include "hash-map.h"
-#include "diagnostic-spec.h"
+#include "gcc-diagnostic-spec.h"
 #include "pretty-print.h"
 #include "options.h"
 
