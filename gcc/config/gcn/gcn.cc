@@ -5792,6 +5792,42 @@ gcn_libc_has_function (enum function_class fn_class,
 /* }}}  */
 /* {{{ md_reorg pass.  */
 
+/* Identify V_CMPX from the "type" attribute;
+   note: this will also match 'v_cmp %E1 vcc'.  */
+
+static bool
+gcn_cmpx_insn_p (attr_type type)
+{
+  switch (type)
+    {
+    case TYPE_VOPC:
+      return true;
+    case TYPE_MUBUF:
+    case TYPE_MTBUF:
+    case TYPE_FLAT:
+    case TYPE_VOP3P_MAI:
+    case TYPE_UNKNOWN:
+    case TYPE_SOP1:
+    case TYPE_SOP2:
+    case TYPE_SOPK:
+    case TYPE_SOPC:
+    case TYPE_SOPP:
+    case TYPE_SMEM:
+    case TYPE_DS:
+    case TYPE_VOP2:
+    case TYPE_VOP1:
+    case TYPE_VOP3A:
+    case TYPE_VOP3B:
+    case TYPE_VOP_SDWA:
+    case TYPE_VOP_DPP:
+    case TYPE_MULT:
+    case TYPE_VMULT:
+      return false;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
 /* Identify VMEM instructions from their "type" attribute.  */
 
 static bool
@@ -6152,12 +6188,22 @@ gcn_md_reorg (void)
      detects the missed cases, and inserts the documented number of NOPs
      required for correct execution.  */
 
+  /* RDNA4 (not yet implemented) differs from RNDA 2/3/3.5 and requires some
+     s_nop, see 5.7 and esp. 5.7.2. in its ISA manual.
+     The assert here is a reminder to add those.  */
+  STATIC_ASSERT (ISA_CDNA1 - ISA_RDNA3 == 1);
+
+  if (TARGET_NO_MANUAL_NOPS)
+    return;
+
   const int max_waits = 5;
   struct ilist
   {
     rtx_insn *insn;
     attr_unit unit;
-    attr_delayeduse delayeduse;
+    attr_type type;
+    attr_flatmemaccess flatmemaccess;
+    bool delayeduse;
     HARD_REG_SET writes;
     HARD_REG_SET reads;
     int age;
@@ -6178,7 +6224,29 @@ gcn_md_reorg (void)
 
       attr_type itype = get_attr_type (insn);
       attr_unit iunit = get_attr_unit (insn);
-      attr_delayeduse idelayeduse = get_attr_delayeduse (insn);
+      attr_flatmemaccess iflatmemaccess = get_attr_flatmemaccess (insn);
+      bool delayeduse;
+      if (TARGET_CDNA3_NOPS)
+	switch (iflatmemaccess)
+	  {
+	  case FLATMEMACCESS_STORE:
+	  case FLATMEMACCESS_STOREX34:
+	  case FLATMEMACCESS_ATOMIC:
+	  case FLATMEMACCESS_CMPSWAPX2:
+	    delayeduse = true;
+	    break;
+	  case FLATMEMACCESS_LOAD:
+	  case FLATMEMACCESS_ATOMICWAIT:
+	  case FLATMEMACCESS_NO:
+	    delayeduse = false;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+      else
+	delayeduse = (iflatmemaccess == FLATMEMACCESS_CMPSWAPX2
+		      || iflatmemaccess == FLATMEMACCESS_STOREX34);
+
       int ivccwait = get_attr_vccwait (insn);
       HARD_REG_SET ireads, iwrites;
       CLEAR_HARD_REG_SET (ireads);
@@ -6223,16 +6291,26 @@ gcn_md_reorg (void)
 		   && TEST_HARD_REG_BIT (ireads, VCCZ_REG))))
 	    nops_rqd = 5 - prev_insn->age;
 
-	  /* VALU writes SGPR/VCC followed by v_{read,write}lane using
-	     SGPR/VCC as lane select requires 4 wait states.  */
+	  /* VALU writes SGPR/VCC followed by
+	     - v_{read,write}lane using SGPR/VCC as lane select requires
+	       4 wait states
+	     - [CDNA3] VALU reads SGPR as constant requires 1 wait state
+	     - [CDNA3] VALU reads SGPR as carry-in requires no wait states  */
 	  if ((prev_insn->age + nops_rqd) < 4
 	      && prev_insn->unit == UNIT_VECTOR
-	      && get_attr_laneselect (insn) == LANESELECT_YES
+	      && get_attr_laneselect (insn) != LANESELECT_NO
 	      && (hard_reg_set_intersect_p
 		    (depregs, reg_class_contents[(int) SGPR_REGS])
 		  || hard_reg_set_intersect_p
 		       (depregs, reg_class_contents[(int) VCC_CONDITIONAL_REG])))
 	    nops_rqd = 4 - prev_insn->age;
+	  else if (TARGET_CDNA3_NOPS
+		   && (prev_insn->age + nops_rqd) < 1
+		   && prev_insn->unit == UNIT_VECTOR
+		   && iunit == UNIT_VECTOR
+		   && hard_reg_set_intersect_p
+			(depregs, reg_class_contents[(int) SGPR_REGS]))
+	    nops_rqd = 1 - prev_insn->age;
 
 	  /* VALU writes VGPR followed by VALU_DPP reading that VGPR
 	     requires 2 wait states.  */
@@ -6245,21 +6323,87 @@ gcn_md_reorg (void)
 		nops_rqd = 2 - prev_insn->age;
 	    }
 
+	  /* VALU writes EXEC followed by VALU DPP op requires 5 nop.  */
+	  if ((prev_insn->age + nops_rqd) < 5
+	      && itype == TYPE_VOP_DPP
+	      && prev_insn->unit == UNIT_VECTOR
+	      && TEST_HARD_REG_BIT (prev_insn->writes, EXECZ_REG))
+	    nops_rqd = 5 - prev_insn->age;
+
 	  /* Store that requires input registers are not overwritten by
-	     following instruction.  */
-	  if ((prev_insn->age + nops_rqd) < 1
-	      && prev_insn->delayeduse == DELAYEDUSE_YES
+	     following instruction.
+	     For CDNA3, only, VALU writes require 2 not 1 nop.
+	     CDNA3 additionally requires that 1 or 2 nop for global & scatch
+	     store/atomic.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 2
+	      && prev_insn->delayeduse
+	      && iunit == UNIT_VECTOR
+	      && ((hard_reg_set_intersect_p
+		   (prev_insn->reads, iwrites))))
+	    nops_rqd = 2 - prev_insn->age;
+	  else if ((prev_insn->age + nops_rqd) < 1
+	      && prev_insn->delayeduse
 	      && ((hard_reg_set_intersect_p
 		   (prev_insn->reads, iwrites))))
 	    nops_rqd = 1 - prev_insn->age;
 
-	  /* Instruction that requires VCC is not written too close before
-	     using it.  */
+	  /* Instruction (such as v_div_fmas) that requires VCC is not written
+	     too close before using it  */
 	  if (prev_insn->age < ivccwait
 	      && (hard_reg_set_intersect_p
 		  (prev_insn->writes,
 		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
 	    nops_rqd = ivccwait - prev_insn->age;
+
+	  /* CDNA3: v_cmpx followed by
+	     - V_readlane, v_readfirstlane, v_writelane requires 4 wait states
+	     - VALU reads EXEC as constant requires 2 wait states
+	     - other VALU requires no wait state  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 4
+	      && gcn_cmpx_insn_p (prev_insn->type)
+	      && get_attr_laneselect (insn) != LANESELECT_NO)
+	    nops_rqd = 4 - prev_insn->age;
+	  else if (TARGET_CDNA3_NOPS
+		   && (prev_insn->age + nops_rqd) < 2
+		   && iunit == UNIT_VECTOR
+		   && gcn_cmpx_insn_p (prev_insn->type)
+		   && TEST_HARD_REG_BIT (ireads, EXECZ_REG))
+	    nops_rqd = 2 - prev_insn->age;
+
+	  /* CDNA3: VALU writes VGPR followed by v_readlane vsrc0 reads VGPRn
+	     requires 1 wait state. */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 1
+	      && prev_insn->unit == UNIT_VECTOR
+	      && prev_insn->flatmemaccess != FLATMEMACCESS_LOAD
+	      && get_attr_laneselect (insn) == LANESELECT_READ
+	      && hard_reg_set_intersect_p
+		    (depregs, reg_class_contents[(int) VGPR_REGS]))
+	    nops_rqd = 1 - prev_insn->age;
+
+	  /* CDNA3: VALU op which uses OPSEL or SDWA with changes the result's
+	     bit position followed by VALU op consumes result of that op
+	     requires 1 wait state.
+	     FIXME: Handle OPSEL, once used.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 1
+	      && prev_insn->unit == UNIT_VECTOR
+	      && prev_insn->type == TYPE_VOP_SDWA
+	      && !hard_reg_set_empty_p (depregs))
+	    nops_rqd = 1 - prev_insn->age;
+
+	  /* CNDA3: VALU Trans Op (such as v_rcp_f64) followed by non-trans VALU
+	     op consumes result of that op requires 1 wait state.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 1
+	      && prev_insn->unit == UNIT_VECTOR
+	      && iunit == UNIT_VECTOR
+	      && get_attr_transop (prev_insn->insn) == TRANSOP_YES
+	      && get_attr_transop (insn) == TRANSOP_NO
+	      && !hard_reg_set_empty_p (depregs))
+	    nops_rqd = 1 - prev_insn->age;
 
 	  /* CDNA1: write VGPR before v_accvgpr_write reads it.  */
 	  if (TARGET_AVGPR_CDNA1_NOPS
@@ -6316,7 +6460,9 @@ gcn_md_reorg (void)
       /* Track the current instruction as a previous instruction.  */
       back[oldest].insn = insn;
       back[oldest].unit = iunit;
-      back[oldest].delayeduse = idelayeduse;
+      back[oldest].type = itype;
+      back[oldest].flatmemaccess = iflatmemaccess;
+      back[oldest].delayeduse = delayeduse;
       back[oldest].writes = iwrites;
       back[oldest].reads = ireads;
       back[oldest].age = 0;

@@ -312,17 +312,27 @@
 ; We need to be able to identify v_readlane and v_writelane with
 ; SGPR lane selection in order to handle "Manually Inserted Wait States".
 
-(define_attr "laneselect" "yes,no" (const_string "no"))
+(define_attr "laneselect" "write,read,no" (const_string "no"))
 
-; Identify instructions that require a "Manually Inserted Wait State" if
-; their inputs are overwritten by subsequent instructions.
+; Global or flat memory access using store or load followed by waitcnt
+; and using flat/global atomic access, possibly followed by a waitcnt.
+; 'storex34' denotes FLAT_STORE_X{3,4}.
+; 'cmpswapx2' denotes FLAT_ATOMIC_{F}CMPSWAP_X2
+; Used to handle "Manually Inserted Wait State".
 
-(define_attr "delayeduse" "yes,no" (const_string "no"))
+(define_attr "flatmemaccess"
+             "store,storex34,load,atomic,atomicwait,cmpswapx2,no"
+             (const_string "no"))
 
 ; Identify instructions that require "Manually Inserted Wait State" if
 ; a previous instruction writes to VCC.  The number gives the number of NOPs.
 
 (define_attr "vccwait" "" (const_int 0))
+
+; Mark trans ops such as v_{exp,rsq,sqrt,sin,cos,log,...}_F{16,32,64}
+; for later conditional s_nop insertion.
+
+(define_attr "transop" "yes,no" (const_string "no"))
 
 ;; }}}
 ;; {{{ Iterators useful across the wole machine description
@@ -555,9 +565,11 @@
   }
   [(set_attr "type" "sop1,vop1,vop3a,sopk,vopc,mult,smem,smem,smem,flat,flat,
 		     flat,flat,flat,flat")
+   (set_attr "flatmemaccess" "*,*,*,*,*,*,*,*,*,load,load,store,load,load,store")
    (set_attr "exec" "*,*,none,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "length" "4,4,4,4,4,8,12,12,12,12,12,12,12,12,12")
-   (set_attr "xnack" "*,*,*,*,*,*,off,on,*,off,on,*,off,on,*")])
+   (set_attr "xnack" "*,*,*,*,*,*,off,on,*,off,on,*,off,on,*")
+   (set_attr "laneselect" "*,*,read,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ; 32bit move pattern
 
@@ -565,38 +577,38 @@
   [(set (match_operand:SISF 0 "nonimmediate_operand")
 	(match_operand:SISF 1 "gcn_load_operand"))]
   ""
-  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack]
-   [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ] s_mov_b32\t%0, %1
-   [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ] s_movk_i32\t%0, %1
-   [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ] s_mov_b32\t%0, %1
-   [SD  ,RB  ;smem ,*   ,12,*    ,off] s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
-   [&SD ,RB  ;smem ,*   ,12,*    ,on ] ^
-   [RB  ,Sm  ;smem ,*   ,12,*    ,*  ] s_buffer_store%s1\t%1, s[0:3], %0
-   [Sm  ,RS  ;smem ,*   ,12,*    ,off] s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-   [&Sm ,RS  ;smem ,*   ,12,*    ,on ] ^
-   [RS  ,Sm  ;smem ,*   ,12,*    ,*  ] s_store_dword\t%1, %A0
-   [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ] v_mov_b32\t%0, %1
-   [Sg  ,v   ;vop3a,none,8 ,*    ,*  ] v_readlane_b32\t%0, %1, 0
-   [v   ,Sv  ;vop3a,none,8 ,*    ,*  ] v_writelane_b32\t%0, %1, 0
-   [v   ,^a  ;vop3p_mai,*,8,*    ,*  ] v_accvgpr_read_b32\t%0, %1
-   [a   ,v   ;vop3p_mai,*,8,*    ,*  ] v_accvgpr_write_b32\t%0, %1
-   [a   ,a   ;vop1 ,*    ,4,cdna2,*  ] v_accvgpr_mov_b32\t%0, %1
-   [v   ,RF  ;flat ,*   ,12,*    ,off] flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
-   [&v  ,RF  ;flat ,*   ,12,*    ,on ] ^
-   [^a  ,RF  ;flat ,*   ,12,cdna2,off] ^
-   [&^a ,RF  ;flat ,*   ,12,cdna2,on ] ^
-   [RF  ,v   ;flat ,*   ,12,*    ,*  ] flat_store_dword\t%A0, %1%O0%g0
-   [RF  ,a   ;flat ,*   ,12,cdna2,*  ] ^
-   [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ] v_mov_b32\t%0, %1
-   [RLRG,v   ;ds   ,*   ,12,*    ,*  ] ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-   [v   ,RLRG;ds   ,*   ,12,*    ,*  ] ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-   [SD  ,Y   ;sop1 ,*   ,8 ,*    ,*  ] s_mov_b32\t%0, %1
-   [v   ,RM  ;flat ,*   ,12,*    ,off] global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-   [&v  ,RM  ;flat ,*   ,12,*    ,on ] ^
-   [^a  ,RM  ;flat ,*   ,12,cdna2,off] ^
-   [&^a ,RM  ;flat ,*   ,12,cdna2,on ] ^
-   [RM  ,v   ;flat ,*   ,12,*    ,*  ] global_store_dword\t%A0, %1%O0%g0
-   [RM  ,a   ;flat ,*   ,12,cdna2,*  ] ^
+  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack, laneselect, flatmemaccess]
+   [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
+   [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ,*    ,*    ] s_movk_i32\t%0, %1
+   [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
+   [SD  ,RB  ;smem ,*   ,12,*    ,off,*    ,*    ] s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
+   [&SD ,RB  ;smem ,*   ,12,*    ,on ,*    ,*    ] ^
+   [RB  ,Sm  ;smem ,*   ,12,*    ,*  ,*    ,*    ] s_buffer_store%s1\t%1, s[0:3], %0
+   [Sm  ,RS  ;smem ,*   ,12,*    ,off,*    ,*    ] s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+   [&Sm ,RS  ;smem ,*   ,12,*    ,on ,*    ,*    ] ^
+   [RS  ,Sm  ;smem ,*   ,12,*    ,*  ,*    ,*    ] s_store_dword\t%1, %A0
+   [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
+   [Sg  ,v   ;vop3a,none,8 ,*    ,*  ,read ,*    ] v_readlane_b32\t%0, %1, 0
+   [v   ,Sv  ;vop3a,none,8 ,*    ,*  ,write,*    ] v_writelane_b32\t%0, %1, 0
+   [v   ,^a  ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_read_b32\t%0, %1
+   [a   ,v   ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_write_b32\t%0, %1
+   [a   ,a   ;vop1 ,*    ,4,cdna2,*  ,*    ,*    ] v_accvgpr_mov_b32\t%0, %1
+   [v   ,RF  ;flat ,*   ,12,*    ,off,*    ,load ] flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
+   [&v  ,RF  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
+   [^a  ,RF  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
+   [&^a ,RF  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
+   [RF  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] flat_store_dword\t%A0, %1%O0%g0
+   [RF  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
+   [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
+   [RLRG,v   ;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+   [v   ,RLRG;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+   [SD  ,Y   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
+   [v   ,RM  ;flat ,*   ,12,*    ,off,*    ,load ] global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+   [&v  ,RM  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
+   [^a  ,RM  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
+   [&^a ,RM  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
+   [RM  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] global_store_dword\t%A0, %1%O0%g0
+   [RM  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
   })
 
 ; 8/16bit move pattern
@@ -606,31 +618,31 @@
   [(set (match_operand:QIHI 0 "nonimmediate_operand")
 	(match_operand:QIHI 1 "gcn_load_operand"))]
   "gcn_valid_move_p (<MODE>mode, operands[0], operands[1])"
-  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack]
-  [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ] s_mov_b32\t%0, %1
-  [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ] s_movk_i32\t%0, %1
-  [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ] s_mov_b32\t%0, %1
-  [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ] v_mov_b32\t%0, %1
-  [Sg  ,v   ;vop3a,none,4 ,*    ,*  ] v_readlane_b32\t%0, %1, 0
-  [v   ,Sv  ;vop3a,none,4 ,*    ,*  ] v_writelane_b32\t%0, %1, 0
-  [v   ,^a  ;vop3p_mai,*,8,*    ,*  ] v_accvgpr_read_b32\t%0, %1
-  [a   ,v   ;vop3p_mai,*,8,*    ,*  ] v_accvgpr_write_b32\t%0, %1
-  [a   ,a   ;vop1 ,*    ,8,cdna2,*  ] v_accvgpr_mov_b32\t%0, %1
-  [v   ,RF  ;flat ,*   ,12,*    ,off] flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
-  [&v  ,RF  ;flat ,*   ,12,*    ,on ] ^
-  [^a  ,RF  ;flat ,*   ,12,cdna2,off] ^
-  [&^a ,RF  ;flat ,*   ,12,cdna2,on ] ^
-  [RF  ,v   ;flat ,*   ,12,*    ,*  ] flat_store%s0\t%A0, %1%O0%g0
-  [RF  ,a   ;flat ,*   ,12,cdna2,*  ] ^
-  [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ] v_mov_b32\t%0, %1
-  [RLRG,v   ;ds   ,*   ,12,*    ,*  ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RLRG;ds   ,*   ,12,*    ,*  ] ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RM  ;flat ,*   ,12,*    ,off] global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  [&v  ,RM  ;flat ,*   ,12,*    ,on ] ^
-  [^a  ,RM  ;flat ,*   ,12,cdna2,off] ^
-  [&^a ,RM  ;flat ,*   ,12,cdna2,on ] ^
-  [RM  ,v   ;flat ,*   ,12,*    ,*  ] global_store%s0\t%A0, %1%O0%g0
-  [RM  ,a   ;flat ,*   ,12,cdna2,*  ] ^
+  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack, laneselect, flatmemaccess]
+  [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
+  [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ,*    ,*    ] s_movk_i32\t%0, %1
+  [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
+  [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
+  [Sg  ,v   ;vop3a,none,4 ,*    ,*  ,read ,*    ] v_readlane_b32\t%0, %1, 0
+  [v   ,Sv  ;vop3a,none,4 ,*    ,*  ,write,*    ] v_writelane_b32\t%0, %1, 0
+  [v   ,^a  ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_read_b32\t%0, %1
+  [a   ,v   ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_write_b32\t%0, %1
+  [a   ,a   ;vop1 ,*    ,8,cdna2,*  ,*    ,*    ] v_accvgpr_mov_b32\t%0, %1
+  [v   ,RF  ;flat ,*   ,12,*    ,off,*    ,load ] flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [&v  ,RF  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
+  [^a  ,RF  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
+  [&^a ,RF  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
+  [RF  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] flat_store%s0\t%A0, %1%O0%g0
+  [RF  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
+  [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
+  [RLRG,v   ;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RM  ;flat ,*   ,12,*    ,off,*    ,load ] global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v  ,RM  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
+  [^a  ,RM  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
+  [&^a ,RM  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
+  [RM  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] global_store%s0\t%A0, %1%O0%g0
+  [RM  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
   })
 
 ; 64bit move pattern
@@ -639,34 +651,34 @@
   [(set (match_operand:DIDF 0 "nonimmediate_operand")
 	(match_operand:DIDF 1 "general_operand"))]
   "GET_CODE(operands[1]) != SYMBOL_REF"
-  {@ [cons: =0, 1; attrs: type, length, cdna, xnack]
-  [SD  ,SSA ;sop1 ,4 ,*    ,*  ] s_mov_b64\t%0, %1
-  [SD  ,C   ;sop1 ,8 ,*    ,*  ] ^
-  [SD  ,DB  ;mult ,* ,*    ,*  ] #
-  [RS  ,Sm  ;smem ,12,*    ,*  ] s_store_dwordx2\t%1, %A0
-  [Sm  ,RS  ;smem ,12,*    ,off] s_load_dwordx2\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  [&Sm ,RS  ;smem ,12,*    ,on ] ^
-  [v   ,v   ;vmult,* ,*    ,*  ] #
-  [v   ,DB  ;vmult,* ,*    ,*  ] #
-  [Sg  ,v   ;vmult,* ,*    ,*  ] #
-  [v   ,Sv  ;vmult,* ,*    ,*  ] #
-  [v   ,^a  ;vmult,* ,*    ,*  ] #
-  [a   ,v   ;vmult,* ,*    ,*  ] #
-  [a   ,a   ;vmult,* ,cdna2,*  ] #
-  [v   ,RF  ;flat ,12,*    ,off] flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
-  [&v  ,RF  ;flat ,12,*    ,on ] ^
-  [^a  ,RF  ;flat ,12,cdna2,off] ^
-  [&^a ,RF  ;flat ,12,cdna2,on ] ^
-  [RF  ,v   ;flat ,12,*    ,*  ] flat_store_dwordx2\t%A0, %1%O0%g0
-  [RF  ,a   ;flat ,12,cdna2,*  ] ^
-  [RLRG,v   ;ds   ,12,*    ,*  ] ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RLRG;ds   ,12,*    ,*  ] ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RM  ;flat ,12,*    ,off] global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  [&v  ,RM  ;flat ,12,*    ,on ] ^
-  [^a  ,RM  ;flat ,12,cdna2,off] ^
-  [&^a ,RM  ;flat ,12,cdna2,on ] ^
-  [RM  ,v   ;flat ,12,*    ,*  ] global_store_dwordx2\t%A0, %1%O0%g0
-  [RM  ,a   ;flat ,12,cdna2,*  ] ^
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack, flatmemaccess]
+  [SD  ,SSA ;sop1 ,4 ,*    ,*  ,*    ] s_mov_b64\t%0, %1
+  [SD  ,C   ;sop1 ,8 ,*    ,*  ,*    ] ^
+  [SD  ,DB  ;mult ,* ,*    ,*  ,*    ] #
+  [RS  ,Sm  ;smem ,12,*    ,*  ,*    ] s_store_dwordx2\t%1, %A0
+  [Sm  ,RS  ;smem ,12,*    ,off,*    ] s_load_dwordx2\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+  [&Sm ,RS  ;smem ,12,*    ,on ,*    ] ^
+  [v   ,v   ;vmult,* ,*    ,*  ,*    ] #
+  [v   ,DB  ;vmult,* ,*    ,*  ,*    ] #
+  [Sg  ,v   ;vmult,* ,*    ,*  ,*    ] #
+  [v   ,Sv  ;vmult,* ,*    ,*  ,*    ] #
+  [v   ,^a  ;vmult,* ,*    ,*  ,*    ] #
+  [a   ,v   ;vmult,* ,*    ,*  ,*    ] #
+  [a   ,a   ;vmult,* ,cdna2,*  ,*    ] #
+  [v   ,RF  ;flat ,12,*    ,off,load ] flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [&v  ,RF  ;flat ,12,*    ,on ,load ] ^
+  [^a  ,RF  ;flat ,12,cdna2,off,load ] ^
+  [&^a ,RF  ;flat ,12,cdna2,on ,load ] ^
+  [RF  ,v   ;flat ,12,*    ,*  ,store] flat_store_dwordx2\t%A0, %1%O0%g0
+  [RF  ,a   ;flat ,12,cdna2,*  ,store] ^
+  [RLRG,v   ;ds   ,12,*    ,*  ,*    ] ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds   ,12,*    ,*  ,*    ] ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RM  ;flat ,12,*    ,off,load ] global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v  ,RM  ;flat ,12,*    ,on ,load ] ^
+  [^a  ,RM  ;flat ,12,cdna2,off,load ] ^
+  [&^a ,RM  ;flat ,12,cdna2,on ,load ] ^
+  [RM  ,v   ;flat ,12,*    ,*  ,store] global_store_dwordx2\t%A0, %1%O0%g0
+  [RM  ,a   ;flat ,12,cdna2,*  ,store] ^
   }
   "reload_completed
    && ((!MEM_P (operands[0]) && !MEM_P (operands[1])
@@ -704,31 +716,31 @@
   [(set (match_operand:TI 0 "nonimmediate_operand")
 	(match_operand:TI 1 "general_operand"  ))]
   ""
-  {@ [cons: =0, 1; attrs: type, delayeduse, length, cdna, xnack]
-  [SD ,SSB;mult ,*  ,* ,*    ,*  ] #
-  [RS ,Sm ;smem ,*  ,12,*    ,*  ] s_store_dwordx4\t%1, %A0
-  [Sm ,RS ;smem ,yes,12,*    ,off] s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  [&Sm,RS ;smem ,yes,12,*    ,on ] ^
-  [RF ,v  ;flat ,*  ,12,*    ,*  ] flat_store_dwordx4\t%A0, %1%O0%g0
-  [RF ,a  ;flat ,*  ,12,cdna2,*  ] ^
-  [v  ,RF ;flat ,*  ,12,*    ,off] flat_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\t0
-  [&v ,RF ;flat ,*  ,12,*    ,on ] ^
-  [^a ,RF ;flat ,*  ,12,cdna2,off] ^
-  [&^a,RF ;flat ,*  ,12,cdna2,on ] ^
-  [v  ,v  ;vmult,*  ,* ,*    ,*  ] #
-  [v  ,Sv ;vmult,*  ,* ,*    ,*  ] #
-  [SD ,v  ;vmult,*  ,* ,*    ,*  ] #
-  [RM ,v  ;flat ,yes,12,*    ,*  ] global_store_dwordx4\t%A0, %1%O0%g0
-  [RM ,a  ;flat ,yes,12,cdna2,*  ] ^
-  [v  ,RM ;flat ,*  ,12,*    ,off] global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  [&v ,RM ;flat ,*  ,12,*    ,on ] ^
-  [^a ,RM ;flat ,*  ,12,cdna2,off] ^
-  [&^a,RM ;flat ,*  ,12,cdna2,on ] ^
-  [RL ,v  ;ds   ,*  ,12,*    ,*  ] ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  [v  ,RL ;ds   ,*  ,12,*    ,*  ] ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  [v  ,^a ;vmult,*  ,* ,*    ,*  ] #
-  [a  ,v  ;vmult,*  ,* ,*    ,*  ] #
-  [a  ,a  ;vmult,*  ,* ,cdna2,*  ] #
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack, flatmemaccess]
+  [SD ,SSB;mult ,* ,*    ,*  ,*       ] #
+  [RS ,Sm ;smem ,12,*    ,*  ,*       ] s_store_dwordx4\t%1, %A0
+  [Sm ,RS ;smem ,12,*    ,off,*       ] s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+  [&Sm,RS ;smem ,12,*    ,on ,*       ] ^
+  [RF ,v  ;flat ,12,*    ,*  ,storex34] flat_store_dwordx4\t%A0, %1%O0%g0
+  [RF ,a  ;flat ,12,cdna2,*  ,storex34] ^
+  [v  ,RF ;flat ,12,*    ,off,load    ] flat_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [&v ,RF ;flat ,12,*    ,on ,load    ] ^
+  [^a ,RF ;flat ,12,cdna2,off,load    ] ^
+  [&^a,RF ;flat ,12,cdna2,on ,load    ] ^
+  [v  ,v  ;vmult,* ,*    ,*  ,*       ] #
+  [v  ,Sv ;vmult,* ,*    ,*  ,*       ] #
+  [SD ,v  ;vmult,* ,*    ,*  ,*       ] #
+  [RM ,v  ;flat ,12,*    ,*  ,storex34] global_store_dwordx4\t%A0, %1%O0%g0
+  [RM ,a  ;flat ,12,cdna2,*  ,storex34] ^
+  [v  ,RM ;flat ,12,*    ,off,load    ] global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v ,RM ;flat ,12,*    ,on ,load    ] ^
+  [^a ,RM ;flat ,12,cdna2,off,load    ] ^
+  [&^a,RM ;flat ,12,cdna2,on ,load    ] ^
+  [RL ,v  ;ds   ,12,*    ,*  ,*       ] ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v  ,RL ;ds   ,12,*    ,*  ,*       ] ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v  ,^a ;vmult,* ,*    ,*  ,*       ] #
+  [a  ,v  ;vmult,* ,*    ,*  ,*       ] #
+  [a  ,a  ;vmult,* ,cdna2,*  ,*       ] #
   }
   "reload_completed
    && REG_P (operands[0])
@@ -1985,6 +1997,7 @@
    flat_atomic_<bare_mnemonic><X>\t%0, %1, %2 %G2\;s_waitcnt\t0
    global_atomic_<bare_mnemonic><X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
+   (set_attr "flatmemaccess" "*,atomicwait,atomicwait")
    (set_attr "length" "12")])
 
 ; FIXME: These patterns are disabled because the instructions don't
@@ -2006,6 +2019,7 @@
    flat_atomic_<bare_mnemonic><X>\t%0, %1\;s_waitcnt\t0
    global_atomic_<bare_mnemonic><X>\t%A0, %1%O0\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
+   (set_attr "flatmemaccess" "*,atomicwait,atomicwait")
    (set_attr "length" "12")])
 
 (define_mode_attr x2 [(SI "DI") (DI "TI")])
@@ -2053,7 +2067,7 @@
    global_atomic_cmpswap<X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")
-   (set_attr "delayeduse" "*,yes,yes")])
+   (set_attr "flatmemaccess" "*,cmpswapx2,cmpswapx2")])
 
 (define_insn "sync_compare_and_swap<mode>_lds_insn"
   [(set (match_operand:SIDI 0 "register_operand"    "= v")
@@ -2173,6 +2187,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
+   (set_attr "flatmemaccess" "*,load,load")
    (set_attr "length" "28")
    (set_attr "rdna" "no,*,*")])
 
@@ -2257,6 +2272,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
+   (set_attr "flatmemaccess" "*,store,store")
    (set_attr "length" "28")
    (set_attr "rdna" "no,*,*")])
 
@@ -2389,6 +2405,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
+   (set_attr "flatmemaccess" "*,atomicwait,atomicwait")
    (set_attr "length" "28")
    (set_attr "rdna" "no,*,*")])
 

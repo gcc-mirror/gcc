@@ -811,7 +811,7 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "write")])
 
 ; FIXME: 64bit operations really should be splitters, but I am not sure how
 ; to represent vertical subregs.
@@ -828,7 +828,7 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "16")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "write")])
 
 (define_expand "vec_set<mode>"
   [(set (match_operand:V_MOV 0 "register_operand")
@@ -854,7 +854,7 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "write")])
 
 (define_insn "*vec_set<mode>_1"
   [(set (match_operand:V_2REG 0 "register_operand"		   "=v")
@@ -871,7 +871,7 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "16")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "write")])
 
 (define_insn "vec_duplicate<mode><exec>"
   [(set (match_operand:V_1REG 0 "register_operand"	   "=v")
@@ -910,7 +910,7 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "read")])
 
 (define_insn "vec_extract<mode><scalar_mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=&Sg")
@@ -922,7 +922,7 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "16")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "read")])
 
 (define_insn "vec_extract<mode><scalar_mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=&Sg")
@@ -934,7 +934,7 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "32")
    (set_attr "exec" "none")
-   (set_attr "laneselect" "yes")])
+   (set_attr "laneselect" "read")])
 
 (define_insn "vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop"
   [(set (match_operand:V_1REG_ALT 0 "register_operand" "=v,v")
@@ -1192,6 +1192,7 @@
     return buf;
   }
   [(set_attr "type" "flat")
+   (set_attr "flatmemaccess" "load")
    (set_attr "length" "12")
    (set_attr "cdna" "*,cdna2,*,cdna2")
    (set_attr "xnack" "off,off,on,on")])
@@ -1250,6 +1251,7 @@
     return buf;
   }
   [(set_attr "type" "flat")
+   (set_attr "flatmemaccess" "load")
    (set_attr "length" "12")
    (set_attr "cdna" "*,cdna2,*,cdna2")
    (set_attr "xnack" "off,off,on,on")])
@@ -1335,6 +1337,7 @@
     return buf;
   }
   [(set_attr "type" "flat")
+   (set_attr "flatmemaccess" "store")
    (set_attr "length" "12")
    (set_attr "cdna" "*,cdna2")])
 
@@ -1390,6 +1393,7 @@
     return buf;
   }
   [(set_attr "type" "flat")
+   (set_attr "flatmemaccess" "store")
    (set_attr "length" "12")
    (set_attr "cdna" "*,cdna2")])
 
@@ -3260,7 +3264,8 @@
   "flag_unsafe_math_optimizations"
   "v_sqrt%i0\t%0, %1"
   [(set_attr "type" "vop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "transop" "yes")])
 
 (define_insn "sqrt<mode>2"
   [(set (match_operand:FP 0 "register_operand"  "=  v")
@@ -3269,7 +3274,8 @@
   "flag_unsafe_math_optimizations"
   "v_sqrt%i0\t%0, %1"
   [(set_attr "type" "vop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "transop" "yes")])
 
 ; These FP unops have f64, f32 and f16 versions.
 (define_int_iterator MATH_UNOP_1OR2REG
@@ -3559,7 +3565,8 @@
   ""
   "v_rcp%i0\t%0, %1"
   [(set_attr "type" "vop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "transop" "yes")])
 
 ;; v_div_scale takes a numerator (op2) and denominator (op1) and returns the
 ;; one that matches op3 adjusted for best results in reciprocal division.
