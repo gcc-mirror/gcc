@@ -2883,7 +2883,7 @@ again:
 	continue;
       vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
       unsigned int size = DR_GROUP_SIZE (vinfo);
-      tree vectype = STMT_VINFO_VECTYPE (vinfo);
+      tree vectype = SLP_TREE_VECTYPE (SLP_INSTANCE_TREE (instance));
       if (vect_store_lanes_supported (vectype, size, false) == IFN_LAST
 	 && ! known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U)
 	 && ! vect_grouped_store_supported (vectype, size))
@@ -2897,7 +2897,7 @@ again:
 	      vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
 	      bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
 	      size = DR_GROUP_SIZE (vinfo);
-	      vectype = STMT_VINFO_VECTYPE (vinfo);
+	      vectype = SLP_TREE_VECTYPE (node);
 	      if (vect_load_lanes_supported (vectype, size, false) == IFN_LAST
 		  && ! vect_grouped_load_supported (vectype, single_element_p,
 						    size))
@@ -6689,7 +6689,7 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 			       vec_loop_lens *lens)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_out = SLP_TREE_VECTYPE (slp_node);
   internal_fn mask_reduc_fn = get_masked_reduction_fn (reduc_fn, vectype_in);
 
   gcc_assert (!nested_in_vect_loop_p (loop, stmt_info));
@@ -8181,7 +8181,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 			  stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			  slp_tree slp_node)
 {
-  tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_out = SLP_TREE_VECTYPE (slp_node);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned vec_num;
 
@@ -8208,7 +8208,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
 
   if (!vectype_in)
-    vectype_in = STMT_VINFO_VECTYPE (stmt_info);
+    vectype_in = SLP_TREE_VECTYPE (slp_node);
 
   vec_num = vect_get_num_copies (loop_vinfo, slp_node, vectype_in);
 
@@ -8528,7 +8528,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 			  stmt_vec_info stmt_info,
 			  slp_tree slp_node, slp_instance slp_node_instance)
 {
-  tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_out = SLP_TREE_VECTYPE (slp_node);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   int i;
   bool nested_cycle = false;
@@ -8781,7 +8781,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
 		       slp_tree slp_node)
 {
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   tree scalar_dest = gimple_phi_result (stmt_info->stmt);
   basic_block bb = gimple_bb (stmt_info->stmt);
   edge e = single_pred_edge (bb);

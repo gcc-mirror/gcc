@@ -5241,7 +5241,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		    if (STMT_VINFO_STRIDED_P (stmt_vinfo)
 			|| compare_step_with_zero (vinfo, stmt_vinfo) <= 0
 			|| vect_load_lanes_supported
-			     (STMT_VINFO_VECTYPE (stmt_vinfo),
+			     (SLP_TREE_VECTYPE (load_node),
 			      DR_GROUP_SIZE (stmt_vinfo), masked) == IFN_LAST
 			/* ???  During SLP re-discovery with a single lane
 			   a masked grouped load will appear permuted and
@@ -5262,7 +5262,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 			 || SLP_TREE_LANES (load_node) == group_size
 			 || (vect_slp_prefer_store_lanes_p
 			     (vinfo, stmt_vinfo,
-			      STMT_VINFO_VECTYPE (stmt_vinfo), masked,
+			      SLP_TREE_VECTYPE (load_node), masked,
 			      group_size, SLP_TREE_LANES (load_node))));
 		  }
 

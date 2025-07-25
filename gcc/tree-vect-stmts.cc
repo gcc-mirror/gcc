@@ -1633,7 +1633,7 @@ prepare_vec_mask (loop_vec_info loop_vinfo, tree mask_type, tree loop_mask,
    else values will be stored in the vector ELSVALS points to.  */
 
 static bool
-vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
+vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info, tree vectype,
 				     loop_vec_info loop_vinfo, bool masked_p,
 				     gather_scatter_info *gs_info,
 				     vec<int> *elsvals)
@@ -1651,7 +1651,6 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
     }
 
   /* Get the number of bits in an element.  */
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   scalar_mode element_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
   unsigned int element_bits = GET_MODE_BITSIZE (element_mode);
 
@@ -1731,14 +1730,14 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
    else values will be stored in the vector ELSVALS points to.  */
 
 static bool
-vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
+vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info, tree vectype,
 				    loop_vec_info loop_vinfo, bool masked_p,
 				    gather_scatter_info *gs_info,
 				    vec<int> *elsvals)
 {
   if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info, elsvals)
       || gs_info->ifn == IFN_LAST)
-    return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
+    return vect_truncate_gather_scatter_offset (stmt_info, vectype, loop_vinfo,
 						masked_p, gs_info, elsvals);
 
   tree old_offset_type = TREE_TYPE (gs_info->offset);
@@ -2255,7 +2254,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       && single_element_p
       && SLP_TREE_LANES (slp_node) == 1
       && loop_vinfo
-      && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
+      && vect_use_strided_gather_scatters_p (stmt_info, vectype, loop_vinfo,
 					     masked_p, gs_info, elsvals))
     *memory_access_type = VMAT_GATHER_SCATTER;
   else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
@@ -2607,8 +2606,7 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
 
   /* If the caller is not prepared for adjusting an external/constant
      SLP mask vector type fail.  */
-  if (slp_node
-      && !mask_node
+  if (!mask_node
       && SLP_TREE_DEF_TYPE (mask_node_1) != vect_internal_def)
     {
       if (dump_enabled_p ())
@@ -2617,7 +2615,7 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
       return false;
     }
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   if (!mask_vectype)
     mask_vectype = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (vectype),
 						  mask_node_1);
@@ -2693,7 +2691,7 @@ vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
       return false;
     }
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   if (rhs_vectype && !useless_type_conversion_p (vectype, rhs_vectype))
     {
       if (dump_enabled_p ())
@@ -2799,11 +2797,11 @@ vect_get_mask_load_else (int elsval, tree type)
 
 static gimple *
 vect_build_one_gather_load_call (vec_info *vinfo, stmt_vec_info stmt_info,
+				 tree vectype,
 				 gimple_stmt_iterator *gsi,
 				 gather_scatter_info *gs_info,
 				 tree ptr, tree offset, tree mask)
 {
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info->decl));
   tree rettype = TREE_TYPE (TREE_TYPE (gs_info->decl));
   tree srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
@@ -3006,7 +3004,7 @@ vect_get_gather_scatter_ops (class loop *loop,
    I * DR_STEP / SCALE.  */
 
 static void
-vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
+vect_get_strided_load_store_ops (stmt_vec_info stmt_info, tree vectype,
 				 loop_vec_info loop_vinfo,
 				 gimple_stmt_iterator *gsi,
 				 gather_scatter_info *gs_info,
@@ -3014,7 +3012,6 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 				 vec_loop_lens *loop_lens)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
   if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
     {
@@ -8383,7 +8380,8 @@ vectorizable_store (vec_info *vinfo,
     {
       aggr_type = elem_type;
       if (!costing_p)
-	vect_get_strided_load_store_ops (stmt_info, loop_vinfo, gsi, &gs_info,
+	vect_get_strided_load_store_ops (stmt_info, vectype, loop_vinfo,
+					 gsi, &gs_info,
 					 &bump, &vec_offset, loop_lens);
     }
   else
@@ -9404,7 +9402,7 @@ vectorizable_load (vec_info *vinfo,
 	return false;
     }
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (loop_vinfo)
@@ -10262,7 +10260,8 @@ vectorizable_load (vec_info *vinfo,
     {
       aggr_type = elem_type;
       if (!costing_p)
-	vect_get_strided_load_store_ops (stmt_info, loop_vinfo, gsi, &gs_info,
+	vect_get_strided_load_store_ops (stmt_info, vectype, loop_vinfo,
+					 gsi, &gs_info,
 					 &bump, &vec_offset, loop_lens);
     }
   else
@@ -10581,7 +10580,7 @@ vectorizable_load (vec_info *vinfo,
 	      if (known_eq (nunits, offset_nunits))
 		{
 		  new_stmt = vect_build_one_gather_load_call
-			       (vinfo, stmt_info, gsi, &gs_info,
+			       (vinfo, stmt_info, vectype, gsi, &gs_info,
 				dataref_ptr, vec_offsets[i], final_mask);
 		  data_ref = NULL_TREE;
 		}
@@ -10591,7 +10590,7 @@ vectorizable_load (vec_info *vinfo,
 		     lanes but the builtins will produce full vectype
 		     data with just the lower lanes filled.  */
 		  new_stmt = vect_build_one_gather_load_call
-			       (vinfo, stmt_info, gsi, &gs_info,
+			       (vinfo, stmt_info, vectype, gsi, &gs_info,
 				dataref_ptr, vec_offsets[2 * i], final_mask);
 		  tree low = make_ssa_name (vectype);
 		  gimple_set_lhs (new_stmt, low);
@@ -10630,7 +10629,8 @@ vectorizable_load (vec_info *vinfo,
 		    }
 
 		  new_stmt = vect_build_one_gather_load_call
-			       (vinfo, stmt_info, gsi, &gs_info, dataref_ptr,
+			       (vinfo, stmt_info, vectype, gsi, &gs_info,
+				dataref_ptr,
 				vec_offsets[2 * i + 1], final_mask);
 		  tree high = make_ssa_name (vectype);
 		  gimple_set_lhs (new_stmt, high);
@@ -10673,7 +10673,7 @@ vectorizable_load (vec_info *vinfo,
 						   new_stmt, gsi);
 		    }
 		  new_stmt = vect_build_one_gather_load_call
-			       (vinfo, stmt_info, gsi, &gs_info,
+			       (vinfo, stmt_info, vectype, gsi, &gs_info,
 				dataref_ptr, vec_offset, final_mask);
 		  data_ref = NULL_TREE;
 		}
