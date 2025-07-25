@@ -584,8 +584,8 @@ AssociatedImplTrait::setup_associated_types (
 	}
       else
 	{
-	  TyTy::ParamType *param = p.get_param_ty ();
-	  TyTy::BaseType *resolved = param->destructure ();
+	  auto param = p.get_param_ty ();
+	  auto resolved = param->destructure ();
 	  subst_args.push_back (TyTy::SubstitutionArg (&p, resolved));
 	  param_mappings[param->get_symbol ()] = resolved->get_ref ();
 	}
@@ -613,8 +613,8 @@ AssociatedImplTrait::setup_associated_types (
       if (i == 0)
 	continue;
 
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      TyTy::BaseType *r = p->resolve ();
+      const auto p = arg.get_param_ty ();
+      auto r = p->resolve ();
       if (!r->is_concrete ())
 	{
 	  r = SubstMapperInternal::Resolve (r, infer_arguments);
@@ -630,8 +630,8 @@ AssociatedImplTrait::setup_associated_types (
       if (i == 0)
 	continue;
 
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      TyTy::BaseType *r = p->resolve ();
+      const auto p = arg.get_param_ty ();
+      auto r = p->resolve ();
       if (!r->is_concrete ())
 	{
 	  r = SubstMapperInternal::Resolve (r, infer_arguments);

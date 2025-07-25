@@ -54,13 +54,13 @@ SubstitutionParamMapping::clone () const
 				   static_cast<ParamType *> (param->clone ()));
 }
 
-ParamType *
+BaseGeneric *
 SubstitutionParamMapping::get_param_ty ()
 {
   return param;
 }
 
-const ParamType *
+const BaseGeneric *
 SubstitutionParamMapping::get_param_ty () const
 {
   return param;
@@ -229,7 +229,7 @@ SubstitutionArg::get_param_mapping () const
   return param;
 }
 
-const ParamType *
+const BaseGeneric *
 SubstitutionArg::get_param_ty () const
 {
   return original_param;
@@ -334,11 +334,11 @@ SubstitutionArgumentMappings::is_error () const
 
 bool
 SubstitutionArgumentMappings::get_argument_for_symbol (
-  const ParamType *param_to_find, SubstitutionArg *argument) const
+  const BaseGeneric *param_to_find, SubstitutionArg *argument) const
 {
   for (const auto &mapping : mappings)
     {
-      const ParamType *p = mapping.get_param_ty ();
+      const auto *p = mapping.get_param_ty ();
       if (p->get_symbol () == param_to_find->get_symbol ())
 	{
 	  *argument = mapping;
@@ -951,7 +951,7 @@ SubstitutionRef::prepare_higher_ranked_bounds ()
 {
   for (const auto &subst : get_substs ())
     {
-      const TyTy::ParamType *pty = subst.get_param_ty ();
+      const auto pty = subst.get_param_ty ();
       for (const auto &bound : pty->get_specified_bounds ())
 	{
 	  const auto ref = bound.get ();
@@ -965,8 +965,7 @@ SubstitutionRef::monomorphize ()
 {
   for (const auto &subst : get_substs ())
     {
-      const TyTy::ParamType *pty = subst.get_param_ty ();
-
+      const auto pty = subst.get_param_ty ();
       if (!pty->can_resolve ())
 	continue;
 

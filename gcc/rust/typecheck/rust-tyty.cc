@@ -1690,7 +1690,7 @@ VariantDef::clone () const
 
   auto &&discriminant_opt = has_discriminant ()
 			      ? tl::optional<std::unique_ptr<HIR::Expr>> (
-				get_discriminant ().clone_expr ())
+				  get_discriminant ().clone_expr ())
 			      : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
@@ -1706,7 +1706,7 @@ VariantDef::monomorphized_clone () const
 
   auto discriminant_opt = has_discriminant ()
 			    ? tl::optional<std::unique_ptr<HIR::Expr>> (
-			      get_discriminant ().clone_expr ())
+				get_discriminant ().clone_expr ())
 			    : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
@@ -1818,8 +1818,8 @@ ADTType::is_equal (const BaseType &other) const
 	  const SubstitutionParamMapping &a = substitutions.at (i);
 	  const SubstitutionParamMapping &b = other2->substitutions.at (i);
 
-	  const ParamType *aa = a.get_param_ty ();
-	  const ParamType *bb = b.get_param_ty ();
+	  const auto &aa = a.get_param_ty ();
+	  const auto &bb = b.get_param_ty ();
 	  if (!aa->is_equal (*bb))
 	    return false;
 	}
@@ -2145,8 +2145,8 @@ FnType::is_equal (const BaseType &other) const
 	  const SubstitutionParamMapping &a = get_substs ().at (i);
 	  const SubstitutionParamMapping &b = ofn.get_substs ().at (i);
 
-	  const ParamType *pa = a.get_param_ty ();
-	  const ParamType *pb = b.get_param_ty ();
+	  const auto *pa = a.get_param_ty ();
+	  const auto *pb = b.get_param_ty ();
 	  if (!pa->is_equal (*pb))
 	    return false;
 	}
@@ -3409,10 +3409,10 @@ ParamType::ParamType (std::string symbol, location_t locus, HirId ref,
 		      HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
-  : BaseType (ref, ref, KIND,
-	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
-	       locus},
-	      specified_bounds, refs),
+  : BaseGeneric (ref, ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		  locus},
+		 specified_bounds, refs),
     is_trait_self (false), symbol (symbol), param (param)
 {}
 
@@ -3420,10 +3420,10 @@ ParamType::ParamType (bool is_trait_self, std::string symbol, location_t locus,
 		      HirId ref, HirId ty_ref, HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
-  : BaseType (ref, ty_ref, KIND,
-	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
-	       locus},
-	      specified_bounds, refs),
+  : BaseGeneric (ref, ty_ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		  locus},
+		 specified_bounds, refs),
     is_trait_self (is_trait_self), symbol (symbol), param (param)
 {}
 

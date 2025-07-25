@@ -31,6 +31,7 @@ namespace Rust {
 namespace TyTy {
 
 class ParamType;
+class BaseGeneric;
 
 struct RegionConstraints
 {
@@ -56,8 +57,8 @@ public:
 
   SubstitutionParamMapping clone () const;
 
-  ParamType *get_param_ty ();
-  const ParamType *get_param_ty () const;
+  BaseGeneric *get_param_ty ();
+  const BaseGeneric *get_param_ty () const;
 
   HIR::GenericParam &get_generic_param ();
   const HIR::GenericParam &get_generic_param () const;
@@ -156,7 +157,7 @@ public:
 
   const SubstitutionParamMapping *get_param_mapping () const;
 
-  const ParamType *get_param_ty () const;
+  const BaseGeneric *get_param_ty () const;
 
   static SubstitutionArg error ();
 
@@ -168,7 +169,7 @@ public:
 
 private:
   const SubstitutionParamMapping *param;
-  const ParamType *original_param;
+  const BaseGeneric *original_param;
   BaseType *argument;
 };
 
@@ -208,7 +209,7 @@ public:
 
   bool is_error () const;
 
-  bool get_argument_for_symbol (const ParamType *param_to_find,
+  bool get_argument_for_symbol (const BaseGeneric *param_to_find,
 				SubstitutionArg *argument) const;
 
   /** Return type parameter index for symbol */

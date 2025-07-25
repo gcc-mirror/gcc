@@ -330,7 +330,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  auto fn = lookup->as<TyTy::FnType> ();
 	  rust_assert (fn->get_num_type_params () > 0);
 	  TyTy::SubstitutionParamMapping &self = fn->get_substs ().at (0);
-	  TyTy::ParamType *receiver = self.get_param_ty ();
+	  TyTy::BaseGeneric *receiver = self.get_param_ty ();
 	  TyTy::BaseType *r = receiver;
 	  if (!receiver->can_resolve ())
 	    {

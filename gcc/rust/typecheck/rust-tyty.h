@@ -365,7 +365,26 @@ public:
   std::string get_name () const override final;
 };
 
-class ParamType : public BaseType
+class BaseGeneric : public BaseType
+{
+public:
+  virtual std::string get_symbol () const = 0;
+
+  virtual HIR::GenericParam &get_generic_param () = 0;
+
+  virtual bool can_resolve () const = 0;
+
+  virtual BaseType *resolve () const = 0;
+
+protected:
+  BaseGeneric (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+	       std::vector<TypeBoundPredicate> specified_bounds,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, kind, ident, specified_bounds, refs)
+  {}
+};
+
+class ParamType : public BaseGeneric
 {
 public:
   static constexpr auto KIND = TypeKind::PARAM;
@@ -389,13 +408,13 @@ public:
 
   BaseType *clone () const final override;
 
-  std::string get_symbol () const;
+  std::string get_symbol () const override final;
 
-  HIR::GenericParam &get_generic_param ();
+  HIR::GenericParam &get_generic_param () override final;
 
-  bool can_resolve () const;
+  bool can_resolve () const override final;
 
-  BaseType *resolve () const;
+  BaseType *resolve () const override final;
 
   std::string get_name () const override final;
 
@@ -523,7 +542,7 @@ public:
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
-  virtual ~TypeBoundPredicate (){};
+  virtual ~TypeBoundPredicate () {};
 
   TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
 

@@ -437,8 +437,8 @@ sizeof_handler (Context *ctx, TyTy::FnType *fntype)
   // get the template parameter type tree fn size_of<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
-  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
-  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  const auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 
@@ -643,8 +643,8 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
-  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
-  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  const auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 
@@ -1079,8 +1079,8 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
   // get the template parameter type tree fn uninit<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
-  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
-  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  const auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 
@@ -1144,8 +1144,8 @@ move_val_init_handler (Context *ctx, TyTy::FnType *fntype)
   // get the template parameter type tree fn size_of<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
-  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
-  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 

@@ -23,6 +23,7 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
 #include "rust-attribute-values.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -486,6 +487,10 @@ TypeCheckBase::resolve_generic_params (
 
 	    context->insert_type (generic_param->get_mappings (),
 				  specified_type);
+
+	    // TODO for const generics
+	    // TyTy::SubstitutionParamMapping p (*generic_param, param_type);
+	    // substitutions.push_back (p);
 	  }
 	  break;
 
@@ -501,8 +506,7 @@ TypeCheckBase::resolve_generic_params (
 	      *generic_param, false /*resolve_trait_bounds*/);
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    auto &param = static_cast<HIR::TypeParam &> (*generic_param);
-	    TyTy::SubstitutionParamMapping p (param, param_type);
+	    TyTy::SubstitutionParamMapping p (*generic_param, param_type);
 	    substitutions.push_back (p);
 	  }
 	  break;
@@ -517,7 +521,10 @@ TypeCheckBase::resolve_generic_params (
 	continue;
 
       auto &type_param = static_cast<HIR::TypeParam &> (generic);
-      auto pty = subst.get_param_ty ();
+      auto bpty = subst.get_param_ty ();
+      rust_assert (bpty->get_kind () == TyTy::TypeKind::PARAM);
+      auto pty = static_cast<TyTy::ParamType *> (bpty);
+
       TypeResolveGenericParam::ApplyAnyTraitBounds (type_param, pty);
     }
 }

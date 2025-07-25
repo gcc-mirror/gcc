@@ -118,8 +118,8 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
 	}
       else
 	{
-	  TyTy::ParamType *param = p.get_param_ty ();
-	  TyTy::BaseType *resolved = param->destructure ();
+	  auto param = p.get_param_ty ();
+	  auto resolved = param->destructure ();
 	  args.push_back (TyTy::SubstitutionArg (&p, resolved));
 	}
     }
