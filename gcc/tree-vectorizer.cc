@@ -724,7 +724,6 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
   STMT_VINFO_SLP_VECT_ONLY_PATTERN (res) = false;
-  STMT_VINFO_VEC_STMTS (res) = vNULL;
   res->reduc_initial_values = vNULL;
   res->reduc_scalar_results = vNULL;
 
@@ -790,7 +789,6 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 
   stmt_info->reduc_initial_values.release ();
   stmt_info->reduc_scalar_results.release ();
-  STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
 }
 

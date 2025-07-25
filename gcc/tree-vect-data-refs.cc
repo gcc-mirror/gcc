@@ -3956,8 +3956,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
     }
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   int misalignment;
-  if (STMT_VINFO_VEC_STMTS (stmt_vinfo).exists ()
-      && ((misalignment = dr_misalignment (dr_info, vectype)), true)
+  if (((misalignment = dr_misalignment (dr_info, vectype)), true)
       && (vect_supportable_dr_alignment (vinfo, dr_info, vectype, misalignment)
 	  == dr_explicit_realign_optimized))
     {
