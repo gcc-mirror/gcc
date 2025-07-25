@@ -59,7 +59,7 @@ public:
   /* Vfunc with responsibility for phase 3 of formatting the message
      and "printing" the result.  */
   virtual void on_report_diagnostic (const diagnostic_info &,
-				     diagnostic_t orig_diag_kind) = 0;
+				     enum kind orig_diag_kind) = 0;
 
   virtual void on_report_verbatim (text_info &);
 

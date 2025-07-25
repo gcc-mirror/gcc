@@ -253,13 +253,13 @@ static void
 cp_adjust_diagnostic_info (diagnostics::context *context,
 			   diagnostic_info *diagnostic)
 {
-  if (diagnostic->m_kind == DK_ERROR)
+  if (diagnostic->m_kind == diagnostics::kind::error)
     if (tree tmpl = get_current_template ())
       {
 	diagnostic->m_option_id = OPT_Wtemplate_body;
 
 	if (context->m_permissive)
-	  diagnostic->m_kind = DK_WARNING;
+	  diagnostic->m_kind = diagnostics::kind::warning;
 
 	bool existed;
 	location_t &error_loc
@@ -4030,7 +4030,7 @@ public:
 	    diagnostic_show_locus (&m_text_output.get_context (),
 				   m_text_output.get_source_printing_options (),
 				   &rich_loc,
-				   DK_NOTE, pp);
+				   diagnostics::kind::note, pp);
 	    pp_set_prefix (pp, saved_prefix);
 	  }
       }
@@ -4042,7 +4042,7 @@ public:
 	diagnostic_show_locus (&m_text_output.get_context (),
 			       m_text_output.get_source_printing_options (),
 			       &rich_loc,
-			       DK_NOTE, pp);
+			       diagnostics::kind::note, pp);
 	pp_set_prefix (pp, saved_prefix);
       }
   }
@@ -4939,7 +4939,9 @@ pedwarn_cxx98 (location_t location,
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
+		       (cxx_dialect == cxx98
+			? diagnostics::kind::pedwarn
+			: diagnostics::kind::warning));
   diagnostic.m_option_id = option_id;
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);

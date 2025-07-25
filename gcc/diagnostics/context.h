@@ -46,7 +46,7 @@ using start_span_fn = void (*) (const location_print_policy &,
 
 typedef void (*text_finalizer_fn) (text_sink &,
 				   const diagnostic_info *,
-				   diagnostic_t);
+				   enum kind);
 
 /* Abstract base class for the diagnostic subsystem to make queries
    about command-line options.  */
@@ -67,8 +67,8 @@ public:
      May return NULL if no name is to be printed.
      May be passed 0 as well as the index of a particular option.  */
   virtual char *make_option_name (option_id opt_id,
-				  diagnostic_t orig_diag_kind,
-				  diagnostic_t diag_kind) const = 0;
+				  enum kind orig_diag_kind,
+				  enum kind diag_kind) const = 0;
 
   /* Return malloced memory for a URL describing the option that controls
      a diagnostic.
@@ -205,13 +205,13 @@ public:
   void
   print (pretty_printer &pp,
 	 const rich_location &richloc,
-	 diagnostic_t diagnostic_kind,
+	 enum kind diagnostic_kind,
 	 source_effect_info *effect_info) const;
 
   void
   print_as_html (xml::printer &xp,
 		 const rich_location &richloc,
-		 diagnostic_t diagnostic_kind,
+		 enum kind diagnostic_kind,
 		 source_effect_info *effect_info,
 		 html_label_writer *label_writer) const;
 
@@ -269,12 +269,15 @@ struct counters
   void dump (FILE *out, int indent) const;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
-  int get_count (diagnostic_t kind) const { return m_count_for_kind[kind]; }
+  int get_count (enum kind kind) const
+  {
+    return m_count_for_kind[static_cast<size_t> (kind)];
+  }
 
   void move_to (counters &dest);
   void clear ();
 
-  int m_count_for_kind[DK_LAST_DIAGNOSTIC_KIND];
+  int m_count_for_kind[static_cast<size_t> (kind::last_diagnostic_kind)];
 };
 
 /* This class encapsulates the state of the diagnostics subsystem
@@ -370,13 +373,13 @@ public:
     return m_option_classifier.option_unspecified_p (opt_id);
   }
 
-  bool emit_diagnostic_with_group (diagnostic_t kind,
+  bool emit_diagnostic_with_group (enum kind kind,
 				   rich_location &richloc,
 				   const metadata *metadata,
 				   option_id opt_id,
 				   const char *gmsgid, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
-  bool emit_diagnostic_with_group_va (diagnostic_t kind,
+  bool emit_diagnostic_with_group_va (enum kind kind,
 				      rich_location &richloc,
 				      const metadata *metadata,
 				      option_id opt_id,
@@ -391,9 +394,9 @@ public:
   void
   report_global_digraph (const digraphs::lazy_digraph &);
 
-  diagnostic_t
+  enum kind
   classify_diagnostic (option_id opt_id,
-		       diagnostic_t new_kind,
+		       enum kind new_kind,
 		       location_t where)
   {
     return m_option_classifier.classify_diagnostic (this,
@@ -413,12 +416,12 @@ public:
 
   void maybe_show_locus (const rich_location &richloc,
 			 const source_printing_options &opts,
-			 diagnostic_t diagnostic_kind,
+			 enum kind diagnostic_kind,
 			 pretty_printer &pp,
 			 source_effect_info *effect_info);
   void maybe_show_locus_as_html (const rich_location &richloc,
 				 const source_printing_options &opts,
-				 diagnostic_t diagnostic_kind,
+				 enum kind diagnostic_kind,
 				 xml::printer &xp,
 				 source_effect_info *effect_info,
 				 html_label_writer *label_writer);
@@ -498,11 +501,11 @@ public:
 
   text_art::theme *get_diagram_theme () const { return m_diagrams.m_theme; }
 
-  int &diagnostic_count (diagnostic_t kind)
+  int &diagnostic_count (enum kind kind)
   {
-    return m_diagnostic_counters.m_count_for_kind[kind];
+    return m_diagnostic_counters.m_count_for_kind[static_cast<size_t> (kind)];
   }
-  int diagnostic_count (diagnostic_t kind) const
+  int diagnostic_count (enum kind kind) const
   {
     return m_diagnostic_counters.get_count (kind);
   }
@@ -516,8 +519,8 @@ public:
   }
 
   inline char *make_option_name (option_id opt_id,
-				 diagnostic_t orig_diag_kind,
-				 diagnostic_t diag_kind) const
+				 enum kind orig_diag_kind,
+				 enum kind diag_kind) const
   {
     if (!m_option_mgr)
       return nullptr;
@@ -544,11 +547,11 @@ public:
 
   bool diagnostic_impl (rich_location *, const metadata *,
 			option_id, const char *,
-			va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
+			va_list *, enum kind) ATTRIBUTE_GCC_DIAG(5,0);
   bool diagnostic_n_impl (rich_location *, const metadata *,
 			  option_id, unsigned HOST_WIDE_INT,
 			  const char *, const char *, va_list *,
-			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
+			  enum kind) ATTRIBUTE_GCC_DIAG(7,0);
 
   int get_diagnostic_nesting_level () const
   {
@@ -595,7 +598,7 @@ public:
 
   bool supports_fnotice_on_stderr_p () const;
 
-  /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
+  /* Raise SIGABRT on any diagnostic of severity kind::error or higher.  */
   void
   set_abort_on_error (bool val)
   {
@@ -649,7 +652,7 @@ private:
   void get_any_inlining_info (diagnostic_info *diagnostic);
 
   void check_max_errors (bool flush);
-  void action_after_output (diagnostic_t diag_kind);
+  void action_after_output (enum kind diag_kind);
 
   /* Data members.
      Ideally, all of these would be private.  */

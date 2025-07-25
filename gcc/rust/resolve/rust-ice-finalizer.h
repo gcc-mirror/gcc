@@ -57,7 +57,7 @@ namespace Resolver {
 void ATTRIBUTE_NORETURN
 funny_ice_text_finalizer (diagnostics::text_sink &text_output,
 			  const diagnostic_info *diagnostic,
-			  diagnostic_t diag_kind);
+			  enum diagnostics::kind diag_kind);
 
 } // namespace Resolver
 } // namespace Rust

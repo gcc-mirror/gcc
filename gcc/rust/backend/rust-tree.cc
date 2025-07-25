@@ -3848,16 +3848,18 @@ strip_top_quals (tree t)
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
    and TYPE is the type that was invalid.  DIAG_KIND indicates the
-   type of diagnostic (see diagnostic.def).  */
+   type of diagnostic (see diagnostics/kinds.def).  */
 
 void
 cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
-				const_tree type, diagnostic_t diag_kind)
+				const_tree type,
+				enum diagnostics::kind diag_kind)
 {
   //  bool is_decl = false, complained = false;
 
-  gcc_assert (diag_kind == DK_WARNING || diag_kind == DK_PEDWARN
-	      || diag_kind == DK_ERROR);
+  gcc_assert (diag_kind == diagnostics::kind::warning
+	      || diag_kind == diagnostics::kind::pedwarn
+	      || diag_kind == diagnostics::kind::error);
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -5131,7 +5133,7 @@ complete_type_or_maybe_complain (tree type, tree value, tsubst_flags_t complain)
   else if (!COMPLETE_TYPE_P (type))
     {
       if (complain & tf_error)
-	cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
+	cxx_incomplete_type_diagnostic (value, type, diagnostics::kind::error);
       note_failed_type_completion_for_satisfaction (type);
       return NULL_TREE;
     }

@@ -4181,7 +4181,8 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 			  "possible problem detected in invocation of "
 			  "operator %<delete []%>"))
 	    {
-	      cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
+	      cxx_incomplete_type_diagnostic (base, type,
+					      diagnostics::kind::warning);
 	      inform (loc, "neither the destructor nor the "
 		      "class-specific operator %<delete []%> will be called, "
 		      "even if they are declared when the class is defined");
@@ -5286,7 +5287,8 @@ build_delete (location_t loc, tree otype, tree addr,
 				  "possible problem detected in invocation of "
 				  "%<operator delete%>"))
 		    {
-		      cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
+		      cxx_incomplete_type_diagnostic (addr, type,
+						      diagnostics::kind::warning);
 		      inform (loc,
 			      "neither the destructor nor the class-specific "
 			      "%<operator delete%> will be called, even if "

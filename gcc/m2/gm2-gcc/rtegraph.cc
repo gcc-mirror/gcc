@@ -283,7 +283,8 @@ rtegraph_lookup (gimple *g, tree fndecl, bool is_call)
 /* rte_error_at - wraps up an error message.  */
 
 static void
-rte_error_at (location_t location, diagnostic_t kind, const char *message, ...)
+rte_error_at (location_t location, diagnostics::kind kind,
+	      const char *message, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
@@ -338,7 +339,7 @@ access_string (tree t, const char **value)
    give the function context which might be misleading if this is inlined.  */
 
 static void
-generate_report (gimple *stmt, const char *report, diagnostic_t kind)
+generate_report (gimple *stmt, const char *report, diagnostics::kind kind)
 {
   if (gimple_call_num_args (stmt) == 5)
     {
@@ -393,15 +394,16 @@ const char *rtenode::create_message (const char *with_name, const char *without_
   return message;
 }
 
-/* error_message issue an DK_ERROR from grtenode.  */
+/* error_message issue an diagnostics::kind::error from grtenode.  */
 
 void rtenode::error_message (void)
 {
   if (grtenode != NULL)
-    generate_report (grtenode, "runtime error will occur", DK_ERROR);
+    generate_report (grtenode, "runtime error will occur",
+		     diagnostics::kind::error);
 }
 
-/* warning_message issue an DK_WARNING from grtenode.  */
+/* warning_message issue an diagnostics::kind::warning from grtenode.  */
 
 void rtenode::warning_message (void)
 {
@@ -409,15 +411,16 @@ void rtenode::warning_message (void)
     ("runtime error will occur if an exported procedure is called from %s",
      "runtime error will occur if an exported procedure is called");
   if (grtenode != NULL)
-    generate_report (grtenode, message, DK_WARNING);
+    generate_report (grtenode, message, diagnostics::kind::warning);
 }
 
-/* note_message issue an DK_NOTE from grtenode.  */
+/* note_message issue an diagnostics::kind::note from grtenode.  */
 
 void rtenode::note_message (void)
 {
   if (grtenode != NULL)
-    generate_report (grtenode, "runtime will occur if this procedure is called", DK_NOTE);
+    generate_report (grtenode, "runtime will occur if this procedure is called",
+		     diagnostics::kind::note);
 }
 
 /* dump_vec display contents of vector array list.  */

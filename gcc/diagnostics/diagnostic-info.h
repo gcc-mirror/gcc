@@ -26,7 +26,7 @@ class metadata;
 
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
-   list in diagnostic.def.  */
+   list in diagnostics/kinds.def.  */
 
 struct diagnostic_info
 {
@@ -53,7 +53,7 @@ struct diagnostic_info
   /* Auxiliary data for client.  */
   void *m_x_data;
   /* The kind of diagnostic it is about.  */
-  diagnostic_t m_kind;
+  kind m_kind;
   /* Which OPT_* directly controls this diagnostic.  */
   option_id m_option_id;
 

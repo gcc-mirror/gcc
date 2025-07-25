@@ -132,7 +132,7 @@ static bool force_show_locus_color = false;
 static void
 custom_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 				  const diagnostic_info *diagnostic,
-				  diagnostic_t)
+				  enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
   bool old_show_color = pp_show_color (pp);

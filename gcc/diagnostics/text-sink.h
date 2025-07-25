@@ -60,7 +60,7 @@ public:
   void on_begin_group () override {}
   void on_end_group () override {}
   void on_report_diagnostic (const diagnostic_info &,
-			     diagnostic_t orig_diag_kind) override;
+			     enum kind orig_diag_kind) override;
   void on_report_verbatim (text_info &) final override;
   void on_diagram (const diagram &d) override;
   void after_diagnostic (const diagnostic_info &) override;
@@ -130,7 +130,7 @@ protected:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
   void print_option_information (const diagnostic_info &diagnostic,
-				 diagnostic_t orig_diag_kind);
+				 enum kind orig_diag_kind);
 
   bool includes_seen_p (const line_map_ordinary *map);
 

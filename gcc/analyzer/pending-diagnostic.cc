@@ -92,7 +92,7 @@ diagnostic_emission_context::warn (const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  const bool result = emit_diagnostic_valist_meta (DK_WARNING,
+  const bool result = emit_diagnostic_valist_meta (diagnostics::kind::warning,
 						   &m_rich_loc, &m_metadata,
 						   pd.get_controlling_option (),
 						   gmsgid, &ap);
@@ -110,7 +110,7 @@ diagnostic_emission_context::inform (const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  emit_diagnostic_valist_meta (DK_NOTE,
+  emit_diagnostic_valist_meta (diagnostics::kind::note,
 			       &m_rich_loc, &m_metadata,
 			       pd.get_controlling_option (),
 			       gmsgid, &ap);

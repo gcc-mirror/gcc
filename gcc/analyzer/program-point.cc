@@ -265,7 +265,7 @@ function_point::print_source_line (pretty_printer *pp) const
   gcc_rich_location richloc (stmt->location);
   diagnostics::source_print_policy source_policy (tmp_dc);
   gcc_assert (pp);
-  source_policy.print (*pp, richloc, DK_ERROR, nullptr);
+  source_policy.print (*pp, richloc, diagnostics::kind::error, nullptr);
   pp_string (pp, pp_formatted_text (tmp_dc.get_reference_printer ()));
 }
 

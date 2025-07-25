@@ -185,7 +185,7 @@ escape_d_format (const char *format)
 static void ATTRIBUTE_GCC_DIAG(3,0)
 d_diagnostic_report_diagnostic (const SourceLoc &loc, int opt,
 				const char *format, va_list ap,
-				diagnostic_t kind, bool verbatim)
+				enum diagnostics::kind kind, bool verbatim)
 {
   va_list argp;
   va_copy (argp, ap);
@@ -224,7 +224,7 @@ void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
 verrorReport (const SourceLoc loc, const char *format, va_list ap,
 	      ErrorKind kind, const char *prefix1, const char *prefix2)
 {
-  diagnostic_t diag_kind = DK_UNSPECIFIED;
+  enum diagnostics::kind diag_kind = diagnostics::kind::unspecified;
   int opt = 0;
   bool verbatim = false;
   char *xformat;
@@ -238,7 +238,9 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
       if (global.gag && !global.params.v.showGaggedErrors)
 	return;
 
-      diag_kind = global.gag ? DK_ANACHRONISM : DK_ERROR;
+      diag_kind = (global.gag
+		   ? diagnostics::kind::anachronism
+		   : diagnostics::kind::error);
     }
   else if (kind == ErrorKind::warning)
     {
@@ -254,7 +256,7 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
       if (global.params.useWarnings == DIAGNOSTICerror)
 	global.warnings++;
 
-      diag_kind = DK_WARNING;
+      diag_kind = diagnostics::kind::warning;
     }
   else if (kind == ErrorKind::deprecation)
     {
@@ -270,11 +272,11 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
 	}
 
       opt = OPT_Wdeprecated;
-      diag_kind = DK_WARNING;
+      diag_kind = diagnostics::kind::warning;
     }
   else if (kind == ErrorKind::message)
     {
-      diag_kind = DK_NOTE;
+      diag_kind = diagnostics::kind::note;
       verbatim = true;
     }
   else if (kind == ErrorKind::tip)
@@ -282,7 +284,7 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
       if (global.gag)
 	return;
 
-      diag_kind = DK_DEBUG;
+      diag_kind = diagnostics::kind::debug;
       verbatim = true;
     }
   else
@@ -328,7 +330,8 @@ verrorReportSupplemental (const SourceLoc loc, const char* format, va_list ap,
   else
     gcc_unreachable ();
 
-  d_diagnostic_report_diagnostic (loc, 0, format, ap, DK_NOTE, false);
+  d_diagnostic_report_diagnostic (loc, 0, format, ap, diagnostics::kind::note,
+				  false);
 }
 
 /* Call this after printing out fatal error messages to clean up and

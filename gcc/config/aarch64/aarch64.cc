@@ -19967,8 +19967,9 @@ aarch64_process_one_target_attr (char *arg_str)
 	      if (valid)
 		{
 		  set_option (&global_options, NULL, p_attr->opt_num, value,
-			      NULL, DK_UNSPECIFIED, input_location,
-			      global_dc);
+			      NULL,
+			      static_cast<int> (diagnostics::kind::unspecified),
+			      input_location, global_dc);
 		}
 	      else
 		{

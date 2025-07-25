@@ -272,7 +272,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
     global_dc->set_diagnostic_buffer (pp_warning_buffer);
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
-		       DK_WARNING);
+		       diagnostics::kind::warning);
   diagnostic.m_option_id = opt;
   bool ret = gfc_report_diagnostic (&diagnostic);
 
@@ -441,7 +441,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	const char *color
 	  = (loc_num
 	     ? "range1"
-	     : diagnostic_get_color_for_kind (curr_diagnostic->m_kind));
+	     : diagnostics::get_color_for_kind (curr_diagnostic->m_kind));
 	pp_string (pp, colorize_start (pp_show_color (pp), color));
 	pp_string (pp, result[loc_num]);
 	pp_string (pp, colorize_stop (pp_show_color (pp)));
@@ -475,15 +475,16 @@ gfc_diagnostic_build_kind_prefix (diagnostics::context *context,
 #undef DEFINE_DIAGNOSTIC_KIND
     NULL
   };
-  gcc_assert (diagnostic->m_kind < DK_LAST_DIAGNOSTIC_KIND);
-  const char *text = _(diagnostic_kind_text[diagnostic->m_kind]);
+  const int diag_kind_idx = static_cast<int> (diagnostic->m_kind);
+  gcc_assert (diagnostic->m_kind < diagnostics::kind::last_diagnostic_kind);
+  const char *text = _(diagnostic_kind_text[diag_kind_idx]);
   const char *text_cs = "", *text_ce = "";
   pretty_printer *const pp = context->get_reference_printer ();
 
-  if (diagnostic_kind_color[diagnostic->m_kind])
+if (diagnostic_kind_color[diag_kind_idx])
     {
       text_cs = colorize_start (pp_show_color (pp),
-				diagnostic_kind_color[diagnostic->m_kind]);
+				diagnostic_kind_color[diag_kind_idx]);
       text_ce = colorize_stop (pp_show_color (pp));
     }
   return build_message_string ("%s%s:%s ", text_cs, text, text_ce);
@@ -636,7 +637,7 @@ gfc_diagnostic_start_span (const diagnostics::location_print_policy &loc_policy,
 static void
 gfc_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 			       const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
-			       diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
+			       enum diagnostics::kind orig_diag_kind ATTRIBUTE_UNUSED)
 {
   pretty_printer *const pp = text_output.get_printer ();
   pp_destroy_prefix (pp);
@@ -655,7 +656,8 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
   bool ret;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       diagnostics::kind::warning);
   diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
@@ -674,7 +676,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
-		       DK_WARNING);
+		       diagnostics::kind::warning);
   diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
@@ -693,7 +695,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
-		       DK_WARNING);
+		       diagnostics::kind::warning);
   diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
@@ -712,7 +714,8 @@ gfc_error_now (const char *gmsgid, ...)
   error_buffer->flag = true;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       diagnostics::kind::error);
   gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 }
@@ -728,7 +731,8 @@ gfc_fatal_error (const char *gmsgid, ...)
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       diagnostics::kind::fatal);
   gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 
@@ -786,7 +790,8 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
   if (buffered_p)
     global_dc->set_diagnostic_buffer (pp_error_buffer);
 
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc, DK_ERROR);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc,
+		       diagnostics::kind::error);
   gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
@@ -831,7 +836,8 @@ gfc_internal_error (const char *gmsgid, ...)
     exit(EXIT_FAILURE);
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       diagnostics::kind::ice);
   gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 

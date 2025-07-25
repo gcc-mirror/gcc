@@ -89,14 +89,14 @@ void
 context::flush_diagnostic_buffer (buffer &buffer_)
 {
   bool had_errors
-    = (buffer_.m_diagnostic_counters.m_count_for_kind[DK_ERROR] > 0
-       || buffer_.m_diagnostic_counters.m_count_for_kind[DK_WERROR] > 0);
+    = (buffer_.diagnostic_count (kind::error) > 0
+       || buffer_.diagnostic_count (kind::werror) > 0);
   if (buffer_.m_per_sink_buffers)
     for (auto per_sink_buffer_ : *buffer_.m_per_sink_buffers)
       per_sink_buffer_->flush ();
   buffer_.m_diagnostic_counters.move_to (m_diagnostic_counters);
 
-  action_after_output (had_errors ? DK_ERROR : DK_WARNING);
+  action_after_output (had_errors ? kind::error : kind::warning);
   check_max_errors (true);
 }
 

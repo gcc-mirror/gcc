@@ -376,7 +376,7 @@ Late::visit (AST::IdentifierExpr &expr)
   else if (funny_error)
     {
       diagnostics::text_finalizer (global_dc) = Resolver::funny_ice_text_finalizer;
-      emit_diagnostic (DK_ICE_NOBT, expr.get_locus (), -1,
+      emit_diagnostic (diagnostics::kind::ice_nobt, expr.get_locus (), -1,
 		       "are you trying to break %s? how dare you?",
 		       expr.as_string ().c_str ());
     }

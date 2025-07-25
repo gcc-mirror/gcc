@@ -1187,15 +1187,15 @@ early_check_defaulted_comparison (tree fn)
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
-      diagnostic_t kind = DK_UNSPECIFIED;
+      enum diagnostics::kind kind = diagnostics::kind::unspecified;
       int opt = 0;
       if (is_auto (TREE_TYPE (fn)))
-	kind = DK_PEDWARN;
+	kind = diagnostics::kind::pedwarn;
       else
-	kind = DK_ERROR;
+	kind = diagnostics::kind::error;
       emit_diagnostic (kind, loc, opt,
 		       "defaulted %qD must return %<bool%>", fn);
-      if (kind == DK_ERROR)
+      if (kind == diagnostics::kind::error)
 	ok = false;
     }
 
@@ -3688,21 +3688,24 @@ maybe_delete_defaulted_fn (tree fn, tree implicit_fn)
 	      the program is ill-formed"  */
 	   || !TYPE_REF_P (parmtype)));
   /* Decide if we want to emit a pedwarn, error, or a warning.  */
-  diagnostic_t diag_kind;
+  enum diagnostics::kind diag_kind;
   int opt;
   if (illformed_p)
     {
-      diag_kind = DK_ERROR;
+      diag_kind = diagnostics::kind::error;
       opt = 0;
     }
   else
     {
-      diag_kind = cxx_dialect >= cxx20 ? DK_WARNING : DK_PEDWARN;
+      diag_kind = (cxx_dialect >= cxx20
+		   ? diagnostics::kind::warning
+		   : diagnostics::kind::pedwarn);
       opt = OPT_Wdefaulted_function_deleted;
     }
 
   /* Don't warn for template instantiations.  */
-  if (DECL_TEMPLATE_INSTANTIATION (fn) && diag_kind == DK_WARNING)
+  if (DECL_TEMPLATE_INSTANTIATION (fn)
+      && diag_kind == diagnostics::kind::warning)
     return;
 
   const char *wmsg;

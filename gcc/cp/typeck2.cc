@@ -295,11 +295,12 @@ cxx_incomplete_type_inform (const_tree type)
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
    and TYPE is the type that was invalid.  DIAG_KIND indicates the
-   type of diagnostic (see diagnostic.def).  */
+   type of diagnostic (see diagnostics/kinds.def).  */
 
 bool
 cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
-				const_tree type, diagnostic_t diag_kind)
+				const_tree type,
+				enum diagnostics::kind diag_kind)
 {
   bool is_decl = false, complained = false;
 
@@ -445,7 +446,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 void
 cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 {
-  cxx_incomplete_type_diagnostic (loc, value, type, DK_ERROR);
+  cxx_incomplete_type_diagnostic (loc, value, type, diagnostics::kind::error);
 }
 
 
@@ -2632,7 +2633,7 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
   bool ok;
   tree core = spec;
   bool is_ptr;
-  diagnostic_t diag_type = DK_UNSPECIFIED; /* none */
+  enum diagnostics::kind diag_type = diagnostics::kind::unspecified; /* none */
 
   if (spec == error_mark_node)
     return list;
@@ -2664,7 +2665,7 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
 	 and calls.  So just give a pedwarn at this point; we will give an
 	 error later if we hit one of those two cases.  */
       if (!COMPLETE_TYPE_P (complete_type (core)))
-	diag_type = DK_PEDWARN; /* pedwarn */
+	diag_type = diagnostics::kind::pedwarn; /* pedwarn */
     }
 
   if (ok)
@@ -2678,9 +2679,9 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
 	list = tree_cons (NULL_TREE, spec, list);
     }
   else
-    diag_type = DK_ERROR; /* error */
+    diag_type = diagnostics::kind::error; /* error */
 
-  if (diag_type != DK_UNSPECIFIED
+  if (diag_type != diagnostics::kind::unspecified
       && (complain & tf_warning_or_error))
     cxx_incomplete_type_diagnostic (NULL_TREE, core, diag_type);
 

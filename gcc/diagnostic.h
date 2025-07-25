@@ -167,13 +167,13 @@ extern diagnostics::context *global_dc;
 
 /* The number of errors that have been issued so far.  Ideally, these
    would take a diagnostics::context as an argument.  */
-#define errorcount global_dc->diagnostic_count (DK_ERROR)
+#define errorcount global_dc->diagnostic_count (diagnostics::kind::error)
 /* Similarly, but for warnings.  */
-#define warningcount global_dc->diagnostic_count (DK_WARNING)
+#define warningcount global_dc->diagnostic_count (diagnostics::kind::warning)
 /* Similarly, but for warnings promoted to errors.  */
-#define werrorcount global_dc->diagnostic_count (DK_WERROR)
+#define werrorcount global_dc->diagnostic_count (diagnostics::kind::werror)
 /* Similarly, but for sorrys.  */
-#define sorrycount global_dc->diagnostic_count (DK_SORRY)
+#define sorrycount global_dc->diagnostic_count (diagnostics::kind::sorry)
 
 /* Returns nonzero if warnings should be emitted.  */
 #define diagnostic_report_warnings_p(DC, LOC)				\
@@ -220,7 +220,7 @@ inline void
 diagnostic_show_locus (diagnostics::context *context,
 		       const diagnostics::source_printing_options &opts,
 		       rich_location *richloc,
-		       diagnostic_t diagnostic_kind,
+		       enum diagnostics::kind diagnostic_kind,
 		       pretty_printer *pp,
 		       diagnostics::source_effect_info *effect_info = nullptr)
 {
@@ -234,7 +234,7 @@ inline void
 diagnostic_show_locus_as_html (diagnostics::context *context,
 			       const diagnostics::source_printing_options &opts,
 			       rich_location *richloc,
-			       diagnostic_t diagnostic_kind,
+			       enum diagnostics::kind diagnostic_kind,
 			       xml::printer &xp,
 			       diagnostics::source_effect_info *effect_info = nullptr,
 			       diagnostics::html_label_writer *label_writer = nullptr)
@@ -269,10 +269,10 @@ diagnostic_initialize_input_context (diagnostics::context *context,
 }
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
-inline diagnostic_t
+inline diagnostics::kind
 diagnostic_classify_diagnostic (diagnostics::context *context,
 				diagnostics::option_id opt_id,
-				diagnostic_t kind,
+				enum diagnostics::kind kind,
 				location_t where)
 {
   return context->classify_diagnostic (opt_id, kind, where);
@@ -310,10 +310,10 @@ diagnostic_report_diagnostic (diagnostics::context *context,
 
 #ifdef ATTRIBUTE_GCC_DIAG
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
-				 rich_location *, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+				 rich_location *, enum diagnostics::kind) ATTRIBUTE_GCC_DIAG(2,0);
 extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    va_list *, rich_location *,
-					    diagnostic_t)
+					    enum diagnostics::kind)
      ATTRIBUTE_GCC_DIAG(2,0);
 #endif
 
@@ -327,7 +327,7 @@ void default_start_span_fn (const diagnostics::location_print_policy &,
 			    expanded_location);
 void default_text_finalizer (diagnostics::text_sink &,
 			     const diagnostic_info *,
-			     diagnostic_t);
+			     enum diagnostics::kind);
 } // namespace diagnostics
 
 void diagnostic_set_caret_max_width (diagnostics::context *context, int value);
@@ -379,8 +379,6 @@ diagnostic_same_line (const diagnostics::context *context,
 	      > abs (s1.column - s2.column)));
 }
 
-extern const char *diagnostic_get_color_for_kind (diagnostic_t kind);
-
 /* Pure text formatting support functions.  */
 
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
@@ -401,8 +399,6 @@ option_unspecified_p (diagnostics::option_id opt_id)
 }
 
 extern char *get_cwe_url (int cwe);
-
-extern const char *get_diagnostic_kind_text (diagnostic_t kind);
 
 namespace diagnostics {
 

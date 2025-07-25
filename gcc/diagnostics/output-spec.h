@@ -103,7 +103,7 @@ public:
   {
     m_dc.begin_group ();
     rich_location richloc (m_control_location_mgr, m_loc);
-    m_dc.diagnostic_impl (&richloc, nullptr, -1, gmsgid, ap, DK_ERROR);
+    m_dc.diagnostic_impl (&richloc, nullptr, -1, gmsgid, ap, kind::error);
     m_dc.end_group ();
   }
 

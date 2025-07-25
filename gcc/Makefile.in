@@ -1069,7 +1069,7 @@ TREE_SSA_H = tree-ssa.h tree-ssa-operands.h \
 PRETTY_PRINT_H = pretty-print.h $(INPUT_H) $(OBSTACK_H) wide-int-print.h
 TREE_PRETTY_PRINT_H = tree-pretty-print.h $(PRETTY_PRINT_H)
 GIMPLE_PRETTY_PRINT_H = gimple-pretty-print.h $(TREE_PRETTY_PRINT_H)
-DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostic.def
+DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostics/kinds.def
 DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(TREE_H)

@@ -1748,11 +1748,13 @@ process_options ()
       if (warn_coverage_mismatch
 	  && option_unspecified_p (OPT_Wcoverage_mismatch))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
-					DK_ERROR, UNKNOWN_LOCATION);
+					diagnostics::kind::error,
+					UNKNOWN_LOCATION);
       if (warn_coverage_invalid_linenum
 	  && option_unspecified_p (OPT_Wcoverage_invalid_line_number))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_invalid_line_number,
-					DK_ERROR, UNKNOWN_LOCATION);
+					diagnostics::kind::error,
+					UNKNOWN_LOCATION);
     }
 
   /* Save the current optimization options.  */

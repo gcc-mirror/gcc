@@ -1510,7 +1510,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	const location_t location = input_location;
 	struct cl_option_handlers handlers;
 	unsigned int option_index;
-	diagnostic_t kind;
+	enum diagnostics::kind kind;
 	bool imply;
 
 	gnat_temp = First (Pragma_Argument_Associations (gnat_node));
@@ -1521,12 +1521,12 @@ Pragma_to_gnu (Node_Id gnat_node)
 	    switch (id)
 	      {
 	      case Pragma_Warning_As_Error:
-		kind = DK_ERROR;
+		kind = diagnostics::kind::error;
 		imply = false;
 		break;
 
 	      case Pragma_Warnings:
-		kind = DK_WARNING;
+		kind = diagnostics::kind::warning;
 		imply = true;
 		break;
 
@@ -1543,11 +1543,11 @@ Pragma_to_gnu (Node_Id gnat_node)
 	    switch (Chars (Expression (gnat_temp)))
 	      {
 		case Name_Off:
-		  kind = DK_IGNORED;
+		  kind = diagnostics::kind::ignored;
 		  break;
 
 		case Name_On:
-		  kind = DK_WARNING;
+		  kind = diagnostics::kind::warning;
 		  break;
 
 		default:
@@ -1569,7 +1569,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 		gnat_expr = Empty;
 
 		/* For pragma Warnings (Off), we save the current state...  */
-		if (kind == DK_IGNORED)
+		if (kind == diagnostics::kind::ignored)
 		  diagnostic_push_diagnostics (global_dc, location);
 
 		/* ...so that, for pragma Warnings (On), we do not enable all

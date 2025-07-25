@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static location_t location_for_asm (const rtx_insn *);
 static void diagnostic_for_asm (const rtx_insn *, const char *, va_list *,
-				diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+				enum diagnostics::kind) ATTRIBUTE_GCC_DIAG(2,0);
 
 /* Figure the location of the given INSN.  */
 static location_t
@@ -64,7 +64,7 @@ location_for_asm (const rtx_insn *insn)
    and each ASM_OPERANDS records its own source file and line.  */
 static void
 diagnostic_for_asm (const rtx_insn *insn, const char *msg, va_list *args_ptr,
-		    diagnostic_t kind)
+		    enum diagnostics::kind kind)
 {
   diagnostic_info diagnostic;
   rich_location richloc (line_table, location_for_asm (insn));
@@ -80,7 +80,7 @@ error_for_asm (const rtx_insn *insn, const char *gmsgid, ...)
   va_list ap;
 
   va_start (ap, gmsgid);
-  diagnostic_for_asm (insn, gmsgid, &ap, DK_ERROR);
+  diagnostic_for_asm (insn, gmsgid, &ap, diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -90,7 +90,7 @@ warning_for_asm (const rtx_insn *insn, const char *gmsgid, ...)
   va_list ap;
 
   va_start (ap, gmsgid);
-  diagnostic_for_asm (insn, gmsgid, &ap, DK_WARNING);
+  diagnostic_for_asm (insn, gmsgid, &ap, diagnostics::kind::warning);
   va_end (ap);
 }
 

@@ -48,7 +48,7 @@ class test_context : public context
      should only be called on a context that uses a non-standard formatter
      that e.g. gathers the results in memory, rather than emits to stderr.  */
   bool
-  report (diagnostic_t kind,
+  report (enum kind kind,
 	  rich_location &richloc,
 	  const metadata *,
 	  option_id opt_id,

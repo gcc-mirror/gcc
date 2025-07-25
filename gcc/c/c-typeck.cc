@@ -6433,14 +6433,16 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else
 	{
 	  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	  diagnostic_t kind = DK_PERMERROR;
+	  enum diagnostics::kind kind = diagnostics::kind::permerror;
 	  if (!flag_isoc99)
 	    /* This downgrade to a warning ensures that -std=gnu89
 	       -pedantic-errors does not flag these mismatches between
-	       builtins as errors (as DK_PERMERROR would).  ISO C99
-	       and later do not have implicit function declarations,
+	       builtins as errors (as diagnostics::kind::permerror would)
+	       ISO C99 and later do not have implicit function declarations,
 	       so the mismatch cannot occur naturally there.  */
-	    kind = bltin1 && bltin2 ? DK_WARNING : DK_PEDWARN;
+	    kind = (bltin1 && bltin2
+		    ? diagnostics::kind::warning
+		    : diagnostics::kind::pedwarn);
 	  if (emit_diagnostic (kind, colon_loc, OPT_Wincompatible_pointer_types,
 			       "pointer type mismatch "
 			       "in conditional expression"))
@@ -7598,7 +7600,8 @@ error_init (location_t loc, const char *gmsgid, ...)
   /* The gmsgid may be a format string with %< and %>. */
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = emit_diagnostic_valist (DK_ERROR, loc, -1, gmsgid, &ap);
+  bool warned = emit_diagnostic_valist (diagnostics::kind::error,
+					loc, -1, gmsgid, &ap);
   va_end (ap);
 
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
@@ -7610,7 +7613,7 @@ error_init (location_t loc, const char *gmsgid, ...)
 
 static bool ATTRIBUTE_GCC_DIAG (3,0)
 pedwarn_permerror_init (location_t loc, int opt, const char *gmsgid,
-			va_list *ap, diagnostic_t kind)
+			va_list *ap, enum diagnostics::kind kind)
 {
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
@@ -7637,7 +7640,8 @@ pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PEDWARN);
+  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap,
+					diagnostics::kind::pedwarn);
   va_end (ap);
   return warned;
 }
@@ -7649,7 +7653,8 @@ permerror_init (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PERMERROR);
+  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap,
+					diagnostics::kind::permerror);
   va_end (ap);
   return warned;
 }
@@ -12891,7 +12896,9 @@ c_finish_return (location_t loc, tree retval, tree origtype, bool musttail_p)
 	  && valtype != NULL_TREE && TREE_CODE (valtype) != VOID_TYPE)
 	{
 	  no_warning = true;
-	  if (emit_diagnostic (flag_isoc99 ? DK_PERMERROR : DK_WARNING,
+	  if (emit_diagnostic (flag_isoc99
+			       ? diagnostics::kind::permerror
+			       : diagnostics::kind::warning,
 			       loc, OPT_Wreturn_mismatch,
 			       "%<return%> with no value,"
 			       " in function returning non-void"))

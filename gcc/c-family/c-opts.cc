@@ -171,7 +171,7 @@ c_common_option_lang_mask (void)
 static void
 c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 			     const diagnostic_info *diagnostic,
-			     diagnostic_t)
+			     enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);

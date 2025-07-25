@@ -3835,7 +3835,7 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
     op1 = TREE_OPERAND (op1, 0);
 
   auto_diagnostic_group d;
-  diagnostic_t kind = DK_WARNING;
+  enum diagnostics::kind kind = diagnostics::kind::warning;
   const char *msg;
   if (c_dialect_cxx () && cxx_dialect >= cxx20)
     {
@@ -3843,7 +3843,7 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
       if (cxx_dialect >= cxx26)
 	{
 	  msg = G_("comparison between two arrays is not allowed in C++26");
-	  kind = DK_PERMERROR;
+	  kind = diagnostics::kind::permerror;
 	}
       else
 	msg = G_("comparison between two arrays is deprecated in C++20");

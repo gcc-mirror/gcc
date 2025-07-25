@@ -4207,7 +4207,8 @@ driver_handle_option (struct gcc_options *opts,
 
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
-  gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (static_cast<diagnostics::kind> (kind)
+	      == diagnostics::kind::unspecified);
   gcc_assert (loc == UNKNOWN_LOCATION);
   gcc_assert (dc == global_dc);
 

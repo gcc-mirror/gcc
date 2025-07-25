@@ -1016,7 +1016,7 @@ public:
   }
 
   void on_report_diagnostic (const diagnostic_info &info,
-			     diagnostic_t orig_diag_kind) final override
+			     enum diagnostics::kind orig_diag_kind) final override
   {
     JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
 
@@ -1056,7 +1056,7 @@ jit_begin_diagnostic (diagnostics::text_sink &,
 static void
 jit_end_diagnostic (diagnostics::text_sink &,
 		    const diagnostic_info *,
-		    diagnostic_t)
+		    enum diagnostics::kind)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());

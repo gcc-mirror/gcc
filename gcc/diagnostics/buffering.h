@@ -66,7 +66,7 @@ class buffer
   void dump (FILE *out, int indent) const;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
-  int diagnostic_count (diagnostic_t kind) const
+  int diagnostic_count (enum kind kind) const
   {
     return m_diagnostic_counters.get_count (kind);
   }

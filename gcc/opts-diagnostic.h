@@ -50,9 +50,10 @@ public:
   }
 
   int option_enabled_p (diagnostics::option_id option_id) const final override;
-  char *make_option_name (diagnostics::option_id option_id,
-			  diagnostic_t orig_diag_kind,
-			  diagnostic_t diag_kind) const final override;
+  char *
+  make_option_name (diagnostics::option_id option_id,
+		    enum diagnostics::kind orig_diag_kind,
+		    enum diagnostics::kind diag_kind) const final override;
 
 private:
   const diagnostics::context &m_context;

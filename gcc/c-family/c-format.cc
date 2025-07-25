@@ -5587,7 +5587,9 @@ test_type_mismatch_range_labels ()
   diagnostics::selftest::test_context dc;
   diagnostic_show_locus (&dc,
 			 dc.m_source_printing,
-			 &richloc, DK_ERROR, dc.get_reference_printer ());
+			 &richloc,
+			 diagnostics::kind::error,
+			 dc.get_reference_printer ());
   if (c_dialect_cxx ())
     /* "char*", without a space.  */
     ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"

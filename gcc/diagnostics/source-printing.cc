@@ -96,7 +96,7 @@ class colorizer
  public:
   colorizer (pretty_printer &pp,
 	     const rich_location &richloc,
-	     diagnostic_t diagnostic_kind);
+	     enum diagnostics::kind diagnostic_kind);
   ~colorizer ();
 
   void set_range (int range_idx)
@@ -116,7 +116,7 @@ class colorizer
        two colors for the secondary locations.
        But if we're printing a run of events in a diagnostic path, that
        makes no sense, so print all of them with the same colorization.  */
-    if (m_diagnostic_kind == DK_DIAGNOSTIC_PATH)
+    if (m_diagnostic_kind == diagnostics::kind::path)
       set_state (0);
     else
       set_state (range_idx);
@@ -141,7 +141,7 @@ class colorizer
 
   pretty_printer &m_pp;
   const rich_location &m_richloc;
-  diagnostic_t m_diagnostic_kind;
+  enum diagnostics::kind m_diagnostic_kind;
   int m_current_state;
   const char *m_range1;
   const char *m_range2;
@@ -947,7 +947,7 @@ private:
 
 colorizer::colorizer (pretty_printer &pp,
 		      const rich_location &richloc,
-		      diagnostic_t diagnostic_kind) :
+		      enum diagnostics::kind diagnostic_kind) :
   m_pp (pp),
   m_richloc (richloc),
   m_diagnostic_kind (diagnostic_kind),
@@ -1025,7 +1025,7 @@ colorizer::begin_state (int state)
       pp_string
 	(&m_pp,
 	 colorize_start (pp_show_color (&m_pp),
-			 diagnostic_get_color_for_kind (m_diagnostic_kind)));
+			 get_color_for_kind (m_diagnostic_kind)));
       break;
 
     case 1:
@@ -3851,7 +3851,7 @@ namespace diagnostics {
 void
 context::maybe_show_locus (const rich_location &richloc,
 			   const source_printing_options &opts,
-			   diagnostic_t diagnostic_kind,
+			   enum kind diagnostic_kind,
 			   pretty_printer &pp,
 			   source_effect_info *effects)
 {
@@ -3884,7 +3884,7 @@ context::maybe_show_locus (const rich_location &richloc,
 void
 context::maybe_show_locus_as_html (const rich_location &richloc,
 				   const source_printing_options &opts,
-				   diagnostic_t diagnostic_kind,
+				   enum kind diagnostic_kind,
 				   xml::printer &xp,
 				   source_effect_info *effects,
 				   html_label_writer *label_writer)
@@ -3945,14 +3945,14 @@ source_print_policy::source_print_policy (const context &dc,
 void
 source_print_policy::print (pretty_printer &pp,
 			    const rich_location &richloc,
-			    diagnostic_t diagnostic_kind,
+			    enum kind diagnostic_kind,
 			    source_effect_info *effects) const
 {
   layout layout (*this, richloc, effects);
   colorizer col (pp, richloc, diagnostic_kind);
   to_text sink (pp, col);
   layout_printer<to_text> lp (sink, layout,
-			      diagnostic_kind == DK_DIAGNOSTIC_PATH);
+			      diagnostic_kind == diagnostics::kind::path);
   lp.print (*this);
 }
 
@@ -3962,14 +3962,14 @@ source_print_policy::print (pretty_printer &pp,
 void
 source_print_policy::print_as_html (xml::printer &xp,
 				    const rich_location &richloc,
-				    diagnostic_t diagnostic_kind,
+				    enum kind diagnostic_kind,
 				    source_effect_info *effects,
 				    html_label_writer *label_writer) const
 {
   layout layout (*this, richloc, effects);
   to_html sink (xp, &richloc, label_writer);
   layout_printer<to_html> lp (sink, layout,
-			      diagnostic_kind == DK_DIAGNOSTIC_PATH);
+			      diagnostic_kind == diagnostics::kind::path);
   xml::auto_check_tag_nesting sentinel (xp);
   lp.print (*this);
 }
@@ -4043,7 +4043,7 @@ using temp_source_file = ::selftest::temp_source_file;
 
 static std::unique_ptr<xml::node>
 make_element_for_locus (const rich_location &rich_loc,
-			diagnostic_t kind,
+			enum kind kind,
 			diagnostics::context &dc)
 {
   dc.m_last_location = UNKNOWN_LOCATION;
@@ -4064,7 +4064,7 @@ make_element_for_locus (const rich_location &rich_loc,
 
 static label_text
 make_raw_html_for_locus (const rich_location &rich_loc,
-			 diagnostic_t kind,
+			 enum kind kind,
 			 diagnostics::context &dc)
 {
   auto node = make_element_for_locus (rich_loc, kind, dc);
@@ -4292,7 +4292,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 							emoji_col));
     layout test_layout (policy, richloc, nullptr);
     colorizer col (*dc.get_reference_printer (),
-		   richloc, DK_ERROR);
+		   richloc, diagnostics::kind::error);
     diagnostics::to_text sink (*dc.get_reference_printer (), col);
     layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
     lp.print (policy);
@@ -4322,7 +4322,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 							emoji_col + 2));
     layout test_layout (dc, richloc, nullptr);
     colorizer col (*dc.get_reference_printer (),
-		   richloc, DK_ERROR);
+		   richloc, diagnostics::kind::error);
     diagnostics::to_text sink (*dc.get_reference_printer (), col);
     layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
     lp.print (policy);
@@ -4406,7 +4406,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
-		     richloc, DK_ERROR);
+		     richloc, diagnostics::kind::error);
       diagnostics::to_text sink (*dc.get_reference_printer (), col);
       layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
       lp.print (policy);
@@ -4434,7 +4434,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
-		     richloc, DK_ERROR);
+		     richloc, diagnostics::kind::error);
       diagnostics::to_text sink (*dc.get_reference_printer (), col);
       layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
       lp.print (policy);
@@ -4520,7 +4520,7 @@ test_one_liner_caret_and_range ()
 
   {
     test_context dc;
-    auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+    auto out = make_raw_html_for_locus (richloc, diagnostics::kind::error, dc);
      ASSERT_STREQ
        ("<table class=\"locus\">\n"
 	"  <tbody class=\"line-span\">\n"
@@ -4533,7 +4533,7 @@ test_one_liner_caret_and_range ()
   {
     test_context dc;
     dc.m_source_printing.show_line_numbers_p = true;
-    auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+    auto out = make_raw_html_for_locus (richloc, diagnostics::kind::error, dc);
      ASSERT_STREQ
        ("<table class=\"locus\">\n"
 	"  <tbody class=\"line-span\">\n"
@@ -4964,7 +4964,8 @@ test_one_liner_labels ()
     {
       test_context dc;
       dc.m_source_printing.show_line_numbers_p = true;
-      auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+      auto out
+	= make_raw_html_for_locus (richloc, diagnostics::kind::error, dc);
       ASSERT_STREQ
 	("<table class=\"locus\">\n"
 	 "  <tbody class=\"line-span\">\n"

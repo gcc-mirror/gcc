@@ -389,9 +389,9 @@ diagnostics::context::execution_failed_p () const
 {
   /* Equivalent to (seen_error () || werrorcount), but on
      this context, rather than global_dc.  */
-  return (diagnostic_count (DK_ERROR)
-	  || diagnostic_count (DK_SORRY)
-	  || diagnostic_count (DK_WERROR));
+  return (diagnostic_count (kind::error)
+	  || diagnostic_count (kind::sorry)
+	  || diagnostic_count (kind::werror));
 }
 
 void
@@ -580,7 +580,7 @@ diagnostics::context::initialize_fixits_change_set ()
 void
 diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
 				va_list *args, rich_location *richloc,
-				diagnostic_t kind)
+				enum diagnostics::kind kind)
 {
   gcc_assert (richloc);
   diagnostic->m_message.m_err_no = errno;
@@ -598,15 +598,32 @@ diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
 void
 diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
 		     va_list *args, rich_location *richloc,
-		     diagnostic_t kind)
+		     enum diagnostics::kind kind)
 {
   gcc_assert (richloc);
   diagnostic_set_info_translated (diagnostic, _(gmsgid), args, richloc, kind);
 }
 
+namespace diagnostics {
+
+static const char *const diagnostic_kind_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
+#include "diagnostics/kinds.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+  "must-not-happen"
+};
+
+/* Get unlocalized string describing KIND.  */
+
+const char *
+get_text_for_kind (enum kind kind)
+{
+  return diagnostic_kind_text[static_cast<int> (kind)];
+}
+
 static const char *const diagnostic_kind_color[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T, C) (C),
-#include "diagnostic.def"
+#include "diagnostics/kinds.def"
 #undef DEFINE_DIAGNOSTIC_KIND
   nullptr
 };
@@ -615,10 +632,12 @@ static const char *const diagnostic_kind_color[] = {
    Result could be nullptr.  */
 
 const char *
-diagnostic_get_color_for_kind (diagnostic_t kind)
+get_color_for_kind (enum kind kind)
 {
-  return diagnostic_kind_color[kind];
+  return diagnostic_kind_color[static_cast<int> (kind)];
 }
+
+} // namespace diagnostics
 
 /* Given an expanded_location, convert the column (which is in 1-based bytes)
    to the requested units, without converting the origin.
@@ -707,21 +726,6 @@ location_print_policy (const diagnostics::text_sink &text_output)
   m_column_policy (text_output.get_context ()),
   m_show_column (text_output.get_context ().m_show_column)
 {
-}
-
-static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-  "must-not-happen"
-};
-
-/* Get unlocalized string describing KIND.  */
-
-const char *
-get_diagnostic_kind_text (diagnostic_t kind)
-{
-  return diagnostic_kind_text[kind];
 }
 
 /* Functions at which to stop the backtrace print.  It's not
@@ -827,9 +831,9 @@ diagnostics::context::check_max_errors (bool flush)
   if (!m_max_errors)
     return;
 
-  int count = (diagnostic_count (DK_ERROR)
-	       + diagnostic_count (DK_SORRY)
-	       + diagnostic_count (DK_WERROR));
+  int count = (diagnostic_count (kind::error)
+	       + diagnostic_count (kind::sorry)
+	       + diagnostic_count (kind::werror));
 
   if (count >= m_max_errors)
     {
@@ -846,18 +850,18 @@ diagnostics::context::check_max_errors (bool flush)
    is written out.  This function does not always return.  */
 
 void
-diagnostics::context::action_after_output (diagnostic_t diag_kind)
+diagnostics::context::action_after_output (enum kind diag_kind)
 {
   switch (diag_kind)
     {
-    case DK_DEBUG:
-    case DK_NOTE:
-    case DK_ANACHRONISM:
-    case DK_WARNING:
+    case kind::debug:
+    case kind::note:
+    case kind::anachronism:
+    case kind::warning:
       break;
 
-    case DK_ERROR:
-    case DK_SORRY:
+    case kind::error:
+    case kind::sorry:
       if (m_abort_on_error)
 	real_abort ();
       if (m_fatal_errors)
@@ -868,8 +872,8 @@ diagnostics::context::action_after_output (diagnostic_t diag_kind)
 	}
       break;
 
-    case DK_ICE:
-    case DK_ICE_NOBT:
+    case kind::ice:
+    case kind::ice_nobt:
       {
 	/* Attempt to ensure that any outputs are flushed e.g. that .sarif
 	   files are written out.
@@ -882,7 +886,7 @@ diagnostics::context::action_after_output (diagnostic_t diag_kind)
 	  }
 
 	struct backtrace_state *state = nullptr;
-	if (diag_kind == DK_ICE)
+	if (diag_kind == kind::ice)
 	  state = backtrace_create_state (nullptr, 0, bt_err_callback, nullptr);
 	int count = 0;
 	if (state != nullptr)
@@ -907,7 +911,7 @@ diagnostics::context::action_after_output (diagnostic_t diag_kind)
 	exit (ICE_EXIT_CODE);
       }
 
-    case DK_FATAL:
+    case kind::fatal:
       if (m_abort_on_error)
 	real_abort ();
       fnotice (stderr, "compilation terminated.\n");
@@ -1127,26 +1131,26 @@ diagnostics::context::diagnostic_enabled (diagnostic_info *diagnostic)
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
-  diagnostic_t diag_class
+  enum kind diag_class
     = m_option_classifier.update_effective_level_from_pragmas (diagnostic);
 
   /* This tests if the user provided the appropriate -Werror=foo
      option.  */
-  if (diag_class == DK_UNSPECIFIED
+  if (diag_class == kind::unspecified
       && !option_unspecified_p (diagnostic->m_option_id))
     {
-      const diagnostic_t new_kind
+      const enum kind new_kind
 	= m_option_classifier.get_current_override (diagnostic->m_option_id);
-      if (new_kind != DK_ANY)
-	/* DK_ANY means the diagnostic is not to be ignored, but we don't want
-	   to change it specifically to DK_ERROR or DK_WARNING; we want to
+      if (new_kind != kind::any)
+	/* kind::any means the diagnostic is not to be ignored, but we don't want
+	   to change it specifically to kind::error or kind::warning; we want to
 	   preserve whatever the caller has specified.  */
 	diagnostic->m_kind = new_kind;
     }
 
   /* This allows for future extensions, like temporarily disabling
      warnings for ranges of source code.  */
-  if (diagnostic->m_kind == DK_IGNORED)
+  if (diagnostic->m_kind == kind::ignored)
     return false;
 
   return true;
@@ -1166,7 +1170,7 @@ diagnostics::context::warning_enabled_at (location_t loc,
   diagnostic.m_option_id = opt_id;
   diagnostic.m_richloc = &richloc;
   diagnostic.m_message.m_richloc = &richloc;
-  diagnostic.m_kind = DK_WARNING;
+  diagnostic.m_kind = kind::warning;
   return diagnostic_enabled (&diagnostic);
 }
 
@@ -1174,7 +1178,7 @@ diagnostics::context::warning_enabled_at (location_t loc,
 
 bool
 diagnostics::context::
-emit_diagnostic_with_group (diagnostic_t kind,
+emit_diagnostic_with_group (enum kind kind,
 			    rich_location &richloc,
 			    const diagnostics::metadata *metadata,
 			    diagnostics::option_id opt_id,
@@ -1197,7 +1201,7 @@ emit_diagnostic_with_group (diagnostic_t kind,
 
 bool
 diagnostics::context::
-emit_diagnostic_with_group_va (diagnostic_t kind,
+emit_diagnostic_with_group_va (enum kind kind,
 			       rich_location &richloc,
 			       const diagnostics::metadata *metadata,
 			       diagnostics::option_id opt_id,
@@ -1222,7 +1226,7 @@ emit_diagnostic_with_group_va (diagnostic_t kind,
 bool
 diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
 {
-  diagnostic_t orig_diag_kind = diagnostic->m_kind;
+  enum kind orig_diag_kind = diagnostic->m_kind;
 
   /* Every call to report_diagnostic should be within a
      begin_group/end_group pair so that output formats can reliably
@@ -1231,8 +1235,8 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
-  bool was_warning = (diagnostic->m_kind == DK_WARNING
-		      || diagnostic->m_kind == DK_PEDWARN);
+  bool was_warning = (diagnostic->m_kind == kind::warning
+		      || diagnostic->m_kind == kind::pedwarn);
   if (was_warning && m_inhibit_warnings)
     {
       inhibit_notes_in_group ();
@@ -1242,15 +1246,15 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
   if (m_adjust_diagnostic_info)
     m_adjust_diagnostic_info (this, diagnostic);
 
-  if (diagnostic->m_kind == DK_PEDWARN)
+  if (diagnostic->m_kind == kind::pedwarn)
     {
-      diagnostic->m_kind = m_pedantic_errors ? DK_ERROR : DK_WARNING;
+      diagnostic->m_kind = m_pedantic_errors ? kind::error : kind::warning;
 
       /* We do this to avoid giving the message for -pedantic-errors.  */
       orig_diag_kind = diagnostic->m_kind;
     }
 
-  if (diagnostic->m_kind == DK_NOTE && m_inhibit_notes_p)
+  if (diagnostic->m_kind == kind::note && m_inhibit_notes_p)
     return false;
 
   /* If the user requested that warnings be treated as errors, so be
@@ -1258,8 +1262,8 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
      individual warnings can be overridden back to warnings with
      -Wno-error=*.  */
   if (m_warning_as_error_requested
-      && diagnostic->m_kind == DK_WARNING)
-    diagnostic->m_kind = DK_ERROR;
+      && diagnostic->m_kind == kind::warning)
+    diagnostic->m_kind = kind::error;
 
   diagnostic->m_message.m_data = &diagnostic->m_x_data;
 
@@ -1272,7 +1276,7 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
       return false;
     }
 
-  if ((was_warning || diagnostic->m_kind == DK_WARNING)
+  if ((was_warning || diagnostic->m_kind == kind::warning)
       && ((!m_warn_system_headers
 	   && diagnostic->m_iinfo.m_allsyslocs)
 	  || m_inhibit_warnings))
@@ -1280,11 +1284,11 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
        inlining stack (if there is one) are in system headers.  */
     return false;
 
-  if (diagnostic->m_kind == DK_NOTE && notes_inhibited_in_group ())
+  if (diagnostic->m_kind == kind::note && notes_inhibited_in_group ())
     /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
     return false;
 
-  if (diagnostic->m_kind != DK_NOTE && diagnostic->m_kind != DK_ICE)
+  if (diagnostic->m_kind != kind::note && diagnostic->m_kind != kind::ice)
     check_max_errors (false);
 
   if (m_lock > 0)
@@ -1292,7 +1296,8 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
       /* If we're reporting an ICE in the middle of some other error,
 	 try to flush out the previous error, then let this one
 	 through.  Don't do this more than once.  */
-      if ((diagnostic->m_kind == DK_ICE || diagnostic->m_kind == DK_ICE_NOBT)
+      if ((diagnostic->m_kind == kind::ice
+	   || diagnostic->m_kind == kind::ice_nobt)
 	  && m_lock == 1)
 	pp_newline_and_flush (m_reference_printer);
       else
@@ -1304,14 +1309,14 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
 
   m_lock++;
 
-  if (diagnostic->m_kind == DK_ICE || diagnostic->m_kind == DK_ICE_NOBT)
+  if (diagnostic->m_kind == kind::ice || diagnostic->m_kind == kind::ice_nobt)
     {
       /* When not checking, ICEs are converted to fatal errors when an
 	 error has already occurred.  This is counteracted by
 	 abort_on_error.  */
       if (!CHECKING_P
-	  && (diagnostic_count (DK_ERROR) > 0
-	      || diagnostic_count (DK_SORRY) > 0)
+	  && (diagnostic_count (kind::error) > 0
+	      || diagnostic_count (kind::sorry) > 0)
 	  && !m_abort_on_error)
 	{
 	  expanded_location s
@@ -1329,15 +1334,15 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
   /* Increment the counter for the appropriate diagnostic kind, either
      within this context, or within the diagnostic_buffer.  */
   {
-    const diagnostic_t kind_for_count =
-      ((diagnostic->m_kind == DK_ERROR && orig_diag_kind == DK_WARNING)
-       ? DK_WERROR
+    const enum kind kind_for_count =
+      ((diagnostic->m_kind == kind::error && orig_diag_kind == kind::warning)
+       ? kind::werror
        : diagnostic->m_kind);
-    diagnostics::counters &counters
+    counters &cs
       = (m_diagnostic_buffer
 	 ? m_diagnostic_buffer->m_diagnostic_counters
 	 : m_diagnostic_counters);
-    ++counters.m_count_for_kind[kind_for_count];
+    ++cs.m_count_for_kind[static_cast<size_t> (kind_for_count)];
   }
 
   /* Is this the initial diagnostic within the stack of groups?  */
@@ -1395,8 +1400,8 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
       break;
     }
   if (m_diagnostic_buffer == nullptr
-      || diagnostic->m_kind == DK_ICE
-      || diagnostic->m_kind == DK_ICE_NOBT)
+      || diagnostic->m_kind == kind::ice
+      || diagnostic->m_kind == kind::ice_nobt)
     action_after_output (diagnostic->m_kind);
   diagnostic->m_x_data = nullptr;
 
@@ -1495,19 +1500,19 @@ diagnostics::context::diagnostic_impl (rich_location *richloc,
 				     const diagnostics::metadata *metadata,
 				     diagnostics::option_id opt_id,
 				     const char *gmsgid,
-				     va_list *ap, diagnostic_t kind)
+				     va_list *ap, enum kind kind)
 {
   diagnostic_info diagnostic;
-  if (kind == DK_PERMERROR)
+  if (kind == kind::permerror)
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
-			   m_permissive ? DK_WARNING : DK_ERROR);
+			   m_permissive ? kind::warning : kind::error);
       diagnostic.m_option_id = (opt_id.m_idx != -1 ? opt_id : m_opt_permissive);
     }
   else
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
-      if (kind == DK_WARNING || kind == DK_PEDWARN)
+      if (kind == kind::warning || kind == kind::pedwarn)
 	diagnostic.m_option_id = opt_id;
     }
   diagnostic.m_metadata = metadata;
@@ -1523,7 +1528,7 @@ diagnostics::context::diagnostic_n_impl (rich_location *richloc,
 				       unsigned HOST_WIDE_INT n,
 				       const char *singular_gmsgid,
 				       const char *plural_gmsgid,
-				       va_list *ap, diagnostic_t kind)
+				       va_list *ap, enum kind kind)
 {
   diagnostic_info diagnostic;
   unsigned long gtn;
@@ -1538,7 +1543,7 @@ diagnostics::context::diagnostic_n_impl (rich_location *richloc,
 
   const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
   diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
-  if (kind == DK_WARNING)
+  if (kind == kind::warning)
     diagnostic.m_option_id = opt_id;
   diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
@@ -1573,7 +1578,7 @@ diagnostics::context::error_recursion ()
 
   /* Call action_after_output to get the "please submit a bug report"
      message.  */
-  action_after_output (DK_ICE);
+  action_after_output (kind::ice);
 
   /* Do not use gcc_unreachable here; that goes through internal_error
      and therefore would cause infinite recursion.  */
@@ -1599,7 +1604,7 @@ fancy_abort (const char *file, int line, const char *function)
   if (global_dc->get_reference_printer () == nullptr)
     {
       /* Print the error message.  */
-      fnotice (stderr, diagnostic_kind_text[DK_ICE]);
+      fnotice (stderr, diagnostics::get_text_for_kind (diagnostics::kind::ice));
       fnotice (stderr, "in %s, at %s:%d", function, trim_filename (file), line);
       fputc ('\n', stderr);
 
@@ -1754,12 +1759,12 @@ diagnostics::counters::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*scounts:\n", indent, "");
   bool none = true;
-  for (int i = 0; i < DK_LAST_DIAGNOSTIC_KIND; i++)
+  for (int i = 0; i < static_cast<int> (kind::last_diagnostic_kind); i++)
     if (m_count_for_kind[i] > 0)
       {
 	fprintf (out, "%*s%s%i\n",
 		 indent + 2, "",
-		 get_diagnostic_kind_text (static_cast<diagnostic_t> (i)),
+		 get_text_for_kind (static_cast<enum kind> (i)),
 		 m_count_for_kind[i]);
 	none = false;
       }
@@ -1770,7 +1775,7 @@ diagnostics::counters::dump (FILE *out, int indent) const
 void
 diagnostics::counters::move_to (diagnostics::counters &dest)
 {
-  for (int i = 0; i < DK_LAST_DIAGNOSTIC_KIND; i++)
+  for (int i = 0; i < static_cast<int> (kind::last_diagnostic_kind); i++)
     dest.m_count_for_kind[i] += m_count_for_kind[i];
   clear ();
 }

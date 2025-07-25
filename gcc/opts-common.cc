@@ -1282,9 +1282,9 @@ keep:
 
 /* Handle option DECODED for the language indicated by LANG_MASK,
    using the handlers in HANDLERS and setting fields in OPTS and
-   OPTS_SET.  KIND is the diagnostic_t if this is a diagnostics
-   option, DK_UNSPECIFIED otherwise, and LOC is the location of the
-   option for options from the source file, UNKNOWN_LOCATION
+   OPTS_SET.  KIND is the enum diagnostics::kind if this is a diagnostics
+   option, diagnostics::kind::unspecified otherwise, and LOC is the location
+   of the option for options from the source file, UNKNOWN_LOCATION
    otherwise.  GENERATED_P is true for an option generated as part of
    processing another option or otherwise generated internally, false
    for one explicitly passed by the user.  control_warning_option
@@ -1645,7 +1645,8 @@ read_cmdline_option (struct gcc_options *opts,
 
   gcc_assert (!decoded->errors);
 
-  if (!handle_option (opts, opts_set, decoded, lang_mask, DK_UNSPECIFIED,
+  if (!handle_option (opts, opts_set, decoded, lang_mask,
+		      static_cast<int> (diagnostics::kind::unspecified),
 		      loc, handlers, false, dc))
     error_at (loc, "unrecognized command-line option %qs", opt);
 }
@@ -1668,8 +1669,10 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
   if (!flag_var)
     return;
 
-  if ((diagnostic_t) kind != DK_UNSPECIFIED && dc != NULL)
-    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
+  if ((enum diagnostics::kind) kind != diagnostics::kind::unspecified
+      && dc != nullptr)
+    diagnostic_classify_diagnostic (dc, opt_index,
+				    (enum diagnostics::kind) kind, loc);
 
   if (opts_set != NULL)
     set_flag_var = option_flag_var (opt_index, opts_set);
@@ -1954,7 +1957,9 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
   if (opt_index == OPT_SPECIAL_ignore || opt_index == OPT_SPECIAL_warn_removed)
     return;
   if (dc)
-    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
+    diagnostic_classify_diagnostic (dc, opt_index,
+				    static_cast<enum diagnostics::kind> (kind),
+				    loc);
   if (imply)
     {
       /* -Werror=foo implies -Wfoo.  */

@@ -220,7 +220,8 @@ static void add_candidates (tree, tree, const vec<tree, va_gc> *, tree, tree,
 			    bool, tree, tree, int, struct z_candidate **,
 			    tsubst_flags_t);
 static conversion *merge_conversion_sequences (conversion *, conversion *);
-static tree build_temp (tree, tree, int, diagnostic_t *, tsubst_flags_t);
+static tree build_temp (tree, tree, int, enum diagnostics::kind *,
+			tsubst_flags_t);
 static conversion *build_identity_conv (tree, tree);
 static inline bool conv_binds_to_array_of_unknown_bound (conversion *);
 static bool conv_is_prvalue (conversion *);
@@ -6460,7 +6461,9 @@ build_conditional_expr (const op_location_t &loc,
 	       types when the enumeration is still being defined.  */;
 	  else if (complain & (cxx_dialect >= cxx26
 			       ? tf_warning_or_error : tf_warning))
-	    emit_diagnostic (cxx_dialect >= cxx26 ? DK_PEDWARN : DK_WARNING,
+	    emit_diagnostic ((cxx_dialect >= cxx26
+			      ? diagnostics::kind::pedwarn
+			      : diagnostics::kind::warning),
 			     loc, OPT_Wenum_compare, "enumerated mismatch "
 			     "in conditional expression: %qT vs %qT",
 			     arg2_type, arg3_type);
@@ -7647,8 +7650,9 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		      && (complain & tf_warning_or_error) == 0)
 		    result = error_mark_node;
 		  else if (cxx_dialect >= cxx26 || (complain & tf_warning))
-		    emit_diagnostic (cxx_dialect >= cxx26
-				     ? DK_PEDWARN : DK_WARNING,
+		    emit_diagnostic ((cxx_dialect >= cxx26
+				      ? diagnostics::kind::pedwarn
+				      : diagnostics::kind::warning),
 				     loc, OPT_Wenum_compare,
 				     "comparison between %q#T and %q#T",
 				     arg1_type, arg2_type);
@@ -8462,11 +8466,11 @@ complain_about_access (tree decl, tree diag_decl, tree diag_location,
 
 static tree
 build_temp (tree expr, tree type, int flags,
-	    diagnostic_t *diagnostic_kind, tsubst_flags_t complain)
+	    enum diagnostics::kind *diagnostic_kind, tsubst_flags_t complain)
 {
   int savew, savee;
 
-  *diagnostic_kind = DK_UNSPECIFIED;
+  *diagnostic_kind = diagnostics::kind::unspecified;
 
   /* If the source is a packed field, calling the copy constructor will require
      binding the field to the reference parameter to the copy constructor, and
@@ -8490,9 +8494,9 @@ build_temp (tree expr, tree type, int flags,
   expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &args, type, flags, complain);
   if (warningcount + werrorcount > savew)
-    *diagnostic_kind = DK_WARNING;
+    *diagnostic_kind = diagnostics::kind::warning;
   else if (errorcount > savee)
-    *diagnostic_kind = DK_ERROR;
+    *diagnostic_kind = diagnostics::kind::error;
   return expr;
 }
 
@@ -8704,7 +8708,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 		       bool nested_p, tsubst_flags_t complain)
 {
   tree totype = convs->type;
-  diagnostic_t diag_kind;
+  enum diagnostics::kind diag_kind;
   int flags;
   location_t loc = cp_expr_loc_or_input_loc (expr);
   const bool stub_object_p = is_stub_object (expr);
@@ -9242,7 +9246,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       if (convs->copy_init_p)
 	flags |= LOOKUP_ONLYCONVERTING;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
-      if (diag_kind && complain)
+      if (diag_kind != diagnostics::kind::unspecified && complain)
 	{
 	  auto_diagnostic_group d;
 	  maybe_print_user_conv_context (convs);

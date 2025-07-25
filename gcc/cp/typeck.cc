@@ -155,7 +155,7 @@ complete_type_or_maybe_complain (tree type, tree value, tsubst_flags_t complain)
   else if (!COMPLETE_TYPE_P (type))
     {
       if (complain & tf_error)
-	cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
+	cxx_incomplete_type_diagnostic (value, type, diagnostics::kind::error);
       note_failed_type_completion (type, complain);
       return NULL_TREE;
     }
@@ -618,7 +618,7 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 
 static void
 composite_pointer_error (const op_location_t &location,
-			 diagnostic_t kind, tree t1, tree t2,
+			 enum diagnostics::kind kind, tree t1, tree t2,
 			 composite_pointer_operation operation)
 {
   switch (operation)
@@ -690,7 +690,7 @@ composite_pointer_type_r (const op_location_t &location,
   else
     {
       if (complain & tf_error)
-	composite_pointer_error (location, DK_PERMERROR,
+	composite_pointer_error (location, diagnostics::kind::permerror,
 				 t1, t2, operation);
       else
 	return error_mark_node;
@@ -716,7 +716,7 @@ composite_pointer_type_r (const op_location_t &location,
 			TYPE_PTRMEM_CLASS_TYPE (t2)))
 	{
 	  if (complain & tf_error)
-	    composite_pointer_error (location, DK_PERMERROR,
+	    composite_pointer_error (location, diagnostics::kind::permerror,
 				     t1, t2, operation);
 	  else
 	    return error_mark_node;
@@ -851,7 +851,8 @@ composite_pointer_type (const op_location_t &location,
       else
         {
           if (complain & tf_error)
-	    composite_pointer_error (location, DK_ERROR, t1, t2, operation);
+	    composite_pointer_error (location, diagnostics::kind::error,
+				     t1, t2, operation);
           return error_mark_node;
         }
     }
@@ -10805,7 +10806,9 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
     {
       if (TYPE_REF_P (valtype))
 	/* P2748 made this an error in C++26.  */
-	emit_diagnostic (cxx_dialect >= cxx26 ? DK_PERMERROR : DK_WARNING,
+	emit_diagnostic ((cxx_dialect >= cxx26
+			  ? diagnostics::kind::permerror
+			  : diagnostics::kind::warning),
 			 loc, OPT_Wreturn_local_addr,
 			 "returning reference to temporary");
       else if (TYPE_PTR_P (valtype))

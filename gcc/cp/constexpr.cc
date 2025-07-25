@@ -161,13 +161,16 @@ constexpr_error (location_t location, bool constexpr_fundef_p,
   if (!constexpr_fundef_p)
     {
       /* Report an error that cannot be suppressed.  */
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
+			   diagnostics::kind::error);
       ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   else if (warn_invalid_constexpr)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-			   cxx_dialect < cxx23 ? DK_PEDWARN : DK_WARNING);
+			   (cxx_dialect < cxx23
+			    ? diagnostics::kind::pedwarn
+			    : diagnostics::kind::warning));
       diagnostic.m_option_id = OPT_Winvalid_constexpr;
       ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }

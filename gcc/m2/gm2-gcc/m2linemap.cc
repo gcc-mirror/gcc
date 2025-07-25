@@ -193,7 +193,8 @@ m2linemap_ErrorAtf_1 (location_t location, const char *message, ...)
   rich_location richloc (line_table, location);
 
   va_start (ap, message);
-  diagnostic_set_info (&diagnostic, message, &ap, &richloc, DK_ERROR);
+  diagnostic_set_info (&diagnostic, message, &ap, &richloc,
+		       diagnostics::kind::error);
   diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);
 }
@@ -214,7 +215,8 @@ m2linemap_WarningAtf_1 (location_t location, const char *message, ...)
   rich_location richloc (line_table, location);
 
   va_start (ap, message);
-  diagnostic_set_info (&diagnostic, message, &ap, &richloc, DK_WARNING);
+  diagnostic_set_info (&diagnostic, message, &ap, &richloc,
+		       diagnostics::kind::warning);
   diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);
 }
@@ -235,7 +237,8 @@ m2linemap_NoteAtf_1 (location_t location, const char *message, ...)
   rich_location richloc (line_table, location);
 
   va_start (ap, message);
-  diagnostic_set_info (&diagnostic, message, &ap, &richloc, DK_NOTE);
+  diagnostic_set_info (&diagnostic, message, &ap, &richloc,
+		       diagnostics::kind::note);
   diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);
 }

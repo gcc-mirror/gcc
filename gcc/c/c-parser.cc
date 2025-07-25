@@ -29162,11 +29162,14 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
       if (msg == NULL)
 	msg = _("<message unknown at compile time>");
     }
+  const enum diagnostics::kind diag_kind = (severity_fatal
+					    ? diagnostics::kind::error
+					    : diagnostics::kind::warning);
   if (msg)
-    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+    emit_diagnostic (diag_kind, loc, 0,
 		     "%<pragma omp error%> encountered: %s", msg);
   else
-    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+    emit_diagnostic (diag_kind, loc, 0,
 		     "%<pragma omp error%> encountered");
   return false;
 }

@@ -44,22 +44,22 @@ public:
 
   bool option_unspecified_p (option_id opt_id) const
   {
-    return get_current_override (opt_id) == DK_UNSPECIFIED;
+    return get_current_override (opt_id) == kind::unspecified;
   }
 
-  diagnostic_t get_current_override (option_id opt_id) const
+  enum kind get_current_override (option_id opt_id) const
   {
     gcc_assert (opt_id.m_idx < m_n_opts);
     return m_classify_diagnostic[opt_id.m_idx];
   }
 
-  diagnostic_t
+  enum kind
   classify_diagnostic (const context *context,
 		       option_id opt_id,
-		       diagnostic_t new_kind,
+		       enum kind new_kind,
 		       location_t where);
 
-  diagnostic_t
+  enum kind
   update_effective_level_from_pragmas (diagnostic_info *diagnostic) const;
 
   int pch_save (FILE *);
@@ -73,12 +73,12 @@ private:
   {
     location_t location;
 
-    /* For DK_POP, this is the index of the corresponding push (as stored
+    /* For kind::pop, this is the index of the corresponding push (as stored
        in m_push_list).
        Otherwise, this is an option index.  */
     int option;
 
-    diagnostic_t kind;
+    enum kind kind;
   };
 
   int m_n_opts;
@@ -86,10 +86,10 @@ private:
   /* For each option index that can be passed to warning() et al
      (OPT_* from options.h when using this code with the core GCC
      options), this array may contain a new kind that the diagnostic
-     should be changed to before reporting, or DK_UNSPECIFIED to leave
-     it as the reported kind, or DK_IGNORED to not report it at
+     should be changed to before reporting, or kind::unspecified to leave
+     it as the reported kind, or kind::ignored to not report it at
      all.  */
-  diagnostic_t *m_classify_diagnostic;
+  enum kind *m_classify_diagnostic;
 
   /* History of all changes to the classifications above.  This list
      is stored in location-order, so we can search it, either

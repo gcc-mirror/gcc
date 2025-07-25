@@ -7068,7 +7068,7 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		  const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
-  diagnostic_t dlevel;
+  enum diagnostics::kind dlevel;
   bool save_warn_system_headers = global_dc->m_warn_system_headers;
   bool ret;
 
@@ -7082,24 +7082,24 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
     case CPP_DL_WARNING:
       if (flag_no_output)
 	return false;
-      dlevel = DK_WARNING;
+      dlevel = diagnostics::kind::warning;
       break;
     case CPP_DL_PEDWARN:
       if (flag_no_output && !flag_pedantic_errors)
 	return false;
-      dlevel = DK_PEDWARN;
+      dlevel = diagnostics::kind::pedwarn;
       break;
     case CPP_DL_ERROR:
-      dlevel = DK_ERROR;
+      dlevel = diagnostics::kind::error;
       break;
     case CPP_DL_ICE:
-      dlevel = DK_ICE;
+      dlevel = diagnostics::kind::ice;
       break;
     case CPP_DL_NOTE:
-      dlevel = DK_NOTE;
+      dlevel = diagnostics::kind::note;
       break;
     case CPP_DL_FATAL:
-      dlevel = DK_FATAL;
+      dlevel = diagnostics::kind::fatal;
       break;
     default:
       gcc_unreachable ();

@@ -120,7 +120,7 @@ public:
   set_main_input_filename (const char *name);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
-			     diagnostic_t orig_diag_kind,
+			     enum kind orig_diag_kind,
 			     html_sink_buffer *buffer);
   void emit_diagram (const diagram &d);
   void emit_global_graph (const digraphs::lazy_digraph &);
@@ -161,7 +161,7 @@ private:
 
   std::unique_ptr<xml::element>
   make_element_for_diagnostic (const diagnostic_info &diagnostic,
-			       diagnostic_t orig_diag_kind,
+			       enum kind orig_diag_kind,
 			       bool alert);
 
   std::unique_ptr<xml::element>
@@ -496,10 +496,10 @@ html_builder::add_stylesheet (std::string url)
 
 void
 html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
-				    diagnostic_t orig_diag_kind,
+				    enum kind orig_diag_kind,
 				    html_sink_buffer *buffer)
 {
-  if (diagnostic.m_kind == DK_ICE || diagnostic.m_kind == DK_ICE_NOBT)
+  if (diagnostic.m_kind == kind::ice || diagnostic.m_kind == kind::ice_nobt)
     {
       /* Print a header for the remaining output to stderr, and
 	 return, attempting to print the usual ICE messages to
@@ -722,23 +722,23 @@ private:
 
 /* See https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts */
 static const char *
-get_pf_class_for_alert_div (diagnostic_t diag_kind)
+get_pf_class_for_alert_div (enum kind diag_kind)
 {
   switch (diag_kind)
     {
-    case DK_DEBUG:
-    case DK_NOTE:
+    case kind::debug:
+    case kind::note:
       return "alert alert-info";
 
-    case DK_ANACHRONISM:
-    case DK_WARNING:
+    case kind::anachronism:
+    case kind::warning:
       return "alert alert-warning";
 
-    case DK_ERROR:
-    case DK_SORRY:
-    case DK_ICE:
-    case DK_ICE_NOBT:
-    case DK_FATAL:
+    case kind::error:
+    case kind::sorry:
+    case kind::ice:
+    case kind::ice_nobt:
+    case kind::fatal:
       return "alert alert-danger";
 
     default:
@@ -747,23 +747,23 @@ get_pf_class_for_alert_div (diagnostic_t diag_kind)
 }
 
 static const char *
-get_pf_class_for_alert_icon (diagnostic_t diag_kind)
+get_pf_class_for_alert_icon (enum kind diag_kind)
 {
   switch (diag_kind)
     {
-    case DK_DEBUG:
-    case DK_NOTE:
+    case kind::debug:
+    case kind::note:
       return "pficon pficon-info";
 
-    case DK_ANACHRONISM:
-    case DK_WARNING:
+    case kind::anachronism:
+    case kind::warning:
       return "pficon pficon-warning-triangle-o";
 
-    case DK_ERROR:
-    case DK_SORRY:
-    case DK_ICE:
-    case DK_ICE_NOBT:
-    case DK_FATAL:
+    case kind::error:
+    case kind::sorry:
+    case kind::ice:
+    case kind::ice_nobt:
+    case kind::fatal:
       return "pficon pficon-error-circle-o";
 
     default:
@@ -946,7 +946,7 @@ private:
 
 std::unique_ptr<xml::element>
 html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
-					   diagnostic_t orig_diag_kind,
+					   enum kind orig_diag_kind,
 					   bool alert)
 {
   const int diag_idx = m_next_diag_id++;
@@ -1004,7 +1004,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   if (show_severity)
   {
     xp.push_tag ("strong");
-    xp.add_text (_(get_diagnostic_kind_text (diagnostic.m_kind)));
+    xp.add_text (_(get_text_for_kind (diagnostic.m_kind)));
     xp.pop_tag ("strong");
     xp.add_text (" ");
   }
@@ -1360,7 +1360,7 @@ public:
   }
   void
   on_report_diagnostic (const diagnostic_info &diagnostic,
-			diagnostic_t orig_diag_kind) final override
+			enum kind orig_diag_kind) final override
   {
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
@@ -1463,7 +1463,7 @@ open_html_output_file (context &dc,
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
       dc.emit_diagnostic_with_group
-	(DK_ERROR, richloc, nullptr, 0,
+	(kind::error, richloc, nullptr, 0,
 	 "unable to determine filename for HTML output");
       return output_file ();
     }
@@ -1476,7 +1476,7 @@ open_html_output_file (context &dc,
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
       dc.emit_diagnostic_with_group
-	(DK_ERROR, richloc, nullptr, 0,
+	(kind::error, richloc, nullptr, 0,
 	 "unable to open %qs for HTML output: %m",
 	 filename.get ());
       return output_file ();
@@ -1620,7 +1620,7 @@ test_simple_log ()
   test_html_context dc;
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
-  dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %qs", "foo");
+  dc.report (kind::error, richloc, nullptr, 0, "this is a test: %qs", "foo");
 
   const xml::document &doc  = dc.get_document ();
 

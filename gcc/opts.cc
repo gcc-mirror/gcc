@@ -371,7 +371,8 @@ target_handle_option (struct gcc_options *opts,
 		      diagnostics::context *dc, void (*) (void))
 {
   gcc_assert (dc == global_dc);
-  gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (static_cast<diagnostics::kind> (kind)
+	      == diagnostics::kind::unspecified);
   return targetm_common.handle_option (opts, opts_set, decoded, loc);
 }
 
@@ -535,14 +536,18 @@ maybe_default_option (struct gcc_options *opts,
   if (enabled)
     handle_generated_option (opts, opts_set, default_opt->opt_index,
 			     default_opt->arg, default_opt->value,
-			     lang_mask, DK_UNSPECIFIED, loc,
+			     lang_mask,
+			     static_cast<int> (diagnostics::kind::unspecified),
+			     loc,
 			     handlers, true, dc);
   else if (default_opt->arg == NULL
 	   && !option->cl_reject_negative
 	   && !(option->flags & CL_PARAMS))
     handle_generated_option (opts, opts_set, default_opt->opt_index,
 			     default_opt->arg, !default_opt->value,
-			     lang_mask, DK_UNSPECIFIED, loc,
+			     lang_mask,
+			     static_cast<int> (diagnostics::kind::unspecified),
+			     loc,
 			     handlers, true, dc);
 }
 
@@ -3317,7 +3322,9 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_pedantic_errors:
       dc->m_pedantic_errors = 1;
-      control_warning_option (OPT_Wpedantic, DK_ERROR, NULL, value,
+      control_warning_option (OPT_Wpedantic,
+			      static_cast<int> (diagnostics::kind::error),
+			      NULL, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set,
                               dc);
@@ -3717,7 +3724,9 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 	      "controls warnings", arg, new_option);
   else
     {
-      const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
+      const enum diagnostics::kind kind = (value
+					   ? diagnostics::kind::error
+					   : diagnostics::kind::warning);
       const char *arg = NULL;
 
       if (cl_options[option_index].flags & CL_JOINED)
@@ -3737,14 +3746,15 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 char *
 compiler_diagnostic_option_manager::
 make_option_name (diagnostics::option_id option_id,
-		  diagnostic_t orig_diag_kind,
-		  diagnostic_t diag_kind) const
+		  enum diagnostics::kind orig_diag_kind,
+		  enum diagnostics::kind diag_kind) const
 {
   if (option_id.m_idx)
     {
       /* A warning classified as an error.  */
-      if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
-	  && diag_kind == DK_ERROR)
+      if ((orig_diag_kind == diagnostics::kind::warning
+	   || orig_diag_kind == diagnostics::kind::pedwarn)
+	  && diag_kind == diagnostics::kind::error)
 	return concat (cl_options[OPT_Werror_].opt_text,
 		       /* Skip over "-W".  */
 		       cl_options[option_id.m_idx].opt_text + 2,
@@ -3754,8 +3764,9 @@ make_option_name (diagnostics::option_id option_id,
 	return xstrdup (cl_options[option_id.m_idx].opt_text);
     }
   /* A warning without option classified as an error.  */
-  else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
-	    || diag_kind == DK_WARNING)
+  else if ((orig_diag_kind == diagnostics::kind::warning
+	    || orig_diag_kind == diagnostics::kind::pedwarn
+	    || diag_kind == diagnostics::kind::warning)
 	   && m_context.warning_as_error_requested_p ())
     return xstrdup (cl_options[OPT_Werror].opt_text);
   else

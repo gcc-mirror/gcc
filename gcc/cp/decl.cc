@@ -110,7 +110,7 @@ static void initialize_local_var (tree, tree, bool);
 static void expand_static_init (tree, tree);
 static location_t smallest_type_location (const cp_decl_specifier_seq*);
 static bool identify_goto (tree, location_t, const location_t *,
-			   diagnostic_t, bool);
+			   enum diagnostics::kind, bool);
 
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
@@ -3737,10 +3737,10 @@ decl_jump_unsafe (tree decl)
 
 static bool
 identify_goto (tree decl, location_t loc, const location_t *locus,
-	       diagnostic_t diag_kind, bool computed)
+	       enum diagnostics::kind diag_kind, bool computed)
 {
   if (computed)
-    diag_kind = DK_WARNING;
+    diag_kind = diagnostics::kind::warning;
   bool complained
     = emit_diagnostic (diag_kind, loc, 0,
 		       decl ? G_("jump to label %qD")
@@ -3776,7 +3776,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 
   if (exited_omp)
     {
-      complained = identify_goto (decl, input_location, locus, DK_ERROR,
+      complained = identify_goto (decl, input_location, locus,
+				  diagnostics::kind::error,
 				  computed);
       if (complained)
 	inform (input_location, "  exits OpenMP structured block");
@@ -3798,7 +3799,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 
 	  if (!identified)
 	    {
-	      complained = identify_goto (decl, input_location, locus, DK_ERROR,
+	      complained = identify_goto (decl, input_location, locus,
+					  diagnostics::kind::error,
 					  computed);
 	      identified = 2;
 	    }
@@ -3866,7 +3868,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
       if (inf)
 	{
 	  if (identified < 2)
-	    complained = identify_goto (decl, input_location, locus, DK_ERROR,
+	    complained = identify_goto (decl, input_location, locus,
+					diagnostics::kind::error,
 					computed);
 	  identified = 2;
 	  if (complained)
@@ -3877,7 +3880,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
   if (!vec_safe_is_empty (computed))
     {
       if (!identified)
-	complained = identify_goto (decl, input_location, locus, DK_ERROR,
+	complained = identify_goto (decl, input_location, locus,
+				    diagnostics::kind::error,
 				    computed);
       identified = 2;
       if (complained)
@@ -3949,14 +3953,14 @@ check_goto_1 (named_label_entry *ent, bool computed)
       || ent->in_omp_scope || ent->in_stmt_expr
       || !vec_safe_is_empty (ent->bad_decls))
     {
-      diagnostic_t diag_kind = DK_PERMERROR;
+      enum diagnostics::kind diag_kind = diagnostics::kind::permerror;
       if (ent->in_try_scope || ent->in_catch_scope || ent->in_constexpr_if
 	  || ent->in_consteval_if || ent->in_transaction_scope
 	  || ent->in_omp_scope || ent->in_stmt_expr)
-	diag_kind = DK_ERROR;
+	diag_kind = diagnostics::kind::error;
       complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
 				  &input_location, diag_kind, computed);
-      identified = 1 + (diag_kind == DK_ERROR);
+      identified = 1 + (diag_kind == diagnostics::kind::error);
     }
 
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
@@ -3969,7 +3973,9 @@ check_goto_1 (named_label_entry *ent, bool computed)
 	  if (identified == 1)
 	    {
 	      complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
-					  &input_location, DK_ERROR, computed);
+					  &input_location,
+					  diagnostics::kind::error,
+					  computed);
 	      identified = 2;
 	    }
 	  if (complained)
@@ -4013,7 +4019,8 @@ check_goto_1 (named_label_entry *ent, bool computed)
 	      {
 		complained = identify_goto (decl,
 					    DECL_SOURCE_LOCATION (decl),
-					    &input_location, DK_ERROR,
+					    &input_location,
+					    diagnostics::kind::error,
 					    computed);
 		identified = 2;
 	      }
@@ -4037,7 +4044,8 @@ check_goto_1 (named_label_entry *ent, bool computed)
 		{
 		  complained
 		    = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
-				     &input_location, DK_ERROR, computed);
+				     &input_location, diagnostics::kind::error,
+				     computed);
 		  identified = 2;
 		}
 	      if (complained)
@@ -4053,7 +4061,8 @@ check_goto_1 (named_label_entry *ent, bool computed)
 		    {
 		      complained
 			= identify_goto (decl, DECL_SOURCE_LOCATION (decl),
-					 &input_location, DK_ERROR, computed);
+					 &input_location, diagnostics::kind::error,
+					 computed);
 		      identified = 2;
 		    }
 		  if (complained)
@@ -11275,12 +11284,12 @@ grokfndecl (tree ctype,
 	   t && t != void_list_node; t = TREE_CHAIN (t))
 	if (TREE_PURPOSE (t))
 	  {
-	    diagnostic_t diag_kind = DK_PERMERROR;
+	    enum diagnostics::kind diag_kind = diagnostics::kind::permerror;
 	    /* For templates, mark the default argument as erroneous and give a
 	       hard error.  */
 	    if (processing_template_decl)
 	      {
-		diag_kind = DK_ERROR;
+		diag_kind = diagnostics::kind::error;
 		TREE_PURPOSE (t) = error_mark_node;
 	      }
 	    if (!has_errored)
@@ -17397,7 +17406,8 @@ xref_basetypes (tree ref, tree base_list)
 	 compatibility.  */
       if (processing_template_decl
 	  && CLASS_TYPE_P (basetype) && TYPE_BEING_DEFINED (basetype))
-	cxx_incomplete_type_diagnostic (NULL_TREE, basetype, DK_PEDWARN);
+	cxx_incomplete_type_diagnostic (NULL_TREE, basetype,
+					diagnostics::kind::pedwarn);
       if (!dependent_type_p (basetype)
 	  && !complete_type_or_else (basetype, NULL))
 	/* An incomplete type.  Remove it from the list.  */

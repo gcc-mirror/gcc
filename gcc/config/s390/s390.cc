@@ -16874,8 +16874,9 @@ s390_valid_target_attribute_inner_p (tree args,
 	      generate_option (opt, NULL, value, CL_TARGET, &decoded);
 	      s390_handle_option (opts, new_opts_set, &decoded, input_location);
 	      set_option (opts, new_opts_set, opt, value,
-			  p + opt_len, DK_UNSPECIFIED, input_location,
-			  global_dc);
+			  p + opt_len,
+			  static_cast<int> (diagnostics::kind::unspecified),
+			  input_location, global_dc);
 	    }
 	  else
 	    {
@@ -16892,8 +16893,9 @@ s390_valid_target_attribute_inner_p (tree args,
 	  arg_ok = opt_enum_arg_to_value (opt, p + opt_len, &value, CL_TARGET);
 	  if (arg_ok)
 	    set_option (opts, new_opts_set, opt, value,
-			p + opt_len, DK_UNSPECIFIED, input_location,
-			global_dc);
+			p + opt_len,
+			static_cast<int> (diagnostics::kind::unspecified),
+			input_location, global_dc);
 	  else
 	    {
 	      error ("attribute %<target%> argument %qs is unknown", orig_p);

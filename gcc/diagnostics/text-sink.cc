@@ -132,7 +132,7 @@ text_sink_buffer::flush ()
 text_sink::~text_sink ()
 {
   /* Some of the errors may actually have been warnings.  */
-  if (m_context.diagnostic_count (DK_WERROR))
+  if (m_context.diagnostic_count (kind::werror))
     {
       pretty_printer *pp = get_printer ();
       /* -Werror was given.  */
@@ -201,7 +201,7 @@ text_sink::make_per_sink_buffer ()
 
 void
 text_sink::on_report_diagnostic (const diagnostic_info &diagnostic,
-				 diagnostic_t orig_diag_kind)
+				 enum kind orig_diag_kind)
 {
   pretty_printer *pp = get_printer ();
 
@@ -291,13 +291,13 @@ after_diagnostic (const diagnostic_info &diagnostic)
 char *
 text_sink::build_prefix (const diagnostic_info &diagnostic) const
 {
-  gcc_assert (diagnostic.m_kind < DK_LAST_DIAGNOSTIC_KIND);
+  gcc_assert (diagnostic.m_kind < kind::last_diagnostic_kind);
 
-  const char *text = _(get_diagnostic_kind_text (diagnostic.m_kind));
+  const char *text = _(get_text_for_kind (diagnostic.m_kind));
   const char *text_cs = "", *text_ce = "";
   pretty_printer *pp = get_printer ();
 
-  if (const char *color_name = diagnostic_get_color_for_kind (diagnostic.m_kind))
+  if (const char *color_name = get_color_for_kind (diagnostic.m_kind))
     {
       text_cs = colorize_start (pp_show_color (pp), color_name);
       text_ce = colorize_stop (pp_show_color (pp));
@@ -310,7 +310,7 @@ text_sink::build_prefix (const diagnostic_info &diagnostic) const
 
       /* Reduce verbosity of nested diagnostics by not printing "note: "
 	 all the time.  */
-      if (diagnostic.m_kind == DK_NOTE)
+      if (diagnostic.m_kind == kind::note)
 	return indent_prefix;
 
       char *result = build_message_string ("%s%s%s%s", indent_prefix,
@@ -416,7 +416,7 @@ text_sink::append_note (location_t location,
   rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, kind::note);
   if (dc->m_inhibit_notes_p)
     {
       va_end (ap);
@@ -431,7 +431,7 @@ text_sink::append_note (location_t location,
   pp_set_prefix (pp, saved_prefix);
   pp_newline (pp);
   diagnostic_show_locus (dc, get_source_printing_options (),
-			 &richloc, DK_NOTE, pp);
+			 &richloc, kind::note, pp);
   va_end (ap);
 }
 
@@ -478,7 +478,7 @@ text_sink::print_any_cwe (const diagnostic_info &diagnostic)
       pretty_printer * const pp = get_printer ();
       char *saved_prefix = pp_take_prefix (pp);
       pp_string (pp, " [");
-      const char *kind_color = diagnostic_get_color_for_kind (diagnostic.m_kind);
+      const char *kind_color = get_color_for_kind (diagnostic.m_kind);
       pp_string (pp, colorize_start (pp_show_color (pp), kind_color));
       if (pp->supports_urls_p ())
 	{
@@ -516,8 +516,7 @@ text_sink::print_any_rules (const diagnostic_info &diagnostic)
 	  pretty_printer * const pp = get_printer ();
 	  char *saved_prefix = pp_take_prefix (pp);
 	  pp_string (pp, " [");
-	  const char *kind_color
-	    = diagnostic_get_color_for_kind (diagnostic.m_kind);
+	  const char *kind_color = get_color_for_kind (diagnostic.m_kind);
 	  pp_string (pp, colorize_start (pp_show_color (pp), kind_color));
 	  char *url = nullptr;
 	  if (pp->supports_urls_p ())
@@ -544,7 +543,7 @@ text_sink::print_any_rules (const diagnostic_info &diagnostic)
 
 void
 text_sink::print_option_information (const diagnostic_info &diagnostic,
-				     diagnostic_t orig_diag_kind)
+				     enum kind orig_diag_kind)
 {
   if (char *option_text
       = m_context.make_option_name (diagnostic.m_option_id,
@@ -555,7 +554,7 @@ text_sink::print_option_information (const diagnostic_info &diagnostic,
       if (pp->supports_urls_p ())
 	option_url = m_context.make_option_url (diagnostic.m_option_id);
       pp_string (pp, " [");
-      const char *kind_color = diagnostic_get_color_for_kind (diagnostic.m_kind);
+      const char *kind_color = get_color_for_kind (diagnostic.m_kind);
       pp_string (pp, colorize_start (pp_show_color (pp), kind_color));
       if (option_url)
 	pp_begin_url (pp, option_url);
@@ -709,7 +708,7 @@ default_text_starter (text_sink &text_output,
 void
 default_text_finalizer (text_sink &text_output,
 			const diagnostic_info *diagnostic,
-			diagnostic_t)
+			enum kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);

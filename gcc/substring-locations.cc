@@ -218,11 +218,11 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostics::option_id option_id,
 
       const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
       diagnostic_set_info_translated (&diagnostic, text, ap, &richloc,
-				      DK_WARNING);
+				      diagnostics::kind::warning);
     }
   else
     diagnostic_set_info (&diagnostic, singular_gmsgid, ap, &richloc,
-			 DK_WARNING);
+			 diagnostics::kind::warning);
   diagnostic.m_option_id = option_id;
   bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 

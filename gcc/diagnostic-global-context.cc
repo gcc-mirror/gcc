@@ -53,7 +53,7 @@ verbatim (const char *gmsgid, ...)
    implying global_dc and taking a variable argument list.  */
 
 bool
-emit_diagnostic (diagnostic_t kind,
+emit_diagnostic (enum diagnostics::kind kind,
 		 location_t location,
 		 diagnostics::option_id option_id,
 		 const char *gmsgid, ...)
@@ -71,7 +71,7 @@ emit_diagnostic (diagnostic_t kind,
 /* As above, but for rich_location *.  */
 
 bool
-emit_diagnostic (diagnostic_t kind,
+emit_diagnostic (enum diagnostics::kind kind,
 		 rich_location *richloc,
 		 diagnostics::option_id option_id,
 		 const char *gmsgid, ...)
@@ -88,7 +88,7 @@ emit_diagnostic (diagnostic_t kind,
 /* As above, but taking a variable argument list.  */
 
 bool
-emit_diagnostic_valist (diagnostic_t kind,
+emit_diagnostic_valist (enum diagnostics::kind kind,
 			location_t location,
 			diagnostics::option_id option_id,
 			const char *gmsgid, va_list *ap)
@@ -101,7 +101,7 @@ emit_diagnostic_valist (diagnostic_t kind,
 /* As above, but with rich_location and metadata.  */
 
 bool
-emit_diagnostic_valist_meta (diagnostic_t kind,
+emit_diagnostic_valist_meta (enum diagnostics::kind kind,
 			     rich_location *richloc,
 			     const diagnostics::metadata *metadata,
 			     diagnostics::option_id option_id,
@@ -120,7 +120,8 @@ inform (location_t location, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_NOTE);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::note);
   va_end (ap);
 }
 
@@ -133,7 +134,8 @@ inform (rich_location *richloc, const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  global_dc->diagnostic_impl (richloc, nullptr, -1, gmsgid, &ap, DK_NOTE);
+  global_dc->diagnostic_impl (richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::note);
   va_end (ap);
 }
 
@@ -149,7 +151,7 @@ inform_n (location_t location, unsigned HOST_WIDE_INT n,
   rich_location richloc (line_table, location);
   global_dc->diagnostic_n_impl (&richloc, nullptr, -1, n,
 				singular_gmsgid, plural_gmsgid,
-				&ap, DK_NOTE);
+				&ap, diagnostics::kind::note);
   va_end (ap);
 }
 
@@ -164,7 +166,8 @@ warning (diagnostics::option_id option_id, const char *gmsgid, ...)
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
   bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_WARNING);
+					 gmsgid, &ap,
+					 diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -183,7 +186,8 @@ warning_at (location_t location,
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_WARNING);
+					 gmsgid, &ap,
+					 diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -201,7 +205,8 @@ warning_at (rich_location *richloc,
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = global_dc->diagnostic_impl (richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_WARNING);
+					 gmsgid, &ap,
+					 diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -220,7 +225,8 @@ warning_meta (rich_location *richloc,
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = global_dc->diagnostic_impl (richloc, &metadata, option_id,
-					 gmsgid, &ap, DK_WARNING);
+					 gmsgid, &ap,
+					 diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -240,7 +246,7 @@ warning_n (rich_location *richloc,
   va_start (ap, plural_gmsgid);
   bool ret = global_dc->diagnostic_n_impl (richloc, nullptr, option_id, n,
 					   singular_gmsgid, plural_gmsgid,
-					   &ap, DK_WARNING);
+					   &ap, diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -261,7 +267,7 @@ warning_n (location_t location,
   rich_location richloc (line_table, location);
   bool ret = global_dc->diagnostic_n_impl (&richloc, nullptr, option_id, n,
 					   singular_gmsgid, plural_gmsgid,
-					   &ap, DK_WARNING);
+					   &ap, diagnostics::kind::warning);
   va_end (ap);
   return ret;
 }
@@ -289,7 +295,8 @@ pedwarn (location_t location,
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_PEDWARN);
+					 gmsgid, &ap,
+					 diagnostics::kind::pedwarn);
   va_end (ap);
   return ret;
 }
@@ -307,7 +314,8 @@ pedwarn (rich_location *richloc,
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = global_dc->diagnostic_impl (richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_PEDWARN);
+					 gmsgid, &ap,
+					 diagnostics::kind::pedwarn);
   va_end (ap);
   return ret;
 }
@@ -327,7 +335,7 @@ permerror (location_t location, const char *gmsgid, ...)
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
-					 DK_PERMERROR);
+					 diagnostics::kind::permerror);
   va_end (ap);
   return ret;
 }
@@ -343,7 +351,7 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = global_dc->diagnostic_impl (richloc, nullptr, -1, gmsgid, &ap,
-					 DK_PERMERROR);
+					 diagnostics::kind::permerror);
   va_end (ap);
   return ret;
 }
@@ -362,7 +370,8 @@ permerror_opt (location_t location,
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_PERMERROR);
+					 gmsgid, &ap,
+					 diagnostics::kind::permerror);
   va_end (ap);
   return ret;
 }
@@ -380,7 +389,8 @@ permerror_opt (rich_location *richloc,
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = global_dc->diagnostic_impl (richloc, nullptr, option_id,
-					 gmsgid, &ap, DK_PERMERROR);
+					 gmsgid, &ap,
+					 diagnostics::kind::permerror);
   va_end (ap);
   return ret;
 }
@@ -394,7 +404,8 @@ error (const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_ERROR);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -410,7 +421,7 @@ error_n (location_t location, unsigned HOST_WIDE_INT n,
   rich_location richloc (line_table, location);
   global_dc->diagnostic_n_impl (&richloc, nullptr, -1, n,
 				singular_gmsgid, plural_gmsgid,
-				&ap, DK_ERROR);
+				&ap, diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -422,7 +433,8 @@ error_at (location_t loc, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, loc);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_ERROR);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -436,7 +448,8 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  global_dc->diagnostic_impl (richloc, nullptr, -1, gmsgid, &ap, DK_ERROR);
+  global_dc->diagnostic_impl (richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -451,7 +464,8 @@ error_meta (rich_location *richloc, const diagnostics::metadata &metadata,
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  global_dc->diagnostic_impl (richloc, &metadata, -1, gmsgid, &ap, DK_ERROR);
+  global_dc->diagnostic_impl (richloc, &metadata, -1, gmsgid, &ap,
+			      diagnostics::kind::error);
   va_end (ap);
 }
 
@@ -465,7 +479,8 @@ sorry (const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_SORRY);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::sorry);
   va_end (ap);
 }
 
@@ -477,7 +492,8 @@ sorry_at (location_t loc, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, loc);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_SORRY);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::sorry);
   va_end (ap);
 }
 
@@ -499,7 +515,8 @@ fatal_error (location_t loc, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, loc);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_FATAL);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::fatal);
   va_end (ap);
 
   gcc_unreachable ();
@@ -514,7 +531,8 @@ internal_error (const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_ICE);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::ice);
   va_end (ap);
 
   gcc_unreachable ();
@@ -530,7 +548,8 @@ internal_error_no_backtrace (const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
-  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap, DK_ICE_NOBT);
+  global_dc->diagnostic_impl (&richloc, nullptr, -1, gmsgid, &ap,
+			      diagnostics::kind::ice_nobt);
   va_end (ap);
 
   gcc_unreachable ();

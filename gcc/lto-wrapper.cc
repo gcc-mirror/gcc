@@ -2279,8 +2279,8 @@ public:
     return true;
   }
   char *make_option_name (diagnostics::option_id,
-			  diagnostic_t,
-			  diagnostic_t) const final override
+			  enum diagnostics::kind,
+			  enum diagnostics::kind) const final override
   {
     return nullptr;
   }

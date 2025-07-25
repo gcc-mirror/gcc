@@ -30,9 +30,9 @@ void
 option_classifier::init (int n_opts)
 {
   m_n_opts = n_opts;
-  m_classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
+  m_classify_diagnostic = XNEWVEC (enum kind, n_opts);
   for (int i = 0; i < n_opts; i++)
-    m_classify_diagnostic[i] = DK_UNSPECIFIED;
+    m_classify_diagnostic[i] = kind::unspecified;
   m_push_list = vNULL;
   m_classification_history = vNULL;
 }
@@ -111,27 +111,27 @@ option_classifier::pop (location_t where)
   else
     jump_to = 0;
 
-  classification_change_t v = { where, jump_to, DK_POP };
+  classification_change_t v = { where, jump_to, kind::pop };
   m_classification_history.safe_push (v);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
-   previous setting, or DK_UNSPECIFIED if the parameters are out of
+   previous setting, or kind::unspecified if the parameters are out of
    range.  If OPTION_ID is zero, the new setting is for all the
    diagnostics.  */
 
-diagnostic_t
+enum kind
 option_classifier::classify_diagnostic (const context *dc,
 					option_id opt_id,
-					diagnostic_t new_kind,
+					enum kind new_kind,
 					location_t where)
 {
-  diagnostic_t old_kind;
+  enum kind old_kind;
 
   if (opt_id.m_idx < 0
       || opt_id.m_idx >= m_n_opts
-      || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
-    return DK_UNSPECIFIED;
+      || new_kind >= kind::last_diagnostic_kind)
+    return kind::unspecified;
 
   old_kind = m_classify_diagnostic[opt_id.m_idx];
 
@@ -141,11 +141,11 @@ option_classifier::classify_diagnostic (const context *dc,
     {
       unsigned i;
 
-      /* Record the command-line status, so we can reset it back on DK_POP. */
-      if (old_kind == DK_UNSPECIFIED)
+      /* Record the command-line status, so we can reset it back on kind::pop. */
+      if (old_kind == kind::unspecified)
 	{
 	  old_kind = (!dc->option_enabled_p (opt_id)
-		      ? DK_IGNORED : DK_ANY);
+		      ? kind::ignored : kind::any);
 	  m_classify_diagnostic[opt_id.m_idx] = old_kind;
 	}
 
@@ -172,15 +172,15 @@ option_classifier::classify_diagnostic (const context *dc,
      #pragma GCC diagnostic
    directives recorded within this object.
 
-   Return the new kind of DIAGNOSTIC if it was updated, or DK_UNSPECIFIED
+   Return the new kind of DIAGNOSTIC if it was updated, or kind::unspecified
    otherwise.  */
 
-diagnostic_t
+enum kind
 option_classifier::
 update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 {
   if (m_classification_history.is_empty ())
-    return DK_UNSPECIFIED;
+    return kind::unspecified;
 
   /* Iterate over the locations, checking the diagnostic disposition
      for the diagnostic at each.  If it's explicitly set as opposed
@@ -197,7 +197,7 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 	  if (!linemap_location_before_p (line_table, pragloc, loc))
 	    continue;
 
-	  if (p->kind == (int) DK_POP)
+	  if (p->kind == kind::pop)
 	    {
 	      /* Move on to the next region.  */
 	      i = p->option;
@@ -208,15 +208,15 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 	  /* The option 0 is for all the diagnostics.  */
 	  if (opt_id == 0 || opt_id == diagnostic->m_option_id)
 	    {
-	      diagnostic_t kind = p->kind;
-	      if (kind != DK_UNSPECIFIED)
+	      enum kind kind = p->kind;
+	      if (kind != kind::unspecified)
 		diagnostic->m_kind = kind;
 	      return kind;
 	    }
 	}
     }
 
-  return DK_UNSPECIFIED;
+  return kind::unspecified;
 }
 
 } // namespace diagnostics

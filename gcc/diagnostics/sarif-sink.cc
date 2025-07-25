@@ -452,7 +452,7 @@ public:
 
   void
   on_nested_diagnostic (const diagnostic_info &diagnostic,
-			diagnostic_t orig_diag_kind,
+			enum kind orig_diag_kind,
 			sarif_builder &builder);
   void on_diagram (const diagram &d,
 		   sarif_builder &builder);
@@ -775,7 +775,7 @@ public:
   set_main_input_filename (const char *name);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
-			     diagnostic_t orig_diag_kind,
+			     enum kind orig_diag_kind,
 			     sarif_sink_buffer *buffer);
   void emit_diagram (const diagram &d);
   void end_group ();
@@ -854,7 +854,7 @@ private:
 
   std::unique_ptr<sarif_result>
   make_result_object (const diagnostic_info &diagnostic,
-		      diagnostic_t orig_diag_kind,
+		      enum kind orig_diag_kind,
 		      unsigned idx_within_parent);
   void
   add_any_include_chain (sarif_location_manager &loc_mgr,
@@ -918,7 +918,7 @@ private:
   make_tool_component_reference_object_for_cwe () const;
   std::unique_ptr<sarif_reporting_descriptor>
   make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
-						diagnostic_t orig_diag_kind,
+						enum kind orig_diag_kind,
 						const char *option_text);
   std::unique_ptr<sarif_reporting_descriptor>
   make_reporting_descriptor_object_for_cwe_id (int cwe_id) const;
@@ -1307,7 +1307,7 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
 
 void
 sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
-				    diagnostic_t /*orig_diag_kind*/,
+				    enum kind /*orig_diag_kind*/,
 				    sarif_builder &builder)
 {
   /* We don't yet generate meaningful logical locations for notes;
@@ -1840,12 +1840,12 @@ sarif_builder::set_main_input_filename (const char *name)
 
 void
 sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
-				     diagnostic_t orig_diag_kind,
+				     enum kind orig_diag_kind,
 				     sarif_sink_buffer *buffer)
 {
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
 
-  if (diagnostic.m_kind == DK_ICE || diagnostic.m_kind == DK_ICE_NOBT)
+  if (diagnostic.m_kind == kind::ice || diagnostic.m_kind == kind::ice_nobt)
     {
       std::unique_ptr<json::object> stack = make_stack_from_backtrace ();
       m_invocation_obj->add_notification_for_ice (diagnostic, *this,
@@ -1949,16 +1949,16 @@ sarif_builder::flush_to_file (FILE *outf)
    Return nullptr if there isn't one.  */
 
 static const char *
-maybe_get_sarif_level (diagnostic_t diag_kind)
+maybe_get_sarif_level (enum kind diag_kind)
 {
   switch (diag_kind)
     {
-    case DK_WARNING:
+    case kind::warning:
       return "warning";
-    case DK_ERROR:
+    case kind::error:
       return "error";
-    case DK_NOTE:
-    case DK_ANACHRONISM:
+    case kind::note:
+    case kind::anachronism:
       return "note";
     default:
       return nullptr;
@@ -1970,10 +1970,10 @@ maybe_get_sarif_level (diagnostic_t diag_kind)
    have anything better to use.  */
 
 static char *
-make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
+make_rule_id_for_diagnostic_kind (enum kind diag_kind)
 {
   /* Lose the trailing ": ".  */
-  const char *kind_text = get_diagnostic_kind_text (diag_kind);
+  const char *kind_text = get_text_for_kind (diag_kind);
   size_t len = strlen (kind_text);
   gcc_assert (len > 2);
   gcc_assert (kind_text[len - 2] == ':');
@@ -1987,7 +1987,7 @@ make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
 
 std::unique_ptr<sarif_result>
 sarif_builder::make_result_object (const diagnostic_info &diagnostic,
-				   diagnostic_t orig_diag_kind,
+				   enum kind orig_diag_kind,
 				   unsigned idx_within_parent)
 {
   auto result_obj = std::make_unique<sarif_result> (idx_within_parent);
@@ -2106,7 +2106,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 std::unique_ptr<sarif_reporting_descriptor>
 sarif_builder::
 make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
-					      diagnostic_t /*orig_diag_kind*/,
+					      enum kind /*orig_diag_kind*/,
 					      const char *option_text)
 {
   auto reporting_desc = std::make_unique<sarif_reporting_descriptor> ();
@@ -2281,7 +2281,7 @@ sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
       dc.set_escape_format (m_escape_format);
       text_sink text_output (dc);
       source_policy.print (*text_output.get_printer (),
-			   my_rich_loc, DK_ERROR, nullptr);
+			   my_rich_loc, kind::error, nullptr);
 
       const char *buf = pp_formatted_text (text_output.get_printer ());
       std::unique_ptr<sarif_multiformat_message_string> result
@@ -3915,7 +3915,7 @@ public:
   }
   void
   on_report_diagnostic (const diagnostic_info &diagnostic,
-			diagnostic_t orig_diag_kind) final override
+			enum kind orig_diag_kind) final override
   {
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
@@ -4189,7 +4189,7 @@ output_file::try_to_open (context &dc,
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
       dc.emit_diagnostic_with_group
-	(DK_ERROR, richloc, nullptr, 0,
+	(kind::error, richloc, nullptr, 0,
 	 "unable to determine filename for SARIF output");
       return output_file ();
     }
@@ -4202,7 +4202,7 @@ output_file::try_to_open (context &dc,
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
       dc.emit_diagnostic_with_group
-	(DK_ERROR, richloc, nullptr, 0,
+	(kind::error, richloc, nullptr, 0,
 	 "unable to open %qs for diagnostic output: %m",
 	 filename.get ());
       return output_file ();
@@ -4583,7 +4583,7 @@ test_simple_log (const sarif_generation_options &sarif_gen_opts)
   test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME", sarif_gen_opts);
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
-  dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
+  dc.report (kind::error, richloc, nullptr, 0, "this is a test: %i", 42);
 
   auto log_ptr = dc.flush_to_object ();
 
@@ -4720,7 +4720,7 @@ test_simple_log_2 (const sarif_generation_options &sarif_gen_opts,
 		     linemap_position_for_column (line_table, 8));
 
   rich_location richloc (line_table, typo_loc);
-  dc.report (DK_ERROR, richloc, nullptr, 0,
+  dc.report (kind::error, richloc, nullptr, 0,
 	     "did you misspell %qs again?",
 	     "unsigned");
 
@@ -4848,7 +4848,7 @@ test_message_with_embedded_link (const sarif_generation_options &sarif_gen_opts)
   {
     test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
-    dc.report (DK_ERROR, richloc, nullptr, 0,
+    dc.report (kind::error, richloc, nullptr, 0,
 	       "before %{text%} after",
 	       "http://example.com");
     std::unique_ptr<sarif_log> log = dc.flush_to_object ();
@@ -4871,7 +4871,7 @@ test_message_with_embedded_link (const sarif_generation_options &sarif_gen_opts)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
-    dc.report (DK_ERROR, richloc, nullptr, 0,
+    dc.report (kind::error, richloc, nullptr, 0,
 	       "Prohibited term used in %{para[0]\\spans[2]%}.",
 	       "1");
 #if __GNUC__ >= 10
@@ -4905,7 +4905,7 @@ test_message_with_embedded_link (const sarif_generation_options &sarif_gen_opts)
     test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     dc.push_owned_urlifier (std::make_unique<test_urlifier> ());
     rich_location richloc (line_table, UNKNOWN_LOCATION);
-    dc.report (DK_ERROR, richloc, nullptr, 0,
+    dc.report (kind::error, richloc, nullptr, 0,
 	       "foo %<-foption%> %<unrecognized%> bar");
     std::unique_ptr<sarif_log> log = dc.flush_to_object ();
 
@@ -4926,7 +4926,7 @@ test_message_with_braces (const sarif_generation_options &sarif_gen_opts)
   {
     test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
-    dc.report (DK_ERROR, richloc, nullptr, 0,
+    dc.report (kind::error, richloc, nullptr, 0,
 	       "open brace: %qs close brace: %qs",
 	       "{", "}");
     std::unique_ptr<sarif_log> log = dc.flush_to_object ();
@@ -4948,21 +4948,21 @@ test_buffering (const sarif_generation_options &sarif_gen_opts)
 
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
-  ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 0);
-  ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 0);
-  ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 0);
+  ASSERT_EQ (dc.diagnostic_count (kind::error), 0);
+  ASSERT_EQ (buf_a.diagnostic_count (kind::error), 0);
+  ASSERT_EQ (buf_b.diagnostic_count (kind::error), 0);
   ASSERT_EQ (dc.num_results (), 0);
   ASSERT_TRUE (buf_a.empty_p ());
   ASSERT_TRUE (buf_b.empty_p ());
 
   /* Unbuffered diagnostic.  */
   {
-    dc.report (DK_ERROR, rich_loc, nullptr, 0,
+    dc.report (kind::error, rich_loc, nullptr, 0,
 	       "message 1");
 
-    ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 0);
-    ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 0);
+    ASSERT_EQ (dc.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_a.diagnostic_count (kind::error), 0);
+    ASSERT_EQ (buf_b.diagnostic_count (kind::error), 0);
     ASSERT_EQ (dc.num_results (), 1);
     sarif_result &result_obj = dc.get_result (0);
     auto message_obj = get_message_from_result (result_obj);
@@ -4975,11 +4975,11 @@ test_buffering (const sarif_generation_options &sarif_gen_opts)
   /* Buffer diagnostic into buffer A.  */
   {
     dc.set_diagnostic_buffer (&buf_a);
-    dc.report (DK_ERROR, rich_loc, nullptr, 0,
+    dc.report (kind::error, rich_loc, nullptr, 0,
 	       "message in buffer a");
-    ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 0);
+    ASSERT_EQ (dc.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_a.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_b.diagnostic_count (kind::error), 0);
     ASSERT_EQ (dc.num_results (), 1);
     ASSERT_FALSE (buf_a.empty_p ());
     ASSERT_TRUE (buf_b.empty_p ());
@@ -4988,11 +4988,11 @@ test_buffering (const sarif_generation_options &sarif_gen_opts)
   /* Buffer diagnostic into buffer B.  */
   {
     dc.set_diagnostic_buffer (&buf_b);
-    dc.report (DK_ERROR, rich_loc, nullptr, 0,
+    dc.report (kind::error, rich_loc, nullptr, 0,
 	       "message in buffer b");
-    ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 1);
+    ASSERT_EQ (dc.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_a.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_b.diagnostic_count (kind::error), 1);
     ASSERT_EQ (dc.num_results (), 1);
     ASSERT_FALSE (buf_a.empty_p ());
     ASSERT_FALSE (buf_b.empty_p ());
@@ -5001,9 +5001,9 @@ test_buffering (const sarif_generation_options &sarif_gen_opts)
   /* Flush buffer B to dc.  */
   {
     dc.flush_diagnostic_buffer (buf_b);
-    ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 2);
-    ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 1);
-    ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 0);
+    ASSERT_EQ (dc.diagnostic_count (kind::error), 2);
+    ASSERT_EQ (buf_a.diagnostic_count (kind::error), 1);
+    ASSERT_EQ (buf_b.diagnostic_count (kind::error), 0);
     ASSERT_EQ (dc.num_results (), 2);
     sarif_result &result_1_obj = dc.get_result (1);
     auto message_1_obj = get_message_from_result (result_1_obj);
@@ -5016,9 +5016,9 @@ test_buffering (const sarif_generation_options &sarif_gen_opts)
   /* Clear buffer A.  */
   {
     dc.clear_diagnostic_buffer (buf_a);
-    ASSERT_EQ (dc.diagnostic_count (DK_ERROR), 2);
-    ASSERT_EQ (buf_a.diagnostic_count (DK_ERROR), 0);
-    ASSERT_EQ (buf_b.diagnostic_count (DK_ERROR), 0);
+    ASSERT_EQ (dc.diagnostic_count (kind::error), 2);
+    ASSERT_EQ (buf_a.diagnostic_count (kind::error), 0);
+    ASSERT_EQ (buf_b.diagnostic_count (kind::error), 0);
     ASSERT_EQ (dc.num_results (), 2);
     ASSERT_TRUE (buf_a.empty_p ());
     ASSERT_TRUE (buf_b.empty_p ());

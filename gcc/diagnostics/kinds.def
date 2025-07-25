@@ -16,40 +16,40 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* DK_UNSPECIFIED must be first so it has a value of zero.  We never
+/* kind::unspecified must be first so it has a value of zero.  We never
    assign this kind to an actual diagnostic, we only use this in
    variables that can hold a kind, to mean they have yet to have a
    kind specified.  I.e. they're uninitialized.  Within the diagnostic
    machinery, this kind also means "don't change the existing kind",
    meaning "no change is specified".  */
-DEFINE_DIAGNOSTIC_KIND (DK_UNSPECIFIED, "", NULL)
+DEFINE_DIAGNOSTIC_KIND (unspecified, "", NULL)
 
-/* If a diagnostic is set to DK_IGNORED, it won't get reported at all.
+/* If a diagnostic is set to kind::ignored, it won't get reported at all.
    This is used by the diagnostic machinery when it wants to disable a
    diagnostic without disabling the option which causes it.  */
-DEFINE_DIAGNOSTIC_KIND (DK_IGNORED, "", NULL)
+DEFINE_DIAGNOSTIC_KIND (ignored, "", NULL)
 
 /* The remainder are real diagnostic types.  */
-DEFINE_DIAGNOSTIC_KIND (DK_FATAL, "fatal error: ", "error")
-DEFINE_DIAGNOSTIC_KIND (DK_ICE, "internal compiler error: ", "error")
-DEFINE_DIAGNOSTIC_KIND (DK_ERROR, "error: ", "error")
-DEFINE_DIAGNOSTIC_KIND (DK_SORRY, "sorry, unimplemented: ", "error")
-DEFINE_DIAGNOSTIC_KIND (DK_WARNING, "warning: ", "warning")
-DEFINE_DIAGNOSTIC_KIND (DK_ANACHRONISM, "anachronism: ", "warning")
-DEFINE_DIAGNOSTIC_KIND (DK_NOTE, "note: ", "note")
-DEFINE_DIAGNOSTIC_KIND (DK_DEBUG, "debug: ", "note")
+DEFINE_DIAGNOSTIC_KIND (fatal, "fatal error: ", "error")
+DEFINE_DIAGNOSTIC_KIND (ice, "internal compiler error: ", "error")
+DEFINE_DIAGNOSTIC_KIND (error, "error: ", "error")
+DEFINE_DIAGNOSTIC_KIND (sorry, "sorry, unimplemented: ", "error")
+DEFINE_DIAGNOSTIC_KIND (warning, "warning: ", "warning")
+DEFINE_DIAGNOSTIC_KIND (anachronism, "anachronism: ", "warning")
+DEFINE_DIAGNOSTIC_KIND (note, "note: ", "note")
+DEFINE_DIAGNOSTIC_KIND (debug, "debug: ", "note")
 
 /* For use when using the diagnostic_show_locus machinery to show
    a range of events within a path.  */
-DEFINE_DIAGNOSTIC_KIND (DK_DIAGNOSTIC_PATH, "path: ", "path")
+DEFINE_DIAGNOSTIC_KIND (path, "path: ", "path")
 
-/* These two would be re-classified as DK_WARNING or DK_ERROR, so the
+/* These two would be re-classified as kind::warning or kind::error, so the
 prefix does not matter.  */
-DEFINE_DIAGNOSTIC_KIND (DK_PEDWARN, "pedwarn: ", NULL)
-DEFINE_DIAGNOSTIC_KIND (DK_PERMERROR, "permerror: ", NULL)
-/* This one is just for counting DK_WARNING promoted to DK_ERROR
+DEFINE_DIAGNOSTIC_KIND (pedwarn, "pedwarn: ", NULL)
+DEFINE_DIAGNOSTIC_KIND (permerror, "permerror: ", NULL)
+/* This one is just for counting kind::warning promoted to kind::error
    due to -Werror and -Werror=warning.  */
-DEFINE_DIAGNOSTIC_KIND (DK_WERROR, "error: ", NULL)
-/* This is like DK_ICE, but backtrace is not printed.  Used in the driver
+DEFINE_DIAGNOSTIC_KIND (werror, "error: ", NULL)
+/* This is like kind::ICE, but backtrace is not printed.  Used in the driver
    when reporting fatal signal in the compiler.  */
-DEFINE_DIAGNOSTIC_KIND (DK_ICE_NOBT, "internal compiler error: ", "error")
+DEFINE_DIAGNOSTIC_KIND (ice_nobt, "internal compiler error: ", "error")

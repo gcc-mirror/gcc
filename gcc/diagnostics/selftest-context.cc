@@ -68,7 +68,7 @@ start_span_cb (const location_print_policy &loc_policy,
 }
 
 bool
-test_context::report (diagnostic_t kind,
+test_context::report (enum kind kind,
 		      rich_location &richloc,
 		      const metadata *metadata_,
 		      option_id opt_id,
@@ -92,7 +92,7 @@ test_context::test_show_locus (rich_location &richloc)
   pretty_printer *pp = get_reference_printer ();
   gcc_assert (pp);
   source_print_policy source_policy (*this);
-  source_policy.print (*pp, richloc, DK_ERROR, nullptr);
+  source_policy.print (*pp, richloc, kind::error, nullptr);
   return pp_formatted_text (pp);
 }
 

@@ -139,8 +139,8 @@ public:
     return 0;
   }
   char *make_option_name (diagnostics::option_id,
-			  diagnostic_t,
-			  diagnostic_t) const final override
+			  enum kind,
+			  enum kind) const final override
   {
     return nullptr;
   }
@@ -175,7 +175,7 @@ test_emission (pretty_printer *event_pp)
 
     diagnostics::option_id opt_id (42); // has to be non-zero
     bool emitted
-      = dc.emit_diagnostic_with_group (DK_WARNING, rich_loc, nullptr,
+      = dc.emit_diagnostic_with_group (kind::warning, rich_loc, nullptr,
 				       opt_id,
 				       "this warning should be skipped");
     ASSERT_FALSE (emitted);
@@ -191,7 +191,7 @@ test_emission (pretty_printer *event_pp)
     ASSERT_FALSE (rich_loc.m_path.generated_p ());
 
     bool emitted
-      = dc.emit_diagnostic_with_group (DK_ERROR, rich_loc, nullptr, 0,
+      = dc.emit_diagnostic_with_group (kind::error, rich_loc, nullptr, 0,
 				       "this is a test");
     ASSERT_TRUE (emitted);
     ASSERT_TRUE (rich_loc.m_path.generated_p ());

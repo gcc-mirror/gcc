@@ -31647,7 +31647,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
 	  /* Be permissive with equivalent alias templates.  */
 	  tree u = get_underlying_template (tmpl);
 	  auto_diagnostic_group d;
-	  diagnostic_t dk = (u == tmpl) ? DK_ERROR : DK_PEDWARN;
+	  const enum diagnostics::kind dk = ((u == tmpl)
+					     ? diagnostics::kind::error
+					     : diagnostics::kind::pedwarn);
 	  bool complained
 	    = emit_diagnostic (dk, input_location, 0,
 			       "alias template deduction only available "

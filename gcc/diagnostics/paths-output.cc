@@ -638,7 +638,7 @@ struct event_range
 
     /* Call diagnostic_show_locus to show the events using labels.  */
     diagnostic_show_locus (&dc, text_output.get_source_printing_options (),
-			   &m_richloc, DK_DIAGNOSTIC_PATH, &pp,
+			   &m_richloc, diagnostics::kind::path, &pp,
 			   effect_info);
 
     /* If we have a macro expansion, show the expansion to the user.  */
@@ -702,7 +702,7 @@ struct event_range
     /* Call diagnostic_show_locus_as_html to show the source,
        showing events using labels.  */
     diagnostic_show_locus_as_html (&dc, dc.m_source_printing,
-				   &m_richloc, DK_DIAGNOSTIC_PATH, xp,
+				   &m_richloc, diagnostics::kind::path, xp,
 				   effect_info, event_label_writer);
 
     // TODO: show macro expansions

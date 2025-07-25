@@ -1334,21 +1334,21 @@ private:
   std::unique_ptr<diagnostic_execution_path> m_path;
 };
 
-static diagnostic_t
-diagnostic_t_from_diagnostic_level (enum diagnostic_level level)
+static enum diagnostics::kind
+diagnostics_kind_from_diagnostic_level (enum diagnostic_level level)
 {
   switch (level)
     {
     default:
       gcc_unreachable ();
     case DIAGNOSTIC_LEVEL_ERROR:
-      return DK_ERROR;
+      return diagnostics::kind::error;
     case DIAGNOSTIC_LEVEL_WARNING:
-      return DK_WARNING;
+      return diagnostics::kind::warning;
     case DIAGNOSTIC_LEVEL_NOTE:
-      return DK_NOTE;
+      return diagnostics::kind::note;
     case DIAGNOSTIC_LEVEL_SORRY:
-      return DK_SORRY;
+      return diagnostics::kind::sorry;
     }
 }
 
@@ -1616,7 +1616,8 @@ diagnostic_manager::emit_va (diagnostic &diag, const char *msgid, va_list *args)
     diagnostic_info info;
 GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
     diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
-			 diagnostic_t_from_diagnostic_level (diag.get_level ()));
+			 diagnostics_kind_from_diagnostic_level
+			   (diag.get_level ()));
 GCC_DIAGNOSTIC_POP
     info.m_metadata = diag.get_metadata ();
     info.m_x_data = &diag;
