@@ -10180,39 +10180,6 @@ vectorizable_load (vec_info *vinfo,
         S2:     z = x + 1       -               -
   */
 
-  /* In case of interleaving (non-unit grouped access):
-
-     S1:  x2 = &base + 2
-     S2:  x0 = &base
-     S3:  x1 = &base + 1
-     S4:  x3 = &base + 3
-
-     Vectorized loads are created in the order of memory accesses
-     starting from the access of the first stmt of the chain:
-
-     VS1: vx0 = &base
-     VS2: vx1 = &base + vec_size*1
-     VS3: vx3 = &base + vec_size*2
-     VS4: vx4 = &base + vec_size*3
-
-     Then permutation statements are generated:
-
-     VS5: vx5 = VEC_PERM_EXPR < vx0, vx1, { 0, 2, ..., i*2 } >
-     VS6: vx6 = VEC_PERM_EXPR < vx0, vx1, { 1, 3, ..., i*2+1 } >
-       ...
-
-     And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts
-     (the order of the data-refs in the output of vect_permute_load_chain
-     corresponds to the order of scalar stmts in the interleaving chain - see
-     the documentation of vect_permute_load_chain()).
-     The generation of permutation stmts and recording them in
-     STMT_VINFO_VEC_STMT is done in vect_transform_grouped_load().
-
-     In case of both multiple types and interleaving, the vector loads and
-     permutation stmts above are created for every copy.  The result vector
-     stmts are put in STMT_VINFO_VEC_STMT for the first copy and in the
-     corresponding STMT_VINFO_RELATED_STMT for the next copies.  */
-
   /* If the data reference is aligned (dr_aligned) or potentially unaligned
      on a target that supports unaligned accesses (dr_unaligned_supported)
      we generate the following code:
@@ -11388,7 +11355,7 @@ vectorizable_load (vec_info *vinfo,
 	}
 
       /* Collect vector loads and later create their permutation in
-	 vect_transform_grouped_load ().  */
+	 vect_transform_slp_perm_load.  */
       if (!costing_p && (grouped_load || slp_perm))
 	dr_chain.quick_push (new_temp);
 

@@ -2572,10 +2572,6 @@ extern tree vect_setup_realignment (vec_info *,
 				    stmt_vec_info, gimple_stmt_iterator *,
 				    tree *, enum dr_alignment_support, tree,
 	                            class loop **);
-extern void vect_transform_grouped_load (vec_info *, stmt_vec_info, vec<tree>,
-					 int, gimple_stmt_iterator *);
-extern void vect_record_grouped_load_vectors (vec_info *,
-					      stmt_vec_info, vec<tree>);
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 extern tree vect_get_new_ssa_name (tree, enum vect_var_kind,
 				   const char * = NULL);
