@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-recording.h"
 
 class diagnostic_context;
-struct diagnostic_info;
+namespace diagnostics { struct diagnostic_info; }
 
 namespace gcc {
 
@@ -298,7 +298,7 @@ public:
 
   void
   add_diagnostic (const char *text,
-		  const diagnostic_info &diagnostic);
+		  const diagnostics::diagnostic_info &diagnostic);
 
   void
   set_tree_location (tree t, location *loc);

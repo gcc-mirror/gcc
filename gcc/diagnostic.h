@@ -152,50 +152,8 @@ enum diagnostic_text_art_charset
   DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI
 };
 
-/* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
-   its context and its KIND (ice, error, warning, note, ...)  See complete
-   list in diagnostic.def.  */
-struct diagnostic_info
-{
-  diagnostic_info ()
-  : m_message (),
-    m_richloc (),
-    m_metadata (),
-    m_x_data (),
-    m_kind (),
-    m_option_id (),
-    m_iinfo ()
-  { }
-
-  /* Text to be formatted.  */
-  text_info m_message;
-
-  /* The location at which the diagnostic is to be reported.  */
-  rich_location *m_richloc;
-
-  /* An optional bundle of metadata associated with the diagnostic
-     (or NULL).  */
-  const diagnostics::metadata *m_metadata;
-
-  /* Auxiliary data for client.  */
-  void *m_x_data;
-  /* The kind of diagnostic it is about.  */
-  diagnostic_t m_kind;
-  /* Which OPT_* directly controls this diagnostic.  */
-  diagnostic_option_id m_option_id;
-
-  /* Inlining context containing locations for each call site along
-     the inlining stack.  */
-  struct inlining_info
-  {
-    /* Locations along the inlining stack.  */
-    auto_vec<location_t, 8> m_ilocs;
-    /* The abstract origin of the location.  */
-    void *m_ao;
-    /* Set if every M_ILOCS element is in a system header.  */
-    bool m_allsyslocs;
-  } m_iinfo;
-};
+#include "diagnostics/diagnostic-info.h"
+typedef diagnostics::diagnostic_info diagnostic_info;
 
 /*  Forward declarations.  */
 class diagnostic_location_print_policy;

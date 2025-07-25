@@ -3892,7 +3892,7 @@ add_error_va (location *loc, const char *fmt, va_list ap)
 void
 playback::context::
 add_diagnostic (const char *text,
-		const diagnostic_info &diagnostic)
+		const diagnostics::diagnostic_info &diagnostic)
 {
   /* Get location information (if any) from the diagnostic.
      The recording::context::add_error[_va] methods require a

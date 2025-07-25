@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hooks.h"
 
-struct diagnostic_info;
+namespace diagnostics { struct diagnostic_info; }
 class substring_loc;
 
 /* Note to creators of new hooks:
@@ -51,7 +51,7 @@ extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
 extern void lhd_print_error_function (diagnostics::text_sink &,
 				      const char *,
-				      const struct diagnostic_info *);
+				      const diagnostics::diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
