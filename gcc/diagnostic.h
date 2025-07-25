@@ -21,42 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_H
 #define GCC_DIAGNOSTIC_H
 
-#include "unique-argv.h"
 #include "rich-location.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h"
 
-namespace diagnostics {
-
-  // diagnostics::digraphs
-  namespace digraphs {
-    class lazy_digraph;
-  } // namespace diagnostics::digraphs
-
-  // diagnostics::logical_locations
-  namespace logical_locations {
-    class manager;
-  } // namespace diagnostics::logical_locations
-
-  class buffer;
-  class client_data_hooks;
-  class diagram;
-  class sink;
-    class text_sink;
-
-  class source_effect_info;
-
-} // namespace diagnostics
-
-namespace text_art
-{
-  class theme;
-} // namespace text_art
-
-namespace xml
-{
-  class printer;
-} // namespace xml
+#include "diagnostics/diagnostic-info.h"
+typedef diagnostics::diagnostic_info diagnostic_info;
 
 /* An enum for controlling what units to use for the column number
    when diagnostics are output, used by the -fdiagnostics-column-unit option.
@@ -150,9 +120,6 @@ enum diagnostic_text_art_charset
   /* Use Emoji.  */
   DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI
 };
-
-#include "diagnostics/diagnostic-info.h"
-typedef diagnostics::diagnostic_info diagnostic_info;
 
 #include "diagnostics/context.h"
 

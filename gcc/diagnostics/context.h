@@ -20,11 +20,44 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_CONTEXT_H
 #define GCC_DIAGNOSTICS_CONTEXT_H
 
+#include "unique-argv.h"
 #include "diagnostics/option-classifier.h"
 
 namespace diagnostics {
 
-namespace changes { class change_set;  }
+  namespace changes {
+    class change_set;
+  }
+
+  namespace digraphs {
+    class lazy_digraph;
+  }
+
+  namespace logical_locations {
+    class manager;
+  }
+
+  class buffer;
+  class client_data_hooks;
+  class diagram;
+  class sink;
+    class text_sink;
+
+  class source_effect_info;
+
+} // namespace diagnostics
+
+namespace text_art
+{
+  class theme;
+} // namespace text_art
+
+namespace xml
+{
+  class printer;
+} // namespace xml
+
+namespace diagnostics {
 
 /*  Forward declarations.  */
 class context;
