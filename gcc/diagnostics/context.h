@@ -678,6 +678,19 @@ public:
   void
   inhibit_notes () { m_inhibit_notes_p = true; }
 
+  source_printing_options &
+  get_source_printing_options ()
+  {
+    return m_source_printing;
+  }
+  const source_printing_options &
+  get_source_printing_options () const
+  {
+    return m_source_printing;
+  }
+
+  void set_caret_max_width (int value);
+
 private:
   void error_recursion () ATTRIBUTE_NORETURN;
 
@@ -822,10 +835,8 @@ private:
 
   bool m_inhibit_notes_p;
 
-public:
   source_printing_options m_source_printing;
 
-private:
   /* True if -freport-bug option is used.  */
   bool m_report_bug;
 

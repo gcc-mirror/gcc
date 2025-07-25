@@ -39,12 +39,14 @@ test_context::test_context ()
 {
   diagnostic_initialize (this, 0);
   pp_show_color (get_reference_printer ()) = false;
-  m_source_printing.enabled = true;
-  m_source_printing.show_labels_p = true;
+
+  auto &source_printing_opts = get_source_printing_options ();
+  source_printing_opts.enabled = true;
+  source_printing_opts.show_labels_p = true;
   m_show_column = true;
   start_span (this) = start_span_cb;
-  m_source_printing.min_margin_width = 6;
-  m_source_printing.max_width = 80;
+  source_printing_opts.min_margin_width = 6;
+  source_printing_opts.max_width = 80;
   pp_buffer (get_sink (0).get_printer ())->m_flush_p = false;
 }
 

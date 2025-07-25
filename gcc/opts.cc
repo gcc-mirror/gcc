@@ -2962,19 +2962,19 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_show_caret:
-      dc->m_source_printing.enabled = value;
+      dc->get_source_printing_options ().enabled = value;
       break;
 
     case OPT_fdiagnostics_show_event_links:
-      dc->m_source_printing.show_event_links_p = value;
+      dc->get_source_printing_options ().show_event_links_p = value;
       break;
 
     case OPT_fdiagnostics_show_labels:
-      dc->m_source_printing.show_labels_p = value;
+      dc->get_source_printing_options ().show_labels_p = value;
       break;
 
     case OPT_fdiagnostics_show_line_numbers:
-      dc->m_source_printing.show_line_numbers_p = value;
+      dc->get_source_printing_options ().show_line_numbers_p = value;
       break;
 
     case OPT_fdiagnostics_color_:
@@ -3052,7 +3052,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_minimum_margin_width_:
-      dc->m_source_printing.min_margin_width = value;
+      dc->get_source_printing_options ().min_margin_width = value;
       break;
 
     case OPT_fdump_:
@@ -3090,7 +3090,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fmessage_length_:
       pp_set_line_maximum_length (dc->get_reference_printer (), value);
-      diagnostic_set_caret_max_width (dc, value);
+      dc->set_caret_max_width (value);
       break;
 
     case OPT_fopt_info:

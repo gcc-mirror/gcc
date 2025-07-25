@@ -48,7 +48,7 @@ test_richloc (rich_location *richloc)
 {
   /* Run the diagnostic and fix-it printing code.  */
   diagnostics::selftest::test_context dc;
-  diagnostic_show_locus (&dc, dc.m_source_printing,
+  diagnostic_show_locus (&dc, dc.get_source_printing_options (),
 			 richloc, diagnostics::kind::error,
 			 dc.get_reference_printer ());
 

@@ -55,6 +55,34 @@ class test_context : public context
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 
   const char *test_show_locus (rich_location &richloc);
+
+  /* Setters for the context's source_printing_options
+     for use in selftests.  */
+  void colorize_source (bool val)
+  {
+    get_source_printing_options ().colorize_source_p = val;
+  }
+  void show_labels (bool val)
+  {
+    get_source_printing_options ().show_labels_p = val;
+  }
+  void show_line_numbers (bool val)
+  {
+    get_source_printing_options ().show_line_numbers_p = val;
+  }
+  void show_ruler (bool val)
+  {
+    get_source_printing_options ().show_ruler_p = val;
+  }
+  void show_event_links (bool val)
+  {
+    get_source_printing_options ().show_event_links_p = val;
+  }
+  void set_caret_char (unsigned idx, char ch)
+  {
+    gcc_assert (idx < rich_location::STATICALLY_ALLOCATED_RANGES);
+    get_source_printing_options ().caret_chars[idx] = ch;
+  }
 };
 
 } // namespace selftest

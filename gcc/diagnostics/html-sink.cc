@@ -1102,12 +1102,13 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     // TODO: m_context.m_last_location should be moved into the sink
     location_t saved = m_context.m_last_location;
     m_context.m_last_location = m_last_location;
-    m_context.maybe_show_locus_as_html (*diagnostic.m_richloc,
-					m_context.m_source_printing,
-					diagnostic.m_kind,
-					xp,
-					nullptr,
-					nullptr);
+    m_context.maybe_show_locus_as_html
+      (*diagnostic.m_richloc,
+       m_context.get_source_printing_options (),
+       diagnostic.m_kind,
+       xp,
+       nullptr,
+       nullptr);
     m_context.m_last_location = saved;
     m_last_location = m_context.m_last_location;
   }

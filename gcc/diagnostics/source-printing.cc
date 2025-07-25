@@ -3843,8 +3843,9 @@ add_location_if_nearby (const diagnostics::context &dc,
 			bool restrict_to_current_line_spans,
 			const range_label *label)
 {
-  diagnostics::source_print_policy source_policy (dc,
-						  dc.m_source_printing);
+  diagnostics::source_print_policy
+    source_policy (dc,
+		   dc.get_source_printing_options ());
   return add_location_if_nearby (source_policy, loc,
 				 restrict_to_current_line_spans, label);
 }
@@ -4057,7 +4058,7 @@ make_element_for_locus (const rich_location &rich_loc,
   xml::element wrapper ("wrapper", false);
   xml::printer xp (wrapper);
   dc.maybe_show_locus_as_html (rich_loc,
-			       dc.m_source_printing,
+			       dc.get_source_printing_options (),
 			       kind,
 			       xp,
 			       nullptr,
@@ -4171,11 +4172,12 @@ test_offset_impl (int caret_byte_col, int max_width,
 		  int left_margin = test_left_margin)
 {
   test_context dc;
-  dc.m_source_printing.max_width = max_width;
+  auto &source_printing_opts = dc.get_source_printing_options ();
+  source_printing_opts.max_width = max_width;
   /* min_margin_width sets the minimum space reserved for
      the line number plus one space after.  */
-  dc.m_source_printing.min_margin_width = left_margin - test_linenum_sep + 1;
-  dc.m_source_printing.show_line_numbers_p = true;
+  source_printing_opts.min_margin_width = left_margin - test_linenum_sep + 1;
+  dc.show_line_numbers (true);
   diagnostics::source_print_policy source_policy (dc);
   rich_location richloc (line_table,
 			 linemap_position_for_column (line_table,
@@ -4287,11 +4289,12 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
   /* Test that the source line is offset as expected when printed.  */
   {
     test_context dc;
-    dc.m_source_printing.max_width = small_width - 6;
-    dc.m_source_printing.min_margin_width
+    auto &source_printing_opts = dc.get_source_printing_options ();
+    source_printing_opts.max_width = small_width - 6;
+    source_printing_opts.min_margin_width
       = test_left_margin - test_linenum_sep + 1;
-    dc.m_source_printing.show_line_numbers_p = true;
-    dc.m_source_printing.show_ruler_p = true;
+    dc.show_line_numbers (true);
+    dc.show_ruler (true);
     diagnostics::source_print_policy policy (dc);
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
@@ -4317,11 +4320,12 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
      it with a padding space in this case.  */
   {
     test_context dc;
-    dc.m_source_printing.max_width = small_width - 5;
-    dc.m_source_printing.min_margin_width
+    auto &source_printing_opts = dc.get_source_printing_options ();
+    source_printing_opts.max_width = small_width - 5;
+    source_printing_opts.min_margin_width
       = test_left_margin - test_linenum_sep + 1;
-    dc.m_source_printing.show_line_numbers_p = true;
-    dc.m_source_printing.show_ruler_p = true;
+    dc.show_line_numbers (true);
+    dc.show_ruler (true);
     diagnostics::source_print_policy policy (dc);
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
@@ -4433,10 +4437,11 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       test_context dc;
       dc.m_tabstop = tabstop;
       static const int small_width = 24;
-      dc.m_source_printing.max_width = small_width - 4;
-      dc.m_source_printing.min_margin_width
+      auto &source_printing_opts = dc.get_source_printing_options ();
+      source_printing_opts.max_width = small_width - 4;
+      source_printing_opts.min_margin_width
 	= test_left_margin - test_linenum_sep + 1;
-      dc.m_source_printing.show_line_numbers_p = true;
+      dc.show_line_numbers (true);
       diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
@@ -4538,7 +4543,7 @@ test_one_liner_caret_and_range ()
   }
   {
     test_context dc;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_line_numbers (true);
     auto out = make_raw_html_for_locus (richloc, diagnostics::kind::error, dc);
      ASSERT_STREQ
        ("<table class=\"locus\">\n"
@@ -4561,19 +4566,19 @@ test_one_liner_multiple_carets_and_ranges ()
     = make_location (linemap_position_for_column (line_table, 2),
 		     linemap_position_for_column (line_table, 1),
 		     linemap_position_for_column (line_table, 3));
-  dc.m_source_printing.caret_chars[0] = 'A';
+  dc.set_caret_char (0, 'A');
 
   location_t bar
     = make_location (linemap_position_for_column (line_table, 8),
 		     linemap_position_for_column (line_table, 7),
 		     linemap_position_for_column (line_table, 9));
-  dc.m_source_printing.caret_chars[1] = 'B';
+  dc.set_caret_char (1, 'B');
 
   location_t field
     = make_location (linemap_position_for_column (line_table, 13),
 		     linemap_position_for_column (line_table, 11),
 		     linemap_position_for_column (line_table, 15));
-  dc.m_source_printing.caret_chars[2] = 'C';
+  dc.set_caret_char (2, 'C');
 
   rich_location richloc (line_table, foo);
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
@@ -4651,8 +4656,9 @@ test_one_liner_fixit_remove ()
   /* Normal, with ruler.  */
   {
     test_context dc;
-    dc.m_source_printing.show_ruler_p = true;
-    dc.m_source_printing.max_width = 104;
+    auto &source_printing_opts = dc.get_source_printing_options ();
+    dc.show_ruler (true);
+    source_printing_opts.max_width = 104;
     ASSERT_STREQ ("          0         0         0         0         0         0         0         0         0         1    \n"
 		  "          1         2         3         4         5         6         7         8         9         0    \n"
 		  " 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234\n"
@@ -4665,8 +4671,9 @@ test_one_liner_fixit_remove ()
   /* Test of adding a prefix, with ruler.  */
   {
     test_context dc;
-    dc.m_source_printing.show_ruler_p = true;
-    dc.m_source_printing.max_width = 50;
+    auto &source_printing_opts = dc.get_source_printing_options ();
+    dc.show_ruler (true);
+    source_printing_opts.max_width = 50;
     pp_prefixing_rule (dc.get_reference_printer ()) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.get_reference_printer (), xstrdup ("TEST PREFIX:"));
     ASSERT_STREQ ("TEST PREFIX:          1         2         3         4         5\n"
@@ -4680,9 +4687,10 @@ test_one_liner_fixit_remove ()
   /* Test of adding a prefix, with ruler and line numbers.  */
   {
     test_context dc;
-    dc.m_source_printing.show_ruler_p = true;
-    dc.m_source_printing.max_width = 50;
-    dc.m_source_printing.show_line_numbers_p = true;
+    auto &source_printing_opts = dc.get_source_printing_options ();
+    dc.show_ruler (true);
+    source_printing_opts.max_width = 50;
+    dc.show_line_numbers (true);
     pp_prefixing_rule (dc.get_reference_printer ()) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.get_reference_printer (), xstrdup ("TEST PREFIX:"));
     ASSERT_STREQ ("TEST PREFIX:      |          1         2         3         4         5\n"
@@ -4942,7 +4950,7 @@ test_one_liner_labels ()
     /* Verify that we can disable label-printing.  */
     {
       test_context dc;
-      dc.m_source_printing.show_labels_p = false;
+      dc.show_labels (false);
       ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n",
 		    dc.test_show_locus (richloc));
@@ -4969,7 +4977,7 @@ test_one_liner_labels ()
 
     {
       test_context dc;
-      dc.m_source_printing.show_line_numbers_p = true;
+      dc.show_line_numbers (true);
       auto out
 	= make_raw_html_for_locus (richloc, diagnostics::kind::error, dc);
       ASSERT_STREQ
@@ -5195,19 +5203,19 @@ test_one_liner_multiple_carets_and_ranges_utf8 ()
     = make_location (linemap_position_for_column (line_table, 7),
 		     linemap_position_for_column (line_table, 1),
 		     linemap_position_for_column (line_table, 8));
-  dc.m_source_printing.caret_chars[0] = 'A';
+  dc.set_caret_char (0, 'A');
 
   location_t bar
     = make_location (linemap_position_for_column (line_table, 16),
 		     linemap_position_for_column (line_table, 12),
 		     linemap_position_for_column (line_table, 17));
-  dc.m_source_printing.caret_chars[1] = 'B';
+  dc.set_caret_char (1, 'B');
 
   location_t field
     = make_location (linemap_position_for_column (line_table, 26),
 		     linemap_position_for_column (line_table, 19),
 		     linemap_position_for_column (line_table, 30));
-  dc.m_source_printing.caret_chars[2] = 'C';
+  dc.set_caret_char (2, 'C');
   rich_location richloc (line_table, foo);
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
   richloc.add_range (field, SHOW_RANGE_WITH_CARET);
@@ -5674,7 +5682,7 @@ static void
 test_one_liner_colorized_utf8 ()
 {
   test_context dc;
-  dc.m_source_printing.colorize_source_p = true;
+  dc.colorize_source (true);
   diagnostic_color_init (&dc, DIAGNOSTICS_COLOR_YES);
   const location_t pi = linemap_position_for_column (line_table, 12);
   rich_location richloc (line_table, pi);
@@ -5892,7 +5900,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     richloc.add_fixit_insert_before (y, ".");
     richloc.add_fixit_replace (colon, "=");
     test_context dc;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_line_numbers (true);
     ASSERT_STREQ ("    3 |                        y\n"
 		  "      |                        .\n"
 		  "......\n"
@@ -6621,7 +6629,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     /* With line numbers.  */
     {
       test_context dc;
-      dc.m_source_printing.show_line_numbers_p = true;
+      dc.show_line_numbers (true);
       ASSERT_STREQ ("    2 |       x = a;\n"
 		    "  +++ |+      break;\n"
 		    "    3 |     case 'b':\n"
@@ -6697,7 +6705,7 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
      consolidated, since it makes little sense to skip line 2.  */
   {
     test_context dc;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_line_numbers (true);
     ASSERT_STREQ ("  +++ |+#include <stdio.h>\n"
 		  "    1 | test (int ch)\n"
 		  "    2 | {\n"
@@ -6980,8 +6988,9 @@ test_line_numbers_multiline_range ()
   location_t loc = make_location (caret, start, finish);
 
   test_context dc;
-  dc.m_source_printing.show_line_numbers_p = true;
-  dc.m_source_printing.min_margin_width = 0;
+  dc.show_line_numbers (true);
+  auto &source_printing_opts = dc.get_source_printing_options ();
+  source_printing_opts.min_margin_width = 0;
   gcc_rich_location richloc (loc);
   ASSERT_STREQ (" 9 | this is line 9\n"
 		"   |         ~~~~~~\n"

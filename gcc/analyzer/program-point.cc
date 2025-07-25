@@ -243,8 +243,9 @@ public:
   debug_diagnostic_context ()
   {
     diagnostic_initialize (this, 0);
-    m_source_printing.show_line_numbers_p = true;
-    m_source_printing.enabled = true;
+    auto &source_printing_opts = get_source_printing_options ();
+    source_printing_opts.show_line_numbers_p = true;
+    source_printing_opts.enabled = true;
   }
   ~debug_diagnostic_context ()
   {

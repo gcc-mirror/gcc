@@ -5588,7 +5588,7 @@ test_type_mismatch_range_labels ()
 
   diagnostics::selftest::test_context dc;
   diagnostic_show_locus (&dc,
-			 dc.m_source_printing,
+			 dc.get_source_printing_options (),
 			 &richloc,
 			 diagnostics::kind::error,
 			 dc.get_reference_printer ());

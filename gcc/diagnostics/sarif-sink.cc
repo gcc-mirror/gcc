@@ -2269,10 +2269,11 @@ sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
     {
       diagnostics::context dc;
       diagnostic_initialize (&dc, 0);
-      dc.m_source_printing.enabled = true;
-      dc.m_source_printing.colorize_source_p = false;
-      dc.m_source_printing.show_labels_p = true;
-      dc.m_source_printing.show_line_numbers_p = true;
+      auto &source_printing_opts = dc.get_source_printing_options ();
+      source_printing_opts.enabled = true;
+      source_printing_opts.colorize_source_p = false;
+      source_printing_opts.show_labels_p = true;
+      source_printing_opts.show_line_numbers_p = true;
 
       rich_location my_rich_loc (m_richloc);
       my_rich_loc.set_escape_on_output (true);

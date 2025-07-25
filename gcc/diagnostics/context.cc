@@ -112,22 +112,23 @@ get_terminal_width (void)
   return INT_MAX;
 }
 
+namespace diagnostics {
+
 /* Set caret_max_width to value.  */
+
 void
-diagnostic_set_caret_max_width (diagnostics::context *context, int value)
+context::set_caret_max_width (int value)
 {
   /* One minus to account for the leading empty space.  */
   value = value ? value - 1
-    : (isatty (fileno (pp_buffer (context->get_reference_printer ())->m_stream))
+    : (isatty (fileno (pp_buffer (get_reference_printer ())->m_stream))
        ? get_terminal_width () - 1 : INT_MAX);
 
   if (value <= 0)
     value = INT_MAX;
 
-  context->m_source_printing.max_width = value;
+  m_source_printing.max_width = value;
 }
-
-namespace diagnostics {
 
 /* Initialize the diagnostic message outputting machinery.  */
 
@@ -144,7 +145,7 @@ context::initialize (int n_opts)
   m_n_opts = n_opts;
   m_option_classifier.init (n_opts);
   m_source_printing.enabled = false;
-  diagnostic_set_caret_max_width (this, pp_line_cutoff (get_reference_printer ()));
+  set_caret_max_width (pp_line_cutoff (get_reference_printer ()));
   for (int i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     m_source_printing.caret_chars[i] = '^';
   m_show_cwe = false;

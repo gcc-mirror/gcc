@@ -558,7 +558,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  global_dc->m_source_printing.max_width = 80;
+  global_dc->get_source_printing_options ().max_width = 80;
 
   pass_info.pass = make_pass_test_show_path (g);
   pass_info.reference_pass_name = "whole-program";

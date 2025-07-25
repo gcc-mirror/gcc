@@ -206,8 +206,6 @@ void default_text_finalizer (diagnostics::text_sink &,
 			     enum diagnostics::kind);
 } // namespace diagnostics
 
-void diagnostic_set_caret_max_width (diagnostics::context *context, int value);
-
 int get_terminal_width (void);
 
 /* Return the location associated to this diagnostic. Parameter WHICH
@@ -253,7 +251,8 @@ diagnostic_same_line (const diagnostics::context *context,
 		      expanded_location s1, expanded_location s2)
 {
   return (s2.column && s1.line == s2.line
-	  && (context->m_source_printing.max_width - CARET_LINE_MARGIN
+	  && ((context->get_source_printing_options ().max_width
+	       - CARET_LINE_MARGIN)
 	      > abs (s1.column - s2.column)));
 }
 

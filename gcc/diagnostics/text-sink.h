@@ -44,7 +44,7 @@ public:
     m_includes_seen (nullptr),
     m_source_printing (source_printing
 		       ? *source_printing
-		       : dc.m_source_printing),
+		       : dc.get_source_printing_options ()),
     m_follows_reference_printer (follows_reference_printer),
     m_show_nesting (false),
     m_show_nesting_levels (false)

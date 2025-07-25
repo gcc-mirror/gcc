@@ -604,7 +604,7 @@ struct event_range
     /* Emit a span indicating the filename (and line/column) if the
        line has changed relative to the last call to
        diagnostic_show_locus.  */
-    if (dc.m_source_printing.enabled)
+    if (dc.get_source_printing_options ().enabled)
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
@@ -662,7 +662,7 @@ struct event_range
     /* Emit a span indicating the filename (and line/column) if the
        line has changed relative to the last call to
        diagnostic_show_locus.  */
-    if (dc.m_source_printing.enabled)
+    if (dc.get_source_printing_options ().enabled)
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
@@ -701,7 +701,7 @@ struct event_range
 
     /* Call diagnostic_show_locus_as_html to show the source,
        showing events using labels.  */
-    diagnostic_show_locus_as_html (&dc, dc.m_source_printing,
+    diagnostic_show_locus_as_html (&dc, dc.get_source_printing_options (),
 				   &m_richloc, diagnostics::kind::path, xp,
 				   effect_info, event_label_writer);
 
@@ -1895,7 +1895,7 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = true;
+    dc.show_event_links (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -1921,7 +1921,7 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = false;
+    dc.show_event_links (false);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -1944,8 +1944,8 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_line_numbers_p = true;
-    dc.m_source_printing.show_event_links_p = true;
+    dc.show_line_numbers (true);
+    dc.show_event_links (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -1971,8 +1971,8 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_line_numbers_p = true;
-    dc.m_source_printing.show_event_links_p = false;
+    dc.show_line_numbers (true);
+    dc.show_event_links (false);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -1995,7 +1995,7 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    dc.m_source_printing.show_event_links_p = true;
+    dc.show_event_links (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -2021,8 +2021,8 @@ test_control_flow_1 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    dc.m_source_printing.show_event_links_p = true;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_event_links (true);
+    dc.show_line_numbers (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -2093,8 +2093,8 @@ test_control_flow_2 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = true;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_event_links (true);
+    dc.show_line_numbers (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -2181,8 +2181,8 @@ test_control_flow_3 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = true;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_event_links (true);
+    dc.show_line_numbers (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -2240,8 +2240,8 @@ assert_cfg_edge_path_streq (const location &loc,
 
   selftest::test_context dc;
   dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-  dc.m_source_printing.show_event_links_p = true;
-  dc.m_source_printing.show_line_numbers_p = true;
+  dc.show_event_links (true);
+  dc.show_line_numbers (true);
   text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, true);
@@ -2565,8 +2565,8 @@ test_control_flow_5 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = true;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_event_links (true);
+    dc.show_line_numbers (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
@@ -2655,8 +2655,8 @@ test_control_flow_6 (const line_table_case &case_,
   {
     selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    dc.m_source_printing.show_event_links_p = true;
-    dc.m_source_printing.show_line_numbers_p = true;
+    dc.show_event_links (true);
+    dc.show_line_numbers (true);
     text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);

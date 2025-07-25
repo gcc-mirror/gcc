@@ -657,14 +657,15 @@ public:
     m_dc.set_show_cwe (true);
     m_dc.set_show_rules (true);
     m_dc.m_show_column = true;
-    m_dc.m_source_printing.enabled = true;
-    m_dc.m_source_printing.colorize_source_p = true;
+    auto &source_printing_opts = m_dc.get_source_printing_options ();
+    source_printing_opts.enabled = true;
+    source_printing_opts.colorize_source_p = true;
 
     /* We don't currently expose a way for clients to manipulate the
        following.  */
-    m_dc.m_source_printing.show_labels_p = true;
-    m_dc.m_source_printing.show_line_numbers_p = true;
-    m_dc.m_source_printing.min_margin_width = 6;
+    source_printing_opts.show_labels_p = true;
+    source_printing_opts.show_line_numbers_p = true;
+    source_printing_opts.min_margin_width = 6;
     m_dc.set_path_format (DPF_INLINE_EVENTS);
 
     m_dc.m_client_aux_data = this;
@@ -1412,7 +1413,7 @@ diagnostic_text_sink::diagnostic_text_sink (diagnostic_manager &mgr,
 					    FILE *dst_stream,
 					    enum diagnostic_colorize colorize)
 : sink (mgr),
-  m_source_printing (mgr.get_dc ().m_source_printing)
+  m_source_printing (mgr.get_dc ().get_source_printing_options ())
 {
   auto inner_sink
     = std::make_unique<diagnostics::text_sink> (mgr.get_dc (),

@@ -271,7 +271,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* No caret by default for Ada.  */
   if (!OPTION_SET_P (flag_diagnostics_show_caret))
-    global_dc->m_source_printing.enabled = false;
+    global_dc->get_source_printing_options ().enabled = false;
 
   /* Copy global settings to local versions.  */
   gnat_encodings = global_options.x_gnat_encodings;

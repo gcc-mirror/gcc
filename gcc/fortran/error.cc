@@ -573,7 +573,7 @@ gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
     ? gfc_diagnostic_build_locus_prefix (loc_policy, s1, colorize)
     : gfc_diagnostic_build_locus_prefix (loc_policy, s1, s2, colorize);
 
-  if (!context->m_source_printing.enabled
+  if (!context->get_source_printing_options ().enabled
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->m_last_location)
     {
@@ -960,8 +960,9 @@ gfc_diagnostics_init (void)
   diagnostics::start_span (global_dc) = gfc_diagnostic_start_span;
   diagnostics::text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->set_format_decoder (gfc_format_decoder);
-  global_dc->m_source_printing.caret_chars[0] = '1';
-  global_dc->m_source_printing.caret_chars[1] = '2';
+  auto &source_printing_opts = global_dc->get_source_printing_options ();
+  source_printing_opts.caret_chars[0] = '1';
+  source_printing_opts.caret_chars[1] = '2';
   pp_warning_buffer = new diagnostics::buffer (*global_dc);
   error_buffer = new gfc_error_buffer ();
   pp_error_buffer = &(error_buffer->buffer);
@@ -975,8 +976,9 @@ gfc_diagnostics_finish (void)
      defaults.  */
   diagnostics::text_starter (global_dc) = gfc_diagnostic_text_starter;
   diagnostics::text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
-  global_dc->m_source_printing.caret_chars[0] = '^';
-  global_dc->m_source_printing.caret_chars[1] = '^';
+  auto &source_printing_opts = global_dc->get_source_printing_options ();
+  source_printing_opts.caret_chars[0] = '^';
+  source_printing_opts.caret_chars[1] = '^';
   delete error_buffer;
   error_buffer = nullptr;
   pp_error_buffer = nullptr;

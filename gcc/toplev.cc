@@ -1070,13 +1070,14 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
 
   global_dc->set_original_argv (std::move (original_argv));
 
-  global_dc->m_source_printing.enabled
+  auto &source_printing_opts = global_dc->get_source_printing_options ();
+  source_printing_opts.enabled
     = global_options_init.x_flag_diagnostics_show_caret;
-  global_dc->m_source_printing.show_event_links_p
+  source_printing_opts.show_event_links_p
     = global_options_init.x_flag_diagnostics_show_event_links;
-  global_dc->m_source_printing.show_labels_p
+  source_printing_opts.show_labels_p
     = global_options_init.x_flag_diagnostics_show_labels;
-  global_dc->m_source_printing.show_line_numbers_p
+  source_printing_opts.show_line_numbers_p
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->set_show_cwe (global_options_init.x_flag_diagnostics_show_cwe);
   global_dc->set_show_rules (global_options_init.x_flag_diagnostics_show_rules);
@@ -1087,7 +1088,7 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
     (global_options_init.x_flag_diagnostics_show_path_depths);
   global_dc->set_show_option_requested
     (global_options_init.x_flag_diagnostics_show_option);
-  global_dc->m_source_printing.min_margin_width
+  source_printing_opts.min_margin_width
     = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->m_show_column
     = global_options_init.x_flag_show_column;
