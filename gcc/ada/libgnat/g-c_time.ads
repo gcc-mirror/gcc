@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                   S Y S T E M . O S _ I N T E R F A C E                  --
+--                           G N A T . C _ T I M E                          --
 --                                                                          --
---                                   B o d y                                --
+--                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2025, AdaCore                     --
+--                       Copyright (C) 2025, AdaCore                        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,51 +24,15 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies, Inc.     --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is an Android version of this package.
+--  This package provides the time_t, timeval and timespec types corresponding
+--  to the C types defined by the OS, as well as various conversion functions.
 
---  This package encapsulates all direct interfaces to OS services
---  that are needed by children of System.
+--  See file s-c_time.ads for full documentation of the interface
 
-with Interfaces.C;            use Interfaces.C;
-
-package body System.OS_Interface is
-
-   -----------------
-   -- To_Duration --
-   -----------------
-
-   function To_Duration (TS : timespec) return Duration is
-   begin
-      return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
-   end To_Duration;
-
-   -----------------
-   -- To_Timespec --
-   -----------------
-
-   function To_Timespec (D : Duration) return timespec is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return timespec'(tv_sec => S,
-                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
-   end To_Timespec;
-
-end System.OS_Interface;
+with System.C_Time;
+package GNAT.C_Time renames System.C_Time;

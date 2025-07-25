@@ -31,7 +31,8 @@
 
 --  This version is for POSIX-like operating systems
 
-with System.Parameters;
+with System.C_Time;
+
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface
@@ -39,16 +40,8 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
-      .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
-
-   type timespec is record
-      tv_sec  : time_t;
-      tv_nsec : Long_Integer;
-   end record;
-   pragma Convention (C, timespec);
-
-   function nanosleep (rqtp, rmtp : not null access timespec) return Integer;
+   function nanosleep (rqtp, rmtp : not null access C_Time.timespec)
+                      return Integer;
    pragma Import (C, nanosleep, "nanosleep");
 
    -----------
@@ -56,28 +49,12 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-
-      type timeval is record
-         tv_sec  : time_t;
-         tv_usec : Long_Integer;
-      end record;
-      pragma Convention (C, timeval);
-
-      procedure timeval_to_duration
-        (T    : not null access timeval;
-         sec  : not null access Long_Long_Integer;
-         usec : not null access Long_Integer);
-      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
-
-      Micro  : constant := 10**6;
-      sec    : aliased Long_Long_Integer;
-      usec   : aliased Long_Integer;
-      TV     : aliased timeval;
+      TV     : aliased C_Time.timeval;
       Result : Integer;
       pragma Unreferenced (Result);
 
       function gettimeofday
-        (Tv : access timeval;
+        (Tv : access C_Time.timeval;
          Tz : System.Address := System.Null_Address) return Integer;
       pragma Import (C, gettimeofday, "gettimeofday");
 
@@ -91,36 +68,8 @@ package body System.OS_Primitives is
       --  value is never checked.
 
       Result := gettimeofday (TV'Access, System.Null_Address);
-      timeval_to_duration (TV'Access, sec'Access, usec'Access);
-      return Duration (sec) + Duration (usec) / Micro;
+      return C_Time.To_Duration (TV);
    end Clock;
-
-   -----------------
-   -- To_Timespec --
-   -----------------
-
-   function To_Timespec (D : Duration) return timespec;
-
-   function To_Timespec (D : Duration) return timespec is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return
-        timespec'(tv_sec  => S,
-                  tv_nsec => Long_Integer (Long_Long_Integer (F * 10#1#E9)));
-   end To_Timespec;
 
    -----------------
    -- Timed_Delay --
@@ -130,8 +79,8 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Request    : aliased timespec;
-      Remaind    : aliased timespec;
+      Request    : aliased C_Time.timespec;
+      Remaind    : aliased C_Time.timespec;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Base_Time  : constant Duration := Clock;
@@ -151,7 +100,7 @@ package body System.OS_Primitives is
 
       if Rel_Time > 0.0 then
          loop
-            Request := To_Timespec (Rel_Time);
+            Request := C_Time.To_Timespec (Rel_Time);
             Result := nanosleep (Request'Access, Remaind'Access);
             Check_Time := Clock;
 

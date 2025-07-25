@@ -36,8 +36,13 @@ procedure Timed_Delay
   (Time : Duration;
    Mode : Integer)
 is
-   Request    : aliased timespec;
-   Remaind    : aliased timespec;
+
+   function nanosleep (rqtp, rmtp : not null access C_Time.timespec)
+                       return Integer;
+   pragma Import (C, nanosleep, "nanosleep");
+
+   Request    : aliased C_Time.timespec;
+   Remaind    : aliased C_Time.timespec;
    Rel_Time   : Duration;
    Abs_Time   : Duration;
    Base_Time  : constant Duration := Clock;
@@ -71,7 +76,7 @@ begin
          end if;
          pragma Warnings (On);
 
-         Request := To_Timespec (Time_Chunk);
+         Request := C_Time.To_Timespec (Time_Chunk);
          Result := nanosleep (Request'Access, Remaind'Access);
 
          Check_Time := Clock;

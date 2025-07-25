@@ -35,15 +35,6 @@ package body System.OS_Interface is
 
    use Interfaces.C;
 
-   -----------------
-   -- To_Duration --
-   -----------------
-
-   function To_Duration (TS : timespec) return Duration is
-   begin
-      return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
-   end To_Duration;
-
    ------------------------
    -- To_Target_Priority --
    ------------------------
@@ -71,29 +62,6 @@ package body System.OS_Interface is
          return Interfaces.C.int (Prio) + 1;
       end if;
    end To_Target_Priority;
-
-   -----------------
-   -- To_Timespec --
-   -----------------
-
-   function To_Timespec (D : Duration) return timespec is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F is negative due to a round-up, adjust for positive F value
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return timespec'(tv_sec => S,
-                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
-   end To_Timespec;
 
    -----------------
    -- sched_yield --
