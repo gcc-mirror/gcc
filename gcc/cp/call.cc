@@ -7491,7 +7491,16 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL)
 	{
 	  if (overload)
-	    *overload = cand->fn;
+	    {
+	      if (cand->rewritten ())
+		/* build_min_non_dep_op_overload needs to know whether the
+		   candidate is rewritten/reversed.  */
+		*overload = build_tree_list (build_int_cst (integer_type_node,
+							    cand->flags),
+					     cand->fn);
+	      else
+		*overload = cand->fn;
+	    }
 
 	  if (resolve_args (arglist, complain) == NULL)
 	    result = error_mark_node;
@@ -7540,11 +7549,6 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	  /* If this was a C++20 rewritten comparison, adjust the result.  */
 	  if (cand->rewritten ())
 	    {
-	      /* FIXME build_min_non_dep_op_overload can't handle rewrites.  */
-	      if (code == NE_EXPR && !cand->reversed ())
-		/* It can handle != rewritten to == though.  */;
-	      else if (overload)
-		*overload = NULL_TREE;
 	      switch (code)
 		{
 		case EQ_EXPR:

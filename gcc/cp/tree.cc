@@ -3696,7 +3696,58 @@ build_min_non_dep_op_overload (enum tree_code op,
   int nargs, expected_nargs;
   tree fn, call, obj = NULL_TREE;
 
-  bool negated = (TREE_CODE (non_dep) == TRUTH_NOT_EXPR);
+  releasing_vec args;
+  va_start (p, overload);
+
+  bool negated = false, rewritten = false, reversed = false;
+  if (cxx_dialect >= cxx20 && TREE_CODE (overload) == TREE_LIST)
+    {
+      /* Handle rebuilding a C++20 rewritten comparison operator expression,
+	 e.g. !(x == y), y <=> x, (x <=> y) @ 0 etc, that resolved to a call
+	 to a user-defined operator<=>/==.  */
+      gcc_checking_assert (TREE_CODE_CLASS (op) == tcc_comparison
+			   || op == SPACESHIP_EXPR);
+      int flags = TREE_INT_CST_LOW (TREE_PURPOSE (overload));
+      if (TREE_CODE (non_dep) == TRUTH_NOT_EXPR)
+	{
+	  negated = true;
+	  non_dep = TREE_OPERAND (non_dep, 0);
+	}
+      if (flags & LOOKUP_REWRITTEN)
+	rewritten = true;
+      if (flags & LOOKUP_REVERSED)
+	reversed = true;
+      if (rewritten
+	  && DECL_OVERLOADED_OPERATOR_IS (TREE_VALUE (overload),
+					  SPACESHIP_EXPR))
+	{
+	  /* Handle (x <=> y) @ 0 and 0 @ (y <=> x) by recursing to first
+	     rebuild the <=>.  Note that both OVERLOAD and the provided arguments
+	     in this case already correspond to the selected operator<=>.  */
+
+	  tree spaceship_non_dep = CALL_EXPR_ARG (non_dep, reversed ? 1 : 0);
+	  gcc_checking_assert (TREE_CODE (spaceship_non_dep) == CALL_EXPR);
+	  tree spaceship_op0 = va_arg (p, tree);
+	  tree spaceship_op1 = va_arg (p, tree);
+	  if (reversed)
+	    std::swap (spaceship_op0, spaceship_op1);
+
+	  /* Push the correct arguments for the operator OP expression, and
+	     set OVERLOAD appropriately.  */
+	  tree op0 = build_min_non_dep_op_overload (SPACESHIP_EXPR,
+						    spaceship_non_dep,
+						    TREE_VALUE (overload),
+						    spaceship_op0,
+						    spaceship_op1);
+	  tree op1 = CALL_EXPR_ARG (non_dep, reversed ? 0 : 1);
+	  gcc_checking_assert (integer_zerop (op1));
+	  vec_safe_push (args, op0);
+	  vec_safe_push (args, op1);
+	  overload = CALL_EXPR_FN (non_dep);
+	}
+      else
+	overload = TREE_VALUE (overload);
+    }
   non_dep = extract_call_expr (non_dep);
 
   nargs = call_expr_nargs (non_dep);
@@ -3717,32 +3768,40 @@ build_min_non_dep_op_overload (enum tree_code op,
     expected_nargs += 1;
   gcc_assert (nargs == expected_nargs);
 
-  releasing_vec args;
-  va_start (p, overload);
-
   if (!DECL_OBJECT_MEMBER_FUNCTION_P (overload))
     {
       fn = overload;
-      if (op == ARRAY_REF)
-	obj = va_arg (p, tree);
+      if (vec_safe_length (args) != 0)
+	/* The correct arguments were already pushed above.  */
+	gcc_checking_assert (rewritten);
+      else
+	{
+	  if (op == ARRAY_REF)
+	    obj = va_arg (p, tree);
+	  for (int i = 0; i < nargs; i++)
+	    {
+	      tree arg = va_arg (p, tree);
+	      vec_safe_push (args, arg);
+	    }
+	}
+      if (reversed)
+	std::swap ((*args)[0], (*args)[1]);
+    }
+  else
+    {
+      gcc_checking_assert (vec_safe_length (args) == 0);
+      tree object = va_arg (p, tree);
       for (int i = 0; i < nargs; i++)
 	{
 	  tree arg = va_arg (p, tree);
 	  vec_safe_push (args, arg);
 	}
-    }
-  else
-    {
-      tree object = va_arg (p, tree);
+      if (reversed)
+	std::swap (object, (*args)[0]);
       tree binfo = TYPE_BINFO (TREE_TYPE (object));
       tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
       fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		      object, method, NULL_TREE);
-      for (int i = 0; i < nargs; i++)
-	{
-	  tree arg = va_arg (p, tree);
-	  vec_safe_push (args, arg);
-	}
     }
 
   va_end (p);

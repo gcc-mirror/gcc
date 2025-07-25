@@ -16,12 +16,16 @@ struct A {
 template<class T>
 void f() {
   A a;
-  (void)(a != 0);         // We only handle this simple case, after PR121179
-  (void)(0 != a);         // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a < 0, 0 < a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a <= 0, 0 <= a); // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a > 0, 0 > a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a >= 0, 0 >= a); // { dg-bogus "deleted" "" { xfail *-*-* } }
+  (void)(a != 0);
+  (void)(0 != a);
+  (void)(a < 0);
+  (void)(0 < a);
+  (void)(a <= 0);
+  (void)(0 <= a);
+  (void)(a > 0);
+  (void)(0 > a);
+  (void)(a >= 0);
+  (void)(0 >= a);
 }
 
 // These later-declared namespace-scope overloads shouldn't be considered
