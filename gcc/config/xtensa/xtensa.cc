@@ -4702,25 +4702,49 @@ static bool
 xtensa_is_insn_L32R_p (const rtx_insn *insn)
 {
   rtx pat, dest, src;
+  machine_mode mode;
 
-  /* "PATTERN (insn)" can be used without checking, see insn_cost()
-     in gcc/rtlanal.cc.  */
+  /* RTX insns that are not "(set (reg) ...)" cannot become L32R instructions:
+     - it is permitted to apply PATTERN() to the insn without validation.
+       See insn_cost() in gcc/rtlanal.cc.
+     - it is used register_operand() instead of REG() to identify things that
+       don't look like REGs but will eventually become so as well.  */
   if (GET_CODE (pat = PATTERN (insn)) != SET
       || ! register_operand (dest = SET_DEST (pat), VOIDmode))
     return false;
 
+  /* If the source is a reference to a literal pool entry, then the insn
+     obviously corresponds to an L32R instruction.  */
   if (constantpool_mem_p (src = SET_SRC (pat)))
     return true;
 
-  /* Return true if:
-     - CONST16 instruction is not configured, and
-     - the source is some constant, and also
-     - negation of "the source is integer and fits into the immediate
-       field".  */
-  return (!TARGET_CONST16
-	  && CONSTANT_P (src)
-	  && ! ((GET_MODE (dest) == SImode || GET_MODE (dest) == HImode)
-		&& CONST_INT_P (src) && xtensa_simm12b (INTVAL (src))));
+  /* Similarly, an insn whose source is not a constant obviously does not
+     correspond to L32R.  */
+  if (! CONSTANT_P (src))
+    return false;
+
+  /* If the source is a CONST_INT whose value fits into signed 12 bits, then
+     the insn corresponds to a MOVI instruction (rather than an L32R one),
+     regardless of the configuration of TARGET_CONST16 or
+     TARGET_AUTOLITPOOLS.  Note that the destination register can be non-
+     SImode.  */
+  if (((mode = GET_MODE (dest)) == SImode
+       || mode == HImode || mode == SFmode)
+      && CONST_INT_P (src) && xtensa_simm12b (INTVAL (src)))
+    return false;
+
+  /* If TARGET_CONST16 is configured, constants of the remaining forms
+     correspond to pairs of CONST16 instructions, not L32R.  */
+  if (TARGET_CONST16)
+    return false;
+
+  /* The last remaining form of constant is one of the following:
+     - CONST_INTs with large values
+     - floating-point constants
+     - symbolic constants
+     and is all handled by a relaxed MOVI instruction, which is later
+     converted to an L32R instruction by the assembler.  */
+  return true;
 }
 
 /* Compute a relative costs of RTL insns.  This is necessary in order to
