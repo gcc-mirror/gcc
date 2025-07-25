@@ -170,7 +170,7 @@ struct GTY(())  riscv_frame_info {
 };
 
 enum riscv_privilege_levels {
-  UNKNOWN_MODE, USER_MODE, SUPERVISOR_MODE, MACHINE_MODE, RNMI_MODE
+  UNKNOWN_MODE, SUPERVISOR_MODE, MACHINE_MODE, RNMI_MODE
 };
 
 struct GTY(()) mode_switching_info {
@@ -6929,11 +6929,12 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	      error ("attribute 'rnmi' requires the Smrnmi ISA extension");
 	      *no_add_attrs = true;
 	    }
-	  else if (strcmp (string, "user") && strcmp (string, "supervisor")
-	      && strcmp (string, "machine") && strcmp (string, "rnmi"))
+	  else if (strcmp (string, "supervisor")
+		   && strcmp (string, "machine")
+		   && strcmp (string, "rnmi"))
 	    {
 	      warning (OPT_Wattributes,
-		       "argument to %qE attribute is not %<\"user\"%>, %<\"supervisor\"%>, "
+		       "argument to %qE attribute is not %<\"supervisor\"%>, "
 		       "%<\"machine\"%>, or %<\"rnmi\"%>", name);
 	      *no_add_attrs = true;
 	    }
@@ -9715,14 +9716,12 @@ riscv_expand_epilogue (int style)
 
       if (th_int_mask && TH_INT_INTERRUPT (cfun))
 	emit_jump_insn (gen_th_int_pop ());
-      else if (mode == MACHINE_MODE)
-	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
 	emit_jump_insn (gen_riscv_sret ());
       else if (mode == RNMI_MODE)
 	emit_jump_insn (gen_riscv_mnret ());
-      else
-	emit_jump_insn (gen_riscv_uret ());
+      else /* Must be MACHINE_MODE.  */
+	emit_jump_insn (gen_riscv_mret ());
     }
   else if (style != SIBCALL_RETURN)
     {
@@ -12064,9 +12063,7 @@ riscv_get_interrupt_type (tree decl)
     {
       const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
 
-      if (!strcmp (string, "user"))
-	return USER_MODE;
-      else if (!strcmp (string, "supervisor"))
+      if (!strcmp (string, "supervisor"))
 	return SUPERVISOR_MODE;
       else if (!strcmp (string, "rnmi"))
 	return RNMI_MODE;

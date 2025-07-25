@@ -120,7 +120,6 @@
   ;; Interrupt handler instructions.
   UNSPECV_MRET
   UNSPECV_SRET
-  UNSPECV_URET
   UNSPECV_MNRET
 
   ;; Blockage and synchronization.
@@ -4165,13 +4164,6 @@
    (unspec_volatile [(const_int 0)] UNSPECV_SRET)]
   ""
   "sret"
-  [(set_attr "type" "ret")])
-
-(define_insn "riscv_uret"
-  [(return)
-   (unspec_volatile [(const_int 0)] UNSPECV_URET)]
-  ""
-  "uret"
   [(set_attr "type" "ret")])
 
 (define_insn "riscv_mnret"

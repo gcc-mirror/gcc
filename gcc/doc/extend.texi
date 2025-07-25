@@ -5654,10 +5654,10 @@ You can specify the kind of interrupt to be handled by adding an optional
 parameter to the interrupt attribute like this:
 
 @smallexample
-void f (void) __attribute__ ((interrupt ("user")));
+void f (void) __attribute__ ((interrupt ("supervisor")));
 @end smallexample
 
-Permissible values for this parameter are @code{user}, @code{supervisor},
+Permissible values for this parameter are @code{supervisor},
 @code{machine}, and @code{rnmi}.  If there is no parameter, then it
 defaults to @code{machine}.
 
