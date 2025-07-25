@@ -28,7 +28,7 @@
 namespace Rust {
 namespace TyTy {
 
-SubstitutionParamMapping::SubstitutionParamMapping (HIR::TypeParam &generic,
+SubstitutionParamMapping::SubstitutionParamMapping (HIR::GenericParam &generic,
 						    ParamType *param)
   : generic (generic), param (param)
 {}
@@ -66,13 +66,13 @@ SubstitutionParamMapping::get_param_ty () const
   return param;
 }
 
-HIR::TypeParam &
+HIR::GenericParam &
 SubstitutionParamMapping::get_generic_param ()
 {
   return generic;
 }
 
-const HIR::TypeParam &
+const HIR::GenericParam &
 SubstitutionParamMapping::get_generic_param () const
 {
   return generic;
@@ -84,6 +84,14 @@ SubstitutionParamMapping::needs_substitution () const
   return !(get_param_ty ()->is_concrete ());
 }
 
+Identifier
+SubstitutionParamMapping::get_type_representation () const
+{
+  rust_assert (generic.get_kind () == HIR::GenericParam::GenericKind::TYPE);
+  const auto &type_param = static_cast<const HIR::TypeParam &> (generic);
+  return type_param.get_type_representation ();
+}
+
 location_t
 SubstitutionParamMapping::get_param_locus () const
 {
@@ -93,13 +101,20 @@ SubstitutionParamMapping::get_param_locus () const
 bool
 SubstitutionParamMapping::param_has_default_ty () const
 {
-  return generic.has_type ();
+  if (generic.get_kind () != HIR::GenericParam::GenericKind::TYPE)
+    return false;
+
+  const auto &type_param = static_cast<const HIR::TypeParam &> (generic);
+  return type_param.has_type ();
 }
 
 BaseType *
 SubstitutionParamMapping::get_default_ty () const
 {
-  TyVar var (generic.get_type_mappings ().get_hirid ());
+  rust_assert (generic.get_kind () == HIR::GenericParam::GenericKind::TYPE);
+
+  const auto &type_param = static_cast<const HIR::TypeParam &> (generic);
+  TyVar var (type_param.get_type_mappings ().get_hirid ());
   return var.get_tyty ();
 }
 
@@ -675,7 +690,11 @@ SubstitutionRef::get_mappings_from_generic_args (
     {
       rich_location r (line_table, args.get_locus ());
       if (!substitutions.empty ())
-	r.add_range (substitutions.front ().get_param_locus ());
+	{
+	  const auto &subst = substitutions.front ();
+	  const auto &generic = subst.get_generic_param ();
+	  r.add_range (generic.get_locus ());
+	}
 
       rust_error_at (
 	r,
@@ -688,7 +707,12 @@ SubstitutionRef::get_mappings_from_generic_args (
   if (args.get_type_args ().size () + offs < min_required_substitutions ())
     {
       rich_location r (line_table, args.get_locus ());
-      r.add_range (substitutions.front ().get_param_locus ());
+      if (!substitutions.empty ())
+	{
+	  const auto &subst = substitutions.front ();
+	  const auto &generic = subst.get_generic_param ();
+	  r.add_range (generic.get_locus ());
+	}
 
       rust_error_at (
 	r, ErrorCode::E0107,
@@ -708,15 +732,20 @@ SubstitutionRef::get_mappings_from_generic_args (
 	}
 
       const auto &param_mapping = substitutions.at (offs);
-      const auto &type_param = param_mapping.get_generic_param ();
-      if (type_param.from_impl_trait ())
+      const auto &generic = param_mapping.get_generic_param ();
+      if (generic.get_kind () == HIR::GenericParam::GenericKind::TYPE)
 	{
-	  rich_location r (line_table, arg->get_locus ());
-	  r.add_fixit_remove (arg->get_locus ());
-	  rust_error_at (r, ErrorCode::E0632,
-			 "cannot provide explicit generic arguments when "
-			 "%<impl Trait%> is used in argument position");
-	  return SubstitutionArgumentMappings::error ();
+	  const auto &type_param
+	    = static_cast<const HIR::TypeParam &> (generic);
+	  if (type_param.from_impl_trait ())
+	    {
+	      rich_location r (line_table, arg->get_locus ());
+	      r.add_fixit_remove (arg->get_locus ());
+	      rust_error_at (r, ErrorCode::E0632,
+			     "cannot provide explicit generic arguments when "
+			     "%<impl Trait%> is used in argument position");
+	      return SubstitutionArgumentMappings::error ();
+	    }
 	}
 
       SubstitutionArg subst_arg (&param_mapping, resolved);

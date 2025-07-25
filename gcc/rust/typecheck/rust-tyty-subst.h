@@ -24,6 +24,7 @@
 #include "rust-hir-full-decls.h"
 #include "rust-tyty-bounds.h"
 #include "rust-tyty-region.h"
+#include "rust-ast.h"
 #include "optional.h"
 
 namespace Rust {
@@ -44,7 +45,7 @@ class SubstitutionArgumentMappings;
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (HIR::TypeParam &generic, ParamType *param);
+  SubstitutionParamMapping (HIR::GenericParam &generic, ParamType *param);
 
   SubstitutionParamMapping (const SubstitutionParamMapping &other);
 
@@ -56,11 +57,12 @@ public:
   SubstitutionParamMapping clone () const;
 
   ParamType *get_param_ty ();
-
   const ParamType *get_param_ty () const;
 
-  HIR::TypeParam &get_generic_param ();
-  const HIR::TypeParam &get_generic_param () const;
+  HIR::GenericParam &get_generic_param ();
+  const HIR::GenericParam &get_generic_param () const;
+
+  Identifier get_type_representation () const;
 
   // this is used for the backend to override the HirId ref of the param to
   // what the concrete type is for the rest of the context
@@ -77,7 +79,7 @@ public:
   bool need_substitution () const;
 
 private:
-  HIR::TypeParam &generic;
+  HIR::GenericParam &generic;
   ParamType *param;
 };
 

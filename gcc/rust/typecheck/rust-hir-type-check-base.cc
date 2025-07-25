@@ -512,9 +512,13 @@ TypeCheckBase::resolve_generic_params (
   // now walk them to setup any specified type param bounds
   for (auto &subst : substitutions)
     {
+      auto &generic = subst.get_generic_param ();
+      if (generic.get_kind () != HIR::GenericParam::GenericKind::TYPE)
+	continue;
+
+      auto &type_param = static_cast<HIR::TypeParam &> (generic);
       auto pty = subst.get_param_ty ();
-      TypeResolveGenericParam::ApplyAnyTraitBounds (subst.get_generic_param (),
-						    pty);
+      TypeResolveGenericParam::ApplyAnyTraitBounds (type_param, pty);
     }
 }
 
