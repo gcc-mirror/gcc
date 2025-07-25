@@ -2568,9 +2568,6 @@ extern internal_fn vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, boo
 extern bool vect_grouped_load_supported (tree, bool, unsigned HOST_WIDE_INT);
 extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT,
 					      bool, vec<int> * = nullptr);
-extern void vect_permute_store_chain (vec_info *, vec<tree> &,
-				      unsigned int, stmt_vec_info,
-				      gimple_stmt_iterator *, vec<tree> *);
 extern tree vect_setup_realignment (vec_info *,
 				    stmt_vec_info, gimple_stmt_iterator *,
 				    tree *, enum dr_alignment_support, tree,

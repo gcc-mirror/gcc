@@ -8413,39 +8413,6 @@ vectorizable_store (vec_info *vinfo,
      more than one vector stmt - i.e - we need to "unroll" the
      vector stmt by a factor VF/nunits.  */
 
-  /* In case of interleaving (non-unit grouped access):
-
-        S1:  &base + 2 = x2
-        S2:  &base = x0
-        S3:  &base + 1 = x1
-        S4:  &base + 3 = x3
-
-     We create vectorized stores starting from base address (the access of the
-     first stmt in the chain (S2 in the above example), when the last store stmt
-     of the chain (S4) is reached:
-
-        VS1: &base = vx2
-	VS2: &base + vec_size*1 = vx0
-	VS3: &base + vec_size*2 = vx1
-	VS4: &base + vec_size*3 = vx3
-
-     Then permutation statements are generated:
-
-	VS5: vx5 = VEC_PERM_EXPR < vx0, vx3, {0, 8, 1, 9, 2, 10, 3, 11} >
-	VS6: vx6 = VEC_PERM_EXPR < vx0, vx3, {4, 12, 5, 13, 6, 14, 7, 15} >
-	...
-
-     And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts
-     (the order of the data-refs in the output of vect_permute_store_chain
-     corresponds to the order of scalar stmts in the interleaving chain - see
-     the documentation of vect_permute_store_chain()).
-
-     In case of both multiple types and interleaving, above vector stores and
-     permutation stmts are created for every copy.  The result vector stmts are
-     put in STMT_VINFO_VEC_STMT for the first copy and in the corresponding
-     STMT_VINFO_RELATED_STMT for the next copies.
-  */
-
   auto_vec<tree> dr_chain (group_size);
   auto_vec<tree> vec_masks;
   tree vec_mask = NULL;
