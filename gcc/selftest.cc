@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
+#include "diagnostics/file-cache.h"
 #include "intl.h"
 
 #if CHECKING_P
@@ -186,7 +187,7 @@ assert_str_startswith (const location &loc,
 /* Constructor.  Generate a name for the file.  */
 
 named_temp_file::named_temp_file (const char *suffix,
-				  file_cache *fc)
+				  diagnostics::file_cache *fc)
 {
   m_filename = make_temp_file (suffix);
   ASSERT_NE (m_filename, NULL);
@@ -210,7 +211,7 @@ named_temp_file::~named_temp_file ()
 temp_source_file::temp_source_file (const location &loc,
 				    const char *suffix,
 				    const char *content,
-				    file_cache *fc)
+				    diagnostics::file_cache *fc)
 : named_temp_file (suffix, fc)
 {
   FILE *out = fopen (get_filename (), "w");

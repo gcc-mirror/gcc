@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/changes.h"
 #include "pretty-print.h"
 #include "diagnostics/color.h"
+#include "diagnostics/file-cache.h"
 #include "selftest.h"
 
 namespace diagnostics {

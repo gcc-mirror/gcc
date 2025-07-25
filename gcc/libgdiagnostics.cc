@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "diagnostics/color.h"
+#include "diagnostics/file-cache.h"
 #include "diagnostics/url.h"
 #include "diagnostics/metadata.h"
 #include "diagnostics/paths.h"
@@ -1358,7 +1359,7 @@ diagnostic_file::set_buffered_content (const char *buf, size_t sz)
   m_content = std::make_unique<content_buffer> (buf, sz);
 
   // Populate file_cache:
-  file_cache &fc = m_mgr.get_dc ().get_file_cache ();
+  diagnostics::file_cache &fc = m_mgr.get_dc ().get_file_cache ();
   fc.add_buffered_content (m_name.get_str (), buf, sz);
 }
 

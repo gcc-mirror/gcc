@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTICS_SELFTEST_SOURCE_PRINTING_H
 
 #include "selftest.h"
+#include "diagnostics/file-cache.h"
 
 /* The selftest code should entirely disappear in a production
    configuration, hence we guard all of it with #if CHECKING_P.  */

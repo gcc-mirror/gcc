@@ -40,6 +40,7 @@ void
 run_diagnostics_selftests ()
 {
   color_cc_tests ();
+  file_cache_cc_tests ();
   source_printing_cc_tests ();
   html_sink_cc_tests ();
   sarif_sink_cc_tests ();

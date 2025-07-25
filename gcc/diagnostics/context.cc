@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-urlifier.h"
 #include "diagnostics/logical-locations.h"
 #include "diagnostics/buffering.h"
+#include "diagnostics/file-cache.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>

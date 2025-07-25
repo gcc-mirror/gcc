@@ -63,6 +63,7 @@
 #include "gcc-rich-location.h"
 #include "text-range-label.h"
 #include "diagnostics/text-sink.h"
+#include "diagnostics/file-cache.h"
 
 int plugin_is_GPL_compatible;
 
@@ -443,8 +444,8 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
-	  file_cache &fc = global_dc->get_file_cache ();
-	  char_span content = fc.get_source_line (file, line);
+	  diagnostics::file_cache &fc = global_dc->get_file_cache ();
+	  diagnostics::char_span content = fc.get_source_line (file, line);
 	  gcc_assert (content);
 	  /* Split line up into words.  */
 	  for (int idx = 0; idx < content.length (); idx++)
@@ -464,7 +465,8 @@ test_show_locus (function *fun)
 		      richloc.add_range (word, SHOW_RANGE_WITH_CARET, &label);
 
 		      /* Add a fixit, converting to upper case.  */
-		      char_span word_span = content.subspan (start_idx, idx - start_idx);
+		      diagnostics::char_span word_span
+			= content.subspan (start_idx, idx - start_idx);
 		      char *copy = word_span.xstrdup ();
 		      for (char *ch = copy; *ch; ch++)
 			*ch = TOUPPER (*ch);

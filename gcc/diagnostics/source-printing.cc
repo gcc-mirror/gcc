@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-art/types.h"
 #include "text-art/theme.h"
 #include "diagnostics/source-printing-effects.h"
+#include "diagnostics/file-cache.h"
 #include "xml.h"
 #include "xml-printer.h"
 
@@ -201,7 +202,7 @@ enum column_unit {
 class exploc_with_display_col : public expanded_location
 {
  public:
-  exploc_with_display_col (file_cache &fc,
+  exploc_with_display_col (diagnostics::file_cache &fc,
 			   const expanded_location &exploc,
 			   const cpp_char_column_policy &policy,
 			   enum location_aspect aspect)
@@ -814,7 +815,7 @@ class layout
 
   const diagnostics::source_printing_options &m_options;
   const line_maps *m_line_table;
-  file_cache &m_file_cache;
+  diagnostics::file_cache &m_file_cache;
   const text_art::ascii_theme m_fallback_theme;
   const text_art::theme &m_theme;
   diagnostics::source_effect_info *m_effect_info;
@@ -1250,7 +1251,7 @@ static cpp_char_column_policy def_policy ()
    e.g. in test_diagnostic_show_locus_one_liner_utf8().  */
 
 static layout_range
-make_range (file_cache &fc,
+make_range (diagnostics::file_cache &fc,
 	    int start_line, int start_col, int end_line, int end_col)
 {
   const expanded_location start_exploc
@@ -1279,7 +1280,7 @@ make_range (file_cache &fc,
 static void
 test_layout_range_for_single_point ()
 {
-  file_cache fc;
+  diagnostics::file_cache fc;
   layout_range point = make_range (fc, 7, 10, 7, 10);
 
   /* Tests for layout_range::contains_point.  */
@@ -1316,7 +1317,7 @@ test_layout_range_for_single_point ()
 static void
 test_layout_range_for_single_line ()
 {
-  file_cache fc;
+  diagnostics::file_cache fc;
   layout_range example_a = make_range (fc, 2, 22, 2, 38);
 
   /* Tests for layout_range::contains_point.  */
@@ -1359,7 +1360,7 @@ test_layout_range_for_single_line ()
 static void
 test_layout_range_for_multiple_lines ()
 {
-  file_cache fc;
+  diagnostics::file_cache fc;
   layout_range example_b = make_range (fc, 3, 14, 5, 8);
 
   /* Tests for layout_range::contains_point.  */
@@ -2201,8 +2202,9 @@ layout::calculate_x_offset_display ()
       return;
     }
 
-  const char_span line = m_file_cache.get_source_line (m_exploc.file,
-						       m_exploc.line);
+  const diagnostics::char_span line
+    = m_file_cache.get_source_line (m_exploc.file,
+				    m_exploc.line);
   if (!line)
     {
       /* Nothing to do, we couldn't find the source line.  */
@@ -3159,7 +3161,7 @@ public:
 
 /* Get the range of bytes or display columns that HINT would affect.  */
 static column_range
-get_affected_range (file_cache &fc,
+get_affected_range (diagnostics::file_cache &fc,
 		    const cpp_char_column_policy &policy,
 		    const fixit_hint *hint, enum column_unit col_unit)
 {
@@ -3189,7 +3191,7 @@ get_affected_range (file_cache &fc,
 /* Get the range of display columns that would be printed for HINT.  */
 
 static column_range
-get_printed_columns (file_cache &fc,
+get_printed_columns (diagnostics::file_cache &fc,
 		     const cpp_char_column_policy &policy,
 		     const fixit_hint *hint)
 {
@@ -3251,7 +3253,7 @@ public:
     m_display_cols = cpp_display_width (m_text, m_byte_length, m_policy);
   }
 
-  void overwrite (int dst_offset, const char_span &src_span)
+  void overwrite (int dst_offset, const diagnostics::char_span &src_span)
   {
     gcc_assert (dst_offset >= 0);
     gcc_assert (dst_offset + src_span.length () < m_alloc_sz);
@@ -3312,7 +3314,7 @@ correction::ensure_terminated ()
 class line_corrections
 {
 public:
-  line_corrections (file_cache &fc,
+  line_corrections (diagnostics::file_cache &fc,
 		    const char_display_policy &policy,
 		    const char *filename,
 		    linenum_type row)
@@ -3323,7 +3325,7 @@ public:
 
   void add_hint (const fixit_hint *hint);
 
-  file_cache &m_file_cache;
+  diagnostics::file_cache &m_file_cache;
   const char_display_policy &m_policy;
   const char *m_filename;
   linenum_type m_row;
@@ -3346,9 +3348,12 @@ line_corrections::~line_corrections ()
 class source_line
 {
 public:
-  source_line (file_cache &fc, const char *filename, int line);
+  source_line (diagnostics::file_cache &fc, const char *filename, int line);
 
-  char_span as_span () { return char_span (chars, width); }
+  diagnostics::char_span as_span ()
+  {
+    return diagnostics::char_span (chars, width);
+  }
 
   const char *chars;
   int width;
@@ -3356,9 +3361,11 @@ public:
 
 /* source_line's ctor.  */
 
-source_line::source_line (file_cache &fc, const char *filename, int line)
+source_line::source_line (diagnostics::file_cache &fc,
+			  const char *filename,
+			  int line)
 {
-  char_span span = fc.get_source_line (filename, line);
+  diagnostics::char_span span = fc.get_source_line (filename, line);
   chars = span.get_buffer ();
   width = span.length ();
 }
@@ -3422,9 +3429,10 @@ line_corrections::add_hint (const fixit_hint *hint)
 		(old_byte_len,
 		 line.as_span ().subspan (between.start - 1,
 					  between.finish + 1 - between.start));
-	      last_correction->overwrite (old_byte_len + between_byte_len,
-					  char_span (hint->get_string (),
-						     hint->get_length ()));
+	      last_correction->overwrite
+		(old_byte_len + between_byte_len,
+		 diagnostics::char_span (hint->get_string (),
+					 hint->get_length ()));
 	      last_correction->m_byte_length = new_byte_len;
 	      last_correction->ensure_terminated ();
 	      last_correction->m_affected_bytes.finish
@@ -3713,7 +3721,7 @@ layout_printer<Sink>::print_line (linenum_type row)
 {
   typename Sink::auto_check_tag_nesting sentinel (m_sink);
 
-  char_span line
+  diagnostics::char_span line
     = m_layout.m_file_cache.get_source_line (m_layout.m_exploc.file, row);
   if (!line)
     return;
@@ -4215,7 +4223,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
   ASSERT_EQ (1, LOCATION_LINE (line_end));
   ASSERT_EQ (line_bytes, LOCATION_COLUMN (line_end));
 
-  char_span lspan = f.m_fc.get_source_line (f.get_filename (), 1);
+  diagnostics::char_span lspan = f.m_fc.get_source_line (f.get_filename (), 1);
   ASSERT_EQ (line_display_cols,
 	     cpp_display_width (lspan.get_buffer (), lspan.length (),
 				def_policy ()));
@@ -4367,7 +4375,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   ASSERT_EQ (7, extra_width[10]);
 
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
-  file_cache fc;
+  diagnostics::file_cache fc;
   line_table_test ltt (case_);
 
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
@@ -4379,7 +4387,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
     return;
 
   /* Check that cpp_display_width handles the tabs as expected.  */
-  char_span lspan = fc.get_source_line (tmp.get_filename (), 1);
+  diagnostics::char_span lspan = fc.get_source_line (tmp.get_filename (), 1);
   ASSERT_EQ ('\t', *(lspan.get_buffer () + (tab_col - 1)));
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
@@ -5712,7 +5720,7 @@ test_diagnostic_show_locus_one_liner_utf8 (const line_table_case &case_)
   ASSERT_EQ (1, LOCATION_LINE (line_end));
   ASSERT_EQ (31, LOCATION_COLUMN (line_end));
 
-  char_span lspan = f.m_fc.get_source_line (f.get_filename (), 1);
+  diagnostics::char_span lspan = f.m_fc.get_source_line (f.get_filename (), 1);
   ASSERT_EQ (25, cpp_display_width (lspan.get_buffer (), lspan.length (),
 				    def_policy ()));
   ASSERT_EQ (25, location_compute_display_column (f.m_fc,
@@ -6057,7 +6065,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
   const char *content
     = ("  foo *f = (foo *)ptr->field;\n");
   temp_source_file tmp (SELFTEST_LOCATION, ".C", content);
-  file_cache fc;
+  diagnostics::file_cache fc;
   line_table_test ltt (case_);
 
   const line_map_ordinary *ord_map
@@ -6295,7 +6303,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
   /* Example where 3 fix-it hints are printed as one.  */
   {
     test_context dc;
-    file_cache &fc = dc.get_file_cache ();
+    diagnostics::file_cache &fc = dc.get_file_cache ();
     rich_location richloc (line_table, expr);
     richloc.add_fixit_replace (open_paren, "const_cast<");
     richloc.add_fixit_replace (close_paren, "> (");
@@ -6520,7 +6528,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
   /* Two insertions, in the wrong order.  */
   {
     test_context dc;
-    file_cache &fc = dc.get_file_cache ();
+    diagnostics::file_cache &fc = dc.get_file_cache ();
 
     rich_location richloc (line_table, col_20);
     richloc.add_fixit_insert_before (col_23, "{");

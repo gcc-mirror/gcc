@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function-abi.h"
 #include "common/common-target.h"
 #include "diagnostic.h"
+#include "diagnostics/file-cache.h"
 
 #include "dwarf2out.h"
 
@@ -2116,7 +2117,7 @@ asm_show_source (const char *filename, int linenum)
   if (!filename)
     return;
 
-  char_span line
+  diagnostics::char_span line
     = global_dc->get_file_cache ().get_source_line (filename, linenum);
   if (!line)
     return;

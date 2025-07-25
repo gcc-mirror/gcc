@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-indentation.h"
 #include "selftest.h"
 #include "diagnostic.h"
+#include "diagnostics/file-cache.h"
 
 /* Round up VIS_COLUMN to nearest tab stop. */
 
@@ -45,13 +46,13 @@ next_tab_stop (unsigned int vis_column, unsigned int tab_width)
    on the line (up to or before EXPLOC).  */
 
 static bool
-get_visual_column (file_cache &fc,
+get_visual_column (diagnostics::file_cache &fc,
 		   expanded_location exploc,
 		   unsigned int *out,
 		   unsigned int *first_nws,
 		   unsigned int tab_width)
 {
-  char_span line = fc.get_source_line (exploc.file, exploc.line);
+  diagnostics::char_span line = fc.get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   if ((size_t)exploc.column > line.length ())
@@ -88,14 +89,14 @@ get_visual_column (file_cache &fc,
    Otherwise, return false, leaving *FIRST_NWS untouched.  */
 
 static bool
-get_first_nws_vis_column (file_cache &fc,
+get_first_nws_vis_column (diagnostics::file_cache &fc,
 			  const char *file, int line_num,
 			  unsigned int *first_nws,
 			  unsigned int tab_width)
 {
   gcc_assert (first_nws);
 
-  char_span line = fc.get_source_line (file, line_num);
+  diagnostics::char_span line = fc.get_source_line (file, line_num);
   if (!line)
     return false;
   unsigned int vis_column = 0;
@@ -160,7 +161,7 @@ get_first_nws_vis_column (file_cache &fc,
    Return true if such an unindent/outdent is detected.  */
 
 static bool
-detect_intervening_unindent (file_cache &fc,
+detect_intervening_unindent (diagnostics::file_cache &fc,
 			     const char *file,
 			     int body_line,
 			     int next_stmt_line,
@@ -335,7 +336,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   if (next_stmt_exploc.file != body_exploc.file)
     return false;
 
-  file_cache &fc = global_dc->get_file_cache ();
+  diagnostics::file_cache &fc = global_dc->get_file_cache ();
 
   /* If NEXT_STMT_LOC and BODY_LOC are on the same line, consider
      the location of the guard.
@@ -691,7 +692,7 @@ test_next_tab_stop ()
 
 static void
 assert_get_visual_column_succeeds (const location &loc,
-				   file_cache &fc,
+				   diagnostics::file_cache &fc,
 				   const char *file, int line, int column,
 				   const unsigned int tab_width,
 				   unsigned int expected_visual_column,
@@ -735,7 +736,7 @@ assert_get_visual_column_succeeds (const location &loc,
 
 static void
 assert_get_visual_column_fails (const location &loc,
-				file_cache &fc,
+				diagnostics::file_cache &fc,
 				const char *file, int line, int column,
 				const unsigned int tab_width)
 {
@@ -783,7 +784,7 @@ test_get_visual_column ()
 			 "\t line 2\n");
   line_table_test ltt;
   temp_source_file tmp (SELFTEST_LOCATION, ".txt", content);
-  file_cache fc;
+  diagnostics::file_cache fc;
 
   const unsigned int tab_width = 8;
   const char *file = tmp.get_filename ();

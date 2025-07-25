@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
-class file_cache;
+namespace diagnostics { class file_cache; }
 
 namespace selftest {
 
@@ -100,13 +100,13 @@ extern void assert_str_startswith (const location &loc,
 class named_temp_file
 {
  public:
-  named_temp_file (const char *suffix, file_cache *fc = nullptr);
+  named_temp_file (const char *suffix, diagnostics::file_cache *fc = nullptr);
   ~named_temp_file ();
   const char *get_filename () const { return m_filename; }
 
  private:
   char *m_filename;
-  file_cache *m_file_cache;
+  diagnostics::file_cache *m_file_cache;
 };
 
 /* A class for writing out a temporary sourcefile for use in selftests
@@ -116,7 +116,7 @@ class temp_source_file : public named_temp_file
 {
  public:
   temp_source_file (const location &loc, const char *suffix,
-		    const char *content, file_cache *fc = nullptr);
+		    const char *content, diagnostics::file_cache *fc = nullptr);
   temp_source_file (const location &loc, const char *suffix,
 		    const char *content, size_t sz);
 };
