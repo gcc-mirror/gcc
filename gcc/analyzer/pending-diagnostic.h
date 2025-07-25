@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "analyzer/sm.h"
 
@@ -138,7 +138,7 @@ class diagnostic_emission_context
 public:
   diagnostic_emission_context (const saved_diagnostic &sd,
 			       rich_location &rich_loc,
-			       diagnostic_metadata &metadata,
+			       diagnostics::metadata &metadata,
 			       logger *logger)
   : m_sd (sd),
     m_rich_loc (rich_loc),
@@ -156,7 +156,7 @@ public:
   logger *get_logger () const { return m_logger; }
 
   void add_cwe (int cwe) { m_metadata.add_cwe (cwe); }
-  void add_rule (const diagnostic_metadata::rule &r)
+  void add_rule (const diagnostics::metadata::rule &r)
   {
     m_metadata.add_rule (r);
   }
@@ -164,7 +164,7 @@ public:
 private:
   const saved_diagnostic &m_sd;
   rich_location &m_rich_loc;
-  diagnostic_metadata &m_metadata;
+  diagnostics::metadata &m_metadata;
   logger *m_logger;
 };
 

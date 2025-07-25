@@ -68,7 +68,7 @@ start_span_cb (const diagnostic_location_print_policy &loc_policy,
 bool
 test_diagnostic_context::report (diagnostic_t kind,
 				 rich_location &richloc,
-				 const diagnostic_metadata *metadata,
+				 const diagnostics::metadata *metadata,
 				 diagnostic_option_id option,
 				 const char * fmt, ...)
 {

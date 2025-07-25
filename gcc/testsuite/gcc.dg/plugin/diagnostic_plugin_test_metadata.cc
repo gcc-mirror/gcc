@@ -1,4 +1,4 @@
-/* This plugin exercises diagnostic_metadata.  */
+/* This plugin exercises diagnostics::metadata.  */
 
 #include "gcc-plugin.h"
 #include "config.h"
@@ -28,7 +28,7 @@
 #include "diagnostic.h"
 #include "context.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 
 int plugin_is_GPL_compatible;
 
@@ -89,7 +89,7 @@ check_for_named_call (gimple *stmt,
   return call;
 }
 
-/* Exercise diagnostic_metadata.  */
+/* Exercise diagnostics::metadata.  */
 
 unsigned int
 pass_test_metadata::execute (function *fun)
@@ -106,13 +106,13 @@ pass_test_metadata::execute (function *fun)
 	if (gcall *call = check_for_named_call (stmt, "gets", 1))
 	  {
 	    gcc_rich_location richloc (gimple_location (call));
-	    diagnostic_metadata m;
+	    diagnostics::metadata m;
 
 	    /* CWE-242: Use of Inherently Dangerous Function.  */
 	    m.add_cwe (242);
 
-	    /* Example of a diagnostic_metadata::rule.  */
-	    diagnostic_metadata::precanned_rule
+	    /* Example of a diagnostics::metadata::rule.  */
+	    diagnostics::metadata::precanned_rule
 	      test_rule ("STR34-C", "https://example.com/");
 	    m.add_rule (test_rule);
 

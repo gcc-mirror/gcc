@@ -47,15 +47,7 @@
 #include <intl.h>
 #include <backtrace.h>
 #include <diagnostic.h>
-#include <diagnostic-color.h>
-#include <diagnostic-url.h>
-#include <diagnostic-metadata.h>
-#include <diagnostic-path.h>
-#include <edit-context.h>
-#include <selftest.h>
-#include <selftest-diagnostic.h>
 #include <opts.h>
-
 #include "util.h"
 
 #include "cbldiag.h"

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
@@ -512,7 +512,7 @@ print_any_rules (const diagnostic_info &diagnostic)
 
   for (unsigned idx = 0; idx < diagnostic.metadata->get_num_rules (); idx++)
     {
-      const diagnostic_metadata::rule &rule
+      const diagnostics::metadata::rule &rule
 	= diagnostic.metadata->get_rule (idx);
       if (char *desc = rule.make_description ())
 	{

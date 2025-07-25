@@ -161,7 +161,7 @@ struct diagnostic_info
 
   /* An optional bundle of metadata associated with the diagnostic
      (or NULL).  */
-  const diagnostic_metadata *metadata;
+  const diagnostics::metadata *metadata;
 
   /* Auxiliary data for client.  */
   void *x_data;
@@ -615,13 +615,13 @@ public:
 
   bool emit_diagnostic_with_group (diagnostic_t kind,
 				   rich_location &richloc,
-				   const diagnostic_metadata *metadata,
+				   const diagnostics::metadata *metadata,
 				   diagnostic_option_id option_id,
 				   const char *gmsgid, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
   bool emit_diagnostic_with_group_va (diagnostic_t kind,
 				      rich_location &richloc,
-				      const diagnostic_metadata *metadata,
+				      const diagnostics::metadata *metadata,
 				      diagnostic_option_id option_id,
 				      const char *gmsgid, va_list *ap)
     ATTRIBUTE_GCC_DIAG(6,0);
@@ -785,10 +785,10 @@ public:
     return m_lang_mask;
   }
 
-  bool diagnostic_impl (rich_location *, const diagnostic_metadata *,
+  bool diagnostic_impl (rich_location *, const diagnostics::metadata *,
 			diagnostic_option_id, const char *,
 			va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
-  bool diagnostic_n_impl (rich_location *, const diagnostic_metadata *,
+  bool diagnostic_n_impl (rich_location *, const diagnostics::metadata *,
 			  diagnostic_option_id, unsigned HOST_WIDE_INT,
 			  const char *, const char *, va_list *,
 			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);

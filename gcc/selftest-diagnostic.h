@@ -49,7 +49,7 @@ class test_diagnostic_context : public diagnostic_context
   bool
   report (diagnostic_t kind,
 	  rich_location &richloc,
-	  const diagnostic_metadata *metadata,
+	  const diagnostics::metadata *metadata,
 	  diagnostic_option_id option,
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 

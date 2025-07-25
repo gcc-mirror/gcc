@@ -33,7 +33,7 @@
 #include "plugin-version.h"
 #include "diagnostic.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "context.h"
 #include "print-tree.h"
 #include "gcc-rich-location.h"
@@ -363,7 +363,7 @@ example_2 ()
 
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       m.add_cwe (415); /* CWE-415: Double Free.  */
 
       warning_meta (&richloc, m, 0,
@@ -441,7 +441,7 @@ example_3 ()
 
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
       m.add_cwe (479);
 
@@ -524,7 +524,7 @@ example_4 ()
 	 thread_2, event_a_acquired);
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       warning_meta (&richloc, m, 0,
 		    "deadlock due to inconsistent lock acquisition order");
     }

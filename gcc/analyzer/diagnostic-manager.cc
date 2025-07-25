@@ -1541,12 +1541,12 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   best_candidates.emit_best (this, eg);
 }
 
-/* Custom subclass of diagnostic_metadata which, for SARIF output,
+/* Custom subclass of diagnostics::metadata which, for SARIF output,
    populates the property bag of the diagnostic's "result" object
    with information from the saved_diagnostic and the
    pending_diagnostic.  */
 
-class pending_diagnostic_metadata : public diagnostic_metadata
+class pending_diagnostic_metadata : public diagnostics::metadata
 {
 public:
   pending_diagnostic_metadata (const saved_diagnostic &sd)

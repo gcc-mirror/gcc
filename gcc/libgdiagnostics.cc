@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
@@ -930,7 +930,7 @@ private:
   char *m_text;
 };
 
-class impl_rule : public diagnostic_metadata::rule
+class impl_rule : public diagnostics::metadata::rule
 {
 public:
   impl_rule (const char *title, const char *url)
@@ -1226,7 +1226,7 @@ public:
   enum diagnostic_level get_level () const { return m_level; }
 
   rich_location *get_rich_location () { return &m_rich_loc; }
-  const diagnostic_metadata *get_metadata () { return &m_metadata; }
+  const diagnostics::metadata *get_metadata () { return &m_metadata; }
 
   void set_cwe (unsigned cwe_id)
   {
@@ -1322,7 +1322,7 @@ private:
   enum diagnostic_level m_level;
   impl_rich_location m_rich_loc;
   const diagnostic_logical_location *m_logical_loc;
-  diagnostic_metadata m_metadata;
+  diagnostics::metadata m_metadata;
   prebuilt_digraphs m_graphs;
   std::vector<std::unique_ptr<range_label>> m_labels;
   std::vector<std::unique_ptr<impl_rule>> m_rules;

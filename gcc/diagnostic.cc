@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
@@ -1372,7 +1372,7 @@ bool
 diagnostic_context::
 emit_diagnostic_with_group (diagnostic_t kind,
 			    rich_location &richloc,
-			    const diagnostic_metadata *metadata,
+			    const diagnostics::metadata *metadata,
 			    diagnostic_option_id option_id,
 			    const char *gmsgid, ...)
 {
@@ -1395,7 +1395,7 @@ bool
 diagnostic_context::
 emit_diagnostic_with_group_va (diagnostic_t kind,
 			       rich_location &richloc,
-			       const diagnostic_metadata *metadata,
+			       const diagnostics::metadata *metadata,
 			       diagnostic_option_id option_id,
 			       const char *gmsgid, va_list *ap)
 {
@@ -1688,7 +1688,7 @@ trim_filename (const char *name)
    and internal_error_no_backtrace, as documented and defined below.  */
 bool
 diagnostic_context::diagnostic_impl (rich_location *richloc,
-				     const diagnostic_metadata *metadata,
+				     const diagnostics::metadata *metadata,
 				     diagnostic_option_id option_id,
 				     const char *gmsgid,
 				     va_list *ap, diagnostic_t kind)
@@ -1714,7 +1714,7 @@ diagnostic_context::diagnostic_impl (rich_location *richloc,
    defined below.  */
 bool
 diagnostic_context::diagnostic_n_impl (rich_location *richloc,
-				       const diagnostic_metadata *metadata,
+				       const diagnostics::metadata *metadata,
 				       diagnostic_option_id option_id,
 				       unsigned HOST_WIDE_INT n,
 				       const char *singular_gmsgid,

@@ -22,7 +22,7 @@
 #include "rust-diagnostics.h"
 
 #include "options.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 
 static std::string
 mformat_value ()
@@ -192,7 +192,7 @@ rust_error_at (const location_t location, const char *fmt, ...)
   va_end (ap);
 }
 
-class rust_error_code_rule : public diagnostic_metadata::rule
+class rust_error_code_rule : public diagnostics::metadata::rule
 {
 public:
   rust_error_code_rule (const ErrorCode code) : m_code (code) {}
@@ -237,7 +237,7 @@ rust_be_error_at (const location_t location, const ErrorCode code,
 		  const std::string &errmsg)
 {
   rich_location gcc_loc (line_table, location);
-  diagnostic_metadata m;
+  diagnostics::metadata m;
   rust_error_code_rule rule (code);
   m.add_rule (rule);
   error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
@@ -260,7 +260,7 @@ rust_be_error_at (const rich_location &location, const ErrorCode code,
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
   rich_location &gcc_loc = const_cast<rich_location &> (location);
-  diagnostic_metadata m;
+  diagnostics::metadata m;
   rust_error_code_rule rule (code);
   m.add_rule (rule);
   error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
@@ -281,7 +281,7 @@ void
 rust_be_error_at (rich_location *richloc, const ErrorCode code,
 		  const std::string &errmsg)
 {
-  diagnostic_metadata m;
+  diagnostics::metadata m;
   rust_error_code_rule rule (code);
   m.add_rule (rule);
   error_meta (richloc, m, "%s", errmsg.c_str ());

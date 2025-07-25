@@ -103,7 +103,7 @@ emit_diagnostic_valist (diagnostic_t kind,
 bool
 emit_diagnostic_valist_meta (diagnostic_t kind,
 			     rich_location *richloc,
-			     const diagnostic_metadata *metadata,
+			     const diagnostics::metadata *metadata,
 			     diagnostic_option_id option_id,
 			     const char *gmsgid, va_list *ap)
 {
@@ -210,7 +210,7 @@ warning_at (rich_location *richloc,
 
 bool
 warning_meta (rich_location *richloc,
-	      const diagnostic_metadata &metadata,
+	      const diagnostics::metadata &metadata,
 	      diagnostic_option_id option_id,
 	      const char *gmsgid, ...)
 {
@@ -443,7 +443,7 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
 /* Same as above, but with metadata.  */
 
 void
-error_meta (rich_location *richloc, const diagnostic_metadata &metadata,
+error_meta (rich_location *richloc, const diagnostics::metadata &metadata,
 	    const char *gmsgid, ...)
 {
   gcc_assert (richloc);

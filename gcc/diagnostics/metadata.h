@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_METADATA_H
-#define GCC_DIAGNOSTIC_METADATA_H
+#ifndef GCC_DIAGNOSTICS_METADATA_H
+#define GCC_DIAGNOSTICS_METADATA_H
 
 class sarif_object;
 
 namespace diagnostics {
+
   namespace digraphs {
     class lazy_digraphs;
   } // namespace digraphs
-} // namespace diagnostics
 
 /* A bundle of additional metadata that can be associated with a
    diagnostic.
@@ -38,7 +38,7 @@ namespace diagnostics {
    Additionally, this provides a place to associate a diagnostic
    with zero or more directed graphs.  */
 
-class diagnostic_metadata
+class metadata
 {
  public:
   /* Abstract base class for referencing a rule that has been violated,
@@ -73,8 +73,8 @@ class diagnostic_metadata
     const char *m_url;
   };
 
-  diagnostic_metadata () : m_cwe (0), m_lazy_digraphs (nullptr) {}
-  virtual ~diagnostic_metadata () {}
+  metadata () : m_cwe (0), m_lazy_digraphs (nullptr) {}
+  virtual ~metadata () {}
 
   /* Hook for SARIF output to allow for adding diagnostic-specific
      properties to  the result object's property bag.  */
@@ -97,12 +97,12 @@ class diagnostic_metadata
   const rule &get_rule (unsigned idx) const { return *(m_rules[idx]); }
 
   void
-  set_lazy_digraphs (const diagnostics::digraphs::lazy_digraphs *lazy_digraphs)
+  set_lazy_digraphs (const digraphs::lazy_digraphs *lazy_digraphs)
   {
     m_lazy_digraphs = lazy_digraphs;
   }
 
-  const diagnostics::digraphs::lazy_digraphs *
+  const digraphs::lazy_digraphs *
   get_lazy_digraphs () const
   {
     return m_lazy_digraphs;
@@ -114,7 +114,9 @@ class diagnostic_metadata
 
   /* An optional way to create directed graphs associated with the
      diagnostic, for the sinks that support this (e.g. SARIF).  */
-  const diagnostics::digraphs::lazy_digraphs *m_lazy_digraphs;
+  const digraphs::lazy_digraphs *m_lazy_digraphs;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_METADATA_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_METADATA_H */

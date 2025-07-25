@@ -61,7 +61,9 @@ class auto_diagnostic_nesting_level
 };
 
 /* Forward decl.  */
-class diagnostic_metadata; /* See diagnostic-metadata.h.  */
+namespace diagnostics {
+   class metadata; /* See diagnostics/metadata.h.  */
+} // namespace diagnostics
 
 /* A class to use for the ID of an option that controls
    a particular diagnostic.
@@ -130,7 +132,7 @@ extern bool warning_at (rich_location *,
 			const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool warning_meta (rich_location *,
-			  const diagnostic_metadata &,
+			  const diagnostics::metadata &,
 			  diagnostic_option_id,
 			  const char *, ...)
     ATTRIBUTE_GCC_DIAG(4,5);
@@ -141,7 +143,7 @@ extern void error_n (location_t, unsigned HOST_WIDE_INT, const char *,
 extern void error_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void error_at (rich_location *, const char *, ...)
   ATTRIBUTE_GCC_DIAG(2,3);
-extern void error_meta (rich_location *, const diagnostic_metadata &,
+extern void error_meta (rich_location *, const diagnostics::metadata &,
 			const char *, ...)
   ATTRIBUTE_GCC_DIAG(3,4);
 extern void fatal_error (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3)
@@ -189,7 +191,7 @@ extern bool emit_diagnostic_valist (diagnostic_t,
   ATTRIBUTE_GCC_DIAG (4,0);
 extern bool emit_diagnostic_valist_meta (diagnostic_t,
 					 rich_location *,
-					 const diagnostic_metadata *,
+					 const diagnostics::metadata *,
 					 diagnostic_option_id,
 					 const char *,
 					 va_list *) ATTRIBUTE_GCC_DIAG (5,0);

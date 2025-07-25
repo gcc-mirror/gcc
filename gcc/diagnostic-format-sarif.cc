@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostic-path.h"
@@ -745,7 +745,7 @@ sarif_serialization_format_json::write_to_file (FILE *outf,
    - doesn't capture -Werror cleanly
    - doesn't capture inlining information (can SARIF handle this?)
    - doesn't capture macro expansion information (can SARIF handle this?).
-   - doesn't capture any diagnostic_metadata::rules associated with
+   - doesn't capture any diagnostics::metadata::rules associated with
      a diagnostic.  */
 
 class sarif_builder
@@ -2039,7 +2039,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 
       diagnostic.metadata->maybe_add_sarif_properties (*result_obj);
 
-      /* We don't yet support diagnostic_metadata::rule.  */
+      /* We don't yet support diagnostics::metadata::rule.  */
     }
 
   /* "level" property (SARIF v2.1.0 section 3.27.10).  */

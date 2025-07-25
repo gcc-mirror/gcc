@@ -783,7 +783,7 @@ public:
 
     /* SEI CERT C Coding Standard: "POS34-C. Do not call putenv() with a
        pointer to an automatic variable as the argument".  */
-    diagnostic_metadata::precanned_rule
+    diagnostics::metadata::precanned_rule
       rule ("POS34-C", "https://wiki.sei.cmu.edu/confluence/x/6NYxBQ");
     ctxt.add_rule (rule);
 

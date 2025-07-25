@@ -33,7 +33,7 @@
 #include "diagnostic.h"
 #include "context.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostics/digraphs.h"
 #include "pass_manager.h"
 
@@ -230,7 +230,7 @@ report_diag_with_graphs (location_t loc)
   };
 
   gcc_rich_location rich_loc (loc);
-  diagnostic_metadata meta;
+  diagnostics::metadata meta;
   my_lazy_digraphs ldg;
   meta.set_lazy_digraphs (&ldg);
   error_meta (&rich_loc, meta,

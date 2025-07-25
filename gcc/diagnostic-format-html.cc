@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "diagnostic-format.h"
 #include "diagnostic-format-html.h"
 #include "diagnostic-format-text.h"
@@ -142,7 +142,7 @@ public:
   }
 
   std::unique_ptr<xml::element>
-  make_element_for_metadata (const diagnostic_metadata &metadata);
+  make_element_for_metadata (const metadata &);
 
   std::unique_ptr<xml::element>
   make_element_for_patch (const diagnostic_info &diagnostic);
@@ -1209,11 +1209,11 @@ html_builder::make_metadata_element (label_text label,
 }
 
 std::unique_ptr<xml::element>
-html_builder::make_element_for_metadata (const diagnostic_metadata &metadata)
+html_builder::make_element_for_metadata (const metadata &m)
 {
   auto span_metadata = make_span ("gcc-metadata");
 
-  int cwe = metadata.get_cwe ();
+  int cwe = m.get_cwe ();
   if (cwe)
     {
       pretty_printer pp;
@@ -1224,9 +1224,9 @@ html_builder::make_element_for_metadata (const diagnostic_metadata &metadata)
 	(make_metadata_element (std::move (label), std::move (url)));
     }
 
-  for (unsigned idx = 0; idx < metadata.get_num_rules (); ++idx)
+  for (unsigned idx = 0; idx < m.get_num_rules (); ++idx)
     {
-      auto &rule = metadata.get_rule (idx);
+      auto &rule = m.get_rule (idx);
       label_text label = label_text::take (rule.make_description ());
       label_text url = label_text::take (rule.make_url ());
       span_metadata->add_child
@@ -1652,9 +1652,9 @@ test_metadata ()
   html_builder &b = dc.get_builder ();
 
   {
-    diagnostic_metadata metadata;
-    metadata.add_cwe (415);
-    auto element = b.make_element_for_metadata (metadata);
+    metadata m;
+    m.add_cwe (415);
+    auto element = b.make_element_for_metadata (m);
     ASSERT_XML_PRINT_EQ
       (*element,
        "<span class=\"gcc-metadata\">"
@@ -1669,11 +1669,11 @@ test_metadata ()
   }
 
   {
-    diagnostic_metadata metadata;
-    diagnostic_metadata::precanned_rule rule ("MISC-42",
-					      "http://example.com");
-    metadata.add_rule (rule);
-    auto element = b.make_element_for_metadata (metadata);
+    metadata m;
+    metadata::precanned_rule rule ("MISC-42",
+				   "http://example.com");
+    m.add_rule (rule);
+    auto element = b.make_element_for_metadata (m);
     ASSERT_XML_PRINT_EQ
       (*element,
        "<span class=\"gcc-metadata\">"
