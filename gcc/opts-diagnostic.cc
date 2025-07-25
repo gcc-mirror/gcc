@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file implements the options -fdiagnostics-add-output=,
    -fdiagnostics-set-output=.  Most of the work is done
-   by diagnostic-output-spec.cc so it can be shared by libgdiagnostics.  */
+   by diagnostics/output-spec.cc so it can be shared by libgdiagnostics.  */
 
 #include "config.h"
 #define INCLUDE_ARRAY
@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "diagnostic-output-spec.h"
+#include "diagnostics/output-spec.h"
 #include "opts.h"
 #include "options.h"
 
@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace {
 
-struct opt_spec_context : public diagnostics_output_spec::gcc_spec_context
+struct opt_spec_context : public diagnostics::output_spec::dc_spec_context
 {
 public:
   opt_spec_context (const gcc_options &opts,
@@ -47,11 +47,11 @@ public:
 		    line_maps *location_mgr,
 		    location_t loc,
 		    const char *option_name)
-  : gcc_spec_context (dc,
-		      location_mgr,
-		      location_mgr,
-		      loc,
-		      option_name),
+  : dc_spec_context (dc,
+		     location_mgr,
+		     location_mgr,
+		     loc,
+		     option_name),
     m_opts (opts)
   {}
 

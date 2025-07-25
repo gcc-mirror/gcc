@@ -18,13 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_OUTPUT_SPEC_H
-#define GCC_DIAGNOSTIC_OUTPUT_SPEC_H
+#ifndef GCC_DIAGNOSTICS_OUTPUT_SPEC_H
+#define GCC_DIAGNOSTICS_OUTPUT_SPEC_H
 
 #include "diagnostic-format.h"
 #include "diagnostics/output-file.h"
 
-namespace diagnostics_output_spec {
+namespace diagnostics {
+namespace output_spec {
 
 /* An abstract base class for handling the DSL of -fdiagnostics-add-output=
    and -fdiagnostics-set-output=.  */
@@ -52,7 +53,7 @@ class context
 		      const std::string &scheme_name,
 		      const char *metavar) const;
 
-  diagnostics::output_file
+  output_file
   open_output_file (label_text &&filename) const;
 
   const char *
@@ -83,14 +84,14 @@ protected:
 
 /* A subclass that implements reporting errors via a diagnostic_context.  */
 
-struct gcc_spec_context : public diagnostics_output_spec::context
+struct dc_spec_context : public output_spec::context
 {
 public:
-  gcc_spec_context (diagnostic_context &dc,
-		    line_maps *affected_location_mgr,
-		    line_maps *control_location_mgr,
-		    location_t loc,
-		    const char *option_name)
+  dc_spec_context (diagnostic_context &dc,
+		   line_maps *affected_location_mgr,
+		   line_maps *control_location_mgr,
+		   location_t loc,
+		   const char *option_name)
   : context (option_name, affected_location_mgr),
     m_dc (dc),
     m_control_location_mgr (control_location_mgr),
@@ -111,6 +112,7 @@ public:
   location_t m_loc;
 };
 
-} // namespace diagnostics_output_spec
+} // namespace output_spec
+} // namespace diagnostics
 
-#endif
+#endif // #ifndef GCC_DIAGNOSTICS_OUTPUT_SPEC_H

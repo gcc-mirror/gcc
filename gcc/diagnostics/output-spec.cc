@@ -40,12 +40,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "pretty-print-markup.h"
-#include "diagnostic-output-spec.h"
+#include "diagnostics/output-spec.h"
 
 /* A namespace for handling the DSL of the arguments of
    -fdiagnostics-add-output= and -fdiagnostics-set-output=.  */
 
-namespace diagnostics_output_spec {
+namespace diagnostics {
+namespace output_spec {
 
 /* Decls.  */
 
@@ -241,16 +242,16 @@ context::report_missing_key (const char *unparsed_arg,
      get_option_name (), scheme_name.c_str (), key.c_str (), metavar);
 }
 
-diagnostics::output_file
+output_file
 context::open_output_file (label_text &&filename) const
 {
   FILE *outf = fopen (filename.get (), "w");
   if (!outf)
     {
       report_error ("unable to open %qs: %m", filename.get ());
-      return diagnostics::output_file (nullptr, false, std::move (filename));
+      return output_file (nullptr, false, std::move (filename));
     }
-  return diagnostics::output_file (outf, true, std::move (filename));
+  return output_file (outf, true, std::move (filename));
 }
 
 static std::unique_ptr<scheme_name_and_params>
@@ -307,11 +308,11 @@ std::unique_ptr<diagnostic_output_format>
 context::parse_and_make_sink (const char *unparsed_arg,
 			      diagnostic_context &dc)
 {
-  auto parsed_arg = diagnostics_output_spec::parse (*this, unparsed_arg);
+  auto parsed_arg = parse (*this, unparsed_arg);
   if (!parsed_arg)
     return nullptr;
 
-  diagnostics_output_spec::output_factory factory;
+  output_factory factory;
   return factory.make_sink (*this, dc, unparsed_arg, *parsed_arg);
 }
 
@@ -488,9 +489,9 @@ sarif_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  diagnostics::output_file output_file;
+  output_file output_file_;
   if (filename.get ())
-    output_file = ctxt.open_output_file (std::move (filename));
+    output_file_ = ctxt.open_output_file (std::move (filename));
   else
     // Default filename
     {
@@ -503,14 +504,14 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 				   "FILENAME");
 	  return nullptr;
 	}
-      output_file
+      output_file_
 	= diagnostic_output_format_open_sarif_file
 	    (dc,
 	     ctxt.get_affected_location_mgr (),
 	     basename,
 	     serialization_kind);
     }
-  if (!output_file)
+  if (!output_file_)
     return nullptr;
 
   auto sarif_gen_opts = make_sarif_gen_opts (version, state_graph);
@@ -521,7 +522,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 			       *ctxt.get_affected_location_mgr (),
 			       std::move (serialization_obj),
 			       sarif_gen_opts,
-			       std::move (output_file));
+			       std::move (output_file_));
   return sink;
 }
 
@@ -621,9 +622,9 @@ html_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  diagnostics::output_file output_file;
+  output_file output_file_;
   if (filename.get ())
-    output_file = ctxt.open_output_file (std::move (filename));
+    output_file_ = ctxt.open_output_file (std::move (filename));
   else
     // Default filename
     {
@@ -636,13 +637,13 @@ html_scheme_handler::make_sink (const context &ctxt,
 				   "FILENAME");
 	  return nullptr;
 	}
-      output_file
+      output_file_
 	= diagnostic_output_format_open_html_file
 	    (dc,
 	     ctxt.get_affected_location_mgr (),
 	     basename);
     }
-  if (!output_file)
+  if (!output_file_)
     return nullptr;
 
   html_generation_options html_gen_opts;
@@ -655,11 +656,12 @@ html_scheme_handler::make_sink (const context &ctxt,
   auto sink = make_html_sink (dc,
 			      *ctxt.get_affected_location_mgr (),
 			      html_gen_opts,
-			      std::move (output_file));
+			      std::move (output_file_));
   return sink;
 }
 
-} // namespace diagnostics_output_spec
+} // namespace output_spec
+} // namespace diagnostics
 
 #if CHECKING_P
 
@@ -688,18 +690,18 @@ private:
 
 struct parser_test
 {
-  class test_spec_context : public diagnostics_output_spec::gcc_spec_context
+  class test_spec_context : public diagnostics::output_spec::dc_spec_context
   {
   public:
     test_spec_context (diagnostic_context &dc,
 		       line_maps *location_mgr,
 		       location_t loc,
 		       const char *option_name)
-    : gcc_spec_context (dc,
-			location_mgr,
-			location_mgr,
-			loc,
-			option_name)
+    : dc_spec_context (dc,
+		       location_mgr,
+		       location_mgr,
+		       loc,
+		       option_name)
     {
     }
 
@@ -718,10 +720,10 @@ struct parser_test
     pp_buffer (m_fmt.get_printer ())->m_flush_p = false;
   }
 
-  std::unique_ptr<diagnostics_output_spec::scheme_name_and_params>
+  std::unique_ptr<diagnostics::output_spec::scheme_name_and_params>
   parse (const char *unparsed_arg)
   {
-    return diagnostics_output_spec::parse (m_ctxt, unparsed_arg);
+    return diagnostics::output_spec::parse (m_ctxt, unparsed_arg);
   }
 
   bool execution_failed_p () const
@@ -838,7 +840,7 @@ test_output_arg_parsing ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_output_spec_cc_tests ()
+diagnostics_output_spec_cc_tests ()
 {
   test_output_arg_parsing ();
 }

@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
-#include "diagnostic-output-spec.h"
+#include "diagnostics/output-spec.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostics/logical-locations.h"
@@ -2419,7 +2419,7 @@ diagnostic_logical_location_get_decorated_name (const diagnostic_logical_locatio
 
 namespace {
 
-struct spec_context : public diagnostics_output_spec::context
+struct spec_context : public diagnostics::output_spec::context
 {
 public:
   spec_context (const char *option_name,
