@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostics/sink.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 
 /* The selftest code should entirely disappear in a production
    configuration, hence we guard all of it with #if CHECKING_P.  */

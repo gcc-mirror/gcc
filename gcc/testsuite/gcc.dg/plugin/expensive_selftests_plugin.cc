@@ -8,7 +8,7 @@
 #include "diagnostic.h"
 #include "diagnostics/edit-context.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 
 int plugin_is_GPL_compatible;
 

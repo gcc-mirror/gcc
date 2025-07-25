@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SELFTEST_DIAGNOSTIC_H
-#define GCC_SELFTEST_DIAGNOSTIC_H
+#ifndef GCC_DIAGNOSTICS_SELFTEST_CONTEXT_H
+#define GCC_DIAGNOSTICS_SELFTEST_CONTEXT_H
 
 /* The selftest code should entirely disappear in a production
    configuration, hence we guard all of it with #if CHECKING_P.  */
@@ -60,4 +60,4 @@ class test_diagnostic_context : public diagnostics::context
 
 #endif /* #if CHECKING_P */
 
-#endif /* GCC_SELFTEST_DIAGNOSTIC_H */
+#endif /* GCC_DIAGNOSTICS_SELFTEST_CONTEXT_H */

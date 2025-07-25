@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostics/lazy-paths.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "simple-diagnostic-path.h"
 #include "gcc-rich-location.h"
 #include "diagnostics/text-sink.h"

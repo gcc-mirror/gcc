@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/text-sink.h"
 #include "diagnostics/edit-context.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "opts.h"
 #include "cpplib.h"
 #include "text-art/theme.h"

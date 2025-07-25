@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/text-sink.h"
 #include "diagnostics/sarif-sink.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "pretty-print-markup.h"
 #include "diagnostics/output-spec.h"
 

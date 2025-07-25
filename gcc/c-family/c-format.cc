@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "substring-locations.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "builtins.h"
 #include "attribs.h"
 #include "c-family/c-type-mismatch.h"

@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/source-printing-effects.h"
 #include "pretty-print-markup.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "diagnostics/selftest-paths.h"
 #include "text-art/theme.h"
 #include "diagnostics/text-sink.h"

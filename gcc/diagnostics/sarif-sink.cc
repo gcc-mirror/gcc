@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 #include "diagnostics/selftest-source-printing.h"
 #include "selftest-json.h"
 #include "text-range-label.h"
