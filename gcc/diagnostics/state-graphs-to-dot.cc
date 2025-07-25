@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 #include "graphviz.h"
 #include "xml.h"
 #include "xml-printer.h"

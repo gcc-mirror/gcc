@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostic-path.h"
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics for the print
    calls below.  */

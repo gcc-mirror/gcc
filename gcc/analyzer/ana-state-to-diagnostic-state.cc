@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_SET
 #include "analyzer/common.h"
 
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 #include "diagnostic-format-sarif.h"
 
 #include "analyzer/region-model.h"

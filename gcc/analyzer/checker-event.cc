@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "inlining-iterator.h"
 #include "tree-logical-location.h"
 #include "diagnostic-format-sarif.h"
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"

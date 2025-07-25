@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-logical-location.h"
 #include "analyzer/program-state.h"
 #include "analyzer/event-loc-info.h"
-#include "diagnostic-digraphs.h"
+#include "diagnostics/digraphs.h"
 
 namespace ana {
 

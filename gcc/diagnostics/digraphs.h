@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_DIGRAPHS_H
-#define GCC_DIAGNOSTIC_DIGRAPHS_H
+#ifndef GCC_DIAGNOSTICS_DIGRAPHS_H
+#define GCC_DIAGNOSTICS_DIGRAPHS_H
 
 #include "json.h"
 #include "logical-location.h"
@@ -418,4 +418,4 @@ private:
 } // namespace digraphs
 } // namespace diagnostics
 
-#endif /* ! GCC_DIAGNOSTIC_DIGRAPHS_H */
+#endif /* ! GCC_DIAGNOSTICS_DIGRAPHS_H */

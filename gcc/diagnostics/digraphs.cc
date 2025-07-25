@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "graphviz.h"
-#include "diagnostic-digraphs.h"
+#include "diagnostics/digraphs.h"
 #include "diagnostic-format-sarif.h"
 
 #include "selftest.h"
@@ -473,7 +473,7 @@ test_simple_graph ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_digraphs_cc_tests ()
+diagnostics_digraphs_cc_tests ()
 {
   test_empty_graph ();
   test_simple_graph ();

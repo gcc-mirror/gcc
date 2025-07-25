@@ -34,7 +34,7 @@
 #include "context.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-metadata.h"
-#include "diagnostic-digraphs.h"
+#include "diagnostics/digraphs.h"
 #include "pass_manager.h"
 
 

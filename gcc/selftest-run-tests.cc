@@ -102,9 +102,9 @@ selftest::run_tests ()
   diagnostic_show_locus_cc_tests ();
   diagnostic_format_html_cc_tests ();
   diagnostic_format_sarif_cc_tests ();
-  diagnostic_digraphs_cc_tests ();
+  diagnostics_digraphs_cc_tests ();
   diagnostic_output_spec_cc_tests ();
-  diagnostic_state_graphs_cc_tests ();
+  diagnostics_state_graphs_cc_tests ();
   edit_context_cc_tests ();
   fold_const_cc_tests ();
   spellcheck_cc_tests ();

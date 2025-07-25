@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_STATE_GRAPHS_H
-#define GCC_DIAGNOSTIC_STATE_GRAPHS_H
+#ifndef GCC_DIAGNOSTICS_STATE_GRAPHS_H
+#define GCC_DIAGNOSTICS_STATE_GRAPHS_H
 
-#include "diagnostic-digraphs.h"
+#include "diagnostics/digraphs.h"
 #include "logical-location.h"
 
 /* diagnostics::digraphs provides support for directed graphs.
@@ -153,4 +153,4 @@ make_dot_graph (const diagnostics::digraphs::digraph &state_graph,
 } // namespace state_graphs
 } // namespace diagnostics
 
-#endif /* ! GCC_DIAGNOSTIC_STATE_GRAPHS_H */
+#endif /* ! GCC_DIAGNOSTICS_STATE_GRAPHS_H */

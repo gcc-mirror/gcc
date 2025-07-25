@@ -1857,14 +1857,14 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-sarif.o \
 	diagnostic-format-text.o \
 	diagnostic-global-context.o \
-	diagnostic-digraphs.o \
 	diagnostic-macro-unwinding.o \
 	diagnostic-output-spec.o \
 	diagnostic-path.o \
 	diagnostic-path-output.o \
 	diagnostic-show-locus.o \
-	diagnostic-state-graphs.o \
-	diagnostic-state-to-dot.o \
+	diagnostics/digraphs.o \
+	diagnostics/state-graphs.o \
+	diagnostics/state-graphs-to-dot.o \
 	edit-context.o \
 	graphviz.o pex.o \
 	pretty-print.o intl.o \
@@ -4082,7 +4082,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
   lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
   pass-instances.def params.list $(srcdir)/../include/gomp-constants.h \
-  $(EXPR_H) $(srcdir)/analyzer/*.h
+  $(EXPR_H) $(srcdir)/analyzer/*.h $(srcdir)/diagnostics/*.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -4120,6 +4120,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 	  fi; \
 	  case $$path in \
 	  "$(srcdir)"/analyzer/* \
+	  | "$(srcdir)"/diagnostics/* \
 	  | "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
 	  | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \

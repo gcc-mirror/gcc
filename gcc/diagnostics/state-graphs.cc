@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 #include "graphviz.h"
 #include "xml.h"
 #include "xml-printer.h"
@@ -148,7 +148,7 @@ test_node_attrs ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_state_graphs_cc_tests ()
+diagnostics_state_graphs_cc_tests ()
 {
   test_node_attrs ();
 }
