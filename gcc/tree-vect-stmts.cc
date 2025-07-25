@@ -9069,39 +9069,6 @@ vectorizable_store (vec_info *vinfo,
       if (mask)
 	vec_mask = vec_masks[0];
     }
-  else
-    {
-      /* For interleaved stores we collect vectorized defs for all the
-	 stores in the group in DR_CHAIN. DR_CHAIN is then used as an
-	 input to vect_permute_store_chain().
-
-	 If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN
-	 is of size 1.  */
-      stmt_vec_info next_stmt_info = first_stmt_info;
-      for (i = 0; i < group_size; i++)
-	{
-	  /* Since gaps are not supported for interleaved stores,
-	     DR_GROUP_SIZE is the exact number of stmts in the chain.
-	     Therefore, NEXT_STMT_INFO can't be NULL_TREE.  In case
-	     that there is no interleaving, DR_GROUP_SIZE is 1,
-	     and only one iteration of the loop will be executed.  */
-	  op = vect_get_store_rhs (next_stmt_info);
-	  if (!costing_p)
-	    {
-	      vect_get_vec_defs_for_operand (vinfo, next_stmt_info,
-					     1, op, gvec_oprnds[i]);
-	      vec_oprnd = (*gvec_oprnds[i])[0];
-	      dr_chain.quick_push (vec_oprnd);
-	    }
-	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
-	}
-      if (mask && !costing_p)
-	{
-	  vect_get_vec_defs_for_operand (vinfo, stmt_info, 1,
-					 mask, &vec_masks, mask_vectype);
-	  vec_mask = vec_masks[0];
-	}
-    }
 
   /* We should have catched mismatched types earlier.  */
   gcc_assert (costing_p
