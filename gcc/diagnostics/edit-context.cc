@@ -21,10 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "line-map.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "pretty-print.h"
 #include "diagnostic-color.h"
 #include "selftest.h"
+
+namespace diagnostics {
 
 /* This file implements a way to track the effect of fix-its,
    via a class edit_context; the other classes are support classes for
@@ -895,11 +897,15 @@ edited_line::ensure_terminated ()
   m_content[m_len] = '\0';
 }
 
+} // namespace diagnostics
+
 #if CHECKING_P
 
 /* Selftests of code-editing.  */
 
 namespace selftest {
+
+using edit_context = diagnostics::edit_context;
 
 /* A wrapper class for ensuring that the underlying pointer is freed.  */
 

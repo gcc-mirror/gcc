@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "opts.h"
@@ -663,7 +663,7 @@ diagnostic_context::create_edit_context ()
 {
   delete m_edit_context_ptr;
   gcc_assert (m_file_cache);
-  m_edit_context_ptr = new edit_context (*m_file_cache);
+  m_edit_context_ptr = new diagnostics::edit_context (*m_file_cache);
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been

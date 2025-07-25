@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostics/logical-locations.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
 #include "pretty-print-format-impl.h"
@@ -670,7 +670,8 @@ public:
 
     diagnostic_text_starter (&m_dc) = diagnostic_text_sink::text_starter;
 
-    m_edit_context = std::make_unique <edit_context> (m_dc.get_file_cache ());
+    m_edit_context
+      = std::make_unique <diagnostics::edit_context> (m_dc.get_file_cache ());
   }
 
   ~diagnostic_manager ()
@@ -901,7 +902,7 @@ private:
   logical_locs_map_t m_logical_locs;
   const diagnostic *m_current_diag;
   const diagnostic_logical_location *m_prev_diag_logical_loc;
-  std::unique_ptr<edit_context> m_edit_context;
+  std::unique_ptr<diagnostics::edit_context> m_edit_context;
 };
 
 class impl_rich_location : public rich_location

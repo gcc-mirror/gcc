@@ -39,6 +39,7 @@ namespace diagnostics {
   } // namespace diagnostics::logical_locations
 
   class diagram;
+  class edit_context;
 
 } // namespace diagnostics
 
@@ -235,7 +236,6 @@ public:
   virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
 };
 
-class edit_context;
 class diagnostic_client_data_hooks;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
@@ -549,7 +549,7 @@ struct diagnostic_counters
      source code
    - a cache for use when quoting the user's source code (class file_cache)
    - a text_art::theme
-   - an edit_context for generating patches from fix-it hints
+   - a diagnostics::edit_context for generating patches from fix-it hints
    - diagnostic_client_data_hooks for metadata.
 
    Try to avoid adding new responsibilities to this class itself, to avoid
@@ -726,7 +726,7 @@ public:
     return *m_file_cache;
   }
 
-  edit_context *get_edit_context () const
+  diagnostics::edit_context *get_edit_context () const
   {
     return m_edit_context_ptr;
   }
@@ -1060,7 +1060,7 @@ private:
      applied, for generating patches.
      Owned by the context; this would be a std::unique_ptr if
      diagnostic_context had a proper ctor.  */
-  edit_context *m_edit_context_ptr;
+  diagnostics::edit_context *m_edit_context_ptr;
 
   /* Fields relating to diagnostic groups.  */
   struct {

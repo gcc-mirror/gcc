@@ -6,7 +6,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 
@@ -52,7 +52,7 @@ test_richloc (rich_location *richloc)
 			 richloc, DK_ERROR, dc.get_reference_printer ());
 
   /* Generate a diff.  */
-  edit_context ec (global_dc->get_file_cache ());
+  diagnostics::edit_context ec (global_dc->get_file_cache ());
   ec.add_fixits (richloc);
   char *diff = ec.generate_diff (true);
   free (diff);

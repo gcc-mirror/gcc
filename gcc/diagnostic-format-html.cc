@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "pretty-print-format-impl.h"
 #include "pretty-print-urlifier.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "intl.h"
 #include "xml.h"
 #include "xml-printer.h"

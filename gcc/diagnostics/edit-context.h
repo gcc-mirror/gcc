@@ -17,12 +17,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_EDIT_CONTEXT_H
-#define GCC_EDIT_CONTEXT_H
+#ifndef GCC_DIAGNOSTICS_EDIT_CONTEXT_H
+#define GCC_DIAGNOSTICS_EDIT_CONTEXT_H
 
 #include "typed-splay-tree.h"
 
 class fixit_hint;
+
+namespace diagnostics {
+
 class edit_context;
 class edited_file;
 
@@ -68,4 +71,6 @@ class edit_context
   typed_splay_tree<const char *, edited_file *> m_files;
 };
 
-#endif /* GCC_EDIT_CONTEXT_H.  */
+} // namespace diagnostics
+
+#endif /* GCC_DIAGNOSTICS_EDIT_CONTEXT_H.  */

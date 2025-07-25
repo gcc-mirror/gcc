@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gcse.h"
 #include "omp-offload.h"
-#include "edit-context.h"
+#include "diagnostics/edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
