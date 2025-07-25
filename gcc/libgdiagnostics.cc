@@ -1446,8 +1446,8 @@ void
 diagnostic_text_sink::text_starter (diagnostics::text_sink &text_output,
 				    const diagnostic_info *info)
 {
-  gcc_assert (info->x_data);
-  const diagnostic &diag = *static_cast<const diagnostic *> (info->x_data);
+  gcc_assert (info->m_x_data);
+  const diagnostic &diag = *static_cast<const diagnostic *> (info->m_x_data);
   pretty_printer *pp = text_output.get_printer ();
   const diagnostic_logical_location *diag_logical_loc
     = diag.get_logical_location ();
@@ -1617,8 +1617,8 @@ GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
     diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
 			 diagnostic_t_from_diagnostic_level (diag.get_level ()));
 GCC_DIAGNOSTIC_POP
-    info.metadata = diag.get_metadata ();
-    info.x_data = &diag;
+    info.m_metadata = diag.get_metadata ();
+    info.m_x_data = &diag;
     diagnostic_report_diagnostic (&m_dc, &info);
 
     m_dc.end_group ();

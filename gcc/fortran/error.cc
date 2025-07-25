@@ -273,7 +273,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_id = opt;
+  diagnostic.m_option_id = opt;
   bool ret = gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
@@ -441,7 +441,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	const char *color
 	  = (loc_num
 	     ? "range1"
-	     : diagnostic_get_color_for_kind (curr_diagnostic->kind));
+	     : diagnostic_get_color_for_kind (curr_diagnostic->m_kind));
 	pp_string (pp, colorize_start (pp_show_color (pp), color));
 	pp_string (pp, result[loc_num]);
 	pp_string (pp, colorize_stop (pp_show_color (pp)));
@@ -475,15 +475,15 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
 #undef DEFINE_DIAGNOSTIC_KIND
     NULL
   };
-  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
-  const char *text = _(diagnostic_kind_text[diagnostic->kind]);
+  gcc_assert (diagnostic->m_kind < DK_LAST_DIAGNOSTIC_KIND);
+  const char *text = _(diagnostic_kind_text[diagnostic->m_kind]);
   const char *text_cs = "", *text_ce = "";
   pretty_printer *const pp = context->get_reference_printer ();
 
-  if (diagnostic_kind_color[diagnostic->kind])
+  if (diagnostic_kind_color[diagnostic->m_kind])
     {
       text_cs = colorize_start (pp_show_color (pp),
-				diagnostic_kind_color[diagnostic->kind]);
+				diagnostic_kind_color[diagnostic->m_kind]);
       text_ce = colorize_stop (pp_show_color (pp));
     }
   return build_message_string ("%s%s:%s ", text_cs, text, text_ce);
@@ -557,7 +557,7 @@ gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
 
   expanded_location s1 = diagnostic_expand_location (diagnostic);
   expanded_location s2;
-  bool one_locus = diagnostic->richloc->get_num_locations () < 2;
+  bool one_locus = diagnostic->m_richloc->get_num_locations () < 2;
   bool same_locus = false;
 
   if (!one_locus)
@@ -608,7 +608,7 @@ gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
       pp_newline (pp);
       diagnostic_show_locus (context,
 			     text_output.get_source_printing_options (),
-			     diagnostic->richloc, diagnostic->kind,
+			     diagnostic->m_richloc, diagnostic->m_kind,
 			     pp);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
@@ -656,7 +656,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
-  diagnostic.option_id = opt;
+  diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -675,7 +675,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_id = opt;
+  diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -694,7 +694,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_id = opt;
+  diagnostic.m_option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;

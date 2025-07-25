@@ -179,7 +179,7 @@ c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 text_output.get_source_printing_options (),
-			 diagnostic->richloc, diagnostic->kind, pp);
+			 diagnostic->m_richloc, diagnostic->m_kind, pp);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
   diagnostics::virt_loc_aware_text_finalizer (text_output, diagnostic);

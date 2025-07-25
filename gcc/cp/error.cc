@@ -253,13 +253,13 @@ static void
 cp_adjust_diagnostic_info (diagnostic_context *context,
 			   diagnostic_info *diagnostic)
 {
-  if (diagnostic->kind == DK_ERROR)
+  if (diagnostic->m_kind == DK_ERROR)
     if (tree tmpl = get_current_template ())
       {
-	diagnostic->option_id = OPT_Wtemplate_body;
+	diagnostic->m_option_id = OPT_Wtemplate_body;
 
 	if (context->m_permissive)
-	  diagnostic->kind = DK_WARNING;
+	  diagnostic->m_kind = DK_WARNING;
 
 	bool existed;
 	location_t &error_loc
@@ -269,7 +269,7 @@ cp_adjust_diagnostic_info (diagnostic_context *context,
 	  /* Remember that this template had a parse-time error so
 	     that we'll ensure a hard error has been issued upon
 	     its instantiation.  */
-	  error_loc = diagnostic->richloc->get_loc ();
+	  error_loc = diagnostic->m_richloc->get_loc ();
       }
 }
 
@@ -4940,7 +4940,7 @@ pedwarn_cxx98 (location_t location,
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
-  diagnostic.option_id = option_id;
+  diagnostic.m_option_id = option_id;
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);
   return ret;

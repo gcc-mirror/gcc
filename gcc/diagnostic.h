@@ -158,26 +158,31 @@ enum diagnostic_text_art_charset
 struct diagnostic_info
 {
   diagnostic_info ()
-    : message (), richloc (), metadata (), x_data (), kind (), option_id (),
-      m_iinfo ()
+  : m_message (),
+    m_richloc (),
+    m_metadata (),
+    m_x_data (),
+    m_kind (),
+    m_option_id (),
+    m_iinfo ()
   { }
 
   /* Text to be formatted.  */
-  text_info message;
+  text_info m_message;
 
   /* The location at which the diagnostic is to be reported.  */
-  rich_location *richloc;
+  rich_location *m_richloc;
 
   /* An optional bundle of metadata associated with the diagnostic
      (or NULL).  */
-  const diagnostics::metadata *metadata;
+  const diagnostics::metadata *m_metadata;
 
   /* Auxiliary data for client.  */
-  void *x_data;
+  void *m_x_data;
   /* The kind of diagnostic it is about.  */
-  diagnostic_t kind;
+  diagnostic_t m_kind;
   /* Which OPT_* directly controls this diagnostic.  */
-  diagnostic_option_id option_id;
+  diagnostic_option_id m_option_id;
 
   /* Inlining context containing locations for each call site along
      the inlining stack.  */
@@ -1153,7 +1158,7 @@ diagnostic_text_finalizer (diagnostic_context *context)
 
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->m_client_aux_data
-#define diagnostic_info_auxiliary_data(DI) (DI)->x_data
+#define diagnostic_info_auxiliary_data(DI) (DI)->m_x_data
 
 /* This diagnostic_context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
@@ -1182,7 +1187,7 @@ inline void
 diagnostic_set_option_id (diagnostic_info *info,
 			  diagnostic_option_id option_id)
 {
-  info->option_id = option_id;
+  info->m_option_id = option_id;
 }
 
 /* Diagnostic related functions.  */
@@ -1335,7 +1340,7 @@ int get_terminal_width (void);
 inline location_t
 diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
 {
-  return diagnostic->message.get_location (which);
+  return diagnostic->m_message.get_location (which);
 }
 
 /* Return the number of locations to be printed in DIAGNOSTIC.  */
@@ -1343,7 +1348,7 @@ diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
 inline unsigned int
 diagnostic_num_locations (const diagnostic_info * diagnostic)
 {
-  return diagnostic->message.m_richloc->get_num_locations ();
+  return diagnostic->m_message.m_richloc->get_num_locations ();
 }
 
 /* Expand the location of this diagnostic. Use this function for
@@ -1353,7 +1358,7 @@ diagnostic_num_locations (const diagnostic_info * diagnostic)
 inline expanded_location
 diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 {
-  return diagnostic->richloc->get_expanded_location (which);
+  return diagnostic->m_richloc->get_expanded_location (which);
 }
 
 /* This is somehow the right-side margin of a caret line, that is, we

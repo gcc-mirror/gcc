@@ -49,7 +49,7 @@ pedwarn_c23 (location_t location,
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc2y)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_id = OPT_Wc23_c2y_compat;
+      diagnostic.m_option_id = OPT_Wc23_c2y_compat;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c23-c2y-compat suppresses even the pedwarns.  */
@@ -59,7 +59,7 @@ pedwarn_c23 (location_t location,
   else if (pedantic && !flag_isoc2y)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
-      diagnostic.option_id = option_id;
+      diagnostic.m_option_id = option_id;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   va_end (ap);
@@ -95,9 +95,9 @@ pedwarn_c11 (location_t location,
 			   (pedantic && !flag_isoc23)
 			   ? DK_PEDWARN : DK_WARNING);
       if (option_id == OPT_Wpedantic)
-	diagnostic.option_id = OPT_Wc11_c23_compat;
+	diagnostic.m_option_id = OPT_Wc11_c23_compat;
       else
-	diagnostic.option_id = option_id;
+	diagnostic.m_option_id = option_id;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c11-c23-compat suppresses even the pedwarns.  */
@@ -107,7 +107,7 @@ pedwarn_c11 (location_t location,
   else if (pedantic && !flag_isoc23)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
-      diagnostic.option_id = option_id;
+      diagnostic.m_option_id = option_id;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   va_end (ap);
@@ -138,7 +138,7 @@ pedwarn_c99 (location_t location,
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc11)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_id = OPT_Wc99_c11_compat;
+      diagnostic.m_option_id = OPT_Wc99_c11_compat;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c99-c11-compat suppresses even the pedwarns.  */
@@ -148,7 +148,7 @@ pedwarn_c99 (location_t location,
   else if (pedantic && !flag_isoc11)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
-      diagnostic.option_id = option_id;
+      diagnostic.m_option_id = option_id;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   va_end (ap);
@@ -184,7 +184,7 @@ pedwarn_c90 (location_t location,
 	  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			       (pedantic && !flag_isoc99)
 			       ? DK_PEDWARN : DK_WARNING);
-	  diagnostic.option_id = option_id;
+	  diagnostic.m_option_id = option_id;
 	  diagnostic_report_diagnostic (global_dc, &diagnostic);
 	  warned = true;
 	  goto out;
@@ -197,7 +197,7 @@ pedwarn_c90 (location_t location,
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc99)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_id = OPT_Wc90_c99_compat;
+      diagnostic.m_option_id = OPT_Wc90_c99_compat;
       diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c90-c99-compat suppresses the pedwarns.  */
@@ -207,7 +207,7 @@ pedwarn_c90 (location_t location,
   else if (pedantic && !flag_isoc99)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
-      diagnostic.option_id = option_id;
+      diagnostic.m_option_id = option_id;
       diagnostic_report_diagnostic (global_dc, &diagnostic);
       warned = true;
     }

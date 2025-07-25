@@ -499,7 +499,7 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 				    diagnostic_t orig_diag_kind,
 				    html_sink_buffer *buffer)
 {
-  if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+  if (diagnostic.m_kind == DK_ICE || diagnostic.m_kind == DK_ICE_NOBT)
     {
       /* Print a header for the remaining output to stderr, and
 	 return, attempting to print the usual ICE messages to
@@ -970,7 +970,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   diag_element->set_attr ("id", diag_id);
   if (alert)
     diag_element->set_attr ("class",
-			    get_pf_class_for_alert_div (diagnostic.kind));
+			    get_pf_class_for_alert_div (diagnostic.m_kind));
 
   xml::printer xp (*diag_element.get ());
   const size_t depth_within_alert_div = 1;
@@ -980,7 +980,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   if (alert)
     {
       xp.push_tag_with_class ("span",
-			      get_pf_class_for_alert_icon (diagnostic.kind),
+			      get_pf_class_for_alert_icon (diagnostic.m_kind),
 			      true);
       xp.add_text (" ");
       xp.pop_tag ("span");
@@ -1004,7 +1004,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   if (show_severity)
   {
     xp.push_tag ("strong");
-    xp.add_text (_(get_diagnostic_kind_text (diagnostic.kind)));
+    xp.add_text (_(get_diagnostic_kind_text (diagnostic.m_kind)));
     xp.pop_tag ("strong");
     xp.add_text (" ");
   }
@@ -1017,21 +1017,21 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   pp_clear_output_area (m_printer);
 
   // Add any metadata as a suffix to the message
-  if (diagnostic.metadata)
+  if (diagnostic.m_metadata)
     {
       xp.add_text (" ");
-      xp.append (make_element_for_metadata (*diagnostic.metadata));
+      xp.append (make_element_for_metadata (*diagnostic.m_metadata));
     }
 
   // Add any option as a suffix to the message
 
   label_text option_text = label_text::take
-    (m_context.make_option_name (diagnostic.option_id,
-				 orig_diag_kind, diagnostic.kind));
+    (m_context.make_option_name (diagnostic.m_option_id,
+				 orig_diag_kind, diagnostic.m_kind));
   if (option_text.get ())
     {
       label_text option_url = label_text::take
-	(m_context.make_option_url (diagnostic.option_id));
+	(m_context.make_option_url (diagnostic.m_option_id));
 
       xp.add_text (" ");
       auto option_span = make_span ("gcc-option");
@@ -1102,9 +1102,9 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     // TODO: m_context.m_last_location should be moved into the sink
     location_t saved = m_context.m_last_location;
     m_context.m_last_location = m_last_location;
-    m_context.maybe_show_locus_as_html (*diagnostic.richloc,
+    m_context.maybe_show_locus_as_html (*diagnostic.m_richloc,
 					m_context.m_source_printing,
-					diagnostic.kind,
+					diagnostic.m_kind,
 					xp,
 					nullptr,
 					nullptr);
@@ -1115,7 +1115,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
 
   /* Execution path.  */
-  if (auto path = diagnostic.richloc->get_path ())
+  if (auto path = diagnostic.m_richloc->get_path ())
     {
       xp.push_tag ("div");
       xp.set_attr ("id", "execution-path");
@@ -1144,8 +1144,8 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
 
   // Try to display any per-diagnostic graphs
-  if (diagnostic.metadata)
-    if (auto ldg = diagnostic.metadata->get_lazy_digraphs ())
+  if (diagnostic.m_metadata)
+    if (auto ldg = diagnostic.m_metadata->get_lazy_digraphs ())
       {
 	auto &digraphs = ldg->get_or_create_digraphs ();
 	for (auto &dg : digraphs)
@@ -1170,7 +1170,7 @@ std::unique_ptr<xml::element>
 html_builder::make_element_for_patch (const diagnostic_info &diagnostic)
 {
   edit_context ec (m_context.get_file_cache ());
-  ec.add_fixits (diagnostic.richloc);
+  ec.add_fixits (diagnostic.m_richloc);
   if (char *diff = ec.generate_diff (true))
     {
       if (strlen (diff) > 0)

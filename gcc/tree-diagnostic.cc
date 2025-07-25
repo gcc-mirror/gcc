@@ -169,7 +169,7 @@ set_inlining_locations (diagnostic_context *,
   /* Set if all locations are in a system header.  */
   diagnostic->m_iinfo.m_allsyslocs = nsyslocs == ilocs.length ();
 
-  if (tree *ao = pp_ti_abstract_origin (&diagnostic->message))
+  if (tree *ao = pp_ti_abstract_origin (&diagnostic->m_message))
     *ao = (tree)diagnostic->m_iinfo.m_ao;
 }
 

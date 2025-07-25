@@ -223,7 +223,7 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
   else
     diagnostic_set_info (&diagnostic, singular_gmsgid, ap, &richloc,
 			 DK_WARNING);
-  diagnostic.option_id = option_id;
+  diagnostic.m_option_id = option_id;
   bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (!err && fmt_substring_loc && !substring_within_range)

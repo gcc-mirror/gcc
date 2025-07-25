@@ -199,7 +199,7 @@ d_diagnostic_report_diagnostic (const SourceLoc &loc, int opt,
       diagnostic_set_info_translated (&diagnostic, xformat, &argp,
 				      &rich_loc, kind);
       if (opt != 0)
-	diagnostic.option_id = opt;
+	diagnostic.m_option_id = opt;
 
       diagnostic_report_diagnostic (global_dc, &diagnostic);
     }

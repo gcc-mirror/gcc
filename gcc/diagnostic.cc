@@ -672,14 +672,14 @@ diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
 				diagnostic_t kind)
 {
   gcc_assert (richloc);
-  diagnostic->message.m_err_no = errno;
-  diagnostic->message.m_args_ptr = args;
-  diagnostic->message.m_format_spec = msg;
-  diagnostic->message.m_richloc = richloc;
-  diagnostic->richloc = richloc;
-  diagnostic->metadata = nullptr;
-  diagnostic->kind = kind;
-  diagnostic->option_id = 0;
+  diagnostic->m_message.m_err_no = errno;
+  diagnostic->m_message.m_args_ptr = args;
+  diagnostic->m_message.m_format_spec = msg;
+  diagnostic->m_message.m_richloc = richloc;
+  diagnostic->m_richloc = richloc;
+  diagnostic->m_metadata = nullptr;
+  diagnostic->m_kind = kind;
+  diagnostic->m_option_id = 0;
 }
 
 /* Initialize DIAGNOSTIC, where the message GMSGID has not yet been
@@ -1279,11 +1279,11 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 
 	  diagnostic_option_id option = p->option;
 	  /* The option 0 is for all the diagnostics.  */
-	  if (option == 0 || option == diagnostic->option_id)
+	  if (option == 0 || option == diagnostic->m_option_id)
 	    {
 	      diagnostic_t kind = p->kind;
 	      if (kind != DK_UNSPECIFIED)
-		diagnostic->kind = kind;
+		diagnostic->m_kind = kind;
 	      return kind;
 	    }
 	}
@@ -1311,13 +1311,13 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
   get_any_inlining_info (diagnostic);
 
   /* Diagnostics with no option or -fpermissive are always enabled.  */
-  if (!diagnostic->option_id.m_idx
-      || diagnostic->option_id == m_opt_permissive)
+  if (!diagnostic->m_option_id.m_idx
+      || diagnostic->m_option_id == m_opt_permissive)
     return true;
 
   /* This tests if the user provided the appropriate -Wfoo or
      -Wno-foo option.  */
-  if (!option_enabled_p (diagnostic->option_id))
+  if (!option_enabled_p (diagnostic->m_option_id))
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
@@ -1327,20 +1327,20 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
   /* This tests if the user provided the appropriate -Werror=foo
      option.  */
   if (diag_class == DK_UNSPECIFIED
-      && !option_unspecified_p (diagnostic->option_id))
+      && !option_unspecified_p (diagnostic->m_option_id))
     {
       const diagnostic_t new_kind
-	= m_option_classifier.get_current_override (diagnostic->option_id);
+	= m_option_classifier.get_current_override (diagnostic->m_option_id);
       if (new_kind != DK_ANY)
 	/* DK_ANY means the diagnostic is not to be ignored, but we don't want
 	   to change it specifically to DK_ERROR or DK_WARNING; we want to
 	   preserve whatever the caller has specified.  */
-	diagnostic->kind = new_kind;
+	diagnostic->m_kind = new_kind;
     }
 
   /* This allows for future extensions, like temporarily disabling
      warnings for ranges of source code.  */
-  if (diagnostic->kind == DK_IGNORED)
+  if (diagnostic->m_kind == DK_IGNORED)
     return false;
 
   return true;
@@ -1357,10 +1357,10 @@ diagnostic_context::warning_enabled_at (location_t loc,
 
   rich_location richloc (line_table, loc);
   diagnostic_info diagnostic = {};
-  diagnostic.option_id = option_id;
-  diagnostic.richloc = &richloc;
-  diagnostic.message.m_richloc = &richloc;
-  diagnostic.kind = DK_WARNING;
+  diagnostic.m_option_id = option_id;
+  diagnostic.m_richloc = &richloc;
+  diagnostic.m_message.m_richloc = &richloc;
+  diagnostic.m_kind = DK_WARNING;
   return diagnostic_enabled (&diagnostic);
 }
 
@@ -1416,7 +1416,7 @@ emit_diagnostic_with_group_va (diagnostic_t kind,
 bool
 diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 {
-  diagnostic_t orig_diag_kind = diagnostic->kind;
+  diagnostic_t orig_diag_kind = diagnostic->m_kind;
 
   /* Every call to report_diagnostic should be within a
      begin_group/end_group pair so that output formats can reliably
@@ -1425,8 +1425,8 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
-  bool was_warning = (diagnostic->kind == DK_WARNING
-		      || diagnostic->kind == DK_PEDWARN);
+  bool was_warning = (diagnostic->m_kind == DK_WARNING
+		      || diagnostic->m_kind == DK_PEDWARN);
   if (was_warning && m_inhibit_warnings)
     {
       inhibit_notes_in_group ();
@@ -1436,15 +1436,15 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   if (m_adjust_diagnostic_info)
     m_adjust_diagnostic_info (this, diagnostic);
 
-  if (diagnostic->kind == DK_PEDWARN)
+  if (diagnostic->m_kind == DK_PEDWARN)
     {
-      diagnostic->kind = m_pedantic_errors ? DK_ERROR : DK_WARNING;
+      diagnostic->m_kind = m_pedantic_errors ? DK_ERROR : DK_WARNING;
 
       /* We do this to avoid giving the message for -pedantic-errors.  */
-      orig_diag_kind = diagnostic->kind;
+      orig_diag_kind = diagnostic->m_kind;
     }
 
-  if (diagnostic->kind == DK_NOTE && m_inhibit_notes_p)
+  if (diagnostic->m_kind == DK_NOTE && m_inhibit_notes_p)
     return false;
 
   /* If the user requested that warnings be treated as errors, so be
@@ -1452,10 +1452,10 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
      individual warnings can be overridden back to warnings with
      -Wno-error=*.  */
   if (m_warning_as_error_requested
-      && diagnostic->kind == DK_WARNING)
-    diagnostic->kind = DK_ERROR;
+      && diagnostic->m_kind == DK_WARNING)
+    diagnostic->m_kind = DK_ERROR;
 
-  diagnostic->message.m_data = &diagnostic->x_data;
+  diagnostic->m_message.m_data = &diagnostic->m_x_data;
 
   /* Check to see if the diagnostic is enabled at the location and
      not disabled by #pragma GCC diagnostic anywhere along the inlining
@@ -1466,7 +1466,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       return false;
     }
 
-  if ((was_warning || diagnostic->kind == DK_WARNING)
+  if ((was_warning || diagnostic->m_kind == DK_WARNING)
       && ((!m_warn_system_headers
 	   && diagnostic->m_iinfo.m_allsyslocs)
 	  || m_inhibit_warnings))
@@ -1474,11 +1474,11 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
        inlining stack (if there is one) are in system headers.  */
     return false;
 
-  if (diagnostic->kind == DK_NOTE && notes_inhibited_in_group ())
+  if (diagnostic->m_kind == DK_NOTE && notes_inhibited_in_group ())
     /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
     return false;
 
-  if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
+  if (diagnostic->m_kind != DK_NOTE && diagnostic->m_kind != DK_ICE)
     check_max_errors (false);
 
   if (m_lock > 0)
@@ -1486,7 +1486,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       /* If we're reporting an ICE in the middle of some other error,
 	 try to flush out the previous error, then let this one
 	 through.  Don't do this more than once.  */
-      if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
+      if ((diagnostic->m_kind == DK_ICE || diagnostic->m_kind == DK_ICE_NOBT)
 	  && m_lock == 1)
 	pp_newline_and_flush (m_reference_printer);
       else
@@ -1498,7 +1498,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 
   m_lock++;
 
-  if (diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
+  if (diagnostic->m_kind == DK_ICE || diagnostic->m_kind == DK_ICE_NOBT)
     {
       /* When not checking, ICEs are converted to fatal errors when an
 	 error has already occurred.  This is counteracted by
@@ -1516,17 +1516,17 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 	}
       if (m_internal_error)
 	(*m_internal_error) (this,
-			     diagnostic->message.m_format_spec,
-			     diagnostic->message.m_args_ptr);
+			     diagnostic->m_message.m_format_spec,
+			     diagnostic->m_message.m_args_ptr);
     }
 
   /* Increment the counter for the appropriate diagnostic kind, either
      within this context, or within the diagnostic_buffer.  */
   {
     const diagnostic_t kind_for_count =
-      ((diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
+      ((diagnostic->m_kind == DK_ERROR && orig_diag_kind == DK_WARNING)
        ? DK_WERROR
-       : diagnostic->kind);
+       : diagnostic->m_kind);
     diagnostic_counters &counters
       = (m_diagnostic_buffer
 	 ? m_diagnostic_buffer->m_diagnostic_counters
@@ -1540,7 +1540,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       sink_->on_begin_group ();
   m_diagnostic_groups.m_emission_count++;
 
-  va_list *orig_args = diagnostic->message.m_args_ptr;
+  va_list *orig_args = diagnostic->m_message.m_args_ptr;
   for (auto sink_ : m_sinks)
     {
       /* Formatting the message is done per-output-format,
@@ -1560,8 +1560,8 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 	 so that each has its own set to consume.  */
       va_list copied_args;
       va_copy (copied_args, *orig_args);
-      diagnostic->message.m_args_ptr = &copied_args;
-      pp_format (sink_->get_printer (), &diagnostic->message);
+      diagnostic->m_message.m_args_ptr = &copied_args;
+      pp_format (sink_->get_printer (), &diagnostic->m_message);
       va_end (copied_args);
 
       /* Call vfunc in the output format.  This is responsible for
@@ -1575,29 +1575,29 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1:
       print_parseable_fixits (get_file_cache (),
-			      m_reference_printer, diagnostic->richloc,
+			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			      m_tabstop);
       pp_flush (m_reference_printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
       print_parseable_fixits (get_file_cache (),
-			      m_reference_printer, diagnostic->richloc,
+			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			      m_tabstop);
       pp_flush (m_reference_printer);
       break;
     }
   if (m_diagnostic_buffer == nullptr
-      || diagnostic->kind == DK_ICE
-      || diagnostic->kind == DK_ICE_NOBT)
-    action_after_output (diagnostic->kind);
-  diagnostic->x_data = nullptr;
+      || diagnostic->m_kind == DK_ICE
+      || diagnostic->m_kind == DK_ICE_NOBT)
+    action_after_output (diagnostic->m_kind);
+  diagnostic->m_x_data = nullptr;
 
   if (m_edit_context_ptr)
-    if (diagnostic->richloc->fixits_can_be_auto_applied_p ())
+    if (diagnostic->m_richloc->fixits_can_be_auto_applied_p ())
       if (!m_diagnostic_buffer)
-	m_edit_context_ptr->add_fixits (diagnostic->richloc);
+	m_edit_context_ptr->add_fixits (diagnostic->m_richloc);
 
   m_lock--;
 
@@ -1696,15 +1696,15 @@ diagnostic_context::diagnostic_impl (rich_location *richloc,
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
 			   m_permissive ? DK_WARNING : DK_ERROR);
-      diagnostic.option_id = (option_id.m_idx != -1 ? option_id : m_opt_permissive);
+      diagnostic.m_option_id = (option_id.m_idx != -1 ? option_id : m_opt_permissive);
     }
   else
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
       if (kind == DK_WARNING || kind == DK_PEDWARN)
-	diagnostic.option_id = option_id;
+	diagnostic.m_option_id = option_id;
     }
-  diagnostic.metadata = metadata;
+  diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
 }
 
@@ -1733,8 +1733,8 @@ diagnostic_context::diagnostic_n_impl (rich_location *richloc,
   const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
   diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
   if (kind == DK_WARNING)
-    diagnostic.option_id = option_id;
-  diagnostic.metadata = metadata;
+    diagnostic.m_option_id = option_id;
+  diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
 }
 

@@ -1314,7 +1314,7 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
      sometimes these will related to current_function_decl, but
      often they won't.  */
   auto location_obj
-    = builder.make_location_object (this, *diagnostic.richloc,
+    = builder.make_location_object (this, *diagnostic.m_richloc,
 				    logical_locations::key (),
 				    diagnostic_artifact_role::result_file);
   auto message_obj
@@ -1845,7 +1845,7 @@ sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 {
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
 
-  if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+  if (diagnostic.m_kind == DK_ICE || diagnostic.m_kind == DK_ICE_NOBT)
     {
       std::unique_ptr<json::object> stack = make_stack_from_backtrace ();
       m_invocation_obj->add_notification_for_ice (diagnostic, *this,
@@ -1995,8 +1995,8 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
   /* "ruleId" property (SARIF v2.1.0 section 3.27.5).  */
   /* Ideally we'd have an option_name for these.  */
   if (char *option_text
-	= m_context.make_option_name (diagnostic.option_id,
-				      orig_diag_kind, diagnostic.kind))
+	= m_context.make_option_name (diagnostic.m_option_id,
+				      orig_diag_kind, diagnostic.m_kind))
     {
       /* Lazily create reportingDescriptor objects for and add to m_rules_arr.
 	 Set ruleId referencing them.  */
@@ -2026,10 +2026,10 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
       free (rule_id);
     }
 
-  if (diagnostic.metadata)
+  if (diagnostic.m_metadata)
     {
       /* "taxa" property (SARIF v2.1.0 section 3.27.8).  */
-      if (int cwe_id = diagnostic.metadata->get_cwe ())
+      if (int cwe_id = diagnostic.m_metadata->get_cwe ())
 	{
 	  auto taxa_arr = std::make_unique<json::array> ();
 	  taxa_arr->append<sarif_reporting_descriptor_reference>
@@ -2037,13 +2037,13 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 	  result_obj->set<json::array> ("taxa", std::move (taxa_arr));
 	}
 
-      diagnostic.metadata->maybe_add_sarif_properties (*result_obj);
+      diagnostic.m_metadata->maybe_add_sarif_properties (*result_obj);
 
       /* We don't yet support diagnostics::metadata::rule.  */
     }
 
   /* "level" property (SARIF v2.1.0 section 3.27.10).  */
-  if (const char *sarif_level = maybe_get_sarif_level (diagnostic.kind))
+  if (const char *sarif_level = maybe_get_sarif_level (diagnostic.m_kind))
     result_obj->set_string ("level", sarif_level);
 
   /* "message" property (SARIF v2.1.0 section 3.27.11).  */
@@ -2060,7 +2060,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 			 diagnostic_artifact_role::result_file));
 
   /* "codeFlows" property (SARIF v2.1.0 section 3.27.18).  */
-  if (const paths::path *path = diagnostic.richloc->get_path ())
+  if (const paths::path *path = diagnostic.m_richloc->get_path ())
     {
       auto code_flows_arr = std::make_unique<json::array> ();
       const unsigned code_flow_index = 0;
@@ -2072,8 +2072,8 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
     }
 
   // "graphs" property (SARIF v2.1.0 section 3.27.19).  */
-  if (diagnostic.metadata)
-    if (auto ldg = diagnostic.metadata->get_lazy_digraphs ())
+  if (diagnostic.m_metadata)
+    if (auto ldg = diagnostic.m_metadata->get_lazy_digraphs ())
       {
 	auto &digraphs = ldg->get_or_create_digraphs ();
 	auto graphs_arr = std::make_unique<json::array> ();
@@ -2089,7 +2089,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
      group.  */
 
   /* "fixes" property (SARIF v2.1.0 section 3.27.30).  */
-  const rich_location *richloc = diagnostic.richloc;
+  const rich_location *richloc = diagnostic.m_richloc;
   if (richloc->get_num_fixit_hints ())
     {
       auto fix_arr = std::make_unique<json::array> ();
@@ -2118,7 +2118,7 @@ make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
      it seems redundant compared to "id".  */
 
   /* "helpUri" property (SARIF v2.1.0 section 3.49.12).  */
-  if (char *option_url = m_context.make_option_url (diagnostic.option_id))
+  if (char *option_url = m_context.make_option_url (diagnostic.m_option_id))
     {
       reporting_desc->set_string ("helpUri", option_url);
       free (option_url);
@@ -2211,7 +2211,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
     logical_loc = client_data_hooks->get_current_logical_location ();
 
   auto location_obj
-    = make_location_object (&loc_mgr, *diagnostic.richloc, logical_loc, role);
+    = make_location_object (&loc_mgr, *diagnostic.m_richloc, logical_loc, role);
   /* Don't add entirely empty location objects to the array.  */
   if (!location_obj->is_empty ())
     locations_arr->append<sarif_location> (std::move (location_obj));
