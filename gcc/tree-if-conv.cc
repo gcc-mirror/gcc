@@ -1755,7 +1755,7 @@ strip_nop_cond_scalar_reduction (bool has_nop, tree op)
    EXTENDED is true if PHI has > 2 arguments.  */
 
 static bool
-is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
+is_cond_scalar_reduction (basic_block bb, tree phi_res, gimple **reduc, tree arg_0, tree arg_1,
 			  tree *op0, tree *op1, bool extended, bool* has_nop,
 			  gimple **nop_reduc)
 {
@@ -1763,7 +1763,6 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
   gimple *stmt;
   gimple *header_phi = NULL;
   enum tree_code reduction_op;
-  basic_block bb = gimple_bb (phi);
   class loop *loop = bb->loop_father;
   edge latch_e = loop_latch_edge (loop);
   imm_use_iterator imm_iter;
@@ -1791,7 +1790,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
   if (gimple_bb (header_phi) != loop->header)
     return false;
 
-  if (PHI_ARG_DEF_FROM_EDGE (header_phi, latch_e) != PHI_RESULT (phi))
+  if (PHI_ARG_DEF_FROM_EDGE (header_phi, latch_e) != phi_res)
     return false;
 
   if (gimple_code (stmt) != GIMPLE_ASSIGN
@@ -1889,7 +1888,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 	    continue;
 	  if (use_stmt == SSA_NAME_DEF_STMT (r_op1))
 	    continue;
-	  if (use_stmt != phi)
+	  if (use_stmt != SSA_NAME_DEF_STMT (phi_res))
 	    return false;
 	}
     }
@@ -2199,8 +2198,8 @@ commutative:
    and *RES to the new values if the factoring happened.
    Loops until all of the factoring is completed.  */
 
-static void
-factor_out_operators (tree *res, gimple_stmt_iterator *gsi,
+static bool
+factor_out_operators (gimple_stmt_iterator *pgsi, tree *res, gimple_stmt_iterator *gsi,
 		      tree *arg0, tree *arg1, gphi *phi)
 {
   gimple_match_op arg0_op, arg1_op;
@@ -2208,28 +2207,28 @@ factor_out_operators (tree *res, gimple_stmt_iterator *gsi,
 
 again:
   if (TREE_CODE (*arg0) != SSA_NAME || TREE_CODE (*arg1) != SSA_NAME)
-    return;
+    return repeated;
 
   if (operand_equal_p (*arg0, *arg1))
-    return;
+    return repeated;
 
   /* If either args have > 1 use, then this transformation actually
      increases the number of expressions evaluated at runtime.  */
   if (repeated
       ? (!has_zero_uses (*arg0) || !has_zero_uses (*arg1))
       : (!has_single_use (*arg0) || !has_single_use (*arg1)))
-    return;
+    return repeated;
 
   gimple *arg0_def_stmt = SSA_NAME_DEF_STMT (*arg0);
   if (!gimple_extract_op (arg0_def_stmt, &arg0_op))
-    return;
+    return repeated;
 
   /* At this point there should be no ssa names occuring in abnormals.  */
   gcc_assert (!arg0_op.operands_occurs_in_abnormal_phi ());
 
   gimple *arg1_def_stmt = SSA_NAME_DEF_STMT (*arg1);
   if (!gimple_extract_op (arg1_def_stmt, &arg1_op))
-    return;
+    return repeated;
 
   /* At this point there should be no ssa names occuring in abnormals.  */
   gcc_assert (!arg1_op.operands_occurs_in_abnormal_phi ());
@@ -2238,15 +2237,15 @@ again:
      or the number operands.  */
   if (arg1_op.code != arg0_op.code
       || arg1_op.num_ops != arg0_op.num_ops)
-    return;
+    return repeated;
 
   tree new_arg0, new_arg1;
   int opnum = find_different_opnum (arg0_op, arg1_op, &new_arg0, &new_arg1);
   if (opnum == -1)
-    return;
+    return repeated;
 
   if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
-    return;
+    return repeated;
   tree new_res = make_ssa_name (TREE_TYPE (new_arg0), NULL);
 
   /* Create the operation stmt if possible and insert it.  */
@@ -2262,7 +2261,7 @@ again:
   if (!result)
     {
       release_ssa_name (new_res);
-      return;
+      return repeated;
     }
   gsi_insert_seq_before (gsi, seq, GSI_CONTINUE_LINKING);
 
@@ -2276,6 +2275,10 @@ again:
       print_generic_expr (dump_file, result);
       fprintf (dump_file, ".\n");
     }
+
+  /* Remove the phi and move to the next phi arg if needed. */
+  if (!repeated)
+    remove_phi_node (pgsi, false);
 
   /* Remove the old operation(s) that has single use.  */
   gimple_stmt_iterator gsi_for_def;
@@ -2400,8 +2403,9 @@ cmp_arg_entry (const void *p1, const void *p2, void * /* data.  */)
    vectorization. */
 
 
-static void
-predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
+static bool
+predicate_scalar_phi (gimple_stmt_iterator *phi_gsi, gphi *phi,
+		      gimple_stmt_iterator *gsi, bool loop_versioned)
 {
   gimple *new_stmt = NULL, *reduc, *nop_reduc;
   tree rhs, res, arg0, arg1, op0, op1, scev;
@@ -2411,10 +2415,11 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
   basic_block bb;
   unsigned int i;
   bool has_nop;
+  bool removed_phi = false;
 
   res = gimple_phi_result (phi);
   if (virtual_operand_p (res))
-    return;
+    return removed_phi;
 
   if ((rhs = degenerate_phi_result (phi))
       || ((scev = analyze_scalar_evolution (gimple_bb (phi)->loop_father,
@@ -2431,7 +2436,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
       update_stmt (new_stmt);
-      return;
+      return removed_phi;
     }
 
   bb = gimple_bb (phi);
@@ -2477,9 +2482,13 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
 
       /* Factor out operand if possible. This can only be done easily
 	 for PHI with 2 elements.  */
-      factor_out_operators (&res, gsi, &arg0, &arg1, phi);
+      if (factor_out_operators (phi_gsi, &res, gsi, &arg0, &arg1, phi))
+	{
+	  phi = nullptr;
+	  removed_phi = true;
+	}
 
-      if (is_cond_scalar_reduction (phi, &reduc, arg0, arg1,
+      if (is_cond_scalar_reduction (bb, res, &reduc, arg0, arg1,
 				    &op0, &op1, false, &has_nop,
 				    &nop_reduc))
 	{
@@ -2508,7 +2517,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
 	  fprintf (dump_file, "new phi replacement stmt\n");
 	  print_gimple_stmt (dump_file, new_stmt, 0, TDF_SLIM);
 	}
-      return;
+      return removed_phi;
     }
 
   /* Create hashmap for PHI node which contain vector of argument indexes
@@ -2576,7 +2585,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
       cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
 				       NULL_TREE, true, GSI_SAME_STMT);
-      if (!(is_cond_scalar_reduction (phi, &reduc, arg0 , arg1,
+      if (!(is_cond_scalar_reduction (bb, res, &reduc, arg0 , arg1,
 				      &op0, &op1, true, &has_nop, &nop_reduc)))
 	rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
 				    swap ? arg1 : arg0,
@@ -2606,6 +2615,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi, bool loop_versioned)
       fprintf (dump_file, "new extended phi replacement stmt\n");
       print_gimple_stmt (dump_file, new_stmt, 0, TDF_SLIM);
     }
+  return removed_phi;
 }
 
 /* Replaces in LOOP all the scalar phi nodes other than those in the
@@ -2642,8 +2652,8 @@ predicate_all_scalar_phis (class loop *loop, bool loop_versioned)
 	    gsi_next (&phi_gsi);
 	  else
 	    {
-	      predicate_scalar_phi (phi, &gsi, loop_versioned);
-	      remove_phi_node (&phi_gsi, false);
+	      if (!predicate_scalar_phi (&phi_gsi, phi, &gsi, loop_versioned))
+		remove_phi_node (&phi_gsi, false);
 	    }
 	}
     }
