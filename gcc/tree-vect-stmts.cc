@@ -1622,8 +1622,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       return;
     }
 
-  if (memory_access_type != VMAT_CONTIGUOUS
-      && memory_access_type != VMAT_CONTIGUOUS_PERMUTE)
+  if (memory_access_type != VMAT_CONTIGUOUS)
     {
       /* Element X of the data must come from iteration i * VF + X of the
 	 scalar loop.  We need more work to support other mappings.  */
@@ -9050,7 +9049,6 @@ vectorizable_store (vec_info *vinfo,
 
   gcc_assert (memory_access_type == VMAT_CONTIGUOUS
 	      || memory_access_type == VMAT_CONTIGUOUS_DOWN
-	      || memory_access_type == VMAT_CONTIGUOUS_PERMUTE
 	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE);
 
   unsigned inside_cost = 0, prologue_cost = 0;
@@ -9095,25 +9093,7 @@ vectorizable_store (vec_info *vinfo,
 					    simd_lane_access_p, bump);
 
   new_stmt = NULL;
-  if (grouped_store)
-    {
-      /* Permute.  */
-      gcc_assert (memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
-      if (costing_p)
-	{
-	  int group_size = DR_GROUP_SIZE (first_stmt_info);
-	  int nstmts = ceil_log2 (group_size) * group_size;
-	  inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
-					   slp_node, 0, vect_body);
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "vect_model_store_cost: "
-			     "strided group_size = %d .\n", group_size);
-	}
-      else
-	vect_permute_store_chain (vinfo, dr_chain, group_size, stmt_info,
-				  gsi, &result_chain);
-    }
-
+  gcc_assert (!grouped_store);
   for (i = 0; i < vec_num; i++)
     {
       if (!costing_p)
@@ -11457,18 +11437,12 @@ vectorizable_load (vec_info *vinfo,
 	 alignment support schemes.  */
       if (costing_p)
 	{
-	  /* For VMAT_CONTIGUOUS_PERMUTE if it's grouped load, we
-	     only need to take care of the first stmt, whose
-	     stmt_info is first_stmt_info, vec_num iterating on it
-	     will cover the cost for the remaining, it's consistent
-	     with transforming.  For the prologue cost for realign,
+	  /* For the prologue cost for realign,
 	     we only need to count it once for the whole group.  */
 	  bool first_stmt_info_p = first_stmt_info == stmt_info;
 	  bool add_realign_cost = first_stmt_info_p && i == 0;
 	  if (memory_access_type == VMAT_CONTIGUOUS
-	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE
-	      || (memory_access_type == VMAT_CONTIGUOUS_PERMUTE
-		  && (!grouped_load || first_stmt_info_p)))
+	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	    {
 	      /* Leave realign cases alone to keep them simple.  */
 	      if (alignment_support_scheme == dr_explicit_realign_optimized
@@ -11625,8 +11599,7 @@ vectorizable_load (vec_info *vinfo,
   if (costing_p)
     {
       gcc_assert (memory_access_type == VMAT_CONTIGUOUS
-		  || memory_access_type == VMAT_CONTIGUOUS_REVERSE
-		  || memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
+		  || memory_access_type == VMAT_CONTIGUOUS_REVERSE);
       if (n_adjacent_loads > 0)
 	vect_get_load_cost (vinfo, stmt_info, slp_node, n_adjacent_loads,
 			    alignment_support_scheme, misalignment, false,

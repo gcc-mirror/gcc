@@ -184,11 +184,6 @@ enum vect_memory_access_type {
      of invariants.  */
   VMAT_CONTIGUOUS_DOWN,
 
-  /* A simple contiguous access in which the elements need to be permuted
-     after loading or before storing.  Only used for loop vectorization;
-     SLP uses separate permutes.  */
-  VMAT_CONTIGUOUS_PERMUTE,
-
   /* A simple contiguous access in which the elements need to be reversed
      after loading or before storing.  */
   VMAT_CONTIGUOUS_REVERSE,
