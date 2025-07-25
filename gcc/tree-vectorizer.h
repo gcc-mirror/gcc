@@ -2419,10 +2419,7 @@ extern bool vect_chooses_same_modes_p (machine_mode, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 				stmt_vec_info * = NULL, gimple ** = NULL);
-extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
-				tree *, stmt_vec_info * = NULL,
-				gimple ** = NULL);
-extern bool vect_is_simple_use (vec_info *, stmt_vec_info, slp_tree,
+extern bool vect_is_simple_use (vec_info *, slp_tree,
 				unsigned, tree *, slp_tree *,
 				enum vect_def_type *,
 				tree *, stmt_vec_info * = NULL);

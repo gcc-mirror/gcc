@@ -2245,6 +2245,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     *memory_access_type = VMAT_GATHER_SCATTER;
   else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
+      tree offset;
+      slp_tree offset_node;
       *memory_access_type = VMAT_GATHER_SCATTER;
       if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
 				      elsvals))
@@ -2266,7 +2268,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			     vls_type == VLS_LOAD ? "gather" : "scatter");
 	  return false;
 	}
-      else if (!vect_is_simple_use (gs_info->offset, vinfo,
+      else if (!vect_is_simple_use (vinfo, slp_node, 0, &offset, &offset_node,
 				    &gs_info->offset_dt,
 				    &gs_info->offset_vectype))
 	{
@@ -2564,7 +2566,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
    to the mask in *MASK_NODE if MASK_NODE is not NULL.  */
 
 static bool
-vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
+vect_check_scalar_mask (vec_info *vinfo,
 			slp_tree slp_node, unsigned mask_index,
 			tree *mask, slp_tree *mask_node,
 			vect_def_type *mask_dt_out, tree *mask_vectype_out)
@@ -2572,7 +2574,7 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
   enum vect_def_type mask_dt;
   tree mask_vectype;
   slp_tree mask_node_1;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, mask_index,
+  if (!vect_is_simple_use (vinfo, slp_node, mask_index,
 			   mask, &mask_node_1, &mask_dt, &mask_vectype))
     {
       if (dump_enabled_p ())
@@ -2657,7 +2659,7 @@ vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
 
   enum vect_def_type rhs_dt;
   tree rhs_vectype;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, op_no,
+  if (!vect_is_simple_use (vinfo, slp_node, op_no,
 			   rhs, rhs_node, &rhs_dt, &rhs_vectype))
     {
       if (dump_enabled_p ())
@@ -3332,13 +3334,13 @@ vectorizable_call (vec_info *vinfo,
     {
       if ((int) i == mask_opno)
 	{
-	  if (!vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_opno,
+	  if (!vect_check_scalar_mask (vinfo, slp_node, mask_opno,
 				       &op, &slp_op[i], &dt[i], &vectypes[i]))
 	    return false;
 	  continue;
 	}
 
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+      if (!vect_is_simple_use (vinfo, slp_node,
 			       i, &op, &slp_op[i], &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
@@ -3918,7 +3920,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       int op_no = vect_slp_child_index_for_operand (stmt,
 						    i + masked_call_offset,
 						    false);
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+      if (!vect_is_simple_use (vinfo, slp_node,
 			       op_no, &op, &slp_op[i],
 			       &thisarginfo.dt, &thisarginfo.vectype)
 	  || thisarginfo.dt == vect_uninitialized_def)
@@ -5128,7 +5130,7 @@ vectorizable_conversion (vec_info *vinfo,
 
   /* Check the operands of the operation.  */
   slp_tree slp_op0, slp_op1 = NULL;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_use (vinfo, slp_node,
 			   0, &op0, &slp_op0, &dt[0], &vectype_in))
     {
       if (dump_enabled_p ())
@@ -5167,7 +5169,7 @@ vectorizable_conversion (vec_info *vinfo,
       op1 = is_gimple_assign (stmt) ? gimple_assign_rhs2 (stmt) :
 				     gimple_call_arg (stmt, 0);
       tree vectype1_in;
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1,
+      if (!vect_is_simple_use (vinfo, slp_node, 1,
 			       &op1, &slp_op1, &dt[1], &vectype1_in))
 	{
           if (dump_enabled_p ())
@@ -5728,7 +5730,7 @@ vectorizable_assignment (vec_info *vinfo,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   slp_tree slp_op;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &op, &slp_op,
+  if (!vect_is_simple_use (vinfo, slp_node, 0, &op, &slp_op,
 			   &dt[0], &vectype_in))
     {
       if (dump_enabled_p ())
@@ -5925,7 +5927,7 @@ vectorizable_shift (vec_info *vinfo,
     }
 
   slp_tree slp_op0;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_use (vinfo, slp_node,
 			   0, &op0, &slp_op0, &dt[0], &vectype))
     {
       if (dump_enabled_p ())
@@ -5954,7 +5956,7 @@ vectorizable_shift (vec_info *vinfo,
 
   stmt_vec_info op1_def_stmt_info;
   slp_tree slp_op1;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1, &op1, &slp_op1,
+  if (!vect_is_simple_use (vinfo, slp_node, 1, &op1, &slp_op1,
 			   &dt[1], &op1_vectype, &op1_def_stmt_info))
     {
       if (dump_enabled_p ())
@@ -6352,7 +6354,7 @@ vectorizable_operation (vec_info *vinfo,
     }
 
   slp_tree slp_op0;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_use (vinfo, slp_node,
 			   0, &op0, &slp_op0, &dt[0], &vectype))
     {
       if (dump_enabled_p ())
@@ -6408,7 +6410,7 @@ vectorizable_operation (vec_info *vinfo,
   slp_tree slp_op1 = NULL, slp_op2 = NULL;
   if (op_type == binary_op || op_type == ternary_op)
     {
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+      if (!vect_is_simple_use (vinfo, slp_node,
 			       1, &op1, &slp_op1, &dt[1], &vectype2))
 	{
 	  if (dump_enabled_p ())
@@ -6426,7 +6428,7 @@ vectorizable_operation (vec_info *vinfo,
     }
   if (op_type == ternary_op)
     {
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+      if (!vect_is_simple_use (vinfo, slp_node,
 			       2, &op2, &slp_op2, &dt[2], &vectype3))
 	{
 	  if (dump_enabled_p ())
@@ -7836,7 +7838,7 @@ vectorizable_store (vec_info *vinfo,
 	mask_index = vect_slp_child_index_for_operand
 		    (call, mask_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
       if (mask_index >= 0
-	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
+	  && !vect_check_scalar_mask (vinfo, slp_node, mask_index,
 				      &mask, &mask_node, &mask_dt,
 				      &mask_vectype))
 	return false;
@@ -9368,7 +9370,7 @@ vectorizable_load (vec_info *vinfo,
 	mask_index = vect_slp_child_index_for_operand
 		    (call, mask_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
       if (mask_index >= 0
-	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
+	  && !vect_check_scalar_mask (vinfo, slp_node, mask_index,
 				      &mask, &slp_op, &mask_dt, &mask_vectype))
 	return false;
 
@@ -9377,7 +9379,7 @@ vectorizable_load (vec_info *vinfo,
 	els_index = vect_slp_child_index_for_operand
 	  (call, els_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
       if (els_index >= 0
-	  && !vect_is_simple_use (vinfo, stmt_info, slp_node, els_index,
+	  && !vect_is_simple_use (vinfo, slp_node, els_index,
 				  &els, &els_op, &els_dt, &els_vectype))
 	return false;
     }
@@ -11426,7 +11428,7 @@ vectorizable_load (vec_info *vinfo,
    condition operands are supportable using vec_is_simple_use.  */
 
 static bool
-vect_is_simple_cond (tree cond, vec_info *vinfo, stmt_vec_info stmt_info,
+vect_is_simple_cond (tree cond, vec_info *vinfo,
 		     slp_tree slp_node, tree *comp_vectype,
 		     enum vect_def_type *dts, tree vectype)
 {
@@ -11438,7 +11440,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, stmt_vec_info stmt_info,
   if (TREE_CODE (cond) == SSA_NAME
       && VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (cond)))
     {
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &cond,
+      if (!vect_is_simple_use (vinfo, slp_node, 0, &cond,
 			       &slp_op, &dts[0], comp_vectype)
 	  || !*comp_vectype
 	  || !VECTOR_BOOLEAN_TYPE_P (*comp_vectype))
@@ -11454,7 +11456,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (TREE_CODE (lhs) == SSA_NAME)
     {
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0,
+      if (!vect_is_simple_use (vinfo, slp_node, 0,
 			       &lhs, &slp_op, &dts[0], &vectype1))
 	return false;
     }
@@ -11466,7 +11468,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
-      if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1,
+      if (!vect_is_simple_use (vinfo, slp_node, 1,
 			       &rhs, &slp_op, &dts[1], &vectype2))
 	return false;
     }
@@ -11585,17 +11587,17 @@ vectorizable_condition (vec_info *vinfo,
   cond_expr = gimple_assign_rhs1 (stmt);
   gcc_assert (! COMPARISON_CLASS_P (cond_expr));
 
-  if (!vect_is_simple_cond (cond_expr, vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_cond (cond_expr, vinfo, slp_node,
 			    &comp_vectype, &dts[0], vectype)
       || !comp_vectype)
     return false;
 
   unsigned op_adjust = COMPARISON_CLASS_P (cond_expr) ? 1 : 0;
   slp_tree then_slp_node, else_slp_node;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1 + op_adjust,
+  if (!vect_is_simple_use (vinfo, slp_node, 1 + op_adjust,
 			   &then_clause, &then_slp_node, &dts[2], &vectype1))
     return false;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 2 + op_adjust,
+  if (!vect_is_simple_use (vinfo, slp_node, 2 + op_adjust,
 			   &else_clause, &else_slp_node, &dts[3], &vectype2))
     return false;
 
@@ -12080,11 +12082,11 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
     return false;
 
   slp_tree slp_rhs1, slp_rhs2;
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_use (vinfo, slp_node,
 			   0, &rhs1, &slp_rhs1, &dts[0], &vectype1))
     return false;
 
-  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+  if (!vect_is_simple_use (vinfo, slp_node,
 			   1, &rhs2, &slp_rhs2, &dts[1], &vectype2))
     return false;
 
@@ -13279,123 +13281,49 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 
 /* Function vect_is_simple_use.
 
-   Same as vect_is_simple_use but also determines the vector operand
-   type of OPERAND and stores it to *VECTYPE.  If the definition of
-   OPERAND is vect_uninitialized_def, vect_constant_def or
-   vect_external_def *VECTYPE will be set to NULL_TREE and the caller
-   is responsible to compute the best suited vector type for the
-   scalar operand.  */
-
-bool
-vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
-		    tree *vectype, stmt_vec_info *def_stmt_info_out,
-		    gimple **def_stmt_out)
-{
-  stmt_vec_info def_stmt_info;
-  gimple *def_stmt;
-  if (!vect_is_simple_use (operand, vinfo, dt, &def_stmt_info, &def_stmt))
-    return false;
-
-  if (def_stmt_out)
-    *def_stmt_out = def_stmt;
-  if (def_stmt_info_out)
-    *def_stmt_info_out = def_stmt_info;
-
-  /* Now get a vector type if the def is internal, otherwise supply
-     NULL_TREE and leave it up to the caller to figure out a proper
-     type for the use stmt.  */
-  if (*dt == vect_internal_def
-      || *dt == vect_induction_def
-      || *dt == vect_reduction_def
-      || *dt == vect_double_reduction_def
-      || *dt == vect_nested_cycle
-      || *dt == vect_first_order_recurrence)
-    {
-      *vectype = STMT_VINFO_VECTYPE (def_stmt_info);
-      gcc_assert (*vectype != NULL_TREE);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "vect_is_simple_use: vectype %T\n", *vectype);
-    }
-  else if (*dt == vect_uninitialized_def
-	   || *dt == vect_constant_def
-	   || *dt == vect_external_def)
-    *vectype = NULL_TREE;
-  else
-    gcc_unreachable ();
-
-  return true;
-}
-
-/* Function vect_is_simple_use.
-
    Same as vect_is_simple_use but determines the operand by operand
    position OPERAND from either STMT or SLP_NODE, filling in *OP
    and *SLP_DEF (when SLP_NODE is not NULL).  */
 
 bool
-vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
+vect_is_simple_use (vec_info *vinfo, slp_tree slp_node,
 		    unsigned operand, tree *op, slp_tree *slp_def,
 		    enum vect_def_type *dt,
 		    tree *vectype, stmt_vec_info *def_stmt_info_out)
 {
-  if (slp_node)
+  slp_tree child = SLP_TREE_CHILDREN (slp_node)[operand];
+  *slp_def = child;
+  *vectype = SLP_TREE_VECTYPE (child);
+  if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
     {
-      slp_tree child = SLP_TREE_CHILDREN (slp_node)[operand];
-      *slp_def = child;
-      *vectype = SLP_TREE_VECTYPE (child);
-      if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+      /* ???  VEC_PERM nodes might be intermediate and their lane value
+	 have no representative (nor do we build a VEC_PERM stmt for
+	 the actual operation).  Note for two-operator nodes we set
+	 a representative but leave scalar stmts empty as we'd only
+	 have one for a subset of lanes.  Ideally no caller would
+	 require *op for internal defs.  */
+      if (SLP_TREE_REPRESENTATIVE (child))
 	{
-	  /* ???  VEC_PERM nodes might be intermediate and their lane value
-	     have no representative (nor do we build a VEC_PERM stmt for
-	     the actual operation).  Note for two-operator nodes we set
-	     a representative but leave scalar stmts empty as we'd only
-	     have one for a subset of lanes.  Ideally no caller would
-	     require *op for internal defs.  */
-	  if (SLP_TREE_REPRESENTATIVE (child))
-	    {
-	      *op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
-	      return vect_is_simple_use (*op, vinfo, dt, def_stmt_info_out);
-	    }
-	  else
-	    {
-	      gcc_assert (SLP_TREE_CODE (child) == VEC_PERM_EXPR);
-	      *op = error_mark_node;
-	      *dt = vect_internal_def;
-	      if (def_stmt_info_out)
-		*def_stmt_info_out = NULL;
-	      return true;
-	    }
+	  *op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
+	  return vect_is_simple_use (*op, vinfo, dt, def_stmt_info_out);
 	}
       else
 	{
+	  gcc_assert (SLP_TREE_CODE (child) == VEC_PERM_EXPR);
+	  *op = error_mark_node;
+	  *dt = vect_internal_def;
 	  if (def_stmt_info_out)
 	    *def_stmt_info_out = NULL;
-	  *op = SLP_TREE_SCALAR_OPS (child)[0];
-	  *dt = SLP_TREE_DEF_TYPE (child);
 	  return true;
 	}
     }
   else
     {
-      *slp_def = NULL;
-      if (gassign *ass = dyn_cast <gassign *> (stmt->stmt))
-	{
-	  if (gimple_assign_rhs_code (ass) == COND_EXPR
-	      && COMPARISON_CLASS_P (gimple_assign_rhs1 (ass)))
-	    gcc_unreachable ();
-	  else if (gimple_assign_rhs_code (ass) == VIEW_CONVERT_EXPR)
-	    *op = TREE_OPERAND (gimple_assign_rhs1 (ass), 0);
-	  else
-	    *op = gimple_op (ass, operand + 1);
-	}
-      else if (gcond *cond = dyn_cast <gcond *> (stmt->stmt))
-	*op = gimple_op (cond, operand);
-      else if (gcall *call = dyn_cast <gcall *> (stmt->stmt))
-	*op = gimple_call_arg (call, operand);
-      else
-	gcc_unreachable ();
-      return vect_is_simple_use (*op, vinfo, dt, vectype, def_stmt_info_out);
+      if (def_stmt_info_out)
+	*def_stmt_info_out = NULL;
+      *op = SLP_TREE_SCALAR_OPS (child)[0];
+      *dt = SLP_TREE_DEF_TYPE (child);
+      return true;
     }
 }
 

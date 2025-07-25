@@ -7076,14 +7076,13 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
   for (int i = 0; i < (int) gimple_num_ops (stmt) - 1; i++)
     {
-      stmt_vec_info def_stmt_info;
       slp_tree slp_op;
       tree op;
       tree vectype;
       enum vect_def_type dt;
 
-      if (!vect_is_simple_use (loop_vinfo, stmt_info, slp_node, i, &op,
-			       &slp_op, &dt, &vectype, &def_stmt_info))
+      if (!vect_is_simple_use (loop_vinfo, slp_node, i, &op,
+			       &slp_op, &dt, &vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7510,7 +7509,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
       stmt_vec_info def_stmt_info;
       enum vect_def_type dt;
-      if (!vect_is_simple_use (loop_vinfo, stmt_info, slp_for_stmt_info,
+      if (!vect_is_simple_use (loop_vinfo, slp_for_stmt_info,
 			       i + opno_adjust, &op.ops[i], &slp_op[i], &dt,
 			       &vectype_op[i], &def_stmt_info))
 	{
