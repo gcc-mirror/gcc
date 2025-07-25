@@ -55,7 +55,7 @@ namespace Resolver {
    the default bug reporting instructions, as there is no bug to report.  */
 
 void ATTRIBUTE_NORETURN
-funny_ice_text_finalizer (diagnostic_text_output_format &text_output,
+funny_ice_text_finalizer (diagnostics::text_sink &text_output,
 			  const diagnostic_info *diagnostic,
 			  diagnostic_t diag_kind);
 

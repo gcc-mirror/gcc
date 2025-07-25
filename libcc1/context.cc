@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 #include "gcc-interface.h"
 
@@ -63,7 +63,7 @@ cc1_plugin::plugin_context *cc1_plugin::current_context;
 // This is put into the lang hooks when the plugin starts.
 
 static void
-plugin_print_error_function (diagnostic_text_output_format &text_output,
+plugin_print_error_function (diagnostics::text_sink &text_output,
 			     const char *file,
 			     const diagnostic_info *diagnostic)
 {

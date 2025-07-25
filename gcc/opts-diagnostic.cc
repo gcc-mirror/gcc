@@ -103,5 +103,5 @@ handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
     return;
 
   sink->set_main_input_filename (opts.x_main_input_filename);
-  dc.set_output_format (std::move (sink));
+  dc.set_sink (std::move (sink));
 }

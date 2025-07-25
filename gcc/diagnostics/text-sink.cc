@@ -31,8 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
 #include "diagnostics/diagram.h"
-#include "diagnostic-format-text.h"
-#include "diagnostic-buffer.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/buffering.h"
 #include "text-art/theme.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
@@ -42,56 +42,55 @@ along with GCC; see the file COPYING3.  If not see
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
 
-using namespace diagnostics;
+namespace diagnostics {
 
-/* Concrete buffering implementation subclass for JSON output.  */
+/* Concrete buffering implementation subclass for text output.  */
 
-class diagnostic_text_format_buffer : public diagnostic_per_format_buffer
+class text_sink_buffer : public per_sink_buffer
 {
 public:
-  friend class diagnostic_text_output_format;
+  friend class text_sink;
 
-  diagnostic_text_format_buffer (diagnostic_output_format &format);
+  text_sink_buffer (sink &sink_);
 
   void dump (FILE *out, int indent) const final override;
 
   bool empty_p () const final override;
-  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void move_to (per_sink_buffer &dest) final override;
   void clear () final override;
   void flush () final override;
 
 private:
-  diagnostic_output_format &m_format;
+  sink &m_sink;
   output_buffer m_output_buffer;
 };
 
-/* class diagnostic_text_format_buffer : public diagnostic_per_format_buffer.  */
+/* class text_sink_buffer : public per_sink_buffer.  */
 
-diagnostic_text_format_buffer::
-diagnostic_text_format_buffer (diagnostic_output_format &format)
-: m_format (format)
+text_sink_buffer::text_sink_buffer (sink &sink_)
+: m_sink (sink_)
 {
   m_output_buffer.m_flush_p = false;
 }
 
 void
-diagnostic_text_format_buffer::dump (FILE *out, int indent) const
+text_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sdiagnostic_text_format_buffer:\n", indent, "");
+  fprintf (out, "%*stext_sink_buffer:\n", indent, "");
   m_output_buffer.dump (out, indent + 2);
 }
 
 bool
-diagnostic_text_format_buffer::empty_p () const
+text_sink_buffer::empty_p () const
 {
   return output_buffer_last_position_in_text (&m_output_buffer) == nullptr;
 }
 
 void
-diagnostic_text_format_buffer::move_to (diagnostic_per_format_buffer &base_dest)
+text_sink_buffer::move_to (per_sink_buffer &base_dest)
 {
-  diagnostic_text_format_buffer &dest
-    = static_cast<diagnostic_text_format_buffer &> (base_dest);
+  text_sink_buffer &dest
+    = static_cast<text_sink_buffer &> (base_dest);
   const char *str = output_buffer_formatted_text (&m_output_buffer);
   output_buffer_append_r (&dest.m_output_buffer, str, strlen (str));
 
@@ -101,9 +100,9 @@ diagnostic_text_format_buffer::move_to (diagnostic_per_format_buffer &base_dest)
 }
 
 void
-diagnostic_text_format_buffer::clear ()
+text_sink_buffer::clear ()
 {
-  pretty_printer *const pp = m_format.get_printer ();
+  pretty_printer *const pp = m_sink.get_printer ();
   output_buffer *const old_output_buffer = pp_buffer (pp);
 
   pp_buffer (pp) = &m_output_buffer;
@@ -115,9 +114,9 @@ diagnostic_text_format_buffer::clear ()
 }
 
 void
-diagnostic_text_format_buffer::flush ()
+text_sink_buffer::flush ()
 {
-  pretty_printer *const pp = m_format.get_printer ();
+  pretty_printer *const pp = m_sink.get_printer ();
   output_buffer *const old_output_buffer = pp_buffer (pp);
 
   pp_buffer (pp) = &m_output_buffer;
@@ -128,9 +127,9 @@ diagnostic_text_format_buffer::flush ()
   pp_buffer (pp) = old_output_buffer;
 }
 
-/* class diagnostic_text_output_format : public diagnostic_output_format.  */
+/* class diagnostics::text_sink : public diagnostics::sink.  */
 
-diagnostic_text_output_format::~diagnostic_text_output_format ()
+text_sink::~text_sink ()
 {
   /* Some of the errors may actually have been warnings.  */
   if (m_context.diagnostic_count (DK_WERROR))
@@ -157,13 +156,13 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
 }
 
 void
-diagnostic_text_output_format::dump (FILE *out, int indent) const
+text_sink::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sdiagnostic_text_output_format\n", indent, "");
+  fprintf (out, "%*stext_sink\n", indent, "");
   fprintf (out, "%*sm_follows_reference_printer: %s\n",
 	   indent, "",
 	   m_follows_reference_printer ? "true" : "false");
-  diagnostic_output_format::dump (out, indent);
+  sink::dump (out, indent);
   fprintf (out, "%*ssaved_output_buffer:\n", indent + 2, "");
   if (m_saved_output_buffer)
     m_saved_output_buffer->dump (out, indent + 4);
@@ -172,10 +171,10 @@ diagnostic_text_output_format::dump (FILE *out, int indent) const
 }
 
 void
-diagnostic_text_output_format::set_buffer (diagnostic_per_format_buffer *base)
+text_sink::set_buffer (per_sink_buffer *base)
 {
-  diagnostic_text_format_buffer * const buffer
-    = static_cast<diagnostic_text_format_buffer *> (base);
+  text_sink_buffer * const buffer
+    = static_cast<text_sink_buffer *> (base);
 
   pretty_printer *const pp = get_printer ();
 
@@ -191,19 +190,18 @@ diagnostic_text_output_format::set_buffer (diagnostic_per_format_buffer *base)
     }
 }
 
-std::unique_ptr<diagnostic_per_format_buffer>
-diagnostic_text_output_format::make_per_format_buffer ()
+std::unique_ptr<per_sink_buffer>
+text_sink::make_per_sink_buffer ()
 {
-  return std::make_unique<diagnostic_text_format_buffer> (*this);
+  return std::make_unique<text_sink_buffer> (*this);
 }
 
-/* Implementation of diagnostic_output_format::on_report_diagnostic vfunc
+/* Implementation of diagnostics::sink::on_report_diagnostic vfunc
    for GCC's standard textual output.  */
 
 void
-diagnostic_text_output_format::
-on_report_diagnostic (const diagnostic_info &diagnostic,
-		      diagnostic_t orig_diag_kind)
+text_sink::on_report_diagnostic (const diagnostic_info &diagnostic,
+				 diagnostic_t orig_diag_kind)
 {
   pretty_printer *pp = get_printer ();
 
@@ -253,14 +251,14 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
 }
 
 void
-diagnostic_text_output_format::on_report_verbatim (text_info &text)
+text_sink::on_report_verbatim (text_info &text)
 {
   pp_format_verbatim (get_printer (), &text);
   pp_newline_and_flush (get_printer ());
 }
 
 void
-diagnostic_text_output_format::on_diagram (const diagnostics::diagram &d)
+text_sink::on_diagram (const diagnostics::diagram &d)
 {
   pretty_printer *const pp = get_printer ();
 
@@ -276,7 +274,7 @@ diagnostic_text_output_format::on_diagram (const diagnostics::diagram &d)
 }
 
 void
-diagnostic_text_output_format::
+text_sink::
 after_diagnostic (const diagnostic_info &diagnostic)
 {
   if (const paths::path *path = diagnostic.richloc->get_path ())
@@ -291,8 +289,7 @@ after_diagnostic (const diagnostic_info &diagnostic)
 
    The caller is responsible for freeing the memory.  */
 char *
-diagnostic_text_output_format::
-build_prefix (const diagnostic_info &diagnostic) const
+text_sink::build_prefix (const diagnostic_info &diagnostic) const
 {
   gcc_assert (diagnostic.kind < DK_LAST_DIAGNOSTIC_KIND);
 
@@ -332,7 +329,7 @@ build_prefix (const diagnostic_info &diagnostic) const
 
 /* Same as build_prefix, but only the source FILE is given.  */
 char *
-diagnostic_text_output_format::file_name_as_prefix (const char *f) const
+text_sink::file_name_as_prefix (const char *f) const
 {
   pretty_printer *const pp = get_printer ();
   const char *locus_cs
@@ -384,7 +381,7 @@ get_bullet_point_unichar (diagnostic_context &dc)
    The caller is responsible for freeing the memory.  */
 
 char *
-diagnostic_text_output_format::build_indent_prefix (bool with_bullet) const
+text_sink::build_indent_prefix (bool with_bullet) const
 {
   if (!m_show_nesting)
     return xstrdup ("");
@@ -409,7 +406,7 @@ diagnostic_text_output_format::build_indent_prefix (bool with_bullet) const
 /* Add a purely textual note with text GMSGID and with LOCATION.  */
 
 void
-diagnostic_text_output_format::append_note (location_t location,
+text_sink::append_note (location_t location,
 					    const char * gmsgid, ...)
 {
   diagnostic_context *context = &get_context ();
@@ -439,14 +436,13 @@ diagnostic_text_output_format::append_note (location_t location,
 }
 
 bool
-diagnostic_text_output_format::follows_reference_printer_p () const
+text_sink::follows_reference_printer_p () const
 {
   return m_follows_reference_printer;
 }
 
 void
-diagnostic_text_output_format::
-update_printer ()
+text_sink::update_printer ()
 {
   pretty_printer *copy_from_pp
     = (m_follows_reference_printer
@@ -471,7 +467,7 @@ update_printer ()
    description of the security issue.  */
 
 void
-diagnostic_text_output_format::print_any_cwe (const diagnostic_info &diagnostic)
+text_sink::print_any_cwe (const diagnostic_info &diagnostic)
 {
   if (!diagnostic.metadata)
     return;
@@ -506,8 +502,7 @@ diagnostic_text_output_format::print_any_cwe (const diagnostic_info &diagnostic)
    with any URL provided by the rule.  */
 
 void
-diagnostic_text_output_format::
-print_any_rules (const diagnostic_info &diagnostic)
+text_sink::print_any_rules (const diagnostic_info &diagnostic)
 {
   if (!diagnostic.metadata)
     return;
@@ -549,9 +544,8 @@ print_any_rules (const diagnostic_info &diagnostic)
    Subroutine of diagnostic_context::report_diagnostic.  */
 
 void
-diagnostic_text_output_format::
-print_option_information (const diagnostic_info &diagnostic,
-			  diagnostic_t orig_diag_kind)
+text_sink::print_option_information (const diagnostic_info &diagnostic,
+				     diagnostic_t orig_diag_kind)
 {
   if (char *option_text
       = m_context.make_option_name (diagnostic.option_id,
@@ -581,7 +575,7 @@ print_option_information (const diagnostic_info &diagnostic,
 /* Only dump the "In file included from..." stack once for each file.  */
 
 bool
-diagnostic_text_output_format::includes_seen_p (const line_map_ordinary *map)
+text_sink::includes_seen_p (const line_map_ordinary *map)
 {
   /* No include path for main.  */
   if (MAIN_FILE_P (map))
@@ -604,8 +598,7 @@ diagnostic_text_output_format::includes_seen_p (const line_map_ordinary *map)
 }
 
 label_text
-diagnostic_text_output_format::
-get_location_text (const expanded_location &s) const
+text_sink::get_location_text (const expanded_location &s) const
 {
   diagnostic_column_policy column_policy (get_context ());
   return column_policy.get_location_text (s,
@@ -638,7 +631,7 @@ maybe_line_and_column (int line, int col)
 }
 
 void
-diagnostic_text_output_format::report_current_module (location_t where)
+text_sink::report_current_module (location_t where)
 {
   pretty_printer *pp = get_printer ();
   const line_map_ordinary *map = nullptr;
@@ -706,8 +699,8 @@ diagnostic_text_output_format::report_current_module (location_t where)
 }
 
 void
-default_diagnostic_text_starter (diagnostic_text_output_format &text_output,
-				 const diagnostic_info *diagnostic)
+default_text_starter (text_sink &text_output,
+		      const diagnostic_info *diagnostic)
 {
   text_output.report_current_module (diagnostic_location (diagnostic));
   pretty_printer *const pp = text_output.get_printer ();
@@ -715,9 +708,9 @@ default_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 }
 
 void
-default_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
-				   const diagnostic_info *diagnostic,
-				   diagnostic_t)
+default_text_finalizer (text_sink &text_output,
+			const diagnostic_info *diagnostic,
+			diagnostic_t)
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);
@@ -733,3 +726,5 @@ default_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop
 #endif
+
+} // namespace diagnostics

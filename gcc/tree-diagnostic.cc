@@ -30,12 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/client-data-hooks.h"
 #include "langhooks.h"
 #include "intl.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 /* Prints out, if necessary, the name of the current function
    that caused an error.  */
 void
-diagnostic_report_current_function (diagnostic_text_output_format &text_output,
+diagnostic_report_current_function (diagnostics::text_sink &text_output,
 				    const diagnostic_info *diagnostic)
 {
   location_t loc = diagnostic_location (diagnostic);
@@ -44,7 +44,7 @@ diagnostic_report_current_function (diagnostic_text_output_format &text_output,
 }
 
 static void
-default_tree_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+default_tree_diagnostic_text_starter (diagnostics::text_sink &text_output,
 				      const diagnostic_info *diagnostic)
 {
   pretty_printer *const pp = text_output.get_printer ();
@@ -178,7 +178,7 @@ void
 tree_diagnostics_defaults (diagnostic_context *context)
 {
   diagnostic_text_starter (context) = default_tree_diagnostic_text_starter;
-  diagnostic_text_finalizer (context) = default_diagnostic_text_finalizer;
+  diagnostic_text_finalizer (context) = diagnostics::default_text_finalizer;
   context->set_format_decoder (default_tree_printer);
   context->set_set_locations_callback (set_inlining_locations);
   context->set_client_data_hooks (make_compiler_data_hooks ());

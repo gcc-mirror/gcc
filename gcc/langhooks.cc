@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -369,7 +369,7 @@ lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 /* The default function to print out name of current function that caused
    an error.  */
 void
-lhd_print_error_function (diagnostic_text_output_format &text_output,
+lhd_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
 			  const diagnostic_info *diagnostic)
 {

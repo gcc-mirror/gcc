@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "digraph.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -1017,9 +1017,10 @@ saved_diagnostic::emit_any_notes () const
    This extra data is intended for use when debugging the analyzer.  */
 
 void
-saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
+saved_diagnostic::
+maybe_add_sarif_properties (diagnostics::sarif_object &result_obj) const
 {
-  sarif_property_bag &props = result_obj.get_or_create_properties ();
+  auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/saved_diagnostic/"
   if (m_sm)
     props.set_string (PROPERTY_PREFIX "sm", m_sm->get_name ());
@@ -1044,7 +1045,7 @@ saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
       auto duplicates_arr = std::make_unique<json::array> ();
       for (auto iter : m_duplicates)
 	{
-	  auto sd_obj = std::make_unique<sarif_object> ();
+	  auto sd_obj = std::make_unique<diagnostics::sarif_object> ();
 	  iter->maybe_add_sarif_properties (*sd_obj);
 	  duplicates_arr->append (std::move (sd_obj));
 	}
@@ -1555,7 +1556,8 @@ public:
   }
 
   void
-  maybe_add_sarif_properties (sarif_object &result_obj) const override
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
+    const override
   {
     m_sd.maybe_add_sarif_properties (result_obj);
   }

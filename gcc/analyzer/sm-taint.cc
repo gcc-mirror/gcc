@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "fold-const.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 #include "gcc-urlifier.h"
 
 #include "analyzer/analyzer-logging.h"
@@ -220,10 +220,11 @@ public:
     return event::meaning ();
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/taint_diagnostic/"
     props.set (PROPERTY_PREFIX "arg", tree_to_json (m_arg));
     props.set_string (PROPERTY_PREFIX "has_bounds",
@@ -496,11 +497,12 @@ public:
 	}
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
     taint_diagnostic::maybe_add_sarif_properties (result_obj);
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/tainted_offset/"
     props.set (PROPERTY_PREFIX "offset", m_offset->to_json ());
 #undef PROPERTY_PREFIX
@@ -865,11 +867,12 @@ public:
 	}
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
     taint_diagnostic::maybe_add_sarif_properties (result_obj);
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/tainted_allocation_size/"
     props.set (PROPERTY_PREFIX "size_in_bytes", m_size_in_bytes->to_json ());
 #undef PROPERTY_PREFIX

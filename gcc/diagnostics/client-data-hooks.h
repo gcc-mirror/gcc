@@ -23,10 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostics/logical-locations.h"
 
-class sarif_object;
-
 namespace diagnostics {
 
+class sarif_object;
 class client_version_info;
 
 /* A bundle of additional metadata, owned by the diagnostic_context,

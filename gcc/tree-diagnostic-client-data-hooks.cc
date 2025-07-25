@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-logical-location.h"
 #include "diagnostics/client-data-hooks.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 #include "langhooks.h"
 #include "plugin.h"
 #include "timevar.h"
@@ -143,13 +143,13 @@ public:
   }
 
   void
-  add_sarif_invocation_properties (sarif_object &invocation_obj)
+  add_sarif_invocation_properties (diagnostics::sarif_object &invocation_obj)
     const final override
   {
     if (g_timer)
       if (auto timereport_val = g_timer->make_json ())
 	{
-	  sarif_property_bag &bag_obj
+	  auto &bag_obj
 	    = invocation_obj.get_or_create_properties ();
 	  bag_obj.set ("gcc/timeReport", std::move (timereport_val));
 

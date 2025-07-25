@@ -67,7 +67,8 @@ public:
 
   void emit_any_notes () const;
 
-  void maybe_add_sarif_properties (sarif_object &result_obj) const;
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj) const;
 
   //private:
   const state_machine *m_sm;

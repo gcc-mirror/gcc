@@ -401,7 +401,8 @@ class pending_diagnostic
      the opportunity to add diagnostic-specific properties to the SARIF
      "result" object for the diagnostic.
      This is intended for use when debugging a diagnostic.  */
-  virtual void maybe_add_sarif_properties (sarif_object &/*result_obj*/) const
+  virtual void
+  maybe_add_sarif_properties (diagnostics::sarif_object &/*result_obj*/) const
   {
     /* Default no-op implementation.  */
   }

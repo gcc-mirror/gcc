@@ -26,12 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostics/metadata.h"
-#include "diagnostic-format.h"
-#include "diagnostic-format-html.h"
-#include "diagnostic-format-text.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sink.h"
+#include "diagnostics/html-sink.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/sarif-sink.h"
 #include "diagnostics/output-file.h"
-#include "diagnostic-buffer.h"
+#include "diagnostics/buffering.h"
 #include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "selftest-xml.h"
 
-using namespace diagnostics;
+namespace diagnostics {
 
 // struct html_generation_options
 
@@ -65,19 +65,19 @@ class html_builder;
 
 /* Concrete buffering implementation subclass for HTML output.  */
 
-class diagnostic_html_format_buffer : public diagnostic_per_format_buffer
+class html_sink_buffer : public per_sink_buffer
 {
 public:
   friend class html_builder;
-  friend class html_output_format;
+  friend class html_sink;
 
-  diagnostic_html_format_buffer (html_builder &builder)
+  html_sink_buffer (html_builder &builder)
   : m_builder (builder)
   {}
 
   void dump (FILE *out, int indent) const final override;
   bool empty_p () const final override;
-  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void move_to (per_sink_buffer &dest) final override;
   void clear () final override;
   void flush () final override;
 
@@ -109,7 +109,7 @@ private:
 class html_builder
 {
 public:
-  friend class diagnostic_html_format_buffer;
+  friend class html_sink_buffer;
 
   html_builder (diagnostic_context &context,
 		pretty_printer &pp,
@@ -121,7 +121,7 @@ public:
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
-			     diagnostic_html_format_buffer *buffer);
+			     html_sink_buffer *buffer);
   void emit_diagram (const diagram &d);
   void emit_global_graph (const digraphs::lazy_digraph &);
 
@@ -218,12 +218,12 @@ make_span (std::string class_)
   return span;
 }
 
-/* class diagnostic_html_format_buffer : public diagnostic_per_format_buffer.  */
+/* class html_sink_buffer : public per_sink_buffer.  */
 
 void
-diagnostic_html_format_buffer::dump (FILE *out, int indent) const
+html_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sdiagnostic_html_format_buffer:\n", indent, "");
+  fprintf (out, "%*shtml_sink_buffer:\n", indent, "");
   int idx = 0;
   for (auto &result : m_results)
     {
@@ -235,29 +235,29 @@ diagnostic_html_format_buffer::dump (FILE *out, int indent) const
 }
 
 bool
-diagnostic_html_format_buffer::empty_p () const
+html_sink_buffer::empty_p () const
 {
   return m_results.empty ();
 }
 
 void
-diagnostic_html_format_buffer::move_to (diagnostic_per_format_buffer &base)
+html_sink_buffer::move_to (per_sink_buffer &base)
 {
-  diagnostic_html_format_buffer &dest
-    = static_cast<diagnostic_html_format_buffer &> (base);
+  html_sink_buffer &dest
+    = static_cast<html_sink_buffer &> (base);
   for (auto &&result : m_results)
     dest.m_results.push_back (std::move (result));
   m_results.clear ();
 }
 
 void
-diagnostic_html_format_buffer::clear ()
+html_sink_buffer::clear ()
 {
   m_results.clear ();
 }
 
 void
-diagnostic_html_format_buffer::flush ()
+html_sink_buffer::flush ()
 {
   for (auto &&result : m_results)
     m_builder.m_diagnostics_element->add_child (std::move (result));
@@ -497,7 +497,7 @@ html_builder::add_stylesheet (std::string url)
 void
 html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 				    diagnostic_t orig_diag_kind,
-				    diagnostic_html_format_buffer *buffer)
+				    html_sink_buffer *buffer)
 {
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
@@ -1313,10 +1313,10 @@ html_builder::flush_to_file (FILE *outf)
   fprintf (outf, "\n");
 }
 
-class html_output_format : public diagnostic_output_format
+class html_sink : public sink
 {
 public:
-  ~html_output_format ()
+  ~html_sink ()
   {
     /* Any diagnostics should have been handled by now.
        If not, then something's gone wrong with diagnostic
@@ -1328,8 +1328,8 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*shtml_output_format\n", indent, "");
-    diagnostic_output_format::dump (out, indent);
+    fprintf (out, "%*shtml_sink\n", indent, "");
+    sink::dump (out, indent);
   }
 
   void
@@ -1338,15 +1338,15 @@ public:
     m_builder.set_main_input_filename (name);
   }
 
-  std::unique_ptr<diagnostic_per_format_buffer>
-  make_per_format_buffer () final override
+  std::unique_ptr<per_sink_buffer>
+  make_per_sink_buffer () final override
   {
-    return std::make_unique<diagnostic_html_format_buffer> (m_builder);
+    return std::make_unique<html_sink_buffer> (m_builder);
   }
-  void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
+  void set_buffer (per_sink_buffer *base_buffer) final override
   {
-    diagnostic_html_format_buffer *buffer
-      = static_cast<diagnostic_html_format_buffer *> (base_buffer);
+    html_sink_buffer *buffer
+      = static_cast<html_sink_buffer *> (base_buffer);
     m_buffer = buffer;
   }
 
@@ -1404,41 +1404,41 @@ public:
   html_builder &get_builder () { return m_builder; }
 
 protected:
-  html_output_format (diagnostic_context &context,
-		      const line_maps *line_maps,
-		      const html_generation_options &html_gen_opts)
-  : diagnostic_output_format (context),
+  html_sink (diagnostic_context &context,
+	     const line_maps *line_maps,
+	     const html_generation_options &html_gen_opts)
+  : sink (context),
     m_builder (context, *get_printer (), line_maps, html_gen_opts),
     m_buffer (nullptr)
   {}
 
   html_builder m_builder;
-  diagnostic_html_format_buffer *m_buffer;
+  html_sink_buffer *m_buffer;
 };
 
-class html_file_output_format : public html_output_format
+class html_file_sink : public html_sink
 {
 public:
-  html_file_output_format (diagnostic_context &context,
-			   const line_maps *line_maps,
-			   const html_generation_options &html_gen_opts,
-			   output_file output_file_)
-  : html_output_format (context, line_maps, html_gen_opts),
+  html_file_sink (diagnostic_context &context,
+		  const line_maps *line_maps,
+		  const html_generation_options &html_gen_opts,
+		  output_file output_file_)
+  : html_sink (context, line_maps, html_gen_opts),
     m_output_file (std::move (output_file_))
   {
     gcc_assert (m_output_file.get_open_file ());
     gcc_assert (m_output_file.get_filename ());
   }
-  ~html_file_output_format ()
+  ~html_file_sink ()
   {
     m_builder.flush_to_file (m_output_file.get_open_file ());
   }
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*shtml_file_output_format: %s\n",
+    fprintf (out, "%*shtml_file_sink: %s\n",
 	     indent, "",
 	     m_output_file.get_filename ());
-    diagnostic_output_format::dump (out, indent);
+    sink::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -1455,9 +1455,9 @@ private:
    using LINE_MAPS.  */
 
 output_file
-diagnostic_output_format_open_html_file (diagnostic_context &context,
-					 line_maps *line_maps,
-					 const char *base_file_name)
+open_html_output_file (diagnostic_context &context,
+		       line_maps *line_maps,
+		       const char *base_file_name)
 {
   if (!base_file_name)
     {
@@ -1484,24 +1484,28 @@ diagnostic_output_format_open_html_file (diagnostic_context &context,
   return output_file (outf, true, std::move (filename));
 }
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
 		output_file output_file_)
 {
   auto sink
-    = std::make_unique<html_file_output_format> (context,
-						 &line_maps,
-						 html_gen_opts,
-						 std::move (output_file_));
+    = std::make_unique<html_file_sink> (context,
+					&line_maps,
+					html_gen_opts,
+					std::move (output_file_));
   sink->update_printer ();
   return sink;
 }
 
+} // namespace diagnostics
+
 #if CHECKING_P
 
 namespace selftest {
+
+using namespace diagnostics;
 
 /* Helper for writing tests of html_token_printer.
    Printing to m_pp will appear as HTML within m_top_element, a <div>.  */
@@ -1559,7 +1563,7 @@ test_token_printer ()
   }
 }
 
-/* A subclass of html_output_format for writing selftests.
+/* A subclass of html_sink for writing selftests.
    The XML output is cached internally, rather than written
    out to a file.  */
 
@@ -1571,14 +1575,14 @@ public:
     html_generation_options html_gen_opts;
     html_gen_opts.m_css = false;
     html_gen_opts.m_javascript = false;
-    auto sink = std::make_unique<html_buffered_output_format> (*this,
-							       line_table,
-							       html_gen_opts);
+    auto sink = std::make_unique<html_buffered_sink> (*this,
+						      line_table,
+						      html_gen_opts);
     sink->update_printer ();
     sink->set_main_input_filename ("(main input filename)");
     m_format = sink.get (); // borrowed
 
-    set_output_format (std::move (sink));
+    set_sink (std::move (sink));
   }
 
   const xml::document &get_document () const
@@ -1592,13 +1596,13 @@ public:
   }
 
 private:
-  class html_buffered_output_format : public html_output_format
+  class html_buffered_sink : public html_sink
   {
   public:
-    html_buffered_output_format (diagnostic_context &context,
-				 const line_maps *line_maps,
-				 const html_generation_options &html_gen_opts)
-    : html_output_format (context, line_maps, html_gen_opts)
+    html_buffered_sink (diagnostic_context &context,
+			const line_maps *line_maps,
+			const html_generation_options &html_gen_opts)
+    : html_sink (context, line_maps, html_gen_opts)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -1607,7 +1611,7 @@ private:
     }
   };
 
-  html_output_format *m_format; // borrowed
+  html_sink *m_format; // borrowed
 };
 
 /* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
@@ -1691,7 +1695,7 @@ test_metadata ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_format_html_cc_tests ()
+diagnostics_html_sink_cc_tests ()
 {
   auto_fix_quotes fix_quotes;
   test_token_printer ();

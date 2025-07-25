@@ -43,7 +43,7 @@ compilation is specified by a string called a "spec".  */
 #include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "pretty-print-urlifier.h"
 #include "flags.h"
 #include "opts.h"
@@ -4367,10 +4367,10 @@ driver_handle_option (struct gcc_options *opts,
 	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
 				  : opts->x_main_input_basename);
 	  gcc_assert (dc);
-	  diagnostic_output_format_init (*dc,
-					 opts->x_main_input_filename, basename,
-					 (enum diagnostics_output_format)value,
-					 opts->x_flag_diagnostics_json_formatting);
+	  diagnostics::output_format_init (*dc,
+					   opts->x_main_input_filename, basename,
+					   (enum diagnostics_output_format)value,
+					   opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
 

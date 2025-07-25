@@ -62,7 +62,7 @@
 #include "print-tree.h"
 #include "gcc-rich-location.h"
 #include "text-range-label.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 int plugin_is_GPL_compatible;
 
@@ -125,12 +125,12 @@ static bool force_show_locus_color = false;
 /* We want to verify the colorized output of diagnostic_show_locus,
    but turning on colorization for everything confuses "dg-warning" etc.
    Hence we special-case it within this plugin by using this modified
-   version of default_diagnostic_text_finalizer, which, if "color" is
+   version of diagnostics::default_text_finalizer, which, if "color" is
    passed in as a plugin argument turns on colorization, but just
    for diagnostic_show_locus.  */
 
 static void
-custom_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+custom_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 				  const diagnostic_info *diagnostic,
 				  diagnostic_t)
 {

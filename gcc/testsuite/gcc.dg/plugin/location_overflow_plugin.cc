@@ -7,7 +7,7 @@
 #include "coretypes.h"
 #include "spellcheck.h"
 #include "diagnostic.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 int plugin_is_GPL_compatible;
 
@@ -42,7 +42,7 @@ on_pragma_registration (void */*gcc_data*/, void */*user_data*/)
 static diagnostic_text_finalizer_fn original_text_finalizer = NULL;
 
 static void
-verify_unpacked_ranges  (diagnostic_text_output_format &text_output,
+verify_unpacked_ranges  (diagnostics::text_sink &text_output,
 			 const diagnostic_info *diagnostic,
 			 diagnostic_t orig_diag_kind)
 {
@@ -56,7 +56,7 @@ verify_unpacked_ranges  (diagnostic_text_output_format &text_output,
 }
 
 static void
-verify_no_columns  (diagnostic_text_output_format &text_output,
+verify_no_columns  (diagnostics::text_sink &text_output,
 		    const diagnostic_info *diagnostic,
 		    diagnostic_t orig_diag_kind)
 {

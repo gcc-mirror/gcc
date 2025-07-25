@@ -547,7 +547,7 @@ struct lang_hooks
 
   /* Called by diagnostic_report_current_function to print out function name
      for textual diagnostic output.  */
-  void (*print_error_function) (diagnostic_text_output_format &,
+  void (*print_error_function) (diagnostics::text_sink &,
 				const char *,
 				const struct diagnostic_info *);
 

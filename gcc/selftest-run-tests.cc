@@ -100,8 +100,8 @@ selftest::run_tests ()
      rely on.  */
   diagnostic_color_cc_tests ();
   diagnostic_show_locus_cc_tests ();
-  diagnostic_format_html_cc_tests ();
-  diagnostic_format_sarif_cc_tests ();
+  diagnostics_html_sink_cc_tests ();
+  diagnostics_sarif_sink_cc_tests ();
   diagnostics_digraphs_cc_tests ();
   diagnostics_output_spec_cc_tests ();
   diagnostics_state_graphs_cc_tests ();

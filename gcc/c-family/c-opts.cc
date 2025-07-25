@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "file-prefix-map.h"    /* add_*_prefix_map()  */
 #include "context.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -169,7 +169,7 @@ c_common_option_lang_mask (void)
 
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
-c_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 			     const diagnostic_info *diagnostic,
 			     diagnostic_t)
 {

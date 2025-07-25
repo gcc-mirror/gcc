@@ -30,8 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/metadata.h"
 #include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
-#include "diagnostic-format-sarif.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/sarif-sink.h"
+#include "diagnostics/text-sink.h"
 #include "diagnostics/output-spec.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
@@ -241,11 +241,11 @@ public:
   set_colorize (enum diagnostic_colorize colorize);
 
   static void
-  text_starter (diagnostic_text_output_format &text_output,
+  text_starter (diagnostics::text_sink &text_output,
 		const diagnostic_info *diagnostic);
 
 private:
-  diagnostic_text_output_format *m_inner_sink; // borrowed from dc
+  diagnostics::text_sink *m_inner_sink; // borrowed from dc
   diagnostic_source_printing_options m_source_printing;
 };
 
@@ -346,7 +346,7 @@ public:
   sarif_sink (diagnostic_manager &mgr,
 	      FILE *dst_stream,
 	      const diagnostic_file *main_input_file,
-	      const sarif_generation_options &sarif_gen_opts);
+	      const diagnostics::sarif_generation_options &sarif_gen_opts);
 };
 
 struct diagnostic_message_buffer
@@ -588,7 +588,8 @@ public:
 
   const char * maybe_get_sarif_source_language (const char *filename)
     const final override;
-  void add_sarif_invocation_properties (sarif_object &invocation_obj)
+  void
+  add_sarif_invocation_properties (diagnostics::sarif_object &invocation_obj)
     const final override;
 
 private:
@@ -1398,7 +1399,7 @@ maybe_get_sarif_source_language (const char *filename) const
 
 void
 impl_diagnostic_client_data_hooks::
-add_sarif_invocation_properties (sarif_object &) const
+add_sarif_invocation_properties (diagnostics::sarif_object &) const
 {
   // No-op.
 }
@@ -1412,7 +1413,7 @@ diagnostic_text_sink::diagnostic_text_sink (diagnostic_manager &mgr,
   m_source_printing (mgr.get_dc ().m_source_printing)
 {
   auto inner_sink
-    = std::make_unique<diagnostic_text_output_format> (mgr.get_dc (),
+    = std::make_unique<diagnostics::text_sink> (mgr.get_dc (),
 						       &m_source_printing);
   inner_sink->get_printer ()->set_output_stream (dst_stream);
   m_inner_sink = inner_sink.get ();
@@ -1442,7 +1443,7 @@ diagnostic_text_sink::set_colorize (enum diagnostic_colorize colorize)
 }
 
 void
-diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
+diagnostic_text_sink::text_starter (diagnostics::text_sink &text_output,
 				    const diagnostic_info *info)
 {
   gcc_assert (info->x_data);
@@ -1512,15 +1513,17 @@ diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
 
 /* class sarif_sink : public sink.  */
 
-sarif_sink::sarif_sink (diagnostic_manager &mgr,
-			FILE *dst_stream,
-			const diagnostic_file *main_input_file,
-			const sarif_generation_options &sarif_gen_opts)
+sarif_sink::
+sarif_sink (diagnostic_manager &mgr,
+	    FILE *dst_stream,
+	    const diagnostic_file *main_input_file,
+	    const diagnostics::sarif_generation_options &sarif_gen_opts)
 : sink (mgr)
 {
   diagnostics::output_file output_file (dst_stream, false,
 					label_text::borrow ("sarif_sink"));
-  auto serialization = std::make_unique<sarif_serialization_format_json> (true);
+  auto serialization
+    = std::make_unique<diagnostics::sarif_serialization_format_json> (true);
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),
 				     std::move (serialization),
@@ -1818,7 +1821,7 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
   FAIL_IF_NULL (dst_stream);
   FAIL_IF_NULL (main_input_file);
 
-  sarif_generation_options sarif_gen_opts;
+  diagnostics::sarif_generation_options sarif_gen_opts;
   switch (version)
     {
     default:
@@ -1826,10 +1829,11 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
 	       __func__, (int)version);
       abort ();
     case DIAGNOSTIC_SARIF_VERSION_2_1_0:
-      sarif_gen_opts.m_version = sarif_version::v2_1_0;
+      sarif_gen_opts.m_version = diagnostics::sarif_version::v2_1_0;
       break;
     case DIAGNOSTIC_SARIF_VERSION_2_2_PRERELEASE:
-      sarif_gen_opts.m_version = sarif_version::v2_2_prerelease_2024_08_08;
+      sarif_gen_opts.m_version
+	= diagnostics::sarif_version::v2_2_prerelease_2024_08_08;
       break;
     }
 
@@ -1963,8 +1967,8 @@ diagnostic_manager_debug_dump_location (const diagnostic_manager *diag_mgr,
       diagnostic_initialize (&dc, 0);
       dc.m_show_column = true;
 
-      diagnostic_text_output_format text_format (dc);
-      label_text loc_text = text_format.get_location_text (exp_loc);
+      diagnostics::text_sink text_output (dc);
+      label_text loc_text = text_output.get_location_text (exp_loc);
       fprintf (out, "%s", loc_text.get ());
 
       diagnostic_finish (&dc);

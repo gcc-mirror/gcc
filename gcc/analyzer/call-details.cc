@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
@@ -528,10 +528,10 @@ public:
     return true;
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/overlapping_buffers/"
     props.set (PROPERTY_PREFIX "bytes_range_a",
 	       m_byte_range_a.to_json ());

@@ -165,7 +165,7 @@ struct cl_decoded_option;
 struct cl_option_handlers;
 class rich_location;
 class diagnostic_context;
-class diagnostic_text_output_format;
+namespace diagnostics { class text_sink; }
 class pretty_printer;
 class diagnostic_event_id_t;
 typedef const char * (*diagnostic_input_charset_callback)(const char *);

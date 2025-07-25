@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "diagnostics/state-graphs.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"

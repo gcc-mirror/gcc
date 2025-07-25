@@ -18,26 +18,28 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_BUFFER_H
-#define GCC_DIAGNOSTIC_BUFFER_H
+#ifndef GCC_DIAGNOSTICS_BUFFERING_H
+#define GCC_DIAGNOSTICS_BUFFERING_H
 
 #include "diagnostic.h"
 
-class diagnostic_per_format_buffer;
-class diagnostic_output_format;
-  class diagnostic_text_output_format;
+namespace diagnostics {
+
+class per_sink_buffer;
+class sink;
+  class text_sink;
 
 /* Class representing a buffer of zero or more diagnostics that
    have been reported to a diagnostic_context, but which haven't
    yet been flushed.
 
-   A diagnostic_buffer can be:
+   A diagnostics::buffer can be:
 
    * flushed to the diagnostic_context, which issues
    the diagnostics within the buffer to the output format
    and checks for limits such as -fmax-errors=, or
 
-   * moved to another diagnostic_buffer, which moves the diagnostics
+   * moved to another diagnostics::buffer, which moves the diagnostics
    within the first buffer to the other buffer, appending them after any
    existing diagnostics within the destination buffer, emptying the
    source buffer, or
@@ -53,13 +55,13 @@ class diagnostic_output_format;
    to change buffering on a diagnostic_context whilst within a
    diagnostic group.  */
 
-class diagnostic_buffer
+class buffer
 {
  public:
-  friend class diagnostic_context;
+  friend class ::diagnostic_context;
 
-  diagnostic_buffer (diagnostic_context &ctxt);
-  ~diagnostic_buffer ();
+  buffer (diagnostic_context &ctxt);
+  ~buffer ();
 
   void dump (FILE *out, int indent) const;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
@@ -71,39 +73,41 @@ class diagnostic_buffer
 
   bool empty_p () const;
 
-  void move_to (diagnostic_buffer &dest);
+  void move_to (buffer &dest);
 
  private:
-  void ensure_per_format_buffers ();
+  void ensure_per_sink_buffers ();
 
   diagnostic_context &m_ctxt;
-  auto_vec<diagnostic_per_format_buffer *> *m_per_format_buffers;
+  auto_vec<per_sink_buffer *> *m_per_sink_buffers;
 
   /* The number of buffered diagnostics of each kind.  */
   diagnostic_counters m_diagnostic_counters;
 };
 
-/* Implementation detail of diagnostic_buffer.
+/* Implementation detail of diagnostics::buffer.
 
    Abstract base class describing how to represent zero of more
-   buffered diagnostics for a particular diagnostic_output_format
+   buffered diagnostics for a particular diagnostics::sink
    (e.g. text vs SARIF).
 
-   Each diagnostic_output_format subclass should implement its own
-   subclass for handling diagnostic_buffer.  */
+   Each diagnostics::sink subclass should implement its own
+   subclass for handling diagnostics::buffer.  */
 
-class diagnostic_per_format_buffer
+class per_sink_buffer
 {
 public:
-  virtual ~diagnostic_per_format_buffer () {}
+  virtual ~per_sink_buffer () {}
 
   virtual void dump (FILE *out, int indent) const = 0;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
   virtual bool empty_p () const = 0;
-  virtual void move_to (diagnostic_per_format_buffer &dest) = 0;
+  virtual void move_to (per_sink_buffer &dest) = 0;
   virtual void clear () = 0;
   virtual void flush () = 0;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_BUFFER_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_BUFFERING_H */

@@ -33,10 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
-#include "diagnostic-format.h"
-#include "diagnostic-format-html.h"
-#include "diagnostic-format-text.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sink.h"
+#include "diagnostics/html-sink.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/sarif-sink.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "pretty-print-markup.h"
@@ -57,7 +57,7 @@ struct scheme_name_and_params
 };
 
 /* Class for parsing the arguments of -fdiagnostics-add-output= and
-   -fdiagnostics-set-output=, and making diagnostic_output_format
+   -fdiagnostics-set-output=, and making sink
    instances (or issuing errors).  */
 
 class output_factory
@@ -73,7 +73,7 @@ public:
 
     const std::string &get_scheme_name () const { return m_scheme_name; }
 
-    virtual std::unique_ptr<diagnostic_output_format>
+    virtual std::unique_ptr<sink>
     make_sink (const context &ctxt,
 	       diagnostic_context &dc,
 	       const char *unparsed_arg,
@@ -146,7 +146,7 @@ public:
 
   output_factory ();
 
-  std::unique_ptr<diagnostic_output_format>
+  std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostic_context &dc,
 	     const char *unparsed_arg,
@@ -163,7 +163,7 @@ class text_scheme_handler : public output_factory::scheme_handler
 public:
   text_scheme_handler () : scheme_handler ("text") {}
 
-  std::unique_ptr<diagnostic_output_format>
+  std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostic_context &dc,
 	     const char *unparsed_arg,
@@ -175,7 +175,7 @@ class sarif_scheme_handler : public output_factory::scheme_handler
 public:
   sarif_scheme_handler () : scheme_handler ("sarif") {}
 
-  std::unique_ptr<diagnostic_output_format>
+  std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostic_context &dc,
 	     const char *unparsed_arg,
@@ -195,7 +195,7 @@ class html_scheme_handler : public output_factory::scheme_handler
 public:
   html_scheme_handler () : scheme_handler ("experimental-html") {}
 
-  std::unique_ptr<diagnostic_output_format>
+  std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostic_context &dc,
 	     const char *unparsed_arg,
@@ -304,7 +304,7 @@ parse (const context &ctxt, const char *unparsed_arg)
   return std::make_unique<scheme_name_and_params> (std::move (result));
 }
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 context::parse_and_make_sink (const char *unparsed_arg,
 			      diagnostic_context &dc)
 {
@@ -336,7 +336,7 @@ output_factory::get_scheme_handler (const std::string &scheme_name)
   return nullptr;
 }
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 output_factory::make_sink (const context &ctxt,
 			   diagnostic_context &dc,
 			   const char *unparsed_arg,
@@ -361,7 +361,7 @@ output_factory::make_sink (const context &ctxt,
 
 /* class text_scheme_handler : public output_factory::scheme_handler.  */
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 text_scheme_handler::make_sink (const context &ctxt,
 				diagnostic_context &dc,
 				const char *unparsed_arg,
@@ -413,7 +413,7 @@ text_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  auto sink = std::make_unique<diagnostic_text_output_format> (dc);
+  auto sink = std::make_unique<diagnostics::text_sink> (dc);
   sink->set_show_nesting (show_nesting);
   sink->set_show_locations_in_nesting (show_locations_in_nesting);
   sink->set_show_nesting_levels (show_levels);
@@ -422,7 +422,7 @@ text_scheme_handler::make_sink (const context &ctxt,
 
 /* class sarif_scheme_handler : public output_factory::scheme_handler.  */
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 sarif_scheme_handler::make_sink (const context &ctxt,
 				 diagnostic_context &dc,
 				 const char *unparsed_arg,
@@ -505,11 +505,10 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 	  return nullptr;
 	}
       output_file_
-	= diagnostic_output_format_open_sarif_file
-	    (dc,
-	     ctxt.get_affected_location_mgr (),
-	     basename,
-	     serialization_kind);
+	= open_sarif_output_file (dc,
+				  ctxt.get_affected_location_mgr (),
+				  basename,
+				  serialization_kind);
     }
   if (!output_file_)
     return nullptr;
@@ -552,7 +551,7 @@ make_sarif_serialization_object (enum sarif_serialization_kind kind)
 
 /* class html_scheme_handler : public output_factory::scheme_handler.  */
 
-std::unique_ptr<diagnostic_output_format>
+std::unique_ptr<sink>
 html_scheme_handler::make_sink (const context &ctxt,
 				diagnostic_context &dc,
 				const char *unparsed_arg,
@@ -638,7 +637,7 @@ html_scheme_handler::make_sink (const context &ctxt,
 	  return nullptr;
 	}
       output_file_
-	= diagnostic_output_format_open_html_file
+	= open_html_output_file
 	    (dc,
 	     ctxt.get_affected_location_mgr (),
 	     basename);
@@ -715,7 +714,7 @@ struct parser_test
   parser_test ()
   : m_dc (),
     m_ctxt (m_dc, line_table, UNKNOWN_LOCATION, "-fOPTION="),
-    m_fmt (m_dc.get_output_format (0))
+    m_fmt (m_dc.get_sink (0))
   {
     pp_buffer (m_fmt.get_printer ())->m_flush_p = false;
   }
@@ -740,7 +739,7 @@ struct parser_test
 private:
   test_diagnostic_context m_dc;
   test_spec_context m_ctxt;
-  diagnostic_output_format &m_fmt;
+  diagnostics::sink &m_fmt;
 };
 
 /* Selftests.  */

@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic.h"
 #include "diagnostic-macro-unwinding.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 #include "intl.h"
 
 /* This is a pair made of a location and the line map it originated
@@ -73,7 +73,7 @@ struct loc_map_pair
    function.  */
 
 void
-maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
+maybe_unwind_expanded_macro_loc (diagnostics::text_sink &text_output,
                                  location_t where)
 {
   const struct line_map *map;
@@ -215,7 +215,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
     that is similar to what is done for function call stacks, or
     template instantiation contexts.  */
 void
-virt_loc_aware_diagnostic_finalizer (diagnostic_text_output_format &text_output,
+virt_loc_aware_diagnostic_finalizer (diagnostics::text_sink &text_output,
 				     const diagnostic_info *diagnostic)
 {
   maybe_unwind_expanded_macro_loc (text_output, diagnostic_location (diagnostic));

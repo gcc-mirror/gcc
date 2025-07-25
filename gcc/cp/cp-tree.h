@@ -8463,7 +8463,7 @@ extern void cxx_print_xnode			(FILE *, tree, int);
 extern void cxx_print_decl			(FILE *, tree, int);
 extern void cxx_print_type			(FILE *, tree, int);
 extern void cxx_print_identifier		(FILE *, tree, int);
-extern void cxx_print_error_function		(diagnostic_text_output_format &,
+extern void cxx_print_error_function		(diagnostics::text_sink &,
 						 const char *,
 						 const diagnostic_info *);
 

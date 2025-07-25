@@ -269,12 +269,12 @@ private:
 	default:
 	  gcc_unreachable ();
 	case style::h1:
-	  // from diagnostic-format-html.cc: HTML_STYLE .linenum
+	  // from diagnostics/html-sink.cc: HTML_STYLE .linenum
 	  bgcolor = "#0088ce";
 	  color = "white";
 	  break;
 	case style::h2:
-	  // from diagnostic-format-html.cc: HTML_STYLE .events-hdr
+	  // from diagnostics/html-sink.cc: HTML_STYLE .events-hdr
 	  bgcolor = "#393f44"; // pf-black-800
 	  color = "white";
 	  break;

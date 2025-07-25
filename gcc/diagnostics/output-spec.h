@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_OUTPUT_SPEC_H
 #define GCC_DIAGNOSTICS_OUTPUT_SPEC_H
 
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "diagnostics/output-file.h"
 
 namespace diagnostics {
@@ -33,7 +33,7 @@ namespace output_spec {
 class context
 {
  public:
-  std::unique_ptr<diagnostic_output_format>
+  std::unique_ptr<sink>
   parse_and_make_sink (const char *,
 		       diagnostic_context &dc);
 

@@ -18,11 +18,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_FORMAT_HTML_H
-#define GCC_DIAGNOSTIC_FORMAT_HTML_H
+#ifndef GCC_DIAGNOSTICS_HTML_SINK_H
+#define GCC_DIAGNOSTICS_HTML_SINK_H
 
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "diagnostics/output-file.h"
+
+namespace diagnostics {
 
 struct html_generation_options
 {
@@ -44,11 +46,11 @@ struct html_generation_options
 };
 
 extern diagnostics::output_file
-diagnostic_output_format_open_html_file (diagnostic_context &context,
-					 line_maps *line_maps,
-					 const char *base_file_name);
+open_html_output_file (diagnostic_context &context,
+		       line_maps *line_maps,
+		       const char *base_file_name);
 
-extern std::unique_ptr<diagnostic_output_format>
+extern std::unique_ptr<sink>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
@@ -61,4 +63,6 @@ print_path_as_html (xml::printer &xp,
 		    html_label_writer *event_label_writer,
 		    const diagnostic_source_print_policy &dspp);
 
-#endif /* ! GCC_DIAGNOSTIC_FORMAT_HTML_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_HTML_SINK_H */

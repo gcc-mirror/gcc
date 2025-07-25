@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "graphviz.h"
 #include "diagnostics/digraphs.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "selftest.h"
 

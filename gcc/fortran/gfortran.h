@@ -3594,11 +3594,11 @@ bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-#include "diagnostic-buffer.h"  /* For diagnostic_buffer.  */
+#include "diagnostics/buffering.h"  /* For diagnostics::buffer.  */
 struct gfc_error_buffer
 {
   bool flag;
-  diagnostic_buffer buffer;
+  diagnostics::buffer buffer;
 
   gfc_error_buffer();
 };

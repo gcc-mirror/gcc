@@ -22,12 +22,12 @@ namespace Rust {
 namespace Resolver {
 
 void ATTRIBUTE_NORETURN
-funny_ice_text_finalizer (diagnostic_text_output_format &text_output,
+funny_ice_text_finalizer (diagnostics::text_sink &text_output,
 			  const diagnostic_info *diagnostic,
 			  diagnostic_t diag_kind)
 {
   gcc_assert (diag_kind == DK_ICE_NOBT);
-  default_diagnostic_text_finalizer (text_output, diagnostic, diag_kind);
+  diagnostics::default_text_finalizer (text_output, diagnostic, diag_kind);
   fnotice (stderr, "You have broken GCC Rust. This is a feature.\n");
   exit (ICE_EXIT_CODE);
 }

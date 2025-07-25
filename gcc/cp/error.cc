@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-name-hint.h"
 #include "attribs.h"
 #include "pretty-print-format-impl.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -96,16 +96,16 @@ static void dump_scope (cxx_pretty_printer *, tree, int);
 static void dump_template_parms (cxx_pretty_printer *, tree, int, int);
 static int get_non_default_template_args_count (tree, int);
 static const char *function_category (tree);
-static void maybe_print_constexpr_context (diagnostic_text_output_format &);
-static void maybe_print_instantiation_context (diagnostic_text_output_format &);
-static void print_instantiation_full_context (diagnostic_text_output_format &);
-static void print_instantiation_partial_context (diagnostic_text_output_format &,
+static void maybe_print_constexpr_context (diagnostics::text_sink &);
+static void maybe_print_instantiation_context (diagnostics::text_sink &);
+static void print_instantiation_full_context (diagnostics::text_sink &);
+static void print_instantiation_partial_context (diagnostics::text_sink &,
 						 struct tinst_level *,
 						 location_t);
-static void maybe_print_constraint_context (diagnostic_text_output_format &);
-static void cp_diagnostic_text_starter (diagnostic_text_output_format &,
+static void maybe_print_constraint_context (diagnostics::text_sink &);
+static void cp_diagnostic_text_starter (diagnostics::text_sink &,
 					const diagnostic_info *);
-static void cp_print_error_function (diagnostic_text_output_format &,
+static void cp_print_error_function (diagnostics::text_sink &,
 				     const diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
@@ -3761,7 +3761,7 @@ eh_spec_to_string (tree p, int /*v*/)
 
 /* Langhook for print_error_function.  */
 void
-cxx_print_error_function (diagnostic_text_output_format &text_output,
+cxx_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
 			  const diagnostic_info *diagnostic)
 {
@@ -3777,7 +3777,7 @@ cxx_print_error_function (diagnostic_text_output_format &text_output,
 }
 
 static void
-cp_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+cp_diagnostic_text_starter (diagnostics::text_sink &text_output,
 			    const diagnostic_info *diagnostic)
 {
   pp_set_prefix (text_output.get_printer (),
@@ -3794,7 +3794,7 @@ cp_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 /* Print current function onto BUFFER, in the process of reporting
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
-cp_print_error_function (diagnostic_text_output_format &text_output,
+cp_print_error_function (diagnostics::text_sink &text_output,
 			 const diagnostic_info *diagnostic)
 {
   /* If we are in an instantiation context, current_function_decl is likely
@@ -3942,7 +3942,7 @@ function_category (tree fn)
 /* Report the full context of a current template instantiation,
    onto BUFFER.  */
 static void
-print_instantiation_full_context (diagnostic_text_output_format &text_output)
+print_instantiation_full_context (diagnostics::text_sink &text_output)
 {
   struct tinst_level *p = current_instantiation ();
   location_t location = input_location;
@@ -3970,7 +3970,7 @@ print_instantiation_full_context (diagnostic_text_output_format &text_output)
 }
 
 static void
-print_location (diagnostic_text_output_format &text_output,
+print_location (diagnostics::text_sink &text_output,
 		location_t loc)
 {
   expanded_location xloc = expand_location (loc);
@@ -3984,7 +3984,7 @@ print_location (diagnostic_text_output_format &text_output,
 }
 
 /* A RAII class for use when emitting a line of contextual information
-   via pp_verbatim to a diagnostic_text_output_format to add before/after
+   via pp_verbatim to a diagnostics::text_sink to add before/after
    behaviors to the pp_verbatim calls.
 
    If the text output has show_nesting_p (), then the ctor prints
@@ -3999,7 +3999,7 @@ print_location (diagnostic_text_output_format &text_output,
 class auto_context_line
 {
 public:
-  auto_context_line (diagnostic_text_output_format &text_output,
+  auto_context_line (diagnostics::text_sink &text_output,
 		     location_t loc,
 		     bool show_locus = false)
   : m_text_output (text_output),
@@ -4047,7 +4047,7 @@ public:
       }
   }
 private:
-  diagnostic_text_output_format &m_text_output;
+  diagnostics::text_sink &m_text_output;
   location_t m_loc;
   bool m_show_locus;
 };
@@ -4056,7 +4056,7 @@ private:
    prints a single line of instantiation context.  */
 
 static void
-print_instantiation_partial_context_line (diagnostic_text_output_format &text_output,
+print_instantiation_partial_context_line (diagnostics::text_sink &text_output,
 					  struct tinst_level *t,
 					  location_t loc, bool recursive_p)
 {
@@ -4094,7 +4094,7 @@ print_instantiation_partial_context_line (diagnostic_text_output_format &text_ou
 /* Same as print_instantiation_full_context but less verbose.  */
 
 static void
-print_instantiation_partial_context (diagnostic_text_output_format &text_output,
+print_instantiation_partial_context (diagnostics::text_sink &text_output,
 				     struct tinst_level *t0, location_t loc)
 {
   struct tinst_level *t;
@@ -4165,7 +4165,7 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
 
 /* Called from cp_thing to print the template context for an error.  */
 static void
-maybe_print_instantiation_context (diagnostic_text_output_format &text_output)
+maybe_print_instantiation_context (diagnostics::text_sink &text_output)
 {
   if (!problematic_instantiation_changed () || current_instantiation () == 0)
     return;
@@ -4177,7 +4177,7 @@ maybe_print_instantiation_context (diagnostic_text_output_format &text_output)
 /* Report what constexpr call(s) we're trying to expand, if any.  */
 
 void
-maybe_print_constexpr_context (diagnostic_text_output_format &text_output)
+maybe_print_constexpr_context (diagnostics::text_sink &text_output)
 {
   vec<tree> call_stack = cx_error_context ();
   unsigned ix;
@@ -4197,7 +4197,7 @@ maybe_print_constexpr_context (diagnostic_text_output_format &text_output)
 
 
 static void
-print_constrained_decl_info (diagnostic_text_output_format &text_output,
+print_constrained_decl_info (diagnostics::text_sink &text_output,
 			     tree decl)
 {
   auto_context_line sentinel (text_output, DECL_SOURCE_LOCATION (decl));
@@ -4206,7 +4206,7 @@ print_constrained_decl_info (diagnostic_text_output_format &text_output,
 }
 
 static void
-print_concept_check_info (diagnostic_text_output_format &text_output,
+print_concept_check_info (diagnostics::text_sink &text_output,
 			  tree expr, tree map, tree args)
 {
   gcc_assert (concept_check_p (expr));
@@ -4231,7 +4231,7 @@ print_concept_check_info (diagnostic_text_output_format &text_output,
    context, if any.  */
 
 static tree
-print_constraint_context_head (diagnostic_text_output_format &text_output,
+print_constraint_context_head (diagnostics::text_sink &text_output,
 			       tree cxt, tree args)
 {
   tree src = TREE_VALUE (cxt);
@@ -4255,7 +4255,7 @@ print_constraint_context_head (diagnostic_text_output_format &text_output,
 }
 
 static void
-print_requires_expression_info (diagnostic_text_output_format &text_output,
+print_requires_expression_info (diagnostics::text_sink &text_output,
 				tree constr, tree args)
 {
 
@@ -4285,7 +4285,7 @@ print_requires_expression_info (diagnostic_text_output_format &text_output,
 }
 
 void
-maybe_print_single_constraint_context (diagnostic_text_output_format &text_output,
+maybe_print_single_constraint_context (diagnostics::text_sink &text_output,
 				       tree failed)
 {
   if (!failed)
@@ -4316,7 +4316,7 @@ maybe_print_single_constraint_context (diagnostic_text_output_format &text_outpu
 }
 
 void
-maybe_print_constraint_context (diagnostic_text_output_format &text_output)
+maybe_print_constraint_context (diagnostics::text_sink &text_output)
 {
   if (!current_failed_constraint)
     return;

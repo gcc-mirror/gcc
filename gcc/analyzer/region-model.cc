@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gcc-rich-location.h"
 #include "gcc-urlifier.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "selftest-tree.h"
@@ -907,9 +907,10 @@ public:
   }
 
   void
-  maybe_add_sarif_properties (sarif_object &result_obj) const final override
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
+    const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/poisoned_value_diagnostic/"
     props.set (PROPERTY_PREFIX "expr", tree_to_json (m_expr));
     props.set_string (PROPERTY_PREFIX "kind", poison_kind_to_str (m_pkind));
@@ -3835,10 +3836,11 @@ public:
     interest->add_region_creation (m_rhs);
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/dubious_allocation_size/"
     props.set (PROPERTY_PREFIX "lhs", m_lhs->to_json ());
     props.set (PROPERTY_PREFIX "rhs", m_rhs->to_json ());
@@ -7595,9 +7597,10 @@ public:
   }
 
   void
-  maybe_add_sarif_properties (sarif_object &result_obj) const final override
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
+    const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/-Wanalyzer-exposure-through-uninit-copy/"
     props.set (PROPERTY_PREFIX "src_region", m_src_region->to_json ());
     props.set (PROPERTY_PREFIX "dest_region", m_dest_region->to_json ());

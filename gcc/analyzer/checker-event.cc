@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "inlining-iterator.h"
 #include "tree-logical-location.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 #include "diagnostics/state-graphs.h"
 
 #include "analyzer/analyzer-logging.h"
@@ -145,10 +145,10 @@ checker_event::get_meaning () const
 
 void
 checker_event::
-maybe_add_sarif_properties (sarif_builder &builder,
-			    sarif_object &thread_flow_loc_obj) const
+maybe_add_sarif_properties (diagnostics::sarif_builder &builder,
+			    diagnostics::sarif_object &thread_flow_loc_obj) const
 {
-  sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
+  auto &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/checker_event/"
   props.set (PROPERTY_PREFIX "emission_id",
 	     diagnostic_event_id_to_json  (m_emission_id));
@@ -534,12 +534,13 @@ state_change_event::get_meaning () const
    for superedge_event.  */
 
 void
-superedge_event::maybe_add_sarif_properties (sarif_builder &builder,
-					     sarif_object &thread_flow_loc_obj)
+superedge_event::
+maybe_add_sarif_properties (diagnostics::sarif_builder &builder,
+			    diagnostics::sarif_object &thread_flow_loc_obj)
   const
 {
   checker_event::maybe_add_sarif_properties (builder, thread_flow_loc_obj);
-  sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
+  auto &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/superedge_event/"
   if (m_sedge)
     props.set (PROPERTY_PREFIX "superedge", m_sedge->to_json ());

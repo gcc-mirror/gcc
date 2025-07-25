@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"
@@ -2985,10 +2985,10 @@ common_handle_option (struct gcc_options *opts,
 	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
 				  : opts->x_main_input_basename);
 	  gcc_assert (dc);
-	  diagnostic_output_format_init (*dc,
-					 opts->x_main_input_filename, basename,
-					 (enum diagnostics_output_format)value,
-					 opts->x_flag_diagnostics_json_formatting);
+	  diagnostics::output_format_init (*dc,
+					   opts->x_main_input_filename, basename,
+					   (enum diagnostics_output_format)value,
+					   opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
 

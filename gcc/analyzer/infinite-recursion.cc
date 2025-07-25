@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cgraph.h"
 #include "digraph.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
@@ -40,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/exploded-graph.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/feasible-graph.h"
-#include "diagnostic-format-sarif.h"
 
 /* A subclass of pending_diagnostic for complaining about suspected
    infinite recursion.  */
@@ -223,10 +223,11 @@ public:
     return false;
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/infinite_recursion_diagnostic/"
     props.set_integer (PROPERTY_PREFIX "prev_entry_enode",
 		       m_prev_entry_enode->m_index);

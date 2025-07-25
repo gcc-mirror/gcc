@@ -18,21 +18,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_FORMAT_H
-#define GCC_DIAGNOSTIC_FORMAT_H
+#ifndef GCC_DIAGNOSTICS_SINK_H
+#define GCC_DIAGNOSTICS_SINK_H
 
 #include "diagnostic.h"
 
-class diagnostic_per_format_buffer;
+namespace diagnostics {
+
+class per_sink_buffer;
 
 /* Abstract base class for a particular output format for diagnostics;
    each value of -fdiagnostics-output-format= will have its own
    implementation.  */
 
-class diagnostic_output_format
+class sink
 {
 public:
-  virtual ~diagnostic_output_format () {}
+  virtual ~sink () {}
 
   virtual void dump (FILE *out, int indent) const;
 
@@ -40,16 +42,16 @@ public:
      e.g. for titles of HTML, for SARIF's artifact metadata.  */
   virtual void set_main_input_filename (const char *) {}
 
-  /* Vfunc for making an appropriate diagnostic_per_format_buffer
+  /* Vfunc for making an appropriate per_sink_buffer
      subclass for this format.  */
-  virtual std::unique_ptr<diagnostic_per_format_buffer>
-  make_per_format_buffer () = 0;
+  virtual std::unique_ptr<per_sink_buffer>
+  make_per_sink_buffer () = 0;
 
-  /* Vfunc to be called when call a diagnostic_buffer is set on
-     a diagnostic_context, to update this format.  The per_format_buffer
-     will be one created by make_per_format_buffer above and thus be
+  /* Vfunc to be called when call a diagnostics::buffer is set on
+     a diagnostic_context, to update this format.  The per_sink_buffer
+     will be one created by make_per_sink_buffer above and thus be
      of the correct subclass.  */
-  virtual void set_buffer (diagnostic_per_format_buffer *) = 0;
+  virtual void set_buffer (per_sink_buffer *) = 0;
 
   virtual void on_begin_group () = 0;
   virtual void on_end_group () = 0;
@@ -61,7 +63,7 @@ public:
 
   virtual void on_report_verbatim (text_info &);
 
-  virtual void on_diagram (const diagnostics::diagram &diag) = 0;
+  virtual void on_diagram (const diagram &diag) = 0;
   virtual void after_diagnostic (const diagnostic_info &) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
   virtual bool follows_reference_printer_p () const = 0;
@@ -73,7 +75,7 @@ public:
   virtual void update_printer () = 0;
 
   virtual void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &) = 0;
+  report_global_digraph (const digraphs::lazy_digraph &) = 0;
 
   diagnostic_context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer.get (); }
@@ -86,7 +88,7 @@ public:
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
 protected:
-  diagnostic_output_format (diagnostic_context &context)
+  sink (diagnostic_context &context)
   : m_context (context),
     m_printer (context.clone_printer ())
   {}
@@ -97,10 +99,12 @@ protected:
 };
 
 extern void
-diagnostic_output_format_init (diagnostic_context &,
-			       const char *main_input_filename_,
-			       const char *base_file_name,
-			       enum diagnostics_output_format,
-			       bool json_formatting);
+output_format_init (diagnostic_context &,
+		    const char *main_input_filename_,
+		    const char *base_file_name,
+		    enum diagnostics_output_format,
+		    bool json_formatting);
 
-#endif /* ! GCC_DIAGNOSTIC_FORMAT_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_SINK_H */

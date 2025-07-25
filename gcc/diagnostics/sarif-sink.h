@@ -18,13 +18,21 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_FORMAT_SARIF_H
-#define GCC_DIAGNOSTIC_FORMAT_SARIF_H
+#ifndef GCC_DIAGNOSTICS_SARIF_SINK_H
+#define GCC_DIAGNOSTICS_SARIF_SINK_H
 
 #include "json.h"
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "diagnostics/output-file.h"
 #include "diagnostics/logical-locations.h"
+
+namespace diagnostics {
+
+namespace digraphs {
+  class digraph;
+  class node;
+  class edge;
+}
 
 /* Enum for choosing what format to serializing the generated SARIF into.  */
 
@@ -36,25 +44,25 @@ enum class sarif_serialization_kind
 };
 
 extern diagnostics::output_file
-diagnostic_output_format_open_sarif_file (diagnostic_context &context,
-					  line_maps *line_maps,
-					  const char *base_file_name,
-					  enum sarif_serialization_kind serialization_kind);
+open_sarif_output_file (diagnostic_context &context,
+			line_maps *line_maps,
+			const char *base_file_name,
+			enum sarif_serialization_kind serialization_kind);
 
-extern diagnostic_output_format &
-diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
-					    const line_maps *line_maps,
-					    bool formatted);
-extern diagnostic_output_format &
-diagnostic_output_format_init_sarif_file (diagnostic_context &context,
-					  line_maps *line_maps,
-					  bool formatted,
-					  const char *base_file_name);
-extern diagnostic_output_format &
-diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
-					    const line_maps *line_maps,
-					    bool formatted,
-					    FILE *stream);
+extern sink &
+init_sarif_stderr (diagnostic_context &context,
+		   const line_maps *line_maps,
+		   bool formatted);
+extern sink &
+init_sarif_file (diagnostic_context &context,
+		 line_maps *line_maps,
+		 bool formatted,
+		 const char *base_file_name);
+extern sink &
+init_sarif_stream (diagnostic_context &context,
+		   const line_maps *line_maps,
+		   bool formatted,
+		   FILE *stream);
 
 /* Abstract base class for handling JSON output vs other kinds of
    serialization of the json tree.  */
@@ -104,7 +112,7 @@ struct sarif_generation_options
   bool m_state_graph;
 };
 
-extern std::unique_ptr<diagnostic_output_format>
+extern std::unique_ptr<sink>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
@@ -113,13 +121,6 @@ make_sarif_sink (diagnostic_context &context,
 
 class sarif_builder;
 class sarif_location_manager;
-
-namespace diagnostics {
-namespace digraphs {
-  class digraph;
-  class node;
-  class edge;
-}}
 
 /* Concrete subclass of json::object for SARIF property bags
    (SARIF v2.1.0 section 3.8).  */
@@ -170,17 +171,19 @@ class sarif_edge : public sarif_object
 };
 
 extern std::unique_ptr<sarif_graph>
-make_sarif_graph (const diagnostics::digraphs::digraph &g,
+make_sarif_graph (const digraphs::digraph &g,
 		  sarif_builder *builder,
 		  sarif_location_manager *sarif_location_mgr);
 
 extern std::unique_ptr<sarif_node>
-make_sarif_node (const diagnostics::digraphs::node &n,
+make_sarif_node (const digraphs::node &n,
 		 sarif_builder *builder,
 		 sarif_location_manager *sarif_location_mgr);
 
 extern std::unique_ptr<sarif_edge>
-make_sarif_edge (const diagnostics::digraphs::edge &e,
+make_sarif_edge (const digraphs::edge &e,
 		 sarif_builder *builder);
 
-#endif /* ! GCC_DIAGNOSTIC_FORMAT_SARIF_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_SARIF_SINK_H */

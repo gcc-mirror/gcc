@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "simple-diagnostic-path.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 using namespace diagnostics::paths;
 
@@ -202,10 +202,10 @@ test_emission (pretty_printer *event_pp)
 
     /* Verify that the path works as expected.  */
     dc.set_path_format (DPF_INLINE_EVENTS);
-    diagnostic_text_output_format sink (dc);
-    pp_buffer (sink.get_printer ())->m_flush_p = false;
-    sink.print_path (rich_loc.m_path);
-    ASSERT_STREQ (pp_formatted_text (sink.get_printer ()),
+    diagnostics::text_sink sink_ (dc);
+    pp_buffer (sink_.get_printer ())->m_flush_p = false;
+    sink_.print_path (rich_loc.m_path);
+    ASSERT_STREQ (pp_formatted_text (sink_.get_printer ()),
 		  "  `foo': event 1\n"
 		  " (1): first `free'\n"
 		  "  `foo': event 2\n"

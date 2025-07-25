@@ -114,8 +114,9 @@ public:
   }
 
   void
-  maybe_add_sarif_properties (sarif_builder &,
-			      sarif_object &thread_flow_loc_obj) const override;
+  maybe_add_sarif_properties (diagnostics::sarif_builder &,
+			      diagnostics::sarif_object &thread_flow_loc_obj)
+    const override;
 
   /* Additional functionality.  */
   enum event_kind get_kind () const { return m_kind; }
@@ -423,8 +424,9 @@ public:
 class superedge_event : public checker_event
 {
 public:
-  void maybe_add_sarif_properties (sarif_builder &,
-				   sarif_object &thread_flow_loc_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_builder &,
+			      diagnostics::sarif_object &thread_flow_loc_obj)
     const override;
 
   /* Mark this edge event as being either an interprocedural call or

@@ -18,24 +18,26 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_FORMAT_TEXT_H
-#define GCC_DIAGNOSTIC_FORMAT_TEXT_H
+#ifndef GCC_DIAGNOSTICS_TEXT_SINK_H
+#define GCC_DIAGNOSTICS_TEXT_SINK_H
 
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 
-/* Subclass of diagnostic_output_format for classic text-based output
+namespace diagnostics {
+
+/* Subclass of diagnostics::sink for classic text-based output
    to stderr.
 
    Uses diagnostic_context.m_text_callbacks to provide client-specific
    textual output (e.g. include paths, macro expansions, etc).  */
 
-class diagnostic_text_output_format : public diagnostic_output_format
+class text_sink : public sink
 {
 public:
-  diagnostic_text_output_format (diagnostic_context &context,
-				 diagnostic_source_printing_options *source_printing = nullptr,
-				 bool follows_reference_printer = false)
-  : diagnostic_output_format (context),
+  text_sink (diagnostic_context &context,
+	     diagnostic_source_printing_options *source_printing = nullptr,
+	     bool follows_reference_printer = false)
+  : sink (context),
     m_saved_output_buffer (nullptr),
     m_column_policy (context),
     m_last_module (nullptr),
@@ -47,20 +49,20 @@ public:
     m_show_nesting (false),
     m_show_nesting_levels (false)
   {}
-  ~diagnostic_text_output_format ();
+  ~text_sink ();
 
   void dump (FILE *out, int indent) const override;
 
-  std::unique_ptr<diagnostic_per_format_buffer>
-  make_per_format_buffer () final override;
-  void set_buffer (diagnostic_per_format_buffer *) final override;
+  std::unique_ptr<per_sink_buffer>
+  make_per_sink_buffer () final override;
+  void set_buffer (per_sink_buffer *) final override;
 
   void on_begin_group () override {}
   void on_end_group () override {}
   void on_report_diagnostic (const diagnostic_info &,
 			     diagnostic_t orig_diag_kind) override;
   void on_report_verbatim (text_info &) final override;
-  void on_diagram (const diagnostics::diagram &d) override;
+  void on_diagram (const diagram &d) override;
   void after_diagnostic (const diagnostic_info &) override;
   bool machine_readable_stderr_p () const final override
   {
@@ -71,7 +73,7 @@ public:
   void update_printer () override;
 
   void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &) final override
+  report_global_digraph (const digraphs::lazy_digraph &) final override
   {
     // no-op for text
   }
@@ -87,7 +89,7 @@ public:
 
   char *build_indent_prefix (bool with_bullet) const;
 
-  void print_path (const diagnostics::paths::path &path);
+  void print_path (const paths::path &path);
 
   bool show_column_p () const { return get_context ().m_show_column; }
 
@@ -168,4 +170,6 @@ protected:
   bool m_show_nesting_levels;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_FORMAT_TEXT_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_TEXT_SINK_H */

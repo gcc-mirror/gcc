@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 static int suppress_errors = 0;
 
@@ -43,7 +43,7 @@ static bool warnings_not_errors = false;
 static bool buffered_p;
 
 static gfc_error_buffer *error_buffer;
-static diagnostic_buffer *pp_error_buffer, *pp_warning_buffer;
+static diagnostics::buffer *pp_error_buffer, *pp_warning_buffer;
 
 gfc_error_buffer::gfc_error_buffer ()
 : flag (false), buffer (*global_dc)
@@ -228,7 +228,7 @@ gfc_print_wide_char (gfc_char_t c)
    it to global_dc.  */
 
 static void
-gfc_clear_diagnostic_buffer (diagnostic_buffer *this_buffer)
+gfc_clear_diagnostic_buffer (diagnostics::buffer *this_buffer)
 {
   gcc_assert (this_buffer);
   global_dc->clear_diagnostic_buffer (*this_buffer);
@@ -263,7 +263,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 
   diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
-  diagnostic_buffer *old_buffer = global_dc->get_diagnostic_buffer ();
+  diagnostics::buffer *old_buffer = global_dc->get_diagnostic_buffer ();
   gcc_assert (!old_buffer);
 
   gfc_clear_diagnostic_buffer (pp_warning_buffer);
@@ -548,7 +548,7 @@ gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_p
        [locus of primary range]: Error: Some error at (1) and (2)
 */
 static void
-gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
 			     const diagnostic_info *diagnostic)
 {
   diagnostic_context *const context = &text_output.get_context ();
@@ -634,7 +634,7 @@ gfc_diagnostic_start_span (const diagnostic_location_print_policy &loc_policy,
 
 
 static void
-gfc_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+gfc_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 			       const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
 			       diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
@@ -778,7 +778,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
 
   diagnostic_info diagnostic;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
-  diagnostic_buffer *old_buffer = global_dc->get_diagnostic_buffer ();
+  diagnostics::buffer *old_buffer = global_dc->get_diagnostic_buffer ();
   gcc_assert (!old_buffer);
 
   gfc_clear_diagnostic_buffer (pp_error_buffer);
@@ -885,8 +885,8 @@ static void
 gfc_move_error_buffer_from_to (gfc_error_buffer * buffer_from,
 			       gfc_error_buffer * buffer_to)
 {
-  diagnostic_buffer * from = &(buffer_from->buffer);
-  diagnostic_buffer * to =  &(buffer_to->buffer);
+  diagnostics::buffer * from = &(buffer_from->buffer);
+  diagnostics::buffer * to =  &(buffer_to->buffer);
 
   buffer_to->flag = buffer_from->flag;
   buffer_from->flag = false;
@@ -956,7 +956,7 @@ gfc_diagnostics_init (void)
   global_dc->set_format_decoder (gfc_format_decoder);
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
-  pp_warning_buffer = new diagnostic_buffer (*global_dc);
+  pp_warning_buffer = new diagnostics::buffer (*global_dc);
   error_buffer = new gfc_error_buffer ();
   pp_error_buffer = &(error_buffer->buffer);
 }

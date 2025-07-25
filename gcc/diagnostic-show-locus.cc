@@ -716,9 +716,9 @@ get_printer (to_text &sink)
 
 template<>
 void
-default_diagnostic_start_span_fn<to_text> (const diagnostic_location_print_policy &loc_policy,
-					   to_text &sink,
-					   expanded_location exploc)
+diagnostics::default_start_span_fn<to_text> (const diagnostic_location_print_policy &loc_policy,
+					     to_text &sink,
+					     expanded_location exploc)
 {
   const diagnostic_column_policy &column_policy
     = loc_policy.get_column_policy ();
@@ -732,9 +732,9 @@ default_diagnostic_start_span_fn<to_text> (const diagnostic_location_print_polic
 
 template<>
 void
-default_diagnostic_start_span_fn<to_html> (const diagnostic_location_print_policy &loc_policy,
-					   to_html &sink,
-					   expanded_location exploc)
+diagnostics::default_start_span_fn<to_html> (const diagnostic_location_print_policy &loc_policy,
+					     to_html &sink,
+					     expanded_location exploc)
 {
   const diagnostic_column_policy &column_policy
     = loc_policy.get_column_policy ();

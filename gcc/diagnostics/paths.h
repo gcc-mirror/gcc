@@ -25,11 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/event-id.h"
 #include "diagnostics/logical-locations.h"
 
-namespace xml { class document; }
-
-class sarif_builder;
-class sarif_object;
-
 namespace diagnostics {
   namespace digraphs {
     class digraph;
@@ -37,6 +32,8 @@ namespace diagnostics {
   namespace logical_locations {
     class manager;
   } // logical_locations
+  class sarif_builder;
+  class sarif_object;
 } //namespace diagnostics
 
 namespace diagnostics {

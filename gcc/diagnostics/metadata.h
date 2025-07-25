@@ -21,9 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_METADATA_H
 #define GCC_DIAGNOSTICS_METADATA_H
 
-class sarif_object;
-
 namespace diagnostics {
+
+  class sarif_object;
 
   namespace digraphs {
     class lazy_digraphs;

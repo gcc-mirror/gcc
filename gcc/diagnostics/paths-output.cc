@@ -38,8 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "diagnostics/selftest-paths.h"
 #include "text-art/theme.h"
-#include "diagnostic-format-text.h"
-#include "diagnostic-format-html.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/html-sink.h"
 #include "xml.h"
 #include "xml-printer.h"
 
@@ -62,7 +62,7 @@ using namespace diagnostics::paths;
 class path_print_policy
 {
 public:
-  path_print_policy (const diagnostic_text_output_format &text_output)
+  path_print_policy (const diagnostics::text_sink &text_output)
   : m_source_policy (text_output.get_context ())
   {
   }
@@ -593,7 +593,7 @@ struct event_range
      call to diagnostic_show_locus.  */
 
   void print_as_text (pretty_printer &pp,
-		      diagnostic_text_output_format &text_output,
+		      diagnostics::text_sink &text_output,
 		      diagnostic_source_effect_info *effect_info)
   {
     location_t initial_loc = m_initial_event.get_location ();
@@ -883,7 +883,7 @@ public:
   }
 
   void
-  print_swimlane_for_event_range_as_text (diagnostic_text_output_format &text_output,
+  print_swimlane_for_event_range_as_text (diagnostics::text_sink &text_output,
 					  pretty_printer *pp,
 					  const logical_locations::manager &logical_loc_mgr,
 					  event_range *range,
@@ -1109,7 +1109,7 @@ private:
 
 static void
 print_path_summary_as_text (const path_summary &ps,
-			    diagnostic_text_output_format &text_output,
+			    diagnostics::text_sink &text_output,
 			    bool show_depths)
 {
   pretty_printer *const pp = text_output.get_printer ();
@@ -1305,7 +1305,7 @@ private:
 /* Print PATH according to the context's path_format.  */
 
 void
-diagnostic_text_output_format::print_path (const path &path_)
+diagnostics::text_sink::print_path (const path &path_)
 {
   const unsigned num_events = path_.num_events ();
 
@@ -1382,11 +1382,11 @@ diagnostic_text_output_format::print_path (const path &path_)
    If non-null, use EVENT_LABEL_WRITER when writing events.  */
 
 void
-print_path_as_html (xml::printer &xp,
-		    const path &path_,
-		    diagnostic_context &dc,
-		    html_label_writer *event_label_writer,
-		    const diagnostic_source_print_policy &dspp)
+diagnostics::print_path_as_html (xml::printer &xp,
+				 const path &path_,
+				 diagnostic_context &dc,
+				 html_label_writer *event_label_writer,
+				 const diagnostic_source_print_policy &dspp)
 {
   path_print_policy policy (dc);
   const bool check_rich_locations = true;
@@ -1438,7 +1438,7 @@ test_empty_path (pretty_printer *event_pp)
   ASSERT_FALSE (path.interprocedural_p ());
 
   test_diagnostic_context dc;
-  diagnostic_text_output_format text_output (dc);
+  diagnostics::text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, false);
   ASSERT_EQ (summary.get_num_ranges (), 0);
@@ -1461,7 +1461,7 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_FALSE (path.interprocedural_p ());
 
   test_diagnostic_context dc;
-  diagnostic_text_output_format text_output (dc);
+  diagnostics::text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, false, false, false);
   ASSERT_EQ (summary.get_num_ranges (), 1);
@@ -1498,7 +1498,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
 
   {
     test_diagnostic_context dc;
-    diagnostic_text_output_format text_output (dc, nullptr, false);
+    diagnostics::text_sink text_output (dc, nullptr, false);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 9);
@@ -1560,7 +1560,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
   {
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1637,7 +1637,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
 
   {
     test_diagnostic_context dc;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 5);
@@ -1674,7 +1674,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
   {
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1726,7 +1726,7 @@ test_recursion (pretty_printer *event_pp)
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
 
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 4);
@@ -1758,7 +1758,7 @@ test_recursion (pretty_printer *event_pp)
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
 
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1880,7 +1880,7 @@ test_control_flow_1 (const line_table_case &case_,
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1906,7 +1906,7 @@ test_control_flow_1 (const line_table_case &case_,
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = false;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1930,7 +1930,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1957,7 +1957,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = false;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1980,7 +1980,7 @@ test_control_flow_1 (const line_table_case &case_,
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     dc.m_source_printing.show_event_links_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2007,7 +2007,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2078,7 +2078,7 @@ test_control_flow_2 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2165,7 +2165,7 @@ test_control_flow_3 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2223,7 +2223,7 @@ assert_cfg_edge_path_streq (const location &loc,
   dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
   dc.m_source_printing.show_event_links_p = true;
   dc.m_source_printing.show_line_numbers_p = true;
-  diagnostic_text_output_format text_output (dc);
+  diagnostics::text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, true);
   print_path_summary_as_text (summary, text_output, false);
@@ -2547,7 +2547,7 @@ test_control_flow_5 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2636,7 +2636,7 @@ test_control_flow_6 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostic_text_output_format text_output (dc);
+    diagnostics::text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);

@@ -38,9 +38,12 @@ namespace diagnostics {
     class manager;
   } // namespace diagnostics::logical_locations
 
+  class buffer;
   class client_data_hooks;
   class diagram;
   class edit_context;
+  class sink;
+    class text_sink;
 
 } // namespace diagnostics
 
@@ -191,7 +194,7 @@ struct diagnostic_info
 class diagnostic_location_print_policy;
 class diagnostic_source_print_policy;
 
-typedef void (*diagnostic_text_starter_fn) (diagnostic_text_output_format &,
+typedef void (*diagnostic_text_starter_fn) (diagnostics::text_sink &,
 					    const diagnostic_info *);
 
 struct to_text;
@@ -204,7 +207,7 @@ using diagnostic_start_span_fn = void (*) (const diagnostic_location_print_polic
 					   Sink &sink,
 					   expanded_location);
 
-typedef void (*diagnostic_text_finalizer_fn) (diagnostic_text_output_format &,
+typedef void (*diagnostic_text_finalizer_fn) (diagnostics::text_sink &,
 					      const diagnostic_info *,
 					      diagnostic_t);
 
@@ -238,9 +241,6 @@ public:
 };
 
 class diagnostic_source_effect_info;
-class diagnostic_output_format;
-  class diagnostic_text_output_format;
-class diagnostic_buffer;
 
 /* A stack of sets of classifications: each entry in the stack is
    a mapping from option index to diagnostic severity that can be changed
@@ -403,7 +403,7 @@ class diagnostic_location_print_policy
 {
 public:
   diagnostic_location_print_policy (const diagnostic_context &dc);
-  diagnostic_location_print_policy (const diagnostic_text_output_format &);
+  diagnostic_location_print_policy (const diagnostics::text_sink &);
 
   bool show_column_p () const { return m_show_column; }
 
@@ -505,7 +505,7 @@ private:
 
 /* A collection of counters of diagnostics, per-kind
    (e.g. "3 errors and 1 warning"), for use by both diagnostic_context
-   and by diagnostic_buffer.  */
+   and by diagnostics::buffer.  */
 
 struct diagnostic_counters
 {
@@ -532,12 +532,12 @@ struct diagnostic_counters
      (e.g. text vs SARIF)
    - providing a "dump" member function for a debug dump of the state of
      the diagnostics subsytem
-   - direct vs buffered diagnostics (see class diagnostic_buffer)
+   - direct vs buffered diagnostics (see class diagnostics::buffer)
    - tracking the original argv of the program (for SARIF output)
    - crash-handling
 
    It delegates responsibility to various other classes:
-   - the various output sinks (instances of diagnostic_output_format
+   - the various output sinks (instances of diagnostics::sink
      subclasses)
    - formatting of messages (class pretty_printer)
    - an optional urlifier to inject URLs into formatted messages
@@ -567,8 +567,8 @@ public:
   diagnostic_text_finalizer (diagnostic_context *context);
 
   friend class diagnostic_source_print_policy;
-  friend class diagnostic_text_output_format;
-  friend class diagnostic_buffer;
+  friend class diagnostics::text_sink;
+  friend class diagnostics::buffer;
 
   typedef void (*set_locations_callback_t) (diagnostic_context *,
 					    diagnostic_info *);
@@ -670,7 +670,7 @@ public:
   void emit_diagram (const diagnostics::diagram &diag);
 
   /* Various setters for use by option-handling logic.  */
-  void set_output_format (std::unique_ptr<diagnostic_output_format> output_format);
+  void set_sink (std::unique_ptr<diagnostics::sink> sink_);
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
   void set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks);
 
@@ -712,7 +712,7 @@ public:
     return m_warning_as_error_requested;
   }
   bool show_path_depths_p () const { return m_show_path_depths; }
-  diagnostic_output_format &get_output_format (size_t idx) const;
+  diagnostics::sink &get_sink (size_t idx) const;
   enum diagnostic_path_format get_path_format () const { return m_path_format; }
   enum diagnostics_escape_format get_escape_format () const
   {
@@ -814,13 +814,13 @@ public:
   }
 
 
-  void set_diagnostic_buffer (diagnostic_buffer *);
-  diagnostic_buffer *get_diagnostic_buffer () const
+  void set_diagnostic_buffer (diagnostics::buffer *);
+  diagnostics::buffer *get_diagnostic_buffer () const
   {
     return m_diagnostic_buffer;
   }
-  void clear_diagnostic_buffer (diagnostic_buffer &);
-  void flush_diagnostic_buffer (diagnostic_buffer &);
+  void clear_diagnostic_buffer (diagnostics::buffer &);
+  void flush_diagnostic_buffer (diagnostics::buffer &);
 
   std::unique_ptr<pretty_printer> clone_printer () const
   {
@@ -833,7 +833,7 @@ public:
   }
 
   void
-  add_sink (std::unique_ptr<diagnostic_output_format>);
+  add_sink (std::unique_ptr<diagnostics::sink>);
 
   void remove_all_output_sinks ();
 
@@ -1086,7 +1086,7 @@ private:
      The sinks are owned by the context; this would be a
      std::vector<std::unique_ptr> if diagnostic_context had a
      proper ctor.  */
-  auto_vec<diagnostic_output_format *> m_output_sinks;
+  auto_vec<diagnostics::sink *> m_sinks;
 
   /* Callback to set the locations of call sites along the inlining
      stack corresponding to a diagnostic location.  Needed to traverse
@@ -1116,14 +1116,14 @@ private:
   /* Owned by the context.  */
   char **m_original_argv;
 
-  /* Borrowed pointer to the active diagnostic_buffer, if any.
+  /* Borrowed pointer to the active diagnostics::buffer, if any.
      If null (the default), then diagnostics that are reported to the
      context are immediately issued to the output format.
      If non-null, then diagnostics that are reported to the context
      are buffered in the buffer, and may be issued to the output format
      later (if the buffer is flushed), moved to other buffers, or
      discarded (if the buffer is cleared).  */
-  diagnostic_buffer *m_diagnostic_buffer;
+  diagnostics::buffer *m_diagnostic_buffer;
 };
 
 /* Client supplied function to announce a diagnostic
@@ -1311,15 +1311,20 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    diagnostic_t)
      ATTRIBUTE_GCC_DIAG(2,0);
 #endif
-void default_diagnostic_text_starter (diagnostic_text_output_format &,
-				      const diagnostic_info *);
+
+namespace diagnostics {
+
+void default_text_starter (diagnostics::text_sink &,
+			   const diagnostic_info *);
 template <typename Sink>
-void default_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
-				       Sink &sink,
-				       expanded_location);
-void default_diagnostic_text_finalizer (diagnostic_text_output_format &,
-					const diagnostic_info *,
-					diagnostic_t);
+void default_start_span_fn (const diagnostic_location_print_policy &,
+			    Sink &sink,
+			    expanded_location);
+void default_text_finalizer (diagnostics::text_sink &,
+			     const diagnostic_info *,
+			     diagnostic_t);
+} // namespace diagnostics
+
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 
 int get_terminal_width (void);
@@ -1394,6 +1399,10 @@ extern char *get_cwe_url (int cwe);
 
 extern const char *get_diagnostic_kind_text (diagnostic_t kind);
 
+namespace diagnostics {
+
 const char *maybe_line_and_column (int line, int col);
+
+} // namespace diagnostics
 
 #endif /* ! GCC_DIAGNOSTIC_H */
