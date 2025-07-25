@@ -96,17 +96,17 @@ enum diagnostics_output_format
   DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE
 };
 
-/* An enum for controlling how diagnostic_paths should be printed.  */
+/* An enum for controlling how diagnostic paths should be printed.  */
 enum diagnostic_path_format
 {
-  /* Don't print diagnostic_paths.  */
+  /* Don't print diagnostic paths.  */
   DPF_NONE,
 
-  /* Print diagnostic_paths by emitting a separate "note" for every event
+  /* Print diagnostic paths by emitting a separate "note" for every event
      in the path.  */
   DPF_SEPARATE_EVENTS,
 
-  /* Print diagnostic_paths by consolidating events together where they
+  /* Print diagnostic paths by consolidating events together where they
      are close enough, and printing such runs of events with multiple
      calls to diagnostic_show_locus, showing the individual events in
      each run via labels in the source.  */
@@ -931,7 +931,7 @@ private:
   /* True if we should print any rules associated with diagnostics.  */
   bool m_show_rules;
 
-  /* How should diagnostic_path objects be printed.  */
+  /* How should diagnostics::paths::path objects be printed.  */
   enum diagnostic_path_format m_path_format;
 
   /* True if we should print stack depths when printing diagnostic paths.  */

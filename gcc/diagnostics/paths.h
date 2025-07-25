@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_PATH_H
-#define GCC_DIAGNOSTIC_PATH_H
+#ifndef GCC_DIAGNOSTICS_PATHS_H
+#define GCC_DIAGNOSTICS_PATHS_H
 
 #include "diagnostic.h" /* for ATTRIBUTE_GCC_DIAG.  */
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "diagnostics/logical-locations.h"
 
 namespace xml { class document; }
@@ -31,12 +31,18 @@ class sarif_builder;
 class sarif_object;
 
 namespace diagnostics {
-namespace digraphs {
-  class digraph;
-} // namespace digraphs
+  namespace digraphs {
+    class digraph;
+  } // namespace digraphs
+  namespace logical_locations {
+    class manager;
+  } // logical_locations
 } //namespace diagnostics
 
-/* A diagnostic_path is an optional additional piece of metadata associated
+namespace diagnostics {
+namespace paths {
+
+/* A diagnostics::paths::path is an optional additional piece of metadata associated
    with a diagnostic (via its rich_location).
 
    It describes a sequence of events predicted by the compiler that
@@ -74,9 +80,9 @@ namespace digraphs {
 /* Abstract base classes, describing events within a path, and the paths
    themselves.  */
 
-/* One event within a diagnostic_path.  */
+/* One event within a path.  */
 
-class diagnostic_event
+class event
 {
  public:
   /* Enums for giving a sense of what this event means.
@@ -148,7 +154,7 @@ class diagnostic_event
     enum property m_property;
   };
 
-  virtual ~diagnostic_event () {}
+  virtual ~event () {}
 
   virtual location_t get_location () const = 0;
 
@@ -160,7 +166,7 @@ class diagnostic_event
   virtual void print_desc (pretty_printer &pp) const = 0;
 
   /* Get a logical location for this event, or null if there is none.  */
-  virtual diagnostics::logical_locations::key get_logical_location () const = 0;
+  virtual logical_locations::key get_logical_location () const = 0;
 
   virtual meaning get_meaning () const = 0;
 
@@ -168,7 +174,7 @@ class diagnostic_event
      next event (e.g. to highlight control flow).  */
   virtual bool connect_to_next_event_p () const = 0;
 
-  virtual diagnostic_thread_id_t get_thread_id () const = 0;
+  virtual thread_id_t get_thread_id () const = 0;
 
   /* Hook for SARIF output to allow for adding diagnostic-specific
      properties to the threadFlowLocation object's property bag.  */
@@ -180,37 +186,35 @@ class diagnostic_event
 
   /* Hook for capturing state at this event, potentially for visualizing
      in HTML output, or for adding to SARIF.  */
-  virtual std::unique_ptr<diagnostics::digraphs::digraph>
+  virtual std::unique_ptr<digraphs::digraph>
   maybe_make_diagnostic_state_graph (bool debug) const;
 
   label_text get_desc (pretty_printer &ref_pp) const;
 };
 
 /* Abstract base class representing a thread of execution within
-   a diagnostic_path.
-   Each diagnostic_event is associated with one thread.
-   Typically there is just one thread per diagnostic_path. */
+   a diagnostics::paths::path.
+   Each event is associated with one thread.
+   Typically there is just one thread per diagnostics::paths::path. */
 
-class diagnostic_thread
+class thread
 {
 public:
-  virtual ~diagnostic_thread () {}
+  virtual ~thread () {}
   virtual label_text get_name (bool can_colorize) const = 0;
 };
 
 /* Abstract base class for getting at a sequence of events.  */
 
-class diagnostic_path
+class path
 {
  public:
-  using logical_location_manager = diagnostics::logical_locations::manager;
-
-  virtual ~diagnostic_path () {}
+  virtual ~path () {}
   virtual unsigned num_events () const = 0;
-  virtual const diagnostic_event & get_event (int idx) const = 0;
+  virtual const event & get_event (int idx) const = 0;
   virtual unsigned num_threads () const = 0;
-  virtual const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const = 0;
+  virtual const thread &
+  get_thread (thread_id_t) const = 0;
 
   /* Return true iff the two events are both within the same function,
      or both outside of any function.  */
@@ -221,13 +225,13 @@ class diagnostic_path
   bool interprocedural_p () const;
   bool multithreaded_p () const;
 
-  const logical_location_manager &get_logical_location_manager () const
+  const logical_locations::manager &get_logical_location_manager () const
   {
     return m_logical_loc_mgr;
   }
 
 protected:
-  diagnostic_path (const logical_location_manager &logical_loc_mgr)
+  path (const logical_locations::manager &logical_loc_mgr)
   : m_logical_loc_mgr (logical_loc_mgr)
   {
   }
@@ -235,12 +239,15 @@ protected:
 private:
   bool get_first_event_in_a_function (unsigned *out_idx) const;
 
-  const logical_location_manager &m_logical_loc_mgr;
+  const logical_locations::manager &m_logical_loc_mgr;
 };
+
+} // namespace paths
+} // namespace diagnostics
 
 /* Concrete subclasses of the above can be found in
    simple-diagnostic-path.h.  */
 
-extern void debug (diagnostic_path *path);
+extern void debug (diagnostics::paths::path *path);
 
-#endif /* ! GCC_DIAGNOSTIC_PATH_H */
+#endif /* ! GCC_DIAGNOSTICS_PATHS_H */

@@ -1,4 +1,4 @@
-/* Subclasses of diagnostic_event for analyzer diagnostics.
+/* Subclasses of diagnostics::paths::event for analyzer diagnostics.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -62,7 +62,7 @@ extern const char *event_kind_to_string (enum event_kind ek);
    The class hierarchy looks like this (using indentation to show
    inheritance, and with event_kinds shown for the concrete subclasses):
 
-   diagnostic_event
+   diagnostics::paths::event
      checker_event
        debug_event (event_kind::debug)
        custom_event (event_kind::custom)
@@ -91,13 +91,13 @@ extern const char *event_kind_to_string (enum event_kind ek);
        unwind_event (event_kind::unwind)
        warning_event (event_kind::warning).  */
 
-/* Abstract subclass of diagnostic_event; the base class for use in
-   checker_path (the analyzer's diagnostic_path subclass).  */
+/* Abstract subclass of diagnostics::paths::event; the base class for use in
+   checker_path (the analyzer's diagnostics::paths::path subclass).  */
 
-class checker_event : public diagnostic_event
+class checker_event : public diagnostics::paths::event
 {
 public:
-  /* Implementation of diagnostic_event.  */
+  /* Implementation of diagnostics::paths::event.  */
 
   location_t get_location () const final override { return m_loc; }
   int get_stack_depth () const final override { return m_effective_depth; }
@@ -108,7 +108,7 @@ public:
   }
   meaning get_meaning () const override;
   bool connect_to_next_event_p () const override { return false; }
-  diagnostic_thread_id_t get_thread_id () const final override
+  diagnostics::paths::thread_id_t get_thread_id () const final override
   {
     return 0;
   }
@@ -125,7 +125,7 @@ public:
 
   virtual void prepare_for_emission (checker_path *,
 				     pending_diagnostic *pd,
-				     diagnostic_event_id_t emission_id);
+				     diagnostics::paths::event_id_t emission_id);
   virtual bool is_call_p () const { return false; }
   virtual bool is_function_entry_p () const  { return false; }
   virtual bool is_return_p () const  { return false; }
@@ -137,7 +137,7 @@ public:
   get_program_state () const { return nullptr; }
 
   /* For use with %@.  */
-  const diagnostic_event_id_t *get_id_ptr () const
+  const diagnostics::paths::event_id_t *get_id_ptr () const
   {
     return &m_emission_id;
   }
@@ -161,7 +161,7 @@ protected:
   int m_original_depth;
   int m_effective_depth;
   pending_diagnostic *m_pending_diagnostic;
-  diagnostic_event_id_t m_emission_id; // only set once all pruning has occurred
+  diagnostics::paths::event_id_t m_emission_id; // only set once all pruning has occurred
   diagnostics::logical_locations::key m_logical_loc;
 };
 
@@ -666,7 +666,7 @@ public:
 
   void prepare_for_emission (checker_path *path,
 			     pending_diagnostic *pd,
-			     diagnostic_event_id_t emission_id) final override;
+			     diagnostics::paths::event_id_t emission_id) final override;
 
 private:
   const exploded_node *m_enode;
@@ -732,10 +732,10 @@ public:
 
   void prepare_for_emission (checker_path *path,
 			     pending_diagnostic *pd,
-			     diagnostic_event_id_t emission_id) final override;
+			     diagnostics::paths::event_id_t emission_id) final override;
 
 private:
-  diagnostic_event_id_t m_original_setjmp_event_id;
+  diagnostics::paths::event_id_t m_original_setjmp_event_id;
 };
 
 /* An abstract subclass for throwing/rethrowing an exception.  */

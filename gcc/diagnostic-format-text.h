@@ -87,7 +87,7 @@ public:
 
   char *build_indent_prefix (bool with_bullet) const;
 
-  void print_path (const diagnostic_path &path);
+  void print_path (const diagnostics::paths::path &path);
 
   bool show_column_p () const { return get_context ().m_show_column; }
 

@@ -1,4 +1,4 @@
-/* Subclasses of diagnostic_event for analyzer diagnostics.
+/* Subclasses of diagnostics::paths::event for analyzer diagnostics.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -101,7 +101,7 @@ event_kind_to_string (enum event_kind ek)
     }
 }
 
-/* class checker_event : public diagnostic_event.  */
+/* class checker_event : public diagnostics::paths::event.  */
 
 /* checker_event's ctor.  */
 
@@ -131,16 +131,16 @@ checker_event::checker_event (enum event_kind kind,
     }
 }
 
-/* No-op implementation of diagnostic_event::get_meaning vfunc for
+/* No-op implementation of diagnostics::paths::event::get_meaning vfunc for
    checker_event: checker events have no meaning by default.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 checker_event::get_meaning () const
 {
-  return meaning ();
+  return diagnostics::paths::event::meaning ();
 }
 
-/* Implementation of diagnostic_event::maybe_add_sarif_properties
+/* Implementation of diagnostics::paths::event::maybe_add_sarif_properties
    for checker_event.  */
 
 void
@@ -215,7 +215,7 @@ checker_event::debug () const
 void
 checker_event::prepare_for_emission (checker_path *path,
 				     pending_diagnostic *pd,
-				     diagnostic_event_id_t emission_id)
+				     diagnostics::paths::event_id_t emission_id)
 {
   m_path = path;
   m_pending_diagnostic = pd;
@@ -252,7 +252,7 @@ checker_event::maybe_make_diagnostic_state_graph (bool debug) const
 
 /* class debug_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    debug_event.
    Use the saved string as the event's description.  */
 
@@ -264,7 +264,7 @@ debug_event::print_desc (pretty_printer &pp) const
 
 /* class precanned_custom_event : public custom_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    precanned_custom_event.
    Use the saved string as the event's description.  */
 
@@ -287,7 +287,7 @@ statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 {
 }
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    statement_event.
    Use the statement's dump form as the event's description.  */
 
@@ -383,7 +383,7 @@ function_entry_event::function_entry_event (const program_point &dst_point,
 {
 }
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    function_entry_event.
 
    Use a string such as "entry to 'foo'" as the event's description.  */
@@ -394,10 +394,10 @@ function_entry_event::print_desc (pretty_printer &pp) const
   pp_printf (&pp, "entry to %qE", m_effective_fndecl);
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    function entry.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 function_entry_event::get_meaning () const
 {
   return meaning (verb::enter, noun::function);
@@ -429,7 +429,7 @@ state_change_event::state_change_event (const supernode *node,
 {
 }
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    state_change_event.
 
    Attempt to generate a nicer human-readable description.
@@ -471,7 +471,7 @@ state_change_event::print_desc (pretty_printer &pp) const
 		pp_string (&pp, "NULL origin");
 
 	      /* Get any "meaning" of event.  */
-	      diagnostic_event::meaning meaning = get_meaning ();
+	      diagnostics::paths::event::meaning meaning = get_meaning ();
 	      pp_string (&pp, ", meaning: ");
 	      meaning.dump_to_pp (&pp);
 	      pp_string (&pp, ")");
@@ -508,11 +508,11 @@ state_change_event::print_desc (pretty_printer &pp) const
     }
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    state change events: delegate to the pending_diagnostic to
    get any meaning.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 state_change_event::get_meaning () const
 {
   if (m_pending_diagnostic)
@@ -530,7 +530,7 @@ state_change_event::get_meaning () const
 
 /* class superedge_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::maybe_add_sarif_properties
+/* Implementation of diagnostics::paths::event::maybe_add_sarif_properties
    for superedge_event.  */
 
 void
@@ -626,10 +626,10 @@ cfg_edge_event::cfg_edge_event (enum event_kind kind,
   gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    CFG edge events.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 cfg_edge_event::get_meaning () const
 {
   const cfg_superedge& cfg_sedge = get_cfg_superedge ();
@@ -643,7 +643,7 @@ cfg_edge_event::get_meaning () const
 
 /* class start_cfg_edge_event : public cfg_edge_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    start_cfg_edge_event.
 
    If -fanalyzer-verbose-edges, then generate low-level descriptions, such
@@ -844,7 +844,7 @@ call_event::call_event (const exploded_edge &eedge,
    m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    call_event.
 
    If this call event passes critical state for an sm-based warning,
@@ -876,10 +876,10 @@ call_event::print_desc (pretty_printer &pp) const
 	     get_caller_fndecl ());
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    function call events.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 call_event::get_meaning () const
 {
   return meaning (verb::call, noun::function);
@@ -928,7 +928,7 @@ return_event::return_event (const exploded_edge &eedge,
   m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    return_event.
 
    If this return event returns critical state for an sm-based warning,
@@ -960,10 +960,10 @@ return_event::print_desc (pretty_printer &pp) const
 	     m_src_snode->m_fun->decl);
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    function return events.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 return_event::get_meaning () const
 {
   return meaning (verb::return_, noun::function);
@@ -987,10 +987,10 @@ start_consolidated_cfg_edges_event::print_desc (pretty_printer &pp) const
 	     m_edge_sense ? "true" : "false");
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    start_consolidated_cfg_edges_event.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 start_consolidated_cfg_edges_event::get_meaning () const
 {
   return meaning (verb::branch,
@@ -1008,10 +1008,10 @@ inlined_call_event::print_desc (pretty_printer &pp) const
 	     m_apparent_caller_fndecl);
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    reconstructed inlined function calls.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 inlined_call_event::get_meaning () const
 {
   return meaning (verb::call, noun::function);
@@ -1019,7 +1019,7 @@ inlined_call_event::get_meaning () const
 
 /* class setjmp_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    setjmp_event.  */
 
 void
@@ -1038,7 +1038,7 @@ setjmp_event::print_desc (pretty_printer &pp) const
 void
 setjmp_event::prepare_for_emission (checker_path *path,
 				    pending_diagnostic *pd,
-				    diagnostic_event_id_t emission_id)
+				    diagnostics::paths::event_id_t emission_id)
 {
   checker_event::prepare_for_emission (path, pd, emission_id);
   path->record_setjmp_event (m_enode, emission_id);
@@ -1077,7 +1077,7 @@ rewind_event::rewind_event (const exploded_edge *eedge,
 
 /* class rewind_from_longjmp_event : public rewind_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    rewind_from_longjmp_event.  */
 
 void
@@ -1101,7 +1101,7 @@ rewind_from_longjmp_event::print_desc (pretty_printer &pp) const
 
 /* class rewind_to_setjmp_event : public rewind_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    rewind_to_setjmp_event.  */
 
 void
@@ -1150,7 +1150,7 @@ rewind_to_setjmp_event::print_desc (pretty_printer &pp) const
 void
 rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
 					      pending_diagnostic *pd,
-					      diagnostic_event_id_t emission_id)
+					      diagnostics::paths::event_id_t emission_id)
 {
   checker_event::prepare_for_emission (path, pd, emission_id);
   path->get_setjmp_event (m_rewind_info->get_enode_origin (),
@@ -1203,7 +1203,7 @@ unwind_event::print_desc (pretty_printer &pp) const
 
 /* class warning_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::print_desc vfunc for
+/* Implementation of diagnostics::paths::event::print_desc vfunc for
    warning_event.
 
    If the pending diagnostic implements describe_final_event, use it,
@@ -1248,10 +1248,10 @@ warning_event::print_desc (pretty_printer &pp) const
     pp_string (&pp, "here");
 }
 
-/* Implementation of diagnostic_event::get_meaning vfunc for
+/* Implementation of diagnostics::paths::event::get_meaning vfunc for
    warning_event.  */
 
-diagnostic_event::meaning
+diagnostics::paths::event::meaning
 warning_event::get_meaning () const
 {
   return meaning (verb::danger, noun::unknown);

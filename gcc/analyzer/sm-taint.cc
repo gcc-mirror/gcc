@@ -209,14 +209,15 @@ public:
     return false;
   }
 
-  diagnostic_event::meaning
+  diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &change)
     const final override
   {
+    using event = diagnostics::paths::event;
     if (change.m_new_state == m_sm.m_tainted)
-      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
-					diagnostic_event::noun::taint);
-    return diagnostic_event::meaning ();
+      return event::meaning (event::verb::acquire,
+			     event::noun::taint);
+    return event::meaning ();
   }
 
   void maybe_add_sarif_properties (sarif_object &result_obj)

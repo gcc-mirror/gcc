@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfg.h"
 #include "sbitmap.h"
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "attribs.h"

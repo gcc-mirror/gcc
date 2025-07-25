@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "bitmap.h"
 #include "diagnostic-core.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "rich-location.h"
 #include "function.h"
 #include "json.h"
@@ -443,7 +443,7 @@ extern std::unique_ptr<json::value>
 tree_to_json (tree node);
 
 extern std::unique_ptr<json::value>
-diagnostic_event_id_to_json (const diagnostic_event_id_t &);
+diagnostic_event_id_to_json (const diagnostics::paths::event_id_t &);
 
 extern std::unique_ptr<json::value>
 bit_offset_to_json (const bit_offset_t &offset);

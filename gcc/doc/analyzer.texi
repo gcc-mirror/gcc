@@ -432,7 +432,7 @@ binop_svalue (mult_expr, initial_svalue(‘size_t’, decl_region(frame_region(�
 @subsection Analyzer Paths
 
 We need to explain to the user what the problem is, and to persuade them
-that there really is a problem.  Hence having a @code{diagnostic_path}
+that there really is a problem.  Hence having a @code{diagnostics::paths::path}
 isn't just an incidental detail of the analyzer; it's required.
 
 Paths ought to be:
@@ -491,7 +491,7 @@ and notes if it is infeasible.
 
 The above gives us a shortest feasible @code{exploded_path} through the
 @code{exploded_graph} (a list of @code{exploded_edge *}).  We use this
-@code{exploded_path} to build a @code{diagnostic_path} (a list of
+@code{exploded_path} to build a @code{diagnostics::paths::path} (a list of
 @strong{events} for the diagnostic subsystem) - specifically a
 @code{checker_path}.
 

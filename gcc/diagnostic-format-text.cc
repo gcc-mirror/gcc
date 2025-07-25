@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
 #include "diagnostics/metadata.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
 #include "diagnostics/diagram.h"
 #include "diagnostic-format-text.h"
@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+using namespace diagnostics;
 
 /* Concrete buffering implementation subclass for JSON output.  */
 
@@ -277,7 +279,7 @@ void
 diagnostic_text_output_format::
 after_diagnostic (const diagnostic_info &diagnostic)
 {
-  if (const diagnostic_path *path = diagnostic.richloc->get_path ())
+  if (const paths::path *path = diagnostic.richloc->get_path ())
     print_path (*path);
 }
 

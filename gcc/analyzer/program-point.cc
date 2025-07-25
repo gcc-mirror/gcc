@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
 #include "sbitmap.h"

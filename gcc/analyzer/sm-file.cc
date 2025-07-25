@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "selftest.h"
 
 #include "analyzer/analyzer-logging.h"
@@ -155,18 +155,20 @@ public:
     return false;
   }
 
-  diagnostic_event::meaning
+  diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &change)
     const final override
   {
+    using event = diagnostics::paths::event;
+
     if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
-      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
-					diagnostic_event::noun::resource);
+      return event::meaning (event::verb::acquire,
+			     event::noun::resource);
     if (change.m_new_state == m_sm.m_closed)
-      return diagnostic_event::meaning (diagnostic_event::verb::release,
-					diagnostic_event::noun::resource);
-    return diagnostic_event::meaning ();
+      return event::meaning (event::verb::release,
+			     event::noun::resource);
+    return event::meaning ();
   }
 
 protected:
@@ -225,7 +227,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_first_fclose_event;
+  diagnostics::paths::event_id_t m_first_fclose_event;
 };
 
 class file_leak : public file_diagnostic
@@ -303,7 +305,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_fopen_event;
+  diagnostics::paths::event_id_t m_fopen_event;
   std::unique_ptr<program_state> m_final_state;
 };
 

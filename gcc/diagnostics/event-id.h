@@ -1,4 +1,4 @@
-/* A class for referring to events within a diagnostic_path.
+/* A class for referring to events within a diagnostics::paths::path.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_EVENT_ID_H
-#define GCC_DIAGNOSTIC_EVENT_ID_H
+#ifndef GCC_DIAGNOSTICS_EVENT_ID_H
+#define GCC_DIAGNOSTICS_EVENT_ID_H
 
-/* A class for referring to events within a diagnostic_path.
+/* A class for referring to events within a diagnostics::paths::path.
 
    They are stored as 0-based offsets into the events, but
    printed (e.g. via %@) as 1-based numbers.
@@ -30,8 +30,10 @@ along with GCC; see the file COPYING3.  If not see
    which would be shown to the user as "(1)", "(2)" and "(3)".
 
    This has its own header so that pretty-print.cc can use this
-   to implement "%@" without bringing in all of diagnostic_path
-   (which e.g. refers to "tree").  */
+   to implement "%@" without bringing in all of diagnostics::paths.
+
+   This has to be in the global namespace for compatibility with
+   c-format.cc in GCC 10 onwards.  */
 
 class diagnostic_event_id_t
 {
@@ -58,15 +60,24 @@ class diagnostic_event_id_t
   int m_index; // zero-based
 };
 
+namespace diagnostics {
+namespace paths {
+
+typedef diagnostic_event_id_t event_id_t;
+
+/* A type for compactly referring to a particular thread within a
+   diagnostics::paths::path.  Typically there is just one thread per path,
+   with id 0.  */
+typedef int thread_id_t;
+
+} // namespace paths
+} // namespace diagnostics
+
+
 /* A pointer to a diagnostic_event_id_t, for use with the "%@" format
    code, which will print a 1-based representation for it, with suitable
    colorization, e.g. "(1)".
    The %@ format code requires that known_p be true for the event ID. */
 typedef diagnostic_event_id_t *diagnostic_event_id_ptr;
 
-/* A type for compactly referring to a particular thread within a
-   diagnostic_path.  Typically there is just one thread per path,
-   with id 0.  */
-typedef int diagnostic_thread_id_t;
-
-#endif /* ! GCC_DIAGNOSTIC_EVENT_ID_H */
+#endif /* ! GCC_DIAGNOSTICS_EVENT_ID_H */

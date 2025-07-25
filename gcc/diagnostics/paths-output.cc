@@ -28,15 +28,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-macro-unwinding.h"
 #include "intl.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "diagnostic-label-effects.h"
 #include "pretty-print-markup.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
-#include "selftest-diagnostic-path.h"
+#include "diagnostics/selftest-paths.h"
 #include "text-art/theme.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-format-html.h"
@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 namespace {
 
 using namespace diagnostics;
+using namespace diagnostics::paths;
 
 /* A bundle of state for printing a path.  */
 
@@ -85,18 +86,18 @@ private:
 };
 
 /* Subclass of range_label for showing a particular event
-   when showing a consecutive run of events within a diagnostic_path as
+   when showing a consecutive run of events within a diagnostic path as
    labelled ranges within one gcc_rich_location.  */
 
 class path_label : public range_label
 {
  public:
-  path_label (const diagnostic_path &path,
+  path_label (const path &path_,
 	      const pretty_printer &ref_pp,
 	      unsigned start_idx,
 	      bool colorize,
 	      bool allow_emojis)
-  : m_path (path),
+  : m_path (path_),
     m_ref_pp (ref_pp),
     m_start_idx (start_idx), m_effects (*this),
     m_colorize (colorize), m_allow_emojis (allow_emojis)
@@ -105,18 +106,17 @@ class path_label : public range_label
   label_text get_text (unsigned range_idx) const final override
   {
     unsigned event_idx = m_start_idx + range_idx;
-    const diagnostic_event &event = m_path.get_event (event_idx);
+    const event &ev = m_path.get_event (event_idx);
 
-    const diagnostic_event::meaning meaning (event.get_meaning ());
+    const event::meaning meaning (ev.get_meaning ());
 
     auto pp = m_ref_pp.clone ();
     pp_show_color (pp.get ()) = m_colorize;
-    diagnostic_event_id_t event_id (event_idx);
-
+    event_id_t event_id (event_idx);
     pp_printf (pp.get (), "%@", &event_id);
     pp_space (pp.get ());
 
-    if (meaning.m_verb == diagnostic_event::verb::danger
+    if (meaning.m_verb == event::verb::danger
 	&& m_allow_emojis)
       {
 	pp_unicode_character (pp.get (), 0x26A0); /* U+26A0 WARNING SIGN.  */
@@ -130,7 +130,7 @@ class path_label : public range_label
 	pp_string (pp.get (), "  ");
       }
 
-    event.print_desc (*pp.get ());
+    ev.print_desc (*pp.get ());
 
     label_text result
       = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
@@ -152,28 +152,28 @@ class path_label : public range_label
     }
     bool has_in_edge (unsigned range_idx) const final override
     {
-      if (const diagnostic_event *prev_event
+      if (const event *prev_event
 	    = m_path_label.get_prev_event (range_idx))
 	return prev_event->connect_to_next_event_p ();
       return false;
     }
     bool has_out_edge (unsigned range_idx) const final override
     {
-      const diagnostic_event &event = m_path_label.get_event (range_idx);
-      return event.connect_to_next_event_p ();
+      const event &ev = m_path_label.get_event (range_idx);
+      return ev.connect_to_next_event_p ();
     }
 
   private:
     const path_label &m_path_label;
   };
 
-  const diagnostic_event &get_event (unsigned range_idx) const
+  const event &get_event (unsigned range_idx) const
   {
     unsigned event_idx = m_start_idx + range_idx;
     return m_path.get_event (event_idx);
   }
 
-  const diagnostic_event *get_prev_event (unsigned range_idx) const
+  const event *get_prev_event (unsigned range_idx) const
   {
     if (m_start_idx + range_idx == 0)
       return nullptr;
@@ -181,7 +181,7 @@ class path_label : public range_label
     return &m_path.get_event (event_idx);
   }
 
-  const diagnostic_path &m_path;
+  const path &m_path;
   const pretty_printer &m_ref_pp;
   unsigned m_start_idx;
   path_label_effects m_effects;
@@ -190,20 +190,20 @@ class path_label : public range_label
 };
 
 /* Return true if E1 and E2 can be consolidated into the same run of events
-   when printing a diagnostic_path.  */
+   when printing a diagnostic path.  */
 
 static bool
-can_consolidate_events (const diagnostic_path &path,
-			const diagnostic_event &e1,
+can_consolidate_events (const path &p,
+			const event &e1,
 			unsigned ev1_idx,
-			const diagnostic_event &e2,
+			const event &e2,
 			unsigned ev2_idx,
 			bool check_locations)
 {
   if (e1.get_thread_id () != e2.get_thread_id ())
     return false;
 
-  if (!path.same_function_p (ev1_idx, ev2_idx))
+  if (!p.same_function_p (ev1_idx, ev2_idx))
     return false;
 
   if (e1.get_stack_depth () != e2.get_stack_depth ())
@@ -233,16 +233,16 @@ struct event_range;
 struct path_summary;
 class thread_event_printer;
 
-/* A bundle of information about all of the events in a diagnostic_path
+/* A bundle of information about all of the events in a diagnostic path
    relating to a specific path, for use by path_summary.  */
 
 class per_thread_summary
 {
 public:
-  per_thread_summary (const diagnostic_path &path,
+  per_thread_summary (const path &path_,
 		      const logical_locations::manager &logical_loc_mgr,
 		      label_text name, unsigned swimlane_idx)
-  : m_path (path),
+  : m_path (path_),
     m_logical_loc_mgr (logical_loc_mgr),
     m_name (std::move (name)),
     m_swimlane_idx (swimlane_idx),
@@ -269,7 +269,7 @@ private:
   friend class thread_event_printer;
   friend struct event_range;
 
-  const diagnostic_path &m_path;
+  const path &m_path;
   const logical_locations::manager &m_logical_loc_mgr;
 
   const label_text m_name;
@@ -281,7 +281,7 @@ private:
   // The event ranges specific to this thread:
   auto_vec<event_range *> m_event_ranges;
 
-  const diagnostic_event *m_last_event;
+  const event *m_last_event;
 
   int m_min_depth;
   int m_max_depth;
@@ -400,7 +400,7 @@ emit_svg_arrow (xml::printer &xp, int old_depth, int new_depth)
   xp.add_raw (pp_formatted_text (pp));
 }
 
-/* A range of consecutive events within a diagnostic_path, all within the
+/* A range of consecutive events within a diagnostic path, all within the
    same thread, and with the same fndecl and stack_depth, and which are suitable
    to print with a single call to diagnostic_show_locus.  */
 struct event_range
@@ -425,7 +425,7 @@ struct event_range
        the events already on this source line, *and* a new event at COLUMN.  */
     bool
     can_add_label_for_event_p (bool has_in_edge,
-			       const diagnostic_event *prev_event,
+			       const event *prev_event,
 			       bool has_out_edge,
 			       int column) const
     {
@@ -490,20 +490,20 @@ struct event_range
     int m_max_label_source_column;
   };
 
-  event_range (const diagnostic_path &path,
+  event_range (const path &path_,
 	       const pretty_printer &ref_pp,
 	       unsigned start_idx,
-	       const diagnostic_event &initial_event,
+	       const event &initial_event,
 	       per_thread_summary &t,
 	       bool show_event_links,
 	       bool colorize_labels,
 	       bool allow_emojis)
-  : m_path (path),
+  : m_path (path_),
     m_initial_event (initial_event),
     m_logical_loc (initial_event.get_logical_location ()),
     m_stack_depth (initial_event.get_stack_depth ()),
     m_start_idx (start_idx), m_end_idx (start_idx),
-    m_path_label (path, ref_pp,
+    m_path_label (path_, ref_pp,
 		  start_idx, colorize_labels, allow_emojis),
     m_richloc (initial_event.get_location (), &m_path_label, nullptr),
     m_thread_id (initial_event.get_thread_id ()),
@@ -518,7 +518,7 @@ struct event_range
 	per_source_line_info &source_line_info
 	  = get_per_source_line_info (exploc.line);
 
-	const diagnostic_event *prev_thread_event = t.m_last_event;
+	const event *prev_thread_event = t.m_last_event;
 	const bool has_in_edge
 	  = (prev_thread_event
 	     ? prev_thread_event->connect_to_next_event_p ()
@@ -542,7 +542,7 @@ struct event_range
   }
 
   bool maybe_add_event (const path_print_policy &policy,
-			const diagnostic_event &new_ev,
+			const event &new_ev,
 			unsigned new_ev_idx,
 			bool check_rich_locations)
   {
@@ -559,7 +559,7 @@ struct event_range
       (line_table, new_ev.get_location (), LOCATION_ASPECT_CARET);
     per_source_line_info &source_line_info
       = get_per_source_line_info (exploc.line);
-    const diagnostic_event *prev_event = nullptr;
+    const event *prev_event = nullptr;
     if (new_ev_idx > 0)
       prev_event = &m_path.get_event (new_ev_idx - 1);
     const bool has_in_edge = (prev_event
@@ -626,7 +626,7 @@ struct event_range
       {
 	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	  {
-	    const diagnostic_event &iter_event = m_path.get_event (i);
+	    const event &iter_event = m_path.get_event (i);
 	    diagnostic_event_id_t event_id (i);
 	    pp_printf (&pp, " %@: ", &event_id);
 	    iter_event.print_desc (pp);
@@ -684,7 +684,7 @@ struct event_range
       {
 	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	  {
-	    const diagnostic_event &iter_event = m_path.get_event (i);
+	    const event &iter_event = m_path.get_event (i);
 	    diagnostic_event_id_t event_id (i);
 	    pretty_printer pp;
 	    pp_printf (&pp, " %@: ", &event_id);
@@ -707,22 +707,22 @@ struct event_range
     // TODO: show macro expansions
   }
 
-  const diagnostic_path &m_path;
-  const diagnostic_event &m_initial_event;
+  const path &m_path;
+  const event &m_initial_event;
   logical_locations::key m_logical_loc;
   int m_stack_depth;
   unsigned m_start_idx;
   unsigned m_end_idx;
   path_label m_path_label;
   gcc_rich_location m_richloc;
-  diagnostic_thread_id_t m_thread_id;
+  thread_id_t m_thread_id;
   per_thread_summary &m_per_thread_summary;
   hash_map<int_hash<int, -1, -2>,
 	   per_source_line_info> m_source_line_info_map;
   bool m_show_event_links;
 };
 
-/* A struct for grouping together the events in a diagnostic_path into
+/* A struct for grouping together the events in a path into
    ranges of events, partitioned by thread and by stack frame (i.e. by fndecl
    and stack depth).  */
 
@@ -730,7 +730,7 @@ struct path_summary
 {
   path_summary (const path_print_policy &policy,
 		const pretty_printer &ref_pp,
-		const diagnostic_path &path,
+		const path &path_,
 		bool check_rich_locations,
 		bool colorize = false,
 		bool show_event_links = true);
@@ -742,7 +742,7 @@ struct path_summary
   unsigned get_num_ranges () const { return m_ranges.length (); }
   bool multithreaded_p () const { return m_per_thread_summary.length () > 1; }
 
-  const per_thread_summary &get_events_for_thread_id (diagnostic_thread_id_t tid)
+  const per_thread_summary &get_events_for_thread_id (thread_id_t tid)
   {
     per_thread_summary **slot = m_thread_id_to_events.get (tid);
     gcc_assert (slot);
@@ -753,20 +753,20 @@ struct path_summary
   const logical_locations::manager &m_logical_loc_mgr;
   auto_delete_vec <event_range> m_ranges;
   auto_delete_vec <per_thread_summary> m_per_thread_summary;
-  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
+  hash_map<int_hash<thread_id_t, -1, -2>,
 	   per_thread_summary *> m_thread_id_to_events;
 
 private:
   per_thread_summary &
-  get_or_create_events_for_thread_id (const diagnostic_path &path,
-				      diagnostic_thread_id_t tid)
+  get_or_create_events_for_thread_id (const path &path_,
+				      thread_id_t tid)
   {
     if (per_thread_summary **slot = m_thread_id_to_events.get (tid))
       return **slot;
 
-    const diagnostic_thread &thread = path.get_thread (tid);
+    const thread &thread = path_.get_thread (tid);
     per_thread_summary *pts
-      = new per_thread_summary (path,
+      = new per_thread_summary (path_,
 				m_logical_loc_mgr,
 				thread.get_name (false),
 				m_per_thread_summary.length ());
@@ -800,40 +800,40 @@ per_thread_summary::interprocedural_p () const
 
 path_summary::path_summary (const path_print_policy &policy,
 			    const pretty_printer &ref_pp,
-			    const diagnostic_path &path,
+			    const path &path_,
 			    bool check_rich_locations,
 			    bool colorize,
 			    bool show_event_links)
-: m_logical_loc_mgr (path.get_logical_location_manager ())
+: m_logical_loc_mgr (path_.get_logical_location_manager ())
 {
-  const unsigned num_events = path.num_events ();
+  const unsigned num_events = path_.num_events ();
 
   event_range *cur_event_range = nullptr;
   for (unsigned idx = 0; idx < num_events; idx++)
     {
-      const diagnostic_event &event = path.get_event (idx);
-      const diagnostic_thread_id_t thread_id = event.get_thread_id ();
+      const event &ev = path_.get_event (idx);
+      const thread_id_t thread_id = ev.get_thread_id ();
       per_thread_summary &pts
-	= get_or_create_events_for_thread_id (path, thread_id);
+	= get_or_create_events_for_thread_id (path_, thread_id);
 
-      pts.update_depth_limits (event.get_stack_depth ());
+      pts.update_depth_limits (ev.get_stack_depth ());
 
       if (cur_event_range)
 	if (cur_event_range->maybe_add_event (policy,
-					      event,
+					      ev,
 					      idx, check_rich_locations))
 	  continue;
 
       auto theme = policy.get_diagram_theme ();
       const bool allow_emojis = theme ? theme->emojis_p () : false;
-      cur_event_range = new event_range (path, ref_pp,
-					 idx, event, pts,
+      cur_event_range = new event_range (path_, ref_pp,
+					 idx, ev, pts,
 					 show_event_links,
 					 colorize,
 					 allow_emojis);
       m_ranges.safe_push (cur_event_range);
       pts.m_event_ranges.safe_push (cur_event_range);
-      pts.m_last_event = &event;
+      pts.m_last_event = &ev;
     }
 }
 
@@ -1286,8 +1286,8 @@ print_path_summary_as_html (const path_summary &ps,
 class element_event_desc : public pp_element
 {
 public:
-  element_event_desc (const diagnostic_event &event)
-  : m_event (event)
+  element_event_desc (const event &event_)
+  : m_event (event_)
   {
   }
 
@@ -1299,15 +1299,15 @@ public:
   }
 
 private:
-  const diagnostic_event &m_event;
+  const event &m_event;
 };
 
 /* Print PATH according to the context's path_format.  */
 
 void
-diagnostic_text_output_format::print_path (const diagnostic_path &path)
+diagnostic_text_output_format::print_path (const path &path_)
 {
-  const unsigned num_events = path.num_events ();
+  const unsigned num_events = path_.num_events ();
 
   switch (get_context ().get_path_format ())
     {
@@ -1318,36 +1318,36 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
     case DPF_SEPARATE_EVENTS:
       {
 	/* A note per event.  */
-	auto &logical_loc_mgr = path.get_logical_location_manager ();
+	auto &logical_loc_mgr = path_.get_logical_location_manager ();
 	for (unsigned i = 0; i < num_events; i++)
 	  {
-	    const diagnostic_event &event = path.get_event (i);
-	    element_event_desc e_event_desc (event);
+	    const event &ev = path_.get_event (i);
+	    element_event_desc e_event_desc (ev);
 	    diagnostic_event_id_t event_id (i);
 	    if (get_context ().show_path_depths_p ())
 	      {
-		int stack_depth = event.get_stack_depth ();
+		int stack_depth = ev.get_stack_depth ();
 		/* -fdiagnostics-path-format=separate-events doesn't print
 		   fndecl information, so with -fdiagnostics-show-path-depths
 		   print the fndecls too, if any.  */
 		if (logical_locations::key logical_loc
-		      = event.get_logical_location ())
+		      = ev.get_logical_location ())
 		  {
 		    label_text name
 		      (logical_loc_mgr.get_name_for_path_output (logical_loc));
-		    inform (event.get_location (),
+		    inform (ev.get_location (),
 			    "%@ %e (fndecl %qs, depth %i)",
 			    &event_id, &e_event_desc,
 			    name.get (), stack_depth);
 		  }
 		else
-		  inform (event.get_location (),
+		  inform (ev.get_location (),
 			  "%@ %e (depth %i)",
 			  &event_id, &e_event_desc,
 			  stack_depth);
 	      }
 	    else
-	      inform (event.get_location (),
+	      inform (ev.get_location (),
 		      "%@ %e", &event_id, &e_event_desc);
 	  }
       }
@@ -1363,7 +1363,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 	const bool show_event_links = m_source_printing.show_event_links_p;
 	path_summary summary (policy,
 			      *pp,
-			      path,
+			      path_,
 			      check_rich_locations,
 			      colorize,
 			      show_event_links);
@@ -1378,12 +1378,12 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
     }
 }
 
-/* Print PATH as HTML to XP, using DC and DSPP for settings.
+/* Print PATH_ as HTML to XP, using DC and DSPP for settings.
    If non-null, use EVENT_LABEL_WRITER when writing events.  */
 
 void
 print_path_as_html (xml::printer &xp,
-		    const diagnostic_path &path,
+		    const path &path_,
 		    diagnostic_context &dc,
 		    html_label_writer *event_label_writer,
 		    const diagnostic_source_print_policy &dspp)
@@ -1396,7 +1396,7 @@ print_path_as_html (xml::printer &xp,
   const bool show_event_links = source_printing_opts.show_event_links_p;
   path_summary summary (policy,
 			*dc.get_reference_printer (),
-			path,
+			path_,
 			check_rich_locations,
 			colorize,
 			show_event_links);
@@ -1408,16 +1408,16 @@ print_path_as_html (xml::printer &xp,
 
 namespace selftest {
 
-/* Return true iff all events in PATH have locations for which column data
+/* Return true iff all events in PATH_ have locations for which column data
    is available, so that selftests that require precise string output can
    bail out for awkward line_table cases.  */
 
 static bool
-path_events_have_column_data_p (const diagnostic_path &path)
+path_events_have_column_data_p (const path &path_)
 {
-  for (unsigned idx = 0; idx < path.num_events (); idx++)
+  for (unsigned idx = 0; idx < path_.num_events (); idx++)
     {
-      location_t event_loc = path.get_event (idx).get_location ();
+      location_t event_loc = path_.get_event (idx).get_location ();
       if (line_table->get_pure_location (event_loc)
 	  > LINE_MAP_MAX_LOCATION_WITH_COLS)
 	return false;
@@ -1709,7 +1709,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
 }
 
 /* Verify that print_path_summary is sane in the face of a recursive
-   diagnostic_path.  */
+   diagnostic path.  */
 
 static void
 test_recursion (pretty_printer *event_pp)
@@ -2692,7 +2692,7 @@ control_flow_tests (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_path_output_cc_tests ()
+diagnostics_paths_output_cc_tests ()
 {
   pretty_printer pp;
   pp_show_color (&pp) = false;

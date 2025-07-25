@@ -18,13 +18,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_LAZY_DIAGNOSTIC_PATH_H
-#define GCC_LAZY_DIAGNOSTIC_PATH_H
+#ifndef GCC_DIAGNOSTICS_LAZY_PATHS_H
+#define GCC_DIAGNOSTICS_LAZY_PATHS_H
 
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 
-/* An implementation of diagnostic_path which has a trivial ctor
-   and lazily creates another diagnostic_path the first time the path
+namespace diagnostics {
+namespace paths {
+
+/* An implementation of diagnostics::paths::path which has a trivial ctor
+   and lazily creates another path the first time the path
    is queried, deferring to this inner path for all queries.
 
    Use this to avoid expensive path creation logic when creating
@@ -32,16 +35,16 @@ along with GCC; see the file COPYING3.  If not see
    is actually used by a diagnostic, and thus avoided for warnings that
    are disabled.  */
 
-class lazy_diagnostic_path : public diagnostic_path
+class lazy_path : public path
 {
  public:
-  virtual ~lazy_diagnostic_path () {}
+  virtual ~lazy_path () {}
 
   unsigned num_events () const final override;
-  const diagnostic_event & get_event (int idx) const final override;
+  const event & get_event (int idx) const final override;
   unsigned num_threads () const final override;
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override;
+  const thread &
+  get_thread (thread_id_t) const final override;
   bool
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override;
@@ -49,16 +52,19 @@ class lazy_diagnostic_path : public diagnostic_path
   bool generated_p () const { return m_inner_path != nullptr; }
 
 protected:
-  lazy_diagnostic_path (const logical_location_manager &logical_loc_mgr)
-  : diagnostic_path (logical_loc_mgr)
+  lazy_path (const logical_locations::manager &logical_loc_mgr)
+  : path (logical_loc_mgr)
   {
   }
 
  private:
   void lazily_generate_path () const;
-  virtual std::unique_ptr<diagnostic_path> make_inner_path () const = 0;
+  virtual std::unique_ptr<path> make_inner_path () const = 0;
 
-  mutable std::unique_ptr<diagnostic_path> m_inner_path;
+  mutable std::unique_ptr<path> m_inner_path;
 };
 
-#endif /* ! GCC_LAZY_DIAGNOSTIC_PATH_H */
+} // namespace paths
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_LAZY_PATHS_H */

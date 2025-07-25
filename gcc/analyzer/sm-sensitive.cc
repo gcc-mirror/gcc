@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -106,14 +106,15 @@ public:
     return false;
   }
 
-  diagnostic_event::meaning
+  diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &change)
     const final override
   {
+    using event = diagnostics::paths::event;
+
     if (change.m_new_state == m_sm.m_sensitive)
-      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
-					diagnostic_event::noun::sensitive);
-    return diagnostic_event::meaning ();
+      return event::meaning (event::verb::acquire, event::noun::sensitive);
+    return event::meaning ();
   }
   bool
   describe_call_with_state (pretty_printer &pp,
@@ -162,7 +163,7 @@ public:
 private:
   const sensitive_state_machine &m_sm;
   tree m_arg;
-  diagnostic_event_id_t m_first_sensitive_event;
+  diagnostics::paths::event_id_t m_first_sensitive_event;
 };
 
 /* sensitive_state_machine's ctor.  */

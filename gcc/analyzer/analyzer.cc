@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "tree-pretty-print.h"
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "tree-dfa.h"
 #include "intl.h"
 
@@ -232,7 +232,7 @@ tree_to_json (tree node)
    for unknown).  */
 
 std::unique_ptr<json::value>
-diagnostic_event_id_to_json (const diagnostic_event_id_t &event_id)
+diagnostic_event_id_to_json (const diagnostics::paths::event_id_t &event_id)
 {
   if (event_id.known_p ())
     {

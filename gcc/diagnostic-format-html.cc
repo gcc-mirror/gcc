@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-sarif.h"
 #include "diagnostics/output-file.h"
 #include "diagnostic-buffer.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -153,7 +153,7 @@ public:
   }
 
   std::unique_ptr<xml::node>
-  maybe_make_state_diagram (const diagnostic_event &event);
+  maybe_make_state_diagram (const paths::event &event);
 
 private:
   void
@@ -607,7 +607,7 @@ print_pre_source (xml::printer &xp, const char *text)
 }
 
 std::unique_ptr<xml::node>
-html_builder::maybe_make_state_diagram (const diagnostic_event &event)
+html_builder::maybe_make_state_diagram (const paths::event &event)
 {
   if (!m_html_gen_opts.m_show_state_diagrams)
     return nullptr;
@@ -665,7 +665,7 @@ class html_path_label_writer : public html_label_writer
 public:
   html_path_label_writer (xml::printer &xp,
 			  html_builder &builder,
-			  const diagnostic_path &path,
+			  const paths::path &path,
 			  const std::string &event_id_prefix)
   : m_xp (xp),
     m_html_builder (builder),
@@ -686,7 +686,7 @@ public:
 
   void end_label () final override
   {
-    const diagnostic_event &event
+    const paths::event &event
       = m_path.get_event (m_curr_event_id.zero_based ());
     if (auto state_doc = m_html_builder.maybe_make_state_diagram (event))
     {
@@ -714,10 +714,10 @@ private:
 
   xml::printer &m_xp;
   html_builder &m_html_builder;
-  const diagnostic_path &m_path;
+  const paths::path &m_path;
   const std::string &m_event_id_prefix;
   int m_next_event_idx;
-  diagnostic_event_id_t m_curr_event_id;
+  paths::event_id_t m_curr_event_id;
 };
 
 /* See https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts */
@@ -1551,7 +1551,7 @@ test_token_printer ()
 
   {
     token_printer_test t;
-    diagnostic_event_id_t event_id (0);
+    paths::event_id_t event_id (0);
     pp_printf (&t.m_pp, "foo %@ bar", &event_id);
     ASSERT_XML_PRINT_EQ
       (t.m_top_element,

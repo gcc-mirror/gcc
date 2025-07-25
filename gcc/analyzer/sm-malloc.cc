@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "xml-printer.h"
@@ -814,18 +814,18 @@ public:
     return false;
   }
 
-  diagnostic_event::meaning
+  diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &change)
     const final override
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& unchecked_p (change.m_new_state))
-      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
-					diagnostic_event::noun::memory);
+      return diagnostics::paths::event::meaning (diagnostics::paths::event::verb::acquire,
+					diagnostics::paths::event::noun::memory);
     if (freed_p (change.m_new_state))
-      return diagnostic_event::meaning (diagnostic_event::verb::release,
-					diagnostic_event::noun::memory);
-    return diagnostic_event::meaning ();
+      return diagnostics::paths::event::meaning (diagnostics::paths::event::verb::release,
+					diagnostics::paths::event::noun::memory);
+    return diagnostics::paths::event::meaning ();
   }
 
 protected:
@@ -918,7 +918,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_alloc_event;
+  diagnostics::paths::event_id_t m_alloc_event;
   const deallocator_set *m_expected_deallocators;
   const deallocator *m_actual_dealloc;
 };
@@ -988,7 +988,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_first_free_event;
+  diagnostics::paths::event_id_t m_first_free_event;
   const char *m_funcname;
 };
 
@@ -1031,7 +1031,7 @@ public:
   }
 
 protected:
-  diagnostic_event_id_t m_origin_of_unchecked_event;
+  diagnostics::paths::event_id_t m_origin_of_unchecked_event;
 };
 
 /* Concrete subclass for describing dereference of a possible NULL
@@ -1419,7 +1419,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_free_event;
+  diagnostics::paths::event_id_t m_free_event;
   const deallocator *m_deallocator;
 };
 
@@ -1500,7 +1500,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_alloc_event;
+  diagnostics::paths::event_id_t m_alloc_event;
   std::unique_ptr<program_state> m_final_state;
 };
 
@@ -1768,7 +1768,7 @@ private:
     return result;
   }
 
-  diagnostic_event_id_t m_first_deref_event;
+  diagnostics::paths::event_id_t m_first_deref_event;
   const exploded_node *m_deref_enode;
   tree m_deref_expr;
   const exploded_node *m_check_enode;

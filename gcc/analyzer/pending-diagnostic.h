@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
 #include "diagnostics/metadata.h"
-#include "diagnostic-path.h"
 #include "analyzer/sm.h"
 
 namespace ana {
@@ -44,7 +43,7 @@ struct interesting_t
 };
 
 /* Various bundles of information used for generating more precise
-   messages for events within a diagnostic_path, for passing to the
+   messages for events within a diagnostic path, for passing to the
    various "describe_*" vfuncs of pending_diagnostic.  See those
    for more information.  */
 
@@ -58,7 +57,7 @@ struct state_change
 		tree origin,
 		state_machine::state_t old_state,
 		state_machine::state_t new_state,
-		diagnostic_event_id_t event_id,
+		diagnostics::paths::event_id_t event_id,
 		const state_change_event &event)
   : m_expr (expr), m_origin (origin),
     m_old_state (old_state), m_new_state (new_state),
@@ -71,7 +70,7 @@ struct state_change
   tree m_origin;
   state_machine::state_t m_old_state;
   state_machine::state_t m_new_state;
-  diagnostic_event_id_t m_event_id;
+  diagnostics::paths::event_id_t m_event_id;
   const state_change_event &m_event;
 };
 
@@ -131,7 +130,7 @@ struct final_event
     pending_diagnostic::emit vfunc.
 
     The rich_location will have already been populated with a
-    diagnostic_path.  */
+    diagnostics::paths::path.  */
 
 class diagnostic_emission_context
 {
@@ -182,7 +181,7 @@ private:
 
    As well as emitting a diagnostic, the class has various "precision of
    wording" virtual functions, for generating descriptions for events
-   within a diagnostic_path.  These are optional, but implementing these
+   within a diagnostic path.  These are optional, but implementing these
    allows for more precise wordings than the more generic
    implementation.  */
 
@@ -238,7 +237,7 @@ class pending_diagnostic
   virtual location_t fixup_location (location_t loc, bool primary) const;
 
   /* Precision-of-wording vfunc for describing a critical state change
-     within the diagnostic_path.
+     within the diagnostic path.
 
      For example, a double-free diagnostic might use the descriptions:
      - "first 'free' happens here"
@@ -260,13 +259,13 @@ class pending_diagnostic
     return false;
   }
 
-  /* Vfunc for implementing diagnostic_event::get_meaning for
+  /* Vfunc for implementing event::get_meaning for
      state_change_event.  */
-  virtual diagnostic_event::meaning
+  virtual diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &) const
   {
     /* Default no-op implementation.  */
-    return diagnostic_event::meaning ();
+    return diagnostics::paths::event::meaning ();
   }
 
   /* Precision-of-wording vfunc for describing an interprocedural call
@@ -285,7 +284,7 @@ class pending_diagnostic
   }
 
   /* Precision-of-wording vfunc for describing an interprocedural return
-     within the diagnostic_path that carries critial state for the
+     within the diagnostic path that carries critial state for the
      diagnostic, from callee back to caller.
 
      For example, a deref-of-unchecked-malloc diagnostic might use:
@@ -301,7 +300,7 @@ class pending_diagnostic
   }
 
   /* Precision-of-wording vfunc for describing the final event within a
-     diagnostic_path.
+     diagnostic path.
 
      For example a double-free diagnostic might use:
       - "second 'free' here; first 'free' was at (3)"

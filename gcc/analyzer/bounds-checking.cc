@@ -51,7 +51,7 @@ public:
     }
     void prepare_for_emission (checker_path *path,
 			       pending_diagnostic *pd,
-			       diagnostic_event_id_t emission_id) override
+			       diagnostics::paths::event_id_t emission_id) override
     {
       region_creation_event_capacity::prepare_for_emission (path,
 							    pd,
@@ -203,7 +203,7 @@ protected:
   const region *m_reg;
   tree m_diag_arg;
   const svalue *m_sval_hint;
-  diagnostic_event_id_t m_region_creation_event_id;
+  diagnostics::paths::event_id_t m_region_creation_event_id;
 };
 
 /* Abstract base class for all out-of-bounds warnings where the

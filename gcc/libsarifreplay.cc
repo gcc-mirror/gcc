@@ -1865,7 +1865,7 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
   libgdiagnostics::graph state_graph;
   if (auto sarif_state_graph
 	= maybe_get_property_bag_value<json::object> (tflow_loc_obj,
-						      "gcc/diagnostic_event/state_graph"))
+						      "gcc/diagnostics/paths/event/state_graph"))
     {
       enum status s
 	= handle_graph_object (*sarif_state_graph, run_obj, state_graph);

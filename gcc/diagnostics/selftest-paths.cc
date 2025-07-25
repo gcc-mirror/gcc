@@ -27,22 +27,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "backtrace.h"
 #include "diagnostic.h"
-#include "selftest-diagnostic-path.h"
+#include "diagnostics/selftest-paths.h"
 
 #if CHECKING_P
 
 namespace selftest {
 
-/* class test_diagnostic_path : public diagnostic_path.  */
+using namespace diagnostics::paths;
+
+/* class test_diagnostic_path : public diagnostics::paths::path.  */
 
 test_diagnostic_path::test_diagnostic_path (pretty_printer *event_pp)
-: diagnostic_path (m_test_logical_loc_mgr),
+: path (m_test_logical_loc_mgr),
   m_event_pp (event_pp)
 {
   add_thread ("main");
 }
 
-/* Implementation of diagnostic_path::num_events vfunc for
+/* Implementation of path::num_events vfunc for
    test_diagnostic_path: simply get the number of events in the vec.  */
 
 unsigned
@@ -54,7 +56,7 @@ test_diagnostic_path::num_events () const
 /* Implementation of diagnostic_path::get_event vfunc for
    test_diagnostic_path: simply return the event in the vec.  */
 
-const diagnostic_event &
+const event &
 test_diagnostic_path::get_event (int idx) const
 {
   return *m_events[idx];
@@ -66,8 +68,8 @@ test_diagnostic_path::num_threads () const
   return m_threads.length ();
 }
 
-const diagnostic_thread &
-test_diagnostic_path::get_thread (diagnostic_thread_id_t idx) const
+const thread &
+test_diagnostic_path::get_thread (thread_id_t idx) const
 {
   return *m_threads[idx];
 }
@@ -80,7 +82,7 @@ test_diagnostic_path::same_function_p (int event_idx_a,
 	  == m_events[event_idx_b]->get_logical_location ());
 }
 
-diagnostic_thread_id_t
+thread_id_t
 test_diagnostic_path::add_thread (const char *name)
 {
   m_threads.safe_push (new test_diagnostic_thread (name));
@@ -95,7 +97,7 @@ test_diagnostic_path::add_thread (const char *name)
 
    Return the id of the new event.  */
 
-diagnostic_event_id_t
+event_id_t
 test_diagnostic_path::add_event (location_t loc,
 				 const char *funcname,
 				 int depth,
@@ -126,11 +128,11 @@ test_diagnostic_path::add_event (location_t loc,
 
   pp_clear_output_area (pp);
 
-  return diagnostic_event_id_t (m_events.length () - 1);
+  return event_id_t (m_events.length () - 1);
 }
 
-diagnostic_event_id_t
-test_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
+event_id_t
+test_diagnostic_path::add_thread_event (thread_id_t thread_id,
 					location_t loc,
 					const char *funcname,
 					int depth,
@@ -163,7 +165,7 @@ test_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
 
   pp_clear_output_area (pp);
 
-  return diagnostic_event_id_t (m_events.length () - 1);
+  return event_id_t (m_events.length () - 1);
 }
 
 /* Mark the most recent event on this path (which must exist) as being
@@ -179,7 +181,7 @@ test_diagnostic_path::connect_to_next_event ()
 void
 test_diagnostic_path::add_entry (const char *callee_name,
 				 int stack_depth,
-				 diagnostic_thread_id_t thread_id)
+				 thread_id_t thread_id)
 {
   add_thread_event (thread_id, UNKNOWN_LOCATION, callee_name, stack_depth,
 		    "entering %qs", callee_name);
@@ -188,7 +190,7 @@ test_diagnostic_path::add_entry (const char *callee_name,
 void
 test_diagnostic_path::add_return (const char *caller_name,
 				  int stack_depth,
-				  diagnostic_thread_id_t thread_id)
+				  thread_id_t thread_id)
 {
   add_thread_event (thread_id, UNKNOWN_LOCATION, caller_name, stack_depth,
 		    "returning to %qs", caller_name);
@@ -198,7 +200,7 @@ void
 test_diagnostic_path::add_call (const char *caller_name,
 				int caller_stack_depth,
 				const char *callee_name,
-				diagnostic_thread_id_t thread_id)
+				thread_id_t thread_id)
 {
   add_thread_event (thread_id, UNKNOWN_LOCATION,
 		    caller_name, caller_stack_depth,
@@ -221,7 +223,7 @@ test_diagnostic_event (location_t loc,
 		       logical_location logical_loc,
 		       int depth,
 		       const char *desc,
-		       diagnostic_thread_id_t thread_id)
+		       thread_id_t thread_id)
 : m_loc (loc),
   m_logical_loc (logical_loc),
   m_depth (depth), m_desc (xstrdup (desc)),

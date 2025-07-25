@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SELFTEST_DIAGNOSTIC_PATH_H
-#define GCC_SELFTEST_DIAGNOSTIC_PATH_H
+#ifndef GCC_DIAGNOSTICS_SELFTEST_PATHS_H
+#define GCC_DIAGNOSTICS_SELFTEST_PATHS_H
 
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "diagnostics/selftest-logical-locations.h"
 
 /* The selftest code should entirely disappear in a production
@@ -38,16 +38,17 @@ namespace selftest {
 
 /* An implementation of diagnostic_event.  */
 
-class test_diagnostic_event : public diagnostic_event
+class test_diagnostic_event : public diagnostics::paths::event
 {
  public:
   using logical_location = diagnostics::logical_locations::key;
+  using thread_id_t = diagnostics::paths::thread_id_t;
 
   test_diagnostic_event (location_t loc,
 			 logical_location logical_loc,
 			 int depth,
 			 const char *desc,
-			 diagnostic_thread_id_t thread_id = 0);
+			 thread_id_t thread_id = 0);
   ~test_diagnostic_event ();
 
   location_t get_location () const final override { return m_loc; }
@@ -68,7 +69,7 @@ class test_diagnostic_event : public diagnostic_event
   {
     return m_connected_to_next_event;
   }
-  diagnostic_thread_id_t get_thread_id () const final override
+  thread_id_t get_thread_id () const final override
   {
     return m_thread_id;
   }
@@ -84,12 +85,12 @@ class test_diagnostic_event : public diagnostic_event
   int m_depth;
   char *m_desc; // has been formatted; doesn't get i18n-ed
   bool m_connected_to_next_event;
-  diagnostic_thread_id_t m_thread_id;
+  thread_id_t m_thread_id;
 };
 
-/* A simple implementation of diagnostic_thread.  */
+/* A simple implementation of diagnostics::paths::thread.  */
 
-class test_diagnostic_thread : public diagnostic_thread
+class test_diagnostic_thread : public diagnostics::paths::thread
 {
 public:
   test_diagnostic_thread (const char *name) : m_name (name) {}
@@ -102,33 +103,38 @@ private:
   const char *m_name; // has been i18n-ed and formatted
 };
 
-/* A concrete subclass of diagnostic_path for implementing selftests
+/* A concrete subclass of diagnostics::paths::path for implementing selftests
    - a vector of test_diagnostic_event instances
    - adds member functions for adding test event
    - does no translation of its events
    - has no dependency on "tree".  */
 
-class test_diagnostic_path : public diagnostic_path
+class test_diagnostic_path : public diagnostics::paths::path
 {
  public:
+  using thread = diagnostics::paths::thread;
+  using thread_id_t = diagnostics::paths::thread_id_t;
+  using event = diagnostics::paths::event;
+  using event_id_t = diagnostics::paths::event_id_t;
+
   test_diagnostic_path (pretty_printer *event_pp);
 
   unsigned num_events () const final override;
-  const diagnostic_event & get_event (int idx) const final override;
+  const event & get_event (int idx) const final override;
   unsigned num_threads () const final override;
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override;
+  const thread &
+  get_thread (thread_id_t) const final override;
   bool
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override;
 
-  diagnostic_thread_id_t add_thread (const char *name);
+  thread_id_t add_thread (const char *name);
 
-  diagnostic_event_id_t add_event (location_t loc, const char *funcname, int depth,
-				   const char *fmt, ...)
+  event_id_t add_event (location_t loc, const char *funcname, int depth,
+			const char *fmt, ...)
     ATTRIBUTE_GCC_DIAG(5,6);
-  diagnostic_event_id_t
-  add_thread_event (diagnostic_thread_id_t thread_id,
+  event_id_t
+  add_thread_event (thread_id_t thread_id,
 		    location_t loc, const char *funcname, int depth,
 		    const char *fmt, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
@@ -136,13 +142,13 @@ class test_diagnostic_path : public diagnostic_path
   void connect_to_next_event ();
 
   void add_entry (const char *callee_name, int stack_depth,
-		  diagnostic_thread_id_t thread_id = 0);
+		  thread_id_t thread_id = 0);
   void add_return (const char *caller_name, int stack_depth,
-		   diagnostic_thread_id_t thread_id = 0);
+		   thread_id_t thread_id = 0);
   void add_call (const char *caller_name,
 		 int caller_stack_depth,
 		 const char *callee_name,
-		 diagnostic_thread_id_t thread_id = 0);
+		 thread_id_t thread_id = 0);
 
  private:
   diagnostics::logical_locations::key
@@ -160,4 +166,4 @@ class test_diagnostic_path : public diagnostic_path
 
 #endif /* #if CHECKING_P */
 
-#endif /* ! GCC_SELFTEST_DIAGNOSTIC_PATH_H */
+#endif /* ! GCC_DIAGNOSTICS_SELFTEST_PATHS_H */

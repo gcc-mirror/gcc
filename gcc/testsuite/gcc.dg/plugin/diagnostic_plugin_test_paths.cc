@@ -32,7 +32,6 @@
 #include "intl.h"
 #include "plugin-version.h"
 #include "diagnostic.h"
-#include "diagnostic-path.h"
 #include "diagnostics/metadata.h"
 #include "context.h"
 #include "print-tree.h"
@@ -223,7 +222,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   diagnostic_event_id_t
   add_event_2 (event_location_t evloc, int stack_depth,
 	       const char *desc,
-	       diagnostic_thread_id_t thread_id = 0)
+	       diagnostics::paths::thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
     return add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
@@ -232,7 +231,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   diagnostic_event_id_t
   add_event_2_with_event_id (event_location_t evloc, int stack_depth,
 			     const char *fmt,
-			     diagnostic_thread_id_t thread_id,
+			     diagnostics::paths::thread_id_t thread_id,
 			     diagnostic_event_id_t event_id)
   {
     gcc_assert (evloc.m_fun);
@@ -242,7 +241,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   }
   void add_entry (event_location_t evloc, int stack_depth,
 		  const char *funcname,
-		  diagnostic_thread_id_t thread_id = 0)
+		  diagnostics::paths::thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
     add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl, stack_depth,
@@ -502,8 +501,8 @@ example_4 ()
 
       gcc_rich_location richloc (call_to_acquire_lock_a_in_bar.m_loc);
       test_diagnostic_path path (global_dc->get_reference_printer ());
-      diagnostic_thread_id_t thread_1 = path.add_thread ("Thread 1");
-      diagnostic_thread_id_t thread_2 = path.add_thread ("Thread 2");
+      diagnostics::paths::thread_id_t thread_1 = path.add_thread ("Thread 1");
+      diagnostics::paths::thread_id_t thread_2 = path.add_thread ("Thread 2");
       path.add_entry (entry_to_foo, 0, "foo", thread_1);
       diagnostic_event_id_t event_a_acquired
 	= path.add_event_2 (call_to_acquire_lock_a_in_foo, 1,

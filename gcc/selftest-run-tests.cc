@@ -105,14 +105,14 @@ selftest::run_tests ()
   diagnostics_digraphs_cc_tests ();
   diagnostics_output_spec_cc_tests ();
   diagnostics_state_graphs_cc_tests ();
+  diagnostics_lazy_paths_cc_tests ();
+  diagnostics_paths_output_cc_tests ();
   edit_context_cc_tests ();
   fold_const_cc_tests ();
   spellcheck_cc_tests ();
   spellcheck_tree_cc_tests ();
   tree_cfg_cc_tests ();
-  diagnostic_path_output_cc_tests ();
   simple_diagnostic_path_cc_tests ();
-  lazy_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
   path_coverage_cc_tests ();
 

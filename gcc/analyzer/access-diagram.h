@@ -152,7 +152,7 @@ class access_diagram : public text_art::wrapper_widget
 {
 public:
   access_diagram (const access_operation &op,
-		  diagnostic_event_id_t region_creation_event_id,
+		  diagnostics::paths::event_id_t region_creation_event_id,
 		  text_art::style_manager &sm,
 		  const text_art::theme &theme,
 		  logger *logger);

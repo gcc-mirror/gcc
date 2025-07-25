@@ -1583,7 +1583,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   /* Precompute all enodes from which the diagnostic is reachable.  */
   path_builder pb (eg, *epath, sd.get_feasibility_problem (), sd);
 
-  /* This is the diagnostic_path subclass that will be built for
+  /* This is the diagnostics::paths::path subclass that will be built for
      the diagnostic.  */
   checker_path emission_path (get_logical_location_manager (),
 			      eg.get_ext_state (),

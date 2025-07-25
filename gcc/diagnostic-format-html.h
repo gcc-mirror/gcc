@@ -56,7 +56,7 @@ make_html_sink (diagnostic_context &context,
 
 extern void
 print_path_as_html (xml::printer &xp,
-		    const diagnostic_path &path,
+		    const diagnostics::paths::path &path,
 		    diagnostic_context &dc,
 		    html_label_writer *event_label_writer,
 		    const diagnostic_source_print_policy &dspp);

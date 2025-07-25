@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-markup.h"
 #include "pretty-print-urlifier.h"
 #include "diagnostic-color.h"
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "diagnostic-highlight-colors.h"
 #include "auto-obstack.h"
 #include "selftest.h"
@@ -3413,8 +3413,8 @@ test_pp_format ()
 			    "foo", 0x12345678);
   /* Verify "%@".  */
   {
-    diagnostic_event_id_t first (2);
-    diagnostic_event_id_t second (7);
+    diagnostics::paths::event_id_t first (2);
+    diagnostics::paths::event_id_t second (7);
 
     ASSERT_PP_FORMAT_2 ("first `free' at (3); second `free' at (8)",
 			"first %<free%> at %@; second %<free%> at %@",

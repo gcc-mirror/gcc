@@ -27,56 +27,58 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "lazy-diagnostic-path.h"
+#include "diagnostics/lazy-paths.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "simple-diagnostic-path.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-format-text.h"
 
-/* class lazy_diagnostic_path : public diagnostic_path.  */
+using namespace diagnostics::paths;
 
-/* Implementation of diagnostic_path vfuncs in terms of a lazily-generated
+/* class lazy_path : public path.  */
+
+/* Implementation of path vfuncs in terms of a lazily-generated
    path.  */
 
 unsigned
-lazy_diagnostic_path::num_events () const
+lazy_path::num_events () const
 {
   lazily_generate_path ();
   return m_inner_path->num_events ();
 }
 
-const diagnostic_event &
-lazy_diagnostic_path::get_event (int idx) const
+const event &
+lazy_path::get_event (int idx) const
 {
   lazily_generate_path ();
   return m_inner_path->get_event (idx);
 }
 
 unsigned
-lazy_diagnostic_path::num_threads () const
+lazy_path::num_threads () const
 {
   lazily_generate_path ();
   return m_inner_path->num_threads ();
 }
 
-const diagnostic_thread &
-lazy_diagnostic_path::get_thread (diagnostic_thread_id_t idx) const
+const thread &
+lazy_path::get_thread (thread_id_t idx) const
 {
   lazily_generate_path ();
   return m_inner_path->get_thread (idx);
 }
 
 bool
-lazy_diagnostic_path::same_function_p (int event_idx_a,
-					   int event_idx_b) const
+lazy_path::same_function_p (int event_idx_a,
+			    int event_idx_b) const
 {
   lazily_generate_path ();
   return m_inner_path->same_function_p (event_idx_a, event_idx_b);
 }
 
 void
-lazy_diagnostic_path::lazily_generate_path () const
+lazy_path::lazily_generate_path () const
 {
   if (!m_inner_path)
     m_inner_path = make_inner_path ();
@@ -87,15 +89,15 @@ lazy_diagnostic_path::lazily_generate_path () const
 
 namespace selftest {
 
-class test_lazy_path : public lazy_diagnostic_path
+class test_lazy_path : public lazy_path
 {
 public:
   test_lazy_path (pretty_printer &pp)
-  : lazy_diagnostic_path (m_logical_loc_mgr),
+  : lazy_path (m_logical_loc_mgr),
     m_pp (pp)
   {
   }
-  std::unique_ptr<diagnostic_path> make_inner_path () const final override
+  std::unique_ptr<path> make_inner_path () const final override
   {
     tree fntype_void_void
       = build_function_type_array (void_type_node, 0, nullptr);
@@ -214,7 +216,7 @@ test_emission (pretty_printer *event_pp)
 /* Run all of the selftests within this file.  */
 
 void
-lazy_diagnostic_path_cc_tests ()
+diagnostics_lazy_paths_cc_tests ()
 {
   /* In a few places we use the global dc's printer to determine
      colorization so ensure this off during the tests.  */

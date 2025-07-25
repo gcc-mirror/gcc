@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/metadata.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "diagnostic-format.h"
 #include "diagnostic-buffer.h"
 #include "json.h"
@@ -534,22 +534,22 @@ public:
   unsigned get_index_within_parent () const { return m_idx_within_parent; }
 
   sarif_thread_flow &
-  get_or_append_thread_flow (const diagnostic_thread &thread,
-			     diagnostic_thread_id_t thread_id);
+  get_or_append_thread_flow (const paths::thread &thread,
+			     paths::thread_id_t thread_id);
 
   sarif_thread_flow &
-  get_thread_flow (diagnostic_thread_id_t thread_id);
+  get_thread_flow (paths::thread_id_t thread_id);
 
   void add_location (sarif_thread_flow_location &);
 
   sarif_thread_flow_location &
-  get_thread_flow_loc_obj (diagnostic_event_id_t event_id) const;
+  get_thread_flow_loc_obj (paths::event_id_t event_id) const;
 
 private:
   sarif_result &m_parent;
   const unsigned m_idx_within_parent;
 
-  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
+  hash_map<int_hash<paths::thread_id_t, -1, -2>,
 	   sarif_thread_flow *> m_thread_id_map; // borrowed ptr
   json::array *m_thread_flows_arr; // borrowed
 
@@ -565,7 +565,7 @@ class sarif_thread_flow : public sarif_object
 {
 public:
   sarif_thread_flow (sarif_code_flow &parent,
-		     const diagnostic_thread &thread,
+		     const paths::thread &thread,
 		     unsigned idx_within_parent);
 
   sarif_code_flow &get_parent () const { return m_parent; }
@@ -865,19 +865,19 @@ private:
 			    logical_locations::key logical_loc);
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
-			const diagnostic_event &event,
+			const paths::event &event,
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_code_flow>
   make_code_flow_object (sarif_result &result,
 			 unsigned idx_within_parent,
-			 const diagnostic_path &path);
+			 const paths::path &path);
   void
   populate_thread_flow_location_object (sarif_result &result,
 					sarif_thread_flow_location &thread_flow_loc_obj,
-					const diagnostic_event &event,
+					const paths::event &event,
 					int event_execution_idx);
   std::unique_ptr<json::array>
-  maybe_make_kinds_array (diagnostic_event::meaning m) const;
+  maybe_make_kinds_array (paths::event::meaning m) const;
   std::unique_ptr<sarif_physical_location>
   maybe_make_physical_location_object (location_t loc,
 				       enum diagnostic_artifact_role role,
@@ -1574,8 +1574,8 @@ sarif_code_flow::sarif_code_flow (sarif_result &parent,
 }
 
 sarif_thread_flow &
-sarif_code_flow::get_or_append_thread_flow (const diagnostic_thread &thread,
-					    diagnostic_thread_id_t thread_id)
+sarif_code_flow::get_or_append_thread_flow (const paths::thread &thread,
+					    paths::thread_id_t thread_id)
 {
   sarif_thread_flow **slot = m_thread_id_map.get (thread_id);
   if (slot)
@@ -1591,7 +1591,7 @@ sarif_code_flow::get_or_append_thread_flow (const diagnostic_thread &thread,
 }
 
 sarif_thread_flow &
-sarif_code_flow::get_thread_flow (diagnostic_thread_id_t thread_id)
+sarif_code_flow::get_thread_flow (paths::thread_id_t thread_id)
 {
   sarif_thread_flow **slot = m_thread_id_map.get (thread_id);
   gcc_assert (slot); // it must already have one
@@ -1605,7 +1605,7 @@ sarif_code_flow::add_location (sarif_thread_flow_location &tfl_obj)
 }
 
 sarif_thread_flow_location &
-sarif_code_flow::get_thread_flow_loc_obj (diagnostic_event_id_t event_id) const
+sarif_code_flow::get_thread_flow_loc_obj (paths::event_id_t event_id) const
 {
   gcc_assert (event_id.known_p ());
   gcc_assert ((size_t)event_id.zero_based () < m_all_tfl_objs.size ());
@@ -1617,7 +1617,7 @@ sarif_code_flow::get_thread_flow_loc_obj (diagnostic_event_id_t event_id) const
 /* class sarif_thread_flow : public sarif_object.  */
 
 sarif_thread_flow::sarif_thread_flow (sarif_code_flow &parent,
-				      const diagnostic_thread &thread,
+				      const paths::thread &thread,
 				      unsigned idx_within_parent)
 : m_parent (parent),
   m_idx_within_parent (idx_within_parent)
@@ -2060,7 +2060,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 			 diagnostic_artifact_role::result_file));
 
   /* "codeFlows" property (SARIF v2.1.0 section 3.27.18).  */
-  if (const diagnostic_path *path = diagnostic.richloc->get_path ())
+  if (const paths::path *path = diagnostic.richloc->get_path ())
     {
       auto code_flows_arr = std::make_unique<json::array> ();
       const unsigned code_flow_index = 0;
@@ -2430,11 +2430,11 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 }
 
 /* Make a "location" object (SARIF v2.1.0 section 3.28) for EVENT
-   within a diagnostic_path.  */
+   within a paths::path.  */
 
 std::unique_ptr<sarif_location>
 sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
-				     const diagnostic_event &event,
+				     const paths::event &event,
 				     enum diagnostic_artifact_role role)
 {
   auto location_obj = std::make_unique<sarif_location> ();
@@ -3050,7 +3050,7 @@ make_minimal_sarif_logical_location (logical_locations::key logical_loc)
 
 label_text
 make_sarif_url_for_event (const sarif_code_flow *code_flow,
-			  diagnostic_event_id_t event_id)
+			  paths::event_id_t event_id)
 {
   gcc_assert (event_id.known_p ());
 
@@ -3084,7 +3084,7 @@ make_sarif_url_for_event (const sarif_code_flow *code_flow,
 std::unique_ptr<sarif_code_flow>
 sarif_builder::make_code_flow_object (sarif_result &result,
 				      unsigned idx_within_parent,
-				      const diagnostic_path &path)
+				      const paths::path &path)
 {
   auto code_flow_obj
     = std::make_unique <sarif_code_flow> (result, idx_within_parent);
@@ -3096,8 +3096,8 @@ sarif_builder::make_code_flow_object (sarif_result &result,
      SARIF file.  */
   for (unsigned i = 0; i < path.num_events (); i++)
     {
-      const diagnostic_event &event = path.get_event (i);
-      const diagnostic_thread_id_t thread_id = event.get_thread_id ();
+      const paths::event &event = path.get_event (i);
+      const paths::thread_id_t thread_id = event.get_thread_id ();
 
       sarif_thread_flow &thread_flow_obj
 	= code_flow_obj->get_or_append_thread_flow (path.get_thread (thread_id),
@@ -3109,7 +3109,7 @@ sarif_builder::make_code_flow_object (sarif_result &result,
   m_current_code_flow = code_flow_obj.get ();
   for (unsigned i = 0; i < path.num_events (); i++)
     {
-      const diagnostic_event &event = path.get_event (i);
+      const paths::event &event = path.get_event (i);
       sarif_thread_flow_location &thread_flow_loc_obj
 	= code_flow_obj->get_thread_flow_loc_obj (i);
       populate_thread_flow_location_object (result,
@@ -3129,10 +3129,10 @@ void
 sarif_builder::
 populate_thread_flow_location_object (sarif_result &result,
 				      sarif_thread_flow_location &tfl_obj,
-				      const diagnostic_event &ev,
+				      const paths::event &ev,
 				      int event_execution_idx)
 {
-  /* Give diagnostic_event subclasses a chance to add custom properties
+  /* Give paths::event subclasses a chance to add custom properties
      via a property bag.  */
   ev.maybe_add_sarif_properties (*this, tfl_obj);
 
@@ -3141,7 +3141,7 @@ populate_thread_flow_location_object (sarif_result &result,
       {
 	sarif_property_bag &props = tfl_obj.get_or_create_properties ();
 
-#define PROPERTY_PREFIX "gcc/diagnostic_event/"
+#define PROPERTY_PREFIX "gcc/diagnostics/paths/event/"
 	props.set_graph (PROPERTY_PREFIX "state_graph",
 			 *this,
 			 /* Use RESULT for any related locations in the graph's
@@ -3160,7 +3160,7 @@ populate_thread_flow_location_object (sarif_result &result,
      make_location_object (result, ev, diagnostic_artifact_role::traced_file));
 
   /* "kinds" property (SARIF v2.1.0 section 3.38.8).  */
-  diagnostic_event::meaning m = ev.get_meaning ();
+  paths::event::meaning m = ev.get_meaning ();
   if (auto kinds_arr = maybe_make_kinds_array (m))
     tfl_obj.set<json::array> ("kinds", std::move (kinds_arr));
 
@@ -3183,22 +3183,25 @@ populate_thread_flow_location_object (sarif_result &result,
    Otherwise, return nullptr.  */
 
 std::unique_ptr<json::array>
-sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
+sarif_builder::
+maybe_make_kinds_array (paths::event::meaning m) const
 {
-  if (m.m_verb == diagnostic_event::verb::unknown
-      && m.m_noun == diagnostic_event::noun::unknown
-      && m.m_property == diagnostic_event::property::unknown)
+  using namespace paths;
+
+  if (m.m_verb == event::verb::unknown
+      && m.m_noun == event::noun::unknown
+      && m.m_property == event::property::unknown)
     return nullptr;
 
   auto kinds_arr = std::make_unique<json::array> ();
   if (const char *verb_str
-	= diagnostic_event::meaning::maybe_get_verb_str (m.m_verb))
+	= event::meaning::maybe_get_verb_str (m.m_verb))
     kinds_arr->append_string (verb_str);
   if (const char *noun_str
-	= diagnostic_event::meaning::maybe_get_noun_str (m.m_noun))
+	= event::meaning::maybe_get_noun_str (m.m_noun))
     kinds_arr->append_string (noun_str);
   if (const char *property_str
-	= diagnostic_event::meaning::maybe_get_property_str (m.m_property))
+	= event::meaning::maybe_get_property_str (m.m_property))
     kinds_arr->append_string (property_str);
   return kinds_arr;
 }

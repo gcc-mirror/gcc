@@ -30,7 +30,7 @@ def get_result_by_index(sarif, idx):
     return results[idx]
     
 def get_state_graph(events, event_idx):
-    graph = events[event_idx]['properties']['gcc/diagnostic_event/state_graph']
+    graph = events[event_idx]['properties']['gcc/diagnostics/paths/event/state_graph']
     if 0:
         print(graph)
     assert graph is not None

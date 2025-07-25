@@ -2701,7 +2701,7 @@ layout_printer<to_text>::begin_label (int range_idx,
 				      bool is_label_text)
 {
   /* Colorize the text, unless it's for labels for events in a
-     diagnostic_path.  */
+     diagnostic path.  */
   if (is_label_text && m_is_diagnostic_path)
     return;
 

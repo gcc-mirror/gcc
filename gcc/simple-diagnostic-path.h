@@ -1,4 +1,4 @@
-/* Concrete classes for implementing diagnostic paths.
+/* Concrete classes for implementing diagnostic paths, using tree.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
@@ -21,20 +21,23 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SIMPLE_DIAGNOSTIC_PATH_H
 #define GCC_SIMPLE_DIAGNOSTIC_PATH_H
 
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "tree-logical-location.h"
 
 /* Concrete subclasses of the abstract base classes
    declared in diagnostic-path.h.  */
 
-/* A simple implementation of diagnostic_event.  */
+/* A simple implementation of diagnostic event.
+   This uses "tree" and so is not in "namespace diagnostics".  */
 
-class simple_diagnostic_event : public diagnostic_event
+class simple_diagnostic_event : public diagnostics::paths::event
 {
  public:
+  using thread_id_t = diagnostics::paths::thread_id_t;
+
   simple_diagnostic_event (location_t loc, tree fndecl, int depth,
 			   const char *desc,
-			   diagnostic_thread_id_t thread_id = 0);
+			   thread_id_t thread_id = 0);
   ~simple_diagnostic_event ();
 
   location_t get_location () const final override { return m_loc; }
@@ -53,7 +56,7 @@ class simple_diagnostic_event : public diagnostic_event
   {
     return m_connected_to_next_event;
   }
-  diagnostic_thread_id_t get_thread_id () const final override
+  thread_id_t get_thread_id () const final override
   {
     return m_thread_id;
   }
@@ -72,12 +75,12 @@ class simple_diagnostic_event : public diagnostic_event
   int m_depth;
   char *m_desc; // has been i18n-ed and formatted
   bool m_connected_to_next_event;
-  diagnostic_thread_id_t m_thread_id;
+  thread_id_t m_thread_id;
 };
 
-/* A simple implementation of diagnostic_thread.  */
+/* A simple implementation of diagnostics::paths::thread.  */
 
-class simple_diagnostic_thread : public diagnostic_thread
+class simple_diagnostic_thread : public diagnostics::paths::thread
 {
 public:
   simple_diagnostic_thread (const char *name) : m_name (name) {}
@@ -93,28 +96,33 @@ private:
 /* A simple implementation of diagnostic_path, as a vector of
    simple_diagnostic_event instances.  */
 
-class simple_diagnostic_path : public diagnostic_path
+class simple_diagnostic_path : public diagnostics::paths::path
 {
  public:
+  using thread = diagnostics::paths::thread;
+  using thread_id_t = diagnostics::paths::thread_id_t;
+  using event = diagnostics::paths::event;
+  using event_id_t = diagnostics::paths::event_id_t;
+
   simple_diagnostic_path (const tree_logical_location_manager &logical_loc_mgr,
 			  pretty_printer *event_pp);
 
   unsigned num_events () const final override { return m_events.length (); }
-  const diagnostic_event & get_event (int idx) const final override;
+  const event & get_event (int idx) const final override;
   unsigned num_threads () const final override { return m_threads.length (); }
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override;
+  const thread &
+  get_thread (thread_id_t) const final override;
   bool
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override;
 
-  diagnostic_thread_id_t add_thread (const char *name);
+  thread_id_t add_thread (const char *name);
 
-  diagnostic_event_id_t add_event (location_t loc, tree fndecl, int depth,
-				   const char *fmt, ...)
+  event_id_t add_event (location_t loc, tree fndecl, int depth,
+			const char *fmt, ...)
     ATTRIBUTE_GCC_DIAG(5,6);
-  diagnostic_event_id_t
-  add_thread_event (diagnostic_thread_id_t thread_id,
+  event_id_t
+  add_thread_event (thread_id_t thread_id,
 		    location_t loc, tree fndecl, int depth,
 		    const char *fmt, ...)
     ATTRIBUTE_GCC_DIAG(6,7);

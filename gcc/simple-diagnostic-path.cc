@@ -1,4 +1,4 @@
-/* Concrete classes for implementing diagnostic paths.
+/* Concrete classes for implementing diagnostic paths, using tree.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
@@ -32,29 +32,31 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-diagnostic-path.h"
 #include "selftest.h"
 
-/* class simple_diagnostic_path : public diagnostic_path.  */
+using namespace diagnostics::paths;
+
+/* class simple_diagnostic_path : public diagnostics::paths::path.  */
 
 simple_diagnostic_path::
 simple_diagnostic_path (const tree_logical_location_manager &logical_loc_mgr,
 			pretty_printer *event_pp)
-: diagnostic_path (logical_loc_mgr),
+: path (logical_loc_mgr),
   m_event_pp (event_pp),
   m_localize_events (true)
 {
   add_thread ("main");
 }
 
-/* Implementation of diagnostic_path::get_event vfunc for
+/* Implementation of path::get_event vfunc for
    simple_diagnostic_path: simply return the event in the vec.  */
 
-const diagnostic_event &
+const event &
 simple_diagnostic_path::get_event (int idx) const
 {
   return *m_events[idx];
 }
 
-const diagnostic_thread &
-simple_diagnostic_path::get_thread (diagnostic_thread_id_t idx) const
+const thread &
+simple_diagnostic_path::get_thread (thread_id_t idx) const
 {
   return *m_threads[idx];
 }
@@ -67,7 +69,7 @@ simple_diagnostic_path::same_function_p (int event_idx_a,
 	  == m_events[event_idx_b]->get_fndecl ());
 }
 
-diagnostic_thread_id_t
+thread_id_t
 simple_diagnostic_path::add_thread (const char *name)
 {
   m_threads.safe_push (new simple_diagnostic_thread (name));
@@ -82,7 +84,7 @@ simple_diagnostic_path::add_thread (const char *name)
 
    Return the id of the new event.  */
 
-diagnostic_event_id_t
+event_id_t
 simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
 				   const char *fmt, ...)
 {
@@ -108,11 +110,11 @@ simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
 
   pp_clear_output_area (pp);
 
-  return diagnostic_event_id_t (m_events.length () - 1);
+  return event_id_t (m_events.length () - 1);
 }
 
-diagnostic_event_id_t
-simple_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
+event_id_t
+simple_diagnostic_path::add_thread_event (thread_id_t thread_id,
 					  location_t loc,
 					  tree fndecl,
 					  int depth,
@@ -141,7 +143,7 @@ simple_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
 
   pp_clear_output_area (pp);
 
-  return diagnostic_event_id_t (m_events.length () - 1);
+  return event_id_t (m_events.length () - 1);
 }
 
 /* Mark the most recent event on this path (which must exist) as being
@@ -163,7 +165,7 @@ simple_diagnostic_event (location_t loc,
 			 tree fndecl,
 			 int depth,
 			 const char *desc,
-			 diagnostic_thread_id_t thread_id)
+			 thread_id_t thread_id)
 : m_loc (loc), m_fndecl (fndecl),
   m_logical_loc (tree_logical_location_manager::key_from_tree (fndecl)),
   m_depth (depth), m_desc (xstrdup (desc)),

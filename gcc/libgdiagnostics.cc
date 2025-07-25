@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
 #include "diagnostics/metadata.h"
-#include "diagnostic-path.h"
+#include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
@@ -210,7 +210,7 @@ struct diagnostic_logical_location
 };
 
 static diagnostic_event_id
-as_diagnostic_event_id (diagnostic_event_id_t id)
+as_diagnostic_event_id (diagnostics::paths::event_id_t id)
 {
   return id.zero_based ();
 }
@@ -993,7 +993,7 @@ struct diagnostic_edge : public diagnostics::digraphs::edge
   }
 };
 
-class libgdiagnostics_path_event : public diagnostic_event
+class libgdiagnostics_path_event : public diagnostics::paths::event
 {
 public:
   libgdiagnostics_path_event (const diagnostic_physical_location *physical_loc,
@@ -1010,7 +1010,7 @@ public:
     gcc_assert (m_msg_buf);
   }
 
-  /* diagnostic_event vfunc implementations.  */
+  /* diagnostics::paths::event vfunc implementations.  */
 
   location_t get_location () const final override
   {
@@ -1047,7 +1047,7 @@ public:
     return false; // TODO
   }
 
-  diagnostic_thread_id_t get_thread_id () const final override
+  diagnostics::paths::thread_id_t get_thread_id () const final override
   {
     return 0;
   }
@@ -1090,7 +1090,7 @@ private:
   std::unique_ptr<diagnostic_message_buffer> m_msg_buf;
 };
 
-class libgdiagnostics_path_thread : public diagnostic_thread
+class libgdiagnostics_path_thread : public diagnostics::paths::thread
 {
 public:
   libgdiagnostics_path_thread (const char *name) : m_name (name) {}
@@ -1105,15 +1105,15 @@ private:
 
 /* This has to be a "struct" as it is exposed in the C API.  */
 
-struct diagnostic_execution_path : public diagnostic_path
+struct diagnostic_execution_path : public diagnostics::paths::path
 {
-  diagnostic_execution_path (const logical_location_manager &logical_loc_mgr)
-  : diagnostic_path (logical_loc_mgr),
+  diagnostic_execution_path (const diagnostics::logical_locations::manager &logical_loc_mgr)
+  : diagnostics::paths::path (logical_loc_mgr),
     m_thread ("")
   {
   }
 
-  diagnostic_event_id_t
+  diagnostics::paths::event_id_t
   add_event_va (const diagnostic_physical_location *physical_loc,
 		const diagnostic_logical_location *logical_loc,
 		unsigned stack_depth,
@@ -1148,19 +1148,19 @@ struct diagnostic_execution_path : public diagnostic_path
     return m_events.size () - 1;
   }
 
-  /* diagnostic_path vfunc implementations.  */
+  /* diagnostics::paths::path vfunc implementations.  */
 
   unsigned num_events () const final override
   {
     return m_events.size ();
   }
-  const diagnostic_event & get_event (int idx) const final override
+  const diagnostics::paths::event & get_event (int idx) const final override
   {
     return *m_events[idx];
   }
   unsigned num_threads () const final override { return 1; }
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override
+  const diagnostics::paths::thread &
+  get_thread (diagnostics::paths::thread_id_t) const final override
   {
     return m_thread;
   }
@@ -2303,11 +2303,12 @@ diagnostic_execution_path_add_event (diagnostic_execution_path *path,
 
   va_list args;
   va_start (args, gmsgid);
-  diagnostic_event_id_t result = path->add_event_va (physical_loc,
-						     logical_loc,
-						     stack_depth,
-						     nullptr,
-						     gmsgid, &args);
+  diagnostics::paths::event_id_t result
+    = path->add_event_va (physical_loc,
+			  logical_loc,
+			  stack_depth,
+			  nullptr,
+			  gmsgid, &args);
   va_end (args);
 
   return as_diagnostic_event_id (result);
@@ -2326,11 +2327,12 @@ diagnostic_execution_path_add_event_va (diagnostic_execution_path *path,
   FAIL_IF_NULL (path);
   FAIL_IF_NULL (gmsgid);
 
-  diagnostic_event_id_t result = path->add_event_va (physical_loc,
-						     logical_loc,
-						     stack_depth,
-						     nullptr,
-						     gmsgid, args);
+  diagnostics::paths::event_id_t result
+    = path->add_event_va (physical_loc,
+			  logical_loc,
+			  stack_depth,
+			  nullptr,
+			  gmsgid, args);
   return as_diagnostic_event_id (result);
 }
 

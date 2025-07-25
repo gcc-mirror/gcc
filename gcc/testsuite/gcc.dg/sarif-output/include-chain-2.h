@@ -1,4 +1,4 @@
-/* Generate a warning with a diagnostic_path within a header.  */
+/* Generate a warning with a diagnostic path within a header.  */
 
 void test (void *ptr)
 {
