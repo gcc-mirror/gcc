@@ -1610,7 +1610,8 @@ struct cpp_decoded_char
    This is a tabstop value, along with a callback for getting the
    widths of characters.  Normally this callback is cpp_wcwidth, but we
    support other schemes for escaping non-ASCII unicode as a series of
-   ASCII chars when printing the user's source code in diagnostic-show-locus.cc
+   ASCII chars when printing the user's source code in
+   gcc/diagnostics/source-printing.cc
 
    For example, consider:
    - the Unicode character U+03C0 "GREEK SMALL LETTER PI" (UTF-8: 0xCF 0x80)

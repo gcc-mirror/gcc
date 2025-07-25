@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SELFTEST_DIAGNOSTIC_SHOW_LOCUS_H
-#define GCC_SELFTEST_DIAGNOSTIC_SHOW_LOCUS_H
+#ifndef GCC_DIAGNOSTICS_SELFTEST_SOURCE_PRINTING_H
+#define GCC_DIAGNOSTICS_SELFTEST_SOURCE_PRINTING_H
 
 #include "selftest.h"
 
@@ -79,4 +79,4 @@ struct diagnostic_show_locus_fixture_one_liner_utf8
 
 #endif /* #if CHECKING_P */
 
-#endif /* GCC_SELFTEST_DIAGNOSTIC_SHOW_LOCUS_H */
+#endif /* GCC_DIAGNOSTICS_SELFTEST_SOURCE_PRINTING_H */

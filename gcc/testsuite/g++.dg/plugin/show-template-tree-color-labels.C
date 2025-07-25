@@ -1,4 +1,4 @@
-/* Verify colorization of the labels in diagnostic-show-locus.c
+/* Verify colorization of the labels in diagnostics/source-printing.cc
    for template comparisons.
    Doing so requires a plugin; see the comments in the plugin for the
    rationale.  */

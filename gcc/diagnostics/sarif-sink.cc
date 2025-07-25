@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
-#include "selftest-diagnostic-show-locus.h"
+#include "diagnostics/selftest-source-printing.h"
 #include "selftest-json.h"
 #include "text-range-label.h"
 #include "pretty-print-format-impl.h"

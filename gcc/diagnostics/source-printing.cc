@@ -34,11 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-range-label.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
-#include "selftest-diagnostic-show-locus.h"
+#include "diagnostics/selftest-source-printing.h"
 #include "cpplib.h"
 #include "text-art/types.h"
 #include "text-art/theme.h"
-#include "diagnostic-label-effects.h"
+#include "diagnostics/source-printing-effects.h"
 #include "xml.h"
 #include "xml-printer.h"
 
@@ -766,7 +766,7 @@ class layout
 
   layout (const diagnostic_source_print_policy &source_policy,
 	  const rich_location &richloc,
-	  diagnostic_source_effect_info *effect_info = nullptr);
+	  diagnostics::source_effect_info *effect_info = nullptr);
 
   bool maybe_add_location_range (const location_range *loc_range,
 				 unsigned original_idx,
@@ -816,7 +816,7 @@ class layout
   file_cache &m_file_cache;
   const text_art::ascii_theme m_fallback_theme;
   const text_art::theme &m_theme;
-  diagnostic_source_effect_info *m_effect_info;
+  diagnostics::source_effect_info *m_effect_info;
   char_display_policy m_char_policy;
   location_t m_primary_loc;
   exploc_with_display_col m_exploc;
@@ -1206,7 +1206,8 @@ layout_range::has_in_edge () const
 {
   if (!m_label)
     return false;
-  const label_effects *effects = m_label->get_effects (m_original_idx);
+  const diagnostics::label_effects *effects
+    = m_label->get_effects (m_original_idx);
   if (!effects)
     return false;
 
@@ -1220,7 +1221,8 @@ layout_range::has_out_edge () const
 {
   if (!m_label)
     return false;
-  const label_effects *effects = m_label->get_effects (m_original_idx);
+  const diagnostics::label_effects *effects
+    = m_label->get_effects (m_original_idx);
   if (!effects)
     return false;
 
@@ -1739,7 +1741,7 @@ make_char_policy (const diagnostic_source_print_policy &source_policy,
 
 layout::layout (const diagnostic_source_print_policy &source_policy,
 		const rich_location &richloc,
-		diagnostic_source_effect_info *effect_info)
+		diagnostics::source_effect_info *effect_info)
 : m_options (source_policy.get_options ()),
   m_line_table (richloc.get_line_table ()),
   m_file_cache (source_policy.get_file_cache ()),
@@ -3845,7 +3847,7 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
 				      const diagnostic_source_printing_options &opts,
 				      diagnostic_t diagnostic_kind,
 				      pretty_printer &pp,
-				      diagnostic_source_effect_info *effects)
+				      diagnostics::source_effect_info *effects)
 {
   const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
@@ -3878,7 +3880,7 @@ diagnostic_context::maybe_show_locus_as_html (const rich_location &richloc,
 					      const diagnostic_source_printing_options &opts,
 					      diagnostic_t diagnostic_kind,
 					      xml::printer &xp,
-					      diagnostic_source_effect_info *effects,
+					      diagnostics::source_effect_info *effects,
 					      html_label_writer *label_writer)
 {
   const location_t loc = richloc.get_loc ();
@@ -3939,7 +3941,7 @@ void
 diagnostic_source_print_policy::print (pretty_printer &pp,
 				       const rich_location &richloc,
 				       diagnostic_t diagnostic_kind,
-				       diagnostic_source_effect_info *effects)
+				       diagnostics::source_effect_info *effects)
   const
 {
   layout layout (*this, richloc, effects);
@@ -3957,7 +3959,7 @@ void
 diagnostic_source_print_policy::print_as_html (xml::printer &xp,
 					       const rich_location &richloc,
 					       diagnostic_t diagnostic_kind,
-					       diagnostic_source_effect_info *effects,
+					       diagnostics::source_effect_info *effects,
 					       html_label_writer *label_writer)
   const
 {
@@ -6973,7 +6975,7 @@ test_line_numbers_multiline_range ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_show_locus_cc_tests ()
+diagnostics_source_printing_cc_tests ()
 {
   test_line_span ();
 

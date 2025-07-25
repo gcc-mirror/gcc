@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
 #include "diagnostics/event-id.h"
-#include "diagnostic-label-effects.h"
+#include "diagnostics/source-printing-effects.h"
 #include "pretty-print-markup.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -137,7 +137,8 @@ class path_label : public range_label
     return result;
   }
 
-  const label_effects *get_effects (unsigned /*range_idx*/) const final override
+  const diagnostics::label_effects *
+  get_effects (unsigned /*range_idx*/) const final override
   {
     return &m_effects;
   }
@@ -594,7 +595,7 @@ struct event_range
 
   void print_as_text (pretty_printer &pp,
 		      diagnostics::text_sink &text_output,
-		      diagnostic_source_effect_info *effect_info)
+		      diagnostics::source_effect_info *effect_info)
   {
     location_t initial_loc = m_initial_event.get_location ();
 
@@ -653,7 +654,7 @@ struct event_range
 
   void print_as_html (xml::printer &xp,
 		      diagnostic_context &dc,
-		      diagnostic_source_effect_info *effect_info,
+		      diagnostics::source_effect_info *effect_info,
 		      html_label_writer *event_label_writer)
   {
     location_t initial_loc = m_initial_event.get_location ();
@@ -887,7 +888,7 @@ public:
 					  pretty_printer *pp,
 					  const logical_locations::manager &logical_loc_mgr,
 					  event_range *range,
-					  diagnostic_source_effect_info *effect_info)
+					  diagnostics::source_effect_info *effect_info)
   {
     gcc_assert (pp);
     const char *const line_color = "path";
@@ -1047,7 +1048,7 @@ public:
 					  xml::printer &xp,
 					  html_label_writer *event_label_writer,
 					  event_range *range,
-					  diagnostic_source_effect_info *effect_info)
+					  diagnostics::source_effect_info *effect_info)
   {
     range->print_as_html (xp, dc, effect_info, event_label_writer);
     m_num_printed++;
@@ -1137,7 +1138,7 @@ print_path_summary_as_text (const path_summary &ps,
       thread_event_printer &tep = thread_event_printers[swimlane_idx];
       /* Wire up any trailing out-edge from previous range to leading in-edge
 	 of this range.  */
-      diagnostic_source_effect_info effect_info;
+      diagnostics::source_effect_info effect_info;
       effect_info.m_leading_in_edge_column = last_out_edge_column;
       tep.print_swimlane_for_event_range_as_text
 	(text_output, pp,
@@ -1263,7 +1264,7 @@ print_path_summary_as_html (const path_summary &ps,
       thread_event_printer &tep = thread_event_printers[swimlane_idx];
       /* Wire up any trailing out-edge from previous range to leading in-edge
 	 of this range.  */
-      diagnostic_source_effect_info effect_info;
+      diagnostics::source_effect_info effect_info;
       effect_info.m_leading_in_edge_column = last_out_edge_column;
       tep.print_swimlane_for_event_range_as_html (dc, xp, event_label_writer,
 						  range, &effect_info);

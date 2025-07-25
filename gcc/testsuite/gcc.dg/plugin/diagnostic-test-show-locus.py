@@ -1,4 +1,4 @@
-# Verify that diagnostic-show-locus.cc works with HTML output.
+# Verify that diagnostics/source-printing.cc works with HTML output.
 
 from htmltest import *
 

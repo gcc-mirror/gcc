@@ -18,8 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_LABEL_EFFECTS_H
-#define GCC_DIAGNOSTIC_LABEL_EFFECTS_H
+#ifndef GCC_DIAGNOSTICS_SOURCE_PRINTING_EFFECTS_H
+#define GCC_DIAGNOSTICS_SOURCE_PRINTING_EFFECTS_H
+
+namespace diagnostics {
 
 /* Abstract base class for describing special effects when printing
    a label when quoting source code.  */
@@ -37,10 +39,10 @@ public:
 
 /* A class to hold state when quoting a run of lines of source code.  */
 
-class diagnostic_source_effect_info
+class source_effect_info
 {
 public:
-  diagnostic_source_effect_info ()
+  source_effect_info ()
   : m_leading_in_edge_column (-1),
     m_trailing_out_edge_column (-1)
   {
@@ -55,4 +57,6 @@ public:
   int m_trailing_out_edge_column;
 };
 
-#endif /* GCC_DIAGNOSTIC_LABEL_EFFECTS_H */
+} // namespace diagnostics
+
+#endif /* GCC_DIAGNOSTICS_SOURCE_PRINTING_EFFECTS_H */

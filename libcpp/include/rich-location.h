@@ -25,7 +25,7 @@ along with this program; see the file COPYING3.  If not see
 #include "label-text.h"
 
 class range_label;
-class label_effects;
+namespace diagnostics { class label_effects; }
 
 /* A hint to diagnostic_show_locus on how to print a source range within a
    rich_location.
@@ -596,7 +596,8 @@ class range_label
   virtual label_text get_text (unsigned range_idx) const = 0;
 
   /* Get any special effects for the label (e.g. links to other labels).  */
-  virtual const label_effects *get_effects (unsigned /*range_idx*/) const
+  virtual const diagnostics::label_effects *
+  get_effects (unsigned /*range_idx*/) const
   {
     return nullptr;
   }

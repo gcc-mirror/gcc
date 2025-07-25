@@ -99,7 +99,7 @@ selftest::run_tests ()
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
   diagnostic_color_cc_tests ();
-  diagnostic_show_locus_cc_tests ();
+  diagnostics_source_printing_cc_tests ();
   diagnostics_html_sink_cc_tests ();
   diagnostics_sarif_sink_cc_tests ();
   diagnostics_digraphs_cc_tests ();

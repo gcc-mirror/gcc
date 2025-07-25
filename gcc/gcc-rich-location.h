@@ -79,7 +79,7 @@ class gcc_rich_location : public rich_location
 	if (!added secondary)
 	  inform (secondary_loc, "message for secondary");
 
-     Implemented in diagnostic-show-locus.cc.  */
+     Implemented in diagnostics/source-printing.cc.  */
 
   bool add_location_if_nearby (const diagnostic_source_print_policy &policy,
 			       location_t loc,

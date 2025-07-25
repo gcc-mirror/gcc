@@ -45,6 +45,8 @@ namespace diagnostics {
   class sink;
     class text_sink;
 
+  class source_effect_info;
+
 } // namespace diagnostics
 
 namespace text_art
@@ -239,8 +241,6 @@ public:
      May be passed 0 as well as the index of a particular option.  */
   virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
 };
-
-class diagnostic_source_effect_info;
 
 /* A stack of sets of classifications: each entry in the stack is
    a mapping from option index to diagnostic severity that can be changed
@@ -451,13 +451,13 @@ public:
   print (pretty_printer &pp,
 	 const rich_location &richloc,
 	 diagnostic_t diagnostic_kind,
-	 diagnostic_source_effect_info *effect_info) const;
+	 diagnostics::source_effect_info *effect_info) const;
 
   void
   print_as_html (xml::printer &xp,
 		 const rich_location &richloc,
 		 diagnostic_t diagnostic_kind,
-		 diagnostic_source_effect_info *effect_info,
+		 diagnostics::source_effect_info *effect_info,
 		 html_label_writer *label_writer) const;
 
   const diagnostic_source_printing_options &
@@ -659,12 +659,12 @@ public:
 			 const diagnostic_source_printing_options &opts,
 			 diagnostic_t diagnostic_kind,
 			 pretty_printer &pp,
-			 diagnostic_source_effect_info *effect_info);
+			 diagnostics::source_effect_info *effect_info);
   void maybe_show_locus_as_html (const rich_location &richloc,
 				 const diagnostic_source_printing_options &opts,
 				 diagnostic_t diagnostic_kind,
 				 xml::printer &xp,
-				 diagnostic_source_effect_info *effect_info,
+				 diagnostics::source_effect_info *effect_info,
 				 html_label_writer *label_writer);
 
   void emit_diagram (const diagnostics::diagram &diag);
@@ -1217,7 +1217,7 @@ diagnostic_show_locus (diagnostic_context *context,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind,
 		       pretty_printer *pp,
-		       diagnostic_source_effect_info *effect_info = nullptr)
+		       diagnostics::source_effect_info *effect_info = nullptr)
 {
   gcc_assert (context);
   gcc_assert (richloc);
@@ -1231,7 +1231,7 @@ diagnostic_show_locus_as_html (diagnostic_context *context,
 			       rich_location *richloc,
 			       diagnostic_t diagnostic_kind,
 			       xml::printer &xp,
-			       diagnostic_source_effect_info *effect_info = nullptr,
+			       diagnostics::source_effect_info *effect_info = nullptr,
 			       html_label_writer *label_writer = nullptr)
 {
   gcc_assert (context);
