@@ -3,11 +3,12 @@
 
 #include <stdint.h>
 
-#undef HAS_UINT128
+#undef HAS_INT128
 
 #if __riscv_xlen == 64
-#define HAS_UINT128
+#define HAS_INT128
 typedef unsigned __int128 uint128_t;
+typedef signed __int128 int128_t;
 #endif
 
 #define DEF_VX_BINARY_CASE_0(T, OP, NAME)                                \
@@ -358,29 +359,35 @@ DEF_AVG_FLOOR(uint8_t, uint16_t)
 DEF_AVG_FLOOR(uint16_t, uint32_t)
 DEF_AVG_FLOOR(uint32_t, uint64_t)
 
-#ifdef HAS_UINT128
+DEF_AVG_FLOOR(int8_t, int16_t)
+DEF_AVG_FLOOR(int16_t, int32_t)
+DEF_AVG_FLOOR(int32_t, int64_t)
+
+#ifdef HAS_INT128
   DEF_AVG_FLOOR(uint64_t, uint128_t)
+  DEF_AVG_FLOOR(int64_t, int128_t)
 #endif
 
 #define AVG_FLOOR_FUNC(T)      test_##T##_avg_floor
 #define AVG_FLOOR_FUNC_WRAP(T) AVG_FLOOR_FUNC(T)
 
-#define TEST_BINARY_VX_SIGNED_0(T)                         \
-  DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                     \
-  DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)                     \
-  DEF_VX_BINARY_REVERSE_CASE_0_WRAP(T, -, rsub)            \
-  DEF_VX_BINARY_CASE_0_WRAP(T, &, and)                     \
-  DEF_VX_BINARY_CASE_0_WRAP(T, |, or)                      \
-  DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)                     \
-  DEF_VX_BINARY_CASE_0_WRAP(T, *, mul)                     \
-  DEF_VX_BINARY_CASE_0_WRAP(T, /, div)                     \
-  DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)                     \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)    \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)    \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)    \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)    \
-  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_ADD_FUNC(T), sat_add) \
-  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_SUB_FUNC(T), sat_sub) \
+#define TEST_BINARY_VX_SIGNED_0(T)                                \
+  DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)                            \
+  DEF_VX_BINARY_REVERSE_CASE_0_WRAP(T, -, rsub)                   \
+  DEF_VX_BINARY_CASE_0_WRAP(T, &, and)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, |, or)                             \
+  DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, *, mul)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, /, div)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)                            \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)           \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)           \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)           \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)           \
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_ADD_FUNC(T), sat_add)        \
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_SUB_FUNC(T), sat_sub)        \
+  DEF_VX_BINARY_CASE_2_WRAP(T, AVG_FLOOR_FUNC_WRAP(T), avg_floor) \
 
 #define TEST_BINARY_VX_UNSIGNED_0(T)                              \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                            \

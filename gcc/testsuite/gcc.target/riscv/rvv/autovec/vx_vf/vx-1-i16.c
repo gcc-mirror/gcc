@@ -20,3 +20,4 @@ TEST_BINARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-times {vmin.vx} 2 } } */
 /* { dg-final { scan-assembler-times {vsadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vssub.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vaadd.vx} 1 } } */
