@@ -197,9 +197,9 @@ namespace diagnostics {
 
 void default_text_starter (diagnostics::text_sink &,
 			   const diagnostics::diagnostic_info *);
-template <typename Sink>
+template <typename TextOrHtml>
 void default_start_span_fn (const diagnostics::location_print_policy &,
-			    Sink &sink,
+			    TextOrHtml &text_or_html,
 			    expanded_location);
 void default_text_finalizer (diagnostics::text_sink &,
 			     const diagnostics::diagnostic_info *,

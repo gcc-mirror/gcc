@@ -73,9 +73,9 @@ struct to_html;
 
 extern pretty_printer *get_printer (to_text &);
 
-template <typename Sink>
+template <typename TextOrHtml>
 using start_span_fn = void (*) (const location_print_policy &,
-				Sink &sink,
+				TextOrHtml &text_or_html,
 				expanded_location);
 
 typedef void (*text_finalizer_fn) (text_sink &,

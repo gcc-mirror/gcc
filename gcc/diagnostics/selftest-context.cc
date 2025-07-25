@@ -61,12 +61,12 @@ test_context::~test_context ()
 void
 test_context::
 start_span_cb (const location_print_policy &loc_policy,
-	       to_text &sink,
+	       to_text &html_or_text,
 	       expanded_location exploc)
 {
   exploc.file = "FILENAME";
   default_start_span_fn<to_text>
-    (loc_policy, sink, exploc);
+    (loc_policy, html_or_text, exploc);
 }
 
 bool
