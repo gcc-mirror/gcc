@@ -169,7 +169,6 @@ class predefined_function_abi;
 struct store_fwd_info;
 
 /* These are defined in tree-vect-stmts.cc.  */
-extern tree stmt_vectype (class _stmt_vec_info *);
 extern bool stmt_in_inner_loop_p (class vec_info *, class _stmt_vec_info *);
 
 /* Assembler instructions for creating various kinds of integer object.  */

@@ -62,14 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
 
-/* Return the vectorized type for the given statement.  */
-
-tree
-stmt_vectype (class _stmt_vec_info *stmt_info)
-{
-  return STMT_VINFO_VECTYPE (stmt_info);
-}
-
 /* Return TRUE iff the given statement is in an inner loop relative to
    the loop being vectorized.  */
 bool
