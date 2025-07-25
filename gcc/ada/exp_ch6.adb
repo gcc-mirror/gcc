@@ -1423,13 +1423,6 @@ package body Exp_Ch6 is
       Formal : Entity_Id;
 
    begin
-      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
-                                        | N_Function_Call
-                                        | N_Procedure_Call_Statement);
-      pragma Assert (Extra_Formals_Known (Subp_Id)
-        or else not Expander_Active
-        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
-
       --  In CodePeer_Mode, the tree for `'Elab_Spec` procedures will be
       --  malformed because GNAT does not perform the usual expansion that
       --  results in the importation of external elaboration procedure symbols.
@@ -1446,6 +1439,13 @@ package body Exp_Ch6 is
       then
          return True;
       end if;
+
+      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
+                                        | N_Function_Call
+                                        | N_Procedure_Call_Statement);
+      pragma Assert (Extra_Formals_Known (Subp_Id)
+        or else not Expander_Active
+        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
 
       Formal := First_Formal_With_Extras (Subp_Id);
       Actual := First_Actual (Subp_Call);
@@ -10274,11 +10274,18 @@ package body Exp_Ch6 is
                begin
                   pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
 
-                  --  Build-in-place function calls return their result by
-                  --  reference.
+                  --  Do not attempt to verify the return type in CodePeer_Mode
+                  --  as CodePeer_Mode is missing some expansion code that
+                  --  results in trees that would be considered malformed for
+                  --  GCC but aren't for GNAT2SCIL.
 
-                  pragma Assert (not Is_Build_In_Place_Function (Subp)
-                    or else Returns_By_Ref (Subp));
+                  if not CodePeer_Mode then
+                    --  Build-in-place function calls return their result by
+                    --  reference.
+
+                     pragma Assert (not Is_Build_In_Place_Function (Subp)
+                       or else Returns_By_Ref (Subp));
+                  end if;
                end;
 
             --  Skip generic bodies
