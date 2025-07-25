@@ -375,6 +375,7 @@ diagnostics::digraphs::lazy_digraphs::get_or_create_digraphs () const
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
 static void
@@ -473,12 +474,13 @@ test_simple_graph ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_digraphs_cc_tests ()
+digraphs_cc_tests ()
 {
   test_empty_graph ();
   test_simple_graph ();
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* CHECKING_P */

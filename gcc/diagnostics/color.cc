@@ -475,6 +475,7 @@ determine_url_format (diagnostic_url_rule_t rule)
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
 /* Test of an empty diagnostic_color_dict.  */
@@ -522,7 +523,7 @@ test_color_dict_envvar_parsing ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_color_cc_tests ()
+color_cc_tests ()
 {
   test_empty_color_dict ();
   test_default_color_dict ();
@@ -530,5 +531,6 @@ diagnostics_color_cc_tests ()
 }
 
 } // namespace selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */

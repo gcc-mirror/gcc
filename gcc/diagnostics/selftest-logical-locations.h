@@ -28,18 +28,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace diagnostics {
+namespace logical_locations {
 namespace selftest {
 
 /* Concrete subclass of logical_locations::manager for use in selftests.  */
 
-class test_logical_location_manager
-  : public diagnostics::logical_locations::manager
+class test_manager : public manager
 {
 public:
-  using key = diagnostics::logical_locations::key;
-  using kind = diagnostics::logical_locations::kind;
-
-  ~test_logical_location_manager ();
+  ~test_manager ();
 
   const char *get_short_name (key) const final override;
   const char *get_name_with_scope (key) const final override;
@@ -79,9 +77,10 @@ private:
   hash_map<nofree_string_hash, item *> m_name_to_item_map;
 };
 
-} // namespace selftest
+} // namespace diagnostics::logical_locations::selftest
+} // namespace diagnostics::logical_locations::
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
-
 
 #endif /* GCC_DIAGNOSTICS_SELFTEST_LOGICAL_LOCATIONS_H.  */

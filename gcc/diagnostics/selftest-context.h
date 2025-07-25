@@ -25,22 +25,23 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
 /* Convenience subclass of diagnostics::context for testing
    the diagnostic subsystem.  */
 
-class test_diagnostic_context : public diagnostics::context
+class test_context : public context
 {
  public:
-  test_diagnostic_context ();
-  ~test_diagnostic_context ();
+  test_context ();
+  ~test_context ();
 
-  /* Implementation of diagnostic_start_span_fn, hiding the
+  /* Implementation of diagnostics::start_span_fn, hiding the
      real filename (to avoid printing the names of tempfiles).  */
   static void
-  start_span_cb (const diagnostics::location_print_policy &,
-		 diagnostics::to_text &sink,
+  start_span_cb (const location_print_policy &,
+		 to_text &sink,
 		 expanded_location exploc);
 
   /* Report a diagnostic to this context.  For a selftest, this
@@ -49,7 +50,7 @@ class test_diagnostic_context : public diagnostics::context
   bool
   report (diagnostic_t kind,
 	  rich_location &richloc,
-	  const diagnostics::metadata *metadata,
+	  const metadata *,
 	  diagnostic_option_id option,
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 
@@ -57,6 +58,7 @@ class test_diagnostic_context : public diagnostics::context
 };
 
 } // namespace selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
 

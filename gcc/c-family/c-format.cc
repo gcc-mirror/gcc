@@ -5584,7 +5584,7 @@ test_type_mismatch_range_labels ()
   gcc_rich_location richloc (fmt, &fmt_label, nullptr);
   richloc.add_range (param, SHOW_RANGE_WITHOUT_CARET, &param_label);
 
-  test_diagnostic_context dc;
+  diagnostics::selftest::test_context dc;
   diagnostic_show_locus (&dc,
 			 dc.m_source_printing,
 			 &richloc, DK_ERROR, dc.get_reference_printer ());

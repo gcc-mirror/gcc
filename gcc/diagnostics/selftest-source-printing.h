@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
 /* RAII class for use in selftests involving diagnostic_show_locus.
@@ -37,10 +38,10 @@ namespace selftest {
      push a line_map starting at the first line of the temporary file
    - provide a file_cache.  */
 
-struct diagnostic_show_locus_fixture
+struct source_printing_fixture
 {
-  diagnostic_show_locus_fixture (const line_table_case &case_,
-				 const char *content);
+  source_printing_fixture (const ::selftest::line_table_case &case_,
+			   const char *content);
 
   const char *get_filename () const
   {
@@ -48,8 +49,8 @@ struct diagnostic_show_locus_fixture
   }
 
   const char *m_content;
-  temp_source_file m_tmp_source_file;
-  line_table_test m_ltt;
+  ::selftest::temp_source_file m_tmp_source_file;
+  ::selftest::line_table_test m_ltt;
   file_cache m_fc;
 };
 
@@ -69,13 +70,14 @@ struct diagnostic_show_locus_fixture
    Here SS represents the two display columns for the U+1F602 emoji and
    P represents the one display column for the U+03C0 pi symbol.  */
 
-struct diagnostic_show_locus_fixture_one_liner_utf8
-  : public diagnostic_show_locus_fixture
+struct source_printing_fixture_one_liner_utf8
+  : public source_printing_fixture
 {
-  diagnostic_show_locus_fixture_one_liner_utf8 (const line_table_case &case_);
+  source_printing_fixture_one_liner_utf8 (const ::selftest::line_table_case &case_);
 };
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
 

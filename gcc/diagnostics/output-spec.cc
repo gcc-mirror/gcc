@@ -660,11 +660,12 @@ html_scheme_handler::make_sink (const context &ctxt,
 }
 
 } // namespace output_spec
-} // namespace diagnostics
 
 #if CHECKING_P
 
 namespace selftest {
+
+using auto_fix_quotes = ::selftest::auto_fix_quotes;
 
 /* RAII class to temporarily override "progname" to the
    string "PROGNAME".  */
@@ -737,7 +738,7 @@ struct parser_test
   }
 
 private:
-  test_diagnostic_context m_dc;
+  diagnostics::selftest::test_context m_dc;
   test_spec_context m_ctxt;
   diagnostics::sink &m_fmt;
 };
@@ -839,12 +840,12 @@ test_output_arg_parsing ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_output_spec_cc_tests ()
+output_spec_cc_tests ()
 {
   test_output_arg_parsing ();
 }
 
-} // namespace selftest
-
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */

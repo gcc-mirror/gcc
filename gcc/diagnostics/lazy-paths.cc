@@ -23,15 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "version.h"
-#include "intl.h"
 #include "diagnostic.h"
 #include "diagnostics/lazy-paths.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"
-#include "simple-diagnostic-path.h"
-#include "gcc-rich-location.h"
+#include "diagnostics/selftest-paths.h"
 #include "diagnostics/text-sink.h"
 
 using namespace diagnostics::paths;
@@ -87,7 +83,10 @@ lazy_path::lazily_generate_path () const
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
+
+using auto_fix_quotes = ::selftest::auto_fix_quotes;
 
 class test_lazy_path : public lazy_path
 {
@@ -99,18 +98,15 @@ public:
   }
   std::unique_ptr<path> make_inner_path () const final override
   {
-    tree fntype_void_void
-      = build_function_type_array (void_type_node, 0, nullptr);
-    tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
     auto path
-      = std::make_unique<simple_diagnostic_path> (m_logical_loc_mgr,
-						  &m_pp);
-    path->add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "first %qs", "free");
-    path->add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "double %qs", "free");
+      = std::make_unique<paths::selftest::test_path> (m_logical_loc_mgr,
+						      &m_pp);
+    path->add_event (UNKNOWN_LOCATION, "foo", 0, "first %qs", "free");
+    path->add_event (UNKNOWN_LOCATION, "foo", 0, "double %qs", "free");
     return path;
   }
 private:
-  const tree_logical_location_manager m_logical_loc_mgr;
+  mutable logical_locations::selftest::test_manager m_logical_loc_mgr;
   pretty_printer &m_pp;
 };
 
@@ -157,10 +153,10 @@ public:
 static void
 test_emission (pretty_printer *event_pp)
 {
-  struct test_rich_location : public gcc_rich_location
+  struct test_rich_location : public rich_location
   {
     test_rich_location (pretty_printer &event_pp)
-    : gcc_rich_location (UNKNOWN_LOCATION),
+    : rich_location (line_table, UNKNOWN_LOCATION),
       m_path (event_pp)
     {
       set_path (&m_path);
@@ -171,7 +167,7 @@ test_emission (pretty_printer *event_pp)
   /* Verify that we don't bother generating the inner path if the warning
      is skipped.  */
   {
-    test_diagnostic_context dc;
+    test_context dc;
     dc.set_option_manager (std::make_unique<all_warnings_disabled> (), 0);
 
     test_rich_location rich_loc (*event_pp);
@@ -189,7 +185,7 @@ test_emission (pretty_printer *event_pp)
   /* Verify that we *do* generate the inner path for a diagnostic that
      is emitted, such as an error.  */
   {
-    test_diagnostic_context dc;
+    test_context dc;
 
     test_rich_location rich_loc (*event_pp);
     ASSERT_FALSE (rich_loc.m_path.generated_p ());
@@ -216,7 +212,7 @@ test_emission (pretty_printer *event_pp)
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_lazy_paths_cc_tests ()
+lazy_paths_cc_tests ()
 {
   /* In a few places we use the global dc's printer to determine
      colorization so ensure this off during the tests.  */
@@ -234,6 +230,7 @@ diagnostics_lazy_paths_cc_tests ()
   pp_show_color (global_pp) = saved_show_color;
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */

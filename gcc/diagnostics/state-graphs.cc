@@ -123,13 +123,14 @@ state_node_ref::set_json_attr (const char *key,
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
 static void
 test_node_attrs ()
 {
-  diagnostics::digraphs::digraph g;
-  diagnostics::digraphs::node n (g, "a");
+  digraphs::digraph g;
+  digraphs::node n (g, "a");
   state_node_ref node_ref (n);
 
   ASSERT_EQ (node_ref.get_node_kind (), node_kind::other);
@@ -148,11 +149,12 @@ test_node_attrs ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_state_graphs_cc_tests ()
+state_graphs_cc_tests ()
 {
   test_node_attrs ();
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* CHECKING_P */

@@ -1454,7 +1454,6 @@ OBJS = \
 	df-problems.o \
 	df-scan.o \
 	dfp.o \
-	diagnostics/lazy-paths.o \
 	digraph.o \
 	dojump.o \
 	dominance.o \
@@ -1862,6 +1861,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o \
 	diagnostics/html-sink.o \
 	diagnostics/sarif-sink.o \
 	diagnostics/text-sink.o \
+	diagnostics/lazy-paths.o \
 	diagnostics/macro-unwinding.o \
 	diagnostics/option-classifier.o \
 	diagnostics/paths.o \
@@ -1872,6 +1872,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o \
 	diagnostics/selftest-context.o \
 	diagnostics/selftest-logical-locations.o \
 	diagnostics/selftest-paths.o \
+	diagnostics/diagnostics-selftests.o \
 	graphviz.o pex.o \
 	pretty-print.o intl.o \
 	json.o json-parsing.o \

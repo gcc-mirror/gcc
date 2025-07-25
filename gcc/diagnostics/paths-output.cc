@@ -1407,7 +1407,16 @@ diagnostics::print_path_as_html (xml::printer &xp,
 
 #if CHECKING_P
 
+namespace diagnostics {
+namespace paths {
 namespace selftest {
+
+using location = ::selftest::location;
+using line_table_case = ::selftest::line_table_case;
+using line_table_test = ::selftest::line_table_test;
+using temp_source_file = ::selftest::temp_source_file;
+
+using test_context = diagnostics::selftest::test_context;
 
 /* Return true iff all events in PATH_ have locations for which column data
    is available, so that selftests that require precise string output can
@@ -1435,11 +1444,12 @@ path_events_have_column_data_p (const path &path_)
 static void
 test_empty_path (pretty_printer *event_pp)
 {
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   ASSERT_FALSE (path.interprocedural_p ());
 
-  test_diagnostic_context dc;
-  diagnostics::text_sink text_output (dc);
+  test_context dc;
+  text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, false);
   ASSERT_EQ (summary.get_num_ranges (), 0);
@@ -1454,15 +1464,16 @@ test_empty_path (pretty_printer *event_pp)
 static void
 test_intraprocedural_path (pretty_printer *event_pp)
 {
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   const char *const funcname = "foo";
   path.add_event (UNKNOWN_LOCATION, funcname, 0, "first %qs", "free");
   path.add_event (UNKNOWN_LOCATION, funcname, 0, "double %qs", "free");
 
   ASSERT_FALSE (path.interprocedural_p ());
 
-  test_diagnostic_context dc;
-  diagnostics::text_sink text_output (dc);
+  selftest::test_context dc;
+  text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, false, false, false);
   ASSERT_EQ (summary.get_num_ranges (), 1);
@@ -1479,7 +1490,8 @@ test_intraprocedural_path (pretty_printer *event_pp)
 static void
 test_interprocedural_path_1 (pretty_printer *event_pp)
 {
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_entry ("test", 0);
   path.add_call ("test", 0, "make_boxed_int");
   path.add_call ("make_boxed_int", 1, "wrapped_malloc");
@@ -1498,8 +1510,8 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
   ASSERT_TRUE (path.interprocedural_p ());
 
   {
-    test_diagnostic_context dc;
-    diagnostics::text_sink text_output (dc, nullptr, false);
+    selftest::test_context dc;
+    text_sink text_output (dc, nullptr, false);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 9);
@@ -1559,9 +1571,9 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1626,7 +1638,8 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
 static void
 test_interprocedural_path_2 (pretty_printer *event_pp)
 {
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_entry ("foo", 0);
   path.add_call ("foo", 0, "bar");
   path.add_call ("bar", 1, "baz");
@@ -1637,8 +1650,8 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
   ASSERT_TRUE (path.interprocedural_p ());
 
   {
-    test_diagnostic_context dc;
-    diagnostics::text_sink text_output (dc);
+    selftest::test_context dc;
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 5);
@@ -1673,9 +1686,9 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1715,7 +1728,8 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
 static void
 test_recursion (pretty_printer *event_pp)
 {
- test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_entry ("factorial", 0);
   for (int depth = 0; depth < 3; depth++)
     path.add_call ("factorial", depth, "factorial");
@@ -1724,10 +1738,10 @@ test_recursion (pretty_printer *event_pp)
   ASSERT_TRUE (path.interprocedural_p ());
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
 
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 4);
@@ -1756,10 +1770,10 @@ test_recursion (pretty_printer *event_pp)
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
 
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     print_path_summary_as_text (summary, text_output, true);
@@ -1792,7 +1806,7 @@ test_recursion (pretty_printer *event_pp)
 class control_flow_test
 {
 public:
-  control_flow_test (const location &loc,
+  control_flow_test (const selftest::location &loc,
 		     const line_table_case &case_,
 		     const char *content)
   : m_tmp_file (loc, ".c", content,
@@ -1861,7 +1875,8 @@ test_control_flow_1 (const line_table_case &case_,
   const location_t conditional = t.get_line_and_column (3, 7);
   const location_t cfg_dest = t.get_line_and_column (5, 10);
 
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_event (conditional, nullptr, 0,
 		  "following %qs branch (when %qs is NULL)...",
 		  "false", "p");
@@ -1878,10 +1893,10 @@ test_control_flow_1 (const line_table_case &case_,
 
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1904,10 +1919,10 @@ test_control_flow_1 (const line_table_case &case_,
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = false;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1927,11 +1942,11 @@ test_control_flow_1 (const line_table_case &case_,
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1954,11 +1969,11 @@ test_control_flow_1 (const line_table_case &case_,
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = false;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -1978,10 +1993,10 @@ test_control_flow_1 (const line_table_case &case_,
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     dc.m_source_printing.show_event_links_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2004,11 +2019,11 @@ test_control_flow_1 (const line_table_case &case_,
        pp_formatted_text (text_output.get_printer ()));
   }
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2058,7 +2073,8 @@ test_control_flow_2 (const line_table_case &case_,
   const location_t loop_body_start = t.get_line_and_columns (5, 12, 17);
   const location_t loop_body_end = t.get_line_and_columns (5, 5, 9, 17);
 
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_event (iter_test, nullptr, 0, "infinite loop here");
 
   path.add_event (iter_test, nullptr, 0, "looping from here...");
@@ -2075,11 +2091,11 @@ test_control_flow_2 (const line_table_case &case_,
     return;
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2145,7 +2161,8 @@ test_control_flow_3 (const line_table_case &case_,
   const location_t iter_test = t.get_line_and_column (3, 19);
   const location_t iter_next = t.get_line_and_columns (3, 22, 24);
 
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_event (iter_test, nullptr, 0, "infinite loop here");
 
   path.add_event (iter_test, nullptr, 0, "looping from here...");
@@ -2162,11 +2179,11 @@ test_control_flow_3 (const line_table_case &case_,
     return;
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2211,7 +2228,8 @@ assert_cfg_edge_path_streq (const location &loc,
 			    const location_t dst_loc,
 			    const char *expected_str)
 {
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   path.add_event (src_loc, nullptr, 0, "from here...");
   path.connect_to_next_event ();
 
@@ -2220,11 +2238,11 @@ assert_cfg_edge_path_streq (const location &loc,
   if (!path_events_have_column_data_p (path))
     return;
 
-  test_diagnostic_context dc;
+  selftest::test_context dc;
   dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
   dc.m_source_printing.show_event_links_p = true;
   dc.m_source_printing.show_line_numbers_p = true;
-  diagnostics::text_sink text_output (dc);
+  text_sink text_output (dc);
   path_print_policy policy (text_output);
   path_summary summary (policy, *event_pp, path, true);
   print_path_summary_as_text (summary, text_output, false);
@@ -2515,7 +2533,8 @@ test_control_flow_5 (const line_table_case &case_,
 
   control_flow_test t (SELFTEST_LOCATION, case_, content);
 
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   /* (1) */
   path.add_event (t.get_line_and_column (1, 6), nullptr, 0,
 		  "following %qs branch (when %qs is non-NULL)...",
@@ -2544,11 +2563,11 @@ test_control_flow_5 (const line_table_case &case_,
     return;
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2604,7 +2623,8 @@ test_control_flow_6 (const line_table_case &case_,
 
   control_flow_test t (SELFTEST_LOCATION, case_, content);
 
-  test_diagnostic_path path (event_pp);
+  logical_locations::selftest::test_manager logical_loc_mgr;
+  test_path path (logical_loc_mgr, event_pp);
   /* (1) */
   path.add_event (t.get_line_and_columns (6, 25, 35), nullptr, 0,
 		  "allocated here");
@@ -2633,11 +2653,11 @@ test_control_flow_6 (const line_table_case &case_,
     return;
 
   {
-    test_diagnostic_context dc;
+    selftest::test_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
-    diagnostics::text_sink text_output (dc);
+    text_sink text_output (dc);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, true);
     print_path_summary_as_text (summary, text_output, false);
@@ -2690,24 +2710,30 @@ control_flow_tests (const line_table_case &case_)
   test_control_flow_6 (case_, &pp);
 }
 
+} // namespace diagnostics::paths::selftest
+} // namespace diagnostics::paths
+
+namespace selftest { // diagnostics::selftest
+
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_paths_output_cc_tests ()
+paths_output_cc_tests ()
 {
   pretty_printer pp;
   pp_show_color (&pp) = false;
 
-  auto_fix_quotes fix_quotes;
-  test_empty_path (&pp);
-  test_intraprocedural_path (&pp);
-  test_interprocedural_path_1 (&pp);
-  test_interprocedural_path_2 (&pp);
-  test_recursion (&pp);
-  for_each_line_table_case (control_flow_tests);
+  ::selftest::auto_fix_quotes fix_quotes;
+  diagnostics::paths::selftest::test_empty_path (&pp);
+  diagnostics::paths::selftest::test_intraprocedural_path (&pp);
+  diagnostics::paths::selftest::test_interprocedural_path_1 (&pp);
+  diagnostics::paths::selftest::test_interprocedural_path_2 (&pp);
+  diagnostics::paths::selftest::test_recursion (&pp);
+  for_each_line_table_case (diagnostics::paths::selftest::control_flow_tests);
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop

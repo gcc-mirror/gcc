@@ -26,20 +26,20 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace diagnostics {
+namespace logical_locations {
 namespace selftest {
 
-using namespace diagnostics::logical_locations;
+/* class test_manager : public manager.  */
 
-/* class test_logical_location_manager : public logical_location_manager.  */
-
-test_logical_location_manager::~test_logical_location_manager ()
+test_manager::~test_manager ()
 {
   for (auto iter : m_name_to_item_map)
     delete iter.second;
 }
 
 const char *
-test_logical_location_manager::get_short_name (key k) const
+test_manager::get_short_name (key k) const
 {
   auto item = item_from_key (k);
   if (!item)
@@ -48,43 +48,43 @@ test_logical_location_manager::get_short_name (key k) const
 }
 
 const char *
-test_logical_location_manager::get_name_with_scope (key k) const
+test_manager::get_name_with_scope (key k) const
 {
   auto item = item_from_key (k);
   return item->m_name;
 }
 
 const char *
-test_logical_location_manager::get_internal_name (key k) const
+test_manager::get_internal_name (key k) const
 {
   auto item = item_from_key (k);
   return item->m_name;
 }
 
 enum diagnostics::logical_locations::kind
-test_logical_location_manager::get_kind (key k) const
+test_manager::get_kind (key k) const
 {
   auto item = item_from_key (k);
   return item->m_kind;
 }
 
 label_text
-test_logical_location_manager::get_name_for_path_output (key k) const
+test_manager::get_name_for_path_output (key k) const
 {
   auto item = item_from_key (k);
   return label_text::borrow (item->m_name);
 }
 
 diagnostics::logical_locations::key
-test_logical_location_manager::
+test_manager::
 logical_location_from_funcname (const char *funcname)
 {
   const item *i = item_from_funcname (funcname);
   return key::from_ptr (i);
 }
 
-const test_logical_location_manager::item *
-test_logical_location_manager::item_from_funcname (const char *funcname)
+const test_manager::item *
+test_manager::item_from_funcname (const char *funcname)
 {
   if (!funcname)
     return nullptr;
@@ -100,9 +100,9 @@ test_logical_location_manager::item_from_funcname (const char *funcname)
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_selftest_logical_locations_cc_tests ()
+selftest_logical_locations_cc_tests ()
 {
-  test_logical_location_manager mgr;
+  test_manager mgr;
 
   ASSERT_FALSE (mgr.logical_location_from_funcname (nullptr));
 
@@ -115,6 +115,8 @@ diagnostics_selftest_logical_locations_cc_tests ()
   ASSERT_STREQ (mgr.get_short_name (loc_bar), "bar");
 }
 
-} // namespace selftest
+} // namespace diagnostics::logical_locations::selftest
+} // namespace diagnostics::logical_locations
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */

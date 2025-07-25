@@ -4317,13 +4317,12 @@ sarif_generation_options::sarif_generation_options ()
 {
 }
 
-} // namespace diagnostics
-
 #if CHECKING_P
 
 namespace selftest {
 
-using namespace diagnostics;
+using auto_fix_quotes = ::selftest::auto_fix_quotes;
+using line_table_case = ::selftest::line_table_case;
 
 static void
 test_sarif_array_of_unique_1 ()
@@ -4399,7 +4398,7 @@ test_sarif_array_of_unique_2 ()
    The JSON output is cached internally, rather than written
    out to a file.  */
 
-class test_sarif_diagnostic_context : public test_diagnostic_context
+class test_sarif_diagnostic_context : public test_context
 {
 public:
   test_sarif_diagnostic_context (const char *main_input_filename,
@@ -4453,16 +4452,16 @@ private:
 
 static void
 test_make_location_object (const sarif_generation_options &sarif_gen_opts,
-			   const line_table_case &case_)
+			   const ::selftest::line_table_case &case_)
 {
-  diagnostic_show_locus_fixture_one_liner_utf8 f (case_);
+  source_printing_fixture_one_liner_utf8 f (case_);
   location_t line_end = linemap_position_for_column (line_table, 31);
 
   /* Don't attempt to run the tests if column data might be unavailable.  */
   if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  test_diagnostic_context dc;
+  test_context dc;
   pretty_printer pp;
   sarif_builder builder
     (dc, pp, line_table,
@@ -4706,7 +4705,7 @@ test_simple_log_2 (const sarif_generation_options &sarif_gen_opts,
     /* 000000000111111
        123456789012345.  */
     = "unsinged int i;\n";
-  diagnostic_show_locus_fixture f (case_, content);
+  source_printing_fixture f (case_, content);
   location_t line_end = linemap_position_for_column (line_table, 31);
 
   /* Don't attempt to run the tests if column data might be unavailable.  */
@@ -5056,7 +5055,7 @@ run_line_table_case_tests_per_version (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_sarif_sink_cc_tests ()
+sarif_sink_cc_tests ()
 {
   test_sarif_array_of_unique_1 ();
   test_sarif_array_of_unique_2 ();
@@ -5070,6 +5069,7 @@ diagnostics_sarif_sink_cc_tests ()
   for_each_line_table_case (run_line_table_case_tests_per_version);
 }
 
-} // namespace selftest
+} // namespace diagnostics::selftest
+} // namespace diagnostics
 
 #endif /* CHECKING_P */

@@ -30,53 +30,54 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace diagnostics {
 namespace selftest {
 
-/* Implementation of class selftest::test_diagnostic_context.  */
+/* Implementation of class diagnostics::selftest::test_context.  */
 
-test_diagnostic_context::test_diagnostic_context ()
+test_context::test_context ()
 {
   diagnostic_initialize (this, 0);
   pp_show_color (get_reference_printer ()) = false;
   m_source_printing.enabled = true;
   m_source_printing.show_labels_p = true;
   m_show_column = true;
-  diagnostics::start_span (this) = start_span_cb;
+  start_span (this) = start_span_cb;
   m_source_printing.min_margin_width = 6;
   m_source_printing.max_width = 80;
   pp_buffer (get_sink (0).get_printer ())->m_flush_p = false;
 }
 
-test_diagnostic_context::~test_diagnostic_context ()
+test_context::~test_context ()
 {
   diagnostic_finish (this);
 }
 
-/* Implementation of diagnostic_start_span_fn, hiding the
+/* Implementation of diagnostics::start_span_fn, hiding the
    real filename (to avoid printing the names of tempfiles).  */
 
 void
-test_diagnostic_context::
-start_span_cb (const diagnostics::location_print_policy &loc_policy,
-	       diagnostics::to_text &sink,
+test_context::
+start_span_cb (const location_print_policy &loc_policy,
+	       to_text &sink,
 	       expanded_location exploc)
 {
   exploc.file = "FILENAME";
-  diagnostics::default_start_span_fn<diagnostics::to_text>
+  default_start_span_fn<to_text>
     (loc_policy, sink, exploc);
 }
 
 bool
-test_diagnostic_context::report (diagnostic_t kind,
-				 rich_location &richloc,
-				 const diagnostics::metadata *metadata,
-				 diagnostic_option_id option,
-				 const char * fmt, ...)
+test_context::report (diagnostic_t kind,
+		      rich_location &richloc,
+		      const metadata *metadata_,
+		      diagnostic_option_id option,
+		      const char * fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
   begin_group ();
-  bool result = diagnostic_impl (&richloc, metadata, option, fmt, &ap, kind);
+  bool result = diagnostic_impl (&richloc, metadata_, option, fmt, &ap, kind);
   end_group ();
   va_end (ap);
   return result;
@@ -86,15 +87,16 @@ test_diagnostic_context::report (diagnostic_t kind,
    Return the text buffer from the printer.  */
 
 const char *
-test_diagnostic_context::test_show_locus (rich_location &richloc)
+test_context::test_show_locus (rich_location &richloc)
 {
   pretty_printer *pp = get_reference_printer ();
   gcc_assert (pp);
-  diagnostics::source_print_policy source_policy (*this);
+  source_print_policy source_policy (*this);
   source_policy.print (*pp, richloc, DK_ERROR, nullptr);
   return pp_formatted_text (pp);
 }
 
 } // namespace selftest
+} // namespace diagnostics
 
 #endif /* #if CHECKING_P */

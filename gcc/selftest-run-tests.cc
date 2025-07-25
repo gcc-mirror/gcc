@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "analyzer/analyzer-selftests.h"
+#include "diagnostics/diagnostics-selftests.h"
 #include "text-art/selftests.h"
 
 /* This function needed to be split out from selftest.cc as it references
@@ -94,20 +95,12 @@ selftest::run_tests ()
   digraph_cc_tests ();
   tristate_cc_tests ();
   ipa_modref_tree_cc_tests ();
-  diagnostics_selftest_logical_locations_cc_tests ();
+
+  /* Run the diagnostics selftests.  */
+  diagnostics::selftest::run_diagnostics_selftests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
-  diagnostics_color_cc_tests ();
-  diagnostics_source_printing_cc_tests ();
-  diagnostics_html_sink_cc_tests ();
-  diagnostics_sarif_sink_cc_tests ();
-  diagnostics_digraphs_cc_tests ();
-  diagnostics_output_spec_cc_tests ();
-  diagnostics_state_graphs_cc_tests ();
-  diagnostics_lazy_paths_cc_tests ();
-  diagnostics_paths_output_cc_tests ();
-  edit_context_cc_tests ();
   fold_const_cc_tests ();
   spellcheck_cc_tests ();
   spellcheck_tree_cc_tests ();

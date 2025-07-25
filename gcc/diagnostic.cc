@@ -1995,7 +1995,7 @@ assert_location_text (const char *expected_loc_text,
 		      enum diagnostics_column_unit column_unit
 			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
-  test_diagnostic_context dc;
+  diagnostics::selftest::test_context dc;
   dc.m_column_unit = column_unit;
   dc.m_column_origin = origin;
 

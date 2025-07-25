@@ -1499,13 +1499,9 @@ make_html_sink (context &dc,
   return sink;
 }
 
-} // namespace diagnostics
-
 #if CHECKING_P
 
 namespace selftest {
-
-using namespace diagnostics;
 
 /* Helper for writing tests of html_token_printer.
    Printing to m_pp will appear as HTML within m_top_element, a <div>.  */
@@ -1567,10 +1563,10 @@ test_token_printer ()
    The XML output is cached internally, rather than written
    out to a file.  */
 
-class test_html_diagnostic_context : public test_diagnostic_context
+class test_html_context : public test_context
 {
 public:
-  test_html_diagnostic_context ()
+  test_html_context ()
   {
     html_generation_options html_gen_opts;
     html_gen_opts.m_css = false;
@@ -1621,7 +1617,7 @@ private:
 static void
 test_simple_log ()
 {
-  test_html_diagnostic_context dc;
+  test_html_context dc;
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %qs", "foo");
@@ -1652,7 +1648,7 @@ test_simple_log ()
 static void
 test_metadata ()
 {
-  test_html_diagnostic_context dc;
+  test_html_context dc;
   html_builder &b = dc.get_builder ();
 
   {
@@ -1695,14 +1691,15 @@ test_metadata ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostics_html_sink_cc_tests ()
+html_sink_cc_tests ()
 {
-  auto_fix_quotes fix_quotes;
+  ::selftest::auto_fix_quotes fix_quotes;
   test_token_printer ();
   test_simple_log ();
   test_metadata ();
 }
 
 } // namespace selftest
+} // namespace diagnostics
 
 #endif /* CHECKING_P */

@@ -897,15 +897,16 @@ edited_line::ensure_terminated ()
   m_content[m_len] = '\0';
 }
 
-} // namespace diagnostics
-
 #if CHECKING_P
 
 /* Selftests of code-editing.  */
 
 namespace selftest {
 
-using edit_context = diagnostics::edit_context;
+using line_table_case = ::selftest::line_table_case;
+using line_table_test = ::selftest::line_table_test;
+using temp_source_file = ::selftest::temp_source_file;
+using named_temp_file = ::selftest::named_temp_file;
 
 /* A wrapper class for ensuring that the underlying pointer is freed.  */
 
@@ -1849,5 +1850,6 @@ edit_context_cc_tests ()
 }
 
 } // namespace selftest
+} // namespace diagnostics
 
 #endif /* CHECKING_P */
