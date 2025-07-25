@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_FORMAT_HTML_H
 
 #include "diagnostic-format.h"
-#include "diagnostic-output-file.h"
+#include "diagnostics/output-file.h"
 
 struct html_generation_options
 {
@@ -43,7 +43,7 @@ struct html_generation_options
   bool m_show_state_diagrams_dot_src;
 };
 
-extern diagnostic_output_file
+extern diagnostics::output_file
 diagnostic_output_format_open_html_file (diagnostic_context &context,
 					 line_maps *line_maps,
 					 const char *base_file_name);
@@ -52,7 +52,7 @@ extern std::unique_ptr<diagnostic_output_format>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
-		diagnostic_output_file output_file);
+		diagnostics::output_file output_file_);
 
 extern void
 print_path_as_html (xml::printer &xp,

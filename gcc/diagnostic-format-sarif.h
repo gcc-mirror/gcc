@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "json.h"
 #include "diagnostic-format.h"
-#include "diagnostic-output-file.h"
+#include "diagnostics/output-file.h"
 #include "diagnostics/logical-locations.h"
 
 /* Enum for choosing what format to serializing the generated SARIF into.  */
@@ -35,7 +35,7 @@ enum class sarif_serialization_kind
    num_values
 };
 
-extern diagnostic_output_file
+extern diagnostics::output_file
 diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
 					  const char *base_file_name,
@@ -109,7 +109,7 @@ make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts,
-		 diagnostic_output_file output_file);
+		 diagnostics::output_file output_file_);
 
 class sarif_builder;
 class sarif_location_manager;

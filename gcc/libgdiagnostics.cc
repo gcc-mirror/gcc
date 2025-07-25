@@ -1518,8 +1518,8 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
 			const sarif_generation_options &sarif_gen_opts)
 : sink (mgr)
 {
-  diagnostic_output_file output_file (dst_stream, false,
-				      label_text::borrow ("sarif_sink"));
+  diagnostics::output_file output_file (dst_stream, false,
+					label_text::borrow ("sarif_sink"));
   auto serialization = std::make_unique<sarif_serialization_format_json> (true);
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),

@@ -18,22 +18,24 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_OUTPUT_FILE_H
-#define GCC_DIAGNOSTIC_OUTPUT_FILE_H
+#ifndef GCC_DIAGNOSTICS_OUTPUT_FILE_H
+#define GCC_DIAGNOSTICS_OUTPUT_FILE_H
+
+namespace diagnostics {
 
 /* RAII class for wrapping a FILE * that could be borrowed or owned,
    along with the underlying filename.  */
 
-class diagnostic_output_file
+class output_file
 {
 public:
-  diagnostic_output_file ()
+  output_file ()
   : m_outf (nullptr),
     m_owned (false),
     m_filename ()
   {
   }
-  diagnostic_output_file (FILE *outf, bool owned, label_text filename)
+  output_file (FILE *outf, bool owned, label_text filename)
   : m_outf (outf),
     m_owned (owned),
     m_filename (std::move (filename))
@@ -42,7 +44,7 @@ public:
     if (m_owned)
       gcc_assert (m_outf);
   }
-  ~diagnostic_output_file ()
+  ~output_file ()
   {
     if (m_owned)
       {
@@ -50,8 +52,8 @@ public:
 	fclose (m_outf);
       }
   }
-  diagnostic_output_file (const diagnostic_output_file &other) = delete;
-  diagnostic_output_file (diagnostic_output_file &&other)
+  output_file (const output_file &other) = delete;
+  output_file (output_file &&other)
   : m_outf (other.m_outf),
     m_owned (other.m_owned),
     m_filename (std::move (other.m_filename))
@@ -63,10 +65,10 @@ public:
     if (m_owned)
       gcc_assert (m_outf);
   }
-  diagnostic_output_file &
-  operator= (const diagnostic_output_file &other) = delete;
-  diagnostic_output_file &
-  operator= (diagnostic_output_file &&other)
+  output_file &
+  operator= (const output_file &other) = delete;
+  output_file &
+  operator= (output_file &&other)
   {
     if (m_owned)
       {
@@ -91,7 +93,7 @@ public:
   FILE *get_open_file () const { return m_outf; }
   const char *get_filename () const { return m_filename.get (); }
 
-  static diagnostic_output_file
+  static output_file
   try_to_open (diagnostic_context &context,
 	       line_maps *line_maps,
 	       const char *base_file_name,
@@ -104,4 +106,6 @@ private:
   label_text m_filename;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_OUTPUT_FILE_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_OUTPUT_FILE_H */

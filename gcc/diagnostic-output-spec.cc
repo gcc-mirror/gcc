@@ -241,16 +241,16 @@ context::report_missing_key (const char *unparsed_arg,
      get_option_name (), scheme_name.c_str (), key.c_str (), metavar);
 }
 
-diagnostic_output_file
+diagnostics::output_file
 context::open_output_file (label_text &&filename) const
 {
   FILE *outf = fopen (filename.get (), "w");
   if (!outf)
     {
       report_error ("unable to open %qs: %m", filename.get ());
-      return diagnostic_output_file (nullptr, false, std::move (filename));
+      return diagnostics::output_file (nullptr, false, std::move (filename));
     }
-  return diagnostic_output_file (outf, true, std::move (filename));
+  return diagnostics::output_file (outf, true, std::move (filename));
 }
 
 static std::unique_ptr<scheme_name_and_params>
@@ -488,7 +488,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  diagnostic_output_file output_file;
+  diagnostics::output_file output_file;
   if (filename.get ())
     output_file = ctxt.open_output_file (std::move (filename));
   else
@@ -621,7 +621,7 @@ html_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  diagnostic_output_file output_file;
+  diagnostics::output_file output_file;
   if (filename.get ())
     output_file = ctxt.open_output_file (std::move (filename));
   else

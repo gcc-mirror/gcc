@@ -3916,7 +3916,7 @@ public:
   {
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
-  void on_diagram (const diagnostics::diagram &d) final override
+  void on_diagram (const diagram &d) final override
   {
     m_builder.emit_diagram (d);
   }
@@ -3983,10 +3983,10 @@ public:
 			    const line_maps *line_maps,
 			    std::unique_ptr<sarif_serialization_format> serialization_format,
 			    const sarif_generation_options &sarif_gen_opts,
-			    diagnostic_output_file output_file)
+			    output_file output_file_)
   : sarif_output_format (context, line_maps,
 			 std::move (serialization_format), sarif_gen_opts),
-    m_output_file (std::move (output_file))
+    m_output_file (std::move (output_file_))
   {
     gcc_assert (m_output_file.get_open_file ());
     gcc_assert (m_output_file.get_filename ());
@@ -4008,7 +4008,7 @@ public:
   }
 
 private:
-  diagnostic_output_file m_output_file;
+  output_file m_output_file;
 };
 
 /* Print the start of an embedded link to PP, as per 3.11.6.  */
@@ -4167,16 +4167,16 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 }
 
 /* Attempt to open "BASE_FILE_NAME""EXTENSION" for writing.
-   Return a non-null diagnostic_output_file,
-   or return a null diagnostic_output_file and complain to CONTEXT
+   Return a non-null output_file,
+   or return a null output_file and complain to CONTEXT
    using LINE_MAPS.  */
 
-diagnostic_output_file
-diagnostic_output_file::try_to_open (diagnostic_context &context,
-				     line_maps *line_maps,
-				     const char *base_file_name,
-				     const char *extension,
-				     bool is_binary)
+output_file
+output_file::try_to_open (diagnostic_context &context,
+			  line_maps *line_maps,
+			  const char *base_file_name,
+			  const char *extension,
+			  bool is_binary)
 {
   gcc_assert (extension);
   gcc_assert (extension[0] == '.');
@@ -4187,7 +4187,7 @@ diagnostic_output_file::try_to_open (diagnostic_context &context,
       context.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to determine filename for SARIF output");
-      return diagnostic_output_file ();
+      return output_file ();
     }
 
   label_text filename = label_text::take (concat (base_file_name,
@@ -4201,17 +4201,17 @@ diagnostic_output_file::try_to_open (diagnostic_context &context,
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to open %qs for diagnostic output: %m",
 	 filename.get ());
-      return diagnostic_output_file ();
+      return output_file ();
     }
-  return diagnostic_output_file (outf, true, std::move (filename));
+  return output_file (outf, true, std::move (filename));
 }
 
 /* Attempt to open BASE_FILE_NAME.sarif for writing JSON.
-   Return a non-null diagnostic_output_file,
-   or return a null diagnostic_output_file and complain to CONTEXT
+   Return a non-null output_file,
+   or return a null output_file and complain to CONTEXT
    using LINE_MAPS.  */
 
-diagnostic_output_file
+output_file
 diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
 					  const char *base_file_name,
@@ -4229,11 +4229,11 @@ diagnostic_output_format_open_sarif_file (diagnostic_context &context,
       break;
     }
 
-  return diagnostic_output_file::try_to_open (context,
-					      line_maps,
-					      base_file_name,
-					      suffix,
-					      is_binary);
+  return output_file::try_to_open (context,
+				   line_maps,
+				   base_file_name,
+				   suffix,
+				   is_binary);
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
@@ -4248,7 +4248,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 {
   gcc_assert (line_maps);
 
-  diagnostic_output_file output_file
+  output_file output_file_
     = diagnostic_output_format_open_sarif_file (context,
 						line_maps,
 						base_file_name,
@@ -4263,7 +4263,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 						 line_maps,
 						 std::move (serialization),
 						 sarif_gen_opts,
-						 std::move (output_file)));
+						 std::move (output_file_)));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to STREAM.
@@ -4293,14 +4293,14 @@ make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization,
 		 const sarif_generation_options &sarif_gen_opts,
-		 diagnostic_output_file output_file)
+		 output_file output_file_)
 {
   auto sink
     = std::make_unique<sarif_file_output_format> (context,
 						  &line_maps,
 						  std::move (serialization),
 						  sarif_gen_opts,
-						  std::move (output_file));
+						  std::move (output_file_));
   sink->update_printer ();
   return sink;
 }

@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-html.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-format-sarif.h"
-#include "diagnostic-output-file.h"
+#include "diagnostics/output-file.h"
 #include "diagnostic-buffer.h"
 #include "diagnostic-path.h"
 #include "diagnostics/client-data-hooks.h"
@@ -1422,9 +1422,9 @@ public:
   html_file_output_format (diagnostic_context &context,
 			   const line_maps *line_maps,
 			   const html_generation_options &html_gen_opts,
-			   diagnostic_output_file output_file)
+			   output_file output_file_)
   : html_output_format (context, line_maps, html_gen_opts),
-    m_output_file (std::move (output_file))
+    m_output_file (std::move (output_file_))
   {
     gcc_assert (m_output_file.get_open_file ());
     gcc_assert (m_output_file.get_filename ());
@@ -1446,15 +1446,15 @@ public:
   }
 
 private:
-  diagnostic_output_file m_output_file;
+  output_file m_output_file;
 };
 
 /* Attempt to open BASE_FILE_NAME.html for writing.
-   Return a non-null diagnostic_output_file,
-   or return a null diagnostic_output_file and complain to CONTEXT
+   Return a non-null output_file,
+   or return a null output_file and complain to CONTEXT
    using LINE_MAPS.  */
 
-diagnostic_output_file
+output_file
 diagnostic_output_format_open_html_file (diagnostic_context &context,
 					 line_maps *line_maps,
 					 const char *base_file_name)
@@ -1465,7 +1465,7 @@ diagnostic_output_format_open_html_file (diagnostic_context &context,
       context.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to determine filename for HTML output");
-      return diagnostic_output_file ();
+      return output_file ();
     }
 
   label_text filename = label_text::take (concat (base_file_name,
@@ -1479,22 +1479,22 @@ diagnostic_output_format_open_html_file (diagnostic_context &context,
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to open %qs for HTML output: %m",
 	 filename.get ());
-      return diagnostic_output_file ();
+      return output_file ();
     }
-  return diagnostic_output_file (outf, true, std::move (filename));
+  return output_file (outf, true, std::move (filename));
 }
 
 std::unique_ptr<diagnostic_output_format>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
-		diagnostic_output_file output_file)
+		output_file output_file_)
 {
   auto sink
     = std::make_unique<html_file_output_format> (context,
 						 &line_maps,
 						 html_gen_opts,
-						 std::move (output_file));
+						 std::move (output_file_));
   sink->update_printer ();
   return sink;
 }

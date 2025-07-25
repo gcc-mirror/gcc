@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_OUTPUT_SPEC_H
 
 #include "diagnostic-format.h"
-#include "diagnostic-output-file.h"
+#include "diagnostics/output-file.h"
 
 namespace diagnostics_output_spec {
 
@@ -52,7 +52,7 @@ class context
 		      const std::string &scheme_name,
 		      const char *metavar) const;
 
-  diagnostic_output_file
+  diagnostics::output_file
   open_output_file (label_text &&filename) const;
 
   const char *
