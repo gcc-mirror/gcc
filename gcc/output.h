@@ -557,6 +557,9 @@ extern rtx get_section_anchor (struct object_block *, HOST_WIDE_INT,
 extern section *mergeable_constant_section (machine_mode,
 					    unsigned HOST_WIDE_INT,
 					    unsigned int);
+extern section *mergeable_constant_section (unsigned HOST_WIDE_INT,
+					    unsigned HOST_WIDE_INT,
+					    unsigned int);
 extern section *function_section (tree);
 extern section *unlikely_text_section (void);
 extern section *current_function_section (void);

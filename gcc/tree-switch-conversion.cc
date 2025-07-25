@@ -1033,6 +1033,17 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
       /* The decl is mergable since we don't take the address ever and
 	 just reading from it. */
       DECL_MERGEABLE (decl) = 1;
+
+      /* Increase the alignments as needed. */
+      if (tree_to_uhwi (DECL_SIZE (decl)) > DECL_ALIGN (decl))
+	{
+	  unsigned HOST_WIDE_INT s = tree_to_uhwi (DECL_SIZE (decl));
+	  /* Only support up to 32bytes since that is what is
+	     supported for merging. */
+	  if (s <= 256)
+	    SET_DECL_ALIGN (decl, HOST_WIDE_INT_1U << ceil_log2 (s));
+	}
+
       if (offloading_function_p (cfun->decl))
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"), NULL_TREE,
