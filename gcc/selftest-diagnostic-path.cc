@@ -206,7 +206,7 @@ test_diagnostic_path::add_call (const char *caller_name,
   add_entry (callee_name, caller_stack_depth + 1, thread_id);
 }
 
-logical_location
+diagnostics::logical_locations::key
 test_diagnostic_path::logical_location_from_funcname (const char *funcname)
 {
   return m_test_logical_loc_mgr.logical_location_from_funcname (funcname);

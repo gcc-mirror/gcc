@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTICS_STATE_GRAPHS_H
 
 #include "diagnostics/digraphs.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
 /* diagnostics::digraphs provides support for directed graphs.
 
@@ -96,7 +96,7 @@ struct state_node_ref
   set_node_kind (enum node_kind);
 
   // For node_kind::stack_frame, this will be the function
-  logical_location
+  logical_locations::key
   get_logical_loc () const
   {
     return m_node.get_logical_loc ();
@@ -148,7 +148,7 @@ struct state_node_ref
 
 extern std::unique_ptr<dot::graph>
 make_dot_graph (const diagnostics::digraphs::digraph &state_graph,
-		const logical_location_manager &logical_loc_mgr);
+		const logical_locations::manager &logical_loc_mgr);
 
 } // namespace state_graphs
 } // namespace diagnostics

@@ -27,9 +27,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 
 namespace diagnostics {
+
+  // diagnostics::digraphs
   namespace digraphs {
     class lazy_digraph;
-  } // namespace digraphs
+  } // namespace diagnostics::digraphs
+
+  // diagnostics::logical_locations
+  namespace logical_locations {
+    class manager;
+  } // namespace diagnostics::logical_locations
+
 } // namespace diagnostics
 
 namespace text_art
@@ -227,7 +235,6 @@ public:
 
 class edit_context;
 class diagnostic_client_data_hooks;
-class logical_location_manager;
 class diagnostic_diagram;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
@@ -727,7 +734,7 @@ public:
     return m_client_data_hooks;
   }
 
-  const logical_location_manager *
+  const diagnostics::logical_locations::manager *
   get_logical_location_manager () const;
 
   const urlifier *get_urlifier () const;

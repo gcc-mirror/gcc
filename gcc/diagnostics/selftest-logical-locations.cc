@@ -1,4 +1,4 @@
-/* Concrete subclass of logical_location for use in selftests.
+/* Concrete subclass of logical_locations::manager for use in selftests.
    Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -22,11 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
-#include "selftest-logical-location.h"
+#include "diagnostics/selftest-logical-locations.h"
 
 #if CHECKING_P
 
 namespace selftest {
+
+using namespace diagnostics::logical_locations;
 
 /* class test_logical_location_manager : public logical_location_manager.  */
 
@@ -59,7 +61,7 @@ test_logical_location_manager::get_internal_name (key k) const
   return item->m_name;
 }
 
-enum logical_location_kind
+enum diagnostics::logical_locations::kind
 test_logical_location_manager::get_kind (key k) const
 {
   auto item = item_from_key (k);
@@ -73,7 +75,7 @@ test_logical_location_manager::get_name_for_path_output (key k) const
   return label_text::borrow (item->m_name);
 }
 
-logical_location
+diagnostics::logical_locations::key
 test_logical_location_manager::
 logical_location_from_funcname (const char *funcname)
 {
@@ -90,7 +92,7 @@ test_logical_location_manager::item_from_funcname (const char *funcname)
   if (item **slot = m_name_to_item_map.get (funcname))
     return *slot;
 
-  item *i = new item (logical_location_kind::function, funcname);
+  item *i = new item (kind::function, funcname);
   m_name_to_item_map.put (funcname, i);
   return i;
 }
@@ -98,14 +100,14 @@ test_logical_location_manager::item_from_funcname (const char *funcname)
 /* Run all of the selftests within this file.  */
 
 void
-selftest_logical_location_cc_tests ()
+diagnostics_selftest_logical_locations_cc_tests ()
 {
   test_logical_location_manager mgr;
 
   ASSERT_FALSE (mgr.logical_location_from_funcname (nullptr));
 
-  logical_location loc_foo = mgr.logical_location_from_funcname ("foo");
-  logical_location loc_bar = mgr.logical_location_from_funcname ("bar");
+  key loc_foo = mgr.logical_location_from_funcname ("foo");
+  key loc_bar = mgr.logical_location_from_funcname ("bar");
 
   ASSERT_NE (loc_foo, loc_bar);
 

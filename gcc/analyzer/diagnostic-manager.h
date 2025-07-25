@@ -191,7 +191,7 @@ public:
   }
 
 private:
-  const logical_location_manager &
+  const diagnostics::logical_locations::manager &
   get_logical_location_manager () const;
 
   void build_emission_path (const path_builder &pb,

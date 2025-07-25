@@ -101,7 +101,8 @@ public:
 
   location_t get_location () const final override { return m_loc; }
   int get_stack_depth () const final override { return m_effective_depth; }
-  logical_location get_logical_location () const final override
+  diagnostics::logical_locations::key
+  get_logical_location () const final override
   {
     return m_logical_loc;
   }
@@ -161,7 +162,7 @@ protected:
   int m_effective_depth;
   pending_diagnostic *m_pending_diagnostic;
   diagnostic_event_id_t m_emission_id; // only set once all pruning has occurred
-  logical_location m_logical_loc;
+  diagnostics::logical_locations::key m_logical_loc;
 };
 
 /* A concrete event subclass for a purely textual event, for use in

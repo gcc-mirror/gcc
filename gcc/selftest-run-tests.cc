@@ -94,7 +94,7 @@ selftest::run_tests ()
   digraph_cc_tests ();
   tristate_cc_tests ();
   ipa_modref_tree_cc_tests ();
-  selftest_logical_location_cc_tests ();
+  diagnostics_selftest_logical_locations_cc_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */

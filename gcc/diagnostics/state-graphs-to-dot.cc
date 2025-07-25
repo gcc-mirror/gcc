@@ -33,10 +33,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "xml-printer.h"
 #include "intl.h"
 
+using namespace diagnostics;
 using namespace diagnostics::state_graphs;
 
 static int
-get_depth (const diagnostics::digraphs::node &n)
+get_depth (const digraphs::node &n)
 {
   int deepest_child = 0;
   for (size_t i = 0; i < n.get_num_children (); ++i)
@@ -77,7 +78,7 @@ class state_diagram : public dot::graph
 {
 public:
   state_diagram (const diagnostics::digraphs::digraph &input_state_graph,
-		 const logical_location_manager &logical_loc_mgr)
+		 const logical_locations::manager &logical_loc_mgr)
   : m_logical_loc_mgr (logical_loc_mgr)
   {
     // "node [shape=plaintext]\n"
@@ -531,20 +532,20 @@ private:
   }
 
 private:
-  const logical_location_manager &m_logical_loc_mgr;
+  const logical_locations::manager &m_logical_loc_mgr;
 
   /* All nodes involved in edges (and thus will need a port).  */
-  std::set<diagnostics::digraphs::node *> m_src_nodes;
-  std::set<diagnostics::digraphs::node *> m_dst_nodes;
+  std::set<digraphs::node *> m_src_nodes;
+  std::set<digraphs::node *> m_dst_nodes;
 
-  std::map<diagnostics::digraphs::node *, dot::node_id> m_src_node_to_port_id;
-  std::map<diagnostics::digraphs::node *, dot::node_id> m_dst_node_to_port_id;
+  std::map<digraphs::node *, dot::node_id> m_src_node_to_port_id;
+  std::map<digraphs::node *, dot::node_id> m_dst_node_to_port_id;
 };
 
 std::unique_ptr<dot::graph>
-diagnostics::state_graphs::
-make_dot_graph (const diagnostics::digraphs::digraph &state_graph,
-		const logical_location_manager &logical_loc_mgr)
+state_graphs::
+make_dot_graph (const digraphs::digraph &state_graph,
+		const logical_locations::manager &logical_loc_mgr)
 {
   return std::make_unique<state_diagram> (state_graph, logical_loc_mgr);
 }

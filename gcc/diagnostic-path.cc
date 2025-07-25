@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
 
+using namespace diagnostics;
+
 /* class diagnostic_event.  */
 
 /* struct diagnostic_event::meaning.  */
@@ -180,7 +182,7 @@ diagnostic_path::get_first_event_in_a_function (unsigned *out_idx) const
   for (unsigned i = 0; i < num; i++)
     {
       const diagnostic_event &event = get_event (i);
-      if (logical_location logical_loc = event.get_logical_location ())
+      if (logical_locations::key logical_loc = event.get_logical_location ())
 	if (m_logical_loc_mgr.function_p (logical_loc))
 	  {
 	    *out_idx = i;

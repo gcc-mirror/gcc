@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTICS_DIGRAPHS_H
 
 #include "json.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
 class graphviz_out;
 
@@ -276,14 +276,14 @@ class node : public object
     m_physical_loc = physical_loc;
   }
 
-  logical_location
+  logical_locations::key
   get_logical_loc () const
   {
     return m_logical_loc;
   }
 
   void
-  set_logical_loc (logical_location logical_loc)
+  set_logical_loc (logical_locations::key logical_loc)
   {
     m_logical_loc = logical_loc;
   }
@@ -305,7 +305,7 @@ class node : public object
   std::unique_ptr<std::string> m_label;
   std::vector<std::unique_ptr<node>> m_children;
   location_t m_physical_loc;
-  logical_location m_logical_loc;
+  logical_locations::key m_logical_loc;
 };
 
 // An edge in a directed graph, corresponding to SARIF v2.1.0 section 3.41.

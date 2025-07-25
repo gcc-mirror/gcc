@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "text-art/theme.h"
 #include "pretty-print-urlifier.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 #include "diagnostic-buffer.h"
 
 #ifdef HAVE_TERMIOS_H
@@ -590,7 +590,7 @@ diagnostic_context::pop_urlifier ()
     delete node.m_urlifier;
 }
 
-const logical_location_manager *
+const diagnostics::logical_locations::manager *
 diagnostic_context::get_logical_location_manager () const
 {
   if (!m_client_data_hooks)
@@ -1055,28 +1055,28 @@ diagnostic_context::notes_inhibited_in_group () const
   return false;
 }
 
-/* class logical_location_manager.  */
+/* class diagnostics::logical_locations::manager.  */
 
 /* Return true iff this is a function or method.  */
 
 bool
-logical_location_manager::function_p (key k) const
+diagnostics::logical_locations::manager::function_p (key k) const
 {
   switch (get_kind (k))
     {
     default:
       gcc_unreachable ();
-    case logical_location_kind::unknown:
-    case logical_location_kind::module_:
-    case logical_location_kind::namespace_:
-    case logical_location_kind::type:
-    case logical_location_kind::return_type:
-    case logical_location_kind::parameter:
-    case logical_location_kind::variable:
+    case kind::unknown:
+    case kind::module_:
+    case kind::namespace_:
+    case kind::type:
+    case kind::return_type:
+    case kind::parameter:
+    case kind::variable:
       return false;
 
-    case logical_location_kind::function:
-    case logical_location_kind::member:
+    case kind::function:
+    case kind::member:
       return true;
     }
 }

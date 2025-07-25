@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace {
 
+using namespace diagnostics;
+
 /* A bundle of state for printing a path.  */
 
 class path_print_policy
@@ -238,7 +240,7 @@ class per_thread_summary
 {
 public:
   per_thread_summary (const diagnostic_path &path,
-		      const logical_location_manager &logical_loc_mgr,
+		      const logical_locations::manager &logical_loc_mgr,
 		      label_text name, unsigned swimlane_idx)
   : m_path (path),
     m_logical_loc_mgr (logical_loc_mgr),
@@ -268,7 +270,7 @@ private:
   friend struct event_range;
 
   const diagnostic_path &m_path;
-  const logical_location_manager &m_logical_loc_mgr;
+  const logical_locations::manager &m_logical_loc_mgr;
 
   const label_text m_name;
 
@@ -291,7 +293,7 @@ private:
 struct stack_frame
 {
   stack_frame (std::unique_ptr<stack_frame> parent,
-	       logical_location logical_loc,
+	       logical_locations::key logical_loc,
 	       int stack_depth)
   : m_parent (std::move (parent)),
     m_logical_loc (logical_loc),
@@ -299,7 +301,7 @@ struct stack_frame
   {}
 
   std::unique_ptr<stack_frame> m_parent;
-  logical_location m_logical_loc;
+  logical_locations::key m_logical_loc;
   const int m_stack_depth;
 };
 
@@ -309,9 +311,9 @@ struct stack_frame
 static std::unique_ptr<stack_frame>
 begin_html_stack_frame (xml::printer &xp,
 			std::unique_ptr<stack_frame> parent,
-			logical_location logical_loc,
+			logical_locations::key logical_loc,
 			int stack_depth,
-			const logical_location_manager *logical_loc_mgr)
+			const logical_locations::manager *logical_loc_mgr)
 {
   if (logical_loc)
     {
@@ -707,7 +709,7 @@ struct event_range
 
   const diagnostic_path &m_path;
   const diagnostic_event &m_initial_event;
-  logical_location m_logical_loc;
+  logical_locations::key m_logical_loc;
   int m_stack_depth;
   unsigned m_start_idx;
   unsigned m_end_idx;
@@ -733,7 +735,7 @@ struct path_summary
 		bool colorize = false,
 		bool show_event_links = true);
 
-  const logical_location_manager &get_logical_location_manager () const
+  const logical_locations::manager &get_logical_location_manager () const
   {
     return m_logical_loc_mgr;
   }
@@ -748,7 +750,7 @@ struct path_summary
     return **slot;
   }
 
-  const logical_location_manager &m_logical_loc_mgr;
+  const logical_locations::manager &m_logical_loc_mgr;
   auto_delete_vec <event_range> m_ranges;
   auto_delete_vec <per_thread_summary> m_per_thread_summary;
   hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
@@ -883,7 +885,7 @@ public:
   void
   print_swimlane_for_event_range_as_text (diagnostic_text_output_format &text_output,
 					  pretty_printer *pp,
-					  const logical_location_manager &logical_loc_mgr,
+					  const logical_locations::manager &logical_loc_mgr,
 					  event_range *range,
 					  diagnostic_source_effect_info *effect_info)
   {
@@ -1158,7 +1160,7 @@ print_path_summary_as_html (const path_summary &ps,
   for (auto t : ps.m_per_thread_summary)
     thread_event_printers.push_back (thread_event_printer (*t, show_depths));
 
-  const logical_location_manager *logical_loc_mgr
+  const logical_locations::manager *logical_loc_mgr
     = dc.get_logical_location_manager ();
 
   xp.push_tag_with_class ("div", "event-ranges", false);
@@ -1173,7 +1175,7 @@ print_path_summary_as_html (const path_summary &ps,
       const int swimlane_idx
 	= range->m_per_thread_summary.get_swimlane_index ();
 
-      const logical_location this_logical_loc = range->m_logical_loc;
+      const logical_locations::key this_logical_loc = range->m_logical_loc;
       const int this_depth = range->m_stack_depth;
       if (curr_frame)
 	{
@@ -1328,7 +1330,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 		/* -fdiagnostics-path-format=separate-events doesn't print
 		   fndecl information, so with -fdiagnostics-show-path-depths
 		   print the fndecls too, if any.  */
-		if (logical_location logical_loc
+		if (logical_locations::key logical_loc
 		      = event.get_logical_location ())
 		  {
 		    label_text name

@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_LOGICAL_LOCATION_H
-#define GCC_LOGICAL_LOCATION_H
+#ifndef GCC_DIAGNOSTICS_LOGICAL_LOCATIONS_H
+#define GCC_DIAGNOSTICS_LOGICAL_LOCATIONS_H
 
 #include "label-text.h"
+
+namespace diagnostics {
+namespace logical_locations {
 
 /* An enum for discriminating between different kinds of logical location
    for a diagnostic.
@@ -29,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    Roughly corresponds to logicalLocation's "kind" property in SARIF v2.1.0
    (section 3.33.7).  */
 
-enum class logical_location_kind
+enum class kind
 {
   unknown,
 
@@ -68,78 +71,84 @@ enum class logical_location_kind
    libgdiagnostics internals), and without requiring heap allocation of an
    interface class when emitting a diagnostic.
 
-   To do this, we split the implementation into logical_location, which is
-   a wrapper around a (const void *), and logical_location_manager which
+   To do this, we split the implementation into logical_locations::key, which is
+   a wrapper around a (const void *), and logical_locations::manager which
    is provided by the client and has vfunc hooks for interpreting
-   logical_location instances.
+   key instances.
 
-   Every logical_location is associated with a logical_location_manager and
-   only has meaning in relation to that manager.
+   Every logical_locations::key is associated with a logical_locations::manager
+   and only has meaning in relation to that manager.
 
-   A "nullptr" within a logical_location means "no logical location".
+   A "nullptr" within a key means "no logical location".
 
    See tree-logical-location.h for concrete subclasses relating to trees,
    where the pointer is a const_tree.
 
-   See selftest-logical-location.h for a concrete subclass for selftests.  */
+   See diagnostics/selftest-logical-locations.h for a concrete subclass for
+   selftests.  */
 
-/* Abstract base class for giving meaning to logical_location values.
+/* Extrinsic state for identifying a specific logical location.
+   This will be our logical location type.
+   This only makes sense with respect to a specific manager.
+   e.g. for a tree-based one it's a wrapper around "tree".
+
+   "nullptr" means "no logical location".
+
+   Note that there is no integration with GCC's garbage collector and thus
+   keys can't be long-lived.  */
+
+class key
+{
+public:
+  key () : m_ptr (nullptr) {}
+
+  static key from_ptr (const void *ptr)
+  {
+    return key (ptr);
+  }
+
+  operator bool () const
+  {
+    return m_ptr != nullptr;
+  }
+
+  template <typename T>
+  T cast_to () const { return static_cast<T> (m_ptr); }
+
+  bool
+  operator== (const key &other) const
+  {
+    return m_ptr == other.m_ptr;
+  }
+
+  bool
+  operator!= (const key &other) const
+  {
+    return m_ptr != other.m_ptr;
+  }
+
+  bool
+  operator< (const key &other) const
+  {
+    return m_ptr < other.m_ptr;
+  }
+
+private:
+  explicit key (const void *ptr) : m_ptr (ptr) {}
+
+  const void *m_ptr;
+};
+
+/* Abstract base class for giving meaning to keys.
    Typically there will just be one client-provided instance, of a
    client-specific subclass.  */
 
-class logical_location_manager
+class manager
 {
 public:
-  /* Extrinsic state for identifying a specific logical location.
-     This will be our logical_location type.
-     This only makes sense with respect to a specific manager.
-     e.g. for a tree-based one it's a wrapper around "tree".
-     "nullptr" means "no logical location".  */
-  class key
-  {
-  public:
-    key () : m_ptr (nullptr) {}
+  virtual ~manager () {}
 
-    static key from_ptr (const void *ptr)
-    {
-      return key (ptr);
-    }
-
-    operator bool () const
-    {
-      return m_ptr != nullptr;
-    }
-
-    template <typename T>
-    T cast_to () const { return static_cast<T> (m_ptr); }
-
-    bool
-    operator== (const key &other) const
-    {
-      return m_ptr == other.m_ptr;
-    }
-
-    bool
-    operator!= (const key &other) const
-    {
-      return m_ptr != other.m_ptr;
-    }
-
-    bool
-    operator< (const key &other) const
-    {
-      return m_ptr < other.m_ptr;
-    }
-
-  private:
-    explicit key (const void *ptr) : m_ptr (ptr) {}
-
-    const void *m_ptr;
-  };
-
-  virtual ~logical_location_manager () {}
-
-  /* vfuncs for interpreting logical_location values.  */
+  /* vfuncs for interpreting keys.  */
 
   /* Get a string (or NULL) for K suitable for use by the SARIF logicalLocation
      "name" property (SARIF v2.1.0 section 3.33.4).  */
@@ -154,7 +163,7 @@ public:
   virtual const char *get_internal_name (key k) const = 0;
 
   /* Get what kind of SARIF logicalLocation K is (if any).  */
-  virtual enum logical_location_kind get_kind (key k) const = 0;
+  virtual enum kind get_kind (key k) const = 0;
 
   /* Get a string for location K in a form suitable for path output.  */
   virtual label_text get_name_for_path_output (key k) const = 0;
@@ -165,11 +174,7 @@ public:
   bool function_p (key k) const;
 };
 
-/* A logical location is a key for a given logical_location_manager.
+} // namespace diagnostics::logical_locations
+} // namespace diagnostics
 
-   Note that there is no integration with GCC's garbage collector and thus
-   logical_location instances can't be long-lived.  */
-
-typedef logical_location_manager::key logical_location;
-
-#endif /* GCC_LOGICAL_LOCATION_H.  */
+#endif /* GCC_DIAGNOSTICS_LOGICAL_LOCATIONS_H.  */

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SELFTEST_DIAGNOSTIC_PATH_H
 
 #include "diagnostic-path.h"
-#include "selftest-logical-location.h"
+#include "diagnostics/selftest-logical-locations.h"
 
 /* The selftest code should entirely disappear in a production
    configuration, hence we guard all of it with #if CHECKING_P.  */
@@ -41,6 +41,8 @@ namespace selftest {
 class test_diagnostic_event : public diagnostic_event
 {
  public:
+  using logical_location = diagnostics::logical_locations::key;
+
   test_diagnostic_event (location_t loc,
 			 logical_location logical_loc,
 			 int depth,
@@ -143,7 +145,7 @@ class test_diagnostic_path : public diagnostic_path
 		 diagnostic_thread_id_t thread_id = 0);
 
  private:
-  logical_location
+  diagnostics::logical_locations::key
   logical_location_from_funcname (const char *funcname);
 
   test_logical_location_manager m_test_logical_loc_mgr;

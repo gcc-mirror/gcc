@@ -40,7 +40,8 @@ class simple_diagnostic_event : public diagnostic_event
   location_t get_location () const final override { return m_loc; }
   int get_stack_depth () const final override { return m_depth; }
   void print_desc (pretty_printer &pp) const final override;
-  logical_location get_logical_location () const final override
+  diagnostics::logical_locations::key
+  get_logical_location () const final override
   {
     return tree_logical_location_manager::key_from_tree (m_fndecl);
   }
@@ -67,7 +68,7 @@ class simple_diagnostic_event : public diagnostic_event
  private:
   location_t m_loc;
   tree m_fndecl;
-  logical_location m_logical_loc;
+  diagnostics::logical_locations::key m_logical_loc;
   int m_depth;
   char *m_desc; // has been i18n-ed and formatted
   bool m_connected_to_next_event;

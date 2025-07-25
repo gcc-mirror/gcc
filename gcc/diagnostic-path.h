@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostic.h" /* for ATTRIBUTE_GCC_DIAG.  */
 #include "diagnostic-event-id.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
 namespace xml { class document; }
 
@@ -160,7 +160,7 @@ class diagnostic_event
   virtual void print_desc (pretty_printer &pp) const = 0;
 
   /* Get a logical location for this event, or null if there is none.  */
-  virtual logical_location get_logical_location () const = 0;
+  virtual diagnostics::logical_locations::key get_logical_location () const = 0;
 
   virtual meaning get_meaning () const = 0;
 
@@ -203,6 +203,8 @@ public:
 class diagnostic_path
 {
  public:
+  using logical_location_manager = diagnostics::logical_locations::manager;
+
   virtual ~diagnostic_path () {}
   virtual unsigned num_events () const = 0;
   virtual const diagnostic_event & get_event (int idx) const = 0;

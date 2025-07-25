@@ -1,4 +1,4 @@
-/* Concrete subclass of logical_location for use in selftests.
+/* Concrete subclass of logical_locations::manager for use in selftests.
    Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SELFTEST_LOGICAL_LOCATION_H
-#define GCC_SELFTEST_LOGICAL_LOCATION_H
+#ifndef GCC_DIAGNOSTICS_SELFTEST_LOGICAL_LOCATIONS_H
+#define GCC_DIAGNOSTICS_SELFTEST_LOGICAL_LOCATIONS_H
 
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
 /* The selftest code should entirely disappear in a production
    configuration, hence we guard all of it with #if CHECKING_P.  */
@@ -30,44 +30,48 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace selftest {
 
-/* Concrete subclass of logical_location_manager for use in selftests.  */
+/* Concrete subclass of logical_locations::manager for use in selftests.  */
 
-class test_logical_location_manager : public logical_location_manager
+class test_logical_location_manager
+  : public diagnostics::logical_locations::manager
 {
 public:
+  using key = diagnostics::logical_locations::key;
+  using kind = diagnostics::logical_locations::kind;
+
   ~test_logical_location_manager ();
 
   const char *get_short_name (key) const final override;
   const char *get_name_with_scope (key) const final override;
   const char *get_internal_name (key) const final override;
-  enum logical_location_kind get_kind (key) const final override;
+  kind get_kind (key) const final override;
   label_text get_name_for_path_output (key) const final override;
   key get_parent (key) const final override
   {
     return key ();
   }
 
-  logical_location
+  key
   logical_location_from_funcname (const char *funcname);
 
 private:
   struct item
   {
-    item (enum logical_location_kind kind,
+    item (kind kind_,
 	  const char *name)
-    : m_kind (kind),
+    : m_kind (kind_),
       m_name (name)
     {
     }
 
-    enum logical_location_kind m_kind;
+    kind m_kind;
     const char *m_name;
   };
 
   const item *
   item_from_funcname (const char *funcname);
 
-  static const item *item_from_key (logical_location k)
+  static const item *item_from_key (key k)
   {
     return k.cast_to<const item *> ();
   }
@@ -80,4 +84,4 @@ private:
 #endif /* #if CHECKING_P */
 
 
-#endif /* GCC_SELFTEST_LOGICAL_LOCATION_H.  */
+#endif /* GCC_DIAGNOSTICS_SELFTEST_LOGICAL_LOCATIONS_H.  */

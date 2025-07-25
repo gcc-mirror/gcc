@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-output-spec.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 #include "edit-context.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
@@ -458,19 +458,23 @@ round_alloc_size (size_t s)
   return s;
 }
 
-class impl_logical_location_manager : public logical_location_manager
+class impl_logical_location_manager
+  : public diagnostics::logical_locations::manager
 {
 public:
+  using key = diagnostics::logical_locations::key;
+  using kind = diagnostics::logical_locations::kind;
+
   static const diagnostic_logical_location *
-  ptr_from_key (logical_location k)
+  ptr_from_key (key k)
   {
     return k.cast_to<const diagnostic_logical_location *> ();
   }
 
-  static logical_location
+  static key
   key_from_ptr (const diagnostic_logical_location *ptr)
   {
-    return logical_location::from_ptr (ptr);
+    return key::from_ptr (ptr);
   }
 
   const char *get_short_name (key k) const final override
@@ -497,7 +501,7 @@ public:
       return nullptr;
   }
 
-  enum logical_location_kind get_kind (key k) const final override
+  kind get_kind (key k) const final override
   {
     auto loc = ptr_from_key (k);
     gcc_assert (loc);
@@ -507,45 +511,45 @@ public:
 	gcc_unreachable ();
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	return logical_location_kind::function;
+	return kind::function;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
-	return logical_location_kind::member;
+	return kind::member;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
-	return logical_location_kind::module_;
+	return kind::module_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
-	return logical_location_kind::namespace_;
+	return kind::namespace_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
-	return logical_location_kind::type;
+	return kind::type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
-	return logical_location_kind::return_type;
+	return kind::return_type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
-	return logical_location_kind::parameter;
+	return kind::parameter;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
-	return logical_location_kind::variable;
+	return kind::variable;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
-	return logical_location_kind::element;
+	return kind::element;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
-	return logical_location_kind::attribute;
+	return kind::attribute;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
-	return logical_location_kind::text;
+	return kind::text;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
-	return logical_location_kind::comment;
+	return kind::comment;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
-	return logical_location_kind::processing_instruction;
+	return kind::processing_instruction;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
-	return logical_location_kind::dtd;
+	return kind::dtd;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
-	return logical_location_kind::declaration;
+	return kind::declaration;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
-	  return logical_location_kind::object;
+	  return kind::object;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
-	return logical_location_kind::array;
+	return kind::array;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
-	return logical_location_kind::property;
+	return kind::property;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
-	return logical_location_kind::value;
+	return kind::value;
       }
   }
 
@@ -573,12 +577,13 @@ public:
 
   const client_version_info *get_any_version_info () const final override;
 
-  const logical_location_manager *
+  const diagnostics::logical_locations::manager *
   get_logical_location_manager () const final override
   {
     return &m_logical_location_manager;
   }
-  logical_location get_current_logical_location () const final override;
+  diagnostics::logical_locations::key
+  get_current_logical_location () const final override;
 
   const char * maybe_get_sarif_source_language (const char *filename)
     const final override;
@@ -688,7 +693,7 @@ public:
   line_maps *get_line_table () { return &m_line_table; }
   diagnostic_context &get_dc () { return m_dc; }
 
-  const logical_location_manager &
+  const diagnostics::logical_locations::manager &
   get_logical_location_manager () const
   {
     auto mgr = m_dc.get_logical_location_manager ();
@@ -1023,7 +1028,8 @@ public:
       }
   }
 
-  logical_location get_logical_location () const final override
+  diagnostics::logical_locations::key
+  get_logical_location () const final override
   {
     return impl_logical_location_manager::key_from_ptr (m_logical_loc);
   }
@@ -1160,9 +1166,10 @@ struct diagnostic_execution_path : public diagnostic_path
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override
   {
+    using logical_location = diagnostics::logical_locations::key;
     logical_location logical_loc_a
       = m_events[event_idx_a]->get_logical_location ();
-    logical_location logical_loc_b
+    logical_location  logical_loc_b
       = m_events[event_idx_b]->get_logical_location ();
 
     /* Pointer equality, as we uniqify logical location instances.  */
@@ -1370,7 +1377,7 @@ impl_diagnostic_client_data_hooks::get_any_version_info () const
   return m_mgr.get_client_version_info ();
 }
 
-logical_location
+diagnostics::logical_locations::key
 impl_diagnostic_client_data_hooks::get_current_logical_location () const
 {
   gcc_assert (m_mgr.get_current_diag ());

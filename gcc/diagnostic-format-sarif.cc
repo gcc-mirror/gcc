@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-buffer.h"
 #include "json.h"
 #include "cpplib.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
 #include "text-art/canvas.h"
@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "backtrace.h"
 #include "xml.h"
+
+using namespace diagnostics;
 
 /* A json::array where the values are "unique" as per
    SARIF v2.1.0 section 3.7.3 ("Array properties with unique values").  */
@@ -763,7 +765,7 @@ public:
     m_printer = &printer;
   }
 
-  const logical_location_manager *
+  const logical_locations::manager *
   get_logical_location_manager () const
   {
     return m_logical_loc_mgr;
@@ -779,7 +781,7 @@ public:
   void end_group ();
 
   void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &);
+  report_global_digraph (const digraphs::lazy_digraph &);
 
   std::unique_ptr<sarif_result> take_current_result ()
   {
@@ -796,7 +798,7 @@ public:
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager *loc_mgr,
 			const rich_location &rich_loc,
-			logical_location logical_loc,
+			logical_locations::key logical_loc,
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
@@ -834,7 +836,7 @@ public:
   const sarif_generation_options &get_opts () const { return m_sarif_gen_opts; }
 
   std::unique_ptr<sarif_logical_location>
-  make_minimal_sarif_logical_location (logical_location);
+  make_minimal_sarif_logical_location (logical_locations::key);
 
 private:
   class sarif_token_printer : public token_printer
@@ -860,7 +862,7 @@ private:
 			 location_t where);
   void
   set_any_logical_locs_arr (sarif_location &location_obj,
-			    logical_location logical_loc);
+			    logical_locations::key logical_loc);
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
 			const diagnostic_event &event,
@@ -895,7 +897,7 @@ private:
   make_region_object_for_hint (const fixit_hint &hint) const;
 
   int
-  ensure_sarif_logical_location_for (logical_location k);
+  ensure_sarif_logical_location_for (logical_locations::key k);
 
   std::unique_ptr<sarif_multiformat_message_string>
   make_multiformat_message_string (const char *msg) const;
@@ -953,7 +955,7 @@ private:
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
 
-  const logical_location_manager *m_logical_loc_mgr;
+  const logical_locations::manager *m_logical_loc_mgr;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -1313,7 +1315,7 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
      often they won't.  */
   auto location_obj
     = builder.make_location_object (this, *diagnostic.richloc,
-				    logical_location (),
+				    logical_locations::key (),
 				    diagnostic_artifact_role::result_file);
   auto message_obj
     = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
@@ -1906,7 +1908,7 @@ sarif_builder::end_group ()
 
 void
 sarif_builder::
-report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg)
+report_global_digraph (const digraphs::lazy_digraph &ldg)
 {
   auto &dg = ldg.get_or_create_digraph ();
 
@@ -2204,7 +2206,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 				   enum diagnostic_artifact_role role)
 {
   auto locations_arr = std::make_unique<json::array> ();
-  logical_location logical_loc;
+  logical_locations::key logical_loc;
   if (auto client_data_hooks = m_context.get_client_data_hooks ())
     logical_loc = client_data_hooks->get_current_logical_location ();
 
@@ -2224,7 +2226,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 void
 sarif_builder::
 set_any_logical_locs_arr (sarif_location &location_obj,
-			  logical_location logical_loc)
+			  logical_locations::key logical_loc)
 {
   if (!logical_loc)
     return;
@@ -2250,7 +2252,7 @@ set_any_logical_locs_arr (sarif_location &location_obj,
 std::unique_ptr<sarif_location>
 sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
 				     const rich_location &rich_loc,
-				     logical_location logical_loc,
+				     logical_locations::key logical_loc,
 				     enum diagnostic_artifact_role role)
 {
   class escape_nonascii_renderer : public content_renderer
@@ -2445,7 +2447,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 						std::move (phs_loc_obj));
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
-  logical_location logical_loc = event.get_logical_location ();
+  logical_locations::key logical_loc = event.get_logical_location ();
   set_any_logical_locs_arr (*location_obj, logical_loc);
 
   /* "message" property (SARIF v2.1.0 section 3.28.5).  */
@@ -2766,57 +2768,59 @@ sarif_builder::make_region_object_for_hint (const fixit_hint &hint) const
    Return nullptr if unknown.  */
 
 static const char *
-maybe_get_sarif_kind (enum logical_location_kind kind)
+maybe_get_sarif_kind (enum logical_locations::kind kind)
 {
+  using namespace logical_locations;
+
   switch (kind)
     {
     default:
       gcc_unreachable ();
-    case logical_location_kind::unknown:
+    case logical_locations::kind::unknown:
       return nullptr;
 
     /* Kinds within executable code.  */
-    case logical_location_kind::function:
+    case logical_locations::kind::function:
       return "function";
-    case logical_location_kind::member:
+    case logical_locations::kind::member:
       return "member";
-    case logical_location_kind::module_:
+    case logical_locations::kind::module_:
       return "module";
-    case logical_location_kind::namespace_:
+    case logical_locations::kind::namespace_:
       return "namespace";
-    case logical_location_kind::type:
+    case logical_locations::kind::type:
       return "type";
-    case logical_location_kind::return_type:
+    case logical_locations::kind::return_type:
       return "returnType";
-    case logical_location_kind::parameter:
+    case logical_locations::kind::parameter:
       return "parameter";
-    case logical_location_kind::variable:
+    case logical_locations::kind::variable:
       return "variable";
 
     /* Kinds within XML or HTML documents.  */
-    case logical_location_kind::element:
+    case logical_locations::kind::element:
       return "element";
-    case logical_location_kind::attribute:
+    case logical_locations::kind::attribute:
       return "attribute";
-    case logical_location_kind::text:
+    case logical_locations::kind::text:
       return "text";
-    case logical_location_kind::comment:
+    case logical_locations::kind::comment:
       return "comment";
-    case logical_location_kind::processing_instruction:
+    case logical_locations::kind::processing_instruction:
       return "processingInstruction";
-    case logical_location_kind::dtd:
+    case logical_locations::kind::dtd:
       return "dtd";
-    case logical_location_kind::declaration:
+    case logical_locations::kind::declaration:
       return "declaration";
 
     /* Kinds within JSON documents.  */
-    case logical_location_kind::object:
+    case logical_locations::kind::object:
       return "object";
-    case logical_location_kind::array:
+    case logical_locations::kind::array:
       return "array";
-    case logical_location_kind::property:
+    case logical_locations::kind::property:
       return "property";
-    case logical_location_kind::value:
+    case logical_locations::kind::value:
       return "value";
     }
 }
@@ -2828,7 +2832,7 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
 void
 sarif_property_bag::set_logical_location (const char *property_name,
 					  sarif_builder &builder,
-					  logical_location logical_loc)
+					  logical_locations::key logical_loc)
 {
   set<sarif_logical_location>
     (property_name,
@@ -2836,7 +2840,7 @@ sarif_property_bag::set_logical_location (const char *property_name,
 }
 
 static void
-copy_any_property_bag (const diagnostics::digraphs::object &input_obj,
+copy_any_property_bag (const digraphs::object &input_obj,
 		       sarif_object &output_obj)
 {
   if (input_obj.get_property_bag ())
@@ -2853,7 +2857,7 @@ copy_any_property_bag (const diagnostics::digraphs::object &input_obj,
 }
 
 std::unique_ptr<sarif_graph>
-make_sarif_graph (const diagnostics::digraphs::digraph &g,
+make_sarif_graph (const digraphs::digraph &g,
 		  sarif_builder *builder,
 		  sarif_location_manager *sarif_location_mgr)
 {
@@ -2887,7 +2891,7 @@ make_sarif_graph (const diagnostics::digraphs::digraph &g,
 }
 
 std::unique_ptr<sarif_node>
-make_sarif_node (const diagnostics::digraphs::node &n,
+make_sarif_node (const digraphs::node &n,
 		 sarif_builder *builder,
 		 sarif_location_manager *sarif_location_mgr)
 {
@@ -2936,7 +2940,7 @@ make_sarif_node (const diagnostics::digraphs::node &n,
 }
 
 std::unique_ptr<sarif_edge>
-make_sarif_edge (const diagnostics::digraphs::edge &e,
+make_sarif_edge (const digraphs::edge &e,
 		 sarif_builder *builder)
 {
   auto result = std::make_unique<sarif_edge> ();
@@ -2965,7 +2969,7 @@ void
 sarif_property_bag::set_graph (const char *property_name,
 			       sarif_builder &builder,
 			       sarif_location_manager *sarif_location_mgr,
-			       const diagnostics::digraphs::digraph &g)
+			       const digraphs::digraph &g)
 {
   set<sarif_graph> (property_name,
 		    make_sarif_graph (g, &builder, sarif_location_mgr));
@@ -2977,7 +2981,7 @@ sarif_property_bag::set_graph (const char *property_name,
 
 int
 sarif_builder::
-ensure_sarif_logical_location_for (logical_location k)
+ensure_sarif_logical_location_for (logical_locations::key k)
 {
   gcc_assert (m_logical_loc_mgr);
 
@@ -2995,7 +2999,7 @@ ensure_sarif_logical_location_for (logical_location k)
     sarif_logical_loc->set_string ("decoratedName", internal_name);
 
   /* "kind" property (SARIF v2.1.0 section 3.33.7).  */
-  enum logical_location_kind kind = m_logical_loc_mgr->get_kind (k);
+  enum logical_locations::kind kind = m_logical_loc_mgr->get_kind (k);
   if (const char *sarif_kind_str = maybe_get_sarif_kind (kind))
     sarif_logical_loc->set_string ("kind", sarif_kind_str);
 
@@ -3021,7 +3025,7 @@ ensure_sarif_logical_location_for (logical_location k)
 
 std::unique_ptr<sarif_logical_location>
 sarif_builder::
-make_minimal_sarif_logical_location (logical_location logical_loc)
+make_minimal_sarif_logical_location (logical_locations::key logical_loc)
 {
   gcc_assert (m_logical_loc_mgr);
 
@@ -3921,7 +3925,7 @@ public:
   }
 
   void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &lazy_digraph) final override
+  report_global_digraph (const digraphs::lazy_digraph &lazy_digraph) final override
   {
     m_builder.report_global_digraph (lazy_digraph);
   }
@@ -4486,7 +4490,7 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
 
   std::unique_ptr<sarif_location> location_obj
     = builder.make_location_object
-	(&result, richloc, logical_location (),
+	(&result, richloc, logical_locations::key (),
 	 diagnostic_artifact_role::analysis_target);
   ASSERT_NE (location_obj, nullptr);
 

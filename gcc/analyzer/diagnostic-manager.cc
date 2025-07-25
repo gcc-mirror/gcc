@@ -1663,7 +1663,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
     }
 }
 
-const logical_location_manager &
+const diagnostics::logical_locations::manager &
 diagnostic_manager::get_logical_location_manager () const
 {
   gcc_assert (global_dc);

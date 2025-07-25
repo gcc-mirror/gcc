@@ -21,29 +21,33 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_LOGICAL_LOCATION_H
 #define GCC_TREE_LOGICAL_LOCATION_H
 
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
-/* A subclass of logical_location_manager in which the keys are
-   "tree".
+/* A subclass of diagnostics::logical_locations::manager in which the
+   keys are "tree".
    Note that there is no integration with the garbage collector,
-   and so logical_location instances can only be short-lived.  */
-class tree_logical_location_manager : public logical_location_manager
+   and so key instances can only be short-lived.  */
+class tree_logical_location_manager
+  : public diagnostics::logical_locations::manager
 {
 public:
+  using key = diagnostics::logical_locations::key;
+  using kind = diagnostics::logical_locations::kind;
+
   const char *get_short_name (key) const final override;
   const char *get_name_with_scope (key) const final override;
   const char *get_internal_name (key) const final override;
-  enum logical_location_kind get_kind (key) const final override;
+  kind get_kind (key) const final override;
   label_text get_name_for_path_output (key) const final override;
   key get_parent (key) const final override;
 
-  static tree tree_from_key (logical_location k)
+  static tree tree_from_key (key k)
   {
     return const_cast<tree> (k.cast_to<const_tree> ());
   }
-  static logical_location key_from_tree (tree node)
+  static key key_from_tree (tree node)
   {
-    return logical_location::from_ptr (node);
+    return key::from_ptr (node);
   }
 };
 

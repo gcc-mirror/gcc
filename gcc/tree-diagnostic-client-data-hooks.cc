@@ -123,12 +123,14 @@ public:
     return &m_version_info;
   }
 
-  const logical_location_manager *get_logical_location_manager () const final override
+  const diagnostics::logical_locations::manager *
+  get_logical_location_manager () const final override
   {
     return &m_logical_location_manager;
   }
 
-  logical_location_manager::key get_current_logical_location () const final override
+  diagnostics::logical_locations::key
+  get_current_logical_location () const final override
   {
     return m_logical_location_manager.key_from_tree (current_function_decl);
   }

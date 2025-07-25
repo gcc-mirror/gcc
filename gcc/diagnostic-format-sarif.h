@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "diagnostic-format.h"
 #include "diagnostic-output-file.h"
-#include "logical-location.h"
+#include "diagnostics/logical-locations.h"
 
 /* Enum for choosing what format to serializing the generated SARIF into.  */
 
@@ -129,7 +129,7 @@ class sarif_property_bag : public json::object
 public:
   void set_logical_location (const char *property_name,
 			     sarif_builder &,
-			     logical_location logical_loc);
+			     diagnostics::logical_locations::key logical_loc);
   void set_graph (const char *property_name,
 		  sarif_builder &,
 		  sarif_location_manager *sarif_location_mgr,

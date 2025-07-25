@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "selftest-xml.h"
 
+using namespace diagnostics;
+
 // struct html_generation_options
 
 html_generation_options::html_generation_options ()
@@ -121,7 +123,7 @@ public:
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_html_format_buffer *buffer);
   void emit_diagram (const diagnostic_diagram &diagram);
-  void emit_global_graph (const diagnostics::digraphs::lazy_digraph &);
+  void emit_global_graph (const digraphs::lazy_digraph &);
 
   void end_group ();
 
@@ -177,14 +179,14 @@ private:
   pop_nesting_level ();
 
   void
-  add_graph (const diagnostics::digraphs::digraph &dg,
+  add_graph (const digraphs::digraph &dg,
 	     xml::element &parent_element);
 
   diagnostic_context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   html_generation_options m_html_gen_opts;
-  const logical_location_manager *m_logical_loc_mgr;
+  const logical_locations::manager *m_logical_loc_mgr;
 
   std::unique_ptr<xml::document> m_document;
   xml::element *m_head_element;
@@ -195,7 +197,7 @@ private:
   std::vector<xml::element *> m_cur_nesting_levels;
   int m_next_diag_id; // for handing out unique IDs
   json::array m_ui_focus_ids;
-  logical_location m_last_logical_location;
+  logical_locations::key m_last_logical_location;
   location_t m_last_location;
   expanded_location m_last_expanded_location;
 };
@@ -512,7 +514,7 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
   if (m_cur_diagnostic_element && nesting_level > 0)
     alert = false;
   if (!m_cur_diagnostic_element)
-    m_last_logical_location = logical_location ();
+    m_last_logical_location = logical_locations::key ();
   auto diag_element
     = make_element_for_diagnostic (diagnostic, orig_diag_kind, alert);
   if (buffer)
@@ -622,8 +624,7 @@ html_builder::maybe_make_state_diagram (const diagnostic_event &event)
     return nullptr;
 
   // Convert it to .dot AST
-  auto dot_graph
-    = diagnostics::state_graphs::make_dot_graph (*state_graph,
+  auto dot_graph = state_graphs::make_dot_graph (*state_graph,
 						 *m_logical_loc_mgr);
   gcc_assert (dot_graph);
 
@@ -771,57 +772,57 @@ get_pf_class_for_alert_icon (diagnostic_t diag_kind)
 }
 
 static const char *
-get_label_for_logical_location_kind (enum logical_location_kind kind)
+get_label_for_logical_location_kind (enum logical_locations::kind kind)
 {
   switch (kind)
     {
     default:
       gcc_unreachable ();
-    case logical_location_kind::unknown:
+    case logical_locations::kind::unknown:
       return nullptr;
 
     /* Kinds within executable code.  */
-    case logical_location_kind::function:
+    case logical_locations::kind::function:
       return "Function";
-    case logical_location_kind::member:
+    case logical_locations::kind::member:
       return "Member";
-    case logical_location_kind::module_:
+    case logical_locations::kind::module_:
       return "Module";
-    case logical_location_kind::namespace_:
+    case logical_locations::kind::namespace_:
       return "Namespace";
-    case logical_location_kind::type:
+    case logical_locations::kind::type:
       return "Type";
-    case logical_location_kind::return_type:
+    case logical_locations::kind::return_type:
       return "Return type";
-    case logical_location_kind::parameter:
+    case logical_locations::kind::parameter:
       return "Parameter";
-    case logical_location_kind::variable:
+    case logical_locations::kind::variable:
       return "Variable";
 
     /* Kinds within XML or HTML documents.  */
-    case logical_location_kind::element:
+    case logical_locations::kind::element:
       return "Element";
-    case logical_location_kind::attribute:
+    case logical_locations::kind::attribute:
       return "Attribute";
-    case logical_location_kind::text:
+    case logical_locations::kind::text:
       return "Text";
-    case logical_location_kind::comment:
+    case logical_locations::kind::comment:
       return "Comment";
-    case logical_location_kind::processing_instruction:
+    case logical_locations::kind::processing_instruction:
       return "Processing Instruction";
-    case logical_location_kind::dtd:
+    case logical_locations::kind::dtd:
       return "DTD";
-    case logical_location_kind::declaration:
+    case logical_locations::kind::declaration:
       return "Declaration";
 
   /* Kinds within JSON documents.  */
-    case logical_location_kind::object:
+    case logical_locations::kind::object:
       return "Object";
-    case logical_location_kind::array:
+    case logical_locations::kind::array:
       return "Array";
-    case logical_location_kind::property:
+    case logical_locations::kind::property:
       return "Property";
-    case logical_location_kind::value:
+    case logical_locations::kind::value:
       return "Value";
     }
 }
@@ -1062,7 +1063,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       if (auto logical_loc = client_data_hooks->get_current_logical_location ())
 	if (logical_loc != m_last_logical_location)
 	  {
-	    enum logical_location_kind kind
+	    enum logical_locations::kind kind
 	      = m_logical_loc_mgr->get_kind (logical_loc);;
 	    if (const char *label = get_label_for_logical_location_kind (kind))
 	      if (const char *name_with_scope
@@ -1248,7 +1249,7 @@ html_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
 }
 
 void
-html_builder::add_graph (const diagnostics::digraphs::digraph &dg,
+html_builder::add_graph (const digraphs::digraph &dg,
 			 xml::element &parent_element)
 {
   if (auto dot_graph = dg.make_dot_graph ())
@@ -1269,7 +1270,7 @@ html_builder::add_graph (const diagnostics::digraphs::digraph &dg,
 }
 
 void
-html_builder::emit_global_graph (const diagnostics::digraphs::lazy_digraph &ldg)
+html_builder::emit_global_graph (const digraphs::lazy_digraph &ldg)
 {
   auto &dg = ldg.get_or_create_digraph ();
   gcc_assert (m_body_element);
@@ -1390,7 +1391,7 @@ public:
   }
 
   void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &ldg) final override
+  report_global_digraph (const digraphs::lazy_digraph &ldg) final override
   {
     m_builder.emit_global_graph (ldg);
   }
