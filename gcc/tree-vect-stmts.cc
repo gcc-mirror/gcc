@@ -1250,12 +1250,11 @@ vect_init_vector (vec_info *vinfo, stmt_vec_info stmt_info, tree val, tree type,
 /* Get vectorized definitions for OP0 and OP1.  */
 
 void
-vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree slp_node,
-		   unsigned,
-		   tree op0, tree, vec<tree> *vec_oprnds0,
-		   tree op1, tree, vec<tree> *vec_oprnds1,
-		   tree op2, tree, vec<tree> *vec_oprnds2,
-		   tree op3, tree, vec<tree> *vec_oprnds3)
+vect_get_vec_defs (vec_info *, slp_tree slp_node,
+		   tree op0, vec<tree> *vec_oprnds0,
+		   tree op1, vec<tree> *vec_oprnds1,
+		   tree op2, vec<tree> *vec_oprnds2,
+		   tree op3, vec<tree> *vec_oprnds3)
 {
   if (op0)
     vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[0], vec_oprnds0);
@@ -1265,21 +1264,6 @@ vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree slp_node,
     vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[2], vec_oprnds2);
   if (op3)
     vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[3], vec_oprnds3);
-}
-
-void
-vect_get_vec_defs (vec_info *vinfo, stmt_vec_info stmt_info, slp_tree slp_node,
-		   unsigned ncopies,
-		   tree op0, vec<tree> *vec_oprnds0,
-		   tree op1, vec<tree> *vec_oprnds1,
-		   tree op2, vec<tree> *vec_oprnds2,
-		   tree op3, vec<tree> *vec_oprnds3)
-{
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		     op0, NULL_TREE, vec_oprnds0,
-		     op1, NULL_TREE, vec_oprnds1,
-		     op2, NULL_TREE, vec_oprnds2,
-		     op3, NULL_TREE, vec_oprnds3);
 }
 
 /* Helper function called by vect_finish_replace_stmt and
@@ -3188,7 +3172,7 @@ vectorizable_bswap (vec_info *vinfo,
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op, &vec_oprnds);
+  vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds);
   /* Arguments are ready. create the new vector stmt.  */
   unsigned i;
   tree vop;
@@ -5516,8 +5500,7 @@ vectorizable_conversion (vec_info *vinfo,
   switch (modifier)
     {
     case NONE:
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-			 op0, vectype_in, &vec_oprnds0);
+      vect_get_vec_defs (vinfo, slp_node, op0, &vec_oprnds0);
       /* vec_dest is intermediate type operand when multi_step_cvt.  */
       if (multi_step_cvt)
 	{
@@ -5552,10 +5535,9 @@ vectorizable_conversion (vec_info *vinfo,
 	 of elements that we can fit in a vectype (nunits), we have to
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-			 op0, vectype_in, &vec_oprnds0,
+      vect_get_vec_defs (vinfo, slp_node, op0, &vec_oprnds0,
 			 code == WIDEN_LSHIFT_EXPR ? NULL_TREE : op1,
-			 vectype_in, &vec_oprnds1);
+			 &vec_oprnds1);
       if (code == WIDEN_LSHIFT_EXPR)
 	{
 	  int oprnds_size = vec_oprnds0.length ();
@@ -5606,8 +5588,7 @@ vectorizable_conversion (vec_info *vinfo,
 	 of elements that we can fit in a vectype (nunits), we have to
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-			 op0, vectype_in, &vec_oprnds0);
+      vect_get_vec_defs (vinfo, slp_node, op0, &vec_oprnds0);
       /* Arguments are ready.  Create the new vector stmts.  */
       if (cvt_type && modifier == NARROW_DST)
 	FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
@@ -5811,7 +5792,7 @@ vectorizable_assignment (vec_info *vinfo,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Handle use.  */
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op, &vec_oprnds);
+  vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds);
 
   /* Arguments are ready. create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
@@ -6209,7 +6190,7 @@ vectorizable_shift (vec_info *vinfo,
   /* vec_oprnd1 is available if operand 1 should be of a scalar-type
      (a special case for certain kind of vector shifts); otherwise,
      operand 1 should be of a vector type (the usual case).  */
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
+  vect_get_vec_defs (vinfo, slp_node,
 		     op0, &vec_oprnds0,
 		     vec_oprnd1 ? NULL_TREE : op1, &vec_oprnds1);
 
@@ -6622,7 +6603,7 @@ vectorizable_operation (vec_info *vinfo,
   else
     vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
+  vect_get_vec_defs (vinfo, slp_node,
 		     op0, &vec_oprnds0, op1, &vec_oprnds1, op2, &vec_oprnds2);
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
@@ -7625,8 +7606,8 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
       /* We want to lookup the vector operands of the reduction, not those
 	 of the store - for SLP we have to use the proper SLP node for the
 	 lookup, which should be the single child of the scan store.  */
-      vect_get_vec_defs (vinfo, stmt_info, SLP_TREE_CHILDREN (slp_node)[0],
-			 1, rhs1, &vec_oprnds2, rhs2, &vec_oprnds3);
+      vect_get_vec_defs (vinfo, SLP_TREE_CHILDREN (slp_node)[0],
+			 rhs1, &vec_oprnds2, rhs2, &vec_oprnds3);
       /* ???  For SLP we do not key the def on 'rhs1' or 'rhs2' but get
 	 them in SLP child order.  So we have to swap here with logic
 	 similar to above.  */
@@ -7640,7 +7621,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  std::swap (vec_oprnds2[i], vec_oprnds3[i]);;
     }
   else
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
+    vect_get_vec_defs (vinfo, slp_node,
 		       rhs2, &vec_oprnds3);
   for (unsigned j = 0; j < vec_oprnds3.length (); j++)
     {
@@ -8219,15 +8200,13 @@ vectorizable_store (vec_info *vinfo,
 	}
 
       alias_off = build_int_cst (ref_type, 0);
-      stmt_vec_info next_stmt_info = first_stmt_info;
       auto_vec<tree> vec_oprnds;
       /* For costing some adjacent vector stores, we'd like to cost with
 	 the total number of them once instead of cost each one by one. */
       unsigned int n_adjacent_stores = 0;
       running_off = offvar;
       if (!costing_p)
-	vect_get_vec_defs (vinfo, next_stmt_info, slp_node, ncopies, op,
-			   &vec_oprnds);
+	vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds);
       unsigned int group_el = 0;
       unsigned HOST_WIDE_INT elsz
 	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
@@ -8892,8 +8871,7 @@ vectorizable_store (vec_info *vinfo,
   if (!costing_p)
     {
       /* Get vectorized arguments for SLP_NODE.  */
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op,
-			 &vec_oprnds, mask, &vec_masks);
+      vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds, mask, &vec_masks);
       vec_oprnd = vec_oprnds[0];
       if (mask)
 	vec_mask = vec_masks[0];
@@ -11836,18 +11814,18 @@ vectorizable_condition (vec_info *vinfo,
 
   /* Handle cond expr.  */
   if (masked)
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-		       cond_expr, comp_vectype, &vec_oprnds0,
-		       then_clause, vectype, &vec_oprnds2,
+    vect_get_vec_defs (vinfo, slp_node,
+		       cond_expr, &vec_oprnds0,
+		       then_clause, &vec_oprnds2,
 		       reduction_type != EXTRACT_LAST_REDUCTION
-		       ? else_clause : NULL, vectype, &vec_oprnds3);
+		       ? else_clause : NULL, &vec_oprnds3);
   else
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-		       cond_expr0, comp_vectype, &vec_oprnds0,
-		       cond_expr1, comp_vectype, &vec_oprnds1,
-		       then_clause, vectype, &vec_oprnds2,
+    vect_get_vec_defs (vinfo, slp_node,
+		       cond_expr0, &vec_oprnds0,
+		       cond_expr1, &vec_oprnds1,
+		       then_clause, &vec_oprnds2,
 		       reduction_type != EXTRACT_LAST_REDUCTION
-		       ? else_clause : NULL, vectype, &vec_oprnds3);
+		       ? else_clause : NULL, &vec_oprnds3);
 
   if (reduction_type == EXTRACT_LAST_REDUCTION)
     vec_else_clause = else_clause;
@@ -12198,9 +12176,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   if (lhs)
     mask = vect_create_destination_var (lhs, mask_type);
 
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
-		     rhs1, vectype, &vec_oprnds0,
-		     rhs2, vectype, &vec_oprnds1);
+  vect_get_vec_defs (vinfo, slp_node, rhs1, &vec_oprnds0, rhs2, &vec_oprnds1);
   if (swap_p)
     std::swap (vec_oprnds0, vec_oprnds1);
 

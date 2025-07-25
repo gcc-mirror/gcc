@@ -8272,7 +8272,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   if (!cond_fn_p)
     {
       gcc_assert (reduc_index >= 0 && reduc_index <= 2);
-      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1,
+      vect_get_vec_defs (loop_vinfo, slp_node,
 			 single_defuse_cycle && reduc_index == 0
 			 ? NULL_TREE : op.ops[0], &vec_oprnds[0],
 			 single_defuse_cycle && reduc_index == 1
@@ -8287,19 +8287,19 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	 vectype.  */
       gcc_assert (single_defuse_cycle
 		  && (reduc_index == 1 || reduc_index == 2));
-      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1, op.ops[0],
-			 truth_type_for (vectype_in), &vec_oprnds[0],
+      vect_get_vec_defs (loop_vinfo, slp_node, op.ops[0],
+			 &vec_oprnds[0],
 			 reduc_index == 1 ? NULL_TREE : op.ops[1],
-			 NULL_TREE, &vec_oprnds[1],
+			 &vec_oprnds[1],
 			 reduc_index == 2 ? NULL_TREE : op.ops[2],
-			 NULL_TREE, &vec_oprnds[2]);
+			 &vec_oprnds[2]);
     }
 
   /* For single def-use cycles get one copy of the vectorized reduction
      definition.  */
   if (single_defuse_cycle)
     {
-      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1,
+      vect_get_vec_defs (loop_vinfo, slp_node,
 			 reduc_index == 0 ? op.ops[0] : NULL_TREE,
 			 &vec_oprnds[0],
 			 reduc_index == 1 ? op.ops[1] : NULL_TREE,
@@ -8786,7 +8786,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
   edge e = single_pred_edge (bb);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
   auto_vec<tree> vec_oprnds;
-  vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1,
+  vect_get_vec_defs (loop_vinfo, slp_node,
 		     gimple_phi_arg_def (stmt_info->stmt, 0), &vec_oprnds);
   for (unsigned i = 0; i < vec_oprnds.length (); i++)
     {
