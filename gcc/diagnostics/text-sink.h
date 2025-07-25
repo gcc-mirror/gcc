@@ -134,7 +134,7 @@ protected:
 
   bool includes_seen_p (const line_map_ordinary *map);
 
-  /* For handling diagnostic_buffer.  */
+  /* For handling diagnostics::buffer.  */
   output_buffer *m_saved_output_buffer;
 
   column_policy m_column_policy;

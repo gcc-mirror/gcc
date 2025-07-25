@@ -1,4 +1,4 @@
-/* Support for buffering diagnostics before flushing them to output format.
+/* Support for buffering diagnostics before flushing them to output sinks.
    Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
