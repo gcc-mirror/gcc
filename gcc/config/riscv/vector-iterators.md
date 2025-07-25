@@ -4014,11 +4014,11 @@
 			      UNSPEC_VSSRL UNSPEC_VSSRA])
 
 (define_int_iterator VSAT_VX_OP_V_VDUP [
-  UNSPEC_VAADDU
+  UNSPEC_VAADDU UNSPEC_VAADD
 ])
 
 (define_int_iterator VSAT_VX_OP_VDUP_V [
-  UNSPEC_VAADDU
+  UNSPEC_VAADDU UNSPEC_VAADD
 ])
 
 (define_int_iterator VSAT_ARITH_OP [UNSPEC_VAADDU UNSPEC_VAADD
@@ -4056,11 +4056,11 @@
 				(UNSPEC_VNCLIPU "vnclip")])
 
 (define_int_attr sat_op_v_vdup [
-  (UNSPEC_VAADDU "aaddu")
+  (UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 ])
 
 (define_int_attr sat_op_vdup_v [
-  (UNSPEC_VAADDU "aaddu")
+  (UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 ])
 
 (define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")

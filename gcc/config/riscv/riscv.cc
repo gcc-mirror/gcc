@@ -4040,6 +4040,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 			switch (XINT (op, 1))
 			  {
 			  case UNSPEC_VAADDU:
+			  case UNSPEC_VAADD:
 			    *total
 			      = get_vector_binary_rtx_cost (op, scalar2vr_cost);
 			    break;

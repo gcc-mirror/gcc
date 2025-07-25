@@ -5693,6 +5693,7 @@ expand_vx_binary_vxrm_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2, int unspec,
 
   switch (unspec)
     {
+    case UNSPEC_VAADD:
     case UNSPEC_VAADDU:
       icode = code_for_pred_scalar (unspec, mode);
       break;
@@ -5717,6 +5718,7 @@ expand_vx_binary_vxrm_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2, int unspec,
 
   switch (unspec)
     {
+    case UNSPEC_VAADD:
     case UNSPEC_VAADDU:
       icode = code_for_pred_scalar (unspec, mode);
       break;
