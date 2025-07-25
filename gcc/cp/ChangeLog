@@ -1,3 +1,68 @@
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117294
+	PR c++/113854
+	* call.cc (implicit_conversion_error): Hide label when printing
+	a stub object.
+	(convert_like_internal): Likewise, and nest candidate
+	diagnostics.
+	* constexpr.cc (diagnose_failing_condition): Nest diagnostics,
+	attempt to provide more helpful diagnostics for traits.
+	* constraint.cc (satisfy_atom): Pass result before constant
+	evaluation to diagnose_atomic_constraint.
+	(diagnose_trait_expr): Adjust diagnostics for clarity and
+	detail.
+	(maybe_diagnose_standard_trait): New function.
+	(diagnose_atomic_constraint): Attempt to provide more helpful
+	diagnostics for more traits.
+	* cp-tree.h (explain_not_noexcept): Declare new function.
+	(is_trivially_xible): Add parameter.
+	(is_nothrow_xible): Likewise.
+	(is_xible): Likewise.
+	(is_convertible): Likewise.
+	(is_nothrow_convertible): Likewise.
+	(diagnose_trait_expr): Declare new function.
+	(maybe_diagnose_standard_trait): Declare new function.
+	* error.cc (dump_type) <case TREE_VEC>: Handle trait types.
+	* except.cc (explain_not_noexcept): New function.
+	* method.cc (build_trait_object): Add complain parameter.
+	(build_invoke): Propagate complain parameter.
+	(assignable_expr): Add explain parameter to show diagnostics.
+	(constructible_expr): Likewise.
+	(destructible_expr): Likewise.
+	(is_xible_helper): Replace trivial flag with explain flag,
+	add diagnostics.
+	(is_trivially_xible): New explain flag.
+	(is_nothrow_xible): Likewise.
+	(is_xible): Likewise.
+	(is_convertible_helper): Add complain flag.
+	(is_convertible): New explain flag.
+	(is_nothrow_convertible): Likewise.
+	* typeck.cc (cp_build_function_call_vec): Add handling for stub
+	objects.
+	(convert_arguments): Always return -1 on error.
+	* typeck2.cc (cxx_readonly_error): Add handling for stub
+	objects.
+
+2025-07-24  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (tsubst_lambda_expr): Revert r9-5971 change.
+
+2025-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114632
+	PR c++/101233
+	* lambda.cc (maybe_add_lambda_conv_op): Not for xobj lambda.
+	* pt.cc (tsubst_function_decl): Add cp_evaluated.
+	(alias_ctad_tweaks): Revert PR101233 fix.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120412
+	* module.cc (trees_out::core_vals): Write TU_LOCAL_ENTITY bits.
+	(trees_in::core_vals): Read it.
+	(trees_in::tree_node): Handle TU_LOCAL_ENTITY typedefs.
+
 2025-07-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/121179

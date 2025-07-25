@@ -1,3 +1,34 @@
+2025-07-24  Steve Baird  <baird@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Add calls to Ensure_Defined
+	before generating assignments to components that could be
+	associated with a not-yet-defined itype.
+
+2025-07-24  Steve Baird  <baird@adacore.com>
+
+	* accessibility.adb (Function_Call_Or_Allocator_Level): Handle the
+	case where a function that has an Extra_Accessibility_Of_Result
+	parameter returns as its result a call to another such function.
+	In that case, the extra parameter should be passed along.
+	(Check_Return_Construct_Accessibility): Replace a warning about an
+	inevitable failure of a dynamic check with a legality-rule-violation
+	error message; adjust the text of the message accordingly.
+	* exp_ch6.ads (Apply_Access_Discrims_Accessibility_Check): New
+	procedure, following example of the existing
+	Apply_CW_Accessibility procedure.
+	* exp_ch6.adb (Apply_Access_Discrims_Accessibility_Check): body
+	for new procedure.
+	(Expand_Simple_Function_Return): Add call to new
+	Apply_Access_Discrims_Accessibility_Check procedure.
+	* exp_ch3.adb (Make_Allocator_For_Return): Add call to new
+	Apply_Access_Discrims_Accessibility_Check procedure.
+
+2025-07-24  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	clarify parameter description.
+	* gnat_rm.texi: Regenerate.
+
 2025-07-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch8.adb (End_Use_Type): Add a test for there not being an earlier

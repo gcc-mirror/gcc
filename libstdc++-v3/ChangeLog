@@ -1,3 +1,57 @@
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117294
+	PR c++/113854
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust
+	diagnostics.
+	* testsuite/20_util/expected/illformed_neg.cc: Likewise.
+	* testsuite/20_util/optional/monadic/or_else_neg.cc: Likewise.
+	* testsuite/23_containers/array/creation/3_neg.cc: Likewise.
+	* testsuite/24_iterators/range_generators/lwg3900.cc: Likewise.
+	* testsuite/29_atomics/atomic/requirements/types_neg.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invocable_neg.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destructible_neg.cc:
+	Likewise.
+	* testsuite/std/format/arguments/args_neg.cc: Likewise.
+	* testsuite/std/format/string_neg.cc: Likewise.
+
+2025-07-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/104874
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc:
+	Reworked.
+
+2025-07-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/from_range.cc: Replace
+	test_constexpr with test_ranges inside static_assert.
+	* testsuite/21_strings/basic_string/modifiers/append/append_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/replace_with_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/append_range.cc:
+	Run full test_ranges instead of span-only in test_constexpr.
+	* testsuite/23_containers/vector/modifiers/append_range.cc:
+	Replace test_constexpr with calls to test_ranges and test_overlapping.
+	* testsuite/util/testsuite_allocator.h (__gnu_test::SimpleAllocator):
+	Declared member functions as constexpr.
+
 2025-07-23  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* testsuite/23_containers/mdspan/accessors/default.cc: Delete.

@@ -1,3 +1,91 @@
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117294
+	PR c++/113854
+	* g++.dg/cpp2a/concepts-traits3.C: Adjust diagnostics.
+	* g++.dg/cpp2a/concepts-traits4.C: New test.
+	* g++.dg/diagnostic/static_assert5.C: New test.
+	* g++.dg/ext/has_virtual_destructor2.C: New test.
+	* g++.dg/ext/is_assignable2.C: New test.
+	* g++.dg/ext/is_constructible9.C: New test.
+	* g++.dg/ext/is_convertible7.C: New test.
+	* g++.dg/ext/is_destructible3.C: New test.
+	* g++.dg/ext/is_invocable6.C: New test.
+	* g++.dg/ext/is_virtual_base_of_diagnostic2.C: New test.
+
+2025-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114632
+	PR c++/101233
+	* g++.dg/cpp23/explicit-obj-lambda18.C: New test.
+	* g++.dg/cpp23/static-operator-call7.C: New test.
+
+2025-07-24  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/_-static__compilation.cob: Modify for -static warning.
+	* cobol.dg/group2/_-static__compilation.out: Removed.
+
+2025-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* lib/target-supports.exp: Fix misalignment check.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* g++.target/aarch64/sve/unpacked_cond_binary_bf16_1.C: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_builtin_fmax_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_builtin_fmin_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fadd_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fdiv_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fmaxnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fminnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fmul_1.c: Likewise..
+	* gcc.target/aarch64/sve/unpacked_cond_fsubr_1.c: Likewise.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_fdiv_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_fdiv_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fdiv_3.c: Likewise.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* g++.target/aarch64/sve/unpacked_binary_bf16_1.C: New test.
+	* g++.target/aarch64/sve/unpacked_binary_bf16_2.C: Likewise.
+	* gcc.target/aarch64/sve/unpacked_builtin_fmax_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_builtin_fmax_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_builtin_fmin_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_builtin_fmin_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fadd_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fadd_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmaxnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmaxnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fminnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fminnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmul_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmul_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fsubr_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fsubr_2.c: Likewise.
+
+2025-07-24  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR testsuite/119382
+	* gcc.target/powerpc/vsx-builtin-7.c: Add '-fno-ipa-icf' to dg-options.
+
+2025-07-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-fixed-vxrm-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-fixed-vxrm-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-fixed-vxrm-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-fixed-vxrm-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-fixed-vxrm.h: New test.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120412
+	* g++.dg/modules/internal-14_a.C: New test.
+	* g++.dg/modules/internal-14_b.C: New test.
+	* g++.dg/modules/internal-14_c.C: New test.
+
 2025-07-23  Spencer Abson  <spencer.abson@arm.com>
 
 	* gcc.target/aarch64/sve/unpacked_cond_fabs_1.c: New test.

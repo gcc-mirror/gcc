@@ -1,3 +1,224 @@
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_induction): Remove
+	gimple **vec_stmt argument.
+	(vectorizable_phi): Likewise.
+	(vectorizable_recurr): Likewise.
+	(vectorizable_early_exit): Likewise.
+	* tree-vect-loop.cc (vectorizable_phi): Likewise and adjust.
+	(vectorizable_recurr): Likewise.
+	(vectorizable_nonlinear_induction): Likewise.
+	(vectorizable_induction): Likewise.
+	* tree-vect-stmts.cc (vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vectorizable_early_exit): Likewise.
+	(vect_analyze_stmt): Adjust.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.cc (vect_slp_analyze_operations): Adjust.
+	(vectorize_slp_instance_root_stmt): Likewise.
+
+2025-07-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* doc/cpp.texi (#ifdef): Correct typo.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_early_exit): Remove non-SLP
+	path.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::simd_clone_info): Remove.
+	(STMT_VINFO_SIMD_CLONE_INFO): Likewise.
+	* tree-vectorizer.cc (vec_info::free_stmt_vec_info): Do not
+	release it.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Remove
+	non-SLP path.
+
+2025-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* internal-fn.cc (internal_fn_len_index): Adjust indices for new
+	alias_ptr param.
+	(internal_fn_else_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(internal_fn_stored_value_index): Ditto.
+	(internal_fn_alias_ptr_index): Ditto.
+	(internal_fn_offset_index): Ditto.
+	(internal_fn_scale_index): Ditto.
+	(internal_gather_scatter_fn_supported_p): Ditto.
+	* internal-fn.h (internal_fn_alias_ptr_index): Ditto.
+	* optabs-query.cc (supports_vec_gather_load_p): Ditto.
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Add alias
+	pointer.
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern): Add
+	alias pointer.
+	* tree-vect-slp.cc (vect_get_operand_map): Adjust for alias
+	pointer.
+	* tree-vect-stmts.cc (vect_truncate_gather_scatter_offset): Add
+	alias pointer and misalignment handling.
+	(get_load_store_type): Move from here...
+	(get_group_load_store_type): ...To here.
+	(vectorizable_store): Add alias pointer.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (struct gather_scatter_info): Ditto.
+
+2025-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/aarch64/aarch64.cc (aarch64_builtin_support_vector_misalignment):
+	Return true for gather/scatter.
+	* config/arm/arm.cc (arm_builtin_support_vector_misalignment):
+	Ditto.
+	* config/epiphany/epiphany.cc (epiphany_support_vector_misalignment):
+	Ditto.
+	* config/gcn/gcn.cc (gcn_vectorize_support_vector_misalignment):
+	Ditto.
+	* config/loongarch/loongarch.cc (loongarch_builtin_support_vector_misalignment):
+	Ditto.
+	* config/riscv/riscv.cc (riscv_support_vector_misalignment):
+	Add gather/scatter argument.
+	* config/rs6000/rs6000.cc (rs6000_builtin_support_vector_misalignment):
+	Return true for gather/scatter.
+	* config/s390/s390.cc (s390_support_vector_misalignment):
+	Ditto.
+	* doc/tm.texi: Add argument.
+	* target.def: Ditto.
+	* targhooks.cc (default_builtin_support_vector_misalignment):
+	Ditto.
+	* targhooks.h (default_builtin_support_vector_misalignment):
+	Ditto.
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment):
+	Ditto.
+
+2025-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-slp.cc (GATHER_SCATTER_OFFSET): New define.
+	(vect_get_and_check_slp_defs): Use.
+	* tree-vectorizer.h (GATHER_SCATTER_LEGACY_P): New define.
+	(GATHER_SCATTER_IFN_P): Ditto.
+	(GATHER_SCATTER_EMULATED_P): Ditto.
+	* tree-vect-stmts.cc (vectorizable_store): Use.
+	(vectorizable_load): Use.
+
+2025-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* internal-fn.cc (expand_scatter_store_optab_fn): Use new
+	function.
+	(expand_gather_load_optab_fn): Ditto.
+	(internal_fn_offset_index): Ditto.
+	(internal_fn_scale_index): Ditto.
+	* internal-fn.h (internal_fn_offset_index): New function.
+	(internal_fn_scale_index): Ditto.
+	* tree-vect-data-refs.cc (vect_describe_gather_scatter_call):
+	Use new function.
+
+2025-07-24  Alfie Richards  <alfie.richards@arm.com>
+
+	* tree-vect-data-refs.cc (vect_create_data_ref_ptr): Remove unnecessary
+	casts to aggr_ptr_type.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_comparison_1): Remove
+	non-SLP path.
+	(vectorizable_comparison): Likewise.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_condition): Remove
+	non-SLP paths.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_scan_store): Remove
+	non-SLP path and unused parameters.
+	(vectorizable_store): Adjust.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_shift): Remove non-SLP paths.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_assignment): Remove
+	non-SLP paths.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_call): Remove non-SLP path.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_bswap): Remove non-SLP path.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_recurr): Remove non-SLP path.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_2_relaxed):
+	Extend from SVE_FULL_F_B16B16 to SVE_F_B16B16.
+	(*cond_<optab><mode>_3_relaxed): Likewise.
+	(*cond_<optab><mode>_any_relaxed): Likwise.
+	(*cond_<optab><mode>_any_const_relaxed): Extend from SVE_FULL_F
+	to SVE_F.
+	(*cond_add<mode>_2_const_relaxed): Likewise.
+	(*cond_add<mode>_any_const_relaxed): Likewise.
+	(*cond_sub<mode>_3_const_relaxed): Likewise.
+	(*cond_sub<mode>_const_relaxed): Likewise.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md: (@aarch64_sve_<optab><mode>):
+	Extend from SVE_FULL_F to SVE_F, use aarch64_predicate_operand.
+	(@aarch64_frecpe<mode>): Extend from SVE_FULL_F to SVE_F.
+	(@aarch64_frecps<mode>): Likewise.
+	(div<mode>3): Likewise, use aarch64_sve_fp_pred.
+	* config/aarch64/iterators.md: Add warnings above SVE_FP_UNARY
+	and SVE_FP_BINARY.
+
+2025-07-24  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<optab><mode>3): Extend from
+	SVE_FULL_F to SVE_F, use aarch64_sve_fp_pred.
+	(*post_ra_<sve_fp_op><mode>3): Extend from SVE_FULL_F to SVE_F.
+	(@aarch64_pred_<optab><mode>): Extend from SVE_FULL_F to SVE_F,
+	use aarch64_predicate_operand (ADD/SUB/MUL/MAX/MIN).
+	(split for using unpredicated insns): Move SVE_RELAXED_GP into
+	the pattern, rather than testing for it in the condition.
+	* config/aarch64/aarch64-sve2.md (@aarch64_pred_<optab><mode>):
+	Extend from VNx8BF_ONLY to SVE_BF.
+
+2025-07-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*uavg_floor_vx_<mode>): Rename
+	from...
+	(*<sat_op_v_vdup>_vx_<mode>): Rename to...
+	(*<sat_op_vdup_v>_vx_<mode>): Rename to...
+	* config/riscv/riscv-protos.h (enum insn_flags): Add vxrm
+	RNE, ROD type.
+	(enum insn_type): Add RNE_P, ROD_P type.
+	(expand_vx_binary_vxrm_vec_vec_dup): Add new func decl.
+	(expand_vx_binary_vxrm_vec_dup_vec): Ditto.
+	* config/riscv/riscv-v.cc (get_insn_type_by_vxrm_val): Add
+	helper to get insn type by vxrm value.
+	(expand_vx_binary_vxrm_vec_vec_dup): Add new func impl
+	to expand vec + vec_dup pattern.
+	(expand_vx_binary_vxrm_vec_dup_vec): Ditto but for
+	vec_dup + vec pattern.
+	* config/riscv/vector-iterators.md: Add helper iterator
+	for sat vx combine.
+
 2025-07-23  Spencer Abson  <spencer.abson@arm.com>
 
 	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_2_relaxed):

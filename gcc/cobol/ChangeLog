@@ -1,3 +1,9 @@
+2025-07-24  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119231
+	* gcobolspec.cc: (lang_specific_driver): Pass OPT_static through.
+	Handle -static and -static-libgcobol properly.
+
 2025-07-23  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (leave_procedure): Adjust location_t for PERFORM.
