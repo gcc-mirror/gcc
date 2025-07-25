@@ -373,48 +373,6 @@ private:
   node &m_dst_node;
 };
 
-/* Abstract base class for lazily creating
-   a digraph on demand.
-
-   This allows us to avoid the work of creating the digraph for
-   the common case where we just have a text sink.  */
-
-class lazy_digraph
-{
-public:
-  virtual ~lazy_digraph () {}
-
-  const digraph &
-  get_or_create_digraph () const;
-
-private:
-  virtual std::unique_ptr<digraph>
-  create_digraph () const = 0;
-
-  mutable std::unique_ptr<digraph> m_digraph;
-};
-
-/* Abstract base class for lazily creating a collection of
-   digraphs on demand.
-
-   This allows us to avoid the work of creating the digraphs for
-   the common case where we just have a text sink.  */
-
-class lazy_digraphs
-{
-public:
-  virtual ~lazy_digraphs () {}
-
-  const std::vector<std::unique_ptr<digraph>> &
-  get_or_create_digraphs () const;
-
-private:
-  virtual std::unique_ptr<std::vector<std::unique_ptr<digraph>>>
-  create_digraphs () const = 0;
-
-  mutable std::unique_ptr<std::vector<std::unique_ptr<digraph>>> m_digraphs;
-};
-
 } // namespace digraphs
 } // namespace diagnostics
 

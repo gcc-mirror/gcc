@@ -73,7 +73,8 @@ public:
   void update_printer () override;
 
   void
-  report_global_digraph (const digraphs::lazy_digraph &) final override
+  report_global_digraph (const lazily_created<digraphs::digraph> &)
+    final override
   {
     // no-op for text
   }

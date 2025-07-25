@@ -781,7 +781,7 @@ public:
   void end_group ();
 
   void
-  report_global_digraph (const digraphs::lazy_digraph &);
+  report_global_digraph (const lazily_created<digraphs::digraph> &);
 
   std::unique_ptr<sarif_result> take_current_result ()
   {
@@ -1908,9 +1908,9 @@ sarif_builder::end_group ()
 
 void
 sarif_builder::
-report_global_digraph (const digraphs::lazy_digraph &ldg)
+report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
 {
-  auto &dg = ldg.get_or_create_digraph ();
+  auto &dg = ldg.get_or_create ();
 
   /* Presumably the location manager must be nullptr; see
      https://github.com/oasis-tcs/sarif-spec/issues/712  */
@@ -2075,7 +2075,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
   if (diagnostic.m_metadata)
     if (auto ldg = diagnostic.m_metadata->get_lazy_digraphs ())
       {
-	auto &digraphs = ldg->get_or_create_digraphs ();
+	auto &digraphs = ldg->get_or_create ();
 	auto graphs_arr = std::make_unique<json::array> ();
 	for (auto &iter : digraphs)
 	  graphs_arr->append (make_sarif_graph (*iter, this,
@@ -3930,9 +3930,10 @@ public:
   }
 
   void
-  report_global_digraph (const digraphs::lazy_digraph &lazy_digraph) final override
+  report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
+    final override
   {
-    m_builder.report_global_digraph (lazy_digraph);
+    m_builder.report_global_digraph (ldg);
   }
 
   sarif_builder &get_builder () { return m_builder; }

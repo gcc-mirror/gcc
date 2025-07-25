@@ -1188,13 +1188,14 @@ private:
   std::vector<std::unique_ptr<libgdiagnostics_path_event>> m_events;
 };
 
-class prebuilt_digraphs : public diagnostics::digraphs::lazy_digraphs
+class prebuilt_digraphs
+  : public lazily_created<std::vector<std::unique_ptr<diagnostics::digraphs::digraph>>>
 {
 public:
   using digraph = diagnostics::digraphs::digraph;
 
   std::unique_ptr<std::vector<std::unique_ptr<digraph>>>
-  create_digraphs () const final override
+  create_object () const final override
   {
     return std::make_unique<std::vector<std::unique_ptr<digraph>>> (std::move (m_digraphs));
   }
@@ -1665,7 +1666,7 @@ diagnostic_manager::new_execution_path ()
 void
 diagnostic_manager::take_global_graph (std::unique_ptr<diagnostic_graph> graph)
 {
-  class prebuilt_lazy_digraph : public diagnostics::digraphs::lazy_digraph
+  class prebuilt_lazy_digraph : public lazily_created<diagnostics::digraphs::digraph>
   {
   public:
     prebuilt_lazy_digraph (std::unique_ptr<diagnostic_graph> graph)
@@ -1674,7 +1675,7 @@ diagnostic_manager::take_global_graph (std::unique_ptr<diagnostic_graph> graph)
     }
 
     std::unique_ptr<diagnostics::digraphs::digraph>
-    create_digraph () const final override
+    create_object () const final override
     {
       return std::move (m_graph);
     }

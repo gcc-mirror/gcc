@@ -6,6 +6,7 @@
    specific tests within the compiler's IR.  We can't use any real
    diagnostics for this, so we have to fake it, hence this plugin.  */
 
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"

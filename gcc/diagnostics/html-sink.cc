@@ -123,7 +123,7 @@ public:
 			     enum kind orig_diag_kind,
 			     html_sink_buffer *buffer);
   void emit_diagram (const diagram &d);
-  void emit_global_graph (const digraphs::lazy_digraph &);
+  void emit_global_graph (const lazily_created<digraphs::digraph> &);
 
   void end_group ();
 
@@ -1148,7 +1148,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   if (diagnostic.m_metadata)
     if (auto ldg = diagnostic.m_metadata->get_lazy_digraphs ())
       {
-	auto &digraphs = ldg->get_or_create_digraphs ();
+	auto &digraphs = ldg->get_or_create ();
 	for (auto &dg : digraphs)
 	  add_graph (*dg, *xp.get_insertion_point ());
       }
@@ -1271,9 +1271,9 @@ html_builder::add_graph (const digraphs::digraph &dg,
 }
 
 void
-html_builder::emit_global_graph (const digraphs::lazy_digraph &ldg)
+html_builder::emit_global_graph (const lazily_created<digraphs::digraph> &ldg)
 {
-  auto &dg = ldg.get_or_create_digraph ();
+  auto &dg = ldg.get_or_create ();
   gcc_assert (m_body_element);
   add_graph (dg, *m_body_element);
 }
@@ -1392,7 +1392,8 @@ public:
   }
 
   void
-  report_global_digraph (const digraphs::lazy_digraph &ldg) final override
+  report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
+    final override
   {
     m_builder.emit_global_graph (ldg);
   }

@@ -1439,7 +1439,7 @@ context::report_verbatim (text_info &text)
 }
 
 void
-context::report_global_digraph (const digraphs::lazy_digraph &ldg)
+context::report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
 {
   for (auto sink_ : m_sinks)
     sink_->report_global_digraph (ldg);

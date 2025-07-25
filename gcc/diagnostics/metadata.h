@@ -21,13 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_METADATA_H
 #define GCC_DIAGNOSTICS_METADATA_H
 
+#include "lazily-created.h"
+
 namespace diagnostics {
 
   class sarif_object;
-
-  namespace digraphs {
-    class lazy_digraphs;
-  } // namespace digraphs
+  namespace digraphs { class digraph; }
 
 /* A bundle of additional metadata that can be associated with a
    diagnostic.
@@ -41,6 +40,9 @@ namespace diagnostics {
 class metadata
 {
  public:
+  using lazy_digraphs
+  = lazily_created<std::vector<std::unique_ptr<digraphs::digraph>>>;
+
   /* Abstract base class for referencing a rule that has been violated,
      such as within a coding standard, or within a specification.  */
   class rule
@@ -97,12 +99,12 @@ class metadata
   const rule &get_rule (unsigned idx) const { return *(m_rules[idx]); }
 
   void
-  set_lazy_digraphs (const digraphs::lazy_digraphs *lazy_digraphs)
+  set_lazy_digraphs (const lazy_digraphs *lazy_digraphs_)
   {
-    m_lazy_digraphs = lazy_digraphs;
+    m_lazy_digraphs = lazy_digraphs_;
   }
 
-  const digraphs::lazy_digraphs *
+  const lazy_digraphs *
   get_lazy_digraphs () const
   {
     return m_lazy_digraphs;
@@ -114,7 +116,7 @@ class metadata
 
   /* An optional way to create directed graphs associated with the
      diagnostic, for the sinks that support this (e.g. SARIF).  */
-  const digraphs::lazy_digraphs *m_lazy_digraphs;
+  const lazy_digraphs *m_lazy_digraphs;
 };
 
 } // namespace diagnostics

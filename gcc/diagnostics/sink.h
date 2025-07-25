@@ -75,7 +75,7 @@ public:
   virtual void update_printer () = 0;
 
   virtual void
-  report_global_digraph (const digraphs::lazy_digraph &) = 0;
+  report_global_digraph (const lazily_created<digraphs::digraph> &) = 0;
 
   context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer.get (); }

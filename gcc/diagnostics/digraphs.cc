@@ -351,28 +351,6 @@ diagnostics::digraphs::edge::to_json_sarif_edge () const
   return make_sarif_edge (*this, nullptr);
 }
 
-// class lazy_digraph
-
-const diagnostics::digraphs::digraph &
-diagnostics::digraphs::lazy_digraph::get_or_create_digraph () const
-{
-  if (!m_digraph)
-    m_digraph = create_digraph ();
-  gcc_assert (m_digraph);
-  return *m_digraph;
-}
-
-// class lazy_digraphs
-
-const std::vector<std::unique_ptr<diagnostics::digraphs::digraph>> &
-diagnostics::digraphs::lazy_digraphs::get_or_create_digraphs () const
-{
-  if (!m_digraphs)
-    m_digraphs = create_digraphs ();
-  gcc_assert (m_digraphs);
-  return *m_digraphs;
-}
-
 #if CHECKING_P
 
 namespace diagnostics {

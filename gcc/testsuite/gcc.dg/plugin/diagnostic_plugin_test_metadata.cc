@@ -1,5 +1,6 @@
 /* This plugin exercises diagnostics::metadata.  */
 
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"

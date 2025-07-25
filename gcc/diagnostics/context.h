@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_CONTEXT_H
 #define GCC_DIAGNOSTICS_CONTEXT_H
 
+#include "lazily-created.h"
 #include "unique-argv.h"
 #include "diagnostics/option-classifier.h"
 #include "diagnostics/context-options.h"
@@ -30,9 +31,7 @@ namespace diagnostics {
     class change_set;
   }
 
-  namespace digraphs {
-    class lazy_digraph;
-  }
+  namespace digraphs { class digraph; }
 
   namespace logical_locations {
     class manager;
@@ -426,7 +425,7 @@ public:
   /* Report a directed graph associated with the run as a whole
      to any sinks that support directed graphs.  */
   void
-  report_global_digraph (const digraphs::lazy_digraph &);
+  report_global_digraph (const lazily_created<digraphs::digraph> &);
 
   enum kind
   classify_diagnostic (option_id opt_id,
