@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "unique-argv.h"
 #include "diagnostics/option-classifier.h"
+#include "diagnostics/context-options.h"
 
 namespace diagnostics {
 
