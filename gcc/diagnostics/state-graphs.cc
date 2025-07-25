@@ -28,10 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "diagnostics/state-graphs.h"
-#include "graphviz.h"
-#include "xml.h"
-#include "xml-printer.h"
-#include "intl.h"
 #include "selftest.h"
 
 using namespace diagnostics::state_graphs;
