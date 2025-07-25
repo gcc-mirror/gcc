@@ -659,7 +659,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-phiprop  -ftree-loop-distribution  -ftree-loop-distribute-patterns
 -ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize
 -ftree-loop-vectorize
--ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta
+-ftree-parallelize-loops[=@var{n}]  -ftree-pre  -ftree-partial-pre  -ftree-pta
 -ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra
 -ftree-switch-conversion  -ftree-tail-merge
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init
@@ -14691,14 +14691,26 @@ variable merging and induction variable elimination) on trees.
 Enabled by default at @option{-O1} and higher.
 
 @opindex ftree-parallelize-loops
-@item -ftree-parallelize-loops=n
-Parallelize loops, i.e., split their iteration space to run in n threads.
+@item -ftree-parallelize-loops
+@itemx -ftree-parallelize-loops=@var{n}
+Parallelize loops, i.e., split their iteration space to run in multiple threads.
 This is only possible for loops whose iterations are independent
 and can be arbitrarily reordered.  The optimization is only
 profitable on multiprocessor machines, for loops that are CPU-intensive,
 rather than constrained e.g.@: by memory bandwidth.  This option
 implies @option{-pthread}, and thus is only supported on targets
 that have support for @option{-pthread}.
+
+When a positive value @var{n} is specified, the number of threads is fixed
+at compile time and cannot be changed after compilation. The compiler
+generates ``#pragma omp parallel num_threads(@var{n})''.
+
+When used without @code{=@var{n}} (i.e., @option{-ftree-parallelize-loops}),
+the number of threads is determined at program execution time via the
+@env{OMP_NUM_THREADS} environment variable. If @env{OMP_NUM_THREADS} is not
+set, the OpenMP runtime automatically detects the number of available
+processors and uses that value. This enables creating binaries that
+adapt to different hardware configurations without recompilation.
 
 @opindex ftree-pta
 @item -ftree-pta

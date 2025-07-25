@@ -2601,10 +2601,19 @@ create_parallel_loop (class loop *loop, tree loop_fn, tree data,
       gsi = gsi_last_bb (paral_bb);
 
       gcc_checking_assert (n_threads != 0);
-      t = build_omp_clause (loc, OMP_CLAUSE_NUM_THREADS);
-      OMP_CLAUSE_NUM_THREADS_EXPR (t)
-	= build_int_cst (integer_type_node, n_threads);
-      omp_par_stmt = gimple_build_omp_parallel (NULL, t, loop_fn, data);
+      if (n_threads == INT_MAX)
+	/* No hardcoded thread count, let OpenMP runtime decide.  */
+	omp_par_stmt = gimple_build_omp_parallel (NULL, NULL_TREE, loop_fn,
+						  data);
+      else
+	{
+	  /* Build the OMP_CLAUSE_NUM_THREADS clause only if we have a fixed
+	     thread count.  */
+	  t = build_omp_clause (loc, OMP_CLAUSE_NUM_THREADS);
+	  OMP_CLAUSE_NUM_THREADS_EXPR (t)
+	    = build_int_cst (integer_type_node, n_threads);
+	  omp_par_stmt = gimple_build_omp_parallel (NULL, t, loop_fn, data);
+	}
       gimple_set_location (omp_par_stmt, loc);
 
       gsi_insert_after (&gsi, omp_par_stmt, GSI_NEW_STMT);
@@ -2812,7 +2821,6 @@ gen_parallel_loop (class loop *loop,
   struct clsn_data clsn_data;
   location_t loc;
   gimple *cond_stmt;
-  unsigned int m_p_thread=2;
 
   /* From
 
@@ -2885,15 +2893,14 @@ gen_parallel_loop (class loop *loop,
 
   if (!oacc_kernels_p)
     {
-      if (loop->inner)
-	m_p_thread=2;
-      else
-	m_p_thread=MIN_PER_THREAD;
-
       gcc_checking_assert (n_threads != 0);
+      /* For runtime thread detection, use a conservative estimate of 2 threads
+	 for the many iterations condition check.  */
+      unsigned threads = (n_threads == INT_MAX) ? 2 : n_threads;
+      unsigned m_p_thread = loop->inner ? 2 : MIN_PER_THREAD;
       many_iterations_cond =
 	fold_build2 (GE_EXPR, boolean_type_node,
-		     nit, build_int_cst (type, m_p_thread * n_threads - 1));
+		     nit, build_int_cst (type, m_p_thread * threads - 1));
 
       many_iterations_cond
 	= fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -3905,14 +3912,15 @@ parallelize_loops (bool oacc_kernels_p)
       estimated = estimated_loop_iterations_int (loop);
       if (estimated == -1)
 	estimated = get_likely_max_loop_iterations_int (loop);
+      /* For runtime thread detection, use an estimate of 2 threads.  */
+      unsigned threads = (n_threads == INT_MAX) ? 2 : n_threads;
+      unsigned m_p_thread = loop->inner ? 2 : MIN_PER_THREAD;
       /* FIXME: Bypass this check as graphite doesn't update the
 	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
 	  && !oacc_kernels_p
 	  && ((estimated != -1
-	       && (estimated
-		   < ((HOST_WIDE_INT) n_threads
-		      * (loop->inner ? 2 : MIN_PER_THREAD) - 1)))
+	       && (estimated < ((HOST_WIDE_INT) threads * m_p_thread - 1)))
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;

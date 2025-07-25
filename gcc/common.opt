@@ -3303,6 +3303,10 @@ ftree-parallelize-loops=
 Common Joined RejectNegative UInteger Var(flag_tree_parallelize_loops) Init(1) Optimization
 -ftree-parallelize-loops=<number>	Enable automatic parallelization of loops.
 
+ftree-parallelize-loops
+Common Alias(ftree-parallelize-loops=,2147483647,1)
+Enable automatic parallelization of loops.
+
 ftree-phiprop
 Common Var(flag_tree_phiprop) Init(1) Optimization
 Enable hoisting loads from conditional pointers.
