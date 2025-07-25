@@ -893,13 +893,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 
 /* Function vect_model_simple_cost.
 
-   Models cost for simple operations, i.e. those that only emit ncopies of a
-   single op.  Right now, this does not account for multiple insns that could
-   be generated for the single vector op.  We will handle that shortly.  */
+   Models cost for simple operations, i.e. those that only emit N operations
+   of the same KIND.  */
 
 static void
-vect_model_simple_cost (vec_info *, int ncopies, enum vect_def_type *dt,
-			int ndts, slp_tree node,
+vect_model_simple_cost (vec_info *, int n, slp_tree node,
 			stmt_vector_for_cost *cost_vec,
 			vect_cost_for_stmt kind = vector_stmt)
 {
@@ -907,22 +905,10 @@ vect_model_simple_cost (vec_info *, int ncopies, enum vect_def_type *dt,
 
   gcc_assert (cost_vec != NULL);
 
-  /* ???  Somehow we need to fix this at the callers.  */
-  if (node)
-    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
-
-  if (!node)
-    /* Cost the "broadcast" of a scalar operand in to a vector operand.
-       Use scalar_to_vec to cost the broadcast, as elsewhere in the vector
-       cost model.  */
-    for (int i = 0; i < ndts; i++)
-      if (dt[i] == vect_constant_def || dt[i] == vect_external_def)
-	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-					   node, 0, vect_prologue);
+  n *= SLP_TREE_NUMBER_OF_VEC_STMTS (node);
 
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
-  inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
-				   node, 0, vect_body);
+  inside_cost += record_stmt_cost (cost_vec, n, kind, node, 0, vect_body);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -3280,7 +3266,6 @@ vectorizable_call (vec_info *vinfo,
 	vect_unknown_def_type };
   tree vectypes[ARRAY_SIZE (dt)] = {};
   slp_tree slp_op[ARRAY_SIZE (dt)] = {};
-  int ndts = ARRAY_SIZE (dt);
   auto_vec<tree, 8> vargs;
   enum { NARROW, NONE, WIDEN } modifier;
   size_t i, nargs;
@@ -3518,7 +3503,7 @@ vectorizable_call (vec_info *vinfo,
 	  }
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_call");
-      vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
+      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
@@ -4313,7 +4298,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
-/*      vect_model_simple_cost (vinfo, ncopies, dt, slp_node, cost_vec); */
+/*      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec); */
       return true;
     }
 
@@ -5068,7 +5053,6 @@ vectorizable_conversion (vec_info *vinfo,
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree new_temp;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  int ndts = 2;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out, vectype_in;
@@ -5459,7 +5443,7 @@ vectorizable_conversion (vec_info *vinfo,
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
 	  vect_model_simple_cost (vinfo, (1 + multi_step_cvt),
-				  dt, ndts, slp_node, cost_vec);
+				  slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
@@ -5708,7 +5692,6 @@ vectorizable_assignment (vec_info *vinfo,
   tree op;
   tree new_temp;
   enum vect_def_type dt[1] = {vect_unknown_def_type};
-  int ndts = 1;
   int i;
   vec<tree> vec_oprnds = vNULL;
   tree vop;
@@ -5814,7 +5797,7 @@ vectorizable_assignment (vec_info *vinfo,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
       if (!vect_nop_conversion_p (stmt_info))
-	vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
+	vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
       return true;
     }
 
@@ -5896,7 +5879,6 @@ vectorizable_shift (vec_info *vinfo,
   int icode;
   machine_mode optab_op2_mode;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  int ndts = 2;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
@@ -6159,8 +6141,7 @@ vectorizable_shift (vec_info *vinfo,
 	  }
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
-      vect_model_simple_cost (vinfo, 1, dt,
-			      scalar_shift_arg ? 1 : ndts, slp_node, cost_vec);
+      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
       return true;
     }
 
@@ -6290,7 +6271,6 @@ vectorizable_operation (vec_info *vinfo,
   bool target_support_p;
   enum vect_def_type dt[3]
     = {vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type};
-  int ndts = 3;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
@@ -6580,7 +6560,7 @@ vectorizable_operation (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_operation");
-      vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
+      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
       if (using_emulated_vectors_p)
 	{
 	  /* The above vect_model_simple_cost call handles constants
@@ -11554,7 +11534,6 @@ vectorizable_condition (vec_info *vinfo,
   enum vect_def_type dts[4]
     = {vect_unknown_def_type, vect_unknown_def_type,
        vect_unknown_def_type, vect_unknown_def_type};
-  int ndts = 4;
   enum tree_code code, cond_code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
@@ -11791,8 +11770,7 @@ vectorizable_condition (vec_info *vinfo,
 	}
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      vect_model_simple_cost (vinfo, 1, dts, ndts, slp_node,
-			      cost_vec, kind);
+      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec, kind);
       return true;
     }
 
@@ -12080,7 +12058,6 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   tree vec_rhs1 = NULL_TREE, vec_rhs2 = NULL_TREE;
   tree new_temp;
   enum vect_def_type dts[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  int ndts = 2;
   poly_uint64 nunits;
   enum tree_code bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
@@ -12208,7 +12185,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	}
 
       vect_model_simple_cost (vinfo, 1 + (bitop2 != NOP_EXPR),
-			      dts, ndts, slp_node, cost_vec);
+			      slp_node, cost_vec);
       return true;
     }
 
