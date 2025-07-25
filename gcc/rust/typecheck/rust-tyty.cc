@@ -1820,9 +1820,7 @@ ADTType::is_equal (const BaseType &other) const
 
 	  const ParamType *aa = a.get_param_ty ();
 	  const ParamType *bb = b.get_param_ty ();
-	  BaseType *aaa = aa->resolve ();
-	  BaseType *bbb = bb->resolve ();
-	  if (!aaa->is_equal (*bbb))
+	  if (!aa->is_equal (*bb))
 	    return false;
 	}
     }
@@ -2149,7 +2147,6 @@ FnType::is_equal (const BaseType &other) const
 
 	  const ParamType *pa = a.get_param_ty ();
 	  const ParamType *pb = b.get_param_ty ();
-
 	  if (!pa->is_equal (*pb))
 	    return false;
 	}
