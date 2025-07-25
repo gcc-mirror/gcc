@@ -20,7 +20,7 @@
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "diagnostics/color.h"
-#include "diagnostic-url.h"
+#include "diagnostics/url.h"
 #include "label-text.h"
 
 #ifdef __MINGW32__

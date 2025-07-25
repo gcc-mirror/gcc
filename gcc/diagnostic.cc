@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostics/color.h"
-#include "diagnostic-url.h"
+#include "diagnostics/url.h"
 #include "diagnostics/metadata.h"
 #include "diagnostics/paths.h"
 #include "diagnostics/client-data-hooks.h"

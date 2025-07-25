@@ -1471,7 +1471,7 @@ Driver Common Joined RejectNegative Var(flag_diagnostics_show_urls) Enum(diagnos
 
 ; Required for these enum values.
 SourceInclude
-diagnostic-url.h
+diagnostics/url.h
 
 Enum
 Name(diagnostic_url_rule) Type(int)

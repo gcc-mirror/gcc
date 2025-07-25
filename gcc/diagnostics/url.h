@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_URL_H
-#define GCC_DIAGNOSTIC_URL_H
+#ifndef GCC_DIAGNOSTICS_URL_H
+#define GCC_DIAGNOSTICS_URL_H
 
 /* Whether to add URLs to diagnostics:
    - DIAGNOSTICS_URL_NO: never
@@ -49,4 +49,4 @@ const diagnostic_url_format URL_FORMAT_DEFAULT = URL_FORMAT_BEL;
 
 extern diagnostic_url_format determine_url_format (diagnostic_url_rule_t);
 
-#endif /* ! GCC_DIAGNOSTIC_URL_H */
+#endif /* ! GCC_DIAGNOSTICS_URL_H */
