@@ -1,3 +1,16 @@
+2025-07-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119962
+	* include/std/ranges (join_view::_Iterator::_M_outer): Initialize.
+	(lazy_split_view::_OuterIter::_M_current): Initialize.
+	(join_with_view::_Iterator::_M_outer_it): Initialize.
+	* testsuite/std/ranges/adaptors/join.cc (test15): New test.
+	* testsuite/std/ranges/adaptors/join_with/1.cc (test05): New test.
+	* testsuite/std/ranges/adaptors/lazy_split.cc (test13): New test.
+
 2025-07-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,29 @@
+2025-07-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121055
+	* g++.dg/ext/is_invocable5.C: New test.
+
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121202
+	* gcc.dg/pr121202.c: New testcase.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120412
+	* g++.dg/modules/internal-14_a.C: New test.
+	* g++.dg/modules/internal-14_b.C: New test.
+	* g++.dg/modules/internal-14_c.C: New test.
+
 2025-07-23  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

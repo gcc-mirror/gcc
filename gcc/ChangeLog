@@ -1,3 +1,12 @@
+2025-07-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121202
+	* tree-vect-slp.cc (vect_schedule_slp_node): Do not take
+	an out-of-region stmt as "last".
+
 2025-07-23  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

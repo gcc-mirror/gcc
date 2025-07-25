@@ -1,3 +1,21 @@
+2025-07-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121055
+	* method.cc (build_invoke): Correct reference_wrapper handling.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120412
+	* module.cc (trees_out::core_vals): Write TU_LOCAL_ENTITY bits.
+	(trees_in::core_vals): Read it.
+	(trees_in::tree_node): Handle TU_LOCAL_ENTITY typedefs.
+
 2025-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
