@@ -2149,7 +2149,7 @@ verify_format( const char gmsgid[] ) {
 }
 #endif
 
-static const diagnostic_option_id option_zero;
+static const diagnostics::option_id option_zero;
 size_t parse_error_inc();
 
 void gcc_location_dump() {

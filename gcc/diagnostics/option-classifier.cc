@@ -122,18 +122,18 @@ option_classifier::pop (location_t where)
 
 diagnostic_t
 option_classifier::classify_diagnostic (const context *dc,
-					diagnostic_option_id option_id,
+					option_id opt_id,
 					diagnostic_t new_kind,
 					location_t where)
 {
   diagnostic_t old_kind;
 
-  if (option_id.m_idx < 0
-      || option_id.m_idx >= m_n_opts
+  if (opt_id.m_idx < 0
+      || opt_id.m_idx >= m_n_opts
       || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
     return DK_UNSPECIFIED;
 
-  old_kind = m_classify_diagnostic[option_id.m_idx];
+  old_kind = m_classify_diagnostic[opt_id.m_idx];
 
   /* Handle pragmas separately, since we need to keep track of *where*
      the pragmas were.  */
@@ -144,25 +144,25 @@ option_classifier::classify_diagnostic (const context *dc,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = (!dc->option_enabled_p (option_id)
+	  old_kind = (!dc->option_enabled_p (opt_id)
 		      ? DK_IGNORED : DK_ANY);
-	  m_classify_diagnostic[option_id.m_idx] = old_kind;
+	  m_classify_diagnostic[opt_id.m_idx] = old_kind;
 	}
 
       classification_change_t *p;
       FOR_EACH_VEC_ELT_REVERSE (m_classification_history, i, p)
-	if (p->option == option_id.m_idx)
+	if (p->option == opt_id.m_idx)
 	  {
 	    old_kind = p->kind;
 	    break;
 	  }
 
       classification_change_t v
-	= { where, option_id.m_idx, new_kind };
+	= { where, opt_id.m_idx, new_kind };
       m_classification_history.safe_push (v);
     }
   else
-    m_classify_diagnostic[option_id.m_idx] = new_kind;
+    m_classify_diagnostic[opt_id.m_idx] = new_kind;
 
   return old_kind;
 }
@@ -204,9 +204,9 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 	      continue;
 	    }
 
-	  diagnostic_option_id option = p->option;
+	  option_id opt_id = p->option;
 	  /* The option 0 is for all the diagnostics.  */
-	  if (option == 0 || option == diagnostic->m_option_id)
+	  if (opt_id == 0 || opt_id == diagnostic->m_option_id)
 	    {
 	      diagnostic_t kind = p->kind;
 	      if (kind != DK_UNSPECIFIED)

@@ -48,12 +48,12 @@ class suggest_missing_option : public deferred_diagnostic
 {
  public:
   suggest_missing_option (location_t loc, const char *name,
-			  diagnostic_option_id option_id);
+			  diagnostics::option_id option_id);
   ~suggest_missing_option ();
 
  private:
   const char *m_name_str;
-  diagnostic_option_id m_option_id;
+  diagnostics::option_id m_option_id;
 };
 
 #endif /* GCC_KNOWN_HEADERS_H */

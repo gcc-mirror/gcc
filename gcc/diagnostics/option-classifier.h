@@ -42,20 +42,20 @@ public:
      is empty, revert to the state based on command line parameters.  */
   void pop (location_t where);
 
-  bool option_unspecified_p (diagnostic_option_id option_id) const
+  bool option_unspecified_p (option_id opt_id) const
   {
-    return get_current_override (option_id) == DK_UNSPECIFIED;
+    return get_current_override (opt_id) == DK_UNSPECIFIED;
   }
 
-  diagnostic_t get_current_override (diagnostic_option_id option_id) const
+  diagnostic_t get_current_override (option_id opt_id) const
   {
-    gcc_assert (option_id.m_idx < m_n_opts);
-    return m_classify_diagnostic[option_id.m_idx];
+    gcc_assert (opt_id.m_idx < m_n_opts);
+    return m_classify_diagnostic[opt_id.m_idx];
   }
 
   diagnostic_t
   classify_diagnostic (const context *context,
-		       diagnostic_option_id option_id,
+		       option_id opt_id,
 		       diagnostic_t new_kind,
 		       location_t where);
 

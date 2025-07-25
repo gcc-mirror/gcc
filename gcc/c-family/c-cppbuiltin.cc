@@ -1681,7 +1681,7 @@ c_cpp_builtins (cpp_reader *pfile)
 /* Given NAME, return the command-line option that would make it be
    a builtin define, or 0 if unrecognized.  */
 
-diagnostic_option_id
+diagnostics::option_id
 get_option_for_builtin_define (const char *name)
 {
   if (!strcmp (name, "_OPENACC"))

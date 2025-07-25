@@ -55,7 +55,7 @@ verbatim (const char *gmsgid, ...)
 bool
 emit_diagnostic (diagnostic_t kind,
 		 location_t location,
-		 diagnostic_option_id option_id,
+		 diagnostics::option_id option_id,
 		 const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
@@ -73,7 +73,7 @@ emit_diagnostic (diagnostic_t kind,
 bool
 emit_diagnostic (diagnostic_t kind,
 		 rich_location *richloc,
-		 diagnostic_option_id option_id,
+		 diagnostics::option_id option_id,
 		 const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
@@ -90,7 +90,7 @@ emit_diagnostic (diagnostic_t kind,
 bool
 emit_diagnostic_valist (diagnostic_t kind,
 			location_t location,
-			diagnostic_option_id option_id,
+			diagnostics::option_id option_id,
 			const char *gmsgid, va_list *ap)
 {
   rich_location richloc (line_table, location);
@@ -104,7 +104,7 @@ bool
 emit_diagnostic_valist_meta (diagnostic_t kind,
 			     rich_location *richloc,
 			     const diagnostics::metadata *metadata,
-			     diagnostic_option_id option_id,
+			     diagnostics::option_id option_id,
 			     const char *gmsgid, va_list *ap)
 {
   return global_dc->diagnostic_impl (richloc, metadata, option_id,
@@ -157,7 +157,7 @@ inform_n (location_t location, unsigned HOST_WIDE_INT n,
    to the relevant language specification but is likely to be buggy anyway.
    Returns true if the warning was printed, false if it was inhibited.  */
 bool
-warning (diagnostic_option_id option_id, const char *gmsgid, ...)
+warning (diagnostics::option_id option_id, const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
   va_list ap;
@@ -175,7 +175,7 @@ warning (diagnostic_option_id option_id, const char *gmsgid, ...)
 
 bool
 warning_at (location_t location,
-	    diagnostic_option_id option_id,
+	    diagnostics::option_id option_id,
 	    const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
@@ -192,7 +192,7 @@ warning_at (location_t location,
 
 bool
 warning_at (rich_location *richloc,
-	    diagnostic_option_id option_id,
+	    diagnostics::option_id option_id,
 	    const char *gmsgid, ...)
 {
   gcc_assert (richloc);
@@ -211,7 +211,7 @@ warning_at (rich_location *richloc,
 bool
 warning_meta (rich_location *richloc,
 	      const diagnostics::metadata &metadata,
-	      diagnostic_option_id option_id,
+	      diagnostics::option_id option_id,
 	      const char *gmsgid, ...)
 {
   gcc_assert (richloc);
@@ -229,7 +229,7 @@ warning_meta (rich_location *richloc,
 
 bool
 warning_n (rich_location *richloc,
-	   diagnostic_option_id option_id,
+	   diagnostics::option_id option_id,
 	   unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
@@ -251,7 +251,7 @@ warning_n (rich_location *richloc,
 
 bool
 warning_n (location_t location,
-	   diagnostic_option_id option_id,
+	   diagnostics::option_id option_id,
 	   unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
@@ -281,7 +281,7 @@ warning_n (location_t location,
 
 bool
 pedwarn (location_t location,
-	 diagnostic_option_id option_id,
+	 diagnostics::option_id option_id,
 	 const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
@@ -298,7 +298,7 @@ pedwarn (location_t location,
 
 bool
 pedwarn (rich_location *richloc,
-	 diagnostic_option_id option_id,
+	 diagnostics::option_id option_id,
 	 const char *gmsgid, ...)
 {
   gcc_assert (richloc);
@@ -354,7 +354,7 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
 
 bool
 permerror_opt (location_t location,
-	       diagnostic_option_id option_id,
+	       diagnostics::option_id option_id,
 	       const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
@@ -371,7 +371,7 @@ permerror_opt (location_t location,
 
 bool
 permerror_opt (rich_location *richloc,
-	       diagnostic_option_id option_id,
+	       diagnostics::option_id option_id,
 	       const char *gmsgid, ...)
 {
   gcc_assert (richloc);

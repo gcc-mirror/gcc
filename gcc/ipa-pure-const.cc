@@ -200,7 +200,7 @@ function_always_visible_to_compiler_p (tree decl)
    by the function.  */
 
 static hash_set<tree> *
-suggest_attribute (diagnostic_option_id option, tree decl, bool known_finite,
+suggest_attribute (diagnostics::option_id option, tree decl, bool known_finite,
 		   hash_set<tree> *warned_about,
 		   const char * attrib_name)
 {

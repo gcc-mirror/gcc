@@ -55,7 +55,7 @@ struct diagnostic_info
   /* The kind of diagnostic it is about.  */
   diagnostic_t m_kind;
   /* Which OPT_* directly controls this diagnostic.  */
-  diagnostic_option_id m_option_id;
+  option_id m_option_id;
 
   /* Inlining context containing locations for each call site along
      the inlining stack.  */

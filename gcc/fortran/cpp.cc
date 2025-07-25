@@ -1063,7 +1063,7 @@ cb_used_define (cpp_reader *pfile, location_t line ATTRIBUTE_UNUSED,
 /* Return the gcc option code associated with the reason for a cpp
    message, or 0 if none.  */
 
-static diagnostic_option_id
+static diagnostics::option_id
 cb_cpp_diagnostic_cpp_option (enum cpp_warning_reason reason)
 {
   const struct cpp_reason_option_codes_t *entry;

@@ -7195,7 +7195,7 @@ suggest_alternatives_for_1 (location_t location, tree name,
   /* Look for exact matches for builtin defines that would have been
      defined if the user had passed a command-line option (e.g. -fopenmp
      for "_OPENMP").  */
-  diagnostic_option_id option_id
+  diagnostics::option_id option_id
     = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
   if (option_id.m_idx > 0)
     return name_hint

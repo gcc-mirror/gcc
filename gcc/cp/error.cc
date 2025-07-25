@@ -4929,7 +4929,7 @@ maybe_warn_variadic_templates (void)
    C++0x.  */
 bool
 pedwarn_cxx98 (location_t location,
-	       diagnostic_option_id option_id,
+	       diagnostics::option_id option_id,
 	       const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;

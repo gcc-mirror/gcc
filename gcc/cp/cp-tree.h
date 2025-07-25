@@ -7455,7 +7455,7 @@ extern void maybe_warn_variadic_templates       (void);
 extern void maybe_warn_cpp0x			(cpp0x_warn_str str,
 						 location_t = input_location);
 extern bool pedwarn_cxx98                       (location_t,
-						 diagnostic_option_id option_id,
+						 diagnostics::option_id option_id,
 						 const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,

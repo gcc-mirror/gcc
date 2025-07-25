@@ -1152,18 +1152,18 @@ diagnostics::context::diagnostic_enabled (diagnostic_info *diagnostic)
   return true;
 }
 
-/* Returns whether warning OPTION_ID is enabled at LOC.  */
+/* Returns whether warning OPT_ID is enabled at LOC.  */
 
 bool
 diagnostics::context::warning_enabled_at (location_t loc,
-					diagnostic_option_id option_id)
+					  diagnostics::option_id opt_id)
 {
   if (!diagnostic_report_warnings_p (this, loc))
     return false;
 
   rich_location richloc (line_table, loc);
   diagnostic_info diagnostic = {};
-  diagnostic.m_option_id = option_id;
+  diagnostic.m_option_id = opt_id;
   diagnostic.m_richloc = &richloc;
   diagnostic.m_message.m_richloc = &richloc;
   diagnostic.m_kind = DK_WARNING;
@@ -1177,14 +1177,14 @@ diagnostics::context::
 emit_diagnostic_with_group (diagnostic_t kind,
 			    rich_location &richloc,
 			    const diagnostics::metadata *metadata,
-			    diagnostic_option_id option_id,
+			    diagnostics::option_id opt_id,
 			    const char *gmsgid, ...)
 {
   begin_group ();
 
   va_list ap;
   va_start (ap, gmsgid);
-  bool ret = emit_diagnostic_with_group_va (kind, richloc, metadata, option_id,
+  bool ret = emit_diagnostic_with_group_va (kind, richloc, metadata, opt_id,
 					    gmsgid, &ap);
   va_end (ap);
 
@@ -1200,12 +1200,12 @@ diagnostics::context::
 emit_diagnostic_with_group_va (diagnostic_t kind,
 			       rich_location &richloc,
 			       const diagnostics::metadata *metadata,
-			       diagnostic_option_id option_id,
+			       diagnostics::option_id opt_id,
 			       const char *gmsgid, va_list *ap)
 {
   begin_group ();
 
-  bool ret = diagnostic_impl (&richloc, metadata, option_id,
+  bool ret = diagnostic_impl (&richloc, metadata, opt_id,
 			      gmsgid, ap, kind);
 
   end_group ();
@@ -1493,7 +1493,7 @@ trim_filename (const char *name)
 bool
 diagnostics::context::diagnostic_impl (rich_location *richloc,
 				     const diagnostics::metadata *metadata,
-				     diagnostic_option_id option_id,
+				     diagnostics::option_id opt_id,
 				     const char *gmsgid,
 				     va_list *ap, diagnostic_t kind)
 {
@@ -1502,13 +1502,13 @@ diagnostics::context::diagnostic_impl (rich_location *richloc,
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
 			   m_permissive ? DK_WARNING : DK_ERROR);
-      diagnostic.m_option_id = (option_id.m_idx != -1 ? option_id : m_opt_permissive);
+      diagnostic.m_option_id = (opt_id.m_idx != -1 ? opt_id : m_opt_permissive);
     }
   else
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
       if (kind == DK_WARNING || kind == DK_PEDWARN)
-	diagnostic.m_option_id = option_id;
+	diagnostic.m_option_id = opt_id;
     }
   diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
@@ -1519,7 +1519,7 @@ diagnostics::context::diagnostic_impl (rich_location *richloc,
 bool
 diagnostics::context::diagnostic_n_impl (rich_location *richloc,
 				       const diagnostics::metadata *metadata,
-				       diagnostic_option_id option_id,
+				       diagnostics::option_id opt_id,
 				       unsigned HOST_WIDE_INT n,
 				       const char *singular_gmsgid,
 				       const char *plural_gmsgid,
@@ -1539,7 +1539,7 @@ diagnostics::context::diagnostic_n_impl (rich_location *richloc,
   const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
   diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
   if (kind == DK_WARNING)
-    diagnostic.m_option_id = option_id;
+    diagnostic.m_option_id = opt_id;
   diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
 }

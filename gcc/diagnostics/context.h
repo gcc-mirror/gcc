@@ -56,17 +56,17 @@ class option_manager
 public:
   virtual ~option_manager () {}
 
-  /* Return 1 if option OPTION_ID is enabled, 0 if it is disabled,
+  /* Return 1 if option OPT_ID is enabled, 0 if it is disabled,
      or -1 if it isn't a simple on-off switch
      (or if the value is unknown, typically set later in target).  */
-  virtual int option_enabled_p (diagnostic_option_id option_id) const = 0;
+  virtual int option_enabled_p (option_id opt_id) const = 0;
 
-  /* Return malloced memory for the name of the option OPTION_ID
+  /* Return malloced memory for the name of the option OPT_ID
      which enabled a diagnostic, originally of type ORIG_DIAG_KIND but
      possibly converted to DIAG_KIND by options such as -Werror.
      May return NULL if no name is to be printed.
      May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_name (diagnostic_option_id option_id,
+  virtual char *make_option_name (option_id opt_id,
 				  diagnostic_t orig_diag_kind,
 				  diagnostic_t diag_kind) const = 0;
 
@@ -74,7 +74,7 @@ public:
      a diagnostic.
      May return NULL if no URL is available.
      May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
+  virtual char *make_option_url (option_id opt_id) const = 0;
 };
 
 /* A bundle of options relating to printing the user's source code
@@ -363,23 +363,23 @@ public:
   void push_nesting_level ();
   void pop_nesting_level ();
 
-  bool warning_enabled_at (location_t loc, diagnostic_option_id option_id);
+  bool warning_enabled_at (location_t loc, option_id opt_id);
 
-  bool option_unspecified_p (diagnostic_option_id option_id) const
+  bool option_unspecified_p (option_id opt_id) const
   {
-    return m_option_classifier.option_unspecified_p (option_id);
+    return m_option_classifier.option_unspecified_p (opt_id);
   }
 
   bool emit_diagnostic_with_group (diagnostic_t kind,
 				   rich_location &richloc,
 				   const metadata *metadata,
-				   diagnostic_option_id option_id,
+				   option_id opt_id,
 				   const char *gmsgid, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
   bool emit_diagnostic_with_group_va (diagnostic_t kind,
 				      rich_location &richloc,
 				      const metadata *metadata,
-				      diagnostic_option_id option_id,
+				      option_id opt_id,
 				      const char *gmsgid, va_list *ap)
     ATTRIBUTE_GCC_DIAG(6,0);
 
@@ -392,12 +392,12 @@ public:
   report_global_digraph (const digraphs::lazy_digraph &);
 
   diagnostic_t
-  classify_diagnostic (diagnostic_option_id option_id,
+  classify_diagnostic (option_id opt_id,
 		       diagnostic_t new_kind,
 		       location_t where)
   {
     return m_option_classifier.classify_diagnostic (this,
-						    option_id,
+						    opt_id,
 						    new_kind,
 						    where);
   }
@@ -508,29 +508,29 @@ public:
   }
 
   /* Option-related member functions.  */
-  inline bool option_enabled_p (diagnostic_option_id option_id) const
+  inline bool option_enabled_p (option_id opt_id) const
   {
     if (!m_option_mgr)
       return true;
-    return m_option_mgr->option_enabled_p (option_id);
+    return m_option_mgr->option_enabled_p (opt_id);
   }
 
-  inline char *make_option_name (diagnostic_option_id option_id,
+  inline char *make_option_name (option_id opt_id,
 				 diagnostic_t orig_diag_kind,
 				 diagnostic_t diag_kind) const
   {
     if (!m_option_mgr)
       return nullptr;
-    return m_option_mgr->make_option_name (option_id,
+    return m_option_mgr->make_option_name (opt_id,
 					   orig_diag_kind,
 					   diag_kind);
   }
 
-  inline char *make_option_url (diagnostic_option_id option_id) const
+  inline char *make_option_url (option_id opt_id) const
   {
     if (!m_option_mgr)
       return nullptr;
-    return m_option_mgr->make_option_url (option_id);
+    return m_option_mgr->make_option_url (opt_id);
   }
 
   void
@@ -543,10 +543,10 @@ public:
   }
 
   bool diagnostic_impl (rich_location *, const metadata *,
-			diagnostic_option_id, const char *,
+			option_id, const char *,
 			va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
   bool diagnostic_n_impl (rich_location *, const metadata *,
-			  diagnostic_option_id, unsigned HOST_WIDE_INT,
+			  option_id, unsigned HOST_WIDE_INT,
 			  const char *, const char *, va_list *,
 			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
 
@@ -612,7 +612,7 @@ public:
   void set_main_input_filename (const char *filename);
 
   void
-  set_permissive_option (diagnostic_option_id opt_permissive)
+  set_permissive_option (option_id opt_permissive)
   {
     m_opt_permissive = opt_permissive;
   }
@@ -713,7 +713,7 @@ public:
 private:
   /* The option to associate with turning permerrors into warnings,
      if any.  */
-  diagnostic_option_id m_opt_permissive;
+  option_id m_opt_permissive;
 
   /* True if errors are fatal.  */
   bool m_fatal_errors;

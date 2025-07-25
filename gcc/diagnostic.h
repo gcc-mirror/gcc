@@ -185,9 +185,9 @@ extern diagnostics::context *global_dc;
 
 inline void
 diagnostic_set_option_id (diagnostic_info *info,
-			  diagnostic_option_id option_id)
+			  diagnostics::option_id opt_id)
 {
-  info->m_option_id = option_id;
+  info->m_option_id = opt_id;
 }
 
 /* Diagnostic related functions.  */
@@ -271,11 +271,11 @@ diagnostic_initialize_input_context (diagnostics::context *context,
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 inline diagnostic_t
 diagnostic_classify_diagnostic (diagnostics::context *context,
-				diagnostic_option_id option_id,
+				diagnostics::option_id opt_id,
 				diagnostic_t kind,
 				location_t where)
 {
-  return context->classify_diagnostic (option_id, kind, where);
+  return context->classify_diagnostic (opt_id, kind, where);
 }
 
 inline void
@@ -389,15 +389,15 @@ extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern int num_digits (int);
 
 inline bool
-warning_enabled_at (location_t loc, diagnostic_option_id option_id)
+warning_enabled_at (location_t loc, diagnostics::option_id opt_id)
 {
-  return global_dc->warning_enabled_at (loc, option_id);
+  return global_dc->warning_enabled_at (loc, opt_id);
 }
 
 inline bool
-option_unspecified_p (diagnostic_option_id option_id)
+option_unspecified_p (diagnostics::option_id opt_id)
 {
-  return global_dc->option_unspecified_p (option_id);
+  return global_dc->option_unspecified_p (opt_id);
 }
 
 extern char *get_cwe_url (int cwe);

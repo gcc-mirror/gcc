@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_CORE_H
 
 #include "bversion.h"
+#include "diagnostics/option-id.h"
 
 /* Constants used to discriminate diagnostics.  */
 typedef enum
@@ -65,27 +66,6 @@ namespace diagnostics {
    class metadata; /* See diagnostics/metadata.h.  */
 } // namespace diagnostics
 
-/* A class to use for the ID of an option that controls
-   a particular diagnostic.
-   This is just a wrapper around "int", but better documents
-   the intent of the code.  */
-
-struct diagnostic_option_id
-{
-  diagnostic_option_id () : m_idx (0) {}
-
-  diagnostic_option_id (int idx) : m_idx (idx) {}
-  /* Ideally we'd take an enum opt_code here, but we don't
-     want to depend on its decl.  */
-
-  bool operator== (diagnostic_option_id other) const
-  {
-    return m_idx == other.m_idx;
-  }
-
-  int m_idx;
-};
-
 extern const char *progname;
 
 extern const char *trim_filename (const char *);
@@ -111,29 +91,29 @@ extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
 extern void internal_error_no_backtrace (const char *, ...)
      ATTRIBUTE_GCC_DIAG(1,2) ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
-extern bool warning (diagnostic_option_id,
+extern bool warning (diagnostics::option_id,
 		     const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool warning_n (location_t,
-		       diagnostic_option_id,
+		       diagnostics::option_id,
 		       unsigned HOST_WIDE_INT,
 		       const char *, const char *, ...)
     ATTRIBUTE_GCC_DIAG(4,6) ATTRIBUTE_GCC_DIAG(5,6);
 extern bool warning_n (rich_location *,
-		       diagnostic_option_id,
+		       diagnostics::option_id,
 		       unsigned HOST_WIDE_INT,
 		       const char *, const char *, ...)
     ATTRIBUTE_GCC_DIAG(4, 6) ATTRIBUTE_GCC_DIAG(5, 6);
 extern bool warning_at (location_t,
-			diagnostic_option_id,
+			diagnostics::option_id,
 			const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool warning_at (rich_location *,
-			diagnostic_option_id,
+			diagnostics::option_id,
 			const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool warning_meta (rich_location *,
 			  const diagnostics::metadata &,
-			  diagnostic_option_id,
+			  diagnostics::option_id,
 			  const char *, ...)
     ATTRIBUTE_GCC_DIAG(4,5);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
@@ -150,22 +130,22 @@ extern void fatal_error (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3)
      ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the second parameter.  */
 extern bool pedwarn (location_t,
-		     diagnostic_option_id,
+		     diagnostics::option_id,
 		     const char *, ...)
      ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn (rich_location *,
-		     diagnostic_option_id,
+		     diagnostics::option_id,
 		     const char *, ...)
      ATTRIBUTE_GCC_DIAG(3,4);
 extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool permerror (rich_location *, const char *,
 				   ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool permerror_opt (location_t,
-			   diagnostic_option_id,
+			   diagnostics::option_id,
 			   const char *, ...)
   ATTRIBUTE_GCC_DIAG(3,4);
 extern bool permerror_opt (rich_location *,
-			   diagnostic_option_id,
+			   diagnostics::option_id,
 			   const char *, ...)
   ATTRIBUTE_GCC_DIAG(3,4);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
@@ -178,21 +158,21 @@ extern void inform_n (location_t, unsigned HOST_WIDE_INT, const char *,
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern bool emit_diagnostic (diagnostic_t,
 			     location_t,
-			     diagnostic_option_id,
+			     diagnostics::option_id,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 extern bool emit_diagnostic (diagnostic_t,
 			     rich_location *,
-			     diagnostic_option_id,
+			     diagnostics::option_id,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 extern bool emit_diagnostic_valist (diagnostic_t,
 				    location_t,
-				    diagnostic_option_id,
+				    diagnostics::option_id,
 				    const char *, va_list *)
   ATTRIBUTE_GCC_DIAG (4,0);
 extern bool emit_diagnostic_valist_meta (diagnostic_t,
 					 rich_location *,
 					 const diagnostics::metadata *,
-					 diagnostic_option_id,
+					 diagnostics::option_id,
 					 const char *,
 					 va_list *) ATTRIBUTE_GCC_DIAG (5,0);
 extern bool seen_error (void);

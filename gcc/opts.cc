@@ -3736,7 +3736,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 
 char *
 compiler_diagnostic_option_manager::
-make_option_name (diagnostic_option_id option_id,
+make_option_name (diagnostics::option_id option_id,
 		  diagnostic_t orig_diag_kind,
 		  diagnostic_t diag_kind) const
 {
@@ -3813,7 +3813,7 @@ get_option_url_suffix (int option_index, unsigned lang_mask)
 
 char *
 gcc_diagnostic_option_manager::
-make_option_url (diagnostic_option_id option_id) const
+make_option_url (diagnostics::option_id option_id) const
 {
   if (option_id.m_idx)
     {

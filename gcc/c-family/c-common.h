@@ -1265,7 +1265,7 @@ extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const line_map_ordinary *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
 			   rich_location *richloc);
-extern diagnostic_option_id get_option_for_builtin_define (const char *macro_name);
+extern diagnostics::option_id get_option_for_builtin_define (const char *macro_name);
 
 /* In c-ppoutput.cc  */
 extern void init_pp_output (FILE *);

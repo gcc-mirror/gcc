@@ -127,24 +127,24 @@ test_intraprocedural_path (pretty_printer *event_pp)
 
 /* Implementation of diagnostics::option_manager for which all
    options are disabled, for use in selftests.
-   Note that this is *not* called for diagnostic_option_id (0), which
+   Note that this is *not* called for option_id (0), which
    means "always warn"  */
 
 class all_warnings_disabled : public diagnostics::option_manager
 {
 public:
-  int option_enabled_p (diagnostic_option_id) const final override
+  int option_enabled_p (diagnostics::option_id) const final override
   {
     /* Treat all options as disabled.  */
     return 0;
   }
-  char *make_option_name (diagnostic_option_id,
+  char *make_option_name (diagnostics::option_id,
 			  diagnostic_t,
 			  diagnostic_t) const final override
   {
     return nullptr;
   }
-  char *make_option_url (diagnostic_option_id) const final override
+  char *make_option_url (diagnostics::option_id) const final override
   {
     return nullptr;
   }
@@ -173,10 +173,10 @@ test_emission (pretty_printer *event_pp)
     test_rich_location rich_loc (*event_pp);
     ASSERT_FALSE (rich_loc.m_path.generated_p ());
 
-    diagnostic_option_id option_id (42); // has to be non-zero
+    diagnostics::option_id opt_id (42); // has to be non-zero
     bool emitted
       = dc.emit_diagnostic_with_group (DK_WARNING, rich_loc, nullptr,
-				       option_id,
+				       opt_id,
 				       "this warning should be skipped");
     ASSERT_FALSE (emitted);
     ASSERT_FALSE (rich_loc.m_path.generated_p ());

@@ -11288,7 +11288,7 @@ grokfndecl (tree ctype,
 		has_errored = true;
 		emit_diagnostic (diag_kind,
 				 DECL_SOURCE_LOCATION (decl),
-				 /*diagnostic_option_id=*/0,
+				 /*diagnostics::option_id=*/0,
 				 "friend declaration of %qD specifies default "
 				 "arguments and isn%'t a definition", decl);
 	      }

@@ -51,7 +51,7 @@ class test_context : public context
   report (diagnostic_t kind,
 	  rich_location &richloc,
 	  const metadata *,
-	  diagnostic_option_id option,
+	  option_id opt_id,
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 
   const char *test_show_locus (rich_location &richloc);

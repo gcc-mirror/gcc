@@ -71,13 +71,13 @@ bool
 test_context::report (diagnostic_t kind,
 		      rich_location &richloc,
 		      const metadata *metadata_,
-		      diagnostic_option_id option,
+		      option_id opt_id,
 		      const char * fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
   begin_group ();
-  bool result = diagnostic_impl (&richloc, metadata_, option, fmt, &ap, kind);
+  bool result = diagnostic_impl (&richloc, metadata_, opt_id, fmt, &ap, kind);
   end_group ();
   va_end (ap);
   return result;

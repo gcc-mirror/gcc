@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 pedwarn_c23 (location_t location,
-	     diagnostic_option_id option_id,
+	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -77,7 +77,7 @@ pedwarn_c23 (location_t location,
 
 bool
 pedwarn_c11 (location_t location,
-	     diagnostic_option_id option_id,
+	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -122,7 +122,7 @@ pedwarn_c11 (location_t location,
 
 bool
 pedwarn_c99 (location_t location,
-	     diagnostic_option_id option_id,
+	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -164,7 +164,7 @@ pedwarn_c99 (location_t location,
 
 bool
 pedwarn_c90 (location_t location,
-	     diagnostic_option_id option_id,
+	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
