@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostics/paths.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostics/event-id.h"
 #include "diagnostics/source-printing-effects.h"
 #include "pretty-print-markup.h"

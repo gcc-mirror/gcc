@@ -23,7 +23,7 @@
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostics/metadata.h"
 #include "tristate.h"
 #include "bitmap.h"

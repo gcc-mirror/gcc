@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PRETTY_PRINT_MARKUP_H
 #define GCC_PRETTY_PRINT_MARKUP_H
 
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 
 class pp_token_list;
 

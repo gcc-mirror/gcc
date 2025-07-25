@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-format-impl.h"
 #include "pretty-print-markup.h"
 #include "pretty-print-urlifier.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostics/event-id.h"
 #include "diagnostic-highlight-colors.h"
 #include "auto-obstack.h"

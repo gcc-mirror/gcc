@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "spellcheck.h"
 #include "opt-suggestions.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostics/sink.h"
 #include "version.h"
 #include "selftest.h"

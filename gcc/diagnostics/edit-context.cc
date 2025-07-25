@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "line-map.h"
 #include "diagnostics/edit-context.h"
 #include "pretty-print.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "selftest.h"
 
 namespace diagnostics {

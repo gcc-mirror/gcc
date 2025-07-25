@@ -221,7 +221,7 @@ extern void bitmap_cc_tests ();
 extern void cgraph_cc_tests ();
 extern void convert_cc_tests ();
 extern void dbgcnt_cc_tests ();
-extern void diagnostic_color_cc_tests ();
+extern void diagnostics_color_cc_tests ();
 extern void diagnostics_digraphs_cc_tests ();
 extern void diagnostics_html_sink_cc_tests ();
 extern void diagnostics_lazy_paths_cc_tests ();

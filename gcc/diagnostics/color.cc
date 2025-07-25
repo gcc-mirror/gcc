@@ -19,7 +19,7 @@
 #include "config.h"
 #define INCLUDE_VECTOR
 #include "system.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostic-url.h"
 #include "label-text.h"
 
@@ -522,7 +522,7 @@ test_color_dict_envvar_parsing ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_color_cc_tests ()
+diagnostics_color_cc_tests ()
 {
   test_empty_color_dict ();
   test_default_color_dict ();

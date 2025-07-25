@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "backtrace.h"
 #include "diagnostic.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "gcc-rich-location.h"
 #include "text-range-label.h"
 #include "selftest.h"

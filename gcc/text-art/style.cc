@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-art/selftests.h"
 #include "text-art/types.h"
 #include "color-macros.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 
 using namespace text_art;
 

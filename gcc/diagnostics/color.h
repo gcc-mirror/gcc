@@ -38,8 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 
    Written July 1992 by Mike Haertel.  */
 
-#ifndef GCC_DIAGNOSTIC_COLOR_H
-#define GCC_DIAGNOSTIC_COLOR_H
+#ifndef GCC_DIAGNOSTICS_COLOR_H
+#define GCC_DIAGNOSTICS_COLOR_H
 
 /* Whether to add color to diagnostics:
    o DIAGNOSTICS_COLOR_NO: never
@@ -62,4 +62,4 @@ colorize_start (bool show_color, const char *name)
   return colorize_start (show_color, name, strlen (name));
 }
 
-#endif /* ! GCC_DIAGNOSTIC_COLOR_H */
+#endif /* ! GCC_DIAGNOSTICS_COLOR_H */

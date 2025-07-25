@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 
 #include "diagnostic.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
 #include "diagnostics/text-sink.h"
 

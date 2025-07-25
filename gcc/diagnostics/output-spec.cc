@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 #include "diagnostics/sink.h"
 #include "diagnostics/html-sink.h"
 #include "diagnostics/text-sink.h"

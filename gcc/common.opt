@@ -1447,7 +1447,7 @@ Driver Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagno
 
 ; Required for these enum values.
 SourceInclude
-diagnostic-color.h
+diagnostics/color.h
 
 Enum
 Name(diagnostic_color_rule) Type(int)
