@@ -41,7 +41,6 @@ namespace diagnostics {
   class buffer;
   class client_data_hooks;
   class diagram;
-  class edit_context;
   class sink;
     class text_sink;
 

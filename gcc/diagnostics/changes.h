@@ -17,24 +17,25 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTICS_EDIT_CONTEXT_H
-#define GCC_DIAGNOSTICS_EDIT_CONTEXT_H
+#ifndef GCC_DIAGNOSTICS_CHANGES_H
+#define GCC_DIAGNOSTICS_CHANGES_H
 
 #include "typed-splay-tree.h"
 
 class fixit_hint;
 
 namespace diagnostics {
+namespace changes {
 
-class edit_context;
-class edited_file;
+class change_set;
+class changed_file;
 
 /* A set of changes to the source code.
 
    The changes are "atomic" - if any changes can't be applied,
    none of them can be (tracked by the m_valid flag).
    Similarly, attempts to add the changes from a rich_location flagged
-   as containing invalid changes mean that the whole of the edit_context
+   as containing invalid changes mean that the whole of the change_set
    is flagged as invalid.
 
    A complication here is that fix-its are expressed relative to coordinates
@@ -43,10 +44,10 @@ class edited_file;
    later fix-its to allow for the changes made by earlier ones.  This
    is done by the various "get_effective_column" methods.  */
 
-class edit_context
+class change_set
 {
  public:
-  edit_context (file_cache &);
+  change_set (file_cache &);
 
   bool valid_p () const { return m_valid; }
 
@@ -63,14 +64,15 @@ class edit_context
 
  private:
   bool apply_fixit (const fixit_hint *hint);
-  edited_file *get_file (const char *filename);
-  edited_file &get_or_insert_file (const char *filename);
+  changed_file *get_file (const char *filename);
+  changed_file &get_or_insert_file (const char *filename);
 
   file_cache &m_file_cache;
   bool m_valid;
-  typed_splay_tree<const char *, edited_file *> m_files;
+  typed_splay_tree<const char *, changed_file *> m_files;
 };
 
+} // namespace diagnostics::changes
 } // namespace diagnostics
 
-#endif /* GCC_DIAGNOSTICS_EDIT_CONTEXT_H.  */
+#endif /* GCC_DIAGNOSTICS_CHANGES_H.  */

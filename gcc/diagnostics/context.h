@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace diagnostics {
 
+namespace changes { class change_set;  }
+
 /*  Forward declarations.  */
 class context;
 class location_print_policy;
@@ -302,7 +304,7 @@ struct counters
      source code
    - a cache for use when quoting the user's source code (class file_cache)
    - a text_art::theme
-   - a diagnostics::edit_context for generating patches from fix-it hints
+   - a diagnostics::changes::change_set for generating patches from fix-it hints
    - diagnostics::client_data_hooks for metadata.
 
    Try to avoid adding new responsibilities to this class itself, to avoid
@@ -432,7 +434,7 @@ public:
   void push_borrowed_urlifier (const urlifier &);
   void pop_urlifier ();
 
-  void create_edit_context ();
+  void initialize_fixits_change_set ();
   void set_warning_as_error_requested (bool val)
   {
     m_warning_as_error_requested = val;
@@ -480,9 +482,9 @@ public:
     return *m_file_cache;
   }
 
-  edit_context *get_edit_context () const
+  changes::change_set *get_fixits_change_set () const
   {
-    return m_edit_context_ptr;
+    return m_fixits_change_set;
   }
   const client_data_hooks *get_client_data_hooks () const
   {
@@ -810,11 +812,11 @@ private:
      a diagnostic suggests escaping the source code on output.  */
   enum diagnostics_escape_format m_escape_format;
 
-  /* If non-NULL, an edit_context to which fix-it hints should be
-     applied, for generating patches.
+  /* If non-NULL, a diagnostics::changes::change_set to which fix-it hints
+     should be applied, for generating patches.
      Owned by the context; this would be a std::unique_ptr if
      context had a proper ctor.  */
-  edit_context *m_edit_context_ptr;
+  changes::change_set *m_fixits_change_set;
 
   /* Fields relating to diagnostic groups.  */
   struct {

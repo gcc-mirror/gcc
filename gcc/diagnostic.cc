@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/sink.h"
 #include "diagnostics/sarif-sink.h"
 #include "diagnostics/text-sink.h"
-#include "diagnostics/edit-context.h"
+#include "diagnostics/changes.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"
 #include "opts.h"
@@ -192,7 +192,7 @@ diagnostics::context::initialize (int n_opts)
   m_column_origin = 1;
   m_tabstop = 8;
   m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
-  m_edit_context_ptr = nullptr;
+  m_fixits_change_set = nullptr;
   m_diagnostic_groups.m_group_nesting_depth = 0;
   m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
@@ -322,10 +322,10 @@ diagnostics::context::finish ()
   delete m_reference_printer;
   m_reference_printer = nullptr;
 
-  if (m_edit_context_ptr)
+  if (m_fixits_change_set)
     {
-      delete m_edit_context_ptr;
-      m_edit_context_ptr = nullptr;
+      delete m_fixits_change_set;
+      m_fixits_change_set = nullptr;
     }
 
   if (m_client_data_hooks)
@@ -568,11 +568,11 @@ diagnostics::context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
 }
 
 void
-diagnostics::context::create_edit_context ()
+diagnostics::context::initialize_fixits_change_set ()
 {
-  delete m_edit_context_ptr;
+  delete m_fixits_change_set;
   gcc_assert (m_file_cache);
-  m_edit_context_ptr = new diagnostics::edit_context (*m_file_cache);
+  m_fixits_change_set = new diagnostics::changes::change_set (*m_file_cache);
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -1400,10 +1400,10 @@ diagnostics::context::report_diagnostic (diagnostic_info *diagnostic)
     action_after_output (diagnostic->m_kind);
   diagnostic->m_x_data = nullptr;
 
-  if (m_edit_context_ptr)
+  if (m_fixits_change_set)
     if (diagnostic->m_richloc->fixits_can_be_auto_applied_p ())
       if (!m_diagnostic_buffer)
-	m_edit_context_ptr->add_fixits (diagnostic->m_richloc);
+	m_fixits_change_set->add_fixits (diagnostic->m_richloc);
 
   m_lock--;
 

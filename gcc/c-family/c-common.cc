@@ -10046,7 +10046,7 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
     return UNKNOWN_LOCATION;
 
   /* The "start_location" is column 0, meaning "the whole line".
-     rich_location and edit_context can't cope with this, so use
+     rich_location and diagnostics::changes can't cope with this, so use
      column 1 instead.  */
   location_t col_0 = ord_map_for_insertion->start_location;
   return linemap_position_for_loc_and_offset (line_table, col_0, 1);

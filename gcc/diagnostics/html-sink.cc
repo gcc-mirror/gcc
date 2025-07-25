@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/selftest-context.h"
 #include "pretty-print-format-impl.h"
 #include "pretty-print-urlifier.h"
-#include "diagnostics/edit-context.h"
+#include "diagnostics/changes.h"
 #include "intl.h"
 #include "xml.h"
 #include "xml-printer.h"
@@ -1169,9 +1169,9 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 std::unique_ptr<xml::element>
 html_builder::make_element_for_patch (const diagnostic_info &diagnostic)
 {
-  edit_context ec (m_context.get_file_cache ());
-  ec.add_fixits (diagnostic.m_richloc);
-  if (char *diff = ec.generate_diff (true))
+  changes::change_set edit (m_context.get_file_cache ());
+  edit.add_fixits (diagnostic.m_richloc);
+  if (char *diff = edit.generate_diff (true))
     {
       if (strlen (diff) > 0)
 	{

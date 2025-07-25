@@ -32,9 +32,9 @@ extern void run_diagnostics_selftests ();
 /* Declarations for specific families of tests (by source file within
    "diagnostics/"), in alphabetical order.  */
 
+extern void changes_cc_tests ();
 extern void color_cc_tests ();
 extern void digraphs_cc_tests ();
-extern void edit_context_cc_tests ();
 extern void html_sink_cc_tests ();
 extern void lazy_paths_cc_tests ();
 extern void output_spec_cc_tests ();

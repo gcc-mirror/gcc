@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gcse.h"
 #include "omp-offload.h"
-#include "diagnostics/edit-context.h"
+#include "diagnostics/changes.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
@@ -1285,7 +1285,7 @@ process_options ()
   input_location = saved_location;
 
   if (flag_diagnostics_generate_patch)
-    global_dc->create_edit_context ();
+    global_dc->initialize_fixits_change_set ();
 
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug)
@@ -2389,11 +2389,11 @@ toplev::main (int argc, char **argv)
      emit some diagnostics here.  */
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
 
-  if (auto edit_context_ptr = global_dc->get_edit_context ())
+  if (auto change_set_ptr = global_dc->get_fixits_change_set ())
     {
       pretty_printer pp;
       pp_show_color (&pp) = pp_show_color (global_dc->get_reference_printer ());
-      edit_context_ptr->print_diff (&pp, true);
+      change_set_ptr->print_diff (&pp, true);
       pp_flush (&pp);
     }
 

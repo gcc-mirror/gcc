@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostics/logical-locations.h"
-#include "diagnostics/edit-context.h"
+#include "diagnostics/changes.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
 #include "pretty-print-format-impl.h"
@@ -672,8 +672,9 @@ public:
 
     diagnostics::text_starter (&m_dc) = diagnostic_text_sink::text_starter;
 
-    m_edit_context
-      = std::make_unique <diagnostics::edit_context> (m_dc.get_file_cache ());
+    m_change_set
+      = std::make_unique <diagnostics::changes::change_set>
+	  (m_dc.get_file_cache ());
   }
 
   ~diagnostic_manager ()
@@ -905,7 +906,7 @@ private:
   logical_locs_map_t m_logical_locs;
   const diagnostic *m_current_diag;
   const diagnostic_logical_location *m_prev_diag_logical_loc;
-  std::unique_ptr<diagnostics::edit_context> m_edit_context;
+  std::unique_ptr<diagnostics::changes::change_set> m_change_set;
 };
 
 class impl_rich_location : public rich_location
@@ -1598,7 +1599,7 @@ diagnostic_manager::write_patch (FILE *dst_stream)
 {
   pretty_printer pp;
   pp.set_output_stream (dst_stream);
-  m_edit_context->print_diff (&pp, true);
+  m_change_set->print_diff (&pp, true);
   pp_flush (&pp);
 }
 
@@ -1626,7 +1627,7 @@ GCC_DIAGNOSTIC_POP
 
   rich_location *rich_loc = diag.get_rich_location ();
   if (rich_loc->fixits_can_be_auto_applied_p ())
-    m_edit_context->add_fixits (rich_loc);
+    m_change_set->add_fixits (rich_loc);
 
   m_prev_diag_logical_loc = diag.get_logical_location ();
   m_current_diag = nullptr;

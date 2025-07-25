@@ -21,16 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "line-map.h"
-#include "diagnostics/edit-context.h"
+#include "diagnostics/changes.h"
 #include "pretty-print.h"
 #include "diagnostics/color.h"
 #include "selftest.h"
 
 namespace diagnostics {
+namespace changes {
 
 /* This file implements a way to track the effect of fix-its,
-   via a class edit_context; the other classes are support classes for
-   edit_context.
+   via a class change_set; the other classes are support classes for
+   change_set.
 
    A complication here is that fix-its are expressed relative to coordinates
    in the file when it was parsed, before any changes have been made, and
@@ -38,14 +39,14 @@ namespace diagnostics {
    later fix-its to allow for the changes made by earlier ones.  This
    is done by the various "get_effective_column" methods.
 
-   The "filename" params are required to outlive the edit_context (no
+   The "filename" params are required to outlive the change_set (no
    copy of the underlying str is taken, just the ptr).  */
 
-/* Forward decls.  class edit_context is declared within edit-context.h.
+/* Forward decls.  class change_set is declared within changes.h.
    The other types are declared here.  */
-class edit_context;
-class edited_file;
-class edited_line;
+class change_set;
+class changed_file;
+class changed_line;
 class line_event;
 
 /* A struct to hold the params of a print_diff call.  */
@@ -60,14 +61,14 @@ public:
   bool m_show_filenames;
 };
 
-/* The state of one named file within an edit_context: the filename,
+/* The state of one named file within an change_set: the filename,
    and the lines that have been edited so far.  */
 
-class edited_file
+class changed_file
 {
  public:
-  edited_file (edit_context &ec, const char *filename);
-  static void delete_cb (edited_file *file);
+  changed_file (change_set &ec, const char *filename);
+  static void delete_cb (changed_file *file);
 
   const char *get_filename () const { return m_filename; }
   char *get_content ();
@@ -78,7 +79,7 @@ class edited_file
 		    int replacement_len);
   int get_effective_column (int line, int column);
 
-  static int call_print_diff (const char *, edited_file *file,
+  static int call_print_diff (const char *, changed_file *file,
 			      void *user_data)
   {
     diff *d = (diff *)user_data;
@@ -88,7 +89,7 @@ class edited_file
 
   file_cache &get_file_cache () const
   {
-    return m_edit_context.get_file_cache ();
+    return m_change_set.get_file_cache ();
   }
 
  private:
@@ -96,8 +97,8 @@ class edited_file
   void print_diff (pretty_printer *pp, bool show_filenames);
   int print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
 		       int old_end_of_hunk, int new_start_of_hunk);
-  edited_line *get_line (int line);
-  edited_line *get_or_insert_line (int line);
+  changed_line *get_line (int line);
+  changed_line *get_or_insert_line (int line);
   int get_num_lines (bool *missing_trailing_newline);
 
   int get_effective_line_count (int old_start_of_hunk,
@@ -107,13 +108,13 @@ class edited_file
 				   int start_of_run,
 				   int end_of_run);
 
-  edit_context &m_edit_context;
+  change_set &m_change_set;
   const char *m_filename;
-  typed_splay_tree<int, edited_line *> m_edited_lines;
+  typed_splay_tree<int, changed_line *> m_changed_lines;
   int m_num_lines;
 };
 
-/* A line added before an edited_line.  */
+/* A line added before an changed_line.  */
 
 class added_line
 {
@@ -156,24 +157,24 @@ class line_event
   int m_delta;
 };
 
-/* The state of one edited line within an edited_file.
+/* The state of one edited line within an changed_file.
    As well as the current content of the line, it contains a record of
    the changes, so that further changes can be applied in the correct
    place.
 
    When handling fix-it hints containing newlines, new lines are added
-   as added_line predecessors to an edited_line.  Hence it's possible
-   for an "edited_line" to not actually have been changed, but to merely
+   as added_line predecessors to an changed_line.  Hence it's possible
+   for an "changed_line" to not actually have been changed, but to merely
    be a placeholder for the lines added before it.  This can be tested
    for with actuall_edited_p, and has a slight effect on how diff hunks
    are generated.  */
 
-class edited_line
+class changed_line
 {
  public:
-  edited_line (file_cache &fc, const char *filename, int line_num);
-  ~edited_line ();
-  static void delete_cb (edited_line *el);
+  changed_line (file_cache &fc, const char *filename, int line_num);
+  ~changed_line ();
+  static void delete_cb (changed_line *el);
 
   int get_line_num () const { return m_line_num; }
   const char *get_content () const { return m_content; }
@@ -212,21 +213,21 @@ static void
 print_diff_line (pretty_printer *pp, char prefix_char,
 		 const char *line, int line_size);
 
-/* Implementation of class edit_context.  */
+/* Implementation of class change_set.  */
 
-/* edit_context's ctor.  */
+/* change_set's ctor.  */
 
-edit_context::edit_context (file_cache &fc)
+change_set::change_set (file_cache &fc)
 : m_file_cache (fc),
   m_valid (true),
-  m_files (strcmp, NULL, edited_file::delete_cb)
+  m_files (strcmp, NULL, changed_file::delete_cb)
 {}
 
 /* Add any fixits within RICHLOC to this context, recording the
    changes that they make.  */
 
 void
-edit_context::add_fixits (rich_location *richloc)
+change_set::add_fixits (rich_location *richloc)
 {
   if (!m_valid)
     return;
@@ -244,15 +245,15 @@ edit_context::add_fixits (rich_location *richloc)
 }
 
 /* Get the content of the given file, with fix-its applied.
-   If any errors occurred in this edit_context, return NULL.
+   If any errors occurred in this change_set, return NULL.
    The ptr should be freed by the caller.  */
 
 char *
-edit_context::get_content (const char *filename)
+change_set::get_content (const char *filename)
 {
   if (!m_valid)
     return NULL;
-  edited_file &file = get_or_insert_file (filename);
+  changed_file &file = get_or_insert_file (filename);
   return file.get_content ();
 }
 
@@ -260,10 +261,10 @@ edit_context::get_content (const char *filename)
    This method is for the selftests.  */
 
 int
-edit_context::get_effective_column (const char *filename, int line,
+change_set::get_effective_column (const char *filename, int line,
 				    int column)
 {
-  edited_file *file = get_file (filename);
+  changed_file *file = get_file (filename);
   if (!file)
     return column;
   return file->get_effective_column (line, column);
@@ -271,10 +272,10 @@ edit_context::get_effective_column (const char *filename, int line,
 
 /* Generate a unified diff.  The resulting string should be freed by the
    caller.  Primarily for selftests.
-   If any errors occurred in this edit_context, return NULL.  */
+   If any errors occurred in this change_set, return NULL.  */
 
 char *
-edit_context::generate_diff (bool show_filenames)
+change_set::generate_diff (bool show_filenames)
 {
   if (!m_valid)
     return NULL;
@@ -288,19 +289,19 @@ edit_context::generate_diff (bool show_filenames)
    context.  */
 
 void
-edit_context::print_diff (pretty_printer *pp, bool show_filenames)
+change_set::print_diff (pretty_printer *pp, bool show_filenames)
 {
   if (!m_valid)
     return;
   diff d (pp, show_filenames);
-  m_files.foreach (edited_file::call_print_diff, &d);
+  m_files.foreach (changed_file::call_print_diff, &d);
 }
 
 /* Attempt to apply the given fixit.  Return true if it can be
    applied, or false otherwise.  */
 
 bool
-edit_context::apply_fixit (const fixit_hint *hint)
+change_set::apply_fixit (const fixit_hint *hint)
 {
   expanded_location start = expand_location (hint->get_start_loc ());
   expanded_location next_loc = expand_location (hint->get_next_loc ());
@@ -313,7 +314,7 @@ edit_context::apply_fixit (const fixit_hint *hint)
   if (next_loc.column == 0)
     return false;
 
-  edited_file &file = get_or_insert_file (start.file);
+  changed_file &file = get_or_insert_file (start.file);
   if (!m_valid)
     return false;
   return file.apply_fixit (start.line, start.column, next_loc.column,
@@ -321,57 +322,57 @@ edit_context::apply_fixit (const fixit_hint *hint)
 			   hint->get_length ());
 }
 
-/* Locate the edited_file * for FILENAME, if any
+/* Locate the changed_file * for FILENAME, if any
    Return NULL if there isn't one.  */
 
-edited_file *
-edit_context::get_file (const char *filename)
+changed_file *
+change_set::get_file (const char *filename)
 {
   gcc_assert (filename);
   return m_files.lookup (filename);
 }
 
-/* Locate the edited_file for FILENAME, adding one if there isn't one.  */
+/* Locate the changed_file for FILENAME, adding one if there isn't one.  */
 
-edited_file &
-edit_context::get_or_insert_file (const char *filename)
+changed_file &
+change_set::get_or_insert_file (const char *filename)
 {
   gcc_assert (filename);
 
-  edited_file *file = get_file (filename);
+  changed_file *file = get_file (filename);
   if (file)
     return *file;
 
   /* Not found.  */
-  file = new edited_file (*this, filename);
+  file = new changed_file (*this, filename);
   m_files.insert (filename, file);
   return *file;
 }
 
-/* Implementation of class edited_file.  */
+/* Implementation of class changed_file.  */
 
-/* Callback for m_edited_lines, for comparing line numbers.  */
+/* Callback for m_changed_lines, for comparing line numbers.  */
 
 static int line_comparator (int a, int b)
 {
   return a - b;
 }
 
-/* edited_file's constructor.  */
+/* changed_file's constructor.  */
 
-edited_file::edited_file (edit_context &ec, const char *filename)
-: m_edit_context (ec),
+changed_file::changed_file (change_set &ec, const char *filename)
+: m_change_set (ec),
   m_filename (filename),
-  m_edited_lines (line_comparator, NULL, edited_line::delete_cb),
+  m_changed_lines (line_comparator, NULL, changed_line::delete_cb),
   m_num_lines (-1)
 {
 }
 
-/* A callback for deleting edited_file *, for use as a
-   delete_value_fn for edit_context::m_files.  */
+/* A callback for deleting changed_file *, for use as a
+   delete_value_fn for change_set::m_files.  */
 
 void
-edited_file::delete_cb (edited_file *file)
+changed_file::delete_cb (changed_file *file)
 {
   delete file;
 }
@@ -380,7 +381,7 @@ edited_file::delete_cb (edited_file *file)
    The ptr should be freed by the caller.  */
 
 char *
-edited_file::get_content ()
+changed_file::get_content ()
 {
   pretty_printer pp;
   if (!print_content (&pp))
@@ -394,11 +395,11 @@ edited_file::get_content ()
    the line.  */
 
 bool
-edited_file::apply_fixit (int line, int start_column, int next_column,
+changed_file::apply_fixit (int line, int start_column, int next_column,
 			  const char *replacement_str,
 			  int replacement_len)
 {
-  edited_line *el = get_or_insert_line (line);
+  changed_line *el = get_or_insert_line (line);
   if (!el)
     return false;
   return el->apply_fixit (start_column, next_column, replacement_str,
@@ -409,9 +410,9 @@ edited_file::apply_fixit (int line, int start_column, int next_column,
    column after edits have been applied.  */
 
 int
-edited_file::get_effective_column (int line, int column)
+changed_file::get_effective_column (int line, int column)
 {
-  const edited_line *el = get_line (line);
+  const changed_line *el = get_line (line);
   if (!el)
     return column;
   return el->get_effective_column (column);
@@ -421,13 +422,13 @@ edited_file::get_effective_column (int line, int column)
    Return true if successful, false otherwise.  */
 
 bool
-edited_file::print_content (pretty_printer *pp)
+changed_file::print_content (pretty_printer *pp)
 {
   bool missing_trailing_newline;
   int line_count = get_num_lines (&missing_trailing_newline);
   for (int line_num = 1; line_num <= line_count; line_num++)
     {
-      edited_line *el = get_line (line_num);
+      changed_line *el = get_line (line_num);
       if (el)
 	el->print_content (pp);
       else
@@ -453,7 +454,7 @@ edited_file::print_content (pretty_printer *pp)
    to this file.  */
 
 void
-edited_file::print_diff (pretty_printer *pp, bool show_filenames)
+changed_file::print_diff (pretty_printer *pp, bool show_filenames)
 {
   if (show_filenames)
     {
@@ -468,7 +469,7 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
       pp_string (pp, colorize_stop (pp_show_color (pp)));
     }
 
-  edited_line *el = m_edited_lines.min ();
+  changed_line *el = m_changed_lines.min ();
 
   bool missing_trailing_newline;
   int line_count = get_num_lines (&missing_trailing_newline);
@@ -490,8 +491,8 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
 	 that are sufficiently close.  */
       while (true)
 	{
-	  edited_line *next_el
-	    = m_edited_lines.successor (el->get_line_num ());
+	  changed_line *next_el
+	    = m_changed_lines.successor (el->get_line_num ());
 	  if (!next_el)
 	    break;
 
@@ -516,7 +517,7 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
       int new_start_of_hunk = start_of_hunk + line_delta;
       line_delta += print_diff_hunk (pp, start_of_hunk, end_of_hunk,
 				     new_start_of_hunk);
-      el = m_edited_lines.successor (el->get_line_num ());
+      el = m_changed_lines.successor (el->get_line_num ());
     }
 }
 
@@ -527,7 +528,7 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
    Return the change in the line count within the hunk.  */
 
 int
-edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
+changed_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
 			      int old_end_of_hunk, int new_start_of_hunk)
 {
   int old_num_lines = old_end_of_hunk - old_start_of_hunk + 1;
@@ -543,7 +544,7 @@ edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
   int line_num = old_start_of_hunk;
   while (line_num <= old_end_of_hunk)
     {
-      edited_line *el = get_line (line_num);
+      changed_line *el = get_line (line_num);
       if (el)
 	{
 	  /* We have an edited line.
@@ -568,12 +569,12 @@ edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
   return new_num_lines - old_num_lines;
 }
 
-/* Subroutine of edited_file::print_diff_hunk: given a run of lines
-   from START_OF_RUN to END_OF_RUN that all have edited_line instances,
+/* Subroutine of changed_file::print_diff_hunk: given a run of lines
+   from START_OF_RUN to END_OF_RUN that all have changed_line instances,
    print the diff to PP.  */
 
 void
-edited_file::print_run_of_changed_lines (pretty_printer *pp,
+changed_file::print_run_of_changed_lines (pretty_printer *pp,
 					 int start_of_run,
 					 int end_of_run)
 {
@@ -584,7 +585,7 @@ edited_file::print_run_of_changed_lines (pretty_printer *pp,
        line_num <= end_of_run;
        line_num++)
     {
-      edited_line *el_in_run = get_line (line_num);
+      changed_line *el_in_run = get_line (line_num);
       gcc_assert (el_in_run);
       if (el_in_run->actually_edited_p ())
 	{
@@ -603,7 +604,7 @@ edited_file::print_run_of_changed_lines (pretty_printer *pp,
        line_num <= end_of_run;
        line_num++)
     {
-      edited_line *el_in_run = get_line (line_num);
+      changed_line *el_in_run = get_line (line_num);
       gcc_assert (el_in_run);
       el_in_run->print_diff_lines (pp);
     }
@@ -629,14 +630,14 @@ print_diff_line (pretty_printer *pp, char prefix_char,
    OLD_END_OF_HUNK inclusive.  */
 
 int
-edited_file::get_effective_line_count (int old_start_of_hunk,
+changed_file::get_effective_line_count (int old_start_of_hunk,
 				       int old_end_of_hunk)
 {
   int line_count = 0;
   for (int old_line_num = old_start_of_hunk; old_line_num <= old_end_of_hunk;
        old_line_num++)
     {
-      edited_line *el = get_line (old_line_num);
+      changed_line *el = get_line (old_line_num);
       if (el)
 	line_count += el->get_effective_line_count ();
       else
@@ -647,28 +648,28 @@ edited_file::get_effective_line_count (int old_start_of_hunk,
 
 /* Get the state of LINE within the file, or NULL if it is untouched.  */
 
-edited_line *
-edited_file::get_line (int line)
+changed_line *
+changed_file::get_line (int line)
 {
-  return m_edited_lines.lookup (line);
+  return m_changed_lines.lookup (line);
 }
 
 /* Get the state of LINE within the file, creating a state for it
    if necessary.  Return NULL if an error occurs.  */
 
-edited_line *
-edited_file::get_or_insert_line (int line)
+changed_line *
+changed_file::get_or_insert_line (int line)
 {
-  edited_line *el = get_line (line);
+  changed_line *el = get_line (line);
   if (el)
     return el;
-  el = new edited_line (get_file_cache (), m_filename, line);
+  el = new changed_line (get_file_cache (), m_filename, line);
   if (el->get_content () == NULL)
     {
       delete el;
       return NULL;
     }
-  m_edited_lines.insert (line, el);
+  m_changed_lines.insert (line, el);
   return el;
 }
 
@@ -677,7 +678,7 @@ edited_file::get_or_insert_line (int line)
    if missing a newline, false otherwise.  */
 
 int
-edited_file::get_num_lines (bool *missing_trailing_newline)
+changed_file::get_num_lines (bool *missing_trailing_newline)
 {
   gcc_assert (missing_trailing_newline);
   if (m_num_lines == -1)
@@ -698,11 +699,11 @@ edited_file::get_num_lines (bool *missing_trailing_newline)
   return m_num_lines;
 }
 
-/* Implementation of class edited_line.  */
+/* Implementation of class changed_line.  */
 
-/* edited_line's ctor.  */
+/* changed_line's ctor.  */
 
-edited_line::edited_line (file_cache &fc, const char *filename, int line_num)
+changed_line::changed_line (file_cache &fc, const char *filename, int line_num)
 : m_line_num (line_num),
   m_content (NULL), m_len (0), m_alloc_sz (0),
   m_line_events (),
@@ -717,9 +718,9 @@ edited_line::edited_line (file_cache &fc, const char *filename, int line_num)
   ensure_terminated ();
 }
 
-/* edited_line's dtor.  */
+/* changed_line's dtor.  */
 
-edited_line::~edited_line ()
+changed_line::~changed_line ()
 {
   unsigned i;
   added_line *pred;
@@ -729,11 +730,11 @@ edited_line::~edited_line ()
     delete pred;
 }
 
-/* A callback for deleting edited_line *, for use as a
-   delete_value_fn for edited_file::m_edited_lines.  */
+/* A callback for deleting changed_line *, for use as a
+   delete_value_fn for changed_file::m_changed_lines.  */
 
 void
-edited_line::delete_cb (edited_line *el)
+changed_line::delete_cb (changed_line *el)
 {
   delete el;
 }
@@ -742,7 +743,7 @@ edited_line::delete_cb (edited_line *el)
    within a specific line.  */
 
 int
-edited_line::get_effective_column (int orig_column) const
+changed_line::get_effective_column (int orig_column) const
 {
   int i;
   line_event *event;
@@ -758,7 +759,7 @@ edited_line::get_effective_column (int orig_column) const
    Return true if successful; false if an error occurred.  */
 
 bool
-edited_line::apply_fixit (int start_column,
+changed_line::apply_fixit (int start_column,
 			  int next_column,
 			  const char *replacement_str,
 			  int replacement_len)
@@ -826,16 +827,16 @@ edited_line::apply_fixit (int start_column,
    also be counted.  */
 
 int
-edited_line::get_effective_line_count () const
+changed_line::get_effective_line_count () const
 {
   return m_predecessors.length () + 1;
 }
 
-/* Subroutine of edited_file::print_content.
+/* Subroutine of changed_file::print_content.
    Print this line and any new lines added before it, to PP.  */
 
 void
-edited_line::print_content (pretty_printer *pp) const
+changed_line::print_content (pretty_printer *pp) const
 {
   unsigned i;
   added_line *pred;
@@ -847,18 +848,18 @@ edited_line::print_content (pretty_printer *pp) const
   pp_string (pp, m_content);
 }
 
-/* Subroutine of edited_file::print_run_of_changed_lines for
+/* Subroutine of changed_file::print_run_of_changed_lines for
    printing diff hunks to PP.
    Print the '+' line for this line, and any newlines added
    before it.
-   Note that if this edited_line was actually edited, the '-'
+   Note that if this changed_line was actually edited, the '-'
    line has already been printed.  If it wasn't, then we merely
-   have a placeholder edited_line for adding newlines to, and
-   we need to print a ' ' line for the edited_line as we haven't
+   have a placeholder changed_line for adding newlines to, and
+   we need to print a ' ' line for the changed_line as we haven't
    printed it yet.  */
 
 void
-edited_line::print_diff_lines (pretty_printer *pp) const
+changed_line::print_diff_lines (pretty_printer *pp) const
 {
   unsigned i;
   added_line *pred;
@@ -876,7 +877,7 @@ edited_line::print_diff_lines (pretty_printer *pp) const
    allocations.  */
 
 void
-edited_line::ensure_capacity (int len)
+changed_line::ensure_capacity (int len)
 {
   /* Allow 1 extra byte for 0-termination.  */
   if (m_alloc_sz < (len + 1))
@@ -890,7 +891,7 @@ edited_line::ensure_capacity (int len)
 /* Ensure that m_content is 0-terminated.  */
 
 void
-edited_line::ensure_terminated ()
+changed_line::ensure_terminated ()
 {
   /* 0-terminate the buffer.  */
   gcc_assert (m_len < m_alloc_sz);
@@ -923,7 +924,7 @@ class auto_free
   POINTER_T m_ptr;
 };
 
-/* Verify that edit_context::get_content works for unedited files.  */
+/* Verify that change_set::get_content works for unedited files.  */
 
 static void
 test_get_content ()
@@ -933,7 +934,7 @@ test_get_content ()
     const char *content = ("");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     ASSERT_STREQ ("", result);
   }
@@ -945,7 +946,7 @@ test_get_content ()
 			   "/* after */\n");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     ASSERT_STREQ ("/* before */\n"
 		  "foo = bar.field;\n"
@@ -959,7 +960,7 @@ test_get_content ()
 			   "/* after */");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     /* We should respect the omitted trailing newline.  */
     ASSERT_STREQ ("/* before */\n"
@@ -993,7 +994,7 @@ test_applying_fixits_insert_before (const line_table_case &case_)
     return;
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (start <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1052,7 +1053,7 @@ test_applying_fixits_insert_after (const line_table_case &case_)
 
   /* Verify that the text was inserted after the end of "field". */
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ ("/* before */\n"
@@ -1095,7 +1096,7 @@ test_applying_fixits_insert_after_at_line_end (const line_table_case &case_)
     return;
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ ("/* before */\n"
@@ -1154,7 +1155,7 @@ test_applying_fixits_insert_after_failure (const line_table_case &case_)
   ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   ASSERT_FALSE (edit.valid_p ());
   ASSERT_EQ (NULL, edit.get_content (filename));
@@ -1192,7 +1193,7 @@ test_applying_fixits_insert_containing_newline (const line_table_case &case_)
     return;
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ (("    case 'a':\n"
@@ -1237,7 +1238,7 @@ test_applying_fixits_growing_replace (const line_table_case &case_)
   richloc.add_fixit_replace ("m_field");
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1283,7 +1284,7 @@ test_applying_fixits_shrinking_replace (const line_table_case &case_)
   richloc.add_fixit_replace ("field");
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1338,7 +1339,7 @@ test_applying_fixits_replace_containing_newline (const line_table_case &case_)
     return;
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   //ASSERT_STREQ ("foo\n  = bar ();\n", new_content);
@@ -1370,7 +1371,7 @@ test_applying_fixits_remove (const line_table_case &case_)
   richloc.add_fixit_remove (range);
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1436,7 +1437,7 @@ test_applying_fixits_multiple (const line_table_case &case_)
 			       "meadow");
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   edit.add_fixits (&insert_a);
   ASSERT_EQ (100, edit.get_effective_column (filename, 1, 100));
   ASSERT_EQ (1, edit.get_effective_column (filename, 2, 1));
@@ -1471,7 +1472,7 @@ test_applying_fixits_multiple (const line_table_case &case_)
    Add the text "CHANGED: " to the front of the given line.  */
 
 static location_t
-change_line (edit_context &edit, int line_num)
+change_line (change_set &edit, int line_num)
 {
   const line_map_ordinary *ord_map
     = LINEMAPS_LAST_ORDINARY_MAP (line_table);
@@ -1497,7 +1498,7 @@ change_line (edit_context &edit, int line_num)
    Add the text "INSERTED\n" in front of the given line.  */
 
 static location_t
-insert_line (edit_context &edit, int line_num)
+insert_line (change_set &edit, int line_num)
 {
   const line_map_ordinary *ord_map
     = LINEMAPS_LAST_ORDINARY_MAP (line_table);
@@ -1539,7 +1540,7 @@ test_applying_fixits_multiple_lines (const line_table_case &case_)
   linemap_position_for_column (line_table, 127);
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
 
   /* A run of consecutive lines.  */
   change_line (edit, 2);
@@ -1628,7 +1629,7 @@ test_applying_fixits_modernize_named_init (const line_table_case &case_)
   /* The order should not matter.  Do r1 then r2. */
   {
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     edit.add_fixits (&r1);
 
     /* Verify state after first replacement.  */
@@ -1662,7 +1663,7 @@ test_applying_fixits_modernize_named_init (const line_table_case &case_)
   /* Try again, doing r2 then r1; the new_content should be the same.  */
   {
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     edit.add_fixits (&r2);
     edit.add_fixits (&r1);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
@@ -1691,7 +1692,7 @@ test_applying_fixits_unreadable_file ()
   insert.add_fixit_insert_before ("change 2");
 
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   /* Attempting to add the fixits affecting the unreadable file
      should transition the edit from valid to invalid.  */
   ASSERT_TRUE (edit.valid_p ());
@@ -1722,10 +1723,10 @@ test_applying_fixits_line_out_of_range ()
   rich_location insert (line_table, loc);
   insert.add_fixit_insert_before ("change");
 
-  /* Verify that attempting the insertion puts an edit_context
+  /* Verify that attempting the insertion puts an change_set
      into an invalid state.  */
   file_cache fc;
-  edit_context edit (fc);
+  change_set edit (fc);
   ASSERT_TRUE (edit.valid_p ());
   edit.add_fixits (&insert);
   ASSERT_FALSE (edit.valid_p ());
@@ -1734,7 +1735,7 @@ test_applying_fixits_line_out_of_range ()
 }
 
 /* Verify the boundary conditions of column values in fix-it
-   hints applied to edit_context instances.  */
+   hints applied to change_set instances.  */
 
 static void
 test_applying_fixits_column_validation (const line_table_case &case_)
@@ -1763,7 +1764,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
     /* Col 15 is at the end of the line, so the insertion
        should succeed.  */
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     edit.add_fixits (&richloc);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
     if (c15 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1780,7 +1781,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
     /* Col 16 is beyond the end of the line, so the insertion
        should fail gracefully.  */
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     ASSERT_TRUE (edit.valid_p ());
     edit.add_fixits (&richloc);
     ASSERT_FALSE (edit.valid_p ());
@@ -1799,7 +1800,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
     /* Col 14 is at the end of the line, so the replacement
        should succeed.  */
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     edit.add_fixits (&richloc);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
     if (c14 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1817,7 +1818,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
     /* Col 15 is after the end of the line, so the replacement
        should fail; verify that the attempt fails gracefully.  */
     file_cache fc;
-    edit_context edit (fc);
+    change_set edit (fc);
     ASSERT_TRUE (edit.valid_p ());
     edit.add_fixits (&richloc);
     ASSERT_FALSE (edit.valid_p ());
@@ -1826,10 +1827,8 @@ test_applying_fixits_column_validation (const line_table_case &case_)
   }
 }
 
-/* Run all of the selftests within this file.  */
-
-void
-edit_context_cc_tests ()
+static void
+run_all_tests ()
 {
   test_get_content ();
   for_each_line_table_case (test_applying_fixits_insert_before);
@@ -1847,6 +1846,19 @@ edit_context_cc_tests ()
   test_applying_fixits_unreadable_file ();
   test_applying_fixits_line_out_of_range ();
   for_each_line_table_case (test_applying_fixits_column_validation);
+}
+
+} // namespace diagnostics::changes::selftest
+} // namespace diagnostics::changes
+
+namespace selftest { // diagnostics::selftest
+
+/* Run all of the selftests within this file.  */
+
+void
+changes_cc_tests ()
+{
+  diagnostics::changes::selftest::run_all_tests ();
 }
 
 } // namespace selftest

@@ -44,7 +44,7 @@ run_diagnostics_selftests ()
   state_graphs_cc_tests ();
   lazy_paths_cc_tests ();
   paths_output_cc_tests ();
-  edit_context_cc_tests ();
+  changes_cc_tests ();
 }
 
 } /* end of namespace diagnostics::selftest.  */
