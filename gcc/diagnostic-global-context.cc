@@ -29,9 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostics/sink.h"
 
-/* A diagnostic_context surrogate for stderr.  */
-static diagnostic_context global_diagnostic_context;
-diagnostic_context *global_dc = &global_diagnostic_context;
+/* A diagnostics::context surrogate for stderr.  */
+static diagnostics::context global_diagnostic_context;
+diagnostics::context *global_dc = &global_diagnostic_context;
 
 /* Standard error reporting routines in increasing order of severity.  */
 
@@ -49,7 +49,7 @@ verbatim (const char *gmsgid, ...)
   va_end (ap);
 }
 
-/* Wrapper around diagnostic_context::diagnostic_impl
+/* Wrapper around diagnostics::context::diagnostic_impl
    implying global_dc and taking a variable argument list.  */
 
 bool

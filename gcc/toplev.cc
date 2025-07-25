@@ -1017,7 +1017,7 @@ open_auxiliary_file (const char *ext)
 /* Alternative diagnostics callback for reentered ICE reporting.  */
 
 static void
-internal_error_reentered (diagnostic_context *, const char *, va_list *)
+internal_error_reentered (diagnostics::context *, const char *, va_list *)
 {
   /* Flush the dump file if emergency_dump_function itself caused an ICE.  */
   if (dump_file)
@@ -1027,7 +1027,7 @@ internal_error_reentered (diagnostic_context *, const char *, va_list *)
 /* Auxiliary callback for the diagnostics code.  */
 
 static void
-internal_error_function (diagnostic_context *, const char *, va_list *)
+internal_error_function (diagnostics::context *, const char *, va_list *)
 {
   global_dc->set_internal_error_callback (internal_error_reentered);
   warn_if_plugins ();

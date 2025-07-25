@@ -28,23 +28,23 @@ namespace diagnostics {
 /* Subclass of diagnostics::sink for classic text-based output
    to stderr.
 
-   Uses diagnostic_context.m_text_callbacks to provide client-specific
+   Uses diagnostics::context.m_text_callbacks to provide client-specific
    textual output (e.g. include paths, macro expansions, etc).  */
 
 class text_sink : public sink
 {
 public:
-  text_sink (diagnostic_context &context,
-	     diagnostic_source_printing_options *source_printing = nullptr,
+  text_sink (context &dc,
+	     source_printing_options *source_printing = nullptr,
 	     bool follows_reference_printer = false)
-  : sink (context),
+  : sink (dc),
     m_saved_output_buffer (nullptr),
-    m_column_policy (context),
+    m_column_policy (dc),
     m_last_module (nullptr),
     m_includes_seen (nullptr),
     m_source_printing (source_printing
 		       ? *source_printing
-		       : context.m_source_printing),
+		       : dc.m_source_printing),
     m_follows_reference_printer (follows_reference_printer),
     m_show_nesting (false),
     m_show_nesting_levels (false)
@@ -93,11 +93,11 @@ public:
 
   bool show_column_p () const { return get_context ().m_show_column; }
 
-  const diagnostic_column_policy &get_column_policy () const
+  const column_policy &get_column_policy () const
   {
     return m_column_policy;
   }
-  diagnostic_location_print_policy get_location_print_policy () const;
+  location_print_policy get_location_print_policy () const;
 
   bool show_nesting_p () const { return m_show_nesting; }
   bool show_locations_in_nesting_p () const
@@ -117,11 +117,11 @@ public:
 
   label_text get_location_text (const expanded_location &s) const;
 
-  diagnostic_source_printing_options &get_source_printing_options ()
+  source_printing_options &get_source_printing_options ()
   {
     return m_source_printing;
   }
-  const diagnostic_source_printing_options &get_source_printing_options () const
+  const source_printing_options &get_source_printing_options () const
   {
     return m_source_printing;
   }
@@ -137,7 +137,7 @@ protected:
   /* For handling diagnostic_buffer.  */
   output_buffer *m_saved_output_buffer;
 
-  diagnostic_column_policy m_column_policy;
+  column_policy m_column_policy;
 
   /* Used to detect when the input file stack has changed since last
      described.  */
@@ -147,10 +147,10 @@ protected:
      include path for.  */
   hash_set<location_t, false, location_hash> *m_includes_seen;
 
-  diagnostic_source_printing_options &m_source_printing;
+  source_printing_options &m_source_printing;
 
   /* If true, this is the initial default text output format created
-     when the diagnostic_context was created, and, in particular, before
+     when the diagnostics::context was created, and, in particular, before
      initializations of color and m_url_format.  Hence this should follow
      the dc's reference printer for these.
      If false, this text output was created after the dc was created, and

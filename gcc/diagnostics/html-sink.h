@@ -46,22 +46,22 @@ struct html_generation_options
 };
 
 extern diagnostics::output_file
-open_html_output_file (diagnostic_context &context,
+open_html_output_file (context &dc,
 		       line_maps *line_maps,
 		       const char *base_file_name);
 
 extern std::unique_ptr<sink>
-make_html_sink (diagnostic_context &context,
+make_html_sink (context &dc,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
-		diagnostics::output_file output_file_);
+		output_file output_file_);
 
 extern void
 print_path_as_html (xml::printer &xp,
-		    const diagnostics::paths::path &path,
-		    diagnostic_context &dc,
+		    const paths::path &path,
+		    context &dc,
 		    html_label_writer *event_label_writer,
-		    const diagnostic_source_print_policy &dspp);
+		    const source_print_policy &dspp);
 
 } // namespace diagnostics
 

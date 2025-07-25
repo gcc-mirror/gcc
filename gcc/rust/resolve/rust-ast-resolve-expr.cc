@@ -129,7 +129,7 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
 	 resolve.  Emit a funny ICE.  We set the finalizer to our custom one,
 	 and use the lower-level emit_diagnostic () instead of the more common
 	 internal_error_no_backtrace () in order to pass our locus.  */
-      diagnostic_text_finalizer (global_dc) = funny_ice_text_finalizer;
+      diagnostics::text_finalizer (global_dc) = funny_ice_text_finalizer;
       emit_diagnostic (DK_ICE_NOBT, expr.get_locus (), -1,
 		       "are you trying to break %s? how dare you?",
 		       expr.as_string ().c_str ());

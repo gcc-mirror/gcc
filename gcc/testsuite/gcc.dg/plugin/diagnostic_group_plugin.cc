@@ -175,11 +175,11 @@ test_diagnostic_text_starter (diagnostics::text_sink &text_output,
    expected output.  */
 
 void
-test_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
-			       to_text &sink,
+test_diagnostic_start_span_fn (const diagnostics::location_print_policy &,
+			       diagnostics::to_text &sink,
 			       expanded_location)
 {
-  pretty_printer *pp = get_printer (sink);
+  pretty_printer *pp = diagnostics::get_printer (sink);
   pp_string (pp, "START_SPAN_FN: ");
   pp_newline (pp);
 }
@@ -189,7 +189,7 @@ test_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
 class custom_test_sink : public diagnostics::text_sink
 {
  public:
-  custom_test_sink (diagnostic_context &context)
+  custom_test_sink (diagnostics::context &context)
   : diagnostics::text_sink (context)
   {}
 
@@ -228,8 +228,8 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  diagnostic_text_starter (global_dc) = test_diagnostic_text_starter;
-  diagnostic_start_span (global_dc) = test_diagnostic_start_span_fn;
+  diagnostics::text_starter (global_dc) = test_diagnostic_text_starter;
+  diagnostics::start_span (global_dc) = test_diagnostic_start_span_fn;
   global_dc->set_sink (::std::make_unique<custom_test_sink> (*global_dc));
 
   pass_info.pass = new pass_test_groups (g);

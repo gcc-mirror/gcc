@@ -67,7 +67,7 @@ public:
   {
   }
 
-  path_print_policy (const diagnostic_context &dc)
+  path_print_policy (const diagnostics::context &dc)
   : m_source_policy (dc)
   {
   }
@@ -78,11 +78,11 @@ public:
     return m_source_policy.get_diagram_theme ();
   }
 
-  const diagnostic_source_print_policy &
+  const diagnostics::source_print_policy &
   get_source_policy () const { return m_source_policy; }
 
 private:
-  diagnostic_source_print_policy m_source_policy;
+  diagnostics::source_print_policy m_source_policy;
 };
 
 /* Subclass of range_label for showing a particular event
@@ -599,7 +599,7 @@ struct event_range
   {
     location_t initial_loc = m_initial_event.get_location ();
 
-    diagnostic_context &dc = text_output.get_context ();
+    diagnostics::context &dc = text_output.get_context ();
 
     /* Emit a span indicating the filename (and line/column) if the
        line has changed relative to the last call to
@@ -611,7 +611,7 @@ struct event_range
 	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
 	if (exploc.file != LOCATION_FILE (dc.m_last_location))
 	  {
-	    diagnostic_location_print_policy loc_policy (text_output);
+	    diagnostics::location_print_policy loc_policy (text_output);
 	    loc_policy.print_text_span_start (dc, pp, exploc);
 	  }
       }
@@ -653,7 +653,7 @@ struct event_range
      call to diagnostic_show_locus_as_html.  */
 
   void print_as_html (xml::printer &xp,
-		      diagnostic_context &dc,
+		      diagnostics::context &dc,
 		      diagnostics::source_effect_info *effect_info,
 		      html_label_writer *event_label_writer)
   {
@@ -669,7 +669,7 @@ struct event_range
 	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
 	if (exploc.file != LOCATION_FILE (dc.m_last_location))
 	  {
-	    diagnostic_location_print_policy loc_policy (dc);
+	    diagnostics::location_print_policy loc_policy (dc);
 	    loc_policy.print_html_span_start (dc, xp, exploc);
 	  }
       }
@@ -1044,7 +1044,7 @@ public:
   }
 
   void
-  print_swimlane_for_event_range_as_html (diagnostic_context &dc,
+  print_swimlane_for_event_range_as_html (diagnostics::context &dc,
 					  xml::printer &xp,
 					  html_label_writer *event_label_writer,
 					  event_range *range,
@@ -1152,7 +1152,7 @@ print_path_summary_as_text (const path_summary &ps,
 
 static void
 print_path_summary_as_html (const path_summary &ps,
-			    diagnostic_context &dc,
+			    diagnostics::context &dc,
 			    xml::printer &xp,
 			    html_label_writer *event_label_writer,
 			    bool show_depths)
@@ -1385,14 +1385,14 @@ diagnostics::text_sink::print_path (const path &path_)
 void
 diagnostics::print_path_as_html (xml::printer &xp,
 				 const path &path_,
-				 diagnostic_context &dc,
+				 context &dc,
 				 html_label_writer *event_label_writer,
-				 const diagnostic_source_print_policy &dspp)
+				 const source_print_policy &dspp)
 {
   path_print_policy policy (dc);
   const bool check_rich_locations = true;
   const bool colorize = false;
-  const diagnostic_source_printing_options &source_printing_opts
+  const source_printing_options &source_printing_opts
     = dspp.get_options ();
   const bool show_event_links = source_printing_opts.show_event_links_p;
   path_summary summary (policy,

@@ -1000,7 +1000,7 @@ struct ggc_root_tab jit_root_tab[] =
 class jit_diagnostic_listener : public diagnostics::text_sink
 {
 public:
-  jit_diagnostic_listener (diagnostic_context &dc,
+  jit_diagnostic_listener (diagnostics::context &dc,
 			   gcc::jit::playback::context &playback_ctxt)
   : diagnostics::text_sink (dc),
     m_playback_ctxt (playback_ctxt)
@@ -1081,8 +1081,8 @@ jit_langhook_init (void)
     }
 
   gcc_assert (global_dc);
-  diagnostic_text_starter (global_dc) = jit_begin_diagnostic;
-  diagnostic_text_finalizer (global_dc) = jit_end_diagnostic;
+  diagnostics::text_starter (global_dc) = jit_begin_diagnostic;
+  diagnostics::text_finalizer (global_dc) = jit_end_diagnostic;
   auto sink
     = std::make_unique<jit_diagnostic_listener>
 	(*global_dc,

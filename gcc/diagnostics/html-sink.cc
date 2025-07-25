@@ -111,7 +111,7 @@ class html_builder
 public:
   friend class html_sink_buffer;
 
-  html_builder (diagnostic_context &context,
+  html_builder (context &dc,
 		pretty_printer &pp,
 		const line_maps *line_maps,
 		const html_generation_options &html_gen_opts);
@@ -182,7 +182,7 @@ private:
   add_graph (const digraphs::digraph &dg,
 	     xml::element &parent_element);
 
-  diagnostic_context &m_context;
+  context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   html_generation_options m_html_gen_opts;
@@ -401,11 +401,11 @@ struct html_doctypedecl : public xml::doctypedecl
 
 /* html_builder's ctor.  */
 
-html_builder::html_builder (diagnostic_context &context,
+html_builder::html_builder (context &dc,
 			    pretty_printer &pp,
 			    const line_maps *line_maps,
 			    const html_generation_options &html_gen_opts)
-: m_context (context),
+: m_context (dc),
   m_printer (&pp),
   m_line_maps (line_maps),
   m_html_gen_opts (html_gen_opts),
@@ -420,7 +420,7 @@ html_builder::html_builder (diagnostic_context &context,
 {
   gcc_assert (m_line_maps);
 
-  if (auto client_data_hooks = context.get_client_data_hooks ())
+  if (auto client_data_hooks = dc.get_client_data_hooks ())
     m_logical_loc_mgr = client_data_hooks->get_logical_location_manager ();
 
   m_document = std::make_unique<xml::document> ();
@@ -1086,8 +1086,8 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       if (s.line)
 	{
 	  add_labelled_value (xp, "line", "Line", std::to_string (s.line), false);
-	  diagnostic_column_policy column_policy (m_context);
-	  int converted_column = column_policy.converted_column (s);
+	  column_policy col_policy (m_context);
+	  int converted_column = col_policy.converted_column (s);
 	  if (converted_column >= 0)
 	    add_labelled_value (xp, "column", "Column",
 				std::to_string (converted_column),
@@ -1134,7 +1134,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       html_path_label_writer event_label_writer (xp, *this, *path,
 						 event_id_prefix);
 
-      diagnostic_source_print_policy dspp (m_context);
+      source_print_policy dspp (m_context);
       print_path_as_html (xp, *path, m_context, &event_label_writer,
 			  dspp);
 
@@ -1236,7 +1236,7 @@ html_builder::make_element_for_metadata (const metadata &m)
   return span_metadata;
 }
 
-/* Implementation of diagnostic_context::m_diagrams.m_emission_cb
+/* Implementation of diagnostics::context::m_diagrams.m_emission_cb
    for HTML output.  */
 
 void
@@ -1404,11 +1404,11 @@ public:
   html_builder &get_builder () { return m_builder; }
 
 protected:
-  html_sink (diagnostic_context &context,
+  html_sink (context &dc,
 	     const line_maps *line_maps,
 	     const html_generation_options &html_gen_opts)
-  : sink (context),
-    m_builder (context, *get_printer (), line_maps, html_gen_opts),
+  : sink (dc),
+    m_builder (dc, *get_printer (), line_maps, html_gen_opts),
     m_buffer (nullptr)
   {}
 
@@ -1419,11 +1419,11 @@ protected:
 class html_file_sink : public html_sink
 {
 public:
-  html_file_sink (diagnostic_context &context,
+  html_file_sink (context &dc,
 		  const line_maps *line_maps,
 		  const html_generation_options &html_gen_opts,
 		  output_file output_file_)
-  : html_sink (context, line_maps, html_gen_opts),
+  : html_sink (dc, line_maps, html_gen_opts),
     m_output_file (std::move (output_file_))
   {
     gcc_assert (m_output_file.get_open_file ());
@@ -1451,18 +1451,18 @@ private:
 
 /* Attempt to open BASE_FILE_NAME.html for writing.
    Return a non-null output_file,
-   or return a null output_file and complain to CONTEXT
+   or return a null output_file and complain to DC
    using LINE_MAPS.  */
 
 output_file
-open_html_output_file (diagnostic_context &context,
+open_html_output_file (context &dc,
 		       line_maps *line_maps,
 		       const char *base_file_name)
 {
   if (!base_file_name)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic_with_group
+      dc.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to determine filename for HTML output");
       return output_file ();
@@ -1475,7 +1475,7 @@ open_html_output_file (diagnostic_context &context,
   if (!outf)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic_with_group
+      dc.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to open %qs for HTML output: %m",
 	 filename.get ());
@@ -1485,13 +1485,13 @@ open_html_output_file (diagnostic_context &context,
 }
 
 std::unique_ptr<sink>
-make_html_sink (diagnostic_context &context,
+make_html_sink (context &dc,
 		const line_maps &line_maps,
 		const html_generation_options &html_gen_opts,
 		output_file output_file_)
 {
   auto sink
-    = std::make_unique<html_file_sink> (context,
+    = std::make_unique<html_file_sink> (dc,
 					&line_maps,
 					html_gen_opts,
 					std::move (output_file_));
@@ -1599,10 +1599,10 @@ private:
   class html_buffered_sink : public html_sink
   {
   public:
-    html_buffered_sink (diagnostic_context &context,
+    html_buffered_sink (context &dc,
 			const line_maps *line_maps,
 			const html_generation_options &html_gen_opts)
-    : html_sink (context, line_maps, html_gen_opts)
+    : html_sink (dc, line_maps, html_gen_opts)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -1615,7 +1615,7 @@ private:
 };
 
 /* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
-   diagnostic_context and examining the generated XML document.
+   diagnostics::context and examining the generated XML document.
    Verify various basic properties. */
 
 static void

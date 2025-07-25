@@ -110,7 +110,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
    to the DIAGNOSTIC location.  */
 
 static void
-set_inlining_locations (diagnostic_context *,
+set_inlining_locations (diagnostics::context *,
 			diagnostic_info *diagnostic)
 {
   location_t loc = diagnostic_location (diagnostic);
@@ -175,10 +175,10 @@ set_inlining_locations (diagnostic_context *,
 
 /* Sets CONTEXT to use language independent diagnostics.  */
 void
-tree_diagnostics_defaults (diagnostic_context *context)
+tree_diagnostics_defaults (diagnostics::context *context)
 {
-  diagnostic_text_starter (context) = default_tree_diagnostic_text_starter;
-  diagnostic_text_finalizer (context) = diagnostics::default_text_finalizer;
+  diagnostics::text_starter (context) = default_tree_diagnostic_text_starter;
+  diagnostics::text_finalizer (context) = diagnostics::default_text_finalizer;
   context->set_format_decoder (default_tree_printer);
   context->set_set_locations_callback (set_inlining_locations);
   context->set_client_data_hooks (make_compiler_data_hooks ());

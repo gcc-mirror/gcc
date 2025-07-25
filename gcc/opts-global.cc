@@ -181,7 +181,7 @@ lang_handle_option (struct gcc_options *opts,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		    location_t loc,
 		    const struct cl_option_handlers *handlers,
-		    diagnostic_context *dc,
+		    diagnostics::context *dc,
 		    void (*) (void))
 {
   gcc_assert (opts == &global_options);
@@ -215,7 +215,7 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		      location_t loc,
 		      unsigned int lang_mask,
 		      const struct cl_option_handlers *handlers,
-		      diagnostic_context *dc)
+		      diagnostics::context *dc)
 {
   unsigned int i;
 
@@ -312,7 +312,7 @@ void
 decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		struct cl_decoded_option *decoded_options,
 		unsigned int decoded_options_count,
-		location_t loc, diagnostic_context *dc,
+		location_t loc, diagnostics::context *dc,
 		void (*target_option_override_hook) (void))
 {
   struct cl_option_handlers handlers;

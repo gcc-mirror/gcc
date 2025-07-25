@@ -30,8 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-recording.h"
 
-class diagnostic_context;
-namespace diagnostics { struct diagnostic_info; }
+namespace diagnostics
+{
+  class context;
+  struct diagnostic_info;
+}
 
 namespace gcc {
 

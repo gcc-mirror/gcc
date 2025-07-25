@@ -43,23 +43,23 @@ enum class sarif_serialization_kind
    num_values
 };
 
-extern diagnostics::output_file
-open_sarif_output_file (diagnostic_context &context,
+extern output_file
+open_sarif_output_file (context &dc,
 			line_maps *line_maps,
 			const char *base_file_name,
 			enum sarif_serialization_kind serialization_kind);
 
 extern sink &
-init_sarif_stderr (diagnostic_context &context,
+init_sarif_stderr (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted);
 extern sink &
-init_sarif_file (diagnostic_context &context,
+init_sarif_file (context &dc,
 		 line_maps *line_maps,
 		 bool formatted,
 		 const char *base_file_name);
 extern sink &
-init_sarif_stream (diagnostic_context &context,
+init_sarif_stream (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted,
 		   FILE *stream);
@@ -113,11 +113,11 @@ struct sarif_generation_options
 };
 
 extern std::unique_ptr<sink>
-make_sarif_sink (diagnostic_context &context,
+make_sarif_sink (context &dc,
 		 const line_maps &line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts,
-		 diagnostics::output_file output_file_);
+		 output_file output_file_);
 
 class sarif_builder;
 class sarif_location_manager;
@@ -130,11 +130,11 @@ class sarif_property_bag : public json::object
 public:
   void set_logical_location (const char *property_name,
 			     sarif_builder &,
-			     diagnostics::logical_locations::key logical_loc);
+			     logical_locations::key logical_loc);
   void set_graph (const char *property_name,
 		  sarif_builder &,
 		  sarif_location_manager *sarif_location_mgr,
-		  const diagnostics::digraphs::digraph &g);
+		  const digraphs::digraph &g);
 };
 
 /* Concrete subclass of json::object for SARIF objects that can

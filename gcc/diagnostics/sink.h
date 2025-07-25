@@ -48,7 +48,7 @@ public:
   make_per_sink_buffer () = 0;
 
   /* Vfunc to be called when call a diagnostics::buffer is set on
-     a diagnostic_context, to update this format.  The per_sink_buffer
+     a diagnostics::context, to update this format.  The per_sink_buffer
      will be one created by make_per_sink_buffer above and thus be
      of the correct subclass.  */
   virtual void set_buffer (per_sink_buffer *) = 0;
@@ -68,7 +68,7 @@ public:
   virtual bool machine_readable_stderr_p () const = 0;
   virtual bool follows_reference_printer_p () const = 0;
 
-  /* Vfunc called when the diagnostic_context changes its
+  /* Vfunc called when the diagnostics::context changes its
      reference printer (either to a new subclass of pretty_printer
      or when color/url options change).
      Subclasses should update their m_printer accordingly.  */
@@ -77,7 +77,7 @@ public:
   virtual void
   report_global_digraph (const digraphs::lazy_digraph &) = 0;
 
-  diagnostic_context &get_context () const { return m_context; }
+  context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer.get (); }
 
   text_art::theme *get_diagram_theme () const
@@ -88,18 +88,18 @@ public:
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
 protected:
-  sink (diagnostic_context &context)
-  : m_context (context),
-    m_printer (context.clone_printer ())
+  sink (context &dc)
+  : m_context (dc),
+    m_printer (dc.clone_printer ())
   {}
 
 protected:
-  diagnostic_context &m_context;
+  context &m_context;
   std::unique_ptr<pretty_printer> m_printer;
 };
 
 extern void
-output_format_init (diagnostic_context &,
+output_format_init (context &,
 		    const char *main_input_filename_,
 		    const char *base_file_name,
 		    enum diagnostics_output_format,

@@ -4195,7 +4195,7 @@ driver_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc,
+		      diagnostics::context *dc,
 		      void (*) (void))
 {
   size_t opt_index = decoded->opt_index;

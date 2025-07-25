@@ -30,12 +30,12 @@ class sink;
   class text_sink;
 
 /* Class representing a buffer of zero or more diagnostics that
-   have been reported to a diagnostic_context, but which haven't
+   have been reported to a diagnostics::context, but which haven't
    yet been flushed.
 
    A diagnostics::buffer can be:
 
-   * flushed to the diagnostic_context, which issues
+   * flushed to the diagnostics::context, which issues
    the diagnostics within the buffer to the output format
    and checks for limits such as -fmax-errors=, or
 
@@ -49,18 +49,18 @@ class sink;
 
    Since a buffer needs to contain output-format-specific data,
    it's not possible to change the output format of the
-   diagnostic_context once any buffers are non-empty.
+   diagnostics::context once any buffers are non-empty.
 
    To simplify implementing output formats, it's not possible
-   to change buffering on a diagnostic_context whilst within a
+   to change buffering on a diagnostics::context whilst within a
    diagnostic group.  */
 
 class buffer
 {
  public:
-  friend class ::diagnostic_context;
+  friend class context;
 
-  buffer (diagnostic_context &ctxt);
+  buffer (context &ctxt);
   ~buffer ();
 
   void dump (FILE *out, int indent) const;
@@ -78,11 +78,11 @@ class buffer
  private:
   void ensure_per_sink_buffers ();
 
-  diagnostic_context &m_ctxt;
+  context &m_ctxt;
   auto_vec<per_sink_buffer *> *m_per_sink_buffers;
 
   /* The number of buffered diagnostics of each kind.  */
-  diagnostic_counters m_diagnostic_counters;
+  counters m_diagnostic_counters;
 };
 
 /* Implementation detail of diagnostics::buffer.

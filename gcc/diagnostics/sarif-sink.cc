@@ -753,7 +753,7 @@ class sarif_builder
 public:
   friend class sarif_sink_buffer;
 
-  sarif_builder (diagnostic_context &context,
+  sarif_builder (diagnostics::context &dc,
 		 pretty_printer &printer,
 		 const line_maps *line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
@@ -820,7 +820,7 @@ public:
     return m_current_code_flow;
   }
 
-  diagnostic_context &get_context () const { return m_context; }
+  diagnostics::context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer; }
   token_printer &get_token_printer () { return m_token_printer; }
   enum sarif_version get_version () const { return m_sarif_gen_opts.m_version; }
@@ -950,7 +950,7 @@ private:
   std::unique_ptr<json::object>
   make_stack_from_backtrace ();
 
-  diagnostic_context &m_context;
+  diagnostics::context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
@@ -1062,10 +1062,10 @@ sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
 void
 sarif_invocation::prepare_to_flush (sarif_builder &builder)
 {
-  const diagnostic_context &context = builder.get_context ();
+  const context &dc = builder.get_context ();
 
   /* "executionSuccessful" property (SARIF v2.1.0 section 3.20.14).  */
-  if (context.execution_failed_p ())
+  if (dc.execution_failed_p ())
     m_success = false;
   set_bool ("executionSuccessful", m_success);
 
@@ -1074,7 +1074,7 @@ sarif_invocation::prepare_to_flush (sarif_builder &builder)
 
   /* Call client hook, allowing it to create a custom property bag for
      this object (SARIF v2.1.0 section 3.8) e.g. for recording time vars.  */
-  if (auto client_data_hooks = context.get_client_data_hooks ())
+  if (auto client_data_hooks = dc.get_client_data_hooks ())
     client_data_hooks->add_sarif_invocation_properties (*this);
 
   // "endTimeUtc" property (SARIF v2.1.0 section 3.20.8);
@@ -1652,19 +1652,19 @@ sarif_thread_flow::add_location ()
 
 /* sarif_builder's ctor.  */
 
-sarif_builder::sarif_builder (diagnostic_context &context,
+sarif_builder::sarif_builder (diagnostics::context &dc,
 			      pretty_printer &printer,
 			      const line_maps *line_maps,
 			      std::unique_ptr<sarif_serialization_format> serialization_format,
 			      const sarif_generation_options &sarif_gen_opts)
-: m_context (context),
+: m_context (dc),
   m_printer (&printer),
   m_line_maps (line_maps),
   m_token_printer (*this),
   m_logical_loc_mgr (nullptr),
   m_invocation_obj
     (std::make_unique<sarif_invocation> (*this,
-					 context.get_original_argv ())),
+					 dc.get_original_argv ())),
   m_results_array (new json::array ()),
   m_cur_group_result (nullptr),
   m_seen_any_relative_paths (false),
@@ -1674,7 +1674,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
     (std::make_unique<sarif_array_of_unique<sarif_logical_location>> ()),
   m_run_graphs
     (std::make_unique<sarif_array_of_unique<sarif_graph>> ()),
-  m_tabstop (context.m_tabstop),
+  m_tabstop (dc.m_tabstop),
   m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
   m_next_result_idx (0),
@@ -1683,7 +1683,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   gcc_assert (m_line_maps);
   gcc_assert (m_serialization_format);
 
-  if (auto client_data_hooks = context.get_client_data_hooks ())
+  if (auto client_data_hooks = dc.get_client_data_hooks ())
     m_logical_loc_mgr = client_data_hooks->get_logical_location_manager ();
 }
 
@@ -1883,7 +1883,7 @@ sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
     }
 }
 
-/* Implementation of diagnostic_context::m_diagrams.m_emission_cb
+/* Implementation of diagnostics::context::m_diagrams.m_emission_cb
    for SARIF output.  */
 
 void
@@ -2267,7 +2267,7 @@ sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
     std::unique_ptr<sarif_multiformat_message_string>
     render (const sarif_builder &builder) const final override
     {
-      diagnostic_context dc;
+      diagnostics::context dc;
       diagnostic_initialize (&dc, 0);
       dc.m_source_printing.enabled = true;
       dc.m_source_printing.colorize_source_p = false;
@@ -2277,7 +2277,7 @@ sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
       rich_location my_rich_loc (m_richloc);
       my_rich_loc.set_escape_on_output (true);
 
-      diagnostic_source_print_policy source_policy (dc);
+      source_print_policy source_policy (dc);
       dc.set_escape_format (m_escape_format);
       text_sink text_output (dc);
       source_policy.print (*text_output.get_printer (),
@@ -2378,7 +2378,7 @@ sarif_builder::make_location_object (sarif_location_manager *loc_mgr,
 /* If WHERE was #included from somewhere, add a worklist item
    to LOC_MGR to lazily add a location for the #include location,
    and relationships between it and the LOCATION_OBJ.
-   Compare with diagnostic_context::report_current_module, but rather
+   Compare with diagnostics::context::report_current_module, but rather
    than iterating the current chain, we add the next edge and iterate
    in the worklist, so that edges are only added once.  */
 
@@ -3940,12 +3940,12 @@ public:
   sarif_result &get_result (size_t idx) { return m_builder.get_result (idx); }
 
 protected:
-  sarif_sink (diagnostic_context &context,
+  sarif_sink (context &dc,
 	      const line_maps *line_maps,
 	      std::unique_ptr<sarif_serialization_format> serialization_format,
 	      const sarif_generation_options &sarif_gen_opts)
-  : sink (context),
-    m_builder (context, *get_printer (), line_maps,
+  : sink (dc),
+    m_builder (dc, *get_printer (), line_maps,
 	       std::move (serialization_format), sarif_gen_opts),
     m_buffer (nullptr)
   {}
@@ -3957,12 +3957,12 @@ protected:
 class sarif_stream_sink : public sarif_sink
 {
 public:
-  sarif_stream_sink (diagnostic_context &context,
+  sarif_stream_sink (context &dc,
 		     const line_maps *line_maps,
 		     std::unique_ptr<sarif_serialization_format> serialization_format,
 		     const sarif_generation_options &sarif_gen_opts,
 		     FILE *stream)
-  : sarif_sink (context, line_maps,
+  : sarif_sink (dc, line_maps,
 		std::move (serialization_format), sarif_gen_opts),
     m_stream (stream)
   {
@@ -3982,12 +3982,12 @@ private:
 class sarif_file_sink : public sarif_sink
 {
 public:
-  sarif_file_sink (diagnostic_context &context,
+  sarif_file_sink (context &dc,
 		   const line_maps *line_maps,
 		   std::unique_ptr<sarif_serialization_format> serialization_format,
 		   const sarif_generation_options &sarif_gen_opts,
 		   output_file output_file_)
-  : sarif_sink (context, line_maps,
+  : sarif_sink (dc, line_maps,
 		std::move (serialization_format),
 		sarif_gen_opts),
     m_output_file (std::move (output_file_))
@@ -4136,7 +4136,7 @@ sarif_builder::sarif_token_printer::print_tokens (pretty_printer *pp,
    Return a reference to *FMT.  */
 
 static sink &
-init_sarif_sink (diagnostic_context &context,
+init_sarif_sink (context &dc,
 		 std::unique_ptr<sarif_sink> fmt)
 {
   gcc_assert (fmt);
@@ -4144,16 +4144,16 @@ init_sarif_sink (diagnostic_context &context,
 
   fmt->update_printer ();
 
-  context.set_sink (std::move (fmt));
+  dc.set_sink (std::move (fmt));
 
   return out;
 }
 
-/* Populate CONTEXT in preparation for SARIF output to stderr.
+/* Populate DC in preparation for SARIF output to stderr.
    Return a reference to the new sink.  */
 
 sink &
-init_sarif_stderr (diagnostic_context &context,
+init_sarif_stderr (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted)
 {
@@ -4162,8 +4162,8 @@ init_sarif_stderr (diagnostic_context &context,
   auto serialization
     = std::make_unique<sarif_serialization_format_json> (formatted);
   return init_sarif_sink
-    (context,
-     std::make_unique<sarif_stream_sink> (context,
+    (dc,
+     std::make_unique<sarif_stream_sink> (dc,
 					  line_maps,
 					  std::move (serialization),
 					  sarif_gen_opts,
@@ -4172,11 +4172,11 @@ init_sarif_stderr (diagnostic_context &context,
 
 /* Attempt to open "BASE_FILE_NAME""EXTENSION" for writing.
    Return a non-null output_file,
-   or return a null output_file and complain to CONTEXT
+   or return a null output_file and complain to DC
    using LINE_MAPS.  */
 
 output_file
-output_file::try_to_open (diagnostic_context &context,
+output_file::try_to_open (context &dc,
 			  line_maps *line_maps,
 			  const char *base_file_name,
 			  const char *extension,
@@ -4188,7 +4188,7 @@ output_file::try_to_open (diagnostic_context &context,
   if (!base_file_name)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic_with_group
+      dc.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to determine filename for SARIF output");
       return output_file ();
@@ -4201,7 +4201,7 @@ output_file::try_to_open (diagnostic_context &context,
   if (!outf)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic_with_group
+      dc.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
 	 "unable to open %qs for diagnostic output: %m",
 	 filename.get ());
@@ -4212,11 +4212,11 @@ output_file::try_to_open (diagnostic_context &context,
 
 /* Attempt to open BASE_FILE_NAME.sarif for writing JSON.
    Return a non-null output_file,
-   or return a null output_file and complain to CONTEXT
+   or return a null output_file and complain to DC
    using LINE_MAPS.  */
 
 output_file
-open_sarif_output_file (diagnostic_context &context,
+open_sarif_output_file (context &dc,
 			line_maps *line_maps,
 			const char *base_file_name,
 			enum sarif_serialization_kind serialization_kind)
@@ -4233,19 +4233,19 @@ open_sarif_output_file (diagnostic_context &context,
       break;
     }
 
-  return output_file::try_to_open (context,
+  return output_file::try_to_open (dc,
 				   line_maps,
 				   base_file_name,
 				   suffix,
 				   is_binary);
 }
 
-/* Populate CONTEXT in preparation for SARIF output to a file named
+/* Populate DC in preparation for SARIF output to a file named
    BASE_FILE_NAME.sarif.
    Return a reference to the new sink.  */
 
 sink &
-init_sarif_file (diagnostic_context &context,
+init_sarif_file (context &dc,
 		 line_maps *line_maps,
 		 bool formatted,
 		 const char *base_file_name)
@@ -4253,7 +4253,7 @@ init_sarif_file (diagnostic_context &context,
   gcc_assert (line_maps);
 
   output_file output_file_
-    = open_sarif_output_file (context,
+    = open_sarif_output_file (dc,
 			      line_maps,
 			      base_file_name,
 			      sarif_serialization_kind::json);
@@ -4262,19 +4262,19 @@ init_sarif_file (diagnostic_context &context,
 
   const sarif_generation_options sarif_gen_opts;
   return init_sarif_sink
-    (context,
-     std::make_unique<sarif_file_sink> (context,
+    (dc,
+     std::make_unique<sarif_file_sink> (dc,
 					line_maps,
 					std::move (serialization),
 					sarif_gen_opts,
 					std::move (output_file_)));
 }
 
-/* Populate CONTEXT in preparation for SARIF output to STREAM.
+/* Populate DC in preparation for SARIF output to STREAM.
    Return a reference to the new sink.  */
 
 sink &
-init_sarif_stream (diagnostic_context &context,
+init_sarif_stream (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted,
 		   FILE *stream)
@@ -4284,8 +4284,8 @@ init_sarif_stream (diagnostic_context &context,
   auto serialization
     = std::make_unique<sarif_serialization_format_json> (formatted);
   return init_sarif_sink
-    (context,
-     std::make_unique<sarif_stream_sink> (context,
+    (dc,
+     std::make_unique<sarif_stream_sink> (dc,
 					  line_maps,
 					  std::move (serialization),
 					  sarif_gen_opts,
@@ -4293,14 +4293,14 @@ init_sarif_stream (diagnostic_context &context,
 }
 
 std::unique_ptr<sink>
-make_sarif_sink (diagnostic_context &context,
+make_sarif_sink (context &dc,
 		 const line_maps &line_maps,
 		 std::unique_ptr<sarif_serialization_format> serialization,
 		 const sarif_generation_options &sarif_gen_opts,
 		 output_file output_file_)
 {
   auto sink
-    = std::make_unique<sarif_file_sink> (context,
+    = std::make_unique<sarif_file_sink> (dc,
 					 &line_maps,
 					 std::move (serialization),
 					 sarif_gen_opts,
@@ -4426,11 +4426,11 @@ private:
   class buffered_sink : public sarif_sink
   {
   public:
-    buffered_sink (diagnostic_context &context,
+    buffered_sink (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted,
 		   const sarif_generation_options &sarif_gen_opts)
-    : sarif_sink (context, line_maps,
+    : sarif_sink (dc, line_maps,
 		  std::make_unique<sarif_serialization_format_json> (formatted),
 		  sarif_gen_opts)
     {
@@ -4575,7 +4575,7 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
 }
 
 /* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
-   diagnostic_context and examining the generated sarif_log.
+   diagnostics::context and examining the generated sarif_log.
    Verify various basic properties. */
 
 static void

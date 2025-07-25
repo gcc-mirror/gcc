@@ -347,7 +347,7 @@ static void set_debug_level (uint32_t dinfo, int extended,
 			     location_t loc);
 static void set_fast_math_flags (struct gcc_options *opts, int set);
 static void decode_d_option (const char *arg, struct gcc_options *opts,
-			     location_t loc, diagnostic_context *dc);
+			     location_t loc, diagnostics::context *dc);
 static void set_unsafe_math_optimizations_flags (struct gcc_options *opts,
 						 int set);
 static void enable_warning_as_error (const char *arg, int value,
@@ -356,7 +356,7 @@ static void enable_warning_as_error (const char *arg, int value,
 				     struct gcc_options *opts,
 				     struct gcc_options *opts_set,
 				     location_t loc,
-				     diagnostic_context *dc);
+				     diagnostics::context *dc);
 
 /* Handle a back-end option; arguments and return value as for
    handle_option.  */
@@ -368,7 +368,7 @@ target_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc, void (*) (void))
+		      diagnostics::context *dc, void (*) (void))
 {
   gcc_assert (dc == global_dc);
   gcc_assert (kind == DK_UNSPECIFIED);
@@ -469,7 +469,7 @@ maybe_default_option (struct gcc_options *opts,
 		      unsigned int lang_mask,
 		      const struct cl_option_handlers *handlers,
 		      location_t loc,
-		      diagnostic_context *dc)
+		      diagnostics::context *dc)
 {
   const struct cl_option *option = &cl_options[default_opt->opt_index];
   bool enabled;
@@ -559,7 +559,7 @@ maybe_default_options (struct gcc_options *opts,
 		       unsigned int lang_mask,
 		       const struct cl_option_handlers *handlers,
 		       location_t loc,
-		       diagnostic_context *dc)
+		       diagnostics::context *dc)
 {
   size_t i;
 
@@ -727,7 +727,7 @@ default_options_optimization (struct gcc_options *opts,
 			      location_t loc,
 			      unsigned int lang_mask,
 			      const struct cl_option_handlers *handlers,
-			      diagnostic_context *dc)
+			      diagnostics::context *dc)
 {
   unsigned int i;
   int opt2;
@@ -2703,7 +2703,7 @@ common_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers,
-		      diagnostic_context *dc,
+		      diagnostics::context *dc,
 		      void (*target_option_override_hook) (void))
 {
   size_t scode = decoded->opt_index;
@@ -3618,7 +3618,7 @@ set_debug_level (uint32_t dinfo, int extended, const char *arg,
    abort ().)  */
 
 static void
-setup_core_dumping (diagnostic_context *dc)
+setup_core_dumping (diagnostics::context *dc)
 {
 #ifdef SIGABRT
   signal (SIGABRT, SIG_DFL);
@@ -3642,7 +3642,7 @@ setup_core_dumping (diagnostic_context *dc)
 
 static void
 decode_d_option (const char *arg, struct gcc_options *opts,
-		 location_t loc, diagnostic_context *dc)
+		 location_t loc, diagnostics::context *dc)
 {
   int c;
 
@@ -3691,7 +3691,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 			 const struct cl_option_handlers *handlers,
 			 struct gcc_options *opts,
 			 struct gcc_options *opts_set,
-			 location_t loc, diagnostic_context *dc)
+			 location_t loc, diagnostics::context *dc)
 {
   char *new_option;
   int option_index;

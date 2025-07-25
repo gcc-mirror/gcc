@@ -155,976 +155,19 @@ enum diagnostic_text_art_charset
 #include "diagnostics/diagnostic-info.h"
 typedef diagnostics::diagnostic_info diagnostic_info;
 
-/*  Forward declarations.  */
-class diagnostic_location_print_policy;
-class diagnostic_source_print_policy;
-
-typedef void (*diagnostic_text_starter_fn) (diagnostics::text_sink &,
-					    const diagnostic_info *);
-
-struct to_text;
-struct to_html;
-
-extern pretty_printer *get_printer (to_text &);
-
-template <typename Sink>
-using diagnostic_start_span_fn = void (*) (const diagnostic_location_print_policy &,
-					   Sink &sink,
-					   expanded_location);
-
-typedef void (*diagnostic_text_finalizer_fn) (diagnostics::text_sink &,
-					      const diagnostic_info *,
-					      diagnostic_t);
-
-/* Abstract base class for the diagnostic subsystem to make queries
-   about command-line options.  */
-
-class diagnostic_option_manager
-{
-public:
-  virtual ~diagnostic_option_manager () {}
-
-  /* Return 1 if option OPTION_ID is enabled, 0 if it is disabled,
-     or -1 if it isn't a simple on-off switch
-     (or if the value is unknown, typically set later in target).  */
-  virtual int option_enabled_p (diagnostic_option_id option_id) const = 0;
-
-  /* Return malloced memory for the name of the option OPTION_ID
-     which enabled a diagnostic, originally of type ORIG_DIAG_KIND but
-     possibly converted to DIAG_KIND by options such as -Werror.
-     May return NULL if no name is to be printed.
-     May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_name (diagnostic_option_id option_id,
-				  diagnostic_t orig_diag_kind,
-				  diagnostic_t diag_kind) const = 0;
-
-  /* Return malloced memory for a URL describing the option that controls
-     a diagnostic.
-     May return NULL if no URL is available.
-     May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
-};
-
-/* A stack of sets of classifications: each entry in the stack is
-   a mapping from option index to diagnostic severity that can be changed
-   via pragmas.  The stack can be pushed and popped.  */
-
-class diagnostic_option_classifier
-{
-public:
-  void init (int n_opts);
-  void fini ();
-
-  /* Save all diagnostic classifications in a stack.  */
-  void push ();
-
-  /* Restore the topmost classification set off the stack.  If the stack
-     is empty, revert to the state based on command line parameters.  */
-  void pop (location_t where);
-
-  bool option_unspecified_p (diagnostic_option_id option_id) const
-  {
-    return get_current_override (option_id) == DK_UNSPECIFIED;
-  }
-
-  diagnostic_t get_current_override (diagnostic_option_id option_id) const
-  {
-    gcc_assert (option_id.m_idx < m_n_opts);
-    return m_classify_diagnostic[option_id.m_idx];
-  }
-
-  diagnostic_t
-  classify_diagnostic (const diagnostic_context *context,
-		       diagnostic_option_id option_id,
-		       diagnostic_t new_kind,
-		       location_t where);
-
-  diagnostic_t
-  update_effective_level_from_pragmas (diagnostic_info *diagnostic) const;
-
-  int pch_save (FILE *);
-  int pch_restore (FILE *);
-
-private:
-  /* Each time a diagnostic's classification is changed with a pragma,
-     we record the change and the location of the change in an array of
-     these structs.  */
-  struct diagnostic_classification_change_t
-  {
-    location_t location;
-
-    /* For DK_POP, this is the index of the corresponding push (as stored
-       in m_push_list).
-       Otherwise, this is an option index.  */
-    int option;
-
-    diagnostic_t kind;
-  };
-
-  int m_n_opts;
-
-  /* For each option index that can be passed to warning() et al
-     (OPT_* from options.h when using this code with the core GCC
-     options), this array may contain a new kind that the diagnostic
-     should be changed to before reporting, or DK_UNSPECIFIED to leave
-     it as the reported kind, or DK_IGNORED to not report it at
-     all.  */
-  diagnostic_t *m_classify_diagnostic;
-
-  /* History of all changes to the classifications above.  This list
-     is stored in location-order, so we can search it, either
-     binary-wise or end-to-front, to find the most recent
-     classification for a given diagnostic, given the location of the
-     diagnostic.  */
-  vec<diagnostic_classification_change_t> m_classification_history;
-
-  /* For diagnostic_context::get_classification_history, declared later.  */
-  friend class diagnostic_context;
-
-  /* For pragma push/pop.  */
-  vec<int> m_push_list;
-};
-
-/* A bundle of options relating to printing the user's source code
-   (potentially with a margin, underlining, labels, etc).  */
-
-struct diagnostic_source_printing_options
-{
-  /* True if we should print the source line with a caret indicating
-     the location.
-     Corresponds to -fdiagnostics-show-caret.  */
-  bool enabled;
-
-  /* Maximum width of the source line printed.  */
-  int max_width;
-
-  /* Character used at the caret when printing source locations.  */
-  char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
-
-  /* When printing source code, should the characters at carets and ranges
-     be colorized? (assuming colorization is on at all).
-     This should be true for frontends that generate range information
-     (so that the ranges of code are colorized),
-     and false for frontends that merely specify points within the
-     source code (to avoid e.g. colorizing just the first character in
-     a token, which would look strange).  */
-  bool colorize_source_p;
-
-  /* When printing source code, should labelled ranges be printed?
-     Corresponds to -fdiagnostics-show-labels.  */
-  bool show_labels_p;
-
-  /* When printing source code, should there be a left-hand margin
-     showing line numbers?
-     Corresponds to -fdiagnostics-show-line-numbers.  */
-  bool show_line_numbers_p;
-
-  /* If printing source code, what should the minimum width of the margin
-     be?  Line numbers will be right-aligned, and padded to this width.
-     Corresponds to -fdiagnostics-minimum-margin-width=VALUE.  */
-  int min_margin_width;
-
-  /* Usable by plugins; if true, print a debugging ruler above the
-     source output.  */
-  bool show_ruler_p;
-
-  /* When printing events in an inline path, should we print lines
-     visualizing links between related events (e.g. for CFG paths)?
-     Corresponds to -fdiagnostics-show-event-links.  */
-  bool show_event_links_p;
-};
-
-/* A bundle of state for determining column numbers in diagnostics
-   (tab stops, whether to start at 0 or 1, etc).
-   Uses a file_cache to handle tabs.  */
-
-class diagnostic_column_policy
-{
-public:
-  diagnostic_column_policy (const diagnostic_context &dc);
-
-  int converted_column (expanded_location s) const;
-
-  label_text get_location_text (const expanded_location &s,
-				bool show_column,
-				bool colorize) const;
-
-  int get_tabstop () const { return m_tabstop; }
-
-private:
-  file_cache &m_file_cache;
-  enum diagnostics_column_unit m_column_unit;
-  int m_column_origin;
-  int m_tabstop;
-};
-
-/* A bundle of state for printing locations within diagnostics
-   (e.g. "FILENAME:LINE:COLUMN"), to isolate the interactions between
-   diagnostic_context and the start_span callbacks.  */
-
-class diagnostic_location_print_policy
-{
-public:
-  diagnostic_location_print_policy (const diagnostic_context &dc);
-  diagnostic_location_print_policy (const diagnostics::text_sink &);
-
-  bool show_column_p () const { return m_show_column; }
-
-  const diagnostic_column_policy &
-  get_column_policy () const { return m_column_policy; }
-
-  void
-  print_text_span_start (const diagnostic_context &dc,
-			 pretty_printer &pp,
-			 const expanded_location &exploc);
-
-  void
-  print_html_span_start (const diagnostic_context &dc,
-			 xml::printer &xp,
-			 const expanded_location &exploc);
-
-private:
-  diagnostic_column_policy m_column_policy;
-  bool m_show_column;
-};
-
-/* Abstract base class for optionally supplying extra tags when writing
-   out annotation labels in HTML output.  */
-
-class html_label_writer
-{
-public:
-  virtual ~html_label_writer () {}
-  virtual void begin_label () = 0;
-  virtual void end_label () = 0;
-};
-
-/* A bundle of state for printing source within a diagnostic,
-   to isolate the interactions between diagnostic_context and the
-   implementation of diagnostic_show_locus.  */
-
-class diagnostic_source_print_policy
-{
-public:
-  diagnostic_source_print_policy (const diagnostic_context &);
-  diagnostic_source_print_policy (const diagnostic_context &,
-				  const diagnostic_source_printing_options &);
-
-  void
-  print (pretty_printer &pp,
-	 const rich_location &richloc,
-	 diagnostic_t diagnostic_kind,
-	 diagnostics::source_effect_info *effect_info) const;
-
-  void
-  print_as_html (xml::printer &xp,
-		 const rich_location &richloc,
-		 diagnostic_t diagnostic_kind,
-		 diagnostics::source_effect_info *effect_info,
-		 html_label_writer *label_writer) const;
-
-  const diagnostic_source_printing_options &
-  get_options () const { return m_options; }
-
-  diagnostic_start_span_fn<to_text>
-  get_text_start_span_fn () const { return m_text_start_span_cb; }
-
-  diagnostic_start_span_fn<to_html>
-  get_html_start_span_fn () const { return m_html_start_span_cb; }
-
-  file_cache &
-  get_file_cache () const { return m_file_cache; }
-
-  enum diagnostics_escape_format
-  get_escape_format () const
-  {
-    return m_escape_format;
-  }
-
-  text_art::theme *
-  get_diagram_theme () const { return m_diagram_theme; }
-
-  const diagnostic_column_policy &get_column_policy () const
-  {
-    return m_location_policy.get_column_policy ();
-  }
-
-  const diagnostic_location_print_policy &get_location_policy () const
-  {
-    return m_location_policy;
-  }
-
-private:
-  const diagnostic_source_printing_options &m_options;
-  class diagnostic_location_print_policy m_location_policy;
-  diagnostic_start_span_fn<to_text> m_text_start_span_cb;
-  diagnostic_start_span_fn<to_html> m_html_start_span_cb;
-  file_cache &m_file_cache;
-
-  /* Other data copied from diagnostic_context.  */
-  text_art::theme *m_diagram_theme;
-  enum diagnostics_escape_format m_escape_format;
-};
-
-/* A collection of counters of diagnostics, per-kind
-   (e.g. "3 errors and 1 warning"), for use by both diagnostic_context
-   and by diagnostics::buffer.  */
-
-struct diagnostic_counters
-{
-  diagnostic_counters ();
-
-  void dump (FILE *out, int indent) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
-
-  int get_count (diagnostic_t kind) const { return m_count_for_kind[kind]; }
-
-  void move_to (diagnostic_counters &dest);
-  void clear ();
-
-  int m_count_for_kind[DK_LAST_DIAGNOSTIC_KIND];
-};
-
-/* This class encapsulates the state of the diagnostics subsystem
-   as a whole (either directly, or via owned objects of other classes, to
-   avoid global variables).
-
-   It has responsibility for:
-   - being a central place for clients to report diagnostics
-   - reporting those diagnostics to zero or more output sinks
-     (e.g. text vs SARIF)
-   - providing a "dump" member function for a debug dump of the state of
-     the diagnostics subsytem
-   - direct vs buffered diagnostics (see class diagnostics::buffer)
-   - tracking the original argv of the program (for SARIF output)
-   - crash-handling
-
-   It delegates responsibility to various other classes:
-   - the various output sinks (instances of diagnostics::sink
-     subclasses)
-   - formatting of messages (class pretty_printer)
-   - an optional urlifier to inject URLs into formatted messages
-   - counting the number of diagnostics reported of each kind
-     (class diagnostic_counters)
-   - calling out to a diagnostic_option_manager to determine if
-     a particular warning is enabled or disabled
-   - tracking pragmas that enable/disable warnings in a range of
-     source code
-   - a cache for use when quoting the user's source code (class file_cache)
-   - a text_art::theme
-   - a diagnostics::edit_context for generating patches from fix-it hints
-   - diagnostics::client_data_hooks for metadata.
-
-   Try to avoid adding new responsibilities to this class itself, to avoid
-   the "blob" anti-pattern.  */
-
-class diagnostic_context
-{
-public:
-  /* Give access to m_text_callbacks.  */
-  friend diagnostic_text_starter_fn &
-  diagnostic_text_starter (diagnostic_context *context);
-  friend diagnostic_start_span_fn<to_text> &
-  diagnostic_start_span (diagnostic_context *context);
-  friend diagnostic_text_finalizer_fn &
-  diagnostic_text_finalizer (diagnostic_context *context);
-
-  friend class diagnostic_source_print_policy;
-  friend class diagnostics::text_sink;
-  friend class diagnostics::buffer;
-
-  typedef void (*set_locations_callback_t) (diagnostic_context *,
-					    diagnostic_info *);
-
-  void initialize (int n_opts);
-  void color_init (int value);
-  void urls_init (int value);
-  void set_pretty_printer (std::unique_ptr<pretty_printer> pp);
-  void refresh_output_sinks ();
-
-  void finish ();
-
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
-
-  bool execution_failed_p () const;
-
-  void set_original_argv (unique_argv original_argv);
-  const char * const *get_original_argv ()
-  {
-    return const_cast<const char * const *> (m_original_argv);
-  }
-
-  void set_set_locations_callback (set_locations_callback_t cb)
-  {
-    m_set_locations_cb = cb;
-  }
-
-  void
-  initialize_input_context (diagnostic_input_charset_callback ccb,
-			    bool should_skip_bom);
-
-  void begin_group ();
-  void end_group ();
-
-  void push_nesting_level ();
-  void pop_nesting_level ();
-
-  bool warning_enabled_at (location_t loc, diagnostic_option_id option_id);
-
-  bool option_unspecified_p (diagnostic_option_id option_id) const
-  {
-    return m_option_classifier.option_unspecified_p (option_id);
-  }
-
-  bool emit_diagnostic_with_group (diagnostic_t kind,
-				   rich_location &richloc,
-				   const diagnostics::metadata *metadata,
-				   diagnostic_option_id option_id,
-				   const char *gmsgid, ...)
-    ATTRIBUTE_GCC_DIAG(6,7);
-  bool emit_diagnostic_with_group_va (diagnostic_t kind,
-				      rich_location &richloc,
-				      const diagnostics::metadata *metadata,
-				      diagnostic_option_id option_id,
-				      const char *gmsgid, va_list *ap)
-    ATTRIBUTE_GCC_DIAG(6,0);
-
-  bool report_diagnostic (diagnostic_info *);
-  void report_verbatim (text_info &);
-
-  /* Report a directed graph associated with the run as a whole
-     to any sinks that support directed graphs.  */
-  void
-  report_global_digraph (const diagnostics::digraphs::lazy_digraph &);
-
-  diagnostic_t
-  classify_diagnostic (diagnostic_option_id option_id,
-		       diagnostic_t new_kind,
-		       location_t where)
-  {
-    return m_option_classifier.classify_diagnostic (this,
-						    option_id,
-						    new_kind,
-						    where);
-  }
-
-  void push_diagnostics (location_t where ATTRIBUTE_UNUSED)
-  {
-    m_option_classifier.push ();
-  }
-  void pop_diagnostics (location_t where)
-  {
-    m_option_classifier.pop (where);
-  }
-
-  void maybe_show_locus (const rich_location &richloc,
-			 const diagnostic_source_printing_options &opts,
-			 diagnostic_t diagnostic_kind,
-			 pretty_printer &pp,
-			 diagnostics::source_effect_info *effect_info);
-  void maybe_show_locus_as_html (const rich_location &richloc,
-				 const diagnostic_source_printing_options &opts,
-				 diagnostic_t diagnostic_kind,
-				 xml::printer &xp,
-				 diagnostics::source_effect_info *effect_info,
-				 html_label_writer *label_writer);
-
-  void emit_diagram (const diagnostics::diagram &diag);
-
-  /* Various setters for use by option-handling logic.  */
-  void set_sink (std::unique_ptr<diagnostics::sink> sink_);
-  void set_text_art_charset (enum diagnostic_text_art_charset charset);
-  void set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks);
-
-  void push_owned_urlifier (std::unique_ptr<urlifier>);
-  void push_borrowed_urlifier (const urlifier &);
-  void pop_urlifier ();
-
-  void create_edit_context ();
-  void set_warning_as_error_requested (bool val)
-  {
-    m_warning_as_error_requested = val;
-  }
-  void set_report_bug (bool val) { m_report_bug = val; }
-  void set_extra_output_kind (enum diagnostics_extra_output_kind kind)
-  {
-    m_extra_output_kind = kind;
-  }
-  void set_show_cwe (bool val) { m_show_cwe = val;  }
-  void set_show_rules (bool val) { m_show_rules = val; }
-  void set_show_highlight_colors (bool val);
-  void set_path_format (enum diagnostic_path_format val)
-  {
-    m_path_format = val;
-  }
-  void set_show_path_depths (bool val) { m_show_path_depths = val; }
-  void set_show_option_requested (bool val) { m_show_option_requested = val; }
-  void set_max_errors (int val) { m_max_errors = val; }
-  void set_escape_format (enum diagnostics_escape_format val)
-  {
-    m_escape_format = val;
-  }
-
-  void set_format_decoder (printer_fn format_decoder);
-  void set_prefixing_rule (diagnostic_prefixing_rule_t rule);
-
-  /* Various accessors.  */
-  bool warning_as_error_requested_p () const
-  {
-    return m_warning_as_error_requested;
-  }
-  bool show_path_depths_p () const { return m_show_path_depths; }
-  diagnostics::sink &get_sink (size_t idx) const;
-  enum diagnostic_path_format get_path_format () const { return m_path_format; }
-  enum diagnostics_escape_format get_escape_format () const
-  {
-    return m_escape_format;
-  }
-
-  file_cache &
-  get_file_cache () const
-  {
-    gcc_assert (m_file_cache);
-    return *m_file_cache;
-  }
-
-  diagnostics::edit_context *get_edit_context () const
-  {
-    return m_edit_context_ptr;
-  }
-  const diagnostics::client_data_hooks *get_client_data_hooks () const
-  {
-    return m_client_data_hooks;
-  }
-
-  const diagnostics::logical_locations::manager *
-  get_logical_location_manager () const;
-
-  const urlifier *get_urlifier () const;
-
-  text_art::theme *get_diagram_theme () const { return m_diagrams.m_theme; }
-
-  int &diagnostic_count (diagnostic_t kind)
-  {
-    return m_diagnostic_counters.m_count_for_kind[kind];
-  }
-  int diagnostic_count (diagnostic_t kind) const
-  {
-    return m_diagnostic_counters.get_count (kind);
-  }
-
-  /* Option-related member functions.  */
-  inline bool option_enabled_p (diagnostic_option_id option_id) const
-  {
-    if (!m_option_mgr)
-      return true;
-    return m_option_mgr->option_enabled_p (option_id);
-  }
-
-  inline char *make_option_name (diagnostic_option_id option_id,
-				 diagnostic_t orig_diag_kind,
-				 diagnostic_t diag_kind) const
-  {
-    if (!m_option_mgr)
-      return nullptr;
-    return m_option_mgr->make_option_name (option_id,
-					   orig_diag_kind,
-					   diag_kind);
-  }
-
-  inline char *make_option_url (diagnostic_option_id option_id) const
-  {
-    if (!m_option_mgr)
-      return nullptr;
-    return m_option_mgr->make_option_url (option_id);
-  }
-
-  void
-  set_option_manager (std::unique_ptr<diagnostic_option_manager> mgr,
-		      unsigned lang_mask);
-
-  unsigned get_lang_mask () const
-  {
-    return m_lang_mask;
-  }
-
-  bool diagnostic_impl (rich_location *, const diagnostics::metadata *,
-			diagnostic_option_id, const char *,
-			va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
-  bool diagnostic_n_impl (rich_location *, const diagnostics::metadata *,
-			  diagnostic_option_id, unsigned HOST_WIDE_INT,
-			  const char *, const char *, va_list *,
-			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
-
-  int get_diagnostic_nesting_level () const
-  {
-    return m_diagnostic_groups.m_diagnostic_nesting_level;
-  }
-
-  char *build_indent_prefix () const;
-
-  int
-  pch_save (FILE *f)
-  {
-    return m_option_classifier.pch_save (f);
-  }
-
-  int
-  pch_restore (FILE *f)
-  {
-    return m_option_classifier.pch_restore (f);
-  }
-
-
-  void set_diagnostic_buffer (diagnostics::buffer *);
-  diagnostics::buffer *get_diagnostic_buffer () const
-  {
-    return m_diagnostic_buffer;
-  }
-  void clear_diagnostic_buffer (diagnostics::buffer &);
-  void flush_diagnostic_buffer (diagnostics::buffer &);
-
-  std::unique_ptr<pretty_printer> clone_printer () const
-  {
-    return m_reference_printer->clone ();
-  }
-
-  pretty_printer *get_reference_printer () const
-  {
-    return m_reference_printer;
-  }
-
-  void
-  add_sink (std::unique_ptr<diagnostics::sink>);
-
-  void remove_all_output_sinks ();
-
-  bool supports_fnotice_on_stderr_p () const;
-
-  /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
-  void
-  set_abort_on_error (bool val)
-  {
-    m_abort_on_error = val;
-  }
-
-  /* Accessor for use in serialization, e.g. by C++ modules.  */
-  auto &
-  get_classification_history ()
-  {
-    return m_option_classifier.m_classification_history;
-  }
-
-  void set_main_input_filename (const char *filename);
-
-  void
-  set_permissive_option (diagnostic_option_id opt_permissive)
-  {
-    m_opt_permissive = opt_permissive;
-  }
-
-  void
-  set_fatal_errors (bool fatal_errors)
-  {
-    m_fatal_errors = fatal_errors;
-  }
-
-  void
-  set_internal_error_callback (void (*cb) (diagnostic_context *,
-					   const char *,
-					   va_list *))
-  {
-    m_internal_error = cb;
-  }
-
-  void
-  set_adjust_diagnostic_info_callback (void (*cb) (diagnostic_context *,
-						   diagnostic_info *))
-  {
-    m_adjust_diagnostic_info = cb;
-  }
-
-  void
-  inhibit_notes () { m_inhibit_notes_p = true; }
-
-private:
-  void error_recursion () ATTRIBUTE_NORETURN;
-
-  bool diagnostic_enabled (diagnostic_info *diagnostic);
-
-  void get_any_inlining_info (diagnostic_info *diagnostic);
-
-  void check_max_errors (bool flush);
-  void action_after_output (diagnostic_t diag_kind);
-
-  /* Data members.
-     Ideally, all of these would be private.  */
-
-private:
-  /* A reference instance of pretty_printer created by the client
-     and owned by the context.  Used for cloning when creating/adding
-     output formats.
-     Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  pretty_printer *m_reference_printer;
-
-  /* Cache of source code.
-     Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  file_cache *m_file_cache;
-
-  /* The number of times we have issued diagnostics.  */
-  diagnostic_counters m_diagnostic_counters;
-
-  /* True if it has been requested that warnings be treated as errors.  */
-  bool m_warning_as_error_requested;
-
-  /* The number of option indexes that can be passed to warning() et
-     al.  */
-  int m_n_opts;
-
-  /* The stack of sets of overridden diagnostic option severities.  */
-  diagnostic_option_classifier m_option_classifier;
-
-  /* True if we should print any CWE identifiers associated with
-     diagnostics.  */
-  bool m_show_cwe;
-
-  /* True if we should print any rules associated with diagnostics.  */
-  bool m_show_rules;
-
-  /* How should diagnostics::paths::path objects be printed.  */
-  enum diagnostic_path_format m_path_format;
-
-  /* True if we should print stack depths when printing diagnostic paths.  */
-  bool m_show_path_depths;
-
-  /* True if we should print the command line option which controls
-     each diagnostic, if known.  */
-  bool m_show_option_requested;
-
-  /* True if we should raise a SIGABRT on errors.  */
-  bool m_abort_on_error;
-
-public:
-  /* True if we should show the column number on diagnostics.  */
-  bool m_show_column;
-
-  /* True if pedwarns are errors.  */
-  bool m_pedantic_errors;
-
-  /* True if permerrors are warnings.  */
-  bool m_permissive;
-
-private:
-  /* The option to associate with turning permerrors into warnings,
-     if any.  */
-  diagnostic_option_id m_opt_permissive;
-
-  /* True if errors are fatal.  */
-  bool m_fatal_errors;
-
-public:
-  /* True if all warnings should be disabled.  */
-  bool m_inhibit_warnings;
-
-  /* True if warnings should be given in system headers.  */
-  bool m_warn_system_headers;
-
-private:
-  /* Maximum number of errors to report.  */
-  int m_max_errors;
-
-  /* Client-supplied callbacks for use in text output.  */
-  struct {
-    /* This function is called before any message is printed out.  It is
-       responsible for preparing message prefix and such.  For example, it
-       might say:
-       In file included from "/usr/local/include/curses.h:5:
-       from "/home/gdr/src/nifty_printer.h:56:
-       ...
-    */
-    diagnostic_text_starter_fn m_begin_diagnostic;
-
-    /* This function is called by diagnostic_show_locus in between
-       disjoint spans of source code, so that the context can print
-       something to indicate that a new span of source code has begun.  */
-    diagnostic_start_span_fn<to_text> m_text_start_span;
-    diagnostic_start_span_fn<to_html> m_html_start_span;
-
-    /* This function is called after the diagnostic message is printed.  */
-    diagnostic_text_finalizer_fn m_end_diagnostic;
-  } m_text_callbacks;
-
-  /* Client hook to report an internal error.  */
-  void (*m_internal_error) (diagnostic_context *, const char *, va_list *);
-
-  /* Client hook to adjust properties of the given diagnostic that we're
-     about to issue, such as its kind.  */
-  void (*m_adjust_diagnostic_info)(diagnostic_context *, diagnostic_info *);
-
-  /* Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  diagnostic_option_manager *m_option_mgr;
-  unsigned m_lang_mask;
-
-  /* A stack of optional hooks for adding URLs to quoted text strings in
-     diagnostics.  Only used for the main diagnostic message.
-     Typically a single one owner by the context, but can be temporarily
-     overridden by a borrowed urlifier (e.g. on-stack).  */
-  struct urlifier_stack_node
-  {
-    urlifier *m_urlifier;
-    bool m_owned;
-  };
-  auto_vec<urlifier_stack_node> *m_urlifier_stack;
-
-public:
-  /* Auxiliary data for client.  */
-  void *m_client_aux_data;
-
-  /* Used to detect that the last caret was printed at the same location.  */
-  location_t m_last_location;
-
-private:
-  int m_lock;
-
-  bool m_inhibit_notes_p;
-
-public:
-  diagnostic_source_printing_options m_source_printing;
-
-private:
-  /* True if -freport-bug option is used.  */
-  bool m_report_bug;
-
-  /* Used to specify additional diagnostic output to be emitted after the
-     rest of the diagnostic.  This is for implementing
-     -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */
-  enum diagnostics_extra_output_kind m_extra_output_kind;
-
-public:
-  /* What units to use when outputting the column number.  */
-  enum diagnostics_column_unit m_column_unit;
-
-  /* The origin for the column number (1-based or 0-based typically).  */
-  int m_column_origin;
-
-  /* The size of the tabstop for tab expansion.  */
-  int m_tabstop;
-
-private:
-  /* How should non-ASCII/non-printable bytes be escaped when
-     a diagnostic suggests escaping the source code on output.  */
-  enum diagnostics_escape_format m_escape_format;
-
-  /* If non-NULL, an edit_context to which fix-it hints should be
-     applied, for generating patches.
-     Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  diagnostics::edit_context *m_edit_context_ptr;
-
-  /* Fields relating to diagnostic groups.  */
-  struct {
-    /* How many diagnostic_group instances are currently alive.  */
-    int m_group_nesting_depth;
-
-    /* How many nesting levels have been pushed within this group.  */
-    int m_diagnostic_nesting_level;
-
-    /* How many diagnostics have been emitted since the bottommost
-       diagnostic_group was pushed.  */
-    int m_emission_count;
-
-    /* The "group+diagnostic" nesting depth from which to inhibit notes.  */
-    int m_inhibiting_notes_from;
-  } m_diagnostic_groups;
-
-  void inhibit_notes_in_group (bool inhibit = true);
-  bool notes_inhibited_in_group () const;
-
-  /* The various sinks to which diagnostics are to be outputted
-     (text vs structured formats such as SARIF).
-     The sinks are owned by the context; this would be a
-     std::vector<std::unique_ptr> if diagnostic_context had a
-     proper ctor.  */
-  auto_vec<diagnostics::sink *> m_sinks;
-
-  /* Callback to set the locations of call sites along the inlining
-     stack corresponding to a diagnostic location.  Needed to traverse
-     the BLOCK_SUPERCONTEXT() chain hanging off the LOCATION_BLOCK()
-     of a diagnostic's location.  */
-  set_locations_callback_t m_set_locations_cb;
-
-  /* A bundle of hooks for providing data to the context about its client
-     e.g. version information, plugins, etc.
-     Used by SARIF output to give metadata about the client that's
-     producing diagnostics.
-     Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  diagnostics::client_data_hooks *m_client_data_hooks;
-
-  /* Support for diagrams.  */
-  struct
-  {
-    /* Theme to use when generating diagrams.
-       Can be NULL (if text art is disabled).
-       Owned by the context; this would be a std::unique_ptr if
-       diagnostic_context had a proper ctor.  */
-    text_art::theme *m_theme;
-
-  } m_diagrams;
-
-  /* Owned by the context.  */
-  char **m_original_argv;
-
-  /* Borrowed pointer to the active diagnostics::buffer, if any.
-     If null (the default), then diagnostics that are reported to the
-     context are immediately issued to the output format.
-     If non-null, then diagnostics that are reported to the context
-     are buffered in the buffer, and may be issued to the output format
-     later (if the buffer is flushed), moved to other buffers, or
-     discarded (if the buffer is cleared).  */
-  diagnostics::buffer *m_diagnostic_buffer;
-};
-
-/* Client supplied function to announce a diagnostic
-   (for text-based diagnostic output).  */
-inline diagnostic_text_starter_fn &
-diagnostic_text_starter (diagnostic_context *context)
-{
-  return context->m_text_callbacks.m_begin_diagnostic;
-}
-
-/* Client supplied function called between disjoint spans of source code,
-   so that the context can print
-   something to indicate that a new span of source code has begun.  */
-inline diagnostic_start_span_fn<to_text> &
-diagnostic_start_span (diagnostic_context *context)
-{
-  return context->m_text_callbacks.m_text_start_span;
-}
-
-/* Client supplied function called after a diagnostic message is
-   displayed (for text-based diagnostic output).  */
-inline diagnostic_text_finalizer_fn &
-diagnostic_text_finalizer (diagnostic_context *context)
-{
-  return context->m_text_callbacks.m_end_diagnostic;
-}
+#include "diagnostics/context.h"
 
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->m_client_aux_data
 #define diagnostic_info_auxiliary_data(DI) (DI)->m_x_data
 
-/* This diagnostic_context is used by front-ends that directly output
+/* This diagnostics::context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
    and similar functions.  */
-extern diagnostic_context *global_dc;
+extern diagnostics::context *global_dc;
 
 /* The number of errors that have been issued so far.  Ideally, these
-   would take a diagnostic_context as an argument.  */
+   would take a diagnostics::context as an argument.  */
 #define errorcount global_dc->diagnostic_count (DK_ERROR)
 /* Similarly, but for warnings.  */
 #define warningcount global_dc->diagnostic_count (DK_WARNING)
@@ -1151,32 +194,32 @@ diagnostic_set_option_id (diagnostic_info *info,
 /* Diagnostic related functions.  */
 
 inline void
-diagnostic_initialize (diagnostic_context *context, int n_opts)
+diagnostic_initialize (diagnostics::context *context, int n_opts)
 {
   context->initialize (n_opts);
 }
 
 inline void
-diagnostic_color_init (diagnostic_context *context, int value = -1)
+diagnostic_color_init (diagnostics::context *context, int value = -1)
 {
   context->color_init (value);
 }
 
 inline void
-diagnostic_urls_init (diagnostic_context *context, int value = -1)
+diagnostic_urls_init (diagnostics::context *context, int value = -1)
 {
   context->urls_init (value);
 }
 
 inline void
-diagnostic_finish (diagnostic_context *context)
+diagnostic_finish (diagnostics::context *context)
 {
   context->finish ();
 }
 
 inline void
-diagnostic_show_locus (diagnostic_context *context,
-		       const diagnostic_source_printing_options &opts,
+diagnostic_show_locus (diagnostics::context *context,
+		       const diagnostics::source_printing_options &opts,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind,
 		       pretty_printer *pp,
@@ -1189,13 +232,13 @@ diagnostic_show_locus (diagnostic_context *context,
 }
 
 inline void
-diagnostic_show_locus_as_html (diagnostic_context *context,
-			       const diagnostic_source_printing_options &opts,
+diagnostic_show_locus_as_html (diagnostics::context *context,
+			       const diagnostics::source_printing_options &opts,
 			       rich_location *richloc,
 			       diagnostic_t diagnostic_kind,
 			       xml::printer &xp,
 			       diagnostics::source_effect_info *effect_info = nullptr,
-			       html_label_writer *label_writer = nullptr)
+			       diagnostics::html_label_writer *label_writer = nullptr)
 {
   gcc_assert (context);
   gcc_assert (richloc);
@@ -1219,7 +262,7 @@ diagnostic_show_locus_as_html (diagnostic_context *context,
    rather skipped as part of the conversion process.)  */
 
 inline void
-diagnostic_initialize_input_context (diagnostic_context *context,
+diagnostic_initialize_input_context (diagnostics::context *context,
 				     diagnostic_input_charset_callback ccb,
 				     bool should_skip_bom)
 {
@@ -1228,7 +271,7 @@ diagnostic_initialize_input_context (diagnostic_context *context,
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 inline diagnostic_t
-diagnostic_classify_diagnostic (diagnostic_context *context,
+diagnostic_classify_diagnostic (diagnostics::context *context,
 				diagnostic_option_id option_id,
 				diagnostic_t kind,
 				location_t where)
@@ -1237,13 +280,13 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
 }
 
 inline void
-diagnostic_push_diagnostics (diagnostic_context *context,
+diagnostic_push_diagnostics (diagnostics::context *context,
 			     location_t where)
 {
   context->push_diagnostics (where);
 }
 inline void
-diagnostic_pop_diagnostics (diagnostic_context *context,
+diagnostic_pop_diagnostics (diagnostics::context *context,
 			    location_t where)
 {
   context->pop_diagnostics (where);
@@ -1257,7 +300,7 @@ diagnostic_pop_diagnostics (diagnostic_context *context,
    Return true if a diagnostic was printed, false otherwise.  */
 
 inline bool
-diagnostic_report_diagnostic (diagnostic_context *context,
+diagnostic_report_diagnostic (diagnostics::context *context,
 			      diagnostic_info *diagnostic)
 {
   context->begin_group ();
@@ -1280,7 +323,7 @@ namespace diagnostics {
 void default_text_starter (diagnostics::text_sink &,
 			   const diagnostic_info *);
 template <typename Sink>
-void default_start_span_fn (const diagnostic_location_print_policy &,
+void default_start_span_fn (const diagnostics::location_print_policy &,
 			    Sink &sink,
 			    expanded_location);
 void default_text_finalizer (diagnostics::text_sink &,
@@ -1288,7 +331,7 @@ void default_text_finalizer (diagnostics::text_sink &,
 			     diagnostic_t);
 } // namespace diagnostics
 
-void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
+void diagnostic_set_caret_max_width (diagnostics::context *context, int value);
 
 int get_terminal_width (void);
 
@@ -1329,8 +372,8 @@ const int CARET_LINE_MARGIN = 10;
    whether to print one or two caret lines.  */
 
 inline bool
-diagnostic_same_line (const diagnostic_context *context,
-		       expanded_location s1, expanded_location s2)
+diagnostic_same_line (const diagnostics::context *context,
+		      expanded_location s1, expanded_location s2)
 {
   return (s2.column && s1.line == s2.line
 	  && (context->m_source_printing.max_width - CARET_LINE_MARGIN

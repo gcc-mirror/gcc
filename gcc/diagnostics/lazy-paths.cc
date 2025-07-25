@@ -129,12 +129,12 @@ test_intraprocedural_path (pretty_printer *event_pp)
 		"double `free'");
 }
 
-/* Implementation of diagnostic_option_manager for which all
+/* Implementation of diagnostics::option_manager for which all
    options are disabled, for use in selftests.
    Note that this is *not* called for diagnostic_option_id (0), which
    means "always warn"  */
 
-class all_warnings_disabled : public diagnostic_option_manager
+class all_warnings_disabled : public diagnostics::option_manager
 {
 public:
   int option_enabled_p (diagnostic_option_id) const final override

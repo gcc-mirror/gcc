@@ -1298,7 +1298,7 @@ handle_option (struct gcc_options *opts,
 	       const struct cl_decoded_option *decoded,
 	       unsigned int lang_mask, int kind, location_t loc,
 	       const struct cl_option_handlers *handlers,
-	       bool generated_p, diagnostic_context *dc)
+	       bool generated_p, diagnostics::context *dc)
 {
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -1336,7 +1336,7 @@ handle_generated_option (struct gcc_options *opts,
 			 size_t opt_index, const char *arg, HOST_WIDE_INT value,
 			 unsigned int lang_mask, int kind, location_t loc,
 			 const struct cl_option_handlers *handlers,
-			 bool generated_p, diagnostic_context *dc)
+			 bool generated_p, diagnostics::context *dc)
 {
   struct cl_decoded_option decoded;
 
@@ -1604,7 +1604,7 @@ read_cmdline_option (struct gcc_options *opts,
 		     location_t loc,
 		     unsigned int lang_mask,
 		     const struct cl_option_handlers *handlers,
-		     diagnostic_context *dc)
+		     diagnostics::context *dc)
 {
   const struct cl_option *option;
   const char *opt = decoded->orig_option_with_args_text;
@@ -1658,7 +1658,7 @@ read_cmdline_option (struct gcc_options *opts,
 void
 set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	    size_t opt_index, HOST_WIDE_INT value, const char *arg,
-	    int kind, location_t loc, diagnostic_context *dc,
+	    int kind, location_t loc, diagnostics::context *dc,
 	    HOST_WIDE_INT mask /* = 0 */)
 {
   const struct cl_option *option = &cl_options[opt_index];
@@ -1941,7 +1941,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 			const struct cl_option_handlers *handlers,
 			struct gcc_options *opts,
 			struct gcc_options *opts_set,
-			diagnostic_context *dc)
+			diagnostics::context *dc)
 {
   if (cl_options[opt_index].alias_target != N_OPTS)
     {

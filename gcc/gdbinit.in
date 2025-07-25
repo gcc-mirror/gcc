@@ -293,12 +293,12 @@ See also 'help-gcc-hooks'.
 end
 
 define break-on-diagnostic
-break diagnostic_context::maybe_show_locus
+break diagnostics::context::maybe_show_locus
 end
 
 document break-on-diagnostic
-Put a breakpoint on diagnostic_show_locus, called whenever a diagnostic
-is emitted (as opposed to those warnings that are suppressed by
+Put a breakpoint on diagnostics::context::show_locus, called whenever
+a diagnostic is emitted (as opposed to those warnings that are suppressed by
 command-line options).
 end
 

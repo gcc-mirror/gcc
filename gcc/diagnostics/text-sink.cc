@@ -205,7 +205,7 @@ text_sink::on_report_diagnostic (const diagnostic_info &diagnostic,
 {
   pretty_printer *pp = get_printer ();
 
-  (*diagnostic_text_starter (&m_context)) (*this, &diagnostic);
+  (*text_starter (&m_context)) (*this, &diagnostic);
 
   pp_output_formatted_text (pp, m_context.get_urlifier ());
 
@@ -242,9 +242,9 @@ text_sink::on_report_diagnostic (const diagnostic_info &diagnostic,
 	}
     }
 
-  (*diagnostic_text_finalizer (&m_context)) (*this,
-					     &diagnostic,
-					     orig_diag_kind);
+  (*text_finalizer (&m_context)) (*this,
+				  &diagnostic,
+				  orig_diag_kind);
 
   if (m_show_nesting && m_show_locations_in_nesting)
     get_context ().m_last_location = diagnostic_location (&diagnostic);
@@ -353,7 +353,7 @@ get_bullet_point_unichar (bool unicode)
 /* Return true if DC's theme supports unicode characters.  */
 
 static bool
-use_unicode_p (const diagnostic_context &dc)
+use_unicode_p (const context &dc)
 {
   if (text_art::theme *theme = dc.get_diagram_theme ())
     return theme->unicode_p ();
@@ -365,7 +365,7 @@ use_unicode_p (const diagnostic_context &dc)
    nested diagnostics.  */
 
 static unsigned
-get_bullet_point_unichar (diagnostic_context &dc)
+get_bullet_point_unichar (context &dc)
 {
   return get_bullet_point_unichar (use_unicode_p (dc));
 }
@@ -407,9 +407,9 @@ text_sink::build_indent_prefix (bool with_bullet) const
 
 void
 text_sink::append_note (location_t location,
-					    const char * gmsgid, ...)
+			const char * gmsgid, ...)
 {
-  diagnostic_context *context = &get_context ();
+  context *dc = &get_context ();
 
   diagnostic_info diagnostic;
   va_list ap;
@@ -417,7 +417,7 @@ text_sink::append_note (location_t location,
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
-  if (context->m_inhibit_notes_p)
+  if (dc->m_inhibit_notes_p)
     {
       va_end (ap);
       return;
@@ -430,7 +430,7 @@ text_sink::append_note (location_t location,
   pp_destroy_prefix (pp);
   pp_set_prefix (pp, saved_prefix);
   pp_newline (pp);
-  diagnostic_show_locus (context, get_source_printing_options (),
+  diagnostic_show_locus (dc, get_source_printing_options (),
 			 &richloc, DK_NOTE, pp);
   va_end (ap);
 }
@@ -539,9 +539,8 @@ text_sink::print_any_rules (const diagnostic_info &diagnostic)
     }
 }
 
-/* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
-   printer, e.g. " [-Werror=uninitialized]".
-   Subroutine of diagnostic_context::report_diagnostic.  */
+/* Print any metadata about the option used to control DIAGNOSTIC to
+   the context's printer, e.g. " [-Werror=uninitialized]".  */
 
 void
 text_sink::print_option_information (const diagnostic_info &diagnostic,
@@ -600,10 +599,10 @@ text_sink::includes_seen_p (const line_map_ordinary *map)
 label_text
 text_sink::get_location_text (const expanded_location &s) const
 {
-  diagnostic_column_policy column_policy (get_context ());
-  return column_policy.get_location_text (s,
-					  show_column_p (),
-					  pp_show_color (get_printer ()));
+  column_policy column_policy_ (get_context ());
+  return column_policy_.get_location_text (s,
+					   show_column_p (),
+					   pp_show_color (get_printer ()));
 }
 
 /* Helpers for writing lang-specific starters/finalizers for text output.  */

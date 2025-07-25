@@ -330,7 +330,7 @@ global_decl_processing (void)
 
 /* Called to perform language-specific initialization of CTX.  */
 void
-lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
+lhd_initialize_diagnostics (diagnostics::context *ctx ATTRIBUTE_UNUSED)
 {
 }
 
@@ -373,7 +373,7 @@ lhd_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
 			  const diagnostic_info *diagnostic)
 {
-  diagnostic_context *const context = &text_output.get_context ();
+  diagnostics::context *const context = &text_output.get_context ();
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       pretty_printer *const pp = text_output.get_printer ();

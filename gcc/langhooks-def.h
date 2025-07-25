@@ -71,7 +71,7 @@ extern tree lhd_builtin_function (tree);
 extern tree lhd_enum_underlying_base_type (const_tree);
 
 /* Declarations of default tree inlining hooks.  */
-extern void lhd_initialize_diagnostics (diagnostic_context *);
+extern void lhd_initialize_diagnostics (diagnostics::context *);
 extern void lhd_init_options (unsigned int,
 			      struct cl_decoded_option *);
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);

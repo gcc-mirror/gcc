@@ -189,9 +189,9 @@ c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
 
 /* Common default settings for diagnostics.  */
 void
-c_common_diagnostics_set_defaults (diagnostic_context *context)
+c_common_diagnostics_set_defaults (diagnostics::context *context)
 {
-  diagnostic_text_finalizer (context) = c_diagnostic_text_finalizer;
+  diagnostics::text_finalizer (context) = c_diagnostic_text_finalizer;
   context->set_permissive_option (OPT_fpermissive);
 }
 

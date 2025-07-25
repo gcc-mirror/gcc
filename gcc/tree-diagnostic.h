@@ -48,10 +48,10 @@ along with GCC; see the file COPYING3.  If not see
        ? diagnostic_abstract_origin (DI)		\
        : current_function_decl)
 
-void diagnostic_report_current_function (diagnostic_context *,
+void diagnostic_report_current_function (diagnostics::context *,
 					 const diagnostic_info *);
 
-void tree_diagnostics_defaults (diagnostic_context *context);
+void tree_diagnostics_defaults (diagnostics::context *);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,
 			   int, bool, bool, bool, bool *, pp_token_list &);
 

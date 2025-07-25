@@ -28,7 +28,7 @@ namespace diagnostics {
 class sarif_object;
 class client_version_info;
 
-/* A bundle of additional metadata, owned by the diagnostic_context,
+/* A bundle of additional metadata, owned by the diagnostics::context,
    for querying things about the client, like version data.  */
 
 class client_data_hooks
@@ -62,7 +62,7 @@ class client_data_hooks
 
 class client_plugin_info;
 
-/* Abstract base class for a diagnostic_context to get at
+/* Abstract base class for a diagnostics::context to get at
    version information about the client.  */
 
 class client_version_info
@@ -95,7 +95,7 @@ public:
   virtual void for_each_plugin (plugin_visitor &v) const = 0;
 };
 
-/* Abstract base class for a diagnostic_context to get at
+/* Abstract base class for a diagnostics::context to get at
    information about a specific plugin within a client.  */
 
 class client_plugin_info

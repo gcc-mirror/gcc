@@ -41,7 +41,7 @@ test_diagnostic_context::test_diagnostic_context ()
   m_source_printing.enabled = true;
   m_source_printing.show_labels_p = true;
   m_show_column = true;
-  diagnostic_start_span (this) = start_span_cb;
+  diagnostics::start_span (this) = start_span_cb;
   m_source_printing.min_margin_width = 6;
   m_source_printing.max_width = 80;
   pp_buffer (get_sink (0).get_printer ())->m_flush_p = false;
@@ -57,12 +57,13 @@ test_diagnostic_context::~test_diagnostic_context ()
 
 void
 test_diagnostic_context::
-start_span_cb (const diagnostic_location_print_policy &loc_policy,
-	       to_text &sink,
+start_span_cb (const diagnostics::location_print_policy &loc_policy,
+	       diagnostics::to_text &sink,
 	       expanded_location exploc)
 {
   exploc.file = "FILENAME";
-  diagnostics::default_start_span_fn<to_text> (loc_policy, sink, exploc);
+  diagnostics::default_start_span_fn<diagnostics::to_text>
+    (loc_policy, sink, exploc);
 }
 
 bool
@@ -89,7 +90,7 @@ test_diagnostic_context::test_show_locus (rich_location &richloc)
 {
   pretty_printer *pp = get_reference_printer ();
   gcc_assert (pp);
-  diagnostic_source_print_policy source_policy (*this);
+  diagnostics::source_print_policy source_policy (*this);
   source_policy.print (*pp, richloc, DK_ERROR, nullptr);
   return pp_formatted_text (pp);
 }

@@ -414,7 +414,7 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 }
 
 void
-c_initialize_diagnostics (diagnostic_context *context)
+c_initialize_diagnostics (diagnostics::context *context)
 {
   context->set_pretty_printer (std::make_unique<c_pretty_printer> ());
   c_common_diagnostics_set_defaults (context);

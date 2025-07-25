@@ -460,7 +460,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 /* Return a malloc'd string describing the kind of diagnostic.  The
    caller is responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
+gfc_diagnostic_build_kind_prefix (diagnostics::context *context,
 				  const diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
@@ -492,7 +492,7 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_policy,
+gfc_diagnostic_build_locus_prefix (const diagnostics::location_print_policy &loc_policy,
 				   expanded_location s,
 				   bool colorize)
 {
@@ -511,7 +511,7 @@ gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_p
 /* Return a malloc'd string describing two locations.  The caller is
    responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_policy,
+gfc_diagnostic_build_locus_prefix (const diagnostics::location_print_policy &loc_policy,
 				   expanded_location s, expanded_location s2,
 				   bool colorize)
 {
@@ -551,7 +551,7 @@ static void
 gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
 			     const diagnostic_info *diagnostic)
 {
-  diagnostic_context *const context = &text_output.get_context ();
+  diagnostics::context *const context = &text_output.get_context ();
   pretty_printer *const pp = text_output.get_printer ();
   char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
 
@@ -566,7 +566,7 @@ gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
       same_locus = diagnostic_same_line (context, s1, s2);
     }
 
-  diagnostic_location_print_policy loc_policy (text_output);
+  diagnostics::location_print_policy loc_policy (text_output);
   const bool colorize = pp_show_color (pp);
   char * locus_prefix = (one_locus || !same_locus)
     ? gfc_diagnostic_build_locus_prefix (loc_policy, s1, colorize)
@@ -617,11 +617,11 @@ gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
 }
 
 static void
-gfc_diagnostic_start_span (const diagnostic_location_print_policy &loc_policy,
-			   to_text &sink,
+gfc_diagnostic_start_span (const diagnostics::location_print_policy &loc_policy,
+			   diagnostics::to_text &sink,
 			   expanded_location exploc)
 {
-  pretty_printer *pp = get_printer (sink);
+  pretty_printer *pp = diagnostics::get_printer (sink);
   const bool colorize = pp_show_color (pp);
   char *locus_prefix
     = gfc_diagnostic_build_locus_prefix (loc_policy, exploc, colorize);
@@ -950,9 +950,9 @@ gfc_errors_to_warnings (bool f)
 void
 gfc_diagnostics_init (void)
 {
-  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
-  diagnostic_start_span (global_dc) = gfc_diagnostic_start_span;
-  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
+  diagnostics::text_starter (global_dc) = gfc_diagnostic_text_starter;
+  diagnostics::start_span (global_dc) = gfc_diagnostic_start_span;
+  diagnostics::text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->set_format_decoder (gfc_format_decoder);
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
@@ -967,8 +967,8 @@ gfc_diagnostics_finish (void)
   tree_diagnostics_defaults (global_dc);
   /* We still want to use the gfc starter and finalizer, not the tree
      defaults.  */
-  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
-  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
+  diagnostics::text_starter (global_dc) = gfc_diagnostic_text_starter;
+  diagnostics::text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->m_source_printing.caret_chars[0] = '^';
   global_dc->m_source_printing.caret_chars[1] = '^';
   delete error_buffer;

@@ -43,7 +43,7 @@ struct opt_spec_context : public diagnostics::output_spec::dc_spec_context
 {
 public:
   opt_spec_context (const gcc_options &opts,
-		    diagnostic_context &dc,
+		    diagnostics::context &dc,
 		    line_maps *location_mgr,
 		    location_t loc,
 		    const char *option_name)
@@ -70,7 +70,7 @@ public:
 
 void
 handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
-				     diagnostic_context &dc,
+				     diagnostics::context &dc,
 				     const char *arg,
 				     location_t loc)
 {
@@ -89,7 +89,7 @@ handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
 
 void
 handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
-				     diagnostic_context &dc,
+				     diagnostics::context &dc,
 				     const char *arg,
 				     location_t loc)
 {

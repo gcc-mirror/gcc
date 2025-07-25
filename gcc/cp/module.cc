@@ -3883,9 +3883,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_macro_maps (elf_out *to, range_t &, unsigned *crc_ptr);
   bool read_macro_maps (line_map_uint_t);
 
-  void write_diagnostic_classification (elf_out *, diagnostic_context *,
+  void write_diagnostic_classification (elf_out *, diagnostics::context *,
 					unsigned *);
-  bool read_diagnostic_classification (diagnostic_context *);
+  bool read_diagnostic_classification (diagnostics::context *);
 
  private:
   void write_define (bytes_out &, const cpp_macro *);
@@ -18364,7 +18364,7 @@ dump_dc_change (unsigned index, unsigned opt, diagnostic_t dk)
 
 void
 module_state::write_diagnostic_classification (elf_out *to,
-					       diagnostic_context *dc,
+					       diagnostics::context *dc,
 					       unsigned *crc_p)
 {
   auto &changes = dc->get_classification_history ();
@@ -18433,7 +18433,7 @@ module_state::write_diagnostic_classification (elf_out *to,
 /* Read any #pragma GCC diagnostic info from the .dgc section.  */
 
 bool
-module_state::read_diagnostic_classification (diagnostic_context *dc)
+module_state::read_diagnostic_classification (diagnostics::context *dc)
 {
   bytes_in sec;
 

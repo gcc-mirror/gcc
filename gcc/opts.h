@@ -313,7 +313,7 @@ struct cl_option_handler_func
 		   const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind, location_t loc,
 		   const struct cl_option_handlers *handlers,
-		   diagnostic_context *dc,
+		   diagnostics::context *dc,
 		   void (*target_option_override_hook) (void));
 
   /* The mask that must have some bit in common with the flags for the
@@ -390,7 +390,7 @@ extern void decode_options (struct gcc_options *opts,
 			    struct cl_decoded_option *decoded_options,
 			    unsigned int decoded_options_count,
 			    location_t loc,
-			    diagnostic_context *dc,
+			    diagnostics::context *dc,
 			    void (*target_option_override_hook) (void));
 extern int option_enabled (int opt_idx, unsigned lang_mask, void *opts);
 
@@ -399,7 +399,7 @@ extern bool get_option_state (struct gcc_options *, int,
 extern void set_option (struct gcc_options *opts,
 			struct gcc_options *opts_set,
 			size_t opt_index, HOST_WIDE_INT value, const char *arg,
-			int kind, location_t loc, diagnostic_context *dc,
+			int kind, location_t loc, diagnostics::context *dc,
 			HOST_WIDE_INT = 0);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
 bool handle_generated_option (struct gcc_options *opts,
@@ -408,7 +408,7 @@ bool handle_generated_option (struct gcc_options *opts,
 			      HOST_WIDE_INT value,
 			      unsigned int lang_mask, int kind, location_t loc,
 			      const struct cl_option_handlers *handlers,
-			      bool generated_p, diagnostic_context *dc);
+			      bool generated_p, diagnostics::context *dc);
 void generate_option (size_t opt_index, const char *arg, HOST_WIDE_INT value,
 		      unsigned int lang_mask,
 		      struct cl_decoded_option *decoded);
@@ -420,14 +420,14 @@ extern void read_cmdline_option (struct gcc_options *opts,
 				 location_t loc,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers,
-				 diagnostic_context *dc);
+				 diagnostics::context *dc);
 extern void control_warning_option (unsigned int opt_index, int kind,
 				    const char *arg, bool imply, location_t loc,
 				    unsigned int lang_mask,
 				    const struct cl_option_handlers *handlers,
 				    struct gcc_options *opts,
 				    struct gcc_options *opts_set,
-				    diagnostic_context *dc);
+				    diagnostics::context *dc);
 extern char *write_langs (unsigned int mask);
 extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
@@ -442,7 +442,7 @@ extern bool common_handle_option (struct gcc_options *opts,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc,
+				  diagnostics::context *dc,
 				  void (*target_option_override_hook) (void));
 extern bool target_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
@@ -450,7 +450,7 @@ extern bool target_handle_option (struct gcc_options *opts,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc,
+				  diagnostics::context *dc,
 				  void (*target_option_override_hook) (void));
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
@@ -466,7 +466,7 @@ extern void default_options_optimization (struct gcc_options *opts,
 					  location_t loc,
 					  unsigned int lang_mask,
 					  const struct cl_option_handlers *handlers,
-					  diagnostic_context *dc);
+					  diagnostics::context *dc);
 extern void set_struct_debug_option (struct gcc_options *opts,
 				     location_t loc,
 				     const char *value);

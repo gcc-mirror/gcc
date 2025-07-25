@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "timevar.h"
 
-/* Concrete class for supplying a diagnostic_context with information
+/* Concrete class for supplying a diagnostics::context with information
    about a specific plugin within the client, when the client is the
    compiler (i.e. a GCC plugin).  */
 

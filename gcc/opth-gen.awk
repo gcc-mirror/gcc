@@ -357,7 +357,7 @@ print "                           const struct cl_decoded_option *decoded,   "
 print "                           unsigned int lang_mask, int kind,          "
 print "                           location_t loc,                            "
 print "                           const struct cl_option_handlers *handlers, "
-print "                           diagnostic_context *dc);                   "
+print "                           diagnostics::context *dc);                   "
 for (i = 0; i < n_langs; i++) {
     lang_name = lang_sanitized_name(langs[i]);
     print "bool"
@@ -368,7 +368,7 @@ for (i = 0; i < n_langs; i++) {
     print "                           unsigned int lang_mask, int kind,"
     print "                           location_t loc,"
     print "                           const struct cl_option_handlers *handlers,"
-    print "                           diagnostic_context *dc);"
+    print "                           diagnostics::context *dc);"
 }
 print "void cpp_handle_option_auto (const struct gcc_options * opts, size_t scode,"
 print "                             struct cpp_options * cpp_opts);"

@@ -292,7 +292,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 /* Here is the function to handle the compiler error processing in GCC.  */
 
 static void
-internal_error_function (diagnostic_context *context, const char *msgid,
+internal_error_function (diagnostics::context *context, const char *msgid,
 			 va_list *ap)
 {
   char *buffer, *p, *loc;

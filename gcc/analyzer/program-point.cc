@@ -234,10 +234,10 @@ function_point::before_supernode (const supernode *supernode,
   return function_point (supernode, from_edge, 0, PK_BEFORE_SUPERNODE);
 }
 
-/* A subclass of diagnostic_context for use by
+/* A subclass of diagnostics::context for use by
    program_point::print_source_line.  */
 
-class debug_diagnostic_context : public diagnostic_context
+class debug_diagnostic_context : public diagnostics::context
 {
 public:
   debug_diagnostic_context ()
@@ -263,7 +263,7 @@ function_point::print_source_line (pretty_printer *pp) const
   // TODO: monospace font
   debug_diagnostic_context tmp_dc;
   gcc_rich_location richloc (stmt->location);
-  diagnostic_source_print_policy source_policy (tmp_dc);
+  diagnostics::source_print_policy source_policy (tmp_dc);
   gcc_assert (pp);
   source_policy.print (*pp, richloc, DK_ERROR, nullptr);
   pp_string (pp, pp_formatted_text (tmp_dc.get_reference_printer ()));

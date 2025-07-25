@@ -94,7 +94,7 @@ public:
   const char *get_filename () const { return m_filename.get (); }
 
   static output_file
-  try_to_open (diagnostic_context &context,
+  try_to_open (context &dc,
 	       line_maps *line_maps,
 	       const char *base_file_name,
 	       const char *extension,

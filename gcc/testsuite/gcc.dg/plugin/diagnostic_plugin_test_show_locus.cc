@@ -176,7 +176,7 @@ test_show_locus (function *fun)
   location_t fnstart = fun->function_start_locus;
   int fnstart_line = LOCATION_LINE (fnstart);
 
-  diagnostic_text_finalizer (global_dc) = custom_diagnostic_text_finalizer;
+  diagnostics::text_finalizer (global_dc) = custom_diagnostic_text_finalizer;
 
   /* Hardcode the "terminal width", to verify the behavior of
      very wide lines.  */

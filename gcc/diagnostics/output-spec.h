@@ -35,7 +35,7 @@ class context
  public:
   std::unique_ptr<sink>
   parse_and_make_sink (const char *,
-		       diagnostic_context &dc);
+		       diagnostics::context &dc);
 
   void
   report_error (const char *gmsgid, ...) const
@@ -82,12 +82,12 @@ protected:
   line_maps *m_affected_location_mgr;
 };
 
-/* A subclass that implements reporting errors via a diagnostic_context.  */
+/* A subclass that implements reporting errors via a diagnostics::context.  */
 
 struct dc_spec_context : public output_spec::context
 {
 public:
-  dc_spec_context (diagnostic_context &dc,
+  dc_spec_context (diagnostics::context &dc,
 		   line_maps *affected_location_mgr,
 		   line_maps *control_location_mgr,
 		   location_t loc,
@@ -107,7 +107,7 @@ public:
     m_dc.end_group ();
   }
 
-  diagnostic_context &m_dc;
+  diagnostics::context &m_dc;
   line_maps *m_control_location_mgr;
   location_t m_loc;
 };

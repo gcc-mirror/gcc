@@ -232,7 +232,7 @@ public:
 			FILE *dst_stream,
 			enum diagnostic_colorize colorize);
 
-  diagnostic_source_printing_options &get_source_printing_options ()
+  diagnostics::source_printing_options &get_source_printing_options ()
   {
     return m_source_printing;
   }
@@ -246,7 +246,7 @@ public:
 
 private:
   diagnostics::text_sink *m_inner_sink; // borrowed from dc
-  diagnostic_source_printing_options m_source_printing;
+  diagnostics::source_printing_options m_source_printing;
 };
 
 /* A token_printer that makes a deep copy of the pp_token_list
@@ -670,7 +670,7 @@ public:
     m_dc.set_client_data_hooks
       (std::make_unique<impl_diagnostic_client_data_hooks> (*this));
 
-    diagnostic_text_starter (&m_dc) = diagnostic_text_sink::text_starter;
+    diagnostics::text_starter (&m_dc) = diagnostic_text_sink::text_starter;
 
     m_edit_context
       = std::make_unique <diagnostics::edit_context> (m_dc.get_file_cache ());
@@ -694,7 +694,7 @@ public:
   }
 
   line_maps *get_line_table () { return &m_line_table; }
-  diagnostic_context &get_dc () { return m_dc; }
+  diagnostics::context &get_dc () { return m_dc; }
 
   const diagnostics::logical_locations::manager &
   get_logical_location_manager () const
@@ -893,7 +893,7 @@ private:
     return phys_loc;
   }
 
-  diagnostic_context m_dc;
+  diagnostics::context m_dc;
   line_maps m_line_table;
   impl_client_version_info m_client_version_info;
   std::vector<std::unique_ptr<sink>> m_sinks;
@@ -1963,7 +1963,7 @@ diagnostic_manager_debug_dump_location (const diagnostic_manager *diag_mgr,
       diag_mgr->set_line_table_global ();
       const expanded_location exp_loc (expand_location (cpplib_loc));
 
-      diagnostic_context dc;
+      diagnostics::context dc;
       diagnostic_initialize (&dc, 0);
       dc.m_show_column = true;
 

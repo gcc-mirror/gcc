@@ -757,7 +757,7 @@ extern tree c_finish_bc_name (location_t, tree, bool);
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
-extern void c_initialize_diagnostics (diagnostic_context *);
+extern void c_initialize_diagnostics (diagnostics::context *);
 extern bool c_var_mod_p (tree x, tree fn);
 extern alias_set_type c_get_alias_set (tree);
 extern int c_type_dwarf_attribute (const_tree, int);

@@ -421,7 +421,7 @@ struct lang_hooks
 
   /* Callback used to perform language-specific initialization for the
      global diagnostic context structure.  */
-  void (*initialize_diagnostics) (diagnostic_context *);
+  void (*initialize_diagnostics) (diagnostics::context *);
 
   /* Beginning the main source file.  */
   void (*preprocess_main_file) (cpp_reader *, line_maps *,

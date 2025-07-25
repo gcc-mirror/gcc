@@ -75,7 +75,7 @@ public:
 
     virtual std::unique_ptr<sink>
     make_sink (const context &ctxt,
-	       diagnostic_context &dc,
+	       diagnostics::context &dc,
 	       const char *unparsed_arg,
 	       const scheme_name_and_params &parsed_arg) const = 0;
 
@@ -148,7 +148,7 @@ public:
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostic_context &dc,
+	     diagnostics::context &dc,
 	     const char *unparsed_arg,
 	     const scheme_name_and_params &parsed_arg);
 
@@ -165,7 +165,7 @@ public:
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostic_context &dc,
+	     diagnostics::context &dc,
 	     const char *unparsed_arg,
 	     const scheme_name_and_params &parsed_arg) const final override;
 };
@@ -177,7 +177,7 @@ public:
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostic_context &dc,
+	     diagnostics::context &dc,
 	     const char *unparsed_arg,
 	     const scheme_name_and_params &parsed_arg) const final override;
 
@@ -197,7 +197,7 @@ public:
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostic_context &dc,
+	     diagnostics::context &dc,
 	     const char *unparsed_arg,
 	     const scheme_name_and_params &parsed_arg) const final override;
 };
@@ -306,7 +306,7 @@ parse (const context &ctxt, const char *unparsed_arg)
 
 std::unique_ptr<sink>
 context::parse_and_make_sink (const char *unparsed_arg,
-			      diagnostic_context &dc)
+			      diagnostics::context &dc)
 {
   auto parsed_arg = parse (*this, unparsed_arg);
   if (!parsed_arg)
@@ -338,7 +338,7 @@ output_factory::get_scheme_handler (const std::string &scheme_name)
 
 std::unique_ptr<sink>
 output_factory::make_sink (const context &ctxt,
-			   diagnostic_context &dc,
+			   diagnostics::context &dc,
 			   const char *unparsed_arg,
 			   const scheme_name_and_params &parsed_arg)
 {
@@ -363,7 +363,7 @@ output_factory::make_sink (const context &ctxt,
 
 std::unique_ptr<sink>
 text_scheme_handler::make_sink (const context &ctxt,
-				diagnostic_context &dc,
+				diagnostics::context &dc,
 				const char *unparsed_arg,
 				const scheme_name_and_params &parsed_arg) const
 {
@@ -424,7 +424,7 @@ text_scheme_handler::make_sink (const context &ctxt,
 
 std::unique_ptr<sink>
 sarif_scheme_handler::make_sink (const context &ctxt,
-				 diagnostic_context &dc,
+				 diagnostics::context &dc,
 				 const char *unparsed_arg,
 				 const scheme_name_and_params &parsed_arg) const
 {
@@ -553,7 +553,7 @@ make_sarif_serialization_object (enum sarif_serialization_kind kind)
 
 std::unique_ptr<sink>
 html_scheme_handler::make_sink (const context &ctxt,
-				diagnostic_context &dc,
+				diagnostics::context &dc,
 				const char *unparsed_arg,
 				const scheme_name_and_params &parsed_arg) const
 {
@@ -692,7 +692,7 @@ struct parser_test
   class test_spec_context : public diagnostics::output_spec::dc_spec_context
   {
   public:
-    test_spec_context (diagnostic_context &dc,
+    test_spec_context (diagnostics::context &dc,
 		       line_maps *location_mgr,
 		       location_t loc,
 		       const char *option_name)

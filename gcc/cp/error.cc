@@ -242,7 +242,7 @@ get_current_template ()
 
 erroneous_templates_t *erroneous_templates;
 
-/* Callback function diagnostic_context::m_adjust_diagnostic_info.
+/* Callback function diagnostics::context::m_adjust_diagnostic_info.
 
    Errors issued when parsing a template are automatically treated like
    permerrors associated with the -Wtemplate-body flag and can be
@@ -250,7 +250,7 @@ erroneous_templates_t *erroneous_templates;
    issue an error if we later need to instantiate the template.  */
 
 static void
-cp_adjust_diagnostic_info (diagnostic_context *context,
+cp_adjust_diagnostic_info (diagnostics::context *context,
 			   diagnostic_info *diagnostic)
 {
   if (diagnostic->m_kind == DK_ERROR)
@@ -298,14 +298,14 @@ cp_seen_error ()
    capacities.  */
 
 void
-cxx_initialize_diagnostics (diagnostic_context *context)
+cxx_initialize_diagnostics (diagnostics::context *context)
 {
   cxx_pretty_printer *pp = new cxx_pretty_printer ();
   pp->set_format_postprocessor (std::make_unique<cxx_format_postprocessor> ());
   context->set_pretty_printer (std::unique_ptr<pretty_printer> (pp));
 
   c_common_diagnostics_set_defaults (context);
-  diagnostic_text_starter (context) = cp_diagnostic_text_starter;
+  diagnostics::text_starter (context) = cp_diagnostic_text_starter;
   /* diagnostic_finalizer is already c_diagnostic_text_finalizer.  */
   context->set_format_decoder (cp_printer);
   context->set_adjust_diagnostic_info_callback (cp_adjust_diagnostic_info);
@@ -3804,7 +3804,7 @@ cp_print_error_function (diagnostics::text_sink &text_output,
   /* The above is true for constraint satisfaction also.  */
   if (current_failed_constraint)
     return;
-  diagnostic_context *const context = &text_output.get_context ();
+  diagnostics::context *const context = &text_output.get_context ();
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       pretty_printer *const pp = text_output.get_printer ();

@@ -375,9 +375,9 @@ struct char_display_policy : public cpp_char_column_policy
  public:
   char_display_policy (int tabstop,
 		       int (*width_cb) (cppchar_t c),
-		       void (*print_text_cb) (to_text &sink,
+		       void (*print_text_cb) (diagnostics::to_text &sink,
 					      const cpp_decoded_char &cp),
-		       void (*print_html_cb) (to_html &sink,
+		       void (*print_html_cb) (diagnostics::to_html &sink,
 					      const cpp_decoded_char &cp))
   : cpp_char_column_policy (tabstop, width_cb),
     m_print_text_cb (print_text_cb),
@@ -385,15 +385,17 @@ struct char_display_policy : public cpp_char_column_policy
   {
   }
 
-  void (*m_print_text_cb) (to_text &sink,
+  void (*m_print_text_cb) (diagnostics::to_text &sink,
 			   const cpp_decoded_char &cp);
-  void (*m_print_html_cb) (to_html &sink,
+  void (*m_print_html_cb) (diagnostics::to_html &sink,
 			   const cpp_decoded_char &cp);
 };
 
 template <typename Sink> class layout_printer;
 
 } // anonymous namespace
+
+namespace diagnostics {
 
 /* This code is written generically to write either:
    - text, to a pretty_printer, potentially with colorization codes, or
@@ -519,8 +521,8 @@ struct to_text
   }
 
   void
-  invoke_start_span_fn (const diagnostic_source_print_policy &source_policy,
-			const diagnostic_location_print_policy &loc_policy,
+  invoke_start_span_fn (const source_print_policy &source_policy,
+			const location_print_policy &loc_policy,
 			const expanded_location &exploc)
   {
     source_policy.get_text_start_span_fn () (loc_policy, *this, exploc);
@@ -654,8 +656,8 @@ struct to_html
   }
 
   void
-  invoke_start_span_fn (const diagnostic_source_print_policy &source_policy,
-			const diagnostic_location_print_policy &loc_policy,
+  invoke_start_span_fn (const source_print_policy &source_policy,
+			const location_print_policy &loc_policy,
 			const expanded_location &exploc)
   {
     source_policy.get_html_start_span_fn () (loc_policy, *this, exploc);
@@ -687,24 +689,24 @@ private:
 };
 
 void
-diagnostic_location_print_policy::
-print_text_span_start (const diagnostic_context &dc,
+location_print_policy::
+print_text_span_start (const diagnostics::context &dc,
 		       pretty_printer &pp,
 		       const expanded_location &exploc)
 {
   to_text sink (pp, nullptr);
-  diagnostic_source_print_policy source_policy (dc);
+  source_print_policy source_policy (dc);
   source_policy.get_text_start_span_fn () (*this, sink, exploc);
 }
 
 void
-diagnostic_location_print_policy::
-print_html_span_start (const diagnostic_context &dc,
+location_print_policy::
+print_html_span_start (const diagnostics::context &dc,
 		       xml::printer &xp,
 		       const expanded_location &exploc)
 {
   to_html sink (xp, nullptr, nullptr);
-  diagnostic_source_print_policy source_policy (dc);
+  source_print_policy source_policy (dc);
   source_policy.get_html_start_span_fn () (*this, sink, exploc);
 }
 
@@ -716,36 +718,37 @@ get_printer (to_text &sink)
 
 template<>
 void
-diagnostics::default_start_span_fn<to_text> (const diagnostic_location_print_policy &loc_policy,
-					     to_text &sink,
-					     expanded_location exploc)
+default_start_span_fn<to_text> (const location_print_policy &loc_policy,
+				to_text &sink,
+				expanded_location exploc)
 {
-  const diagnostic_column_policy &column_policy
-    = loc_policy.get_column_policy ();
+  const column_policy &column_policy_ = loc_policy.get_column_policy ();
   label_text text
-    = column_policy.get_location_text (exploc,
-				       loc_policy.show_column_p (),
-				       pp_show_color (&sink.m_pp));
+    = column_policy_.get_location_text (exploc,
+					loc_policy.show_column_p (),
+					pp_show_color (&sink.m_pp));
   pp_string (&sink.m_pp, text.get ());
   pp_newline (&sink.m_pp);
 }
 
 template<>
 void
-diagnostics::default_start_span_fn<to_html> (const diagnostic_location_print_policy &loc_policy,
-					     to_html &sink,
-					     expanded_location exploc)
+default_start_span_fn<to_html> (const location_print_policy &loc_policy,
+				to_html &sink,
+				expanded_location exploc)
 {
-  const diagnostic_column_policy &column_policy
+  const column_policy &column_policy_
     = loc_policy.get_column_policy ();
   label_text text
-    = column_policy.get_location_text (exploc,
-				       loc_policy.show_column_p (),
-				       false);
+    = column_policy_.get_location_text (exploc,
+					loc_policy.show_column_p (),
+					false);
   sink.m_xp.push_tag_with_class ("span", "location", true);
   sink.m_xp.add_text (text.get ());
   sink.m_xp.pop_tag ("span");
 }
+
+} // namespace diagnostics
 
 namespace {
 
@@ -761,10 +764,10 @@ namespace {
 class layout
 {
  public:
-  friend class layout_printer<to_text>;
-  friend class layout_printer<to_html>;
+  friend class layout_printer<diagnostics::to_text>;
+  friend class layout_printer<diagnostics::to_html>;
 
-  layout (const diagnostic_source_print_policy &source_policy,
+  layout (const diagnostics::source_print_policy &source_policy,
 	  const rich_location &richloc,
 	  diagnostics::source_effect_info *effect_info = nullptr);
 
@@ -811,7 +814,7 @@ class layout
  private:
   bool compatible_locations_p (location_t loc_a, location_t loc_b) const;
 
-  const diagnostic_source_printing_options &m_options;
+  const diagnostics::source_printing_options &m_options;
   const line_maps *m_line_table;
   file_cache &m_file_cache;
   const text_art::ascii_theme m_fallback_theme;
@@ -847,10 +850,10 @@ public:
 		  const layout &layout,
 		  bool is_diagnostic_path);
 
-  void print (const diagnostic_source_print_policy &source_policy);
+  void print (const diagnostics::source_print_policy &source_policy);
 
 private:
-  const diagnostic_source_printing_options &
+  const diagnostics::source_printing_options &
   get_options () const { return m_layout.m_options; }
 
   const text_art::theme &
@@ -1693,15 +1696,15 @@ escape_as_unicode_print (Sink &sink,
 /* Populate a char_display_policy based on SOURCE_POLICY and RICHLOC.  */
 
 static char_display_policy
-make_char_policy (const diagnostic_source_print_policy &source_policy,
+make_char_policy (const diagnostics::source_print_policy &source_policy,
 		  const rich_location &richloc)
 {
   /* The default is to not escape non-ASCII bytes.  */
   char_display_policy result
     (source_policy.get_column_policy ().get_tabstop (),
      cpp_wcwidth,
-     default_print_decoded_ch<to_text>,
-     default_print_decoded_ch<to_html>);
+     default_print_decoded_ch<diagnostics::to_text>,
+     default_print_decoded_ch<diagnostics::to_html>);
 
   /* If the diagnostic suggests escaping non-ASCII bytes, then
      use policy from user-supplied options.  */
@@ -1714,13 +1717,15 @@ make_char_policy (const diagnostic_source_print_policy &source_policy,
 	  gcc_unreachable ();
 	case DIAGNOSTICS_ESCAPE_FORMAT_UNICODE:
 	  result.m_width_cb = escape_as_unicode_width;
-	  result.m_print_text_cb = escape_as_unicode_print<to_text>;
-	  result.m_print_html_cb = escape_as_unicode_print<to_html>;
+	  result.m_print_text_cb
+	    = escape_as_unicode_print<diagnostics::to_text>;
+	  result.m_print_html_cb
+	    = escape_as_unicode_print<diagnostics::to_html>;
 	  break;
 	case DIAGNOSTICS_ESCAPE_FORMAT_BYTES:
 	  result.m_width_cb = escape_as_bytes_width;
-	  result.m_print_text_cb = escape_as_bytes_print<to_text>;
-	  result.m_print_html_cb = escape_as_bytes_print<to_html>;
+	  result.m_print_text_cb = escape_as_bytes_print<diagnostics::to_text>;
+	  result.m_print_html_cb = escape_as_bytes_print<diagnostics::to_html>;
 	  break;
 	}
     }
@@ -1737,9 +1742,9 @@ make_char_policy (const diagnostic_source_print_policy &source_policy,
    Determine the range of lines that we will print, splitting them
    up into an ordered list of disjoint spans of contiguous line numbers.
    Determine m_x_offset_display, to ensure that the primary caret
-   will fit within the max_width provided by the diagnostic_context.  */
+   will fit within the max_width provided by the diagnostics::context.  */
 
-layout::layout (const diagnostic_source_print_policy &source_policy,
+layout::layout (const diagnostics::source_print_policy &source_policy,
 		const rich_location &richloc,
 		diagnostics::source_effect_info *effect_info)
 : m_options (source_policy.get_options ()),
@@ -1929,7 +1934,7 @@ layout::will_show_line_p (linenum_type row) const
 
 template<>
 void
-layout_printer<to_text>::print_gap_in_line_numbering ()
+layout_printer<diagnostics::to_text>::print_gap_in_line_numbering ()
 {
   gcc_assert (m_layout.m_options.show_line_numbers_p);
 
@@ -1943,7 +1948,7 @@ layout_printer<to_text>::print_gap_in_line_numbering ()
 
 template<>
 void
-layout_printer<to_html>::print_gap_in_line_numbering ()
+layout_printer<diagnostics::to_html>::print_gap_in_line_numbering ()
 {
   gcc_assert (m_layout.m_options.show_line_numbers_p);
 
@@ -2501,7 +2506,7 @@ layout_printer<Sink>::start_annotation_line (enum margin_kind margin)
 
 template<>
 void
-layout_printer<to_text>::end_line ()
+layout_printer<diagnostics::to_text>::end_line ()
 {
   m_sink.colorize_text_ensure_normal ();
   m_sink.add_newline ();
@@ -2512,7 +2517,7 @@ layout_printer<to_text>::end_line ()
 
 template<>
 void
-layout_printer<to_html>::end_line ()
+layout_printer<diagnostics::to_html>::end_line ()
 {
   m_sink.pop_html_tag ("td");
   m_sink.pop_html_tag ("tr");
@@ -2699,8 +2704,8 @@ public:
 
 template<>
 void
-layout_printer<to_text>::begin_label (int range_idx,
-				      bool is_label_text)
+layout_printer<diagnostics::to_text>::begin_label (int range_idx,
+						   bool is_label_text)
 {
   /* Colorize the text, unless it's for labels for events in a
      diagnostic path.  */
@@ -2713,8 +2718,8 @@ layout_printer<to_text>::begin_label (int range_idx,
 
 template<>
 void
-layout_printer<to_html>::begin_label (int range_idx,
-				      bool is_label_text)
+layout_printer<diagnostics::to_html>::begin_label (int range_idx,
+						   bool is_label_text)
 {
   if (is_label_text && m_sink.m_html_label_writer)
     m_sink.m_html_label_writer->begin_label ();
@@ -2726,15 +2731,15 @@ layout_printer<to_html>::begin_label (int range_idx,
 
 template<>
 void
-layout_printer<to_text>::end_label (int, bool)
+layout_printer<diagnostics::to_text>::end_label (int, bool)
 {
   m_sink.colorize_text_ensure_normal ();
 }
 
 template<>
 void
-layout_printer<to_html>::end_label (int range_idx,
-				    bool is_label_text)
+layout_printer<diagnostics::to_html>::end_label (int range_idx,
+						 bool is_label_text)
 {
   if (m_sink.get_highlight_color_for_range_idx (range_idx))
     m_sink.m_xp.pop_tag ("span");
@@ -3803,7 +3808,7 @@ layout_printer<Sink>::layout_printer (Sink &sink,
 
 bool
 gcc_rich_location::
-add_location_if_nearby (const diagnostic_source_print_policy &policy,
+add_location_if_nearby (const diagnostics::source_print_policy &policy,
 			location_t loc,
 			bool restrict_to_current_line_spans,
 			const range_label *label)
@@ -3827,27 +3832,28 @@ add_location_if_nearby (const diagnostic_source_print_policy &policy,
 
 bool
 gcc_rich_location::
-add_location_if_nearby (const diagnostic_context &dc,
+add_location_if_nearby (const diagnostics::context &dc,
 			location_t loc,
 			bool restrict_to_current_line_spans,
 			const range_label *label)
 {
-  diagnostic_source_print_policy source_policy (dc,
-						dc.m_source_printing);
+  diagnostics::source_print_policy source_policy (dc,
+						  dc.m_source_printing);
   return add_location_if_nearby (source_policy, loc,
 				 restrict_to_current_line_spans, label);
 }
 
+namespace diagnostics {
 
-/* As per diagnostic_source_print_policy::print, but don't print anything
+/* As per diagnostics::source_print_policy::print, but don't print anything
    if source printing is disabled, or if the location hasn't changed.  */
 
 void
-diagnostic_context::maybe_show_locus (const rich_location &richloc,
-				      const diagnostic_source_printing_options &opts,
-				      diagnostic_t diagnostic_kind,
-				      pretty_printer &pp,
-				      diagnostics::source_effect_info *effects)
+context::maybe_show_locus (const rich_location &richloc,
+			   const source_printing_options &opts,
+			   diagnostic_t diagnostic_kind,
+			   pretty_printer &pp,
+			   source_effect_info *effects)
 {
   const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
@@ -3868,7 +3874,7 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
 
   m_last_location = loc;
 
-  diagnostic_source_print_policy source_policy (*this, opts);
+  source_print_policy source_policy (*this, opts);
   source_policy.print (pp, richloc, diagnostic_kind, effects);
 }
 
@@ -3876,12 +3882,12 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
    If non-null, use LABEL_WRITER when writing labelled ranges.  */
 
 void
-diagnostic_context::maybe_show_locus_as_html (const rich_location &richloc,
-					      const diagnostic_source_printing_options &opts,
-					      diagnostic_t diagnostic_kind,
-					      xml::printer &xp,
-					      diagnostics::source_effect_info *effects,
-					      html_label_writer *label_writer)
+context::maybe_show_locus_as_html (const rich_location &richloc,
+				   const source_printing_options &opts,
+				   diagnostic_t diagnostic_kind,
+				   xml::printer &xp,
+				   source_effect_info *effects,
+				   html_label_writer *label_writer)
 {
   const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
@@ -3902,13 +3908,13 @@ diagnostic_context::maybe_show_locus_as_html (const rich_location &richloc,
 
   m_last_location = loc;
 
-  diagnostic_source_print_policy source_policy (*this, opts);
+  source_print_policy source_policy (*this, opts);
   source_policy.print_as_html (xp, richloc, diagnostic_kind, effects,
 			       label_writer);
 }
 
-diagnostic_source_print_policy::
-diagnostic_source_print_policy (const diagnostic_context &dc)
+source_print_policy::
+source_print_policy (const context &dc)
 : m_options (dc.m_source_printing),
   m_location_policy (dc),
   m_text_start_span_cb (dc.m_text_callbacks.m_text_start_span),
@@ -3919,9 +3925,8 @@ diagnostic_source_print_policy (const diagnostic_context &dc)
 {
 }
 
-diagnostic_source_print_policy::
-diagnostic_source_print_policy (const diagnostic_context &dc,
-				const diagnostic_source_printing_options &opts)
+source_print_policy::source_print_policy (const context &dc,
+					  const source_printing_options &opts)
 : m_options (opts),
   m_location_policy (dc),
   m_text_start_span_cb (dc.m_text_callbacks.m_text_start_span),
@@ -3938,11 +3943,10 @@ diagnostic_source_print_policy (const diagnostic_context &dc,
    If EFFECTS is non-null, then use and update it.  */
 
 void
-diagnostic_source_print_policy::print (pretty_printer &pp,
-				       const rich_location &richloc,
-				       diagnostic_t diagnostic_kind,
-				       diagnostics::source_effect_info *effects)
-  const
+source_print_policy::print (pretty_printer &pp,
+			    const rich_location &richloc,
+			    diagnostic_t diagnostic_kind,
+			    source_effect_info *effects) const
 {
   layout layout (*this, richloc, effects);
   colorizer col (pp, richloc, diagnostic_kind);
@@ -3956,12 +3960,11 @@ diagnostic_source_print_policy::print (pretty_printer &pp,
    If non-null, use LABEL_WRITER when writing labelled ranges.  */
 
 void
-diagnostic_source_print_policy::print_as_html (xml::printer &xp,
-					       const rich_location &richloc,
-					       diagnostic_t diagnostic_kind,
-					       diagnostics::source_effect_info *effects,
-					       html_label_writer *label_writer)
-  const
+source_print_policy::print_as_html (xml::printer &xp,
+				    const rich_location &richloc,
+				    diagnostic_t diagnostic_kind,
+				    source_effect_info *effects,
+				    html_label_writer *label_writer) const
 {
   layout layout (*this, richloc, effects);
   to_html sink (xp, &richloc, label_writer);
@@ -3971,9 +3974,12 @@ diagnostic_source_print_policy::print_as_html (xml::printer &xp,
   lp.print (*this);
 }
 
+} // namespace diagnostics
+
 template <typename Sink>
 void
-layout_printer<Sink>::print (const diagnostic_source_print_policy &source_policy)
+layout_printer<Sink>::
+print (const diagnostics::source_print_policy &source_policy)
 {
   typename Sink::auto_check_tag_nesting sentinel (m_sink);
 
@@ -4000,7 +4006,7 @@ layout_printer<Sink>::print (const diagnostic_source_print_policy &source_policy
 	    {
 	      expanded_location exploc
 		= m_layout.get_expanded_location (line_span);
-	      const diagnostic_location_print_policy &
+	      const diagnostics::location_print_policy &
 		loc_policy = source_policy.get_location_policy ();
 	      m_sink.invoke_start_span_fn (source_policy, loc_policy, exploc);
 	    }
@@ -4031,7 +4037,7 @@ namespace selftest {
 static std::unique_ptr<xml::node>
 make_element_for_locus (const rich_location &rich_loc,
 			diagnostic_t kind,
-			diagnostic_context &dc)
+			diagnostics::context &dc)
 {
   dc.m_last_location = UNKNOWN_LOCATION;
 
@@ -4052,7 +4058,7 @@ make_element_for_locus (const rich_location &rich_loc,
 static label_text
 make_raw_html_for_locus (const rich_location &rich_loc,
 			 diagnostic_t kind,
-			 diagnostic_context &dc)
+			 diagnostics::context &dc)
 {
   auto node = make_element_for_locus (rich_loc, kind, dc);
   pretty_printer pp;
@@ -4078,10 +4084,10 @@ diagnostic_show_locus_fixture (const line_table_case &case_,
 /* Populate a char_display_policy based on DC and RICHLOC.  */
 
 static char_display_policy
-make_char_policy (const diagnostic_context &dc,
+make_char_policy (const diagnostics::context &dc,
 		  const rich_location &richloc)
 {
-  diagnostic_source_print_policy source_policy (dc);
+  diagnostics::source_print_policy source_policy (dc);
   return ::make_char_policy (source_policy, richloc);
 }
 
@@ -4153,11 +4159,11 @@ test_offset_impl (int caret_byte_col, int max_width,
 {
   test_diagnostic_context dc;
   dc.m_source_printing.max_width = max_width;
-  /* diagnostic_context::min_margin_width sets the minimum space reserved for
+  /* min_margin_width sets the minimum space reserved for
      the line number plus one space after.  */
   dc.m_source_printing.min_margin_width = left_margin - test_linenum_sep + 1;
   dc.m_source_printing.show_line_numbers_p = true;
-  diagnostic_source_print_policy source_policy (dc);
+  diagnostics::source_print_policy source_policy (dc);
   rich_location richloc (line_table,
 			 linemap_position_for_column (line_table,
 						      caret_byte_col));
@@ -4273,15 +4279,15 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
       = test_left_margin - test_linenum_sep + 1;
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_ruler_p = true;
-    diagnostic_source_print_policy policy (dc);
+    diagnostics::source_print_policy policy (dc);
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col));
     layout test_layout (policy, richloc, nullptr);
     colorizer col (*dc.get_reference_printer (),
 		   richloc, DK_ERROR);
-    to_text sink (*dc.get_reference_printer (), col);
-    layout_printer<to_text> lp (sink, test_layout, false);
+    diagnostics::to_text sink (*dc.get_reference_printer (), col);
+    layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
     lp.print (policy);
     ASSERT_STREQ ("     |         1         \n"
 		  "     |         1         \n"
@@ -4303,15 +4309,15 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
       = test_left_margin - test_linenum_sep + 1;
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_ruler_p = true;
-    diagnostic_source_print_policy policy (dc);
+    diagnostics::source_print_policy policy (dc);
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col + 2));
     layout test_layout (dc, richloc, nullptr);
     colorizer col (*dc.get_reference_printer (),
 		   richloc, DK_ERROR);
-    to_text sink (*dc.get_reference_printer (), col);
-    layout_printer<to_text> lp (sink, test_layout, false);
+    diagnostics::to_text sink (*dc.get_reference_printer (), col);
+    layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
     lp.print (policy);
     ASSERT_STREQ ("     |        1         1 \n"
 		  "     |        1         2 \n"
@@ -4390,12 +4396,12 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
     {
       test_diagnostic_context dc;
       dc.m_tabstop = tabstop;
-      diagnostic_source_print_policy policy (dc);
+      diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
 		     richloc, DK_ERROR);
-      to_text sink (*dc.get_reference_printer (), col);
-      layout_printer<to_text> lp (sink, test_layout, false);
+      diagnostics::to_text sink (*dc.get_reference_printer (), col);
+      layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
       lp.print (policy);
       const char *out = pp_formatted_text (dc.get_reference_printer ());
       ASSERT_EQ (nullptr, strchr (out, '\t'));
@@ -4418,12 +4424,12 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_source_printing.min_margin_width
 	= test_left_margin - test_linenum_sep + 1;
       dc.m_source_printing.show_line_numbers_p = true;
-      diagnostic_source_print_policy policy (dc);
+      diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
 		     richloc, DK_ERROR);
-      to_text sink (*dc.get_reference_printer (), col);
-      layout_printer<to_text> lp (sink, test_layout, false);
+      diagnostics::to_text sink (*dc.get_reference_printer (), col);
+      layout_printer<diagnostics::to_text> lp (sink, test_layout, false);
       lp.print (policy);
 
       /* We have arranged things so that two columns will be printed before
