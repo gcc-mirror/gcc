@@ -36,20 +36,20 @@ along with GCC; see the file COPYING3.  If not see
    that caused an error.  */
 void
 diagnostic_report_current_function (diagnostics::text_sink &text_output,
-				    const diagnostic_info *diagnostic)
+				    const diagnostics::diagnostic_info *diag)
 {
-  location_t loc = diagnostic_location (diagnostic);
+  location_t loc = diagnostic_location (diag);
   text_output.report_current_module (loc);
-  lang_hooks.print_error_function (text_output, LOCATION_FILE (loc), diagnostic);
+  lang_hooks.print_error_function (text_output, LOCATION_FILE (loc), diag);
 }
 
 static void
 default_tree_diagnostic_text_starter (diagnostics::text_sink &text_output,
-				      const diagnostic_info *diagnostic)
+				      const diagnostics::diagnostic_info *diag)
 {
   pretty_printer *const pp = text_output.get_printer ();
-  diagnostic_report_current_function (text_output, diagnostic);
-  pp_set_prefix (pp, text_output.build_prefix (*diagnostic));
+  diagnostic_report_current_function (text_output, diag);
+  pp_set_prefix (pp, text_output.build_prefix (*diag));
 }
 
 /* Default tree printer.   Handles declarations only.  */
@@ -111,7 +111,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
 static void
 set_inlining_locations (diagnostics::context *,
-			diagnostic_info *diagnostic)
+			diagnostics::diagnostic_info *diagnostic)
 {
   location_t loc = diagnostic_location (diagnostic);
   tree block = LOCATION_BLOCK (loc);

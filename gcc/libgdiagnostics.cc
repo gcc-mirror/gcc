@@ -243,7 +243,7 @@ public:
 
   static void
   text_starter (diagnostics::text_sink &text_output,
-		const diagnostic_info *diagnostic);
+		const diagnostics::diagnostic_info *diagnostic);
 
 private:
   diagnostics::text_sink *m_inner_sink; // borrowed from dc
@@ -1446,7 +1446,7 @@ diagnostic_text_sink::set_colorize (enum diagnostic_colorize colorize)
 
 void
 diagnostic_text_sink::text_starter (diagnostics::text_sink &text_output,
-				    const diagnostic_info *info)
+				    const diagnostics::diagnostic_info *info)
 {
   gcc_assert (info->m_x_data);
   const diagnostic &diag = *static_cast<const diagnostic *> (info->m_x_data);
@@ -1614,7 +1614,7 @@ diagnostic_manager::emit_va (diagnostic &diag, const char *msgid, va_list *args)
   {
     m_dc.begin_group ();
 
-    diagnostic_info info;
+    diagnostics::diagnostic_info info;
 GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
     diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
 			 diagnostics_kind_from_diagnostic_level

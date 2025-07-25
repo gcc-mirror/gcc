@@ -4822,7 +4822,8 @@ noisy_p ()
     return false;
 
   pp_needs_newline (global_dc->get_reference_printer ()) = true;
-  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+  diagnostic_set_last_function (global_dc,
+				(diagnostics::diagnostic_info *) nullptr);
 
   return true;
 }

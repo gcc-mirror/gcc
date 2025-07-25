@@ -132,7 +132,7 @@ static bool force_show_locus_color = false;
 
 static void
 custom_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
-				  const diagnostic_info *diagnostic,
+				  const diagnostics::diagnostic_info *diag,
 				  enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
@@ -144,7 +144,7 @@ custom_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 text_output.get_source_printing_options (),
-			 diagnostic->m_richloc, diagnostic->m_kind, pp);
+			 diag->m_richloc, diag->m_kind, pp);
   pp_show_color (pp) = old_show_color;
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);

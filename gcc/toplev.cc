@@ -231,7 +231,8 @@ announce_function (tree decl)
 		 identifier_to_locale (lang_hooks.decl_printable_name (decl, 2)));
       fflush (stderr);
       pp_needs_newline (global_dc->get_reference_printer ()) = true;
-      diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+      diagnostic_set_last_function (global_dc,
+				    (diagnostics::diagnostic_info *) nullptr);
     }
 }
 

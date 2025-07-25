@@ -193,7 +193,7 @@ d_diagnostic_report_diagnostic (const SourceLoc &loc, int opt,
   if (loc.filename.length != 0 || !verbatim)
     {
       rich_location rich_loc (line_table, make_location_t (loc));
-      diagnostic_info diagnostic;
+      diagnostics::diagnostic_info diagnostic;
       char *xformat = expand_d_format (format);
 
       diagnostic_set_info_translated (&diagnostic, xformat, &argp,

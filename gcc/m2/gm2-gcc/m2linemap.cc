@@ -188,7 +188,7 @@ m2linemap_ErrorAt (location_t location, char *message)
 static void
 m2linemap_ErrorAtf_1 (location_t location, const char *message, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
 
@@ -210,7 +210,7 @@ m2linemap_ErrorAtf (location_t location, const char *message)
 static void
 m2linemap_WarningAtf_1 (location_t location, const char *message, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
 
@@ -232,7 +232,7 @@ m2linemap_WarningAtf (location_t location, const char *message)
 static void
 m2linemap_NoteAtf_1 (location_t location, const char *message, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
 

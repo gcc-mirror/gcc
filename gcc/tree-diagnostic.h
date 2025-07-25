@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
        : current_function_decl)
 
 void diagnostic_report_current_function (diagnostics::context *,
-					 const diagnostic_info *);
+					 const diagnostics::diagnostic_info *);
 
 void tree_diagnostics_defaults (diagnostics::context *);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,

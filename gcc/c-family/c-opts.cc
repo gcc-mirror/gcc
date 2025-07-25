@@ -170,7 +170,7 @@ c_common_option_lang_mask (void)
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
 c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
-			     const diagnostic_info *diagnostic,
+			     const diagnostics::diagnostic_info *diagnostic,
 			     enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();

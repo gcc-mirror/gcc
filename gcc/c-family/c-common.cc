@@ -7068,7 +7068,7 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		  rich_location *richloc,
 		  const char *msg, va_list *ap)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   enum diagnostics::kind dlevel;
   bool save_warn_system_headers = global_dc->m_warn_system_headers;
   bool ret;

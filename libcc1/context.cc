@@ -65,7 +65,7 @@ cc1_plugin::plugin_context *cc1_plugin::current_context;
 static void
 plugin_print_error_function (diagnostics::text_sink &text_output,
 			     const char *file,
-			     const diagnostic_info *diagnostic)
+			     const diagnostics::diagnostic_info *diagnostic)
 {
   if (current_function_decl != NULL_TREE
       && DECL_NAME (current_function_decl) != NULL_TREE

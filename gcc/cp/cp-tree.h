@@ -8465,7 +8465,7 @@ extern void cxx_print_type			(FILE *, tree, int);
 extern void cxx_print_identifier		(FILE *, tree, int);
 extern void cxx_print_error_function		(diagnostics::text_sink &,
 						 const char *,
-						 const diagnostic_info *);
+						 const diagnostics::diagnostic_info *);
 
 /* in typeck.cc */
 /* Says how we should behave when comparing two arrays one of which

@@ -21,7 +21,8 @@
 int plugin_is_GPL_compatible;
 
 void
-noop_text_starter_fn (diagnostics::text_sink &, const diagnostic_info *)
+noop_text_starter_fn (diagnostics::text_sink &,
+		      const diagnostics::diagnostic_info *)
 {
 }
 

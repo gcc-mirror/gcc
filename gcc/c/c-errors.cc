@@ -36,7 +36,7 @@ pedwarn_c23 (location_t location,
 	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
   rich_location richloc (line_table, location);
@@ -82,7 +82,7 @@ pedwarn_c11 (location_t location,
 	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
   rich_location richloc (line_table, location);
@@ -129,7 +129,7 @@ pedwarn_c99 (location_t location,
 	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
   rich_location richloc (line_table, location);
@@ -173,7 +173,7 @@ pedwarn_c90 (location_t location,
 	     diagnostics::option_id option_id,
 	     const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
   rich_location richloc (line_table, location);

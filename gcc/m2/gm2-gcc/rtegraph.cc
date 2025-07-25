@@ -286,7 +286,7 @@ static void
 rte_error_at (location_t location, diagnostics::kind kind,
 	      const char *message, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
 

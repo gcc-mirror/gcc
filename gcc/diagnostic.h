@@ -26,8 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 
 #include "diagnostics/diagnostic-info.h"
-typedef diagnostics::diagnostic_info diagnostic_info;
-
 #include "diagnostics/context.h"
 
 /* Extension hooks for client.  */
@@ -58,7 +56,7 @@ extern diagnostics::context *global_dc;
    diagnostic.  */
 
 inline void
-diagnostic_set_option_id (diagnostic_info *info,
+diagnostic_set_option_id (diagnostics::diagnostic_info *info,
 			  diagnostics::option_id opt_id)
 {
   info->m_option_id = opt_id;
@@ -174,7 +172,7 @@ diagnostic_pop_diagnostics (diagnostics::context *context,
 
 inline bool
 diagnostic_report_diagnostic (diagnostics::context *context,
-			      diagnostic_info *diagnostic)
+			      diagnostics::diagnostic_info *diagnostic)
 {
   context->begin_group ();
   bool warned = context->report_diagnostic (diagnostic);
@@ -183,10 +181,14 @@ diagnostic_report_diagnostic (diagnostics::context *context,
 }
 
 #ifdef ATTRIBUTE_GCC_DIAG
-extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
-				 rich_location *, enum diagnostics::kind) ATTRIBUTE_GCC_DIAG(2,0);
-extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
-					    va_list *, rich_location *,
+extern void diagnostic_set_info (diagnostics::diagnostic_info *,
+				 const char *, va_list *,
+				 rich_location *,
+				 enum diagnostics::kind)
+  ATTRIBUTE_GCC_DIAG(2,0);
+extern void diagnostic_set_info_translated (diagnostics::diagnostic_info *,
+					    const char *, va_list *,
+					    rich_location *,
 					    enum diagnostics::kind)
      ATTRIBUTE_GCC_DIAG(2,0);
 #endif
@@ -194,13 +196,13 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 namespace diagnostics {
 
 void default_text_starter (diagnostics::text_sink &,
-			   const diagnostic_info *);
+			   const diagnostics::diagnostic_info *);
 template <typename Sink>
 void default_start_span_fn (const diagnostics::location_print_policy &,
 			    Sink &sink,
 			    expanded_location);
 void default_text_finalizer (diagnostics::text_sink &,
-			     const diagnostic_info *,
+			     const diagnostics::diagnostic_info *,
 			     enum diagnostics::kind);
 } // namespace diagnostics
 
@@ -212,7 +214,8 @@ int get_terminal_width (void);
    specifies which location. By default, expand the first one.  */
 
 inline location_t
-diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
+diagnostic_location (const diagnostics::diagnostic_info *diagnostic,
+		     int which = 0)
 {
   return diagnostic->m_message.get_location (which);
 }
@@ -220,7 +223,7 @@ diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
 /* Return the number of locations to be printed in DIAGNOSTIC.  */
 
 inline unsigned int
-diagnostic_num_locations (const diagnostic_info * diagnostic)
+diagnostic_num_locations (const diagnostics::diagnostic_info *diagnostic)
 {
   return diagnostic->m_message.m_richloc->get_num_locations ();
 }
@@ -230,7 +233,8 @@ diagnostic_num_locations (const diagnostic_info * diagnostic)
    expand the first one.  */
 
 inline expanded_location
-diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
+diagnostic_expand_location (const diagnostics::diagnostic_info *diagnostic,
+			    int which = 0)
 {
   return diagnostic->m_richloc->get_expanded_location (which);
 }

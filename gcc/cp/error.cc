@@ -104,9 +104,9 @@ static void print_instantiation_partial_context (diagnostics::text_sink &,
 						 location_t);
 static void maybe_print_constraint_context (diagnostics::text_sink &);
 static void cp_diagnostic_text_starter (diagnostics::text_sink &,
-					const diagnostic_info *);
+					const diagnostics::diagnostic_info *);
 static void cp_print_error_function (diagnostics::text_sink &,
-				     const diagnostic_info *);
+				     const diagnostics::diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool, bool *, pp_token_list &);
@@ -251,7 +251,7 @@ erroneous_templates_t *erroneous_templates;
 
 static void
 cp_adjust_diagnostic_info (diagnostics::context *context,
-			   diagnostic_info *diagnostic)
+			   diagnostics::diagnostic_info *diagnostic)
 {
   if (diagnostic->m_kind == diagnostics::kind::error)
     if (tree tmpl = get_current_template ())
@@ -3763,7 +3763,7 @@ eh_spec_to_string (tree p, int /*v*/)
 void
 cxx_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
-			  const diagnostic_info *diagnostic)
+			  const diagnostics::diagnostic_info *diagnostic)
 {
   char *prefix;
   if (file)
@@ -3778,7 +3778,7 @@ cxx_print_error_function (diagnostics::text_sink &text_output,
 
 static void
 cp_diagnostic_text_starter (diagnostics::text_sink &text_output,
-			    const diagnostic_info *diagnostic)
+			    const diagnostics::diagnostic_info *diagnostic)
 {
   pp_set_prefix (text_output.get_printer (),
 		 text_output.build_indent_prefix (true));
@@ -3795,7 +3795,7 @@ cp_diagnostic_text_starter (diagnostics::text_sink &text_output,
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
 cp_print_error_function (diagnostics::text_sink &text_output,
-			 const diagnostic_info *diagnostic)
+			 const diagnostics::diagnostic_info *diagnostic)
 {
   /* If we are in an instantiation context, current_function_decl is likely
      to be wrong, so just rely on print_instantiation_full_context.  */
@@ -4932,7 +4932,7 @@ pedwarn_cxx98 (location_t location,
 	       diagnostics::option_id option_id,
 	       const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   bool ret;
   rich_location richloc (line_table, location);

@@ -203,7 +203,7 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostics::option_id option_id,
   if (!err && m_corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, m_corrected_substring);
 
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   if (singular_gmsgid != plural_gmsgid)
     {
       unsigned long gtn;

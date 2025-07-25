@@ -1015,7 +1015,7 @@ public:
 	     (void *)&m_playback_ctxt);
   }
 
-  void on_report_diagnostic (const diagnostic_info &info,
+  void on_report_diagnostic (const diagnostics::diagnostic_info &info,
 			     enum diagnostics::kind orig_diag_kind) final override
   {
     JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
@@ -1042,7 +1042,7 @@ private:
 
 static void
 jit_begin_diagnostic (diagnostics::text_sink &,
-		      const diagnostic_info */*diagnostic*/)
+		      const diagnostics::diagnostic_info */*diagnostic*/)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
@@ -1055,7 +1055,7 @@ jit_begin_diagnostic (diagnostics::text_sink &,
 
 static void
 jit_end_diagnostic (diagnostics::text_sink &,
-		    const diagnostic_info *,
+		    const diagnostics::diagnostic_info *,
 		    enum diagnostics::kind)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);

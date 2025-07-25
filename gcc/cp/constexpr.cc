@@ -153,7 +153,7 @@ static bool
 constexpr_error (location_t location, bool constexpr_fundef_p,
 		 const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
   va_start (ap, gmsgid);

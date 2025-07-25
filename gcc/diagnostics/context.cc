@@ -580,8 +580,9 @@ context::initialize_fixits_change_set ()
 /* Initialize DIAGNOSTIC, where the message MSG has already been
    translated.  */
 void
-diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
-				va_list *args, rich_location *richloc,
+diagnostic_set_info_translated (diagnostics::diagnostic_info *diagnostic,
+				const char *msg, va_list *args,
+				rich_location *richloc,
 				enum diagnostics::kind kind)
 {
   gcc_assert (richloc);
@@ -598,8 +599,9 @@ diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
 /* Initialize DIAGNOSTIC, where the message GMSGID has not yet been
    translated.  */
 void
-diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
-		     va_list *args, rich_location *richloc,
+diagnostic_set_info (diagnostics::diagnostic_info *diagnostic,
+		     const char *gmsgid, va_list *args,
+		     rich_location *richloc,
 		     enum diagnostics::kind kind)
 {
   gcc_assert (richloc);

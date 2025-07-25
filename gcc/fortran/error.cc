@@ -237,13 +237,13 @@ gfc_clear_diagnostic_buffer (diagnostics::buffer *this_buffer)
 /* The currently-printing diagnostic, for use by gfc_format_decoder,
    for colorizing %C and %L.  */
 
-static diagnostic_info *curr_diagnostic;
+static diagnostics::diagnostic_info *curr_diagnostic;
 
 /* A helper function to call diagnostic_report_diagnostic, while setting
    curr_diagnostic for the duration of the call.  */
 
 static bool
-gfc_report_diagnostic (diagnostic_info *diagnostic)
+gfc_report_diagnostic (diagnostics::diagnostic_info *diagnostic)
 {
   gcc_assert (diagnostic != NULL);
   curr_diagnostic = diagnostic;
@@ -261,7 +261,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   va_list argp;
   va_copy (argp, ap);
 
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   diagnostics::buffer *old_buffer = global_dc->get_diagnostic_buffer ();
   gcc_assert (!old_buffer);
@@ -461,7 +461,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
    caller is responsible for freeing the memory.  */
 static char *
 gfc_diagnostic_build_kind_prefix (diagnostics::context *context,
-				  const diagnostic_info *diagnostic)
+				  const diagnostics::diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
@@ -550,7 +550,7 @@ gfc_diagnostic_build_locus_prefix (const diagnostics::location_print_policy &loc
 */
 static void
 gfc_diagnostic_text_starter (diagnostics::text_sink &text_output,
-			     const diagnostic_info *diagnostic)
+			     const diagnostics::diagnostic_info *diagnostic)
 {
   diagnostics::context *const context = &text_output.get_context ();
   pretty_printer *const pp = text_output.get_printer ();
@@ -636,7 +636,7 @@ gfc_diagnostic_start_span (const diagnostics::location_print_policy &loc_policy,
 
 static void
 gfc_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
-			       const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
+			       const diagnostics::diagnostic_info *,
 			       enum diagnostics::kind orig_diag_kind ATTRIBUTE_UNUSED)
 {
   pretty_printer *const pp = text_output.get_printer ();
@@ -651,7 +651,7 @@ bool
 gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, loc);
   bool ret;
 
@@ -670,7 +670,7 @@ bool
 gfc_warning_now (int opt, const char *gmsgid, ...)
 {
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool ret;
 
@@ -689,7 +689,7 @@ bool
 gfc_warning_internal (int opt, const char *gmsgid, ...)
 {
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool ret;
 
@@ -708,7 +708,7 @@ void
 gfc_error_now (const char *gmsgid, ...)
 {
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   error_buffer->flag = true;
@@ -727,7 +727,7 @@ void
 gfc_fatal_error (const char *gmsgid, ...)
 {
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
@@ -780,7 +780,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
       return;
     }
 
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   diagnostics::buffer *old_buffer = global_dc->get_diagnostic_buffer ();
   gcc_assert (!old_buffer);
@@ -828,7 +828,7 @@ gfc_internal_error (const char *gmsgid, ...)
 {
   int e, w;
   va_list argp;
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   gfc_get_errors (&w, &e);

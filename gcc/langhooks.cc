@@ -371,7 +371,7 @@ lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 void
 lhd_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
-			  const diagnostic_info *diagnostic)
+			  const diagnostics::diagnostic_info *diagnostic)
 {
   diagnostics::context *const context = &text_output.get_context ();
   if (diagnostic_last_function_changed (context, diagnostic))

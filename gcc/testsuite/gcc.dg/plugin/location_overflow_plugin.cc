@@ -43,7 +43,7 @@ static diagnostics::text_finalizer_fn original_text_finalizer = NULL;
 
 static void
 verify_unpacked_ranges  (diagnostics::text_sink &text_output,
-			 const diagnostic_info *diagnostic,
+			 const diagnostics::diagnostic_info *diagnostic,
 			 enum diagnostics::kind orig_diag_kind)
 {
   /* Verify that the locations are ad-hoc, not packed. */
@@ -57,7 +57,7 @@ verify_unpacked_ranges  (diagnostics::text_sink &text_output,
 
 static void
 verify_no_columns  (diagnostics::text_sink &text_output,
-		    const diagnostic_info *diagnostic,
+		    const diagnostics::diagnostic_info *diagnostic,
 		    enum diagnostics::kind orig_diag_kind)
 {
   /* Verify that the locations have no columns. */
