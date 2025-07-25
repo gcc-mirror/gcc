@@ -18,33 +18,36 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_CLIENT_DATA_HOOKS_H
-#define GCC_DIAGNOSTIC_CLIENT_DATA_HOOKS_H
+#ifndef GCC_DIAGNOSTICS_CLIENT_DATA_HOOKS_H
+#define GCC_DIAGNOSTICS_CLIENT_DATA_HOOKS_H
 
 #include "diagnostics/logical-locations.h"
 
 class sarif_object;
+
+namespace diagnostics {
+
 class client_version_info;
 
 /* A bundle of additional metadata, owned by the diagnostic_context,
    for querying things about the client, like version data.  */
 
-class diagnostic_client_data_hooks
+class client_data_hooks
 {
  public:
-  virtual ~diagnostic_client_data_hooks () {}
+  virtual ~client_data_hooks () {}
 
   /* Get version info for this client, or NULL.  */
   virtual const client_version_info *get_any_version_info () const = 0;
 
   /* Get the current logical_locations::manager for this client, or null.  */
-  virtual const diagnostics::logical_locations::manager *
+  virtual const logical_locations::manager *
   get_logical_location_manager () const = 0;
 
   /* Get the current logical location, or null.
      If this returns a non-null logical location, then
      get_logical_location_manager must return non-null.  */
-  virtual diagnostics::logical_locations::key
+  virtual logical_locations::key
   get_current_logical_location () const = 0;
 
   /* Get a sourceLanguage value for FILENAME, or return NULL.
@@ -58,13 +61,7 @@ class diagnostic_client_data_hooks
   add_sarif_invocation_properties (sarif_object &invocation_obj) const = 0;
 };
 
-/* Factory function for making an instance of diagnostic_client_data_hooks
-   for use in the compiler (i.e. with knowledge of "tree", access to
-   langhooks, etc).  */
-
-extern std::unique_ptr<diagnostic_client_data_hooks> make_compiler_data_hooks ();
-
-class diagnostic_client_plugin_info;
+class client_plugin_info;
 
 /* Abstract base class for a diagnostic_context to get at
    version information about the client.  */
@@ -75,7 +72,7 @@ public:
   class plugin_visitor
   {
   public:
-    virtual void on_plugin (const diagnostic_client_plugin_info &) = 0;
+    virtual void on_plugin (const client_plugin_info &) = 0;
   };
 
   virtual ~client_version_info () {}
@@ -102,7 +99,7 @@ public:
 /* Abstract base class for a diagnostic_context to get at
    information about a specific plugin within a client.  */
 
-class diagnostic_client_plugin_info
+class client_plugin_info
 {
 public:
   /* For use e.g. by SARIF "name" property (SARIF v2.1.0 section 3.19.8).  */
@@ -117,4 +114,13 @@ public:
   virtual const char *get_version () const = 0;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_CLIENT_DATA_HOOKS_H */
+} // namespace diagnostics
+
+/* Factory function for making an instance of client_data_hooks
+   for use in the compiler (i.e. with knowledge of "tree", access to
+   langhooks, etc).  */
+
+extern std::unique_ptr<diagnostics::client_data_hooks>
+make_compiler_data_hooks ();
+
+#endif /* ! GCC_DIAGNOSTICS_CLIENT_DATA_HOOKS_H */

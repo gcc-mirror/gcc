@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-url.h"
 #include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "diagnostics/diagram.h"
 #include "diagnostic-format.h"
 #include "diagnostic-format-sarif.h"
@@ -533,7 +533,7 @@ diagnostic_context::set_main_input_filename (const char *filename)
 
 void
 diagnostic_context::
-set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks)
+set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks)
 {
   delete m_client_data_hooks;
   /* Ideally the field would be a std::unique_ptr here.  */

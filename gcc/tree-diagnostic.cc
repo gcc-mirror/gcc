@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-diagnostic.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "langhooks.h"
 #include "intl.h"
 #include "diagnostic-format-text.h"

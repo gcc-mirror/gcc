@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-output-file.h"
 #include "diagnostic-buffer.h"
 #include "diagnostic-path.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "pretty-print-format-impl.h"

@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-url.h"
 #include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-output-spec.h"
@@ -568,14 +568,15 @@ public:
   }
 };
 
-class impl_diagnostic_client_data_hooks : public diagnostic_client_data_hooks
+class impl_diagnostic_client_data_hooks : public diagnostics::client_data_hooks
 {
 public:
   impl_diagnostic_client_data_hooks (diagnostic_manager &mgr)
   : m_mgr (mgr)
   {}
 
-  const client_version_info *get_any_version_info () const final override;
+  const diagnostics::client_version_info *
+  get_any_version_info () const final override;
 
   const diagnostics::logical_locations::manager *
   get_logical_location_manager () const final override
@@ -595,7 +596,7 @@ private:
   impl_logical_location_manager m_logical_location_manager;
 };
 
-class impl_client_version_info : public client_version_info
+class impl_client_version_info : public diagnostics::client_version_info
 {
 public:
   const char *get_tool_name () const final override
@@ -824,7 +825,8 @@ public:
 
   const diagnostic *get_current_diag () { return m_current_diag; }
 
-  const client_version_info *get_client_version_info () const
+  const diagnostics::client_version_info *
+  get_client_version_info () const
   {
     return &m_client_version_info;
   }
@@ -1372,7 +1374,7 @@ diagnostic_physical_location::get_file () const
 
 /* class impl_diagnostic_client_data_hooks.  */
 
-const client_version_info *
+const diagnostics::client_version_info *
 impl_diagnostic_client_data_hooks::get_any_version_info () const
 {
   return m_mgr.get_client_version_info ();

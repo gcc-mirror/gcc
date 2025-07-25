@@ -38,6 +38,7 @@ namespace diagnostics {
     class manager;
   } // namespace diagnostics::logical_locations
 
+  class client_data_hooks;
   class diagram;
   class edit_context;
 
@@ -236,7 +237,6 @@ public:
   virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
 };
 
-class diagnostic_client_data_hooks;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
   class diagnostic_text_output_format;
@@ -550,7 +550,7 @@ struct diagnostic_counters
    - a cache for use when quoting the user's source code (class file_cache)
    - a text_art::theme
    - a diagnostics::edit_context for generating patches from fix-it hints
-   - diagnostic_client_data_hooks for metadata.
+   - diagnostics::client_data_hooks for metadata.
 
    Try to avoid adding new responsibilities to this class itself, to avoid
    the "blob" anti-pattern.  */
@@ -672,7 +672,7 @@ public:
   /* Various setters for use by option-handling logic.  */
   void set_output_format (std::unique_ptr<diagnostic_output_format> output_format);
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
-  void set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks);
+  void set_client_data_hooks (std::unique_ptr<diagnostics::client_data_hooks> hooks);
 
   void push_owned_urlifier (std::unique_ptr<urlifier>);
   void push_borrowed_urlifier (const urlifier &);
@@ -730,7 +730,7 @@ public:
   {
     return m_edit_context_ptr;
   }
-  const diagnostic_client_data_hooks *get_client_data_hooks () const
+  const diagnostics::client_data_hooks *get_client_data_hooks () const
   {
     return m_client_data_hooks;
   }
@@ -1100,7 +1100,7 @@ private:
      producing diagnostics.
      Owned by the context; this would be a std::unique_ptr if
      diagnostic_context had a proper ctor.  */
-  diagnostic_client_data_hooks *m_client_data_hooks;
+  diagnostics::client_data_hooks *m_client_data_hooks;
 
   /* Support for diagrams.  */
   struct

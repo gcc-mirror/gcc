@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-url.h"
 #include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "diagnostics/diagram.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-buffer.h"

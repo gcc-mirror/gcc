@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "cpplib.h"
 #include "diagnostics/logical-locations.h"
-#include "diagnostic-client-data-hooks.h"
+#include "diagnostics/client-data-hooks.h"
 #include "diagnostics/diagram.h"
 #include "text-art/canvas.h"
 #include "diagnostic-format-sarif.h"
@@ -3442,7 +3442,8 @@ sarif_builder::make_tool_object ()
 	class my_plugin_visitor : public client_version_info :: plugin_visitor
 	{
 	public:
-	  void on_plugin (const diagnostic_client_plugin_info &p) final override
+	  void
+	  on_plugin (const client_plugin_info &p) final override
 	  {
 	    /* Create a "toolComponent" object (SARIF v2.1.0 section 3.19)
 	       for the plugin.  */
