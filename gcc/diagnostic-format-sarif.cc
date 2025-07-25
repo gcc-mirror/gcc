@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "diagnostics/logical-locations.h"
 #include "diagnostic-client-data-hooks.h"
-#include "diagnostic-diagram.h"
+#include "diagnostics/diagram.h"
 #include "text-art/canvas.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
@@ -454,7 +454,7 @@ public:
   on_nested_diagnostic (const diagnostic_info &diagnostic,
 			diagnostic_t orig_diag_kind,
 			sarif_builder &builder);
-  void on_diagram (const diagnostic_diagram &diagram,
+  void on_diagram (const diagram &d,
 		   sarif_builder &builder);
 
 private:
@@ -777,7 +777,7 @@ public:
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_sarif_format_buffer *buffer);
-  void emit_diagram (const diagnostic_diagram &diagram);
+  void emit_diagram (const diagram &d);
   void end_group ();
 
   void
@@ -807,7 +807,7 @@ public:
   std::unique_ptr<sarif_message>
   make_message_object (const char *msg) const;
   std::unique_ptr<sarif_message>
-  make_message_object_for_diagram (const diagnostic_diagram &diagram);
+  make_message_object_for_diagram (const diagram &d);
   std::unique_ptr<sarif_artifact_content>
   maybe_make_artifact_content_object (const char *filename) const;
 
@@ -1338,11 +1338,11 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
    (SARIF v2.1.0 section 3.28.5).  */
 
 void
-sarif_result::on_diagram (const diagnostic_diagram &diagram,
+sarif_result::on_diagram (const diagram &d,
 			  sarif_builder &builder)
 {
   auto location_obj = std::make_unique<sarif_location> ();
-  auto message_obj = builder.make_message_object_for_diagram (diagram);
+  auto message_obj = builder.make_message_object_for_diagram (d);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj), builder);
@@ -1887,11 +1887,11 @@ sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
    for SARIF output.  */
 
 void
-sarif_builder::emit_diagram (const diagnostic_diagram &diagram)
+sarif_builder::emit_diagram (const diagram &d)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_group_result);
-  m_cur_group_result->on_diagram (diagram, *this);
+  m_cur_group_result->on_diagram (d, *this);
 }
 
 /* Implementation of "end_group_cb" for SARIF output.  */
@@ -3249,18 +3249,18 @@ sarif_builder::make_message_object (const char *msg) const
   return message_obj;
 }
 
-/* Make a "message" object (SARIF v2.1.0 section 3.11) for DIAGRAM.
+/* Make a "message" object (SARIF v2.1.0 section 3.11) for D.
    We emit the diagram as a code block within the Markdown part
    of the message.  */
 
 std::unique_ptr<sarif_message>
-sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagram)
+sarif_builder::make_message_object_for_diagram (const diagram &d)
 {
   auto message_obj = std::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   set_string_property_escaping_braces (*message_obj,
-				       "text", diagram.get_alt_text ());
+				       "text", d.get_alt_text ());
 
   pretty_printer *const pp = m_printer;
   char *saved_prefix = pp_take_prefix (pp);
@@ -3269,7 +3269,7 @@ sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagra
   /* "To produce a code block in Markdown, simply indent every line of
      the block by at least 4 spaces or 1 tab."
      Here we use 4 spaces.  */
-  diagram.get_canvas ().print_to_pp (pp, "    ");
+  d.get_canvas ().print_to_pp (pp, "    ");
   pp_set_prefix (pp, saved_prefix);
 
   /* "markdown" property (SARIF v2.1.0 section 3.11.9).  */
@@ -3915,9 +3915,9 @@ public:
   {
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
-  void on_diagram (const diagnostic_diagram &diagram) final override
+  void on_diagram (const diagnostics::diagram &d) final override
   {
-    m_builder.emit_diagram (diagram);
+    m_builder.emit_diagram (d);
   }
   void after_diagnostic (const diagnostic_info &) final override
   {

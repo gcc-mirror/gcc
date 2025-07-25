@@ -38,6 +38,8 @@ namespace diagnostics {
     class manager;
   } // namespace diagnostics::logical_locations
 
+  class diagram;
+
 } // namespace diagnostics
 
 namespace text_art
@@ -235,7 +237,6 @@ public:
 
 class edit_context;
 class diagnostic_client_data_hooks;
-class diagnostic_diagram;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
   class diagnostic_text_output_format;
@@ -666,7 +667,7 @@ public:
 				 diagnostic_source_effect_info *effect_info,
 				 html_label_writer *label_writer);
 
-  void emit_diagram (const diagnostic_diagram &diagram);
+  void emit_diagram (const diagnostics::diagram &diag);
 
   /* Various setters for use by option-handling logic.  */
   void set_output_format (std::unique_ptr<diagnostic_output_format> output_format);

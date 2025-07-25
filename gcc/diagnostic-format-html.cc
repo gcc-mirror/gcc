@@ -122,7 +122,7 @@ public:
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_html_format_buffer *buffer);
-  void emit_diagram (const diagnostic_diagram &diagram);
+  void emit_diagram (const diagram &d);
   void emit_global_graph (const digraphs::lazy_digraph &);
 
   void end_group ();
@@ -1240,7 +1240,7 @@ html_builder::make_element_for_metadata (const metadata &m)
    for HTML output.  */
 
 void
-html_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
+html_builder::emit_diagram (const diagram &)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_diagnostic_element);
@@ -1364,9 +1364,9 @@ public:
   {
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
-  void on_diagram (const diagnostic_diagram &diagram) final override
+  void on_diagram (const diagram &d) final override
   {
-    m_builder.emit_diagram (diagram);
+    m_builder.emit_diagram (d);
   }
   void after_diagnostic (const diagnostic_info &) final override
   {

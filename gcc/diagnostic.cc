@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
-#include "diagnostic-diagram.h"
+#include "diagnostics/diagram.h"
 #include "diagnostic-format.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
@@ -1744,13 +1744,13 @@ diagnostic_context::diagnostic_n_impl (rich_location *richloc,
 /* Emit DIAGRAM to this context, respecting the output format.  */
 
 void
-diagnostic_context::emit_diagram (const diagnostic_diagram &diagram)
+diagnostic_context::emit_diagram (const diagnostics::diagram &diag)
 {
   if (m_diagrams.m_theme == nullptr)
     return;
 
   for (auto sink : m_output_sinks)
-    sink->on_diagram (diagram);
+    sink->on_diagram (diag);
 }
 
 /* Inform the user that an error occurred while trying to report some

@@ -18,22 +18,24 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_DIAGNOSTIC_DIAGRAM_H
-#define GCC_DIAGNOSTIC_DIAGRAM_H
+#ifndef GCC_DIAGNOSTICS_DIAGRAM_H
+#define GCC_DIAGNOSTICS_DIAGRAM_H
 
 namespace text_art
 {
   class canvas;
 } // namespace text_art
 
+namespace diagnostics {
+
 /* A text art diagram, along with an "alternative text" string
    describing it.  */
 
-class diagnostic_diagram
+class diagram
 {
  public:
-  diagnostic_diagram (const text_art::canvas &canvas,
-		      const char *alt_text)
+  diagram (const text_art::canvas &canvas,
+	   const char *alt_text)
   : m_canvas (canvas),
     m_alt_text (alt_text)
   {
@@ -48,4 +50,6 @@ class diagnostic_diagram
   const char *const m_alt_text;
 };
 
-#endif /* ! GCC_DIAGNOSTIC_DIAGRAM_H */
+} // namespace diagnostics
+
+#endif /* ! GCC_DIAGNOSTICS_DIAGRAM_H */

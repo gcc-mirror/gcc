@@ -60,7 +60,7 @@ public:
   void on_report_diagnostic (const diagnostic_info &,
 			     diagnostic_t orig_diag_kind) override;
   void on_report_verbatim (text_info &) final override;
-  void on_diagram (const diagnostic_diagram &diagram) override;
+  void on_diagram (const diagnostics::diagram &d) override;
   void after_diagnostic (const diagnostic_info &) override;
   bool machine_readable_stderr_p () const final override
   {

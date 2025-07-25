@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "intl.h"
-#include "diagnostic-diagram.h"
+#include "diagnostics/diagram.h"
 #include "diagnostic-format-sarif.h"
 
 #include "analyzer/analyzer-logging.h"
@@ -181,7 +181,7 @@ protected:
 	       a problem.  Give up if that's happened.  */
 	    return;
 	  }
-	diagnostic_diagram diagram
+	diagnostics::diagram diagram
 	  (canvas,
 	   /* Alt text.  */
 	   _("Diagram visualizing the predicted out-of-bounds access"));

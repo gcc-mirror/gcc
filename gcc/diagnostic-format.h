@@ -61,7 +61,7 @@ public:
 
   virtual void on_report_verbatim (text_info &);
 
-  virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
+  virtual void on_diagram (const diagnostics::diagram &diag) = 0;
   virtual void after_diagnostic (const diagnostic_info &) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
   virtual bool follows_reference_printer_p () const = 0;

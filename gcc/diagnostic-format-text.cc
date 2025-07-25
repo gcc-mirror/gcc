@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
-#include "diagnostic-diagram.h"
+#include "diagnostics/diagram.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-buffer.h"
 #include "text-art/theme.h"
@@ -258,7 +258,7 @@ diagnostic_text_output_format::on_report_verbatim (text_info &text)
 }
 
 void
-diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
+diagnostic_text_output_format::on_diagram (const diagnostics::diagram &d)
 {
   pretty_printer *const pp = get_printer ();
 
@@ -267,7 +267,7 @@ diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
   /* Use a newline before and after and a two-space indent
      to make the diagram stand out a little from the wall of text.  */
   pp_newline (pp);
-  diagram.get_canvas ().print_to_pp (pp, "  ");
+  d.get_canvas ().print_to_pp (pp, "  ");
   pp_newline (pp);
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);
