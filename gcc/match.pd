@@ -3595,22 +3595,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  return (T)x;
       }
       while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
-   (convert@4 (min (widen_mult:c@3 (convert@5 (convert @0))
-				   (convert@6 (convert @1)))
+   (convert (min (widen_mult:c@3 (convert@4 (convert @0))
+				 (convert@5 (convert @1)))
 		   INTEGER_CST@2))
-   (if (types_match (type, @0, @1) && types_match (type, @4))
+   (if (types_match (type, @0, @1))
     (with
      {
       unsigned prec = TYPE_PRECISION (type);
       unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      unsigned cvt4_prec = TYPE_PRECISION (TREE_TYPE (@4));
       unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
-      unsigned cvt6_prec = TYPE_PRECISION (TREE_TYPE (@6));
       wide_int c2 = wi::to_wide (@2);
       wide_int max = wi::mask (prec, false, widen_prec);
       bool c2_is_max_p = wi::eq_p (c2, max);
-      bool widen_mult_p = cvt5_prec == cvt6_prec && widen_prec == cvt6_prec * 2;
+      bool widen_mult_p = cvt4_prec == cvt5_prec && widen_prec == cvt5_prec * 2;
      }
      (if (widen_prec > prec && c2_is_max_p && widen_mult_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   (convert (min (mult:c@3 (convert @0) (convert @1)) INTEGER_CST@2))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      wide_int c2 = wi::to_wide (@2);
+      wide_int max = wi::mask (prec, false, widen_prec);
+      bool c2_is_max_p = wi::eq_p (c2, max);
+     }
+     (if (widen_prec > prec && c2_is_max_p)))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
