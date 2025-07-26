@@ -519,15 +519,20 @@
 				     VNx4HI VNx2HI
 				     VNx2SI])
 
+;; All SVE integer vector modes.
+(define_mode_iterator SVE_I [VNx16QI VNx8QI VNx4QI VNx2QI
+			     VNx8HI VNx4HI VNx2HI
+			     VNx4SI VNx2SI
+			     VNx2DI])
+
+;; All SVE floating-point vector modes.
+(define_mode_iterator SVE_F [VNx8HF VNx4HF VNx2HF
+			     VNx8BF VNx4BF VNx2BF
+			     VNx4SF VNx2SF
+			     VNx2DF])
+
 ;; All SVE vector modes.
-(define_mode_iterator SVE_ALL [VNx16QI VNx8QI VNx4QI VNx2QI
-			       VNx8HI VNx4HI VNx2HI
-			       VNx8HF VNx4HF VNx2HF
-			       VNx8BF VNx4BF VNx2BF
-			       VNx4SI VNx2SI
-			       VNx4SF VNx2SF
-			       VNx2DI
-			       VNx2DF])
+(define_mode_iterator SVE_ALL [SVE_I SVE_F])
 
 ;; All SVE 2-vector modes.
 (define_mode_iterator SVE_FULLx2 [VNx32QI VNx16HI VNx8SI VNx4DI
@@ -548,12 +553,6 @@
 
 ;; All SVE vector and structure modes.
 (define_mode_iterator SVE_ALL_STRUCT [SVE_ALL SVE_STRUCT])
-
-;; All SVE integer vector modes.
-(define_mode_iterator SVE_I [VNx16QI VNx8QI VNx4QI VNx2QI
-			     VNx8HI VNx4HI VNx2HI
-			     VNx4SI VNx2SI
-			     VNx2DI])
 
 ;; All SVE integer vector modes and Advanced SIMD 64-bit vector
 ;; element modes

@@ -6422,10 +6422,10 @@
 ;; by providing this, but we need to use UNSPECs since rtx logical ops
 ;; aren't defined for floating-point modes.
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
-	(unspec:SVE_FULL_F
-	  [(match_operand:SVE_FULL_F 1 "register_operand" "w")
-	   (match_operand:SVE_FULL_F 2 "register_operand" "w")]
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:SVE_F 1 "register_operand" "w")
+	   (match_operand:SVE_F 2 "register_operand" "w")]
 	  LOGICALF))]
   "TARGET_SVE"
   "<logicalf_op>\t%0.d, %1.d, %2.d"
