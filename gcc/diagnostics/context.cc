@@ -1511,16 +1511,19 @@ context::diagnostic_impl (rich_location *richloc,
 			  va_list *ap, enum kind kind)
 {
   diagnostic_info diagnostic;
-  if (kind == kind::permerror)
+  if (kind == diagnostics::kind::permerror)
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
-			   m_permissive ? kind::warning : kind::error);
+			   (m_permissive
+			    ? diagnostics::kind::warning
+			    : diagnostics::kind::error));
       diagnostic.m_option_id = (opt_id.m_idx != -1 ? opt_id : m_opt_permissive);
     }
   else
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
-      if (kind == kind::warning || kind == kind::pedwarn)
+      if (kind == diagnostics::kind::warning
+	  || kind == diagnostics::kind::pedwarn)
 	diagnostic.m_option_id = opt_id;
     }
   diagnostic.m_metadata = metadata;
@@ -1551,7 +1554,7 @@ context::diagnostic_n_impl (rich_location *richloc,
 
   const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
   diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
-  if (kind == kind::warning)
+  if (kind == diagnostics::kind::warning)
     diagnostic.m_option_id = opt_id;
   diagnostic.m_metadata = metadata;
   return report_diagnostic (&diagnostic);
