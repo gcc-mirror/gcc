@@ -463,9 +463,11 @@ TYPE
                                               (* of param.                   *)
                  Type          : CARDINAL ;   (* Index to the type of param. *)
                  IsUnbounded   : BOOLEAN ;    (* Is it an ARRAY OF Type?     *)
+                 Scope         : CARDINAL ;   (* Procedure declaration.      *)
                  ShadowVar     : CARDINAL ;   (* The local variable used to  *)
                                               (* shadow this parameter.      *)
-                 At            : Where ;      (* Where was sym declared/used *)
+                 FullTok,                     (* name: type virtual token.   *)
+                 At            : CARDINAL ;   (* Where was sym declared.     *)
               END ;
 
    SymVarParam = RECORD
@@ -476,9 +478,11 @@ TYPE
                     HeapVar       : CARDINAL ;(* The pointer value on heap.  *)
                                               (* Only used by static         *)
                                               (* analysis.                   *)
+                    Scope         : CARDINAL ;(* Procedure declaration.      *)
                     ShadowVar     : CARDINAL ;(* The local variable used to  *)
                                               (* shadow this parameter.      *)
-                    At            : Where ;   (* Where was sym declared/used *)
+                    FullTok,                  (* name: type virtual token.   *)
+                    At            : CARDINAL ;(* Where was sym declared.     *)
                  END ;
 
    ConstStringVariant = (m2str, cstr, m2nulstr, cnulstr) ;
@@ -4456,9 +4460,19 @@ BEGIN
       pSym := GetPsym (sym) ;
       IF IsParameterVar (sym)
       THEN
-         RETURN GetVarDeclTok (pSym^.VarParam.ShadowVar)
+         IF pSym^.VarParam.ShadowVar = NulSym
+         THEN
+            RETURN pSym^.VarParam.At
+         ELSE
+            RETURN GetVarDeclTok (pSym^.VarParam.ShadowVar)
+         END
       ELSE
-         RETURN GetVarDeclTok (pSym^.Param.ShadowVar)
+         IF pSym^.Param.ShadowVar = NulSym
+         THEN
+            RETURN pSym^.Param.At
+         ELSE
+            RETURN GetVarDeclTok (pSym^.Param.ShadowVar)
+         END
       END
    ELSIF IsVar (sym)
    THEN
@@ -4549,9 +4563,9 @@ BEGIN
    THEN
       IF IsParameterVar (sym)
       THEN
-         RETURN GetVarDeclFullTok (pSym^.VarParam.ShadowVar)
+         RETURN pSym^.VarParam.FullTok
       ELSE
-         RETURN GetVarDeclFullTok (pSym^.Param.ShadowVar)
+         RETURN pSym^.Param.FullTok
       END
    ELSIF IsVar (sym)
    THEN
@@ -10651,8 +10665,10 @@ BEGIN
             name := ParamName ;
             Type := ParamType ;
             IsUnbounded := isUnbounded ;
+            Scope := Sym ;
             ShadowVar := NulSym ;
-            InitWhereDeclaredTok(tok, At)
+            FullTok := MakeVirtual2Tok (tok, typetok) ;
+            At := tok
          END
       END ;
       AddParameter (Sym, kind, ParSym) ;
@@ -10671,7 +10687,7 @@ BEGIN
             pSym^.Param.ShadowVar := VariableSym
          END
       END ;
-      AddProcedureProcTypeParam (Sym, ParamType, isUnbounded, FALSE)
+      AddProcedureProcTypeParam (tok, Sym, ParamType, isUnbounded, FALSE)
    END ;
    RETURN( TRUE )
 END PutParam ;
@@ -10708,9 +10724,11 @@ BEGIN
             name := ParamName ;
             Type := ParamType ;
             IsUnbounded := isUnbounded ;
+            Scope := Sym ;
             ShadowVar := NulSym ;
             HeapVar := NulSym ;  (* Will contain a pointer value.  *)
-            InitWhereDeclaredTok(tok, At)
+            FullTok := MakeVirtual2Tok (tok, typetok) ;
+            At := tok
          END
       END ;
       AddParameter (Sym, kind, ParSym) ;
@@ -10729,7 +10747,7 @@ BEGIN
             pSym^.VarParam.ShadowVar := VariableSym
          END
       END ;
-      AddProcedureProcTypeParam (Sym, ParamType, isUnbounded, TRUE)
+      AddProcedureProcTypeParam (tok, Sym, ParamType, isUnbounded, TRUE)
    END ;
    RETURN( TRUE )
 END PutVarParam ;
@@ -10816,7 +10834,8 @@ END AddParameter ;
                                associated with procedure Sym.
 *)
 
-PROCEDURE AddProcedureProcTypeParam (Sym, ParamType: CARDINAL;
+PROCEDURE AddProcedureProcTypeParam (tok: CARDINAL;
+                                     Sym, ParamType: CARDINAL;
                                      isUnbounded, isVarParam: BOOLEAN) ;
 VAR
    pSym: PtrToSymbol ;
@@ -10829,10 +10848,12 @@ BEGIN
                     THEN
                        IF isVarParam
                        THEN
-                          PutProcTypeVarParam (Procedure.ProcedureType,
+                          PutProcTypeVarParam (tok,
+                                               Procedure.ProcedureType,
                                                ParamType, isUnbounded)
                        ELSE
-                          PutProcTypeParam (Procedure.ProcedureType,
+                          PutProcTypeParam (tok,
+                                            Procedure.ProcedureType,
                                             ParamType, isUnbounded)
                        END
                     END
@@ -13027,18 +13048,8 @@ BEGIN
       ConstLitSym        : RETURN( ConstLit.Scope ) |
       ConstStringSym     : RETURN( ConstString.Scope ) |
       ConstVarSym        : RETURN( ConstVar.Scope ) |
-      ParamSym           : IF Param.ShadowVar = NulSym
-                           THEN
-                              RETURN NulSym
-                           ELSE
-                              RETURN( GetScope (Param.ShadowVar) )
-                           END |
-      VarParamSym        : IF VarParam.ShadowVar = NulSym
-                           THEN
-                              RETURN NulSym
-                           ELSE
-                              RETURN( GetScope (VarParam.ShadowVar) )
-                           END |
+      ParamSym           : RETURN( Param.Scope ) |
+      VarParamSym        : RETURN( VarParam.Scope ) |
       UndefinedSym       : RETURN( NulSym ) |
       PartialUnboundedSym: InternalError ('should not be requesting the scope of a PartialUnbounded symbol')
 
@@ -13186,7 +13197,8 @@ END MakeProcType ;
                       ParamType into ProcType Sym.
 *)
 
-PROCEDURE PutProcTypeParam (Sym: CARDINAL;
+PROCEDURE PutProcTypeParam (tok: CARDINAL;
+                            Sym: CARDINAL;
                             ParamType: CARDINAL; isUnbounded: BOOLEAN) ;
 VAR
    pSym  : PtrToSymbol ;
@@ -13201,7 +13213,8 @@ BEGIN
          Type := ParamType ;
          IsUnbounded := isUnbounded ;
          ShadowVar := NulSym ;
-         InitWhereDeclared(At)
+         FullTok := tok ;
+         At := tok
       END
    END ;
    AddParameter (Sym, ProperProcedure, ParSym)
@@ -13213,7 +13226,8 @@ END PutProcTypeParam ;
                          ParamType into ProcType Sym.
 *)
 
-PROCEDURE PutProcTypeVarParam (Sym: CARDINAL;
+PROCEDURE PutProcTypeVarParam (tok: CARDINAL;
+                               Sym: CARDINAL;
                                ParamType: CARDINAL; isUnbounded: BOOLEAN) ;
 VAR
    pSym  : PtrToSymbol ;
@@ -13228,7 +13242,8 @@ BEGIN
          Type := ParamType ;
          IsUnbounded := isUnbounded ;
          ShadowVar := NulSym ;
-         InitWhereDeclared(At)
+         FullTok := tok ;
+         At := tok
       END
    END ;
    AddParameter (Sym, ProperProcedure, ParSym)
@@ -13918,8 +13933,8 @@ BEGIN
       UnboundedSym       : RETURN( Unbounded.At.DefDeclared ) |
       ProcedureSym       : RETURN( Procedure.At.DefDeclared ) |
       ProcTypeSym        : RETURN( ProcType.At.DefDeclared ) |
-      ParamSym           : RETURN( Param.At.DefDeclared ) |
-      VarParamSym        : RETURN( VarParam.At.DefDeclared ) |
+      ParamSym           : RETURN( Param.At ) |
+      VarParamSym        : RETURN( VarParam.At ) |
       ConstStringSym     : RETURN( ConstString.At.DefDeclared ) |
       ConstLitSym        : RETURN( ConstLit.At.DefDeclared ) |
       ConstVarSym        : RETURN( ConstVar.At.DefDeclared ) |
@@ -13968,8 +13983,8 @@ BEGIN
       UnboundedSym       : RETURN( Unbounded.At.ModDeclared ) |
       ProcedureSym       : RETURN( Procedure.At.ModDeclared ) |
       ProcTypeSym        : RETURN( ProcType.At.ModDeclared ) |
-      ParamSym           : RETURN( Param.At.ModDeclared ) |
-      VarParamSym        : RETURN( VarParam.At.ModDeclared ) |
+      ParamSym           : RETURN( Param.At ) |
+      VarParamSym        : RETURN( VarParam.At ) |
       ConstStringSym     : RETURN( ConstString.At.ModDeclared ) |
       ConstLitSym        : RETURN( ConstLit.At.ModDeclared ) |
       ConstVarSym        : RETURN( ConstVar.At.ModDeclared ) |
@@ -14019,8 +14034,6 @@ BEGIN
       UnboundedSym       : Unbounded.At.DefDeclared := tok |
       ProcedureSym       : Procedure.At.DefDeclared := tok |
       ProcTypeSym        : ProcType.At.DefDeclared := tok |
-      ParamSym           : Param.At.DefDeclared := tok |
-      VarParamSym        : VarParam.At.DefDeclared := tok |
       ConstStringSym     : ConstString.At.DefDeclared := tok |
       ConstLitSym        : ConstLit.At.DefDeclared := tok |
       ConstVarSym        : ConstVar.At.DefDeclared := tok |
@@ -14067,8 +14080,6 @@ BEGIN
       UnboundedSym       : Unbounded.At.ModDeclared := tok |
       ProcedureSym       : Procedure.At.ModDeclared := tok |
       ProcTypeSym        : ProcType.At.ModDeclared := tok |
-      ParamSym           : Param.At.ModDeclared := tok |
-      VarParamSym        : VarParam.At.ModDeclared := tok |
       ConstStringSym     : ConstString.At.ModDeclared := tok |
       ConstLitSym        : ConstLit.At.ModDeclared := tok |
       ConstVarSym        : ConstVar.At.ModDeclared := tok |
@@ -14323,8 +14334,10 @@ BEGIN
       UnboundedSym       : RETURN( Unbounded.At.FirstUsed ) |
       ProcedureSym       : RETURN( Procedure.At.FirstUsed ) |
       ProcTypeSym        : RETURN( ProcType.At.FirstUsed ) |
+      (*
       ParamSym           : RETURN( Param.At.FirstUsed ) |
       VarParamSym        : RETURN( VarParam.At.FirstUsed ) |
+      *)
       ConstStringSym     : RETURN( ConstString.At.FirstUsed ) |
       ConstLitSym        : RETURN( ConstLit.At.FirstUsed ) |
       ConstVarSym        : RETURN( ConstVar.At.FirstUsed ) |
