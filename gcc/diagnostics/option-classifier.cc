@@ -209,7 +209,7 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 	  if (opt_id == 0 || opt_id == diagnostic->m_option_id)
 	    {
 	      enum kind kind = p->kind;
-	      if (kind != kind::unspecified)
+	      if (kind != diagnostics::kind::unspecified)
 		diagnostic->m_kind = kind;
 	      return kind;
 	    }
