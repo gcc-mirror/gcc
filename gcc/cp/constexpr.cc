@@ -3337,10 +3337,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      && TREE_CODE (new_obj) == COMPONENT_REF
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (new_obj, 0))) == UNION_TYPE)
 	    {
+	      tree ctor = build_constructor (TREE_TYPE (new_obj), NULL);
+	      CONSTRUCTOR_NO_CLEARING (ctor) = true;
 	      tree activate = build2 (INIT_EXPR, TREE_TYPE (new_obj),
-				      new_obj,
-				      build_constructor (TREE_TYPE (new_obj),
-							 NULL));
+				      new_obj, ctor);
 	      cxx_eval_constant_expression (ctx, activate,
 					    lval, non_constant_p, overflow_p);
 	      ggc_free (activate);
@@ -4731,6 +4731,16 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
     }
 
   /* If there's no explicit init for this field, it's value-initialized.  */
+
+  if (AGGREGATE_TYPE_P (TREE_TYPE (t)))
+    {
+      /* As in cxx_eval_store_expression, insert an empty CONSTRUCTOR
+	 and copy the flags.  */
+      constructor_elt *e = get_or_insert_ctor_field (whole, part);
+      e->value = value = build_constructor (TREE_TYPE (part), NULL);
+      return value;
+    }
+
   value = build_value_init (TREE_TYPE (t), tf_warning_or_error);
   return cxx_eval_constant_expression (ctx, value,
 				       lval,
