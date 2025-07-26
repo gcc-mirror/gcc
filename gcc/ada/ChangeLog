@@ -1,3 +1,12 @@
+2025-07-25  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance):
+	Do nothing in case of E_Subprogram_Body.
+
+2025-07-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Set flag appropriately.
+
 2025-07-22  Ronan Desplanques  <desplanques@adacore.com>
 
 	* gen_il-fields.ads (Is_Implicit_Full_View): New field.

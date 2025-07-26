@@ -1,3 +1,14 @@
+2025-07-25  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120577
+	* constexpr.cc (cxx_eval_call_expression): Set
+	CONSTRUCTOR_NO_CLEARING on initial value for ctor.
+	(cxx_eval_component_reference): Make value-initialization
+	of an aggregate member explicit.
+
 2025-07-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
