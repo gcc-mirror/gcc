@@ -14263,6 +14263,8 @@ supportable_widening_operation (vec_info *vinfo,
 
       internal_fn lo, hi, even, odd;
       lookup_hilo_internal_fn (ifn, &lo, &hi);
+      if (BYTES_BIG_ENDIAN)
+	std::swap (lo, hi);
       *code1 = as_combined_fn (lo);
       *code2 = as_combined_fn (hi);
       optab1 = direct_internal_fn_optab (lo, {vectype, vectype});
