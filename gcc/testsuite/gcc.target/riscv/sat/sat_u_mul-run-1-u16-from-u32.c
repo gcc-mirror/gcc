@@ -4,8 +4,8 @@
 #include "sat_arith.h"
 #include "sat_arith_data.h"
 
-#define NT               uint8_t
-#define WT               uint64_t
+#define NT               uint16_t
+#define WT               uint32_t
 #define NAME             usmul
 #define DATA             TEST_BINARY_DATA_WRAP(NT, NAME)
 #define T                TEST_BINARY_STRUCT_DECL_WRAP(NT, NAME)
