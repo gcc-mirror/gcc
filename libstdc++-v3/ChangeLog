@@ -1,3 +1,8 @@
+2025-07-25  Tuur Martens  <tuurmartens4@gmail.com>
+
+	* include/bits/unordered_map.h: Rectify referencing of
+	non-existent type.
+
 2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/117294

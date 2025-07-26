@@ -1,3 +1,77 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* constexpr.cc: Update usage of "diagnostic_info" to explicitly
+	refer to "diagnostics::diagnostic_info".
+	* cp-tree.h: Likewise.
+	* error.cc: Likewise.
+	* module.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* constexpr.cc: Likewise.
+	* cp-tree.h: Likewise.
+	* decl.cc: Likewise.
+	* error.cc: Likewise.
+	* init.cc: Likewise.
+	* method.cc: Likewise.
+	* module.cc: Likewise.
+	* parser.cc: Likewise.
+	* pt.cc: Likewise.
+	* semantics.cc: Likewise.
+	* typeck.cc: Likewise.
+	* typeck2.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for renaming of diagnostic_option_id to
+	diagnostics::option_id.
+	* decl.cc: Likewise.
+	* error.cc: Likewise.
+	* name-lookup.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for diagnostic_context becoming
+	diagnostics::context.
+	* error.cc: Likewise.
+	* module.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* constexpr.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+	* error.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+	* error.cc: Likewise.
+
+2025-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (build_new_op): If the selected candidate is
+	rewritten, communicate the LOOKUP_REWRITTEN/REVERSED flags to
+	the caller via the 'overload' out-parameter, and stop clearing
+	'*overload' in that case.
+	* tree.cc (build_min_non_dep_op_overload): Handle rebuilding all
+	C++20 rewritten comparison operator expressions.
+
+2025-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/121219
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Reorder the return
+	expressions for the 'normal' and 'allocation failed' cases so that
+	NRV constraints are met.
+
 2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/117294

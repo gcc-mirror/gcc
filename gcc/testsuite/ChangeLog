@@ -1,3 +1,163 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc: Eliminate
+	digraphs::lazy_digraph and digraphs::lazy_digraphs in favor of
+	lazily_created template.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.cc: Define
+	INCLUDE_VECTOR since diagnostics/metadata.h now requires it.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.cc: Make
+	diagnostics::context::m_source_printing private.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.cc:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.cc:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Likewise.
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/show_template_tree_color_plugin.cc: Update usage
+	of "diagnostic_info" to explicitly refer to
+	"diagnostics::diagnostic_info".
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Update for
+	file_cache and char_span moving from input.h to
+	diagnostics/file-cache.h and into the "diagnostics::" namespace.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Update for
+	diagnostic_t becoming enum class diagnostics::kind.
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Likewise.
+	* lib/gcc-dg.exp: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Update for change
+	from edit-context.h to changes.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Update for move of
+	selftest::test_diagnostic_context to
+	diagnostics::selftest::test_context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Update for move of
+	diagnostic-color.h to diagnostics/color.h.
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Update for move of
+	selftest-diagnostic.h to diagnostics/selftest-context.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/show_template_tree_color_plugin.cc: Update for
+	moves to namespace diagnostics.
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Update to
+	add "m_" prefix to fields of diagnostic_info throughout.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/show-template-tree-color-labels.C: Update for
+	moves to "source-printing".
+	* gcc.dg/plugin/diagnostic-test-show-locus.py: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Update for move of
+	diagnostics output formats into namespace "diagnostics" as
+	"sinks".
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Update #include for
+	"diagnostic-path.h" moving to "diagnostics/paths.h",
+	diagnostic_thread_id_t to diagnostics::paths::thread_id_t,
+	diagnostic_event_id_t to diagnostics::paths::event_id_t,
+	diagnostic_path to diagnostics::paths::path, and
+	diagnostic_thread to diagnostics::paths::thread, and
+	diagnostic_event to diagnostics::paths::event.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: Likewise.
+	* lib/sarif.py (get_state_graph): Update property prefix for
+	threadFlowLocations from "gcc/diagnostic_event/" to
+	"gcc/diagnostics/paths/event/".
+	* gcc.dg/sarif-output/include-chain-2.h: Update comment.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Update #include for
+	move of edit-context.h to diagnostics subdir.  Update
+	for move of edit_context to diagnostics::edit_context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.cc: Update
+	#include for move of "diagnostic-diagram.h" to
+	"diagnostics/diagram.h". Update for move of diagnostic_diagram to
+	diagnostics::diagram.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: : Update #include for
+	move of "diagnostic-metadata.h" to "diagnostics/metadata.h"
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc: Likewise.  Also
+	update for move of diagnostic_metadata to diagnostics::metadata.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc: Update #include
+	for move of "diagnostic-digraphs.h" to "diagnostics/digraphs.h".
+
+2025-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/lookup/operator-8.C: Remove XFAILs and properly
+	suppress all -Wunused-result warnings.
+
+2025-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/121219
+	* g++.dg/coroutines/torture/pr121219.C: New test.
+
+2025-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/interrupt-conflict-mode.c: Remove "user"
+	interrupts.
+	* gcc.target/riscv/xtheadint-push-pop.c: Likewise.
+	* gcc.target/riscv/interrupt-umode.c: Removed.
+
+2025-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/interrupt-rnmi.c: New test.
+
 2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/117294

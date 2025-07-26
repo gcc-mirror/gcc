@@ -1,3 +1,60 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/misc.cc: Make
+	diagnostics::context::m_source_printing private.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/trans.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/misc.cc: Update for diagnostic_context becoming
+	diagnostics::context.
+
+2025-07-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/utils.cc (update_pointer_to): Renamed ptr/old_ptr, ref/old_ref.
+
+2025-07-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* s-oscons-tmplt.c (CLOCK_RT_Ada) [__vxworks]: Define to
+	CLOCK_REALTIME on VxWorks6.
+	* gsocket.h [__vxworks]: Include strings.h if available.
+	* sysdep.c [__vxworks]: Likewise.
+
+2025-07-25  Steve Baird  <baird@adacore.com>
+
+	* exp_ch6.adb (Apply_Access_Discrims_Accessibility_Check): Do
+	nothing and simply return if either Ada_Version <= Ada_95 or if
+	the function being returned from lacks the extra formal parameter
+	needed to perform the check (typically because the result is
+	tagged).
+
+2025-07-25  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance):
+	Do nothing in case of E_Subprogram_Body.
+
+2025-07-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Update comments
+
+2025-07-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Set flag appropriately.
+
+2025-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-calend.adb (To_Struct_Timespec_64): Deal with negative
+	Duration values and truncate the nanoseconds too.
+	* libgnat/g-calend.adb (timeval_to_duration): Unsuppress overflow
+	checks.
+	(duration_to_timeval): Likewise.  Deal with negative Duration values
+	as well as integral Duration values.
+	* libgnat/g-socket.adb (To_Timeval): Simplify the implementation.
+
 2025-07-24  Steve Baird  <baird@adacore.com>
 
 	* exp_aggr.adb (Convert_To_Assignments): Add calls to Ensure_Defined

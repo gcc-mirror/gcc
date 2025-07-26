@@ -1,3 +1,46 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Make diagnostics::context::m_source_printing private.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update usage of "diagnostic_info" to explicitly refer to
+	"diagnostics::diagnostic_info".
+	* error.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* error.cc: Likewise.
+	* options.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for renaming of
+	diagnostic_option_id to diagnostics::option_id.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for diagnostic_context becoming
+	diagnostics::context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+	* gfortran.h: Likewise.
+
 2025-07-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121203

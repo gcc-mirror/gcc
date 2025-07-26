@@ -1,3 +1,12 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* filter-clang-warnings.py: Update for move of
+	diagnostic-path-output.cc to diagnostics/paths-output.cc.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add gcc/diagnostics subdir.
+
 2025-07-23  Sam James  <sam@gentoo.org>
 
 	PR other/105404

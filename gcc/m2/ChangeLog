@@ -1,3 +1,20 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gm2-gcc/m2linemap.cc: Update usage of "diagnostic_info" to
+	explicitly refer to "diagnostics::diagnostic_info".
+	* gm2-gcc/rtegraph.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gm2-gcc/m2linemap.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* gm2-gcc/rtegraph.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gm2-gcc/m2color.cc: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+
 2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/M2EXCEPTION.mod (M2Exception): Add return

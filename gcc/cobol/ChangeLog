@@ -1,3 +1,17 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* util.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* util.cc: Update for renaming of diagnostic_option_id to
+	diagnostics::option_id.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* util.cc: Remove redundant #includes
+
 2025-07-24  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119231

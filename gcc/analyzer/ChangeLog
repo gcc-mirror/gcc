@@ -1,3 +1,105 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc: Make diagnostics::context::m_source_printing
+	private.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* pending-diagnostic.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* program-point.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc: : Update for diagnostic_context becoming
+	diagnostics::context, and for diagnostic_source_print_policy
+	becoming diagnostics::source_print_policy.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc: Update for move of
+	diagnostics output formats into namespace "diagnostics" as
+	"sinks".
+	* bounds-checking.cc: Likewise.
+	* call-details.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-event.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* diagnostic-manager.h: Likewise.
+	* infinite-loop.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* region-model.cc: Likewise.
+	* sm-taint.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Update for changes to diagnostic paths:
+	"diagnostic-path.h" moving to "diagnostics/paths.h",
+	"diagnostic-event-id.h" moving to "diagnostics/event-id.h",
+	diagnostic_event_id_t to diagnostics::paths::event_id_t,
+	diagnostic_path to diagnostics::paths::path, and
+	diagnostic_event to diagnostics::paths::event.
+	* access-diagram.h: Likewise.
+	* analyzer.cc: Likewise.
+	* bounds-checking.cc: Likewise.
+	* call-info.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-event.h: Likewise.
+	* checker-path.cc: Likewise.
+	* checker-path.h: Likewise.
+	* common.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* program-point.cc: Likewise.
+	* program-state.cc: Likewise.
+	* region-model.cc: Likewise.
+	* sm-fd.cc: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* bounds-checking.cc: Update #include for move of
+	"diagnostic-diagram.h" to "diagnostics/diagram.h". Update for
+	move of diagnostic_diagram to diagnostics::diagram.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc: Update for move of diagnostic_metadata to
+	diagnostics::metadata.
+	* kf.cc: Likewise.
+	* pending-diagnostic.h: Likewise; also, update #include for move
+	of "diagnostic-metadata.h" to "diagnostics/metadata.h".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::get_logical_location): Update
+	for conversion of logical_location to
+	diagnostics::logical_locations::key.
+	(checker_event::m_logical_loc): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::get_logical_location_manager): Likewise.
+	* diagnostic-manager.h
+	(diagnostic_manager::get_logical_location_manager): Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc: Update #include for move of
+	"diagnostic-state-graphs.h" to "diagnostics/state-graphs.h".
+	* ana-state-to-diagnostic-state.h: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-event.h: Update #include for move of
+	"diagnostic-digraphs.h" to "diagnostics/digraphs.h".
+	* program-state.cc: : Update #include for move of
+	"diagnostic-state-graphs.h" to "diagnostics/state-graphs.h".
+
 2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* region-model-asm.cc (region_model::on_asm_stmt): Pass null

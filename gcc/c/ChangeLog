@@ -1,3 +1,33 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-errors.cc: Update usage of "diagnostic_info" to explicitly
+	refer to "diagnostics::diagnostic_info".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-errors.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* c-parser.cc: Likewise.
+	* c-typeck.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc: Update for renaming of diagnostic_option_id to
+	diagnostics::option_id.
+	* c-errors.cc: Likewise.
+	* c-tree.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc: Update for diagnostic_context becoming
+	diagnostics::context.
+	* c-tree.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-errors.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+
 2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* c-typeck.cc (build_asm_expr): Pass null pointer to

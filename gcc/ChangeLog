@@ -1,3 +1,1265 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.cc: Eliminate digraphs::lazy_digraph in
+	favor of lazily_created template.
+	* diagnostics/context.h: Likewise.
+	* diagnostics/digraphs.cc: Likewise, also digraphs::lazy_digraphs.
+	* diagnostics/digraphs.h: Likewise.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostics/metadata.h: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/sink.h: Likewise.
+	* diagnostics/text-sink.h: Likewise.
+	* lazily-created.h: New file.
+	* libgdiagnostics.cc: Eliminate digraphs::lazy_digraph in
+	favor of lazily_created template.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h: Use TextOrHtml rather than Sink for template
+	params.
+	* diagnostics/context.h: Likewise.
+	* diagnostics/selftest-context.cc: Use "html_or_text" rather than
+	"sink".
+	* diagnostics/source-printing.cc: Use TextOrHtml rather than Sink
+	for template params.  Use "text_out" and "html_out" rather than
+	"sink".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_set_caret_max_width): Drop forward
+	decl.
+	(diagnostic_same_line): Make
+	diagnostics::context::m_source_printing private.
+	* diagnostics/context.cc (diagnostic_set_caret_max_width): Convert
+	to...
+	(diagnostics::context::set_caret_max_width): ...this.
+	* diagnostics/context.h
+	(diagnostics::context::get_source_printing_options): New
+	accessors.
+	(diagnostics::context::m_source_printing): Make private.
+	* diagnostics/html-sink.cc: Make
+	diagnostics::context::m_source_printing private.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/selftest-context.cc: Likewise.
+	* diagnostics/selftest-context.h
+	(diagnostics::selftest::test_context::colorize_source): New.
+	(diagnostics::selftest::test_context::show_labels): New.
+	(diagnostics::selftest::test_context::show_line_numbers): New.
+	(diagnostics::selftest::test_context::show_ruler): New.
+	(diagnostics::selftest::test_context::show_event_links): New.
+	(diagnostics::selftest::test_context::set_caret_char): New.
+	* diagnostics/source-printing.cc: Make
+	diagnostics::context::m_source_printing private.
+	* diagnostics/text-sink.h: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* opts.cc: Likewise.
+	* toplev.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h: Eliminate "diagnostic_info" typedef.
+	* diagnostics/context.cc: Update usage of "diagnostic_info" to
+	explicitly refer to "diagnostics::diagnostic_info".
+	* langhooks.cc: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* rtl-error.cc: Likewise.
+	* substring-locations.cc: Likewise.
+	* toplev.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+	* tree-diagnostic.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (enum diagnostics_column_unit): Move to
+	diagnostics/context-options.h.
+	(enum diagnostics_escape_format): Likewise.
+	(enum diagnostics_output_format): Likewise.
+	(enum diagnostic_path_format): Likewise.
+	(enum diagnostics_extra_output_kind): Likewise.
+	(enum diagnostic_text_art_charset): Likewise.
+	* diagnostics/context-options.h: New file, based on the above
+	material.
+	* diagnostics/context.h: Include it.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostics/file-cache.o.
+	* diagnostics/changes.cc: Update for file_cache and char_span
+	moving from input.h to diagnostics/file-cache.h and into the
+	"diagnostics::" namespace.
+	* diagnostics/context.cc: Likewise.
+	* diagnostics/diagnostics-selftests.cc: Likewise.
+	* diagnostics/diagnostics-selftests.h: Likewise.
+	* diagnostics/file-cache.cc: New file, based on the file_cache
+	and file_cache_slot material in input.cc.
+	* diagnostics/file-cache.h: Likewise for input.h.
+	* diagnostics/selftest-source-printing.h: Update for file_cache
+	and char_span moving from input.h to diagnostics/file-cache.h and
+	into the "diagnostics::" namespace.
+	* diagnostics/source-printing.cc: Likewise.
+	* final.cc: Likewise.
+	* gcc-rich-location.cc: Likewise.
+	* input.cc (default_charset_callback): Move to
+	diagnostics/file-cache.cc.
+	(file_cache::initialize_input_context): Likewise.
+	(class file_cache_slot): Likewise.
+	(file_cache::tune): Likewise.
+	(file_cache::lookup_file): Likewise.
+	(file_cache::forcibly_evict_file): Likewise.
+	(file_cache::missing_trailing_newline_p): Likewise.
+	(file_cache::add_buffered_content): Likewise.
+	(file_cache::evicted_cache_tab_entry): Likewise.
+	(file_cache::add_file): Likewise.
+	(file_cache::file_cache): Likewise.
+	(file_cache::dump): Likewise.
+	(file_cache::dump): Likewise.
+	(file_cache::lookup_or_add_file): Likewise.
+	(find_end_of_line): Likewise.
+	(file_cache::get_source_line): Likewise.
+	(check_line): Likewise.
+	(test_replacement): Likewise.
+	(test_reading_source_line): Likewise.
+	(test_reading_source_buffer): Likewise.
+	* input.h (class char_span): Move to diagnostics/file-cache.h and
+	into the "diagnostics::" namespace.
+	(class file_cache_slot): Likewise.
+	(class file_cache): Likewise.
+	* libgdiagnostics.cc: Update for file_cache and char_span moving
+	from input.h to diagnostics/file-cache.h and into the
+	"diagnostics::" namespace.
+	* selftest.cc: Likewise.
+	* selftest.h: Likewise.
+	* substring-locations.h: Likewise.
+	* toplev.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/selftest-paths.cc: Don't include "demangle.h"
+	and "backtrace.h".
+	* diagnostics/source-printing.cc: Likewise.
+	* diagnostics/state-graphs.cc: Don't include "graphviz.h",
+	"xml.h", "xml-printer.h", or "intl.h".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h: Move include of "unique-argv.h"
+	and various forward decls into...
+	* diagnostics/context.h: ...here.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (num_digits): Move to...
+	(diagnostics::num_digits): ...here.
+	(get_cwe_url): Move to...
+	(diagnostics::get_cwe_url): ...here.
+	(maybe_line_and_column): Move to...
+	(diagnostics::maybe_line_and_column): ...here.
+	* diagnostic.cc: Move to...
+	* diagnostics/context.cc: ...here.
+	* diagnostics/diagnostics-selftests.cc
+	(run_diagnostics_selftests): Add comment about context_cc_tests.
+	* diagnostics/diagnostics-selftests.h: Add context_cc_tests decl.
+	* diagnostics/sarif-sink.cc: Update for file rename.
+	* diagnostics/source-printing.cc: Update for num_digits moving to
+	diagnostics::num_digits.
+	* errors.cc: Update for file rename.
+	* input.cc: Update for num_digits moving to
+	diagnostics::num_digits.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace diagnostic.o with
+	diagnostics/context.o.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Replace diagnostic.def with diagnostics/kinds.def.
+	* config/aarch64/aarch64.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* config/i386/i386-options.cc: Likewise.
+	* config/s390/s390.cc: Likewise.
+	* diagnostic-core.h: Replace typedef diagnostic_t with
+	enum class diagnostics::kind in diagnostics/kinds.h and include
+	it.
+	* diagnostic-global-context.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostics/buffering.cc: Likewise.
+	* diagnostics/buffering.h: Likewise.
+	* diagnostics/context.h: Likewise.
+	* diagnostics/diagnostic-info.h: Likewise.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostic.def: Move to...
+	* diagnostics/kinds.def: ...here and update for diagnostic_t
+	becoming enum class diagnostics::kind.
+	* diagnostics/kinds.h: New file, based on material in
+	diagnostic-core.h.
+	* diagnostics/lazy-paths.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* diagnostics/option-classifier.cc: Likewise.
+	* diagnostics/option-classifier.h: Likewise.
+	* diagnostics/output-spec.h: Likewise.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/selftest-context.cc: Likewise.
+	* diagnostics/selftest-context.h: Likewise.
+	* diagnostics/sink.h: Likewise.
+	* diagnostics/source-printing.cc: Likewise.
+	* diagnostics/text-sink.cc: Likewise.
+	* diagnostics/text-sink.h: Likewise.
+	* gcc.cc: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* lto-wrapper.cc: Likewise.
+	* opts-common.cc: Likewise.
+	* opts-diagnostic.h: Likewise.
+	* opts.cc: Likewise.
+	* rtl-error.cc: Likewise.
+	* substring-locations.cc: Likewise.
+	* toplev.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h: Include "diagnostics/option-id.h".
+	(struct diagnostic_option_id): Move there, renaming to
+	diagnostics::option_id.
+	* diagnostic-global-context.cc: Update for renaming of
+	diagnostic_option_id to diagnostics::option_id.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostics/context.h: Likewise.
+	* diagnostics/diagnostic-info.h: Likewise.
+	* diagnostics/lazy-paths.cc: Likewise.
+	* diagnostics/option-classifier.cc: Likewise.
+	* diagnostics/option-classifier.h: Likewise.
+	* diagnostics/option-id.h: New file, taken from material in
+	diagnostic-core.h.
+	* diagnostics/selftest-context.cc: Update for renaming of
+	diagnostic_option_id to diagnostics::option_id.
+	* diagnostics/selftest-context.h: Likewise.
+	* ipa-pure-const.cc: Likewise.
+	* lto-wrapper.cc: Likewise.
+	* opts-common.cc: Likewise.
+	* opts-diagnostic.h: Likewise.
+	* opts.cc: Likewise.
+	* substring-locations.cc: Likewise.
+	* substring-locations.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace diagnostic-spec.o with
+	gcc-diagnostic-spec.o.
+	(GTFILES): Replace diagnostic-spec.h with gcc-diagnostic-spec.h.
+	* diagnostic-spec.cc: Move to...
+	* gcc-diagnostic-spec.cc: ...here.
+	* diagnostic-spec.h: Move to...
+	* gcc-diagnostic-spec.h: ...here.
+	* gengtype.cc (open_base_files): Replace diagnostic-spec.h with
+	gcc-diagnostic-spec.h.
+	* warning-control.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace diagnostics/changes.o with
+	diagnostics/edit-context.o.
+	* diagnostic.cc: Update for move of diagnostics/edit-context.h to
+	diagnostics/changes.h.
+	(diagnostics::context::initialize): Update for renaming of
+	m_edit_context_ptr to m_fixits_change_set.
+	(diagnostics::context::finish): Likewise.
+	(diagnostics::context::create_edit_context): Rename to...
+	(diagnostics::context::initialize_fixits_change_set): ...this and
+	update for other renamings.
+	(diagnostics::context::report_diagnostic): Update for renaming of
+	m_edit_context_ptr to m_fixits_change_set.
+	* diagnostic.h (diagnostics::edit_context): Drop forward decl
+	* diagnostics/edit-context.cc: Move to...
+	* diagnostics/changes.cc: ...here.  Update for move of
+	diagnostics/edit-context.h to diagnostics/changes.h.
+	Rename diagnostics::edit_context to
+	diagnostics::changes::change_set.  Rename diagnostics::edited_file
+	to diagnostics::changes::changed_file.  Rename
+	diagnostics::edited_line to diagnostics::changes::changed_line.
+	* diagnostics/edit-context.h: Move to...
+	* diagnostics/changes.h: ...here, renaming as above.
+	* diagnostics/context.h (diagnostics::changes::change_set): New
+	forward decl.
+	(diagnostics::context::create_edit_context): Rename to...
+	(diagnostics::context::initialize_fixits_change_set): ...this.
+	(diagnostics::context::get_edit_context): Rename to...
+	(diagnostics::context::get_fixits_change_set): ...this.
+	(diagnostics::context::m_edit_context_ptr): Rename to...
+	(diagnostics::context::m_fixits_change_set): ..this and update
+	type.
+	* diagnostics/diagnostics-selftests.cc: Update for renaming.
+	* diagnostics/diagnostics-selftests.h: Likewise.
+	* diagnostics/html-sink.cc: Update for above changes.
+	* libgdiagnostics.cc: Likewise.
+	* toplev.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Move diagnostics/lazy-paths.o to...
+	(OBJS-libcommon): ...here.  Add
+	diagnostics/diagnostics-selftests.o.
+	* diagnostic.cc: Update for move of
+	selftest::test_diagnostic_context to
+	diagnostics::selftest::test_context.
+	* diagnostics/color.cc: Move selftests from selftest:: to
+	diagnostics::selftest::.
+	* diagnostics/diagnostics-selftests.cc: New file.
+	* diagnostics/diagnostics-selftests.h: New file.
+	* diagnostics/digraphs.cc: Move selftests from selftest:: to
+	diagnostics::selftest::.
+	* diagnostics/edit-context.cc: Likewise.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostics/lazy-paths.cc: Likewise.  Eliminate use of "tree"
+	by porting selftests from simple-diagnostic-path.h to
+	diagnostics/selftest-paths.h.
+	* diagnostics/output-spec.cc: Move selftests from selftest:: to
+	diagnostics::selftest::.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/selftest-context.cc: Move
+	selftest::test_diagnostic_context to
+	diagnostics::selftest::test_context.
+	* diagnostics/selftest-context.h: Likewise.
+	* diagnostics/selftest-logical-locations.cc: Move selftests from
+	selftest:: to diagnostics::logical_locations::selftest::.
+	* diagnostics/selftest-logical-locations.h: Move
+	selftest::logical_location_manager to
+	diagnostics::logical_locations::selftest::logical_location_manager.
+	* diagnostics/selftest-paths.cc: Move
+	selftest::test_diagnostic_path to
+	diagnostics::paths::selftest::test_path.  Move
+	selftest::test_diagnostic_event to
+	diagnostics::paths::selftest::test_event.
+	* diagnostics/selftest-paths.h: Likewise, and move
+	selftest::test_diagnostic_thread to
+	diagnostics::paths::selftest::test_thread.
+	* diagnostics/selftest-source-printing.h: Move
+	selftest::diagnostic_show_locus_fixture to
+	diagnostics::selftest::source_printing_fixture.
+	* diagnostics/source-printing.cc: Move selftests from selftest::
+	to diagnostics::selftest:: and update for renames.
+	* diagnostics/state-graphs.cc: Likewise.
+	* selftest-run-tests.cc: Include
+	"diagnostics/diagnostics-selftests.h".
+	(selftest::run_tests): Replace invocation of the various diagnostics
+	selftests with a call to
+	diagnostics::selftest::run_diagnostics_selftests.
+	* selftest.h: Move decls of the various per-file diagnostics
+	invocation functions to diagnostics/diagnostics-selftests.h,
+	renaming due to diagostics prefix being implied by namespace.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt: Update for move of diagnostic-url.h to
+	diagnostics/url.h.
+	* diagnostic.cc: Likewise.
+	* diagnostics/color.cc: Likewise.
+	* diagnostics/text-sink.cc: Likewise.
+	* diagnostic-url.h: Move to...
+	* diagnostics/url.h: ...here.
+	* libgdiagnostics.cc: Update for move of diagnostic-url.h to
+	diagnostics/url.h.
+	* pretty-print.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace diagnostic-color.o with
+	diagnostics/color.o.
+	(PLUGIN_HEADERS): Remove diagnostic-color.h in favor of glob.
+	* common.opt: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+	* diagnostic.cc: Likewise.
+	* diagnostic-color.cc: Move to...
+	* diagnostics/color.cc: ...here.
+	* diagnostic-color.h: Move to...
+	* diagnostics/color.h: ...here.
+	* diagnostics/edit-context.cc: Update for move of
+	diagnostic-color.h to diagnostics/color.h.
+	* diagnostics/output-spec.cc: Likewise.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/source-printing.cc: Likewise.
+	* diagnostics/text-sink.cc: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* opts.cc: Likewise.
+	* pretty-print-markup.h: Likewise.
+	* pretty-print.cc: Likewise.
+	* selftest-run-tests.cc: Likewise.
+	* selftest.h: Likewise.
+	* text-art/style.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace selftest-diagnostic.o with
+	diagnostics/selftest-context.o.
+	* diagnostic.cc: Update for move of selftest-diagnostic.h to
+	diagnostics/selftest-context.h.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostics/lazy-paths.cc: Likewise.
+	* diagnostics/output-spec.cc: Likewise.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* selftest-diagnostic.cc: Move to...
+	* diagnostics/selftest-context.cc: ...here and update for move of
+	header file.
+	* selftest-diagnostic.h: Move to...
+	* diagnostics/selftest-context.h: ...here.
+	* diagnostics/source-printing.cc: Update for move of
+	selftest-diagnostic.h to diagnostics/selftest-context.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostics/buffering.o.
+	* diagnostic.cc (diagnostics::context::set_diagnostic_buffer): Move to
+	diagnostics/buffering.cc.
+	(diagnostics::context::clear_diagnostic_buffer): Likewise.
+	(diagnostics::context::flush_diagnostic_buffer): Likewise.
+	(diagnostics::buffer::buffer): Likewise.
+	(diagnostics::buffer::~buffer): Likewise.
+	(diagnostics::buffer::dump): Likewise.
+	(diagnostics::buffer::empty_p): Likewise.
+	(diagnostics::buffer::move_to): Likewise.
+	(diagnostics::buffer::ensure_per_sink_buffers): Likewise.
+	* diagnostics/buffering.cc: New file, from material in diagnostic.cc.
+	* diagnostics/buffering.h: Fix comment.
+	* diagnostics/text-sink.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add
+	diagnostics/option-classifier.o.
+	* diagnostic.cc (diagnostics::option_classifier::init): Move to
+	diagnostics/option-classifier.cc.
+	(diagnostics::option_classifier::fini): Likewise.
+	(diagnostics::option_classifier::pch_save): Likewise.
+	(diagnostics::option_classifier::pch_restore): Likewise.
+	(diagnostics::option_classifier::push): Likewise.
+	(diagnostics::option_classifier::pop): Likewise.
+	(diagnostics::option_classifier::classify_diagnostic): Likewise.
+	(diagnostics::option_classifier::update_effective_level_from_pragmas):
+	Likewise.
+	* diagnostics/context.h: Include
+	"diagnostics/option-classifier.h".
+	(class option_classifier): Move to
+	diagnostics/option-classifier.h.
+	* diagnostics/option-classifier.cc: New file, based on material
+	from diagnostic.cc.
+	* diagnostics/option-classifier.h: New file, based on material
+	from diagnostics/context.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* coretypes.h: Update for diagnostic_context becoming
+	diagnostics::context.
+	* diagnostic-global-context.cc: Likewise.
+	* diagnostic.cc: Likewise.  Also for diagnostic_option_classifier
+	becoming diagnostics::option_classifier.
+	* diagnostic.h (diagnostic_text_starter_fn): Rename to...
+	(diagnostics::text_starter_fn): ...this, and move to
+	diagnostics/context.h.
+	(get_printer): Rename to...
+	(diagnostics::get_printer): ...this, and move to
+	diagnostics/context.h.
+	(class diagnostic_option_manager): Rename to...
+	(class diagnostics::option_manager): ...this, and move to
+	diagnostics/context.h.
+	(class diagnostic_option_classifier): Rename to...
+	(class diagnostics::option_classifier): ...this, and move to
+	diagnostics/context.h.
+	(struct diagnostic_source_printing_options): Rename to...
+	(struct diagnostics::source_printing_options): ...this, and move
+	to diagnostics/context.h.
+	(class diagnostic_column_policy): Rename to...
+	(class diagnostics::column_policy): ...this, and move to
+	diagnostics/context.h.
+	(class diagnostic_location_print_policy): Rename to...
+	(class diagnostics::location_print_policy): ...this, and move to
+	diagnostics/context.h.
+	(class html_label_writer): Rename to...
+	(class diagnostics::html_label_writer): ...this, and move to
+	diagnostics/context.h.
+	(class diagnostic_source_print_policy): Rename to...
+	(class diagnostics::source_print_policy): ...this, and move to
+	diagnostics/context.h.
+	(struct diagnostic_counters): Rename to...
+	(struct diagnostics::counters): ...this, and move to
+	diagnostics/context.h.
+	(class diagnostic_context): Rename to...
+	(class diagnostics::context): ...this, and move to
+	diagnostics/context.h.
+	(diagnostic_text_starter): Rename to...
+	(diagnostics::text_starter): ...this, and move to
+	diagnostics/context.h.
+	(diagnostic_start_span): Rename to...
+	(diagnostics::start_span): ...this, and move to
+	diagnostics/context.h.
+	(diagnostic_text_finalizer): Rename to...
+	(diagnostics::text_finalizer): ...this, and move to
+	diagnostics/context.h.
+	Include "diagnostics/context.h".
+	* diagnostics/buffering.h: Update for diagnostic_context becoming
+	diagnostics::context; similarly for diagnostic_counters.
+	* diagnostics/client-data-hooks.h: Likewise.
+	* diagnostics/context.h: New file, taken from material in
+	diagnostic.h.
+	* diagnostics/html-sink.cc: : Update for diagnostic_context
+	becoming diagnostics::context.
+	* diagnostics/html-sink.h: Likewise.
+	* diagnostics/lazy-paths.cc: Likewise for
+	diagnostic_option_manager.
+	* diagnostics/output-file.h: Likewise for diagnostic_context.
+	* diagnostics/output-spec.cc: Likewise.
+	* diagnostics/output-spec.h: Likewise.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/sarif-sink.h: Likewise.
+	* diagnostics/sink.h: Likewise.
+	* diagnostics/source-printing.cc: Likewise.
+	* diagnostics/text-sink.cc: Likewise.
+	* diagnostics/text-sink.h: Likewise.
+	* gcc-rich-location.h: Likewise.
+	* gcc.cc: Likewise.
+	* gdbinit.in: Likewise.
+	* langhooks-def.h: Likewise.
+	* langhooks.cc: Likewise.
+	* langhooks.h: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* optc-gen.awk: Likewise.
+	* opth-gen.awk: Likewise.
+	* opts-common.cc: Likewise.
+	* opts-diagnostic.cc: Likewise.
+	* opts-diagnostic.h: Likewise.
+	* opts-global.cc: Likewise.
+	* opts.cc: Likewise.
+	* opts.h: Likewise.
+	* selftest-diagnostic.cc: Likewise.
+	* selftest-diagnostic.h: Likewise.
+	* toplev.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+	* tree-diagnostic.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (struct diagnostic_info): Move to
+	diagnostics/diagnostic-info.h as diagnostics::diagnostic_info.
+	Add typedef bringing it back into root namespace, for now.
+	* diagnostics/diagnostic-info.h: New file, based on the above.
+	* langhooks-def.h: Update for diagnostic_info moving into
+	namespace diagnostics.
+	* langhooks.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+	* diagnostic.h: Likewise.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/text-sink.cc: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* substring-locations.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Replace diagnostic-macro-unwinding.o with
+	diagnostics/macro-unwinding.o.
+	* diagnostic-macro-unwinding.cc: Move to...
+	* diagnostics/macro-unwinding.cc: ...here, moving content into
+	namespace diagnostics.
+	* diagnostic-macro-unwinding.h: Move to...
+	* diagnostics/macro-unwinding.h: ...here, moving content into
+	namespace diagnostics.
+	* diagnostics/paths-output.cc: Update for move of
+	"diagnostic-macro-unwinding.h" to "diagnostics/macro-unwinding.h".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Replace diagnostic-show-locus.o with
+	diagnostics/source-printing.o.
+	* diagnostic.h (class diagnostic_source_effect_info): Replace
+	with...
+	(class diagnotics::source_effect_info): ...this.
+	* diagnostics/paths-output.cc: Likewise.  Update for move of
+	"diagnostic-label-effects.h" to
+	"diagnostics/source-printing-effects.h".
+	* diagnostics/sarif-sink.cc: Update for move of
+	"selftest-diagnostic-show-locus.h" to
+	"diagnostics/selftest-source-printing.h".
+	* selftest-diagnostic-show-locus.h: Move to...
+	* diagnostics/selftest-source-printing.h: ...here.
+	* diagnostic-label-effects.h: Move to...
+	* diagnostics/source-printing-effects.h: ...here, updating
+	for above changes.
+	* diagnostic-show-locus.cc: Move to...
+	* diagnostics/source-printing.cc: ...here.
+	* gcc-rich-location.h: Likewise.
+	* selftest-run-tests.cc: Likewise.
+	* selftest.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Replace diagnostic-format-html.o with
+	diagnostics/html-sink.o, diagnostic-format-sarif.o with
+	diagnostics/sarif-sink.o, and diagnostic-format-text.o with
+	diagnostics/text-sink.o.
+	* coretypes.h (class diagnostic_text_output_format): Replace
+	with...
+	(class diagnostics::text_sink): ...this.
+	* diagnostic-global-context.cc: Update for move of diagnostics
+	output formats into namespace "diagnostics", as "sinks".
+	* diagnostic-macro-unwinding.cc: Likewise.
+	* diagnostic-macro-unwinding.h: Likewise.
+	* diagnostic-show-locus.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostic-buffer.h: Rename to...
+	* diagnostics/buffering.h: ...this, updating for above changes.
+	* diagnostics/client-data-hooks.h: Likewise.
+	* diagnostics/digraphs.cc: Likewise.
+	* diagnostic-format-html.cc: Rename to...
+	* diagnostics/html-sink.cc: ...this, updating for above changes.
+	* diagnostic-format-html.h: Rename to...
+	* diagnostics/html-sink.h: ...this, updating for above changes.
+	* diagnostics/lazy-paths.cc: Likewise.
+	* diagnostics/metadata.h: Likewise.
+	* diagnostics/output-spec.cc: Likewise.
+	* diagnostics/output-spec.h: Likewise.
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/paths.h: Likewise.
+	* diagnostic-format-sarif.cc: Rename to...
+	* diagnostics/sarif-sink.cc: ...this, updating for above changes.
+	* diagnostic-format-sarif.h: Rename to...
+	* diagnostics/sarif-sink.h: ...this, updating for above changes.
+	* diagnostic-format.h: Rename to...
+	* diagnostics/sink.h: ...this, updating for above changes.
+	* diagnostics/state-graphs-to-dot.cc: Likewise.
+	* diagnostic-format-text.cc: Rename to...
+	* diagnostics/text-sink.cc: ...this, updating for above changes.
+	* diagnostic-format-text.h: Rename to...
+	* diagnostics/text-sink.h: ...this, updating for above changes.
+	* gcc.cc: Likewise.
+	* langhooks-def.h: Likewise.
+	* langhooks.cc: Likewise.
+	* langhooks.h: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* opts-diagnostic.cc: Likewise.
+	* opts.cc: Likewise.
+	* selftest-diagnostic.cc: Likewise.
+	* selftest-run-tests.cc: Likewise.
+	* selftest.h: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Replace lazy-diagnostic-path.o with
+	diagnostics/lazy-paths.o.
+	(OBJS-libcommon): Replace diagnostic-path.o with
+	diagnostics/paths.o, diagnostic-path-output.o with
+	diagnostics/paths-output.o, and selftest-diagnostic-path.o with
+	diagnostics/selftest-paths.o.
+	(EXTRA_BACKEND_OBJS): Replace lazy-diagnostic-path.o with
+	diagnostics/lazy-paths.o.
+	* diagnostic-format-html.cc: Update #include for
+	"diagnostic-path.h" moving to "diagnostics/paths.h",
+	diagnostic_thread_id_t to diagnostics::paths::thread_id_t,
+	diagnostic_event_id_t to diagnostics::paths::event_id_t,
+	diagnostic_path to diagnostics::paths::path, and
+	diagnostic_thread to diagnostics::paths::thread, and
+	diagnostic_event to diagnostics::paths::event.
+	* diagnostic-format-html.h: Likewise.
+	* diagnostic-format-sarif.cc: Likewise.  Update PROPERTY_PREFIX
+	for threadFlowLocations from "gcc/diagnostic_event/" to
+	"gcc/diagnostics/paths/event/".
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic-format-text.h: Likewise.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostic-event-id.h: Move to...
+	* diagnostics/event-id.h: ...here, updating header guard.
+	(diagnostics:paths:event_id_t): New typedef.
+	(diagnostic_thread_id_t): Replace with...
+	(diagnostics:paths:thread_id_t): New typedef.
+	* lazy-diagnostic-path.cc: Move to...
+	* diagnostics/lazy-paths.cc: ...here.  Update for above changes,
+	lazy_diagnostic_path becomes diagnostics::paths::lazy_path.
+	(lazy_diagnostic_path_cc_tests): Rename to...
+	(diagnostics_lazy_paths_cc_tests): ...this.
+	* lazy-diagnostic-path.h: Move to...
+	* diagnostics/lazy-paths.h: ...here, updating header guard.
+	Update for above changes.
+	* diagnostic-path-output.cc: Move to...
+	* diagnostics/paths-output.cc: ...here.  Update for above changes.
+	(diagnostic_path_output_cc_tests): Rename to...
+	(diagnostics_paths_output_cc_tests): ...this.
+	* diagnostic-path.cc: Move to...
+	* diagnostics/paths.cc: ...here.  Update for above changes.
+	* diagnostic-path.h: Move to...
+	* diagnostics/paths.h: ...here, updating header guard.
+	Update #include for moving "diagnostic-event-id.h" to
+	"diagnostics/event-id.h".
+	(class diagnostic_event): Convert to...
+	(class diagnostics::paths::event): ...this.
+	(class diagnostic_thread): Convert to...
+	(class diagnostics::paths::thread): ...this.
+	(class diagnostic_path): Convert to...
+	(class diagnostics::paths::path): ...this.
+	* diagnostic-show-locus.cc: Update for above changes.
+	* doc/analyzer.texi: Likewise.
+	* selftest-diagnostic-path.cc: Move to...
+	* diagnostics/selftest-paths.cc: ...here.  Update for
+	above changes, and for "selftest-diagnostic-path.h" moving to
+	"diagnostics/selftest-paths.h".
+	* selftest-diagnostic-path.h: Move to...
+	* diagnostics/selftest-paths.h: ...here, updating header guard.
+	Update for above changes.
+	* libgdiagnostics.cc: Update for above changes.
+	* libsarifreplay.cc: Update property prefix for
+	threadFlowLocations from "gcc/diagnostic_event/" to
+	"gcc/diagnostics/paths/event/".
+	* pretty-print-format-impl.h: Update for above changes.
+	* pretty-print.cc: Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Update for
+	renaming of lazy_diagnostic_path_cc_tests to
+	diagnostics_lazy_paths_cc_tests, and of
+	diagnostic_path_output_cc_tests to
+	diagnostics_paths_output_cc_tests.
+	* selftest.h (lazy_diagnostic_path_cc_tests): Replace decl with...
+	(diagnostics_lazy_paths_cc_tests): ...this.
+	(diagnostic_path_output_cc_tests): Replace decl with...
+	(diagnostics_paths_output_cc_tests): ...this.
+	* simple-diagnostic-path.cc: Clarify that this relates to "tree"
+	and thus shouldn't be in "diagnostics".  Update for above changes.
+	* simple-diagnostic-path.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace diagnostic-output-spec.o
+	with diagnostics/output-spec.o.
+	* diagnostic-output-spec.cc: Move to...
+	* diagnostics/output-spec.cc: ...here.  Update #include for
+	move of diagnostic-output-spec.h to diagnostics/output-spec.h.
+	(namespace::diagnostics_output_spec): Replace with...
+	(namespace diagnostics::output_spec): ...this, removing redundant
+	prefixes.
+	(diagnostics_output_spec::gcc_spec_context): Replace with...
+	(diagnostics::output_spec::dc_spec_context): ...this.
+	(diagnostic_output_spec_cc_tests): Rename to...
+	(diagnostics_output_spec_cc_tests): ...this.
+	* diagnostic-output-spec.h: Move to...
+	* diagnostics/output-spec.h: ...here and update inclusion guard.
+	(namespace::diagnostics_output_spec): Replace with...
+	(namespace diagnostics::output_spec): ...this, removing redundant
+	prefixes.
+	(diagnostics_output_spec::gcc_spec_context): Replace with...
+	(diagnostics::output_spec::dc_spec_context): ...this.
+	* libgdiagnostics.cc: Update #include for move of
+	diagnostic-output-spec.h to diagnostics/output-spec.h.
+	* opts-diagnostic.cc: Likewise.  Update for namespace and name
+	changes.
+	* selftest-run-tests.cc (selftest::run_tests): Update for renaming
+	of diagnostic_output_spec_cc_tests to
+	diagnostics_output_spec_cc_tests.
+	* selftest.h (diagnostic_output_spec_cc_tests): Rename decl to...
+	(diagnostics_output_spec_cc_tests): ...this.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc: Update #include for move of
+	diagnostic-output-file.h to diagnostics/output-file.h.  Update for
+	move of diagnostic_output_file to diagnostics::output_file.
+	* diagnostic-format-html.h: Likewise.
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-format-sarif.h: Likewise.
+	* diagnostic-output-spec.cc: Likewise.
+	* diagnostic-output-spec.h (along): Likewise.
+	* diagnostic-output-file.h: Move to...
+	* diagnostics/output-file.h: ...here, updating header guard.
+	(class diagnostic_output_file): Move to...
+	(class diagnostics::output_file): ...here.
+	* libgdiagnostics.cc (sarif_sink::sarif_sink): Update for
+	move of diagnostic_output_file to diagnostics::output_file.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc: Update #include for move of
+	diagnostic-client-data-hooks.h to diagnostics/client-data-hooks.h.
+	* diagnostic-format-sarif.cc: Likewise.  Update for move of
+	diagnostic_client_plugin_info to diagnostics::client_plugin_info.
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostic-client-data-hooks.h: Move to...
+	* diagnostics/client-data-hooks.h: ...here, updating header guard.
+	(class diagnostic_client_data_hooks): Move to...
+	(class diagnostics::client_data_hooks): ...here.  Remove redundant
+	"diagnostics::" prefixes.
+	(class diagnostic_client_plugin_info): Move to...
+	(class diagnostics::client_plugin_info): ...here.
+	* libgdiagnostics.cc: : Update #include for move of
+	diagnostic-client-data-hooks.h to diagnostics/client-data-hooks.h.
+	Update for move of diagnostic_client_data_hooks to
+	diagnostics::client_data_hooks, and for move of
+	diagnostic_client_version_info to diagnostics::client_version_info.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace edit-context.o with
+	diagnostics/edit-context.o.
+	* diagnostic-format-html.cc: Update #include for move
+	of edit-context.h to diagnostics subdir.
+	* diagnostic.cc: Likewise.  Update for move of edit_context to
+	diagnostics::edit_context.
+	* diagnostic.h: Likewise.
+	* edit-context.cc: Move to...
+	* diagnostics/edit-context.cc: ...here.  Update #include for move
+	of edit-context.h to diagnostics subdir.  Move all code
+	within namespace diagnostics.
+	* edit-context.h: Move to...
+	* diagnostics/edit-context.h: ...here, updating header guard.
+	Move all code within namespace diagnostics.
+	* libgdiagnostics.cc: Update #include for move of edit-context.h
+	to diagnostics subdir.  Update for move of edit_context
+	to diagnostics::edit_context.
+	* toplev.cc: Update #include for move of edit-context.h
+	to diagnostics subdir.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc: Update for move of diagnostic_diagram
+	to diagnostics::diagram.
+	* diagnostic-format-sarif.cc: Update #include for move of
+	"diagnostic-diagram.h" to "diagnostics/diagram.h". Update for move
+	of diagnostic_diagram to diagnostics::diagram.
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic-format-text.h: Update for move of diagnostic_diagram
+	to diagnostics::diagram.
+	* diagnostic-format.h: Likewise.
+	* diagnostic.cc: Update #include for move of
+	"diagnostic-diagram.h" to "diagnostics/diagram.h". Update for move
+	of diagnostic_diagram to diagnostics::diagram.
+	* diagnostic.h: Update for move of diagnostic_diagram to
+	diagnostics::diagram.
+	* diagnostic-diagram.h: Move to...
+	* diagnostics/diagram.h: ...here.
+	(class diagnostic_diagram): Convert to...
+	(class diagnostics::diagram): ...this.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h: Update for move of diagnostic_metadata to
+	diagnostics::metadata.
+	* diagnostic-format-html.cc: Likewise; also, update #include for
+	move of "diagnostic-metadata.h" to "diagnostics/metadata.h".
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic-global-context.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostic-metadata.h: Move to...
+	* diagnostics/metadata.h: ...here, updating header guard.
+	(class diagnostic_metadata): Move to...
+	(class diagnostics::metadata): ...here.  Drop redundant
+	"diagnostics::" qualifiers.
+	* libgdiagnostics.cc: : Update #include for move of
+	"diagnostic-metadata.h" to "diagnostics/metadata.h", and update
+	for move of diagnostic_metadata to diagnostics::metadata.
+	* selftest-diagnostic.cc: Update for move of diagnostic_metadata
+	to diagnostics::metadata.
+	* selftest-diagnostic.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Replace
+	selftest-logical-location.o with
+	diagnostics/selftest-logical-locations.o.
+	* diagnostic-client-data-hooks.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, and of logical_location
+	to diagnostics::logical_locations::key.
+	* diagnostic-format-html.cc: Add "using namespace diagnostics;",
+	and drop now-redundant "diagnostics::" prefixes.
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, of logical_location to
+	diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	* diagnostic-format-sarif.cc: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".  Add
+	"using namespace diagnostics;", and drop now-redundant
+	"diagnostics::" prefixes.
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, of logical_location to
+	diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	* diagnostic-format-sarif.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location to
+	diagnostics::logical_locations::key.
+	* diagnostic-path-output.cc: Add "using namespace diagnostics;".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, and
+	of logical_location to diagnostics::logical_locations::key,
+	* diagnostic-path.cc: Add "using namespace diagnostics;".
+	Update for conversion of logical_location to
+	diagnostics::logical_locations::key.
+	* diagnostic-path.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, and of logical_location
+	to diagnostics::logical_locations::key,
+	* diagnostic.cc: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	* diagnostic.h: Reorganize forward decls.
+	(class logical_location_manager): Replace this forward decl
+	with...
+	(class diagnostics::logical_locations::manager): ...this.
+	(diagnostic_context::get_logical_location_manager): Update
+	return type.
+	* diagnostics/digraphs.h: : Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location to
+	diagnostics::logical_locations::key.
+	* logical-location.h: Move to...
+	* diagnostics/logical-locations.h: ...here.
+	(enum class logical_location_kind): Convert to...
+	(enum class diagnostics::logical_locations::kind): ... this.
+	(class logical_location_manager::key): Convert to...
+	(class diagnostics::logical_locations::key): ... this.
+	(class logical_location_manager): Convert to...
+	(class diagnostics::logical_locations::manager): ... this.
+	(logical_location): Drop this typedef in favor of
+	diagnostics::logical_locations::key.
+	* selftest-logical-location.cc: Move to...
+	* diagnostics/selftest-logical-locations.cc: ...here.
+	Update #include for move of "selftest-logical-location.h" to
+	"diagnostics/selftest-logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, of logical_location to
+	diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	(selftest_logical_location_cc_tests): Rename to...
+	(diagnostics_selftest_logical_locations_cc_tests): ...this.
+	* selftest-logical-location.h: Move to...
+	* diagnostics/selftest-logical-locations.h: ...here, updating
+	include guard.
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, of logical_location to
+	diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	* diagnostics/state-graphs-to-dot.cc: Add
+	"using namespace diagnostics;" and drop now-redundant
+	"diagnostics::" prefixes.
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager.
+	* diagnostics/state-graphs.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager,
+	of logical_location to diagnostics::logical_locations::key.
+	* libgdiagnostics.cc: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, and of logical_location
+	to diagnostics::logical_locations::key.
+	* selftest-diagnostic-path.cc: Update for conversion of
+	logical_location to diagnostics::logical_locations::key.
+	* selftest-diagnostic-path.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location to
+	diagnostics::logical_locations::key.
+	* selftest-run-tests.cc (selftest::run_tests): Update for
+	renaming of selftest_logical_location_cc_tests to
+	diagnostics_selftest_logical_locations_cc_tests.
+	* selftest.h: Likewise.
+	* simple-diagnostic-path.h: Update for conversion of
+	logical_location to diagnostics::logical_locations::key.
+	* tree-diagnostic-client-data-hooks.cc: Update for conversion of
+	logical_location_manager to
+	diagnostics::logical_locations::manager, and of logical_location
+	to diagnostics::logical_locations::key.
+	* tree-logical-location.cc: Update for conversions.
+	Update for conversion of logical_location to
+	diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+	* tree-logical-location.h: Update #include for move of
+	"logical-location.h" to "diagnostics/logical-locations.h".
+	Update for conversion of logical_location_manager to
+	diagnostics::logical_locations::manager, of logical_location
+	to diagnostics::logical_locations::key, and of
+	enum logical_location_kind to
+	enum diagnostics::logical_locations::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Rename diagnostic-digraphs.o to
+	diagnostics/digraphs.o.  Rename diagnostic-state-graphs.o to
+	diagnostics/state-graphs.o.  Rename diagnostic-state-to-dot.o to
+	diagnostics/state-graphs-to-dot.o.
+	(PLUGIN_HEADERS): Add $(srcdir)/diagnostics/*.h.
+	(install-plugin:): Likewise.
+	* configure: Regenerate.
+	* configure.ac (gccdepdir): Add "diagnostics" to directories.
+	* diagnostic-format-html.cc: Update #includes for move of
+	"diagnostic-digraphs.h" to "diagnostics/digraphs.h" and of
+	move of "diagnostic-state-graphs.h" to
+	"diagnostics/state-graphs.h".
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-path.cc: Likewise for state-graphs.h
+	* diagnostic-digraphs.cc: Move...
+	* diagnostics/digraphs.cc: ...to here.  Update #include
+	for renaming of digraphs.h.
+	(selftest::diagnostic_digraphs_cc_tests): Rename to...
+	(selftest::diagnostics_digraphs_cc_tests): ...this.
+	* diagnostic-digraphs.h: Move...
+	* diagnostics/digraphs.h: ...to here, updating header guard.
+	* diagnostic-state-to-dot.cc: Move...
+	* diagnostics/state-graphs-to-dot.cc: ...to here.  Update #include
+	of state-graphs.h.
+	* diagnostic-state-graphs.cc: Move...
+	* diagnostics/state-graphs.cc: ...to here.  Update #include
+	of state-graphs.h.
+	(selftest::diagnostic_state_graphs_cc_tests): Rename...
+	(selftest::diagnostics_state_graphs_cc_tests): ...to this.
+	* diagnostic-state-graphs.h: Move...
+	* diagnostics/state-graphs.h: ...to here, updating header guard.
+	* libgdiagnostics.cc: Update #includes for move of
+	"diagnostic-digraphs.h" to "diagnostics/digraphs.h" and of
+	move of "diagnostic-state-graphs.h" to
+	"diagnostics/state-graphs.h".
+	* selftest-run-tests.cc (selftest::run_tests): Update for
+	function renamings that reflect file renamings.
+	* selftest.h (selftest::diagnostic_digraphs_cc_tests): Rename
+	to...
+	(selftest::diagnostics_digraphs_cc_tests): ...this.
+	(selftest::diagnostic_state_graphs_cc_tests): Rename...
+	(selftest::diagnostics_state_graphs_cc_tests): ...to this.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs): Remove overload
+	with operand vector type.  Remove stmt_vec_info and
+	ncopies argument.
+	* tree-vect-stmts.cc (vect_get_vec_defs): Likewise.
+	(vectorizable_conversion): Adjust by not passing in
+	vector types, stmt_vec_info and ncopies.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_scan_store): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	* tree-vect-loop.cc (vect_transform_reduction): Likewise.
+	(vect_transform_lc_phi): Likewise.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_is_simple_use): Remove stmt-info
+	with vectype output overload and remove stmt-info argument
+	from SLP based API.
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Remove
+	unused def_stmt_info output argument to vect_is_simple_use.
+	Adjust.
+	* tree-vect-stmts.cc (get_group_load_store_type): Get
+	the gather/scatter offset vector type from the SLP child.
+	(vect_check_scalar_mask): Remove stmt_info argument.  Adjust.
+	(vect_check_store_rhs): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_is_simple_cond): Remove stmt_info argument.  Adjust.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	(vectorizable_store): Likewise.
+	(vect_is_simple_use): Remove overload and non-SLP path.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_model_simple_cost): Removed code
+	when no SLP node is passed, remove then unused dt and ndts
+	parameters and fix the number of vector stmts calculation.
+	(vectorizable_call): Adjust.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+
+2025-07-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-vector-costs.cc (get_live_range):
+	Move compute_local_program_points to cost class.
+	(variable_vectorized_p): Add slp node parameter.
+	(need_additional_vector_vars_p): Move from here...
+	(costs::need_additional_vector_vars_p): ... to here and add slp
+	parameter.
+	(compute_estimated_lmul): Move update_local_live_ranges to cost
+	class.
+	(has_unexpected_spills_p): Move from here...
+	(costs::has_unexpected_spills_p): ... to here.
+	(costs::record_lmul_spills): New function.
+	(costs::add_stmt_cost): Add stmt_info, slp mapping.
+	(costs::finish_cost): Analyze loop.
+	* config/riscv/riscv-vector-costs.h: Move declarations to class.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Get vectype
+	from the SLP node.
+	(vectorize_fold_left_reduction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vect_transform_lc_phi): Likewise.
+	* tree-vect-slp.cc (vect_analyze_slp): Likewise.
+	* tree-vect-stmts.cc (vect_truncate_gather_scatter_offset):
+	Pass in vectype and use that.
+	(vect_use_strided_gather_scatters_p): Likewise.
+	(get_group_load_store_type): Adjust.
+	(vect_check_scalar_mask): We always have a SLP node.
+	Use vectype from the SLP node.
+	(vect_check_store_rhs): Likewise.
+	(vect_build_one_gather_load_call): Pass in the vector type
+	and use that.
+	(vect_get_strided_load_store_ops): Likewise.
+	(vectorizable_store): Adjust.
+	(vectorizable_load): Use the vector type from the SLP node
+	and adjust.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* target.h (stmt_vectype): Remove.
+	* tree-vect-stmts.cc (stmt_vectype): Likewise.
+
+2025-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (enum riscv_privilege_levels): Remove USER_MODE.
+	(riscv_handle_type_attribute): Remove "user" interrupts.
+	(riscv_expand_epilogue): Likewise.
+	(riscv_get_interrupt_type): Likewise.
+	* config/riscv/riscv.md (riscv_uret): Remove URET pattern.
+	* doc/extend.texi: Remove documentation of user interrupts.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::vec_stmts): Remove.
+	(STMT_VINFO_VEC_STMTS): Likewise.
+	* tree-vectorizer.cc (vec_info::new_stmt_vec_info): Do not
+	initialize it.
+	(vec_info::free_stmt_vec_info): Nor free it.
+	* tree-vect-data-refs.cc (vect_vfa_access_size): Remove
+	check on STMT_VINFO_VEC_STMTS.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_transform_grouped_load): Remove.
+	(vect_record_grouped_load_vectors): Likewise.
+	* tree-vect-data-refs.cc (vect_permute_load_chain): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	(vect_transform_grouped_load): Likewise.
+	(vect_record_grouped_load_vectors): Likewise.
+	* tree-vect-stmts.cc (vectorizable_load): Remove comments
+	about load interleaving.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_permute_store_chain): Remove.
+	* tree-vect-data-refs.cc (vect_permute_store_chain): Likewise.
+	* tree-vect-stmts.cc (vectorizable_store): Remove comment
+	about store interleaving.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs_for_operand): Remove.
+	* tree-vect-stmts.cc (vect_get_vec_defs_for_operand): Likewise.
+	(vect_get_vec_defs): Remove non-SLP path.
+	(check_load_store_for_partial_vectors): We always have an
+	SLP node.
+	(vect_check_store_rhs): Likewise.
+	(vect_get_gather_scatter_ops): Likewise.
+	(vect_create_vectorized_demotion_stmts): Likewise.
+	(vectorizable_store): Adjust.
+	(vectorizable_load): Likewise.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (VMAT_CONTIGUOUS_PERMUTE): Remove.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Remove checks on VMAT_CONTIGUOUS_PERMUTE.
+	(vectorizable_load): Likewise.
+	(vectorizable_store): Likewise.  Prune dead code.
+
+2025-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Remove trivially
+	dead code.
+
+2025-07-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_NO_MANUAL_NOPS,
+	TARGET_CDNA3_NOPS): Define.
+	* config/gcn/gcn.md (define_attr "laneselect): Change 'yes' to
+	'read' and 'write'.
+	(define_attr "flatmemaccess"): Add with values store, storex34,
+	load, atomic, atomicwait, cmpswapx2, and no. Replacing ...
+	(define_attr "delayeduse"): Remove.
+	(define_attr "transop"): Add with values yes and no.
+	(various insns): Update 'laneselect', add flatmemaccess and transop,
+	remove delayeduse; fixing an issue for s_load_dwordx4 vs.
+	flat_store_dwordx4 related to delayeduse (now: flatmemaccess).
+	* config/gcn/gcn-valu.md: Update laneselect attribute and add
+	flatmemaccess.
+	* config/gcn/gcn.cc (gcn_cmpx_insn_p): New.
+	(gcn_md_reorg): Update for MI300 to add additional s_nop.
+	Skip s_nop-insertion part for RDNA{2,3}; add "VALU writes EXEC
+	followed by VALU DPP" unconditionally for CDNA2/CDNA3/GCN5.
+
+2025-07-25  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/121214
+	* genpreds.cc (constraint_max_namelen): Delete.
+	(write_tm_preds_h): Always write insn_constraint_len() and
+	define CONSTRAINT_LEN to it, i.e., remove guard
+	constraint_max_namelen>1.  Remove outer guard
+	constraint_max_namelen>0 and re-indent.
+	(write_insn_preds_c): Remove guard
+	constraint_max_namelen>0 and re-indent.
+
+2025-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (enum riscv_privilege_levels): Add
+	RNMI_MODE.
+	(riscv_handle_type_attribute): Handle 'rnmi' interrupt attribute.
+	(riscv_expand_epilogue): Generate nmret for RNMI handlers.
+	(riscv_get_interrupt_type): Handle 'rnmi' interrupt attribute.
+	* config/riscv/riscv.md (riscv_rnmi): Add nmret INSN.
+	* doc/extend.texi: Add documentation for 'rnmi' interrupt attribute.
+
 2025-07-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vectorizable_induction): Remove
