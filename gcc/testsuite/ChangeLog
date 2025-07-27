@@ -1,3 +1,27 @@
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* gcc.target/aarch64/sve/acle/general/perm_1.c: New test.
+
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* gcc.target/aarch64/sve/permute_5.c: New test.
+
+2025-07-26  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120577
+	* g++.dg/cpp2a/constexpr-union9.C: New test.
+
 2025-07-22  Haochen Gui  <guihaoc@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,50 @@
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* config/aarch64/aarch64.cc (aarch64_evpc_sve_tbl): Punt on 2-input
+	operations that can be handled by vec_perm.
+
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121027
+	* config/aarch64/iterators.md (SVE_I): Move further up file.
+	(SVE_F): New mode iterator.
+	(SVE_ALL): Redefine in terms of SVE_I and SVE_F.
+	* config/aarch64/aarch64-sve.md (*<LOGICALF:optab><mode>3): Extend
+	to all SVE_F.
+
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118891
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Fix the
+	ZIP1 operand order for big-endian targets.
+
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_set_neonq_<mode>):
+	Use %Z instead of lowpart_subreg.  Tweak formatting.
+
+2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118891
+	* tree-vect-stmts.cc (supportable_widening_operation): Swap the
+	hi and lo internal functions on big-endian targets.
+
 2025-07-22  Haochen Gui  <guihaoc@gcc.gnu.org>
 
 	Backported from master:
