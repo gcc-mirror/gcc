@@ -118,8 +118,7 @@ typedef int IA2[2];
 typedef int IA3[3];
 
 // The message should differentiate between the [] form and *.
-void f1IAx_A1 (IAx);            // { dg-message "previously declared as 'int\\\[]'" "pr?????" { xfail *-*-* } }
-                                // { dg-message "previously declared as 'int *\\\*'" "note" { target *-*-* } .-1 }
+void f1IAx_A1 (IAx);            // { dg-message "previously declared as 'int\\\[]'" }
 void f1IAx_A1 (IA1);            // { dg-message "argument 1 of type 'int\\\[1]' with mismatched bound" }
 
 void f1IA1_A2 (IA1);            // { dg-message "previously declared as 'int\\\[1]'" }

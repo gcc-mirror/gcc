@@ -6208,184 +6208,7 @@ grokparm (const struct c_parm *parm, tree *expr)
   return decl;
 }
 
-/* Return attribute "arg spec" corresponding to an array/VLA parameter
-   described by PARM, concatenated onto attributes ATTRS.
-   The spec consists of one dollar symbol for each specified variable
-   bound, one asterisk for each unspecified variable bound, followed
-   by at most one specification of the most significant bound of
-   an ordinary array parameter.  For ordinary arrays the specification
-   is either the constant bound itself, or the space character for
-   an array with an unspecified bound (the [] form).  Finally, a chain
-   of specified variable bounds is appended to the spec, starting with
-   the most significant bound.  For example, the PARM T a[2][m][3][n]
-   will produce __attribute__((arg spec ("[$$2]", m, n)).
-   For T a typedef for an array with variable bounds, the bounds are
-   included in the specification in the expected order.
-   No "arg spec"  is created for parameters of pointer types, making
-   a distinction between T(*)[N] (or, equivalently, T[][N]) and
-   the T[M][N] form, all of which have the same type and are represented
-   the same, but only the last of which gets an "arg spec" describing
-   the most significant bound M.  */
 
-static tree
-get_parm_array_spec (const struct c_parm *parm, tree attrs)
-{
-  /* The attribute specification string, minor bound first.  */
-  std::string spec;
-
-  /* A list of VLA variable bounds, major first, or null if unspecified
-     or not a VLA.  */
-  tree vbchain = NULL_TREE;
-  /* True for a pointer parameter.  */
-  bool pointer = false;
-  /* True for an ordinary array with an unpecified bound.  */
-  bool nobound = false;
-
-  /* Create a string representation for the bounds of the array/VLA.  */
-  for (c_declarator *pd = parm->declarator, *next; pd; pd = next)
-    {
-      next = pd->declarator;
-      while (next && next->kind == cdk_attrs)
-	next = next->declarator;
-
-      /* Remember if a pointer has been seen to avoid storing the constant
-	 bound.  */
-      if (pd->kind == cdk_pointer)
-	pointer = true;
-
-      if ((pd->kind == cdk_pointer || pd->kind == cdk_function)
-	  && (!next || next->kind == cdk_id))
-	{
-	  /* Do nothing for the common case of a pointer.  The fact that
-	     the parameter is one can be deduced from the absence of
-	     an arg spec for it.  */
-	  return attrs;
-	}
-
-      if (pd->kind == cdk_id)
-	{
-	  if (pointer
-	      || !parm->specs->type
-	      || TREE_CODE (parm->specs->type) != ARRAY_TYPE
-	      || !TYPE_DOMAIN (parm->specs->type)
-	      || !TYPE_MAX_VALUE (TYPE_DOMAIN (parm->specs->type)))
-	    continue;
-
-	  tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm->specs->type));
-	  if (!vbchain
-	      && TREE_CODE (max) == INTEGER_CST)
-	    {
-	      /* Extract the upper bound from a parameter of an array type
-		 unless the parameter is an ordinary array of unspecified
-		 bound in which case a next iteration of the loop will
-		 exit.  */
-	      if (spec.empty () || spec.end ()[-1] != ' ')
-		{
-		  if (!tree_fits_shwi_p (max))
-		    continue;
-
-		  /* The upper bound is the value of the largest valid
-		     index.  */
-		  HOST_WIDE_INT n = tree_to_shwi (max) + 1;
-		  char buf[40];
-		  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
-		  spec += buf;
-		}
-	      continue;
-	    }
-
-	  /* For a VLA typedef, create a list of its variable bounds and
-	     append it in the expected order to VBCHAIN.  */
-	  tree tpbnds = NULL_TREE;
-	  for (tree type = parm->specs->type; TREE_CODE (type) == ARRAY_TYPE;
-	       type = TREE_TYPE (type))
-	    {
-	      tree nelts_minus_one = array_type_nelts_minus_one (type);
-	      if (error_operand_p (nelts_minus_one))
-		return attrs;
-	      if (TREE_CODE (nelts_minus_one) != INTEGER_CST)
-		{
-		  /* Each variable VLA bound is represented by the dollar
-		     sign.  */
-		  spec += "$";
-		  tpbnds = tree_cons (NULL_TREE, nelts_minus_one, tpbnds);
-		}
-	    }
-	  tpbnds = nreverse (tpbnds);
-	  vbchain = chainon (vbchain, tpbnds);
-	  continue;
-	}
-
-      if (pd->kind != cdk_array)
-	continue;
-
-      if (pd->u.array.vla_unspec_p)
-	{
-	  /* Each unspecified bound is represented by a star.  There
-	     can be any number of these in a declaration (but none in
-	     a definition).  */
-	  spec += '*';
-	  continue;
-	}
-
-      tree nelts = pd->u.array.dimen;
-      if (!nelts)
-	{
-	  /* Ordinary array of unspecified size.  There can be at most
-	     one for the most significant bound.  Exit on the next
-	     iteration which determines whether or not PARM is declared
-	     as a pointer or an array.  */
-	  nobound = true;
-	  continue;
-	}
-
-      if (pd->u.array.static_p)
-	spec += 's';
-
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
-	/* Avoid invalid NELTS.  */
-	return attrs;
-
-      STRIP_NOPS (nelts);
-      nelts = c_fully_fold (nelts, false, nullptr);
-      if (TREE_CODE (nelts) == INTEGER_CST)
-	{
-	  /* Skip all constant bounds except the most significant one.
-	     The interior ones are included in the array type.  */
-	  if (next && (next->kind == cdk_array || next->kind == cdk_pointer))
-	    continue;
-
-	  if (!tree_fits_uhwi_p (nelts))
-	    /* Bail completely on invalid bounds.  */
-	    return attrs;
-
-	  char buf[40];
-	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
-	  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
-	  spec += buf;
-	  break;
-	}
-
-      /* Each variable VLA bound is represented by a dollar sign.  */
-      spec += "$";
-      vbchain = tree_cons (NULL_TREE, nelts, vbchain);
-    }
-
-  if (spec.empty () && !nobound)
-    return attrs;
-
-  spec.insert (0, "[");
-  if (nobound)
-    /* Ordinary array of unspecified bound is represented by a space.
-       It must be last in the spec.  */
-    spec += ' ';
-  spec += ']';
-
-  tree acsstr = build_string (spec.length () + 1, spec.c_str ());
-  tree args = tree_cons (NULL_TREE, acsstr, vbchain);
-  tree name = get_identifier ("arg spec");
-  return tree_cons (name, args, attrs);
-}
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL
    and push that on the current scope.  EXPR is a pointer to an
@@ -6401,7 +6224,6 @@ push_parm_decl (const struct c_parm *parm, tree *expr)
   if (decl && DECL_P (decl))
     DECL_SOURCE_LOCATION (decl) = parm->loc;
 
-  attrs = get_parm_array_spec (parm, attrs);
   decl_attributes (&decl, attrs, 0);
 
   decl = pushdecl (decl);
@@ -6775,6 +6597,25 @@ add_decl_expr (location_t loc, tree type, tree *expr, bool set_name_p)
     }
 }
 
+
+/* Add attribute "arg spec" to ATTRS corresponding to an array/VLA parameter
+   declared with type TYPE.  The attribute has two arguments.  The first is
+   a string that encodes the presence of the static keyword.  The second is
+   the declared type of the array before adjustment, i.e. as an array type
+   including the outermost bound.  */
+
+static tree
+build_arg_spec_attribute (tree type, bool static_p, tree attrs)
+{
+  tree vbchain = tree_cons (NULL_TREE, type, NULL_TREE);
+  tree acsstr = static_p ? build_string (7, "static") :
+			   build_string (1, "");
+  tree args = tree_cons (NULL_TREE, acsstr, vbchain);
+  tree name = get_identifier ("arg spec");
+  return tree_cons (name, args, attrs);
+}
+
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -6834,6 +6675,7 @@ grokdeclarator (const struct c_declarator *declarator,
   bool funcdef_flag = false;
   bool funcdef_syntax = false;
   bool size_varies = false;
+  bool size_error = false;
   tree decl_attr = declspecs->decl_attr;
   int array_ptr_quals = TYPE_UNQUALIFIED;
   tree array_ptr_attrs = NULL_TREE;
@@ -7326,6 +7168,7 @@ grokdeclarator (const struct c_declarator *declarator,
 				"size of unnamed array has non-integer type");
 		    size = integer_one_node;
 		    size_int_const = true;
+		    size_error = true;
 		  }
 		/* This can happen with enum forward declaration.  */
 		else if (!COMPLETE_TYPE_P (TREE_TYPE (size)))
@@ -7338,6 +7181,7 @@ grokdeclarator (const struct c_declarator *declarator,
 				"type");
 		    size = integer_one_node;
 		    size_int_const = true;
+		    size_error = true;
 		  }
 
 		size = c_fully_fold (size, false, &size_maybe_const);
@@ -7363,6 +7207,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			  error_at (loc, "size of unnamed array is negative");
 			size = integer_one_node;
 			size_int_const = true;
+			size_error = true;
 		      }
 		    /* Handle a size folded to an integer constant but
 		       not an integer constant expression.  */
@@ -7978,6 +7823,10 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	if (TREE_CODE (type) == ARRAY_TYPE)
 	  {
+	    if (!size_error)
+	      *decl_attrs = build_arg_spec_attribute (type, array_parm_static,
+						      *decl_attrs);
+
 	    /* Transfer const-ness of array into that of type pointed to.  */
 	    type = TREE_TYPE (type);
 	    if (orig_qual_type != NULL_TREE)
