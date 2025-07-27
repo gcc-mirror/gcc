@@ -125,7 +125,7 @@ namespace __detail
       typedef std::ctype<char_type> __ctype_type;
       const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
 
-      static const char* __collatenames[] =
+      static const char* const __collatenames[] =
 	{
 	  "NUL",
 	  "SOH",
