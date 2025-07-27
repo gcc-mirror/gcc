@@ -29,44 +29,59 @@ class Base
 class Derived : public Base
 { };
 
-template<template<typename T> typename Accessor>
+template<typename RhsAccessor, typename LhsAccessor, bool ExpectConvertible>
+  constexpr void
+  check_convertible()
+  {
+    RhsAccessor rhs;
+    [[maybe_unused]] LhsAccessor lhs(rhs);
+    static_assert(std::is_nothrow_constructible_v<LhsAccessor, RhsAccessor>);
+    static_assert(std::is_convertible_v<RhsAccessor, LhsAccessor> == ExpectConvertible);
+  }
+
+template<template<typename T> typename LhsAccessor,
+	 template<typename T> typename RhsAccessor = LhsAccessor,
+	 bool ExpectConvertible = true>
   constexpr bool
   test_ctor()
   {
     // T -> T
-    static_assert(std::is_nothrow_constructible_v<Accessor<double>,
-						  Accessor<double>>);
-    static_assert(std::is_convertible_v<Accessor<double>, Accessor<double>>);
+    check_convertible<RhsAccessor<double>, LhsAccessor<double>,
+		      ExpectConvertible>();
 
     // T -> const T
-    static_assert(std::is_convertible_v<Accessor<double>,
-					Accessor<const double>>);
-    static_assert(std::is_convertible_v<Accessor<Derived>,
-					Accessor<const Derived>>);
+    check_convertible<RhsAccessor<double>, LhsAccessor<const double>,
+		      ExpectConvertible>();
+    check_convertible<RhsAccessor<Derived>, LhsAccessor<const Derived>,
+		      ExpectConvertible>();
 
     // const T -> T
-    static_assert(!std::is_constructible_v<Accessor<double>,
-					   Accessor<const double>>);
-    static_assert(!std::is_constructible_v<Accessor<Derived>,
-					   Accessor<const Derived>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<double>,
+					   RhsAccessor<const double>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Derived>,
+					   RhsAccessor<const Derived>>);
 
     // T <-> volatile T
-    static_assert(std::is_convertible_v<Accessor<int>, Accessor<volatile int>>);
-    static_assert(!std::is_constructible_v<Accessor<int>,
-					   Accessor<volatile int>>);
+    check_convertible<RhsAccessor<int>, LhsAccessor<volatile int>,
+		      ExpectConvertible>();
+    static_assert(!std::is_constructible_v<LhsAccessor<int>,
+					   RhsAccessor<volatile int>>);
 
     // size difference
-    static_assert(!std::is_constructible_v<Accessor<char>, Accessor<int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<char>,
+					   RhsAccessor<int>>);
 
     // signedness
-    static_assert(!std::is_constructible_v<Accessor<int>,
-					   Accessor<unsigned int>>);
-    static_assert(!std::is_constructible_v<Accessor<unsigned int>,
-					   Accessor<int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<int>,
+					   RhsAccessor<unsigned int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<unsigned int>,
+					   RhsAccessor<int>>);
 
     // Derived <-> Base
-    static_assert(!std::is_constructible_v<Accessor<Base>, Accessor<Derived>>);
-    static_assert(!std::is_constructible_v<Accessor<Derived>, Accessor<Base>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Base>,
+					   RhsAccessor<Derived>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Derived>,
+					   RhsAccessor<Base>>);
     return true;
   }
 
