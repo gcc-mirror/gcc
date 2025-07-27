@@ -1,3 +1,13 @@
+2025-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121203
+	* trans-expr.cc (gfc_conv_procedure_call): Obtain the character
+	length of an assumed character length procedure from the typespec
+	of the actual argument even if there is no explicit interface.
+
 2025-07-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

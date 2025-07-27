@@ -1,3 +1,64 @@
+2025-07-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/M2EXCEPTION.mod (M2Exception): Add return
+	exException in case Raise completes.
+
+2025-07-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2-compiler/P1SymBuild.mod: Remove PutProcTypeParam.
+	Remove PutProcTypeParam.
+	(CheckFileName): Remove.
+	(P1EndBuildDefinitionModule): Correct spelling.
+	(P1EndBuildImplementationModule): Ditto.
+	(P1EndBuildProgramModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	* gm2-compiler/P2SymBuild.mod (P2EndBuildDefModule): Correct
+	spelling.
+	(P2EndBuildImplementationModule): Ditto.
+	(P2EndBuildProgramModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	(CheckFormalParameterSection): Ditto.
+	* gm2-compiler/P3SymBuild.mod (P3EndBuildDefModule): Ditto.
+	* gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): Ditto.
+	(fixupProcedureType): Pass tok to PutProcTypeVarParam.
+	Pass tok to PutProcTypeParam.
+	* gm2-compiler/SymbolTable.def (PutProcTypeParam): Add tok
+	parameter.
+	(PutProcTypeVarParam): Ditto.
+	* gm2-compiler/SymbolTable.mod (SymParam): At change type to
+	CARDINAL.
+	New field FullTok.
+	New field Scope.
+	(SymVarParam): At change type to CARDINAL.
+	New field FullTok.
+	New field Scope.
+	(GetVarDeclTok): Check ShadowVar for NulSym and return At.
+	(PutParam): Initialize FullTok.
+	Initialize At.
+	Initialize Scope.
+	(PutVarParam): Initialize FullTok.
+	Assign At.
+	Initialize Scope.
+	(AddProcedureProcTypeParam): Add tok parameter.
+	(GetScope): Add ParamSym and VarParamSym clause.
+	(PutProcTypeVarParam): Add tok parameter.
+	Initialize At.
+	Initialize FullTok.
+	(GetDeclaredDefinition): Clause ParamSym return At.
+	Clause VarParamSym return At.
+	(GetDeclaredModule): Ditto.
+	(PutDeclaredDefinition): Remove clause ParamSym.
+	Remove clause VarParamSym.
+	(PutDeclaredModule): Remove clause ParamSym.
+	Remove clause VarParamSym.
+
 2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

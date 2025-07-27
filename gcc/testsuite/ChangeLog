@@ -1,3 +1,28 @@
+2025-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-07-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120119
+	* g++.dg/torture/pr120119-1.C: New test.
+
+2025-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121203
+	* gfortran.dg/function_charlen_4.f90: New test.
+
+2025-07-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2/switches/pedantic-params/fail/arrayofchar.def: New test.
+	* gm2/switches/pedantic-params/fail/arrayofchar.mod: New test.
+
 2025-07-25  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

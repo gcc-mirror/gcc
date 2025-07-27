@@ -1,3 +1,20 @@
+2025-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-07-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/121095
+	* gcse.cc (execute_hardreg_pre): Skip if the hardreg which is never live.
+
+2025-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-07-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120119
+	* config/aarch64/cortex-a57-fma-steering.cc (func_fma_steering::analyze):
+	Skip if renaming fails.
+
 2025-07-24  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
