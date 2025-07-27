@@ -1,3 +1,31 @@
+2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR middle-end/120855
+	* cgraphunit.cc (symbol_table::compile): Assert a transparent
+	alias is not an internal identifier.
+	* symtab.cc (symbol_table::change_decl_assembler_name):
+	Likewise.
+	* varasm.cc (assemble_name_resolve): Check for
+	IDENTIFIER_TRANSPARENT_ALIAS instead of just TREE_CHAIN.
+
+2025-07-26  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* diagnostics/context.cc (context::diagnostic_impl)
+	(context::diagnostic_n_impl): In presence of formal parameter
+	'kind', explicitly state 'diagnostics::' scope for 'kind' enum.
+
+2025-07-26  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* diagnostics/option-classifier.cc
+	(update_effective_level_from_pragmas): In presence of local
+	variable 'kind', explicitly state 'diagnostics::' scope for 'kind'
+	enum.
+
+2025-07-26  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-ext.def: Add allocated group IDs and
+	group bit positions.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostics/context.cc: Eliminate digraphs::lazy_digraph in

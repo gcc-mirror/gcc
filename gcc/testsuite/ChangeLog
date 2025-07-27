@@ -1,3 +1,8 @@
+2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/class-11_a.H: New test.
+	* g++.dg/modules/class-11_b.C: New test.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc: Eliminate

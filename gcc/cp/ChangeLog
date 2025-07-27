@@ -1,3 +1,10 @@
+2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (struct lang_type): Add comment mentioning modules.
+	* module.cc (trees_out::lang_type_bools): Stream new flags, use
+	gcc_checking_assert.
+	(trees_in::lang_type_bools): Likewise.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* constexpr.cc: Update usage of "diagnostic_info" to explicitly
