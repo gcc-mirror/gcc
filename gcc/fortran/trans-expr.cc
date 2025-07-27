@@ -12892,9 +12892,16 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   gfc_init_se (&lse, NULL);
   gfc_init_se (&rse, NULL);
 
+  gfc_fix_class_refs (expr1);
+
+  realloc_flag = flag_realloc_lhs
+		 && gfc_is_reallocatable_lhs (expr1)
+		 && expr2->rank
+		 && !is_runtime_conformable (expr1, expr2);
+
   /* Walk the lhs.  */
   lss = gfc_walk_expr (expr1);
-  if (gfc_is_reallocatable_lhs (expr1))
+  if (realloc_flag)
     {
       lss->no_bounds_check = 1;
       lss->is_alloc_lhs = 1;
@@ -12944,11 +12951,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       && lhs_attr.flavor != FL_PROCEDURE;
 
   assoc_assign = is_assoc_assign (expr1, expr2);
-
-  realloc_flag = flag_realloc_lhs
-		 && gfc_is_reallocatable_lhs (expr1)
-		 && expr2->rank
-		 && !is_runtime_conformable (expr1, expr2);
 
   /* Only analyze the expressions for coarray properties, when in coarray-lib
      mode.  Avoid false-positive uninitialized diagnostics with initializing
