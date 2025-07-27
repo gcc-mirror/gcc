@@ -313,6 +313,7 @@ Some basic guidelines for editing this document:
 * @code{SIZEOF}:        SIZEOF,    Determine the size in bytes of an expression
 * @code{SLEEP}:         SLEEP,     Sleep for the specified number of seconds
 * @code{SPACING}:       SPACING,   Smallest distance between two numbers of a given type
+* @code{SPLIT}:         SPLIT,     Parse a string into tokens, one at a time.
 * @code{SPREAD}:        SPREAD,    Add a dimension to an array 
 * @code{SQRT}:          SQRT,      Square-root function
 * @code{SRAND}:         SRAND,     Reinitialize the random number generator
@@ -14199,6 +14200,69 @@ Fortran 90 and later
 
 @item @emph{See also}:
 @ref{RRSPACING}
+@end table
+
+
+
+@node SPLIT
+@section @code{SPLIT} --- Parse a string into tokens, one at a time
+@fnindex SPLIT
+@cindex string, split
+
+@table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SPLIT(STRING, SET, POS [, BACK])}
+
+@item @emph{Description}:
+Updates the integer @var{POS} to the position of the next (or previous)
+separator in @var{STRING}.
+
+If @var{BACK} is absent or is present with the value false, @var{POS} is
+assigned the position of the leftmost token delimiter in @var{STRING} whose
+position is greater than @var{POS}, or if there is no such character, it is
+assigned a value one greater than the length of @var{STRING}. This identifies
+a token with starting position one greater than the value of @var{POS} on
+invocation, and ending position one less than the value of @var{POS} on return.
+
+If @var{BACK} is present with the value true, @var{POS} is assigned the
+position of the rightmost token delimiter in @var{STRING} whose position is
+less than @var{POS}, or if there is no such character, it is assigned the value
+zero. This identifies a token with ending position one less than the value of
+@var{POS} on invocation, and starting position one greater than the value of
+@var{POS} on return.
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{STRING} @tab Shall be of type @code{CHARACTER}.
+@item @var{SET}    @tab Shall be of type @code{CHARACTER}.
+@item @var{POS}    @tab Shall be of type @code{INTEGER}.
+@item @var{BACK}   @tab (Optional) Shall be of type @code{LOGICAL}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+character(len=:), allocatable :: input
+character(len=2) :: set = ', '
+integer :: p
+input = "one,last example"
+p = 0
+do
+  if (p > len(input)) exit
+  istart = p + 1
+  call split(input, set, p)
+  iend = p - 1
+  print '(t7, a)', input(istart:iend)
+end do
+@end smallexample
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{See also}:
+@ref{SCAN}
 @end table
 
 

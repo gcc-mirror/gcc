@@ -3863,6 +3863,19 @@ gfc_resolve_sleep_sub (gfc_code *c)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
+void
+gfc_resolve_split (gfc_code *c)
+{
+  const char *name;
+  gfc_expr *string;
+
+  string = c->ext.actual->expr;
+  if (string->ts.type == BT_CHARACTER && string->ts.kind == 4)
+    name = "__split_char4";
+  else
+    name = "__split";
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 /* G77 compatibility function srand().  */
 

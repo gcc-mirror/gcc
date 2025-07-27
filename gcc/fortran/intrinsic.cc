@@ -3933,6 +3933,14 @@ add_subroutines (void)
 	      pt, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      gt, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
+  add_sym_4s ("split", GFC_ISYM_SPLIT, CLASS_PURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2023,
+	      gfc_check_split, NULL, gfc_resolve_split,
+	      "string", BT_CHARACTER, dc, REQUIRED, INTENT_IN,
+	      "set", BT_CHARACTER, dc, REQUIRED, INTENT_IN,
+	      "pos", BT_INTEGER, di, REQUIRED, INTENT_INOUT,
+	      "back", BT_LOGICAL, dl, OPTIONAL, INTENT_IN);
+
   /* The following subroutines are part of ISO_C_BINDING.  */
 
   add_sym_3s ("c_f_pointer", GFC_ISYM_C_F_POINTER, CLASS_IMPURE, BT_UNKNOWN, 0,

@@ -215,6 +215,7 @@ bool gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 bool gfc_check_random_init (gfc_expr *, gfc_expr *);
 bool gfc_check_random_number (gfc_expr *);
 bool gfc_check_random_seed (gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_split (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_dtime_etime_sub (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetputc_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_fgetput_sub (gfc_expr *, gfc_expr *);
@@ -693,6 +694,7 @@ void gfc_resolve_link_sub (gfc_code *);
 void gfc_resolve_symlnk_sub (gfc_code *);
 void gfc_resolve_signal_sub (gfc_code *);
 void gfc_resolve_sleep_sub (gfc_code *);
+void gfc_resolve_split (gfc_code *);
 void gfc_resolve_stat_sub (gfc_code *);
 void gfc_resolve_system_clock (gfc_code *);
 void gfc_resolve_system_sub (gfc_code *);

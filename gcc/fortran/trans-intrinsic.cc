@@ -3466,6 +3466,74 @@ else
   return gfc_finish_block (&block);
 }
 
+static tree
+conv_intrinsic_split (gfc_code *code)
+{
+  stmtblock_t block, post_block;
+  gfc_se se;
+  gfc_expr *string_expr, *set_expr, *pos_expr, *back_expr;
+  tree string, string_len;
+  tree set, set_len;
+  tree pos, pos_for_call;
+  tree back;
+  tree fndecl, call;
+
+  string_expr = code->ext.actual->expr;
+  set_expr = code->ext.actual->next->expr;
+  pos_expr = code->ext.actual->next->next->expr;
+  back_expr = code->ext.actual->next->next->next->expr;
+
+  gfc_start_block (&block);
+  gfc_init_block (&post_block);
+
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr (&se, string_expr);
+  gfc_conv_string_parameter (&se);
+  gfc_add_block_to_block (&block, &se.pre);
+  gfc_add_block_to_block (&post_block, &se.post);
+  string = se.expr;
+  string_len = se.string_length;
+
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr (&se, set_expr);
+  gfc_conv_string_parameter (&se);
+  gfc_add_block_to_block (&block, &se.pre);
+  gfc_add_block_to_block (&post_block, &se.post);
+  set = se.expr;
+  set_len = se.string_length;
+
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr (&se, pos_expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  gfc_add_block_to_block (&post_block, &se.post);
+  pos = se.expr;
+  pos_for_call = fold_convert (gfc_charlen_type_node, pos);
+
+  if (back_expr)
+    {
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, back_expr);
+      gfc_add_block_to_block (&block, &se.pre);
+      gfc_add_block_to_block (&post_block, &se.post);
+      back = se.expr;
+    }
+  else
+    back = logical_false_node;
+
+  if (string_expr->ts.kind == 1)
+    fndecl = gfor_fndecl_string_split;
+  else if (string_expr->ts.kind == 4)
+    fndecl = gfor_fndecl_string_split_char4;
+  else
+    gcc_unreachable ();
+
+  call = build_call_expr_loc (input_location, fndecl, 6, string_len, string,
+			      set_len, set, pos_for_call, back);
+  gfc_add_modify (&block, pos, fold_convert (TREE_TYPE (pos), call));
+
+  gfc_add_block_to_block (&block, &post_block);
+  return gfc_finish_block (&block);
+}
 
 /* Return a character string containing the tty name.  */
 
@@ -13259,6 +13327,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
 
     case GFC_ISYM_SYSTEM_CLOCK:
       res = conv_intrinsic_system_clock (code);
+      break;
+
+    case GFC_ISYM_SPLIT:
+      res = conv_intrinsic_split (code);
       break;
 
     default:

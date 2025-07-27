@@ -5559,6 +5559,27 @@ gfc_check_scan (gfc_expr *x, gfc_expr *y, gfc_expr *z, gfc_expr *kind)
   return true;
 }
 
+bool
+gfc_check_split (gfc_expr *string, gfc_expr *set, gfc_expr *pos, gfc_expr *back)
+{
+  if (!type_check (string, 0, BT_CHARACTER))
+    return false;
+
+  if (!type_check (set, 1, BT_CHARACTER))
+    return false;
+
+  if (!type_check (pos, 2, BT_INTEGER) || !scalar_check (pos, 2))
+    return false;
+
+  if (back != NULL
+      && (!type_check (back, 3, BT_LOGICAL) || !scalar_check (back, 3)))
+    return false;
+
+  if (!same_type_check (string, 0, set, 1))
+    return false;
+
+  return true;
+}
 
 bool
 gfc_check_secnds (gfc_expr *r)

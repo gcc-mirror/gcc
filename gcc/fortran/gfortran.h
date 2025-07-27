@@ -729,6 +729,8 @@ enum gfc_isym_id
   GFC_ISYM_COSPI,
   GFC_ISYM_SINPI,
   GFC_ISYM_TANPI,
+
+  GFC_ISYM_SPLIT,
 };
 
 enum init_local_logical

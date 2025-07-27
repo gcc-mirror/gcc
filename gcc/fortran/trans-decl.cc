@@ -197,6 +197,7 @@ tree gfor_fndecl_string_scan;
 tree gfor_fndecl_string_verify;
 tree gfor_fndecl_string_trim;
 tree gfor_fndecl_string_minmax;
+tree gfor_fndecl_string_split;
 tree gfor_fndecl_adjustl;
 tree gfor_fndecl_adjustr;
 tree gfor_fndecl_select_string;
@@ -208,6 +209,7 @@ tree gfor_fndecl_string_scan_char4;
 tree gfor_fndecl_string_verify_char4;
 tree gfor_fndecl_string_trim_char4;
 tree gfor_fndecl_string_minmax_char4;
+tree gfor_fndecl_string_split_char4;
 tree gfor_fndecl_adjustl_char4;
 tree gfor_fndecl_adjustr_char4;
 tree gfor_fndecl_select_string_char4;
@@ -3569,6 +3571,12 @@ gfc_build_intrinsic_function_decls (void)
 	build_pointer_type (pchar1_type_node), integer_type_node,
 	integer_type_node);
 
+  gfor_fndecl_string_split = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("string_split")), ". . R . R . . ",
+    gfc_charlen_type_node, 6, gfc_charlen_type_node, pchar1_type_node,
+    gfc_charlen_type_node, pchar1_type_node, gfc_charlen_type_node,
+    gfc_logical4_type_node);
+
   gfor_fndecl_adjustl = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("adjustl")), ". W . R ",
 	void_type_node, 3, pchar1_type_node, gfc_charlen_type_node,
@@ -3640,6 +3648,12 @@ gfc_build_intrinsic_function_decls (void)
 	void_type_node, -4, build_pointer_type (gfc_charlen_type_node),
 	build_pointer_type (pchar4_type_node), integer_type_node,
 	integer_type_node);
+
+  gfor_fndecl_string_split_char4 = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("string_split_char4")), ". . R . R . . ",
+    gfc_charlen_type_node, 6, gfc_charlen_type_node, pchar4_type_node,
+    gfc_charlen_type_node, pchar4_type_node, gfc_charlen_type_node,
+    gfc_logical4_type_node);
 
   gfor_fndecl_adjustl_char4 = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("adjustl_char4")), ". W . R ",
