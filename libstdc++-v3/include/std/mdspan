@@ -159,9 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	static constexpr span<const size_t>
 	_S_static_extents(size_t __begin, size_t __end) noexcept
-	{
-	  return {_Extents.data() + __begin, _Extents.data() + __end};
-	}
+	{ return {_Extents.data() + __begin, _Extents.data() + __end}; }
 
 	constexpr span<const _IndexType>
 	_M_dynamic_extents(size_t __begin, size_t __end) const noexcept
@@ -185,10 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       concept
       __valid_static_extent = _Extent == dynamic_extent
 	|| _Extent <= numeric_limits<_IndexType>::max();
-  }
 
-  namespace __mdspan
-  {
     template<typename _Extents>
       constexpr span<const size_t>
       __static_extents(size_t __begin = 0, size_t __end = _Extents::rank())
@@ -199,9 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr span<const typename _Extents::index_type>
       __dynamic_extents(const _Extents& __exts, size_t __begin = 0,
 			size_t __end = _Extents::rank()) noexcept
-      {
-	return __exts._M_exts._M_dynamic_extents(__begin, __end);
-      }
+      { return __exts._M_exts._M_dynamic_extents(__begin, __end); }
   }
 
   template<typename _IndexType, size_t... _Extents>
@@ -1248,9 +1241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]]
       constexpr bool
       empty() const noexcept
-      {
-	return __mdspan::__empty(extents());
-      }
+      { return __mdspan::__empty(extents()); }
 
       friend constexpr void
       swap(mdspan& __x, mdspan& __y) noexcept
@@ -1299,7 +1290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr bool
       is_strided() const noexcept(noexcept(_M_mapping.is_strided()))
-      { return _M_mapping. is_strided(); }
+      { return _M_mapping.is_strided(); }
 
       constexpr index_type
       stride(rank_type __r) const { return _M_mapping.stride(__r); }
