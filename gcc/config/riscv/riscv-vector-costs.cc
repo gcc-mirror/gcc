@@ -275,13 +275,13 @@ loop_invariant_op_p (class loop *loop,
 /* Return true if the variable should be counted into liveness.  */
 static bool
 variable_vectorized_p (class loop *loop, stmt_vec_info stmt_info,
-		       slp_tree node ATTRIBUTE_UNUSED, tree var, bool lhs_p)
+		       slp_tree node, tree var, bool lhs_p)
 {
   if (!var)
     return false;
   gimple *stmt = STMT_VINFO_STMT (stmt_info);
   stmt_info = vect_stmt_to_vectorize (stmt_info);
-  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+  enum stmt_vec_info_type type = SLP_TREE_TYPE (node);
   if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
     {
       if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE
@@ -602,9 +602,9 @@ get_store_value (gimple *stmt)
 /* Return true if additional vector vars needed.  */
 bool
 costs::need_additional_vector_vars_p (stmt_vec_info stmt_info,
-				      slp_tree node ATTRIBUTE_UNUSED)
+				      slp_tree node)
 {
-  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+  enum stmt_vec_info_type type = SLP_TREE_TYPE (node);
   if (type == load_vec_info_type || type == store_vec_info_type)
     {
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
@@ -694,7 +694,7 @@ costs::update_local_live_ranges (
 	  if (!node)
 	    continue;
 
-	  if (STMT_VINFO_TYPE (stmt_info) == undef_vec_info_type)
+	  if (SLP_TREE_TYPE (*node) == undef_vec_info_type)
 	    continue;
 
 	  for (j = 0; j < gimple_phi_num_args (phi); j++)
@@ -773,7 +773,7 @@ costs::update_local_live_ranges (
 	  slp_tree *node = vinfo_slp_map.get (stmt_info);
 	  if (!node)
 	    continue;
-	  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+	  enum stmt_vec_info_type type = SLP_TREE_TYPE (*node);
 	  if (need_additional_vector_vars_p (stmt_info, *node))
 	    {
 	      /* For non-adjacent load/store STMT, we will potentially

@@ -3158,7 +3158,7 @@ vectorizable_bswap (vec_info *vinfo,
 	  return false;
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
       record_stmt_cost (cost_vec,
 			1, vector_stmt, stmt_info, 0, vect_prologue);
@@ -3487,7 +3487,7 @@ vectorizable_call (vec_info *vinfo,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
-      STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_call");
       vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
 
@@ -4282,7 +4282,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = call_simd_clone_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
 /*      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec); */
       return true;
@@ -5427,13 +5427,13 @@ vectorizable_conversion (vec_info *vinfo,
       DUMP_VECT_SCOPE ("vectorizable_conversion");
       if (modifier == NONE)
         {
-	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
+	  SLP_TREE_TYPE (slp_node) = type_conversion_vec_info_type;
 	  vect_model_simple_cost (vinfo, (1 + multi_step_cvt),
 				  slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
-	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
+	  SLP_TREE_TYPE (slp_node) = type_demotion_vec_info_type;
 	  /* The final packing step produces one vector result per copy.  */
 	  unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
@@ -5442,7 +5442,7 @@ vectorizable_conversion (vec_info *vinfo,
 	}
       else
 	{
-	  STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
+	  SLP_TREE_TYPE (slp_node) = type_promotion_vec_info_type;
 	  /* The initial unpacking step produces two vector results
 	     per copy.  MULTI_STEP_CVT is 0 for a single conversion,
 	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
@@ -5777,7 +5777,7 @@ vectorizable_assignment (vec_info *vinfo,
 			     "incompatible vector types for invariants\n");
 	  return false;
 	}
-      STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
       if (!vect_nop_conversion_p (stmt_info))
 	vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
@@ -6122,7 +6122,7 @@ vectorizable_shift (vec_info *vinfo,
 	    gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (slp_op1)[i])
 			 == INTEGER_CST));
 	  }
-      STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
       vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
       return true;
@@ -6541,7 +6541,7 @@ vectorizable_operation (vec_info *vinfo,
 	  return false;
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = op_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_operation");
       vect_model_simple_cost (vinfo, 1, slp_node, cost_vec);
       if (using_emulated_vectors_p)
@@ -7974,7 +7974,7 @@ vectorizable_store (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
 
-      STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = store_vec_info_type;
     }
   gcc_assert (memory_access_type == SLP_TREE_MEMORY_ACCESS_TYPE (stmt_info));
 
@@ -9572,7 +9572,7 @@ vectorizable_load (vec_info *vinfo,
       if (memory_access_type == VMAT_LOAD_STORE_LANES)
 	vinfo->any_known_not_updated_vssa = true;
 
-      STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = load_vec_info_type;
     }
   else
     {
@@ -11749,7 +11749,7 @@ vectorizable_condition (vec_info *vinfo,
 	    }
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = condition_vec_info_type;
       vect_model_simple_cost (vinfo, 1, slp_node, cost_vec, kind);
       return true;
     }
@@ -12256,7 +12256,7 @@ vectorizable_comparison (vec_info *vinfo,
     return false;
 
   if (cost_vec)
-    STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
+    SLP_TREE_TYPE (slp_node) = comparison_vec_info_type;
 
   return true;
 }
@@ -12657,8 +12657,8 @@ vect_analyze_stmt (vec_info *vinfo,
   /* Stmts that are (also) "live" (i.e. - that are used out of the loop)
       need extra handling, except for vectorizable reductions.  */
   if (!bb_vinfo
-      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
-      && (STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
+      && SLP_TREE_TYPE (node) != reduc_vec_info_type
+      && (SLP_TREE_TYPE (node) != lc_phi_info_type
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
       && (!node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
@@ -12694,7 +12694,7 @@ vect_transform_stmt (vec_info *vinfo,
   tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
   STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
 
-  switch (STMT_VINFO_TYPE (stmt_info))
+  switch (SLP_TREE_TYPE (slp_node))
     {
     case type_demotion_vec_info_type:
     case type_promotion_vec_info_type:
@@ -12811,7 +12811,7 @@ vect_transform_stmt (vec_info *vinfo,
       done = true;
     }
 
-  if (STMT_VINFO_TYPE (stmt_info) != store_vec_info_type
+  if (SLP_TREE_TYPE (slp_node) != store_vec_info_type
       && (!slp_node->ldst_lanes
 	  || SLP_TREE_CODE (slp_node) == VEC_PERM_EXPR))
     {

@@ -205,6 +205,32 @@ enum vect_memory_access_type {
   VMAT_GATHER_SCATTER
 };
 
+/*-----------------------------------------------------------------*/
+/* Info on vectorized defs.                                        */
+/*-----------------------------------------------------------------*/
+enum stmt_vec_info_type {
+  undef_vec_info_type = 0,
+  load_vec_info_type,
+  store_vec_info_type,
+  shift_vec_info_type,
+  op_vec_info_type,
+  call_vec_info_type,
+  call_simd_clone_vec_info_type,
+  assignment_vec_info_type,
+  condition_vec_info_type,
+  comparison_vec_info_type,
+  reduc_vec_info_type,
+  induc_vec_info_type,
+  type_promotion_vec_info_type,
+  type_demotion_vec_info_type,
+  type_conversion_vec_info_type,
+  cycle_phi_info_type,
+  lc_phi_info_type,
+  phi_info_type,
+  recurr_info_type,
+  loop_exit_ctrl_vec_info_type
+};
+
 /************************************************************************
   SLP
  ************************************************************************/
@@ -278,6 +304,13 @@ struct _slp_tree {
   /* Classifies how the load or store is going to be implemented
      for loop vectorization.  */
   vect_memory_access_type memory_access_type;
+
+  /* The kind of operation as determined by analysis and a tagged
+     union with kind specific data.  */
+  enum stmt_vec_info_type type;
+  union {
+      void *undef;
+  } u;
 
   /* If not NULL this is a cached failed SLP discovery attempt with
      the lanes that failed during SLP discovery as 'false'.  This is
@@ -364,6 +397,7 @@ public:
 #define SLP_TREE_LANES(S)			 (S)->lanes
 #define SLP_TREE_CODE(S)			 (S)->code
 #define SLP_TREE_MEMORY_ACCESS_TYPE(S)		 (S)->memory_access_type
+#define SLP_TREE_TYPE(S)			 (S)->type
 
 enum vect_partial_vector_style {
     vect_partial_vectors_none,
@@ -1211,32 +1245,6 @@ public:
 #define BB_VINFO_DATAREFS(B)         (B)->shared->datarefs
 #define BB_VINFO_DDRS(B)             (B)->shared->ddrs
 
-/*-----------------------------------------------------------------*/
-/* Info on vectorized defs.                                        */
-/*-----------------------------------------------------------------*/
-enum stmt_vec_info_type {
-  undef_vec_info_type = 0,
-  load_vec_info_type,
-  store_vec_info_type,
-  shift_vec_info_type,
-  op_vec_info_type,
-  call_vec_info_type,
-  call_simd_clone_vec_info_type,
-  assignment_vec_info_type,
-  condition_vec_info_type,
-  comparison_vec_info_type,
-  reduc_vec_info_type,
-  induc_vec_info_type,
-  type_promotion_vec_info_type,
-  type_demotion_vec_info_type,
-  type_conversion_vec_info_type,
-  cycle_phi_info_type,
-  lc_phi_info_type,
-  phi_info_type,
-  recurr_info_type,
-  loop_exit_ctrl_vec_info_type
-};
-
 /* Indicates whether/how a variable is used in the scope of loop/basic
    block.  */
 enum vect_relevant {
@@ -1328,8 +1336,6 @@ typedef struct data_reference *dr_p;
 
 class _stmt_vec_info {
 public:
-
-  enum stmt_vec_info_type type;
 
   /* Indicates whether this stmts is part of a computation whose result is
      used outside the loop.  */
@@ -1569,7 +1575,6 @@ struct gather_scatter_info {
 };
 
 /* Access Functions.  */
-#define STMT_VINFO_TYPE(S)                 (S)->type
 #define STMT_VINFO_STMT(S)                 (S)->stmt
 #define STMT_VINFO_RELEVANT(S)             (S)->relevant
 #define STMT_VINFO_LIVE_P(S)               (S)->live

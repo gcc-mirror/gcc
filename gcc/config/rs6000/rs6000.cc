@@ -5174,6 +5174,7 @@ public:
 
 protected:
   void update_target_cost_per_stmt (vect_cost_for_stmt, stmt_vec_info,
+				    slp_tree node,
 				    vect_cost_model_location, unsigned int);
   void density_test (loop_vec_info);
   void adjust_vect_cost_per_loop (loop_vec_info);
@@ -5321,6 +5322,7 @@ rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
 void
 rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 					       stmt_vec_info stmt_info,
+					       slp_tree node,
 					       vect_cost_model_location where,
 					       unsigned int orig_count)
 {
@@ -5381,12 +5383,12 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 	 or may not need to apply.  When finalizing the cost of the loop,
 	 the extra penalty is applied when the load density heuristics
 	 are satisfied.  */
-      if (kind == vec_construct && stmt_info
-	  && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
-	  && (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
-	      || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_STRIDED_SLP))
+      if (kind == vec_construct && node
+	  && SLP_TREE_TYPE (node) == load_vec_info_type
+	  && (SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_ELEMENTWISE
+	      || SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_STRIDED_SLP))
 	{
-	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  tree vectype = SLP_TREE_VECTYPE (node);
 	  unsigned int nunits = vect_nunits_for_cost (vectype);
 	  /* As PR103702 shows, it's possible that vectorizer wants to do
 	     costings for only one unit here, it's no need to do any
@@ -5415,7 +5417,7 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 
 unsigned
 rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, slp_tree,
+				 stmt_vec_info stmt_info, slp_tree node,
 				 tree vectype, int misalign,
 				 vect_cost_model_location where)
 {
@@ -5433,7 +5435,7 @@ rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
       retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
       m_costs[where] += retval;
 
-      update_target_cost_per_stmt (kind, stmt_info, where, orig_count);
+      update_target_cost_per_stmt (kind, stmt_info, node, where, orig_count);
     }
 
   return retval;

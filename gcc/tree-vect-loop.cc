@@ -1919,7 +1919,6 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
   for (gcond *cond : info->conds)
     {
       stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (cond);
-      STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
       /* Mark the statement as a condition.  */
       STMT_VINFO_DEF_TYPE (loop_cond_info) = vect_condition_def;
     }
@@ -1936,9 +1935,6 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
 
   if (info->inner_loop_cond)
     {
-      stmt_vec_info inner_loop_cond_info
-	= loop_vinfo->lookup_stmt (info->inner_loop_cond);
-      STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
       /* If we have an estimate on the number of iterations of the inner
 	 loop use that to limit the scale for costing, otherwise use
 	 --param vect-inner-loop-cost-factor literally.  */
@@ -7151,7 +7147,7 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     }
 
   /* Transform via vect_transform_reduction.  */
-  STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
+  SLP_TREE_TYPE (slp_node) = reduc_vec_info_type;
   return true;
 }
 
@@ -7253,18 +7249,17 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      }
 	  /* Analysis for double-reduction is done on the outer
 	     loop PHI, nested cycles have no further restrictions.  */
-	  STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
+	  SLP_TREE_TYPE (slp_node) = cycle_phi_info_type;
 	}
       else
-	STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
+	SLP_TREE_TYPE (slp_node) = reduc_vec_info_type;
       return true;
     }
 
-  stmt_vec_info orig_stmt_of_analysis = stmt_info;
   stmt_vec_info phi_info = stmt_info;
   if (!is_a <gphi *> (stmt_info->stmt))
     {
-      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = reduc_vec_info_type;
       return true;
     }
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
@@ -8074,7 +8069,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       && reduction_type == FOLD_LEFT_REDUCTION)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "using an in-order (fold-left) reduction.\n");
-  STMT_VINFO_TYPE (orig_stmt_of_analysis) = cycle_phi_info_type;
+  SLP_TREE_TYPE (slp_node) = cycle_phi_info_type;
 
   /* All but single defuse-cycle optimized and fold-left reductions go
      through their own vectorizable_* routines.  */
@@ -8770,7 +8765,7 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
       return false;
     }
 
-  STMT_VINFO_TYPE (stmt_info) = lc_phi_info_type;
+  SLP_TREE_TYPE (slp_node) = lc_phi_info_type;
   return true;
 }
 
@@ -8855,7 +8850,7 @@ vectorizable_phi (vec_info *,
       if (gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) > 1)
 	record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
 			  vector_stmt, stmt_info, vectype, 0, vect_body);
-      STMT_VINFO_TYPE (stmt_info) = phi_info_type;
+      SLP_TREE_TYPE (slp_node) = phi_info_type;
       return true;
     }
 
@@ -9016,7 +9011,7 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			 "prologue_cost = %d .\n", inside_cost,
 			 prologue_cost);
 
-      STMT_VINFO_TYPE (stmt_info) = recurr_info_type;
+      SLP_TREE_TYPE (slp_node) = recurr_info_type;
       return true;
     }
 
@@ -9552,7 +9547,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 			 "prologue_cost = %d. \n", inside_cost,
 			 prologue_cost);
 
-      STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = induc_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_nonlinear_induction");
       return true;
     }
@@ -9853,7 +9848,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 			 "prologue_cost = %d .\n", inside_cost,
 			 prologue_cost);
 
-      STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
+      SLP_TREE_TYPE (slp_node) = induc_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_induction");
       return true;
     }

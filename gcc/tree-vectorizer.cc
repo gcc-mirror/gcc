@@ -715,7 +715,6 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   stmt_vec_info res = XCNEW (class _stmt_vec_info);
   res->stmt = stmt;
 
-  STMT_VINFO_TYPE (res) = undef_vec_info_type;
   STMT_VINFO_RELEVANT (res) = vect_unused_in_scope;
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_REDUC_TYPE (res) = TREE_CODE_REDUCTION;

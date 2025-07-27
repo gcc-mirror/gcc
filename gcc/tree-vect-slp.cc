@@ -130,6 +130,8 @@ _slp_tree::_slp_tree ()
   this->failed = NULL;
   this->max_nunits = 1;
   this->lanes = 0;
+  SLP_TREE_TYPE (this) = undef_vec_info_type;
+  this->u.undef = NULL;
 }
 
 /* Tear down a SLP node.  */
@@ -8259,8 +8261,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      /* Masked loads can have an undefined (default SSA definition)
 		 else operand.  We do not need to cost it.  */
 	      vec<tree> ops = SLP_TREE_SCALAR_OPS (child);
-	      if ((STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
-		   == load_vec_info_type)
+	      if (SLP_TREE_TYPE (node) == load_vec_info_type
 		  && ((ops.length ()
 		       && TREE_CODE (ops[0]) == SSA_NAME
 		       && SSA_NAME_IS_DEFAULT_DEF (ops[0])
@@ -8271,8 +8272,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      /* For shifts with a scalar argument we don't need
 		 to cost or code-generate anything.
 		 ???  Represent this more explicitely.  */
-	      gcc_assert ((STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
-			   == shift_vec_info_type)
+	      gcc_assert (SLP_TREE_TYPE (node) == shift_vec_info_type
 			  && j == 1);
 	      continue;
 	    }
@@ -11308,9 +11308,9 @@ vect_schedule_slp_node (vec_info *vinfo,
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
   else if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
-	   && (STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
-	       || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
-	       || STMT_VINFO_TYPE (stmt_info) == phi_info_type))
+	   && (SLP_TREE_TYPE (node) == cycle_phi_info_type
+	       || SLP_TREE_TYPE (node) == induc_vec_info_type
+	       || SLP_TREE_TYPE (node) == phi_info_type))
     {
       /* For PHI node vectorization we do not use the insertion iterator.  */
       si = gsi_none ();
@@ -11330,8 +11330,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	       last scalar def here.  */
 	    if (SLP_TREE_VEC_DEFS (child).is_empty ())
 	      {
-		gcc_assert (STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (child))
-			    == cycle_phi_info_type);
+		gcc_assert (SLP_TREE_TYPE (child) == cycle_phi_info_type);
 		gphi *phi = as_a <gphi *>
 			      (vect_find_last_scalar_stmt_in_slp (child)->stmt);
 		if (!last_stmt)
@@ -11482,7 +11481,7 @@ vect_schedule_slp_node (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "------>vectorizing SLP permutation node\n");
-      /* ???  the transform kind is stored to STMT_VINFO_TYPE which might
+      /* ???  the transform kind was stored to STMT_VINFO_TYPE which might
 	 be shared with different SLP nodes (but usually it's the same
 	 operation apart from the case the stmt is only there for denoting
 	 the actual scalar lane defs ...).  So do not call vect_transform_stmt
