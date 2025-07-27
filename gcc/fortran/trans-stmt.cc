@@ -6710,7 +6710,6 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
   stmtblock_t block;
   stmtblock_t post;
   stmtblock_t final_block;
-  tree nelems;
   bool upoly_expr, tmp_expr3_len_flag = false, al_len_needs_set, is_coarray;
   bool needs_caf_sync, caf_refs_comp;
   bool e3_has_nodescriptor = false;
@@ -7242,7 +7241,6 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	 to handle the complete array allocation.  Only the element size
 	 needs to be provided, which is done most of the time by the
 	 pre-evaluation step.  */
-      nelems = NULL_TREE;
       if (expr3_len && (code->expr3->ts.type == BT_CHARACTER
 			|| code->expr3->ts.type == BT_CLASS))
 	{
@@ -7313,9 +7311,8 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 
 	}
 
-      if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,
-			       label_finish, tmp, &nelems,
-			       e3rhs ? e3rhs : code->expr3,
+      if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen, label_finish,
+			       tmp, e3rhs ? e3rhs : code->expr3,
 			       e3_is == E3_DESC ? expr3 : NULL_TREE,
 			       e3_has_nodescriptor, omp_alloc_item,
 			       code->ext.alloc.ts.type != BT_UNKNOWN))
