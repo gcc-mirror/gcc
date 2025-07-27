@@ -142,6 +142,12 @@ TyTyResolveCompile::visit (const TyTy::ParamType &)
 }
 
 void
+TyTyResolveCompile::visit (const TyTy::ConstType &)
+{
+  translated = error_mark_node;
+}
+
+void
 TyTyResolveCompile::visit (const TyTy::ProjectionType &type)
 {
   translated = error_mark_node;

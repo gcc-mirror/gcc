@@ -493,6 +493,7 @@ private:
       case TyTy::PROJECTION: // TODO: DUNNO
       case TyTy::CLOSURE:    // TODO: DUNNO
       case TyTy::DYNAMIC:    // TODO: dunno
+      case TyTy::CONST:
       case TyTy::OPAQUE:
 	return false;
       }

@@ -57,6 +57,7 @@ enum TypeKind
   REF,
   POINTER,
   PARAM,
+  CONST,
   ARRAY,
   SLICE,
   FNDEF,
@@ -427,6 +428,59 @@ public:
 
 private:
   bool is_trait_self;
+  std::string symbol;
+  HIR::GenericParam &param;
+};
+
+class ConstType : public BaseGeneric
+{
+public:
+  static constexpr auto KIND = TypeKind::CONST;
+
+  enum ConstKind
+  {
+    Decl,
+    Value,
+    Infer,
+    Error
+  };
+
+  ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty, tree value,
+	     std::vector<TypeBoundPredicate> specified_bounds, location_t locus,
+	     HirId ref, HirId ty_ref, HIR::GenericParam &param,
+	     std::set<HirId> refs = std::set<HirId> ());
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  ConstKind get_const_kind () const { return const_kind; }
+  TyTy::BaseType *get_ty () const { return ty; }
+  tree get_value () const { return value; }
+
+  std::string as_string () const override;
+
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+
+  BaseType *clone () const final override;
+
+  std::string get_symbol () const override final;
+
+  HIR::GenericParam &get_generic_param () override final;
+
+  bool can_resolve () const override final;
+
+  BaseType *resolve () const override final;
+
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  ConstType *handle_substitions (SubstitutionArgumentMappings &mappings);
+
+private:
+  ConstKind const_kind;
+  TyTy::BaseType *ty;
+  tree value;
   std::string symbol;
   HIR::GenericParam &param;
 };

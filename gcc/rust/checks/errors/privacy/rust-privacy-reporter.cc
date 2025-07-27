@@ -277,6 +277,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
       return;
     case TyTy::OPAQUE:
       return;
+    case TyTy::CONST:
+      return;
     case TyTy::ERROR:
       return;
     }

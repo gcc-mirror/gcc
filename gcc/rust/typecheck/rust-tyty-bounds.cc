@@ -173,6 +173,7 @@ TypeBoundsProbe::assemble_marker_builtins ()
       assemble_builtin_candidate (LangItem::Kind::SIZED);
       break;
 
+    case TyTy::CONST:
     case TyTy::DYNAMIC:
     case TyTy::ERROR:
       break;

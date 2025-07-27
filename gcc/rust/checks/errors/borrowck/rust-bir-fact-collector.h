@@ -824,6 +824,7 @@ protected: // Subset helpers.
       case TyTy::PLACEHOLDER:
       case TyTy::INFER:
       case TyTy::PARAM:
+      case TyTy::CONST:
       case TyTy::OPAQUE:
 	rust_unreachable ();
       }

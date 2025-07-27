@@ -116,6 +116,9 @@ TypeKindFormat::to_string (TypeKind kind)
     case TypeKind::OPAQUE:
       return "Opaque";
 
+    case TypeKind::CONST:
+      return "Const";
+
     case TypeKind::ERROR:
       return "ERROR";
     }
@@ -225,6 +228,7 @@ BaseType::is_unit () const
     case OPAQUE:
     case STR:
     case DYNAMIC:
+    case CONST:
     case ERROR:
       return false;
 
@@ -892,6 +896,7 @@ BaseType::has_substitutions_defined () const
     case TUPLE:
     case PARAM:
     case PLACEHOLDER:
+    case CONST:
     case OPAQUE:
       return false;
 
@@ -958,6 +963,7 @@ BaseType::needs_generic_substitutions () const
     case TUPLE:
     case PARAM:
     case PLACEHOLDER:
+    case CONST:
     case OPAQUE:
       return false;
 
@@ -3578,6 +3584,103 @@ bool
 ParamType::is_implicit_self_trait () const
 {
   return is_trait_self;
+}
+
+// ConstType
+
+ConstType::ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty,
+		      tree value,
+		      std::vector<TypeBoundPredicate> specified_bounds,
+		      location_t locus, HirId ref, HirId ty_ref,
+		      HIR::GenericParam &param, std::set<HirId> refs)
+  : BaseGeneric (ref, ty_ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		  locus},
+		 specified_bounds, refs),
+    const_kind (kind), ty (ty), value (value), symbol (symbol), param (param)
+{}
+
+void
+ConstType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+ConstType::as_string () const
+{
+  return get_name ();
+}
+
+bool
+ConstType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  ConstCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+ConstType::clone () const
+{
+  return new ConstType (const_kind, symbol, ty, value, get_specified_bounds (),
+			ident.locus, ref, ty_ref, param, get_combined_refs ());
+}
+
+std::string
+ConstType::get_symbol () const
+{
+  return symbol;
+}
+
+HIR::GenericParam &
+ConstType::get_generic_param ()
+{
+  return param;
+}
+
+bool
+ConstType::can_resolve () const
+{
+  return false;
+}
+
+BaseType *
+ConstType::resolve () const
+{
+  rust_unreachable ();
+  return nullptr;
+}
+
+std::string
+ConstType::get_name () const
+{
+  return "CONST_TYPE";
+}
+
+bool
+ConstType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+
+  // TODO
+
+  return false;
+}
+
+ConstType *
+ConstType::handle_substitions (SubstitutionArgumentMappings &mappings)
+{
+  rust_unreachable ();
+  return nullptr;
 }
 
 // OpaqueType

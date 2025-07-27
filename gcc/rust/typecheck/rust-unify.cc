@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unify.h"
+#include "rust-tyty.h"
 #include "tree.h"
 
 namespace Rust {
@@ -326,6 +327,9 @@ UnifyRules::go ()
     case TyTy::OPAQUE:
       return expect_opaque (static_cast<TyTy::OpaqueType *> (ltype), rtype);
 
+    case TyTy::CONST:
+      return expect_const (static_cast<TyTy::ConstType *> (ltype), rtype);
+
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -420,6 +424,7 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
+    case TyTy::CONST:
     case TyTy::OPAQUE:
       {
 	bool is_valid = (ltype->get_infer_kind ()
@@ -546,6 +551,7 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -592,6 +598,7 @@ UnifyRules::expect_str (TyTy::StrType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -663,6 +670,7 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -734,6 +742,7 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -798,6 +807,7 @@ UnifyRules::expect_param (TyTy::ParamType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -869,6 +879,7 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -929,6 +940,7 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1018,6 +1030,7 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1166,6 +1179,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1237,6 +1251,7 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1286,6 +1301,7 @@ UnifyRules::expect_bool (TyTy::BoolType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1335,6 +1351,7 @@ UnifyRules::expect_char (TyTy::CharType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1392,6 +1409,7 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1449,6 +1467,7 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1506,6 +1525,7 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1555,6 +1575,7 @@ UnifyRules::expect_isize (TyTy::ISizeType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1604,6 +1625,7 @@ UnifyRules::expect_usize (TyTy::USizeType *ltype, TyTy::BaseType *rtype)
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1676,6 +1698,7 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
 	return rtype->clone ();
       gcc_fallthrough ();
 
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1725,6 +1748,7 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
     case TyTy::NEVER:
     case TyTy::PLACEHOLDER:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1786,6 +1810,7 @@ UnifyRules::expect_dyn (TyTy::DynamicObjectType *ltype, TyTy::BaseType *rtype)
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1857,6 +1882,7 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
     case TyTy::OPAQUE:
+    case TyTy::CONST:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1907,6 +1933,19 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
     }
 
   return ltype;
+}
+
+TyTy::BaseType *
+UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
+{
+  if (rtype->get_kind () != TyTy::TypeKind::CONST)
+    return new TyTy::ErrorType (0);
+
+  // TODO
+  // TyTy::ConstType &lhs = *ltype;
+  // TyTy::ConstType &rhs = *static_cast<TyTy::ConstType *> (rtype);
+
+  return new TyTy::ErrorType (0);
 }
 
 } // namespace Resolver
