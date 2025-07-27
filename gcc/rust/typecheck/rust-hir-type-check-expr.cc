@@ -33,6 +33,7 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-compile-base.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -1058,6 +1059,10 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 {
   auto &elements = expr.get_internal_elements ();
 
+  TyTy::BaseType *expected_ty = nullptr;
+  bool ok = context->lookup_builtin ("usize", &expected_ty);
+  rust_assert (ok);
+
   HIR::Expr *capacity_expr = nullptr;
   TyTy::BaseType *element_type = nullptr;
   TyTy::BaseType *capacity_type = nullptr;
@@ -1072,9 +1077,6 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	auto capacity_expr_ty
 	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
 
-	TyTy::BaseType *expected_ty = nullptr;
-	bool ok = context->lookup_builtin ("usize", &expected_ty);
-	rust_assert (ok);
 	context->insert_type (elems.get_num_copies_expr ().get_mappings (),
 			      expected_ty);
 
@@ -1123,9 +1125,6 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 					      UNDEF_LOCATION, {});
 
 	// mark the type for this implicit node
-	TyTy::BaseType *expected_ty = nullptr;
-	bool ok = context->lookup_builtin ("usize", &expected_ty);
-	rust_assert (ok);
 	context->insert_type (mapping, expected_ty);
 	capacity_type = expected_ty;
       }
@@ -1135,12 +1134,17 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
   rust_assert (capacity_expr);
   rust_assert (capacity_type);
   auto ctx = Compile::Context::get ();
-  tree capacity
+  tree capacity_value
     = Compile::HIRCompileBase::query_compile_const_expr (ctx, capacity_type,
 							 *capacity_expr);
+  HirId size_id = capacity_expr->get_mappings ().get_hirid ();
+  TyTy::ConstType *const_type
+    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "", expected_ty,
+			   capacity_value, {}, capacity_expr->get_locus (),
+			   size_id, size_id);
   infered
     = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), expr.get_locus (),
-			   capacity, TyTy::TyVar (element_type->get_ref ()));
+			   const_type, TyTy::TyVar (element_type->get_ref ()));
 }
 
 // empty struct
@@ -1798,7 +1802,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   TyTy::TyVar result_type
     = expr.has_return_type ()
 	? TyTy::TyVar (
-	  TypeCheckType::Resolve (expr.get_return_type ())->get_ref ())
+	    TypeCheckType::Resolve (expr.get_return_type ())->get_ref ())
 	: TyTy::TyVar::get_implicit_infer_var (expr.get_locus ());
 
   // resolve the block

@@ -696,6 +696,9 @@ HIRCompileBase::compile_function (
   std::string ir_symbol_name
     = canonical_path.get () + fntype->subst_as_string ();
 
+  rust_debug_loc (locus, "--> Compiling [%s] - %s", ir_symbol_name.c_str (),
+		  fntype->get_name ().c_str ());
+
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0 && is_root_item
 		    && canonical_path.size () <= 2;

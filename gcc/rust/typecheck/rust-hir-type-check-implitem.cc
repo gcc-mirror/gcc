@@ -70,7 +70,9 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
     {
-      resolve_generic_params (function.get_generic_params (), substitutions,
+      resolve_generic_params (HIR::Item::ItemKind::Function,
+			      function.get_locus (),
+			      function.get_generic_params (), substitutions,
 			      true /*is_foreign*/, parent.get_abi ());
     }
 
@@ -200,7 +202,9 @@ TypeCheckImplItem::visit (HIR::Function &function)
   auto binder_pin = context->push_lifetime_binder ();
 
   if (function.has_generics ())
-    resolve_generic_params (function.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Function,
+			    function.get_locus (),
+			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
@@ -397,7 +401,8 @@ TypeCheckImplItem::visit (HIR::TypeAlias &alias)
   auto binder_pin = context->push_lifetime_binder ();
 
   if (alias.has_generics ())
-    resolve_generic_params (alias.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::TypeAlias, alias.get_locus (),
+			    alias.get_generic_params (), substitutions);
 
   TyTy::BaseType *actual_type
     = TypeCheckType::Resolve (alias.get_type_aliased ());

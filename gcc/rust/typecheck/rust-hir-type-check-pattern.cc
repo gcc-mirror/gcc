@@ -641,7 +641,8 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
       {
 	auto &array_ty_ty = static_cast<TyTy::ArrayType &> (*parent);
 	parent_element_ty = array_ty_ty.get_element_type ();
-	tree cap = array_ty_ty.get_capacity ();
+	auto capacity = array_ty_ty.get_capacity ();
+	tree cap = capacity->get_value ();
 	if (error_operand_p (cap))
 	  {
 	    rust_error_at (parent->get_locus (),

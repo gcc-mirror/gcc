@@ -19,6 +19,7 @@
 #include "rust-tyty.h"
 
 #include "optional.h"
+#include "rust-tyty-subst.h"
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-location.h"
@@ -31,10 +32,12 @@
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
 #include "print-tree.h"
+#include "tree-pretty-print.h"
 
 #include "options.h"
 #include "rust-system.h"
 #include "tree.h"
+#include <string>
 
 namespace Rust {
 namespace TyTy {
@@ -829,7 +832,8 @@ BaseType::is_concrete () const
     }
   else if (auto arr = x->try_as<const ArrayType> ())
     {
-      return arr->get_element_type ()->is_concrete ();
+      return arr->get_element_type ()->is_concrete ()
+	     && arr->get_capacity ()->is_concrete ();
     }
   else if (auto slice = x->try_as<const SliceType> ())
     {
@@ -857,6 +861,10 @@ BaseType::is_concrete () const
       if (closure->get_parameters ().is_concrete ())
 	return false;
       return closure->get_result_type ().is_concrete ();
+    }
+  else if (auto const_type = x->try_as<const ConstType> ())
+    {
+      return const_type->get_value () != error_mark_node;
     }
   else if (x->is<InferType> () || x->is<BoolType> () || x->is<CharType> ()
 	   || x->is<IntType> () || x->is<UintType> () || x->is<FloatType> ()
@@ -2491,16 +2499,8 @@ ArrayType::accept_vis (TyConstVisitor &vis) const
 std::string
 ArrayType::as_string () const
 {
-  std::string capacity_str = "<error>";
-  if (!error_operand_p (capacity))
-    {
-      unsigned HOST_WIDE_INT length = wi::to_wide (capacity).to_uhwi ();
-
-      char buf[64];
-      snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_UNSIGNED, length);
-      capacity_str = std::string (buf);
-    }
-  return "[" + get_element_type ()->as_string () + "; " + capacity_str + "]";
+  return "[" + get_element_type ()->as_string () + "; " + capacity->as_string ()
+	 + "]";
 }
 
 bool
@@ -2555,6 +2555,13 @@ ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
   auto base = ref->get_element_type ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
   ref->element_type = TyVar::subst_covariant_var (base, concrete);
+
+  // handle capacity type
+  auto cap = ref->get_capacity ();
+  BaseType *concrete_cap
+    = Resolver::SubstMapperInternal::Resolve (cap, mappings);
+  rust_assert (concrete_cap->get_kind () == TyTy::TypeKind::CONST);
+  ref->capacity = static_cast<TyTy::ConstType *> (concrete_cap);
 
   return ref;
 }
@@ -3412,32 +3419,25 @@ PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 // PARAM Type
 
 ParamType::ParamType (std::string symbol, location_t locus, HirId ref,
-		      HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
   : BaseGeneric (ref, ref, KIND,
 		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 		  locus},
 		 specified_bounds, refs),
-    is_trait_self (false), symbol (symbol), param (param)
+    is_trait_self (false), symbol (symbol)
 {}
 
 ParamType::ParamType (bool is_trait_self, std::string symbol, location_t locus,
-		      HirId ref, HirId ty_ref, HIR::GenericParam &param,
+		      HirId ref, HirId ty_ref,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
   : BaseGeneric (ref, ty_ref, KIND,
 		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 		  locus},
 		 specified_bounds, refs),
-    is_trait_self (is_trait_self), symbol (symbol), param (param)
+    is_trait_self (is_trait_self), symbol (symbol)
 {}
-
-HIR::GenericParam &
-ParamType::get_generic_param ()
-{
-  return param;
-}
 
 bool
 ParamType::can_resolve () const
@@ -3489,7 +3489,7 @@ BaseType *
 ParamType::clone () const
 {
   return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
-			get_ty_ref (), param, get_specified_bounds (),
+			get_ty_ref (), get_specified_bounds (),
 			get_combined_refs ());
 }
 
@@ -3592,12 +3592,14 @@ ConstType::ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty,
 		      tree value,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      location_t locus, HirId ref, HirId ty_ref,
-		      HIR::GenericParam &param, std::set<HirId> refs)
+		      std::set<HirId> refs)
   : BaseGeneric (ref, ty_ref, KIND,
-		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID,
+						    symbol.empty () ? "<n/a>"
+								    : symbol),
 		  locus},
 		 specified_bounds, refs),
-    const_kind (kind), ty (ty), value (value), symbol (symbol), param (param)
+    const_kind (kind), ty (ty), value (value), symbol (symbol)
 {}
 
 void
@@ -3610,6 +3612,13 @@ void
 ConstType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
+}
+
+void
+ConstType::set_value (tree v)
+{
+  value = v;
+  const_kind = ConstType::ConstKind::Value;
 }
 
 std::string
@@ -3629,19 +3638,13 @@ BaseType *
 ConstType::clone () const
 {
   return new ConstType (const_kind, symbol, ty, value, get_specified_bounds (),
-			ident.locus, ref, ty_ref, param, get_combined_refs ());
+			ident.locus, ref, ty_ref, get_combined_refs ());
 }
 
 std::string
 ConstType::get_symbol () const
 {
   return symbol;
-}
-
-HIR::GenericParam &
-ConstType::get_generic_param ()
-{
-  return param;
 }
 
 bool
@@ -3657,10 +3660,48 @@ ConstType::resolve () const
   return nullptr;
 }
 
+static std::string
+generate_tree_str (tree value)
+{
+  char *buf = nullptr;
+  size_t size = 0;
+
+  FILE *stream = open_memstream (&buf, &size);
+  if (!stream)
+    return "<error>";
+
+  print_generic_stmt (stream, value, TDF_NONE);
+  fclose (stream);
+
+  std::string result = (buf ? std::string (buf, size) : "<error>");
+  free (buf);
+
+  if (!result.empty () && result.back () == '\n')
+    result.pop_back ();
+
+  return result;
+}
+
 std::string
 ConstType::get_name () const
 {
-  return "CONST_TYPE";
+  if (value == error_mark_node)
+    {
+      switch (get_const_kind ())
+	{
+	case Rust::TyTy::ConstType::Decl:
+	  return "ConstType:<" + get_ty ()->get_name () + " " + get_symbol ()
+		 + ">";
+
+	case Rust::TyTy::ConstType::Infer:
+	  return "ConstType:<" + get_ty ()->get_name () + " ?" + ">";
+
+	default:
+	  return "ConstType:<" + get_ty ()->get_name () + " - <error>" + ">";
+	}
+    }
+
+  return generate_tree_str (value);
 }
 
 bool
@@ -3679,8 +3720,16 @@ ConstType::is_equal (const BaseType &other) const
 ConstType *
 ConstType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  rust_unreachable ();
-  return nullptr;
+  SubstitutionArg arg = SubstitutionArg::error ();
+  bool found = mappings.get_argument_for_symbol (this, &arg);
+  if (found && !arg.is_error ())
+    {
+      TyTy::BaseType *subst = arg.get_tyty ();
+      rust_assert (subst->is<TyTy::ConstType> ());
+      return static_cast<TyTy::ConstType *> (subst);
+    }
+
+  return this;
 }
 
 // OpaqueType

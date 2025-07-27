@@ -132,6 +132,8 @@ public:
 
   std::unique_ptr<Expr> &get_expression () { return expression; }
 
+  location_t get_locus () const { return locus; }
+
 private:
   std::unique_ptr<Expr> expression;
   location_t locus;
@@ -150,7 +152,7 @@ public:
   bool has_generic_args () const
   {
     return !(lifetime_args.empty () && type_args.empty ()
-	     && binding_args.empty ());
+	     && binding_args.empty () && const_args.empty ());
   }
 
   GenericArgs (std::vector<Lifetime> lifetime_args,

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unify.h"
+#include "fold-const.h"
 #include "rust-tyty.h"
 #include "tree.h"
 
@@ -839,20 +840,21 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	if (element_unify->get_kind () == TyTy::TypeKind::ERROR)
 	  return new TyTy::ErrorType (0);
 
-	// TODO infer capacity?
-	tree lcap = ltype->get_capacity ();
-	tree rcap = type.get_capacity ();
-	if (error_operand_p (lcap) || error_operand_p (rcap))
+	bool save_emit_error = emit_error;
+	emit_error = false;
+	TyTy::BaseType *capacity_unify
+	  = resolve_subtype (TyTy::TyWithLocation (ltype->get_capacity ()),
+			     TyTy::TyWithLocation (type.get_capacity ()));
+	emit_error = save_emit_error;
+
+	if (capacity_unify->get_kind () != TyTy::TypeKind::CONST)
 	  return new TyTy::ErrorType (0);
 
-	auto lc = wi::to_wide (lcap).to_uhwi ();
-	auto rc = wi::to_wide (rcap).to_uhwi ();
-	if (lc != rc)
-	  return new TyTy::ErrorType (0);
-
+	TyTy::ConstType *capacity_type_unify
+	  = static_cast<TyTy::ConstType *> (capacity_unify);
 	return new TyTy::ArrayType (type.get_ref (), type.get_ty_ref (),
 				    type.get_ident ().locus,
-				    type.get_capacity (),
+				    capacity_type_unify,
 				    TyTy::TyVar (element_unify->get_ref ()));
       }
       break;
@@ -1941,9 +1943,63 @@ UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
   if (rtype->get_kind () != TyTy::TypeKind::CONST)
     return new TyTy::ErrorType (0);
 
-  // TODO
-  // TyTy::ConstType &lhs = *ltype;
-  // TyTy::ConstType &rhs = *static_cast<TyTy::ConstType *> (rtype);
+  TyTy::ConstType &lhs = *ltype;
+  TyTy::ConstType &rhs = *static_cast<TyTy::ConstType *> (rtype);
+
+  auto res = resolve_subtype (TyTy::TyWithLocation (lhs.get_ty ()),
+			      TyTy::TyWithLocation (rhs.get_ty ()));
+  if (res->get_kind () == TyTy::TypeKind::ERROR)
+    return new TyTy::ErrorType (0);
+
+  tree lv = lhs.get_value ();
+  tree rv = rhs.get_value ();
+
+  if (error_operand_p (lv) && error_operand_p (rv))
+    {
+      // this is only allowed for some silly senarios like:
+      // gcc/testsuite/rust/compile/issue-const_generics_5.rs
+      if (lhs.get_const_kind () == rhs.get_const_kind ())
+	{
+	  return new TyTy::ConstType (lhs.get_const_kind (), lhs.get_symbol (),
+				      res, error_mark_node,
+				      lhs.get_specified_bounds (),
+				      lhs.get_locus (), lhs.get_ref (),
+				      lhs.get_ty_ref (),
+				      lhs.get_combined_refs ());
+	}
+
+      return new TyTy::ErrorType (0);
+    }
+
+  bool equal = operand_equal_p (lv, rv, 0);
+  if (equal)
+    {
+      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
+				  lhs.get_symbol (), res, lv,
+				  lhs.get_specified_bounds (), lhs.get_locus (),
+				  lhs.get_ref (), lhs.get_ty_ref (),
+				  lhs.get_combined_refs ());
+    }
+
+  if (lhs.get_const_kind () == TyTy::ConstType::Infer && !error_operand_p (rv))
+    {
+      lhs.set_value (rv);
+      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
+				  lhs.get_symbol (), res, rv,
+				  lhs.get_specified_bounds (), lhs.get_locus (),
+				  lhs.get_ref (), lhs.get_ty_ref (),
+				  lhs.get_combined_refs ());
+    }
+  else if (rhs.get_const_kind () == TyTy::ConstType::Infer
+	   && !error_operand_p (lv))
+    {
+      rhs.set_value (lv);
+      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
+				  rhs.get_symbol (), res, lv,
+				  rhs.get_specified_bounds (), rhs.get_locus (),
+				  rhs.get_ref (), rhs.get_ty_ref (),
+				  rhs.get_combined_refs ());
+    }
 
   return new TyTy::ErrorType (0);
 }

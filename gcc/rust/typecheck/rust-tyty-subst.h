@@ -46,7 +46,7 @@ class SubstitutionArgumentMappings;
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (HIR::GenericParam &generic, ParamType *param);
+  SubstitutionParamMapping (HIR::GenericParam &generic, BaseGeneric *param);
 
   SubstitutionParamMapping (const SubstitutionParamMapping &other);
 
@@ -81,7 +81,7 @@ public:
 
 private:
   HIR::GenericParam &generic;
-  ParamType *param;
+  BaseGeneric *param;
 };
 
 /**

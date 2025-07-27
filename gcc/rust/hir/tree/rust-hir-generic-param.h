@@ -150,7 +150,7 @@ public:
 
   location_t get_locus () const override final { return locus; };
 
-  bool has_default_expression () { return default_expression != nullptr; }
+  bool has_default_expression () const { return default_expression != nullptr; }
 
   std::string get_name () { return name; }
   Type &get_type ()
@@ -159,6 +159,8 @@ public:
     return *type;
   }
   Expr &get_default_expression () { return *default_expression; }
+
+  const Expr &get_default_expression () const { return *default_expression; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

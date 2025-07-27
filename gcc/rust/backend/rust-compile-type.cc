@@ -476,7 +476,8 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 {
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
-  tree folded_capacity_expr = type.get_capacity ();
+  TyTy::ConstType *const_capacity = type.get_capacity ();
+  tree folded_capacity_expr = const_capacity->get_value ();
 
   // build_index_type takes the maximum index, which is one less than
   // the length.

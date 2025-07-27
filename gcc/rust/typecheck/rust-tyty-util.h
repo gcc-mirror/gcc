@@ -25,6 +25,7 @@ namespace Rust {
 namespace TyTy {
 
 class BaseType;
+class ConstType;
 
 // this is a placeholder for types that can change like inference variables
 class TyVar
@@ -41,6 +42,9 @@ public:
   TyVar monomorphized_clone () const;
 
   static TyVar get_implicit_infer_var (location_t locus);
+
+  static TyVar get_implicit_const_infer_var (const TyTy::ConstType &const_type,
+					     location_t locus);
 
   static TyVar subst_covariant_var (TyTy::BaseType *orig,
 				    TyTy::BaseType *subst);

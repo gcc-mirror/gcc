@@ -20,6 +20,7 @@
 #include "optional.h"
 #include "rust-canonical-path.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-item.h"
 #include "rust-hir-type-check-enumitem.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
@@ -167,7 +168,9 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (struct_decl.has_generics ())
-    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Struct,
+			    struct_decl.get_locus (),
+			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
@@ -238,7 +241,9 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (struct_decl.has_generics ())
-    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Struct,
+			    struct_decl.get_locus (),
+			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
@@ -304,7 +309,8 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (enum_decl.has_generics ())
-    resolve_generic_params (enum_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Enum, enum_decl.get_locus (),
+			    enum_decl.get_generic_params (), substitutions);
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = enum_decl.get_outer_attrs ();
@@ -364,7 +370,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (union_decl.has_generics ())
-    resolve_generic_params (union_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Union, union_decl.get_locus (),
+			    union_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : union_decl.get_where_clause ().get_items ())
@@ -512,8 +519,9 @@ TypeCheckItem::visit (HIR::Function &function)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
-    resolve_generic_params (function.get_generic_params (),
-			    substitutions); // TODO resolve constraints
+    resolve_generic_params (HIR::Item::ItemKind::Function,
+			    function.get_locus (),
+			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
@@ -700,7 +708,8 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (impl_block.has_generics ())
-    resolve_generic_params (impl_block.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Impl, impl_block.get_locus (),
+			    impl_block.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : impl_block.get_where_clause ().get_items ())

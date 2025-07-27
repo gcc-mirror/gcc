@@ -161,7 +161,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
-      TypeCheckBase::ResolveGenericParams (function.get_generic_params (),
+      TypeCheckBase::ResolveGenericParams (HIR::Item::ItemKind::Function,
+					   fn.get_locus (),
+					   function.get_generic_params (),
 					   substitutions, false /*is_foreign*/,
 					   ABI::RUST);
     }
