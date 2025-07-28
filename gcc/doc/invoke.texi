@@ -31336,7 +31336,7 @@ The default is @option{-misa-spec=20191213} unless GCC has been configured
 with @option{--with-isa-spec=} specifying a different default version.
 
 @opindex march
-@item -march=@var{ISA-string|Profiles|Profile_ISA-string}
+@item -march=@var{ISA-string|Profiles|Profile_ISA-string|help|unset}
 Generate code for given RISC-V ISA or Profiles or a combination of them
 (e.g.@: @samp{rv64im} @samp{rvi20u64} @samp{rvi20u64_zbb}).  ISA strings and
 Profiles must be lower-case.  Examples include @samp{rv64i}, @samp{rv32g},
@@ -31346,6 +31346,12 @@ at the beginning of the option, then use underline connect ISA-string (e.g.@:
 @samp{rvi20u64_zca_zcb} @samp{rva23u64_zacas}).  Additionally, a special value
 @option{help} (@option{-march=help}) is accepted to list all supported
 extensions.
+
+@samp{-march=unset} causes the compiler to ignore any @samp{-march=@dots{}} options
+that appear earlier on the command line, behaving as if the option was never
+passed. This is useful for ensuring that the architecture is taken from the
+@samp{-mcpu} option, and it will result in an error if no @samp{-mcpu} option
+is given when @samp{-march=unset} is used.
 
 The syntax of the ISA string is defined as follows:
 

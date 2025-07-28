@@ -1758,6 +1758,11 @@ riscv_expand_arch (int argc,
 {
   gcc_assert (argc == 1);
   location_t loc = UNKNOWN_LOCATION;
+
+  /* Filter out -march=unset, it will expand from -mcpu later.  */
+  if (strcmp (argv[0], "unset") == 0)
+    return "";
+
   /* Try to interpret the arch as CPU first.  */
   const char *arch_str = riscv_expand_arch_from_cpu (argc, argv);
   if (!strlen (arch_str))
