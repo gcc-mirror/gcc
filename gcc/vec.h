@@ -2514,6 +2514,10 @@ public:
       return false;
     if (lhs.size () != rhs.size ())
       return false;
+    /* Case where either is a NULL pointer and therefore, as both are valid,
+       both are empty slices with length 0.  */
+    if (lhs.size () == 0)
+      return true;
     return memcmp (lhs.begin (), rhs.begin (), lhs.size ()) == 0;
   }
 
