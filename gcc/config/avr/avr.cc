@@ -14988,10 +14988,11 @@ avr_addr_space_convert (rtx src, tree type_old, tree type_new)
 
       /* Linearize memory: RAM has bit 23 set.  When as_new = __flashx then
 	 this is basically UB since __flashx mistreats RAM addresses, but there
-	 is no way to bail out.  (Though -Waddr-space-convert will tell.)  */
+	 is no way to bail out.  (Though -Waddr-space-convert will tell.)
+	 ...but PR121277 is confusing, in particular when NULL is coming in. */
 
       int msb = ADDR_SPACE_GENERIC_P (as_old)
-	? 0x80
+	? as_new == ADDR_SPACE_MEMX ? 0x80 : 0x00
 	: avr_addrspace[as_old].segment;
 
       src = force_reg (Pmode, src);
@@ -15089,10 +15090,16 @@ avr_convert_to_type (tree type, tree expr)
 	  const char *name_old = avr_addrspace[as_old].name;
 	  const char *name_new = avr_addrspace[as_new].name;
 
-	  warning (OPT_Waddr_space_convert,
-		   "conversion from address space %qs to address space %qs",
-		   ADDR_SPACE_GENERIC_P (as_old) ? "generic" : name_old,
-		   ADDR_SPACE_GENERIC_P (as_new) ? "generic" : name_new);
+	  // Be relaxed when NULL is used, and when 0x0 stands for
+	  // address 0x0.
+	  bool nowarn = (expr == null_pointer_node
+			 && (as_new == ADDR_SPACE_FLASHX
+			     || as_new == ADDR_SPACE_FLASH));
+	  if (!nowarn)
+	    warning (OPT_Waddr_space_convert,
+		     "conversion from address space %qs to address space %qs",
+		     ADDR_SPACE_GENERIC_P (as_old) ? "generic" : name_old,
+		     ADDR_SPACE_GENERIC_P (as_new) ? "generic" : name_new);
 
 	  return fold_build1_loc (loc, ADDR_SPACE_CONVERT_EXPR, type, expr);
 	}
