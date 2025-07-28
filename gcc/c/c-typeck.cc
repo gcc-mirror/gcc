@@ -1970,6 +1970,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		ft2 = DECL_BIT_FIELD_TYPE (s2);
 	      }
 
+	    if (!ft1 || !ft2)
+	      return false;
+
 	    if (TREE_CODE (ft1) == ERROR_MARK || TREE_CODE (ft2) == ERROR_MARK)
 	      return false;
 
