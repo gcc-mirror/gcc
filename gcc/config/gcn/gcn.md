@@ -2183,7 +2183,7 @@
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_load%o0\t%0, %A1%O1 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
 		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
@@ -2195,7 +2195,7 @@
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_load%o0\t%0, %A1%O1 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
 		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
@@ -2242,7 +2242,7 @@
 		    : TARGET_WBINVL1_CACHE
 		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architectire unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
@@ -2250,7 +2250,7 @@
 		    : TARGET_WBINVL1_CACHE
 		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;global_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architecture unspecified");
 	  }
 	break;
@@ -2270,7 +2270,8 @@
 		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;"
+		      "flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  case 2:
@@ -2281,7 +2282,8 @@
 		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
+		      "global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  }
@@ -2365,7 +2367,7 @@
             ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
             : "error: cache architecture unspecified");
 	  case 2:
@@ -2378,7 +2380,7 @@
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
             : "error: cache architecture unspecified");
@@ -2400,7 +2402,7 @@
             ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  case 2:
@@ -2413,7 +2415,7 @@
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
             : "error: cache architecture unspecified");
