@@ -36,6 +36,7 @@ extern bool hook_bool_mode_true (machine_mode);
 extern bool hook_bool_mode_mode_true (machine_mode, machine_mode);
 extern bool hook_bool_mode_const_rtx_false (machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (machine_mode, const_rtx);
+extern bool hook_bool_mode_int_unsigned_false (machine_mode, int, unsigned);
 extern bool hook_bool_mode_rtx_false (machine_mode, rtx);
 extern bool hook_bool_mode_rtx_true (machine_mode, rtx);
 extern bool hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *,

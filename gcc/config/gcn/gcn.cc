@@ -5795,6 +5795,16 @@ gcn_libc_has_function (enum function_class fn_class,
   return bsd_libc_has_function (fn_class, type);
 }
 
+/* Implement TARGET_VECTORIZE_PREFER_GATHER_SCATTER. */
+
+static bool
+gcn_prefer_gather_scatter (machine_mode ARG_UNUSED (mode),
+			   int ARG_UNUSED (scale),
+			   unsigned int ARG_UNUSED (group_size))
+{
+  return true;
+}
+
 /* }}}  */
 /* {{{ md_reorg pass.  */
 
@@ -8146,6 +8156,8 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_vectorize_builtin_vectorized_function
 #undef  TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE gcn_vectorize_get_mask_mode
+#undef  TARGET_VECTORIZE_PREFER_GATHER_SCATTER
+#define TARGET_VECTORIZE_PREFER_GATHER_SCATTER gcn_prefer_gather_scatter
 #undef  TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE gcn_vectorize_preferred_simd_mode
 #undef  TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
