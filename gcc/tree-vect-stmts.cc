@@ -1822,21 +1822,35 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
 
 static bool
 vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
+				    tree vectype,
 				    loop_vec_info loop_vinfo, bool masked_p,
 				    gather_scatter_info *gs_info,
-				    vec<int> *elsvals)
+				    vec<int> *elsvals,
+				    unsigned int group_size,
+				    bool single_element_p)
 {
   if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info, elsvals)
       || gs_info->ifn == IFN_LAST)
-    return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
-						masked_p, gs_info, elsvals);
+    {
+      if (!vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
+						masked_p, gs_info, elsvals))
+	return false;
+    }
+  else
+    {
+      tree old_offset_type = TREE_TYPE (gs_info->offset);
+      tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
 
-  tree old_offset_type = TREE_TYPE (gs_info->offset);
-  tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
+      gcc_assert (TYPE_PRECISION (new_offset_type)
+		  >= TYPE_PRECISION (old_offset_type));
+      gs_info->offset = fold_convert (new_offset_type, gs_info->offset);
+    }
 
-  gcc_assert (TYPE_PRECISION (new_offset_type)
-	      >= TYPE_PRECISION (old_offset_type));
-  gs_info->offset = fold_convert (new_offset_type, gs_info->offset);
+  if (!single_element_p
+      && !targetm.vectorize.prefer_gather_scatter (TYPE_MODE (vectype),
+						   gs_info->scale,
+						   group_size))
+    return false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2397,11 +2411,11 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
      allows us to use contiguous accesses.  */
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
-      && single_element_p
       && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
       && loop_vinfo
-      && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
-					     masked_p, gs_info, elsvals))
+      && vect_use_strided_gather_scatters_p (stmt_info, vectype, loop_vinfo,
+					     masked_p, gs_info, elsvals,
+					     group_size, single_element_p))
     *memory_access_type = VMAT_GATHER_SCATTER;
 
   if (*memory_access_type == VMAT_CONTIGUOUS_DOWN
@@ -2558,8 +2572,9 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
     {
       gcc_assert (!slp_node);
       if (loop_vinfo
-	  && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
-						 masked_p, gs_info, elsvals))
+	  && vect_use_strided_gather_scatters_p (stmt_info, vectype, loop_vinfo,
+						 masked_p, gs_info, elsvals,
+						 1, false))
 	*memory_access_type = VMAT_GATHER_SCATTER;
       else
 	*memory_access_type = VMAT_ELEMENTWISE;

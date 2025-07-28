@@ -117,6 +117,13 @@ hook_bool_mode_const_rtx_true (machine_mode, const_rtx)
   return true;
 }
 
+/* Generic hook that takes (machine_mode, int, unsigned) and returns false.  */
+bool
+hook_bool_mode_int_unsigned_false (machine_mode, int, unsigned)
+{
+  return false;
+}
+
 /* Generic hook that takes (machine_mode, rtx) and returns false.  */
 bool
 hook_bool_mode_rtx_false (machine_mode, rtx)
