@@ -3272,6 +3272,8 @@ package body Sem_Ch13 is
                   goto Continue;
                else
                   Check_Applicable_Policy (Aspect);
+                  Set_Aspect_Ghost_Assertion_Level
+                    (Aspect, Standard_Level_Default);
                end if;
 
             end if;

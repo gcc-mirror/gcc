@@ -12734,6 +12734,8 @@ package body Sem_Prag is
 
          else
             Check_Applicable_Policy (N, Empty);
+            Set_Pragma_Ghost_Assertion_Level
+              (N, Standard_Level_Default);
          end if;
       end if;
 
