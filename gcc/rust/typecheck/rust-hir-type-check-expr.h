@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_TYPE_CHECK_EXPR
 #define RUST_HIR_TYPE_CHECK_EXPR
 
+#include "rust-hir-expr.h"
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-visitor.h"
 #include "rust-tyty.h"
@@ -78,6 +79,7 @@ public:
   void visit (HIR::ClosureExpr &expr) override;
   void visit (HIR::InlineAsm &expr) override;
   void visit (HIR::LlvmInlineAsm &expr) override;
+  void visit (HIR::OffsetOf &expr) override;
 
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}

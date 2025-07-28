@@ -1059,8 +1059,16 @@ ASTLoweringExpr::visit (AST::FormatArgs &fmt)
 void
 ASTLoweringExpr::visit (AST::OffsetOf &offset_of)
 {
-  // FIXME: Implement HIR::OffsetOf node and const evaluation
-  rust_unreachable ();
+  auto type = std::unique_ptr<Type> (
+    ASTLoweringType::translate (offset_of.get_type ()));
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, offset_of.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated = new HIR::OffsetOf (std::move (type), offset_of.get_field (),
+				  mapping, offset_of.get_locus ());
 }
 
 } // namespace HIR

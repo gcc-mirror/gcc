@@ -1526,5 +1526,41 @@ InlineAsm::InlineAsm (location_t locus, bool is_global_asm,
     clobber_abi (std::move (clobber_abi)), options (std::move (options))
 {}
 
+OffsetOf &
+OffsetOf::operator= (const OffsetOf &other)
+{
+  ExprWithoutBlock::operator= (other);
+
+  type = other.type->clone_type ();
+  field = other.field;
+  loc = other.loc;
+
+  return *this;
+}
+
+ExprWithoutBlock *
+OffsetOf::clone_expr_without_block_impl () const
+{
+  return new OffsetOf (*this);
+}
+
+std::string
+OffsetOf::as_string () const
+{
+  return "OffsetOf(" + type->as_string () + ", " + field.as_string () + ")";
+}
+
+void
+OffsetOf::accept_vis (HIRExpressionVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+OffsetOf::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
 } // namespace HIR
 } // namespace Rust

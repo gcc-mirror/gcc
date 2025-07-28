@@ -88,6 +88,7 @@ public:
   virtual void visit (AsyncBlockExpr &expr) = 0;
   virtual void visit (InlineAsm &expr) = 0;
   virtual void visit (LlvmInlineAsm &expr) = 0;
+  virtual void visit (OffsetOf &expr) = 0;
   virtual void visit (TypeParam &param) = 0;
   virtual void visit (ConstGenericParam &param) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
@@ -254,6 +255,7 @@ public:
   virtual void visit (AsyncBlockExpr &node) override { walk (node); }
   virtual void visit (InlineAsm &node) override { walk (node); }
   virtual void visit (LlvmInlineAsm &node) override { walk (node); }
+  virtual void visit (OffsetOf &node) override { walk (node); }
   virtual void visit (TypeParam &node) override { walk (node); }
   virtual void visit (ConstGenericParam &node) override { walk (node); }
   virtual void visit (LifetimeWhereClauseItem &node) override { walk (node); }
@@ -392,6 +394,7 @@ protected:
   virtual void walk (AsyncBlockExpr &) final;
   virtual void walk (InlineAsm &) final;
   virtual void walk (LlvmInlineAsm &) final;
+  virtual void walk (OffsetOf &) final;
   virtual void walk (TypeParam &) final;
   virtual void walk (ConstGenericParam &) final;
   virtual void walk (LifetimeWhereClauseItem &) final;
@@ -531,6 +534,7 @@ public:
   virtual void visit (AsyncBlockExpr &) override {}
   virtual void visit (InlineAsm &) override {}
   virtual void visit (LlvmInlineAsm &) override {}
+  virtual void visit (OffsetOf &) override {}
 
   virtual void visit (TypeParam &) override {}
   virtual void visit (ConstGenericParam &) override {}
@@ -754,6 +758,7 @@ public:
   virtual void visit (IfExpr &expr) = 0;
   virtual void visit (IfExprConseqElse &expr) = 0;
   virtual void visit (InlineAsm &expr) = 0;
+  virtual void visit (OffsetOf &expr) = 0;
   virtual void visit (LlvmInlineAsm &expr) = 0;
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;

@@ -694,6 +694,12 @@ UnsafeChecker::visit (LlvmInlineAsm &expr)
 }
 
 void
+UnsafeChecker::visit (OffsetOf &expr)
+{
+  // nothing to do, offset_of!() is safe
+}
+
+void
 UnsafeChecker::visit (TypeParam &)
 {}
 

@@ -439,6 +439,10 @@ PatternChecker::visit (LlvmInlineAsm &expr)
 {}
 
 void
+PatternChecker::visit (OffsetOf &expr)
+{}
+
+void
 PatternChecker::visit (TypeParam &)
 {}
 

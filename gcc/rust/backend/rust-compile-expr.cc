@@ -376,6 +376,12 @@ CompileExpr::visit (HIR::LlvmInlineAsm &expr)
 }
 
 void
+CompileExpr::visit (HIR::OffsetOf &expr)
+{
+  rust_unreachable ();
+}
+
+void
 CompileExpr::visit (HIR::IfExprConseqElse &expr)
 {
   TyTy::BaseType *if_type = nullptr;

@@ -128,6 +128,7 @@ class InlineAsmRegClass;
 class InlineAsmOperand;
 class InlineAsm;
 class LlvmInlineAsm;
+class OffsetOf;
 
 // rust-stmt.h
 class EmptyStmt;

@@ -19,6 +19,7 @@
 #ifndef RUST_BIR_BUILDER_EXPR_H
 #define RUST_BIR_BUILDER_EXPR_H
 
+#include "rust-hir-expr.h"
 #include "rust-hir-visitor.h"
 #include "rust-bir-builder-internal.h"
 
@@ -103,6 +104,7 @@ protected: // Expr
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::InlineAsm &expr) override;
   void visit (HIR::LlvmInlineAsm &expr) override;
+  void visit (HIR::OffsetOf &expr) override;
 
   void visit (HIR::MatchExpr &expr) override;
   void visit (HIR::AwaitExpr &expr) override;

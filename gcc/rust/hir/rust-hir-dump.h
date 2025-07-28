@@ -169,6 +169,7 @@ private:
   virtual void visit (AsyncBlockExpr &) override;
   virtual void visit (InlineAsm &) override;
   virtual void visit (LlvmInlineAsm &) override;
+  virtual void visit (OffsetOf &) override;
 
   virtual void visit (TypeParam &) override;
   virtual void visit (ConstGenericParam &) override;

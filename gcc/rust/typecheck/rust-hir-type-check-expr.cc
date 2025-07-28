@@ -896,6 +896,19 @@ TypeCheckExpr::visit (HIR::LlvmInlineAsm &expr)
 }
 
 void
+TypeCheckExpr::visit (HIR::OffsetOf &expr)
+{
+  TypeCheckType::Resolve (expr.get_type ());
+
+  // FIXME: Does offset_of always return a usize?
+  TyTy::BaseType *size_ty;
+  bool ok = context->lookup_builtin ("usize", &size_ty);
+  rust_assert (ok);
+
+  infered = size_ty;
+}
+
+void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_FULL;

@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_FUNCTION_COLLECTOR_H
 #define RUST_HIR_FUNCTION_COLLECTOR_H
 
+#include "rust-hir-expr.h"
 #include "rust-hir-item.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir.h"
@@ -126,6 +127,7 @@ public:
   void visit (HIR::AsyncBlockExpr &expr) override {}
   void visit (HIR::InlineAsm &expr) override {}
   void visit (HIR::LlvmInlineAsm &expr) override {}
+  void visit (HIR::OffsetOf &expr) override {}
   void visit (HIR::TypeParam &param) override {}
   void visit (HIR::ConstGenericParam &param) override {}
   void visit (HIR::LifetimeWhereClauseItem &item) override {}

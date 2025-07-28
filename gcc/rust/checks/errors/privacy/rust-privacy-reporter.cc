@@ -314,6 +314,12 @@ PrivacyReporter::visit (HIR::LlvmInlineAsm &)
 {}
 
 void
+PrivacyReporter::visit (HIR::OffsetOf &expr)
+{
+  // TODO: Do we have to do anything?
+}
+
+void
 PrivacyReporter::visit (HIR::TypePath &path)
 {
   check_for_privacy_violation (path.get_mappings ().get_nodeid (),

@@ -20,6 +20,7 @@
 #define RUST_COMPILE_BLOCK
 
 #include "rust-compile-base.h"
+#include "rust-hir-expr.h"
 #include "rust-hir-visitor.h"
 
 namespace Rust {
@@ -103,6 +104,7 @@ public:
   void visit (HIR::AsyncBlockExpr &) override {}
   void visit (HIR::InlineAsm &) override {}
   void visit (HIR::LlvmInlineAsm &) override {}
+  void visit (HIR::OffsetOf &) override {}
 
 private:
   CompileConditionalBlocks (Context *ctx, Bvariable *result)
@@ -192,6 +194,7 @@ public:
   void visit (HIR::AsyncBlockExpr &) override {}
   void visit (HIR::InlineAsm &) override {}
   void visit (HIR::LlvmInlineAsm &) override {}
+  void visit (HIR::OffsetOf &) override {}
   void visit (HIR::AnonConst &) override {}
 
 private:

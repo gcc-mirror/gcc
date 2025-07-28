@@ -1603,6 +1603,17 @@ Dump::visit (LlvmInlineAsm &e)
 {}
 
 void
+Dump::visit (OffsetOf &e)
+{
+  begin ("OffsetOf");
+
+  put_field ("type", e.get_type ().as_string ());
+  put_field ("field", e.get_field ());
+
+  end ("OffsetOf");
+}
+
+void
 Dump::visit (TypeParam &e)
 {
   begin ("TypeParam");

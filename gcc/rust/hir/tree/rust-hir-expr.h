@@ -3236,6 +3236,42 @@ public:
 	     AST::AttrVec outer_attribs = AST::AttrVec ());
 };
 
+class OffsetOf : public ExprWithoutBlock
+{
+public:
+  OffsetOf (std::unique_ptr<Type> &&type, Identifier field,
+	    Analysis::NodeMapping mappings, location_t loc)
+    : ExprWithoutBlock (mappings), type (std::move (type)), field (field),
+      loc (loc)
+  {}
+
+  OffsetOf (const OffsetOf &other)
+    : ExprWithoutBlock (other), type (other.type->clone_type ()),
+      field (other.field), loc (other.loc)
+  {}
+
+  OffsetOf &operator= (const OffsetOf &other);
+
+  ExprWithoutBlock *clone_expr_without_block_impl () const override;
+  std::string as_string () const override;
+
+  void accept_vis (HIRExpressionVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
+
+  ExprType get_expression_type () const override { return ExprType::OffsetOf; }
+
+  location_t get_locus () const override { return loc; }
+
+  Type &get_type () { return *type; }
+  const Type &get_type () const { return *type; }
+  const Identifier &get_field () const { return field; }
+
+private:
+  std::unique_ptr<Type> type;
+  Identifier field;
+  location_t loc;
+};
+
 struct LlvmOperand
 {
   std::string constraint;

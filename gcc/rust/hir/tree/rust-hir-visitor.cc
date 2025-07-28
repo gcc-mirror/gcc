@@ -604,6 +604,12 @@ DefaultHIRVisitor::walk (LlvmInlineAsm &expr)
 }
 
 void
+DefaultHIRVisitor::walk (OffsetOf &expr)
+{
+  expr.get_type ().accept_vis (*this);
+}
+
+void
 DefaultHIRVisitor::walk (TypeParam &param)
 {
   visit_outer_attrs (param);
