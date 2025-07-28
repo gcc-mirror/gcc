@@ -10200,29 +10200,6 @@ vectorizable_load (vec_info *vinfo,
 
   tree bump;
   tree vec_offset = NULL_TREE;
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-    {
-      aggr_type = NULL_TREE;
-      bump = NULL_TREE;
-    }
-  else if (memory_access_type == VMAT_GATHER_SCATTER)
-    {
-      aggr_type = elem_type;
-      if (!costing_p)
-	vect_get_strided_load_store_ops (stmt_info, vectype, loop_vinfo,
-					 gsi, &gs_info,
-					 &bump, &vec_offset, loop_lens);
-    }
-  else
-    {
-      if (memory_access_type == VMAT_LOAD_STORE_LANES)
-	aggr_type = build_array_type_nelts (elem_type, group_size * nunits);
-      else
-	aggr_type = vectype;
-      if (!costing_p)
-	bump = vect_get_data_ptr_increment (vinfo, gsi, dr_info, aggr_type,
-					    memory_access_type, loop_lens);
-    }
 
   auto_vec<tree> vec_offsets;
   auto_vec<tree> vec_masks;
@@ -10236,6 +10213,11 @@ vectorizable_load (vec_info *vinfo,
     {
       gcc_assert (alignment_support_scheme == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported);
+
+      aggr_type = build_array_type_nelts (elem_type, group_size * nunits);
+      if (!costing_p)
+	bump = vect_get_data_ptr_increment (vinfo, gsi, dr_info, aggr_type,
+					    memory_access_type, loop_lens);
 
       unsigned int inside_cost = 0, prologue_cost = 0;
       /* For costing some adjacent vector loads, we'd like to cost with
@@ -10398,20 +10380,31 @@ vectorizable_load (vec_info *vinfo,
     {
       gcc_assert (!grouped_load && !slp_perm);
 
-      unsigned int inside_cost = 0, prologue_cost = 0;
-
       /* 1. Create the vector or array pointer update chain.  */
-      if (!costing_p)
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	{
-	  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	  aggr_type = NULL_TREE;
+	  bump = NULL_TREE;
+	  if (!costing_p)
 	    vect_get_gather_scatter_ops (loop, slp_node, &gs_info, &dataref_ptr,
 					 &vec_offsets);
-	  else
-	    dataref_ptr
-	      = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
-					  at_loop, offset, &dummy, gsi,
-					  &ptr_incr, false, bump);
 	}
+      else
+	{
+	  aggr_type = elem_type;
+	  if (!costing_p)
+	    {
+	      vect_get_strided_load_store_ops (stmt_info, vectype, loop_vinfo,
+					       gsi, &gs_info,
+					       &bump, &vec_offset, loop_lens);
+	      dataref_ptr
+		  = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
+					      at_loop, offset, &dummy, gsi,
+					      &ptr_incr, false, bump);
+	    }
+	}
+
+      unsigned int inside_cost = 0, prologue_cost = 0;
 
       gimple *new_stmt = NULL;
       for (i = 0; i < vec_num; i++)
@@ -10732,6 +10725,11 @@ vectorizable_load (vec_info *vinfo,
 			 inside_cost, prologue_cost);
       return true;
     }
+
+  aggr_type = vectype;
+  if (!costing_p)
+    bump = vect_get_data_ptr_increment (vinfo, gsi, dr_info, aggr_type,
+					memory_access_type, loop_lens);
 
   poly_uint64 group_elt = 0;
   unsigned int inside_cost = 0, prologue_cost = 0;
