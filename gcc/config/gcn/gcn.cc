@@ -5792,42 +5792,6 @@ gcn_libc_has_function (enum function_class fn_class,
 /* }}}  */
 /* {{{ md_reorg pass.  */
 
-/* Identify V_CMPX from the "type" attribute;
-   note: this will also match 'v_cmp %E1 vcc'.  */
-
-static bool
-gcn_cmpx_insn_p (attr_type type)
-{
-  switch (type)
-    {
-    case TYPE_VOPC:
-      return true;
-    case TYPE_MUBUF:
-    case TYPE_MTBUF:
-    case TYPE_FLAT:
-    case TYPE_VOP3P_MAI:
-    case TYPE_UNKNOWN:
-    case TYPE_SOP1:
-    case TYPE_SOP2:
-    case TYPE_SOPK:
-    case TYPE_SOPC:
-    case TYPE_SOPP:
-    case TYPE_SMEM:
-    case TYPE_DS:
-    case TYPE_VOP2:
-    case TYPE_VOP1:
-    case TYPE_VOP3A:
-    case TYPE_VOP3B:
-    case TYPE_VOP_SDWA:
-    case TYPE_VOP_DPP:
-    case TYPE_MULT:
-    case TYPE_VMULT:
-      return false;
-    }
-  gcc_unreachable ();
-  return false;
-}
-
 /* Identify VMEM instructions from their "type" attribute.  */
 
 static bool
@@ -6356,19 +6320,59 @@ gcn_md_reorg (void)
 		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
 	    nops_rqd = ivccwait - prev_insn->age;
 
+	  /* NOTE: The following condition for adding wait state exists, but
+	     GCC does not access the special registers using their SGPR#.
+	     Thus, no action is required here.  The following wait-state
+	     condition exists at least for VEGA/gfx900+ to CDNA3:
+		Mixed use of VCC: alias vs. SGPR# - v_readlane,
+		v_readfirstlane, v_cmp, v_add_*i/u, v_sub_*i/u, v_div_*scale
+		followed by VALU reads VCC as constant requires 1 wait state.
+		(As carry-in, it requires none.)
+		[VCC can be accessed by name or logical SGPR that holds it.]  */
+
+	  /* Testing indicates that CDNA3 requires an s_nop between
+	     e.g. 'v_cmp_eq_u64 vcc, v[4:5], v[8:9]' and 'v_mov_b32 v0, vcc_lo'.
+	     Thus: add it between v_cmp writing VCC and VALU read of VCC.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 1
+	      && iunit == UNIT_VECTOR
+	      && (hard_reg_set_intersect_p
+		  (depregs, reg_class_contents[(int)VCC_CONDITIONAL_REG]))
+	      && get_attr_vcmp (prev_insn->insn) == VCMP_VCMP)
+	    nops_rqd = 1 - prev_insn->age;
+
+	  /* CDNA3: VALU writes SGPR/VCC: v_readlane, v_readfirstlane, v_cmp,
+	     v_add_*i/u, v_sub_*i/u, v_div_*scale - followed by:
+	     - VALU reads SGPR as constant requires 1 waite state
+	     - VALU reads SGPR as carry-in requires no waite state
+	     - v_readlane/v_writelane reads SGPR as lane select requires 4 wait
+	       states.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 4
+	      && iunit == UNIT_VECTOR
+	      && prev_insn->unit == UNIT_VECTOR
+	      && hard_reg_set_intersect_p
+		   (depregs, reg_class_contents[(int) SGPR_SRC_REGS]))
+	    {
+	      if (get_attr_laneselect (insn) != LANESELECT_NO)
+		nops_rqd = 4 - prev_insn->age;
+	      else if ((prev_insn->age + nops_rqd) < 1)
+		nops_rqd = 1 - prev_insn->age;
+	    }
+
 	  /* CDNA3: v_cmpx followed by
 	     - V_readlane, v_readfirstlane, v_writelane requires 4 wait states
 	     - VALU reads EXEC as constant requires 2 wait states
 	     - other VALU requires no wait state  */
 	  if (TARGET_CDNA3_NOPS
 	      && (prev_insn->age + nops_rqd) < 4
-	      && gcn_cmpx_insn_p (prev_insn->type)
+	      && get_attr_vcmp (prev_insn->insn) == VCMP_VCMPX
 	      && get_attr_laneselect (insn) != LANESELECT_NO)
 	    nops_rqd = 4 - prev_insn->age;
 	  else if (TARGET_CDNA3_NOPS
 		   && (prev_insn->age + nops_rqd) < 2
 		   && iunit == UNIT_VECTOR
-		   && gcn_cmpx_insn_p (prev_insn->type)
+		   && get_attr_vcmp (prev_insn->insn) == VCMP_VCMPX
 		   && TEST_HARD_REG_BIT (ireads, EXECZ_REG))
 	    nops_rqd = 2 - prev_insn->age;
 

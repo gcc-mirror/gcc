@@ -324,6 +324,11 @@
              "store,storex34,load,atomic,atomicwait,cmpswapx2,no"
              (const_string "no"))
 
+; Identify v_cmp and v_cmpx instructions for "Manually Inserted Wait State"
+; handling.
+
+(define_attr "vcmp" "vcmp,vcmpx,no" (const_string "no"))
+
 ; Identify instructions that require "Manually Inserted Wait State" if
 ; a previous instruction writes to VCC.  The number gives the number of NOPs.
 
@@ -575,6 +580,7 @@
   [(set_attr "type" "sop1,vop1,vop3a,sopk,vopc,mult,smem,smem,smem,flat,flat,
 		     flat,flat,flat,flat")
    (set_attr "flatmemaccess" "*,*,*,*,*,*,*,*,*,load,load,store,load,load,store")
+   (set_attr "vcmp" "*,*,*,*,vcmp,*,*,*,*,*,*,*,*,*,*")
    (set_attr "exec" "*,*,none,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "length" "4,4,4,4,4,8,12,12,12,12,12,12,12,12,12")
    (set_attr "xnack" "*,*,*,*,*,*,off,on,*,off,on,*,off,on,*")
@@ -1098,6 +1104,7 @@
    s_cmp%D1\t%2, %3
    v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "sopc,vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_insn "cstoredi4_vector"
@@ -1108,6 +1115,7 @@
   ""
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_expand "cbranchdi4"
@@ -1134,6 +1142,7 @@
   ""
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_expand "cbranch<mode>4"
