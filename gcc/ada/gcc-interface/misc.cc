@@ -837,6 +837,8 @@ gnat_get_array_descr_info (const_tree const_type,
       if (TYPE_IMPL_PACKED_ARRAY_P (array_type)
           && TYPE_ORIGINAL_PACKED_ARRAY (array_type))
         array_type = TYPE_ORIGINAL_PACKED_ARRAY (array_type);
+      if (TREE_CODE (array_type) != ARRAY_TYPE)
+	return false;
 
       /* Shift back the address to get the address of the template.  */
       tree shift_amount
