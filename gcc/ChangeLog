@@ -1,3 +1,12 @@
+2025-07-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vxrm_vec_vec_dup):
+	Add new case UNSPEC_VAADD.
+	(expand_vx_binary_vxrm_vec_dup_vec): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new case UNSPEC_VAADD to
+	iterator.
+
 2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR middle-end/120855

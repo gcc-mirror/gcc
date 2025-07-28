@@ -1,3 +1,26 @@
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_trans_assignment_1): Use the same condition
+	to set the is_alloc_lhs flag and to decide to generate
+	reallocation code.  Add explicit call to gfc_fix_class_refs
+	before evaluating the condition.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-array.cc (set_factored_descriptor_value): Also trigger
+	the saving of the previously selected reference on encountering
+	an INDIRECT_REF.  Extract the saving code...
+	(save_ref): ... here as a new function.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_get_class_from_expr): Give up class
+	container lookup on the second COMPONENT_REF after an array
+	descriptor.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc: Make diagnostics::context::m_source_printing private.
