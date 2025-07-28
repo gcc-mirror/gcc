@@ -1561,9 +1561,6 @@ struct gather_scatter_info {
      being added to the base.  */
   int scale;
 
-  /* The definition type for the vectorized offset.  */
-  enum vect_def_type offset_dt;
-
   /* The type of the vectorized offset.  */
   tree offset_vectype;
 

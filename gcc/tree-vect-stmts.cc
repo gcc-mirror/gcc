@@ -1676,7 +1676,6 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info, tree vectype,
 	 get_object_alignment (DR_REF (dr)));
       gs_info->element_type = TREE_TYPE (vectype);
       gs_info->offset = fold_convert (offset_type, step);
-      gs_info->offset_dt = vect_constant_def;
       gs_info->scale = scale;
       gs_info->memory_type = memory_type;
       return true;
@@ -2229,22 +2228,23 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     *memory_access_type = VMAT_GATHER_SCATTER;
   else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
-      tree offset;
-      slp_tree offset_node;
       *memory_access_type = VMAT_GATHER_SCATTER;
       if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
 				      elsvals))
 	gcc_unreachable ();
+      slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
+      tree offset_vectype = SLP_TREE_VECTYPE (offset_node);
+      gs_info->offset_vectype = offset_vectype;
       /* When using internal functions, we rely on pattern recognition
 	 to convert the type of the offset to the type that the target
 	 requires, with the result being a call to an internal function.
 	 If that failed for some reason (e.g. because another pattern
 	 took priority), just handle cases in which the offset already
 	 has the right type.  */
-      else if (GATHER_SCATTER_IFN_P (*gs_info)
-	       && !is_gimple_call (stmt_info->stmt)
-	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
-					  TREE_TYPE (gs_info->offset_vectype)))
+      if (GATHER_SCATTER_IFN_P (*gs_info)
+	  && !is_gimple_call (stmt_info->stmt)
+	  && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
+				     offset_vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2252,23 +2252,12 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			     vls_type == VLS_LOAD ? "gather" : "scatter");
 	  return false;
 	}
-      else if (!vect_is_simple_use (vinfo, slp_node, 0, &offset, &offset_node,
-				    &gs_info->offset_dt,
-				    &gs_info->offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "%s index use not simple.\n",
-			     vls_type == VLS_LOAD ? "gather" : "scatter");
-	  return false;
-	}
       else if (GATHER_SCATTER_EMULATED_P (*gs_info))
 	{
 	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
-	      || !TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype).is_constant ()
-	      || VECTOR_BOOLEAN_TYPE_P (gs_info->offset_vectype)
-	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS
-					 (gs_info->offset_vectype),
+	      || !TYPE_VECTOR_SUBPARTS (offset_vectype).is_constant ()
+	      || VECTOR_BOOLEAN_TYPE_P (offset_vectype)
+	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS (offset_vectype),
 				       TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
 	      if (dump_enabled_p ())

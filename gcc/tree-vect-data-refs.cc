@@ -4542,7 +4542,6 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 		     (call, internal_fn_alias_ptr_index (info->ifn));
   info->offset = gimple_call_arg
 		  (call, internal_fn_offset_index (info->ifn));
-  info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = NULL_TREE;
   info->scale = TREE_INT_CST_LOW (gimple_call_arg
 				  (call, internal_fn_scale_index (info->ifn)));
@@ -4872,7 +4871,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
      get_object_alignment (DR_REF (dr)));
 
   info->offset = off;
-  info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = offset_vectype;
   info->scale = scale;
   info->element_type = TREE_TYPE (vectype);
