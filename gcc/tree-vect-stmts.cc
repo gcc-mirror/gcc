@@ -1422,7 +1422,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 				      int group_size,
 				      vect_memory_access_type
 				      memory_access_type,
-				      gather_scatter_info *gs_info,
+				      const gather_scatter_info *gs_info,
 				      tree scalar_mask,
 				      vec<int> *elsvals = nullptr)
 {
@@ -2771,7 +2771,7 @@ static gimple *
 vect_build_one_gather_load_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				 tree vectype,
 				 gimple_stmt_iterator *gsi,
-				 gather_scatter_info *gs_info,
+				 const gather_scatter_info *gs_info,
 				 tree ptr, tree offset, tree mask)
 {
   tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info->decl));
@@ -2869,7 +2869,7 @@ vect_build_one_gather_load_call (vec_info *vinfo, stmt_vec_info stmt_info,
 static gimple *
 vect_build_one_scatter_store_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				   gimple_stmt_iterator *gsi,
-				   gather_scatter_info *gs_info,
+				   const gather_scatter_info *gs_info,
 				   tree ptr, tree offset, tree oprnd, tree mask)
 {
   tree rettype = TREE_TYPE (TREE_TYPE (gs_info->decl));
@@ -2950,8 +2950,8 @@ vect_build_one_scatter_store_call (vec_info *vinfo, stmt_vec_info stmt_info,
    containing loop.  */
 
 static void
-vect_get_gather_scatter_ops (class loop *loop,
-			     slp_tree slp_node, gather_scatter_info *gs_info,
+vect_get_gather_scatter_ops (class loop *loop, slp_tree slp_node,
+			     const gather_scatter_info *gs_info,
 			     tree *dataref_ptr, vec<tree> *vec_offset)
 {
   gimple_seq stmts = NULL;
@@ -2979,7 +2979,7 @@ static void
 vect_get_strided_load_store_ops (stmt_vec_info stmt_info, tree vectype,
 				 loop_vec_info loop_vinfo,
 				 gimple_stmt_iterator *gsi,
-				 gather_scatter_info *gs_info,
+				 const gather_scatter_info *gs_info,
 				 tree *dataref_bump, tree *vec_offset,
 				 vec_loop_lens *loop_lens)
 {
