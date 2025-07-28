@@ -6436,8 +6436,8 @@ gcn_md_reorg (void)
 	}
 
       /* Insert the required number of NOPs.  */
-      for (int i = nops_rqd; i > 0; i--)
-	emit_insn_after (gen_nop (), last_insn);
+      if (nops_rqd > 0)
+	emit_insn_after (gen_nops (GEN_INT (nops_rqd-1)), last_insn);
 
       /* Age the previous instructions.  We can also ignore writes to
          registers subsequently overwritten.  */
@@ -7283,6 +7283,11 @@ print_operand_address (FILE *file, rtx mem)
    H - print second part of a multi-reg value (high-part of 2-reg value)
    J - print third part of a multi-reg value
    K - print fourth part of a multi-reg value
+   R   Print a scalar register number as an integer.  Temporary hack.
+   V - Print a vector register number as an integer.  Temporary hack.
+
+   Additionally, the standard builtin c, n, a, and l exist; see gccint's
+   "Output Templates and Operand Substitution" for details.
  */
 
 void

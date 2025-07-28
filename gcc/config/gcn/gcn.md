@@ -424,6 +424,15 @@
   "s_nop\t0x0"
   [(set_attr "type" "sopp")])
 
+; Variant of 'nop' that accepts a count argument.
+; s_nop accepts 0x0 to 0xf for 1 to 16 nops; however,
+; as %0 prints decimals, only 0 to 9 (= 1 to 10 nops) can be used.
+(define_insn "nops"
+  [(match_operand 0 "const_int_operand")]
+  ""
+  "s_nop\t0x%0"
+  [(set_attr "type" "sopp")])
+
 ; FIXME: What should the value of the immediate be? Zero is disallowed, so
 ; pick 1 for now.
 (define_insn "trap"

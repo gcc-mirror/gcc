@@ -92,6 +92,8 @@ enum hsaco_attr_type
 /* Whether to use the 'globally coherent' (glc) or the 'scope' (sc0) flag
    for non-scalar memory operations. The string starts on purpose with a space.
    Note: for scalar memory operations (i.e. 's_...'), 'glc' is still used.
+   Note: on atomics, glc/sc0 denotes whether the pre-op operation should
+   be used.
    CDNA3 also uses 'nt' instead of 'slc' and 'sc1' instead of 'scc'; however,
    there is no non-scalar user so far.  */
 #define TARGET_GLC_NAME (TARGET_CDNA3 ? " sc0" : " glc")
