@@ -1417,6 +1417,10 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
   if (gimple_has_volatile_ops (stmt))
     return false;
 
+  /* Can't prop if the statement could throw.  */
+  if (stmt_could_throw_p (cfun, stmt))
+    return false;
+
   tree dest = gimple_assign_lhs (stmt);
   tree src = gimple_assign_rhs1 (stmt);
   /* If the statement is `src = src;` then ignore it. */
