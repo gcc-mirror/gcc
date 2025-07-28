@@ -20,6 +20,7 @@ DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_1_WARP(T), min, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, SAT_U_ADD_FUNC_WRAP(T), sat_add, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, SAT_U_SUB_FUNC_WRAP(T), sat_sub, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, AVG_FLOOR_FUNC_WRAP(T), avg_floor, VX_BINARY_FUNC_BODY)
+DEF_VX_BINARY_CASE_3_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil, VX_BINARY_FUNC_BODY)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
