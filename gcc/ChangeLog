@@ -1,3 +1,12 @@
+2025-07-27  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	Backported from master:
+	2025-06-30  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120714
+	* config/riscv/riscv.cc (riscv_allocate_and_probe_stack_space):
+	Fix SP-addresses in REG_CFA_DEF_CFA notes for stack-clash case.
+
 2025-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
