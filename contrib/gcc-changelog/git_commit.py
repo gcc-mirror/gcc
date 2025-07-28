@@ -97,6 +97,7 @@ bug_components = {
     'd',
     'debug',
     'demangler',
+    'diagnostics',
     'driver',
     'fastjar',
     'fortran',
