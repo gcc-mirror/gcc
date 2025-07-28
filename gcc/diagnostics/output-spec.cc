@@ -846,6 +846,7 @@ output_spec_cc_tests ()
 }
 
 } // namespace diagnostics::selftest
-} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
+
+} // namespace diagnostics

@@ -2130,9 +2130,10 @@ context_cc_tests ()
 }
 
 } // namespace diagnostics::selftest
-} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
+
+} // namespace diagnostics
 
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop

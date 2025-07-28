@@ -1702,6 +1702,7 @@ html_sink_cc_tests ()
 }
 
 } // namespace selftest
-} // namespace diagnostics
 
 #endif /* CHECKING_P */
+
+} // namespace diagnostics

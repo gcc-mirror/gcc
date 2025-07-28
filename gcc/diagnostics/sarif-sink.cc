@@ -5072,6 +5072,7 @@ sarif_sink_cc_tests ()
 }
 
 } // namespace diagnostics::selftest
-} // namespace diagnostics
 
 #endif /* CHECKING_P */
+
+} // namespace diagnostics
