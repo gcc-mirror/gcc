@@ -871,7 +871,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && TREE_CODE (decl) == STRING_CST
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-      && align <= 256
+      && align <= MAX_ALIGN_MERGABLE
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && TREE_STRING_LENGTH (decl) == len)
     {
@@ -885,7 +885,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 
       mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
       modesize = GET_MODE_BITSIZE (mode);
-      if (modesize >= 8 && modesize <= 256
+      if (modesize >= 8 && modesize <= MAX_ALIGN_MERGABLE
 	  && (modesize & (modesize - 1)) == 0)
 	{
 	  if (align < modesize)
@@ -926,7 +926,7 @@ mergeable_constant_section (unsigned HOST_WIDE_INT size_bits,
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && size_bits <= align
       && align >= 8
-      && align <= 256
+      && align <= MAX_ALIGN_MERGABLE
       && (align & (align - 1)) == 0)
     {
       const char *prefix = function_mergeable_rodata_prefix ();

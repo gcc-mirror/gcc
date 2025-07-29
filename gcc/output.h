@@ -545,6 +545,9 @@ extern GTY(()) section *bss_noswitch_section;
 extern GTY(()) section *in_section;
 extern GTY(()) bool in_cold_section_p;
 
+/* MAX bit alignment for mergable sections. */
+#define MAX_ALIGN_MERGABLE 256
+
 extern section *get_unnamed_section (unsigned int, void (*) (const char *),
 				     const char *);
 extern section *get_section (const char *, unsigned int, tree,

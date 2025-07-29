@@ -55,6 +55,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "hwint.h"
 #include "internal-fn.h"
 #include "diagnostic-core.h"
+#include "output.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
@@ -1038,9 +1039,8 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
       if (tree_to_uhwi (DECL_SIZE (decl)) > DECL_ALIGN (decl))
 	{
 	  unsigned HOST_WIDE_INT s = tree_to_uhwi (DECL_SIZE (decl));
-	  /* Only support up to 32bytes since that is what is
-	     supported for merging. */
-	  if (s <= 256)
+	  /* Only support up to the max supported for merging. */
+	  if (s <= MAX_ALIGN_MERGABLE)
 	    SET_DECL_ALIGN (decl, HOST_WIDE_INT_1U << ceil_log2 (s));
 	}
 
