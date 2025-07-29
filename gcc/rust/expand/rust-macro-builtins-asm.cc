@@ -384,6 +384,7 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
   auto token = parser.peek_current_token ();
+  location_t locus = token->get_locus ();
 
   if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "inout"))
     {
@@ -401,10 +402,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
-      // TODO: Not sure how to use parse_expr
-      if (!check_identifier (parser, ""))
-	rust_unreachable ();
-      // auto expr = parse_format_string (inline_asm_ctx);
+      std::unique_ptr<AST::Expr> in_expr = parser.parse_expr ();
+      rust_assert (in_expr != nullptr);
 
       std::unique_ptr<AST::Expr> out_expr;
 
@@ -414,10 +413,18 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	    {
 	      // auto result = parse_format_string (inline_asm_ctx);
 
-	      if (!check_identifier (parser, ""))
-		rust_unreachable ();
-	      // out_expr = parser.parse_expr();
+	      out_expr = parser.parse_expr ();
+
+	      AST::InlineAsmOperand::SplitInOut splitinout (
+		reg, false, std::move (in_expr), std::move (out_expr));
+
+	      inline_asm_ctx.inline_asm.operands.emplace_back (splitinout,
+							       locus);
+
+	      return inline_asm_ctx;
 	    }
+
+	  rust_unreachable ();
 
 	  // TODO: Rembmer to pass in clone_expr() instead of nullptr
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L135
@@ -432,6 +439,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	}
       else
 	{
+	  AST::InlineAsmOperand::InOut inout (reg, false, std::move (in_expr));
+	  inline_asm_ctx.inline_asm.operands.emplace_back (inout, locus);
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L137
 	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: false
 	  // }
