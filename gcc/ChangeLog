@@ -1,3 +1,18 @@
+2025-07-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-07-17  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121064
+	* config/loongarch/lsx.md (lsx_vshuf_<lsxfmt_f>): Add '@' to
+	generate a mode-aware helper.  Use <VIMODE> as the mode of the
+	operand 1 (selector).
+	* config/loongarch/lasx.md (lasx_xvshuf_<lasxfmt_f>): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_try_expand_lsx_vshuf_const): Create a new pseudo for
+	the selector.  Use the mode-aware helper to simplify the code.
+	(loongarch_expand_vec_perm_const): Likewise.
+
 2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

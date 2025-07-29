@@ -1,3 +1,11 @@
+2025-07-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-07-17  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121064
+	* gcc.target/loongarch/pr121064.c: New test.
+
 2025-07-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
