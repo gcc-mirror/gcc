@@ -217,21 +217,31 @@ am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"
 LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
-libcaf_single_la_LIBADD =
+libcaf_shmem_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libcaf_single_la_OBJECTS = caf/single.lo
+am__objects_1 = caf/caf_error.lo
+am_libcaf_shmem_la_OBJECTS = $(am__objects_1) caf/shmem.lo \
+	caf/shmem/alloc.lo caf/shmem/allocator.lo \
+	caf/shmem/collective_subroutine.lo \
+	caf/shmem/counter_barrier.lo caf/shmem/hashmap.lo \
+	caf/shmem/shared_memory.lo caf/shmem/supervisor.lo \
+	caf/shmem/sync.lo caf/shmem/teams_mgmt.lo \
+	caf/shmem/thread_support.lo
+libcaf_shmem_la_OBJECTS = $(am_libcaf_shmem_la_OBJECTS)
+libcaf_single_la_LIBADD =
+am_libcaf_single_la_OBJECTS = caf/single.lo $(am__objects_1)
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
 libgfortran_la_LIBADD =
-@LIBGFOR_MINIMAL_TRUE@am__objects_1 = runtime/minimal.lo
-@LIBGFOR_MINIMAL_FALSE@am__objects_2 = runtime/backtrace.lo \
+@LIBGFOR_MINIMAL_TRUE@am__objects_2 = runtime/minimal.lo
+@LIBGFOR_MINIMAL_FALSE@am__objects_3 = runtime/backtrace.lo \
 @LIBGFOR_MINIMAL_FALSE@	runtime/convert_char.lo \
 @LIBGFOR_MINIMAL_FALSE@	runtime/environ.lo runtime/error.lo \
 @LIBGFOR_MINIMAL_FALSE@	runtime/fpu.lo runtime/main.lo \
 @LIBGFOR_MINIMAL_FALSE@	runtime/pause.lo runtime/stop.lo
-am__objects_3 = runtime/bounds.lo runtime/compile_options.lo \
+am__objects_4 = runtime/bounds.lo runtime/compile_options.lo \
 	runtime/memory.lo runtime/string.lo runtime/select.lo \
-	$(am__objects_1) $(am__objects_2)
-am__objects_4 = generated/matmul_i1.lo generated/matmul_i2.lo \
+	$(am__objects_2) $(am__objects_3)
+am__objects_5 = generated/matmul_i1.lo generated/matmul_i2.lo \
 	generated/matmul_i4.lo generated/matmul_i8.lo \
 	generated/matmul_i16.lo generated/matmul_r4.lo \
 	generated/matmul_r8.lo generated/matmul_r10.lo \
@@ -239,9 +249,9 @@ am__objects_4 = generated/matmul_i1.lo generated/matmul_i2.lo \
 	generated/matmul_c4.lo generated/matmul_c8.lo \
 	generated/matmul_c10.lo generated/matmul_c16.lo \
 	generated/matmul_c17.lo
-am__objects_5 = generated/matmul_l4.lo generated/matmul_l8.lo \
+am__objects_6 = generated/matmul_l4.lo generated/matmul_l8.lo \
 	generated/matmul_l16.lo
-am__objects_6 = generated/matmulavx128_i1.lo \
+am__objects_7 = generated/matmulavx128_i1.lo \
 	generated/matmulavx128_i2.lo generated/matmulavx128_i4.lo \
 	generated/matmulavx128_i8.lo generated/matmulavx128_i16.lo \
 	generated/matmulavx128_r4.lo generated/matmulavx128_r8.lo \
@@ -249,7 +259,7 @@ am__objects_6 = generated/matmulavx128_i1.lo \
 	generated/matmulavx128_r17.lo generated/matmulavx128_c4.lo \
 	generated/matmulavx128_c8.lo generated/matmulavx128_c10.lo \
 	generated/matmulavx128_c16.lo generated/matmulavx128_c17.lo
-am__objects_7 = generated/all_l1.lo generated/all_l2.lo \
+am__objects_8 = generated/all_l1.lo generated/all_l2.lo \
 	generated/all_l4.lo generated/all_l8.lo generated/all_l16.lo \
 	generated/any_l1.lo generated/any_l2.lo generated/any_l4.lo \
 	generated/any_l8.lo generated/any_l16.lo \
@@ -538,17 +548,17 @@ am__objects_7 = generated/all_l1.lo generated/all_l2.lo \
 	generated/pow_m8_m16.lo generated/pow_m16_m1.lo \
 	generated/pow_m16_m2.lo generated/pow_m16_m4.lo \
 	generated/pow_m16_m8.lo generated/pow_m16_m16.lo \
-	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	runtime/ISO_Fortran_binding.lo
-@LIBGFOR_MINIMAL_FALSE@am__objects_8 = io/close.lo io/file_pos.lo \
+@LIBGFOR_MINIMAL_FALSE@am__objects_9 = io/close.lo io/file_pos.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/format.lo io/inquire.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/intrinsics.lo io/list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/lock.lo io/open.lo io/read.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/transfer.lo io/transfer128.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/unit.lo io/unix.lo io/write.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/fbuf.lo io/async.lo
-am__objects_9 = io/size_from_kind.lo $(am__objects_8)
-@LIBGFOR_MINIMAL_FALSE@am__objects_10 = intrinsics/access.lo \
+am__objects_10 = io/size_from_kind.lo $(am__objects_9)
+@LIBGFOR_MINIMAL_FALSE@am__objects_11 = intrinsics/access.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/chdir.lo intrinsics/chmod.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/clock.lo \
@@ -572,8 +582,8 @@ am__objects_9 = io/size_from_kind.lo $(am__objects_8)
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/system_clock.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/time.lo intrinsics/umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_11 = ieee/ieee_helper.lo
-am__objects_12 = intrinsics/associated.lo intrinsics/abort.lo \
+@IEEE_SUPPORT_TRUE@am__objects_12 = ieee/ieee_helper.lo
+am__objects_13 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/args.lo intrinsics/cshift0.lo \
 	intrinsics/eoshift0.lo intrinsics/eoshift2.lo \
 	intrinsics/erfc_scaled.lo intrinsics/extends_type_of.lo \
@@ -588,12 +598,12 @@ am__objects_12 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/selected_real_kind.lo intrinsics/trigd.lo \
 	intrinsics/unpack_generic.lo runtime/in_pack_generic.lo \
 	runtime/in_unpack_generic.lo runtime/in_pack_class.lo \
-	runtime/in_unpack_class.lo $(am__objects_10) $(am__objects_11)
-@IEEE_SUPPORT_TRUE@am__objects_13 = ieee/ieee_arithmetic.lo \
+	runtime/in_unpack_class.lo $(am__objects_11) $(am__objects_12)
+@IEEE_SUPPORT_TRUE@am__objects_14 = ieee/ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_exceptions.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_features.lo
-am__objects_14 =
-am__objects_15 = generated/_abs_c4.lo generated/_abs_c8.lo \
+am__objects_15 =
+am__objects_16 = generated/_abs_c4.lo generated/_abs_c8.lo \
 	generated/_abs_c10.lo generated/_abs_c16.lo \
 	generated/_abs_c17.lo generated/_abs_i4.lo \
 	generated/_abs_i8.lo generated/_abs_i16.lo \
@@ -679,9 +689,9 @@ am__objects_15 = generated/_abs_c4.lo generated/_abs_c8.lo \
 	generated/_mod_r17.lo generated/misc_specifics.lo \
 	intrinsics/dprod_r8.lo intrinsics/f2c_specifics.lo \
 	intrinsics/random_init.lo
-am_libgfortran_la_OBJECTS = $(am__objects_3) $(am__objects_7) \
-	$(am__objects_9) $(am__objects_12) $(am__objects_13) \
-	$(am__objects_14) $(am__objects_15)
+am_libgfortran_la_OBJECTS = $(am__objects_4) $(am__objects_8) \
+	$(am__objects_10) $(am__objects_13) $(am__objects_14) \
+	$(am__objects_15) $(am__objects_16)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -746,7 +756,8 @@ AM_V_FC = $(am__v_FC_@AM_V@)
 am__v_FC_ = $(am__v_FC_@AM_DEFAULT_V@)
 am__v_FC_0 = @echo "  FC      " $@;
 am__v_FC_1 = 
-SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES)
+SOURCES = $(libcaf_shmem_la_SOURCES) $(libcaf_single_la_SOURCES) \
+	$(libgfortran_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -962,12 +973,28 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
-cafexeclib_LTLIBRARIES = libcaf_single.la
+libcaf_shared_DEPS = caf/libcaf.h caf/caf_error.h
+libcaf_shared_SRCS = caf/caf_error.c
+cafexeclib_LTLIBRARIES = libcaf_single.la libcaf_shmem.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libcaf_single_la_SOURCES = caf/single.c
+libcaf_single_la_SOURCES = caf/single.c $(libcaf_shared_SRCS)
 libcaf_single_la_LDFLAGS = -static
-libcaf_single_la_DEPENDENCIES = caf/libcaf.h
+libcaf_single_la_DEPENDENCIES = $(libcaf_shared_DEPS)
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+libcaf_shmem_la_SOURCES = $(libcaf_shared_SRCS) \
+	caf/shmem.c caf/shmem/alloc.c caf/shmem/allocator.c \
+	caf/shmem/collective_subroutine.c caf/shmem/counter_barrier.c \
+	caf/shmem/hashmap.c caf/shmem/shared_memory.c caf/shmem/supervisor.c \
+	caf/shmem/sync.c caf/shmem/teams_mgmt.c caf/shmem/thread_support.c
+
+libcaf_shmem_la_LDFLAGS = -static
+libcaf_shmem_la_DEPENDENCIES = $(libcaf_shared_DEPS) caf/shmem/alloc.h \
+	caf/shmem/allocator.h caf/shmem/collective_subroutine.h \
+	caf/shmem/counter_barrier.h caf/shmem/hashmap.h \
+	caf/shmem/shared_memory.h caf/shmem/supervisor.h caf/shmem/sync.h \
+	caf/shmem/teams_mgmt.h caf/shmem/thread_support.h
+
+libcaf_shmem_la_LINK = $(LINK) $(libcaf_shmem_la_LDFLAGS)
 @IEEE_SUPPORT_TRUE@fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 @IEEE_SUPPORT_TRUE@nodist_finclude_HEADERS = ieee_arithmetic.mod ieee_exceptions.mod ieee_features.mod
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
@@ -1964,9 +1991,40 @@ caf/$(am__dirstamp):
 caf/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) caf/$(DEPDIR)
 	@: > caf/$(DEPDIR)/$(am__dirstamp)
+caf/caf_error.lo: caf/$(am__dirstamp) caf/$(DEPDIR)/$(am__dirstamp)
+caf/shmem.lo: caf/$(am__dirstamp) caf/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/$(am__dirstamp):
+	@$(MKDIR_P) caf/shmem
+	@: > caf/shmem/$(am__dirstamp)
+caf/shmem/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) caf/shmem/$(DEPDIR)
+	@: > caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/alloc.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/allocator.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/collective_subroutine.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/counter_barrier.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/hashmap.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/shared_memory.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/supervisor.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/sync.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/teams_mgmt.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+caf/shmem/thread_support.lo: caf/shmem/$(am__dirstamp) \
+	caf/shmem/$(DEPDIR)/$(am__dirstamp)
+
+libcaf_shmem.la: $(libcaf_shmem_la_OBJECTS) $(libcaf_shmem_la_DEPENDENCIES) $(EXTRA_libcaf_shmem_la_DEPENDENCIES)
+	$(AM_V_GEN)$(libcaf_shmem_la_LINK) -rpath $(cafexeclibdir) $(libcaf_shmem_la_OBJECTS) $(libcaf_shmem_la_LIBADD) $(LIBS)
 caf/single.lo: caf/$(am__dirstamp) caf/$(DEPDIR)/$(am__dirstamp)
 
-libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $(EXTRA_libcaf_single_la_DEPENDENCIES) 
+libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $(EXTRA_libcaf_single_la_DEPENDENCIES)
 	$(AM_V_GEN)$(libcaf_single_la_LINK) -rpath $(cafexeclibdir) $(libcaf_single_la_OBJECTS) $(libcaf_single_la_LIBADD) $(LIBS)
 runtime/$(am__dirstamp):
 	@$(MKDIR_P) runtime
@@ -3771,6 +3829,8 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f caf/*.$(OBJEXT)
 	-rm -f caf/*.lo
+	-rm -f caf/shmem/*.$(OBJEXT)
+	-rm -f caf/shmem/*.lo
 	-rm -f generated/*.$(OBJEXT)
 	-rm -f generated/*.lo
 	-rm -f ieee/*.$(OBJEXT)
@@ -3785,7 +3845,19 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@caf/$(DEPDIR)/caf_error.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/$(DEPDIR)/shmem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@caf/$(DEPDIR)/single.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/alloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/collective_subroutine.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/counter_barrier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/hashmap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/shared_memory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/supervisor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/sync.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/teams_mgmt.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@caf/shmem/$(DEPDIR)/thread_support.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/all_l1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/all_l16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/all_l2.Plo@am__quote@
@@ -4550,6 +4622,7 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf caf/.libs caf/_libs
+	-rm -rf caf/shmem/.libs caf/shmem/_libs
 	-rm -rf generated/.libs generated/_libs
 	-rm -rf ieee/.libs ieee/_libs
 	-rm -rf intrinsics/.libs intrinsics/_libs
@@ -4717,6 +4790,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f caf/$(DEPDIR)/$(am__dirstamp)
 	-rm -f caf/$(am__dirstamp)
+	-rm -f caf/shmem/$(DEPDIR)/$(am__dirstamp)
+	-rm -f caf/shmem/$(am__dirstamp)
 	-rm -f generated/$(DEPDIR)/$(am__dirstamp)
 	-rm -f generated/$(am__dirstamp)
 	-rm -f ieee/$(DEPDIR)/$(am__dirstamp)
@@ -4739,7 +4814,7 @@ clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf caf/$(DEPDIR) generated/$(DEPDIR) ieee/$(DEPDIR) intrinsics/$(DEPDIR) io/$(DEPDIR) runtime/$(DEPDIR)
+	-rm -rf caf/$(DEPDIR) caf/shmem/$(DEPDIR) generated/$(DEPDIR) ieee/$(DEPDIR) intrinsics/$(DEPDIR) io/$(DEPDIR) runtime/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-local distclean-tags
@@ -4788,7 +4863,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf caf/$(DEPDIR) generated/$(DEPDIR) ieee/$(DEPDIR) intrinsics/$(DEPDIR) io/$(DEPDIR) runtime/$(DEPDIR)
+	-rm -rf caf/$(DEPDIR) caf/shmem/$(DEPDIR) generated/$(DEPDIR) ieee/$(DEPDIR) intrinsics/$(DEPDIR) io/$(DEPDIR) runtime/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic \
 	maintainer-clean-local
