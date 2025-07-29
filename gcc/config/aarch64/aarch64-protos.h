@@ -1031,6 +1031,7 @@ rtx aarch64_pfalse_reg (machine_mode);
 bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
 rtx aarch64_sve_packed_pred (machine_mode);
 rtx aarch64_sve_fp_pred (machine_mode, rtx *);
+rtx aarch64_sve_emit_masked_fp_pred (machine_mode, rtx);
 void aarch64_emit_load_store_through_mode (rtx, rtx, machine_mode);
 bool aarch64_expand_maskloadstore (rtx *, machine_mode);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);

@@ -3933,6 +3933,33 @@ aarch64_sve_fp_pred (machine_mode data_mode, rtx *strictness)
    return aarch64_ptrue_reg (aarch64_sve_pred_mode (data_mode));
 }
 
+/* PRED is a predicate that governs an operation on DATA_MODE.  If DATA_MODE
+   is a partial vector mode, and if exceptions must be suppressed for its
+   undefined elements, convert PRED from a container-level predicate to
+   an element-level predicate and ensure that the undefined elements
+   are inactive.  Make no changes otherwise.
+
+   Return the resultant predicate.  */
+rtx
+aarch64_sve_emit_masked_fp_pred (machine_mode data_mode, rtx pred)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (data_mode);
+  if (flag_trapping_math && (vec_flags & VEC_PARTIAL))
+    {
+      /* Generate an element-level mask.  */
+      rtx mask = aarch64_sve_packed_pred (data_mode);
+      machine_mode pmode = GET_MODE (mask);
+
+      /* Apply the existing predicate.  */
+      rtx dst = gen_reg_rtx (pmode);
+      emit_insn (gen_and3 (pmode, dst, mask,
+			   gen_lowpart (pmode, pred)));
+      return dst;
+    }
+
+  return pred;
+}
+
 /* Emit a comparison CMP between OP0 and OP1, both of which have mode
    DATA_MODE, and return the result in a predicate of mode PRED_MODE.
    Use TARGET as the target register if nonnull and convenient.  */

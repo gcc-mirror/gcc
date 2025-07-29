@@ -5605,18 +5605,21 @@
 
 ;; Predicated floating-point operations with merging.
 (define_expand "@cond_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "<sve_pred_fp_rhs1_operand>")
-	      (match_operand:SVE_FULL_F_B16B16 3 "<sve_pred_fp_rhs2_operand>")]
+	      (match_operand:SVE_F_B16B16 2 "<sve_pred_fp_rhs1_operand>")
+	      (match_operand:SVE_F_B16B16 3 "<sve_pred_fp_rhs2_operand>")]
 	     SVE_COND_FP_BINARY)
-	   (match_operand:SVE_FULL_F_B16B16 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && (<supports_bf16> || !<is_bf16>)"
+  {
+    operands[1] = aarch64_sve_emit_masked_fp_pred (<MODE>mode, operands[1]);
+  }
 )
 
 ;; Predicated floating-point operations, merging with the first input.
@@ -5644,14 +5647,14 @@
 )
 
 (define_insn "*cond_<optab><mode>_2_strict"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -5687,14 +5690,14 @@
 )
 
 (define_insn "*cond_<optab><mode>_2_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -5730,14 +5733,14 @@
 )
 
 (define_insn "*cond_<optab><mode>_3_strict"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
@@ -5794,16 +5797,16 @@
 )
 
 (define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
-	   (match_operand:SVE_FULL_F_B16B16 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && (<supports_bf16> || !<is_bf16>)
@@ -5868,16 +5871,16 @@
 )
 
 (define_insn_and_rewrite "*cond_<optab><mode>_any_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   {@ [ cons: =0 , 1   , 2 , 4   ]
@@ -5953,14 +5956,14 @@
 )
 
 (define_insn "*cond_add<mode>_2_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
 	     UNSPEC_COND_FADD)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -6015,16 +6018,16 @@
 )
 
 (define_insn_and_rewrite "*cond_add<mode>_any_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate")]
 	     UNSPEC_COND_FADD)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   {@ [ cons: =0 , 1   , 2 , 3   , 4   ]
@@ -6266,14 +6269,14 @@
 )
 
 (define_insn "*cond_sub<mode>_3_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
-	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand")]
 	     UNSPEC_COND_FSUB)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
@@ -6323,16 +6326,16 @@
 )
 
 (define_insn_and_rewrite "*cond_sub<mode>_const_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
-	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand")]
 	     UNSPEC_COND_FSUB)
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[3], operands[4])"
   {@ [ cons: =0 , 1   , 3 , 4   ]
@@ -6913,7 +6916,7 @@
 ;; Predicate AND.  We can reuse one of the inputs as the GP.
 ;; Doubling the second operand is the preferred implementation
 ;; of the MOV alias, so we use that instead of %1/z, %1, %2.
-(define_insn "and<mode>3"
+(define_insn "@and<mode>3"
   [(set (match_operand:PRED_ALL 0 "register_operand")
 	(and:PRED_ALL (match_operand:PRED_ALL 1 "register_operand")
 		      (match_operand:PRED_ALL 2 "register_operand")))]
@@ -8201,20 +8204,23 @@
 ;;
 ;; For unpacked vectors, it doesn't really matter whether SEL uses the
 ;; the container size or the element size.  If SEL used the container size,
-;; it would ignore undefined bits of the predicate but would copy the
-;; upper (undefined) bits of each container along with the defined bits.
-;; If SEL used the element size, it would use undefined bits of the predicate
-;; to select between undefined elements in each input vector.  Thus the only
-;; difference is whether the undefined bits in a container always come from
-;; the same input as the defined bits, or whether the choice can vary
-;; independently of the defined bits.
+;; it would would copy the upper (undefined) bits of each container along
+;; with the corresponding defined bits.  If SEL used the element size,
+;; it would use separate predicate bits to select between the undefined
+;; elements in each input vector; these seperate predicate bits might
+;; themselves be undefined, depending on the mode of the predicate.
+;;
+;; Thus the only difference is whether the undefined bits in a container
+;; always come from the same input as the defined bits, or whether the
+;; choice can vary independently of the defined bits.
 ;;
 ;; For the other instructions, using the element size is more natural,
 ;; so we do that for SEL as well.
+;;
 (define_insn "*vcond_mask_<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 3 "register_operand")
+	  [(match_operand:<VPRED> 3 "aarch64_predicate_operand")
 	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm")
 	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
