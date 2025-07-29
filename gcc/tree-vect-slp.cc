@@ -4950,6 +4950,9 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 						 max_tree_size, &limit,
 						 force_single_lane))
 	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "SLP discovery of reduction chain failed\n");
 	    /* Dissolve reduction chain group.  */
 	    stmt_vec_info vinfo = first_element;
 	    stmt_vec_info last = NULL;
