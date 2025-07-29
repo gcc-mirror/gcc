@@ -20,7 +20,7 @@ struct pr106381 {
 struct L1 : pr106381 {
   char x;  // { dg-warning "offset" "" { target c++14 } }
 };
-static_assert(sizeof(L1) == sizeof(pr106381));
+static_assert(sizeof(L1) == sizeof(pr106381), "");
 
 
 struct pr120012 {
@@ -33,4 +33,4 @@ struct pr120012 {
 struct L2 : pr120012 {
   unsigned char y;  // { dg-warning "offset" "" { target c++20 } }
 };
-static_assert(sizeof(L2) > sizeof(pr120012));
+static_assert(sizeof(L2) > sizeof(pr120012), "");
