@@ -1718,6 +1718,7 @@ public:
   unsigned int total_cost () const;
   unsigned int suggested_unroll_factor () const;
   machine_mode suggested_epilogue_mode (int &masked) const;
+  bool costing_for_scalar () const { return m_costing_for_scalar; }
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -2000,6 +2001,13 @@ add_stmt_cost (vector_costs *costs, int count,
 	       tree vectype, int misalign,
 	       enum vect_cost_model_location where)
 {
+  /* Even though a vector type might be set on stmt do not pass that on when
+     costing the scalar IL.  A SLP node shouldn't have been recorded.  */
+  if (costs->costing_for_scalar ())
+    {
+      vectype = NULL_TREE;
+      gcc_checking_assert (node == NULL);
+    }
   unsigned cost = costs->add_stmt_cost (count, kind, stmt_info, node, vectype,
 					misalign, where);
   if (dump_file && (dump_flags & TDF_DETAILS))
