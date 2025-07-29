@@ -25808,15 +25808,20 @@ private:
   unsigned m_num_sse_needed[3];
   /* Number of 256-bit vector permutation.  */
   unsigned m_num_avx256_vec_perm[3];
+  /* Number of reductions for FMA/DOT_PROD_EXPR/SAD_EXPR  */
+  unsigned m_num_reduc[X86_REDUC_LAST];
+  /* Don't do unroll if m_prefer_unroll is false, default is true.  */
+  bool m_prefer_unroll;
 };
 
 ix86_vector_costs::ix86_vector_costs (vec_info* vinfo, bool costing_for_scalar)
   : vector_costs (vinfo, costing_for_scalar),
     m_num_gpr_needed (),
     m_num_sse_needed (),
-    m_num_avx256_vec_perm ()
-{
-}
+    m_num_avx256_vec_perm (),
+    m_num_reduc (),
+    m_prefer_unroll (true)
+{}
 
 /* Implement targetm.vectorize.create_costs.  */
 
@@ -26113,6 +26118,125 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	}
     }
 
+  /* Record number of load/store/gather/scatter in vectorized body.  */
+  if (where == vect_body && !m_costing_for_scalar)
+    {
+      switch (kind)
+	{
+	  /* Emulated gather/scatter or any scalarization.  */
+	case scalar_load:
+	case scalar_stmt:
+	case scalar_store:
+	case vector_gather_load:
+	case vector_scatter_store:
+	  m_prefer_unroll = false;
+	  break;
+
+	case vector_stmt:
+	case vec_to_scalar:
+	  /* Count number of reduction FMA and "real" DOT_PROD_EXPR,
+	     unroll in the vectorizer will enable partial sum.  */
+	  if (stmt_info
+	      && vect_is_reduction (stmt_info)
+	      && stmt_info->stmt)
+	    {
+	      /* Handle __builtin_fma.  */
+	      if (gimple_call_combined_fn (stmt_info->stmt) == CFN_FMA)
+		{
+		  m_num_reduc[X86_REDUC_FMA] += count;
+		  break;
+		}
+
+	      if (!is_gimple_assign (stmt_info->stmt))
+		break;
+
+	      tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
+	      machine_mode inner_mode = GET_MODE_INNER (mode);
+	      tree rhs1, rhs2;
+	      bool native_vnni_p = true;
+	      gimple* def;
+	      machine_mode mode_rhs;
+	      switch (subcode)
+		{
+		case PLUS_EXPR:
+		case MINUS_EXPR:
+		  if (!fp || !flag_associative_math
+		      || flag_fp_contract_mode != FP_CONTRACT_FAST)
+		    break;
+
+		  /* FMA condition for different modes.  */
+		  if (((inner_mode == DFmode || inner_mode == SFmode)
+		       && !TARGET_FMA && !TARGET_AVX512VL)
+		      || (inner_mode == HFmode && !TARGET_AVX512FP16)
+		      || (inner_mode == BFmode && !TARGET_AVX10_2))
+		    break;
+
+		  /* MULT_EXPR + PLUS_EXPR/MINUS_EXPR is transformed
+		     to FMA/FNMA after vectorization.  */
+		  rhs1 = gimple_assign_rhs1 (stmt_info->stmt);
+		  rhs2 = gimple_assign_rhs2 (stmt_info->stmt);
+		  if (subcode == PLUS_EXPR
+		      && TREE_CODE (rhs1) == SSA_NAME
+		      && (def = SSA_NAME_DEF_STMT (rhs1), true)
+		      && is_gimple_assign (def)
+		      && gimple_assign_rhs_code (def) == MULT_EXPR)
+		    m_num_reduc[X86_REDUC_FMA] += count;
+		  else if (TREE_CODE (rhs2) == SSA_NAME
+			   && (def = SSA_NAME_DEF_STMT (rhs2), true)
+			   && is_gimple_assign (def)
+			   && gimple_assign_rhs_code (def) == MULT_EXPR)
+		    m_num_reduc[X86_REDUC_FMA] += count;
+		  break;
+
+		  /* Vectorizer lane_reducing_op_p supports DOT_PROX_EXPR,
+		     WIDEN_SUM_EXPR and SAD_EXPR, x86 backend only supports
+		     SAD_EXPR (usad{v16qi,v32qi,v64qi}) and DOT_PROD_EXPR.  */
+		case DOT_PROD_EXPR:
+		  rhs1 = gimple_assign_rhs1 (stmt_info->stmt);
+		  mode_rhs = TYPE_MODE (TREE_TYPE (rhs1));
+		  if (mode_rhs == QImode)
+		    {
+		      rhs2 = gimple_assign_rhs2 (stmt_info->stmt);
+		      signop signop1_p = TYPE_SIGN (TREE_TYPE (rhs1));
+		      signop signop2_p = TYPE_SIGN (TREE_TYPE (rhs2));
+
+		      /* vpdpbusd.  */
+		      if (signop1_p != signop2_p)
+			native_vnni_p
+			  = (GET_MODE_SIZE (mode) == 64
+			     ? TARGET_AVX512VNNI
+			     : ((TARGET_AVX512VNNI && TARGET_AVX512VL)
+				|| TARGET_AVXVNNI));
+		      else
+			/* vpdpbssd.  */
+			native_vnni_p
+			  = (GET_MODE_SIZE (mode) == 64
+			     ? TARGET_AVX10_2
+			     : (TARGET_AVXVNNIINT8 || TARGET_AVX10_2));
+		    }
+		  m_num_reduc[X86_REDUC_DOT_PROD] += count;
+
+		  /* Dislike to do unroll and partial sum for
+		     emulated DOT_PROD_EXPR.  */
+		  if (!native_vnni_p)
+		    m_num_reduc[X86_REDUC_DOT_PROD] += 3 * count;
+		  break;
+
+		case SAD_EXPR:
+		  m_num_reduc[X86_REDUC_SAD] += count;
+		  break;
+
+		default:
+		  break;
+		}
+	    }
+
+	default:
+	  break;
+	}
+    }
+
+
   combined_fn cfn;
   if ((kind == vector_stmt || kind == scalar_stmt)
       && stmt_info
@@ -26319,6 +26443,41 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 	  && (exact_log2 (LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant ())
 	      > ceil_log2 (LOOP_VINFO_INT_NITERS (loop_vinfo))))
 	m_costs[vect_body] = INT_MAX;
+
+      bool any_reduc_p = false;
+      for (int i = 0; i != X86_REDUC_LAST; i++)
+	if (m_num_reduc[i])
+	  {
+	    any_reduc_p = true;
+	    break;
+	  }
+
+      if (any_reduc_p
+	  /* Not much gain for loop with gather and scatter.  */
+	  && m_prefer_unroll
+	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+	{
+	  unsigned unroll_factor
+	    = OPTION_SET_P (ix86_vect_unroll_limit)
+	    ? ix86_vect_unroll_limit
+	    : ix86_cost->vect_unroll_limit;
+
+	  if (unroll_factor > 1)
+	    {
+	      for (int i = 0 ; i != X86_REDUC_LAST; i++)
+		{
+		  if (m_num_reduc[i])
+		    {
+		      unsigned tmp = CEIL (ix86_cost->reduc_lat_mult_thr[i],
+					   m_num_reduc[i]);
+		      unroll_factor = MIN (unroll_factor, tmp);
+		    }
+		}
+
+	      m_suggested_unroll_factor  = 1 << ceil_log2 (unroll_factor);
+	    }
+	}
+
     }
 
   ix86_vect_estimate_reg_pressure ();

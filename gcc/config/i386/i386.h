@@ -102,6 +102,15 @@ struct stringop_algs
 #define COSTS_N_BYTES(N) ((N) * 2)
 #endif
 
+
+enum ix86_reduc_unroll_factor{
+  X86_REDUC_FMA,
+  X86_REDUC_DOT_PROD,
+  X86_REDUC_SAD,
+
+  X86_REDUC_LAST
+};
+
 /* Define the specific costs for a given cpu.  NB: hard_register is used
    by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
    hard register move costs by register allocator.  Relative costs of
@@ -225,6 +234,13 @@ struct processor_costs {
 				   to number of instructions executed in
 				   parallel.  See also
 				   ix86_reassociation_width.  */
+  const unsigned reduc_lat_mult_thr[X86_REDUC_LAST];
+				/* Latency times throughput of
+				   FMA/DOT_PROD_EXPR/SAD_EXPR,
+				   it's used to determine unroll
+				   factor in the vectorizer.  */
+  const unsigned vect_unroll_limit;    /* Limit how much the autovectorizer
+					  may unroll a loop.  */
   struct stringop_algs *memcpy, *memset;
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
 					  cost model.  */

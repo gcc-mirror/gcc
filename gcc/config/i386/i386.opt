@@ -1246,6 +1246,10 @@ munroll-only-small-loops
 Target Var(ix86_unroll_only_small_loops) Init(0) Optimization
 Enable conservative small loop unrolling.
 
+-param=ix86-vect-unroll-limit=
+Target Joined UInteger Var(ix86_vect_unroll_limit) Init(4) Param
+Limit how much the autovectorizer may unroll a loop.
+
 mlam=
 Target RejectNegative Joined Enum(lam_type) Var(ix86_lam_type) Init(lam_none)
 -mlam=[none|u48|u57] Instrument meta data position in user data pointers.
