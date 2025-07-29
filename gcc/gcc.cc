@@ -43,7 +43,7 @@ compilation is specified by a string called a "spec".  */
 #include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
-#include "diagnostic-format.h"
+#include "diagnostics/sink.h"
 #include "pretty-print-urlifier.h"
 #include "flags.h"
 #include "opts.h"
@@ -4195,7 +4195,7 @@ driver_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc,
+		      diagnostics::context *dc,
 		      void (*) (void))
 {
   size_t opt_index = decoded->opt_index;
@@ -4207,7 +4207,8 @@ driver_handle_option (struct gcc_options *opts,
 
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
-  gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (static_cast<diagnostics::kind> (kind)
+	      == diagnostics::kind::unspecified);
   gcc_assert (loc == UNKNOWN_LOCATION);
   gcc_assert (dc == global_dc);
 
@@ -4367,10 +4368,10 @@ driver_handle_option (struct gcc_options *opts,
 	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
 				  : opts->x_main_input_basename);
 	  gcc_assert (dc);
-	  diagnostic_output_format_init (*dc,
-					 opts->x_main_input_filename, basename,
-					 (enum diagnostics_output_format)value,
-					 opts->x_flag_diagnostics_json_formatting);
+	  diagnostics::output_format_init (*dc,
+					   opts->x_main_input_filename, basename,
+					   (enum diagnostics_output_format)value,
+					   opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
 

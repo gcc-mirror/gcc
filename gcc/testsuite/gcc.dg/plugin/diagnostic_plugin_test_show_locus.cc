@@ -62,7 +62,8 @@
 #include "print-tree.h"
 #include "gcc-rich-location.h"
 #include "text-range-label.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/file-cache.h"
 
 int plugin_is_GPL_compatible;
 
@@ -125,14 +126,14 @@ static bool force_show_locus_color = false;
 /* We want to verify the colorized output of diagnostic_show_locus,
    but turning on colorization for everything confuses "dg-warning" etc.
    Hence we special-case it within this plugin by using this modified
-   version of default_diagnostic_text_finalizer, which, if "color" is
+   version of diagnostics::default_text_finalizer, which, if "color" is
    passed in as a plugin argument turns on colorization, but just
    for diagnostic_show_locus.  */
 
 static void
-custom_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
-				  const diagnostic_info *diagnostic,
-				  diagnostic_t)
+custom_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
+				  const diagnostics::diagnostic_info *diag,
+				  enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
   bool old_show_color = pp_show_color (pp);
@@ -143,7 +144,7 @@ custom_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 text_output.get_source_printing_options (),
-			 diagnostic->richloc, diagnostic->kind, pp);
+			 diag->m_richloc, diag->m_kind, pp);
   pp_show_color (pp) = old_show_color;
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);
@@ -176,11 +177,11 @@ test_show_locus (function *fun)
   location_t fnstart = fun->function_start_locus;
   int fnstart_line = LOCATION_LINE (fnstart);
 
-  diagnostic_text_finalizer (global_dc) = custom_diagnostic_text_finalizer;
+  diagnostics::text_finalizer (global_dc) = custom_diagnostic_text_finalizer;
 
   /* Hardcode the "terminal width", to verify the behavior of
      very wide lines.  */
-  global_dc->m_source_printing.max_width = 71;
+  global_dc->get_source_printing_options ().max_width = 71;
 
   if (0 == strcmp (fnname, "test_simple"))
     {
@@ -251,7 +252,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_very_wide_line"))
     {
       const int line = fnstart_line + 2;
-      global_dc->m_source_printing.show_ruler_p = true;
+      global_dc->get_source_printing_options ().show_ruler_p = true;
       text_range_label label0 ("label 0");
       text_range_label label1 ("label 1");
       rich_location richloc (line_table,
@@ -263,7 +264,7 @@ test_show_locus (function *fun)
 			 &label1);
       richloc.add_fixit_replace ("bar * foo");
       warning_at (&richloc, 0, "test");
-      global_dc->m_source_printing.show_ruler_p = false;
+      global_dc->get_source_printing_options ().show_ruler_p = false;
     }
 
   /* Likewise, but with a secondary location that's immediately before
@@ -271,7 +272,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_very_wide_line_2"))
     {
       const int line = fnstart_line + 2;
-      global_dc->m_source_printing.show_ruler_p = true;
+      global_dc->get_source_printing_options ().show_ruler_p = true;
       text_range_label label0 ("label 0");
       text_range_label label1 ("label 1");
       rich_location richloc (line_table,
@@ -283,7 +284,7 @@ test_show_locus (function *fun)
       richloc.add_range (get_loc (line, 34), SHOW_RANGE_WITHOUT_CARET,
 			 &label1);
       warning_at (&richloc, 0, "test");
-      global_dc->m_source_printing.show_ruler_p = false;
+      global_dc->get_source_printing_options ().show_ruler_p = false;
     }
 
   /* Example of multiple carets.  */
@@ -294,11 +295,11 @@ test_show_locus (function *fun)
       location_t caret_b = get_loc (line, 11);
       rich_location richloc (line_table, caret_a);
       add_range (&richloc, caret_b, caret_b, SHOW_RANGE_WITH_CARET);
-      global_dc->m_source_printing.caret_chars[0] = 'A';
-      global_dc->m_source_printing.caret_chars[1] = 'B';
+      global_dc->get_source_printing_options ().caret_chars[0] = 'A';
+      global_dc->get_source_printing_options ().caret_chars[1] = 'B';
       warning_at (&richloc, 0, "test");
-      global_dc->m_source_printing.caret_chars[0] = '^';
-      global_dc->m_source_printing.caret_chars[1] = '^';
+      global_dc->get_source_printing_options ().caret_chars[0] = '^';
+      global_dc->get_source_printing_options ().caret_chars[1] = '^';
     }
 
   /* Tests of rendering fixit hints.  */
@@ -412,11 +413,11 @@ test_show_locus (function *fun)
       location_t caret_b = get_loc (line - 1, 19);
       rich_location richloc (line_table, caret_a);
       richloc.add_range (caret_b, SHOW_RANGE_WITH_CARET);
-      global_dc->m_source_printing.caret_chars[0] = '1';
-      global_dc->m_source_printing.caret_chars[1] = '2';
+      global_dc->get_source_printing_options ().caret_chars[0] = '1';
+      global_dc->get_source_printing_options ().caret_chars[1] = '2';
       warning_at (&richloc, 0, "test");
-      global_dc->m_source_printing.caret_chars[0] = '^';
-      global_dc->m_source_printing.caret_chars[1] = '^';
+      global_dc->get_source_printing_options ().caret_chars[0] = '^';
+      global_dc->get_source_printing_options ().caret_chars[1] = '^';
     }
 
   /* Example of using the "%q+D" format code, which as well as printing
@@ -443,8 +444,8 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
-	  file_cache &fc = global_dc->get_file_cache ();
-	  char_span content = fc.get_source_line (file, line);
+	  diagnostics::file_cache &fc = global_dc->get_file_cache ();
+	  diagnostics::char_span content = fc.get_source_line (file, line);
 	  gcc_assert (content);
 	  /* Split line up into words.  */
 	  for (int idx = 0; idx < content.length (); idx++)
@@ -464,7 +465,8 @@ test_show_locus (function *fun)
 		      richloc.add_range (word, SHOW_RANGE_WITH_CARET, &label);
 
 		      /* Add a fixit, converting to upper case.  */
-		      char_span word_span = content.subspan (start_idx, idx - start_idx);
+		      diagnostics::char_span word_span
+			= content.subspan (start_idx, idx - start_idx);
 		      char *copy = word_span.xstrdup ();
 		      for (char *ch = copy; *ch; ch++)
 			*ch = TOUPPER (*ch);

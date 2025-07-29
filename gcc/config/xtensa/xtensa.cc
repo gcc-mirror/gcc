@@ -601,8 +601,8 @@ constantpool_address_p (const_rtx addr)
 
       /* Make sure the address is word aligned.  */
       offset = XEXP (addr, 1);
-      if ((!CONST_INT_P (offset))
-	  || ((INTVAL (offset) & 3) != 0))
+      if (! CONST_INT_P (offset)
+	  || (INTVAL (offset) & 3) != 0)
 	return false;
 
       sym = XEXP (addr, 0);
@@ -611,6 +611,7 @@ constantpool_address_p (const_rtx addr)
   if (SYMBOL_REF_P (sym)
       && CONSTANT_POOL_ADDRESS_P (sym))
     return true;
+
   return false;
 }
 
@@ -4694,29 +4695,32 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 }
 
+/* Return TRUE if the specified insn corresponds to one or more L32R machine
+   instructions.  */
+
 static bool
 xtensa_is_insn_L32R_p (const rtx_insn *insn)
 {
-  rtx x = PATTERN (insn);
+  rtx pat, dest, src;
 
-  if (GET_CODE (x) != SET)
+  /* "PATTERN (insn)" can be used without checking, see insn_cost()
+     in gcc/rtlanal.cc.  */
+  if (GET_CODE (pat = PATTERN (insn)) != SET
+      || ! register_operand (dest = SET_DEST (pat), VOIDmode))
     return false;
 
-  x = XEXP (x, 1);
-  if (MEM_P (x))
-    {
-      x = XEXP (x, 0);
-      return (SYMBOL_REF_P (x) || CONST_INT_P (x))
-	     && CONSTANT_POOL_ADDRESS_P (x);
-    }
-
-  /* relaxed MOVI instructions, that will be converted to L32R by the
-     assembler.  */
-  if (CONST_INT_P (x)
-      && ! xtensa_simm12b (INTVAL (x)))
+  if (constantpool_mem_p (src = SET_SRC (pat)))
     return true;
 
-  return false;
+  /* Return true if:
+     - CONST16 instruction is not configured, and
+     - the source is some constant, and also
+     - negation of "the source is integer and fits into the immediate
+       field".  */
+  return (!TARGET_CONST16
+	  && CONSTANT_P (src)
+	  && ! ((GET_MODE (dest) == SImode || GET_MODE (dest) == HImode)
+		&& CONST_INT_P (src) && xtensa_simm12b (INTVAL (src))));
 }
 
 /* Compute a relative costs of RTL insns.  This is necessary in order to
@@ -4725,7 +4729,7 @@ xtensa_is_insn_L32R_p (const rtx_insn *insn)
 static int
 xtensa_insn_cost (rtx_insn *insn, bool speed)
 {
-  if (!(recog_memoized (insn) < 0))
+  if (! (recog_memoized (insn) < 0))
     {
       int len = get_attr_length (insn);
 
@@ -4738,7 +4742,7 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 
 	  /* "L32R" may be particular slow (implementation-dependent).  */
 	  if (xtensa_is_insn_L32R_p (insn))
-	    return COSTS_N_INSNS (1 + xtensa_extra_l32r_costs);
+	    return COSTS_N_INSNS ((1 + xtensa_extra_l32r_costs) * n);
 
 	  /* Cost based on the pipeline model.  */
 	  switch (get_attr_type (insn))
@@ -4783,7 +4787,7 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 	    {
 	      /* "L32R" itself plus constant in litpool.  */
 	      if (xtensa_is_insn_L32R_p (insn))
-		len = 3 + 4;
+		len += (len / 3) * 4;
 
 	      /* Consider fractional instruction length (for example, ".n"
 		 short instructions or "L32R" litpool constants.  */

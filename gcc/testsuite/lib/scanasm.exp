@@ -896,6 +896,10 @@ proc configure_check-function-bodies { config } {
 	set up_config(fluff) {^\s*(?://)}
     } elseif { [istarget *-*-darwin*] } {
 	set up_config(fluff) {^\s*(?:\.|//|@)|^L[0-9ABCESV]}
+    } elseif { [istarget s390*-*-*] } {
+	# Additionally to the defaults skip lines beginning with a # resulting
+	# from inline asm.
+	set up_config(fluff) {^\s*(?:\.|//|@|$|#)}
     } else {
 	# Skip lines beginning with labels ('.L[...]:') or other directives
 	# ('.align', '.cfi_startproc', '.quad [...]', '.text', etc.), '//' or

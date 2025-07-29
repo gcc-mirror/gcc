@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "obstack.h"
 #include "rich-location.h"
-#include "diagnostic-url.h"
+#include "diagnostics/url.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30

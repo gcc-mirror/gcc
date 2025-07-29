@@ -1989,6 +1989,14 @@ ftms = {
 };
 
 ftms = {
+  name = inplace_vector;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = indirect;
   values = {
     v = 202502;

@@ -90,23 +90,23 @@ class format_string_diagnostic_t
 
   /* Functions for emitting a warning about a format string.  */
 
-  bool emit_warning_va (diagnostic_option_id option_id,
+  bool emit_warning_va (diagnostics::option_id option_id,
 			const char *gmsgid,
 			va_list *ap) const
     ATTRIBUTE_GCC_DIAG (3, 0);
 
-  bool emit_warning_n_va (diagnostic_option_id option_id,
+  bool emit_warning_n_va (diagnostics::option_id option_id,
 			  unsigned HOST_WIDE_INT n,
 			  const char *singular_gmsgid,
 			  const char *plural_gmsgid,
 			  va_list *ap) const
   ATTRIBUTE_GCC_DIAG (4, 0) ATTRIBUTE_GCC_DIAG (5, 0);
 
-  bool emit_warning (diagnostic_option_id option_id,
+  bool emit_warning (diagnostics::option_id option_id,
 		     const char *gmsgid, ...) const
     ATTRIBUTE_GCC_DIAG (3, 4);
 
-  bool emit_warning_n (diagnostic_option_id option_id,
+  bool emit_warning_n (diagnostics::option_id option_id,
 		       unsigned HOST_WIDE_INT n,
 		       const char *singular_gmsgid,
 		       const char *plural_gmsgid, ...) const
@@ -125,7 +125,7 @@ class format_string_diagnostic_t
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
 
 extern const char *get_location_within_string (cpp_reader *pfile,
-					       file_cache &fc,
+					       diagnostics::file_cache &fc,
 					       string_concat_db *concats,
 					       location_t strloc,
 					       enum cpp_ttype type,

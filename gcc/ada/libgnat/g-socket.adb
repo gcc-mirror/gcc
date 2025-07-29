@@ -3059,12 +3059,11 @@ package body GNAT.Sockets is
       --  Normal case where we do round down
 
       else
-         S  := time_t (Val - 0.5);
-         uS := suseconds_t (1_000_000 * (Val - Selector_Duration (S)) - 0.5);
-
-         if uS = -1 then
-            --  It happen on integer duration
+         S := time_t (Val - 0.5);
+         if Val = Timeval_Duration (S) then
             uS := 0;
+         else
+            uS := suseconds_t ((Val - Timeval_Duration (S)) * 1_000_000 - 0.5);
          end if;
       end if;
 

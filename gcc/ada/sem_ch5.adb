@@ -807,7 +807,14 @@ package body Sem_Ch5 is
 
       if Is_Tag_Indeterminate (Rhs) then
          if Is_Class_Wide_Type (T1) then
-            Propagate_Tag (Lhs, Rhs);
+
+            --  No need to propagate the tag when the RHS has function calls
+            --  that already propagated it (see Expand_Call_Helper), or if
+            --  some error was reported analyzing RHS.
+
+            if not (Error_Posted (Rhs) or else Tag_Propagated (Lhs)) then
+               Propagate_Tag (Lhs, Rhs);
+            end if;
 
          elsif Nkind (Rhs) = N_Function_Call
            and then Is_Entity_Name (Name (Rhs))

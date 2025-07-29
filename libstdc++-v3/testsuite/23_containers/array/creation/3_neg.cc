@@ -54,3 +54,5 @@ test03()
 }
 
 // { dg-prune-output "static assertion failed" }
+// { dg-prune-output "use of deleted function" }
+// { dg-prune-output "could not convert" }

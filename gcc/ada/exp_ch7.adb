@@ -59,6 +59,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Res;        use Sem_Res;
@@ -2331,6 +2332,8 @@ package body Exp_Ch7 is
 
                Ensure_Freeze_Node (Fin_Id);
                Insert_After (Fin_Spec, Freeze_Node (Fin_Id));
+               Mutate_Ekind (Fin_Id, E_Procedure);
+               Freeze_Extra_Formals (Fin_Id);
                Set_Is_Frozen (Fin_Id);
 
                Append_To (Stmts, Fin_Body);
@@ -3586,18 +3589,22 @@ package body Exp_Ch7 is
 
    procedure Build_Record_Deep_Procs (Typ : Entity_Id) is
    begin
-      Set_TSS (Typ,
-        Make_Deep_Proc
-          (Prim  => Initialize_Case,
-           Typ   => Typ,
-           Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
+      if Has_Controlled_Component (Typ) then
+         Set_TSS
+           (Typ,
+            Make_Deep_Proc
+              (Prim  => Initialize_Case,
+               Typ   => Typ,
+               Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
 
-      if not Is_Inherently_Limited_Type (Typ) then
-         Set_TSS (Typ,
-           Make_Deep_Proc
-             (Prim  => Adjust_Case,
-              Typ   => Typ,
-              Stmts => Make_Deep_Record_Body (Adjust_Case, Typ)));
+         if not Is_Inherently_Limited_Type (Typ) then
+            Set_TSS
+              (Typ,
+               Make_Deep_Proc
+                 (Prim  => Adjust_Case,
+                  Typ   => Typ,
+                  Stmts => Make_Deep_Record_Body (Adjust_Case, Typ)));
+         end if;
       end if;
 
       --  Do not generate Deep_Finalize and Finalize_Address if finalization is
@@ -5598,7 +5605,10 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Present (Utyp) and then Is_Untagged_Derivation (Typ) then
+      if Present (Utyp)
+        and then Is_Untagged_Derivation (Typ)
+        and then Is_Implicit_Full_View (Utyp)
+      then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
          Set_Assignment_OK (Ref);
@@ -6635,6 +6645,16 @@ package body Exp_Ch7 is
       --       Raised : Boolean := False;
       --
       --    begin
+      --       begin
+      --          <Destructor_Proc> (V);  --  If applicable
+      --       exception
+      --          when others =>
+      --             if not Raised then
+      --                Raised := True;
+      --                Save_Occurrence (E, Get_Current_Excep.all.all);
+      --             end if;
+      --       end;
+      --
       --       if F then
       --          begin
       --             Finalize (V);  --  If applicable
@@ -6690,6 +6710,8 @@ package body Exp_Ch7 is
       --
       --       begin
       --          Deep_Finalize (V._parent, False);  --  If applicable
+      --  or
+      --          Deep_Finalize (Parent_Type (V), False); -- Untagged case
       --       exception
       --          when Id : others =>
       --             if not Raised then
@@ -7094,7 +7116,7 @@ package body Exp_Ch7 is
          --  or the type is not controlled.
 
          if Is_Empty_List (Bod_Stmts) then
-            Append_To (Bod_Stmts, Make_Null_Statement (Loc));
+            Append_New_To (Bod_Stmts, Make_Null_Statement (Loc));
 
             return Bod_Stmts;
 
@@ -7581,9 +7603,13 @@ package body Exp_Ch7 is
 
          --    Deep_Finalize (Obj._parent, False);
 
-         if Is_Tagged_Type (Typ) and then Is_Derived_Type (Typ) then
+         if Is_Derived_Type (Typ) then
             declare
-               Par_Typ  : constant Entity_Id := Parent_Field_Type (Typ);
+               Tagd     : constant Boolean := Is_Tagged_Type (Typ);
+               Par_Typ  : constant Entity_Id :=
+                 (if Tagd
+                  then Parent_Field_Type (Typ)
+                  else Etype (Base_Type (Typ)));
                Call     : Node_Id;
                Fin_Stmt : Node_Id;
 
@@ -7592,16 +7618,37 @@ package body Exp_Ch7 is
                   Call :=
                     Make_Final_Call
                       (Obj_Ref   =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => Make_Identifier (Loc, Name_V),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Name_uParent)),
+                         (if Tagd
+                          then
+                            Make_Selected_Component
+                              (Loc,
+                               Prefix        => Make_Identifier (Loc, Name_V),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uParent))
+                          else
+                            Convert_To
+                              (Par_Typ, Make_Identifier (Loc, Name_V))),
                        Typ       => Par_Typ,
                        Skip_Self => True);
 
                   --  Generate:
                   --    begin
                   --       Deep_Finalize (V._parent, False);
+
+                  --    exception
+                  --       when Id : others =>
+                  --          if not Raised then
+                  --             Raised := True;
+                  --             Save_Occurrence (E,
+                  --               Get_Current_Excep.all.all);
+                  --          end if;
+                  --    end;
+                  --
+                  --  in the tagged case. In the untagged case, which arises
+                  --  with the Destructor aspect, generate:
+                  --
+                  --    begin
+                  --       Deep_Finalize (Parent_Type (V), False);
 
                   --    exception
                   --       when Id : others =>
@@ -7656,7 +7703,7 @@ package body Exp_Ch7 is
                         --  than before, the extension components. That might
                         --  be more intuitive (as discussed in preceding
                         --  comment), but it is not required.
-                        Prepend_To (Bod_Stmts, Fin_Stmt);
+                        Prepend_New_To (Bod_Stmts, Fin_Stmt);
                      end if;
                   end if;
                end if;
@@ -7707,10 +7754,56 @@ package body Exp_Ch7 is
                                  (Finalizer_Data))));
                   end if;
 
-                  Prepend_To (Bod_Stmts,
+                  Prepend_New_To (Bod_Stmts,
                     Make_If_Statement (Loc,
                       Condition       => Make_Identifier (Loc, Name_F),
                       Then_Statements => New_List (Fin_Stmt)));
+               end if;
+            end;
+
+            declare
+               ASN : constant Opt_N_Aspect_Specification_Id :=
+                 Get_Rep_Item (Typ, Name_Destructor, False);
+
+               Stmt : Node_Id;
+               Proc : Entity_Id;
+            begin
+               if Present (ASN) then
+                  --  Generate:
+                  --    begin
+                  --       <Destructor_Proc> (V);
+
+                  --    exception
+                  --       when others =>
+                  --          if not Raised then
+                  --             Raised := True;
+                  --             Save_Occurrence (E,
+                  --               Get_Current_Excep.all.all);
+                  --          end if;
+                  --    end;
+
+                  Proc := Entity (Expression (ASN));
+                  Stmt :=
+                    Make_Procedure_Call_Statement
+                      (Loc,
+                       Name                   => New_Occurrence_Of (Proc, Loc),
+                       Parameter_Associations =>
+                         New_List (Make_Identifier (Loc, Name_V)));
+                  if Exceptions_OK then
+                     Stmt :=
+                       Make_Block_Statement
+                         (Loc,
+                          Handled_Statement_Sequence =>
+                            Make_Handled_Sequence_Of_Statements
+                              (Loc,
+                               Statements         => New_List (Stmt),
+                               Exception_Handlers =>
+                                 New_List
+                                   (Build_Exception_Handler
+                                      (Finalizer_Data))));
+                  end if;
+
+                  Prepend_New_To (Bod_Stmts, Stmt);
                end if;
             end;
          end if;
@@ -7906,16 +7999,12 @@ package body Exp_Ch7 is
       if Is_Untagged_Derivation (Typ) then
          if Is_Protected_Type (Typ) then
             Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+         elsif Is_Implicit_Full_View (Utyp) then
+            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
 
-         else
-            declare
-               Root : constant Entity_Id :=
-                 Underlying_Type (Root_Type (Base_Type (Typ)));
-            begin
-               if Is_Protected_Type (Root) then
-                  Utyp := Corresponding_Record_Type (Root);
-               end if;
-            end;
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
          end if;
 
          Ref := Unchecked_Convert_To (Utyp, Ref);
@@ -7970,7 +8059,7 @@ package body Exp_Ch7 is
          return Empty;
 
       elsif Skip_Self then
-         if Has_Controlled_Component (Utyp) then
+         if Has_Controlled_Component (Utyp) or else Has_Destructor (Utyp) then
             if Is_Tagged_Type (Utyp) then
                Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
             else
@@ -7983,6 +8072,7 @@ package body Exp_Ch7 is
       elsif Is_Class_Wide_Type (Typ)
         or else Is_Interface (Typ)
         or else Has_Controlled_Component (Utyp)
+        or else Has_Destructor (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
             Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
@@ -8480,7 +8570,10 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ) and then not Is_Conc then
+      if Is_Untagged_Derivation (Typ)
+        and then not Is_Conc
+        and then Is_Implicit_Full_View (Utyp)
+      then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
 
@@ -9448,8 +9541,15 @@ package body Exp_Ch7 is
    procedure Wrap_Transient_Expression (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Expr : Node_Id             := Relocate_Node (N);
-      Temp : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Typ  : constant Entity_Id  := Etype (N);
+
+      Temp : constant Entity_Id  := Make_Temporary (Loc, 'E',
+                                      Related_Node => Expr);
+      --  We link the temporary with its relocated expression to facilitate
+      --  locating the expression in the expanded code; this simplifies the
+      --  implementation of the function that searchs in the expanded code
+      --  for a function call that has been wrapped in a transient block
+      --  (see Get_Relocated_Function_Call).
 
    begin
       --  Generate:

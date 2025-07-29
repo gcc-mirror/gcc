@@ -66,9 +66,9 @@ namespace all_extents
     test_ctor(Shape shape)
     {
       auto expected = std::extents<int, 1, 2, 3>();
-      VERIFY((std::extents<int, 1, dyn, 3>(shape)) == expected);
-      VERIFY((std::extents<int, dyn, dyn, dyn>(shape)) == expected);
-      VERIFY((std::extents<int, 1, 2, 3>(shape)) == expected);
+      VERIFY(std::extents<int, 1, dyn, 3>(shape) == expected);
+      VERIFY(std::extents<int, dyn, dyn, dyn>(shape) == expected);
+      VERIFY(std::extents<int, 1, 2, 3>(shape) == expected);
     }
 
   constexpr void
@@ -90,8 +90,8 @@ namespace all_extents
     auto span = std::span<int, 0>(shape);
 
     auto expected = std::extents<int>();
-    VERIFY((std::extents<int>(shape)) == expected);
-    VERIFY((std::extents<int>(span)) == expected);
+    VERIFY(std::extents<int>(shape) == expected);
+    VERIFY(std::extents<int>(span) == expected);
   }
 
   constexpr bool

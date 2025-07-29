@@ -72,7 +72,7 @@ f_vnx128qi (int8_t *out)
   *(vnx128qi *) out = v;
 }
 
-/* { dg-final { scan-assembler-times {vmv.v.x\tv[0-9]+,\s*[a-x0-9]+} 6 } } */
+/* { dg-final { scan-assembler-times {vmv.v.x\tv[0-9]+,\s*[a-x0-9]+} 7 } } */
 /* { dg-final { scan-assembler-times {slli\t[a-x0-9]+,\s*[a-x0-9]+,\s*8} 6 } } */
 /* { dg-final { scan-assembler-times {or\t[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+} 6 } } */
 /* { dg-final { scan-assembler-times {vslide1down\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+} 1 } } */

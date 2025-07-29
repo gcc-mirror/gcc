@@ -1,0 +1,12 @@
+DEFINITION MODULE arrayofchar ;
+
+FROM FIO IMPORT File ;
+
+(*
+   Description: provides write procedures for ARRAY OF CHAR.
+*)
+
+PROCEDURE Write (f: File; str: ARRAY OF CHAR) ;
+PROCEDURE WriteLn (f: File) ;
+
+END arrayofchar.

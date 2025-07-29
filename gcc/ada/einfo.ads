@@ -1279,9 +1279,10 @@ package Einfo is
 --       that represents an activation record pointer is an extra formal.
 
 --    Extra_Formals
---       Applies to subprograms, subprogram types, entries, and entry
---       families. Returns first extra formal of the subprogram or entry.
---       Returns Empty if there are no extra formals.
+--       Applies to subprograms, subprogram types, entries, and entry families.
+--       Returns the first extra formal of the subprogram or entry. An entity
+--       has no extra formals when this attribute is Empty, and its attribute
+--       Extra_Formals_Known is True.
 
 --    Finalization_Collection [root type only]
 --       Defined in access-to-controlled or access-to-class-wide types. The
@@ -1594,6 +1595,11 @@ package Einfo is
 --       set, signalling that Freeze.Inherit_Delayed_Rep_Aspects must be called
 --       at the freeze point of the derived type.
 
+--    Has_Destructor
+--       Defined in all type and subtype entities. Set only for record type
+--       entities for which at least one ancestor has the Destructor aspect
+--       specified.
+
 --    Has_DIC (synthesized)
 --       Defined in all type entities. Set for a private type and its full view
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
@@ -1640,11 +1646,6 @@ package Einfo is
 --       that this does not imply a representation with holes, since the rep
 --       clause may merely confirm the default 0..N representation.
 
---    Has_First_Controlling_Parameter_Aspect
---       Defined in tagged types, concurrent types and concurrent record types.
---       Set to indicate that the type has a First_Controlling_Parameter of
---       True (whether by an aspect_specification, a pragma, or inheritance).
-
 --    Has_Exit
 --       Defined in loop entities. Set if the loop contains an exit statement.
 
@@ -1653,6 +1654,12 @@ package Einfo is
 --       when a subprogram has a N_Contract node that has been expanded. The
 --       flag prevents double expansion of a contract when a construct is
 --       rewritten into something else and subsequently reanalyzed/expanded.
+
+--    Has_First_Controlling_Parameter_Aspect
+--       Defined in tagged types, concurrent types, and concurrent record
+--       types. Set to indicate that the type has a First_Controlling_Parameter
+--       of True (whether by an aspect_specification, a pragma, or
+--       inheritance).
 
 --    Has_Foreign_Convention (synthesized)
 --       Applies to all entities. Determines if the Convention for the entity
@@ -1667,6 +1674,12 @@ package Einfo is
 --       appearing in the same package because the placement requirements of
 --       the instance will conflict with the linear elaboration of front-end
 --       inlining.
+
+--    Extra_Formals_Known
+--       Defined in subprograms, subprogram types, entries, and entry families.
+--       Set when the extra formals have been determined. An entity has no
+--       extra formals when this attribute is True, and its attribute
+--       Extra_Formals is Empty.
 
 --    Has_Fully_Qualified_Name
 --       Defined in all entities. Set if the name in the Chars field has been
@@ -2515,11 +2528,12 @@ package Einfo is
 
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
---       i.e. has been declared with the Finalizable aspect or has inherited
---       the Finalizable aspect from an ancestor. Can only be set for record
---       types, tagged or untagged. System.Finalization_Root.Root_Controlled
---       is an example of the former case while Ada.Finalization.Controlled
---       and Ada.Finalization.Limited_Controlled are examples of the latter.
+--       i.e. has been declared with the Finalizable or the Destructor aspect
+--       or has inherited the aspect from an ancestor. Can only be set for
+--       record types, tagged or untagged.
+--       System.Finalization_Root.Root_Controlled is an example of the former
+--       case while Ada.Finalization.Controlled and
+--       Ada.Finalization.Limited_Controlled are examples of the latter.
 
 --    Is_Controlled (synth) [base type only]
 --       Defined in all type entities. Set if Is_Controlled_Active is set for
@@ -2544,6 +2558,10 @@ package Einfo is
 --    Is_Descendant_Of_Address
 --       Defined in all entities. True if the entity is type System.Address,
 --       or (recursively) a subtype or derived type of System.Address.
+
+--    Is_Destructor
+--       Defined in procedure entities. True if the procedure is denoted by the
+--       Destructor aspect on some type.
 
 --    Is_DIC_Procedure
 --       Defined in functions and procedures. Set for a generated procedure
@@ -2778,6 +2796,10 @@ package Einfo is
 --       applied to the pragma. Used to mark all implementation defined
 --       identifiers in standard library packages, and to implement the
 --       restriction No_Implementation_Identifiers.
+
+--    Is_Implicit_Full_View
+--       Defined in types. Set on types that the compiler generates to act as
+--       full views of types that are derivations of private types.
 
 --    Is_Imported
 --       Defined in all entities. Set if the entity is imported. For now we
@@ -3940,9 +3962,21 @@ package Einfo is
 --       Defined in constants and variables. Set if there is an address clause
 --       that causes the entity to overlay a constant object.
 
+--    Overridden_Inherited_Operation
+--       Defined in subprograms and enumeration literals. When set on a
+--       subprogram S, indicates an inherited subprogram that S overrides.
+--       In the case of a privately declared explicit subprogram E that
+--       overrides a private inherited subprogram, and the inherited
+--       subprogram itself overrides another inherited subprogram declared
+--       for a private extension, the field on E will reference the subprogram
+--       inherited by the private extension. This field is used for properly
+--       handling visibility for such privately declared subprograms. This
+--       field is always Empty for enumeration literal entities.
+
 --    Overridden_Operation
 --       Defined in subprograms. For overriding operations, points to the
---       user-defined parent subprogram that is being overridden.
+--       user-defined parent subprogram from which the inherited subprogram
+--       that is being overridden is derived.
 
 --    Package_Instantiation
 --       Defined in packages and generic packages. When defined, this field
@@ -5381,11 +5415,12 @@ package Einfo is
    --    Scope_Depth_Value
    --    Protection_Object                    (protected kind)
    --    Contract_Wrapper
-   --    Extra_Formals
    --    Contract
    --    SPARK_Pragma                         (protected kind)
    --    Default_Expressions_Processed
    --    Entry_Accepted
+   --    Extra_Formals
+   --    Extra_Formals_Known
    --    Has_Yield_Aspect
    --    Has_Expanded_Contract
    --    Ignore_SPARK_Mode_Pragmas
@@ -5413,6 +5448,7 @@ package Einfo is
    --    Enumeration_Pos
    --    Enumeration_Rep
    --    Alias
+   --    Overridden_Inherited_Operation
    --    Enumeration_Rep_Expr
    --    Interface_Name $$$
    --    Renamed_Object $$$
@@ -5502,9 +5538,11 @@ package Einfo is
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
    --    LSP_Subprogram                       (non-generic case only)
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
+   --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
@@ -5705,9 +5743,12 @@ package Einfo is
    --    Extra_Accessibility_Of_Result
    --    Last_Entity
    --    Subps_Index
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Linker_Section_Pragma
    --    Contract
+   --    Extra_Formals
+   --    Extra_Formals_Known
    --    Import_Pragma
    --    LSP_Subprogram
    --    SPARK_Pragma
@@ -5858,9 +5899,11 @@ package Einfo is
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
    --    LSP_Subprogram                       (non-generic case only)
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
+   --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
@@ -5899,6 +5942,7 @@ package Einfo is
    --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel
+   --    Is_Destructor                        (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id
@@ -6088,6 +6132,7 @@ package Einfo is
    --    Last_Entity
    --    Scope_Depth_Value
    --    Extra_Formals
+   --    Extra_Formals_Known
    --    Anonymous_Collections
    --    Contract
    --    SPARK_Pragma
@@ -6101,6 +6146,7 @@ package Einfo is
    --    Extra_Accessibility_Of_Result
    --    Directly_Designated_Type
    --    Extra_Formals
+   --    Extra_Formals_Known
    --    Access_Subprogram_Wrapper
    --    First_Formal                         (synth)
    --    First_Formal_With_Extras             (synth)

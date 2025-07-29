@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_ANA_STATE_TO_DIAGNOSTIC_STATE_H
 #define GCC_ANALYZER_ANA_STATE_TO_DIAGNOSTIC_STATE_H
 
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/state-graphs.h"
 #include "tree-logical-location.h"
 
 namespace ana {

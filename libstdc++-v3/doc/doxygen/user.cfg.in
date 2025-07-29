@@ -869,6 +869,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/functional \
                          include/future \
                          include/generator \
+                         include/inplace_vector \
                          include/iomanip \
                          include/ios \
                          include/iosfwd \

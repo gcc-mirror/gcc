@@ -1338,8 +1338,8 @@ proc dg-missed { args } {
 }
 
 # Look for messages with 'note: ' prefixes.
-# In addition to standard compiler diagnostics ('DK_NOTE', 'inform' functions,
-# "for additional details on an error message"),
+# In addition to standard compiler diagnostics (diagnostics::kind::note,
+# 'inform' functions, "for additional details on an error message"),
 # this also includes output from '-fopt-info' for 'MSG_NOTE':
 # a general optimization info.
 # By default, any *excess* notes are pruned, meaning their appearance doesn't

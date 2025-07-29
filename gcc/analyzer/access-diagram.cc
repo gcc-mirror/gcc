@@ -1300,7 +1300,7 @@ class valid_region_spatial_item : public spatial_item
 {
 public:
   valid_region_spatial_item (const access_operation &op,
-			     diagnostic_event_id_t region_creation_event_id,
+			     diagnostics::paths::event_id_t region_creation_event_id,
 			     const theme &theme)
   : m_op (op),
     m_region_creation_event_id (region_creation_event_id),
@@ -1523,7 +1523,7 @@ public:
 
 private:
   const access_operation &m_op;
-  diagnostic_event_id_t m_region_creation_event_id;
+  diagnostics::paths::event_id_t m_region_creation_event_id;
   mutable const boundaries *m_boundaries;
   const svalue *m_existing_sval;
   std::unique_ptr<spatial_item> m_existing_sval_spatial_item;
@@ -2012,7 +2012,7 @@ class access_diagram_impl : public vbox_widget
 {
 public:
   access_diagram_impl (const access_operation &op,
-		       diagnostic_event_id_t region_creation_event_id,
+		       diagnostics::paths::event_id_t region_creation_event_id,
 		       style_manager &sm,
 		       const theme &theme,
 		       logger *logger)
@@ -2564,7 +2564,7 @@ private:
   }
 
   const access_operation &m_op;
-  diagnostic_event_id_t m_region_creation_event_id;
+  diagnostics::paths::event_id_t m_region_creation_event_id;
   style_manager &m_sm;
   const theme &m_theme;
   logger *m_logger;
@@ -2662,7 +2662,7 @@ direction_widget::paint_to_canvas (canvas &canvas)
    an access_diagram_impl.  */
 
 access_diagram::access_diagram (const access_operation &op,
-				diagnostic_event_id_t region_creation_event_id,
+				diagnostics::paths::event_id_t region_creation_event_id,
 				style_manager &sm,
 				const theme &theme,
 				logger *logger)

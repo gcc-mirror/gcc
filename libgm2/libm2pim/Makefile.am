@@ -185,6 +185,7 @@ libm2pim_la_M2FLAGS = \
   -fm2-pathname=m2pim -I. -I$(GM2_SRC)/gm2-libs \
   -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
   -fm2-g -g -Wcase-enum -Wreturn-type \
+  -Wall \
   -fcase -fm2-prefix=m2pim
 
 if TARGET_DARWIN

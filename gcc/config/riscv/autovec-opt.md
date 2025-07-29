@@ -1714,6 +1714,74 @@
   }
   [(set_attr "type" "vialu")])
 
+(define_insn_and_split "*<sat_op_v_vdup>_vx_<mode>"
+ [(set (match_operand:V_VLSI   0 "register_operand")
+   (if_then_else:V_VLSI
+    (unspec:<VM>
+     [(match_operand:<VM>      1 "vector_mask_operand")
+      (match_operand           5 "vector_length_operand")
+      (match_operand           6 "const_int_operand")
+      (match_operand           7 "const_int_operand")
+      (match_operand           8 "const_int_operand")
+      (match_operand           9 "const_int_operand")
+      (reg:SI VL_REGNUM)
+      (reg:SI VTYPE_REGNUM)
+      (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
+    (unspec:V_VLSI
+     [(match_operand:V_VLSI    3 "register_operand")
+      (vec_duplicate:V_VLSI
+       (match_operand:<VEL>    4 "reg_or_int_operand"))] VSAT_VX_OP_V_VDUP)
+    (unspec:V_VLSI
+     [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    int vxrm_val = INTVAL (operands[9]);
+    riscv_vector::expand_vx_binary_vxrm_vec_vec_dup (operands[0], operands[3],
+						     operands[4],
+						     <VSAT_VX_OP_V_VDUP>,
+						     vxrm_val, <MODE>mode);
+
+    DONE;
+  }
+  [(set_attr "type" "vaalu")])
+
+(define_insn_and_split "*<sat_op_vdup_v>_vx_<mode>"
+ [(set (match_operand:V_VLSI   0 "register_operand")
+   (if_then_else:V_VLSI
+    (unspec:<VM>
+     [(match_operand:<VM>      1 "vector_mask_operand")
+      (match_operand           5 "vector_length_operand")
+      (match_operand           6 "const_int_operand")
+      (match_operand           7 "const_int_operand")
+      (match_operand           8 "const_int_operand")
+      (match_operand           9 "const_int_operand")
+      (reg:SI VL_REGNUM)
+      (reg:SI VTYPE_REGNUM)
+      (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
+    (unspec:V_VLSI
+     [(vec_duplicate:V_VLSI
+       (match_operand:<VEL>    4 "reg_or_int_operand"))
+      (match_operand:V_VLSI    3 "register_operand")] VSAT_VX_OP_VDUP_V)
+    (unspec:V_VLSI
+     [(match_operand:DI        2 "register_operand")] UNSPEC_VUNDEF)))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    int vxrm_val = INTVAL (operands[9]);
+    riscv_vector::expand_vx_binary_vxrm_vec_dup_vec (operands[0], operands[3],
+						     operands[4],
+						     <VSAT_VX_OP_VDUP_V>,
+						     vxrm_val, <MODE>mode);
+
+    DONE;
+  }
+  [(set_attr "type" "vaalu")])
+
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
 ;; Include
@@ -1838,8 +1906,58 @@
     emit_insn (gen_extend<vsubel><vel>2(tmp, operands[1]));
 
     rtx ops[] = {operands[0], tmp};
-    riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                   riscv_vector::UNARY_OP, ops);
+    riscv_vector::expand_broadcast (<MODE>mode, ops);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")]
+)
+
+;; vfwnmacc.vf
+(define_insn_and_split "*vfwnmacc_vf_<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+    (minus:VWEXTF
+      (mult:VWEXTF
+	(neg:VWEXTF
+	  (vec_duplicate:VWEXTF
+	    (float_extend:<VEL>
+	      (match_operand:<VSUBEL> 2 "register_operand"))))
+	(float_extend:VWEXTF
+	  (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))
+      (match_operand:VWEXTF 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3]};
+    riscv_vector::emit_vlmax_insn(
+	code_for_pred_widen_mul_neg_scalar(MINUS, <MODE>mode),
+	riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, ops);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")]
+)
+
+;; vfwnmsac.vf
+(define_insn_and_split "*vfwnmsac_vf_<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+    (minus:VWEXTF
+      (match_operand:VWEXTF 1 "register_operand")
+      (mult:VWEXTF
+	(float_extend:VWEXTF
+	  (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	(vec_duplicate:VWEXTF
+	  (float_extend:<VEL>
+	    (match_operand:<VSUBEL> 2 "register_operand"))))))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3]};
+    riscv_vector::emit_vlmax_insn(
+	code_for_pred_widen_mul_neg_scalar (PLUS, <MODE>mode),
+	riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, ops);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")]

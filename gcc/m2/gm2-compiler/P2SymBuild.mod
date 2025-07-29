@@ -356,7 +356,7 @@ BEGIN
    END ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat2('inconsistant definition module name, module began as (%a) and ended with (%a)', NameStart, NameEnd)
+      WriteFormat2('inconsistent definition module name, module began as (%a) and ended with (%a)', NameStart, NameEnd)
    END ;
    M2Error.LeaveErrorScope
 END P2EndBuildDefModule ;
@@ -425,7 +425,7 @@ BEGIN
    PopT (NameEnd) ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat1('inconsistant implementation module name %a', NameStart)
+      WriteFormat1('inconsistent implementation module name %a', NameStart)
    END ;
    M2Error.LeaveErrorScope
 END P2EndBuildImplementationModule ;
@@ -499,7 +499,7 @@ BEGIN
    END ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat2('inconsistant program module name %a does not match %a', NameStart, NameEnd)
+      WriteFormat2('inconsistent program module name %a does not match %a', NameStart, NameEnd)
    END ;
    M2Error.LeaveErrorScope
 END P2EndBuildProgramModule ;
@@ -564,7 +564,7 @@ BEGIN
    PopT(NameEnd) ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat2('inconsistant inner module name %a does not match %a',
+      WriteFormat2('inconsistent inner module name %a does not match %a',
                    NameStart, NameEnd)
    END ;
    M2Error.LeaveErrorScope
@@ -1835,13 +1835,13 @@ BEGIN
          (* WarnStringAt (InitString ('parampos?'), OperandTok (pi)) ;  *)
          IF Unbounded AND (NOT IsUnboundedParam (ProcSym, prevkind, ParamTotal+i))
          THEN
-            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                             'the parameter {%3EHa} was not declared as an ARRAY OF type',
                             'the parameter {%3EVa} was declared as an ARRAY OF type',
                             ParamTotal+i, ProcSym, curkind, prevkind)
          ELSIF (NOT Unbounded) AND IsUnboundedParam (ProcSym, prevkind, ParamTotal+i)
          THEN
-            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                             'the parameter {%3EHa} was declared as an ARRAY OF type',
                             'the parameter {%3EVa} was not declared as an ARRAY OF type',
                             ParamTotal+i, ProcSym, curkind, prevkind)
@@ -1850,7 +1850,7 @@ BEGIN
          THEN
             IF GetDimension (GetNthParam (ProcSym, prevkind, ParamTotal+1)) # ndim
             THEN
-               ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+               ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                                'the dynamic array parameter {%3EHa} was declared with a different of dimensions',
                                'the dynamic array parameter {%3EVa} was declared with a different of dimensions',
                                ParamTotal+i, ProcSym, curkind, prevkind)
@@ -1859,14 +1859,14 @@ BEGIN
          IF isVarParam AND (NOT IsVarParam (ProcSym, prevkind, ParamTotal+i))
          THEN
             (* Expecting non VAR parameter.  *)
-            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                             '{%3EHa} was not declared as a {%kVAR} parameter',
                             '{%3EVa} was declared as a {%kVAR} parameter',
                             ParamTotal+i, ProcSym, curkind, prevkind)
          ELSIF (NOT isVarParam) AND IsVarParam (ProcSym, prevkind, ParamTotal+i)
          THEN
             (* Expecting VAR pamarater.  *)
-            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                             '{%3EHa} was declared as a {%kVAR} parameter',
                             '{%3EVa} was not declared as a {%kVAR} parameter',
                             ParamTotal+i, ProcSym, curkind, prevkind)
@@ -1877,7 +1877,7 @@ BEGIN
             IF GetSymName (ParamI) # OperandT (pi)
             THEN
                (* Different parameter names.  *)
-               ParameterError ('procedure {%%1a} in the %s differs from the %s, {%%2N} parameter name is inconsistant, %s',
+               ParameterError ('procedure {%%1a} in the %s differs from the %s, {%%2N} parameter name is inconsistent, %s',
                             'named as {%3EVa}',
                             'named as {%3EVa}',
                             ParamTotal+i, ProcSym, curkind, prevkind)
@@ -1897,7 +1897,7 @@ BEGIN
             (NOT IsUnknown(SkipType(ParamIType)))
          THEN
             (* Different parameter types.  *)
-            ParameterError ('declaration in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+            ParameterError ('declaration in the %s differs from the %s, {%%2N} parameter is inconsistent, %s',
                             'the parameter {%3EHa} was declared with a different type',
                             'the parameter {%3EVa} was declared with a different type',
                             ParamTotal+i, ProcSym, curkind, prevkind)
@@ -3072,10 +3072,10 @@ BEGIN
    IF Var=VarTok
    THEN
       (* VAR parameter *)
-      PutProcTypeVarParam(ProcTypeSym, TypeSym, IsUnbounded(TypeSym))
+      PutProcTypeVarParam (tok, ProcTypeSym, TypeSym, IsUnbounded (TypeSym))
    ELSE
       (* Non VAR parameter *)
-      PutProcTypeParam(ProcTypeSym, TypeSym, IsUnbounded(TypeSym))
+      PutProcTypeParam (tok, ProcTypeSym, TypeSym, IsUnbounded (TypeSym))
    END ;
    PushT(ProcTypeSym) ;
    Annotate("%1s(%1d)||proc type")

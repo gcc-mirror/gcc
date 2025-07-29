@@ -27,6 +27,7 @@ void test01()
   const any y(1);
   any_cast<int&>(y); // { dg-error "here" }
   // { dg-error "Template argument must be constructible from a const value" "" { target { *-*-* } } 0 }
+  // { dg-error "binding reference of type 'int&' to 'const int' discards qualifiers" "" { target { *-*-* } } 0 }
 }
 
 void test02()
@@ -34,6 +35,7 @@ void test02()
   any y(1);
   any_cast<int&&>(y); // { dg-error "here" }
   // { dg-error "Template argument must be constructible from an lvalue" "" { target { *-*-* } } 0 }
+  // { dg-error "cannot bind rvalue reference of type 'int&&' to lvalue of type 'int'" "" { target { *-*-* } } 0 }
 }
 
 void test03()
@@ -41,6 +43,7 @@ void test03()
   any y(1);
   any_cast<int&>(std::move(y)); // { dg-error "here" }
   // { dg-error "Template argument must be constructible from an rvalue" "" { target { *-*-* } } 0 }
+  // { dg-error "cannot bind non-const lvalue reference of type 'int&' to an rvalue of type 'int'" "" { target { *-*-* } } 0 }
 }
 
 // { dg-prune-output "invalid 'static_cast'" }

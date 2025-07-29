@@ -1422,8 +1422,11 @@ package body Exp_Aggr is
                elsif Is_Mutably_Tagged_Type (Comp_Typ)
                  and then Nkind (Expr) = N_Qualified_Expression
                then
-                  Analyze_And_Resolve (Expr_Q, Etype (Expr));
+                  --  Avoid class-wide expected type for aggregate
+                  --  (which would be rejected as illegal)
+                  --  if the aggregate is explicitly qualified.
 
+                  Analyze_And_Resolve (Expr_Q, Etype (Expr));
                else
                   Analyze_And_Resolve (Expr_Q, Comp_Typ);
                end if;
@@ -1457,54 +1460,12 @@ package body Exp_Aggr is
          end if;
 
          if Present (Expr) then
-
-            --  For mutably tagged abstract class-wide types, we rely on the
-            --  type of the initializing expression to initialize the tag of
-            --  each array component.
-
-            --  Generate:
-            --     expr_type!(Indexed_Comp) := expr;
-            --     expr_type!(Indexed_Comp)._tag := expr_type'Tag;
-
-            if Is_Mutably_Tagged_Type (Comp_Typ)
-              and then Is_Abstract_Type (Root_Type (Comp_Typ))
-            then
-               declare
-                  Expr_Type : Entity_Id;
-
-               begin
-                  if Nkind (Expr) in N_Has_Etype
-                    and then Present (Etype (Expr))
-                  then
-                     Expr_Type := Etype (Expr);
-
-                  elsif Nkind (Expr) = N_Qualified_Expression then
-                     Analyze (Subtype_Mark (Expr));
-                     Expr_Type := Etype (Subtype_Mark (Expr));
-
-                  --  Unsupported case
-
-                  else
-                     pragma Assert (False);
-                     raise Program_Error;
-                  end if;
-
-                  Initialize_Component
-                    (N          => N,
-                     Comp       => Unchecked_Convert_To (Expr_Type,
-                                     Indexed_Comp),
-                     Comp_Typ   => Expr_Type,
-                     Init_Expr  => Expr,
-                     Stmts      => Stmts);
-               end;
-            else
-               Initialize_Component
-                 (N          => N,
-                  Comp       => Indexed_Comp,
-                  Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Expr,
-                  Stmts      => Stmts);
-            end if;
+            Initialize_Component
+              (N          => N,
+               Comp       => Indexed_Comp,
+               Comp_Typ   => Comp_Typ,
+               Init_Expr  => Expr,
+               Stmts      => Stmts);
 
          --  Ada 2005 (AI-287): In case of default initialized component, call
          --  the initialization subprogram associated with the component type.
@@ -1519,10 +1480,10 @@ package body Exp_Aggr is
 
          else
             --  For mutably tagged class-wide types, default initialization is
-            --  performed by the init procedure of their root type.
+            --  performed by the init procedure of their specific type.
 
             if Is_Mutably_Tagged_Type (Comp_Typ) then
-               Comp_Typ := Root_Type (Comp_Typ);
+               Comp_Typ := Find_Specific_Type (Comp_Typ);
             end if;
 
             if Present (Base_Init_Proc (Comp_Typ)) then
@@ -4388,6 +4349,7 @@ package body Exp_Aggr is
         and then Is_Limited_Type (Typ)
       then
          Target_Expr := New_Copy_Tree (Name (Parent_Node));
+         Ensure_Defined (Typ, Parent_Node);
          Insert_Actions (Parent_Node,
            Build_Record_Aggr_Code (N, Typ, Target_Expr));
          Rewrite (Parent_Node, Make_Null_Statement (Loc));
@@ -4413,6 +4375,7 @@ package body Exp_Aggr is
 
             if Nkind (N) in N_Aggregate | N_Extension_Aggregate then
                Target_Expr := New_Copy_Tree (Lhs);
+               Ensure_Defined (Typ, Parent_Node);
                Insert_Actions (Parent_Node,
                  Build_Record_Aggr_Code (N, Typ, Target_Expr));
                Rewrite (Parent_Node, Make_Null_Statement (Loc));
@@ -6771,6 +6734,7 @@ package body Exp_Aggr is
       function Build_Size_Expr (Comp : Node_Id) return Node_Id is
          Lo, Hi       : Node_Id;
          It           : Node_Id;
+         It_Subt      : Entity_Id;
          Siz_Exp      : Node_Id := Empty;
          Choice       : Node_Id;
          Temp_Siz_Exp : Node_Id;
@@ -6845,20 +6809,22 @@ package body Exp_Aggr is
          elsif Nkind (Comp) = N_Iterated_Component_Association then
             if Present (Iterator_Specification (Comp)) then
 
-               --  If the static size of the iterable object is known,
+               --  If the size of the iterable object can be determined,
                --  attempt to return it.
 
                It := Name (Iterator_Specification (Comp));
                Preanalyze (It);
 
-               --  Handle the simplest cases for now where It denotes an array
-               --  object.
+               It_Subt := Etype (It);
+
+               --  Handle the simplest cases for now, where It denotes an array
+               --  object or a container object.
 
                if Nkind (It) in N_Identifier
-                 and then Ekind (Etype (It)) = E_Array_Subtype
+                 and then Ekind (It_Subt) = E_Array_Subtype
                then
                   declare
-                     Idx_N : Node_Id := First_Index (Etype (It));
+                     Idx_N : Node_Id := First_Index (It_Subt);
                      Siz_Exp : Node_Id := Empty;
                   begin
                      while Present (Idx_N) loop
@@ -6891,6 +6857,96 @@ package body Exp_Aggr is
                      end loop;
 
                      return Siz_Exp;
+                  end;
+
+               --  Case of iterating over a container object. Note that this
+               --  must be a simple object, and not something like a function
+               --  call (which might have side effects, and we wouldn't want
+               --  it to be evaluated more than once). We take advantage of
+               --  RM22 4.3.5(40/5), which allows implementation-defined
+               --  behavior for the parameter passed to the Empty function,
+               --  and here use the container Length function when available.
+               --  Class-wide objects are also excluded, since those would
+               --  lead to dispatching, which could call a user-defined
+               --  overriding of Length that might have arbitrary effects.
+
+               elsif Is_Entity_Name (It)
+                 and then Is_Object (Entity (It))
+                 and then Ekind (It_Subt) in Record_Kind
+                 and then not Is_Class_Wide_Type (It_Subt)
+               then
+                  declare
+                     Aggr_Base    : constant Entity_Id := Base_Type (Typ);
+                     It_Base      : constant Entity_Id := Base_Type (It_Subt);
+                     Empty_Formal : constant Entity_Id :=
+                                      First_Formal (Entity (Empty_Subp));
+                     Length_Subp  : Entity_Id;
+                     Param_List   : List_Id;
+
+                  begin
+                     --  We only determine a nondefault capacity in the case
+                     --  of containers of predefined container types, which
+                     --  generally have a Length function. User-defined
+                     --  containers don't necessarily have such a function,
+                     --  or it may be named differently, or it may have
+                     --  the wrong semantics. The base subtypes are tested,
+                     --  since their Sloc will refer to the original container
+                     --  generics in the predefined library, even though the
+                     --  types are declared in a package instantiation in some
+                     --  other unit. Also, this is only done when Empty_Subp
+                     --  has a formal parameter (generally named Capacity),
+                     --  and not in the case of a parameterless Empty function.
+                     --  Finally, we test for the container aggregate's type
+                     --  having a first discriminant with the name Capacity,
+                     --  since determining capacity via Length is only sensible
+                     --  for container types with that discriminant (bounded
+                     --  containers).
+
+                     if Present (Empty_Formal)
+                       and then In_Predefined_Unit (It_Base)
+                       and then In_Predefined_Unit (Aggr_Base)
+                       and then Has_Discriminants (Aggr_Base)
+                       and then
+                         Get_Name_String
+                           (Chars (First_Discriminant (Aggr_Base)))
+                           = "capacity"
+                     then
+                        --  Look for the container type's Length function in
+                        --  the package where it's defined.
+
+                        Push_Scope (Scope (It_Base));
+
+                        Length_Subp := Current_Entity_In_Scope (Name_Length);
+
+                        Pop_Scope;
+
+                        --  If we found a Length function that has a single
+                        --  parameter of the iterator object's container type,
+                        --  then expand a call to that, passing the object,
+                        --  and return that call, which will be used as the
+                        --  "size" of the current element association of the
+                        --  bounded container aggregate.
+
+                        if Present (Length_Subp)
+                          and then Ekind (Length_Subp) = E_Function
+                          and then
+                            Present (First_Entity (Length_Subp))
+                          and then
+                            No (Next_Entity (First_Entity (Length_Subp)))
+                          and then
+                            Base_Type
+                              (Etype (First_Entity (Length_Subp))) = It_Base
+                        then
+                           Param_List :=
+                             New_List (New_Occurrence_Of (Entity (It), Loc));
+
+                           return
+                             Make_Function_Call (Loc,
+                               Name =>
+                                 New_Occurrence_Of (Length_Subp, Loc),
+                               Parameter_Associations => Param_List);
+                        end if;
+                     end if;
                   end;
                end if;
 
@@ -8864,7 +8920,15 @@ package body Exp_Aggr is
       else
          Set_No_Ctrl_Actions (Init_Stmt);
 
-         if Tagged_Type_Expansion and then Is_Tagged_Type (Comp_Typ) then
+         if Tagged_Type_Expansion
+           and then Is_Tagged_Type (Comp_Typ)
+
+         --  Cannot adjust the tag when the expected type of the component is
+         --  a mutably tagged (and therefore class-wide) type; each component
+         --  of the aggregate has the tag of its initializing expression.
+
+           and then not Is_Mutably_Tagged_Type (Comp_Typ)
+         then
             declare
                Typ : Entity_Id := Underlying_Type (Comp_Typ);
 

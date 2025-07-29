@@ -46,7 +46,7 @@ def skip_warning(filename, message):
                  '-Wunused-function', '-Wunneeded-internal-declaration',
                  '-Wvla-cxx-extension', '-Wunused-command-line-argument'],
 
-            'diagnostic-path-output.cc': ['m_logical_loc_mgr'],
+            'diagnostics/paths-output.cc': ['m_logical_loc_mgr'],
             'fold-const-call.cc': ['-Wreturn-type'],
             'gimple-match': ['-Wunused-', '-Wtautological-compare'],
             'generic-match': ['-Wunused-', '-Wtautological-compare'],

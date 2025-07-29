@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
 #include "sbitmap.h"
@@ -234,17 +234,18 @@ function_point::before_supernode (const supernode *supernode,
   return function_point (supernode, from_edge, 0, PK_BEFORE_SUPERNODE);
 }
 
-/* A subclass of diagnostic_context for use by
+/* A subclass of diagnostics::context for use by
    program_point::print_source_line.  */
 
-class debug_diagnostic_context : public diagnostic_context
+class debug_diagnostic_context : public diagnostics::context
 {
 public:
   debug_diagnostic_context ()
   {
     diagnostic_initialize (this, 0);
-    m_source_printing.show_line_numbers_p = true;
-    m_source_printing.enabled = true;
+    auto &source_printing_opts = get_source_printing_options ();
+    source_printing_opts.show_line_numbers_p = true;
+    source_printing_opts.enabled = true;
   }
   ~debug_diagnostic_context ()
   {
@@ -263,9 +264,9 @@ function_point::print_source_line (pretty_printer *pp) const
   // TODO: monospace font
   debug_diagnostic_context tmp_dc;
   gcc_rich_location richloc (stmt->location);
-  diagnostic_source_print_policy source_policy (tmp_dc);
+  diagnostics::source_print_policy source_policy (tmp_dc);
   gcc_assert (pp);
-  source_policy.print (*pp, richloc, DK_ERROR, nullptr);
+  source_policy.print (*pp, richloc, diagnostics::kind::error, nullptr);
   pp_string (pp, pp_formatted_text (tmp_dc.get_reference_printer ()));
 }
 

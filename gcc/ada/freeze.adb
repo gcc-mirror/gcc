@@ -7231,6 +7231,35 @@ package body Freeze is
             end if;
 
             Inherit_Aspects_At_Freeze_Point (E);
+
+            --  Destructor legality check
+
+            if Present (Primitive_Operations (E)) then
+               declare
+                  Subp             : Entity_Id;
+                  Parent_Operation : Entity_Id;
+
+                  Elmt : Elmt_Id := First_Elmt (Primitive_Operations (E));
+
+               begin
+                  while Present (Elmt) loop
+                     Subp := Node (Elmt);
+
+                     if Present (Overridden_Operation (Subp)) then
+                        Parent_Operation := Overridden_Operation (Subp);
+
+                        if Ekind (Parent_Operation) = E_Procedure
+                          and then Is_Destructor (Parent_Operation)
+                        then
+                           Error_Msg_N ("cannot override destructor", Subp);
+                        end if;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
+
          end if;
 
          --  Case of array type
@@ -8130,6 +8159,7 @@ package body Freeze is
          if Ekind (E) = E_Anonymous_Access_Subprogram_Type
            and then Ekind (Designated_Type (E)) = E_Subprogram_Type
          then
+            Create_Extra_Formals (Designated_Type (E));
             Layout_Type (Etype (Designated_Type (E)));
          end if;
 
@@ -10393,6 +10423,8 @@ package body Freeze is
 
       --  Local variables
 
+      use Deferred_Extra_Formals_Support;
+
       F      : Entity_Id;
       Retype : Entity_Id;
 
@@ -10493,8 +10525,11 @@ package body Freeze is
             Create_Extra_Formals (E);
 
             pragma Assert
-              ((Ekind (E) = E_Subprogram_Type
-                  and then Extra_Formals_OK (E))
+              ((Extra_Formals_Known (E)
+                 or else Is_Deferred_Extra_Formals_Entity (E))
+               or else
+                 (Ekind (E) = E_Subprogram_Type
+                   and then Extra_Formals_OK (E))
                or else
                  (Is_Subprogram (E)
                    and then Extra_Formals_OK (E)
@@ -10522,6 +10557,10 @@ package body Freeze is
 
       else
          Set_Mechanisms (E);
+
+         if not Extra_Formals_Known (E) then
+            Freeze_Extra_Formals (E);
+         end if;
 
          --  For foreign conventions, warn about return of unconstrained array
 
@@ -10577,6 +10616,11 @@ package body Freeze is
             end loop;
          end if;
       end if;
+
+      --  Check formals matching in thunks
+
+      pragma Assert (not Is_Thunk (E)
+        or else Extra_Formals_Match_OK (Thunk_Entity (E), E));
 
       --  Pragma Inline_Always is disallowed for dispatching subprograms
       --  because the address of such subprograms is saved in the dispatch

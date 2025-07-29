@@ -33,8 +33,8 @@
 #include "diagnostic.h"
 #include "context.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-metadata.h"
-#include "diagnostic-digraphs.h"
+#include "diagnostics/metadata.h"
+#include "diagnostics/digraphs.h"
 #include "pass_manager.h"
 
 
@@ -97,7 +97,7 @@ check_for_named_call (gimple *stmt,
   return call;
 }
 
-class lazy_passes_graph : public diagnostics::digraphs::lazy_digraph
+class lazy_passes_graph : public lazily_created<diagnostics::digraphs::digraph>
 {
 public:
   lazy_passes_graph (const ::gcc::pass_manager &pass_manager_)
@@ -105,8 +105,9 @@ public:
   {
   }
 
+private:
   std::unique_ptr<diagnostics::digraphs::digraph>
-  create_digraph () const final override
+  create_object () const final override
   {
     auto g = std::make_unique<diagnostics::digraphs::digraph> ();
     g->set_description ("Optimization Passes");
@@ -176,14 +177,13 @@ public:
     return result;
   }
 
-private:
   const ::gcc::pass_manager &m_pass_manager;
 };
 
 static void
 report_diag_with_graphs (location_t loc)
 {
-  class my_lazy_digraphs : public diagnostics::digraphs::lazy_digraphs
+  class my_lazy_digraphs : public diagnostics::metadata::lazy_digraphs
   {
   public:
     using diagnostic_graph = diagnostics::digraphs::digraph;
@@ -191,7 +191,7 @@ report_diag_with_graphs (location_t loc)
     using diagnostic_edge = diagnostics::digraphs::edge;
 
     std::unique_ptr<std::vector<std::unique_ptr<diagnostic_graph>>>
-    create_digraphs () const final override
+    create_object () const final override
     {
       auto graphs
 	= std::make_unique<std::vector<std::unique_ptr<diagnostic_graph>>> ();
@@ -230,7 +230,7 @@ report_diag_with_graphs (location_t loc)
   };
 
   gcc_rich_location rich_loc (loc);
-  diagnostic_metadata meta;
+  diagnostics::metadata meta;
   my_lazy_digraphs ldg;
   meta.set_lazy_digraphs (&ldg);
   error_meta (&rich_loc, meta,

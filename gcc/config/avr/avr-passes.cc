@@ -4120,9 +4120,8 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   JUMP_LABEL (cbranch) = xop[4];
   ++LABEL_NUSES (xop[4]);
 
-  rtx_insn *seq1 = get_insns ();
   rtx_insn *last1 = get_last_insn ();
-  end_sequence ();
+  rtx_insn *seq1 = end_sequence ();
 
   emit_insn_after (seq1, insns[2]);
 
@@ -4141,9 +4140,8 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 
   emit_insn (pat_4);
 
-  rtx_insn *seq2 = get_insns ();
   rtx_insn *last2 = get_last_insn ();
-  end_sequence ();
+  rtx_insn *seq2 = end_sequence ();
 
   emit_insn_after (seq2, insns[3]);
 

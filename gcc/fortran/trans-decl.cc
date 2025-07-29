@@ -4773,14 +4773,14 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       /* Nullify explicit return class arrays on entry.  */
       tree type;
       tmp = get_proc_result (proc_sym);
-	if (tmp && GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
-	  {
-	    gfc_start_block (&init);
-	    tmp = gfc_class_data_get (tmp);
-	    type = TREE_TYPE (gfc_conv_descriptor_data_get (tmp));
-	    gfc_conv_descriptor_data_set (&init, tmp, build_int_cst (type, 0));
-	    gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
-	  }
+      if (tmp && GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  gfc_start_block (&init);
+	  tmp = gfc_class_data_get (tmp);
+	  type = TREE_TYPE (gfc_conv_descriptor_data_get (tmp));
+	  gfc_conv_descriptor_data_set (&init, tmp, build_int_cst (type, 0));
+	  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+	}
     }
 
 

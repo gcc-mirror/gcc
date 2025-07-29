@@ -368,7 +368,7 @@ is
    -- Empty --
    -----------
 
-   function Empty (Capacity : Count_Type) return Map is
+   function Empty (Capacity : Count_Type := 10) return Map is
    begin
       return Result : Map (Capacity, 0) do
          null;

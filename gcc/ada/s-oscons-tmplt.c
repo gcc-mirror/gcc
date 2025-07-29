@@ -1976,7 +1976,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 #if defined(__linux__) || defined(__FreeBSD__) \
  || (defined(_AIX) && defined(_AIXVERSION_530)) \
  || defined(__DragonFly__) || defined(__QNX__) \
- || defined (__vxworks)
+ || (defined (__vxworks) && /* VxWorks7 */ defined (_VSB_CONFIG_FILE))
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).
@@ -1985,6 +1985,10 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
  ** pthread_cond_timedwait (and does not have pthread_condattr_setclock),
  ** hence the conditionalization on AIX version above). _AIXVERSION_530
  ** is defined in AIX 5.3 and more recent versions.
+ **
+ ** VxWorks6 lacks pthread_condattr_setclock, so define CLOCK_RT_Ada to
+ ** CLOCK_REALTIME to get the dummy definition of __gnat_pthread_condattr_setup
+ ** in libgnarl/thread.c.
  **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
 

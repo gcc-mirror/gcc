@@ -21,7 +21,8 @@
 int plugin_is_GPL_compatible;
 
 void
-noop_text_starter_fn (diagnostic_text_output_format &, const diagnostic_info *)
+noop_text_starter_fn (diagnostics::text_sink &,
+		      const diagnostics::diagnostic_info *)
 {
 }
 
@@ -32,7 +33,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  diagnostic_text_starter (global_dc) = noop_text_starter_fn;
+  diagnostics::text_starter (global_dc) = noop_text_starter_fn;
 
   return 0;
 }

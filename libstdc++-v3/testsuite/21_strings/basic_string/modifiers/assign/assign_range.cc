@@ -41,7 +41,7 @@ do_test()
 }
 
 template<typename Range>
-void
+constexpr void
 do_test_a()
 {
   do_test<Range, std::allocator<char>>();
@@ -50,7 +50,7 @@ do_test_a()
   do_test<Range, __gnu_test::SimpleAllocator<wchar_t>>();
 }
 
-bool
+constexpr bool
 test_ranges()
 {
   using namespace __gnu_test;
@@ -69,9 +69,9 @@ test_ranges()
 
   // Not lvalue-convertible to char
   struct C {
-    C(char v) : val(v) { }
-    operator char() && { return val; }
-    bool operator==(char b) const { return b == val; }
+    constexpr C(char v) : val(v) { }
+    constexpr operator char() && { return val; }
+    constexpr bool operator==(char b) const { return b == val; }
     char val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
@@ -98,19 +98,11 @@ test_overlapping()
   VERIFY( c == "1234" );
 }
 
-constexpr bool
-test_constexpr()
-{
-#if _GLIBCXX_USE_CXX11_ABI
-  // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::string_view, std::allocator<char>>();
-#endif // _GLIBCXX_USE_CXX11_ABI
-  return true;
-}
-
 int main()
 {
   test_ranges();
   test_overlapping();
-  static_assert( test_constexpr() );
+#if _GLIBCXX_USE_CXX11_ABI
+  static_assert( test_ranges() );
+#endif // _GLIBCXX_USE_CXX11_ABI
 }

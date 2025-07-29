@@ -25,7 +25,7 @@ along with this program; see the file COPYING3.  If not see
 #include "label-text.h"
 
 class range_label;
-class label_effects;
+namespace diagnostics { class label_effects; }
 
 /* A hint to diagnostic_show_locus on how to print a source range within a
    rich_location.
@@ -213,7 +213,7 @@ semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
 }
 
 class fixit_hint;
-class diagnostic_path;
+namespace diagnostics { namespace paths { class path; }}
 
 /* A "rich" source code location, for use when printing diagnostics.
    A rich_location has one or more carets&ranges, where the carets
@@ -520,8 +520,8 @@ class rich_location
   }
 
   /* An optional path through the code.  */
-  const diagnostic_path *get_path () const { return m_path; }
-  void set_path (const diagnostic_path *path) { m_path = path; }
+  const diagnostics::paths::path *get_path () const { return m_path; }
+  void set_path (const diagnostics::paths::path *path) { m_path = path; }
 
   /* A flag for hinting that the diagnostic involves character encoding
      issues, and thus that it will be helpful to the user if we show some
@@ -567,7 +567,7 @@ protected:
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
 
-  const diagnostic_path *m_path;
+  const diagnostics::paths::path *m_path;
 };
 
 /* Abstract base class for labelling a range within a rich_location
@@ -596,7 +596,8 @@ class range_label
   virtual label_text get_text (unsigned range_idx) const = 0;
 
   /* Get any special effects for the label (e.g. links to other labels).  */
-  virtual const label_effects *get_effects (unsigned /*range_idx*/) const
+  virtual const diagnostics::label_effects *
+  get_effects (unsigned /*range_idx*/) const
   {
     return nullptr;
   }

@@ -781,7 +781,7 @@ public:
       PK_IGNORED_ATTRIBUTES,
       PK_DIAGNOSTIC,
     } pd_kind;
-  diagnostic_t diagnostic_kind;
+  enum diagnostics::kind diagnostic_kind;
   const char *kind_str;
   const char *option_str;
   bool own_option_str;
@@ -792,7 +792,7 @@ public:
     valid = false;
     loc_kind = loc_option = UNKNOWN_LOCATION;
     pd_kind = PK_INVALID;
-    diagnostic_kind = DK_UNSPECIFIED;
+    diagnostic_kind = diagnostics::kind::unspecified;
     kind_str = option_str = nullptr;
     own_option_str = false;
   }
@@ -808,7 +808,7 @@ public:
     kind_str = kind_string;
 
     pd_kind = PK_INVALID;
-    diagnostic_kind = DK_UNSPECIFIED;
+    diagnostic_kind = diagnostics::kind::unspecified;
     if (strcmp (kind_str, "push") == 0)
       pd_kind = PK_PUSH;
     else if (strcmp (kind_str, "pop") == 0)
@@ -818,17 +818,17 @@ public:
     else if (strcmp (kind_str, "error") == 0)
       {
 	pd_kind = PK_DIAGNOSTIC;
-	diagnostic_kind = DK_ERROR;
+	diagnostic_kind = diagnostics::kind::error;
       }
     else if (strcmp (kind_str, "warning") == 0)
       {
 	pd_kind = PK_DIAGNOSTIC;
-	diagnostic_kind = DK_WARNING;
+	diagnostic_kind = diagnostics::kind::warning;
       }
     else if (strcmp (kind_str, "ignored") == 0)
       {
 	pd_kind = PK_DIAGNOSTIC;
-	diagnostic_kind = DK_IGNORED;
+	diagnostic_kind = diagnostics::kind::ignored;
       }
   }
 
@@ -1016,7 +1016,8 @@ handle_pragma_diagnostic_impl ()
      what we used to do here before and changing it breaks e.g.
      PR69543 and PR69558.  */
   control_warning_option (option_index, (int) data.diagnostic_kind,
-			  arg, data.diagnostic_kind != DK_IGNORED,
+			  arg,
+			  data.diagnostic_kind != diagnostics::kind::ignored,
 			  input_location, lang_mask, &handlers,
 			  &global_options, &global_options_set,
 			  global_dc);

@@ -1143,7 +1143,9 @@ maybe_add_lambda_conv_op (tree type)
   tree lam = CLASSTYPE_LAMBDA_EXPR (type);
 
   if (LAMBDA_EXPR_CAPTURE_LIST (lam) != NULL_TREE
-      || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) != CPLD_NONE)
+      || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) != CPLD_NONE
+      /* CWG2561 ...and no explicit object parameter.  */
+      || DECL_XOBJ_MEMBER_FUNCTION_P (callop))
     return;
 
   if (processing_template_decl)

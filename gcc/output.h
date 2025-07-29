@@ -639,4 +639,6 @@ extern int default_address_cost (rtx, machine_mode, addr_space_t, bool);
 /* Stack usage.  */
 extern void output_stack_usage (void);
 
+extern void verify_reg_names_in_constraints ();
+
 #endif /* ! GCC_OUTPUT_H */

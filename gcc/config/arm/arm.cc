@@ -289,7 +289,8 @@ static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
 static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 						     const_tree type,
 						     int misalignment,
-						     bool is_packed);
+						     bool is_packed,
+						     bool is_gather_scatter);
 static void arm_conditional_register_usage (void);
 static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
@@ -30661,11 +30662,15 @@ arm_vector_alignment_reachable (const_tree type, bool is_packed)
 static bool
 arm_builtin_support_vector_misalignment (machine_mode mode,
 					 const_tree type, int misalignment,
-					 bool is_packed)
+					 bool is_packed,
+					 bool is_gather_scatter)
 {
   if (TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access)
     {
       HOST_WIDE_INT align = TYPE_ALIGN_UNIT (type);
+
+      if (is_gather_scatter)
+	return true;
 
       if (is_packed)
         return align == 1;
@@ -30683,7 +30688,8 @@ arm_builtin_support_vector_misalignment (machine_mode mode,
     }
 
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 static void

@@ -27,8 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "cgraph.h"
 #include "digraph.h"
-#include "diagnostic-event-id.h"
-#include "diagnostic-state-graphs.h"
+#include "diagnostics/event-id.h"
+#include "diagnostics/state-graphs.h"
 #include "graphviz.h"
 
 #include "text-art/tree-widget.h"

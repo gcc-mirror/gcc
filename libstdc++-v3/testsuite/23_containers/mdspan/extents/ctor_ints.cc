@@ -35,20 +35,20 @@ test_all()
   auto expected = std::extents<int, 1, 2, 3>(1, 2, 3);
 
   // From all extents.
-  VERIFY((std::extents<int, 1, 2, 3>(1, 2, 3)) == expected);
-  VERIFY((std::extents<int, dyn, 2, 3>(1, 2, 3)) == expected);
-  VERIFY((std::extents<int, dyn, 2, dyn>(1, 2, 3)) == expected);
+  VERIFY(std::extents<int, 1, 2, 3>(1, 2, 3) == expected);
+  VERIFY(std::extents<int, dyn, 2, 3>(1, 2, 3) == expected);
+  VERIFY(std::extents<int, dyn, 2, dyn>(1, 2, 3) == expected);
 
-  VERIFY((std::extents<int, 1, 2, 3>{1, 2, 3}) == expected);
-  VERIFY((std::extents<int, dyn, 2, 3>{1, 2, 3}) == expected);
-  VERIFY((std::extents<int, dyn, 2, dyn>{1, 2, 3}) == expected);
+  VERIFY(std::extents<int, 1, 2, 3>{1, 2, 3} == expected);
+  VERIFY(std::extents<int, dyn, 2, 3>{1, 2, 3} == expected);
+  VERIFY(std::extents<int, dyn, 2, dyn>{1, 2, 3} == expected);
 
   // From only dynamic extents.
-  VERIFY((std::extents<int, dyn, 2, 3>(1)) == expected);
-  VERIFY((std::extents<int, dyn, 2, dyn>(1, 3)) == expected);
+  VERIFY(std::extents<int, dyn, 2, 3>(1) == expected);
+  VERIFY(std::extents<int, dyn, 2, dyn>(1, 3) == expected);
 
-  VERIFY((std::extents<int, dyn, 2, 3>{1}) == expected);
-  VERIFY((std::extents<int, dyn, 2, dyn>{1, 3}) == expected);
+  VERIFY(std::extents<int, dyn, 2, 3>{1} == expected);
+  VERIFY(std::extents<int, dyn, 2, dyn>{1, 3} == expected);
 
   return true;
 }

@@ -643,7 +643,8 @@ public:
 	return e.use_exact_insn (code_for_pred_mov (e.vector_mode ()));
       case OP_TYPE_x:
       case OP_TYPE_f:
-	return e.use_exact_insn (code_for_pred_broadcast (e.vector_mode ()));
+	return e.use_scalar_broadcast_insn
+	  (code_for_pred_broadcast (e.vector_mode ()));
       default:
 	gcc_unreachable ();
       }

@@ -20,6 +20,7 @@ DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_0_WARP(T), min, VX_BINARY_FUNC_BODY_X8)
 DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_1_WARP(T), min, VX_BINARY_FUNC_BODY_X8)
 DEF_VX_BINARY_CASE_3_WRAP(T, SAT_S_ADD_FUNC_WRAP(T), sat_add, VX_BINARY_FUNC_BODY_X8)
 DEF_VX_BINARY_CASE_3_WRAP(T, SAT_S_SUB_FUNC_WRAP(T), sat_sub, VX_BINARY_FUNC_BODY_X8)
+DEF_VX_BINARY_CASE_3_WRAP(T, AVG_FLOOR_FUNC_WRAP(T), avg_floor, VX_BINARY_FUNC_BODY_X8)
 
 /* { dg-final { scan-assembler {vadd.vx} } } */
 /* { dg-final { scan-assembler {vsub.vx} } } */
@@ -34,3 +35,8 @@ DEF_VX_BINARY_CASE_3_WRAP(T, SAT_S_SUB_FUNC_WRAP(T), sat_sub, VX_BINARY_FUNC_BOD
 /* { dg-final { scan-assembler {vmin.vx} } } */
 /* { dg-final { scan-assembler {vsadd.vx} } } */
 /* { dg-final { scan-assembler {vssub.vx} } } */
+/* { dg-final { scan-assembler {vaadd.vx} { target { any-opts {
+     "-mrvv-vector-bits=zvl -mrvv-max-lmul=m1"
+     "-mrvv-vector-bits=zvl -mrvv-max-lmul=m2"
+     "-mrvv-vector-bits=zvl -mrvv-max-lmul=m4"
+   } } } } } */

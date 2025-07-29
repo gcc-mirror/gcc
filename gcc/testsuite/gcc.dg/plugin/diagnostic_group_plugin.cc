@@ -27,7 +27,7 @@
 #include "plugin-version.h"
 #include "c-family/c-common.h"
 #include "diagnostic.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 #include "context.h"
 
 int plugin_is_GPL_compatible;
@@ -165,8 +165,8 @@ pass_test_groups::execute (function *fun)
    expected output.  */
 
 void
-test_diagnostic_text_starter (diagnostic_text_output_format &text_output,
-			      const diagnostic_info *diagnostic)
+test_diagnostic_text_starter (diagnostics::text_sink &text_output,
+			      const diagnostics::diagnostic_info *diagnostic)
 {
   pp_set_prefix (text_output.get_printer (), xstrdup ("PREFIX: "));
 }
@@ -175,22 +175,22 @@ test_diagnostic_text_starter (diagnostic_text_output_format &text_output,
    expected output.  */
 
 void
-test_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
-			       to_text &sink,
+test_diagnostic_start_span_fn (const diagnostics::location_print_policy &,
+			       diagnostics::to_text &sink,
 			       expanded_location)
 {
-  pretty_printer *pp = get_printer (sink);
+  pretty_printer *pp = diagnostics::get_printer (sink);
   pp_string (pp, "START_SPAN_FN: ");
   pp_newline (pp);
 }
 
-/* Custom output format subclass.  */
+/* Custom text_sink subclass.  */
 
-class test_output_format : public diagnostic_text_output_format
+class custom_test_sink : public diagnostics::text_sink
 {
  public:
-  test_output_format (diagnostic_context &context)
-  : diagnostic_text_output_format (context)
+  custom_test_sink (diagnostics::context &context)
+  : diagnostics::text_sink (context)
   {}
 
   void on_begin_group () final override
@@ -228,10 +228,9 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  diagnostic_text_starter (global_dc) = test_diagnostic_text_starter;
-  diagnostic_start_span (global_dc) = test_diagnostic_start_span_fn;
-  global_dc->set_output_format
-    (::std::make_unique<test_output_format> (*global_dc));
+  diagnostics::text_starter (global_dc) = test_diagnostic_text_starter;
+  diagnostics::start_span (global_dc) = test_diagnostic_start_span_fn;
+  global_dc->set_sink (::std::make_unique<custom_test_sink> (*global_dc));
 
   pass_info.pass = new pass_test_groups (g);
   pass_info.reference_pass_name = "*warn_function_noreturn";

@@ -25,18 +25,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "diagnostic-color.h"
-#include "diagnostic-url.h"
-#include "diagnostic-metadata.h"
-#include "diagnostic-path.h"
-#include "diagnostic-client-data-hooks.h"
-#include "diagnostic-format-sarif.h"
-#include "diagnostic-format-text.h"
-#include "diagnostic-output-spec.h"
-#include "diagnostic-digraphs.h"
-#include "diagnostic-state-graphs.h"
-#include "logical-location.h"
-#include "edit-context.h"
+#include "diagnostics/color.h"
+#include "diagnostics/file-cache.h"
+#include "diagnostics/url.h"
+#include "diagnostics/metadata.h"
+#include "diagnostics/paths.h"
+#include "diagnostics/client-data-hooks.h"
+#include "diagnostics/sarif-sink.h"
+#include "diagnostics/text-sink.h"
+#include "diagnostics/output-spec.h"
+#include "diagnostics/digraphs.h"
+#include "diagnostics/state-graphs.h"
+#include "diagnostics/logical-locations.h"
+#include "diagnostics/changes.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
 #include "pretty-print-format-impl.h"
@@ -210,7 +211,7 @@ struct diagnostic_logical_location
 };
 
 static diagnostic_event_id
-as_diagnostic_event_id (diagnostic_event_id_t id)
+as_diagnostic_event_id (diagnostics::paths::event_id_t id)
 {
   return id.zero_based ();
 }
@@ -232,7 +233,7 @@ public:
 			FILE *dst_stream,
 			enum diagnostic_colorize colorize);
 
-  diagnostic_source_printing_options &get_source_printing_options ()
+  diagnostics::source_printing_options &get_source_printing_options ()
   {
     return m_source_printing;
   }
@@ -241,12 +242,12 @@ public:
   set_colorize (enum diagnostic_colorize colorize);
 
   static void
-  text_starter (diagnostic_text_output_format &text_output,
-		const diagnostic_info *diagnostic);
+  text_starter (diagnostics::text_sink &text_output,
+		const diagnostics::diagnostic_info *diagnostic);
 
 private:
-  diagnostic_text_output_format *m_inner_sink; // borrowed from dc
-  diagnostic_source_printing_options m_source_printing;
+  diagnostics::text_sink *m_inner_sink; // borrowed from dc
+  diagnostics::source_printing_options m_source_printing;
 };
 
 /* A token_printer that makes a deep copy of the pp_token_list
@@ -346,7 +347,7 @@ public:
   sarif_sink (diagnostic_manager &mgr,
 	      FILE *dst_stream,
 	      const diagnostic_file *main_input_file,
-	      const sarif_generation_options &sarif_gen_opts);
+	      const diagnostics::sarif_generation_options &sarif_gen_opts);
 };
 
 struct diagnostic_message_buffer
@@ -458,19 +459,23 @@ round_alloc_size (size_t s)
   return s;
 }
 
-class impl_logical_location_manager : public logical_location_manager
+class impl_logical_location_manager
+  : public diagnostics::logical_locations::manager
 {
 public:
+  using key = diagnostics::logical_locations::key;
+  using kind = diagnostics::logical_locations::kind;
+
   static const diagnostic_logical_location *
-  ptr_from_key (logical_location k)
+  ptr_from_key (key k)
   {
     return k.cast_to<const diagnostic_logical_location *> ();
   }
 
-  static logical_location
+  static key
   key_from_ptr (const diagnostic_logical_location *ptr)
   {
-    return logical_location::from_ptr (ptr);
+    return key::from_ptr (ptr);
   }
 
   const char *get_short_name (key k) const final override
@@ -497,7 +502,7 @@ public:
       return nullptr;
   }
 
-  enum logical_location_kind get_kind (key k) const final override
+  kind get_kind (key k) const final override
   {
     auto loc = ptr_from_key (k);
     gcc_assert (loc);
@@ -507,45 +512,45 @@ public:
 	gcc_unreachable ();
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	return logical_location_kind::function;
+	return kind::function;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
-	return logical_location_kind::member;
+	return kind::member;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
-	return logical_location_kind::module_;
+	return kind::module_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
-	return logical_location_kind::namespace_;
+	return kind::namespace_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
-	return logical_location_kind::type;
+	return kind::type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
-	return logical_location_kind::return_type;
+	return kind::return_type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
-	return logical_location_kind::parameter;
+	return kind::parameter;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
-	return logical_location_kind::variable;
+	return kind::variable;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
-	return logical_location_kind::element;
+	return kind::element;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
-	return logical_location_kind::attribute;
+	return kind::attribute;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
-	return logical_location_kind::text;
+	return kind::text;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
-	return logical_location_kind::comment;
+	return kind::comment;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
-	return logical_location_kind::processing_instruction;
+	return kind::processing_instruction;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
-	return logical_location_kind::dtd;
+	return kind::dtd;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
-	return logical_location_kind::declaration;
+	return kind::declaration;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
-	  return logical_location_kind::object;
+	  return kind::object;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
-	return logical_location_kind::array;
+	return kind::array;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
-	return logical_location_kind::property;
+	return kind::property;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
-	return logical_location_kind::value;
+	return kind::value;
       }
   }
 
@@ -564,25 +569,28 @@ public:
   }
 };
 
-class impl_diagnostic_client_data_hooks : public diagnostic_client_data_hooks
+class impl_diagnostic_client_data_hooks : public diagnostics::client_data_hooks
 {
 public:
   impl_diagnostic_client_data_hooks (diagnostic_manager &mgr)
   : m_mgr (mgr)
   {}
 
-  const client_version_info *get_any_version_info () const final override;
+  const diagnostics::client_version_info *
+  get_any_version_info () const final override;
 
-  const logical_location_manager *
+  const diagnostics::logical_locations::manager *
   get_logical_location_manager () const final override
   {
     return &m_logical_location_manager;
   }
-  logical_location get_current_logical_location () const final override;
+  diagnostics::logical_locations::key
+  get_current_logical_location () const final override;
 
   const char * maybe_get_sarif_source_language (const char *filename)
     const final override;
-  void add_sarif_invocation_properties (sarif_object &invocation_obj)
+  void
+  add_sarif_invocation_properties (diagnostics::sarif_object &invocation_obj)
     const final override;
 
 private:
@@ -590,7 +598,7 @@ private:
   impl_logical_location_manager m_logical_location_manager;
 };
 
-class impl_client_version_info : public client_version_info
+class impl_client_version_info : public diagnostics::client_version_info
 {
 public:
   const char *get_tool_name () const final override
@@ -649,23 +657,26 @@ public:
     m_dc.set_show_cwe (true);
     m_dc.set_show_rules (true);
     m_dc.m_show_column = true;
-    m_dc.m_source_printing.enabled = true;
-    m_dc.m_source_printing.colorize_source_p = true;
+    auto &source_printing_opts = m_dc.get_source_printing_options ();
+    source_printing_opts.enabled = true;
+    source_printing_opts.colorize_source_p = true;
 
     /* We don't currently expose a way for clients to manipulate the
        following.  */
-    m_dc.m_source_printing.show_labels_p = true;
-    m_dc.m_source_printing.show_line_numbers_p = true;
-    m_dc.m_source_printing.min_margin_width = 6;
+    source_printing_opts.show_labels_p = true;
+    source_printing_opts.show_line_numbers_p = true;
+    source_printing_opts.min_margin_width = 6;
     m_dc.set_path_format (DPF_INLINE_EVENTS);
 
     m_dc.m_client_aux_data = this;
     m_dc.set_client_data_hooks
       (std::make_unique<impl_diagnostic_client_data_hooks> (*this));
 
-    diagnostic_text_starter (&m_dc) = diagnostic_text_sink::text_starter;
+    diagnostics::text_starter (&m_dc) = diagnostic_text_sink::text_starter;
 
-    m_edit_context = std::make_unique <edit_context> (m_dc.get_file_cache ());
+    m_change_set
+      = std::make_unique <diagnostics::changes::change_set>
+	  (m_dc.get_file_cache ());
   }
 
   ~diagnostic_manager ()
@@ -686,9 +697,9 @@ public:
   }
 
   line_maps *get_line_table () { return &m_line_table; }
-  diagnostic_context &get_dc () { return m_dc; }
+  diagnostics::context &get_dc () { return m_dc; }
 
-  const logical_location_manager &
+  const diagnostics::logical_locations::manager &
   get_logical_location_manager () const
   {
     auto mgr = m_dc.get_logical_location_manager ();
@@ -818,7 +829,8 @@ public:
 
   const diagnostic *get_current_diag () { return m_current_diag; }
 
-  const client_version_info *get_client_version_info () const
+  const diagnostics::client_version_info *
+  get_client_version_info () const
   {
     return &m_client_version_info;
   }
@@ -884,7 +896,7 @@ private:
     return phys_loc;
   }
 
-  diagnostic_context m_dc;
+  diagnostics::context m_dc;
   line_maps m_line_table;
   impl_client_version_info m_client_version_info;
   std::vector<std::unique_ptr<sink>> m_sinks;
@@ -896,7 +908,7 @@ private:
   logical_locs_map_t m_logical_locs;
   const diagnostic *m_current_diag;
   const diagnostic_logical_location *m_prev_diag_logical_loc;
-  std::unique_ptr<edit_context> m_edit_context;
+  std::unique_ptr<diagnostics::changes::change_set> m_change_set;
 };
 
 class impl_rich_location : public rich_location
@@ -925,7 +937,7 @@ private:
   char *m_text;
 };
 
-class impl_rule : public diagnostic_metadata::rule
+class impl_rule : public diagnostics::metadata::rule
 {
 public:
   impl_rule (const char *title, const char *url)
@@ -985,7 +997,7 @@ struct diagnostic_edge : public diagnostics::digraphs::edge
   }
 };
 
-class libgdiagnostics_path_event : public diagnostic_event
+class libgdiagnostics_path_event : public diagnostics::paths::event
 {
 public:
   libgdiagnostics_path_event (const diagnostic_physical_location *physical_loc,
@@ -1002,7 +1014,7 @@ public:
     gcc_assert (m_msg_buf);
   }
 
-  /* diagnostic_event vfunc implementations.  */
+  /* diagnostics::paths::event vfunc implementations.  */
 
   location_t get_location () const final override
   {
@@ -1023,7 +1035,8 @@ public:
       }
   }
 
-  logical_location get_logical_location () const final override
+  diagnostics::logical_locations::key
+  get_logical_location () const final override
   {
     return impl_logical_location_manager::key_from_ptr (m_logical_loc);
   }
@@ -1038,7 +1051,7 @@ public:
     return false; // TODO
   }
 
-  diagnostic_thread_id_t get_thread_id () const final override
+  diagnostics::paths::thread_id_t get_thread_id () const final override
   {
     return 0;
   }
@@ -1081,7 +1094,7 @@ private:
   std::unique_ptr<diagnostic_message_buffer> m_msg_buf;
 };
 
-class libgdiagnostics_path_thread : public diagnostic_thread
+class libgdiagnostics_path_thread : public diagnostics::paths::thread
 {
 public:
   libgdiagnostics_path_thread (const char *name) : m_name (name) {}
@@ -1096,15 +1109,15 @@ private:
 
 /* This has to be a "struct" as it is exposed in the C API.  */
 
-struct diagnostic_execution_path : public diagnostic_path
+struct diagnostic_execution_path : public diagnostics::paths::path
 {
-  diagnostic_execution_path (const logical_location_manager &logical_loc_mgr)
-  : diagnostic_path (logical_loc_mgr),
+  diagnostic_execution_path (const diagnostics::logical_locations::manager &logical_loc_mgr)
+  : diagnostics::paths::path (logical_loc_mgr),
     m_thread ("")
   {
   }
 
-  diagnostic_event_id_t
+  diagnostics::paths::event_id_t
   add_event_va (const diagnostic_physical_location *physical_loc,
 		const diagnostic_logical_location *logical_loc,
 		unsigned stack_depth,
@@ -1139,19 +1152,19 @@ struct diagnostic_execution_path : public diagnostic_path
     return m_events.size () - 1;
   }
 
-  /* diagnostic_path vfunc implementations.  */
+  /* diagnostics::paths::path vfunc implementations.  */
 
   unsigned num_events () const final override
   {
     return m_events.size ();
   }
-  const diagnostic_event & get_event (int idx) const final override
+  const diagnostics::paths::event & get_event (int idx) const final override
   {
     return *m_events[idx];
   }
   unsigned num_threads () const final override { return 1; }
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override
+  const diagnostics::paths::thread &
+  get_thread (diagnostics::paths::thread_id_t) const final override
   {
     return m_thread;
   }
@@ -1160,9 +1173,10 @@ struct diagnostic_execution_path : public diagnostic_path
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override
   {
+    using logical_location = diagnostics::logical_locations::key;
     logical_location logical_loc_a
       = m_events[event_idx_a]->get_logical_location ();
-    logical_location logical_loc_b
+    logical_location  logical_loc_b
       = m_events[event_idx_b]->get_logical_location ();
 
     /* Pointer equality, as we uniqify logical location instances.  */
@@ -1174,13 +1188,14 @@ private:
   std::vector<std::unique_ptr<libgdiagnostics_path_event>> m_events;
 };
 
-class prebuilt_digraphs : public diagnostics::digraphs::lazy_digraphs
+class prebuilt_digraphs
+  : public lazily_created<std::vector<std::unique_ptr<diagnostics::digraphs::digraph>>>
 {
 public:
   using digraph = diagnostics::digraphs::digraph;
 
   std::unique_ptr<std::vector<std::unique_ptr<digraph>>>
-  create_digraphs () const final override
+  create_object () const final override
   {
     return std::make_unique<std::vector<std::unique_ptr<digraph>>> (std::move (m_digraphs));
   }
@@ -1219,7 +1234,7 @@ public:
   enum diagnostic_level get_level () const { return m_level; }
 
   rich_location *get_rich_location () { return &m_rich_loc; }
-  const diagnostic_metadata *get_metadata () { return &m_metadata; }
+  const diagnostics::metadata *get_metadata () { return &m_metadata; }
 
   void set_cwe (unsigned cwe_id)
   {
@@ -1315,28 +1330,28 @@ private:
   enum diagnostic_level m_level;
   impl_rich_location m_rich_loc;
   const diagnostic_logical_location *m_logical_loc;
-  diagnostic_metadata m_metadata;
+  diagnostics::metadata m_metadata;
   prebuilt_digraphs m_graphs;
   std::vector<std::unique_ptr<range_label>> m_labels;
   std::vector<std::unique_ptr<impl_rule>> m_rules;
   std::unique_ptr<diagnostic_execution_path> m_path;
 };
 
-static diagnostic_t
-diagnostic_t_from_diagnostic_level (enum diagnostic_level level)
+static enum diagnostics::kind
+diagnostics_kind_from_diagnostic_level (enum diagnostic_level level)
 {
   switch (level)
     {
     default:
       gcc_unreachable ();
     case DIAGNOSTIC_LEVEL_ERROR:
-      return DK_ERROR;
+      return diagnostics::kind::error;
     case DIAGNOSTIC_LEVEL_WARNING:
-      return DK_WARNING;
+      return diagnostics::kind::warning;
     case DIAGNOSTIC_LEVEL_NOTE:
-      return DK_NOTE;
+      return diagnostics::kind::note;
     case DIAGNOSTIC_LEVEL_SORRY:
-      return DK_SORRY;
+      return diagnostics::kind::sorry;
     }
 }
 
@@ -1346,7 +1361,7 @@ diagnostic_file::set_buffered_content (const char *buf, size_t sz)
   m_content = std::make_unique<content_buffer> (buf, sz);
 
   // Populate file_cache:
-  file_cache &fc = m_mgr.get_dc ().get_file_cache ();
+  diagnostics::file_cache &fc = m_mgr.get_dc ().get_file_cache ();
   fc.add_buffered_content (m_name.get_str (), buf, sz);
 }
 
@@ -1364,13 +1379,13 @@ diagnostic_physical_location::get_file () const
 
 /* class impl_diagnostic_client_data_hooks.  */
 
-const client_version_info *
+const diagnostics::client_version_info *
 impl_diagnostic_client_data_hooks::get_any_version_info () const
 {
   return m_mgr.get_client_version_info ();
 }
 
-logical_location
+diagnostics::logical_locations::key
 impl_diagnostic_client_data_hooks::get_current_logical_location () const
 {
   gcc_assert (m_mgr.get_current_diag ());
@@ -1388,7 +1403,7 @@ maybe_get_sarif_source_language (const char *filename) const
 
 void
 impl_diagnostic_client_data_hooks::
-add_sarif_invocation_properties (sarif_object &) const
+add_sarif_invocation_properties (diagnostics::sarif_object &) const
 {
   // No-op.
 }
@@ -1399,10 +1414,10 @@ diagnostic_text_sink::diagnostic_text_sink (diagnostic_manager &mgr,
 					    FILE *dst_stream,
 					    enum diagnostic_colorize colorize)
 : sink (mgr),
-  m_source_printing (mgr.get_dc ().m_source_printing)
+  m_source_printing (mgr.get_dc ().get_source_printing_options ())
 {
   auto inner_sink
-    = std::make_unique<diagnostic_text_output_format> (mgr.get_dc (),
+    = std::make_unique<diagnostics::text_sink> (mgr.get_dc (),
 						       &m_source_printing);
   inner_sink->get_printer ()->set_output_stream (dst_stream);
   m_inner_sink = inner_sink.get ();
@@ -1432,11 +1447,11 @@ diagnostic_text_sink::set_colorize (enum diagnostic_colorize colorize)
 }
 
 void
-diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
-				    const diagnostic_info *info)
+diagnostic_text_sink::text_starter (diagnostics::text_sink &text_output,
+				    const diagnostics::diagnostic_info *info)
 {
-  gcc_assert (info->x_data);
-  const diagnostic &diag = *static_cast<const diagnostic *> (info->x_data);
+  gcc_assert (info->m_x_data);
+  const diagnostic &diag = *static_cast<const diagnostic *> (info->m_x_data);
   pretty_printer *pp = text_output.get_printer ();
   const diagnostic_logical_location *diag_logical_loc
     = diag.get_logical_location ();
@@ -1502,15 +1517,17 @@ diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
 
 /* class sarif_sink : public sink.  */
 
-sarif_sink::sarif_sink (diagnostic_manager &mgr,
-			FILE *dst_stream,
-			const diagnostic_file *main_input_file,
-			const sarif_generation_options &sarif_gen_opts)
+sarif_sink::
+sarif_sink (diagnostic_manager &mgr,
+	    FILE *dst_stream,
+	    const diagnostic_file *main_input_file,
+	    const diagnostics::sarif_generation_options &sarif_gen_opts)
 : sink (mgr)
 {
-  diagnostic_output_file output_file (dst_stream, false,
-				      label_text::borrow ("sarif_sink"));
-  auto serialization = std::make_unique<sarif_serialization_format_json> (true);
+  diagnostics::output_file output_file (dst_stream, false,
+					label_text::borrow ("sarif_sink"));
+  auto serialization
+    = std::make_unique<diagnostics::sarif_serialization_format_json> (true);
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),
 				     std::move (serialization),
@@ -1585,7 +1602,7 @@ diagnostic_manager::write_patch (FILE *dst_stream)
 {
   pretty_printer pp;
   pp.set_output_stream (dst_stream);
-  m_edit_context->print_diff (&pp, true);
+  m_change_set->print_diff (&pp, true);
   pp_flush (&pp);
 }
 
@@ -1599,13 +1616,14 @@ diagnostic_manager::emit_va (diagnostic &diag, const char *msgid, va_list *args)
   {
     m_dc.begin_group ();
 
-    diagnostic_info info;
+    diagnostics::diagnostic_info info;
 GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
     diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
-			 diagnostic_t_from_diagnostic_level (diag.get_level ()));
+			 diagnostics_kind_from_diagnostic_level
+			   (diag.get_level ()));
 GCC_DIAGNOSTIC_POP
-    info.metadata = diag.get_metadata ();
-    info.x_data = &diag;
+    info.m_metadata = diag.get_metadata ();
+    info.m_x_data = &diag;
     diagnostic_report_diagnostic (&m_dc, &info);
 
     m_dc.end_group ();
@@ -1613,7 +1631,7 @@ GCC_DIAGNOSTIC_POP
 
   rich_location *rich_loc = diag.get_rich_location ();
   if (rich_loc->fixits_can_be_auto_applied_p ())
-    m_edit_context->add_fixits (rich_loc);
+    m_change_set->add_fixits (rich_loc);
 
   m_prev_diag_logical_loc = diag.get_logical_location ();
   m_current_diag = nullptr;
@@ -1648,7 +1666,7 @@ diagnostic_manager::new_execution_path ()
 void
 diagnostic_manager::take_global_graph (std::unique_ptr<diagnostic_graph> graph)
 {
-  class prebuilt_lazy_digraph : public diagnostics::digraphs::lazy_digraph
+  class prebuilt_lazy_digraph : public lazily_created<diagnostics::digraphs::digraph>
   {
   public:
     prebuilt_lazy_digraph (std::unique_ptr<diagnostic_graph> graph)
@@ -1657,7 +1675,7 @@ diagnostic_manager::take_global_graph (std::unique_ptr<diagnostic_graph> graph)
     }
 
     std::unique_ptr<diagnostics::digraphs::digraph>
-    create_digraph () const final override
+    create_object () const final override
     {
       return std::move (m_graph);
     }
@@ -1808,7 +1826,7 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
   FAIL_IF_NULL (dst_stream);
   FAIL_IF_NULL (main_input_file);
 
-  sarif_generation_options sarif_gen_opts;
+  diagnostics::sarif_generation_options sarif_gen_opts;
   switch (version)
     {
     default:
@@ -1816,10 +1834,11 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
 	       __func__, (int)version);
       abort ();
     case DIAGNOSTIC_SARIF_VERSION_2_1_0:
-      sarif_gen_opts.m_version = sarif_version::v2_1_0;
+      sarif_gen_opts.m_version = diagnostics::sarif_version::v2_1_0;
       break;
     case DIAGNOSTIC_SARIF_VERSION_2_2_PRERELEASE:
-      sarif_gen_opts.m_version = sarif_version::v2_2_prerelease_2024_08_08;
+      sarif_gen_opts.m_version
+	= diagnostics::sarif_version::v2_2_prerelease_2024_08_08;
       break;
     }
 
@@ -1949,12 +1968,12 @@ diagnostic_manager_debug_dump_location (const diagnostic_manager *diag_mgr,
       diag_mgr->set_line_table_global ();
       const expanded_location exp_loc (expand_location (cpplib_loc));
 
-      diagnostic_context dc;
+      diagnostics::context dc;
       diagnostic_initialize (&dc, 0);
       dc.m_show_column = true;
 
-      diagnostic_text_output_format text_format (dc);
-      label_text loc_text = text_format.get_location_text (exp_loc);
+      diagnostics::text_sink text_output (dc);
+      label_text loc_text = text_output.get_location_text (exp_loc);
       fprintf (out, "%s", loc_text.get ());
 
       diagnostic_finish (&dc);
@@ -2293,11 +2312,12 @@ diagnostic_execution_path_add_event (diagnostic_execution_path *path,
 
   va_list args;
   va_start (args, gmsgid);
-  diagnostic_event_id_t result = path->add_event_va (physical_loc,
-						     logical_loc,
-						     stack_depth,
-						     nullptr,
-						     gmsgid, &args);
+  diagnostics::paths::event_id_t result
+    = path->add_event_va (physical_loc,
+			  logical_loc,
+			  stack_depth,
+			  nullptr,
+			  gmsgid, &args);
   va_end (args);
 
   return as_diagnostic_event_id (result);
@@ -2316,11 +2336,12 @@ diagnostic_execution_path_add_event_va (diagnostic_execution_path *path,
   FAIL_IF_NULL (path);
   FAIL_IF_NULL (gmsgid);
 
-  diagnostic_event_id_t result = path->add_event_va (physical_loc,
-						     logical_loc,
-						     stack_depth,
-						     nullptr,
-						     gmsgid, args);
+  diagnostics::paths::event_id_t result
+    = path->add_event_va (physical_loc,
+			  logical_loc,
+			  stack_depth,
+			  nullptr,
+			  gmsgid, args);
   return as_diagnostic_event_id (result);
 }
 
@@ -2409,7 +2430,7 @@ diagnostic_logical_location_get_decorated_name (const diagnostic_logical_locatio
 
 namespace {
 
-struct spec_context : public diagnostics_output_spec::context
+struct spec_context : public diagnostics::output_spec::context
 {
 public:
   spec_context (const char *option_name,

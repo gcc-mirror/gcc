@@ -153,7 +153,7 @@ static bool
 constexpr_error (location_t location, bool constexpr_fundef_p,
 		 const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
   va_start (ap, gmsgid);
@@ -161,14 +161,17 @@ constexpr_error (location_t location, bool constexpr_fundef_p,
   if (!constexpr_fundef_p)
     {
       /* Report an error that cannot be suppressed.  */
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
+			   diagnostics::kind::error);
       ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   else if (warn_invalid_constexpr)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-			   cxx_dialect < cxx23 ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_id = OPT_Winvalid_constexpr;
+			   (cxx_dialect < cxx23
+			    ? diagnostics::kind::pedwarn
+			    : diagnostics::kind::warning));
+      diagnostic.m_option_id = OPT_Winvalid_constexpr;
       ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   else
@@ -2883,10 +2886,15 @@ diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p,
   if (TREE_CODE (bad) == CLEANUP_POINT_EXPR)
     bad = TREE_OPERAND (bad, 0);
 
+  auto_diagnostic_nesting_level sentinel;
+
   /* Actually explain the failure if this is a concept check or a
      requires-expression.  */
   if (concept_check_p (bad) || TREE_CODE (bad) == REQUIRES_EXPR)
     diagnose_constraints (cloc, bad, NULL_TREE);
+  /* Similarly if this is a standard trait.  */
+  else if (maybe_diagnose_standard_trait (cloc, bad))
+    ;
   else if (COMPARISON_CLASS_P (bad)
 	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
     {
@@ -7736,13 +7744,24 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (*valp), first, NULL_TREE);
 
       /* Check for implicit change of active member for a union.  */
+
+      /* LWG3436, CWG2675, c++/121068: The array object model is confused.  For
+	 now allow initializing an array element to activate the array.  */
+      auto only_array_refs = [](const releasing_vec &refs)
+      {
+	for (unsigned i = 1; i < refs->length(); i += 3)
+	  if (TREE_CODE ((*refs)[i]) != INTEGER_CST)
+	    return false;
+	return true;
+      };
+
       if (code == UNION_TYPE
 	  && (CONSTRUCTOR_NELTS (*valp) == 0
 	      || CONSTRUCTOR_ELT (*valp, 0)->index != index)
 	  /* An INIT_EXPR of the last member in an access chain is always OK,
 	     but still check implicit change of members earlier on; see
 	     cpp2a/constexpr-union6.C.  */
-	  && !(TREE_CODE (t) == INIT_EXPR && refs->is_empty ()))
+	  && !(TREE_CODE (t) == INIT_EXPR && only_array_refs (refs)))
 	{
 	  bool has_active_member = CONSTRUCTOR_NELTS (*valp) != 0;
 	  tree inner = strip_array_types (reftype);

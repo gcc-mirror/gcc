@@ -16,11 +16,16 @@ struct A {
 template<class T>
 void f() {
   A a;
-  (void)(a != 0, 0 != a); // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a < 0, 0 < a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a <= 0, 0 <= a); // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a > 0, 0 > a);   // { dg-bogus "deleted" "" { xfail *-*-* } }
-  (void)(a >= 0, 0 >= a); // { dg-bogus "deleted" "" { xfail *-*-* } }
+  (void)(a != 0);
+  (void)(0 != a);
+  (void)(a < 0);
+  (void)(0 < a);
+  (void)(a <= 0);
+  (void)(0 <= a);
+  (void)(a > 0);
+  (void)(0 > a);
+  (void)(a >= 0);
+  (void)(0 >= a);
 }
 
 // These later-declared namespace-scope overloads shouldn't be considered
@@ -30,5 +35,11 @@ bool operator<(A, int) = delete;
 bool operator<=(A, int) = delete;
 bool operator>(A, int) = delete;
 bool operator>=(A, int) = delete;
+
+bool operator!=(int, A) = delete;
+bool operator<(int, A) = delete;
+bool operator<=(int, A) = delete;
+bool operator>(int, A) = delete;
+bool operator>=(int, A) = delete;
 
 template void f<int>();

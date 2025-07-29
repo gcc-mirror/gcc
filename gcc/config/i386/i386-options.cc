@@ -1362,7 +1362,9 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	  arg_ok = opt_enum_arg_to_value (opt, p + opt_len, &value, CL_TARGET);
 	  if (arg_ok)
 	    set_option (opts, enum_opts_set, opt, value,
-			p + opt_len, DK_UNSPECIFIED, input_location,
+			p + opt_len,
+			static_cast<int> (diagnostics::kind::unspecified),
+			input_location,
 			global_dc);
 	  else
 	    {

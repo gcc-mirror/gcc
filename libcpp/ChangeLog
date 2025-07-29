@@ -1,3 +1,23 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.cc: Update comment for file rename.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal.h: Update comment for diagnostic_t becoming
+	enum class diagnostics::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/cpplib.h: Update for moves to "source-printing".
+	* include/rich-location.h (class label_effects): Move to...
+	(class diagnostics::label_effects): ...here.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h: Replace diagnostic_path with
+	diagnostics::paths::path.
+
 2025-06-17  Jason Merrill  <jason@redhat.com>
 
 	* line-map.cc (linemap_location_from_module_p): Add.

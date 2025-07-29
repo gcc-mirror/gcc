@@ -402,16 +402,17 @@ package Sinfo is
    --       Has_Secondary_Private_View  set in generic units
 
    --    "plus fields for expression"
-   --       Paren_Count               number of parentheses levels
-   --       Etype                     type of the expression
-   --       Is_Overloaded             >1 type interpretation exists
-   --       Is_Static_Expression      set for static expression
-   --       Raises_Constraint_Error   evaluation raises CE
-   --       Must_Not_Freeze           set if must not freeze
-   --       Do_Range_Check            set if a range check needed
-   --       Has_Dynamic_Length_Check  set if length check inserted
-   --       Assignment_OK             set if modification is OK
-   --       Is_Controlling_Actual     set for controlling argument
+   --       Paren_Count                  number of parentheses levels
+   --       Etype                        type of the expression
+   --       Is_Overloaded                >1 type interpretation exists
+   --       Is_Static_Expression         set for static expression
+   --       Raises_Constraint_Error      evaluation raises CE
+   --       Must_Not_Freeze              set if must not freeze
+   --       Do_Range_Check               set if a range check needed
+   --       Has_Dynamic_Length_Check     set if length check inserted
+   --       Assignment_OK                set if modification is OK
+   --       Is_Controlling_Actual        set for controlling argument
+   --       Is_Expanded_Dispatching_Call set for expanded dispatching calls
 
    --  Note: see under (EXPRESSION) for further details on the use of
    --  the Paren_Count field to record the number of parentheses levels.
@@ -1664,6 +1665,10 @@ package Sinfo is
    --    actuals to support a build-in-place style of call have been added to
    --    the call.
 
+   --  Is_Expanded_Dispatching_Call
+   --    This flag is set in N_Block_Statement, and expression nodes to
+   --    indicate that it is an expanded dispatching call.
+
    --  Is_Expanded_Prefixed_Call
    --    This flag is set in N_Function_Call and N_Procedure_Call_Statement
    --    nodes to indicate that it is an expanded prefixed call.
@@ -2321,6 +2326,13 @@ package Sinfo is
    --    statement applies to. Finally, if Analyze_Continue_Statement detects
    --    an error, this field is set to Empty.
 
+   --  Tag_Propagated
+   --    This flag is set in N_Identifier, N_Explicit_Dereference, and N_Type_
+   --    Conversion nodes that are the LHS of an assignment statement. Used to
+   --    remember that the RHS of the assignment has tag indeterminate function
+   --    calls and the tag has been propagated to the calls (as part of the
+   --    bottom-up analysis of the RHS of the assignment statement).
+
    --  Target_Type
    --    Used in an N_Validate_Unchecked_Conversion node to point to the target
    --    type entity for the unchecked conversion instantiation which gigi must
@@ -2507,6 +2519,7 @@ package Sinfo is
       --  Has_Private_View (set in generic units)
       --  Has_Secondary_Private_View (set in generic units)
       --  Redundant_Use
+      --  Tag_Propagated
       --  Atomic_Sync_Required
       --  plus fields for expression
 
@@ -3820,6 +3833,7 @@ package Sinfo is
       --  Prefix
       --  Actual_Designated_Subtype
       --  Has_Dereference_Action
+      --  Tag_Propagated
       --  Atomic_Sync_Required
       --  plus fields for expression
 
@@ -4755,6 +4769,7 @@ package Sinfo is
       --  Conversion_OK
       --  Do_Overflow_Check
       --  Rounded_Result
+      --  Tag_Propagated
       --  plus fields for expression
 
       --  Note: if a range check is required, then the Do_Range_Check flag
@@ -5196,6 +5211,7 @@ package Sinfo is
       --  Has_Created_Identifier
       --  Is_Abort_Block
       --  Is_Asynchronous_Call_Block
+      --  Is_Expanded_Dispatching_Call
       --  Is_Initialization_Block
       --  Is_Task_Allocation_Block
       --  Is_Task_Master

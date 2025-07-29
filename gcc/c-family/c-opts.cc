@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "diagnostic-macro-unwinding.h" /* for virt_loc_aware_diagnostic_finalizer */
+#include "diagnostics/macro-unwinding.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
 #include "incpath.h"
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "file-prefix-map.h"    /* add_*_prefix_map()  */
 #include "context.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -169,9 +169,9 @@ c_common_option_lang_mask (void)
 
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
-c_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
-			     const diagnostic_info *diagnostic,
-			     diagnostic_t)
+c_diagnostic_text_finalizer (diagnostics::text_sink &text_output,
+			     const diagnostics::diagnostic_info *diagnostic,
+			     enum diagnostics::kind)
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);
@@ -179,19 +179,19 @@ c_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 text_output.get_source_printing_options (),
-			 diagnostic->richloc, diagnostic->kind, pp);
+			 diagnostic->m_richloc, diagnostic->m_kind, pp);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
-  virt_loc_aware_diagnostic_finalizer (text_output, diagnostic);
+  diagnostics::virt_loc_aware_text_finalizer (text_output, diagnostic);
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);
 }
 
 /* Common default settings for diagnostics.  */
 void
-c_common_diagnostics_set_defaults (diagnostic_context *context)
+c_common_diagnostics_set_defaults (diagnostics::context *context)
 {
-  diagnostic_text_finalizer (context) = c_diagnostic_text_finalizer;
+  diagnostics::text_finalizer (context) = c_diagnostic_text_finalizer;
   context->set_permissive_option (OPT_fpermissive);
 }
 
@@ -278,7 +278,7 @@ c_common_init_options (unsigned int decoded_options_count,
   if (c_dialect_cxx ())
     set_std_cxx17 (/*ISO*/false);
 
-  global_dc->m_source_printing.colorize_source_p = true;
+  global_dc->get_source_printing_options ().colorize_source_p = true;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-

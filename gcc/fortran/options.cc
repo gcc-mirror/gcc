@@ -406,7 +406,8 @@ gfc_post_options (const char **pfilename)
       if (warn_line_truncation && !OPTION_SET_P (warnings_are_errors)
 	  && option_unspecified_p (OPT_Wline_truncation))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
-					DK_ERROR, UNKNOWN_LOCATION);
+					diagnostics::kind::error,
+					UNKNOWN_LOCATION);
     }
   else
     {

@@ -5050,6 +5050,8 @@ cp_coroutine_transform::build_ramp_function ()
      check the returned pointer and call the func if it's null.
      Otherwise, no check, and we fail for noexcept/fno-exceptions cases.  */
 
+  tree grooaf_if_stmt = NULL_TREE;
+  tree alloc_ok_scope = NULL_TREE;
   if (grooaf)
     {
       /* [dcl.fct.def.coroutine] / 10 (part 3)
@@ -5057,20 +5059,11 @@ cp_coroutine_transform::build_ramp_function ()
 	 control to the caller of the coroutine and the return value is
 	 obtained by a call to T::get_return_object_on_allocation_failure(),
 	 where T is the promise type.  */
-      tree if_stmt = begin_if_stmt ();
       tree cond = build1 (CONVERT_EXPR, frame_ptr_type, nullptr_node);
-      cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
-      finish_if_stmt_cond (cond, if_stmt);
-      r = NULL_TREE;
-      if (void_ramp_p)
-	/* Execute the get-return-object-on-alloc-fail call...  */
-	finish_expr_stmt (grooaf);
-      else
-	/* Get the fallback return object.  */
-	r = grooaf;
-      finish_return_stmt (r);
-      finish_then_clause (if_stmt);
-      finish_if_stmt (if_stmt);
+      cond = build2 (NE_EXPR, boolean_type_node, coro_fp, cond);
+      grooaf_if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (cond, grooaf_if_stmt);
+      alloc_ok_scope = begin_compound_stmt (BCS_NORMAL);
     }
 
   /* Dereference the frame pointer, to use in member access code.  */
@@ -5295,7 +5288,6 @@ cp_coroutine_transform::build_ramp_function ()
 	 a temp which is then used to intialize the return object, including
 	 NVRO.  */
 
-      /* Temporary var to hold the g_r_o across the function body.  */
       coro_gro
 	= coro_build_and_push_artificial_var (loc, "_Coro_gro", gro_type,
 					      orig_fn_decl, NULL_TREE);
@@ -5328,8 +5320,27 @@ cp_coroutine_transform::build_ramp_function ()
   /* The ramp is done, we just need the return statement, which we build from
      the return object we constructed before we called the actor.  */
 
+  /* This is our 'normal' exit.  */
   r = void_ramp_p ? NULL_TREE : convert_from_reference (coro_gro);
   finish_return_stmt (r);
+
+  if (grooaf)
+    {
+      finish_compound_stmt (alloc_ok_scope);
+      finish_then_clause (grooaf_if_stmt);
+
+      begin_else_clause (grooaf_if_stmt);
+      /* We come here if the frame allocation failed.  */
+      r = NULL_TREE;
+      if (void_ramp_p)
+	/* Execute the get-return-object-on-alloc-fail call...  */
+	finish_expr_stmt (grooaf);
+      else
+	/* Get the fallback return object.  */
+	r = grooaf;
+      finish_return_stmt (r);
+      finish_if_stmt (grooaf_if_stmt);
+    }
 
   finish_compound_stmt (ramp_fnbody);
   return true;

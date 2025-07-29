@@ -1,3 +1,13 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* context.cc: Update usage of "diagnostic_info" to explicitly
+	refer to "diagnostics::diagnostic_info".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* context.cc: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+
 2024-12-23  Simon Martin  <simon@nasilyan.com>
 
 	* Makefile.am: Remove reference to deleted marshall-c.h.

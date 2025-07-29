@@ -1,3 +1,173 @@
+2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (struct lang_type): Add comment mentioning modules.
+	* module.cc (trees_out::lang_type_bools): Stream new flags, use
+	gcc_checking_assert.
+	(trees_in::lang_type_bools): Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* constexpr.cc: Update usage of "diagnostic_info" to explicitly
+	refer to "diagnostics::diagnostic_info".
+	* cp-tree.h: Likewise.
+	* error.cc: Likewise.
+	* module.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* constexpr.cc: Likewise.
+	* cp-tree.h: Likewise.
+	* decl.cc: Likewise.
+	* error.cc: Likewise.
+	* init.cc: Likewise.
+	* method.cc: Likewise.
+	* module.cc: Likewise.
+	* parser.cc: Likewise.
+	* pt.cc: Likewise.
+	* semantics.cc: Likewise.
+	* typeck.cc: Likewise.
+	* typeck2.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for renaming of diagnostic_option_id to
+	diagnostics::option_id.
+	* decl.cc: Likewise.
+	* error.cc: Likewise.
+	* name-lookup.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for diagnostic_context becoming
+	diagnostics::context.
+	* error.cc: Likewise.
+	* module.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* constexpr.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+	* error.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+	* error.cc: Likewise.
+
+2025-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (build_new_op): If the selected candidate is
+	rewritten, communicate the LOOKUP_REWRITTEN/REVERSED flags to
+	the caller via the 'overload' out-parameter, and stop clearing
+	'*overload' in that case.
+	* tree.cc (build_min_non_dep_op_overload): Handle rebuilding all
+	C++20 rewritten comparison operator expressions.
+
+2025-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/121219
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Reorder the return
+	expressions for the 'normal' and 'allocation failed' cases so that
+	NRV constraints are met.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117294
+	PR c++/113854
+	* call.cc (implicit_conversion_error): Hide label when printing
+	a stub object.
+	(convert_like_internal): Likewise, and nest candidate
+	diagnostics.
+	* constexpr.cc (diagnose_failing_condition): Nest diagnostics,
+	attempt to provide more helpful diagnostics for traits.
+	* constraint.cc (satisfy_atom): Pass result before constant
+	evaluation to diagnose_atomic_constraint.
+	(diagnose_trait_expr): Adjust diagnostics for clarity and
+	detail.
+	(maybe_diagnose_standard_trait): New function.
+	(diagnose_atomic_constraint): Attempt to provide more helpful
+	diagnostics for more traits.
+	* cp-tree.h (explain_not_noexcept): Declare new function.
+	(is_trivially_xible): Add parameter.
+	(is_nothrow_xible): Likewise.
+	(is_xible): Likewise.
+	(is_convertible): Likewise.
+	(is_nothrow_convertible): Likewise.
+	(diagnose_trait_expr): Declare new function.
+	(maybe_diagnose_standard_trait): Declare new function.
+	* error.cc (dump_type) <case TREE_VEC>: Handle trait types.
+	* except.cc (explain_not_noexcept): New function.
+	* method.cc (build_trait_object): Add complain parameter.
+	(build_invoke): Propagate complain parameter.
+	(assignable_expr): Add explain parameter to show diagnostics.
+	(constructible_expr): Likewise.
+	(destructible_expr): Likewise.
+	(is_xible_helper): Replace trivial flag with explain flag,
+	add diagnostics.
+	(is_trivially_xible): New explain flag.
+	(is_nothrow_xible): Likewise.
+	(is_xible): Likewise.
+	(is_convertible_helper): Add complain flag.
+	(is_convertible): New explain flag.
+	(is_nothrow_convertible): Likewise.
+	* typeck.cc (cp_build_function_call_vec): Add handling for stub
+	objects.
+	(convert_arguments): Always return -1 on error.
+	* typeck2.cc (cxx_readonly_error): Add handling for stub
+	objects.
+
+2025-07-24  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (tsubst_lambda_expr): Revert r9-5971 change.
+
+2025-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114632
+	PR c++/101233
+	* lambda.cc (maybe_add_lambda_conv_op): Not for xobj lambda.
+	* pt.cc (tsubst_function_decl): Add cp_evaluated.
+	(alias_ctad_tweaks): Revert PR101233 fix.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120412
+	* module.cc (trees_out::core_vals): Write TU_LOCAL_ENTITY bits.
+	(trees_in::core_vals): Read it.
+	(trees_in::tree_node): Handle TU_LOCAL_ENTITY typedefs.
+
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121179
+	* call.cc (build_new_op): Don't clear *overload for a simple
+	!= to == rewrite.
+	* tree.cc (build_min_non_dep_op_overload): Handle TRUTH_NOT_EXPR
+	appearing in a rewritten operator expression.
+
+2025-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121055
+	* method.cc (build_invoke): Correct reference_wrapper handling.
+
+2025-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* constexpr.cc (cxx_eval_store_expression): Allow ARRAY_REFs
+	when activating an array member of a union.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* semantics.cc (finish_asm_stmt): Pass null pointer to
+	parse_{input,output}_constraint().
+
 2025-07-16  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* pt.cc (tsubst_omp_clause_decl): Use OMP_ITERATOR_DECL_P.

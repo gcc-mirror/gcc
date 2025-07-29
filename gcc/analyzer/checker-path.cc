@@ -1,4 +1,4 @@
-/* Subclass of diagnostic_path for analyzer diagnostics.
+/* Subclass of diagnostics::paths::path for analyzer diagnostics.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 

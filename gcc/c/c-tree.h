@@ -757,7 +757,7 @@ extern tree c_finish_bc_name (location_t, tree, bool);
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
-extern void c_initialize_diagnostics (diagnostic_context *);
+extern void c_initialize_diagnostics (diagnostics::context *);
 extern bool c_var_mod_p (tree x, tree fn);
 extern alias_set_type c_get_alias_set (tree);
 extern int c_type_dwarf_attribute (const_tree, int);
@@ -960,13 +960,13 @@ extern void c_bind (location_t, tree, bool);
 extern bool tag_exists_p (enum tree_code, tree);
 
 /* In c-errors.cc */
-extern bool pedwarn_c90 (location_t, diagnostic_option_id, const char *, ...)
+extern bool pedwarn_c90 (location_t, diagnostics::option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c99 (location_t, diagnostic_option_id, const char *, ...)
+extern bool pedwarn_c99 (location_t, diagnostics::option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c11 (location_t, diagnostic_option_id, const char *, ...)
+extern bool pedwarn_c11 (location_t, diagnostics::option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c23 (location_t, diagnostic_option_id, const char *, ...)
+extern bool pedwarn_c23 (location_t, diagnostics::option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern void add_note_about_new_keyword (location_t loc,
 					tree keyword_id);

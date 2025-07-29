@@ -1017,6 +1017,18 @@ proc check_effective_target_label_values {} {
     return 1
 }
 
+
+# Return 1 if builtin_trap expands not into a call but an instruction,
+# 0 otherwise.
+proc check_effective_target_trap { } {
+    return [check_no_messages_and_pattern trap "!\\(call" rtl-expand {
+	void foo ()
+	  {
+	    return __builtin_trap ();
+	  }
+    } "" ]
+}
+
 # Return 1 if builtin_return_address and builtin_frame_address are
 # supported, 0 otherwise.
 
@@ -2428,7 +2440,7 @@ proc check_effective_target_riscv_v_misalign_ok { } {
 		= {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 	      asm ("vsetivli zero,7,e8,m1,ta,ma");
 	      asm ("addi a7,%0,1" : : "r" (a) : "a7" );
-	      asm ("vle8.v v8,0(a7)" : : : "v8");
+	      asm ("vle16.v v8,0(a7)" : : : "v8");
 	      return 0; } } "-march=${gcc_march}"] } {
 	return 1
     }
@@ -2683,6 +2695,14 @@ proc add_options_for_riscv_zvbb { flags } {
 
 proc remove_options_for_riscv_zvbb { flags } {
     return [add_options_for_riscv_z_ext zvbb $flags]
+}
+
+proc add_options_for_riscv_zvfh { flags } {
+    return [add_options_for_riscv_z_ext zvfh $flags]
+}
+
+proc remove_options_for_riscv_zvfh { flags } {
+    return [add_options_for_riscv_z_ext zvfh $flags]
 }
 
 # Return 1 if the target is ia32 or x86_64.

@@ -1625,16 +1625,14 @@ expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
      Otherwise, use a predicated store.  */
   if (known_eq (GET_MODE_SIZE (info.vmode), INTVAL (info.avl)))
     {
-      emit_vlmax_insn (code_for_pred_broadcast (info.vmode), UNARY_OP,
-		       broadcast_ops);
+      riscv_vector::expand_broadcast (info.vmode, broadcast_ops);
       emit_move_insn (dst, fill_value);
     }
   else
     {
       if (!satisfies_constraint_vl (info.avl))
 	info.avl = force_reg (Pmode, info.avl);
-      emit_nonvlmax_insn (code_for_pred_broadcast (info.vmode),
-			  riscv_vector::UNARY_OP, broadcast_ops, info.avl);
+      riscv_vector::expand_broadcast (info.vmode, broadcast_ops, info.avl);
       machine_mode mask_mode
 	= riscv_vector::get_vector_mode (BImode, GET_MODE_NUNITS (info.vmode))
 	  .require ();

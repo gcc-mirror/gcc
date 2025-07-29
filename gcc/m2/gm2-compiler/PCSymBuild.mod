@@ -269,7 +269,7 @@ BEGIN
    PopT(NameStart) ;
    IF NameStart#NameEnd
    THEN
-      WriteFormat2('inconsistant definition module was named (%a) and concluded as (%a)',
+      WriteFormat2('inconsistent definition module was named (%a) and concluded as (%a)',
                    NameStart, NameEnd)
    END ;
    M2Error.LeaveErrorScope
@@ -1168,9 +1168,9 @@ BEGIN
          par := GetParam (p, i) ;
          IF IsParameterVar (par)
          THEN
-            PutProcTypeVarParam (t, GetType (par), IsParameterUnbounded (par))
+            PutProcTypeVarParam (tok, t, GetType (par), IsParameterUnbounded (par))
          ELSE
-            PutProcTypeParam (t, GetType (par), IsParameterUnbounded (par))
+            PutProcTypeParam (tok, t, GetType (par), IsParameterUnbounded (par))
          END ;
          INC(i)
       END ;

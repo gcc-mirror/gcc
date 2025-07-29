@@ -305,6 +305,7 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
       SET_DECL_ASSEMBLER_NAME (decl, name);
       if (alias)
 	{
+	  gcc_assert (!IDENTIFIER_INTERNAL_P (name));
 	  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
 	  TREE_CHAIN (name) = alias;
 	}

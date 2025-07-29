@@ -9,7 +9,7 @@
 #include "coretypes.h"
 #include "plugin-version.h"
 #include "diagnostic.h"
-#include "diagnostic-diagram.h"
+#include "diagnostics/diagram.h"
 #include "text-art/canvas.h"
 #include "text-art/table.h"
 
@@ -22,7 +22,7 @@ using namespace text_art;
 static void
 emit_canvas (const canvas &c, const char *alt_text)
 {
-  diagnostic_diagram diagram (c, alt_text);
+  diagnostics::diagram diagram (c, alt_text);
   global_dc->emit_diagram (diagram);
 }
 

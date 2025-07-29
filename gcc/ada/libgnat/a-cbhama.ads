@@ -71,7 +71,7 @@ is
    --  Map objects declared without an initialization expression are
    --  initialized to the value Empty_Map.
 
-   function Empty (Capacity : Count_Type) return Map;
+   function Empty (Capacity : Count_Type := 10) return Map;
 
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are

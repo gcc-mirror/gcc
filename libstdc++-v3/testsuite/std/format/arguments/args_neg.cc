@@ -42,3 +42,4 @@ void test_const_arg()
 }
 
 // { dg-prune-output "no matching function for call to .*::basic_format_arg<" }
+// { dg-prune-output "use of deleted function" }

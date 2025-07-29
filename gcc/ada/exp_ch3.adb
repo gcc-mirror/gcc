@@ -942,10 +942,11 @@ package body Exp_Ch3 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Body_Stmts)));
 
-         Mutate_Ekind       (Proc_Id, E_Procedure);
-         Set_Is_Public      (Proc_Id, Is_Public (A_Type));
-         Set_Is_Internal    (Proc_Id);
-         Set_Has_Completion (Proc_Id);
+         Mutate_Ekind         (Proc_Id, E_Procedure);
+         Set_Is_Public        (Proc_Id, Is_Public (A_Type));
+         Set_Is_Internal      (Proc_Id);
+         Set_Has_Completion   (Proc_Id);
+         Freeze_Extra_Formals (Proc_Id);
 
          if not Debug_Generated_Code then
             Set_Debug_Info_Off (Proc_Id);
@@ -3204,6 +3205,7 @@ package body Exp_Ch3 is
          end if;
 
          Set_Parameter_Specifications (Proc_Spec_Node, Parameters);
+         Freeze_Extra_Formals (Proc_Id);
          Set_Specification (Body_Node, Proc_Spec_Node);
          Set_Declarations (Body_Node, Decls);
 
@@ -6496,7 +6498,7 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      if Has_Controlled_Component (Typ) then
+      if Has_Controlled_Component (Typ) or else Has_Destructor (Typ) then
          Build_Controlling_Procs (Typ);
       end if;
 
@@ -6570,17 +6572,16 @@ package body Exp_Ch3 is
       --  procedure, because a self-referential type might call one of these
       --  primitives in the body of the init_proc itself.
       --
-      --  This is not needed:
-      --    1) If expansion is disabled, because extra formals are only added
-      --       when we are generating code.
+      --  This is not needed when expansion is disabled, because extra formals
+      --  are only added when we are generating code.
       --
-      --    2) For types with foreign convention since primitives with foreign
-      --       convention don't have extra formals and AI95-117 requires that
-      --       all primitives of a tagged type inherit the convention.
+      --  Notice that for tagged types with foreign convention this is also
+      --  required because (although primitives with foreign convention don't
+      --  have extra formals), a tagged type with foreign convention may have
+      --  primitives with convention Ada.
 
       if Expander_Active
         and then Is_Tagged_Type (Typ)
-        and then not Has_Foreign_Convention (Typ)
       then
          declare
             Elmt : Elmt_Id;
@@ -7498,6 +7499,12 @@ package body Exp_Ch3 is
 
             if Is_Class_Wide_Type (Etype (Func_Id)) then
                Apply_CW_Accessibility_Check (Expr, Func_Id);
+            end if;
+
+            if Has_Anonymous_Access_Discriminant (Etype (Expr)) then
+               --  Check that access discrims do not designate entities
+               --  that the function result could outlive.
+               Apply_Access_Discrims_Accessibility_Check (Expr, Func_Id);
             end if;
 
             Alloc_Expr := New_Copy_Tree (Expr);
@@ -9058,6 +9065,10 @@ package body Exp_Ch3 is
                if Is_Class_Wide_Type (Etype (Func_Id)) then
                   Apply_CW_Accessibility_Check (Expr_Q, Func_Id);
                end if;
+
+               --  ??? Usually calls to Apply_CW_Accessibility_Check and to
+               --  Apply_Access_Discrims_Accessibility_Check come in pairs.
+               --  Do we need a (conditional) call here to A_A_D_A_C ?
             end;
          end if;
 
@@ -12845,25 +12856,27 @@ package body Exp_Ch3 is
             Append_To (Res, Decl);
          end if;
 
-         Fin_Call := Empty;
-         Decl     := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
+         if not Has_Destructor (Tag_Typ) then
+            Fin_Call := Empty;
+            Decl := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
 
-         if Is_Controlled (Tag_Typ) then
-            Fin_Call :=
-              Make_Final_Call
-                (Obj_Ref => Make_Identifier (Loc, Name_V),
-                 Typ     => Tag_Typ);
+            if Is_Controlled (Tag_Typ) then
+               Fin_Call :=
+                 Make_Final_Call
+                   (Obj_Ref => Make_Identifier (Loc, Name_V), Typ => Tag_Typ);
+            end if;
+
+            if No (Fin_Call) then
+               Fin_Call := Make_Null_Statement (Loc);
+            end if;
+
+            Set_Handled_Statement_Sequence
+              (Decl,
+               Make_Handled_Sequence_Of_Statements
+                 (Loc, Statements => New_List (Fin_Call)));
+
+            Append_To (Res, Decl);
          end if;
-
-         if No (Fin_Call) then
-            Fin_Call := Make_Null_Statement (Loc);
-         end if;
-
-         Set_Handled_Statement_Sequence (Decl,
-           Make_Handled_Sequence_Of_Statements (Loc,
-             Statements => New_List (Fin_Call)));
-
-         Append_To (Res, Decl);
       end if;
 
       return Res;

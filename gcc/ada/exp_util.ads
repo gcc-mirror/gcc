@@ -1064,16 +1064,6 @@ package Exp_Util is
    --  typically return Standard_Short_Integer. For fixed-point types, this
    --  will return integer types of the corresponding size.
 
-   function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean;
-   --  Determines if the given type, Typ, may require a large temporary of the
-   --  kind that causes back-end trouble if stack checking is enabled. The
-   --  result is True only the size of the type is known at compile time and
-   --  large, where large is defined heuristically by the body of this routine.
-   --  The purpose of this routine is to help avoid generating troublesome
-   --  temporaries that interfere with stack checking mechanism. Note that the
-   --  caller has to check whether stack checking is actually enabled in order
-   --  to guide the expansion (typically of a function call).
-
    procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id);
    --  Decl is an N_Object_Declaration node and Stop is a node past Decl in
    --  the same list. Move all the nodes on the list between Decl and Stop

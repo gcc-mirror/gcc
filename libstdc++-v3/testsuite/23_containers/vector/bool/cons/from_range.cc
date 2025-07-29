@@ -42,14 +42,16 @@ do_test(Alloc alloc)
 }
 
 template<typename Range>
-void
+constexpr void
 do_test_a()
 {
   do_test<Range>(std::allocator<bool>());
-  do_test<Range>(__gnu_test::uneq_allocator<bool>(42));
+  if not consteval {
+    do_test<Range>(__gnu_test::uneq_allocator<bool>(42));
+  }
 }
 
-bool
+constexpr bool
 test_ranges()
 {
   using namespace __gnu_test;
@@ -71,9 +73,9 @@ test_ranges()
 
   // Not lvalue-convertible to bool
   struct C {
-    C(bool v) : val(v) { }
-    operator bool() && { return val; }
-    bool operator==(bool b) const { return b == val; }
+    constexpr C(bool v) : val(v) { }
+    constexpr operator bool() && { return val; }
+    constexpr bool operator==(bool b) const { return b == val; }
     bool val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
@@ -82,16 +84,8 @@ test_ranges()
   return true;
 }
 
-constexpr bool
-test_constexpr()
-{
-  // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<bool>>(std::allocator<bool>());
-  return true;
-}
-
 int main()
 {
   test_ranges();
-  static_assert( test_constexpr() );
+  static_assert( test_ranges() );
 }

@@ -327,8 +327,23 @@ package body Accessibility is
                if In_Return_Value (N)
                  or else In_Return_Context
                then
-                  return Make_Level_Literal
-                           (Subprogram_Access_Level (Current_Subprogram));
+                  if Present (Extra_Accessibility_Of_Result
+                                (Current_Subprogram))
+                  then
+                     --  If a function is passed an extra "level of the
+                     --  master of the call" parameter and that function
+                     --  returns a call to another such function (or
+                     --  possibly to the same function, in the case of a
+                     --  recursive call), then that parameter should be
+                     --  "passed along".
+
+                     return New_Occurrence_Of
+                              (Extra_Accessibility_Of_Result
+                                (Current_Subprogram), Loc);
+                  else
+                     return Make_Level_Literal
+                              (Subprogram_Access_Level (Current_Subprogram));
+                  end if;
                end if;
             end if;
 
@@ -1683,16 +1698,14 @@ package body Accessibility is
                 Condition => Check_Cond,
                 Reason    => PE_Accessibility_Check_Failed));
 
-            --  If constant folding has happened on the condition for the
-            --  generated error, then warn about it being unconditional when
-            --  we know an error will be raised.
+            --  ??? Is this how we want to detect RM 6.5(5.9) violations?
 
             if Nkind (Check_Cond) = N_Identifier
               and then Entity (Check_Cond) = Standard_True
             then
                Error_Msg_N
-                 ("access discriminant in return object could be a dangling"
-                  & " reference??", Return_Stmt);
+                 ("level of type of access discriminant value of return object"
+                    & " is statically too deep", Return_Stmt);
             end if;
          end if;
 

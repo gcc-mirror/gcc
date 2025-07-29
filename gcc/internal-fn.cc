@@ -3652,8 +3652,8 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   internal_fn ifn = gimple_call_internal_fn (stmt);
   int rhs_index = internal_fn_stored_value_index (ifn);
   tree base = gimple_call_arg (stmt, 0);
-  tree offset = gimple_call_arg (stmt, 1);
-  tree scale = gimple_call_arg (stmt, 2);
+  tree offset = gimple_call_arg (stmt, internal_fn_offset_index (ifn));
+  tree scale = gimple_call_arg (stmt, internal_fn_scale_index (ifn));
   tree rhs = gimple_call_arg (stmt, rhs_index);
 
   rtx base_rtx = expand_normal (base);
@@ -3678,12 +3678,12 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
 /* Expand {MASK_,}GATHER_LOAD call CALL using optab OPTAB.  */
 
 static void
-expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
+expand_gather_load_optab_fn (internal_fn ifn, gcall *stmt, direct_optab optab)
 {
   tree lhs = gimple_call_lhs (stmt);
   tree base = gimple_call_arg (stmt, 0);
-  tree offset = gimple_call_arg (stmt, 1);
-  tree scale = gimple_call_arg (stmt, 2);
+  tree offset = gimple_call_arg (stmt, internal_fn_offset_index (ifn));
+  tree scale = gimple_call_arg (stmt, internal_fn_scale_index (ifn));
 
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx base_rtx = expand_normal (base);
@@ -4967,11 +4967,13 @@ internal_fn_len_index (internal_fn fn)
       return 2;
 
     case IFN_MASK_LEN_SCATTER_STORE:
+      return 6;
+
     case IFN_MASK_LEN_STRIDED_LOAD:
       return 5;
 
     case IFN_MASK_LEN_GATHER_LOAD:
-      return 6;
+      return 7;
 
     case IFN_COND_LEN_FMA:
     case IFN_COND_LEN_FMS:
@@ -5075,7 +5077,7 @@ internal_fn_else_index (internal_fn fn)
 
     case IFN_MASK_GATHER_LOAD:
     case IFN_MASK_LEN_GATHER_LOAD:
-      return 5;
+      return 6;
 
     default:
       return -1;
@@ -5110,7 +5112,7 @@ internal_fn_mask_index (internal_fn fn)
     case IFN_MASK_SCATTER_STORE:
     case IFN_MASK_LEN_GATHER_LOAD:
     case IFN_MASK_LEN_SCATTER_STORE:
-      return 4;
+      return 5;
 
     case IFN_VCOND_MASK:
     case IFN_VCOND_MASK_LEN:
@@ -5135,10 +5137,11 @@ internal_fn_stored_value_index (internal_fn fn)
 
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
+      return 3;
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
     case IFN_MASK_LEN_SCATTER_STORE:
-      return 3;
+      return 4;
 
     case IFN_LEN_STORE:
       return 4;
@@ -5152,6 +5155,75 @@ internal_fn_stored_value_index (internal_fn fn)
     }
 }
 
+/* If FN has an alias pointer return its index, otherwise return -1.  */
+
+int
+internal_fn_alias_ptr_index (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_LOAD:
+    case IFN_MASK_LEN_LOAD:
+    case IFN_GATHER_LOAD:
+    case IFN_MASK_GATHER_LOAD:
+    case IFN_MASK_LEN_GATHER_LOAD:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
+      return 1;
+
+    default:
+      return -1;
+    }
+}
+
+/* If FN is a gather/scatter return the index of its offset argument,
+   otherwise return -1.  */
+
+int
+internal_fn_offset_index (internal_fn fn)
+{
+  if (!internal_gather_scatter_fn_p (fn))
+    return -1;
+
+  switch (fn)
+    {
+    case IFN_GATHER_LOAD:
+    case IFN_MASK_GATHER_LOAD:
+    case IFN_MASK_LEN_GATHER_LOAD:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
+      return 2;
+
+    default:
+      return -1;
+    }
+}
+
+/* If FN is a gather/scatter return the index of its scale argument,
+   otherwise return -1.  */
+
+int
+internal_fn_scale_index (internal_fn fn)
+{
+  if (!internal_gather_scatter_fn_p (fn))
+    return -1;
+
+  switch (fn)
+    {
+    case IFN_GATHER_LOAD:
+    case IFN_MASK_GATHER_LOAD:
+    case IFN_MASK_LEN_GATHER_LOAD:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
+      return 3;
+
+    default:
+      return -1;
+    }
+}
 
 /* Store all supported else values for the optab referred to by ICODE
    in ELSE_VALS.  The index of the else operand must be specified in
@@ -5230,13 +5302,9 @@ internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
     && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
     && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale));
 
-  /* For gather the optab's operand indices do not match the IFN's because
-     the latter does not have the extension operand (operand 3).  It is
-     implicitly added during expansion so we use the IFN's else index + 1.
-     */
   if (ok && elsvals)
     get_supported_else_vals
-      (icode, internal_fn_else_index (IFN_MASK_GATHER_LOAD) + 1, *elsvals);
+      (icode, internal_fn_else_index (IFN_MASK_GATHER_LOAD), *elsvals);
 
   return ok;
 }

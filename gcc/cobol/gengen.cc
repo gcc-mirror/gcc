@@ -107,8 +107,6 @@
 // Don't like it?  Cry me a river.
 static const int ARG_LIMIT = 512;
 
-static int sv_current_line_number;
-
 // These are globally useful constants
 tree char_nodes[256];
 
@@ -452,7 +450,7 @@ gg_assign(tree dest, const tree source)
 
   if( okay )
     {
-    stmt = build2_loc(location_from_lineno(),
+    stmt = build2_loc(gg_token_location(),
                       MODIFY_EXPR,
                       TREE_TYPE(dest),
                       dest,
@@ -616,7 +614,7 @@ gg_add_field_to_structure(const tree type_of_field, const char *name_of_field, t
   tree id_of_field = get_identifier (name_of_field);
 
   // Create the new field:
-  tree new_field_decl = build_decl(   location_from_lineno(),
+  tree new_field_decl = build_decl(   gg_token_location(),
                                       FIELD_DECL,
                                       id_of_field,
                                       type_of_field);
@@ -1043,7 +1041,7 @@ gg_define_from_declaration(tree var_decl)
     {
     // Having made sure the chain of variable declarations is nicely started,
     // it's time to actually define the storage with a decl_expression:
-    tree stmt = build1_loc (location_from_lineno(),
+    tree stmt = build1_loc (gg_token_location(),
                             DECL_EXPR,
                             TREE_TYPE(var_decl),
                             var_decl);
@@ -1774,7 +1772,7 @@ gg_build_relational_expression(tree operand_a,
       compare = LE_EXPR;
       break;
     }
-  tree relational_expression = build2_loc(location_from_lineno(),
+  tree relational_expression = build2_loc(gg_token_location(),
                                           compare,
                                           boolean_type_node,
                                           operand_a,
@@ -1891,7 +1889,7 @@ gg_create_goto_pair(tree *goto_expr,
 void
 gg_goto_label_decl(tree label_decl)
   {
-  tree goto_expr  = build1_loc( location_from_lineno(),
+  tree goto_expr  = build1_loc( gg_token_location(),
                                 GOTO_EXPR,
                                 void_type_node,
                                 label_decl);
@@ -1938,7 +1936,7 @@ gg_create_goto_pair(tree *goto_expr, tree *label_expr, const char *name)
 void
 gg_goto(tree var_decl_pointer)
   {
-  tree go_to = build1_loc(location_from_lineno(),
+  tree go_to = build1_loc(gg_token_location(),
                           GOTO_EXPR,
                           void_type_node,
                           var_decl_pointer);
@@ -2186,7 +2184,7 @@ gg_printf(const char *format_string, ...)
     function = gg_get_function_address(INT, "__gg__fprintf_stderr");
     }
 
-  tree stmt = build_call_array_loc (location_from_lineno(),
+  tree stmt = build_call_array_loc (gg_token_location(),
                                     INT,
                                     function,
                                     nargs,
@@ -2233,7 +2231,7 @@ gg_fprintf(tree fd, int nargs, const char *format_string, ...)
     function = gg_get_function_address(INT, "sprintf");
     }
 
-  tree stmt = build_call_array_loc (location_from_lineno(),
+  tree stmt = build_call_array_loc (gg_token_location(),
                                     INT,
                                     function,
                                     argc,
@@ -2280,7 +2278,7 @@ void
 gg_memset(tree dest, const tree value, tree size)
   {
   tree the_call =
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_MEMSET),
                           3,
                           dest,
@@ -2294,7 +2292,7 @@ gg_memchr(tree buf, tree ch, tree length)
   {
   tree the_call = fold_convert(
       pvoid_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_MEMCHR),
                           3,
                           buf,
@@ -2309,7 +2307,7 @@ void
 gg_memcpy(tree dest, const tree src, tree size)
   {
   tree the_call = build_call_expr_loc(
-        location_from_lineno(),
+        gg_token_location(),
         builtin_decl_explicit (BUILT_IN_MEMCPY),
         3,
         dest,
@@ -2324,7 +2322,7 @@ void
 gg_memmove(tree dest, const tree src, tree size)
   {
   tree the_call = build_call_expr_loc(
-        location_from_lineno(),
+        gg_token_location(),
         builtin_decl_explicit (BUILT_IN_MEMMOVE),
         3,
         dest,
@@ -2357,7 +2355,7 @@ void
 gg_strcpy(tree dest, tree src)
   {
   tree the_call =
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_STRCPY),
                           2,
                           dest,
@@ -2370,7 +2368,7 @@ gg_strcmp(tree A, tree B)
   {
   tree the_call = fold_convert(
       integer_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_STRCMP),
                           2,
                           A,
@@ -2402,7 +2400,7 @@ gg_strncmp(tree char_star_A, tree char_star_B, tree size_t_N)
   {
   tree the_call = fold_convert(
       integer_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_STRNCMP),
                           3,
                           char_star_A,
@@ -2433,7 +2431,7 @@ gg_return(tree operand)
     {
     // When there is no operand, or if the function result is void, then
     // we just generate a return_expr.
-    stmt = build1_loc(location_from_lineno(), RETURN_EXPR, void_type_node, NULL_TREE);
+    stmt = build1_loc(gg_token_location(), RETURN_EXPR, void_type_node, NULL_TREE);
     }
   else
     {
@@ -2443,7 +2441,7 @@ gg_return(tree operand)
                             function_type,
                             DECL_RESULT(current_function->function_decl),
                             gg_cast(function_type, operand));
-    stmt = build1_loc(location_from_lineno(), RETURN_EXPR, void_type_node, modify);
+    stmt = build1_loc(gg_token_location(), RETURN_EXPR, void_type_node, modify);
     }
   gg_append_statement(stmt);
   }
@@ -2451,7 +2449,7 @@ gg_return(tree operand)
 void
 chain_parameter_to_function(tree function_decl, const tree param_type,  const char *name)
   {
-  tree parm = build_decl (location_from_lineno(),
+  tree parm = build_decl (gg_token_location(),
                           PARM_DECL,
                           get_identifier (name),
                           param_type);
@@ -2686,7 +2684,7 @@ gg_define_function( tree return_type,
     }
 
   // Establish the RESULT_DECL for the function:
-  tree resdecl = build_decl (location_from_lineno(), RESULT_DECL, NULL_TREE, return_type);
+  tree resdecl = build_decl (gg_token_location(), RESULT_DECL, NULL_TREE, return_type);
   DECL_CONTEXT (resdecl) = function_decl;
   DECL_RESULT (function_decl) = resdecl;
 
@@ -2818,7 +2816,7 @@ gg_get_function_decl(tree return_type, const char *funcname, ...)
     }
 
   // Establish the RESULT_DECL for the function:
-  tree resdecl = build_decl (location_from_lineno(), RESULT_DECL, NULL_TREE, return_type);
+  tree resdecl = build_decl (gg_token_location(), RESULT_DECL, NULL_TREE, return_type);
   DECL_CONTEXT (resdecl) = function_decl;
   DECL_RESULT (function_decl) = resdecl;
 
@@ -3076,7 +3074,7 @@ gg_call_expr(tree return_type, const char *function_name, ...)
   tree the_func_addr = build1(ADDR_EXPR,
                               build_pointer_type (TREE_TYPE(function_decl)),
                               function_decl);
-  tree the_call = build_call_array_loc(location_from_lineno(),
+  tree the_call = build_call_array_loc(gg_token_location(),
                                        return_type,
                                        the_func_addr,
                                        nargs,
@@ -3132,7 +3130,7 @@ gg_call(tree return_type, const char *function_name,  ...)
   tree the_func_addr = build1(ADDR_EXPR,
                               build_pointer_type (TREE_TYPE(function_decl)),
                               function_decl);
-  tree the_call = build_call_array_loc(location_from_lineno(),
+  tree the_call = build_call_array_loc(gg_token_location(),
                                        return_type,
                                        the_func_addr,
                                        nargs,
@@ -3157,7 +3155,7 @@ gg_call_expr_list(tree return_type, tree function_pointer, int param_count, tree
   // Avoid that with something like
   //      gg_assign( dest, gg_call_expr_list(...) );
 
-  tree the_call = build_call_array_loc(location_from_lineno(),
+  tree the_call = build_call_array_loc(gg_token_location(),
                                        return_type,
                                        function_pointer,
                                        param_count,
@@ -3192,7 +3190,7 @@ void
 gg_exit(tree exit_code)
   {
   tree the_call =
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_EXIT),
                           1,
                           exit_code);
@@ -3203,7 +3201,7 @@ void
 gg_abort()
   {
   tree the_call =
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_ABORT),
                           0);
   gg_append_statement(the_call);
@@ -3214,7 +3212,7 @@ gg_strlen(tree psz)
   {
   tree the_call = fold_convert(
       size_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_STRLEN),
                           1,
                           psz));
@@ -3226,7 +3224,7 @@ gg_strdup(tree psz)
   {
   tree the_call = fold_convert(
       build_pointer_type(char_type_node),
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_STRDUP),
                           1,
                           psz));
@@ -3240,7 +3238,7 @@ gg_malloc(tree size)
   {
   tree the_call = fold_convert(
       pvoid_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_MALLOC),
                           1,
                           size));
@@ -3252,7 +3250,7 @@ gg_realloc(tree base, tree size)
   {
   tree the_call = fold_convert(
       pvoid_type_node,
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_REALLOC),
                           2,
                           base,
@@ -3276,7 +3274,7 @@ void
 gg_free(tree pointer)
   {
   tree the_call =
-      build_call_expr_loc(location_from_lineno(),
+      build_call_expr_loc(gg_token_location(),
                           builtin_decl_explicit (BUILT_IN_FREE),
                           1,
                           pointer);
@@ -3377,18 +3375,6 @@ gg_string_literal(const char *string)
   return build_string_literal(strlen(string)+1, string);
   }
 
-void
-gg_set_current_line_number(int line_number)
-  {
-  sv_current_line_number = line_number;
-  }
-
-int
-gg_get_current_line_number()
-  {
-  return sv_current_line_number;
-  }
-
 tree
 gg_trans_unit_var_decl(const char *var_name)
   {
@@ -3410,7 +3396,7 @@ gg_insert_into_assembler(const char ach[])
   if( !optimize )
     {
     // Create the required generic tag
-    tree asm_expr = build5_loc( location_from_lineno(),
+    tree asm_expr = build5_loc( gg_token_location(),
                             ASM_EXPR,
                             VOID,
                             build_string(strlen(ach), ach),
@@ -3447,5 +3433,28 @@ gg_insert_into_assemblerf(const char *format, ...)
     gg_insert_into_assembler(ach);
     }
   }
-
 #pragma GCC diagnostic pop
+
+static location_t sv_token_location_override = 0;
+
+void
+token_location_override(location_t loc)
+  {
+  sv_token_location_override = loc;
+  }
+
+location_t
+gg_token_location()
+  {
+  location_t retval;
+  if( sv_token_location_override )
+    {
+    retval = sv_token_location_override;
+    sv_token_location_override = 0;
+    }
+  else
+    {
+    retval = current_token_location();
+    }
+  return retval;
+  }

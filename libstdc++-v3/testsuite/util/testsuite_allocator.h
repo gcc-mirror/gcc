@@ -517,19 +517,24 @@ namespace __gnu_test
       constexpr SimpleAllocator() noexcept { }
 
       template <class T>
+	constexpr
         SimpleAllocator(const SimpleAllocator<T>&) { }
 
+      _GLIBCXX20_CONSTEXPR
       Tp *allocate(std::size_t n)
       { return std::allocator<Tp>().allocate(n); }
 
+      _GLIBCXX20_CONSTEXPR
       void deallocate(Tp *p, std::size_t n)
       { std::allocator<Tp>().deallocate(p, n); }
     };
 
   template <class T, class U>
+    constexpr
     bool operator==(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
     { return true; }
   template <class T, class U>
+    constexpr
     bool operator!=(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
     { return false; }
 

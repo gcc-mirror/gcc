@@ -71,6 +71,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "tree-nested.h"
 #include "gcc-urlifier.h"
+#include "insn-config.h"
+#include "recog.h"
+#include "output.h"
+#include "gimplify_reg_info.h"
 
 /* Identifier for a basic condition, mapping it to other basic conditions of
    its Boolean expression.  Basic conditions given the same uid (in the same
@@ -7823,6 +7827,42 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   return ret;
 }
 
+/* Return the number of times character C occurs in string S.  */
+
+static int
+num_occurrences (int c, const char *s)
+{
+  int n = 0;
+  while (*s)
+    n += (*s++ == c);
+  return n;
+}
+
+/* A subroutine of gimplify_asm_expr.  Check that all operands have
+   the same number of alternatives.  Return -1 if this is violated.  Otherwise
+   return the number of alternatives.  */
+
+static int
+num_alternatives (const_tree link)
+{
+  if (link == nullptr)
+    return 0;
+
+  const char *constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+  int num = num_occurrences (',', constraint);
+
+  if (num + 1 > MAX_RECOG_ALTERNATIVES)
+    return -1;
+
+  for (link = TREE_CHAIN (link); link; link = TREE_CHAIN (link))
+    {
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      if (num_occurrences (',', constraint) != num)
+	return -1;
+    }
+  return num + 1;
+}
+
 /* Gimplify the operands of an ASM_EXPR.  Input operands should be a gimple
    value; output operands should be a gimple lvalue.  */
 
@@ -7853,6 +7893,36 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   clobbers = NULL;
   labels = NULL;
 
+  int num_alternatives_out = num_alternatives (ASM_OUTPUTS (expr));
+  int num_alternatives_in = num_alternatives (ASM_INPUTS (expr));
+  if (num_alternatives_out == -1 || num_alternatives_in == -1
+      || (num_alternatives_out > 0 && num_alternatives_in > 0
+	  && num_alternatives_out != num_alternatives_in))
+    {
+      error ("operand constraints for %<asm%> differ "
+	     "in number of alternatives");
+      return GS_ERROR;
+    }
+  int num_alternatives = MAX (num_alternatives_out, num_alternatives_in);
+
+  gimplify_reg_info reg_info (num_alternatives, noutputs);
+
+  link_next = NULL_TREE;
+  for (link = ASM_CLOBBERS (expr); link; link = link_next)
+    {
+      /* The clobber entry could also be an error marker.  */
+      if (TREE_CODE (TREE_VALUE (link)) == STRING_CST)
+	{
+	  const char *regname= TREE_STRING_POINTER (TREE_VALUE (link));
+	  int regno = decode_reg_name (regname);
+	  if (regno >= 0)
+	    reg_info.set_clobbered (regno);
+	}
+      link_next = TREE_CHAIN (link);
+      TREE_CHAIN (link) = NULL_TREE;
+      vec_safe_push (clobbers, link);
+    }
+
   ret = GS_ALL_DONE;
   link_next = NULL_TREE;
   for (i = 0, link = ASM_OUTPUTS (expr); link; ++i, link = link_next)
@@ -7869,8 +7939,9 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (constraint_len == 0)
         continue;
 
-      ok = parse_output_constraint (&constraint, i, 0, 0,
-				    &allows_mem, &allows_reg, &is_inout);
+      reg_info.operand = TREE_VALUE (link);
+      ok = parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
+				    &allows_reg, &is_inout, &reg_info);
       if (!ok)
 	{
 	  ret = GS_ERROR;
@@ -8001,8 +8072,8 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			*end = '\0';
 		      beg[-1] = '=';
 		      tem = beg - 1;
-		      parse_output_constraint (&tem, i, 0, 0,
-					       &mem_p, &reg_p, &inout_p);
+		      parse_output_constraint (&tem, i, 0, 0, &mem_p, &reg_p,
+					       &inout_p, nullptr);
 		      if (dst != str)
 			*dst++ = ',';
 		      if (reg_p)
@@ -8041,13 +8112,60 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	}
     }
 
+  /* After all output operands have been gimplified, verify that each output
+     operand is used at most once in case of hard register constraints.  Thus,
+     error out in cases like
+       asm ("" : "={0}" (x), "={1}" (x));
+     or even for
+       asm ("" : "=r" (x), "={1}" (x));
+
+     FIXME: Ideally we would also error out for cases like
+       int x;
+       asm ("" : "=r" (x), "=r" (x));
+     However, since code like that was previously accepted, erroring out now might
+     break existing code.  On the other hand, we already error out for register
+     asm like
+       register int x asm ("0");
+       asm ("" : "=r" (x), "=r" (x));
+     Thus, maybe it wouldn't be too bad to also error out in the former
+     non-register-asm case.
+  */
+  for (unsigned i = 0; i < vec_safe_length (outputs); ++i)
+    {
+      tree link = (*outputs)[i];
+      tree op1 = TREE_VALUE (link);
+      const char *constraint
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      if (strchr (constraint, '{') != nullptr)
+	for (unsigned j = 0; j < vec_safe_length (outputs); ++j)
+	  {
+	    if (i == j)
+	      continue;
+	    tree link2 = (*outputs)[j];
+	    tree op2 = TREE_VALUE (link2);
+	    if (op1 == op2)
+	      {
+		error ("multiple outputs to lvalue %qE", op2);
+		return GS_ERROR;
+	      }
+	  }
+    }
+
   link_next = NULL_TREE;
-  for (link = ASM_INPUTS (expr); link; ++i, link = link_next)
+  int input_num = 0;
+  for (link = ASM_INPUTS (expr); link; ++input_num, ++i, link = link_next)
     {
       link_next = TREE_CHAIN (link);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-			      oconstraints, &allows_mem, &allows_reg);
+      reg_info.operand = TREE_VALUE (link);
+      bool ok = parse_input_constraint (&constraint, input_num, 0, noutputs, 0,
+					oconstraints, &allows_mem, &allows_reg,
+					&reg_info);
+      if (!ok)
+	{
+	  ret = GS_ERROR;
+	  is_inout = false;
+	}
 
       /* If we can't make copies, we can only accept memory.  */
       tree intype = TREE_TYPE (TREE_VALUE (link));
@@ -8129,15 +8247,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     }
 
   link_next = NULL_TREE;
-  for (link = ASM_CLOBBERS (expr); link; ++i, link = link_next)
-    {
-      link_next = TREE_CHAIN (link);
-      TREE_CHAIN (link) = NULL_TREE;
-      vec_safe_push (clobbers, link);
-    }
-
-  link_next = NULL_TREE;
-  for (link = ASM_LABELS (expr); link; ++i, link = link_next)
+  for (link = ASM_LABELS (expr); link; link = link_next)
     {
       link_next = TREE_CHAIN (link);
       TREE_CHAIN (link) = NULL_TREE;

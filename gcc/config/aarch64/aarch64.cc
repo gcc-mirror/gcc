@@ -356,7 +356,8 @@ static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
 							 int misalignment,
-							 bool is_packed);
+							 bool is_packed,
+							 bool is_gather_scatter);
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
@@ -15854,11 +15855,14 @@ cost_plus:
 	break;
     case CONST_VECTOR:
 	{
-	  /* Load using MOVI/MVNI.  */
-	  if (aarch64_simd_valid_mov_imm (x))
-	    *cost = extra_cost->vect.movi;
-	  else /* Load using constant pool.  */
-	    *cost = extra_cost->ldst.load;
+	  if (speed)
+	    {
+	      /* Load using MOVI/MVNI.  */
+	      if (aarch64_simd_valid_mov_imm (x))
+		*cost += extra_cost->vect.movi;
+	      else /* Load using constant pool.  */
+		*cost += extra_cost->ldst.load;
+	    }
 	  break;
 	}
     case VEC_CONCAT:
@@ -15867,7 +15871,8 @@ cost_plus:
 	break;
     case VEC_DUPLICATE:
 	/* Load using a DUP.  */
-	*cost = extra_cost->vect.dup;
+	if (speed)
+	  *cost += extra_cost->vect.dup;
 	return false;
     case VEC_SELECT:
 	{
@@ -15875,13 +15880,16 @@ cost_plus:
 	  *cost = rtx_cost (op0, GET_MODE (op0), VEC_SELECT, 0, speed);
 
 	  /* cost subreg of 0 as free, otherwise as DUP */
-	  rtx op1 = XEXP (x, 1);
-	  if (vec_series_lowpart_p (mode, GET_MODE (op1), op1))
-	    ;
-	  else if (vec_series_highpart_p (mode, GET_MODE (op1), op1))
-	    *cost = extra_cost->vect.dup;
-	  else
-	    *cost = extra_cost->vect.extract;
+	  if (speed)
+	    {
+	      rtx op1 = XEXP (x, 1);
+	      if (vec_series_lowpart_p (mode, GET_MODE (op1), op1))
+		;
+	      else if (vec_series_highpart_p (mode, GET_MODE (op1), op1))
+		*cost += extra_cost->vect.dup;
+	      else
+		*cost += extra_cost->vect.extract;
+	    }
 	  return true;
 	}
     default:
@@ -17969,6 +17977,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
       /* Check if we've seen an SVE gather/scatter operation and which size.  */
       if (kind == scalar_load
+	  && vectype
 	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
 	  && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
 	{
@@ -19958,8 +19967,9 @@ aarch64_process_one_target_attr (char *arg_str)
 	      if (valid)
 		{
 		  set_option (&global_options, NULL, p_attr->opt_num, value,
-			      NULL, DK_UNSPECIFIED, input_location,
-			      global_dc);
+			      NULL,
+			      static_cast<int> (diagnostics::kind::unspecified),
+			      input_location, global_dc);
 		}
 	      else
 		{
@@ -24406,10 +24416,14 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
 static bool
 aarch64_builtin_support_vector_misalignment (machine_mode mode,
 					     const_tree type, int misalignment,
-					     bool is_packed)
+					     bool is_packed,
+					     bool is_gather_scatter)
 {
   if (TARGET_SIMD && STRICT_ALIGNMENT)
     {
+      if (is_gather_scatter)
+	return true;
+
       /* Return if movmisalign pattern is not supported for this mode.  */
       if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
@@ -24419,7 +24433,8 @@ aarch64_builtin_support_vector_misalignment (machine_mode mode,
 	return false;
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* If VALS is a vector constant that can be loaded into a register

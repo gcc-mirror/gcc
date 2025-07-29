@@ -497,6 +497,7 @@ public:
   rtx use_ternop_insn (bool, insn_code);
   rtx use_widen_ternop_insn (insn_code);
   rtx use_scalar_move_insn (insn_code);
+  rtx use_scalar_broadcast_insn (insn_code);
   rtx generate_insn (insn_code);
 
   /* The function call expression.  */

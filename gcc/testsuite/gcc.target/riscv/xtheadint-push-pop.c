@@ -20,12 +20,6 @@ void func_machine (void)
 /* { dg-final { scan-assembler-times {\mth\.ipop\M} 2 { target { rv32 } } } } */
 
 
-__attribute__ ((interrupt ("user")))
-void func_usr (void)
-{
-  f ();
-}
-
 __attribute__ ((interrupt ("supervisor")))
 void func_supervisor (void)
 {

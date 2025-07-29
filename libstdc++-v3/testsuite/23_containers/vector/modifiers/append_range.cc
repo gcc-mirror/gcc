@@ -42,14 +42,14 @@ do_test()
 }
 
 template<typename Range>
-void
+constexpr void
 do_test_a()
 {
   do_test<Range, std::allocator<int>>();
   do_test<Range, __gnu_test::SimpleAllocator<int>>();
 }
 
-bool
+constexpr bool
 test_ranges()
 {
   using namespace __gnu_test;
@@ -71,9 +71,9 @@ test_ranges()
 
   // Not lvalue-convertible to int
   struct C {
-    C(int v) : val(v) { }
-    operator int() && { return val; }
-    bool operator==(int b) const { return b == val; }
+    constexpr C(int v) : val(v) { }
+    constexpr operator int() && { return val; }
+    constexpr bool operator==(int b) const { return b == val; }
     int val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
@@ -82,7 +82,7 @@ test_ranges()
   return true;
 }
 
-void
+constexpr void
 test_overlapping()
 {
   using __gnu_test::test_input_range;
@@ -199,64 +199,14 @@ test_overlapping()
   }
 }
 
-constexpr bool
-test_constexpr()
-{
-  // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<short>, std::allocator<int>>();
-
-  // Some basic tests for overlapping ranges in constant expressions.
-  struct InputRange
-  {
-    struct Sent { const void* end; };
-
-    struct Iter
-    {
-      using value_type = int;
-      using difference_type = int;
-      constexpr explicit Iter(int* p) : ptr(p) { }
-      constexpr Iter& operator++() { ++ptr; return *this; }
-      constexpr Iter operator++(int) { auto i = *this; ++ptr; return i; }
-      constexpr int operator*() const { return *ptr; }
-      constexpr bool operator==(const Iter&) const = default;
-      constexpr bool operator==(const Sent& s) const { return ptr == s.end; }
-      int* ptr;
-    };
-
-    Iter iter;
-    Sent sent;
-
-    constexpr InputRange(int* f, int* l) : iter{f}, sent{l} { }
-    constexpr Iter begin() const { return iter; }
-    constexpr Sent end() const { return sent; }
-  };
-  static_assert( std::ranges::input_range<InputRange> );
-  static_assert( ! std::ranges::forward_range<InputRange> );
-
-  std::vector<int> vec(5);
-
-  // Test overlapping input ranges
-  vec.resize(vec.capacity());
-  vec.append_range(InputRange(vec.data(), vec.data() + 3)); // no capacity
-  vec.reserve(vec.capacity() + 2);
-  vec.append_range(InputRange(vec.data(), vec.data() + 4)); // some capacity
-  vec.reserve(vec.capacity() + 6);
-  vec.append_range(InputRange(vec.data(), vec.data() + 5)); // enough capacity
-
-  // Test overlapping forward ranges
-  vec.resize(vec.capacity());
-  vec.append_range(std::span<int>(vec));               // no capacity
-  vec.reserve(vec.size() + 2);
-  vec.append_range(std::span<int>(vec).subspan(1, 4)); // some capacity
-  vec.reserve(vec.size() + 6);
-  vec.append_range(std::span<int>(vec).subspan(1, 5)); // enough capacity
-
-  return true;
-}
-
 int main()
 {
-  test_ranges();
-  test_overlapping();
-  static_assert( test_constexpr() );
+  auto test_all = [] {
+    test_ranges();
+    test_overlapping();
+    return true;
+  };
+
+  test_all();
+  static_assert( test_all() );
 }

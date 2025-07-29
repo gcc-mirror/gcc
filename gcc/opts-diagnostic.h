@@ -20,12 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_DIAGNOSTIC_H
 #define GCC_OPTS_DIAGNOSTIC_H
 
-/* Abstract subclass of diagnostic_option_manager for gcc options.  */
+/* Abstract subclass of diagnostics::option_manager for gcc options.  */
 
-class gcc_diagnostic_option_manager : public diagnostic_option_manager
+class gcc_diagnostic_option_manager : public diagnostics::option_manager
 {
 public:
-  char *make_option_url (diagnostic_option_id option_id) const final override;
+  char *make_option_url (diagnostics::option_id option_id) const final override;
 
 protected:
   gcc_diagnostic_option_manager (unsigned lang_mask)
@@ -40,7 +40,7 @@ protected:
 class compiler_diagnostic_option_manager : public gcc_diagnostic_option_manager
 {
 public:
-  compiler_diagnostic_option_manager (const diagnostic_context &context,
+  compiler_diagnostic_option_manager (const diagnostics::context &context,
 				      unsigned lang_mask,
 				      void *opts)
   : gcc_diagnostic_option_manager (lang_mask),
@@ -49,25 +49,26 @@ public:
   {
   }
 
-  int option_enabled_p (diagnostic_option_id option_id) const final override;
-  char *make_option_name (diagnostic_option_id option_id,
-			  diagnostic_t orig_diag_kind,
-			  diagnostic_t diag_kind) const final override;
+  int option_enabled_p (diagnostics::option_id option_id) const final override;
+  char *
+  make_option_name (diagnostics::option_id option_id,
+		    enum diagnostics::kind orig_diag_kind,
+		    enum diagnostics::kind diag_kind) const final override;
 
 private:
-  const diagnostic_context &m_context;
+  const diagnostics::context &m_context;
   void *m_opts;
 };
 
 extern void
 handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
-				     diagnostic_context &dc,
+				     diagnostics::context &dc,
 				     const char *arg,
 				     location_t loc);
 
 extern void
 handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
-				     diagnostic_context &dc,
+				     diagnostics::context &dc,
 				     const char *arg,
 				     location_t loc);
 #endif

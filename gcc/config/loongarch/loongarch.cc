@@ -11052,17 +11052,21 @@ static bool
 loongarch_builtin_support_vector_misalignment (machine_mode mode,
 					       const_tree type,
 					       int misalignment,
-					       bool is_packed)
+					       bool is_packed,
+					       bool is_gather_scatter)
 {
   if ((ISA_HAS_LSX || ISA_HAS_LASX) && STRICT_ALIGNMENT)
     {
+      if (is_gather_scatter)
+	return true;
       if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
 	return false;
       if (misalignment == -1)
 	return false;
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* Return a PARALLEL containing NELTS elements, with element I equal

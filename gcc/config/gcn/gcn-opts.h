@@ -82,8 +82,13 @@ enum hsaco_attr_type
 #define TARGET_DPP_FULL !TARGET_RDNA2_PLUS
 #define TARGET_DPP16 TARGET_RDNA2_PLUS
 #define TARGET_DPP8 TARGET_RDNA2_PLUS
+/* Device requires no manually inserted wait states; that's the
+   case for RDNA 2, 3 and 3.5 (but not for RNDA 4).  */
+#define TARGET_NO_MANUAL_NOPS TARGET_RDNA2_PLUS
 /* Device requires CDNA1-style manually inserted wait states for AVGPRs.  */
 #define TARGET_AVGPR_CDNA1_NOPS TARGET_CDNA1
+/* Device requires CDNA3-style manually inserted wait states.  */
+#define TARGET_CDNA3_NOPS TARGET_CDNA3
 /* Whether to use the 'globally coherent' (glc) or the 'scope' (sc0) flag
    for non-scalar memory operations. The string starts on purpose with a space.
    Note: for scalar memory operations (i.e. 's_...'), 'glc' is still used.

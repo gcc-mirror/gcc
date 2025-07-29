@@ -151,7 +151,7 @@ format_string_diagnostic_t (const substring_loc &fmt_loc,
    Return true if a warning was emitted, false otherwise.  */
 
 bool
-format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
+format_string_diagnostic_t::emit_warning_n_va (diagnostics::option_id option_id,
 					       unsigned HOST_WIDE_INT n,
 					       const char *singular_gmsgid,
 					       const char *plural_gmsgid,
@@ -203,7 +203,7 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
   if (!err && m_corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, m_corrected_substring);
 
-  diagnostic_info diagnostic;
+  diagnostics::diagnostic_info diagnostic;
   if (singular_gmsgid != plural_gmsgid)
     {
       unsigned long gtn;
@@ -218,12 +218,12 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
 
       const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
       diagnostic_set_info_translated (&diagnostic, text, ap, &richloc,
-				      DK_WARNING);
+				      diagnostics::kind::warning);
     }
   else
     diagnostic_set_info (&diagnostic, singular_gmsgid, ap, &richloc,
-			 DK_WARNING);
-  diagnostic.option_id = option_id;
+			 diagnostics::kind::warning);
+  diagnostic.m_option_id = option_id;
   bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (!err && fmt_substring_loc && !substring_within_range)
@@ -248,7 +248,7 @@ format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
 /* Singular-only version of the above.  */
 
 bool
-format_string_diagnostic_t::emit_warning_va (diagnostic_option_id option_id,
+format_string_diagnostic_t::emit_warning_va (diagnostics::option_id option_id,
 					     const char *gmsgid,
 					     va_list *ap) const
 {
@@ -258,7 +258,7 @@ format_string_diagnostic_t::emit_warning_va (diagnostic_option_id option_id,
 /* Variadic version of the above (singular only).  */
 
 bool
-format_string_diagnostic_t::emit_warning (diagnostic_option_id option_id,
+format_string_diagnostic_t::emit_warning (diagnostics::option_id option_id,
 					  const char *gmsgid,
 					  ...) const
 {
@@ -273,7 +273,7 @@ format_string_diagnostic_t::emit_warning (diagnostic_option_id option_id,
 /* Variadic version of the above (singular vs plural).  */
 
 bool
-format_string_diagnostic_t::emit_warning_n (diagnostic_option_id option_id,
+format_string_diagnostic_t::emit_warning_n (diagnostics::option_id option_id,
 					    unsigned HOST_WIDE_INT n,
 					    const char *singular_gmsgid,
 					    const char *plural_gmsgid,

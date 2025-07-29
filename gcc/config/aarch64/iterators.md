@@ -463,6 +463,7 @@
 (define_mode_iterator VNx8SI_ONLY [VNx8SI])
 (define_mode_iterator VNx8SF_ONLY [VNx8SF])
 (define_mode_iterator VNx8DI_ONLY [VNx8DI])
+(define_mode_iterator VNx2SI_ONLY [VNx2SI])
 (define_mode_iterator VNx4SI_ONLY [VNx4SI])
 (define_mode_iterator VNx4SF_ONLY [VNx4SF])
 (define_mode_iterator VNx2DI_ONLY [VNx2DI])
@@ -3366,6 +3367,10 @@
 (define_int_iterator SVE_INT_UNARY [UNSPEC_REVB
 				    UNSPEC_REVH UNSPEC_REVW])
 
+;; This iterator is currently only used for estimation instructions,
+;; which are never generated automatically when -ftrapping-math is true.
+;; The iterator is therefore applied unconditionally to partial FP modes.
+;; This might need to be revisited if new operations are added in future.
 (define_int_iterator SVE_FP_UNARY [UNSPEC_FRECPE UNSPEC_RSQRTE])
 
 (define_int_iterator SVE_FP_UNARY_INT [(UNSPEC_FEXPA "TARGET_NON_STREAMING")])
@@ -3378,6 +3383,10 @@
 (define_int_iterator SVE_INT_BINARY_MULTI [UNSPEC_SQDMULH
 					   UNSPEC_SRSHL UNSPEC_URSHL])
 
+;; This iterator is currently only used for estimation instructions,
+;; which are never generated automatically when -ftrapping-math is true.
+;; The iterator is therefore applied unconditionally to partial FP modes.
+;; This might need to be revisited if new operations are added in future.
 (define_int_iterator SVE_FP_BINARY [UNSPEC_FRECPS UNSPEC_RSQRTS])
 
 (define_int_iterator SVE_FP_BINARY_INT [UNSPEC_FTSMUL UNSPEC_FTSSEL])
@@ -3429,9 +3438,10 @@
 					   UNSPEC_FMINQV
 					   UNSPEC_FMINNMQV])
 
-(define_int_iterator SVE_COND_FP_UNARY [UNSPEC_COND_FABS
-					UNSPEC_COND_FNEG
-					UNSPEC_COND_FRECPX
+(define_int_iterator SVE_COND_FP_UNARY_BITWISE [UNSPEC_COND_FABS
+						UNSPEC_COND_FNEG])
+
+(define_int_iterator SVE_COND_FP_UNARY [UNSPEC_COND_FRECPX
 					UNSPEC_COND_FRINTA
 					UNSPEC_COND_FRINTI
 					UNSPEC_COND_FRINTM
@@ -3439,13 +3449,12 @@
 					UNSPEC_COND_FRINTP
 					UNSPEC_COND_FRINTX
 					UNSPEC_COND_FRINTZ
-					UNSPEC_COND_FSQRT])
+					UNSPEC_COND_FSQRT
+					SVE_COND_FP_UNARY_BITWISE])
 
 ;; Same as SVE_COND_FP_UNARY, but without codes that have a dedicated
 ;; <optab><mode>2 expander.
-(define_int_iterator SVE_COND_FP_UNARY_OPTAB [UNSPEC_COND_FABS
-					      UNSPEC_COND_FNEG
-					      UNSPEC_COND_FRECPX
+(define_int_iterator SVE_COND_FP_UNARY_OPTAB [UNSPEC_COND_FRECPX
 					      UNSPEC_COND_FRINTA
 					      UNSPEC_COND_FRINTI
 					      UNSPEC_COND_FRINTM

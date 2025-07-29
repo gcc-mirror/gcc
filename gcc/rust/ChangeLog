@@ -1,3 +1,37 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* resolve/rust-ice-finalizer.cc: Update usage of "diagnostic_info"
+	to explicitly refer to "diagnostics::diagnostic_info".
+	* resolve/rust-ice-finalizer.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* backend/rust-tree.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* backend/rust-tree.h: Likewise.
+	* resolve/rust-ast-resolve-expr.cc: Likewise.
+	* resolve/rust-ice-finalizer.cc: Likewise.
+	* resolve/rust-ice-finalizer.h: Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* resolve/rust-ast-resolve-expr.cc: Update for diagnostic_text_finalizer
+	becoming diagnostics::text_finalizer.
+	* resolve/rust-late-name-resolver-2.0.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* resolve/rust-ice-finalizer.cc: Update for move of diagnostics
+	output formats into namespace "diagnostics" as "sinks".
+	* resolve/rust-ice-finalizer.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* rust-diagnostics.cc: Update #include for move of
+	"diagnostic-metadata.h" to "diagnostics/metadata.h", and update
+	for move of diagnostic_metadata to diagnostics::metadata.
+
 2025-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	* checks/errors/borrowck/rust-borrow-checker-diagnostics.cc

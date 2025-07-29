@@ -6,6 +6,7 @@
    specific tests within the compiler's IR.  We can't use any real
    diagnostics for this, so we have to fake it, hence this plugin.  */
 
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"
@@ -32,8 +33,7 @@
 #include "intl.h"
 #include "plugin-version.h"
 #include "diagnostic.h"
-#include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
+#include "diagnostics/metadata.h"
 #include "context.h"
 #include "print-tree.h"
 #include "gcc-rich-location.h"
@@ -223,7 +223,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   diagnostic_event_id_t
   add_event_2 (event_location_t evloc, int stack_depth,
 	       const char *desc,
-	       diagnostic_thread_id_t thread_id = 0)
+	       diagnostics::paths::thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
     return add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
@@ -232,7 +232,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   diagnostic_event_id_t
   add_event_2_with_event_id (event_location_t evloc, int stack_depth,
 			     const char *fmt,
-			     diagnostic_thread_id_t thread_id,
+			     diagnostics::paths::thread_id_t thread_id,
 			     diagnostic_event_id_t event_id)
   {
     gcc_assert (evloc.m_fun);
@@ -242,7 +242,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   }
   void add_entry (event_location_t evloc, int stack_depth,
 		  const char *funcname,
-		  diagnostic_thread_id_t thread_id = 0)
+		  diagnostics::paths::thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
     add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl, stack_depth,
@@ -363,7 +363,7 @@ example_2 ()
 
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       m.add_cwe (415); /* CWE-415: Double Free.  */
 
       warning_meta (&richloc, m, 0,
@@ -441,7 +441,7 @@ example_3 ()
 
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
       m.add_cwe (479);
 
@@ -502,8 +502,8 @@ example_4 ()
 
       gcc_rich_location richloc (call_to_acquire_lock_a_in_bar.m_loc);
       test_diagnostic_path path (global_dc->get_reference_printer ());
-      diagnostic_thread_id_t thread_1 = path.add_thread ("Thread 1");
-      diagnostic_thread_id_t thread_2 = path.add_thread ("Thread 2");
+      diagnostics::paths::thread_id_t thread_1 = path.add_thread ("Thread 1");
+      diagnostics::paths::thread_id_t thread_2 = path.add_thread ("Thread 2");
       path.add_entry (entry_to_foo, 0, "foo", thread_1);
       diagnostic_event_id_t event_a_acquired
 	= path.add_event_2 (call_to_acquire_lock_a_in_foo, 1,
@@ -524,7 +524,7 @@ example_4 ()
 	 thread_2, event_a_acquired);
       richloc.set_path (&path);
 
-      diagnostic_metadata m;
+      diagnostics::metadata m;
       warning_meta (&richloc, m, 0,
 		    "deadlock due to inconsistent lock acquisition order");
     }
@@ -559,7 +559,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  global_dc->m_source_printing.max_width = 80;
+  global_dc->get_source_printing_options ().max_width = 80;
 
   pass_info.pass = make_pass_test_show_path (g);
   pass_info.reference_pass_name = "whole-program";

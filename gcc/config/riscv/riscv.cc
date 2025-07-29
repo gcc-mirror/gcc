@@ -170,7 +170,7 @@ struct GTY(())  riscv_frame_info {
 };
 
 enum riscv_privilege_levels {
-  UNKNOWN_MODE, USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
+  UNKNOWN_MODE, SUPERVISOR_MODE, MACHINE_MODE, RNMI_MODE
 };
 
 struct GTY(()) mode_switching_info {
@@ -3967,13 +3967,27 @@ get_vector_binary_rtx_cost (rtx x, int scalar2vr_cost)
 {
   gcc_assert (riscv_v_ext_mode_p (GET_MODE (x)));
 
-  rtx op_0 = XEXP (x, 0);
-  rtx op_1 = XEXP (x, 1);
+  rtx neg;
+  rtx op_0;
+  rtx op_1;
+
+  if (GET_CODE (x) == UNSPEC)
+    {
+      op_0 = XVECEXP (x, 0, 0);
+      op_1 = XVECEXP (x, 0, 1);
+    }
+  else
+    {
+      op_0 = XEXP (x, 0);
+      op_1 = XEXP (x, 1);
+    }
 
   if (GET_CODE (op_0) == VEC_DUPLICATE
       || GET_CODE (op_1) == VEC_DUPLICATE)
     return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
-  else if (GET_CODE (op_0) == NEG && GET_CODE (op_1) == VEC_DUPLICATE)
+  else if (GET_CODE (neg = op_0) == NEG
+	   && (GET_CODE (op_1) == VEC_DUPLICATE
+	       || GET_CODE (XEXP (neg, 0)) == VEC_DUPLICATE))
     return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
   else
     return COSTS_N_INSNS (1);
@@ -4020,6 +4034,21 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		    case SS_PLUS:
 		    case SS_MINUS:
 		      *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
+		      break;
+		    case UNSPEC:
+		      {
+			switch (XINT (op, 1))
+			  {
+			  case UNSPEC_VAADDU:
+			  case UNSPEC_VAADD:
+			    *total
+			      = get_vector_binary_rtx_cost (op, scalar2vr_cost);
+			    break;
+			  default:
+			    *total = COSTS_N_INSNS (1);
+			    break;
+			  }
+		      }
 		      break;
 		    default:
 		      *total = COSTS_N_INSNS (1);
@@ -6896,12 +6925,18 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	    }
 
 	  string = TREE_STRING_POINTER (cst);
-	  if (strcmp (string, "user") && strcmp (string, "supervisor")
-	      && strcmp (string, "machine"))
+	  if (!strcmp (string, "rnmi") && !TARGET_SMRNMI)
+	    {
+	      error ("attribute 'rnmi' requires the Smrnmi ISA extension");
+	      *no_add_attrs = true;
+	    }
+	  else if (strcmp (string, "supervisor")
+		   && strcmp (string, "machine")
+		   && strcmp (string, "rnmi"))
 	    {
 	      warning (OPT_Wattributes,
-		       "argument to %qE attribute is not %<\"user\"%>, %<\"supervisor\"%>, "
-		       "or %<\"machine\"%>", name);
+		       "argument to %qE attribute is not %<\"supervisor\"%>, "
+		       "%<\"machine\"%>, or %<\"rnmi\"%>", name);
 	      *no_add_attrs = true;
 	    }
 	}
@@ -9049,7 +9084,7 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, temp1,
+			plus_constant (Pmode, temp2,
 				       initial_cfa_offset + rounded_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -9682,12 +9717,12 @@ riscv_expand_epilogue (int style)
 
       if (th_int_mask && TH_INT_INTERRUPT (cfun))
 	emit_jump_insn (gen_th_int_pop ());
-      else if (mode == MACHINE_MODE)
-	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
 	emit_jump_insn (gen_riscv_sret ());
-      else
-	emit_jump_insn (gen_riscv_uret ());
+      else if (mode == RNMI_MODE)
+	emit_jump_insn (gen_riscv_mnret ());
+      else /* Must be MACHINE_MODE.  */
+	emit_jump_insn (gen_riscv_mret ());
     }
   else if (style != SIBCALL_RETURN)
     {
@@ -10359,10 +10394,10 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   bool simple_sets_p = prev_set && curr_set && !any_condjump_p (curr);
   bool sched1 = can_create_pseudo_p ();
 
-  unsigned int prev_dest_regno = (REG_P (SET_DEST (prev_set))
+  unsigned int prev_dest_regno = (prev_set && REG_P (SET_DEST (prev_set))
 				  ? REGNO (SET_DEST (prev_set))
 				  : FIRST_PSEUDO_REGISTER);
-  unsigned int curr_dest_regno = (REG_P (SET_DEST (curr_set))
+  unsigned int curr_dest_regno = (curr_set && REG_P (SET_DEST (curr_set))
 				  ? REGNO (SET_DEST (curr_set))
 				  : FIRST_PSEUDO_REGISTER);
 
@@ -12029,10 +12064,10 @@ riscv_get_interrupt_type (tree decl)
     {
       const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
 
-      if (!strcmp (string, "user"))
-	return USER_MODE;
-      else if (!strcmp (string, "supervisor"))
+      if (!strcmp (string, "supervisor"))
 	return SUPERVISOR_MODE;
+      else if (!strcmp (string, "rnmi"))
+	return RNMI_MODE;
       else /* Must be "machine".  */
 	return MACHINE_MODE;
     }
@@ -12649,14 +12684,31 @@ riscv_estimated_poly_value (poly_int64 val,
 /* Return true if the vector misalignment factor is supported by the
    target.  */
 bool
-riscv_support_vector_misalignment (machine_mode mode,
-				   const_tree type ATTRIBUTE_UNUSED,
-				   int misalignment,
-				   bool is_packed ATTRIBUTE_UNUSED)
+riscv_support_vector_misalignment (machine_mode mode, const_tree type,
+				   int misalignment, bool is_packed,
+				   bool is_gather_scatter)
 {
-  /* Depend on movmisalign pattern.  */
+  /* IS_PACKED is true if the corresponding scalar element is not naturally
+     aligned.  If the misalignment is unknown and the the access is packed
+     we defer to the default hook which will check if movmisalign is present.
+     Movmisalign, in turn, depends on TARGET_VECTOR_MISALIGN_SUPPORTED.  */
+  if (misalignment == DR_MISALIGNMENT_UNKNOWN)
+    {
+      if (!is_packed)
+	return true;
+    }
+  else
+    {
+      /* If we know that misalignment is a multiple of the element size, we're
+	 good.  */
+      if (misalignment % TYPE_ALIGN_UNIT (type) == 0)
+	return true;
+    }
+
+  /* Otherwise fall back to movmisalign again.  */
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */

@@ -2504,6 +2504,12 @@ sort_and_splice_var_accesses (tree var)
 		}
 	      unscalarizable_region = true;
 	    }
+	  /* If there the same place is accessed with two incompatible
+	     aggregate types, trying to base total scalarization on either of
+	     them can be wrong.  */
+	  if (!first_scalar && !types_compatible_p (access->type, ac2->type))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (access->base));
 
 	  if (grp_same_access_path
 	      && (!ac2->grp_same_access_path
@@ -2889,7 +2895,10 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   for (child = root->first_child; child; child = child->next_sibling)
     {
-      hole |= covered_to < child->offset;
+      if (totally)
+	covered_to = child->offset;
+      else
+	hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
 					     allow_replacements && !scalar
 					     && !root->grp_partial_lhs,
@@ -2900,6 +2909,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	covered_to += child->size;
       else
 	hole = true;
+      if (totally && !hole)
+	covered_to = limit;
     }
 
   if (allow_replacements && scalar && !root->first_child
@@ -2972,7 +2983,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_total_scalarization = 0;
     }
 
-  if (!hole || totally)
+  if (!hole)
     root->grp_covered = 1;
   else if (root->grp_write || comes_initialized_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */

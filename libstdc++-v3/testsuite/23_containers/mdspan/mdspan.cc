@@ -4,6 +4,7 @@
 #include <testsuite_hooks.h>
 #include "int_like.h"
 #include "layout_like.h"
+#include <stdexcept>
 
 constexpr auto dyn = std::dynamic_extent;
 
@@ -114,6 +115,27 @@ test_class_properties_all()
   return true;
 }
 
+template<typename T>
+  class ThrowingDefaultAccessor
+  {
+  public:
+    using element_type = T;
+    using reference = element_type&;
+    using data_handle_type = element_type*;
+    using offset_policy = ThrowingDefaultAccessor;
+
+    ThrowingDefaultAccessor() noexcept(false)
+    { }
+
+    reference
+    access(data_handle_type p, size_t i) const
+    { return p[i]; }
+
+    typename offset_policy::data_handle_type
+    offset(data_handle_type p, size_t i) const
+    { return p + i; }
+  };
+
 constexpr bool
 test_default_ctor()
 {
@@ -129,6 +151,18 @@ test_default_ctor()
   VERIFY(md.empty());
   return true;
 }
+
+template<template<typename T> typename Accessor, bool Expected>
+  constexpr void
+  test_nothrow_default_ctor()
+  {
+    using Extents = std::extents<int, dyn>;
+    using Layout = std::layout_left;
+    using MDSpan = std::mdspan<double, Extents, Layout, Accessor<double>>;
+
+    static_assert(std::is_default_constructible_v<MDSpan>);
+    static_assert(std::is_nothrow_default_constructible_v<MDSpan> == Expected);
+  }
 
 constexpr bool
 test_from_other()
@@ -206,9 +240,9 @@ test_from_pointer_and_shape()
     assert_deduced_typedefs<double, std::dextents<size_t, 2>>(md);
     VERIFY(md.rank() == 2);
     VERIFY(md.rank_dynamic() == 2);
-    VERIFY((md[0, 0]) == data[0]);
-    VERIFY((md[0, 1]) == data[1]);
-    VERIFY((md[1, 0]) == data[3]);
+    VERIFY(md[0, 0] == data[0]);
+    VERIFY(md[0, 1] == data[1]);
+    VERIFY(md[1, 0] == data[3]);
   };
 
   verify(std::mdspan(data.data(), shape[0], shape[1]));
@@ -428,10 +462,10 @@ test_from_opaque_accessor()
   using MDSpan = decltype(md);
   static_assert(std::same_as<MDSpan::accessor_type, decltype(a)>);
 
-  VERIFY((md[0, 0, 0]) == 0.0);
+  VERIFY(md[0, 0, 0] == 0.0);
   VERIFY(md.accessor().access_count == 1);
 
-  VERIFY((md[2, 4, 6]) == 0.0);
+  VERIFY(md[2, 4, 6] == 0.0);
   VERIFY(md.accessor().access_count == 2);
 }
 
@@ -480,8 +514,8 @@ test_from_base_class_accessor()
   using MDSpan = decltype(md);
   static_assert(std::same_as<MDSpan::accessor_type, decltype(a)>);
   static_assert(std::same_as<decltype(md[0, 0, 0]), Base&>);
-  VERIFY((md[0, 0, 0].value) == 1.0);
-  VERIFY((md[2, 4, 6].value) == 1.0);
+  VERIFY(md[0, 0, 0].value == 1.0);
+  VERIFY(md[2, 4, 6].value == 1.0);
 }
 
 constexpr bool
@@ -490,8 +524,8 @@ test_from_mapping_like()
   double data = 1.1;
   auto m = LayoutLike::mapping<std::extents<int, 1, 2, 3>>{};
   auto md = std::mdspan(&data, m);
-  VERIFY((md[0, 0, 0]) == data);
-  VERIFY((md[0, 1, 2]) == data);
+  VERIFY(md[0, 0, 0] == data);
+  VERIFY(md[0, 1, 2] == data);
   return true;
 }
 
@@ -535,13 +569,13 @@ template<typename Int, bool ValidForPacks, bool ValidForArrays>
 	  {
 	    storage[mapping(i, j, k)] = 1.0;
 	    if constexpr (ValidForPacks)
-	      VERIFY((md[Int(i), Int(j), Int(k)]) == 1.0);
+	      VERIFY(md[Int(i), Int(j), Int(k)] == 1.0);
 
 	    if constexpr (ValidForArrays)
 	      {
 		std::array<Int, 3> ijk{Int(i), Int(j), Int(k)};
-		VERIFY((md[ijk]) == 1.0);
-		VERIFY((md[std::span(ijk)]) == 1.0);
+		VERIFY(md[ijk] == 1.0);
+		VERIFY(md[std::span(ijk)] == 1.0);
 	      }
 	    storage[mapping(i, j, k)] = 0.0;
 	  }
@@ -650,6 +684,21 @@ test_nothrow_movable_all()
   test_nothrow_movable<false, false>();
 }
 
+template<typename Layout, bool Expected>
+  constexpr void
+  test_nothrow_is_methods()
+  {
+    using Extents = std::extents<int, dyn>;
+    using MDSpan = std::mdspan<double, Extents, Layout>;
+    static_assert(noexcept(MDSpan::is_always_unique()) == Expected);
+    static_assert(noexcept(MDSpan::is_always_exhaustive()) == Expected);
+    static_assert(noexcept(MDSpan::is_always_strided()) == Expected);
+
+    static_assert(noexcept(std::declval<MDSpan>().is_unique()) == Expected);
+    static_assert(noexcept(std::declval<MDSpan>().is_exhaustive()) == Expected);
+    static_assert(noexcept(std::declval<MDSpan>().is_strided()) == Expected);
+  }
+
 int
 main()
 {
@@ -667,6 +716,9 @@ main()
 
   test_default_ctor();
   static_assert(test_default_ctor());
+
+  test_nothrow_default_ctor<std::default_accessor, true>();
+  test_nothrow_default_ctor<ThrowingDefaultAccessor, false>();
 
   test_from_other();
   static_assert(test_from_other());
@@ -713,5 +765,7 @@ main()
   test_swap_adl();
 
   test_nothrow_movable_all();
+  test_nothrow_is_methods<std::layout_right, true>();
+  test_nothrow_is_methods<ThrowingLayout, false>();
   return 0;
 }

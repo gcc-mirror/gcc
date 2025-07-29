@@ -1297,7 +1297,10 @@
       std::swap (operands[0], operands[1]);
       std::swap (operands[2], operands[3]);
     }
-})
+}
+  [(set_attr "type"	"move,move,load,load,store")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"6,12,6,6,6")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
@@ -1344,7 +1347,7 @@
    %v0s32i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
+  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,load,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
 
@@ -1410,7 +1413,7 @@
    %v0s16i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,move,move,load,load,store,rsr,wsr")
+  [(set_attr "type"	"move,move,move,move,load,load,load,store,rsr,wsr")
    (set_attr "mode"	"HI")
    (set_attr "length"	"2,2,3,3,3,3,3,3,3,3")])
 
@@ -1519,7 +1522,7 @@
    const16\t%0, %t1\;const16\t%0, %b1
    %v1l32i\t%0, %1
    %v0s32i\t%1, %0"
-  [(set_attr "type"	"farith,fload,fstore,move,load,load,store,move,farith,farith,move,move,load,store")
+  [(set_attr "type"	"farith,fload,fstore,move,load,load,store,move,farith,farith,load,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3,3,3,2,3,2,2,3,3,3,3,6,3,3")])
 
@@ -1643,7 +1646,10 @@
       std::swap (operands[0], operands[1]);
       std::swap (operands[2], operands[3]);
     }
-})
+}
+  [(set_attr "type"	"move,load,move,load,load,store")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"6,6,12,6,6,6")])
 
 ;; Block moves
 

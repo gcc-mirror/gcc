@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cpplib.h"
 #include "diagnostic.h"
+#include "diagnostics/file-cache.h"
 
 /* Add a range to the rich_location, covering expression EXPR,
    using LABEL if non-NULL. */
@@ -79,11 +80,11 @@ gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
 /* Return true if there is nothing on LOC's line before LOC.  */
 
 static bool
-blank_line_before_p (file_cache &fc,
+blank_line_before_p (diagnostics::file_cache &fc,
 		     location_t loc)
 {
   expanded_location exploc = expand_location (loc);
-  char_span line = fc.get_source_line (exploc.file, exploc.line);
+  diagnostics::char_span line = fc.get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   if (line.length () < (size_t)exploc.column)
@@ -101,7 +102,7 @@ blank_line_before_p (file_cache &fc,
    If true is returned then *OUT_START_OF_LINE is written to.  */
 
 static bool
-use_new_line (file_cache &fc,
+use_new_line (diagnostics::file_cache &fc,
 	      location_t insertion_point, location_t indent,
 	      location_t *out_start_of_line)
 {

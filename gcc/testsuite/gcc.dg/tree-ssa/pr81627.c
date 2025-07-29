@@ -4,6 +4,7 @@
 int a, b, c, d[6], e = 3, f;
 
 void abort (void);
+void fn1 () __attribute__((noinline));
 void fn1 ()
 {
   for (b = 1; b < 5; b++)

@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cgraph.h"
 #include "digraph.h"
-#include "diagnostic-format-sarif.h"
+#include "diagnostics/sarif-sink.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
@@ -307,10 +307,11 @@ public:
       }
   }
 
-  void maybe_add_sarif_properties (sarif_object &result_obj)
+  void
+  maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
     const final override
   {
-    sarif_property_bag &props = result_obj.get_or_create_properties ();
+    auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/infinite_loop_diagnostic/"
     props.set (PROPERTY_PREFIX "inf_loop", m_inf_loop->to_json ());
 #undef PROPERTY_PREFIX

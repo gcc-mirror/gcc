@@ -13,6 +13,7 @@ test_unexpected()
   std::unexpected<void()> func(test_unexpected); // { dg-error "here" }
   // { dg-error "no matching function for call to" "" { target *-*-* } 0 }
   // { dg-error "invalidly declared function type" "" { target *-*-* } 0 }
+  // { dg-error "could not convert" "" { target *-*-* } 0 }
 
   // an array type,
   std::unexpected<int[2]> array(i); // { dg-error "here" }

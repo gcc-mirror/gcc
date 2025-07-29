@@ -334,17 +334,17 @@ public:
     return false;
   }
 
-  diagnostic_event::meaning
+  diagnostics::paths::event::meaning
   get_meaning_for_state_change (const evdesc::state_change &change)
     const final override
   {
     if (change.m_new_state == m_sm.m_started)
-      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
-					diagnostic_event::noun::resource);
+      return diagnostics::paths::event::meaning (diagnostics::paths::event::verb::acquire,
+					diagnostics::paths::event::noun::resource);
     if (change.m_new_state == m_sm.m_ended)
-      return diagnostic_event::meaning (diagnostic_event::verb::release,
-					diagnostic_event::noun::resource);
-    return diagnostic_event::meaning ();
+      return diagnostics::paths::event::meaning (diagnostics::paths::event::verb::release,
+					diagnostics::paths::event::noun::resource);
+    return diagnostics::paths::event::meaning ();
   }
 
 protected:
@@ -452,7 +452,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_va_end_event;
+  diagnostics::paths::event_id_t m_va_end_event;
   const char *m_usage_fnname;
 };
 
@@ -539,7 +539,7 @@ public:
   }
 
 private:
-  diagnostic_event_id_t m_start_event;
+  diagnostics::paths::event_id_t m_start_event;
   const char *m_start_event_fnname;
   std::unique_ptr<program_state> m_final_state;
 };

@@ -19,7 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* warning, error, and fatal.  These definitions are suitable for use
    in the generator programs; the compiler has a more elaborate suite
-   of diagnostic printers, found in diagnostic.cc.  */
+   of diagnostic printers, found in diagnostic-global-context.cc using
+   the diagnostics/ subdirectory.  */
 
 #ifdef HOST_GENERATOR_FILE
 #include "config.h"
@@ -126,7 +127,7 @@ trim_filename (const char *name)
 
 /* "Fancy" abort.  Reports where in the compiler someone gave up.
    This file is used only by build programs, so we're not as polite as
-   the version in diagnostic.cc.  */
+   the version in diagnostics/context.cc.  */
 void
 fancy_abort (const char *file, int line, const char *func)
 {

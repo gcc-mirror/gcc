@@ -1372,7 +1372,7 @@ simplify_constructor (gfc_constructor_base base, int type)
 	      || !gfc_simplify_expr (c->iterator->step, type)))
 	return false;
 
-      if (c->expr)
+      if (c->expr && c->expr->expr_type != EXPR_CONSTANT)
 	{
 	  /* Try and simplify a copy.  Replace the original if successful
 	     but keep going through the constructor at all costs.  Not
@@ -2469,7 +2469,8 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	{
 	  if (!simplify_parameter_variable (p, type))
 	    return false;
-	  break;
+	  if (!iter_stack)
+	    break;
 	}
 
       if (type == 1)

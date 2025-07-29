@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cgraph.h"
 #include "target.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 #include "print-tree.h"
 
 #include <mpfr.h>
@@ -993,16 +993,16 @@ struct ggc_root_tab jit_root_tab[] =
     LAST_GGC_ROOT_TAB
   };
 
-/* Subclass of diagnostic_output_format for libgccjit: like text
+/* Subclass of diagnostics::text_sink for libgccjit: like text
    output, but capture the message and call add_diagnostic with it
    on the active playback context.  */
 
-class jit_diagnostic_listener : public diagnostic_text_output_format
+class jit_diagnostic_listener : public diagnostics::text_sink
 {
 public:
-  jit_diagnostic_listener (diagnostic_context &dc,
+  jit_diagnostic_listener (diagnostics::context &dc,
 			   gcc::jit::playback::context &playback_ctxt)
-  : diagnostic_text_output_format (dc),
+  : diagnostics::text_sink (dc),
     m_playback_ctxt (playback_ctxt)
   {
   }
@@ -1015,13 +1015,13 @@ public:
 	     (void *)&m_playback_ctxt);
   }
 
-  void on_report_diagnostic (const diagnostic_info &info,
-			     diagnostic_t orig_diag_kind) final override
+  void on_report_diagnostic (const diagnostics::diagnostic_info &info,
+			     enum diagnostics::kind orig_diag_kind) final override
   {
     JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
 
     /* Let the text output format do most of the work.  */
-    diagnostic_text_output_format::on_report_diagnostic (info, orig_diag_kind);
+    diagnostics::text_sink::on_report_diagnostic (info, orig_diag_kind);
 
     const char *text = pp_formatted_text (get_printer ());
 
@@ -1041,8 +1041,8 @@ private:
 /* Implementation of "begin_diagnostic".  */
 
 static void
-jit_begin_diagnostic (diagnostic_text_output_format &,
-		      const diagnostic_info */*diagnostic*/)
+jit_begin_diagnostic (diagnostics::text_sink &,
+		      const diagnostics::diagnostic_info */*diagnostic*/)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
@@ -1054,9 +1054,9 @@ jit_begin_diagnostic (diagnostic_text_output_format &,
 /* Implementation of "end_diagnostic".  */
 
 static void
-jit_end_diagnostic (diagnostic_text_output_format &,
-		    const diagnostic_info *,
-		    diagnostic_t)
+jit_end_diagnostic (diagnostics::text_sink &,
+		    const diagnostics::diagnostic_info *,
+		    enum diagnostics::kind)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
@@ -1081,13 +1081,13 @@ jit_langhook_init (void)
     }
 
   gcc_assert (global_dc);
-  diagnostic_text_starter (global_dc) = jit_begin_diagnostic;
-  diagnostic_text_finalizer (global_dc) = jit_end_diagnostic;
+  diagnostics::text_starter (global_dc) = jit_begin_diagnostic;
+  diagnostics::text_finalizer (global_dc) = jit_end_diagnostic;
   auto sink
     = std::make_unique<jit_diagnostic_listener>
 	(*global_dc,
 	 *gcc::jit::active_playback_ctxt);
-  global_dc->set_output_format (std::move (sink));
+  global_dc->set_sink (std::move (sink));
 
   build_common_tree_nodes (flag_signed_char);
 

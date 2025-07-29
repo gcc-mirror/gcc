@@ -5266,7 +5266,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 	      && (id_equal (suffix_id, "i")
 		  || id_equal (suffix_id, "if")
 		  || id_equal (suffix_id, "il")));
-  diagnostic_t kind = DK_ERROR;
+  enum diagnostics::kind kind = diagnostics::kind::error;
   int opt = 0;
 
   if (i14 && ext)
@@ -5276,7 +5276,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       if (cxlit == error_mark_node)
 	{
 	  /* No <complex>, so pedwarn and use GNU semantics.  */
-	  kind = DK_PEDWARN;
+	  kind = diagnostics::kind::pedwarn;
 	  opt = OPT_Wpedantic;
 	}
     }
@@ -5303,7 +5303,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 	      "to enable more built-in suffixes");
   }
 
-  if (kind == DK_ERROR)
+  if (kind == diagnostics::kind::error)
     value = error_mark_node;
   else
     {
@@ -6647,7 +6647,8 @@ cp_parser_primary_expression (cp_parser *parser,
    member template.  */
 
 static void
-missing_template_diag (location_t loc, diagnostic_t diag_kind = DK_WARNING)
+missing_template_diag (location_t loc,
+		       enum diagnostics::kind diag_kind = diagnostics::kind::warning)
 {
   if (warning_suppressed_at (loc, OPT_Wmissing_template_keyword))
     return;
@@ -8854,8 +8855,10 @@ cp_parser_dot_deref_incomplete (tree *scope, cp_expr *postfix_expression,
 {
   /* In a template, be permissive by treating an object expression
      of incomplete type as dependent (after a pedwarn).  */
-  diagnostic_t kind = (processing_template_decl
-		       && MAYBE_CLASS_TYPE_P (*scope) ? DK_PEDWARN : DK_ERROR);
+  enum diagnostics::kind kind = ((processing_template_decl
+				  && MAYBE_CLASS_TYPE_P (*scope))
+				 ? diagnostics::kind::pedwarn
+				 : diagnostics::kind::error);
 
   switch (TREE_CODE (*postfix_expression))
     {
@@ -8867,27 +8870,27 @@ cp_parser_dot_deref_incomplete (tree *scope, cp_expr *postfix_expression,
     case IMPLICIT_CONV_EXPR:
     case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
-      kind = DK_ERROR;
+      kind = diagnostics::kind::error;
       break;
     case OVERLOAD:
       /* Don't emit any diagnostic for OVERLOADs.  */
-      kind = DK_IGNORED;
+      kind = diagnostics::kind::ignored;
       break;
     default:
       /* Avoid clobbering e.g. DECLs.  */
       if (!EXPR_P (*postfix_expression))
-	kind = DK_ERROR;
+	kind = diagnostics::kind::error;
       break;
     }
 
-  if (kind == DK_IGNORED)
+  if (kind == diagnostics::kind::ignored)
     return false;
 
   location_t exploc = location_of (*postfix_expression);
   cxx_incomplete_type_diagnostic (exploc, *postfix_expression, *scope, kind);
   if (!MAYBE_CLASS_TYPE_P (*scope))
     return true;
-  if (kind == DK_ERROR)
+  if (kind == diagnostics::kind::error)
     *scope = *postfix_expression = error_mark_node;
   else if (processing_template_decl)
     {
@@ -9510,7 +9513,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    diagnostic_push_diagnostics (global_dc, input_location);
 	    diagnostic_classify_diagnostic
 	      (global_dc, OPT_Wconditionally_supported,
-	       DK_IGNORED, input_location);
+	       diagnostics::kind::ignored, input_location);
 	    /* Parse the cast-expression.  */
 	    expr = cp_parser_simple_cast_expression (parser);
 	    /* Restore the PEDANTIC flag.  */
@@ -33706,7 +33709,9 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
       && cp_lexer_peek_token (parser->lexer)->type == CPP_TEMPLATE_ID)
     {
       auto_diagnostic_group d;
-      if (emit_diagnostic (cxx_dialect >= cxx20 ? DK_PEDWARN : DK_WARNING,
+      if (emit_diagnostic ((cxx_dialect >= cxx20
+			    ? diagnostics::kind::pedwarn
+			    : diagnostics::kind::warning),
 			   input_location, OPT_Wtemplate_id_cdtor,
 			   "template-id not allowed for constructor in C++20"))
 	inform (input_location, "remove the %qs", "< >");
@@ -53048,11 +53053,14 @@ cp_parser_omp_error (cp_parser *parser, cp_token *pragma_tok,
       if (msg == NULL)
 	msg = _("<message unknown at compile time>");
     }
+  const enum diagnostics::kind diag_kind = (severity_fatal
+					    ? diagnostics::kind::error
+					    : diagnostics::kind::warning);
   if (msg)
-    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+    emit_diagnostic (diag_kind, loc, 0,
 		     "%<pragma omp error%> encountered: %s", msg);
   else
-    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+    emit_diagnostic (diag_kind, loc, 0,
 		     "%<pragma omp error%> encountered");
   return false;
 }

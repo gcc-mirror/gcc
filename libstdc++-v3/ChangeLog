@@ -1,3 +1,242 @@
+2025-07-25  Tuur Martens  <tuurmartens4@gmail.com>
+
+	* include/bits/unordered_map.h: Rectify referencing of
+	non-existent type.
+
+2025-07-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117294
+	PR c++/113854
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust
+	diagnostics.
+	* testsuite/20_util/expected/illformed_neg.cc: Likewise.
+	* testsuite/20_util/optional/monadic/or_else_neg.cc: Likewise.
+	* testsuite/23_containers/array/creation/3_neg.cc: Likewise.
+	* testsuite/24_iterators/range_generators/lwg3900.cc: Likewise.
+	* testsuite/29_atomics/atomic/requirements/types_neg.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invocable_neg.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destructible_neg.cc:
+	Likewise.
+	* testsuite/std/format/arguments/args_neg.cc: Likewise.
+	* testsuite/std/format/string_neg.cc: Likewise.
+
+2025-07-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/104874
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc:
+	Reworked.
+
+2025-07-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/from_range.cc: Replace
+	test_constexpr with test_ranges inside static_assert.
+	* testsuite/21_strings/basic_string/modifiers/append/append_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/replace_with_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/append_range.cc:
+	Run full test_ranges instead of span-only in test_constexpr.
+	* testsuite/23_containers/vector/modifiers/append_range.cc:
+	Replace test_constexpr with calls to test_ranges and test_overlapping.
+	* testsuite/util/testsuite_allocator.h (__gnu_test::SimpleAllocator):
+	Declared member functions as constexpr.
+
+2025-07-23  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/accessors/default.cc: Delete.
+	* testsuite/23_containers/mdspan/accessors/generic.cc: Slightly
+	generalize the test code previously in default.cc.
+
+2025-07-23  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/extents/ctor_ints.cc: Remove
+	superfluous parens.
+	* testsuite/23_containers/mdspan/extents/ctor_shape.cc: Ditto.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+
+2025-07-23  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* testsuite/23_containers/inplace_vector/access/elem.cc: Cover
+	front and back methods and const calls.
+	* testsuite/23_containers/inplace_vector/access/elem_neg.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/erase_neg.cc:
+	New test.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert_neg.cc:
+	New test.
+
+2025-07-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* testsuite/23_containers/inplace_vector/cons/from_range.cc: Run
+	iterators and range test at compile-time.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	Likewise.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::BoundsContainer)
+	(__gnu_test::OutputContainer, __gnu_test::WritableObject)
+	(__gnu_test::output_iterator_wrapper, __gnu_test::input_iterator_wrapper)
+	(__gnu_test::forward_iterator_wrapper)
+	(__gnu_test::bidirectional_iterator_wrapper)
+	(__gnu_test::random_access_iterator_wrapper)
+	(__gnu_test::test_container): Add appropriate _GLIBCXXNN_CONSTEXPR
+	macros to member functions.
+	(__gnu_test::contiguous_iterator_wrapper)
+	(__gnu_test::input_iterator_wrapper_rval)
+	(__gnu_test::test_range, __gnu_test::test_range_nocopy)
+	(__gnu_test::test_sized_range_sized_sent)
+	(__gnu_test::test_sized_range): Add constexpr specifier to member
+	functions.
+
+2025-07-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* include/std/inplace_vector (inplace_vector::assign_range):
+	Replace _Nm with _M_size in the assigment loop.
+
+2025-07-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (mdspan::mdspan): Make default ctor
+	conditionally noexcept.
+	* testsuite/23_containers/mdspan/mdspan.cc: Add tests.
+
+2025-07-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (mdspan::is_always_unique): Make
+	conditionally noexcept.
+	(mdspan::is_always_exhaustive): Ditto.
+	(mdspan::is_always_strided): Ditto.
+	(mdspan::is_unique): Ditto.
+	(mdspan::is_exhaustive): Ditto.
+	(mdspan::is_strided): Ditto.
+	* testsuite/23_containers/mdspan/layout_like.h: Make noexcept
+	configurable. Add ThrowingLayout.
+	* testsuite/23_containers/mdspan/mdspan.cc: Add tests for
+	noexcept.
+
+2025-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121174
+	* src/c++23/std.cc.in (std::dextents): Export.  Add to FIXME comments
+	other not yet implemented nor exported <mdspan> entities.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h (__any_input_iterator):
+	Only define when __cpp_lib_concepts is defined.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Remove Paolo from
+	list of maintainers to contact about contributing.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Document that
+	windows_zones-map.h is a generated file.
+	* doc/html/manual/appendix_porting.html: Regenerate.
+
+2025-07-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* include/std/inplace_vector (inplace_vector::operator=):
+	Qualify call to std::addressof.
+
+2025-07-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121154
+	* include/bits/chrono_io.h (_ChronoSpec::_M_time_point): Remove.
+	(_ChronoSpec::_M_needs_ok_check): Define
+	(__formatter_chrono::_M_parse): Set _M_needs_ok_check.
+	(__formatter_chrono::_M_check_ok): Check values also for debug mode,
+	and return __string_view.
+	(__formatter_chrono::_M_format_to): Handle results of _M_check_ok.
+	(__formatter_chrono::_M_wi, __formatter_chrono::_M_a_A)
+	(__formatter_chrono::_M_b_B, __formatter_chrono::_M_C_y_Y)
+	(__formatter_chrono::_M_d_e, __formatter_chrono::_M_F):
+	Removed handling of _M_debug.
+	(__formatter_chrono::__M_m): Print zero unpadded in _M_debug mode.
+	(__formatter_duration::_S_spec_for): Remove _M_time_point refernce.
+	(__formatter_duration::_M_parse): Override _M_needs_ok_check.
+	* testsuite/std/time/month/io.cc: Test for localized !ok() values.
+	* testsuite/std/time/weekday/io.cc: Test for localized !ok() values.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121150
+	* testsuite/20_util/hash/int128.cc: Cast expected values to
+	size_t.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_iterator::operator--): Reorder
+	conditions and update position after reading a code unit.
+	(_Utf_iterator::_M_read_reverse): Define.
+	(_Utf_iterator::_M_read_utf8): Return extracted code point.
+	(_Utf_iterator::_M_read_reverse_utf8): Define.
+	(_Utf_iterator::_M_read_reverse_utf16): Define.
+	(_Utf_iterator::_M_read_reverse_utf32): Define.
+	* testsuite/ext/unicode/view.cc: Add checks for reversed views
+	and reverse iteration.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_iterator): Reorder data members
+	to be more compact.
+
+2025-07-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119137
+	* doc/doxygen/user.cfg.in (INPUT): Add new header.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/stl_iterator_base_types.h (__any_input_iterator):
+	Define.
+	* include/bits/version.def (inplace_vector): Define.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* src/c++23/std.cc.in: Export contents if new header.
+	* include/std/inplace_vector: New file.
+	* testsuite/23_containers/inplace_vector/access/capacity.cc: New file.
+	* testsuite/23_containers/inplace_vector/access/elem.cc: New file.
+	* testsuite/23_containers/inplace_vector/access/elem_neg.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/1.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/from_range.cc: New file.
+	* testsuite/23_containers/inplace_vector/cons/throws.cc: New file.
+	* testsuite/23_containers/inplace_vector/copy.cc: New file.
+	* testsuite/23_containers/inplace_vector/erasure.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/erase.cc: New file.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	New file.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert.cc:
+	New file.
+	* testsuite/23_containers/inplace_vector/move.cc: New file.
+	* testsuite/23_containers/inplace_vector/relops.cc: New file.
+	* testsuite/23_containers/inplace_vector/version.cc: New file.
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper::base):
+	Define.
+
 2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/96710

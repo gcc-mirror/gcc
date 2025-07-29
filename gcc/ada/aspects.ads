@@ -92,6 +92,7 @@ package Aspects is
       Aspect_Default_Value,
       Aspect_Depends,                       -- GNAT
       Aspect_Designated_Storage_Model,      -- GNAT
+      Aspect_Destructor,                    -- GNAT
       Aspect_Dimension,                     -- GNAT
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
@@ -259,6 +260,7 @@ package Aspects is
                                  | Aspect_Iterator_Element
                                  | Aspect_Max_Entry_Queue_Length
                                  | Aspect_No_Controlled_Parts
+                                 | Aspect_No_Task_Parts
                                  | Aspect_Real_Literal
                                  | Aspect_String_Literal
                                  | Aspect_Variable_Indexing;
@@ -293,6 +295,7 @@ package Aspects is
       Aspect_CUDA_Global                => True,
       Aspect_Depends                    => True,
       Aspect_Designated_Storage_Model   => True,
+      Aspect_Destructor                 => True,
       Aspect_Dimension                  => True,
       Aspect_Dimension_System           => True,
       Aspect_Disable_Controlled         => True,
@@ -447,6 +450,7 @@ package Aspects is
       Aspect_Default_Value              => Expression,
       Aspect_Depends                    => Expression,
       Aspect_Designated_Storage_Model   => Name,
+      Aspect_Destructor                 => Name,
       Aspect_Dimension                  => Expression,
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
@@ -551,6 +555,7 @@ package Aspects is
       Aspect_Default_Value                => True,
       Aspect_Depends                      => False,
       Aspect_Designated_Storage_Model     => True,
+      Aspect_Destructor                   => False,
       Aspect_Dimension                    => False,
       Aspect_Dimension_System             => False,
       Aspect_Dispatching_Domain           => False,
@@ -726,6 +731,7 @@ package Aspects is
       Aspect_Default_Value                => Name_Default_Value,
       Aspect_Depends                      => Name_Depends,
       Aspect_Designated_Storage_Model     => Name_Designated_Storage_Model,
+      Aspect_Destructor                   => Name_Destructor,
       Aspect_Dimension                    => Name_Dimension,
       Aspect_Dimension_System             => Name_Dimension_System,
       Aspect_Disable_Controlled           => Name_Disable_Controlled,
@@ -994,6 +1000,7 @@ package Aspects is
       Aspect_Default_Value                => Always_Delay,
       Aspect_Default_Component_Value      => Always_Delay,
       Aspect_Designated_Storage_Model     => Always_Delay,
+      Aspect_Destructor                   => Always_Delay,
       Aspect_Discard_Names                => Always_Delay,
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,

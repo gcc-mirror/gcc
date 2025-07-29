@@ -54,3 +54,4 @@ test02(std::stop_token& tok, G& g)
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// { dg-error "private within this context" "" { target *-*-* } 0 }

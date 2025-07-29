@@ -1359,9 +1359,7 @@
   if (operands[2] == const0_rtx)
     {
       rtx ops[] = {operands[0], operands[0], operands[1]};
-      riscv_vector::emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-					riscv_vector::SCALAR_MOVE_MERGED_OP_TU,
-					ops, CONST1_RTX (Pmode));
+      riscv_vector::expand_set_first_tu (<MODE>mode, ops);
     }
   else
     {
@@ -1385,8 +1383,7 @@
 	 VL we need for the slide.  */
       rtx tmp = gen_reg_rtx (<MODE>mode);
       rtx ops1[] = {tmp, operands[1]};
-      emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                           riscv_vector::UNARY_OP, ops1, length);
+      riscv_vector::expand_broadcast (<MODE>mode, ops1, length);
 
       /* Slide exactly one element up leaving the tail elements
 	 unchanged.  */
@@ -2489,7 +2486,8 @@
       (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
       (sign_extend:VWEXTI
-       (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))))))]
+       (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
+     (const_int 1))))]
   "TARGET_VECTOR"
   {
     insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
@@ -2522,10 +2520,24 @@
 	(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
        (sign_extend:VWEXTI
 	(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
-      (const_int 1)))))]
+      (const_int 1))
+     (const_int 1))))]
   "TARGET_VECTOR"
   {
     insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
+				   operands);
+    DONE;
+  }
+)
+
+(define_expand "avg<mode>3_ceil"
+ [(match_operand:V_VLSI_D 0 "register_operand")
+  (match_operand:V_VLSI_D 1 "register_operand")
+  (match_operand:V_VLSI_D 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <MODE>mode);
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
 				   operands);
     DONE;

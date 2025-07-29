@@ -107,6 +107,7 @@ libm2min_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs
 libm2min_la_M2FLAGS = \
    -fm2-pathname=m2min -I. -I$(GM2_SRC)/gm2-libs-min \
    -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs -fno-exceptions \
+   -Wall \
    -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main -fm2-prefix=m2min
 
 if TARGET_DARWIN

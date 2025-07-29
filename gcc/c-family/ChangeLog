@@ -1,3 +1,86 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Make diagnostics::context::m_source_printing
+	private.
+	* c-format.cc: Likewise.
+	* c-opts.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Update usage of "diagnostic_info" to explicitly
+	refer to "diagnostics::diagnostic_info".
+	* c-opts.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc: Update for file_cache and char_span moving from
+	input.h to diagnostics/file-cache.h and into the "diagnostics::"
+	namespace.
+	* c-indentation.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (c_family_tests): Add include of
+	"diagnostics/diagnostics-selftests.h".  Replace
+	c_diagnostic_cc_tests with
+	diagnostics::selftest::context_cc_tests.
+	* c-common.h: Drop c_diagnostic_cc_tests decl.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* c-format.cc: Likewise.
+	* c-lex.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-pragma.cc: Likewise.
+	* c-warn.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Update for renaming of diagnostic_option_id to
+	diagnostics::option_id.
+	* c-common.h: Likewise.
+	* c-cppbuiltin.cc: Likewise.
+	* known-headers.cc: Likewise.
+	* known-headers.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Update comment for renaming of edit_context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc (test_type_mismatch_range_labels): Update for
+	move of selftest::test_diagnostic_context to
+	diagnostics::selftest::test_context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc: Update for move of selftest-diagnostic.h to
+	diagnostics/selftest-context.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h: Update for diagnostic_context becoming
+	diagnostics::context.
+	* c-opts.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc (c_diagnostic_text_finalizer): Add "m_" prefix to
+	fields of diagnostic_info.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc: Update for move of "diagnostic-macro-unwinding.h"
+	to "diagnostics/macro-unwinding.h".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+
 2025-07-16  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* c-omp.cc (c_finish_omp_depobj): Use OMP_ITERATOR_DECL_P.

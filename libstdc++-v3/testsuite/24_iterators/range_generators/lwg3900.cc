@@ -13,4 +13,5 @@ bar(std::allocator_arg_t, std::pmr::memory_resource& mr) // { dg-error "here" }
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
-// { dg-error "no matching function .*memory_resource&" "" { target *-*-* } 0 }
+// { dg-error "could not convert 'const std::pmr::memory_resource'" "" { target *-*-* } 0 }
+// { dg-error "no matching function \[^\n\r\]*memory_resource&" "" { target *-*-* } 0 }

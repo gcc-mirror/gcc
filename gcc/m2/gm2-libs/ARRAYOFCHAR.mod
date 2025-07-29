@@ -34,14 +34,14 @@ IMPORT StrLib ;
    Write - writes a string to file f.
 *)
 
-PROCEDURE Write (f: File; a: ARRAY OF CHAR) ;
+PROCEDURE Write (f: File; str: ARRAY OF CHAR) ;
 VAR
    len, i: CARDINAL ;
 BEGIN
-   len := StrLib.StrLen (a) ;
+   len := StrLib.StrLen (str) ;
    i := 0 ;
    WHILE i < len DO
-      WriteChar (f, a[i]) ;
+      WriteChar (f, str[i]) ;
       INC (i)
    END
 END Write ;

@@ -17,12 +17,12 @@ main (void)
 {
   check_vect ();
 
-  struct st a[9] = {};
+  struct st a[10] = {};
 
-  // input a = 0, 0, 0, 0, 0, 0, 0, 0, 0
+  // input a = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   mem_overlap (&a[1], a);
 
-  // output a = 0, 1, 2, 3, 4, 5, 6, 7, 8
+  // output a = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
   if (a[2].num == 2)
     return 0;
   else

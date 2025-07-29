@@ -6189,18 +6189,12 @@ package body Exp_Util is
          if Is_Protected_Type (Btyp) then
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
-         else
-            declare
-               Root : constant Entity_Id := Underlying_Type (Root_Type (Btyp));
-            begin
-               if Is_Protected_Type (Root) then
-                  Utyp := Corresponding_Record_Type (Root);
-               else
-                  while No (TSS (Utyp, TSS_Finalize_Address)) loop
-                     Utyp := Underlying_Type (Base_Type (Etype (Utyp)));
-                  end loop;
-               end if;
-            end;
+         elsif Is_Implicit_Full_View (Utyp) then
+            Utyp := Underlying_Type (Root_Type (Btyp));
+
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
          end if;
       end if;
 
@@ -11736,34 +11730,6 @@ package body Exp_Util is
       end if;
    end Matching_Standard_Type;
 
-   -----------------------------
-   -- May_Generate_Large_Temp --
-   -----------------------------
-
-   --  At the current time, the only types that we return False for (i.e. where
-   --  we decide we know they cannot generate large temps) are ones where we
-   --  know the size is 256 bits or less at compile time, and we are still not
-   --  doing a thorough job on arrays and records.
-
-   function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
-   begin
-      if not Size_Known_At_Compile_Time (Typ) then
-         return False;
-      end if;
-
-      if Known_Esize (Typ) and then Esize (Typ) <= 256 then
-         return False;
-      end if;
-
-      if Is_Array_Type (Typ)
-        and then Present (Packed_Array_Impl_Type (Typ))
-      then
-         return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
-      end if;
-
-      return True;
-   end May_Generate_Large_Temp;
-
    ---------------------------------------
    -- Move_To_Initialization_Statements --
    ---------------------------------------
@@ -13766,11 +13732,12 @@ package body Exp_Util is
    --  The above requirements should be documented in Sinfo ???
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean is
+      Pexp : constant Node_Id := Parent (Exp);
+
       Otyp   : Entity_Id;
       Ityp   : Entity_Id;
       Oalign : Uint;
       Ialign : Uint;
-      Pexp   : constant Node_Id := Parent (Exp);
 
    begin
       --  If the expression is the RHS of an assignment or object declaration
@@ -13788,18 +13755,12 @@ package body Exp_Util is
          return True;
 
       --  If the expression is the prefix of an N_Selected_Component we should
-      --  also be OK because GCC knows to look inside the conversion except if
-      --  the type is discriminated. We assume that we are OK anyway if the
-      --  type is not set yet or if it is controlled since we can't afford to
-      --  introduce a temporary in this case.
+      --  also be OK because GCC knows to look inside the conversion.
 
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         return No (Etype (Pexp))
-           or else not Is_Type (Etype (Pexp))
-           or else not Has_Discriminants (Etype (Pexp))
-           or else Is_Constrained (Etype (Pexp));
+         return True;
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
@@ -13872,14 +13833,7 @@ package body Exp_Util is
       --  known size, but we can't consider them that way here, because we are
       --  talking about the actual size of the object.
 
-      --  We also make sure that in addition to the size being known, we do not
-      --  have a case which might generate an embarrassingly large temp in
-      --  stack checking mode.
-
       elsif Size_Known_At_Compile_Time (Otyp)
-        and then
-          (not Stack_Checking_Enabled
-            or else not May_Generate_Large_Temp (Otyp))
         and then not (Is_Record_Type (Otyp) and then not Is_Constrained (Otyp))
       then
          return True;

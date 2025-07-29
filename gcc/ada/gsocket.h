@@ -64,6 +64,12 @@
 #include <ioLib.h>
 #include <hostLib.h>
 
+#if __has_include ("strings.h")
+/* On VxWorks6, FD_ZERO uses bzero, but since it's not a standard header, don't
+   require it.  */
+#include "strings.h"
+#endif
+
 #define SHUT_RD		0
 #define SHUT_WR		1
 #define SHUT_RDWR	2

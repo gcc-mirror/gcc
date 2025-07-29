@@ -1069,7 +1069,7 @@ TREE_SSA_H = tree-ssa.h tree-ssa-operands.h \
 PRETTY_PRINT_H = pretty-print.h $(INPUT_H) $(OBSTACK_H) wide-int-print.h
 TREE_PRETTY_PRINT_H = tree-pretty-print.h $(PRETTY_PRINT_H)
 GIMPLE_PRETTY_PRINT_H = gimple-pretty-print.h $(TREE_PRETTY_PRINT_H)
-DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostic.def
+DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostics/kinds.def
 DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(TREE_H)
@@ -1595,7 +1595,6 @@ OBJS = \
 	jump.o \
 	langhooks.o \
 	late-combine.o \
-	lazy-diagnostic-path.o \
 	lcm.o \
 	lists.o \
 	loop-doloop.o \
@@ -1852,30 +1851,39 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
-	diagnostic-format-html.o \
-	diagnostic-format-sarif.o \
-	diagnostic-format-text.o \
+OBJS-libcommon = \
 	diagnostic-global-context.o \
-	diagnostic-digraphs.o \
-	diagnostic-macro-unwinding.o \
-	diagnostic-output-spec.o \
-	diagnostic-path.o \
-	diagnostic-path-output.o \
-	diagnostic-show-locus.o \
-	diagnostic-state-graphs.o \
-	diagnostic-state-to-dot.o \
-	edit-context.o \
+	diagnostics/buffering.o \
+	diagnostics/changes.o \
+	diagnostics/color.o \
+	diagnostics/context.o \
+	diagnostics/digraphs.o \
+	diagnostics/file-cache.o \
+	diagnostics/output-spec.o \
+	diagnostics/html-sink.o \
+	diagnostics/sarif-sink.o \
+	diagnostics/text-sink.o \
+	diagnostics/lazy-paths.o \
+	diagnostics/macro-unwinding.o \
+	diagnostics/option-classifier.o \
+	diagnostics/paths.o \
+	diagnostics/paths-output.o \
+	diagnostics/source-printing.o \
+	diagnostics/state-graphs.o \
+	diagnostics/state-graphs-to-dot.o \
+	diagnostics/selftest-context.o \
+	diagnostics/selftest-logical-locations.o \
+	diagnostics/selftest-paths.o \
+	diagnostics/diagnostics-selftests.o \
+	gcc-diagnostic-spec.o \
 	graphviz.o pex.o \
 	pretty-print.o intl.o \
 	json.o json-parsing.o \
 	xml.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
-	selftest.o selftest-diagnostic.o sort.o \
-	selftest-diagnostic-path.o \
+	selftest.o sort.o \
 	selftest-json.o \
-	selftest-logical-location.o \
 	text-art/box-drawing.o \
 	text-art/canvas.o \
 	text-art/ruler.o \
@@ -1922,7 +1930,7 @@ endif
 
 # libbackend.a objs that might not be in some cases linked into the compiler,
 # yet they are supposed to be part of the plugin ABI.  See PR116143.
-EXTRA_BACKEND_OBJS = simple-diagnostic-path.o lazy-diagnostic-path.o
+EXTRA_BACKEND_OBJS = simple-diagnostic-path.o diagnostics/lazy-paths.o
 
 BACKEND = $(EXTRA_BACKEND_OBJS) libbackend.a main.o libcommon-target.a \
 	libcommon.a $(CPPLIB) $(LIBDECNUMBER)
@@ -3039,7 +3047,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/ipa-locality-cloning.cc \
   $(srcdir)/signop.h \
-  $(srcdir)/diagnostic-spec.h $(srcdir)/diagnostic-spec.cc \
+  $(srcdir)/gcc-diagnostic-spec.h $(srcdir)/gcc-diagnostic-spec.cc \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.cc \
   $(srcdir)/dwarf2cfi.cc \
@@ -4072,7 +4080,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   fold-const.h fold-const-call.h tree-cfg.h tree-into-ssa.h tree-ssanames.h \
   print-tree.h varasm.h context.h tree-phinodes.h stor-layout.h \
   ssa-iterators.h $(RESOURCE_H) tree-cfgcleanup.h attribs.h calls.h \
-  cfgexpand.h diagnostic-color.h gcc-symtab.h gimple-builder.h gimple-low.h \
+  cfgexpand.h gcc-symtab.h gimple-builder.h gimple-low.h \
   gimple-walk.h gimplify-me.h pass_manager.h print-rtl.h stmt.h \
   tree-dfa.h tree-hasher.h tree-nested.h tree-object-size.h tree-outof-ssa.h \
   tree-parloops.h tree-ssa-address.h tree-ssa-coalesce.h tree-ssa-dom.h \
@@ -4082,7 +4090,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
   lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
   pass-instances.def params.list $(srcdir)/../include/gomp-constants.h \
-  $(EXPR_H) $(srcdir)/analyzer/*.h
+  $(EXPR_H) $(srcdir)/analyzer/*.h $(srcdir)/diagnostics/*.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -4120,6 +4128,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 	  fi; \
 	  case $$path in \
 	  "$(srcdir)"/analyzer/* \
+	  | "$(srcdir)"/diagnostics/* \
 	  | "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
 	  | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \

@@ -6,9 +6,9 @@
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "edit-context.h"
+#include "diagnostics/changes.h"
 #include "selftest.h"
-#include "selftest-diagnostic.h"
+#include "diagnostics/selftest-context.h"
 
 int plugin_is_GPL_compatible;
 
@@ -47,14 +47,15 @@ static void
 test_richloc (rich_location *richloc)
 {
   /* Run the diagnostic and fix-it printing code.  */
-  test_diagnostic_context dc;
-  diagnostic_show_locus (&dc, dc.m_source_printing,
-			 richloc, DK_ERROR, dc.get_reference_printer ());
+  diagnostics::selftest::test_context dc;
+  diagnostic_show_locus (&dc, dc.get_source_printing_options (),
+			 richloc, diagnostics::kind::error,
+			 dc.get_reference_printer ());
 
   /* Generate a diff.  */
-  edit_context ec (global_dc->get_file_cache ());
-  ec.add_fixits (richloc);
-  char *diff = ec.generate_diff (true);
+  diagnostics::changes::change_set edit (global_dc->get_file_cache ());
+  edit.add_fixits (richloc);
+  char *diff = edit.generate_diff (true);
   free (diff);
 }
 

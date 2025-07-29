@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_condition } */
 /* { dg-additional-options "-fdump-tree-ifcvt-details" } */
 
 #include <stdarg.h>

@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -330,7 +330,7 @@ global_decl_processing (void)
 
 /* Called to perform language-specific initialization of CTX.  */
 void
-lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
+lhd_initialize_diagnostics (diagnostics::context *ctx ATTRIBUTE_UNUSED)
 {
 }
 
@@ -369,11 +369,11 @@ lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 /* The default function to print out name of current function that caused
    an error.  */
 void
-lhd_print_error_function (diagnostic_text_output_format &text_output,
+lhd_print_error_function (diagnostics::text_sink &text_output,
 			  const char *file,
-			  const diagnostic_info *diagnostic)
+			  const diagnostics::diagnostic_info *diagnostic)
 {
-  diagnostic_context *const context = &text_output.get_context ();
+  diagnostics::context *const context = &text_output.get_context ();
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       pretty_printer *const pp = text_output.get_printer ();

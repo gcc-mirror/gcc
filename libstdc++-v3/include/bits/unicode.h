@@ -209,10 +209,15 @@ namespace __unicode
       constexpr _Utf_iterator&
       operator--() requires bidirectional_iterator<_Iter>
       {
-	if (!_M_buf_index && _M_curr() != _M_first())
-	  _M_read_reverse();
-	else if (_M_buf_index)
+	if (_M_buf_index > 0)
 	  --_M_buf_index;
+	else if (_M_curr() != _M_first())
+	  {
+	    _M_read_reverse();
+	    _M_buf_index = _M_buf_last - 1;
+	    ranges::advance(_M_curr(), -_M_to_increment);
+	  }
+	// else erroneous, but ignored for now.
 	return *this;
       }
 
@@ -269,7 +274,18 @@ namespace __unicode
       }
 
       constexpr void
-      _M_read_reverse(); // TODO
+      _M_read_reverse() requires bidirectional_iterator<_Iter>
+      {
+	if constexpr (sizeof(_FromFmt) == sizeof(uint8_t))
+	  _M_read_reverse_utf8();
+	else if constexpr (sizeof(_FromFmt) == sizeof(uint16_t))
+	  _M_read_reverse_utf16();
+	else
+	  {
+	    static_assert(sizeof(_FromFmt) == sizeof(uint32_t));
+	    _M_read_reverse_utf32();
+	  }
+      }
 
       template<typename>
 	struct _Guard
@@ -285,7 +301,7 @@ namespace __unicode
 	  _It _M_orig;
 	};
 
-      constexpr void
+      constexpr char32_t
       _M_read_utf8()
       {
 	_Guard<_Iter> __g{this, _M_curr()};
@@ -383,6 +399,8 @@ namespace __unicode
 	  __c = _S_error();
 
 	_M_update(__c, __to_incr);
+
+	return __c;
       }
 
       constexpr void
@@ -420,6 +438,116 @@ namespace __unicode
       {
 	_Guard<_Iter> __g{this, _M_curr()};
 	char32_t __c = *_M_curr()++;
+	if (!__is_scalar_value(__c)) [[unlikely]]
+	  __c = _S_error();
+	_M_update(__c, 1);
+      }
+
+      constexpr void
+      _M_read_reverse_utf8() requires bidirectional_iterator<_Iter>
+      {
+	const auto __first = _M_first();
+	auto __curr = _M_curr();
+	// The code point we decode:
+	char32_t __c{};
+	// The last code unit read:
+	uint8_t __u = *--__curr;
+	// Count of bytes read:
+	uint8_t __to_incr = 1;
+
+	if (__u <= 0x7F) [[likely]]
+	  {
+	    _M_update(__u, 1);
+	    return;
+	  }
+
+	// Continuation bytes match 10xxxxxx
+	auto __is_continuation = [](uint8_t __b) {
+	  return (__b & 0xC0) == 0x80;
+	};
+	// 0xC0 and 0xC1 would produce overlong encodings of ASCII characters.
+	// 0xF5-0xFF would produce code points above U+10FFFF
+	auto __is_invalid = [](uint8_t __b) {
+	  return (__b & 0xFE) == 0xC0 || __b >= 0xF5;
+	};
+
+	// No valid or invalid multibyte sequence is longer than 4 bytes,
+	// so skip back over at most four bytes.
+	while (__is_continuation(__u) && __to_incr < 4 && __curr != __first)
+	  {
+	    ++__to_incr;
+	    __u = *--__curr;
+	  }
+
+	// If the last byte read was a continuation byte then either we read
+	// four continuation bytes, or stopped at the start of the sequence.
+	// Either way, the maximal subparts are the individual continuation
+	// bytes so each one should be replaced with U+FFFD.
+	if (__is_continuation(__u) || __is_invalid(__u)) [[unlikely]]
+	  {
+	    // Either found four continuation bytes (maximum allowed is three)
+	    // or first non-continuation byte is an invalid UTF-8 code unit.
+	    _M_update(_S_error(), 1);
+	    return;
+	  }
+	// __u is a valid start byte so use countl_one to get the expected
+	// length of the multibyte sequence that starts with this byte.
+	int __seq_length = std::countl_one((unsigned char)__u);
+	if (__seq_length < __to_incr) [[unlikely]]
+	  {
+	    // If the expected number of continuation bytes is less than
+	    // the number we found, then the last continuation byte is a
+	    // maximal subpart and the decremented iterator points to it.
+	    _M_update(_S_error(), 1);
+	    return;
+	  }
+
+	auto __orig = std::__exchange(_M_curr(), std::move(__curr));
+	if (_M_read_utf8() == _S_error()) [[unlikely]]
+	  {
+	    if (_M_to_increment < __to_incr) // Read truncated sequence, set
+	      _M_to_increment = 1;           // curr to last continuation byte.
+	  }
+
+	_M_curr() = std::move(__orig);
+	// operator--() will move back by _M_to_increment
+      }
+
+      constexpr void
+      _M_read_reverse_utf16() requires bidirectional_iterator<_Iter>
+      {
+	_Guard<_Iter> __g{this, _M_curr()};
+	char32_t __c{};
+	uint16_t __u = *--_M_curr();
+	uint8_t __to_incr = 1;
+
+	if (__u < 0xD800 || __u > 0xDFFF) [[likely]]
+	  __c = __u;
+	else if (__u >= 0xDC00 && _M_curr() != _M_first()) [[likely]]
+	  {
+	    // read a low surrogate, expect a high surrogate before it.
+	    uint16_t __u2 = *--_M_curr();
+	    if (__u2 < 0xD800 || __u2 > 0xDC00) [[unlikely]]
+	      __c = _S_error(); // unpaired low surrogate
+	    else
+	      {
+		__to_incr = 2;
+		uint32_t __x = (__u2 & 0x3F) << 10 | (__u & 0x3FF);
+		uint32_t __w = (__u2 >> 6) & 0x1F;
+		__c = (__w + 1) << 16 | __x;
+	      }
+	  }
+	else
+	  __c = _S_error(); // unpaired surrogate
+
+	_M_update(__c, __to_incr);
+      }
+
+      constexpr void
+      _M_read_reverse_utf32() requires bidirectional_iterator<_Iter>
+      {
+	_Guard<_Iter> __g{this, _M_curr()};
+	char32_t __c = *--_M_curr();
 	if (!__is_scalar_value(__c)) [[unlikely]]
 	  __c = _S_error();
 	_M_update(__c, 1);
@@ -509,9 +637,6 @@ namespace __unicode
       constexpr _Iter
       _M_curr() const { return _M_first_and_curr._M_curr; }
 
-      // Buffer holding the individual code units of the current code point.
-      array<value_type, 4 / sizeof(_ToFmt)> _M_buf;
-
       // _M_first is not needed for non-bidirectional ranges.
       template<typename _It>
 	struct _First_and_curr
@@ -553,12 +678,15 @@ namespace __unicode
       // start (or end, for non-forward iterators) of the current code point.
       _First_and_curr<_Iter> _M_first_and_curr;
 
+      // The end of the underlying input range.
+      [[no_unique_address]] _Sent _M_last;
+
+      // Buffer holding the individual code units of the current code point.
+      array<value_type, 4 / sizeof(_ToFmt)> _M_buf;
+
       uint8_t _M_buf_index = 0;    // Index of current code unit in the buffer.
       uint8_t _M_buf_last = 0;     // Number of code units in the buffer.
       uint8_t _M_to_increment = 0; // How far to advance _M_curr on increment.
-
-      // The end of the underlying input range.
-      [[no_unique_address]] _Sent _M_last;
 
       template<typename _FromFmt2, typename _ToFmt2,
 	       input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,

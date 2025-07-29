@@ -17,238 +17,162 @@
 // along with this program; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <string>
 #include <vector>
 #include <testsuite_hooks.h>
 
-int 
+void
 string_stuff()
 {
-   int failures(0);
-
    std::string s("abcde");
 
    std::string::iterator i1(s.begin());
-   if (*i1 != 'a')
-      ++failures;
+   VERIFY( *i1 == 'a' );
 
    ++i1;
-   if (*i1 != 'b')
-      ++failures;
+   VERIFY( *i1 == 'b' );
 
-   if (*i1++ != 'b')
-       ++failures;
-   if (*i1 != 'c')
-      ++failures;
+   VERIFY( *i1++ == 'b' );
+   VERIFY( *i1 == 'c' );
 
    ++ ++i1;
-   if (*i1 != 'e')
-      ++failures;
+   VERIFY( *i1 == 'e' );
 
    --i1;
-   if (*i1 != 'd')
-      ++failures;
+   VERIFY( *i1 == 'd' );
 
-   if (*i1-- != 'd')
-      ++failures;
-   if (*i1 != 'c')
-      ++failures;
+   VERIFY( *i1-- == 'd' );
+   VERIFY( *i1 == 'c' );
 
    -- --i1;
-   if (*i1 != 'a')
-      ++failures;
+   VERIFY( *i1 == 'a' );
 
    std::string::iterator i2;
    i2 = s.end();
    std::iterator_traits<std::string::iterator>::difference_type d1;
    d1 = i2 - i1;
-   if (d1 != 5)
-      ++failures;
+   VERIFY( d1 == 5 );
 
    std::iterator_traits<std::string::iterator>::value_type v1;
    v1 = i1[0];
-   if (v1 != 'a')
-      ++failures;
+   VERIFY( v1 == 'a' );
 
    std::iterator_traits<std::string::iterator>::reference r1(i1[0]);
-   if (r1 != 'a')
-      ++failures;
+   VERIFY( r1 == 'a' );
    r1 = 'x';
-   if (r1 != 'x')
-      ++failures;
+   VERIFY( r1 == 'x' );
    r1 = 'a';
 
-   if ((i1 != i2) != true)
-      ++failures;
-   if ((i1 == i2) != false)
-      ++failures;
-   if ((i1 <  i2) != true)
-      ++failures;
-   if ((i1 >  i2) != false)
-      ++failures;
-   if ((i1 <= i2) != true)
-      ++failures;
-   if ((i1 >= i2) != false)
-      ++failures;
+   VERIFY( (i1 != i2) == true );
+   VERIFY( (i1 == i2) == false );
+   VERIFY( (i1 <  i2) == true );
+   VERIFY( (i1 >  i2) == false );
+   VERIFY( (i1 <= i2) == true );
+   VERIFY( (i1 >= i2) == false );
 
    std::string::iterator i3;
    i3 = i1;
-   if ((i3 == i1) != true)
-      ++failures;
+   VERIFY( (i3 == i1) == true );
 
    i3 += 5;
-   if ((i3 == i2) != true)
-      ++failures;
+   VERIFY( (i3 == i2) == true );
 
    i3 -= 5;
-   if ((i3 == i1) != true)
-      ++failures;
+   VERIFY( (i3 == i1) == true );
 
-   if (i3 + 5 != i2)
-      ++failures;
+   VERIFY( i3 + 5 == i2 );
+   VERIFY( 5 + i3 == i2 );
+   VERIFY( i2 - 5 == i3 );
 
-   if (5 + i3 != i2)
-      ++failures;
-
-   if (i2 - 5 != i3)
-      ++failures;
-
-   if (i1[0] != 'a')
-      ++failures;
+   VERIFY( i1[0] == 'a' );
 
    i1[4] = 'x';
-   if (i2[-1] != 'x')
-      ++failures;
+   VERIFY( i2[-1] == 'x' );
    i1[4] = 'e';
 
    i1[2] = 'x';
-   if (i2[-3] != 'x')
-      ++failures;
+   VERIFY( i2[-3] == 'x' );
    i1[2] = 'c';
 
    std::string::const_iterator ci1(s.begin());
-   if (*ci1 != 'a')
-      ++failures;
+   VERIFY( *ci1 == 'a' );
 
    ++ci1;
-   if (*ci1 != 'b')
-      ++failures;
+   VERIFY( *ci1 == 'b' );
 
-   if (*ci1++ != 'b')
-      ++failures;
-   if (*ci1 != 'c')
-      ++failures;
+   VERIFY( *ci1++ == 'b' );
+   VERIFY( *ci1 == 'c' );
 
    ++ ++ci1;
-   if (*ci1 != 'e')
-      ++failures;
+   VERIFY( *ci1 == 'e' );
 
    --ci1;
-   if (*ci1 != 'd')
-      ++failures;
+   VERIFY( *ci1 == 'd' );
 
-   if (*ci1-- != 'd')
-      ++failures;
-   if (*ci1 != 'c')
-      ++failures;
+   VERIFY( *ci1-- == 'd' );
+   VERIFY( *ci1 == 'c' );
 
    -- --ci1;
-   if (*ci1 != 'a')
-      ++failures;
+   VERIFY( *ci1 == 'a' );
 
    std::string::const_iterator ci2;
    ci2 = s.end();
    std::iterator_traits<std::string::const_iterator>::difference_type d2;
    d2 = ci2 - ci1;
-   if (d2 != 5)
-     ++failures;
+   VERIFY( d2 == 5 );
 
    std::iterator_traits<std::string::const_iterator>::value_type v2;
    v2 = ci1[0];
-   if (v2 != 'a')
-     ++failures;
+   VERIFY( v2 == 'a' );
 
    std::iterator_traits<std::string::const_iterator>::reference r2(ci1[0]);
-   if (r2 != 'a')
-      ++failures;
+   VERIFY( r2 == 'a' );
 
-   if ((ci1 != ci2) != true)
-      ++failures;
-   if ((ci1 == ci2) != false)
-      ++failures;
-   if ((ci1 <  ci2) != true)
-      ++failures;
-   if ((ci1 >  ci2) != false)
-      ++failures;
-   if ((ci1 <= ci2) != true)
-      ++failures;
-   if ((ci1 >= ci2) != false)
-      ++failures;
+   VERIFY( (ci1 != ci2) == true );
+   VERIFY( (ci1 == ci2) == false );
+   VERIFY( (ci1 <  ci2) == true );
+   VERIFY( (ci1 >  ci2) == false );
+   VERIFY( (ci1 <= ci2) == true );
+   VERIFY( (ci1 >= ci2) == false );
 
    std::string::const_iterator ci3;
    ci3 = ci1;
-   if ((ci3 == ci1) != true)
-      ++failures;
+   VERIFY( ci3 == ci1 );
 
    ci3 += 5;
-   if ((ci3 == ci2) != true)
-      ++failures;
+   VERIFY( ci3 == ci2 );
 
    ci3 -= 5;
-   if ((ci3 == ci1) != true)
-      ++failures;
+   VERIFY( ci3 == ci1 );
 
-   if (ci3 + 5 != ci2)
-      ++failures;
+   VERIFY( ci3 + 5 == ci2 );
+   VERIFY( 5 + ci3 == ci2 );
+   VERIFY( ci2 - 5 == ci3 );
 
-   if (5 + ci3 != ci2)
-      ++failures;
-
-   if (ci2 - 5 != ci3)
-      ++failures;
-
-   if (ci1[2] != 'c')
-      ++failures;
-
-   if (ci2[-1] != 'e')
-      ++failures;
+   VERIFY( ci1[2] == 'c' );
+   VERIFY( ci2[-1] == 'e' );
 
    // iterator and const_iterator
    std::string::const_iterator ci4(i1);
-   if ((ci4 == i1) != true)
-      ++failures;
-   if ((ci4 != i1) != false)
-      ++failures;
-   if ((ci4 < i1)  != false)
-     ++failures;
-   if ((ci4 > i1)  != false)
-     ++failures;
-   if ((ci4 <= i1) != true)
-     ++failures;
-   if ((ci4 >= i1) != true)
-     ++failures;
+   VERIFY( (ci4 == i1) == true );
+   VERIFY( (ci4 != i1) == false );
+   VERIFY( (ci4 < i1) == false );
+   VERIFY( (ci4 > i1) == false );
+   VERIFY( (ci4 <= i1) == true );
+   VERIFY( (ci4 >= i1) == true );
    ci4 = i2;
-   if ((i2 == ci4) != true)
-     ++failures;
-   if ((i2 < ci4)  != false)
-     ++failures;
-   if ((i2 > ci4)  != false)
-     ++failures;
-   if ((i2 <= ci4) != true)
-     ++failures;
-   if ((i2 >= ci4) != true)
-     ++failures;
+   VERIFY( (i2 == ci4) == true );
+   VERIFY( (i2 < ci4) == false );
+   VERIFY( (i2 > ci4) == false );
+   VERIFY( (i2 <= ci4) == true );
+   VERIFY( (i2 >= ci4) == true );
 
    const std::string cs("ABCDE");
    std::string::const_iterator ci5(cs.begin());
-   if (ci5[0] != 'A')
-      ++failures;
-
-   return failures;
+   VERIFY( ci5[0] == 'A' );
 }
 
-int 
+void
 vector_stuff()
 {
    int failures(0);
@@ -261,347 +185,190 @@ vector_stuff()
    v.push_back(int(5));
 
    std::vector<int>::iterator i1(v.begin());
-   if (*i1 != 1)
-      ++failures;
+   VERIFY( *i1 == 1 );
 
    ++i1;
-   if (*i1 != 2)
-      ++failures;
+   VERIFY( *i1 == 2 );
 
-   if (*i1++ != 2)
-      ++failures;
-   if (*i1 != 3)
-      ++failures;
+   VERIFY( *i1++ == 2 );
+   VERIFY( *i1 == 3 );
 
    ++ ++i1;
-   if (*i1 != 5)
-      ++failures;
+   VERIFY( *i1 == 5 );
 
    --i1;
-   if (*i1 != 4)
-      ++failures;
+   VERIFY( *i1 == 4 );
 
-   if (*i1-- != 4)
-      ++failures;
-   if (*i1 != 3)
-      ++failures;
+   VERIFY( *i1-- == 4 );
+   VERIFY( *i1 == 3 );
 
    -- --i1;
-   if (*i1 != 1)
-      ++failures;
+   VERIFY( *i1 == 1 );
 
    std::vector<int>::iterator i2;
    i2 = v.end();
    std::iterator_traits<std::vector<int>::iterator>::difference_type d1;
    d1 = i2 - i1;
-   if (d1 != 5)
-      ++failures;
+   VERIFY( d1 == 5 );
 
    std::iterator_traits<std::vector<int>::iterator>::value_type v1;
    v1 = i1[0];
-   if (v1 != 1)
-      ++failures;
+   VERIFY( v1 == 1 );
 
    std::iterator_traits<std::vector<int>::iterator>::reference r1(i1[0]);
-   if (r1 != 1)
-      ++failures;
+   VERIFY( r1 == 1 );
    r1 = 9;
-   if (r1 != 9)
-      ++failures;
+   VERIFY( r1 == 9 );
    r1 = 1;
 
-   if ((i1 != i2) != true)
-      ++failures;
-   if ((i1 == i2) != false)
-      ++failures;
-   if ((i1 <  i2) != true)
-      ++failures;
-   if ((i1 >  i2) != false)
-      ++failures;
-   if ((i1 <= i2) != true)
-      ++failures;
-   if ((i1 >= i2) != false)
-      ++failures;
+   VERIFY( (i1 != i2) == true );
+   VERIFY( (i1 == i2) == false );
+   VERIFY( (i1 <  i2) == true );
+   VERIFY( (i1 >  i2) == false );
+   VERIFY( (i1 <= i2) == true );
+   VERIFY( (i1 >= i2) == false );
 
    std::vector<int>::iterator i3;
    i3 = i1;
-   if ((i3 == i1) != true)
-      ++failures;
+   VERIFY( (i3 == i1) == true );
 
    i3 += 5;
-   if ((i3 == i2) != true)
-      ++failures;
+   VERIFY( (i3 == i2) == true );
 
    i3 -= 5;
-   if ((i3 == i1) != true)
-      ++failures;
+   VERIFY( (i3 == i1) == true );
 
-   if (i3 + 5 != i2)
-      ++failures;
+   VERIFY( i3 + 5 == i2 );
+   VERIFY( 5 + i3 == i2 );
+   VERIFY( i2 - 5 == i3 );
 
-   if (5 + i3 != i2)
-      ++failures;
-
-   if (i2 - 5 != i3)
-      ++failures;
-
-   if (i1[0] != 1)
-      ++failures;
+   VERIFY( i1[0] == 1 );
 
    i1[4] = 9;
-   if (i2[-1] != 9)
-      ++failures;
+   VERIFY( i2[-1] == 9 );
    i1[4] = 5;
 
    i1[2] = 9;
-   if (i2[-3] != 9)
-      ++failures;
+   VERIFY( i2[-3] == 9 );
    i1[2] = 3;
 
    std::vector<int>::const_iterator ci1(v.begin());
-   if (*ci1 != 1)
-      ++failures;
+   VERIFY( *ci1 == 1 );
 
    ++ci1;
-   if (*ci1 != 2)
-      ++failures;
+   VERIFY( *ci1 == 2 );
 
-   if (*ci1++ != 2)
-      ++failures;
-   if (*ci1 != 3)
-      ++failures;
+   VERIFY( *ci1++ == 2 );
+   VERIFY( *ci1 == 3 );
 
    ++ ++ci1;
-   if (*ci1 != 5)
-      ++failures;
+   VERIFY( *ci1 == 5 );
 
    --ci1;
-   if (*ci1 != 4)
-      ++failures;
+   VERIFY( *ci1 == 4 );
 
-   if (*ci1-- != 4)
-      ++failures;
-   if (*ci1 != 3)
-      ++failures;
+   VERIFY( *ci1-- == 4 );
+   VERIFY( *ci1 == 3 );
 
    -- --ci1;
-   if (*ci1 != 1)
-      ++failures;
+   VERIFY( *ci1 == 1 );
 
    std::vector<int>::const_iterator ci2;
    ci2 = v.end();
    std::iterator_traits<std::vector<int>::const_iterator>::difference_type d2;
    d2 = ci2 - ci1;
-   if (d2 != 5)
-      ++failures;
+   VERIFY( d2 == 5 );
 
    std::iterator_traits<std::vector<int>::const_iterator>::value_type v2;
    v2 = ci1[0];
-   if (v2 != 1)
-      ++failures;
+   VERIFY( v2 == 1 );
 
    std::iterator_traits<std::vector<int>::const_iterator>::reference
       r2(ci1[0]);
-   if (r2 != 1)
-      ++failures;
+   VERIFY( r2 == 1 );
 
-   if ((ci1 != ci2) != true)
-      ++failures;
-   if ((ci1 == ci2) != false)
-      ++failures;
-   if ((ci1 <  ci2) != true)
-      ++failures;
-   if ((ci1 >  ci2) != false)
-      ++failures;
-   if ((ci1 <= ci2) != true)
-      ++failures;
-   if ((ci1 >= ci2) != false)
-      ++failures;
+   VERIFY( (ci1 != ci2) == true );
+   VERIFY( (ci1 == ci2) == false );
+   VERIFY( (ci1 <  ci2) == true );
+   VERIFY( (ci1 >  ci2) == false );
+   VERIFY( (ci1 <= ci2) == true );
+   VERIFY( (ci1 >= ci2) == false );
 
    std::vector<int>::const_iterator ci3;
    ci3 = ci1;
-   if ((ci3 == ci1) != true)
-      ++failures;
+   VERIFY( (ci3 == ci1) == true );
 
    ci3 += 5;
-   if ((ci3 == ci2) != true)
-      ++failures;
+   VERIFY( (ci3 == ci2) == true );
 
    ci3 -= 5;
-   if ((ci3 == ci1) != true)
-      ++failures;
+   VERIFY( (ci3 == ci1) == true );
 
-   if (ci3 + 5 != ci2)
-      ++failures;
+   VERIFY( ci3 + 5 == ci2 );
+   VERIFY( 5 + ci3 == ci2 );
+   VERIFY( ci2 - 5 == ci3 );
 
-   if (5 + ci3 != ci2)
-      ++failures;
+   VERIFY( ci1[2] == 3 );
 
-   if (ci2 - 5 != ci3)
-      ++failures;
-
-   if (ci1[2] != 3)
-      ++failures;
-
-   if (ci2[-1] != 5)
-      ++failures;
+   VERIFY( ci2[-1] == 5 );
 
    // iterator to const_iterator
    std::vector<int>::const_iterator ci4(i1);
-   if ((ci4 == i1) != true)
-      ++failures;
-   if ((ci4 != i1) != false)
-      ++failures;
-   if ((ci4 < i1)  != false)
-     ++failures;
-   if ((ci4 > i1)  != false)
-     ++failures;
-   if ((ci4 <= i1) != true)
-     ++failures;
-   if ((ci4 >= i1) != true)
-     ++failures;
+   VERIFY( (ci4 == i1) == true );
+   VERIFY( (ci4 != i1) == false );
+   VERIFY( (ci4 < i1) == false );
+   VERIFY( (ci4 > i1) == false );
+   VERIFY( (ci4 <= i1) == true );
+   VERIFY( (ci4 >= i1) == true );
    ci4 = i2;
-   if ((i2 == ci4) != true)
-     ++failures;
-   if ((i2 < ci4)  != false)
-     ++failures;
-   if ((i2 > ci4)  != false)
-     ++failures;
-   if ((i2 <= ci4) != true)
-     ++failures;
-   if ((i2 >= ci4) != true)
-     ++failures;
+   VERIFY( (i2 == ci4) == true );
+   VERIFY( (i2 < ci4) == false );
+   VERIFY( (i2 > ci4) == false );
+   VERIFY( (i2 <= ci4) == true );
+   VERIFY( (i2 >= ci4) == true );
 
    const std::vector<int> cv(v);
    std::vector<int>::const_iterator ci5(cv.begin());
-   if (ci5[0] != 1)
-      ++failures;
+   VERIFY( ci5[0] == 1 );
 
    std::vector<std::string> vs;
    vs.push_back(std::string("abc"));
    std::vector<std::string>::iterator ivs(vs.begin());
-   if (ivs->c_str()[1] != 'b')
-      ++failures;
-
-   return failures;
+   VERIFY( ivs->c_str()[1] == 'b' );
 }
 
-int 
+void 
 reverse_stuff()
 {
-   int failures(0);
-
    std::string s("abcde");
 
    std::string::reverse_iterator ri(s.rbegin());
-   if (*ri != 'e')
-      ++failures;
+   VERIFY( *ri == 'e' );
 
    std::iterator_traits<std::string::reverse_iterator>::difference_type d;
    d = s.rend() - ri;
-   if (d != 5)
-      ++failures;
+   VERIFY( d == 5 );
 
    const std::string cs("abcde");
    std::string::const_reverse_iterator cri(cs.rend());
-   if (cri - 5 != cs.rbegin())
-      ++failures;
-
-   return failures;
-}
-
-// the following should be compiler errors
-// flag runtime errors in case they slip through the compiler
-int 
-wrong_stuff()
-{
-   int failures(0);
-
-#ifdef ITER24_F1
-   extern void f(std::vector<std::string*>::iterator);
-   std::vector<std::string*> vs[2];
-   f(vs);                       // address of array is not an iterator
-   failures++;
-#endif
-
-#ifdef ITER24_F2
-   std::string s;
-   char *i = s.begin();         // begin() doesn't return a pointer
-   failures++;
-#endif
-
-#ifdef ITER24_F3
-   std::string::const_iterator ci;
-   std::string::iterator i;
-   if (i - ci)                  // remove const_ is a warning
-      i++;
-   // failures++;  only a warning
-#endif
-
-#ifdef ITER24_F4
-   std::vector<char>::iterator iv;
-   std::string::iterator is(iv);// vector<char> is not string
-   failures++;
-#endif
-
-#ifdef ITER24_F5
-   std::vector<char>::iterator iv;
-   std::string::iterator is;
-   if (iv == is)                // vector<char> is not string
-      ++iv;
-   failures++;
-#endif
-
-#ifdef ITER24_F6
-   std::vector<char>::const_iterator ci;
-   std::vector<char>::iterator i = ci;  // remove const_ is a warning
-   ++i;
-   // failures++; only a warning
-#endif
-
-#ifdef ITER24_F7
-   std::vector<int> v(1);
-   std::vector<int>::const_iterator ci(v.begin());
-   *ci = 1;                     // cannot assign through const_iterator
-   failures++;
-#endif
-
-#ifdef ITER24_F8
-   std::vector<const int> v(1);
-   std::vector<const int>::reference r(v.begin()[0]);
-   r = 1;                       // cannot assign through reference to const
-   failures++;
-#endif
-
-   return failures;
+   VERIFY( cri - 5 == cs.rbegin() );
 }
 
 // libstdc++/6642
-int
+void
 test6642()
 {
    std::string s;
    std::string::iterator it = s.begin();
    std::string::const_iterator cit = s.begin();
-
-   return it - cit;
+   VERIFY( (it - cit) == 0 );
 }
 
 int
 main()
 {
-   int failures(0);
-
-   failures += string_stuff();
-
-   failures += vector_stuff();
-
-   failures += reverse_stuff();
-
-   failures += wrong_stuff();
-
-   failures += test6642();
-
-   VERIFY(failures == 0);
+   string_stuff();
+   vector_stuff();
+   reverse_stuff();
    return 0;
 }

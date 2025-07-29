@@ -1,3 +1,30 @@
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc: Update usage of "diagnostic_info" to
+	explicitly refer to "diagnostics::diagnostic_info".
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc: Update for diagnostic_context becoming
+	diagnostics::context.
+	* jit-playback.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.cc: Update for diagnostic_info moving into
+	namespace diagnostics.
+	* jit-playback.h: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc: Update for move of diagnostics output formats
+	into namespace "diagnostics" as "sinks".
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.cc: Drop include of "make-unique.h".

@@ -1114,11 +1114,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr
       mdspan()
       requires (rank_dynamic() > 0)
-          && is_default_constructible_v<data_handle_type>
+	  && is_default_constructible_v<data_handle_type>
 	  && is_default_constructible_v<mapping_type>
-	  && is_default_constructible_v<accessor_type>
-      : _M_accessor(), _M_mapping(), _M_handle()
-      { }
+	  && is_default_constructible_v<accessor_type> = default;
 
       constexpr
       mdspan(const mdspan& __other) = default;
@@ -1275,31 +1273,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const accessor_type&
       accessor() const noexcept { return _M_accessor; }
 
-      static constexpr bool
-      is_always_unique() { return mapping_type::is_always_unique(); }
+      // Strengthened noexcept for all `is_*` methods.
 
       static constexpr bool
-      is_always_exhaustive() { return mapping_type::is_always_exhaustive(); }
+      is_always_unique() noexcept(noexcept(mapping_type::is_always_unique()))
+      { return mapping_type::is_always_unique(); }
 
       static constexpr bool
-      is_always_strided() { return mapping_type::is_always_strided(); }
+      is_always_exhaustive()
+      noexcept(noexcept(mapping_type::is_always_exhaustive()))
+      { return mapping_type::is_always_exhaustive(); }
+
+      static constexpr bool
+      is_always_strided()
+      noexcept(noexcept(mapping_type::is_always_strided()))
+      { return mapping_type::is_always_strided(); }
 
       constexpr bool
-      is_unique() const { return _M_mapping.is_unique(); }
+      is_unique() const noexcept(noexcept(_M_mapping.is_unique()))
+      { return _M_mapping.is_unique(); }
 
       constexpr bool
-      is_exhaustive() const { return _M_mapping.is_exhaustive(); }
+      is_exhaustive() const noexcept(noexcept(_M_mapping.is_exhaustive()))
+      { return _M_mapping.is_exhaustive(); }
 
       constexpr bool
-      is_strided() const { return _M_mapping. is_strided(); }
+      is_strided() const noexcept(noexcept(_M_mapping.is_strided()))
+      { return _M_mapping. is_strided(); }
 
       constexpr index_type
       stride(rank_type __r) const { return _M_mapping.stride(__r); }
 
     private:
-      [[no_unique_address]] accessor_type _M_accessor;
-      [[no_unique_address]] mapping_type _M_mapping;
-      [[no_unique_address]] data_handle_type _M_handle;
+      [[no_unique_address]] accessor_type _M_accessor = accessor_type();
+      [[no_unique_address]] mapping_type _M_mapping = mapping_type();
+      [[no_unique_address]] data_handle_type _M_handle = data_handle_type();
     };
 
   template<typename _CArray>

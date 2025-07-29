@@ -7035,6 +7035,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (icmp @0 @1)
     (if (ic == ncmp)
      (ncmp @0 @1)))))
+ /* ((cast)cmp) - 1 -> -(cast)icmp . */
+ (simplify
+  (plus (convert? (cmp@2 @0 @1)) integer_minus_onep)
+  (if (TYPE_PRECISION (type) > 1
+       && INTEGRAL_TYPE_P (TREE_TYPE (@2)) && TYPE_PRECISION (TREE_TYPE (@2)) == 1)
+   /* Comparison inversion may be impossible for trapping math,
+      invert_tree_comparison will tell us.  But we can't use
+      a computed operator in the replacement tree thus we have
+      to play the trick below.  */
+   (with { enum tree_code ic = invert_tree_comparison
+             (cmp, HONOR_NANS (@0));
+           tree cmptype = TREE_TYPE (@2); }
+    (if (ic == icmp)
+     (negate (convert (icmp:cmptype @0 @1)))
+     (if (ic == ncmp)
+      (negate (convert (ncmp:cmptype @0 @1))))))))
  /* The following bits are handled by fold_binary_op_with_conditional_arg.  */
  (simplify
   (ne (cmp@2 @0 @1) integer_zerop)

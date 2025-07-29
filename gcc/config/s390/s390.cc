@@ -16874,8 +16874,9 @@ s390_valid_target_attribute_inner_p (tree args,
 	      generate_option (opt, NULL, value, CL_TARGET, &decoded);
 	      s390_handle_option (opts, new_opts_set, &decoded, input_location);
 	      set_option (opts, new_opts_set, opt, value,
-			  p + opt_len, DK_UNSPECIFIED, input_location,
-			  global_dc);
+			  p + opt_len,
+			  static_cast<int> (diagnostics::kind::unspecified),
+			  input_location, global_dc);
 	    }
 	  else
 	    {
@@ -16892,8 +16893,9 @@ s390_valid_target_attribute_inner_p (tree args,
 	  arg_ok = opt_enum_arg_to_value (opt, p + opt_len, &value, CL_TARGET);
 	  if (arg_ok)
 	    set_option (opts, new_opts_set, opt, value,
-			p + opt_len, DK_UNSPECIFIED, input_location,
-			global_dc);
+			p + opt_len,
+			static_cast<int> (diagnostics::kind::unspecified),
+			input_location, global_dc);
 	  else
 	    {
 	      error ("attribute %<target%> argument %qs is unknown", orig_p);
@@ -17345,13 +17347,15 @@ static bool
 s390_support_vector_misalignment (machine_mode mode ATTRIBUTE_UNUSED,
 				  const_tree type ATTRIBUTE_UNUSED,
 				  int misalignment ATTRIBUTE_UNUSED,
-				  bool is_packed ATTRIBUTE_UNUSED)
+				  bool is_packed ATTRIBUTE_UNUSED,
+				  bool is_gather_scatter ATTRIBUTE_UNUSED)
 {
   if (TARGET_VX)
     return true;
 
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* The vector ABI requires vector types to be aligned on an 8 byte
@@ -17843,9 +17847,11 @@ f_constraint_p (const char *constraint)
   for (size_t i = 0, c_len = strlen (constraint); i < c_len;
        i += CONSTRAINT_LEN (constraint[i], constraint + i))
     {
-      if (constraint[i] == 'f')
+      if (constraint[i] == 'f'
+	  || (constraint[i] == '{' && constraint[i + 1] == 'f'))
 	seen_f_p = true;
-      if (constraint[i] == 'v')
+      if (constraint[i] == 'v'
+	  || (constraint[i] == '{' && constraint[i + 1] == 'v'))
 	seen_v_p = true;
     }
 
@@ -17935,7 +17941,8 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 	continue;
       bool allows_mem, allows_reg, is_inout;
       bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
-					 &allows_mem, &allows_reg, &is_inout);
+					 &allows_mem, &allows_reg, &is_inout,
+					 nullptr);
       gcc_assert (ok);
       if (!f_constraint_p (constraint))
 	/* Long double with a constraint other than "=f" - nothing to do.  */
@@ -17980,7 +17987,7 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       bool allows_mem, allows_reg;
       bool ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
 					constraints.address (), &allows_mem,
-					&allows_reg);
+					&allows_reg, nullptr);
       gcc_assert (ok);
       if (!f_constraint_p (constraint))
 	/* Long double with a constraint other than "f" (or "=f" for inout

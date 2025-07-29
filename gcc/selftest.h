@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
-class file_cache;
+namespace diagnostics { class file_cache; }
 
 namespace selftest {
 
@@ -100,13 +100,13 @@ extern void assert_str_startswith (const location &loc,
 class named_temp_file
 {
  public:
-  named_temp_file (const char *suffix, file_cache *fc = nullptr);
+  named_temp_file (const char *suffix, diagnostics::file_cache *fc = nullptr);
   ~named_temp_file ();
   const char *get_filename () const { return m_filename; }
 
  private:
   char *m_filename;
-  file_cache *m_file_cache;
+  diagnostics::file_cache *m_file_cache;
 };
 
 /* A class for writing out a temporary sourcefile for use in selftests
@@ -116,7 +116,7 @@ class temp_source_file : public named_temp_file
 {
  public:
   temp_source_file (const location &loc, const char *suffix,
-		    const char *content, file_cache *fc = nullptr);
+		    const char *content, diagnostics::file_cache *fc = nullptr);
   temp_source_file (const location &loc, const char *suffix,
 		    const char *content, size_t sz);
 };
@@ -221,17 +221,8 @@ extern void bitmap_cc_tests ();
 extern void cgraph_cc_tests ();
 extern void convert_cc_tests ();
 extern void dbgcnt_cc_tests ();
-extern void diagnostic_color_cc_tests ();
-extern void diagnostic_digraphs_cc_tests ();
-extern void diagnostic_format_html_cc_tests ();
-extern void diagnostic_format_sarif_cc_tests ();
-extern void diagnostic_output_spec_cc_tests ();
-extern void diagnostic_path_output_cc_tests ();
-extern void diagnostic_show_locus_cc_tests ();
-extern void diagnostic_state_graphs_cc_tests ();
 extern void digraph_cc_tests ();
 extern void dumpfile_cc_tests ();
-extern void edit_context_cc_tests ();
 extern void et_forest_cc_tests ();
 extern void fibonacci_heap_cc_tests ();
 extern void fold_const_cc_tests ();
@@ -248,7 +239,6 @@ extern void input_cc_tests ();
 extern void ipa_modref_tree_cc_tests ();
 extern void json_cc_tests ();
 extern void json_parser_cc_tests ();
-extern void lazy_diagnostic_path_cc_tests ();
 extern void opt_suggestions_cc_tests ();
 extern void optinfo_emit_json_cc_tests ();
 extern void opts_cc_tests ();
@@ -263,7 +253,6 @@ extern void relation_tests ();
 extern void rtl_tests_cc_tests ();
 extern void sbitmap_cc_tests ();
 extern void selftest_cc_tests ();
-extern void selftest_logical_location_cc_tests ();
 extern void simple_diagnostic_path_cc_tests ();
 extern void simplify_rtx_cc_tests ();
 extern void spellcheck_cc_tests ();

@@ -3020,6 +3020,8 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Full_Type_Declaration (N : Node_Id) is
+      use Deferred_Extra_Formals_Support;
+
       Def    : constant Node_Id   := Type_Definition (N);
       Def_Id : constant Entity_Id := Defining_Identifier (N);
       T      : Entity_Id;
@@ -3556,6 +3558,16 @@ package body Sem_Ch3 is
                end loop;
             end;
          end if;
+      end if;
+
+      --  If we have some subprogram, subprogram type, or entry, with deferred
+      --  addition of its extra formals (because the underlying type of this
+      --  type was not previously available), then try creating now its extra
+      --  formals. Create also the extra actuals of deferred calls to entities
+      --  with deferred extra formals.
+
+      if Has_Deferred_Extra_Formals (T) then
+         Add_Deferred_Extra_Params (T);
       end if;
 
       if Ekind (T) = E_Record_Type
@@ -6819,7 +6831,7 @@ package body Sem_Ch3 is
       --  that the element type is constrained.
 
       if Is_Mutably_Tagged_Type (Element_Type) then
-         Set_Component_Type (T,
+         Set_Component_Type (Base_Type (T),
            Class_Wide_Equivalent_Type (Element_Type));
 
       elsif not Is_Definite_Subtype (Element_Type) then
@@ -8440,15 +8452,17 @@ package body Sem_Ch3 is
          Set_Has_Private_Declaration (Full_Der);
          Set_Has_Private_Declaration (Derived_Type);
 
-         Set_Scope                (Full_Der, Scope (Derived_Type));
-         Set_Is_First_Subtype     (Full_Der, Is_First_Subtype (Derived_Type));
-         Set_Has_Size_Clause      (Full_Der, False);
-         Set_Has_Alignment_Clause (Full_Der, False);
-         Set_Has_Delayed_Freeze   (Full_Der);
-         Set_Is_Frozen            (Full_Der, False);
-         Set_Freeze_Node          (Full_Der, Empty);
-         Set_Depends_On_Private   (Full_Der, Has_Private_Component (Full_Der));
-         Set_Is_Public            (Full_Der, Is_Public (Derived_Type));
+         Set_Scope                 (Full_Der, Scope (Derived_Type));
+         Set_Is_First_Subtype      (Full_Der, Is_First_Subtype (Derived_Type));
+         Set_Has_Size_Clause       (Full_Der, False);
+         Set_Has_Alignment_Clause  (Full_Der, False);
+         Set_Has_Delayed_Freeze    (Full_Der);
+         Set_Is_Frozen             (Full_Der, False);
+         Set_Freeze_Node           (Full_Der, Empty);
+         Set_Depends_On_Private
+           (Full_Der, Has_Private_Component (Full_Der));
+         Set_Is_Public             (Full_Der, Is_Public (Derived_Type));
+         Set_Is_Implicit_Full_View (Full_Der);
 
          --  The convention on the base type may be set in the private part
          --  and not propagated to the subtype until later, so we obtain the
@@ -9645,6 +9659,8 @@ package body Sem_Ch3 is
          Build_Derived_Type
            (New_Decl, Parent_Base, New_Base,
             Is_Completion => False, Derive_Subps => False);
+
+         Set_Is_Implicit_Full_View (New_Base);
 
          --  ??? This needs re-examination to determine whether the
          --  following call can simply be replaced by a call to Analyze.
@@ -21279,8 +21295,8 @@ package body Sem_Ch3 is
       --  On entry, the current scope is the composite type.
 
       --  The discriminants are initially entered into the scope of the type
-      --  via Enter_Name with the default Ekind of E_Void to prevent premature
-      --  use, as explained at the end of this procedure.
+      --  via Enter_Name with Is_Not_Self_Hidden set to False to prevent
+      --  premature use, as explained at the end of this procedure.
 
       Discr := First (Discriminant_Specifications (N));
       while Present (Discr) loop
@@ -21553,12 +21569,12 @@ package body Sem_Ch3 is
       --  expressions of a discriminant part if the specification of the
       --  discriminant is itself given in the discriminant part. (RM 3.7.1)
 
-      --  To detect this, the discriminant names are entered initially with an
-      --  Ekind of E_Void (which is the default Ekind given by Enter_Name). Any
-      --  attempt to use a void entity (for example in an expression that is
-      --  type-checked) produces the error message: premature usage. Now after
-      --  completing the semantic analysis of the discriminant part, we can set
-      --  the Ekind of all the discriminants appropriately.
+      --  To detect this, the discriminant names are entered initially with
+      --  Is_Not_Self_Hidden set to False. Any attempt to use a self-hidden
+      --  entity (for example in an expression that is type-checked) produces
+      --  the error message: premature usage. Now after completing the semantic
+      --  analysis of the discriminant part, we can set Is_Not_Self_Hidden on
+      --  all the discriminants appropriately.
 
       Discr := First (Discriminant_Specifications (N));
       Discr_Number := Uint_1;

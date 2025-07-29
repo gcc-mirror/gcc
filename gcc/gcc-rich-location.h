@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rich-location.h"
 
-class diagnostic_source_print_policy;
+namespace diagnostics { class source_print_policy; }
 
 /* A gcc_rich_location is libcpp's rich_location with additional
    helper methods for working with gcc's types.  The class is not
@@ -79,14 +79,14 @@ class gcc_rich_location : public rich_location
 	if (!added secondary)
 	  inform (secondary_loc, "message for secondary");
 
-     Implemented in diagnostic-show-locus.cc.  */
+     Implemented in diagnostics/source-printing.cc.  */
 
-  bool add_location_if_nearby (const diagnostic_source_print_policy &policy,
+  bool add_location_if_nearby (const diagnostics::source_print_policy &policy,
 			       location_t loc,
 			       bool restrict_to_current_line_spans = true,
 			       const range_label *label = NULL);
 
-  bool add_location_if_nearby (const diagnostic_context &dc,
+  bool add_location_if_nearby (const diagnostics::context &dc,
 			       location_t loc,
 			       bool restrict_to_current_line_spans = true,
 			       const range_label *label = NULL);

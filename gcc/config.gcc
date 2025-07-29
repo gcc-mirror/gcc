@@ -3504,10 +3504,9 @@ sparc*-*-solaris2*)
 	    sparc64-*-* | sparcv9-*-*)
 		tm_file="sparc/default64.h ${tm_file}"
 		;;
-	    *)
-		test x$with_cpu != x || with_cpu=v9
-		;;
 	esac
+	# Match Studio 12.6 cc.
+	with_cpu=${with_cpu:-ultrasparc3}
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-sol2"
 	;;
 sparc-wrs-vxworks)

@@ -149,6 +149,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Controlling_Actual, Flag),
         Sm (Is_Overloaded, Flag),
         Sm (Is_Static_Expression, Flag),
+        Sm (Is_Expanded_Dispatching_Call, Flag),
         Sm (Must_Not_Freeze, Flag),
         Sm (Raises_Constraint_Error, Flag)));
 
@@ -181,7 +182,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (Original_Discriminant, Node_Id),
-        Sm (Redundant_Use, Flag)));
+        Sm (Redundant_Use, Flag),
+        Sm (Tag_Propagated, Flag)));
 
    Cc (N_Operator_Symbol, N_Direct_Name,
        (Sy (Strval, String_Id)));
@@ -346,7 +348,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Prefix, Node_Id),
         Sm (Actual_Designated_Subtype, Node_Id),
         Sm (Atomic_Sync_Required, Flag),
-        Sm (Has_Dereference_Action, Flag)));
+        Sm (Has_Dereference_Action, Flag),
+        Sm (Tag_Propagated, Flag)));
 
    Cc (N_Expression_With_Actions, N_Subexpr,
        (Sy (Actions, List_Id, Default_No_List),
@@ -463,6 +466,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Length_Check, Flag),
         Sm (Do_Overflow_Check, Flag),
         Sm (Float_Truncate, Flag),
+        Sm (Tag_Propagated, Flag),
         Sm (Rounded_Result, Flag)));
 
    Cc (N_Unchecked_Type_Conversion, N_Subexpr,
@@ -905,6 +909,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Cleanup_Actions, List_Id),
         Sm (Exception_Junk, Flag),
         Sm (Is_Abort_Block, Flag),
+        Sm (Is_Expanded_Dispatching_Call, Flag),
         Sm (Is_Initialization_Block, Flag),
         Sm (Is_Task_Master, Flag)));
 

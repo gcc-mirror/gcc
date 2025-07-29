@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* FIXME: This file should be #include-d after tree.h (for enum tree_code).  */
 
-struct diagnostic_info;
+namespace diagnostics { struct diagnostic_info; }
 
 struct gimplify_omp_ctx;
 
@@ -421,7 +421,7 @@ struct lang_hooks
 
   /* Callback used to perform language-specific initialization for the
      global diagnostic context structure.  */
-  void (*initialize_diagnostics) (diagnostic_context *);
+  void (*initialize_diagnostics) (diagnostics::context *);
 
   /* Beginning the main source file.  */
   void (*preprocess_main_file) (cpp_reader *, line_maps *,
@@ -547,9 +547,9 @@ struct lang_hooks
 
   /* Called by diagnostic_report_current_function to print out function name
      for textual diagnostic output.  */
-  void (*print_error_function) (diagnostic_text_output_format &,
+  void (*print_error_function) (diagnostics::text_sink &,
 				const char *,
-				const struct diagnostic_info *);
+				const diagnostics::diagnostic_info *);
 
   /* Convert a character from the host's to the target's character
      set.  The character should be in what C calls the "basic source

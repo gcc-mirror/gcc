@@ -4951,10 +4951,19 @@ static bool
 rs6000_builtin_support_vector_misalignment (machine_mode mode,
 					    const_tree type,
 					    int misalignment,
-					    bool is_packed)
+					    bool is_packed,
+					    bool is_gather_scatter)
 {
   if (TARGET_VSX)
     {
+      if (is_gather_scatter)
+	{
+	  if (TARGET_ALTIVEC && is_packed)
+	    return false;
+	  else
+	    return true;
+	}
+
       if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	return true;
 

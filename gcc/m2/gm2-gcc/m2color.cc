@@ -23,7 +23,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2color.h"
 
 #include "gcc-consolidation.h"
-#include "diagnostic-color.h"
+#include "diagnostics/color.h"
 
 
 char *

@@ -227,8 +227,15 @@ package Exp_Ch9 is
    procedure Expand_N_Delay_Until_Statement      (N : Node_Id);
    procedure Expand_N_Entry_Body                 (N : Node_Id);
    procedure Expand_N_Entry_Call_Statement       (N : Node_Id);
-   procedure Expand_N_Entry_Declaration          (N : Node_Id);
    procedure Expand_N_Protected_Body             (N : Node_Id);
+
+   procedure Expand_N_Entry_Declaration
+     (N            : Node_Id;
+      Was_Deferred : Boolean := False);
+   --  Expands an entry declaration, building a record type to hold all the
+   --  parameter values. Was_Deferred is True when this expansion was deferred
+   --  because the underlying type of some formal was not available to build
+   --  the record.
 
    procedure Expand_N_Protected_Type_Declaration (N : Node_Id);
    --  Expands protected type declarations. This results, among other things,

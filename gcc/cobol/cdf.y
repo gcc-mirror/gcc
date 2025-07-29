@@ -95,7 +95,7 @@ void input_file_status_notify();
         }                                                               \
       location_dump("cdf.c", __LINE__, "current", (Current));		\
       input_file_status_notify();					\
-      gcc_location_set( location_set(Current) );			\
+      location_set(Current);                                            \
   } while (0)
 
 %}

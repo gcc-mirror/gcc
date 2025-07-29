@@ -1176,7 +1176,7 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 	  && (flags & CPP_N_WIDTH) != CPP_N_LARGE)
 	emit_diagnostic
 	  ((c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99)
-	   ? DK_PEDWARN : DK_WARNING,
+	   ? diagnostics::kind::pedwarn : diagnostics::kind::warning,
 	   input_location, OPT_Wlong_long,
 	   (flags & CPP_N_UNSIGNED)
 	   ? "integer constant is too large for %<unsigned long%> type"

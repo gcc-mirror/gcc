@@ -79,7 +79,7 @@ gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 void
 gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 {
-  unsigned int generation, gen;
+  unsigned int gen;
 
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     {
@@ -105,7 +105,6 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	}
     }
 
-  generation = state;
   state &= ~BAR_CANCELLED;
   int retry = 100;
   do
@@ -128,7 +127,6 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	  gomp_barrier_handle_tasks (state);
 	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	}
-      generation |= gen & BAR_WAITING_FOR_TASK;
     }
   while (gen != state + BAR_INCR);
 }
@@ -152,7 +150,7 @@ bool
 gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 				   gomp_barrier_state_t state)
 {
-  unsigned int generation, gen;
+  unsigned int gen;
 
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     {
@@ -184,7 +182,6 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
   if (__builtin_expect (state & BAR_CANCELLED, 0))
     return true;
 
-  generation = state;
   int retry = 100;
   do
     {
@@ -209,7 +206,6 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	  gomp_barrier_handle_tasks (state);
 	  gen = __atomic_load_n (&bar->generation, MEMMODEL_RELAXED);
 	}
-      generation |= gen & BAR_WAITING_FOR_TASK;
     }
   while (gen != state + BAR_INCR);
 

@@ -599,15 +599,16 @@ proc aarch64-arch-dg-options { args } {
 
     set add_arch 1
     set add_tune 1
+    set add_override 1
     set checks_output [string equal [lindex $do_what 0] "compile"]
     set options [lindex $args 1]
 
     foreach option [split $options] {
 	switch -glob -- $option {
 	    -march=* { set add_arch 0 }
-	    -mcpu=* { set add_arch 0; set add_tune 0 }
-	    -mtune=* { set add_tune 0 }
-	    -moverride=* { set add_tune 0 }
+	    -mcpu=* { set add_arch 0; set add_tune 0; set add_override 0}
+	    -mtune=* { set add_tune 0; set add_override 0 }
+	    -moverride=* { set add_override 0 }
 	    -save-temps { set checks_output 1 }
 	    --save-temps { set checks_output 1 }
 	    -fdump* { set checks_output 1 }
@@ -619,9 +620,14 @@ proc aarch64-arch-dg-options { args } {
 	append options " $aarch64_default_testing_arch"
     }
 
-    if { $add_tune && $checks_output } {
+    if { $checks_output } {
 	# Turn off any default tuning and codegen tweaks.
-	append options " -mtune=generic -moverride=tune=none"
+        if { $add_tune } {
+            append options " -mtune=generic"
+        }
+        if { $add_override } {
+            append options " -moverride=tune=none"
+        }
     }
 
     uplevel 1 aarch64-old-dg-options [lreplace $args 1 1 $options]

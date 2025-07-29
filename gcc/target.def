@@ -1918,17 +1918,21 @@ implementation approaches itself.",
  NULL)
 
 /* Return true if the target supports misaligned store/load of a
-   specific factor denoted in the third parameter.  The last parameter
-   is true if the access is defined in a packed struct.  */
+   specific factor denoted in the third parameter.  The second to the last
+   parameter is true if the access is defined in a packed struct and
+   the last parameter is true if the access is a gather/scatter.  */
 DEFHOOK
 (support_vector_misalignment,
  "This hook should return true if the target supports misaligned vector\n\
 store/load of a specific factor denoted in the @var{misalignment}\n\
 parameter.  The vector store/load should be of machine mode @var{mode} and\n\
-the elements in the vectors should be of type @var{type}.  @var{is_packed}\n\
-parameter is true if the memory access is defined in a packed struct.",
+the elements in the vectors should be of type @var{type}.  The\n\
+@var{is_packed} parameter is true if the misalignment is unknown and the\n\
+memory access is defined in a packed struct.  @var{is_gather_scatter} is true\n\
+if the load/store is a gather or scatter.",
  bool,
- (machine_mode mode, const_tree type, int misalignment, bool is_packed),
+ (machine_mode mode, const_tree type, int misalignment, bool is_packed,
+  bool is_gather_scatter),
  default_builtin_support_vector_misalignment)
 
 /* Returns the preferred mode for SIMD operations for the specified

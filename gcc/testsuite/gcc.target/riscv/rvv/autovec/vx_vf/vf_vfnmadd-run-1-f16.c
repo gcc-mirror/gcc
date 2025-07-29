@@ -1,5 +1,9 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-march=rv64gcv_zvfh --param=fpr2vr-cost=0" } */
+/* { dg-require-effective-target riscv_v_ok } */
+/* { dg-require-effective-target riscv_zvfh } */
+/* { dg-add-options "riscv_v" } */
+/* { dg-add-options "riscv_zvfh" } */
+/* { dg-additional-options "--param=fpr2vr-cost=0" } */
 
 #include "vf_mulop.h"
 #include "vf_mulop_data.h"

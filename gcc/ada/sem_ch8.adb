@@ -5444,7 +5444,15 @@ package body Sem_Ch8 is
          elsif In_Open_Scopes (Scope (Base_Type (T))) then
             null;
 
-         elsif not Redundant_Use (Id) then
+         --  Turn off the use_type_clause on the type unless the clause is
+         --  redundant, or there's a previous use_type_clause. (The case where
+         --  a use_type_clause without "all" is followed by one with "all" in
+         --  a more nested scope is not considered redundant, necessitating
+         --  the test for a previous clause. One might expect the latter test
+         --  to suffice, but it turns out there are cases where Redundant_Use
+         --  is set, but Prev_Use_Clause is not set. ???)
+
+         elsif not Redundant_Use (Id) and then No (Prev_Use_Clause (N)) then
             Set_In_Use (T, False);
             Set_In_Use (Base_Type (T), False);
             Set_Current_Use_Clause (T, Empty);

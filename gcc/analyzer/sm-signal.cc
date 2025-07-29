@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
-#include "diagnostic-event-id.h"
+#include "diagnostics/event-id.h"
 #include "sbitmap.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"

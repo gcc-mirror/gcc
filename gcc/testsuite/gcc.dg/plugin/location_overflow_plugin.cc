@@ -7,7 +7,7 @@
 #include "coretypes.h"
 #include "spellcheck.h"
 #include "diagnostic.h"
-#include "diagnostic-format-text.h"
+#include "diagnostics/text-sink.h"
 
 int plugin_is_GPL_compatible;
 
@@ -39,12 +39,12 @@ on_pragma_registration (void */*gcc_data*/, void */*user_data*/)
 /* We add some extra testing during diagnostics by chaining up
    to the text finalizer.  */
 
-static diagnostic_text_finalizer_fn original_text_finalizer = NULL;
+static diagnostics::text_finalizer_fn original_text_finalizer = NULL;
 
 static void
-verify_unpacked_ranges  (diagnostic_text_output_format &text_output,
-			 const diagnostic_info *diagnostic,
-			 diagnostic_t orig_diag_kind)
+verify_unpacked_ranges  (diagnostics::text_sink &text_output,
+			 const diagnostics::diagnostic_info *diagnostic,
+			 enum diagnostics::kind orig_diag_kind)
 {
   /* Verify that the locations are ad-hoc, not packed. */
   location_t loc = diagnostic_location (diagnostic);
@@ -56,9 +56,9 @@ verify_unpacked_ranges  (diagnostic_text_output_format &text_output,
 }
 
 static void
-verify_no_columns  (diagnostic_text_output_format &text_output,
-		    const diagnostic_info *diagnostic,
-		    diagnostic_t orig_diag_kind)
+verify_no_columns  (diagnostics::text_sink &text_output,
+		    const diagnostics::diagnostic_info *diagnostic,
+		    enum diagnostics::kind orig_diag_kind)
 {
   /* Verify that the locations have no columns. */
   location_t loc = diagnostic_location (diagnostic);
@@ -104,15 +104,15 @@ plugin_init (struct plugin_name_args *plugin_info,
 		     NULL); /* void *user_data */
 
   /* Hack in additional testing, based on the exact value supplied.  */
-  original_text_finalizer = diagnostic_text_finalizer (global_dc);
+  original_text_finalizer = diagnostics::text_finalizer (global_dc);
   switch (base_location)
     {
     case LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 1:
-      diagnostic_text_finalizer (global_dc) = verify_unpacked_ranges;
+      diagnostics::text_finalizer (global_dc) = verify_unpacked_ranges;
       break;
 
     case LINE_MAP_MAX_LOCATION_WITH_COLS + 1:
-      diagnostic_text_finalizer (global_dc) = verify_no_columns;
+      diagnostics::text_finalizer (global_dc) = verify_no_columns;
       break;
 
     default:

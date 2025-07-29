@@ -23,7 +23,7 @@ void foo (void *base, void *out, size_t vl)
 ** foo2:
 ** fld\tfa[0-9]+,\s*100\(a0\)
 ** vsetvli\tzero,a2,e64,m2,t[au],m[au]
-** vfmv\.v\.f\tv[0-9]+,\s*fa[0-9]+
+** vfmv\.s\.f\tv[0-9]+,\s*fa[0-9]+
 ** vs2r.v\tv[0-9]+,0\([a-x0-9]+\)
 ** ret
 */
@@ -52,7 +52,7 @@ void foo3 (void *base, void *out, size_t vl)
 /*
 ** foo4:
 ** ...
-** vfmv\.v\.f\tv[0-9]+,\s*fa[0-9]+
+** vfmv\.s\.f\tv[0-9]+,\s*fa[0-9]+
 ** ...
 ** ret
 */

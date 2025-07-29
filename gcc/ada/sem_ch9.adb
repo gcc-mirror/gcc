@@ -1700,6 +1700,12 @@ package body Sem_Ch9 is
          Process_Formals (Formals, N);
          Create_Extra_Formals (Def_Id);
          End_Scope;
+
+      --  If the entry has no formals, extra formals are definitely not
+      --  required.
+
+      else
+         Freeze_Extra_Formals (Def_Id);
       end if;
 
       if Ekind (Def_Id) = E_Entry then

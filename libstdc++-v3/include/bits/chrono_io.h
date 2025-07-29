@@ -280,8 +280,9 @@ namespace __format
       // in the format-spec, e.g. "{:L%a}" is localized and locale-specific,
       // but "{:L}" is only localized and "{:%a}" is only locale-specific.
       unsigned _M_locale_specific : 1;
-      // Indicates that we are handling time_point.
-      unsigned _M_time_point : 1;
+      // Indicates if parts that are checked for ok come directly from the
+      // input, instead of being computed.
+      unsigned _M_needs_ok_check : 1;
       // Indicates that duration should be treated as floating point.
       unsigned _M_floating_point_rep : 1;
       // Indicate that duration uses user-defined representation.
@@ -570,7 +571,15 @@ namespace __format
 
 	  _ChronoSpec<_CharT> __spec = __def;
 
-	  auto __finalize = [this, &__spec] {
+	  auto __finalize = [this, &__spec, &__def] {
+	    using enum _ChronoParts;
+            _ChronoParts __checked 
+	      = __spec._M_debug ? _YearMonthDay|_IndexedWeekday
+	                        : _Month|_Weekday;
+	    // n.b. for calendar types __def._M_needed contains only parts
+	    // copied from the input, remaining ones are computed, and thus ok
+	    __spec._M_needs_ok_check 
+	      = __spec._M_needs(__def._M_needed & __checked);
 	    _M_spec = __spec;
 	  };
 
@@ -821,10 +830,10 @@ namespace __format
 	    __throw_format_error("chrono format error: unescaped '%' in "
 				 "chrono-specs");
 
-	  _M_spec = __spec;
-	  _M_spec._M_chrono_specs
-		 = __string_view(__chrono_specs, __first - __chrono_specs);
+	  __spec._M_chrono_specs
+	    = __string_view(__chrono_specs, __first - __chrono_specs);
 
+	  __finalize();
 	  return __first;
 	}
 
@@ -972,30 +981,71 @@ namespace __format
 	  return __out;
 	}
 
-      void
-      _M_check_ok(const _ChronoData<_CharT>& __t, _CharT __conv) const
+      __string_view
+      _M_check_ok(const _ChronoData<_CharT>& __t, _CharT& __conv) const
       {
-	// n.b. for time point all date parts are computed, so
-	// they are always ok.
-	if (_M_spec._M_time_point || _M_spec._M_debug)
-	  return;
+	if (!_M_spec._M_debug)
+	  {
+	    switch (__conv)
+	    {
+	    case 'a':
+	    case 'A':
+	      if (!__t._M_weekday.ok()) [[unlikely]]
+		__throw_format_error("format error: invalid weekday");
+	      break;
+	    case 'b':
+	    case 'h':
+	    case 'B':
+	      if (!__t._M_month.ok()) [[unlikely]]
+		__throw_format_error("format error: invalid month");
+	      break;
+	    default:
+	      break;
+	    }
+	    return __string_view();
+	  }
 
 	switch (__conv)
 	{
+	// %\0 is extension for handling weekday index
+	case '\0':
+	  if (__t._M_weekday_index < 1 || __t._M_weekday_index > 5) [[unlikely]]
+	    return _GLIBCXX_WIDEN("index");
+	  break;
 	case 'a':
 	case 'A':
 	  if (!__t._M_weekday.ok()) [[unlikely]]
-	    __throw_format_error("format error: invalid weekday");
-	  return;
+	    {
+	      __conv = 'w'; // print as decimal number
+	      return _GLIBCXX_WIDEN("weekday");
+	    }
+	  break;
 	case 'b':
 	case 'h':
 	case 'B':
 	  if (!__t._M_month.ok()) [[unlikely]]
-	    __throw_format_error("format error: invalid month");
-	  return;
+	    {
+	      __conv = 'm'; // print as decimal number
+	      return _GLIBCXX_WIDEN("month");
+	    }
+	  break;
+	case 'd':
+	case 'e':
+	  if (!__t._M_day.ok()) [[unlikely]]
+	    return _GLIBCXX_WIDEN("day");
+	  break;
+	case 'F':
+	  if (!(__t._M_year/__t._M_month/__t._M_day).ok()) [[unlikely]]
+	    return _GLIBCXX_WIDEN("date");
+	  break;
+	case 'Y':
+	  if (!__t._M_year.ok()) [[unlikely]]
+	    return _GLIBCXX_WIDEN("year");
+	  break;
 	default:
-	  return;
+	  break;
 	}
+	return __string_view();
       }
 
       template<typename _OutIter, typename _FormatContext>
@@ -1054,9 +1104,12 @@ namespace __format
 	  do
 	    {
 	      _CharT __c = *__first++;
-	      _M_check_ok(__t, __c);
+	      __string_view __invalid;
+	      if (_M_spec._M_needs_ok_check)
+		__invalid = _M_check_ok(__t, __c);
 
-	      if (__use_locale_fmt && _S_localized_spec(__c, __mod)) [[unlikely]]
+	      if (__invalid.empty() &&__use_locale_fmt
+		    && _S_localized_spec(__c, __mod)) [[unlikely]]
 		__out = _M_locale_fmt(std::move(__out), __fc.locale(),
 				      __tm, __c, __mod);
 	      else switch (__c)
@@ -1164,6 +1217,14 @@ namespace __format
 		  __first = __last;
 		  break;
 		}
+
+	      if (!__invalid.empty())
+		{
+		  constexpr __string_view __pref = _GLIBCXX_WIDEN(" is not a valid ");
+		  __out = __format::__write(std::move(__out), __pref);
+		  __out = __format::__write(std::move(__out), __invalid);
+		}
+
 	      __mod = _CharT();
 	      // Scan for next '%' and write out everything before it.
 	      __string_view __str(__first, __last - __first);
@@ -1193,9 +1254,6 @@ namespace __format
 	  // %\0 Extension to format weekday index, used only by empty format spec
 	  _CharT __buf[3];
 	  __out = __format::__write(std::move(__out), _S_str_d1(__buf, __wi));
-	  if (_M_spec._M_debug && (__wi < 1 || __wi > 5))
-	    __out = __format::__write(std::move(__out),
-		      __string_view(_GLIBCXX_WIDEN(" is not a valid index")));
 	  return std::move(__out);
 	}
 
@@ -1205,15 +1263,6 @@ namespace __format
 	{
 	  // %a Locale's abbreviated weekday name.
 	  // %A Locale's full weekday name.
-	  if (_M_spec._M_debug && !__wd.ok())
-	    {
-	      _CharT __buf[3];
-	      __out = __format::__write(std::move(__out),
-					_S_str_d1(__buf, __wd.c_encoding()));
-	      return __format::__write(std::move(__out),
-			__string_view(_GLIBCXX_WIDEN(" is not a valid weekday")));
-	    }
-
 	  __string_view __str = _S_weekdays[__wd.c_encoding()];
 	  if (!__full)
 	    __str = __str.substr(0, 3);
@@ -1226,15 +1275,6 @@ namespace __format
 	{
 	  // %b Locale's abbreviated month name.
 	  // %B Locale's full month name.
-	  if (_M_spec._M_debug && !__m.ok())
-	    {
-	      _CharT __buf[3];
-	      __out = __format::__write(std::move(__out),
-					_S_str_d1(__buf, (unsigned)__m));
-	      return __format::__write(std::move(__out),
-			__string_view(_GLIBCXX_WIDEN(" is not a valid month")));
-	    }
-
 	  __string_view __str = _S_months[(unsigned)__m - 1];
 	  if (!__full)
 	    __str = __str.substr(0, 3);
@@ -1303,10 +1343,6 @@ namespace __format
 		}
 	      __out = __format::__write(std::move(__out), __sv);
 	    }
-
-	  if (_M_spec._M_debug && __conv == 'Y' && !__y.ok()) [[unlikely]]
-	    __out = __format::__write(std::move(__out),
-		      __string_view(_GLIBCXX_WIDEN(" is not a valid year")));
 	  return __out;
 	}
 
@@ -1365,9 +1401,6 @@ namespace __format
 	    }
 
 	  __out = __format::__write(std::move(__out), __sv);
-	  if (_M_spec._M_debug && !__d.ok()) [[unlikely]]
-	    __out = __format::__write(std::move(__out),
-		      __string_view(_GLIBCXX_WIDEN(" is not a valid day")));
 	  return std::move(__out);
 	}
 
@@ -1404,9 +1437,6 @@ namespace __format
 	      __out = __format::__write(std::move(__out), __sv);
 	    }
 
-	  if (_M_spec._M_debug && !(__t._M_year/__t._M_month/__t._M_day).ok())
-	    __out = __format::__write(std::move(__out),
-		      __string_view(_GLIBCXX_WIDEN(" is not a valid date")));
 	  return std::move(__out);
 	}
 
@@ -1474,8 +1504,10 @@ namespace __format
 	{
 	  // %m  month as a decimal number.
 	  // %Om Locale's alternative representation.
-
 	  auto __i = (unsigned)__m;
+	  if (__i == 0 && _M_spec._M_debug) [[unlikely]]
+	    // 0 should not be padded to two digits
+	    return __format::__write(std::move(__out), _S_digit(0));
 
 	  _CharT __buf[3];
 	  return __format::__write(std::move(__out), _S_str_d2(__buf, __i));
@@ -1852,7 +1884,6 @@ namespace __format
 	  using enum _ChronoParts;
 
 	  _ChronoSpec<_CharT> __res{};
-	  __res._M_time_point = (__parts & _DateTime) == _DateTime;
 	  __res._M_floating_point_rep = chrono::treat_as_floating_point_v<_Rep>;
 	  __res._M_custom_rep = !is_arithmetic_v<_Rep>;
 	  __res._M_prec = chrono::hh_mm_ss<_Duration>::fractional_width;
@@ -1901,6 +1932,10 @@ namespace __format
 
 	  auto __res
 	    = __formatter_chrono<_CharT>::_M_parse(__pc, __parts, __def);
+	  // n.b. durations do not contain date parts, and for time point all
+	  // date parts are computed, and they are always ok.
+	  _M_spec._M_needs_ok_check = false;
+
 	  // check for custom floating point durations, if digits of output
 	  // will contain subseconds, then formatters must support specifying
 	  // precision.

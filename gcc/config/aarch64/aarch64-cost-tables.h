@@ -125,9 +125,9 @@ const struct cpu_cost_table qdf24xx_extra_costs =
   {
     COSTS_N_INSNS (1),  /* alu.  */
     COSTS_N_INSNS (4),  /* mult.  */
-    COSTS_N_INSNS (1),  /* movi.  */
-    COSTS_N_INSNS (2),  /* dup.  */
-    COSTS_N_INSNS (2)   /* extract.  */
+    COSTS_N_INSNS (0),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
   }
 };
 
@@ -233,9 +233,9 @@ const struct cpu_cost_table thunderx_extra_costs =
   {
     COSTS_N_INSNS (1),	/* Alu.  */
     COSTS_N_INSNS (4),	/* mult.  */
-    COSTS_N_INSNS (1),	/* movi.  */
-    COSTS_N_INSNS (2),	/* dup.  */
-    COSTS_N_INSNS (2)	/* extract.  */
+    COSTS_N_INSNS (0),	/* movi.  */
+    COSTS_N_INSNS (1),	/* dup.  */
+    COSTS_N_INSNS (1)	/* extract.  */
   }
 };
 
@@ -340,9 +340,9 @@ const struct cpu_cost_table thunderx2t99_extra_costs =
   {
     COSTS_N_INSNS (1),	/* Alu.  */
     COSTS_N_INSNS (4),	/* Mult.  */
-    COSTS_N_INSNS (1),	/* movi.  */
-    COSTS_N_INSNS (2),	/* dup.  */
-    COSTS_N_INSNS (2)	/* extract.  */
+    COSTS_N_INSNS (0),	/* movi.  */
+    COSTS_N_INSNS (1),	/* dup.  */
+    COSTS_N_INSNS (1)	/* extract.  */
   }
 };
 
@@ -447,9 +447,9 @@ const struct cpu_cost_table thunderx3t110_extra_costs =
   {
     COSTS_N_INSNS (1),	/* Alu.  */
     COSTS_N_INSNS (4),	/* Mult.  */
-    COSTS_N_INSNS (1),	/* movi.  */
-    COSTS_N_INSNS (2),	/* dup.  */
-    COSTS_N_INSNS (2)	/* extract.  */
+    COSTS_N_INSNS (0),	/* movi.  */
+    COSTS_N_INSNS (1),	/* dup.  */
+    COSTS_N_INSNS (1)	/* extract.  */
   }
 };
 
@@ -555,9 +555,9 @@ const struct cpu_cost_table tsv110_extra_costs =
   {
     COSTS_N_INSNS (1),  /* alu.  */
     COSTS_N_INSNS (4),  /* mult.  */
-    COSTS_N_INSNS (1),  /* movi.  */
-    COSTS_N_INSNS (2),  /* dup.  */
-    COSTS_N_INSNS (2)   /* extract.  */
+    COSTS_N_INSNS (0),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
   }
 };
 
@@ -662,9 +662,9 @@ const struct cpu_cost_table a64fx_extra_costs =
   {
     COSTS_N_INSNS (1),  /* alu.  */
     COSTS_N_INSNS (4),  /* mult.  */
-    COSTS_N_INSNS (1),  /* movi.  */
-    COSTS_N_INSNS (2),  /* dup.  */
-    COSTS_N_INSNS (2)   /* extract.  */
+    COSTS_N_INSNS (0),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
   }
 };
 
@@ -769,9 +769,9 @@ const struct cpu_cost_table ampere1_extra_costs =
   {
     COSTS_N_INSNS (3),  /* alu.  */
     COSTS_N_INSNS (3),  /* mult.  */
-    COSTS_N_INSNS (2),  /* movi.  */
-    COSTS_N_INSNS (2),  /* dup.  */
-    COSTS_N_INSNS (2)   /* extract.  */
+    COSTS_N_INSNS (1),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
   }
 };
 
@@ -876,9 +876,9 @@ const struct cpu_cost_table ampere1a_extra_costs =
   {
     COSTS_N_INSNS (3),  /* alu.  */
     COSTS_N_INSNS (3),  /* mult.  */
-    COSTS_N_INSNS (2),  /* movi.  */
-    COSTS_N_INSNS (2),  /* dup.  */
-    COSTS_N_INSNS (2)   /* extract.  */
+    COSTS_N_INSNS (1),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
   }
 };
 
@@ -983,9 +983,9 @@ const struct cpu_cost_table ampere1b_extra_costs =
   {
     COSTS_N_INSNS (1),  /* alu.  */
     COSTS_N_INSNS (2),  /* mult.  */
-    COSTS_N_INSNS (1),  /* movi.  */
-    COSTS_N_INSNS (1),  /* dup.  */
-    COSTS_N_INSNS (1)   /* extract.  */
+    COSTS_N_INSNS (0),  /* movi.  */
+    COSTS_N_INSNS (0),  /* dup.  */
+    COSTS_N_INSNS (0)   /* extract.  */
   }
 };
 

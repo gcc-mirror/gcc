@@ -77,8 +77,28 @@ package body Exp_Put_Image is
    --  reference). The Loc parameter is used as the Sloc of the created entity.
 
    function Put_Image_Base_Type (E : Entity_Id) return Entity_Id;
-   --  Returns the base type, except for an array type whose whose first
-   --  subtype is constrained, in which case it returns the first subtype.
+   --  For an array type whose whose first subtype is constrained, return
+   --  the first subtype. For the internal representation type corresponding
+   --  to a mutably tagged type, return the mutably tagged type. Otherwise,
+   --  return the base type. Similar to Exp_Strm.Stream_Base_Type.
+
+   procedure Put_Specific_Type_Name_Qualifier
+              (Loc               : Source_Ptr;
+               Stms              : List_Id;
+               Tagged_Obj        : Node_Id;
+               Buffer_Name       : Node_Id;
+               Is_Interface_Type : Boolean);
+   --  Append to the given statement list calls to add into the
+   --  buffer the name of the given object's tag and then a "'".
+
+   function Put_String_Exp_To_Buffer
+     (Loc         : Source_Ptr;
+      String_Exp  : Node_Id;
+      Buffer_Name : Node_Id;
+      Wide_Wide   : Boolean := False) return Node_Id;
+   --  Generate a call to evaluate a String (or Wide_Wide_String, depending
+   --  on the Wide_Wide Boolean parameter) expression and output it into
+   --  the buffer.
 
    -------------------------------------
    -- Build_Array_Put_Image_Procedure --
@@ -189,7 +209,7 @@ package body Exp_Put_Image is
       Ndim : constant Pos        := Number_Dimensions (Typ);
       Ctyp : constant Entity_Id  := Component_Type (Typ);
 
-      Stm         : Node_Id;
+      Stms        : List_Id := New_List;
       Exl         : constant List_Id := New_List;
       PI_Entity   : Entity_Id;
 
@@ -220,15 +240,36 @@ package body Exp_Put_Image is
          Append_To (Exl, Make_Identifier (Loc, New_External_Name ('L', Dim)));
       end loop;
 
-      Stm :=
-        Make_Attribute_Reference (Loc,
-          Prefix => New_Occurrence_Of (Put_Image_Base_Type (Ctyp), Loc),
-          Attribute_Name => Name_Put_Image,
-          Expressions => New_List (
-            Make_Identifier (Loc, Name_S),
-            Make_Indexed_Component (Loc,
-              Prefix      => Make_Identifier (Loc, Name_V),
-              Expressions => Exl)));
+      declare
+         Ctype_For_Call : constant Entity_Id := Put_Image_Base_Type (Ctyp);
+         Indexed_Comp   : constant Node_Id :=
+           Make_Indexed_Component (Loc,
+             Prefix      => Make_Identifier (Loc, Name_V),
+             Expressions => Exl);
+      begin
+         if Is_Mutably_Tagged_Type (Ctype_For_Call) then
+            pragma Assert (not Is_Mutably_Tagged_Type (Component_Type (Typ)));
+
+            Make_Mutably_Tagged_Conversion (Indexed_Comp,
+                                            Typ => Ctype_For_Call);
+
+            pragma Assert (Is_Mutably_Tagged_Type (Etype (Indexed_Comp)));
+
+            Put_Specific_Type_Name_Qualifier (Loc,
+               Stms              => Stms,
+               Tagged_Obj        => Indexed_Comp,
+               Buffer_Name       => Make_Identifier (Loc, Name_S),
+               Is_Interface_Type => False);
+         end if;
+
+         Append_To (Stms,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Occurrence_Of (Ctype_For_Call, Loc),
+             Attribute_Name => Name_Put_Image,
+             Expressions => New_List (
+               Make_Identifier (Loc, Name_S),
+               Indexed_Comp)));
+      end;
 
       --  The corresponding attribute for the component type of the array might
       --  be user-defined, and frozen after the array type. In that case,
@@ -245,46 +286,42 @@ package body Exp_Put_Image is
       --  Loop through the dimensions, innermost first, generating a loop for
       --  each dimension.
 
-      declare
-         Stms : List_Id := New_List (Stm);
-      begin
-         for Dim in reverse 1 .. Ndim loop
-            declare
-               New_Stms : constant List_Id := New_List;
-               Between_Proc : RE_Id;
-            begin
-               --  For a one-dimensional array of elementary type, use
-               --  RE_Simple_Array_Between. The same applies to the last
-               --  dimension of a multidimensional array.
+      for Dim in reverse 1 .. Ndim loop
+         declare
+            New_Stms : constant List_Id := New_List;
+            Between_Proc : RE_Id;
+         begin
+            --  For a one-dimensional array of elementary type, use
+            --  RE_Simple_Array_Between. The same applies to the last
+            --  dimension of a multidimensional array.
 
-               if Is_Elementary_Type (Ctyp) and then Dim = Ndim then
-                  Between_Proc := RE_Simple_Array_Between;
-               else
-                  Between_Proc := RE_Array_Between;
-               end if;
+            if Is_Elementary_Type (Ctyp) and then Dim = Ndim then
+               Between_Proc := RE_Simple_Array_Between;
+            else
+               Between_Proc := RE_Array_Between;
+            end if;
 
-               Append_To (New_Stms,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_Array_Before), Loc),
-                   Parameter_Associations => New_List
-                     (Make_Identifier (Loc, Name_S))));
+            Append_To (New_Stms,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Array_Before), Loc),
+                Parameter_Associations => New_List
+                  (Make_Identifier (Loc, Name_S))));
 
-               Append_To
-                 (New_Stms,
-                  Wrap_In_Loop (Stms, Dim, Indices (Dim), Between_Proc));
+            Append_To
+              (New_Stms,
+               Wrap_In_Loop (Stms, Dim, Indices (Dim), Between_Proc));
 
-               Append_To (New_Stms,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_Array_After), Loc),
-                   Parameter_Associations => New_List
-                     (Make_Identifier (Loc, Name_S))));
+            Append_To (New_Stms,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Array_After), Loc),
+                Parameter_Associations => New_List
+                  (Make_Identifier (Loc, Name_S))));
 
-               Stms := New_Stms;
-            end;
-         end loop;
+            Stms := New_Stms;
+         end;
+      end loop;
 
-         Build_Put_Image_Proc (Loc, Typ, Decl, Pnam, Stms);
-      end;
+      Build_Put_Image_Proc (Loc, Typ, Decl, Pnam, Stms);
    end Build_Array_Put_Image_Procedure;
 
    -------------------------------------
@@ -379,7 +416,8 @@ package body Exp_Put_Image is
          begin
             --  We have built a dispatching call to handle calls to
             --  descendants (since they are not available through rtsfind).
-            --  Further details available in the body of Put_String_Exp.
+            --  Further details available in the body of
+            --  Put_String_Exp_To_Buffer.
 
             return Put_Call;
          end;
@@ -691,19 +729,33 @@ package body Exp_Put_Image is
       ---------------------------
 
       procedure Append_Component_Attr (Clist : List_Id; C : Entity_Id) is
-         Component_Typ : constant Entity_Id :=
-           Put_Image_Base_Type
-             (Get_Corresponding_Mutably_Tagged_Type_If_Present (Etype (C)));
+         Component_Typ : constant Entity_Id := Put_Image_Base_Type (Etype (C));
+         Selected_Comp : constant Node_Id :=
+           Make_Selected_Component (Loc,
+             Prefix        => Make_Identifier (Loc, Name_V),
+             Selector_Name => New_Occurrence_Of (C, Loc));
       begin
+         if Is_Mutably_Tagged_Type (Component_Typ) then
+            pragma Assert (not Is_Mutably_Tagged_Type (Etype (C)));
+
+            Make_Mutably_Tagged_Conversion (Selected_Comp,
+                                            Typ => Component_Typ);
+
+            pragma Assert (Is_Mutably_Tagged_Type (Etype (Selected_Comp)));
+
+            Put_Specific_Type_Name_Qualifier (Loc,
+               Stms              => Clist,
+               Tagged_Obj        => Selected_Comp,
+               Buffer_Name       => Make_Identifier (Loc, Name_S),
+               Is_Interface_Type => False);
+         end if;
+
          Append_To (Clist,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Component_Typ, Loc),
              Attribute_Name => Name_Put_Image,
-             Expressions    => New_List (
-               Make_Identifier (Loc, Name_S),
-               Make_Selected_Component (Loc,
-                 Prefix        => Make_Identifier (Loc, Name_V),
-                 Selector_Name => New_Occurrence_Of (C, Loc)))));
+             Expressions    => New_List (Make_Identifier (Loc, Name_S),
+                                         Selected_Comp)));
       end Append_Component_Attr;
 
       -------------------------------
@@ -1303,105 +1355,20 @@ package body Exp_Put_Image is
                 New_Occurrence_Of (Sink_Entity, Loc))));
       Actions : List_Id;
 
-      function Put_String_Exp (String_Exp : Node_Id;
-                               Wide_Wide  : Boolean := False) return Node_Id;
-      --  Generate a call to evaluate a String (or Wide_Wide_String, depending
-      --  on the Wide_Wide Boolean parameter) expression and output it into
-      --  the buffer.
-
-      --------------------
-      -- Put_String_Exp --
-      --------------------
-
-      function Put_String_Exp (String_Exp : Node_Id;
-                               Wide_Wide  : Boolean := False) return Node_Id is
-         Put_Id : constant RE_Id :=
-           (if Wide_Wide then RE_Wide_Wide_Put else RE_Put_UTF_8);
-
-         --  We could build a nondispatching call here, but to make
-         --  that work we'd have to change Rtsfind spec to make available
-         --  corresponding callees out of Ada.Strings.Text_Buffers.Unbounded
-         --  (as opposed to from Ada.Strings.Text_Buffers). Seems simpler to
-         --  introduce a type conversion and leave it to the optimizer to
-         --  eliminate the dispatching. This does not *introduce* any problems
-         --  if a no-dispatching-allowed restriction is in effect, since we
-         --  are already in the middle of generating a call to T'Class'Image.
-
-         Sink_Exp : constant Node_Id :=
-           Make_Type_Conversion (Loc,
-             Subtype_Mark =>
-               New_Occurrence_Of
-                 (Class_Wide_Type (RTE (RE_Root_Buffer_Type)), Loc),
-             Expression   => New_Occurrence_Of (Sink_Entity, Loc));
-      begin
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (Put_Id), Loc),
-             Parameter_Associations => New_List (Sink_Exp, String_Exp));
-      end Put_String_Exp;
-
-      --  Local variables
-
-      Tag_Node : Node_Id;
-
    --  Start of processing for Build_Image_Call
 
    begin
       if Is_Class_Wide_Type (U_Type) then
+         Actions := New_List (Sink_Decl);
 
-         --  For interface types we must generate code to displace the pointer
-         --  to the object to reference the base of the underlying object.
+         Put_Specific_Type_Name_Qualifier (Loc,
+           Stms              => Actions,
+           Tagged_Obj        => Image_Prefix,
+           Buffer_Name       => New_Occurrence_Of (Sink_Entity, Loc),
+           Is_Interface_Type => Is_Interface (U_Type));
 
-         --  Generate:
-         --    To_Tag_Ptr (Image_Prefix'Address).all
-
-         --  Note that Image_Prefix'Address is recursively expanded into a
-         --  call to Ada.Tags.Base_Address (Image_Prefix'Address).
-
-         if Is_Interface (U_Type) then
-            Tag_Node :=
-              Make_Explicit_Dereference (Loc,
-                Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Duplicate_Subexpr (Image_Prefix),
-                    Attribute_Name => Name_Address)));
-
-         --  Common case
-
-         else
-            Tag_Node :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => Duplicate_Subexpr (Image_Prefix),
-                Attribute_Name => Name_Tag);
-         end if;
-
-         --  Generate qualified-expression syntax; qualification name comes
-         --  from calling Ada.Tags.Wide_Wide_Expanded_Name.
-
-         declare
-            --  The copy of Image_Prefix will be evaluated before the
-            --  original, which is ok if no side effects are involved.
-
-            pragma Assert (Side_Effect_Free (Image_Prefix));
-
-            Specific_Type_Name : constant Node_Id :=
-              Put_String_Exp
-                (Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of
-                             (RTE (RE_Wide_Wide_Expanded_Name), Loc),
-                   Parameter_Associations => New_List (Tag_Node)),
-                 Wide_Wide => True);
-
-            Qualification : constant Node_Id :=
-              Put_String_Exp (Make_String_Literal (Loc, "'"));
-         begin
-            Actions := New_List
-                         (Sink_Decl,
-                          Specific_Type_Name,
-                          Qualification,
-                          Put_Im,
-                          Result_Decl);
-         end;
+         Append_To (Actions, Put_Im);
+         Append_To (Actions, Result_Decl);
       else
          Actions := New_List (Sink_Decl, Put_Im, Result_Decl);
       end if;
@@ -1485,9 +1452,89 @@ package body Exp_Put_Image is
          return E;
       elsif Is_Private_Type (Base_Type (E)) and not Is_Private_Type (E) then
          return Implementation_Base_Type (E);
+      elsif Is_Mutably_Tagged_CW_Equivalent_Type (E) then
+         return Get_Corresponding_Mutably_Tagged_Type_If_Present (E);
       else
          return Base_Type (E);
       end if;
    end Put_Image_Base_Type;
+
+   --------------------------------------
+   -- Put_Specific_Type_Name_Qualifier --
+   --------------------------------------
+
+   procedure Put_Specific_Type_Name_Qualifier
+     (Loc               : Source_Ptr;
+      Stms              : List_Id;
+      Tagged_Obj        : Node_Id;
+      Buffer_Name       : Node_Id;
+      Is_Interface_Type : Boolean)
+   is
+      Tag_Node : Node_Id;
+   begin
+      if Is_Interface_Type then
+         Tag_Node :=
+           Make_Explicit_Dereference (Loc,
+             Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Copy_Tree (Tagged_Obj),
+                 Attribute_Name => Name_Address)));
+      else
+         Tag_Node :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Copy_Tree (Tagged_Obj),
+             Attribute_Name => Name_Tag);
+      end if;
+
+      Append_To (Stms,
+                 Put_String_Exp_To_Buffer (Loc,
+                   String_Exp =>
+                     Make_Function_Call (Loc,
+                       Name => New_Occurrence_Of
+                                 (RTE (RE_Wide_Wide_Expanded_Name), Loc),
+                       Parameter_Associations => New_List (Tag_Node)),
+                   Buffer_Name => Buffer_Name,
+                   Wide_Wide => True));
+
+      Append_To (Stms,
+                 Put_String_Exp_To_Buffer (Loc,
+                   String_Exp  => Make_String_Literal (Loc, "'"),
+                   Buffer_Name => New_Copy_Tree (Buffer_Name)));
+   end Put_Specific_Type_Name_Qualifier;
+
+   ------------------------------
+   -- Put_String_Exp_To_Buffer --
+   ------------------------------
+
+   function Put_String_Exp_To_Buffer
+     (Loc         : Source_Ptr;
+      String_Exp  : Node_Id;
+      Buffer_Name : Node_Id;
+      Wide_Wide   : Boolean := False) return Node_Id
+   is
+      Put_Id : constant RE_Id :=
+        (if Wide_Wide then RE_Wide_Wide_Put else RE_Put_UTF_8);
+
+      --  We could build a nondispatching call here, but to make
+      --  that work we'd have to change Rtsfind spec to make available
+      --  corresponding callees out of Ada.Strings.Text_Buffers.Unbounded
+      --  (as opposed to from Ada.Strings.Text_Buffers). Seems simpler to
+      --  introduce a type conversion and leave it to the optimizer to
+      --  eliminate the dispatching. This does not *introduce* any problems
+      --  if a no-dispatching-allowed restriction is in effect, since we
+      --  are already in the middle of generating a call to T'Class'Image.
+
+      Sink_Exp : constant Node_Id :=
+        Make_Type_Conversion (Loc,
+          Subtype_Mark =>
+            New_Occurrence_Of
+              (Class_Wide_Type (RTE (RE_Root_Buffer_Type)), Loc),
+          Expression   => Buffer_Name);
+   begin
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Occurrence_Of (RTE (Put_Id), Loc),
+          Parameter_Associations => New_List (Sink_Exp, String_Exp));
+   end Put_String_Exp_To_Buffer;
 
 end Exp_Put_Image;

@@ -24788,6 +24788,12 @@ static void map_egpr_constraints (vec<const char *> &constraints)
 	      buf.safe_push (cur[j + 1]);
 	      j++;
 	      break;
+	    case '{':
+	      do
+		{
+		  buf.safe_push (cur[j]);
+		} while (cur[j++] != '}');
+	      break;
 	    default:
 	      buf.safe_push (cur[j]);
 	      break;

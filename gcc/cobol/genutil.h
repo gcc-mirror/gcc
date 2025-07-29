@@ -140,12 +140,12 @@ char     *get_literal_string(cbl_field_t *field);
 
 bool      refer_is_clean(const cbl_refer_t &refer);
 
-tree      refer_offset(cbl_refer_t &refer,
+tree      refer_offset(const cbl_refer_t &refer,
                        int *pflags=NULL);
-tree      refer_size_source(cbl_refer_t &refer);
-tree      refer_size_dest(cbl_refer_t &refer);
+tree      refer_size_source(const cbl_refer_t &refer);
+tree      refer_size_dest(const cbl_refer_t &refer);
 
-tree      qualified_data_location(cbl_refer_t &refer);
+tree      qualified_data_location(const cbl_refer_t &refer);
 
 void      build_array_of_treeplets( int ngroup,
                                     size_t N,
