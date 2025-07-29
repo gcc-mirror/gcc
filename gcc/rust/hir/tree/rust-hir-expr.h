@@ -3098,8 +3098,9 @@ public:
     Label operator= (const struct Label &other);
   };
 
-private:
   using RegisterType = AST::InlineAsmOperand::RegisterType;
+
+private:
   AST::InlineAsmOperand::RegisterType register_type;
 
   tl::optional<struct In> in;
@@ -3143,13 +3144,24 @@ public:
   RegisterType get_register_type () const { return register_type; }
 
   // Potentially unsafe without get_register_type() check
-  struct In get_in () const { return in.value (); }
-  struct Out get_out () const { return out.value (); }
-  struct InOut get_in_out () const { return in_out.value (); }
-  struct SplitInOut get_split_in_out () const { return split_in_out.value (); }
-  struct Const get_const () const { return cnst.value (); }
-  struct Sym get_sym () const { return sym.value (); }
-  struct Label get_label () const { return label.value (); }
+  const struct In &get_in () const { return in.value (); }
+  const struct Out &get_out () const { return out.value (); }
+  const struct InOut &get_in_out () const { return in_out.value (); }
+  const struct SplitInOut &get_split_in_out () const
+  {
+    return split_in_out.value ();
+  }
+  const struct Const &get_const () const { return cnst.value (); }
+  const struct Sym &get_sym () const { return sym.value (); }
+  const struct Label &get_label () const { return label.value (); }
+
+  struct In &get_in () { return in.value (); }
+  struct Out &get_out () { return out.value (); }
+  struct InOut &get_in_out () { return in_out.value (); }
+  struct SplitInOut &get_split_in_out () { return split_in_out.value (); }
+  struct Const &get_const () { return cnst.value (); }
+  struct Sym &get_sym () { return sym.value (); }
+  struct Label &get_label () { return label.value (); }
 };
 
 // Inline Assembly Node
@@ -3196,7 +3208,7 @@ public:
     return template_strs;
   }
 
-  std::vector<HIR::InlineAsmOperand> get_operands () { return operands; }
+  std::vector<HIR::InlineAsmOperand> &get_operands () { return operands; }
 
   std::vector<AST::TupleClobber> get_clobber_abi () { return clobber_abi; }
 

@@ -547,7 +547,7 @@ void
 DefaultHIRVisitor::walk (InlineAsm &expr)
 {
   visit_outer_attrs (expr);
-  const auto &operands = expr.get_operands ();
+  auto &operands = expr.get_operands ();
   using RegisterType = AST::InlineAsmOperand::RegisterType;
   for (auto &operand : operands)
     {

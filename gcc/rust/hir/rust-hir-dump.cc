@@ -1529,7 +1529,74 @@ Dump::visit (AsyncBlockExpr &e)
 
 void
 Dump::visit (InlineAsm &e)
-{}
+{
+  begin ("InlineAsm");
+  do_expr (e);
+  for (auto &temp : e.get_template_ ())
+    {
+      put_field ("template", temp.string);
+    }
+
+  for (auto &temp_str : e.get_template_strs ())
+    {
+      put_field ("template_str", temp_str.symbol);
+    }
+
+  for (auto &operand : e.get_operands ())
+    {
+      switch (operand.get_register_type ())
+	{
+	case HIR::InlineAsmOperand::RegisterType::In:
+	  {
+	    const auto &in = operand.get_in ();
+	    visit_field ("in expr", *in.expr);
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::Out:
+	  {
+	    const auto &out = operand.get_out ();
+	    visit_field ("out expr", *out.expr);
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::InOut:
+	  {
+	    const auto &inout = operand.get_in_out ();
+	    visit_field ("inout expr", *inout.expr);
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::SplitInOut:
+	  {
+	    const auto &inout = operand.get_split_in_out ();
+	    begin ("Split in out");
+	    visit_field ("in expr", *inout.in_expr);
+	    visit_field ("out expr", *inout.out_expr);
+	    end ("Split in out");
+
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::Const:
+	  {
+	    auto &cnst = operand.get_const ();
+	    visit_field ("const expr", cnst.anon_const.get_inner_expr ());
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::Sym:
+	  {
+	    auto &sym = operand.get_sym ();
+	    visit_field ("sym expr", *sym.expr);
+	    break;
+	  }
+	case HIR::InlineAsmOperand::RegisterType::Label:
+	  {
+	    auto &label = operand.get_label ();
+	    put_field ("label name", label.label_name);
+	    do_expr (*label.expr);
+	    break;
+	  }
+	}
+    }
+  end ("InlineAsm");
+}
 
 void
 Dump::visit (LlvmInlineAsm &e)
