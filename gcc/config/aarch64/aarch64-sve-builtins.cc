@@ -4004,7 +4004,8 @@ rtx
 function_expander::get_reg_target ()
 {
   machine_mode target_mode = result_mode ();
-  if (!possible_target || GET_MODE (possible_target) != target_mode)
+  if (!possible_target
+      || !register_operand (possible_target, target_mode))
     possible_target = gen_reg_rtx (target_mode);
   return possible_target;
 }
