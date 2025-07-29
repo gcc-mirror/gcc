@@ -2903,9 +2903,6 @@ END CheckStop ;
 *)
 
 PROCEDURE FoldBecomes (p: WalkAction; bb: BasicBlock; quad: CARDINAL) ;
-VAR
-   op            : QuadOperator ;
-   des, op2, expr: CARDINAL ;
 BEGIN
    IF DeclaredOperandsBecomes (p, quad)
    THEN
@@ -8154,8 +8151,6 @@ VAR
    rightpos,
    typepos,
    indrxpos        : CARDINAL ;
-   length,
-   newstr          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, indrxpos, op, left, type, right,

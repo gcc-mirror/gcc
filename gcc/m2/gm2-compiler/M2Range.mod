@@ -1869,14 +1869,12 @@ END FoldTypeAssign ;
 
 PROCEDURE FoldTypeIndrX (q: CARDINAL; tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
 VAR
-   desType,
    exprType: CARDINAL ;
 BEGIN
    (* Need to skip over a variable or temporary in des and expr so
       long as expr is not a procedure.  In the case of des = *expr,
       both expr and des will be variables due to the property of
       indirection.  *)
-   desType := GetType (des) ;
    IF IsProcedure (expr)
    THEN
       (* Must not GetType for a procedure as it gives the return type.  *)
