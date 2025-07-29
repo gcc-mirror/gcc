@@ -1,3 +1,7 @@
+2025-07-28  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Fix typo in comment.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/misc.cc: Make

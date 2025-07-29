@@ -1,3 +1,36 @@
+2025-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102181
+	* include/bits/stl_iterator_base_funcs.h (distance, advance):
+	Check C++20 iterator concepts and handle appropriately.
+	(__detail::__iter_category_converts_to_concept): New concept.
+	(__detail::__promotable_iterator): New concept.
+	* testsuite/24_iterators/operations/cxx20_iterators.cc: New
+	test.
+
+2025-07-28  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119742
+	* include/debug/bitset: Add new ctor.
+
+2025-07-28  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Small stylistic adjustments.
+
+2025-07-28  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/accessors/generic.cc: Refactor
+	test_ctor.
+
+2025-07-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121196
+	* include/std/inplace_vector (std::erase): Provide default argument
+	for _Up parameter.
+	* testsuite/23_containers/inplace_vector/erasure.cc: Add test for
+	using braces-init-list as arguments to erase_if and use function
+	to verify content of inplace_vector
+
 2025-07-25  Tuur Martens  <tuurmartens4@gmail.com>
 
 	* include/bits/unordered_map.h: Rectify referencing of

@@ -1,3 +1,42 @@
+2025-07-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	* gcc.dg/torture/pr121236-1.c: New test.
+
+2025-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* gcc.target/i386/pr121208-1a.c: New test.
+	* gcc.target/i386/pr121208-1b.c: Likewise.
+	* gcc.target/i386/pr121208-2a.c: Likewise.
+	* gcc.target/i386/pr121208-2b.c: Likewise.
+	* gcc.target/i386/pr121208-3a.c: Likewise.
+	* gcc.target/i386/pr121208-3b.c: Likewise.
+
+2025-07-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_100.c: New.
+	* gcc.target/nvptx/march-map=sm_100a.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_100f.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_101.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_101a.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_101f.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_103.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_103a.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_103f.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_120.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_120a.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_120f.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_121.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_121a.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_121f.c: Likewise.
+
+2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* gcc.dg/vect/vect-recurr-pr121256.c: New testcase.
+	* gcc.dg/vect/vect-recurr-pr121256-2.c: Likewise.
+
 2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/121185

@@ -1,3 +1,141 @@
+2025-07-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121277
+	* config/avr/avr.cc (avr_addr_space_convert): When converting
+	from generic AS to __flashx, don't set bit 23.
+	(avr_convert_to_type): Don't -Waddr-space-convert when NULL
+	is converted to __flashx or to __flash.
+
+2025-07-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	* tree-if-conv.cc (is_cond_scalar_reduction): Instead of phi argument,
+	pass bb and res of the phi.
+	(factor_out_operators): Add iterator for the phi. Remove the phi
+	if this is the first time. Return if we had removed the phi.
+	(predicate_scalar_phi): Add the phi iterator argument.
+	Update call to is_cond_scalar_reduction.
+	Update call to factor_out_operators and set the return value to true
+	when factor_out_operators returns true.
+	(predicate_all_scalar_phis): Don't remove the phi if predicate_scalar_phi
+	already removed it.
+
+2025-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* config/i386/i386.cc (ix86_tls_get_addr): Issue an error for
+	-mtls-dialect=gnu with no_caller_saved_registers attribute and
+	suggest -mtls-dialect=gnu2.
+
+2025-07-28  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR other/121260
+	* diagnostics/changes.cc: Correct nesting of namespaces
+	and #if CHECKING_P blocks.
+	* diagnostics/context.cc: Likewise.
+	* diagnostics/html-sink.cc: Likewise.
+	* diagnostics/output-spec.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+
+2025-07-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/nvptx.opt (march-map=): Add sm_100{,f,a},
+	sm_101{,f,a}, sm_103{,a,f}, sm_120{,a,f} and sm_121{,f,a}.
+
+2025-07-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn.md (atomic_load, atomic_store, atomic_exchange):
+	Fix CDNA3 L2 cache write-back before atomic instructions.
+
+2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Make *gs_info const.
+	(vect_build_one_gather_load_call): Likewise.
+	(vect_build_one_scatter_store_call): Likewise.
+	(vect_get_gather_scatter_ops): Likewise.
+	(vect_get_strided_load_store_ops): Likewise.
+
+2025-07-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn.md  (define_attr "vcmp"): Add with values
+	vcmp/vcmpx/no.
+	(*movbi, cstoredi4.., cstore<mode>4): Set it.
+	* config/gcn/gcn-valu.md (vec_cmp<mode>...): Likewise.
+	* config/gcn/gcn.cc (gcn_cmpx_insn_p): Remove.
+	(gcn_md_reorg): Add two new conditions for MI300.
+
+2025-07-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-opts.h (enum hsaco_attr_type): Add comment
+	about 'sc0'.
+	* config/gcn/gcn.cc (gcn_md_reorg): Use gen_nops instead of gen_nop.
+	(print_operand_address): Document 'R' and 'V' in the
+	pre-function comment as well.
+	* config/gcn/gcn.md (nops): Add.
+
+2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* tree-vect-loop.cc (vectorizable_recurr): Build a correct
+	initialization vector for SLP_TREE_LANES > 1.
+
+2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::type): Add.
+	(_slp_tree::u): Likewise.
+	(_stmt_vec_info::type): Remove.
+	(STMT_VINFO_TYPE): Likewise.
+	(SLP_TREE_TYPE): New.
+	* tree-vectorizer.cc (vec_info::new_stmt_vec_info): Do not
+	initialize type.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize type.
+	(vect_slp_analyze_node_operations): Adjust.
+	(vect_schedule_slp_node): Likewise.
+	* tree-vect-patterns.cc (vect_init_pattern_stmt): Do not
+	copy STMT_VINFO_TYPE.
+	* tree-vect-loop.cc: Set SLP_TREE_TYPE instead of
+	STMT_VINFO_TYPE everywhere.
+	(vect_create_loop_vinfo): Do not set STMT_VINFO_TYPE on
+	loop conditions.
+	* tree-vect-stmts.cc: Set SLP_TREE_TYPE instead of
+	STMT_VINFO_TYPE everywhere.
+	(vect_analyze_stmt): Adjust.
+	(vect_transform_stmt): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::count_ops):
+	Access SLP_TREE_TYPE instead of STMT_VINFO_TYPE.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Remove non-SLP element-wise load/store matching.
+	* config/rs6000/rs6000.cc
+	(rs6000_cost_data::update_target_cost_per_stmt): Pass in
+	the SLP node.  Use that to get at the memory access
+	kind and type.
+	(rs6000_cost_data::add_stmt_cost): Pass down SLP node.
+	* config/riscv/riscv-vector-costs.cc (variable_vectorized_p):
+	Use SLP_TREE_TYPE.
+	(costs::need_additional_vector_vars_p): Likewise.
+	(costs::update_local_live_ranges): Likewise.
+
+2025-07-28  Jennifer Schmitz  <jschmitz@nvidia.com>
+	    Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (olympus): Use olympus tuning
+	model.
+	* config/aarch64/aarch64.cc: Include olympus.h.
+	* config/aarch64/tuning_models/olympus.h: New file.
+
+2025-07-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.h
+	(CASE_VECTOR_SHORTEN_MODE): Delete.
+
+2025-07-28  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_is_insn_L32R_p):
+	Re-rewrite to more accurately capture insns that could be L32R machine
+	instructions wherever possible, and add comments that help understand
+	the intent of the process.
+
 2025-07-27  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-v.cc (expand_vx_binary_vxrm_vec_vec_dup):
