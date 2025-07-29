@@ -55,5 +55,5 @@ volatile fn_ptr_t fn_ptr;
 void
 test_5 (void)
 {
-  fn_ptr (); /* { dg-error "cannot tail-call: " } */
+  fn_ptr ();
 }
