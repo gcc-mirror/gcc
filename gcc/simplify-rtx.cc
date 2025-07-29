@@ -8394,9 +8394,45 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && VECTOR_MODE_P (innermode)
       && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
       && known_eq (GET_MODE_UNIT_SIZE (outermode),
-		    GET_MODE_UNIT_SIZE (innermode)))
+		   GET_MODE_UNIT_SIZE (innermode)))
     return simplify_gen_relational (GET_CODE (op), outermode, innermode,
 				    XEXP (op, 0), XEXP (op, 1));
+
+  /* Distribute lowpart subregs through logic ops in cases where one term
+     disappears.
+
+     (subreg:M1 (and:M2 X C1)) -> (subreg:M1 X)
+     (subreg:M1 (ior:M2 X C1)) -> (subreg:M1 C1)
+     (subreg:M1 (xor:M2 X C1)) -> (subreg:M1 (not:M2 X))
+
+     if M2 is no smaller than M1 and (subreg:M1 C1) is all-ones.
+
+     (subreg:M1 (and:M2 X C2)) -> (subreg:M1 C2)
+     (subreg:M1 (ior/xor:M2 X C2)) -> (subreg:M1 X)
+
+     if M2 is no smaller than M1 and (subreg:M1 C2) is zero.  */
+  if (known_ge (innersize, outersize)
+      && GET_MODE_CLASS (outermode) == GET_MODE_CLASS (innermode)
+      && (GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR)
+      && CONSTANT_P (XEXP (op, 1)))
+    {
+      rtx op1_subreg = simplify_subreg (outermode, XEXP (op, 1), innermode, 0);
+      if (op1_subreg == CONSTM1_RTX (outermode))
+	{
+	  if (GET_CODE (op) == IOR)
+	    return op1_subreg;
+	  rtx op0 = XEXP (op, 0);
+	  if (GET_CODE (op) == XOR)
+	    op0 = simplify_gen_unary (NOT, innermode, op0, innermode);
+	  return simplify_gen_subreg (outermode, op0, innermode, 0);
+	}
+
+      if (op1_subreg == CONST0_RTX (outermode))
+	return (GET_CODE (op) == AND
+		? op1_subreg
+		: simplify_gen_subreg (outermode, XEXP (op, 0), innermode, 0));
+    }
+
   return NULL_RTX;
 }
 
@@ -8667,6 +8703,43 @@ test_scalar_int_ext_ops (machine_mode bmode, machine_mode smode)
   ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
 				     lowpart_subreg (bmode, sreg, smode),
 				     bmode),
+		 sreg);
+
+  /* Test extensions, followed by logic ops, followed by truncations.  */
+  rtx bsubreg = lowpart_subreg (bmode, sreg, smode);
+  rtx smask = gen_int_mode (GET_MODE_MASK (smode), bmode);
+  rtx inv_smask = gen_int_mode (~GET_MODE_MASK (smode), bmode);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (AND, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 sreg);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (AND, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
+		 const0_rtx);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (IOR, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 constm1_rtx);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (IOR, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
+		 sreg);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (XOR, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 lowpart_subreg (smode,
+				 gen_rtx_NOT (bmode, bsubreg),
+				 bmode));
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (XOR, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
 		 sreg);
 }
 

@@ -31964,9 +31964,43 @@ aarch64_test_sysreg_encoding_clashes (void)
 static void
 aarch64_test_sve_folding ()
 {
+  aarch64_target_switcher switcher (AARCH64_FL_SVE);
+
   tree res = fold_unary (BIT_NOT_EXPR, ssizetype,
 			 ssize_int (poly_int64 (1, 1)));
   ASSERT_TRUE (operand_equal_p (res, ssize_int (poly_int64 (-2, -1))));
+
+  auto build_v16bi = [](bool a, bool b)
+    {
+      rtx_vector_builder builder (VNx16BImode, 2, 1);
+      builder.quick_push (a ? const1_rtx : const0_rtx);
+      builder.quick_push (b ? const1_rtx : const0_rtx);
+      return builder.build ();
+    };
+  rtx v16bi_10 = build_v16bi (1, 0);
+  rtx v16bi_01 = build_v16bi (0, 1);
+
+  for (auto mode : { VNx8BImode, VNx4BImode, VNx2BImode })
+    {
+      rtx reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+      rtx subreg = lowpart_subreg (VNx16BImode, reg, mode);
+      rtx and1 = simplify_gen_binary (AND, VNx16BImode, subreg, v16bi_10);
+      ASSERT_EQ (lowpart_subreg (mode, and1, VNx16BImode), reg);
+      rtx and0 = simplify_gen_binary (AND, VNx16BImode, subreg, v16bi_01);
+      ASSERT_EQ (lowpart_subreg (mode, and0, VNx16BImode), CONST0_RTX (mode));
+
+      rtx ior1 = simplify_gen_binary (IOR, VNx16BImode, subreg, v16bi_10);
+      ASSERT_EQ (lowpart_subreg (mode, ior1, VNx16BImode), CONSTM1_RTX (mode));
+      rtx ior0 = simplify_gen_binary (IOR, VNx16BImode, subreg, v16bi_01);
+      ASSERT_EQ (lowpart_subreg (mode, ior0, VNx16BImode), reg);
+
+      rtx xor1 = simplify_gen_binary (XOR, VNx16BImode, subreg, v16bi_10);
+      ASSERT_RTX_EQ (lowpart_subreg (mode, xor1, VNx16BImode),
+		     lowpart_subreg (mode, gen_rtx_NOT (VNx16BImode, subreg),
+				     VNx16BImode));
+      rtx xor0 = simplify_gen_binary (XOR, VNx16BImode, subreg, v16bi_01);
+      ASSERT_EQ (lowpart_subreg (mode, xor0, VNx16BImode), reg);
+    }
 }
 
 /* Run all target-specific selftests.  */
