@@ -2589,7 +2589,8 @@ can_implement_as_sibling_call_p (tree exp,
       return false;
     }
 
-  if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr))))
+  if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr)))
+      && !CALL_EXPR_MUST_TAIL_CALL (exp))
     {
       maybe_complain_about_tail_call (exp, _("volatile function type"));
       return false;
