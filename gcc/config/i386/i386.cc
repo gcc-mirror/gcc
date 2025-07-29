@@ -21513,8 +21513,7 @@ ix86_hard_regno_nregs (unsigned int regno, machine_mode mode)
   /* Register pair for mask registers.  */
   if (mode == P2QImode || mode == P2HImode)
     return 2;
-  if (mode == V64SFmode || mode == V64SImode)
-    return 4;
+
   return 1;
 }
 

@@ -91,7 +91,6 @@ VECTOR_MODES (FLOAT, 16);     /*         V8HF V4SF V2DF */
 VECTOR_MODES (FLOAT, 32);     /*   V16HF V8SF V4DF V2TF */
 VECTOR_MODES (FLOAT, 64);     /*  V32HF V16SF V8DF V4TF */
 VECTOR_MODES (FLOAT, 128);    /* V64HF V32SF V16DF V8TF */
-VECTOR_MODES (FLOAT, 256);    /* V128HF V64SF V32DF V16TF */
 VECTOR_MODE (FLOAT, HF, 2);   /* 	      	   V2HF */
 VECTOR_MODE (FLOAT, BF, 2);   /* 	      	   V2BF */
 VECTOR_MODE (FLOAT, HF, 6);   /*		   V6HF */
@@ -102,7 +101,6 @@ VECTOR_MODE (INT, QI, 2);     /*                   V2QI */
 VECTOR_MODE (INT, QI, 12);    /*                  V12QI */
 VECTOR_MODE (INT, QI, 14);    /*                  V14QI */
 VECTOR_MODE (INT, HI, 6);     /*                   V6HI */
-VECTOR_MODE (INT, SI, 64);    /* 		  V64SI */
 
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);
