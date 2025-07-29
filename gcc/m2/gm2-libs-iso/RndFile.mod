@@ -398,9 +398,9 @@ PROCEDURE EndPos (cid: ChanId): FilePos;
      position after which there have been no writes.
   *)
 VAR
-   d  : DeviceTablePtr ;
-   end,
-   old: FilePos ;
+   d   : DeviceTablePtr ;
+   endP,
+   old : FilePos ;
 BEGIN
    IF IsRndFile(cid)
    THEN
@@ -410,9 +410,9 @@ BEGIN
          old := CurrentPos(cid) ;
          FIO.SetPositionFromEnd(RTio.GetFile(cid), 0) ;
          checkErrno(dev, d) ;
-         end := CurrentPos(cid) ;
+         endP := CurrentPos(cid) ;
          FIO.SetPositionFromBeginning(RTio.GetFile(cid), old) ;
-         RETURN( end )
+         RETURN( endP )
       END
    ELSE
       RAISEdevException(cid, did, IOChan.wrongDevice,

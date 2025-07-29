@@ -1179,8 +1179,8 @@ BEGIN
    PopT (n) ;
    i := 1 ;
    WHILE i <= n DO
-      CheckVariableAgainstKeyword (OperandT (n+1-i)) ;
       tok := OperandTok (n+1-i) ;
+      CheckVariableAgainstKeyword (tok, OperandT (n+1-i)) ;
       Var := MakeVar (tok, OperandT (n+1-i)) ;
       AtAddress := OperandA (n+1-i) ;
       IF AtAddress # NulSym

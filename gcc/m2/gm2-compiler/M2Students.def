@@ -39,7 +39,7 @@ EXPORT QUALIFIED StudentVariableCheck, CheckVariableAgainstKeyword ;
                                  as a keyword except for its case.
 *)
 
-PROCEDURE CheckVariableAgainstKeyword (name: Name) ;
+PROCEDURE CheckVariableAgainstKeyword (tok: CARDINAL; name: Name) ;
 
 
 (*

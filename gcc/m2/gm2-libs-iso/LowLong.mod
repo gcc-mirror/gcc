@@ -182,7 +182,7 @@ BEGIN
    IF n<0
    THEN
       (* exception raised *)
-      RAISE(except, ORD(badparam),
+      RAISE(exceptSrc, ORD(badparam),
             'LowLong.trunc: cannot truncate to a negative number of digits') ;
       RETURN x
    ELSE
@@ -230,7 +230,7 @@ BEGIN
    IF n<0
    THEN
       (* exception raised *)
-      RAISE(except, ORD(badparam),
+      RAISE(exceptSrc, ORD(badparam),
             'LowLong.round: cannot round to a negative number of digits') ;
       RETURN x
    ELSE
@@ -287,12 +287,12 @@ END currentMode ;
 
 PROCEDURE IsLowException () : BOOLEAN ;
 BEGIN
-   RETURN( IsExceptionalExecution() AND IsCurrentSource(except) )
+   RETURN( IsExceptionalExecution () AND IsCurrentSource (exceptSrc) )
 END IsLowException ;
 
 
 VAR
-   except: ExceptionSource ;
+   exceptSrc: ExceptionSource ;
 BEGIN
-   AllocateSource(except)
+   AllocateSource (exceptSrc)
 END LowLong.
