@@ -75,7 +75,9 @@ void test_override()
   CustFormat<int, std::range_format::set> setf{1, 2, 3};
   VERIFY( std::format("{}", setf) == "{1, 2, 3}" );
 
-  // TODO test map once formatter for pair is implenented
+  CustFormat<std::pair<int, int>, std::range_format::map> mapf
+  {{1, 11}, {2, 22}, {3, 33}};
+  VERIFY( std::format("{}", mapf) == "{1: 11, 2: 22, 3: 33}" );
 
   CustFormat<char, std::range_format::string> stringf{'a', 'b', 'c', 'd'};
   VERIFY( std::format("{}", stringf) == "abcd" );
