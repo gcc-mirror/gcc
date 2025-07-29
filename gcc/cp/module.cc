@@ -6542,8 +6542,14 @@ trees_out::core_vals (tree t)
 	}
 
       WT (t->function_decl.personality);
-      WT (t->function_decl.function_specific_target);
-      WT (t->function_decl.function_specific_optimization);
+      /* Rather than streaming target/optimize nodes, we should reconstruct
+	 them on stream-in from any attributes applied to the function.  */
+      if (streaming_p () && t->function_decl.function_specific_target)
+	warning_at (DECL_SOURCE_LOCATION (t), 0,
+		    "%<target%> attribute currently unsupported in modules");
+      if (streaming_p () && t->function_decl.function_specific_optimization)
+	warning_at (DECL_SOURCE_LOCATION (t), 0,
+		    "%<optimize%> attribute currently unsupported in modules");
       WT (t->function_decl.vindex);
 
       if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
@@ -6633,11 +6639,12 @@ trees_out::core_vals (tree t)
     case TARGET_OPTION_NODE:
       // FIXME: Our representation for these two nodes is a cache of
       // the resulting set of options.  Not a record of the options
-      // that got changed by a particular attribute or pragma.  Should
-      // we record that, or should we record the diff from the command
-      // line options?  The latter seems the right behaviour, but is
-      // (a) harder, and I guess could introduce strangeness if the
-      // importer has set some incompatible set of optimization flags?
+      // that got changed by a particular attribute or pragma.  Instead
+      // of recording that, we probably should just rebuild the options
+      // on stream-in from the function attributes.  This could introduce
+      // strangeness if the importer has some incompatible set of flags
+      // but we currently assume users "know what they're doing" in such
+      // a case anyway.
       gcc_unreachable ();
       break;
 
@@ -7096,8 +7103,10 @@ trees_in::core_vals (tree t)
 	  }
 
 	RT (t->function_decl.personality);
-	RT (t->function_decl.function_specific_target);
-	RT (t->function_decl.function_specific_optimization);
+	/* These properties are not streamed, and should be reconstructed
+	   from any function attributes.  */
+	// t->function_decl.function_specific_target);
+	// t->function_decl.function_specific_optimization);
 	RT (t->function_decl.vindex);
 
 	if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
@@ -7203,7 +7212,7 @@ trees_in::core_vals (tree t)
 
     case OPTIMIZATION_NODE:
     case TARGET_OPTION_NODE:
-      /* Not yet implemented, see trees_out::core_vals.  */
+      /* Not implemented, see trees_out::core_vals.  */
       gcc_unreachable ();
       break;
 
