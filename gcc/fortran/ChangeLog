@@ -1,3 +1,13 @@
+2025-07-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119106
+	* expr.cc (simplify_constructor): Do not simplify constants.
+	(gfc_simplify_expr): Continue to simplify expression when an
+	iterator is present.
+
 2025-07-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
