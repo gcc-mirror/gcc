@@ -8,6 +8,5 @@ program event_4
   type(event_type) done[*]
   nc(1) = 1
   event post(done[1])
-  if (this_image() == 1) event wait(done,until_count=nc(1))
-  sync all
+  event wait(done,until_count=nc(1))
 end

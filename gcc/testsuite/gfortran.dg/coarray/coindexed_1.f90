@@ -21,7 +21,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 1_"abc"
   str2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     str2a[1] = str1a
   end if
@@ -38,7 +37,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
   ustr2a = 4_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a[1] = ustr1a
   end if
@@ -55,7 +53,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 1_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a[1] = str2a
   end if
@@ -72,7 +69,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   ustr1a = 4_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a[1] = ustr2a
   end if
@@ -95,7 +91,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = str1b
   end if
@@ -118,7 +113,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = ustr1b
   end if
@@ -141,7 +135,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = str2b
   end if
@@ -164,7 +157,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = ustr2b
   end if
@@ -187,7 +179,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = str1a
   end if
@@ -208,7 +199,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = ustr1a
   end if
@@ -229,7 +219,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = str2a
   end if
@@ -250,7 +239,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = ustr2a
   end if
@@ -273,7 +261,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 1_"abc"
   str2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     str2a = str1a[1]
   end if
@@ -290,7 +277,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
   ustr2a = 4_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a = ustr1a[1]
   end if
@@ -307,7 +293,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 1_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a = str2a[1]
   end if
@@ -324,7 +309,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   ustr1a = 4_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a = ustr2a[1]
   end if
@@ -347,7 +331,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b = str1b(:)[1]
   end if
@@ -370,7 +353,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b = ustr1b(:)[1]
   end if
@@ -393,7 +375,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b = str2b(:)[1]
   end if
@@ -416,7 +397,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b = ustr2b(:)[1]
   end if
@@ -439,7 +419,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b = str1a[1]
   end if
@@ -460,7 +439,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b = ustr1a[1]
   end if
@@ -481,7 +459,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b = str2a[1]
   end if
@@ -502,7 +479,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b = ustr2a[1]
   end if
@@ -526,7 +502,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 1_"abc"
   str2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     str2a[1] = str1a[mod(1, num_images())+1]
   end if
@@ -543,7 +518,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
   ustr2a = 4_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a[1] = ustr1a[mod(1, num_images())+1]
   end if
@@ -560,7 +534,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 1_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a[1] = str2a[mod(1, num_images())+1]
   end if
@@ -577,7 +550,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   ustr1a = 4_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a[1] = ustr2a[mod(1, num_images())+1]
   end if
@@ -600,7 +572,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = str1b(:)[mod(1, num_images())+1]
   end if
@@ -623,7 +594,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = ustr1b(:)[mod(1, num_images())+1]
   end if
@@ -646,7 +616,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = str2b(:)[mod(1, num_images())+1]
   end if
@@ -669,7 +638,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = ustr2b(:)[mod(1, num_images())+1]
   end if
@@ -692,7 +660,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = str1a[mod(1, num_images())+1]
   end if
@@ -713,7 +680,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = ustr1a[mod(1, num_images())+1]
   end if
@@ -734,7 +700,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = str2a[mod(1, num_images())+1]
   end if
@@ -755,7 +720,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = ustr2a[mod(1, num_images())+1]
   end if
@@ -779,8 +743,7 @@ subroutine char_test()
   str2a = 1_"zzzzzzzz"; str2b = 1_"zzzzzzzz"
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
-  str2a = 1_"XXXXXXX"
-  sync all
+  str1a = 1_"XXXXXXX"
   if (this_image() == num_images()) then
     str2a[1] = ustr1a
   end if
@@ -797,7 +760,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 4_"abc"
   ustr2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a[1] = str1a
   end if
@@ -814,7 +776,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a[1] = ustr2a
   end if
@@ -831,7 +792,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 4_"abcde"
   ustr1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a[1] = str2a
   end if
@@ -854,7 +814,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = ustr1b
   end if
@@ -877,7 +836,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = str1b
   end if
@@ -900,7 +858,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = ustr2b
   end if
@@ -923,7 +880,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = str2b
   end if
@@ -946,7 +902,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = ustr1a
   end if
@@ -967,7 +922,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = str1a
   end if
@@ -988,7 +942,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = ustr2a
   end if
@@ -1009,7 +962,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = str2a
   end if
@@ -1032,7 +984,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
   str2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     str2a = ustr1a[1]
   end if
@@ -1049,7 +1000,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 1_"abc"
   ustr2a = 4_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a = str1a[1]
   end if
@@ -1066,7 +1016,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a = ustr2a[1]
   end if
@@ -1083,7 +1032,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 1_"abcde"
   ustr1a = 4_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a = str2a[1]
   end if
@@ -1106,7 +1054,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b = ustr1b(:)[1]
   end if
@@ -1129,7 +1076,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b = str1b(:)[1]
   end if
@@ -1152,7 +1098,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b = ustr2b(:)[1]
   end if
@@ -1175,7 +1120,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b = str2b(:)[1]
   end if
@@ -1198,7 +1142,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b = ustr1a[1]
   end if
@@ -1219,7 +1162,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b = str1a[1]
   end if
@@ -1240,7 +1182,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b = ustr2a[1]
   end if
@@ -1261,7 +1202,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b = str2a[1]
   end if
@@ -1285,7 +1225,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr1a = 4_"abc"
   str2a = 1_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     str2a[1] = ustr1a[mod(1, num_images())+1]
   end if
@@ -1302,7 +1241,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str1a = 1_"abc"
   ustr2a = 4_"XXXXXXX"
-  sync all
   if (this_image() == num_images()) then
     ustr2a[1] = str1a[mod(1, num_images())+1]
   end if
@@ -1319,7 +1257,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   ustr2a = 4_"abcde"
   str1a = 1_"XXX"
-  sync all
   if (this_image() == num_images()) then
     str1a[1] = ustr2a[mod(1, num_images())+1]
   end if
@@ -1336,7 +1273,6 @@ subroutine char_test()
   ustr2a = 4_"zzzzzzzz"; ustr2b = 4_"zzzzzzzz"
   str2a = 1_"abcde"
   ustr1a = 4_"XXX"
-  sync all
   if (this_image() == num_images()) then
     ustr1a[1] = str2a[mod(1, num_images())+1]
   end if
@@ -1359,7 +1295,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = ustr1b(:)[mod(1, num_images())+1]
   end if
@@ -1382,7 +1317,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = str1b(:)[mod(1, num_images())+1]
   end if
@@ -1405,7 +1339,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = ustr2b(:)[mod(1, num_images())+1]
   end if
@@ -1428,7 +1361,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = str2b(:)[mod(1, num_images())+1]
   end if
@@ -1451,7 +1383,6 @@ subroutine char_test()
   str2b(1) = 1_"XXXXXXX"
   str2b(2) = 1_"YYYYYYY"
   str2b(3) = 1_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     str2b(:)[1] = ustr1a[mod(1, num_images())+1]
   end if
@@ -1472,7 +1403,6 @@ subroutine char_test()
   ustr2b(1) = 4_"XXXXXXX"
   ustr2b(2) = 4_"YYYYYYY"
   ustr2b(3) = 4_"ZZZZZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr2b(:)[1] = str1a[mod(1, num_images())+1]
   end if
@@ -1493,7 +1423,6 @@ subroutine char_test()
   str1b(1) = 1_"XXX"
   str1b(2) = 1_"YYY"
   str1b(3) = 1_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     str1b(:)[1] = ustr2a[mod(1, num_images())+1]
   end if
@@ -1514,7 +1443,6 @@ subroutine char_test()
   ustr1b(1) = 4_"XXX"
   ustr1b(2) = 4_"YYY"
   ustr1b(3) = 4_"ZZZ"
-  sync all
   if (this_image() == num_images()) then
     ustr1b(:)[1] = str2a[mod(1, num_images())+1]
   end if
