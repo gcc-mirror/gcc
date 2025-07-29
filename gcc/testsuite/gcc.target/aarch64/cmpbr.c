@@ -121,7 +121,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_eq_x1:
-**	cbbeq	w1, w0, .L([0-9]+)
+**	cbbeq	(?:w1, w0|w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -129,7 +129,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ne_x1:
-**	cbbne	w1, w0, .L([0-9]+)
+**	cbbne	(?:w1, w0|w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -137,7 +137,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ult_x1:
-**	cbbhi	w1, w0, .L([0-9]+)
+**	(?:cbbhi	w1, w0|cbblo	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -145,7 +145,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ule_x1:
-**	cbbhs	w1, w0, .L([0-9]+)
+**	(?:cbbhs	w1, w0|cbbls	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -153,7 +153,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_ugt_x1:
-**	cbblo	w1, w0, .L([0-9]+)
+**	(?:cbblo	w1, w0|cbbhi	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -161,7 +161,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u8_x0_uge_x1:
-**	cbbls	w1, w0, .L([0-9]+)
+**	(?:cbbls	w1, w0|cbbhs	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -169,7 +169,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_slt_x1:
-**	cbbgt	w1, w0, .L([0-9]+)
+**	(?:cbbgt	w1, w0|cbblt	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -177,7 +177,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sle_x1:
-**	cbbge	w1, w0, .L([0-9]+)
+**	(?:cbbge	w1, w0|cbble	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -185,7 +185,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sgt_x1:
-**	cbblt	w1, w0, .L([0-9]+)
+**	(?:cbblt	w1, w0|cbbgt	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -193,7 +193,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i8_x0_sge_x1:
-**	cbble	w1, w0, .L([0-9]+)
+**	(?:cbble	w1, w0|cbbge	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -201,7 +201,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_eq_x1:
-**	cbheq	w1, w0, .L([0-9]+)
+**	cbheq	(?:w1, w0|w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -209,7 +209,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ne_x1:
-**	cbhne	w0|w1, w1|w0, .L([0-9]+)
+**	cbhne	(?:w1, w0|w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -217,7 +217,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ult_x1:
-**	cbhhi	w1, w0, .L([0-9]+)
+**	(?:cbhhi	w1, w0|cbhlo	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -225,7 +225,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ule_x1:
-**	cbhhs	w1, w0, .L([0-9]+)
+**	(?:cbhhs	w1, w0|cbhls	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -233,7 +233,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_ugt_x1:
-**	cbhlo	w1, w0, .L([0-9]+)
+**	(?:cbhlo	w1, w0|cbhhi	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -241,7 +241,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** u16_x0_uge_x1:
-**	cbhls	w1, w0, .L([0-9]+)
+**	(?:cbhls	w1, w0|cbhhs	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -249,7 +249,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_slt_x1:
-**	cbhgt	w1, w0, .L([0-9]+)
+**	(?:cbhgt	w1, w0|cbhlt	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -257,7 +257,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sle_x1:
-**	cbhge	w1, w0, .L([0-9]+)
+**	(?:cbhge	w1, w0|cbhle	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -265,7 +265,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sgt_x1:
-**	cbhlt	w1, w0, .L([0-9]+)
+**	(?:cbhlt	w1, w0|cbhgt	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
@@ -273,7 +273,7 @@ FAR_BRANCH(u64, 42);
 
 /*
 ** i16_x0_sge_x1:
-**	cbhle	w1, w0, .L([0-9]+)
+**	(?:cbhle	w1, w0|cbhge	w0, w1), .L([0-9]+)
 **	b	not_taken
 ** .L\1:
 **	b	taken
