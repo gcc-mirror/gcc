@@ -59,12 +59,11 @@ is
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty     => Empty,
-                            Add_Named => Insert);
+                            Add_Named => Insert),
+      Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Map);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private with
+      Preelaborable_Initialization;
 
    Empty_Map : constant Map;
    --  Map objects declared without an initialization expression are

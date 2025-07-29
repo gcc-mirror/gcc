@@ -68,8 +68,8 @@ package System is
 
    --  Storage-related Declarations
 
-   type Address is private;
-   pragma Preelaborable_Initialization (Address);
+   type Address is private
+   with Preelaborable_Initialization;
    Null_Address : constant Address;
 
    Storage_Unit : constant := Standard'Storage_Unit;

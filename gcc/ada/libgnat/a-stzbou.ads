@@ -47,8 +47,8 @@ package Ada.Strings.Wide_Wide_Bounded is
 
       Max_Length : constant Positive := Max;
 
-      type Bounded_Wide_Wide_String is private;
-      pragma Preelaborable_Initialization (Bounded_Wide_Wide_String);
+      type Bounded_Wide_Wide_String is private
+      with Preelaborable_Initialization;
 
       Null_Bounded_Wide_Wide_String : constant Bounded_Wide_Wide_String;
 

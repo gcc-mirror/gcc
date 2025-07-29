@@ -59,8 +59,8 @@ is
    -- Character Set Declarations --
    --------------------------------
 
-   type Character_Set is private;
-   pragma Preelaborable_Initialization (Character_Set);
+   type Character_Set is private
+   with Preelaborable_Initialization;
    --  An object of type Character_Set represents a set of characters.
 
    Null_Set : constant Character_Set;
@@ -256,8 +256,8 @@ is
    -- Character Mapping Declarations --
    ------------------------------------
 
-   type Character_Mapping is private;
-   pragma Preelaborable_Initialization (Character_Mapping);
+   type Character_Mapping is private
+   with Preelaborable_Initialization;
    --  An object of type Character_Mapping represents a Character-to-Character
    --  mapping.
 
