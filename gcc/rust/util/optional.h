@@ -1364,7 +1364,7 @@ public:
       this->m_has_value = false;
     }
   }
-}; // namespace tl
+};
 
 /// Compares two optional objects
 template <class T, class U>
@@ -2110,7 +2110,7 @@ public:
 
 private:
   T *m_value;
-}; // namespace tl
+};
 
 
 

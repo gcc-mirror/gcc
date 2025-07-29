@@ -49,7 +49,7 @@ private:
   virtual void visit (Token &tts) override;
 };
 
-}; // namespace AST
-}; // namespace Rust
+} // namespace AST
+} // namespace Rust
 
 #endif //! RUST_TOKEN_TREE_DESUGAR_H

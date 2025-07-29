@@ -68,5 +68,5 @@ TokenTreeDesugar::visit (Token &tts)
     }
 }
 
-}; // namespace AST
-}; // namespace Rust
+} // namespace AST
+} // namespace Rust

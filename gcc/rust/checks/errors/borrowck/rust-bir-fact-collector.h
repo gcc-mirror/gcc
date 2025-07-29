@@ -883,7 +883,7 @@ protected: // Subset helpers.
 
     return region_end;
   }
-}; // namespace BIR
+};
 
 } // namespace BIR
 } // namespace Rust

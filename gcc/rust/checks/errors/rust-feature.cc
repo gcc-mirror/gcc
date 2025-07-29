@@ -84,7 +84,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"exclusive_range_pattern", Feature::Name::EXCLUSIVE_RANGE_PATTERN},
   {"prelude_import", Feature::Name::PRELUDE_IMPORT},
   {"min_specialization", Feature::Name::MIN_SPECIALIZATION},
-}; // namespace Rust
+};
 
 tl::optional<Feature::Name>
 Feature::as_name (const std::string &name)
