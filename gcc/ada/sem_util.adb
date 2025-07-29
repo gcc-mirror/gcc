@@ -26574,6 +26574,8 @@ package body Sem_Util is
 
       Kind : Name_Id;
 
+      Level_Id : Entity_Id;
+
    --  Start of processing for Policy_In_Effect
 
    begin
@@ -26581,10 +26583,19 @@ package body Sem_Util is
          raise Program_Error;
       end if;
 
-      if Present (Level)
-        and then not Is_Valid_Assertion_Level (Level)
-      then
-         raise Program_Error;
+      if Present (Level) then
+         Level_Id := Get_Assertion_Level (Level);
+         if No (Level_Id) then
+            raise Program_Error;
+         end if;
+
+         if Level_Id = Standard_Level_Runtime then
+            return Name_Check;
+         elsif Level_Id = Standard_Level_Static
+           or else Depends_On_Level (Level_Id, Standard_Level_Static)
+         then
+            return Name_Ignore;
+         end if;
       end if;
 
       --  Inspect all policy pragmas that appear within scopes (if any)
