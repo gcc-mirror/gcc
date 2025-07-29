@@ -7,7 +7,10 @@
 
 int c;
 int x[2000];
-__attribute__((regparm(1))) void foo (int a, int b)
+#ifndef __x86_64__
+__attribute__((regparm(1)))
+#endif
+void foo (int a, int b)
  {
    int t[200];
    if (a == 0 || c == 0)

@@ -1,23 +1,29 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+#ifndef __x86_64__
+#define REGPARM __attribute__((regparm(1)))
+#else
+#define REGPARM
+#endif
+
 extern void abort (void);
 
-static int __attribute__((regparm(1)))
+static int REGPARM
 bar(void *arg)
 {
   return arg != bar;
 }
 
-static int __attribute__((noinline,noclone,regparm(1)))
-foo(int (__attribute__((regparm(1))) **bar)(void*))
+static int __attribute__((noinline,noclone)) REGPARM
+foo(int (REGPARM **bar)(void*))
 {
   return (*bar)(*bar);
 }
 
 int main()
 {
-  int (__attribute__((regparm(1))) *p)(void*) = bar;
+  int (REGPARM *p)(void*) = bar;
   if (foo(&p))
     abort();
   return 0;

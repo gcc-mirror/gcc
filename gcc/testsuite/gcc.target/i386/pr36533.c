@@ -55,14 +55,22 @@ typedef struct
   S1 *s18;
 } S7;
 
-__attribute__((regparm (3), noinline)) int
+#ifndef __x86_64__
+__attribute__((regparm (3)))
+#endif
+__attribute__((noinline))
+int
 fn1 (const char *x, void *y, S1 *z)
 {
   asm volatile ("" : : : "memory");
   return *x + (y != 0);
 }
 
-__attribute__((regparm (3), noinline)) int
+#ifndef __x86_64__
+__attribute__((regparm (3)))
+#endif
+__attribute__((noinline))
+int
 fn2 (const char *x, int y, S2 *z)
 {
   asm volatile ("" : : : "memory");
@@ -84,7 +92,11 @@ fn3 (S3 *p)
   return (S3 *) ((char *) p + fn4 (p->s9));
 }
 
-__attribute__((regparm (3), noinline)) int
+#ifndef __x86_64__
+__attribute__((regparm (3)))
+#endif
+__attribute__((noinline))
+int
 fn5 (void)
 {
   asm volatile ("" : : : "memory");
@@ -116,7 +128,11 @@ fn6 (S3 *w, int x, S2 *y, S4 *z)
   return a;
 }
 
-__attribute__((regparm (3), noinline)) unsigned int
+#ifndef __x86_64__
+__attribute__((regparm (3)))
+#endif
+__attribute__((noinline))
+unsigned int
 test (void *u, S6 *v, S1 **w, S7 *x, S2 *y, S1 *z)
 {
   unsigned b = v->s17->s16;

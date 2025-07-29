@@ -4,6 +4,7 @@
    while callee was actually not poping it up (as the hidden argument
    was passed in register).  */
 /* { dg-do run } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
 extern void abort (void);

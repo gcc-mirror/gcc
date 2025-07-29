@@ -1,4 +1,4 @@
-/* PR 15184 second two tests
+/* PR 15184 second two tests */
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */

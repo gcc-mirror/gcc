@@ -3615,6 +3615,18 @@ ix86_handle_cconv_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
+  if (TARGET_64BIT)
+    {
+      /* Do not warn when emulating the MS ABI.  */
+      if ((TREE_CODE (*node) != FUNCTION_TYPE
+	   && TREE_CODE (*node) != METHOD_TYPE)
+	  || ix86_function_type_abi (*node) != MS_ABI)
+	warning (OPT_Wattributes, "%qE attribute ignored",
+		 name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
   /* Can combine regparm with all attributes but fastcall, and thiscall.  */
   if (is_attribute_p ("regparm", name))
     {
@@ -3645,18 +3657,6 @@ ix86_handle_cconv_attribute (tree *node, tree name, tree args, int,
 	  *no_add_attrs = true;
 	}
 
-      return NULL_TREE;
-    }
-
-  if (TARGET_64BIT)
-    {
-      /* Do not warn when emulating the MS ABI.  */
-      if ((TREE_CODE (*node) != FUNCTION_TYPE
-	   && TREE_CODE (*node) != METHOD_TYPE)
-	  || ix86_function_type_abi (*node) != MS_ABI)
-	warning (OPT_Wattributes, "%qE attribute ignored",
-	         name);
-      *no_add_attrs = true;
       return NULL_TREE;
     }
 
