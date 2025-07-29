@@ -21729,6 +21729,19 @@
 	   (const_string "orig")))
    (set_attr "mode" "TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
 
+;; Eliminate redundancy caused by
+;; /* Special case TImode to 128-bit vector conversions via V2DI.  */
+;; in ix86_expand_vector_move
+
+(define_split
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_concat:V2DI
+	  (subreg:DI (match_operand:TI 1 "register_operand") 0)
+	  (subreg:DI (match_dup 1) 8)))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  [(set (match_dup 0)
+	(subreg:V2DI (match_dup 1) 0))])
+
 (define_insn "*vec_concatv2di_0"
   [(set (match_operand:V2DI 0 "register_operand"     "=v,v ,x")
 	(vec_concat:V2DI
