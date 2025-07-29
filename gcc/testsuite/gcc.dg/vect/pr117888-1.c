@@ -5,6 +5,7 @@
 /* { dg-additional-options "-mavx2" { target x86_64-*-* i?86-*-* } } */
 /* { dg-additional-options "--param max-completely-peeled-insns=200" { target powerpc64*-*-* } } */
 /* { dg-additional-options "-mlsx" { target loongarch64-*-* } } */
+/* { dg-additional-options "--param max-completely-peeled-insns=200 --param min-vect-loop-bound=0" { target s390*-*-* } } */
 
 typedef unsigned short ggml_fp16_t;
 static float table_f32_f16[1 << 16];
