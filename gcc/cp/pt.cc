@@ -6952,14 +6952,22 @@ convert_nontype_argument_function (tree type, tree expr,
 	{
 	  auto_diagnostic_group d;
 	  location_t loc = cp_expr_loc_or_input_loc (expr);
-	  error_at (loc, "%qE is not a valid template argument for type %qT",
-		    expr, type);
-	  if (TYPE_PTR_P (type))
-	    inform (loc, "it must be the address of a function "
-		    "with external linkage");
+	  tree c;
+	  if (cxx_dialect >= cxx17
+	      && (c = cxx_constant_value (fn),
+		  c == error_mark_node))
+	    ;
 	  else
-	    inform (loc, "it must be the name of a function with "
-		    "external linkage");
+	    {
+	      error_at (loc, "%qE is not a valid template argument for "
+			"type %qT", expr, type);
+	      if (TYPE_PTR_P (type))
+		inform (loc, "it must be the address of a function "
+			"with external linkage");
+	      else
+		inform (loc, "it must be the name of a function with "
+			"external linkage");
+	    }
 	}
       return NULL_TREE;
     }
@@ -7402,22 +7410,22 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 	/* Null pointer values are OK in C++11.  */;
       else
 	{
-	  if (VAR_P (expr))
-	    {
-	      if (complain & tf_error)
-		error ("%qD is not a valid template argument "
-		       "because %qD is a variable, not the address of "
-		       "a variable", expr, expr);
-	      return true;
-	    }
+	  tree c;
+	  if (!(complain & tf_error))
+	    ;
+	  else if (cxx_dialect >= cxx17
+		   && (c = cxx_constant_value (expr),
+		       c == error_mark_node))
+	    ;
+	  else if (VAR_P (expr))
+	    error ("%qD is not a valid template argument "
+		   "because %qD is a variable, not the address of "
+		   "a variable", expr, expr);
 	  else
-	    {
-	      if (complain & tf_error)
-		error ("%qE is not a valid template argument for %qT "
-		       "because it is not the address of a variable",
-		       expr, type);
-	      return true;
-	    }
+	    error ("%qE is not a valid template argument for %qT "
+		   "because it is not the address of a variable",
+		   expr, type);
+	  return true;
 	}
     }
   return false;
