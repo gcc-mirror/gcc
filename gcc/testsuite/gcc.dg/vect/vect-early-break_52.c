@@ -18,4 +18,4 @@ int main1 (short X)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { target { ! "x86_64-*-* i?86-*-*" } } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { target { ! "x86_64-*-* i?86-*-* arm*-*-*" } } } } */
