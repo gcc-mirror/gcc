@@ -7634,17 +7634,17 @@
 
 ;; Predicated floating-point ternary operations with merging.
 (define_expand "@cond_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")
+	      (match_operand:SVE_F_B16B16 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
-	   (match_operand:SVE_FULL_F_B16B16 5 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 5 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && (<supports_bf16> || !<is_bf16>)"
 {
@@ -7652,6 +7652,8 @@
      second of the two.  */
   if (rtx_equal_p (operands[3], operands[5]))
     std::swap (operands[2], operands[3]);
+
+  operands[1] = aarch64_sve_emit_masked_fp_pred (<MODE>mode, operands[1]);
 })
 
 ;; Predicated floating-point ternary operations, merging with the
@@ -7681,15 +7683,15 @@
 )
 
 (define_insn "*cond_<optab><mode>_2_strict"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "register_operand")
-	      (match_operand:SVE_FULL_F 4 "register_operand")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "register_operand")
+	      (match_operand:SVE_F 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -7727,15 +7729,15 @@
 )
 
 (define_insn "*cond_<optab><mode>_4_strict"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")
+	      (match_operand:SVE_F_B16B16 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 4)]
 	  UNSPEC_SEL))]
@@ -7795,17 +7797,17 @@
 )
 
 (define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	   (unspec:SVE_F_B16B16
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")
+	      (match_operand:SVE_F_B16B16 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
-	   (match_operand:SVE_FULL_F_B16B16 5 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 5 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && (<supports_bf16> || !<is_bf16>)

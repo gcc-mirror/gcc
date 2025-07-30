@@ -25,6 +25,8 @@
   }
 
 #define TEST_ALL(FN, TYPE0, TYPE1, COUNT) \
+  TEST_FN (FN, TYPE0, TYPE1, COUNT, a_i)  \
+  TEST_FN (FN, TYPE0, TYPE1, COUNT, b_i)  \
   TEST_FN (FN, TYPE0, TYPE1, COUNT, c_i)  \
   TEST_FN (FN, TYPE0, TYPE1, COUNT, 0)
 
@@ -34,14 +36,16 @@ TEST_ALL (FNMLA (f16), _Float16, uint32_t, 64)
 
 TEST_ALL (FNMLA (f32), float, uint64_t, 32)
 
-/* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.d} 6 } } */
-/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.s} 6 } } */
-/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.d} 12 } } */
+/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.s} 12 } } */
+/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.d} 12 } } */
 
 /* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.s, p[0-7]/z, z[0-9]+\.s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfnmla\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tfnmad\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
 
 /* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tfnmad\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
 /* { dg-final { scan-assembler-times {\tfnmla\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
 
 /* { dg-final { scan-assembler-not {\tsel\t} } } */
