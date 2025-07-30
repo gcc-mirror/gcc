@@ -388,9 +388,30 @@ PatternDeclaration::visit (AST::RangePattern &pattern)
 void
 PatternDeclaration::visit (AST::SlicePattern &pattern)
 {
-  for (auto &p : pattern.get_items ())
+  auto &items = pattern.get_items ();
+  switch (items.get_pattern_type ())
     {
-      p->accept_vis (*this);
+    case AST::SlicePatternItems::SlicePatternItemType::NO_REST:
+      {
+	auto &ref
+	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
+
+	for (auto &p : ref.get_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
+
+    case AST::SlicePatternItems::SlicePatternItemType::HAS_REST:
+      {
+	auto &ref
+	  = static_cast<AST::SlicePatternItemsHasRest &> (pattern.get_items ());
+
+	for (auto &p : ref.get_lower_patterns ())
+	  p->accept_vis (*this);
+	for (auto &p : ref.get_upper_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
     }
 }
 

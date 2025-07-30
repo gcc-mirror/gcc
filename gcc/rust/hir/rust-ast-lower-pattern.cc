@@ -321,10 +321,27 @@ void
 ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 {
   std::vector<std::unique_ptr<HIR::Pattern>> items;
-  for (auto &p : pattern.get_items ())
+
+  switch (pattern.get_items ().get_pattern_type ())
     {
-      HIR::Pattern *item = ASTLoweringPattern::translate (*p);
-      items.push_back (std::unique_ptr<HIR::Pattern> (item));
+    case AST::SlicePatternItems::SlicePatternItemType::NO_REST:
+      {
+	AST::SlicePatternItemsNoRest &ref
+	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
+	for (auto &p : ref.get_patterns ())
+	  {
+	    HIR::Pattern *item = ASTLoweringPattern::translate (*p);
+	    items.push_back (std::unique_ptr<HIR::Pattern> (item));
+	  }
+      }
+      break;
+    case AST::SlicePatternItems::SlicePatternItemType::HAS_REST:
+      {
+	rust_error_at (pattern.get_locus (),
+		       "lowering of slice patterns with rest elements are not "
+		       "supported yet");
+      }
+      break;
     }
 
   auto crate_num = mappings.get_current_crate ();

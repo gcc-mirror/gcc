@@ -248,6 +248,8 @@ class TuplePatternItemsMultiple;
 class TuplePatternItemsRanged;
 class TuplePattern;
 class GroupedPattern;
+class SlicePatternItemsNoRest;
+class SlicePatternItemsHasRest;
 class SlicePattern;
 class AltPattern;
 

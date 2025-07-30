@@ -10962,27 +10962,47 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
 {
   location_t square_locus = lexer.peek_token ()->get_locus ();
   std::vector<std::unique_ptr<AST::Pattern>> patterns;
+  tl::optional<std::vector<std::unique_ptr<AST::Pattern>>> upper_patterns
+    = tl::nullopt;
+
+  // lambda function to determine which vector to push new patterns into
+  auto get_pattern_ref
+    = [&] () -> std::vector<std::unique_ptr<AST::Pattern>> & {
+    return upper_patterns.has_value () ? upper_patterns.value () : patterns;
+  };
+
   skip_token (LEFT_SQUARE);
 
   if (lexer.peek_token ()->get_id () == RIGHT_SQUARE)
     {
       skip_token (RIGHT_SQUARE);
+      std::unique_ptr<AST::SlicePatternItemsNoRest> items (
+	new AST::SlicePatternItemsNoRest (std::move (patterns)));
       return std::unique_ptr<AST::SlicePattern> (
-	new AST::SlicePattern (std::move (patterns), square_locus));
+	new AST::SlicePattern (std::move (items), square_locus));
     }
 
   // parse initial pattern (required)
-  std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
-  if (initial_pattern == nullptr)
+  if (lexer.peek_token ()->get_id () == DOT_DOT)
     {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "failed to parse initial pattern in slice pattern");
-      add_error (std::move (error));
-
-      return nullptr;
+      lexer.skip_token ();
+      upper_patterns = std::vector<std::unique_ptr<AST::Pattern>> ();
     }
+  else
+    {
+      // Not a rest pattern `..`, parse normally
+      std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
+      if (initial_pattern == nullptr)
+	{
+	  Error error (lexer.peek_token ()->get_locus (),
+		       "failed to parse initial pattern in slice pattern");
+	  add_error (std::move (error));
 
-  patterns.push_back (std::move (initial_pattern));
+	  return nullptr;
+	}
+
+      patterns.push_back (std::move (initial_pattern));
+    }
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () == COMMA)
@@ -10992,6 +11012,23 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
       // break if end bracket
       if (lexer.peek_token ()->get_id () == RIGHT_SQUARE)
 	break;
+
+      if (lexer.peek_token ()->get_id () == DOT_DOT)
+	{
+	  if (upper_patterns.has_value ())
+	    {
+	      // DOT_DOT has been parsed before
+	      Error error (lexer.peek_token ()->get_locus (), "%s",
+			   "`..` can only be used once per slice pattern");
+	      add_error (std::move (error));
+
+	      return nullptr;
+	    }
+	  upper_patterns = std::vector<std::unique_ptr<AST::Pattern>> ();
+	  lexer.skip_token ();
+	  t = lexer.peek_token ();
+	  continue;
+	}
 
       // parse pattern (required)
       std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
@@ -11003,7 +11040,7 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
 
 	  return nullptr;
 	}
-      patterns.push_back (std::move (pattern));
+      get_pattern_ref ().push_back (std::move (pattern));
 
       t = lexer.peek_token ();
     }
@@ -11013,8 +11050,21 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
       return nullptr;
     }
 
+  if (upper_patterns.has_value ())
+    {
+      // Slice pattern with rest
+      std::unique_ptr<AST::SlicePatternItemsHasRest> items (
+	new AST::SlicePatternItemsHasRest (
+	  std::move (patterns), std::move (upper_patterns.value ())));
+      return std::unique_ptr<AST::SlicePattern> (
+	new AST::SlicePattern (std::move (items), square_locus));
+    }
+
+  // Rest-less slice pattern
+  std::unique_ptr<AST::SlicePatternItemsNoRest> items (
+    new AST::SlicePatternItemsNoRest (std::move (patterns)));
   return std::unique_ptr<AST::SlicePattern> (
-    new AST::SlicePattern (std::move (patterns), square_locus));
+    new AST::SlicePattern (std::move (items), square_locus));
 }
 
 /* Parses an identifier pattern (pattern that binds a value matched to a

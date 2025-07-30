@@ -236,6 +236,8 @@ public:
   virtual void visit (AST::TuplePatternItemsRanged &tuple_items) override;
   virtual void visit (AST::TuplePattern &pattern) override;
   virtual void visit (AST::GroupedPattern &pattern) override;
+  virtual void visit (AST::SlicePatternItemsNoRest &items) override;
+  virtual void visit (AST::SlicePatternItemsHasRest &items) override;
   virtual void visit (AST::SlicePattern &pattern) override;
   virtual void visit (AST::AltPattern &pattern) override;
 

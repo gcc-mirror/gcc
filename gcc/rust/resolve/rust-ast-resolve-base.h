@@ -186,6 +186,8 @@ public:
   void visit (AST::TuplePatternItemsRanged &);
   void visit (AST::TuplePattern &);
   void visit (AST::GroupedPattern &);
+  void visit (AST::SlicePatternItemsNoRest &);
+  void visit (AST::SlicePatternItemsHasRest &);
   void visit (AST::SlicePattern &);
   void visit (AST::AltPattern &);
 

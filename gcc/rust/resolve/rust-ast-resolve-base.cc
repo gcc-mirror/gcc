@@ -584,6 +584,14 @@ ResolverBase::visit (AST::GroupedPattern &)
 {}
 
 void
+ResolverBase::visit (AST::SlicePatternItemsNoRest &)
+{}
+
+void
+ResolverBase::visit (AST::SlicePatternItemsHasRest &)
+{}
+
+void
 ResolverBase::visit (AST::SlicePattern &)
 {}
 

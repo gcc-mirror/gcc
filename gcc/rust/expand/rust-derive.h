@@ -231,6 +231,8 @@ private:
   virtual void visit (TuplePatternItemsRanged &tuple_items) override final{};
   virtual void visit (TuplePattern &pattern) override final{};
   virtual void visit (GroupedPattern &pattern) override final{};
+  virtual void visit (SlicePatternItemsNoRest &items) override final{};
+  virtual void visit (SlicePatternItemsHasRest &items) override final{};
   virtual void visit (SlicePattern &pattern) override final{};
   virtual void visit (AltPattern &pattern) override final{};
   virtual void visit (EmptyStmt &stmt) override final{};

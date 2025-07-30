@@ -1521,41 +1521,217 @@ protected:
   }
 };
 
+// Base abstract class representing patterns in a SlicePattern
+class SlicePatternItems
+{
+public:
+  enum SlicePatternItemType
+  {
+    NO_REST,
+    HAS_REST,
+  };
+
+  virtual ~SlicePatternItems () {}
+
+  // TODO: should this store location data?
+
+  // Unique pointer custom clone function
+  std::unique_ptr<SlicePatternItems> clone_slice_pattern_items () const
+  {
+    return std::unique_ptr<SlicePatternItems> (
+      clone_slice_pattern_items_impl ());
+  }
+
+  virtual std::string as_string () const = 0;
+
+  virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual SlicePatternItemType get_pattern_type () const = 0;
+
+protected:
+  // pure virtual clone implementation
+  virtual SlicePatternItems *clone_slice_pattern_items_impl () const = 0;
+};
+
+// Class representing the patterns in a SlicePattern without `..`
+class SlicePatternItemsNoRest : public SlicePatternItems
+{
+  std::vector<std::unique_ptr<Pattern>> patterns;
+
+public:
+  SlicePatternItemsNoRest (std::vector<std::unique_ptr<Pattern>> patterns)
+    : patterns (std::move (patterns))
+  {}
+
+  // Copy constructor with vector clone
+  SlicePatternItemsNoRest (SlicePatternItemsNoRest const &other)
+  {
+    patterns.reserve (other.patterns.size ());
+    for (const auto &e : other.patterns)
+      patterns.push_back (e->clone_pattern ());
+  }
+
+  // Overloaded assignment operator to vector clone
+  SlicePatternItemsNoRest &operator= (SlicePatternItemsNoRest const &other)
+  {
+    patterns.clear ();
+    patterns.reserve (other.patterns.size ());
+    for (const auto &e : other.patterns)
+      patterns.push_back (e->clone_pattern ());
+
+    return *this;
+  }
+
+  // move constructors
+  SlicePatternItemsNoRest (SlicePatternItemsNoRest &&other) = default;
+  SlicePatternItemsNoRest &operator= (SlicePatternItemsNoRest &&other)
+    = default;
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
+  {
+    return patterns;
+  }
+
+  SlicePatternItemType get_pattern_type () const override
+  {
+    return SlicePatternItemType::NO_REST;
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  SlicePatternItemsNoRest *clone_slice_pattern_items_impl () const override
+  {
+    return new SlicePatternItemsNoRest (*this);
+  }
+};
+
+// Class representing the patterns in a SlicePattern that contains a `..`
+class SlicePatternItemsHasRest : public SlicePatternItems
+{
+  std::vector<std::unique_ptr<Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<Pattern>> upper_patterns;
+
+public:
+  SlicePatternItemsHasRest (
+    std::vector<std::unique_ptr<Pattern>> lower_patterns,
+    std::vector<std::unique_ptr<Pattern>> upper_patterns)
+    : lower_patterns (std::move (lower_patterns)),
+      upper_patterns (std::move (upper_patterns))
+  {}
+
+  // Copy constructor with vector clone
+  SlicePatternItemsHasRest (SlicePatternItemsHasRest const &other)
+  {
+    lower_patterns.reserve (other.lower_patterns.size ());
+    for (const auto &e : other.lower_patterns)
+      lower_patterns.push_back (e->clone_pattern ());
+
+    upper_patterns.reserve (other.upper_patterns.size ());
+    for (const auto &e : other.upper_patterns)
+      upper_patterns.push_back (e->clone_pattern ());
+  }
+
+  // Overloaded assignment operator to clone
+  SlicePatternItemsHasRest &operator= (SlicePatternItemsHasRest const &other)
+  {
+    lower_patterns.clear ();
+    lower_patterns.reserve (other.lower_patterns.size ());
+    for (const auto &e : other.lower_patterns)
+      lower_patterns.push_back (e->clone_pattern ());
+
+    upper_patterns.clear ();
+    upper_patterns.reserve (other.upper_patterns.size ());
+    for (const auto &e : other.upper_patterns)
+      upper_patterns.push_back (e->clone_pattern ());
+
+    return *this;
+  }
+
+  // move constructors
+  SlicePatternItemsHasRest (SlicePatternItemsHasRest &&other) = default;
+  SlicePatternItemsHasRest &operator= (SlicePatternItemsHasRest &&other)
+    = default;
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
+  {
+    return lower_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
+  {
+    return lower_patterns;
+  }
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
+  {
+    return upper_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
+  {
+    return upper_patterns;
+  }
+
+  SlicePatternItemType get_pattern_type () const override
+  {
+    return SlicePatternItemType::HAS_REST;
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  SlicePatternItemsHasRest *clone_slice_pattern_items_impl () const override
+  {
+    return new SlicePatternItemsHasRest (*this);
+  }
+};
+
 // AST node representing patterns that can match slices and arrays
 class SlicePattern : public Pattern
 {
-  std::vector<std::unique_ptr<Pattern>> items;
+  std::unique_ptr<SlicePatternItems> items;
   location_t locus;
   NodeId node_id;
 
 public:
   std::string as_string () const override;
 
-  SlicePattern (std::vector<std::unique_ptr<Pattern>> items, location_t locus)
+  SlicePattern (std::unique_ptr<SlicePatternItems> items, location_t locus)
     : items (std::move (items)), locus (locus),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
-  // Copy constructor with vector clone
+  // Copy constructor requires clone
   SlicePattern (SlicePattern const &other) : locus (other.locus)
   {
+    // guard to prevent null dereference
+    rust_assert (other.items != nullptr);
+
     node_id = other.node_id;
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_pattern ());
+    items = other.items->clone_slice_pattern_items ();
   }
 
-  // Overloaded assignment operator to vector clone
+  // Overloaded assignment operator to clone
   SlicePattern &operator= (SlicePattern const &other)
   {
     locus = other.locus;
     node_id = other.node_id;
 
-    items.clear ();
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_pattern ());
+    // guard to prevent null dereference
+    rust_assert (other.items != nullptr);
 
+    items = other.items->clone_slice_pattern_items ();
     return *this;
   }
 
@@ -1568,10 +1744,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern>> &get_items () { return items; }
-  const std::vector<std::unique_ptr<Pattern>> &get_items () const
+  SlicePatternItems &get_items ()
   {
-    return items;
+    rust_assert (items != nullptr);
+    return *items;
   }
 
   NodeId get_node_id () const override { return node_id; }
