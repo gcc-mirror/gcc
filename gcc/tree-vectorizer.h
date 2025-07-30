@@ -1197,6 +1197,10 @@ public:
    || LOOP_REQUIRES_VERSIONING_FOR_NITERS (L)		\
    || LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (L))
 
+#define LOOP_VINFO_USE_VERSIONING_WITHOUT_PEELING(L)	\
+  ((L)->may_misalign_stmts.length () > 0		\
+   && !LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT (L))
+
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
   (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)
 
