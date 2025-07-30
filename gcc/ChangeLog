@@ -1,3 +1,43 @@
+2025-07-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-14  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/120645
+	* config/darwin-driver.cc: Account for latest macOS numbering
+	scheme.
+
+2025-07-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/119085
+	* tree-sra.cc (sort_and_splice_var_accesses): Prevent total
+	scalarization if two incompatible aggregates access the same place.
+
+2025-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121159
+	* calls.cc (can_implement_as_sibling_call_p): Don't reject declared
+	noreturn functions in musttail calls.
+
+2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-06-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (*mov<mode>_and): Changed to
+	define_insn_and_split.  Split it to "mov $0,mem" if not -Oz.
+	(*mov<mode>_or): Changed to define_insn_and_split.  Split it
+	to "mov $-1,mem" if not -Oz.
+	(peephole2): Don't transform "mov $-1,reg" to "push $-1; pop reg"
+	for -Oz since it will be transformed to "or $-1,reg".
+
 2025-07-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
