@@ -131,7 +131,7 @@ _slp_tree::_slp_tree ()
   this->max_nunits = 1;
   this->lanes = 0;
   SLP_TREE_TYPE (this) = undef_vec_info_type;
-  this->u.undef = NULL;
+  this->data = NULL;
 }
 
 /* Tear down a SLP node.  */
@@ -153,6 +153,8 @@ _slp_tree::~_slp_tree ()
   SLP_TREE_SIMD_CLONE_INFO (this).release ();
   if (this->failed)
     free (failed);
+  if (this->data)
+    delete this->data;
 }
 
 /* Push the single SSA definition in DEF to the vector of vector defs.  */

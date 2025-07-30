@@ -239,6 +239,10 @@ typedef auto_vec<std::pair<unsigned, unsigned>, 16> auto_lane_permutation_t;
 typedef vec<unsigned> load_permutation_t;
 typedef auto_vec<unsigned, 16> auto_load_permutation_t;
 
+struct vect_data {
+  virtual ~vect_data () = default;
+};
+
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -305,12 +309,13 @@ struct _slp_tree {
      for loop vectorization.  */
   vect_memory_access_type memory_access_type;
 
-  /* The kind of operation as determined by analysis and a tagged
-     union with kind specific data.  */
+  /* The kind of operation as determined by analysis and optional
+     kind specific data.  */
   enum stmt_vec_info_type type;
-  union {
-      void *undef;
-  } u;
+  vect_data *data;
+
+  template <class T>
+  T& get_data (T& else_) { return data ? *static_cast <T *> (data) : else_; }
 
   /* If not NULL this is a cached failed SLP discovery attempt with
      the lanes that failed during SLP discovery as 'false'.  This is
