@@ -8213,6 +8213,167 @@ s390_expand_atomic (machine_mode mode, enum rtx_code code,
 					       NULL_RTX, 1, OPTAB_DIRECT), 1);
 }
 
+/* Expand integer op0 = op1 <=> op2, i.e.,
+   op0 = op1 == op2 ? 0 : op1 < op2 ? -1 : 1.
+
+   Signedness is specified by op3.  If op3 equals 1, then perform an unsigned
+   comparison, and if op3 equals -1, then perform a signed comparison.
+
+   For integer comparisons we strive for a sequence like
+   CR[L] ; LHI ; LOCHIL ; LOCHIH
+   where the first three instructions fit into a group.  */
+
+void
+s390_expand_int_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
+{
+  gcc_assert (op3 == const1_rtx || op3 == constm1_rtx);
+
+  rtx cc, cond_lt, cond_gt;
+  machine_mode cc_mode;
+  machine_mode mode = GET_MODE (op1);
+
+  /* Prior VXE3 emulate a 128-bit comparison by breaking it up into three
+     comparisons.  First test the high halfs.  In case they equal, then test
+     the low halfs.  Finally, test for equality.  Depending on the results
+     make use of LOCs.  */
+  if (mode == TImode && !TARGET_VXE3)
+    {
+      gcc_assert (TARGET_VX);
+      op1
+	= force_reg (V2DImode, simplify_gen_subreg (V2DImode, op1, TImode, 0));
+      op2
+	= force_reg (V2DImode, simplify_gen_subreg (V2DImode, op2, TImode, 0));
+      rtx lab = gen_label_rtx ();
+      rtx ccz = gen_rtx_REG (CCZmode, CC_REGNUM);
+      /* Compare high halfs for equality.
+	 VEC[L]G op1, op2 sets
+	   CC1 if high(op1) < high(op2)
+	 and
+	   CC2 if high(op1) > high(op2).  */
+      machine_mode cc_mode = op3 == const1_rtx ? CCUmode : CCSmode;
+      rtx lane0 = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+      emit_insn (gen_rtx_SET (
+	gen_rtx_REG (cc_mode, CC_REGNUM),
+	gen_rtx_COMPARE (cc_mode,
+			 gen_rtx_VEC_SELECT (DImode, op1, lane0),
+			 gen_rtx_VEC_SELECT (DImode, op2, lane0))));
+      s390_emit_jump (lab, gen_rtx_NE (CCZmode, ccz, const0_rtx));
+      /* At this point we know that the high halfs equal.
+	 VCHLGS op2, op1 sets CC1 if low(op1) < low(op2)  */
+      emit_insn (gen_rtx_PARALLEL (
+	VOIDmode,
+	gen_rtvec (2,
+		   gen_rtx_SET (gen_rtx_REG (CCVIHUmode, CC_REGNUM),
+				gen_rtx_COMPARE (CCVIHUmode, op2, op1)),
+		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (V2DImode)))));
+      emit_label (lab);
+      emit_insn (gen_rtx_SET (op0, const1_rtx));
+      emit_insn (
+	gen_movsicc (op0,
+		     gen_rtx_LTU (CCUmode, gen_rtx_REG (CCUmode, CC_REGNUM),
+				  const0_rtx),
+		     constm1_rtx, op0));
+      /* Deal with the case where both halfs equal.  */
+      emit_insn (gen_rtx_PARALLEL (
+	VOIDmode,
+	gen_rtvec (2,
+		   gen_rtx_SET (gen_rtx_REG (CCVEQmode, CC_REGNUM),
+				gen_rtx_COMPARE (CCVEQmode, op1, op2)),
+		   gen_rtx_SET (gen_reg_rtx (V2DImode),
+				gen_rtx_EQ (V2DImode, op1, op2)))));
+      emit_insn (gen_movsicc (op0, gen_rtx_EQ (CCZmode, ccz, const0_rtx),
+			      const0_rtx, op0));
+      return;
+    }
+
+  if (mode == QImode || mode == HImode)
+    {
+      rtx_code extend = op3 == const1_rtx ? ZERO_EXTEND : SIGN_EXTEND;
+      op1 = simplify_gen_unary (extend, SImode, op1, mode);
+      op1 = force_reg (SImode, op1);
+      op2 = simplify_gen_unary (extend, SImode, op2, mode);
+      op2 = force_reg (SImode, op2);
+      mode = SImode;
+    }
+
+  if (op3 == const1_rtx)
+    {
+      cc_mode = CCUmode;
+      cc = gen_rtx_REG (cc_mode, CC_REGNUM);
+      cond_lt = gen_rtx_LTU (mode, cc, const0_rtx);
+      cond_gt = gen_rtx_GTU (mode, cc, const0_rtx);
+    }
+  else
+    {
+      cc_mode = CCSmode;
+      cc = gen_rtx_REG (cc_mode, CC_REGNUM);
+      cond_lt = gen_rtx_LT (mode, cc, const0_rtx);
+      cond_gt = gen_rtx_GT (mode, cc, const0_rtx);
+    }
+
+  emit_insn (gen_rtx_SET (cc, gen_rtx_COMPARE (cc_mode, op1, op2)));
+  emit_move_insn (op0, const0_rtx);
+  emit_insn (gen_movsicc (op0, cond_lt, constm1_rtx, op0));
+  emit_insn (gen_movsicc (op0, cond_gt, const1_rtx, op0));
+}
+
+/* Expand floating-point op0 = op1 <=> op2, i.e.,
+   op0 = op1 == op2 ? 0 : op1 < op2 ? -1 : op1 > op2 ? 1 : 2.
+
+   If op3 equals const0_rtx, then we are interested in the compare only (see
+   test spaceship-fp-4.c).  Otherwise, op3 is a CONST_INT different than
+   const1_rtx and constm1_rtx which is used in order to set op0 for unordered.
+
+   Emit a branch-only solution, i.e., let if-convert fold the branches into
+   LOCs if applicable.  This has the benefit that the solution is also
+   applicable if we are only interested in the compare, i.e., if op3 equals
+   const0_rtx.
+ */
+
+void
+s390_expand_fp_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
+{
+  gcc_assert (op3 != const1_rtx && op3 != constm1_rtx);
+
+  machine_mode mode = GET_MODE (op1);
+  machine_mode cc_mode = s390_select_ccmode (LTGT, op1, op2);
+  rtx cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+  rtx cond_unordered = gen_rtx_UNORDERED (mode, cc_reg, const0_rtx);
+  rtx cond_eq = gen_rtx_EQ (mode, cc_reg, const0_rtx);
+  rtx cond_gt = gen_rtx_GT (mode, cc_reg, const0_rtx);
+  rtx_insn *insn;
+  rtx l_unordered = gen_label_rtx ();
+  rtx l_eq = gen_label_rtx ();
+  rtx l_gt = gen_label_rtx ();
+  rtx l_end = gen_label_rtx ();
+
+  s390_emit_compare (VOIDmode, LTGT, op1, op2);
+  if (!flag_finite_math_only)
+    {
+      insn = s390_emit_jump (l_unordered, cond_unordered);
+      add_reg_br_prob_note (insn, profile_probability::very_unlikely ());
+    }
+  insn = s390_emit_jump (l_eq, cond_eq);
+  add_reg_br_prob_note (insn, profile_probability::unlikely ());
+  insn = s390_emit_jump (l_gt, cond_gt);
+  add_reg_br_prob_note (insn, profile_probability::even ());
+  emit_move_insn (op0, constm1_rtx);
+  emit_jump (l_end);
+  emit_label (l_eq);
+  emit_move_insn (op0, const0_rtx);
+  emit_jump (l_end);
+  emit_label (l_gt);
+  emit_move_insn (op0, const1_rtx);
+  if (!flag_finite_math_only)
+    {
+      emit_jump (l_end);
+      emit_label (l_unordered);
+      rtx unord_val = op3 == const0_rtx ? const2_rtx : op3;
+      emit_move_insn (op0, unord_val);
+    }
+  emit_label (l_end);
+}
+
 /* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
