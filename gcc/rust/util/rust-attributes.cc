@@ -392,7 +392,7 @@ AttributeChecker::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemPathLit &)
+AttributeChecker::visit (AST::MetaItemPathExpr &)
 {}
 
 void

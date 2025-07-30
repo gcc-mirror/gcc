@@ -116,7 +116,7 @@ ResolverBase::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-ResolverBase::visit (AST::MetaItemPathLit &)
+ResolverBase::visit (AST::MetaItemPathExpr &)
 {}
 
 void

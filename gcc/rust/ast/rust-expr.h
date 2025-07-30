@@ -249,36 +249,50 @@ protected:
   }
 };
 
-// more generic meta item "path = lit" form
-class MetaItemPathLit : public MetaItem
+// more generic meta item "path = expr" form
+class MetaItemPathExpr : public MetaItem
 {
   SimplePath path;
-  LiteralExpr lit;
+  std::unique_ptr<Expr> expr;
 
 public:
-  MetaItemPathLit (SimplePath path, LiteralExpr lit_expr)
-    : path (std::move (path)), lit (std::move (lit_expr))
+  MetaItemPathExpr (SimplePath path, std::unique_ptr<Expr> expr)
+    : path (std::move (path)), expr (std::move (expr))
   {}
+
+  MetaItemPathExpr (const MetaItemPathExpr &other)
+    : MetaItem (other), path (other.path), expr (other.expr->clone_expr ())
+  {}
+
+  MetaItemPathExpr (MetaItemPathExpr &&) = default;
+
+  MetaItemPathExpr &operator= (MetaItemPathExpr &&) = default;
+
+  MetaItemPathExpr operator= (const MetaItemPathExpr &other)
+  {
+    MetaItem::operator= (other);
+    path = other.path;
+    expr = other.expr->clone_expr ();
+    return *this;
+  }
 
   SimplePath get_path () const { return path; }
 
   SimplePath &get_path () { return path; }
 
-  LiteralExpr get_literal () const { return lit; }
-
-  LiteralExpr &get_literal () { return lit; }
+  Expr &get_expr () { return *expr; }
 
   std::string as_string () const override
   {
-    return path.as_string () + " = " + lit.as_string ();
+    return path.as_string () + " = " + expr->as_string ();
   }
 
   MetaItem::ItemKind get_item_kind () const override
   {
-    return MetaItem::ItemKind::PathLit;
+    return MetaItem::ItemKind::PathExpr;
   }
 
-  // There are two Locations in MetaItemPathLit (path and lit_expr),
+  // There are two Locations in MetaItemPathExpr (path and expr),
   //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
   //  now.
   // Maybe we will figure out when we really need the location in the future.
@@ -294,9 +308,9 @@ public:
 
 protected:
   // Use covariance to implement clone function as returning this type
-  MetaItemPathLit *clone_meta_item_inner_impl () const override
+  MetaItemPathExpr *clone_meta_item_inner_impl () const override
   {
-    return new MetaItemPathLit (*this);
+    return new MetaItemPathExpr (*this);
   }
 };
 

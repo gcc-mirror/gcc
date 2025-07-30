@@ -58,7 +58,7 @@ public:
   void visit (AST::AttrInputLiteral &);
   void visit (AST::AttrInputMacro &);
   void visit (AST::MetaItemLitExpr &);
-  void visit (AST::MetaItemPathLit &);
+  void visit (AST::MetaItemPathExpr &);
   void visit (AST::BorrowExpr &);
   void visit (AST::DereferenceExpr &);
   void visit (AST::ErrorPropagationExpr &);

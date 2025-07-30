@@ -106,7 +106,7 @@ public:
   virtual void visit (AST::AttrInputLiteral &attr_input) override;
   virtual void visit (AST::AttrInputMacro &attr_input) override;
   virtual void visit (AST::MetaItemLitExpr &meta_item) override;
-  virtual void visit (AST::MetaItemPathLit &meta_item) override;
+  virtual void visit (AST::MetaItemPathExpr &meta_item) override;
   virtual void visit (AST::BorrowExpr &expr) override;
   virtual void visit (AST::DereferenceExpr &expr) override;
   virtual void visit (AST::NegationExpr &expr) override;

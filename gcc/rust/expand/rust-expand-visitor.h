@@ -209,7 +209,7 @@ public:
   void visit (AST::AttrInputLiteral &) override;
   void visit (AST::AttrInputMacro &) override;
   void visit (AST::MetaItemLitExpr &) override;
-  void visit (AST::MetaItemPathLit &) override;
+  void visit (AST::MetaItemPathExpr &) override;
   void visit (AST::ErrorPropagationExpr &expr) override;
   void visit (AST::ArithmeticOrLogicalExpr &expr) override;
   void visit (AST::ComparisonExpr &expr) override;

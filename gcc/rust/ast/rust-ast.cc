@@ -288,7 +288,7 @@ Attribute::get_traits_to_derive ()
 		      break;
 		    case AST::MetaItem::ItemKind::ListPaths:
 		    case AST::MetaItem::ItemKind::NameValueStr:
-		    case AST::MetaItem::ItemKind::PathLit:
+		    case AST::MetaItem::ItemKind::PathExpr:
 		    case AST::MetaItem::ItemKind::Seq:
 		    case AST::MetaItem::ItemKind::ListNameValueStr:
 		    default:
@@ -3712,20 +3712,12 @@ AttributeParser::parse_path_meta_item ()
       {
 	skip_token ();
 
-	location_t locus = peek_token ()->get_locus ();
-	Literal lit = parse_literal ();
-	if (lit.is_error ())
-	  {
-	    rust_error_at (peek_token ()->get_locus (),
-			   "failed to parse literal in attribute");
-	    return nullptr;
-	  }
-	LiteralExpr expr (std::move (lit), {}, locus);
+	std::unique_ptr<Expr> expr = parser->parse_expr ();
 	// stream_pos++;
 	/* shouldn't be required anymore due to parsing literal actually
 	 * skipping the token */
-	return std::unique_ptr<MetaItemPathLit> (
-	  new MetaItemPathLit (std::move (path), std::move (expr)));
+	return std::unique_ptr<MetaItemPathExpr> (
+	  new MetaItemPathExpr (std::move (path), std::move (expr)));
       }
     case COMMA:
       // just simple path
@@ -4144,10 +4136,12 @@ MetaNameValueStr::check_cfg_predicate (const Session &session) const
 }
 
 bool
-MetaItemPathLit::check_cfg_predicate (const Session &session) const
+MetaItemPathExpr::check_cfg_predicate (const Session &session) const
 {
+  // FIXME: Accept path expressions
+  rust_assert (expr->is_literal ());
   return session.options.target_data.has_key_value_pair (path.as_string (),
-							 lit.as_string ());
+							 expr->as_string ());
 }
 
 std::vector<std::unique_ptr<Token>>
@@ -4235,8 +4229,10 @@ MetaListNameValueStr::to_attribute () const
 }
 
 Attribute
-MetaItemPathLit::to_attribute () const
+MetaItemPathExpr::to_attribute () const
 {
+  rust_assert (expr->is_literal ());
+  auto &lit = static_cast<LiteralExpr &> (*expr);
   return Attribute (path, std::unique_ptr<AttrInputLiteral> (
 			    new AttrInputLiteral (lit)));
 }
@@ -4406,7 +4402,7 @@ MetaItemLitExpr::accept_vis (ASTVisitor &vis)
 }
 
 void
-MetaItemPathLit::accept_vis (ASTVisitor &vis)
+MetaItemPathExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

@@ -78,7 +78,7 @@ class LiteralExpr;
 class AttrInputLiteral;
 class AttrInputMacro;
 class MetaItemLitExpr;
-class MetaItemPathLit;
+class MetaItemPathExpr;
 class OperatorExpr;
 class BorrowExpr;
 class DereferenceExpr;

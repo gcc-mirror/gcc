@@ -136,7 +136,7 @@ void
 ASTLoweringBase::visit (AST::MetaItemLitExpr &)
 {}
 void
-ASTLoweringBase::visit (AST::MetaItemPathLit &)
+ASTLoweringBase::visit (AST::MetaItemPathExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::BorrowExpr &)

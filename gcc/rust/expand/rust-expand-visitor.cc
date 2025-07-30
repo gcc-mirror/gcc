@@ -538,7 +538,7 @@ ExpandVisitor::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-ExpandVisitor::visit (AST::MetaItemPathLit &)
+ExpandVisitor::visit (AST::MetaItemPathExpr &)
 {}
 
 void
