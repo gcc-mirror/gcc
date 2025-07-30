@@ -2366,4 +2366,30 @@ write_global_definitions (const std::vector<tree> &type_decls,
   delete[] defs;
 }
 
+tree
+lookup_field (const_tree type, tree component)
+{
+  tree field;
+
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (DECL_NAME (field) == NULL_TREE
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree anon = lookup_field (TREE_TYPE (field), component);
+
+	  if (anon)
+	    return tree_cons (NULL_TREE, field, anon);
+	}
+
+      if (DECL_NAME (field) == component)
+	break;
+    }
+
+  if (field == NULL_TREE)
+    return NULL_TREE;
+
+  return tree_cons (NULL_TREE, field, NULL_TREE);
+}
+
 } // namespace Backend

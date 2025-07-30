@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-expr.h"
+#include "rust-backend.h"
+#include "rust-compile-type.h"
 #include "rust-compile-struct-field-expr.h"
 #include "rust-compile-pattern.h"
 #include "rust-compile-resolve-path.h"
@@ -32,7 +34,9 @@
 #include "print-tree.h"
 #include "rust-hir-expr.h"
 #include "rust-system.h"
+#include "rust-tree.h"
 #include "rust-tyty.h"
+#include "tree-core.h"
 
 namespace Rust {
 namespace Compile {
@@ -378,7 +382,26 @@ CompileExpr::visit (HIR::LlvmInlineAsm &expr)
 void
 CompileExpr::visit (HIR::OffsetOf &expr)
 {
-  rust_unreachable ();
+  TyTy::BaseType *type = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_type ().get_mappings ().get_hirid (), &type))
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  auto compiled_ty = TyTyResolveCompile::compile (ctx, type);
+
+  rust_assert (TREE_CODE (compiled_ty) == RECORD_TYPE);
+
+  // Create an identifier node for the field
+  auto field_id = Backend::get_identifier_node (expr.get_field ().as_string ());
+
+  // And now look it up and get its value for `byte_position`
+  auto field = Backend::lookup_field (compiled_ty, field_id);
+  auto field_value = TREE_VALUE (field);
+
+  translated = byte_position (field_value);
 }
 
 void

@@ -397,6 +397,12 @@ tree goto_statement (tree, location_t);
 // recover.
 tree label_address (tree, location_t);
 
+// Lookup a field from a type given its name.
+// Build the `component` tree with `Backend::get_identifier_node`.
+//
+// Forked from the C frontend.
+tree lookup_field (const_tree, tree);
+
 // Functions.
 
 // Bit flags to pass to the function method.
