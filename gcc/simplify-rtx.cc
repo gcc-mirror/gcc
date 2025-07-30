@@ -8344,6 +8344,15 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
     }
 
+  /* Attempt to simplify WORD_MODE SUBREGs of unary bitwise expression.  */
+  if (outermode == word_mode && GET_CODE (op) == NOT
+      && SCALAR_INT_MODE_P (innermode))
+    {
+      rtx op0 = simplify_subreg (outermode, XEXP (op, 0), innermode, byte);
+      if (op0)
+	return simplify_gen_unary (GET_CODE (op), outermode, op0, outermode);
+    }
+
   scalar_int_mode int_outermode, int_innermode;
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)
