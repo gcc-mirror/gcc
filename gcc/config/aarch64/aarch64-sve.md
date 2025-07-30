@@ -7657,15 +7657,15 @@
 ;; Predicated floating-point ternary operations, merging with the
 ;; first input.
 (define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_F
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 2 "register_operand")
-	      (match_operand:SVE_FULL_F 3 "register_operand")
-	      (match_operand:SVE_FULL_F 4 "register_operand")]
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "register_operand")
+	      (match_operand:SVE_F 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
@@ -7703,15 +7703,15 @@
 ;; Predicated floating-point ternary operations, merging with the
 ;; third input.
 (define_insn_and_rewrite "*cond_<optab><mode>_4_relaxed"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")
+	      (match_operand:SVE_F_B16B16 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 4)]
 	  UNSPEC_SEL))]
@@ -7749,17 +7749,17 @@
 ;; Predicated floating-point ternary operations, merging with an
 ;; independent value.
 (define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_FULL_F_B16B16
+	   (unspec:SVE_F_B16B16
 	     [(match_operand 6)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	      (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	      (match_operand:SVE_F_B16B16 2 "register_operand")
+	      (match_operand:SVE_F_B16B16 3 "register_operand")
+	      (match_operand:SVE_F_B16B16 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
-	   (match_operand:SVE_FULL_F_B16B16 5 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F_B16B16 5 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && (<supports_bf16> || !<is_bf16>)
