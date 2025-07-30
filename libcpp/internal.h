@@ -282,6 +282,9 @@ struct lexer_state
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 
+  /* Nonzero if CPP_COMMA is valid in expression in C++.  */
+  unsigned int comma_ok;
+
   /* Nonzero when tokenizing a deferred pragma.  */
   unsigned char in_deferred_pragma;
 
