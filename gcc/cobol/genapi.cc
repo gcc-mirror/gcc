@@ -531,6 +531,14 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
     free(stream);
     domain += 1;
     }
+
+  if( returned_size >= retval_capacity)
+    {
+    retval_capacity *= 2;
+    retval = static_cast<char *>(xrealloc(retval, retval_capacity));
+    }
+
+  gcc_assert(returned_size < retval_capacity);
   retval[returned_size++] = '\0';
   return retval;
   }
@@ -16765,9 +16773,9 @@ psa_FldLiteralA(struct cbl_field_t *field )
                                                 vs_file_static);
     actually_create_the_static_field(
                 field,
-                build_string_literal(field->data.capacity+1,
+                build_string_literal(field->data.capacity,
                                      buffer),
-                field->data.capacity+1,
+                field->data.capacity,
                 field->data.initial,
                 NULL_TREE,
                 field->var_decl_node);

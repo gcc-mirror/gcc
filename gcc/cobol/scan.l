@@ -1673,16 +1673,17 @@ B-SHIFT-RC
 		    p += 2;
 		    while( ISSPACE(*p) ) p++;
 		    cbl_name_t name2;
-		    std::transform( p, p + sizeof(name2), name2,
-				    []( char ch ) {
-				      switch(ch) {
-				      case '-':
-				      case '_': return ch;
-				      default:
-					if( ISALNUM(ch) ) return ch;
-				      }
-				      return '\0';
-				    } );
+                    const char *pend = p + sizeof(name2);
+                    char *pout = name2;
+                    while( p < pend ) {
+                      char ch = *p++;
+                      if( ISALNUM(ch) || ch == '-' || ch == '_' )  {
+                        *pout++ = ch;
+                      } else {
+                        *pout++  = '\0';
+                        break;
+                      }
+                    }
 		    symbol_elem_t *e = symbol_file(PROGRAM, name2);
 		    /*
 		     * For NAME IN FILENAME, we want the parser to handle it.
