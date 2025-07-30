@@ -145,11 +145,18 @@ is_store_forwarding (rtx store_mem, rtx load_mem, HOST_WIDE_INT *off_val)
   poly_int64 load_offset, store_offset;
   rtx load_base = strip_offset (XEXP (load_mem, 0), &load_offset);
   rtx store_base = strip_offset (XEXP (store_mem, 0), &store_offset);
+  poly_int64 off_diff = store_offset - load_offset;
+
+  HOST_WIDE_INT off_val_tmp = 0;
+  bool is_off_diff_constant = off_diff.is_constant (&off_val_tmp);
+  if (off_val)
+    *off_val = off_val_tmp;
+
   return (MEM_SIZE (load_mem).is_constant ()
 	  && rtx_equal_p (load_base, store_base)
 	  && known_subrange_p (store_offset, MEM_SIZE (store_mem),
 			       load_offset, MEM_SIZE (load_mem))
-	  && (store_offset - load_offset).is_constant (off_val));
+	  && is_off_diff_constant);
 }
 
 /* Given a list of small stores that are forwarded to LOAD_INSN, try to
