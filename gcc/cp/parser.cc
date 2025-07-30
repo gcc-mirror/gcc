@@ -2921,7 +2921,7 @@ static size_t cp_parser_skip_std_attribute_spec_seq
 static size_t cp_parser_skip_attributes_opt
   (cp_parser *, size_t);
 static bool cp_parser_extension_opt
-  (cp_parser *, int *);
+  (cp_parser *, int *, int *);
 static void cp_parser_label_declaration
   (cp_parser *);
 
@@ -9504,11 +9504,12 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	case RID_EXTENSION:
 	  {
 	    /* The saved value of the PEDANTIC flag.  */
-	    int saved_pedantic;
+	    int saved_pedantic, saved_long_long;
 	    tree expr;
 
 	    /* Save away the PEDANTIC flag.  */
-	    cp_parser_extension_opt (parser, &saved_pedantic);
+	    cp_parser_extension_opt (parser, &saved_pedantic,
+				     &saved_long_long);
 	    /* Also suppress -Wconditionally-supported.  */
 	    diagnostic_push_diagnostics (global_dc, input_location);
 	    diagnostic_classify_diagnostic
@@ -9519,6 +9520,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    /* Restore the PEDANTIC flag.  */
 	    diagnostic_pop_diagnostics (global_dc, input_location);
 	    pedantic = saved_pedantic;
+	    warn_long_long = saved_long_long;
 
 	    return expr;
 	  }
@@ -16047,15 +16049,16 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 static void
 cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 {
-  int saved_pedantic;
+  int saved_pedantic, saved_long_long;
 
   /* Check for the `__extension__' keyword.  */
-  if (cp_parser_extension_opt (parser, &saved_pedantic))
+  if (cp_parser_extension_opt (parser, &saved_pedantic, &saved_long_long))
     {
       /* Parse the qualified declaration.  */
       cp_parser_declaration (parser, prefix_attrs);
       /* Restore the PEDANTIC flag.  */
       pedantic = saved_pedantic;
+      warn_long_long = saved_long_long;
 
       return;
     }
@@ -16323,15 +16326,16 @@ static void
 cp_parser_block_declaration (cp_parser *parser,
 			     bool      statement_p)
 {
-  int saved_pedantic;
+  int saved_pedantic, saved_long_long;
 
   /* Check for the `__extension__' keyword.  */
-  if (cp_parser_extension_opt (parser, &saved_pedantic))
+  if (cp_parser_extension_opt (parser, &saved_pedantic, &saved_long_long))
     {
       /* Parse the qualified declaration.  */
       cp_parser_block_declaration (parser, statement_p);
       /* Restore the PEDANTIC flag.  */
       pedantic = saved_pedantic;
+      warn_long_long = saved_long_long;
 
       return;
     }
@@ -28869,16 +28873,17 @@ cp_parser_member_declaration (cp_parser* parser)
   cp_token *token = NULL;
   cp_token *decl_spec_token_start = NULL;
   cp_token *initializer_token_start = NULL;
-  int saved_pedantic;
+  int saved_pedantic, saved_long_long;
   bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
   /* Check for the `__extension__' keyword.  */
-  if (cp_parser_extension_opt (parser, &saved_pedantic))
+  if (cp_parser_extension_opt (parser, &saved_pedantic, &saved_long_long))
     {
       /* Recurse.  */
       cp_parser_member_declaration (parser);
       /* Restore the old value of the PEDANTIC flag.  */
       pedantic = saved_pedantic;
+      warn_long_long = saved_long_long;
 
       return;
     }
@@ -32020,13 +32025,16 @@ cp_parser_skip_attributes_opt (cp_parser *parser, size_t n)
    present, and FALSE otherwise.  *SAVED_PEDANTIC is set to the
    current value of the PEDANTIC flag, regardless of whether or not
    the `__extension__' keyword is present.  The caller is responsible
-   for restoring the value of the PEDANTIC flag.  */
+   for restoring the value of the PEDANTIC flag.  Similarly *SAVED_LONG_LONG
+   for warn_long_long flag.  */
 
 static bool
-cp_parser_extension_opt (cp_parser* parser, int* saved_pedantic)
+cp_parser_extension_opt (cp_parser *parser, int *saved_pedantic,
+			 int *saved_long_long)
 {
   /* Save the old value of the PEDANTIC flag.  */
   *saved_pedantic = pedantic;
+  *saved_long_long = warn_long_long;
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXTENSION))
     {
@@ -32035,6 +32043,8 @@ cp_parser_extension_opt (cp_parser* parser, int* saved_pedantic)
       /* We're not being pedantic while the `__extension__' keyword is
 	 in effect.  */
       pedantic = 0;
+      /* And we don't want -Wlong-long warning.  */
+      warn_long_long = 0;
 
       return true;
     }
