@@ -161,11 +161,13 @@ package body Ghost is
 
       --  Alternatively the argument could be an Assertion_Level
 
-      if Nkind (Expr) = N_Identifier
-        and then Present (Get_Assertion_Level (Chars (Expr)))
-      then
+      if Nkind (Expr) = N_Identifier then
          Level := Get_Assertion_Level (Chars (Expr));
          if Present (Level) then
+            --  The identifier resolved to an assertion level. Override the
+            --  Any_Id from a failed resolution in pre-analysis.
+
+            Set_Entity (Expr, Level);
             return Level;
          end if;
       end if;
@@ -1774,31 +1776,11 @@ package body Ghost is
       -----------------------
 
       function Enables_Ghostness (Arg : Node_Id) return Boolean is
-         Expr : constant Node_Id := Get_Pragma_Arg (Arg);
-
       begin
-         --  Aspect Ghost without an expression enables ghostness
+         --  Ghostness is enabled if the argument implies a default assertion
+         --  level or it is explicitly a reference to an assertion level.
 
-         if No (Expr) then
-            return True;
-         end if;
-
-         --  Check if the expression matches a static boolean expression first
-
-         Preanalyze_And_Resolve_Without_Errors (Expr);
-         if Is_OK_Static_Expression (Expr) then
-            return Is_True (Expr_Value (Expr));
-         end if;
-
-         --  Alternatively the argument could be an Assertion_Level
-
-         if Nkind (Expr) = N_Identifier
-           and then Present (Get_Assertion_Level (Chars (Expr)))
-         then
-            return True;
-         end if;
-
-         return False;
+         return Present (Assertion_Level_From_Arg (Arg));
       end Enables_Ghostness;
 
       --  Local variables

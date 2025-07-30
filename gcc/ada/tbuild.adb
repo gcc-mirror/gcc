@@ -162,6 +162,7 @@ package body Tbuild is
    begin
       Mutate_Ekind (Level, E_Assertion_Level);
       Set_Etype (Level, Standard_Void_Type);
+      Set_Scope (Level, Standard_Standard);
       return Level;
    end Make_Assertion_Level;
 
