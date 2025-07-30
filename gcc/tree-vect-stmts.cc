@@ -3892,9 +3892,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if (nargs == 0)
     return false;
 
-  vec<tree>& simd_clone_info = SLP_TREE_SIMD_CLONE_INFO (slp_node);
-  if (cost_vec)
-    simd_clone_info.truncate (0);
+  vect_simd_clone_data _data;
+  vect_simd_clone_data &data = slp_node->get_data (_data);
+  vec<tree>& simd_clone_info = data.simd_clone_info;
   arginfo.reserve (nargs, true);
   auto_vec<slp_tree> slp_op;
   slp_op.safe_grow_cleared (nargs);
@@ -4291,6 +4291,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
 
       SLP_TREE_TYPE (slp_node) = call_simd_clone_vec_info_type;
+      slp_node->data = new vect_simd_clone_data (std::move (_data));
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
 /*      vect_model_simple_cost (vinfo, 1, slp_node, cost_vec); */
       return true;

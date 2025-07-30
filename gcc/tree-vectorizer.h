@@ -243,6 +243,19 @@ struct vect_data {
   virtual ~vect_data () = default;
 };
 
+/* Analysis data from vectorizable_simd_clone_call for
+   call_simd_clone_vec_info_type.  */
+struct vect_simd_clone_data : vect_data {
+  virtual ~vect_simd_clone_data () = default;
+  vect_simd_clone_data () = default;
+  vect_simd_clone_data (vect_simd_clone_data &&other) = default;
+
+  /* Selected SIMD clone's function info.  First vector element
+     is SIMD clone's function decl, followed by a pair of trees (base + step)
+     for linear arguments (pair of NULLs for other arguments).  */
+  auto_vec<tree> simd_clone_info;
+};
+
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -270,11 +283,6 @@ struct _slp_tree {
      of { operand number, lane number }.  The number of elements
      denotes the number of output lanes.  */
   lane_permutation_t lane_permutation;
-
-  /* Selected SIMD clone's function info.  First vector element
-     is SIMD clone's function decl, followed by a pair of trees (base + step)
-     for linear arguments (pair of NULLs for other arguments).  */
-  vec<tree> simd_clone_info;
 
   tree vectype;
   /* Vectorized defs.  */
@@ -395,7 +403,6 @@ public:
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_LANE_PERMUTATION(S)             (S)->lane_permutation
-#define SLP_TREE_SIMD_CLONE_INFO(S)              (S)->simd_clone_info
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 #define SLP_TREE_VECTYPE(S)			 (S)->vectype
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
