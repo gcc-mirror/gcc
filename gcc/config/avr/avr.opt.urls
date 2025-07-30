@@ -92,6 +92,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
 mfuse-move=
 UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
 
+mfuse-move2
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-move2)
+
 mabsdata
 UrlSuffix(gcc/AVR-Options.html#index-mabsdata)
 

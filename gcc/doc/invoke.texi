@@ -913,7 +913,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options} (@ref{AVR Options})
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args  -mcvt
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
--mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
+-mfuse-move2  -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
@@ -24859,6 +24859,10 @@ and @code{@var{level}=23} for higher optimizations.
 Valid values for @var{level} are in the range @code{0} @dots{} @code{23}
 which is a 3:2:2:2 mixed radix value.  Each digit controls some
 aspect of the optimization.
+
+@opindex mfuse-move2
+@item -mfuse-move2
+Run a post combine optimization pass that tries to fuse move instructions.
 
 @opindex mstrict-X
 @item -mstrict-X
