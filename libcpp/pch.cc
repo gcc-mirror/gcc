@@ -730,9 +730,20 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 
 /* Save all the existing macros.  */
 
+namespace {
+
+struct saved_macro
+{
+  uchar *defn;
+  location_t loc;
+  expanded_location xloc;
+};
+
+} /* unnamed namespace */
+
 struct save_macro_data
 {
-  uchar **defns;
+  saved_macro *defns;
   size_t count;
   size_t array_size;
   char **saved_pragmas;
@@ -762,14 +773,29 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
       if (data->count == data->array_size)
 	{
 	  data->array_size *= 2;
-	  data->defns = XRESIZEVEC (uchar *, data->defns, (data->array_size));
+	  data->defns = XRESIZEVEC (saved_macro, data->defns, data->array_size);
 	}
 
       const uchar * defn = cpp_macro_definition (r, h);
       size_t defnlen = ustrlen (defn);
 
-      data->defns[data->count] = (uchar *) xmemdup (defn, defnlen, defnlen + 2);
-      data->defns[data->count][defnlen] = '\n';
+      const auto d = data->defns + data->count;
+      d->defn = (uchar *) xmemdup (defn, defnlen, defnlen + 2);
+      d->defn[defnlen] = '\n';
+      d->loc = h->value.macro->line;
+      d->xloc = {};
+      if (d->loc == r->line_table->cmdline_location)
+	{
+	  /* The cmdline_location may be different when it comes time to
+	     restore the macros, so use 0 to indicate this.  */
+	  d->loc = 0;
+	}
+      else if (d->loc != r->line_table->builtin_location)
+	{
+	  const auto map = linemap_lookup (r->line_table, d->loc);
+	  gcc_assert (map);
+	  d->xloc = linemap_expand_location (r->line_table, map, d->loc);
+	}
       data->count++;
     }
 
@@ -785,9 +811,22 @@ cpp_prepare_state (cpp_reader *r, struct save_macro_data **data)
   struct save_macro_data *d = XNEW (struct save_macro_data);
 
   d->array_size = 512;
-  d->defns = XNEWVEC (uchar *, d->array_size);
+  d->defns = XNEWVEC (saved_macro, d->array_size);
   d->count = 0;
   cpp_forall_identifiers (r, save_macros, d);
+
+  /* Sort the saved macros in order, so the line map gets built up
+     in chronological order as expected when we load them back in.  */
+  static line_maps *line_table;
+  line_table = r->line_table;
+  qsort (d->defns, d->count, sizeof (saved_macro),
+	 [] (const void *x1, const void *x2)
+	 {
+	   const auto d1 = static_cast<const saved_macro *> (x1);
+	   const auto d2 = static_cast<const saved_macro *> (x2);
+	   return linemap_compare_locations (line_table, d2->loc, d1->loc);
+	 });
+
   d->saved_pragmas = _cpp_save_pragma_names (r);
   *data = d;
 }
@@ -820,16 +859,16 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
   r->state.prevent_expansion = 1;
   r->state.angled_headers = 0;
 
+  const auto old_directive_line = r->directive_line;
+
   /* Run through the carefully-saved macros, insert them.  */
+  const char *cur_fname = nullptr;
   for (i = 0; i < data->count; i++)
     {
-      cpp_hashnode *h;
-      size_t namelen;
-      uchar *defn;
-
-      namelen = ustrcspn (data->defns[i], "( \n");
-      h = cpp_lookup (r, data->defns[i], namelen);
-      defn = data->defns[i] + namelen;
+      const auto d = data->defns + i;
+      const size_t namelen = ustrcspn (d->defn, "( \n");
+      cpp_hashnode *const h = cpp_lookup (r, d->defn, namelen);
+      const auto defn = d->defn + namelen;
 
       /* The PCH file is valid, so we know that if there is a definition
 	 from the PCH file it must be the same as the one we had
@@ -839,28 +878,72 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 	  if (cpp_push_buffer (r, defn, ustrchr (defn, '\n') - defn, true)
 	      != NULL)
 	    {
-	      _cpp_clean_line (r);
+	      if (d->loc == r->line_table->builtin_location)
+		r->directive_line = r->line_table->builtin_location;
+	      else if (d->loc == 0)
+		/* This was a command-line-defined macro, preserve that
+		   aspect now.  */
+		r->directive_line = r->line_table->cmdline_location;
+	      else
+		{
+		  /* In practice, almost all of the locations ought to be in the
+		     main file, since a PCH cannot be loaded after including
+		     other headers.  The (probably sole) exception is that
+		     implicit preincludes can be loaded, so if an implicit
+		     preinclude such as /usr/include/stdc-predef.h has changed
+		     since the PCH was created (in a way not invalidating the
+		     PCH), we can end up here with locations that are not in the
+		     main file.  In that case, we may be adding them to the
+		     line_map out of order (the implicit preinclude already
+		     being represented in the line_map we have loaded from the
+		     PCH), but it is probably not going to cause any observable
+		     issue given the constraints on what can appear in a header
+		     before loading a PCH.  */
+		  if (!cur_fname || strcmp (cur_fname, d->xloc.file))
+		    {
+		      linemap_add (r->line_table, LC_RENAME, d->xloc.sysp,
+				   d->xloc.file, d->xloc.line);
+		      cur_fname = d->xloc.file;
+		    }
+		  r->directive_line = linemap_line_start (r->line_table,
+							  d->xloc.line, 127);
+		}
 
-	      /* ??? Using r->line_table->highest_line is not ideal here, but we
-		 do need to use some location that is relative to the new line
-		 map just loaded, not the old one that was in effect when these
-		 macros were lexed.  The proper fix is to remember the file name
-		 and line number where each macro was defined, and then add
-		 these locations into the new line map.  See PR105608.  */
-	      if (!_cpp_create_definition (r, h, r->line_table->highest_line))
+	      /* Even when the macro was defined in the main file, we have to
+		 use cpp_force_token_locations here, so all tokens in the macro
+		 will have location assigned to the directive line with no
+		 column information.  We no longer know even which line the
+		 tokens appeared on originally now, much less the column, since
+		 we only stored the macro definition string after lexing it.  */
+	      cpp_force_token_locations (r, r->directive_line);
+
+	      _cpp_clean_line (r);
+	      if (!_cpp_create_definition (r, h, r->directive_line))
 		abort ();
+	      cpp_stop_forcing_token_locations (r);
 	      _cpp_pop_buffer (r);
+
+	      if (d->loc < RESERVED_LOCATION_COUNT)
+		/* Macros defined on the command line or as builtins are always
+		   implicitly used.  It is necessary to note this here or else
+		   -Wunused-macros will complain, because these locations do
+		   return TRUE for MAIN_FILE_P().  For a command line
+		   definition, d->loc was set to 0 when we saved it, so it does
+		   satisfy the check performed here.  */
+		h->value.macro->used = true;
 	    }
 	  else
 	    abort ();
 	}
 
-      free (data->defns[i]);
+      free (data->defns[i].defn);
     }
   r->state = old_state;
+  r->directive_line = old_directive_line;
 
   _cpp_restore_pragma_names (r, data->saved_pragmas);
 
+  XDELETEVEC (data->defns);
   free (data);
 
   if (deps_restore (r->deps, f, CPP_OPTION (r, restore_pch_deps) ? name : NULL)

@@ -878,6 +878,12 @@ public:
      built-in tokens.  */
   location_t builtin_location;
 
+  /* The special location value to be used for tokens originating on the
+     command line.  This is currently only needed by the C-family front ends
+     for PCH support; if it would be used for another purpose in the future,
+     then other libcpp-using front ends may need to set it as well.  */
+  location_t cmdline_location;
+
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
 

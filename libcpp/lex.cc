@@ -1353,6 +1353,8 @@ get_location_for_byte_range_in_cur_line (cpp_reader *pfile,
 					 const unsigned char *const start,
 					 size_t num_bytes)
 {
+  if (pfile->forced_token_location)
+    return pfile->forced_token_location;
   gcc_checking_assert (num_bytes > 0);
 
   /* CPP_BUF_COLUMN and linemap_position_for_column both refer
@@ -2035,6 +2037,7 @@ warn_about_normalization (cpp_reader *pfile,
       /* If possible, create a location range for the token.  */
       if (loc >= RESERVED_LOCATION_COUNT
 	  && token->type != CPP_EOF
+	  && !pfile->forced_token_location
 	  /* There must be no line notes to process.  */
 	  && (!(pfile->buffer->cur
 		>= pfile->buffer->notes[pfile->buffer->cur_note].pos
@@ -4399,7 +4402,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 
   /* Potentially convert the location of the token to a range.  */
   if (result->src_loc >= RESERVED_LOCATION_COUNT
-      && result->type != CPP_EOF)
+      && result->type != CPP_EOF
+      && !pfile->forced_token_location)
     {
       /* Ensure that any line notes are processed, so that we have the
 	 correct physical line/column for the end-point of the token even

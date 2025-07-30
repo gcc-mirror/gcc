@@ -1700,6 +1700,7 @@ c_finish_options (void)
       bool cxx_assert_seen_p = false;
 
       /* All command line defines must have the same location.  */
+      line_table->cmdline_location = line_table->highest_line;
       cpp_force_token_locations (parse_in, line_table->highest_line);
       for (size_t i = 0; i < deferred_count; i++)
 	{
