@@ -453,6 +453,13 @@ package body Ghost is
                return False;
             end if;
 
+            --  if the entitiy associated with the pragma is ignored then we do
+            --  not need to analyze the pragma.
+
+            if Is_Ignored_Ghost_Pragma (Prag) then
+               return True;
+            end if;
+
             Prag_Id  := Get_Pragma_Id (Prag);
             Prag_Nam := Original_Aspect_Pragma_Name (Prag);
 
