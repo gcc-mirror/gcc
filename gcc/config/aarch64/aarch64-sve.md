@@ -7598,29 +7598,29 @@
 
 ;; Unpredicated floating-point ternary operations.
 (define_expand "<optab><mode>4"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
 	  [(match_dup 4)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_FULL_F_B16B16 1 "register_operand")
-	   (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	   (match_operand:SVE_FULL_F_B16B16 3 "register_operand")]
+	   (match_dup 5)
+	   (match_operand:SVE_F_B16B16 1 "register_operand")
+	   (match_operand:SVE_F_B16B16 2 "register_operand")
+	   (match_operand:SVE_F_B16B16 3 "register_operand")]
 	  SVE_COND_FP_TERNARY))]
   "TARGET_SVE && (<supports_bf16> || !<is_bf16>)"
   {
-    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
+    operands[4] = aarch64_sve_fp_pred (<MODE>mode, &operands[5]);
   }
 )
 
 ;; Predicated floating-point ternary operations.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F_B16B16 0 "register_operand")
-	(unspec:SVE_FULL_F_B16B16
-	  [(match_operand:<VPRED> 1 "register_operand")
+  [(set (match_operand:SVE_F_B16B16 0 "register_operand")
+	(unspec:SVE_F_B16B16
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
 	   (match_operand:SI 5 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_FULL_F_B16B16 2 "register_operand")
-	   (match_operand:SVE_FULL_F_B16B16 3 "register_operand")
-	   (match_operand:SVE_FULL_F_B16B16 4 "register_operand")]
+	   (match_operand:SVE_F_B16B16 2 "register_operand")
+	   (match_operand:SVE_F_B16B16 3 "register_operand")
+	   (match_operand:SVE_F_B16B16 4 "register_operand")]
 	  SVE_COND_FP_TERNARY))]
   "TARGET_SVE && (<supports_bf16> || !<is_bf16>)"
   {@ [ cons: =0 , 1   , %2  , 3 , 4 ; attrs: movprfx , is_rev ]
