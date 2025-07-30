@@ -74,6 +74,14 @@ INSERT_PASS_BEFORE (pass_free_cfg, 1, avr_pass_recompute_notes);
 
 INSERT_PASS_AFTER (pass_expand, 1, avr_pass_casesi);
 
+/* Insn combine may come up with superfluous reg-reg moves, where the combine
+   people say that these are no problem since reg-alloc is supposed to optimize
+   them.  The issue is that the lower-subreg pass sitting between combine and
+   reg-alloc may split such moves, coming up with a zoo of subregs which are
+   only handled poorly by the register allocator.  */
+
+INSERT_PASS_AFTER (pass_combine, 1, avr_pass_2moves);
+
 /* Some combine insns have nonzero_bits() in their condition, though insns
    should not use such stuff in their condition.  Therefore, we split such
    insn into something without nonzero_bits() in their condition right after

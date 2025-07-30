@@ -4843,6 +4843,137 @@ avr_pass_fuse_add::execute1 (function *func)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// Fuse 2 move insns after combine.
+
+static const pass_data avr_pass_data_2moves =
+{
+  RTL_PASS,	    // type
+  "",		    // name (will be patched)
+  OPTGROUP_NONE,    // optinfo_flags
+  TV_DF_SCAN,	    // tv_id
+  0,		    // properties_required
+  0,		    // properties_provided
+  0,		    // properties_destroyed
+  0,		    // todo_flags_start
+  0		    // todo_flags_finish
+};
+
+class avr_pass_2moves : public rtl_opt_pass
+{
+public:
+  avr_pass_2moves (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_2moves, ctxt)
+  {
+    this->name = name;
+  }
+
+  unsigned int execute (function *func) final override
+  {
+    if (optimize && avropt_fuse_move2)
+      {
+	bool changed = false;
+	basic_block bb;
+
+	FOR_EACH_BB_FN (bb, func)
+	  {
+	    changed |= optimize_2moves_bb (bb);
+	  }
+
+	if (changed)
+	  {
+	    df_note_add_problem ();
+	    df_analyze ();
+	  }
+      }
+
+    return 0;
+  }
+
+  bool optimize_2moves (rtx_insn *, rtx_insn *);
+  bool optimize_2moves_bb (basic_block);
+}; // avr_pass_2moves
+
+bool
+avr_pass_2moves::optimize_2moves_bb (basic_block bb)
+{
+  bool changed = false;
+  rtx_insn *insn1 = nullptr;
+  rtx_insn *insn2 = nullptr;
+  rtx_insn *curr;
+
+  FOR_BB_INSNS (bb, curr)
+    {
+      if (insn1 && INSN_P (insn1)
+	  && insn2 && INSN_P (insn2))
+	changed |= optimize_2moves (insn1, insn2);
+
+      insn1 = insn2;
+      insn2 = curr;
+    }
+
+  return changed;
+}
+
+bool
+avr_pass_2moves::optimize_2moves (rtx_insn *insn1, rtx_insn *insn2)
+{
+  bool good = false;
+  bool bad = false;
+  rtx set1, dest1, src1;
+  rtx set2, dest2, src2;
+
+  if ((set1 = single_set (insn1))
+      && (set2 = single_set (insn2))
+      && (src1 = SET_SRC (set1))
+      && REG_P (src2 = SET_SRC (set2))
+      && REG_P (dest1 = SET_DEST (set1))
+      && REG_P (dest2 = SET_DEST (set2))
+      && rtx_equal_p (dest1, src2)
+      // Now we have:
+      // insn1: dest1 = src1
+      // insn2: dest2 = dest1
+      && REGNO (dest1) >= FIRST_PSEUDO_REGISTER
+      // Paranoia.
+      && GET_CODE (PATTERN (insn1)) != PARALLEL
+      && GET_CODE (PATTERN (insn2)) != PARALLEL
+      && (rtx_equal_p (dest2, src1)
+	  || !reg_overlap_mentioned_p (dest2, src1)))
+    {
+      avr_dump ("\n;; Found 2moves:\n%r\n%r\n", insn1, insn2);
+      avr_dump (";; reg %d: insn uses uids:", REGNO (dest1));
+
+      // Go check that dest1 is used exactly once, namely by insn2.
+
+      df_ref use = DF_REG_USE_CHAIN (REGNO (dest1));
+      for (; use; use = DF_REF_NEXT_REG (use))
+	{
+	  rtx_insn *user = DF_REF_INSN (use);
+	  avr_dump (" %d", INSN_UID (user));
+	  good |= INSN_UID (user) == INSN_UID (insn2);
+	  bad |= INSN_UID (user) != INSN_UID (insn2);
+	}
+      avr_dump (".\n");
+
+      if (good && !bad
+	  // Propagate src1 to insn2:
+	  // insn1: # Deleted
+	  // insn2: dest2 = src1
+	  && validate_change (insn2, &SET_SRC (set2), src1, false))
+	{
+	  SET_INSN_DELETED (insn1);
+	  return true;
+	}
+    }
+
+  if (good && !bad)
+    avr_dump (";; Failed\n");
+
+  return false;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Split insns with nonzero_bits() after combine.
 
 static const pass_data avr_pass_data_split_nzb =
@@ -5702,6 +5833,14 @@ rtl_opt_pass *
 make_avr_pass_casesi (gcc::context *ctxt)
 {
   return new avr_pass_casesi (ctxt, "avr-casesi");
+}
+
+// Optimize 2 consecutive moves after combine.
+
+rtl_opt_pass *
+make_avr_pass_2moves (gcc::context *ctxt)
+{
+  return new avr_pass_2moves (ctxt, "avr-2moves");
 }
 
 rtl_opt_pass *

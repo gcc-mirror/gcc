@@ -164,6 +164,10 @@ mfuse-move=
 Target Joined RejectNegative UInteger Var(avropt_fuse_move) Init(0) Optimization IntegerRange(0, 23)
 -mfuse-move=<0,23>	Optimization. Run a post-reload pass that tweaks move instructions.
 
+mfuse-move2
+Target Var(avropt_fuse_move2) Init(0) Optimization
+Optimization. Fuse some move insns after insn combine.
+
 mabsdata
 Target Mask(ABSDATA)
 Assume that all data in static storage can be accessed by LDS / STS instructions.  This option is only useful for reduced Tiny devices like ATtiny40.
