@@ -374,11 +374,16 @@ DEF_AVG_CEIL(uint8_t, uint16_t)
 DEF_AVG_CEIL(uint16_t, uint32_t)
 DEF_AVG_CEIL(uint32_t, uint64_t)
 
+DEF_AVG_CEIL(int8_t, int16_t)
+DEF_AVG_CEIL(int16_t, int32_t)
+DEF_AVG_CEIL(int32_t, int64_t)
+
 #ifdef HAS_INT128
   DEF_AVG_FLOOR(uint64_t, uint128_t)
   DEF_AVG_FLOOR(int64_t, int128_t)
 
   DEF_AVG_CEIL(uint64_t, uint128_t)
+  DEF_AVG_CEIL(int64_t, int128_t)
 #endif
 
 #define AVG_FLOOR_FUNC(T)      test_##T##_avg_floor
@@ -404,6 +409,7 @@ DEF_AVG_CEIL(uint32_t, uint64_t)
   DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_ADD_FUNC(T), sat_add)        \
   DEF_VX_BINARY_CASE_2_WRAP(T, SAT_S_SUB_FUNC(T), sat_sub)        \
   DEF_VX_BINARY_CASE_2_WRAP(T, AVG_FLOOR_FUNC_WRAP(T), avg_floor) \
+  DEF_VX_BINARY_CASE_2_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil)   \
 
 #define TEST_BINARY_VX_UNSIGNED_0(T)                              \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                            \
