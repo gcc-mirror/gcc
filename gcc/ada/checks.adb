@@ -8948,6 +8948,8 @@ package body Checks is
    function Make_Bignum_Block (Loc : Source_Ptr) return Node_Id is
       M : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uM);
    begin
+      Check_Restriction (No_Secondary_Stack, M);
+
       return
         Make_Block_Statement (Loc,
           Declarations               =>
