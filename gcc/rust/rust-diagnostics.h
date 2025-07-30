@@ -183,7 +183,7 @@ struct Error
   Error (Kind kind, location_t locus, std::string message)
     : kind (kind), locus (locus), message (std::move (message))
   {
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // simple location + error code
   Error (Kind kind, location_t locus, ErrorCode code, std::string message)
@@ -191,13 +191,13 @@ struct Error
       message (std::move (message))
   {
     is_errorcode = true;
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // rich location
   Error (Kind kind, rich_location *richlocus, std::string message)
     : kind (kind), richlocus (richlocus), message (std::move (message))
   {
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // rich location + error code
   Error (Kind kind, rich_location *richlocus, ErrorCode code,
@@ -206,7 +206,7 @@ struct Error
       message (std::move (message))
   {
     is_errorcode = true;
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // simple location
   Error (location_t locus, std::string message)
