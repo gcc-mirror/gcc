@@ -11164,6 +11164,20 @@ trees_in::fn_parms_fini (int tag, tree fn, tree existing, bool is_defn)
 		 names of the parms from us.  */
 	      DECL_NAME (existing_parm) = DECL_NAME (parm);
 	      DECL_SOURCE_LOCATION (existing_parm) = DECL_SOURCE_LOCATION (parm);
+
+	      /* And some other flags important for codegen are only set
+		 by the definition.  */
+	      TREE_ADDRESSABLE (existing_parm) = TREE_ADDRESSABLE (parm);
+	      DECL_BY_REFERENCE (existing_parm) = DECL_BY_REFERENCE (parm);
+	      DECL_NONLOCAL (existing_parm) = DECL_NONLOCAL (parm);
+	      DECL_ARG_TYPE (existing_parm) = DECL_ARG_TYPE (parm);
+
+	      /* Invisiref parms had their types adjusted by cp_genericize. */
+	      if (DECL_BY_REFERENCE (parm))
+		{
+		  TREE_TYPE (existing_parm) = TREE_TYPE (parm);
+		  relayout_decl (existing_parm);
+		}
 	    }
 
 	  back_refs[~tag] = existing_parm;
