@@ -885,6 +885,8 @@ string_table::read ()
     {
       vector_.quick_push (xstrdup (gcov_read_string ()));
       map_[vector_.last ()] = i;
+      if (gcov_is_error ())
+	return false;
     }
   return true;
 }
@@ -2747,14 +2749,22 @@ read_profile (void)
 
   /* autofdo_source_profile.  */
   afdo_source_profile = autofdo_source_profile::create ();
-  if (afdo_source_profile == NULL)
+  if (afdo_source_profile == NULL
+      || gcov_is_error ())
     {
       error ("cannot read function profile from %s", auto_profile_file);
+      delete afdo_source_profile;
+      afdo_source_profile = NULL;
       return;
     }
 
   /* autofdo_module_profile.  */
   fake_read_autofdo_module_profile ();
+  if (gcov_is_error ())
+    {
+      error ("cannot read module profile from %s", auto_profile_file);
+      return;
+    }
 }
 
 /* From AutoFDO profiles, find values inside STMT for that we want to measure
