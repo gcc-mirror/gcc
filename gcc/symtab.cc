@@ -303,6 +303,11 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 	warning (0, "%qD renamed after being referenced in assembly", decl);
 
       SET_DECL_ASSEMBLER_NAME (decl, name);
+      if (DECL_RTL_SET_P (decl))
+	{
+	  SET_DECL_RTL (decl, NULL);
+	  make_decl_rtl (decl);
+	}
       if (alias)
 	{
 	  gcc_assert (!IDENTIFIER_INTERNAL_P (name));
