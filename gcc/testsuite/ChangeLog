@@ -1,3 +1,111 @@
+2025-07-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/121215
+	* lib/profopt.exp (profopt-execute): Call cleanup-after-saved-dg-test
+	if returning early for the -fauto-profile case failing case.
+
+2025-07-29  Spencer Abson  <spencer.abson@arm.com>
+
+	* g++.target/aarch64/sve/unpacked_cond_binary_bf16_2.C: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_builtin_fmax_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_builtin_fmin_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fadd_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fdiv_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fmaxnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fminnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fmul_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fsubr_2.c: Likewise.
+
+2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* gcc.target/i386/pr121208-1a.c (dg-options): Add -mno-80387.
+	* gcc.target/i386/pr121208-1b.c (dg-options): Likewise.
+
+2025-07-29  Juergen Christ  <jchrist@linux.ibm.com>
+
+	PR testsuite/121286
+	PR testsuite/121288
+	* gcc.dg/vect/pr112325.c: Adjust parameters for s390.
+	* gcc.dg/vect/pr117888-1.c: Ditto.
+
+2025-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/saturating_arithmetic_1.c: Allow w0 and w1
+	to be duplicated in either order.
+	* gcc.target/aarch64/saturating_arithmetic_2.c: Likewise.
+
+2025-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/cmpbr.c: Support both operand orders
+	for 8-bit and 16-bit comparisons.
+
+2025-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/120660
+	* gcc.dg/pr120660.c: New test.
+
+2025-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119795
+	* gcc.target/i386/pr119795.c: New test.
+
+2025-07-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u16-from-u64.c: Add rv64
+	target for run.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u32-from-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u8-from-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_mul-1-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-1-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-2-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-2-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-2-u8-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-1-u8-from-u32.c: New test.
+
+2025-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* gcc.dg/vect/pr120687-3.c: New testcase.
+
+2025-07-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR testsuite/121285
+	* g++.dg/modules/class-11_a.H: Make static_asserts valid for
+	C++14.
+
+2025-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* gcc.dg/vect/pr120687-1.c: New testcase.
+	* gcc.dg/vect/pr120687-2.c: Likewise.
+
+2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121289
+	* gm2/warnings/style/fail/badvarname.mod: New test.
+	* gm2/warnings/style/fail/warnings-style-fail.exp: New test.
+
+2025-07-29  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/pr116906-1.c: Add 'dg-do run'.
+	* gcc.dg/pr116906-2.c: Likewise.
+	* gcc.dg/pr78185.c: Likewise.
+
+2025-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121159
+	* c-c++-common/pr121159.c: New test.
+	* gcc.dg/plugin/must-tail-call-2.c (test_5): Don't expect an error.
+
+2025-07-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120523
+	* gcc.dg/tree-ssa/cswtch-7.c: New test.
+
 2025-07-28  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/121236

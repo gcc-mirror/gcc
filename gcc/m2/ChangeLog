@@ -1,3 +1,36 @@
+2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldBecomes): Remove all
+	local variables.
+	(CodeIndrX): Remove length.
+	Remove newstr.
+	* gm2-compiler/M2Range.mod (FoldTypeIndrX): Remove desType.
+
+2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121289
+	* gm2-compiler/M2Students.def (CheckVariableAgainstKeyword): New
+	parameter tok.
+	* gm2-compiler/M2Students.mod (CheckVariableAgainstKeyword): New
+	parameter tok.
+	Pass tok to PerformVariableKeywordCheck.
+	(PerformVariableKeywordCheck): New parameter tok.
+	Pass tok to MetaErrorStringT0.
+	* gm2-compiler/P2SymBuild.mod (BuildVariable): Pass tok to
+	CheckVariableAgainstKeyword.
+	* gm2-libs-iso/LowLong.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/LowReal.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/LowShort.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/Processes.mod (Wait): Replace from with fromCor.
+	* gm2-libs-iso/RndFile.mod (EndPos): Replace end with endP.
+	* gm2-libs/SCmdArgs.mod (GetArg): Replace start with startPos.
+	Replace end with endPos.
+	(NArg): Replace start with startPos.
+	Replace end with endPos.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* gm2-gcc/m2linemap.cc: Update usage of "diagnostic_info" to

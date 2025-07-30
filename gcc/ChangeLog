@@ -1,3 +1,140 @@
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/121302
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Use
+	byte instead of 0 when calling simplify_subreg.
+
+2025-07-29  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_emit_masked_fp_pred):
+	Declare.
+	* config/aarch64/aarch64-sve.md (and<mode>3):  Change this to...
+	(@and<mode>3): ...this, so that we can use gen_and3.
+	(@cond_<optab><mode>): Extend from SVE_FULL_F_B16B16 to SVE_F_B16B16,
+	use aarch64_predicate_operand.
+	(*cond_<optab><mode>_2_strict): Likewise.
+	(*cond_<optab><mode>_3_strict): Likewise.
+	(*cond_<optab><mode>_any_strict): Likwise.
+	(*cond_<optab><mode>_2_const_strict): Extend from SVE_FULL_F to SVE_F,
+	use aarch64_predicate_operand.
+	(*cond_<optab><mode>_any_const_strict): Likewise.
+	(*cond_sub<mode>_3_const_strict): Likwise.
+	(*cond_sub<mode>_const_strict): Likewise.
+	(*vcond_mask_<mode><vpred>): Use aarch64_predicate_operand, and update
+	the comment here.
+	* config/aarch64/aarch64.cc (aarch64_sve_emit_masked_fp_pred): New
+	function.  Helper to mask the predicate in conditional expanders.
+
+2025-07-29  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* Makefile.in: Add riscv-mcpu.texi and riscv-mtune.texi to the list
+	of files to be processed by the Texinfo generator.
+	* config/riscv/t-riscv: Add rule for generating riscv-mcpu.texi
+	and riscv-mtune.texi.
+	* doc/invoke.texi: Replace hand‑written extension table with
+	`@include riscv-mcpu.texi` and `@include riscv-mtune.texi` to
+	pull in auto‑generated entries.
+	* config/riscv/gen-riscv-mcpu-texi.cc: New file.
+	* config/riscv/gen-riscv-mtune-texi.cc: New file.
+	* doc/riscv-mcpu.texi: New file.
+	* doc/riscv-mtune.texi: New file.
+
+2025-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Distribute
+	lowpart subregs through AND/IOR/XOR, if doing so eliminates one
+	of the terms.
+	(test_scalar_int_ext_ops): Add some tests of the above for integers.
+	* config/aarch64/aarch64.cc (aarch64_test_sve_folding): Likewise
+	add tests for predicate modes.
+
+2025-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::get_reg_target): Check whether the target
+	is a valid register_operand.
+
+2025-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/120660
+	* avoid-store-forwarding.cc (process_store_forwarding):
+	Fix instruction generation when haveing multiple stores with
+	base offset.
+
+2025-07-29  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_is_subset):
+	Remove use of structured binding to fix compiler warning.
+
+2025-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119795
+	* avoid-store-forwarding.cc
+	(store_forwarding_analyzer::avoid_store_forwarding): Skip
+	transformations for stores that operate on the same address
+	range as deleted ones.
+
+2025-07-29  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add mul based unsigned SAT_MUL.
+
+2025-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* tree-ssa-reassoc.cc (reassociate_bb): Do not disturb
+	the sorted operand order in the early pass.
+	* tree-vect-slp.cc (vect_analyze_slp): Dump when a detected
+	reduction chain fails SLP discovery.
+
+2025-07-29  Alfie Richards  <alfie.richards@arm.com>
+
+	PR middle-end/121261
+	* vec.h: Add null ptr check.
+
+2025-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121159
+	* calls.cc (can_implement_as_sibling_call_p): Don't reject declared
+	noreturn functions in musttail calls.
+
+2025-07-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* output.h (MAX_ALIGN_MERGABLE): New define.
+	* tree-switch-conversion.cc (switch_conversion::build_one_array):
+	Use MAX_ALIGN_MERGABLE instead of 256.
+	* varasm.cc (mergeable_string_section): Likewise
+	(mergeable_constant_section): Likewise
+
+2025-07-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120523
+	* output.h (mergeable_constant_section): New declaration taking
+	unsigned HOST_WIDE_INT for the size.
+	* tree-switch-conversion.cc (switch_conversion::build_one_array):
+	Increase the alignment of CSWTCH for sizes less than 32bytes.
+	* varasm.cc (mergeable_constant_section): Split out twice.
+	One that takes the size in unsigned HOST_WIDE_INT and the
+	other size in a tree.
+	(default_elf_select_section): Pass DECL_SIZE instead of
+	DECL_MODE to mergeable_constant_section.
+
+2025-07-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Un-factor VMAT
+	specific code to their handling blocks.
+
+2025-07-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (gather_scatter_info::offset_dt): Remove.
+	* tree-vect-data-refs.cc (vect_describe_gather_scatter_call):
+	Do not set it.
+	(vect_check_gather_scatter): Likewise.
+	* tree-vect-stmts.cc (vect_truncate_gather_scatter_offset):
+	Likewise.
+	(get_group_load_store_type): Use the vector type of the offset
+	SLP child.  Do not re-check vect_is_simple_use validated by
+	SLP build.
+
 2025-07-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/121277
