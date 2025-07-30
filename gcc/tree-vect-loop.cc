@@ -10973,42 +10973,26 @@ scale_profile_for_vect_loop (class loop *loop, edge exit_e, unsigned vf, bool fl
 		      get_likely_max_loop_iterations_int (loop));
 }
 
-/* Helper function to pass to simplify_replace_tree to enable replacing tree's
-   in the hash_map with its corresponding values.  */
-
-static tree
-find_in_mapping (tree t, void *context)
-{
-  hash_map<tree,tree>* mapping = (hash_map<tree, tree>*) context;
-
-  tree *value = mapping->get (t);
-  return value ? *value : t;
-}
-
 /* Update EPILOGUE's loop_vec_info.  EPILOGUE was constructed as a copy of the
    original loop that has now been vectorized.
 
    The inits of the data_references need to be advanced with the number of
    iterations of the main loop.  This has been computed in vect_do_peeling and
-   is stored in parameter ADVANCE.  We first restore the data_references
-   initial offset with the values recored in ORIG_DRS_INIT.
+   is stored in parameter ADVANCE.
 
    Since the loop_vec_info of this EPILOGUE was constructed for the original
    loop, its stmt_vec_infos all point to the original statements.  These need
-   to be updated to point to their corresponding copies as well as the SSA_NAMES
-   in their PATTERN_DEF_SEQs and RELATED_STMTs.
+   to be updated to point to their corresponding copies.
 
    The data_reference's connections also need to be updated.  Their
    corresponding dr_vec_info need to be reconnected to the EPILOGUE's
-   stmt_vec_infos, their statements need to point to their corresponding copy,
-   if they are gather loads or scatter stores then their reference needs to be
-   updated to point to its corresponding copy.  */
+   stmt_vec_infos, their statements need to point to their corresponding
+   copy.  */
 
 static void
 update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 {
   loop_vec_info epilogue_vinfo = loop_vec_info_for_loop (epilogue);
-  auto_vec<gimple *> stmt_worklist;
   hash_map<tree,tree> mapping;
   gimple *orig_stmt, *new_stmt;
   gimple_stmt_iterator epilogue_gsi;
@@ -11023,9 +11007,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 
   /* The EPILOGUE loop is a copy of the original loop so they share the same
      gimple UIDs.  In this loop we update the loop_vec_info of the EPILOGUE to
-     point to the copied statements.  We also create a mapping of all LHS' in
-     the original loop and all the LHS' in the EPILOGUE and create worklists to
-     update teh STMT_VINFO_PATTERN_DEF_SEQs and STMT_VINFO_RELATED_STMTs.  */
+     point to the copied statements.  */
   for (unsigned i = 0; i < epilogue->num_nodes; ++i)
     {
       for (epilogue_phi_gsi = gsi_start_phis (epilogue_bbs[i]);
@@ -11037,14 +11019,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	  stmt_vinfo
 	    = epilogue_vinfo->stmt_vec_infos[gimple_uid (new_stmt) - 1];
 
-	  orig_stmt = STMT_VINFO_STMT (stmt_vinfo);
 	  STMT_VINFO_STMT (stmt_vinfo) = new_stmt;
-
-	  mapping.put (gimple_phi_result (orig_stmt),
-		       gimple_phi_result (new_stmt));
-	  /* PHI nodes can not have patterns or related statements.  */
-	  gcc_assert (STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) == NULL
-		      && STMT_VINFO_RELATED_STMT (stmt_vinfo) == NULL);
 	}
 
       for (epilogue_gsi = gsi_start_bb (epilogue_bbs[i]);
@@ -11058,25 +11033,12 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	  stmt_vinfo
 	    = epilogue_vinfo->stmt_vec_infos[gimple_uid (new_stmt) - 1];
 
-	  orig_stmt = STMT_VINFO_STMT (stmt_vinfo);
 	  STMT_VINFO_STMT (stmt_vinfo) = new_stmt;
-
-	  if (tree old_lhs = gimple_get_lhs (orig_stmt))
-	    mapping.put (old_lhs, gimple_get_lhs (new_stmt));
-
-	  if (STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo))
-	    {
-	      gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
-	      for (gimple_stmt_iterator gsi = gsi_start (seq);
-		   !gsi_end_p (gsi); gsi_next (&gsi))
-		stmt_worklist.safe_push (gsi_stmt (gsi));
-	    }
 
 	  related_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
 	  if (related_vinfo != NULL && related_vinfo != stmt_vinfo)
 	    {
 	      gimple *stmt = STMT_VINFO_STMT (related_vinfo);
-	      stmt_worklist.safe_push (stmt);
 	      /* Set BB such that the assert in
 		'get_initial_defs_for_reduction' is able to determine that
 		the BB of the related stmt is inside this loop.  */
@@ -11089,33 +11051,6 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	}
     }
 
-  /* The PATTERN_DEF_SEQs and RELATED_STMTs in the epilogue were constructed
-     using the original main loop and thus need to be updated to refer to the
-     cloned variables used in the epilogue.  */
-  for (unsigned i = 0; i < stmt_worklist.length (); ++i)
-    {
-      gimple *stmt = stmt_worklist[i];
-      tree *new_op;
-
-      for (unsigned j = 1; j < gimple_num_ops (stmt); ++j)
-	{
-	  tree op = gimple_op (stmt, j);
-	  if ((new_op = mapping.get(op)))
-	    gimple_set_op (stmt, j, *new_op);
-	  else
-	    {
-	      /* PR92429: The last argument of simplify_replace_tree disables
-		 folding when replacing arguments.  This is required as
-		 otherwise you might end up with different statements than the
-		 ones analyzed in vect_loop_analyze, leading to different
-		 vectorization.  */
-	      op = simplify_replace_tree (op, NULL_TREE, NULL_TREE,
-					  &find_in_mapping, &mapping, false);
-	      gimple_set_op (stmt, j, op);
-	    }
-	}
-    }
-
   struct data_reference *dr;
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (epilogue_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
@@ -11123,25 +11058,6 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
       orig_stmt = DR_STMT (dr);
       gcc_assert (gimple_uid (orig_stmt) > 0);
       stmt_vinfo = epilogue_vinfo->stmt_vec_infos[gimple_uid (orig_stmt) - 1];
-      /* Data references for gather loads and scatter stores do not use the
-	 updated offset we set using ADVANCE.  Instead we have to make sure the
-	 reference in the data references point to the corresponding copy of
-	 the original in the epilogue.  Make sure to update both
-	 gather/scatters recognized by dataref analysis.  */
-      auto vstmt_vinfo = vect_stmt_to_vectorize (stmt_vinfo);
-      if (STMT_VINFO_STRIDED_P (vstmt_vinfo)
-	  || STMT_VINFO_GATHER_SCATTER_P (vstmt_vinfo))
-	{
-	  /* ???  As we copy epilogues from the main loop incremental
-	     replacement from an already replaced DR_REF from vectorizing
-	     the first epilogue will fail.  */
-	  DR_REF (dr)
-	    = simplify_replace_tree (DR_REF (dr), NULL_TREE, NULL_TREE,
-				     &find_in_mapping, &mapping);
-	  DR_BASE_ADDRESS (dr)
-	    = simplify_replace_tree (DR_BASE_ADDRESS (dr), NULL_TREE, NULL_TREE,
-				     &find_in_mapping, &mapping);
-	}
       DR_STMT (dr) = STMT_VINFO_STMT (stmt_vinfo);
     }
 
