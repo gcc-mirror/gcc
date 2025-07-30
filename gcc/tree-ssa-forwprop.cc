@@ -1340,6 +1340,21 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
 	    }
 	}
     }
+  /* A store of integer (scalar, vector or complex) zeros is
+     a zero store. */
+  else if (gimple_store_p (stmt)
+	   && gimple_assign_single_p (stmt)
+	   && integer_zerop (gimple_assign_rhs1 (stmt)))
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      tree type = TREE_TYPE (rhs);
+      dest = gimple_assign_lhs (stmt);
+      ao_ref_init (&read, dest);
+      /* For integral types, the type precision needs to be a multiply of BITS_PER_UNIT. */
+      if (INTEGRAL_TYPE_P (type)
+	  && (TYPE_PRECISION (type) % BITS_PER_UNIT) != 0)
+	dest = NULL_TREE;
+    }
   else if (gimple_store_p (stmt)
 	   && gimple_assign_single_p (stmt)
 	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == CONSTRUCTOR
