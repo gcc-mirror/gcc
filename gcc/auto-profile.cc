@@ -1629,7 +1629,13 @@ function_instance::match (cgraph_node *node,
 	if (iter->first != end_location
 	    && iter->first != start_location
 	    && (iter->first & 65535) != zero_location
-	    && iter->first)
+	    && iter->first
+	    /* FIXME: dwarf5 does not represent inline stack of debug
+	       statements and consequently create_gcov is sometimes
+	       mixing up statements from other functions.  Do not warn
+	       user about this until this problem is solved.
+	       We still write info into dump file.  */
+	    && 0)
 	  {
 	    if (!warned)
 	      warned = warning_at (DECL_SOURCE_LOCATION (node->decl),
@@ -3425,7 +3431,7 @@ add_scale (vec <scale> *scales, profile_count annotated, profile_count orig)
       annotated.dump (dump_file);
       fprintf (dump_file, "\n");
     }
-  if (orig.force_nonzero () == orig)
+  if (orig.nonzero_p ())
     {
       sreal scale
 	= annotated.guessed_local ()
@@ -3672,7 +3678,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	 {
 	   if (dump_file)
 	     fprintf (dump_file,
-		      "  Can not determine count from the boundary; giving up");
+		      "  Can not determine count from the boundary; giving up\n");
 	   continue;
 	 }
        gcc_checking_assert (scales.length ());
