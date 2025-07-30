@@ -1,3 +1,16 @@
+2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-06-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (*mov<mode>_and): Changed to
+	define_insn_and_split.  Split it to "mov $0,mem" if not -Oz.
+	(*mov<mode>_or): Changed to define_insn_and_split.  Split it
+	to "mov $-1,mem" if not -Oz.
+	(peephole2): Don't transform "mov $-1,reg" to "push $-1; pop reg"
+	for -Oz since it will be transformed to "or $-1,reg".
+
 2025-07-28  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
