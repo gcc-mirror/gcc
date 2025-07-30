@@ -7098,13 +7098,14 @@ check_scan_store (vec_info *vinfo, stmt_vec_info stmt_info, tree vectype,
   tree ref_type;
 
   gcc_assert (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) > 1);
-  if ((slp_node && SLP_TREE_LANES (slp_node) > 1)
+  if (SLP_TREE_LANES (slp_node) > 1
       || mask
       || memory_access_type != VMAT_CONTIGUOUS
       || TREE_CODE (DR_BASE_ADDRESS (dr_info->dr)) != ADDR_EXPR
       || !VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (dr_info->dr), 0))
       || loop_vinfo == NULL
       || LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+      || LOOP_VINFO_EPILOGUE_P (loop_vinfo)
       || STMT_VINFO_GROUPED_ACCESS (stmt_info)
       || !integer_zerop (get_dr_vinfo_offset (vinfo, dr_info))
       || !integer_zerop (DR_INIT (dr_info->dr))
