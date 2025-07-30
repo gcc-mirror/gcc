@@ -1976,7 +1976,49 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
        separated by the stride, until we have a complete vector.
        Fall back to scalar accesses if that isn't possible.  */
     *memory_access_type = VMAT_STRIDED_SLP;
-  else if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    {
+      *memory_access_type = VMAT_GATHER_SCATTER;
+      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
+				      elsvals))
+	gcc_unreachable ();
+      slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
+      tree offset_vectype = SLP_TREE_VECTYPE (offset_node);
+      gs_info->offset_vectype = offset_vectype;
+      /* When using internal functions, we rely on pattern recognition
+	 to convert the type of the offset to the type that the target
+	 requires, with the result being a call to an internal function.
+	 If that failed for some reason (e.g. because another pattern
+	 took priority), just handle cases in which the offset already
+	 has the right type.  */
+      if (GATHER_SCATTER_IFN_P (*gs_info)
+	  && !is_gimple_call (stmt_info->stmt)
+	  && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
+				     offset_vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s offset requires a conversion\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
+      else if (GATHER_SCATTER_EMULATED_P (*gs_info))
+	{
+	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
+	      || !TYPE_VECTOR_SUBPARTS (offset_vectype).is_constant ()
+	      || VECTOR_BOOLEAN_TYPE_P (offset_vectype)
+	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS (offset_vectype),
+				       TYPE_VECTOR_SUBPARTS (vectype)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "unsupported vector types for emulated "
+				 "gather.\n");
+	      return false;
+	    }
+	}
+    }
+  else
     {
       int cmp = compare_step_with_zero (vinfo, stmt_info);
       if (cmp < 0)
@@ -2226,48 +2268,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       && vect_use_strided_gather_scatters_p (stmt_info, vectype, loop_vinfo,
 					     masked_p, gs_info, elsvals))
     *memory_access_type = VMAT_GATHER_SCATTER;
-  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-    {
-      *memory_access_type = VMAT_GATHER_SCATTER;
-      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
-				      elsvals))
-	gcc_unreachable ();
-      slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
-      tree offset_vectype = SLP_TREE_VECTYPE (offset_node);
-      gs_info->offset_vectype = offset_vectype;
-      /* When using internal functions, we rely on pattern recognition
-	 to convert the type of the offset to the type that the target
-	 requires, with the result being a call to an internal function.
-	 If that failed for some reason (e.g. because another pattern
-	 took priority), just handle cases in which the offset already
-	 has the right type.  */
-      if (GATHER_SCATTER_IFN_P (*gs_info)
-	  && !is_gimple_call (stmt_info->stmt)
-	  && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
-				     offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "%s offset requires a conversion\n",
-			     vls_type == VLS_LOAD ? "gather" : "scatter");
-	  return false;
-	}
-      else if (GATHER_SCATTER_EMULATED_P (*gs_info))
-	{
-	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
-	      || !TYPE_VECTOR_SUBPARTS (offset_vectype).is_constant ()
-	      || VECTOR_BOOLEAN_TYPE_P (offset_vectype)
-	      || !constant_multiple_p (TYPE_VECTOR_SUBPARTS (offset_vectype),
-				       TYPE_VECTOR_SUBPARTS (vectype)))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "unsupported vector types for emulated "
-				 "gather.\n");
-	      return false;
-	    }
-	}
-    }
 
   if (*memory_access_type == VMAT_CONTIGUOUS_DOWN
       || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
