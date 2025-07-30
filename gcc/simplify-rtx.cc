@@ -8398,7 +8398,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
     return simplify_gen_relational (GET_CODE (op), outermode, innermode,
 				    XEXP (op, 0), XEXP (op, 1));
 
-  /* Distribute lowpart subregs through logic ops in cases where one term
+  /* Distribute non-paradoxical subregs through logic ops in cases where one term
      disappears.
 
      (subreg:M1 (and:M2 X C1)) -> (subreg:M1 X)
@@ -8416,7 +8416,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && (GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR)
       && CONSTANT_P (XEXP (op, 1)))
     {
-      rtx op1_subreg = simplify_subreg (outermode, XEXP (op, 1), innermode, 0);
+      rtx op1_subreg = simplify_subreg (outermode, XEXP (op, 1), innermode, byte);
       if (op1_subreg == CONSTM1_RTX (outermode))
 	{
 	  if (GET_CODE (op) == IOR)
@@ -8424,13 +8424,13 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	  rtx op0 = XEXP (op, 0);
 	  if (GET_CODE (op) == XOR)
 	    op0 = simplify_gen_unary (NOT, innermode, op0, innermode);
-	  return simplify_gen_subreg (outermode, op0, innermode, 0);
+	  return simplify_gen_subreg (outermode, op0, innermode, byte);
 	}
 
       if (op1_subreg == CONST0_RTX (outermode))
 	return (GET_CODE (op) == AND
 		? op1_subreg
-		: simplify_gen_subreg (outermode, XEXP (op, 0), innermode, 0));
+		: simplify_gen_subreg (outermode, XEXP (op, 0), innermode, byte));
     }
 
   return NULL_RTX;
