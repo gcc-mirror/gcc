@@ -937,7 +937,9 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
     {
       if (!parser.skip_token (COMMA))
 	{
-	  break;
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "expected token %qs", ";");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
       // Ok after the comma is good, we better be parsing correctly
       // everything in here, which is formatted string in ABNF
