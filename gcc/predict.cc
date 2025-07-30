@@ -245,7 +245,10 @@ unlikely_executed_edge_p (edge e)
 {
   return (e->src->count == profile_count::zero ()
 	  || e->probability == profile_probability::never ())
-	 || (e->flags & (EDGE_EH | EDGE_FAKE));
+	 || (e->flags & EDGE_FAKE)
+	 /* If we read profile and know EH edge is executed, trust it.
+	    Otherwise we consider EH edges never executed.  */
+	 || ((e->flags & EDGE_EH) && !e->probability.reliable_p ());
 }
 
 /* Return true if edge E of function FUN is probably never executed.  */
@@ -830,6 +833,26 @@ unlikely_executed_stmt_p (gimple *stmt)
 {
   if (!is_gimple_call (stmt))
     return false;
+
+  /* Those calls are inserted by optimizers when code is known to be
+     unreachable or undefined.  */
+  if (gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE)
+      || gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE_TRAP)
+      || gimple_call_builtin_p (stmt, BUILT_IN_TRAP))
+    return false;
+
+  /* Checks below do not need to be fully reliable.  Cold attribute may be
+     misplaced by user and in the presence of comdat we may result in call to
+     function with 0 profile having non-zero profile.
+
+     We later detect that profile is lost and will drop the profile of the
+     comdat.
+
+     So if we think profile count is reliable, do not try to apply these
+     heuristics.  */
+  if (gimple_bb (stmt)->count.reliable_p ()
+      && gimple_bb (stmt)->count.nonzero_p ())
+    return gimple_bb (stmt)->count == profile_count::zero ();
   /* NORETURN attribute alone is not strong enough: exit() may be quite
      likely executed once during program run.  */
   if (gimple_call_fntype (stmt)
@@ -3269,7 +3292,8 @@ tree_estimate_probability (bool dry_run)
   calculate_dominance_info (CDI_POST_DOMINATORS);
   /* Decide which edges are known to be unlikely.  This improves later
      branch prediction. */
-  determine_unlikely_bbs ();
+  if (!dry_run)
+    determine_unlikely_bbs ();
 
   bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
   ssa_expected_value = new hash_map<int_hash<unsigned, 0>, expected_value>;
