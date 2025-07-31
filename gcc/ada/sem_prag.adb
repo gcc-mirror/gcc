@@ -6900,12 +6900,14 @@ package body Sem_Prag is
          Handler_Proc := Find_Unique_Parameterless_Procedure (Arg1_X, Arg1);
          Proc_Scope := Scope (Handler_Proc);
 
-         if Ekind (Proc_Scope) /= E_Protected_Type then
+         if Nkind (Parent (Subprogram_Spec (Handler_Proc))) /=
+           N_Protected_Definition
+         then
             Error_Pragma_Arg
               ("argument of pragma% must be protected procedure", Arg1);
          end if;
 
-         --  For pragma case (as opposed to access case), check placement.
+         --  For pragma case (as opposed to aspect case), check placement.
          --  We don't need to do that for aspects, because we have the
          --  check that they aspect applies an appropriate procedure.
 
