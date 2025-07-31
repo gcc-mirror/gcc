@@ -1,3 +1,5 @@
+/* { dg-do assemble { target { aarch64_asm_sme2_ok && aarch64_asm_faminmax_ok } } } */
+/* { dg-do compile { target { ! { aarch64_asm_sme2_ok && aarch64_asm_faminmax_ok } } } } */
 /* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
 
 #include "test_sme2_acle.h"
