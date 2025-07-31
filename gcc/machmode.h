@@ -958,7 +958,8 @@ private:
 
 /* Find the best mode to use to access a bit field.  */
 
-extern bool get_best_mode (int, int, poly_uint64, poly_uint64, unsigned int,
+extern bool get_best_mode (HOST_WIDE_INT, HOST_WIDE_INT,
+			   poly_uint64, poly_uint64, unsigned int,
 			   unsigned HOST_WIDE_INT, bool, scalar_int_mode *);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */

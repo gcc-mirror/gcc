@@ -3167,7 +3167,7 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    decide which of the above modes should be used.  */
 
 bool
-get_best_mode (int bitsize, int bitpos,
+get_best_mode (HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	       poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 	       unsigned int align,
 	       unsigned HOST_WIDE_INT largest_mode_bitsize, bool volatilep,
