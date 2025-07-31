@@ -17465,6 +17465,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      for each element.  We therefore need to divide the full-instruction
      cost by the number of elements in the vector.  */
   if (kind == scalar_load
+      && node
       && sve_costs
       && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     {
@@ -17478,6 +17479,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   /* Detect cases in which a scalar_store is really storing one element
      in a scatter operation.  */
   if (kind == scalar_store
+      && node
       && sve_costs
       && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
     return sve_costs->scatter_store_elt_cost;
@@ -18005,7 +18007,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
       /* Check if we've seen an SVE gather/scatter operation and which size.  */
       if (kind == scalar_load
-	  && !m_costing_for_scalar
+	  && node
 	  && vectype
 	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
 	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
