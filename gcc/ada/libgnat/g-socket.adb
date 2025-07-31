@@ -47,7 +47,6 @@ with GNAT.Sockets.Poll;
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
-with System.C_Time;
 with System.Task_Lock;
 
 package body GNAT.Sockets is
@@ -179,6 +178,13 @@ package body GNAT.Sockets is
 
    function Value (S : System.Address) return String;
    --  Same as Interfaces.C.Strings.Value but taking a System.Address
+
+   function To_Timeval (Val : Timeval_Duration) return Timeval;
+   --  Separate Val in seconds and microseconds
+
+   function To_Duration (Val : Timeval) return Timeval_Duration;
+   --  Reconstruct a Duration value from a Timeval record (seconds and
+   --  microseconds).
 
    function Dedot (Value : String) return String
    is (if Value /= "" and then Value (Value'Last) = '.'
@@ -522,7 +528,7 @@ package body GNAT.Sockets is
       Res  : C.int;
       Last : C.int;
       RSig : Socket_Type := No_Socket;
-      TVal : aliased System.C_Time.timeval;
+      TVal : aliased Timeval;
       TPtr : Timeval_Access;
 
    begin
@@ -537,7 +543,7 @@ package body GNAT.Sockets is
       if Timeout = Forever then
          TPtr := null;
       else
-         TVal := System.C_Time.To_Timeval (Timeout);
+         TVal := To_Timeval (Timeout);
          TPtr := TVal'Unchecked_Access;
       end if;
 
@@ -1417,7 +1423,7 @@ package body GNAT.Sockets is
       U4  : aliased C.unsigned;
       V1  : aliased C.unsigned_char;
       VS  : aliased C.char_array (1 .. NS); -- for devices name
-      VT  : aliased System.C_Time.timeval;
+      VT  : aliased Timeval;
       Len : aliased C.int;
       Add : System.Address;
       Res : C.int;
@@ -1590,10 +1596,8 @@ package body GNAT.Sockets is
                   Opt.Timeout := Duration (U4) / 1000;
                end if;
 
-            elsif System.C_Time.In_Timeval_Duration (VT) then
-               Opt.Timeout := System.C_Time.To_Duration (VT);
             else
-               Opt.Timeout := Forever;
+               Opt.Timeout := To_Duration (VT);
             end if;
 
          when Bind_To_Device =>
@@ -2629,7 +2633,7 @@ package body GNAT.Sockets is
               (1 .. (if Option.Name = Bind_To_Device
                      then C.size_t (ASU.Length (Option.Device) + 1)
                      else 0));
-      VT  : aliased System.C_Time.timeval;
+      VT  : aliased Timeval;
       Len : C.int;
       Add : System.Address := Null_Address;
       Res : C.int;
@@ -2763,7 +2767,7 @@ package body GNAT.Sockets is
                end if;
 
             else
-               VT  := System.C_Time.To_Timeval (Option.Timeout);
+               VT  := To_Timeval (Option.Timeout);
                Len := VT'Size / 8;
                Add := VT'Address;
             end if;
@@ -2860,6 +2864,33 @@ package body GNAT.Sockets is
    begin
       return Integer (Socket);
    end To_C;
+
+   -----------------
+   -- To_Duration --
+   -----------------
+
+   function To_Duration (Val : Timeval) return Timeval_Duration is
+      Max_D : constant Long_Long_Integer := Long_Long_Integer (Forever - 0.5);
+      Tv_sec_64 : constant Boolean := SOSC.SIZEOF_tv_sec = 8;
+      --  Need to separate this condition into the constant declaration to
+      --  avoid GNAT warning about "always true" or "always false".
+   begin
+      if Tv_sec_64 then
+         --  Check for possible Duration overflow when Tv_Sec field is 64 bit
+         --  integer.
+
+         if Val.Tv_Sec > time_t (Max_D)
+             or else
+           (Val.Tv_Sec = time_t (Max_D)
+              and then
+            Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
+         then
+            return Forever;
+         end if;
+      end if;
+
+      return Duration (Val.Tv_Sec) + Duration (Val.Tv_Usec) * 1.0E-6;
+   end To_Duration;
 
    -------------------
    -- To_Host_Entry --
@@ -3009,6 +3040,35 @@ package body GNAT.Sockets is
    begin
       return HN.Name (1 .. HN.Length);
    end To_String;
+
+   ----------------
+   -- To_Timeval --
+   ----------------
+
+   function To_Timeval (Val : Timeval_Duration) return Timeval is
+      S  : time_t;
+      uS : suseconds_t;
+
+   begin
+      --  If zero, set result as zero (otherwise it gets rounded down to -1)
+
+      if Val = 0.0 then
+         S  := 0;
+         uS := 0;
+
+      --  Normal case where we do round down
+
+      else
+         S := time_t (Val - 0.5);
+         if Val = Timeval_Duration (S) then
+            uS := 0;
+         else
+            uS := suseconds_t ((Val - Timeval_Duration (S)) * 1_000_000 - 0.5);
+         end if;
+      end if;
+
+      return (S, uS);
+   end To_Timeval;
 
    -----------
    -- Value --

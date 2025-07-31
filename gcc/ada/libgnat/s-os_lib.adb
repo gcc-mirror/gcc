@@ -2985,7 +2985,7 @@ package body System.OS_Lib is
    -- To_Ada --
    ------------
 
-   function To_Ada (Time : Long_Long_Integer) return OS_Time is
+   function To_Ada (Time : time_t) return OS_Time is
    begin
       return OS_Time (Time);
    end To_Ada;
@@ -3023,9 +3023,9 @@ package body System.OS_Lib is
    -- To_C --
    ----------
 
-   function To_C (Time : OS_Time) return Long_Long_Integer is
+   function To_C (Time : OS_Time) return time_t is
    begin
-      return Long_Long_Integer (Time);
+      return time_t (Time);
    end To_C;
 
    ------------------

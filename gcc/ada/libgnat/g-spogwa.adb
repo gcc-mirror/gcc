@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.C_Time;
+with GNAT.Sockets.Thin_Common;
 
 procedure GNAT.Sockets.Poll.G_Wait
   (Fds : in out Set; Timeout : Interfaces.C.int; Result : out Integer)
@@ -41,11 +41,11 @@ is
       readfds   : access FD_Set_Type;
       writefds  : access FD_Set_Type;
       exceptfds : access FD_Set_Type;
-      timeout   : access System.C_Time.timeval) return Integer
+      timeout   : access Thin_Common.Timeval) return Integer
      with Import => True, Convention => Stdcall, External_Name => "select";
 
-   Timeout_V : aliased System.C_Time.timeval;
-   Timeout_A : access System.C_Time.timeval;
+   Timeout_V : aliased Thin_Common.Timeval;
+   Timeout_A : access Thin_Common.Timeval;
 
    Rfds      : aliased FD_Set_Type;
    Rcount    : Natural := 0;
@@ -63,7 +63,8 @@ begin
 
    if Timeout >= 0 then
       Timeout_A := Timeout_V'Access;
-      Timeout_V := System.C_Time.Milliseconds_To_Timeval (Timeout);
+      Timeout_V.Tv_Sec  := Thin_Common.time_t  (Timeout / 1000);
+      Timeout_V.Tv_Usec := Thin_Common.suseconds_t (Timeout rem 1000 * 1000);
    end if;
 
    Reset_Socket_Set (Rfds);

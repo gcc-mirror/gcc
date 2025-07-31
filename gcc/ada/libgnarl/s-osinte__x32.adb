@@ -35,7 +35,7 @@
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
 
-with Interfaces.C;
+with Interfaces.C; use Interfaces.C;
 
 package body System.OS_Interface is
 
@@ -59,6 +59,15 @@ package body System.OS_Interface is
       null;
    end pthread_init;
 
+   -----------------
+   -- To_Duration --
+   -----------------
+
+   function To_Duration (TS : timespec) return Duration is
+   begin
+      return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
+   end To_Duration;
+
    ------------------------
    -- To_Target_Priority --
    ------------------------
@@ -69,5 +78,29 @@ package body System.OS_Interface is
    begin
       return Interfaces.C.int (Prio);
    end To_Target_Priority;
+
+   -----------------
+   -- To_Timespec --
+   -----------------
+
+   function To_Timespec (D : Duration) return timespec is
+      S : time_t;
+      F : Duration;
+
+   begin
+      S := time_t (Long_Long_Integer (D));
+      F := D - Duration (S);
+
+      --  If F has negative value due to a round-up, adjust for positive F
+      --  value.
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
+      return timespec'(tv_sec => S,
+                       tv_nsec => Long_Long_Integer (F * 10#1#E9));
+   end To_Timespec;
 
 end System.OS_Interface;

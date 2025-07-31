@@ -1764,17 +1764,6 @@ CND(SIZEOF_tv_usec, "tv_usec")
 #endif
 CNS(MAX_tv_sec, "")
 }
-
-{
-  struct timespec ts;
-/*
-   --  Sizes (in bytes) of the components of struct timespec.
-   --  The tv_sec field is the same as in struct timeval.
-*/
-#define SIZEOF_tv_nsec (sizeof (ts.tv_nsec))
-CND(SIZEOF_tv_nsec, "tv_nsec");
-}
-
 /*
 
    --  Sizes of various data types

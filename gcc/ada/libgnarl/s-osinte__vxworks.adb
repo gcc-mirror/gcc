@@ -41,6 +41,38 @@ package body System.OS_Interface is
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority
 
+   -----------------
+   -- To_Duration --
+   -----------------
+
+   function To_Duration (TS : timespec) return Duration is
+   begin
+      return Duration (TS.ts_sec) + Duration (TS.ts_nsec) / 10#1#E9;
+   end To_Duration;
+
+   -----------------
+   -- To_Timespec --
+   -----------------
+
+   function To_Timespec (D : Duration) return timespec is
+      S : time_t;
+      F : Duration;
+
+   begin
+      S := time_t (Long_Long_Integer (D));
+      F := D - Duration (S);
+
+      --  If F is negative due to a round-up, adjust for positive F value
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
+      return timespec'(ts_sec  => S,
+                       ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+   end To_Timespec;
+
    -------------------------
    -- To_VxWorks_Priority --
    -------------------------

@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2014-2025, Free Software Foundation, Inc.       --
+--          Copyright (C) 2013-2025, Free Software Foundation, Inc.         --
+--
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -19,15 +20,15 @@
 -- additional permissions described in the GCC Runtime Library Exception,   --
 -- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
--- In particular,  you can freely  distribute your programs  built with the --
--- GNAT Pro compiler, including any required library run-time units,  using --
--- any licensing terms  of your choosing.  See the AdaCore Software License --
--- for full details.                                                        --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Android version of this package
+--  This is the x32 version of this package
 
 --  This package encapsulates cpu specific differences between implementations
 --  of GNU/Linux, in order to share s-osinte-linux.ads.
@@ -36,6 +37,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package
 
 with Interfaces.C;
+
 with System.Parameters;
 
 package System.Linux is
@@ -45,15 +47,16 @@ package System.Linux is
    -- Time --
    ----------
 
-   subtype long        is Interfaces.C.long;
-   subtype suseconds_t is Interfaces.C.long;
+   subtype suseconds_t is Long_Long_Integer;
+   --  Note that suseconds_t is 64 bits.
    type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
      .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
    subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : long;
+      tv_nsec : Long_Long_Integer;
+      --  Note that tv_nsec is 64 bits.
    end record;
    pragma Convention (C, timespec);
 
@@ -88,53 +91,43 @@ package System.Linux is
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 7; --  bus error
+   SIGUSR1    : constant := 10; --  user defined signal 1
    SIGSEGV    : constant := 11; --  segmentation violation
+   SIGUSR2    : constant := 12; --  user defined signal 2
    SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
    SIGALRM    : constant := 14; --  alarm clock
    SIGTERM    : constant := 15; --  software termination signal from kill
-   SIGUSR1    : constant := 10; --  user defined signal 1
-   SIGUSR2    : constant := 12; --  user defined signal 2
+   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
    SIGCLD     : constant := 17; --  alias for SIGCHLD
    SIGCHLD    : constant := 17; --  child status change
-   SIGPWR     : constant := 30; --  power-fail restart
-   SIGWINCH   : constant := 28; --  window size change
-   SIGURG     : constant := 23; --  urgent condition on IO channel
-   SIGPOLL    : constant := 29; --  pollable event occurred
-   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
-   SIGLOST    : constant := 29; --  File lock lost
    SIGSTOP    : constant := 19; --  stop (cannot be caught or ignored)
    SIGTSTP    : constant := 20; --  user stop requested from tty
    SIGCONT    : constant := 18; --  stopped process has been continued
    SIGTTIN    : constant := 21; --  background tty read attempted
    SIGTTOU    : constant := 22; --  background tty write attempted
-   SIGVTALRM  : constant := 26; --  virtual timer expired
-   SIGPROF    : constant := 27; --  profiling timer expired
+   SIGURG     : constant := 23; --  urgent condition on IO channel
    SIGXCPU    : constant := 24; --  CPU time limit exceeded
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGSYS     : constant := 31; --  bad argument to system call
-   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
-   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
+   SIGVTALRM  : constant := 26; --  virtual timer expired
+   SIGPROF    : constant := 27; --  profiling timer expired
+   SIGWINCH   : constant := 28; --  window size change
+   SIGPOLL    : constant := 29; --  pollable event occurred
+   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
+   SIGLOST    : constant := 29; --  File lock lost
+   SIGPWR     : constant := 30; --  power-fail restart
+   SIGSYS     : constant := 31; --  bad system call
+   SIGUNUSED  : constant := 31; --  unused signal (mapped to SIGSYS)
    SIG32      : constant := 32; --  glibc internal signal
    SIG33      : constant := 33; --  glibc internal signal
    SIG34      : constant := 34; --  glibc internal signal
 
-   --  struct_sigaction
+   --  struct_sigaction offsets
 
-   generic
-      type sigset_t is private;
-   package Android_Sigaction is
-      type struct_sigaction is record
-         sa_handler  : System.Address;
-         sa_mask     : sigset_t;
-         sa_flags    : Interfaces.C.int;
-         sa_restorer : System.Address;
-      end record;
-      pragma Convention (C, struct_sigaction);
-   end Android_Sigaction;
+   sa_handler_pos : constant := 0;
+   sa_mask_pos    : constant := Standard'Address_Size / 8;
+   sa_flags_pos   : constant := 128 + sa_mask_pos;
 
-   SA_SIGINFO  : constant := 16#00000004#;
+   SA_SIGINFO  : constant := 16#04#;
    SA_ONSTACK  : constant := 16#08000000#;
-   SA_RESTART  : constant := 16#10000000#;
-   SA_NODEFER  : constant := 16#40000000#;
 
 end System.Linux;

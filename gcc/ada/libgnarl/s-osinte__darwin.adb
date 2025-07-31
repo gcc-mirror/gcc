@@ -36,6 +36,15 @@ with Interfaces.C.Extensions;
 package body System.OS_Interface is
    use Interfaces.C;
 
+   -----------------
+   -- To_Duration --
+   -----------------
+
+   function To_Duration (TS : timespec) return Duration is
+   begin
+      return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
+   end To_Duration;
+
    ------------------------
    -- To_Target_Priority --
    ------------------------
@@ -47,13 +56,37 @@ package body System.OS_Interface is
       return Interfaces.C.int (Prio);
    end To_Target_Priority;
 
+   -----------------
+   -- To_Timespec --
+   -----------------
+
+   function To_Timespec (D : Duration) return timespec is
+      S : time_t;
+      F : Duration;
+
+   begin
+      S := time_t (Long_Long_Integer (D));
+      F := D - Duration (S);
+
+      --  If F has negative value due to a round-up, adjust for positive F
+      --  value.
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
+      return timespec'(tv_sec => S,
+        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+   end To_Timespec;
+
    -------------------
    -- clock_gettime --
    -------------------
 
    function clock_gettime
      (clock_id : clockid_t;
-      tp       : access C_Time.timespec) return int
+      tp       : access timespec) return int
    is
       pragma Unreferenced (clock_id);
 
@@ -61,18 +94,33 @@ package body System.OS_Interface is
 
       use Interfaces;
 
-      TV     : aliased C_Time.timeval;
+      type timeval is array (1 .. 3) of C.long;
+      --  The timeval array is sized to contain long_long sec and long usec.
+      --  If long_long'Size = long'Size then it will be overly large but that
+      --  won't effect the implementation since it's not accessed directly.
+
+      procedure timeval_to_duration
+        (T    : not null access timeval;
+         sec  : not null access C.Extensions.long_long;
+         usec : not null access C.long);
+      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
+
+      Micro  : constant := 10**6;
+      sec    : aliased C.Extensions.long_long;
+      usec   : aliased C.long;
+      TV     : aliased timeval;
       Result : int;
 
       function gettimeofday
-        (Tv : access C_Time.timeval;
+        (Tv : access timeval;
          Tz : System.Address := System.Null_Address) return int;
       pragma Import (C, gettimeofday, "gettimeofday");
 
    begin
       Result := gettimeofday (TV'Access, System.Null_Address);
       pragma Assert (Result = 0);
-      tp.all := C_Time.To_Timespec (TV);
+      timeval_to_duration (TV'Access, sec'Access, usec'Access);
+      tp.all := To_Timespec (Duration (sec) + Duration (usec) / Micro);
       return Result;
    end clock_gettime;
 
@@ -82,12 +130,13 @@ package body System.OS_Interface is
 
    function clock_getres
      (clock_id : clockid_t;
-      res      : access C_Time.timespec) return int
+      res      : access timespec) return int
    is
       pragma Unreferenced (clock_id);
 
       --  Darwin Threads don't have clock_getres.
 
+      Nano   : constant := 10**9;
       nsec   : int := 0;
       Result : int := -1;
 
@@ -96,7 +145,7 @@ package body System.OS_Interface is
 
    begin
       nsec := clock_get_res;
-      res.all := C_Time.Nanoseconds_To_Timespec (nsec);
+      res.all := To_Timespec (Duration (0.0) + Duration (nsec) / Nano);
 
       if nsec > 0 then
          Result := 0;

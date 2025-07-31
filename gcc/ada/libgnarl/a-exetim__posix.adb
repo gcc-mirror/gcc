@@ -34,9 +34,8 @@
 with Ada.Task_Identification;  use Ada.Task_Identification;
 with Ada.Unchecked_Conversion;
 
-with System.C_Time;
-with System.OS_Interface; use System.OS_Interface;
 with System.Tasking;
+with System.OS_Interface; use System.OS_Interface;
 with System.Task_Primitives.Operations; use System.Task_Primitives.Operations;
 
 with Interfaces.C; use Interfaces.C;
@@ -99,7 +98,7 @@ package body Ada.Execution_Time is
      (T : Ada.Task_Identification.Task_Id :=
         Ada.Task_Identification.Current_Task) return CPU_Time
    is
-      TS       : aliased System.C_Time.timespec;
+      TS       : aliased timespec;
       Clock_Id : aliased Interfaces.C.int;
       Result   : Interfaces.C.int;
 
@@ -113,7 +112,7 @@ package body Ada.Execution_Time is
 
       function clock_gettime
         (clock_id : Interfaces.C.int;
-         tp       : access System.C_Time.timespec)
+         tp       : access timespec)
          return Interfaces.C.int;
       pragma Import (C, clock_gettime, "clock_gettime");
       --  Function from the POSIX.1b Realtime Extensions library
@@ -140,7 +139,7 @@ package body Ada.Execution_Time is
         (clock_id => Clock_Id, tp => TS'Unchecked_Access);
       pragma Assert (Result = 0);
 
-      return To_CPU_Time (System.C_Time.To_Duration (TS));
+      return To_CPU_Time (To_Duration (TS));
    end Clock;
 
    --------------------------

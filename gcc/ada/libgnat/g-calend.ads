@@ -40,8 +40,7 @@
 --  Day_Of_Week, Day_In_Year and Week_In_Year.
 
 with Ada.Calendar.Formatting;
-
-with System.C_Time;
+with Interfaces.C;
 
 package GNAT.Calendar is
 
@@ -127,7 +126,7 @@ package GNAT.Calendar is
    --  locale (equivalent to Clock). Due to this simplified behavior, the
    --  implementation does not require expensive system calls on targets such
    --  as Windows.
-   --  WARNING: Time_At_Locale is no longer aware of historic events and may
+   --  WARNING: Split_At_Locale is no longer aware of historic events and may
    --  produce inaccurate results over DST changes which occurred in the past.
 
    function Week_In_Year (Date : Ada.Calendar.Time) return Week_In_Year_Number;
@@ -146,18 +145,24 @@ package GNAT.Calendar is
    --  Return the week number as defined in ISO 8601 along with the year in
    --  which the week occurs.
 
-   subtype timeval is System.C_Time.timeval;
-   pragma Obsolescent (timeval, "use type from GNAT.C_Time instead");
+   --  C timeval conversion
+
+   --  C timeval represent a duration (used in Select for example). This
+   --  structure is composed of a number of seconds and a number of micro
+   --  seconds. The timeval structure is not exposed here because its
+   --  definition is target dependent. Interface to C programs is done via a
+   --  pointer to timeval structure.
+
+   type timeval is private;
 
    function To_Duration (T : not null access timeval) return Duration;
-   pragma Inline (To_Duration);
-   pragma Obsolescent (To_Duration, "use function from GNAT.C_Time instead");
-
    function To_Timeval  (D : Duration) return timeval;
-   pragma Inline (To_Timeval);
-   pragma Obsolescent (To_Timeval, "use function from GNAT.C_Time instead");
 
 private
+   --  This is a dummy declaration that should be the largest possible timeval
+   --  structure of all supported targets.
+
+   type timeval is array (1 .. 3) of Interfaces.C.long;
 
    function Julian_Day
      (Year  : Ada.Calendar.Year_Number;

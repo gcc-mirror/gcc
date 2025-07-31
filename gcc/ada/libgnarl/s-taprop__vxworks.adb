@@ -38,7 +38,6 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
-with System.C_Time;
 with System.Float_Control;
 with System.Interrupt_Management;
 with System.Multiprocessors;
@@ -682,12 +681,12 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    function Monotonic_Clock return Duration is
-      TS     : aliased C_Time.timespec;
+      TS     : aliased timespec;
       Result : int;
    begin
       Result := clock_gettime (OSC.CLOCK_RT_Ada, TS'Unchecked_Access);
       pragma Assert (Result = 0);
-      return C_Time.To_Duration (TS);
+      return To_Duration (TS);
    end Monotonic_Clock;
 
    -------------------

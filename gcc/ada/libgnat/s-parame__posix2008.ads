@@ -29,12 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Default version used when no target-specific version is provided
+--  This is the Posix 2008 version for 64 bit time_t.
 
---  This package defines a number of system-dependent parameters for GNAT.
---  These are values that are referenced by the runtime library and are
---  therefore relevant to the target machine. This includes the default and
---  minimum size and the length of a task name.
+--  This package defines some system dependent parameters for GNAT. These
+--  are values that are referenced by the runtime library and are therefore
+--  relevant to the target machine.
 
 --  The parameters whose value is defined in the spec are not generally
 --  expected to be changed. If they are changed, it will be necessary to
@@ -101,8 +100,9 @@ package System.Parameters is
    -- Characteristics of time_t type --
    ------------------------------------
 
-   time_t_bits : constant := Long_Integer'Size;
-   --  Number of bits in type time_t
+   time_t_bits : constant := Long_Long_Integer'Size;
+   --  Number of bits in type time_t. Use for targets that are Posix 2008
+   --  compliant (fixes the year 2038 time_t overflow).
 
    ----------------------------------------------
    -- Characteristics of types in Interfaces.C --

@@ -31,8 +31,6 @@
 
 --  This is the Monotonic version of this package for Posix and Linux targets.
 
-with System.C_Time;
-
 separate (System.Task_Primitives.Operations)
 package body Monotonic is
 
@@ -56,14 +54,14 @@ package body Monotonic is
    ---------------------
 
    function Monotonic_Clock return Duration is
-      TS     : aliased C_Time.timespec;
+      TS     : aliased timespec;
       Result : Interfaces.C.int;
    begin
       Result := clock_gettime
         (clock_id => OSC.CLOCK_RT_Ada, tp => TS'Unchecked_Access);
       pragma Assert (Result = 0);
 
-      return C_Time.To_Duration (TS);
+      return To_Duration (TS);
    end Monotonic_Clock;
 
    -------------------
@@ -71,14 +69,14 @@ package body Monotonic is
    -------------------
 
    function RT_Resolution return Duration is
-      TS     : aliased C_Time.timespec;
+      TS     : aliased timespec;
       Result : Interfaces.C.int;
 
    begin
       Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);
 
-      return C_Time.To_Duration (TS);
+      return To_Duration (TS);
    end RT_Resolution;
 
    ----------------------
@@ -152,7 +150,7 @@ package body Monotonic is
       Abs_Time   : Duration;
       P_Abs_Time : Duration;
 
-      Request    : aliased C_Time.timespec;
+      Request    : aliased timespec;
       Result     : Interfaces.C.int;
       Exit_Outer : Boolean := False;
 
@@ -186,7 +184,7 @@ package body Monotonic is
             end if;
             pragma Warnings (On);
 
-            Request := C_Time.To_Timespec (P_Abs_Time);
+            Request := To_Timespec (P_Abs_Time);
 
             Inner : loop
                exit Outer
@@ -238,7 +236,7 @@ package body Monotonic is
       Check_Time : Duration;
       Abs_Time   : Duration;
       P_Abs_Time : Duration;
-      Request    : aliased C_Time.timespec;
+      Request    : aliased timespec;
 
       Result     : Interfaces.C.int;
       Exit_Outer : Boolean := False;
@@ -273,7 +271,7 @@ package body Monotonic is
             end if;
             pragma Warnings (On);
 
-            Request := C_Time.To_Timespec (P_Abs_Time);
+            Request := To_Timespec (P_Abs_Time);
 
             Inner : loop
                exit Outer

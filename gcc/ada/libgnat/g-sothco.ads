@@ -33,10 +33,8 @@
 --  This package should not be directly with'ed by an applications program.
 
 with Ada.Unchecked_Conversion;
-
 with Interfaces.C.Strings;
-
-with System.C_Time;
+with System.Parameters;
 
 package GNAT.Sockets.Thin_Common is
 
@@ -46,23 +44,31 @@ package GNAT.Sockets.Thin_Common is
    Success : constant C.int :=  0;
    Failure : constant C.int := -1;
 
-   subtype time_t is System.C_Time.time_t;
-   pragma Obsolescent (time_t, "use type from GNAT.C_Time instead");
+   type time_t is
+     range -2 ** (System.Parameters.time_t_bits - 1)
+        .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   for time_t'Size use System.Parameters.time_t_bits;
+   pragma Convention (C, time_t);
 
-   subtype suseconds_t is System.C_Time.usec_t;
-   pragma Obsolescent (suseconds_t, "use type from GNAT.C_Time instead");
+   type suseconds_t is
+     range -2 ** (8 * SOSC.SIZEOF_tv_usec - 1)
+         .. 2 ** (8 * SOSC.SIZEOF_tv_usec - 1) - 1;
+   for suseconds_t'Size use 8 * SOSC.SIZEOF_tv_usec;
+   pragma Convention (C, suseconds_t);
 
-   subtype timeval is System.C_Time.timeval;
-   pragma Obsolescent (timeval, "use type from GNAT.C_Time instead");
+   type Timeval is record
+      Tv_Sec  : time_t;
+      Tv_Usec : suseconds_t;
+   end record;
+   pragma Convention (C, Timeval);
 
-   type Timeval_Access is access all System.C_Time.timeval;
+   type Timeval_Access is access all Timeval;
    pragma Convention (C, Timeval_Access);
 
    type socklen_t is mod 2 ** (8 * SOSC.SIZEOF_socklen_t);
    for socklen_t'Size use (8 * SOSC.SIZEOF_socklen_t);
 
-   Immediat : constant System.C_Time.timeval
-     := System.C_Time.Milliseconds_To_Timeval (0);
+   Immediat : constant Timeval := (0, 0);
 
    -------------------------------------------
    -- Mapping tables to low level constants --

@@ -40,10 +40,10 @@
 
 with Interfaces.C;
 
-with System.C_Time;
 with System.VxWorks;
 with System.VxWorks.Ext;
 with System.Multiprocessors;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -244,13 +244,37 @@ package System.OS_Interface is
    -- Time --
    ----------
 
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   --  Time_t here used to be unsigned to match the VxWorks header declaration.
+   --  The header declaration has changed in newer releases and is now signed
+   --  for applications.
+
+   type timespec is record
+      ts_sec  : time_t;
+      ts_nsec : long;
+   end record;
+   pragma Convention (C, timespec);
+
    type clockid_t is new int;
+
+   function To_Duration (TS : timespec) return Duration;
+   pragma Inline (To_Duration);
+
+   function To_Timespec (D : Duration) return timespec;
+   pragma Inline (To_Timespec);
+   --  Convert a Duration value to a timespec value. Note that in VxWorks,
+   --  timespec is always non-negative (since time_t is defined above as
+   --  unsigned long). This means that there is a potential problem if a
+   --  negative argument is passed for D. However, in actual usage, the
+   --  value of the input argument D is always non-negative, so no problem
+   --  arises in practice.
 
    function To_Clock_Ticks (D : Duration) return int;
    --  Convert a duration value (in seconds) into clock ticks
 
    function clock_gettime
-     (clock_id : clockid_t; tp : access C_Time.timespec) return int;
+     (clock_id : clockid_t; tp : access timespec) return int;
    pragma Import (C, clock_gettime, "clock_gettime");
 
    ----------------------

@@ -30,9 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This version uses gettimeofday and select
---  This file is suitable for Dec Unix, SCO UnixWare and Sun Solaris.
-
-with System.C_Time;
+--  This file is suitable for OpenNT, Dec Unix and SCO UnixWare.
 
 package body System.OS_Primitives is
 
@@ -41,8 +39,14 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
+   type struct_timeval is record
+      tv_sec  : Integer;
+      tv_usec : Integer;
+   end record;
+   pragma Convention (C, struct_timeval);
+
    procedure gettimeofday
-     (tv : not null access C_Time.timeval;
+     (tv : not null access struct_timeval;
       tz : Address := Null_Address);
    pragma Import (C, gettimeofday, "gettimeofday");
 
@@ -51,7 +55,7 @@ package body System.OS_Primitives is
       readfds,
       writefds,
       exceptfds : Address := Null_Address;
-      timeout   : not null access C_Time.timeval);
+      timeout   : not null access struct_timeval);
    pragma Import (C, C_select, "select");
 
    -----------
@@ -59,11 +63,11 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      TV : aliased C_Time.timeval;
+      TV : aliased struct_timeval;
 
    begin
       gettimeofday (TV'Access);
-      return C_Time.To_Duration (TV);
+      return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end Clock;
 
    -----------------
@@ -78,7 +82,7 @@ package body System.OS_Primitives is
       Abs_Time   : Duration;
       Base_Time  : constant Duration := Clock;
       Check_Time : Duration := Base_Time;
-      timeval    : aliased C_Time.timeval;
+      timeval    : aliased struct_timeval;
 
    begin
       if Mode = Relative then
@@ -91,7 +95,14 @@ package body System.OS_Primitives is
 
       if Rel_Time > 0.0 then
          loop
-            timeval := C_Time.To_Timeval (Rel_Time);
+            timeval.tv_sec := Integer (Rel_Time);
+
+            if Duration (timeval.tv_sec) > Rel_Time then
+               timeval.tv_sec := timeval.tv_sec - 1;
+            end if;
+
+            timeval.tv_usec :=
+              Integer ((Rel_Time - Duration (timeval.tv_sec)) * 10#1#E6);
 
             C_select (timeout => timeval'Unchecked_Access);
             Check_Time := Clock;

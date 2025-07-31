@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is for darwin
+--  This version uses gettimeofday and select
+--  This file is suitable for Solaris (32 and 64 bits).
 
-with System.Parameters;
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface
@@ -39,85 +39,36 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type struct_timezone is record
-      tz_minuteswest  : Integer;
-      tz_dsttime   : Integer;
-   end record;
-   pragma Convention (C, struct_timezone);
-   type struct_timezone_ptr is access all struct_timezone;
-
-   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
-     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
-
    type struct_timeval is record
-      tv_sec       : time_t;
-      tv_usec      : Integer;
+      tv_sec  : Long_Integer;
+      tv_usec : Long_Integer;
    end record;
    pragma Convention (C, struct_timeval);
 
-   function gettimeofday
+   procedure gettimeofday
      (tv : not null access struct_timeval;
-      tz : struct_timezone_ptr) return Integer;
+      tz : Address := Null_Address);
    pragma Import (C, gettimeofday, "gettimeofday");
 
-   type timespec is record
-      tv_sec  : time_t;
-      tv_nsec : Long_Integer;
-   end record;
-   pragma Convention (C, timespec);
-
-   function nanosleep (rqtp, rmtp : not null access timespec) return Integer;
-   pragma Import (C, nanosleep, "nanosleep");
+   procedure C_select
+     (n         : Integer := 0;
+      readfds,
+      writefds,
+      exceptfds : Address := Null_Address;
+      timeout   : not null access struct_timeval);
+   pragma Import (C, C_select, "select");
 
    -----------
    -- Clock --
    -----------
 
    function Clock return Duration is
-      TV     : aliased struct_timeval;
-
-      Result : Integer;
-      pragma Unreferenced (Result);
+      TV : aliased struct_timeval;
 
    begin
-      --  The return codes for gettimeofday are as follows (from man pages):
-      --    EPERM  settimeofday is called by someone other than the superuser
-      --    EINVAL Timezone (or something else) is invalid
-      --    EFAULT One of tv or tz pointed outside accessible address space
-
-      --  None of these codes signal a potential clock skew, hence the return
-      --  value is never checked.
-
-      Result := gettimeofday (TV'Access, null);
+      gettimeofday (TV'Access);
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end Clock;
-
-   -----------------
-   -- To_Timespec --
-   -----------------
-
-   function To_Timespec (D : Duration) return timespec;
-
-   function To_Timespec (D : Duration) return timespec is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return
-        timespec'(tv_sec  => S,
-                  tv_nsec => Long_Integer (Long_Long_Integer (F * 10#1#E9)));
-   end To_Timespec;
 
    -----------------
    -- Timed_Delay --
@@ -127,15 +78,11 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Request    : aliased timespec;
-      Remaind    : aliased timespec;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Base_Time  : constant Duration := Clock;
       Check_Time : Duration := Base_Time;
-
-      Result : Integer;
-      pragma Unreferenced (Result);
+      timeval    : aliased struct_timeval;
 
    begin
       if Mode = Relative then
@@ -148,8 +95,16 @@ package body System.OS_Primitives is
 
       if Rel_Time > 0.0 then
          loop
-            Request := To_Timespec (Rel_Time);
-            Result := nanosleep (Request'Access, Remaind'Access);
+            timeval.tv_sec := Long_Integer (Rel_Time);
+
+            if Duration (timeval.tv_sec) > Rel_Time then
+               timeval.tv_sec := timeval.tv_sec - 1;
+            end if;
+
+            timeval.tv_usec :=
+              Long_Integer ((Rel_Time - Duration (timeval.tv_sec)) * 10#1#E6);
+
+            C_select (timeout => timeval'Unchecked_Access);
             Check_Time := Clock;
 
             exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
