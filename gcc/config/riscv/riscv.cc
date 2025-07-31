@@ -13867,9 +13867,9 @@ riscv_expand_xmode_usmul (rtx dest, rtx x, rtx y)
   riscv_emit_binary (MULT, mul, x, y);
 
   if (TARGET_64BIT)
-    emit_insn (gen_usmuldi3_highpart (mulhu, x, y));
+    emit_insn (gen_umuldi3_highpart (mulhu, x, y));
   else
-    emit_insn (gen_usmulsi3_highpart (mulhu, x, y));
+    emit_insn (gen_umulsi3_highpart (mulhu, x, y));
 
   riscv_emit_binary (NE, overflow_p, mulhu, CONST0_RTX (Xmode));
   riscv_emit_unary (NEG, overflow_p, overflow_p);
