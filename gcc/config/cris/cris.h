@@ -171,7 +171,7 @@ extern int cris_cpu_version;
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_ASM_SUBTARGET_SPEC \
- "--em=criself %{!march=*:%{!mcpu=*:" CRIS_DEFAULT_ASM_ARCH_OPTION "}}"
+ "--emulation=criself %{!march=*:%{!mcpu=*:" CRIS_DEFAULT_ASM_ARCH_OPTION "}}"
 
 /* FIXME: We should propagate the -melf option to make the criself
    "emulation" unless a linker script is provided (-T*), but I don't know
