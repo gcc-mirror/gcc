@@ -324,7 +324,7 @@ public:
 				    Variance variance) override;
   void add_constraints_from_generic_args (HirId ref, SubstitutionRef &subst,
 					  Variance variance,
-					  bool invariant_args) override {};
+					  bool invariant_args) override{};
   void add_constrints_from_param (ParamType &param, Variance variance) override;
 
   Variance contra (Variance variance) override

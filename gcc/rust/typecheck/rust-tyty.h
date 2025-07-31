@@ -590,7 +590,7 @@ public:
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
-  virtual ~TypeBoundPredicate () {};
+  virtual ~TypeBoundPredicate (){};
 
   TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
 
