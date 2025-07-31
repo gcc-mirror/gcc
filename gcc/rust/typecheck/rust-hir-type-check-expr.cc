@@ -33,6 +33,7 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-compile-base.h"
+#include "rust-tyty-util.h"
 #include "tree.h"
 
 namespace Rust {
@@ -662,11 +663,22 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 void
 TypeCheckExpr::visit (HIR::AnonConst &expr)
 {
-  // FIXME: How do we typecheck a deferred inference const?
+  if (!expr.is_deferred ())
+    {
+      infered = TypeCheckExpr::Resolve (expr.get_inner_expr ());
+      return;
+    }
 
-  rust_assert (!expr.is_deferred ());
+  auto locus = expr.get_locus ();
+  auto infer_ty_var = TyTy::TyVar::get_implicit_infer_var (locus);
 
-  infered = TypeCheckExpr::Resolve (expr.get_inner_expr ());
+  HirId next = mappings.get_next_hir_id ();
+  infered = new TyTy::ConstType (TyTy::ConstType::ConstKind::Infer, "",
+				 infer_ty_var.get_tyty (), error_mark_node, {},
+				 locus, next, next, {});
+
+  context->insert_implicit_type (infered->get_ref (), infered);
+  mappings.insert_location (infered->get_ref (), locus);
 }
 
 void
