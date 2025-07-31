@@ -9649,18 +9649,21 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
      are uniform.  */
   tree uniform_initval = NULL_TREE;
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  for (stmt_vec_info s : SLP_TREE_SCALAR_STMTS (slp_node))
-    {
-      gphi *phi = as_a <gphi *> (s->stmt);
-      if (! uniform_initval)
-	uniform_initval = PHI_ARG_DEF_FROM_EDGE (phi, pe);
-      else if (! operand_equal_p (uniform_initval,
-				  PHI_ARG_DEF_FROM_EDGE (phi, pe)))
-	{
-	  uniform_initval = NULL_TREE;
-	  break;
-	}
-    }
+  if (slp_node)
+    for (stmt_vec_info s : SLP_TREE_SCALAR_STMTS (slp_node))
+      {
+	gphi *phi = as_a <gphi *> (s->stmt);
+	if (! uniform_initval)
+	  uniform_initval = PHI_ARG_DEF_FROM_EDGE (phi, pe);
+	else if (! operand_equal_p (uniform_initval,
+				    PHI_ARG_DEF_FROM_EDGE (phi, pe)))
+	  {
+	    uniform_initval = NULL_TREE;
+	    break;
+	  }
+      }
+  else
+    uniform_initval = PHI_ARG_DEF_FROM_EDGE (phi, pe);
   if (!uniform_initval && !nunits.is_constant ())
     {
       if (dump_enabled_p ())
