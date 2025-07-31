@@ -11318,9 +11318,6 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 
   /* Remember the advancement made.  */
   LOOP_VINFO_DRS_ADVANCED_BY (epilogue_vinfo) = advance;
-
-  epilogue_vinfo->shared->datarefs_copy.release ();
-  epilogue_vinfo->shared->save_datarefs ();
 }
 
 /*  When vectorizing early break statements instructions that happen before
@@ -11426,7 +11423,8 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
   DUMP_VECT_SCOPE ("vec_transform_loop");
 
-  loop_vinfo->shared->check_datarefs ();
+  if (! LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    loop_vinfo->shared->check_datarefs ();
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
