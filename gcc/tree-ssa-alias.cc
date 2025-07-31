@@ -901,7 +901,9 @@ ao_ref_init_from_ptr_and_range (ao_ref *ref, tree ptr,
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
       ref->base = get_addr_base_and_unit_offset (TREE_OPERAND (ptr, 0), &t);
-      if (ref->base)
+      if (ref->base
+	  && coeffs_in_range_p (t, -HOST_WIDE_INT_MAX / BITS_PER_UNIT,
+				HOST_WIDE_INT_MAX / BITS_PER_UNIT))
 	ref->offset = BITS_PER_UNIT * t;
       else
 	{
