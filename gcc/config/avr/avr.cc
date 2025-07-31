@@ -14422,6 +14422,13 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
   // Output the label that precedes the table.
 
   ASM_OUTPUT_ALIGN (stream, 1);
+
+  char s_labl[40];
+  targetm.asm_out.generate_internal_label (s_labl, "L",
+					   CODE_LABEL_NUMBER (labl));
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, s_labl,
+			     AVR_HAVE_JMP_CALL ? "object" : "function");
+
   targetm.asm_out.internal_label (stream, "L", CODE_LABEL_NUMBER (labl));
 
   // Output the table's content.
