@@ -2007,7 +2007,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       if (GATHER_SCATTER_IFN_P (*gs_info)
 	  && !is_gimple_call (stmt_info->stmt)
 	  && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
-				     offset_vectype))
+				     TREE_TYPE (offset_vectype)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
