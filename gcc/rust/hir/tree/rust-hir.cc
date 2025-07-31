@@ -1055,7 +1055,10 @@ AnonConst::as_string () const
   std::string istr = indent_spaces (enter);
   std::string str = istr + "AnonConst:\n" + istr;
 
-  str += get_inner_expr ().as_string ();
+  if (expr.has_value ())
+    str += get_inner_expr ().as_string ();
+  else
+    str += "_";
 
   str += "\n" + indent_spaces (out);
 

@@ -1302,7 +1302,10 @@ Dump::visit (AnonConst &e)
   begin ("AnonConst");
   do_expr (e);
 
-  visit_field ("inner", e.get_inner_expr ());
+  if (e.is_deferred ())
+    put_field ("inner", "_");
+  else
+    visit_field ("inner", e.get_inner_expr ());
 
   end ("AnonConst");
 }
