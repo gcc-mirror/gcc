@@ -1629,6 +1629,11 @@ real_to_decimal_for_mode (char *str, const REAL_VALUE_TYPE *r_orig,
       strcpy (str, (r.sign ? "-0.0" : "0.0"));
       return;
     case rvc_normal:
+      /*  When r_orig is a positive value that converts to all nines and is
+          rounded up to 1.0, str[0] is harmlessly accessed before being set to
+          '1'.  That read access triggers a valgrind warning.  Setting str[0]
+          to any value quiets the warning. */
+      str[0] = ' ';
       break;
     case rvc_inf:
       strcpy (str, (r.sign ? "-Inf" : "+Inf"));
