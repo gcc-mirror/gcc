@@ -1,3 +1,20 @@
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120354
+	* c-decl.cc (finish_struct): Or the results for TYPE_INCLUDES_FLEXARRAY.
+
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120353
+	* c-decl.cc (finish_struct): Copy TYPE_INCLUDES_FLEXARRAY marking
+	to all the variant types of the current structure type.
+
 2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

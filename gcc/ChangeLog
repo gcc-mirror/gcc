@@ -1,3 +1,11 @@
+2025-07-30  Jennifer Schmitz  <jschmitz@nvidia.com>
+	    Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (olympus): Use olympus tuning
+	model.
+	* config/aarch64/aarch64.cc: Include olympus.h.
+	* config/aarch64/tuning_models/olympus.h: New file.
+
 2025-07-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:

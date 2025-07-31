@@ -1,3 +1,38 @@
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120354
+	* gcc.dg/pr120354.c: New test.
+
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120353
+	* gcc.dg/pr120353.c: New test.
+
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121133
+	* g++.dg/warn/pr121133-1.C: New test.
+	* g++.dg/warn/pr121133-2.C: New test.
+	* g++.dg/warn/pr121133-3.C: New test.
+	* g++.dg/warn/pr121133-4.C: New test.
+
+2025-07-30  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2025-07-24  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR testsuite/119382
+	* gcc.target/powerpc/vsx-builtin-7.c: Add '-fno-ipa-icf' to dg-options.
+
 2025-07-29  Robert Dubner  <rdubner@symas.com>
 
 	Backported from master:

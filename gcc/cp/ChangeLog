@@ -1,3 +1,18 @@
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121133
+	* parser.cc (cp_parser_unary_expression): Adjust
+	cp_parser_extension_opt caller and restore warn_long_long.
+	(cp_parser_declaration): Likewise.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_extension_opt): Add SAVED_LONG_LONG argument,
+	save previous warn_long_long state into it and clear it
+	for __extension__.
+
 2025-07-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
