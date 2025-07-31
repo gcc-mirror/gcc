@@ -2045,59 +2045,46 @@ package body Ghost is
       Level  : Entity_Id := Empty;
       Par_Id : Entity_Id;
       Policy : Name_Id := No_Name;
-      Id     : Entity_Id;
 
    begin
       --  A declaration becomes Ghost when it is subject to aspect or pragma
       --  Ghost.
 
-      if Is_Subject_To_Ghost (N) then
-         Id := Defining_Entity (N);
+      Level := Get_Ghost_Assertion_Level (N);
 
-         if Is_Ghost_Entity (Id) then
-            if Is_Checked_Ghost_Entity (Id) then
-               Policy := Name_Check;
+      --  A valid assertion level from an explicit pragma or aspect ghost
+      --  indicates the explicit ghostlyness of the declaration. Otherwise the
+      --  ghostliness of the declaration should be handled by other means like
+      --  the region.
 
-            elsif Is_Ignored_Ghost_Entity (Id) then
-               Policy := Name_Ignore;
-            end if;
-
-            Level := Ghost_Assertion_Level (Id);
-
-         else
-            --  We need to mark the declaration before the analysis so we
-            --  cannot rely on the Id already having the correct ghost markers.
-            --  Analyze if the node is associated with a ghost aspect here and
-            --  check for the applicable policy.
-
-            Level := Get_Ghost_Assertion_Level (N);
-            Policy :=
-              Policy_In_Effect (Name_Ghost, Assertion_Level_To_Name (Level));
-         end if;
+      if Present (Level) then
+         Policy :=
+           Policy_In_Effect (Name_Ghost, Assertion_Level_To_Name (Level));
 
       --  A declaration elaborated in a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
       elsif Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
-         Level  := Ghost_Config.Ghost_Mode_Assertion_Level;
+         Level := Ghost_Config.Ghost_Mode_Assertion_Level;
 
       elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
-         Level  := Ghost_Config.Ghost_Mode_Assertion_Level;
+         Level := Ghost_Config.Ghost_Mode_Assertion_Level;
 
       --  A child package or subprogram declaration becomes Ghost when its
       --  parent is Ghost (SPARK RM 6.9(2)).
 
-      elsif Nkind (N) in N_Generic_Function_Renaming_Declaration
-                       | N_Generic_Package_Declaration
-                       | N_Generic_Package_Renaming_Declaration
-                       | N_Generic_Procedure_Renaming_Declaration
-                       | N_Generic_Subprogram_Declaration
-                       | N_Package_Declaration
-                       | N_Package_Renaming_Declaration
-                       | N_Subprogram_Declaration
-                       | N_Subprogram_Renaming_Declaration
+      elsif Nkind (N)
+            in N_Generic_Function_Renaming_Declaration
+             | N_Generic_Package_Declaration
+             | N_Generic_Package_Renaming_Declaration
+             | N_Generic_Procedure_Renaming_Declaration
+             | N_Generic_Subprogram_Declaration
+             | N_Package_Declaration
+             | N_Package_Renaming_Declaration
+             | N_Subprogram_Declaration
+             | N_Subprogram_Renaming_Declaration
         and then Present (Parent_Spec (N))
       then
          Par_Id := Defining_Entity (Unit (Parent_Spec (N)));
