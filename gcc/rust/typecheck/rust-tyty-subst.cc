@@ -705,7 +705,9 @@ SubstitutionRef::get_mappings_from_generic_args (
 
   // for inherited arguments
   size_t offs = used_arguments.size ();
-  if (args.get_type_args ().size () + offs > substitutions.size ())
+  size_t total_arguments
+    = args.get_type_args ().size () + args.get_const_args ().size () + offs;
+  if (total_arguments > substitutions.size ())
     {
       rich_location r (line_table, args.get_locus ());
       if (!substitutions.empty ())
@@ -723,8 +725,6 @@ SubstitutionRef::get_mappings_from_generic_args (
       return SubstitutionArgumentMappings::error ();
     }
 
-  size_t total_arguments
-    = args.get_type_args ().size () + args.get_const_args ().size () + offs;
   if (total_arguments < min_required_substitutions ())
     {
       rich_location r (line_table, args.get_locus ());
