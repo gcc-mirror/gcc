@@ -6598,6 +6598,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
     return cxx_eval_bare_aggregate (ctx, init, lval,
 				    non_constant_p, overflow_p, jump_target);
 
+  /* We already checked access when building the VEC_INIT_EXPR.  */
+  deferring_access_check_sentinel acs (dk_deferred);
+
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
      here, as for a constructor to be constexpr, all members must be
