@@ -10320,15 +10320,18 @@ can_be_rotated_to_negative_lis (HOST_WIDE_INT c, int *rot)
 
   /* case b. xx0..01..1xx: some of 15 x's (and some of 16 0's) are
      rotated over the highest bit.  */
-  int pos_one = clz_hwi ((c << 16) >> 16);
-  middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
-  int middle_ones = clz_hwi (~(c << pos_one));
-  if (middle_zeros >= 16 && middle_ones >= 33)
+  unsigned HOST_WIDE_INT uc = c;
+  int pos_one = clz_hwi ((HOST_WIDE_INT) (uc << 16) >> 16);
+  if (pos_one != 0)
     {
-      *rot = pos_one;
-      return true;
+      middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
+      int middle_ones = clz_hwi (~(uc << pos_one));
+      if (middle_zeros >= 16 && middle_ones >= 33)
+	{
+	  *rot = pos_one;
+	  return true;
+	}
     }
-
   return false;
 }
 
@@ -10445,7 +10448,8 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   if (lz >= HOST_BITS_PER_WIDE_INT)
     return false;
 
-  int middle_ones = clz_hwi (~(c << lz));
+  unsigned HOST_WIDE_INT uc = c;
+  int middle_ones = clz_hwi (~(uc << lz));
   if (tz + lz + middle_ones >= ones
       && (tz - lz) < HOST_BITS_PER_WIDE_INT
       && tz < HOST_BITS_PER_WIDE_INT)
@@ -10479,7 +10483,7 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   if (!IN_RANGE (pos_first_1, 1, HOST_BITS_PER_WIDE_INT-1))
     return false;
 
-  middle_ones = clz_hwi (~c << pos_first_1);
+  middle_ones = clz_hwi ((~(unsigned HOST_WIDE_INT) c) << pos_first_1);
   middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_first_1));
   if (pos_first_1 < HOST_BITS_PER_WIDE_INT
       && middle_ones + middle_zeros < HOST_BITS_PER_WIDE_INT
@@ -10581,7 +10585,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c, int *num_insns)
     {
       /* li/lis; rldicX */
       unsigned HOST_WIDE_INT imm = (c | ~mask);
-      imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
+      if (shift != 0)
+	imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
 
       count_or_emit_insn (temp, GEN_INT (imm));
       if (shift != 0)
