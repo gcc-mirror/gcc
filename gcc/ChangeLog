@@ -1,5 +1,193 @@
 2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
 
+	PR rtl-optimization/121308
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Handle
+	subreg of `not` with word_mode to make it symmetric with the
+	other bitwise operators.
+
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	PR tree-optimization/121295
+	* tree-if-conv.cc (factor_out_operators): Change the phi node
+	to the new result and args.
+
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Revert:
+	2025-07-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	* tree-if-conv.cc (is_cond_scalar_reduction): Instead of phi argument,
+	pass bb and res of the phi.
+	(factor_out_operators): Add iterator for the phi. Remove the phi
+	if this is the first time. Return if we had removed the phi.
+	(predicate_scalar_phi): Add the phi iterator argument.
+	Update call to is_cond_scalar_reduction.
+	Update call to factor_out_operators and set the return value to true
+	when factor_out_operators returns true.
+	(predicate_all_scalar_phis): Don't remove the phi if predicate_scalar_phi
+	already removed it.
+
+2025-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* auto-profile.cc (string_table::read): Check gcov_is_error.
+	(read_profile): Likewise.
+	* gcov-io.cc (gcov_is_error): Export for gcc linkage.
+	* gcov-io.h (gcov_is_error): Declare.
+
+2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_default_vector_cost): Split
+	out from ...
+	(ix86_builtin_vectorization_cost): ... this and use
+	mode instead of vectype as argument.
+	(ix86_vector_costs::add_stmt_cost): Call
+	ix86_default_vector_cost instead of ix86_builtin_vectorization_cost.
+
+2025-07-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/117015
+	* config/s390/s390-protos.h (s390_expand_int_spaceship): New
+	function.
+	(s390_expand_fp_spaceship): New function.
+	* config/s390/s390.cc (s390_expand_int_spaceship): New function.
+	(s390_expand_fp_spaceship): New function.
+	* config/s390/s390.md (spaceship<mode>4): New expander.
+
+2025-07-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* cprop.cc (bypass_block): Extract single set.
+	(bypass_conditional_jumps): Ditto.
+
+2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (peephole2): Transform "movq $-1,reg" to
+	"pushq $-1; popq reg" for -Oz if reg is a legacy integer register.
+
+2025-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* auto-profile.cc (function_instance::match): Disable warning
+	about bogus locations since dwarf does not represent enough
+	info to output them correctly in all cases.
+	(add_scale): Use nonzero_p instead of orig.force_nonzero () == orig.
+	(afdo_adjust_guessed_profile): Add missing newline in dump
+	file.
+
+2025-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.cc (symbol_table::change_decl_assembler_name): Recompute DECL_RTL
+	in case it is already computed.
+
+2025-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* predict.cc (unlikely_executed_edge_p): Ignore EDGE_EH if profile
+	is reliable.
+	(unlikely_executed_stmt_p): special case builtin_trap/unreachable and
+	ignore other heuristics for reliable profiles.
+	(tree_estimate_probability): Disable unlikely bb detection when
+	doing dry run
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+	     Julian Brown   <julian@codesourcery.com>
+
+	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Add
+	documentation hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (prefer_gather_scatter): Add target hook under vectorizer.
+	* hooks.cc (hook_bool_mode_int_unsigned_false): New function.
+	* hooks.h (hook_bool_mode_int_unsigned_false): New prototype.
+	* tree-vect-stmts.cc (vect_use_strided_gather_scatters_p): Add
+	parameters group_size and single_element_p, and rework to use
+	targetm.vectorize.prefer_gather_scatter.
+	(get_group_load_store_type): Move some of the condition into
+	vect_use_strided_gather_scatters_p.
+	* config/gcn/gcn.cc (gcn_prefer_gather_scatter): New function.
+	(TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Define hook.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_option_override): Add note to set default for
+	param_vect_partial_vector_usage to "1".
+	* optc-save-gen.awk: Don't pass through options marked "NoOffload".
+	* params.opt (-param=vect-epilogues-nomask): Add NoOffload.
+	(-param=vect-partial-vector-usage): Likewise.
+	(-param=vect-inner-loop-cost-factor): Likewise.
+
+2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121130
+	* tree-vect-stmts.cc (vectorizable_call): Bail out for
+	.MASK_CALL.
+
+2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121020
+	* tree-vect-loop-manip.cc (vect_do_peeling): Update the
+	condition of omitting the skip-vector check.
+	* tree-vectorizer.h (LOOP_VINFO_USE_VERSIONING_WITHOUT_PEELING):
+	Add a helper macro.
+
+2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121190
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment):
+	Increase alignment requirement for speculative loads.
+
+2025-07-30  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/121300
+	* config/aarch64/aarch64-sve-builtins-sme.def (svamin/svamax): Fix
+	arch gating.
+
+2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type):
+	Process STMT_VINFO_GATHER_SCATTER before reading
+	memory_access_type.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@cond_<optab><mode>): Extend
+	to support partial FP modes.
+	(*cond_<optab><mode>_2_strict): Extend from SVE_FULL_F to SVE_F,
+	use aarch64_predicate_operand.
+	(*cond_<optab><mode>_4_strict): Extend from SVE_FULL_F_B16B16 to
+	SVE_F_B16B16, use aarch64_predicate_operand.
+	(*cond_<optab><mode>_any_strict):  Likewise.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_2_relaxed):
+	Extend from SVE_FULL_F to SVE_F.
+	(*cond_<optab><mode>_4_relaxed): Extend from SVE_FULL_F_B16B16
+	to SVE_F_B16B16.
+	(*cond_<optab><mode>_any_relaxed): Likewise.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<optab><mode>4): Extend from
+	SVE_FULL_F_B16B16 to SVE_F_B16B16.  Use aarch64_sve_fp_pred instead
+	of aarch64_ptrue_reg.
+	(@aarch64_pred_<optab><mode>): Extend from SVE_FULL_F_B16B16 to
+	SVE_F_B16B16.  Use aarch64_predicate_operand.
+
+2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-modes.def: Remove VECTOR_MODES(FLOAT, 256)
+	and VECTOR_MODE (INT, SI, 64).
+	* config/i386/i386.cc (ix86_hard_regno_nregs): Remove related
+	code for V64SF/V64SImode.
+
+2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121274
+	* config/i386/sse.md (*vec_concatv2di_0): Add a splitter
+	before it.
+
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
 	PR rtl-optimization/121302
 	* simplify-rtx.cc (simplify_context::simplify_subreg): Use
 	byte instead of 0 when calling simplify_subreg.

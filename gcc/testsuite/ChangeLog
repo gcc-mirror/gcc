@@ -1,3 +1,154 @@
+2025-07-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121291
+	* g++.dg/ext/is_invocable7.C: New test.
+	* g++.dg/ext/is_nothrow_convertible5.C: New test.
+
+2025-07-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tc1/dr49.C: Adjust diagnostic.
+	* g++.dg/template/func2.C: Likewise.
+	* g++.dg/cpp1z/nontype8.C: New test.
+
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	PR tree-optimization/121295
+	* gcc.dg/torture/pr121236-1.c: New test.
+	* gcc.dg/torture/pr121295-1.c: New test.
+
+2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Revert:
+	2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/121236
+	* gcc.dg/torture/pr121236-1.c: New test.
+
+2025-07-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/spaceship-fp-1.c: New test.
+	* gcc.target/s390/spaceship-fp-2.c: New test.
+	* gcc.target/s390/spaceship-fp-3.c: New test.
+	* gcc.target/s390/spaceship-fp-4.c: New test.
+	* gcc.target/s390/spaceship-int-1.c: New test.
+	* gcc.target/s390/spaceship-int-2.c: New test.
+	* gcc.target/s390/spaceship-int-3.c: New test.
+
+2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* gcc.target/i386/pr120427-5.c: New test.
+
+2025-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-prof/eh1.C: New test.
+
+2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121130
+	* gcc.dg/vect/vect-simd-pr121130.c: New testcase.
+
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121133
+	* g++.dg/warn/pr121133-1.C: New test.
+	* g++.dg/warn/pr121133-2.C: New test.
+	* g++.dg/warn/pr121133-3.C: New test.
+	* g++.dg/warn/pr121133-4.C: New test.
+
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120778
+	* g++.dg/cpp/if-comma-1.C: New test.
+
+2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121020
+	* gcc.dg/vect/vect-early-break_138-pr121020.c: New test.
+
+2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121190
+	* gcc.dg/vect/vect-early-break_52.c: Update an unsafe test.
+	* gcc.dg/vect/vect-early-break_137-pr121190.c: New test.
+
+2025-07-30  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/121300
+	* gcc.target/aarch64/pr121300.c: New test.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_cond_fmla_1.c: Add test cases
+	for merging with multiplcand.
+	* gcc.target/aarch64/sve/unpacked_cond_fmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fmla_2.c: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_fmls_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmla_2.c: Likewise..
+	* gcc.target/aarch64/sve/unpacked_cond_fnmls_2.c: Likewise.
+	* g++.target/aarch64/sve/unpacked_cond_ternary_bf16_1.C: Likewise.
+	* g++.target/aarch64/sve/unpacked_cond_ternary_bf16_2.C: Likewise.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/unpacked_cond_fmla_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_cond_fmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmls_1.c: Likewise.
+
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.dg/split_1.f90: New test.
+	* gfortran.dg/split_2.f90: New test.
+	* gfortran.dg/split_3.f90: New test.
+	* gfortran.dg/split_4.f90: New test.
+
+2025-07-30  Spencer Abson  <spencer.abson@arm.com>
+
+	* g++.target/aarch64/sve/unpacked_ternary_bf16_1.C: New test.
+	* g++.target/aarch64/sve/unpacked_ternary_bf16_2.C: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmla_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fmls_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmla_1.c: Likeiwse.
+	* gcc.target/aarch64/sve/unpacked_fnmla_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmls_2.c: Likewise.
+
+2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr121274.c: New test.
+
+2025-07-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Add asm check
+	for unsigned avg ceil.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add
+	test data.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vaadd-run-2-u8.c: New test.
+
 2025-07-29  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/121215

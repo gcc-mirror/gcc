@@ -1,3 +1,9 @@
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.map: Add split symbol.
+	* intrinsics/string_intrinsics_inc.c (string_split):
+	Runtime support for SPLIT.
+
 2025-06-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/82480

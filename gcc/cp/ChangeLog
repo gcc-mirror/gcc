@@ -1,3 +1,34 @@
+2025-07-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121291
+	* constraint.cc (diagnose_trait_expr): Remove assumption about
+	failures returning error_mark_node.
+	* except.cc (explain_not_noexcept): Allow expr not being
+	noexcept.
+	* method.cc (build_invoke): Adjust comment.
+	(is_trivially_xible): Always note non-trivial components if expr
+	is not null or error_mark_node.
+	(is_nothrow_xible): Likewise for non-noexcept components.
+	(is_nothrow_convertible): Likewise.
+
+2025-07-30  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (convert_nontype_argument_function): Check
+	cxx_constant_value on failure.
+	(invalid_tparm_referent_p): Likewise.
+
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121133
+	* parser.cc (cp_parser_unary_expression): Adjust
+	cp_parser_extension_opt caller and restore warn_long_long.
+	(cp_parser_declaration): Likewise.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_extension_opt): Add SAVED_LONG_LONG argument,
+	save previous warn_long_long state into it and clear it
+	for __extension__.
+
 2025-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* cp-tree.h (struct lang_type): Add comment mentioning modules.

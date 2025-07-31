@@ -1,3 +1,8 @@
+2025-07-30  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/std/time/format/data_not_present_neg.cc: Remove _GLIBCXX_USE_DUAL_ABI
+	check.
+
 2025-07-29  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* testsuite/std/format/ranges/format_kind.cc: New test.

@@ -1,3 +1,13 @@
+2025-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120778
+	* internal.h (struct lexer_state): Add comma_ok member.
+	* expr.cc (_cpp_parse_expr): Initialize it to 0, increment on
+	CPP_OPEN_PAREN and CPP_QUERY, decrement on CPP_CLOSE_PAREN
+	and CPP_COLON.
+	(num_binary_op): For C++ pedwarn on comma operator if
+	pfile->state.comma_ok is 0 instead of !c99 or skip_eval.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* charset.cc: Update comment for file rename.

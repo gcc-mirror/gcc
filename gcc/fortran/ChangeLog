@@ -1,3 +1,28 @@
+2025-07-30  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_array_init_size): Remove the nelems
+	argument.
+	(gfc_array_allocate): Update caller.  Remove the nelems
+	argument.
+	* trans-stmt.cc (gfc_trans_allocate): Update caller.  Remove the
+	nelems variable.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_split): Argument check for SPLIT.
+	* gfortran.h (enum gfc_isym_id): Define GFC_ISYM_SPLIT.
+	* intrinsic.cc (add_subroutines): Register SPLIT intrinsic.
+	* intrinsic.h (gfc_check_split): New decl.
+	(gfc_resolve_split): Ditto.
+	* intrinsic.texi: SPLIT documentation.
+	* iresolve.cc (gfc_resolve_split): Add resolved_sym for SPLIT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Add decl for
+	SPLIT in libgfortran.
+	* trans-intrinsic.cc (conv_intrinsic_split): SPLIT codegen.
+	(gfc_conv_intrinsic_subroutine): Handle SPLIT case.
+	* trans.h (GTY): Declare gfor_fndecl_string_split{, _char4}.
+
 2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/121185
