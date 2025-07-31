@@ -5197,7 +5197,7 @@
 
 2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
 
-	* resolve/rust-name-resolver.cc: Include options.txt.
+	* resolve/rust-name-resolver.cc: Include options.h.
 	(Resolver::insert_resolved_name): Assert that name resolution
 	2.0 is disabled.
 	(Resolver::lookup_resolved_name): Likewise.
