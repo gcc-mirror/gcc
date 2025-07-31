@@ -183,9 +183,13 @@ public:
 
   AttrInputMacro (AttrInputMacro &&oth) : macro (std::move (oth.macro)) {}
 
-  void operator= (const AttrInputMacro &oth);
+  AttrInputMacro &operator= (const AttrInputMacro &oth);
 
-  void operator= (AttrInputMacro &&oth) { macro = std::move (oth.macro); }
+  AttrInputMacro &operator= (AttrInputMacro &&oth)
+  {
+    macro = std::move (oth.macro);
+    return *this;
+  }
 
   std::string as_string () const override;
 

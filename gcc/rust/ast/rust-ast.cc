@@ -4339,11 +4339,12 @@ AttrInputMacro::AttrInputMacro (const AttrInputMacro &oth)
   : macro (oth.macro->clone_macro_invocation_impl ())
 {}
 
-void
+AttrInputMacro &
 AttrInputMacro::operator= (const AttrInputMacro &oth)
 {
   macro = std::unique_ptr<MacroInvocation> (
     oth.macro->clone_macro_invocation_impl ());
+  return *this;
 }
 
 /* Visitor implementations - these are short but inlining can't happen anyway
