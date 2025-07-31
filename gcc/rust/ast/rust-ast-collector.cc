@@ -1274,7 +1274,13 @@ TokenCollector::visit (BlockExpr &expr)
 void
 TokenCollector::visit (AnonConst &expr)
 {
-  visit (expr.get_inner_expr ());
+  if (!expr.is_deferred ())
+    {
+      visit (expr.get_inner_expr ());
+      return;
+    }
+
+  push (Rust::Token::make_string (expr.get_locus (), "_"));
 }
 
 void
