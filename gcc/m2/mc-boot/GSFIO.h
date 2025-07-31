@@ -103,6 +103,13 @@ EXTERN DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s
 */
 
 EXTERN DynamicStrings_String SFIO_ReadS (FIO_File file);
+
+/*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*/
+
+EXTERN DynamicStrings_String SFIO_GetFileName (FIO_File file);
 #   ifdef __cplusplus
 }
 #   endif

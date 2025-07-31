@@ -99,6 +99,13 @@ extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_Stri
 
 extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file);
 
+/*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*/
+
+extern "C" DynamicStrings_String SFIO_GetFileName (FIO_File file);
+
 
 /*
    Exists - returns TRUE if a file named, fname exists for reading.
@@ -203,6 +210,19 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
         {}  /* empty.  */
     }
   return s;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*/
+
+extern "C" DynamicStrings_String SFIO_GetFileName (FIO_File file)
+{
+  return DynamicStrings_InitStringCharStar (FIO_getFileName (file));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

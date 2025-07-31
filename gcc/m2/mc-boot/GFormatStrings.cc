@@ -464,7 +464,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* avoid dangling else.  */
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
-              in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
+              in = Copy (fmt, in, (*startpos), nextperc);
               in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 16, true));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
@@ -475,7 +475,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* avoid dangling else.  */
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
-              in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
+              in = Copy (fmt, in, (*startpos), nextperc);
               in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 10, false));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
