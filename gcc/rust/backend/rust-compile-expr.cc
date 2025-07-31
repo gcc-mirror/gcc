@@ -490,6 +490,8 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
       rust_error_at (struct_expr.get_locus (), "unknown type");
       return;
     }
+  if (!tyty->is<TyTy::ADTType> ())
+    return;
 
   // it must be an ADT
   rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
