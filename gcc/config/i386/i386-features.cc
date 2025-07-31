@@ -3226,7 +3226,7 @@ remove_partial_avx_dependency (void)
 	      break;
 	    }
 
-	  /* Only hanlde conversion here.  */
+	  /* Only handle conversion here.  */
 	  machine_mode src_mode
 	    = convert_p ? GET_MODE (XEXP (src, 0)) : VOIDmode;
 	  switch (src_mode)

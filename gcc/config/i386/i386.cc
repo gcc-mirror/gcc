@@ -20029,7 +20029,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree utype, ures, vce;
 	utype = unsigned_type_for (TREE_TYPE (arg0));
 	/* PABSB/W/D/Q store the unsigned result in dst, use ABSU_EXPR
-	   instead of ABS_EXPR to hanlde overflow case(TYPE_MIN).  */
+	   instead of ABS_EXPR to handle overflow case(TYPE_MIN).  */
 	ures = gimple_build (&stmts, ABSU_EXPR, utype, arg0);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	loc = gimple_location (stmt);
@@ -23153,7 +23153,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	     So current solution is make constant disp as cheap as possible.  */
 	  if (GET_CODE (addr) == PLUS
 	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode)
-	      /* Only hanlde (reg + disp) since other forms of addr are mostly LEA,
+	      /* Only handle (reg + disp) since other forms of addr are mostly LEA,
 		 there's no additional cost for the plus of disp.  */
 	      && register_operand (XEXP (addr, 0), Pmode))
 	    {
