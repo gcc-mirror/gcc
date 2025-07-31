@@ -23,15 +23,15 @@ mod core {
     }
 }
 
-#[derive(Debug)] // { dg-warning "unused name" }
+#[derive(Debug)]
 // { dg-warning "stub implementation" "" { target *-*-* } .-1 }
 struct Foo { a: i32, b: i64 } // { dg-warning "is never constructed" }
 
-#[derive(Debug)] // { dg-warning "unused name" }
+#[derive(Debug)]
 // { dg-warning "stub implementation" "" { target *-*-* } .-1 }
 struct Bar(i32, i32); // { dg-warning "is never constructed" }
 
-#[derive(Debug)] // { dg-warning "unused name" }
+#[derive(Debug)]
 // { dg-warning "stub implementation" "" { target *-*-* } .-1 }
 enum Baz {
     A,

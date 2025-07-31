@@ -10,7 +10,6 @@ struct Baz;
 
 impl Foo for Baz {
     fn Bar(self) -> i32 {
-        // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
         123
     }
 }

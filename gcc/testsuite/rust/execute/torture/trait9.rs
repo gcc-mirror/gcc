@@ -13,7 +13,6 @@ trait FnLike<A, R> {
 struct S;
 impl<T> FnLike<&T, &T> for S {
     fn call(&self, arg: &T) -> &T {
-        // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
         arg
     }
 }

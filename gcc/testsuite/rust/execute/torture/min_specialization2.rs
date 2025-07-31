@@ -8,7 +8,7 @@ trait Foo {
 }
 
 impl<T> Foo for T {
-    default fn foo(&self) -> i32 { // { dg-warning "unused" }
+    default fn foo(&self) -> i32 {
         15
     }
 }

@@ -18,7 +18,6 @@ struct Console;
 
 impl Printer for Console {
     fn print(&self, input: impl Speak) {
-        // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
         unsafe {
             let a = input.speak();
             let b = a as *const str;

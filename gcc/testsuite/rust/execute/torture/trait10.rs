@@ -26,7 +26,6 @@ impl Bar for Foo {
 struct S;
 impl S {
     fn dynamic_dispatch(self, t: &dyn Bar) {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         t.baz();
     }
 }

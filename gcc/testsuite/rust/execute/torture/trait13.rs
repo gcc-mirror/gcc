@@ -11,7 +11,6 @@ trait Bar {
     fn baz(&self);
 
     fn qux(&self) {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         unsafe {
             let a = "%i\n\0";
             let b = a as *const str;
