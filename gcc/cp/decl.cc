@@ -12183,8 +12183,11 @@ grokvardecl (tree type,
       if (DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	{
 	  CP_DECL_THREAD_LOCAL_P (decl) = true;
+	  // NB: Set a tentative TLS model to avoid tls_model attribute
+	  // warnings due to lack of thread storage duration.  It will
+	  // be updated by cplus_decl_attributes later.
 	  if (!processing_template_decl)
-	    set_decl_tls_model (decl, decl_default_tls_model (decl));
+	    set_decl_tls_model (decl, TLS_MODEL_REAL);
 	}
       if (declspecs->gnu_thread_keyword_p)
 	SET_DECL_GNU_TLS_P (decl);
