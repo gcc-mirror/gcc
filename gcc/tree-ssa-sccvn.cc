@@ -1219,7 +1219,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 		  offset = 0;
 		}
 	      else
-		offset += pop->off * BITS_PER_UNIT;
+		offset += poly_offset_int (pop->off) * BITS_PER_UNIT;
 	      op0_p = NULL;
 	      break;
 	    }
@@ -1270,7 +1270,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    offset += op->off * BITS_PER_UNIT;
+	    offset += poly_offset_int (op->off) * BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
