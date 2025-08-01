@@ -92,7 +92,7 @@ Dump::go (HIR::Crate &e)
   end ("Crate");
 }
 
-Dump::Dump (std::ostream &stream) : stream (stream) {}
+Dump::Dump (std::ostream &stream) : beg_of_line (false), stream (stream) {}
 
 /**
  * Writes TEXT with a final newline if ENDLINE is true.
