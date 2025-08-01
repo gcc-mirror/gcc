@@ -24,6 +24,7 @@
 #include "rust-hir-type-check.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-casts.h"
+#include "rust-mapping-common.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
 #include "rust-hir-type-bounds.h"
@@ -186,10 +187,12 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
 
-  rust_debug (
-    "unify_site_and commit %s infer %s id={%u} expected={%s} expr={%s}",
-    commit_if_ok ? "true" : "false", implicit_infer_vars ? "true" : "false", id,
-    expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+  rust_debug_loc (
+    unify_locus,
+    "begin unify_site_and commit %s infer %s id={%u} expected={%s} expr={%s}",
+    commit_if_ok ? "true" : "false", implicit_infer_vars ? "true" : "false",
+    id == UNKNOWN_HIRID ? 0 : id, expected->debug_str ().c_str (),
+    expr->debug_str ().c_str ());
 
   std::vector<UnifyRules::CommitSite> commits;
   std::vector<UnifyRules::InferenceSite> infers;
@@ -197,6 +200,15 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
     = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
 			   emit_errors, implicit_infer_vars, commits, infers);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
+
+  rust_debug_loc (unify_locus,
+		  "unify_site_and done ok=%s commit %s infer %s id={%u} "
+		  "expected={%s} expr={%s}",
+		  ok ? "true" : "false", commit_if_ok ? "true" : "false",
+		  implicit_infer_vars ? "true" : "false",
+		  id == UNKNOWN_HIRID ? 0 : id, expected->debug_str ().c_str (),
+		  expr->debug_str ().c_str ());
+
   if (ok && commit_if_ok)
     {
       for (auto &c : commits)
