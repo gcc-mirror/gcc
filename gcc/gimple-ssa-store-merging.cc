@@ -1057,6 +1057,8 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 		      if (count <= range / BITS_PER_MARKER)
 			{
 			  count = (count + i) * BITS_PER_MARKER % range;
+			  if (!count)
+			    return NULL;
 			  break;
 			}
 		      else
