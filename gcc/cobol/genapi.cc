@@ -1198,12 +1198,9 @@ parser_statement_begin( const cbl_name_t statement_name,
   if( exception_processing )
     {
     store_location_stuff(statement_name);
-    }
-
-  if( exception_processing )
-    {
     set_exception_environment(ecs, dcls);
     }
+
   sv_is_i_o = false;
   }
 

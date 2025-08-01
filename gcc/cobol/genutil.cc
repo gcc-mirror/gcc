@@ -27,6 +27,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// cppcheck-suppress-file duplicateBreak
+
 #include "cobol-system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -1267,7 +1270,7 @@ get_binary_value( tree value,
                             cbl_field_type_str(field->type) );
       cbl_internal_error("%s", err);
       abort();
-      // break; // break not needed after abort();
+      break;
       }
     }
 

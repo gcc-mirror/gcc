@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// cppcheck-suppress-file duplicateBreak
+
 #include "config.h"
 #include <fstream> // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
@@ -500,13 +502,13 @@ symbol_elem_cmp( const void *K, const void *E )
       }
       return strcasecmp(key.name, elem.name);
     }
-    // break; // This break not needed if all options do a return.
+    break;
   case SymSpecial:
     return special_pair_cmp(k->elem.special, e->elem.special)? 0 : 1;
-    // break; // This break not needed after return.
+    break;
   case SymAlphabet:
     return strcasecmp(k->elem.alphabet.name, e->elem.alphabet.name);
-    // break; // This break not needed after return.
+    break;
   case SymFile:
     // If the key is global, so must be the found element.
     if( (cbl_file_of(k)->attr & global_e) == global_e &&
@@ -514,7 +516,7 @@ symbol_elem_cmp( const void *K, const void *E )
       return 1;
     }
     return strcasecmp(k->elem.file.name, e->elem.file.name);
-    // break; // This break not needed after return.
+    break;
   }
   assert(k->type == SymField);
 
