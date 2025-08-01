@@ -717,7 +717,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
   hashval_t result;
   int i;
   vn_reference_op_t vro;
-  poly_int64 off = -1;
+  poly_offset_int off = -1;
   bool deref = false;
 
   FOR_EACH_VEC_ELT (vr1->operands, i, vro)
@@ -736,7 +736,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
 	{
 	  if (maybe_ne (off, -1)
 	      && maybe_ne (off, 0))
-	    hstate.add_poly_int (off);
+	    hstate.add_poly_hwi (off.force_shwi ());
 	  off = -1;
 	  if (deref
 	      && vro->opcode == ADDR_EXPR)
@@ -850,7 +850,7 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
   j = 0;
   do
     {
-      poly_int64 off1 = 0, off2 = 0;
+      poly_offset_int off1 = 0, off2 = 0;
       vn_reference_op_t vro1, vro2;
       vn_reference_op_s tem1, tem2;
       bool deref1 = false, deref2 = false;
