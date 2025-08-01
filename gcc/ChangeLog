@@ -1,3 +1,117 @@
+2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/121340
+	* config/avr/avr.opt (-mfuse-move2): New option.
+	* config/avr/avr-passes.def (avr_pass_2moves): Insert after combine.
+	* config/avr/avr-passes.cc (make_avr_pass_2moves): New function.
+	(pass_data avr_pass_data_2moves): New static variable.
+	(avr_pass_2moves): New rtl_opt_pass.
+	* config/avr/avr-protos.h (make_avr_pass_2moves): New proto.
+	* common/config/avr/avr-common.cc
+	(default_options avr_option_optimization_table) <-mfuse-move2>:
+	Set for -O1 and higher.
+	* doc/invoke.texi (AVR Options) <-mfuse-move2>: Document.
+	* config/avr/avr.opt.urls (-mfuse-move2): Add url.
+
+2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_output_addr_vec) <labl>: Asm out its .type.
+
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	Backported from master:
+	2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/121028
+	* config/aarch64/aarch64-sme.md (aarch64_smstart_sm): Use the .inst
+	directive if !TARGET_SME.
+	(aarch64_smstop_sm): Likewise.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* tree-vect-loop.cc (vectorizable_recurr): Handle the case
+	of a NULL SLP node.
+
+2025-07-31  Andreas Schwab  <schwab@suse.de>
+
+	Backported from master:
+	2025-07-21  Andreas Schwab  <schwab@suse.de>
+
+	PR target/121121
+	* config/riscv/riscv.cc (riscv_allocate_and_probe_stack_space):
+	Use temp2 instead of temp1 for the CFA note.
+
+2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121264
+	* machmode.h (get_best_mode): Change type of first 2 arguments
+	from int to HOST_WIDE_INT.
+	* stor-layout.cc (get_best_mode): Likewise.
+
+2025-07-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2025-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114790
+	* cgraph.cc (cgraph_update_edges_for_call_stmt_node): Resolve devirtualization
+	if call statement was optimized out or turned to direct call.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* tree-vect-loop.cc (vectorizable_recurr): Build a correct
+	initialization vector for SLP_TREE_LANES > 1.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121130
+	* tree-vect-stmts.cc (vectorizable_call): Bail out for
+	.MASK_CALL.
+
+2025-07-31  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	Backported from master:
+	2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121190
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment):
+	Increase alignment requirement for speculative loads.
+
+2025-07-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (peephole2): Transform "movq $-1,reg" to
+	"pushq $-1; popq reg" for -Oz if reg is a legacy integer register.
+
+2025-07-31  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121274
+	* config/i386/sse.md (*vec_concatv2di_0): Add a splitter
+	before it.
+
 2025-07-30  Jennifer Schmitz  <jschmitz@nvidia.com>
 	    Dhruv Chawla  <dhruvc@nvidia.com>
 

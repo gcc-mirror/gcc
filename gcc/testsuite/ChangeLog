@@ -1,3 +1,104 @@
+2025-07-31  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120800
+	* g++.dg/cpp0x/constexpr-array30.C: New test.
+
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	Backported from master:
+	2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/121028
+	* gcc.target/aarch64/sme/call_sm_switch_1.c: Tell check-function
+	-bodies not to ignore .inst directives, and replace the test for
+	"smstart sm" with one for it's encoding.
+	* gcc.target/aarch64/sme/call_sm_switch_11.c: Likewise.
+	* gcc.target/aarch64/sme/pr121028.c: New test.
+
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	Backported from master:
+	2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	* lib/target-supports.exp: Split the extensions that require SME into
+	a separate set, and use armv9-a as their baseline.
+
+2025-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120224
+	* g++.dg/cpp0x/alias-decl-80.C: New test.
+
+2025-07-31  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/120756
+	* g++.dg/warn/deprecated-22.C: New test.
+
+2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121264
+	* gcc.dg/tree-ssa/pr121264.c: New test.
+
+2025-07-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2025-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr114790_0.C: New test.
+	* g++.dg/lto/pr114790_1.C: New test.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* gcc.dg/vect/vect-recurr-pr121256.c: New testcase.
+	* gcc.dg/vect/vect-recurr-pr121256-2.c: Likewise.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121130
+	* gcc.dg/vect/vect-simd-pr121130.c: New testcase.
+
+2025-07-31  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	Backported from master:
+	2025-07-30  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR tree-optimization/121190
+	* gcc.dg/vect/vect-early-break_52.c: Update an unsafe test.
+	* gcc.dg/vect/vect-early-break_137-pr121190.c: New test.
+
+2025-07-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* gcc.target/i386/pr120427-5.c: New test.
+
+2025-07-31  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr121274.c: New test.
+
 2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	Backported from master:
