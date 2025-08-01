@@ -8765,6 +8765,8 @@ package body Sem_Prag is
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
+         Mark_Ghost_Pragma (N, Current_Scope);
+
          if CodePeer_Mode then
             Rewrite (N, Make_Null_Statement (Loc));
             return;
@@ -12749,12 +12751,6 @@ package body Sem_Prag is
          raise Pragma_Exit;
       end if;
 
-      --  Mark assertion pragmas as Ghost depending on their enclosing context
-
-      if Assertion_Expression_Pragma (Prag_Id) then
-         Mark_Ghost_Pragma (N, Current_Scope);
-      end if;
-
       --  Preset arguments
 
       Arg_Count := List_Length (Pragma_Argument_Associations (N));
@@ -14364,6 +14360,7 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments (2);
             Gather_Associations (Names, Args);
             Check_Arg_Order (Names);
+            Mark_Ghost_Pragma (N, Current_Scope);
 
             --  Special processing for Loop_Invariant, Loop_Variant or for
             --  other cases where a Loop_Entry attribute is present. If the
@@ -15384,6 +15381,8 @@ package body Sem_Prag is
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are marked as Ghost.
+
+            Mark_Ghost_Pragma (N, Current_Scope);
 
             Set_Ghost_Mode (N);
 
@@ -21580,6 +21579,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
+            Mark_Ghost_Pragma (N, Current_Scope);
 
             --  Process all increasing / decreasing expressions
 
