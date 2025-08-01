@@ -147,7 +147,7 @@ along with GCC; see the file COPYING3.  If not see
    The average trip count is computed from profile data if it
    exists. */
 
-static inline HOST_WIDE_INT
+static inline unsigned HOST_WIDE_INT
 avg_loop_niter (class loop *loop)
 {
   HOST_WIDE_INT niter = estimated_stmt_executions_int (loop);
@@ -4213,7 +4213,9 @@ adjust_setup_cost (struct ivopts_data *data, int64_t cost,
     return cost;
   else if (optimize_loop_for_speed_p (data->current_loop))
     {
-      int64_t niters = (int64_t) avg_loop_niter (data->current_loop);
+      uint64_t niters = avg_loop_niter (data->current_loop);
+      if (niters > (uint64_t) cost)
+	return (round_up_p && cost != 0) ? 1 : 0;
       return (cost + (round_up_p ? niters - 1 : 0)) / niters;
     }
   else
@@ -7277,7 +7279,7 @@ create_new_ivs (struct ivopts_data *data, class iv_ca *set)
       if (data->loop_loc != UNKNOWN_LOCATION)
 	fprintf (dump_file, " at %s:%d", LOCATION_FILE (data->loop_loc),
 		 LOCATION_LINE (data->loop_loc));
-      fprintf (dump_file, ", " HOST_WIDE_INT_PRINT_DEC " avg niters",
+      fprintf (dump_file, ", " HOST_WIDE_INT_PRINT_UNSIGNED " avg niters",
 	       avg_loop_niter (data->current_loop));
       fprintf (dump_file, ", %lu IVs:\n", bitmap_count_bits (set->cands));
       EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)
