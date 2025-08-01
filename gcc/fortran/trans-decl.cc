@@ -823,11 +823,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
         }
     }
 
-  /* Handle threadprivate variables.  */
-  if (sym->attr.threadprivate
-      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-    set_decl_tls_model (decl, decl_default_tls_model (decl));
-
   if (sym->attr.omp_allocate && TREE_STATIC (decl))
     {
       struct gfc_omp_namelist *n;
@@ -845,6 +840,11 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Mark weak variables.  */
   if (sym->attr.ext_attr & (1 << EXT_ATTR_WEAK))
     declare_weak (decl);
+
+  /* Handle threadprivate variables.  */
+  if (sym->attr.threadprivate
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
 
   gfc_finish_decl_attrs (decl, &sym->attr);
 }
@@ -2218,12 +2218,12 @@ get_proc_pointer_decl (gfc_symbol *sym)
 						  false, true);
     }
 
+  add_attributes_to_decl (&decl, sym);
+
   /* Handle threadprivate procedure pointers.  */
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     set_decl_tls_model (decl, decl_default_tls_model (decl));
-
-  add_attributes_to_decl (&decl, sym);
 
   return decl;
 }

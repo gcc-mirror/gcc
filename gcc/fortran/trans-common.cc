@@ -469,9 +469,6 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
       gfc_set_decl_location (decl, &com->where);
 
-      if (com->threadprivate)
-	set_decl_tls_model (decl, decl_default_tls_model (decl));
-
       if (com->omp_device_type != OMP_DEVICE_TYPE_UNSET)
 	{
 	  tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
@@ -536,6 +533,10 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       DECL_COMMON (decl) = 0;
       DECL_DEFER_OUTPUT (decl) = 0;
     }
+
+  if (com->threadprivate)
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
+
   return decl;
 }
 
