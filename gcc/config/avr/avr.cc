@@ -411,6 +411,29 @@ avr_to_int_mode (rtx x)
 }
 
 
+/* Return the pattern of INSN, but with added (clobber (reg:CC REG_CC)).
+   The pattern of INSN must be a PARALLEL or a SET.  INSN is unchanged.  */
+
+rtx
+avr_add_ccclobber (rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == SET || GET_CODE (pat) == PARALLEL);
+
+  int newlen = GET_CODE (pat) == SET ? 2 : 1 + XVECLEN (pat, 0);
+  rtx newpat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (newlen));
+  rtx elt0 = GET_CODE (pat) == SET ? pat : XVECEXP (pat, 0, 0);
+
+  XVECEXP (newpat, 0, 0) = copy_rtx (elt0);
+  XVECEXP (newpat, 0, newlen - 1) = gen_rtx_CLOBBER (VOIDmode, cc_reg_rtx);
+
+  for (int i = 1; i < newlen - 1; ++i)
+    XVECEXP (newpat, 0, i) = copy_rtx (XVECEXP (pat, 0, i));
+
+  return newpat;
+}
+
+
 /* Return true if hard register REG supports the ADIW and SBIW instructions.  */
 
 bool

@@ -168,6 +168,8 @@ regmask (machine_mode mode, unsigned regno)
 
 extern void avr_fix_inputs (rtx*, unsigned, unsigned);
 extern bool avr_emit3_fix_outputs (rtx (*)(rtx,rtx,rtx), rtx*, unsigned, unsigned);
+extern rtx avr_add_ccclobber (rtx_insn *);
+#define DONE_ADD_CCC emit (avr_add_ccclobber (curr_insn)); DONE;
 
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;
