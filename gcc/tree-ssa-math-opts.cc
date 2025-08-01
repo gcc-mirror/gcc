@@ -4241,6 +4241,39 @@ match_unsigned_saturation_mul (gimple_stmt_iterator *gsi, gassign *stmt)
 						    ops[0], ops[1]);
 }
 
+/* Try to match saturation unsigned mul, aka:
+     _6 = .MUL_OVERFLOW (a_4(D), b_5(D));
+     _2 = IMAGPART_EXPR <_6>;
+     if (_2 != 0)
+       goto <bb 4>; [35.00%]
+     else
+       goto <bb 3>; [65.00%]
+
+     <bb 3> [local count: 697932184]:
+     _1 = REALPART_EXPR <_6>;
+
+     <bb 4> [local count: 1073741824]:
+     # _3 = PHI <18446744073709551615(2), _1(3)>
+     =>
+     _3 = .SAT_MUL (a_4(D), b_5(D));  */
+
+static bool
+match_saturation_mul (gimple_stmt_iterator *gsi, gphi *phi)
+{
+  if (gimple_phi_num_args (phi) != 2)
+    return false;
+
+  tree ops[2];
+  tree phi_result = gimple_phi_result (phi);
+
+  if (!gimple_unsigned_integer_sat_mul (phi_result, ops, NULL))
+    return false;
+
+  return build_saturation_binary_arith_call_and_insert (gsi, IFN_SAT_MUL,
+							phi_result, ops[0],
+							ops[1]);
+}
+
 /*
  * Try to match saturation unsigned sub.
  *  <bb 2> [local count: 1073741824]:
@@ -6417,7 +6450,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
       if (match_saturation_add (&gsi, phi)
 	  || match_saturation_sub (&gsi, phi)
-	  || match_saturation_trunc (&gsi, phi))
+	  || match_saturation_trunc (&gsi, phi)
+	  || match_saturation_mul (&gsi, phi))
 	remove_phi_node (&psi, /* release_lhs_p */ false);
     }
 
