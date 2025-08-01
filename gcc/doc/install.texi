@@ -302,7 +302,7 @@ released on 2017-05-06.
 The gcobol documentation is maintained as manpages using troff
 mdoc. GNU groff is required to convert them to PDF format.  Conversion
 to HTML is done with mandoc, available at
-@uref{http://mdocml.bsd.lv/}.
+@uref{https://mandoc.bsd.lv}.
 
 Because ISO COBOL defines strict requirements for numerical precision,
 gcobol requires hardware with 128-bit computation instructions.  This
