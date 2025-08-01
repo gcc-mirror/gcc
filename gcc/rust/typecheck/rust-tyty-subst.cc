@@ -163,8 +163,11 @@ SubstitutionParamMapping::fill_param_ty (
 
   if (type.get_kind () == TypeKind::PARAM)
     {
-      // delete param;
-      param = static_cast<ParamType *> (type.clone ());
+      param = static_cast<BaseGeneric *> (type.clone ());
+    }
+  else if (type.get_kind () == TyTy::TypeKind::CONST)
+    {
+      param = static_cast<BaseGeneric *> (type.clone ());
     }
   else if (param->get_kind () == TypeKind::PARAM)
     {

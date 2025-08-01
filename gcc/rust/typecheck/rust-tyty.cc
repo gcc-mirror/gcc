@@ -37,6 +37,7 @@
 #include "options.h"
 #include "rust-system.h"
 #include "tree.h"
+#include "fold-const.h"
 #include <string>
 
 namespace Rust {
@@ -3712,9 +3713,14 @@ ConstType::is_equal (const BaseType &other) const
       return false;
     }
 
-  // TODO
+  const ConstType &rhs = static_cast<const ConstType &> (other);
+  if (!get_ty ()->is_equal (*rhs.get_ty ()))
+    return false;
 
-  return false;
+  tree lv = get_value ();
+  tree rv = rhs.get_value ();
+
+  return operand_equal_p (lv, rv, 0);
 }
 
 ConstType *
