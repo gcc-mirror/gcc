@@ -278,6 +278,15 @@ ASTLowerTraitItem::visit (AST::Function &func)
       function_params.push_back (hir_param);
     }
 
+  if (func.has_self_param ())
+    {
+      // insert mappings for self
+      // TODO: Is this correct ? Looks fishy
+      mappings.insert_hir_self_param (&*self_param);
+      mappings.insert_location (self_param->get_mappings ().get_hirid (),
+				self_param->get_locus ());
+    }
+
   HIR::TraitFunctionDecl decl (func.get_function_name (),
 			       std::move (qualifiers),
 			       std::move (generic_params),
@@ -301,14 +310,6 @@ ASTLowerTraitItem::visit (AST::Function &func)
     = new HIR::TraitItemFunc (mapping, std::move (decl), std::move (block_expr),
 			      func.get_outer_attrs (), func.get_locus ());
   translated = trait_item;
-  if (func.has_self_param ())
-    {
-      // insert mappings for self
-      // TODO: Is this correct ? Looks fishy
-      mappings.insert_hir_self_param (&*self_param);
-      mappings.insert_location (self_param->get_mappings ().get_hirid (),
-				self_param->get_locus ());
-    }
 
   // add the mappings for the function params at the end
   for (auto &param : trait_item->get_decl ().get_function_params ())
