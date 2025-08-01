@@ -883,19 +883,12 @@ SubstitutionRef::infer_substitions (location_t locus)
   std::map<std::string, BaseType *> argument_mappings;
   for (auto &p : get_substs ())
     {
-      rust_debug_loc (locus, "XXXXXXXXXXXXXXXXXXXXXX 1: [%s]",
-		      p.need_substitution () ? "true" : "false");
-      p.get_param_ty ()->debug ();
-
       if (p.needs_substitution ())
 	{
 	  const HIR::GenericParam &generic = p.get_generic_param ();
 	  const std::string &symbol = p.get_param_ty ()->get_symbol ();
 	  auto it = argument_mappings.find (symbol);
 	  bool have_mapping = it != argument_mappings.end ();
-
-	  rust_debug_loc (locus, "XXXXXXXXXXXXXXX 2: [%s] [%s]",
-			  have_mapping ? "true" : "false", symbol.c_str ());
 
 	  if (have_mapping)
 	    {
