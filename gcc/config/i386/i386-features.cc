@@ -3085,21 +3085,63 @@ ix86_rpad_gate ()
 	  && optimize_function_for_speed_p (cfun));
 }
 
+enum x86_cse_kind
+{
+  X86_CSE_CONST0_VECTOR,
+  X86_CSE_CONSTM1_VECTOR,
+  X86_CSE_VEC_DUP
+};
+
+struct redundant_load
+{
+  /* Bitmap of basic blocks with broadcast instructions.  */
+  auto_bitmap bbs;
+  /* Bitmap of broadcast instructions.  */
+  auto_bitmap insns;
+  /* The broadcast inner scalar.  */
+  rtx val;
+  /* The inner scalar mode.  */
+  machine_mode mode;
+  /* The instruction which sets the inner scalar.  Nullptr if the inner
+     scalar is applied to the whole function, instead of within the same
+     block.  */
+  rtx_insn *def_insn;
+  /* The widest broadcast source.  */
+  rtx broadcast_source;
+  /* The widest broadcast register.  */
+  rtx broadcast_reg;
+  /* The basic block of the broadcast instruction.  */
+  basic_block bb;
+  /* The number of broadcast instructions with the same inner scalar.  */
+  unsigned HOST_WIDE_INT count;
+  /* The threshold of broadcast instructions with the same inner
+     scalar.  */
+  unsigned int threshold;
+  /* The widest broadcast size in bytes.  */
+  unsigned int size;
+  /* Load kind.  */
+  x86_cse_kind kind;
+};
+
 /* Generate a vector set, DEST = SRC, at entry of the nearest dominator
    for basic block map BBS, which is in the fake loop that contains the
    whole function, so that there is only a single vector set in the
-   whole function.  If not nullptr, INNER_SCALAR is the inner scalar of
-   SRC, as (reg:SI 99) in (vec_duplicate:V4SI (reg:SI 99)).  */
+   whole function.  If not nullptr, LOAD is a pointer to the load.  */
 
 static void
 ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
-			      rtx inner_scalar = nullptr)
+			      redundant_load *load = nullptr)
 {
   basic_block bb = nearest_common_dominator_for_set (CDI_DOMINATORS, bbs);
-  while (bb->loop_father->latch
-	 != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    bb = get_immediate_dominator (CDI_DOMINATORS,
-				  bb->loop_father->header);
+  /* For X86_CSE_VEC_DUP, don't place the vector set outside of the loop
+     to avoid extra spills.  */
+  if (!load || load->kind != X86_CSE_VEC_DUP)
+    {
+      while (bb->loop_father->latch
+	     != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	bb = get_immediate_dominator (CDI_DOMINATORS,
+				      bb->loop_father->header);
+    }
 
   rtx set = gen_rtx_SET (dest, src);
 
@@ -3141,8 +3183,14 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
 	}
     }
 
-  if (inner_scalar)
+  if (load && load->kind == X86_CSE_VEC_DUP)
     {
+      /* Get the source from LOAD as (reg:SI 99) in
+
+	 (vec_duplicate:V4SI (reg:SI 99))
+
+       */
+      rtx inner_scalar = load->val;
       /* Set the source in (vec_duplicate:V4SI (reg:SI 99)).  */
       rtx reg = XEXP (src, 0);
       if ((REG_P (inner_scalar) || MEM_P (inner_scalar))
@@ -3489,44 +3537,6 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
     }
 }
 
-enum x86_cse_kind
-{
-  X86_CSE_CONST0_VECTOR,
-  X86_CSE_CONSTM1_VECTOR,
-  X86_CSE_VEC_DUP
-};
-
-struct redundant_load
-{
-  /* Bitmap of basic blocks with broadcast instructions.  */
-  auto_bitmap bbs;
-  /* Bitmap of broadcast instructions.  */
-  auto_bitmap insns;
-  /* The broadcast inner scalar.  */
-  rtx val;
-  /* The inner scalar mode.  */
-  machine_mode mode;
-  /* The instruction which sets the inner scalar.  Nullptr if the inner
-     scalar is applied to the whole function, instead of within the same
-     block.  */
-  rtx_insn *def_insn;
-  /* The widest broadcast source.  */
-  rtx broadcast_source;
-  /* The widest broadcast register.  */
-  rtx broadcast_reg;
-  /* The basic block of the broadcast instruction.  */
-  basic_block bb;
-  /* The number of broadcast instructions with the same inner scalar.  */
-  unsigned HOST_WIDE_INT count;
-  /* The threshold of broadcast instructions with the same inner
-     scalar.  */
-  unsigned int threshold;
-  /* The widest broadcast size in bytes.  */
-  unsigned int size;
-  /* Load kind.  */
-  x86_cse_kind kind;
-};
-
 /* Return the inner scalar if OP is a broadcast, else return nullptr.  */
 
 static rtx
@@ -3872,10 +3882,7 @@ remove_redundant_vector_load (void)
 	    else
 	      ix86_place_single_vector_set (load->broadcast_reg,
 					    load->broadcast_source,
-					    load->bbs,
-					    (load->kind == X86_CSE_VEC_DUP
-					     ? load->val
-					     : nullptr));
+					    load->bbs, load);
 	  }
 
       loop_optimizer_finalize ();
