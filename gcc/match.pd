@@ -3623,6 +3623,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       bool c2_is_max_p = wi::eq_p (c2, max);
      }
      (if (widen_prec > prec && c2_is_max_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	T result;
+	if (__builtin_mul_overflow (X, Y, &result))
+	  return -1;
+	else
+	  return -(T)overflow_p | result;
+      }
+      while T can be uint8_t, uint16_t, uint32_t and uint64_t.  */
+   (cond^ (ne (imagpart (IFN_MUL_OVERFLOW:c@2 @0 @1)) integer_zerop)
+	   integer_minus_onep (realpart @2))
+   (if (types_match (type, @0, @1))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
