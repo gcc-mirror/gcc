@@ -2308,26 +2308,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	    *memory_access_type == VMAT_GATHER_SCATTER ? gs_info : nullptr);
     }
 
-  if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
-    {
-      /* STMT is the leader of the group. Check the operands of all the
-	 stmts of the group.  */
-      stmt_vec_info next_stmt_info = DR_GROUP_NEXT_ELEMENT (stmt_info);
-      while (next_stmt_info)
-	{
-	  tree op = vect_get_store_rhs (next_stmt_info);
-	  enum vect_def_type dt;
-	  if (!vect_is_simple_use (op, vinfo, &dt))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "use not simple.\n");
-	      return false;
-	    }
-	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
-	}
-    }
-
   if (overrun_p)
     {
       gcc_assert (can_overrun_p);
@@ -2629,7 +2609,7 @@ vect_check_scalar_mask (vec_info *vinfo,
 
 static bool
 vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
-		      slp_tree slp_node, tree *rhs, slp_tree *rhs_node,
+		      slp_tree slp_node, slp_tree *rhs_node,
 		      vect_def_type *rhs_dt_out, tree *rhs_vectype_out,
 		      vec_load_store_type *vls_type_out)
 {
@@ -2645,8 +2625,9 @@ vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
 
   enum vect_def_type rhs_dt;
   tree rhs_vectype;
+  tree rhs;
   if (!vect_is_simple_use (vinfo, slp_node, op_no,
-			   rhs, rhs_node, &rhs_dt, &rhs_vectype))
+			   &rhs, rhs_node, &rhs_dt, &rhs_vectype))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2657,7 +2638,7 @@ vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
   /* In the case this is a store from a constant make sure
      native_encode_expr can handle it.  */
   if (rhs_dt == vect_constant_def
-      && CONSTANT_CLASS_P (*rhs) && native_encode_expr (*rhs, NULL, 64) == 0)
+      && CONSTANT_CLASS_P (rhs) && native_encode_expr (rhs, NULL, 64) == 0)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7861,10 +7842,9 @@ vectorizable_store (vec_info *vinfo,
       return false;
     }
 
-  tree op;
   slp_tree op_node;
   if (!vect_check_store_rhs (vinfo, stmt_info, slp_node,
-			     &op, &op_node, &rhs_dt, &rhs_vectype, &vls_type))
+			     &op_node, &rhs_dt, &rhs_vectype, &vls_type))
     return false;
 
   elem_type = TREE_TYPE (vectype);
@@ -8029,7 +8009,6 @@ vectorizable_store (vec_info *vinfo,
   gcc_assert (!STMT_VINFO_GROUPED_ACCESS (first_stmt_info)
 	      || (DR_GROUP_FIRST_ELEMENT (first_stmt_info) == first_stmt_info));
   first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-  op = vect_get_store_rhs (first_stmt_info);
 
   ref_type = get_group_alias_ptr_type (first_stmt_info);
 
@@ -8215,7 +8194,7 @@ vectorizable_store (vec_info *vinfo,
       unsigned int n_adjacent_stores = 0;
       running_off = offvar;
       if (!costing_p)
-	vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds);
+	vect_get_slp_defs (op_node, &vec_oprnds);
       unsigned int group_el = 0;
       unsigned HOST_WIDE_INT elsz
 	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
@@ -8880,10 +8859,13 @@ vectorizable_store (vec_info *vinfo,
   if (!costing_p)
     {
       /* Get vectorized arguments for SLP_NODE.  */
-      vect_get_vec_defs (vinfo, slp_node, op, &vec_oprnds, mask, &vec_masks);
+      vect_get_slp_defs (op_node, &vec_oprnds);
       vec_oprnd = vec_oprnds[0];
       if (mask)
-	vec_mask = vec_masks[0];
+	{
+	  vect_get_slp_defs (mask_node, &vec_masks);
+	  vec_mask = vec_masks[0];
+	}
     }
 
   /* We should have catched mismatched types earlier.  */
@@ -8925,10 +8907,7 @@ vectorizable_store (vec_info *vinfo,
 	  else
 	    {
 	      tree perm_mask = perm_mask_for_reverse (vectype);
-	      tree perm_dest
-		= vect_create_destination_var (vect_get_store_rhs (stmt_info),
-					       vectype);
-	      tree new_temp = make_ssa_name (perm_dest);
+	      tree new_temp = make_ssa_name (vectype);
 
 	      /* Generate the permute statement.  */
 	      gimple *perm_stmt
