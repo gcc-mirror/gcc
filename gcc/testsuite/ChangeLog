@@ -1,3 +1,38 @@
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	Backported from master:
+	2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/121028
+	* gcc.target/aarch64/sme/call_sm_switch_1.c: Tell check-function
+	-bodies not to ignore .inst directives, and replace the test for
+	"smstart sm" with one for it's encoding.
+	* gcc.target/aarch64/sme/call_sm_switch_11.c: Likewise.
+	* gcc.target/aarch64/sme/pr121028.c: New test.
+
+2025-07-31  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2025-07-24  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR testsuite/119382
+	* gcc.target/powerpc/vsx-builtin-7.c: Add '-fno-ipa-icf' to dg-options.
+
+2025-07-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* gcc.target/i386/pr120427-5.c: New test.
+
+2025-07-31  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr121274.c: New test.
+
 2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

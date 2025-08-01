@@ -1,3 +1,31 @@
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	Backported from master:
+	2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/121028
+	* config/aarch64/aarch64-sme.md (aarch64_smstart_sm): Use the .inst
+	directive if !TARGET_SME.
+	(aarch64_smstop_sm): Likewise.
+
+2025-07-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (peephole2): Transform "movq $-1,reg" to
+	"pushq $-1; popq reg" for -Oz if reg is a legacy integer register.
+
+2025-07-31  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121274
+	* config/i386/sse.md (*vec_concatv2di_0): Add a splitter
+	before it.
+
 2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
