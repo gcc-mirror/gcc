@@ -2298,16 +2298,45 @@ package body Ghost is
       Param        : Node_Id;
       Param_Id     : Entity_Id;
 
+      procedure Mark_And_Set_Is_Checked_Ghost_Entity (E : Entity_Id);
+      --  Sets Is_Checked_Ghost_Entity, unsets Is_Ignored_Ghost_Entity
+
+      procedure Mark_And_Set_Is_Ignored_Ghost_Entity (E : Entity_Id);
+      --  Sets Is_Ignored_Ghost_Entity, unsets Is_Checked_Ghost_Entity
+
+      ------------------------------------------
+      -- Mark_And_Set_Is_Checked_Ghost_Entity --
+      ------------------------------------------
+
+      procedure Mark_And_Set_Is_Checked_Ghost_Entity (E : Entity_Id) is
+      begin
+         Set_Is_Checked_Ghost_Entity (E, True);
+         Set_Is_Ignored_Ghost_Entity (E, False);
+      end Mark_And_Set_Is_Checked_Ghost_Entity;
+
+      ------------------------------------------
+      -- Mark_And_Set_Is_Ignored_Ghost_Entity --
+      ------------------------------------------
+
+      procedure Mark_And_Set_Is_Ignored_Ghost_Entity (E : Entity_Id) is
+      begin
+         Set_Is_Checked_Ghost_Entity (E, False);
+         Set_Is_Ignored_Ghost_Entity (E, True);
+      end Mark_And_Set_Is_Ignored_Ghost_Entity;
+
+   --  Start of processing for Mark_Ghost_Declaration_Or_Body
+
    begin
       Set_Ghost_Assertion_Level (Id, Level);
 
       if Mode = Name_Check then
          Mark_Formals := True;
-         Set_Is_Checked_Ghost_Entity (Id);
+         Mark_And_Set_Is_Checked_Ghost_Entity (Id);
 
       elsif Mode = Name_Ignore then
          Mark_Formals := True;
-         Set_Is_Ignored_Ghost_Entity (Id);
+         Mark_And_Set_Is_Ignored_Ghost_Entity (Id);
+
          Set_Is_Ignored_Ghost_Node (N);
          Record_Ignored_Ghost_Node (N);
       end if;
@@ -2335,10 +2364,10 @@ package body Ghost is
             Set_Ghost_Assertion_Level (Param_Id, Level);
 
             if Mode = Name_Check then
-               Set_Is_Checked_Ghost_Entity (Param_Id);
+               Mark_And_Set_Is_Checked_Ghost_Entity (Param_Id);
 
             elsif Mode = Name_Ignore then
-               Set_Is_Ignored_Ghost_Entity (Param_Id);
+               Mark_And_Set_Is_Ignored_Ghost_Entity (Param_Id);
             end if;
 
             Next (Param);
