@@ -1515,7 +1515,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
     }
 
   /* We might load more scalars than we need for permuting SLP loads.
-     We checked in get_group_load_store_type that the extra elements
+     We checked in get_load_store_type that the extra elements
      don't leak into a new vector.  */
   auto group_memory_nvectors = [](poly_uint64 size, poly_uint64 nunits)
   {
@@ -1915,38 +1915,45 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
   return NULL_TREE;
 }
 
-/* A subroutine of get_load_store_type, with a subset of the same
-   arguments.  Handle the case where STMT_INFO is part of a grouped load
-   or store.
+/* Analyze load or store SLP_NODE of type VLS_TYPE.  Return true
+   if there is a memory access type that the vectorized form can use,
+   storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
+   or scatters, fill in GS_INFO accordingly.  In addition
+   *ALIGNMENT_SUPPORT_SCHEME is filled out and false is returned if
+   the target does not support the alignment scheme.  *MISALIGNMENT
+   is set according to the alignment of the access (including
+   DR_MISALIGNMENT_UNKNOWN when it is unknown).
 
-   For stores, the statements in the group are all consecutive
-   and there is no gap at the end.  For loads, the statements in the
-   group might not be consecutive; there can be gaps between statements
-   as well as at the end.
+   MASKED_P is true if the statement is conditional on a vectorized mask.
+   VECTYPE is the vector type that the vectorized statements will use.
 
-   If we can use gather/scatter and ELSVALS is nonzero the supported
-   else values will be stored in the vector ELSVALS points to.
-*/
+   If ELSVALS is nonzero the supported else values will be stored in the
+   vector ELSVALS points to.  */
 
 static bool
-get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
-			   tree vectype, slp_tree slp_node,
-			   bool masked_p, vec_load_store_type vls_type,
-			   vect_memory_access_type *memory_access_type,
-			   poly_int64 *poffset,
-			   dr_alignment_support *alignment_support_scheme,
-			   int *misalignment,
-			   gather_scatter_info *gs_info,
-			   internal_fn *lanes_ifn,
-			   vec<int> *elsvals)
+get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
+		     tree vectype, slp_tree slp_node,
+		     bool masked_p, vec_load_store_type vls_type,
+		     vect_memory_access_type *memory_access_type,
+		     poly_int64 *poffset,
+		     dr_alignment_support *alignment_support_scheme,
+		     int *misalignment,
+		     gather_scatter_info *gs_info,
+		     internal_fn *lanes_ifn,
+		     vec<int> *elsvals = nullptr)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   stmt_vec_info first_stmt_info;
   unsigned int group_size;
   unsigned HOST_WIDE_INT gap;
   bool single_element_p;
   poly_int64 neg_ldst_offset = 0;
+
+  *misalignment = DR_MISALIGNMENT_UNKNOWN;
+  *poffset = 0;
+
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
@@ -1963,7 +1970,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       single_element_p = true;
     }
   dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* True if the vectorized statements would access beyond the last
      statement in the group.  */
@@ -2318,51 +2324,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
     }
 
-  return true;
-}
-
-/* Analyze load or store statement STMT_INFO of type VLS_TYPE.  Return true
-   if there is a memory access type that the vectorized form can use,
-   storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
-   or scatters, fill in GS_INFO accordingly.  In addition
-   *ALIGNMENT_SUPPORT_SCHEME is filled out and false is returned if
-   the target does not support the alignment scheme.  *MISALIGNMENT
-   is set according to the alignment of the access (including
-   DR_MISALIGNMENT_UNKNOWN when it is unknown).
-
-   SLP says whether we're performing SLP rather than loop vectorization.
-   MASKED_P is true if the statement is conditional on a vectorized mask.
-   VECTYPE is the vector type that the vectorized statements will use.
-   NCOPIES is the number of vector statements that will be needed.
-
-   If ELSVALS is nonzero the supported else values will be stored in the
-   vector ELSVALS points to.  */
-
-static bool
-get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
-		     tree vectype, slp_tree slp_node,
-		     bool masked_p, vec_load_store_type vls_type,
-		     unsigned int,
-		     vect_memory_access_type *memory_access_type,
-		     poly_int64 *poffset,
-		     dr_alignment_support *alignment_support_scheme,
-		     int *misalignment,
-		     gather_scatter_info *gs_info,
-		     internal_fn *lanes_ifn,
-		     vec<int> *elsvals = nullptr)
-{
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  *misalignment = DR_MISALIGNMENT_UNKNOWN;
-  *poffset = 0;
-  if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
-				  masked_p,
-				  vls_type, memory_access_type, poffset,
-				  alignment_support_scheme,
-				  misalignment, gs_info, lanes_ifn,
-				  elsvals))
-    return false;
-
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
       && !nunits.is_constant ())
@@ -2373,7 +2334,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			 "vectorization factor.\n");
       return false;
     }
-
 
   /* Checks if all scalar iterations are known to be inbounds.  */
   bool inbounds = DR_SCALAR_KNOWN_BOUNDS (STMT_VINFO_DR_INFO (stmt_info));
@@ -2508,9 +2468,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   /* FIXME: At the moment the cost model seems to underestimate the
      cost of using elementwise accesses.  This check preserves the
      traditional behavior until that can be fixed.  */
-  stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-  if (!first_stmt_info)
-    first_stmt_info = stmt_info;
   if (*memory_access_type == VMAT_ELEMENTWISE
       && !STMT_VINFO_STRIDED_P (first_stmt_info)
       && !(stmt_info == DR_GROUP_FIRST_ELEMENT (stmt_info)
@@ -7859,7 +7816,7 @@ vectorizable_store (vec_info *vinfo,
   poly_int64 poffset;
   internal_fn lanes_ifn;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, vls_type,
-			    1, &memory_access_type, &poffset,
+			    &memory_access_type, &poffset,
 			    &alignment_support_scheme, &misalignment, &gs_info,
 			    &lanes_ifn))
     return false;
@@ -9421,7 +9378,7 @@ vectorizable_load (vec_info *vinfo,
   int maskload_elsval = 0;
   bool need_zeroing = false;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
-			    1, &memory_access_type, &poffset,
+			    &memory_access_type, &poffset,
 			    &alignment_support_scheme, &misalignment, &gs_info,
 			    &lanes_ifn, &elsvals))
     return false;
@@ -9435,7 +9392,7 @@ vectorizable_load (vec_info *vinfo,
     = TYPE_PRECISION (scalar_type) < GET_MODE_PRECISION (GET_MODE_INNER (mode));
 
   /* ???  The following checks should really be part of
-     get_group_load_store_type.  */
+     get_load_store_type.  */
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
       && !((memory_access_type == VMAT_ELEMENTWISE
 	    || memory_access_type == VMAT_GATHER_SCATTER)
