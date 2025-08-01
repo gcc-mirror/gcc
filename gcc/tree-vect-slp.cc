@@ -124,7 +124,7 @@ _slp_tree::_slp_tree ()
   this->avoid_stlf_fail = false;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
   SLP_TREE_REPRESENTATIVE (this) = NULL;
-  SLP_TREE_MEMORY_ACCESS_TYPE (this) = VMAT_INVARIANT;
+  SLP_TREE_MEMORY_ACCESS_TYPE (this) = VMAT_UNINITIALIZED;
   SLP_TREE_REF_COUNT (this) = 1;
   this->failed = NULL;
   this->max_nunits = 1;

@@ -173,6 +173,8 @@ struct vect_scalar_ops_slice_hash : typed_noop_remove<vect_scalar_ops_slice>
 /* Describes how we're going to vectorize an individual load or store,
    or a group of loads or stores.  */
 enum vect_memory_access_type {
+  VMAT_UNINITIALIZED,
+
   /* An access to an invariant address.  This is used only for loads.  */
   VMAT_INVARIANT,
 
