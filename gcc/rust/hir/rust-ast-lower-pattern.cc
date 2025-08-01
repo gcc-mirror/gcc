@@ -23,7 +23,9 @@
 namespace Rust {
 namespace HIR {
 
-ASTLoweringPattern::ASTLoweringPattern () : translated (nullptr) {}
+ASTLoweringPattern::ASTLoweringPattern ()
+  : translated (nullptr), is_let_top_level (false)
+{}
 
 HIR::Pattern *
 ASTLoweringPattern::translate (AST::Pattern &pattern, bool is_let_top_level)
