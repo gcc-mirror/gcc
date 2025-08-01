@@ -68,6 +68,7 @@ make_eager_builtin_invocation (
 {
   auto path_str = make_macro_path_str (kind);
 
+  auto token_stream = arguments.to_token_stream ();
   std::unique_ptr<AST::Expr> node = AST::MacroInvocation::Builtin (
     kind,
     AST::MacroInvocData (AST::SimplePath (
@@ -76,7 +77,7 @@ make_eager_builtin_invocation (
     {}, locus, std::move (pending_invocations));
 
   return AST::Fragment ({AST::SingleASTNode (std::move (node))},
-			arguments.to_token_stream ());
+			std::move (token_stream));
 }
 
 /* Match the end token of a macro given the start delimiter of the macro */
