@@ -1,3 +1,18 @@
+2025-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121314
+	* mc-boot/GFormatStrings.cc (PerformFormatString): Rebuilt.
+	* mc-boot/GM2EXCEPTION.cc (M2EXCEPTION_M2Exception): Rebuilt.
+	* mc-boot/GSFIO.cc (SFIO_GetFileName): Rebuilt.
+	* mc-boot/GSFIO.h (SFIO_GetFileName): Rebuilt.
+	* mc-boot/Gdecl.cc: Rebuilt.
+	* mc-boot/GmcFileName.h: Rebuilt.
+	* mc/decl.mod (getStringChar): New procedure function.
+	(getStringContents): Call getStringChar.
+	(addQuotes): New procedure function.
+	(foldBinary): Call addQuotes to add delimiting quotes
+	to the new string.
+
 2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GenGCC.mod (FoldBecomes): Remove all

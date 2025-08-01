@@ -1,3 +1,181 @@
+2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls (-mfuse-move2): Add url.
+
+2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_output_addr_vec) <labl>: Asm out its .type.
+
+2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/121340
+	* config/avr/avr.opt (-mfuse-move2): New option.
+	* config/avr/avr-passes.def (avr_pass_2moves): Insert after combine.
+	* config/avr/avr-passes.cc (make_avr_pass_2moves): New function.
+	(pass_data avr_pass_data_2moves): New static variable.
+	(avr_pass_2moves): New rtl_opt_pass.
+	* config/avr/avr-protos.h (make_avr_pass_2moves): New proto.
+	* common/config/avr/avr-common.cc
+	(default_options avr_option_optimization_table) <-mfuse-move2>:
+	Set for -O1 and higher.
+	* doc/invoke.texi (AVR Options) <-mfuse-move2>: Document.
+
+2025-07-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120805
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Skip setting
+	bounds on epilogues.
+
+2025-07-31  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* common/config/aarch64/cpuinfo.h: Remove unused features, add FEAT_CSSC
+	and FEAT_MOPS.
+	* config/aarch64/aarch64-option-extensions.def: Remove FMV support
+	for RPRES, use PULL rather than AES, add FMV support for CSSC and MOPS.
+
+2025-07-31  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/tuning_models/generic_armv9_a.h
+	(generic_armv9_a_addrcost_table): Use zero cost for himode.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Properly
+	compare the scalar type of the gather/scatter offset to
+	the offset vector component type.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (fold_stmt_inplace): Add valueization hook
+	argument, defaulted to no_follow_ssa_edges.
+	* gimple-fold.cc (fold_stmt_inplace): Adjust.
+
+2025-07-31  Artemiy Granat  <a.granat@ispras.ru>
+
+	* config/i386/i386-options.cc (ix86_handle_cconv_attribute):
+	Fix typo.
+
+2025-07-31  Artemiy Granat  <a.granat@ispras.ru>
+
+	* config/i386/i386-options.cc (ix86_handle_cconv_attribute):
+	Handle simultaneous use of regparm and thiscall attributes in
+	case when regparm is set before thiscall.
+
+2025-07-31  Artemiy Granat  <a.granat@ispras.ru>
+
+	* config/i386/i386-options.cc (ix86_handle_cconv_attribute):
+	Fix comments which state that combination of stdcall and fastcall
+	attributes is valid but redundant.
+
+2025-07-31  Artemiy Granat  <a.granat@ispras.ru>
+
+	* config/i386/i386-options.cc (ix86_handle_cconv_attribute):
+	Move 64-bit mode check before regparm handling.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121320
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Convert
+	op->off to poly_offset_int before multiplying by
+	BITS_PER_UNIT.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121323
+	* tree-ssa-alias.cc (ao_ref_init_from_ptr_and_range): Check
+	the pointer offset fits in a HWI when represented in bits.
+
+2025-07-31  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64.cc (build_ifunc_arg_type):
+	Add new fields _hwcap3 and _hwcap4.
+
+2025-07-31  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/118890
+	* config/rs6000/rs6000.cc (can_be_rotated_to_negative_lis): Avoid left
+	shift of negative value and guard shift count.
+	(can_be_built_by_li_and_rldic): Likewise.
+	(rs6000_emit_set_long_const): Likewise.
+	* config/rs6000/rs6000.md (splitter for plus into two 16-bit parts): Fix
+	UB from overflow in addition.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* config/aarch64/aarch64.cc (aarch64_detect_vector_stmt_subtype):
+	Check for node before dereferencing.
+	(aarch64_vector_costs::add_stmt_cost): Likewise.
+
+2025-07-31  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/121028
+	* config/aarch64/aarch64-sme.md (aarch64_smstart_sm): Use the .inst
+	directive if !TARGET_SME.
+	(aarch64_smstop_sm): Likewise.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::memory_access_type): Remove.
+	(STMT_VINFO_MEMORY_ACCESS_TYPE): Likewise.
+	(vect_mem_access_type): Likewise.
+	* tree-vect-stmts.cc (vectorizable_store): Do not set
+	STMT_VINFO_MEMORY_ACCESS_TYPE.  Fix SLP_TREE_MEMORY_ACCESS_TYPE
+	usage.
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Remove
+	checking of memory access type.
+	* config/riscv/riscv-vector-costs.cc (costs::compute_local_live_ranges):
+	Use SLP_TREE_MEMORY_ACCESS_TYPE.
+	(costs::need_additional_vector_vars_p): Likewise.
+	(segment_loadstore_group_size): Get SLP node as argument,
+	use SLP_TREE_MEMORY_ACCESS_TYPE.
+	(costs::adjust_stmt_cost): Pass down SLP node.
+	* config/aarch64/aarch64.cc (aarch64_ld234_st234_vectors): Use
+	SLP_TREE_MEMORY_ACCESS_TYPE instead of vect_mem_access_type.
+	(aarch64_detect_vector_stmt_subtype): Likewise.
+	(aarch64_vector_costs::count_ops): Likewise.
+	(aarch64_vector_costs::add_stmt_cost): Likewise.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_transform_loop): Do not verify DRs
+	have not been modified for epilogue loops.
+	(update_epilogue_loop_vinfo): Do not copy modified DRs to
+	the originals.
+
+2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121264
+	* machmode.h (get_best_mode): Change type of first 2 arguments
+	from int to HOST_WIDE_INT.
+	* stor-layout.cc (get_best_mode): Likewise.
+
+2025-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Fix comment typos,
+	hanlde -> handle.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin, ix86_rtx_costs):
+	Likewise.
+	* config/i386/i386-features.cc (remove_partial_avx_dependency):
+	Likewise.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (check_scan_store): Remove redundant
+	slp_node check.  Disallow epilogue vectorization.
+
+2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vector_costs::costing_for_scalar): New
+	accessor.
+	(add_stmt_cost): For scalar costing force vectype to NULL.
+	Verify we do not pass in a SLP node.
+
+2025-07-31  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/121312
+	* config/riscv/arch-canonicalize: Add H extension to the
+	canonical order.
+
 2025-07-30  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/121308

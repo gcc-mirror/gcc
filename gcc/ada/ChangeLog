@@ -1,3 +1,202 @@
+2025-07-31  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	Revert:
+	2025-07-31  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-c_time$(objext) and
+	s-c_time$(objext).
+	(Aarch64/Android): Do not use s-osinte__android.adb.
+	(SPARC/Solaris): Do not use s-osprim__solaris.adb.
+	(x86/Solaris): Likewise.
+	(LynxOS178): Do not use s-parame__posix2008.ads.
+	(RTEMS): Likewise.
+	(x32/Linux): Likewise, as well as s-linux__x32.ads.  Replace
+	s-osprim__x32.adb with s-osprim__posix.adb.
+	(LIBGNAT_OBJS): Remove cal.o.
+	* cal.c: Delete.
+	* doc/gnat_rm/the_gnat_library.rst (GNAT.C_Time): New entry.
+	(GNAT.Calendar): Do not mention the obsolete conversion functions.
+	* impunit.adb (Non_Imp_File_Names_95): Add g-c_time.
+	* libgnarl/a-exetim__posix.adb: Add with clause for System.C_Time
+	(Clock): Use type and functions from System.C_Time.
+	* libgnarl/s-linux.ads: Remove with clause for System.Parameters.
+	Remove declarations of C time types.
+	* libgnarl/s-linux__alpha.ads: Likewise.
+	* libgnarl/s-linux__android-aarch64.ads: Likewise.
+	* libgnarl/s-linux__android-arm.ads: Likewise.
+	* libgnarl/s-linux__hppa.ads: Likewise.
+	* libgnarl/s-linux__loongarch.ads: Likewise.
+	* libgnarl/s-linux__mips.ads: Likewise.
+	* libgnarl/s-linux__riscv.ads: Likewise.
+	* libgnarl/s-linux__sparc.ads: Likewise.
+	* libgnarl/s-osinte__aix.ads: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__cheribsd.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__solaris.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.ads: Likewise.
+	* libgnarl/s-qnx.ads: Likewise.
+	* libgnarl/s-linux__x32.ads: Delete.
+	* libgnarl/s-osinte__darwin.adb (To_Duration): Remove.
+	(To_Timespec): Likewise.
+	* libgnarl/s-osinte__aix.adb: Likewise.
+	* libgnarl/s-osinte__dragonfly.adb: Likewise.
+	* libgnarl/s-osinte__freebsd.adb: Likewise.
+	* libgnarl/s-osinte__gnu.adb: Likewise.
+	* libgnarl/s-osinte__lynxos178.adb: Likewise.
+	* libgnarl/s-osinte__posix.adb: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__solaris.adb: Likewise.
+	* libgnarl/s-osinte__vxworks.adb: Likewise.
+	* libgnarl/s-osinte__x32.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Add with clause for System.C_Time.
+	(Monotonic_Clock): Use type and functions from System.C_Time.
+	(RT_Resolution): Likewise.
+	(Timed_Sleep): Likewise.
+	(Timed_Delay): Likewise.
+	* libgnarl/s-taprop__vxworks.adb: Likewise.
+	* libgnarl/s-tpopmo.adb: Likewise.
+	* libgnarl/s-osinte__android.adb: Delete.
+	* libgnat/g-c_time.ads: New file.
+	* libgnat/g-calend.adb: Delegate to System.C_Time.
+	* libgnat/g-calend.ads: Likewise.
+	* libgnat/g-socket.adb: Likewise.
+	* libgnat/g-socthi.adb: Likewise.
+	* libgnat/g-socthi__vxworks.adb: Likewise.
+	* libgnat/g-sothco.ads: Likewise.
+	* libgnat/g-spogwa.adb: Likewise.
+	* libgnat/s-c_time.adb: New file.
+	* libgnat/s-c_time.ads: Likewise.
+	* libgnat/s-optide.adb: Import nanosleep here.
+	* libgnat/s-os_lib.ads (time_t): Remove.
+	(To_Ada): Adjust.
+	(To_C): Likewise.
+	* libgnat/s-os_lib.adb: Likewise.
+	* libgnat/s-osprim__darwin.adb: Delegate to System.C_Time.
+	* libgnat/s-osprim__posix.adb: Likewise.
+	* libgnat/s-osprim__posix2008.adb: Likewise.
+	* libgnat/s-osprim__rtems.adb: Likewise.
+	* libgnat/s-osprim__unix.adb: Likewise.
+	* libgnat/s-osprim__solaris.adb: Delete.
+	* libgnat/s-osprim__x32.adb: Likewise.
+	* libgnat/s-parame.ads (time_t_bits): Remove.
+	* libgnat/s-parame__hpux.ads: Likewise.
+	* libgnat/s-parame__vxworks.ads: Likewise.
+	* libgnat/s-parame__posix2008.ads: Delete.
+	* s-oscons-tmplt.c (SIZEOF_tv_nsec): New constant.
+
+2025-07-31  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/120440
+	* gcc-interface/Makefile.in (GNATLINK_OBJS): Add s-excmac.o.
+	(GNATMAKE_OBJS): Likewise.
+
+2025-07-31  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-c_time$(objext) and
+	s-c_time$(objext).
+	(Aarch64/Android): Do not use s-osinte__android.adb.
+	(SPARC/Solaris): Do not use s-osprim__solaris.adb.
+	(x86/Solaris): Likewise.
+	(LynxOS178): Do not use s-parame__posix2008.ads.
+	(RTEMS): Likewise.
+	(x32/Linux): Likewise, as well as s-linux__x32.ads.  Replace
+	s-osprim__x32.adb with s-osprim__posix.adb.
+	(LIBGNAT_OBJS): Remove cal.o.
+	* cal.c: Delete.
+	* doc/gnat_rm/the_gnat_library.rst (GNAT.C_Time): New entry.
+	(GNAT.Calendar): Do not mention the obsolete conversion functions.
+	* impunit.adb (Non_Imp_File_Names_95): Add g-c_time.
+	* libgnarl/a-exetim__posix.adb: Add with clause for System.C_Time
+	(Clock): Use type and functions from System.C_Time.
+	* libgnarl/s-linux.ads: Remove with clause for System.Parameters.
+	Remove declarations of C time types.
+	* libgnarl/s-linux__alpha.ads: Likewise.
+	* libgnarl/s-linux__android-aarch64.ads: Likewise.
+	* libgnarl/s-linux__android-arm.ads: Likewise.
+	* libgnarl/s-linux__hppa.ads: Likewise.
+	* libgnarl/s-linux__loongarch.ads: Likewise.
+	* libgnarl/s-linux__mips.ads: Likewise.
+	* libgnarl/s-linux__riscv.ads: Likewise.
+	* libgnarl/s-linux__sparc.ads: Likewise.
+	* libgnarl/s-osinte__aix.ads: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__cheribsd.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__solaris.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.ads: Likewise.
+	* libgnarl/s-qnx.ads: Likewise.
+	* libgnarl/s-linux__x32.ads: Delete.
+	* libgnarl/s-osinte__darwin.adb (To_Duration): Remove.
+	(To_Timespec): Likewise.
+	* libgnarl/s-osinte__aix.adb: Likewise.
+	* libgnarl/s-osinte__dragonfly.adb: Likewise.
+	* libgnarl/s-osinte__freebsd.adb: Likewise.
+	* libgnarl/s-osinte__gnu.adb: Likewise.
+	* libgnarl/s-osinte__lynxos178.adb: Likewise.
+	* libgnarl/s-osinte__posix.adb: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__solaris.adb: Likewise.
+	* libgnarl/s-osinte__vxworks.adb: Likewise.
+	* libgnarl/s-osinte__x32.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Add with clause for System.C_Time.
+	(Monotonic_Clock): Use type and functions from System.C_Time.
+	(RT_Resolution): Likewise.
+	(Timed_Sleep): Likewise.
+	(Timed_Delay): Likewise.
+	* libgnarl/s-taprop__vxworks.adb: Likewise.
+	* libgnarl/s-tpopmo.adb: Likewise.
+	* libgnarl/s-osinte__android.adb: Delete.
+	* libgnat/g-c_time.ads: New file.
+	* libgnat/g-calend.adb: Delegate to System.C_Time.
+	* libgnat/g-calend.ads: Likewise.
+	* libgnat/g-socket.adb: Likewise.
+	* libgnat/g-socthi.adb: Likewise.
+	* libgnat/g-socthi__vxworks.adb: Likewise.
+	* libgnat/g-sothco.ads: Likewise.
+	* libgnat/g-spogwa.adb: Likewise.
+	* libgnat/s-c_time.adb: New file.
+	* libgnat/s-c_time.ads: Likewise.
+	* libgnat/s-optide.adb: Import nanosleep here.
+	* libgnat/s-os_lib.ads (time_t): Remove.
+	(To_Ada): Adjust.
+	(To_C): Likewise.
+	* libgnat/s-os_lib.adb: Likewise.
+	* libgnat/s-osprim__darwin.adb: Delegate to System.C_Time.
+	* libgnat/s-osprim__posix.adb: Likewise.
+	* libgnat/s-osprim__posix2008.adb: Likewise.
+	* libgnat/s-osprim__rtems.adb: Likewise.
+	* libgnat/s-osprim__unix.adb: Likewise.
+	* libgnat/s-osprim__solaris.adb: Delete.
+	* libgnat/s-osprim__x32.adb: Likewise.
+	* libgnat/s-parame.ads (time_t_bits): Remove.
+	* libgnat/s-parame__hpux.ads: Likewise.
+	* libgnat/s-parame__vxworks.ads: Likewise.
+	* libgnat/s-parame__posix2008.ads: Delete.
+	* s-oscons-tmplt.c (SIZEOF_tv_nsec): New constant.
+
 2025-07-28  Marc Poulhiès  <poulhies@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_to_gnu): Fix typo in comment.

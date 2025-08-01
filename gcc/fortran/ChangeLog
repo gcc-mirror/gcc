@@ -1,3 +1,23 @@
+2025-07-31  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/121342
+	* trans-expr.cc (gfc_conv_subref_array_arg): Remove offset
+	update.
+	(gfc_conv_procedure_call): For polymorphic functions, move the
+	scalarizer descriptor information...
+	* trans-array.cc (gfc_add_loop_ss_code): ... here, and evaluate
+	the bounds to fresh variables.
+	(get_class_info_from_ss): Remove offset update.
+	(gfc_conv_ss_startstride): Don't set a zero value for function
+	result upper bounds.
+	(late_set_loop_bounds): New.
+	(gfc_conv_loop_setup): If the bounds of a function result have
+	been set, and no other array provided loop bounds for a
+	dimension, use the function result bounds as loop bounds for
+	that dimension.
+	(gfc_set_delta): Don't skip delta setting for polymorphic
+	function results.
+
 2025-07-30  Mikael Morin  <morin-mikael@orange.fr>
 
 	* trans-array.cc (gfc_array_init_size): Remove the nelems

@@ -1,3 +1,11 @@
+2025-07-31  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/120244
+	* genapi.cc (get_level_88_domain): Increase array size for final byte.
+	(psa_FldLiteralA): Use correct length in build_string_literal call.
+	* scan.l: Use a loop instead of std:transform to avoid EOF overrun.
+	* scan_ante.h (binary_integer_usage): Use a variable-length buffer.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* util.cc: Update for diagnostic_t becoming

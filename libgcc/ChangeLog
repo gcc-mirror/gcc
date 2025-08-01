@@ -1,3 +1,20 @@
+2025-07-31  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):
+	Remove unused features, add support for CSSC and MOPS.
+
+2025-07-31  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/cpuinfo.c: Cleanup HWCAP defines.
+
+2025-07-31  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/cpuinfo.c (__ifunc_arg_t): Likewise.
+	(__init_cpu_features): obtain and assign values for the
+	fields _hwcap3 and _hwcap4.
+	(__init_cpu_features_constructor): check _size in the
+	arg argument.
+
 2025-07-17  Richard Sandiford  <richard.sandiford@arm.com>
 	    Yury Khrustalev  <yury.khrustalev@arm.com>
 

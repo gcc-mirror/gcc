@@ -1,3 +1,8 @@
+2025-07-31  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+	* configure.ac: Set version to 1.3.1.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.
