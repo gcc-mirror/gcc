@@ -8233,7 +8233,7 @@ vectorizable_store (vec_info *vinfo,
 	      else
 		inside_cost
 		  += record_stmt_cost (cost_vec, n_adjacent_stores,
-				       scalar_store, stmt_info, 0, vect_body);
+				       scalar_store, slp_node, 0, vect_body);
 	      /* Only need vector extracting when there are more
 		 than one stores.  */
 	      if (nstores > 1)
