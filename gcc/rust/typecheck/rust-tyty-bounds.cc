@@ -849,21 +849,19 @@ TypeBoundPredicate::is_equal (const TypeBoundPredicate &other) const
   // then match the generics applied
   for (size_t i = 0; i < get_num_substitutions (); i++)
     {
-      const SubstitutionParamMapping &a = substitutions.at (i);
-      const SubstitutionParamMapping &b = other.substitutions.at (i);
+      SubstitutionParamMapping a = substitutions.at (i);
+      SubstitutionParamMapping b = other.substitutions.at (i);
 
-      const auto ap = a.get_param_ty ();
-      const auto bp = b.get_param_ty ();
+      auto ap = a.get_param_ty ();
+      auto bp = b.get_param_ty ();
 
-      const BaseType *apd = ap->destructure ();
-      const BaseType *bpd = bp->destructure ();
+      BaseType *apd = ap->destructure ();
+      BaseType *bpd = bp->destructure ();
 
-      // FIXME use the unify_and infer inteface or try coerce
-      if (!apd->can_eq (bpd, false /*emit_errors*/))
-	{
-	  if (!bpd->can_eq (apd, false /*emit_errors*/))
-	    return false;
-	}
+      if (!Resolver::types_compatable (TyTy::TyWithLocation (apd),
+				       TyTy::TyWithLocation (bpd),
+				       UNKNOWN_LOCATION, false))
+	return false;
     }
 
   return true;

@@ -108,9 +108,8 @@ class PathProbeType : public TypeCheckBase, public HIR::HIRImplVisitor
 {
 public:
   static std::set<PathProbeCandidate>
-  Probe (const TyTy::BaseType *receiver,
-	 const HIR::PathIdentSegment &segment_name, bool probe_impls,
-	 bool probe_bounds, bool ignore_mandatory_trait_items,
+  Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
+	 bool probe_impls, bool probe_bounds, bool ignore_mandatory_trait_items,
 	 DefId specific_trait_id = UNKNOWN_DEFID);
 
   void visit (HIR::TypeAlias &alias) override;
@@ -135,8 +134,8 @@ protected:
 				    bool ignore_mandatory_trait_items);
 
 protected:
-  PathProbeType (const TyTy::BaseType *receiver,
-		 const HIR::PathIdentSegment &query, DefId specific_trait_id);
+  PathProbeType (TyTy::BaseType *receiver, const HIR::PathIdentSegment &query,
+		 DefId specific_trait_id);
 
   std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
   union_bounds (
@@ -147,7 +146,7 @@ protected:
 
   bool is_receiver_generic () const;
 
-  const TyTy::BaseType *receiver;
+  TyTy::BaseType *receiver;
   const HIR::PathIdentSegment &search;
   std::set<PathProbeCandidate> candidates;
   HIR::ImplBlock *current_impl;
@@ -178,12 +177,11 @@ class PathProbeImplTrait : public PathProbeType
 {
 public:
   static std::set<PathProbeCandidate>
-  Probe (const TyTy::BaseType *receiver,
-	 const HIR::PathIdentSegment &segment_name,
+  Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
 	 const TraitReference *trait_reference);
 
 private:
-  PathProbeImplTrait (const TyTy::BaseType *receiver,
+  PathProbeImplTrait (TyTy::BaseType *receiver,
 		      const HIR::PathIdentSegment &query,
 		      const TraitReference *trait_reference);
 

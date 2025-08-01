@@ -52,10 +52,10 @@ walk_types_to_constrain (std::set<HirId> &constrained_symbols,
 {
   for (const auto &c : constraints.get_mappings ())
     {
-      const TyTy::BaseType *arg = c.get_tyty ();
+      auto arg = c.get_tyty ();
       if (arg != nullptr)
 	{
-	  const TyTy::BaseType *p = arg->get_root ();
+	  const auto p = arg->get_root ();
 	  constrained_symbols.insert (p->get_ty_ref ());
 	  if (p->has_substitutions_defined ())
 	    {
@@ -71,7 +71,7 @@ TypeCheckBase::check_for_unconstrained (
   const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
   const TyTy::SubstitutionArgumentMappings &constraint_a,
   const TyTy::SubstitutionArgumentMappings &constraint_b,
-  const TyTy::BaseType *reference)
+  TyTy::BaseType *reference)
 {
   bool check_result = false;
   bool check_completed

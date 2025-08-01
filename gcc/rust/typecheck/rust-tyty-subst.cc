@@ -234,12 +234,6 @@ SubstitutionArg::operator= (const SubstitutionArg &other)
 }
 
 BaseType *
-SubstitutionArg::get_tyty ()
-{
-  return argument;
-}
-
-const BaseType *
 SubstitutionArg::get_tyty () const
 {
   return argument;

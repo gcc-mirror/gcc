@@ -247,7 +247,6 @@ resolve_operator_overload_fn (
 	  const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (lhs);
 
 	  auto s = fn->get_self_type ()->get_root ();
-	  rust_assert (s->can_eq (adt, false));
 	  rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
 	  const TyTy::ADTType *self_adt
 	    = static_cast<const TyTy::ADTType *> (s);

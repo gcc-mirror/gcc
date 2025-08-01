@@ -450,11 +450,10 @@ BaseType::inherit_bounds (
     }
 }
 
-const BaseType *
-BaseType::get_root () const
+BaseType *
+BaseType::get_root ()
 {
-  // FIXME this needs to be it its own visitor class with a vector adjustments
-  const TyTy::BaseType *root = this;
+  TyTy::BaseType *root = this;
 
   if (const auto r = root->try_as<const ReferenceType> ())
     {

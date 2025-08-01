@@ -204,8 +204,9 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
 
     default:
       {
-	// FIXME this can probably turn into a unify_and
-	if (receiver->can_eq (expected, false))
+	if (types_compatable (TyTy::TyWithLocation (receiver),
+			      TyTy::TyWithLocation (expected), UNKNOWN_LOCATION,
+			      false))
 	  return CoercionResult{{}, expected->clone ()};
 
 	return CoercionResult::get_error ();
@@ -280,9 +281,6 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 
     default:
       {
-	// FIXME
-	// we might be able to replace this with a can_eq because we default
-	// back to a final unity anyway
 	rust_debug ("coerce_borrowed_pointer -- unify");
 	TyTy::BaseType *result
 	  = unify_site_and (receiver->get_ref (),

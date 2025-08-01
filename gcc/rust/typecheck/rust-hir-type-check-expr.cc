@@ -1025,7 +1025,10 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   bool ok = context->lookup_builtin ("usize", &size_ty);
   rust_assert (ok);
 
-  bool maybe_simple_array_access = index_expr_ty->can_eq (size_ty, false);
+  bool maybe_simple_array_access
+    = types_compatable (TyTy::TyWithLocation (index_expr_ty),
+			TyTy::TyWithLocation (size_ty), expr.get_locus (),
+			false);
   if (maybe_simple_array_access
       && direct_array_expr_ty->get_kind () == TyTy::TypeKind::ARRAY)
     {

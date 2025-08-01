@@ -137,7 +137,7 @@ PathProbeCandidate::operator< (const PathProbeCandidate &c) const
 
 // PathProbeType
 
-PathProbeType::PathProbeType (const TyTy::BaseType *receiver,
+PathProbeType::PathProbeType (TyTy::BaseType *receiver,
 			      const HIR::PathIdentSegment &query,
 			      DefId specific_trait_id)
   : TypeCheckBase (), receiver (receiver), search (query),
@@ -145,7 +145,7 @@ PathProbeType::PathProbeType (const TyTy::BaseType *receiver,
 {}
 
 std::set<PathProbeCandidate>
-PathProbeType::Probe (const TyTy::BaseType *receiver,
+PathProbeType::Probe (TyTy::BaseType *receiver,
 		      const HIR::PathIdentSegment &segment_name,
 		      bool probe_impls, bool probe_bounds,
 		      bool ignore_mandatory_trait_items,
@@ -443,7 +443,7 @@ PathProbeType::is_receiver_generic () const
 
 // PathProbImplTrait
 
-PathProbeImplTrait::PathProbeImplTrait (const TyTy::BaseType *receiver,
+PathProbeImplTrait::PathProbeImplTrait (TyTy::BaseType *receiver,
 					const HIR::PathIdentSegment &query,
 					const TraitReference *trait_reference)
   : PathProbeType (receiver, query, UNKNOWN_DEFID),
@@ -451,7 +451,7 @@ PathProbeImplTrait::PathProbeImplTrait (const TyTy::BaseType *receiver,
 {}
 
 std::set<PathProbeCandidate>
-PathProbeImplTrait::Probe (const TyTy::BaseType *receiver,
+PathProbeImplTrait::Probe (TyTy::BaseType *receiver,
 			   const HIR::PathIdentSegment &segment_name,
 			   const TraitReference *trait_reference)
 {

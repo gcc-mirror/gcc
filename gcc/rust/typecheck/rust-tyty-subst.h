@@ -151,9 +151,7 @@ public:
 
   SubstitutionArg &operator= (const SubstitutionArg &other);
 
-  BaseType *get_tyty ();
-
-  const BaseType *get_tyty () const;
+  BaseType *get_tyty () const;
 
   const SubstitutionParamMapping *get_param_mapping () const;
 

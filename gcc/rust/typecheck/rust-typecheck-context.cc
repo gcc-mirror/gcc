@@ -300,8 +300,9 @@ TypeCheckContext::lookup_associated_type_mapping (HirId id, HirId *mapping)
 }
 
 void
-TypeCheckContext::insert_associated_impl_mapping (
-  HirId trait_id, const TyTy::BaseType *impl_type, HirId impl_id)
+TypeCheckContext::insert_associated_impl_mapping (HirId trait_id,
+						  TyTy::BaseType *impl_type,
+						  HirId impl_id)
 {
   auto it = associated_traits_to_impls.find (trait_id);
   if (it == associated_traits_to_impls.end ())
@@ -313,8 +314,9 @@ TypeCheckContext::insert_associated_impl_mapping (
 }
 
 bool
-TypeCheckContext::lookup_associated_impl_mapping_for_self (
-  HirId trait_id, const TyTy::BaseType *self, HirId *mapping)
+TypeCheckContext::lookup_associated_impl_mapping_for_self (HirId trait_id,
+							   TyTy::BaseType *self,
+							   HirId *mapping)
 {
   auto it = associated_traits_to_impls.find (trait_id);
   if (it == associated_traits_to_impls.end ())
@@ -322,7 +324,9 @@ TypeCheckContext::lookup_associated_impl_mapping_for_self (
 
   for (auto &item : it->second)
     {
-      if (item.first->can_eq (self, false))
+      if (types_compatable (TyTy::TyWithLocation (item.first),
+			    TyTy::TyWithLocation (self), UNKNOWN_LOCATION,
+			    false))
 	{
 	  *mapping = item.second;
 	  return true;

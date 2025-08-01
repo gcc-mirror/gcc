@@ -167,8 +167,7 @@ public:
 
   void debug () const;
 
-  // FIXME this will eventually go away
-  const BaseType *get_root () const;
+  BaseType *get_root ();
 
   // This will get the monomorphized type from Params, Placeholders or
   // Projections if available or error

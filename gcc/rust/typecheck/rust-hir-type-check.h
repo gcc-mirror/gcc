@@ -249,10 +249,10 @@ public:
   bool lookup_associated_type_mapping (HirId id, HirId *mapping);
 
   void insert_associated_impl_mapping (HirId trait_id,
-				       const TyTy::BaseType *impl_type,
+				       TyTy::BaseType *impl_type,
 				       HirId impl_id);
   bool lookup_associated_impl_mapping_for_self (HirId trait_id,
-						const TyTy::BaseType *self,
+						TyTy::BaseType *self,
 						HirId *mapping);
 
   void insert_autoderef_mappings (HirId id,
@@ -325,7 +325,7 @@ private:
   std::map<HirId, AssociatedImplTrait> associated_impl_traits;
 
   // trait-id -> list of < self-tyty:impl-id>
-  std::map<HirId, std::vector<std::pair<const TyTy::BaseType *, HirId>>>
+  std::map<HirId, std::vector<std::pair<TyTy::BaseType *, HirId>>>
     associated_traits_to_impls;
 
   std::map<HirId, HirId> associated_type_mappings;

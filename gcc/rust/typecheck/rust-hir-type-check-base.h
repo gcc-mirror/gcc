@@ -53,7 +53,7 @@ protected:
     const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
     const TyTy::SubstitutionArgumentMappings &constraint_a,
     const TyTy::SubstitutionArgumentMappings &constraint_b,
-    const TyTy::BaseType *reference);
+    TyTy::BaseType *reference);
 
   TyTy::BaseType *resolve_literal (const Analysis::NodeMapping &mappings,
 				   HIR::Literal &literal, location_t locus);
