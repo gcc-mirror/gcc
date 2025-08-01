@@ -1,3 +1,4 @@
+/* { dg-options "-msse2" } */
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
 
@@ -9,7 +10,7 @@ void foo5(int i, int j) __attribute__((sseregparm, regparm(2)));
 
 void foo6(int i, int j) __attribute__((stdcall, fastcall)); /* { dg-error "not compatible" } */
 void foo7(int i, int j) __attribute__((regparm(2), fastcall)); /* { dg-error "not compatible" } */
-void foo8(int i, int j) __attribute__((sseregparm, fastcall)); /* { dg-error "not compatible" } */
+void foo8(int i, int j) __attribute__((cdecl, fastcall)); /* { dg-error "not compatible" } */
 void foo9(int i, int j) __attribute__((thiscall, fastcall)); /* { dg-error "not compatible" } */
 void foo10(int i, int j) __attribute__((sseregparm, fastcall));
 
