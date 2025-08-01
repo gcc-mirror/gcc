@@ -840,8 +840,8 @@ package body Ghost is
       ------------------------
 
       procedure Check_Ghost_Policy (Id : Entity_Id; Ref : Node_Id) is
+         Applic_Policy : Ghost_Mode_Type := Ghost_Config.Ghost_Mode;
          Ghost_Region  : constant Node_Id := Ghost_Config.Current_Region;
-         Region_Policy : constant Ghost_Mode_Type := Ghost_Config.Ghost_Mode;
       begin
          --  Ghost entities can be referenced inside a renaming declaration if
          --  used within a renaming declaration.
@@ -854,11 +854,18 @@ package body Ghost is
             return;
          end if;
 
+         --  The applied policy for procedure calls is the policy in effect at
+         --  the moment of the call.
+
+         if Ekind (Id) in E_Procedure then
+            Applic_Policy := Name_To_Ghost_Mode (Ghost_Policy_In_Effect (Id));
+         end if;
+
          --  The Ghost policy in effect a the point of declaration and at the
          --  point of use must match (SPARK RM 6.9(15)).
 
          if Is_Checked_Ghost_Entity (Id)
-           and then Region_Policy = Ignore
+           and then Applic_Policy = Ignore
            and then Known_To_Be_Assigned (Ref)
          then
             Error_Msg_N  (Ghost_Policy_Error_Msg, Ref);
@@ -880,7 +887,7 @@ package body Ghost is
             return;
          end if;
 
-         if Is_Ignored_Ghost_Entity (Id) and then Region_Policy = Check
+         if Is_Ignored_Ghost_Entity (Id) and then Applic_Policy = Check
          then
             Error_Msg_N  (Ghost_Policy_Error_Msg,  Ref);
             Error_Msg_NE ("\& declared with ghost policy `Ignore`", Ref, Id);
