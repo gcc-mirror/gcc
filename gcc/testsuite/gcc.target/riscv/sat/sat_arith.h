@@ -693,4 +693,19 @@ sat_u_mul_##NT##_from_##WT##_fmt_1 (NT a, NT b) \
   sat_u_mul_##NT##_from_##WT##_fmt_1 (a, b)
 #define RUN_SAT_U_MUL_FMT_1_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_1(NT, WT, a, b)
 
+#define DEF_SAT_U_MUL_FMT_2(T)               \
+T __attribute__((noinline))                  \
+sat_u_mul_##T##_fmt_2 (T a, T b)             \
+{                                            \
+  T result;                                  \
+  if (__builtin_mul_overflow(a, b, &result)) \
+    return -1;                               \
+  else                                       \
+    return result;                           \
+}
+
+#define DEF_SAT_U_MUL_FMT_2_WRAP(T) DEF_SAT_U_MUL_FMT_2(T)
+#define RUN_SAT_U_MUL_FMT_2(T, a, b) sat_u_mul_##T##_fmt_2 (a, b)
+#define RUN_SAT_U_MUL_FMT_2_WRAP(T, a, b) RUN_SAT_U_MUL_FMT_2(T, a, b)
+
 #endif
