@@ -843,12 +843,14 @@ package body Ghost is
          Applic_Policy : Ghost_Mode_Type := Ghost_Config.Ghost_Mode;
          Ghost_Region  : constant Node_Id := Ghost_Config.Current_Region;
       begin
-         --  Ghost entities can be referenced inside a renaming declaration if
-         --  used within a renaming declaration.
+         --  The policy is allowed to change within renaming and instantiation
+         --  statements.
 
          if No (Ghost_Region)
            or else Nkind (Ghost_Region)
                    in N_Object_Renaming_Declaration
+                    | N_Package_Instantiation
+                    | N_Procedure_Instantiation
                     | N_Subprogram_Renaming_Declaration
          then
             return;
