@@ -5164,13 +5164,6 @@ respects, this target is the same as the
 @anchor{windows}
 @heading Microsoft Windows
 
-@subheading Intel 16-bit versions
-The 16-bit versions of Microsoft Windows, such as Windows 3.1, are not
-supported.
-
-However, the 32-bit port has limited support for Microsoft
-Windows 3.11 in the Win32s environment, as a target only.  See below.
-
 @subheading Intel 32-bit versions
 The 32-bit versions of Windows, including Windows 95, Windows NT, Windows
 XP, and Windows Vista, are supported by several different target
