@@ -1,3 +1,51 @@
+2025-08-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/120351
+	* gcc.target/arm/pr120351.c: New test.
+
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-02  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wdeprecated-non-prototype-6.c: New test.
+
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wdeprecated-non-prototype-5.c: New test.
+
+2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121322
+	* gcc.dg/pr121322.c: New test.
+
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108080
+	* g++.dg/modules/pr108080.H: New test.
+
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121238
+	* g++.dg/modules/merge-19.h: New test.
+	* g++.dg/modules/merge-19_a.H: New test.
+	* g++.dg/modules/merge-19_b.C: New test.
+
 2025-07-31  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

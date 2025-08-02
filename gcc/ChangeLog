@@ -1,3 +1,40 @@
+2025-08-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/120351
+	* config/arm/predicates.md (mem_noofs_operand): Also check the op
+	is a valid memory_operand.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121323
+	* tree-ssa-alias.cc (ao_ref_init_from_ptr_and_range): Check
+	the pointer offset fits in a HWI when represented in bits.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121320
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Convert
+	op->off to poly_offset_int before multiplying by
+	BITS_PER_UNIT.
+
+2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121322
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Return NULL if
+	count is 0.
+
 2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

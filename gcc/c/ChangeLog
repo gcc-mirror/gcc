@@ -1,3 +1,21 @@
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-02  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/120055
+	* c-typeck.cc (convert_arguments): Check if fundecl is null
+	before checking for builtin function declaration.
+
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/119950
+	* c-typeck.cc (convert_arguments): Check for built-in
+	function declaration before warning.
+
 2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	Backported from master:
