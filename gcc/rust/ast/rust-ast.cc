@@ -3713,9 +3713,12 @@ AttributeParser::parse_path_meta_item ()
 	skip_token ();
 
 	std::unique_ptr<Expr> expr = parser->parse_expr ();
-	// stream_pos++;
-	/* shouldn't be required anymore due to parsing literal actually
-	 * skipping the token */
+
+	// handle error
+	// parse_expr should already emit an error and return nullptr
+	if (!expr)
+	  return nullptr;
+
 	return std::unique_ptr<MetaItemPathExpr> (
 	  new MetaItemPathExpr (std::move (path), std::move (expr)));
       }
