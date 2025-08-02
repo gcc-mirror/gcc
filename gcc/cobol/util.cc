@@ -1049,8 +1049,8 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
                                                  return TOUPPER(ch) == 'E';
                                                } );
               if( !has_exponent && data.precision() < pend - p ) {
-                error_msg(loc, "%s cannot represent VALUE %qs exactly (max %c%ld)",
-                          name, data.initial, '.', (long)(pend - p));
+                error_msg(loc, "%s cannot represent VALUE %qs exactly (max %c%td)",
+                          name, data.initial, '.', pend - p);
               }
             }
           }
