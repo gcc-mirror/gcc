@@ -797,7 +797,4 @@ bool is_match_compatible (const AST::MacroMatch &last_match,
 			  const AST::MacroMatch &current_match);
 } // namespace Rust
 
-// as now template, include implementations of all methods
-#include "rust-parse-impl.h"
-
 #endif // RUST_PARSE_H

@@ -19,7 +19,8 @@
 /* Template implementation for Rust::Parser. Previously in rust-parse.cc (before
  * Parser was template). Separated from rust-parse.h for readability. */
 
-/* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
+/* DO NOT INCLUDE ANYWHERE - this is automatically included
+ *   by rust-parse-impl-*.cc
  * This is also the reason why there are no include guards. */
 
 #include "expected.h"
@@ -3372,7 +3373,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
 
 /* Parses lifetime generic parameters (objects). Will also consume any
  * trailing comma. No extra checks for end token.
- * TODO: is this best solution? implements most of the same algorithm. */
+ * TODO: is this best solution? implements most of the same algorithm.
+ * TODO: seems to be unused, remove? */
 template <typename ManagedTokenSource>
 std::vector<AST::LifetimeParam>
 Parser<ManagedTokenSource>::parse_lifetime_params_objs ()
@@ -3390,7 +3392,7 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs ()
 	  break;
 	}
 
-      lifetime_params.push_back (std::move (lifetime_param));
+      lifetime_params.push_back (std::move (lifetime_param.value ()));
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	break;
@@ -11920,11 +11922,12 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 }
 
 // "Unexpected token" panic mode - flags gcc error at unexpected token
+// TODO: seems to be unused, remove?
 template <typename ManagedTokenSource>
 void
 Parser<ManagedTokenSource>::unexpected_token (const_TokenPtr t)
 {
-  Error error (t->get_locus (), "unexpected token %qs\n",
+  Error error (t->get_locus (), "unexpected token %qs",
 	       t->get_token_description ());
   add_error (std::move (error));
 }

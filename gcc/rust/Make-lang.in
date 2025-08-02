@@ -73,6 +73,9 @@ GRS_OBJS = \
     rust/rust-lex.o \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
+    rust/rust-parse-impl-proc-macro.o \
+    rust/rust-parse-impl-macro.o \
+    rust/rust-parse-impl-lexer.o \
     rust/rust-ast.o \
     rust/rust-ast-formatting.o \
     rust/rust-path.o \
