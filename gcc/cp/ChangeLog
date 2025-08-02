@@ -1,3 +1,11 @@
+2025-08-01  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120800
+	* constexpr.cc (cxx_eval_vec_init_1): Suppress access control.
+
 2025-07-26  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
