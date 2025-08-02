@@ -270,7 +270,9 @@ along with GCC; see the file COPYING3.  If not see
   if (GET_MODE_CLASS (MODE) == MODE_INT \
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
     { \
-      if ((MODE) == SImode) \
+      if ((MODE) == SImode \
+	  && !(TYPE && TREE_CODE (TYPE) == BITINT_TYPE \
+	       && TYPE_PRECISION (TYPE) < 32)) \
 	(UNSIGNEDP) = 0; \
       (MODE) = Pmode; \
     }
