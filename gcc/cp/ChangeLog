@@ -1,3 +1,16 @@
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108080
+	* module.cc (trees_out::core_vals): Warn when streaming
+	target/optimize node; adjust comments.
+	(trees_in::core_vals): Don't stream a target/optimize node.
+
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121238
+	* module.cc (trees_in::fn_parms_fini): Merge properties for
+	definitions.
+
 2025-07-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120800

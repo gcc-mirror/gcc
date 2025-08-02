@@ -1,3 +1,82 @@
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121350
+	* tree-vect-stmts.cc (vectorizable_store): Pass down SLP
+	node when costing scalar stores in vect_body.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121349
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Get full SLP mask, reduce to uniform scalar_mask for further
+	processing if possible.
+	(vect_check_scalar_mask): Remove scalar mask output, remove
+	code conditional on slp_mask.
+	(vectorizable_call): Adjust.
+	(check_scan_store): Get and check SLP mask.
+	(vectorizable_store): Eliminate scalar mask variable.
+	(vectorizable_load): Likewise.
+
+2025-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): mdocml.bsd.lv is now
+	mandoc.bsd.lv.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Remove,
+	inline into ...
+	(get_load_store_type): ... this.  Remove ncopies parameter.
+	(vectorizable_load): Adjust.
+	(vectorizable_store): Likewise.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Remove
+	checks performed at SLP build time.
+	(vect_check_store_rhs): Remove scalar RHS output.
+	(vectorizable_store): Remove uses of scalar RHS.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (VMAT_UNINITIALIZED): New
+	vect_memory_access_type.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Use it.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121338
+	* tree-ssa-loop-ivopts.cc (avg_loop_niter): Return an
+	unsigned.
+	(adjust_setup_cost): When niters is so large the division
+	result is one or zero avoid it.
+	(create_new_ivs): Adjust.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_simd_clone_data): New.
+	(_slp_tree::simd_clone_info): Remove.
+	(SLP_TREE_SIMD_CLONE_INFO): Likewise.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Adjust.
+	(_slp_tree::~_slp_tree): Likewise.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use
+	tyupe specific data to store SLP_TREE_SIMD_CLONE_INFO.
+
+2025-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Adjust.
+	(_slp_tree::~_slp_tree): Likewise.
+	* tree-vectorizer.h (vect_data): New base class.
+	(_slp_tree::u): Remove.
+	(_slp_tree::data): Add pointer to vect_data.
+	(_slp_tree::get_data): New helper template.
+
+2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121322
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Return NULL if
+	count is 0.
+
 2025-07-31  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.opt.urls (-mfuse-move2): Add url.

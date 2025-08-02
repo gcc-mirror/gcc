@@ -1,3 +1,11 @@
+2025-08-01  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119324
+	* cbldiag.h (location_dump): Inline suppression of knownConditionTrueFalse.
+	* genapi.cc (parser_statement_begin): Combine two if() statements.
+	* genutil.cc (get_binary_value): File-level suppression of duplicateBreak.
+	* symbols.cc (symbol_elem_cmp): File-level suppression of duplicateBreak.
+
 2025-07-31  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/120244

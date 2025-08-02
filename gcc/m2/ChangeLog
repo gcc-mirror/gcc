@@ -1,3 +1,9 @@
+2025-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121354
+	* gm2-compiler/M2GenGCC.mod (FoldHigh): Rewrite.
+	(IsUnboundedArray): New procedure function.
+
 2025-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121314

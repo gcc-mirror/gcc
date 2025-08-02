@@ -1,3 +1,25 @@
+2025-08-01  Artemiy Granat  <a.granat@ispras.ru>
+
+	* gcc.target/i386/attributes-error.c: Change incorrect
+	sseregparm,fastcall combination to cdecl,fastcall.
+
+2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121322
+	* gcc.dg/pr121322.c: New test.
+
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108080
+	* g++.dg/modules/pr108080.H: New test.
+
+2025-08-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121238
+	* g++.dg/modules/merge-19.h: New test.
+	* g++.dg/modules/merge-19_a.H: New test.
+	* g++.dg/modules/merge-19_b.C: New test.
+
 2025-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121314
