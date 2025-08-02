@@ -354,17 +354,17 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-    case HIR::TupleStructItems::RANGED:
+    case HIR::TupleStructItems::HAS_REST:
       {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-    case HIR::TupleStructItems::MULTIPLE:
+    case HIR::TupleStructItems::NO_REST:
       {
-	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
+	HIR::TupleStructItemsNoRest &items_no_range
+	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
 
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
@@ -428,10 +428,10 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::RANGED:
+    case HIR::TuplePatternItems::HAS_REST:
       {
 	auto &items
-	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
 	size_t tuple_field_index = 0;
 
 	// lookup the type to find out number of fields
@@ -477,10 +477,10 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
       }
       break;
 
-    case HIR::TuplePatternItems::MULTIPLE:
+    case HIR::TuplePatternItems::NO_REST:
       {
-	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  pattern.get_items ());
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
 	size_t tuple_field_index = 0;
 
 	for (auto &pat : items.get_patterns ())
@@ -628,17 +628,17 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-    case HIR::TupleStructItems::RANGED:
+    case HIR::TupleStructItems::HAS_REST:
       {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-    case HIR::TupleStructItems::MULTIPLE:
+    case HIR::TupleStructItems::NO_REST:
       {
-	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
+	HIR::TupleStructItemsNoRest &items_no_range
+	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
 
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
@@ -843,11 +843,11 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::ItemType::RANGED:
+    case HIR::TuplePatternItems::ItemType::HAS_REST:
       {
 	size_t tuple_idx = 0;
 	auto &items
-	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
 
 	auto &items_lower = items.get_lower_patterns ();
 	auto &items_upper = items.get_upper_patterns ();
@@ -887,11 +887,11 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+    case HIR::TuplePatternItems::ItemType::NO_REST:
       {
 	size_t tuple_idx = 0;
-	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  pattern.get_items ());
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
 
 	for (auto &sub : items.get_patterns ())
 	  {
@@ -1024,11 +1024,11 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::ItemType::RANGED:
+    case HIR::TuplePatternItems::ItemType::HAS_REST:
       {
 	size_t tuple_idx = 0;
 	auto &items
-	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
 
 	auto &items_lower = items.get_lower_patterns ();
 	auto &items_upper = items.get_upper_patterns ();
@@ -1069,11 +1069,11 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+    case HIR::TuplePatternItems::ItemType::NO_REST:
       {
 	size_t tuple_idx = 0;
-	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  pattern.get_items ());
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
 
 	for (auto &sub : items.get_patterns ())
 	  {

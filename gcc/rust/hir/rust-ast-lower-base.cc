@@ -887,7 +887,7 @@ ASTLoweringBase::lower_tuple_pattern_multiple (
     }
 
   return std::unique_ptr<HIR::TuplePatternItems> (
-    new HIR::TuplePatternItemsMultiple (std::move (patterns)));
+    new HIR::TuplePatternItemsNoRest (std::move (patterns)));
 }
 
 std::unique_ptr<TuplePatternItems>
@@ -910,8 +910,8 @@ ASTLoweringBase::lower_tuple_pattern_ranged (
     }
 
   return std::unique_ptr<HIR::TuplePatternItems> (
-    new HIR::TuplePatternItemsRanged (std::move (lower_patterns),
-				      std::move (upper_patterns)));
+    new HIR::TuplePatternItemsHasRest (std::move (lower_patterns),
+				       std::move (upper_patterns)));
 }
 
 std::unique_ptr<HIR::RangePatternBound>

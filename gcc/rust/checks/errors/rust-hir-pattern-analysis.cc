@@ -640,11 +640,11 @@ PatternChecker::visit (StructPattern &)
 {}
 
 void
-PatternChecker::visit (TupleStructItemsNoRange &)
+PatternChecker::visit (TupleStructItemsNoRest &)
 {}
 
 void
-PatternChecker::visit (TupleStructItemsRange &)
+PatternChecker::visit (TupleStructItemsHasRest &)
 {}
 
 void
@@ -652,11 +652,11 @@ PatternChecker::visit (TupleStructPattern &)
 {}
 
 void
-PatternChecker::visit (TuplePatternItemsMultiple &)
+PatternChecker::visit (TuplePatternItemsNoRest &)
 {}
 
 void
-PatternChecker::visit (TuplePatternItemsRanged &)
+PatternChecker::visit (TuplePatternItemsHasRest &)
 {}
 
 void
@@ -1213,10 +1213,10 @@ lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
   std::vector<DeconstructedPat> fields;
   switch (elems.get_item_type ())
     {
-    case HIR::TupleStructItems::ItemType::MULTIPLE:
+    case HIR::TupleStructItems::ItemType::NO_REST:
       {
-	HIR::TupleStructItemsNoRange &multiple
-	  = static_cast<HIR::TupleStructItemsNoRange &> (elems);
+	HIR::TupleStructItemsNoRest &multiple
+	  = static_cast<HIR::TupleStructItemsNoRest &> (elems);
 
 	rust_assert (variant->get_fields ().size ()
 		     == multiple.get_patterns ().size ());
@@ -1230,7 +1230,7 @@ lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
 	return DeconstructedPat (ctor, arity, fields, pattern.get_locus ());
       }
       break;
-    case HIR::TupleStructItems::ItemType::RANGED:
+    case HIR::TupleStructItems::ItemType::HAS_REST:
       {
 	// TODO: ranged tuple struct items
 	rust_unreachable ();

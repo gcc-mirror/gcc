@@ -200,17 +200,17 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-    case HIR::TupleStructItems::RANGED:
+    case HIR::TupleStructItems::HAS_REST:
       {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-    case HIR::TupleStructItems::MULTIPLE:
+    case HIR::TupleStructItems::NO_REST:
       {
-	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
+	HIR::TupleStructItemsNoRest &items_no_range
+	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
 
 	if (items_no_range.get_patterns ().size () != variant->num_fields ())
 	  {
@@ -463,10 +463,10 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+    case HIR::TuplePatternItems::ItemType::NO_REST:
       {
-	auto &ref = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  pattern.get_items ());
+	auto &ref
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
 
 	const auto &patterns = ref.get_patterns ();
 	size_t nitems_to_resolve = patterns.size ();
@@ -493,10 +493,10 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
       }
       break;
 
-    case HIR::TuplePatternItems::ItemType::RANGED:
+    case HIR::TuplePatternItems::ItemType::HAS_REST:
       {
-	HIR::TuplePatternItemsRanged &ref
-	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	HIR::TuplePatternItemsHasRest &ref
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
 
 	const auto &lower = ref.get_lower_patterns ();
 	const auto &upper = ref.get_upper_patterns ();

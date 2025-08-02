@@ -2307,20 +2307,20 @@ Dump::visit (StructPattern &e)
 }
 
 void
-Dump::visit (TupleStructItemsNoRange &e)
+Dump::visit (TupleStructItemsNoRest &e)
 {
-  begin ("TupleStructItemsNoRange");
+  begin ("TupleStructItemsNoRest");
   visit_collection ("patterns", e.get_patterns ());
-  end ("TupleStructItemsNoRange");
+  end ("TupleStructItemsNoRest");
 }
 
 void
-Dump::visit (TupleStructItemsRange &e)
+Dump::visit (TupleStructItemsHasRest &e)
 {
-  begin ("TupleStructItemsRange");
+  begin ("TupleStructItemsHasRest");
   visit_collection ("lower_patterns", e.get_lower_patterns ());
   visit_collection ("upper_patterns", e.get_upper_patterns ());
-  end ("TupleStructItemsRange");
+  end ("TupleStructItemsHasRest");
 }
 
 void
@@ -2337,20 +2337,20 @@ Dump::visit (TupleStructPattern &e)
 }
 
 void
-Dump::visit (TuplePatternItemsMultiple &e)
+Dump::visit (TuplePatternItemsNoRest &e)
 {
-  begin ("TuplePatternItemsMultiple");
+  begin ("TuplePatternItemsNoRest");
   visit_collection ("patterns", e.get_patterns ());
-  end ("TuplePatternItemsMultiple");
+  end ("TuplePatternItemsNoRest");
 }
 
 void
-Dump::visit (TuplePatternItemsRanged &e)
+Dump::visit (TuplePatternItemsHasRest &e)
 {
-  begin ("TuplePatternItemsRanged");
+  begin ("TuplePatternItemsHasRest");
   visit_collection ("lower_patterns", e.get_lower_patterns ());
   visit_collection ("upper_patterns", e.get_upper_patterns ());
-  end ("TuplePatternItemsRanged");
+  end ("TuplePatternItemsHasRest");
 }
 
 void

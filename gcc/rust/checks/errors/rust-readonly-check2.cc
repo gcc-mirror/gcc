@@ -137,9 +137,9 @@ ReadonlyChecker::collect_assignment_tuple (TuplePattern &tuple_pattern,
 {
   switch (tuple_pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+    case HIR::TuplePatternItems::ItemType::NO_REST:
       {
-	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
+	auto &items = static_cast<HIR::TuplePatternItemsNoRest &> (
 	  tuple_pattern.get_items ());
 	for (auto &sub : items.get_patterns ())
 	  {

@@ -100,7 +100,7 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
 	    patterns.push_back (std::unique_ptr<HIR::Pattern> (p));
 	  }
 
-	lowered = new HIR::TupleStructItemsNoRange (std::move (patterns));
+	lowered = new HIR::TupleStructItemsNoRest (std::move (patterns));
       }
       break;
     }

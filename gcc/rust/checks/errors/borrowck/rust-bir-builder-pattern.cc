@@ -202,17 +202,17 @@ PatternBindingBuilder::visit (HIR::TuplePattern &pattern)
   size_t index = 0;
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TuplePatternItems::MULTIPLE:
+    case HIR::TuplePatternItems::NO_REST:
       {
-	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  pattern.get_items ());
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
 	visit_tuple_fields (items.get_patterns (), saved, index);
 	break;
       }
-    case HIR::TuplePatternItems::RANGED:
+    case HIR::TuplePatternItems::HAS_REST:
       {
 	auto &items
-	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
 
 	auto tyty = ctx.place_db[init.value ()].tyty;
 	rust_assert (tyty->get_kind () == TyTy::TUPLE);
@@ -249,10 +249,10 @@ PatternBindingBuilder::visit (HIR::TupleStructPattern &pattern)
   size_t index = 0;
   switch (pattern.get_items ().get_item_type ())
     {
-    case HIR::TupleStructItems::RANGED:
+    case HIR::TupleStructItems::HAS_REST:
       {
 	auto &items
-	  = static_cast<HIR::TupleStructItemsRange &> (pattern.get_items ());
+	  = static_cast<HIR::TupleStructItemsHasRest &> (pattern.get_items ());
 
 	rust_assert (type->get_kind () == TyTy::ADT);
 	auto adt_ty = static_cast<TyTy::ADTType *> (type);
@@ -267,10 +267,10 @@ PatternBindingBuilder::visit (HIR::TupleStructPattern &pattern)
 	visit_tuple_fields (items.get_upper_patterns (), saved, index);
 	break;
       }
-    case HIR::TupleStructItems::MULTIPLE:
+    case HIR::TupleStructItems::NO_REST:
       {
 	auto &items
-	  = static_cast<HIR::TupleStructItemsNoRange &> (pattern.get_items ());
+	  = static_cast<HIR::TupleStructItemsNoRest &> (pattern.get_items ());
 	visit_tuple_fields (items.get_patterns (), saved, index);
 	break;
       }
