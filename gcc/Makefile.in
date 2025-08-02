@@ -187,8 +187,6 @@ C_STRICT_WARN = @c_strict_warn@
 
 NOEXCEPTION_FLAGS = @noexception_flags@
 
-ALIASING_FLAGS = @aliasing_flags@
-
 # This is set by --disable-maintainer-mode (default) to "#"
 # FIXME: 'MAINT' will always be set to an empty string, no matter if
 # --disable-maintainer-mode is used or not.  This is because the
