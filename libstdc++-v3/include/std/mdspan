@@ -202,6 +202,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __static_extents() noexcept
       { return _Extents::_S_storage::_S_static_extents(); }
 
+    template<array _Extents>
+      consteval size_t
+      __static_prod(size_t __begin, size_t __end)
+      {
+	size_t __prod = 1;
+	for(size_t __i = __begin; __i < __end; ++__i)
+	  {
+	    auto __ext = _Extents[__i];
+	    __prod *= __ext == dynamic_extent ? size_t(1) : __ext;
+	  }
+	return __prod;
+      }
+
+    // Pre-compute: \prod_{i = 0}^r _Extents[i], for r = 0,..., n (exclusive)
+    template<array _Extents>
+      constexpr auto __fwd_partial_prods = [] consteval
+	{
+	  constexpr size_t __rank = _Extents.size();
+	  std::array<size_t, __rank + 1> __ret;
+	  for(size_t __r = 0; __r < __rank + 1; ++__r)
+	    __ret[__r] = __static_prod<_Extents>(0, __r);
+	  return __ret;
+	}();
+
+    // Pre-compute: \prod_{i = r+1}^{n-1} _Extents[i]
+    template<array _Extents>
+      constexpr auto __rev_partial_prods = [] consteval
+	{
+	  constexpr size_t __rank = _Extents.size();
+	  std::array<size_t, __rank> __ret;
+	  for(size_t __r = 0; __r < __rank; ++__r)
+	    __ret[__r] = __static_prod<_Extents>(__r + 1, __rank);
+	  return __ret;
+	}();
+
     template<typename _Extents>
       constexpr span<const typename _Extents::index_type>
       __dynamic_extents(const _Extents& __exts, size_t __begin = 0,
@@ -369,47 +404,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
       }
 
-    constexpr size_t
-    __static_extents_prod(const auto& __sta_exts) noexcept
-    {
-      size_t __ret = 1;
-      for (auto __factor : __sta_exts)
-	if (__factor != dynamic_extent)
-	  __ret *= __factor;
-      return __ret;
-    }
-
     template<typename _Extents>
       constexpr typename _Extents::index_type
-      __exts_prod(const _Extents& __exts, size_t __begin, size_t __end) noexcept
+      __extents_prod(const _Extents& __exts, size_t __sta_prod, size_t __begin,
+		     size_t __end) noexcept
       {
-	using _IndexType = typename _Extents::index_type;
+	if (__sta_prod == 0)
+	  return 0;
 
-	size_t __ret = 1;
-	if constexpr (_Extents::rank_dynamic() != _Extents::rank())
-	  {
-	    std::span<const size_t> __sta_exts = __static_extents<_Extents>();
-	    __ret = __static_extents_prod(__sta_exts.subspan(__begin,
-				                             __end - __begin));
-	    if (__ret == 0)
-	      return 0;
-	  }
-
+	size_t __ret = __sta_prod;
 	if constexpr (_Extents::rank_dynamic() > 0)
 	  for (auto __factor : __dynamic_extents(__exts, __begin, __end))
 	    __ret *= size_t(__factor);
-	return _IndexType(__ret);
+	return static_cast<typename _Extents::index_type>(__ret);
       }
 
     template<typename _Extents>
       constexpr typename _Extents::index_type
       __fwd_prod(const _Extents& __exts, size_t __r) noexcept
-      { return __exts_prod(__exts, 0, __r); }
+      {
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	size_t __sta_prod = __fwd_partial_prods<__sta_exts>[__r];
+	return __extents_prod(__exts, __sta_prod, 0, __r);
+      }
 
     template<typename _Extents>
       constexpr typename _Extents::index_type
       __rev_prod(const _Extents& __exts, size_t __r) noexcept
-      { return __exts_prod(__exts, __r + 1, __exts.rank()); }
+      {
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	constexpr size_t __rank = _Extents::rank();
+	size_t __sta_prod = __rev_partial_prods<__sta_exts>[__r];
+	return __extents_prod(__exts, __sta_prod, __r + 1, __rank);
+      }
 
     template<typename _Extents>
       constexpr typename _Extents::index_type
