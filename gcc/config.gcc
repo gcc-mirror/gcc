@@ -1316,6 +1316,7 @@ aarch64-*-mingw*)
 	    ;;
 	esac
 	default_use_cxa_atexit=yes
+	use_gcc_stdint=wrap
 	user_headers_inc_next_post="${user_headers_inc_next_post} float.h"
 	tm_defines="${tm_defines} TARGET_AARCH64_MS_ABI=1"
 	;;
