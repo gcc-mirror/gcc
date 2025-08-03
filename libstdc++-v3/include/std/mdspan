@@ -36,7 +36,6 @@
 #include <span>
 #include <array>
 #include <type_traits>
-#include <limits>
 #include <utility>
 
 #define __glibcxx_want_mdspan
@@ -250,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<size_t _Extent, typename _IndexType>
       concept
       __valid_static_extent = _Extent == dynamic_extent
-	|| _Extent <= numeric_limits<_IndexType>::max();
+	|| _Extent <= __gnu_cxx::__int_traits<_IndexType>::__max;
 
     template<typename _Extents>
       constexpr const array<size_t, _Extents::rank()>&
@@ -351,8 +350,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_ctor_explicit()
 	{
 	  return (_S_is_less_dynamic(_Extents, _OExtents) || ...)
-	    || (numeric_limits<index_type>::max()
-		< numeric_limits<_OIndexType>::max());
+	    || (__gnu_cxx::__int_traits<index_type>::__max
+		< __gnu_cxx::__int_traits<_OIndexType>::__max);
 	}
 
       template<size_t... _OExtents>
@@ -589,7 +588,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Extents,
              typename _IndexType = typename _Extents::index_type>
       consteval _IndexType
-      __static_quotient(_IndexType __nom = numeric_limits<_IndexType>::max())
+      __static_quotient(_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>
+						    ::__max)
       {
 	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
 	for (auto __factor : __sta_exts)
@@ -1038,12 +1038,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(__mdspan::__representable_size<_OExtents, index_type>,
 	    "The size of StridedMapping::extents_type must be representable as"
 	    " index_type");
-	  if constexpr (cmp_greater(numeric_limits<_OIndexType>::max(),
-				    numeric_limits<index_type>::max()))
-	    __glibcxx_assert(!cmp_less(numeric_limits<index_type>::max(),
-				       __other.required_span_size())
-		&& "other.required_span_size() must be representable"
-		   " as index_type");
+	  if constexpr (cmp_greater(__gnu_cxx::__int_traits<_OIndexType>::__max,
+				    __gnu_cxx::__int_traits<index_type>::__max))
+	    __glibcxx_assert(!cmp_less(
+		__gnu_cxx::__int_traits<index_type>::__max,
+		__other.required_span_size())
+	      && "other.required_span_size() must be representable"
+		 " as index_type");
 	  if constexpr (extents_type::rank() > 0)
 	    for (size_t __i = 0; __i < extents_type::rank(); ++__i)
 	      _M_strides[__i] = index_type(__other.stride(__i));
@@ -1360,7 +1361,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size() const noexcept
       {
 	__glibcxx_assert(cmp_less_equal(_M_mapping.required_span_size(),
-					numeric_limits<size_t>::max()));
+					__gnu_cxx::__int_traits<size_t>
+						 ::__max));
 	return size_type(__mdspan::__size(extents()));
       }
 

@@ -12,3 +12,6 @@ std::extents<double, 1> e4;               // { dg-error "from here" }
 // { dg-prune-output "signed or unsigned integer" }
 // { dg-prune-output "invalid use of incomplete type" }
 // { dg-prune-output "non-constant condition for static assertion" }
+// { dg-prune-output "integer constants in boolean context" }
+// { dg-prune-output "__gnu_cxx::__numeric_traits_integer" }
+// { dg-prune-output "static assertion failed" }
