@@ -407,10 +407,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return false;
 	  else
 	    {
-	      for (size_t __i = 0; __i < __self.rank(); ++__i)
-		if (!cmp_equal(__self.extent(__i), __other.extent(__i)))
-		  return false;
-	      return true;
+	      auto __impl = [&__self, &__other]<size_t... _Counts>(
+		  index_sequence<_Counts...>)
+		{ return (cmp_equal(__self.extent(_Counts),
+				    __other.extent(_Counts)) && ...); };
+	      return __impl(make_index_sequence<__self.rank()>());
 	    }
 	}
 
