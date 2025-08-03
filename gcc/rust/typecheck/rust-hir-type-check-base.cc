@@ -56,7 +56,9 @@ walk_types_to_constrain (std::set<HirId> &constrained_symbols,
       if (arg != nullptr)
 	{
 	  const auto p = arg->get_root ();
+	  constrained_symbols.insert (p->get_ref ());
 	  constrained_symbols.insert (p->get_ty_ref ());
+
 	  if (p->has_substitutions_defined ())
 	    {
 	      walk_types_to_constrain (constrained_symbols,
@@ -164,8 +166,6 @@ TypeCheckBase::check_for_unconstrained (
       HirId ref = p.get_param_ty ()->get_ref ();
       symbols_to_constrain.insert (ref);
       symbol_to_location.insert ({ref, p.get_param_locus ()});
-
-      rust_debug_loc (p.get_param_locus (), "XX constrain THIS");
     }
 
   // set up the set of constrained symbols
