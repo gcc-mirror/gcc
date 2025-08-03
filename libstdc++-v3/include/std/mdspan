@@ -419,29 +419,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return static_cast<typename _Extents::index_type>(__ret);
       }
 
+    // Preconditions: _r < _Extents::rank()
     template<typename _Extents>
       constexpr typename _Extents::index_type
       __fwd_prod(const _Extents& __exts, size_t __r) noexcept
       {
+	constexpr size_t __rank = _Extents::rank();
 	constexpr auto& __sta_exts = __static_extents<_Extents>();
-	size_t __sta_prod = __fwd_partial_prods<__sta_exts>[__r];
-	return __extents_prod(__exts, __sta_prod, 0, __r);
+	if constexpr (__rank == 1)
+	  return 1;
+	else if constexpr (__rank == 2)
+	  return __r == 0 ? 1 : __exts.extent(0);
+	else
+	  {
+	    size_t __sta_prod = __fwd_partial_prods<__sta_exts>[__r];
+	    return __extents_prod(__exts, __sta_prod, 0, __r);
+	  }
       }
 
+    // Preconditions: _r < _Extents::rank()
     template<typename _Extents>
       constexpr typename _Extents::index_type
       __rev_prod(const _Extents& __exts, size_t __r) noexcept
       {
-	constexpr auto& __sta_exts = __static_extents<_Extents>();
 	constexpr size_t __rank = _Extents::rank();
-	size_t __sta_prod = __rev_partial_prods<__sta_exts>[__r];
-	return __extents_prod(__exts, __sta_prod, __r + 1, __rank);
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	if constexpr (__rank == 1)
+	  return 1;
+	else if constexpr (__rank == 2)
+	  return __r == 0 ? __exts.extent(1) : 1;
+	else
+	  {
+	    size_t __sta_prod = __rev_partial_prods<__sta_exts>[__r];
+	    return __extents_prod(__exts, __sta_prod, __r + 1, __rank);
+	  }
       }
 
     template<typename _Extents>
       constexpr typename _Extents::index_type
       __size(const _Extents& __exts) noexcept
-      { return __fwd_prod(__exts, __exts.rank()); }
+      {
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	constexpr size_t __rank = _Extents::rank();
+	constexpr size_t __sta_prod = __static_prod<__sta_exts>(0, __rank);
+	return __extents_prod(__exts, __sta_prod, 0, __rank);
+      }
 
     template<typename _IndexType, size_t... _Counts>
       auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
