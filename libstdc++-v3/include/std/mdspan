@@ -49,18 +49,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __mdspan
   {
-    template<typename _IndexType, array _Extents>
-      class _ExtentsStorage
+    template<array _Extents>
+      class _StaticExtents
       {
       public:
 	static consteval bool
 	_S_is_dyn(size_t __ext) noexcept
 	{ return __ext == dynamic_extent; }
-
-	template<typename _OIndexType>
-	  static constexpr _IndexType
-	  _S_int_cast(const _OIndexType& __other) noexcept
-	  { return _IndexType(__other); }
 
 	static constexpr size_t _S_rank = _Extents.size();
 
@@ -99,6 +94,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr size_t
 	_S_static_extent(size_t __r) noexcept
 	{ return _Extents[__r]; }
+      };
+
+    template<typename _IndexType, array _Extents>
+      class _ExtentsStorage : public _StaticExtents<_Extents>
+      {
+      private:
+	using _S_base = _StaticExtents<_Extents>;
+
+      public:
+	using _S_base::_S_rank;
+	using _S_base::_S_rank_dynamic;
+	using _S_base::_S_dynamic_index;
+	using _S_base::_S_dynamic_index_inv;
+
+	template<typename _OIndexType>
+	  static constexpr _IndexType
+	  _S_int_cast(const _OIndexType& __other) noexcept
+	  { return _IndexType(__other); }
 
 	constexpr _IndexType
 	_M_extent(size_t __r) const noexcept
@@ -157,9 +170,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      { return __exts[__i]; });
 	  }
 
-	static constexpr span<const size_t>
-	_S_static_extents(size_t __begin, size_t __end) noexcept
-	{ return {_Extents.data() + __begin, _Extents.data() + __end}; }
+	static constexpr const array<size_t, _S_rank>&
+	_S_static_extents() noexcept
+	{ return _Extents; }
 
 	constexpr span<const _IndexType>
 	_M_dynamic_extents(size_t __begin, size_t __end) const noexcept
@@ -185,10 +198,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	|| _Extent <= numeric_limits<_IndexType>::max();
 
     template<typename _Extents>
-      constexpr span<const size_t>
-      __static_extents(size_t __begin = 0, size_t __end = _Extents::rank())
-      noexcept
-      { return _Extents::_S_storage::_S_static_extents(__begin, __end); }
+      constexpr const array<size_t, _Extents::rank()>&
+      __static_extents() noexcept
+      { return _Extents::_S_storage::_S_static_extents(); }
 
     template<typename _Extents>
       constexpr span<const typename _Extents::index_type>
@@ -314,8 +326,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
-      friend span<const size_t>
-      __mdspan::__static_extents<extents>(size_t, size_t);
+      friend const array<size_t, rank()>&
+      __mdspan::__static_extents<extents>();
 
       friend span<const index_type>
       __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t);
@@ -339,6 +351,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return true;
 	return false;
       }
+
+    template<typename _Tp, size_t _Nm>
+      consteval bool
+      __contains_zero(const array<_Tp, _Nm>& __exts) noexcept
+      { return __contains_zero(span<const _Tp>(__exts)); }
 
     template<typename _Extents>
       constexpr bool
@@ -371,8 +388,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_t __ret = 1;
 	if constexpr (_Extents::rank_dynamic() != _Extents::rank())
 	  {
-	    auto __sta_exts = __static_extents<_Extents>(__begin, __end);
-	    __ret = __static_extents_prod(__sta_exts);
+	    std::span<const size_t> __sta_exts = __static_extents<_Extents>();
+	    __ret = __static_extents_prod(__sta_exts.subspan(__begin,
+				                             __end - __begin));
 	    if (__ret == 0)
 	      return 0;
 	  }
@@ -465,7 +483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       consteval _IndexType
       __static_quotient(_IndexType __nom = numeric_limits<_IndexType>::max())
       {
-	auto __sta_exts = __static_extents<_Extents>();
+	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
 	for (auto __factor : __sta_exts)
 	  {
 	    if (__factor != dynamic_extent)
