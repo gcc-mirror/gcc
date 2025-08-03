@@ -50,6 +50,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __mdspan
   {
     consteval bool
+    __all_static(std::span<const size_t> __extents)
+    {
+      for(auto __ext : __extents)
+	if (__ext == dynamic_extent)
+	  return false;
+      return true;
+    }
+
+    consteval bool
     __all_dynamic(std::span<const size_t> __extents)
     {
       for(auto __ext : __extents)
@@ -62,10 +71,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class _StaticExtents
       {
       public:
-	static consteval bool
-	_S_is_dyn(size_t __ext) noexcept
-	{ return __ext == dynamic_extent; }
-
 	static constexpr size_t _S_rank = _Extents.size();
 
 	// For __r in [0, _S_rank], _S_dynamic_index(__r) is the number
@@ -85,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (size_t __i = 0; __i < _S_rank; ++__i)
 	    {
 	      __ret[__i] = __dyn;
-	      __dyn += _S_is_dyn(_Extents[__i]);
+	      __dyn += (_Extents[__i] == dynamic_extent);
 	    }
 	  __ret[_S_rank] = __dyn;
 	  return __ret;
@@ -103,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  array<size_t, _S_rank_dynamic> __ret;
 	  for (size_t __i = 0, __r = 0; __i < _S_rank; ++__i)
-	    if (_S_is_dyn(_Extents[__i]))
+	    if (_Extents[__i] == dynamic_extent)
 	      __ret[__r++] = __i;
 	  return __ret;
 	}();
@@ -148,6 +153,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _S_base::_S_dynamic_index_inv;
 	using _S_base::_S_static_extent;
 
+	static constexpr bool
+	_S_is_dynamic(size_t __r) noexcept
+	{
+	  if constexpr (__all_static(_Extents))
+	    return false;
+	  else if constexpr (__all_dynamic(_Extents))
+	    return true;
+	  else
+	    return _Extents[__r] == dynamic_extent;
+	}
+
 	template<typename _OIndexType>
 	  static constexpr _IndexType
 	  _S_int_cast(const _OIndexType& __other) noexcept
@@ -156,11 +172,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr _IndexType
 	_M_extent(size_t __r) const noexcept
 	{
-	  auto __se = _Extents[__r];
-	  if (__se == dynamic_extent)
+	  if (_S_is_dynamic(__r))
 	    return _M_dyn_exts[_S_dynamic_index(__r)];
 	  else
-	    return __se;
+	    return _S_static_extent(__r);
 	}
 
 	template<size_t _OtherRank, typename _GetOtherExtent>
@@ -169,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    if constexpr (_OtherRank == _S_rank)
 	      for (size_t __i = 0; __i < _S_rank; ++__i)
-		if (_Extents[__i] != dynamic_extent
+		if (!_S_is_dynamic(__i)
 		    && !cmp_equal(_Extents[__i], _S_int_cast(__get_extent(__i))))
 		  return false;
 	    return true;
