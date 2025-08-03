@@ -266,6 +266,21 @@ UnifyRules::go ()
 	}
     }
 
+  if ((ltype->is<TyTy::ConstType> () || rtype->is<TyTy::ConstType> ())
+      && !(ltype->is<TyTy::ConstType> () && rtype->is<TyTy::ConstType> ()))
+    {
+      if (ltype->is<TyTy::ConstType> ())
+	{
+	  auto const_type = static_cast<TyTy::ConstType *> (ltype);
+	  ltype = const_type->get_ty ();
+	}
+      else if (rtype->is<TyTy::ConstType> ())
+	{
+	  auto const_type = static_cast<TyTy::ConstType *> (rtype);
+	  rtype = const_type->get_ty ();
+	}
+    }
+
   switch (ltype->get_kind ())
     {
     case TyTy::INFER:
