@@ -3549,34 +3549,100 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
       /* Find the common base of ref and the lhs.  lhs_ops already
          contains valueized operands for the lhs.  */
+      poly_int64 extra_off = 0;
       i = vr->operands.length () - 1;
       j = lhs_ops.length () - 1;
+
+      /* The base should be always equal due to the above check.  */
+      if (! vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
+	return (void *)-1;
+      i--, j--;
+
+      /* The 2nd component should always exist and be a MEM_REF.  */
+      if (!(i >= 0 && j >= 0))
+	;
+      else if (vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
+	i--, j--;
+      else if (vr->operands[i].opcode == MEM_REF
+	       && lhs_ops[j].opcode == MEM_REF
+	       && known_ne (lhs_ops[j].off, -1)
+	       && known_ne (vr->operands[i].off, -1))
+	{
+	  bool found = false;
+	  /* When we ge a mismatch at a MEM_REF that is not the sole component
+	     try finding a match in one of the outer components and continue
+	     stripping there.  This happens when addresses of components get
+	     forwarded into dereferences.  */
+	  if (j > 0)
+	    {
+	      int temi = i - 1;
+	      extra_off = vr->operands[i].off;
+	      while (temi >= 0
+		     && known_ne (vr->operands[temi].off, -1))
+		{
+		  if (vr->operands[temi].type
+		      && lhs_ops[j].type
+		      && (TYPE_MAIN_VARIANT (vr->operands[temi].type)
+			  == TYPE_MAIN_VARIANT (lhs_ops[j].type)))
+		    {
+		      i = temi;
+		      /* Strip the component that was type matched to
+			 the MEM_REF.  */
+		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      i--, j--;
+		      /* Strip further equal components.  */
+		      found = true;
+		      break;
+		    }
+		  extra_off += vr->operands[temi].off;
+		  temi--;
+		}
+	    }
+	  if (!found && i > 0)
+	    {
+	      int temj = j - 1;
+	      extra_off = -lhs_ops[j].off;
+	      while (temj >= 0
+		     && known_ne (lhs_ops[temj].off, -1))
+		{
+		  if (vr->operands[i].type
+		      && lhs_ops[temj].type
+		      && (TYPE_MAIN_VARIANT (vr->operands[i].type)
+			  == TYPE_MAIN_VARIANT (lhs_ops[temj].type)))
+		    {
+		      j = temj;
+		      /* Strip the component that was type matched to
+			 the MEM_REF.  */
+		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      i--, j--;
+		      /* Strip further equal components.  */
+		      found = true;
+		      break;
+		    }
+		  extra_off += -lhs_ops[temj].off;
+		  temj--;
+		}
+	    }
+	  /* When the LHS is already at the outermost level simply
+	     adjust for any offset difference.  Further lookups
+	     will fail when there's too gross of a type compatibility
+	     issue.  */
+	  if (!found && j == 0)
+	    {
+	      extra_off = vr->operands[i].off - lhs_ops[j].off;
+	      i--, j--;
+	    }
+	}
+      else
+	return (void *)-1;
+
+      /* Strip further common components, attempting to consume lhs_ops
+	 in full.  */
       while (j >= 0 && i >= 0
 	     && vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
 	{
 	  i--;
 	  j--;
-	}
-
-      /* ???  The innermost op should always be a MEM_REF and we already
-         checked that the assignment to the lhs kills vr.  Thus for
-	 aggregate copies using char[] types the vn_reference_op_eq
-	 may fail when comparing types for compatibility.  But we really
-	 don't care here - further lookups with the rewritten operands
-	 will simply fail if we messed up types too badly.  */
-      poly_int64 extra_off = 0;
-      if (j == 0 && i >= 0
-	  && lhs_ops[0].opcode == MEM_REF
-	  && maybe_ne (lhs_ops[0].off, -1))
-	{
-	  if (known_eq (lhs_ops[0].off, vr->operands[i].off))
-	    i--, j--;
-	  else if (vr->operands[i].opcode == MEM_REF
-		   && maybe_ne (vr->operands[i].off, -1))
-	    {
-	      extra_off = vr->operands[i].off - lhs_ops[0].off;
-	      i--, j--;
-	    }
 	}
 
       /* i now points to the first additional op.
