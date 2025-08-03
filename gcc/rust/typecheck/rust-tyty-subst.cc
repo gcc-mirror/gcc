@@ -808,32 +808,60 @@ SubstitutionRef::get_mappings_from_generic_args (
       auto specified_type = const_param->get_ty ();
 
       // validate this const generic is of the correct type
-      auto coereced_type
-	= Resolver::coercion_site (expr.get_mappings ().get_hirid (),
-				   TyTy::TyWithLocation (specified_type),
-				   TyTy::TyWithLocation (expr_type,
-							 expr.get_locus ()),
-				   arg.get_locus ());
-      if (coereced_type->is<ErrorType> ())
+      TyTy::BaseType *coereced_type = nullptr;
+      if (expr_type->is<ConstType> ())
+	{
+	  TyTy::ConstType *const_expr_type
+	    = static_cast<TyTy::ConstType *> (expr_type);
+	  TyTy::BaseType *const_value_type = const_expr_type->get_ty ();
+	  coereced_type
+	    = Resolver::coercion_site (expr.get_mappings ().get_hirid (),
+				       TyTy::TyWithLocation (specified_type),
+				       TyTy::TyWithLocation (const_value_type,
+							     expr.get_locus ()),
+				       arg.get_locus ());
+	}
+      else
+	{
+	  coereced_type
+	    = Resolver::coercion_site (expr.get_mappings ().get_hirid (),
+				       TyTy::TyWithLocation (specified_type),
+				       TyTy::TyWithLocation (expr_type,
+							     expr.get_locus ()),
+				       arg.get_locus ());
+	}
+
+      if (coereced_type == nullptr || coereced_type->is<ErrorType> ())
 	return SubstitutionArgumentMappings::error ();
 
-      // const fold it
-      auto ctx = Compile::Context::get ();
-      tree folded
-	= Compile::HIRCompileBase::query_compile_const_expr (ctx, coereced_type,
-							     expr);
+      TyTy::BaseType *const_value_ty = nullptr;
+      if (expr_type->is<ConstType> ())
+	const_value_ty = expr_type;
+      else
+	{
+	  // const fold it if available
+	  auto ctx = Compile::Context::get ();
+	  tree folded
+	    = Compile::HIRCompileBase::query_compile_const_expr (ctx,
+								 coereced_type,
+								 expr);
 
-      if (folded == error_mark_node)
-	return SubstitutionArgumentMappings::error ();
+	  if (folded == error_mark_node)
+	    {
+	      rich_location r (line_table, arg.get_locus ());
+	      r.add_range (expr.get_locus ());
+	      rust_error_at (r, "failed to resolve const expression");
+	      return SubstitutionArgumentMappings::error ();
+	    }
 
-      // create const type
-      auto const_value
-	= new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "",
-			       coereced_type, folded, {}, expr.get_locus (),
-			       expr.get_mappings ().get_hirid (),
-			       expr.get_mappings ().get_hirid (), {});
+	  const_value_ty
+	    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "",
+				   coereced_type, folded, {}, expr.get_locus (),
+				   expr.get_mappings ().get_hirid (),
+				   expr.get_mappings ().get_hirid (), {});
+	}
 
-      mappings.emplace_back (&param_mapping, const_value);
+      mappings.emplace_back (&param_mapping, const_value_ty);
       offs++;
     }
 
