@@ -1,6 +1,6 @@
 /* Test case failed on avrtiny.  */
 /* { dg-do run } */
-/* { dg-additional-options "-std=c99 -mlra" } */
+/* { dg-additional-options "-std=c99" } */
 
 __attribute__((noipa))
 void func2 (long a, long b)

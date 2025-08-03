@@ -309,12 +309,6 @@ enum reg_class {
 
 #define STATIC_CHAIN_REGNUM ((AVR_TINY) ? 18 :2)
 
-#define RELOAD_ELIMINABLE_REGS {				\
-    { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },               \
-    { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },               \
-    { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },             \
-    { FRAME_POINTER_REGNUM + 1, STACK_POINTER_REGNUM + 1 } }
-
 #define ELIMINABLE_REGS						\
   {								\
     { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
@@ -357,18 +351,6 @@ typedef struct avr_args
 #define HAVE_PRE_DECREMENT 1
 
 #define MAX_REGS_PER_ADDRESS 1
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)          \
-  do {                                                                  \
-    rtx new_x = avr_legitimize_reload_address (&(X), MODE, OPNUM, TYPE, \
-                                               ADDR_TYPE (TYPE),        \
-                                               IND_L, make_memloc);     \
-    if (new_x)                                                          \
-      {                                                                 \
-        X = new_x;                                                      \
-        goto WIN;                                                       \
-      }                                                                 \
-  } while (0)
 
 /* We increase branch costs after reload in order to keep basic-block
    reordering from introducing out-of-line jumps and to prefer fall-through
