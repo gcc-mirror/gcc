@@ -284,16 +284,6 @@ gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
 }
 
 
-/* This provides address access to the data field.  This should only be
-   used by array allocation, passing this on to the runtime.  */
-
-tree
-gfc_conv_descriptor_data_addr (tree desc)
-{
-  tree field = gfc_get_descriptor_field (desc, DATA_FIELD);
-  return gfc_build_addr_expr (NULL_TREE, field);
-}
-
 static tree
 gfc_conv_descriptor_offset (tree desc)
 {

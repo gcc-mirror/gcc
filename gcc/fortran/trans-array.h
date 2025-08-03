@@ -173,7 +173,6 @@ void gfc_get_descriptor_offsets_for_info (const_tree, tree *, tree *, tree *, tr
 					  tree *, tree *, tree *, tree *);
 
 tree gfc_conv_descriptor_data_get (tree);
-tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset_get (tree);
 tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
