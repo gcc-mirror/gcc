@@ -1,3 +1,9 @@
+2025-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/Warray-parameter-11.c: Change Warray-parameter to
+	-Wvla-parameter as these are VLAs.
+	* gcc.dg/Warray-parameter.c: Remove xfail.
+
 2025-08-01  Artemiy Granat  <a.granat@ispras.ru>
 
 	* gcc.target/i386/attributes-error.c: Change incorrect

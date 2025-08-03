@@ -1,3 +1,10 @@
+2025-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y (intrinsic): Use %td format specifier with no cast on
+	argument instead of %ld with cast to long.
+	* scan_ante.h (numstr_of): Likewise.
+	* util.cc (cbl_field_t::report_invalid_initial_value): Likewise.
+
 2025-08-01  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119324

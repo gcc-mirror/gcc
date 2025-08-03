@@ -1,3 +1,10 @@
+2025-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (get_parm_array_spec): Remove.
+	(push_parm_decl): Do not add `arg spec` attribute.
+	(build_arg_spec_attribute): New function.
+	(grokdeklarator): Add `arg spec` attribute.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-errors.cc: Update usage of "diagnostic_info" to explicitly

@@ -1,3 +1,9 @@
+2025-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* c-attribs.cc (handle_argspec_attribute): Update.
+	(build_arg_spec): New function.
+	(build_attr_access_from_parms): Rewrite `arg spec' handling.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.cc: Make diagnostics::context::m_source_printing

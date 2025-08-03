@@ -1,3 +1,9 @@
+2025-08-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <windows>: Drop note on 16-bit
+	Windows support. Streamline note on 32-bit support.
+
 2025-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/121350
