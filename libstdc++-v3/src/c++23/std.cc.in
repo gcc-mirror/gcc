@@ -1982,6 +1982,10 @@ export namespace std
   using std::polymorphic;
   namespace pmr { using std::pmr::polymorphic; }
 #endif
+#if __cpp_lib_smart_ptr_owner_equality
+  using std::owner_equal;
+  using std::owner_hash;
+#endif
 }
 
 // 20.4 <memory_resource>
