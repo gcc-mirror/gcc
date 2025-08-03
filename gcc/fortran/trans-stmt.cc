@@ -2494,9 +2494,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	{
 	  tmp = sym->backend_decl;
 	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
-	    tmp = gfc_conv_descriptor_data_get (tmp);
-	  gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
-						    null_pointer_node));
+	    gfc_conv_descriptor_data_set (&se.pre, tmp, null_pointer_node);
+	  else
+	    gfc_add_modify (&se.pre, tmp,
+			    fold_convert (TREE_TYPE (tmp), null_pointer_node));
 	}
 
       lhs = gfc_lval_expr_from_sym (sym);

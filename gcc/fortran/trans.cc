@@ -1740,7 +1740,7 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
 			     gfc_call_free (data_ptr),
 			     build_empty_stmt (input_location));
       gfc_add_expr_to_block (&se->loop->post, tmp);
-      gfc_add_modify (&se->loop->post, data_ptr, data_null);
+      gfc_conv_descriptor_data_set (&se->loop->post, desc, data_null);
     }
   else
     {
@@ -1754,7 +1754,7 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
 				 gfc_call_free (data_ptr),
 				 build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&se->finalblock, tmp);
-	  gfc_add_modify (&se->finalblock, data_ptr, data_null);
+	  gfc_conv_descriptor_data_set (&se->finalblock, desc, data_null);
 	}
     }
 }

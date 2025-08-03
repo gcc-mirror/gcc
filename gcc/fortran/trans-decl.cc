@@ -5156,10 +5156,24 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  if (!sym->attr.dummy || sym->attr.intent == INTENT_OUT)
 		    {
 		      /* Nullify when entering the scope.  */
-		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					     TREE_TYPE (se.expr), se.expr,
-					     fold_convert (TREE_TYPE (se.expr),
-							   null_pointer_node));
+		      if (sym->ts.type == BT_CLASS
+			  && (CLASS_DATA (sym)->attr.dimension
+			      || CLASS_DATA (sym)->attr.codimension))
+			{
+			  stmtblock_t nullify;
+			  gfc_init_block (&nullify);
+			  gfc_conv_descriptor_data_set (&nullify, descriptor,
+							null_pointer_node);
+			  tmp = gfc_finish_block (&nullify);
+			}
+		      else
+			{
+			  tree typed_null = fold_convert (TREE_TYPE (se.expr),
+							  null_pointer_node);
+			  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+						 TREE_TYPE (se.expr), se.expr,
+						 typed_null);
+			}
 		      if (sym->attr.optional)
 			{
 			  tree present = gfc_conv_expr_present (sym);
