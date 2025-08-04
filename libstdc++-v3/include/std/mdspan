@@ -38,7 +38,12 @@
 #include <type_traits>
 #include <utility>
 
+#if __cplusplus > 202302L
+#include <bits/align.h>
+#endif
+
 #define __glibcxx_want_mdspan
+#define __glibcxx_want_aligned_accessor
 #include <bits/version.h>
 
 #ifdef __glibcxx_mdspan
@@ -1183,6 +1188,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       offset(data_handle_type __p, size_t __i) const noexcept
       { return __p + __i; }
     };
+
+#ifdef __glibcxx_aligned_accessor
+  template<typename _ElementType, size_t _ByteAlignment>
+    struct aligned_accessor
+    {
+      static_assert(has_single_bit(_ByteAlignment),
+	"ByteAlignment must be a power of two");
+      static_assert(_ByteAlignment >= alignof(_ElementType));
+
+      using offset_policy = default_accessor<_ElementType>;
+      using element_type = _ElementType;
+      using reference = element_type&;
+      using data_handle_type = element_type*;
+
+      static constexpr size_t byte_alignment = _ByteAlignment;
+
+      constexpr
+      aligned_accessor() noexcept = default;
+
+      template<typename _OElementType, size_t _OByteAlignment>
+	requires (_OByteAlignment >= byte_alignment) 
+	    && is_convertible_v<_OElementType(*)[], element_type(*)[]>
+	constexpr
+	aligned_accessor(aligned_accessor<_OElementType, _OByteAlignment>)
+	noexcept
+	{ }
+
+      template<typename _OElementType>
+	requires is_convertible_v<_OElementType(*)[], element_type(*)[]>
+	constexpr explicit
+	aligned_accessor(default_accessor<_OElementType>) noexcept
+	{ }
+
+      template<typename _OElementType>
+	requires is_convertible_v<element_type(*)[], _OElementType(*)[]>
+	constexpr
+	operator default_accessor<_OElementType>() const noexcept
+	{ return {}; }
+
+      constexpr reference
+      access(data_handle_type __p, size_t __i) const noexcept
+      { return std::assume_aligned<byte_alignment>(__p)[__i]; }
+
+      constexpr typename offset_policy::data_handle_type
+      offset(data_handle_type __p, size_t __i) const noexcept
+      { return std::assume_aligned<byte_alignment>(__p) + __i; }
+    };
+#endif
 
   namespace __mdspan
   {

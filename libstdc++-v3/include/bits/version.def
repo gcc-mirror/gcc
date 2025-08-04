@@ -1026,6 +1026,16 @@ ftms = {
 };
 
 ftms = {
+  name = aligned_accessor;
+  values = {
+    v = 202411;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_assume_aligned "
+    "&& __glibcxx_is_sufficiently_aligned";
+  };
+};
+
+ftms = {
   name = ssize;
   values = {
     v = 201902;

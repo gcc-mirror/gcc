@@ -1865,10 +1865,13 @@ export namespace std
   using std::layout_right;
   using std::layout_stride;
   using std::default_accessor;
+#if __glibcxx_aligned_accessor
+  using std::aligned_accessor;
+#endif
   using std::mdspan;
-  // FIXME layout_left_padded, layout_right_padded, aligned_accessor,
-  // strided_slice, submdspan_mapping_result, full_extent_t, full_extent,
-  // submdspan_extents, mdsubspan
+  // FIXME layout_left_padded, layout_right_padded, strided_slice,
+  // submdspan_mapping_result, full_extent_t, full_extent, submdspan_extents,
+  // mdsubspan
 }
 #endif
 

@@ -97,9 +97,35 @@ template<template<typename T> typename Accessor>
 
 static_assert(test_properties<std::default_accessor>());
 
+#ifdef __glibcxx_aligned_accessor
+template<size_t Mult>
+struct OverAlignedAccessorTrait
+{
+  template<typename T>
+    using type = std::aligned_accessor<T, Mult*alignof(T)>;
+};
+
+static_assert(test_properties<OverAlignedAccessorTrait<1>::type>());
+static_assert(test_properties<OverAlignedAccessorTrait<2>::type>());
+static_assert(test_ctor<OverAlignedAccessorTrait<2>::type,
+			std::default_accessor, false>());
+static_assert(test_ctor<OverAlignedAccessorTrait<2>::type,
+			OverAlignedAccessorTrait<4>::type>());
+static_assert(test_ctor<std::default_accessor,
+			OverAlignedAccessorTrait<2>::type>());
+static_assert(!std::is_constructible_v<std::aligned_accessor<char, 4>,
+				       std::aligned_accessor<char, 2>>);
+#endif
+
 template<typename A>
   constexpr size_t
   accessor_alignment = alignof(typename A::element_type);
+
+#ifdef __glibcxx_aligned_accessor
+template<typename T, size_t N>
+  constexpr size_t
+  accessor_alignment<std::aligned_accessor<T, N>> = N;
+#endif
 
 template<typename Accessor>
   constexpr void
@@ -136,5 +162,10 @@ main()
 {
   test_all<std::default_accessor<double>>();
   static_assert(test_all<std::default_accessor<double>>());
+
+#ifdef __glibcxx_aligned_accessor
+  test_all<typename OverAlignedAccessorTrait<4>::type<double>>();
+  static_assert(test_all<typename OverAlignedAccessorTrait<4>::type<double>>());
+#endif
   return 0;
 }

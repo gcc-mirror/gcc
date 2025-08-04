@@ -1149,6 +1149,16 @@
 #endif /* !defined(__cpp_lib_mdspan) && defined(__glibcxx_want_mdspan) */
 #undef __glibcxx_want_mdspan
 
+#if !defined(__cpp_lib_aligned_accessor)
+# if (__cplusplus >  202302L) && (__glibcxx_assume_aligned && __glibcxx_is_sufficiently_aligned)
+#  define __glibcxx_aligned_accessor 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_aligned_accessor)
+#   define __cpp_lib_aligned_accessor 202411L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_aligned_accessor) && defined(__glibcxx_want_aligned_accessor) */
+#undef __glibcxx_want_aligned_accessor
+
 #if !defined(__cpp_lib_ssize)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_ssize 201902L
