@@ -3744,7 +3744,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
    as -Werror.  */
 
 char *
-compiler_diagnostic_option_manager::
+compiler_diagnostic_option_id_manager::
 make_option_name (diagnostics::option_id option_id,
 		  enum diagnostics::kind orig_diag_kind,
 		  enum diagnostics::kind diag_kind) const
@@ -3823,7 +3823,7 @@ get_option_url_suffix (int option_index, unsigned lang_mask)
    which enabled a diagnostic.  */
 
 char *
-gcc_diagnostic_option_manager::
+gcc_diagnostic_option_id_manager::
 make_option_url (diagnostics::option_id option_id) const
 {
   if (option_id.m_idx)

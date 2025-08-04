@@ -20,30 +20,31 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_DIAGNOSTIC_H
 #define GCC_OPTS_DIAGNOSTIC_H
 
-/* Abstract subclass of diagnostics::option_manager for gcc options.  */
+/* Abstract subclass of diagnostics::option_id_manager for gcc options.  */
 
-class gcc_diagnostic_option_manager : public diagnostics::option_manager
+class gcc_diagnostic_option_id_manager : public diagnostics::option_id_manager
 {
 public:
   char *make_option_url (diagnostics::option_id option_id) const final override;
 
 protected:
-  gcc_diagnostic_option_manager (unsigned lang_mask)
+  gcc_diagnostic_option_id_manager (unsigned lang_mask)
   : m_lang_mask (lang_mask)
   {}
 
   unsigned m_lang_mask;
 };
 
-/* Concrete implementation of diagnostic_option_manager for compiler.  */
+/* Concrete implementation of diagnostics::option_id_manager for compiler.  */
 
-class compiler_diagnostic_option_manager : public gcc_diagnostic_option_manager
+class compiler_diagnostic_option_id_manager
+  : public gcc_diagnostic_option_id_manager
 {
 public:
-  compiler_diagnostic_option_manager (const diagnostics::context &context,
-				      unsigned lang_mask,
-				      void *opts)
-  : gcc_diagnostic_option_manager (lang_mask),
+  compiler_diagnostic_option_id_manager (const diagnostics::context &context,
+					 unsigned lang_mask,
+					 void *opts)
+  : gcc_diagnostic_option_id_manager (lang_mask),
     m_context (context),
     m_opts (opts)
   {

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lazily-created.h"
 #include "unique-argv.h"
 #include "diagnostics/option-classifier.h"
+#include "diagnostics/option-id-manager.h"
 #include "diagnostics/context-options.h"
 
 namespace diagnostics {
@@ -80,35 +81,6 @@ using start_span_fn = void (*) (const location_print_policy &,
 typedef void (*text_finalizer_fn) (text_sink &,
 				   const diagnostic_info *,
 				   enum kind);
-
-/* Abstract base class for the diagnostic subsystem to make queries
-   about command-line options.  */
-
-class option_manager
-{
-public:
-  virtual ~option_manager () {}
-
-  /* Return 1 if option OPT_ID is enabled, 0 if it is disabled,
-     or -1 if it isn't a simple on-off switch
-     (or if the value is unknown, typically set later in target).  */
-  virtual int option_enabled_p (option_id opt_id) const = 0;
-
-  /* Return malloced memory for the name of the option OPT_ID
-     which enabled a diagnostic, originally of type ORIG_DIAG_KIND but
-     possibly converted to DIAG_KIND by options such as -Werror.
-     May return NULL if no name is to be printed.
-     May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_name (option_id opt_id,
-				  enum kind orig_diag_kind,
-				  enum kind diag_kind) const = 0;
-
-  /* Return malloced memory for a URL describing the option that controls
-     a diagnostic.
-     May return NULL if no URL is available.
-     May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_url (option_id opt_id) const = 0;
-};
 
 /* A bundle of options relating to printing the user's source code
    (potentially with a margin, underlining, labels, etc).  */
@@ -334,7 +306,7 @@ struct counters
    - an optional urlifier to inject URLs into formatted messages
    - counting the number of diagnostics reported of each kind
      (class diagnostics::counters)
-   - calling out to a option_manager to determine if
+   - calling out to a option_id_manager to determine if
      a particular warning is enabled or disabled
    - tracking pragmas that enable/disable warnings in a range of
      source code
@@ -546,32 +518,32 @@ public:
   /* Option-related member functions.  */
   inline bool option_enabled_p (option_id opt_id) const
   {
-    if (!m_option_mgr)
+    if (!m_option_id_mgr)
       return true;
-    return m_option_mgr->option_enabled_p (opt_id);
+    return m_option_id_mgr->option_enabled_p (opt_id);
   }
 
   inline char *make_option_name (option_id opt_id,
 				 enum kind orig_diag_kind,
 				 enum kind diag_kind) const
   {
-    if (!m_option_mgr)
+    if (!m_option_id_mgr)
       return nullptr;
-    return m_option_mgr->make_option_name (opt_id,
-					   orig_diag_kind,
-					   diag_kind);
+    return m_option_id_mgr->make_option_name (opt_id,
+					      orig_diag_kind,
+					      diag_kind);
   }
 
   inline char *make_option_url (option_id opt_id) const
   {
-    if (!m_option_mgr)
+    if (!m_option_id_mgr)
       return nullptr;
-    return m_option_mgr->make_option_url (opt_id);
+    return m_option_id_mgr->make_option_url (opt_id);
   }
 
   void
-  set_option_manager (std::unique_ptr<option_manager> mgr,
-		      unsigned lang_mask);
+  set_option_id_manager (std::unique_ptr<option_id_manager> option_id_mgr,
+			 unsigned lang_mask);
 
   unsigned get_lang_mask () const
   {
@@ -808,7 +780,7 @@ private:
 
   /* Owned by the context; this would be a std::unique_ptr if
      context had a proper ctor.  */
-  option_manager *m_option_mgr;
+  option_id_manager *m_option_id_mgr;
   unsigned m_lang_mask;
 
   /* A stack of optional hooks for adding URLs to quoted text strings in

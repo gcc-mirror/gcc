@@ -1876,7 +1876,7 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 }
 
 int
-compiler_diagnostic_option_manager::
+compiler_diagnostic_option_id_manager::
 option_enabled_p (diagnostics::option_id opt_id) const
 {
   return option_enabled (opt_id.m_idx, m_lang_mask, m_opts);

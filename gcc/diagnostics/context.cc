@@ -170,7 +170,7 @@ context::initialize (int n_opts)
   m_text_callbacks.m_html_start_span
     = default_start_span_fn<to_html>;
   m_text_callbacks.m_end_diagnostic = default_text_finalizer;
-  m_option_mgr = nullptr;
+  m_option_id_mgr = nullptr;
   m_urlifier_stack = new auto_vec<urlifier_stack_node> ();
   m_last_location = UNKNOWN_LOCATION;
   m_client_aux_data = nullptr;
@@ -337,8 +337,8 @@ context::finish ()
       m_client_data_hooks = nullptr;
     }
 
-  delete m_option_mgr;
-  m_option_mgr = nullptr;
+  delete m_option_id_mgr;
+  m_option_id_mgr = nullptr;
 
   if (m_urlifier_stack)
     {
@@ -465,11 +465,11 @@ context::set_original_argv (unique_argv original_argv)
 }
 
 void
-context::set_option_manager (std::unique_ptr<option_manager> mgr,
-			     unsigned lang_mask)
+context::set_option_id_manager (std::unique_ptr<option_id_manager> mgr,
+				unsigned lang_mask)
 {
-  delete m_option_mgr;
-  m_option_mgr = mgr.release ();
+  delete m_option_id_mgr;
+  m_option_id_mgr = mgr.release ();
   m_lang_mask = lang_mask;
 }
 

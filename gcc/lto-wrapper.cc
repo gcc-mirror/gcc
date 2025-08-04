@@ -2265,13 +2265,14 @@ cont:
   obstack_free (&argv_obstack, NULL);
 }
 
-/* Concrete implementation of diagnostic_option_manager for LTO.  */
+/* Concrete implementation of diagnostics::option_id_manager for LTO.  */
 
-class lto_diagnostic_option_manager : public gcc_diagnostic_option_manager
+class lto_diagnostic_option_id_manager
+  : public gcc_diagnostic_option_id_manager
 {
 public:
-  lto_diagnostic_option_manager ()
-  : gcc_diagnostic_option_manager (0 /* lang_mask */)
+  lto_diagnostic_option_id_manager ()
+  : gcc_diagnostic_option_id_manager (0 /* lang_mask */)
   {
   }
   int option_enabled_p (diagnostics::option_id) const final override
@@ -2307,8 +2308,8 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->set_option_manager
-    (::make_unique<lto_diagnostic_option_manager> (), 0);
+  global_dc->set_option_id_manager
+    (::make_unique<lto_diagnostic_option_id_manager> (), 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

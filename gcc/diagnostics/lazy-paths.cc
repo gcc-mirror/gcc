@@ -125,12 +125,12 @@ test_intraprocedural_path (pretty_printer *event_pp)
 		"double `free'");
 }
 
-/* Implementation of diagnostics::option_manager for which all
+/* Implementation of diagnostics::option_id_manager for which all
    options are disabled, for use in selftests.
    Note that this is *not* called for option_id (0), which
    means "always warn"  */
 
-class all_warnings_disabled : public diagnostics::option_manager
+class all_warnings_disabled : public diagnostics::option_id_manager
 {
 public:
   int option_enabled_p (diagnostics::option_id) const final override
@@ -168,7 +168,7 @@ test_emission (pretty_printer *event_pp)
      is skipped.  */
   {
     test_context dc;
-    dc.set_option_manager (std::make_unique<all_warnings_disabled> (), 0);
+    dc.set_option_id_manager (std::make_unique<all_warnings_disabled> (), 0);
 
     test_rich_location rich_loc (*event_pp);
     ASSERT_FALSE (rich_loc.m_path.generated_p ());
