@@ -3880,6 +3880,8 @@
 
 (define_int_iterator SVE_PITER [UNSPEC_PFIRST UNSPEC_PNEXT])
 
+(define_int_iterator PNEXT_ONLY [UNSPEC_PNEXT])
+
 (define_int_iterator MATMUL [UNSPEC_SMATMUL UNSPEC_UMATMUL
 			     UNSPEC_USMATMUL])
 

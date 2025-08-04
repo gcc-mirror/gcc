@@ -11179,14 +11179,49 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sve_<sve_pred_op><mode>"
-  [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
-	(unspec:PRED_ALL
-	  [(match_operand:PRED_ALL 1 "register_operand" "Upa")
+  [(set (match_operand:VNx16BI_ONLY 0 "register_operand" "=Upa")
+	(unspec:VNx16BI_ONLY
+	  [(match_operand:VNx16BI_ONLY 1 "register_operand" "Upa")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
-	   (match_operand:PRED_ALL 3 "register_operand" "0")]
+	   (match_operand:VNx16BI_ONLY 3 "register_operand" "0")]
 	  SVE_PITER))
    (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_SVE && <max_elem_bits> >= <elem_bits>"
+  "TARGET_SVE"
+  "<sve_pred_op>\t%0.<Vetype>, %1, %0.<Vetype>"
+)
+
+(define_expand "@aarch64_sve_<sve_pred_op><mode>"
+  [(parallel
+     [(set (match_operand:VNx16BI 0 "register_operand")
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:PRED_HSD
+		 [(match_operand:PRED_HSD 1 "register_operand")
+		  (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+		  (match_operand:PRED_HSD 3 "register_operand")]
+		 PNEXT_ONLY)
+	       0)
+	     (match_dup 4)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+  {
+    operands[4] = aarch64_ptrue_all (<data_bytes>);
+  }
+)
+
+(define_insn "*aarch64_sve_<sve_pred_op><mode>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:PRED_HSD
+	      [(match_operand:PRED_HSD 1 "register_operand" "Upa")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (match_operand:PRED_HSD 3 "register_operand" "0")]
+	      PNEXT_ONLY)
+	    0)
+	  (match_operand:PRED_HSD 4 "aarch64_ptrue_all_operand")))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE"
   "<sve_pred_op>\t%0.<Vetype>, %1, %0.<Vetype>"
 )
 
@@ -11211,6 +11246,38 @@
 	  SVE_PITER))]
   "TARGET_SVE
    && <max_elem_bits> >= <elem_bits>
+   && aarch64_sve_same_pred_for_ptest_p (&operands[2], &operands[4])"
+  "<sve_pred_op>\t%0.<Vetype>, %1, %0.<Vetype>"
+  "&& !rtx_equal_p (operands[2], operands[4])"
+  {
+    operands[4] = operands[2];
+    operands[5] = operands[3];
+  }
+)
+
+(define_insn_and_rewrite "*aarch64_sve_<sve_pred_op><mode>_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand 2)
+	   (match_operand:SI 3 "aarch64_sve_ptrue_flag")
+	   (unspec:PRED_HSD
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_ptrue_flag")
+	      (match_operand:PRED_HSD 6 "register_operand" "0")]
+	     PNEXT_ONLY)]
+	  UNSPEC_PTEST))
+   (set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:PRED_HSD
+	      [(match_dup 4)
+	       (match_dup 5)
+	       (match_dup 6)]
+	      PNEXT_ONLY)
+	    0)
+	  (match_operand:PRED_HSD 7 "aarch64_ptrue_all_operand")))]
+  "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[2], &operands[4])"
   "<sve_pred_op>\t%0.<Vetype>, %1, %0.<Vetype>"
   "&& !rtx_equal_p (operands[2], operands[4])"
