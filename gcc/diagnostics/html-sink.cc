@@ -1018,10 +1018,11 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   // Add any metadata as a suffix to the message
   if (diagnostic.m_metadata)
-    {
-      xp.add_text (" ");
-      xp.append (make_element_for_metadata (*diagnostic.m_metadata));
-    }
+    if (auto e = make_element_for_metadata (*diagnostic.m_metadata))
+      {
+	xp.add_text (" ");
+	xp.append (std::move (e));
+      }
 
   // Add any option as a suffix to the message
 
@@ -1233,6 +1234,9 @@ html_builder::make_element_for_metadata (const metadata &m)
       span_metadata->add_child
 	(make_metadata_element (std::move (label), std::move (url)));
     }
+
+  if (span_metadata->m_children.empty ())
+    return nullptr;
 
   return span_metadata;
 }
