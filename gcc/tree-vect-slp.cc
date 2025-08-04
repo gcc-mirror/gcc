@@ -4888,9 +4888,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 
   /* Find SLP sequences starting from groups of grouped stores.  */
   FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
-    vect_analyze_slp_instance (vinfo, bst_map, first_element,
-			       slp_inst_kind_store, max_tree_size, &limit,
-			       force_single_lane);
+    if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
+				     slp_inst_kind_store, max_tree_size, &limit,
+				     force_single_lane)
+	&& loop_vinfo)
+      return opt_result::failure_at (vect_location, "SLP build failed.\n");
 
   /* For loops also start SLP discovery from non-grouped stores.  */
   if (loop_vinfo)
@@ -4908,9 +4910,12 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	    vec<tree> remain = vNULL;
 	    stmts.create (1);
 	    stmts.quick_push (stmt_info);
-	    vect_build_slp_instance (vinfo, slp_inst_kind_store,
-				     stmts, roots, remain, max_tree_size,
-				     &limit, bst_map, NULL, force_single_lane);
+	    if (! vect_build_slp_instance (vinfo, slp_inst_kind_store,
+					   stmts, roots, remain, max_tree_size,
+					   &limit, bst_map, NULL,
+					   force_single_lane))
+	      return opt_result::failure_at (vect_location,
+					     "SLP build failed.\n");
 	  }
     }
 
@@ -5002,12 +5007,14 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		      vec<tree> remain = vNULL;
 		      stmts.create (1);
 		      stmts.quick_push (next_info);
-		      vect_build_slp_instance (vinfo,
-					       slp_inst_kind_reduc_group,
-					       stmts, roots, remain,
-					       max_tree_size, &limit,
-					       bst_map, NULL,
-					       force_single_lane);
+		      if (! vect_build_slp_instance (vinfo,
+						     slp_inst_kind_reduc_group,
+						     stmts, roots, remain,
+						     max_tree_size, &limit,
+						     bst_map, NULL,
+						     force_single_lane))
+			return opt_result::failure_at (vect_location,
+						       "SLP build failed.\n");
 		    }
 		}
 	    }
@@ -5032,11 +5039,14 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		  vec<tree> remain = vNULL;
 		  stmts.create (1);
 		  stmts.quick_push (vect_stmt_to_vectorize (stmt_info));
-		  vect_build_slp_instance (vinfo,
-					   slp_inst_kind_reduc_group,
-					   stmts, roots, remain,
-					   max_tree_size, &limit,
-					   bst_map, NULL, force_single_lane);
+		  if (! vect_build_slp_instance (vinfo,
+						 slp_inst_kind_reduc_group,
+						 stmts, roots, remain,
+						 max_tree_size, &limit,
+						 bst_map, NULL,
+						 force_single_lane))
+		    return opt_result::failure_at (vect_location,
+						   "SLP build failed.\n");
 		}
 	    }
 	  saved_stmts.release ();
@@ -5065,11 +5075,14 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		vec<tree> remain = vNULL;
 		stmts.create (1);
 		stmts.quick_push (vect_stmt_to_vectorize (stmt_info));
-		vect_build_slp_instance (vinfo,
-					 slp_inst_kind_reduc_group,
-					 stmts, roots, remain,
-					 max_tree_size, &limit,
-					 bst_map, NULL, force_single_lane);
+		if (! vect_build_slp_instance (vinfo,
+					       slp_inst_kind_reduc_group,
+					       stmts, roots, remain,
+					       max_tree_size, &limit,
+					       bst_map, NULL,
+					       force_single_lane))
+		  return opt_result::failure_at (vect_location,
+						 "SLP build failed.\n");
 	      }
 	  }
 
@@ -5092,7 +5105,8 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	      || !integer_zerop (args1))
 	    {
 	      roots.release ();
-	      continue;
+	      return opt_result::failure_at (vect_location,
+					     "SLP build failed.\n");
 	    }
 
 	  /* An argument without a loop def will be codegened from vectorizing the
@@ -5110,7 +5124,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 					 stmts, roots, remain,
 					 max_tree_size, &limit,
 					 bst_map, NULL, force_single_lane))
-	    roots.release ();
+	    {
+	      roots.release ();
+	      return opt_result::failure_at (vect_location,
+					     "SLP build failed.\n");
+	    }
 	}
 
 	/* Find and create slp instances for inductions that have been forced
@@ -5128,10 +5146,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	      {
 		stmts.create (1);
 		stmts.quick_push (vect_stmt_to_vectorize (lc_info));
-		vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
-					 stmts, roots, remain,
-					 max_tree_size, &limit,
-					 bst_map, NULL, force_single_lane);
+		if (! vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
+					       stmts, roots, remain,
+					       max_tree_size, &limit,
+					       bst_map, NULL,
+					       force_single_lane))
+		  return opt_result::failure_at (vect_location,
+						 "SLP build failed.\n");
 	      }
 	    /* When the latch def is from a different cycle this can only
 	       be a induction.  Build a simple instance for this.
@@ -5144,10 +5165,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	      {
 		stmts.create (1);
 		stmts.quick_push (stmt_info);
-		vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
-					 stmts, roots, remain,
-					 max_tree_size, &limit,
-					 bst_map, NULL, force_single_lane);
+		if (! vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
+					       stmts, roots, remain,
+					       max_tree_size, &limit,
+					       bst_map, NULL,
+					       force_single_lane))
+		  return opt_result::failure_at (vect_location,
+						 "SLP build failed.\n");
 	      }
 	  }
     }
