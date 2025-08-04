@@ -1259,9 +1259,10 @@ public:
 	index = target;
       }
 
-    e.args[0] = gen_lowpart (VNx2DImode, e.args[0]);
+    e.args[0] = aarch64_sve_reinterpret (VNx2DImode, e.args[0]);
     e.args[1] = index;
-    return e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
+    rtx res = e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
+    return aarch64_sve_reinterpret (mode, res);
   }
 };
 
