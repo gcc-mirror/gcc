@@ -1,3 +1,26 @@
+2025-08-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (define_insn_and_split) [reload_completed]:
+	For splits that just append a (clobber (reg:CC REG_CC)) to
+	the pattern, use avr_add_ccclobber (curr_insn) instead of
+	repeating the original pattern.
+	* config/avr/avr-dimode.md: Same.
+	* config/avr/avr-fixed.md: Same.
+
+2025-08-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_add_ccclobber): New function.
+	* config/avr/avr-protos.h (avr_add_ccclobber): New proto.
+	(DONE_ADD_CCC): New define.
+
+2025-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90242
+	* tree-ssa-sccvn.cc (vn_reference_compute_hash): Use
+	poly_offset_int for offset accumulation.  For hashing
+	truncate to 64 bits and also hash 64 bits.
+	(vn_reference_eq): Likewise.
+
 2025-08-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR target/69374
