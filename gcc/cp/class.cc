@@ -1356,7 +1356,30 @@ add_method (tree type, tree method, bool via_using)
       if (!compparms (parms1, parms2))
 	continue;
 
-      if (!equivalently_constrained (fn, method))
+      tree fn_constraints = get_constraints (fn);
+      tree method_constraints = get_constraints (method);
+
+      if (fn_constraints && method_constraints
+	  && DECL_CONTEXT (fn) != type
+	  && !processing_template_decl)
+	{
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    ++processing_template_decl;
+	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (fn)))
+	    fn_constraints = tsubst_constraint_info (fn_constraints,
+						     TI_ARGS (ti),
+						     tf_warning_or_error,
+						     fn);
+	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (method)))
+	    method_constraints = tsubst_constraint_info (method_constraints,
+							 TI_ARGS (ti),
+							 tf_warning_or_error,
+							 method);
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    --processing_template_decl;
+	}
+
+      if (!equivalent_constraints (fn_constraints, method_constraints))
 	{
 	  if (processing_template_decl)
 	    /* We can't check satisfaction in dependent context, wait until
