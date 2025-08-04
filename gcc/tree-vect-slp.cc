@@ -120,6 +120,8 @@ _slp_tree::_slp_tree ()
   SLP_TREE_LANE_PERMUTATION (this) = vNULL;
   SLP_TREE_DEF_TYPE (this) = vect_uninitialized_def;
   SLP_TREE_CODE (this) = ERROR_MARK;
+  SLP_TREE_GS_SCALE (this) = 0;
+  SLP_TREE_GS_BASE (this) = NULL_TREE;
   this->ldst_lanes = false;
   this->avoid_stlf_fail = false;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
@@ -680,6 +682,15 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	{
 	  internal_fn ifn = gimple_call_internal_fn (stmt);
 	  commutative_op = first_commutative_argument (ifn);
+	  if (internal_gather_scatter_fn_p (ifn))
+	    {
+	      vect_describe_gather_scatter_call
+		(stmt_info,
+		 first ? &(*oprnds_info)[0]->first_gs_info : &gs_info);
+	      if (first)
+		(*oprnds_info)[0]->first_gs_p = true;
+	      gs_op = 0;
+	    }
 	}
     }
   else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
@@ -2720,6 +2731,9 @@ out:
 
   stmt_info = stmts[0];
 
+  int gs_scale = 0;
+  tree gs_base = NULL_TREE;
+
   /* Create SLP_TREE nodes for the definition node/s.  */
   FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
     {
@@ -2740,6 +2754,12 @@ out:
 	     is a SSA name.  */
 	  gcc_assert (i == 3 && nops == 4);
 	  continue;
+	}
+
+      if (oprnd_info->first_gs_p)
+	{
+	  gs_scale = oprnd_info->first_gs_info.scale;
+	  gs_base = oprnd_info->first_gs_info.base;
 	}
 
       if (is_a <bb_vec_info> (vinfo)
@@ -3131,6 +3151,8 @@ fail:
   node = vect_create_new_slp_node (node, stmts, nops);
   SLP_TREE_VECTYPE (node) = vectype;
   SLP_TREE_CHILDREN (node).splice (children);
+  SLP_TREE_GS_SCALE (node) = gs_scale;
+  SLP_TREE_GS_BASE (node) = gs_base;
   return node;
 }
 

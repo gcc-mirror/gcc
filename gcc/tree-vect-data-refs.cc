@@ -4423,8 +4423,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
    MASKED_P is true if the load or store is conditional.  MEMORY_TYPE is
    the type of the memory elements being loaded or stored.  OFFSET_TYPE
    is the type of the offset that is being applied to the invariant
-   base address.  SCALE is the amount by which the offset should
-   be multiplied *after* it has been converted to address width.
+   base address.  If OFFSET_TYPE is scalar the function chooses an
+   appropriate vector type for it.  SCALE is the amount by which the
+   offset should be multiplied *after* it has been converted to address width.
 
    Return true if the function is supported, storing the function id in
    *IFN_OUT and the vector type for the offset in *OFFSET_VECTYPE_OUT.
@@ -4467,9 +4468,15 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 
   for (;;)
     {
-      tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
-      if (!offset_vectype)
-	return false;
+      tree offset_vectype;
+      if (VECTOR_TYPE_P (offset_type))
+	offset_vectype = offset_type;
+      else
+	{
+	  offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
+	  if (!offset_vectype)
+	    return false;
+	}
 
       /* Test whether the target supports this combination.  */
       if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
@@ -4500,10 +4507,15 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	  return true;
 	}
 
+      /* For fixed offset vector type we're done.  */
+      if (VECTOR_TYPE_P (offset_type))
+	return false;
+
       if (TYPE_PRECISION (offset_type) >= POINTER_SIZE
 	  && TYPE_PRECISION (offset_type) >= element_bits)
 	return false;
 
+      /* Try a larger offset vector type.  */
       offset_type = build_nonstandard_integer_type
 	(TYPE_PRECISION (offset_type) * 2, TYPE_UNSIGNED (offset_type));
     }
@@ -4512,7 +4524,7 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 /* STMT_INFO is a call to an internal gather load or scatter store function.
    Describe the operation in INFO.  */
 
-static void
+void
 vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 				   gather_scatter_info *info)
 {

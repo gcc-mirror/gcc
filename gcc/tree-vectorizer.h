@@ -306,6 +306,11 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+  /* For gather/scatter memory operations the scale each offset element
+     should be multiplied by before being added to the base.  */
+  int gs_scale;
+  /* For gather/scatter memory operations the loop-invariant base value.  */
+  tree gs_base;
   /* Whether uses of this load or feeders of this store are suitable
      for load/store-lanes.  */
   bool ldst_lanes;
@@ -412,6 +417,8 @@ public:
 #define SLP_TREE_CODE(S)			 (S)->code
 #define SLP_TREE_MEMORY_ACCESS_TYPE(S)		 (S)->memory_access_type
 #define SLP_TREE_TYPE(S)			 (S)->type
+#define SLP_TREE_GS_SCALE(S)			 (S)->gs_scale
+#define SLP_TREE_GS_BASE(S)			 (S)->gs_base
 
 enum vect_partial_vector_style {
     vect_partial_vectors_none,
@@ -2550,6 +2557,8 @@ extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
 extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
 				       gather_scatter_info *,
 				       vec<int> * = nullptr);
+extern void vect_describe_gather_scatter_call (stmt_vec_info,
+					       gather_scatter_info *);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
 						 vec<data_reference_p> *,
 						 vec<int> *, int);
