@@ -2440,7 +2440,11 @@ cxx_dynamic_cast_fn_p (tree fndecl)
 {
   return (cxx_dialect >= cxx20
 	  && id_equal (DECL_NAME (fndecl), "__dynamic_cast")
-	  && CP_DECL_CONTEXT (fndecl) == abi_node);
+	  && CP_DECL_CONTEXT (fndecl) == abi_node
+	  /* Only consider implementation-detail __dynamic_cast calls that
+	     correspond to a dynamic_cast, and ignore direct calls to
+	     abi::__dynamic_cast.  */
+	  && DECL_ARTIFICIAL (fndecl));
 }
 
 /* Often, we have an expression in the form of address + offset, e.g.
