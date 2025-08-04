@@ -429,4 +429,26 @@ DEF_AVG_CEIL(int32_t, int64_t)
   DEF_VX_BINARY_CASE_2_WRAP(T, AVG_FLOOR_FUNC_WRAP(T), avg_floor) \
   DEF_VX_BINARY_CASE_2_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil)   \
 
+/* For some special cases cannot be normalized as above  */
+
+#define DEF_VX_MERGE_0(T)                                      \
+void                                                           \
+test_vx_merge_##T##_case_0 (T * restrict out, T * restrict in, \
+                            T x,  unsigned n)                  \
+{                                                              \
+  for (unsigned i = 0; i < n; i++)                             \
+    {                                                          \
+      if (i % 2 == 0)                                          \
+        out[i] = x;                                            \
+      else                                                     \
+        out[i] = in[i];                                        \
+    }                                                          \
+}
+
+#define DEF_VX_MERGE_0_WRAP(T) DEF_VX_MERGE_0(T)
+
+#define RUN_VX_MERGE_0(T, out, in, x, n) \
+  test_vx_merge_##T##_case_0(out, in, x, n)
+#define RUN_VX_MERGE_0_WRAP(T, out, in, x, n) RUN_VX_MERGE_0(T, out, in, x, n)
+
 #endif
