@@ -9012,6 +9012,43 @@
   }
 )
 
+(define_expand "@aarch64_pred_fcm<cmp_op><mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (match_operand:SVE_F 3 "register_operand")
+	       (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
+	      SVE_COND_FP_CMP_I0)
+	    0)
+	  (match_dup 5)))]
+  "TARGET_SVE"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
+)
+
+(define_insn "*aarch64_pred_fcm<cmp_op><mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (match_operand:SVE_F 3 "register_operand")
+	       (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
+	      SVE_COND_FP_CMP_I0)
+	    0)
+	  (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))]
+  "TARGET_SVE"
+  {@ [ cons: =0 , 1   , 3 , 4   ]
+     [ Upa      , Upl , w , Dz  ] fcm<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #0.0
+     [ Upa      , Upl , w , w   ] fcm<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+  }
+)
+
 ;; Same for unordered comparisons.
 (define_insn "@aarch64_pred_fcmuo<mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
@@ -9021,6 +9058,40 @@
 	   (match_operand:SVE_F 3 "register_operand" "w")
 	   (match_operand:SVE_F 4 "register_operand" "w")]
 	  UNSPEC_COND_FCMUO))]
+  "TARGET_SVE"
+  "fcmuo\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
+)
+
+(define_expand "@aarch64_pred_fcmuo<mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (match_operand:SVE_F 3 "register_operand")
+	       (match_operand:SVE_F 4 "register_operand")]
+	      UNSPEC_COND_FCMUO)
+	    0)
+	  (match_dup 5)))]
+  "TARGET_SVE"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
+)
+
+(define_insn "*aarch64_pred_fcmuo<mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "aarch64_predicate_operand" "Upl")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (match_operand:SVE_F 3 "register_operand" "w")
+	       (match_operand:SVE_F 4 "register_operand" "w")]
+	      UNSPEC_COND_FCMUO)
+	    0)
+	  (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))]
   "TARGET_SVE"
   "fcmuo\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
 )

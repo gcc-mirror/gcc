@@ -500,7 +500,7 @@ public:
 	return e.use_exact_insn (code_for_aarch64_pred_cmp_acle (code, mode));
       }
 
-    insn_code icode = code_for_aarch64_pred_fcm (m_unspec_for_fp, mode);
+    insn_code icode = code_for_aarch64_pred_fcm_acle (m_unspec_for_fp, mode);
     return e.use_exact_insn (icode);
   }
 
@@ -581,7 +581,8 @@ public:
   expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
-    return e.use_exact_insn (code_for_aarch64_pred_fcmuo (e.vector_mode (0)));
+    auto mode = e.vector_mode (0);
+    return e.use_exact_insn (code_for_aarch64_pred_fcmuo_acle (mode));
   }
 };
 
