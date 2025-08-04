@@ -8635,7 +8635,7 @@
 
 ;; Predicated integer wide comparisons in which both the flag and
 ;; predicate results are interesting.
-(define_insn "*aarch64_pred_cmp<cmp_op><mode>_wide_cc"
+(define_insn_and_rewrite "*aarch64_pred_cmp<cmp_op><mode>_wide_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand:VNx16BI 1 "register_operand")
@@ -8666,11 +8666,16 @@
      [ ?Upl    ,  0  , w, w, Upl; yes                 ] ^
      [ Upa     ,  Upl, w, w, Upl; no                  ] ^
   }
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
 )
 
 ;; Predicated integer wide comparisons in which only the flags result
 ;; is interesting.
-(define_insn "*aarch64_pred_cmp<cmp_op><mode>_wide_ptest"
+(define_insn_and_rewrite "*aarch64_pred_cmp<cmp_op><mode>_wide_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand:VNx16BI 1 "register_operand")
@@ -8692,6 +8697,11 @@
      [ &Upa     ,  Upl, w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
      [ ?Upl     ,  0  , w, w, Upl; yes                 ] ^
      [ Upa      ,  Upl, w, w, Upl; no                  ] ^
+  }
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
   }
 )
 
