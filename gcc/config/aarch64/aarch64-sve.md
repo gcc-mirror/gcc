@@ -10582,6 +10582,34 @@
   "punpk<perm_hilo>\t%0.h, %1.b"
 )
 
+(define_expand "@aarch64_sve_punpk<perm_hilo>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:VNx8BI
+	      [(match_operand:VNx16BI 1 "register_operand")]
+	      UNPACK_UNSIGNED)
+	    0)
+	  (match_dup 2)))]
+  "TARGET_SVE"
+  {
+    operands[2] = aarch64_ptrue_all (2);
+  }
+)
+
+(define_insn "*aarch64_sve_punpk<perm_hilo>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:VNx8BI
+	      [(match_operand:VNx16BI 1 "register_operand" "Upa")]
+	      UNPACK_UNSIGNED)
+	    0)
+	  (match_operand:VNx8BI 2 "aarch64_ptrue_all_operand")))]
+  "TARGET_SVE"
+  "punpk<perm_hilo>\t%0.h, %1.b"
+)
+
 ;; =========================================================================
 ;; == Vector partitioning
 ;; =========================================================================

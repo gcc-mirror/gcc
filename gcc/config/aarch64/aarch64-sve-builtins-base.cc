@@ -3252,7 +3252,7 @@ public:
     unsigned int unpacks = m_high_p ? UNSPEC_UNPACKSHI : UNSPEC_UNPACKSLO;
     insn_code icode;
     if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-      icode = code_for_aarch64_sve_punpk (unpacku, mode);
+      icode = code_for_aarch64_sve_punpk_acle (unpacku);
     else
       {
 	int unspec = e.type_suffix (0).unsigned_p ? unpacku : unpacks;
