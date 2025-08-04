@@ -7780,10 +7780,6 @@ vectorizable_store (vec_info *vinfo,
 	return false;
     }
 
-  /* Cannot have hybrid store SLP -- that would mean storing to the
-     same location twice.  */
-  gcc_assert (PURE_SLP_STMT (stmt_info));
-
   tree vectype = SLP_TREE_VECTYPE (stmt_info), rhs_vectype = NULL_TREE;
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
