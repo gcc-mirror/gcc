@@ -20612,18 +20612,22 @@ LTO output files.
 @opindex fdump-rtl-@var{pass}
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}
-@itemx -fdump-rtl-@var{pass}=@var{filename}
+@itemx -fdump-rtl-@var{pass}-@var{options}
+@itemx -fdump-rtl-@var{pass}-@var{options}=@var{filename}
 Says to make debugging dumps during compilation at times specified by
-@var{letters}.  This is used for debugging the RTL-based passes of the
+@var{letters} when using @option{-d} or by @var{pass} when using
+@option{-fdump-rtl}.  This is used for debugging the RTL-based passes of the
 compiler.
 
 Some @option{-d@var{letters}} switches have different meaning when
 @option{-E} is used for preprocessing.  @xref{Preprocessor Options},
 for information about preprocessor-specific dump options.
 
-Debug dumps can be enabled with a @option{-fdump-rtl} switch or some
-@option{-d} option @var{letters}.  Here are the possible
-letters for use in @var{pass} and @var{letters}, and their meanings:
+The @samp{-@var{options}} form allows greater control over the details of the
+dump. See @option{-fdump-tree}.
+
+Here are actual instances of command-line options following these patterns and
+their meanings:
 
 @table @gcctabopt
 
@@ -21150,8 +21154,7 @@ GraphViz to @file{@var{file}.@var{passid}.@var{pass}.dot}.  Each function in
 the file is pretty-printed as a subgraph, so that GraphViz can render them
 all in a single plot.
 
-This option currently only works for RTL dumps, and the RTL is always
-dumped in slim form.
+RTL is always dumped in slim form.
 @item vops
 Enable showing virtual operands for every statement.
 @item lineno
