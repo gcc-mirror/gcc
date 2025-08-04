@@ -64,3 +64,7 @@ main ()
   return 0;
 }
 
+/* { dg-final { scan-tree-dump "31:17: optimized: loop vectorized" "vect" } } */
+/* { dg-final { scan-tree-dump "37:7: optimized: loop vectorized" "vect" } } */
+/* { dg-final { scan-tree-dump "44:17: optimized: loop vectorized" "vect" } } */
+/* { dg-final { scan-tree-dump "50:7: optimized: loop vectorized" "vect" } } */

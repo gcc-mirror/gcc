@@ -1140,7 +1140,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       soft_fail_nunits_vectype = nunits_vectype;
     }
 
-  gcc_assert (vectype);
+  gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
   *node_vectype = vectype;
 
   /* For every stmt in NODE find its def stmt/s.  */
@@ -1187,10 +1187,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
       gcall *call_stmt = dyn_cast <gcall *> (stmt);
       tree lhs = gimple_get_lhs (stmt);
-      if (lhs == NULL_TREE
-	  && (!call_stmt
-	      || !gimple_call_internal_p (stmt)
-	      || !internal_store_fn_p (gimple_call_internal_fn (stmt))))
+      if (lhs == NULL_TREE && !call_stmt)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -4917,6 +4914,22 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	      return opt_result::failure_at (vect_location,
 					     "SLP build failed.\n");
 	  }
+
+      stmt_vec_info stmt_info;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_ALTERNATE_DEFS (loop_vinfo), i, stmt_info)
+	{
+	  vec<stmt_vec_info> stmts;
+	  vec<stmt_vec_info> roots = vNULL;
+	  vec<tree> remain = vNULL;
+	  stmts.create (1);
+	  stmts.quick_push (stmt_info);
+	  if (! vect_build_slp_instance (vinfo, slp_inst_kind_store,
+					 stmts, roots, remain, max_tree_size,
+					 &limit, bst_map, NULL,
+					 force_single_lane))
+	    return opt_result::failure_at (vect_location,
+					   "SLP build failed.\n");
+	}
     }
 
   if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo))
@@ -7634,7 +7647,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
       /* If all instances ended up with vector(1) T roots make sure to
 	 not vectorize.  RVV for example relies on loop vectorization
 	 when some instances are essentially kept scalar.  See PR121048.  */
-      if (known_gt (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (root)), 1U))
+      if (SLP_TREE_VECTYPE (root)
+	  && known_gt (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (root)), 1U))
 	decided_to_slp++;
     }
 
@@ -7961,7 +7975,10 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
      elements in a vector.  For single-defuse-cycle, lane-reducing op, and
      PHI statement that starts reduction comprised of only lane-reducing ops,
      the number is more than effective vector statements actually required.  */
-  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
+  if (SLP_TREE_VECTYPE (node))
+    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
+  else
+    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
 
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
@@ -11318,8 +11335,10 @@ vect_schedule_slp_node (vec_info *vinfo,
 
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
-  gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
-  SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
+  gcc_assert (!SLP_TREE_VECTYPE (node)
+	      || SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
+  if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0)
+    SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
   if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
       && STMT_VINFO_DATA_REF (stmt_info))

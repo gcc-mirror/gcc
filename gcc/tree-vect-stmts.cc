@@ -386,6 +386,9 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  dump_printf_loc (MSG_NOTE, vect_location,
                            "vec_stmt_relevant_p: stmt has vdefs.\n");
 	*relevant = vect_used_in_scope;
+	if (! STMT_VINFO_DATA_REF (stmt_info)
+	    && zero_ssa_operands (stmt_info->stmt, SSA_OP_DEF))
+	  LOOP_VINFO_ALTERNATE_DEFS (loop_vinfo).safe_push (stmt_info);
       }
 
   /* uses outside the loop.  */
@@ -4752,7 +4755,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    }
 	}
 
-      SLP_TREE_VEC_DEFS (slp_node).quick_push (gimple_get_lhs (new_stmt));
+      if (gimple_get_lhs (new_stmt))
+	SLP_TREE_VEC_DEFS (slp_node).quick_push (gimple_get_lhs (new_stmt));
     }
 
   for (i = 0; i < nargs; ++i)

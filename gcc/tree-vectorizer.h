@@ -947,6 +947,10 @@ public:
      stmt in the chain.  */
   auto_vec<stmt_vec_info> reduction_chains;
 
+  /* Defs that could not be analyzed such as OMP SIMD calls without
+     a LHS.  */
+  auto_vec<stmt_vec_info> alternate_defs;
+
   /* Cost vector for a single scalar iteration.  */
   auto_vec<stmt_info_for_cost> scalar_cost_vec;
 
@@ -1186,6 +1190,7 @@ public:
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
 #define LOOP_VINFO_INV_PATTERN_DEF_SEQ(L)  (L)->inv_pattern_def_seq
 #define LOOP_VINFO_DRS_ADVANCED_BY(L)      (L)->drs_advanced_by
+#define LOOP_VINFO_ALTERNATE_DEFS(L)       (L)->alternate_defs
 
 #define LOOP_VINFO_FULLY_MASKED_P(L)		\
   (LOOP_VINFO_USING_PARTIAL_VECTORS_P (L)	\
