@@ -804,7 +804,7 @@
 )
 
 ;; For an EQ/NE comparison against zero, emit `CBZ`/`CBNZ`
-(define_insn "aarch64_cbz<optab><mode>1"
+(define_insn "*aarch64_cbz<optab><mode>"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
 				(const_int 0))
 			   (label_ref (match_operand 1))

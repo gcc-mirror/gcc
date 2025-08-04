@@ -2885,7 +2885,7 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
 /* Generate conditional branch to LABEL, comparing X to 0 using CODE.
    Return the jump instruction.  */
 
-static rtx
+rtx
 aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
 				     rtx_code_label *label)
 {

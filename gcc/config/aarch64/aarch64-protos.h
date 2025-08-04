@@ -1281,4 +1281,7 @@ extern bool aarch64_gcs_enabled ();
 extern unsigned aarch64_data_alignment (const_tree exp, unsigned align);
 extern unsigned aarch64_stack_alignment (const_tree exp, unsigned align);
 
+extern rtx aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
+						rtx_code_label *label);
+
 #endif /* GCC_AARCH64_PROTOS_H */

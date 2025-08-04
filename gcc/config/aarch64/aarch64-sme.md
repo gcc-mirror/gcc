@@ -400,7 +400,8 @@
     auto label = gen_label_rtx ();
     auto tpidr2 = gen_rtx_REG (DImode, R16_REGNUM);
     emit_insn (gen_aarch64_read_tpidr2 (tpidr2));
-    auto jump = emit_likely_jump_insn (gen_aarch64_cbznedi1 (tpidr2, label));
+    auto pat = aarch64_gen_compare_zero_and_branch (NE, tpidr2, label);
+    auto jump = emit_likely_jump_insn (pat);
     JUMP_LABEL (jump) = label;
 
     aarch64_restore_za (operands[0]);
