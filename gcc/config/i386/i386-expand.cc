@@ -27034,6 +27034,109 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
   return target;
 }
 
+/* GF2P8AFFINEQB matrixes to implement shift and rotate.  */
+
+static const uint64_t matrix_ashift[8] =
+{
+  0,
+  0x0001020408102040, /* 1 l */
+  0x0000010204081020, /* 2 l */
+  0x0000000102040810, /* 3 l */
+  0x0000000001020408, /* 4 l */
+  0x0000000000010204, /* 5 l */
+  0x0000000000000102, /* 6 l */
+  0x0000000000000001  /* 7 l */
+};
+
+static const uint64_t matrix_lshiftrt[8] =
+{
+  0,
+  0x0204081020408000, /* 1 r */
+  0x0408102040800000, /* 2 r */
+  0x0810204080000000, /* 3 r */
+  0x1020408000000000, /* 4 r */
+  0x2040800000000000, /* 5 r */
+  0x4080000000000000, /* 6 r */
+  0x8000000000000000  /* 7 r */
+};
+
+static const uint64_t matrix_ashiftrt[8] =
+{
+  0,
+  0x0204081020408080, /* 1 r */
+  0x0408102040808080, /* 2 r */
+  0x0810204080808080, /* 3 r */
+  0x1020408080808080, /* 4 r */
+  0x2040808080808080, /* 5 r */
+  0x4080808080808080, /* 6 r */
+  0x8080808080808080  /* 7 r */
+};
+
+static const uint64_t matrix_rotate[8] =
+{
+  0,
+  0x8001020408102040, /* 1 rol8 */
+  0x4080010204081020, /* 2 rol8 */
+  0x2040800102040810, /* 3 rol8 */
+  0x1020408001020408, /* 4 rol8 */
+  0x0810204080010204, /* 5 rol8 */
+  0x0408102040800102, /* 6 rol8 */
+  0x0204081020408001  /* 7 rol8 */
+};
+
+static const uint64_t matrix_rotatert[8] =
+{
+  0,
+  0x0204081020408001, /* 1 ror8 */
+  0x0408102040800102, /* 2 ror8 */
+  0x0810204080010204, /* 3 ror8 */
+  0x1020408001020408, /* 4 ror8 */
+  0x2040800102040810, /* 5 ror8 */
+  0x4080010204081020, /* 6 ror8 */
+  0x8001020408102040  /* 7 ror8 */
+};
+
+/* Return rtx to load a 64bit GF2P8AFFINE GP(2) matrix implementing a shift
+   for CODE and shift count COUNT into register with vector of size of SRC.  */
+
+rtx
+ix86_vgf2p8affine_shift_matrix (rtx src, rtx count, enum rtx_code code)
+{
+  machine_mode mode = GET_MODE (src);
+  const uint64_t *matrix;
+  unsigned shift = INTVAL (count) & 7;
+  gcc_assert (shift > 0 && shift < 8);
+
+  switch (code)
+    {
+    case ASHIFT:
+      matrix = matrix_ashift;
+      break;
+    case ASHIFTRT:
+      matrix = matrix_ashiftrt;
+      break;
+    case LSHIFTRT:
+      matrix = matrix_lshiftrt;
+      break;
+    case ROTATE:
+      matrix = matrix_rotate;
+      break;
+    case ROTATERT:
+      matrix = matrix_rotatert;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  int nelts = GET_MODE_NUNITS (mode);
+  rtvec vec = rtvec_alloc (nelts);
+  uint64_t ma = matrix[shift];
+  for (int i = 0; i < nelts; i++)
+    RTVEC_ELT (vec, i) = gen_int_mode ((ma >> ((i % 8) * 8)) & 0xff, QImode);
+
+  return force_reg (mode, gen_rtx_CONST_VECTOR (mode, vec));
+}
+
 /* Trunc a vector to a narrow vector, like v4di -> v4si.  */
 
 void
