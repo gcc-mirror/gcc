@@ -31,6 +31,7 @@ struct replay_options
   bool m_echo_file;
   bool m_json_comments;
   bool m_verbose;
+  bool m_debug_physical_locations;
   enum diagnostic_colorize m_diagnostics_colorize;
 };
 

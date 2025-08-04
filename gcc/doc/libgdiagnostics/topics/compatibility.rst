@@ -262,3 +262,12 @@ working with :type:`diagnostic_message_buffer`.
   * :func:`diagnostic_add_location_with_label_via_msg_buf`
 
   * :func:`diagnostic_execution_path_add_event_via_msg_buf`
+
+.. _LIBGDIAGNOSTICS_ABI_5:
+
+``LIBGDIAGNOSTICS_ABI_5``
+-------------------------
+
+``LIBGDIAGNOSTICS_ABI_5`` covers the addition of this function:
+
+  * :func:`diagnostic_manager_set_debug_physical_locations`

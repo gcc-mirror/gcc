@@ -304,3 +304,19 @@ This diagnostic has three locations
    .. code-block:: c
 
       #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_message_buffer
+
+.. function:: void diagnostic_manager_set_debug_physical_locations (diagnostic_manager *mgr, \
+						 int value)
+
+   Calling ``diagnostic_manager_set_debug_physical_locations (mgr, 1);``
+   will lead to debugging information being printed to ``stderr`` when
+   creating :type:`diagnostic_physical_location` instances.
+
+   The precise format of these messages is subject to change.
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_5`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_manager_set_debug_physical_locations

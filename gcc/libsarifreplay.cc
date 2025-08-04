@@ -1408,10 +1408,22 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 		  rule_obj));
 	      if (!msg_buf.m_inner)
 		return status::err_invalid_sarif;
+
 	      auto note (m_output_mgr.begin_diagnostic (DIAGNOSTIC_LEVEL_NOTE));
 	      note.set_location (physical_loc);
 	      note.set_logical_location (logical_loc);
 	      add_any_annotations (note, annotations);
+
+	      /* Look for "nestingLevel" property, as per
+		 "P3358R0 SARIF for Structured Diagnostics"
+		 https://wg21.link/P3358R0  */
+	      if (auto nesting_level
+		  = maybe_get_property_bag_value<json::integer_number>
+		  (*location_obj,
+		   "nestingLevel"))
+		private_diagnostic_set_nesting_level (note.m_inner,
+						      nesting_level->get ());
+
 	      notes.push_back ({std::move (note), std::move (msg_buf)});
 	    }
 	  else

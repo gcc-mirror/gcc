@@ -1,0 +1,164 @@
+/* Test a replay of a .sarif file generated from GCC testsuite.
+
+   The dg directives were stripped out from the generated .sarif
+   to avoid confusing DejaGnu for this test.   */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif:file=nested-diagnostics-1.roundtrip.sarif" } */
+/* { dg-additional-options "-fdiagnostics-add-output=experimental-html:file=nested-diagnostics-1.sarif.html,javascript=no" } */
+
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 16.0.0 20250723 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "16.0.0 20250723 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-16/",
+                               "rules": []},
+                    "extensions": [{"name": "diagnostic_plugin_test_nesting",
+                                    "fullName": "./diagnostic_plugin_test_nesting.so"}]},
+           "invocations": [{"executionSuccessful": false,
+                            "toolExecutionNotifications": []}],
+           "artifacts": [{"location": {"uri": "diagnostic-test-nesting-sarif.c"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "\n\nextern void foo (void);\n\nvoid test_nesting (void)\n{\n  foo ();\n}\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "top-level error"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                            "region": {"startLine": 8,
+                                                                       "startColumn": 3,
+                                                                       "endColumn": 9},
+                                                            "contextRegion": {"startLine": 8,
+                                                                              "snippet": {"text": "  foo ();\n"}}},
+                                       "logicalLocations": [{"index": 0,
+                                                             "fullyQualifiedName": "test_nesting"}]}],
+                        "relatedLocations": [{"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "child 0"},
+                                              "properties": {"nestingLevel": 1}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 0 0"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 0 1"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 0 2"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "child 1"},
+                                              "properties": {"nestingLevel": 1}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 1 0"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 1 1"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 1 2"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "child 2"},
+                                              "properties": {"nestingLevel": 1}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 2 0"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 2 1"},
+                                              "properties": {"nestingLevel": 2}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "diagnostic-test-nesting-sarif.c"},
+                                                                   "region": {"startLine": 8,
+                                                                              "startColumn": 3,
+                                                                              "endColumn": 9},
+                                                                   "contextRegion": {"startLine": 8,
+                                                                                     "snippet": {"text": "  foo ();\n"}}},
+                                              "message": {"text": "grandchild 2 2"},
+                                              "properties": {"nestingLevel": 2}}]}],
+           "logicalLocations": [{"name": "test_nesting",
+                                 "fullyQualifiedName": "test_nesting",
+                                 "decoratedName": "test_nesting",
+                                 "kind": "function",
+                                 "index": 0}]}]}
+
+/* For now, we don't have a way of enabling showing the nesting
+   on the default text output.  However we do test the nesting
+   in the SARIF and HTML outputs below.  */
+/* { dg-begin-multiline-output "" }
+In function 'test_nesting':
+diagnostic-test-nesting-sarif.c:8:3: error: top-level error
+    8 | }
+      |   ^     
+diagnostic-test-nesting-sarif.c:8:3: note: child 0
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 0 0
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 0 1
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 0 2
+diagnostic-test-nesting-sarif.c:8:3: note: child 1
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 1 0
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 1 1
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 1 2
+diagnostic-test-nesting-sarif.c:8:3: note: child 2
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 2 0
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 2 1
+diagnostic-test-nesting-sarif.c:8:3: note: grandchild 2 2
+   { dg-end-multiline-output "" } */
+
+/* Use a Python script to verify various properties about the *generated*
+   .sarif file:
+   { dg-final { run-sarif-pytest nested-diagnostics-1.roundtrip "../gcc.dg/plugin/diagnostic-test-nesting-sarif.py" } } */
+
+/* Use a Python script to verify various properties about the generated
+   .html file:
+   { dg-final { run-html-pytest nested-diagnostics-1.sarif "../gcc.dg/plugin/diagnostic-test-nesting-html.py" } } */

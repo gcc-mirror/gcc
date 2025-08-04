@@ -58,6 +58,13 @@ private_diagnostic_execution_path_add_event_3 (diagnostic_execution_path *path,
   LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (5)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (6);
 
+/* Entrypoint added in LIBGDIAGNOSTICS_ABI_5.  */
+
+extern void
+private_diagnostic_set_nesting_level (diagnostic *diag,
+				      int nesting_level)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
 } // extern "C"
 
 #endif  /* LIBGDIAGNOSTICS_PRIVATE_H  */

@@ -116,6 +116,7 @@ set plugin_test_list [list \
 	  diagnostic-test-nesting-text-indented.c \
 	  diagnostic-test-nesting-text-indented-show-levels.c \
 	  diagnostic-test-nesting-text-indented-unicode.c \
+	  diagnostic-test-nesting-html.c \
 	  diagnostic-test-nesting-sarif.c } \
     { diagnostic_plugin_test_paths.cc \
 	  diagnostic-test-paths-1.c \

@@ -93,6 +93,11 @@ static const char *const usage_msg = (
 "\n"
 "  --usage\n"
 "     Print this message and exit.\n"
+"\n"
+"Options for maintainers:\n"
+"\n"
+"  -fdebug-physical-locations\n"
+"    Dump debugging information about physical locations to stderr.\n"
 "\n");
 
 static void
@@ -182,7 +187,11 @@ parse_options (int argc, char **argv,
 	  print_version ();
 	  exit (0);
 	}
-
+      else if (strcmp (option, "-fdebug-physical-locations") == 0)
+	{
+	  opts.m_replay_opts.m_debug_physical_locations = true;
+	  handled = true;
+	}
       if (!handled)
 	{
 	  if (option[0] == '-')
@@ -245,6 +254,8 @@ main (int argc, char **argv)
 	  note.finish ("about to replay %qs...", filename);
 	}
       libgdiagnostics::manager playback_mgr;
+      playback_mgr.set_debug_physical_locations
+	(opts.m_replay_opts.m_debug_physical_locations);
       playback_mgr.add_text_sink (stderr,
 				  opts.m_replay_opts.m_diagnostics_colorize);
       for (auto spec : opts.m_extra_output_specs)

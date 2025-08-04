@@ -301,6 +301,7 @@ public:
 
   void push_nesting_level ();
   void pop_nesting_level ();
+  void set_nesting_level (int new_level);
 
   bool warning_enabled_at (location_t loc, option_id opt_id);
 

@@ -66,6 +66,7 @@ main ()
       |                        ~~~~~ 
    23 |                        "bar"
       |                        ~~~~~^
+      |                             ,
    24 |                        "baz"};
       |                        ~~~~~ 
    { dg-end-multiline-output "" } */

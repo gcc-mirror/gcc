@@ -141,3 +141,11 @@ LIBGDIAGNOSTICS_ABI_4 {
     # Private hook used by sarif-replay
     private_diagnostic_execution_path_add_event_3;
 } LIBGDIAGNOSTICS_ABI_3;
+
+LIBGDIAGNOSTICS_ABI_5 {
+  global:
+    diagnostic_manager_set_debug_physical_locations;
+
+    # Private hook used by sarif-replay
+    private_diagnostic_set_nesting_level;
+} LIBGDIAGNOSTICS_ABI_4;

@@ -1682,6 +1682,12 @@ context::pop_nesting_level ()
 }
 
 void
+context::set_nesting_level (int new_level)
+{
+  m_diagnostic_groups.m_diagnostic_nesting_level = new_level;
+}
+
+void
 sink::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*sprinter:\n", indent, "");
