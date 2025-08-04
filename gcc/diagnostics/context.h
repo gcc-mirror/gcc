@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/option-id-manager.h"
 #include "diagnostics/context-options.h"
 #include "diagnostics/source-printing-options.h"
+#include "diagnostics/counters.h"
 
 namespace diagnostics {
 
@@ -213,28 +214,6 @@ private:
   /* Other data copied from context.  */
   text_art::theme *m_diagram_theme;
   enum diagnostics_escape_format m_escape_format;
-};
-
-/* A collection of counters of diagnostics, per-kind
-   (e.g. "3 errors and 1 warning"), for use by both context
-   and by diagnostics::buffer.  */
-
-struct counters
-{
-  counters ();
-
-  void dump (FILE *out, int indent) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
-
-  int get_count (enum kind kind) const
-  {
-    return m_count_for_kind[static_cast<size_t> (kind)];
-  }
-
-  void move_to (counters &dest);
-  void clear ();
-
-  int m_count_for_kind[static_cast<size_t> (kind::last_diagnostic_kind)];
 };
 
 /* This class encapsulates the state of the diagnostics subsystem
