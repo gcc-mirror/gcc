@@ -1078,3 +1078,9 @@
 (define_predicate "aarch64_maskload_else_operand"
   (and (match_code "const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+;; Check for a VNx16BI predicate that is a canonical PTRUE for the given
+;; predicate mode.
+(define_special_predicate "aarch64_ptrue_all_operand"
+  (and (match_code "const_vector")
+       (match_test "aarch64_ptrue_all_mode (op) == mode")))

@@ -6069,9 +6069,9 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
 				 unsigned int vl)
 {
   rtx limit = force_reg (DImode, gen_int_mode (vl, DImode));
-  target = aarch64_target_reg (target, mode);
-  emit_insn (gen_while (UNSPEC_WHILELO, DImode, mode,
-			target, const0_rtx, limit));
+  target = aarch64_target_reg (target, VNx16BImode);
+  emit_insn (gen_aarch64_sve_while_acle (UNSPEC_WHILELO, DImode, mode,
+					 target, const0_rtx, limit));
   return target;
 }
 

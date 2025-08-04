@@ -838,7 +838,8 @@ public:
 
     machine_mode pred_mode = e.vector_mode (0);
     scalar_mode reg_mode = GET_MODE_INNER (e.vector_mode (1));
-    return e.use_exact_insn (code_for_while (unspec, reg_mode, pred_mode));
+    auto icode = code_for_aarch64_sve_while_acle (unspec, reg_mode, pred_mode);
+    return e.use_exact_insn (icode);
   }
 
   /* The unspec codes associated with signed and unsigned operations

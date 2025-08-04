@@ -8584,6 +8584,58 @@
   "while<cmp_op>\t%0.<PRED_ALL:Vetype>, %<w>1, %<w>2"
 )
 
+;; Likewise, but yield a VNx16BI result regardless of the element width.
+;; The .b case is equivalent to the above.
+(define_expand "@aarch64_sve_while_<while_optab_cmp><GPI:mode><VNx16BI_ONLY:mode>_acle"
+  [(parallel
+     [(set (match_operand:VNx16BI_ONLY 0 "register_operand")
+	   (unspec:VNx16BI_ONLY
+	     [(const_int SVE_WHILE_B)
+	      (match_operand:GPI 1 "aarch64_reg_or_zero")
+	      (match_operand:GPI 2 "aarch64_reg_or_zero")]
+	     SVE_WHILE))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+)
+
+;; For wider elements, bitcast the predicate result to a VNx16BI and use
+;; an (and ...) to indicate that only every second, fourth, or eighth bit
+;; is set.
+(define_expand "@aarch64_sve_while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle"
+  [(parallel
+     [(set (match_operand:VNx16BI 0 "register_operand")
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:PRED_HSD
+		 [(const_int SVE_WHILE_B)
+		  (match_operand:GPI 1 "aarch64_reg_or_zero")
+		  (match_operand:GPI 2 "aarch64_reg_or_zero")]
+		 SVE_WHILE)
+	       0)
+	     (match_dup 3)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+  {
+    operands[3] = aarch64_ptrue_all (<data_bytes>);
+  }
+)
+
+(define_insn "*aarch64_sve_while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:PRED_HSD
+	      [(const_int SVE_WHILE_B)
+	       (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	       (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
+	      SVE_WHILE)
+	    0)
+	  (match_operand:PRED_HSD 3 "aarch64_ptrue_all_operand")))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE"
+  "while<cmp_op>\t%0.<PRED_HSD:Vetype>, %<w>1, %<w>2"
+)
+
 ;; The WHILE instructions set the flags in the same way as a PTEST with
 ;; a PTRUE GP.  Handle the case in which both results are useful.  The GP
 ;; operands to the PTEST aren't needed, so we allow them to be anything.
@@ -8612,6 +8664,38 @@
   {
     operands[3] = CONSTM1_RTX (VNx16BImode);
     operands[4] = CONSTM1_RTX (<PRED_ALL:MODE>mode);
+  }
+)
+
+(define_insn_and_rewrite "*while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand 3)
+	   (match_operand 4)
+	   (const_int SVE_KNOWN_PTRUE)
+	   (unspec:PRED_HSD
+	     [(const_int SVE_WHILE_B)
+	      (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	      (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
+	     SVE_WHILE)]
+	  UNSPEC_PTEST))
+   (set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:PRED_HSD [(const_int SVE_WHILE_B)
+			      (match_dup 1)
+			      (match_dup 2)]
+			     SVE_WHILE)
+	    0)
+	  (match_operand:PRED_HSD 5 "aarch64_ptrue_all_operand")))]
+  "TARGET_SVE"
+  "while<cmp_op>\t%0.<PRED_HSD:Vetype>, %<w>1, %<w>2"
+  ;; Force the compiler to drop the unused predicate operand, so that we
+  ;; don't have an unnecessary PTRUE.
+  "&& (!CONSTANT_P (operands[3]) || !CONSTANT_P (operands[4]))"
+  {
+    operands[3] = CONSTM1_RTX (VNx16BImode);
+    operands[4] = CONSTM1_RTX (<PRED_HSD:MODE>mode);
   }
 )
 

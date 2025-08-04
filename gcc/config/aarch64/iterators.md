@@ -455,6 +455,7 @@
 (define_mode_iterator VCVTFPM [V4HF V8HF V4SF])
 
 ;; Iterators for single modes, for "@" patterns.
+(define_mode_iterator VNx16BI_ONLY [VNx16BI])
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx16SI_ONLY [VNx16SI])
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
