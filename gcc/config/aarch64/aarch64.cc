@@ -6752,6 +6752,27 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
 			       dest, ptrue, src));
 }
 
+/* Set predicate register DEST such that every element has the scalar
+   boolean value in SRC, with any nonzero source counting as "true".
+   MODE is a MODE_VECTOR_BOOL that determines the element size;
+   DEST can have this mode or VNx16BImode.  In the latter case,
+   the upper bits of each element are defined to be zero, as for
+   the .H, .S, and .D forms of PTRUE.  */
+
+void
+aarch64_emit_sve_pred_vec_duplicate (machine_mode mode, rtx dest, rtx src)
+{
+  rtx tmp = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (tmp, gen_lowpart (DImode, src),
+			  gen_int_mode (63, DImode)));
+  if (GET_MODE (dest) == VNx16BImode)
+    emit_insn (gen_aarch64_sve_while_acle (UNSPEC_WHILELO, DImode, mode,
+					   dest, const0_rtx, tmp));
+  else
+    emit_insn (gen_while (UNSPEC_WHILELO, DImode, mode,
+			  dest, const0_rtx, tmp));
+}
+
 static bool
 aarch64_function_ok_for_sibcall (tree, tree exp)
 {

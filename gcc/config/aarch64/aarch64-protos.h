@@ -1039,6 +1039,7 @@ void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);
 bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);
 rtx aarch64_replace_reg_mode (rtx, machine_mode);
 void aarch64_split_sve_subreg_move (rtx, rtx, rtx);
+void aarch64_emit_sve_pred_vec_duplicate (machine_mode, rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_decompose_vec_struct_index (machine_mode, rtx *, rtx *, bool);
 void aarch64_expand_vector_init (rtx, rtx);

@@ -2990,10 +2990,7 @@
 	(vec_duplicate:PRED_ALL (match_operand:QI 1 "register_operand")))]
   "TARGET_SVE"
   {
-    rtx tmp = gen_reg_rtx (DImode);
-    rtx op1 = gen_lowpart (DImode, operands[1]);
-    emit_insn (gen_ashldi3 (tmp, op1, gen_int_mode (63, DImode)));
-    emit_insn (gen_while_ultdi<mode> (operands[0], const0_rtx, tmp));
+    aarch64_emit_sve_pred_vec_duplicate (<MODE>mode, operands[0], operands[1]);
     DONE;
   }
 )

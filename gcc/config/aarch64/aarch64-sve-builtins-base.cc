@@ -1050,6 +1050,23 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    machine_mode mode = e.vector_mode (0);
+    if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+      {
+	gcc_assert (e.pred == PRED_none);
+
+	rtx src = e.args[0];
+	if (GET_CODE (src) == CONST_INT)
+	  return (src == const0_rtx
+		  ? CONST0_RTX (VNx16BImode)
+		  : aarch64_ptrue_all (e.type_suffix (0).element_bytes));
+
+	rtx dest = e.get_reg_target ();
+	src = force_reg (GET_MODE (src), src);
+	aarch64_emit_sve_pred_vec_duplicate (mode, dest, src);
+	return dest;
+      }
+
     if (e.pred == PRED_none || e.pred == PRED_x)
       /* There's no benefit to using predicated instructions for _x here.  */
       return e.use_unpred_insn (e.direct_optab_handler (vec_duplicate_optab));
@@ -1058,7 +1075,6 @@ public:
        the duplicate of the function argument and the "false" value
        is the value of inactive lanes.  */
     insn_code icode;
-    machine_mode mode = e.vector_mode (0);
     if (valid_for_const_vector_p (GET_MODE_INNER (mode), e.args.last ()))
       /* Duplicate the constant to fill a vector.  The pattern optimizes
 	 various cases involving constant operands, falling back to SEL
