@@ -2758,9 +2758,6 @@ package body Sem_Ch7 is
 
       Set_Is_Tagged_Type (Id, Tagged_Present (Def));
 
-      Set_Discriminant_Constraint (Id, No_Elist);
-      Set_Stored_Constraint (Id, No_Elist);
-
       if Present (Discriminant_Specifications (N)) then
          Push_Scope (Id);
          Process_Discriminants (N);
