@@ -8620,10 +8620,55 @@
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_operand:SVE_FULL_BHSI 3 "register_operand")
+	     [(match_operand:VNx16QI_ONLY 3 "register_operand")
 	      (match_operand:VNx2DI 4 "register_operand")]
 	     SVE_COND_INT_CMP_WIDE)]
 	  UNSPEC_PRED_Z))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE"
+  {@ [ cons: =0, 1   , 2, 3, 4; attrs: pred_clobber ]
+     [ &Upa    ,  Upl,  , w, w; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.d
+     [ ?Upl    ,  0  ,  , w, w; yes                 ] ^
+     [ Upa     ,  Upl,  , w, w; no                  ] ^
+  }
+)
+
+(define_expand "@aarch64_pred_cmp<cmp_op><mode>_wide"
+  [(parallel
+     [(set (match_operand:VNx16BI 0 "register_operand")
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:<VPRED>
+		 [(match_operand:<VPRED> 1 "register_operand")
+		  (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+		  (unspec:<VPRED>
+		    [(match_operand:SVE_FULL_HSI 3 "register_operand")
+		     (match_operand:VNx2DI 4 "register_operand")]
+		    SVE_COND_INT_CMP_WIDE)]
+		 UNSPEC_PRED_Z)
+	       0)
+	     (match_dup 5)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
+)
+
+(define_insn "*aarch64_pred_cmp<cmp_op><mode>_wide"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "register_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (unspec:<VPRED>
+		 [(match_operand:SVE_FULL_HSI 3 "register_operand")
+		  (match_operand:VNx2DI 4 "register_operand")]
+		 SVE_COND_INT_CMP_WIDE)]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
   {@ [ cons: =0, 1   , 2, 3, 4; attrs: pred_clobber ]
@@ -8659,6 +8704,48 @@
 	      (match_dup 3)]
 	     SVE_COND_INT_CMP_WIDE)]
 	  UNSPEC_PRED_Z))]
+  "TARGET_SVE
+   && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
+  {@ [ cons: =0, 1   , 2, 3, 6  ; attrs: pred_clobber ]
+     [ &Upa    ,  Upl, w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+     [ ?Upl    ,  0  , w, w, Upl; yes                 ] ^
+     [ Upa     ,  Upl, w, w, Upl; no                  ] ^
+  }
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
+)
+
+(define_insn_and_rewrite "*aarch64_pred_cmp<cmp_op><mode>_wide_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
+	   (unspec:<VPRED>
+	     [(match_operand:<VPRED> 6 "register_operand")
+	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
+	      (unspec:<VPRED>
+		[(match_operand:SVE_FULL_HSI 2 "register_operand")
+		 (match_operand:VNx2DI 3 "register_operand")]
+		SVE_COND_INT_CMP_WIDE)]
+	     UNSPEC_PRED_Z)]
+	  UNSPEC_PTEST))
+   (set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_dup 6)
+	       (match_dup 7)
+	       (unspec:<VPRED>
+		 [(match_dup 2)
+		  (match_dup 3)]
+		 SVE_COND_INT_CMP_WIDE)]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 8 "aarch64_ptrue_all_operand")))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   {@ [ cons: =0, 1   , 2, 3, 6  ; attrs: pred_clobber ]
