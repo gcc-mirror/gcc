@@ -1003,7 +1003,10 @@ stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count)
   /* Ignore the final \ of invalid string literals.  */
   if (backslash_count & 1)
     {
-      cpp_error (pfile, CPP_DL_WARNING,
+      cpp_error (pfile,
+		 CPP_OPTION (pfile, cplusplus)
+		 && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26
+		 ? CPP_DL_PEDWARN : CPP_DL_WARNING,
 		 "invalid string literal, ignoring final %<\\%>");
       dest--;
     }
