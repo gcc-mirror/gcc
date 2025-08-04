@@ -497,7 +497,7 @@ public:
       {
 	bool unsigned_p = e.type_suffix (0).unsigned_p;
 	rtx_code code = get_rtx_code (m_code, unsigned_p);
-	return e.use_exact_insn (code_for_aarch64_pred_cmp (code, mode));
+	return e.use_exact_insn (code_for_aarch64_pred_cmp_acle (code, mode));
       }
 
     insn_code icode = code_for_aarch64_pred_fcm (m_unspec_for_fp, mode);
@@ -542,7 +542,7 @@ public:
 
     /* If the argument is a constant that the unwidened comparisons
        can handle directly, use them instead.  */
-    insn_code icode = code_for_aarch64_pred_cmp (code, mode);
+    insn_code icode = code_for_aarch64_pred_cmp_acle (code, mode);
     rtx op2 = unwrap_const_vec_duplicate (e.args[3]);
     if (CONSTANT_P (op2)
 	&& insn_data[icode].operand[4].predicate (op2, DImode))

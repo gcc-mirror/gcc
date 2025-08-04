@@ -8361,6 +8361,71 @@
   }
 )
 
+;; Likewise, but yield a VNx16BI result regardless of the element width.
+;; The .b case is equivalent to the above.
+(define_expand "@aarch64_pred_cmp<cmp_op><mode>_acle"
+  [(parallel
+     [(set (match_operand:<VPRED> 0 "register_operand")
+	   (unspec:<VPRED>
+	     [(match_operand:<VPRED> 1 "register_operand")
+	      (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	      (SVE_INT_CMP:<VPRED>
+		(match_operand:VNx16QI_ONLY 3 "register_operand")
+		(match_operand:VNx16QI_ONLY 4 "aarch64_sve_cmp_<sve_imm_con>_operand"))]
+	     UNSPEC_PRED_Z))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+)
+
+;; For wider elements, bitcast the predicate result to a VNx16BI and use
+;; an (and ...) to indicate that only every second, fourth, or eighth bit
+;; is set.
+(define_expand "@aarch64_pred_cmp<cmp_op><mode>_acle"
+  [(parallel
+     [(set (match_operand:VNx16BI 0 "register_operand")
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:<VPRED>
+		 [(match_operand:<VPRED> 1 "register_operand")
+		  (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+		  (SVE_INT_CMP:<VPRED>
+		    (match_operand:SVE_FULL_HSDI 3 "register_operand")
+		    (match_operand:SVE_FULL_HSDI 4 "aarch64_sve_cmp_<sve_imm_con>_operand"))]
+		 UNSPEC_PRED_Z)
+	       0)
+	     (match_dup 5)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
+)
+
+(define_insn "*aarch64_pred_cmp<cmp_op><mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "register_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (SVE_INT_CMP:<VPRED>
+		 (match_operand:SVE_FULL_HSDI 3 "register_operand")
+		 (match_operand:SVE_FULL_HSDI 4 "aarch64_sve_cmp_<sve_imm_con>_operand"))]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE"
+  {@ [ cons: =0 , 1  , 3 , 4            ; attrs: pred_clobber ]
+     [ &Upa     , Upl, w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
+     [ ?Upl     , 0  , w , <sve_imm_con>; yes                 ] ^
+     [ Upa      , Upl, w , <sve_imm_con>; no                  ] ^
+     [ &Upa     , Upl, w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+     [ ?Upl     , 0  , w , w            ; yes                 ] ^
+     [ Upa      , Upl, w , w            ; no                  ] ^
+  }
+)
+
 ;; Predicated integer comparisons in which both the flag and predicate
 ;; results are interesting.
 (define_insn_and_rewrite "*cmp<cmp_op><mode>_cc"
@@ -8385,6 +8450,49 @@
 	     (match_dup 2)
 	     (match_dup 3))]
 	  UNSPEC_PRED_Z))]
+  "TARGET_SVE
+   && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
+  {@ [ cons: =0 , 1   , 2 , 3            ; attrs: pred_clobber ]
+     [ &Upa     ,  Upl, w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
+     [ ?Upl     ,  0  , w , <sve_imm_con>; yes                 ] ^
+     [ Upa      ,  Upl, w , <sve_imm_con>; no                  ] ^
+     [ &Upa     ,  Upl, w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+     [ ?Upl     ,  0  , w , w            ; yes                 ] ^
+     [ Upa      ,  Upl, w , w            ; no                  ] ^
+  }
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
+)
+
+(define_insn_and_rewrite "*cmp<cmp_op><mode>_acle_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
+	   (unspec:<VPRED>
+	     [(match_operand 6)
+	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
+	      (SVE_INT_CMP:<VPRED>
+		(match_operand:SVE_FULL_HSDI 2 "register_operand")
+		(match_operand:SVE_FULL_HSDI 3 "aarch64_sve_cmp_<sve_imm_con>_operand"))]
+	     UNSPEC_PRED_Z)]
+	  UNSPEC_PTEST))
+   (set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_dup 6)
+	       (match_dup 7)
+	       (SVE_INT_CMP:<VPRED>
+		 (match_dup 2)
+		 (match_dup 3))]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 8 "aarch64_ptrue_all_operand")))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   {@ [ cons: =0 , 1   , 2 , 3            ; attrs: pred_clobber ]
@@ -8465,6 +8573,44 @@
 		(match_dup 3))]
 	     UNSPEC_PRED_Z))
       (clobber (reg:CC_NZC CC_REGNUM))])]
+)
+
+(define_insn_and_split "*cmp<cmp_op><mode>_acle_and"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa, Upa")
+	(and:VNx16BI
+	  (and:VNx16BI
+	    (subreg:VNx16BI
+	      (unspec:<VPRED>
+		[(match_operand 4)
+		 (const_int SVE_KNOWN_PTRUE)
+		 (SVE_INT_CMP:<VPRED>
+		   (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w")
+		   (match_operand:SVE_FULL_HSDI 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+		UNSPEC_PRED_Z)
+	      0)
+	    (match_operand:VNx16BI 1 "register_operand" "Upl, Upl"))
+          (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(parallel
+     [(set (match_dup 0)
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:<VPRED>
+		 [(match_dup 1)
+		  (const_int SVE_MAYBE_NOT_PTRUE)
+		  (SVE_INT_CMP:<VPRED>
+		    (match_dup 2)
+		    (match_dup 3))]
+		 UNSPEC_PRED_Z)
+	       0)
+	     (match_dup 5)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  {
+    operands[1] = gen_lowpart (<VPRED>mode, operands[1]);
+  }
 )
 
 ;; Predicated integer wide comparisons.
