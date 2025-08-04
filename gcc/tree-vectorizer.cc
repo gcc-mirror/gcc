@@ -733,7 +733,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   else
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
-  STMT_SLP_TYPE (res) = loop_vect;
+  STMT_SLP_TYPE (res) = not_vect;
 
   /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
   res->dr_aux.misalignment = DR_MISALIGNMENT_UNINITIALIZED;

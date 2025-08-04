@@ -1288,24 +1288,11 @@ enum vect_relevant {
   vect_used_in_scope
 };
 
-/* The type of vectorization that can be applied to the stmt: regular loop-based
-   vectorization; pure SLP - the stmt is a part of SLP instances and does not
-   have uses outside SLP instances; or hybrid SLP and loop-based - the stmt is
-   a part of SLP instance and also must be loop-based vectorized, since it has
-   uses outside SLP sequences.
-
-   In the loop context the meanings of pure and hybrid SLP are slightly
-   different. By saying that pure SLP is applied to the loop, we mean that we
-   exploit only intra-iteration parallelism in the loop; i.e., the loop can be
-   vectorized without doing any conceptual unrolling, cause we don't pack
-   together stmts from different iterations, only within a single iteration.
-   Loop hybrid SLP means that we exploit both intra-iteration and
-   inter-iteration parallelism (e.g., number of elements in the vector is 4
-   and the slp-group-size is 2, in which case we don't have enough parallelism
-   within an iteration, so we obtain the rest of the parallelism from subsequent
-   iterations by unrolling the loop by 2).  */
+/* The type of vectorization.  pure_slp means the stmt is covered by the
+   SLP graph, not_vect means it is not.  This is mostly used by BB
+   vectorization.  */
 enum slp_vect_type {
-  loop_vect = 0,
+  not_vect = 0,
   pure_slp,
   hybrid
 };
@@ -1655,7 +1642,6 @@ struct gather_scatter_info {
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 
-#define HYBRID_SLP_STMT(S)                ((S)->slp_type == hybrid)
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
