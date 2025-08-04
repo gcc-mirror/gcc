@@ -277,15 +277,14 @@ export namespace std
     using std::ranges::shuffle;
   }
   using std::shift_left;
+  using std::shift_right;
+#if __cpp_lib_shift >= 202202L // >= C++23
   namespace ranges
   {
     using std::ranges::shift_left;
-  }
-  using std::shift_right;
-  namespace ranges
-  {
     using std::ranges::shift_right;
   }
+#endif
   using std::sort;
   namespace ranges
   {
@@ -500,7 +499,9 @@ export namespace std
     using ranges::fold_left;
     using ranges::fold_left_first;
     using ranges::fold_left_first_with_iter;
+    using ranges::fold_left_first_with_iter_result;
     using ranges::fold_left_with_iter;
+    using ranges::fold_left_with_iter_result;
     using ranges::fold_right;
     using ranges::fold_right_last;
     using ranges::in_value_result;
@@ -672,6 +673,9 @@ export namespace std
   using std::popcount;
   using std::rotl;
   using std::rotr;
+#if __cpp_lib_byteswap // >= C++23
+  using std::byteswap;
+#endif
 }
 
 // 22.9 <bitset>
@@ -1693,6 +1697,8 @@ export namespace std
   {
     using std::ranges::advance;
     using std::ranges::distance;
+    using std::ranges::iter_move;
+    using std::ranges::iter_swap;
     using std::ranges::next;
     using std::ranges::prev;
   }
@@ -1746,6 +1752,9 @@ export namespace std
   using std::const_sentinel;
   using std::make_const_iterator;
   using std::make_const_sentinel;
+#endif
+#if __glibcxx_algorithm_default_value_type // >= C++26
+  using std::projected_value_t;
 #endif
 }
 
@@ -1973,6 +1982,8 @@ export namespace std
 #if __cpp_lib_out_ptr
   using std::out_ptr;
   using std::inout_ptr;
+  using std::out_ptr_t;
+  using std::inout_ptr_t;
 #endif
 #if __cpp_lib_indirect
   using std::indirect;
@@ -2101,7 +2112,11 @@ export namespace std
   using std::lcm;
   using std::midpoint;
 #if __cpp_lib_ranges_iota
-  namespace ranges { using ranges::iota; }
+  namespace ranges
+  {
+    using ranges::iota;
+    using ranges::iota_result;
+  }
 #endif
 #if __cpp_lib_saturation_arithmetic
   using std::add_sat;
@@ -2512,6 +2527,43 @@ export namespace std
     using std::regex_constants::operator|;
     using std::regex_constants::operator|=;
     using std::regex_constants::operator~;
+    using std::regex_constants::awk;
+    using std::regex_constants::basic;
+    using std::regex_constants::collate;
+    using std::regex_constants::ECMAScript;
+    using std::regex_constants::egrep;
+    using std::regex_constants::extended;
+    using std::regex_constants::grep;
+    using std::regex_constants::icase;
+    using std::regex_constants::multiline;
+    using std::regex_constants::nosubs;
+    using std::regex_constants::optimize;
+    using std::regex_constants::format_default;
+    using std::regex_constants::format_first_only;
+    using std::regex_constants::format_no_copy;
+    using std::regex_constants::format_sed;
+    using std::regex_constants::match_any;
+    using std::regex_constants::match_continuous;
+    using std::regex_constants::match_default;
+    using std::regex_constants::match_not_bol;
+    using std::regex_constants::match_not_bow;
+    using std::regex_constants::match_not_eol;
+    using std::regex_constants::match_not_eow;
+    using std::regex_constants::match_not_null;
+    using std::regex_constants::match_prev_avail;
+    using std::regex_constants::error_backref;
+    using std::regex_constants::error_badbrace;
+    using std::regex_constants::error_badrepeat;
+    using std::regex_constants::error_brace;
+    using std::regex_constants::error_brack;
+    using std::regex_constants::error_collate;
+    using std::regex_constants::error_complexity;
+    using std::regex_constants::error_ctype;
+    using std::regex_constants::error_escape;
+    using std::regex_constants::error_paren;
+    using std::regex_constants::error_range;
+    using std::regex_constants::error_space;
+    using std::regex_constants::error_stack;
   }
   using std::basic_regex;
   using std::csub_match;
@@ -3152,6 +3204,10 @@ export namespace std
   using std::is_pointer_interconvertible_base_of;
   using std::is_pointer_interconvertible_base_of_v;
   using std::is_pointer_interconvertible_with_class;
+#endif
+#if __cpp_lib_is_scoped_enum
+  using std::is_scoped_enum;
+  using std::is_scoped_enum_v;
 #endif
 }
 
