@@ -8617,7 +8617,7 @@
 (define_insn "@aarch64_pred_cmp<cmp_op><mode>_wide"
   [(set (match_operand:<VPRED> 0 "register_operand")
 	(unspec:<VPRED>
-	  [(match_operand:VNx16BI 1 "register_operand")
+	  [(match_operand:<VPRED> 1 "register_operand")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
 	     [(match_operand:SVE_FULL_BHSI 3 "register_operand")
@@ -8642,7 +8642,7 @@
 	   (match_operand 4)
 	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_operand:VNx16BI 6 "register_operand")
+	     [(match_operand:<VPRED> 6 "register_operand")
 	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (unspec:<VPRED>
 		[(match_operand:SVE_FULL_BHSI 2 "register_operand")
@@ -8677,7 +8677,7 @@
 	   (match_operand 4)
 	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_operand:VNx16BI 6 "register_operand")
+	     [(match_operand:<VPRED> 6 "register_operand")
 	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (unspec:<VPRED>
 		[(match_operand:SVE_FULL_BHSI 2 "register_operand")
