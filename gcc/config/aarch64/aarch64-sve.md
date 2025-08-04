@@ -9538,18 +9538,39 @@
   "<perm_insn>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
 )
 
-;; Special purpose permute used by the predicate generation instructions.
-;; Unlike the normal permute patterns, these instructions operate on VNx16BI
-;; regardless of the element size, so that all input and output bits are
-;; well-defined.  Operand 3 then indicates the size of the permute.
-(define_insn "@aarch64_sve_trn1_conv<mode>"
+;; Special-purpose permutes used by the ACLE intrinsics and predicate
+;; generation instructions.  Unlike the normal permute patterns, these
+;; instructions operate on VNx16BI regardless of the element size, so that
+;; all input and output bits are well-defined.  Operand 3 then indicates
+;; the size of the permute.
+;;
+;; To make generation easier, this pattern embeds the permute type as the
+;; fourth operand to the unspec.  On the one hand, this avoids overloading
+;; unspecs like UNSPEC_ZIP1 to represent two different operations.  On the
+;; other hand, it avoids having a separate unspec for each variant, and
+;; having to map from one kind of unspec to the other.
+(define_expand "@aarch64_sve_<perm_insn><mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(unspec:VNx16BI [(match_operand:VNx16BI 1 "register_operand")
+			 (match_operand:VNx16BI 2 "register_operand")
+			 (match_dup:PRED_ALL 3)
+			 (const_int PERMUTE)]
+			UNSPEC_PERMUTE_PRED))]
+  "TARGET_SVE"
+  {
+    operands[3] = CONST0_RTX (<MODE>mode);
+  }
+)
+
+(define_insn "*aarch64_sve_<perm_insn><mode>_acle"
   [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
 	(unspec:VNx16BI [(match_operand:VNx16BI 1 "register_operand" "Upa")
 			 (match_operand:VNx16BI 2 "register_operand" "Upa")
-			 (match_operand:PRED_ALL 3 "aarch64_simd_imm_zero")]
-			UNSPEC_TRN1_CONV))]
+			 (match_operand:PRED_ALL 3 "aarch64_simd_imm_zero")
+			 (const_int PERMUTE)]
+			UNSPEC_PERMUTE_PRED))]
   "TARGET_SVE"
-  "trn1\t%0.<PRED_ALL:Vetype>, %1.<PRED_ALL:Vetype>, %2.<PRED_ALL:Vetype>"
+  "<perm_insn>\t%0.<PRED_ALL:Vetype>, %1.<PRED_ALL:Vetype>, %2.<PRED_ALL:Vetype>"
 )
 
 ;; =========================================================================

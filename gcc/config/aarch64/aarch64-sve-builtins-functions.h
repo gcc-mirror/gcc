@@ -630,7 +630,10 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = code_for_aarch64_sve (m_unspec, e.vector_mode (0));
+    auto mode = e.vector_mode (0);
+    insn_code icode = (e.type_suffix (0).bool_p
+		       ? code_for_aarch64_sve_acle (m_unspec, mode)
+		       : code_for_aarch64_sve (m_unspec, mode));
     return e.use_exact_insn (icode);
   }
 
