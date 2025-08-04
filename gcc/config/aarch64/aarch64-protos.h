@@ -1020,7 +1020,7 @@ void aarch64_err_no_fpadvsimd (machine_mode);
 void aarch64_expand_epilogue (rtx_call_insn *);
 rtx aarch64_ptrue_all (unsigned int);
 opt_machine_mode aarch64_ptrue_all_mode (rtx);
-rtx aarch64_convert_sve_data_to_pred (rtx, machine_mode, rtx);
+rtx aarch64_convert_sve_data_to_pred (rtx, rtx);
 rtx aarch64_expand_sve_dupq (rtx, machine_mode, rtx);
 void aarch64_expand_mov_immediate (rtx, rtx);
 rtx aarch64_stack_protect_canary_mem (machine_mode, rtx, aarch64_salt_type);

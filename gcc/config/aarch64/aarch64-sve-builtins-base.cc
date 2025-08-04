@@ -1215,8 +1215,7 @@ public:
     if (mode != e.vector_mode (0))
       {
 	rtx data_dupq = aarch64_expand_sve_dupq (NULL, mode, vq_reg);
-	return aarch64_convert_sve_data_to_pred (e.possible_target,
-						 e.vector_mode (0), data_dupq);
+	return aarch64_convert_sve_data_to_pred (e.possible_target, data_dupq);
       }
 
     return aarch64_expand_sve_dupq (e.possible_target, mode, vq_reg);

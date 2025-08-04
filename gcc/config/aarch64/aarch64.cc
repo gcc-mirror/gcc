@@ -3962,16 +3962,24 @@ aarch64_sve_emit_masked_fp_pred (machine_mode data_mode, rtx pred)
 
 /* Emit a comparison CMP between OP0 and OP1, both of which have mode
    DATA_MODE, and return the result in a predicate of mode PRED_MODE.
-   Use TARGET as the target register if nonnull and convenient.  */
+   Use TARGET as the target register if nonnull and convenient.
+
+   PRED_MODE can be either VNx16BI or the natural predicate mode for
+   DATA_MODE.  */
 
 static rtx
 aarch64_sve_emit_int_cmp (rtx target, machine_mode pred_mode, rtx_code cmp,
 			  machine_mode data_mode, rtx op1, rtx op2)
 {
-  insn_code icode = code_for_aarch64_pred_cmp (cmp, data_mode);
+  auto src_pred_mode = aarch64_sve_pred_mode (data_mode);
+  insn_code icode;
+  if (known_eq (GET_MODE_NUNITS (pred_mode), GET_MODE_NUNITS (data_mode)))
+    icode = code_for_aarch64_pred_cmp (cmp, data_mode);
+  else
+    icode = code_for_aarch64_pred_cmp_acle (cmp, data_mode);
   expand_operand ops[5];
   create_output_operand (&ops[0], target, pred_mode);
-  create_input_operand (&ops[1], CONSTM1_RTX (pred_mode), pred_mode);
+  create_input_operand (&ops[1], CONSTM1_RTX (src_pred_mode), src_pred_mode);
   create_integer_operand (&ops[2], SVE_KNOWN_PTRUE);
   create_input_operand (&ops[3], op1, data_mode);
   create_input_operand (&ops[4], op2, data_mode);
@@ -3979,15 +3987,14 @@ aarch64_sve_emit_int_cmp (rtx target, machine_mode pred_mode, rtx_code cmp,
   return ops[0].value;
 }
 
-/* Use a comparison to convert integer vector SRC into MODE, which is
-   the corresponding SVE predicate mode.  Use TARGET for the result
-   if it's nonnull and convenient.  */
+/* Use a comparison to convert integer vector SRC into VNx16BI.
+   Use TARGET for the result if it's nonnull and convenient.  */
 
 rtx
-aarch64_convert_sve_data_to_pred (rtx target, machine_mode mode, rtx src)
+aarch64_convert_sve_data_to_pred (rtx target, rtx src)
 {
   machine_mode src_mode = GET_MODE (src);
-  return aarch64_sve_emit_int_cmp (target, mode, NE, src_mode,
+  return aarch64_sve_emit_int_cmp (target, VNx16BImode, NE, src_mode,
 				   src, CONST0_RTX (src_mode));
 }
 
@@ -6299,8 +6306,7 @@ aarch64_expand_sve_const_pred (rtx target, rtx_vector_builder &builder)
   for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
     int_builder.quick_push (INTVAL (builder.elt (i))
 			    ? constm1_rtx : const0_rtx);
-  return aarch64_convert_sve_data_to_pred (target, VNx16BImode,
-					   int_builder.build ());
+  return aarch64_convert_sve_data_to_pred (target, int_builder.build ());
 }
 
 /* Set DEST to immediate IMM.  */
