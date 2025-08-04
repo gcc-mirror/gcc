@@ -14460,6 +14460,15 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 	    *cost += extra_cost->alu.arith * 2;
 	  return true;
 	}
+
+      if (TARGET_CMPBR)
+	{
+	  *cost += rtx_cost (inner, cmpmode, cmpcode, 0, speed);
+	  if ((cmpmode != SImode && cmpmode != DImode)
+	      || !aarch64_cb_rhs (cmpcode, comparator))
+	    *cost += rtx_cost (comparator, cmpmode, cmpcode, 1, speed);
+	  return true;
+	}
     }
   else if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
     {
