@@ -733,6 +733,14 @@ ftms = {
 };
 
 ftms = {
+  name = is_sufficiently_aligned;
+  values = {
+    v = 202411;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = atomic_flag_test;
   values = {
     v = 201907;

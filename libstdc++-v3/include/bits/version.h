@@ -815,6 +815,16 @@
 #endif /* !defined(__cpp_lib_assume_aligned) && defined(__glibcxx_want_assume_aligned) */
 #undef __glibcxx_want_assume_aligned
 
+#if !defined(__cpp_lib_is_sufficiently_aligned)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_is_sufficiently_aligned 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_is_sufficiently_aligned)
+#   define __cpp_lib_is_sufficiently_aligned 202411L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_is_sufficiently_aligned) && defined(__glibcxx_want_is_sufficiently_aligned) */
+#undef __glibcxx_want_is_sufficiently_aligned
+
 #if !defined(__cpp_lib_atomic_flag_test)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_flag_test 201907L

@@ -1881,6 +1881,9 @@ export namespace std
   using std::allocator_arg_t;
   using std::allocator_traits;
   using std::assume_aligned;
+#if __glibcxx_is_sufficiently_aligned
+  using std::is_sufficiently_aligned;
+#endif  
   using std::make_obj_using_allocator;
   using std::pointer_traits;
   using std::to_address;

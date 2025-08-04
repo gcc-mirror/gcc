@@ -10,3 +10,7 @@
 #if __cpp_lib_addressof_constexpr != 201603L
 # error "Feature-test macro __cpp_lib_addressof_constexpr has wrong value in <version>"
 #endif
+
+#if __cplusplus > 202302L && __cpp_lib_is_sufficiently_aligned != 202411L
+# error "Feature-test macro __cpp_lib_is_sufficiently_aligned has wrong value in <version>"
+#endif

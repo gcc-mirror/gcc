@@ -110,6 +110,7 @@
 #define __glibcxx_want_constexpr_memory
 #define __glibcxx_want_enable_shared_from_this
 #define __glibcxx_want_indirect
+#define __glibcxx_want_is_sufficiently_aligned
 #define __glibcxx_want_make_unique
 #define __glibcxx_want_out_ptr
 #define __glibcxx_want_parallel_algorithm
