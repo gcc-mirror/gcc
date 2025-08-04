@@ -4593,7 +4593,27 @@ function_expander::expand ()
       gcc_assert (args.last ()->mode == DImode);
       emit_move_insn (gen_rtx_REG (DImode, FPM_REGNUM), args.last ());
     }
-  return base->expand (*this);
+  rtx result = base->expand (*this);
+  if (function_returns_void_p ())
+    gcc_assert (result == const0_rtx);
+  else
+    {
+      auto expected_mode = result_mode ();
+      if (GET_MODE_CLASS (expected_mode) == MODE_INT)
+	/* Scalar integer constants don't store a mode.
+
+	   It's OK for a variable result to have a different mode from the
+	   function return type.  In particular, some functions that return int
+	   expand into instructions that have a DImode result, with all 64 bits
+	   of the DImode being well-defined (usually zero).  */
+	gcc_assert (CONST_SCALAR_INT_P (result)
+		    || GET_MODE_CLASS (GET_MODE (result)) == MODE_INT);
+      else
+	/* In other cases, the return value should have the same mode
+	   as the return type.  */
+	gcc_assert (GET_MODE (result) == expected_mode);
+    }
+  return result;
 }
 
 /* Return a structure type that contains a single field of type FIELD_TYPE.
