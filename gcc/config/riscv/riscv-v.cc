@@ -954,6 +954,26 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
   emit_vlmax_insn (icode, BINARY_OP_TAMU, ops);
 }
 
+/* Function to emit a vslide1up instruction of mode MODE with destination
+   DEST and slideup element ELT.  */
+
+rtx
+expand_slide1up (machine_mode mode, rtx dest, rtx elt)
+{
+  unsigned int unspec
+    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+  insn_code icode = code_for_pred_slide (unspec, mode);
+  /* RVV Spec 16.3.1
+     The destination vector register group for vslideup cannot overlap the
+     source vector register group, otherwise the instruction encoding
+     is reserved.  Thus, we need a new register.  */
+  rtx tmp = gen_reg_rtx (mode);
+  rtx ops[] = {tmp, dest, elt};
+  emit_vlmax_insn (icode, BINARY_OP, ops);
+  return tmp;
+}
+
+
 /* According to RVV ISA spec (16.5.1. Synthesizing vdecompress):
    https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc
 
@@ -1175,16 +1195,7 @@ expand_vector_init_trailing_same_elem (rtx target,
     {
       rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
       for (int i = nelts_reqd - trailing_ndups - 1; i >= 0; i--)
-	{
-	  unsigned int unspec
-	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-	  insn_code icode = code_for_pred_slide (unspec, mode);
-	  rtx tmp = gen_reg_rtx (mode);
-	  rtx ops[] = {tmp, dup, builder.elt (i)};
-	  emit_vlmax_insn (icode, BINARY_OP, ops);
-	  /* slide1up need source and dest to be different REG.  */
-	  dup = tmp;
-	}
+	dup = expand_slide1up (mode, dup, builder.elt (i));
 
       emit_move_insn (target, dup);
       return true;
@@ -1717,6 +1728,77 @@ expand_const_vector_stepped (rtx target, rtx src, rvv_builder *builder)
   gcc_unreachable ();
 }
 
+/* We don't actually allow this case in legitimate_constant_p but
+   the middle-end still expects us to handle it in an expander
+   (see PR121334).  This is assumed to happen very rarely so the
+   implementation is not very efficient, particularly
+   for short vectors.
+*/
+
+static void
+expand_const_vector_onestep (rtx target, rvv_builder &builder)
+{
+  machine_mode mode = GET_MODE (target);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
+  gcc_assert (builder.nelts_per_pattern () == 2);
+
+  /* We have n encoded patterns
+       {csta_0, cstb_0},
+       {csta_1, cstb_1},
+       ...
+       {csta_{n-1}, cstb_{n-1}}
+     which should become one vector:
+       {csta_0, csta_1, ..., csta_{n-1},
+	cstb_0, cstb_1, ..., cstb_{n-1},
+	...
+	cstb_0, cstb_1, ..., cstb_{n-1}}.
+
+     In order to achieve this we create a permute/gather constant
+	sel = {0, 1, ..., n - 1, 0, 1, ..., n - 1, ...}
+     and two vectors
+	va = {csta_0, csta_1, ..., csta_{n-1}},
+	vb = {cstb_0, cstb_1, ..., cstb_{n-1}}.
+
+     Then we use a VLMAX gather to "broadcast" vb and afterwards
+     overwrite the first n elements with va.  */
+
+  int n = builder.npatterns ();
+  /* { 0, 1, 2, ..., n - 1 }.  */
+  rtx vid = gen_reg_rtx (mode);
+  expand_vec_series (vid, const0_rtx, const1_rtx);
+
+  /* { 0, 1, ..., n - 1, 0, 1, ..., n - 1, ... }.  */
+  rtx sel = gen_reg_rtx (mode);
+  rtx and_ops[] = {sel, vid, GEN_INT (n)};
+  emit_vlmax_insn (code_for_pred_scalar (AND, mode), BINARY_OP, and_ops);
+
+  /* va = { ELT (0), ELT (1), ... ELT (n - 1) }.  */
+  rtx tmp1 = gen_reg_rtx (mode);
+  rtx ops1[] = {tmp1, builder.elt (0)};
+  expand_broadcast (mode, ops1);
+  for (int i = 1; i < n; i++)
+    tmp1 = expand_slide1up (mode, tmp1, builder.elt (i));
+
+  /* vb = { ELT (n), ELT (n + 1), ... ELT (2 * n - 1) }.  */
+  rtx tmp2 = gen_reg_rtx (mode);
+  rtx ops2[] = {tmp2, builder.elt (n)};
+  expand_broadcast (mode, ops2);
+  for (int i = 1; i < n; i++)
+    tmp2 = expand_slide1up (mode, tmp2, builder.elt (n + i));
+
+  /* Duplicate vb.  */
+  rtx tmp3 = gen_reg_rtx (mode);
+  emit_vlmax_gather_insn (tmp3, tmp2, sel);
+
+  /* Overwrite the first n - 1 elements with va.  */
+  rtx dest = gen_reg_rtx (mode);
+  insn_code icode = code_for_pred_mov (mode);
+  rtx ops3[] = {dest, tmp3, tmp1};
+  emit_nonvlmax_insn (icode, __MASK_OP_TUMA | UNARY_OP_P, ops3, GEN_INT (n));
+
+  emit_move_insn (target, dest);
+}
+
 static void
 expand_const_vector (rtx target, rtx src)
 {
@@ -1744,6 +1826,8 @@ expand_const_vector (rtx target, rtx src)
 
   if (CONST_VECTOR_DUPLICATE_P (src))
     return expand_const_vector_duplicate (target, &builder);
+  else if (CONST_VECTOR_NELTS_PER_PATTERN (src) == 2)
+    return expand_const_vector_onestep (target, builder);
   else if (CONST_VECTOR_STEPPED_P (src))
     return expand_const_vector_stepped (target, src, &builder);
 
@@ -2648,8 +2732,14 @@ expand_vector_init_merge_repeating_sequence (rtx target,
     = get_repeating_sequence_dup_machine_mode (builder, mask_bit_mode);
   uint64_t full_nelts = builder.full_nelts ().to_constant ();
 
+  gcc_assert (builder.nelts_per_pattern () == 1
+	      || builder.nelts_per_pattern () == 2);
+
+  rtx first
+    = builder.nelts_per_pattern () == 1 ? builder.elt (0) : builder.elt (1);
+
   /* Step 1: Broadcast the first pattern.  */
-  rtx ops[] = {target, force_reg (builder.inner_mode (), builder.elt (0))};
+  rtx ops[] = {target, force_reg (builder.inner_mode (), first)};
   expand_broadcast (builder.mode (), ops);
   /* Step 2: Merge the rest iteration of pattern.  */
   for (unsigned int i = 1; i < builder.npatterns (); i++)
@@ -2677,7 +2767,10 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       emit_move_insn (mask, gen_lowpart (mask_bit_mode, dup));
 
       /* Step 2-2: Merge pattern according to the mask.  */
-      rtx ops[] = {target, target, builder.elt (i), mask};
+      unsigned int which = i;
+      if (builder.nelts_per_pattern () == 2)
+	which = 2 * which + 1;
+      rtx ops[] = {target, target, builder.elt (which), mask};
       emit_vlmax_insn (code_for_pred_merge_scalar (GET_MODE (target)),
 			MERGE_OP, ops);
     }
@@ -4078,11 +4171,7 @@ shuffle_off_by_one_patterns (struct expand_vec_perm_d *d)
       emit_vec_extract (tmp, d->op0, gen_int_mode (nunits - 1, Pmode));
 
       /* Insert the scalar into element 0.  */
-      unsigned int unspec
-	= FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-      insn_code icode = code_for_pred_slide (unspec, d->vmode);
-      rtx ops[] = {d->target, d->op1, tmp};
-      emit_vlmax_insn (icode, BINARY_OP, ops);
+      expand_slide1up (d->vmode, d->op1, tmp);
     }
 
   return true;
