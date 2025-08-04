@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 
 opt_problem::opt_problem (const dump_location_t &loc,
 			  const char *fmt, va_list *ap)
-: m_optinfo (loc, OPTINFO_KIND_FAILURE, current_pass)
+: m_optinfo (loc, optinfo::kind::failure, current_pass)
 {
   /* We shouldn't be bothering to construct these objects if
      dumping isn't enabled.  */

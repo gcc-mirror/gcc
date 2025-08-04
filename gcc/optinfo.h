@@ -74,18 +74,6 @@ class optinfo_item;
 
 extern bool optinfo_wants_inlining_info_p ();
 
-/* The various kinds of optinfo.  */
-
-enum optinfo_kind
-{
-  OPTINFO_KIND_SUCCESS,
-  OPTINFO_KIND_FAILURE,
-  OPTINFO_KIND_NOTE,
-  OPTINFO_KIND_SCOPE
-};
-
-extern const char *optinfo_kind_to_string (enum optinfo_kind kind);
-
 class dump_context;
 
 /* A bundle of information describing part of an optimization.  */
@@ -95,10 +83,19 @@ class optinfo
   friend class dump_context;
 
  public:
+  /* The various kinds of optinfo.  */
+  enum class kind
+  {
+    success,
+    failure,
+    note,
+    scope
+  };
+
   optinfo (const dump_location_t &loc,
-	   enum optinfo_kind kind,
+	   enum kind kind_,
 	   opt_pass *pass)
-  : m_loc (loc), m_kind (kind), m_pass (pass), m_items ()
+  : m_loc (loc), m_kind (kind_), m_pass (pass), m_items ()
   {}
   ~optinfo ();
 
@@ -111,7 +108,7 @@ class optinfo
   const dump_impl_location_t &
   get_impl_location () const { return m_loc.get_impl_location (); }
 
-  enum optinfo_kind get_kind () const { return m_kind; }
+  enum kind get_kind () const { return m_kind; }
   opt_pass *get_pass () const { return m_pass; }
   unsigned int num_items () const { return m_items.length (); }
   const optinfo_item *get_item (unsigned int i) const { return m_items[i]; }
@@ -123,6 +120,9 @@ class optinfo
 
   void emit_for_opt_problem () const;
 
+  static const char *kind_to_string (enum kind k);
+  static dump_flags_t kind_to_dump_flag (enum kind k);
+
  private:
   /* Pre-canned ways of manipulating the optinfo, for use by friend class
      dump_context.  */
@@ -130,19 +130,9 @@ class optinfo
 
  private:
   dump_location_t m_loc;
-  enum optinfo_kind m_kind;
+  enum kind m_kind;
   opt_pass *m_pass;
   auto_vec <optinfo_item *> m_items;
-};
-
-/* An enum for discriminating between different kinds of optinfo_item.  */
-
-enum optinfo_item_kind
-{
-  OPTINFO_ITEM_KIND_TEXT,
-  OPTINFO_ITEM_KIND_TREE,
-  OPTINFO_ITEM_KIND_GIMPLE,
-  OPTINFO_ITEM_KIND_SYMTAB_NODE
 };
 
 /* An item within an optinfo.  */
@@ -150,17 +140,26 @@ enum optinfo_item_kind
 class optinfo_item
 {
  public:
-  optinfo_item (enum optinfo_item_kind kind, location_t location,
+  /* An enum for discriminating between different kinds of optinfo_item.  */
+  enum class kind
+  {
+    text,
+    tree,
+    gimple,
+    symtab_node
+  };
+
+  optinfo_item (enum kind kind_, location_t location,
 		char *text);
   ~optinfo_item ();
 
-  enum optinfo_item_kind get_kind () const { return m_kind; }
+  enum kind get_kind () const { return m_kind; }
   location_t get_location () const { return m_location; }
   const char *get_text () const { return m_text; }
 
  private:
   /* Metadata (e.g. for optimization records).  */
-  enum optinfo_item_kind m_kind;
+  enum kind m_kind;
   location_t m_location;
 
   /* The textual form of the item, owned by the item.  */

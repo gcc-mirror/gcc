@@ -267,7 +267,7 @@ extern void verify_dumped_text (const location &loc,
 void
 verify_item (const location &loc,
 	     const optinfo_item *item,
-	     enum optinfo_item_kind expected_kind,
+	     enum optinfo_item::kind expected_kind,
 	     location_t expected_location,
 	     const char *expected_text);
 
@@ -275,7 +275,7 @@ verify_item (const location &loc,
 
 #define ASSERT_IS_TEXT(ITEM, EXPECTED_TEXT) \
   SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TEXT, \
+    verify_item (SELFTEST_LOCATION, (ITEM), optinfo_item::kind::text, \
 		 UNKNOWN_LOCATION, (EXPECTED_TEXT));		    \
   SELFTEST_END_STMT
 
@@ -283,7 +283,7 @@ verify_item (const location &loc,
 
 #define ASSERT_IS_TREE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
   SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TREE, \
+    verify_item (SELFTEST_LOCATION, (ITEM), optinfo_item::kind::tree, \
 		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
   SELFTEST_END_STMT
 
@@ -291,7 +291,7 @@ verify_item (const location &loc,
 
 #define ASSERT_IS_GIMPLE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
   SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_GIMPLE, \
+    verify_item (SELFTEST_LOCATION, (ITEM), optinfo_item::kind::gimple,	\
 		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
   SELFTEST_END_STMT
 
@@ -299,7 +299,7 @@ verify_item (const location &loc,
 
 #define ASSERT_IS_SYMTAB_NODE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
   SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_SYMTAB_NODE, \
+    verify_item (SELFTEST_LOCATION, (ITEM), optinfo_item::kind::symtab_node, \
 		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
   SELFTEST_END_STMT
 

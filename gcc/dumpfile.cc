@@ -636,8 +636,8 @@ make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
   pp_newline (&pp);
 
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::gimple,
 				      gimple_location (stmt),
 				      xstrdup (pp_formatted_text (&pp)));
   return item;
@@ -684,8 +684,8 @@ make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_needs_newline (&pp) = true;
   pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
 
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::gimple,
 				      gimple_location (stmt),
 				      xstrdup (pp_formatted_text (&pp)));
   return item;
@@ -738,8 +738,8 @@ make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
   if (EXPR_HAS_LOCATION (node))
     loc = EXPR_LOCATION (node);
 
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TREE, loc,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::tree, loc,
 				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
@@ -783,8 +783,8 @@ static std::unique_ptr<optinfo_item>
 make_item_for_dump_symtab_node (symtab_node *node)
 {
   location_t loc = DECL_SOURCE_LOCATION (node->decl);
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::symtab_node, loc,
 				      xstrdup (node->dump_name ()));
   return item;
 }
@@ -1011,8 +1011,9 @@ emit_any_pending_textual_chunks ()
     return;
 
   char *formatted_text = xstrdup (pp_formatted_text (pp));
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::text,
+				      UNKNOWN_LOCATION,
 				      formatted_text);
   pp->emit_item (std::move (item), m_optinfo);
 
@@ -1084,7 +1085,8 @@ make_item_for_dump_dec (const poly_int<N, C> &value)
     }
 
   auto item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+    = std::make_unique<optinfo_item> (optinfo_item::kind::text,
+				      UNKNOWN_LOCATION,
 				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
@@ -1162,8 +1164,9 @@ dump_context::begin_scope (const char *name,
   pretty_printer pp;
   pp_printf (&pp, "%s %s %s", "===", name, "===");
   pp_newline (&pp);
-  std::unique_ptr<optinfo_item> item
-    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+  auto item
+    = std::make_unique<optinfo_item> (optinfo_item::kind::text,
+				      UNKNOWN_LOCATION,
 				      xstrdup (pp_formatted_text (&pp)));
   emit_item (*item.get (), MSG_NOTE);
 
@@ -1172,7 +1175,7 @@ dump_context::begin_scope (const char *name,
       optinfo &info
 	= begin_next_optinfo (dump_metadata_t (MSG_NOTE, impl_location),
 			      user_location);
-      info.m_kind = OPTINFO_KIND_SCOPE;
+      info.m_kind = optinfo::kind::scope;
       info.add_item (std::move (item));
       end_any_optinfo ();
     }
@@ -1221,7 +1224,7 @@ dump_context::begin_next_optinfo (const dump_metadata_t &metadata,
   end_any_optinfo ();
   gcc_assert (m_pending == NULL);
   dump_location_t loc (user_loc, metadata.get_impl_location ());
-  m_pending = new optinfo (loc, OPTINFO_KIND_NOTE, current_pass);
+  m_pending = new optinfo (loc, optinfo::kind::note, current_pass);
   m_pending->handle_dump_file_kind (metadata.get_dump_flags ());
   return *m_pending;
 }
@@ -2265,7 +2268,7 @@ verify_dumped_text (const location &loc,
 void
 verify_item (const location &loc,
 	     const optinfo_item *item,
-	     enum optinfo_item_kind expected_kind,
+	     enum optinfo_item::kind expected_kind,
 	     location_t expected_location,
 	     const char *expected_text)
 {
@@ -2324,7 +2327,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
@@ -2345,7 +2348,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
@@ -2367,7 +2370,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
 	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;");
@@ -2389,7 +2392,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
 	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;\n");
@@ -2411,7 +2414,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
 	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/1");
@@ -2441,7 +2444,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 8);
 	    ASSERT_IS_TEXT (info->get_item (0), "before ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
@@ -2471,7 +2474,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
 	    ASSERT_EQ (info->get_location_t (), stmt_loc);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
@@ -2494,7 +2497,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
 	    ASSERT_EQ (info->get_location_t (), stmt_loc);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
@@ -2598,7 +2601,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->get_kind (), optinfo::kind::note);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
@@ -2727,7 +2730,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
       temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
-		 OPTINFO_KIND_SUCCESS);
+		 optinfo::kind::success);
     }
 
     /* MSG_MISSED_OPTIMIZATION.  */
@@ -2735,7 +2738,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
       temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
-		 OPTINFO_KIND_FAILURE);
+		 optinfo::kind::failure);
     }
   }
 
