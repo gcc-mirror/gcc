@@ -214,7 +214,8 @@ public:
   expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
-    insn_code icode = code_for_aarch64_pred_fac (m_unspec, e.vector_mode (0));
+    insn_code icode = code_for_aarch64_pred_fac_acle (m_unspec,
+						      e.vector_mode (0));
     return e.use_exact_insn (icode);
   }
 

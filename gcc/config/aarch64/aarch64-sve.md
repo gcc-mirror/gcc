@@ -9314,23 +9314,30 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicated floating-point absolute comparisons.
-(define_expand "@aarch64_pred_fac<cmp_op><mode>"
-  [(set (match_operand:<VPRED> 0 "register_operand")
-	(unspec:<VPRED>
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
-	   (unspec:SVE_FULL_F
-	     [(match_dup 1)
-	      (match_dup 2)
-	      (match_operand:SVE_FULL_F 3 "register_operand")]
-	     UNSPEC_COND_FABS)
-	   (unspec:SVE_FULL_F
-	     [(match_dup 1)
-	      (match_dup 2)
-	      (match_operand:SVE_FULL_F 4 "register_operand")]
-	     UNSPEC_COND_FABS)]
-	  SVE_COND_FP_ABS_CMP))]
+(define_expand "@aarch64_pred_fac<cmp_op><mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "register_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (unspec:SVE_FULL_F
+		 [(match_dup 1)
+		  (match_dup 2)
+		  (match_operand:SVE_FULL_F 3 "register_operand")]
+		 UNSPEC_COND_FABS)
+	       (unspec:SVE_FULL_F
+		 [(match_dup 1)
+		  (match_dup 2)
+		  (match_operand:SVE_FULL_F 4 "register_operand")]
+		 UNSPEC_COND_FABS)]
+	      SVE_COND_FP_ABS_CMP)
+	    0)
+	  (match_dup 5)))]
   "TARGET_SVE"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
 )
 
 (define_insn_and_rewrite "*aarch64_pred_fac<cmp_op><mode>_relaxed"
@@ -9375,6 +9382,30 @@
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	     UNSPEC_COND_FABS)]
 	  SVE_COND_FP_ABS_CMP))]
+  "TARGET_SVE"
+  "fac<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+)
+
+(define_insn "*aarch64_pred_fac<cmp_op><mode>_strict_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	       (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	       (unspec:SVE_FULL_F
+		 [(match_dup 1)
+		  (match_operand:SI 5 "aarch64_sve_gp_strictness")
+		  (match_operand:SVE_FULL_F 2 "register_operand" "w")]
+		 UNSPEC_COND_FABS)
+	       (unspec:SVE_FULL_F
+		 [(match_dup 1)
+		  (match_operand:SI 6 "aarch64_sve_gp_strictness")
+		  (match_operand:SVE_FULL_F 3 "register_operand" "w")]
+		 UNSPEC_COND_FABS)]
+	      SVE_COND_FP_ABS_CMP)
+	    0)
+	  (match_operand:<VPRED> 7 "aarch64_ptrue_all_operand")))]
   "TARGET_SVE"
   "fac<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
