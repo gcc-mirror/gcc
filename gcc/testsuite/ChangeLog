@@ -1,3 +1,193 @@
+2025-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	* g++.dg/cpp2a/concepts-using6.C: New test.
+
+2025-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	PR c++/119859
+	* g++.dg/cpp2a/concepts-using5.C: New test.
+	* g++.dg/cpp2a/concepts-using5a.C: New test.
+
+2025-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120620
+	* g++.dg/cpp2a/constexpr-dynamic19.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic1a.C: New test.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116253
+	* gcc.dg/plugin/diagnostic-test-nesting-html.c: New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-html.py: New test script.
+	* gcc.dg/plugin/plugin.exp: Add it.
+	* libgdiagnostics.dg/test-multiple-lines.c: Update expected output
+	to show fix-it hint.
+	* sarif-replay.dg/2.1.0-valid/nested-diagnostics-1.sarif: New test.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116792
+	* gcc.dg/plugin/diagnostic-test-graphs-html.py: Remove trailing
+	space from expected text of message.
+	* sarif-replay.dg/2.1.0-valid/embedded-links-check-html.py:
+	Likewise.
+	* sarif-replay.dg/2.1.0-valid/graphs-check-html.py: Likewise.
+
+2025-08-04  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/121303
+	* gcc.target/i386/pr121303.c: New test.
+
+2025-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* g++.dg/DRs/dr2580.C: New test.
+
+2025-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* g++.dg/DRs/dr2578.C: New test.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/dupq_13.c: New test.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/dup_1.c: New test.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/pnext_3.c: New test.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/general/match_4.c: New test.
+	* gcc.target/aarch64/sve2/acle/general/nmatch_1.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/acge_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/acgt_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/acle_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/aclt_1.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cmpeq_6.c: New test.
+	* gcc.target/aarch64/sve/acle/general/cmpge_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpne_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpuo_1.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cmpeq_5.c: New test.
+	* gcc.target/aarch64/sve/acle/general/cmpge_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpge_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpne_4.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cmpeq_1.c: Check the number
+	of PTRUEs.
+	* gcc.target/aarch64/sve/acle/general/cmpge_5.c: New test.
+	* gcc.target/aarch64/sve/acle/general/cmpge_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpne_3.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cmpeq_1.c: Add more tests.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pred_clobber_1.c: Disable combine.
+	* gcc.target/aarch64/sve/pred_clobber_2.c: Likewise.
+	* gcc.target/aarch64/sve/pred_clobber_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpeq_2.c: Add more cases.
+	* gcc.target/aarch64/sve/acle/general/cmpeq_4.c: New test.
+	* gcc.target/aarch64/sve/acle/general/cmpge_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpge_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpge_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpge_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpgt_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmple_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmplt_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpne_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/cmpne_2.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/unpkhi_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/unpklo_1.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* gcc.target/aarch64/sve/acle/general/rev_2.c: New test.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* gcc.target/aarch64/sve/acle/general/perm_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general/perm_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_7.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/121118
+	* gcc.target/aarch64/sve/acle/general/pr121118_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_13.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_6.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilege_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilegt_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilerw_5.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilewr_5.c: Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121293
+	* gcc.target/aarch64/sve/acle/general/dupq_lane_9.c: New test.
+
+2025-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121362
+	* gcc.dg/tree-ssa/ssa-fre-105.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-106.c: Likewise.
+
+2025-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120941
+	* gcc.target/i386/pr120941-1.c: New test.
+
 2025-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/120778

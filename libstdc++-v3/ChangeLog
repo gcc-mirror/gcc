@@ -1,3 +1,27 @@
+2025-08-04  Jakub Jelinek  <jakub@redhat.com>
+	    hexne  <printfne@gmail.com>
+
+	PR libstdc++/121373
+	* src/c++23/std.cc.in (std::ranges::shift_left,
+	std::ranges::shift_right): Only export for C++23 and later.
+	(std::ranges::fold_left_first_with_iter_result,
+	std::ranges::fold_left_with_iter_result): Export.
+	(std::byteswap): Export for C++23 and later.
+	(std::ranges::iter_move, std::ranges::iter_swap): Export.
+	(std::projected_value_t): Export for C++26 and later.
+	(std::out_ptr_t, std::inout_ptr_t): Export.
+	(std::ranges::iota_result): Export.
+	(std::regex_constants): Export a lot of constants.
+	(std::is_scoped_enum, std::is_scoped_enum_v): Export.
+
+2025-08-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121128
+	* include/bits/indirect.h (indirect::operator*):
+	Cast __self to approparietly qualified indirect.
+	* testsuite/std/memory/indirect/access.cc: New test.
+	* testsuite/std/memory/polymorphic/access.cc: New test.
+
 2025-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/c++23/std.cc.in (std::owner_equal, std::owner_hash): Export.

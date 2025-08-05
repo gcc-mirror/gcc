@@ -1,3 +1,118 @@
+2025-08-04  Viljar Indus  <indus@adacore.com>
+
+	* contracts.adb: Use Is_Ignored_In_Codegen instead of just
+	using Is_Ignored.
+	* exp_ch6.adb: Likewise.
+	* exp_prag.adb: Likewise.
+	* exp_util.adb: Likewise.
+	* frontend.adb: Avoid removal of ignored nodes in GNATProve_Mode.
+	* gnat1drv.adb: Avoid forcing Assertions_Enabled in GNATProve_Mode.
+	* lib-writ.adb (Write_With_File_Names): Avoid early exit
+	with ignored entities in GNATProve_Mode.
+	* lib-xref.adb: Likewise.
+	* opt.adb: Remove check for Assertions_Enabled.
+	* sem_attr.adb: Use Is_Ignored_In_Codegen instead of Is_Ignored.
+	* sem_ch13.adb: Likewise. Additionally always add predicates in
+	GNATProve_Mode.
+	* sem_prag.adb: Likewise. Additionally remove modifications
+	to applied policies in GNATProve_Mode.
+	* sem_util.adb (Is_Ignored_In_Codegen): New function that overrides
+	Is_Ignored in GNATProve_Mode and Codepeer_Mode.
+	(Is_Ignored_Ghost_Pragma_In_Codegen): Likewise for
+	Is_Ignored_Ghost_Pragma.
+	(Is_Ignored_Ghost_Entity_In_Codegen): Likewise for
+	Is_Ignored_Ghost_Entity.
+	(Policy_In_List): Remove overriding of policies in GNATProve_Mode.
+	* sem_util.ads: Add specs for new functions.
+	* (Predicates_Enabled): Always generate predicates in
+	GNATProve_Mode.
+
+2025-08-04  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node_Ref): Protect against
+	Entity (N) being empty before calling
+	Compile_Time_Known_Value.
+
+2025-08-04  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Validate_Compile_Time_Warning_Errors):
+	Check if the original compile time pragma was replaced and
+	validate the original node instead.
+
+2025-08-04  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Validate_Compile_Time_Warning_Or_Error):
+	simplify the implementation.
+
+2025-08-04  Steve Baird  <baird@adacore.com>
+
+	* exp_ch6.adb (Apply_Access_Discrims_Accessibility_Check): If the
+	accessibility level being checked is known statically, then
+	statically check it against the level of the function being
+	returned from.
+
+2025-08-04  Viljar Indus  <indus@adacore.com>
+
+	* atree.adb: update references to Ghost_Mode.
+	* exp_ch3.adb: use a structure type to store all of the existing
+	ghost mode related state variables.
+	* exp_disp.adb: Likewise.
+	* exp_spark.adb: Likewise.
+	* exp_util.adb: Likewise.
+	* expander.adb: Likewise.
+	* freeze.adb: Likewise and replace references to existing ghost
+	mode variables.
+	* ghost.adb (Install_Ghost_Region): install the changes of
+	the region in to the new Ghost_Config structure.
+	(Restore_Ghost_Region): Use the new Ghost_Config instead.
+	In general replace all references to the existing ghost mode
+	variables with the new structure equivalent.
+	* ghost.ads (Restore_Ghost_Region): update the spec.
+	* opt.ads (Ghost_Config_Type): A new type that has two of the
+	previous ghost code related global variables as memembers -
+	Ghost_Mode and Ignored_Ghost_Region.
+	(Ghost_Config) New variable to store the previous Ghost_Mode and
+	Ignored_Ghost_Region info.
+	* rtsfind.adb: Replace references to existing ghost mode variables.
+	* sem.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_ch7.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_util.adb: Likewise.
+
+2025-08-04  Steve Baird  <baird@adacore.com>
+
+	* freeze.adb (Freeze_Profile): Do not emit a warning stating that
+	a formal parameter's size is 8 if the parameter's size is not 8.
+
+2025-08-04  Viljar Indus  <indus@adacore.com>
+
+	* table.adb (Max): Move variable to the body and initialize
+	it with the same value as in the Init function.
+	* table.ads (Max): Likewise.
+
+2025-08-04  Bob Duff  <duff@adacore.com>
+
+	* par.adb: Move and rewrite some comments.
+	(Util): Shared code and comments for dealing with
+	defining_identifier_lists.
+	* par-util.adb (Append): Shared code for appending
+	one identifier onto Defining_Identifiers.
+	(P_Def_Ids): Shared code for parsing a defining_identifier_list.
+	Unfortunately, this is not used in all cases, because some of
+	them mix in sophisticated error recovery, which we do not
+	modify here.
+	* par-ch12.adb (P_Formal_Object_Declarations):
+	Use Defining_Identifiers and related code.
+	* par-ch3.adb (P_Identifier_Declarations): Likewise.
+	(P_Known_Discriminant_Part_Opt): Likewise.
+	(P_Component_Items): Likewise.
+	* par-ch6.adb (P_Formal_Part): Likewise.
+
 2025-07-31  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	Revert:

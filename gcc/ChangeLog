@@ -1,3 +1,311 @@
+2025-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* defaults.h (MAX_FIXED_MODE_SIZE): Default to 2 * BITS_PER_WORD
+	for larger-than-32-bitters.
+	* doc/tm.texi.in (MAX_FIXED_MODE_SIZE): Adjust accordingly.  Tweak
+	wording.
+	* doc/tm.texi: Regenerate.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h: Convert "enum optinfo_item_kind" into
+	"enum class kind" within class optinfo_item.
+	* dumpfile.cc: Likewise.  Use "auto" in a few places.
+	Convert "enum optinfo_kind" to "enum class kind" within
+	class optinfo.
+	* opt-problem.cc: Likewise.
+	* optinfo-emit-json.cc: Likewise.
+	* optinfo.cc: Likewise.
+	* optinfo.h: Likewise.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116253
+	* diagnostics/context.cc (context::set_nesting_level): New.
+	* diagnostics/context.h (context::set_nesting_level): New decl.
+	* doc/libgdiagnostics/topics/compatibility.rst
+	(LIBGDIAGNOSTICS_ABI_5): New.
+	* doc/libgdiagnostics/topics/physical-locations.rst
+	(diagnostic_manager_set_debug_physical_locations): New.
+	* libgdiagnostics++.h (manager::set_debug_physical_locations):
+	New.
+	* libgdiagnostics-private.h
+	(private_diagnostic_set_nesting_level): New decl.
+	* libgdiagnostics.cc (diagnostic_manager::diagnostic_manager):
+	Initialize m_debug_physical_locations.
+	(diagnostic_manager::new_location_from_file_and_line): Add debug
+	printing.
+	(diagnostic_manager::new_location_from_file_line_column):
+	Likewise.
+	(diagnostic_manager::new_location_from_range): Likewise.
+	(diagnostic_manager::set_debug_physical_locations): New.
+	(diagnostic_manager::ensure_linemap_for_file_and_line): Avoid
+	redundant calls to linemap_add.
+	(diagnostic_manager::new_location): Add debug printing.
+	(diagnostic_manager::m_debug_physical_locations): New field.
+	(diagnostic::diagnostic): Initialize m_nesting_level.
+	(diagnostic::get_nesting_level): New accessor.
+	(diagnostic::set_nesting_level): New.
+	(diagnostic::m_nesting_level): New field.
+	(diagnostic_manager::emit_va): Set and reset the nesting level
+	of the context from that of the diagnostic.
+	(diagnostic_manager_set_debug_physical_locations): New.
+	(private_diagnostic_set_nesting_level): New.
+	* libgdiagnostics.h
+	(diagnostic_manager_set_debug_physical_locations): New decl.
+	* libgdiagnostics.map (LIBGDIAGNOSTICS_ABI_5): New.
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Support
+	the "nestingLevel" property.
+	* libsarifreplay.h (replay_options::m_debug_physical_locations):
+	New field.
+	* sarif-replay.cc: Add -fdebug-physical-locations.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116792
+	* diagnostics/html-sink.cc
+	(html_builder::make_element_for_diagnostic): Don't add the
+	metadata element if it's empty.
+	(html_builder::make_element_for_metadata): Return null rather than
+	an empty element.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.h: Move struct counters to its own header
+	and include it.
+	* diagnostics/counters.h: New file, from the above.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.h: Split struct source_printing_options out
+	into "diagnostics/source-printing-options.h" and include it.
+	* diagnostics/source-printing-options.h: New file, from the above.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.cc: Update for renaming of option_manager to
+	option_id_manager and of context::m_option_mgr to
+	context::m_option_id_mgr.
+	* diagnostics/context.h: Likewise, moving class declaration to a
+	new diagnostics/option-id-manager.h.
+	* diagnostics/lazy-paths.cc: Likewise.
+	* diagnostics/option-id-manager.h: New file, from material in
+	diagnostics/context.h.
+	* lto-wrapper.cc: Update for renaming of option_manager to
+	option_id_manager.
+	* opts-common.cc: Likewise.
+	* opts-diagnostic.h: Likewise.
+	* opts.cc: Likewise.
+	* toplev.cc: Likewise.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/buffering.h: Update comment to refer to output sinks
+	rather than output formats.
+
+2025-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-warn-recursion.cc (pass_warn_recursion::execute): Add
+	missing auto_diagnostic_group.
+
+2025-08-04  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/121303
+	* avoid-store-forwarding.cc (is_store_forwarding): Add check
+	for `off_val` in `is_store_forwarding`.
+
+2025-08-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): When analyzing a loop
+	and slp instance discovery fails, immediately fail the whole
+	process.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::expand): Assert that the return value
+	has an appropriate mode.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_convert_sve_data_to_pred): Remove the mode argument.
+	* config/aarch64/aarch64.cc
+	(aarch64_sve_emit_int_cmp): Allow PRED_MODE to be VNx16BI or
+	the natural predicate mode for the data mode.
+	(aarch64_convert_sve_data_to_pred): Remove the mode argument
+	and instead always create a VNx16BI result.
+	(aarch64_expand_sve_const_pred): Update call accordingly.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdupq_impl::expand): Likewise, ensuring that the result
+	has mode VNx16BI.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_emit_sve_pred_vec_duplicate): Declare.
+	* config/aarch64/aarch64.cc
+	(aarch64_emit_sve_pred_vec_duplicate): New function.
+	* config/aarch64/aarch64-sve.md (vec_duplicate<PRED_ALL:mode>): Use it.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdup_impl::expand): Handle boolean values specially.  Check for
+	constants and fall back on aarch64_emit_sve_pred_vec_duplicate
+	for the variable case, ensuring that the result has mode VNx16BI.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (PNEXT_ONLY): New int iterator.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_sve_<sve_pred_op><mode>): Restrict SVE_PITER pattern
+	to VNx16BI_ONLY.
+	(@aarch64_sve_<sve_pred_op><mode>): New PNEXT_ONLY pattern for
+	PRED_HSD.
+	(*aarch64_sve_<sve_pred_op><mode>): Likewise.
+	(*aarch64_sve_<sve_pred_op><mode>_cc): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_pred_<sve_int_op><mode>):
+	Split SVE2_MATCH pattern into a VNx16QI_ONLY define_ins and a
+	VNx8HI_ONLY define_expand.  Use a VNx16BI destination for the latter.
+	(*aarch64_pred_<sve_int_op><mode>): New SVE2_MATCH pattern for
+	VNx8HI_ONLY.
+	(*aarch64_pred_<sve_int_op><mode>_cc): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_fac<cmp_op><mode>):
+	Replace with...
+	(@aarch64_pred_fac<cmp_op><mode>_acle): ...this new expander.
+	(*aarch64_pred_fac<cmp_op><mode>_strict_acle): New pattern.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svac_impl::expand): Update accordingly.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_fcm<cmp_op><mode>_acle)
+	(*aarch64_pred_fcm<cmp_op><mode>_acle, @aarch64_pred_fcmuo<mode>_acle)
+	(*aarch64_pred_fcmuo<mode>_acle): New patterns.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcmp_impl::expand, svcmpuo_impl::expand): Use them.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cmp<cmp_op><mode>_wide):
+	Split into VNx16QI_ONLY and SVE_FULL_HSI patterns.  Use VNx16BI
+	results for both.
+	(*aarch64_pred_cmp<cmp_op><mode>_wide): New pattern.
+	(*aarch64_pred_cmp<cmp_op><mode>_wide_cc): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md
+	(*aarch64_pred_cmp<cmp_op><mode>_wide_cc): Turn into a
+	define_insn_and_rewrite and rewrite the governing predicate
+	of the comparison so that it is identical to the PTEST's.
+	(*aarch64_pred_cmp<cmp_op><mode>_wide_ptest): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cmp<cmp_op><mode>_wide)
+	(*aarch64_pred_cmp<cmp_op><mode>_wide_cc): Use <VPRED> instead of
+	VNx16BI for the governing predicate.
+	(*aarch64_pred_cmp<cmp_op><mode>_wide_ptest): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cmp<cmp_op><mode>_acle)
+	(*aarch64_pred_cmp<cmp_op><mode>_acle, *cmp<cmp_op><mode>_acle_cc)
+	(*cmp<cmp_op><mode>_acle_and): New patterns that yield VNx16BI
+	results for all element types.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcmp_impl::expand): Use them.
+	(svcmp_wide_impl::expand): Likewise when implementing an svcmp_wide
+	against an in-range constant.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_punpk<perm_hilo>_acle)
+	(*aarch64_sve_punpk<perm_hilo>_acle): New patterns.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svunpk_impl::expand): Use them for boolean svunpk*.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* config/aarch64/aarch64.md (UNSPEC_REV_PRED): New unspec.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_rev<mode>_acle)
+	(*aarch64_sve_rev<mode>_acle): New patterns.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svrev_impl::expand): Use the new patterns for boolean svrev.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* config/aarch64/iterators.md (UNSPEC_TRN1_CONV): Delete.
+	(UNSPEC_PERMUTE_PRED): New unspec.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_trn1_conv<mode>):
+	Replace with...
+	(@aarch64_sve_<perm_insn><mode>_acle)
+	(*aarch64_sve_<perm_insn><mode>_acle): ...these new patterns.
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_const_pred_trn):
+	Update accordingly.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(binary_permute::expand): Use the new _acle patterns for
+	predicate operations.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/121118
+	* config/aarch64/iterators.md (VNx16BI_ONLY): New mode iterator.
+	* config/aarch64/predicates.md (aarch64_ptrue_all_operand): New
+	predicate.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_sve_while_<while_optab_cmp><GPI:mode><VNx16BI_ONLY:mode>_acle)
+	(@aarch64_sve_while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle)
+	(*aarch64_sve_while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle)
+	(*while_<while_optab_cmp><GPI:mode><PRED_HSD:mode>_acle_cc): New
+	patterns.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(while_comparison::expand): Use the new _acle patterns that
+	always return a VNx16BI.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svwhilerw_svwhilewr_impl::expand): Likewise.
+	* config/aarch64/aarch64.cc
+	(aarch64_sve_move_pred_via_while): Likewise.
+
+2025-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121293
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdupq_lane::expand):
+	Use aarch64_sve_reinterpret instead of subregs.  Explicitly
+	reinterpret the result back to the required mode, rather than
+	leaving the caller to take a subreg.
+
+2025-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121362
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Generalize
+	aggregate copy handling.
+
+2025-08-04  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Add remark about -options being documented
+	under -fdump-tree.  Remove remark about -graph working only for
+	RTL.
+
+2025-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120941
+	* config/i386/i386-features.cc (x86_cse_kind): Moved before
+	ix86_place_single_vector_set.
+	(redundant_load): Likewise.
+	(ix86_place_single_vector_set): Replace the last argument to the
+	pointer to redundant_load.  For X86_CSE_VEC_DUP, don't place the
+	vector set outside of the loop to avoid extra spills.
+	(remove_redundant_vector_load): Pass load to
+	ix86_place_single_vector_set.
+
 2025-08-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (define_insn_and_split) [reload_completed]:
