@@ -93,7 +93,7 @@ class ConfigurationAll : public ConfigurationPredicate
 public:
   ConfigurationAll (
     std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
-    : predicate_list (predicate_list)
+    : predicate_list (std::move (predicate_list))
   {}
 
   void accept_vis (ASTVisitor &vis) override;
@@ -116,7 +116,7 @@ class ConfigurationAny : public ConfigurationPredicate
 public:
   ConfigurationAny (
     std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
-    : predicate_list (predicate_list)
+    : predicate_list (std::move (predicate_list))
   {}
 
   void accept_vis (ASTVisitor &vis) override;
