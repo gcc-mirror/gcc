@@ -32,6 +32,7 @@
 #include "rust-type-util.h"
 #include "rust-compile-implitem.h"
 #include "rust-attribute-values.h"
+#include "rust-attributes.h"
 #include "rust-immutable-name-resolution-context.h"
 
 #include "fold-const.h"
@@ -251,25 +252,21 @@ void
 HIRCompileBase::handle_link_section_attribute_on_fndecl (
   tree fndecl, const AST::Attribute &attr)
 {
-  if (!attr.has_attr_input ())
+  auto msg_str = Analysis::Attributes::extract_string_literal (attr);
+
+  if (!msg_str.has_value ())
     {
       rust_error_at (attr.get_locus (),
-		     "%<link_section%> expects exactly one argment");
+		     "malformed %<link_section%> attribute input");
       return;
     }
-
-  rust_assert (attr.get_attr_input ().get_attr_input_type ()
-	       == AST::AttrInput::AttrInputType::LITERAL);
-
-  auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
-  const auto &msg_str = literal.get_literal ().as_string ();
 
   if (decl_section_name (fndecl))
     {
       rust_warning_at (attr.get_locus (), 0, "section name redefined");
     }
 
-  set_decl_section_name (fndecl, msg_str.c_str ());
+  set_decl_section_name (fndecl, msg_str->c_str ());
 }
 
 void
@@ -416,13 +413,10 @@ HIRCompileBase::handle_must_use_attribute_on_fndecl (tree fndecl,
 
   if (attr.has_attr_input ())
     {
-      rust_assert (attr.get_attr_input ().get_attr_input_type ()
-		   == AST::AttrInput::AttrInputType::LITERAL);
+      auto msg_str = Analysis::Attributes::extract_string_literal (attr);
+      rust_assert (msg_str.has_value ());
 
-      auto &literal
-	= static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
-      const auto &msg_str = literal.get_literal ().as_string ();
-      tree message = build_string (msg_str.size (), msg_str.c_str ());
+      tree message = build_string (msg_str->size (), msg_str->c_str ());
 
       value = tree_cons (nodiscard, message, NULL_TREE);
     }

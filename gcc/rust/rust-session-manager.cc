@@ -422,32 +422,31 @@ Session::handle_crate_name (const char *filename,
     {
       if (attr.get_path () != "crate_name")
 	continue;
-      if (!attr.has_attr_input ())
+
+      auto msg_str = Analysis::Attributes::extract_string_literal (attr);
+      if (!msg_str.has_value ())
 	{
 	  rust_error_at (attr.get_locus (),
-			 "%<crate_name%> accepts one argument");
+			 "malformed %<crate_name%> attribute input");
 	  continue;
 	}
 
-      auto &literal
-	= static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
-      const auto &msg_str = literal.get_literal ().as_string ();
-      if (!validate_crate_name (msg_str, error))
+      if (!validate_crate_name (*msg_str, error))
 	{
 	  error.locus = attr.get_locus ();
 	  error.emit ();
 	  continue;
 	}
 
-      if (options.crate_name_set_manually && (options.crate_name != msg_str))
+      if (options.crate_name_set_manually && (options.crate_name != *msg_str))
 	{
 	  rust_error_at (attr.get_locus (),
 			 "%<-frust-crate-name%> and %<#[crate_name]%> are "
 			 "required to match, but %qs does not match %qs",
-			 options.crate_name.c_str (), msg_str.c_str ());
+			 options.crate_name.c_str (), msg_str->c_str ());
 	}
       crate_name_found = true;
-      options.set_crate_name (msg_str);
+      options.set_crate_name (*msg_str);
     }
 
   options.crate_name_set_manually |= crate_name_found;

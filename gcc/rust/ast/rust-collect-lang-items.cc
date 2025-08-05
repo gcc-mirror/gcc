@@ -43,18 +43,16 @@ get_lang_item_attr (const T &maybe_lang_item)
 	  continue;
 	}
 
-      bool is_lang_item = str_path == Values::Attributes::LANG
-			  && attr.has_attr_input ()
-			  && attr.get_attr_input ().get_attr_input_type ()
-			       == AST::AttrInput::AttrInputType::LITERAL;
+      bool is_lang_item = str_path == Values::Attributes::LANG;
 
       if (is_lang_item)
 	{
-	  auto &literal
-	    = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
-	  const auto &lang_item_type_str = literal.get_literal ().as_string ();
+	  auto lang_item_type_str
+	    = Analysis::Attributes::extract_string_literal (attr);
 
-	  return LangItem::Parse (lang_item_type_str);
+	  rust_assert (lang_item_type_str.has_value ());
+
+	  return LangItem::Parse (*lang_item_type_str);
 	}
     }
 

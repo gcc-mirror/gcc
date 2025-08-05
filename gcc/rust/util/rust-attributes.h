@@ -29,6 +29,8 @@ class Attributes
 {
 public:
   static bool is_known (const std::string &attribute_path);
+  static tl::optional<std::string>
+  extract_string_literal (const AST::Attribute &attr);
 };
 
 enum CompilerPass

@@ -38,6 +38,31 @@ Attributes::is_known (const std::string &attribute_path)
   return !lookup.is_error ();
 }
 
+tl::optional<std::string>
+Attributes::extract_string_literal (const AST::Attribute &attr)
+{
+  if (!attr.has_attr_input ())
+    return tl::nullopt;
+
+  auto &attr_input = attr.get_attr_input ();
+
+  if (attr_input.get_attr_input_type ()
+      != AST::AttrInput::AttrInputType::LITERAL)
+    return tl::nullopt;
+
+  auto &literal_expr
+    = static_cast<AST::AttrInputLiteral &> (attr_input).get_literal ();
+
+  auto lit_type = literal_expr.get_lit_type ();
+
+  // TODO: bring escape sequence handling out of lexing?
+  if (lit_type != AST::Literal::LitType::STRING
+      && lit_type != AST::Literal::LitType::RAW_STRING)
+    return tl::nullopt;
+
+  return literal_expr.as_string ();
+}
+
 using Attrs = Values::Attributes;
 
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
