@@ -226,7 +226,7 @@ public:
   CfgAttrAttribute (CfgAttrAttribute const &other)
     : config_to_include (
       other.config_to_include->clone_configuration_predicate ()),
-      cfg_attrs (cfg_attrs)
+      cfg_attrs (other.cfg_attrs)
   {}
 
   // Overloaded assignment operator to clone
