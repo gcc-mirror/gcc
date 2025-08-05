@@ -20,6 +20,7 @@
 #define RUST_AST_PATTERN_H
 
 #include "rust-ast.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace AST {
