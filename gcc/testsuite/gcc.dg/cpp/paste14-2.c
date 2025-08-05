@@ -4,8 +4,8 @@
    { dg-do preprocess }
 */
 
-#define foo - ## >> /* { dg-error "pasting \"-\" and \">>\"" } */
+#define foo - ## >> /* { dg-error "pasting '-' and '>>'" } */
 foo
-#define bar = ## == /* { dg-error "pasting \"=\" and \"==\"" } */
+#define bar = ## == /* { dg-error "pasting '=' and '=='" } */
 bar
 

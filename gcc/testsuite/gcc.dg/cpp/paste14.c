@@ -5,6 +5,6 @@
 */
 
 #define foo - ## >>
-foo		/* { dg-error "pasting \"-\" and \">>\"" } */
+foo		/* { dg-error "pasting '-' and '>>'" } */
 #define bar = ## ==
-bar		/* { dg-error "pasting \"=\" and \"==\"" } */
+bar		/* { dg-error "pasting '=' and '=='" } */

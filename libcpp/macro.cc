@@ -1071,7 +1071,7 @@ paste_tokens (cpp_reader *pfile, location_t location,
       /* Mandatory error for all apart from assembler.  */
       if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
-			     "pasting \"%.*s\" and \"%.*s\" does not give "
+			     "pasting %<%.*s%> and %<%.*s%> does not give "
 			     "a valid preprocessing token",
 			     (int) (lhsend - buf), buf,
 			     (int) (end - rhsstart), rhsstart);
