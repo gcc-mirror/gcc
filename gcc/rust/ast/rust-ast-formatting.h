@@ -19,6 +19,9 @@
 #ifndef RUST_AST_FORMATTING_H
 #define RUST_AST_FORMATTING_H
 
+#include "rust-ast.h"
+#include "rust-system.h"
+
 namespace Rust {
 namespace AST {
 
