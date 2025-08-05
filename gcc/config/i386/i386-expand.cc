@@ -9574,8 +9574,9 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case vector_loop:
       need_zero_guard = true;
       unroll_factor = 4;
-      /* Get the vector mode to move MOVE_MAX bytes.  */
-      nunits = MOVE_MAX / GET_MODE_SIZE (word_mode);
+      /* Get the vector mode to move STORE_MAX_PIECES/MOVE_MAX bytes.  */
+      nunits = issetmem ? STORE_MAX_PIECES : MOVE_MAX;
+      nunits /= GET_MODE_SIZE (word_mode);
       if (nunits > 1)
 	{
 	  move_mode = mode_for_vector (word_mode, nunits).require ();
