@@ -3,9 +3,9 @@
 #define N 16
 
 void __attribute__((noipa))
-f (int *restrict y, int *restrict x, int *restrict indices)
+f (int *restrict y, int *restrict x, int *restrict indices, int n)
 {
-  for (int i = 0; i < N; ++i)
+  for (int i = 0; i < n; ++i)
     {
       y[i * 2] = x[indices[i * 2]] + 1;
       y[i * 2 + 1] = x[indices[i * 2 + 1]] + 2;
@@ -49,7 +49,7 @@ main (void)
 {
   check_vect ();
 
-  f (y, x, indices);
+  f (y, x, indices, N);
 #pragma GCC novector
   for (int i = 0; i < 32; ++i)
     if (y[i] != expected[i])

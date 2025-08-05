@@ -1497,7 +1497,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 						       gs_info->memory_type,
 						       gs_info->offset_vectype,
 						       gs_info->scale,
-						       elsvals))
+						       elsvals)
+	       || gs_info->decl != NULL_TREE)
 	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
 			       scalar_mask);
       else
