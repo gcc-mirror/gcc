@@ -11146,11 +11146,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    {
 	      rse.expr = gfc_class_data_get (rse.expr);
 	      gfc_add_modify (&lse.pre, desc, rse.expr);
-	      /* Set the lhs span.  */
-	      tmp = TREE_TYPE (rse.expr);
-	      tmp = TYPE_SIZE_UNIT (gfc_get_element_type (tmp));
-	      tmp = fold_convert (gfc_array_index_type, tmp);
-	      gfc_conv_descriptor_span_set (&lse.pre, desc, tmp);
  	    }
 	  else
 	    {
