@@ -128,9 +128,13 @@ DeriveEq::eq_impls (
   auto eq_impl = builder.trait_impl (eq, std::move (eq_generics.self_type),
 				     std::move (trait_items),
 				     std::move (eq_generics.impl));
+
+  // StructuralEq is a marker trait
+  decltype (trait_items) steq_trait_items = {};
+
   auto steq_impl
     = builder.trait_impl (steq, std::move (steq_generics.self_type),
-			  std::move (trait_items),
+			  std::move (steq_trait_items),
 			  std::move (steq_generics.impl));
 
   return vec (std::move (eq_impl), std::move (steq_impl));
