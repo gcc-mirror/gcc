@@ -1740,8 +1740,12 @@
 (define_predicate "compare_operator"
   (match_code "compare"))
 
-(define_predicate "extract_operator"
-  (match_code "zero_extract,sign_extract"))
+(define_predicate "extract_high_operator"
+  (match_code "zero_extract,sign_extract,ashiftrt,lshiftrt")
+{
+  return (const8_operand (XEXP (op, 1), VOIDmode)
+	  && (BINARY_P (op) || const8_operand (XEXP (op, 2), VOIDmode)));
+})
 
 ;; Return true if OP is a memory operand, aligned to
 ;; less than its natural alignment.
