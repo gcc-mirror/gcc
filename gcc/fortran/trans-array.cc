@@ -8499,14 +8499,6 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  else
 	    gcc_assert (se->ss == ss);
 
-	  if (!is_pointer_array (se->expr))
-	    {
-	      tmp = gfc_get_element_type (TREE_TYPE (se->expr));
-	      tmp = fold_convert (gfc_array_index_type,
-				  size_in_bytes (tmp));
-	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
-	    }
-
 	  se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 	  gfc_conv_expr (se, expr);
 
