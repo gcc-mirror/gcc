@@ -39,6 +39,9 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#define __glibcxx_want_philox_engine
+#include <bits/version.h>
+
 #include <cmath>
 #include <cstdint> // For uint_fast32_t, uint_fast64_t, uint_least32_t
 #include <cstdlib>

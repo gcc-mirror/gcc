@@ -2397,4 +2397,14 @@
 #endif /* !defined(__cpp_lib_constexpr_exceptions) && defined(__glibcxx_want_constexpr_exceptions) */
 #undef __glibcxx_want_constexpr_exceptions
 
+#if !defined(__cpp_lib_philox_engine)
+# if (__cplusplus >  202302L) && (__SIZEOF_INT128__)
+#  define __glibcxx_philox_engine 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_philox_engine)
+#   define __cpp_lib_philox_engine 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_philox_engine) && defined(__glibcxx_want_philox_engine) */
+#undef __glibcxx_want_philox_engine
+
 #undef __glibcxx_want_all

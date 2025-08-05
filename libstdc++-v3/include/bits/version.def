@@ -2137,6 +2137,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = philox_engine;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+    extra_cond = "__SIZEOF_INT128__";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";
