@@ -5139,7 +5139,8 @@ convert (tree type, tree expr)
      But don't do it if we are just annotating types since tagged types
      aren't fully laid out in this mode.  */
   else if (ecode == RECORD_TYPE && code == RECORD_TYPE
-	   && TYPE_ALIGN_OK (etype) && TYPE_ALIGN_OK (type)
+	   && type_is_tagged_or_cw_equivalent (etype)
+	   && type_is_tagged_or_cw_equivalent (type)
 	   && !type_annotate_only)
     {
       tree child_etype = etype;

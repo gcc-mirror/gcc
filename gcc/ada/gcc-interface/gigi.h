@@ -399,6 +399,9 @@ enum standard_datatypes
   /* Identifier for the name of the _Parent field in tagged record types.  */
   ADT_parent_name_id,
 
+  /* Identifier for the name of the _Tag field in tagged record types.  */
+  ADT_tag_name_id,
+
   /* Identifier for the name of the Not_Handled_By_Others field.  */
   ADT_not_handled_by_others_name_id,
 
@@ -461,6 +464,7 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define mulv128_decl gnat_std_decls[(int) ADT_mulv128_decl]
 #define uns_mulv128_decl gnat_std_decls[(int) ADT_uns_mulv128_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
+#define tag_name_id gnat_std_decls[(int) ADT_tag_name_id]
 #define not_handled_by_others_name_id \
 	  gnat_std_decls[(int) ADT_not_handled_by_others_name_id]
 #define reraise_zcx_decl gnat_std_decls[(int) ADT_reraise_zcx_decl]
@@ -1122,6 +1126,28 @@ call_is_atomic_load (tree exp)
 
   enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
   return BUILT_IN_ATOMIC_LOAD_N <= code && code <= BUILT_IN_ATOMIC_LOAD_16;
+}
+
+/* Return true if TYPE is a tagged type or a CW-equivalent type.  */
+
+static inline bool
+type_is_tagged_or_cw_equivalent (tree type)
+{
+  if (!RECORD_OR_UNION_TYPE_P (type))
+    return false;
+
+  tree field = TYPE_FIELDS (type);
+  if (!field)
+    return false;
+
+  /* The tag can be put into the REP part of a record type.  */
+  if (DECL_INTERNAL_P (field))
+    return type_is_tagged_or_cw_equivalent (TREE_TYPE (field));
+
+  tree name = DECL_NAME (field);
+
+  /* See Exp_Util.Make_CW_Equivalent_Type for the CW-equivalent case.  */
+  return name == tag_name_id || name == parent_name_id;
 }
 
 /* Return true if TYPE is padding a self-referential type.  */

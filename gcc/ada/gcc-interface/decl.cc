@@ -4821,14 +4821,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	{
 	  bool align_clause;
 
-	  /* Record the property that objects of tagged types are guaranteed to
-	     be properly aligned.  This is necessary because conversions to the
-	     class-wide type are translated into conversions to the root type,
-	     which can be less aligned than some of its derived types.  */
-	  if (Is_Tagged_Type (gnat_entity)
-	      || Is_Class_Wide_Equivalent_Type (gnat_entity))
-	    TYPE_ALIGN_OK (gnu_type) = 1;
-
 	  /* Record whether the type is passed by reference.  */
 	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;

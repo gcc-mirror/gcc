@@ -1041,9 +1041,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	}
 
       /* If a class-wide type may be involved, force use of the RHS type.  */
-      if ((TREE_CODE (right_type) == RECORD_TYPE
-	   || TREE_CODE (right_type) == UNION_TYPE)
-	  && TYPE_ALIGN_OK (right_type))
+      if (type_is_tagged_or_cw_equivalent (right_type))
 	operation_type = right_type;
 
       /* If we are copying between padded objects with compatible types, use
@@ -1118,7 +1116,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 			     == TREE_CODE (operand_type (result))
 			     && TYPE_MODE (restype)
 				== TYPE_MODE (operand_type (result))))
-			   || TYPE_ALIGN_OK (restype))))
+			   || type_is_tagged_or_cw_equivalent (restype))))
 	    result = TREE_OPERAND (result, 0);
 
 	  else if (TREE_CODE (result) == VIEW_CONVERT_EXPR)

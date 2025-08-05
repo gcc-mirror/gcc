@@ -512,6 +512,9 @@ gigi (Node_Id gnat_root,
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
 
+  /* Name of the _Tag field in tagged record types.  */
+  tag_name_id = get_identifier (Get_Name_String (Name_uTag));
+
   /* Name of the Not_Handled_By_Others field in exception record types.  */
   not_handled_by_others_name_id = get_identifier ("not_handled_by_others");
 
@@ -7304,7 +7307,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	  tree gnu_obj_type = TREE_TYPE (gnu_result_type);
 	  unsigned int oalign = TYPE_ALIGN (gnu_obj_type);
 
-	  if (align != 0 && align < oalign && !TYPE_ALIGN_OK (gnu_obj_type))
+	  /* Skip tagged types because conversions to the class-wide type are
+	     translated into conversions to the root type, which may be less
+	     aligned than some of its derived types.  */
+	  if (align != 0
+	      && align < oalign
+	      && !type_is_tagged_or_cw_equivalent (gnu_obj_type))
 	    post_error_ne_tree_2
 	      ("??source alignment (^) '< alignment of & (^)",
 	       gnat_node, Designated_Type (Etype (gnat_node)),
@@ -10612,8 +10620,8 @@ addressable_p (tree gnu_expr, tree gnu_type, bool compg)
 		     && (!STRICT_ALIGNMENT
 			 || TYPE_ALIGN (type) <= TYPE_ALIGN (inner_type)
 			 || TYPE_ALIGN (inner_type) >= BIGGEST_ALIGNMENT
-			 || TYPE_ALIGN_OK (type)
-			 || TYPE_ALIGN_OK (inner_type))))
+			 || type_is_tagged_or_cw_equivalent (type)
+			 || type_is_tagged_or_cw_equivalent (inner_type))))
 		&& addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE,
 				  compg));
       }

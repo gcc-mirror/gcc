@@ -184,9 +184,6 @@ do {							 \
 /* True for a dummy type if TYPE appears in a profile.  */
 #define TYPE_DUMMY_IN_PROFILE_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
-/* True if objects of this type are guaranteed to be properly aligned.  */
-#define TYPE_ALIGN_OK(NODE) TYPE_LANG_FLAG_7 (NODE)
-
 /* True for types that implement a packed array and for original packed array
    types.  */
 #define TYPE_IMPL_PACKED_ARRAY_P(NODE) \
