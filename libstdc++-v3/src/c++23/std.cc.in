@@ -1697,8 +1697,6 @@ export namespace std
   {
     using std::ranges::advance;
     using std::ranges::distance;
-    using std::ranges::iter_move;
-    using std::ranges::iter_swap;
     using std::ranges::next;
     using std::ranges::prev;
   }
