@@ -2943,7 +2943,7 @@
   [(set (match_operand:HI 0 "register_operand"                           "=r,*r")
         (ashift:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "0,r"))
                    (const_int 1)))
-   (clobber (reg:CC REG_CC)) ]
+   (clobber (reg:CC REG_CC))]
   "reload_completed"
   "@
 	lsl %A0\;sbc %B0,%B0
@@ -3003,6 +3003,41 @@
   {
     operands[2] = gen_int_mode (1 << INTVAL (operands[2]), QImode);
   })
+
+(define_insn_and_split "*sext.ashift<QIPSI:mode><HISI:mode>2_split"
+  [(set (match_operand:HISI 0 "register_operand"                                 "=r")
+        (sign_extend:HISI (ashift:QIPSI (match_operand:QIPSI 1 "register_operand" "0")
+                                        (match_operand:QI 2 "const_int_operand" "PKC03"))))]
+  "<HISI:SIZE> > <QIPSI:SIZE>
+   && IN_RANGE (INTVAL (operands[2]), 1, 2 + (<QIPSI:SIZE> <= 2))"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  { DONE_ADD_CCC })
+
+(define_insn "*sext.ashift<QIPSI:mode><HISI:mode>2"
+  [(set (match_operand:HISI 0 "register_operand"                                 "=r")
+        (sign_extend:HISI (ashift:QIPSI (match_operand:QIPSI 1 "register_operand" "0")
+                                        (match_operand:QI 2 "const_int_operand" "PKC03"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && IN_RANGE (INTVAL (operands[2]), 1, 2 + (<QIPSI:SIZE> <= 2))"
+  {
+    const int regno = REGNO (operands[0]);
+    // The shift.
+    for (int s = 0; s < (int) INTVAL (operands[2]); ++s)
+      for (int b = 0; b < <QIPSI:SIZE>; ++b)
+        output_asm_insn (b == 0 ? "lsl %0" : "rol %0",
+                         &all_regs_rtx[regno + b]);
+    // Sign-extend can use carry.
+    for (int b = <QIPSI:SIZE>; b < <HISI:SIZE>; ++b)
+      output_asm_insn ("sbc %0,%0", &all_regs_rtx[regno + b]);
+    return "";
+  }
+  [(set (attr "length")
+        (plus (symbol_ref "<QIPSI:SIZE> * INTVAL (operands[2])")
+              (symbol_ref "<HISI:SIZE> - <QIPSI:SIZE>")))])
 
 ;******************************************************************************
 ; mul HI: $1 = sign-/zero-/one-extend, $2 = reg

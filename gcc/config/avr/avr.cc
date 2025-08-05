@@ -12758,6 +12758,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case SIGN_EXTEND:
+      if (GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+	{
+	  // "*sext.ashift<QIPSI:mode><HISI:mode>2_split"
+	  int m0 = GET_MODE_SIZE (GET_MODE (XEXP (x, 0)));
+	  int m1 = GET_MODE_SIZE (mode);
+	  *total = COSTS_N_INSNS (m0 * INTVAL (XEXP (XEXP (x, 0), 1))
+				  + m1 - m0);
+	  return true;
+	}
       *total = COSTS_N_INSNS (n_bytes + 2
 			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
       *total += avr_operand_rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
