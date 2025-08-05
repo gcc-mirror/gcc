@@ -4936,20 +4936,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	}
 
-      if (sym->attr.pointer && sym->attr.dimension
-	  && sym->attr.save == SAVE_NONE
-	  && !sym->attr.use_assoc
-	  && !sym->attr.host_assoc
-	  && !sym->attr.dummy
-	  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)))
-	{
-	  gfc_init_block (&tmpblock);
-	  gfc_conv_descriptor_span_set (&tmpblock, sym->backend_decl,
-				build_int_cst (gfc_array_index_type, 0));
-	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
-				NULL_TREE);
-	}
-
       if (sym->ts.type == BT_CLASS
 	  && (sym->attr.save || flag_max_stack_var_size == 0)
 	  && CLASS_DATA (sym)->attr.allocatable)
