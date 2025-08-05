@@ -986,7 +986,7 @@ public:
       return_type (std::move (type)), locus (locus)
   {
     if (!variadic_attrs.empty ())
-      is_variadic = true;
+      _is_variadic = true;
   }
 
   // Copy constructor with clone
