@@ -14380,39 +14380,48 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
   if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
     {
       /* Conditional branch.  */
-      if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
+      enum machine_mode cmpmode = GET_MODE (inner);
+      if (GET_MODE_CLASS (cmpmode) == MODE_CC)
 	return true;
 
-      if (cmpcode == NE || cmpcode == EQ)
+      if (comparator == const0_rtx)
 	{
-	  if (comparator == const0_rtx)
+	  switch (cmpcode)
 	    {
-	      /* TBZ/TBNZ/CBZ/CBNZ.  */
+	    case NE:
+	    case EQ:
+	      if (cmpmode != SImode && cmpmode != DImode)
+		break;
 	      if (GET_CODE (inner) == ZERO_EXTRACT)
-		/* TBZ/TBNZ.  */
-		*cost += rtx_cost (XEXP (inner, 0), VOIDmode,
-				   ZERO_EXTRACT, 0, speed);
-	      else
-		/* CBZ/CBNZ.  */
-		*cost += rtx_cost (inner, VOIDmode, cmpcode, 0, speed);
+		{
+		  /* TBZ/TBNZ.  */
+		  *cost += rtx_cost (XEXP (inner, 0), VOIDmode,
+				     ZERO_EXTRACT, 0, speed);
+		  return true;
+		}
+	      /* FALLTHRU */
 
+	    case LT:
+	    case GE:
+	      /* CBZ/CBNZ/TBZ/TBNZ.  */
+	      *cost += rtx_cost (inner, cmpmode, cmpcode, 0, speed);
 	      return true;
-	    }
-	  if (register_operand (inner, VOIDmode)
-	      && aarch64_imm24 (comparator, VOIDmode))
-	    {
-	      /* SUB and SUBS.  */
-	      *cost += COSTS_N_INSNS (2);
-	      if (speed)
-		*cost += extra_cost->alu.arith * 2;
-	      return true;
+
+	    default:
+	      break;
 	    }
 	}
-      else if (cmpcode == LT || cmpcode == GE)
+
+      if ((cmpcode == NE || cmpcode == EQ)
+	  && (cmpmode == SImode || cmpmode == DImode)
+	  && aarch64_imm24 (comparator, cmpmode))
 	{
-	  /* TBZ/TBNZ.  */
-	  if (comparator == const0_rtx)
-	    return true;
+	  /* SUB and SUBS.  */
+	  *cost += rtx_cost (inner, cmpmode, cmpcode, 0, speed);
+	  *cost += COSTS_N_INSNS (2);
+	  if (speed)
+	    *cost += extra_cost->alu.arith * 2;
+	  return true;
 	}
     }
   else if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
