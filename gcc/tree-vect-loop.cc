@@ -2512,9 +2512,8 @@ start_over:
   if (!vect_make_slp_decision (loop_vinfo))
     return opt_result::failure_at (vect_location, "no stmts to vectorize.\n");
 
-  /* Find stmts that need to be both vectorized and SLPed.  */
-  if (!vect_detect_hybrid_slp (loop_vinfo))
-    return opt_result::failure_at (vect_location, "needs non-SLP handling\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "Loop contains only SLP stmts\n");
 
   /* Determine the vectorization factor from the SLP decision.  */
   LOOP_VINFO_VECT_FACTOR (loop_vinfo)

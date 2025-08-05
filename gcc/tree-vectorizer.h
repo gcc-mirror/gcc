@@ -1299,7 +1299,6 @@ enum vect_relevant {
 enum slp_vect_type {
   not_vect = 0,
   pure_slp,
-  hybrid
 };
 
 /* Says whether a statement is a load, a store of a vectorized statement
