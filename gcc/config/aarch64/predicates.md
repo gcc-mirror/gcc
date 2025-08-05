@@ -286,10 +286,15 @@
   (and (match_code "const_int")
        (match_test "UINTVAL (op) <= 7")))
 
-;; An immediate that fits into 24 bits.
-(define_predicate "aarch64_imm24"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (UINTVAL (op), 0, 0xffffff)")))
+;; An immediate that fits into 24 bits, but needs splitting.
+(define_predicate "aarch64_split_imm24"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT i = UINTVAL (op);
+  return (IN_RANGE (i, 0, 0xffffff)
+          && !aarch64_move_imm (i, mode)
+          && !aarch64_uimm12_shift (i));
+})
 
 (define_predicate "aarch64_mem_pair_offset"
   (and (match_code "const_int")

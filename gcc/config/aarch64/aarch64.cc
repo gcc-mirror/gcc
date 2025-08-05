@@ -14414,7 +14414,7 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 
       if ((cmpcode == NE || cmpcode == EQ)
 	  && (cmpmode == SImode || cmpmode == DImode)
-	  && aarch64_imm24 (comparator, cmpmode))
+	  && aarch64_split_imm24 (comparator, cmpmode))
 	{
 	  /* SUB and SUBS.  */
 	  *cost += rtx_cost (inner, cmpmode, cmpcode, 0, speed);

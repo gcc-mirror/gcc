@@ -990,12 +990,10 @@
 ;; 	b<ne,eq> .Label
 (define_insn_and_split "*aarch64_bcond_wide_imm<GPI:mode>"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
-			        (match_operand:GPI 1 "aarch64_imm24" "n"))
+			        (match_operand:GPI 1 "aarch64_split_imm24" "n"))
 			   (label_ref:P (match_operand 2))
 			   (pc)))]
-  "!aarch64_move_imm (INTVAL (operands[1]), <GPI:MODE>mode)
-   && !aarch64_plus_operand (operands[1], <GPI:MODE>mode)
-   && !reload_completed"
+  "!reload_completed"
   "#"
   "&& true"
   [(const_int 0)]
@@ -4664,11 +4662,9 @@
 (define_insn_and_split "*compare_cstore<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	 (EQL:GPI (match_operand:GPI 1 "register_operand" "r")
-		  (match_operand:GPI 2 "aarch64_imm24" "n")))
+		  (match_operand:GPI 2 "aarch64_split_imm24" "n")))
    (clobber (reg:CC CC_REGNUM))]
-  "!aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)
-   && !aarch64_plus_operand (operands[2], <MODE>mode)
-   && !reload_completed"
+  "!reload_completed"
   "#"
   "&& true"
   [(const_int 0)]
