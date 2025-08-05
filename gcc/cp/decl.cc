@@ -18440,6 +18440,8 @@ build_clobber_this (clobber_kind kind)
     }
 
   tree exprstmt = build2 (MODIFY_EXPR, void_type_node, thisref, clobber);
+  if (kind == CLOBBER_OBJECT_BEGIN)
+    TREE_SET_CODE (exprstmt, INIT_EXPR);
   if (vbases)
     exprstmt = build_if_in_charge (exprstmt);
 

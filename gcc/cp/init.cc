@@ -3557,9 +3557,19 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     alloc_expr = maybe_wrap_new_for_constexpr (alloc_expr, type,
 					       cookie_size);
 
+  bool std_placement = std_placement_new_fn_p (alloc_fn);
+
+  /* For std placement new, clobber the object if the constructor won't do it
+     in start_preparsed_function.  This is most important for activating an
+     array in a union (c++/121068), but should also help the optimizers.  */
+  const bool do_clobber
+    = (std_placement && !*init && flag_lifetime_dse > 1
+       && (!CLASS_TYPE_P (elt_type)
+	   || type_has_non_user_provided_default_constructor (elt_type)));
+
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
-  if (!cookie_size && !is_initialized && !member_delete_p)
+  if (!cookie_size && !is_initialized && !member_delete_p && !do_clobber)
     return build_nop (pointer_type, alloc_expr);
 
   /* Store the result of the allocation call in a variable so that we can
@@ -3593,8 +3603,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      So check for a null exception spec on the op new we just called.  */
 
   nothrow = TYPE_NOTHROW_P (TREE_TYPE (alloc_fn));
-  check_new
-    = flag_check_new || (nothrow && !std_placement_new_fn_p (alloc_fn));
+  check_new = flag_check_new || (nothrow && !std_placement);
 
   if (cookie_size)
     {
@@ -3648,6 +3657,29 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   data_addr = fold_convert (non_const_pointer_type, data_addr);
   /* Any further uses of alloc_node will want this type, too.  */
   alloc_node = fold_convert (non_const_pointer_type, alloc_node);
+
+  tree clobber_expr = NULL_TREE;
+  if (do_clobber)
+    {
+      tree clobber = build_clobber (elt_type, CLOBBER_OBJECT_BEGIN);
+      CONSTRUCTOR_IS_DIRECT_INIT (clobber) = true;
+      if (array_p)
+	{
+	  /* Clobber each element rather than the array at once.  */
+	  tree maxindex = cp_build_binary_op (input_location,
+					      MINUS_EXPR, outer_nelts,
+					      integer_one_node,
+					      complain);
+	  clobber_expr = build_vec_init (data_addr, maxindex, clobber,
+					 /*valinit*/false, /*from_arr*/0,
+					 complain, nullptr);
+	}
+      else
+	{
+	  tree targ = cp_build_fold_indirect_ref (data_addr);
+	  clobber_expr = cp_build_init_expr (targ, clobber);
+	}
+    }
 
   /* Now initialize the allocated object.  Note that we preevaluate the
      initialization expression, apart from the actual constructor call or
@@ -3877,6 +3909,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   if (init_expr)
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), init_expr, rval);
+  if (clobber_expr)
+    rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), clobber_expr, rval);
   if (cookie_expr)
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), cookie_expr, rval);
 
@@ -4717,6 +4751,9 @@ build_vec_init (tree base, tree maxindex, tree init,
      the partially constructed array if an exception is thrown.
      But don't do this if we're assigning.  */
   if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      /* And don't clean up from clobbers, the actual initialization will
+	 follow as a separate build_vec_init.  */
+      && !(init && TREE_CLOBBER_P (init))
       && from_array != 2)
     {
       tree e;
