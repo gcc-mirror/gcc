@@ -4538,6 +4538,8 @@ extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
+extern bool gimple_unsigned_integer_narrow_clip (tree, tree*, tree (*)(tree));
+
 extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_signed_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_signed_integer_sat_trunc (tree, tree*, tree (*)(tree));
@@ -4771,6 +4773,36 @@ vect_recog_sat_trunc_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   tree ops[1];
   tree lhs = gimple_assign_lhs (last_stmt);
   tree otype = TREE_TYPE (lhs);
+
+  if ((gimple_unsigned_integer_narrow_clip (lhs, ops, NULL))
+       && type_has_mode_precision_p (otype))
+    {
+      tree itype = TREE_TYPE (ops[0]);
+      tree v_itype = get_vectype_for_scalar_type (vinfo, itype);
+      tree v_otype = get_vectype_for_scalar_type (vinfo, otype);
+      internal_fn fn = IFN_SAT_TRUNC;
+
+      if (v_itype != NULL_TREE && v_otype != NULL_TREE
+	&& direct_internal_fn_supported_p (fn, tree_pair (v_otype, v_itype),
+					   OPTIMIZE_FOR_BOTH))
+	{
+	  tree temp = vect_recog_temp_ssa_var (itype, NULL);
+	  gimple * max_stmt = gimple_build_assign (temp, build2 (MAX_EXPR, itype, build_zero_cst(itype), ops[0]));
+	  append_pattern_def_seq (vinfo, stmt_vinfo, max_stmt, v_itype);
+
+	  gcall *call = gimple_build_call_internal (fn, 1, temp);
+	  tree out_ssa = vect_recog_temp_ssa_var (otype, NULL);
+
+	  gimple_call_set_lhs (call, out_ssa);
+	  gimple_call_set_nothrow (call, /* nothrow_p */ false);
+	  gimple_set_location (call, gimple_location (last_stmt));
+
+	  *type_out = v_otype;
+
+	  return call;
+	}
+
+    }
 
   if ((gimple_unsigned_integer_sat_trunc (lhs, ops, NULL)
        || gimple_signed_integer_sat_trunc (lhs, ops, NULL))
