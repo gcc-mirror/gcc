@@ -1876,9 +1876,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   bool class_target;
   bool unlimited;
   tree desc;
-  tree offset;
-  tree dim;
-  int n;
   tree charlen;
   bool need_len_assign;
   bool whole_array = true;
@@ -2291,21 +2288,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 
 	  desc = gfc_class_data_get (se.expr);
-
-	  /* Set the offset.  */
-	  offset = gfc_index_zero_node;
-	  for (n = 0; n < e->rank; n++)
-	    {
-	      dim = gfc_rank_cst[n];
-	      tmp = fold_build2_loc (input_location, MULT_EXPR,
-				     gfc_array_index_type,
-				     gfc_conv_descriptor_stride_get (desc, dim),
-				     gfc_conv_descriptor_lbound_get (desc, dim));
-	      offset = fold_build2_loc (input_location, MINUS_EXPR,
-					gfc_array_index_type,
-					offset, tmp);
-	    }
-	  gfc_conv_descriptor_offset_set (&se.pre, desc, offset);
 
 	  if (need_len_assign)
 	    {
