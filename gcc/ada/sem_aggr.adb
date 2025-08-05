@@ -3331,6 +3331,24 @@ package body Sem_Aggr is
                      --  Not needed if others, since missing impossible.
 
                      if No (Others_N) then
+                        --  We are dealing with a gap in the indicies. However
+                        --  we should also check for an out of bounds error. If
+                        --  there exists an out of bounds error then we should
+                        --  not be suggesting that the user should add the
+                        --  missing indices but rather remove the ones that are
+                        --  out of bounds.
+
+                        Aggr_Low := Table (1).Lo;
+                        Aggr_High := Table (Nb_Discrete_Choices).Hi;
+
+                        Check_Bounds
+                          (Index_Typ_Low, Index_Typ_High, Aggr_Low, Aggr_High);
+                        Check_Bounds
+                          (Index_Base_Low,
+                           Index_Base_High,
+                           Aggr_Low,
+                           Aggr_High);
+
                         for J in 2 .. Nb_Discrete_Choices loop
                            Lo_Val := Expr_Value (Table (J).Lo);
                            Hi_Val := Table (J - 1).Highest;
@@ -3358,11 +3376,13 @@ package body Sem_Aggr is
                                  if Hi_Val + 1 = Lo_Val - 1 then
                                     Error_Msg_N
                                       ("missing index value "
-                                       & "in array aggregate!", Error_Node);
+                                       & "in array aggregate!",
+                                       Error_Node);
                                  else
                                     Error_Msg_N
                                       ("missing index values "
-                                       & "in array aggregate!", Error_Node);
+                                       & "in array aggregate!",
+                                       Error_Node);
                                  end if;
 
                                  Output_Bad_Choices
