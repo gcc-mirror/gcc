@@ -19,9 +19,6 @@
 #ifndef RUST_HIR_LIVENESS_BASE
 #define RUST_HIR_LIVENESS_BASE
 
-#include "rust-diagnostics.h"
-#include "rust-lint-marklive.h"
-#include "rust-lint-marklive-base.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir-map.h"
 
