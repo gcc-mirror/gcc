@@ -670,6 +670,17 @@ scev_dfs::add_to_evolution_1 (tree chrec_before, tree to_add, gimple *at_stmt)
 	  to_add = chrec_convert (type, to_add, at_stmt);
 	  right = chrec_convert_rhs (type, right, at_stmt);
 	  right = chrec_fold_plus (chrec_type (right), right, to_add);
+	  /* When we have an evolution in a non-wrapping type and
+	     in the process of accumulating CHREC_RIGHT there was
+	     overflow this indicates in the association that happened
+	     in building the CHREC clearly involved UB.  Avoid this.
+	     In building a CHREC we basically turn (a + INCR1) + INCR2
+	     into a + (INCR1 + INCR2) which is not always valid.
+	     Note this check only catches few invalid cases.  */
+	  if ((INTEGRAL_TYPE_P (type) && ! TYPE_OVERFLOW_WRAPS (type))
+	      && TREE_CODE (right) == INTEGER_CST
+	      && TREE_OVERFLOW (right))
+	    return chrec_dont_know;
 	  return build_polynomial_chrec (var, left, right);
 	}
       else
