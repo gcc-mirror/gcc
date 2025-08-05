@@ -2261,6 +2261,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   endif
   LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<libgnat/a-dirval__mingw.adb \
+  s-crtl.adb<libgnat/s-crtl__mingw.adb \
   s-gloloc.adb<libgnat/s-gloloc__mingw.adb \
   s-inmaop.adb<libgnarl/s-inmaop__dummy.adb \
   s-taspri.ads<libgnarl/s-taspri__mingw.ads \

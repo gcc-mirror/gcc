@@ -532,7 +532,6 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-carun8.o	\
  ada/libgnat/s-casuti.o \
  ada/libgnat/s-cautns.o \
- ada/libgnat/s-crtl.o	\
  ada/libgnat/s-conca2.o	\
  ada/libgnat/s-conca3.o	\
  ada/libgnat/s-conca4.o	\
@@ -542,6 +541,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-conca8.o	\
  ada/libgnat/s-conca9.o	\
  ada/libgnat/s-crc32.o	\
+ ada/libgnat/s-crtl.o	\
  ada/libgnat/s-excdeb.o	\
  ada/libgnat/s-except.o	\
  ada/libgnat/s-excmac.o	\
@@ -690,7 +690,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/g-cstyin.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
- ada/libgnat/i-c.o	      \
+ ada/libgnat/i-c.o        \
  ada/libgnat/i-cstrin.o   \
  ada/libgnat/interfac.o   \
  ada/libgnat/s-addope.o   \
@@ -707,6 +707,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-conca8.o   \
  ada/libgnat/s-conca9.o   \
  ada/libgnat/s-crc32.o    \
+ ada/libgnat/s-crtl.o     \
  ada/libgnat/s-excdeb.o   \
  ada/libgnat/s-except.o   \
  ada/libgnat/s-excmac.o   \
