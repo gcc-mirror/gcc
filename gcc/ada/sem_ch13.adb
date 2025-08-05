@@ -4878,14 +4878,28 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
 
-                  --  All other cases, generate attribute definition
+                  --  Generate an attribute definition for access types
 
-                  else
+                  elsif Is_Access_Type (E) then
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
                          Chars      => Name_Storage_Size,
                          Expression => Relocate_Node (Expr));
+
+                  --  This is likely a misplaced aspect. Create a pragma to
+                  --  emit the actual error.
+
+                  else
+                     Aitem :=
+                       Make_Aitem_Pragma
+                         (Pragma_Argument_Associations =>
+                            New_List
+                              (Make_Pragma_Argument_Association
+                                 (Loc, Expression => Relocate_Node (Expr))),
+                          Pragma_Name                  => Name_Storage_Size);
+                     Insert_Pragma (Aitem);
+                     goto Continue;
                   end if;
 
                when Aspect_External_Initialization =>
