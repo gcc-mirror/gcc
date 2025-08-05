@@ -91,6 +91,10 @@ class ConfigurationAll : public ConfigurationPredicate
     predicate_list; // inlined form
 
 public:
+  ConfigurationAll (const ConfigurationAll &) = delete;
+
+  ConfigurationAll (ConfigurationAll &&) = default;
+
   ConfigurationAll (
     std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
     : predicate_list (std::move (predicate_list))
@@ -103,7 +107,14 @@ protected:
    * than base */
   ConfigurationAll *clone_configuration_predicate_impl () const override
   {
-    return new ConfigurationAll (*this);
+    decltype (predicate_list) predicate_list_clone = {};
+    predicate_list_clone.reserve (predicate_list.size ());
+
+    for (const auto &predicate : predicate_list)
+      predicate_list_clone.push_back (
+	predicate->clone_configuration_predicate ());
+
+    return new ConfigurationAll (std::move (predicate_list_clone));
   }
 };
 
@@ -114,6 +125,10 @@ class ConfigurationAny : public ConfigurationPredicate
     predicate_list; // inlined form
 
 public:
+  ConfigurationAny (const ConfigurationAny &) = delete;
+
+  ConfigurationAny (ConfigurationAny &&) = default;
+
   ConfigurationAny (
     std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
     : predicate_list (std::move (predicate_list))
@@ -126,7 +141,14 @@ protected:
    * than base */
   ConfigurationAny *clone_configuration_predicate_impl () const override
   {
-    return new ConfigurationAny (*this);
+    decltype (predicate_list) predicate_list_clone = {};
+    predicate_list_clone.reserve (predicate_list.size ());
+
+    for (const auto &predicate : predicate_list)
+      predicate_list_clone.push_back (
+	predicate->clone_configuration_predicate ());
+
+    return new ConfigurationAny (std::move (predicate_list_clone));
   }
 };
 
