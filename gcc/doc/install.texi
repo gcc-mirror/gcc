@@ -1887,8 +1887,8 @@ Produce code conforming to version 20191213.
 In the absence of this configuration option the default version is 20191213.
 
 @item --enable-__cxa_atexit
-Define if you want to use @code{__cxa_atexit}, rather than atexit, to
-register C++ destructors for local statics and global objects.
+Define if you want to use @code{__cxa_atexit}, rather than @code{atexit},
+to register C++ destructors for local statics and global objects.
 This is essential for fully standards-compliant handling of
 destructors, but requires @code{__cxa_atexit} in libc.  This option is
 currently only available on systems with GNU libc.  When enabled, this
