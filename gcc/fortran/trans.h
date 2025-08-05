@@ -105,10 +105,6 @@ typedef struct gfc_se
   /* If set, will pass subref descriptors without a temporary.  */
   unsigned force_no_tmp:1;
 
-  /* Unconditionally calculate offset for array segments and constant
-     arrays in gfc_conv_expr_descriptor.  */
-  unsigned use_offset:1;
-
   unsigned want_coarray:1;
 
   /* Scalarization parameters.  */
