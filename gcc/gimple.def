@@ -393,7 +393,7 @@ DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE_LAYOUT)
    DATA_ARG is a vec of 3 local variables in the parent function
    containing data to be mapped to CHILD_FN.  This is used to
    implement the MAP clauses.  */
-DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL_LAYOUT)
+DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_TARGET)
 
 /* GIMPLE_OMP_TEAMS <BODY, CLAUSES, CHILD_FN, DATA_ARG> represents
    #pragma omp teams

@@ -1796,6 +1796,8 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
+      walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
+		 info, gimple_omp_target_iterator_loops_ptr (stmt));
       if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
@@ -2517,6 +2519,9 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
+      walk_body (convert_local_reference_stmt, convert_local_reference_op, info,
+		 gimple_omp_target_iterator_loops_ptr (stmt));
+
       if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
@@ -2898,6 +2903,8 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  *handled_ops_p = false;
 	  return NULL_TREE;
 	}
+      walk_body (convert_tramp_reference_stmt, convert_tramp_reference_op,
+		 info, gimple_omp_target_iterator_loops_ptr (stmt));
       /* FALLTHRU */
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:

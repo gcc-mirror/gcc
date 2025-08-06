@@ -12651,6 +12651,63 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     }
 }
 
+ /* Set EXPR as the hostaddr expression that should result from the clause C
+    in the target statement STMT.  Returns the tree that should be
+    passed as the hostaddr (a pointer to the array containing the expanded
+    hostaddrs and sizes of the clause).  */
+
+static tree
+lower_omp_map_iterator_expr (tree expr, tree c, gomp_target *stmt)
+{
+  if (!OMP_CLAUSE_HAS_ITERATORS (c))
+    return expr;
+
+  tree iterator = OMP_CLAUSE_ITERATORS (c);
+  tree elems = TREE_VEC_ELT (iterator, 7);
+  tree index = TREE_VEC_ELT (iterator, 8);
+  gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
+
+   /* IN LOOP BODY:  */
+   /* elems[idx] = <expr>;  */
+  tree lhs = build4 (ARRAY_REF, ptr_type_node, elems, index,
+		     NULL_TREE, NULL_TREE);
+  tree mod_expr = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+			      void_type_node, lhs, expr);
+  gimplify_and_add (mod_expr, loop_body_p);
+  exit_omp_iterator_loop_context (c);
+
+  return build_fold_addr_expr_with_type (elems, ptr_type_node);
+}
+
+/* Set SIZE as the size expression that should result from the clause C
+   in the target statement STMT.  Returns the tree that should be
+   passed as the clause size (a size_int with the value SIZE_MAX, indicating
+   that the clause uses an iterator).  */
+
+static tree
+lower_omp_map_iterator_size (tree size, tree c, gomp_target *stmt)
+{
+  if (!OMP_CLAUSE_HAS_ITERATORS (c))
+    return size;
+
+  tree iterator = OMP_CLAUSE_ITERATORS (c);
+  tree elems = TREE_VEC_ELT (iterator, 7);
+  tree index = TREE_VEC_ELT (iterator, 8);
+  gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
+
+  /* IN LOOP BODY:  */
+  /* elems[idx+1] = <size>;  */
+  tree lhs = build4 (ARRAY_REF, ptr_type_node, elems,
+		     size_binop (PLUS_EXPR, index, size_int (1)),
+		     NULL_TREE, NULL_TREE);
+  tree mod_expr = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+			      void_type_node, lhs, size);
+  gimplify_and_add (mod_expr, loop_body_p);
+  exit_omp_iterator_loop_context (c);
+
+  return size_int (SIZE_MAX);
+}
+
 /* Lower the GIMPLE_OMP_TARGET in the current statement
    in GSI_P.  CTX holds context information for the directive.  */
 
@@ -12819,6 +12876,11 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  else if (extra != NULL_TREE)
 	    deep_map_cnt = extra;
 	}
+
+	if (deep_map_cnt
+	    && OMP_CLAUSE_HAS_ITERATORS (c))
+	  sorry ("iterators used together with deep mapping are not "
+		 "supported yet");
 
 	if (!DECL_P (var))
 	  {
@@ -13234,6 +13296,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			  *p = build_fold_indirect_ref (nd);
 		      }
 		    v = build_fold_addr_expr_with_type (v, ptr_type_node);
+		    v = lower_omp_map_iterator_expr (v, c, stmt);
 		    gimplify_assign (x, v, &ilist);
 		    nc = NULL_TREE;
 		  }
@@ -13307,12 +13370,17 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    && TREE_CODE (TREE_TYPE (ovar)) == ARRAY_TYPE)
 		  {
 		    gcc_assert (offloaded);
-		    tree avar
-		      = create_tmp_var (TREE_TYPE (TREE_TYPE (x)));
-		    mark_addressable (avar);
-		    gimplify_assign (avar, build_fold_addr_expr (var), &ilist);
-		    talign = DECL_ALIGN_UNIT (avar);
+		    tree avar = build_fold_addr_expr (var);
+		    if (!OMP_CLAUSE_ITERATORS (c))
+		      {
+			tree tmp = create_tmp_var (TREE_TYPE (TREE_TYPE (x)));
+			mark_addressable (tmp);
+			gimplify_assign (tmp, avar, &ilist);
+			avar = tmp;
+		      }
+		    talign = TYPE_ALIGN_UNIT (TREE_TYPE (TREE_TYPE (x)));
 		    avar = build_fold_addr_expr (avar);
+		    avar = lower_omp_map_iterator_expr (avar, c, stmt);
 		    gimplify_assign (x, avar, &ilist);
 		  }
 		else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
@@ -13392,6 +13460,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    if (s == NULL_TREE)
 	      s = TYPE_SIZE_UNIT (TREE_TYPE (ovar));
 	    s = fold_convert (size_type_node, s);
+	    s = lower_omp_map_iterator_size (s, c, stmt);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
 	    if (TREE_CODE (s) != INTEGER_CST)
@@ -14324,6 +14393,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_omp_set_body (stmt, new_body);
     }
 
+  gsi_insert_seq_before (gsi_p, gimple_omp_target_iterator_loops (stmt),
+			 GSI_SAME_STMT);
+  gimple_omp_target_set_iterator_loops (stmt, NULL);
   bind = gimple_build_bind (NULL, NULL,
 			    tgt_bind ? gimple_bind_block (tgt_bind)
 				     : NULL_TREE);
