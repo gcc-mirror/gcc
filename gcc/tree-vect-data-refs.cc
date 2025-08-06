@@ -6536,7 +6536,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 			       tree vectype, int misalignment,
 			       gather_scatter_info *gs_info)
 {
-  data_reference *dr = dr_info ? dr_info->dr : nullptr;
+  data_reference *dr = dr_info->dr;
   stmt_vec_info stmt_info = dr_info->stmt;
   machine_mode mode = TYPE_MODE (vectype);
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -6617,7 +6617,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
         }
     } */
 
-  if (dr && DR_IS_READ (dr))
+  if (DR_IS_READ (dr))
     {
       if (can_implement_p (vec_realign_load_optab, mode)
 	  && (!targetm.vectorize.builtin_mask_for_load
@@ -6647,38 +6647,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
   tree type = TREE_TYPE (DR_REF (dr));
   bool is_gather_scatter = gs_info != nullptr;
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
-    {
-      if (!is_gather_scatter || dr != nullptr)
-	is_packed = not_size_aligned (DR_REF (dr));
-      else
-	{
-	  /* Gather-scatter accesses normally perform only component accesses
-	     so alignment is irrelevant for them.  Targets like riscv do care
-	     about scalar alignment in vector accesses, though, so check scalar
-	     alignment here.  We determined the alias pointer as well as the
-	     base alignment during pattern recognition and can re-use it here.
-
-	     As we do not have an analyzed dataref we only know the alignment
-	     of the reference itself and nothing about init, steps, etc.
-	     For now don't try harder to determine misalignment and
-	     just assume it is unknown.  We consider the type packed if its
-	     scalar alignment is lower than the natural alignment of a vector
-	     element's type.  */
-
-	  gcc_assert (!GATHER_SCATTER_LEGACY_P (*gs_info));
-	  gcc_assert (dr == nullptr);
-
-	  tree inner_vectype = TREE_TYPE (vectype);
-
-	  unsigned HOST_WIDE_INT scalar_align
-	    = tree_to_uhwi (gs_info->alias_ptr);
-	  unsigned HOST_WIDE_INT inner_vectype_sz
-	    = tree_to_uhwi (TYPE_SIZE (inner_vectype));
-
-	  bool is_misaligned = scalar_align < inner_vectype_sz;
-	  is_packed = scalar_align > 1 && is_misaligned;
-	}
-    }
+    is_packed = not_size_aligned (DR_REF (dr));
   if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
 						     is_packed,
 						     is_gather_scatter))
