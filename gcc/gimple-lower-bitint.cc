@@ -3181,6 +3181,17 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	    {
 	      tree l = limb_access (nlhs ? NULL_TREE : lhs_type,
 				    nlhs ? nlhs : lhs, idx, true);
+
+	      if (bitint_extended
+		  && sext
+		  && TYPE_UNSIGNED (lhs_type)
+		  && tree_fits_uhwi_p (idx)
+		  && !nlhs)
+		{
+		  rhs1 = add_cast (limb_access_type (lhs_type, idx), rhs1);
+		  rhs1 = add_cast (TREE_TYPE (l), rhs1);
+		}
+
 	      g = gimple_build_assign (l, rhs1);
 	    }
 	  insert_before (g);
