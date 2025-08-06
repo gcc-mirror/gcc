@@ -1005,6 +1005,8 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
       sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
     else if (strcmp ("LTRAMP", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lTRAMP", (long)(NUM));\
+    else if (strncmp ("LANCHOR", PREFIX, 7) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lANCHOR", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)
