@@ -393,7 +393,7 @@ Note binutils 2.35 or newer is required for LTO to work correctly
 with GNU libtool that includes doing a bootstrap with LTO enabled.
 
 @item gzip version 1.2.4 (or later) or
-@itemx bzip2 version 1.0.2 (or later)
+@itemx xz version 5.0 (or later)
 
 Necessary to uncompress GCC @command{tar} files when source code is
 obtained via HTTPS mirror sites.
