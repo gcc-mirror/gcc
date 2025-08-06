@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-system.h"
+#include "optional.h"
 
 #ifndef BIMAP_H
 #define BIMAP_H
