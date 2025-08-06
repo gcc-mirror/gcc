@@ -1067,6 +1067,8 @@ Driver Undocumented
 ;
 ; 21: Fix noexcept lambda capture pruning.
 ;     Fix C++20 layout of base with all explicitly defaulted constructors.
+;     Fix mangling of class and array objects with implicitly
+;     zero-initialized non-trailing subojects.
 ;     Default in G++ 16.
 ;
 ; Additional positive integers will be assigned as new versions of

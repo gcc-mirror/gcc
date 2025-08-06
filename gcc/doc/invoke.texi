@@ -3016,8 +3016,9 @@ Version 20, which first appeared in G++ 15, fixes manglings of lambdas
 in static data member initializers.
 
 Version 21, which first appeared in G++ 16, fixes unnecessary captures
-in noexcept lambdas (c++/119764) and layout of a base class
-with all explicitly defaulted constructors (c++/120012).
+in noexcept lambdas (c++/119764), layout of a base class with all explicitly
+defaulted constructors (c++/120012), and mangling of class and array
+objects with implicitly zero-initialized non-trailing subobjects (c++/121231).
 
 See also @option{-Wabi}.
 

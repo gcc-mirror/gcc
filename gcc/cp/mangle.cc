@@ -3745,11 +3745,59 @@ write_expression (tree expr)
 		      || !zero_init_expr_p (ce->value))
 		    last_nonzero = i;
 
+	      tree prev_field = NULL_TREE;
 	      if (undigested || last_nonzero != UINT_MAX)
 		for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
 		  {
 		    if (i > last_nonzero)
 		      break;
+		    if (!undigested && !CONSTRUCTOR_NO_CLEARING (expr)
+			&& (TREE_CODE (etype) == RECORD_TYPE
+			    || TREE_CODE (etype) == ARRAY_TYPE))
+		      {
+			/* Write out any implicit non-trailing zeros
+			   (which we neglected to do before v21).  */
+			if (TREE_CODE (etype) == RECORD_TYPE)
+			  {
+			    tree field;
+			    if (i == 0)
+			      field = first_field (etype);
+			    else
+			      field = DECL_CHAIN (prev_field);
+			    for (;;)
+			      {
+				field = next_subobject_field (field);
+				if (field == ce->index)
+				  break;
+				if (abi_check (21))
+				  write_expression (build_zero_cst
+						    (TREE_TYPE (field)));
+				field = DECL_CHAIN (field);
+			      }
+			  }
+			else if (TREE_CODE (etype) == ARRAY_TYPE)
+			  {
+			    unsigned HOST_WIDE_INT j;
+			    if (i == 0)
+			      j = 0;
+			    else
+			      j = 1 + tree_to_uhwi (prev_field);
+			    unsigned HOST_WIDE_INT k;
+			    if (TREE_CODE (ce->index) == RANGE_EXPR)
+			      k = tree_to_uhwi (TREE_OPERAND (ce->index, 0));
+			    else
+			      k = tree_to_uhwi (ce->index);
+			    tree zero = NULL_TREE;
+			    for (; j < k; ++j)
+			      if (abi_check (21))
+				{
+				  if (!zero)
+				    zero = build_zero_cst (TREE_TYPE (etype));
+				  write_expression (zero);
+				}
+			  }
+		      }
+
 		    if (!undigested && TREE_CODE (etype) == UNION_TYPE)
 		      {
 			/* Express the active member as a designator.  */
@@ -3794,6 +3842,9 @@ write_expression (tree expr)
 		    else
 		      for (unsigned j = 0; j < reps; ++j)
 			write_expression (ce->value);
+		    prev_field = ce->index;
+		    if (prev_field && TREE_CODE (prev_field) == RANGE_EXPR)
+		      prev_field = TREE_OPERAND (prev_field, 1);
 		  }
 	    }
 	  else
