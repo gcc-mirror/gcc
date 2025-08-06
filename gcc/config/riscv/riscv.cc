@@ -3958,41 +3958,6 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   return COSTS_N_INSNS (2);
 }
 
-/* Return the cost of the vector binary rtx like add, minus, mult.
-   The cost of scalar2vr_cost will be appended if there one of the
-   op comes from the VEC_DUPLICATE.  */
-
-static int
-get_vector_binary_rtx_cost (rtx x, int scalar2vr_cost)
-{
-  gcc_assert (riscv_v_ext_mode_p (GET_MODE (x)));
-
-  rtx neg;
-  rtx op_0;
-  rtx op_1;
-
-  if (GET_CODE (x) == UNSPEC)
-    {
-      op_0 = XVECEXP (x, 0, 0);
-      op_1 = XVECEXP (x, 0, 1);
-    }
-  else
-    {
-      op_0 = XEXP (x, 0);
-      op_1 = XEXP (x, 1);
-    }
-
-  if (GET_CODE (op_0) == VEC_DUPLICATE
-      || GET_CODE (op_1) == VEC_DUPLICATE)
-    return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
-  else if (GET_CODE (neg = op_0) == NEG
-	   && (GET_CODE (op_1) == VEC_DUPLICATE
-	       || GET_CODE (XEXP (neg, 0)) == VEC_DUPLICATE))
-    return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
-  else
-    return COSTS_N_INSNS (1);
-}
-
 /* Implement TARGET_RTX_COSTS.  */
 
 #define SINGLE_SHIFT_COST 1
@@ -4014,73 +3979,20 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	{
 	case SET:
 	  {
-	    switch (GET_CODE (x))
+	    if (GET_CODE (x) == VEC_DUPLICATE)
+	      *total = (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
+	    else
 	      {
-	      case VEC_DUPLICATE:
-		*total = gr2vr_cost * COSTS_N_INSNS (1);
-		break;
-	      case IF_THEN_ELSE:
-		{
-		  rtx op = XEXP (x, 1);
+		int vec_dup_count = 0;
+		subrtx_var_iterator::array_type array;
 
-		  switch (GET_CODE (op))
-		    {
-		    case DIV:
-		    case UDIV:
-		    case MOD:
-		    case UMOD:
-		    case US_PLUS:
-		    case US_MINUS:
-		    case SS_PLUS:
-		    case SS_MINUS:
-		      *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
-		      break;
-		    case UNSPEC:
-		      {
-			switch (XINT (op, 1))
-			  {
-			  case UNSPEC_VAADDU:
-			  case UNSPEC_VAADD:
-			    *total
-			      = get_vector_binary_rtx_cost (op, scalar2vr_cost);
-			    break;
-			  default:
-			    *total = COSTS_N_INSNS (1);
-			    break;
-			  }
-		      }
-		      break;
-		    default:
-		      *total = COSTS_N_INSNS (1);
-		      break;
-		    }
-		}
-		break;
-	      case PLUS:
-	      case MINUS:
-	      case AND:
-	      case IOR:
-	      case XOR:
-	      case MULT:
-	      case SMAX:
-	      case UMAX:
-	      case SMIN:
-	      case UMIN:
-		{
-		  rtx op;
-		  rtx op_0 = XEXP (x, 0);
-		  rtx op_1 = XEXP (x, 1);
+		FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
+		  if (GET_CODE (*iter) == VEC_DUPLICATE)
+		    vec_dup_count++;
 
-		  if (GET_CODE (op = op_0) == MULT
-		      || GET_CODE (op = op_1) == MULT)
-		    *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
-		  else
-		    *total = get_vector_binary_rtx_cost (x, scalar2vr_cost);
-		}
-		break;
-	      default:
-		*total = COSTS_N_INSNS (1);
-		break;
+		int total_vec_dup_cost = vec_dup_count * scalar2vr_cost;
+
+		*total = COSTS_N_INSNS (1) * (total_vec_dup_cost + 1);
 	      }
 	  }
 	  break;
