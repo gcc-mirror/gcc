@@ -1128,11 +1128,16 @@ handle_hardbool_attribute (tree *node, tree name, tree args,
     }
 
   tree orig = *node;
-  *node = build_duplicate_type (orig);
+  /* Drop qualifiers from the base type.  Keep attributes, so that, in the odd
+     chance attributes are applicable and relevant to the base type, if they
+     are specified first, or through a typedef, they wouldn't be dropped on the
+     floor here.  */
+  tree unqual = build_qualified_type (orig, TYPE_UNQUALIFIED);
+  *node = build_distinct_type_copy (unqual);
 
   TREE_SET_CODE (*node, ENUMERAL_TYPE);
-  ENUM_UNDERLYING_TYPE (*node) = orig;
-  TYPE_CANONICAL (*node) = TYPE_CANONICAL (orig);
+  ENUM_UNDERLYING_TYPE (*node) = unqual;
+  SET_TYPE_STRUCTURAL_EQUALITY (*node);
 
   tree false_value;
   if (args)
@@ -1191,7 +1196,13 @@ handle_hardbool_attribute (tree *node, tree name, tree args,
 
   gcc_checking_assert (!TYPE_CACHED_VALUES_P (*node));
   TYPE_VALUES (*node) = values;
-  TYPE_NAME (*node) = orig;
+  TYPE_NAME (*node) = unqual;
+
+  if (TYPE_QUALS (orig) != TYPE_QUALS (*node))
+    {
+      *node = build_qualified_type (*node, TYPE_QUALS (orig));
+      TYPE_NAME (*node) = orig;
+    }
 
   return NULL_TREE;
 }

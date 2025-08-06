@@ -163,7 +163,8 @@ along with GCC; see the file COPYING3.  If not see
   (TREE_CODE (TYPE) == BOOLEAN_TYPE					\
    || (TREE_CODE (TYPE) == ENUMERAL_TYPE				\
        && ENUM_UNDERLYING_TYPE (TYPE) != NULL_TREE			\
-       && TREE_CODE (ENUM_UNDERLYING_TYPE (TYPE)) == BOOLEAN_TYPE))
+       && (TREE_CODE (ENUM_UNDERLYING_TYPE (TYPE)) == BOOLEAN_TYPE	\
+	   || c_hardbool_type_attr (TYPE))))
 
 /* Record parser information about an expression that is irrelevant
    for code generation alongside a tree representing its value.  */

@@ -2680,6 +2680,20 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   return exp;
 }
 
+/* Wrapper for the overload above, same arguments but for tree rather than
+   c_expr.  This is important for hardbools to decay to bools.  */
+
+static inline tree
+convert_lvalue_to_rvalue (location_t loc, tree val,
+			  bool convert_p, bool read_p, bool for_init = false)
+{
+  struct c_expr expr;
+  memset (&expr, 0, sizeof (expr));
+  expr.value = val;
+  expr = convert_lvalue_to_rvalue (loc, expr, convert_p, read_p, for_init);
+  return expr.value;
+}
+
 /* EXP is an expression of integer type.  Apply the integer promotions
    to it and return the promoted value.  */
 
@@ -5303,7 +5317,9 @@ cas_loop:
   /* newval = old + val;  */
   if (rhs_type != rhs_semantic_type)
     val = build1 (EXCESS_PRECISION_EXPR, nonatomic_rhs_semantic_type, val);
-  rhs = build_binary_op (loc, modifycode, old, val, true);
+  rhs = build_binary_op (loc, modifycode,
+			 convert_lvalue_to_rvalue (loc, old, true, true),
+			 val, true);
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
     {
       tree eptype = TREE_TYPE (rhs);
@@ -5759,7 +5775,48 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    goto return_build_unary_op;
 	  }
 
-	if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
+	tree true_res;
+	if (c_hardbool_type_attr (TREE_TYPE (arg), NULL, &true_res))
+	  {
+	    tree larg = stabilize_reference (arg);
+	    tree sarg = save_expr (larg);
+	    switch (code)
+	      {
+	      case PREINCREMENT_EXPR:
+		val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, true_res);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		break;
+	      case POSTINCREMENT_EXPR:
+		val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, true_res);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), val, sarg);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		break;
+	      case PREDECREMENT_EXPR:
+		{
+		  tree rarg = convert_lvalue_to_rvalue (location, sarg,
+							true, true);
+		  rarg = invert_truthvalue_loc (location, rarg);
+		  rarg = convert (TREE_TYPE (sarg), rarg);
+		  val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, rarg);
+		}
+		break;
+	      case POSTDECREMENT_EXPR:
+		{
+		  tree rarg = convert_lvalue_to_rvalue (location, sarg,
+							true, true);
+		  rarg = invert_truthvalue_loc (location, rarg);
+		  tree iarg = convert (TREE_TYPE (larg), rarg);
+		  val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, iarg);
+		  val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), val, sarg);
+		  val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		}
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    TREE_SIDE_EFFECTS (val) = 1;
+	  }
+	else if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
 	  val = boolean_increment (code, arg);
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
@@ -7372,8 +7429,10 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 		clear_decl_read = true;
 	    }
 
-	  newrhs = build_binary_op (location,
-				    modifycode, lhs, newrhs, true);
+	  newrhs = build_binary_op (location, modifycode,
+				    convert_lvalue_to_rvalue (location, lhs,
+							      true, true),
+				    newrhs, true);
 	  if (clear_decl_read)
 	    DECL_READ_P (lhs) = 0;
 
@@ -12765,11 +12824,9 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	    }
 	  else
 	    {
-	      struct c_expr expr;
-	      memset (&expr, 0, sizeof (expr));
-	      expr.value = input;
-	      expr = convert_lvalue_to_rvalue (loc, expr, true, false);
-	      input = c_fully_fold (expr.value, false, NULL);
+	      input = c_fully_fold (convert_lvalue_to_rvalue (loc, input,
+							      true, false),
+				    false, NULL);
 
 	      if (input != error_mark_node && VOID_TYPE_P (TREE_TYPE (input)))
 		{
@@ -15391,12 +15448,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  /* If the array section is pointer based and the pointer
 	     itself is _Atomic qualified, we need to atomically load
 	     the pointer.  */
-	  c_expr expr;
-	  memset (&expr, 0, sizeof (expr));
-	  expr.value = ret;
-	  expr = convert_lvalue_to_rvalue (OMP_CLAUSE_LOCATION (c),
-					   expr, false, false);
-	  ret = expr.value;
+	  ret = convert_lvalue_to_rvalue (OMP_CLAUSE_LOCATION (c),
+					  ret, false, false);
 	}
       return ret;
     }
