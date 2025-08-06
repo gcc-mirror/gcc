@@ -3402,6 +3402,9 @@ gengtype-lex.cc : gengtype-lex.l
 	  echo '#else'                     >> $@.tmp; \
 	  echo '#include "bconfig.h"'      >> $@.tmp; \
 	  echo '#endif'                    >> $@.tmp; \
+	  echo '#define FLEX_SCANNER'      >> $@.tmp; \
+	  echo '#include "system.h"'       >> $@.tmp; \
+	  echo '#undef FLEX_SCANNER'       >> $@.tmp; \
 	  cat $@ >> $@.tmp; \
 	  mv $@.tmp $@; \
 	}
