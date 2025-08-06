@@ -1,3 +1,7 @@
+2025-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* .gitignore: Remove 'libgrust/*/target/'.
+
 2025-08-01  Luis Machado  <luis.machado.foss@gmail.com>
 
 	* MAINTAINERS: Update my e-mail address.

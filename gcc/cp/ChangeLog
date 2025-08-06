@@ -1,3 +1,12 @@
+2025-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* constexpr.cc (cxx_eval_store_expression): Handle clobbers.
+	(potential_constant_expression_1): Handle clobbers more.
+	* decl.cc (build_clobber_this): Use INIT_EXPR for initial clobber.
+	* init.cc (build_new_1): Clobber on placement new.
+	(build_vec_init): Don't clean up after clobber.
+
 2025-08-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/121351

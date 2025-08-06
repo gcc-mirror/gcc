@@ -1,3 +1,9 @@
+2025-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121373
+	* src/c++23/std.cc.in (std::ranges::iter_move, std::ranges::iter_swap):
+	Remove exports.
+
 2025-08-04  Jakub Jelinek  <jakub@redhat.com>
 	    hexne  <printfne@gmail.com>
 

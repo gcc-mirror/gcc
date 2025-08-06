@@ -1,3 +1,132 @@
+2025-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121410
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Use
+	STORE_MAX_PIECES to get the widest vector mode in vector loop
+	for memset.
+
+2025-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_rtx_costs_1) [SIGN_EXTEND]: Adjust cost.
+	* config/avr/avr.md (*sext.ashift<QIPSI:mode><HISI:mode>2): New
+	insn and a cc split.
+
+2025-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121306
+	* config/i386/predicates.md (extract_operator): Replace with...
+	(extract_high_operator): ...this new predicate.
+	* config/i386/i386.md (*cmpqi_ext<mode>_1, *cmpqi_ext<mode>_2)
+	(*cmpqi_ext<mode>_3, *cmpqi_ext<mode>_4, *movstrictqi_ext<mode>_1)
+	(*extzv<mode>, *insvqi_2, *extendqi<SWI24:mode>_ext_1)
+	(*addqi_ext<mode>_1_slp, *addqi_ext<mode>_1_slp, *addqi_ext<mode>_0)
+	(*addqi_ext2<mode>_0, *addqi_ext<mode>_1, *<insn>qi_ext<mode>_2)
+	(*subqi_ext<mode>_1_slp, *subqi_ext<mode>_2_slp, *subqi_ext<mode>_0)
+	(*subqi_ext2<mode>_0, *subqi_ext<mode>_1, *testqi_ext<mode>_1)
+	(*testqi_ext<mode>_2, *<code>qi_ext<mode>_1_slp)
+	(*<code>qi_ext<mode>_2_slp. *<code>qi_ext<mode>_0)
+	(*<code>qi_ext2<mode>_0, *<code>qi_ext<mode>_1)
+	(*<code>qi_ext<mode>_1_cc, *<code>qi_ext<mode>_1_cc)
+	(*<code>qi_ext<mode>_2, *<code>qi_ext<mode>_3, *negqi_ext<mode>_1)
+	(*one_cmplqi_ext<mode>_1, *ashlqi_ext<mode>_1, *<insn>qi_ext<mode>_1)
+	(define_peephole2): Replace uses of extract_operator with
+	extract_high_operator, matching only the first operand.
+	Use zero_extract rather than match_op_dup when splitting.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_relevant::hybrid): Remove.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Do not call
+	vect_detect_hybrid_slp.
+	* tree-vect-slp.cc (maybe_push_to_hybrid_worklist): Remove.
+	(vect_detect_hybrid_slp): Likewise.
+
+2025-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121359
+	* config/avr/avr.h: Remove -mlra and remains of reload.
+	* config/avr/avr.cc: Same.
+	* config/avr/avr.md: Same.
+	* config/avr/avr-log.cc: Same.
+	* config/avr/avr-protos.h: Same.
+	* config/avr/avr.opt: Same.
+	* config/avr/avr.opt.urls: Same.
+
+2025-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121306
+	* config/i386/i386.md (*one_cmplqi_ext<mode>_1): Updated to
+	support the new pattern.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121395
+	* tree-vectorizer.h (_loop_vec_info::alternate_defs): New member.
+	(LOOP_VINFO_ALTERNATE_DEFS): New.
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Populate it.
+	(vectorizable_simd_clone_call): Do not register a SLP def
+	when there is none.
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Allow a NULL
+	vectype when there's no LHS.  Allow all calls w/o LHS.
+	(vect_analyze_slp): Process LOOP_VINFO_ALTERNATE_DEFS as
+	SLP graph entries.
+	(vect_make_slp_decision): Handle a NULL SLP_TREE_VECTYPE.
+	(vect_slp_analyze_node_operations_1): Likewise.
+	(vect_schedule_slp_node): Likewise.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (enum slp_vect_type): Rename loop_vect
+	to not_vect, clarify docs.
+	(HYBRID_SLP_STMT): Remove.
+	* tree-vectorizer.cc (vec_info::new_stmt_vec_info): Adjust.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Likewise.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_get_data_access_cost): Use
+	ncopies == 1.
+	* tree-vect-slp.cc (vect_remove_slp_scalar_calls): Remove
+	hybrid/loop SLP skip.
+	* tree-vect-stmts.cc (vectorizable_store): Remove pure SLP assert.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121382
+	* tree-ssa-loop-ivopts.cc (create_new_iv): Rewrite the IV
+	step to defined form.
+
+2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121370
+	* tree-scalar-evolution.cc (scev_dfs::add_to_evolution_1):
+	Avoid UB integer overflow in accumulating CHREC_RIGHT.
+
+2025-08-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* expr.cc (expand_expr_real_1): Do not call
+	reduce_to_bit_field_precision if the target assumes the _BitInt
+	results to be already extended.
+	(EXTEND_BITINT): Same.
+	* expr.h (bitint_extended): Declare the cache variable.
+	* function.cc (prepare_function_start): Initialize it.
+
+2025-08-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* explow.cc (promote_function_mode): Add a case for
+	small/medium _BitInts.
+	(promote_mode): Same.
+
+2025-08-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Configuration): Mark up atexit as code.
+
+2025-08-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_expand_xmode_usmul): Take
+	umulhu for high bits mul result.
+
 2025-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* defaults.h (MAX_FIXED_MODE_SIZE): Default to 2 * BITS_PER_WORD

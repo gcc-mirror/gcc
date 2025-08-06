@@ -1,3 +1,68 @@
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of
+	the polymorphic associate variable's array descriptor offset.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (trans_array_constructor): Remove the update of
+	the array descriptor upper bound after array constructor
+	expansion.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_conv_expr_descriptor): Remove
+	isolated initialization of the span field before passing to
+	the function that will do the initialization.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Don't default
+	initialize the span of local pointer arrays.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of the
+	span field of the associate variable's array descriptor.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-expr.cc (gfc_trans_pointer_assignment): Remove overwrite
+	of the span after assignment of the array descriptor in the
+	polymorphic function result to non-polymorphic pointer case.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_se): Remove field use_offset.
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): Remove use_offset
+	initialization.
+	(gfc_conv_procedure_call): Likewise.
+	* trans-stmt.cc (trans_associate_var): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Use the
+	offset setter instead of generating a write to the offset.
+	(gfc_conv_array_parameter): Use the offset setter instead of
+	generating a write to the value returned by the offset getter.
+	* trans-expr.cc (gfc_trans_alloc_subarray_assign): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_descriptor_data_addr): Remove.
+	* trans-array.h (gfc_conv_descriptor_data_addr): Remove.
+	* trans-decl.cc (gfc_trans_deferred_vars): Use
+	gfc_conv_descriptor_data_get.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_finalize_tree_expr): Use the data setter instead
+	of writing to the value returned by the data getter.
+	* trans-decl.cc (gfc_trans_deferred_vars): Likewise.
+	* trans-stmt.cc (trans_associate_var): Use the data setter
+	instead of writing to the value dereferenced from the data
+	address.
+
 2025-08-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-decl.cc (gfc_trans_deferred_vars): Fix closing brace in
