@@ -42636,8 +42636,11 @@ cp_parser_omp_clause_doacross (cp_parser *parser, tree list, location_t loc)
    to ( variable-list )
 
    OpenMP 5.1:
-   from ( [present :] variable-list )
-   to ( [present :] variable-list ) */
+   from ( [motion-modifier[,] [motion-modifier[,]...]:] variable-list )
+   to ( [motion-modifier[,] [motion-modifier[,]...]:] variable-list )
+
+   motion-modifier:
+     present | iterator (iterators-definition)  */
 
 static tree
 cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
@@ -42646,22 +42649,112 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  bool present = false;
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  int pos = 1;
+  int colon_pos = 0;
+  int iterator_length = 0;
 
-  if (token->type == CPP_NAME
-      && strcmp (IDENTIFIER_POINTER (token->u.value), "present") == 0
-      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+  while (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_NAME)
     {
-      present = true;
-      cp_lexer_consume_token (parser->lexer);
-      cp_lexer_consume_token (parser->lexer);
+      const char *identifier =
+	IDENTIFIER_POINTER (cp_lexer_peek_nth_token (parser->lexer,
+						     pos)->u.value);
+      if (cp_lexer_nth_token_is (parser->lexer, pos + 1, CPP_OPEN_PAREN))
+	{
+	  int n = cp_parser_skip_balanced_tokens (parser, pos + 1);
+	  if (n != pos + 1)
+	    {
+	      if (strcmp (identifier, "iterator") == 0)
+	      iterator_length = n - pos;
+	      pos = n - 1;
+	    }
+	}
+      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COMMA)
+	pos += 2;
+      else
+	pos++;
+      if (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_COLON)
+	{
+	  colon_pos = pos;
+	  break;
+	}
     }
+
+  bool present = false;
+  tree iterators = NULL_TREE;
+
+  for (int pos = 1; pos < colon_pos; ++pos)
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_COMMA)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      const char *p = IDENTIFIER_POINTER (token->u.value);
+      if (strcmp ("present", p) == 0)
+	{
+	  if (present)
+	    {
+	      cp_parser_error (parser, "too many %<present%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  present = true;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (strcmp ("iterator", p) == 0)
+	{
+	  if (iterators)
+	    {
+	      cp_parser_error (parser, "too many %<iterator%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  pos += iterator_length - 1;
+	}
+
+      else
+	{
+	  error_at (token->location,
+		    "%qs clause with modifier other than %<iterator%> "
+		    "or %<present%>",
+		    kind == OMP_CLAUSE_TO ? "to" : "from");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+     }
+
+  if (colon_pos)
+    cp_parser_require (parser, CPP_COLON, RT_COLON);
 
   tree nl = cp_parser_omp_var_list_no_open (parser, kind, list, NULL, true);
   if (present)
     for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
       OMP_CLAUSE_MOTION_PRESENT (c) = 1;
+
+  if (iterators)
+    {
+      tree block = poplevel (1, 1, 0);
+      if (iterators == error_mark_node)
+	iterators = NULL_TREE;
+      else
+	TREE_VEC_ELT (iterators, 5) = block;
+    }
+
+  if (iterators)
+    for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_ITERATORS (c) = iterators;
 
   return nl;
 }

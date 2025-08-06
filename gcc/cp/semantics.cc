@@ -9007,6 +9007,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	      break;
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
 	  if (OMP_CLAUSE_ITERATORS (c)
 	      && cp_omp_finish_iterators (OMP_CLAUSE_ITERATORS (c)))
 	    {
@@ -9014,8 +9017,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      break;
 	    }
 	  /* FALLTHRU */
-	case OMP_CLAUSE_TO:
-	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE__CACHE_:
 	  {
 	    using namespace omp_addr_tokenizer;
