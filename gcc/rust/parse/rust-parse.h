@@ -782,7 +782,7 @@ private:
 
   // don't want to make things *only* AttributeParser uses public
   // TODO: fold more of AttributeParser into Parser?
-  friend class ::Rust::AST::AttributeParser;
+  friend struct ::Rust::AST::AttributeParser;
 };
 
 std::string extract_module_path (const AST::AttrVec &inner_attrs,
