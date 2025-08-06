@@ -5508,16 +5508,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (convert @0)))
 
 /* Strip inner integral conversions that do not change precision or size, or
-   zero-extend while keeping the same size (for bool-to-char).  */
+   zero-extend while keeping the same size (for bool-to-char).
+   However, keep this conversion if the result is an extended _BitInt,
+   since it may rely on this conversion to extend properly.  */
+
 (simplify
   (view_convert (convert@0 @1))
+  (with {
+    bool extended_bitint = false;
+    if (BITINT_TYPE_P (TREE_TYPE (@0)))
+      {
+	struct bitint_info info;
+	extended_bitint
+	  = targetm.c.bitint_type_info (TYPE_PRECISION (TREE_TYPE (@0)),
+							&info);
+	extended_bitint = extended_bitint && info.extended;
+      }
+   }
   (if ((INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
        && (INTEGRAL_TYPE_P (TREE_TYPE (@1)) || POINTER_TYPE_P (TREE_TYPE (@1)))
+       && !extended_bitint
        && TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))
        && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1))
 	   || (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (TREE_TYPE (@1))
 	       && TYPE_UNSIGNED (TREE_TYPE (@1)))))
-   (view_convert @1)))
+   (view_convert @1))))
 
 /* Simplify a view-converted empty or single-element constructor.  */
 (simplify
