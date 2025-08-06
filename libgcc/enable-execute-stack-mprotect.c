@@ -30,7 +30,6 @@
 
 static int need_enable_exec_stack;
 
-static void check_enabling (void) __attribute__ ((unused));
 extern void __enable_execute_stack (void *);
 
 #if defined __sun__ && defined __svr4__
