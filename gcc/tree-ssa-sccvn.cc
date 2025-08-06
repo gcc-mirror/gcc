@@ -5633,6 +5633,28 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
+    case BIT_FIELD_REF:
+      if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
+	{
+	  tree op0 = TREE_OPERAND (rhs1, 0);
+	  gassign *ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op0));
+	  if (ass
+	      && !gimple_has_volatile_ops (ass)
+	      && vn_get_stmt_kind (ass) == VN_REFERENCE)
+	    {
+	      tree last_vuse = gimple_vuse (ass);
+	      tree op = build3 (BIT_FIELD_REF, TREE_TYPE (rhs1),
+				gimple_assign_rhs1 (ass),
+				TREE_OPERAND (rhs1, 1), TREE_OPERAND (rhs1, 2));
+	      tree result = vn_reference_lookup (op, gimple_vuse (ass),
+						 default_vn_walk_kind,
+						 NULL, true, &last_vuse);
+	      if (result
+		  && useless_type_conversion_p (type, TREE_TYPE (result)))
+		return set_ssa_val_to (lhs, result);
+	    }
+	}
+      break;
     case TRUNC_DIV_EXPR:
       if (TYPE_UNSIGNED (type))
 	break;

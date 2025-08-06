@@ -16,8 +16,5 @@ loop (int k, double x)
   return t;
 }
 
-/* Verify we end up with scalar loads from r for the final sum.  */
-/* { dg-final { scan-assembler "vaddsd\tr\\\+40" } } */
-/* { dg-final { scan-assembler "vaddsd\tr\\\+32" } } */
-/* { dg-final { scan-assembler "vaddsd\tr\\\+24" } } */
-/* { dg-final { scan-assembler "vaddsd\tr\\\+16" } } */
+/* Verify we end up with no loads from r.  */
+/* { dg-final { scan-assembler-not "v\[ma\]\[^\t \]+\tr" } } */
