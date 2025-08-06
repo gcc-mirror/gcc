@@ -432,7 +432,7 @@ struct bitint_large_huge
 
   void insert_before (gimple *);
   tree limb_access_type (tree, tree);
-  tree limb_access (tree, tree, tree, bool);
+  tree limb_access (tree, tree, tree, bool, bool = false);
   tree build_bit_field_ref (tree, tree, unsigned HOST_WIDE_INT,
 			    unsigned HOST_WIDE_INT);
   void if_then (gimple *, profile_probability, edge &, edge &);
@@ -613,11 +613,14 @@ bitint_large_huge::limb_access_type (tree type, tree idx)
    TYPE.  If WRITE_P is true, it will be a store, otherwise a read.  */
 
 tree
-bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
+bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
+				bool abi_load_p)
 {
   tree atype = (tree_fits_uhwi_p (idx)
 		? limb_access_type (type, idx) : m_limb_type);
-  tree ltype = m_limb_type;
+
+  tree ltype = (bitint_extended && abi_load_p) ? atype : m_limb_type;
+
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (var));
   if (as != TYPE_ADDR_SPACE (ltype))
     ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
@@ -654,12 +657,21 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 	{
 	  unsigned HOST_WIDE_INT nelts
 	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var))), limb_prec);
-	  tree atype = build_array_type_nelts (ltype, nelts);
+
+	  /* Build the array type with m_limb_type from the right address
+	     space.  */
+	  tree limb_type_a = m_limb_type;
+	  if (as != TYPE_ADDR_SPACE (m_limb_type))
+	    limb_type_a = build_qualified_type (m_limb_type,
+						TYPE_QUALS (m_limb_type)
+						| ENCODE_QUAL_ADDR_SPACE (as));
+
+	  tree atype = build_array_type_nelts (limb_type_a, nelts);
 	  var = build1 (VIEW_CONVERT_EXPR, atype, var);
 	}
       ret = build4 (ARRAY_REF, ltype, var, idx, NULL_TREE, NULL_TREE);
     }
-  if (!write_p && !useless_type_conversion_p (atype, m_limb_type))
+  if (!write_p && !useless_type_conversion_p (atype, ltype))
     {
       gimple *g = gimple_build_assign (make_ssa_name (m_limb_type), ret);
       insert_before (g);
@@ -1967,6 +1979,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs_type = TREE_TYPE (rhs1);
   bool eh = stmt_ends_bb_p (stmt);
+  bool load_bitfield_p = false;
   edge eh_edge = NULL;
   gimple *g;
 
@@ -1990,12 +2003,18 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
       if (!bitint_big_endian
 	  && DECL_OFFSET_ALIGN (fld) >= TYPE_ALIGN (TREE_TYPE (rhs1))
 	  && (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (fld)) % limb_prec) == 0)
-	goto normal_load;
+	{
+	  load_bitfield_p = true;
+	  goto normal_load;
+	}
       /* Even if DECL_FIELD_BIT_OFFSET (fld) is a multiple of BITS_PER_UNIT,
 	 handle it normally for now.  */
       if (!bitint_big_endian
 	  && (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (fld)) % BITS_PER_UNIT) == 0)
-	goto normal_load;
+	{
+	  load_bitfield_p = true;
+	  goto normal_load;
+	}
       tree repr = DECL_BIT_FIELD_REPRESENTATIVE (fld);
       poly_int64 bitoffset;
       poly_uint64 field_offset, repr_offset;
@@ -2244,7 +2263,7 @@ normal_load:
   /* Use write_p = true for loads with EH edges to make
      sure limb_access doesn't add a cast as separate
      statement after it.  */
-  rhs1 = limb_access (rhs_type, rhs1, idx, eh);
+  rhs1 = limb_access (rhs_type, rhs1, idx, eh, !load_bitfield_p);
   tree ret = make_ssa_name (TREE_TYPE (rhs1));
   g = gimple_build_assign (ret, rhs1);
   insert_before (g);
