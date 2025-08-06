@@ -97,10 +97,12 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
     }
 
   std::vector<TyTy::TyVar> params;
+  params.reserve (fntype.get_function_params ().size ());
+
   for (auto &param : fntype.get_function_params ())
     {
       TyTy::BaseType *ptype = TypeCheckType::Resolve (param.get_type ());
-      params.push_back (TyTy::TyVar (ptype->get_ref ()));
+      params.emplace_back (ptype->get_ref ());
     }
 
   translated = new TyTy::FnPtr (fntype.get_mappings ().get_hirid (),
@@ -118,10 +120,12 @@ TypeCheckType::visit (HIR::TupleType &tuple)
     }
 
   std::vector<TyTy::TyVar> fields;
+  fields.reserve (tuple.get_elems ().size ());
+
   for (auto &elem : tuple.get_elems ())
     {
       auto field_ty = TypeCheckType::Resolve (*elem);
-      fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
+      fields.emplace_back (field_ty->get_ref ());
     }
 
   translated = new TyTy::TupleType (tuple.get_mappings ().get_hirid (),

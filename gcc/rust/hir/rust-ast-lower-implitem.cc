@@ -115,7 +115,7 @@ ASTLowerImplItem::visit (AST::Function &function)
     {
       HIR::WhereClauseItem *i
 	= ASTLowerWhereClauseItem::translate (*item.get ());
-      where_clause_items.push_back (std::unique_ptr<HIR::WhereClauseItem> (i));
+      where_clause_items.emplace_back (i);
     }
 
   HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -162,10 +162,9 @@ ASTLowerImplItem::visit (AST::Function &function)
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
-      auto hir_param
-	= HIR::FunctionParam (mapping, std::move (translated_pattern),
-			      std::move (translated_type), param.get_locus ());
-      function_params.push_back (std::move (hir_param));
+      function_params.emplace_back (mapping, std::move (translated_pattern),
+				    std::move (translated_type),
+				    param.get_locus ());
     }
 
   bool terminated = false;
@@ -272,10 +271,9 @@ ASTLowerTraitItem::visit (AST::Function &func)
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
-      auto hir_param
-	= HIR::FunctionParam (mapping, std::move (translated_pattern),
-			      std::move (translated_type), param.get_locus ());
-      function_params.push_back (std::move (hir_param));
+      function_params.emplace_back (mapping, std::move (translated_pattern),
+				    std::move (translated_type),
+				    param.get_locus ());
     }
 
   if (func.has_self_param ())

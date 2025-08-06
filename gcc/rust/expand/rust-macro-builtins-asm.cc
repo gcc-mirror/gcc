@@ -101,7 +101,7 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
       if (token->get_id () == STRING_LITERAL)
 	{
 	  // TODO: Caring for span in here.
-	  new_abis.push_back ({token->as_string (), token->get_locus ()});
+	  new_abis.emplace_back (token->as_string (), token->get_locus ());
 	}
       else
 	{

@@ -200,8 +200,7 @@ PatternDeclaration::visit (AST::AltPattern &pattern)
   // push a new set of 'Or' bindings to the stack. Accounts for the
   // alternatives. e.g. in `p_0 | p_1`, bindings to the same identifier between
   // p_0 and p_1 shouldn't cause an error.
-  bindings_with_ctx.push_back (
-    PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ()));
+  bindings_with_ctx.emplace_back (PatternBoundCtx::Or, std::set<Identifier> ());
 
   // This is a hack to avoid creating a separate visitor class for the
   // consistency checks. We empty out the binding_info_map before each iteration
@@ -219,8 +218,8 @@ PatternDeclaration::visit (AST::AltPattern &pattern)
 
       // push a new `Product` context to correctly reject multiple bindings
       // within this single alt.
-      bindings_with_ctx.push_back (
-	PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ()));
+      bindings_with_ctx.emplace_back (PatternBoundCtx::Product,
+				      std::set<Identifier> ());
 
       alt->accept_vis (*this);
 

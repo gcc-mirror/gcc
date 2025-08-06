@@ -2368,8 +2368,10 @@ BaseType *
 FnPtr::clone () const
 {
   std::vector<TyVar> cloned_params;
+  cloned_params.reserve (params.size ());
+
   for (auto &p : params)
-    cloned_params.push_back (TyVar (p.get_ref ()));
+    cloned_params.emplace_back (p.get_ref ());
 
   return new FnPtr (get_ref (), get_ty_ref (), ident.locus,
 		    std::move (cloned_params), result_type,
@@ -4287,7 +4289,7 @@ DynamicObjectType::get_object_items () const
 	  if (item->get_trait_item_type ()
 		== Resolver::TraitItemReference::TraitItemType::FN
 	      && item->is_object_safe ())
-	    items.push_back ({item, &bound});
+	    items.emplace_back (item, &bound);
 	}
     }
   return items;

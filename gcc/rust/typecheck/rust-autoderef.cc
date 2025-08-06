@@ -425,8 +425,7 @@ AutoderefCycle::try_autoderefed (TyTy::BaseType *r)
   TyTy::ReferenceType *r1
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Imm);
-  adjustments.push_back (
-    Adjustment (Adjustment::AdjustmentType::IMM_REF, r, r1));
+  adjustments.emplace_back (Adjustment::AdjustmentType::IMM_REF, r, r1);
   if (select (*r1))
     return true;
 
@@ -436,8 +435,7 @@ AutoderefCycle::try_autoderefed (TyTy::BaseType *r)
   TyTy::ReferenceType *r2
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Mut);
-  adjustments.push_back (
-    Adjustment (Adjustment::AdjustmentType::MUT_REF, r, r2));
+  adjustments.emplace_back (Adjustment::AdjustmentType::MUT_REF, r, r2);
   if (select (*r2))
     return true;
 

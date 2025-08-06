@@ -980,7 +980,7 @@ Matrix::specialize (const Constructor &ctor) const
       if (ctor.is_covered_by (hd.ctor ()))
 	{
 	  pats.pop_head_constructor (ctor, subfields_place_info.size ());
-	  new_rows.push_back (MatrixRow (pats, row.is_under_guard ()));
+	  new_rows.emplace_back (pats, row.is_under_guard ());
 	}
     }
 
@@ -1186,7 +1186,7 @@ WitnessMatrix::apply_constructor (const Constructor &ctor,
 	    }
 	}
 
-      stack.push_back (WitnessPat (ctor, subfield, ty));
+      stack.emplace_back (ctor, subfield, ty);
     }
 }
 
@@ -1597,7 +1597,7 @@ check_match_usefulness (Resolver::TypeCheckContext *ctx,
       MatchArm lowered = lower_arm (ctx, arm, scrutinee_ty);
       PatOrWild pat = PatOrWild::make_pattern (lowered.get_pat ());
       pats.push (pat);
-      rows.push_back (MatrixRow (pats, lowered.has_guard ()));
+      rows.emplace_back (pats, lowered.has_guard ());
     }
 
   std::vector<PlaceInfo> place_infos = {{PlaceInfo (scrutinee_ty)}};

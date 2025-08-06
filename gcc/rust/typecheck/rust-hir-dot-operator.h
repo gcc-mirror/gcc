@@ -49,6 +49,10 @@ class MethodResolver : private TypeCheckBase, protected AutoderefCycle
 public:
   struct predicate_candidate
   {
+    predicate_candidate (TyTy::TypeBoundPredicateItem lookup,
+			 TyTy::FnType *fntype)
+      : lookup (lookup), fntype (fntype)
+    {}
     TyTy::TypeBoundPredicateItem lookup;
     TyTy::FnType *fntype;
   };
@@ -67,6 +71,11 @@ public:
 
   struct impl_item_candidate
   {
+    impl_item_candidate (HIR::Function *item, HIR::ImplBlock *impl_block,
+			 TyTy::FnType *ty)
+      : item (item), impl_block (impl_block), ty (ty)
+    {}
+
     HIR::Function *item;
     HIR::ImplBlock *impl_block;
     TyTy::FnType *ty;
@@ -74,6 +83,13 @@ public:
 
   struct trait_item_candidate
   {
+    trait_item_candidate (const HIR::TraitItemFunc *item,
+			  const HIR::Trait *trait, TyTy::FnType *ty,
+			  const TraitReference *reference,
+			  const TraitItemReference *item_ref)
+      : item (item), trait (trait), ty (ty), reference (reference),
+	item_ref (item_ref)
+    {}
     const HIR::TraitItemFunc *item;
     const HIR::Trait *trait;
     TyTy::FnType *ty;

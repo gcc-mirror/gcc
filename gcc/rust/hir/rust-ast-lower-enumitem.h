@@ -80,6 +80,8 @@ public:
 		     item.get_visibility ().as_string ().c_str ());
 
     std::vector<HIR::TupleField> fields;
+    fields.reserve (item.get_tuple_fields ().size ());
+
     for (auto &field : item.get_tuple_fields ())
       {
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
@@ -90,11 +92,8 @@ public:
 	  crate_num, field.get_node_id (), mappings.get_next_hir_id (crate_num),
 	  mappings.get_next_localdef_id (crate_num));
 
-	HIR::TupleField translated_field (field_mapping,
-					  std::unique_ptr<HIR::Type> (type),
-					  vis, field.get_locus (),
-					  field.get_outer_attrs ());
-	fields.push_back (std::move (translated_field));
+	fields.emplace_back (field_mapping, std::unique_ptr<HIR::Type> (type),
+			     vis, field.get_locus (), field.get_outer_attrs ());
       }
 
     translated

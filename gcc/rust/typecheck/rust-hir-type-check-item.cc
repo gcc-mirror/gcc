@@ -115,13 +115,13 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
       if (p.needs_substitution ())
 	{
 	  TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
-	  args.push_back (TyTy::SubstitutionArg (&p, infer_var.get_tyty ()));
+	  args.emplace_back (&p, infer_var.get_tyty ());
 	}
       else
 	{
 	  auto param = p.get_param_ty ();
 	  auto resolved = param->destructure ();
-	  args.push_back (TyTy::SubstitutionArg (&p, resolved));
+	  args.emplace_back (&p, resolved);
 	}
     }
 
@@ -554,8 +554,8 @@ TypeCheckItem::visit (HIR::Function &function)
       auto param_tyty = TypeCheckType::Resolve (param.get_type ());
       context->insert_type (param.get_mappings (), param_tyty);
       TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
-      params.push_back (
-	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
+      params.emplace_back (param.get_param_name ().clone_pattern (),
+			   param_tyty);
     }
 
   auto &nr_ctx

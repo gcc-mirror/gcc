@@ -44,7 +44,7 @@ UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		infers);
 
   TyTy::BaseType *result = r.go ();
-  commits.push_back ({lhs.get_ty (), rhs.get_ty (), result});
+  commits.emplace_back (lhs.get_ty (), rhs.get_ty (), result);
   if (r.commit_flag)
     UnifyRules::commit (lhs.get_ty (), rhs.get_ty (), result);
 
@@ -222,7 +222,7 @@ UnifyRules::go ()
 	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
 	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
 
-	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+	  infers.emplace_back (p->get_ref (), p->get_ty_ref (), p, i);
 
 	  // FIXME
 	  // this is hacky to set the implicit param lets make this a function
@@ -239,7 +239,7 @@ UnifyRules::go ()
 	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
 	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
 
-	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+	  infers.emplace_back (p->get_ref (), p->get_ty_ref (), p, i);
 
 	  // FIXME
 	  // this is hacky to set the implicit param lets make this a function
@@ -1223,7 +1223,7 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 	    if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 	      return new TyTy::ErrorType (0);
 
-	    fields.push_back (TyTy::TyVar (unified_ty->get_ref ()));
+	    fields.emplace_back (unified_ty->get_ref ());
 	  }
 
 	return new TyTy::TupleType (type.get_ref (), type.get_ty_ref (),

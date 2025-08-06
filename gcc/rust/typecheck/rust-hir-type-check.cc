@@ -260,7 +260,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	}
 
       context->insert_type (self_param.get_mappings (), self_type);
-      params.push_back (TyTy::FnParam (std::move (self_pattern), self_type));
+      params.emplace_back (std::move (self_pattern), self_type);
     }
 
   for (auto &param : function.get_function_params ())
@@ -270,8 +270,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       context->insert_type (param.get_mappings (), param_tyty);
       TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
       // FIXME: Should we take the name ? Use a shared pointer instead ?
-      params.push_back (
-	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
+      params.emplace_back (param.get_param_name ().clone_pattern (),
+			   param_tyty);
     }
 
   auto &nr_ctx

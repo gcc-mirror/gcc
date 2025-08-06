@@ -327,8 +327,8 @@ TypeCheckMethodCallExpr::go (FnType *ref, HIR::MethodCallExpr &call,
 	  return new ErrorType (ref->get_ref ());
 	}
 
-      Argument a (arg->get_mappings (), argument_expr_tyty, arg->get_locus ());
-      args.push_back (std::move (a));
+      args.emplace_back (arg->get_mappings (), argument_expr_tyty,
+			 arg->get_locus ());
     }
 
   TypeCheckMethodCallExpr checker (call.get_mappings (), args,

@@ -105,8 +105,8 @@ ResolveTraitItems::visit (AST::Function &function)
 	    {
 	      // here we implicitly make self have a type path of Self
 	      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-	      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-		new AST::TypePathSegment ("Self", false, param.get_locus ())));
+	      segments.emplace_back (
+		new AST::TypePathSegment ("Self", false, param.get_locus ()));
 
 	      AST::TypePath self_type_path (std::move (segments),
 					    param.get_locus ());
@@ -512,8 +512,8 @@ ResolveItem::visit (AST::Function &function)
 	{
 	  // here we implicitly make self have a type path of Self
 	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+	  segments.emplace_back (
+	    new AST::TypePathSegment ("Self", false, self_param.get_locus ()));
 
 	  AST::TypePath self_type_path (std::move (segments),
 					self_param.get_locus ());
@@ -906,9 +906,8 @@ flatten_list (const AST::UseTreeList &list, std::vector<Import> &imports)
 	    = AST::SimplePath ({}, prefix.has_opening_scope_resolution (),
 			       prefix.get_locus ());
 	  for (auto &seg : prefix.get_segments ())
-	    prefix_copy.get_segments ().push_back (
-	      AST::SimplePathSegment (seg.get_segment_name (),
-				      seg.get_locus ()));
+	    prefix_copy.get_segments ().emplace_back (seg.get_segment_name (),
+						      seg.get_locus ());
 
 	  import->add_prefix (std::move (prefix_copy));
 	}

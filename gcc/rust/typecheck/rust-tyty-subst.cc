@@ -554,6 +554,7 @@ std::vector<SubstitutionParamMapping>
 SubstitutionRef::clone_substs () const
 {
   std::vector<SubstitutionParamMapping> clone;
+  clone.reserve (substitutions.size ());
 
   for (auto &sub : substitutions)
     clone.push_back (sub.clone ());
@@ -777,9 +778,8 @@ SubstitutionRef::get_mappings_from_generic_args (
 	    }
 	}
 
-      SubstitutionArg subst_arg (&param_mapping, resolved);
+      mappings.emplace_back (&param_mapping, resolved);
       offs++;
-      mappings.push_back (std::move (subst_arg));
     }
 
   for (auto &arg : args.get_const_args ())
@@ -833,9 +833,8 @@ SubstitutionRef::get_mappings_from_generic_args (
 			       expr.get_mappings ().get_hirid (),
 			       expr.get_mappings ().get_hirid (), {});
 
-      SubstitutionArg subst_arg (&param_mapping, const_value);
+      mappings.emplace_back (&param_mapping, const_value);
       offs++;
-      mappings.push_back (std::move (subst_arg));
     }
 
   // we must need to fill out defaults
@@ -865,8 +864,7 @@ SubstitutionRef::get_mappings_from_generic_args (
 		return SubstitutionArgumentMappings::error ();
 	    }
 
-	  SubstitutionArg subst_arg (&param, resolved);
-	  mappings.push_back (std::move (subst_arg));
+	  mappings.emplace_back (&param, resolved);
 	}
     }
 
@@ -892,12 +890,12 @@ SubstitutionRef::infer_substitions (location_t locus)
 
 	  if (have_mapping)
 	    {
-	      args.push_back (SubstitutionArg (&p, it->second));
+	      args.emplace_back (&p, it->second);
 	    }
 	  else if (generic.get_kind () == HIR::GenericParam::GenericKind::TYPE)
 	    {
 	      TyVar infer_var = TyVar::get_implicit_infer_var (locus);
-	      args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
+	      args.emplace_back (&p, infer_var.get_tyty ());
 	      argument_mappings[symbol] = infer_var.get_tyty ();
 	    }
 	  else if (generic.get_kind () == HIR::GenericParam::GenericKind::CONST)
@@ -909,13 +907,13 @@ SubstitutionRef::infer_substitions (location_t locus)
 
 	      TyVar infer_var
 		= TyVar::get_implicit_const_infer_var (const_type, locus);
-	      args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
+	      args.emplace_back (&p, infer_var.get_tyty ());
 	      argument_mappings[symbol] = infer_var.get_tyty ();
 	    }
 	}
       else
 	{
-	  args.push_back (SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	  args.emplace_back (&p, p.get_param_ty ()->resolve ());
 	}
     }
 
@@ -961,10 +959,7 @@ SubstitutionRef::adjust_mappings_for_this (
 
       bool ok = !arg.is_error ();
       if (ok || (trait_mode && i == 0))
-	{
-	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
+	resolved_mappings.emplace_back (&subst, arg.get_tyty ());
     }
 
   if (resolved_mappings.empty ())
@@ -1008,10 +1003,7 @@ SubstitutionRef::are_mappings_bound (SubstitutionArgumentMappings &mappings)
 
       bool ok = !arg.is_error ();
       if (ok)
-	{
-	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
+	resolved_mappings.emplace_back (&subst, arg.get_tyty ());
     }
 
   return !resolved_mappings.empty ();
@@ -1032,10 +1024,7 @@ SubstitutionRef::solve_mappings_from_receiver_for_self (
       SubstitutionArg &arg = mappings.get_mappings ().at (i);
 
       if (param_mapping.needs_substitution ())
-	{
-	  SubstitutionArg adjusted (&param_mapping, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
+	resolved_mappings.emplace_back (&param_mapping, arg.get_tyty ());
     }
 
   return SubstitutionArgumentMappings (resolved_mappings,

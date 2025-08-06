@@ -214,8 +214,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	      rust_assert (ok);
 
 	      adtFieldIndexToField[field_index] = implicit_field;
-	      struct_expr.get_fields ().push_back (
-		std::unique_ptr<HIR::StructExprField> (implicit_field));
+	      struct_expr.get_fields ().emplace_back (implicit_field);
 	    }
 	}
     }
@@ -245,11 +244,11 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	field.release ();
 
       std::vector<std::unique_ptr<HIR::StructExprField> > ordered_fields;
+      ordered_fields.reserve (adtFieldIndexToField.size ());
+
       for (size_t i = 0; i < adtFieldIndexToField.size (); i++)
-	{
-	  ordered_fields.push_back (
-	    std::unique_ptr<HIR::StructExprField> (adtFieldIndexToField[i]));
-	}
+	ordered_fields.emplace_back (adtFieldIndexToField[i]);
+
       struct_expr.set_fields_as_owner (std::move (ordered_fields));
     }
 

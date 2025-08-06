@@ -30,6 +30,11 @@ class UnifyRules
 public:
   struct InferenceSite
   {
+    InferenceSite (HirId pref, HirId ptyref, TyTy::ParamType *param,
+		   TyTy::InferType *infer)
+      : pref (pref), ptyref (ptyref), param (param), infer (infer)
+    {}
+
     HirId pref;
     HirId ptyref;
     TyTy::ParamType *param;
@@ -37,6 +42,11 @@ public:
   };
   struct CommitSite
   {
+    CommitSite (TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+		TyTy::BaseType *resolved)
+      : lhs (lhs), rhs (rhs), resolved (resolved)
+    {}
+
     TyTy::BaseType *lhs;
     TyTy::BaseType *rhs;
     TyTy::BaseType *resolved;

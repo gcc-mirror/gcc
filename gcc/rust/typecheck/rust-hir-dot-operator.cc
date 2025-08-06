@@ -175,7 +175,7 @@ MethodResolver::assemble_inherent_impl_candidates (
 	    return true;
 	}
 
-      inherent_impl_fns.push_back ({func, impl, fnty});
+      inherent_impl_fns.emplace_back (func, impl, fnty);
 
       return true;
     });
@@ -259,7 +259,7 @@ MethodResolver::assemble_trait_impl_candidates (
 	      continue;
 	  }
 
-	impl_candidates.push_back ({func, impl, fnty});
+	impl_candidates.emplace_back (func, impl, fnty);
 	return true;
       }
 
@@ -285,8 +285,7 @@ MethodResolver::assemble_trait_impl_candidates (
     rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
     TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
 
-    trait_item_candidate candidate{func, trait, fnty, trait_ref, item_ref};
-    trait_candidates.push_back (candidate);
+    trait_candidates.emplace_back (func, trait, fnty, trait_ref, item_ref);
 
     return true;
   });
@@ -474,10 +473,7 @@ MethodResolver::get_predicate_items (
 	{
 	  TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
 	  if (fnty->is_method ())
-	    {
-	      predicate_candidate candidate{lookup, fnty};
-	      predicate_items.push_back (candidate);
-	    }
+	    predicate_items.emplace_back (lookup, fnty);
 	}
     }
 

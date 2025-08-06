@@ -5494,6 +5494,8 @@ struct InlineAsmTemplatePiece
 
 struct TupleClobber
 {
+  TupleClobber (std::string symbol, location_t loc) : symbol (symbol), loc (loc)
+  {}
   // as gccrs still doesn't contain a symbol class I have put them as strings
   std::string symbol;
   location_t loc;

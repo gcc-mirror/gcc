@@ -102,7 +102,9 @@ ProcMacro::TokenStream
 convert (const std::vector<const_TokenPtr> &tokens)
 {
   std::vector<ProcMacro::TokenStream> trees;
-  trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
+  trees.reserve (tokens.size ());
+
+  trees.emplace_back (ProcMacro::TokenStream::make_tokenstream ());
   for (auto &token : tokens)
     {
       auto loc = convert (token->get_locus ());

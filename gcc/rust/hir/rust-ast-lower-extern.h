@@ -109,9 +109,8 @@ public:
 				       mappings.get_next_localdef_id (
 					 crate_num));
 
-	function_params.push_back (
-	  HIR::NamedFunctionParam (mapping, param_name,
-				   std::unique_ptr<HIR::Type> (param_type)));
+	function_params.emplace_back (mapping, param_name,
+				      std::unique_ptr<HIR::Type> (param_type));
       }
 
     auto crate_num = mappings.get_current_crate ();

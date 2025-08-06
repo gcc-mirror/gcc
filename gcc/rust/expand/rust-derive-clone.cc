@@ -64,11 +64,10 @@ DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
     new BlockExpr ({}, std::move (clone_expr), {}, {}, tl::nullopt, loc, loc));
   auto big_self_type = builder.single_type_path ("Self");
 
-  std::unique_ptr<SelfParam> self (new SelfParam (tl::nullopt,
-						  /* is_mut */ false, loc));
-
   std::vector<std::unique_ptr<Param>> params;
-  params.push_back (std::move (self));
+
+  params.emplace_back (new SelfParam (tl::nullopt,
+				      /* is_mut */ false, loc));
 
   return std::unique_ptr<AssociatedItem> (
     new Function ({"clone"}, builder.fn_qualifiers (), /* generics */ {},

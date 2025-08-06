@@ -91,8 +91,8 @@ ExportContext::emit_function (const HIR::Function &fn)
       AST::Function &function = static_cast<AST::Function &> (vis_item);
 
       std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
-      external_items.push_back (std::unique_ptr<AST::ExternalItem> (
-	static_cast<AST::ExternalItem *> (&function)));
+      external_items.emplace_back (
+	static_cast<AST::ExternalItem *> (&function));
 
       AST::ExternBlock extern_block (get_string_from_abi (Rust::ABI::RUST),
 				     std::move (external_items),

@@ -114,6 +114,8 @@ public:
       return CanonicalPath (other.segs, crate_num);
 
     std::vector<std::pair<NodeId, std::string>> copy (segs);
+    copy.reserve (other.segs.size ());
+
     for (auto &s : other.segs)
       copy.push_back (s);
 

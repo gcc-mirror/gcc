@@ -154,7 +154,7 @@ void
 TypeCheckContext::push_return_type (TypeCheckContextItem item,
 				    TyTy::BaseType *return_type)
 {
-  return_type_stack.push_back ({std::move (item), return_type});
+  return_type_stack.emplace_back (std::move (item), return_type);
 }
 
 void
@@ -310,7 +310,7 @@ TypeCheckContext::insert_associated_impl_mapping (HirId trait_id,
       associated_traits_to_impls[trait_id] = {};
     }
 
-  associated_traits_to_impls[trait_id].push_back ({impl_type, impl_id});
+  associated_traits_to_impls[trait_id].emplace_back (impl_type, impl_id);
 }
 
 bool

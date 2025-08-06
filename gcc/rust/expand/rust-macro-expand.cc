@@ -1165,7 +1165,7 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 	  auto result = parser.parse_item (false);
 	  if (result == nullptr)
 	    break;
-	  nodes.push_back ({std::move (result)});
+	  nodes.emplace_back (std::move (result));
 	}
       break;
     case ContextType::STMT:
@@ -1174,7 +1174,7 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 	  auto result = parser.parse_stmt ();
 	  if (result == nullptr)
 	    break;
-	  nodes.push_back ({std::move (result)});
+	  nodes.emplace_back (std::move (result));
 	}
       break;
     case ContextType::TRAIT:

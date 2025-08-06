@@ -356,8 +356,8 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       needs_reborrow = true;
       expected_mutability = to_mutbl;
 
-      adjustments.push_back (
-	Adjustment (Adjustment::AdjustmentType::INDIRECTION, source_ref, ty_a));
+      adjustments.emplace_back (Adjustment::AdjustmentType::INDIRECTION,
+				source_ref, ty_a);
     }
   else if (source_is_ref && target_is_ptr)
     {
@@ -381,8 +381,8 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       needs_reborrow = true;
       expected_mutability = to_mutbl;
 
-      adjustments.push_back (
-	Adjustment (Adjustment::AdjustmentType::INDIRECTION, source_ref, ty_a));
+      adjustments.emplace_back (Adjustment::AdjustmentType::INDIRECTION,
+				source_ref, ty_a);
     }
 
   // FIXME
@@ -411,7 +411,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       // result->set_ref (a->get_ref ());
 
       // append a dyn coercion adjustment
-      adjustments.push_back (Adjustment (Adjustment::UNSIZE, a, result));
+      adjustments.emplace_back (Adjustment::UNSIZE, a, result);
 
       // reborrow if needed
       if (needs_reborrow)
@@ -424,7 +424,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 	  Adjustment::AdjustmentType borrow_type
 	    = expected_mutability == Mutability::Imm ? Adjustment::IMM_REF
 						     : Adjustment::MUT_REF;
-	  adjustments.push_back (Adjustment (borrow_type, result, reborrow));
+	  adjustments.emplace_back (borrow_type, result, reborrow);
 	  result = reborrow;
 	}
 

@@ -94,11 +94,11 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
 	  = static_cast<AST::TupleStructItemsNoRange &> (items);
 
 	std::vector<std::unique_ptr<HIR::Pattern>> patterns;
+	patterns.reserve (items_no_range.get_patterns ().size ());
+
 	for (auto &inner_pattern : items_no_range.get_patterns ())
-	  {
-	    HIR::Pattern *p = ASTLoweringPattern::translate (*inner_pattern);
-	    patterns.push_back (std::unique_ptr<HIR::Pattern> (p));
-	  }
+	  patterns.emplace_back (
+	    ASTLoweringPattern::translate (*inner_pattern));
 
 	lowered = new HIR::TupleStructItemsNoRest (std::move (patterns));
       }
@@ -196,7 +196,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
       mappings.insert_node_to_hir (field_node_id, field_id);
 
       // add it to the lowered fields list
-      fields.push_back (std::unique_ptr<HIR::StructPatternField> (f));
+      fields.emplace_back (f);
     }
 
   auto crate_num = mappings.get_current_crate ();
@@ -331,10 +331,7 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 	AST::SlicePatternItemsNoRest &ref
 	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
 	for (auto &p : ref.get_patterns ())
-	  {
-	    HIR::Pattern *item = ASTLoweringPattern::translate (*p);
-	    items.push_back (std::unique_ptr<HIR::Pattern> (item));
-	  }
+	  items.emplace_back (ASTLoweringPattern::translate (*p));
       }
       break;
     case AST::SlicePatternItems::SlicePatternItemType::HAS_REST:
@@ -364,12 +361,10 @@ ASTLoweringPattern::visit (AST::AltPattern &pattern)
 				 UNKNOWN_LOCAL_DEFID);
 
   std::vector<std::unique_ptr<HIR::Pattern>> alts;
+  alts.reserve (pattern.get_alts ().size ());
 
   for (auto &alt : pattern.get_alts ())
-    {
-      alts.push_back (
-	std::unique_ptr<HIR::Pattern> (ASTLoweringPattern::translate (*alt)));
-    }
+    alts.emplace_back (ASTLoweringPattern::translate (*alt));
 
   translated
     = new HIR::AltPattern (mapping, std::move (alts), pattern.get_locus ());

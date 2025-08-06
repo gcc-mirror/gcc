@@ -90,7 +90,7 @@ TypeBoundsProbe::process_impl_block (
 	return true;
     }
 
-  possible_trait_paths.push_back ({&impl->get_trait_ref (), impl});
+  possible_trait_paths.emplace_back (&impl->get_trait_ref (), impl);
   return true;
 }
 
@@ -110,7 +110,7 @@ TypeBoundsProbe::scan ()
       TraitReference *trait_ref = TraitResolver::Resolve (*trait_path);
 
       if (!trait_ref->is_error ())
-	trait_references.push_back ({trait_ref, path.second});
+	trait_references.emplace_back (trait_ref, path.second);
     }
 
   // marker traits...
@@ -185,7 +185,7 @@ TypeBoundsProbe::add_trait_bound (HIR::Trait *trait)
 {
   auto trait_ref = TraitResolver::Resolve (*trait);
 
-  trait_references.push_back ({trait_ref, mappings.lookup_builtin_marker ()});
+  trait_references.emplace_back (trait_ref, mappings.lookup_builtin_marker ());
 }
 
 void
@@ -306,11 +306,9 @@ TypeCheckBase::get_predicate_from_bound (
 
 	std::vector<HIR::GenericArgsBinding> bindings;
 	location_t output_locus = fn.get_return_type ().get_locus ();
-	HIR::GenericArgsBinding binding (Identifier (
-					   trait_item->trait_identifier ()),
-					 fn.get_return_type ().clone_type (),
-					 output_locus);
-	bindings.push_back (std::move (binding));
+	bindings.emplace_back (Identifier (trait_item->trait_identifier ()),
+			       fn.get_return_type ().clone_type (),
+			       output_locus);
 
 	args = HIR::GenericArgs ({} /* lifetimes */,
 				 std::move (inputs) /* type_args*/,
@@ -468,8 +466,8 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
     {
       TyTy::BaseType *argument
 	= m.get_tyty () == nullptr ? nullptr : m.get_tyty ()->clone ();
-      SubstitutionArg c (&substitutions.at (i++), argument);
-      copied_arg_mappings.push_back (std::move (c));
+
+      copied_arg_mappings.emplace_back (&substitutions.at (i++), argument);
     }
 
   used_arguments
@@ -691,8 +689,7 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
       TyTy::BaseType *argument
 	= is_implicit_self ? receiver->clone () : mapping.get_tyty ();
 
-      SubstitutionArg arg (mapping.get_param_mapping (), argument);
-      adjusted_mappings.push_back (std::move (arg));
+      adjusted_mappings.emplace_back (mapping.get_param_mapping (), argument);
     }
 
   SubstitutionArgumentMappings adjusted (adjusted_mappings, {},
@@ -827,10 +824,7 @@ TypeBoundPredicate::get_associated_type_items ()
 	= trait_item.get_trait_item_type ()
 	  == Resolver::TraitItemReference::TraitItemType::TYPE;
       if (is_associated_type)
-	{
-	  TypeBoundPredicateItem item (*this, &trait_item);
-	  items.push_back (std::move (item));
-	}
+	items.emplace_back (*this, &trait_item);
     }
   return items;
 }

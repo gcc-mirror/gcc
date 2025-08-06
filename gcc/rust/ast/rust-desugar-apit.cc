@@ -188,9 +188,10 @@ public:
 
     // Convert to TypePath by creating path segments
     std::vector<std::unique_ptr<TypePathSegment>> segments;
-    segments.push_back (std::unique_ptr<TypePathSegment> (new TypePathSegment (
-      PathIdentSegment (ident.as_string (), type.get_locus ()), false,
-      type.get_locus ())));
+    segments.emplace_back (
+      new TypePathSegment (PathIdentSegment (ident.as_string (),
+					     type.get_locus ()),
+			   false, type.get_locus ()));
 
     // Create TypePath from segments
     auto type_path
@@ -198,6 +199,8 @@ public:
 
     // Convert bounds from impl trait to generic parameter bounds
     std::vector<std::unique_ptr<TypeParamBound>> bounds;
+    bounds.reserve (type.get_type_param_bounds ().size ());
+
     for (auto &bound : type.get_type_param_bounds ())
       bounds.push_back (bound->clone_type_param_bound ());
 
@@ -228,9 +231,10 @@ public:
 
     // Convert to TypePath by creating path segments
     std::vector<std::unique_ptr<TypePathSegment>> segments;
-    segments.push_back (std::unique_ptr<TypePathSegment> (new TypePathSegment (
-      PathIdentSegment (ident.as_string (), type.get_locus ()), false,
-      type.get_locus ())));
+    segments.emplace_back (
+      new TypePathSegment (PathIdentSegment (ident.as_string (),
+					     type.get_locus ()),
+			   false, type.get_locus ()));
 
     // Create TypePath from segments
     auto type_path
@@ -407,6 +411,9 @@ private:
 
 		  std::vector<std::unique_ptr<TypeParamBound>>
 		    type_param_bounds;
+		  type_param_bounds.reserve (
+		    tp.get_type_param_bounds ().size ());
+
 		  for (auto &b : tp.get_type_param_bounds ())
 		    type_param_bounds.push_back (std::move (b));
 		  tp.get_type_param_bounds ().clear ();
@@ -459,9 +466,10 @@ private:
     std::vector<SimplePathSegment> simple_segs = {simple_seg};
     auto simple_path = SimplePath (simple_segs, false, ident.get_locus ());
     std::vector<std::unique_ptr<TypePathSegment>> segments;
-    segments.push_back (std::unique_ptr<TypePathSegment> (new TypePathSegment (
-      PathIdentSegment (ident.as_string (), ident.get_locus ()), false,
-      ident.get_locus ())));
+    segments.emplace_back (
+      new TypePathSegment (PathIdentSegment (ident.as_string (),
+					     ident.get_locus ()),
+			   false, ident.get_locus ()));
     auto type_path = new TypePath (std::move (segments), ident.get_locus ());
     return std::unique_ptr<Type> (type_path);
   }

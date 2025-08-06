@@ -425,10 +425,10 @@ PathProbeType::union_bounds (
     }
 
   std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>> union_set;
+
   for (auto it = mapper.begin (); it != mapper.end (); it++)
-    {
-      union_set.push_back ({it->second.first, it->second.second});
-    }
+    union_set.emplace_back (it->second.first, it->second.second);
+
   return union_set;
 }
 

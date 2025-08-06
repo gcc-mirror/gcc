@@ -1716,10 +1716,9 @@ Parser<ManagedTokenSource>::parse_decl_macro_def (AST::Visibility vis,
 	  return nullptr;
 	}
 
-      AST::MacroRule macro_rule
-	= AST::MacroRule (std::move (matcher), std::move (transcriber), locus);
       std::vector<AST::MacroRule> macro_rules;
-      macro_rules.push_back (macro_rule);
+      macro_rules.emplace_back (std::move (matcher), std::move (transcriber),
+				locus);
 
       return std::unique_ptr<AST::MacroRulesDefinition> (
 	AST::MacroRulesDefinition::decl_macro (std::move (rule_name),
@@ -3316,8 +3315,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params ()
 	  break;
 	}
 
-      lifetime_params.push_back (std::unique_ptr<AST::LifetimeParam> (
-	new AST::LifetimeParam (std::move (lifetime_param.value ()))));
+      lifetime_params.emplace_back (
+	new AST::LifetimeParam (std::move (lifetime_param.value ())));
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	break;
@@ -3356,8 +3355,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
 	  return {};
 	}
 
-      lifetime_params.push_back (std::unique_ptr<AST::LifetimeParam> (
-	new AST::LifetimeParam (std::move (lifetime_param))));
+      lifetime_params.emplace_back (
+	new AST::LifetimeParam (std::move (lifetime_param)));
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	break;

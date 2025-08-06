@@ -47,6 +47,10 @@ struct Term
 /** Variance constraint of a type parameter. */
 struct Constraint
 {
+  Constraint (SolutionIndex target_index, Term *term)
+    : target_index (target_index), term (term)
+  {}
+
   SolutionIndex target_index;
   Term *term;
 };

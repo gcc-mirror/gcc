@@ -554,12 +554,12 @@ std::unique_ptr<GenericParam>
 Builder::new_lifetime_param (LifetimeParam &param)
 {
   Lifetime l = new_lifetime (param.get_lifetime ());
+
   std::vector<Lifetime> lifetime_bounds;
+  lifetime_bounds.reserve (param.get_lifetime_bounds ().size ());
+
   for (auto b : param.get_lifetime_bounds ())
-    {
-      Lifetime bl = new_lifetime (b);
-      lifetime_bounds.push_back (bl);
-    }
+    lifetime_bounds.emplace_back (new_lifetime (b));
 
   auto p = new LifetimeParam (l, std::move (lifetime_bounds),
 			      param.get_outer_attrs (), param.get_locus ());
@@ -605,11 +605,11 @@ Builder::new_type_param (
 	    for (const auto &lifetime : tb.get_for_lifetimes ())
 	      {
 		std::vector<Lifetime> lifetime_bounds;
+		lifetime_bounds.reserve (
+		  lifetime.get_lifetime_bounds ().size ());
+
 		for (const auto &b : lifetime.get_lifetime_bounds ())
-		  {
-		    Lifetime bl = new_lifetime (b);
-		    lifetime_bounds.push_back (std::move (bl));
-		  }
+		  lifetime_bounds.emplace_back (new_lifetime (b));
 
 		Lifetime nl = new_lifetime (lifetime.get_lifetime ());
 		LifetimeParam p (std::move (nl), std::move (lifetime_bounds),
@@ -626,12 +626,11 @@ Builder::new_type_param (
 		    {
 		      const TypePathSegment &segment
 			= (const TypePathSegment &) (*seg.get ());
-		      TypePathSegment *s = new TypePathSegment (
+
+		      segments.emplace_back (new TypePathSegment (
 			segment.get_ident_segment (),
 			segment.get_separating_scope_resolution (),
-			segment.get_locus ());
-		      std::unique_ptr<TypePathSegment> sg (s);
-		      segments.push_back (std::move (sg));
+			segment.get_locus ()));
 		    }
 		    break;
 
@@ -642,11 +641,10 @@ Builder::new_type_param (
 
 		      GenericArgs args
 			= new_generic_args (generic.get_generic_args ());
-		      TypePathSegmentGeneric *s = new TypePathSegmentGeneric (
+
+		      segments.emplace_back (new TypePathSegmentGeneric (
 			generic.get_ident_segment (), false, std::move (args),
-			generic.get_locus ());
-		      std::unique_ptr<TypePathSegment> sg (s);
-		      segments.push_back (std::move (sg));
+			generic.get_locus ()));
 		    }
 		    break;
 
@@ -664,12 +662,9 @@ Builder::new_type_param (
 	    TypePath p (std::move (segments), path.get_locus (),
 			path.has_opening_scope_resolution_op ());
 
-	    TraitBound *b = new TraitBound (std::move (p), tb.get_locus (),
-					    tb.is_in_parens (),
-					    tb.has_opening_question_mark (),
-					    std::move (for_lifetimes));
-	    std::unique_ptr<TypeParamBound> bound (b);
-	    type_param_bounds.push_back (std::move (bound));
+	    type_param_bounds.emplace_back (new TraitBound (
+	      std::move (p), tb.get_locus (), tb.is_in_parens (),
+	      tb.has_opening_question_mark (), std::move (for_lifetimes)));
 	  }
 	  break;
 
@@ -677,10 +672,9 @@ Builder::new_type_param (
 	  {
 	    const Lifetime &l = (const Lifetime &) *b.get ();
 
-	    auto bl = new Lifetime (l.get_lifetime_type (),
-				    l.get_lifetime_name (), l.get_locus ());
-	    std::unique_ptr<TypeParamBound> bound (bl);
-	    type_param_bounds.push_back (std::move (bound));
+	    type_param_bounds.emplace_back (
+	      new Lifetime (l.get_lifetime_type (), l.get_lifetime_name (),
+			    l.get_locus ()));
 	  }
 	  break;
 	}
@@ -709,18 +703,14 @@ Builder::new_generic_args (GenericArgs &args)
   location_t locus = args.get_locus ();
 
   for (const auto &lifetime : args.get_lifetime_args ())
-    {
-      Lifetime l = new_lifetime (lifetime);
-      lifetime_args.push_back (std::move (l));
-    }
+    lifetime_args.push_back (new_lifetime (lifetime));
 
   for (auto &binding : args.get_binding_args ())
     {
       Type &t = *binding.get_type_ptr ().get ();
       std::unique_ptr<Type> ty = t.reconstruct ();
-      GenericArgsBinding b (binding.get_identifier (), std::move (ty),
-			    binding.get_locus ());
-      binding_args.push_back (std::move (b));
+      binding_args.emplace_back (binding.get_identifier (), std::move (ty),
+				 binding.get_locus ());
     }
 
   for (auto &arg : args.get_generic_args ())

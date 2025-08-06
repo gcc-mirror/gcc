@@ -34,6 +34,10 @@ namespace Compile {
 
 struct fncontext
 {
+  fncontext (tree fndecl, ::Bvariable *ret_addr, TyTy::BaseType *retty)
+    : fndecl (fndecl), ret_addr (ret_addr), retty (retty)
+  {}
+
   tree fndecl;
   ::Bvariable *ret_addr;
   TyTy::BaseType *retty;
@@ -154,7 +158,7 @@ public:
     if (it == mono_fns.end ())
       mono_fns[dId] = {};
 
-    mono_fns[dId].push_back ({ref, fn});
+    mono_fns[dId].emplace_back (ref, fn);
   }
 
   void insert_closure_decl (const TyTy::ClosureType *ref, tree fn)
@@ -164,7 +168,7 @@ public:
     if (it == mono_closure_fns.end ())
       mono_closure_fns[dId] = {};
 
-    mono_closure_fns[dId].push_back ({ref, fn});
+    mono_closure_fns[dId].emplace_back (ref, fn);
   }
 
   tree lookup_closure_decl (const TyTy::ClosureType *ref)
@@ -279,7 +283,7 @@ public:
 
   void push_fn (tree fn, ::Bvariable *ret_addr, TyTy::BaseType *retty)
   {
-    fn_stack.push_back (fncontext{fn, ret_addr, retty});
+    fn_stack.emplace_back (fn, ret_addr, retty);
   }
   void pop_fn () { fn_stack.pop_back (); }
 

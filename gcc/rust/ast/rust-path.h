@@ -448,9 +448,7 @@ public:
     generic_args.clear ();
     generic_args.reserve (other.generic_args.size ());
     for (const auto &arg : other.generic_args)
-      {
-	generic_args.push_back (GenericArg (arg));
-      }
+      generic_args.emplace_back (arg);
   }
 
   ~GenericArgs () = default;
@@ -465,9 +463,7 @@ public:
     generic_args.clear ();
     generic_args.reserve (other.generic_args.size ());
     for (const auto &arg : other.generic_args)
-      {
-	generic_args.push_back (GenericArg (arg));
-      }
+      generic_args.emplace_back (arg);
 
     return *this;
   }

@@ -2239,8 +2239,8 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
 
       // create segment and add to vector
       std::string segment_str = segment.as_string ();
-      simple_segments.push_back (
-	AST::SimplePathSegment (std::move (segment_str), segment.get_locus ()));
+      simple_segments.emplace_back (std::move (segment_str),
+				    segment.get_locus ());
     }
 
   // kind of a HACK to get locus depending on opening scope resolution
@@ -2281,9 +2281,8 @@ TypePath::as_simple_path () const
 
       // create segment and add to vector
       std::string segment_str = segment->as_string ();
-      simple_segments.push_back (
-	AST::SimplePathSegment (std::move (segment_str),
-				segment->get_locus ()));
+      simple_segments.emplace_back (std::move (segment_str),
+				    segment->get_locus ());
     }
 
   return AST::SimplePath (std::move (simple_segments),

@@ -224,8 +224,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 						  apply_sized);
 
 	    context->insert_type (generic_param->get_mappings (), param_type);
-	    substitutions.push_back (
-	      TyTy::SubstitutionParamMapping (typaram, param_type));
+	    substitutions.emplace_back (typaram, param_type);
 
 	    if (is_self)
 	      {
@@ -247,6 +246,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
   // copy the substitition mappings
   std::vector<TyTy::SubstitutionParamMapping> self_subst_copy;
+  self_subst_copy.reserve (substitutions.size ());
+
   for (auto &sub : substitutions)
     self_subst_copy.push_back (sub.clone ());
 
@@ -291,6 +292,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
     {
       // make a copy of the substs
       std::vector<TyTy::SubstitutionParamMapping> item_subst;
+      item_subst.reserve (substitutions.size ());
+
       for (auto &sub : substitutions)
 	item_subst.push_back (sub.clone ());
 
@@ -553,9 +556,9 @@ AssociatedImplTrait::setup_associated_types (
 	      generic_param->get_mappings ().get_hirid (), &l);
 	    if (ok && l->get_kind () == TyTy::TypeKind::PARAM)
 	      {
-		substitutions.push_back (TyTy::SubstitutionParamMapping (
-		  static_cast<HIR::TypeParam &> (*generic_param),
-		  static_cast<TyTy::ParamType *> (l)));
+		substitutions.emplace_back (static_cast<HIR::TypeParam &> (
+					      *generic_param),
+					    static_cast<TyTy::ParamType *> (l));
 	      }
 	  }
 	  break;
@@ -579,14 +582,13 @@ AssociatedImplTrait::setup_associated_types (
       if (p.needs_substitution () && infer)
 	{
 	  TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
-	  subst_args.push_back (
-	    TyTy::SubstitutionArg (&p, infer_var.get_tyty ()));
+	  subst_args.emplace_back (&p, infer_var.get_tyty ());
 	}
       else
 	{
 	  auto param = p.get_param_ty ();
 	  auto resolved = param->destructure ();
-	  subst_args.push_back (TyTy::SubstitutionArg (&p, resolved));
+	  subst_args.emplace_back (&p, resolved);
 	  param_mappings[param->get_symbol ()] = resolved->get_ref ();
 	}
     }

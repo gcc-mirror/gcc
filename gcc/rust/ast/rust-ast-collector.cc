@@ -76,13 +76,13 @@ TokenCollector::trailing_comma ()
 void
 TokenCollector::newline ()
 {
-  tokens.push_back ({CollectItem::Kind::Newline});
+  tokens.emplace_back (CollectItem::Kind::Newline);
 }
 
 void
 TokenCollector::indentation ()
 {
-  tokens.push_back ({indent_level});
+  tokens.emplace_back (indent_level);
 }
 
 void
@@ -101,7 +101,7 @@ TokenCollector::decrement_indentation ()
 void
 TokenCollector::comment (std::string comment)
 {
-  tokens.push_back ({comment});
+  tokens.emplace_back (comment);
 }
 
 void

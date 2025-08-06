@@ -81,11 +81,10 @@ void
 ASTLoweringExpr::visit (AST::TupleExpr &expr)
 {
   std::vector<std::unique_ptr<HIR::Expr>> tuple_elements;
+  tuple_elements.reserve (expr.get_tuple_elems ().size ());
+
   for (auto &e : expr.get_tuple_elems ())
-    {
-      HIR::Expr *t = ASTLoweringExpr::translate (*e);
-      tuple_elements.push_back (std::unique_ptr<HIR::Expr> (t));
-    }
+    tuple_elements.emplace_back (ASTLoweringExpr::translate (*e));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -221,12 +220,12 @@ ASTLoweringExpr::visit (AST::CallExpr &expr)
   HIR::Expr *func = ASTLoweringExpr::translate (expr.get_function_expr ());
 
   auto const &in_params = expr.get_params ();
+
   std::vector<std::unique_ptr<HIR::Expr>> params;
+  params.reserve (in_params.size ());
+
   for (auto &param : in_params)
-    {
-      auto trans = ASTLoweringExpr::translate (*param);
-      params.push_back (std::unique_ptr<HIR::Expr> (trans));
-    }
+    params.emplace_back (ASTLoweringExpr::translate (*param));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (
@@ -248,11 +247,10 @@ ASTLoweringExpr::visit (AST::MethodCallExpr &expr)
 
   auto const &in_params = expr.get_params ();
   std::vector<std::unique_ptr<HIR::Expr>> params;
+  params.reserve (in_params.size ());
+
   for (auto &param : in_params)
-    {
-      auto trans = ASTLoweringExpr::translate (*param);
-      params.push_back (std::unique_ptr<HIR::Expr> (trans));
-    }
+    params.emplace_back (ASTLoweringExpr::translate (*param));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -338,11 +336,10 @@ void
 ASTLoweringExpr::visit (AST::ArrayElemsValues &elems)
 {
   std::vector<std::unique_ptr<HIR::Expr>> elements;
+  elements.reserve (elems.get_values ().size ());
+
   for (auto &elem : elems.get_values ())
-    {
-      HIR::Expr *translated_elem = ASTLoweringExpr::translate (*elem);
-      elements.push_back (std::unique_ptr<HIR::Expr> (translated_elem));
-    }
+    elements.emplace_back (ASTLoweringExpr::translate (*elem));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (mappings.get_current_crate (),
@@ -569,13 +566,12 @@ ASTLoweringExpr::visit (AST::StructExprStructFields &struct_expr)
     }
 
   auto const &in_fields = struct_expr.get_fields ();
+
   std::vector<std::unique_ptr<HIR::StructExprField>> fields;
+  fields.reserve (in_fields.size ());
+
   for (auto &field : in_fields)
-    {
-      HIR::StructExprField *translated
-	= ASTLowerStructExprField::translate (*field);
-      fields.push_back (std::unique_ptr<HIR::StructExprField> (translated));
-    }
+    fields.emplace_back (ASTLowerStructExprField::translate (*field));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, struct_expr.get_node_id (),
@@ -814,11 +810,10 @@ ASTLoweringExpr::visit (AST::ClosureExprInner &expr)
     = ASTLoweringExpr::translate (expr.get_definition_expr ());
 
   std::vector<HIR::ClosureParam> closure_params;
+  closure_params.reserve (expr.get_params ().size ());
+
   for (auto &param : expr.get_params ())
-    {
-      HIR::ClosureParam p = lower_closure_param (param);
-      closure_params.push_back (std::move (p));
-    }
+    closure_params.emplace_back (lower_closure_param (param));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -841,11 +836,10 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
     = ASTLoweringExpr::translate (expr.get_definition_expr ());
 
   std::vector<HIR::ClosureParam> closure_params;
+  closure_params.reserve (expr.get_params ().size ());
+
   for (auto &param : expr.get_params ())
-    {
-      HIR::ClosureParam p = lower_closure_param (param);
-      closure_params.push_back (std::move (p));
-    }
+    closure_params.emplace_back (lower_closure_param (param));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -1009,7 +1003,10 @@ ASTLoweringExpr::visit (AST::LlvmInlineAsm &expr)
 				 mappings.get_next_localdef_id (crate_num));
 
   std::vector<LlvmOperand> inputs;
+  inputs.reserve (expr.get_inputs ().size ());
+
   std::vector<LlvmOperand> outputs;
+  outputs.reserve (expr.get_outputs ().size ());
 
   for (auto i : expr.get_inputs ())
     {

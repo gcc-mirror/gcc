@@ -160,7 +160,7 @@ TypeCheckExpr::visit (HIR::TupleExpr &expr)
   for (auto &elem : expr.get_tuple_elems ())
     {
       auto field_ty = TypeCheckExpr::Resolve (*elem);
-      fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
+      fields.emplace_back (field_ty->get_ref ());
     }
   infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (),
 				 expr.get_locus (), fields);
@@ -730,7 +730,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
-  subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
+  subst_mappings.emplace_back (param_ref, unified);
 
   TyTy::SubstitutionArgumentMappings subst (
     subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
@@ -774,7 +774,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
-  subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
+  subst_mappings.emplace_back (param_ref, from_ty);
 
   TyTy::SubstitutionArgumentMappings subst (
     subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
@@ -818,7 +818,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
-  subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
+  subst_mappings.emplace_back (param_ref, from_ty);
 
   TyTy::SubstitutionArgumentMappings subst (
     subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
@@ -991,7 +991,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
-  subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
+  subst_mappings.emplace_back (param_ref, unified);
 
   TyTy::SubstitutionArgumentMappings subst (
     subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
@@ -1888,7 +1888,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 			     // auto resolve because the hir id's match
 			  ,
 			  expr.get_locus ());
-  args.get_type_args ().push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
+  args.get_type_args ().emplace_back (implicit_tuple);
 
   // apply the arguments
   predicate.apply_generic_arguments (&args, false, false);
@@ -1974,13 +1974,13 @@ TypeCheckExpr::resolve_operator_overload (
 
       std::vector<TyTy::SubstitutionArg> mappings;
       auto &self_param_mapping = trait_subst[0];
-      mappings.push_back (TyTy::SubstitutionArg (&self_param_mapping, lhs));
+      mappings.emplace_back (&self_param_mapping, lhs);
 
       if (rhs != nullptr)
 	{
 	  rust_assert (trait_subst.size () == 2);
 	  auto &rhs_param_mapping = trait_subst[1];
-	  mappings.push_back (TyTy::SubstitutionArg (&rhs_param_mapping, lhs));
+	  mappings.emplace_back (&rhs_param_mapping, lhs);
 	}
 
       std::map<std::string, TyTy::BaseType *> binding_args;
@@ -2312,7 +2312,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   for (auto &arg : expr.get_arguments ())
     {
       TyTy::BaseType *a = TypeCheckExpr::Resolve (*arg);
-      call_args.push_back (TyTy::TyVar (a->get_ref ()));
+      call_args.emplace_back (a->get_ref ());
     }
 
   // crate implicit tuple
@@ -2325,9 +2325,8 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   context->insert_implicit_type (implicit_arg_id, tuple);
 
   std::vector<TyTy::Argument> args;
-  TyTy::Argument a (mapping, tuple,
-		    expr.get_locus () /*FIXME is there a better location*/);
-  args.push_back (std::move (a));
+  args.emplace_back (mapping, tuple,
+		     expr.get_locus () /*FIXME is there a better location*/);
 
   TyTy::BaseType *function_ret_tyty
     = TyTy::TypeCheckMethodCallExpr::go (fn, expr.get_mappings (), args,

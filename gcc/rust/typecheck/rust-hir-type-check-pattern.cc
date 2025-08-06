@@ -486,7 +486,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    TyTy::BaseType *par_type = par.get_field (i);
 
 	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
-	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	    pattern_elems.emplace_back (elem->get_ref ());
 	  }
 	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
 				       pattern.get_locus (), pattern_elems);
@@ -519,7 +519,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    TyTy::BaseType *par_type = par.get_field (i);
 
 	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
-	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	    pattern_elems.emplace_back (elem->get_ref ());
 	  }
 
 	// Pad pattern_elems until needing to resolve upper patterns
@@ -527,7 +527,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	for (size_t i = lower.size (); i < rest_end; i++)
 	  {
 	    TyTy::BaseType *par_type = par.get_field (i);
-	    pattern_elems.push_back (TyTy::TyVar (par_type->get_ref ()));
+	    pattern_elems.emplace_back (par_type->get_ref ());
 	  }
 
 	// Resolve upper patterns
@@ -537,7 +537,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    TyTy::BaseType *par_type = par.get_field (rest_end + i);
 
 	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
-	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	    pattern_elems.emplace_back (elem->get_ref ());
 	  }
 
 	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
