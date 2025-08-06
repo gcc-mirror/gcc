@@ -1,6 +1,5 @@
 // Test that the instructions added by FEAT_CMPBR are emitted
 // { dg-do compile }
-// { dg-do-if assemble { target aarch64_asm_cmpbr_ok } }
 // { dg-options "-march=armv9.5-a+cmpbr -O2" }
 // { dg-final { check-function-bodies "**" "*/" "" { target *-*-* } {\.L[0-9]+} } }
 
