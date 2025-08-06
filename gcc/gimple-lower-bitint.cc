@@ -7675,7 +7675,8 @@ gimple_lower_bitint (void)
 		  else
 		    {
 		      min_prec = CEIL (min_prec, limb_prec) * limb_prec;
-		      if (min_prec > limb_prec && abi_limb_prec > limb_prec)
+		      if (min_prec > (unsigned) limb_prec
+			  && abi_limb_prec > limb_prec)
 			{
 			  /* For targets with ABI limb precision higher than
 			     limb precision round to ABI limb precision,
