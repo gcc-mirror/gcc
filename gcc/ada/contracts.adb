@@ -3282,7 +3282,7 @@ package body Contracts is
       --  The contract of an ignored Ghost subprogram does not need expansion,
       --  because the subprogram and all calls to it will be removed.
 
-      elsif Is_Ignored_Ghost_Entity (Subp_Id) then
+      elsif Is_Ignored_Ghost_Entity_In_Codegen (Subp_Id) then
          return;
 
       --  No action needed for helpers and indirect-call wrapper built to

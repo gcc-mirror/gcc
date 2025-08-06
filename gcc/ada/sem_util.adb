@@ -26658,9 +26658,8 @@ package body Sem_Util is
    begin
       return
         Present (Predicate_Function (Typ))
-        and then (GNATprove_Mode
-                  or else (not Predicates_Ignored (Typ)
-                           and then not Predicate_Checks_Suppressed (Empty)));
+        and then not Predicates_Ignored_In_Codegen (Typ)
+        and then not Predicate_Checks_Suppressed (Empty);
    end Predicate_Enabled;
 
    ----------------------------------
@@ -26725,6 +26724,18 @@ package body Sem_Util is
 
       return Empty;
    end Predicate_Failure_Expression;
+
+   -----------------------------------
+   -- Predicates_Ignored_In_Codegen --
+   -----------------------------------
+
+   function Predicates_Ignored_In_Codegen (N : Node_Id) return Boolean is
+   begin
+      return
+        Predicates_Ignored (N)
+        and then not CodePeer_Mode
+        and then not GNATprove_Mode;
+   end Predicates_Ignored_In_Codegen;
 
    ----------------------------------
    -- Predicate_Tests_On_Arguments --
@@ -28163,7 +28174,7 @@ package body Sem_Util is
       --  Nothing to do for an ignored Ghost entity because the entity will be
       --  eliminated from the tree.
 
-      elsif Is_Ignored_Ghost_Entity (T) then
+      elsif Is_Ignored_Ghost_Entity_In_Codegen (T) then
          return;
 
       --  Nothing to do if entity comes from a predefined file. Library files

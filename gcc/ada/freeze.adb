@@ -4685,7 +4685,9 @@ package body Freeze is
 
          --  Declaring too big an array in disabled ghost code is OK
 
-         if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
+         if Is_Array_Type (Typ)
+           and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
+         then
             Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;

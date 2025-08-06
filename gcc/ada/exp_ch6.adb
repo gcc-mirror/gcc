@@ -5247,7 +5247,7 @@ package body Exp_Ch6 is
       --  the current subprogram is called.
 
       if Is_Subprogram (Subp)
-        and then not Is_Ignored_Ghost_Entity (Subp)
+        and then not Is_Ignored_Ghost_Entity_In_Codegen (Subp)
         and then Same_Or_Aliased_Subprograms (Subp, Current_Scope)
       then
          Check_Subprogram_Variant;
@@ -7274,7 +7274,7 @@ package body Exp_Ch6 is
 
       elsif (not Needs_Secondary_Stack (R_Type)
               and then not Is_Secondary_Stack_Thunk (Scope_Id))
-        or else Is_Ignored_Ghost_Entity (Scope_Id)
+        or else Is_Ignored_Ghost_Entity_In_Codegen (Scope_Id)
       then
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will

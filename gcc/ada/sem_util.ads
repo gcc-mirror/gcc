@@ -2102,14 +2102,42 @@ package Sem_Util is
    function Is_Ignored_Ghost_Entity_In_Codegen (N : Node_Id) return Boolean;
    --  True if N Is_Ignored_Ghost_Entity and GNATProve_mode and Codepeer_Mode
    --  are not active.
+   --
+   --  See Is_Ignored_In_Codegen for instructions on when this function should
+   --  be used.
 
    function Is_Ignored_Ghost_Pragma_In_Codegen (N : Node_Id) return Boolean;
    --  True if N Is_Ignored_Ghost_Pragma and GNATProve_mode and Codepeer_Mode
    --  are not active.
+   --
+   --  See Is_Ignored_In_Codegen for instructions on when this function should
+   --  be used.
 
    function Is_Ignored_In_Codegen (N : Node_Id) return Boolean;
    --  True if N Is_Ignored and GNATProve_mode and Codepeer_Mode are not
    --  active.
+   --
+   --  Tools like GNATProve and Codepeer that use the frontend to get the
+   --  representation of the source code along with all of the code generated
+   --  for assertions. This includes even the ones that are ignored. The
+   --  frontend normally avoids the generation of such assertions and ghost
+   --  code if marked as ignored. However we should still enable the generation
+   --  when working in one of those tool modes. In most cases this means that
+   --  we should ignore the fact the given node is marked as ignored and behave
+   --  as if it was not. This involves checking attributes such as Is_Ignored
+   --  along with these tool modes.
+   --
+   --  This function (and similar _In_Codegen functions) behaves as a wrapper
+   --  for such conditions. We should use this functions in scenarios where we
+   --  would normally stop the code generation for such ignored nodes. For
+   --  example in the expander where we normally transform non-ignored nodes.
+   --  Not doing so may lead to a partially expanded tree for those tools.
+   --
+   --  On the other hand we should use these attributes directly when
+   --  propagating the Is_Ignored or other similar property related values
+   --  between nodes. Additionally we should be using the original attributes
+   --  when checking for the compatibility of the checked/ignored properties
+   --  between nodes.
 
    function Is_EVF_Expression (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a reference to a formal parameter of
@@ -2958,6 +2986,13 @@ package Sem_Util is
    --  Otherwise, if Typ denotes a subtype or a derived type then
    --  returns the result of recursing on the ancestor subtype.
    --  Otherwise, returns Empty.
+
+   function Predicates_Ignored_In_Codegen (N : Node_Id) return Boolean;
+   --  True if N Predicates_Ignored is set and GNATProve_mode and Codepeer_Mode
+   --  are not active.
+   --
+   --  See Is_Ignored_In_Codegen for instructions on when this function should
+   --  be used.
 
    function Predicate_Function_Needs_Membership_Parameter (Typ : Entity_Id)
      return Boolean is

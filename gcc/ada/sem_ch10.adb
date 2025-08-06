@@ -1494,7 +1494,7 @@ package body Sem_Ch10 is
 
                 --  No checked needed for ignored ghost units
 
-                or else Is_Ignored_Ghost_Entity (Spec_Id)
+                or else Is_Ignored_Ghost_Entity_In_Codegen (Spec_Id)
               )
             then
                --  This is a case where we only need the entity for checking to

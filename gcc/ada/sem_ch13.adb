@@ -5103,7 +5103,7 @@ package body Sem_Ch13 is
                   if Class_Present (Aspect)
                     and then A_Id in Aspect_Pre | Aspect_Post
                     and then Is_Subprogram (E)
-                    and then not Is_Ignored_Ghost_Entity (E)
+                    and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
                   then
                      if A_Id = Aspect_Pre then
                         if Is_Ignored_In_Codegen (Aspect) then

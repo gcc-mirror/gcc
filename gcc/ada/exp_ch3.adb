@@ -2145,7 +2145,7 @@ package body Exp_Ch3 is
          end if;
 
          if Policy_In_Effect (Name_Assert) = Name_Check
-           and then not Predicates_Ignored (Etype (Discr))
+           and then not Predicates_Ignored_In_Codegen (Etype (Discr))
          then
             Prepend_To (Res, Make_Predicate_Check (Typ, Val));
          end if;
@@ -5878,7 +5878,7 @@ package body Exp_Ch3 is
       --  the subtype.
 
       if not No_Exception_Handlers_Set
-        and then not Predicates_Ignored (Typ)
+        and then not Predicates_Ignored_In_Codegen (Typ)
       then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,

@@ -2898,12 +2898,14 @@ package body Sem_Ch3 is
          --  private type from a library unit, otherwise premature freezing of
          --  the private type will occur.
 
-         elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl)
+         elsif not Analyzed (Next_Decl)
+           and then Is_Body (Next_Decl)
            and then ((Nkind (Next_Decl) /= N_Subprogram_Body
-                       or else not Was_Expression_Function (Next_Decl))
-                      or else (not Is_Ignored_Ghost_Entity (Current_Scope)
-                                and then not Contains_Lib_Incomplete_Type
-                                               (Current_Scope)))
+                      or else not Was_Expression_Function (Next_Decl))
+                     or else (not Is_Ignored_Ghost_Entity_In_Codegen
+                                    (Current_Scope)
+                              and then not Contains_Lib_Incomplete_Type
+                                             (Current_Scope)))
          then
             --  When a controlled type is frozen, the expander generates stream
             --  and controlled-type support routines. If the freeze is caused

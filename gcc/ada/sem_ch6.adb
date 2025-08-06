@@ -581,7 +581,8 @@ package body Sem_Ch6 is
          --  Ghost subprogram.
 
          if Inside_A_Generic then
-            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
+            Set_Has_Completion
+              (Def_Id, not Is_Ignored_Ghost_Entity_In_Codegen (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
             Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
@@ -3907,7 +3908,7 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else Operating_Mode = Check_Semantics
-                      or else Is_Ignored_Ghost_Entity (Spec_Id))
+                      or else Is_Ignored_Ghost_Entity_In_Codegen (Spec_Id))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for

@@ -4686,7 +4686,7 @@ package body Exp_Ch9 is
       --  by a missing activation chain entity; also skip generating it when
       --  it is a ghost entity.
 
-      if No (Chain) or else Is_Ignored_Ghost_Entity (Chain) then
+      if No (Chain) or else Is_Ignored_Ghost_Entity_In_Codegen (Chain) then
          return;
 
       --  The availability of the activation chain entity does not ensure

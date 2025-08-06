@@ -6056,7 +6056,7 @@ package body Exp_Disp is
                     --  Skip ignored Ghost subprograms as those will be removed
                     --  from the executable.
 
-                    and then not Is_Ignored_Ghost_Entity (E)
+                    and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
                   then
                      pragma Assert
                        (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);

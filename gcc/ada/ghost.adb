@@ -1777,7 +1777,7 @@ package body Ghost is
 
       return
         Nkind (N) = N_Compilation_Unit
-          and then Is_Ignored_Ghost_Entity
+          and then Is_Ignored_Ghost_Entity_In_Codegen
                      (Defining_Entity (Ultimate_Original_Node (Unit (N))));
    end Is_Ignored_Ghost_Unit;
 
@@ -2189,9 +2189,7 @@ package body Ghost is
       --  Inherit the "ghostness" of the generic unit, but the current Ghost
       --  policy is the relevant one for the instantiation.
 
-      elsif Is_Checked_Ghost_Entity (Gen_Id)
-        or else Is_Ignored_Ghost_Entity (Gen_Id)
-      then
+      elsif Is_Ghost_Entity (Gen_Id) then
          Policy := Ghost_Policy_In_Effect (Gen_Id);
 
          if Policy = No_Name then
@@ -2278,7 +2276,7 @@ package body Ghost is
       if Present (Nam)
         and then Is_Entity_Name (Nam)
         and then Present (Entity (Nam))
-        and then Is_Ignored_Ghost_Entity (Entity (Nam))
+        and then Is_Ignored_Ghost_Entity_In_Codegen (Entity (Nam))
       then
          Set_Is_Ignored_Ghost_Node (N);
          Record_Ignored_Ghost_Node (N);
