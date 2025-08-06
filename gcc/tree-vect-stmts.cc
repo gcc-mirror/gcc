@@ -8530,7 +8530,6 @@ vectorizable_store (vec_info *vinfo,
 	      gcc_assert (useless_type_conversion_p (vectype,
 						     TREE_TYPE (vec_oprnd)));
 	    }
-	  unsigned HOST_WIDE_INT align;
 	  tree final_mask = NULL_TREE;
 	  tree final_len = NULL_TREE;
 	  tree bias = NULL_TREE;
@@ -8545,6 +8544,8 @@ vectorizable_store (vec_info *vinfo,
 					       final_mask, vec_mask, gsi);
 	    }
 
+	  unsigned align = get_object_alignment (DR_REF (first_dr_info->dr));
+	  tree alias_align_ptr = build_int_cst (ref_type, align);
 	  if (GATHER_SCATTER_IFN_P (gs_info))
 	    {
 	      if (costing_p)
@@ -8586,7 +8587,7 @@ vectorizable_store (vec_info *vinfo,
 		  if (VECTOR_TYPE_P (TREE_TYPE (vec_offset)))
 		    call = gimple_build_call_internal (
 			    IFN_MASK_LEN_SCATTER_STORE, 8, dataref_ptr,
-			    gs_info.alias_ptr,
+			    alias_align_ptr,
 			    vec_offset, scale, vec_oprnd, final_mask, final_len,
 			    bias);
 		  else
@@ -8603,12 +8604,12 @@ vectorizable_store (vec_info *vinfo,
 	      else if (final_mask)
 		call = gimple_build_call_internal
 			     (IFN_MASK_SCATTER_STORE, 6, dataref_ptr,
-			      gs_info.alias_ptr,
+			      alias_align_ptr,
 			      vec_offset, scale, vec_oprnd, final_mask);
 	      else
 		call = gimple_build_call_internal (IFN_SCATTER_STORE, 5,
 						   dataref_ptr,
-						   gs_info.alias_ptr,
+						   alias_align_ptr,
 						   vec_offset,
 						   scale, vec_oprnd);
 	      gimple_call_set_nothrow (call, true);
@@ -8764,7 +8765,6 @@ vectorizable_store (vec_info *vinfo,
 		= (j % factor) * const_nunits;
 	      tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
 	      tree scale = size_int (gs_info.scale);
-	      align = get_object_alignment (DR_REF (first_dr_info->dr));
 	      tree ltype = build_aligned_type (TREE_TYPE (vectype), align);
 	      for (unsigned k = 0; k < const_nunits; ++k)
 		{
@@ -10393,7 +10393,8 @@ vectorizable_load (vec_info *vinfo,
 	    }
 
 	  /* 2. Create the vector-load in the loop.  */
-	  unsigned HOST_WIDE_INT align;
+	  unsigned align = get_object_alignment (DR_REF (first_dr_info->dr));
+	  tree alias_align_ptr = build_int_cst (ref_type, align);
 	  if (GATHER_SCATTER_IFN_P (gs_info))
 	    {
 	      if (costing_p)
@@ -10441,7 +10442,7 @@ vectorizable_load (vec_info *vinfo,
 		  if (VECTOR_TYPE_P (TREE_TYPE (vec_offset)))
 		    call = gimple_build_call_internal (IFN_MASK_LEN_GATHER_LOAD,
 						       9, dataref_ptr,
-						       gs_info.alias_ptr,
+						       alias_align_ptr,
 						       vec_offset, scale, zero,
 						       final_mask, vec_els,
 						       final_len, bias);
@@ -10457,13 +10458,13 @@ vectorizable_load (vec_info *vinfo,
 	      else if (final_mask)
 		call = gimple_build_call_internal (IFN_MASK_GATHER_LOAD,
 						   7, dataref_ptr,
-						   gs_info.alias_ptr,
+						   alias_align_ptr,
 						   vec_offset, scale,
 						   zero, final_mask, vec_els);
 	      else
 		call = gimple_build_call_internal (IFN_GATHER_LOAD, 5,
 						   dataref_ptr,
-						   gs_info.alias_ptr,
+						   alias_align_ptr,
 						   vec_offset, scale, zero);
 	      gimple_call_set_nothrow (call, true);
 	      new_stmt = call;
@@ -10621,7 +10622,6 @@ vectorizable_load (vec_info *vinfo,
 	      unsigned elt_offset = (i % factor) * const_nunits;
 	      tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
 	      tree scale = size_int (gs_info.scale);
-	      align = get_object_alignment (DR_REF (first_dr_info->dr));
 	      tree ltype = build_aligned_type (TREE_TYPE (vectype), align);
 	      for (unsigned k = 0; k < const_nunits; ++k)
 		{
