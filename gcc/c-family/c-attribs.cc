@@ -249,13 +249,6 @@ static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
   ATTR_EXCL ("always_inline", true, true, true),
   ATTR_EXCL ("target", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
 	     TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE),
-  ATTR_EXCL ("target_version", true, true, true),
-  ATTR_EXCL (NULL, false, false, false),
-};
-
-static const struct attribute_spec::exclusions attr_target_version_exclusions[] =
-{
-  ATTR_EXCL ("target_clones", true, true, true),
   ATTR_EXCL (NULL, false, false, false),
 };
 
@@ -543,7 +536,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      attr_target_exclusions },
   { "target_version",         1, 1, true, false, false, false,
 			      handle_target_version_attribute,
-			      attr_target_version_exclusions },
+			      NULL },
   { "target_clones",          1, -1, true, false, false, false,
 			      handle_target_clones_attribute,
 			      attr_target_clones_exclusions },

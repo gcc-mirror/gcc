@@ -1233,7 +1233,8 @@ make_dispatcher_decl (const tree decl)
    With the target attribute semantics, returns true if the function is marked
    as default with the target version.
    With the target_version attribute semantics, returns true if the function
-   is either not annotated, or annotated as default.  */
+   is either not annotated, annotated as default, or is a target_clone
+   containing the default declaration.  */
 
 bool
 is_function_default_version (const tree decl)
@@ -1250,6 +1251,13 @@ is_function_default_version (const tree decl)
     }
   else
     {
+      if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (decl)))
+	{
+	  int num_defaults = 0;
+	  get_clone_versions (decl, &num_defaults);
+	  return num_defaults > 0;
+	}
+
       attr = lookup_attribute ("target_version", DECL_ATTRIBUTES (decl));
       if (!attr)
 	return true;

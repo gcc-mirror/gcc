@@ -269,13 +269,27 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   auto_vec<string_slice> attr_list = get_clone_versions (node->decl,
 							 &num_defaults);
 
+  /* If the target clones list is empty after filtering, remove this node.  */
+  if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE && attr_list.is_empty ())
+    {
+      node->remove ();
+      return false;
+    }
+
   /* No need to clone for 1 target attribute.  */
-  if (attr_list.length () == 1)
+  if (attr_list.length () == 1 && TARGET_HAS_FMV_TARGET_ATTRIBUTE)
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl),
 		  0, "single %<target_clones%> attribute is ignored");
       return false;
     }
+
+  /* For target_version semantics, a target clone with just a default version
+     is the same as an unannotated decl, so can ignore.  */
+  if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+      && attr_list.length () == 1
+      && num_defaults == 1)
+    return false;
 
   if (node->definition
       && (node->alias || !tree_versionable_function_p (node->decl)))
@@ -304,8 +318,10 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 		"multiple %<default%> targets were set");
       return false;
     }
-  /* Disallow target clones with no defaults.  */
-  if (num_defaults == 0)
+
+  /* For target FMV semantics, where target and target_clone mixing
+     is not supported, disallow target clones with no defaults.  */
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE && num_defaults == 0)
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"%<default%> target was not set");
@@ -521,7 +537,7 @@ ipa_target_clone (bool early)
      The late stage is only used for the expansion and dispatching of the simple
      case where the FMV set is defined by a single target_clone attribute.  */
 
-  FOR_EACH_FUNCTION (node)
+  FOR_EACH_FUNCTION_REMOVABLE (node)
     {
       /* In the early stage, we need to expand any target clone that is not
 	 the simple case.  Simple cases are dispatched in the later stage.  */

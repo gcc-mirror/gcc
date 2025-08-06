@@ -3124,6 +3124,13 @@ symbol_table::next_function_with_gimple_body (cgraph_node *node)
    for ((node) = symtab->first_function (); (node); \
 	(node) = symtab->next_function ((node)))
 
+/* Walk all functions but precompute so a node can be deleted if needed.  */
+#define FOR_EACH_FUNCTION_REMOVABLE(node) \
+   cgraph_node *next; \
+   for ((node) = symtab->first_function (), \
+	next = (node) ? symtab->next_function ((node)) : NULL; (node); \
+	(node) = next, next = (node) ? symtab->next_function ((node)) : NULL)
+
 /* Return true when callgraph node is a function with Gimple body defined
    in current unit.  Functions can also be define externally or they
    can be thunks with no Gimple representation.
