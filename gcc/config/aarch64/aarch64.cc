@@ -2882,6 +2882,43 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   return aarch64_gen_compare_reg (code, x, y);
 }
 
+/* Split IMM into two 12-bit halves, producing an EQ/NE comparison vs X.
+   TMP may be a scratch.  This optimizes a sequence from
+	mov	x0, #imm1
+	movk	x0, #imm2, lsl 16  -- x0 contains CST
+	cmp	x1, x0
+   into the shorter:
+	sub	tmp, x1, #(CST & 0xfff000)
+	subs	tmp, tmp, #(CST & 0x000fff)
+*/
+rtx
+aarch64_gen_compare_split_imm24 (rtx x, rtx imm, rtx tmp)
+{
+  HOST_WIDE_INT lo_imm = UINTVAL (imm) & 0xfff;
+  HOST_WIDE_INT hi_imm = UINTVAL (imm) & 0xfff000;
+  enum machine_mode mode = GET_MODE (x);
+
+  if (GET_CODE (tmp) == SCRATCH)
+    tmp = gen_reg_rtx (mode);
+
+  emit_insn (gen_add3_insn (tmp, x, GEN_INT (-hi_imm)));
+  /* TODO: We don't need the gpr result of the second insn. */
+  switch (mode)
+    {
+    case SImode:
+      tmp = gen_addsi3_compare0 (tmp, tmp, GEN_INT (-lo_imm));
+      break;
+    case DImode:
+      tmp = gen_adddi3_compare0 (tmp, tmp, GEN_INT (-lo_imm));
+      break;
+    default:
+      abort ();
+    }
+  emit_insn (tmp);
+
+  return gen_rtx_REG (CC_NZmode, CC_REGNUM);
+}
+
 /* Generate conditional branch to LABEL, comparing X to 0 using CODE.
    Return the jump instruction.  */
 

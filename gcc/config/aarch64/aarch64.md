@@ -978,35 +978,24 @@
 		      (const_string "yes")))]
 )
 
-;; For a 24-bit immediate CST we can optimize the compare for equality
-;; and branch sequence from:
-;; 	mov	x0, #imm1
-;; 	movk	x0, #imm2, lsl 16 /* x0 contains CST.  */
-;; 	cmp	x1, x0
-;; 	b<ne,eq> .Label
-;; into the shorter:
-;; 	sub	x0, x1, #(CST & 0xfff000)
-;; 	subs	x0, x0, #(CST & 0x000fff)
-;; 	b<ne,eq> .Label
+;; For a 24-bit immediate CST we can optimize the compare for equality.
 (define_insn_and_split "*aarch64_bcond_wide_imm<GPI:mode>"
-  [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
-			        (match_operand:GPI 1 "aarch64_split_imm24" "n"))
-			   (label_ref:P (match_operand 2))
-			   (pc)))]
-  "!reload_completed"
+  [(set (pc) (if_then_else
+	       (match_operator 0 "aarch64_equality_operator"
+		[(match_operand:GPI 1 "register_operand" "r")
+	         (match_operand:GPI 2 "aarch64_split_imm24" "n")])
+	       (label_ref (match_operand 3))
+	       (pc)))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (match_scratch:GPI 4 "=r"))]
+  ""
   "#"
-  "&& true"
+  ""
   [(const_int 0)]
   {
-    HOST_WIDE_INT lo_imm = UINTVAL (operands[1]) & 0xfff;
-    HOST_WIDE_INT hi_imm = UINTVAL (operands[1]) & 0xfff000;
-    rtx tmp = gen_reg_rtx (<GPI:MODE>mode);
-    emit_insn (gen_add<GPI:mode>3 (tmp, operands[0], GEN_INT (-hi_imm)));
-    emit_insn (gen_add<GPI:mode>3_compare0 (tmp, tmp, GEN_INT (-lo_imm)));
-    rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
-    rtx cmp_rtx = gen_rtx_fmt_ee (<EQL:CMP>, <GPI:MODE>mode,
-				  cc_reg, const0_rtx);
-    emit_jump_insn (gen_aarch64_bcond (cmp_rtx, cc_reg, operands[2]));
+    rtx cc_reg = aarch64_gen_compare_split_imm24 (operands[1], operands[2],
+						  operands[4]);
+    emit_jump_insn (gen_aarch64_bcond (operands[0], cc_reg, operands[3]));
     DONE;
   }
 )
@@ -4649,37 +4638,24 @@
   [(set_attr "type" "csel")]
 )
 
-;; For a 24-bit immediate CST we can optimize the compare for equality
-;; and branch sequence from:
-;; 	mov	x0, #imm1
-;; 	movk	x0, #imm2, lsl 16 /* x0 contains CST.  */
-;; 	cmp	x1, x0
-;; 	cset	x2, <ne,eq>
-;; into the shorter:
-;; 	sub	x0, x1, #(CST & 0xfff000)
-;; 	subs	x0, x0, #(CST & 0x000fff)
-;; 	cset x2, <ne, eq>.
+;; For a 24-bit immediate CST we can optimize the compare for equality.
 (define_insn_and_split "*compare_cstore<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	 (EQL:GPI (match_operand:GPI 1 "register_operand" "r")
-		  (match_operand:GPI 2 "aarch64_split_imm24" "n")))
-   (clobber (reg:CC CC_REGNUM))]
-  "!reload_completed"
+	(match_operator:GPI 1 "aarch64_equality_operator"
+	 [(match_operand:GPI 2 "register_operand" "r")
+	  (match_operand:GPI 3 "aarch64_split_imm24" "n")]))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (match_scratch:GPI 4 "=r"))]
+  ""
   "#"
-  "&& true"
+  ""
   [(const_int 0)]
   {
-    HOST_WIDE_INT lo_imm = UINTVAL (operands[2]) & 0xfff;
-    HOST_WIDE_INT hi_imm = UINTVAL (operands[2]) & 0xfff000;
-    rtx tmp = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_add<mode>3 (tmp, operands[1], GEN_INT (-hi_imm)));
-    emit_insn (gen_add<mode>3_compare0 (tmp, tmp, GEN_INT (-lo_imm)));
-    rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
-    rtx cmp_rtx = gen_rtx_fmt_ee (<EQL:CMP>, <MODE>mode, cc_reg, const0_rtx);
-    emit_insn (gen_aarch64_cstore<mode> (operands[0], cmp_rtx, cc_reg));
+    rtx cc_reg = aarch64_gen_compare_split_imm24 (operands[2], operands[3],
+						  operands[4]);
+    emit_insn (gen_aarch64_cstore<mode> (operands[0], operands[1], cc_reg));
     DONE;
   }
-  [(set_attr "type" "csel")]
 )
 
 ;; zero_extend version of the above
