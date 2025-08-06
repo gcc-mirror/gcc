@@ -361,7 +361,7 @@ gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_dtdef_ref array_elems_type,
 
   dw_attr_node *upper_bound_at;
   dw_die_ref array_index_type;
-  uint32_t array_num_elements;
+  unsigned HOST_WIDE_INT array_num_elements;
 
   if (dw_get_die_tag (c) == DW_TAG_subrange_type)
     {
@@ -376,9 +376,9 @@ gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_dtdef_ref array_elems_type,
       if (upper_bound_at
 	  && AT_class (upper_bound_at) == dw_val_class_unsigned_const)
 	/* This is the upper bound index.  */
-	array_num_elements = get_AT_unsigned (c, DW_AT_upper_bound) + 1;
+	array_num_elements = AT_unsigned (get_AT (c, DW_AT_upper_bound)) + 1;
       else if (get_AT (c, DW_AT_count))
-	array_num_elements = get_AT_unsigned (c, DW_AT_count);
+	array_num_elements = AT_unsigned (get_AT (c, DW_AT_count));
       else
 	{
 	  /* This is a VLA of some kind.  */
@@ -387,6 +387,12 @@ gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_dtdef_ref array_elems_type,
     }
   else
     gcc_unreachable ();
+
+  if (array_num_elements > UINT32_MAX)
+    {
+      /* The array cannot be encoded in CTF.  TBD_CTF_REPRESENTATION_LIMIT.  */
+      return gen_ctf_unknown_type (ctfc);
+    }
 
   /* Ok, mount and register the array type.  Note how the array
      type we register here is the type of the elements in
