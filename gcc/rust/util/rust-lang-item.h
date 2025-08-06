@@ -21,6 +21,9 @@
 #include "optional.h"
 #include "bi-map.h"
 
+#ifndef RUST_LANG_ITEM_H
+#define RUST_LANG_ITEM_H
+
 namespace Rust {
 
 class LangItem
@@ -185,3 +188,5 @@ template <> struct hash<Rust::LangItem::Kind>
   }
 };
 } // namespace std
+
+#endif // RUST_LANG_ITEM_H
