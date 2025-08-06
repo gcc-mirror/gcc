@@ -2213,7 +2213,7 @@ range_to_prec (tree op, gimple *stmt)
    from that precision, if it is negative, the operand is sign-extended
    from -*PREC.  If PREC_STORED is NULL, it is the toplevel call,
    otherwise *PREC_STORED is prec from the innermost call without
-   range optimizations.  */
+   range optimizations (0 for uninitialized SSA_NAME).  */
 
 tree
 bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
@@ -2318,7 +2318,7 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	    {
 	      *prec = TYPE_UNSIGNED (TREE_TYPE (op)) ? limb_prec : -limb_prec;
 	      if (prec_stored)
-		*prec_stored = *prec;
+		*prec_stored = 0;
 	      tree var = create_tmp_var (m_limb_type);
 	      TREE_ADDRESSABLE (var) = 1;
 	      ret = build_fold_addr_expr (var);
@@ -2346,6 +2346,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 		  tree rhs_type = TREE_TYPE (rhs1);
 		  int prec_stored_val = 0;
 		  ret = handle_operand_addr (rhs1, g, &prec_stored_val, prec);
+		  if (prec_stored)
+		    *prec_stored = prec_stored_val;
 		  if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (rhs_type))
 		    {
 		      if (TYPE_UNSIGNED (lhs_type)
@@ -2354,7 +2356,9 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 		    }
 		  else
 		    {
-		      if (*prec > 0 && *prec < TYPE_PRECISION (lhs_type))
+		      if (prec_stored_val == 0)
+			/* Non-widening cast of uninitialized value.  */;
+		      else if (*prec > 0 && *prec < TYPE_PRECISION (lhs_type))
 			;
 		      else if (TYPE_UNSIGNED (lhs_type))
 			{
