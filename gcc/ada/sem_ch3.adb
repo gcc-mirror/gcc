@@ -15644,11 +15644,11 @@ package body Sem_Ch3 is
       --  Initialize new full declaration entity by copying the pertinent
       --  fields of the corresponding private declaration entity.
 
-      --  We temporarily set Ekind to a value appropriate for a type to
-      --  avoid assert failures in Einfo from checking for setting type
-      --  attributes on something that is not a type. Ekind (Priv) is an
-      --  appropriate choice, since it allowed the attributes to be set
-      --  in the first place. This Ekind value will be modified later.
+      --  We temporarily set Ekind to a value appropriate for a type to avoid
+      --  assert failures in Einfo from checking for setting type fields on
+      --  something that is not a type. Ekind (Priv) is an appropriate choice,
+      --  since it allowed the fields to be set in the first place. This Ekind
+      --  value will be modified later.
 
       Mutate_Ekind (Full, Ekind (Priv));
 
@@ -15658,7 +15658,7 @@ package body Sem_Ch3 is
 
       Set_Etype (Full, Any_Type);
 
-      --  Now start copying attributes
+      --  Now start copying fields
 
       Set_Has_Discriminants          (Full, Has_Discriminants       (Priv));
 
@@ -15713,12 +15713,15 @@ package body Sem_Ch3 is
             Access_Types_To_Process (Freeze_Node (Priv)));
       end if;
 
-      --  Swap the two entities. Now Private is the full type entity and Full
-      --  is the private one. They will be swapped back at the end of the
-      --  private part. This swapping ensures that the entity that is visible
-      --  in the private part is the full declaration.
+      --  Swap the two entities
 
       Exchange_Entities (Priv, Full);
+
+      --  Now the slot Priv points to contains the full type entity and the
+      --  slot Full points to contains the private one. They will be swapped
+      --  back at the end of the private part. This swapping ensures that the
+      --  entity that is visible in the private part is the full declaration.
+
       Set_Is_Not_Self_Hidden (Priv);
       Append_Entity (Full, Scope (Full));
    end Copy_And_Swap;
