@@ -76,7 +76,7 @@ enum bitint_prec_kind {
 /* Caches to speed up bitint_precision_kind.  */
 
 static int small_max_prec, mid_min_prec, large_min_prec, huge_min_prec;
-static int limb_prec;
+static int limb_prec, abi_limb_prec;
 
 /* Categorize _BitInt(PREC) as small, middle, large or huge.  */
 
@@ -106,6 +106,9 @@ bitint_precision_kind (int prec)
     large_min_prec = MAX_FIXED_MODE_SIZE + 1;
   if (!limb_prec)
     limb_prec = GET_MODE_PRECISION (limb_mode);
+  if (!abi_limb_prec)
+    abi_limb_prec
+      = GET_MODE_PRECISION (as_a <scalar_int_mode> (info.abi_limb_mode));
   if (!huge_min_prec)
     {
       if (4 * limb_prec >= MAX_FIXED_MODE_SIZE)
@@ -6070,7 +6073,7 @@ static unsigned int
 gimple_lower_bitint (void)
 {
   small_max_prec = mid_min_prec = large_min_prec = huge_min_prec = 0;
-  limb_prec = 0;
+  limb_prec = abi_limb_prec = 0;
 
   unsigned int i;
   for (i = 0; i < num_ssa_names; ++i)
@@ -7028,7 +7031,20 @@ gimple_lower_bitint (void)
 		       from smaller number.  */
 		    min_prec = prec;
 		  else
-		    min_prec = CEIL (min_prec, limb_prec) * limb_prec;
+		    {
+		      min_prec = CEIL (min_prec, limb_prec) * limb_prec;
+		      if (min_prec > (unsigned) limb_prec
+			  && abi_limb_prec > limb_prec)
+			{
+			  /* For targets with ABI limb precision higher than
+			     limb precision round to ABI limb precision,
+			     otherwise c can contain padding bits.  */
+			  min_prec
+			    = CEIL (min_prec, abi_limb_prec) * abi_limb_prec;
+			  if (min_prec > prec - rem - 2 * limb_prec)
+			    min_prec = prec;
+			}
+		    }
 		  if (min_prec == 0)
 		    c = NULL_TREE;
 		  else if (min_prec == prec)
