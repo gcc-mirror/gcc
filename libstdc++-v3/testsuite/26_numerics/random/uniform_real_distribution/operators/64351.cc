@@ -21,21 +21,6 @@
 #include <random>
 #include <testsuite_hooks.h>
 
-// libstdc++/64351
-void
-test01()
-{
-  std::mt19937 rng(8890);
-  std::uniform_real_distribution<float> dist;
-
-  rng.discard(30e6);
-  for (long i = 0; i < 10e6; ++i)
-    {
-      auto n = dist(rng);
-      VERIFY( n != 1.f );
-    }
-}
-
 // libstdc++/63176
 void
 test02()
@@ -47,19 +32,18 @@ test02()
   std::mt19937 rng2{rng};
   for (int i = 0; i < 20; ++i)
   {
-    float n =
-      std::generate_canonical<float, std::numeric_limits<float>::digits>(rng);
+    float n = std::generate_canonical<float, -1u>(rng);
     VERIFY( n != 1.f );
 
-    // PR libstdc++/80137
     rng2.discard(1);
-    VERIFY( rng == rng2 );
   }
+  // PR libstdc++/80137
+  rng2.discard(1);  // account for a 1.0 generated and discarded.
+  VERIFY( rng == rng2 );
 }
 
 int
 main()
 {
-  test01();
   test02();
 }

@@ -3472,22 +3472,260 @@ namespace __detail
 	}
     }
 
+// [rand.util.canonical]
+// generate_canonical(RNG&)
+
+#ifndef _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // for variable templates
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
+  // This version is used when Urbg::max()-Urbg::min() is a power of
+  // two less 1, the norm in real programs. It works by calling urng()
+  // as many times as needed to fill the target mantissa, accumulating
+  // entropy into an integer value, converting that to the float type,
+  // and then dividing by the range of the integer value (a constexpr
+  // power of 2, so only adjusts the exponent) to produce a result in
+  // [0..1]. In case of an exact 1.0 result, we re-try.
+  //
+  // It needs to work even when the integer type used is only as big
+  // as the float mantissa, such as uint64_t for long double. So,
+  // commented-out assignments represent computations the Standard
+  // prescribes but cannot be performed, or are not used. Names are
+  // chosen to match the description in the Standard.
+  //
+  // When the result is close to zero, the strict Standard-prescribed
+  // calculation may leave more low-order zeros in the mantissa than
+  // is usually necessary. When spare entropy has been extracted, as
+  // is usual for float and double, some or all of the spare entropy
+  // can commonly be pulled into the result for better randomness.
+  // Defining _GLIBCXX_GENERATE_CANONICAL_STRICT discards it instead.
+  //
+  // When k calls to urng() yield more bits of entropy, log2_Rk_max,
+  // than fit into UInt, we discard some of it by overflowing, which
+  // is OK.  On converting the integer representation of the sample
+  // to the float value, we must divide out the (possibly-truncated)
+  // size log2_Rk.
+  //
+  // This implementation works with std::bfloat16, which can exactly
+  // represent 2^32, but not with std::float16_t, limited to 2^15.
+
+  template<typename _RealT, typename _UInt, size_t __d, typename _Urbg>
+    _RealT
+    __generate_canonical_pow2(_Urbg& __urng)
+    {
+      // Parameter __d is the actual target number of bits.
+      // Commented-out assignments below are of values specified in
+      //  the Standard, but not used here for reasons noted.
+      // r = 2;  // Redundant, we only support radix 2.
+      using _Rng = decltype(_Urbg::max());
+      const _Rng __rng_range_less_1 = _Urbg::max() - _Urbg::min();
+      const _UInt __uint_range_less_1 = ~_UInt(0);
+      // R = _UInt(__rng_range_less_1) + 1;  // May wrap to 0.
+      const auto __log2_R = __builtin_popcountg(__rng_range_less_1);
+      const auto __log2_uint_max = __builtin_popcountg(__uint_range_less_1);
+      // rd = _UInt(1) << __d;  // Could overflow, UB.
+      const unsigned __k = (__d + __log2_R - 1) / __log2_R;
+      const unsigned __log2_Rk_max = __k * __log2_R;
+      const unsigned __log2_Rk =  // Bits of entropy actually obtained:
+	__log2_uint_max < __log2_Rk_max ? __log2_uint_max : __log2_Rk_max;
+      static_assert(__log2_Rk >= __d);
+      // Rk = _UInt(1) << __log2_Rk;  // Likely overflows, UB.
+      constexpr _RealT __Rk = _RealT(_UInt(1) << (__log2_Rk - 1)) * 2.0;
+#if defined(_GLIBCXX_GENERATE_CANONICAL_STRICT)
+      const unsigned __log2_x = __log2_Rk - __d; // # of spare entropy bits.
+#else
+      const unsigned __log2_x = 0;
+#endif
+      const _UInt __x = _UInt(1) << __log2_x;
+      constexpr _RealT __rd = __Rk / __x;
+      // xrd = __x << __d;  // Could overflow.
+
+      while (true)
+	{
+	  _UInt __sum = _UInt(__urng() - _Urbg::min());
+	  for (unsigned __i = __k - 1, __shift = 0; __i > 0; --__i)
+	    {
+	      __shift += __log2_R;
+	      __sum |= _UInt(__urng() - _Urbg::min()) << __shift;
+	    }
+	  const _RealT __ret = _RealT(__sum >> __log2_x) / __rd;
+	  if (__ret < _RealT(1.0))
+	    return __ret;
+	}
+    }
+
+  template <typename _UInt>
+    constexpr _UInt
+    __gen_can_pow(_UInt __base, size_t __exponent)
+    {
+      _UInt __prod = __base;
+      while (--__exponent != 0) __prod *= __base;
+      return __prod;
+    }
+
+  template <typename _UInt>
+    constexpr unsigned
+    __gen_can_rng_calls_needed(_UInt __R, _UInt __rd)
+    {
+      unsigned __i = 1;
+      for (auto __Ri = __R; __Ri < __rd; __Ri *= __R)
+	++__i;
+      return __i;
+    }
+
+  // This version must be used when the range of possible RNG results,
+  // Urbg::max()-Urbg::min(), is not a power of two less one. The UInt
+  // type passed must be big enough to represent Rk, R^k, a power of R
+  // (the range of values produced by the rng) up to twice the length
+  // of the mantissa.
+
+  template<typename _RealT, typename _UInt, size_t __d, typename _Urbg>
+    _RealT
+    __generate_canonical_any(_Urbg& __urng)
+    {
+      static_assert(__d < __builtin_popcountg(~_UInt(0)));
+      // Names below are chosen to match the description in the Standard.
+      // Parameter d is the actual target number of bits.
+      const _UInt __r = 2;
+      const _UInt __R = _UInt(_Urbg::max() - _Urbg::min()) + 1;
+      const _UInt __rd = _UInt(1) << __d;
+      const unsigned __k = __gen_can_rng_calls_needed(__R, __rd);
+      const _UInt __Rk = __gen_can_pow(__R, __k);
+      const _UInt __x =  __Rk/__rd;
+
+      while (true)
+	{
+	  _UInt __Ri = 1, __sum = __urng() - _Urbg::min();
+	  for (int __i = __k - 1; __i > 0; --__i)
+	    {
+	      __Ri *= __R;
+	      __sum += (__urng() - _Urbg::min()) * __Ri;
+	    }
+	  const _RealT __ret = _RealT(__sum / __x) / __rd;
+	  if (__ret < _RealT(1.0))
+	    return __ret;
+	}
+    }
+
+#if !defined(_GLIBCXX_GENERATE_CANONICAL_STRICT)
+  template <typename _Tp>
+    const bool __is_rand_dist_float_v = is_floating_point<_Tp>::value;
+#else
+  template <typename _Tp> const bool __is_rand_dist_float_v = false;
+  template <> const bool __is_rand_dist_float_v<float> = true;
+  template <> const bool __is_rand_dist_float_v<double> = true;
+  template <> const bool __is_rand_dist_float_v<long double> = true;
+#endif
+
+#ifdef __glibcxx_concepts
+# define _Uniform_random_bit_generator uniform_random_bit_generator
+#else
+# define _Uniform_random_bit_generator typename
+#endif
+
+  // Note, this works even when (__range + 1) overflows:
+  template <typename _Rng>
+    constexpr bool __is_power_of_2_less_1(_Rng __range)
+      { return ((__range + 1) & __range) == 0; };
+
+  /** Produce a random floating-point value in the range [0..1)
+   *
+   * The result of `std::generate_canonical<RealT,digits>(urng)` is a
+   * random floating-point value of type `RealT` in the range [0..1),
+   * using entropy provided by the uniform random bit generator `urng`.
+   * A value for `digits` may be passed to limit the precision of the
+   * result to so many bits, but normally `-1u` is passed to get the
+   * native precision of `RealT`. As many `urng()` calls are made as
+   * needed to obtain the required entropy. On rare occasions, more
+   * `urng()` calls are used. It is fastest when the value of
+   * `Urbg::max()` is a power of two less one, such as from a
+   * `std::philox4x32` (for `float`) or `philox4x64` (for `double`).
+   *
+   *  @since C++11
+   */
+  template<typename _RealT, size_t __digits,
+	_Uniform_random_bit_generator _Urbg>
+    _RealT
+    generate_canonical(_Urbg& __urng)
+    {
+      static_assert(__is_rand_dist_float_v<_RealT>,
+	"template argument must be floating point");
+      static_assert(__digits != 0 && _Urbg::max() > _Urbg::min(),
+	"random samples with 0 bits are not meaningful");
+      static_assert(std::numeric_limits<_RealT>::radix == 2,
+	"only base-2 float types are supported");
+#if defined(__STDCPP_FLOAT16_T__)
+      static_assert(! is_same_v<_RealT, _Float16>,
+	"float16_t type is not supported, consider using bfloat16_t");
+#endif
+
+      using _Rng = decltype(_Urbg::max());
+      const unsigned __d_max = std::numeric_limits<_RealT>::digits;
+      const unsigned __d = __digits > __d_max ? __d_max : __digits;
+
+      // If the RNG range is a power of 2 less 1, the float type mantissa
+      // is enough bits. If not, we need more.
+      if constexpr (__is_power_of_2_less_1(_Urbg::max() - _Urbg::min()))
+	{
+	  if constexpr (__d <= 32)
+	    return __generate_canonical_pow2<_RealT, uint32_t, __d>(__urng);
+	  else if constexpr (__d <= 64)
+	    return __generate_canonical_pow2<_RealT, uint64_t, __d>(__urng);
+	  else
+	    {
+#if defined(__SIZEOF_INT128__)
+	      // Accommodate double double or float128.
+	      return __generate_canonical_pow2<
+		_RealT, unsigned __int128, __d>(__urng);
+#else
+	      static_assert(false,
+		"float precision >64 requires __int128 support");
+#endif
+	    }
+	}
+      else // Need up to 2x bits.
+	{
+	  if constexpr (__d <= 32)
+	    return __generate_canonical_any<_RealT, uint64_t, __d>(__urng);
+	  else
+	    {
+#if defined(__SIZEOF_INT128__)
+	      static_assert(__d <= 64,
+		"irregular RNG with float precision >64 is not supported");
+	      return __generate_canonical_any<
+		_RealT, unsigned __int128, __d>(__urng);
+#else
+	      static_assert(false, "irregular RNG with float precision"
+		 " >32 requires __int128 support");
+#endif
+	    }
+	}
+    }
+
+#pragma GCC diagnostic pop
+
+#else // _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+
+  // This is the pre-P0952 definition, to reproduce old results.
+
   template<typename _RealType, size_t __bits,
-	   typename _UniformRandomNumberGenerator>
+	  typename _UniformRandomNumberGenerator>
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __urng)
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument must be a floating point type");
+		   "template argument must be a floating point type");
 
       const size_t __b
-	= std::min(static_cast<size_t>(std::numeric_limits<_RealType>::digits),
-                   __bits);
+       = std::min(static_cast<size_t>(std::numeric_limits<_RealType>::digits),
+		   __bits);
       const long double __r = static_cast<long double>(__urng.max())
-			    - static_cast<long double>(__urng.min()) + 1.0L;
+			   - static_cast<long double>(__urng.min()) + 1.0L;
       const size_t __log2r = std::log(__r) / std::log(2.0L);
       const size_t __m = std::max<size_t>(1UL,
-					  (__b + __log2r - 1UL) / __log2r);
+					 (__b + __log2r - 1UL) / __log2r);
       _RealType __ret;
       _RealType __sum = _RealType(0);
       _RealType __tmp = _RealType(1);
@@ -3498,16 +3736,16 @@ namespace __detail
 	}
       __ret = __sum / __tmp;
       if (__builtin_expect(__ret >= _RealType(1), 0))
-	{
-#if _GLIBCXX_USE_C99_MATH_FUNCS
+# if _GLIBCXX_USE_C99_MATH_FUNCS
 	  __ret = std::nextafter(_RealType(1), _RealType(0));
-#else
+# else
 	  __ret = _RealType(1)
 	    - std::numeric_limits<_RealType>::epsilon() / _RealType(2);
-#endif
-	}
+# endif
       return __ret;
     }
+
+#endif // _GLIBCXX_USE_OLD_GENERATE_CANONICAL
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
