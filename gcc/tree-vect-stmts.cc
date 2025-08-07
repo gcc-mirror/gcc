@@ -929,8 +929,7 @@ vect_model_simple_cost (vec_info *, int n, slp_tree node,
    is true the stmt is doing widening arithmetic.  */
 
 static void
-vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
-				    enum vect_def_type *dt,
+vect_model_promotion_demotion_cost (slp_tree slp_node,
 				    unsigned int ncopies, int pwr,
 				    stmt_vector_for_cost *cost_vec,
 				    bool widen_arith)
@@ -943,15 +942,9 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
       inside_cost += record_stmt_cost (cost_vec, ncopies,
 				       widen_arith
 				       ? vector_stmt : vec_promote_demote,
-				       stmt_info, 0, vect_body);
+				       slp_node, 0, vect_body);
       ncopies *= 2;
     }
-
-  /* FORNOW: Assuming maximum 2 args per stmts.  */
-  for (i = 0; i < 2; i++)
-    if (dt[i] == vect_constant_def || dt[i] == vect_external_def)
-      prologue_cost += record_stmt_cost (cost_vec, 1, vector_stmt,
-					 stmt_info, 0, vect_prologue);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -5386,7 +5379,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  SLP_TREE_TYPE (slp_node) = type_demotion_vec_info_type;
 	  /* The final packing step produces one vector result per copy.  */
 	  unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+	  vect_model_promotion_demotion_cost (slp_node, nvectors,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
 	}
@@ -5398,7 +5391,7 @@ vectorizable_conversion (vec_info *vinfo,
 	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
 	  unsigned int nvectors
 	    = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+	  vect_model_promotion_demotion_cost (slp_node, nvectors,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
 	}
