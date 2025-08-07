@@ -3083,24 +3083,14 @@ package body Sem_Ch3 is
 
          --  Local variables
 
-         Prev_Aspects   : constant List_Id :=
-                            Aspect_Specifications (Parent (Def_Id));
-         Par_Type       : Entity_Id;
-         Prev_Aspect    : Node_Id;
+         Prev_Aspects : constant List_Id :=
+           Aspect_Specifications (Parent (Def_Id));
+         Prev_Aspect  : Node_Id;
+         Par_Type     : constant Entity_Id := Etype (T);
 
       --  Start of processing for Check_Nonoverridable_Aspects
 
       begin
-         --  Get parent type of derived type. Note that Prev is the entity in
-         --  the partial declaration, but its contents are now those of full
-         --  view, while Def_Id reflects the partial view.
-
-         if Is_Private_Type (Def_Id) then
-            Par_Type := Etype (Full_View (Def_Id));
-         else
-            Par_Type := Etype (Def_Id);
-         end if;
-
          --  If there is an inherited Implicit_Dereference, verify that it is
          --  made explicit in the partial view.
 
