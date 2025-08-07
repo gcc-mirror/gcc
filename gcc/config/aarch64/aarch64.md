@@ -838,27 +838,13 @@
   [(set (pc) (if_then_else (LTGE (match_operand:ALLI 0 "register_operand" "r")
 				 (const_int 0))
 			   (label_ref (match_operand 1))
-			   (pc)))
-   (clobber (reg:CC CC_REGNUM))]
+			   (pc)))]
   "!aarch64_track_speculation"
   {
-    if (get_attr_length (insn) == 8)
-      {
-	if (get_attr_far_branch (insn) == FAR_BRANCH_YES)
-	  return aarch64_gen_far_branch (operands, 1, "Ltb",
-					 "<inv_tb>\\t%<w>0, <sizem1>, ");
-	else
-	  {
-	    char buf[64];
-	    uint64_t val = ((uint64_t) 1)
-		<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
-	    sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
-	    output_asm_insn (buf, operands);
-	    return "<bcond>\t%l1";
-	  }
-      }
-    else
+    if (get_attr_length (insn) == 4)
       return "<tbz>\t%<w>0, <sizem1>, %l1";
+    return aarch64_gen_far_branch (operands, 1, "Ltb",
+				   "<inv_tb>\\t%<w>0, <sizem1>, ");
   }
   [(set_attr "type" "branch")
    (set (attr "length")
@@ -870,9 +856,9 @@
 		      (const_int 8)))
    (set (attr "far_branch")
 	(if_then_else (and (ge (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_N_1MiB))
+			       (const_int BRANCH_LEN_N_32KiB))
 			   (lt (minus (match_dup 1) (pc))
-			       (const_int BRANCH_LEN_P_1MiB)))
+			       (const_int BRANCH_LEN_P_32KiB)))
 		      (const_string "no")
 		      (const_string "yes")))]
 )
