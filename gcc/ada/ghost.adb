@@ -216,19 +216,19 @@ package body Ghost is
       if Is_Checked_Ghost_Entity (Prev_Id)
         and then Policy = Name_Ignore
       then
-         Error_Msg_Sloc := Sloc (Compl_Id);
-
          Error_Msg_N (Ghost_Policy_Error_Msg, Prev_Id);
-         Error_Msg_N ("\& declared with ghost policy `Check`", Prev_Id);
+         Error_Msg_Sloc := Sloc (Prev_Id);
+         Error_Msg_N ("\& declared # with ghost policy `Check`", Prev_Id);
+         Error_Msg_Sloc := Sloc (Compl_Id);
          Error_Msg_N ("\& completed # with ghost policy `Ignore`", Prev_Id);
 
       elsif Is_Ignored_Ghost_Entity (Prev_Id)
         and then Policy = Name_Check
       then
-         Error_Msg_Sloc := Sloc (Compl_Id);
-
          Error_Msg_N (Ghost_Policy_Error_Msg, Prev_Id);
-         Error_Msg_N ("\& declared with ghost policy `Ignore`", Prev_Id);
+         Error_Msg_Sloc := Sloc (Prev_Id);
+         Error_Msg_N ("\& declared # with ghost policy `Ignore`", Prev_Id);
+         Error_Msg_Sloc := Sloc (Compl_Id);
          Error_Msg_N ("\& completed # with ghost policy `Check`", Prev_Id);
       end if;
    end Check_Ghost_Completion;
@@ -871,7 +871,8 @@ package body Ghost is
            and then Known_To_Be_Assigned (Ref)
          then
             Error_Msg_N  (Ghost_Policy_Error_Msg, Ref);
-            Error_Msg_NE ("\& declared with ghost policy `Check`", Ref, Id);
+            Error_Msg_Sloc := Sloc (Id);
+            Error_Msg_NE ("\& declared # with ghost policy `Check`", Ref, Id);
             Error_Msg_Sloc := Sloc (Ref);
             Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Ref, Id);
          end if;
@@ -892,7 +893,8 @@ package body Ghost is
          if Is_Ignored_Ghost_Entity (Id) and then Applic_Policy = Check
          then
             Error_Msg_N  (Ghost_Policy_Error_Msg,  Ref);
-            Error_Msg_NE ("\& declared with ghost policy `Ignore`", Ref, Id);
+            Error_Msg_Sloc := Sloc (Id);
+            Error_Msg_NE ("\& declared # with ghost policy `Ignore`", Ref, Id);
             Error_Msg_Sloc := Sloc (Ref);
             Error_Msg_NE ("\& used # with ghost policy `Check`",    Ref, Id);
          end if;
