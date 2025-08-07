@@ -871,7 +871,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && TREE_CODE (decl) == STRING_CST
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-      && align <= MAX_ALIGN_MERGABLE
+      && align <= MAX_MERGEABLE_BITSIZE
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && TREE_STRING_LENGTH (decl) == len)
     {
@@ -885,7 +885,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 
       mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
       modesize = GET_MODE_BITSIZE (mode);
-      if (modesize >= 8 && modesize <= MAX_ALIGN_MERGABLE
+      if (modesize >= 8 && modesize <= MAX_MERGEABLE_BITSIZE
 	  && (modesize & (modesize - 1)) == 0)
 	{
 	  if (align < modesize)
@@ -906,8 +906,8 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	  if (i == len - unit || (unit == 1 && i == len))
 	    {
 	      sprintf (name, "%s.str%d.%d", prefix,
-		       modesize / 8, (int) (align / 8));
-	      flags |= (modesize / 8) | SECTION_MERGE | SECTION_STRINGS;
+		       modesize / BITS_PER_UNIT, (int) (align / BITS_PER_UNIT));
+	      flags |= (modesize / BITS_PER_UNIT) | SECTION_MERGE | SECTION_STRINGS;
 	      return get_section (name, flags, NULL);
 	    }
 	}
@@ -923,17 +923,19 @@ mergeable_constant_section (unsigned HOST_WIDE_INT size_bits,
 			    unsigned HOST_WIDE_INT align,
 			    unsigned int flags)
 {
+  unsigned HOST_WIDE_INT newsize;
+  newsize = HOST_WIDE_INT_1U << ceil_log2 (size_bits);
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
-      && size_bits <= align
+      && newsize <= MAX_MERGEABLE_BITSIZE
       && align >= 8
-      && align <= MAX_ALIGN_MERGABLE
+      && align <= newsize
       && (align & (align - 1)) == 0)
     {
       const char *prefix = function_mergeable_rodata_prefix ();
       char *name = (char *) alloca (strlen (prefix) + 30);
 
-      sprintf (name, "%s.cst%d", prefix, (int) (align / 8));
-      flags |= (align / 8) | SECTION_MERGE;
+      sprintf (name, "%s.cst%d", prefix, (int) (newsize / BITS_PER_UNIT));
+      flags |= (newsize / BITS_PER_UNIT) | SECTION_MERGE;
       return get_section (name, flags, NULL);
     }
   return readonly_data_section;
