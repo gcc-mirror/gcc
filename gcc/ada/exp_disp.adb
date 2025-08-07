@@ -971,7 +971,7 @@ package body Exp_Disp is
          pragma Assert (Is_Frozen (Typ));
 
          if Extra_Formals_Known (Subp) then
-            Create_Extra_Formals (Subp_Typ);
+            Create_Extra_Formals (Subp_Typ, Related_Nod => Call_Node);
 
          --  Extra formals were previously deferred
 

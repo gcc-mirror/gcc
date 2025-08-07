@@ -6592,7 +6592,7 @@ package body Exp_Ch3 is
 
             Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Elmt) loop
-               Create_Extra_Formals (Node (Elmt));
+               Create_Extra_Formals (Node (Elmt), Related_Nod => N);
                Next_Elmt (Elmt);
             end loop;
 
@@ -6609,7 +6609,7 @@ package body Exp_Ch3 is
                  and then Find_Dispatching_Type (E) = Typ
                  and then not Contains (Primitive_Operations (Typ), E)
                then
-                  Create_Extra_Formals (E);
+                  Create_Extra_Formals (E, Related_Nod => N);
                end if;
 
                Next_Entity (E);

@@ -4716,7 +4716,7 @@ package body Exp_Ch6 is
       --  of init procs were added when they were built.
 
       if not Extra_Formals_Known (Subp) then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          --  If the previous call to Create_Extra_Formals could not add the
          --  extra formals, then we must defer adding the extra actuals of
@@ -4785,7 +4785,7 @@ package body Exp_Ch6 is
         and then Extra_Formals_Known (Subp)
         and then Present (Extra_Formals (Subp))
       then
-         Create_Extra_Actuals (N);
+         Create_Extra_Actuals (Call_Node);
 
          --  Mark the call as an expanded build-in-place call; required
          --  to avoid adding the extra formals twice.
@@ -5228,10 +5228,10 @@ package body Exp_Ch6 is
          null;
 
       elsif not Defer_Extra_Actuals then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          if Extra_Formals_Known (Subp) then
-            Create_Extra_Actuals (N);
+            Create_Extra_Actuals (Call_Node);
          end if;
       end if;
 
