@@ -276,7 +276,7 @@ check in changes outside of the parts of the compiler they maintain.
                         Reviewers
 
 aarch64 port            Alex Coplan             <alex.coplan@arm.com>
-aarch64 port            Andrew Pinski           <pinskia@gmail.com>
+aarch64 port            Andrew Pinski           <andrew.pinski@oss.qualcomm.com>
 arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
@@ -734,7 +734,7 @@ Sebastian Peryt                 speryt          <sebastian.peryt@intel.com>
 Johannes Pfau                   jpfau           <johannespfau@gmail.com>
 Gerald Pfeifer                  gerald          <gerald@pfeifer.com>
 Kaushik Phatak                  kaushikp        <kaushik.phatak@kpitcummins.com>
-Andrew Pinski                   pinskia         <pinskia@gmail.com>
+Andrew Pinski                   pinskia         <andrew.pinski@qualcomm.com>
 Nicolas Pitre                   nico            <nico@cam.org>
 Michael Ploujnikov              plouj           <michael.ploujnikov@oracle.com>
 Paul Pluzhnikov                 ppluzhnikov     <ppluzhnikov@google.com>
@@ -959,6 +959,7 @@ Immad Mir                                       <mir@sourceware.org>
 Gaius Mulley                                    <gaiusmod2@gmail.com>
 Szabolcs Nagy                                   <nsz@gcc.gnu.org>
 Andrew Pinski                                   <quic_apinski@quicinc.com>
+Andrew Pinski                                   <andrew.pinski@oss.qualcomm.com>
 Siddhesh Poyarekar                              <siddhesh@gotplt.org>
 Ramana Radhakrishnan                            <ramanara@nvidia.com>
 Navid Rahimi                                    <navidr@gcc.gnu.org>
