@@ -58,7 +58,7 @@ with Ada.Streams;
 with Interfaces;
 with System.CRC32;
 
-package GNAT.CRC32 is
+package GNAT.CRC32 with Pure, Always_Terminates is
 
    subtype CRC32 is System.CRC32.CRC32;
    --  Used to represent CRC32 values, which are 32 bit bit-strings

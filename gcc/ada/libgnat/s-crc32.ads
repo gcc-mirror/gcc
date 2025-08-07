@@ -56,7 +56,7 @@
 
 with Interfaces;
 
-package System.CRC32 is
+package System.CRC32 with Pure, Always_Terminates is
 
    type CRC32 is new Interfaces.Unsigned_32;
    --  Used to represent CRC32 values, which are 32 bit bit-strings
