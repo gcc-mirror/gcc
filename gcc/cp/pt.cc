@@ -13981,8 +13981,29 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       else if (is_capture_proxy (parm_pack))
 	{
 	  arg_pack = retrieve_local_specialization (parm_pack);
+	  if (DECL_DECOMPOSITION_P (arg_pack))
+	    {
+	      orig_arg = arg_pack;
+	      goto expand_sb_pack;
+	    }
 	  if (DECL_PACK_P (arg_pack))
 	    arg_pack = NULL_TREE;
+	}
+      else if (DECL_DECOMPOSITION_P (parm_pack))
+	{
+	  orig_arg = retrieve_local_specialization (parm_pack);
+	expand_sb_pack:
+	  gcc_assert (DECL_DECOMPOSITION_P (orig_arg));
+	  if (TREE_TYPE (orig_arg) == error_mark_node)
+	    return error_mark_node;
+	  gcc_assert (DECL_HAS_VALUE_EXPR_P (orig_arg));
+	  arg_pack = DECL_VALUE_EXPR (orig_arg);
+	  tree vec = make_tree_vec (TREE_VEC_LENGTH (arg_pack) - 2);
+	  if (TREE_VEC_LENGTH (vec))
+	    memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
+		    TREE_VEC_LENGTH (vec) * sizeof (tree));
+	  arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
+	  ARGUMENT_PACK_ARGS (arg_pack) = vec;
 	}
       else
         {
@@ -13996,7 +14017,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	    arg_pack = NULL_TREE;
         }
 
-      orig_arg = arg_pack;
+      if (orig_arg == NULL_TREE)
+	orig_arg = arg_pack;
       if (arg_pack && TREE_CODE (arg_pack) == ARGUMENT_PACK_SELECT)
 	arg_pack = ARGUMENT_PACK_SELECT_FROM_PACK (arg_pack);
 
@@ -14011,8 +14033,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
       if (arg_pack)
         {
-          int my_len =
-            TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack));
+	  int my_len
+	    = TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack));
 
 	  /* Don't bother trying to do a partial substitution with
 	     incomplete packs; we'll try again after deduction.  */
@@ -14176,8 +14198,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
           /* Update the corresponding argument.  */
           if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
-            TREE_VEC_ELT (TREE_VEC_ELT (args, level -1 ), idx) =
-              TREE_TYPE (pack);
+	    TREE_VEC_ELT (TREE_VEC_ELT (args, level -1 ), idx)
+	      = TREE_TYPE (pack);
           else
             TREE_VEC_ELT (args, idx) = TREE_TYPE (pack);
         }
@@ -15921,7 +15943,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 	    tsubst_flags_t tcomplain = complain;
 	    if (VAR_P (t))
 	      tcomplain |= tf_tst_ok;
-	    type = tsubst (type, args, tcomplain, in_decl);
+	    if (DECL_DECOMPOSITION_P (t) && DECL_PACK_P (t))
+	      type = NULL_TREE;
+	    else
+	      type = tsubst (type, args, tcomplain, in_decl);
 	    /* Substituting the type might have recursively instantiated this
 	       same alias (c++/86171).  */
 	    if (use_spec_table && gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
@@ -15938,6 +15963,17 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 	  {
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
+	    if (DECL_DECOMPOSITION_P (t) && DECL_PACK_P (t))
+	      {
+		tree dtype = cxx_make_type (DECLTYPE_TYPE);
+		DECLTYPE_TYPE_EXPR (dtype) = r;
+		DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (dtype) = 1;
+		SET_TYPE_STRUCTURAL_EQUALITY (dtype);
+		type = cxx_make_type (TYPE_PACK_EXPANSION);
+		PACK_EXPANSION_PATTERN (type) = dtype;
+		SET_TYPE_STRUCTURAL_EQUALITY (type);
+		PACK_EXPANSION_PARAMETER_PACKS (type) = r;
+	      }
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
 		/* It may seem that this case cannot occur, since:
@@ -18555,13 +18591,17 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
 	{
 	  tree v = DECL_VALUE_EXPR (decl);
-	  if (TREE_CODE (v) == ARRAY_REF
-	      && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	  if ((TREE_CODE (v) == ARRAY_REF
+	       && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	      || (TREE_CODE (v) == TREE_VEC
+		  && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0))))
 	    {
+	      v = (TREE_CODE (v) == ARRAY_REF
+		   ? TREE_OPERAND (v, 0) : TREE_VEC_ELT (v, 0));
 	      cp_decomp decomp_d = { NULL_TREE, 0 };
-	      tree d = tsubst_decl (TREE_OPERAND (v, 0), args, complain);
+	      tree d = tsubst_decl (v, args, complain);
 	      maybe_push_decl (d);
-	      d = tsubst_decomp_names (d, TREE_OPERAND (v, 0), args, complain,
+	      d = tsubst_decomp_names (d, v, args, complain,
 				       in_decl, &decomp_d);
 	      decomp = true;
 	      if (d == error_mark_node)
@@ -21220,7 +21260,28 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  ++c_inhibit_evaluation_warnings;
 	  /* We only want to compute the number of arguments.  */
 	  if (PACK_EXPANSION_P (op))
-	    expanded = tsubst_pack_expansion (op, args, complain, in_decl);
+	    {
+	      expanded = NULL_TREE;
+	      if (DECL_DECOMPOSITION_P (PACK_EXPANSION_PATTERN (op)))
+		{
+		  tree d = PACK_EXPANSION_PATTERN (op);
+		  if (DECL_HAS_VALUE_EXPR_P (d))
+		    {
+		      d = DECL_VALUE_EXPR (d);
+		      if (TREE_CODE (d) == TREE_VEC)
+			{
+			  tree b = TREE_VEC_ELT (d, 0);
+			  if (!type_dependent_expression_p_push (b))
+			    {
+			      expanded = void_node;
+			      len = TREE_VEC_LENGTH (d) - 2;
+			    }
+			}
+		    }
+		}
+	      if (!expanded)
+		expanded = tsubst_pack_expansion (op, args, complain, in_decl);
+	    }
 	  else
 	    expanded = tsubst_template_args (ARGUMENT_PACK_ARGS (op),
 					     args, complain, in_decl);
@@ -29050,6 +29111,24 @@ value_dependent_expression_p (tree expression)
     case SIZEOF_EXPR:
       if (SIZEOF_EXPR_TYPE_P (expression))
 	return dependent_type_p (TREE_TYPE (TREE_OPERAND (expression, 0)));
+      if (tree p = TREE_OPERAND (expression, 0))
+	if (PACK_EXPANSION_P (p)
+	    && DECL_DECOMPOSITION_P (PACK_EXPANSION_PATTERN (p)))
+	  {
+	    tree d = PACK_EXPANSION_PATTERN (p);
+	    if (DECL_HAS_VALUE_EXPR_P (d))
+	      {
+		d = DECL_VALUE_EXPR (d);
+		/* [temp.dep.constexpr]/4:
+		   Expressions of the following form are value-dependent:
+		   sizeof ... ( identifier )
+		   unless the identifier is a structured binding pack whose
+		   initializer is not dependent.  */
+		if (TREE_CODE (d) == TREE_VEC
+		    && !type_dependent_expression_p (TREE_VEC_ELT (d, 0)))
+		  return false;
+	      }
+	  }
       /* FALLTHRU */
     case ALIGNOF_EXPR:
     case TYPEID_EXPR:
@@ -29563,6 +29642,22 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	tree op = TREE_OPERAND (*tp, 0);
 	if (code == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (*tp))
 	  op = TREE_TYPE (op);
+	else if (code == SIZEOF_EXPR
+		 && PACK_EXPANSION_P (op)
+		 && DECL_DECOMPOSITION_P (PACK_EXPANSION_PATTERN (op)))
+	  {
+	    tree d = PACK_EXPANSION_PATTERN (op);
+	    if (DECL_HAS_VALUE_EXPR_P (d))
+	      {
+		d = DECL_VALUE_EXPR (d);
+		if (TREE_CODE (d) == TREE_VEC
+		    && !type_dependent_expression_p (TREE_VEC_ELT (d, 0)))
+		  {
+		    *walk_subtrees = 0;
+		    return NULL_TREE;
+		  }
+	      }
+	  }
 	if (TYPE_P (op))
 	  {
 	    if (dependent_type_p (op))

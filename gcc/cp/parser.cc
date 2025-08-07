@@ -14672,13 +14672,23 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 	  tree v = DECL_VALUE_EXPR (range_decl);
 	  /* For decomposition declaration get all of the corresponding
 	     declarations out of the way.  */
-	  if (TREE_CODE (v) == ARRAY_REF
-	      && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	  if ((TREE_CODE (v) == ARRAY_REF
+	       && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	      || (TREE_CODE (v) == TREE_VEC
+		  && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0))))
 	    {
 	      tree d = range_decl;
-	      range_decl = TREE_OPERAND (v, 0);
 	      decomp = &decomp_d;
-	      decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	      if (TREE_CODE (v) == ARRAY_REF)
+		{
+		  range_decl = TREE_OPERAND (v, 0);
+		  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+		}
+	      else
+		{
+		  range_decl = TREE_VEC_ELT (v, 0);
+		  decomp->count = tree_to_uhwi (TREE_VEC_ELT (v, 1)) + 1;
+		}
 	      decomp->decl = d;
 	      bool seen_name_independent_decl = false;
 	      for (unsigned int i = 0; i < decomp->count;
@@ -16843,7 +16853,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 }
 
 /* Helper of cp_parser_simple_declaration, parse a decomposition declaration.
-     decl-specifier-seq ref-qualifier [opt] [ identifier-list ]
+     decl-specifier-seq ref-qualifier [opt] [ sb-identifier-list ]
        initializer ;  */
 
 static tree
@@ -16856,21 +16866,45 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   cp_parser_require (parser, CPP_OPEN_SQUARE, RT_OPEN_SQUARE);
 
-  /* Parse the identifier-list.  */
+  /* Parse the sb-identifier-list.  */
   auto_vec<cp_expr, 10> v;
   bool attr_diagnosed = false;
   int first_attr = -1;
+  int pack = -1;
   unsigned int cnt = 0;
   if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
     while (true)
       {
+	if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	  {
+	    location_t elloc = cp_lexer_peek_token (parser->lexer)->location;
+	    if (!processing_template_decl)
+	      error_at (elloc, "structured binding pack outside of template");
+	    else if (pack != -1)
+	      error_at (elloc,
+			"multiple packs in structured binding declaration");
+	    else
+	      {
+		if (keyword == RID_MAX
+		    && cxx_dialect >= cxx17
+		    && cxx_dialect < cxx26)
+		  pedwarn (elloc, OPT_Wc__26_extensions,
+			   "structured binding packs only available with "
+			   "%<-std=c++2c%> or %<-std=gnu++2c%>");
+		pack = cnt;
+	      }
+	    cp_lexer_consume_token (parser->lexer);
+	  }
 	cp_expr e = cp_parser_identifier (parser);
 	if (e.get_value () == error_mark_node)
 	  break;
 	tree attr = NULL_TREE;
 	if (cp_next_tokens_can_be_std_attribute_p (parser))
 	  {
-	    if (cxx_dialect >= cxx17 && cxx_dialect < cxx26 && !attr_diagnosed)
+	    if (keyword == RID_MAX
+		&& cxx_dialect >= cxx17
+		&& cxx_dialect < cxx26
+		&& !attr_diagnosed)
 	      {
 		pedwarn (cp_lexer_peek_token (parser->lexer)->location,
 			 OPT_Wc__26_extensions,
@@ -16931,7 +16965,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 			  &pushed_scope);
   tree orig_decl = decl;
 
-  unsigned int i;
+  unsigned int i, j;
   cp_expr e;
   cp_decl_specifier_seq decl_specs;
   clear_decl_specs (&decl_specs);
@@ -16939,6 +16973,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   if (decl_specifiers->storage_class == sc_static)
     decl_specs.storage_class = sc_static;
   tree prev = decl;
+  j = 0;
   FOR_EACH_VEC_ELT (v, i, e)
     {
       if (i == 0)
@@ -16969,9 +17004,22 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  prev = decl2;
 	  DECL_DECLARED_CONSTEXPR_P (decl2) = DECL_DECLARED_CONSTEXPR_P (decl);
 	  DECL_DECLARED_CONSTINIT_P (decl2) = DECL_DECLARED_CONSTINIT_P (decl);
+	  if (j == (unsigned) pack)
+	    {
+	      tree dtype = cxx_make_type (DECLTYPE_TYPE);
+	      DECLTYPE_TYPE_EXPR (dtype) = decl2;
+	      DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (dtype) = 1;
+	      SET_TYPE_STRUCTURAL_EQUALITY (dtype);
+	      tree type = cxx_make_type (TYPE_PACK_EXPANSION);
+	      PACK_EXPANSION_PATTERN (type) = dtype;
+	      SET_TYPE_STRUCTURAL_EQUALITY (type);
+	      PACK_EXPANSION_PARAMETER_PACKS (type) = decl2;
+	      TREE_TYPE (decl2) = type;
+	    }
 	}
       if (elt_pushed_scope)
 	pop_scope (elt_pushed_scope);
+      ++j;
     }
 
   if (v.is_empty ())
@@ -46300,6 +46348,14 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 		  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
 		  decomp->decl = decl;
 		}
+	      else if (TREE_CODE (v) == TREE_VEC
+		       && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0)))
+		{
+		  d = TREE_VEC_ELT (v, 0);
+		  decomp = &decomp_d;
+		  decomp->count = tree_to_uhwi (TREE_VEC_ELT (v, 1)) + 1;
+		  decomp->decl = decl;
+		}
 	    }
 	  do_range_for_auto_deduction (d, init, decomp);
 	}
@@ -46421,6 +46477,15 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	  orig_decl = TREE_OPERAND (v, 0);
 	  decomp = &decomp_d;
 	  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	  decomp->decl = d;
+	}
+      else if (TREE_CODE (v) == TREE_VEC
+	       && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0)))
+	{
+	  tree d = orig_decl;
+	  orig_decl = TREE_VEC_ELT (v, 0);
+	  decomp = &decomp_d;
+	  decomp->count = tree_to_uhwi (TREE_VEC_ELT (v, 1)) + 1;
 	  decomp->decl = d;
 	}
     }

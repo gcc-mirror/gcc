@@ -11615,12 +11615,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		}
 	      return false;
 	    }
+	  tree ve = DECL_VALUE_EXPR (t);
 	  /* Treat __PRETTY_FUNCTION__ inside a template function as
 	     potentially-constant.  */
-	  else if (DECL_PRETTY_FUNCTION_P (t)
-		   && DECL_VALUE_EXPR (t) == error_mark_node)
+	  if (DECL_PRETTY_FUNCTION_P (t) && ve == error_mark_node)
 	    return true;
-	  return RECUR (DECL_VALUE_EXPR (t), rval);
+	  if (DECL_DECOMPOSITION_P (t) && TREE_CODE (ve) == TREE_VEC)
+	    return RECUR (TREE_VEC_ELT (ve, 0), rval);
+	  return RECUR (ve, rval);
 	}
       if (want_rval
 	  && (now || !var_in_maybe_constexpr_fn (t))

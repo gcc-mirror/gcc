@@ -1090,7 +1090,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr_exceptions=202411L");
 	  cpp_define (pfile, "__cpp_static_assert=202306L");
 	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
-	  cpp_define (pfile, "__cpp_structured_bindings=202403L");
+	  cpp_define (pfile, "__cpp_structured_bindings=202411L");
 	  cpp_define (pfile, "__cpp_deleted_function=202403L");
 	  cpp_define (pfile, "__cpp_variadic_friend=202403L");
 	  cpp_define (pfile, "__cpp_pack_indexing=202311L");

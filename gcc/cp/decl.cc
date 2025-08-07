@@ -9748,7 +9748,7 @@ get_tuple_size (tree type)
 /* Return std::tuple_element<I,TYPE>::type.  */
 
 static tree
-get_tuple_element_type (tree type, unsigned i)
+get_tuple_element_type (tree type, unsigned HOST_WIDE_INT i)
 {
   tree args = make_tree_vec (2);
   TREE_VEC_ELT (args, 0) = build_int_cst (integer_type_node, i);
@@ -9764,7 +9764,7 @@ get_tuple_element_type (tree type, unsigned i)
 /* Return e.get<i>() or get<i>(e).  */
 
 static tree
-get_tuple_decomp_init (tree decl, unsigned i)
+get_tuple_decomp_init (tree decl, unsigned HOST_WIDE_INT i)
 {
   tree targs = make_tree_vec (1);
   TREE_VEC_ELT (targs, 0) = build_int_cst (integer_type_node, i);
@@ -9870,6 +9870,19 @@ cp_maybe_mangle_decomp (tree decl, cp_decomp *decomp)
     }
 }
 
+/* Append #i to DECL_NAME (decl).  */
+
+static void
+set_sb_pack_name (tree decl, unsigned HOST_WIDE_INT i)
+{
+  tree name = DECL_NAME (decl);
+  size_t len = IDENTIFIER_LENGTH (name) + 22;
+  char *n = XALLOCAVEC (char, len);
+  snprintf (n, len, "%s#" HOST_WIDE_INT_PRINT_UNSIGNED,
+	    IDENTIFIER_POINTER (name), i);
+  DECL_NAME (decl) = get_identifier (n);
+}
+
 /* Finish a decomposition declaration.  DECL is the underlying declaration
    "e", FIRST is the head of a chain of decls for the individual identifiers
    chained through DECL_CHAIN in reverse order and COUNT is the number of
@@ -9926,10 +9939,13 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
   auto_vec<tree, 16> v;
   v.safe_grow (count, true);
   tree d = first;
+  int pack = -1;
   for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
     {
       v[count - i - 1] = d;
       fit_decomposition_lang_decl (d, decl);
+      if (DECL_PACK_P (d))
+	pack = count - i - 1;
     }
 
   tree type = TREE_TYPE (decl);
@@ -9951,6 +9967,14 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 
   tree eltype = NULL_TREE;
   unsigned HOST_WIDE_INT eltscnt = 0;
+  /* Structured binding packs when initializer is non-dependent should
+     have their DECL_VALUE_EXPR set to a TREE_VEC.  First two elements
+     of that TREE_VEC are the base and index, what is normally represented
+     as DECL_VALUE_EXPR ARRAY_REF <base, index> where index is the index
+     of the pack first element.  The remaining elements of the TREE_VEC
+     are VAR_DECLs for the pack elements.  */
+  tree packv = NULL_TREE;
+
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree nelts;
@@ -9969,7 +9993,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  goto error_out;
 	}
       eltscnt = tree_to_uhwi (nelts);
-      if (count != eltscnt)
+      if (pack != -1 ? count - 1 > eltscnt : count != eltscnt)
 	{
        cnt_mismatch:
 	  auto_diagnostic_group d;
@@ -9990,12 +10014,37 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
       eltype = TREE_TYPE (type);
       for (unsigned int i = 0; i < count; i++)
 	{
+	  if ((unsigned) pack == i)
+	    {
+	      packv = make_tree_vec (eltscnt - count + 3);
+	      for (unsigned HOST_WIDE_INT j = 0; j < eltscnt - count + 1; ++j)
+		{
+		  tree t;
+		  TREE_VEC_ELT (packv, j + 2) = t = copy_node (v[pack]);
+		  set_sb_pack_name (t, j);
+		  maybe_push_decl (t);
+		  TREE_TYPE (t) = eltype;
+		  layout_decl (t, 0);
+		  if (!processing_template_decl)
+		    {
+		      tree a = unshare_expr (dexp);
+		      a = build4 (ARRAY_REF, eltype, a, size_int (j + pack),
+				  NULL_TREE, NULL_TREE);
+		      SET_DECL_VALUE_EXPR (t, a);
+		      DECL_HAS_VALUE_EXPR_P (t) = 1;
+		    }
+		}
+	      continue;
+	    }
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
+	  unsigned HOST_WIDE_INT j = i;
+	  if (pack != -1 && (unsigned) pack < i)
+	    j = i + eltscnt - count;
+	  t = build4 (ARRAY_REF, eltype, t, size_int (j), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -10004,17 +10053,41 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
   else if (TREE_CODE (type) == COMPLEX_TYPE)
     {
       eltscnt = 2;
-      if (count != eltscnt)
+      if (pack != -1 ? count - 1 > eltscnt : count != eltscnt)
 	goto cnt_mismatch;
       eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
       for (unsigned int i = 0; i < count; i++)
 	{
+	  if ((unsigned) pack == i)
+	    {
+	      packv = make_tree_vec (eltscnt - count + 3);
+	      for (unsigned HOST_WIDE_INT j = 0; j < eltscnt - count + 1; ++j)
+		{
+		  tree t;
+		  TREE_VEC_ELT (packv, j + 2) = t = copy_node (v[pack]);
+		  set_sb_pack_name (t, j);
+		  maybe_push_decl (t);
+		  TREE_TYPE (t) = eltype;
+		  layout_decl (t, 0);
+		  if (!processing_template_decl)
+		    {
+		      tree a = build1 (pack + j ? IMAGPART_EXPR : REALPART_EXPR, eltype,
+				       unshare_expr (dexp));
+		      SET_DECL_VALUE_EXPR (t, a);
+		      DECL_HAS_VALUE_EXPR_P (t) = 1;
+		    }
+		}
+	      continue;
+	    }
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build1 (i ? IMAGPART_EXPR : REALPART_EXPR, eltype, t);
+	  unsigned HOST_WIDE_INT j = i;
+	  if (pack != -1 && (unsigned) pack < i)
+	    j = i + eltscnt - count;
+	  t = build1 (j ? IMAGPART_EXPR : REALPART_EXPR, eltype, t);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -10026,19 +10099,47 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  error_at (loc, "cannot decompose variable length vector %qT", type);
 	  goto error_out;
 	}
-      if (count != eltscnt)
+      if (pack != -1 ? count - 1 > eltscnt : count != eltscnt)
 	goto cnt_mismatch;
       eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
       for (unsigned int i = 0; i < count; i++)
 	{
+	  if ((unsigned) pack == i)
+	    {
+	      packv = make_tree_vec (eltscnt - count + 3);
+	      for (unsigned HOST_WIDE_INT j = 0; j < eltscnt - count + 1; ++j)
+		{
+		  tree t;
+		  TREE_VEC_ELT (packv, j + 2) = t = copy_node (v[pack]);
+		  set_sb_pack_name (t, j);
+		  maybe_push_decl (t);
+		  TREE_TYPE (t) = eltype;
+		  layout_decl (t, 0);
+		  if (!processing_template_decl)
+		    {
+		      tree a = unshare_expr (dexp);
+		      location_t loc = DECL_SOURCE_LOCATION (t);
+		      tree s = size_int (j + pack);
+		      convert_vector_to_array_for_subscript (loc, &a, s);
+		      a = build4 (ARRAY_REF, eltype, a, s,
+				  NULL_TREE, NULL_TREE);
+		      SET_DECL_VALUE_EXPR (t, a);
+		      DECL_HAS_VALUE_EXPR_P (t) = 1;
+		    }
+		}
+	      continue;
+	    }
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
+	  unsigned HOST_WIDE_INT j = i;
+	  if (pack != -1 && (unsigned) pack < i)
+	    j = i + eltscnt - count;
 	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
-						 &t, size_int (i));
-	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
+						 &t, size_int (j));
+	  t = build4 (ARRAY_REF, eltype, t, size_int (j), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -10062,11 +10163,11 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  goto error_out;
 	}
       eltscnt = tree_to_uhwi (tsize);
-      if (count != eltscnt)
+      if (pack != -1 ? count - 1 > eltscnt : count != eltscnt)
 	goto cnt_mismatch;
-      if (test_p)
+      if (test_p && eltscnt)
 	return true;
-      if (!processing_template_decl && DECL_DECOMP_BASE (decl))
+      if (!processing_template_decl && DECL_DECOMP_BASE (decl) && eltscnt)
 	{
 	  /* For structured bindings used in conditions we need to evaluate
 	     the conversion of decl (aka e in the standard) to bool or
@@ -10096,16 +10197,70 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  location_t sloc = input_location;
 	  location_t dloc = DECL_SOURCE_LOCATION (v[i]);
 
+	  if ((unsigned) pack == i)
+	    {
+	      packv = make_tree_vec (eltscnt - count + 3);
+	      for (unsigned HOST_WIDE_INT j = 0; j < eltscnt - count + 1; ++j)
+		{
+		  tree t;
+		  TREE_VEC_ELT (packv, j + 2) = t = copy_node (v[pack]);
+		  set_sb_pack_name (t, j);
+		  input_location = dloc;
+		  tree init = get_tuple_decomp_init (decl, j + pack);
+		  tree eltype = (init == error_mark_node ? error_mark_node
+				 : get_tuple_element_type (type, j + pack));
+		  input_location = sloc;
+
+		  if (VOID_TYPE_P (eltype))
+		    {
+		      error ("%<std::tuple_element<%wu, %T>::type%> is "
+			     "%<void%>", j + pack, type);
+		      eltype = error_mark_node;
+		    }
+		  if (init == error_mark_node || eltype == error_mark_node)
+		    {
+		      inform (dloc, "in initialization of structured binding "
+			      "pack %qD", v[pack]);
+		      goto error_out;
+		    }
+		  if (j == 0
+		      && !processing_template_decl
+		      && TREE_STATIC (decl))
+		    {
+		      sorry_at (dloc, "mangling of structured binding pack "
+				      "elements not implemented yet");
+		      goto error_out;
+		    }
+		  maybe_push_decl (t);
+		  /* Save the decltype away before reference collapse.  */
+		  hash_map_safe_put<hm_ggc> (decomp_type_table, t, eltype);
+		  eltype = cp_build_reference_type (eltype, !lvalue_p (init));
+		  TREE_TYPE (t) = eltype;
+		  layout_decl (t, 0);
+		  DECL_HAS_VALUE_EXPR_P (t) = 0;
+		  if (!processing_template_decl)
+		    {
+		      copy_linkage (t, decl);
+		      cp_finish_decl (t, init, /*constexpr*/false,
+				      /*asm*/NULL_TREE, LOOKUP_NORMAL);
+		    }
+		}
+	      continue;
+	    }
+
+	  unsigned HOST_WIDE_INT j = i;
+	  if (pack != -1 && (unsigned) pack < i)
+	    j = i + eltscnt - count;
 	  input_location = dloc;
-	  tree init = get_tuple_decomp_init (decl, i);
+	  tree init = get_tuple_decomp_init (decl, j);
 	  tree eltype = (init == error_mark_node ? error_mark_node
-			 : get_tuple_element_type (type, i));
+			 : get_tuple_element_type (type, j));
 	  input_location = sloc;
 
 	  if (VOID_TYPE_P (eltype))
 	    {
-	      error ("%<std::tuple_element<%u, %T>::type%> is %<void%>",
-		     i, type);
+	      error ("%<std::tuple_element<%wu, %T>::type%> is %<void%>",
+		     j, type);
 	      eltype = error_mark_node;
 	    }
 	  if (init == error_mark_node || eltype == error_mark_node)
@@ -10159,6 +10314,12 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	goto error_out;
       else if (btype == NULL_TREE)
 	{
+	  if (pack == 0 && count == 1)
+	    {
+	      eltscnt = 0;
+	      packv = make_tree_vec (2);
+	      goto done;
+	    }
 	  error_at (loc, "cannot decompose class type %qT without non-static "
 			 "data members", type);
 	  goto error_out;
@@ -10170,7 +10331,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  continue;
 	else
 	  eltscnt++;
-      if (count != eltscnt)
+      if (pack != -1 ? count - 1 > eltscnt : count != eltscnt)
 	goto cnt_mismatch;
       tree t = dexp;
       if (type != btype)
@@ -10179,6 +10340,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 			       /*nonnull*/false, tf_warning_or_error);
 	  type = btype;
 	}
+      unsigned HOST_WIDE_INT j = 0;
       unsigned int i = 0;
       for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) != FIELD_DECL
@@ -10191,6 +10353,32 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 						     NULL_TREE);
 	    if (REFERENCE_REF_P (tt))
 	      tt = TREE_OPERAND (tt, 0);
+	    if (pack != -1 && j >= (unsigned) pack)
+	      {
+		if (j == (unsigned) pack)
+		  {
+		    packv = make_tree_vec (eltscnt - count + 3);
+		    i++;
+		  }
+		if (j < (unsigned) pack + eltscnt - (count - 1))
+		  {
+		    tree t;
+		    TREE_VEC_ELT (packv, j + 3 - i) = t = copy_node (v[pack]);
+		    set_sb_pack_name (t, j + 1 - i);
+		    maybe_push_decl (t);
+		    TREE_TYPE (t) = TREE_TYPE (tt);
+		    layout_decl (t, 0);
+		    if (!processing_template_decl)
+		      {
+			SET_DECL_VALUE_EXPR (t, tt);
+			DECL_HAS_VALUE_EXPR_P (t) = 1;
+		      }
+		    else
+		      DECL_HAS_VALUE_EXPR_P (t) = 0;
+		    j++;
+		    continue;
+		  }
+	      }
 	    TREE_TYPE (v[i]) = TREE_TYPE (tt);
 	    layout_decl (v[i], 0);
 	    if (!processing_template_decl)
@@ -10199,7 +10387,26 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 		DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	      }
 	    i++;
+	    j++;
 	  }
+      if (pack != -1 && j == (unsigned) pack)
+	{
+	  gcc_checking_assert (eltscnt == count - 1);
+	  packv = make_tree_vec (2);
+	}
+    }
+ done:
+  if (packv)
+    {
+      gcc_checking_assert (pack != -1);
+      TREE_VEC_ELT (packv, 0) = decl;
+      TREE_VEC_ELT (packv, 1) = size_int (pack);
+      SET_DECL_VALUE_EXPR (v[pack], packv);
+      DECL_HAS_VALUE_EXPR_P (v[pack]) = 1;
+      DECL_IGNORED_P (v[pack]) = 1;
+      if (!processing_template_decl)
+	for (unsigned int i = 0; i < TREE_VEC_LENGTH (packv) - 2U; ++i)
+	  pushdecl (TREE_VEC_ELT (packv, 2 + i));
     }
   if (processing_template_decl)
     {
