@@ -975,19 +975,24 @@ aarch64_cb_rhs (rtx_code op_code, rtx rhs)
     {
     case EQ:
     case NE:
-    case GT:
-    case GTU:
     case LT:
     case LTU:
+    case GE:
+    case GEU:
+      /* EQ/NE  range is 0 .. 63.
+	 LT/LTU range is 0 .. 63.
+	 GE/GEU range is 1 .. 64 => GT x - 1, but also supports 0 via XZR.
+	 So the intersection is 0 .. 63. */
       return IN_RANGE (rhs_val, 0, 63);
 
-    case GE:  /* CBGE:   signed greater than or equal */
-    case GEU: /* CBHS: unsigned greater than or equal */
-      return IN_RANGE (rhs_val, 1, 64);
-
-    case LE:  /* CBLE:   signed less than or equal */
-    case LEU: /* CBLS: unsigned less than or equal */
-      return IN_RANGE (rhs_val, -1, 62);
+    case GT:
+    case GTU:
+    case LE:
+    case LEU:
+      /* GT/GTU range is  0 .. 63
+	 LE/LEU range is -1 .. 62 => LT x + 1.
+	 So the intersection is 0 .. 62. */
+      return IN_RANGE (rhs_val, 0, 62);
 
     default:
       return false;

@@ -1089,3 +1089,13 @@
 (define_special_predicate "aarch64_ptrue_all_operand"
   (and (match_code "const_vector")
        (match_test "aarch64_ptrue_all_mode (op) == mode")))
+
+(define_predicate "aarch64_reg_Uc0_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "satisfies_constraint_Uc0 (op)"))))
+
+(define_predicate "aarch64_reg_Uc1_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "satisfies_constraint_Uc1 (op)"))))

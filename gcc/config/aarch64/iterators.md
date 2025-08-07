@@ -2986,19 +2986,15 @@
 
 (define_code_iterator INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
+;; Inverse comparisons must have the same constraint so that
+;; branches can be redirected during late compilation.
 (define_code_attr cmpbr_imm_constraint [
-    (eq "Uc0")
-    (ne "Uc0")
-    (gt "Uc0")
-    (gtu "Uc0")
-    (lt "Uc0")
-    (ltu "Uc0")
+    (eq "Uc0") (ne "Uc0")
+    (lt "Uc0") (ge "Uc0")
+    (ltu "Uc0") (geu "Uc0")
 
-    (ge "Uc1")
-    (geu "Uc1")
-
-    (le "Uc2")
-    (leu "Uc2")
+    (gt "Uc1") (le "Uc1")
+    (gtu "Uc1") (leu "Uc1")
 ])
 
 (define_code_attr fix_trunc_optab [(fix "fix_trunc")

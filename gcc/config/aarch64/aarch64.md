@@ -865,21 +865,21 @@
 
 ;; Emit a `CB<cond> (register)` or `CB<cond> (immediate)` instruction.
 ;; The immediate range depends on the comparison code.
-;; Comparisons against immediates outside this range fall back to
-;; CMP + B<cond>.
-(define_insn "aarch64_cb<INT_CMP:code><GPI:mode>"
-  [(set (pc) (if_then_else (INT_CMP
-			     (match_operand:GPI 0 "register_operand" "r")
-			     (match_operand:GPI 1 "nonmemory_operand"
-			       "r<INT_CMP:cmpbr_imm_constraint>"))
-			   (label_ref (match_operand 2))
-			   (pc)))]
-  "TARGET_CMPBR && aarch64_cb_rhs (<INT_CMP:CODE>, operands[1])"
+(define_insn "*aarch64_cb<code><mode>"
+  [(set (pc) (if_then_else
+		(INT_CMP
+		  (match_operand:GPI 0 "register_operand" "r")
+		  (match_operand:GPI 1
+		    "aarch64_reg_<cmpbr_imm_constraint>_operand"
+		    "r<cmpbr_imm_constraint>"))
+		(label_ref (match_operand 2))
+		(pc)))]
+  "TARGET_CMPBR"
   {
-    return (get_attr_far_branch (insn) == FAR_BRANCH_NO)
-      ? "cb<INT_CMP:cmp_op>\\t%<w>0, %<w>1, %l2"
-      : aarch64_gen_far_branch (operands, 2, "L",
-          "cb<INT_CMP:inv_cmp_op>\\t%<w>0, %<w>1, ");
+    if (get_attr_length (insn) == 4)
+      return "cb<cmp_op>\t%<w>0, %<w>1, %l2";
+    return aarch64_gen_far_branch (operands, 2, "L",
+		"cb<inv_cmp_op>\t%<w>0, %<w>1, ");
   }
   [(set_attr "type" "branch")
    (set (attr "length")
