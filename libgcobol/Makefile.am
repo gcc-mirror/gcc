@@ -42,6 +42,7 @@ libgcobol_la_SOURCES =				\
 	intrinsic.cc				\
 	io.cc					\
 	libgcobol.cc				\
+	stringbin.cc				\
 	valconv.cc
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings

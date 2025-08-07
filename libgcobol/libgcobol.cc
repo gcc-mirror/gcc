@@ -72,6 +72,8 @@
 #include <sys/time.h>
 #include <execinfo.h>
 #include "exceptl.h"
+#include "stringbin.h"
+
 
 /* BSD extension.  */
 #if !defined(LOG_PERROR)
@@ -798,7 +800,7 @@ __gg__power_of_ten(int n)
     fprintf(stderr,
             "Trying to raise 10 to %d as an int128, which we can't do.\n",
             n);
-    fprintf(stderr, "The problem is in %s.\n", __func__);
+    fprintf(stderr, "The problem is in %s %s:%d.\n", __func__, __FILE__, __LINE__);
     abort();
     }
   if( n <= MAX_POWER )
@@ -873,56 +875,6 @@ __gg__scale_by_power_of_ten_2(__int128 value, int N)
     value /= __gg__power_of_ten(-N);
     }
   return value;
-  }
-
-extern "C"
-bool
-__gg__binary_to_string(char *result, int digits, __int128 value)
-  {
-  // The result is not terminated, because this routine is used
-  // to put information directly into cblc_field_t::data
-  // Our caller has to keep track of whether value was negative.
-
-  // Note that this routine operates in the source code-set space; that is
-  // the result comes back with zero as an ASCII 0x30, not an EBCDIC 0xF0
-
-  if( value < 0 )
-    {
-    value = -value;
-    }
-  result += digits-1 ;
-  while( digits-- )
-    {
-    *result-- = value%10 + ascii_zero;
-    value /= 10;
-    }
-  // Should value be non-zero, it means we potentially have a size error
-  return value != 0;
-  }
-
-extern "C"
-bool
-__gg__binary_to_string_internal(char *result, int digits, __int128 value)
-  {
-  // The result is not terminated, because this routine is used
-  // to put information directly into cblc_field_t::data
-  // Our caller has to keep track of whether value was negative.
-
-  // Note that this routine operates in the source code-set space; that is
-  // the result comes back with zero as an ASCII 0x30, not an EBCDIC 0xF0
-
-  if( value < 0 )
-    {
-    value = -value;
-    }
-  result += digits-1 ;
-  while( digits-- )
-    {
-    *result-- = (value%10) + internal_zero;
-    value /= 10;
-    }
-  // Should value be non-zero, it means we potentially have a size error
-  return value != 0;
   }
 
 static bool
@@ -1617,9 +1569,13 @@ int128_to_field(cblc_field_t   *var,
 
             // Note that sending a signed value to an alphanumeric strips off
             // any plus or minus signs.
+            memset(location, 0, length);
             size_error = __gg__binary_to_string_internal(
-                          PTRCAST(char, location),
-                          length, value);
+                                           PTRCAST(char, location),
+                                           length > MAX_FIXED_POINT_DIGITS 
+                                                    ? MAX_FIXED_POINT_DIGITS 
+                                                    : length,
+                                           value);
             break;
 
           case FldNumericDisplay:
@@ -1708,7 +1664,7 @@ int128_to_field(cblc_field_t   *var,
 
               // At this point, value is scaled to the target's rdigits
 
-              size_error = __gg__binary_to_string(ach, var->digits, value);
+              size_error = __gg__binary_to_string_ascii(ach, var->digits, value);
               ach[var->digits] = NULLCH;
 
               // Convert that string according to the PICTURE clause
@@ -1749,7 +1705,7 @@ int128_to_field(cblc_field_t   *var,
           case FldAlphaEdited:
             {
             char ach[128];
-            size_error = __gg__binary_to_string(ach, length, value);
+            size_error = __gg__binary_to_string_ascii(ach, length, value);
             ach[length] = NULLCH;
 
             // Convert that string according to the PICTURE clause
@@ -6126,7 +6082,7 @@ __gg__move( cblc_field_t        *fdest,
 
             // Convert it to the full complement of digits available
             // from the source...but no more
-            __gg__binary_to_string(ach, source_digits, value);
+            __gg__binary_to_string_ascii(ach, source_digits, value);
 
             // Binary to string returns ASCII characters:
             for(int i=0; i<source_digits; i++)

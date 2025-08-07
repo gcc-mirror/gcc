@@ -122,8 +122,8 @@ static void
 location_dump( const char func[], int line, const char tag[], const LOC& loc) {
   extern int yy_flex_debug; // cppcheck-suppress shadowVariable
   if( yy_flex_debug ) {
-    const char *detail = gcobol_getenv("update_location"); // cppcheck-suppress knownConditionTrueFalse
-    if( detail ) {
+    const char *detail = gcobol_getenv("update_location");
+    if( detail ) { // cppcheck-suppress knownConditionTrueFalse
       fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d)\n",
               func, line, tag,
               loc.first_line, loc.first_column, loc.last_line, loc.last_column);
