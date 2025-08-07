@@ -535,7 +535,14 @@ pass_avlprop::execute (function *fn)
 	      && !m_avl_propagations->get (candidate.second)
 	      && imm_avl_p (vtype_mode))
 	    {
-	      rtx new_avl = gen_int_mode (GET_MODE_NUNITS (vtype_mode), Pmode);
+	      /* For segmented operations AVL refers to a single register and
+		 not all NF registers.  Therefore divide the mode size by NF
+		 to obtain the proper AVL.  */
+	      int nf = 1;
+	      if (riscv_v_ext_tuple_mode_p (vtype_mode))
+		nf = get_nf (vtype_mode);
+	      rtx new_avl = gen_int_mode
+	      (GET_MODE_NUNITS (vtype_mode).to_constant () / nf, Pmode);
 	      simplify_replace_vlmax_avl (rinsn, new_avl);
 	    }
 	}
