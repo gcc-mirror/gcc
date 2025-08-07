@@ -9239,15 +9239,12 @@ print_operand (FILE *file, rtx x, int code)
       else if (code == 'h')
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		 ((CONST_WIDE_INT_ELT (x, 0) & 0xffff) ^ 0x8000) - 0x8000);
+      /* Support arbitrary _BitInt constants in asm statements.  */
+      else if (code == 0)
+	output_addr_const (file, x);
       else
-	{
-	  if (code == 0)
-	    output_operand_lossage ("invalid constant - try using "
-				    "an output modifier");
-	  else
-	    output_operand_lossage ("invalid constant for output modifier '%c'",
-				    code);
-	}
+	output_operand_lossage ("invalid constant for output modifier '%c'",
+				code);
       break;
     case CONST_VECTOR:
       switch (code)
@@ -18768,6 +18765,27 @@ s390_c_mode_for_floating_type (enum tree_index ti)
   return default_mode_for_floating_type (ti);
 }
 
+/* Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+
+bool
+s390_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (!TARGET_64BIT)
+    return false;
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else
+    info->limb_mode = DImode;
+  info->abi_limb_mode = info->limb_mode;
+  info->big_endian = true;
+  info->extended = true;
+  return true;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -19088,6 +19106,9 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "S/390"
+
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO s390_bitint_type_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
