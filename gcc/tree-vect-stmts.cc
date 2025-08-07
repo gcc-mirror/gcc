@@ -7777,7 +7777,7 @@ vectorizable_store (vec_info *vinfo,
 	return false;
     }
 
-  tree vectype = SLP_TREE_VECTYPE (stmt_info), rhs_vectype = NULL_TREE;
+  tree vectype = SLP_TREE_VECTYPE (slp_node), rhs_vectype = NULL_TREE;
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (loop_vinfo)
