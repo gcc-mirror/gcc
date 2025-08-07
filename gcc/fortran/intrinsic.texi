@@ -3368,11 +3368,13 @@ Fortran 2003 and later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
+@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE, LOWER])}
 
 @item @emph{Description}:
-@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
-@var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
+@code{C_F_POINTER(CPTR, FPTR[, SHAPE, LOWER])} assigns the target of the C
+pointer @var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
+For an array @var{FPTR}, the lower bounds are specified by @var{LOWER} if
+present and otherwise equal to 1.
 
 @item @emph{Class}:
 Subroutine
@@ -3384,9 +3386,11 @@ Subroutine
 @item @var{FPTR}  @tab pointer interoperable with @var{cptr}. It is
 @code{INTENT(OUT)}.
 @item @var{SHAPE} @tab (Optional) Rank-one array of type @code{INTEGER}
-with @code{INTENT(IN)}. It shall be present
-if and only if @var{fptr} is an array. The size
-must be equal to the rank of @var{fptr}.
+with @code{INTENT(IN)}. It shall be present if and only if @var{FPTR} is an
+array. The size must be equal to the rank of @var{FPTR}.
+@item @var{LOWER} @tab (Optional) Rank-one array of type @code{INTEGER}
+with @code{INTENT(IN)}. It shall not be present if @var{SHAPE} is not present.
+The size must be equal to the rank of @var{FPTR}.
 @end multitable
 
 @item @emph{Example}:
@@ -3408,7 +3412,7 @@ end program main
 @end smallexample
 
 @item @emph{Standard}:
-Fortran 2003 and later
+Fortran 2003 and later, with @var{LOWER} argument Fortran 2023 and later
 
 @item @emph{See also}:
 @ref{C_LOC}, @*

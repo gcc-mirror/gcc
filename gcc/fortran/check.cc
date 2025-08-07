@@ -6081,7 +6081,8 @@ gfc_check_c_associated (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
 
 
 bool
-gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
+gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape,
+		       gfc_expr *lower)
 {
   symbol_attribute attr;
   const char *msg;
@@ -6150,6 +6151,43 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
 	      mpz_clear (size);
 	      gfc_error ("SHAPE argument at %L to C_F_POINTER must have the same "
 			"size as the RANK of FPTR", &shape->where);
+	      return false;
+	    }
+	  mpz_clear (size);
+	}
+    }
+
+  if (lower
+      && !gfc_notify_std (GFC_STD_F2023, "LOWER argument at %L to C_F_POINTER",
+			  &lower->where))
+    return false;
+
+  if (!shape && lower)
+    {
+      gfc_error ("Unexpected LOWER argument at %L to C_F_POINTER "
+		 "with scalar FPTR",
+		 &lower->where);
+      return false;
+    }
+
+  if (lower && !rank_check (lower, 3, 1))
+    return false;
+
+  if (lower && !type_check (lower, 3, BT_INTEGER))
+    return false;
+
+  if (lower)
+    {
+      mpz_t size;
+      if (gfc_array_size (lower, &size))
+	{
+	  if (mpz_cmp_ui (size, fptr->rank) != 0)
+	    {
+	      mpz_clear (size);
+	      gfc_error (
+		"LOWER argument at %L to C_F_POINTER must have the same "
+		"size as the RANK of FPTR",
+		&lower->where);
 	      return false;
 	    }
 	  mpz_clear (size);

@@ -3943,11 +3943,12 @@ add_subroutines (void)
 
   /* The following subroutines are part of ISO_C_BINDING.  */
 
-  add_sym_3s ("c_f_pointer", GFC_ISYM_C_F_POINTER, CLASS_IMPURE, BT_UNKNOWN, 0,
+  add_sym_4s ("c_f_pointer", GFC_ISYM_C_F_POINTER, CLASS_IMPURE, BT_UNKNOWN, 0,
 	      GFC_STD_F2003, gfc_check_c_f_pointer, NULL, NULL,
 	      "cptr", BT_VOID, 0, REQUIRED, INTENT_IN,
 	      "fptr", BT_UNKNOWN, 0, REQUIRED, INTENT_OUT,
-	      "shape", BT_INTEGER, di, OPTIONAL, INTENT_IN);
+	      "shape", BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      "lower", BT_INTEGER, di, OPTIONAL, INTENT_IN);
   make_from_module();
 
   add_sym_2s ("c_f_procpointer", GFC_ISYM_C_F_PROCPOINTER, CLASS_IMPURE,
