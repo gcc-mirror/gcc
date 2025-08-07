@@ -1,3 +1,45 @@
+2025-08-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-tree.h (C_BOOLEAN_TYPE_P): Cover hardbools as well.
+	* c-typeck.cc (convert_lvalue_to_rvalue): New overload and
+	wrapper.
+	(build_atomic_assign, build_modify_expr): Use it.
+	(build_asm_expr, handle_omp-array_sections_1): Simplify with
+	it.
+	(build_unary_op): Handle hardbools.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/108931
+	* c-typeck.cc (composite_type_cond): Renamed from
+	composite_type with argument for condition
+	(composite_type): New function.
+	(composite_type_internal): Implement new logic.
+	(build_conditional_expr): Pass condition.
+	(common_pointer_type): Adapt.
+	(pointer_diff): Adapt.
+	(build_binary_op): Adapt.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/121217
+	* c-typeck.cc (tagged_types_tu_compatible_p): Add check.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_from_to): Parse 'iterator' modifier.
+	* c-typeck.cc (c_finish_omp_clauses): Finish iterators for to/from
+	clauses.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_variable_list): Use location of the
+	map expression as the clause location.
+	(c_parser_omp_clause_map): Parse 'iterator' modifier.
+	* c-typeck.cc (c_finish_omp_clauses): Finish iterators.  Apply
+	iterators to generated clauses.
+
 2025-08-02  Martin Uecker  <uecker@tugraz.at>
 
 	* c-decl.cc (get_parm_array_spec): Remove.

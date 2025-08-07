@@ -1,3 +1,7 @@
+2025-08-06  Sam James  <sam@gentoo.org>
+
+	* Make-lang.in (ALL_DFLAGS): Don't use ALIASING_FLAGS.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* d-diagnostic.cc: Likewise.

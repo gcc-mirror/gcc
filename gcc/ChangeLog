@@ -1,3 +1,223 @@
+2025-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/96226
+	* config/i386/predicates.md (and_operator): New operator.
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask):
+	Use and_operator to match AND RTX and use its mode
+	in the split pattern.
+
+2025-08-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Prerequisites): Replace bzip2 by xz.
+
+2025-08-06  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/i386/i386.h (PTA_BDVER1):
+	Add missing PTA_POPCNT and PTA_LZCNT with PTA_ABM.
+	(PTA_ZNVER1): Ditto.
+	(PTA_BTVER1): Ditto.
+	(PTA_LUJIAZUI): Ditto.
+	(PTA_YONGFENG): Do not include extra PTA_LZCNT.
+
+2025-08-06  Sam James  <sam@gentoo.org>
+
+	PR libstdc++/29286
+	* Makefile.in (ALIASING_FLAGS): Drop.
+	* configure: Regenerate.
+	* configure.ac: Drop -fno-strict-aliasing workaround for < GCC 4.3.
+
+2025-08-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment):
+	Prune dead code.
+
+2025-08-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121231
+	PR c++/119688
+	PR c++/94511
+	* common.opt: Document additional ABI version 21 change.
+	* doc/invoke.texi: Likewise.
+
+2025-08-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::gs_scale): New.
+	(_slp_tree::gs_base): Likewise.
+	(SLP_TREE_GS_SCALE): Likewise.
+	(SLP_TREE_GS_BASE): Likewise.
+	(vect_describe_gather_scatter_call): Declare.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize
+	new members.
+	(vect_build_slp_tree_2): Record gather/scatter base and scale.
+	(vect_get_and_check_slp_defs): For gather/scatter IFNs
+	describe the call to first_gs_info.
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Add
+	mode of operation with fixed offset vector type.
+	(vect_describe_gather_scatter_call): Export.
+	* tree-vect-stmts.cc (get_load_store_type): Do not call
+	vect_check_gather_scatter to fill gs_info, instead populate
+	from the SLP tree.  Check which of, IFN, decl or fallback
+	is supported and record that decision.
+
+2025-08-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Build proper
+	alias + align pointer value for gather/scatter and SLP
+	and use it.
+	(vectorizable_load): Likewise.
+
+2025-08-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Remove redundant gather/scatter target support check, instead
+	check the recorded ifns.  Also allow legacy gather/scatter
+	with loop masking.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121413
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Fix up last
+	commit, cast limb_prec to unsigned before comparison.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* match.pd: Preserve conversion to _BitInt before a VCE
+	if the _BitInt is extended.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt):
+	Zero-extend the partial limb of any unsigned _BitInt LHS assigned
+	with a widening sign-extension.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access):
+	Add a parameter abi_load_p.  If set, load a limb directly
+	in its actual precision without casting from m_limb_type.
+	(struct bitint_large_huge): Same.
+	(bitint_large_huge::handle_load): Use.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121413
+	* gimple-lower-bitint.cc (abi_limb_prec): New variable
+	(bitint_precision_kind): Initialize it.
+	(gimple_lower_bitint): Clear it at the start.  For
+	min_prec > limb_prec descreased precision vars for
+	INTEGER_CST PHI arguments ensure min_prec is either
+	prec or multiple of abi_limb_prec.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121127
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand_addr): For
+	uninitialized SSA_NAME, set *prec_stored to 0 rather than *prec.
+	Handle that case in narrowing casts.  If prec_stored is non-NULL,
+	set *prec_stored to prec_stored_val.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/121386
+	* Makefile.in (gengtype-lex.cc): Append #define FLEX_SCANNER,
+	#include "system.h" and #undef FLEX_SCANNER to the prepended lines.
+	* gengtype-lex.l: Remove inclusion of config.h or bconfig.h, system.h
+	and definition of malloc/realloc from %{} section.
+
+2025-08-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize: Read extension data from
+	riscv-ext*.def and adding unittest.
+
+2025-08-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_expand_arch):
+	Ignore `unset`.
+	* config/riscv/riscv.h (OPTION_DEFAULT_SPECS): Handle
+	`-march=unset`.
+	(ARCH_UNSET_CLEANUP_SPECS): New.
+	(DRIVER_SELF_SPECS): Handle -march=unset.
+	* doc/invoke.texi (RISC-V Options): Update documentation for
+	`-march=unset`.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gimplify.cc (remove_unused_omp_iterator_vars): Display unused
+	variable warning for 'to' and 'from' clauses.
+	(gimplify_scan_omp_clauses): Add argument for iterator loop sequence.
+	Gimplify the clause decl and size into the iterator loop if iterators
+	are used.
+	(gimplify_omp_workshare): Add argument for iterator loops sequence
+	in call to gimplify_scan_omp_clauses.
+	(gimplify_omp_target_update): Call remove_unused_omp_iterator_vars and
+	build_omp_iterators_loops.  Add loop sequence as argument when calling
+	gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses and building
+	the Gimple statement.
+	* tree-pretty-print.cc (dump_omp_clause): Call dump_omp_iterators
+	for to/from clauses with iterators.
+	* tree.cc (omp_clause_num_ops): Add extra operand for OMP_CLAUSE_FROM
+	and OMP_CLAUSE_TO.
+	* tree.h (OMP_CLAUSE_HAS_ITERATORS): Add check for OMP_CLAUSE_TO and
+	OMP_CLAUSE_FROM.
+	(OMP_CLAUSE_ITERATORS): Likewise.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* gimple-pretty-print.cc (dump_gimple_omp_target): Print expanded
+	iterator loops.
+	* gimple.cc (gimple_build_omp_target): Add argument for iterator
+	loops sequence.  Initialize iterator loops field.
+	* gimple.def (GIMPLE_OMP_TARGET): Set GSS symbol to GSS_OMP_TARGET.
+	* gimple.h (gomp_target): Set GSS symbol to GSS_OMP_TARGET.  Add extra
+	field for iterator loops.
+	(gimple_build_omp_target): Add argument for iterator loops sequence.
+	(gimple_omp_target_iterator_loops): New.
+	(gimple_omp_target_iterator_loops_ptr): New.
+	(gimple_omp_target_set_iterator_loops): New.
+	* gimplify.cc (find_var_decl): New.
+	(copy_omp_iterator): New.
+	(remap_omp_iterator_var_1): New.
+	(remap_omp_iterator_var): New.
+	(remove_unused_omp_iterator_vars): New.
+	(struct iterator_loop_info_t): New type.
+	(iterator_loop_info_map_t): New type.
+	(build_omp_iterators_loops): New.
+	(enter_omp_iterator_loop_context_1): New.
+	(enter_omp_iterator_loop_context): New.
+	(enter_omp_iterator_loop_context): New.
+	(exit_omp_iterator_loop_context): New.
+	(gimplify_adjust_omp_clauses): Add argument for iterator loop
+	sequence.  Gimplify the clause decl and size into the iterator
+	loop if iterators are used.
+	(gimplify_omp_workshare): Call remove_unused_omp_iterator_vars and
+	build_omp_iterators_loops for OpenMP target expressions.  Add
+	loop sequence as argument when calling gimplify_adjust_omp_clauses
+	and building the Gimple statement.
+	* gimplify.h (enter_omp_iterator_loop_context): New prototype.
+	(exit_omp_iterator_loop_context): New prototype.
+	* gsstruct.def (GSS_OMP_TARGET): New.
+	* omp-low.cc (lower_omp_map_iterator_expr): New.
+	(lower_omp_map_iterator_size): New.
+	(finish_omp_map_iterators): New.
+	(lower_omp_target): Add sorry if iterators used with deep mapping.
+	Call lower_omp_map_iterator_expr before assigning to sender ref.
+	Call lower_omp_map_iterator_size before setting the size.  Insert
+	iterator loop sequence before the statements for the target clause.
+	* tree-nested.cc (convert_nonlocal_reference_stmt): Walk the iterator
+	loop sequence of OpenMP target statements.
+	(convert_local_reference_stmt): Likewise.
+	(convert_tramp_reference_stmt): Likewise.
+	* tree-pretty-print.cc (dump_omp_iterators): Dump extra iterator
+	information if present.
+	(dump_omp_clause): Call dump_omp_iterators for iterators in map
+	clauses.
+	* tree.cc (omp_clause_num_ops): Add operand for OMP_CLAUSE_MAP.
+	(walk_tree_1): Do not walk last operand of OMP_CLAUSE_MAP.
+	* tree.h (OMP_CLAUSE_HAS_ITERATORS): New.
+	(OMP_CLAUSE_ITERATORS): New.
+
 2025-08-05  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/121410

@@ -1,3 +1,9 @@
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/121397
+	* enable-execute-stack-mprotect.c (check_enabling): Remove useless
+	forward declaration.
+
 2025-07-31  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):

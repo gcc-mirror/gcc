@@ -1,3 +1,28 @@
+2025-08-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121231
+	PR c++/119688
+	PR c++/94511
+	* mangle.cc (write_expression): Write out implicit non-trailing
+	zeroes of a CONSTRUCTOR when the ABI version is at least 21.
+
+2025-08-06  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_indirect_ref): Improve diagnostic.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_from_to): Parse 'iterator' modifier.
+	* semantics.cc (finish_omp_clauses): Finish iterators for to/from
+	clauses.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Parse 'iterator' modifier.
+	* semantics.cc (finish_omp_clauses): Finish iterators.  Apply
+	iterators to generated clauses.
+
 2025-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121068

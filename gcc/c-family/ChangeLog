@@ -1,3 +1,9 @@
+2025-08-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-attribs.cc (handle_hardbool_attribute): Create distinct
+	enumeration types, with structural equality.  Handle
+	base type qualifiers.
+
 2025-08-02  Martin Uecker  <uecker@tugraz.at>
 
 	* c-attribs.cc (handle_argspec_attribute): Update.

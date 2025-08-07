@@ -1,3 +1,112 @@
+2025-08-06  Sam James  <sam@gentoo.org>
+
+	* g++.dg/cpp26/constexpr-new3.C: Escape '[' and ']'.
+
+2025-08-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/torture/hardbool-ai.c: New.
+	* gcc.dg/torture/hardbool-vi.c: New.
+	* gcc.dg/torture/hardbool.c: Handle NO_BITFIELDS.
+	(add1, preinc, postinc, sub1, predec, postdec): New.
+	(main): Exercise them.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/108931
+	* gcc.dg/vla-tert-1.c: New test.
+
+2025-08-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121231
+	PR c++/119688
+	PR c++/94511
+	* g++.dg/abi/mangle82.C: New test.
+	* g++.dg/cpp2a/nontype-class73.C: New test.
+
+2025-08-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp26/constexpr-new3.C: Tweak diagnostic.
+
+2025-08-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-gather-1.c: Adjust to hide N.
+
+2025-08-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cops.c: Fix test.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gcc.dg/torture/bitint-84.c: New test.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gcc.dg/torture/bitint-83.c: New test.
+
+2025-08-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gcc.dg/bitintext.h (BEXTC1): Define.  Convert the copied
+	object back to the original type before comparison.
+	(BEXTC): Use BEXTC1 for both the signed and the unsigned case.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121413
+	* gcc.dg/torture/bitint-85.c: New test.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121127
+	* gcc.dg/bitint-125.c: New test.
+
+2025-08-06  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.dg/c_f_pointer_shape_tests_2.f03: Use the new driver.
+	* gfortran.dg/c_f_pointer_shape_tests_4.f03: Ditto.
+	* gfortran.dg/c_f_pointer_shape_tests_4_driver.c: Removed.
+	* gfortran.dg/c_f_pointer_shape_tests_2_driver.c: Renamed to ...
+	* gfortran.dg/c_f_pointer_shape_tests_driver.c: ... this; format
+	with gcc style.
+
+2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* c-c++-common/cpp/comment-ff-1.c: New test.
+	* c-c++-common/cpp/comment-vtab-1.c: New test.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/121217
+	* gcc.dg/pr121217.c: New test.
+
+2025-08-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-unset-1.c: New test.
+	* gcc.target/riscv/arch-unset-2.c: New test.
+	* gcc.target/riscv/arch-unset-3.c: New test.
+	* gcc.target/riscv/arch-unset-4.c: New test.
+	* gcc.target/riscv/arch-unset-5.c: New test.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-c++-common/gomp/target-update-iterators-1.c: New.
+	* c-c++-common/gomp/target-update-iterators-2.c: New.
+	* c-c++-common/gomp/target-update-iterators-3.c: New.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-c++-common/gomp/map-6.c (foo): Amend expected error message.
+	* c-c++-common/gomp/target-map-iterators-1.c: New.
+	* c-c++-common/gomp/target-map-iterators-2.c: New.
+	* c-c++-common/gomp/target-map-iterators-3.c: New.
+	* c-c++-common/gomp/target-map-iterators-4.c: New.
+
+2025-08-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/121234
+	* gfortran.dg/pr121234.f90: New test.
+
 2025-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121068
