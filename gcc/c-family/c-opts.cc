@@ -959,6 +959,15 @@ c_common_post_options (const char **pfilename)
   if (warn_enum_compare == -1)
     warn_enum_compare = c_dialect_cxx () ? 1 : 0;
 
+  /* For C++26 default to -Wkeyword-macro if -Wpedantic.  */
+  if (cxx_dialect >= cxx26 && pedantic)
+    {
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   warn_keyword_macro, 1);
+      if (warn_keyword_macro)
+	cpp_opts->cpp_warn_keyword_macro = warn_keyword_macro;
+    }
+
   /* -Wpacked-bitfield-compat is on by default for the C languages.  The
      warning is issued in stor-layout.cc which is not part of the front-end so
      we need to selectively turn it on here.  */

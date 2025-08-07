@@ -4825,6 +4825,29 @@ c_init_decl_processing (void)
 
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
+
+  if (warn_keyword_macro)
+    {
+      for (unsigned int i = 0; i < num_c_common_reswords; ++i)
+	/* For C register keywords which don't start with underscore
+	   or start with just single underscore.  Don't complain about
+	   ObjC or Transactional Memory keywords.  */
+	if (c_common_reswords[i].word[0] == '_'
+	    && c_common_reswords[i].word[1] == '_')
+	  continue;
+	else if (c_common_reswords[i].disable
+		 & (D_TRANSMEM | D_OBJC | D_CXX_OBJC))
+	  continue;
+	else
+	  {
+	    tree id = get_identifier (c_common_reswords[i].word);
+	    if (C_IS_RESERVED_WORD (id)
+		&& C_RID_CODE (id) != RID_CXX_COMPAT_WARN)
+	      cpp_lookup (parse_in,
+			  (const unsigned char *) IDENTIFIER_POINTER (id),
+			  IDENTIFIER_LENGTH (id))->flags |= NODE_WARN;
+	  }
+    }
 }
 
 /* Create the VAR_DECL at LOC for __FUNCTION__ etc. ID is the name to

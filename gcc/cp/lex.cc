@@ -368,6 +368,66 @@ cxx_init (void)
 
   cxx_init_decl_processing ();
 
+  if (warn_keyword_macro)
+    {
+      for (unsigned int i = 0; i < num_c_common_reswords; ++i)
+	/* For C++ none of the keywords in [lex.key] starts with underscore,
+	   don't register anything like that.  Don't complain about
+	   ObjC or Transactional Memory keywords.  */
+	if (c_common_reswords[i].word[0] == '_')
+	  continue;
+	else if (c_common_reswords[i].disable & (D_TRANSMEM | D_OBJC))
+	  continue;
+	else
+	  {
+	    tree id = get_identifier (c_common_reswords[i].word);
+	    if (IDENTIFIER_KEYWORD_P (id)
+		/* Don't register keywords with spaces.  */
+		&& IDENTIFIER_POINTER (id)[IDENTIFIER_LENGTH (id) - 1] != ' ')
+	      cpp_lookup (parse_in,
+			  (const unsigned char *) IDENTIFIER_POINTER (id),
+			  IDENTIFIER_LENGTH (id))->flags |= NODE_WARN;
+	  }
+      auto warn_on = [] (const char *name) {
+	cpp_lookup (parse_in, (const unsigned char *) name,
+		    strlen (name))->flags |= NODE_WARN;
+      };
+      if (cxx_dialect >= cxx11)
+	{
+	  warn_on ("final");
+	  warn_on ("override");
+	  warn_on ("noreturn");
+	  if (cxx_dialect < cxx26)
+	    warn_on ("carries_dependency");
+	}
+      if (cxx_dialect >= cxx14)
+	warn_on ("deprecated");
+      if (cxx_dialect >= cxx17)
+	{
+	  warn_on ("fallthrough");
+	  warn_on ("maybe_unused");
+	  warn_on ("nodiscard");
+	}
+      if (cxx_dialect >= cxx20)
+	{
+	  warn_on ("likely");
+	  warn_on ("unlikely");
+	  warn_on ("no_unique_address");
+	}
+      if (flag_modules)
+	{
+	  warn_on ("import");
+	  warn_on ("module");
+	}
+      if (cxx_dialect >= cxx23)
+	warn_on ("assume");
+      if (cxx_dialect >= cxx26)
+	{
+	  warn_on ("replaceable_if_eligible");
+	  warn_on ("trivially_relocatable_if_eligible");
+	}
+    }
+
   if (c_common_init () == false)
     {
       input_location = saved_loc;

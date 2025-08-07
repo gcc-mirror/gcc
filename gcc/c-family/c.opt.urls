@@ -508,6 +508,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Winvalid-utf8)
 Wjump-misses-init
 UrlSuffix(gcc/Warning-Options.html#index-Wjump-misses-init)
 
+Wkeyword-macro
+UrlSuffix(gcc/Warning-Options.html#index-Wkeyword-macro)
+
 Wleading-whitespace=
 UrlSuffix(gcc/Warning-Options.html#index-Wleading-whitespace_003d)
 

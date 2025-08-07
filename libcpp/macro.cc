@@ -3411,7 +3411,11 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 {
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
-    return true;
+    {
+      /* Ignore NODE_WARN on -Wkeyword-macro registered identifiers though.  */
+      if (!CPP_OPTION (pfile, cpp_warn_keyword_macro) || !cpp_keyword_p (node))
+	return true;
+    }
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
@@ -3949,6 +3953,25 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
   if (name_loc)
     macro->line = name_loc;
 
+  /* Handle -Wkeyword-macro registered identifiers.  */
+  if (CPP_OPTION (pfile, cpp_warn_keyword_macro) && cpp_keyword_p (node))
+    {
+      if (macro->fun_like
+	  && CPP_OPTION (pfile, cplusplus)
+	  && (strcmp ((const char *) NODE_NAME (node), "likely") == 0
+	      || strcmp ((const char *) NODE_NAME (node), "unlikely") == 0))
+	/* likely and unlikely can be defined as function-like macros.  */;
+      else if (CPP_OPTION (pfile, cpp_pedantic)
+	       && CPP_OPTION (pfile, cplusplus)
+	       && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	cpp_pedwarning_with_line (pfile, CPP_W_KEYWORD_MACRO, macro->line, 0,
+				  "keyword %qs defined as macro",
+				  NODE_NAME (node));
+      else
+	cpp_warning_with_line (pfile, CPP_W_KEYWORD_MACRO, macro->line, 0,
+			       "keyword %qs defined as macro",
+			       NODE_NAME (node));
+    }
   if (cpp_macro_p (node))
     {
       if (CPP_OPTION (pfile, warn_unused_macros))
@@ -3957,12 +3980,12 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
       if (warn_of_redefinition (pfile, node, macro))
 	{
           const enum cpp_warning_reason reason
-	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))
-	    ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
+	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN)
+	       ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE);
 
 	  bool warned
-	    =  cpp_pedwarning_with_line (pfile, reason, macro->line, 0,
-					 "%qs redefined", NODE_NAME (node));
+	    = cpp_pedwarning_with_line (pfile, reason, macro->line, 0,
+					"%qs redefined", NODE_NAME (node));
 
 	  if (warned && cpp_user_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE, node->value.macro->line,

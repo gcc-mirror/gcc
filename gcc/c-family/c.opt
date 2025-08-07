@@ -964,6 +964,10 @@ Enum(warn_leading_whitespace_kind) String(tabs) Value(2)
 EnumValue
 Enum(warn_leading_whitespace_kind) String(blanks) Value(3)
 
+Wkeyword-macro
+C ObjC C++ ObjC++ CPP(cpp_warn_keyword_macro) CppReason(CPP_W_KEYWORD_MACRO) Var(warn_keyword_macro) Init(0) Warning
+Warn about defining or undefining macros with identifiers equal to keywords (or for C++ conditional keywords or standard attribute names).
+
 Wleading-whitespace=
 C ObjC C++ ObjC++ CPP(cpp_warn_leading_whitespace) CppReason(CPP_W_LEADING_WHITESPACE) Enum(warn_leading_whitespace_kind) Joined RejectNegative Var(warn_leading_whitespace) Init(0) Warning
 Warn about leading whitespace style issues on lines except when in raw string literals.

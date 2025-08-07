@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -Wno-keyword-macro" }
 #define import import
 import malcolm; // { dg-error "object-like macro" }
 // { dg-error "failed to read" "" { target *-*-* } 0 }

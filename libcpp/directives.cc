@@ -734,13 +734,30 @@ do_undef (cpp_reader *pfile)
       if (pfile->cb.undef)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
 
+      /* Handle -Wkeyword-macro registered identifiers.  */
+      bool diagnosed = false;
+      if (CPP_OPTION (pfile, cpp_warn_keyword_macro) && cpp_keyword_p (node))
+	{
+	  if (CPP_OPTION (pfile, cpp_pedantic)
+	      && CPP_OPTION (pfile, cplusplus)
+	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	    cpp_pedwarning (pfile, CPP_W_KEYWORD_MACRO,
+			    "undefining keyword %qs", NODE_NAME (node));
+	  else
+	    cpp_warning (pfile, CPP_W_KEYWORD_MACRO,
+			 "undefining keyword %qs", NODE_NAME (node));
+	  diagnosed = true;
+	}
       /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified
 	 identifier is not currently defined as a macro name.  */
       if (cpp_macro_p (node))
 	{
 	  if (node->flags & NODE_WARN)
-	    cpp_error (pfile, CPP_DL_WARNING,
-		       "undefining %qs", NODE_NAME (node));
+	    {
+	      if (!diagnosed)
+		cpp_error (pfile, CPP_DL_WARNING,
+			   "undefining %qs", NODE_NAME (node));
+	    }
 	  else if (cpp_builtin_macro_p (node)
 		   && CPP_OPTION (pfile, warn_builtin_macro_redefined))
 	    cpp_warning (pfile, CPP_W_BUILTIN_MACRO_REDEFINED,

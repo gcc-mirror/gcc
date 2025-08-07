@@ -1,7 +1,7 @@
 // The conversion from D* to B* is ambiguous, but that should not produce
 // an error, it should remove the first f overload by SFINAE.
 
-#define static_assert(TEST,STR) \
+#define my_static_assert(TEST,STR) \
   do { int ar[(TEST)?1:-1]; } while (0);
 
 struct B {};
@@ -23,6 +23,6 @@ template <class T>
 
 int main()
 {
-  static_assert(sizeof f<int>(0) == sizeof(two), "");
-  static_assert(sizeof f<B *>(0) == sizeof(two), "");
+  my_static_assert(sizeof f<int>(0) == sizeof(two), "");
+  my_static_assert(sizeof f<B *>(0) == sizeof(two), "");
 }

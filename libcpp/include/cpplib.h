@@ -620,6 +620,9 @@ struct cpp_options
   /* True if -finput-charset= option has been used explicitly.  */
   bool cpp_input_charset_explicit;
 
+  /* True if -Wkeyword-macro.  */
+  bool cpp_warn_keyword_macro;
+
   /* -Wleading-whitespace= value.  */
   unsigned char cpp_warn_leading_whitespace;
 
@@ -757,7 +760,8 @@ enum cpp_warning_reason {
   CPP_W_HEADER_GUARD,
   CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER,
   CPP_W_LEADING_WHITESPACE,
-  CPP_W_TRAILING_WHITESPACE
+  CPP_W_TRAILING_WHITESPACE,
+  CPP_W_KEYWORD_MACRO
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -1248,6 +1252,17 @@ cpp_macro *cpp_get_deferred_macro (cpp_reader *, cpp_hashnode *, location_t);
 inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
 {
   return cpp_user_macro_p (node) && node->value.macro->fun_like;
+}
+
+/* Return true for nodes marked for -Wkeyword-macro diagnostics.  */
+inline bool cpp_keyword_p (cpp_hashnode *node)
+{
+  /* As keywords are marked identifiers which don't start with underscore
+     or start with underscore followed by capital letter (except for
+     _Pragma).  */
+  return ((node->flags & NODE_WARN)
+	  && (NODE_NAME (node)[0] != '_'
+	      || (NODE_NAME (node)[1] != '_' && NODE_NAME (node)[1] != 'P')));
 }
 
 extern const unsigned char *cpp_macro_definition (cpp_reader *, cpp_hashnode *);

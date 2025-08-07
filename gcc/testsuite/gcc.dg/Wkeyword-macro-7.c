@@ -1,0 +1,47 @@
+// { dg-do preprocess }
+// { dg-options "-Wkeyword-macro -std=c17" }
+
+#undef _Alignas			// { dg-warning "undefining keyword '_Alignas'" }
+#undef _Alignof			// { dg-warning "undefining keyword '_Alignof'" }
+#undef _Atomic			// { dg-warning "undefining keyword '_Atomic'" }
+#undef _Bool			// { dg-warning "undefining keyword '_Bool'" }
+#undef _Complex			// { dg-warning "undefining keyword '_Complex'" }
+#undef _Generic			// { dg-warning "undefining keyword '_Generic'" }
+#undef _Imaginary		// { dg-warning "undefining keyword '_Imaginary'" }
+#undef _Noreturn		// { dg-warning "undefining keyword '_Noreturn'" }
+#undef _Static_assert		// { dg-warning "undefining keyword '_Static_assert'" }
+#undef _Thread_local		// { dg-warning "undefining keyword '_Thread_local'" }
+#undef auto			// { dg-warning "undefining keyword 'auto'" }
+#undef break			// { dg-warning "undefining keyword 'break'" }
+#undef case			// { dg-warning "undefining keyword 'case'" }
+#undef char			// { dg-warning "undefining keyword 'char'" }
+#undef const			// { dg-warning "undefining keyword 'const'" }
+#undef continue			// { dg-warning "undefining keyword 'continue'" }
+#undef default			// { dg-warning "undefining keyword 'default'" }
+#undef do			// { dg-warning "undefining keyword 'do'" }
+#undef double			// { dg-warning "undefining keyword 'double'" }
+#undef else			// { dg-warning "undefining keyword 'else'" }
+#undef enum			// { dg-warning "undefining keyword 'enum'" }
+#undef extern			// { dg-warning "undefining keyword 'extern'" }
+#undef float			// { dg-warning "undefining keyword 'float'" }
+#undef for			// { dg-warning "undefining keyword 'for'" }
+#undef goto			// { dg-warning "undefining keyword 'goto'" }
+#undef if			// { dg-warning "undefining keyword 'if'" }
+#undef inline			// { dg-warning "undefining keyword 'inline'" }
+#undef int			// { dg-warning "undefining keyword 'int'" }
+#undef long			// { dg-warning "undefining keyword 'long'" }
+#undef register			// { dg-warning "undefining keyword 'register'" }
+#undef restrict			// { dg-warning "undefining keyword 'restrict'" }
+#undef return			// { dg-warning "undefining keyword 'return'" }
+#undef short			// { dg-warning "undefining keyword 'short'" }
+#undef signed			// { dg-warning "undefining keyword 'signed'" }
+#undef sizeof			// { dg-warning "undefining keyword 'sizeof'" }
+#undef static			// { dg-warning "undefining keyword 'static'" }
+#undef struct			// { dg-warning "undefining keyword 'struct'" }
+#undef switch			// { dg-warning "undefining keyword 'switch'" }
+#undef typedef			// { dg-warning "undefining keyword 'typedef'" }
+#undef union			// { dg-warning "undefining keyword 'union'" }
+#undef unsigned			// { dg-warning "undefining keyword 'unsigned'" }
+#undef void			// { dg-warning "undefining keyword 'void'" }
+#undef volatile			// { dg-warning "undefining keyword 'volatile'" }
+#undef while			// { dg-warning "undefining keyword 'while'" }
