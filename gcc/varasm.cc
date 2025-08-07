@@ -2475,6 +2475,19 @@ assemble_variable_contents (tree decl, const char *name,
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
+      /* For mergeable section, make sure the section is zero filled up to
+	 the entity size of the section.  */
+      if (in_section
+	  && (in_section->common.flags & SECTION_MERGE)
+	  && tree_fits_uhwi_p (DECL_SIZE_UNIT (decl))
+	  && ((in_section->common.flags & SECTION_ENTSIZE)
+	      > tree_to_uhwi (DECL_SIZE_UNIT (decl))))
+	{
+	  unsigned HOST_WIDE_INT entsize, declsize;
+	  entsize = (in_section->common.flags & SECTION_ENTSIZE);
+	  declsize = tree_to_uhwi (DECL_SIZE_UNIT (decl));
+	  assemble_zeros (entsize - declsize);
+	}
       targetm.asm_out.decl_end ();
     }
 }
@@ -4435,10 +4448,16 @@ output_constant_pool_1 (class constant_descriptor_rtx *desc,
 
   /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
      sections have proper size.  */
-  if (align > GET_MODE_BITSIZE (desc->mode)
-      && in_section
-      && (in_section->common.flags & SECTION_MERGE))
-    assemble_align (align);
+  if (in_section
+      && (in_section->common.flags & SECTION_MERGE)
+      && ((in_section->common.flags & SECTION_ENTSIZE)
+	   > GET_MODE_SIZE (desc->mode)))
+    {
+      unsigned HOST_WIDE_INT entsize, constsize;
+      entsize = (in_section->common.flags & SECTION_ENTSIZE);
+      constsize = GET_MODE_SIZE (desc->mode);
+      assemble_zeros (entsize - constsize);
+    }
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
  done:
