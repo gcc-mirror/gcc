@@ -8460,14 +8460,10 @@ simplify_context::simplify_gen_subreg (machine_mode outermode, rtx op,
 
   if (GET_CODE (op) == SUBREG
       || GET_CODE (op) == CONCAT
-      || GET_MODE (op) == VOIDmode)
-    return NULL_RTX;
-
-  if (MODE_COMPOSITE_P (outermode)
-      && (CONST_SCALAR_INT_P (op)
-	  || CONST_DOUBLE_AS_FLOAT_P (op)
-	  || CONST_FIXED_P (op)
-	  || GET_CODE (op) == CONST_VECTOR))
+      || CONST_SCALAR_INT_P (op)
+      || CONST_DOUBLE_AS_FLOAT_P (op)
+      || CONST_FIXED_P (op)
+      || GET_CODE (op) == CONST_VECTOR)
     return NULL_RTX;
 
   if (validate_subreg (outermode, innermode, op, byte))
