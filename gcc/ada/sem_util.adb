@@ -23154,7 +23154,8 @@ package body Sem_Util is
    begin
       --  Ada 2005 or later, and formals present. The first formal must be
       --  of a type that supports prefix notation: a controlling argument,
-      --  a class-wide type, or an access to such.
+      --  a class-wide type, an access to such, or an untagged record type
+      --  (when compiling with Core_Extensions allowed).
 
       if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
@@ -23162,7 +23163,9 @@ package body Sem_Util is
         and then
           (Is_Controlling_Formal (First_Formal (E))
             or else Is_Class_Wide_Type (Etype (First_Formal (E)))
-            or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
+            or else Is_Anonymous_Access_Type (Etype (First_Formal (E)))
+            or else (Core_Extensions_Allowed
+                       and then Is_Record_Type (Etype (First_Formal (E)))))
       then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop
