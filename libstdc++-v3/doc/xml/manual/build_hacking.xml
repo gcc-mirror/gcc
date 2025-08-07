@@ -17,7 +17,7 @@
 <section xml:id="build_hacking.prereq"><info><title>Prerequisites</title></info>
 
   <para>
-    As noted <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/prerequisites.html">previously</link>,
+    As noted <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/prerequisites.html">previously</link>,
     certain other tools are necessary for hacking on files that
     control configure (<code>configure.ac</code>,
     <code>acinclude.m4</code>) and make
