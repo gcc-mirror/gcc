@@ -1397,6 +1397,8 @@ s390x-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux t-stack s390/t-stack-s390"
 	if test "${host_address}" = 32; then
 	   tmake_file="${tmake_file} s390/32/t-floattodi"
+	else
+	   tmake_file="${tmake_file} s390/t-softfp t-softfp"
 	fi
 	md_unwind_header=s390/linux-unwind.h
 	;;
