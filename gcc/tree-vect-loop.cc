@@ -4957,8 +4957,9 @@ have_whole_vector_shift (machine_mode mode)
    See vect_emulate_mixed_dot_prod for the actual sequence used.  */
 
 static bool
-vect_is_emulated_mixed_dot_prod (stmt_vec_info stmt_info)
+vect_is_emulated_mixed_dot_prod (slp_tree slp_node)
 {
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (slp_node);
   gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
   if (!assign || gimple_assign_rhs_code (assign) != DOT_PROD_EXPR)
     return false;
@@ -4970,7 +4971,7 @@ vect_is_emulated_mixed_dot_prod (stmt_vec_info stmt_info)
 
   gcc_assert (STMT_VINFO_REDUC_VECTYPE_IN (stmt_info));
   return !directly_supported_p (DOT_PROD_EXPR,
-				STMT_VINFO_VECTYPE (stmt_info),
+				SLP_TREE_VECTYPE (slp_node),
 				STMT_VINFO_REDUC_VECTYPE_IN (stmt_info),
 				optab_vector_mixed_sign);
 }
@@ -7119,13 +7120,13 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 						       vectype_in);
   gcc_assert (ncopies_for_cost >= 1);
 
-  if (vect_is_emulated_mixed_dot_prod (stmt_info))
+  if (vect_is_emulated_mixed_dot_prod (slp_node))
     {
       /* We need extra two invariants: one that contains the minimum signed
 	 value and one that contains half of its negative.  */
       int prologue_stmts = 2;
       unsigned cost = record_stmt_cost (cost_vec, prologue_stmts,
-					scalar_to_vec, stmt_info, 0,
+					scalar_to_vec, slp_node, 0,
 					vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE, "vectorizable_lane_reducing: "
@@ -7135,7 +7136,7 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
       ncopies_for_cost *= 4;
     }
 
-  record_stmt_cost (cost_vec, (int) ncopies_for_cost, vector_stmt, stmt_info,
+  record_stmt_cost (cost_vec, (int) ncopies_for_cost, vector_stmt, slp_node,
 		    0, vect_body);
 
   if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
@@ -8421,7 +8422,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	}
     }
 
-  bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
+  bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (slp_node);
   unsigned num = vec_oprnds[reduc_index == 0 ? 1 : 0].length ();
   unsigned mask_index = 0;
 
