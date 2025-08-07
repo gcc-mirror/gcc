@@ -2454,10 +2454,7 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   else
     {
       tree vla = build_int_cst (type, target_align);
-      tree vla_align = fold_build2 (BIT_AND_EXPR, type, vla,
-				    fold_build2 (MINUS_EXPR, type,
-						 build_int_cst (type, 0), vla));
-      target_align_minus_1 = fold_build2 (MINUS_EXPR, type, vla_align,
+      target_align_minus_1 = fold_build2 (MINUS_EXPR, type, vla,
 					  build_int_cst (type, 1));
     }
 
@@ -3840,7 +3837,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   const vec<stmt_vec_info> &may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   stmt_vec_info stmt_info;
-  int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
+  poly_uint64 mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
   tree mask_cst;
   unsigned int i;
   tree int_ptrsize_type;
@@ -3852,9 +3849,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   tree ptrsize_zero;
   tree part_cond_expr;
 
-  /* Check that mask is one less than a power of 2, i.e., mask is
-     all zeros followed by all ones.  */
-  gcc_assert ((mask != 0) && ((mask & (mask+1)) == 0));
+  gcc_assert (known_ne (mask, 0U));
 
   int_ptrsize_type = signed_type_for (ptr_type_node);
 
@@ -3960,6 +3955,62 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   part_cond_expr = fold_build2 (EQ_EXPR, boolean_type_node,
 				and_tmp_name, ptrsize_zero);
   chain_cond_expr (cond_expr, part_cond_expr);
+}
+
+/* Function vect_create_cond_for_vla_spec_read.
+
+   Create a conditional expression that represents the run-time checks with
+   max speculative read amount in VLA modes.  We check two things:
+     1) if the max speculative read amount exceeds the min page size
+     2) if the VF is power-of-2 - done by checking the max read amount instead
+
+   Input:
+   COND_EXPR  - input conditional expression.  New conditions will be chained
+		with logical AND operation.
+   LOOP_VINFO - field LOOP_VINFO_MAX_SPEC_READ_AMOUNT contains the max
+		possible speculative read amount in VLA modes.
+
+   Output:
+   COND_EXPR - conditional expression.
+
+   The returned COND_EXPR is the conditional expression to be used in the
+   if statement that controls which version of the loop gets executed at
+   runtime.  */
+
+static void
+vect_create_cond_for_vla_spec_read (loop_vec_info loop_vinfo, tree *cond_expr)
+{
+  poly_uint64 read_amount_poly = LOOP_VINFO_MAX_SPEC_READ_AMOUNT (loop_vinfo);
+  tree amount = build_int_cst (long_unsigned_type_node, read_amount_poly);
+
+  /* Both the read amount and the VF must be variants, and the read amount must
+     be a constant power-of-2 multiple of the VF.  */
+  unsigned HOST_WIDE_INT multiple;
+  gcc_assert (!read_amount_poly.is_constant ()
+	      && !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
+	      && constant_multiple_p (read_amount_poly,
+				      LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+				      &multiple)
+	      && pow2p_hwi (multiple));
+
+  tree cst_ul_zero = build_int_cstu (long_unsigned_type_node, 0U);
+  tree cst_ul_one = build_int_cstu (long_unsigned_type_node, 1U);
+  tree cst_ul_pagesize = build_int_cstu (long_unsigned_type_node,
+					 (unsigned long) param_min_pagesize);
+
+  /* Create an expression of "amount & (amount - 1) == 0".  */
+  tree amount_m1 = fold_build2 (MINUS_EXPR, long_unsigned_type_node,
+				amount, cst_ul_one);
+  tree amount_and_expr = fold_build2 (BIT_AND_EXPR, long_unsigned_type_node,
+				      amount, amount_m1);
+  tree powof2_cond_expr = fold_build2 (EQ_EXPR, boolean_type_node,
+				       amount_and_expr, cst_ul_zero);
+  chain_cond_expr (cond_expr, powof2_cond_expr);
+
+  /* Create an expression of "amount <= cst_ul_pagesize".  */
+  tree pagesize_cond_expr = fold_build2 (LE_EXPR, boolean_type_node,
+					 amount, cst_ul_pagesize);
+  chain_cond_expr (cond_expr, pagesize_cond_expr);
 }
 
 /* If LOOP_VINFO_CHECK_UNEQUAL_ADDRS contains <A1, B1>, ..., <An, Bn>,
@@ -4087,6 +4138,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   gimple_seq gimplify_stmt_list = NULL;
   tree scalar_loop_iters = LOOP_VINFO_NITERSM1 (loop_vinfo);
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
+  bool version_spec_read = LOOP_REQUIRES_VERSIONING_FOR_SPEC_READ (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
   poly_uint64 versioning_threshold
@@ -4144,6 +4196,9 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   if (version_align)
     vect_create_cond_for_align_checks (loop_vinfo, &cond_expr,
 				       &cond_expr_stmt_list);
+
+  if (version_spec_read)
+    vect_create_cond_for_vla_spec_read (loop_vinfo, &cond_expr);
 
   if (version_alias)
     {

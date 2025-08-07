@@ -919,7 +919,10 @@ public:
   int peeling_for_alignment;
 
   /* The mask used to check the alignment of pointers or arrays.  */
-  int ptr_mask;
+  poly_uint64 ptr_mask;
+
+  /* The maximum speculative read amount in VLA modes for runtime check.  */
+  poly_uint64 max_spec_read_amount;
 
   /* Indicates whether the loop has any non-linear IV.  */
   bool nonlinear_iv;
@@ -1155,6 +1158,7 @@ public:
 #define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
 #define LOOP_VINFO_PARTIAL_VECTORS_STYLE(L) (L)->partial_vector_style
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
+#define LOOP_VINFO_MAX_SPEC_READ_AMOUNT(L) (L)->max_spec_read_amount
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->shared->ddrs
@@ -1209,6 +1213,8 @@ public:
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
+#define LOOP_REQUIRES_VERSIONING_FOR_SPEC_READ(L)	\
+  (maybe_gt ((L)->max_spec_read_amount, 0U))
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)		\
   ((L)->comp_alias_ddrs.length () > 0 \
    || (L)->check_unequal_addrs.length () > 0 \
@@ -1219,6 +1225,7 @@ public:
   (LOOP_VINFO_SIMD_IF_COND (L))
 #define LOOP_REQUIRES_VERSIONING(L)			\
   (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (L)		\
+   || LOOP_REQUIRES_VERSIONING_FOR_SPEC_READ (L)	\
    || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (L)		\
    || LOOP_REQUIRES_VERSIONING_FOR_NITERS (L)		\
    || LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (L))

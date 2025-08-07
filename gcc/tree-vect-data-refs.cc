@@ -1448,17 +1448,20 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
   if (loop_vinfo
       && dr_safe_speculative_read_required (stmt_info))
     {
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      auto vectype_size
+      /* The required target alignment must be a power-of-2 value and is
+	 computed as the product of vector element size, VF and group size.
+	 We compute the constant part first as VF may be a variable.  For
+	 variable VF, the power-of-2 check of VF is deferred to runtime.  */
+      auto align_factor_c
 	= TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
-      poly_uint64 new_alignment = vf * vectype_size;
-      /* If we have a grouped access we require that the alignment be N * elem.  */
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	new_alignment *= DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
+	align_factor_c *= DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
 
-      unsigned HOST_WIDE_INT target_alignment;
-      if (new_alignment.is_constant (&target_alignment)
-	  && pow2p_hwi (target_alignment))
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      poly_uint64 new_alignment = vf * align_factor_c;
+
+      if ((vf.is_constant () && pow2p_hwi (new_alignment.to_constant ()))
+	  || (!vf.is_constant () && pow2p_hwi (align_factor_c)))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -1467,7 +1470,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	      dump_dec (MSG_NOTE, new_alignment);
 	      dump_printf (MSG_NOTE, " bytes.\n");
 	    }
-	  vector_alignment = target_alignment;
+	  vector_alignment = new_alignment;
 	}
     }
 
@@ -2438,6 +2441,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      - The cost of peeling (the extra runtime checks, the increase
        in code size).  */
 
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
@@ -2446,9 +2450,18 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_info = dr_info->stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      do_peeling
-	= vector_alignment_reachable_p (dr_info,
-					LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+
+      /* With variable VF, unsafe speculative read can be avoided for known
+	 inbounds DRs as long as partial vectors are used.  */
+      if (!vf.is_constant ()
+	  && dr_safe_speculative_read_required (stmt_info)
+	  && DR_SCALAR_KNOWN_BOUNDS (dr_info))
+	{
+	  dr_set_safe_speculative_read_required (stmt_info, false);
+	  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	}
+
+      do_peeling = vector_alignment_reachable_p (dr_info, vf);
       if (do_peeling)
         {
 	  if (known_alignment_for_access_p (dr_info, vectype))
@@ -2488,7 +2501,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      poly_uint64 nscalars = npeel_tmp;
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
-		  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 		  unsigned group_size = 1;
 		  if (STMT_SLP_TYPE (stmt_info)
 		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -2911,14 +2923,12 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      2) there is at least one unsupported misaligned data ref with an unknown
         misalignment, and
      3) all misaligned data refs with a known misalignment are supported, and
-     4) the number of runtime alignment checks is within reason.
-     5) the vectorization factor is a constant.  */
+     4) the number of runtime alignment checks is within reason.  */
 
   do_versioning
     = (optimize_loop_nest_for_speed_p (loop)
        && !loop->inner /* FORNOW */
-       && loop_cost_model (loop) > VECT_COST_MODEL_CHEAP)
-       && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ();
+       && loop_cost_model (loop) > VECT_COST_MODEL_CHEAP);
 
   if (do_versioning)
     {
@@ -2965,25 +2975,22 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		 ?? We could actually unroll the loop to achieve the required
 		 overall step alignment, and forcing the alignment could be
 		 done by doing some iterations of the non-vectorized loop.  */
-	      if (!multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-			       * DR_STEP_ALIGNMENT (dr),
+	      if (!multiple_p (vf * DR_STEP_ALIGNMENT (dr),
 			       DR_TARGET_ALIGNMENT (dr_info)))
 		{
 		  do_versioning = false;
 		  break;
 		}
 
-              /* The rightmost bits of an aligned address must be zeros.
-                 Construct the mask needed for this test.  For example,
-                 GET_MODE_SIZE for the vector mode V4SI is 16 bytes so the
-                 mask must be 15 = 0xf. */
-	      gcc_assert (DR_TARGET_ALIGNMENT (dr_info).is_constant ());
-	      int mask = DR_TARGET_ALIGNMENT (dr_info).to_constant () - 1;
+	      /* Use "mask = DR_TARGET_ALIGNMENT - 1" to test rightmost address
+		 bits for runtime alignment check.  For example, for 16 bytes
+		 target alignment the mask is 15 = 0xf.  */
+	      poly_uint64 mask = DR_TARGET_ALIGNMENT (dr_info) - 1;
 
 	      /* FORNOW: use the same mask to test all potentially unaligned
 		 references in the loop.  */
-	      if (LOOP_VINFO_PTR_MASK (loop_vinfo)
-		  && LOOP_VINFO_PTR_MASK (loop_vinfo) != mask)
+	      if (maybe_ne (LOOP_VINFO_PTR_MASK (loop_vinfo), 0U)
+		  && maybe_ne (LOOP_VINFO_PTR_MASK (loop_vinfo), mask))
 		{
 		  do_versioning = false;
 		  break;

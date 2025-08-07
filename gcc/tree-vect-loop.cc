@@ -1009,6 +1009,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
+    max_spec_read_amount (0),
     nonlinear_iv (false),
     ivexpr_map (NULL),
     scan_map (NULL),
@@ -10141,7 +10142,12 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       if (peel_mul)
 	{
 	  if (!step_mul)
-	    step_mul = peel_mul;
+	    {
+	      gcc_assert (!nunits.is_constant ());
+	      step_mul = gimple_build (&init_stmts,
+				       MINUS_EXPR, step_vectype,
+				       build_zero_cst (step_vectype), peel_mul);
+	    }
 	  else
 	    step_mul = gimple_build (&init_stmts,
 				     MINUS_EXPR, step_vectype,
