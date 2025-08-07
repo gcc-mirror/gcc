@@ -1298,6 +1298,29 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
      SYMBOL_FLAG_EXTERNAL.  */
   default_encode_section_info (decl, rtl, first);
 
+  if (CONSTANT_CLASS_P (decl))
+    {
+      bool is_str = TREE_CODE (decl) == STRING_CST;
+      rtx sym_ref = XEXP (rtl, 0);
+
+      /* If this is a string cst or not anchored we have nothing to do.  */
+      if (is_str || !SYMBOL_REF_HAS_BLOCK_INFO_P (sym_ref))
+	return;
+
+      tree sym_decl = SYMBOL_REF_DECL (sym_ref);
+      const char *name = XSTR (sym_ref, 0);
+      gcc_checking_assert (strncmp ("*lC", name, 3) == 0);
+
+      char *buf;
+      /* Lets identify anchored constants with a different prefix, for the
+	  sake of inspection only.  */
+      buf = xasprintf ("*LaC%s", &name[3]);
+      if (sym_decl)
+	DECL_NAME (sym_decl) = get_identifier (buf);
+      XSTR (sym_ref, 0) = ggc_strdup (buf);
+      free (buf);
+    }
+
   if (! VAR_OR_FUNCTION_DECL_P (decl))
     return;
 
@@ -3297,11 +3320,16 @@ darwin_use_anchors_for_symbol_p (const_rtx symbol)
 {
   if (DARWIN_SECTION_ANCHORS && flag_section_anchors)
     {
-      section *sect;
-      /* If the section contains a zero-sized object it's ineligible.  */
-      sect = SYMBOL_REF_BLOCK (symbol)->sect;
-      /* This should have the effect of disabling anchors for vars that follow
-         any zero-sized one, in a given section.  */
+      tree decl = SYMBOL_REF_DECL (symbol);
+      /* If the symbol would be linker-visible, then it can split at that
+	 so we must disallow.  This is more strict than the default impl.
+	 TODO: add other cases.  */
+      if (decl && DECL_P (decl)
+	  && (TREE_PUBLIC (decl) || !DECL_ARTIFICIAL (decl)))
+	return false;
+
+      /* We mark sections containing unsuitable entries.  */
+      section *sect = SYMBOL_REF_BLOCK (symbol)->sect;
       if (sect->common.flags & SECTION_NO_ANCHOR)
 	return false;
 
