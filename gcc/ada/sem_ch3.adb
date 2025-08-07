@@ -3034,8 +3034,10 @@ package body Sem_Ch3 is
                                      or else In_Package_Body (Current_Scope));
 
       procedure Check_Nonoverridable_Aspects;
-      --  Apply the rule in RM 13.1.1(18.4/4) on iterator aspects that cannot
-      --  be overridden, and can only be confirmed on derivation.
+      --  Apply rules for nonoverridable aspects on types with partial views
+      --  described in RM 13.1.1 (18.6/6). This procedure must only be called
+      --  in the partial view completion case, i.e. when T points to the
+      --  full view and Def_Id points to the partial view.
 
       procedure Check_Ops_From_Incomplete_Type;
       --  If there is a tagged incomplete partial view of the type, traverse
