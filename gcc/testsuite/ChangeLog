@@ -1,3 +1,7 @@
+2025-08-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cops.c: Fix test.
+
 2025-08-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
