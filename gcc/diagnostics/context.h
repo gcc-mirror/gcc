@@ -264,7 +264,7 @@ public:
   friend class text_sink;
   friend class buffer;
 
-  typedef void (*set_locations_callback_t) (context *,
+  typedef void (*set_locations_callback_t) (const context &,
 					    diagnostic_info *);
 
   void initialize (int n_opts);
@@ -571,7 +571,7 @@ public:
   }
 
   void
-  set_adjust_diagnostic_info_callback (void (*cb) (context *,
+  set_adjust_diagnostic_info_callback (void (*cb) (const context &,
 						   diagnostic_info *))
   {
     m_adjust_diagnostic_info = cb;
@@ -710,7 +710,7 @@ private:
 
   /* Client hook to adjust properties of the given diagnostic that we're
      about to issue, such as its kind.  */
-  void (*m_adjust_diagnostic_info)(context *, diagnostic_info *);
+  void (*m_adjust_diagnostic_info)(const context &, diagnostic_info *);
 
   /* Owned by the context; this would be a std::unique_ptr if
      context had a proper ctor.  */

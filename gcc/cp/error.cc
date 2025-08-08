@@ -250,7 +250,7 @@ erroneous_templates_t *erroneous_templates;
    issue an error if we later need to instantiate the template.  */
 
 static void
-cp_adjust_diagnostic_info (diagnostics::context *context,
+cp_adjust_diagnostic_info (const diagnostics::context &context,
 			   diagnostics::diagnostic_info *diagnostic)
 {
   if (diagnostic->m_kind == diagnostics::kind::error)
@@ -258,7 +258,7 @@ cp_adjust_diagnostic_info (diagnostics::context *context,
       {
 	diagnostic->m_option_id = OPT_Wtemplate_body;
 
-	if (context->m_permissive)
+	if (context.m_permissive)
 	  diagnostic->m_kind = diagnostics::kind::warning;
 
 	bool existed;

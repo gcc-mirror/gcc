@@ -110,7 +110,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
    to the DIAGNOSTIC location.  */
 
 static void
-set_inlining_locations (diagnostics::context *,
+set_inlining_locations (const diagnostics::context &,
 			diagnostics::diagnostic_info *diagnostic)
 {
   location_t loc = diagnostic_location (diagnostic);

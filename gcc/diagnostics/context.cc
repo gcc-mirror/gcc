@@ -1108,7 +1108,7 @@ context::get_any_inlining_info (diagnostic_info *diagnostic)
     /* Retrieve the locations into which the expression about to be
        diagnosed has been inlined, including those of all the callers
        all the way down the inlining stack.  */
-    m_set_locations_cb (this, diagnostic);
+    m_set_locations_cb (*this, diagnostic);
   else
     {
       /* When there's no callback use just the one location provided
@@ -1259,7 +1259,7 @@ context::report_diagnostic (diagnostic_info *diagnostic)
     }
 
   if (m_adjust_diagnostic_info)
-    m_adjust_diagnostic_info (this, diagnostic);
+    m_adjust_diagnostic_info (*this, diagnostic);
 
   if (diagnostic->m_kind == kind::pedwarn)
     {
