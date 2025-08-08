@@ -37,6 +37,8 @@ through the macros defined in the @file{.h} file.
 * Trampolines::         Code set up at run time to enter a nested function.
 * Library Calls::       Controlling how library routines are implicitly called.
 * Addressing Modes::    Defining addressing modes valid for memory operands.
+* Vectorization::       Controlling how the vectorizer operates.
+* OpenMP and OpenACC::  Defining how OpenMP and OpenACC features should work.
 * Anchored Addresses::  Defining how @option{-fsection-anchors} should work.
 * Condition Code::      Defining how insns update the condition code.
 * Costs::               Defining relative costs of different operations.
@@ -4273,6 +4275,10 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_BUILTIN_RECIPROCAL
 
+@node Vectorization
+@section Vectorization
+@cindex Vectorization
+
 @hook TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
@@ -4312,6 +4318,10 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_VECTORIZE_BUILTIN_SCATTER
 
 @hook TARGET_VECTORIZE_PREFER_GATHER_SCATTER
+
+@node OpenMP and OpenACC
+@section OpenMP and OpenACC
+@cindex OpenMP and OpenACC
 
 @hook TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
 
