@@ -560,7 +560,7 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
     }
 }
 
-// For ease of comparison with experimental-nesting-show-levels=yes
+// For ease of comparison with show-nesting-levels=yes
 
 static void
 add_nesting_level_attr (xml::element &element,

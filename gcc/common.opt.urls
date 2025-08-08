@@ -640,6 +640,15 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-text
 fdiagnostics-minimum-margin-width=
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-minimum-margin-width)
 
+fdiagnostics-show-nesting
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-nesting)
+
+fdiagnostics-show-nesting-locations
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-nesting-locations)
+
+fdiagnostics-show-nesting-levels
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-nesting-levels)
+
 fdisable-
 UrlSuffix(gcc/Developer-Options.html#index-fdisable-)
 

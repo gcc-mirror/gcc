@@ -320,6 +320,9 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
+	case OPT_fdiagnostics_show_nesting:
+	case OPT_fdiagnostics_show_nesting_locations:
+	case OPT_fdiagnostics_show_nesting_levels:
 	case OPT_fshow_column:
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
@@ -739,6 +742,9 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
+	case OPT_fdiagnostics_show_nesting:
+	case OPT_fdiagnostics_show_nesting_locations:
+	case OPT_fdiagnostics_show_nesting_levels:
 	case OPT_fshow_column:
 	case OPT_fPIC:
 	case OPT_fpic:
@@ -801,6 +807,9 @@ append_diag_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
+	case OPT_fdiagnostics_show_nesting:
+	case OPT_fdiagnostics_show_nesting_locations:
+	case OPT_fdiagnostics_show_nesting_levels:
 	case OPT_fshow_column:
 	  break;
 	default:

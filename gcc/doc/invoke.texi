@@ -322,6 +322,9 @@ Objective-C and Objective-C++ Dialects}.
 -fno-diagnostics-show-cwe
 -fno-diagnostics-show-rules
 -fno-diagnostics-show-highlight-colors
+-fno-diagnostics-show-nesting
+-fno-diagnostics-show-nesting-locations
+-fdiagnostics-show-nesting-levels
 -fdiagnostics-minimum-margin-width=@var{width}
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch
 -fdiagnostics-show-template-tree  -fno-elide-type
@@ -5429,7 +5432,8 @@ options:
 -fdiagnostics-urls=never
 -fdiagnostics-path-format=separate-events
 -fdiagnostics-text-art-charset=none
--fno-diagnostics-show-event-links}
+-fno-diagnostics-show-event-links
+-fno-diagnostics-show-nesting}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
@@ -6051,6 +6055,40 @@ emoji variant of the character).
 The default is @samp{emoji}, except when the environment variable @env{LANG}
 is set to @samp{C}, in which case the default is @samp{ascii}.
 
+@opindex fno-diagnostics-show-nesting
+@opindex fdiagnostics-show-nesting
+@item -fno-diagnostics-show-nesting
+Some GCC diagnostics have an internal tree-like structure of nested
+sub-diagnostics, such as for problems when instantiating C++ templates.
+
+By default GCC uses indentation and bullet points in its text output to
+show the nesting structure of these diagnostics, moves location
+information to separate lines to make the structure clearer, and
+eliminates redundant repeated information.
+
+Selecting @option{-fno-diagnostics-show-nesting} suppresses this
+indentation, reformatting, and elision, restoring an older `look'' for the
+diagnostics.
+
+@opindex fno-diagnostics-show-nesting-locations
+@opindex fdiagnostics-show-nesting-locations
+@item -fno-diagnostics-show-nesting-locations
+
+When @option{fdiagnostics-show-nesting} is enabled, file names and
+line- and column- numbers are displayed on separate lines from the
+messages.  This location information can be disabled altogether with
+@option{-fno-diagnostics-show-nesting-locations}.
+This option exists for use by GCC developers, for writing DejaGnu test cases.
+
+@opindex fdiagnostics-show-nesting-levels
+@opindex fno-diagnostics-show-nesting-levels
+@item -fdiagnostics-show-nesting-levels
+When @option{fdiagnostics-show-nesting} is enabled, use
+@option{fdiagnostics-show-nesting-levels} to also display numbers
+showing the depth of the nesting.
+This option exists for use by GCC developers for debugging nested
+diagnostics, but may be of use to plugin authors.
+
 @opindex fdiagnostics-format
 @item -fdiagnostics-format=@var{FORMAT}
 Select a different format for printing diagnostics.
@@ -6099,18 +6137,18 @@ Supported keys are:
 Override colorization settings from @option{-fdiagnostics-color} for this
 text output.
 
-@item experimental-nesting=@r{[}yes@r{|}no@r{]}
-Enable an experimental mode that emphasizes hierarchical relationships
-within diagnostics messages, displaying location information on separate
-lines.
+@item show-nesting=@r{[}yes@r{|}no@r{]}
+Enable a mode that emphasizes hierarchical relationships
+within diagnostics messages, as per @option{-fdiagnostics-show-nesting}.
+Defaults to @code{yes}.
 
-@item experimental-nesting-show-locations=@r{[}yes@r{|}no@r{]}
-If @code{experimental-nesting=yes}, then by default locations are
+@item show-nesting-locations=@r{[}yes@r{|}no@r{]}
+If @code{show-nesting=yes}, then by default locations are
 shown; set this key to @code{no} to disable printing such locations.
 This exists for use by GCC developers, for writing DejaGnu test cases.
 
-@item experimental-nesting-show-levels=@r{[}yes@r{|}no@r{]}
-This is a debugging option for use with @code{experimental-nesting=yes}.
+@item show-nesting-levels=@r{[}yes@r{|}no@r{]}
+This is a debugging option for use with @code{show-nesting=yes}.
 Set this key to @code{yes} to print explicit nesting levels in the output.
 This exists for use by GCC developers.
 

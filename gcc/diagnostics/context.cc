@@ -288,6 +288,33 @@ context::urls_init (int value)
 	(m_reference_printer->get_url_format ());
 }
 
+void
+context::set_show_nesting (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_nesting (val);
+}
+
+void
+context::set_show_nesting_locations (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_locations_in_nesting (val);
+}
+
+void
+context::set_show_nesting_levels (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_nesting_levels (val);
+}
+
 /* Create the file_cache, if not already created, and tell it how to
    translate files on input.  */
 void

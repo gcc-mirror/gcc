@@ -392,6 +392,9 @@ public:
   }
   void set_show_path_depths (bool val) { m_show_path_depths = val; }
   void set_show_option_requested (bool val) { m_show_option_requested = val; }
+  void set_show_nesting (bool val);
+  void set_show_nesting_locations (bool val);
+  void set_show_nesting_levels (bool val);
   void set_max_errors (int val) { m_max_errors = val; }
   void set_escape_format (enum diagnostics_escape_format val)
   {

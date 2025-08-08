@@ -1096,7 +1096,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	    "-fdiagnostics-urls=never",
 	    "-fdiagnostics-path-format=separate-events",
 	    "-fdiagnostics-text-art-charset=none",
-	    "-fno-diagnostics-show-event-links"
+	    "-fno-diagnostics-show-event-links",
+	    "-fno-diagnostics-show-nesting"
 	    /* We don't put "-fno-diagnostics-show-highlight-colors" here
 	       as -fdiagnostics-color=never makes it redundant.  */
 	  };

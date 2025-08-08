@@ -1620,6 +1620,18 @@ fdiagnostics-minimum-margin-width=
 Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
 Set minimum width of left margin of source code when showing source.
 
+fdiagnostics-show-nesting
+Common Var(flag_diagnostics_show_nesting) Init(1)
+Use indentation to show nesting of diagnostics in text output.
+
+fdiagnostics-show-nesting-locations
+Common Var(flag_diagnostics_show_nesting_locations) Init(1)
+Show location information when showing nested diagnostics.
+
+fdiagnostics-show-nesting-levels
+Common Var(flag_diagnostics_show_nesting_levels) Init(0)
+Show nesting levels as numbers when showing nested diagnostics.
+
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fdisable-[tree|rtl|ipa]-<pass>=range1+range2	Disable an optimization pass.

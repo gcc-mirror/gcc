@@ -3052,6 +3052,18 @@ common_handle_option (struct gcc_options *opts,
       dc->set_show_option_requested (value);
       break;
 
+    case OPT_fdiagnostics_show_nesting:
+      dc->set_show_nesting (value);
+      break;
+
+    case OPT_fdiagnostics_show_nesting_locations:
+      dc->set_show_nesting_locations (value);
+      break;
+
+    case OPT_fdiagnostics_show_nesting_levels:
+      dc->set_show_nesting_levels (value);
+      break;
+
     case OPT_fdiagnostics_minimum_margin_width_:
       dc->get_source_printing_options ().min_margin_width = value;
       break;
@@ -3880,6 +3892,9 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
       case OPT_fdiagnostics_format_:
+      case OPT_fdiagnostics_show_nesting:
+      case OPT_fdiagnostics_show_nesting_locations:
+      case OPT_fdiagnostics_show_nesting_levels:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:

@@ -51,6 +51,8 @@ public:
   {}
   ~text_sink ();
 
+  text_sink *dyn_cast_text_sink () final override { return this; }
+
   void dump_kind (FILE *out) const override
   {
     fprintf (out, "text_sink");
