@@ -779,12 +779,25 @@ enum riscv_cc
 {
   RISCV_CC_BASE = 0, /* Base standard RISC-V ABI.  */
   RISCV_CC_V, /* For functions that pass or return values in V registers.  */
+  /* For functions that pass or return values in V registers.  */
+  RISCV_CC_VLS_V_32,
+  RISCV_CC_VLS_V_64,
+  RISCV_CC_VLS_V_128,
+  RISCV_CC_VLS_V_256,
+  RISCV_CC_VLS_V_512,
+  RISCV_CC_VLS_V_1024,
+  RISCV_CC_VLS_V_2048,
+  RISCV_CC_VLS_V_4096,
+  RISCV_CC_VLS_V_8192,
+  RISCV_CC_VLS_V_16384,
   RISCV_CC_UNKNOWN
 };
 
 typedef struct {
   /* The calling convention that current function used.  */
   enum riscv_cc variant_cc;
+
+  unsigned int abi_vlen;
 
   /* Number of integer registers used so far, up to MAX_ARGS_IN_REGISTERS. */
   unsigned int num_gprs;
@@ -809,7 +822,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   riscv_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (INDIRECT),     \
-			(N_NAMED_ARGS) != -1)
+			(N_NAMED_ARGS) != -1, /* check_only */false)
 
 #define EPILOGUE_USES(REGNO)	riscv_epilogue_uses (REGNO)
 
