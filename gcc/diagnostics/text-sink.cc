@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/diagram.h"
 #include "diagnostics/text-sink.h"
 #include "diagnostics/buffering.h"
+#include "diagnostics/dumping.h"
 #include "text-art/theme.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
@@ -76,7 +77,7 @@ text_sink_buffer::text_sink_buffer (sink &sink_)
 void
 text_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*stext_sink_buffer:\n", indent, "");
+  dumping::emit_heading (out, indent, "text_sink_buffer");
   m_output_buffer.dump (out, indent + 2);
 }
 
@@ -156,18 +157,19 @@ text_sink::~text_sink ()
 }
 
 void
-text_sink::dump (FILE *out, int indent) const
+text_sink::dump (FILE *outfile, int indent) const
 {
-  fprintf (out, "%*stext_sink\n", indent, "");
-  fprintf (out, "%*sm_follows_reference_printer: %s\n",
-	   indent, "",
-	   m_follows_reference_printer ? "true" : "false");
-  sink::dump (out, indent);
-  fprintf (out, "%*ssaved_output_buffer:\n", indent + 2, "");
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_follows_reference_printer);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_nesting);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_locations_in_nesting);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_nesting_levels);
+
+  sink::dump (outfile, indent);
+  dumping::emit_heading (outfile, indent, "saved_output_buffer");
   if (m_saved_output_buffer)
-    m_saved_output_buffer->dump (out, indent + 4);
+    m_saved_output_buffer->dump (outfile, indent + 2);
   else
-    fprintf (out, "%*s(none):\n", indent + 4, "");
+    dumping::emit_none (outfile, indent + 2);
 }
 
 void

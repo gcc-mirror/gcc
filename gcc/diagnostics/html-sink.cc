@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/output-file.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/paths.h"
+#include "diagnostics/dumping.h"
 #include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"
@@ -59,6 +60,16 @@ html_generation_options::html_generation_options ()
   m_show_state_diagrams_sarif (false),
   m_show_state_diagrams_dot_src (false)
 {
+}
+
+void
+html_generation_options::dump (FILE *outfile, int indent) const
+{
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_css);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_javascript);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams_sarif);
+  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams_dot_src);
 }
 
 class html_builder;
@@ -115,6 +126,8 @@ public:
 		pretty_printer &pp,
 		const line_maps *line_maps,
 		const html_generation_options &html_gen_opts);
+
+  void dump (FILE *out, int indent) const;
 
   void
   set_main_input_filename (const char *name);
@@ -223,11 +236,12 @@ make_span (std::string class_)
 void
 html_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*shtml_sink_buffer:\n", indent, "");
+  dumping::emit_heading (out, indent, "html_sink_buffer");
   int idx = 0;
   for (auto &result : m_results)
     {
-      fprintf (out, "%*sresult[%i]:\n", indent + 2, "", idx);
+      dumping::emit_indent (out, indent + 2);
+      fprintf (out, "result[%i]:\n", idx);
       result->dump (out);
       fprintf (out, "\n");
       ++idx;
@@ -467,6 +481,13 @@ html_builder::html_builder (context &dc,
       }
     }
   }
+}
+
+void
+html_builder::dump (FILE *out, int indent) const
+{
+  dumping::emit_heading (out, indent, "HTML generation options");
+  m_html_gen_opts.dump (out, indent + 2);
 }
 
 void
@@ -1333,8 +1354,9 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*shtml_sink\n", indent, "");
     sink::dump (out, indent);
+    dumping::emit_heading (out, indent, "html_builder");
+    m_builder.dump (out, indent + 2);
   }
 
   void
@@ -1439,12 +1461,10 @@ public:
   {
     m_builder.flush_to_file (m_output_file.get_open_file ());
   }
-  void dump (FILE *out, int indent) const override
+  void dump_kind (FILE *out) const override
   {
-    fprintf (out, "%*shtml_file_sink: %s\n",
-	     indent, "",
+    fprintf (out, "html_file_sink: %s",
 	     m_output_file.get_filename ());
-    sink::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -1606,6 +1626,10 @@ private:
 			const html_generation_options &html_gen_opts)
     : html_sink (dc, line_maps, html_gen_opts)
     {
+    }
+    void dump_kind (FILE *out) const final override
+    {
+      fprintf (out, "html_buffered_sink");
     }
     bool machine_readable_stderr_p () const final override
     {

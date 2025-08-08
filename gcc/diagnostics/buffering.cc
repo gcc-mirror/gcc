@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/sink.h"
+#include "diagnostics/dumping.h"
 
 namespace diagnostics {
 
@@ -122,12 +123,12 @@ void
 buffer::dump (FILE *out, int indent) const
 {
   m_diagnostic_counters.dump (out, indent + 2);
-  fprintf (out, "%*sm_per_sink_buffers:\n", indent, "");
+  dumping::emit_heading (out, indent, "m_per_sink_buffers");
   if (m_per_sink_buffers)
     for (auto per_sink_buffer_ : *m_per_sink_buffers)
       per_sink_buffer_->dump (out, indent + 2);
   else
-    fprintf (out, "%*s(none)\n", indent + 2, "");
+    dumping::emit_none (out, indent + 2);
 }
 
 bool

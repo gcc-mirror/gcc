@@ -73,6 +73,7 @@ public:
   virtual ~sarif_serialization_format () {}
   virtual void write_to_file (FILE *outf,
 			      const json::value &top) = 0;
+  virtual void dump (FILE *out, int indent) const = 0;
 };
 
 /* Concrete subclass for serializing SARIF as JSON.  */
@@ -85,6 +86,7 @@ public:
   {
   }
   void write_to_file (FILE *outf, const json::value &top) final override;
+  void dump (FILE *out, int indent) const final override;
 
 private:
   bool m_formatted;
@@ -107,6 +109,8 @@ enum class sarif_version
 struct sarif_generation_options
 {
   sarif_generation_options ();
+
+  void dump (FILE *out, int indent) const;
 
   enum sarif_version m_version;
   bool m_state_graph;

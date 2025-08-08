@@ -1856,6 +1856,7 @@ OBJS-libcommon = \
 	diagnostics/color.o \
 	diagnostics/context.o \
 	diagnostics/digraphs.o \
+	diagnostics/dumping.o \
 	diagnostics/file-cache.o \
 	diagnostics/output-spec.o \
 	diagnostics/html-sink.o \

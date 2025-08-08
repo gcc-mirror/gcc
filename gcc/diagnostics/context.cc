@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/logical-locations.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/file-cache.h"
+#include "diagnostics/dumping.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -358,33 +359,37 @@ context::finish ()
 /* Dump state of this diagnostics::context to OUT, for debugging.  */
 
 void
-context::dump (FILE *out) const
+context::dump (FILE *outfile) const
 {
-  fprintf (out, "diagnostics::context:\n");
-  m_diagnostic_counters.dump (out, 2);
-  fprintf (out, "  reference printer:\n");
-  m_reference_printer->dump (out, 4);
-  fprintf (out, "  output sinks:\n");
+  dumping::emit_heading (outfile, 0, "diagnostics::context");
+  m_diagnostic_counters.dump (outfile, 2);
+  dumping::emit_heading (outfile, 2, "reference printer");
+  m_reference_printer->dump (outfile, 4);
+  dumping::emit_heading (outfile, 2, "output sinks");
   if (m_sinks.length () > 0)
     {
       for (unsigned i = 0; i < m_sinks.length (); ++i)
 	{
-	  fprintf (out, "  sink %i:\n", i);
-	  m_sinks[i]->dump (out, 4);
+	  dumping::emit_indent (outfile, 4);
+	  const sink *s = m_sinks[i];
+	  fprintf (outfile, "sink %i (", i);
+	  s->dump_kind (outfile);
+	  fprintf (outfile, "):\n");
+	  s->dump (outfile, 6);
 	}
     }
   else
-    fprintf (out, "    (none):\n");
-  fprintf (out, "  diagnostic buffer:\n");
+    dumping::emit_none (outfile, 4);
+  dumping::emit_heading (outfile, 2, "diagnostic buffer");
   if (m_diagnostic_buffer)
-    m_diagnostic_buffer->dump (out, 4);
+    m_diagnostic_buffer->dump (outfile, 4);
   else
-    fprintf (out, "    (none):\n");
-  fprintf (out, "  file cache:\n");
+    dumping::emit_none (outfile, 4);
+  dumping::emit_heading (outfile, 2, "file cache");
   if (m_file_cache)
-    m_file_cache->dump (out, 4);
+    m_file_cache->dump (outfile, 4);
   else
-    fprintf (out, "    (none):\n");
+    dumping::emit_none (outfile, 4);
 }
 
 /* Return true if sufficiently severe diagnostics have been seen that
@@ -1702,7 +1707,7 @@ context::set_nesting_level (int new_level)
 void
 sink::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sprinter:\n", indent, "");
+  dumping::emit_heading (out, indent, "printer");
   m_printer->dump (out, indent + 2);
 }
 
@@ -1789,19 +1794,19 @@ counters::counters ()
 void
 counters::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*scounts:\n", indent, "");
+  dumping::emit_heading (out, indent, "counts");
   bool none = true;
   for (int i = 0; i < static_cast<int> (kind::last_diagnostic_kind); i++)
     if (m_count_for_kind[i] > 0)
       {
-	fprintf (out, "%*s%s%i\n",
-		 indent + 2, "",
+	dumping::emit_indent (out, indent + 2);
+	fprintf (out, "%s%i\n",
 		 get_text_for_kind (static_cast<enum kind> (i)),
 		 m_count_for_kind[i]);
 	none = false;
       }
   if (none)
-    fprintf (out, "%*s(none)\n", indent + 2, "");
+    dumping::emit_none (out, indent + 2);
 }
 
 void

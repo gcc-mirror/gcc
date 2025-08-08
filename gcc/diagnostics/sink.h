@@ -36,6 +36,7 @@ class sink
 public:
   virtual ~sink () {}
 
+  virtual void dump_kind (FILE *out) const = 0;
   virtual void dump (FILE *out, int indent) const;
 
   /* Vfunc for notifying this format what the primary input file is,

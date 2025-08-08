@@ -51,6 +51,10 @@ public:
   {}
   ~text_sink ();
 
+  void dump_kind (FILE *out) const override
+  {
+    fprintf (out, "text_sink");
+  }
   void dump (FILE *out, int indent) const override;
 
   std::unique_ptr<per_sink_buffer>
