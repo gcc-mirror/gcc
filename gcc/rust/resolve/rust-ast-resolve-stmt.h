@@ -235,6 +235,7 @@ public:
 	redefined_error (r);
       });
 
+    ResolveExpr::go (item.get_expr (), path, cpath);
     // Done, no fields.
   }
 
