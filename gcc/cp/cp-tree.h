@@ -2341,7 +2341,8 @@ enum languages { lang_c, lang_cplusplus };
 /* Nonzero if NODE, a TYPE, has no name for linkage purposes.  */
 #define TYPE_UNNAMED_P(NODE)					\
   (TYPE_ANON_P (NODE)						\
-   && !IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+   && !IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE))     \
+   && !enum_with_enumerator_for_linkage_p (NODE))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -7325,6 +7326,7 @@ extern tree xref_tag				(tag_types, tree,
 						 bool tpl_header_p = false);
 extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
+extern bool enum_with_enumerator_for_linkage_p	(tree);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
 extern tree build_enumerator			(tree, tree, tree, tree, location_t);

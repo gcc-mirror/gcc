@@ -203,6 +203,7 @@ static void write_conversion_operator_name (const tree);
 static void write_source_name (tree);
 static void write_literal_operator_name (tree);
 static void write_unnamed_type_name (const tree);
+static void write_unnamed_enum_name (const tree);
 static void write_closure_type_name (const tree);
 static int hwint_to_ascii (unsigned HOST_WIDE_INT, const unsigned int, char *,
 			   const unsigned int);
@@ -1591,7 +1592,9 @@ write_unqualified_name (tree decl)
       tree type = TREE_TYPE (decl);
 
       if (TREE_CODE (decl) == TYPE_DECL
-          && TYPE_UNNAMED_P (type))
+	  && enum_with_enumerator_for_linkage_p (type))
+	write_unnamed_enum_name (type);
+      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_UNNAMED_P (type))
         write_unnamed_type_name (type);
       else if (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (type))
         write_closure_type_name (type);
@@ -1818,6 +1821,17 @@ write_unnamed_type_name (const tree type)
 
   write_string ("Ut");
   write_compact_number (discriminator);
+}
+
+/* <unnamed-enum-name> ::= Ue <underlying type> <enumerator source-name> */
+
+static void
+write_unnamed_enum_name (const tree type)
+{
+  MANGLE_TRACE_TREE ("unnamed-enum-name", type);
+  write_string ("Ue");
+  write_type (ENUM_UNDERLYING_TYPE (type));
+  write_source_name (DECL_NAME (TREE_VALUE (TYPE_VALUES (type))));
 }
 
 /* ABI issue #47: if a function template parameter is not "natural" for its

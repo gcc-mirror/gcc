@@ -435,6 +435,8 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_DEFAULT_ARG,
   /* An unnamed type.  */
   DEMANGLE_COMPONENT_UNNAMED_TYPE,
+  /* An unnamed enum.  */
+  DEMANGLE_COMPONENT_UNNAMED_ENUM,
   /* A transactional clone.  This has one subtree, the encoding for
      which it is providing alternative linkage.  */
   DEMANGLE_COMPONENT_TRANSACTION_CLONE,

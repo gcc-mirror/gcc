@@ -16,9 +16,9 @@ template <typename T> struct B {
 
 template <typename T> T B<T>::t2 = { };
 
-enum { E1 } e1;			// OK, defined
-extern enum { E2 } e2;		// { dg-error "never defined" }
-extern "C" enum { E3 } e3;	// OK, extern "C"
+enum { } e1;			// OK, defined
+extern enum { } e2;		// { dg-error "never defined" }
+extern "C" enum { } e3;		// OK, extern "C"
 
 void f() {
   struct A { int x; };  // no linkage

@@ -13106,7 +13106,8 @@ maybe_diagnose_non_c_class_typedef_for_linkage (tree type, tree orig, tree t)
 void
 name_unnamed_type (tree type, tree decl)
 {
-  gcc_assert (TYPE_UNNAMED_P (type));
+  gcc_assert (TYPE_UNNAMED_P (type)
+	      || enum_with_enumerator_for_linkage_p (type));
 
   /* Replace the anonymous decl with the real decl.  Be careful not to
      rename other typedefs (such as the self-reference) of type.  */
@@ -13132,7 +13133,8 @@ name_unnamed_type (tree type, tree decl)
 
   /* Check that our job is done, and that it would fail if we
      attempted to do it again.  */
-  gcc_assert (!TYPE_UNNAMED_P (type));
+  gcc_assert (!TYPE_UNNAMED_P (type)
+	      && !enum_with_enumerator_for_linkage_p (type));
 }
 
 /* Check that decltype(auto) was well-formed: only plain decltype(auto)
@@ -15382,7 +15384,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  && unqualified_id
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && TYPE_UNNAMED_P (type)
+	  && (TYPE_UNNAMED_P (type)
+	      /* An enum may have previously used an enumerator for linkage
+		 purposes, but we want the typedef name to take priority.  */
+	      || enum_with_enumerator_for_linkage_p (type))
 	  && declspecs->type_definition_p
 	  && attributes_naming_typedef_ok (*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
@@ -18225,6 +18230,18 @@ start_enum (tree name, tree enumtype, tree underlying_type,
     return enumtype;
 }
 
+/* Returns true if TYPE is an enum that uses an enumerator name for
+   linkage purposes.  */
+
+bool
+enum_with_enumerator_for_linkage_p (tree type)
+{
+  return (cxx_dialect >= cxx20
+	  && UNSCOPED_ENUM_P (type)
+	  && TYPE_ANON_P (type)
+	  && TYPE_VALUES (type));
+}
+
 /* After processing and defining all the values of an enumeration type,
    install their decls in the enumeration type.
    ENUMTYPE is the type object.  */
@@ -18454,6 +18471,11 @@ finish_enum_value_list (tree enumtype)
       /* TYPE_FIELDS needs fixup.  */
       fixup_type_variants (current_class_type);
     }
+
+  /* P2115: An unnamed enum uses the name of its first enumerator for
+     linkage purposes; reset the type linkage if that is the case.  */
+  if (enum_with_enumerator_for_linkage_p (enumtype))
+    reset_type_linkage (enumtype);
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, namespace_bindings_p ());

@@ -6399,8 +6399,8 @@ decl_linkage (tree decl)
   if (NAMESPACE_SCOPE_P (decl)
       && (!DECL_NAME (decl) || IDENTIFIER_ANON_P (DECL_NAME (decl))))
     {
-      if (TREE_CODE (decl) == TYPE_DECL && !TYPE_ANON_P (TREE_TYPE (decl)))
-	/* This entity has a typedef name for linkage purposes.  */;
+      if (TREE_CODE (decl) == TYPE_DECL && !TYPE_UNNAMED_P (TREE_TYPE (decl)))
+	/* This entity has a name for linkage purposes.  */;
       else if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_IS_BASE (decl))
 	/* Namespace-scope structured bindings can have linkage.  */;
       else if (TREE_CODE (decl) == NAMESPACE_DECL && cxx_dialect >= cxx11)
