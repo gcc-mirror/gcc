@@ -3016,11 +3016,12 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_column_unit_:
-      dc->m_column_unit = (enum diagnostics_column_unit)value;
+      dc->get_column_options ().m_column_unit
+	= (enum diagnostics_column_unit)value;
       break;
 
     case OPT_fdiagnostics_column_origin_:
-      dc->m_column_origin = value;
+      dc->get_column_options ().m_column_origin = value;
       break;
 
     case OPT_fdiagnostics_escape_format_:
@@ -3408,7 +3409,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_ftabstop_:
       /* It is documented that we silently ignore silly values.  */
       if (value >= 1 && value <= 100)
-	dc->m_tabstop = value;
+	dc->get_column_options ().m_tabstop = value;
       break;
 
     case OPT_freport_bug:

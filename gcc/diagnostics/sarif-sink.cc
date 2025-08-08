@@ -1674,7 +1674,7 @@ sarif_builder::sarif_builder (diagnostics::context &dc,
     (std::make_unique<sarif_array_of_unique<sarif_logical_location>> ()),
   m_run_graphs
     (std::make_unique<sarif_array_of_unique<sarif_graph>> ()),
-  m_tabstop (dc.m_tabstop),
+  m_tabstop (dc.get_column_options ().m_tabstop),
   m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
   m_next_result_idx (0),

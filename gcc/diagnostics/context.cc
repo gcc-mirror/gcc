@@ -176,12 +176,18 @@ context::initialize (int n_opts)
   m_client_aux_data = nullptr;
   m_lock = 0;
   m_inhibit_notes_p = false;
+
   m_source_printing.colorize_source_p = false;
   m_source_printing.show_labels_p = false;
   m_source_printing.show_line_numbers_p = false;
   m_source_printing.min_margin_width = 0;
   m_source_printing.show_ruler_p = false;
   m_source_printing.show_event_links_p = false;
+
+  m_column_options.m_column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
+  m_column_options.m_column_origin = 1;
+  m_column_options.m_tabstop = 8;
+
   m_report_bug = false;
   m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_none;
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))
@@ -192,9 +198,6 @@ context::initialize (int n_opts)
 	m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2;
       /* Silently ignore unrecognized values.  */
     }
-  m_column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
-  m_column_origin = 1;
-  m_tabstop = 8;
   m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   m_fixits_change_set = nullptr;
   m_diagnostic_groups.m_group_nesting_depth = 0;
@@ -671,11 +674,22 @@ convert_column_unit (file_cache &fc,
     }
 }
 
+/* Given an expanded_location, convert the column (which is in 1-based bytes)
+   to the requested units and origin.  Return -1 if the column is
+   invalid (<= 0).  */
+int
+column_options::convert_column (file_cache &fc,
+				expanded_location s) const
+{
+  int one_based_col = convert_column_unit (fc, m_column_unit, m_tabstop, s);
+  if (one_based_col <= 0)
+    return -1;
+  return one_based_col + (m_column_origin - 1);
+}
+
 column_policy::column_policy (const context &dc)
 : m_file_cache (dc.get_file_cache ()),
-  m_column_unit (dc.m_column_unit),
-  m_column_origin (dc.m_column_origin),
-  m_tabstop (dc.m_tabstop)
+  m_column_options (dc.get_column_options ())
 {
 }
 
@@ -685,11 +699,7 @@ column_policy::column_policy (const context &dc)
 int
 column_policy::converted_column (expanded_location s) const
 {
-  int one_based_col = convert_column_unit (m_file_cache,
-					   m_column_unit, m_tabstop, s);
-  if (one_based_col <= 0)
-    return -1;
-  return one_based_col + (m_column_origin - 1);
+  return m_column_options.convert_column (m_file_cache, s);
 }
 
 /* Return a string describing a location e.g. "foo.c:42:10".  */
@@ -1385,6 +1395,8 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       sink_->on_report_diagnostic (*diagnostic, orig_diag_kind);
     }
 
+  const int tabstop = get_column_options ().m_tabstop;
+
   switch (m_extra_output_kind)
     {
     default:
@@ -1393,14 +1405,14 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       print_parseable_fixits (get_file_cache (),
 			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
-			      m_tabstop);
+			      tabstop);
       pp_flush (m_reference_printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
       print_parseable_fixits (get_file_cache (),
 			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
-			      m_tabstop);
+			      tabstop);
       pp_flush (m_reference_printer);
       break;
     }
@@ -2015,8 +2027,8 @@ assert_location_text (const char *expected_loc_text,
 			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
   diagnostics::selftest::test_context dc;
-  dc.m_column_unit = column_unit;
-  dc.m_column_origin = origin;
+  dc.get_column_options ().m_column_unit = column_unit;
+  dc.get_column_options ().m_column_origin = origin;
 
   expanded_location xloc;
   xloc.file = filename;

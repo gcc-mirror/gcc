@@ -1200,7 +1200,7 @@ c_common_post_options (const char **pfilename)
     flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc23;
   cpp_opts->unsigned_utf8char = flag_char8_t ? 1 : cpp_opts->unsigned_char;
 
-  cpp_opts->cpp_tabstop = global_dc->m_tabstop;
+  cpp_opts->cpp_tabstop = global_dc->get_column_options ().m_tabstop;
 
   if (flag_extern_tls_init)
     {

@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/option-id-manager.h"
 #include "diagnostics/context-options.h"
 #include "diagnostics/source-printing-options.h"
+#include "diagnostics/column-options.h"
 #include "diagnostics/counters.h"
 
 namespace diagnostics {
@@ -99,13 +100,11 @@ public:
 				bool show_column,
 				bool colorize) const;
 
-  int get_tabstop () const { return m_tabstop; }
+  int get_tabstop () const { return m_column_options.m_tabstop; }
 
 private:
   file_cache &m_file_cache;
-  enum diagnostics_column_unit m_column_unit;
-  int m_column_origin;
-  int m_tabstop;
+  column_options m_column_options;
 };
 
 /* A bundle of state for printing locations within diagnostics
@@ -592,6 +591,9 @@ public:
     return m_source_printing;
   }
 
+  column_options &get_column_options () { return m_column_options; }
+  const column_options &get_column_options () const { return m_column_options; }
+
   void set_caret_max_width (int value);
 
 private:
@@ -739,6 +741,7 @@ private:
   bool m_inhibit_notes_p;
 
   source_printing_options m_source_printing;
+  column_options m_column_options;
 
   /* True if -freport-bug option is used.  */
   bool m_report_bug;
@@ -748,17 +751,6 @@ private:
      -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */
   enum diagnostics_extra_output_kind m_extra_output_kind;
 
-public:
-  /* What units to use when outputting the column number.  */
-  enum diagnostics_column_unit m_column_unit;
-
-  /* The origin for the column number (1-based or 0-based typically).  */
-  int m_column_origin;
-
-  /* The size of the tabstop for tab expansion.  */
-  int m_tabstop;
-
-private:
   /* How should non-ASCII/non-printable bytes be escaped when
      a diagnostic suggests escaping the source code on output.  */
   enum diagnostics_escape_format m_escape_format;

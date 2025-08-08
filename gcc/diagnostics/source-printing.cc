@@ -4412,7 +4412,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_context dc;
-      dc.m_tabstop = tabstop;
+      dc.get_column_options ().m_tabstop = tabstop;
       diagnostics::source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
       colorizer col (*dc.get_reference_printer (),
@@ -4436,7 +4436,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_context dc;
-      dc.m_tabstop = tabstop;
+      dc.get_column_options ().m_tabstop = tabstop;
       static const int small_width = 24;
       auto &source_printing_opts = dc.get_source_printing_options ();
       source_printing_opts.max_width = small_width - 4;
@@ -6833,7 +6833,7 @@ test_tab_expansion (const line_table_case &case_)
      everything too.  */
   {
     test_context dc;
-    dc.m_tabstop = tabstop;
+    dc.get_column_options ().m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
@@ -6846,7 +6846,7 @@ test_tab_expansion (const line_table_case &case_)
      as well.  */
   {
     test_context dc;
-    dc.m_tabstop = tabstop;
+    dc.get_column_options ().m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
