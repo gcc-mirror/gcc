@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    NUM_ABI_IDS is the maximum number of such ABIs that GCC can handle at once.
    A bitfield with this number of bits can represent any combinaion of the
    supported ABIs.  */
-const size_t NUM_ABI_IDS = 8;
+const size_t NUM_ABI_IDS = 12;
 
 /* Information about one of the target's predefined ABIs.  */
 class predefined_function_abi
