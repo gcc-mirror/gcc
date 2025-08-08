@@ -1,3 +1,4 @@
+/* { dg-do run { target x86_64*-*-* } } */
 /* { dg-output "Value is: 5\r*\n" } */
 #![feature(rustc_attrs)]
 
