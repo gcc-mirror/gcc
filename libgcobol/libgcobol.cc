@@ -1719,34 +1719,27 @@ int128_to_field(cblc_field_t   *var,
 
           case FldPacked:
             {
-            static const unsigned char bin2pd[100] =
-              {
-              0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-              0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
-              0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29,
-              0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
-              0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
-              0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59,
-              0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
-              0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79,
-              0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
-              0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99,
-              } ;
-
             // Convert the binary value to packed decimal.
+            int digits = var->digits;
 
-            // Set the destination bytes to zero
-            memset(location, 0, length);
+            // Assume for the moment that the res
             unsigned char sign_nybble = 0;
-            if( !(var->attr & packed_no_sign_e) )
+            if( var->attr & packed_no_sign_e ) 
+              {
+              // This is COMP-6 packed decimal, with no sign nybble
+              sign_nybble = 0;
+              }
+            else 
               {
               // This is COMP-3 packed decimal, so we need to make room to the
               // right of the final decimal digit for the sign nybble:
               value *= 10;
+              digits += 1;
               // Figure out what the sign nybble is going to be, and make the
               // the value positive:
               if(var->attr & signable_e)
                 {
+                // It is signable, so 0xD for negative, and 0xC for positive
                 if(value < 0)
                   {
                   sign_nybble = 0x0D;
@@ -1759,6 +1752,7 @@ int128_to_field(cblc_field_t   *var,
                 }
               else
                 {
+                // The value is not signable, so the sign nybble is 0xF
                 sign_nybble = 0x0F;
                 if(value < 0)
                   {
@@ -1766,43 +1760,25 @@ int128_to_field(cblc_field_t   *var,
                   }
                 }
               }
-            // ploc points to the current rightmost byte of the location:
-            unsigned char *ploc = location + length -1 ;
 
-            // Build the target from right to left, so that the result is
-            // big-endian:
-            while( value && ploc >= location )
-              {
-              *ploc-- = bin2pd[value%100];
-              value /= 100;
-              }
+            /*  We need to check if the value is too big, in case our caller
+                wants to check for the error condition.  In any event, we need
+                to make sure the value actually fits, because otherwise the 
+                result might have a bad high-place digit for a value with an
+                odd number of places. */
 
+            __int128 mask = __gg__power_of_ten(digits);
+            size_error = !!(value / mask);
+            value %= mask;
+
+            // We are now set up to do the conversion:
+            __gg__binary_to_packed(location, digits, value);
+            
             // We can put the sign nybble into place at this point.  Note that
             // for COMP-6 numbers the sign_nybble value is zero, so the next
             // operation is harmless.
             location[length -1] |= sign_nybble;
 
-            // If we still have value left, we have a size error
-            if( value )
-              {
-              size_error = true;
-              }
-            else
-              {
-              if(    (  sign_nybble && !(var->digits&1) )
-                  || ( !sign_nybble &&  (var->digits&1) ) )
-                {
-                // This is either
-                // comp-3 with an even number of digits, or
-                // comp-6 with an odd  number of digits.
-                // Either way, the first byte of the target has to have a high
-                // nybble of zero.  If it's non-zero, then we have a size error:
-                if( location[0] & 0xF0 )
-                  {
-                  size_error = true;
-                  }
-                }
-              }
             // And we're done.
             break;
             }

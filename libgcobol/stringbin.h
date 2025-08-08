@@ -39,4 +39,9 @@ bool __gg__binary_to_string_internal( char *result,
                                       int digits,
                                       __int128 value);
 
+extern "C"
+void __gg__binary_to_packed( unsigned char *result,
+                             int digits,
+                             __int128 value);
+
 #endif
