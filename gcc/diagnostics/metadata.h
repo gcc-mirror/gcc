@@ -119,6 +119,8 @@ class metadata
   const lazy_digraphs *m_lazy_digraphs;
 };
 
+extern char *get_cwe_url (int cwe);
+
 } // namespace diagnostics
 
 #endif /* ! GCC_DIAGNOSTICS_METADATA_H */

@@ -127,6 +127,8 @@ public:
     return m_source_printing;
   }
 
+  static const char *maybe_line_and_column (int line, int col);
+
 protected:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);

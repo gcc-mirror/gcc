@@ -277,9 +277,6 @@ namespace diagnostics {
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);
 
-extern char *get_cwe_url (int cwe);
-extern const char *maybe_line_and_column (int line, int col);
-
 } // namespace diagnostics
 
 #endif /* ! GCC_DIAGNOSTIC_H */

@@ -612,7 +612,7 @@ text_sink::get_location_text (const expanded_location &s) const
    The result is a statically allocated buffer.  */
 
 const char *
-maybe_line_and_column (int line, int col)
+text_sink::maybe_line_and_column (int line, int col)
 {
   static char result[32];
 

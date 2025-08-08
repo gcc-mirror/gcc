@@ -721,7 +721,7 @@ column_policy::get_location_text (const expanded_location &s,
 	col = converted_column (s);
     }
 
-  const char *line_col = maybe_line_and_column (line, col);
+  const char *line_col = text_sink::maybe_line_and_column (line, col);
   return label_text::take (build_message_string ("%s%s%s:%s", locus_cs, file,
 						 line_col, locus_ce));
 }
@@ -2064,8 +2064,8 @@ test_get_location_text ()
   assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
   assert_location_text ("foo.c:", "foo.c", 0, 10, false);
 
-  diagnostics::maybe_line_and_column (INT_MAX, INT_MAX);
-  diagnostics::maybe_line_and_column (INT_MIN, INT_MIN);
+  diagnostics::text_sink::maybe_line_and_column (INT_MAX, INT_MAX);
+  diagnostics::text_sink::maybe_line_and_column (INT_MIN, INT_MIN);
 
   {
     /* In order to test display columns vs byte columns, we need to create a
