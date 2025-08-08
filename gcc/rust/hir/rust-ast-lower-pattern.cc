@@ -268,8 +268,6 @@ ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
 void
 ASTLoweringPattern::visit (AST::RangePattern &pattern)
 {
-  if (pattern.get_range_kind () == AST::RangeKind::EXCLUDED)
-    rust_unreachable (); // Not supported yet
   auto upper_bound = lower_range_pattern_bound (pattern.get_upper_bound ());
   auto lower_bound = lower_range_pattern_bound (pattern.get_lower_bound ());
 
@@ -278,9 +276,11 @@ ASTLoweringPattern::visit (AST::RangePattern &pattern)
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated
-    = new HIR::RangePattern (mapping, std::move (lower_bound),
-			     std::move (upper_bound), pattern.get_locus ());
+  bool is_inclusive = (pattern.get_range_kind () == AST::RangeKind::INCLUDED);
+
+  translated = new HIR::RangePattern (mapping, std::move (lower_bound),
+				      std::move (upper_bound),
+				      pattern.get_locus (), is_inclusive);
 }
 
 void

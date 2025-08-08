@@ -158,13 +158,15 @@ CompilePatternCheckExpr::visit (HIR::RangePattern &pattern)
 					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
 
+  ComparisonOperator upper_cmp = pattern.is_inclusive_range ()
+				   ? ComparisonOperator::LESS_OR_EQUAL
+				   : ComparisonOperator::LESS_THAN;
   tree check_lower
     = Backend::comparison_expression (ComparisonOperator::GREATER_OR_EQUAL,
 				      match_scrutinee_expr, lower,
 				      pattern.get_locus ());
   tree check_upper
-    = Backend::comparison_expression (ComparisonOperator::LESS_OR_EQUAL,
-				      match_scrutinee_expr, upper,
+    = Backend::comparison_expression (upper_cmp, match_scrutinee_expr, upper,
 				      pattern.get_locus ());
   check_expr = Backend::arithmetic_or_logical_expression (
     ArithmeticOrLogicalOperator::BITWISE_AND, check_lower, check_upper,

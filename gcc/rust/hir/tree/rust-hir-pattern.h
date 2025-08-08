@@ -350,6 +350,7 @@ class RangePattern : public Pattern
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
   location_t locus;
+  bool is_inclusive;
   Analysis::NodeMapping mappings;
 
 public:
@@ -359,10 +360,10 @@ public:
   RangePattern (Analysis::NodeMapping mappings,
 		std::unique_ptr<RangePatternBound> lower,
 		std::unique_ptr<RangePatternBound> upper, location_t locus,
-		bool has_ellipsis_syntax = false)
+		bool is_inclusive, bool has_ellipsis_syntax = false)
     : lower (std::move (lower)), upper (std::move (upper)),
       has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
-      mappings (mappings)
+      is_inclusive (is_inclusive), mappings (mappings)
   {}
 
   // Copy constructor with clone
@@ -370,7 +371,7 @@ public:
     : lower (other.lower->clone_range_pattern_bound ()),
       upper (other.upper->clone_range_pattern_bound ()),
       has_ellipsis_syntax (other.has_ellipsis_syntax), locus (other.locus),
-      mappings (other.mappings)
+      is_inclusive (other.is_inclusive), mappings (other.mappings)
   {}
 
   // Overloaded assignment operator to clone
@@ -380,6 +381,7 @@ public:
     upper = other.upper->clone_range_pattern_bound ();
     has_ellipsis_syntax = other.has_ellipsis_syntax;
     locus = other.locus;
+    is_inclusive = other.is_inclusive;
     mappings = other.mappings;
 
     return *this;
@@ -395,6 +397,7 @@ public:
   void accept_vis (HIRPatternVisitor &vis) override;
 
   bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; };
+  bool is_inclusive_range () const { return is_inclusive; }
 
   const Analysis::NodeMapping &get_mappings () const override final
   {
