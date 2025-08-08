@@ -1,3 +1,100 @@
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* g++.dg/cpp26/decomp13.C: New test.
+	* g++.dg/cpp26/decomp14.C: New test.
+	* g++.dg/cpp26/decomp15.C: New test.
+	* g++.dg/cpp26/decomp16.C: New test.
+	* g++.dg/cpp26/decomp17.C: New test.
+	* g++.dg/cpp26/decomp18.C: New test.
+	* g++.dg/cpp26/decomp19.C: New test.
+	* g++.dg/cpp26/decomp20.C: New test.
+	* g++.dg/cpp26/decomp21.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_structured_bindings): Expect
+	202411 rather than 202403.
+
+2025-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121414
+	* gcc.target/aarch64/sme/pr121414_1.c: New test.
+
+2025-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120718
+	* gcc.target/aarch64/sve/acle/general/pr120718.c: New test.
+
+2025-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121405
+	* gcc.dg/tree-ssa/ssa-fre-107.c: New testcase.
+	* gcc.target/i386/pr90579.c: Adjust.
+
+2025-08-07  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* gcc.target/aarch64/sve/peel_ind_11.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_11_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_12.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_12_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_13.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_13_run.c: New test.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* g++.dg/DRs/dr2577-1.C: New test.
+	* g++.dg/DRs/dr2577-2.C: New test.
+	* g++.dg/DRs/dr2577-2.h: New file.
+	* g++.dg/DRs/dr2577-3.C: New test.
+	* g++.dg/DRs/dr2577-3.h: New file.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* g++.dg/DRs/dr2575.C: New test.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* g++.dg/DRs/dr2576.C: New test.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* gcc.dg/Wkeyword-macro-1.c: New test.
+	* gcc.dg/Wkeyword-macro-2.c: New test.
+	* gcc.dg/Wkeyword-macro-3.c: New test.
+	* gcc.dg/Wkeyword-macro-4.c: New test.
+	* gcc.dg/Wkeyword-macro-5.c: New test.
+	* gcc.dg/Wkeyword-macro-6.c: New test.
+	* gcc.dg/Wkeyword-macro-7.c: New test.
+	* gcc.dg/Wkeyword-macro-8.c: New test.
+	* gcc.dg/Wkeyword-macro-9.c: New test.
+	* g++.dg/warn/Wkeyword-macro-1.C: New test.
+	* g++.dg/warn/Wkeyword-macro-2.C: New test.
+	* g++.dg/warn/Wkeyword-macro-3.C: New test.
+	* g++.dg/warn/Wkeyword-macro-4.C: New test.
+	* g++.dg/warn/Wkeyword-macro-5.C: New test.
+	* g++.dg/warn/Wkeyword-macro-6.C: New test.
+	* g++.dg/warn/Wkeyword-macro-7.C: New test.
+	* g++.dg/warn/Wkeyword-macro-8.C: New test.
+	* g++.dg/warn/Wkeyword-macro-9.C: New test.
+	* g++.dg/warn/Wkeyword-macro-10.C: New test.
+	* g++.dg/opt/pr82577.C: Don't #define register to nothing for
+	C++17 and later.  Instead define reg macro to nothing for C++17
+	and later or to register and use it instead of register.
+	* g++.dg/modules/atom-preamble-3.C: Add -Wno-keyword-macro to
+	dg-additional-options.
+	* g++.dg/template/sfinae17.C (static_assert): Rename macro to ...
+	(my_static_assert): ... this.
+	(main): Use my_static_assert instead of static_assert.
+
+2025-08-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/bitint-1.c: New test.
+	* gcc.target/s390/bitint-2.c: New test.
+	* gcc.target/s390/bitint-3.c: New test.
+	* gcc.target/s390/bitint-4.c: New test.
+
 2025-08-06  Sam James  <sam@gentoo.org>
 
 	* g++.dg/cpp26/constexpr-new3.C: Escape '[' and ']'.

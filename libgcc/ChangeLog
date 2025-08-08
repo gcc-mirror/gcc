@@ -1,3 +1,17 @@
+2025-08-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/libgcc-glibc.ver: Export _BitInt support
+	functions.
+	* config/s390/t-softfp (softfp_extras): Add fixtfbitint
+	floatbitinttf.
+
+2025-08-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config.host: Include makefiles t-softfp for -m64.
+	* config/s390/sfp-exceptions.c: New file.
+	* config/s390/sfp-machine.h: New file.
+	* config/s390/t-softfp: New file.
+
 2025-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/121397

@@ -1,3 +1,57 @@
+2025-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121414
+	* config/aarch64/aarch64.cc (aarch64_is_variant_pcs): New function,
+	split out from...
+	(aarch64_asm_output_variant_pcs): ...here.  Handle various types
+	of SME function type.
+
+2025-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120718
+	* simplify-rtx.cc (simplify_context::simplify_gen_subreg):
+	Remove MODE_COMPOSITE_P condition.
+
+2025-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121405
+	* tree-ssa-sccvn.cc (visit_nary_op): Handle BIT_FIELD_REF
+	with reference def by looking up a combination of both.
+
+2025-08-07  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* tree-vect-data-refs.cc (vect_compute_data_ref_alignment):
+	Allow DR target alignment to be a poly_int.
+	(vect_enhance_data_refs_alignment): Support peeling and
+	versioning for VLA modes.
+	* tree-vect-loop-manip.cc (get_misalign_in_elems): Remove
+	power-of-two rounding in peeling.
+	(vect_create_cond_for_align_checks): Update alignment check
+	logic for poly_int mask.
+	(vect_create_cond_for_vla_spec_read): New runtime checks.
+	(vect_loop_versioning): Support new runtime checks.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Add a new
+	loop_vinfo field.
+	(vectorizable_induction): Fix wrong IV offset issue.
+	* tree-vect-stmts.cc (get_load_store_type): Refactor
+	vectorizable checks for speculative loads.
+	* tree-vectorizer.h (LOOP_VINFO_MAX_SPEC_READ_AMOUNT): New
+	macro for new runtime checks.
+	(LOOP_REQUIRES_VERSIONING_FOR_SPEC_READ): Likewise
+	(LOOP_REQUIRES_VERSIONING): Update macro for new runtime checks.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* doc/invoke.texi (Wkeyword-macro): Document.
+
+2025-08-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (print_operand): Allow arbitrary wide_int
+	constants for _BitInt.
+	(s390_bitint_type_info): Implement target hook
+	TARGET_C_BITINT_TYPE_INFO.
+
 2025-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/96226

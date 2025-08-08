@@ -1,3 +1,9 @@
+2025-08-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/build_hacking.xml: Switch gcc.gnu.org installation
+	docs to https.
+	* doc/html/manual/appendix_porting.html: Regenerate.
+
 2025-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/121373

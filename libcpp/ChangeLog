@@ -1,3 +1,15 @@
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* include/cpplib.h (struct cpp_options): Add cpp_warn_keyword_macro.
+	(enum cpp_warning_reason): Add CPP_W_KEYWORD_MACRO enumerator.
+	(cpp_keyword_p): New inline function.
+	* directives.cc (do_undef): Support -Wkeyword-macro diagnostics.
+	* macro.cc (warn_of_redefinition): Ignore NODE_WARN flag on nodes
+	registered for -Wkeyword-macro.
+	(_cpp_create_definition): Support -Wkeyword-macro diagnostics.
+	Formatting fixes.
+
 2025-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/120778

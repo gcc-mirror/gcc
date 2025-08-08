@@ -1,3 +1,15 @@
+2025-08-07  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Include new stringbin.cc file.
+	* Makefile.in: Regenerated.
+	* libgcobol.cc (__gg__power_of_ten): Improve error message.
+	(__gg__binary_to_string): Deleted.
+	(__gg__binary_to_string_internal): Deleted.
+	(int128_to_field): Use new conversion routine.
+	(__gg__move): Use new conversion routine.
+	* stringbin.cc: New file. Implements new conversion routine.
+	* stringbin.h: New file. Likewise.
+
 2025-07-13  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (PTRCAST): Moved here from libgcobol.h.

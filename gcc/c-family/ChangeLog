@@ -1,3 +1,18 @@
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_structured_bindings
+	predefined value for C++26 from 202403L to 202411L.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* c.opt (Wkeyword-macro): New option.
+	* c.opt.urls: Regenerate.
+	* c-common.h (cxx_dialect): Comment formatting fix.
+	* c-opts.cc (c_common_post_options): Default to
+	-Wkeyword-macro for C++26 if pedantic.
+
 2025-08-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-attribs.cc (handle_hardbool_attribute): Create distinct

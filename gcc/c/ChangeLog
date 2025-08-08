@@ -1,3 +1,9 @@
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* c-decl.cc (c_init_decl_processing): Mark cpp nodes corresponding
+	to keywords as NODE_WARN if warn_keyword_macro.
+
 2025-08-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-tree.h (C_BOOLEAN_TYPE_P): Cover hardbools as well.

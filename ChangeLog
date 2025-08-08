@@ -1,3 +1,7 @@
+2025-08-07  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* MAINTAINERS: Add myself.
+
 2025-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* .gitignore: Remove 'libgrust/*/target/'.

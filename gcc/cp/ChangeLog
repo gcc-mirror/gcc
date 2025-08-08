@@ -1,3 +1,48 @@
+2025-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (extract_call_expr): Remove handling of C++20
+	rewritten comparison operators.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* parser.cc: Implement C++26 P1061R10 - Structured Bindings can
+	introduce a Pack.
+	(cp_parser_range_for): Also handle TREE_VEC as DECL_VALUE_EXPR
+	instead of ARRAY_REF.
+	(cp_parser_decomposition_declaration): Use sb-identifier-list instead
+	of identifier-list in comments.  Parse structured bindings with
+	structured binding pack.  Don't emit pedwarn about structured
+	binding attributes in structured bindings inside of a condition.
+	(cp_convert_omp_range_for): Also handle TREE_VEC as DECL_VALUE_EXPR
+	instead of ARRAY_REF.
+	* decl.cc (get_tuple_element_type): Change i argument type from
+	unsigned to unsigned HOST_WIDE_INT.
+	(get_tuple_decomp_init): Likewise.
+	(set_sb_pack_name): New function.
+	(cp_finish_decomp): Handle structured binding packs.
+	* pt.cc (tsubst_pack_expansion): Handle structured binding packs
+	and capture proxies for them.  Formatting fixes.
+	(tsubst_decl): For structured binding packs don't tsubst TREE_TYPE
+	first, instead recreate the type after r is created.
+	(tsubst_omp_for_iterator): Also handle TREE_VEC as DECL_VALUE_EXPR
+	instead of ARRAY_REF.
+	(tsubst_expr): Handle sizeof... on non-dependent structure binding
+	packs.
+	(value_dependent_expression_p): Return false for sizeof... on
+	non-dependent structure binding packs.
+	(instantiation_dependent_r): Don't recurse on sizeof... on
+	non-dependent structure binding packs.
+	* constexpr.cc (potential_constant_expression_1): Also handle
+	TREE_VEC on DECL_VALUE_EXPR of structure binding packs.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* lex.cc (cxx_init): Mark cpp nodes corresponding
+	to keywords, identifiers with special meaning and standard
+	attribute identifiers as NODE_WARN if warn_keyword_macro.
+
 2025-08-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/121231

@@ -1,3 +1,13 @@
+2025-08-07  Robert Dubner  <rdubner@symas.com>
+
+	* cbldiag.h (location_dump): Source code formatting.
+	* parse.y: error_msg formatting.
+	* scan.l: Remove UTF-8 character from regex pattern.
+	* scan_ante.h (numstr_of): error_msg formatting.
+	* show_parse.h (class ANALYZE): Suppress cppcheck error.
+	* util.cc (cbl_field_t::report_invalid_initial_value):
+	error_msg formatting.
+
 2025-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.y (intrinsic): Use %td format specifier with no cast on
