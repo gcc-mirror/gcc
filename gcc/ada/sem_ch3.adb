@@ -18747,7 +18747,11 @@ package body Sem_Ch3 is
             Enter_Name (Id);
             New_Id := Id;
 
-         --  Check invalid completion of private or incomplete type
+         --  Check invalid completion of private or incomplete type. The
+         --  completion of an incomplete view must be a non-incomplete type
+         --  declaration (RM 3.10.1 (3/3)) and the completion of a partial view
+         --  must be a full type declaration (RM 7.3 (4)). Before Ada 2012, a
+         --  full type declaration is needed in the two cases.
 
          elsif Nkind (N) not in N_Full_Type_Declaration
                               | N_Task_Type_Declaration
@@ -18758,8 +18762,6 @@ package body Sem_Ch3 is
                or else Nkind (N) not in N_Private_Type_Declaration
                                       | N_Private_Extension_Declaration)
          then
-            --  Completion must be a full type declarations (RM 7.3(4))
-
             Error_Msg_Sloc := Sloc (Prev);
             Error_Msg_NE ("invalid completion of }", Id, Prev);
 
