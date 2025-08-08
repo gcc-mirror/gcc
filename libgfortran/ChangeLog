@@ -1,3 +1,7 @@
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
 2025-06-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

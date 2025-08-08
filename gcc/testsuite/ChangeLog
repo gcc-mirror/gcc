@@ -1,3 +1,7 @@
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
 2025-08-06  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/cops.c: Fix test.
