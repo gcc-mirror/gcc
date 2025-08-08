@@ -1358,5 +1358,17 @@ Mappings::lookup_captures (NodeId closure)
     return cap->second;
 }
 
+void
+Mappings::add_derived_node (NodeId node_id)
+{
+  derived_nodes.insert (node_id);
+}
+
+bool
+Mappings::is_derived_node (NodeId node_id)
+{
+  return derived_nodes.find (node_id) != derived_nodes.end ();
+}
+
 } // namespace Analysis
 } // namespace Rust

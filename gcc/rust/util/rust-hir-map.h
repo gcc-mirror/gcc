@@ -350,6 +350,9 @@ public:
   void add_capture (NodeId closure, NodeId definition);
   tl::optional<std::vector<NodeId>> lookup_captures (NodeId closure);
 
+  void add_derived_node (NodeId node_id);
+  bool is_derived_node (NodeId node_id);
+
 private:
   Mappings ();
 
@@ -443,6 +446,8 @@ private:
 
   // Closure AST NodeId -> vector of Definition node ids
   std::unordered_map<NodeId, std::vector<NodeId>> captures;
+
+  std::set<NodeId> derived_nodes;
 };
 
 } // namespace Analysis
