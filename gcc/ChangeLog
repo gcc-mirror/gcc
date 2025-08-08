@@ -1,3 +1,14 @@
+2025-08-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/96226
+	* config/i386/predicates.md (and_operator): New operator.
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask):
+	Use and_operator to match AND RTX and use its mode
+	in the split pattern.
+
 2025-08-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
