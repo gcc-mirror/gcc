@@ -1,3 +1,36 @@
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121413
+	* gimple-lower-bitint.cc (abi_limb_prec): New variable
+	(bitint_precision_kind): Initialize it.
+	(gimple_lower_bitint): Clear it at the start.  For
+	min_prec > limb_prec descreased precision vars for
+	INTEGER_CST PHI arguments ensure min_prec is either
+	prec or multiple of abi_limb_prec.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121127
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand_addr): For
+	uninitialized SSA_NAME, set *prec_stored to 0 rather than *prec.
+	Handle that case in narrowing casts.  If prec_stored is non-NULL,
+	set *prec_stored to prec_stored_val.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121322
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Return NULL if
+	count is 0.
+
 2025-07-31  Spencer Abson  <spencer.abson@arm.com>
 
 	Backported from master:
