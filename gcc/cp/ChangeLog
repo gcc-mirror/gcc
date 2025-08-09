@@ -1,3 +1,8 @@
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (cp_adjust_diagnostic_info): Convert "context" arg from
+	ptr to const &.
+
 2025-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	* call.cc (extract_call_expr): Remove handling of C++20

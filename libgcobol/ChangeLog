@@ -1,3 +1,10 @@
+2025-08-08  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (int128_to_field): Switch to the new routine.
+	* stringbin.cc (packed_from_combined): Implement the new routine.
+	(__gg__binary_to_packed): Likewise.
+	* stringbin.h (__gg__binary_to_packed): Likewise.
+
 2025-08-07  Robert Dubner  <rdubner@symas.com>
 
 	* Makefile.am: Include new stringbin.cc file.

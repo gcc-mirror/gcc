@@ -1,3 +1,262 @@
+2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120599
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop): Don't try to copy
+	from statements that throw.
+
+2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118946
+	PR tree-optimization/121422
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Remove.
+	(optimize_aggr_zeroprop_1): New function.
+	(optimize_aggr_zeroprop): New function.
+	(simplify_builtin_call): Don't call optimize_memcpy_to_memset
+	for memcpy but call optimize_aggr_zeroprop for memset.
+	(pass_forwprop::execute): Don't call optimize_memcpy_to_memset
+	for aggregate copies but rather call optimize_aggr_zeroprop
+	for aggregate stores.
+
+2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop): Change into a
+	forward looking (looking at vdef's uses) instead of a back
+	looking (vuse's def).
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116253
+	* common.opt (fdiagnostics-show-nesting): New option.
+	(fdiagnostics-show-nesting-locations): New option.
+	(fdiagnostics-show-nesting-levels): New option.
+	* common.opt.urls: Regenerate.
+	* diagnostics/context.cc (context::set_show_nesting): New.
+	(context::set_show_nesting_locations): New.
+	(context::set_show_nesting_levels): New.
+	* diagnostics/context.h (context::set_show_nesting): New decl.
+	(context::set_show_nesting_locations): New decl.
+	(context::set_show_nesting_levels): New decl.
+	* diagnostics/html-sink.cc: Tweak comment.
+	* diagnostics/output-spec.cc (text_scheme_handler::make_sink):
+	Rename "experimental-nesting" to "show-nesting" and enable by
+	default.  Rename "experimental-nesting-show-locations" to
+	"show-nesting-locations".  Rename
+	"experimental-nesting-show-levels" to "show-nesting-levels".
+	* diagnostics/sink.h (sink::dyn_cast_text_sink): New.
+	* diagnostics/text-sink.h (text_sink::dyn_cast_text_sink): New.
+	* doc/invoke.texi: Add -fdiagnostics-show-nesting,
+	-fdiagnostics-show-nesting-locations, and
+	-fdiagnostics-show-nesting-levels.  Update for changes to
+	output-spec.cc above.
+	* lto-wrapper.cc (merge_and_complain): Ignore
+	OPT_fdiagnostics_show_nesting,
+	OPT_fdiagnostics_show_nesting_locations, and
+	OPT_fdiagnostics_show_nesting_levels.
+	(append_compiler_options): Likewise.
+	(append_diag_options): Likewise.
+	* opts-common.cc (decode_cmdline_options_to_array): Add
+	"-fno-diagnostics-show-nesting" to -fdiagnostics-plain-output.
+	* opts.cc (common_handle_option): Handle the new options.
+	(gen_command_line_string): Ignore the new options.
+	* toplev.cc (general_init): Call set_show_nesting,
+	set_show_nesting_locations, and set_show_nesting_levels on
+	global_dc.
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostics/dumping.o.
+	* diagnostics/buffering.cc: Include "diagnostics/dumping.h".
+	(buffer::dump): Reimplement using diagnostics::dumping.
+	* diagnostics/context.cc: Include "diagnostics/dumping.h".
+	(context::dump): Reimplement using diagnostics::dumping.
+	Use sink::dump_kind when listing the sinks.
+	(sink::dump): Reimplement using diagnostics::dumping.
+	(counters::dump): Likewise.
+	* diagnostics/dumping.cc: New file.
+	* diagnostics/dumping.h: New file.
+	* diagnostics/file-cache.cc: Include "diagnostics/dumping.h".
+	(file_cache::dump): Reimplement using diagnostics::dumping.
+	(file_cache_slot::dump): Likewise.
+	* diagnostics/html-sink.cc: Include "diagnostics/dumping.h".
+	(html_generation_options::dump): New.
+	(html_sink_buffer::dump): Reimplement using diagnostics::dumping.
+	(html_builder::dump): New.
+	(html_sink::dump): Reimplement using diagnostics::dumping.
+	Add dump of the html_builder.
+	(html_file_sink::dump): Replace with...
+	(html_file_sink::dump_kind): ...this.
+	(html_buffered_sink::dump_kind): New.
+	* diagnostics/html-sink.h (html_generation_options::dump): New
+	decl.
+	* diagnostics/sarif-sink.cc: Include "diagnostics/dumping.h".
+	(sarif_serialization_format_json::dump): New.
+	(sarif_builder::dump): New.
+	(sarif_sink_buffer::dump): Reimplement using diagnostics::dumping.
+	(sarif_sink::dump): Likewise.  Add dump of the sarif_builder.
+	(sarif_stream_sink::dump_kind): New.
+	(sarif_file_sink::dump): Replace with...
+	(sarif_file_sink::dump_kind): ...this.
+	(get_dump_string_for_sarif_version): New.
+	(sarif_generation_options::dump): New.
+	(class buffered_sink): Rename to...
+	(class sarif_buffered_sink): ...this.
+	(sarif_buffered_sink::dump_kind): New.
+	* diagnostics/sarif-sink.h (sarif_serialization_format::dump):
+	New.
+	(sarif_serialization_format_json::dump): New decl.
+	(sarif_generation_options::dump): New decl.
+	* diagnostics/sink.h (sink::dump_kind): New.
+	* diagnostics/text-sink.cc: Include "diagnostics/dumping.h".
+	(text_sink_buffer::dump): Reimplement using diagnostics::dumping.
+	(text_sink::dump): Likewise.  Emit fields m_show_nesting,
+	m_show_locations_in_nesting, and m_show_nesting_levels.
+	* diagnostics/text-sink.h (text_sink::dump_kind): New.
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostics::get_cwe_url): Move decl to
+	diagnostics/metadata.h.
+	(diagnostics::maybe_line_and_column): Move into
+	diagnostics::text_sink.
+	* diagnostics/context.cc: Update for maybe_line_and_column
+	becoming a static member of text_sink.
+	* diagnostics/metadata.h (diagnostics::get_cwe_url): Move decl
+	here from diagnostic.h.
+	* diagnostics/text-sink.cc (maybe_line_and_column): Convert to...
+	(text_sink::maybe_line_and_column): ...this.
+	* diagnostics/text-sink.h (text_sink::maybe_line_and_column): Move
+	here from diagnostic.h.
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.cc (context::get_any_inlining_info): Convert
+	"context" arg of m_set_locations_cb from ptr to const &.
+	(context::report_diagnostic): Convert "context" arg of
+	m_adjust_diagnostic_info from ptr to const &.
+	* diagnostics/context.h (context::set_locations_callback_t):
+	Likewise.
+	(context::set_adjust_diagnostic_info_callback): Likewise.
+	(context::m_adjust_diagnostic_info): Likewise.
+	* tree-diagnostic.cc (set_inlining_locations): Likewise.
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/column-options.h: New file, adding struct
+	diagnostics::column_options, taken from fields in
+	diagnostics::context and diagnostics::column_policy.
+	* diagnostics/context.cc (context::initialize): Update for moving
+	fields of diagnostics::context into diagnostics::column_options.
+	(column_policy::column_policy): Likewise.
+	(column_policy::converted_column): Move implementation to...
+	(column_options::convert_column): ...this new function.
+	(context::report_diagnostic): Update for moving fields of
+	diagnostics::context into diagnostics::column_options.
+	(assert_location_text): Likewise.
+	* diagnostics/context.h: Include "diagnostics/column-options.h".
+	(class column_policy): Replace fields m_column_unit,
+	m_column_origin, and m_tabstop with m_column_options.
+	(context::get_column_options): New accessors.
+	(context::m_column_unit): Move to struct column_options and
+	replace with m_column_options.
+	(context::m_column_origin): Likewise.
+	(context::m_tabstop): Likewise.
+	* diagnostics/sarif-sink.cc (sarif_builder::sarif_builder): Update
+	for moving fields of diagnostics::context into
+	diagnostics::column_options.
+	* diagnostics/source-printing.cc: Likewise.
+	* opts.cc (common_handle_option): Likewise.
+
+2025-08-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/120977
+	* config/arm/arm.md (call): Move unspec parameter to parallel.
+	(nonsecure_call_internal): Likewise.
+	(call_value): Likewise.
+	(nonsecure_call_value_internal): Likewise.
+	* config/arm/thumb1.md (nonsecure_call_reg_thumb1_v5): Likewise.
+	(nonsecure_call_value_reg_thumb1_v5): Likewise.
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2_fpcxt):
+	Likewise.
+	(nonsecure_call_reg_thumb2): Likewise.
+	(nonsecure_call_value_reg_thumb2_fpcxt): Likewise.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+	* config/arm/arm.cc (cmse_nonsecure_call_inline_register_clear):
+	Likewise.
+
+2025-08-08  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR target/121449
+	* config/aarch64/aarch64-sve.md
+	(mask_gather_load<mode><v_int_container>): Use vg<Vesize>
+	constraints for alternatives with immediate offset.
+	(mask_scatter_store<mode><v_int_container>): Likewise.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	* doc/tm.texi.in: Add Vectorization and OpenMP and OpenACC
+	sub-sections to the list of target macros and functions.
+	* doc/tm.texi: Re-generate.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_determine_vectype_for_stmt_1): Remove.
+	(vect_determine_vectype_for_stmt): Likewise.
+	(vect_set_stmts_vectype): Likewise.
+	(vect_analyze_loop_2): Do not call vect_set_stmts_vectype.
+	* tree-vect-stmts.cc (vect_mark_stmts_to_be_vectorized): Detect
+	irregular stmts early here.
+
+2025-08-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/120986
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::expand): Relax fpm_t assert to allow
+	modeless const_ints.
+
+2025-08-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/120986
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_dot<mode>):
+	Switch mode iterator from SVE_FULL_HSF to new iterator;
+	remove insn predicate as this is now taken care of by conditions
+	in the mode iterator.
+	(@aarch64_sve_dot_lane<mode>): Likewise.
+	* config/aarch64/iterators.md (SVE_FULL_HSF_FP8_FDOT): New.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121454
+	* tree-ssa-sccvn.cc (visit_nary_op): Avoid unexpected
+	BIT_FIELD_REFs.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121389
+	* tree-tailcall.cc (find_tail_calls): For finally_tmp.N
+	handle not just GIMPLE_CONDs with EQ_EXPR/NE_EXPR and only
+	values 0 and 1, but arbitrary non-negative values, arbitrary
+	comparisons in conditions and also GIMPLE_SWITCH next to
+	GIMPLE_CONDs.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_is_emulated_mixed_dot_prod): Get
+	the SLP node rather than the stmt_info.
+	(vectorizable_lane_reducing): Adjust, pass SLP node to costing.
+	(vect_transform_reduction): Adjust.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_model_promotion_demotion_cost): Pass
+	in SLP node and drop unused dr argument.  Use SLP node for
+	costing, drop costing of constant/external operands.
+	(vectorizable_conversion): Adjust.
+
+2025-08-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Apply SLP_TREE_VECTYPE
+	to slp_node rather than stmt_info.
+
 2025-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/121414

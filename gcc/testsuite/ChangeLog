@@ -1,3 +1,63 @@
+2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120599
+	* g++.dg/torture/noncall-eh-1.C: New test.
+
+2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118946
+	PR tree-optimization/121422
+	* gcc.dg/pr118946-1.c: New test.
+	* gcc.dg/torture/pr121422-1.c: New test.
+	* gcc.dg/torture/pr121422-2.c: New test.
+
+2025-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/116253
+	* g++.dg/concepts/nested-diagnostics-1-truncated.C: Update for
+	renamed keys to -fdiagnostics-set-output=text
+	* g++.dg/concepts/nested-diagnostics-1.C: Likewise.
+	* g++.dg/concepts/nested-diagnostics-2.C: Likewise.
+	* gcc.dg/plugin/diagnostic-test-nesting-no-show-nesting.c: New
+	test.
+	* gcc.dg/plugin/diagnostic-test-nesting-show-nesting.c: New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-show-levels.c:
+	Update for renamed keys to -fdiagnostics-set-output=text.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-unicode.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented.c: Likewise.
+	* gcc.dg/plugin/plugin.exp: Add the new tests.
+
+2025-08-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/120977
+	* gcc.target/arm/cmse/cmse-18.c: Check only the case when FPCXT is
+	not enabled.
+	* gcc.target/arm/cmse/cmse-19.c: New test.
+
+2025-08-08  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR target/121449
+	* g++.target/aarch64/sve/pr121449.C: New test.
+
+2025-08-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/120986
+	* gcc.target/aarch64/torture/pr120986-2.c: New test.
+
+2025-08-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/120986
+	* gcc.target/aarch64/pr120986-1.c: New test.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121389
+	* c-c++-common/asan/pr121389-1.c: New test.
+	* c-c++-common/asan/pr121389-2.c: New test.
+	* c-c++-common/asan/pr121389-3.c: New test.
+	* c-c++-common/asan/pr121389-4.c: New test.
+
 2025-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117783
