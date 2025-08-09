@@ -45,58 +45,44 @@ emit_heading (FILE *outfile, int indent,
   fprintf (outfile, "%s:\n", text);
 }
 
-/* Various specializattions that emit an indented line to OUTFILE
+/* Various functions that emit an indented line to OUTFILE
    showing "label: value".  */
 
-template <>
 void
-emit_field<const char *> (FILE *outfile, int indent,
-			  const char *label, const char *value)
+emit_string_field (FILE *outfile, int indent,
+		      const char *label, const char *value)
 {
   emit_indent (outfile, indent);
   fprintf (outfile, "%s: %s\n", label, value);
 }
 
-template <>
 void
-emit_field<char *> (FILE *outfile, int indent,
-		    const char *label, char *value)
+emit_bool_field (FILE *outfile, int indent,
+		 const char *label, bool value)
+{
+  emit_string_field (outfile, indent, label,
+		     value ? "true" : "false");
+}
+
+void
+emit_size_t_field (FILE *outfile, int indent,
+		   const char *label, size_t value)
 {
   emit_indent (outfile, indent);
-  fprintf (outfile, "%s: %s\n", label, value);
+  fprintf (outfile, "%s: " HOST_SIZE_T_PRINT_DEC "\n", label, value);
 }
 
-template <>
 void
-emit_field<bool> (FILE *outfile, int indent,
-		  const char *label, bool value)
-{
-  emit_field<const char *> (outfile, indent, label,
-			    value ? "true" : "false");
-}
-
-template <>
-void
-emit_field<size_t> (FILE *outfile, int indent,
-		    const char *label, size_t value)
-{
-  emit_indent (outfile, indent);
-  fprintf (outfile, "%s: %zi\n", label, value);
-}
-
-template <>
-void
-emit_field<int> (FILE *outfile, int indent,
-		 const char *label, int value)
+emit_int_field (FILE *outfile, int indent,
+		const char *label, int value)
 {
   emit_indent (outfile, indent);
   fprintf (outfile, "%s: %i\n", label, value);
 }
 
-template <>
 void
-emit_field<unsigned> (FILE *outfile, int indent,
-		      const char *label, unsigned value)
+emit_unsigned_field (FILE *outfile, int indent,
+		     const char *label, unsigned value)
 {
   emit_indent (outfile, indent);
   fprintf (outfile, "%s: %u\n", label, value);

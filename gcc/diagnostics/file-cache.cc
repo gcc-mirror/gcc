@@ -547,20 +547,20 @@ file_cache_slot::dump (FILE *out, int indent) const
       fprintf (out, "(unused)\n");
       return;
     }
-  dumping::emit_field (out, indent, "file_path", m_file_path);
+  dumping::emit_string_field (out, indent, "file_path", m_file_path);
   {
     dumping::emit_indent (out, indent);
     fprintf (out, "fp: %p\n", (void *)m_fp);
   }
-  dumping::emit_field (out, indent, "needs_read_p", needs_read_p ());
-  dumping::emit_field (out, indent, "needs_grow_p", needs_grow_p ());
-  dumping::emit_field (out, indent, "use_count", m_use_count);
-  dumping::emit_field (out, indent, "size", m_size);
-  dumping::emit_field (out, indent, "nb_read", m_nb_read);
-  dumping::emit_field (out, indent, "start_line_idx", m_line_start_idx);
-  dumping::emit_field (out, indent, "line_num", m_line_num);
-  dumping::emit_field (out, indent, "missing_trailing_newline",
-		       (int)m_missing_trailing_newline);
+  dumping::emit_bool_field (out, indent, "needs_read_p", needs_read_p ());
+  dumping::emit_bool_field (out, indent, "needs_grow_p", needs_grow_p ());
+  dumping::emit_unsigned_field (out, indent, "use_count", m_use_count);
+  dumping::emit_size_t_field (out, indent, "size", m_size);
+  dumping::emit_size_t_field (out, indent, "nb_read", m_nb_read);
+  dumping::emit_size_t_field (out, indent, "start_line_idx", m_line_start_idx);
+  dumping::emit_size_t_field (out, indent, "line_num", m_line_num);
+  dumping::emit_bool_field (out, indent, "missing_trailing_newline",
+			    m_missing_trailing_newline);
   {
     dumping::emit_indent (out, indent);
     fprintf (out, "line records (%i):\n", m_line_record.length ());
@@ -569,7 +569,10 @@ file_cache_slot::dump (FILE *out, int indent) const
   for (auto &line : m_line_record)
     {
       dumping::emit_indent (out, indent);
-      fprintf (out, "[%i]: line %zi: byte offsets: %zi-%zi\n",
+      fprintf (out, ("[%i]:"
+		     " line " HOST_SIZE_T_PRINT_DEC ":"
+		     " byte offsets: " HOST_SIZE_T_PRINT_DEC
+		     "-" HOST_SIZE_T_PRINT_DEC "\n"),
 	       idx++, line.line_num, line.start_pos, line.end_pos);
     }
 }

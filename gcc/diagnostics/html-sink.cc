@@ -65,11 +65,11 @@ html_generation_options::html_generation_options ()
 void
 html_generation_options::dump (FILE *outfile, int indent) const
 {
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_css);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_javascript);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams_sarif);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_state_diagrams_dot_src);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_css);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_javascript);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_sarif);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_dot_src);
 }
 
 class html_builder;

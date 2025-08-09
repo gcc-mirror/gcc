@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-urlifier.h"
 #include "diagnostics/color.h"
 #include "diagnostics/event-id.h"
+#include "diagnostics/dumping.h"
 #include "diagnostic-highlight-colors.h"
 #include "auto-obstack.h"
 #include "selftest.h"
@@ -1600,9 +1601,8 @@ pp_formatted_chunks::dump (FILE *out, int indent) const
 {
   for (size_t idx = 0; m_args[idx]; ++idx)
     {
-      fprintf (out, "%*s%i: ",
-	       indent, "",
-	       (int)idx);
+      diagnostics::dumping::emit_indent (out, indent);
+      fprintf (out, "%i: ", (int)idx);
       m_args[idx]->dump (out);
     }
 }
@@ -3100,34 +3100,39 @@ pretty_printer::end_url ()
     pp_string (this, get_end_url_string (this));
 }
 
-/* Dump state of this pretty_printer to OUT, for debugging.  */
-
-void
-pretty_printer::dump (FILE *out, int indent) const
+static const char *
+get_url_format_as_string (diagnostic_url_format url_format)
 {
-  fprintf (out, "%*sm_show_color: %s\n",
-	   indent, "",
-	   m_show_color ? "true" : "false");
-
-  fprintf (out, "%*sm_url_format: ", indent, "");
-  switch (m_url_format)
+  switch (url_format)
     {
     case URL_FORMAT_NONE:
-      fprintf (out, "none");
-      break;
+      return "none";
     case URL_FORMAT_ST:
-      fprintf (out, "st");
-      break;
+      return "st";
     case URL_FORMAT_BEL:
-      fprintf (out, "bel");
-      break;
+      return "bel";
     default:
       gcc_unreachable ();
     }
-  fprintf (out, "\n");
+}
 
-  fprintf (out, "%*sm_buffer:\n", indent, "");
-  m_buffer->dump (out, indent + 2);
+/* Dump state of this pretty_printer to OUT, for debugging.  */
+
+void
+pretty_printer::dump (FILE *outfile, int indent) const
+{
+  namespace dumping = diagnostics::dumping;
+
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_color);
+  dumping::emit_string_field
+    (outfile, indent,
+     "m_url_format",
+     get_url_format_as_string (m_url_format));
+  dumping::emit_heading (outfile, indent, "m_buffer");
+  if (m_buffer)
+    m_buffer->dump (outfile, indent + 2);
+  else
+    dumping::emit_none (outfile, indent + 2);
 }
 
 /* class pp_markup::context.  */

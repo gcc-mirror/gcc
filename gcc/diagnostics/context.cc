@@ -391,7 +391,10 @@ context::dump (FILE *outfile) const
   dumping::emit_heading (outfile, 0, "diagnostics::context");
   m_diagnostic_counters.dump (outfile, 2);
   dumping::emit_heading (outfile, 2, "reference printer");
-  m_reference_printer->dump (outfile, 4);
+  if (m_reference_printer)
+    m_reference_printer->dump (outfile, 4);
+  else
+    dumping::emit_none (outfile, 4);
   dumping::emit_heading (outfile, 2, "output sinks");
   if (m_sinks.length () > 0)
     {

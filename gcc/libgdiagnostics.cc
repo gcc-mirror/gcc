@@ -1939,7 +1939,8 @@ diagnostic_manager_debug_dump_file (diagnostic_manager *,
 	fprintf (out, ", sarif_source_language=\"%s\"",
 		 file->get_sarif_source_language ());
       if (const content_buffer *buf = file->get_content ())
-	fprintf (out, ", content=(size=%zi)", buf->m_sz);
+	fprintf (out, ", content=(size=" HOST_SIZE_T_PRINT_DEC ")",
+		 buf->m_sz);
       fprintf (out, ")");
     }
   else

@@ -159,10 +159,10 @@ text_sink::~text_sink ()
 void
 text_sink::dump (FILE *outfile, int indent) const
 {
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_follows_reference_printer);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_nesting);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_locations_in_nesting);
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_show_nesting_levels);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_follows_reference_printer);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_nesting);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_locations_in_nesting);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_nesting_levels);
 
   sink::dump (outfile, indent);
   dumping::emit_heading (outfile, indent, "saved_output_buffer");

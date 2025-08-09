@@ -710,7 +710,7 @@ sarif_serialization_format_json::dump (FILE *outfile, int indent) const
 {
   dumping::emit_indent (outfile, indent);
   fprintf (outfile, "json\n");
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_formatted);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_formatted);
 }
 
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
@@ -4360,10 +4360,10 @@ get_dump_string_for_sarif_version (enum sarif_version version)
 void
 sarif_generation_options::dump (FILE *outfile, int indent) const
 {
-  dumping::emit_field (outfile, indent,
-		       "m_version",
-		       get_dump_string_for_sarif_version (m_version));
-  DIAGNOSTICS_DUMPING_EMIT_FIELD (m_state_graph);
+  dumping::emit_string_field (outfile, indent,
+			      "m_version",
+			      get_dump_string_for_sarif_version (m_version));
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_state_graph);
 }
 
 #if CHECKING_P
