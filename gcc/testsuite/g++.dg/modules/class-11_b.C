@@ -1,4 +1,5 @@
 // { dg-additional-options "-fmodules -fabi-version=21 -Wabi=15" }
+// { dg-skip-if "test assumes that structs have padding" { default_packed } }
 
 import "class-11_a.H";
 

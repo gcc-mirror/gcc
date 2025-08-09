@@ -1,6 +1,7 @@
 // Check for some additional lang_type flags that we'd missed.
 // { dg-additional-options "-fmodule-header -fabi-version=21 -Wabi=15" }
 // { dg-module-cmi {} }
+// { dg-skip-if "test assumes that structs have padding" { default_packed } }
 
 #if __cpp_trivial_relocatability < 202502L
 #define trivially_relocatable_if_eligible __trivially_relocatable_if_eligible
