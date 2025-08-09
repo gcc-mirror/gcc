@@ -215,3 +215,10 @@ DEF_SECTION (objc2_method_names_section, 0,
 
 DEF_SECTION (objc2_method_types_section, 0,
 	     ".section __TEXT, __objc_methtype, cstring_literals", 1)
+
+/* ASAN sections.  */
+
+DEF_SECTION (asan_string_section, 0, ".section __TEXT, __asan_cstring", 0)
+DEF_SECTION (asan_globals_section, 0, ".section __DATA, __asan_globals", 0)
+DEF_SECTION (asan_liveness_section, 0,
+	     ".section __DATA,__asan_liveness,regular,live_support", 0)
