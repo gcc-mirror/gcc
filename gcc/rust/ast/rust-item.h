@@ -1567,6 +1567,9 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
+  // needed to override AssociatedItem::get_node_id
+  NodeId get_node_id () const override final { return VisItem::get_node_id (); }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if existing type is null, so base stripping on that.
@@ -2514,6 +2517,9 @@ public:
   bool is_unnamed () const { return identifier.as_string () == "_"; }
 
   location_t get_locus () const override final { return locus; }
+
+  // needed to override AssociatedItem::get_node_id
+  NodeId get_node_id () const override final { return VisItem::get_node_id (); }
 
   void accept_vis (ASTVisitor &vis) override;
 

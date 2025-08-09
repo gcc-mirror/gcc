@@ -865,11 +865,23 @@ public:
     return *main_or_left_expr;
   }
 
+  std::unique_ptr<Expr> &get_casted_expr_ptr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
   // TODO: is this better? Or is a "vis_block" better?
   TypeNoBounds &get_type_to_cast_to ()
   {
     rust_assert (type_to_convert_to != nullptr);
     return *type_to_convert_to;
+  }
+
+  std::unique_ptr<TypeNoBounds> &get_type_to_cast_to_ptr ()
+  {
+    rust_assert (type_to_convert_to != nullptr);
+    return type_to_convert_to;
   }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::TypeCast; }
@@ -2595,6 +2607,12 @@ public:
   {
     rust_assert (closure_inner != nullptr);
     return *closure_inner;
+  }
+
+  std::unique_ptr<Expr> &get_definition_expr_ptr ()
+  {
+    rust_assert (closure_inner != nullptr);
+    return closure_inner;
   }
 
 protected:

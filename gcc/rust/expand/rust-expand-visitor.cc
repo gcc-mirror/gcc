@@ -329,9 +329,14 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 void
 ExpandVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
+  NodeId old_expect = expr->get_node_id ();
+  std::swap (macro_invoc_expect_id, old_expect);
+
   expander.push_context (MacroExpander::ContextType::EXPR);
   expr->accept_vis (*this);
   expander.pop_context ();
+
+  std::swap (macro_invoc_expect_id, old_expect);
 
   auto final_fragment = expander.take_expanded_fragment ();
   if (final_fragment.should_expand ()
@@ -342,14 +347,37 @@ ExpandVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 void
 ExpandVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
 {
-  expander.push_context (MacroExpander::ContextType::TYPE);
+  NodeId old_expect = type->get_node_id ();
+  std::swap (macro_invoc_expect_id, old_expect);
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
   type->accept_vis (*this);
+  expander.pop_context ();
+
+  std::swap (macro_invoc_expect_id, old_expect);
+
   auto final_fragment = expander.take_expanded_fragment ();
   if (final_fragment.should_expand () && final_fragment.is_type_fragment ())
     type = final_fragment.take_type_fragment ();
+}
 
+// HACK: maybe we shouldn't have TypeNoBounds as a base class
+void
+ExpandVisitor::maybe_expand_type (std::unique_ptr<AST::TypeNoBounds> &type)
+{
+  NodeId old_expect = type->get_node_id ();
+  std::swap (macro_invoc_expect_id, old_expect);
+
+  expander.push_context (MacroExpander::ContextType::TYPE);
+  type->accept_vis (*this);
   expander.pop_context ();
+
+  std::swap (macro_invoc_expect_id, old_expect);
+
+  auto final_fragment = expander.take_expanded_fragment ();
+  if (final_fragment.should_expand () && final_fragment.is_type_fragment ())
+    type = std::make_unique<AST::ParenthesisedType> (
+      final_fragment.take_type_fragment (), BUILTINS_LOCATION);
 }
 
 // FIXME: Can this be refactored into a `scoped` method? Which takes a
@@ -465,6 +493,14 @@ ExpandVisitor::visit (AST::ConstGenericParam &)
 void
 ExpandVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
+  if (macro_invoc_expect_id != macro_invoc.get_node_id ())
+    {
+      rust_internal_error_at (
+	macro_invoc.get_locus (),
+	"attempting to expand node with id %d into position with node id %d",
+	(int) macro_invoc.get_node_id (), (int) macro_invoc_expect_id);
+    }
+
   // TODO: Can we do the AST fragment replacing here? Probably not, right?
   expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ()
 					? AST::InvocKind::Semicoloned
@@ -569,6 +605,13 @@ ExpandVisitor::visit (AST::LazyBooleanExpr &expr)
 }
 
 void
+ExpandVisitor::visit (AST::TypeCastExpr &expr)
+{
+  maybe_expand_expr (expr.get_casted_expr_ptr ());
+  maybe_expand_type (expr.get_type_to_cast_to_ptr ());
+}
+
+void
 ExpandVisitor::visit (AST::AssignmentExpr &expr)
 {
   maybe_expand_expr (expr.get_left_expr_ptr ());
@@ -615,7 +658,7 @@ ExpandVisitor::visit (AST::ClosureExprInner &expr)
 {
   expand_closure_params (expr.get_params ());
 
-  visit (expr.get_definition_expr ());
+  maybe_expand_expr (expr.get_definition_expr_ptr ());
 }
 
 void

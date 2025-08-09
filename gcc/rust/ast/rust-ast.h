@@ -1137,7 +1137,9 @@ public:
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
-  NodeId get_node_id () const { return node_id; }
+
+  // TODO: put this in a virtual base class?
+  virtual NodeId get_node_id () const { return node_id; }
 
   virtual Kind get_stmt_kind () = 0;
 
@@ -1536,7 +1538,8 @@ public:
 
   virtual location_t get_locus () const = 0;
 
-  NodeId get_node_id () const { return node_id; }
+  // TODO: put this in a virtual base class?
+  virtual NodeId get_node_id () const { return node_id; }
   virtual Type *reconstruct_impl () const = 0;
 
 protected:
@@ -1799,6 +1802,8 @@ public:
   virtual bool is_marked_for_strip () const = 0;
 
   virtual location_t get_locus () const = 0;
+
+  virtual NodeId get_node_id () const = 0;
 };
 
 // Item used in trait declarations - abstract base class
