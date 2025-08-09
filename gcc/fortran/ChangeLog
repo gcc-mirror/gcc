@@ -285,7 +285,7 @@
 
 2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/106135
+	PR fortran/106035
 	* decl.cc (build_sym): Emit an error if a symbol associated by
 	an IMPORT, ONLY or IMPORT, all statement is being redeclared.
 	(gfc_match_import): Parse and check the F2018 versions of the
