@@ -1,3 +1,13 @@
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120845
+	* lex.cc (cpp_maybe_module_directive): Move eol variable declaration
+	to the start of the function, initialize to false and only set it to
+	peek->type == CPP_PRAGMA_EOL in the not_module case.  Formatting fix.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.

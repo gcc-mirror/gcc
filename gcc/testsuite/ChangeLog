@@ -1,3 +1,57 @@
+2025-08-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	PR c++/119859
+	* g++.dg/cpp2a/concepts-using5.C: New test.
+	* g++.dg/cpp2a/concepts-using5a.C: New test.
+
+2025-08-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120620
+	* g++.dg/cpp2a/constexpr-dynamic19.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic1a.C: New test.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121389
+	* c-c++-common/asan/pr121389-1.c: New test.
+	* c-c++-common/asan/pr121389-2.c: New test.
+	* c-c++-common/asan/pr121389-3.c: New test.
+	* c-c++-common/asan/pr121389-4.c: New test.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121413
+	* gcc.dg/torture/bitint-85.c: New test.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121127
+	* gcc.dg/bitint-125.c: New test.
+
+2025-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120845
+	* g++.dg/modules/cpp-21.C: New test.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.
