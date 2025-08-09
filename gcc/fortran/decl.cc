@@ -11710,10 +11710,308 @@ syntax:
 }
 
 
+/* Match a GENERIC statement.
+F2018 15.4.3.3 GENERIC statement
+
+A GENERIC statement specifies a generic identifier for one or more specific
+procedures, in the same way as a generic interface block that does not contain
+interface bodies.
+
+R1510 generic-stmt is:
+GENERIC [ , access-spec ] :: generic-spec => specific-procedure-list
+
+C1510 (R1510) A specific-procedure in a GENERIC statement shall not specify a
+procedure that was specified previously in any accessible interface with the
+same generic identifier.
+
+If access-spec appears, it specifies the accessibility (8.5.2) of generic-spec.
+
+For GENERIC statements outside of a derived type, use is made of the existing,
+typebound matching functions to obtain access-spec and generic-spec.  After
+this the standard INTERFACE machinery is used. */
+
+static match
+match_generic_stmt (void)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Allow space for OPERATOR(...).  */
+  char generic_spec_name[GFC_MAX_SYMBOL_LEN + 16];
+  /* Generics other than uops  */
+  gfc_symbol* generic_spec = NULL;
+  /* Generic uops  */
+  gfc_user_op *generic_uop = NULL;
+  /* For the matching calls  */
+  gfc_typebound_proc tbattr;
+  gfc_namespace* ns = gfc_current_ns;
+  interface_type op_type;
+  gfc_intrinsic_op op;
+  match m;
+  gfc_symtree* st;
+  /* The specific-procedure-list  */
+  gfc_interface *generic = NULL;
+  /* The head of the specific-procedure-list  */
+  gfc_interface **generic_tail = NULL;
+
+  memset (&tbattr, 0, sizeof (tbattr));
+  tbattr.where = gfc_current_locus;
+
+  /* See if we get an access-specifier.  */
+  m = match_binding_attributes (&tbattr, true, false);
+  tbattr.where = gfc_current_locus;
+  if (m == MATCH_ERROR)
+    goto error;
+
+  /* Now the colons, those are required.  */
+  if (gfc_match (" ::") != MATCH_YES)
+    {
+      gfc_error ("Expected %<::%> at %C");
+      goto error;
+    }
+
+  /* Match the generic-spec name; depending on type (operator / generic) format
+     it for future error messages in 'generic_spec_name'.  */
+  m = gfc_match_generic_spec (&op_type, name, &op);
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+  if (m == MATCH_NO)
+    {
+      gfc_error ("Expected generic name or operator descriptor at %C");
+      goto error;
+    }
+
+  switch (op_type)
+    {
+    case INTERFACE_GENERIC:
+    case INTERFACE_DTIO:
+      snprintf (generic_spec_name, sizeof (generic_spec_name), "%s", name);
+      break;
+
+    case INTERFACE_USER_OP:
+      snprintf (generic_spec_name, sizeof (generic_spec_name), "OPERATOR(.%s.)", name);
+      break;
+
+    case INTERFACE_INTRINSIC_OP:
+      snprintf (generic_spec_name, sizeof (generic_spec_name), "OPERATOR(%s)",
+		gfc_op2string (op));
+      break;
+
+    case INTERFACE_NAMELESS:
+      gfc_error ("Malformed GENERIC statement at %C");
+      goto error;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Match the required =>.  */
+  if (gfc_match (" =>") != MATCH_YES)
+    {
+      gfc_error ("Expected %<=>%> at %C");
+      goto error;
+    }
+
+
+  if (gfc_current_state () != COMP_MODULE && tbattr.access != ACCESS_UNKNOWN)
+    {
+      gfc_error ("The access specification at %L not in a module",
+		 &tbattr.where);
+      goto error;
+    }
+
+  /* Try to find existing generic-spec with this name for this operator;
+     if there is something, check that it is another generic-spec and then
+     extend it rather than building a new symbol. Otherwise, create a new
+     one with the right attributes.  */
+
+  switch (op_type)
+    {
+    case INTERFACE_DTIO:
+    case INTERFACE_GENERIC:
+      st = gfc_find_symtree (ns->sym_root, name);
+      generic_spec = st ? st->n.sym : NULL;
+      if (generic_spec)
+	{
+	  if (generic_spec->attr.flavor != FL_PROCEDURE
+	       && generic_spec->attr.flavor != FL_UNKNOWN)
+	    {
+	      gfc_error ("The generic-spec name %qs at %C clashes with the "
+			 "name of an entity declared at %L that is not a "
+			 "procedure", name, &generic_spec->declared_at);
+	      goto error;
+	    }
+
+	  if (op_type == INTERFACE_GENERIC && !generic_spec->attr.generic
+	       && generic_spec->attr.flavor != FL_UNKNOWN)
+	    {
+	      gfc_error ("There's already a non-generic procedure with "
+			 "name %qs at %C", generic_spec->name);
+	      goto error;
+	    }
+
+	  if (tbattr.access != ACCESS_UNKNOWN)
+	    {
+	      if (generic_spec->attr.access != tbattr.access)
+		{
+		  gfc_error ("The access specification at %L conflicts with "
+			     "that already given to %qs", &tbattr.where,
+			     generic_spec->name);
+		  goto error;
+		}
+	      else
+		{
+		  gfc_error ("The access specification at %L repeats that "
+			     "already given to %qs", &tbattr.where,
+			     generic_spec->name);
+		  goto error;
+		}
+	    }
+
+	  if (generic_spec->ts.type != BT_UNKNOWN)
+	    {
+	      gfc_error ("The generic-spec in the generic statement at %C "
+			 "has a type from the declaration at %L",
+			 &generic_spec->declared_at);
+	      goto error;
+	    }
+	}
+
+      /* Now create the generic_spec if it doesn't already exist and provide
+	 is with the appropriate attributes.  */
+      if (!generic_spec || generic_spec->attr.flavor != FL_PROCEDURE)
+	{
+	  if (!generic_spec)
+	    {
+	      gfc_get_symbol (name, ns, &generic_spec, &gfc_current_locus);
+	      gfc_set_sym_referenced (generic_spec);
+	      generic_spec->attr.access = tbattr.access;
+	    }
+	  else if (generic_spec->attr.access == ACCESS_UNKNOWN)
+	    generic_spec->attr.access = tbattr.access;
+	  generic_spec->refs++;
+	  generic_spec->attr.generic = 1;
+	  generic_spec->attr.flavor = FL_PROCEDURE;
+
+	  generic_spec->declared_at = gfc_current_locus;
+	}
+
+      /* Prepare to add the specific procedures.  */
+      generic = generic_spec->generic;
+      generic_tail = &generic_spec->generic;
+      break;
+
+    case INTERFACE_USER_OP:
+      st = gfc_find_symtree (ns->uop_root, name);
+      generic_uop = st ? st->n.uop : NULL;
+      if (generic_uop)
+	{
+	  if (generic_uop->access != ACCESS_UNKNOWN
+	      && tbattr.access != ACCESS_UNKNOWN)
+	    {
+	      if (generic_uop->access != tbattr.access)
+		{
+		  gfc_error ("The user operator at %L must have the same "
+			     "access specification as already defined user "
+			     "operator %qs", &tbattr.where, generic_spec_name);
+		  goto error;
+		}
+	      else
+		{
+		  gfc_error ("The user operator at %L repeats the access "
+			     "specification of already defined user operator " 				   "%qs", &tbattr.where, generic_spec_name);
+		  goto error;
+		}
+	    }
+	  else if (generic_uop->access == ACCESS_UNKNOWN)
+	    generic_uop->access = tbattr.access;
+	}
+      else
+	{
+	  generic_uop = gfc_get_uop (name);
+	  generic_uop->access = tbattr.access;
+	}
+
+      /* Prepare to add the specific procedures.  */
+      generic = generic_uop->op;
+      generic_tail = &generic_uop->op;
+      break;
+
+    case INTERFACE_INTRINSIC_OP:
+      generic = ns->op[op];
+      generic_tail = &ns->op[op];
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Now, match all following names in the specific-procedure-list.  */
+  do
+    {
+      m = gfc_match_name (name);
+      if (m == MATCH_ERROR)
+	goto error;
+      if (m == MATCH_NO)
+	{
+	  gfc_error ("Expected specific procedure name at %C");
+	  goto error;
+	}
+
+      if (op_type == INTERFACE_GENERIC
+	  && !strcmp (generic_spec->name, name))
+	{
+	  gfc_error ("The name %qs of the specific procedure at %C conflicts "
+		     "with that of the generic-spec", name);
+	  goto error;
+	}
+
+      generic = *generic_tail;
+      for (; generic; generic = generic->next)
+	{
+	  if (!strcmp (generic->sym->name, name))
+	    {
+	      gfc_error ("%qs already defined as a specific procedure for the"
+			 " generic %qs at %C", name, generic_spec->name);
+	      goto error;
+	    }
+	}
+
+      gfc_find_sym_tree (name, ns, 1, &st);
+      if (!st)
+	{
+	  /* This might be a procedure that has not yet been parsed. If
+	     so gfc_fixup_sibling_symbols will replace this symbol with
+	     that of the procedure.  */
+	  gfc_get_sym_tree (name, ns, &st, false);
+	  st->n.sym->refs++;
+	}
+
+      generic = gfc_get_interface();
+      generic->next = *generic_tail;
+      *generic_tail = generic;
+      generic->where = gfc_current_locus;
+      generic->sym = st->n.sym;
+    }
+  while (gfc_match (" ,") == MATCH_YES);
+
+  if (gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("Junk after GENERIC statement at %C");
+      goto error;
+    }
+
+  gfc_commit_symbols ();
+  return MATCH_YES;
+
+error:
+  return MATCH_ERROR;
+}
+
+
 /* Match a GENERIC procedure binding inside a derived type.  */
 
-match
-gfc_match_generic (void)
+static match
+match_typebound_generic (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char bind_name[GFC_MAX_SYMBOL_LEN + 16]; /* Allow space for OPERATOR(...).  */
@@ -11920,6 +12218,17 @@ gfc_match_generic (void)
 
 error:
   return MATCH_ERROR;
+}
+
+
+match
+gfc_match_generic ()
+{
+  if (gfc_option.allow_std & ~GFC_STD_OPT_F08
+      && gfc_current_state () != COMP_DERIVED_CONTAINS)
+    return match_generic_stmt ();
+  else
+    return match_typebound_generic ();
 }
 
 

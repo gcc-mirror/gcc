@@ -242,6 +242,7 @@ decode_specification_statement (void)
       break;
 
     case 'g':
+      match ("generic", gfc_match_generic, ST_GENERIC);
       break;
 
     case 'i':
@@ -4530,6 +4531,11 @@ declSt:
 	  break;
 	}
 
+      accept_statement (st);
+      st = next_statement ();
+      goto loop;
+
+    case ST_GENERIC:
       accept_statement (st);
       st = next_statement ();
       goto loop;
