@@ -233,4 +233,8 @@ frust-assume-builtin-offset-of
 Rust Var(flag_assume_builtin_offset_of)
 Define a built-in offset_of macro in the compiler and assume it is present
 
+frust-unused-check-2.0
+Rust Var(flag_unused_check_2_0)
+Use the new unused variable check instead of old one
+
 ; This comment is to ensure we retain the blank line above.
