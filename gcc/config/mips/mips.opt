@@ -473,6 +473,10 @@ mframe-header-opt
 Target Var(flag_frame_header_optimization) Optimization
 Optimize frame header.
 
+mgrow-frame-downwards
+Target Var(TARGET_FRAME_GROWS_DOWNWARDS) Init(1) Undocumented
+Change the behaviour to grow the frame downwards.
+
 noasmopt
 Driver
 
