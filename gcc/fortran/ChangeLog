@@ -1,3 +1,18 @@
+2025-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121182
+	* decl.cc (match_generic_stmt): New function based on original
+	gfc_match_generic but feeding namespace rather than typebound
+	generics.
+	(match_typebound_generic): Renamed original gfc_match_generic.
+	(gfc_match_generic): New function that selects between type
+	bound generic and other generic statements and calls one of the
+	above two functions as appropriate.
+	* parse.cc (decode_specification_statement): Allow generic
+	statements.
+	(parse_spec): Accept a generic statement in a specification
+	block.
+
 2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
 
 	* trans-stmt.cc (trans_associate_var): Remove overwrite of

@@ -1,3 +1,69 @@
+2025-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_encode_section_info): Do not
+	make anchored symbols linker-visible.
+	(darwin_use_anchors_for_symbol_p): Disallow anchoring on
+	symbols that must be linker-visible (or external), even
+	if the definitions are in this TU.
+
+2025-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): New
+	entry for LANCHOR.
+
+2025-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.cc (context::dump): Bulletproof against
+	m_reference_printer being null.
+	* diagnostics/dumping.cc (emit_field<const char *>): Replace
+	with...
+	(emit_string_field): ...this.
+	(emit_field<char *>): Eliminate.
+	(emit_field<bool>): Replace with...
+	(emit_bool_field): ...this.
+	(emit_field<size_t>): Replace with...
+	(emit_size_t_field): ...this, and use HOST_SIZE_T_PRINT_DEC rather
+	than %zi in fprintf call.
+	(emit_field<int>): Replace with...
+	(emit_int_field): ...this.
+	(emit_field<unsigned>): Replace with...
+	(emit_unsigned_field): ...this.
+	* diagnostics/dumping.h (emit_field): Replace this template decl
+	with...
+	(emit_string_field): ...this,
+	(emit_bool_field): ...this,
+	(emit_size_t_field): ...this,
+	(emit_int_field): ...this,
+	(emit_unsigned_field): ... and this.
+	(DIAGNOSTICS_DUMPING_EMIT_FIELD): Rename to...
+	(DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD): ...this and update for
+	above change.
+	* diagnostics/file-cache.cc (file_cache_slot::dump): Replace
+	emit_field calls with calls that explicitly state the type.  Fix
+	type of dump of m_missing_trailing_newline to use bool.
+	(file_cache_slot::dump): Use HOST_SIZE_T_PRINT_DEC rather than
+	%zi in fprintf call.
+	* diagnostics/html-sink.cc (html_generation_options::dump): Update
+	for macro renaming.
+	* diagnostics/sarif-sink.cc
+	(sarif_serialization_format_json::dump): Likewise.
+	(sarif_generation_options::dump): Likewise, and for function
+	renaming.
+	* diagnostics/text-sink.cc (text_sink::dump): Update for macro
+	renaming.
+	* libgdiagnostics.cc (diagnostic_manager_debug_dump_file): Use
+	HOST_SIZE_T_PRINT_DEC rather than %zi in fprintf call.
+	* pretty-print.cc: Include "diagnostics/dumping.h".
+	(pp_formatted_chunks::dump): Use it.
+	(get_url_format_as_string): New.
+	(pretty_printer::dump): Use diagnostics::dumping.  Bulletproof
+	against m_buffer being null.
+
+2025-08-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (T):
+	Change define_memory_constraint to define_special_memory_constraint.
+
 2025-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/120599
