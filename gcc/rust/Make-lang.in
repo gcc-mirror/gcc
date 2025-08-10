@@ -150,6 +150,7 @@ GRS_OBJS = \
 	rust/rust-immutable-name-resolution-context.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
+    rust/rust-resolve-builtins.o \
     rust/rust-ast-resolve.o \
     rust/rust-ast-resolve-base.o \
     rust/rust-ast-resolve-item.o \

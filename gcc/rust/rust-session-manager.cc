@@ -48,6 +48,7 @@
 #include "rust-name-resolution-context.h"
 #include "rust-early-name-resolver-2.0.h"
 #include "rust-late-name-resolver-2.0.h"
+#include "rust-resolve-builtins.h"
 #include "rust-cfg-strip.h"
 #include "rust-expand-visitor.h"
 #include "rust-unicode.h"
@@ -934,6 +935,8 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
    * method. */
   MacroExpander expander (crate, cfg, *this);
   std::vector<Error> macro_errors;
+
+  Resolver2_0::Builtins::setup_lang_prelude (ctx);
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {

@@ -75,9 +75,6 @@ public:
 private:
   void resolve_label (AST::Lifetime &lifetime);
 
-  /* Setup Rust's builtin types (u8, i32, !...) in the resolver */
-  void setup_builtin_types ();
-
   bool funny_error;
 
   /* used to prevent "impl Self {}", "impl (Self, i32) {}", etc */

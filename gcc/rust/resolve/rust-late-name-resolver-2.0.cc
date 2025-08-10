@@ -24,6 +24,7 @@
 #include "rust-late-name-resolver-2.0.h"
 #include "rust-default-resolver.h"
 #include "rust-name-resolution-context.h"
+#include "rust-resolve-builtins.h"
 #include "rust-path.h"
 #include "rust-system.h"
 #include "rust-tyty.h"
@@ -38,84 +39,10 @@ Late::Late (NameResolutionContext &ctx)
   : DefaultResolver (ctx), funny_error (false), block_big_self (false)
 {}
 
-static NodeId
-next_node_id ()
-{
-  return Analysis::Mappings::get ().get_next_node_id ();
-};
-
-static HirId
-next_hir_id ()
-{
-  return Analysis::Mappings::get ().get_next_hir_id ();
-};
-
-void
-Late::setup_builtin_types ()
-{
-  // access the global type context to setup the TyTys
-  auto &ty_ctx = *Resolver::TypeCheckContext::get ();
-
-  // Late builtin type struct helper
-  struct LType
-  {
-    std::string name;
-    NodeId node_id;
-    NodeId hir_id;
-    TyTy::BaseType *type;
-
-    explicit LType (std::string name, TyTy::BaseType *type)
-      : name (name), node_id (next_node_id ()), hir_id (type->get_ref ()),
-	type (type)
-    {}
-  };
-
-  static const LType builtins[] = {
-    {LType ("bool", new TyTy::BoolType (next_hir_id ()))},
-    {LType ("u8", new TyTy::UintType (next_hir_id (), TyTy::UintType::U8))},
-    {LType ("u16", new TyTy::UintType (next_hir_id (), TyTy::UintType::U16))},
-    {LType ("u32", new TyTy::UintType (next_hir_id (), TyTy::UintType::U32))},
-    {LType ("u64", new TyTy::UintType (next_hir_id (), TyTy::UintType::U64))},
-    {LType ("u128", new TyTy::UintType (next_hir_id (), TyTy::UintType::U128))},
-    {LType ("i8", new TyTy::IntType (next_hir_id (), TyTy::IntType::I8))},
-    {LType ("i16", new TyTy::IntType (next_hir_id (), TyTy::IntType::I16))},
-    {LType ("i32", new TyTy::IntType (next_hir_id (), TyTy::IntType::I32))},
-    {LType ("i64", new TyTy::IntType (next_hir_id (), TyTy::IntType::I64))},
-    {LType ("i128", new TyTy::IntType (next_hir_id (), TyTy::IntType::I128))},
-    {LType ("f32", new TyTy::FloatType (next_hir_id (), TyTy::FloatType::F32))},
-    {LType ("f64", new TyTy::FloatType (next_hir_id (), TyTy::FloatType::F64))},
-    {LType ("usize", new TyTy::USizeType (next_hir_id ()))},
-    {LType ("isize", new TyTy::ISizeType (next_hir_id ()))},
-    {LType ("char", new TyTy::CharType (next_hir_id ()))},
-    {LType ("str", new TyTy::StrType (next_hir_id ()))},
-    {LType ("!", new TyTy::NeverType (next_hir_id ()))},
-
-    // the unit type `()` does not play a part in name-resolution - so we only
-    // insert it in the type context...
-  };
-
-  // There's a special Rib for putting prelude items, since prelude items need
-  // to satisfy certain special rules.
-  ctx.scoped (Rib::Kind::Prelude, 0, [this, &ty_ctx] (void) -> void {
-    for (const auto &builtin : builtins)
-      {
-	auto ok = ctx.types.insert (builtin.name, builtin.node_id);
-	rust_assert (ok);
-
-	ctx.mappings.insert_node_to_hir (builtin.node_id, builtin.hir_id);
-	ty_ctx.insert_builtin (builtin.hir_id, builtin.node_id, builtin.type);
-      }
-  });
-
-  // ...here!
-  auto *unit_type = TyTy::TupleType::get_unit_type ();
-  ty_ctx.insert_builtin (unit_type->get_ref (), next_node_id (), unit_type);
-}
-
 void
 Late::go (AST::Crate &crate)
 {
-  setup_builtin_types ();
+  Builtins::setup_type_ctx ();
 
   visit (crate);
 }
