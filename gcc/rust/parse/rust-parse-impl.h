@@ -1053,6 +1053,7 @@ Parser<ManagedTokenSource>::parse_identifier_or_keyword_token ()
     }
   else
     {
+      add_error (Error (t->get_locus (), "expected keyword or identifier"));
       return nullptr;
     }
 }
