@@ -126,6 +126,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
 [
   define([NAME],[translit([$1],[abcdefghijklmnopqrstuvwxyz./-],
                                [ABCDEFGHIJKLMNOPQRSTUVWXYZ___])])
+  define([Name],[translit([$1],[./-], [___])])
   dnl By default, look in $includedir and $libdir.
   use_additional=yes
   AC_LIB_WITH_FINAL_PREFIX([
@@ -152,8 +153,8 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
 ])
   AC_LIB_ARG_WITH([lib$1-type],
 [  --with-lib$1-type=TYPE     type of library to search for (auto/static/shared) ],
-  [ with_lib$1_type=$withval ], [ with_lib$1_type=auto ])
-  lib_type=`eval echo \$with_lib$1_type`
+  [ with_lib[]Name[]_type=$withval ], [ with_lib[]Name[]_type=auto ])
+  lib_type=`eval echo \$with_lib[]Name[]_type`
 
   dnl Search the library and its dependencies in $additional_libdir and
   dnl $LDFLAGS. Using breadth-first-seach.
