@@ -11268,6 +11268,7 @@ fi
 
 
 
+
     use_additional=yes
 
   acl_save_prefix="$prefix"
@@ -14190,6 +14191,7 @@ $as_echo "$LIBICONV" >&6; }
     LIBICONV=
     LTLIBICONV=
   fi
+
 
 
 
@@ -21482,7 +21484,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21485 "configure"
+#line 21487 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21588,7 +21590,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21591 "configure"
+#line 21593 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
