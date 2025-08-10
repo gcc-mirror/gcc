@@ -1165,6 +1165,11 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
   rust_assert (
     ctx->lookup_var_decl (pattern.get_mappings ().get_hirid (), &var));
 
+  if (pattern.get_is_ref ())
+    {
+      init_expr = address_expression (init_expr, EXPR_LOCATION (init_expr));
+    }
+
   auto fnctx = ctx->peek_fn ();
   if (ty->is_unit ())
     {
@@ -1204,11 +1209,54 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 {
   rust_assert (pattern.has_tuple_pattern_items ());
 
-  tree tuple_type = TyTyResolveCompile::compile (ctx, ty);
+  bool has_by_ref = false;
+  auto check_refs
+    = [] (const std::vector<std::unique_ptr<HIR::Pattern>> &patterns) {
+	for (const auto &sub : patterns)
+	  {
+	    switch (sub->get_pattern_type ())
+	      {
+	      case HIR::Pattern::PatternType::IDENTIFIER:
+		{
+		  auto id = static_cast<HIR::IdentifierPattern *> (sub.get ());
+		  if (id->get_is_ref ())
+		    return true;
+		  break;
+		}
+	      case HIR::Pattern::PatternType::REFERENCE:
+		return true;
+	      default:
+		break;
+	      }
+	  }
+	return false;
+      };
+  switch (pattern.get_items ().get_item_type ())
+    {
+    case HIR::TuplePatternItems::ItemType::NO_REST:
+      {
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsNoRest &> (pattern.get_items ());
+	has_by_ref = check_refs (items.get_patterns ());
+	break;
+      }
+    case HIR::TuplePatternItems::ItemType::HAS_REST:
+      {
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsHasRest &> (pattern.get_items ());
+	has_by_ref = check_refs (items.get_lower_patterns ())
+		     || check_refs (items.get_upper_patterns ());
+	break;
+      }
+    default:
+      break;
+    }
+
+  tree rhs_tuple_type = TYPE_MAIN_VARIANT (TREE_TYPE (init_expr));
   tree init_stmt;
   Bvariable *tmp_var
     = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
-				   tuple_type, init_expr, false,
+				   rhs_tuple_type, init_expr, has_by_ref,
 				   pattern.get_locus (), &init_stmt);
   tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
   ctx->add_statement (init_stmt);
