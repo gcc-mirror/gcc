@@ -1782,6 +1782,24 @@
   }
   [(set_attr "type" "vaalu")])
 
+(define_insn_and_split "*merge_vx_<mode>"
+ [(set (match_operand:V_VLSI 0 "register_operand")
+   (if_then_else:V_VLSI
+    (match_operand:<VM>      3 "vector_mask_operand")
+    (vec_duplicate:V_VLSI
+     (match_operand:<VEL>    2 "reg_or_int_operand"))
+    (match_operand:V_VLSI    1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_merge_scalar (<MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::MERGE_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vimerge")])
+
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
 ;; Include
