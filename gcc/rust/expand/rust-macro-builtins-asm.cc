@@ -880,7 +880,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   // context.
   if (resulting_context)
     {
-      auto node = (*resulting_context).inline_asm.clone_expr_without_block ();
+      auto resulting_ctx = resulting_context.value ();
+      auto node = resulting_ctx.inline_asm.clone_expr_without_block ();
 
       std::vector<AST::SingleASTNode> single_vec = {};
 
@@ -1177,12 +1178,13 @@ parse_llvm_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
   auto asm_ctx = LlvmAsmContext (llvm_asm, parser, last_token_id);
 
-  auto resulting_context
+  tl::optional<LlvmAsmContext> resulting_context
     = parse_llvm_templates (asm_ctx).and_then (parse_llvm_arguments);
 
   if (resulting_context)
     {
-      auto node = (*resulting_context).llvm_asm.clone_expr_without_block ();
+      auto resulting_ctx = resulting_context.value ();
+      auto node = resulting_ctx.llvm_asm.clone_expr_without_block ();
 
       std::vector<AST::SingleASTNode> single_vec = {};
 
@@ -1190,12 +1192,13 @@ parse_llvm_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
       // need to make it a statement. This way, it will be expanded
       // properly.
       if (semicolon == AST::InvocKind::Semicoloned)
-	single_vec.emplace_back (AST::SingleASTNode (
-	  std::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
-					   semicolon
-					     == AST::InvocKind::Semicoloned)));
+	{
+	  single_vec.emplace_back (
+	    std::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
+					     true /* has semicolon */));
+	}
       else
-	single_vec.emplace_back (AST::SingleASTNode (std::move (node)));
+	single_vec.emplace_back (std::move (node));
 
       AST::Fragment fragment_ast
 	= AST::Fragment (single_vec,
