@@ -3631,7 +3631,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    {
 	      extra_off = vr->operands[i].off - lhs_ops[j].off;
 	      i--, j--;
+	      found = true;
 	    }
+	  /* If we did find a match we'd eventually append a MEM_REF
+	     as component.  Don't.  */
+	  if (!found)
+	    return (void *)-1;
 	}
       else
 	return (void *)-1;
