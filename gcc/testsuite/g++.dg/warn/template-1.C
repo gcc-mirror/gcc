@@ -2,7 +2,7 @@
 //PR c++/11490
 //Since N is know at instantiation time, there
 // should be no warning about comparision between
-// unsinged and signed interegers.
+// unsigned and signed interegers.
 
 // { dg-do compile }
 // { dg-options "-W" }

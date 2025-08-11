@@ -2944,7 +2944,7 @@ typedef struct gfc_equiv_list
    upwards, if *low is NULL the selection is *high downwards.
 
    This structure has separate fields to allow single and double linked
-   lists of CASEs at the same time.  The singe linked list along the NEXT
+   lists of CASEs at the same time.  The single linked list along the NEXT
    field is a list of cases for a single CASE label.  The double linked
    list along the LEFT/RIGHT fields is used to detect overlap and to
    build a table of the cases for SELECT constructs with a CHARACTER

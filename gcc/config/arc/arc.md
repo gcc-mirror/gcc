@@ -66,9 +66,9 @@
 ;;   I signed 12-bit immediate (for ARCompact)
 ;;   K  unsigned 3-bit immediate (for ARCompact)
 ;;   L  unsigned 6-bit immediate (for ARCompact)
-;;   M  unsinged 5-bit immediate (for ARCompact)
-;;   O  unsinged 7-bit immediate (for ARCompact)
-;;   P  unsinged 8-bit immediate (for ARCompact)
+;;   M  unsigned 5-bit immediate (for ARCompact)
+;;   O  unsigned 7-bit immediate (for ARCompact)
+;;   P  unsigned 8-bit immediate (for ARCompact)
 ;;   N  constant '1' (for ARCompact)
 
 

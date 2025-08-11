@@ -2473,7 +2473,7 @@ find_case_label_for_value (const gswitch *switch_stmt, tree val)
 
       if (CASE_HIGH (t) == NULL)
 	{
-	  /* A singe-valued case label.  */
+	  /* A single-valued case label.  */
 	  if (cmp == 0)
 	    return t;
 	}
