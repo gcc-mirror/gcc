@@ -1125,8 +1125,11 @@ parse_llvm_clobbers (LlvmAsmContext &ctx)
 	{
 	  ctx.llvm_asm.get_clobbers ().push_back (
 	    {strip_double_quotes (token->as_string ()), token->get_locus ()});
+
+	  parser.skip_token (STRING_LITERAL);
 	}
-      parser.skip_token (STRING_LITERAL);
+
+      parser.maybe_skip_token (COMMA);
       token = parser.peek_current_token ();
     }
 }
