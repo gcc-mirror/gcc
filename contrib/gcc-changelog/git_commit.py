@@ -150,6 +150,7 @@ ignored_prefixes = {
     'gcc/testsuite/go.test/test/',
     'libffi/',
     'libgo/',
+    'libgrust/rustc-lib/core/',
     'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
