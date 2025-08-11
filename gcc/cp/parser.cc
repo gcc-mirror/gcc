@@ -17002,8 +17002,13 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       else
 	{
 	  prev = decl2;
-	  DECL_DECLARED_CONSTEXPR_P (decl2) = DECL_DECLARED_CONSTEXPR_P (decl);
-	  DECL_DECLARED_CONSTINIT_P (decl2) = DECL_DECLARED_CONSTINIT_P (decl);
+	  if (decl != error_mark_node)
+	    {
+	      DECL_DECLARED_CONSTEXPR_P (decl2)
+		= DECL_DECLARED_CONSTEXPR_P (decl);
+	      DECL_DECLARED_CONSTINIT_P (decl2)
+		= DECL_DECLARED_CONSTINIT_P (decl);
+	    }
 	  if (j == (unsigned) pack)
 	    {
 	      tree dtype = cxx_make_type (DECLTYPE_TYPE);
