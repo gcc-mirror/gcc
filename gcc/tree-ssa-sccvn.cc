@@ -3650,6 +3650,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  j--;
 	}
 
+      /* When we still didn't manage to strip off all components from
+	 lhs_op, opportunistically continue for those we can handle
+	 via extra_off.  Note this is an attempt to fixup secondary
+	 copies after we hit the !found && j == 0 case above.  */
+      while (j != -1
+	     && known_ne (lhs_ops[j].off, -1U))
+	{
+	  extra_off += -lhs_ops[j].off;
+	  j--;
+	}
+
       /* i now points to the first additional op.
 	 ???  LHS may not be completely contained in VR, one or more
 	 VIEW_CONVERT_EXPRs could be in its way.  We could at least
