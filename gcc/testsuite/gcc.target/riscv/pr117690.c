@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv64*-*-* } } } */
+/* { dg-do run { target { rv64 && riscv_b_ok } } } */
 /* { dg-options "-march=rv64gc_zba_zbb -mabi=lp64d" } */
 
 #define myconst 0x4fffaffb0fffefffUL;

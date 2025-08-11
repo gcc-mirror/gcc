@@ -1,4 +1,4 @@
-/* { dg-do run { target { rv64 } } } */
+/* { dg-do run { target { rv64 && riscv_b_ok } } } */
 /* { dg-options "-march=rv64gc_zba -mabi=lp64d -O2" } */
 
 struct {

@@ -1,5 +1,4 @@
-/* { dg-do run } */
-/* { dg-require-effective-target rv64 } */
+/* { dg-do run { target { rv64 && riscv_b_ok } } } */
 /* { dg-options "-march=rv64gc_zbb -mabi=lp64d -fno-ext-dce" } */
 
 extern void abort (void);
