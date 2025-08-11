@@ -12515,13 +12515,15 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
-  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
-  STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
+  if (! STMT_VINFO_DATA_REF (stmt_info))
+    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
+  else
+    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
       gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
-      gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
+      gcc_assert (SLP_TREE_VECTYPE (node)
 		  || gimple_code (stmt_info->stmt) == GIMPLE_COND
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
     }
@@ -12589,8 +12591,6 @@ vect_analyze_stmt (vec_info *vinfo,
 
     }
 
-  STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
-
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
@@ -12634,8 +12634,10 @@ vect_transform_stmt (vec_info *vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing statement: %G", stmt_info->stmt);
 
-  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
-  STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
+  if (! STMT_VINFO_DATA_REF (stmt_info))
+    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
+  else
+    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
 
   switch (SLP_TREE_TYPE (slp_node))
     {
@@ -12764,8 +12766,6 @@ vect_transform_stmt (vec_info *vinfo,
 				       slp_node_instance, true, NULL);
       gcc_assert (done);
     }
-
-  STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
 
   return is_store;
 }
