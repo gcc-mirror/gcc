@@ -1,3 +1,30 @@
+2025-08-10  Harish Sadineni  <Harish.Sadineni@windriver.com>
+
+	Backported from master:
+	2025-08-10  Harish Sadineni  <Harish.Sadineni@windriver.com>
+
+	PR target/118885
+	* gcc.target/i386/pr90579.c: add -fno-pie to dg-options
+	to fix tests when PIE is enabled.
+
+2025-08-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-08-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/multiline.exp: Added pruning of .exe.
+
+2025-08-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-07-12  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/87600
+	PR rtl-optimization/120983
+	* gcc.dg/pr87600.h [__loongarch__]: Define REG0 and REG1.
+	* gcc.dg/pr87600-1.c (dg-do): Add loongarch.
+	* gcc.dg/pr87600-2.c (dg-do): Likewise.
+
 2025-08-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

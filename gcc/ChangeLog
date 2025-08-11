@@ -1,3 +1,12 @@
+2025-08-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-07-12  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/120983
+	* lra-constraints.cc (process_alt_operands): Allow reloading
+	user hard registers unless the insn is an asm.
+
 2025-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
