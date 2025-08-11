@@ -24,7 +24,6 @@ foo ()
   static auto [ta, ...tb, tc] = t;	// { dg-warning "structured binding packs only available with" "" { target { c++17 && c++23_down } } }
 					// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
 					// { dg-warning "structured binding declaration can be 'static' only in" "" { target c++17_down } .-2 }
-					// { dg-message "mangling of structured binding pack elements not implemented yet" "" { target *-*-* } .-3 }
 }
 
 template <int N>
@@ -35,7 +34,6 @@ bar ()
   thread_local auto [...ta] = t;	// { dg-warning "structured binding packs only available with" "" { target { c++17 && c++23_down } } }
 					// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
 					// { dg-warning "structured binding declaration can be 'thread_local' only in" "" { target c++17_down } .-2 }
-					// { dg-message "mangling of structured binding pack elements not implemented yet" "" { target *-*-* } .-3 }
 }
 
 int

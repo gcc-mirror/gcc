@@ -10223,14 +10223,6 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 			      "pack %qD", v[pack]);
 		      goto error_out;
 		    }
-		  if (j == 0
-		      && !processing_template_decl
-		      && TREE_STATIC (decl))
-		    {
-		      sorry_at (dloc, "mangling of structured binding pack "
-				      "elements not implemented yet");
-		      goto error_out;
-		    }
 		  maybe_push_decl (t);
 		  /* Save the decltype away before reference collapse.  */
 		  hash_map_safe_put<hm_ggc> (decomp_type_table, t, eltype);
@@ -10241,8 +10233,16 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 		  if (!processing_template_decl)
 		    {
 		      copy_linkage (t, decl);
+		      tree name = DECL_NAME (t);
+		      if (TREE_STATIC (decl))
+			DECL_NAME (t) = DECL_NAME (v[pack]);
 		      cp_finish_decl (t, init, /*constexpr*/false,
 				      /*asm*/NULL_TREE, LOOKUP_NORMAL);
+		      if (TREE_STATIC (decl))
+			{
+			  DECL_ASSEMBLER_NAME (t);
+			  DECL_NAME (t) = name;
+			}
 		    }
 		}
 	      continue;
