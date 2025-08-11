@@ -3608,11 +3608,7 @@ package body Sem_Ch3 is
       Generate_Definition (Defining_Identifier (N));
 
       --  Process an incomplete declaration. The identifier must not have been
-      --  declared already in the scope. However, an incomplete declaration may
-      --  appear in the private part of a package, for a private type that has
-      --  already been declared.
-
-      --  In this case, the discriminants (if any) must match
+      --  declared already in the scope.
 
       T := Find_Type_Name (N);
 
