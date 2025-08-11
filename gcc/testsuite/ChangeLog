@@ -1,3 +1,41 @@
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121205
+	* gcc.dg/asm-hard-reg-6.c: Adjust scan for x86 with ia32, lp64 and
+	x32.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121205
+	* gcc.dg/asm-hard-reg-5.c: Compile for x86 !ia32.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121205
+	* gcc.dg/asm-hard-reg-4.c: Compile with -msse2 for x86 and scan
+	x86.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121205
+	* gcc.dg/asm-hard-reg-2.c: Compile for x86 !ia32 and scan x86.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121205
+	* gcc.dg/asm-hard-reg-1.c: Adjust scan for x86 with ia32, x32 and
+	lp64.
+
+2025-08-10  Harish Sadineni  <Harish.Sadineni@windriver.com>
+
+	PR target/118885
+	* gcc.target/i386/pr90579.c: add -fno-pie to dg-options
+	to fix tests when PIE is enabled.
+
+2025-08-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/multiline.exp: Added pruning of .exe.
+
 2025-08-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR testsuite/121205

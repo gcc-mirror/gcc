@@ -1,3 +1,35 @@
+2025-08-10  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.h (FRAME_GROWS_DOWNWARD) Allow the frame to
+	grow downwards for mips16 when -mgrow-frame-downwards is set.
+	* config/mips/mips.opt: Add -mgrow-frame-downwards option.
+
+2025-08-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/121438
+	PR middle-end/121444
+	* output.h (MAX_ALIGN_MERGABLE): Rename to ...
+	(MAX_MERGEABLE_BITSIZE): This.
+	* tree-switch-conversion.cc (switch_conversion::build_one_array): Don't
+	increase the alignment.
+	* varasm.cc (mergeable_string_section): Use MAX_MERGEABLE_BITSIZE
+	instead of MAX_ALIGN_MERGABLE. Also replace `/ 8` with `/ BITS_PER_UNIT`.
+	(mergeable_constant_section): Select the mergeable section based on
+	the bitsize rather than the alignment. Make sure the align is less
+	than the entity size.
+
+2025-08-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/121394
+	* varasm.cc (assemble_variable_contents): Pad out
+	mergeable sections if needed.
+	(output_constant_pool_1): Change the padding to be explicit
+	zeroing for mergeable sections.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+
 2025-08-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.cc (darwin_encode_section_info): Do not

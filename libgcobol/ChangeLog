@@ -1,3 +1,7 @@
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+
 2025-08-08  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (int128_to_field): Switch to the new routine.

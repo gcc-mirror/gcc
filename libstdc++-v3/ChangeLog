@@ -1,3 +1,7 @@
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+
 2025-08-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/build_hacking.xml: Switch gcc.gnu.org installation
