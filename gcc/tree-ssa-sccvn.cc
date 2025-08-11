@@ -3573,7 +3573,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     try finding a match in one of the outer components and continue
 	     stripping there.  This happens when addresses of components get
 	     forwarded into dereferences.  */
-	  if (j > 0)
+	  if (i > 0)
 	    {
 	      int temi = i - 1;
 	      extra_off = vr->operands[i].off;
@@ -3598,7 +3598,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		  temi--;
 		}
 	    }
-	  if (!found && i > 0)
+	  if (!found && j > 0)
 	    {
 	      int temj = j - 1;
 	      extra_off = -lhs_ops[j].off;
