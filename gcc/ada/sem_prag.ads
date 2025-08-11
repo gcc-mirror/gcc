@@ -253,6 +253,63 @@ package Sem_Prag is
      (Pragma_Extensions_Visible => True,
       others                    => False);
 
+   --  List of pragmas where the ghost policy checks have been disabled.
+   --
+   --  There is an analysis circularity issue here. These pragmas are marked as
+   --  Ghost based on the ghostness of the entity in their argument. We need to
+   --  analyze the argument to determine the ghostness of the pragma. However
+   --  if we are analyzing a ghost argument we need to validate its context and
+   --  for that we need to mark the ghostness of the pragma beforehand.
+   --
+   --  We suppress the checks for these pragmas in order to break that loop. We
+   --  do not need to emit an error since if the argument was ghost that means
+   --  that the pragma was ghost as well.
+
+   Suppressed_Ghost_Policy_Check_Pragma :
+     constant array (Pragma_Id) of Boolean :=
+       (Pragma_All_Calls_Remote             => True,
+        Pragma_Annotate                     => True,
+        Pragma_Asynchronous                 => True,
+        Pragma_Atomic_Components            => True,
+        Pragma_Compile_Time_Error           => True,
+        Pragma_Compile_Time_Warning         => True,
+        Pragma_Convention                   => True,
+        Pragma_Default_Storage_Pool         => True,
+        Pragma_Discard_Names                => True,
+        Pragma_Elaborate_Body               => True,
+        Pragma_Export                       => True,
+        Pragma_Extended_Access              => True,
+        Pragma_External                     => True,
+        Pragma_Favor_Top_Level              => True,
+        Pragma_Import                       => True,
+        Pragma_Independent_Components       => True,
+        Pragma_Interface                    => True,
+        Pragma_No_Return                    => True,
+        Pragma_Obsolescent                  => True,
+        Pragma_Pack                         => True,
+        Pragma_Persistent_BSS               => True,
+        Pragma_Preelaborable_Initialization => True,
+        Pragma_Preelaborate                 => True,
+        Pragma_Pure                         => True,
+        Pragma_Pure_Function                => True,
+        Pragma_Remote_Access_Type           => True,
+        Pragma_Remote_Call_Interface        => True,
+        Pragma_Remote_Types                 => True,
+        Pragma_Shared_Passive               => True,
+        Pragma_Simple_Storage_Pool_Type     => True,
+        Pragma_Suppress                     => True,
+        Pragma_Suppress_Debug_Info          => True,
+        Pragma_Suppress_Initialization      => True,
+        Pragma_Thread_Local_Storage         => True,
+        Pragma_Unchecked_Union              => True,
+        Pragma_Universal_Aliasing           => True,
+        Pragma_Unreferenced                 => True,
+        Pragma_Unreferenced_Objects         => True,
+        Pragma_Unsuppress                   => True,
+        Pragma_Unused                       => True,
+        Pragma_Volatile_Components          => True,
+        others                              => False);
+
    function Find_Assertion_Level (Nam : Name_Id) return Entity_Id;
    --  Find an existing definition with the given name that has been inserted
    --  into the Assertion_Levels table.

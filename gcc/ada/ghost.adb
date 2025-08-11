@@ -467,12 +467,7 @@ package body Ghost is
             --  not determined yet, but it is guaranteed to be Ghost when
             --  referencing a Ghost entity.
 
-            if Prag_Nam
-               in Name_Annotate
-                | Name_Compile_Time_Error
-                | Name_Compile_Time_Warning
-                | Name_Unreferenced
-            then
+            if Suppressed_Ghost_Policy_Check_Pragma (Prag_Id) then
                return True;
 
             --  An assertion expression pragma is Ghost when it contains a
