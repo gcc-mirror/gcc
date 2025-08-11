@@ -1487,6 +1487,7 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
 	  fprintf (dump_file, "after previous\n  ");
 	  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
 	}
+      gimple *orig_stmt = use_stmt;
       gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
       gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (src));
       update_stmt (use_stmt);
@@ -1496,6 +1497,10 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
 	  fprintf (dump_file, "into\n  ");
 	  print_gimple_stmt (dump_file, use_stmt, 0, dump_flags);
 	}
+
+      /* Mark the bb for eh cleanup if needed.  */
+      if (maybe_clean_or_replace_eh_stmt (orig_stmt, use_stmt))
+	bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
       statistics_counter_event (cfun, "copy prop for aggregate", 1);
       changed = true;
     }
