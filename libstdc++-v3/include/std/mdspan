@@ -274,8 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto __fwd_partial_prods = [] consteval
 	{
 	  constexpr size_t __rank = _Extents.size();
-	  std::array<size_t, __rank + 1> __ret;
-	  for(size_t __r = 0; __r < __rank + 1; ++__r)
+	  std::array<size_t, __rank> __ret;
+	  for(size_t __r = 0; __r < __rank; ++__r)
 	    __ret[__r] = __static_prod<_Extents>(0, __r);
 	  return __ret;
 	}();
