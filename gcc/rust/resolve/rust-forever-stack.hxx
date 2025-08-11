@@ -531,7 +531,7 @@ ForeverStack<N>::resolve_segments (
 				       || seg.is_lower_self_seg ()))
 	return tl::nullopt;
 
-      tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
+      tl::optional<std::reference_wrapper<Node>> child = tl::nullopt;
 
       /*
        * On every iteration this loop either
@@ -583,10 +583,17 @@ ForeverStack<N>::resolve_segments (
 	      break;
 	    }
 
-	  if (N == Namespace::Types)
+	  auto rib_lookup = current_node->rib.get (seg.as_string ());
+	  if (rib_lookup && !rib_lookup->is_ambiguous ())
 	    {
-	      auto rib_lookup = current_node->rib.get (seg.as_string ());
-	      if (rib_lookup && !rib_lookup->is_ambiguous ())
+	      if (Analysis::Mappings::get ()
+		    .lookup_glob_container (rib_lookup->get_node_id ())
+		    .has_value ())
+		{
+		  child = dfs_node (root, rib_lookup->get_node_id ()).value ();
+		  break;
+		}
+	      else
 		{
 		  insert_segment_resolution (outer_seg,
 					     rib_lookup->get_node_id ());
@@ -611,9 +618,9 @@ ForeverStack<N>::resolve_segments (
 	  current_node = &current_node->parent.value ();
 	}
 
-      // if child didn't contain a value
-      // the while loop above should have return'd or kept looping
-      current_node = &child.value ();
+      // if child didn't point to a value
+      // the while loop above would have returned or kept looping
+      current_node = &child->get ();
       insert_segment_resolution (outer_seg, current_node->id);
     }
 
