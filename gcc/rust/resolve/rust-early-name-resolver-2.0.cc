@@ -447,8 +447,8 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
 	break;
       }
     case AST::UseTreeRebind::NewBindType::WILDCARD:
-      rust_unreachable ();
-      break;
+      // We don't want to insert it into the trie
+      return;
     }
 
   for (auto &&definition : data.definitions ())
