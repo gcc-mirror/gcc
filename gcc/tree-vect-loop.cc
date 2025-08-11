@@ -5012,6 +5012,7 @@ vect_emit_reduction_init_stmts (loop_vec_info loop_vinfo,
 static void
 get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
 				stmt_vec_info reduc_info,
+				tree vector_type,
 				vec<tree> *vec_oprnds,
 				unsigned int number_of_vectors,
 				unsigned int group_size, tree neutral_op)
@@ -5019,7 +5020,6 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
   vec<tree> &initial_values = reduc_info->reduc_initial_values;
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
-  tree vector_type = STMT_VINFO_VECTYPE (reduc_info);
   unsigned int i;
 
   gcc_assert (group_size == initial_values.length () || neutral_op);
@@ -5155,7 +5155,7 @@ info_for_reduction (vec_info *vinfo, stmt_vec_info stmt_info)
 
 static bool
 vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
-				stmt_vec_info reduc_info)
+				stmt_vec_info reduc_info, tree vectype)
 {
   loop_vec_info main_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
   if (!main_loop_vinfo)
@@ -5204,7 +5204,6 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
     return false;
 
   /* Handle the case where we can reduce wider vectors to narrower ones.  */
-  tree vectype = STMT_VINFO_VECTYPE (reduc_info);
   tree old_vectype = TREE_TYPE (accumulator->reduc_input);
   unsigned HOST_WIDE_INT m;
   if (!constant_multiple_p (TYPE_VECTOR_SUBPARTS (old_vectype),
@@ -8435,7 +8434,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	  initial_values.quick_push (vect_phi_initial_value (this_phi));
 	}
       if (vec_num == 1)
-	vect_find_reusable_accumulator (loop_vinfo, reduc_info);
+	vect_find_reusable_accumulator (loop_vinfo, reduc_info, vectype_out);
       if (!initial_values.is_empty ())
 	{
 	  tree initial_value
@@ -8458,7 +8457,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 		= initial_values[0];
 	      initial_values[0] = neutral_op;
 	    }
-	  get_initial_defs_for_reduction (loop_vinfo, reduc_info,
+	  get_initial_defs_for_reduction (loop_vinfo, reduc_info, vectype_out,
 					  &vec_initial_defs, vec_num,
 					  stmts.length (), neutral_op);
 	}
