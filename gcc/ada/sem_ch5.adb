@@ -1696,10 +1696,15 @@ package body Sem_Ch5 is
       --  interpretation of N.
 
       function Make_Call return N_Procedure_Call_Statement_Id is
+         Id : constant Node_Id := Make_Identifier (Loc, Name_Continue);
+         X : constant N_Procedure_Call_Statement_Id :=
+           Make_Procedure_Call_Statement (Loc, Id);
       begin
-         return
-           Make_Procedure_Call_Statement
-             (Loc, Make_Identifier (Loc, Name_Continue));
+         --  If we settle for the procedure call interpretation, we set
+         --  Comes_From_Source since the user did type out the call explicitly.
+         Set_Comes_From_Source (Id);
+         Set_Comes_From_Source (X);
+         return X;
       end Make_Call;
 
       function Make_Stmt return N_Continue_Statement_Id is
