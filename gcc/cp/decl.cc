@@ -9870,17 +9870,27 @@ cp_maybe_mangle_decomp (tree decl, cp_decomp *decomp)
     }
 }
 
-/* Append #i to DECL_NAME (decl).  */
+/* Append #i to DECL_NAME (decl) or for name independent decls
+   clear DECL_NAME (decl).  */
 
 static void
 set_sb_pack_name (tree decl, unsigned HOST_WIDE_INT i)
 {
-  tree name = DECL_NAME (decl);
-  size_t len = IDENTIFIER_LENGTH (name) + 22;
-  char *n = XALLOCAVEC (char, len);
-  snprintf (n, len, "%s#" HOST_WIDE_INT_PRINT_UNSIGNED,
-	    IDENTIFIER_POINTER (name), i);
-  DECL_NAME (decl) = get_identifier (n);
+  if (name_independent_decl_p (decl))
+    /* Only "_" names are treated as name independent, "_#0" etc. is not and
+       because we pushdecl the individual decl elements of structured binding
+       pack, we could get redeclaration errors if there are 2 or more name
+       independent structured binding packs in the same scope.  */
+    DECL_NAME (decl) = NULL_TREE;
+  else
+    {
+      tree name = DECL_NAME (decl);
+      size_t len = IDENTIFIER_LENGTH (name) + 22;
+      char *n = XALLOCAVEC (char, len);
+      snprintf (n, len, "%s#" HOST_WIDE_INT_PRINT_UNSIGNED,
+		IDENTIFIER_POINTER (name), i);
+      DECL_NAME (decl) = get_identifier (n);
+    }
 }
 
 /* Finish a decomposition declaration.  DECL is the underlying declaration
