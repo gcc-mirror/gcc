@@ -7225,7 +7225,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 		vectype_in = vectype_op;
 	    }
 	  else if (!vectype_in)
-	    vectype_in = STMT_VINFO_VECTYPE (phi_info);
+	    vectype_in = SLP_TREE_VECTYPE (slp_node);
 	  if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
 	    vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
 	}
