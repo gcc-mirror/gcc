@@ -994,6 +994,23 @@ ASTLoweringExpr::visit (AST::InlineAsm &expr)
 			  expr.get_options (), mapping);
 }
 
+namespace {
+// We're not really supporting llvm_asm, only the bare minimum for libcore's
+// blackbox
+// llvm_asm!("" : : "r"(&mut dummy) : "memory" : "volatile");
+bool
+check_llvm_asm_support (const std::vector<LlvmOperand> &inputs,
+			const std::vector<LlvmOperand> &outputs,
+			const AST::LlvmInlineAsm &expr)
+{
+  return outputs.size () == 0 && inputs.size () <= 1
+	 && expr.get_clobbers ().size () <= 1
+	 && expr.get_templates ().size () == 1
+	 && expr.get_templates ()[0].symbol == "";
+}
+
+} // namespace
+
 void
 ASTLoweringExpr::visit (AST::LlvmInlineAsm &expr)
 {
@@ -1026,13 +1043,15 @@ ASTLoweringExpr::visit (AST::LlvmInlineAsm &expr)
 				      expr.is_stack_aligned (),
 				      expr.get_dialect ()};
 
-  // We're not really supporting llvm_asm, only the bare minimum
-  // we're quite conservative here as the current code support more usecase.
-  rust_assert (outputs.size () == 0);
-  rust_assert (inputs.size () <= 1);
-  rust_assert (expr.get_clobbers ().size () <= 1);
-  rust_assert (expr.get_templates ().size () == 1);
-  rust_assert (expr.get_templates ()[0].symbol == "");
+  if (!check_llvm_asm_support (inputs, outputs, expr))
+    {
+      rust_error_at (expr.get_locus (), "unsupported %qs construct",
+		     "llvm_asm");
+      rust_inform (
+	expr.get_locus (),
+	"%<llvm_asm%> has been replaced with %<asm%>, gccrs only supports a "
+	"subset of %<llvm_asm%> to compile libcore");
+    }
 
   translated
     = new HIR::LlvmInlineAsm (expr.get_locus (), inputs, outputs,

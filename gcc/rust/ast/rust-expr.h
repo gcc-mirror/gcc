@@ -5687,6 +5687,10 @@ public:
   }
 
   std::vector<TupleTemplateStr> &get_templates () { return templates; }
+  const std::vector<TupleTemplateStr> &get_templates () const
+  {
+    return templates;
+  }
 
   Expr::Kind get_expr_kind () const override
   {
@@ -5705,9 +5709,12 @@ public:
   void set_outputs (std::vector<LlvmOperand> operands) { outputs = operands; }
 
   std::vector<LlvmOperand> &get_inputs () { return inputs; }
+  const std::vector<LlvmOperand> &get_inputs () const { return inputs; }
   std::vector<LlvmOperand> &get_outputs () { return outputs; }
+  const std::vector<LlvmOperand> &get_outputs () const { return outputs; }
 
   std::vector<TupleClobber> &get_clobbers () { return clobbers; }
+  const std::vector<TupleClobber> &get_clobbers () const { return clobbers; }
 };
 
 } // namespace AST
