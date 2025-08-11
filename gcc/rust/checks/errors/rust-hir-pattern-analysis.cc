@@ -664,6 +664,14 @@ PatternChecker::visit (TuplePattern &)
 {}
 
 void
+PatternChecker::visit (SlicePatternItemsNoRest &)
+{}
+
+void
+PatternChecker::visit (SlicePatternItemsHasRest &)
+{}
+
+void
 PatternChecker::visit (SlicePattern &)
 {}
 

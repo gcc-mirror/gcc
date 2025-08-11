@@ -176,6 +176,8 @@ public:
   void visit (HIR::TuplePatternItemsNoRest &tuple_items) override {}
   void visit (HIR::TuplePatternItemsHasRest &tuple_items) override {}
   void visit (HIR::TuplePattern &pattern) override {}
+  void visit (HIR::SlicePatternItemsNoRest &tuple_items) override {}
+  void visit (HIR::SlicePatternItemsHasRest &tuple_items) override {}
   void visit (HIR::SlicePattern &pattern) override {}
   void visit (HIR::AltPattern &pattern) override {}
   void visit (HIR::EmptyStmt &stmt) override {}

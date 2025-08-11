@@ -1068,10 +1068,25 @@ DefaultHIRVisitor::walk (TuplePattern &pattern)
 }
 
 void
+DefaultHIRVisitor::walk (SlicePatternItemsNoRest &items)
+{
+  for (auto &pattern : items.get_patterns ())
+    pattern->accept_vis (*this);
+}
+
+void
+DefaultHIRVisitor::walk (SlicePatternItemsHasRest &items)
+{
+  for (auto &lower : items.get_lower_patterns ())
+    lower->accept_vis (*this);
+  for (auto &upper : items.get_upper_patterns ())
+    upper->accept_vis (*this);
+}
+
+void
 DefaultHIRVisitor::walk (SlicePattern &pattern)
 {
-  for (auto &item : pattern.get_items ())
-    item->accept_vis (*this);
+  pattern.get_items ().accept_vis (*this);
 }
 
 void

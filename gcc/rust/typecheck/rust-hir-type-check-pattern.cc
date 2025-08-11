@@ -651,14 +651,44 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 	    break;
 	  }
 	auto cap_wi = wi::to_wide (cap).to_uhwi ();
-	if (cap_wi != pattern.get_items ().size ())
+
+	// size check during compile time
+	switch (pattern.get_items ().get_item_type ())
 	  {
-	    rust_error_at (pattern.get_locus (), ErrorCode::E0527,
-			   "pattern requires %lu elements but array has %lu",
-			   (unsigned long) pattern.get_items ().size (),
-			   (unsigned long) cap_wi);
+	  case HIR::SlicePatternItems::ItemType::NO_REST:
+	    {
+	      auto &ref = static_cast<HIR::SlicePatternItemsNoRest &> (
+		pattern.get_items ());
+	      if (cap_wi != ref.get_patterns ().size ())
+		{
+		  rust_error_at (
+		    pattern.get_locus (), ErrorCode::E0527,
+		    "pattern requires %lu elements but array has %lu",
+		    (unsigned long) ref.get_patterns ().size (),
+		    (unsigned long) cap_wi);
+		  break;
+		}
+	    }
+	    break;
+	  case HIR::SlicePatternItems::ItemType::HAS_REST:
+	    {
+	      auto &ref = static_cast<HIR::SlicePatternItemsHasRest &> (
+		pattern.get_items ());
+	      auto pattern_min_cap = ref.get_lower_patterns ().size ()
+				     + ref.get_upper_patterns ().size ();
+
+	      if (cap_wi < pattern_min_cap)
+		{
+		  rust_error_at (
+		    pattern.get_locus (), ErrorCode::E0528,
+		    "pattern requires at least %lu elements but array has %lu",
+		    (unsigned long) pattern_min_cap, (unsigned long) cap_wi);
+		  break;
+		}
+	    }
 	    break;
 	  }
+
 	break;
       }
     case TyTy::SLICE:
@@ -694,10 +724,32 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
   infered->set_ref (pattern.get_mappings ().get_hirid ());
 
   // Type check every item in the SlicePattern against parent's element ty
-  // TODO update this after adding support for RestPattern in SlicePattern
-  for (const auto &item : pattern.get_items ())
+  switch (pattern.get_items ().get_item_type ())
     {
-      TypeCheckPattern::Resolve (*item, parent_element_ty);
+    case HIR::SlicePatternItems::ItemType::NO_REST:
+      {
+	auto &ref
+	  = static_cast<HIR::SlicePatternItemsNoRest &> (pattern.get_items ());
+	for (const auto &pattern_member : ref.get_patterns ())
+	  {
+	    TypeCheckPattern::Resolve (*pattern_member, parent_element_ty);
+	  }
+	break;
+      }
+    case HIR::SlicePatternItems::ItemType::HAS_REST:
+      {
+	auto &ref
+	  = static_cast<HIR::SlicePatternItemsHasRest &> (pattern.get_items ());
+	for (const auto &pattern_member : ref.get_lower_patterns ())
+	  {
+	    TypeCheckPattern::Resolve (*pattern_member, parent_element_ty);
+	  }
+	for (const auto &pattern_member : ref.get_upper_patterns ())
+	  {
+	    TypeCheckPattern::Resolve (*pattern_member, parent_element_ty);
+	  }
+	break;
+      }
     }
 }
 

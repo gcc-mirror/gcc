@@ -246,6 +246,14 @@ protected:
     rust_unreachable ();
   }
   void visit (HIR::TuplePattern &pattern) override { rust_unreachable (); }
+  void visit (HIR::SlicePatternItemsNoRest &tuple_items) override
+  {
+    rust_unreachable ();
+  }
+  void visit (HIR::SlicePatternItemsHasRest &tuple_items) override
+  {
+    rust_unreachable ();
+  }
   void visit (HIR::SlicePattern &pattern) override { rust_unreachable (); }
   void visit (HIR::AltPattern &pattern) override { rust_unreachable (); }
   void visit (HIR::EmptyStmt &stmt) override { rust_unreachable (); }

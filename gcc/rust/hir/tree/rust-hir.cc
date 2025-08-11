@@ -2386,16 +2386,56 @@ RangePatternBoundLiteral::as_string () const
 }
 
 std::string
-SlicePattern::as_string () const
+SlicePatternItemsNoRest::as_string () const
 {
-  std::string str ("SlicePattern: ");
+  std::string str;
 
-  for (const auto &pattern : items)
+  for (const auto &pattern : patterns)
     {
       str += "\n " + pattern->as_string ();
     }
 
   return str;
+}
+
+std::string
+SlicePatternItemsHasRest::as_string () const
+{
+  std::string str;
+
+  str += "\n Lower patterns: ";
+  if (lower_patterns.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      for (const auto &lower : lower_patterns)
+	{
+	  str += "\n  " + lower->as_string ();
+	}
+    }
+
+  str += "\n Upper patterns: ";
+  if (upper_patterns.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      for (const auto &upper : upper_patterns)
+	{
+	  str += "\n  " + upper->as_string ();
+	}
+    }
+
+  return str;
+}
+
+std::string
+SlicePattern::as_string () const
+{
+  return "SlicePattern: " + items->as_string ();
 }
 
 std::string
@@ -4501,6 +4541,18 @@ TuplePatternItemsHasRest::accept_vis (HIRFullVisitor &vis)
 
 void
 TuplePattern::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+SlicePatternItemsNoRest::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+SlicePatternItemsHasRest::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }

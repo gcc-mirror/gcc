@@ -950,6 +950,14 @@ UnsafeChecker::visit (TuplePattern &)
 {}
 
 void
+UnsafeChecker::visit (SlicePatternItemsNoRest &)
+{}
+
+void
+UnsafeChecker::visit (SlicePatternItemsHasRest &)
+{}
+
+void
 UnsafeChecker::visit (SlicePattern &)
 {}
 

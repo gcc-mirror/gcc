@@ -322,6 +322,12 @@ protected:
   std::unique_ptr<TuplePatternItems>
   lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
 
+  std::unique_ptr<SlicePatternItems>
+  lower_slice_pattern_no_rest (AST::SlicePatternItemsNoRest &pattern);
+
+  std::unique_ptr<SlicePatternItems>
+  lower_slice_pattern_has_rest (AST::SlicePatternItemsHasRest &pattern);
+
   std::unique_ptr<HIR::RangePatternBound>
   lower_range_pattern_bound (AST::RangePatternBound &bound);
 

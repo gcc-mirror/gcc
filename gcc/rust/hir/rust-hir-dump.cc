@@ -2363,11 +2363,28 @@ Dump::visit (TuplePattern &e)
 }
 
 void
+Dump::visit (SlicePatternItemsNoRest &e)
+{
+  begin ("SlicePatternItemsNoRest");
+  visit_collection ("patterns", e.get_patterns ());
+  end ("SlicePatternItemsNoRest");
+}
+
+void
+Dump::visit (SlicePatternItemsHasRest &e)
+{
+  begin ("SlicePatternItemsHasRest");
+  visit_collection ("lower_patterns", e.get_lower_patterns ());
+  visit_collection ("upper_patterns", e.get_upper_patterns ());
+  end ("SlicePatternItemsHasRest");
+}
+
+void
 Dump::visit (SlicePattern &e)
 {
   begin ("SlicePattern");
   do_mappings (e.get_mappings ());
-  visit_collection ("items", e.get_items ());
+  visit_field ("items", e.get_items ());
   end ("SlicePattern");
 }
 

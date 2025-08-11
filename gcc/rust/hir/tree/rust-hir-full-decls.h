@@ -206,6 +206,8 @@ class TuplePatternItems;
 class TuplePatternItemsNoRest;
 class TuplePatternItemsHasRest;
 class TuplePattern;
+class SlicePatternItemsNoRest;
+class SlicePatternItemsHasRest;
 class SlicePattern;
 class AltPattern;
 

@@ -70,11 +70,34 @@ PatternBindingBuilder::visit (HIR::SlicePattern &pattern)
     return ty->as<TyTy::SliceType> ()->get_element_type ();
   });
 
-  // Regions are unchnaged.
+  // Regions are unchanged.
 
-  for (auto &item : pattern.get_items ())
+  switch (pattern.get_items ().get_item_type ())
     {
-      item->accept_vis (*this);
+    case HIR::SlicePatternItems::NO_REST:
+      {
+	auto &items
+	  = static_cast<HIR::SlicePatternItemsNoRest &> (pattern.get_items ());
+	for (auto &member : items.get_patterns ())
+	  {
+	    member->accept_vis (*this);
+	  }
+	break;
+      }
+    case HIR::SlicePatternItems::HAS_REST:
+      {
+	auto &items
+	  = static_cast<HIR::SlicePatternItemsHasRest &> (pattern.get_items ());
+	for (auto &member : items.get_lower_patterns ())
+	  {
+	    member->accept_vis (*this);
+	  }
+	for (auto &member : items.get_upper_patterns ())
+	  {
+	    member->accept_vis (*this);
+	  }
+	break;
+      }
     }
 }
 

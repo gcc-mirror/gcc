@@ -138,6 +138,8 @@ public:
   virtual void visit (TuplePatternItemsNoRest &tuple_items) = 0;
   virtual void visit (TuplePatternItemsHasRest &tuple_items) = 0;
   virtual void visit (TuplePattern &pattern) = 0;
+  virtual void visit (SlicePatternItemsNoRest &items) = 0;
+  virtual void visit (SlicePatternItemsHasRest &items) = 0;
   virtual void visit (SlicePattern &pattern) = 0;
   virtual void visit (AltPattern &pattern) = 0;
   virtual void visit (EmptyStmt &stmt) = 0;
@@ -311,6 +313,8 @@ public:
   virtual void visit (TuplePatternItemsNoRest &node) override { walk (node); }
   virtual void visit (TuplePatternItemsHasRest &node) override { walk (node); }
   virtual void visit (TuplePattern &node) override { walk (node); }
+  virtual void visit (SlicePatternItemsNoRest &node) override { walk (node); }
+  virtual void visit (SlicePatternItemsHasRest &node) override { walk (node); }
   virtual void visit (SlicePattern &node) override { walk (node); }
   virtual void visit (AltPattern &node) override { walk (node); }
   virtual void visit (EmptyStmt &node) override { walk (node); }
@@ -444,6 +448,8 @@ protected:
   virtual void walk (TuplePatternItemsNoRest &) final;
   virtual void walk (TuplePatternItemsHasRest &) final;
   virtual void walk (TuplePattern &) final;
+  virtual void walk (SlicePatternItemsNoRest &) final;
+  virtual void walk (SlicePatternItemsHasRest &) final;
   virtual void walk (SlicePattern &) final;
   virtual void walk (AltPattern &) final;
   virtual void walk (EmptyStmt &) final;
@@ -593,6 +599,9 @@ public:
   virtual void visit (TuplePatternItemsNoRest &) override {}
   virtual void visit (TuplePatternItemsHasRest &) override {}
   virtual void visit (TuplePattern &) override {}
+
+  virtual void visit (SlicePatternItemsNoRest &) override {}
+  virtual void visit (SlicePatternItemsHasRest &) override {}
   virtual void visit (SlicePattern &) override {}
   virtual void visit (AltPattern &) override {}
 

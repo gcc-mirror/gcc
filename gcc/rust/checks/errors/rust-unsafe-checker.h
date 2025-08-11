@@ -167,6 +167,8 @@ private:
   virtual void visit (TuplePatternItemsNoRest &tuple_items) override;
   virtual void visit (TuplePatternItemsHasRest &tuple_items) override;
   virtual void visit (TuplePattern &pattern) override;
+  virtual void visit (SlicePatternItemsNoRest &items) override;
+  virtual void visit (SlicePatternItemsHasRest &items) override;
   virtual void visit (SlicePattern &pattern) override;
   virtual void visit (AltPattern &pattern) override;
   virtual void visit (EmptyStmt &stmt) override;

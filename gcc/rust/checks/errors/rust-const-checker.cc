@@ -837,6 +837,14 @@ ConstChecker::visit (TuplePattern &)
 {}
 
 void
+ConstChecker::visit (SlicePatternItemsNoRest &)
+{}
+
+void
+ConstChecker::visit (SlicePatternItemsHasRest &)
+{}
+
+void
 ConstChecker::visit (SlicePattern &)
 {}
 
