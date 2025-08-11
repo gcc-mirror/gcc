@@ -5660,6 +5660,23 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  if (result
 		      && useless_type_conversion_p (type, TREE_TYPE (result)))
 		    return set_ssa_val_to (lhs, result);
+		  else if (result
+			   && TYPE_SIZE (type)
+			   && TYPE_SIZE (TREE_TYPE (result))
+			   && operand_equal_p (TYPE_SIZE (type),
+					       TYPE_SIZE (TREE_TYPE (result))))
+		    {
+		      gimple_match_op match_op (gimple_match_cond::UNCOND,
+						VIEW_CONVERT_EXPR,
+						type, result);
+		      result = vn_nary_build_or_lookup (&match_op);
+		      if (result)
+			{
+			  bool changed = set_ssa_val_to (lhs, result);
+			  vn_nary_op_insert_stmt (stmt, result);
+			  return changed;
+			}
+		    }
 		}
 	    }
 	}
