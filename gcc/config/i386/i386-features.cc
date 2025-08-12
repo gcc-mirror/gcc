@@ -3639,6 +3639,8 @@ ix86_broadcast_inner (rtx op, machine_mode mode,
 	 Set *INSN_P to nullptr and return SET_SRC if SET_SRC is an
 	 integer constant.  */
       op = src;
+      if (mode != GET_MODE (reg))
+	op = gen_int_mode (INTVAL (src), mode);
       *insn_p = nullptr;
     }
   else
