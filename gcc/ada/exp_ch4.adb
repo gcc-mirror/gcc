@@ -8423,6 +8423,13 @@ package body Exp_Ch4 is
       is
          Eq : Entity_Id;
       begin
+         --  Temporarily disable warning, to prevent spurious warnings
+         --  occurring in vss-xml-implementation-html_writer_data.adb. ???
+
+         if True then
+            return;
+         end if;
+
          if Is_Record_Type (Underlying_Type (Comp_Type)) then
             Eq := Get_User_Defined_Equality (Comp_Type);
 
