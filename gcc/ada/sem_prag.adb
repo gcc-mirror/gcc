@@ -19428,6 +19428,7 @@ package body Sem_Prag is
             --  pragma Ghost (False).
 
             if Is_Ghost then
+               Set_Is_Implicit_Ghost (Id, False);
                Set_Is_Ghost_Entity (Id);
             end if;
          end Ghost;

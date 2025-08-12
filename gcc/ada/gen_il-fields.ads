@@ -743,6 +743,7 @@ package Gen_IL.Fields is
       Is_Immediately_Visible,
       Is_Implementation_Defined,
       Is_Implicit_Full_View,
+      Is_Implicit_Ghost,
       Is_Imported,
       Is_Independent,
       Is_Initial_Condition_Procedure,

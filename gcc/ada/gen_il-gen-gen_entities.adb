@@ -159,6 +159,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Ignored_Ghost_Entity, Flag),
         Sm (Is_Immediately_Visible, Flag),
         Sm (Is_Implementation_Defined, Flag),
+        Sm (Is_Implicit_Ghost, Flag),
         Sm (Is_Imported, Flag),
         Sm (Is_Independent, Flag),
         Sm (Is_Inlined, Flag),

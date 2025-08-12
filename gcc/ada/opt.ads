@@ -767,6 +767,12 @@ package Opt is
 
       Current_Region : Node_Id := Empty;
       --  Latest ghost region
+
+      Is_Inside_Statement_Or_Pragma : Boolean := False;
+      --  A flag to tag whether we are currently in a region that originated
+      --  from a Statement or a pragma. Inside those regions the ghost policy
+      --  in effect for implicitly defined entities is not the policy for Ghost
+      --  but instead the policy for the region (SPARK RM 6.9 (3)).
    end record;
 
    Ghost_Config : Ghost_Config_Type;

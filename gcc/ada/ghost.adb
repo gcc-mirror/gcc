@@ -94,15 +94,30 @@ package body Ghost is
    --  Returns the Assertion_Level entity if the node has a Ghost aspect and
    --  the Ghost aspect is using an Assertion_Level.
 
+   function Ghost_Assertion_Level_In_Effect (Id : Entity_Id) return Entity_Id;
+   --  Returns the ghost level applicable for the given entity Id in a similar
+   --  manner as Ghost_Policy_In_Effect.
+
    function Ghost_Policy_In_Effect (Id : Entity_Id) return Name_Id;
-   --  Returns the first Assertion Policy in place for either Ghost or the
-   --  Assertion_Level associated with Ghost aspect on the the declaration node
-   --  Decl.
+   --  Returns the ghost policy applicable for the given entity Id.
+   --
+   --  SPARK RM 6.9 (3):
+   --
+   --  An object declaration which occurs inside an expression in a ghost
+   --  declaration, statement, assertion pragma or specification aspect
+   --  declaration is a ghost declaration.
+   --
+   --  If this declaration does not have the Ghost aspect specified, the
+   --  assertion policy applicable to this declaration comes from the policy
+   --  applicable to the enclosing declaration, statement, assertion pragma
+   --  or specification aspect.
+   --
+   --  Otherwise, the assertion policy applicable to an object declaration
+   --  comes either from its assertion level if any, or from the ghost
+   --  policy at the point of declaration.
 
    procedure Install_Ghost_Region
-     (Mode  : Name_Id;
-      N     : Node_Id;
-      Level : Entity_Id);
+     (Mode : Name_Id; N : Node_Id; Level : Entity_Id);
    pragma Inline (Install_Ghost_Region);
    --  Install a Ghost region comprised of mode Mode and ignored region start
    --  node N and Level as the Assertion_Level that was associated with it.
@@ -1561,6 +1576,22 @@ package body Ghost is
       return Empty;
    end Get_Ghost_Assertion_Level;
 
+   -------------------------------------
+   -- Ghost_Assertion_Level_In_Effect --
+   -------------------------------------
+
+   function Ghost_Assertion_Level_In_Effect (Id : Entity_Id) return Entity_Id
+   is
+   begin
+      if Ghost_Config.Is_Inside_Statement_Or_Pragma
+        and then Is_Implicit_Ghost (Id)
+      then
+         return Ghost_Config.Ghost_Mode_Assertion_Level;
+      else
+         return Ghost_Assertion_Level (Id);
+      end if;
+   end Ghost_Assertion_Level_In_Effect;
+
    ----------------------------
    -- Ghost_Policy_In_Effect --
    ----------------------------
@@ -1570,7 +1601,22 @@ package body Ghost is
       Level_Nam : constant Name_Id :=
         (if No (Level) then No_Name else Chars (Level));
    begin
-      return Policy_In_Effect (Name_Ghost, Level_Nam);
+      if Ghost_Config.Is_Inside_Statement_Or_Pragma
+        and then Is_Implicit_Ghost (Id)
+      then
+         case Ghost_Config.Ghost_Mode is
+            when Check =>
+               return Name_Check;
+
+            when Ignore =>
+               return Name_Ignore;
+
+            when None =>
+               return No_Name;
+         end case;
+      else
+         return Policy_In_Effect (Name_Ghost, Level_Nam);
+      end if;
    end Ghost_Policy_In_Effect;
 
    --------------------------------
@@ -1642,12 +1688,18 @@ package body Ghost is
       Ghost_Config.Current_Region := N;
       Ghost_Config.Ghost_Mode := Mode;
       Ghost_Config.Ghost_Mode_Assertion_Level := Level;
+
+      if Nkind (Ghost_Config.Current_Region)
+         in N_Statement_Other_Than_Procedure_Call
+          | N_Procedure_Call_Statement
+          | N_Pragma
+      then
+         Ghost_Config.Is_Inside_Statement_Or_Pragma := True;
+      end if;
    end Install_Ghost_Region;
 
    procedure Install_Ghost_Region
-     (Mode  : Name_Id;
-      N     : Node_Id;
-      Level : Entity_Id) is
+     (Mode : Name_Id; N : Node_Id; Level : Entity_Id) is
    begin
       Install_Ghost_Region (Name_To_Ghost_Mode (Mode), N, Level);
    end Install_Ghost_Region;
@@ -1657,14 +1709,13 @@ package body Ghost is
    -------------------------
 
    function Is_Assertion_Level_Dependent
-     (Self : Entity_Id; Other : Entity_Id) return Boolean
-   is
+     (Self : Entity_Id; Other : Entity_Id) return Boolean is
    begin
       return
-         Self = Standard_Level_Default
-         or else Other = Standard_Level_Default
-         or else Is_Same_Or_Depends_On_Level (Self, Other)
-         or else Is_Same_Or_Depends_On_Level (Self, Standard_Level_Static);
+        Self = Standard_Level_Default
+        or else Other = Standard_Level_Default
+        or else Is_Same_Or_Depends_On_Level (Self, Other)
+        or else Is_Same_Or_Depends_On_Level (Self, Standard_Level_Static);
    end Is_Assertion_Level_Dependent;
 
    -------------------------
@@ -1977,10 +2028,7 @@ package body Ghost is
    -- Mark_And_Set_Ghost_Body --
    -----------------------------
 
-   procedure Mark_And_Set_Ghost_Body
-     (N       : Node_Id;
-      Spec_Id : Entity_Id)
-   is
+   procedure Mark_And_Set_Ghost_Body (N : Node_Id; Spec_Id : Entity_Id) is
       Body_Id : constant Entity_Id := Defining_Entity (N);
       Level   : Entity_Id := Empty;
       Policy  : Name_Id := No_Name;
@@ -1991,10 +2039,10 @@ package body Ghost is
       if Is_Subject_To_Ghost (N) then
          if Present (Spec_Id) then
             Policy := Ghost_Policy_In_Effect (Spec_Id);
-            Level  := Ghost_Assertion_Level (Spec_Id);
+            Level := Ghost_Assertion_Level_In_Effect (Spec_Id);
          else
             Policy := Ghost_Policy_In_Effect (Body_Id);
-            Level  := Ghost_Assertion_Level (Body_Id);
+            Level := Ghost_Assertion_Level_In_Effect (Body_Id);
          end if;
 
       --  A body declared within a Ghost region is automatically Ghost
@@ -2002,11 +2050,11 @@ package body Ghost is
 
       elsif Ghost_Config.Ghost_Mode = Check then
          Policy := Name_Check;
-         Level  := Ghost_Config.Ghost_Mode_Assertion_Level;
+         Level := Ghost_Config.Ghost_Mode_Assertion_Level;
 
       elsif Ghost_Config.Ghost_Mode = Ignore then
          Policy := Name_Ignore;
-         Level  := Ghost_Config.Ghost_Mode_Assertion_Level;
+         Level := Ghost_Config.Ghost_Mode_Assertion_Level;
 
       --  Inherit the "ghostness" of the previous declaration when the body
       --  acts as a completion.
@@ -2025,13 +2073,7 @@ package body Ghost is
       --  The Ghost policy in effect at the point of declaration and at the
       --  point of completion must match (SPARK RM 6.9(16)).
 
-      Check_Ghost_Completion
-        (Prev_Id  => Spec_Id,
-         Compl_Id => Body_Id);
-
-      if Present (Level) then
-         Set_Ghost_Assertion_Level (Body_Id, Level);
-      end if;
+      Check_Ghost_Completion (Prev_Id => Spec_Id, Compl_Id => Body_Id);
 
       --  Mark the body as its formals as Ghost
 
@@ -2441,16 +2483,15 @@ package body Ghost is
       end if;
    end Mark_Ghost_Pragma;
 
-   procedure Mark_Ghost_Pragma
-     (N    : Node_Id;
-      Mode : Ghost_Mode_Type)
-   is
+   procedure Mark_Ghost_Pragma (N : Node_Id; Mode : Ghost_Mode_Type) is
    begin
       if Mode = Check then
-         Set_Is_Checked_Ghost_Pragma (N);
+         Set_Is_Checked_Ghost_Pragma (N, True);
+         Set_Is_Ignored_Ghost_Pragma (N, False);
 
       else
-         Set_Is_Ignored_Ghost_Pragma (N);
+         Set_Is_Checked_Ghost_Pragma (N, False);
+         Set_Is_Ignored_Ghost_Pragma (N, True);
          Set_Is_Ignored_Ghost_Node (N);
          Record_Ignored_Ghost_Node (N);
       end if;
@@ -2460,10 +2501,7 @@ package body Ghost is
    -- Mark_Ghost_Renaming --
    -------------------------
 
-   procedure Mark_Ghost_Renaming
-     (N  : Node_Id;
-      Id : Entity_Id)
-   is
+   procedure Mark_Ghost_Renaming (N : Node_Id; Id : Entity_Id) is
       Policy : Name_Id := No_Name;
       Level  : constant Entity_Id := Ghost_Assertion_Level (Id);
    begin
@@ -2661,12 +2699,26 @@ package body Ghost is
 
       elsif Nkind (N) = N_Pragma then
          Level := Pragma_Ghost_Assertion_Level (N);
+
          if Is_Checked_Ghost_Pragma (N) then
-            Install_Ghost_Region (Check, N, Level);
+
+            --  Still install an ignored ghost region if the pragma is attached
+            --  to a checked ghost entity, but the pragma itself is explicitly
+            --  ignored.
+
+            if Is_Ignored (N) then
+               Install_Ghost_Region (Ignore, N, Level);
+            else
+               Install_Ghost_Region (Check, N, Level);
+            end if;
          elsif Is_Ignored_Ghost_Pragma (N) then
             Install_Ghost_Region (Ignore, N, Level);
          else
-            Install_Ghost_Region (None, N, Level);
+            if Is_Checked (N) then
+               Install_Ghost_Region (Check, N, Level);
+            else
+               Install_Ghost_Region (None, N, Level);
+            end if;
          end if;
 
       --  The Ghost mode of a procedure call depends on the Ghost mode of the

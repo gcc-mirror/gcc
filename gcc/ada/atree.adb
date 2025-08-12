@@ -1807,6 +1807,7 @@ package body Atree is
             Set_Is_Checked_Ghost_Entity (N);
             Set_Ghost_Assertion_Level
               (N, Ghost_Config.Ghost_Mode_Assertion_Level);
+            Set_Is_Implicit_Ghost (N);
          end if;
 
       elsif Ghost_Config.Ghost_Mode = Ignore then
@@ -1814,6 +1815,7 @@ package body Atree is
             Set_Is_Ignored_Ghost_Entity (N);
             Set_Ghost_Assertion_Level
               (N, Ghost_Config.Ghost_Mode_Assertion_Level);
+            Set_Is_Implicit_Ghost (N);
          end if;
 
          Set_Is_Ignored_Ghost_Node (N);
