@@ -2102,6 +2102,7 @@ compare_binary_binary(tree return_int,
                    right_side_ref->field,
                    refer_offset(*right_side_ref),
                    hilo_right);
+
   IF( hilo_left, eq_op, integer_one_node )
     {
     // left side is hi-value
@@ -2358,8 +2359,6 @@ cobol_compare(  tree return_int,
                 NULL_TREE));
     // compared = true;  // Commented out to quiet cppcheck
     }
-
-//  gg_printf("   result is %d\n", return_int, NULL_TREE);
   }
 
 static void
@@ -14852,7 +14851,7 @@ static bool
 mh_numeric_display( const cbl_refer_t &destref,
                     const cbl_refer_t &sourceref,
                     const TREEPLET    &tsource,
-                          tree size_error)
+                          tree         size_error)
   {
   bool moved = false;
 
@@ -14862,97 +14861,105 @@ mh_numeric_display( const cbl_refer_t &destref,
       &&  !(sourceref.field->attr & scaled_e) )
     {
     Analyze();
-    // I believe that there are 225 pathways through the following code.  That's
-    // because there are five different valid combination of signable_e,
+    // I believe that there are 450 pathways through the following code.
+    // That's because there are five different valid combination of signable_e,
     // separate_e, and leading_e.  There are three possibilities for
-    // sender/receiver rdigits (too many, too few, and just right), and the same
-    // for ldigits.  5 * 5 * 3 * 3 = 225.
+    // sender/receiver rdigits (too many, too few, and just right), and the
+    // same for ldigits.  5 * 5 * 3 * 3 * 2 = 450.
 
     // Fasten your seat belts.
 
-    // In order to simplify processing of a signable internal sender, we are
-    // going to pick up the sign byte and temporarily turn off the sign bit in
-    // the source data.  At the end, we will restore that value.  This
-    // reflexively makes me a bit nervous (it isn't, for example, thread-safe),
-    // but it makes life easier.
+    // This routine is complicated by the fact that although I had several 
+    // false starts of putting this into libgcobol, I keep coming back to the
+    // fact that assignment of zoned values is common.  And, so, there are all
+    // kinds of things that are known at compile time that would turn into 
+    // execution-time decisions if I moved them to the library.  So, complex
+    // or not, I am doing all this code here at compile time because it will
+    // minimize the code at execution time.
 
-    static tree source_sign_loc  = gg_define_variable(UCHAR_P, "..mhnd_sign_loc", vs_file_static);
-    static tree source_sign_byte = gg_define_variable(UCHAR,   "..mhnd_sign_byte", vs_file_static);
-    static tree dest_p    = gg_define_variable(UCHAR_P, "..mhnd_dest", vs_file_static); // The destination data pointer
-    static tree source_p  = gg_define_variable(UCHAR_P, "..mhnd_source", vs_file_static); // The source data pointer
-    static tree source_ep = gg_define_variable(UCHAR_P, "..mhnd_source_e", vs_file_static); // When we need an end pointer
+    // One thing to keep in mind is the problem caused by a source value being
+    // internally signed.  That turns an ASCII "123" into "12t", and we
+    // very probably don't want that "t" to find its way into the destination
+    // value.  The internal sign characteristic of ASCII is that the high
+    // nybble of the sign location is 0x30 or 0x70.  For EBCDIC, the high
+    // nybble is 0xC0 for positive values, and 0xD0 for negative; all other
+    // digits are 0x70.
+
+    static tree source_sign_loc  = gg_define_variable(UCHAR_P,
+                                                      "..mhnd_sign_loc",
+                                                      vs_file_static);
+    static tree source_sign_byte = gg_define_variable(UCHAR,
+                                                      "..mhnd_sign_byte",
+                                                      vs_file_static);
+    // The destination data pointer
+    static tree dest_p    = gg_define_variable( UCHAR_P,
+                                                "..mhnd_dest",
+                                                vs_file_static);
+    // The source data pointer
+    static tree source_p  = gg_define_variable( UCHAR_P,
+                                                "..mhnd_source",
+                                                vs_file_static);
+    // When we need an end pointer
+    static tree source_ep = gg_define_variable( UCHAR_P,
+                                                "..mhnd_source_e",
+                                                vs_file_static);
 
     gg_assign(dest_p,   qualified_data_location(destref));
     gg_assign(source_p, gg_add(member(sourceref.field, "data"),
                                tsource.offset));
 
-    if( sourceref.field->attr & signable_e )
-      {
-      // The source is signable
+    bool source_is_signable = sourceref.field->attr & signable_e;
+    bool source_is_leading  = sourceref.field->attr & leading_e;
+    bool source_is_separate = sourceref.field->attr & separate_e;
 
-      if( !(sourceref.field->attr & leading_e) )
+    bool dest_is_signable = destref.field->attr & signable_e;
+    bool dest_is_leading  = destref.field->attr & leading_e;
+    bool dest_is_separate = destref.field->attr & separate_e;
+
+    if( source_is_signable )
+      {
+      // The source is signable, so we are going to calculate the location of
+      // the source sign information.
+
+      gg_assign(source_sign_loc,
+                gg_add(member(sourceref.field->var_decl_node, "data"),
+                       tsource.offset));
+
+      if( (source_is_leading) )
         {
-        // The sign location is trailing.  Whether separate or not, the location
-        // is the final byte of the data:
-        gg_assign(source_sign_loc, gg_add(member( sourceref.field->var_decl_node, "data"),
-                                          tsource.offset)),
-        gg_assign(source_sign_loc,
-                  gg_add(source_sign_loc,
-                         build_int_cst_type(SIZE_T,
-                                            sourceref.field->data.capacity-1)));
-        if( (sourceref.field->attr & separate_e) )
+        // The source sign location is in the leading position.
+        if( source_is_separate )
           {
-          // We have trailing separate
-          }
-        else
-          {
-          // We have trailing internal
+          // We have LEADING SEPARATE, so the first actual digit is at
+          // source_p+1.
+          gg_increment(source_p);
           }
         }
       else
         {
-        // The source sign location is in the leading position.
+        // The sign location is trailing.  Whether separate or not, the
+        // location is the final byte of the data:
         gg_assign(source_sign_loc,
-                  gg_add(member(sourceref.field->var_decl_node, "data"),
-                         tsource.offset));
-        if( (sourceref.field->attr & separate_e) )
-          {
-          // We have leading separate, so the first actual digit is at
-          // source_p+1.
-          gg_increment(source_p);
-          }
-        else
-          {
-          // We have leading internal
-          }
+                  gg_add(source_sign_loc,
+                        build_int_cst_type(SIZE_T,
+                                          sourceref.field->data.capacity-1)));
         }
       // Pick up the byte that contains the sign data, whether internal or
       // external:
       gg_assign(source_sign_byte, gg_indirect(source_sign_loc));
 
-      if( !(sourceref.field->attr & separate_e) )
+      if( !source_is_separate )
         {
-        // This is signable and internal, so we want to turn off the sign bit
-        // in the original source data
-        if( internal_codeset_is_ebcdic() )
-          {
-          gg_assign(gg_indirect(source_sign_loc),
-                    gg_bitwise_or(source_sign_byte,
-                                  build_int_cst_type( UCHAR,
-                                                      NUMERIC_DISPLAY_SIGN_BIT)));
-          }
-        else
-          {
-          gg_assign(gg_indirect(source_sign_loc),
-                    gg_bitwise_and( source_sign_byte,
-                                    build_int_cst_type( UCHAR,
-                                                       ~NUMERIC_DISPLAY_SIGN_BIT)));
-          }
+        // The source is signable and internal.  We will modify the zone of
+        // the source sign byte to force it to be plain vanilla positive.
+
+        // When the move is done, we will replace that byte with the original
+        // value.
+        gg_assign(gg_indirect(source_sign_loc),
+                  gg_bitwise_or(build_int_cst_type(UCHAR, ZONED_ZERO),
+                                gg_bitwise_and( source_sign_byte,
+                                                build_int_cst_type( UCHAR, 0x0F))));
         }
-      }
-    else
-      {
-      // The number is unsigned, so do nothing.
       }
 
     // Let the shenanigans begin.
@@ -14961,83 +14968,49 @@ mh_numeric_display( const cbl_refer_t &destref,
 
     // The first thing to do is see if we need to output a leading sign
     // character
-    if(    (destref.field->attr & signable_e)
-        && (destref.field->attr & leading_e)
-        && (destref.field->attr & separate_e) )
+    if(    dest_is_signable
+        && dest_is_leading
+        && dest_is_separate )
       {
       // The output is signed, separate, and leading, so the first character
       // needs to be either '+' or '-'
-      if( (sourceref.field->attr & separate_e) )
+      if( source_is_separate )
         {
-        // The source is signable/separate
-        // Oooh.  Shiny.  We already have that character.
+        // The source and dest are both signable/separate.
+        // Oooh.  Shiny.  We already have the sign character from the source,
+        // so we assign that to the destination.
         gg_assign(gg_indirect(dest_p), source_sign_byte);
         }
       else
         {
-        // The source is internal.  Not that up above we set source_sign_byte
-        // even for source values that aren't signable
-        if( internal_codeset_is_ebcdic() )
+        // The source is internal.
+        if( source_is_signable )
           {
-          // We are working in EBCDIC
-          if( sourceref.field->attr & signable_e )
+          IF( gg_bitwise_and( source_sign_byte,
+                              build_int_cst_type( UCHAR,
+                                                  NUMERIC_DISPLAY_SIGN_BIT)),
+              ne_op,
+              build_int_cst_type( UCHAR, 0) )
             {
-            IF( gg_bitwise_and( source_sign_byte,
-                                build_int_cst_type( UCHAR,
-                                                    NUMERIC_DISPLAY_SIGN_BIT)),
-                eq_op,
-                build_int_cst_type( UCHAR, 0) )
-              {
-              // The source was negative
-              gg_assign(gg_indirect(dest_p),
-                        build_int_cst_type( UCHAR, EBCDIC_MINUS));
-
-              }
-            ELSE
-              {
-              // The source was positive
-              gg_assign(gg_indirect(dest_p),
-                        build_int_cst_type( UCHAR, EBCDIC_PLUS));
-              }
-              ENDIF
-            }
-          else
-            {
-            // The source is not signable, so the result is positive
+            // The source was negative
             gg_assign(gg_indirect(dest_p),
-                      build_int_cst_type( UCHAR, EBCDIC_PLUS));
+                      build_int_cst_type( UCHAR, SEPARATE_MINUS));
+
             }
+          ELSE
+            {
+            // The source was positive
+            gg_assign(gg_indirect(dest_p),
+                      build_int_cst_type( UCHAR, SEPARATE_PLUS));
+            }
+            ENDIF
           }
         else
           {
-          // We are working in ASCII
-          if( sourceref.field->attr & signable_e )
-            {
-            IF( gg_bitwise_and( source_sign_byte,
-                                build_int_cst_type( UCHAR,
-                                                    NUMERIC_DISPLAY_SIGN_BIT)),
-                ne_op,
-                build_int_cst_type( UCHAR, 0) )
-              {
-              // The source was negative
-              gg_assign(gg_indirect(dest_p),
-                        build_int_cst_type( UCHAR, '-'));
-
-              }
-            ELSE
-              {
-              // The source was positive
-              gg_assign(gg_indirect(dest_p),
-                        build_int_cst_type( UCHAR, '+'));
-              }
-              ENDIF
-            }
-          else
-            {
-            // The source is not signable, so the result is positive
-            gg_assign(gg_indirect(dest_p),
-                      build_int_cst_type( UCHAR, '+'));
-            }
+          // The source is not signable, so the signed becomes positive no
+          // matter what the sign of the source.
+          gg_assign(gg_indirect(dest_p),
+                    build_int_cst_type( UCHAR, SEPARATE_PLUS));
           }
         }
       gg_increment(dest_p);
@@ -15058,8 +15031,7 @@ mh_numeric_display( const cbl_refer_t &destref,
       // The destination has more ldigits than the source, and needs some
       // leading zeroes:
       picky_memset( dest_p,
-                    internal_codeset_is_ebcdic() ?
-                                EBCDIC_ZERO : '0' ,
+                    ZONED_ZERO ,
                     dest_ldigits - source_ldigits);
       // With the leading zeros set, copy over the ldigits:
       digit_count = source_ldigits;
@@ -15085,8 +15057,7 @@ mh_numeric_display( const cbl_refer_t &destref,
           IF( gg_indirect(source_p),
               ne_op,
               build_int_cst_type( UCHAR,
-                                  internal_codeset_is_ebcdic() ?
-                                              EBCDIC_ZERO : '0') )
+                                  ZONED_ZERO) )
             {
             set_exception_code(ec_size_truncation_e);
             gg_assign(size_error, integer_one_node);
@@ -15132,25 +15103,23 @@ mh_numeric_display( const cbl_refer_t &destref,
       // over only the necessary rdigits, discarding the ones to the right.
       digit_count += dest_rdigits;
       }
-
     picky_memcpy(dest_p, source_p, digit_count);
     picky_memset( dest_p,
-                  internal_codeset_is_ebcdic() ?
-                              EBCDIC_ZERO : '0' ,
+                  ZONED_ZERO ,
                   trailing_zeros);
 
     // With the digits in place, we need to sort out what to do if the target
     // is signable:
-    if( destref.field->attr & signable_e )
+    if( dest_is_signable )
       {
-      if(     (destref.field->attr & separate_e)
-          && !(destref.field->attr & leading_e) )
+      if(     dest_is_separate
+          && !dest_is_leading )
         {
         // The target is separate/trailing, so we need to tack a '+'
         // or '-' character
-        if( sourceref.field->attr & separate_e )
+        if( source_is_separate )
           {
-          // The source was separate, so we already have what we need in t
+          // The source was separate, so we already have what we need in the
           // source_sign_byte:
           gg_assign(gg_indirect(dest_p), source_sign_byte);
           gg_increment(dest_p);
@@ -15158,68 +15127,43 @@ mh_numeric_display( const cbl_refer_t &destref,
         else
           {
           // The source is either internal, or unsigned
-          if( sourceref.field->attr & signable_e )
+          if( source_is_signable )
             {
             // The source is signable/internal, so we need to extract the
             // sign bit from source_sign_byte
-            if( internal_codeset_is_ebcdic() )
+            IF( gg_bitwise_and( source_sign_byte,
+                                build_int_cst_type( UCHAR,
+                                                    NUMERIC_DISPLAY_SIGN_BIT)),
+                ne_op,
+                build_int_cst_type( UCHAR, 0) )
               {
-              IF( gg_bitwise_and( source_sign_byte,
-                                  build_int_cst_type( UCHAR,
-                                                      NUMERIC_DISPLAY_SIGN_BIT)),
-                  eq_op,
-                  build_int_cst_type( UCHAR, 0) )
-                {
-                // The source was negative
-                gg_assign(gg_indirect(dest_p),
-                          build_int_cst_type( UCHAR, EBCDIC_MINUS));
+              // The source was negative
+              gg_assign(gg_indirect(dest_p),
+                        build_int_cst_type( UCHAR, SEPARATE_MINUS));
 
-                }
-              ELSE
-                {
-                // The source was positive
-                gg_assign(gg_indirect(dest_p),
-                          build_int_cst_type( UCHAR, EBCDIC_PLUS));
-                }
-                ENDIF
               }
-            else
+            ELSE
               {
-              IF( gg_bitwise_and( source_sign_byte,
-                                  build_int_cst_type( UCHAR,
-                                                      NUMERIC_DISPLAY_SIGN_BIT)),
-                  ne_op,
-                  build_int_cst_type( UCHAR, 0) )
-                {
-                // The source was negative
-                gg_assign(gg_indirect(dest_p),
-                          build_int_cst_type( UCHAR, '-'));
-
-                }
-              ELSE
-                {
-                // The source was positive
-                gg_assign(gg_indirect(dest_p),
-                          build_int_cst_type( UCHAR, '+'));
-                }
-                ENDIF
+              // The source was positive
+              gg_assign(gg_indirect(dest_p),
+                        build_int_cst_type( UCHAR, SEPARATE_PLUS));
               }
+              ENDIF
             }
           else
             {
             // The source is unsigned, so dest is positive
             gg_assign(gg_indirect(dest_p),
                       build_int_cst_type( UCHAR,
-                                          internal_codeset_is_ebcdic() ?
-                                          EBCDIC_PLUS : '+' ));
+                                          SEPARATE_PLUS));
             }
           }
         gg_increment(dest_p);
         }
-      else if( !(destref.field->attr & separate_e) )
+      else if( !dest_is_separate )
         {
         // The destination is signed/internal
-        if( destref.field->attr & leading_e )
+        if( dest_is_leading )
           {
           // The sign bit goes into the first byte:
           gg_assign(dest_p, qualified_data_location(destref));
@@ -15229,104 +15173,62 @@ mh_numeric_display( const cbl_refer_t &destref,
           // The sign bit goes into the last byte:
           gg_decrement(dest_p);
           }
-        if( sourceref.field->attr & signable_e )
+        // dest_p now points to the internal sign location
+        if( internal_codeset_is_ebcdic() )
           {
-          if( sourceref.field->attr & separate_e )
+          // For EBCDIC, the zone is going to end up being 0xC0 or 0xD0
+          gg_assign(gg_indirect(dest_p),
+                    gg_bitwise_and(gg_indirect(dest_p),
+                                   build_int_cst_type(UCHAR,
+                                                      ZONE_SIGNED_EBCDIC+0x0F)));
+          }
+
+        if( source_is_signable )
+          {
+          if( source_is_separate )
             {
             // The source is separate, so source_sign_byte is '+' or '-'
             IF( source_sign_byte,
                 eq_op,
-                build_int_cst_type(UCHAR,
-                                   internal_codeset_is_ebcdic() ?
-                                        EBCDIC_MINUS : '-') )
+                build_int_cst_type(UCHAR, SEPARATE_MINUS) )
               {
-              // The source is negative, so turn the ASCII bit on
-              if( !internal_codeset_is_ebcdic() )
-                {
-                gg_assign(gg_indirect(dest_p),
-                          gg_bitwise_or(gg_indirect(dest_p),
-                                        build_int_cst_type(
-                                                  UCHAR,
-                                                  NUMERIC_DISPLAY_SIGN_BIT)));
-
-                }
-              else
-                {
-                // It's ebcdic, so turn the sign bit OFF
-                gg_assign(gg_indirect(dest_p),
-                          gg_bitwise_and(gg_indirect(dest_p),
-                                        build_int_cst_type(
-                                                  UCHAR,
-                                                  ~NUMERIC_DISPLAY_SIGN_BIT)));
-                }
+              // The source is negative, so turn on the internal "is minus" bit
+              gg_assign(gg_indirect(dest_p),
+                        gg_bitwise_or(gg_indirect(dest_p),
+                                      build_int_cst_type(
+                                                UCHAR,
+                                                NUMERIC_DISPLAY_SIGN_BIT)));
               }
             ELSE
-              {
-              // The source is positive, so turn the EBCDIC bit ON:
-              if( internal_codeset_is_ebcdic() )
-                {
-                gg_assign(gg_indirect(dest_p),
-                          gg_bitwise_or(gg_indirect(dest_p),
-                                        build_int_cst_type(
-                                                  UCHAR,
-                                                  NUMERIC_DISPLAY_SIGN_BIT)));
-                }
-              }
               ENDIF
             }
           else
             {
             // The source is signable/internal, so the sign bit is in
             // source_sign_byte. Whatever it is, it has to go into dest_p:
-            if( internal_codeset_is_ebcdic()  )
+            IF( gg_bitwise_and( source_sign_byte,
+                                build_int_cst_type(
+                                             UCHAR,
+                                             NUMERIC_DISPLAY_SIGN_BIT)),
+                ne_op,
+                build_int_cst_type(UCHAR, 0) )
               {
-              // This is EBCDIC, so if the source_sign_byte bit is LOW, we
-              // clear that bit in dest_p high.
-              IF( gg_bitwise_and( source_sign_byte,
-                                  build_int_cst_type(
-                                               UCHAR,
-                                               NUMERIC_DISPLAY_SIGN_BIT)),
-                  eq_op,
-                  build_int_cst_type(UCHAR, 0) )
-                {
-                // The source was negative, so make the dest negative
-                gg_assign(gg_indirect(dest_p),
-                          gg_bitwise_and(gg_indirect(dest_p),
-                                         build_int_cst_type(
-                                                  UCHAR,
-                                                  ~NUMERIC_DISPLAY_SIGN_BIT)));
-                }
-              ELSE
-                ENDIF
+              // The source was negative, so make the dest negative
+              gg_assign(gg_indirect(dest_p),
+                        gg_bitwise_or(gg_indirect(dest_p),
+                                      build_int_cst_type(
+                                                UCHAR,
+                                                NUMERIC_DISPLAY_SIGN_BIT)));
               }
-            else
-              {
-              // This is ASCII, so if the source_sign_byte bit is high, we
-              // set that bit in dest_p high.
-              IF( gg_bitwise_and( source_sign_byte,
-                                  build_int_cst_type(
-                                               UCHAR,
-                                               NUMERIC_DISPLAY_SIGN_BIT)),
-                  ne_op,
-                  build_int_cst_type(UCHAR, 0) )
-                {
-                // The source was negative, so make the dest negative
-                gg_assign(gg_indirect(dest_p),
-                          gg_bitwise_or(gg_indirect(dest_p),
-                                        build_int_cst_type(
-                                                  UCHAR,
-                                                  NUMERIC_DISPLAY_SIGN_BIT)));
-                }
-              ELSE
-                ENDIF
-              }
+            ELSE
+              ENDIF
             }
           }
         }
       }
 
-    if(     (sourceref.field->attr & signable_e)
-        && !(sourceref.field->attr & separate_e))
+    if(     source_is_signable
+        && !source_is_separate)
       {
       // The source is signable internal, so we need to restore the original
       // sign byte in the original source data:
@@ -15335,7 +15237,7 @@ mh_numeric_display( const cbl_refer_t &destref,
     moved = true;
     }
   return moved;
-  }
+  } //NUMERIC_DISPLAY_SIGN
 
 static bool
 mh_little_endian( const cbl_refer_t &destref,
@@ -16068,12 +15970,12 @@ initial_from_initial(cbl_field_t *field)
       bool negative;
       if( real_isneg (&value) )
         {
-          negative = true;
-          value = real_value_negate (&value);
+        negative = true;
+        value = real_value_negate (&value);
         }
       else
         {
-          negative = false;
+        negative = false;
         }
 
       digits_from_float128(ach, field, field->data.digits, rdigits, value);
@@ -16083,6 +15985,7 @@ initial_from_initial(cbl_field_t *field)
           && (field->attr & separate_e)
           && (field->attr & leading_e ) )
         {
+        // This zoned decimal value is signable, separate, and leading.
         if( negative )
           {
           *pretval++ = internal_minus;
@@ -16094,12 +15997,14 @@ initial_from_initial(cbl_field_t *field)
         }
       for(size_t i=0; i<field->data.digits; i++)
         {
+        // Start by assuming its an value that can't be signed
         *pretval++ = internal_zero + ((*digits++) & 0x0F);
         }
       if(     (field->attr & signable_e)
           &&  (field->attr & separate_e)
           && !(field->attr & leading_e ) )
         {
+        // The value is signable, separate, and trailing
         if( negative )
           {
           *pretval++ = internal_minus;
@@ -16110,30 +16015,21 @@ initial_from_initial(cbl_field_t *field)
           }
         }
       if(     (field->attr & signable_e)
-          && !(field->attr & separate_e)
-          &&  negative)
+          && !(field->attr & separate_e) )
         {
-        if( field->attr & leading_e )
+        // This value is signable, and not separate.  So, the sign information
+        // goes into the first or last byte:
+        char *sign_location = field->attr & leading_e ? 
+                              retval : retval + field->data.digits - 1 ;
+        if( internal_codeset_is_ebcdic() )
           {
-          if( internal_is_ebcdic )
-            {
-            retval[0] &= ~NUMERIC_DISPLAY_SIGN_BIT;
-            }
-          else
-            {
-            retval[0] |=  NUMERIC_DISPLAY_SIGN_BIT;
-            }
+          // Change the zone from 0xFO to 0xC0
+          *sign_location &= (ZONE_SIGNED_EBCDIC + 0x0F);
           }
-        else
+        if( negative )
           {
-          if( internal_is_ebcdic )
-            {
-            pretval[-1] &= ~NUMERIC_DISPLAY_SIGN_BIT;
-            }
-          else
-            {
-            pretval[-1] |=  NUMERIC_DISPLAY_SIGN_BIT;
-            }
+          // Turn on the sign bit:
+          *sign_location |= NUMERIC_DISPLAY_SIGN_BIT;
           }
         }
       break;

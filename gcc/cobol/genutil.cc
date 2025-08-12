@@ -858,57 +858,47 @@ get_binary_value( tree value,
               // The sign byte is internal
               if( field->attr & leading_e)
                 {
-                // The first byte has the sign bit:
+                // The first byte has the sign bit.  We need to turn it off,
+                // to make the value positive:
                 gg_assign(signbyte,
                           gg_get_indirect_reference(source_address, NULL_TREE));
-                if( internal_codeset_is_ebcdic() )
-                  {
-                  // We need to make sure the EBCDIC sign bit is ON, for positive
-                  gg_assign(gg_get_indirect_reference(source_address, NULL_TREE),
-                            gg_bitwise_or(signbyte,
+                // We need to make sure the ascii sign bit is off, for positive
+                gg_assign(gg_get_indirect_reference(source_address, NULL_TREE),
+                          gg_bitwise_and( signbyte,
                                           build_int_cst_type( UCHAR,
-                                                              NUMERIC_DISPLAY_SIGN_BIT)));
-                  }
-                else
-                  {
-                  // We need to make sure the ascii sign bit is Off, for positive
-                  gg_assign(gg_get_indirect_reference(source_address, NULL_TREE),
-                            gg_bitwise_and( signbyte,
-                                            build_int_cst_type( UCHAR,
-                                                                ~NUMERIC_DISPLAY_SIGN_BIT)));
-                  }
+                                                              ~NUMERIC_DISPLAY_SIGN_BIT)));
                 }
               else
                 {
-                // The final byte has the sign bit:
+                // The final byte has the sign bit.  We need to turn it off,
+                // to make the value positive:
                 gg_assign(signbyte,
                           gg_get_indirect_reference(source_address,
                                                     build_int_cst_type(SIZE_T,
                                                     field->data.capacity-1)));
-                if( internal_codeset_is_ebcdic() )
-                  {
-                  // We need to make sure the EBCDIC sign bit is ON, for positive
-                  gg_assign(gg_get_indirect_reference(source_address,
-                                                      build_int_cst_type( SIZE_T,
-                                                                          field->data.capacity-1)),
-                            gg_bitwise_or(signbyte,
+                gg_assign(gg_get_indirect_reference(source_address,
+                                                    build_int_cst_type( SIZE_T,
+                                                                        field->data.capacity-1)),
+                          gg_bitwise_and( signbyte,
                                           build_int_cst_type( UCHAR,
-                                                              NUMERIC_DISPLAY_SIGN_BIT)));
-                  }
-                else
-                  {
-                  // We need to make sure the ASCII sign bit is Off, for positive
-                  gg_assign(gg_get_indirect_reference(source_address,
-                                                      build_int_cst_type( SIZE_T,
-                                                                          field->data.capacity-1)),
-                            gg_bitwise_and( signbyte,
-                                            build_int_cst_type( UCHAR,
-                                                                ~NUMERIC_DISPLAY_SIGN_BIT)));
-                  }
+                                                              ~NUMERIC_DISPLAY_SIGN_BIT)));
                 }
               }
             }
           // We can now set up the byte-by-byte processing loop:
+          WHILE( pointer, lt_op, pend )
+            {
+            // Pick up the byte
+            digit = gg_get_indirect_reference(pointer, NULL_TREE);
+            // Whether ASCII or EBCDIC, the bottom four bits tell the tale:
+            // Multiply our accumulator by ten:
+            gg_assign(value, gg_multiply(value, build_int_cst_type(TREE_TYPE(value), 10)));
+            // And add in the current digit
+            gg_assign(value, gg_add(value, gg_cast(TREE_TYPE(value), gg_bitwise_and(digit, build_int_cst_type(UCHAR, 0x0F)))));
+            gg_increment(pointer);
+            }
+            WEND
+#if 0
           if( internal_codeset_is_ebcdic() )
             {
             // We are working in EBCDIC
@@ -961,6 +951,7 @@ get_binary_value( tree value,
               }
               WEND
             }
+#endif
 
           // Value contains the binary value.  The last thing is to apply -- and
           // undo -- the signable logic:
@@ -1004,10 +995,12 @@ get_binary_value( tree value,
                 // The final byte is '+' or '-'
                 if( internal_codeset_is_ebcdic() )
                   {
-                  // We are operating in EBCDIC, so we look for a 96 (is minus sign)
-                  IF( gg_get_indirect_reference(source_address, build_int_cst_type(SIZE_T, field->data.capacity-1)),
-                                                eq_op,
-                                                build_int_cst_type(UCHAR, 96) )
+                  // We are operating in EBCDIC
+                  IF( gg_get_indirect_reference(source_address,
+                                                build_int_cst_type(SIZE_T,
+                                                      field->data.capacity-1)),
+                      eq_op,
+                      build_int_cst_type(UCHAR, EBCDIC_MINUS) )
                     {
                     gg_assign(value, gg_negate(value));
                     }
@@ -1031,30 +1024,17 @@ get_binary_value( tree value,
             else
               {
               // The sign byte is internal.  Check the sign bit
-              if(internal_codeset_is_ebcdic())
+              IF( gg_bitwise_and(signbyte,
+                                 build_int_cst_type(UCHAR,
+                                                    NUMERIC_DISPLAY_SIGN_BIT)),
+                  ne_op, 
+                  build_int_cst_type(UCHAR, 0) )
                 {
-                IF( gg_bitwise_and( signbyte,
-                                          build_int_cst_type( UCHAR,
-                                                              NUMERIC_DISPLAY_SIGN_BIT)), eq_op, build_int_cst_type(UCHAR, 0) )
-                  {
-                  // The EBCDIC sign bit was OFF, so negate the result
-                  gg_assign(value, gg_negate(value));
-                  }
-                ELSE
-                  ENDIF
+                // The ASCII sign bit was on, so negate the result
+                gg_assign(value, gg_negate(value));
                 }
-              else
-                {
-                IF( gg_bitwise_and( signbyte,
-                                          build_int_cst_type( UCHAR,
-                                                              NUMERIC_DISPLAY_SIGN_BIT)), ne_op, build_int_cst_type(UCHAR, 0) )
-                  {
-                  // The ASCII sign bit was on, so negate the result
-                  gg_assign(value, gg_negate(value));
-                  }
-                ELSE
-                  ENDIF
-                }
+              ELSE
+                ENDIF
               // It's time to put back the original data:
               if( field->attr & leading_e)
                 {

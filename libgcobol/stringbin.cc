@@ -331,7 +331,7 @@ __gg__binary_to_string_internal(char *result, int digits, __int128 value)
 
 static
 void
-packed_from_combined(COMBINED &combined)
+packed_from_combined(const COMBINED &combined)
   {
   /*  The combined.value must be positive at this point.
 
