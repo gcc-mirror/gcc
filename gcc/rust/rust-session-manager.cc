@@ -938,7 +938,7 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
-      CfgStrip ().go (crate);
+      CfgStrip (cfg).go (crate);
       // Errors might happen during cfg strip pass
       bool visitor_dirty = false;
 
