@@ -11761,6 +11761,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	    std::unique_ptr<AST::MacroInvocation> invoc
 	      = parse_macro_invocation_partial (std::move (path),
 						std::move (outer_attrs));
+	    if (invoc == nullptr)
+	      return ExprOrStmt::create_error ();
 
 	    if (restrictions.consume_semi && maybe_skip_token (SEMICOLON))
 	      {
@@ -11772,9 +11774,12 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 
 	    TokenId after_macro = lexer.peek_token ()->get_id ();
 
-	    if (invoc->get_invoc_data ().get_delim_tok_tree ().get_delim_type ()
-		  == AST::CURLY
-		&& after_macro != DOT && after_macro != QUESTION_MARK)
+	    AST::DelimType delim_type = invoc->get_invoc_data ()
+					  .get_delim_tok_tree ()
+					  .get_delim_type ();
+
+	    if (delim_type == AST::CURLY && after_macro != DOT
+		&& after_macro != QUESTION_MARK)
 	      {
 		rust_debug ("braced macro statement");
 		return ExprOrStmt (
