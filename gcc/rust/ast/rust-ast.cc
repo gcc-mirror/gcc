@@ -48,27 +48,27 @@ SingleASTNode::SingleASTNode (SingleASTNode const &other)
   kind = other.kind;
   switch (kind)
     {
-    case EXPRESSION:
+    case Kind::Expr:
       expr = other.expr->clone_expr ();
       break;
 
-    case ITEM:
+    case Kind::Item:
       item = other.item->clone_item ();
       break;
 
-    case STMT:
+    case Kind::Stmt:
       stmt = other.stmt->clone_stmt ();
       break;
 
-    case EXTERN:
+    case Kind::Extern:
       external_item = other.external_item->clone_external_item ();
       break;
 
-    case ASSOC_ITEM:
+    case Kind::Assoc:
       assoc_item = other.assoc_item->clone_associated_item ();
       break;
 
-    case TYPE:
+    case Kind::Type:
       type = other.type->clone_type ();
       break;
     }
@@ -80,27 +80,27 @@ SingleASTNode::operator= (SingleASTNode const &other)
   kind = other.kind;
   switch (kind)
     {
-    case EXPRESSION:
+    case Kind::Expr:
       expr = other.expr->clone_expr ();
       break;
 
-    case ITEM:
+    case Kind::Item:
       item = other.item->clone_item ();
       break;
 
-    case STMT:
+    case Kind::Stmt:
       stmt = other.stmt->clone_stmt ();
       break;
 
-    case EXTERN:
+    case Kind::Extern:
       external_item = other.external_item->clone_external_item ();
       break;
 
-    case ASSOC_ITEM:
+    case Kind::Assoc:
       assoc_item = other.assoc_item->clone_associated_item ();
       break;
 
-    case TYPE:
+    case Kind::Type:
       type = other.type->clone_type ();
       break;
     }
@@ -112,27 +112,27 @@ SingleASTNode::accept_vis (ASTVisitor &vis)
 {
   switch (kind)
     {
-    case EXPRESSION:
+    case Kind::Expr:
       expr->accept_vis (vis);
       break;
 
-    case ITEM:
+    case Kind::Item:
       item->accept_vis (vis);
       break;
 
-    case STMT:
+    case Kind::Stmt:
       stmt->accept_vis (vis);
       break;
 
-    case EXTERN:
+    case Kind::Extern:
       external_item->accept_vis (vis);
       break;
 
-    case ASSOC_ITEM:
+    case Kind::Assoc:
       assoc_item->accept_vis (vis);
       break;
 
-    case TYPE:
+    case Kind::Type:
       type->accept_vis (vis);
       break;
     }
@@ -143,17 +143,17 @@ SingleASTNode::is_error ()
 {
   switch (kind)
     {
-    case EXPRESSION:
+    case Kind::Expr:
       return expr == nullptr;
-    case ITEM:
+    case Kind::Item:
       return item == nullptr;
-    case STMT:
+    case Kind::Stmt:
       return stmt == nullptr;
-    case EXTERN:
+    case Kind::Extern:
       return external_item == nullptr;
-    case ASSOC_ITEM:
+    case Kind::Assoc:
       return assoc_item == nullptr;
-    case TYPE:
+    case Kind::Type:
       return type == nullptr;
     }
 
@@ -166,17 +166,17 @@ SingleASTNode::as_string () const
 {
   switch (kind)
     {
-    case EXPRESSION:
+    case Kind::Expr:
       return "Expr: " + expr->as_string ();
-    case ITEM:
+    case Kind::Item:
       return "Item: " + item->as_string ();
-    case STMT:
+    case Kind::Stmt:
       return "Stmt: " + stmt->as_string ();
-    case EXTERN:
+    case Kind::Extern:
       return "External Item: " + external_item->as_string ();
-    case ASSOC_ITEM:
+    case Kind::Assoc:
       return "Associated Item: " + assoc_item->as_string ();
-    case TYPE:
+    case Kind::Type:
       return "Type: " + type->as_string ();
     }
 

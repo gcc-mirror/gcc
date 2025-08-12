@@ -119,8 +119,8 @@ private:
    * one Node will be extracted from the `nodes` vector
    */
   bool is_single_fragment () const;
-  bool is_single_fragment_of_kind (SingleASTNode::NodeType expected) const;
-  void assert_single_fragment (SingleASTNode::NodeType expected) const;
+  bool is_single_fragment_of_kind (SingleASTNode::Kind expected) const;
+  void assert_single_fragment (SingleASTNode::Kind expected) const;
 };
 
 enum class InvocKind

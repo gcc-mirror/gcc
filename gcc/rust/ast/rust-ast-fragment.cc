@@ -107,26 +107,26 @@ Fragment::should_expand () const
 bool
 Fragment::is_expression_fragment () const
 {
-  return is_single_fragment_of_kind (SingleASTNode::NodeType::EXPRESSION);
+  return is_single_fragment_of_kind (SingleASTNode::Kind::Expr);
 }
 
 bool
 Fragment::is_type_fragment () const
 {
-  return is_single_fragment_of_kind (SingleASTNode::NodeType::TYPE);
+  return is_single_fragment_of_kind (SingleASTNode::Kind::Type);
 }
 
 std::unique_ptr<Expr>
 Fragment::take_expression_fragment ()
 {
-  assert_single_fragment (SingleASTNode::NodeType::EXPRESSION);
+  assert_single_fragment (SingleASTNode::Kind::Expr);
   return nodes[0].take_expr ();
 }
 
 std::unique_ptr<Type>
 Fragment::take_type_fragment ()
 {
-  assert_single_fragment (SingleASTNode::NodeType::TYPE);
+  assert_single_fragment (SingleASTNode::Kind::Type);
   return nodes[0].take_type ();
 }
 
@@ -144,21 +144,21 @@ Fragment::is_single_fragment () const
 }
 
 bool
-Fragment::is_single_fragment_of_kind (SingleASTNode::NodeType expected) const
+Fragment::is_single_fragment_of_kind (SingleASTNode::Kind expected) const
 {
   return is_single_fragment () && nodes[0].get_kind () == expected;
 }
 
 void
-Fragment::assert_single_fragment (SingleASTNode::NodeType expected) const
+Fragment::assert_single_fragment (SingleASTNode::Kind expected) const
 {
-  static const std::map<SingleASTNode::NodeType, const char *> str_map = {
-    {SingleASTNode::NodeType::ASSOC_ITEM, "associated item"},
-    {SingleASTNode::NodeType::ITEM, "item"},
-    {SingleASTNode::NodeType::TYPE, "type"},
-    {SingleASTNode::NodeType::EXPRESSION, "expr"},
-    {SingleASTNode::NodeType::STMT, "stmt"},
-    {SingleASTNode::NodeType::EXTERN, "extern"},
+  static const std::map<SingleASTNode::Kind, const char *> str_map = {
+    {SingleASTNode::Kind::Assoc, "associated item"},
+    {SingleASTNode::Kind::Item, "item"},
+    {SingleASTNode::Kind::Type, "type"},
+    {SingleASTNode::Kind::Expr, "expr"},
+    {SingleASTNode::Kind::Stmt, "stmt"},
+    {SingleASTNode::Kind::Extern, "extern"},
   };
 
   auto actual = nodes[0].get_kind ();

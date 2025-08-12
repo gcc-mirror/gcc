@@ -1962,18 +1962,18 @@ public:
 class SingleASTNode : public Visitable
 {
 public:
-  enum NodeType
+  enum class Kind
   {
-    EXPRESSION,
-    ITEM,
-    STMT,
-    EXTERN,
-    ASSOC_ITEM,
-    TYPE,
+    Expr,
+    Item,
+    Stmt,
+    Extern,
+    Assoc,
+    Type,
   };
 
 private:
-  NodeType kind;
+  Kind kind;
 
   // FIXME make this a union
   std::unique_ptr<Expr> expr;
@@ -1985,27 +1985,27 @@ private:
 
 public:
   SingleASTNode (std::unique_ptr<Expr> expr)
-    : kind (EXPRESSION), expr (std::move (expr))
+    : kind (Kind::Expr), expr (std::move (expr))
   {}
 
   SingleASTNode (std::unique_ptr<Item> item)
-    : kind (ITEM), item (std::move (item))
+    : kind (Kind::Item), item (std::move (item))
   {}
 
   SingleASTNode (std::unique_ptr<Stmt> stmt)
-    : kind (STMT), stmt (std::move (stmt))
+    : kind (Kind::Stmt), stmt (std::move (stmt))
   {}
 
   SingleASTNode (std::unique_ptr<ExternalItem> item)
-    : kind (EXTERN), external_item (std::move (item))
+    : kind (Kind::Extern), external_item (std::move (item))
   {}
 
   SingleASTNode (std::unique_ptr<AssociatedItem> item)
-    : kind (ASSOC_ITEM), assoc_item (std::move (item))
+    : kind (Kind::Assoc), assoc_item (std::move (item))
   {}
 
   SingleASTNode (std::unique_ptr<Type> type)
-    : kind (TYPE), type (std::move (type))
+    : kind (Kind::Type), type (std::move (type))
   {}
 
   SingleASTNode (SingleASTNode const &other);
@@ -2015,23 +2015,23 @@ public:
   SingleASTNode (SingleASTNode &&other) = default;
   SingleASTNode &operator= (SingleASTNode &&other) = default;
 
-  NodeType get_kind () const { return kind; }
+  Kind get_kind () const { return kind; }
 
   std::unique_ptr<Expr> &get_expr ()
   {
-    rust_assert (kind == EXPRESSION);
+    rust_assert (kind == Kind::Expr);
     return expr;
   }
 
   std::unique_ptr<Item> &get_item ()
   {
-    rust_assert (kind == ITEM);
+    rust_assert (kind == Kind::Item);
     return item;
   }
 
   std::unique_ptr<Stmt> &get_stmt ()
   {
-    rust_assert (kind == STMT);
+    rust_assert (kind == Kind::Stmt);
     return stmt;
   }
 
