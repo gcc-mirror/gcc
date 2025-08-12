@@ -204,8 +204,20 @@ enum vect_memory_access_type {
   VMAT_STRIDED_SLP,
 
   /* The access uses gather loads or scatter stores.  */
-  VMAT_GATHER_SCATTER
+  VMAT_GATHER_SCATTER_LEGACY,
+  VMAT_GATHER_SCATTER_IFN,
+  VMAT_GATHER_SCATTER_EMULATED
 };
+
+/* Returns whether MAT is any of the VMAT_GATHER_SCATTER_* kinds.  */
+
+inline bool
+mat_gather_scatter_p (vect_memory_access_type mat)
+{
+  return (mat == VMAT_GATHER_SCATTER_LEGACY
+	  || mat == VMAT_GATHER_SCATTER_IFN
+	  || mat == VMAT_GATHER_SCATTER_EMULATED);
+}
 
 /*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */
@@ -1662,13 +1674,6 @@ struct gather_scatter_info {
 
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
-
-#define GATHER_SCATTER_LEGACY_P(info) ((info).decl != NULL_TREE \
-				       && (info).ifn == IFN_LAST)
-#define GATHER_SCATTER_IFN_P(info) ((info).decl == NULL_TREE \
-				    && (info).ifn != IFN_LAST)
-#define GATHER_SCATTER_EMULATED_P(info) ((info).decl == NULL_TREE \
-					 && (info).ifn == IFN_LAST)
 
 
 /* Contains the scalar or vector costs for a vec_info.  */

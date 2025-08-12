@@ -607,7 +607,7 @@ costs::need_additional_vector_vars_p (stmt_vec_info stmt_info,
   if (type == load_vec_info_type || type == store_vec_info_type)
     {
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
-	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_GATHER_SCATTER)
+	  && mat_gather_scatter_p (SLP_TREE_MEMORY_ACCESS_TYPE (node)))
 	return true;
 
       machine_mode mode = TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info));

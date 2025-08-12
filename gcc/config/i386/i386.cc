@@ -26161,8 +26161,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		&& (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF
 					(SLP_TREE_REPRESENTATIVE (node))))
 		    != INTEGER_CST))
-	       || (SLP_TREE_MEMORY_ACCESS_TYPE (node)
-		   == VMAT_GATHER_SCATTER)))))
+	       || mat_gather_scatter_p (SLP_TREE_MEMORY_ACCESS_TYPE (node))))))
     {
       stmt_cost = ix86_default_vector_cost (kind, mode);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
