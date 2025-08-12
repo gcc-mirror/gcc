@@ -814,6 +814,11 @@ ClosureParamInfer::visit (HIR::WildcardPattern &pattern)
 void
 ClosureParamInfer::visit (HIR::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      ClosureParamInfer::Resolve (pattern.get_subpattern ());
+    }
+
   HirId id = pattern.get_mappings ().get_hirid ();
   infered = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
 				 TyTy::InferType::TypeHint::Default (),
