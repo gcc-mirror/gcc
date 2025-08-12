@@ -64,6 +64,15 @@ public:
     ctx->insert_var_decl (stmt_id, var);
 
     vars.push_back (var);
+
+    if (pattern.has_subpattern ())
+      {
+	auto subpattern_vars
+	  = CompileVarDecl::compile (fndecl, translated_type,
+				     &pattern.get_subpattern (), ctx);
+	vars.insert (vars.end (), subpattern_vars.begin (),
+		     subpattern_vars.end ());
+      }
   }
 
   void visit (HIR::TuplePattern &pattern) override

@@ -992,6 +992,11 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
     }
   else
     {
+      if (pattern.has_subpattern ())
+	{
+	  CompilePatternLet::Compile (&pattern.get_subpattern (), init_expr, ty,
+				      rval_locus, ctx);
+	}
       auto s = Backend::init_statement (fnctx.fndecl, var, init_expr);
       ctx->add_statement (s);
     }
