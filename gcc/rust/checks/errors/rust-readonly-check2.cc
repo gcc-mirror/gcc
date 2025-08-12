@@ -110,6 +110,11 @@ ReadonlyChecker::check_variable (IdentifierPattern *pattern,
 {
   if (!mutable_context.is_in_context ())
     return;
+
+  TyTy::BaseType *type;
+  if (context.lookup_type (pattern->get_mappings ().get_hirid (), &type)
+      && is_mutable_type (type))
+    return;
   if (pattern->is_mut ())
     return;
 
@@ -236,18 +241,18 @@ ReadonlyChecker::visit (DereferenceExpr &expr)
   auto to_deref = expr.get_expr ().get_mappings ().get_hirid ();
   if (!context.lookup_type (to_deref, &to_deref_type))
     return;
-  if (to_deref_type->get_kind () == TyTy::TypeKind::REF)
-    {
-      auto ref_type = static_cast<TyTy::ReferenceType *> (to_deref_type);
-      if (!ref_type->is_mutable ())
-	rust_error_at (expr.get_locus (), "assignment of read-only location");
-    }
-  if (to_deref_type->get_kind () == TyTy::TypeKind::POINTER)
-    {
-      auto ptr_type = static_cast<TyTy::PointerType *> (to_deref_type);
-      if (!ptr_type->is_mutable ())
-	rust_error_at (expr.get_locus (), "assignment of read-only location");
-    }
+  if (!is_mutable_type (to_deref_type))
+    rust_error_at (expr.get_locus (), "assignment of read-only location");
+}
+
+bool
+ReadonlyChecker::is_mutable_type (TyTy::BaseType *type)
+{
+  if (type->get_kind () == TyTy::TypeKind::REF)
+    return static_cast<TyTy::ReferenceType *> (type)->is_mutable ();
+  if (type->get_kind () == TyTy::TypeKind::POINTER)
+    return static_cast<TyTy::PointerType *> (type)->is_mutable ();
+  return false;
 }
 } // namespace HIR
 } // namespace Rust

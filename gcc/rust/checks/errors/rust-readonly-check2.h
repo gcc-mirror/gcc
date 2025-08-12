@@ -61,6 +61,8 @@ private:
   void collect_assignment_tuple (TuplePattern &pattern, bool has_init_expr);
 
   void check_variable (IdentifierPattern *pattern, location_t assigned_loc);
+
+  bool is_mutable_type (TyTy::BaseType *type);
 };
 
 } // namespace HIR
