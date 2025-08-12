@@ -722,7 +722,12 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 			     phi_info->stmt);
 
 	  if (vect_stmt_relevant_p (phi_info, loop_vinfo, &relevant, &live_p))
-	    vect_mark_relevant (&worklist, phi_info, relevant, live_p);
+	    {
+	      if (STMT_VINFO_DEF_TYPE (phi_info) == vect_unknown_def_type)
+		return opt_result::failure_at
+		  (*si, "not vectorized: unhandled relevant PHI: %G", *si);
+	      vect_mark_relevant (&worklist, phi_info, relevant, live_p);
+	    }
 	}
       for (si = gsi_after_labels (bb); !gsi_end_p (si); gsi_next (&si))
 	{
