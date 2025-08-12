@@ -2549,7 +2549,7 @@ extern bool ref_within_array_bound (gimple *, tree);
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
 				   (vec_info *, dr_vec_info *, tree, int,
-				     gather_scatter_info * = nullptr);
+				    bool = false);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, tree);
 extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);

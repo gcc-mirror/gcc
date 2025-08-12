@@ -2346,7 +2346,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       *alignment_support_scheme
 	= vect_supportable_dr_alignment
 	   (vinfo, first_dr_info, vectype, *misalignment,
-	    *memory_access_type == VMAT_GATHER_SCATTER ? gs_info : nullptr);
+	    *memory_access_type == VMAT_GATHER_SCATTER);
     }
 
   if (overrun_p)

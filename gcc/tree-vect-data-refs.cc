@@ -6541,7 +6541,7 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
 enum dr_alignment_support
 vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 			       tree vectype, int misalignment,
-			       gather_scatter_info *gs_info)
+			       bool is_gather_scatter)
 {
   data_reference *dr = dr_info->dr;
   stmt_vec_info stmt_info = dr_info->stmt;
@@ -6652,7 +6652,6 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 
   bool is_packed = false;
   tree type = TREE_TYPE (DR_REF (dr));
-  bool is_gather_scatter = gs_info != nullptr;
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
     is_packed = not_size_aligned (DR_REF (dr));
   if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
