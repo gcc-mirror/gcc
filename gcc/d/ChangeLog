@@ -1,3 +1,9 @@
+2025-08-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* d-codegen.cc (build_filename_from_loc): Use
+	build_string_literal() to build a null-terminated string for
+	the filename.
+
 2025-08-06  Sam James  <sam@gentoo.org>
 
 	* Make-lang.in (ALL_DFLAGS): Don't use ALIASING_FLAGS.

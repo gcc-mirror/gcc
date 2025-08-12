@@ -1,3 +1,28 @@
+2025-08-11  Nicolas Werner  <nicolas.werner@hotmail.de>
+
+	* mapper-client.cc (spawn_mapper_program): change argv parsing
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* decl.cc (set_sb_pack_name): For name independent decls
+	just clear DECL_NAME instead of appending #i to it.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* decl.cc (cp_finish_decomp): Don't sorry on tuple static
+	structured bindings with a pack, instead temporarily reset
+	DECL_NAME of the individual vars in the pack to the name
+	of the pack for cp_finish_decl time and force mangling.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121442
+	* parser.cc (cp_parser_decomposition_declaration): Don't copy
+	DECL_DECLARED_CONST{EXPR,INIT}_P bits from decl to decl2 if
+	decl is error_mark_node.
+
 2025-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc (cp_adjust_diagnostic_info): Convert "context" arg from

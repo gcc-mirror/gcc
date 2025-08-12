@@ -1,3 +1,143 @@
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.md (mov<ALLI>cc): Accept MODE_CC
+	conditions directly; reject QI/HImode conditions.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/121388
+	* config/aarch64/aarch64.cc (aarch64_cb_rhs): Restrict the
+	range of LT/GE and GT/LE to their intersections.
+	* config/aarch64/aarch64.md (*aarch64_cb<INT_CMP><GPI>): Unexport.
+	Use cmpbr_imm_predicate instead of aarch64_cb_rhs.
+	* config/aarch64/constraints.md (Uc1): Accept 0..62.
+	(Uc2): Remove.
+	* config/aarch64/iterators.md (cmpbr_imm_predicate): New.
+	(cmpbr_imm_constraint): Update to match aarch64_cb_rhs.
+	* config/aarch64/predicates.md (aarch64_cb_reg_i63_operand): New.
+	(aarch64_cb_reg_i62_operand): New.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_if_then_else_costs):
+	Use aarch64_cb_rhs to match CB insns.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/121385
+	* config/aarch64/aarch64.md (*aarch64_tbz<LTGE><ALLI>1): Remove
+	cc clobber and expansion via TST+Bcond.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.h (TARGET_CMPBR): False when
+	aarch64_track_speculation is true.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_gen_compare_split_imm24): New.
+	* config/aarch64/aarch64-protos.h: Update.
+	* config/aarch64/aarch64.md (*aarch64_bcond_wide_imm<GPI>): Use it.
+	Add match_scratch and cc clobbers.  Use match_operator instead of
+	iterator expansion.
+	(*compare_cstore<GPI>_insn): Likewise.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/predicates.md (aarch64_split_imm24): Rename from
+	aarch64_imm24; exclude aarch64_move_imm and aarch64_uimm12_shift.
+	* config/aarch64/aarch64.md (*aarch64_bcond_wide_imm<GPI>):
+	Update for aarch64_split_imm24.
+	(*compare_cstore<GPI>_insn): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_if_then_else_costs): Likewise.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.md (tbranch_<EQL><SHORT>3): Remove.
+	(save_stack_nonlocal): Use aarch64_gen_compare_zero_and_branch.
+	(restore_stack_nonlocal): Likewise.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_gen_compare_zero_and_branch): Export.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_gen_compare_zero_and_branch): Declare it.
+	* config/aarch64/aarch64-sme.md (aarch64_restore_za): Use it.
+	* config/aarch64/aarch64.md (*aarch64_cbz<EQL><GPI>): Unexport.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_if_the_else_costs): Reorg to
+	include the cost of inner within TBZ sign-bit test, only match
+	CBZ/CBNZ with valid modes, and both for the aarch64_imm24 test.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_if_then_else_costs): Remove
+	else after return and re-indent.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.md (BRANCH_LEN_N_1KiB): Rename
+	from BRANCH_LEN_N_1Kib.
+
+2025-08-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_aggr_zeroprop): Recognize stores
+	of integer_zerop as memset of 0.
+
+2025-08-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* doc/sourcebuild.texi: Add riscv_b_ok and riscv_v_ok target selectors.
+
+2025-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121488
+	* tree-ssa-sccvn.cc (visit_nary_op): If the BIT_FIELD_REF
+	result is of wrong type, try a VIEW_CONVERT_EXPR around it.
+
+2025-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121362
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Swap index
+	guards on component stripping loops.
+
+2025-08-11  Pan Li  <pan2.li@intel.com>
+
+	* tree-ssa-math-opts.cc (match_saturation_mul): Add new func
+	to emit IFN_SAT_MUL if matched.
+	(math_opts_dom_walker::after_dom_children): Try to match
+	the phi node for SAT_MUL.
+
+2025-08-11  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 2 for unsigned SAT_MUL.
+
+2025-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Remove.
+	(riscv_rtx_costs): Refactor to serach vec_duplicate on the
+	sub rtx.
+
+2025-08-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/121464
+	* config/arm/arm.md (arm_<mrrc>, arm_<mcrr>): Fix operand check.
+
+2025-08-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121306
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Distribute
+	non-narrowing integer-to-integer subregs through logic ops,
+	in a similar way to the existing word_mode handling.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-cfg.cc (find_case_label_for_value): Fix comment typo,
+	singe-valued -> single-valued.
+	* config/arc/arc.md: Fix comment typos, unsinged -> unsigned.
+
 2025-08-10  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips.h (FRAME_GROWS_DOWNWARD) Allow the frame to

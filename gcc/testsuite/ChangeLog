@@ -1,3 +1,151 @@
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/aarch64/cmpbr-3.c: New.
+	* gcc.target/aarch64/ifcvt_multiple_sets_rewire.c: Simplify
+	test for csel by ignoring the actual registers used.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/121388
+	* gcc.target/aarch64/cmpbr.c (u32_x0_ult_64): XFAIL.
+	(i32_x0_slt_64, u64_x0_ult_64, i64_x0_slt_64): XFAIL.
+	* gcc.target/aarch64/cmpbr-2.c: New.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/aarch64/cmpbr.c: Only compile, not assemble,
+	since we want to scan the assembly.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/121385
+	* gcc.target/aarch64/cmpbr-1.c: New.
+
+2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/aarch64/gcs-nonlocal-3.c: Match cbnz.
+
+2025-08-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121398
+	* gfortran.dg/pdt_generic_1.f90: New test.
+
+2025-08-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/torture/copy-prop-aggr-zero-1.c: New test.
+	* gcc.dg/torture/copy-prop-aggr-zero-2.c: New test.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-zero-1.c: New test.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-zero-2.c: New test.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-zero-3.c: New test.
+
+2025-08-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* lib/target-supports.exp (check_effective_target_riscv_b_ok): New.
+	* gcc.target/riscv/pr116085.c: Use new target selector.
+	* gcc.target/riscv/pr117690.c: Use new target selector.
+	* gcc.target/riscv/pr120333.c: Use new target selector.
+	* gcc.target/riscv/zba-shNadd-10.c: Use new target selector.
+
+2025-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121488
+	* gcc.dg/tree-ssa/ssa-fre-108.c: New testcase.
+
+2025-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-3-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-3-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-3-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-3-u8.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-3-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-3-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-3-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-3-u8.c: New test.
+
+2025-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Update
+	asm check due to above change.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-08-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/121464
+	* gcc.target/arm/acle/mcrr.c: Update testcase.
+	* gcc.target/arm/acle/mcrr2.c: Likewise.
+	* gcc.target/arm/acle/mrrc.c: Likewise.
+	* gcc.target/arm/acle/mrrc2.c: Likewise.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/template-1.C: Fix comment typo, unsinged -> unsigned.
+	* gcc.target/powerpc/builtins-2-p9-runnable.c (main): Likewise.
+	* gcc.dg/graphite/id-30.c: Likewise.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* g++.dg/cpp26/name-independent-decl11.C: New test.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117783
+	* g++.dg/cpp26/decomp19.C: Don't expect sorry on tuple static
+	structured bindings with a pack.
+	* g++.dg/cpp26/decomp26.C: New test.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121442
+	* g++.dg/cpp1z/decomp65.C: New test.
+
 2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR testsuite/121205

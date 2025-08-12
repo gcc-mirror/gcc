@@ -1,3 +1,19 @@
+2025-08-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121398
+	* resolve.cc (check_pdt_args): New function.
+	(check_generic_tbp_ambiguity): Use it to ensure that args to
+	typebound procedures that do not have the same declared type as
+	the containing derived type have 'pass1/2' set to null. This
+	avoids false ambiguity errors.
+	(resolve_typebound_procedure): Do not generate a wrong type
+	error for typebound procedures marked as pass if they are of a
+	different declared type to the containing pdt_type.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_case): Fix comment typo, singe -> single.
+
 2025-08-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/121182
