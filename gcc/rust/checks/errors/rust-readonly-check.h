@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 Free Software Foundation, Inc.
+// Copyright (C) 2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -16,21 +16,54 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_READONLY_CHECK
-#define RUST_READONLY_CHECK
-
-#include "rust-compile-context.h"
+#include "rust-hir-visitor.h"
+#include "rust-name-resolver.h"
+#include "rust-stacked-contexts.h"
+#include "rust-hir-type-check.h"
 
 namespace Rust {
-namespace Analysis {
-
-class ReadonlyCheck
+namespace HIR {
+class ReadonlyChecker : public DefaultHIRVisitor
 {
 public:
-  static void Lint (Compile::Context &ctx);
+  ReadonlyChecker ();
+
+  void go (HIR::Crate &crate);
+
+private:
+  enum class lvalue_use
+  {
+    assign,
+    increment,
+    decrement,
+  };
+
+  Resolver::Resolver &resolver;
+  Analysis::Mappings &mappings;
+  Resolver::TypeCheckContext &context;
+  StackedContexts<HirId> mutable_context;
+
+  using DefaultHIRVisitor::visit;
+
+  virtual void visit (AssignmentExpr &expr) override;
+  virtual void visit (PathInExpression &expr) override;
+  virtual void visit (FieldAccessExpr &expr) override;
+  virtual void visit (ArrayIndexExpr &expr) override;
+  virtual void visit (TupleExpr &expr) override;
+  virtual void visit (TupleIndexExpr &expr) override;
+  virtual void visit (LetStmt &stmt) override;
+  virtual void visit (LiteralExpr &expr) override;
+  virtual void visit (DereferenceExpr &expr) override;
+
+  void collect_assignment (Pattern &pattern, bool has_init_expr);
+  void collect_assignment_identifier (IdentifierPattern &pattern,
+				      bool has_init_expr);
+  void collect_assignment_tuple (TuplePattern &pattern, bool has_init_expr);
+
+  void check_variable (IdentifierPattern *pattern, location_t assigned_loc);
+
+  bool is_mutable_type (TyTy::BaseType *type);
 };
 
-} // namespace Analysis
+} // namespace HIR
 } // namespace Rust
-
-#endif // RUST_READONLY_CHECK

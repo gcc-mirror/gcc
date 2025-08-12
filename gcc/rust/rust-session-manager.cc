@@ -737,7 +737,7 @@ Session::compile_crate (const char *filename)
       // lints
       Analysis::ScanDeadcode::Scan (hir);
       Analysis::UnusedVariables::Lint (*ctx);
-      Analysis::ReadonlyCheck::Lint (*ctx);
+      HIR::ReadonlyChecker ().go (hir);
 
       // metadata
       bool specified_emit_metadata
@@ -756,6 +756,9 @@ Session::compile_crate (const char *filename)
 	      hir, options.get_metadata_output ());
 	}
     }
+
+  if (saw_errors ())
+    return;
 
   // pass to GCC middle-end
   ctx->write_to_backend ();

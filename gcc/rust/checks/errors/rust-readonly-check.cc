@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 Free Software Foundation, Inc.
+// Copyright (C) 2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,184 +17,242 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-readonly-check.h"
-#include "rust-tree.h"
-#include "rust-gcc.h"
-#include "print-tree.h"
+#include "rust-hir-expr.h"
+#include "rust-hir-node.h"
+#include "rust-hir-path.h"
+#include "rust-hir-map.h"
+#include "rust-hir-pattern.h"
+#include "rust-mapping-common.h"
+#include "rust-system.h"
+#include "rust-immutable-name-resolution-context.h"
+#include "rust-tyty.h"
 
 namespace Rust {
-namespace Analysis {
+namespace HIR {
 
-static std::map<tree, int> assignment_map = {};
+static std::set<HirId> already_assigned_variables = {};
 
-// ported over from c-family/c-warn.cc
+ReadonlyChecker::ReadonlyChecker ()
+  : resolver (*Resolver::Resolver::get ()),
+    mappings (Analysis::Mappings::get ()),
+    context (*Resolver::TypeCheckContext::get ())
+{}
+
 void
-readonly_error (location_t loc, tree arg, enum lvalue_use use)
+ReadonlyChecker::go (Crate &crate)
 {
-  gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
-	      || use == lv_asm);
-  STRIP_ANY_LOCATION_WRAPPER (arg);
-  /* Using this macro rather than (for example) arrays of messages
-     ensures that all the format strings are checked at compile
-     time.  */
-#define READONLY_MSG(A, I, D, AS)                                              \
-  (use == lv_assign                                                            \
-     ? (A)                                                                     \
-     : (use == lv_increment ? (I) : (use == lv_decrement ? (D) : (AS))))
-  if (TREE_CODE (arg) == COMPONENT_REF)
-    {
-      if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-	error_at (loc,
-		  READONLY_MSG (G_ ("assignment of member "
-				    "%qD in read-only object"),
-				G_ ("increment of member "
-				    "%qD in read-only object"),
-				G_ ("decrement of member "
-				    "%qD in read-only object"),
-				G_ ("member %qD in read-only object "
-				    "used as %<asm%> output")),
-		  TREE_OPERAND (arg, 1));
-      else
-	error_at (
-	  loc,
-	  READONLY_MSG (G_ ("assignment of read-only member %qD"),
-			G_ ("increment of read-only member %qD"),
-			G_ ("decrement of read-only member %qD"),
-			G_ ("read-only member %qD used as %<asm%> output")),
-	  TREE_OPERAND (arg, 1));
-    }
-  else if (VAR_P (arg))
-    error_at (loc,
-	      READONLY_MSG (G_ ("assignment of read-only variable %qD"),
-			    G_ ("increment of read-only variable %qD"),
-			    G_ ("decrement of read-only variable %qD"),
-			    G_ (
-			      "read-only variable %qD used as %<asm%> output")),
-	      arg);
-  else if (TREE_CODE (arg) == PARM_DECL)
-    error_at (loc,
-	      READONLY_MSG (G_ ("assignment of read-only parameter %qD"),
-			    G_ ("increment of read-only parameter %qD"),
-			    G_ ("decrement of read-only parameter %qD"),
-			    G_ (
-			      "read-only parameter %qD use as %<asm%> output")),
-	      arg);
-  else if (TREE_CODE (arg) == RESULT_DECL)
-    {
-      error_at (loc,
-		READONLY_MSG (G_ ("assignment of "
-				  "read-only named return value %qD"),
-			      G_ ("increment of "
-				  "read-only named return value %qD"),
-			      G_ ("decrement of "
-				  "read-only named return value %qD"),
-			      G_ ("read-only named return value %qD "
-				  "used as %<asm%>output")),
-		arg);
-    }
-  else if (TREE_CODE (arg) == FUNCTION_DECL)
-    error_at (loc,
-	      READONLY_MSG (G_ ("assignment of function %qD"),
-			    G_ ("increment of function %qD"),
-			    G_ ("decrement of function %qD"),
-			    G_ ("function %qD used as %<asm%> output")),
-	      arg);
+  for (auto &item : crate.get_items ())
+    item->accept_vis (*this);
+}
+
+void
+ReadonlyChecker::visit (AssignmentExpr &expr)
+{
+  Expr &lhs = expr.get_lhs ();
+  mutable_context.enter (expr.get_mappings ().get_hirid ());
+  lhs.accept_vis (*this);
+  mutable_context.exit ();
+}
+
+void
+ReadonlyChecker::visit (PathInExpression &expr)
+{
+  if (!mutable_context.is_in_context ())
+    return;
+
+  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+  NodeId def_id;
+
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  if (auto id = nr_ctx.lookup (ast_node_id))
+    def_id = *id;
   else
-    error_at (loc,
-	      READONLY_MSG (G_ ("assignment of read-only location %qE"),
-			    G_ ("increment of read-only location %qE"),
-			    G_ ("decrement of read-only location %qE"),
-			    G_ (
-			      "read-only location %qE used as %<asm%> output")),
-	      arg);
-}
+    return;
 
-static void
-emit_error (tree *t, tree lhs, enum lvalue_use use)
-{
-  readonly_error (EXPR_LOCATION (*t), lhs, use);
-  TREE_OPERAND (*t, 0) = error_mark_node;
-}
+  auto hir_id = mappings.lookup_node_to_hir (def_id);
+  if (!hir_id)
+    return;
 
-static void
-check_modify_expr (tree *t)
-{
-  tree lhs = TREE_OPERAND (*t, 0);
-  if (TREE_CODE (lhs) == ARRAY_REF || TREE_CODE (lhs) == COMPONENT_REF)
-    lhs = TREE_OPERAND (lhs, 0);
+  // Check if the local variable is mutable.
+  auto maybe_pattern = mappings.lookup_hir_pattern (*hir_id);
+  if (maybe_pattern
+      && maybe_pattern.value ()->get_pattern_type ()
+	   == HIR::Pattern::PatternType::IDENTIFIER)
+    check_variable (static_cast<IdentifierPattern *> (maybe_pattern.value ()),
+		    expr.get_locus ());
 
-  tree lhs_type = TREE_TYPE (lhs);
-  if (TYPE_READONLY (lhs_type) || TREE_READONLY (lhs) || TREE_CONSTANT (lhs))
+  // Check if the static item is mutable.
+  auto maybe_item = mappings.lookup_hir_item (*hir_id);
+  if (maybe_item
+      && maybe_item.value ()->get_item_kind () == HIR::Item::ItemKind::Static)
     {
-      if (TREE_CODE (lhs) != VAR_DECL)
-	emit_error (t, lhs, lv_assign);
-      else if (!DECL_ARTIFICIAL (lhs))
-	{
-	  if (DECL_INITIAL (lhs) != NULL)
-	    emit_error (t, lhs, lv_assign);
-	  else
-	    {
-	      if (assignment_map.find (lhs) == assignment_map.end ())
-		{
-		  assignment_map.insert ({lhs, 0});
-		}
-	      assignment_map[lhs]++;
+      auto static_item = static_cast<HIR::StaticItem *> (*maybe_item);
+      if (!static_item->is_mut ())
+	rust_error_at (expr.get_locus (),
+		       "assignment of read-only location '%s'",
+		       static_item->get_identifier ().as_string ().c_str ());
+    }
 
-	      if (assignment_map[lhs] > 1)
-		emit_error (t, lhs, lv_assign);
-	    }
-	}
+  // Check if the constant item is mutable.
+  if (maybe_item
+      && maybe_item.value ()->get_item_kind () == HIR::Item::ItemKind::Constant)
+    {
+      auto const_item = static_cast<HIR::ConstantItem *> (*maybe_item);
+      rust_error_at (expr.get_locus (), "assignment of read-only location '%s'",
+		     const_item->get_identifier ().as_string ().c_str ());
     }
 }
 
-static void
-check_decl (tree *t)
+void
+ReadonlyChecker::check_variable (IdentifierPattern *pattern,
+				 location_t assigned_loc)
 {
-  switch (TREE_CODE (*t))
-    {
-    case MODIFY_EXPR:
-      check_modify_expr (t);
-      break;
+  if (!mutable_context.is_in_context ())
+    return;
 
+  TyTy::BaseType *type;
+  if (context.lookup_type (pattern->get_mappings ().get_hirid (), &type)
+      && is_mutable_type (type))
+    return;
+  if (pattern->is_mut ())
+    return;
+
+  auto hir_id = pattern->get_mappings ().get_hirid ();
+  if (already_assigned_variables.count (hir_id) > 0)
+    rust_error_at (assigned_loc, "assignment of read-only variable '%s'",
+		   pattern->as_string ().c_str ());
+  already_assigned_variables.insert (hir_id);
+}
+
+void
+ReadonlyChecker::collect_assignment_identifier (IdentifierPattern &pattern,
+						bool has_init_expr)
+{
+  if (has_init_expr)
+    {
+      HirId pattern_id = pattern.get_mappings ().get_hirid ();
+      already_assigned_variables.insert (pattern_id);
+    }
+}
+
+void
+ReadonlyChecker::collect_assignment_tuple (TuplePattern &tuple_pattern,
+					   bool has_init_expr)
+{
+  switch (tuple_pattern.get_items ().get_item_type ())
+    {
+    case HIR::TuplePatternItems::ItemType::NO_REST:
+      {
+	auto &items = static_cast<HIR::TuplePatternItemsNoRest &> (
+	  tuple_pattern.get_items ());
+	for (auto &sub : items.get_patterns ())
+	  {
+	    collect_assignment (*sub, has_init_expr);
+	  }
+      }
+      break;
     default:
       break;
     }
 }
 
-static tree
-readonly_walk_fn (tree *t, int *, void *)
+void
+ReadonlyChecker::collect_assignment (Pattern &pattern, bool has_init_expr)
 {
-  check_decl (t);
-  return NULL_TREE;
+  switch (pattern.get_pattern_type ())
+    {
+    case HIR::Pattern::PatternType::IDENTIFIER:
+      {
+	collect_assignment_identifier (static_cast<IdentifierPattern &> (
+					 pattern),
+				       has_init_expr);
+      }
+      break;
+    case HIR::Pattern::PatternType::TUPLE:
+      {
+	auto &tuple_pattern = static_cast<HIR::TuplePattern &> (pattern);
+	collect_assignment_tuple (tuple_pattern, has_init_expr);
+      }
+      break;
+    default:
+      break;
+    }
 }
 
 void
-ReadonlyCheck::Lint (Compile::Context &ctx)
+ReadonlyChecker::visit (LetStmt &stmt)
 {
-  assignment_map.clear ();
-  for (auto &fndecl : ctx.get_func_decls ())
-    {
-      for (tree p = DECL_ARGUMENTS (fndecl); p != NULL_TREE; p = DECL_CHAIN (p))
-	{
-	  check_decl (&p);
-	}
+  HIR::Pattern &pattern = stmt.get_pattern ();
+  collect_assignment (pattern, stmt.has_init_expr ());
+}
 
-      walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
-				    &readonly_walk_fn, &ctx);
-    }
-
-  assignment_map.clear ();
-  for (auto &var : ctx.get_var_decls ())
+void
+ReadonlyChecker::visit (FieldAccessExpr &expr)
+{
+  if (mutable_context.is_in_context ())
     {
-      tree decl = var->get_decl ();
-      check_decl (&decl);
-    }
-
-  assignment_map.clear ();
-  for (auto &const_decl : ctx.get_const_decls ())
-    {
-      check_decl (&const_decl);
+      expr.get_receiver_expr ().accept_vis (*this);
     }
 }
 
-} // namespace Analysis
+void
+ReadonlyChecker::visit (TupleIndexExpr &expr)
+{
+  if (mutable_context.is_in_context ())
+    {
+      expr.get_tuple_expr ().accept_vis (*this);
+    }
+}
+
+void
+ReadonlyChecker::visit (ArrayIndexExpr &expr)
+{
+  if (mutable_context.is_in_context ())
+    {
+      expr.get_array_expr ().accept_vis (*this);
+    }
+}
+
+void
+ReadonlyChecker::visit (TupleExpr &expr)
+{
+  if (mutable_context.is_in_context ())
+    {
+      // TODO: Add check for tuple expression
+    }
+}
+
+void
+ReadonlyChecker::visit (LiteralExpr &expr)
+{
+  if (mutable_context.is_in_context ())
+    {
+      rust_error_at (expr.get_locus (), "assignment of read-only location");
+    }
+}
+
+void
+ReadonlyChecker::visit (DereferenceExpr &expr)
+{
+  if (!mutable_context.is_in_context ())
+    return;
+  TyTy::BaseType *to_deref_type;
+  auto to_deref = expr.get_expr ().get_mappings ().get_hirid ();
+  if (!context.lookup_type (to_deref, &to_deref_type))
+    return;
+  if (!is_mutable_type (to_deref_type))
+    rust_error_at (expr.get_locus (), "assignment of read-only location");
+}
+
+bool
+ReadonlyChecker::is_mutable_type (TyTy::BaseType *type)
+{
+  if (type->get_kind () == TyTy::TypeKind::REF)
+    return static_cast<TyTy::ReferenceType *> (type)->is_mutable ();
+  if (type->get_kind () == TyTy::TypeKind::POINTER)
+    return static_cast<TyTy::PointerType *> (type)->is_mutable ();
+  return false;
+}
+} // namespace HIR
 } // namespace Rust
