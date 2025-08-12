@@ -15353,6 +15353,100 @@ synthesize_and (rtx operands[3])
   return true;
 }
 
+/* Synthesize OPERANDS[0] = OPERANDS[1] + OPERANDS[2].
+
+    OPERANDS[0] and OPERANDS[1] will be a REG and may be the same
+    REG.
+
+    OPERANDS[2] is a CONST_INT.
+
+    Return TRUE if the operation was fully synthesized and the caller
+    need not generate additional code.  Return FALSE if the operation
+    was not synthesized and the caller is responsible for emitting the
+    proper sequence.  */
+
+bool
+synthesize_add (rtx operands[3])
+{
+  /* Trivial cases that don't need synthesis.  */
+  if (SMALL_OPERAND (INTVAL (operands[2])))
+    return false;
+
+  int budget1 = riscv_const_insns (operands[2], true);
+  int budget2 = riscv_const_insns (GEN_INT (-INTVAL (operands[2])), true);
+
+  HOST_WIDE_INT ival = INTVAL (operands[2]);
+
+  /* If we can emit two addi insns then that's better than synthesizing
+     the constant into a temporary, then adding the temporary to the
+     other input.  The exception is when the constant can be loaded
+     in a single instruction which can issue whenever its convenient.  */
+  if (SUM_OF_TWO_S12 (ival) && budget1 >= 2)
+    {
+      HOST_WIDE_INT saturated = HOST_WIDE_INT_M1U << (IMM_BITS - 1);
+
+      if (ival >= 0)
+	saturated = ~saturated;
+
+      ival -= saturated;
+
+      rtx x = gen_rtx_PLUS (word_mode, operands[1], GEN_INT (saturated));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      rtx output = gen_rtx_PLUS (word_mode, operands[0], GEN_INT (ival));
+      emit_insn (gen_rtx_SET (operands[0], output));
+      return true;
+    }
+
+  /* If we can shift the constant by 1, 2, or 3 bit positions
+     and the result is a cheaper constant, then do so.  */
+  ival = INTVAL (operands[2]);
+  if (TARGET_ZBA
+      && (((ival % 2) == 0 && budget1
+	   > riscv_const_insns (GEN_INT (ival >> 1), true))
+	   || ((ival % 4) == 0 && budget1
+	       > riscv_const_insns (GEN_INT (ival >> 2), true))
+	   || ((ival % 8) == 0 && budget1
+	       > riscv_const_insns (GEN_INT (ival >> 3), true))))
+    {
+      // Load the shifted constant into a temporary
+      int shct = ctz_hwi (ival);
+
+      /* We can handle shifting up to 3 bit positions via shNadd.  */
+      if (shct > 3)
+	shct = 3;
+
+      /* The adjusted constant may still need synthesis, so do not copy
+	 it directly into register.  Let the expander handle it.  */
+      rtx tmp = force_reg (word_mode, GEN_INT (ival >> shct));
+
+      /* Generate shift-add of temporary and operands[1]
+	 into the final destination.  */
+      rtx x = gen_rtx_ASHIFT (word_mode, tmp, GEN_INT (shct));
+      rtx output = gen_rtx_PLUS (word_mode, x, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], output));
+      return true;
+    }
+
+  /* If the negated constant is cheaper than the original, then negate
+     the constant and use sub.  */
+  if (budget2 < budget1)
+    {
+      // load -INTVAL (operands[2]) into a temporary
+      rtx tmp = force_reg (word_mode, GEN_INT (-INTVAL (operands[2])));
+
+      // subtract operads[2] from operands[1]
+      rtx output = gen_rtx_MINUS (word_mode, operands[1], tmp);
+      emit_insn (gen_rtx_SET (operands[0], output));
+      return true;
+    }
+
+  /* No add synthesis was found.  Synthesize the constant into
+     a temporary and use that.  */
+  rtx x = force_reg (word_mode, operands[2]);
+  x = gen_rtx_PLUS (word_mode, operands[1], x);
+  emit_insn (gen_rtx_SET (operands[0], x));
+  return true;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
