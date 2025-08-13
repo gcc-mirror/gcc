@@ -88,6 +88,8 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 {
   CHECK_VALUE (result, NULL);
 
-  CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
-		      "cannot tail-call: callee returns a structure");
+  /* Check that we get an error message with a reason; we
+     don't want to overspecify the test with a precise reason, though.  */
+  CHECK_STRING_STARTS_WITH (gcc_jit_context_get_first_error (ctxt),
+			    "cannot tail-call: ");
 }
