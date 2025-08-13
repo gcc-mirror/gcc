@@ -3185,7 +3185,7 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 	       node->avoid_stlf_fail ? " (avoid-stlf-fail)" : "");
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
     {
-      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+      if (SLP_TREE_PERMUTE_P (node))
 	dump_printf_loc (metadata, user_loc, "op: VEC_PERM_EXPR\n");
       else
 	dump_printf_loc (metadata, user_loc, "op template: %G",
@@ -3437,7 +3437,7 @@ vect_gather_slp_loads (vec<slp_tree> &loads, slp_tree node,
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return;
 
-  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+  if (!SLP_TREE_PERMUTE_P (node))
     {
       stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
       if (STMT_VINFO_DATA_REF (stmt_info)
@@ -3551,7 +3551,7 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
 static inline bool
 vect_is_slp_load_node  (slp_tree root)
 {
-  return (SLP_TREE_CODE (root) != VEC_PERM_EXPR
+  return (!SLP_TREE_PERMUTE_P (root)
 	  && SLP_TREE_DEF_TYPE (root) == vect_internal_def
 	  && STMT_VINFO_GROUPED_ACCESS (SLP_TREE_REPRESENTATIVE (root))
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))));
@@ -3576,7 +3576,7 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
   /* For now, we don't know anything about externals so do not do anything.  */
   if (!root || SLP_TREE_DEF_TYPE (root) != vect_internal_def)
     return NULL;
-  else if (SLP_TREE_CODE (root) == VEC_PERM_EXPR)
+  else if (SLP_TREE_PERMUTE_P (root))
     {
       /* First convert this node into a load node and add it to the leaves
 	 list and flatten the permute from a lane to a load one.  If it's
@@ -5946,7 +5946,7 @@ vect_optimize_slp_pass::is_cfg_latch_edge (graph_edge *ud)
   slp_tree use = m_vertices[ud->src].node;
   slp_tree def = m_vertices[ud->dest].node;
   if ((SLP_TREE_DEF_TYPE (use) != vect_internal_def
-       || SLP_TREE_CODE (use) == VEC_PERM_EXPR)
+       || SLP_TREE_PERMUTE_P (use))
       || SLP_TREE_DEF_TYPE (def) != vect_internal_def)
     return false;
 
@@ -6279,7 +6279,7 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
 {
   const int fallback_cost = 1;
 
-  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+  if (SLP_TREE_PERMUTE_P (node))
     {
       auto_lane_permutation_t tmp_perm;
       tmp_perm.safe_splice (SLP_TREE_LANE_PERMUTATION (node));
@@ -6414,7 +6414,7 @@ vect_optimize_slp_pass::start_choosing_layouts ()
 	  imin = DR_GROUP_SIZE (dr_stmt) + 1;
 	  tmp_perm.safe_splice (SLP_TREE_LOAD_PERMUTATION (node));
 	}
-      else if (SLP_TREE_CODE (node) == VEC_PERM_EXPR
+      else if (SLP_TREE_PERMUTE_P (node)
 	       && SLP_TREE_CHILDREN (node).length () == 1
 	       && (child = SLP_TREE_CHILDREN (node)[0])
 	       && (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (child))
@@ -6732,7 +6732,7 @@ vect_optimize_slp_pass::backward_cost (graph_edge *ud, unsigned int to_node_i,
   auto &to_costs = partition_layout_costs (to_partition_i,
 					   to_partition.layout);
   if (ud->src == int (to_node_i)
-      && SLP_TREE_CODE (to_vertex.node) == VEC_PERM_EXPR)
+      && SLP_TREE_PERMUTE_P (to_vertex.node))
     {
       auto &from_partition = m_partitions[m_vertices[ud->dest].partition];
       auto old_layout = from_partition.layout;
@@ -6787,7 +6787,7 @@ vect_optimize_slp_pass::forward_pass ()
 	{
 	  unsigned int node_i = m_partitioned_nodes[partition.node_begin];
 	  single_node = m_vertices[node_i].node;
-	  if (SLP_TREE_CODE (single_node) == VEC_PERM_EXPR)
+	  if (SLP_TREE_PERMUTE_P (single_node))
 	    in_cost = total_in_cost (node_i);
 	}
 
@@ -6884,8 +6884,7 @@ vect_optimize_slp_pass::forward_pass ()
 	     if the VEC_PERM_EXPR can be changed to support output layout
 	     LAYOUT_I while keeping all the provisional choices of input
 	     layout.  */
-	  if (single_node
-	      && SLP_TREE_CODE (single_node) == VEC_PERM_EXPR)
+	  if (single_node && SLP_TREE_PERMUTE_P (single_node))
 	    {
 	      int factor = internal_node_cost (single_node, -1, layout_i);
 	      if (factor >= 0)
@@ -7044,7 +7043,7 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
 	 in TMP_PERM on success.  */
       auto_lane_permutation_t tmp_perm;
       unsigned int num_inputs = 1;
-      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+      if (SLP_TREE_PERMUTE_P (node))
 	{
 	  tmp_perm.safe_splice (SLP_TREE_LANE_PERMUTATION (node));
 	  if (from_layout_i != 0)
@@ -7138,7 +7137,7 @@ vect_optimize_slp_pass::materialize ()
 			  SLP_TREE_SCALAR_STMTS (node), true);
 
       /* Update load and lane permutations.  */
-      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+      if (SLP_TREE_PERMUTE_P (node))
 	{
 	  /* First try to absorb the input vector layouts.  If that fails,
 	     force the inputs to have layout LAYOUT_I too.  We checked that
@@ -7342,7 +7341,7 @@ vect_optimize_slp_pass::dump ()
 			     "          out weight: %f (degree %d)\n",
 			     vertex.out_weight.to_double (),
 			     vertex.out_degree);
-	  if (SLP_TREE_CODE (vertex.node) == VEC_PERM_EXPR)
+	  if (SLP_TREE_PERMUTE_P (vertex.node))
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "          op: VEC_PERM_EXPR\n");
 	  else if (auto rep = SLP_TREE_REPRESENTATIVE (vertex.node))
@@ -7421,7 +7420,7 @@ vect_optimize_slp_pass::decide_masked_load_lanes ()
     {
       slp_tree node = v.node;
       if (SLP_TREE_DEF_TYPE (node) != vect_internal_def
-	  || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	  || SLP_TREE_PERMUTE_P (node))
 	continue;
       stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
       if (! STMT_VINFO_GROUPED_ACCESS (stmt_info)
@@ -7441,7 +7440,7 @@ vect_optimize_slp_pass::decide_masked_load_lanes ()
 
       /* Uniform masks need to be suitably represented.  */
       slp_tree mask = SLP_TREE_CHILDREN (node)[0];
-      if (SLP_TREE_CODE (mask) != VEC_PERM_EXPR
+      if (!SLP_TREE_PERMUTE_P (mask)
 	  || SLP_TREE_CHILDREN (mask).length () != 1)
 	continue;
       bool match = true;
@@ -7460,7 +7459,7 @@ vect_optimize_slp_pass::decide_masked_load_lanes ()
 	{
 	  slp_tree pred_node = m_vertices[pred->src].node;
 	  /* All consumers should be a permute with a single outgoing lane.  */
-	  if (SLP_TREE_CODE (pred_node) != VEC_PERM_EXPR
+	  if (!SLP_TREE_PERMUTE_P (pred_node)
 	      || SLP_TREE_LANES (pred_node) != 1)
 	    {
 	      match = false;
@@ -7621,8 +7620,7 @@ vect_update_slp_vf_for_node (slp_tree node, poly_uint64 &vf,
 
   /* For permute nodes that are fed from externs or constants we have to
      consider their number of lanes as well.  Likewise for store-lanes.  */
-  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR
-      || node->ldst_lanes)
+  if (SLP_TREE_PERMUTE_P (node) || node->ldst_lanes)
     for (slp_tree child : SLP_TREE_CHILDREN (node))
       if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
 	{
@@ -7777,7 +7775,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
     SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
 
   /* Handle purely internal nodes.  */
-  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+  if (SLP_TREE_PERMUTE_P (node))
     {
       if (!vectorizable_slp_permutation (vinfo, NULL, node, cost_vec))
 	return false;
@@ -8852,7 +8850,7 @@ next_lane:
 	{
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
-	  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	  if (SLP_TREE_PERMUTE_P (node))
 	    {
 	      subtree_life.safe_grow_cleared (SLP_TREE_LANES (child), true);
 	      for (unsigned j = 0;
@@ -11136,8 +11134,7 @@ vect_schedule_slp_node (vec_info *vinfo,
   if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0)
     SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
-  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
-      && STMT_VINFO_DATA_REF (stmt_info))
+  if (!SLP_TREE_PERMUTE_P (node) && STMT_VINFO_DATA_REF (stmt_info))
     {
       /* Vectorized loads go before the first scalar load to make it
 	 ready early, vectorized stores go before the last scalar
@@ -11149,7 +11146,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
-  else if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+  else if (!SLP_TREE_PERMUTE_P (node)
 	   && (SLP_TREE_TYPE (node) == cycle_phi_info_type
 	       || SLP_TREE_TYPE (node) == induc_vec_info_type
 	       || SLP_TREE_TYPE (node) == phi_info_type))
@@ -11273,7 +11270,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  si = gsi_after_labels (vinfo->bbs[0]);
 	}
       else if (is_a <bb_vec_info> (vinfo)
-	       && SLP_TREE_CODE (node) != VEC_PERM_EXPR
+	       && !SLP_TREE_PERMUTE_P (node)
 	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)
 	       && gimple_could_trap_p (stmt_info->stmt))
 	{
@@ -11318,7 +11315,7 @@ vect_schedule_slp_node (vec_info *vinfo,
     }
 
   /* Handle purely internal nodes.  */
-  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+  if (SLP_TREE_PERMUTE_P (node))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -11597,7 +11594,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       stack.pop ();
       info->on_stack = false;
       vect_schedule_slp_node (vinfo, node, instance);
-      if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+      if (!SLP_TREE_PERMUTE_P (node)
 	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
 	phis_to_fixup.quick_push (node);
     }
@@ -11620,7 +11617,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	      slp_tree entry = stack[idx];
 	      if (!entry)
 		continue;
-	      bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
+	      bool phi = (!SLP_TREE_PERMUTE_P (entry)
 			  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
 	      bool ready = !phi;
 	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)

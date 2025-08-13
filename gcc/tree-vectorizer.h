@@ -431,6 +431,7 @@ public:
 #define SLP_TREE_TYPE(S)			 (S)->type
 #define SLP_TREE_GS_SCALE(S)			 (S)->gs_scale
 #define SLP_TREE_GS_BASE(S)			 (S)->gs_base
+#define SLP_TREE_PERMUTE_P(S)			 ((S)->code == VEC_PERM_EXPR)
 
 enum vect_partial_vector_style {
     vect_partial_vectors_none,

@@ -12605,7 +12605,7 @@ vect_analyze_stmt (vec_info *vinfo,
       && SLP_TREE_TYPE (node) != reduc_vec_info_type
       && (SLP_TREE_TYPE (node) != lc_phi_info_type
 	  || SLP_TREE_DEF_TYPE (node) == vect_internal_def)
-      && (!node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+      && (!node->ldst_lanes || SLP_TREE_PERMUTE_P (node))
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
 				    node, node_instance,
 				    false, cost_vec))
@@ -12759,8 +12759,7 @@ vect_transform_stmt (vec_info *vinfo,
     }
 
   if (SLP_TREE_TYPE (slp_node) != store_vec_info_type
-      && (!slp_node->ldst_lanes
-	  || SLP_TREE_CODE (slp_node) == VEC_PERM_EXPR))
+      && (!slp_node->ldst_lanes || SLP_TREE_PERMUTE_P (slp_node)))
     {
       /* Handle stmts whose DEF is used outside the loop-nest that is
 	 being vectorized.  */
@@ -13230,7 +13229,7 @@ vect_is_simple_use (vec_info *vinfo, slp_tree slp_node,
 	}
       else
 	{
-	  gcc_assert (SLP_TREE_CODE (child) == VEC_PERM_EXPR);
+	  gcc_assert (SLP_TREE_PERMUTE_P (child));
 	  *op = error_mark_node;
 	  *dt = vect_internal_def;
 	  if (def_stmt_info_out)

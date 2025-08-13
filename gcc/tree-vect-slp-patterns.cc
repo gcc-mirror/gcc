@@ -221,7 +221,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
 
   /* If it's a load node, then just read the load permute.  */
   if (SLP_TREE_DEF_TYPE (root) == vect_internal_def
-      && SLP_TREE_CODE (root) != VEC_PERM_EXPR
+      && !SLP_TREE_PERMUTE_P (root)
       && STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))
       && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))))
     {
@@ -407,7 +407,7 @@ static complex_operation_t
 vect_detect_pair_op (slp_tree node, bool two_operands = true,
 		     vec<slp_tree> *ops = NULL)
 {
-  if (!two_operands && SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+  if (!two_operands && SLP_TREE_PERMUTE_P (node))
     return CMPLX_NONE;
 
   if (SLP_TREE_CHILDREN (node).length () != 2)
@@ -1488,7 +1488,7 @@ addsub_pattern::recognize (slp_tree_to_load_perm_map_t *,
 			   slp_compat_nodes_map_t *, slp_tree *node_)
 {
   slp_tree node = *node_;
-  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+  if (!SLP_TREE_PERMUTE_P (node)
       || SLP_TREE_CHILDREN (node).length () != 2
       || SLP_TREE_LANE_PERMUTATION (node).length () % 2)
     return NULL;
