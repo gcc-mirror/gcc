@@ -4507,7 +4507,7 @@
   [(set_attr "type" "fcmp<stype>")]
 )
 
-(define_insn "*cmp_swp_<shift>_reg<mode>"
+(define_insn "cmp_swp_<shift>_reg<mode>"
   [(set (reg:CC_SWP CC_REGNUM)
 	(compare:CC_SWP (ASHIFT:GPI
 			 (match_operand:GPI 0 "register_operand" "r")
@@ -7686,6 +7686,22 @@
   emit_insn (gen_xorsign3 (<VCONQ>mode, tmp, op1, op2));
   emit_move_insn (operands[0],
 		  lowpart_subreg (<MODE>mode, tmp, <VCONQ>mode));
+  DONE;
+}
+)
+
+(define_expand "isinf<mode>2"
+ [(match_operand:SI 0 "register_operand")
+  (match_operand:GPF 1 "register_operand")]
+ "TARGET_FLOAT"
+{
+  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
+  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
+  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
+  emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
   DONE;
 }
 )

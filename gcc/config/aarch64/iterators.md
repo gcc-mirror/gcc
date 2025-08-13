@@ -1340,6 +1340,8 @@
 
 (define_mode_attr half_mask [(HI "255") (SI "65535") (DI "4294967295")])
 
+(define_mode_attr mantissa_bits [(SF "23") (DF "52")])
+
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
 
