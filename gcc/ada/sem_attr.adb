@@ -8195,13 +8195,6 @@ package body Sem_Attr is
 
       if Nkind (N) /= N_Attribute_Reference then
          return;
-
-      --  No evaluation required under strict preanalysis because locating
-      --  static expressions is not needed; this also minimizes making tree
-      --  modifications during strict preanalysis.
-
-      elsif In_Strict_Preanalysis then
-         return;
       end if;
 
       Aname := Attribute_Name (N);
