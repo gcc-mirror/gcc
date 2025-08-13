@@ -11453,7 +11453,8 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
 #pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
       bool list_p = new_level->list_p ();
-      if (list_p && !pp.has_flag (TDF_DETAILS))
+      if ((list_p || TREE_CODE (tldcl) == TEMPLATE_FOR_STMT)
+	  && !pp.has_flag (TDF_DETAILS))
 	/* Skip non-instantiations unless -details.  */;
       else
 	{
@@ -11469,7 +11470,9 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
 	    }
 	  for (int i = 0; i < tinst_depth; ++i)
 	    pp_space (&pp);
-	  if (list_p)
+	  if (TREE_CODE (tldcl) == TEMPLATE_FOR_STMT)
+	    pp_printf (&pp, "I template for");
+	  else if (list_p)
 	    pp_printf (&pp, "S %S", new_level->get_node ());
 	  else
 	    pp_printf (&pp, "I %D", tldcl);
@@ -11583,7 +11586,9 @@ reopen_tinst_level (struct tinst_level *level)
 	    {
 	      last_ctx = ctx;
 	      pp_newline (&pp);
-	      if (t->list_p ())
+	      if (TREE_CODE (t->tldcl) == TEMPLATE_FOR_STMT)
+		pp_printf (&pp, "RI template for");
+	      else if (t->list_p ())
 		pp_printf (&pp, "RS %S", ctx);
 	      else
 		pp_printf (&pp, "RI %D", ctx);
@@ -19376,6 +19381,62 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       finish_do_body (stmt);
       tmp = RECUR (DO_COND (t));
       finish_do_stmt (tmp, stmt, false, 0, false);
+      break;
+
+    case TEMPLATE_FOR_STMT:
+      {
+	tree init;
+	stmt = build_stmt (EXPR_LOCATION (t), TEMPLATE_FOR_STMT, NULL_TREE,
+			   NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+	TEMPLATE_FOR_SCOPE (stmt) = begin_template_for_scope (&init);
+	TEMPLATE_FOR_INIT_STMT (stmt) = init;
+	RECUR (TEMPLATE_FOR_INIT_STMT (t));
+	TEMPLATE_FOR_EXPR (stmt) = RECUR (TEMPLATE_FOR_EXPR (t));
+	if (processing_template_decl)
+	  {
+	    tree orig_decl = TEMPLATE_FOR_DECL (t);
+	    if (TREE_CODE (orig_decl) == TREE_VEC)
+	      orig_decl = TREE_VEC_ELT (orig_decl, 0);
+	    tree decl = tsubst (orig_decl, args, complain, in_decl);
+	    maybe_push_decl (decl);
+
+	    cp_decomp decomp_d, *decomp = NULL;
+	    if (DECL_DECOMPOSITION_P (decl))
+	      {
+		decomp = &decomp_d;
+		decl = tsubst_decomp_names (decl, orig_decl, args,
+					    complain, in_decl, decomp);
+		if (decl != error_mark_node)
+		  {
+		    tree v = make_tree_vec (decomp->count + 1);
+		    TREE_VEC_ELT (v, 0) = decl;
+		    decl = decomp->decl;
+		    for (unsigned i = 0; i < decomp->count; ++i)
+		      {
+			TREE_VEC_ELT (v, decomp->count - i) = decl;
+			decl = DECL_CHAIN (decl);
+		      }
+		    decl = v;
+		  }
+	      }
+	    TEMPLATE_FOR_DECL (stmt) = decl;
+	    TEMPLATE_FOR_INIT_STMT (stmt) = pop_stmt_list (init);
+	    add_stmt (stmt);
+	    TEMPLATE_FOR_BODY (stmt) = do_pushlevel (sk_block);
+	    bool prev = note_iteration_stmt_body_start ();
+	    RECUR (TEMPLATE_FOR_BODY (t));
+	    note_iteration_stmt_body_end (prev);
+	    TEMPLATE_FOR_BODY (stmt)
+	      = do_poplevel (TEMPLATE_FOR_BODY (stmt));
+	  }
+	else
+	  {
+	    TEMPLATE_FOR_DECL (stmt) = TEMPLATE_FOR_DECL (t);
+	    TEMPLATE_FOR_BODY (stmt) = TEMPLATE_FOR_BODY (t);
+	    finish_expansion_stmt (stmt, args, complain, in_decl);
+	  }
+	add_stmt (do_poplevel (TEMPLATE_FOR_SCOPE (stmt)));
+      }
       break;
 
     case IF_STMT:
@@ -32549,6 +32610,405 @@ add_mergeable_specialization (bool decl_p, spec_entry *elt, tree decl,
       TREE_TYPE (cons) = decl_p ? TREE_TYPE (elt->spec) : elt->spec;
       DECL_TEMPLATE_SPECIALIZATIONS (elt->tmpl) = cons;
       set_defining_module_for_partial_spec (STRIP_TEMPLATE (decl));
+    }
+}
+
+struct expansion_stmt_bc
+{
+  tree break_label;
+  tree continue_label;
+  hash_set<tree> *pset;
+  location_t loc;
+  bool in_switch;
+};
+
+/* Helper function for finish_expansion_stmt.  Find BREAK_STMT (not
+   nested inside of other WHILE_STMT, FOR_STMT, DO_STMT, TEMPLATE_FOR_STMT
+   or SWITCH_STMT) or CONTINUE_STMT (not nested inside those except
+   perhaps SWITCH_STMT) and replace them with GOTO_EXPR to lazily created
+   label.  */
+
+static tree
+expansion_stmt_find_bc_r (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp;
+  expansion_stmt_bc *bc_data = (expansion_stmt_bc *) data;
+  switch (TREE_CODE (t))
+    {
+    case WHILE_STMT:
+      *walk_subtrees = 0;
+      for (int i = 0; i < TREE_CODE_LENGTH (WHILE_STMT); ++i)
+	if (&TREE_OPERAND (t, i) != &WHILE_BODY (t))
+	  cp_walk_tree (&TREE_OPERAND (t, i), expansion_stmt_find_bc_r,
+			data, bc_data->pset);
+      break;
+    case FOR_STMT:
+      *walk_subtrees = 0;
+      for (int i = 0; i < TREE_CODE_LENGTH (FOR_STMT); ++i)
+	if (&TREE_OPERAND (t, i) != &FOR_BODY (t))
+	  cp_walk_tree (&TREE_OPERAND (t, i), expansion_stmt_find_bc_r,
+			data, bc_data->pset);
+      break;
+    case DO_STMT:
+      *walk_subtrees = 0;
+      for (int i = 0; i < TREE_CODE_LENGTH (DO_STMT); ++i)
+	if (&TREE_OPERAND (t, i) != &DO_BODY (t))
+	  cp_walk_tree (&TREE_OPERAND (t, i), expansion_stmt_find_bc_r,
+			data, bc_data->pset);
+      break;
+    case TEMPLATE_FOR_STMT:
+      *walk_subtrees = 0;
+      for (int i = 0; i < TREE_CODE_LENGTH (TEMPLATE_FOR_STMT); ++i)
+	if (&TREE_OPERAND (t, i) != &TEMPLATE_FOR_BODY (t))
+	  cp_walk_tree (&TREE_OPERAND (t, i), expansion_stmt_find_bc_r,
+			data, bc_data->pset);
+      break;
+    case SWITCH_STMT:
+      if (!bc_data->in_switch)
+	{
+	  *walk_subtrees = 0;
+	  for (int i = 0; i < TREE_CODE_LENGTH (SWITCH_STMT); ++i)
+	    if (&TREE_OPERAND (t, i) != &SWITCH_STMT_BODY (t))
+	      cp_walk_tree (&TREE_OPERAND (t, i), expansion_stmt_find_bc_r,
+			    data, bc_data->pset);
+	  bc_data->in_switch = true;
+	  cp_walk_tree (&SWITCH_STMT_BODY (t), expansion_stmt_find_bc_r,
+			data, bc_data->pset);
+	  bc_data->in_switch = false;
+	}
+      break;
+    case BREAK_STMT:
+      if (!bc_data->in_switch)
+	{
+	  if (!bc_data->break_label)
+	    {
+	      bc_data->break_label = create_artificial_label (bc_data->loc);
+	      TREE_USED (bc_data->break_label) = 1;
+	      LABEL_DECL_BREAK (bc_data->break_label) = true;
+	    }
+	  *tp = build1_loc (EXPR_LOCATION (t), GOTO_EXPR, void_type_node,
+			    bc_data->break_label);
+	}
+      break;
+    case CONTINUE_STMT:
+      if (!bc_data->continue_label)
+	{
+	  bc_data->continue_label = create_artificial_label (bc_data->loc);
+	  TREE_USED (bc_data->continue_label) = 1;
+	  LABEL_DECL_CONTINUE (bc_data->continue_label) = true;
+	}
+      *tp = build1_loc (EXPR_LOCATION (t), GOTO_EXPR, void_type_node,
+			bc_data->continue_label);
+      break;
+    default:
+      if (TYPE_P (t))
+	*walk_subtrees = 0;
+      break;
+    }
+  return NULL_TREE;
+}
+
+/* Finish an expansion-statement.  */
+
+void
+finish_expansion_stmt (tree expansion_stmt, tree args,
+		       tsubst_flags_t complain, tree in_decl)
+{
+  tree expansion_init = TEMPLATE_FOR_EXPR (expansion_stmt);
+  if (error_operand_p (expansion_init))
+    return;
+
+  enum expansion_stmt_kind {
+    esk_none,
+    esk_iterating,
+    esk_destructuring,
+    esk_enumerating
+  } kind = esk_none;
+
+  unsigned HOST_WIDE_INT n = 0;
+  tree range_decl = TEMPLATE_FOR_DECL (expansion_stmt);
+  bool is_decomp = false;
+  if (TREE_CODE (range_decl) == TREE_VEC)
+    {
+      is_decomp = true;
+      range_decl = TREE_VEC_ELT (range_decl, 0);
+    }
+  if (error_operand_p (range_decl))
+    return;
+
+  location_t loc = DECL_SOURCE_LOCATION (range_decl);
+  tree begin = NULL_TREE;
+  auto_vec<tree, 8> destruct_decls;
+  if (BRACE_ENCLOSED_INITIALIZER_P (expansion_init))
+    {
+      /* Enumerating expansion statements.  */
+      kind = esk_enumerating;
+      n = CONSTRUCTOR_NELTS (expansion_init);
+    }
+  else if (TYPE_REF_P (TREE_TYPE (expansion_init))
+	   ? TREE_CODE (TREE_TYPE (TREE_TYPE (expansion_init))) != ARRAY_TYPE
+	   : TREE_CODE (TREE_TYPE (expansion_init)) != ARRAY_TYPE)
+    {
+      tree range_temp, begin_expr, end_expr, iter_type;
+      range_temp = convert_from_reference (build_range_temp (expansion_init));
+      iter_type = cp_perform_range_for_lookup (range_temp, &begin_expr,
+					       &end_expr, tf_none);
+      if (begin_expr != error_mark_node && end_expr != error_mark_node)
+	{
+	  kind = esk_iterating;
+	  gcc_assert (iter_type);
+	}
+    }
+  if (kind == esk_iterating)
+    {
+      /* Iterating expansion statements.  */
+      tree end;
+      begin = cp_build_range_for_decls (loc, expansion_init, &end, true);
+      if (!error_operand_p (begin) && !error_operand_p (end))
+	{
+	  tree i = get_target_expr (begin);
+	  tree w = build_stmt (loc, WHILE_STMT, NULL_TREE, NULL_TREE,
+			       NULL_TREE, NULL_TREE, NULL_TREE);
+	  tree r = get_target_expr (build_zero_cst (ptrdiff_type_node));
+	  tree iinc = build_x_unary_op (loc, PREINCREMENT_EXPR,
+					TARGET_EXPR_SLOT (i), NULL_TREE,
+					tf_warning_or_error);
+	  tree rinc = build2 (PREINCREMENT_EXPR, ptrdiff_type_node,
+			      TARGET_EXPR_SLOT (r),
+			      build_int_cst (ptrdiff_type_node, 1));
+	  WHILE_BODY (w) = build_compound_expr (loc, iinc, rinc);
+	  WHILE_COND (w) = build_x_binary_op (loc, NE_EXPR, i, ERROR_MARK,
+					      end, ERROR_MARK, NULL_TREE, NULL,
+					      tf_warning_or_error);
+	  tree e = build_compound_expr (loc, r, i);
+	  e = build_compound_expr (loc, e, w);
+	  e = build_compound_expr (loc, e, TARGET_EXPR_SLOT (r));
+	  e = cxx_constant_value (e);
+	  if (tree_fits_uhwi_p (e))
+	    n = tree_to_uhwi (e);
+	}
+    }
+  else if (kind == esk_none)
+    {
+      kind = esk_destructuring;
+      HOST_WIDE_INT sz = cp_decomp_size (loc, TREE_TYPE (expansion_init),
+					 tf_warning_or_error);
+      if (sz < 0)
+	return;
+      if (sz == 0)
+	{
+	  error_at (loc, "empty structured binding");
+	  return;
+	}
+      n = sz;
+      tree auto_node = make_auto ();
+      tree decomp_type = cp_build_reference_type (auto_node, true);
+      decomp_type = do_auto_deduction (decomp_type, expansion_init, auto_node);
+      tree decl = build_decl (loc, VAR_DECL, NULL_TREE, decomp_type);
+      TREE_USED (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_DECLARED_CONSTEXPR_P (decl)
+	= DECL_DECLARED_CONSTEXPR_P (range_decl);
+      if (DECL_DECLARED_CONSTEXPR_P (decl))
+	TREE_READONLY (decl) = 1;
+      fit_decomposition_lang_decl (decl, NULL_TREE);
+      pushdecl (decl);
+      cp_decomp this_decomp;
+      this_decomp.count = n;
+      destruct_decls.safe_grow (n, true);
+      for (unsigned HOST_WIDE_INT i = 0; i < n; ++i)
+	{
+	  tree this_decl = build_decl (loc, VAR_DECL, NULL_TREE, make_auto ());
+	  TREE_USED (this_decl) = 1;
+	  DECL_ARTIFICIAL (this_decl) = 1;
+	  DECL_DECLARED_CONSTEXPR_P (this_decl)
+	    = DECL_DECLARED_CONSTEXPR_P (decl);
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    TREE_READONLY (this_decl) = 1;
+	  pushdecl (this_decl);
+	  this_decomp.decl = this_decl;
+	  destruct_decls[i] = this_decl;
+	}
+      DECL_NAME (decl) = for_range__identifier;
+      cp_finish_decl (decl, expansion_init,
+		      /*is_constant_init*/false, NULL_TREE,
+		      LOOKUP_ONLYCONVERTING, &this_decomp);
+      DECL_NAME (decl) = NULL_TREE;
+    }
+
+  expansion_stmt_bc bc_data = { NULL_TREE, NULL_TREE, NULL, loc, false };
+
+  for (unsigned HOST_WIDE_INT i = 0; i < n; ++i)
+    {
+      tree scope = do_pushlevel (sk_block);
+      bool revert_outer
+	= (current_binding_level->level_chain
+	   && current_binding_level->level_chain->kind == sk_template_for);
+      /* Don't diagnose redeclaration of for-range-declaration decls.
+	 The sk_template_for block is reused for the originally parsed
+	 source as well as the lowered one.  In the original one
+	 redeclaration of the for-range-declaration decls in the substatement
+	 should be diagnosed (i.e. declarations of the same name in sk_block
+	 of the body vs. declarations in sk_template_for block).  In the
+	 lowered case, the sk_block added by do_pushlevel (sk_block) above
+	 will be block in the lowering of each Si.  Those blocks do redeclare
+	 for-range-declaration, so temporarily change sk_template_for
+	 kind to sk_block to avoid it being diagnosed as invalid.  */
+      if (revert_outer)
+	current_binding_level->level_chain->kind = sk_block;
+      tree type = TREE_TYPE (range_decl);
+      if (args)
+	type = tsubst (type, args, complain | tf_tst_ok, in_decl);
+      tree decl = build_decl (loc, VAR_DECL, DECL_NAME (range_decl), type);
+      DECL_ATTRIBUTES (decl) = DECL_ATTRIBUTES (range_decl);
+      if (args)
+	apply_late_template_attributes (&decl, DECL_ATTRIBUTES (decl),
+					/*flags=*/0, args, complain,
+					in_decl);
+
+      DECL_DECLARED_CONSTEXPR_P (decl)
+	= DECL_DECLARED_CONSTEXPR_P (range_decl);
+      if (DECL_DECLARED_CONSTEXPR_P (decl))
+	TREE_READONLY (decl) = 1;
+      pushdecl (decl);
+      tree init = NULL_TREE;
+      switch (kind)
+	{
+	case esk_enumerating:
+	  init = CONSTRUCTOR_ELT (expansion_init, i)->value;
+	  break;
+	case esk_iterating:
+	  tree iter_init, auto_node, iter_type, iter;
+	  iter_init
+	    = build_x_binary_op (loc, PLUS_EXPR, begin, ERROR_MARK,
+				 build_int_cst (ptrdiff_type_node, i),
+				 ERROR_MARK, NULL_TREE, NULL,
+				 tf_warning_or_error);
+	  auto_node = make_auto ();
+	  iter_type = do_auto_deduction (auto_node, iter_init, auto_node);
+	  iter = build_decl (loc, VAR_DECL, NULL_TREE, iter_type);
+	  TREE_USED (iter) = 1;
+	  DECL_ARTIFICIAL (iter) = 1;
+	  TREE_STATIC (iter) = 1;
+	  DECL_DECLARED_CONSTEXPR_P (iter) = 1;
+	  pushdecl (iter);
+	  cp_finish_decl (iter, iter_init, /*is_constant_init*/false,
+			  NULL_TREE, LOOKUP_ONLYCONVERTING);
+	  init = build_x_indirect_ref (loc, iter, RO_UNARY_STAR, NULL_TREE,
+				       tf_warning_or_error);
+	  break;
+	case esk_destructuring:
+	  init = convert_from_reference (destruct_decls[i]);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      cp_decomp this_decomp = {};
+      if (is_decomp)
+	{
+	  fit_decomposition_lang_decl (decl, NULL_TREE);
+	  tree v = TEMPLATE_FOR_DECL (expansion_stmt);
+	  this_decomp.count = TREE_VEC_LENGTH (v) - 1;
+	  for (unsigned i = 0; i < this_decomp.count; ++i)
+	    {
+	      tree this_decl
+		= build_decl (loc, VAR_DECL,
+			      DECL_NAME (TREE_VEC_ELT (v, i + 1)),
+			      make_auto ());
+	      TREE_USED (this_decl) = 1;
+	      DECL_ARTIFICIAL (this_decl) = 1;
+	      DECL_ATTRIBUTES (this_decl)
+		= DECL_ATTRIBUTES (TREE_VEC_ELT (v, i + 1));
+	      if (DECL_PACK_P (TREE_VEC_ELT (v, i + 1)))
+		{
+		  tree dtype = cxx_make_type (DECLTYPE_TYPE);
+		  DECLTYPE_TYPE_EXPR (dtype) = this_decl;
+		  DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (dtype) = 1;
+		  SET_TYPE_STRUCTURAL_EQUALITY (dtype);
+		  tree type = cxx_make_type (TYPE_PACK_EXPANSION);
+		  PACK_EXPANSION_PATTERN (type) = dtype;
+		  SET_TYPE_STRUCTURAL_EQUALITY (type);
+		  PACK_EXPANSION_PARAMETER_PACKS (type) = this_decl;
+		  TREE_TYPE (this_decl) = type;
+		}
+	      if (args)
+		apply_late_template_attributes (&this_decl,
+						DECL_ATTRIBUTES (this_decl),
+						/*flags=*/0, args,
+						complain, in_decl);
+	      DECL_DECLARED_CONSTEXPR_P (this_decl)
+		= DECL_DECLARED_CONSTEXPR_P (decl);
+	      if (DECL_DECLARED_CONSTEXPR_P (decl))
+		TREE_READONLY (this_decl) = 1;
+	      pushdecl (this_decl);
+	      this_decomp.decl = this_decl;
+	    }
+	}
+      cp_finish_decl (decl, init, false, NULL_TREE,
+		      LOOKUP_ONLYCONVERTING, is_decomp ? &this_decomp : NULL);
+      if (revert_outer)
+	current_binding_level->level_chain->kind = sk_template_for;
+      tree targs = args;
+      if (args == NULL_TREE)
+	{
+	  targs = make_tree_vec (1);
+	  TREE_VEC_ELT (targs, 0) = build_int_cst (ptrdiff_type_node, i + 1);
+	}
+      if (args != NULL_TREE
+	  || push_tinst_level_loc (expansion_stmt, targs, loc))
+	{
+	  local_specialization_stack lss (lss_copy);
+	  register_local_specialization (decl, range_decl);
+	  if (is_decomp)
+	    {
+	      tree d = this_decomp.decl;
+	      unsigned int cnt = this_decomp.count;
+	      tree v = TEMPLATE_FOR_DECL (expansion_stmt);
+	      for (unsigned int i = 0; i < cnt; ++i, d = DECL_CHAIN (d))
+		register_local_specialization (d, TREE_VEC_ELT (v, cnt - i));
+	    }
+	  tsubst_stmt (TEMPLATE_FOR_BODY (expansion_stmt),
+		       targs, complain, in_decl ? in_decl : range_decl);
+	  if (args == NULL_TREE)
+	    pop_tinst_level ();
+	}
+      tree stmt = do_poplevel (scope);
+      if (stmt)
+	{
+	  add_stmt (stmt);
+	  hash_set<tree> pset;
+	  bc_data.continue_label = NULL_TREE;
+	  bc_data.pset = &pset;
+	  cp_walk_tree (&stmt, expansion_stmt_find_bc_r, &bc_data, &pset);
+	  if (bc_data.continue_label)
+	    add_stmt (build1 (LABEL_EXPR, void_type_node,
+			      bc_data.continue_label));
+	}
+    }
+  if (bc_data.break_label)
+    add_stmt (build1 (LABEL_EXPR, void_type_node, bc_data.break_label));
+  if (args == NULL_TREE)
+    {
+      TREE_TYPE (range_decl) = error_mark_node;
+      if (DECL_HAS_VALUE_EXPR_P (range_decl))
+	{
+	  SET_DECL_VALUE_EXPR (range_decl, NULL_TREE);
+	  DECL_HAS_VALUE_EXPR_P (range_decl) = 0;
+	}
+      if (is_decomp)
+	{
+	  tree v = TEMPLATE_FOR_DECL (expansion_stmt);
+	  for (int i = 1; i < TREE_VEC_LENGTH (v); ++i)
+	    {
+	      tree d = TREE_VEC_ELT (v, i);
+	      TREE_TYPE (d) = error_mark_node;
+	      if (DECL_HAS_VALUE_EXPR_P (d))
+		{
+		  SET_DECL_VALUE_EXPR (d, NULL_TREE);
+		  DECL_HAS_VALUE_EXPR_P (d) = 0;
+		}
+	    }
+	}
     }
 }
 

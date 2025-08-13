@@ -677,7 +677,7 @@ do_poplevel (tree stmt_list)
 
 /* Begin a new scope.  */
 
-static tree
+tree
 do_pushlevel (scope_kind sk)
 {
   tree ret = push_stmt_list ();
@@ -1852,6 +1852,21 @@ finish_range_for_decl (tree range_for_stmt, tree decl, tree expr)
   RANGE_FOR_EXPR (range_for_stmt) = expr;
   add_stmt (range_for_stmt);
   RANGE_FOR_BODY (range_for_stmt) = do_pushlevel (sk_block);
+}
+
+/* Begin the scope of an expansion-statement.  */
+
+tree
+begin_template_for_scope (tree *init)
+{
+  tree scope = do_pushlevel (sk_template_for);
+
+  if (processing_template_decl)
+    *init = push_stmt_list ();
+  else
+    *init = NULL_TREE;
+
+  return scope;
 }
 
 /* Finish a break-statement.  */

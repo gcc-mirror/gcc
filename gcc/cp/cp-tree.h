@@ -1973,6 +1973,8 @@ struct GTY(()) saved_scope {
      of consteval if statement.  Also set while processing an immediate
      invocation.  */
   BOOL_BITFIELD consteval_if_p : 1;
+  /* Nonzero if we are parsing the substatement of expansion-statement.  */
+  BOOL_BITFIELD expansion_stmt : 1;
 
   int unevaluated_operand;
   int inhibit_evaluation_warnings;
@@ -2046,6 +2048,7 @@ extern GTY(()) struct saved_scope *scope_chain;
 
 #define in_discarded_stmt scope_chain->discarded_stmt
 #define in_consteval_if_p scope_chain->consteval_if_p
+#define in_expansion_stmt scope_chain->expansion_stmt
 
 #define current_ref_temp_count scope_chain->ref_temp_count
 
@@ -5691,6 +5694,19 @@ decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 #define RANGE_FOR_NOVECTOR(NODE) TREE_LANG_FLAG_5 (RANGE_FOR_STMT_CHECK (NODE))
 
+/* TEMPLATE_FOR_STMT accessors.  These give access to the declarator,
+   expression, body, and scope of the statement, respectively.  */
+#define TEMPLATE_FOR_DECL(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 0)
+#define TEMPLATE_FOR_EXPR(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 1)
+#define TEMPLATE_FOR_BODY(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 2)
+#define TEMPLATE_FOR_SCOPE(NODE) \
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 3)
+#define TEMPLATE_FOR_INIT_STMT(NODE) \
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 4)
+
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 
@@ -6802,9 +6818,11 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
 
   /* The original node.  TLDCL can be a DECL (for a function or static
      data member), a TYPE (for a class), depending on what we were
-     asked to instantiate, or a TREE_LIST with the template as PURPOSE
-     and the template args as VALUE, if we are substituting for
-     overload resolution.  In all these cases, TARGS is NULL.
+     asked to instantiate, a TEMPLATE_FOR_STMT (for instantiation
+     of expansion stmt body outside of templates) or a TREE_LIST with
+     the template as PURPOSE and the template args as VALUE, if we are
+     substituting for overload resolution.  In all these cases, TARGS
+     is NULL.
      However, to avoid creating TREE_LIST objects for substitutions if
      we can help, we store PURPOSE and VALUE in TLDCL and TARGS,
      respectively.  So TLDCL stands for TREE_LIST or DECL (the
@@ -7278,6 +7296,7 @@ extern void omp_declare_variant_finalize	(tree, tree);
 struct cp_decomp { tree decl; unsigned int count; };
 extern void cp_finish_decl			(tree, tree, bool, tree, int, cp_decomp * = nullptr);
 extern tree lookup_decomp_type			(tree);
+HOST_WIDE_INT cp_decomp_size			(location_t, tree, tsubst_flags_t);
 extern bool cp_finish_decomp			(tree, cp_decomp *, bool = false);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
@@ -7760,8 +7779,12 @@ extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
+extern tree cp_build_range_for_decls (location_t, tree, tree *, bool);
 extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 				  tree, bool);
+extern tree build_range_temp (tree);
+extern tree cp_perform_range_for_lookup	(tree, tree *, tree *,
+					 tsubst_flags_t = tf_warning_or_error);
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &,
 				      bool);
@@ -7978,6 +8001,7 @@ extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
 extern tree add_extra_args			(tree, tree, tsubst_flags_t, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
+extern void finish_expansion_stmt		(tree, tree, tsubst_flags_t, tree);
 
 /* in rtti.cc */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
@@ -8078,6 +8102,7 @@ public:
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
+extern tree do_pushlevel			(scope_kind);
 extern void break_maybe_infinite_loop		(void);
 extern void add_decl_expr			(tree);
 extern tree maybe_cleanup_point_expr_void	(tree);
@@ -8104,7 +8129,7 @@ extern void find_range_for_decls		(tree[3]);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);
 extern void finish_range_for_decl		(tree, tree, tree);
-extern void finish_range_for_stmt		(tree);
+extern tree begin_template_for_scope		(tree *);
 extern tree finish_break_stmt			(void);
 extern tree finish_continue_stmt		(void);
 extern tree begin_switch_stmt			(void);

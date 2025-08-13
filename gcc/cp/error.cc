@@ -3953,14 +3953,20 @@ print_instantiation_full_context (diagnostics::text_sink &text_output)
 	= ((!text_output.show_nesting_p ())
 	   || text_output.show_locations_in_nesting_p ());
       char *indent = text_output.build_indent_prefix (true);
+      bool expansion_stmt_p = TREE_CODE (p->tldcl) == TEMPLATE_FOR_STMT;
       pp_verbatim (text_output.get_printer (),
-		   p->list_p ()
+		   expansion_stmt_p
+		   ? G_("%s%s%sIn instantiation of %<template for%> "
+			"iteration %E:\n")
+		   : p->list_p ()
 		   ? G_("%s%s%sIn substitution of %qS:\n")
 		   : G_("%s%s%sIn instantiation of %q#D:\n"),
 		   indent,
 		   show_file ? LOCATION_FILE (location) : "",
 		   show_file ? ": " : "",
-		   p->get_node ());
+		   expansion_stmt_p
+		   ? TREE_VEC_ELT (p->targs, 0)
+		   : p->get_node ());
       free (indent);
       location = p->locus;
       p = p->next;
@@ -4069,7 +4075,14 @@ print_instantiation_partial_context_line (diagnostics::text_sink &text_output,
 
   if (t != NULL)
     {
-      if (t->list_p ())
+      if (TREE_CODE (t->tldcl) == TEMPLATE_FOR_STMT)
+	pp_verbatim (pp,
+		     recursive_p
+		     ? G_("recursively required from %<template for%> "
+			  "iteration %E\n")
+		     : G_("required from %<template for%> iteration %E\n"),
+		     TREE_VEC_ELT (t->targs, 0));
+      else if (t->list_p ())
 	pp_verbatim (pp,
 		     recursive_p
 		     ? G_("recursively required by substitution of %qS\n")

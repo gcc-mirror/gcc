@@ -601,6 +601,8 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->in_template_argument_list_p);
   cp_debug_print_flag (file, "Parsing an iteration statement",
 			      parser->in_statement & IN_ITERATION_STMT);
+  cp_debug_print_flag (file, "Parsing an expansion statement",
+			      parser->in_statement & IN_EXPANSION_STMT);
   cp_debug_print_flag (file, "Parsing a switch statement",
 			      parser->in_statement & IN_SWITCH_STMT);
   cp_debug_print_flag (file, "Parsing a structured OpenMP block",
@@ -2611,11 +2613,11 @@ static tree cp_parser_c_for
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree, bool, tree, bool, bool);
 static void do_range_for_auto_deduction
-  (tree, tree, cp_decomp *);
-static tree cp_parser_perform_range_for_lookup
-  (tree, tree *, tree *);
-static tree cp_parser_range_for_member_function
+  (tree, tree, cp_decomp *, bool);
+static tree cp_range_for_member_function
   (tree, tree);
+static tree cp_parser_expansion_statement
+  (cp_parser *, bool *);
 static tree cp_parser_jump_statement
   (cp_parser *, tree &);
 static void cp_parser_declaration_statement
@@ -11875,6 +11877,10 @@ cp_parser_lambda_expression (cp_parser* parser,
     bool save_in_consteval_if_p = in_consteval_if_p;
     in_consteval_if_p = false;
 
+    /* Similarly the body of a lambda is not part of expansion statement.  */
+    bool save_in_expansion_stmt = in_expansion_stmt;
+    in_expansion_stmt = 0;
+
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
@@ -11904,6 +11910,7 @@ cp_parser_lambda_expression (cp_parser* parser,
 
     finish_struct (type, /*attributes=*/NULL_TREE);
 
+    in_expansion_stmt = save_in_expansion_stmt;
     in_consteval_if_p = save_in_consteval_if_p;
     in_discarded_stmt = discarded;
 
@@ -13164,6 +13171,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  case RID_TRANSACTION_CANCEL:
 	    handle_omp_attribs = true;
 	    break;
+	  case RID_TEMPLATE:
+	    if (cxx_dialect >= cxx11
+		&& cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_FOR))
+	      handle_omp_attribs = true;
+	    break;
 	  default:
 	    break;
 	  }
@@ -13214,6 +13226,16 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_iteration_statement (parser, if_p, false,
 						     NULL_TREE, false);
+	  break;
+
+	case RID_TEMPLATE:
+	  if (cxx_dialect >= cxx11
+	      && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_FOR))
+	    {
+	      std_attrs = process_stmt_hotness_attribute (std_attrs,
+							  attrs_loc);
+	      statement = cp_parser_expansion_statement (parser, if_p);
+	    }
 	  break;
 
 	case RID_BREAK:
@@ -13618,6 +13640,13 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
     default:
       /* Anything else must be an ordinary label.  */
       cp_expr identifier = cp_parser_identifier (parser);
+      if (in_expansion_stmt && identifier != error_mark_node)
+	{
+	  error_at (token->location,
+		    "identifier label %qE in %<template for%> body",
+		    *identifier);
+	  break;
+	}
       if (identifier != error_mark_node
 	  && parser->omp_metadirective_state)
 	*identifier = mangle_metadirective_region_label (parser, *identifier);
@@ -14644,6 +14673,73 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
   return stmt;
 }
 
+/* Helper function for cp_parser_range_for and cp_parser_expansion_statement.
+   Get the range declaration momentarily out of the way so that the range
+   expression doesn't clash with it. */
+
+static cp_decomp *
+cp_hide_range_decl (tree *range_decl_p, cp_decomp *decomp_d,
+		    auto_vec <cxx_binding *> &bindings,
+		    auto_vec <tree> &names)
+{
+  tree range_decl = *range_decl_p;
+  cp_decomp *decomp = NULL;
+  if (range_decl == error_mark_node)
+    return decomp;
+
+  if (DECL_HAS_VALUE_EXPR_P (range_decl))
+    {
+      tree v = DECL_VALUE_EXPR (range_decl);
+      /* For decomposition declaration get all of the corresponding
+	 declarations out of the way.  */
+      if ((TREE_CODE (v) == ARRAY_REF
+	   && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	  || (TREE_CODE (v) == TREE_VEC
+	      && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0))))
+	{
+	  tree d = range_decl;
+	  decomp = decomp_d;
+	  if (TREE_CODE (v) == ARRAY_REF)
+	    {
+	      *range_decl_p = range_decl = TREE_OPERAND (v, 0);
+	      decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	    }
+	  else
+	    {
+	      *range_decl_p = range_decl = TREE_VEC_ELT (v, 0);
+	      decomp->count = tree_to_uhwi (TREE_VEC_ELT (v, 1)) + 1;
+	    }
+	  decomp->decl = d;
+	  bool seen_name_independent_decl = false;
+	  names.reserve (decomp->count);
+	  bindings.reserve (decomp->count);
+	  for (unsigned int i = 0; i < decomp->count; i++, d = DECL_CHAIN (d))
+	    {
+	      if (name_independent_decl_p (d))
+		{
+		  /* If there is more than one _ decl in the structured
+		     binding, just push and move it away once.  */
+		  if (seen_name_independent_decl)
+		    continue;
+		  seen_name_independent_decl = true;
+		}
+	      tree name = DECL_NAME (d);
+	      names.quick_push (name);
+	      bindings.quick_push (IDENTIFIER_BINDING (name));
+	      IDENTIFIER_BINDING (name) = IDENTIFIER_BINDING (name)->previous;
+	    }
+	}
+    }
+  if (names.is_empty ())
+    {
+      tree name = DECL_NAME (range_decl);
+      names.safe_push (name);
+      bindings.safe_push (IDENTIFIER_BINDING (name));
+      IDENTIFIER_BINDING (name) = IDENTIFIER_BINDING (name)->previous;
+    }
+  return decomp;
+}
+
 /* Tries to parse a range-based for-statement:
 
   range-based-for:
@@ -14659,66 +14755,14 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 		     bool ivdep, tree unroll, bool novector, bool is_omp)
 {
   tree stmt, range_expr;
-  auto_vec <cxx_binding *, 16> bindings;
-  auto_vec <tree, 16> names;
-  cp_decomp decomp_d, *decomp = NULL;
+  auto_vec <cxx_binding *> bindings;
+  auto_vec <tree> names;
+  cp_decomp decomp_d;
 
   /* Get the range declaration momentarily out of the way so that
      the range expression doesn't clash with it. */
-  if (range_decl != error_mark_node)
-    {
-      if (DECL_HAS_VALUE_EXPR_P (range_decl))
-	{
-	  tree v = DECL_VALUE_EXPR (range_decl);
-	  /* For decomposition declaration get all of the corresponding
-	     declarations out of the way.  */
-	  if ((TREE_CODE (v) == ARRAY_REF
-	       && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
-	      || (TREE_CODE (v) == TREE_VEC
-		  && DECL_DECOMPOSITION_P (TREE_VEC_ELT (v, 0))))
-	    {
-	      tree d = range_decl;
-	      decomp = &decomp_d;
-	      if (TREE_CODE (v) == ARRAY_REF)
-		{
-		  range_decl = TREE_OPERAND (v, 0);
-		  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
-		}
-	      else
-		{
-		  range_decl = TREE_VEC_ELT (v, 0);
-		  decomp->count = tree_to_uhwi (TREE_VEC_ELT (v, 1)) + 1;
-		}
-	      decomp->decl = d;
-	      bool seen_name_independent_decl = false;
-	      for (unsigned int i = 0; i < decomp->count;
-		   i++, d = DECL_CHAIN (d))
-		{
-		  if (name_independent_decl_p (d))
-		    {
-		      /* If there is more than one _ decl in
-			 the structured binding, just push and move it
-			 away once.  */
-		      if (seen_name_independent_decl)
-			continue;
-		      seen_name_independent_decl = true;
-		    }
-		  tree name = DECL_NAME (d);
-		  names.safe_push (name);
-		  bindings.safe_push (IDENTIFIER_BINDING (name));
-		  IDENTIFIER_BINDING (name)
-		    = IDENTIFIER_BINDING (name)->previous;
-		}
-	    }
-	}
-      if (names.is_empty ())
-	{
-	  tree name = DECL_NAME (range_decl);
-	  names.safe_push (name);
-	  bindings.safe_push (IDENTIFIER_BINDING (name));
-	  IDENTIFIER_BINDING (name) = IDENTIFIER_BINDING (name)->previous;
-	}
-    }
+  cp_decomp *decomp = cp_hide_range_decl (&range_decl, &decomp_d, bindings,
+					  names);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     range_expr = cp_parser_braced_list (parser);
@@ -14755,7 +14799,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       if (!type_dependent_expression_p (range_expr)
 	  /* do_auto_deduction doesn't mess with template init-lists.  */
 	  && !BRACE_ENCLOSED_INITIALIZER_P (range_expr))
-	do_range_for_auto_deduction (range_decl, range_expr, decomp);
+	do_range_for_auto_deduction (range_decl, range_expr, decomp, false);
     }
   else
     {
@@ -14769,7 +14813,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 /* Subroutine of cp_convert_range_for: given the initializer expression,
    builds up the range temporary.  */
 
-static tree
+tree
 build_range_temp (tree range_expr)
 {
   /* Find out the type deduced by the declaration
@@ -14793,15 +14837,22 @@ build_range_temp (tree range_expr)
    a shortcut version of cp_convert_range_for.  */
 
 static void
-do_range_for_auto_deduction (tree decl, tree range_expr, cp_decomp *decomp)
+do_range_for_auto_deduction (tree decl, tree range_expr, cp_decomp *decomp,
+			     bool expansion_stmt)
 {
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
   if (auto_node)
     {
       tree begin_dummy, end_dummy, range_temp, iter_type, iter_decl;
       range_temp = convert_from_reference (build_range_temp (range_expr));
-      iter_type = (cp_parser_perform_range_for_lookup
-		   (range_temp, &begin_dummy, &end_dummy));
+      iter_type = cp_perform_range_for_lookup (range_temp, &begin_dummy,
+					       &end_dummy,
+					       expansion_stmt ? tf_none
+					       : tf_warning_or_error);
+      if (expansion_stmt
+	  && (begin_dummy == error_mark_node
+	      || end_dummy == error_mark_node))
+	return;
       if (iter_type)
 	{
 	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
@@ -14902,6 +14953,89 @@ warn_for_range_copy (tree decl, tree expr)
     }
 }
 
+/* Helper function for cp_convert_range_for and finish_expansion_stmt.
+   Build the __range, __begin and __end declarations.  Return the
+   __begin VAR_DECL, set *END_P to the __end VAR_DECL.  */
+
+tree
+cp_build_range_for_decls (location_t loc, tree range_expr, tree *end_p,
+			  bool expansion_stmt_p)
+{
+  tree iter_type, begin_expr, end_expr;
+
+  if (range_expr == error_mark_node)
+    /* If an error happened previously do nothing or else a lot of
+       unhelpful errors would be issued.  */
+    begin_expr = end_expr = iter_type = error_mark_node;
+  else
+    {
+      tree range_temp;
+
+      if (!expansion_stmt_p
+	  && VAR_P (range_expr)
+	  && array_of_runtime_bound_p (TREE_TYPE (range_expr)))
+	/* Can't bind a reference to an array of runtime bound.  */
+	range_temp = range_expr;
+      else
+	{
+	  range_temp = build_range_temp (range_expr);
+	  if (expansion_stmt_p)
+	    {
+	      /* Depending on CWG3044 resolution, we might want to remove
+		 these 3 sets of TREE_STATIC (on range_temp, begin and end).
+		 Although it can only be done when P2686R4 is fully
+		 implemented.  */
+	      TREE_STATIC (range_temp) = 1;
+	      TREE_PUBLIC (range_temp) = 0;
+	      DECL_COMMON (range_temp) = 0;
+	      DECL_INTERFACE_KNOWN (range_temp) = 1;
+	      DECL_DECLARED_CONSTEXPR_P (range_temp) = 1;
+	      TREE_READONLY (range_temp) = 1;
+	    }
+	  pushdecl (range_temp);
+	  cp_finish_decl (range_temp, range_expr,
+			  /*is_constant_init*/false, NULL_TREE,
+			  LOOKUP_ONLYCONVERTING);
+	  range_temp = convert_from_reference (range_temp);
+	}
+      iter_type = cp_perform_range_for_lookup (range_temp, &begin_expr,
+					       &end_expr);
+    }
+
+  /* The new for initialization statement.  */
+  tree begin = build_decl (loc, VAR_DECL, for_begin__identifier, iter_type);
+  TREE_USED (begin) = 1;
+  DECL_ARTIFICIAL (begin) = 1;
+  if (expansion_stmt_p)
+    {
+      TREE_STATIC (begin) = 1;
+      DECL_DECLARED_CONSTEXPR_P (begin) = 1;
+      TREE_READONLY (begin) = 1;
+    }
+  pushdecl (begin);
+  cp_finish_decl (begin, begin_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  if (cxx_dialect >= cxx17)
+    iter_type = cv_unqualified (TREE_TYPE (end_expr));
+  tree end = build_decl (loc, VAR_DECL, for_end__identifier, iter_type);
+  TREE_USED (end) = 1;
+  DECL_ARTIFICIAL (end) = 1;
+  if (expansion_stmt_p)
+    {
+      TREE_STATIC (end) = 1;
+      DECL_DECLARED_CONSTEXPR_P (end) = 1;
+      TREE_READONLY (end) = 1;
+    }
+  pushdecl (end);
+  cp_finish_decl (end, end_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+  *end_p = end;
+  return begin;
+}
+
 /* Converts a range-based for-statement into a normal
    for-statement, as per the definition.
 
@@ -14942,56 +15076,14 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 		      cp_decomp *decomp, bool ivdep, tree unroll,
 		      bool novector)
 {
-  tree begin, end;
-  tree iter_type, begin_expr, end_expr;
-  tree condition, expression;
+  tree end, condition, expression;
 
   range_expr = mark_lvalue_use (range_expr);
 
-  if (range_decl == error_mark_node || range_expr == error_mark_node)
-    /* If an error happened previously do nothing or else a lot of
-       unhelpful errors would be issued.  */
-    begin_expr = end_expr = iter_type = error_mark_node;
-  else
-    {
-      tree range_temp;
-
-      if (VAR_P (range_expr)
-	  && array_of_runtime_bound_p (TREE_TYPE (range_expr)))
-	/* Can't bind a reference to an array of runtime bound.  */
-	range_temp = range_expr;
-      else
-	{
-	  range_temp = build_range_temp (range_expr);
-	  pushdecl (range_temp);
-	  cp_finish_decl (range_temp, range_expr,
-			  /*is_constant_init*/false, NULL_TREE,
-			  LOOKUP_ONLYCONVERTING);
-	  range_temp = convert_from_reference (range_temp);
-	}
-      iter_type = cp_parser_perform_range_for_lookup (range_temp,
-						      &begin_expr, &end_expr);
-    }
-
-  /* The new for initialization statement.  */
-  begin = build_decl (input_location, VAR_DECL, for_begin__identifier,
-		      iter_type);
-  TREE_USED (begin) = 1;
-  DECL_ARTIFICIAL (begin) = 1;
-  pushdecl (begin);
-  cp_finish_decl (begin, begin_expr,
-		  /*is_constant_init*/false, NULL_TREE,
-		  LOOKUP_ONLYCONVERTING);
-
-  if (cxx_dialect >= cxx17)
-    iter_type = cv_unqualified (TREE_TYPE (end_expr));
-  end = build_decl (input_location, VAR_DECL, for_end__identifier, iter_type);
-  TREE_USED (end) = 1;
-  DECL_ARTIFICIAL (end) = 1;
-  pushdecl (end);
-  cp_finish_decl (end, end_expr,
-		  /*is_constant_init*/false, NULL_TREE,
-		  LOOKUP_ONLYCONVERTING);
+  if (range_decl == error_mark_node)
+    range_expr = error_mark_node;
+  tree begin
+    = cp_build_range_for_decls (input_location, range_expr, &end, false);
 
   finish_init_stmt (statement);
 
@@ -15025,8 +15117,10 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
    depends on the existence of members begin or end.
    Returns the type deduced for the iterator expression.  */
 
-static tree
-cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
+tree
+cp_perform_range_for_lookup (tree range, tree *begin, tree *end,
+			     tsubst_flags_t complain
+			     /* = tf_warning_or_error */)
 {
   if (error_operand_p (range))
     {
@@ -15036,8 +15130,9 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 
   if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (range))))
     {
-      error ("range-based %<for%> expression of type %qT "
-	     "has incomplete type", TREE_TYPE (range));
+      if (complain & tf_error)
+	error ("range-based %<for%> expression of type %qT "
+	       "has incomplete type", TREE_TYPE (range));
       *begin = *end = error_mark_node;
       return error_mark_node;
     }
@@ -15063,16 +15158,16 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       id_end = get_identifier ("end");
       member_begin = lookup_member (TREE_TYPE (range), id_begin,
 				    /*protect=*/2, /*want_type=*/false,
-				    tf_warning_or_error);
+				    complain);
       member_end = lookup_member (TREE_TYPE (range), id_end,
 				  /*protect=*/2, /*want_type=*/false,
-				  tf_warning_or_error);
+				  complain);
 
       if (member_begin != NULL_TREE && member_end != NULL_TREE)
 	{
 	  /* Use the member functions.  */
-	  *begin = cp_parser_range_for_member_function (range, id_begin);
-	  *end = cp_parser_range_for_member_function (range, id_end);
+	  *begin = cp_range_for_member_function (range, id_begin);
+	  *end = cp_range_for_member_function (range, id_end);
 	}
       else
 	{
@@ -15082,13 +15177,20 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	  vec_safe_push (vec, range);
 
 	  member_begin = perform_koenig_lookup (id_begin, vec,
-						tf_warning_or_error);
+						complain);
+	  if ((complain & tf_error) == 0 && member_begin == id_begin)
+	    return error_mark_node;
 	  *begin = finish_call_expr (member_begin, &vec, false, true,
-				     tf_warning_or_error);
+				     complain);
 	  member_end = perform_koenig_lookup (id_end, vec,
 					      tf_warning_or_error);
+	  if ((complain & tf_error) == 0 && member_end == id_end)
+	    {
+	      *begin = error_mark_node;
+	      return error_mark_node;
+	    }
 	  *end = finish_call_expr (member_end, &vec, false, true,
-				   tf_warning_or_error);
+				   complain);
 	}
 
       /* Last common checks.  */
@@ -15119,7 +15221,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 		/* P0184R0 allows __begin and __end to have different types,
 		   but make sure they are comparable so we can give a better
 		   diagnostic.  */;
-	      else
+	      else if (complain & tf_error)
 		error ("inconsistent begin/end types in range-based %<for%> "
 		       "statement: %qT and %qT",
 		       TREE_TYPE (*begin), TREE_TYPE (*end));
@@ -15129,11 +15231,11 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
     }
 }
 
-/* Helper function for cp_parser_perform_range_for_lookup.
+/* Helper function for cp_perform_range_for_lookup.
    Builds a tree for RANGE.IDENTIFIER().  */
 
 static tree
-cp_parser_range_for_member_function (tree range, tree identifier)
+cp_range_for_member_function (tree range, tree identifier)
 {
   tree member, res;
 
@@ -15352,6 +15454,183 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
   return false;
 }
 
+/* Parse an expansion-statement.
+
+   expansion-statement:
+     template for ( init-statement[opt]
+		    for-range-declaration : expansion-initializer )
+       statement
+
+   expansion-initializer:
+     expression
+     expansion-init-list
+
+   expansion-init-list:
+     { expression-list }  */
+
+static tree
+cp_parser_expansion_statement (cp_parser* parser, bool *if_p)
+{
+  /* Peek at the next token.  */
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  gcc_assert (token->keyword == RID_TEMPLATE);
+  gcc_assert (cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_FOR));
+  cp_lexer_consume_token (parser->lexer);
+  cp_token *for_token = cp_lexer_peek_token (parser->lexer);
+  cp_lexer_consume_token (parser->lexer);
+
+  if (cxx_dialect < cxx26)
+    pedwarn (make_location (token->location, token->location,
+			    for_token->location), OPT_Wc__26_extensions,
+	     "%<template for%> only available with %<-std=c++2c%> "
+	     "or %<-std=gnu++2c%>");
+
+  token_indent_info guard_tinfo = get_token_indent_info (token);
+
+  /* Remember whether or not we are already within an iteration
+     statement.  */
+  unsigned char in_statement = parser->in_statement;
+  /* And whether we are already in expansion-statement.  */
+  auto save_in_expansion_stmt = in_expansion_stmt;
+
+  /* Look for the `('.  */
+  matching_parens parens;
+  parens.require_open (parser);
+
+  tree init;
+  tree scope = begin_template_for_scope (&init);
+
+  /* Maybe parse the optional init-statement in a expansion-statement.  */
+  if (cp_parser_range_based_for_with_init_p (parser)
+      /* Checked for diagnostic purposes only.  */
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+    {
+      tree dummy;
+      cp_parser_init_statement (parser, &dummy);
+    }
+
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+
+  /* A colon is used in expansion-statement.  */
+  parser->colon_corrects_to_scope_p = false;
+
+  /* Parse the declaration.  */
+  tree range_decl;
+  cp_parser_simple_declaration (parser,
+				/*function_definition_allowed_p=*/false,
+				&range_decl);
+  if (range_decl == NULL_TREE)
+    range_decl = error_mark_node;
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
+
+  cp_parser_require (parser, CPP_COLON, RT_COLON);
+
+  auto_vec <cxx_binding *> bindings;
+  auto_vec <tree> names;
+  cp_decomp decomp_d;
+
+  /* Get the range declaration momentarily out of the way so that
+     the range expression doesn't clash with it. */
+  cp_decomp *decomp = cp_hide_range_decl (&range_decl, &decomp_d, bindings,
+					  names);
+
+  tree expansion_init;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      expansion_init = cp_parser_braced_list (parser);
+      if (TREE_CODE (expansion_init) == CONSTRUCTOR
+	  && CONSTRUCTOR_IS_DESIGNATED_INIT (expansion_init))
+	error_at (EXPR_LOC_OR_LOC (expansion_init, token->location),
+		  "designators in %<template for%> initializer");
+    }
+  else
+    expansion_init = cp_parser_expression (parser);
+
+  /* Put the range declaration(s) back into scope. */
+  for (unsigned int i = 0; i < names.length (); i++)
+    {
+      cxx_binding *binding = bindings[i];
+      binding->previous = IDENTIFIER_BINDING (names[i]);
+      IDENTIFIER_BINDING (names[i]) = binding;
+    }
+
+  /* Look for the `)'.  */
+  parens.require_close (parser);
+
+  if (processing_template_decl
+      && check_for_bare_parameter_packs (expansion_init))
+    expansion_init = error_mark_node;
+
+  if (expansion_init != error_mark_node
+      && !type_dependent_expression_p (expansion_init)
+      && TREE_CODE (TREE_TYPE (expansion_init)) != ARRAY_TYPE
+      && !BRACE_ENCLOSED_INITIALIZER_P (expansion_init))
+    do_range_for_auto_deduction (range_decl, expansion_init, decomp,
+				 true);
+
+  bool outside_of_template = !processing_template_decl;
+  if (outside_of_template)
+    {
+      ++processing_template_decl;
+      current_template_parms
+	= tree_cons (size_int (current_template_depth + 1),
+		     make_tree_vec (0), current_template_parms);
+    }
+  in_expansion_stmt = true;
+
+  tree r = build_stmt (token->location, TEMPLATE_FOR_STMT, NULL_TREE,
+		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+
+  current_binding_level->this_entity = r;
+  TEMPLATE_FOR_INIT_STMT (r) = init;
+  TEMPLATE_FOR_SCOPE (r) = scope;
+  if (!outside_of_template)
+    TEMPLATE_FOR_INIT_STMT (r) = pop_stmt_list (TEMPLATE_FOR_INIT_STMT (r));
+  TEMPLATE_FOR_DECL (r) = range_decl;
+  TEMPLATE_FOR_EXPR (r) = expansion_init;
+  TEMPLATE_FOR_BODY (r) = do_pushlevel (sk_block);
+
+  /* Parse the body of the expansion-statement.  */
+  parser->in_statement = IN_EXPANSION_STMT;
+  bool prev = note_iteration_stmt_body_start ();
+  cp_parser_already_scoped_statement (parser, if_p, guard_tinfo);
+  note_iteration_stmt_body_end (prev);
+  parser->in_statement = in_statement;
+  in_expansion_stmt = save_in_expansion_stmt;
+
+  TEMPLATE_FOR_BODY (r) = do_poplevel (TEMPLATE_FOR_BODY (r));
+
+  if (outside_of_template)
+    {
+      current_template_parms = TREE_CHAIN (current_template_parms);
+      --processing_template_decl;
+    }
+
+  if (VAR_P (range_decl) && DECL_DECLARED_CONSTINIT_P (range_decl))
+    error_at (DECL_SOURCE_LOCATION (range_decl),
+	      "for-range-declaration cannot be 'constinit'");
+
+  if (decomp)
+    {
+      tree v = make_tree_vec (decomp->count + 1);
+      TREE_VEC_ELT (v, 0) = TEMPLATE_FOR_DECL (r);
+      tree d = decomp->decl;
+      for (unsigned i = 0; i < decomp->count; ++i, d = DECL_CHAIN (d))
+	TREE_VEC_ELT (v, decomp->count - i) = d;
+      TEMPLATE_FOR_DECL (r) = v;
+    }
+
+  if (processing_template_decl)
+    add_stmt (r);
+  else
+    finish_expansion_stmt (r, NULL_TREE, tf_warning_or_error, NULL_TREE);
+
+  add_stmt (do_poplevel (TEMPLATE_FOR_SCOPE (r)));
+  TEMPLATE_FOR_SCOPE (r) = NULL_TREE;
+
+  return r;
+}
+
 /* Parse a jump-statement.
 
    jump-statement:
@@ -15396,7 +15675,8 @@ cp_parser_jump_statement (cp_parser* parser, tree &std_attrs)
 	  break;
 	default:
 	  gcc_assert ((in_statement & IN_SWITCH_STMT)
-		      || in_statement == IN_ITERATION_STMT);
+		      || in_statement == IN_ITERATION_STMT
+		      || in_statement == IN_EXPANSION_STMT);
 	  statement = finish_break_stmt ();
 	  if (in_statement == IN_ITERATION_STMT)
 	    break_maybe_infinite_loop ();
@@ -15419,6 +15699,7 @@ cp_parser_jump_statement (cp_parser* parser, tree &std_attrs)
 	  break;
 	  /* Fall through.  */
 	case IN_ITERATION_STMT:
+	case IN_EXPANSION_STMT:
 	case IN_OMP_FOR:
 	  statement = finish_continue_stmt ();
 	  break;
@@ -46362,7 +46643,7 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 		  decomp->decl = decl;
 		}
 	    }
-	  do_range_for_auto_deduction (d, init, decomp);
+	  do_range_for_auto_deduction (d, init, decomp, false);
 	}
       cond = global_namespace;
       incr = NULL_TREE;
@@ -46418,8 +46699,8 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	  range_temp_decl = range_temp;
 	  range_temp = convert_from_reference (range_temp);
 	}
-      iter_type = cp_parser_perform_range_for_lookup (range_temp,
-						      &begin_expr, &end_expr);
+      iter_type = cp_perform_range_for_lookup (range_temp, &begin_expr,
+					       &end_expr);
     }
 
   tree end_iter_type = iter_type;

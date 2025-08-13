@@ -6229,6 +6229,7 @@ cp_warn_deprecated_use_scopes (tree scope)
 bool
 decl_dependent_p (tree decl)
 {
+  tree orig_decl = decl;
   if (DECL_FUNCTION_SCOPE_P (decl)
       || TREE_CODE (decl) == CONST_DECL
       || TREE_CODE (decl) == USING_DECL
@@ -6239,6 +6240,13 @@ decl_dependent_p (tree decl)
       return true;
   if (LAMBDA_FUNCTION_P (decl)
       && dependent_type_p (DECL_CONTEXT (decl)))
+    return true;
+  /* for-range-declaration of expansion statement as well as variable
+     declarations in the expansion statement body when the expansion statement
+     is not inside a template still need to be treated as dependent during
+     parsing.  When the body is instantiated, in_expansion_stmt will be already
+     false.  */
+  if (VAR_P (orig_decl) && in_expansion_stmt && decl == current_function_decl)
     return true;
   return false;
 }

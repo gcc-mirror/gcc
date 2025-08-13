@@ -652,3 +652,9 @@
 #elif __cpp_trivial_relocatability != 202502
 #  error "__cpp_trivial_relocatability != 202502"
 #endif
+
+#ifndef __cpp_expansion_statements
+#  error "__cpp_expansion_statements"
+#elif __cpp_expansion_statements != 202506
+#  error "__cpp_expansion_statements != 202506"
+#endif

@@ -572,9 +572,9 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 	  ent->in_stmt_expr = true;
 	  break;
 	case sk_block:
-	  if (level_for_constexpr_if (bl->level_chain))
+	  if (level_for_constexpr_if (obl))
 	    ent->in_constexpr_if = true;
-	  else if (level_for_consteval_if (bl->level_chain))
+	  else if (level_for_consteval_if (obl))
 	    ent->in_consteval_if = true;
 	  break;
 	default:
@@ -4336,7 +4336,19 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
       tree label;
 
       /* For templates, just add the case label; we'll do semantic
-	 analysis at instantiation-time.  */
+	 analysis at instantiation-time.  But diagnose case labels
+	 in expansion statements with switch outside of it here.  */
+      if (in_expansion_stmt)
+	for (cp_binding_level *b = current_binding_level;
+	     b != switch_stack->level; b = b->level_chain)
+	  if (b->kind == sk_template_for && b->this_entity)
+	    {
+	      auto_diagnostic_group d;
+	      error ("jump to case label");
+	      inform (EXPR_LOCATION (b->this_entity),
+		      "  enters %<template for%> statement");
+	      return error_mark_node;
+	    }
       label = build_decl (loc, LABEL_DECL, NULL_TREE, void_type_node);
       return add_stmt (build_case_label (low_value, high_value, label));
     }
@@ -9633,13 +9645,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
    error has been diagnosed.  */
 
 static tree
-find_decomp_class_base (location_t loc, tree type, tree ret)
+find_decomp_class_base (location_t loc, tree type, tree ret,
+			tsubst_flags_t complain)
 {
   if (LAMBDA_TYPE_P (type))
     {
-      auto_diagnostic_group d;
-      error_at (loc, "cannot decompose lambda closure type %qT", type);
-      inform (location_of (type), "lambda declared here");
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error_at (loc, "cannot decompose lambda closure type %qT", type);
+	  inform (location_of (type), "lambda declared here");
+	}
       return error_mark_node;
     }
 
@@ -9653,6 +9669,8 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
       return type;
     else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
       {
+	if ((complain & tf_error) == 0)
+	  return error_mark_node;
 	auto_diagnostic_group d;
 	if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
 	  error_at (loc, "cannot decompose class type %qT because it has an "
@@ -9665,6 +9683,8 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
       }
     else if (!accessible_p (type, field, true))
       {
+	if ((complain & tf_error) == 0)
+	  return error_mark_node;
 	auto_diagnostic_group d;
 	error_at (loc, "cannot decompose inaccessible member %qD of %qT",
 		  field, type);
@@ -9686,28 +9706,32 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
        BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
       auto_diagnostic_group d;
-      tree t = find_decomp_class_base (loc, TREE_TYPE (base_binfo), ret);
+      tree t = find_decomp_class_base (loc, TREE_TYPE (base_binfo), ret,
+				       complain);
       if (t == error_mark_node)
 	{
-	  inform (location_of (type), "in base class of %qT", type);
+	  if (complain & tf_error)
+	    inform (location_of (type), "in base class of %qT", type);
 	  return error_mark_node;
 	}
       if (t != NULL_TREE && t != ret)
 	{
 	  if (ret == type)
 	    {
-	      error_at (loc, "cannot decompose class type %qT: both it and "
-			     "its base class %qT have non-static data members",
-			type, t);
+	      if (complain & tf_error)
+		error_at (loc, "cannot decompose class type %qT: both it and "
+			       "its base class %qT have non-static data "
+			       "members", type, t);
 	      return error_mark_node;
 	    }
 	  else if (orig_ret != NULL_TREE)
 	    return t;
 	  else if (ret != NULL_TREE)
 	    {
-	      error_at (loc, "cannot decompose class type %qT: its base "
-			     "classes %qT and %qT have non-static data "
-			     "members", type, ret, t);
+	      if (complain & tf_error)
+		error_at (loc, "cannot decompose class type %qT: its base "
+			       "classes %qT and %qT have non-static data "
+			       "members", type, ret, t);
 	      return error_mark_node;
 	    }
 	  else
@@ -9890,6 +9914,116 @@ set_sb_pack_name (tree decl, unsigned HOST_WIDE_INT i)
       snprintf (n, len, "%s#" HOST_WIDE_INT_PRINT_UNSIGNED,
 		IDENTIFIER_POINTER (name), i);
       DECL_NAME (decl) = get_identifier (n);
+    }
+}
+
+/* Return structured binding size of TYPE or -1 if erroneous.  */
+
+HOST_WIDE_INT
+cp_decomp_size (location_t loc, tree type, tsubst_flags_t complain)
+{
+  if (TYPE_REF_P (type))
+    {
+      type = complete_type (TREE_TYPE (type));
+      if (type == error_mark_node)
+	return -1;
+      if (!COMPLETE_TYPE_P (type))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "structured binding refers to incomplete type %qT",
+		      type);
+	  return -1;
+	}
+    }
+
+  unsigned HOST_WIDE_INT eltscnt = 0;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (type) == NULL_TREE)
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "cannot decompose array of unknown bound %qT",
+		      type);
+	  return -1;
+	}
+      tree nelts = array_type_nelts_top (type);
+      if (nelts == error_mark_node)
+	return -1;
+      if (!tree_fits_shwi_p (nelts))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "cannot decompose variable length array %qT", type);
+	  return -1;
+	}
+      return tree_to_shwi (nelts);
+    }
+  /* 2 GNU extensions.  */
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    return 2;
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&eltscnt))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "cannot decompose variable length vector %qT", type);
+	  return -1;
+	}
+      return eltscnt;
+    }
+  else if (tree tsize = get_tuple_size (type))
+    {
+      if (tsize == error_mark_node
+	  || !tree_fits_shwi_p (tsize)
+	  || tree_int_cst_sgn (tsize) < 0)
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "%<std::tuple_size<%T>::value%> is not an integral "
+			   "constant expression", type);
+	  return -1;
+	}
+      return tree_to_shwi (tsize);
+    }
+  else if (TREE_CODE (type) == UNION_TYPE)
+    {
+      if (complain & tf_error)
+	error_at (loc, "cannot decompose union type %qT", type);
+      return -1;
+    }
+  else if (!CLASS_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "cannot decompose non-array non-class type %qT", type);
+      return -1;
+    }
+  else if (processing_template_decl && complete_type (type) == error_mark_node)
+    return -1;
+  else if (processing_template_decl && !COMPLETE_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	pedwarn (loc, 0, "structured binding refers to incomplete class type "
+			 "%qT", type);
+      return -1;
+    }
+  else
+    {
+      tree btype = find_decomp_class_base (loc, type, NULL_TREE, complain);
+      if (btype == error_mark_node)
+	return -1;
+      else if (btype == NULL_TREE)
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "cannot decompose class type %qT without non-static "
+			   "data members", type);
+	  return -1;
+	}
+      for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) != FIELD_DECL
+	    || DECL_ARTIFICIAL (field)
+	    || DECL_UNNAMED_BIT_FIELD (field))
+	  continue;
+	else
+	  eltscnt++;
+      return eltscnt;
     }
 }
 
@@ -10319,7 +10453,8 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	     type);
   else
     {
-      tree btype = find_decomp_class_base (loc, type, NULL_TREE);
+      tree btype = find_decomp_class_base (loc, type, NULL_TREE,
+					   tf_warning_or_error);
       if (btype == error_mark_node)
 	goto error_out;
       else if (btype == NULL_TREE)

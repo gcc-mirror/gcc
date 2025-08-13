@@ -15032,7 +15032,10 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
 
   /* P2718R0 - in C++23 for-range-initializer, extend all temps.  */
   if (DECL_NAME (decl) == for_range__identifier
-      && flag_range_for_ext_temps)
+      && flag_range_for_ext_temps
+      /* Iterating expansion statement decl is static right now, but that
+	 could change depending on CWG3044 and CWG3043.  */
+      && !TREE_STATIC (decl))
     {
       gcc_checking_assert (!cond_guard);
       return extend_all_temps (decl, init, cleanups);
