@@ -841,7 +841,7 @@ context::new_struct_type (const std::string &name,
 			  location loc)
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  field *as_array_of_wrappers = &fields[0];
+  field *as_array_of_wrappers = fields.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.	*/
@@ -885,7 +885,7 @@ context::new_function (enum gcc_jit_function_kind kind,
 		       location loc)
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  param *as_array_of_wrappers = &params[0];
+  param *as_array_of_wrappers = params.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.	*/
@@ -988,7 +988,7 @@ context::new_rvalue (type vector_type,
 		     std::vector<rvalue> elements) const
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  rvalue *as_array_of_wrappers = &elements[0];
+  rvalue *as_array_of_wrappers = elements.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.	*/
@@ -1194,7 +1194,7 @@ context::new_call (function func,
 		   location loc)
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  rvalue *as_array_of_wrappers = &args[0];
+  rvalue *as_array_of_wrappers = args.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.	*/
@@ -1615,7 +1615,7 @@ block::end_with_switch (rvalue expr,
 			location loc)
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  case_ *as_array_of_wrappers = &cases[0];
+  case_ *as_array_of_wrappers = cases.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.	*/
@@ -1645,7 +1645,7 @@ block::end_with_extended_asm_goto (const std::string &asm_template,
 				   location loc)
 {
   /* Treat std::vector as an array, relying on it not being resized: */
-  block *as_array_of_wrappers = &goto_blocks[0];
+  block *as_array_of_wrappers = goto_blocks.data ();
 
   /* Treat the array as being of the underlying pointers, relying on
      the wrapper type being such a pointer internally.  */
@@ -1869,14 +1869,14 @@ context::new_struct_ctor (type type_,
 {
   field *pfields = nullptr;
   if (fields.size ())
-    pfields = &fields[0];
+    pfields = fields.data ();
 
   gcc_jit_field **fields_arr =
     reinterpret_cast<gcc_jit_field **> (pfields);
 
   rvalue *pvalues = nullptr;
   if (values.size ())
-    pvalues = &values[0];
+    pvalues = values.data ();
 
   gcc_jit_rvalue **values_arr =
     reinterpret_cast<gcc_jit_rvalue **> (pvalues);
@@ -1898,7 +1898,7 @@ context::new_array_ctor (type type_,
 {
   rvalue *pvalues = nullptr;
   if (values.size ())
-    pvalues = &values[0];
+    pvalues = values.data ();
 
   gcc_jit_rvalue **values_arr =
     reinterpret_cast<gcc_jit_rvalue **> (pvalues);
