@@ -1,3 +1,11 @@
+2025-08-12  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_c_f_pointer): Check lower arg legitimacy.
+	* intrinsic.cc (add_subroutines): Teach c_f_pointer about lower arg.
+	* intrinsic.h (gfc_check_c_f_pointer): Add lower arg.
+	* intrinsic.texi: Update lower arg for c_f_pointer.
+	* trans-intrinsic.cc (conv_isocbinding_subroutine): Add logic handle lower.
+
 2025-08-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/121398

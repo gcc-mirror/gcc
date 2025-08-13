@@ -1,3 +1,30 @@
+2025-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (NUMERIC_DISPLAY_SIGN_BIT): New comment; new constant.
+	(EBCDIC_MINUS): New constant.
+	(EBCDIC_PLUS): Likewise.
+	(EBCDIC_ZERO): Likewise.
+	(EBCDIC_NINE): Likewise.
+	(PACKED_NYBBLE_PLUS): Likewise.
+	(PACKED_NYBBLE_MINUS): Likewise.
+	(PACKED_NYBBLE_UNSIGNED): Likewise.
+	(NUMERIC_DISPLAY_SIGN_BIT_ASCII): Likewise.
+	(NUMERIC_DISPLAY_SIGN_BIT_EBCDIC): Likewise.
+	(SEPARATE_PLUS): Likewise.
+	(SEPARATE_MINUS): Likewise.
+	(ZONED_ZERO): Likewise.
+	(ZONE_SIGNED_EBCDIC): Likewise.
+	* configure: Regenerate.
+	* libgcobol.cc (turn_sign_bit_on): Handle new EBCDIC sign convention.
+	(turn_sign_bit_off): Likewise.
+	(is_sign_bit_on): Likewise.
+	(int128_to_field): EBCDIC NumericDisplay conversion.
+	(get_binary_value_local): Likewise.
+	(format_for_display_internal): Likewise.
+	(normalize_id): Likewise.
+	(__gg__inspect_format_1): Convert EBCDIC negative numbers to positive.
+	* stringbin.cc (packed_from_combined): Quell cppcheck warning.
+
 2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	* configure: Regenerated.

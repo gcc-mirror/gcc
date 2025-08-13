@@ -1,3 +1,12 @@
+2025-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (compare_binary_binary): Formatting.
+	(cobol_compare): Formatting.
+	(mh_numeric_display): Rewrite "move ND to ND" algorithm.
+	(initial_from_initial): Proper initialization of EBCDIC ND variables.
+	* genmath.cc (fast_add): Delete comment.
+	* genutil.cc (get_binary_value): Modify for updated EBCDIC.
+
 2025-08-07  Robert Dubner  <rdubner@symas.com>
 
 	* cbldiag.h (location_dump): Source code formatting.

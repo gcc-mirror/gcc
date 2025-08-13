@@ -1,3 +1,68 @@
+2025-08-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-2-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-3-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-merge-3-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmerge-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmerge-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmerge-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmerge-run-1-i8.c: New test.
+
+2025-08-12  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121334
+	* gcc.target/riscv/rvv/autovec/pr121334.c: New test.
+
+2025-08-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121253
+	* gcc.target/aarch64/pr121253.c: New test.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121509
+	* gcc.dg/vect/pr121509.c: New testcase.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121514
+	* gcc.dg/torture/pr121514.c: New testcase.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121493
+	* gcc.dg/tree-ssa/ssa-fre-109.c: New testcase.
+
+2025-08-12  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.dg/c_f_pointer_shape_tests_7.f90: New test.
+	* gfortran.dg/c_f_pointer_shape_tests_8.f90: New test.
+	* gfortran.dg/c_f_pointer_shape_tests_9.f90: New test.
+
+2025-08-12  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+	    Jeff Law   <jlaw@ventanamicro.com>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/add-synthesis-1.c: New test.
+
+2025-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.out:
+	Change test for updated handling of Numeric Display variables.
+
 2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
 
 	* gcc.target/aarch64/cmpbr-3.c: New.

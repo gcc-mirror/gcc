@@ -1,3 +1,98 @@
+2025-08-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*merge_vx_<mode>): Add new
+	pattern to combine the vmerge.vxm.
+
+2025-08-12  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121334
+	* config/riscv/riscv-v.cc (expand_slide1up): New function.
+	(expand_vector_init_trailing_same_elem): Use new function.
+	(expand_const_vector_onestep): New function.
+	(expand_const_vector): Uew expand_slide1up.
+	(expand_vector_init_merge_repeating_sequence): Ditto.
+	(shuffle_off_by_one_patterns): Ditto.
+
+2025-08-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/loongarch-def.h (ABI_BASE_LP64D): New macro.
+	(ABI_BASE_LP64F): New macro.
+	(ABI_BASE_LP64S): New macro.
+	(N_ABI_BASE_TYPES): New macro.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Change
+	slp_done_for_suggested_uf to a boolean
+	single_lane_slp_done_for_suggested_uf.  Change slp
+	to force_single_lane boolean.
+	(vect_analyze_loop_1): Adjust similarly.
+
+2025-08-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121253
+	* fwprop.cc (forward_propagate_into): Don't propagate asm defs.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121509
+	* tree-vect-stmts.cc (vect_mark_stmts_to_be_vectorized):
+	Fail early when we detect a relevant but not handled PHI.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121514
+	* tree-ssa-sccvn.cc (visit_nary_op): Only call
+	vn_nary_op_insert_stmt for SSA name result.
+
+2025-08-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121494
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop): Mark the bb of the use
+	stmt if needed for eh cleanup.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_analyze_stmt): Only set
+	STMT_VINFO_VECTYPE for dataref SLP representatives.
+	Clear it for others and do not restore the original value.
+	(vect_transform_stmt): Likewise.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (get_initial_defs_for_reduction):
+	Get vector type as argument.
+	(vect_find_reusable_accumulator): Likewise.
+	(vect_transform_cycle_phi): Adjust.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Replace
+	STMT_VINFO_VECTYPE use with SLP_TREE_VECTYPE.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121493
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Opportunistically
+	strip components with known offset.
+
+2025-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): When we fail to
+	match up the two base MEM_REFs, fail.
+
+2025-08-12  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+	    Jeff Law   <jlaw@ventanamicro.com>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv-protos.h (synthesize_add): Add prototype.
+	* config/riscv/riscv.cc (synthesize_add): New function.
+	* config/riscv/riscv.md (addsi3): Allow any constant as operands[2]
+	in the expander.  Force the constant into a register as needed for
+	TARGET_64BIT.  Use synthesize_add for !TARGET_64BIT.
+	(*adddi3): Renamed from adddi3.
+	(adddi3): New expander.  Use synthesize_add.
+
 2025-08-11  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64.md (mov<ALLI>cc): Accept MODE_CC
