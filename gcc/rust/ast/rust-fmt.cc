@@ -32,41 +32,11 @@ Pieces
 Pieces::collect (const std::string &to_parse, bool append_newline,
 		 ffi::ParseMode parse_mode)
 {
-  auto handle
-    = ffi::collect_pieces (to_parse.c_str (), append_newline, parse_mode);
-
-  // this performs multiple copies, can we avoid them maybe?
-  // TODO: Instead of just creating a vec of, basically, `ffi::Piece`s, we
-  // should transform them into the proper C++ type which we can work with. so
-  // transform all the strings into C++ strings? all the Option<T> into
-  // tl::optional<T>?
-  auto pieces_vector = std::vector<ffi::Piece> (handle.piece_slice.base_ptr,
-						handle.piece_slice.base_ptr
-						  + handle.piece_slice.len);
-
-  return Pieces (handle, std::move (pieces_vector));
+  Pieces ret (to_parse, ffi::FFIVec<ffi::Piece> ());
+  ret.data->second = ffi::collect_pieces (ffi::RustHamster (ret.data->first),
+					  append_newline, parse_mode);
+  return ret;
 }
-
-Pieces::~Pieces () { ffi::destroy_pieces (handle); }
-
-Pieces::Pieces (const Pieces &other) : pieces_vector (other.pieces_vector)
-{
-  handle = ffi::clone_pieces (other.handle);
-}
-
-Pieces &
-Pieces::operator= (const Pieces &other)
-{
-  handle = ffi::clone_pieces (other.handle);
-  pieces_vector = other.pieces_vector;
-
-  return *this;
-}
-
-Pieces::Pieces (Pieces &&other)
-  : pieces_vector (std::move (other.pieces_vector)),
-    handle (clone_pieces (other.handle))
-{}
 
 } // namespace Fmt
 } // namespace Rust

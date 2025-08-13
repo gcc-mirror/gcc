@@ -20,13 +20,127 @@
 #define RUST_FMT_H
 
 #include "rust-system.h"
-
-// FIXME: How to encode Option?
+#include "optional.h"
 
 namespace Rust {
 namespace Fmt {
 
 namespace ffi {
+
+extern "C" {
+
+unsigned char *rust_ffi_alloc (size_t count, size_t elem_size, size_t align);
+
+void rust_ffi_dealloc (unsigned char *data, size_t count, size_t elem_size,
+		       size_t align);
+
+} // extern "C"
+
+template <typename T> class FFIVec
+{
+  T *data;
+  size_t len;
+  size_t cap;
+
+public:
+  FFIVec () : data ((T *) alignof (T)), len (0), cap (0) {}
+
+  FFIVec (const FFIVec &) = delete;
+  FFIVec &operator= (const FFIVec &) = delete;
+
+  FFIVec (FFIVec &&other) : data (other.data), len (other.len), cap (other.cap)
+  {
+    other.data = (T *) alignof (T);
+    other.len = 0;
+    other.cap = 0;
+  }
+
+  FFIVec &operator= (FFIVec &&other)
+  {
+    this->~FFIVec ();
+    new (this) FFIVec (std::move (other));
+    return *this;
+  }
+
+  ~FFIVec ()
+  {
+    // T can't be zero-sized
+    if (cap)
+      rust_ffi_dealloc ((unsigned char *) data, cap, sizeof (T), alignof (T));
+  }
+
+  size_t size () const { return len; }
+
+  const T &operator[] (size_t idx) const
+  {
+    rust_assert (idx <= len);
+    return data[idx];
+  }
+
+  T *begin () { return data; }
+  const T *begin () const { return data; }
+  T *end () { return data + len; }
+  const T *end () const { return data + len; }
+};
+
+template <typename T> class FFIOpt
+{
+  struct alignas (T) Inner
+  {
+    char data[sizeof (T)];
+  } inner;
+  bool is_some;
+
+public:
+  template <typename U> FFIOpt (U &&val) : is_some (true)
+  {
+    new (inner.data) T (std::forward<U> (val));
+  }
+
+  FFIOpt () : is_some (false) {}
+
+  FFIOpt (const FFIOpt &other) : is_some (other.is_some)
+  {
+    if (is_some)
+      new (inner.data) T (*(const T *) other.inner.data);
+  }
+
+  FFIOpt (FFIOpt &&other) : is_some (other.is_some)
+  {
+    if (is_some)
+      new (inner.data) T (std::move (*(const T *) other.inner.data));
+  }
+
+  ~FFIOpt ()
+  {
+    if (is_some)
+      ((T *) inner.data)->~T ();
+  }
+
+  FFIOpt &operator= (const FFIOpt &other)
+  {
+    this->~FFIOpt ();
+    new (this) FFIOpt (other);
+    return *this;
+  }
+
+  FFIOpt &operator= (FFIOpt &&other)
+  {
+    this->~FFIOpt ();
+    new (this) FFIOpt (std::move (other));
+    return *this;
+  }
+
+  tl::optional<std::reference_wrapper<T>> get_opt ()
+  {
+    return (T *) inner.data;
+  }
+
+  tl::optional<std::reference_wrapper<const T>> get_opt () const
+  {
+    return (const T *) inner.data;
+  }
+};
 
 struct RustHamster
 {
@@ -34,6 +148,10 @@ struct RustHamster
   size_t len;
 
   std::string to_string () const;
+
+  explicit RustHamster (const std::string &str)
+    : ptr (str.data ()), len (str.size ())
+  {}
 };
 
 /// Enum of alignments which are supported.
@@ -166,33 +284,33 @@ struct Count
 struct FormatSpec
 {
   /// Optionally specified character to fill alignment with.
-  const uint32_t *fill;
+  FFIOpt<uint32_t> fill;
   /// Span of the optionally specified fill character.
-  const InnerSpan *fill_span;
+  FFIOpt<InnerSpan> fill_span;
   /// Optionally specified alignment.
   Alignment align;
   /// The `+` or `-` flag.
-  const Sign *sign;
+  FFIOpt<Sign> sign;
   /// The `#` flag.
   bool alternate;
   /// The `0` flag.
   bool zero_pad;
   /// The `x` or `X` flag. (Only for `Debug`.)
-  const DebugHex *debug_hex;
+  FFIOpt<DebugHex> debug_hex;
   /// The integer precision to use.
   Count precision;
   /// The span of the precision formatting flag (for diagnostics).
-  const InnerSpan *precision_span;
+  FFIOpt<InnerSpan> precision_span;
   /// The string width requested for the resulting format.
   Count width;
   /// The span of the width formatting flag (for diagnostics).
-  const InnerSpan *width_span;
+  FFIOpt<InnerSpan> width_span;
   /// The descriptor string representing the name of the format desired for
   /// this argument, this can be empty or any number of characters, although
   /// it is required to be one word.
   RustHamster ty;
   /// The span of the descriptor string (for diagnostics).
-  const InnerSpan *ty_span;
+  FFIOpt<InnerSpan> ty_span;
 };
 
 /// Representation of an argument specification.
@@ -238,26 +356,6 @@ struct Piece
   };
 };
 
-struct PieceSlice
-{
-  const Piece *base_ptr;
-  size_t len;
-  size_t cap;
-};
-
-struct RustString
-{
-  const unsigned char *ptr;
-  size_t len;
-  size_t cap;
-};
-
-struct FormatArgsHandle
-{
-  PieceSlice piece_slice;
-  RustString rust_string;
-};
-
 enum ParseMode
 {
   Format = 0,
@@ -266,12 +364,10 @@ enum ParseMode
 
 extern "C" {
 
-FormatArgsHandle collect_pieces (const char *input, bool append_newline,
-				 ParseMode parse_mode);
+FFIVec<Piece> collect_pieces (RustHamster input, bool append_newline,
+			      ParseMode parse_mode);
 
-FormatArgsHandle clone_pieces (const FormatArgsHandle &);
-
-void destroy_pieces (FormatArgsHandle);
+FFIVec<Piece> clone_pieces (const FFIVec<Piece> &);
 
 } // extern "C"
 
@@ -281,33 +377,20 @@ struct Pieces
 {
   static Pieces collect (const std::string &to_parse, bool append_newline,
 			 ffi::ParseMode parse_mode);
-  ~Pieces ();
 
-  Pieces (const Pieces &other);
-  Pieces &operator= (const Pieces &other);
-
-  Pieces (Pieces &&other);
-
-  const std::vector<ffi::Piece> &get_pieces () const { return pieces_vector; }
-
-  // {
-  //   slice = clone_pieces (&other.slice);
-  //   to_parse = other.to_parse;
-
-  //   return *this;
-  // }
+  const ffi::FFIVec<ffi::Piece> &get_pieces () const { return data->second; }
 
 private:
-  Pieces (ffi::FormatArgsHandle handle, std::vector<ffi::Piece> &&pieces_vector)
-    : pieces_vector (std::move (pieces_vector)), handle (handle)
+  Pieces (std::string str, ffi::FFIVec<ffi::Piece> pieces)
+    : data (
+      std::make_shared<decltype (data)::element_type> (std::move (str),
+						       std::move (pieces)))
   {}
 
-  std::vector<ffi::Piece> pieces_vector;
-
-  // this memory is held for FFI reasons - it needs to be released and cloned
-  // precisely, so try to not access it/modify it if possible. you should
-  // instead work with `pieces_vector`
-  ffi::FormatArgsHandle handle;
+  // makes copying simpler
+  // also, we'd need to keep the parsed string in a shared_ptr anyways
+  // since we store pointers into the parsed string
+  std::shared_ptr<std::pair<std::string, ffi::FFIVec<ffi::Piece>>> data;
 };
 
 } // namespace Fmt

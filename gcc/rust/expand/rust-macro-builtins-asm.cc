@@ -787,12 +787,12 @@ expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 
       auto pieces = Fmt::Pieces::collect (template_str.symbol, false,
 					  Fmt::ffi::ParseMode::InlineAsm);
-      auto pieces_vec = pieces.get_pieces ();
+      auto &pieces_vec = pieces.get_pieces ();
 
       std::string transformed_template_str = "";
       for (size_t i = 0; i < pieces_vec.size (); i++)
 	{
-	  auto piece = pieces_vec[i];
+	  auto &piece = pieces_vec[i];
 	  if (piece.tag == Fmt::ffi::Piece::Tag::String)
 	    {
 	      transformed_template_str += piece.string._0.to_string ();
