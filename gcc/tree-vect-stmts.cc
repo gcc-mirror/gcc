@@ -12604,7 +12604,7 @@ vect_analyze_stmt (vec_info *vinfo,
   if (!bb_vinfo
       && SLP_TREE_TYPE (node) != reduc_vec_info_type
       && (SLP_TREE_TYPE (node) != lc_phi_info_type
-	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
+	  || SLP_TREE_DEF_TYPE (node) == vect_internal_def)
       && (!node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
 				    node, node_instance,
