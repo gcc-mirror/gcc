@@ -1,5 +1,5 @@
 /* { dg-do compile { target { *-*-linux* && lp64 } } } */
-/* { dg-options "-O2 -fno-pic -mtune=generic -msse2 -mapxf -mtune-ctrl=prologue_using_move,epilogue_using_move" } */
+/* { dg-options "-O2 -fno-pic -mtune=generic -msse2 -mno-avx -mno-mmx -mno-80387 -mapxf -mtune-ctrl=prologue_using_move,epilogue_using_move" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.}  } } */
 

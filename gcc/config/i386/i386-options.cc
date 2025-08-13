@@ -3556,6 +3556,10 @@ ix86_set_current_function (tree fndecl)
 	    isa = "AVX";
 	  else if (cfun->machine->func_type != TYPE_NORMAL)
 	    isa = "SSE";
+	  else if (TARGET_MMX)
+	    isa = "MMX/3Dnow";
+	  else if (TARGET_80387)
+	    isa = "80387";
 	  else
 	    isa = NULL;
 	}
