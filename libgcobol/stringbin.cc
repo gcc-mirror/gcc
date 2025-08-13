@@ -476,121 +476,6 @@ __gg__binary_to_packed( unsigned char *result,
   memcpy(result, combined_string, length);
   }
 
-
-unsigned __int128
-int_from_string(const char *psz, int n)
-  {
-  /* This is a generalized converter */
-
-
-  /*  We are assuming that 64-bit arithmetic is faster than 128-bit arithmetic,
-      and so we build up a 128-bit result in three 64-bit pieces, and assemble
-      them at the end.  */
-
-  static const uint8_t lookup[] =
-    {
-     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,0,0,0,0,0,
-    10,11,12,13,14,15,16,17,18,19, 0,0,0,0,0,0,
-    20,21,22,23,24,25,26,27,28,29, 0,0,0,0,0,0,
-    30,31,32,33,34,35,36,37,38,39, 0,0,0,0,0,0,
-    40,41,42,43,44,45,46,47,48,49, 0,0,0,0,0,0,
-    50,51,52,53,54,55,56,57,58,59, 0,0,0,0,0,0,
-    60,61,62,63,64,65,66,67,68,69, 0,0,0,0,0,0,
-    70,71,72,73,74,75,76,77,78,79, 0,0,0,0,0,0,
-    80,81,82,83,84,85,86,87,88,89, 0,0,0,0,0,0,
-    90,91,92,93,94,95,96,97,98,99, 0,0,0,0,0,0,
-    };
-
-  unsigned __int128 retval;
-
-  uint64_t top = 0;
-  uint64_t middle = 0;
-  uint64_t bottom = 0;
-
-  int count_bottom;
-  int count_middle;
-  int count_top;
-
-  // Digits 1 through 18 come from the bottom:
-  if( n <= 18 )
-    {
-    count_bottom = n;
-    count_middle = 0;
-    count_top = 0;
-    }
-  else if( n<= 36 )
-    {
-    count_bottom = 18;
-    count_middle = n - 18;
-    count_top = 0;
-    }
-  else
-    {
-    count_bottom = 18;
-    count_middle = 18;
-    count_top = n - 36;
-    }
-
-  if( n & 1 )
-    {
-    // We are dealing with an odd number of digits
-    if( count_top )
-      {
-      top = *psz++ & 0x0f;
-      count_top -= 1;
-      }
-    else if( count_middle )
-      {
-      middle = *psz++ & 0x0f;
-      count_middle -= 1;
-      }
-    else
-      {
-      bottom = *psz++ & 0x0f;
-      count_bottom -= 1;
-      }
-    }
-
-  uint8_t add_me;
-
-  while( count_top )
-    {
-    add_me  = *psz++ << 4;
-    add_me += *psz++ &  0xF;
-    top *= 100 ;
-    top += lookup[add_me];
-    count_top -= 2;
-    }
-
-  while( count_middle )
-    {
-    add_me  = *psz++ << 4;
-    add_me += *psz++ &  0xF;
-    middle *= 100 ;
-    middle += lookup[add_me];
-    count_middle -= 2;
-    }
-
-  while( count_bottom )
-    {
-    add_me  = *psz++ << 4;
-    add_me += *psz++ &  0xF;
-    bottom *= 100 ;
-    bottom += lookup[add_me];
-    count_bottom -= 2;
-    }
-
-  retval = top;
-  retval *= 1000000000000000000ULL; // 10E18
-
-  retval += middle;
-  retval *= 1000000000000000000ULL;
-
-  retval += bottom;
-
-  return retval;
-  }
-
 extern "C"
 __int128
 __gg__numeric_display_to_binary(unsigned char *signp,
@@ -807,6 +692,114 @@ __gg__numeric_display_to_binary(unsigned char *signp,
 
   // Replace the original sign byte:
   *signp = sign_byte; // cppcheck-suppress redundantAssignment
+
+  return retval;
+  }
+
+extern "C"
+__int128
+__gg__packed_to_binary(const unsigned char *psz,
+                             int            nplaces )
+  {
+  // See the comments in __gg__numeric_display_to_binary() above.
+
+  __int128 retval = 0;
+
+  static const unsigned char dp2bin[160] =
+    {
+    // This may not be the weirdest table I've ever created, but it is
+    // certainly a contender.  Given the packed decimal byte 0x23, it
+    // returns the equivalent decimal value of 23.  Note that the final
+    // entries in each line are intended to handle the final place of
+    // signed values.  0x2D, for example, gets picked up as 20.
+    00, 01, 02, 03, 04, 05, 06, 07,  8,  9,  0,  0,  0,  0,  0,  0, // 0x00
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 10, 10, 10, 10, 10, 10, // 0x10
+    20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 20, 20, 20, 20, 20, 20, // 0x20
+    30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 30, 30, 30, 30, 30, 30, // 0x30
+    40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 40, 40, 40, 40, 40, 40, // 0x40
+    50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 50, 50, 50, 50, 50, 50, // 0x50
+    60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 60, 60, 60, 60, 60, 60, // 0x60
+    70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 70, 70, 70, 70, 70, 70, // 0x70
+    80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 80, 80, 80, 80, 80, 80, // 0x80
+    90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 90, 90, 90, 90, 90, 90, // 0x90
+    };
+
+  uint64_t top = 0;
+  uint64_t middle = 0;
+  uint64_t bottom = 0;
+
+  int count_bottom;
+  int count_middle;
+  int count_top;
+
+  // Turn places into n digits
+  int n = nplaces * 2;
+
+  // Digits 1 through 18 come from the bottom:
+  if( n <= 18 )
+    {
+    count_bottom = n;
+    count_middle = 0;
+    count_top = 0;
+    }
+  else if( n<= 36 )
+    {
+    count_bottom = 18;
+    count_middle = n - 18;
+    count_top = 0;
+    }
+  else
+    {
+    count_bottom = 18;
+    count_middle = 18;
+    count_top = n - 36;
+    }
+
+  while( count_top )
+    {
+    top *= 100 ;
+    top += dp2bin[*psz++];
+    count_top -= 2;
+    }
+
+  while( count_middle )
+    {
+    middle *= 100 ;
+    middle += dp2bin[*psz++];
+    count_middle -= 2;
+    }
+
+  while( count_bottom )
+    {
+    bottom *= 100 ;
+    bottom += dp2bin[*psz++];
+    count_bottom -= 2;
+    }
+
+  retval = top;
+  retval *= 1000000000000000000ULL; // 10E18
+
+  retval += middle;
+  retval *= 1000000000000000000ULL;
+
+  retval += bottom;
+
+  // retval is now the binary value of the packed decimal number.
+
+  // back up one byte to fetch the sign nybble.
+  uint8_t sign_nybble = *(psz-1) & 0x0F;
+
+  if( sign_nybble > 9 )
+    {
+    // There is a sign nybble.  We have to divide the result by ten to offset
+    // left shift due place taken up by the sign nybble.
+    retval /= 10;
+
+    if( sign_nybble == PACKED_NYBBLE_MINUS )
+      {
+      retval = -retval ;
+      }
+    }
 
   return retval;
   }

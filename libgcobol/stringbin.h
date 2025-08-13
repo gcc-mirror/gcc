@@ -49,4 +49,9 @@ __int128 __gg__numeric_display_to_binary( unsigned char *sign_byte,
                                     const unsigned char *digits,
                                           int ndigits );
 
+extern "C"
+__int128
+__gg__packed_to_binary(const unsigned char *psz,
+                             int            nplaces );
+
 #endif

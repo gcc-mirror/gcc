@@ -755,10 +755,6 @@ get_binary_value( tree value,
   static tree pointer = gg_define_variable( UCHAR_P,
                                             "..gbv_pointer",
                                             vs_file_static);
-  static tree pend = gg_define_variable(UCHAR_P,
-                                        "..gbv_pend",
-                                        vs_file_static);
-
   switch(field->type)
     {
     case FldLiteralN:
@@ -945,7 +941,9 @@ get_binary_value( tree value,
                                                     vs_file_static);
         if( field->attr & signable_e )
           {
-          IF( gg_array_value(gg_cast(build_pointer_type(SCHAR), source)), lt_op, gg_cast(SCHAR, integer_zero_node) )
+          IF( gg_array_value(gg_cast(build_pointer_type(SCHAR), source)),
+              lt_op, 
+              gg_cast(SCHAR, integer_zero_node) )
             {
             gg_assign(extension, build_int_cst_type(UCHAR, 0xFF));
             }
@@ -1028,45 +1026,23 @@ get_binary_value( tree value,
 
     case FldPacked:
       {
-      // Zero out the destination:
-      gg_assign(value, gg_cast(TREE_TYPE(value), integer_zero_node));
-      gg_assign(pointer, get_data_address(field, field_offset));
-      gg_assign(pend,
-                gg_add(pointer,
-                       build_int_cst_type(SIZE_T, field->data.capacity-1)));
-
-      // Convert all but the last byte of the packed decimal sequence
-      WHILE( pointer, lt_op, pend )
+      if( rdigits )
         {
-        // Convert the first nybble
-        gg_assign(value, gg_multiply(value, build_int_cst_type(TREE_TYPE(value), 10)));
-        gg_assign(value, gg_add(value, gg_cast(TREE_TYPE(value), gg_rshift(gg_get_indirect_reference(pointer, NULL_TREE), build_int_cst(UINT, 4)))));
-
-        // Convert the second nybble
-        gg_assign(value, gg_multiply(value, build_int_cst_type(TREE_TYPE(value), 10)));
-        gg_assign(value, gg_add(value, gg_cast(TREE_TYPE(value), gg_bitwise_and(gg_get_indirect_reference(pointer, NULL_TREE), build_int_cst_type(UCHAR, 0xF)))));
-        gg_increment(pointer);
+        gg_assign(rdigits,
+                  build_int_cst_type( TREE_TYPE(rdigits),
+                                      get_scaled_rdigits(field)));
         }
-        WEND
-
-      // This is the final byte:
-      gg_assign(value, gg_multiply(value, build_int_cst_type(TREE_TYPE(value), 10)));
-      gg_assign(value, gg_add(value, gg_cast(TREE_TYPE(value), gg_rshift(gg_get_indirect_reference(pointer, NULL_TREE), build_int_cst(UINT, 4)))));
-
-      IF( gg_bitwise_and(gg_get_indirect_reference(pointer, NULL_TREE), build_int_cst_type(UCHAR, 0xF)), eq_op, build_int_cst_type(UCHAR, 0x0D) )
-        {
-        gg_assign(value, gg_negate(value));
-        }
-      ELSE
-        {
-        IF( gg_bitwise_and(gg_get_indirect_reference(pointer, NULL_TREE), build_int_cst_type(UCHAR, 0xF)), eq_op, build_int_cst_type(UCHAR, 0x0B) )
-          {
-          gg_assign(value, gg_negate(value));
-          }
-        ELSE
-          ENDIF
-        }
-        ENDIF
+      tree dest_type = TREE_TYPE(value);
+        
+      gg_assign(value, 
+                gg_cast(dest_type,
+                        gg_call_expr(INT128,
+                                    "__gg__packed_to_binary",
+                                    get_data_address( field,
+                                                      field_offset),
+                                    build_int_cst_type(INT,
+                                                      field->data.capacity),
+                                    NULL_TREE)));
       break;
       }
 

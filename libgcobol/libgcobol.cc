@@ -2149,52 +2149,9 @@ get_binary_value_local(  int                 *rdigits,
 
     case FldPacked:
       {
-      static const unsigned char dp2bin[160] =
-        {
-        // This may not be the weirdest table I've ever created, but it is
-        // certainly a contender.  Given the packed decimal byte 0x23, it
-        // returns the equivalent decimal value of 23.
-        00, 01, 02, 03, 04, 05, 06, 07,  8,  9, 0, 0, 0, 0, 0, 0, // 0x00
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 0, 0, 0, 0, 0, 0, // 0x10
-        20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 0, 0, 0, 0, 0, 0, // 0x20
-        30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 0, 0, 0, 0, 0, 0, // 0x30
-        40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 0, 0, 0, 0, 0, 0, // 0x40
-        50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 0, 0, 0, 0, 0, 0, // 0x50
-        60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 0, 0, 0, 0, 0, 0, // 0x60
-        70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 0, 0, 0, 0, 0, 0, // 0x70
-        80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 0, 0, 0, 0, 0, 0, // 0x80
-        90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 0, 0, 0, 0, 0, 0, // 0x90
-        };
-
-      if( resolved_var->attr & packed_no_sign_e )
-        {
-        // This is packed decimal without a sign nybble
-        retval = 0;
-        for(size_t i=0; i<resolved_var->capacity; i++)
-          {
-          retval *= 100;
-          retval += dp2bin[resolved_location[i]];
-          }
-        }
-      else
-        {
-        // This is packed decimal with a final sign nybble
-        retval = 0;
-        size_t imputed_length = (resolved_var->digits + 2)/2;
-        for(size_t i=0; i<imputed_length-1; i++)
-          {
-          retval *= 100;
-          retval += dp2bin[resolved_location[i]];
-          }
-        retval *= 10;
-        retval += resolved_location[imputed_length-1]>>4;
-        if(    (resolved_location[imputed_length-1]&0x0F) == 0x0D
-            || (resolved_location[imputed_length-1]&0x0F) == 0x0B )
-          {
-          retval = -retval;
-          }
-        }
-     *rdigits = resolved_var->rdigits;
+      *rdigits = resolved_var->rdigits;
+      retval = __gg__packed_to_binary(resolved_location,
+                                      resolved_length);
       break;
       }
     }
