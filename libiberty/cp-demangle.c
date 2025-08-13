@@ -1424,7 +1424,7 @@ d_encoding (struct d_info *di, int top_level)
 
 	      /* If this is a non-top-level local-name, clear the
 		 return type, so it doesn't confuse the user by
-		 being confused with the return type of whaever
+		 being confused with the return type of whatever
 		 this is nested within.  */
 	      if (!top_level && dc->type == DEMANGLE_COMPONENT_LOCAL_NAME
 		  && ftype->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
