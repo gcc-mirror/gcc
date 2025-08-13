@@ -291,6 +291,7 @@ struct MacroExpander
     TRAIT,
     IMPL,
     TRAIT_IMPL,
+    PATTERN,
   };
 
   ExpansionCfg cfg;

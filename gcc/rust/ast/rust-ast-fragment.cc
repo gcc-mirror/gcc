@@ -116,6 +116,12 @@ Fragment::is_type_fragment () const
   return is_single_fragment_of_kind (SingleASTNode::Kind::Type);
 }
 
+bool
+Fragment::is_pattern_fragment () const
+{
+  return is_single_fragment_of_kind (SingleASTNode::Kind::Pattern);
+}
+
 std::unique_ptr<Expr>
 Fragment::take_expression_fragment ()
 {
@@ -128,6 +134,13 @@ Fragment::take_type_fragment ()
 {
   assert_single_fragment (SingleASTNode::Kind::Type);
   return nodes[0].take_type ();
+}
+
+std::unique_ptr<Pattern>
+Fragment::take_pattern_fragment ()
+{
+  assert_single_fragment (SingleASTNode::Kind::Pattern);
+  return nodes[0].take_pattern ();
 }
 
 void
@@ -159,6 +172,7 @@ Fragment::assert_single_fragment (SingleASTNode::Kind expected) const
     {SingleASTNode::Kind::Expr, "expr"},
     {SingleASTNode::Kind::Stmt, "stmt"},
     {SingleASTNode::Kind::Extern, "extern"},
+    {SingleASTNode::Kind::Pattern, "pattern"},
   };
 
   auto actual = nodes[0].get_kind ();

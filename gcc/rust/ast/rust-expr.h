@@ -2492,6 +2492,12 @@ public:
     return *pattern;
   }
 
+  std::unique_ptr<Pattern> &get_pattern_ptr ()
+  {
+    rust_assert (pattern != nullptr);
+    return pattern;
+  }
+
   Type &get_type ()
   {
     rust_assert (has_type_given ());

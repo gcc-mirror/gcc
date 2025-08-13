@@ -71,6 +71,10 @@ SingleASTNode::SingleASTNode (SingleASTNode const &other)
     case Kind::Type:
       type = other.type->clone_type ();
       break;
+
+    case Kind::Pattern:
+      pattern = other.pattern->clone_pattern ();
+      break;
     }
 }
 
@@ -102,6 +106,10 @@ SingleASTNode::operator= (SingleASTNode const &other)
 
     case Kind::Type:
       type = other.type->clone_type ();
+      break;
+
+    case Kind::Pattern:
+      pattern = other.pattern->clone_pattern ();
       break;
     }
   return *this;
@@ -135,6 +143,10 @@ SingleASTNode::accept_vis (ASTVisitor &vis)
     case Kind::Type:
       type->accept_vis (vis);
       break;
+
+    case Kind::Pattern:
+      pattern->accept_vis (vis);
+      break;
     }
 }
 
@@ -155,6 +167,8 @@ SingleASTNode::is_error ()
       return assoc_item == nullptr;
     case Kind::Type:
       return type == nullptr;
+    case Kind::Pattern:
+      return pattern == nullptr;
     }
 
   rust_unreachable ();
@@ -178,6 +192,8 @@ SingleASTNode::as_string () const
       return "Associated Item: " + assoc_item->as_string ();
     case Kind::Type:
       return "Type: " + type->as_string ();
+    case Kind::Pattern:
+      return "Pattern: " + pattern->as_string ();
     }
 
   rust_unreachable ();

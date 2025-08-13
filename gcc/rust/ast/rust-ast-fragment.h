@@ -86,9 +86,11 @@ public:
 
   bool is_expression_fragment () const;
   bool is_type_fragment () const;
+  bool is_pattern_fragment () const;
 
   std::unique_ptr<Expr> take_expression_fragment ();
   std::unique_ptr<Type> take_type_fragment ();
+  std::unique_ptr<Pattern> take_pattern_fragment ();
 
   void accept_vis (ASTVisitor &vis);
 

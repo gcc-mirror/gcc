@@ -201,6 +201,12 @@ public:
     return *variables_pattern;
   }
 
+  std::unique_ptr<Pattern> &get_pattern_ptr ()
+  {
+    rust_assert (variables_pattern != nullptr);
+    return variables_pattern;
+  }
+
   Type &get_type ()
   {
     rust_assert (has_type ());

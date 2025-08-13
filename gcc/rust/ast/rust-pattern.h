@@ -1509,6 +1509,12 @@ public:
     return *pattern_in_parens;
   }
 
+  std::unique_ptr<Pattern> &get_pattern_in_parens_ptr ()
+  {
+    rust_assert (pattern_in_parens != nullptr);
+    return pattern_in_parens;
+  }
+
   NodeId get_node_id () const override { return node_id; }
 
   Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Grouped; }

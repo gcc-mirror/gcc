@@ -631,6 +631,12 @@ public:
     return *param_name;
   }
 
+  std::unique_ptr<Pattern> &get_pattern_ptr ()
+  {
+    rust_assert (param_name != nullptr);
+    return param_name;
+  }
+
   const Pattern &get_pattern () const
   {
     rust_assert (param_name != nullptr);
@@ -712,6 +718,12 @@ public:
   {
     rust_assert (param_name != nullptr);
     return *param_name;
+  }
+
+  std::unique_ptr<Pattern> &get_pattern_ptr ()
+  {
+    rust_assert (param_name != nullptr);
+    return param_name;
   }
 
   bool has_name () const { return param_name != nullptr; }
