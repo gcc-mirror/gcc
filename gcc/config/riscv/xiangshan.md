@@ -144,13 +144,13 @@
 (define_insn_reservation "xiangshan_sfdiv" 11
   (and (eq_attr "tune" "xiangshan")
        (eq_attr "type" "fdiv")
-       (eq_attr "mode" "SF"))
+       (eq_attr "mode" "HF,SF"))
   "xs_fmisc_rs")
 
 (define_insn_reservation "xiangshan_sfsqrt" 17
   (and (eq_attr "tune" "xiangshan")
        (eq_attr "type" "fsqrt")
-       (eq_attr "mode" "SF"))
+       (eq_attr "mode" "HF,SF"))
   "xs_fmisc_rs")
 
 (define_insn_reservation "xiangshan_dfdiv" 21

@@ -157,10 +157,13 @@
        (eq_attr "type" "fmove,fcvt"))
   "float_pipe,sifive_p600_fpu")
 
+;; We need something for HF so that we don't abort during
+;; scheduling if someone was to ask for p600 scheduling, but
+;; enable the various HF mode extensions.
 (define_insn_reservation "sifive_p600_fdiv_s" 11
   (and (eq_attr "tune" "sifive_p600")
        (eq_attr "type" "fdiv,fsqrt")
-       (eq_attr "mode" "SF"))
+       (eq_attr "mode" "HF,SF"))
   "sifive_p600_FM, sifive_p600_fdiv*5")
 
 (define_insn_reservation "sifive_p600_fdiv_d" 19
