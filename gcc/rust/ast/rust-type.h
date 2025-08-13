@@ -571,6 +571,12 @@ public:
     return *type;
   }
 
+  std::unique_ptr<TypeNoBounds> &get_type_pointed_to_ptr ()
+  {
+    rust_assert (type != nullptr);
+    return type;
+  }
+
   // Getter for direct access to the type unique_ptr
   std::unique_ptr<TypeNoBounds> &get_type_ptr () { return type; }
 
@@ -646,6 +652,12 @@ public:
     return *type;
   }
 
+  std::unique_ptr<TypeNoBounds> &get_type_referenced_ptr ()
+  {
+    rust_assert (type != nullptr);
+    return type;
+  }
+
   bool get_has_mut () const { return has_mut; }
 
   Lifetime &get_lifetime () { return lifetime.value (); }
@@ -718,6 +730,12 @@ public:
   {
     rust_assert (elem_type != nullptr);
     return *elem_type;
+  }
+
+  std::unique_ptr<Type> &get_elem_type_ptr ()
+  {
+    rust_assert (elem_type != nullptr);
+    return elem_type;
   }
 
   // TODO: would a "vis_expr" be better?
@@ -1042,6 +1060,12 @@ public:
   {
     rust_assert (has_return_type ());
     return *return_type;
+  }
+
+  std::unique_ptr<TypeNoBounds> &get_return_type_ptr ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
   }
 
   FunctionQualifiers &get_function_qualifiers () { return function_qualifiers; }

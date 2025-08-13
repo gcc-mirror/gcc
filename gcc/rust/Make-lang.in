@@ -84,6 +84,7 @@ GRS_OBJS = \
     rust/rust-ast-dump.o \
     rust/rust-ast-collector.o \
     rust/rust-ast-visitor.o \
+    rust/rust-ast-pointer-visitor.o \
     rust/rust-hir-visitor.o \
     rust/rust-hir-dump.o \
     rust/rust-session-manager.o \

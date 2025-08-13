@@ -1610,6 +1610,12 @@ public:
     return *existing_type;
   }
 
+  std::unique_ptr<Type> &get_type_aliased_ptr ()
+  {
+    rust_assert (existing_type != nullptr);
+    return existing_type;
+  }
+
   Identifier get_new_type_name () const { return new_type_name; }
 
   Item::Kind get_item_kind () const override { return Item::Kind::TypeAlias; }

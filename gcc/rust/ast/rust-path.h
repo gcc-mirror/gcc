@@ -377,6 +377,13 @@ public:
     return *type;
   }
 
+  std::unique_ptr<AST::Type> &get_type_ptr ()
+  {
+    rust_assert (has_type ());
+
+    return type;
+  }
+
   GenericArg &get_default_value_unchecked ()
   {
     rust_assert (has_default_value ());

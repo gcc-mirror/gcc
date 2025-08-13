@@ -144,6 +144,12 @@ public:
     return *subpattern;
   }
 
+  std::unique_ptr<Pattern> &get_subpattern_ptr ()
+  {
+    rust_assert (has_subpattern ());
+    return subpattern;
+  }
+
   Identifier get_ident () const { return variable_ident; }
 
   bool get_is_mut () const { return is_mut; }
@@ -519,6 +525,12 @@ public:
     return *pattern;
   }
 
+  std::unique_ptr<Pattern> &get_referenced_pattern_ptr ()
+  {
+    rust_assert (pattern != nullptr);
+    return pattern;
+  }
+
   bool is_double_reference () const { return has_two_amps; }
 
   bool get_is_mut () const { return is_mut; }
@@ -682,6 +694,12 @@ public:
     return *tuple_pattern;
   }
 
+  std::unique_ptr<Pattern> &get_index_pattern_ptr ()
+  {
+    rust_assert (tuple_pattern != nullptr);
+    return tuple_pattern;
+  }
+
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
 protected:
@@ -760,6 +778,12 @@ public:
   {
     rust_assert (ident_pattern != nullptr);
     return *ident_pattern;
+  }
+
+  std::unique_ptr<Pattern> &get_ident_pattern_ptr ()
+  {
+    rust_assert (ident_pattern != nullptr);
+    return ident_pattern;
   }
 
   ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }

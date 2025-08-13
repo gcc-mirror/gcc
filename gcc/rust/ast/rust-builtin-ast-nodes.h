@@ -255,6 +255,7 @@ public:
   virtual location_t get_locus () const override { return loc; }
   const Type &get_type () const { return *type; }
   Type &get_type () { return *type; }
+  std::unique_ptr<Type> &get_type_ptr () { return type; }
   const Identifier &get_field () const { return field; }
 
   bool is_expr_without_block () const override { return false; }
