@@ -21578,7 +21578,7 @@ package body Sem_Ch3 is
       Set_Stored_Constraint (Current_Scope, No_Elist);
 
       --  Default expressions must be provided either for all or for none
-      --  of the discriminants of a discriminant part. (RM 3.7.1)
+      --  of the discriminants of a discriminant part (RM 3.7 (9.1/3)).
 
       if Default_Present and then Default_Not_Present then
          Error_Msg_N
@@ -21969,8 +21969,7 @@ package body Sem_Ch3 is
 
       else
          --  For untagged types, verify that a type without discriminants is
-         --  not completed with an unconstrained type. A separate error message
-         --  is produced if the full type has defaulted discriminants.
+         --  not completed with an indefinite type.
 
          if Is_Definite_Subtype (Priv_T)
            and then not Is_Definite_Subtype (Full_T)
