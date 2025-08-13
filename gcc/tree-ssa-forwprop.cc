@@ -1401,10 +1401,10 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
 
 	  /* If this statement does not clobber add the vdef stmt to the
 	     worklist.  */
-	  if (gimple_vdef (use_stmt)
+	  if (limit != 0
+	      && gimple_vdef (use_stmt)
 	      && !stmt_may_clobber_ref_p_1 (use_stmt, &read,
-					   /* tbaa_p = */ can_use_tbba)
-	      && limit != 0)
+					   /* tbaa_p = */ can_use_tbba))
 	    worklist.safe_push (std::make_pair (gimple_vdef (use_stmt),
 						limit - 1));
 
