@@ -83,7 +83,7 @@
 
     That turns out to be unnecessarily slow.
 
-    The routine implemented here uses a divide-and-conquer approach to 
+    The routine implemented here uses a divide-and-conquer approach to
     minimimizing the number of operations, and when you get down to two
     digits it does a divide-by-100 and uses the remainder in a table lookup
     to get the digits. */
@@ -92,10 +92,10 @@
     Whether that paranoia is justified (perhaps "digit%10 + '0';" ) would
     actually be faster) is currently untested.  But I figured this would be
     pretty darn fast.
-    
+
     Use them when you know the index is between zero and one hundred.  */
 
-static const char digit_low[100] = 
+static const char digit_low[100] =
   {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -109,9 +109,9 @@ static const char digit_low[100] =
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
   };
 
-static const char digit_high[100] = 
+static const char digit_high[100] =
   {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
   3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -126,7 +126,7 @@ static const char digit_high[100] =
 static char combined_string[128];
 static char zero_char;
 
-typedef struct 
+typedef struct
   {
   int   start;
   int   run;
@@ -146,7 +146,7 @@ string_from_combined(const COMBINED &combined)
   {
   COMBINED left;
   COMBINED right;
-  
+
   uint16_t v16;
 
   switch(combined.run)
@@ -163,7 +163,7 @@ string_from_combined(const COMBINED &combined)
       break;
 
     case 3:
-      // We know that val16 has three digits.  
+      // We know that val16 has three digits.
       v16 = combined.val16;
       combined_string[combined.start] = v16 / 100 + zero_char;
       v16 %= 100;
@@ -357,7 +357,7 @@ packed_from_combined(const COMBINED &combined)
 
   COMBINED left;
   COMBINED right;
-  
+
   switch(combined.run)
     {
     case 1:
@@ -475,3 +475,343 @@ __gg__binary_to_packed( unsigned char *result,
   packed_from_combined(combined);
   memcpy(result, combined_string, length);
   }
+
+
+unsigned __int128
+int_from_string(const char *psz, int n)
+  {
+  /* This is a generalized converter */
+
+
+  /*  We are assuming that 64-bit arithmetic is faster than 128-bit arithmetic,
+      and so we build up a 128-bit result in three 64-bit pieces, and assemble
+      them at the end.  */
+
+  static const uint8_t lookup[] =
+    {
+     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,0,0,0,0,0,
+    10,11,12,13,14,15,16,17,18,19, 0,0,0,0,0,0,
+    20,21,22,23,24,25,26,27,28,29, 0,0,0,0,0,0,
+    30,31,32,33,34,35,36,37,38,39, 0,0,0,0,0,0,
+    40,41,42,43,44,45,46,47,48,49, 0,0,0,0,0,0,
+    50,51,52,53,54,55,56,57,58,59, 0,0,0,0,0,0,
+    60,61,62,63,64,65,66,67,68,69, 0,0,0,0,0,0,
+    70,71,72,73,74,75,76,77,78,79, 0,0,0,0,0,0,
+    80,81,82,83,84,85,86,87,88,89, 0,0,0,0,0,0,
+    90,91,92,93,94,95,96,97,98,99, 0,0,0,0,0,0,
+    };
+
+  unsigned __int128 retval;
+
+  uint64_t top = 0;
+  uint64_t middle = 0;
+  uint64_t bottom = 0;
+
+  int count_bottom;
+  int count_middle;
+  int count_top;
+
+  // Digits 1 through 18 come from the bottom:
+  if( n <= 18 )
+    {
+    count_bottom = n;
+    count_middle = 0;
+    count_top = 0;
+    }
+  else if( n<= 36 )
+    {
+    count_bottom = 18;
+    count_middle = n - 18;
+    count_top = 0;
+    }
+  else
+    {
+    count_bottom = 18;
+    count_middle = 18;
+    count_top = n - 36;
+    }
+
+  if( n & 1 )
+    {
+    // We are dealing with an odd number of digits
+    if( count_top )
+      {
+      top = *psz++ & 0x0f;
+      count_top -= 1;
+      }
+    else if( count_middle )
+      {
+      middle = *psz++ & 0x0f;
+      count_middle -= 1;
+      }
+    else
+      {
+      bottom = *psz++ & 0x0f;
+      count_bottom -= 1;
+      }
+    }
+
+  uint8_t add_me;
+
+  while( count_top )
+    {
+    add_me  = *psz++ << 4;
+    add_me += *psz++ &  0xF;
+    top *= 100 ;
+    top += lookup[add_me];
+    count_top -= 2;
+    }
+
+  while( count_middle )
+    {
+    add_me  = *psz++ << 4;
+    add_me += *psz++ &  0xF;
+    middle *= 100 ;
+    middle += lookup[add_me];
+    count_middle -= 2;
+    }
+
+  while( count_bottom )
+    {
+    add_me  = *psz++ << 4;
+    add_me += *psz++ &  0xF;
+    bottom *= 100 ;
+    bottom += lookup[add_me];
+    count_bottom -= 2;
+    }
+
+  retval = top;
+  retval *= 1000000000000000000ULL; // 10E18
+
+  retval += middle;
+  retval *= 1000000000000000000ULL;
+
+  retval += bottom;
+
+  return retval;
+  }
+
+extern "C"
+__int128
+__gg__numeric_display_to_binary(unsigned char *signp,
+                          const unsigned char *psz,
+                                int n )
+  {
+  /*  This is specific to numeric display values.
+
+      Such values can be unsigned, or they can have leading or trailing
+      internal sign information, or they can have leading or trailing external
+      sign information.
+
+      In ASCII, digits are 030; internal sign is has the zone 0x70.
+
+      In EBDIC, normal digits are 0xF0.  The sign byte in for a positive
+      signable number has the zone 0xC0; a negative value has the zone 0xD0.
+
+      A further complication is that it is legal for NumericDisplay values to
+      have non-digit characters.  This is because of REDEFINES, and whatnot.
+      Some COBOL implementations just look at the bottom four bits of
+      characters regardless of their legality.  I am choosing to have non-legal
+      characters come back as zero.  I do this with tables, so the cost is low.
+      */
+
+  /*  We are assuming that 64-bit arithmetic is faster than 128-bit arithmetic,
+      and so we build up a 128-bit result in three 64-bit pieces, and assemble
+      them at the end.  */
+
+
+  static const uint8_t lookup[] =
+    {
+     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,0,0,0,0,0,
+    10,11,12,13,14,15,16,17,18,19, 0,0,0,0,0,0,
+    20,21,22,23,24,25,26,27,28,29, 0,0,0,0,0,0,
+    30,31,32,33,34,35,36,37,38,39, 0,0,0,0,0,0,
+    40,41,42,43,44,45,46,47,48,49, 0,0,0,0,0,0,
+    50,51,52,53,54,55,56,57,58,59, 0,0,0,0,0,0,
+    60,61,62,63,64,65,66,67,68,69, 0,0,0,0,0,0,
+    70,71,72,73,74,75,76,77,78,79, 0,0,0,0,0,0,
+    80,81,82,83,84,85,86,87,88,89, 0,0,0,0,0,0,
+    90,91,92,93,94,95,96,97,98,99, 0,0,0,0,0,0,
+    };
+
+  static const uint8_t from_ebcdic[256] =
+    {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x00
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x10
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x20
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x30
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x40
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x50
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x60
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x70
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x80
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x90
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xa0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xb0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xc0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xd0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xe0
+    0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, // 0xf0
+    };
+
+  static const uint8_t from_ascii[256] =
+    {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x00
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x10
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x20
+    0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, // 0x30
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x40
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x50
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x60
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x70
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x80
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x90
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xa0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xb0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xc0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xd0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xe0
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xf0
+    };
+
+  __int128 retval;
+
+  uint64_t top = 0;
+  uint64_t middle = 0;
+  uint64_t bottom = 0;
+
+  int count_bottom;
+  int count_middle;
+  int count_top;
+
+  bool is_negative = false;
+
+  // Pick up the original sign byte:
+  unsigned char sign_byte = *signp;
+
+  const unsigned char *mapper;
+  if( internal_is_ebcdic )
+    {
+    mapper = from_ebcdic;
+    if( sign_byte == EBCDIC_MINUS )
+      {
+      is_negative = true;
+      }
+    else if( (sign_byte & 0xF0) == 0xD0 )
+      {
+      is_negative = true;
+      }
+    // No matter what the digit, force it to be a valid positive digit by
+    // forcing the zone to 0xF0.  Note that this is harmless if redundant, and
+    // harmless as well if the data SIGN IS SEPARATE.  Whatever we do to this
+    // byte will be undone at the end of the routine.
+    *signp |= 0xF0;
+    }
+  else
+    {
+    mapper = from_ascii;
+    if( sign_byte == '-' )
+      {
+      is_negative = true;
+      }
+    else if( (sign_byte & 0xF0) == 0x70 )
+      {
+      is_negative = true;
+
+      // Make it a valid positive digit by turning the zone to 0x30
+      *signp &= 0x3F;
+      }
+    }
+
+  // Digits 1 through 18 come from the bottom:
+  if( n <= 18 )
+    {
+    count_bottom = n;
+    count_middle = 0;
+    count_top = 0;
+    }
+  else if( n<= 36 )
+    {
+    count_bottom = 18;
+    count_middle = n - 18;
+    count_top = 0;
+    }
+  else
+    {
+    count_bottom = 18;
+    count_middle = 18;
+    count_top = n - 36;
+    }
+
+  if( n & 1 )
+    {
+    // We are dealing with an odd number of digits
+    if( count_top )
+      {
+      top = mapper[*psz++];
+      count_top -= 1;
+      }
+    else if( count_middle )
+      {
+      middle = mapper[*psz++];
+      count_middle -= 1;
+      }
+    else
+      {
+      bottom = mapper[*psz++];
+      count_bottom -= 1;
+      }
+    }
+
+  uint8_t add_me;
+
+  while( count_top )
+    {
+    add_me  = mapper[*psz++] << 4;
+    add_me += mapper[*psz++];
+    top *= 100 ;
+    top += lookup[add_me];
+    count_top -= 2;
+    }
+
+  while( count_middle )
+    {
+    add_me  = mapper[*psz++] << 4;
+    add_me += mapper[*psz++];
+    middle *= 100 ;
+    middle += lookup[add_me];
+    count_middle -= 2;
+    }
+
+  while( count_bottom )
+    {
+    add_me  = mapper[*psz++] << 4;
+    add_me += mapper[*psz++];
+    bottom *= 100 ;
+    bottom += lookup[add_me];
+    count_bottom -= 2;
+    }
+
+  retval = top;
+  retval *= 1000000000000000000ULL; // 10E18
+
+  retval += middle;
+  retval *= 1000000000000000000ULL;
+
+  retval += bottom;
+
+  if( is_negative )
+    {
+    retval = -retval;
+    }
+
+  // Replace the original sign byte:
+  *signp = sign_byte; // cppcheck-suppress redundantAssignment
+
+  return retval;
+  }
+
+
+
+
+

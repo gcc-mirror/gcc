@@ -44,4 +44,9 @@ void __gg__binary_to_packed( unsigned char *result,
                              int digits,
                              __int128 value);
 
+extern "C"
+__int128 __gg__numeric_display_to_binary( unsigned char *sign_byte,
+                                    const unsigned char *digits,
+                                          int ndigits );
+
 #endif
