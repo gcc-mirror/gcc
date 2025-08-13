@@ -4165,11 +4165,12 @@ AttrInputMetaItemContainer::separate_cfg_attrs () const
 bool
 Attribute::check_cfg_predicate (const Session &session) const
 {
+  auto string_path = path.as_string ();
   /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
    * cfg_attr path */
   if (!has_attr_input ()
-      || (path.as_string () != Values::Attributes::CFG
-	  && path.as_string () != Values::Attributes::CFG_ATTR))
+      || (string_path != Values::Attributes::CFG
+	  && string_path != Values::Attributes::CFG_ATTR))
     {
       // DEBUG message
       rust_debug (
@@ -4185,6 +4186,13 @@ Attribute::check_cfg_predicate (const Session &session) const
     return false;
 
   auto &meta_item = static_cast<AttrInputMetaItemContainer &> (*attr_input);
+  if (meta_item.get_items ().empty ()
+      && string_path == Values::Attributes::CFG_ATTR)
+    {
+      rust_error_at (path.get_locus (),
+		     "malformed %<cfg_attr%> attribute input");
+      return false;
+    }
   return meta_item.get_items ().front ()->check_cfg_predicate (session);
 }
 
