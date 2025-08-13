@@ -3629,12 +3629,37 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	if (__builtin_mul_overflow (X, Y, &result))
 	  return -1;
 	else
-	  return -(T)overflow_p | result;
+	  return result;
       }
       while T can be uint8_t, uint16_t, uint32_t and uint64_t.  */
    (cond^ (ne (imagpart (IFN_MUL_OVERFLOW:c@2 @0 @1)) integer_zerop)
 	   integer_minus_onep (realpart @2))
    (if (types_match (type, @0, @1))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	WT x = (WT)a * (WT)b;
+	if ((x >> sizeof(a) * 8) == 0)
+	  return (T)x;
+	else
+	  return (T)-1;
+      }
+      while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
+   (convert (cond^ (eq (rshift (mult:c@3 (convert @0) (convert @1))
+			       INTEGER_CST@2)
+		       integer_zerop)
+		   @3 INTEGER_CST@4))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      wide_int c4 = wi::to_wide (@4);
+      wide_int max = wi::mask (prec, false, widen_prec);
+      bool c4_is_max_p = wi::eq_p (c4, max);
+      unsigned c2 = tree_to_uhwi (@2);
+      bool c2_is_type_precision_p = c2 == prec;
+     }
+     (if (widen_prec > prec && c2_is_type_precision_p && c4_is_max_p)))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
