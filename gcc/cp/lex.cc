@@ -172,7 +172,7 @@ init_operators (void)
   /* This loop iterates backwards because we need to move the
      assignment operators down to their correct slots.  I.e. morally
      equivalent to an overlapping memmove where dest > src.  Slot
-     zero is for error_mark, so hae no operator. */
+     zero is for error_mark, so has no operator.  */
   for (unsigned ix = OVL_OP_MAX; --ix;)
     {
       ovl_op_info_t *op_ptr = &ovl_op_info[false][ix];
