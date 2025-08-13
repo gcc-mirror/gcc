@@ -5444,9 +5444,9 @@ canonicalize_comparands (rtx_code code, rtx *op0, rtx *op1)
 
   /* We might have been handed back a SUBREG.  Just to make things
      easy, force it into a REG.  */
-  if (!REG_P (*op0) && !CONST_INT_P (*op0))
+  if (!REG_P (*op0) && !CONST_INT_P (*op0) && INTEGRAL_MODE_P (GET_MODE (*op0)))
     *op0 = force_reg (word_mode, *op0);
-  if (!REG_P (*op1) && !CONST_INT_P (*op1))
+  if (!REG_P (*op1) && !CONST_INT_P (*op1) && INTEGRAL_MODE_P (GET_MODE (*op1)))
     *op1 = force_reg (word_mode, *op1);
 }
 
