@@ -1299,7 +1299,7 @@ optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
    and/or memcpy (&b, &a, sizeof (a)); instead of b = a;  */
 
 static bool
-optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
+optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
 {
   ao_ref read;
   gimple *stmt = gsi_stmt (*gsip);
@@ -1383,7 +1383,7 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
 
   /* Setup the worklist.  */
   auto_vec<std::pair<tree, unsigned>> worklist;
-  unsigned limit = param_sccvn_max_alias_queries_per_access;
+  unsigned limit = full_walk ? param_sccvn_max_alias_queries_per_access : 0;
   worklist.safe_push (std::make_pair (gimple_vdef (stmt), limit));
 
   while (!worklist.is_empty ())
@@ -1400,13 +1400,17 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
 	    continue;
 
 	  /* If this statement does not clobber add the vdef stmt to the
-	     worklist.  */
-	  if (limit != 0
+	     worklist.
+	     After hitting the limit, allow clobbers to able to pass through.  */
+	  if ((limit != 0 || gimple_clobber_p (use_stmt))
 	      && gimple_vdef (use_stmt)
 	      && !stmt_may_clobber_ref_p_1 (use_stmt, &read,
 					   /* tbaa_p = */ can_use_tbba))
-	    worklist.safe_push (std::make_pair (gimple_vdef (use_stmt),
-						limit - 1));
+	      {
+		unsigned new_limit = limit == 0 ? 0 : limit - 1;
+		worklist.safe_push (std::make_pair (gimple_vdef (use_stmt),
+						    new_limit));
+	      }
 
 	  if (optimize_aggr_zeroprop_1 (stmt, use_stmt, dest_base, offset,
 					 val, wi::to_poly_offset (len)))
@@ -1591,7 +1595,7 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
    to __atomic_fetch_op (p, x, y) when possible (also __sync).  */
 
 static bool
-simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
+simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk)
 {
   gimple *stmt1, *stmt2 = gsi_stmt (*gsi_p);
   enum built_in_function other_atomic = END_BUILTINS;
@@ -1670,7 +1674,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	{
 	  /* Try to prop the zeroing/value of the memset to memcpy
 	     if the dest is an address and the value is a constant. */
-	  if (optimize_aggr_zeroprop (gsi_p))
+	  if (optimize_aggr_zeroprop (gsi_p, full_walk))
 	    return true;
 	}
       if (gimple_call_num_args (stmt2) != 3
@@ -4460,8 +4464,17 @@ public:
   opt_pass * clone () final override { return new pass_forwprop (m_ctxt); }
   void set_pass_param (unsigned int n, bool param) final override
     {
-      gcc_assert (n == 0);
-      last_p = param;
+      switch (n)
+	{
+	  case 0:
+	    m_full_walk = param;
+	    break;
+	  case 1:
+	    last_p = param;
+	    break;
+	  default:
+	  gcc_unreachable();
+	}
     }
   bool gate (function *) final override { return flag_tree_forwprop; }
   unsigned int execute (function *) final override;
@@ -4469,12 +4482,17 @@ public:
  private:
   /* Determines whether the pass instance should set PROP_last_full_fold.  */
   bool last_p;
+
+  /* True if the aggregate props are doing a full walk or not.  */
+  bool m_full_walk = false;
 }; // class pass_forwprop
 
 unsigned int
 pass_forwprop::execute (function *fun)
 {
   unsigned int todoflags = 0;
+  /* Handle a full walk only when expensive optimizations are on.  */
+  bool full_walk = m_full_walk && flag_expensive_optimizations;
 
   cfg_changed = false;
   if (last_p)
@@ -4991,7 +5009,7 @@ pass_forwprop::execute (function *fun)
 		  {
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
-		    if (gimple_store_p (stmt) && optimize_aggr_zeroprop (&gsi))
+		    if (gimple_store_p (stmt) && optimize_aggr_zeroprop (&gsi, full_walk))
 		      {
 			changed = true;
 			break;
@@ -5051,7 +5069,7 @@ pass_forwprop::execute (function *fun)
 		    tree callee = gimple_call_fndecl (stmt);
 		    if (callee != NULL_TREE
 			&& fndecl_built_in_p (callee, BUILT_IN_NORMAL))
-		      changed |= simplify_builtin_call (&gsi, callee);
+		      changed |= simplify_builtin_call (&gsi, callee, full_walk);
 		    break;
 		  }
 
