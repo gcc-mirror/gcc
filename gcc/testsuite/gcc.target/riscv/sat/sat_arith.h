@@ -708,4 +708,20 @@ sat_u_mul_##T##_fmt_2 (T a, T b)             \
 #define RUN_SAT_U_MUL_FMT_2(T, a, b) sat_u_mul_##T##_fmt_2 (a, b)
 #define RUN_SAT_U_MUL_FMT_2_WRAP(T, a, b) RUN_SAT_U_MUL_FMT_2(T, a, b)
 
+#define DEF_SAT_U_MUL_FMT_3(NT, WT)             \
+NT __attribute__((noinline))                    \
+sat_u_mul_##NT##_from_##WT##_fmt_3 (NT a, NT b) \
+{                                               \
+  WT x = (WT)a * (WT)b;                         \
+  if ((x >> sizeof(a) * 8) == 0)                \
+    return (NT)x;                               \
+  else                                          \
+    return (NT)-1;                              \
+}
+
+#define DEF_SAT_U_MUL_FMT_3_WRAP(NT, WT) DEF_SAT_U_MUL_FMT_3(NT, WT)
+#define RUN_SAT_U_MUL_FMT_3(NT, WT, a, b) \
+  sat_u_mul_##NT##_from_##WT##_fmt_3 (a, b)
+#define RUN_SAT_U_MUL_FMT_3_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_3(NT, WT, a, b)
+
 #endif
