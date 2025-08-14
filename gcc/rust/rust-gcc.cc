@@ -1258,7 +1258,7 @@ constructor_expression (tree type_tree, bool is_variant,
     return error_mark_node;
 
   vec<constructor_elt, va_gc> *init;
-  vec_alloc (init, vals.size ());
+  vec_alloc (init, union_index != -1 ? 1 : vals.size ());
 
   tree sink = NULL_TREE;
   bool is_constant = true;
