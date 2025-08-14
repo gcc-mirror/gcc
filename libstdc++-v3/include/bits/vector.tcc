@@ -994,15 +994,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	if constexpr (ranges::forward_range<_Rg>)
 	  {
+	    const auto __ins_idx = __pos - cbegin();
+	    // Number of new elements to insert:
+	    const auto __n = size_type(ranges::distance(__rg));
+	    if (__n == 0)
+	      return begin() + __ins_idx;
+
 	    // Start of existing elements:
 	    pointer __old_start = this->_M_impl._M_start;
 	    // End of existing elements:
 	    pointer __old_finish = this->_M_impl._M_finish;
 	    // Insertion point:
-	    const auto __ins_idx = __pos - cbegin();
 	    pointer __ins = __old_start + __ins_idx;
-	    // Number of new elements to insert:
-	    const auto __n = size_type(ranges::distance(__rg));
 	    // Number of elements that can fit in unused capacity:
 	    const auto __cap = this->_M_impl._M_end_of_storage - __old_finish;
 	    if (__cap >= __n)

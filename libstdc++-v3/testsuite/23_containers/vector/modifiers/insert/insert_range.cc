@@ -99,16 +99,67 @@ test_ranges()
   return true;
 }
 
+struct SelfAssignChecker {
+  static int moveCounter;
+  static int copyCounter;
+
+  SelfAssignChecker() = default;
+  constexpr SelfAssignChecker(int v) : val(v) { }
+  SelfAssignChecker(const SelfAssignChecker&) = default;
+  SelfAssignChecker(SelfAssignChecker&&) = default;
+
+  SelfAssignChecker operator=(const SelfAssignChecker& rhs)
+  {
+    if (this == &rhs)
+      ++copyCounter;
+    this->val = rhs.val;
+    return *this;
+  }
+
+  SelfAssignChecker operator=(SelfAssignChecker&& rhs)
+  {
+    if (this == &rhs)
+      ++moveCounter;
+    this->val = rhs.val;
+    return *this;
+  }
+
+  int val;
+
+  friend bool operator==(SelfAssignChecker, SelfAssignChecker) = default;
+};
+
+int SelfAssignChecker::moveCounter = 0;
+int SelfAssignChecker::copyCounter = 0;
+
+void
+test_pr121313()
+{
+  using namespace __gnu_test;
+
+  SelfAssignChecker::copyCounter = SelfAssignChecker::moveCounter = 0;
+  do_test<test_forward_range<int>, std::allocator<SelfAssignChecker>>();
+  VERIFY( SelfAssignChecker::moveCounter == 0 );
+  VERIFY( SelfAssignChecker::copyCounter == 0 );
+
+  SelfAssignChecker::copyCounter = SelfAssignChecker::moveCounter = 0;
+  do_test<test_input_range<int>, std::allocator<SelfAssignChecker>>();
+  VERIFY( SelfAssignChecker::moveCounter == 0 );
+  VERIFY( SelfAssignChecker::copyCounter == 0 );
+}
+
 constexpr bool
 test_constexpr()
 {
   // XXX: this doesn't test the non-forward_range code paths are constexpr.
   do_test<std::span<short>, std::allocator<int>>();
   return true;
+
 }
 
 int main()
 {
   test_ranges();
+  test_pr121313();
   static_assert( test_constexpr() );
 }
