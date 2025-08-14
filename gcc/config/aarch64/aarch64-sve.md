@@ -8834,7 +8834,30 @@
 	(unspec:PRED_ALL [(match_operand:PRED_ALL 1 "register_operand" "Upa")]
 			 UNSPEC_REV))]
   "TARGET_SVE"
-  "rev\t%0.<Vetype>, %1.<Vetype>")
+  "rev\t%0.<Vetype>, %1.<Vetype>"
+)
+
+(define_expand "@aarch64_sve_rev<mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(unspec:VNx16BI
+	  [(match_operand:VNx16BI 1 "register_operand")
+	   (match_dup:PRED_ALL 2)]
+	  UNSPEC_REV_PRED))]
+  "TARGET_SVE"
+  {
+    operands[2] = CONST0_RTX (<MODE>mode);
+  }
+)
+
+(define_insn "*aarch64_sve_rev<mode>_acle"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(unspec:VNx16BI
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand:PRED_ALL 2 "aarch64_simd_imm_zero")]
+	  UNSPEC_REV_PRED))]
+  "TARGET_SVE"
+  "rev\t%0.<Vetype>, %1.<Vetype>"
+)
 
 ;; -------------------------------------------------------------------------
 ;; ---- [PRED] Special-purpose binary permutes
