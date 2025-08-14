@@ -111,4 +111,4 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "ACCESS_WITH_SIZE" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "ACCESS_WITH_SIZE" 6 "original" } } */

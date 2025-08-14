@@ -2487,11 +2487,10 @@ struct c_expr
 default_function_array_read_conversion (location_t loc, struct c_expr exp)
 {
   mark_exp_read (exp.value);
-  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
-     it is a read.  */
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
   if (TREE_CODE (exp.value) == COMPONENT_REF
       && handle_counted_by_p (exp.value))
-    exp.value = handle_counted_by_for_component_ref (loc, exp.value, true);
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value);
   return default_function_array_conversion (loc, exp);
 }
 
@@ -2593,11 +2592,10 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   bool force_non_npc = false;
   if (read_p)
     mark_exp_read (exp.value);
-  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
-     it is a read.  */
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
   if (read_p && TREE_CODE (exp.value) == COMPONENT_REF
       && handle_counted_by_p (exp.value))
-    exp.value = handle_counted_by_for_component_ref (loc, exp.value, true);
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value);
 
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
@@ -2776,11 +2774,10 @@ default_conversion (tree exp)
   tree promoted_type;
 
   mark_exp_read (exp);
-  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
-     it is a read.  */
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
   if (TREE_CODE (exp) == COMPONENT_REF
       && handle_counted_by_p (exp))
-    exp = handle_counted_by_for_component_ref (EXPR_LOCATION (exp), exp, true);
+    exp = handle_counted_by_for_component_ref (EXPR_LOCATION (exp), exp);
 
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
@@ -3193,12 +3190,10 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 /* For the COMPONENT_REF ref, check whether it has a counted_by attribute,
    if so, wrap this COMPONENT_REF with the corresponding CALL to the
    function .ACCESS_WITH_SIZE.
-   Otherwise, return the ref itself.
-   FOR_POINTER is true when this is for pointer field.  */
+   Otherwise, return the ref itself.  */
 
 tree
-handle_counted_by_for_component_ref (location_t loc, tree ref,
-				     bool for_pointer)
+handle_counted_by_for_component_ref (location_t loc, tree ref)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
   tree datum = TREE_OPERAND (ref, 0);
@@ -3207,11 +3202,6 @@ handle_counted_by_for_component_ref (location_t loc, tree ref,
 
   if (!(c_flexible_array_member_type_p (TREE_TYPE (ref))
 	|| TREE_CODE (TREE_TYPE (ref)) == POINTER_TYPE))
-    return ref;
-
-  bool is_fam = c_flexible_array_member_type_p (TREE_TYPE (ref));
-
-  if (!(is_fam ^ for_pointer))
     return ref;
 
   tree counted_by_ref = build_counted_by_ref (datum, subdatum,
@@ -3233,8 +3223,7 @@ handle_counted_by_for_component_ref (location_t loc, tree ref,
 
 tree
 build_component_ref (location_t loc, tree datum, tree component,
-		     location_t component_loc, location_t arrow_loc,
-		     bool handle_counted_by)
+		     location_t component_loc, location_t arrow_loc)
 {
   tree type = TREE_TYPE (datum);
   enum tree_code code = TREE_CODE (type);
@@ -3306,8 +3295,6 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  int quals;
 	  tree subtype;
 	  bool use_datum_quals;
-	  /* Do not handle counted_by when in typeof and alignof operator.  */
-	  handle_counted_by = handle_counted_by && !in_typeof && !in_alignof;
 
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
@@ -3329,8 +3316,6 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  SET_EXPR_LOCATION (ref, loc);
 
 	  check_counted_by_attribute (loc, ref);
-	  if (handle_counted_by)
-	    ref = handle_counted_by_for_component_ref (loc, ref, false);
 
 	  if (TREE_READONLY (subdatum)
 	      || (use_datum_quals && TREE_READONLY (datum)))
@@ -3516,6 +3501,11 @@ build_array_ref (location_t loc, tree array, tree index)
 
   bool was_vector = VECTOR_TYPE_P (TREE_TYPE (array));
   bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, index);
+
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
+  if (TREE_CODE (array) == COMPONENT_REF
+      && handle_counted_by_p (array))
+    array = handle_counted_by_for_component_ref (loc, array);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
