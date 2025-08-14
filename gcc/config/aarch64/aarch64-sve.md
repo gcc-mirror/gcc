@@ -1421,7 +1421,7 @@
   [(set (match_operand:SVE_4 0 "register_operand" "=w, w, w, w, w, w")
 	(unspec:SVE_4
 	  [(match_operand:VNx4BI 5 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
-	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vgw, rk, rk, rk, rk")
+	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vg<Vesize>, rk, rk, rk, rk")
 	   (match_operand:VNx4SI 2 "register_operand" "w, w, w, w, w, w")
 	   (match_operand:DI 3 "const_int_operand" "Ui1, Ui1, Z, Ui1, Z, Ui1")
 	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, Ui1, i, i")
@@ -1443,7 +1443,7 @@
   [(set (match_operand:SVE_2 0 "register_operand" "=w, w, w, w")
 	(unspec:SVE_2
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl, Upl, Upl")
-	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vgd, rk, rk")
+	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vg<Vesize>, rk, rk")
 	   (match_operand:VNx2DI 2 "register_operand" "w, w, w, w")
 	   (match_operand:DI 3 "const_int_operand")
 	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, i")
@@ -2254,7 +2254,7 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx4BI 5 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
-	   (match_operand:DI 0 "aarch64_sve_gather_offset_<Vesize>" "Z, vgw, rk, rk, rk, rk")
+	   (match_operand:DI 0 "aarch64_sve_gather_offset_<Vesize>" "Z, vg<Vesize>, rk, rk, rk, rk")
 	   (match_operand:VNx4SI 1 "register_operand" "w, w, w, w, w, w")
 	   (match_operand:DI 2 "const_int_operand" "Ui1, Ui1, Z, Ui1, Z, Ui1")
 	   (match_operand:DI 3 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, Ui1, i, i")
@@ -2276,7 +2276,7 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl, Upl, Upl")
-	   (match_operand:DI 0 "aarch64_sve_gather_offset_<Vesize>" "Z, vgd, rk, rk")
+	   (match_operand:DI 0 "aarch64_sve_gather_offset_<Vesize>" "Z, vg<Vesize>, rk, rk")
 	   (match_operand:VNx2DI 1 "register_operand" "w, w, w, w")
 	   (match_operand:DI 2 "const_int_operand")
 	   (match_operand:DI 3 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, i")
