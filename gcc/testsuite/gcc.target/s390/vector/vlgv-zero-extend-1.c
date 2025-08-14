@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target s390_vx } */
+/* { dg-require-effective-target s390_mvx } */
 /* { dg-additional-options "-O2" } */
 /* { dg-final { scan-assembler-not {\tllg?[fhc]r\t} } } */
 

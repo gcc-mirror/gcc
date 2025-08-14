@@ -501,54 +501,6 @@
                         SIL,SIL,RI,RI,RRE,RRE,RIL,RR,RXY,RXY,RIL")])
 
 
-; Instructions vlgvb, vlgvh, vlgvf zero all remaining bits of a GPR, i.e.,
-; an implicit zero extend is done.
-
-(define_insn "*movdi<mode>_zero_extend_A"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(zero_extend:DI (match_operand:SINT 1 "register_operand" "v")))]
-  "TARGET_VX"
-  "vlgv<bhfgq>\t%0,%v1,0"
-  [(set_attr "op_type" "VRS")])
-
-(define_insn "*movsi<mode>_zero_extend_A"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(zero_extend:SI (match_operand:HQI 1 "register_operand" "v")))]
-  "TARGET_VX"
-  "vlgv<bhfgq>\t%0,%v1,0"
-  [(set_attr "op_type" "VRS")])
-
-(define_mode_iterator VLGV_DI [V1QI V2QI V4QI V8QI V16QI
-			       V1HI V2HI V4HI V8HI
-			       V1SI V2SI V4SI])
-(define_insn "*movdi<mode>_zero_extend_B"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(zero_extend:DI (vec_select:<non_vec>
-			  (match_operand:VLGV_DI 1 "register_operand" "v")
-			  (parallel [(match_operand:SI 2 "const_int_operand" "n")]))))]
-  "TARGET_VX"
-{
-  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
-  return "vlgv<bhfgq>\t%0,%v1,%Y2";
-}
-  [(set_attr "op_type" "VRS")
-   (set_attr "mnemonic" "vlgv<bhfgq>")])
-
-(define_mode_iterator VLGV_SI [V1QI V2QI V4QI V8QI V16QI
-			       V1HI V2HI V4HI V8HI])
-(define_insn "*movsi<mode>_zero_extend_B"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(zero_extend:SI (vec_select:<non_vec>
-			  (match_operand:VLGV_SI 1 "register_operand" "v")
-			  (parallel [(match_operand:SI 2 "const_int_operand" "n")]))))]
-  "TARGET_VX"
-{
-  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
-  return "vlgv<bhfgq>\t%0,%v1,%Y2";
-}
-  [(set_attr "op_type" "VRS")
-   (set_attr "mnemonic" "vlgv<bhfgq>")])
-
 ; vec_load_lanes?
 
 ; vec_store_lanes?
@@ -762,6 +714,42 @@
   s390_expand_vec_init (operands[0], operands[1]);
   DONE;
 })
+
+; Instructions vlgvb, vlgvh, vlgvf zero all remaining bits of a GPR, i.e.,
+; an implicit zero extend is done.
+
+(define_mode_iterator VLGV_DI [V1QI V2QI V4QI V8QI V16QI
+			       V1HI V2HI V4HI V8HI
+			       V1SI V2SI V4SI])
+(define_insn "*vec_extract<mode>_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(zero_extend:DI (vec_select:<non_vec>
+			  (match_operand:VLGV_DI 1 "register_operand" "v")
+			  (parallel [(match_operand:SI 2 "nonmemory_operand" "an")]))))]
+  "TARGET_VX"
+{
+  if (CONST_INT_P (operands[2]))
+    operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
+  return "vlgv<bhfgq>\t%0,%v1,%Y2";
+}
+  [(set_attr "op_type" "VRS")
+   (set_attr "mnemonic" "vlgv<bhfgq>")])
+
+(define_mode_iterator VLGV_SI [V1QI V2QI V4QI V8QI V16QI
+			       V1HI V2HI V4HI V8HI])
+(define_insn "*vec_extract<mode>_zero_extend"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (vec_select:<non_vec>
+			  (match_operand:VLGV_SI 1 "register_operand" "v")
+			  (parallel [(match_operand:SI 2 "nonmemory_operand" "an")]))))]
+  "TARGET_VX"
+{
+  if (CONST_INT_P (operands[2]))
+    operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<MODE>mode) - 1));
+  return "vlgv<bhfgq>\t%0,%v1,%Y2";
+}
+  [(set_attr "op_type" "VRS")
+   (set_attr "mnemonic" "vlgv<bhfgq>")])
 
 (define_insn "*vec_vllezlf<mode>"
   [(set (match_operand:V_HW_4              0 "register_operand" "=v")
