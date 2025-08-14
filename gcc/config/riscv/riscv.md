@@ -2286,12 +2286,16 @@
       rtx abs_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx coeff_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx tmp_reg = gen_reg_rtx (<ANYF:MODE>mode);
+      rtx fflags = gen_reg_rtx (SImode);
 
       riscv_emit_move (tmp_reg, operands[1]);
       riscv_emit_move (coeff_reg,
 		       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
       emit_insn (gen_abs<ANYF:mode>2 (abs_reg, operands[1]));
 
+      /* fp compare can set invalid flag for NaN, so backup fflags.  */
+      if (flag_trapping_math)
+        emit_insn (gen_riscv_frflags (fflags));
       riscv_expand_conditional_branch (label, LT, abs_reg, coeff_reg);
 
       emit_jump_insn (gen_jump (end_label));
@@ -2317,6 +2321,14 @@
       emit_insn (gen_copysign<ANYF:mode>3 (tmp_reg, abs_reg, operands[1]));
 
       emit_label (end_label);
+
+      /* Restore fflags, but after label.  This is slightly different
+         than glibc implementation which only needs to restore under
+         the label, since it checks for NaN first, meaning following fp
+         compare can't raise fp exceptons and thus not clobber fflags.  */
+      if (flag_trapping_math)
+        emit_insn (gen_riscv_fsflags (fflags));
+
       riscv_emit_move (operands[0], tmp_reg);
     }
 
