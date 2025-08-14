@@ -137,6 +137,7 @@ static void record_maybe_used_decl (tree);
 static bool comptypes_internal (const_tree, const_tree,
 				struct comptypes_data *data);
 static bool comptypes_check_for_composite (tree t1, tree t2);
+static bool handle_counted_by_p (tree);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
@@ -2486,6 +2487,11 @@ struct c_expr
 default_function_array_read_conversion (location_t loc, struct c_expr exp)
 {
   mark_exp_read (exp.value);
+  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
+     it is a read.  */
+  if (TREE_CODE (exp.value) == COMPONENT_REF
+      && handle_counted_by_p (exp.value))
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value, true);
   return default_function_array_conversion (loc, exp);
 }
 
@@ -2587,6 +2593,12 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   bool force_non_npc = false;
   if (read_p)
     mark_exp_read (exp.value);
+  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
+     it is a read.  */
+  if (read_p && TREE_CODE (exp.value) == COMPONENT_REF
+      && handle_counted_by_p (exp.value))
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value, true);
+
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
@@ -2764,6 +2776,11 @@ default_conversion (tree exp)
   tree promoted_type;
 
   mark_exp_read (exp);
+  /* We only generate a call to .ACCESS_WITH_SIZE for a pointer field when
+     it is a read.  */
+  if (TREE_CODE (exp) == COMPONENT_REF
+      && handle_counted_by_p (exp))
+    exp = handle_counted_by_for_component_ref (EXPR_LOCATION (exp), exp, true);
 
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
@@ -2982,10 +2999,63 @@ should_suggest_deref_p (tree datum_type)
     return false;
 }
 
-/* For a SUBDATUM field of a structure or union DATUM, generate a REF to
-   the object that represents its counted_by per the attribute counted_by
-   attached to this field if it's a flexible array member field, otherwise
-   return NULL_TREE.
+/* Give a component ref REF, decide whether we should handle its counted_by
+   attribute based on its context:
+   Do not handle counted_by when in offsetof, typeof and alignof operator.  */
+
+static bool
+handle_counted_by_p (tree ref)
+{
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+  tree datum = TREE_OPERAND (ref, 0);
+  /* If the component_ref is build for a offsetof, i.e., the datum
+     of the component_ref is a indirect_ref of null_pointer_node,
+     we should not generate call to .ACCESS_WITH_SIZE.  */
+  if (TREE_CODE (datum) == INDIRECT_REF
+      && TREE_OPERAND (datum, 0) == null_pointer_node)
+    return false;
+  if (in_typeof || in_alignof)
+    return false;
+  return true;
+}
+
+/* Given a component ref REF, if there is a counted_by attribute attached,
+   issue error when the element_type is a structure or union including a
+   flexible array member.  */
+
+static void
+check_counted_by_attribute (location_t loc, tree ref)
+{
+  tree subdatum = TREE_OPERAND (ref, 1);
+  tree sub_type = TREE_TYPE (subdatum);
+
+  if (!c_flexible_array_member_type_p (sub_type)
+      && TREE_CODE (sub_type) != POINTER_TYPE)
+    return;
+
+  tree element_type = TREE_TYPE (sub_type);
+
+  tree attr_counted_by = lookup_attribute ("counted_by",
+					   DECL_ATTRIBUTES (subdatum));
+  if (attr_counted_by)
+    {
+      /* Issue error when the element_type is a structure or
+	union including a flexible array member.  */
+      if (RECORD_OR_UNION_TYPE_P (element_type)
+	  && TYPE_INCLUDES_FLEXARRAY (element_type))
+	{
+	  error_at (loc,
+		    "%<counted_by%> attribute is not allowed for a pointer to"
+		    " structure or union with flexible array member");
+	  return;
+	}
+    }
+}
+
+/* For a SUBDATUM field of a structure or union DATUM, generate a REF
+   to the object that represents its counted_by per the attribute
+   counted_by attached to this field if it's a flexible array member
+   or a pointer field, otherwise return NULL_TREE.
    Set COUNTED_BY_TYPE to the TYPE of the counted_by field.
    For example, if:
 
@@ -3000,13 +3070,16 @@ should_suggest_deref_p (tree datum_type)
     the ref to the object that represents its element count will be:
 
     &(p->k)
-
 */
+
 static tree
-build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
+build_counted_by_ref (tree datum, tree subdatum,
+		      tree *counted_by_type)
 {
   tree type = TREE_TYPE (datum);
-  if (!c_flexible_array_member_type_p (TREE_TYPE (subdatum)))
+  tree sub_type = TREE_TYPE (subdatum);
+  if (!c_flexible_array_member_type_p (sub_type)
+      && TREE_CODE (sub_type) != POINTER_TYPE)
     return NULL_TREE;
 
   tree attr_counted_by = lookup_attribute ("counted_by",
@@ -3037,8 +3110,11 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 }
 
 /* Given a COMPONENT_REF REF with the location LOC, the corresponding
-   COUNTED_BY_REF, and the COUNTED_BY_TYPE, generate an INDIRECT_REF
-   to a call to the internal function .ACCESS_WITH_SIZE.
+   COUNTED_BY_REF, and the COUNTED_BY_TYPE, generate the corresponding
+   call to the internal function .ACCESS_WITH_SIZE.
+
+   A: For the Flexible Array Member, Generate an INDIRECT_REF to a call to
+   the internal function .ACCESS_WITH_SIZE.
 
    REF
 
@@ -3048,11 +3124,24 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 			TYPE_SIZE_UNIT for element)
 
    NOTE: The return type of this function is the POINTER type pointing
-   to the original flexible array type.
-   Then the type of the INDIRECT_REF is the original flexible array type.
-
+   to the original flexible array type.  Then the type of the INDIRECT_REF
+   is the original flexible array type.
    The type of the first argument of this function is a POINTER type
    to the original flexible array type.
+
+   B: For pointers with counted_by, generate a call to the internal function
+   .ACCESS_WITH_SIZE.
+
+    REF
+
+    to:
+
+    .ACCESS_WITH_SIZE (REF, COUNTED_BY_REF, (* TYPE_OF_SIZE)0,
+		       TYPE_SIZE_UNIT for element)
+
+   NOTE: The return type of this function is the original pointer type.
+   The type of the first argument of this function is the original
+   pointer type.
 
    The 3rd argument of the call is a constant 0 with the pointer TYPE whose
    pointee type is the TYPE of the object pointed by COUNTED_BY_REF.
@@ -3066,16 +3155,25 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 				       tree counted_by_ref,
 				       tree counted_by_type)
 {
-  gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
-  /* The result type of the call is a pointer to the flexible array type.  */
-  tree result_type = c_build_pointer_type (TREE_TYPE (ref));
+  gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref))
+	      || TREE_CODE (TREE_TYPE (ref)) == POINTER_TYPE);
+
+  bool is_fam = c_flexible_array_member_type_p (TREE_TYPE (ref));
+
+  /* The result type of the call is a pointer to the flexible array type;
+     or is the original ponter type to the pointer field with counted_by.  */
+  tree result_type = is_fam ? c_build_pointer_type (TREE_TYPE (ref))
+		     : TREE_TYPE (ref);
+
   tree element_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ref)));
 
-  tree first_param
-    = c_fully_fold (array_to_pointer_conversion (loc, ref), false, NULL);
+  tree first_param = is_fam
+		     ? c_fully_fold (array_to_pointer_conversion (loc, ref),
+				     false, NULL)
+		     : ref;
   tree second_param
     = c_fully_fold (counted_by_ref, false, NULL);
-  tree third_param = build_int_cst (build_pointer_type (counted_by_type), 0);
+  tree third_param = build_int_cst (c_build_pointer_type (counted_by_type), 0);
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
@@ -3086,7 +3184,8 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 				    element_size);
 
   /* Wrap the call with an INDIRECT_REF with the flexible array type.  */
-  call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
+  if (is_fam)
+    call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
   SET_EXPR_LOCATION (call, loc);
   return call;
 }
@@ -3094,15 +3193,27 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 /* For the COMPONENT_REF ref, check whether it has a counted_by attribute,
    if so, wrap this COMPONENT_REF with the corresponding CALL to the
    function .ACCESS_WITH_SIZE.
-   Otherwise, return the ref itself.  */
+   Otherwise, return the ref itself.
+   FOR_POINTER is true when this is for pointer field.  */
 
 tree
-handle_counted_by_for_component_ref (location_t loc, tree ref)
+handle_counted_by_for_component_ref (location_t loc, tree ref,
+				     bool for_pointer)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
   tree datum = TREE_OPERAND (ref, 0);
   tree subdatum = TREE_OPERAND (ref, 1);
   tree counted_by_type = NULL_TREE;
+
+  if (!(c_flexible_array_member_type_p (TREE_TYPE (ref))
+	|| TREE_CODE (TREE_TYPE (ref)) == POINTER_TYPE))
+    return ref;
+
+  bool is_fam = c_flexible_array_member_type_p (TREE_TYPE (ref));
+
+  if (!(is_fam ^ for_pointer))
+    return ref;
+
   tree counted_by_ref = build_counted_by_ref (datum, subdatum,
 					      &counted_by_type);
   if (counted_by_ref)
@@ -3217,8 +3328,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 			NULL_TREE);
 	  SET_EXPR_LOCATION (ref, loc);
 
+	  check_counted_by_attribute (loc, ref);
 	  if (handle_counted_by)
-	    ref = handle_counted_by_for_component_ref (loc, ref);
+	    ref = handle_counted_by_for_component_ref (loc, ref, false);
 
 	  if (TREE_READONLY (subdatum)
 	      || (use_datum_quals && TREE_READONLY (datum)))
