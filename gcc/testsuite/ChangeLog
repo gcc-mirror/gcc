@@ -1,3 +1,22 @@
+2025-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+		    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* lib/target-supports.exp (add_options_for_aarch64_sme)
+	(check_effective_target_aarch64_sme_hw): New procedures.
+	* g++.target/aarch64/sme/sme_throw_1.C: New test.
+	* g++.target/aarch64/sme/sme_throw_2.C: Likewise.
+
+2025-08-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-08-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/121234
+	* gfortran.dg/pr121234.f90: New test.
+
 2025-08-11  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
