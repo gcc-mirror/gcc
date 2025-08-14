@@ -8187,8 +8187,8 @@ package body Exp_Ch4 is
 
       procedure Warn_On_Abstract_Equality_For_Component
         (Comp_Type : Entity_Id);
-      --  If Comp_Type has a user-defined abstract equality function, then
-      --  issue a warning that Program_Error will be raised.
+      --  If Comp_Type is a record type with a user-defined abstract primitive
+      --  equality, then issue a warning that Program_Error will be raised.
 
       -------------------------
       -- Build_Equality_Call --
@@ -8423,13 +8423,6 @@ package body Exp_Ch4 is
       is
          Eq : Entity_Id;
       begin
-         --  Temporarily disable warning, to prevent spurious warnings
-         --  occurring in vss-xml-implementation-html_writer_data.adb. ???
-
-         if True then
-            return;
-         end if;
-
          if Is_Record_Type (Underlying_Type (Comp_Type)) then
             Eq := Get_User_Defined_Equality (Comp_Type);
 
@@ -8509,7 +8502,16 @@ package body Exp_Ch4 is
       --  Array types
 
       elsif Is_Array_Type (Typl) then
-         Warn_On_Abstract_Equality_For_Component (Component_Type (Typl));
+
+         --  If the outer type doesn't have a user-defined equality operation,
+         --  check whether its component type has an abstract equality, and
+         --  warn if so. Such a component equality function will raise
+         --  Program_Error of objects of the outer type are compared using
+         --  predefined equality.
+
+         if not Present (Get_User_Defined_Equality (Typl)) then
+            Warn_On_Abstract_Equality_For_Component (Component_Type (Typl));
+         end if;
 
          --  If we are doing full validity checking, and it is possible for the
          --  array elements to be invalid then expand out array comparisons to
@@ -8580,17 +8582,35 @@ package body Exp_Ch4 is
 
       elsif Is_Record_Type (Typl) then
 
-         declare
-            Comp : Entity_Id := First_Component (Typl);
-         begin
-            while Present (Comp) loop
-               if Chars (Comp) /= Name_uParent then
-                  Warn_On_Abstract_Equality_For_Component (Etype (Comp));
-               end if;
+         --  When outer type doesn't have a user-defined equality operation,
+         --  check whether any of its components' types have an abstract
+         --  equality, and warn if so. Such component equality functions will
+         --  raise Program_Error when objects of the outer type are compared
+         --  using predefined equality.
 
-               Next_Component (Comp);
-            end loop;
-         end;
+         --  ??? Note that this warning is currently only issued in cases of
+         --  top-level components of the type and not for deeper subcomponents.
+         --  Those could be handled with more work, such as by adding a flag
+         --  on record type entities, but it's not clear that it would be
+         --  worth the effort. Another limitation is that the warning check
+         --  is not done for tagged types in some cases, because equality
+         --  comparisons for those can be changed to calls at an earlier point
+         --  during analysis and resolution, and do not reach this code (but in
+         --  many cases tagged equality comparisons do reach the code below).
+
+         if not Present (Get_User_Defined_Equality (Typl)) then
+            declare
+               Comp : Entity_Id := First_Component (Typl);
+            begin
+               while Present (Comp) loop
+                  if Chars (Comp) /= Name_uParent then
+                     Warn_On_Abstract_Equality_For_Component (Etype (Comp));
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
 
          --  For tagged types, use the primitive "="
 
