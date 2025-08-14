@@ -2396,7 +2396,10 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_aarch64_sve_rev (e.vector_mode (0)));
+    auto mode = e.vector_mode (0);
+    return e.use_exact_insn (e.type_suffix (0).bool_p
+			     ? code_for_aarch64_sve_rev_acle (mode)
+			     : code_for_aarch64_sve_rev (mode));
   }
 };
 
