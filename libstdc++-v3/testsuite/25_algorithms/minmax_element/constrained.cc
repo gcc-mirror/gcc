@@ -70,21 +70,29 @@ test02()
   { bool operator()(int a, int b) { ++counter; return a < b; } };
 
   int x[] = {1,2,3,4,5,6,7,8,9,10};
-  ranges::minmax_element(x, x+2, counted_less{});
+  auto p = ranges::minmax_element(x, x+2, counted_less{});
   VERIFY( counter == 1 );
+  VERIFY( p.min == x+0 );
+  VERIFY( p.max == x+1 );
 
   counter = 0;
-  ranges::minmax_element(x, x+3, counted_less{});
+  p = ranges::minmax_element(x, x+3, counted_less{});
   VERIFY( counter == 3 );
+  VERIFY( p.min == x+0 );
+  VERIFY( p.max == x+2 );
 
   counter = 0;
-  ranges::minmax_element(x, counted_less{});
+  p = ranges::minmax_element(x, counted_less{});
   VERIFY( counter <= 15 );
+  VERIFY( p.min == x+0 );
+  VERIFY( p.max == x+9 );
 
   ranges::reverse(x);
   counter = 0;
-  ranges::minmax_element(x, counted_less{});
+  p = ranges::minmax_element(x, counted_less{});
   VERIFY( counter <= 15 );
+  VERIFY( p.min == x+9 );
+  VERIFY( p.max == x+0 );
 }
 
 int

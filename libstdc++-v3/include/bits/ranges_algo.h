@@ -109,7 +109,7 @@ namespace ranges
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -122,7 +122,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -137,7 +137,7 @@ namespace ranges
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -150,7 +150,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -165,7 +165,7 @@ namespace ranges
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -178,7 +178,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -279,7 +279,7 @@ namespace ranges
 	     typename _Pred = ranges::equal_to,
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-      constexpr _Iter1
+      [[nodiscard]] constexpr _Iter1
       operator()(_Iter1 __first1, _Sent1 __last1,
 		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -298,7 +298,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      constexpr borrowed_iterator_t<_Range1>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range1>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -319,7 +319,7 @@ namespace ranges
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<_Iter, _Proj>,
 					 const _Tp*>
-      constexpr iter_difference_t<_Iter>
+      [[nodiscard]] constexpr iter_difference_t<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
@@ -336,7 +336,7 @@ namespace ranges
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<iterator_t<_Range>, _Proj>,
 					 const _Tp*>
-      constexpr range_difference_t<_Range>
+      [[nodiscard]] constexpr range_difference_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -726,7 +726,7 @@ namespace ranges
 	     typename _Pred = ranges::equal_to,
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-      constexpr subrange<_Iter1>
+      [[nodiscard]] constexpr subrange<_Iter1>
       operator()(_Iter1 __first1, _Sent1 __last1,
 		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -783,7 +783,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      constexpr borrowed_subrange_t<_Range1>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range1>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -806,7 +806,7 @@ namespace ranges
 	     indirect_equivalence_relation<projected<_Iter1, _Proj1>,
 					   projected<_Iter2, _Proj2>> _Pred
 	       = ranges::equal_to>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1,
 		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -875,7 +875,7 @@ namespace ranges
 	     indirect_equivalence_relation<
 	       projected<iterator_t<_Range1>, _Proj1>,
 	       projected<iterator_t<_Range2>, _Proj2>> _Pred = ranges::equal_to>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -1281,7 +1281,7 @@ namespace ranges
     template<permutable _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -1305,7 +1305,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires permutable<iterator_t<_Range>>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1323,7 +1323,7 @@ namespace ranges
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<_Iter, _Proj>,
 					 const _Tp*>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
@@ -1341,7 +1341,7 @@ namespace ranges
 	&& indirect_binary_predicate<ranges::equal_to,
 				     projected<iterator_t<_Range>, _Proj>,
 				     const _Tp*>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1440,7 +1440,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_equivalence_relation<
 	       projected<_Iter, _Proj>> _Comp = ranges::equal_to>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -1462,7 +1462,7 @@ namespace ranges
 	     indirect_equivalence_relation<
 	       projected<iterator_t<_Range>, _Proj>> _Comp = ranges::equal_to>
       requires permutable<iterator_t<_Range>>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2849,7 +2849,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2868,7 +2868,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2884,7 +2884,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2903,7 +2903,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2987,7 +2987,7 @@ namespace ranges
 	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj),
 	     indirect_strict_weak_order<const _Tp*, projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3017,7 +3017,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3035,7 +3035,7 @@ namespace ranges
 	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj),
 	     indirect_strict_weak_order<const _Tp*, projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3065,7 +3065,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3083,7 +3083,7 @@ namespace ranges
 	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj),
 	     indirect_strict_weak_order<const _Tp*, projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3128,7 +3128,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3146,7 +3146,7 @@ namespace ranges
 	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj),
 	     indirect_strict_weak_order<const _Tp*, projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -3164,7 +3164,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, const _Tp& __value, _Comp __comp = {},
 		 _Proj __proj = {}) const
       {
@@ -3180,7 +3180,7 @@ namespace ranges
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -3196,7 +3196,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3488,7 +3488,7 @@ namespace ranges
     template<forward_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -3514,7 +3514,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3875,7 +3875,7 @@ namespace ranges
 	     indirect_strict_weak_order<projected<_Iter1, _Proj1>,
 					projected<_Iter2, _Proj2>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1,
 		 _Iter2 __first2, _Sent2 __last2,
 		 _Comp __comp = {},
@@ -3904,7 +3904,7 @@ namespace ranges
 	     indirect_strict_weak_order<projected<iterator_t<_Range1>, _Proj1>,
 					projected<iterator_t<_Range2>, _Proj2>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -4175,7 +4175,7 @@ namespace ranges
     template<typename _Tp, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
-      constexpr const _Tp&
+      [[nodiscard]] constexpr const _Tp&
       operator()(const _Tp& __a, const _Tp& __b,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4192,7 +4192,7 @@ namespace ranges
 	       _Comp = ranges::less>
       requires indirectly_copyable_storable<iterator_t<_Range>,
 					    range_value_t<_Range>*>
-      constexpr range_value_t<_Range>
+      [[nodiscard]] constexpr range_value_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __first = ranges::begin(__r);
@@ -4213,7 +4213,7 @@ namespace ranges
     template<copyable _Tp, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Tp
+      [[nodiscard]] constexpr _Tp
       operator()(initializer_list<_Tp> __r,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4229,7 +4229,7 @@ namespace ranges
     template<typename _Tp, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>> _Comp
 	       = ranges::less>
-      constexpr const _Tp&
+      [[nodiscard]] constexpr const _Tp&
       operator()(const _Tp& __val, const _Tp& __lo, const _Tp& __hi,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4279,7 +4279,7 @@ namespace ranges
     template<typename _Tp, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
-      constexpr minmax_result<const _Tp&>
+      [[nodiscard]] constexpr minmax_result<const _Tp&>
       operator()(const _Tp& __a, const _Tp& __b,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4295,7 +4295,7 @@ namespace ranges
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
       requires indirectly_copyable_storable<iterator_t<_Range>, range_value_t<_Range>*>
-      constexpr minmax_result<range_value_t<_Range>>
+      [[nodiscard]] constexpr minmax_result<range_value_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __first = ranges::begin(__r);
@@ -4354,7 +4354,7 @@ namespace ranges
     template<copyable _Tp, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
-      constexpr minmax_result<_Tp>
+      [[nodiscard]] constexpr minmax_result<_Tp>
       operator()(initializer_list<_Tp> __r,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4371,7 +4371,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4392,7 +4392,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -4408,7 +4408,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr _Iter
+      [[nodiscard]] constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4429,7 +4429,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr borrowed_iterator_t<_Range>
+      [[nodiscard]] constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -4448,7 +4448,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
-      constexpr minmax_element_result<_Iter>
+      [[nodiscard]] constexpr minmax_element_result<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -4503,7 +4503,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr minmax_element_result<borrowed_iterator_t<_Range>>
+      [[nodiscard]] constexpr minmax_element_result<borrowed_iterator_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -4521,7 +4521,7 @@ namespace ranges
 	     indirect_strict_weak_order<projected<_Iter1, _Proj1>,
 					projected<_Iter2, _Proj2>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1,
 		 _Iter2 __first2, _Sent2 __last2,
 		 _Comp __comp = {},
@@ -4607,7 +4607,7 @@ namespace ranges
 	     indirect_strict_weak_order<projected<iterator_t<_Range1>, _Proj1>,
 					projected<iterator_t<_Range2>, _Proj2>>
 	       _Comp = ranges::less>
-      constexpr bool
+      [[nodiscard]] constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -4836,7 +4836,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj)>
       requires indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const _Tp*>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
       {
 	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
@@ -4869,7 +4869,7 @@ namespace ranges
 	     typename _Tp
 	       _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(iterator_t<_Range>, _Proj)>
       requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Tp*>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       { return (*this)(ranges::begin(__r), ranges::end(__r), __value, std::move(__proj)); }
   };
@@ -4880,7 +4880,7 @@ namespace ranges
   {
     template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
       {
 	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
@@ -4911,7 +4911,7 @@ namespace ranges
 
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__pred), std::move(__proj)); }
   };
@@ -4922,7 +4922,7 @@ namespace ranges
   {
     template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr subrange<_Iter>
+      [[nodiscard]] constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
       {
 	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
@@ -4953,7 +4953,7 @@ namespace ranges
 
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
-      constexpr borrowed_subrange_t<_Range>
+      [[nodiscard]] constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__pred), std::move(__proj)); }
   };

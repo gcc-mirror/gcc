@@ -87,12 +87,12 @@ test04()
     int m;
   };
   A r[5] = {5, 4, 3, 2, 1};
-  ranges::min(r, ranges::less{}, &A::m);
+  (void)ranges::min(r, ranges::less{}, &A::m);
   VERIFY( copies == 5 );
   VERIFY( moves == 0 );
   copies = moves = 0;
   A s[5] = {1, 2, 3, 4, 5};
-  ranges::min(s, ranges::less{}, &A::m);
+  (void)ranges::min(s, ranges::less{}, &A::m);
   VERIFY( copies == 1 );
   VERIFY( moves == 0 );
 }
