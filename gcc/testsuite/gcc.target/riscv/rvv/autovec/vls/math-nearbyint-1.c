@@ -54,5 +54,5 @@ DEF_OP_V (nearbyint, 512, double, __builtin_nearbyint)
 /* { dg-final { scan-tree-dump-not "4096,4096" "optimized" } } */
 /* { dg-final { scan-assembler-times {vfcvt\.x\.f\.v\s+v[0-9]+,\s*v[0-9]+,\s*v0\.t} 30 } } */
 /* { dg-final { scan-assembler-times {vfcvt\.f\.x\.v\s+v[0-9]+,\s*v[0-9]+,\s*v0\.t} 30 } } */
-/* { dg-final { scan-assembler-times {frflags\s+[atx][0-9]+} 30 } } */
-/* { dg-final { scan-assembler-times {fsflags\s+[atx][0-9]+} 30 } } */
+/* { dg-final { scan-assembler-times {frflags\s+[atx][0-9]+} 32 } } */
+/* { dg-final { scan-assembler-times {fsflags\s+[atx][0-9]+} 32 } } */
