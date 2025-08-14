@@ -3064,7 +3064,7 @@ can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   if (riscv_v_ext_vls_mode_p (vector_mode)
-      && multiple_p (TARGET_MIN_VLEN * TARGET_MAX_LMUL,
+      && multiple_p ((TARGET_MIN_VLEN * TARGET_MAX_LMUL) / BITS_PER_UNIT,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   return false;
