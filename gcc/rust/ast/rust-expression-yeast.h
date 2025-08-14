@@ -19,7 +19,7 @@
 #ifndef RUST_EXPRESSION_YEAST
 #define RUST_EXPRESSION_YEAST
 
-#include "rust-ast-visitor.h"
+#include "rust-ast-pointer-visitor.h"
 #include "rust-ast.h"
 #include "rust-desugar-question-mark.h"
 
@@ -28,22 +28,19 @@ namespace AST {
 
 // This visitor takes care of all the expression desugars: try-blocks,
 // error-propagation, etc.
-class ExpressionYeast : public AST::DefaultASTVisitor
+class ExpressionYeast : public AST::PointerVisitor
 {
-  using AST::DefaultASTVisitor::visit;
+  using AST::PointerVisitor::reseat;
+  using AST::PointerVisitor::visit;
 
 public:
   void go (AST::Crate &);
 
 private:
   // Dispatch to the proper desugar
-  void dispatch (std::unique_ptr<Expr> &expr);
-  void dispatch_loops (std::unique_ptr<Expr> &loop_expr);
+  void reseat (std::unique_ptr<Expr> &expr) override;
 
-  void visit (AST::ExprStmt &) override;
-  void visit (AST::CallExpr &) override;
-  void visit (AST::LetStmt &) override;
-  void visit (AST::BlockExpr &) override;
+  void dispatch_loops (std::unique_ptr<Expr> &loop_expr);
 };
 
 } // namespace AST

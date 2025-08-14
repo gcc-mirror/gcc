@@ -21,10 +21,8 @@
 #include "rust-desugar-question-mark.h"
 #include "rust-desugar-try-block.h"
 #include "rust-desugar-for-loops.h"
-#include "rust-ast-full.h"
 #include "rust-desugar-while-let.h"
 #include "rust-expr.h"
-#include "rust-stmt.h"
 
 namespace Rust {
 namespace AST {
@@ -32,7 +30,7 @@ namespace AST {
 void
 ExpressionYeast::go (AST::Crate &crate)
 {
-  DefaultASTVisitor::visit (crate);
+  PointerVisitor::visit (crate);
 }
 
 void
@@ -54,7 +52,7 @@ ExpressionYeast::dispatch_loops (std::unique_ptr<Expr> &loop_expr)
 }
 
 void
-ExpressionYeast::dispatch (std::unique_ptr<Expr> &expr)
+ExpressionYeast::reseat (std::unique_ptr<Expr> &expr)
 {
   switch (expr->get_expr_kind ())
     {
@@ -71,47 +69,8 @@ ExpressionYeast::dispatch (std::unique_ptr<Expr> &expr)
     default:
       break;
     }
-}
 
-void
-ExpressionYeast::visit (ExprStmt &stmt)
-{
-  dispatch (stmt.get_expr_ptr ());
-
-  DefaultASTVisitor::visit (stmt);
-}
-
-void
-ExpressionYeast::visit (CallExpr &call)
-{
-  dispatch (call.get_function_expr_ptr ());
-
-  for (auto &arg : call.get_params ())
-    dispatch (arg);
-
-  DefaultASTVisitor::visit (call);
-}
-
-void
-ExpressionYeast::visit (BlockExpr &block)
-{
-  for (auto &stmt : block.get_statements ())
-    if (stmt->get_stmt_kind () == Stmt::Kind::Expr)
-      dispatch (static_cast<ExprStmt &> (*stmt).get_expr_ptr ());
-
-  if (block.has_tail_expr ())
-    dispatch (block.get_tail_expr_ptr ());
-
-  DefaultASTVisitor::visit (block);
-}
-
-void
-ExpressionYeast::visit (LetStmt &stmt)
-{
-  if (stmt.has_init_expr ())
-    dispatch (stmt.get_init_expr_ptr ());
-
-  DefaultASTVisitor::visit (stmt);
+  visit (expr);
 }
 
 } // namespace AST
