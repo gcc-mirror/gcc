@@ -1186,7 +1186,12 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       for (t = m; t; t = TYPE_NEXT_VARIANT (t))
 	if (TREE_TYPE (t) == elt_type
 	    && TYPE_NAME (t) == NULL_TREE
-	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE
+	    && (!TYPE_USER_ALIGN (t)
+		|| (TYPE_USER_ALIGN (elt_type)
+		    && TYPE_ALIGN (t) == TYPE_ALIGN (elt_type)))
+	    && !TREE_DEPRECATED (t)
+	    && !TREE_UNAVAILABLE (t))
 	  break;
       if (!t)
 	{
