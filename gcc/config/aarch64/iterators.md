@@ -902,7 +902,6 @@
     UNSPEC_UZP2Q	; Used in aarch64-sve.md.
     UNSPEC_ZIP1Q	; Used in aarch64-sve.md.
     UNSPEC_ZIP2Q	; Used in aarch64-sve.md.
-    UNSPEC_TRN1_CONV	; Used in aarch64-sve.md.
     UNSPEC_COND_CMPEQ_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGE_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGT_WIDE ; Used in aarch64-sve.md.
@@ -1156,6 +1155,9 @@
     UNSPEC_LUTI		; Used in aarch64-simd.md.
     UNSPEC_LUTI2	; Used in aarch64-simd.md.
     UNSPEC_LUTI4	; Used in aarch64-simd.md.
+
+    ;; All used in aarch64-sve.md
+    UNSPEC_PERMUTE_PRED
 
     ;; All used in aarch64-sve2.md
     UNSPEC_ADDQV
