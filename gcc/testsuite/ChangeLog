@@ -1,3 +1,115 @@
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121531
+	* gcc.target/riscv/pr121531.c: New test.
+
+2025-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102610
+	* g++.dg/cpp0x/lambda/lambda-decltype3.C: Remove xfail.
+	* g++.dg/warn/Wshadow-19.C: Add -Wpedantic.  Adjust a dg-warning.
+	* g++.dg/warn/Wshadow-6.C: Adjust expected diagnostics.
+	* g++.dg/cpp23/lambda-scope1.C: New test.
+	* g++.dg/cpp23/lambda-scope2.C: New test.
+	* g++.dg/cpp23/lambda-scope3.C: New test.
+	* g++.dg/cpp23/lambda-scope4.C: New test.
+	* g++.dg/cpp23/lambda-scope4b.C: New test.
+	* g++.dg/cpp23/lambda-scope5.C: New test.
+	* g++.dg/cpp23/lambda-scope6.C: New test.
+	* g++.dg/cpp23/lambda-scope7.C: New test.
+	* g++.dg/cpp23/lambda-scope8.C: New test.
+	* g++.dg/cpp23/lambda-scope9.C: New test.
+
+2025-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120776
+	* g++.dg/cpp1z/decomp64.C: New test.
+	* g++.dg/cpp26/expansion-stmt1.C: New test.
+	* g++.dg/cpp26/expansion-stmt2.C: New test.
+	* g++.dg/cpp26/expansion-stmt3.C: New test.
+	* g++.dg/cpp26/expansion-stmt4.C: New test.
+	* g++.dg/cpp26/expansion-stmt5.C: New test.
+	* g++.dg/cpp26/expansion-stmt6.C: New test.
+	* g++.dg/cpp26/expansion-stmt7.C: New test.
+	* g++.dg/cpp26/expansion-stmt8.C: New test.
+	* g++.dg/cpp26/expansion-stmt9.C: New test.
+	* g++.dg/cpp26/expansion-stmt10.C: New test.
+	* g++.dg/cpp26/expansion-stmt11.C: New test.
+	* g++.dg/cpp26/expansion-stmt12.C: New test.
+	* g++.dg/cpp26/expansion-stmt13.C: New test.
+	* g++.dg/cpp26/expansion-stmt14.C: New test.
+	* g++.dg/cpp26/expansion-stmt15.C: New test.
+	* g++.dg/cpp26/expansion-stmt16.C: New test.
+	* g++.dg/cpp26/expansion-stmt17.C: New test.
+	* g++.dg/cpp26/expansion-stmt18.C: New test.
+	* g++.dg/cpp26/expansion-stmt19.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C: Add __cpp_expansion_statements
+	tests.
+
+2025-08-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/81501
+	* g++.target/i386/pr81501-1.C: New test.
+	* gcc.target/i386/pr81501-1a.c: Likewise.
+	* gcc.target/i386/pr81501-1b.c: Likewise.
+	* gcc.target/i386/pr81501-2a.c: Likewise.
+	* gcc.target/i386/pr81501-2b.c: Likewise.
+	* gcc.target/i386/pr81501-3.c: Likewise.
+	* gcc.target/i386/pr81501-4a.c: Likewise.
+	* gcc.target/i386/pr81501-4b.c: Likewise.
+	* gcc.target/i386/pr81501-5.c: Likewise.
+	* gcc.target/i386/pr81501-6a.c: Likewise.
+	* gcc.target/i386/pr81501-6b.c: Likewise.
+	* gcc.target/i386/pr81501-7.c: Likewise.
+	* gcc.target/i386/pr81501-8a.c: Likewise.
+	* gcc.target/i386/pr81501-8b.c: Likewise.
+	* gcc.target/i386/pr81501-9a.c: Likewise.
+	* gcc.target/i386/pr81501-9b.c: Likewise.
+	* gcc.target/i386/pr81501-10a.c: Likewise.
+	* gcc.target/i386/pr81501-10b.c: Likewise.
+
+2025-08-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/darwin-cfstring-3.c: Adjust for amended
+	string labels.
+	* g++.dg/torture/darwin-cfstring-3.C: Likewise.
+
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121160
+	* gcc.target/riscv/pr121160.c: New test.
+
+2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* gfortran.dg/pr89092.f90: New test.
+
+2025-08-13  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/117599
+	* gcc.target/loongarch/bitint-alignments.c: New test.
+	* gcc.target/loongarch/bitint-args.c: New test.
+	* gcc.target/loongarch/bitint-sizes.c: New test.
+
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121113
+	* gcc.target/riscv/pr121113.c: New test.
+
+2025-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/119783
+	jit.dg/test-error-impossible-must-tail-call.c
+	* jit.dg/test-error-impossible-must-tail-call.c (verify_code):
+	Check that we get a suitable-looking error message, but don't
+	try to specify exactly what the message is.
+
+2025-08-13  H.J. Lu  <hjl.tools@gmail.com>
+	    Liu, Hongtao  <hongtao.liu@intel.com>
+
+	PR target/121497
+	* gcc.target/i386/pr121497.c: New test.
+
 2025-08-12  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test

@@ -1,3 +1,15 @@
+2025-08-13  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/117599
+	* config/loongarch/t-softfp-tf: Enable _BitInt helper functions.
+	* config/loongarch/t-loongarch: Same.
+	* config/loongarch/libgcc-loongarch.ver: New file.
+
+2025-08-13  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.host: Remove unused code. Include LoongArch-specific
+	tmake_files after the OS-specific ones.
+
 2025-08-08  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR libgcc/117600

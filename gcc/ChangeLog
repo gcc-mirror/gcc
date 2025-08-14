@@ -1,3 +1,192 @@
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121531
+	* config/riscv/sifive-p400.md (sifive_p400_unknown): New reservation.
+	* config/riscv/sifive-p600.md (sifive_p600_unkonwn): Likewise.
+
+2025-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc (sarif_scheme_handler::make_sink):
+	Populate sarif_generation_options instance directly, rather than
+	through local variables.
+	(sarif_scheme_handler::make_sarif_gen_opts): Drop.
+	(html_scheme_handler::make_sink): Populate html_generation_options
+	instance directly, rather than through local variables.
+
+2025-08-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* config.gcc: Mark epiphany*-*-* and rl78*-*-* as
+	obsolete targets.
+
+2025-08-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/81501
+	* config/i386/i386-features.cc (x86_cse_kind): Add X86_CSE_TLS_GD,
+	X86_CSE_TLS_LD_BASE and X86_CSE_TLSDESC.
+	(redundant_load): Renamed to ...
+	(redundant_pattern): This.
+	(ix86_place_single_vector_set): Replace redundant_load with
+	redundant_pattern.
+	(replace_tls_call): New.
+	(ix86_place_single_tls_call): Likewise.
+	(pass_remove_redundant_vector_load): Renamed to ...
+	(pass_x86_cse): This.  Add val, def_insn, mode, scalar_mode, kind,
+	x86_cse, candidate_gnu_tls_p, candidate_gnu2_tls_p and
+	candidate_vector_p.
+	(pass_x86_cse::candidate_gnu_tls_p): New.
+	(pass_x86_cse::candidate_gnu2_tls_p): Likewise.
+	(pass_x86_cse::candidate_vector_p): Likewise.
+	(remove_redundant_vector_load): Renamed to ...
+	(pass_x86_cse::x86_cse): This.  Extend to remove redundant TLS
+	calls.
+	(make_pass_remove_redundant_vector_load): Renamed to ...
+	(make_pass_x86_cse): This.
+	* config/i386/i386-passes.def: Replace
+	pass_remove_redundant_vector_load with pass_x86_cse.
+	* config/i386/i386-protos.h (ix86_tls_get_addr): New.
+	(make_pass_remove_redundant_vector_load): Renamed to ...
+	(make_pass_x86_cse): This.
+	* config/i386/i386.cc (ix86_tls_get_addr): Remove static.
+	* config/i386/i386.h (machine_function): Add
+	tls_descriptor_call_multiple_p.
+	* config/i386/i386.md (tls64): New attribute.
+	(@tls_global_dynamic_64_<mode>): Set tls_descriptor_call_multiple_p.
+	(@tls_local_dynamic_base_64_<mode>): Likewise.
+	(@tls_dynamic_gnu2_64_<mode>): Likewise.
+	(*tls_global_dynamic_64_<mode>): Set tls64 attribute to gd.
+	(*tls_local_dynamic_base_64_<mode>): Set tls64 attribute to ld_base.
+	(*tls_dynamic_gnu2_lea_64_<mode>): Set tls64 attribute to lea.
+	(*tls_dynamic_gnu2_call_64_<mode>): Set tls64 attribute to call.
+	(*tls_dynamic_gnu2_combine_64_<mode>): Set tls64 attribute to
+	combine.
+
+2025-08-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_LD_NO_DEDUPLICATE): New.
+	(LINK_SPEC): Handle -no_deduplicate.
+	* configure: Regenerate.
+	* configure.ac: Detect linker support for -no_deduplicate.
+
+2025-08-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (asan_string_section,
+	asan_globals_section, asan_liveness_section): New.
+	* config/darwin.cc (objc_method_decl): Use asan sections
+	when asan is enabled.
+	(darwin_encode_section_info): Alter string constant
+	linker visibility depending on asan.
+	(machopic_select_section): Use the asan sections when
+	asan is enabled.
+
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121160
+	* config/riscv/riscv.cc (canonicalize_comparands); Tighten check for
+	forcing value into a GPR.
+
+2025-08-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121474
+	* tree-ssa-forwprop.cc (optimize_aggr_zeroprop): Move the check
+	for limit before the alias check.
+
+2025-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (SLP_TREE_PERMUTE_P): New.
+	* tree-vect-slp-patterns.cc (linear_loads_p): Adjust.
+	(vect_detect_pair_op): Likewise.
+	(addsub_pattern::recognize): Likewise.
+	* tree-vect-slp.cc (vect_print_slp_tree): Likewise.
+	(vect_gather_slp_loads): Likewise.
+	(vect_is_slp_load_node): Likewise.
+	(optimize_load_redistribution_1): Likewise.
+	(vect_optimize_slp_pass::is_cfg_latch_edge): Likewise.
+	(vect_optimize_slp_pass::internal_node_cost): Likewise.
+	(vect_optimize_slp_pass::start_choosing_layouts): Likewise.
+	(vect_optimize_slp_pass::backward_cost): Likewise.
+	(vect_optimize_slp_pass::forward_pass): Likewise.
+	(vect_optimize_slp_pass::get_result_with_layout): Likewise.
+	(vect_optimize_slp_pass::materialize): Likewise.
+	(vect_optimize_slp_pass::dump): Likewise.
+	(vect_optimize_slp_pass::decide_masked_load_lanes): Likewise.
+	(vect_update_slp_vf_for_node): Likewise.
+	(vect_slp_analyze_node_operations_1): Likewise.
+	(vect_schedule_slp_node): Likewise.
+	(vect_schedule_scc): Likewise.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Likewise.
+	(vect_is_simple_use): Likewise.
+
+2025-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_analyze_stmt): Use
+	SLP_TREE_DEF_TYPE instead of STMT_VINFO_DEF_TYPE.
+
+2025-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_memory_access_type): Replace
+	VMAT_GATHER_SCATTER with three separate access types,
+	VMAT_GATHER_SCATTER_LEGACY, VMAT_GATHER_SCATTER_IFN and
+	VMAT_GATHER_SCATTER_EMULATED.
+	(mat_gather_scatter_p): New predicate.
+	(GATHER_SCATTER_LEGACY_P): Remove.
+	(GATHER_SCATTER_IFN_P): Likewise.
+	(GATHER_SCATTER_EMULATED_P): Likewise.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Adjust.
+	(get_load_store_type): Likewise.
+	(vect_get_loop_variant_data_ptr_increment): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Likewise.
+	* config/riscv/riscv-vector-costs.cc
+	(costs::need_additional_vector_vars_p): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_detect_vector_stmt_subtype):
+	Likewise.
+	(aarch64_vector_costs::count_ops): Likewise.
+	(aarch64_vector_costs::add_stmt_cost): Likewise.
+
+2025-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_supportable_dr_alignment): Pass
+	a bool instead of a pointer to gather_scatter_info.
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment):
+	Likewise.
+	* tree-vect-stmts.cc (get_load_store_type): Adjust.
+
+2025-08-13  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/120476
+	* config/loongarch/loongarch.cc
+	(loongarch_compute_pressure_classes): New function.
+	(TARGET_COMPUTE_PRESSURE_CLASSES): Define.
+
+2025-08-13  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/117599
+	* config/loongarch/loongarch.h: Define a PROMOTE_MODE case for
+	small _BitInts.
+	* config/loongarch/loongarch.cc (loongarch_promote_function_mode):
+	Same.
+	(loongarch_bitint_type_info): New function.
+	(TARGET_C_BITINT_TYPE_INFO): Declare.
+
+2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121113
+	* config/riscv/sifive-p400.md: Handle HFmode for fdiv/fsqrt.
+	* config/riscv/sifive-p600.md: Likewise.
+	* config/riscv/xiangshan.md: Likewise.
+
+2025-08-13  H.J. Lu  <hjl.tools@gmail.com>
+	    Liu, Hongtao  <hongtao.liu@intel.com>
+
+	PR target/121497
+	* config/i386/i386-features.cc (ix86_broadcast_inner): Convert
+	integer constant to mode of move
+
 2025-08-12  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec-opt.md (*merge_vx_<mode>): Add new

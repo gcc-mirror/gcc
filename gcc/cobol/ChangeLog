@@ -1,3 +1,11 @@
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* genutil.cc (get_binary_value): Use the new routine.
+
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* genutil.cc (get_binary_value): Use the new routine.
+
 2025-08-12  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (compare_binary_binary): Formatting.

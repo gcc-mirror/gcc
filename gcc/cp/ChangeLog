@@ -1,3 +1,119 @@
+2025-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102610
+	* cp-tree.h (LAMBDA_EXPR_CONST_QUAL_P): Define.
+	(maybe_add_dummy_lambda_op): Declare.
+	(remove_dummy_lambda_op): Declare.
+	(push_capture_proxies): Adjust.
+	* lambda.cc (build_capture_proxy): No longer static.  New early_p
+	parameter.  Use it.
+	(add_capture): Adjust the call to build_capture_proxy.
+	(resolvable_dummy_lambda): Check DECL_LAMBDA_FUNCTION_P.
+	(push_capture_proxies): New.
+	(start_lambda_function): Use it.
+	* name-lookup.cc (check_local_shadow): Give an error for
+	is_capture_proxy.
+	(cp_binding_level_descriptor): Add lambda-scope.
+	(begin_scope) <case sk_lambda>: New case.
+	* name-lookup.h (enum scope_kind): Add sk_lambda.
+	(struct cp_binding_level): Widen kind.
+	* parser.cc (cp_parser_lambda_expression): Create a new (lambda) scope
+	after the lambda-introducer.
+	(cp_parser_lambda_declarator_opt): Set LAMBDA_EXPR_CONST_QUAL_P.
+	Create a dummy operator() if needed.  Inject the captures into the
+	lambda scope.  Remove the dummy operator().
+	(make_dummy_lambda_op): New.
+	(maybe_add_dummy_lambda_op): New.
+	(remove_dummy_lambda_op): New.
+	* pt.cc (tsubst_lambda_expr): Begin/end a lambda scope.  Push the
+	capture proxies.  Build/remove a dummy operator() if needed.  Set
+	LAMBDA_EXPR_CONST_QUAL_P.
+	* semantics.cc (parsing_lambda_declarator): New.
+	(outer_var_p): Also consider captures as outer variables if in a lambda
+	declarator.
+	(process_outer_var_ref): Reset containing_function when
+	parsing_lambda_declarator.
+	(finish_decltype_type): Process decls in the lambda-declarator as well.
+	Look at LAMBDA_EXPR_CONST_QUAL_P unless we have an xobj function.
+
+2025-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120776
+	* cp-tree.def: Implement C++26 P1306R5 - Expansion statements.
+	(TEMPLATE_FOR_STMT): New tree code.
+	* cp-tree.h (struct saved_scope): Add expansion_stmt.
+	(in_expansion_stmt): Define.
+	(TEMPLATE_FOR_DECL, TEMPLATE_FOR_EXPR, TEMPLATE_FOR_BODY,
+	TEMPLATE_FOR_SCOPE, TEMPLATE_FOR_INIT_STMT): Define.
+	(struct tinst_level): Adjust comment.
+	(cp_decomp_size, finish_expansion_stmt, do_pushlevel,
+	cp_build_range_for_decls, build_range_temp,
+	cp_perform_range_for_lookup, begin_template_for_scope): Declare.
+	(finish_range_for_stmt): Remove declaration.
+	* cp-objcp-common.cc (cp_common_init_ts): Handle TEMPLATE_FOR_STMT.
+	* name-lookup.h (enum scope_kind): Add sk_template_for enumerator.
+	(struct cp_binding_level): Enlarge kind bitfield from 4 to 5 bits.
+	Adjust comment with remaining space bits.
+	* name-lookup.cc (check_local_shadow): Handle sk_template_for like
+	sk_for.
+	(cp_binding_level_descriptor): Add entry for sk_template_for.
+	(begin_scope): Handle sk_template_for.
+	* parser.h (IN_EXPANSION_STMT): Define.
+	* parser.cc (cp_debug_parser): Print IN_EXPANSION_STMT bit.
+	(cp_parser_lambda_expression): Temporarily clear in_expansion_stmt.
+	(cp_parser_statement): Handle RID_TEMPLATE followed by RID_FOR for
+	C++11.
+	(cp_parser_label_for_labeled_statement): Complain about named labels
+	inside of expansion stmt body.
+	(cp_hide_range_decl): New function.
+	(cp_parser_range_for): Use it.  Adjust do_range_for_auto_deduction
+	caller.  Remove second template argument from auto_vecs bindings and
+	names.
+	(build_range_temp): No longer static.
+	(do_range_for_auto_deduction): Add expansion_stmt argument.
+	(cp_build_range_for_decls): New function.
+	(cp_convert_range_for): Use it.  Call cp_perform_range_for_lookup
+	rather than cp_parser_perform_range_for_lookup.
+	(cp_parser_perform_range_for_lookup): Rename to ...
+	(cp_perform_range_for_lookup): ... this.  No longer static.  Add
+	complain argument and handle it.
+	(cp_parser_range_for_member_function): Rename to ...
+	(cp_range_for_member_function): ... this.
+	(cp_parser_expansion_statement): New function.
+	(cp_parser_jump_statement): Handle IN_EXPANSION_STMT.
+	(cp_convert_omp_range_for): Adjust do_range_for_auto_deduction caller.
+	Call cp_perform_range_for_lookup rather than
+	cp_parser_perform_range_for_lookup.
+	* error.cc (print_instantiation_full_context): Handle tldcl being
+	TEMPLATE_FOR_STMT.
+	(print_instantiation_partial_context_line): Likewise.
+	* constexpr.cc (potential_constant_expression_1): Handle
+	TEMPLATE_FOR_STMT.
+	* decl.cc (poplevel_named_label_1): Use obl instead of bl->level_chain.
+	(finish_case_label): Diagnose case labels inside of template for.
+	(find_decomp_class_base): Add complain argument, don't diagnose
+	anything and just return error_mark_node if tf_none, adjust recursive
+	call.
+	(cp_decomp_size): New function.
+	(cp_finish_decomp): Adjust find_decomp_class_base caller.
+	* semantics.cc (do_pushlevel): No longer static.
+	(begin_template_for_scope): New function.
+	* pt.cc (push_tinst_level_loc): Handle TEMPLATE_FOR_STMT.
+	(reopen_tinst_level): Likewise.
+	(tsubst_stmt): Handle TEMPLATE_FOR_STMT.
+	(struct expansion_stmt_bc): New type.
+	(expansion_stmt_find_bc_r, finish_expansion_stmt): New functions.
+	* decl2.cc (decl_dependent_p): Return true for current function's decl
+	if in_expansion_stmt.
+	* call.cc (extend_ref_init_temps): Don't extend_all_temps if
+	TREE_STATIC (decl).
+	* cxx-pretty-print.cc (cxx_pretty_printer::statement): Handle
+	TEMPLATE_FOR_STMT.
+
+2025-08-13  Benjamin Wu  <bwu25@cs.washington.edu>
+
+	* lex.cc (init_operators): Fix typo.
+
 2025-08-11  Nicolas Werner  <nicolas.werner@hotmail.de>
 
 	* mapper-client.cc (spawn_mapper_program): change argv parsing

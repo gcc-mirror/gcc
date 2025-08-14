@@ -1,3 +1,26 @@
+2025-08-13  Mark Wielaard  <mark@klomp.org>
+
+	* configure: Regenerate.
+
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (get_binary_value_local): Use the new routine.
+	* stringbin.cc (int_from_string): Removed.
+	(__gg__packed_to_binary): Implement new routine.
+	* stringbin.h (__gg__packed_to_binary): Likewise.
+
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (int128_to_field): Use the new routine.
+	(get_binary_value_local): Use the new routine.
+	(format_for_display_internal): Formatting.
+	(__gg__get_file_descriptor): Likewise.
+	* stringbin.cc (string_from_combined): Formatting.
+	(packed_from_combined): Likewise.
+	(int_from_string): New routine.
+	(__gg__numeric_display_to_binary): Likewise.
+	* stringbin.h (__gg__numeric_display_to_binary): Likewise.
+
 2025-08-12  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (NUMERIC_DISPLAY_SIGN_BIT): New comment; new constant.

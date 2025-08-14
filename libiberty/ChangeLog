@@ -1,3 +1,7 @@
+2025-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.c (d_encoding): Fix a comment typo, whaever -> whatever.
+
 2025-08-06  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* testsuite/test-doubly-linked-list.c: disable debug logging on

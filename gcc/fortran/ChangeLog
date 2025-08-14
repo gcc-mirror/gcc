@@ -1,3 +1,8 @@
+2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* resolve.cc (was_declared): Add subroutine attribute.
+
 2025-08-12  Yuao Ma  <c8ef@outlook.com>
 
 	* check.cc (gfc_check_c_f_pointer): Check lower arg legitimacy.
