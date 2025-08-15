@@ -378,7 +378,7 @@ riscv_subset_t::riscv_subset_t ()
 {
 }
 
-riscv_subset_list::riscv_subset_list (const char *arch, location_t loc)
+riscv_subset_list::riscv_subset_list (const char *arch, location_t *loc)
   : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0),
     m_subset_num (0), m_allow_adding_dup (false)
 {
@@ -584,47 +584,49 @@ riscv_subset_list::add (const char *subset, int major_version,
       else
 	{
 	  /* The extension is already in the list.  */
-	  if (!m_allow_adding_dup
-	      || ext->major_version != major_version
-	      || ext->minor_version != minor_version)
-	    error_at (
-	      m_loc,
-	      "%<-march=%s%>: extension %qs appear more than one time",
-	      m_arch,
-	      subset);
+	  if (m_loc
+	      && (!m_allow_adding_dup
+		  || ext->major_version != major_version
+		  || ext->minor_version != minor_version))
+	    error_at (*m_loc, "%<-march=%s%>: extension %qs appear more "
+		      "than one time", m_arch, subset);
 	}
       return;
     }
   else if (strlen (subset) == 1 && !standard_extensions_p (subset))
     {
-      error_at (m_loc,
-		"%<-march=%s%>: extension %qs is unsupported standard single "
-		"letter extension",
-		m_arch, subset);
+      if (m_loc)
+	error_at (*m_loc,
+		  "%<-march=%s%>: extension %qs is unsupported standard "
+		  "single letter extension",
+		  m_arch, subset);
       return;
     }
   else if (subset[0] == 'z' && !standard_extensions_p (subset))
     {
-      error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with 'z' but is "
-		"unsupported standard extension",
-		m_arch, subset);
+      if (m_loc)
+	error_at (*m_loc,
+		  "%<-march=%s%>: extension %qs starts with 'z' but is "
+		  "unsupported standard extension",
+		  m_arch, subset);
       return;
     }
   else if (subset[0] == 's' && !standard_extensions_p (subset))
     {
-      error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with 's' but is "
-		"unsupported standard supervisor extension",
-		m_arch, subset);
+      if (m_loc)
+	error_at (*m_loc,
+		  "%<-march=%s%>: extension %qs starts with 's' but is "
+		  "unsupported standard supervisor extension",
+		  m_arch, subset);
       return;
     }
   else if (subset[0] == 'x' && !standard_extensions_p (subset))
     {
-      error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with 'x' but is "
-		"unsupported non-standard extension",
-		m_arch, subset);
+      if (m_loc)
+	error_at (*m_loc,
+		  "%<-march=%s%>: extension %qs starts with 'x' but is "
+		  "unsupported non-standard extension",
+		  m_arch, subset);
       return;
     }
 
@@ -886,15 +888,17 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	  {
 	    if (!ISDIGIT (*(p+1)))
 	      {
-		error_at (m_loc, "%<-march=%s%>: expect number "
-			  "after %<%dp%>", m_arch, version);
+		if (m_loc)
+		  error_at (*m_loc, "%<-march=%s%>: expect number "
+			    "after %<%dp%>", m_arch, version);
 		return NULL;
 	      }
 	    if (!major_p)
 	      {
-		error_at (m_loc, "%<-march=%s%>: for %<%s%dp%dp?%>, version "
-			  "number with more than 2 level is not supported",
-			  m_arch, ext, major, version);
+		if (m_loc)
+		  error_at (*m_loc, "%<-march=%s%>: for %<%s%dp%dp?%>, "
+			    "version number with more than 2 level is not "
+			    "supported", m_arch, ext, major, version);
 		return NULL;
 	      }
 	    major = version;
@@ -957,8 +961,9 @@ riscv_subset_list::parse_profiles (const char *arch)
 	  /* If isn't '_' after profile, need to add it and mention the user.  */
 	  if (after_part[0] != '_')
 	  {
-	    warning_at (m_loc, 0, "Should use \"%c\" to contact Profiles with other "
-				  "extensions", '_');
+	    if (m_loc)
+	      warning_at (*m_loc, 0, "Should use \"%c\" to contact Profiles "
+			  "with other extensions", '_');
 	    return p_str + "_" + after_part;
 	  }
 
@@ -996,9 +1001,10 @@ riscv_subset_list::parse_base_ext (const char *p)
     }
   else
     {
-      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32, rv64,"
-		" a supported RVA profile or refer to a supported CPU",
-		m_arch);
+      if (m_loc)
+	error_at (*m_loc, "%<-march=%s%>: ISA string must begin with rv32, "
+		  "rv64, a supported RVA profile or refer to a supported CPU",
+		  m_arch);
       return NULL;
     }
 
@@ -1021,8 +1027,9 @@ riscv_subset_list::parse_base_ext (const char *p)
 
       if (m_xlen > 64)
 	{
-	  error_at (m_loc, "%<-march=%s%>: rv%de is not a valid base ISA",
-		    m_arch, m_xlen);
+	  if (m_loc)
+	    error_at (*m_loc, "%<-march=%s%>: rv%de is not a valid base ISA",
+		      m_arch, m_xlen);
 	  return NULL;
 	}
       break;
@@ -1033,8 +1040,9 @@ riscv_subset_list::parse_base_ext (const char *p)
 				  /* std_ext_p= */ true, &explicit_version_p);
       if (major_version != 0 || minor_version != 0)
 	{
-	  warning_at (m_loc, 0, "version of %<g%> will be omitted, please "
-				"specify version for individual extension");
+	  if (m_loc)
+	    warning_at (*m_loc, 0, "version of %<g%> will be omitted, please "
+			"specify version for individual extension");
 	}
 
       /* We have special rule for G, we disallow rv32gm2p but allow rv32g_zicsr
@@ -1052,8 +1060,9 @@ riscv_subset_list::parse_base_ext (const char *p)
       break;
 
     default:
-      error_at (m_loc, "%<-march=%s%>: first ISA subset must be %<e%>, "
-		"%<i%> or %<g%>", m_arch);
+      if (m_loc)
+	error_at (*m_loc, "%<-march=%s%>: first ISA subset must be %<e%>, "
+		  "%<i%> or %<g%>", m_arch);
       return NULL;
     }
   return p;
@@ -1074,10 +1083,9 @@ riscv_subset_list::parse_single_std_ext (const char *p, bool exact_single_p)
 {
   if (*p == 'x' || *p == 's' || *p == 'z')
     {
-      error_at (m_loc,
-		"%<-march=%s%>: Not single-letter extension. "
-		"%<%c%>",
-		m_arch, *p);
+      if (m_loc)
+	error_at (*m_loc, "%<-march=%s%>: Not single-letter extension. %<%c%>",
+		  m_arch, *p);
       return nullptr;
     }
 
@@ -1183,54 +1191,58 @@ riscv_subset_list::handle_combine_ext ()
 void
 riscv_subset_list::check_conflict_ext ()
 {
+  if (!m_loc)
+    return;
+
   if (lookup ("zcf") && m_xlen == 64)
-    error_at (m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
+    error_at (*m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
 	      m_arch);
   
   if (lookup ("zilsd") && m_xlen == 64)
-    error_at (m_loc, "%<-march=%s%>: zilsd extension supports in rv32 only",
+    error_at (*m_loc, "%<-march=%s%>: zilsd extension supports in rv32 only",
 	      m_arch);
 
   if (lookup ("zclsd") && m_xlen == 64)
-    error_at (m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
+    error_at (*m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
 	      m_arch);
 
   if (lookup ("ssnpm") && m_xlen == 32)
-    error_at (m_loc, "%<-march=%s%>: ssnpm extension supports in rv64 only",
+    error_at (*m_loc, "%<-march=%s%>: ssnpm extension supports in rv64 only",
 	      m_arch);
 
   if (lookup ("smnpm") && m_xlen == 32)
-    error_at (m_loc, "%<-march=%s%>: smnpm extension supports in rv64 only",
+    error_at (*m_loc, "%<-march=%s%>: smnpm extension supports in rv64 only",
 	      m_arch);
 
   if (lookup ("smmpm") && m_xlen == 32)
-    error_at (m_loc, "%<-march=%s%>: smmpm extension supports in rv64 only",
+    error_at (*m_loc, "%<-march=%s%>: smmpm extension supports in rv64 only",
 	      m_arch);
 
   if (lookup ("sspm") && m_xlen == 32)
-    error_at (m_loc, "%<-march=%s%>: sspm extension supports in rv64 only",
+    error_at (*m_loc, "%<-march=%s%>: sspm extension supports in rv64 only",
 	      m_arch);
 
   if (lookup ("supm") && m_xlen == 32)
-    error_at (m_loc, "%<-march=%s%>: supm extension supports in rv64 only",
+    error_at (*m_loc, "%<-march=%s%>: supm extension supports in rv64 only",
 	      m_arch);
 
   if (lookup ("zfinx") && lookup ("f"))
-    error_at (m_loc,
+    error_at (*m_loc,
 	      "%<-march=%s%>: z*inx conflicts with floating-point "
 	      "extensions",
 	      m_arch);
 
   /* 'H' hypervisor extension requires base ISA with 32 registers.  */
   if (lookup ("e") && lookup ("h"))
-    error_at (m_loc, "%<-march=%s%>: h extension requires i extension", m_arch);
+    error_at (*m_loc, "%<-march=%s%>: h extension requires i extension",
+	      m_arch);
 
   if (lookup ("zcd"))
     {
       if (lookup ("zcmt"))
-	error_at (m_loc, "%<-march=%s%>: zcd conflicts with zcmt", m_arch);
+	error_at (*m_loc, "%<-march=%s%>: zcd conflicts with zcmt", m_arch);
       if (lookup ("zcmp"))
-	error_at (m_loc, "%<-march=%s%>: zcd conflicts with zcmp", m_arch);
+	error_at (*m_loc, "%<-march=%s%>: zcd conflicts with zcmp", m_arch);
     }
 
   if ((lookup ("v") || lookup ("zve32x")
@@ -1238,9 +1250,9 @@ riscv_subset_list::check_conflict_ext ()
 	 || lookup ("zve64f") || lookup ("zve64d")
 	 || lookup ("zvl32b") || lookup ("zvl64b")
 	 || lookup ("zvl128b") || lookup ("zvfh"))
-	 && lookup ("xtheadvector"))
-    error_at (m_loc, "%<-march=%s%>: xtheadvector conflicts with vector "
-		   "extension or its sub-extensions", m_arch);
+      && lookup ("xtheadvector"))
+    error_at (*m_loc, "%<-march=%s%>: xtheadvector conflicts with vector "
+	      "extension or its sub-extensions", m_arch);
 }
 
 /* Parsing function for multi-letter extensions.
@@ -1336,8 +1348,9 @@ riscv_subset_list::parse_single_multiletter_ext (const char *p,
 
   if (strlen (subset) == 1)
     {
-      error_at (m_loc, "%<-march=%s%>: name of %s must be more than 1 letter",
-		m_arch, ext_type_str);
+      if (m_loc)
+	error_at (*m_loc, "%<-march=%s%>: name of %s must be more "
+		  "than 1 letter", m_arch, ext_type_str);
       free (subset);
       return NULL;
     }
@@ -1348,8 +1361,9 @@ riscv_subset_list::parse_single_multiletter_ext (const char *p,
 
   if (*p != '\0' && *p != '_')
     {
-      error_at (m_loc, "%<-march=%s%>: %s must separate with %<_%>",
-		m_arch, ext_type_str);
+      if (m_loc)
+	error_at (*m_loc, "%<-march=%s%>: %s must separate with %<_%>",
+		  m_arch, ext_type_str);
       return NULL;
     }
 
@@ -1386,10 +1400,12 @@ riscv_subset_list::parse_single_ext (const char *p, bool exact_single_p)
     }
 }
 
-/* Parsing arch string to subset list, return NULL if parsing failed.  */
+/* Parsing arch string to subset list, return NULL if parsing failed.
+   If LOC is nonnull, report diagnostics against location *LOC, otherwise
+   remain silent.  */
 
 riscv_subset_list *
-riscv_subset_list::parse (const char *arch, location_t loc)
+riscv_subset_list::parse (const char *arch, location_t *loc)
 {
   if (riscv_subset_list::parse_failed)
     return NULL;
@@ -1412,8 +1428,9 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 	case 'e':
 	case 'i':
 	case 'g':
-	  error_at (loc, "%<-march=%s%>: i, e or g must be the first extension",
-		    arch);
+	  if (loc)
+	    error_at (*loc, "%<-march=%s%>: i, e or g must be "
+		      "the first extension", arch);
 	  goto fail;
 	default:
 	  p = subset_list->parse_single_ext (p, /*exact_single_p=*/ false);
@@ -1448,7 +1465,7 @@ riscv_subset_list::clone () const
 }
 
 void
-riscv_subset_list::set_loc (location_t loc)
+riscv_subset_list::set_loc (location_t *loc)
 {
   m_loc = loc;
 }
@@ -1622,12 +1639,15 @@ riscv_ext_is_subset (struct cl_target_option *opts,
    The minimal feature bits refer to using the earliest extension that appeared
    in the Linux hwprobe to support the specified ISA string.  This ensures that
    older kernels, which may lack certain implied extensions, can still run the
-   FMV dispatcher correctly.  */
+   FMV dispatcher correctly.
+
+   If LOC is nonnull, report any diagnostics against *LOC, otherwise remain
+   silent.  */
 
 bool
 riscv_minimal_hwprobe_feature_bits (const char *isa,
 				    struct riscv_feature_bits *res,
-				    location_t loc)
+				    location_t *loc)
 {
   riscv_subset_list *subset_list;
   subset_list = riscv_subset_list::parse (isa, loc);
@@ -1697,7 +1717,7 @@ riscv_parse_arch_string (const char *isa,
 			 location_t loc)
 {
   riscv_subset_list *subset_list;
-  subset_list = riscv_subset_list::parse (isa, loc);
+  subset_list = riscv_subset_list::parse (isa, &loc);
   if (!subset_list)
     return;
 
@@ -1904,7 +1924,8 @@ riscv_multi_lib_info_t::parse (
     }
 
   multi_lib_info->subset_list =
-    riscv_subset_list::parse (multi_lib_info->arch_str.c_str (), input_location);
+    riscv_subset_list::parse (multi_lib_info->arch_str.c_str (),
+			      &input_location);
 
   return true;
 }
@@ -2093,7 +2114,7 @@ riscv_compute_multilib (
     return multilib_dir;
 
   subset_list = riscv_subset_list::parse (riscv_current_arch_str.c_str (),
-					  input_location);
+					  &input_location);
 
   /* Failed to parse -march, fallback to using what gcc use.  */
   if (subset_list == NULL)

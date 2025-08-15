@@ -13950,10 +13950,13 @@ riscv_c_mode_for_floating_type (enum tree_index ti)
   return default_mode_for_floating_type (ti);
 }
 
-/* This parses the attribute arguments to target_version in DECL and modifies
-   the feature mask and priority required to select those targets.  */
+/* Parse the attribute arguments to target_version in DECL and modify
+   the feature mask and priority required to select those targets.
+   If LOC is nonnull, report diagnostics against *LOC, otherwise
+   remain silent.  */
 static void
 parse_features_for_version (tree decl,
+			    location_t *loc,
 			    struct riscv_feature_bits &res,
 			    int &priority)
 {
@@ -13984,14 +13987,12 @@ parse_features_for_version (tree decl,
   cl_target_option_restore (&global_options, &global_options_set,
 			    default_opts);
 
-  riscv_process_target_version_attr (TREE_VALUE (version_attr),
-				     DECL_SOURCE_LOCATION (decl));
+  riscv_process_target_version_attr (TREE_VALUE (version_attr), loc);
 
   priority = global_options.x_riscv_fmv_priority;
   const char *arch_string = global_options.x_riscv_arch_string;
   bool parse_res
-    = riscv_minimal_hwprobe_feature_bits (arch_string, &res,
-					  DECL_SOURCE_LOCATION (decl));
+    = riscv_minimal_hwprobe_feature_bits (arch_string, &res, loc);
   gcc_assert (parse_res);
 
   cl_target_option_restore (&global_options, &global_options_set,
@@ -14048,8 +14049,8 @@ riscv_compare_version_priority (tree decl1, tree decl2)
   struct riscv_feature_bits mask1, mask2;
   int prio1, prio2;
 
-  parse_features_for_version (decl1, mask1, prio1);
-  parse_features_for_version (decl2, mask2, prio2);
+  parse_features_for_version (decl1, nullptr, mask1, prio1);
+  parse_features_for_version (decl2, nullptr, mask2, prio2);
 
   return compare_fmv_features (mask1, mask2, prio1, prio2);
 }
@@ -14352,6 +14353,7 @@ dispatch_function_versions (tree dispatch_decl,
       version_info.version_decl = version_decl;
       // Get attribute string, parse it and find the right features.
       parse_features_for_version (version_decl,
+				  &DECL_SOURCE_LOCATION (version_decl),
 				  version_info.features,
 				  version_info.prio);
       function_versions.push_back (version_info);
