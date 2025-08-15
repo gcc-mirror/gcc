@@ -27,10 +27,14 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "prefetch_const_operand"
+  (and (match_code "const_int")
+       (match_test "(IN_RANGE (INTVAL (op),  0, 511))")))
+
 ;; REG or REG+D where D fits in a simm12 and has the low 5 bits
 ;; off.  The REG+D form can be reloaded into a temporary if needed
 ;; after FP elimination if that exposes an invalid offset.
-(define_predicate "prefetch_operand"
+(define_predicate "zicbop_prefetch_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_test "const_arith_operand (op, VOIDmode)")
 	    (match_test "(INTVAL (op) & 0x1f) == 0"))
@@ -38,6 +42,20 @@
 	    (match_test "register_operand (XEXP (op, 0), word_mode)")
 	    (match_test "const_arith_operand (XEXP (op, 1), VOIDmode)")
 	    (match_test "(INTVAL (XEXP (op, 1)) & 0x1f) == 0"))))
+
+;; REG or REG+D where D fits in a uimm9
+(define_predicate "mips_prefetch_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "prefetch_const_operand (op, VOIDmode)")
+       (and (match_code "plus")
+	(match_test "register_operand (XEXP (op, 0), word_mode)")
+	(match_test "prefetch_const_operand (XEXP (op, 1), VOIDmode)"))))
+
+;; MIPS specific or Standard RISCV Extension
+(define_predicate "prefetch_operand"
+  (if_then_else (match_test "TARGET_XMIPSCBOP")
+      (match_operand 0 "mips_prefetch_operand")
+      (match_operand 0 "zicbop_prefetch_operand")))
 
 (define_predicate "lui_operand"
   (and (match_code "const_int")

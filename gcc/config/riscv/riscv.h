@@ -1325,4 +1325,15 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
 
+/* mips pref valid offset range.  */
+#define MIPS_RISCV_9BIT_OFFSET_P(OFFSET) (IN_RANGE (OFFSET, 0, 511))
+
+/* mips pref cache hint type.  */
+typedef enum {
+    ICACHE_HINT = 0 << 3,
+    DCACHE_HINT = 1 << 3,
+    SCACHE_HINT = 2 << 3,
+    TCACHE_HINT = 3 << 3
+} CacheHint;
+
 #endif /* ! GCC_RISCV_H */

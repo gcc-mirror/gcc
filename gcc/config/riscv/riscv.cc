@@ -15451,6 +15451,37 @@ synthesize_add (rtx operands[3])
   return true;
 }
 
+/*
+    HINT : argument specify the target cache
+
+    TODO : LOCALITY is unused.
+
+    Return the first operand of the associated PREF or PREFX insn.  */
+rtx
+riscv_prefetch_cookie (rtx hint, rtx locality)
+{
+  return (GEN_INT (INTVAL (hint)
+		   + CacheHint::DCACHE_HINT + INTVAL (locality) * 0));
+}
+
+/* Return true if X is a legitimate address with offset for prefetch.
+   MODE is the mode of the value being accessed.  */
+bool
+riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
+{
+  struct riscv_address_info addr;
+
+  if (riscv_classify_address (&addr, x, mode, false)
+      && addr.type == ADDRESS_REG)
+    {
+      if (TARGET_XMIPSCBOP)
+	return (CONST_INT_P (addr.offset)
+		&& MIPS_RISCV_9BIT_OFFSET_P (INTVAL (addr.offset)));
+    }
+
+  return true;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"

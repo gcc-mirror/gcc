@@ -718,4 +718,8 @@
 @tab 1.0
 @tab Mips conditional move extension
 
+@item xmipscbop
+@tab 1.0
+@tab Mips Prefetch extension
+
 @end multitable
