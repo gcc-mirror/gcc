@@ -1,3 +1,59 @@
+2025-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119275
+	* config/riscv/riscv.cc (riscv_legitimize_move): Avoid calling
+	gen_lowpart for cases where it'll fail.  Just use standard expander
+	paths for those cases.
+
+2025-08-14  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/121336
+	* config/cris/cris.h: Do not abbreviate --emulation.
+
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121501
+	* config/rs6000/rs6000.md (cmprb, setb_signed, setb_unsigned)
+	(cmprb2, cmpeqb): Add missing modes to nested if_then_elses.
+
+2025-08-14  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121474
+	* passes.def: Update forwprop1/2 to have full_walk to be true.
+	* tree-ssa-forwprop.cc (optimize_aggr_zeroprop): Add new argument
+	full_walk. Take into account the full_walk and clobbers at the end
+	of the limit can be done always.
+	(simplify_builtin_call): Add new argument, full_walk.
+	Update call to optimize_aggr_zeroprop.
+	(pass_forwprop): Add m_full_walk field.
+	(pass_forwprop::set_pass_param): Update for m_full_walk.
+	(pass_forwprop::execute): Update call to simplify_builtin_call
+	and optimize_aggr_zeroprop.
+
+2025-08-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): New function split out of ...
+	(optimize_agr_copyprop): Here. Also try calling optimize_agr_copyprop_arg.
+	(optimize_agr_copyprop_arg): New function.
+
+2025-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md: Merge movdi<mode>_zero_extend_A and
+	movsi<mode>_zero_extend_A into zero_extendsidi2 and
+	zero_extendhi<mode>2_z10 and
+	zero_extend<HQI:mode><GPR:mode>2_extimm.
+	* config/s390/vector.md (*movdi<mode>_zero_extend_A): Remove.
+	(*movsi<mode>_zero_extend_A): Remove.
+	(*movdi<mode>_zero_extend_B): Move to vec_extract patterns and
+	rename to *vec_extract<mode>_zero_extend.
+	(*movsi<mode>_zero_extend_B): Ditto.
+
+2025-08-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121540
+	* config/i386/i386-options.cc (ix86_set_current_function):
+	Properly check if MMX and 80387 are enabled.
+
 2025-08-13  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/121531

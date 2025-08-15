@@ -1,3 +1,11 @@
+2025-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121524
+	* tree.cc (build_cplus_array_type): Don't reuse variant type
+	if it has TREE_DEPRECATED or TREE_UNAVAILABLE flags set or,
+	unless elt_type has TYPE_USER_ALIGN set and TYPE_ALIGN is
+	TYPE_ALIGN of elt_type, TYPE_USER_ALIGN is not set.
+
 2025-08-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102610
