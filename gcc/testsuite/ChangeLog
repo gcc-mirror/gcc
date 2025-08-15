@@ -1,3 +1,64 @@
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121414
+	* gcc.target/aarch64/sme/pr121414_1.c: New test.
+
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* gcc.target/aarch64/sve/acle/general/rev_2.c: New test.
+
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* gcc.target/aarch64/sve/acle/general/perm_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general/perm_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/perm_7.c: Likewise.
+
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120718
+	* gcc.target/aarch64/sve/acle/general/pr120718.c: New test.
+
+2025-08-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/121007
+	* gcc.target/powerpc/pr121007.c: New.
+
+2025-08-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-06-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119830
+	* gcc.target/riscv/pr119830.c: New test.
+
+2025-08-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* gcc.target/i386/pr121208-1a.c (dg-options): Add
+	-mno-sse -mno-mmx -mno-80387.
+	* gcc.target/i386/pr121208-1b.c (dg-options): Likewise.
+
+2025-08-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* gcc.target/i386/pr121208-1a.c: New test.
+	* gcc.target/i386/pr121208-1b.c: Likewise.
+	* gcc.target/i386/pr121208-2a.c: Likewise.
+	* gcc.target/i386/pr121208-2b.c: Likewise.
+	* gcc.target/i386/pr121208-3a.c: Likewise.
+	* gcc.target/i386/pr121208-3b.c: Likewise.
+
 2025-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
