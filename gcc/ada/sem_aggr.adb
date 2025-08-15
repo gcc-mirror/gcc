@@ -1139,7 +1139,8 @@ package body Sem_Aggr is
       if Is_Modular_Integer_Type (Index_Typ) then
          Error_Msg_N
            ("null array aggregate indexed by a modular type<<", N);
-      else
+
+      elsif Is_Enumeration_Type (Index_Typ) then
          Error_Msg_N
            ("null array aggregate indexed by an enumeration type<<", N);
       end if;
@@ -5463,8 +5464,13 @@ package body Sem_Aggr is
 
             Hi := New_Copy_Tree (Lo);
 
-            Report_Null_Array_Constraint_Error (N, Index_Typ);
-            Set_Raises_Constraint_Error (N);
+            --  On multidimiensional arrays, avoid reporting the same error
+            --  several times.
+
+            if not Raises_Constraint_Error (N) then
+               Report_Null_Array_Constraint_Error (N, Index_Typ);
+               Set_Raises_Constraint_Error (N);
+            end if;
 
          else
             --  The upper bound is the predecessor of the lower bound
@@ -5477,6 +5483,15 @@ package body Sem_Aggr is
 
          Append (Make_Range (Loc, New_Copy_Tree (Lo), Hi), Constr);
          Analyze_And_Resolve (Last (Constr), Etype (Index));
+
+         if Known_Bounds
+           and then
+             (Nkind (High_Bound (Last (Constr))) = N_Raise_Constraint_Error
+                or else
+              Nkind (Low_Bound (Last (Constr))) = N_Raise_Constraint_Error)
+         then
+            Set_Raises_Constraint_Error (N);
+         end if;
 
          Next_Index (Index);
       end loop;
