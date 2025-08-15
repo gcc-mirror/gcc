@@ -40,10 +40,10 @@ package body System.CRTL is
    function read (fd : int; buffer : chars; count : size_t) return ssize_t
    is
       function read_raw
-        (fd : int; buffer : chars; count : size_t) return int;
+        (fd : int; buffer : chars; count : unsigned) return int;
       pragma Import (C, read_raw, "read");
    begin
-      return ssize_t (read_raw (fd, buffer, count));
+      return ssize_t (read_raw (fd, buffer, unsigned (count)));
    end read;
 
    -----------
@@ -53,10 +53,10 @@ package body System.CRTL is
    function write (fd : int; buffer : chars; count : size_t) return ssize_t
    is
       function write_raw
-        (fd : int; buffer : chars; count : size_t) return int;
+        (fd : int; buffer : chars; count : unsigned) return int;
       pragma Import (C, write_raw, "write");
    begin
-      return ssize_t (write_raw (fd, buffer, count));
+      return ssize_t (write_raw (fd, buffer, unsigned (count)));
    end write;
 
 end System.CRTL;

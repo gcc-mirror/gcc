@@ -50,6 +50,9 @@ package System.CRTL is
 
    subtype int is Integer;
 
+   type unsigned is mod 2 ** 32;
+   for unsigned'Size use 32;
+
    type long is range -(2 ** (System.Parameters.long_bits - 1))
                    .. +(2 ** (System.Parameters.long_bits - 1)) - 1;
 
