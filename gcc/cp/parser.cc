@@ -37174,7 +37174,11 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	case CPP_CLOSE_SQUARE:
 	  if (depth == 0
 	      /* Handle correctly int n = sizeof ... ( p );  */
-	      && token->type != CPP_ELLIPSIS)
+	      && (token->type != CPP_ELLIPSIS
+		  /* For int n = 42 ...) handle ... as variadic arguments.  */
+		  || (!nsdmi
+		      && cp_lexer_nth_token_is (parser->lexer, 2,
+						CPP_CLOSE_PAREN))))
 	    done = true;
 	  /* Update DEPTH, if necessary.  */
 	  else if (token->type == CPP_CLOSE_PAREN
