@@ -3412,8 +3412,11 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
     {
-      /* Ignore NODE_WARN on -Wkeyword-macro registered identifiers though.  */
-      if (!CPP_OPTION (pfile, cpp_warn_keyword_macro) || !cpp_keyword_p (node))
+      /* Ignore NODE_WARN on -Wkeyword-macro registered identifiers though
+	 or during cpp_define.  */
+      if (!CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	  && (!CPP_OPTION (pfile, cpp_warn_keyword_macro)
+	      || !cpp_keyword_p (node)))
 	return true;
     }
 
@@ -3954,7 +3957,9 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
     macro->line = name_loc;
 
   /* Handle -Wkeyword-macro registered identifiers.  */
-  if (CPP_OPTION (pfile, cpp_warn_keyword_macro) && cpp_keyword_p (node))
+  if (CPP_OPTION (pfile, cpp_warn_keyword_macro)
+      && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+      && cpp_keyword_p (node))
     {
       if (macro->fun_like
 	  && CPP_OPTION (pfile, cplusplus)
@@ -3994,6 +3999,11 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
 	}
       _cpp_free_definition (node);
     }
+  else if ((node->flags & NODE_WARN)
+	   && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	   && !cpp_keyword_p (node))
+    cpp_error_with_line (pfile, CPP_DL_WARNING, macro->line, 0,
+			 "%qs defined", NODE_NAME (node));
 
   /* Enter definition in hash table.  */
   node->type = NT_USER_MACRO;

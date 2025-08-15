@@ -4843,9 +4843,8 @@ c_init_decl_processing (void)
 	    tree id = get_identifier (c_common_reswords[i].word);
 	    if (C_IS_RESERVED_WORD (id)
 		&& C_RID_CODE (id) != RID_CXX_COMPAT_WARN)
-	      cpp_lookup (parse_in,
-			  (const unsigned char *) IDENTIFIER_POINTER (id),
-			  IDENTIFIER_LENGTH (id))->flags |= NODE_WARN;
+	      cpp_warn (parse_in, IDENTIFIER_POINTER (id),
+			IDENTIFIER_LENGTH (id));
 	  }
     }
 }

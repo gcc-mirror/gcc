@@ -736,7 +736,9 @@ do_undef (cpp_reader *pfile)
 
       /* Handle -Wkeyword-macro registered identifiers.  */
       bool diagnosed = false;
-      if (CPP_OPTION (pfile, cpp_warn_keyword_macro) && cpp_keyword_p (node))
+      if (CPP_OPTION (pfile, cpp_warn_keyword_macro)
+	  && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	  && cpp_keyword_p (node))
 	{
 	  if (CPP_OPTION (pfile, cpp_pedantic)
 	      && CPP_OPTION (pfile, cplusplus)
@@ -752,7 +754,8 @@ do_undef (cpp_reader *pfile)
 	 identifier is not currently defined as a macro name.  */
       if (cpp_macro_p (node))
 	{
-	  if (node->flags & NODE_WARN)
+	  if ((node->flags & NODE_WARN)
+	      && !CPP_OPTION (pfile, suppress_builtin_macro_warnings))
 	    {
 	      if (!diagnosed)
 		cpp_error (pfile, CPP_DL_WARNING,
@@ -769,6 +772,11 @@ do_undef (cpp_reader *pfile)
 
 	  _cpp_free_definition (node);
 	}
+      else if ((node->flags & NODE_WARN)
+	       && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	       && !diagnosed
+	       && !cpp_keyword_p (node))
+	cpp_error (pfile, CPP_DL_WARNING, "undefining %qs", NODE_NAME (node));
     }
 
   check_eol (pfile, false);
@@ -3087,7 +3095,9 @@ cpp_define (cpp_reader *pfile, const char *str)
     }
   buf[count] = '\n';
 
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 1;
   run_directive (pfile, T_DEFINE, buf, count);
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 0;
 }
 
 /* Like cpp_define, but does not warn about unused macro.  */
@@ -3141,7 +3151,9 @@ _cpp_define_builtin (cpp_reader *pfile, const char *str)
   char *buf = (char *) alloca (len + 1);
   memcpy (buf, str, len);
   buf[len] = '\n';
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 1;
   run_directive (pfile, T_DEFINE, buf, len);
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 0;
 }
 
 /* Process MACRO as if it appeared as the body of an #undef.  */
@@ -3152,7 +3164,9 @@ cpp_undef (cpp_reader *pfile, const char *macro)
   char *buf = (char *) alloca (len + 1);
   memcpy (buf, macro, len);
   buf[len] = '\n';
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 1;
   run_directive (pfile, T_UNDEF, buf, len);
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 0;
 }
 
 /* Replace a previous definition DEF of the macro STR.  If DEF is NULL,

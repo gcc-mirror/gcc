@@ -384,47 +384,42 @@ cxx_init (void)
 	    if (IDENTIFIER_KEYWORD_P (id)
 		/* Don't register keywords with spaces.  */
 		&& IDENTIFIER_POINTER (id)[IDENTIFIER_LENGTH (id) - 1] != ' ')
-	      cpp_lookup (parse_in,
-			  (const unsigned char *) IDENTIFIER_POINTER (id),
-			  IDENTIFIER_LENGTH (id))->flags |= NODE_WARN;
+	      cpp_warn (parse_in, IDENTIFIER_POINTER (id),
+			IDENTIFIER_LENGTH (id));
 	  }
-      auto warn_on = [] (const char *name) {
-	cpp_lookup (parse_in, (const unsigned char *) name,
-		    strlen (name))->flags |= NODE_WARN;
-      };
       if (cxx_dialect >= cxx11)
 	{
-	  warn_on ("final");
-	  warn_on ("override");
-	  warn_on ("noreturn");
+	  cpp_warn (parse_in, "final");
+	  cpp_warn (parse_in, "override");
+	  cpp_warn (parse_in, "noreturn");
 	  if (cxx_dialect < cxx26)
-	    warn_on ("carries_dependency");
+	    cpp_warn (parse_in, "carries_dependency");
 	}
       if (cxx_dialect >= cxx14)
-	warn_on ("deprecated");
+	cpp_warn (parse_in, "deprecated");
       if (cxx_dialect >= cxx17)
 	{
-	  warn_on ("fallthrough");
-	  warn_on ("maybe_unused");
-	  warn_on ("nodiscard");
+	  cpp_warn (parse_in, "fallthrough");
+	  cpp_warn (parse_in, "maybe_unused");
+	  cpp_warn (parse_in, "nodiscard");
 	}
       if (cxx_dialect >= cxx20)
 	{
-	  warn_on ("likely");
-	  warn_on ("unlikely");
-	  warn_on ("no_unique_address");
+	  cpp_warn (parse_in, "likely");
+	  cpp_warn (parse_in, "unlikely");
+	  cpp_warn (parse_in, "no_unique_address");
 	}
       if (flag_modules)
 	{
-	  warn_on ("import");
-	  warn_on ("module");
+	  cpp_warn (parse_in, "import");
+	  cpp_warn (parse_in, "module");
 	}
       if (cxx_dialect >= cxx23)
-	warn_on ("assume");
+	cpp_warn (parse_in, "assume");
       if (cxx_dialect >= cxx26)
 	{
-	  warn_on ("replaceable_if_eligible");
-	  warn_on ("trivially_relocatable_if_eligible");
+	  cpp_warn (parse_in, "replaceable_if_eligible");
+	  cpp_warn (parse_in, "trivially_relocatable_if_eligible");
 	}
     }
 

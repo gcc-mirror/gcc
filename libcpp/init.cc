@@ -246,6 +246,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, warn_dollars) = 1;
   CPP_OPTION (pfile, warn_variadic_macros) = 1;
+  CPP_OPTION (pfile, suppress_builtin_macro_warnings) = 0;
   CPP_OPTION (pfile, warn_builtin_macro_redefined) = 1;
   CPP_OPTION (pfile, cpp_warn_implicit_fallthrough) = 0;
   CPP_OPTION (pfile, warn_header_guard) = 0;
@@ -593,6 +594,8 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
       && (! CPP_OPTION (pfile, stdc_0_in_system_headers)
 	  || CPP_OPTION (pfile, std)))
     _cpp_define_builtin (pfile, "__STDC__ 1");
+  else if (CPP_OPTION (pfile, cplusplus))
+    cpp_warn (pfile, "__STDC__");
 
   if (CPP_OPTION (pfile, cplusplus))
     {
@@ -618,6 +621,14 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 	_cpp_define_builtin (pfile, "__cplusplus 201103L");
       else
 	_cpp_define_builtin (pfile, "__cplusplus 199711L");
+      cpp_warn (pfile, "__cplusplus");
+      if (CPP_OPTION (pfile, lang) >= CLK_GNUCXX11)
+	{
+	  cpp_warn (pfile, "__STDC_VERSION__");
+	  cpp_warn (pfile, "__STDC_MB_MIGHT_NEQ_WC__");
+	  if (CPP_OPTION (pfile, lang) < CLK_GNUCXX23)
+	    cpp_warn (pfile, "__STDCPP_STRICT_POINTER_SAFETY__");
+	}
     }
   else if (CPP_OPTION (pfile, lang) == CLK_ASM)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");

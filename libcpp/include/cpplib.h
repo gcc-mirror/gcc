@@ -435,6 +435,10 @@ struct cpp_options
      Presumably the usage is protected by the appropriate #ifdef.  */
   unsigned char warn_variadic_macros;
 
+  /* Non-zero means suppress diagnostics for NODE_WARN #define or #undef.
+     Used for cpp_define/cpp_undef.  */
+  unsigned char suppress_builtin_macro_warnings;
+
   /* Nonzero means warn about builtin macros that are redefined or
      explicitly undefined.  */
   unsigned char warn_builtin_macro_redefined;
@@ -1525,6 +1529,21 @@ extern cpp_comment_table *cpp_get_comments (cpp_reader *);
    table if it is not already there.  */
 extern cpp_hashnode *cpp_lookup (cpp_reader *, const unsigned char *,
 				 unsigned int);
+
+/* Set NODE_WARN flag for NAME, such that there will be diagnostics
+   for #define or #undef of NAME.  */
+
+inline void
+cpp_warn (cpp_reader *pfile, const char *name, unsigned int len)
+{
+  cpp_lookup (pfile, (const unsigned char *) name, len)->flags |= NODE_WARN;
+}
+
+inline void
+cpp_warn (cpp_reader *pfile, const char *name)
+{
+  cpp_warn (pfile, name, strlen (name));
+}
 
 typedef int (*cpp_cb) (cpp_reader *, cpp_hashnode *, void *);
 extern void cpp_forall_identifiers (cpp_reader *, cpp_cb, void *);
