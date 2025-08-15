@@ -30846,6 +30846,12 @@ A binary type trait: @code{true} whenever the @var{type1} and
 @var{type2} refer to the same type.
 @enddefbuiltin
 
+@defbuiltin{size_t __builtin_structured_binding_size (@var{type})}
+This trait returns the structured binding size ([dcl.struct.bind])
+of @var{type}.  If a type does not have a structured binding size,
+an error is diagnosed unless it is used in SFINAE contexts.
+@enddefbuiltin
+
 
 @node Deprecated Features
 @section Deprecated Features

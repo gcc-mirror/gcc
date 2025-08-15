@@ -3304,6 +3304,9 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
     case CPTK_TYPE_ORDER:
       inform (loc, "%qT and %qT cannot be ordered", t1, t2);
       break;
+    case CPTK_STRUCTURED_BINDING_SIZE:
+      inform (loc, "%qT is not destructurable", t1);
+      break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "%qT is not a reference that binds to a temporary "
 	      "object of type %qT (direct-initialization)", t1, t2);

@@ -22655,6 +22655,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  type1 = tsubst_expr (type1, args, complain, in_decl);
 	tree type2 = tsubst (TRAIT_EXPR_TYPE2 (t), args,
 			     complain, in_decl);
+	if (TRAIT_EXPR_KIND (t) == CPTK_STRUCTURED_BINDING_SIZE
+	    && type1 != error_mark_node
+	    && !processing_template_decl)
+	  /* __builtin_structured_binding_size handled separately
+	     to make it SFINAE friendly.  */
+	  RETURN (finish_structured_binding_size (TRAIT_EXPR_LOCATION (t),
+						  type1, complain));
 	RETURN (finish_trait_expr (TRAIT_EXPR_LOCATION (t),
 				   TRAIT_EXPR_KIND (t), type1, type2));
       }

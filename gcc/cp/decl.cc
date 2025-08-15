@@ -9762,7 +9762,7 @@ get_tuple_size (tree type)
   if (val == error_mark_node)
     return NULL_TREE;
   if (VAR_P (val) || TREE_CODE (val) == CONST_DECL)
-    val = maybe_constant_value (val);
+    val = maybe_constant_value (val, NULL_TREE, mce_true);
   if (TREE_CODE (val) == INTEGER_CST)
     return val;
   else
@@ -9997,11 +9997,11 @@ cp_decomp_size (location_t loc, tree type, tsubst_flags_t complain)
     }
   else if (processing_template_decl && complete_type (type) == error_mark_node)
     return -1;
-  else if (processing_template_decl && !COMPLETE_TYPE_P (type))
+  else if (!COMPLETE_TYPE_P (type))
     {
       if (complain & tf_error)
-	pedwarn (loc, 0, "structured binding refers to incomplete class type "
-			 "%qT", type);
+	error_at (loc, "structured binding refers to incomplete class type "
+		  "%qT", type);
       return -1;
     }
   else
@@ -10010,12 +10010,7 @@ cp_decomp_size (location_t loc, tree type, tsubst_flags_t complain)
       if (btype == error_mark_node)
 	return -1;
       else if (btype == NULL_TREE)
-	{
-	  if (complain & tf_error)
-	    error_at (loc, "cannot decompose class type %qT without non-static "
-			   "data members", type);
-	  return -1;
-	}
+	return 0;
       for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) != FIELD_DECL
 	    || DECL_ARTIFICIAL (field)

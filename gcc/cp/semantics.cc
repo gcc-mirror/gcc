@@ -13710,10 +13710,11 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_DEDUCIBLE:
       return type_targs_deducible_from (type1, type2);
 
-    /* __array_rank and __builtin_type_order are handled in
-       finish_trait_expr.  */
+    /* __array_rank, __builtin_type_order and __builtin_structured_binding_size
+       are handled in finish_trait_expr.  */
     case CPTK_RANK:
     case CPTK_TYPE_ORDER:
+    case CPTK_STRUCTURED_BINDING_SIZE:
       gcc_unreachable ();
 
 #define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
@@ -13818,6 +13819,27 @@ same_type_ref_bind_p (cp_trait_kind kind, tree type1, tree type2)
 	      (non_reference (to), non_reference (from))));
 }
 
+/* Helper for finish_trait_expr and tsubst_expr.  Handle
+   CPTK_STRUCTURED_BINDING_SIZE in possibly SFINAE-friendly
+   way.  */
+
+tree
+finish_structured_binding_size (location_t loc, tree type,
+				tsubst_flags_t complain)
+{
+  if (TYPE_REF_P (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "%qs argument %qT is a reference",
+		  "__builtin_structured_binding_size", type);
+      return error_mark_node;
+    }
+  HOST_WIDE_INT ret = cp_decomp_size (loc, type, complain);
+  if (ret == -1)
+    return error_mark_node;
+  return maybe_wrap_with_location (build_int_cst (size_type_node, ret), loc);
+}
+
 /* Process a trait expression.  */
 
 tree
@@ -13830,7 +13852,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
   if (processing_template_decl)
     {
       tree trait_expr = make_node (TRAIT_EXPR);
-      if (kind == CPTK_RANK)
+      if (kind == CPTK_RANK || kind == CPTK_STRUCTURED_BINDING_SIZE)
 	TREE_TYPE (trait_expr) = size_type_node;
       else if (kind == CPTK_TYPE_ORDER)
 	{
@@ -13947,9 +13969,22 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNBOUNDED_ARRAY:
     case CPTK_IS_UNION:
     case CPTK_IS_VOLATILE:
-    case CPTK_RANK:
-    case CPTK_TYPE_ORDER:
       break;
+
+    case CPTK_RANK:
+      {
+	size_t rank = 0;
+	for (; TREE_CODE (type1) == ARRAY_TYPE; type1 = TREE_TYPE (type1))
+	  ++rank;
+	return maybe_wrap_with_location (build_int_cst (size_type_node, rank),
+					 loc);
+      }
+
+    case CPTK_TYPE_ORDER:
+      return maybe_wrap_with_location (type_order_value (type1, type2), loc);
+
+    case CPTK_STRUCTURED_BINDING_SIZE:
+      return finish_structured_binding_size (loc, type1, tf_warning_or_error);
 
     case CPTK_IS_LAYOUT_COMPATIBLE:
       if (!array_of_unknown_bound_p (type1)
@@ -13980,20 +14015,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       gcc_unreachable ();
     }
 
-  tree val;
-  if (kind == CPTK_RANK)
-    {
-      size_t rank = 0;
-      for (; TREE_CODE (type1) == ARRAY_TYPE; type1 = TREE_TYPE (type1))
-	++rank;
-      val = build_int_cst (size_type_node, rank);
-    }
-  else if (kind == CPTK_TYPE_ORDER)
-    val = type_order_value (type1, type2);
-  else
-    val = (trait_expr_value (kind, type1, type2)
-	   ? boolean_true_node : boolean_false_node);
-
+  tree val = (trait_expr_value (kind, type1, type2)
+	      ? boolean_true_node : boolean_false_node);
   return maybe_wrap_with_location (val, loc);
 }
 
