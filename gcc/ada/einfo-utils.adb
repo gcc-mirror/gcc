@@ -669,6 +669,8 @@ package body Einfo.Utils is
             Result := Id;
          else
             pragma Assert (Is_Type (Id));
+            --  ...because Is_Base_Type returns True for nontypes
+
             Result := Etype (Id);
             if False then
                pragma Assert (Is_Base_Type (Result));
@@ -679,8 +681,28 @@ package body Einfo.Utils is
                --  expect.
             end if;
          end if;
+
+         --  pragma Assert (Result = Base_Type_If_Set (Id));
+         --  Disabled; too slow
       end return;
    end Base_Type;
+
+   ----------------------
+   -- Base_Type_If_Set --
+   ----------------------
+
+   function Base_Type_If_Set (Id : E) return Opt_N_Entity_Id is
+   begin
+      return Result : Opt_N_Entity_Id do
+         if Is_Base_Type (Id) then
+            Result := Id;
+         elsif Field_Is_Initial_Zero (Id, F_Etype) then
+            Result := Empty;
+         else
+            Result := Etype (Id);
+         end if;
+      end return;
+   end Base_Type_If_Set;
 
    ----------------------
    -- Declaration_Node --
@@ -1374,29 +1396,42 @@ package body Einfo.Utils is
    ------------------------------
 
    function Implementation_Base_Type (Id : E) return E is
-      Bastyp : Entity_Id;
       Imptyp : Entity_Id;
-
    begin
-      Bastyp := Base_Type (Id);
+      return Result : E := Base_Type (Id) do
+         if Is_Incomplete_Or_Private_Type (Result) then
+            Imptyp := Underlying_Type (Result);
 
-      if Is_Incomplete_Or_Private_Type (Bastyp) then
-         Imptyp := Underlying_Type (Bastyp);
+            --  If we have an implementation type, return its Base_Type.
 
-         --  If we have an implementation type, then just return it,
-         --  otherwise we return the Base_Type anyway. This can only
-         --  happen in error situations and should avoid some error bombs.
-
-         if Present (Imptyp) then
-            return Base_Type (Imptyp);
-         else
-            return Bastyp;
+            if Present (Imptyp) then
+               Result := Base_Type (Imptyp);
+            end if;
          end if;
 
-      else
-         return Bastyp;
-      end if;
+         --  pragma Assert (Result = Implementation_Base_Type_If_Set (Id));
+         --  Disabled; too slow
+      end return;
    end Implementation_Base_Type;
+
+   -------------------------------------
+   -- Implementation_Base_Type_If_Set --
+   -------------------------------------
+
+   function Implementation_Base_Type_If_Set (Id : E) return Opt_N_Entity_Id is
+      Imptyp : Entity_Id;
+   begin
+      return Result : Opt_N_Entity_Id := Base_Type_If_Set (Id) do
+         if Present (Result) and then Is_Incomplete_Or_Private_Type (Result)
+         then
+            Imptyp := Underlying_Type (Result);
+
+            if Present (Imptyp) then
+               Result := Base_Type_If_Set (Imptyp);
+            end if;
+         end if;
+      end return;
+   end Implementation_Base_Type_If_Set;
 
    -------------------------
    -- Invariant_Procedure --
@@ -2540,51 +2575,75 @@ package body Einfo.Utils is
    ---------------
 
    function Root_Type (Id : E) return E is
-      T, Etyp : Entity_Id;
+      Etyp : Entity_Id;
 
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      return T : E := Base_Type (Id) do
+         if Ekind (T) = E_Class_Wide_Type then
+            T := Etype (T);
+         else
+            loop
+               Etyp := Etype (T);
 
-      T := Base_Type (Id);
+               exit when T = Etyp
+                 or else
+                   (Is_Private_Type (T) and then Etyp = Full_View (T))
+                 or else
+                   (Is_Private_Type (Etyp) and then Full_View (Etyp) = T);
 
-      if Ekind (T) = E_Class_Wide_Type then
-         return Etype (T);
+               T := Etyp;
 
-      --  Other cases
+               --  Quit if there is a circularity in the inheritance chain.
+               --  This happens in some error situations and we do not want
+               --  to get stuck in this loop.
 
-      else
-         loop
-            Etyp := Etype (T);
+               if T = Base_Type (Id) then
+                  Check_Error_Detected;
+                  exit;
+               end if;
+            end loop;
+         end if;
 
-            if T = Etyp then
-               return T;
-
-            --  Following test catches some error cases resulting from
-            --  previous errors.
-
-            elsif No (Etyp) then
-               Check_Error_Detected;
-               return T;
-
-            elsif Is_Private_Type (T) and then Etyp = Full_View (T) then
-               return T;
-
-            elsif Is_Private_Type (Etyp) and then Full_View (Etyp) = T then
-               return T;
-            end if;
-
-            T := Etyp;
-
-            --  Return if there is a circularity in the inheritance chain. This
-            --  happens in some error situations and we do not want to get
-            --  stuck in this loop.
-
-            if T = Base_Type (Id) then
-               return T;
-            end if;
-         end loop;
-      end if;
+         --  pragma Assert (T = Root_Type_If_Set (Id));
+         --  Disabled; too slow
+      end return;
    end Root_Type;
+
+   function Root_Type_If_Set (Id : E) return Opt_N_Entity_Id is
+      Etyp : Entity_Id;
+
+   begin
+      return T : Opt_N_Entity_Id := Base_Type_If_Set (Id) do
+         if Ekind (T) = E_Class_Wide_Type then
+            T := Etype (T);
+         else
+            loop
+               Etyp := Etype (T);
+
+               if No (Etyp) then
+                  T := Empty;
+                  exit;
+               end if;
+
+               exit when T = Etyp
+                 or else
+                   (Is_Private_Type (T) and then Etyp = Full_View (T))
+                 or else
+                   (Is_Private_Type (Etyp) and then Full_View (Etyp) = T);
+
+               T := Etyp;
+
+               --  Quit if there is a circularity in the inheritance chain.
+               --  This happens in some error situations and we do not want
+               --  to get stuck in this loop.
+
+               if T = Base_Type_If_Set (Id) then
+                  exit;
+               end if;
+            end loop;
+         end if;
+      end return;
+   end Root_Type_If_Set;
 
    ---------------------
    -- Safe_Emax_Value --
@@ -3010,7 +3069,7 @@ package body Einfo.Utils is
    -- Underlying_Type --
    ---------------------
 
-   function Underlying_Type (Id : E) return Entity_Id is
+   function Underlying_Type (Id : E) return Opt_N_Entity_Id is
    begin
       --  For record_with_private the underlying type is always the direct full
       --  view. Never try to take the full view of the parent it does not make

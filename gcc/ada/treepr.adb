@@ -1047,9 +1047,11 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
-      NN : constant Node_Id := Node_To_Fetch_From (N, Field);
+      NN : constant Node_Id := Node_To_Fetch_From_If_Set (N, Field);
+      --  If NN is Empty, it means that we cannot compute the
+      --  Node_To_Fetch_From, so we simply skip this field.
    begin
-      if not Field_Is_Initial_Zero (N, Field) then
+      if Present (NN) and then not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), NN, FD, Format);
       end if;
    end Print_Entity_Field;
