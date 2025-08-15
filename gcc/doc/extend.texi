@@ -6798,6 +6798,11 @@ Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
 instructions followed an additional Newton-Raphson step instead of
 doing a floating-point division.
 
+@cindex @code{target("80387")} function attribute, x86
+@item 80387
+@itemx no-80387
+Generate code containing 80387 instructions for floating point.
+
 @cindex @code{target("general-regs-only")} function attribute, x86
 @item general-regs-only
 Generate code which uses only the general registers.

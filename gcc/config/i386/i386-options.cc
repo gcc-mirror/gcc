@@ -1172,6 +1172,10 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 		   OPT_mrecip,
 		   MASK_RECIP),
 
+    IX86_ATTR_YES ("80387",
+		   OPT_m80387,
+		   MASK_80387),
+
     IX86_ATTR_IX86_YES ("general-regs-only",
 			OPT_mgeneral_regs_only,
 			OPTION_MASK_GENERAL_REGS_ONLY),
@@ -1281,6 +1285,8 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 
       else if (type == ix86_opt_yes || type == ix86_opt_no)
 	{
+	  opts_set->x_target_flags |= mask;
+
 	  if (type == ix86_opt_no)
 	    opt_set_p = !opt_set_p;
 
