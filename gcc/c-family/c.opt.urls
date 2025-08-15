@@ -613,6 +613,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-noexcept)
 Wnoexcept-type
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-noexcept-type)
 
+Wnon-c-typedef-for-linkage
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-non-c-typedef-for-linkage)
+
 Wnon-template-friend
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-non-template-friend)
 

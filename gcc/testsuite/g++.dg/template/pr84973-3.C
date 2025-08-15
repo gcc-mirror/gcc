@@ -1,4 +1,5 @@
 // { dg-do link }
+// { dg-additional-options "-Wno-non-c-typedef-for-linkage" }
 
 template <int> void a() {
   typedef struct {

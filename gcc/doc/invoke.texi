@@ -268,7 +268,7 @@ in the following sections.
 -Wrange-loop-construct -Wredundant-move -Wredundant-tags
 -Wreorder  -Wregister -Wno-sfinae-incomplete
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates
--Wno-non-template-friend  -Wold-style-cast
+-Wno-non-c-typedef-for-linkage  -Wno-non-template-friend  -Wold-style-cast
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
@@ -4493,6 +4493,28 @@ compiling only with GCC this is a valid sentinel, as @code{NULL} is defined
 to @code{__null}.  Although it is a null pointer constant rather than a
 null pointer, it is guaranteed to be of the same size as a pointer.
 But this use is not portable across different compilers.
+
+@opindex Wno-non-c-typedef-for-linkage
+@opindex Wnon-c-typedef-for-linkage
+@item -Wno-non-c-typedef-for-linkage @r{(C++ and Objective-C++ only)}
+Disable pedwarn for unnamed classes with a typedef name for linkage purposes
+containing C++ specific members, base classes, default member initializers
+or lambda expressions, including those on nested member classes.
+
+@smallexample
+typedef struct @{
+  int a; // non-static data members are ok
+  struct T @{ int b; @}; // member classes too
+  enum E @{ E1, E2, E3 @}; // member enumerations as well
+  int c = 42; // default member initializers are not ok
+  struct U : A @{ int c; @}; // classes with base classes are not ok
+  typedef int V; // typedef is not ok
+  using W = int; // using declaration is not ok
+  decltype([]()@{@}) x; // lambda expressions not ok
+@} S;
+@end smallexample
+
+In all these cases, the tag name S should be added after the struct keyword.
 
 @opindex Wno-non-template-friend
 @opindex Wnon-template-friend

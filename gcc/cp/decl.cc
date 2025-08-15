@@ -13022,6 +13022,88 @@ mark_inline_variable (tree decl, location_t loc)
 }
 
 
+/* Diagnose -Wnon-c-typedef-for-linkage pedwarn.  TYPE is the unnamed class
+   with a typedef name for linkage purposes with freshly updated TYPE_NAME,
+   ORIG is the anonymous TYPE_NAME before that change.  */
+
+static bool
+diagnose_non_c_class_typedef_for_linkage (tree type, tree orig)
+{
+  gcc_rich_location richloc (DECL_SOURCE_LOCATION (orig));
+  tree name = DECL_NAME (TYPE_NAME (type));
+  richloc.add_fixit_insert_before (IDENTIFIER_POINTER (name));
+  return pedwarn (&richloc, OPT_Wnon_c_typedef_for_linkage,
+		  "anonymous non-C-compatible type given name for linkage "
+		  "purposes by %<typedef%> declaration");
+}
+
+/* Diagnose -Wnon-c-typedef-for-linkage violations on T.  TYPE and ORIG
+   like for diagnose_non_c_class_typedef_for_linkage, T is initially equal
+   to TYPE but during recursion can be set to nested classes.  */
+
+static bool
+maybe_diagnose_non_c_class_typedef_for_linkage (tree type, tree orig, tree t)
+{
+  if (!BINFO_BASE_BINFOS (TYPE_BINFO (t))->is_empty ())
+    {
+      auto_diagnostic_group d;
+      if (diagnose_non_c_class_typedef_for_linkage (type, orig))
+	inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)),
+		"type is not C-compatible because it has a base class");
+      return true;
+    }
+  for (tree field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+    switch (TREE_CODE (field))
+      {
+      case VAR_DECL:
+	/* static data members have been diagnosed already.  */
+	continue;
+      case FIELD_DECL:
+	if (DECL_INITIAL (field))
+	  {
+	    auto_diagnostic_group d;
+	    if (diagnose_non_c_class_typedef_for_linkage (type, orig))
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "type is not C-compatible because %qD has default "
+		      "member initializer", field);
+	    return true;
+	  }
+	continue;
+      case CONST_DECL:
+	continue;
+      case TYPE_DECL:
+	if (DECL_SELF_REFERENCE_P (field))
+	  continue;
+	if (DECL_IMPLICIT_TYPEDEF_P (field))
+	  {
+	    if (TREE_CODE (TREE_TYPE (field)) == ENUMERAL_TYPE)
+	      continue;
+	    if (CLASS_TYPE_P (TREE_TYPE (field)))
+	      {
+		tree tf = TREE_TYPE (field);
+		if (maybe_diagnose_non_c_class_typedef_for_linkage (type, orig,
+								    tf))
+		  return true;
+		continue;
+	      }
+	  }
+	/* FALLTHRU */
+      case FUNCTION_DECL:
+      case TEMPLATE_DECL:
+	{
+	  auto_diagnostic_group d;
+	  if (diagnose_non_c_class_typedef_for_linkage (type, orig))
+	    inform (DECL_SOURCE_LOCATION (field),
+		    "type is not C-compatible because it contains %qD "
+		    "declaration", field);
+	  return true;
+	}
+      default:
+	break;
+      }
+  return false;
+}
+
 /* Assign a typedef-given name to a class or enumeration type declared
    as anonymous at first.  This was split out of grokdeclarator
    because it is also used in libcc1.  */
@@ -13046,6 +13128,9 @@ name_unnamed_type (tree type, tree decl)
 
   /* Adjust linkage now that we aren't unnamed anymore.  */
   reset_type_linkage (type);
+
+  if (CLASS_TYPE_P (type) && warn_non_c_typedef_for_linkage)
+    maybe_diagnose_non_c_class_typedef_for_linkage (type, orig, type);
 
   /* FIXME remangle member functions; member functions of a
      type with external linkage have external linkage.  */

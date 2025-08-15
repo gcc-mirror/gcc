@@ -1110,6 +1110,10 @@ Wnoexcept-type
 C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++17-compat)
 Warn if C++17 noexcept function type will change the mangled name of a symbol.
 
+Wnon-c-typedef-for-linkage
+C++ ObjC++ Var(warn_non_c_typedef_for_linkage) Init(1) Warning
+Warn for non-C compatible unnamed classes with a typedef name for linkage purposes.
+
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
