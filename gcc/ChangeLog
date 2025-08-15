@@ -1,3 +1,43 @@
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* config/aarch64/aarch64.md (UNSPEC_REV_PRED): New unspec.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_rev<mode>_acle)
+	(*aarch64_sve_rev<mode>_acle): New patterns.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svrev_impl::expand): Use the new patterns for boolean svrev.
+
+2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121294
+	* config/aarch64/iterators.md (UNSPEC_TRN1_CONV): Delete.
+	(UNSPEC_PERMUTE_PRED): New unspec.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_trn1_conv<mode>):
+	Replace with...
+	(@aarch64_sve_<perm_insn><mode>_acle)
+	(*aarch64_sve_<perm_insn><mode>_acle): ...these new patterns.
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_const_pred_trn):
+	Update accordingly.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(binary_permute::expand): Use the new _acle patterns for
+	predicate operations.
+
+2025-08-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121208
+	* config/i386/i386.cc (ix86_tls_get_addr): Issue an error for
+	-mtls-dialect=gnu with no_caller_saved_registers attribute and
+	suggest -mtls-dialect=gnu2.
+
 2025-07-31  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
