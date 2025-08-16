@@ -65,6 +65,9 @@
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "%{!mabi=ti:-lgloss} "
 
+#undef  MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { "mloop", "mmul", "mfillzero" }
+
 /* TI ABI mandates that ELF symbols do not start with any prefix.  */
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""

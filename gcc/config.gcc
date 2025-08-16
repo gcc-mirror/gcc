@@ -3207,7 +3207,7 @@ powerpcle-*-eabi*)
 	;;
 pru*-*-*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="${tmake_file} pru/t-pru"
+	tmake_file="${tmake_file} pru/t-multilib pru/t-pru"
 	extra_objs="pru-pragma.o pru-passes.o"
 	use_gcc_stdint=wrap
 	;;
