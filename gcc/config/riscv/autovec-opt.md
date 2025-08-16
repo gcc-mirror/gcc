@@ -1679,6 +1679,26 @@
 ;; Combine vec_duplicate + op.vv to op.vx
 ;; Include
 ;; - vadd.vx
+;; - vsub.vx
+;; - vrsub.vx
+;; - vand.vx
+;; - vor.vx
+;; - vmul.vx
+;; - vdiv.vx
+;; - vdivu.vx
+;; - vrem.vx
+;; - vremu.vx
+;; - vmax.vx
+;; - vmaxu.vx
+;; - vmin.vx
+;; - vminu.vx
+;; - vsadd.vx
+;; - vsaddu.vx
+;; - vssub.vx
+;; - vssubu.vx
+;; - vaadd.vx
+;; - vaaddu.vx
+;; - vmerge.vxm
 ;; =============================================================================
 (define_insn_and_split "*<optab>_vx_<mode>"
  [(set (match_operand:V_VLSI    0 "register_operand")
