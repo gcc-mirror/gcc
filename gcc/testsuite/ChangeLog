@@ -1,3 +1,114 @@
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt15.C: Expect different diagnostics
+	for zero size destructuring expansion statement.
+	* g++.dg/ext/builtin-structured-binding-size1.C: New test.
+	* g++.dg/ext/builtin-structured-binding-size2.C: New test.
+	* g++.dg/ext/builtin-structured-binding-size3.C: New test.
+	* g++.dg/ext/builtin-structured-binding-size4.C: New test.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121552
+	* g++.dg/parse/defarg21.C: New test.
+	* g++.dg/template/defarg24.C: New test.
+	* g++.dg/modules/default-arg-4_a.C: New test.
+	* g++.dg/modules/default-arg-4_b.C: New test.
+	* g++.dg/modules/default-arg-5_a.C: New test.
+	* g++.dg/modules/default-arg-5_b.C: New test.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121552
+	* g++.dg/cpp2a/typedef1.C: New test.
+	* g++.dg/debug/dwarf2/typedef5.C: Add -Wno-non-c-typedef-for-linkage
+	to dg-options.
+	* g++.dg/inherit/typeinfo1.C: Add -Wno-non-c-typedef-for-linkage
+	to dg-additional-options.
+	* g++.dg/parse/ctor2.C: Likewise.
+	* g++.dg/ext/anon-struct9.C: Add -Wno-non-c-typedef-for-linkage to
+	dg-options.
+	* g++.dg/ext/visibility/anon11.C: Add -Wno-non-c-typedef-for-linkage
+	to dg-additional-options.
+	* g++.dg/lto/pr69137_0.C: Add -Wno-non-c-typedef-for-linkage
+	to dg-lto-options.
+	* g++.dg/other/anon8.C: Add -Wno-non-c-typedef-for-linkage
+	to dg-additional-options.
+	* g++.dg/template/pr84973.C: Likewise.
+	* g++.dg/template/pr84973-2.C: Likewise.
+	* g++.dg/template/pr84973-3.C: Likewise.
+	* g++.dg/abi/anon2.C: Likewise.
+	* g++.dg/abi/anon3.C: Likewise.
+	* g++.old-deja/g++.oliva/linkage1.C: Likewise.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121539
+	* g++.dg/parse/defarg20.C: New test.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	PR target/121520
+	* g++.dg/DRs/dr2581-1.C: New test.
+	* g++.dg/DRs/dr2581-2.C: New test.
+	* c-c++-common/cpp/pr92296-2.c: Expect warnings also on defining
+	special macros after undefining them.
+
+2025-08-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/121534
+	* gcc.target/riscv/rvv/autovec/vls/math-nearbyint-1.c: Adjust
+	scan pattern for additional instances of frflags/fsrflags.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/flex-array-counted-by-2.c: Adjust testing case.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/ubsan/pointer-counted-by-bounds-2.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-3.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-4.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-5.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds.c: New test.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/pointer-counted-by-4-char.c: New test.
+	* gcc.dg/pointer-counted-by-4-float.c: New test.
+	* gcc.dg/pointer-counted-by-4-struct.c: New test.
+	* gcc.dg/pointer-counted-by-4-union.c: New test.
+	* gcc.dg/pointer-counted-by-4.c: New test.
+	* gcc.dg/pointer-counted-by-5.c: New test.
+	* gcc.dg/pointer-counted-by-6.c: New test.
+	* gcc.dg/pointer-counted-by-7.c: New test.
+	* gcc.dg/pr120929.c: New test.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/flex-array-counted-by.c: Update test.
+	* gcc.dg/pointer-counted-by-1.c: New test.
+	* gcc.dg/pointer-counted-by-2.c: New test.
+	* gcc.dg/pointer-counted-by-3.c: New test.
+	* gcc.dg/pointer-counted-by-8.c: New test.
+	* gcc.dg/pointer-counted-by-9.c: New test.
+	* gcc.dg/pointer-counted-by.c: New test.
+
+2025-08-15  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* gcc.target/riscv/mipsprefetch.c: Test file for mips.pref.
+
+2025-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119156
+	* gcc.target/aarch64/sve/pr119156_1.c: New test.
+
+2025-08-15  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/121542
+	* gcc.target/loongarch/pr121542.c: New test.
+
 2025-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/121524

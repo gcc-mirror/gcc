@@ -1,3 +1,42 @@
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-trait.def (STRUCTURED_BINDING_SIZE): New unary trait.
+	* cp-tree.h (finish_structured_binding_size): Declare.
+	* semantics.cc (trait_expr_value): Handle
+	CPTK_STRUCTURED_BINDING_SIZE.
+	(finish_structured_binding_size): New function.
+	(finish_trait_expr): Handle CPTK_RANK and CPTK_TYPE_ORDER
+	in the switch instead of just doing break; for those and
+	ifs at the end to handle them.  Handle CPTK_STRUCTURED_BINDING_SIZE.
+	* pt.cc (tsubst_expr): Likewise.
+	* constraint.cc (diagnose_trait_expr): Likewise.
+	* decl.cc (get_tuple_size): Use mce_true for maybe_const_value.
+	(cp_decomp_size): Diagnose incomplete types not just if
+	processing_template_decl, and use error_at instead of pedwarn.
+	If btype is NULL, just return 0 instead of diagnosing an error.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121552
+	* decl.cc: Implement C++20 P1766R1 - Mitigating minor modules maladies.
+	(diagnose_non_c_class_typedef_for_linkage,
+	maybe_diagnose_non_c_class_typedef_for_linkage): New functions.
+	(name_unnamed_type): Call
+	maybe_diagnose_non_c_class_typedef_for_linkage.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121539
+	* parser.cc (cp_parser_cache_defarg): Set done to true for
+	CPP_ELLIPSIS followed by CPP_CLOSE_PAREN in !nsdmi at depth 0.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	PR target/121520
+	* lex.cc (cxx_init): Remove warn_on lambda.  Use cpp_warn instead of
+	cpp_lookup and NODE_WARN bit setting or warn_on.
+
 2025-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/121524

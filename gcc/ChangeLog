@@ -1,3 +1,103 @@
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (Type Traits): Document
+	__builtin_structured_binding_size.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121552
+	* doc/invoke.texi (-Wno-non-c-typedef-for-linkage): Document.
+
+2025-08-15  Robert Dubner  <rdubner@symas.com>
+
+	* real.cc (real_to_decimal_for_mode): Set str[0] to known value.
+
+2025-08-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/121534
+	* config/riscv/riscv.md (round_pattern): save/restore fflags.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Extend counted_by attribute to pointer fields in
+	structures. Add one more requirement to pointers with counted_by
+	attribute.
+
+2025-08-15  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/riscv-ext-mips.def (DEFINE_RISCV_EXT):
+	Added mips prefetch extension.
+	* config/riscv/riscv-ext.opt: Generated file.
+	* config/riscv/riscv.md (prefetch):
+	Added mips prefetch address operand constraint.
+	* config/riscv/constraints.md: Added mips specific constraint.
+	* config/riscv/predicates.md (prefetch_operand):
+	Updated for mips nine bits offset.
+	* config/riscv/riscv.cc (riscv_prefetch_offset_address_p):
+	Legitimate address with offset for prefetch check.
+	* config/riscv/riscv-protos.h: Likewise.
+	* config/riscv/riscv.h:
+	Macros to support for mips cached type.
+	* doc/riscv-ext.texi: Updated for mips prefetch.
+
+2025-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/riscv/riscv-protos.h
+	(riscv_process_target_version_attr): Change location_t argument
+	to location_t *.
+	* config/riscv/riscv-subset.h
+	(riscv_subset_list::riscv_subset_list): Change location_t argument
+	to location_t *.
+	(riscv_subset_list::parse): Likwise.
+	(riscv_subset_list::set_loc): Likewise.
+	(riscv_minimal_hwprobe_feature_bits): Likewise.
+	(riscv_subset_list::m_loc): Change type to location_t.
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::riscv_subset_list): Change location_t argument
+	to location_t *.
+	(riscv_subset_list::add): Suppress diagnostics when m_loc is null.
+	(riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_profiles): Likewise.
+	(riscv_subset_list::parse_base_ext): Likewise.
+	(riscv_subset_list::parse_single_std_ext): Likewise.
+	(riscv_subset_list::check_conflict_ext): Likewise.
+	(riscv_subset_list::parse_single_multiletter_ext): Likewise.
+	(riscv_subset_list::parse): Change location_t argument to location_t *.
+	(riscv_subset_list::set_loc): Likewise.
+	(riscv_minimal_hwprobe_feature_bits): Likewise.
+	(riscv_parse_arch_string): Update call accordingly.
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::m_loc): Change type to location_t *.
+	(riscv_target_attr_parser::riscv_target_attr_parser): Change
+	location_t argument to location_t *.
+	(riscv_process_one_target_attr): Likewise.
+	(riscv_process_target_attr): Likewise.
+	(riscv_process_target_version_attr): Likewise.
+	(riscv_target_attr_parser::parse_arch): Suppress diagnostics when
+	m_loc is null.
+	(riscv_target_attr_parser::handle_arch): Likewise.
+	(riscv_target_attr_parser::handle_cpu): Likewise.
+	(riscv_target_attr_parser::handle_tune): Likewise.
+	(riscv_target_attr_parser::handle_priority): Likewise.
+	(riscv_option_valid_attribute_p): Update call accordingly.
+	(riscv_option_valid_version_attribute_p): Likewise.
+	* config/riscv/riscv.cc (parse_features_for_version): Add a
+	location_t * argument.
+	(dispatch_function_versions): Update call accordingly.
+	(riscv_compare_version_priority): Likewise, suppressing diagnostics.
+
+2025-08-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* tree-nrv.cc (pass_return_slot::execute): Use
+	gimple_call_fntype instead of gimple_call_fndecl.
+
+2025-08-15  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/121542
+	* config/loongarch/loongarch.cc
+	(loongarch_vector_costs::add_stmt_cost): When using vectype,
+	first determine whether it is NULL.
+
 2025-08-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/119275

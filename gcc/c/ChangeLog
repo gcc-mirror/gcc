@@ -1,3 +1,49 @@
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	PR target/121520
+	* c-decl.cc (c_init_decl_processing): Use cpp_warn instead of
+	cpp_lookup and NODE_WARN bit setting.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-tree.h (handle_counted_by_for_component_ref): New prototype of
+	build_component_ref and handle_counted_by_for_component_ref.
+	* c-parser.cc (c_parser_postfix_expression): Call the new prototypes
+	of build_component_ref and handle_counted_by_for_component_ref,
+	update comments.
+	* c-typeck.cc (default_function_array_read_conversion): Likewise.
+	(convert_lvalue_to_rvalue): Likewise.
+	(default_conversion): Likewise.
+	(handle_counted_by_p): Update comments.
+	(handle_counted_by_for_component_ref): Delete one argument.
+	(build_component_ref): Delete one argument. Delete the call to
+	handle_counted_by_for_component_ref completely.
+	(build_array_ref): Generate call to .ACCESS_WITH_SIZE for array.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (verify_counted_by_attribute): Change the 2nd argument
+	to a vector of fields with counted_by attribute. Verify all fields
+	in this vector.
+	(finish_struct): Collect all the fields with counted_by attribute
+	to a vector and pass this vector to verify_counted_by_attribute.
+	* c-tree.h (handle_counted_by_for_component_ref): New prototype of
+	handle_counted_by_form_component_ref.
+	* c-parser.cc (c_parser_postfix_expression): Call the new prototype
+	of handle_counted_by_for_component_ref.
+	* c-typeck.cc (default_function_array_read_conversion): Only generate
+	call to .ACCESS_WITH_SIZE for a pointer field when it's a read.
+	(convert_lvalue_to_rvalue): Likewise.
+	(default_conversion): Likewise.
+	(handle_counted_by_p): New routine.
+	(check_counted_by_attribute): New routine.
+	(build_counted_by_ref): Handle pointers with counted_by.
+	(build_access_with_size_for_counted_by): Handle pointers with counted_by.
+	(handle_counted_by_for_component_ref): Add one more argument.
+	(build_component_ref): Call the new prototype of
+	handle_counted_by_for_component_ref.
+
 2025-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/120778
