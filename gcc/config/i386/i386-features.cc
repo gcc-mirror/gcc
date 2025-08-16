@@ -3684,10 +3684,12 @@ ix86_broadcast_inner (rtx op, machine_mode mode,
   return op;
 }
 
-/* Replace CALL instruction in TLS_CALL_INSNS with SET from SRC.  */
+/* Replace CALL instruction in TLS_CALL_INSNS with SET from SRC and
+   put the updated instruction in UPDATED_TLS_INSNS.  */
 
 static void
-replace_tls_call (rtx src, auto_bitmap &tls_call_insns)
+replace_tls_call (rtx src, auto_bitmap &tls_call_insns,
+		  auto_bitmap &updated_tls_insns)
 {
   bitmap_iterator bi;
   unsigned int id;
@@ -3716,6 +3718,9 @@ replace_tls_call (rtx src, auto_bitmap &tls_call_insns)
       if (recog_memoized (set_insn) < 0)
 	gcc_unreachable ();
 
+      /* Put SET_INSN in UPDATED_TLS_INSNS.  */
+      bitmap_set_bit (updated_tls_insns, INSN_UID (set_insn));
+
       if (dump_file)
 	{
 	  fprintf (dump_file, "\nReplace:\n\n");
@@ -3732,32 +3737,222 @@ replace_tls_call (rtx src, auto_bitmap &tls_call_insns)
     }
 }
 
+/* Return the basic block which dominates all basic blocks which set
+   hard register REGNO used in basic block BB.  */
+
+static basic_block
+ix86_get_dominator_for_reg (unsigned int regno, basic_block bb)
+{
+  basic_block set_bb;
+  auto_bitmap set_bbs;
+
+  /* Get all BBs which set REGNO and dominate the current BB from all
+     DEFs of REGNO.  */
+  for (df_ref def = DF_REG_DEF_CHAIN (regno);
+       def;
+       def = DF_REF_NEXT_REG (def))
+    if (!DF_REF_IS_ARTIFICIAL (def)
+	&& !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER)
+	&& !DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER))
+      {
+	set_bb = DF_REF_BB (def);
+	if (dominated_by_p (CDI_DOMINATORS, bb, set_bb))
+	  bitmap_set_bit (set_bbs, set_bb->index);
+      }
+
+  bb = nearest_common_dominator_for_set (CDI_DOMINATORS, set_bbs);
+  return bb;
+}
+
+/* Mark FLAGS register as live in DATA, a bitmap of live caller-saved
+   registers, if DEST is FLAGS register.  */
+
+static void
+ix86_check_flags_reg (rtx dest, const_rtx, void *data)
+{
+  auto_bitmap *live_caller_saved_regs = (auto_bitmap *) data;
+  if (REG_P (dest) && REGNO (dest) == FLAGS_REG)
+    bitmap_set_bit (*live_caller_saved_regs, FLAGS_REG);
+}
+
+/* Emit a TLS_SET instruction of KIND in basic block BB.   Store the
+   insertion point in *BEFORE_P for emit_insn_before or in *AFTER_P
+   for emit_insn_after.  UPDATED_GNU_TLS_INSNS contains instructions
+   which replace the GNU TLS instructions.  UPDATED_GNU2_TLS_INSNS
+   contains instructions which replace the GNU2 TLS instructions.  */
+
+static rtx_insn *
+ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
+		    rtx_insn **before_p, rtx_insn **after_p,
+		    auto_bitmap &updated_gnu_tls_insns,
+		    auto_bitmap &updated_gnu2_tls_insns)
+{
+  rtx_insn *tls_insn;
+
+  do
+    {
+      rtx_insn *insn = BB_HEAD (bb);
+      while (insn && !NONDEBUG_INSN_P (insn))
+	{
+	  if (insn == BB_END (bb))
+	    break;
+	  insn = NEXT_INSN (insn);
+	}
+
+      /* TLS_GD and TLS_LD_BASE instructions are normal functions which
+	 clobber caller-saved registers.  TLSDESC instructions only
+	 clobber FLAGS.  If any registers clobbered by TLS instructions
+	 are live in this basic block, we must insert TLS instructions
+	 after all live registers clobbered are dead.  */
+
+      auto_bitmap live_caller_saved_regs;
+      bitmap in = df_live ? DF_LIVE_IN (bb) : DF_LR_IN (bb);
+
+      if (bitmap_bit_p (in, FLAGS_REG))
+	bitmap_set_bit (live_caller_saved_regs, FLAGS_REG);
+
+      unsigned int i;
+
+      /* Get all live caller-saved registers for TLS_GD and TLS_LD_BASE
+	 instructions.  */
+      if (kind != X86_CSE_TLSDESC)
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  if (call_used_regs[i]
+	      && !fixed_regs[i]
+	      && bitmap_bit_p (in, i))
+	    bitmap_set_bit (live_caller_saved_regs, i);
+
+      if (bitmap_empty_p (live_caller_saved_regs))
+	{
+	  if (insn == BB_HEAD (bb) || insn == BB_END (bb))
+	    {
+	      *before_p = insn;
+	      tls_insn = emit_insn_before (tls_set, insn);
+	    }
+	  else
+	    {
+	      insn = PREV_INSN (insn);
+	      *after_p = insn;
+	      tls_insn = emit_insn_after (tls_set, insn);
+	    }
+	  return tls_insn;
+	}
+
+      bool repeat = false;
+
+      /* Search for REG_DEAD notes in this basic block.  */
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  /* NB: Conditional jump is the only instruction which reads
+	     flags register and changes control flow.  We can never
+	     place the TLS call after unconditional jump.  */
+	  if (JUMP_P (insn))
+	    {
+	      /* This must be a conditional jump.  */
+	      rtx label = JUMP_LABEL (insn);
+	      if (label == nullptr
+		  || ANY_RETURN_P (label)
+		  || !(LABEL_P (label) || SYMBOL_REF_P (label)))
+		gcc_unreachable ();
+
+	      /* Place the call before all FLAGS_REG setting BBs since
+		 we can't place a call before nor after a conditional
+		 jump.  */
+	      bb = ix86_get_dominator_for_reg (FLAGS_REG, bb);
+
+	      /* Start over again.  */
+	      repeat = true;
+	      break;
+	    }
+
+	  if (bitmap_bit_p (updated_gnu_tls_insns, INSN_UID (insn)))
+	    {
+	      /* Insert the __tls_get_addr call before INSN which
+		 replaces a __tls_get_addr call.  */
+	      *before_p = insn;
+	      tls_insn = emit_insn_before (tls_set, insn);
+	      return tls_insn;
+	    }
+
+	  if (bitmap_bit_p (updated_gnu2_tls_insns, INSN_UID (insn)))
+	    {
+	      /* Mark FLAGS register as dead since FLAGS register
+		 would be clobbered by the GNU2 TLS instruction.  */
+	      bitmap_clear_bit (live_caller_saved_regs, FLAGS_REG);
+	      continue;
+	    }
+
+	  /* Check if FLAGS register is live.  */
+	  note_stores (insn, ix86_check_flags_reg,
+		       &live_caller_saved_regs);
+
+	  rtx link;
+	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	    if (REG_NOTE_KIND (link) == REG_DEAD
+		&& REG_P (XEXP (link, 0)))
+	      {
+		/* Mark the live caller-saved register as dead.  */
+		for (i = REGNO (XEXP (link, 0));
+		     i < END_REGNO (XEXP (link, 0));
+		     i++)
+		  if (i < FIRST_PSEUDO_REGISTER)
+		    bitmap_clear_bit (live_caller_saved_regs, i);
+
+		if (bitmap_empty_p (live_caller_saved_regs))
+		  {
+		    *after_p = insn;
+		    tls_insn = emit_insn_after (tls_set, insn);
+		    return tls_insn;
+		  }
+	      }
+	}
+
+      /* NB: Start over again for conditional jump.  */
+      if (repeat)
+	continue;
+
+      gcc_assert (!bitmap_empty_p (live_caller_saved_regs));
+
+      /* If any live caller-saved registers aren't dead at the end of
+	 this basic block, get the basic block which dominates all
+	 basic blocks which set the remaining live registers.  */
+      auto_bitmap set_bbs;
+      bitmap_iterator bi;
+      unsigned int id;
+      EXECUTE_IF_SET_IN_BITMAP (live_caller_saved_regs, 0, id, bi)
+	{
+	  basic_block set_bb = ix86_get_dominator_for_reg (id, bb);
+	  bitmap_set_bit (set_bbs, set_bb->index);
+	}
+      bb = nearest_common_dominator_for_set (CDI_DOMINATORS, set_bbs);
+    }
+  while (true);
+}
+
 /* Generate a TLS call of KIND with VAL and copy the call result to DEST,
    at entry of the nearest dominator for basic block map BBS, which is in
    the fake loop that contains the whole function, so that there is only
-   a single TLS CALL of KIND with VAL in the whole function.  If
-   TLSDESC_SET isn't nullptr, insert it before the TLS call.  */
+   a single TLS CALL of KIND with VAL in the whole function.
+   UPDATED_GNU_TLS_INSNS contains instructions which replace the GNU TLS
+   instructions.  UPDATED_GNU2_TLS_INSNS contains instructions which
+   replace the GNU2 TLS instructions.  If TLSDESC_SET isn't nullptr,
+   insert it before the TLS call.  */
 
 static void
 ix86_place_single_tls_call (rtx dest, rtx val, x86_cse_kind kind,
-			    bitmap bbs, rtx tlsdesc_set = nullptr)
+			    auto_bitmap &bbs,
+			    auto_bitmap &updated_gnu_tls_insns,
+			    auto_bitmap &updated_gnu2_tls_insns,
+			    rtx tlsdesc_set = nullptr)
 {
   basic_block bb = nearest_common_dominator_for_set (CDI_DOMINATORS, bbs);
   while (bb->loop_father->latch
 	 != EXIT_BLOCK_PTR_FOR_FN (cfun))
     bb = get_immediate_dominator (CDI_DOMINATORS,
 				  bb->loop_father->header);
-
-  rtx_insn *insn = BB_HEAD (bb);
-  while (insn && !NONDEBUG_INSN_P (insn))
-    {
-      if (insn == BB_END (bb))
-	{
-	  insn = NULL;
-	  break;
-	}
-      insn = NEXT_INSN (insn);
-    }
 
   rtx rax = nullptr, rdi;
   rtx eqv = nullptr;
@@ -3766,7 +3961,6 @@ ix86_place_single_tls_call (rtx dest, rtx val, x86_cse_kind kind,
   rtx clob;
   rtx symbol;
   rtx tls;
-  rtx_insn *tls_insn;
 
   switch (kind)
     {
@@ -3808,94 +4002,13 @@ ix86_place_single_tls_call (rtx dest, rtx val, x86_cse_kind kind,
       gcc_unreachable ();
     }
 
+  /* Emit the TLS CALL insn.  */
   rtx_insn *before = nullptr;
   rtx_insn *after = nullptr;
-  if (insn == BB_HEAD (bb))
-    before = insn;
-  else
-    after = insn ? PREV_INSN (insn) : BB_END (bb);
-
-  /* TLS_GD and TLS_LD_BASE instructions are normal functions which
-     clobber caller-saved registers.  TLSDESC instructions only clobber
-     FLAGS.  If any registers clobbered by TLS instructions are live
-     in this basic block, we must insert TLS instructions after all live
-     registers clobbered are dead.  */
-
-  auto_bitmap live_caller_saved_regs;
-  bitmap in = df_live ? DF_LIVE_IN (bb) : DF_LR_IN (bb);
-
-  bool flags_live_p = bitmap_bit_p (in, FLAGS_REG);
-
-  unsigned int i;
-
-  /* Get all live caller-saved registers for TLS_GD and TLS_LD_BASE
-     instructions.  */
-  if (kind != X86_CSE_TLSDESC)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (call_used_regs[i]
-	  && !fixed_regs[i]
-	  && bitmap_bit_p (in, i))
-	bitmap_set_bit (live_caller_saved_regs, i);
-
-  if (!bitmap_empty_p (live_caller_saved_regs))
-    {
-      /* Search for REG_DEAD notes in this basic block.  */
-      FOR_BB_INSNS (bb, insn)
-	{
-	  if (!NONDEBUG_INSN_P (insn))
-	    continue;
-
-	  /* Check if FLAGS register is live.  */
-	  set = single_set (insn);
-	  if (set)
-	    {
-	      rtx dest = SET_DEST (set);
-	      if (REG_P (dest) && REGNO (dest) == FLAGS_REG)
-		flags_live_p = true;
-	    }
-
-	  rtx link;
-	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	    if (REG_NOTE_KIND (link) == REG_DEAD
-		&& REG_P (XEXP (link, 0)))
-	      {
-		/* Mark the live caller-saved register as dead.  */
-		for (i = REGNO (XEXP (link, 0));
-		     i < END_REGNO (XEXP (link, 0));
-		     i++)
-		  bitmap_clear_bit (live_caller_saved_regs, i);
-
-		/* Check if FLAGS register is dead.  */
-		if (REGNO (XEXP (link, 0)) == FLAGS_REG)
-		  flags_live_p = false;
-
-		if (bitmap_empty_p (live_caller_saved_regs))
-		  {
-		    /* All live caller-saved registers are dead after
-		       this instruction.  Since TLS instructions
-		       clobber FLAGS register, it must be dead where
-		       the TLS will be inserted after.  */
-		    if (flags_live_p)
-		      gcc_unreachable ();
-		    after = insn;
-		    goto insert_after;
-		  }
-	      }
-	}
-
-      /* All live caller-saved registers should be dead at the end
-	 of this basic block.  */
-      gcc_unreachable ();
-    }
-
-  /* Emit the TLS CALL insn.  */
-  if (after)
-    {
-insert_after:
-      tls_insn = emit_insn_after (tls, after);
-    }
-  else
-    tls_insn = emit_insn_before (tls, before);
+  rtx_insn *tls_insn = ix86_emit_tls_call (tls, kind, bb, &before,
+					   &after,
+					   updated_gnu_tls_insns,
+					   updated_gnu2_tls_insns);
 
   rtx_insn *tlsdesc_insn = nullptr;
   if (tlsdesc_set)
@@ -3936,7 +4049,7 @@ insert_after:
 	    print_rtl_single (dump_file, tlsdesc_insn);
 	  print_rtl_single (dump_file, tls_insn);
 	  fprintf (dump_file, "\nbefore:\n\n");
-	  print_rtl_single (dump_file, insn);
+	  print_rtl_single (dump_file, before);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -4213,6 +4326,8 @@ pass_x86_cse::x86_cse (void)
   basic_block bb;
   rtx_insn *insn;
   unsigned int i;
+  auto_bitmap updated_gnu_tls_insns;
+  auto_bitmap updated_gnu2_tls_insns;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
@@ -4333,7 +4448,10 @@ pass_x86_cse::x86_cse (void)
 	  case X86_CSE_TLS_LD_BASE:
 	  case X86_CSE_TLSDESC:
 	    broadcast_reg = gen_reg_rtx (load->mode);
-	    replace_tls_call (broadcast_reg, load->insns);
+	    replace_tls_call (broadcast_reg, load->insns,
+			      (load->kind == X86_CSE_TLSDESC
+			       ? updated_gnu2_tls_insns
+			       : updated_gnu_tls_insns));
 	    load->broadcast_reg = broadcast_reg;
 	    break;
 
@@ -4399,6 +4517,8 @@ pass_x86_cse::x86_cse (void)
 					      load->val,
 					      load->kind,
 					      load->bbs,
+					      updated_gnu_tls_insns,
+					      updated_gnu2_tls_insns,
 					      PATTERN (load->def_insn));
 		  break;
 		case X86_CSE_VEC_DUP:
@@ -4442,7 +4562,9 @@ pass_x86_cse::x86_cse (void)
 		  ix86_place_single_tls_call (load->broadcast_reg,
 					      load->val,
 					      load->kind,
-					      load->bbs);
+					      load->bbs,
+					      updated_gnu_tls_insns,
+					      updated_gnu2_tls_insns);
 		  break;
 		case X86_CSE_CONST0_VECTOR:
 		case X86_CSE_CONSTM1_VECTOR:
