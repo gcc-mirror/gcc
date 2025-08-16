@@ -1265,7 +1265,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{PRU Options} (@ref{PRU Options})
 @gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop
--mabi=@var{variant}}
+-mmul -mfillzero -mabi=@var{variant}}
 
 @emph{RISC-V Options} (@ref{RISC-V Options})
 @gccoptlist{-mbranch-cost=@var{N-instruction}
@@ -31321,6 +31321,14 @@ instead of the @option{--relax} option.
 @opindex mloop
 @item -mloop
 Allow (or do not allow) GCC to use the LOOP instruction.
+
+@opindex mmul
+@item -mmul
+Allow (or do not allow) GCC to use the PRU multiplier unit.
+
+@opindex mfillzero
+@item -mfillzero
+Allow (or do not allow) GCC to use the FILL and ZERO instructions.
 
 @opindex mabi
 @item -mabi=@var{variant}

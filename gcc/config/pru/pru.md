@@ -215,7 +215,7 @@
     mov\\t%0, %1
     ldi\\t%0, %%pmem(%1)
     ldi\\t%0, %1
-    fill\\t%0, 4
+    * return TARGET_OPT_FILLZERO ? \"fill\\t%0, 4\" : \"ldi32\\t%0, 0xffffffff\";
     ldi32\\t%0, %1"
   [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
    (set_attr "length" "4,4,4,4,4,4,8")])
@@ -259,9 +259,11 @@
     case 1:
       return "lb%B1o\\t%b0, %1, %S1";
     case 2:
-      return "zero\\t%F0, 8";
+      return TARGET_OPT_FILLZERO ? "zero\\t%F0, 8"
+				 : "ldi\\t%F0, 0\;ldi\\t%N0, 0";
     case 3:
-      return "fill\\t%F0, 8";
+      return TARGET_OPT_FILLZERO ? "fill\\t%F0, 8"
+				 : "ldi32\\t%F0, 0xffffffff\;mov\\t%N0, %F0";
     case 4:
       /* careful with overlapping source and destination regs.  */
       gcc_assert (GP_REG_P (REGNO (operands[0])));
@@ -502,7 +504,7 @@
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "0,r")))]
-  ""
+  "TARGET_OPT_FILLZERO"
   "@
     zero\\t%F0.b1, 7
     mov\\t%F0.b0, %1\;zero\\t%F0.b1, 7"
@@ -512,7 +514,7 @@
 (define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:HI 1 "register_operand" "0,r")))]
-  ""
+  "TARGET_OPT_FILLZERO"
   "@
     zero\\t%F0.b2, 6
     mov\\t%F0.w0, %1\;zero\\t%F0.b2, 6"
@@ -522,7 +524,7 @@
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:SI 1 "register_operand" "0,r")))]
-  ""
+  "TARGET_OPT_FILLZERO"
   "@
     zero\\t%N0, 4
     mov\\t%F0, %1\;zero\\t%N0, 4"
@@ -535,7 +537,7 @@
 (define_expand "extend<EQS0:mode><EQDHIDI:mode>2"
   [(set (match_operand:EQDHIDI 0 "register_operand" "=r")
 	(sign_extend:EQDHIDI (match_operand:EQS0 1 "register_operand" "r")))]
-  ""
+  "TARGET_OPT_FILLZERO"
 {
   rtx_code_label *skip_hiset_label;
 
@@ -744,7 +746,7 @@
 	(ior:HIDI
 	   (match_operand:HIDI 1 "register_operand" "0")
 	   (match_operand:HIDI 2 "const_fillbytes_operand" "Uf")))]
-  ""
+  "TARGET_OPT_FILLZERO"
 {
   static char line[64];
   pru_byterange r;
@@ -767,7 +769,7 @@
 	(and:HIDI
 	   (match_operand:HIDI 1 "register_operand" "0")
 	   (match_operand:HIDI 2 "const_zerobytes_operand" "Uz")))]
-  ""
+  "TARGET_OPT_FILLZERO"
 {
   static char line[64];
   pru_byterange r;
@@ -1114,7 +1116,8 @@
   /* Try with the more efficient zero/fill patterns first.  */
   if (<LOGICAL_BITOP:CODE> == IOR
       && CONST_INT_P (operands[2])
-      && const_fillbytes_operand (operands[2], DImode))
+      && const_fillbytes_operand (operands[2], DImode)
+      && TARGET_OPT_FILLZERO)
     {
       rtx insn = maybe_gen_pru_ior_fillbytes (DImode,
 					      operands[0],
@@ -1130,7 +1133,8 @@
     }
   if (<LOGICAL_BITOP:CODE> == AND
       && CONST_INT_P (operands[2])
-      && const_zerobytes_operand (operands[2], DImode))
+      && const_zerobytes_operand (operands[2], DImode)
+      && TARGET_OPT_FILLZERO)
     {
       rtx insn = maybe_gen_pru_and_zerobytes (DImode,
 					      operands[0],
@@ -1212,7 +1216,7 @@
   [(set (match_operand:SI 0 "pru_muldst_operand"	   "=Rmd0")
 	(mult:SI (match_operand:SI 1 "pru_mulsrc0_operand" "%Rms0")
 		 (match_operand:SI 2 "pru_mulsrc1_operand" "Rms1")))]
-  ""
+  "TARGET_OPT_MUL"
   "nop\;xin\\t0, %0, 4"
   [(set_attr "type" "alu")
    (set_attr "length" "8")])
