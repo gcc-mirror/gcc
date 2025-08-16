@@ -1694,6 +1694,8 @@
     riscv_vector::expand_vx_binary_vec_dup_vec (operands[0], operands[2],
 						operands[1], <CODE>,
 						<MODE>mode);
+
+    DONE;
   }
   [(set_attr "type" "vialu")])
 
@@ -1711,6 +1713,8 @@
     riscv_vector::expand_vx_binary_vec_vec_dup (operands[0], operands[1],
 						operands[2], <CODE>,
 						<MODE>mode);
+
+    DONE;
   }
   [(set_attr "type" "vialu")])
 
