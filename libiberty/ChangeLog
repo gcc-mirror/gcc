@@ -1,3 +1,16 @@
+2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120503
+	PR c++/120824
+	* cp-demangle.c (d_unnamed_enum): New function.
+	(d_unqualified_name): Call it.
+	(cplus_demangle_type): Handle unscoped unnamed types
+	(Ue, Ul, etc.)
+	(d_count_templates_scopes): Handle unnamed enums.
+	(d_find_pack): Likewise.
+	(d_print_comp_inner): Print unnamed enums.
+	* testsuite/demangle-expected: Add tests.
+
 2025-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-demangle.c (d_encoding): Fix a comment typo, whaever -> whatever.

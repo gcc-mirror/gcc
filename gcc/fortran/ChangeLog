@@ -1,3 +1,11 @@
+2025-08-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/107421
+	* trans-common.cc (build_common_decl): Call set_decl_tls_model
+	after processing a variable.
+	* trans-decl.cc (gfc_finish_var_decl): Likewise.
+	(get_proc_pointer_decl): Likewise.
+
 2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89092

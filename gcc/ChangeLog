@@ -1,3 +1,13 @@
+2025-08-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Add supported insn
+	of vx combine.
+
+2025-08-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Add missed DONE
+	for vx combine pattern.
+
 2025-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi (Type Traits): Document

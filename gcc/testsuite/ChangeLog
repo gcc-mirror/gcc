@@ -1,3 +1,20 @@
+2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120503
+	PR c++/120824
+	* g++.dg/abi/mangle32.C: Remove enumerator list.
+	* g++.dg/cpp0x/linkage2.C: Likewise.
+	* g++.dg/ext/vector26.C: Likewise.
+	* g++.dg/other/anon3.C: Likewise.
+	* g++.dg/abi/mangle83.C: New test.
+	* g++.dg/modules/enum-15_a.C: New test.
+	* g++.dg/modules/enum-15_b.C: New test.
+
+2025-08-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/107421
+	* gfortran.dg/gomp/pr107421.f90: New test.
+
 2025-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp26/expansion-stmt15.C: Expect different diagnostics

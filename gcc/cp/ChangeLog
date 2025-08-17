@@ -1,3 +1,22 @@
+2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120503
+	PR c++/120824
+	* cp-tree.h (TYPE_UNNAMED_P): Adjust for enums with enumerators
+	for linkage purposes.
+	(enum_with_enumerator_for_linkage_p): Declare.
+	* decl.cc (name_unnamed_type): Adjust assertions to handle enums
+	with enumerators for linkage purposes.
+	(grokdeclarator): Use a typedef name for enums with enumerators
+	for linkage purposes.
+	(enum_with_enumerator_for_linkage_p): New function.
+	(finish_enum_value_list): Reset type linkage for enums with
+	enumerators for linkage purposes.
+	* mangle.cc (write_unnamed_enum_name): New function.
+	(write_unqualified_name): Handle enums with enumerators for
+	linkage purposes.
+	* tree.cc (decl_linkage): Fixup unnamed enums.
+
 2025-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-trait.def (STRUCTURED_BINDING_SIZE): New unary trait.
