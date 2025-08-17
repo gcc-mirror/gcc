@@ -3670,6 +3670,7 @@ extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
 extern bool contains_constant_pool_address_p (const_rtx);
 extern void add_auto_inc_notes (rtx_insn *, rtx);
+extern bool single_output_fused_pair_p (rtx_insn *);
 
 /* Handle the cheap and common cases inline for performance.  */
 

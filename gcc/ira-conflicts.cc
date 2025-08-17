@@ -448,7 +448,7 @@ process_reg_shuffles (rtx_insn *insn, rtx reg, int op_num, int freq,
 static void
 add_insn_allocno_copies (rtx_insn *insn)
 {
-  rtx set, operand, dup;
+  rtx set = single_set (insn), operand, dup;
   bool bound_p[MAX_RECOG_OPERANDS];
   int i, n, freq;
   alternative_mask alts;
@@ -456,7 +456,15 @@ add_insn_allocno_copies (rtx_insn *insn)
   freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
   if (freq == 0)
     freq = 1;
-  if ((set = single_set (insn)) != NULL_RTX
+
+  /* Tie output register operands of two consecutive single_sets
+     marked as a fused pair.  */
+  if (single_output_fused_pair_p (insn))
+    process_regs_for_copy (SET_DEST (set),
+		   SET_DEST (single_set (prev_nonnote_nondebug_insn (insn))),
+		   true, NULL, freq);
+
+  if (set != NULL_RTX
       && REG_SUBREG_P (SET_DEST (set)) && REG_SUBREG_P (SET_SRC (set))
       && ! side_effects_p (set)
       && find_reg_note (insn, REG_DEAD,
