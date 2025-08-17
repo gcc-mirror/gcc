@@ -16,8 +16,8 @@ int test ()
           + normal_func ());
 }
 
-/* { dg-final { scan-assembler-not "\tjal(|s)\tlong_call_func\n" } } */
-/* { dg-final { scan-assembler-not "\tjal(|s)\tfar_func\n" } } */
-/* { dg-final { scan-assembler     "\t(jal(|s)|balc)\tshort_call_func\n" } } */
-/* { dg-final { scan-assembler     "\t(jal(|s)|balc)\tnear_func\n" } } */
-/* { dg-final { scan-assembler     "\t(jal(|s)|balc)\tnormal_func\n" } } */
+/* { dg-final { scan-assembler-not "\t(jals?|balc)\tlong_call_func\n" } } */
+/* { dg-final { scan-assembler-not "\t(jals?|balc)\tfar_func\n" } } */
+/* { dg-final { scan-assembler     "\t(jals?|balc)\tshort_call_func\n" } } */
+/* { dg-final { scan-assembler     "\t(jals?|balc)\tnear_func\n" } } */
+/* { dg-final { scan-assembler     "\t(jals?|balc)\tnormal_func\n" } } */
