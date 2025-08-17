@@ -941,9 +941,18 @@ pru_init_libfuncs (void)
 
   /* Long long.  */
   set_optab_libfunc (ashr_optab, DImode, "__pruabi_asrll");
-  set_optab_libfunc (smul_optab, DImode, "__pruabi_mpyll");
   set_optab_libfunc (ashl_optab, DImode, "__pruabi_lslll");
   set_optab_libfunc (lshr_optab, DImode, "__pruabi_lsrll");
+
+  if (TARGET_OPT_MUL)
+    {
+      set_optab_libfunc (smul_optab, DImode, "__pruabi_mpyll");
+    }
+  else
+    {
+      set_optab_libfunc (smul_optab, DImode, "__pruabi_softmpyll");
+      set_optab_libfunc (smul_optab, SImode, "__pruabi_softmpyi");
+    }
 
   set_optab_libfunc (sdiv_optab, SImode, "__pruabi_divi");
   set_optab_libfunc (udiv_optab, SImode, "__pruabi_divu");
