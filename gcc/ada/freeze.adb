@@ -7750,7 +7750,14 @@ package body Freeze is
 
             --  Check restriction for standard storage pool
 
-            if No (Associated_Storage_Pool (E)) then
+            --  Skip this check when Etype (T) is unknown, since attribute
+            --  Associated_Storage_Pool is only available in the root type
+            --  of E, and in such case it cannot not be computed (thus
+            --  causing spurious errors).
+
+            if Present (Etype (E))
+              and then No (Associated_Storage_Pool (E))
+            then
                Check_Restriction (No_Standard_Storage_Pools, E);
             end if;
 

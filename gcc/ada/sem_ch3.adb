@@ -1476,9 +1476,15 @@ package body Sem_Ch3 is
       --  This reset is performed in most cases except where the access type
       --  has been created for the purposes of allocating or deallocating a
       --  build-in-place object. Such access types have explicitly set pools
-      --  and finalization collections.
+      --  and finalization collections. It is also skipped when Etype (T) is
+      --  unknown, since attribute Associated_Storage_Pool is only available
+      --  in the root type of T, and in such case it cannot not be computed
+      --  (thus causing spurious errors). Etype (T) is unknown when errors
+      --  have been previously reported on T.
 
-      if No (Associated_Storage_Pool (T)) then
+      if Present (Etype (T))
+        and then No (Associated_Storage_Pool (T))
+      then
          Set_Finalization_Collection (T, Empty);
       end if;
 
