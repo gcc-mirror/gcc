@@ -386,13 +386,13 @@
   })
 
 (define_insn "amo_atomic_exchange<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")
+  [(set (match_operand:GPR 0 "register_operand" "=r")
 	(unspec_volatile:GPR
 	  [(match_operand:GPR 1 "memory_operand" "+A")
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	  UNSPEC_SYNC_EXCHANGE))
    (set (match_dup 1)
-	(match_operand:GPR 2 "register_operand" "0"))]
+	(match_operand:GPR 2 "reg_or_0_operand" "rJ"))]
   "TARGET_ZAAMO"
   "amoswap.<amo>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
@@ -434,13 +434,13 @@
 })
 
 (define_insn "zabha_atomic_exchange<mode>"
-  [(set (match_operand:SHORT 0 "register_operand" "=&r")
+  [(set (match_operand:SHORT 0 "register_operand" "=r")
 	(unspec_volatile:SHORT
 	  [(match_operand:SHORT 1 "memory_operand" "+A")
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	  UNSPEC_SYNC_EXCHANGE_ZABHA))
    (set (match_dup 1)
-	(match_operand:SHORT 2 "register_operand" "0"))]
+	(match_operand:SHORT 2 "reg_or_0_operand" "rJ"))]
   "TARGET_ZABHA"
   "amoswap.<amobh>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
