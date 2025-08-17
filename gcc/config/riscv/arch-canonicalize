@@ -163,7 +163,19 @@ def parse_dep_exts(dep_exts_str):
     ext_name = match.group(1)
     condition_code = match.group(2)
     deps.append({'ext': ext_name, 'type': 'conditional', 'condition': condition_code})
-    conditional_matches.append((match.start(), match.end()))
+    # The conditional_pattern RE matches only the first code block enclosed
+    # in braces.
+    #
+    # Extend the match to the condition block's closing brace, encompassing
+    # all code blocks,  by simply trying to match the numbers of opening
+    # and closing braces.  While crude, this avoids writing a complicated
+    # parse here.
+    closing_braces_left = condition_code.count('{') - condition_code.count('}')
+    condition_end = match.end()
+    while closing_braces_left > 0:
+      condition_end = dep_exts_str.find('}', condition_end)
+      closing_braces_left -= 1
+    conditional_matches.append((match.start(), condition_end))
 
   # Remove conditional dependency blocks from the string
   remaining_str = dep_exts_str
@@ -534,6 +546,11 @@ def run_unit_tests():
     assert extensions[0]['name'] == 'test'
     assert len(extensions[0]['dep_exts']) == 2
 
+  def test_parse_long_condition_block():
+    """Test condition block containing several code blocks."""
+    result = arch_canonicalize("rv32ec", "20191213")
+    assert "rv32ec_zca" in result
+
   # Collect test functions
   test_functions = [
     test_basic_arch_parsing,
@@ -542,7 +559,8 @@ def run_unit_tests():
     test_conditional_dependencies,
     test_parse_dep_exts,
     test_evaluate_conditional_dependency,
-    test_parse_define_riscv_ext
+    test_parse_define_riscv_ext,
+    test_parse_long_condition_block
   ]
 
   # Run tests manually first, then optionally with pytest
