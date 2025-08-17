@@ -835,9 +835,9 @@ package Opt is
 
    Implicit_Packing : Boolean := False;
    --  GNAT
-   --  If set True, then a Size attribute clause on an array is allowed to
-   --  cause implicit packing instead of generating an error message. Set by
-   --  use of pragma Implicit_Packing.
+   --  If set True, then a Size attribute clause on an array or record is
+   --  allowed to cause implicit packing instead of generating an error
+   --  message. Set by use of pragma Implicit_Packing.
 
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GNATBIND

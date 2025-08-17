@@ -7151,31 +7151,30 @@ package body Freeze is
                         Next_Index (Indx);
                      end loop;
 
-                     --  What we are looking for here is the situation where
-                     --  the RM_Size given would be exactly right if there was
-                     --  a pragma Pack, resulting in the component size being
-                     --  the RM_Size of the component type.
+                     --  In Implicit_Packing mode, if the specified RM_Size
+                     --  would be big enough if there were a pragma Pack,
+                     --  then set the component size as if there were Pack,
+                     --  and Freeze_Array_Type will do the rest.
 
-                     if RM_Size (E) = Num_Elmts * Rsiz then
+                     if Implicit_Packing
+                       and then RM_Size (E) >= Num_Elmts * Rsiz
+                     then
+                        Set_Component_Size (Btyp, Rsiz);
 
-                        --  For implicit packing mode, just set the component
-                        --  size and Freeze_Array_Type will do the rest.
+                     --  Otherwise, if pragma Pack would result in exactly the
+                     --  right size, give an error message suggesting packing,
+                     --  except that if the specified Size is zero, there is no
+                     --  need for pragma Pack. Note that size zero is not
+                     --  considered Addressable.
 
-                        if Implicit_Packing then
-                           Set_Component_Size (Btyp, Rsiz);
-
-                        --  Otherwise give an error message, except that if the
-                        --  specified Size is zero, there is no need for pragma
-                        --  Pack. Note that size zero is not considered
-                        --  Addressable.
-
-                        elsif RM_Size (E) /= Uint_0 then
-                           Error_Msg_NE
-                             ("size given for& too small", SZ, E);
-                           Error_Msg_N -- CODEFIX
-                             ("\use explicit pragma Pack or use pragma "
-                              & "Implicit_Packing", SZ);
-                        end if;
+                     elsif RM_Size (E) = Num_Elmts * Rsiz
+                       and then RM_Size (E) /= Uint_0
+                     then
+                        Error_Msg_NE
+                          ("size given for& too small", SZ, E);
+                        Error_Msg_N -- CODEFIX
+                          ("\use explicit pragma Pack or use pragma "
+                           & "Implicit_Packing", SZ);
                      end if;
                   end if;
                end;
