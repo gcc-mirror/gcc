@@ -1117,6 +1117,12 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
   unsigned this_regno = REGNO (x);
   int this_nregs = REG_NREGS (x);
 
+  /* Do not process write actions for the second instruction of
+     a macro-fused pair of two single_sets.  */
+  if ((action == mark_write || action == terminate_write)
+	&& single_output_fused_pair_p (insn))
+    return;
+
   if (action == mark_write)
     {
       if (type == OP_OUT)
@@ -1153,7 +1159,9 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
       return;
     }
 
-  if ((type == OP_OUT) != (action == terminate_write || action == mark_access))
+  if ((type == OP_OUT) != (action == terminate_write || action == mark_access)
+	&& ! (type == OP_OUT && action == mark_read
+	      && single_output_fused_pair_p (insn)))
     return;
 
   for (p = &open_chains; *p;)
