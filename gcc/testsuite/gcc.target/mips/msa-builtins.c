@@ -1,6 +1,6 @@
 /* Test builtins for MIPS MSA ASE instructions */
 /* { dg-do compile } */
-/* { dg-options "-mfp64 -mhard-float -mmsa" } */
+/* { dg-options "-mno-mips16 -mfp64 -mhard-float -mmsa" } */
 
 /* { dg-final { scan-assembler-times "msa_addv_b:.*addv\\.b.*msa_addv_b" 1 } } */
 /* { dg-final { scan-assembler-times "msa_addv_h:.*addv\\.h.*msa_addv_h" 1 } } */
@@ -641,182 +641,182 @@
 #define FN(NAME, T) FN_EVAL (NAME, T)
 
 /* MSA Arithmetic builtins.  */
-#define ADDV(T) NOMIPS16 T FN (addv, T ## _DF) (T i, T j) { return BUILTIN (addv, T ## _DF) (i, j); }
-#define ADDVI(T) NOMIPS16 T FN (addvi, T ## _DF) (T i) { return BUILTIN (addvi, T ## _DF) (i, U5MAX); }
-#define ADD_A(T) NOMIPS16 T FN (add_a, T ## _DF) (T i, T j) { return BUILTIN (add_a, T ## _DF) (i, j); }
-#define ADDS_A(T) NOMIPS16 T FN (adds_a, T ## _DF) (T i, T j) { return BUILTIN (adds_a, T ## _DF) (i, j); }
-#define ADDS_S(T) NOMIPS16 T FN (adds_s, T ## _DF) (T i, T j) { return BUILTIN (adds_s, T ## _DF) (i, j); }
-#define ADDS_U(T) NOMIPS16 T FN (adds_u, T ## _DF) (T i, T j) { return BUILTIN (adds_u, T ## _DF) (i, j); }
-#define HADD_S(T) NOMIPS16 T ## _DBL FN (hadd_s, T ## _DDF) (T i, T j) { return BUILTIN (hadd_s, T ## _DDF) (i, j); }
-#define HADD_U(T) NOMIPS16 T ## _DBL FN (hadd_u, T ## _DDF) (T i, T j) { return BUILTIN (hadd_u, T ## _DDF) (i, j); }
-#define ASUB_S(T) NOMIPS16 T FN (asub_s, T ## _DF) (T i, T j) { return BUILTIN (asub_s, T ## _DF) (i, j); }
-#define ASUB_U(T) NOMIPS16 T FN (asub_u, T ## _DF) (T i, T j) { return BUILTIN (asub_u, T ## _DF) (i, j); }
-#define AVE_S(T) NOMIPS16 T FN (ave_s, T ## _DF) (T i, T j) { return BUILTIN (ave_s, T ## _DF) (i, j); }
-#define AVE_U(T) NOMIPS16 T FN (ave_u, T ## _DF) (T i, T j) { return BUILTIN (ave_u, T ## _DF) (i, j); }
-#define AVER_S(T) NOMIPS16 T FN (aver_s, T ## _DF) (T i, T j) { return BUILTIN (aver_s, T ## _DF) (i, j); }
-#define AVER_U(T) NOMIPS16 T FN (aver_u, T ## _DF) (T i, T j) { return BUILTIN (aver_u, T ## _DF) (i, j); }
-#define DOTP_S(T) NOMIPS16 T ## _DBL FN (dotp_s, T ## _DDF) (T i, T j) { return BUILTIN (dotp_s, T ## _DDF) (i, j); }
-#define DOTP_U(T) NOMIPS16 T ## _DBL FN (dotp_u, T ## _DDF) (T i, T j) { return BUILTIN (dotp_u, T ## _DDF) (i, j); }
-#define DPADD_S(T) NOMIPS16 T ## _DBL FN (dpadd_s, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpadd_s, T ## _DDF) (i, j, k); }
-#define DPADD_U(T) NOMIPS16 T ## _DBL FN (dpadd_u, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpadd_u, T ## _DDF) (i, j, k); }
-#define DPSUB_S(T) NOMIPS16 T ## _DBL FN (dpsub_s, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpsub_s, T ## _DDF) (i, j, k); }
-#define DPSUB_U(T) NOMIPS16 T ## _SDBL FN (dpsub_u, T ## _DDF) (T ## _SDBL i, T j, T k) { return BUILTIN (dpsub_u, T ## _DDF) (i, j, k); }
-#define DIV_S(T) NOMIPS16 T FN (div_s, T ## _DF) (T i, T j) { return BUILTIN (div_s, T ## _DF) (i, j); }
-#define DIV_U(T) NOMIPS16 T FN (div_u, T ## _DF) (T i, T j) { return BUILTIN (div_u, T ## _DF) (i, j); }
-#define MADDV(T) NOMIPS16 T FN (maddv, T ## _DF) (T i, T j, T k) { return BUILTIN (maddv, T ## _DF) (i, j, k); }
-#define MAX_A(T) NOMIPS16 T FN (max_a, T ## _DF) (T i, T j) { return BUILTIN (max_a, T ## _DF) (i, j); }
-#define MIN_A(T) NOMIPS16 T FN (min_a, T ## _DF) (T i, T j) { return BUILTIN (min_a, T ## _DF) (i, j); }
-#define MAX_S(T) NOMIPS16 T FN (max_s, T ## _DF) (T i, T j) { return BUILTIN (max_s, T ## _DF) (i, j); }
-#define MAXI_S(T) NOMIPS16 T FN (maxi_s, T ## _DF) (T i) { return BUILTIN (maxi_s, T ## _DF) (i, S5MAX); }
-#define MAX_U(T) NOMIPS16 T FN (max_u, T ## _DF) (T i, T j) { return BUILTIN (max_u, T ## _DF) (i, j); }
-#define MAXI_U(T) NOMIPS16 T FN (maxi_u, T ## _DF) (T i) { return BUILTIN (maxi_u, T ## _DF) (i, S5MAX); }
-#define MIN_S(T) NOMIPS16 T FN (min_s, T ## _DF) (T i, T j) { return BUILTIN (min_s, T ## _DF) (i, j); }
-#define MINI_S(T) NOMIPS16 T FN (mini_s, T ## _DF) (T i) { return BUILTIN (mini_s, T ## _DF) (i, S5MAX); }
-#define MIN_U(T) NOMIPS16 T FN (min_u, T ## _DF) (T i, T j) { return BUILTIN (min_u, T ## _DF) (i, j); }
-#define MINI_U(T) NOMIPS16 T FN (mini_u, T ## _DF) (T i) { return BUILTIN (mini_u, T ## _DF) (i, S5MAX); }
-#define MSUBV(T) NOMIPS16 T FN (msubv, T ## _DF) (T i, T j, T k) { return BUILTIN (msubv, T ## _DF) (i, j, k); }
-#define MULV(T) NOMIPS16 T FN (mulv, T ## _DF) (T i, T j) { return BUILTIN (mulv, T ## _DF) (i, j); }
-#define MOD_S(T) NOMIPS16 T FN (mod_s, T ## _DF) (T i, T j) { return BUILTIN (mod_s, T ## _DF) (i, j); }
-#define MOD_U(T) NOMIPS16 T FN (mod_u, T ## _DF) (T i, T j) { return BUILTIN (mod_u, T ## _DF) (i, j); }
-#define SAT_S(T) NOMIPS16 T FN (sat_s, T ## _DF) (T i) { return BUILTIN (sat_s, T ## _DF) (i, 7); }
-#define SAT_U(T) NOMIPS16 T FN (sat_u, T ## _DF) (T i) { return BUILTIN (sat_u, T ## _DF) (i, 7); }
-#define SUBS_S(T) NOMIPS16 T FN (subs_s, T ## _DF) (T i, T j) { return BUILTIN (subs_s, T ## _DF) (i, j); }
-#define SUBS_U(T) NOMIPS16 T FN (subs_u, T ## _DF) (T i, T j) { return BUILTIN (subs_u, T ## _DF) (i, j); }
-#define HSUB_S(T) NOMIPS16 T ## _DBL FN (hsub_s, T ## _DDF) (T i, T j) { return BUILTIN (hsub_s, T ## _DDF) (i, j); }
-#define HSUB_U(T) NOMIPS16 T ## _SDBL FN (hsub_u, T ## _DDF) (T i, T j) { return BUILTIN (hsub_u, T ## _DDF) (i, j); }
-#define SUBSUU_S(T) NOMIPS16 T ## _S FN (subsuu_s, T ## _DF) (T i, T j) { return BUILTIN (subsuu_s, T ## _DF) (i, j); }
-#define SUBSUS_U(T) NOMIPS16 T FN (subsus_u, T ## _DF) (T i, T ## _S j) { return BUILTIN (subsus_u, T ## _DF) (i, j); }
-#define SUBV(T) NOMIPS16 T FN (subv, T ## _DF) (T i, T j) { return BUILTIN (subv, T ## _DF) (i, j); }
-#define SUBVI(T) NOMIPS16 T FN (subvi, T ## _DF) (T i) { return BUILTIN (subvi, T ## _DF) (i, U5MAX); }
+#define ADDV(T) T FN (addv, T ## _DF) (T i, T j) { return BUILTIN (addv, T ## _DF) (i, j); }
+#define ADDVI(T) T FN (addvi, T ## _DF) (T i) { return BUILTIN (addvi, T ## _DF) (i, U5MAX); }
+#define ADD_A(T) T FN (add_a, T ## _DF) (T i, T j) { return BUILTIN (add_a, T ## _DF) (i, j); }
+#define ADDS_A(T) T FN (adds_a, T ## _DF) (T i, T j) { return BUILTIN (adds_a, T ## _DF) (i, j); }
+#define ADDS_S(T) T FN (adds_s, T ## _DF) (T i, T j) { return BUILTIN (adds_s, T ## _DF) (i, j); }
+#define ADDS_U(T) T FN (adds_u, T ## _DF) (T i, T j) { return BUILTIN (adds_u, T ## _DF) (i, j); }
+#define HADD_S(T) T ## _DBL FN (hadd_s, T ## _DDF) (T i, T j) { return BUILTIN (hadd_s, T ## _DDF) (i, j); }
+#define HADD_U(T) T ## _DBL FN (hadd_u, T ## _DDF) (T i, T j) { return BUILTIN (hadd_u, T ## _DDF) (i, j); }
+#define ASUB_S(T) T FN (asub_s, T ## _DF) (T i, T j) { return BUILTIN (asub_s, T ## _DF) (i, j); }
+#define ASUB_U(T) T FN (asub_u, T ## _DF) (T i, T j) { return BUILTIN (asub_u, T ## _DF) (i, j); }
+#define AVE_S(T) T FN (ave_s, T ## _DF) (T i, T j) { return BUILTIN (ave_s, T ## _DF) (i, j); }
+#define AVE_U(T) T FN (ave_u, T ## _DF) (T i, T j) { return BUILTIN (ave_u, T ## _DF) (i, j); }
+#define AVER_S(T) T FN (aver_s, T ## _DF) (T i, T j) { return BUILTIN (aver_s, T ## _DF) (i, j); }
+#define AVER_U(T) T FN (aver_u, T ## _DF) (T i, T j) { return BUILTIN (aver_u, T ## _DF) (i, j); }
+#define DOTP_S(T) T ## _DBL FN (dotp_s, T ## _DDF) (T i, T j) { return BUILTIN (dotp_s, T ## _DDF) (i, j); }
+#define DOTP_U(T) T ## _DBL FN (dotp_u, T ## _DDF) (T i, T j) { return BUILTIN (dotp_u, T ## _DDF) (i, j); }
+#define DPADD_S(T) T ## _DBL FN (dpadd_s, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpadd_s, T ## _DDF) (i, j, k); }
+#define DPADD_U(T) T ## _DBL FN (dpadd_u, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpadd_u, T ## _DDF) (i, j, k); }
+#define DPSUB_S(T) T ## _DBL FN (dpsub_s, T ## _DDF) (T ## _DBL i, T j, T k) { return BUILTIN (dpsub_s, T ## _DDF) (i, j, k); }
+#define DPSUB_U(T) T ## _SDBL FN (dpsub_u, T ## _DDF) (T ## _SDBL i, T j, T k) { return BUILTIN (dpsub_u, T ## _DDF) (i, j, k); }
+#define DIV_S(T) T FN (div_s, T ## _DF) (T i, T j) { return BUILTIN (div_s, T ## _DF) (i, j); }
+#define DIV_U(T) T FN (div_u, T ## _DF) (T i, T j) { return BUILTIN (div_u, T ## _DF) (i, j); }
+#define MADDV(T) T FN (maddv, T ## _DF) (T i, T j, T k) { return BUILTIN (maddv, T ## _DF) (i, j, k); }
+#define MAX_A(T) T FN (max_a, T ## _DF) (T i, T j) { return BUILTIN (max_a, T ## _DF) (i, j); }
+#define MIN_A(T) T FN (min_a, T ## _DF) (T i, T j) { return BUILTIN (min_a, T ## _DF) (i, j); }
+#define MAX_S(T) T FN (max_s, T ## _DF) (T i, T j) { return BUILTIN (max_s, T ## _DF) (i, j); }
+#define MAXI_S(T) T FN (maxi_s, T ## _DF) (T i) { return BUILTIN (maxi_s, T ## _DF) (i, S5MAX); }
+#define MAX_U(T) T FN (max_u, T ## _DF) (T i, T j) { return BUILTIN (max_u, T ## _DF) (i, j); }
+#define MAXI_U(T) T FN (maxi_u, T ## _DF) (T i) { return BUILTIN (maxi_u, T ## _DF) (i, S5MAX); }
+#define MIN_S(T) T FN (min_s, T ## _DF) (T i, T j) { return BUILTIN (min_s, T ## _DF) (i, j); }
+#define MINI_S(T) T FN (mini_s, T ## _DF) (T i) { return BUILTIN (mini_s, T ## _DF) (i, S5MAX); }
+#define MIN_U(T) T FN (min_u, T ## _DF) (T i, T j) { return BUILTIN (min_u, T ## _DF) (i, j); }
+#define MINI_U(T) T FN (mini_u, T ## _DF) (T i) { return BUILTIN (mini_u, T ## _DF) (i, S5MAX); }
+#define MSUBV(T) T FN (msubv, T ## _DF) (T i, T j, T k) { return BUILTIN (msubv, T ## _DF) (i, j, k); }
+#define MULV(T) T FN (mulv, T ## _DF) (T i, T j) { return BUILTIN (mulv, T ## _DF) (i, j); }
+#define MOD_S(T) T FN (mod_s, T ## _DF) (T i, T j) { return BUILTIN (mod_s, T ## _DF) (i, j); }
+#define MOD_U(T) T FN (mod_u, T ## _DF) (T i, T j) { return BUILTIN (mod_u, T ## _DF) (i, j); }
+#define SAT_S(T) T FN (sat_s, T ## _DF) (T i) { return BUILTIN (sat_s, T ## _DF) (i, 7); }
+#define SAT_U(T) T FN (sat_u, T ## _DF) (T i) { return BUILTIN (sat_u, T ## _DF) (i, 7); }
+#define SUBS_S(T) T FN (subs_s, T ## _DF) (T i, T j) { return BUILTIN (subs_s, T ## _DF) (i, j); }
+#define SUBS_U(T) T FN (subs_u, T ## _DF) (T i, T j) { return BUILTIN (subs_u, T ## _DF) (i, j); }
+#define HSUB_S(T) T ## _DBL FN (hsub_s, T ## _DDF) (T i, T j) { return BUILTIN (hsub_s, T ## _DDF) (i, j); }
+#define HSUB_U(T) T ## _SDBL FN (hsub_u, T ## _DDF) (T i, T j) { return BUILTIN (hsub_u, T ## _DDF) (i, j); }
+#define SUBSUU_S(T) T ## _S FN (subsuu_s, T ## _DF) (T i, T j) { return BUILTIN (subsuu_s, T ## _DF) (i, j); }
+#define SUBSUS_U(T) T FN (subsus_u, T ## _DF) (T i, T ## _S j) { return BUILTIN (subsus_u, T ## _DF) (i, j); }
+#define SUBV(T) T FN (subv, T ## _DF) (T i, T j) { return BUILTIN (subv, T ## _DF) (i, j); }
+#define SUBVI(T) T FN (subvi, T ## _DF) (T i) { return BUILTIN (subvi, T ## _DF) (i, U5MAX); }
 
 /* MSA Bitwise builtins.  */
-#define AND(T) NOMIPS16 T FN (and, v) (T i, T j) { return BUILTIN (and, v) (i, j); }
-#define ANDI(T) NOMIPS16 T FN (andi, T ## _DF) (T i) { return BUILTIN (andi, T ## _DF) (i, 252); }
-#define BCLR(T) NOMIPS16 T FN (bclr, T ## _DF) (T i, T j) { return BUILTIN (bclr, T ## _DF) (i, j); }
-#define BCLRI(T) NOMIPS16 T FN (bclri, T ## _DF) (T i) { return BUILTIN (bclri, T ## _DF) (i, 0); }
-#define BINSL(T) NOMIPS16 T FN (binsl, T ## _DF) (T i, T j, T k) { return BUILTIN (binsl, T ## _DF) (i, j, k); }
-#define BINSLI(T) NOMIPS16 T FN (binsli, T ## _DF) (T i, T j) { return BUILTIN (binsli, T ## _DF) (i, j, 0); }
-#define BINSR(T) NOMIPS16 T FN (binsr, T ## _DF) (T i, T j, T k) { return BUILTIN (binsr, T ## _DF) (i, j, k); }
-#define BINSRI(T) NOMIPS16 T FN (binsri, T ## _DF) (T i, T j) { return BUILTIN (binsri, T ## _DF) (i, j, 0); }
-#define BMNZ(T) NOMIPS16 T FN (bmnz, v) (T i, T j, T k) { return BUILTIN (bmnz, v) (i, j, k); }
-#define BMNZI(T) NOMIPS16 T FN (bmnzi, T ## _DF) (T i, T j) { return BUILTIN (bmnzi, T ## _DF) (i, j, 254); }
-#define BMZ(T) NOMIPS16 T FN (bmz, v) (T i, T j, T k) { return BUILTIN (bmz, v) (i, j, k); }
-#define BMZI(T) NOMIPS16 T FN (bmzi, T ## _DF) (T i, T j) { return BUILTIN (bmzi, T ## _DF) (i, j, 254); }
-#define BNEG(T) NOMIPS16 T FN (bneg, T ## _DF) (T i, T j) { return BUILTIN (bneg, T ## _DF) (i, j); }
-#define BNEGI(T) NOMIPS16 T FN (bnegi, T ## _DF) (T i) { return BUILTIN (bnegi, T ## _DF) (i, 0); }
-#define BSEL(T) NOMIPS16 T FN (bsel, v) (T i, T j, T k) { return BUILTIN (bsel, v) (i, j, k); }
-#define BSELI(T) NOMIPS16 T FN (bseli, T ## _DF) (T i, T j) { return BUILTIN (bseli, T ## _DF) (i, j, U8MAX-1); }
-#define BSET(T) NOMIPS16 T FN (bset, T ## _DF) (T i, T j) { return BUILTIN (bset, T ## _DF) (i, j); }
-#define BSETI(T) NOMIPS16 T FN (bseti, T ## _DF) (T i) { return BUILTIN (bseti, T ## _DF) (i, 0); }
-#define NLOC(T) NOMIPS16 T FN (nloc, T ## _DF) (T i) { return BUILTIN (nloc, T ## _DF) (i); }
-#define NLZC(T) NOMIPS16 T FN (nlzc, T ## _DF) (T i) { return BUILTIN (nlzc, T ## _DF) (i); }
-#define NOR(T) NOMIPS16 T FN (nor, v) (T i, T j) { return BUILTIN (nor, v) (i, j); }
-#define NORI(T) NOMIPS16 T FN (nori, T ## _DF) (T i) { return BUILTIN (nori, T ## _DF) (i, 254); }
-#define PCNT(T) NOMIPS16 T FN (pcnt, T ## _DF) (T i) { return BUILTIN (pcnt, T ## _DF) (i); }
-#define OR(T) NOMIPS16 T FN (or, v) (T i, T j) { return BUILTIN (or, v) (i, j); }
-#define ORI(T) NOMIPS16 T FN (ori, T ## _DF) (T i) { return BUILTIN (ori, T ## _DF) (i, 252); }
-#define XOR(T) NOMIPS16 T FN (xor, v) (T i, T j) { return BUILTIN (xor, v) (i, j); }
-#define XORI(T) NOMIPS16 T FN (xori, T ## _DF) (T i) { return BUILTIN (xori, T ## _DF) (i, 254); }
-#define SLL(T) NOMIPS16 T FN (sll, T ## _DF) (T i, T j) { return BUILTIN (sll, T ## _DF) (i, j); }
-#define SLLI(T) NOMIPS16 T FN (slli, T ## _DF) (T i) { return BUILTIN (slli, T ## _DF) (i, 1); }
-#define SRA(T) NOMIPS16 T FN (sra, T ## _DF) (T i, T j) { return BUILTIN (sra, T ## _DF) (i, j); }
-#define SRAI(T) NOMIPS16 T FN (srai, T ## _DF) (T i) { return BUILTIN (srai, T ## _DF) (i, 1); }
-#define SRAR(T) NOMIPS16 T FN (srar, T ## _DF) (T i, T j) { return BUILTIN (srar, T ## _DF) (i, j); }
-#define SRARI(T) NOMIPS16 T FN (srari, T ## _DF) (T i) { return BUILTIN (srari, T ## _DF) (i, 0); }
-#define SRL(T) NOMIPS16 T FN (srl, T ## _DF) (T i, T j) { return BUILTIN (srl, T ## _DF) (i, j); }
-#define SRLI(T) NOMIPS16 T FN (srli, T ## _DF) (T i) { return BUILTIN (srli, T ## _DF) (i, 1); }
-#define SRLR(T) NOMIPS16 T FN (srlr, T ## _DF) (T i, T j) { return BUILTIN (srlr, T ## _DF) (i, j); }
-#define SRLRI(T) NOMIPS16 T FN (srlri, T ## _DF) (T i) { return BUILTIN (srlri, T ## _DF) (i, 0); }
+#define AND(T) T FN (and, v) (T i, T j) { return BUILTIN (and, v) (i, j); }
+#define ANDI(T) T FN (andi, T ## _DF) (T i) { return BUILTIN (andi, T ## _DF) (i, 252); }
+#define BCLR(T) T FN (bclr, T ## _DF) (T i, T j) { return BUILTIN (bclr, T ## _DF) (i, j); }
+#define BCLRI(T) T FN (bclri, T ## _DF) (T i) { return BUILTIN (bclri, T ## _DF) (i, 0); }
+#define BINSL(T) T FN (binsl, T ## _DF) (T i, T j, T k) { return BUILTIN (binsl, T ## _DF) (i, j, k); }
+#define BINSLI(T) T FN (binsli, T ## _DF) (T i, T j) { return BUILTIN (binsli, T ## _DF) (i, j, 0); }
+#define BINSR(T) T FN (binsr, T ## _DF) (T i, T j, T k) { return BUILTIN (binsr, T ## _DF) (i, j, k); }
+#define BINSRI(T) T FN (binsri, T ## _DF) (T i, T j) { return BUILTIN (binsri, T ## _DF) (i, j, 0); }
+#define BMNZ(T) T FN (bmnz, v) (T i, T j, T k) { return BUILTIN (bmnz, v) (i, j, k); }
+#define BMNZI(T) T FN (bmnzi, T ## _DF) (T i, T j) { return BUILTIN (bmnzi, T ## _DF) (i, j, 254); }
+#define BMZ(T) T FN (bmz, v) (T i, T j, T k) { return BUILTIN (bmz, v) (i, j, k); }
+#define BMZI(T) T FN (bmzi, T ## _DF) (T i, T j) { return BUILTIN (bmzi, T ## _DF) (i, j, 254); }
+#define BNEG(T) T FN (bneg, T ## _DF) (T i, T j) { return BUILTIN (bneg, T ## _DF) (i, j); }
+#define BNEGI(T) T FN (bnegi, T ## _DF) (T i) { return BUILTIN (bnegi, T ## _DF) (i, 0); }
+#define BSEL(T) T FN (bsel, v) (T i, T j, T k) { return BUILTIN (bsel, v) (i, j, k); }
+#define BSELI(T) T FN (bseli, T ## _DF) (T i, T j) { return BUILTIN (bseli, T ## _DF) (i, j, U8MAX-1); }
+#define BSET(T) T FN (bset, T ## _DF) (T i, T j) { return BUILTIN (bset, T ## _DF) (i, j); }
+#define BSETI(T) T FN (bseti, T ## _DF) (T i) { return BUILTIN (bseti, T ## _DF) (i, 0); }
+#define NLOC(T) T FN (nloc, T ## _DF) (T i) { return BUILTIN (nloc, T ## _DF) (i); }
+#define NLZC(T) T FN (nlzc, T ## _DF) (T i) { return BUILTIN (nlzc, T ## _DF) (i); }
+#define NOR(T) T FN (nor, v) (T i, T j) { return BUILTIN (nor, v) (i, j); }
+#define NORI(T) T FN (nori, T ## _DF) (T i) { return BUILTIN (nori, T ## _DF) (i, 254); }
+#define PCNT(T) T FN (pcnt, T ## _DF) (T i) { return BUILTIN (pcnt, T ## _DF) (i); }
+#define OR(T) T FN (or, v) (T i, T j) { return BUILTIN (or, v) (i, j); }
+#define ORI(T) T FN (ori, T ## _DF) (T i) { return BUILTIN (ori, T ## _DF) (i, 252); }
+#define XOR(T) T FN (xor, v) (T i, T j) { return BUILTIN (xor, v) (i, j); }
+#define XORI(T) T FN (xori, T ## _DF) (T i) { return BUILTIN (xori, T ## _DF) (i, 254); }
+#define SLL(T) T FN (sll, T ## _DF) (T i, T j) { return BUILTIN (sll, T ## _DF) (i, j); }
+#define SLLI(T) T FN (slli, T ## _DF) (T i) { return BUILTIN (slli, T ## _DF) (i, 1); }
+#define SRA(T) T FN (sra, T ## _DF) (T i, T j) { return BUILTIN (sra, T ## _DF) (i, j); }
+#define SRAI(T) T FN (srai, T ## _DF) (T i) { return BUILTIN (srai, T ## _DF) (i, 1); }
+#define SRAR(T) T FN (srar, T ## _DF) (T i, T j) { return BUILTIN (srar, T ## _DF) (i, j); }
+#define SRARI(T) T FN (srari, T ## _DF) (T i) { return BUILTIN (srari, T ## _DF) (i, 0); }
+#define SRL(T) T FN (srl, T ## _DF) (T i, T j) { return BUILTIN (srl, T ## _DF) (i, j); }
+#define SRLI(T) T FN (srli, T ## _DF) (T i) { return BUILTIN (srli, T ## _DF) (i, 1); }
+#define SRLR(T) T FN (srlr, T ## _DF) (T i, T j) { return BUILTIN (srlr, T ## _DF) (i, j); }
+#define SRLRI(T) T FN (srlri, T ## _DF) (T i) { return BUILTIN (srlri, T ## _DF) (i, 0); }
 
 /* MSA Floating-Point Arithmetic builtins.  */
-#define FADD(T) NOMIPS16 T FN (fadd, T ## _DF) (T i, T j) { return BUILTIN (fadd, T ## _DF) (i, j); }
-#define FDIV(T) NOMIPS16 T FN (fdiv, T ## _DF) (T i, T j) { return BUILTIN (fdiv, T ## _DF) (i, j); }
-#define FEXP2(T) NOMIPS16 T FN (fexp2, T ## _DF) (T i, T ## _FEXP2 j) { return BUILTIN (fexp2, T ## _DF) (i, j); }
-#define FLOG2(T) NOMIPS16 T FN (flog2, T ## _DF) (T i) { return BUILTIN (flog2, T ## _DF) (i); }
-#define FMADD(T) NOMIPS16 T FN (fmadd, T ## _DF) (T i, T j, T k) { return BUILTIN (fmadd, T ## _DF) (i, j, k); }
-#define FMSUB(T) NOMIPS16 T FN (fmsub, T ## _DF) (T i, T j, T k) { return BUILTIN (fmsub, T ## _DF) (i, j, k); }
-#define FMAX(T) NOMIPS16 T FN (fmax, T ## _DF) (T i, T j) { return BUILTIN (fmax, T ## _DF) (i, j); }
-#define FMIN(T) NOMIPS16 T FN (fmin, T ## _DF) (T i, T j) { return BUILTIN (fmin, T ## _DF) (i, j); }
-#define FMAX_A(T) NOMIPS16 T FN (fmax_a, T ## _DF) (T i, T j) { return BUILTIN (fmax_a, T ## _DF) (i, j); }
-#define FMIN_A(T) NOMIPS16 T FN (fmin_a, T ## _DF) (T i, T j) { return BUILTIN (fmin_a, T ## _DF) (i, j); }
-#define FMUL(T) NOMIPS16 T FN (fmul, T ## _DF) (T i, T j) { return BUILTIN (fmul, T ## _DF) (i, j); }
-#define FRCP(T) NOMIPS16 T FN (frcp, T ## _DF) (T i) { return BUILTIN (frcp, T ## _DF) (i); }
-#define FRINT(T) NOMIPS16 T FN (frint, T ## _DF) (T i) { return BUILTIN (frint, T ## _DF) (i); }
-#define FRSQRT(T) NOMIPS16 T FN (frsqrt, T ## _DF) (T i) { return BUILTIN (frsqrt, T ## _DF) (i); }
-#define FSQRT(T) NOMIPS16 T FN (fsqrt, T ## _DF) (T i) { return BUILTIN (fsqrt, T ## _DF) (i); }
-#define FSUB(T) NOMIPS16 T FN (fsub, T ## _DF) (T i, T j) { return BUILTIN (fsub, T ## _DF) (i, j); }
+#define FADD(T) T FN (fadd, T ## _DF) (T i, T j) { return BUILTIN (fadd, T ## _DF) (i, j); }
+#define FDIV(T) T FN (fdiv, T ## _DF) (T i, T j) { return BUILTIN (fdiv, T ## _DF) (i, j); }
+#define FEXP2(T) T FN (fexp2, T ## _DF) (T i, T ## _FEXP2 j) { return BUILTIN (fexp2, T ## _DF) (i, j); }
+#define FLOG2(T) T FN (flog2, T ## _DF) (T i) { return BUILTIN (flog2, T ## _DF) (i); }
+#define FMADD(T) T FN (fmadd, T ## _DF) (T i, T j, T k) { return BUILTIN (fmadd, T ## _DF) (i, j, k); }
+#define FMSUB(T) T FN (fmsub, T ## _DF) (T i, T j, T k) { return BUILTIN (fmsub, T ## _DF) (i, j, k); }
+#define FMAX(T) T FN (fmax, T ## _DF) (T i, T j) { return BUILTIN (fmax, T ## _DF) (i, j); }
+#define FMIN(T) T FN (fmin, T ## _DF) (T i, T j) { return BUILTIN (fmin, T ## _DF) (i, j); }
+#define FMAX_A(T) T FN (fmax_a, T ## _DF) (T i, T j) { return BUILTIN (fmax_a, T ## _DF) (i, j); }
+#define FMIN_A(T) T FN (fmin_a, T ## _DF) (T i, T j) { return BUILTIN (fmin_a, T ## _DF) (i, j); }
+#define FMUL(T) T FN (fmul, T ## _DF) (T i, T j) { return BUILTIN (fmul, T ## _DF) (i, j); }
+#define FRCP(T) T FN (frcp, T ## _DF) (T i) { return BUILTIN (frcp, T ## _DF) (i); }
+#define FRINT(T) T FN (frint, T ## _DF) (T i) { return BUILTIN (frint, T ## _DF) (i); }
+#define FRSQRT(T) T FN (frsqrt, T ## _DF) (T i) { return BUILTIN (frsqrt, T ## _DF) (i); }
+#define FSQRT(T) T FN (fsqrt, T ## _DF) (T i) { return BUILTIN (fsqrt, T ## _DF) (i); }
+#define FSUB(T) T FN (fsub, T ## _DF) (T i, T j) { return BUILTIN (fsub, T ## _DF) (i, j); }
 
 /* MSA Floating-Point Compare builtins.  */
-#define FCLASS(T) NOMIPS16 T ## _FRES FN (fclass, T ## _DF) (T i) { return BUILTIN (fclass, T ## _DF) (i); }
-#define FCAF(T) NOMIPS16 T ## _FRES FN (fcaf, T ## _DF) (T i, T j) { return BUILTIN (fcaf, T ## _DF) (i, j); }
-#define FCUN(T) NOMIPS16 T ## _FRES FN (fcun, T ## _DF) (T i, T j) { return BUILTIN (fcun, T ## _DF) (i, j); }
-#define FCOR(T) NOMIPS16 T ## _FRES FN (fcor, T ## _DF) (T i, T j) { return BUILTIN (fcor, T ## _DF) (i, j); }
-#define FCEQ(T) NOMIPS16 T ## _FRES FN (fceq, T ## _DF) (T i, T j) { return BUILTIN (fceq, T ## _DF) (i, j); }
-#define FCUNE(T) NOMIPS16 T ## _FRES FN (fcune, T ## _DF) (T i, T j) { return BUILTIN (fcune, T ## _DF) (i, j); }
-#define FCUEQ(T) NOMIPS16 T ## _FRES FN (fcueq, T ## _DF) (T i, T j) { return BUILTIN (fcueq, T ## _DF) (i, j); }
-#define FCNE(T) NOMIPS16 T ## _FRES FN (fcne, T ## _DF) (T i, T j) { return BUILTIN (fcne, T ## _DF) (i, j); }
-#define FCLT(T) NOMIPS16 T ## _FRES FN (fclt, T ## _DF) (T i, T j) { return BUILTIN (fclt, T ## _DF) (i, j); }
-#define FCULT(T) NOMIPS16 T ## _FRES FN (fcult, T ## _DF) (T i, T j) { return BUILTIN (fcult, T ## _DF) (i, j); }
-#define FCLE(T) NOMIPS16 T ## _FRES FN (fcle, T ## _DF) (T i, T j) { return BUILTIN (fcle, T ## _DF) (i, j); }
-#define FCULE(T) NOMIPS16 T ## _FRES FN (fcule, T ## _DF) (T i, T j) { return BUILTIN (fcule, T ## _DF) (i, j); }
-#define FSAF(T) NOMIPS16 T ## _FRES FN (fsaf, T ## _DF) (T i, T j) { return BUILTIN (fsaf, T ## _DF) (i, j); }
-#define FSUN(T) NOMIPS16 T ## _FRES FN (fsun, T ## _DF) (T i, T j) { return BUILTIN (fsun, T ## _DF) (i, j); }
-#define FSOR(T) NOMIPS16 T ## _FRES FN (fsor, T ## _DF) (T i, T j) { return BUILTIN (fsor, T ## _DF) (i, j); }
-#define FSEQ(T) NOMIPS16 T ## _FRES FN (fseq, T ## _DF) (T i, T j) { return BUILTIN (fseq, T ## _DF) (i, j); }
-#define FSUNE(T) NOMIPS16 T ## _FRES FN (fsune, T ## _DF) (T i, T j) { return BUILTIN (fsune, T ## _DF) (i, j); }
-#define FSUEQ(T) NOMIPS16 T ## _FRES FN (fsueq, T ## _DF) (T i, T j) { return BUILTIN (fsueq, T ## _DF) (i, j); }
-#define FSNE(T) NOMIPS16 T ## _FRES FN (fsne, T ## _DF) (T i, T j) { return BUILTIN (fsne, T ## _DF) (i, j); }
-#define FSLT(T) NOMIPS16 T ## _FRES FN (fslt, T ## _DF) (T i, T j) { return BUILTIN (fslt, T ## _DF) (i, j); }
-#define FSULT(T) NOMIPS16 T ## _FRES FN (fsult, T ## _DF) (T i, T j) { return BUILTIN (fsult, T ## _DF) (i, j); }
-#define FSLE(T) NOMIPS16 T ## _FRES FN (fsle, T ## _DF) (T i, T j) { return BUILTIN (fsle, T ## _DF) (i, j); }
-#define FSULE(T) NOMIPS16 T ## _FRES FN (fsule, T ## _DF) (T i, T j) { return BUILTIN (fsule, T ## _DF) (i, j); }
+#define FCLASS(T) T ## _FRES FN (fclass, T ## _DF) (T i) { return BUILTIN (fclass, T ## _DF) (i); }
+#define FCAF(T) T ## _FRES FN (fcaf, T ## _DF) (T i, T j) { return BUILTIN (fcaf, T ## _DF) (i, j); }
+#define FCUN(T) T ## _FRES FN (fcun, T ## _DF) (T i, T j) { return BUILTIN (fcun, T ## _DF) (i, j); }
+#define FCOR(T) T ## _FRES FN (fcor, T ## _DF) (T i, T j) { return BUILTIN (fcor, T ## _DF) (i, j); }
+#define FCEQ(T) T ## _FRES FN (fceq, T ## _DF) (T i, T j) { return BUILTIN (fceq, T ## _DF) (i, j); }
+#define FCUNE(T) T ## _FRES FN (fcune, T ## _DF) (T i, T j) { return BUILTIN (fcune, T ## _DF) (i, j); }
+#define FCUEQ(T) T ## _FRES FN (fcueq, T ## _DF) (T i, T j) { return BUILTIN (fcueq, T ## _DF) (i, j); }
+#define FCNE(T) T ## _FRES FN (fcne, T ## _DF) (T i, T j) { return BUILTIN (fcne, T ## _DF) (i, j); }
+#define FCLT(T) T ## _FRES FN (fclt, T ## _DF) (T i, T j) { return BUILTIN (fclt, T ## _DF) (i, j); }
+#define FCULT(T) T ## _FRES FN (fcult, T ## _DF) (T i, T j) { return BUILTIN (fcult, T ## _DF) (i, j); }
+#define FCLE(T) T ## _FRES FN (fcle, T ## _DF) (T i, T j) { return BUILTIN (fcle, T ## _DF) (i, j); }
+#define FCULE(T) T ## _FRES FN (fcule, T ## _DF) (T i, T j) { return BUILTIN (fcule, T ## _DF) (i, j); }
+#define FSAF(T) T ## _FRES FN (fsaf, T ## _DF) (T i, T j) { return BUILTIN (fsaf, T ## _DF) (i, j); }
+#define FSUN(T) T ## _FRES FN (fsun, T ## _DF) (T i, T j) { return BUILTIN (fsun, T ## _DF) (i, j); }
+#define FSOR(T) T ## _FRES FN (fsor, T ## _DF) (T i, T j) { return BUILTIN (fsor, T ## _DF) (i, j); }
+#define FSEQ(T) T ## _FRES FN (fseq, T ## _DF) (T i, T j) { return BUILTIN (fseq, T ## _DF) (i, j); }
+#define FSUNE(T) T ## _FRES FN (fsune, T ## _DF) (T i, T j) { return BUILTIN (fsune, T ## _DF) (i, j); }
+#define FSUEQ(T) T ## _FRES FN (fsueq, T ## _DF) (T i, T j) { return BUILTIN (fsueq, T ## _DF) (i, j); }
+#define FSNE(T) T ## _FRES FN (fsne, T ## _DF) (T i, T j) { return BUILTIN (fsne, T ## _DF) (i, j); }
+#define FSLT(T) T ## _FRES FN (fslt, T ## _DF) (T i, T j) { return BUILTIN (fslt, T ## _DF) (i, j); }
+#define FSULT(T) T ## _FRES FN (fsult, T ## _DF) (T i, T j) { return BUILTIN (fsult, T ## _DF) (i, j); }
+#define FSLE(T) T ## _FRES FN (fsle, T ## _DF) (T i, T j) { return BUILTIN (fsle, T ## _DF) (i, j); }
+#define FSULE(T) T ## _FRES FN (fsule, T ## _DF) (T i, T j) { return BUILTIN (fsule, T ## _DF) (i, j); }
 
 /* MSA Floating-Point Conversion builtins.  */
-#define FEXUPL(T) NOMIPS16 T FN (fexupl, T ## _DF) (T ## _FCNV i) { return BUILTIN (fexupl, T ## _DF) (i); }
-#define FEXUPR(T) NOMIPS16 T FN (fexupr, T ## _DF) (T ## _FCNV i) { return BUILTIN (fexupr, T ## _DF) (i); }
-#define FEXDO(T) NOMIPS16 T ## _FCNV FN (fexdo, T ## _HDF) (T i, T j) { return BUILTIN (fexdo, T ## _HDF) (i, j); }
-#define FFINT_S(T) NOMIPS16 T FN (ffint_s, T ## _DF) (T ## _FSINT i) { return BUILTIN (ffint_s, T ## _DF) (i); }
-#define FFINT_U(T) NOMIPS16 T FN (ffint_u, T ## _DF) (T ## _FUINT i) { return BUILTIN (ffint_u, T ## _DF) (i); }
-#define FFQL(T) NOMIPS16 T FN (ffql, T ## _DF) (T ## _FFP i) { return BUILTIN (ffql, T ## _DF) (i); }
-#define FFQR(T) NOMIPS16 T FN (ffqr, T ## _DF) (T ## _FFP i) { return BUILTIN (ffqr, T ## _DF) (i); }
-#define FTINT_S(T) NOMIPS16 T ## _FSINT FN (ftint_s, T ## _DF) (T i) { return BUILTIN (ftint_s, T ## _DF) (i); }
-#define FTINT_U(T) NOMIPS16 T ## _FUINT FN (ftint_u, T ## _DF) (T i) { return BUILTIN (ftint_u, T ## _DF) (i); }
-#define FTRUNC_S(T) NOMIPS16 T ## _FSINT FN (ftrunc_s, T ## _DF) (T i) { return BUILTIN (ftrunc_s, T ## _DF) (i); }
-#define FTRUNC_U(T) NOMIPS16 T ## _FUINT FN (ftrunc_u, T ## _DF) (T i) { return BUILTIN (ftrunc_u, T ## _DF) (i); }
-#define FTQ(T) NOMIPS16 T ## _FFP FN (ftq, T ## _HDF) (T i, T j) { return BUILTIN (ftq, T ## _HDF) (i, j); }
+#define FEXUPL(T) T FN (fexupl, T ## _DF) (T ## _FCNV i) { return BUILTIN (fexupl, T ## _DF) (i); }
+#define FEXUPR(T) T FN (fexupr, T ## _DF) (T ## _FCNV i) { return BUILTIN (fexupr, T ## _DF) (i); }
+#define FEXDO(T) T ## _FCNV FN (fexdo, T ## _HDF) (T i, T j) { return BUILTIN (fexdo, T ## _HDF) (i, j); }
+#define FFINT_S(T) T FN (ffint_s, T ## _DF) (T ## _FSINT i) { return BUILTIN (ffint_s, T ## _DF) (i); }
+#define FFINT_U(T) T FN (ffint_u, T ## _DF) (T ## _FUINT i) { return BUILTIN (ffint_u, T ## _DF) (i); }
+#define FFQL(T) T FN (ffql, T ## _DF) (T ## _FFP i) { return BUILTIN (ffql, T ## _DF) (i); }
+#define FFQR(T) T FN (ffqr, T ## _DF) (T ## _FFP i) { return BUILTIN (ffqr, T ## _DF) (i); }
+#define FTINT_S(T) T ## _FSINT FN (ftint_s, T ## _DF) (T i) { return BUILTIN (ftint_s, T ## _DF) (i); }
+#define FTINT_U(T) T ## _FUINT FN (ftint_u, T ## _DF) (T i) { return BUILTIN (ftint_u, T ## _DF) (i); }
+#define FTRUNC_S(T) T ## _FSINT FN (ftrunc_s, T ## _DF) (T i) { return BUILTIN (ftrunc_s, T ## _DF) (i); }
+#define FTRUNC_U(T) T ## _FUINT FN (ftrunc_u, T ## _DF) (T i) { return BUILTIN (ftrunc_u, T ## _DF) (i); }
+#define FTQ(T) T ## _FFP FN (ftq, T ## _HDF) (T i, T j) { return BUILTIN (ftq, T ## _HDF) (i, j); }
 
 /* MSA Fixed-Point Multiplication builtins.  */
-#define MADD_Q(T) NOMIPS16 T ## _FFP FN (madd_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (madd_q, T ## _HDF) (i, j, k); }
-#define MADDR_Q(T) NOMIPS16 T ## _FFP FN (maddr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (maddr_q, T ## _HDF) (i, j, k); }
-#define MSUB_Q(T) NOMIPS16 T ## _FFP FN (msub_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (msub_q, T ## _HDF) (i, j, k); }
-#define MSUBR_Q(T) NOMIPS16 T ## _FFP FN (msubr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (msubr_q, T ## _HDF) (i, j, k); }
-#define MUL_Q(T) NOMIPS16 T ## _FFP FN (mul_q, T ## _HDF) (T ## _FFP i, T ## _FFP j) { return BUILTIN (mul_q, T ## _HDF) (i, j); }
-#define MULR_Q(T) NOMIPS16 T ## _FFP FN (mulr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j) { return BUILTIN (mulr_q, T ## _HDF) (i, j); }
+#define MADD_Q(T) T ## _FFP FN (madd_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (madd_q, T ## _HDF) (i, j, k); }
+#define MADDR_Q(T) T ## _FFP FN (maddr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (maddr_q, T ## _HDF) (i, j, k); }
+#define MSUB_Q(T) T ## _FFP FN (msub_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (msub_q, T ## _HDF) (i, j, k); }
+#define MSUBR_Q(T) T ## _FFP FN (msubr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j, T ## _FFP k) { return BUILTIN (msubr_q, T ## _HDF) (i, j, k); }
+#define MUL_Q(T) T ## _FFP FN (mul_q, T ## _HDF) (T ## _FFP i, T ## _FFP j) { return BUILTIN (mul_q, T ## _HDF) (i, j); }
+#define MULR_Q(T) T ## _FFP FN (mulr_q, T ## _HDF) (T ## _FFP i, T ## _FFP j) { return BUILTIN (mulr_q, T ## _HDF) (i, j); }
 
 /* MSA Compare builtins.  */
-#define CEQ(T) NOMIPS16 T FN (ceq, T ## _DF) (T i, T j) { return BUILTIN (ceq, T ## _DF) (i, j); }
-#define CEQI(T) NOMIPS16 T FN (ceqi, T ## _DF) (T i) { return BUILTIN (ceqi, T ## _DF) (i, 0); }
-#define CLE_S(T) NOMIPS16 T FN (cle_s, T ## _DF) (T i, T j) { return BUILTIN (cle_s, T ## _DF) (i, j); }
-#define CLEI_S(T) NOMIPS16 T FN (clei_s, T ## _DF) (T i) { return BUILTIN (clei_s, T ## _DF) (i, 0); }
-#define CLE_U(T) NOMIPS16 T ## _CMP FN (cle_u, T ## _DF) (T i, T j) { return BUILTIN (cle_u, T ## _DF) (i, j); }
-#define CLEI_U(T) NOMIPS16 T ## _CMP FN (clei_u, T ## _DF) (T i) { return BUILTIN (clei_u, T ## _DF) (i, 10); }
-#define CLT_S(T) NOMIPS16 T FN (clt_s, T ## _DF) (T i, T j) { return BUILTIN (clt_s, T ## _DF) (i, j); }
-#define CLTI_S(T) NOMIPS16 T FN (clti_s, T ## _DF) (T i) { return BUILTIN (clti_s, T ## _DF) (i, 0); }
-#define CLT_U(T) NOMIPS16 T ## _CMP FN (clt_u, T ## _DF) (T i, T j) { return BUILTIN (clt_u, T ## _DF) (i, j); }
-#define CLTI_U(T) NOMIPS16 T ## _CMP FN (clti_u, T ## _DF) (T i) { return BUILTIN (clti_u, T ## _DF) (i, 0); }
+#define CEQ(T) T FN (ceq, T ## _DF) (T i, T j) { return BUILTIN (ceq, T ## _DF) (i, j); }
+#define CEQI(T) T FN (ceqi, T ## _DF) (T i) { return BUILTIN (ceqi, T ## _DF) (i, 0); }
+#define CLE_S(T) T FN (cle_s, T ## _DF) (T i, T j) { return BUILTIN (cle_s, T ## _DF) (i, j); }
+#define CLEI_S(T) T FN (clei_s, T ## _DF) (T i) { return BUILTIN (clei_s, T ## _DF) (i, 0); }
+#define CLE_U(T) T ## _CMP FN (cle_u, T ## _DF) (T i, T j) { return BUILTIN (cle_u, T ## _DF) (i, j); }
+#define CLEI_U(T) T ## _CMP FN (clei_u, T ## _DF) (T i) { return BUILTIN (clei_u, T ## _DF) (i, 10); }
+#define CLT_S(T) T FN (clt_s, T ## _DF) (T i, T j) { return BUILTIN (clt_s, T ## _DF) (i, j); }
+#define CLTI_S(T) T FN (clti_s, T ## _DF) (T i) { return BUILTIN (clti_s, T ## _DF) (i, 0); }
+#define CLT_U(T) T ## _CMP FN (clt_u, T ## _DF) (T i, T j) { return BUILTIN (clt_u, T ## _DF) (i, j); }
+#define CLTI_U(T) T ## _CMP FN (clti_u, T ## _DF) (T i) { return BUILTIN (clti_u, T ## _DF) (i, 0); }
 
 /* MSA Branch builtins.  */
-#define BNZV(T) NOMIPS16 int FN (bnz, v) (T i) { return BUILTIN (bnz, v) (i); }
-#define BZV(T) NOMIPS16 int FN (bz, v) (T i) { return BUILTIN (bz, v) (i); }
-#define BNZ(T) NOMIPS16 int FN (bnz, T ## _DF) (T i) { return BUILTIN (bnz, T ## _DF) (i); }
-#define BZ(T) NOMIPS16 int FN (bz, T ## _DF) (T i) { return BUILTIN (bz, T ## _DF) (i); }
+#define BNZV(T) int FN (bnz, v) (T i) { return BUILTIN (bnz, v) (i); }
+#define BZV(T) int FN (bz, v) (T i) { return BUILTIN (bz, v) (i); }
+#define BNZ(T) int FN (bnz, T ## _DF) (T i) { return BUILTIN (bnz, T ## _DF) (i); }
+#define BZ(T) int FN (bz, T ## _DF) (T i) { return BUILTIN (bz, T ## _DF) (i); }
 
 /* MSA Load/Store and Move builtins.  */
 #define CFCMSA() int msa_cfcmsa () { return __builtin_msa_cfcmsa(0x1f); }
 #define CTCMSA() void msa_ctcmsa (int i) { return __builtin_msa_ctcmsa(0x1f, i); }
 #define LD(T) T FN (ld, T ## _DF) (char *i) { return BUILTIN (ld, T ## _DF) (i, 0); }
 #define LDI(T) T FN (ldi, T ## _DF) () { return BUILTIN (ldi, T ## _DF) (123); }
-#define MOVE(T) NOMIPS16 T FN (move, v) (T i) { return BUILTIN (move, v) (i); }
+#define MOVE(T) T FN (move, v) (T i) { return BUILTIN (move, v) (i); }
 #define SPLAT(T) T FN (splat, T ## _DF) (T i, int j) { return BUILTIN (splat, T ## _DF) (i, j); }
 #define SPLATI(T) T FN (splati, T ## _DF) (T i) { return BUILTIN (splati, T ## _DF) (i, 1); }
 #define FILL(T) T FN (fill, T ## _DF) (int i) { return BUILTIN (fill, T ## _DF) (i); }
@@ -829,16 +829,16 @@
 #define ST(T) void FN (st, T ## _DF) (T i, char *j) { BUILTIN (st, T ## _DF) (i, j, -64); }
 
 /* MSA Element Permute builtins.  */
-#define ILVEV(T) NOMIPS16 T FN (ilvev, T ## _DF) (T i, T j) { return BUILTIN (ilvev, T ## _DF) (i, j); }
-#define ILVOD(T) NOMIPS16 T FN (ilvod, T ## _DF) (T i, T j) { return BUILTIN (ilvod, T ## _DF) (i, j); }
-#define ILVL(T) NOMIPS16 T FN (ilvl, T ## _DF) (T i, T j) { return BUILTIN (ilvl, T ## _DF) (i, j); }
-#define ILVR(T) NOMIPS16 T FN (ilvr, T ## _DF) (T i, T j) { return BUILTIN (ilvr, T ## _DF) (i, j); }
-#define PCKEV(T) NOMIPS16 T FN (pckev, T ## _DF) (T i, T j) { return BUILTIN (pckev, T ## _DF) (i, j); }
-#define PCKOD(T) NOMIPS16 T FN (pckod, T ## _DF) (T i, T j) { return BUILTIN (pckod, T ## _DF) (i, j); }
-#define SHF(T) NOMIPS16 T FN (shf, T ## _DF) (T i) { return BUILTIN (shf, T ## _DF) (i, 127); }
-#define SLD(T) NOMIPS16 T FN (sld, T ## _DF) (T i, T j, int k) { return BUILTIN (sld, T ## _DF) (i, j, k); }
-#define SLDI(T) NOMIPS16 T FN (sldi, T ## _DF) (T i, T j) { return BUILTIN (sldi, T ## _DF) (i, j, 1); }
-#define VSHF(T) NOMIPS16 T FN (vshf, T ## _DF) (T i, T j, T k) { return BUILTIN (vshf, T ## _DF) (i, j, k); }
+#define ILVEV(T) T FN (ilvev, T ## _DF) (T i, T j) { return BUILTIN (ilvev, T ## _DF) (i, j); }
+#define ILVOD(T) T FN (ilvod, T ## _DF) (T i, T j) { return BUILTIN (ilvod, T ## _DF) (i, j); }
+#define ILVL(T) T FN (ilvl, T ## _DF) (T i, T j) { return BUILTIN (ilvl, T ## _DF) (i, j); }
+#define ILVR(T) T FN (ilvr, T ## _DF) (T i, T j) { return BUILTIN (ilvr, T ## _DF) (i, j); }
+#define PCKEV(T) T FN (pckev, T ## _DF) (T i, T j) { return BUILTIN (pckev, T ## _DF) (i, j); }
+#define PCKOD(T) T FN (pckod, T ## _DF) (T i, T j) { return BUILTIN (pckod, T ## _DF) (i, j); }
+#define SHF(T) T FN (shf, T ## _DF) (T i) { return BUILTIN (shf, T ## _DF) (i, 127); }
+#define SLD(T) T FN (sld, T ## _DF) (T i, T j, int k) { return BUILTIN (sld, T ## _DF) (i, j, k); }
+#define SLDI(T) T FN (sldi, T ## _DF) (T i, T j) { return BUILTIN (sldi, T ## _DF) (i, j, 1); }
+#define VSHF(T) T FN (vshf, T ## _DF) (T i, T j, T k) { return BUILTIN (vshf, T ## _DF) (i, j, k); }
 
 /* GCC builtins that generate MSA instructions.  */
 #define SHUFFLE1_S(T) T FN (gcc_1_s_vshf, T ## _DF) (T i, T mask) { return __builtin_shuffle (i, mask); }

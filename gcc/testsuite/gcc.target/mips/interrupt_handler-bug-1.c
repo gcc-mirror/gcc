@@ -2,7 +2,7 @@
 int foo;
 int bar;
 
-void __attribute__ ((interrupt))
+NOMIPS16 void __attribute__ ((interrupt))
 isr (void)
 {
   if (!foo)
