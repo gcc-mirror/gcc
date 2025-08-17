@@ -156,7 +156,7 @@
   "#"
   "&& reload_completed"
   [(set (reg:CCZ CC_REG)
-	(eq (zero_extract:HSI (match_dup 1) (const_int 1) (match_dup 2))
+	(eq:CCZ (zero_extract:HSI (match_dup 1) (const_int 1) (match_dup 2))
 	    (const_int 0)))
    (set (pc)
 	(if_then_else (match_op_dup 3 [(reg:CCZ CC_REG) (const_int 0)])
@@ -181,7 +181,7 @@
 			   (lshiftrt:SI (match_dup 1) (const_int 16))))
 	      (clobber (reg:CC CC_REG))])
    (set (reg:CCZ CC_REG)
-	(eq (zero_extract:SI (match_dup 4) (const_int 1) (match_dup 2))
+	(eq:CCZ (zero_extract:SI (match_dup 4) (const_int 1) (match_dup 2))
 	    (const_int 0)))
    (set (pc)
 	(if_then_else (match_op_dup 3 [(reg:CCZ CC_REG) (const_int 0)])
@@ -288,7 +288,7 @@
   })
 
 (define_insn "call_insn_<mode>"
-  [(call (mem:QI (match_operand 0 "call_insn_operand" "Cr"))
+  [(call (mem:QI (match_operand:P 0 "call_insn_operand" "Cr"))
 	         (match_operand:P 1 "general_operand" "g"))]
   "!SIBLING_CALL_P (insn)"
 {
@@ -326,7 +326,7 @@
 
 (define_insn "call_value_insn_<mode>"
   [(set (match_operand 0 "" "=r")
-	(call (mem:QI (match_operand 1 "call_insn_operand" "Cr"))
+	(call (mem:QI (match_operand:P 1 "call_insn_operand" "Cr"))
 		      (match_operand:P 2 "general_operand" "g")))]
   "!SIBLING_CALL_P (insn)"
 {
@@ -358,7 +358,7 @@
   })
 
 (define_insn "sibcall_insn_<mode>"
-  [(call (mem:QI (match_operand 0 "call_insn_operand" "Cr"))
+  [(call (mem:QI (match_operand:P 0 "call_insn_operand" "Cr"))
 	         (match_operand:P 1 "general_operand" "g"))]
   "SIBLING_CALL_P (insn)"
 {
@@ -396,7 +396,7 @@
 
 (define_insn "sibcall_value_insn_<mode>"
   [(set (match_operand 0 "" "=r")
-	(call (mem:QI (match_operand 1 "call_insn_operand" "Cr"))
+	(call (mem:QI (match_operand:P 1 "call_insn_operand" "Cr"))
 		      (match_operand:P 2 "general_operand" "g")))]
   "SIBLING_CALL_P (insn)"
 {

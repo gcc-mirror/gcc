@@ -271,7 +271,7 @@
 			     (match_operand:QHSI 2 "register_operand" "r"))
 		(match_dup 1)))
    (set (match_operand:QHSI 0 "register_operand" "=r")
-	(plus (match_dup 1) (match_dup 2)))
+	(plus:QHSI (match_dup 1) (match_dup 2)))
    (clobber (reg:CC CC_REG))]
   ""
 {
