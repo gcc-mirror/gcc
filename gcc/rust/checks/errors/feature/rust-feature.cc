@@ -20,70 +20,58 @@
 
 namespace Rust {
 
-Feature
-Feature::create (Feature::Name f)
-{
-  switch (f)
-    {
-    case Feature::Name::ASSOCIATED_TYPE_BOUNDS:
-      return Feature (Feature::Name::ASSOCIATED_TYPE_BOUNDS,
-		      Feature::State::ACCEPTED, "associated_type_bounds",
-		      "1.34.0", 52662);
-    case Feature::Name::INTRINSICS:
-      return Feature (f, Feature::State::ACCEPTED, "intrinsics", "1.0.0");
-    case Feature::Name::RUSTC_ATTRS:
-      return Feature (f, Feature::State::ACCEPTED, "rustc_attrs", "1.0.0");
-    case Feature::Name::DECL_MACRO:
-      return Feature (f, Feature::State::ACCEPTED, "decl_macro", "1.0.0",
-		      39412);
-    case Feature::Name::EXTERN_TYPES:
-      return Feature (f, Feature::State::ACTIVE, "extern_types", "1.23.0",
-		      43467);
-    case Feature::Name::NEGATIVE_IMPLS:
-      return Feature (f, Feature::State::ACTIVE, "negative_impls", "1.0.0",
-		      68318);
-    case Feature::Name::BOX_SYNTAX:
-      return Feature (f, Feature::State::ACTIVE, "box_syntax", "1.0.0", 49733);
-    case Feature::Name::DROPCK_EYEPATCH:
-      return Feature (f, Feature::State::ACTIVE, "dropck_eyepatch", "1.10.0",
-		      34761);
-    case Feature::Name::RAW_REF_OP:
-      return Feature (f, Feature::State::ACTIVE, "raw_ref_op", "1.41.0", 64490);
-    case Feature::Name::EXCLUSIVE_RANGE_PATTERN:
-      return Feature (Feature::Name::EXCLUSIVE_RANGE_PATTERN,
-		      Feature::State::ACTIVE, "exclusive_range_pattern",
-		      "1.11.0", 37854);
-    case Feature::Name::PRELUDE_IMPORT:
-      return Feature (f, Feature::State::ACTIVE, "prelude_import", "1.0.0");
-    case Feature::Name::MIN_SPECIALIZATION:
-      return Feature (f, Feature::State::ACTIVE, "min_specialization",
-		      "1.0.0" /* FIXME: What version here? */, 31844);
-    case Feature::Name::AUTO_TRAITS:
-      return Feature (f, Feature::State::ACTIVE, "optin_builtin_traits",
-		      "1.0.0", 13231);
-    default:
-      rust_unreachable ();
-    }
-}
+Feature Feature::feature_list[] = {
+#define ISSUE_SOME(n) n
+#define ISSUE_NONE tl::nullopt
+#define EDITION_2018 Edition::E2018
+#define EDITION_NONE tl::nullopt
+#define REASON_SOME(r) r
+#define REASON_NONE tl::nullopt
+
+#define FEATURE_BASE(state, name_str, name, rust_since, issue, ...)            \
+  Feature (Feature::Name::name, Feature::State::state, name_str, rust_since,   \
+	   issue, __VA_ARGS__),
+
+#define FEATURE_ACTIVE(a, b, c, d, edition)                                    \
+  FEATURE_BASE (ACTIVE, a, b, c, d, edition, tl::nullopt)
+
+#define FEATURE_ACCEPTED(a, b, c, d)                                           \
+  FEATURE_BASE (ACCEPTED, a, b, c, d, tl::nullopt, tl::nullopt)
+
+#define FEATURE_REMOVED(a, b, c, d, reason)                                    \
+  FEATURE_BASE (REMOVED, a, b, c, d, tl::nullopt, reason)
+
+#define FEATURE_STABLE_REMOVED(a, b, c, d)                                     \
+  FEATURE_BASE (ACCEPTED, a, b, c, d, tl::nullopt, tl::nullopt)
+
+#include "rust-feature-defs.h"
+
+#undef ISSUE_SOME
+#undef ISSUE_NONE
+#undef EDITION_2018
+#undef EDITION_NONE
+#undef REASON_SOME
+#undef REASON_NONE
+
+#undef FEATURE_BASE
+#undef FEATURE_ACTIVE
+#undef FEATURE_ACCEPTED
+#undef FEATURE_REMOVED
+#undef FEATURE_STABLE_REMOVED
+};
 
 const std::map<std::string, Feature::Name> Feature::name_hash_map = {
-  {"associated_type_bounds", Feature::Name::ASSOCIATED_TYPE_BOUNDS},
-  {"intrinsics", Feature::Name::INTRINSICS},
-  {"rustc_attrs", Feature::Name::RUSTC_ATTRS},
-  {"decl_macro", Feature::Name::DECL_MACRO},
-  {"negative_impls", Feature::Name::NEGATIVE_IMPLS},
-  // TODO: Rename to "auto_traits" when supporting
-  // later Rust versions
-  {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
-  {"extern_types", Feature::Name::EXTERN_TYPES},
-  {"lang_items", Feature::Name::LANG_ITEMS},
-  {"no_core", Feature::Name::NO_CORE},
-  {"box_syntax", Feature::Name::BOX_SYNTAX},
-  {"dropck_eyepatch", Feature::Name::DROPCK_EYEPATCH},
-  {"raw_ref_op", Feature::Name::RAW_REF_OP},
-  {"exclusive_range_pattern", Feature::Name::EXCLUSIVE_RANGE_PATTERN},
-  {"prelude_import", Feature::Name::PRELUDE_IMPORT},
-  {"min_specialization", Feature::Name::MIN_SPECIALIZATION},
+#define FEATURE(s, name, ...) {s, Feature::Name::name},
+#define FEATURE_ACTIVE(...) FEATURE (__VA_ARGS__)
+#define FEATURE_ACCEPTED(...) FEATURE (__VA_ARGS__)
+#define FEATURE_REMOVED(...) FEATURE (__VA_ARGS__)
+#define FEATURE_STABLE_REMOVED(...) FEATURE (__VA_ARGS__)
+#include "rust-feature-defs.h"
+#undef FEATURE
+#undef FEATURE_ACTIVE
+#undef FEATURE_ACCEPTED
+#undef FEATURE_REMOVED
+#undef FEATURE_STABLE_REMOVED
 };
 
 tl::optional<Feature::Name>
@@ -93,6 +81,19 @@ Feature::as_name (const std::string &name)
     return Feature::name_hash_map.at (name);
 
   return tl::nullopt;
+}
+
+tl::optional<std::reference_wrapper<const Feature>>
+Feature::lookup (const std::string &name)
+{
+  return as_name (name).map (
+    [] (Name n) { return std::ref (Feature::lookup (n)); });
+}
+
+const Feature &
+Feature::lookup (Feature::Name name)
+{
+  return feature_list[static_cast<size_t> (name)];
 }
 
 } // namespace Rust

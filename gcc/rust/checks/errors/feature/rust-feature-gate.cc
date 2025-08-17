@@ -82,7 +82,7 @@ FeatureGate::gate (Feature::Name name, location_t loc,
 {
   if (!valid_features.count (name))
     {
-      auto feature = Feature::create (name);
+      auto &feature = Feature::lookup (name);
       if (auto issue = feature.issue ())
 	{
 	  auto issue_number = issue.value ();
@@ -184,7 +184,7 @@ void
 FeatureGate::visit (AST::Trait &trait)
 {
   if (trait.is_auto ())
-    gate (Feature::Name::AUTO_TRAITS, trait.get_locus (),
+    gate (Feature::Name::OPTIN_BUILTIN_TRAITS, trait.get_locus (),
 	  "auto traits are experimental and possibly buggy");
   AST::DefaultASTVisitor::visit (trait);
 }

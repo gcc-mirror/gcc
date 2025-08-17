@@ -29,59 +29,55 @@ class Feature
 public:
   enum class State
   {
-    ACCEPTED,
-    ACTIVE,
-    REMOVED,
-    STABILIZED,
+    ACCEPTED,	// stabilized
+    ACTIVE,	// unstable
+    REMOVED,	// removed
+    STABILIZED, // removed after stabilization
   };
 
   enum class Name
   {
-    ASSOCIATED_TYPE_BOUNDS,
-    INTRINSICS,
-    NEGATIVE_IMPLS,
-    RUSTC_ATTRS,
-    DECL_MACRO,
-    AUTO_TRAITS,
-    EXTERN_TYPES,
-    LANG_ITEMS,
-    NO_CORE,
-    BOX_SYNTAX,
-    DROPCK_EYEPATCH,
-    RAW_REF_OP,
-    EXCLUSIVE_RANGE_PATTERN,
-    PRELUDE_IMPORT,
-    MIN_SPECIALIZATION,
+#define FEATURE_ACTIVE(x, name, ...) name,
+#define FEATURE_ACCEPTED(x, name, ...) name,
+#define FEATURE_REMOVED(x, name, ...) name,
+#define FEATURE_STABLE_REMOVED(x, name, ...) name,
+#include "rust-feature-defs.h"
+#undef FEATURE_ACTIVE
+#undef FEATURE_ACCEPTED
+#undef FEATURE_REMOVED
+#undef FEATURE_STABLE_REMOVED
   };
 
-  const std::string &as_string () { return m_name_str; }
-  Name name () { return m_name; }
-  const std::string &description () { return m_description; }
-  State state () { return m_state; }
-  tl::optional<unsigned> issue () { return m_issue; }
+  const std::string &as_string () const { return m_name_str; }
+
+  Name name () const { return m_name; }
+  State state () const { return m_state; }
+  tl::optional<unsigned> issue () const { return m_issue; }
 
   static tl::optional<Name> as_name (const std::string &name);
-  static Feature create (Name name);
+
+  static tl::optional<std::reference_wrapper<const Feature>>
+  lookup (const std::string &name);
+  static const Feature &lookup (Name name);
 
 private:
-  Feature (Name name, State state, const char *name_str,
-	   const char *rustc_since,
-	   tl::optional<unsigned> issue_number = tl::nullopt,
-	   const tl::optional<Edition> &edition = tl::nullopt,
-	   const char *description = "")
-    : m_state (state), m_name (name), m_name_str (name_str),
-      m_rustc_since (rustc_since), m_issue (issue_number), edition (edition),
-      m_description (description)
+  Feature (Name name, State state, const char *name_str, const char *rust_since,
+	   tl::optional<unsigned> issue_number, tl::optional<Edition> edition,
+	   tl::optional<const char *> reason)
+    : m_name (name), m_state (state), m_name_str (name_str),
+      m_rust_since (rust_since), m_issue (issue_number), edition (edition),
+      m_reason (reason)
   {}
 
-  State m_state;
   Name m_name;
+  State m_state;
   std::string m_name_str;
-  std::string m_rustc_since;
+  std::string m_rust_since;
   tl::optional<unsigned> m_issue;
   tl::optional<Edition> edition;
-  std::string m_description; // TODO: Switch to optional?
+  tl::optional<const char *> m_reason;
 
+  static Feature feature_list[];
   static const std::map<std::string, Name> name_hash_map;
 };
 
