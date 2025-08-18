@@ -5943,7 +5943,7 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
   target = aarch64_target_reg (target, mode);
   emit_insn (gen_while (UNSPEC_WHILELO, DImode, mode,
 			target, const0_rtx, limit));
-  return target;
+  return gen_lowpart (VNx16BImode, target);
 }
 
 static rtx
