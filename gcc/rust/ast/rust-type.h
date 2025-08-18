@@ -1048,10 +1048,14 @@ public:
 
   BareFunctionType *reconstruct_impl () const override
   {
+    std::unique_ptr<TypeNoBounds> ret_type = nullptr;
+    if (return_type != nullptr)
+      ret_type = return_type->reconstruct ();
+
     return new BareFunctionType (
       for_lifetimes, function_qualifiers, params,
       /* FIXME: Should params be reconstruct() as well? */
-      _is_variadic, variadic_attrs, return_type->reconstruct (), locus);
+      _is_variadic, variadic_attrs, std::move (ret_type), locus);
   }
 
 protected:
