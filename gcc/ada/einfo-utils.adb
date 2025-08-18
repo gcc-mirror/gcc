@@ -2585,7 +2585,11 @@ package body Einfo.Utils is
             loop
                Etyp := Etype (T);
 
-               exit when T = Etyp
+               if No (Etyp) then
+                  Check_Error_Detected;
+               end if;
+
+               exit when No (Etyp) or else T = Etyp
                  or else
                    (Is_Private_Type (T) and then Etyp = Full_View (T))
                  or else
@@ -2609,6 +2613,10 @@ package body Einfo.Utils is
       end return;
    end Root_Type;
 
+   ----------------------
+   -- Root_Type_If_Set --
+   ----------------------
+
    function Root_Type_If_Set (Id : E) return Opt_N_Entity_Id is
       Etyp : Entity_Id;
 
@@ -2620,12 +2628,7 @@ package body Einfo.Utils is
             loop
                Etyp := Etype (T);
 
-               if No (Etyp) then
-                  T := Empty;
-                  exit;
-               end if;
-
-               exit when T = Etyp
+               exit when No (Etyp) or else T = Etyp
                  or else
                    (Is_Private_Type (T) and then Etyp = Full_View (T))
                  or else
