@@ -682,21 +682,25 @@
 })
 
 (define_insn "atomic_compare_and_swapti_scq"
-  [(set (match_operand:TI 0 "register_operand" "=&r")
-	(match_operand:TI 1 "memory_operand"   "+ZB"))
+  [(set (match_operand:V2DI 0 "register_operand" "=&f")
+	(match_operand:V2DI 1 "memory_operand"   "+m"))
    (set (match_dup 1)
-	(unspec_volatile:TI [(match_operand:TI 2 "reg_or_0_operand" "rJ")
-			     (match_operand:TI 3 "reg_or_0_operand" "rJ")
-			     (match_operand:SI 4 "const_int_operand")]  ;; mod_f
-	 UNSPEC_COMPARE_AND_SWAP))
-   (clobber (match_scratch:DI 5 "=&r"))]
-  "TARGET_64BIT && ISA_HAS_SCQ"
+	(unspec_volatile:V2DI
+	  [(match_operand:V2DI 2 "reg_or_0_operand" "fJ")
+	   (match_operand:TI   3 "reg_or_0_operand" "rJ")
+	   (match_operand:SI   4 "const_int_operand")]
+	  UNSPEC_COMPARE_AND_SWAP))
+   (set (match_operand:FCC 5 "register_operand" "=z")
+	(ne:FCC (match_dup 1) (match_dup 2)))
+   (clobber (match_scratch:V2DI 6 "=&f"))
+   (clobber (match_scratch:DI   7 "=&r"))]
+  "TARGET_64BIT && ISA_HAS_SCQ && ISA_HAS_LSX"
 {
   output_asm_insn ("1:", operands);
-  output_asm_insn ("ll.d\t%0,%1", operands);
 
-  /* Compare the low word */
-  output_asm_insn ("bne\t%0,%z2,2f", operands);
+  /* The loaded value in %7 will just be discarded, this instruction is
+     only intended to raise the LL bit.  Should we use %. instead??  */
+  output_asm_insn ("ll.d\t%7,%1", operands);
 
   /* Don't reorder the load of high word before ll.d.  As the TImode
      must be aligned in the memory, the high and low words must be in
@@ -704,23 +708,31 @@
   if (!ISA_HAS_LD_SEQ_SA)
     output_asm_insn ("dbar\t0x700", operands);
 
-  /* Now load the high word.  As the high and low words are in the same
-     cacheline, in case another core has clobbered the high word before the
-     sc.q instruction is executed, the LL bit for the low word will be
-     cleared.  Thus a normal load is sufficient.  */
-  output_asm_insn ("ld.d\t%t0,%b1,8", operands);
+  /* Load the word pair altogether.  We cannot just load the high word
+     alone: doing so will need to rely on sc.q to ensure no other threads
+     have updated the memory between two loads, but issuing an sc.q when
+     original != expected will cause a page fault with a "valid" (well, at
+     least the standard implies it's valid) use of
+     atomic_compare_and_exchange on a const _Atomic object.  See
+     https://gcc.gnu.org/PR80878#c1.  */
+  output_asm_insn ("vld\t%w0,%1", operands);
 
-  /* Compare the high word.  */
-  output_asm_insn ("bne\t%t0,%t2,2f", operands);
+  /* Compare the word pair.  */
+  if (const_0_operand (operands[2], V1TImode))
+    operands[7] = operands[0];
+  else
+    output_asm_insn ("vxor.v\t%w6,%w0,%w2", operands);
+  output_asm_insn ("vseteqz.v\t%5,%w6", operands);
+  output_asm_insn ("bceqz\t%5,2f", operands);
 
   /* Copy the low word of the new value as it'll be clobbered by sc.q.  */
-  output_asm_insn ("move\t%5,%z3", operands);
+  output_asm_insn ("move\t%7,%z3", operands);
 
   /* Store both words if LL bit is still set.  */
-  output_asm_insn ("sc.q\t%5,%t3,%1", operands);
+  output_asm_insn ("sc.q\t%7,%t3,%1", operands);
 
   /* Check if sc.q has done the store.  */
-  output_asm_insn ("beqz\t%5,1b", operands);
+  output_asm_insn ("beqz\t%7,1b", operands);
 
   /* Jump over the mod_f barrier if sc.q has succeeded.  */
   output_asm_insn ("%T4b\t3f", operands);
@@ -732,7 +744,7 @@
   output_asm_insn ("3:", operands);
   return "";
 }
-  [(set_attr "length" "40")])
+  [(set_attr "length" "44")])
 
 (define_expand "atomic_compare_and_swapti"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -743,30 +755,40 @@
    (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
    (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
-  "TARGET_64BIT && ISA_HAS_SCQ"
+  "TARGET_64BIT && ISA_HAS_SCQ && ISA_HAS_LSX"
 {
-  emit_insn (gen_atomic_compare_and_swapti_scq (operands[1], operands[2],
-						operands[3], operands[4],
-						operands[7]));
+  rtx fcc = gen_reg_rtx (FCCmode);
+  rtx gpr = gen_reg_rtx (DImode);
+  rtx vr = gen_reg_rtx (V2DImode);
+  rtx mem = gen_rtx_MEM (V2DImode, XEXP (operands[2], 0));
 
-  rtx t[2];
-
-  for (int i = 0; i < 2; i++)
+  if (const_0_operand (operands[3], TImode))
+    operands[3] = CONST0_RTX (V2DImode);
+  else
     {
-      rtx compare = loongarch_subword (operands[1], i);
-      rtx expect = loongarch_subword (operands[3], i);
+      rtvec v = rtvec_alloc (2);
+      for (int i = 0; i < 2; i++)
+	RTVEC_ELT (v, i) = loongarch_subword (operands[3], i);
 
-      t[i] = gen_reg_rtx (DImode);
-
-      if (expect != const0_rtx)
-	emit_insn (gen_xordi3 (t[i], compare, expect));
-      else
-	emit_move_insn (t[i], compare);
+      operands[3] = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_initv2didi (operands[3],
+				     gen_rtx_PARALLEL (V2DImode, v)));
     }
 
-  emit_insn (gen_iordi3 (t[0], t[0], t[1]));
-  emit_insn (gen_rtx_SET (operands[0],
-			  gen_rtx_EQ (SImode, t[0], const0_rtx)));
+  emit_insn (gen_atomic_compare_and_swapti_scq (vr, mem, operands[3],
+						operands[4], operands[7],
+						fcc));
+
+  for (int i = 0; i < 2; i++)
+    emit_insn (
+      gen_lsx_vpickve2gr_d (loongarch_subword (operands[1], i), vr,
+			    GEN_INT (i)));
+
+  emit_insn (gen_fcc_to_di (gpr, fcc));
+  gpr = gen_lowpart (SImode, gpr);
+  SUBREG_PROMOTED_VAR_P (gpr) = 1;
+  SUBREG_PROMOTED_SET (gpr, SRP_SIGNED);
+  emit_move_insn (operands[0], gpr);
   DONE;
 })
 
