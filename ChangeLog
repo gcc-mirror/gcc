@@ -1,3 +1,8 @@
+2025-08-17  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Switch around Andrew Pinski's entries in
+	Contributing under DCO.
+
 2025-08-16  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	* MAINTAINERS: Add myself to write after approval.

@@ -1,3 +1,45 @@
+2025-08-17  Austin Law  <austinklaw@gmail.com>
+
+	PR target/121213
+	* config/riscv/sync.md (amo_atomic_exchange<mode>): Allow
+	(const_int 0) as input operand. Do not tie input to output.
+	No longer earlyclobber the output.
+
+2025-08-17  Artemiy Volkov  <artemiyv@acm.org>
+
+	* regrename.cc (scan_rtx_reg): Handle fused insn pairs.
+
+2025-08-17  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/109324
+	* config/h8300/addsub.md: Explicitly specify mode for plus operation.
+	* config/h8300/jumpcall.md: Explicitly specify modes for eq and
+	match_operand operations.
+	* config/h8300/testcompare.md: Explicitly specify modes for eq, ltu
+	and compare operations.
+
+2025-08-17  Artemiy Volkov  <artemiyv@acm.org>
+
+	* ira-conflicts.cc (add_insn_allocno_copies): Handle fused insn pairs.
+	* rtl.h (single_output_fused_pair_p): Declare new function.
+	* rtlanal.cc (single_output_fused_pair_p): Define it.
+
+2025-08-17  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/121538
+	* config/riscv/arch-canonicalize (parse_dep_exts):
+	Match condition block up to closing brace.
+	(test_parse_long_condition_block): New test.
+
+2025-08-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121541
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Add target("80387")
+	attribute.  Set the mask bit in opts_set->x_target_flags if the
+	mask bit in opts->x_target_flags is updated.
+	* doc/extend.texi: Document target("80387") function attribute.
+
 2025-08-17  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec-opt.md: Add supported insn

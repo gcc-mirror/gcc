@@ -1,3 +1,59 @@
+2025-08-17  Austin Law  <austinklaw@gmail.com>
+
+	PR target/121213
+	* gcc.target/riscv/amo/pr121213.c: New test.
+
+2025-08-17  dragan.mladjenovic  <dragan.mladjenovic@rt-rk.com>
+
+	* gcc.target/mips/tls-1.c: New file.
+
+2025-08-17  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/call-clobbered-1.c: Use HAS_LDC ghost
+	option instead of isa>=2.
+
+2025-08-17  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/near-far-1.c: Fix tests properly for
+	compact-branches (jals and balc).
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+2025-08-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/mips/call-clobbered-2.c: Add a NOMIPS16 attribute.
+	* gcc.target/mips/call-clobbered-3.c: Likewise.
+	* gcc.target/mips/call-clobbered-5.c: Likewise.
+	* gcc.target/mips/ds-schedule-2.c: Add an -mno-mips16 option.
+	* gcc.target/mips/interrupt_handler-bug-1.c: Same as
+	call-clobbered-*.c tests.
+	* gcc.target/mips/movdf-1.c: Likewise.
+	* gcc.target/mips/movdf-2.c: Likewise.
+	* gcc.target/mips/movdf-3.c: Likewise.
+	* gcc.target/mips/msa-builtins.c: Same as ds-schedule-2.c.
+	Remove a NOMIPS16 attribute from builtins.
+	* gcc.target/mips/msa.c: Likewise.
+
+2025-08-17  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/insn-casesi.c: Require mips16 support but
+	not the command line option.
+	* gcc.target/mips/insn-tablejump.c: Force o32 ABI as
+	we do not really support n32/n64 microMIPS.  Require micromips
+	support but not the command line option.
+
+2025-08-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121541
+	* gcc.target/i386/pr121541-1a.c: New test.
+	* gcc.target/i386/pr121541-1b.c: Likewise.
+	* gcc.target/i386/pr121541-2.c: Likewise.
+	* gcc.target/i386/pr121541-3.c: Likewise.
+	* gcc.target/i386/pr121541-4.c: Likewise.
+	* gcc.target/i386/pr121541-5a.c: Likewise.
+	* gcc.target/i386/pr121541-5b.c: Likewise.
+
 2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120503
