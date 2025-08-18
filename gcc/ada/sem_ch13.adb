@@ -4464,11 +4464,16 @@ package body Sem_Ch13 is
                   --  Error checking
 
                   if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
                      goto Continue;
                   end if;
 
-                  if Ekind (E) /= E_Procedure then
-                     Error_Msg_N ("Initialize must apply to a constructor", N);
+                  if Ekind (E) /= E_Subprogram_Body
+                    or else Nkind (Parent (E)) /= N_Procedure_Specification
+                  then
+                     Error_Msg_N
+                       ("Initialize must apply to a constructor body", N);
                   end if;
 
                   if Present (Expressions (Expression (Aspect))) then
@@ -4507,11 +4512,6 @@ package body Sem_Ch13 is
                      Next_Entity (Type_Comp);
                   end loop;
 
-                  --  Push the scope and formals for analysis
-
-                  Push_Scope (E);
-                  Install_Formals (Defining_Unit_Name (Specification (N)));
-
                   --  Analyze the components
 
                   Aspect_Comp :=
@@ -4530,10 +4530,6 @@ package body Sem_Ch13 is
                   Dummy_Aggr := New_Copy_Tree (Expression (Aspect));
                   Resolve_Aggregate (Dummy_Aggr, Typ);
                   Expander_Active := True;
-
-                  --  Return the scope
-
-                  End_Scope;
                end Initialize;
 
                --  Initializes
@@ -5031,6 +5027,12 @@ package body Sem_Ch13 is
                   goto Continue;
 
                when Aspect_Constructor =>
+                  if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
+                  end if;
+
                   Set_Constructor_Name (E, Expr);
                   Set_Needs_Construction (E);
 
@@ -5294,6 +5296,80 @@ package body Sem_Ch13 is
                --  In the delayed case, the corresponding pragma cannot be
                --  generated yet because the evaluation of the boolean needs
                --  to be delayed till the freeze point.
+
+               --  Super
+
+               when Aspect_Super => Super :
+               declare
+                  Analyze_Parameter_Expressions : constant Boolean := True;
+                  --  ???
+                  --  We can analyze actual parameter expressions here (with
+                  --  no context, like the operand of a type conversion),
+                  --  or leave them unanalyzed for now and catch problems
+                  --  when we analyze the generated constructor call
+                  --  (where overload resolution may provide context that
+                  --  resolves some ambiguities).
+                  --  For now, we analyze them here to avoid depending
+                  --  on legality checking performed during expansion.
+                  --  To reverse this decision, set this flag to False.
+
+               begin
+                  --  Error checking
+
+                  if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
+                  end if;
+
+                  if Ekind (E) /= E_Subprogram_Body
+                    or else Nkind (Parent (E)) /= N_Procedure_Specification
+                  then
+                     Error_Msg_N ("Super must apply to a constructor body", N);
+                  end if;
+
+                  --  handle missing parameter list (an error case)
+
+                  if No (Expr) then
+                     Error_Msg_N ("constructor parameters required", N);
+
+                  --  Handle parameter list of length more than one
+                  --  (such a list is parsed as an aggregate).
+
+                  elsif Nkind (Expr) = N_Aggregate then
+                     if Present (Component_Associations (Expr))
+                       or else No (Expressions (Expr))
+                     then
+                        Error_Msg_N
+                          ("malformed constructor parameter list", N);
+
+                     elsif Analyze_Parameter_Expressions then
+                        declare
+                           Param_Expr : Node_Id := First (Expressions (Expr));
+                        begin
+                           while Present (Param_Expr) loop
+                              Analyze (Param_Expr);
+                              Next (Param_Expr);
+                           end loop;
+
+                           Set_Analyzed (Expr);
+                           --  Someday Vast may complain that this so-called
+                           --  aggregate has no Etype. For now, we mark it
+                           --  as analyzed and hope that nobody trips over it.
+                        end;
+                     end if;
+
+                  --  handle parameter list of length one
+
+                  elsif Paren_Count (Expr) = 0 then
+                     Error_Msg_N
+                       ("parentheses missing for constructor parameter list ",
+                        N);
+
+                  elsif Analyze_Parameter_Expressions then
+                     Analyze (Expr);
+                  end if;
+               end Super;
 
                when Boolean_Aspects
                   | Library_Unit_Aspects
@@ -5690,7 +5766,9 @@ package body Sem_Ch13 is
                         Set_Declarations (N, New_List);
                      end if;
 
-                     Prepend (Aitem, Declarations (N));
+                     if Present (Aitem) then
+                        Prepend (Aitem, Declarations (N));
+                     end if;
 
                   elsif Nkind (N) = N_Generic_Package_Declaration then
                      if No (Visible_Declarations (Specification (N))) then
@@ -5761,7 +5839,9 @@ package body Sem_Ch13 is
 
                --  The pragma is added before source declarations
 
-               Prepend_To (Declarations (N), Aitem);
+               if Present (Aitem) then
+                  Prepend_To (Declarations (N), Aitem);
+               end if;
 
             --  When delay is not required and the context is not a compilation
             --  unit, we simply insert the pragma/attribute definition clause
@@ -11629,7 +11709,7 @@ package body Sem_Ch13 is
       --  Case of stream attributes and Put_Image, just have to compare
       --  entities. However, the expression is just a possibly-overloaded
       --  name, so we need to verify that one of these interpretations is
-      --  the one available at at the freeze point.
+      --  the one available at the freeze point.
 
       elsif A_Id in Aspect_Constructor
                   | Aspect_Destructor
@@ -12221,6 +12301,7 @@ package body Sem_Ch13 is
             | Aspect_Relaxed_Initialization
             | Aspect_SPARK_Mode
             | Aspect_Subprogram_Variant
+            | Aspect_Super
             | Aspect_Suppress
             | Aspect_Test_Case
             | Aspect_Unimplemented

@@ -158,6 +158,7 @@ package Aspects is
       Aspect_Stream_Size,
       Aspect_String_Literal,
       Aspect_Subprogram_Variant,            -- GNAT
+      Aspect_Super,                         -- GNAT
       Aspect_Suppress,
       Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
@@ -518,6 +519,7 @@ package Aspects is
       Aspect_Stream_Size                => Expression,
       Aspect_String_Literal             => Name,
       Aspect_Subprogram_Variant         => Expression,
+      Aspect_Super                      => Expression,
       Aspect_Suppress                   => Name,
       Aspect_Synchronization            => Name,
       Aspect_Test_Case                  => Expression,
@@ -626,6 +628,7 @@ package Aspects is
       Aspect_Stream_Size                  => True,
       Aspect_String_Literal               => False,
       Aspect_Subprogram_Variant           => False,
+      Aspect_Super                        => False,
       Aspect_Suppress                     => False,
       Aspect_Synchronization              => False,
       Aspect_Test_Case                    => False,
@@ -842,6 +845,7 @@ package Aspects is
       Aspect_Stream_Size                  => Name_Stream_Size,
       Aspect_String_Literal               => Name_String_Literal,
       Aspect_Subprogram_Variant           => Name_Subprogram_Variant,
+      Aspect_Super                        => Name_Super,
       Aspect_Suppress                     => Name_Suppress,
       Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
       Aspect_Suppress_Initialization      => Name_Suppress_Initialization,
@@ -1124,6 +1128,7 @@ package Aspects is
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Static                       => Never_Delay,
       Aspect_Subprogram_Variant           => Never_Delay,
+      Aspect_Super                        => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
@@ -1193,10 +1198,12 @@ package Aspects is
    --  Sem_Prag.
 
    Aspect_On_Body_Or_Stub_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Refined_Depends              => True,
+     (Aspect_Initialize                   => True,
+      Aspect_Refined_Depends              => True,
       Aspect_Refined_Global               => True,
       Aspect_Refined_Post                 => True,
       Aspect_SPARK_Mode                   => True,
+      Aspect_Super                        => True,
       Aspect_Warnings                     => True,
       others                              => False);
 

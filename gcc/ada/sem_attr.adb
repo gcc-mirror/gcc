@@ -5179,10 +5179,8 @@ package body Sem_Attr is
       when Attribute_Make => declare
          Expr : Entity_Id;
       begin
-         --  Should this be assert? Parsing should fail if it hits 'Make
-         --  and all extensions aren't enabled ???
-
          if not All_Extensions_Allowed then
+            Error_Msg_GNAT_Extension ("Make attribute", Loc);
             return;
          end if;
 

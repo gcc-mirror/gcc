@@ -27,6 +27,7 @@
 
 with Elists;  use Elists;
 with Exp_Tss; use Exp_Tss;
+with Tbuild;  use Tbuild;
 with Types;   use Types;
 with Uintp;   use Uintp;
 
@@ -193,6 +194,32 @@ package Exp_Ch3 is
    --  True then the tag components located at fixed positions of Target are
    --  initialized; if Variable_Comps is True then tags components located at
    --  variable positions of Target are initialized.
+
+   type Initialization_Mode is
+     (Full_Init, Full_Init_Except_Tag, Early_Init_Only, Late_Init_Only);
+   --  The initialization routine for a tagged type is passed in a
+   --  formal parameter of this type, indicating what initialization
+   --  is to be performed. This parameter defaults to Full_Init in all
+   --  cases except when the init proc of a type extension (let's call
+   --  that type T2) calls the init proc of its parent (let's call that
+   --  type T1). In that case, one of the other 3 values will
+   --  be passed in. In all three of those cases, the Tag component has
+   --  already been initialized before the call and is therefore not to be
+   --  modified. T2's init proc will either call T1's init proc
+   --  once (with Full_Init_Except_Tag as the parameter value) or twice
+   --  (first with Early_Init_Only, then later with Late_Init_Only),
+   --  depending on the result returned by Has_Late_Init_Component (T1).
+   --  In the latter case, the first call does not initialize any
+   --  components that require late initialization and the second call
+   --  then performs that deferred initialization.
+   --  Strictly speaking, the formal parameter subtype is actually Natural
+   --  but calls will only pass in values corresponding to literals
+   --  of this enumeration type.
+
+   function Make_Mode_Literal
+     (Loc : Source_Ptr; Mode : Initialization_Mode) return Node_Id
+   is (Make_Integer_Literal (Loc, Initialization_Mode'Pos (Mode)));
+   --  Generate an integer literal for a given mode value.
 
    procedure Make_Controlling_Function_Wrappers
      (Tag_Typ   : Entity_Id;
