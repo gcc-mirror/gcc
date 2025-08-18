@@ -99,6 +99,39 @@ public:
     return m_full_and_partial_reg_clobbers;
   }
 
+  /* Return the set of registers that a function call is allowed to alter
+     partially but not fully; i.e. those in full_and_partial_reg_clobbers ()
+     but not in full_reg_clobbers ().
+
+     If a register X is in this set and if we don't know which parts of
+     X are live (typically because we don't bother to track X's mode),
+     then the conservative assumptions are:
+
+     - to ignore the call when computing reaching definitions
+     - to treat X as clobbered when computing availability
+
+     For example, if we have:
+
+       A: X := Y
+       B: call that partially clobbers X
+       C: ... := ... X ...
+
+     and don't track the mode of X when computing reaching definitions,
+     then the conservative assumption is that A's definition survives
+     until C.  But if we have:
+
+       A: X := Y
+       B: call that partially clobbers X
+       C: ... := ... Y ...
+
+     and don't track the mode of X when computing availability, then the
+     conservative assumption is that Y is not available in X at C.  */
+  HARD_REG_SET
+  only_partial_reg_clobbers () const
+  {
+    return full_and_partial_reg_clobbers () & ~full_reg_clobbers ();
+  }
+
   /* Return the set of registers that cannot be used to hold a value of
      mode MODE across a function call.  That is:
 
@@ -163,6 +196,12 @@ public:
   full_and_partial_reg_clobbers () const
   {
     return m_mask & m_base_abi->full_and_partial_reg_clobbers ();
+  }
+
+  HARD_REG_SET
+  only_partial_reg_clobbers () const
+  {
+    return m_mask & m_base_abi->only_partial_reg_clobbers ();
   }
 
   HARD_REG_SET
