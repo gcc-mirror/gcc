@@ -11113,7 +11113,7 @@ Parser<ManagedTokenSource>::parse_identifier_pattern ()
       lexer.skip_token ();
 
       // parse required pattern to bind
-      bind_pattern = parse_pattern ();
+      bind_pattern = parse_pattern_no_alt ();
       if (bind_pattern == nullptr)
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
@@ -11240,7 +11240,8 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	    // identifier with pattern bind
 	    lexer.skip_token ();
 
-	    std::unique_ptr<AST::Pattern> bind_pattern = parse_pattern ();
+	    std::unique_ptr<AST::Pattern> bind_pattern
+	      = parse_pattern_no_alt ();
 	    if (bind_pattern == nullptr)
 	      {
 		Error error (
