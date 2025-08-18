@@ -831,7 +831,7 @@ extern bool th_print_operand_address (FILE *, machine_mode, rtx);
 
 extern bool strided_load_broadcast_p (void);
 extern bool riscv_use_divmod_expander (void);
-void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
+void riscv_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx, tree, int);
 extern bool
 riscv_option_valid_attribute_p (tree, tree, tree, int);
 extern bool

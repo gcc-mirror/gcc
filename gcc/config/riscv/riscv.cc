@@ -6126,7 +6126,8 @@ riscv_pass_vls_aggregate_in_gpr (struct riscv_arg_info *info, machine_mode mode,
    For a library call, FNTYPE is 0.  */
 
 void
-riscv_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx, tree, int)
+riscv_init_cumulative_args (CUMULATIVE_ARGS *cum, const_tree fntype,
+			    rtx, tree, int)
 {
   memset (cum, 0, sizeof (*cum));
 
@@ -6407,30 +6408,44 @@ riscv_arg_partial_bytes (cumulative_args_t cum,
   return arg.stack_p ? arg.num_gprs * UNITS_PER_WORD : 0;
 }
 
-/* Implement FUNCTION_VALUE and LIBCALL_VALUE.  For normal calls,
-   VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
-   VALTYPE is null and MODE is the mode of the return value.  */
+/* Implements hook TARGET_FUNCTION_VALUE.  */
 
 rtx
-riscv_function_value (const_tree type, const_tree func, machine_mode mode)
+riscv_function_value (const_tree ret_type, const_tree fn_decl_or_type,
+		      bool outgoing)
 {
   struct riscv_arg_info info;
   CUMULATIVE_ARGS args;
 
-  if (type)
+  if (fn_decl_or_type)
     {
-      int unsigned_p = TYPE_UNSIGNED (type);
-
-      mode = TYPE_MODE (type);
-
-      /* Since TARGET_PROMOTE_FUNCTION_MODE unconditionally promotes,
-	 return values, promote the mode here too.  */
-      mode = promote_function_mode (type, mode, &unsigned_p, func, 1);
+      const_tree fntype = TREE_CODE (fn_decl_or_type) == FUNCTION_DECL ?
+			    TREE_TYPE (fn_decl_or_type) : fn_decl_or_type;
+      riscv_init_cumulative_args (&args, fntype, NULL_RTX, NULL_TREE, 0);
     }
+  else
+    memset (&args, 0, sizeof args);
 
+  int unsigned_p = TYPE_UNSIGNED (ret_type);
+
+  machine_mode mode = TYPE_MODE (ret_type);
+
+  /* Since TARGET_PROMOTE_FUNCTION_MODE unconditionally promotes,
+     return values, promote the mode here too.  */
+  mode = promote_function_mode (ret_type, mode, &unsigned_p, fn_decl_or_type, 1);
+
+  return riscv_get_arg_info (&info, &args, mode, ret_type, true, true);
+}
+
+/* Implements hook TARGET_LIBCALL_VALUE.  */
+
+rtx
+riscv_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  struct riscv_arg_info info;
+  CUMULATIVE_ARGS args;
   memset (&args, 0, sizeof args);
-
-  return riscv_get_arg_info (&info, &args, mode, type, true, true);
+  return riscv_get_arg_info (&info, &args, mode, NULL_TREE, true, true);
 }
 
 /* Implement TARGET_PASS_BY_REFERENCE. */
@@ -15843,6 +15858,12 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
 #define TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P riscv_vector_mode_supported_any_target_p
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE riscv_function_value
+
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE riscv_libcall_value
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P riscv_function_value_regno_p

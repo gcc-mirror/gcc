@@ -765,12 +765,6 @@ enum reg_class
 
 #define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
-#define LIBCALL_VALUE(MODE) \
-  riscv_function_value (NULL_TREE, NULL_TREE, MODE)
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  riscv_function_value (VALTYPE, FUNC, VOIDmode)
-
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
 
