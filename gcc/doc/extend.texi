@@ -17252,7 +17252,8 @@ is computed.
 
 @smallexample
 struct V @{ char buf1[10]; int b; char buf2[10]; @} var;
-char *p = &var.buf1[1], *q = &var.b;
+char *p = &var.buf1[1];
+int *q = &var.b;
 
 /* Here the object p points to is var.  */
 assert (__builtin_object_size (p, 0) == sizeof (var) - 1);
