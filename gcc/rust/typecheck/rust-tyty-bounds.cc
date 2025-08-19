@@ -575,10 +575,13 @@ TypeBoundPredicate::apply_argument_mappings (
       std::string identifier = it.first;
       TyTy::BaseType *type = it.second;
 
-      TypeBoundPredicateItem item = lookup_associated_item (identifier);
-      rust_assert (!item.is_error ());
+      tl::optional<TypeBoundPredicateItem> item
+	= lookup_associated_item (identifier);
 
-      const auto item_ref = item.get_raw_item ();
+      if (!item.has_value ())
+	continue;
+
+      const auto item_ref = item->get_raw_item ();
       item_ref->associated_type_set (type);
     }
 
@@ -599,7 +602,7 @@ TypeBoundPredicate::contains_item (const std::string &search) const
   return trait_ref->lookup_trait_item (search, &trait_item_ref);
 }
 
-TypeBoundPredicateItem
+tl::optional<TypeBoundPredicateItem>
 TypeBoundPredicate::lookup_associated_item (const std::string &search) const
 {
   auto trait_ref = get ();
@@ -611,11 +614,11 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
   for (auto &super_trait : super_traits)
     {
       auto lookup = super_trait.lookup_associated_item (search);
-      if (!lookup.is_error ())
+      if (lookup.has_value ())
 	return lookup;
     }
 
-  return TypeBoundPredicateItem::error ();
+  return tl::nullopt;
 }
 
 TypeBoundPredicateItem::TypeBoundPredicateItem (
@@ -656,7 +659,7 @@ TypeBoundPredicateItem::get_parent () const
   return &parent;
 }
 
-TypeBoundPredicateItem
+tl::optional<TypeBoundPredicateItem>
 TypeBoundPredicate::lookup_associated_item (
   const Resolver::TraitItemReference *ref) const
 {
@@ -732,10 +735,11 @@ TypeBoundPredicate::handle_substitions (
       std::string identifier = it.first;
       TyTy::BaseType *type = it.second;
 
-      TypeBoundPredicateItem item = lookup_associated_item (identifier);
-      if (!item.is_error ())
+      tl::optional<TypeBoundPredicateItem> item
+	= lookup_associated_item (identifier);
+      if (item.has_value ())
 	{
-	  const auto item_ref = item.get_raw_item ();
+	  const auto item_ref = item->get_raw_item ();
 	  item_ref->associated_type_set (type);
 	}
     }
@@ -799,18 +803,18 @@ TypeBoundPredicate::get_trait_hierachy (
 TypeBoundPredicateItem
 TypeBoundPredicate::lookup_associated_type (const std::string &search)
 {
-  TypeBoundPredicateItem item = lookup_associated_item (search);
+  tl::optional<TypeBoundPredicateItem> item = lookup_associated_item (search);
 
   // only need to check that it is infact an associated type because other
   // wise if it was not found it will just be an error node anyway
-  if (!item.is_error ())
+  if (item.has_value ())
     {
-      const auto raw = item.get_raw_item ();
+      const auto raw = item->get_raw_item ();
       if (raw->get_trait_item_type ()
 	  != Resolver::TraitItemReference::TraitItemType::TYPE)
 	return TypeBoundPredicateItem::error ();
     }
-  return item;
+  return item.value ();
 }
 
 std::vector<TypeBoundPredicateItem>

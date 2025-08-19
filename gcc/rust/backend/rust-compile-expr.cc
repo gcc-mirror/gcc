@@ -2617,15 +2617,15 @@ CompileExpr::generate_closure_fntype (HIR::ClosureExpr &expr,
   TyTy::TypeBoundPredicateItem item = TyTy::TypeBoundPredicateItem::error ();
   if (predicate.get_name ().compare ("FnOnce") == 0)
     {
-      item = predicate.lookup_associated_item ("call_once");
+      item = predicate.lookup_associated_item ("call_once").value ();
     }
   else if (predicate.get_name ().compare ("FnMut") == 0)
     {
-      item = predicate.lookup_associated_item ("call_mut");
+      item = predicate.lookup_associated_item ("call_mut").value ();
     }
   else if (predicate.get_name ().compare ("Fn") == 0)
     {
-      item = predicate.lookup_associated_item ("call");
+      item = predicate.lookup_associated_item ("call").value ();
     }
   else
     {

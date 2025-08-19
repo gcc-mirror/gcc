@@ -367,15 +367,15 @@ PathProbeType::process_predicate_for_candidates (
 {
   const TraitReference *trait_ref = predicate.get ();
 
-  TyTy::TypeBoundPredicateItem item
+  tl::optional<TyTy::TypeBoundPredicateItem> item
     = predicate.lookup_associated_item (search.as_string ());
-  if (item.is_error ())
+  if (!item.has_value ())
     return;
 
-  if (ignore_mandatory_trait_items && item.needs_implementation ())
+  if (ignore_mandatory_trait_items && item->needs_implementation ())
     return;
 
-  const TraitItemReference *trait_item_ref = item.get_raw_item ();
+  const TraitItemReference *trait_item_ref = item->get_raw_item ();
   PathProbeCandidate::CandidateType candidate_type;
   switch (trait_item_ref->get_trait_item_type ())
     {
@@ -395,9 +395,9 @@ PathProbeType::process_predicate_for_candidates (
       break;
     }
 
-  TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
+  TyTy::BaseType *trait_item_tyty = item->get_raw_item ()->get_tyty ();
   if (receiver->get_kind () != TyTy::DYNAMIC)
-    trait_item_tyty = item.get_tyty_for_receiver (receiver);
+    trait_item_tyty = item->get_tyty_for_receiver (receiver);
 
   PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 							      trait_item_ref,

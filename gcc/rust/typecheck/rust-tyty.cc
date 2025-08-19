@@ -351,12 +351,12 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 	    return false;
 
 	  std::string item_name = item->get_impl_item_name ();
-	  TypeBoundPredicateItem lookup
+	  tl::optional<TypeBoundPredicateItem> lookup
 	    = predicate.lookup_associated_item (item_name);
-	  if (lookup.is_error ())
+	  if (!lookup.has_value ())
 	    return false;
 
-	  const auto *item_ref = lookup.get_raw_item ();
+	  const auto *item_ref = lookup->get_raw_item ();
 	  TyTy::BaseType *bound_ty = item_ref->get_tyty ();
 
 	  // compare the types

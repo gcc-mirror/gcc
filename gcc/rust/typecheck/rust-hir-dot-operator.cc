@@ -471,17 +471,17 @@ MethodResolver::get_predicate_items (
   std::vector<predicate_candidate> predicate_items;
   for (auto &bound : specified_bounds)
     {
-      TyTy::TypeBoundPredicateItem lookup
+      tl::optional<TyTy::TypeBoundPredicateItem> lookup
 	= bound.lookup_associated_item (segment_name.as_string ());
-      if (lookup.is_error ())
+      if (!lookup.has_value ())
 	continue;
 
-      TyTy::BaseType *ty = lookup.get_tyty_for_receiver (&receiver);
+      TyTy::BaseType *ty = lookup->get_tyty_for_receiver (&receiver);
       if (ty->get_kind () == TyTy::TypeKind::FNDEF)
 	{
 	  TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
 	  if (fnty->is_method ())
-	    predicate_items.emplace_back (lookup, fnty);
+	    predicate_items.emplace_back (lookup.value (), fnty);
 	}
     }
 

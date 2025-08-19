@@ -77,9 +77,9 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   // lookup the associated item from the specified bound
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
   HIR::PathIdentSegment item_seg_identifier = item_seg.get_segment ();
-  TyTy::TypeBoundPredicateItem item
+  tl::optional<TyTy::TypeBoundPredicateItem> item
     = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
-  if (item.is_error ())
+  if (!item.has_value ())
     {
       rust_error_at (item_seg.get_locus (), "unknown associated item");
       return;
@@ -116,9 +116,9 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
       // and we dont need to worry if the trait item is actually implemented or
       // not because this will have already been validated as part of the trait
       // impl block
-      infered = item.get_tyty_for_receiver (root);
+      infered = item->get_tyty_for_receiver (root);
       root_resolved_node_id
-	= item.get_raw_item ()->get_mappings ().get_nodeid ();
+	= item->get_raw_item ()->get_mappings ().get_nodeid ();
     }
   else
     {

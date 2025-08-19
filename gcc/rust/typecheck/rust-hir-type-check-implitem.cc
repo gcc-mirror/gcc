@@ -469,8 +469,8 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
     }
 
   // get the item from the predicate
-  resolved_trait_item = trait_reference.lookup_associated_item (raw_trait_item);
-  rust_assert (!resolved_trait_item.is_error ());
+  resolved_trait_item
+    = trait_reference.lookup_associated_item (raw_trait_item).value ();
 
   // merge the attributes
   const HIR::TraitItem *hir_trait_item
@@ -519,8 +519,8 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
     }
 
   // get the item from the predicate
-  resolved_trait_item = trait_reference.lookup_associated_item (raw_trait_item);
-  rust_assert (!resolved_trait_item.is_error ());
+  resolved_trait_item
+    = trait_reference.lookup_associated_item (raw_trait_item).value ();
 
   // merge the attributes
   const HIR::TraitItem *hir_trait_item
@@ -578,8 +578,8 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
     }
 
   // get the item from the predicate
-  resolved_trait_item = trait_reference.lookup_associated_item (raw_trait_item);
-  rust_assert (!resolved_trait_item.is_error ());
+  resolved_trait_item
+    = trait_reference.lookup_associated_item (raw_trait_item).value ();
 
   // merge the attributes
   const HIR::TraitItem *hir_trait_item

@@ -241,12 +241,13 @@ HIRCompileBase::compute_address_for_trait_item (
     &receiver_bounds,
   const TyTy::BaseType *receiver, const TyTy::BaseType *root, location_t locus)
 {
-  TyTy::TypeBoundPredicateItem predicate_item
+  tl::optional<TyTy::TypeBoundPredicateItem> predicate_item
     = predicate->lookup_associated_item (ref->get_identifier ());
-  rust_assert (!predicate_item.is_error ());
+  rust_assert (predicate_item.has_value ());
 
   // This is the expected end type
-  TyTy::BaseType *trait_item_type = predicate_item.get_tyty_for_receiver (root);
+  TyTy::BaseType *trait_item_type
+    = predicate_item->get_tyty_for_receiver (root);
   rust_assert (trait_item_type->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *trait_item_fntype
     = static_cast<TyTy::FnType *> (trait_item_type);

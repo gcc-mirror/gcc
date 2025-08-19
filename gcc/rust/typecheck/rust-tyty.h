@@ -617,10 +617,10 @@ public:
 
   bool contains_item (const std::string &search) const;
 
-  TypeBoundPredicateItem
+  tl::optional<TypeBoundPredicateItem>
   lookup_associated_item (const std::string &search) const;
 
-  TypeBoundPredicateItem
+  tl::optional<TypeBoundPredicateItem>
   lookup_associated_item (const Resolver::TraitItemReference *ref) const;
 
   // WARNING THIS WILL ALWAYS RETURN NULLPTR
