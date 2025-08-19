@@ -5,7 +5,7 @@ x=fixincl.x =]
      (dne "-D" " * " "/* ")
      (dne " * " "/* ") ) =]
  */
-/* DO NOT SVN-MERGE THIS FILE, EITHER [=
+/* DO NOT MERGE THIS FILE, EITHER [=
    (define re-ct 0) (define max-mach 0) (define ct 0)
    (define HACK "") (define Hack "")    (define tmp "") 
    (shell "date") =]
