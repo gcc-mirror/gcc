@@ -4782,7 +4782,7 @@ case "${target}" in
 			exit 1
 			;;
 		esac
-		PYTHON=`which python || which python3 || which python2`
+		PYTHON=`which python3 || which python`
 		if test "x${PYTHON}" != x; then
 			with_arch=`${PYTHON} ${srcdir}/config/riscv/arch-canonicalize -misa-spec=${with_isa_spec} ${with_arch}`
 		fi
