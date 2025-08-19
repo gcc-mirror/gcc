@@ -1,3 +1,45 @@
+2025-08-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121476
+	* include/bits/ranges_algo.h (__all_of_fn::operator()):
+	(__any_of_fn::operator(), __none_of_fn::operator())
+	(__find_first_of_fn::operator(), __count_fn::operator())
+	(__find_end_fn::operator(), __remove_if_fn::operator())
+	(__remove_fn::operator(), __unique_fn::operator())
+	(__is_sorted_until_fn::operator(), __is_sorted_fn::operator())
+	(__lower_bound_fn::operator(), __upper_bound_fn::operator())
+	(__equal_range_fn::operator(), __binary_search_fn::operator())
+	(__is_partitioned_fn::operator(), __partition_point_fn::operator())
+	(__minmax_fn::operator(), __min_element_fn::operator())
+	(__includes_fn::operator(), __max_fn::operator())
+	(__lexicographical_compare_fn::operator(), __clamp__fn::operator())
+	(__find_last_fn::operator(), __find_last_if_fn::operator())
+	(__find_last_if_not_fn::operator()): Add [[nodiscard]] attribute.
+	* include/bits/ranges_algobase.h (__equal_fn::operator()):
+	Add [[nodiscard]] attribute.
+	* include/bits/ranges_util.h (__find_fn::operator())
+	(__find_if_fn::operator(), __find_if_not_fn::operator())
+	(__mismatch_fn::operator(), __search_fn::operator())
+	(__min_fn::operator(), __adjacent_find_fn::operator()):
+	Add [[nodiscard]] attribute.
+	* include/bits/stl_algo.h (std::min(initializer_list<T>))
+	(std::min(initializer_list<T>, _Compare))
+	(std::max(initializer_list<T>))
+	(std::mmax(initializer_list<T>, _Compare)): Add _GLIBCXX_NODISCARD.
+	* testsuite/25_algorithms/min/constrained.cc: Silence nodiscard
+	warning.
+	* testsuite/25_algorithms/max/constrained.cc: Likewise.
+	* testsuite/25_algorithms/minmax/constrained.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/constrained.cc: Likewise.
+
+2025-08-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121313
+	* include/bits/vector.tcc (vector::insert_range): Add check for
+	empty size.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	New tests.
+
 2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	* configure: Regenerated.

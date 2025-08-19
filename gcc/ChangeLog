@@ -1,3 +1,180 @@
+2025-08-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/121581
+	* doc/extend.texi (__builtin_object_size): Fix example.
+
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* flag-types.h (sanitize_code_type): Define.
+	* asan.h (sanitize_flags_p): Use 'sanitize_code_type' instead of
+	'unsigned int'.
+	* common.opt: Likewise.
+	* dwarf2asm.cc (dw2_output_indirect_constant_1): Likewise.
+	* opts.cc (find_sanitizer_argument): Likewise.
+	(report_conflicting_sanitizer_options): Likewise.
+	(parse_sanitizer_options): Likewise.
+	(parse_no_sanitize_attribute): Likewise.
+	* opts.h (parse_sanitizer_options): Likewise.
+	(parse_no_sanitize_attribute): Likewise.
+	* tree-cfg.cc (print_no_sanitize_attr_value): Likewise.
+	* tree.cc (tree_fits_sanitize_code_type_p): Define.
+	(tree_to_sanitize_code_type): Likewise.
+	* tree.h (tree_fits_sanitize_code_type_p): Declare.
+	(tree_to_sanitize_code_type): Likewise.
+
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/aarch64/aarch64.md (MEMTAG_TAG_MASK): New define
+	constant.
+	(MEMTAG_ADDR_MASK): Likewise.
+	(irg, subp, ldg): Use new constants.
+
+2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97497
+	* function-abi.h (predefined_function_abi::only_partial_reg_clobbers)
+	(function_abi::only_partial_reg_clobbers): New member functions.
+	* gcse-common.cc: Include regs.h and function-abi.h.
+	(compute_transp): Check for partially call-clobbered registers
+	and treat them as not being transparent in blocks with calls.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (UNSPEC_TI_FETCH_ADD): New unspec.
+	(UNSPEC_TI_FETCH_SUB): Likewise.
+	(UNSPEC_TI_FETCH_AND): Likewise.
+	(UNSPEC_TI_FETCH_XOR): Likewise.
+	(UNSPEC_TI_FETCH_OR): Likewise.
+	(UNSPEC_TI_FETCH_NAND_MASK_INVERTED): Likewise.
+	(ALL_SC): New define_mode_iterator.
+	(_scq): New define_mode_attr.
+	(atomic_fetch_nand<mode>): Accept ALL_SC instead of only GPR.
+	(UNSPEC_TI_FETCH_DIRECT): New define_int_iterator.
+	(UNSPEC_TI_FETCH): New define_int_iterator.
+	(amop_ti_fetch): New define_int_attr.
+	(size_ti_fetch): New define_int_attr.
+	(atomic_fetch_<amop_ti_fetch>ti_scq): New define_insn.
+	(atomic_fetch_<amop_ti_fetch>ti): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_exchangeti_scq): New
+	define_insn.
+	(atomic_exchangeti): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_compare_and_swapti_scq): New
+	define_insn.
+	(atomic_compare_and_swapti): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand_reloc):
+	Accept "%t" for printing the number of the 64-bit machine
+	register holding the upper half of a TImode.
+	* config/loongarch/sync.md (atomic_storeti_scq): New
+	define_insn.
+	(atomic_storeti): expand to atomic_storeti_scq if !ISA_HAS_LSX.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/isa-evolution.in (scq): New evolution
+	feature.
+	* config/loongarch/loongarch-evolution.cc: Regenerate.
+	* config/loongarch/loongarch-evolution.h: Regenerate.
+	* config/loongarch/loongarch-str.h: Regenerate.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+	* config/loongarch/loongarch-def.cc: Make -mscq the default for
+	-march=la664 and -march=la64v1.1.
+	* doc/invoke.texi (LoongArch Options): Document -m[no-]scq.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_storeti_lsx): New
+	define_insn.
+	(atomic_storeti): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_loadti_lsx): New define_insn.
+	(atomic_loadti): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md
+	(atomic_fetch_nand_mask_inverted<GPR:mode>): New define_insn.
+	(atomic_fetch_nand<GPR:mode>): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_fetch_sub<SHORT:mode>):
+	Disable if ISA_HAS_LAM_BH.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (UNSPEC_COMPARE_AND_SWAP_AND):
+	Remove.
+	(UNSPEC_COMPARE_AND_SWAP_XOR): Remove.
+	(UNSPEC_COMPARE_AND_SWAP_OR): Remove.
+	(atomic_test_and_set): Rename to ...
+	(atomic_fetch_<any_bitwise:amop><SHORT:mode>): ... this, and
+	adapt the expansion to use it for any bitwise operations and any
+	val, instead of just ior 1.
+	(atomic_test_and_set): New define_expand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_test_and_set): Remove
+	unneeded andi instruction from the expansion.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand_reloc):
+	Make "%T" output a comment marker if the operand is a memory
+	order for which the barrier won't be generated; remove "%t".
+	* config/loongarch/sync.md (atomic_cas_value_strong<mode>): Add
+	%T before "b 3f".
+	(atomic_cas_value_cmp_and_7_<mode>): Likewise.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (UNSPEC_COMPARE_AND_SWAP_AMCAS): New
+	UNSPEC code.
+	(atomic_cas_value_strong<mode>): NFC, update the comment to note
+	we only need to consider failure memory order.
+	(atomic_cas_value_strong<mode>_amcas): Use
+	UNSPEC_COMPARE_AND_SWAP_AMCAS instead of
+	UNSPEC_COMPARE_AND_SWAP.
+	(atomic_compare_and_swap<mode:GPR>): Pass failure memorder to
+	gen_atomic_cas_value_strong<mode>.
+	(atomic_compare_and_swap<mode:SHORT>): Pass failure memorder to
+	gen_atomic_cas_value_cmp_and_7_si.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_test_and_set): Use bstrins
+	for masking the address if possible.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_load<mode>): Remove "+" for
+	the memory operand.
+	(atomic_store<mode>): Use "=" instead of "+" for the memory
+	operand.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md: Use <size> instead of <amo>.
+	(amo): Remove.
+
+2025-08-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_optab): Remove.
+	(atomic_<atomic_optab><mode>): Change atomic_optab to amop.
+	(atomic_fetch_<atomic_optab><mode>): Likewise.
+
 2025-08-17  Austin Law  <austinklaw@gmail.com>
 
 	PR target/121213

@@ -1,3 +1,8 @@
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* typeck.cc (get_member_function_from_ptrfunc): Use
+	'sanitize_code_type' instead of 'unsigned int'.
+
 2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120503

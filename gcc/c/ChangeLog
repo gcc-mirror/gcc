@@ -1,3 +1,8 @@
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-parser.cc (c_parser_declaration_or_fndef): Use
+	'sanitize_code_type' instead of 'unsigned int'.
+
 2025-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/120778

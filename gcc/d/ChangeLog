@@ -1,3 +1,8 @@
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* d-attribs.cc (d_handle_no_sanitize_attribute): Use
+	'sanitize_code_type' instead of 'unsigned int'.
+
 2025-08-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* d-codegen.cc (build_filename_from_loc): Use
