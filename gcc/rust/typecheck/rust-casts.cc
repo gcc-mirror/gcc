@@ -277,6 +277,7 @@ TypeCastRules::cast_rules ()
       break;
 
     case TyTy::TypeKind::REF:
+    case TyTy::TypeKind::FNPTR:
     case TyTy::TypeKind::POINTER:
       switch (to.get_ty ()->get_kind ())
 	{
@@ -286,8 +287,9 @@ TypeCastRules::cast_rules ()
 	case TyTy::TypeKind::INT:
 	  {
 	    // refs should not cast to numeric type
-	    bool from_ptr
-	      = from.get_ty ()->get_kind () == TyTy::TypeKind::POINTER;
+	    auto kind = from.get_ty ()->get_kind ();
+	    bool from_ptr = kind == TyTy::TypeKind::POINTER
+			    || kind == TyTy::TypeKind::FNPTR;
 	    if (from_ptr)
 	      {
 		return TypeCoercionRules::CoercionResult{
