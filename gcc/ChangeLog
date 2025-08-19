@@ -1,3 +1,17 @@
+2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/121118
+	* config/aarch64/aarch64.cc (aarch64_sve_move_pred_via_while):
+	Return a VNx16BI predicate.
+
+2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-08-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121253
+	* fwprop.cc (forward_propagate_into): Don't propagate asm defs.
+
 2025-08-15  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

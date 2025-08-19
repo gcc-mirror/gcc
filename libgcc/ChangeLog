@@ -1,3 +1,14 @@
+2025-08-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-08-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR libgcc/117600
+	* Makefile.in (WERROR): New.
+	* config/aarch64/t-aarch64: Handle WERROR.
+	* configure: Regenerate.
+	* configure.ac: Add support for --enable-werror.
+
 2025-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
