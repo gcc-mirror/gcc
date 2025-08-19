@@ -17378,13 +17378,14 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
 
 static bool
 aarch64_bool_compound_p (vec_info *vinfo, stmt_vec_info stmt_info,
-			 unsigned int vec_flags)
+			 slp_tree node, unsigned int vec_flags)
 {
   gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
   if (!assign
+      || !node
       || gimple_assign_rhs_code (assign) != BIT_AND_EXPR
-      || !STMT_VINFO_VECTYPE (stmt_info)
-      || !VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_info)))
+      || !SLP_TREE_VECTYPE (node)
+      || !VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (node)))
     return false;
 
   for (int i = 1; i < 3; ++i)
@@ -17723,7 +17724,7 @@ aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
 
 	  /* For vector boolean ANDs with a compare operand we just need
 	     one insn.  */
-	  if (aarch64_bool_compound_p (vinfo, stmt_info, vec_flags))
+	  if (aarch64_bool_compound_p (vinfo, stmt_info, node, vec_flags))
 	    return 0;
 	}
 
@@ -17804,7 +17805,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 
       /* Assume that bool AND with compare operands will become a single
 	 operation.  */
-      if (aarch64_bool_compound_p (m_vinfo, stmt_info, m_vec_flags))
+      if (aarch64_bool_compound_p (m_vinfo, stmt_info, node, m_vec_flags))
 	return;
     }
 
