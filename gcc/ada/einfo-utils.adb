@@ -2585,11 +2585,7 @@ package body Einfo.Utils is
             loop
                Etyp := Etype (T);
 
-               if No (Etyp) then
-                  Check_Error_Detected;
-               end if;
-
-               exit when No (Etyp) or else T = Etyp
+               exit when T = Etyp
                  or else
                    (Is_Private_Type (T) and then Etyp = Full_View (T))
                  or else
