@@ -18045,6 +18045,17 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				     tree vectype, int misalign,
 				     vect_cost_model_location where)
 {
+  /* When costing for scalars, vectype will be NULL; so look up the type via
+     stmt_info's statement.  */
+  if (m_costing_for_scalar && stmt_info)
+    {
+      gcc_assert (!vectype);
+      /* This won't work for e.g. gconds or other statements without a lhs,
+	 but those only work on GPR anyway and this is the best we can do.  */
+      if (tree lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info)))
+	vectype = TREE_TYPE (lhs);
+    }
+
   fractional_cost stmt_cost
     = aarch64_builtin_vectorization_cost (kind, vectype, misalign);
 
