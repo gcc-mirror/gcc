@@ -1882,7 +1882,7 @@ make_fancy_name (tree expr)
    the current one as specified by INSERT_AFTER.  This function is not capable
    of handling bitfields.  */
 
-tree
+static tree
 build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)

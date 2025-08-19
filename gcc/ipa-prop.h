@@ -1276,10 +1276,6 @@ bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 void ipa_get_range_from_ip_invariant (vrange &r, tree val, cgraph_node *node);
 void ipa_prop_cc_finalize (void);
 
-/* From tree-sra.cc:  */
-tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
-			   gimple_stmt_iterator *, bool);
-
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);
 bool ipa_return_value_range (value_range &range, tree decl);
