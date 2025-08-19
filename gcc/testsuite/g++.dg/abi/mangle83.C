@@ -1,6 +1,6 @@
 // PR c++/120503
 // Implement P2115r0 "merging definitions of unnamed unscoped enums"
-// { dg-do compile { target c++14 } }
+// { dg-do compile { target c++17 } }
 
 template<auto V> int Frob () { return int (V); }
 
