@@ -3107,10 +3107,10 @@ vectorizable_bswap (vec_info *vinfo,
       SLP_TREE_TYPE (slp_node) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
       record_stmt_cost (cost_vec,
-			1, vector_stmt, stmt_info, 0, vect_prologue);
+			1, vector_stmt, slp_node, 0, vect_prologue);
       record_stmt_cost (cost_vec,
 			SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
-			vec_perm, stmt_info, 0, vect_body);
+			vec_perm, slp_node, 0, vect_body);
       return true;
     }
 
@@ -7940,7 +7940,7 @@ vectorizable_store (vec_info *vinfo,
 	  unsigned int inside_cost = 0, prologue_cost = 0;
 	  if (vls_type == VLS_STORE_INVARIANT)
 	    prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-					       stmt_info, 0, vect_prologue);
+					       slp_node, 0, vect_prologue);
 	  vect_get_store_cost (vinfo, stmt_info, slp_node, 1,
 			       alignment_support_scheme, misalignment,
 			       &inside_cost, cost_vec);

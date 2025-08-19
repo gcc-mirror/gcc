@@ -7892,7 +7892,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      vect_transform_reduction for non-lane-reducing operation.  Otherwise
      this is costed by the separate vectorizable_* routines.  */
   if (single_defuse_cycle)
-    record_stmt_cost (cost_vec, ncopies, vector_stmt, stmt_info, 0, vect_body);
+    record_stmt_cost (cost_vec, ncopies, vector_stmt,
+		      slp_for_stmt_info, 0, vect_body);
 
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
@@ -10378,7 +10379,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       /* ???  Enable for loop costing as well.  */
       if (!loop_vinfo)
-	record_stmt_cost (cost_vec, 1, vec_to_scalar, stmt_info, NULL_TREE,
+	record_stmt_cost (cost_vec, 1, vec_to_scalar, slp_node,
 			  0, vect_epilogue);
       return true;
     }
