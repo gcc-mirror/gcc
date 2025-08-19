@@ -8678,7 +8678,7 @@ vectorizable_phi (vec_info *,
 	 favoring the vector path (but may pessimize it in some cases).  */
       if (gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) > 1)
 	record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
-			  vector_stmt, stmt_info, vectype, 0, vect_body);
+			  vector_stmt, slp_node, vectype, 0, vect_body);
       SLP_TREE_TYPE (slp_node) = phi_info_type;
       return true;
     }
@@ -8860,7 +8860,7 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 	 represented and costed separately.  */
       unsigned prologue_cost = 0;
       unsigned inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
-					       stmt_info, 0, vect_body);
+					       slp_node, 0, vect_body);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "vectorizable_recurr: inside_cost = %d, "
@@ -9403,7 +9403,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       /* loop cost for vec_loop. Neg induction doesn't have any
 	 inside_cost.  */
       inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
-				      stmt_info, 0, vect_body);
+				      slp_node, 0, vect_body);
 
       /* loop cost for vec_loop. Neg induction doesn't have any
 	 inside_cost.  */
@@ -9412,7 +9412,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 
       /* prologue cost for vec_init and vec_step.  */
       prologue_cost = record_stmt_cost (cost_vec, 2, scalar_to_vec,
-					stmt_info, 0, vect_prologue);
+					slp_node, 0, vect_prologue);
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -9710,11 +9710,11 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       /* loop cost for vec_loop.  */
       inside_cost = record_stmt_cost (cost_vec,
 				      SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
-				      vector_stmt, stmt_info, 0, vect_body);
+				      vector_stmt, slp_node, 0, vect_body);
       /* prologue cost for vec_init (if not nested) and step.  */
       prologue_cost = record_stmt_cost (cost_vec, 1 + !nested_in_vect_loop,
 					scalar_to_vec,
-					stmt_info, 0, vect_prologue);
+					slp_node, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "vect_model_induction_cost: inside_cost = %d, "
