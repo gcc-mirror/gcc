@@ -1365,14 +1365,14 @@ add_method (tree type, tree method, bool via_using)
 	{
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    ++processing_template_decl;
-	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (fn)))
+	  if (tree outer_args = outer_template_args (fn))
 	    fn_constraints = tsubst_constraint_info (fn_constraints,
-						     TI_ARGS (ti),
+						     outer_args,
 						     tf_warning_or_error,
 						     fn);
-	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (method)))
+	  if (tree outer_args = outer_template_args (method))
 	    method_constraints = tsubst_constraint_info (method_constraints,
-							 TI_ARGS (ti),
+							 outer_args,
 							 tf_warning_or_error,
 							 method);
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
