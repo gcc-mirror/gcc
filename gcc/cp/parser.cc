@@ -33403,9 +33403,12 @@ cp_parser_compound_requirement (cp_parser *parser)
 	    }
 	}
       else
-	/* P1452R2 removed the trailing-return-type option.  */
-	error_at (type_loc,
-		  "return-type-requirement is not a type-constraint");
+	{
+	  /* P1452R2 removed the trailing-return-type option.  */
+	  error_at (type_loc,
+		    "return-type-requirement is not a type-constraint");
+	  type = NULL_TREE;
+	}
     }
 
   location_t loc = make_location (expr_token->location,

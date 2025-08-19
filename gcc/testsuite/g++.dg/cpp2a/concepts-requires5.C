@@ -41,5 +41,5 @@ class D : /*private*/ B { };
 void driver_2()
 {
   static_assert(ConvertibleTo<D, B>()); // { dg-error "cannot call" }
-  static_assert(ConvertibleTo<D, B>); // { dg-error "static assertion failed" }
+  static_assert(ConvertibleTo<D, B>); // { dg-prune-output "static assertion failed" }
 }
