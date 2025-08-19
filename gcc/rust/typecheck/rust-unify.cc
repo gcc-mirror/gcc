@@ -137,6 +137,16 @@ UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
 	  // if any of the types are inference variables lets fix them
 	  if (ref_tyty->is<TyTy::InferType> ())
 	    context.insert_implicit_type (ref, resolved);
+	  else if (resolved->is<TyTy::ConstType> ()
+		   && ref_tyty->is<TyTy::ConstType> ())
+	    {
+	      auto &const_expr = *static_cast<TyTy::ConstType *> (resolved);
+	      if (const_expr.get_const_kind ()
+		  == TyTy::ConstType::ConstKind::Value)
+		{
+		  context.insert_implicit_type (ref, resolved);
+		}
+	    }
 	}
     }
 }
@@ -263,6 +273,35 @@ UnifyRules::go ()
 
 	  // set the rtype now to the new inference var
 	  ltype = i;
+	}
+      else if (ltype->is<TyTy::ConstType> () && rtype->is<TyTy::ConstType> ())
+	{
+	  const auto &lhs = *static_cast<TyTy::ConstType *> (ltype);
+	  const auto &rhs = *static_cast<TyTy::ConstType *> (rtype);
+
+	  bool both_are_decls
+	    = lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl
+	      && rhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl;
+	  bool have_decls
+	    = lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl
+	      || rhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl;
+
+	  if (have_decls && !both_are_decls)
+	    {
+	      if (lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl)
+		{
+		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
+		    lhs, lhs.get_locus ());
+		  ltype = iv.get_tyty ();
+		}
+	      else if (rhs.get_const_kind ()
+		       == TyTy::ConstType::ConstKind::Decl)
+		{
+		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
+		    rhs, rhs.get_locus ());
+		  rtype = iv.get_tyty ();
+		}
+	    }
 	}
     }
 
