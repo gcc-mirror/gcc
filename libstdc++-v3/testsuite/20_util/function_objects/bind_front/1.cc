@@ -48,6 +48,15 @@ test01()
       decltype(bind_front(std::declval<const F&>(), std::declval<const int&>()))
       >);
 
+  static_assert(std::is_same_v<
+      decltype(bind_front(std::declval<F>(), std::declval<int>(), std::declval<float>())),
+      decltype(bind_front(std::declval<F&>(), std::declval<int&>(), std::declval<float&>()))
+      >);
+  static_assert(std::is_same_v<
+      decltype(bind_front(std::declval<F>(), std::declval<int>(), std::declval<float>())),
+      decltype(bind_front(std::declval<const F&>(), std::declval<const int&>(), std::declval<const float&>()))
+      >);
+
   // Reference wrappers should be handled:
   static_assert(!std::is_same_v<
       decltype(bind_front(std::declval<F>(), std::declval<int&>())),
@@ -63,25 +72,26 @@ test01()
       >);
 }
 
-void
-test02()
+struct quals
 {
-  struct quals
-  {
-    bool as_const;
-    bool as_lvalue;
-  };
+  bool as_const;
+  bool as_lvalue;
+};
 
+template<typename... Args>
+void
+testTarget(Args... args)
+{
   struct F
   {
-    quals operator()() & { return { false, true }; }
-    quals operator()() const & { return { true, true }; }
-    quals operator()() && { return { false, false }; }
-    quals operator()() const && { return { true, false }; }
+    quals operator()(Args...) & { return { false, true }; }
+    quals operator()(Args...) const & { return { true, true }; }
+    quals operator()(Args...) && { return { false, false }; }
+    quals operator()(Args...) const && { return { true, false }; }
   };
 
   F f;
-  auto g = bind_front(f);
+  auto g = bind_front(f, args...);
   const auto& cg = g;
   quals q;
 
@@ -93,6 +103,98 @@ test02()
   q = cg();
   VERIFY( q.as_const && q.as_lvalue );
   q = std::move(cg)();
+  VERIFY( q.as_const && ! q.as_lvalue );
+}
+
+template<typename... Args>
+void
+testBoundArgs(Args... args)
+{
+  struct F
+  {
+    quals operator()(Args..., int&) const { return { false, true }; }
+    quals operator()(Args..., int const&) const { return { true, true }; }
+    quals operator()(Args..., int&&) const { return { false, false }; }
+    quals operator()(Args..., int const&&) const { return { true, false }; }
+  };
+
+  F f;
+  auto g = bind_front(f, args..., 10);
+  const auto& cg = g;
+  quals q;
+
+  // constness and value category should be forwarded to the bound objects:
+  q = g();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(g)();
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = cg();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(cg)();
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  int i = 0;
+  auto gr = bind_front(f, args..., std::ref(i));
+  const auto& cgr = gr;
+
+  // bound object is reference wrapper, converts to same type of reference
+  q = gr();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(gr)();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = cgr();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(cgr)();
+  VERIFY( ! q.as_const && q.as_lvalue );
+
+  auto gcr = bind_front(f, args..., std::cref(i));
+  const auto& cgcr = gcr;
+
+  q = gcr();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(gcr)();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cgcr();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(cgcr)();
+  VERIFY( q.as_const && q.as_lvalue );
+}
+
+template<typename... Args>
+void
+testCallArgs(Args... args)
+{
+  struct F
+  {
+    quals operator()(Args..., int&) const { return { false, true }; }
+    quals operator()(Args..., int const&) const { return { true, true }; }
+    quals operator()(Args..., int&&) const { return { false, false }; }
+    quals operator()(Args..., int const&&) const { return { true, false }; }
+  };
+
+  F f;
+  auto g = bind_front(f, args...);
+  const auto& cg = g;
+  quals q;
+  int i = 10;
+  const int ci = i;
+
+  q = g(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = g(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = g(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = g(std::move(ci));
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  q = cg(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = cg(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = cg(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cg(std::move(ci));
   VERIFY( q.as_const && ! q.as_lvalue );
 }
 
@@ -167,11 +269,51 @@ test04()
   VERIFY( bind_front(g2, 3)() == 6 );
 }
 
+struct CountedArg
+{
+  CountedArg() = default;
+  CountedArg(CountedArg&& f) noexcept : counter(f.counter) { ++counter; }
+  CountedArg& operator=(CountedArg&&) = delete;
+
+  int counter = 0;
+};
+CountedArg const c;
+
+void
+testMaterialization()
+{
+  struct F
+  {
+    int operator()(int, CountedArg arg) const
+    { return arg.counter; };
+  };
+
+  // CountedArg is bound to rvalue-reference thus moved
+  auto f0 = std::bind_front(F{});
+  VERIFY( f0(10, CountedArg()) == 1 );
+
+  auto f1 = std::bind_front(F{}, 10);
+  VERIFY( f1(CountedArg()) == 1 );
+}
+
 int
 main()
 {
   test01();
-  test02();
   test03();
   test04();
+
+  testTarget();
+  testTarget(10);
+  testTarget(10, 20, 30);
+
+  testBoundArgs();
+  testBoundArgs(10);
+  testBoundArgs(10, 20, 30);
+
+  testCallArgs();
+  testCallArgs(10);
+  testCallArgs(10, 20, 30);
+
+  testMaterialization();
 }

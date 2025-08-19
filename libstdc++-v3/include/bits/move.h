@@ -89,7 +89,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return static_cast<_Tp&&>(__t);
     }
 
-#if __glibcxx_forward_like // C++ >= 23
   template<typename _Tp, typename _Up>
   struct __like_impl; // _Tp must be a reference and _Up an lvalue reference
 
@@ -112,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     using __like_t = typename __like_impl<_Tp&&, _Up&>::type;
 
+#if __glibcxx_forward_like // C++ >= 23
   /** @brief Forward with the cv-qualifiers and value category of another type.
    *  @tparam _Tp An lvalue reference or rvalue reference.
    *  @tparam _Up An lvalue reference type deduced from the function argument.

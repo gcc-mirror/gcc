@@ -37,6 +37,17 @@ int main() {
   g1(); // { dg-error "deleted|no match" }
   std::move(g1)(); // { dg-error "deleted|no match" }
   std::move(std::as_const(g1))();
+
+  auto f2 = std::bind_back(F{}, 42, 10);
+  f2(); // { dg-error "deleted|no match" }
+  std::move(f2)();
+  std::as_const(f2)();
+  std::move(std::as_const(f2))();
+
+  auto g2 = std::bind_back(G{}, 42, 10);
+  g2(); // { dg-error "deleted|no match" }
+  std::move(g2)(); // { dg-error "deleted|no match" }
+  std::move(std::as_const(g2))();
 }
 
 // { dg-error "no type named 'type' in 'struct std::invoke_result" "" { target c++23 } 0 }
