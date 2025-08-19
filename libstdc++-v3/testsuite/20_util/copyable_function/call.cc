@@ -214,6 +214,28 @@ test_params()
   std::copyable_function<void(CompleteEnum)> f4;
 }
 
+struct EmptyIdFunc
+{
+  EmptyIdFunc* operator()()
+  { return this; }
+};
+
+struct Composed : EmptyIdFunc
+{
+  std::move_only_function<EmptyIdFunc*()> nested;
+};
+
+void
+test_aliasing()
+{
+  Composed c;
+  c.nested = EmptyIdFunc{};
+
+  EmptyIdFunc* baseAddr = c();
+  EmptyIdFunc* nestedAddr = c.nested();
+  VERIFY( baseAddr != nestedAddr );
+};
+
 int main()
 {
   test01();
@@ -222,4 +244,5 @@ int main()
   test04();
   test05();
   test_params();
+  test_aliasing();
 }

@@ -419,6 +419,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        _M_manage = _Manager::_S_empty;
      }
 
+     void _M_destroy() noexcept
+     { _M_manage(_Manager::_Op::_Destroy, _M_storage, nullptr); }
+
      ~_Mo_base()
      { _M_destroy(); }
 
@@ -434,17 +437,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        std::swap(_M_manage, __x._M_manage);
      }
 
-     _Storage _M_storage;
-
-   private:
-     void _M_destroy() noexcept
-     { _M_manage(_Manager::_Op::_Destroy, _M_storage, nullptr); }
-
      _Manager::_Func _M_manage;
-
-#ifdef __glibcxx_copyable_function // C++ >= 26 && HOSTED
-     friend class _Cpy_base;
-#endif // __glibcxx_copyable_function
+     _Storage _M_storage;
    };
 #endif // __glibcxx_copyable_function || __glibcxx_copyable_function
 } // namespace __polyfunc
