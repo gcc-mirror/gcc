@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sync_int_128_runtime } */
 /* { dg-options "-mcx16" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-mlsx -mscq" { target { loongarch64-*-* } } } */
 
 __int128_t i;
 
