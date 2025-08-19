@@ -1298,6 +1298,63 @@ public:
   }
 };
 
+ /* Map the function directly to mve_vec_set_internal (M) or mve_vec_extract
+   (M, M) where M is the vector mode associated with type suffix 0, except when
+   mode is V2DI where the builtin name is hardcoded.  */
+class mve_function_vsetq_vgetq_lane : public function_base
+{
+public:
+  CONSTEXPR mve_function_vsetq_vgetq_lane (bool is_get)
+    : m_is_get (is_get)
+  {}
+
+  /* True for vgetq_lane, false for vsetq_lane.  */
+  bool m_is_get;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    insn_code code;
+    HOST_WIDE_INT elem;
+
+    code = (mode == V2DImode)
+      ? (m_is_get
+	 ? CODE_FOR_mve_vec_extractv2didi
+	 : CODE_FOR_mve_vec_setv2di_internal)
+      : (m_is_get
+	 ? code_for_mve_vec_extract (mode, mode)
+	 : code_for_mve_vec_set_internal (mode));
+
+    if (!m_is_get)
+      {
+	/* mve_vec_set has vector and lane number arguments in opposite order
+	   compared to the intrinsic: swap them now...  */
+	std::swap (e.args[1], e.args[2]);
+      }
+
+    elem = INTVAL (e.args[1]);
+
+    /* For big-endian, GCC's vector indices are reversed within each 64 bits
+       compared to the architectural lane indices used by MVE intrinsics.  */
+    if (BYTES_BIG_ENDIAN)
+      {
+	unsigned int num_lanes = 128 / e.type_suffix (0).element_bits;
+	elem ^= (num_lanes / 2) - 1;
+      }
+
+    if (!m_is_get)
+      {
+	/* ... and convert the lane number into a mask as expected by the
+	   builtin.  */
+	elem = HOST_WIDE_INT_1 << elem;
+      }
+    e.args[1] = GEN_INT (elem);
+
+    return e.use_unpred_insn (code);
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -1537,6 +1594,7 @@ FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))
 FUNCTION (vfmasq, unspec_mve_function_exact_insn, (-1, -1, -1, -1, -1, VFMASQ_N_F, -1, -1, -1, -1, -1, VFMASQ_M_N_F))
 FUNCTION (vfmsq, unspec_mve_function_exact_insn, (-1, -1, VFMSQ_F, -1, -1, -1, -1, -1, VFMSQ_M_F, -1, -1, -1))
+FUNCTION (vgetq_lane, mve_function_vsetq_vgetq_lane, (true))
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
 FUNCTION (vld1q, vld1_impl,)
@@ -1665,6 +1723,7 @@ FUNCTION_ONLY_N_NO_F (vrshrntq, VRSHRNTQ)
 FUNCTION_ONLY_N_NO_F (vrshrq, VRSHRQ)
 FUNCTION (vsbciq, vadc_vsbc_impl, (true, false))
 FUNCTION (vsbcq, vadc_vsbc_impl, (false, false))
+FUNCTION (vsetq_lane, mve_function_vsetq_vgetq_lane, (false))
 FUNCTION (vshlcq, vshlc_impl,)
 FUNCTION_ONLY_N_NO_F (vshllbq, VSHLLBQ)
 FUNCTION_ONLY_N_NO_F (vshlltq, VSHLLTQ)

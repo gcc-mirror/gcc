@@ -1467,6 +1467,47 @@ struct create_def : public nonoverloaded_base
 };
 SHAPE (create)
 
+/* <S0>_t vfoo[_t0](<T0>_t, const int)
+
+   Check that 'idx' is in the [0..#num_lanes - 1] range.
+
+   Example: vgetq_lane.
+   int8_t [__arm_]vgetq_lane[_s8](int8x16_t a, const int idx)  */
+
+struct getq_lane_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "s0,v0,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i-1)) == NUM_TYPE_SUFFIXES
+	|| !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int num_lanes = 128 / c.type_suffix (0).element_bits;
+
+    return c.require_immediate_range (1, 0, num_lanes - 1);
+  }
+
+};
+SHAPE (getq_lane)
+
 /* <T0>[xN]_t vfoo_t0().
 
    Example: vuninitializedq.
@@ -1833,6 +1874,46 @@ struct scalar_u64_shift_imm_def : public nonoverloaded_base
   }
 };
 SHAPE (scalar_u64_shift_imm)
+
+/* <T0>_t vfoo[_t0](<S0>_t, <T0>_t, const_int)
+
+   Check that 'idx' is in the [0..#num_lanes - 1] range.
+
+   Example: vsetq_lane.
+   int8x16_t [__arm_]vsetq_lane[_s8](int8_t a, int8x16_t b, const int idx)  */
+struct setq_lane_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,s0,v0,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (i-1)) == NUM_TYPE_SUFFIXES
+	|| !r.require_derived_scalar_type (i - 2, r.SAME_TYPE_CLASS)
+	|| !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int num_lanes = 128 / c.type_suffix (0).element_bits;
+
+    return c.require_immediate_range (2, 0, num_lanes - 1);
+  }
+};
+SHAPE (setq_lane)
 
 /* void vfoo[_t0](<X>_t *, <T0>[xN]_t)
 

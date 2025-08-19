@@ -4158,10 +4158,11 @@
    return "";
 }
   [(set_attr "length" "16")])
+
 ;;
 ;; [vgetq_lane_u, vgetq_lane_s, vgetq_lane_f])
 ;;
-(define_insn "mve_vec_extract<mode><V_elem_l>"
+(define_insn "@mve_vec_extract<mode><V_elem_l>"
  [(set (match_operand:<V_elem> 0 "nonimmediate_operand" "=r")
    (vec_select:<V_elem>
     (match_operand:MVE_VLD_ST 1 "s_register_operand" "w")
@@ -4236,7 +4237,7 @@
 ;;
 ;; [vsetq_lane_u, vsetq_lane_s, vsetq_lane_f])
 ;;
-(define_insn "mve_vec_set<mode>_internal"
+(define_insn "@mve_vec_set<mode>_internal"
  [(set (match_operand:VQ2 0 "s_register_operand" "=w")
        (vec_merge:VQ2
 	(vec_duplicate:VQ2
