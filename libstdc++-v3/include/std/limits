@@ -2128,7 +2128,7 @@ __glibcxx_float_n(128)
       static _GLIBCXX_USE_CONSTEXPR int digits = 113;
       static _GLIBCXX_USE_CONSTEXPR int digits10 = 33;
 #if __cplusplus >= 201103L
-      static constexpr int max_digits10 = 35;
+      static constexpr int max_digits10 = 36;
 #endif
       static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
       static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
