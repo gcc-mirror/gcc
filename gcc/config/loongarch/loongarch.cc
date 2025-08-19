@@ -6495,8 +6495,7 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 't':
-      if (GET_MODE (op) != TImode
-	  || (op != CONST0_RTX (TImode) && code != REG))
+      if (!reg_or_0_operand (op, TImode))
 	{
 	  output_operand_lossage ("invalid use of '%%%c'", letter);
 	  break;
