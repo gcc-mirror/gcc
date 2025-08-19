@@ -2,10 +2,12 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d --param=gpr2vr-cost=0" } */
 
 #include "vx_binary.h"
+#include "vx_ternary.h"
 
 #define T uint64_t
 
 TEST_BINARY_VX_UNSIGNED_0(T)
+TEST_TERNARY_VX_UNSIGNED_0(T)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vsub.vx} 1 } } */
@@ -23,3 +25,4 @@ TEST_BINARY_VX_UNSIGNED_0(T)
      "-O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m2"
      "-O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m4"
    } } } } } */
+/* { dg-final { scan-assembler-times {vmacc.vx} 1 } } */
