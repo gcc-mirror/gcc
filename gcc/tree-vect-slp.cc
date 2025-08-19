@@ -5005,6 +5005,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		vinfo = next;
 	      }
 	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
+	    /* ???  When there's a conversion around the reduction
+	       chain 'last' isn't the entry of the reduction.  */
+	    if (STMT_VINFO_DEF_TYPE (last) != vect_reduction_def)
+	      return opt_result::failure_at (vect_location,
+					     "SLP build failed.\n");
 	    /* It can be still vectorized as part of an SLP reduction.  */
 	    loop_vinfo->reductions.safe_push (last);
 	  }
