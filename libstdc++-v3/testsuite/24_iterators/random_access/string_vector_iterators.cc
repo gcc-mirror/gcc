@@ -370,5 +370,6 @@ main()
    string_stuff();
    vector_stuff();
    reverse_stuff();
+   test6642();
    return 0;
 }
