@@ -649,6 +649,12 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show
 fdiagnostics-show-nesting-levels
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-nesting-levels)
 
+fdiagnostics-show-context
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-context)
+
+fdiagnostics-show-context=
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-context)
+
 fdisable-
 UrlSuffix(gcc/Developer-Options.html#index-fdisable-)
 
