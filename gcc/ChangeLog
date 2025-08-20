@@ -1,3 +1,68 @@
+2025-08-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/120024
+	* calls.cc (expand_call): Remove start_sequence/end_sequence
+	for ECF_MALLOC.
+	Check valreg before deferencing it when it comes to malloc like
+	functions. Use the return value of emit_move_insn instead of
+	calling get_last_insn.
+
+2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-parloops.cc (parloops_is_slp_reduction): Remove.
+	(parloops_is_simple_reduction): Do not call it.
+
+2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Pass the
+	appropriate SLP node for costing of single-def-use-cycle
+	operations.
+	(vectorizable_live_operation): Pass the SLP node to the
+	costing hook.
+	* tree-vect-stmts.cc (vectorizable_bswap): Likewise.
+	(vectorizable_store): Likewise.
+
+2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121592
+	* tree-vect-slp.cc (vect_analyze_slp): When SLP reduction chain
+	discovery fails, fail overall when the tail of the chain
+	isn't also the entry for the non-SLP reduction.
+
+2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc (riscv*-*-*): Look for python3, then fall back
+	to python.  Never use python2.
+
+2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121527
+	* tree-sra.cc (build_access_from_expr_1): Do not strip an
+	outer VIEW_CONVERT_EXPR as it's relevant for the size of
+	the access.
+	(get_access_for_expr): Likewise.
+
+2025-08-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121536
+	* config/aarch64/aarch64.cc (aarch64_bool_compound_p): Use
+	SLP_TREE_VECTYPE instead of STMT_VINFO_VECTYPE.
+	(aarch64_adjust_stmt_cost, aarch64_vector_costs::count_ops): Pass SLP
+	node to aarch64_bool_compound_p.
+
+2025-08-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121536
+	* tree-vect-loop.cc (vectorizable_phi, vectorizable_recurr,
+	vectorizable_nonlinear_induction, vectorizable_induction): Pass slp_node
+	instead of stmt_info to record_stmt_cost.
+
+2025-08-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121536
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost): Set
+	vectype from type of lhs of gimple stmt.
+
 2025-08-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/121581

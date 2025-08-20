@@ -1,3 +1,9 @@
+2025-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/104874
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc:
+	Call test6642.
+
 2025-08-18  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/121476

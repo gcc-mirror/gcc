@@ -1,3 +1,47 @@
+2025-08-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt16.C: Add -fno-implicit-constexpr.
+
+2025-08-19  Ben Wu  <soggysocks206@gmail.com>
+
+	PR c++/120618
+	* g++.dg/cpp2a/concepts-requires5.C: Don't require
+	redundant diagnostic in static assertion.
+	* g++.dg/concepts/pr120618.C: New test.
+
+2025-08-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/120024
+	* gcc.dg/torture/malloc-1.c: New test.
+	* gcc.dg/torture/malloc-2.c: New test.
+
+2025-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	* g++.dg/cpp2a/concepts-using7.C: New test.
+
+2025-08-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121536
+	* g++.target/aarch64/sve/pr121536.cc: New test.
+
+2025-08-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121578
+	* g++.dg/abi/mangle83.C: Requires C++17.
+
+2025-08-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120195
+	* g++.dg/modules/using-32_a.C: New test.
+	* g++.dg/modules/using-32_b.C: New test.
+
+2025-08-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108080
+	PR c++/121396
+	* g++.dg/modules/pr108080.H: Also allow target warnings.
+
 2025-08-17  Austin Law  <austinklaw@gmail.com>
 
 	PR target/121213
