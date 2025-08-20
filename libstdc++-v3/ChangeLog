@@ -1,3 +1,25 @@
+2025-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-08-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121313
+	* include/bits/vector.tcc (vector::insert_range): Add check for
+	empty size.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	New tests.
+
+2025-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-07-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119861
+	* include/std/format (formatter<_Rg, _CharT>::set_separator)
+	(formatter<_Rg, _CharT>::set_brackets): Constrain with
+	(format_kind<_Rg> == range_format::sequence).
+	* testsuite/std/format/ranges/pr119861_neg.cc: New test.
+
 2025-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
