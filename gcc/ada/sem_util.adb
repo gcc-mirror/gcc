@@ -5881,18 +5881,20 @@ package body Sem_Util is
 
             --  Test whether the result type or any of the parameter types of
             --  each subprogram following the type match that type when the
-            --  type is declared in a package spec, is a derived type, or the
-            --  subprogram is marked as primitive. (The Is_Primitive test is
-            --  needed to find primitives of nonderived types in declarative
-            --  parts that happen to override the predefined "=" operator.)
-
-            --  Note that generic formal subprograms are not considered to be
-            --  primitive operations and thus are never inherited.
+            --  type is declared in a package spec, the subprogram is marked as
+            --  primitive, or the subprogram is inherited. Note that the
+            --  Is_Primitive test is needed to find primitives of nonderived
+            --  types in declarative parts that happen to override the
+            --  predefined "=" operator.
 
             if Is_Overloadable (Id)
               and then (Is_Type_In_Pkg
-                         or else Is_Derived_Type (B_Type)
-                         or else Is_Primitive (Id))
+                         or else Is_Primitive (Id)
+                         or else not Comes_From_Source (Id))
+
+            --  Generic formal subprograms are not considered to be primitive
+            --  operations and thus are never inherited.
+
               and then Parent_Kind (Parent (Id))
                                     not in N_Formal_Subprogram_Declaration
               and then not Is_Child_Unit (Id)

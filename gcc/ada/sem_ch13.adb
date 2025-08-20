@@ -1406,7 +1406,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("nonoverridable aspect % of type % requires % "
                             & Operation_Kind
                             & "# to be a primitive operation",
-                            Original);
+                            Expr);
             end;
          end if;
       end Check_Nonoverridable_Aspect_Subprograms;
