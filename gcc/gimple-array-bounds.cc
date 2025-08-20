@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "fold-const.h"
 #include "diagnostic-core.h"
+#include "diagnostic-context-rich-location.h"
 #include "intl.h"
 #include "tree-vrp.h"
 #include "alloc-pool.h"
@@ -262,6 +263,7 @@ get_up_bounds_for_array_ref (tree ref, tree *decl,
 
 static bool
 check_out_of_bounds_and_warn (location_t location, tree ref,
+			      gimple *stmt,
 			      tree low_sub_org, tree low_sub, tree up_sub,
 			      tree up_bound, tree up_bound_p1,
 			      const irange *vr,
@@ -275,12 +277,13 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
   bool warned = false;
   *out_of_bound = false;
 
+  rich_location_with_details richloc (location, stmt);
   /* Empty array.  */
   if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
     {
       *out_of_bound = true;
       if (for_array_bound)
-	warned = warning_at (location, OPT_Warray_bounds_,
+	warned = warning_at (&richloc, OPT_Warray_bounds_,
 			     "array subscript %E is outside array"
 			     " bounds of %qT", low_sub_org, artype);
     }
@@ -299,7 +302,7 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
 	{
 	  *out_of_bound = true;
 	  if (for_array_bound)
-	    warned = warning_at (location, OPT_Warray_bounds_,
+	    warned = warning_at (&richloc, OPT_Warray_bounds_,
 				 "array subscript [%E, %E] is outside "
 				 "array bounds of %qT",
 				 low_sub, up_sub, artype);
@@ -313,7 +316,7 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
     {
       *out_of_bound = true;
       if (for_array_bound)
-	warned = warning_at (location, OPT_Warray_bounds_,
+	warned = warning_at (&richloc, OPT_Warray_bounds_,
 			     "array subscript %E is above array bounds of %qT",
 			     up_sub, artype);
     }
@@ -322,7 +325,7 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
     {
       *out_of_bound = true;
       if (for_array_bound)
-	warned = warning_at (location, OPT_Warray_bounds_,
+	warned = warning_at (&richloc, OPT_Warray_bounds_,
 			     "array subscript %E is below array bounds of %qT",
 			     low_sub, artype);
     }
@@ -388,15 +391,16 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 	}
     }
 
-  warned = check_out_of_bounds_and_warn (location, ref,
+  warned = check_out_of_bounds_and_warn (location, ref, stmt,
 					 low_sub_org, low_sub, up_sub,
 					 up_bound, up_bound_p1, &vr,
 					 ignore_off_by_one, warn_array_bounds,
 					 &out_of_bound);
 
+  rich_location_with_details richloc (location, stmt);
 
   if (!warned && sam == special_array_member::int_0)
-    warned = warning_at (location, OPT_Wzero_length_bounds,
+    warned = warning_at (&richloc, OPT_Wzero_length_bounds,
 			 (TREE_CODE (low_sub) == INTEGER_CST
 			  ? G_("array subscript %E is outside the bounds "
 			       "of an interior zero-length array %qT")
@@ -420,7 +424,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
       && DECL_NOT_FLEXARRAY (afield_decl))
     {
       bool warned1
-	= warning_at (location, OPT_Wstrict_flex_arrays,
+	= warning_at (&richloc, OPT_Wstrict_flex_arrays,
 		      "trailing array %qT should not be used as "
 		      "a flexible array member",
 		      artype);
@@ -478,6 +482,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 
 bool
 array_bounds_checker::check_mem_ref (location_t location, tree ref,
+				     gimple *stmt,
 				     bool ignore_off_by_one)
 {
   if (warning_suppressed_p (ref, OPT_Warray_bounds_))
@@ -576,16 +581,17 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	}
     }
 
+  rich_location_with_details richloc (location, stmt);
   bool warned = false;
   if (lboob)
     {
       if (offrange[0] == offrange[1])
-	warned = warning_at (location, OPT_Warray_bounds_,
+	warned = warning_at (&richloc, OPT_Warray_bounds_,
 			     "array subscript %wi is outside array bounds "
 			     "of %qT",
 			     offrange[0].to_shwi (), reftype);
       else
-	warned = warning_at (location, OPT_Warray_bounds_,
+	warned = warning_at (&richloc, OPT_Warray_bounds_,
 			     "array subscript [%wi, %wi] is outside "
 			     "array bounds of %qT",
 			     offrange[0].to_shwi (),
@@ -599,8 +605,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	   it were an untyped array of bytes.  */
 	backtype = build_array_type_nelts (unsigned_char_type_node,
 					   aref.sizrng[1].to_uhwi ());
-
-      warned = warning_at (location, OPT_Warray_bounds_,
+      warned = warning_at (&richloc, OPT_Warray_bounds_,
 			   "array subscript %<%T[%wi]%> is partly "
 			   "outside array bounds of %qT",
 			   axstype, offrange[0].to_shwi (), backtype);
@@ -623,7 +628,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
     {
       HOST_WIDE_INT tmpidx = (aref.offmax[i] / eltsize).to_shwi ();
 
-      if (warning_at (location, OPT_Warray_bounds_,
+      if (warning_at (&richloc, OPT_Warray_bounds_,
 		      "intermediate array offset %wi is outside array bounds "
 		      "of %qT", tmpidx, reftype))
 	{
@@ -656,7 +661,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
 	  ignore_off_by_one = false;
 	}
       else if (TREE_CODE (t) == MEM_REF)
-	warned = check_mem_ref (location, t, ignore_off_by_one);
+	warned = check_mem_ref (location, t, stmt, ignore_off_by_one);
 
       if (warned)
 	suppress_warning (t, OPT_Warray_bounds_);
@@ -692,6 +697,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
   if (!mem_ref_offset (t).is_constant (&idx))
     return;
 
+  rich_location_with_details richloc (location, stmt);
   bool warned = false;
   idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
   if (idx < 0)
@@ -702,7 +708,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
 	  fprintf (dump_file, "\n");
 	}
-      warned = warning_at (location, OPT_Warray_bounds_,
+      warned = warning_at (&richloc, OPT_Warray_bounds_,
 			   "array subscript %wi is below "
 			   "array bounds of %qT",
 			   idx.to_shwi (), TREE_TYPE (tem));
@@ -716,7 +722,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
 	  fprintf (dump_file, "\n");
 	}
-      warned = warning_at (location, OPT_Warray_bounds_,
+      warned = warning_at (&richloc, OPT_Warray_bounds_,
 			   "array subscript %wu is above "
 			   "array bounds of %qT",
 			   idx.to_uhwi (), TREE_TYPE (tem));
@@ -811,7 +817,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
     warned = checker->check_array_ref (location, t, wi->stmt,
 				       false/*ignore_off_by_one*/);
   else if (TREE_CODE (t) == MEM_REF)
-    warned = checker->check_mem_ref (location, t,
+    warned = checker->check_mem_ref (location, t, wi->stmt,
 				     false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {

@@ -1620,6 +1620,7 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
+	diagnostic-context-rich-location.o \
 	multiple_target.o \
 	omp-offload.o \
 	omp-expand.o \

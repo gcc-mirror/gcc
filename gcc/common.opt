@@ -1632,6 +1632,13 @@ fdiagnostics-show-nesting-levels
 Common Var(flag_diagnostics_show_nesting_levels) Init(0)
 Show nesting levels as numbers when showing nested diagnostics.
 
+fdiagnostics-show-context
+Common Alias(fdiagnostics-show-context=,1,0)
+
+fdiagnostics-show-context=
+Common Joined RejectNegative UInteger Var(flag_diagnostics_show_context) Init(0)
+Collect and print more context information for diagnostics.
+
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fdisable-[tree|rtl|ipa]-<pass>=range1+range2	Disable an optimization pass.

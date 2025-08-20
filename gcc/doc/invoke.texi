@@ -334,7 +334,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]}
 -fdiagnostics-column-origin=@var{origin}
 -fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}
--fdiagnostics-text-art-charset=@r{[}none@r{|}ascii@r{|}unicode@r{|}emoji@r{]}}
+-fdiagnostics-text-art-charset=@r{[}none@r{|}ascii@r{|}unicode@r{|}emoji@r{]}
+-fdiagnostics-show-context@r{[}=@var{depth}@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -5792,6 +5793,22 @@ left margin.
 @item -fdiagnostics-minimum-margin-width=@var{width}
 This option controls the minimum width of the left margin printed by
 @option{-fdiagnostics-show-line-numbers}.  It defaults to 6.
+
+@opindex fdiagnostics-show-context
+@item -fdiagnostics-show-context[=@var{depth}]
+@itemx -fno-diagnostics-show-context
+With this option, the compiler might print the interesting control flow
+chain that guards the basic block of the statement which has the warning.
+@var{depth} is the maximum depth of the control flow chain.
+Currently, The list of the impacted warning options includes:
+@option{-Warray-bounds}, @option{-Wstringop-overflow},
+@option{-Wstringop-overread}, @option{-Wstringop-truncation}.
+and @option{-Wrestrict}.
+More warning options might be added to this list in future releases.
+The forms @option{-fdiagnostics-show-context} and
+@option{-fno-diagnostics-show-context} are aliases for
+@option{-fdiagnostics-show-context=1} and
+@option{-fdiagnostics-show-context=0}, respectively.
 
 @opindex fdiagnostics-parseable-fixits
 @item -fdiagnostics-parseable-fixits
