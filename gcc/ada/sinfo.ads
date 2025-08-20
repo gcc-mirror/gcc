@@ -1477,7 +1477,7 @@ package Sinfo is
 
    --  Has_Target_Names
    --    Present in assignment statements. Indicates that the RHS contains
-   --    target names (see AI12-0125-3) and must be expanded accordingly.
+   --    target names ("@" -- see AI12-0125-3).
 
    --  Has_Wide_Character
    --    Present in string literals, set if any wide character (i.e. character
