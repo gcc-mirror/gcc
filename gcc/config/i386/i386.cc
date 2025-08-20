@@ -26392,8 +26392,63 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     stmt_cost = ix86_default_vector_cost (kind, mode);
 
   if (kind == vec_perm && vectype
-      && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32)
-    m_num_avx256_vec_perm[where]++;
+      && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32
+      /* BIT_FIELD_REF <vect_**, 64, 0> 0 times vec_perm costs 0 in body.  */
+      && count != 0)
+    {
+      bool real_perm = true;
+      unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+      if (node
+	  && SLP_TREE_LOAD_PERMUTATION (node).exists ()
+	  /* Loop vectorization will have 4 times vec_perm
+	     with index as {0, 0, 0, 0}.
+	     But it actually generates
+	     vec_perm_expr <vect, vect, 0, 0, 0, 0>
+	     vec_perm_expr <vect, vect, 1, 1, 1, 1>
+	     vec_perm_expr <vect, vect, 2, 2, 2, 2>
+	     Need to be handled separately.  */
+	  && is_a <bb_vec_info> (m_vinfo))
+	{
+	  unsigned half = nunits / 2;
+	  unsigned i = 0;
+	  bool allsame = true;
+	  unsigned first = SLP_TREE_LOAD_PERMUTATION (node)[0];
+	  bool cross_lane_p = false;
+	  for (i = 0 ; i != SLP_TREE_LANES (node); i++)
+	    {
+	      unsigned tmp = SLP_TREE_LOAD_PERMUTATION (node)[i];
+	      /* allsame is just a broadcast.  */
+	      if (tmp != first)
+		allsame = false;
+
+	      /* 4 times vec_perm with number of lanes multiple of nunits.  */
+	      tmp = tmp & (nunits - 1);
+	      unsigned index = i & (nunits - 1);
+	      if ((index < half && tmp >= half)
+		  || (index >= half && tmp < half))
+		cross_lane_p = true;
+
+	      if (!allsame && cross_lane_p)
+		break;
+	    }
+
+	  if (i == SLP_TREE_LANES (node))
+	    real_perm = false;
+	}
+
+      if (real_perm)
+	{
+	  m_num_avx256_vec_perm[where] += count;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Detected avx256 cross-lane permutation: ");
+	      if (stmt_info)
+		print_gimple_expr (dump_file, stmt_info->stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, " \n");
+	    }
+	}
+    }
 
   /* Penalize DFmode vector operations for Bonnell.  */
   if (TARGET_CPU_P (BONNELL) && kind == vector_stmt
