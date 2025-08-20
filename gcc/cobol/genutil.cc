@@ -819,7 +819,7 @@ get_binary_value( tree value,
           }
         ELSE
           {
-          // We are dealing with an ordinary NumericEdited value
+          // We are dealing with an ordinary NumericDisplay value
           gg_assign(pointer, source_address);
 
           if( rdigits )

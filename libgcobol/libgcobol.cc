@@ -2990,6 +2990,9 @@ format_for_display_internal(char **dest,
       {
       // Because a NumericDisplay can have any damned thing as a character,
       // we are going force things that aren't digits to display as '0'
+
+      // 0xFF is an exception, so that a HIGH-VALUE in a numeric display shows
+      // up in a unique way.
       static const uint8_t ascii_chars[256] =
         {
         '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', // 0x00
@@ -3007,7 +3010,7 @@ format_for_display_internal(char **dest,
         '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', // 0xc0
         '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', // 0xd0
         '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', // 0xe0
-        '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', // 0xf0
+        '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', 0xFF, // 0xf0
         };
       static const uint8_t ebcdic_chars[256] =
         {
@@ -3026,7 +3029,7 @@ format_for_display_internal(char **dest,
         0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0, // 0xc0
         0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0, // 0xd0
         0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0, // 0xe0
-        0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xf0,0xf0,0xf0,0xf0,0xf0,0xf0, // 0xf0
+        0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xf0,0xf0,0xf0,0xf0,0xf0,0xFF, // 0xf0
         } ;
 
       // We are going to make use of fact that a NumericDisplay's data is
@@ -3114,22 +3117,20 @@ format_for_display_internal(char **dest,
 
           // But when it isn't HIGH-VALUE, we don't want to see the effects
           // of the internal sign.
-          if( (*dest)[index-1] != (char)DEGENERATE_HIGH_VALUE )
-            {
-            // Another tricky thing, though, is that for various reasons
-            // the string of digits might not be digits.  There can be
-            // REDEFINES, or the middle of the number might have been changed
-            // with an INITIALIZE into spaces.  But we do want numbers to
-            // look like numbers.  So, we do what we can:
 
-            if( internal_is_ebcdic )
-              {
-              ch = ebcdic_chars[ch];
-              }
-            else
-              {
-              ch = ascii_chars[ch];
-              }
+          // Another tricky thing, though, is that for various reasons
+          // the string of digits might not be digits.  There can be
+          // REDEFINES, or the middle of the number might have been changed
+          // with an INITIALIZE into spaces.  But we do want numbers to
+          // look like numbers.  So, we do what we can:
+
+          if( internal_is_ebcdic )
+            {
+            ch = ebcdic_chars[ch];
+            }
+          else
+            {
+            ch = ascii_chars[ch];
             }
           (*dest)[index++] = ch;
           }
@@ -3151,16 +3152,13 @@ format_for_display_internal(char **dest,
           for(int i=0; i<rdigits; i++ )
             {
             unsigned char ch = *running_location++;
-              if( (*dest)[index-1] != (char)DEGENERATE_HIGH_VALUE )
-                {
-              if( internal_is_ebcdic )
-                {
-                ch = ebcdic_chars[ch];
-                }
-              else
-                {
-                ch = ascii_chars[ch];
-                }
+            if( internal_is_ebcdic )
+              {
+              ch = ebcdic_chars[ch];
+              }
+            else
+              {
+              ch = ascii_chars[ch];
               }
             (*dest)[index++] = ch;
             }
@@ -3664,7 +3662,9 @@ compare_88( const char    *list,
     cmpval = cstrncmp (test,
                       PTRCAST(char, conditional_location),
                       conditional_length);
-    if( cmpval == 0 && (int)strlen(test) != conditional_length )
+
+//    if( cmpval == 0 && (int)strlen(test) != conditional_length )
+    if( cmpval == 0 && test_len != conditional_length )
       {
       // When strncmp returns 0, the actual smaller string is the
       // the shorter of the two:
@@ -11058,9 +11058,12 @@ __gg__unstring( const cblc_field_t *id1,        // The string being unstring
       }
 
     // Update the state variables:
-    pointer += examined + id2_s[ifound];
     tally += 1;
     nreceiver += 1;
+    if( ifound >= 0 )
+      {
+      pointer += examined + id2_s[ifound];
+      }
     }
 
 done:

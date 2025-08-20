@@ -1598,7 +1598,17 @@ extend_66_capacity( cbl_field_t *alias ) {
   symbol_elem_t *e = symbol_at(alias->parent);
   symbol_elem_t *e2 =
     reinterpret_cast<symbol_elem_t*>(const_cast<char*>(alias->data.picture));
+#ifndef __OPTIMIZE__
+#pragma message "The assert(e < e2) needs fixing"
+  // The following assert fails when valgrind is involved.  This is the known
+  // problem of expecting mmap() to put new memory maps after older memory
+  // maps; that assumption fails when valgrind is involved.
+
+  // For now I am defeating the assert when using -O0 so that I can run the
+  // NIST "make valgrind" tests.  But this should be fixed so that the
+  // symbol table index is used, not the entry locations.
   assert(e < e2);
+#endif
   alias->data.picture = NULL;
 
   capacity_of cap;
