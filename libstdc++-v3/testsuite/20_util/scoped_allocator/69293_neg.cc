@@ -42,6 +42,8 @@ static_assert(uses_allocator<X, inner_alloc_type>{}, "");
 static_assert(!is_constructible<X, allocator_arg_t, inner_alloc_type>{}, "");
 static_assert(!is_constructible<X, inner_alloc_type>{}, "");
 
+// { dg-error "too many initializers" "" { target c++20 } 0 }
+
 void
 test01()
 {
