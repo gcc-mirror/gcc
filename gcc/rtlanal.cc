@@ -5740,7 +5740,8 @@ pattern_cost (rtx pat, bool speed)
 	  rtx x = XVECEXP (pat, 0, i);
 	  if (GET_CODE (x) == SET)
 	    {
-	      if (GET_CODE (SET_SRC (x)) == COMPARE)
+	      if (GET_CODE (SET_SRC (x)) == COMPARE
+		  || GET_MODE_CLASS (GET_MODE (SET_DEST (x))) == MODE_CC)
 		{
 		  if (comparison)
 		    return 0;
