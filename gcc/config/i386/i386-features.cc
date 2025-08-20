@@ -3795,7 +3795,18 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
       while (insn && !NONDEBUG_INSN_P (insn))
 	{
 	  if (insn == BB_END (bb))
-	    break;
+	    {
+	      /* This must be a basic block with only a label:
+
+		 (code_label 78 11 77 3 14 (nil) [1 uses])
+		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
+
+	       */
+	      gcc_assert (NOTE_P (insn)
+			  && NOTE_KIND (insn) == NOTE_INSN_BASIC_BLOCK);
+	      insn = NULL;
+	      break;
+	    }
 	  insn = NEXT_INSN (insn);
 	}
 
@@ -3824,14 +3835,21 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 
       if (bitmap_empty_p (live_caller_saved_regs))
 	{
-	  if (insn == BB_HEAD (bb) || insn == BB_END (bb))
+	  if (insn == BB_HEAD (bb))
 	    {
 	      *before_p = insn;
 	      tls_insn = emit_insn_before (tls_set, insn);
 	    }
 	  else
 	    {
-	      insn = PREV_INSN (insn);
+	      /* Emit the TLS call after NOTE_INSN_BASIC_BLOCK in a
+		 basic block with only a label:
+
+		 (code_label 78 11 77 3 14 (nil) [1 uses])
+		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
+
+	       */
+	      insn = insn ? PREV_INSN (insn) : BB_END (bb);
 	      *after_p = insn;
 	      tls_insn = emit_insn_after (tls_set, insn);
 	    }
