@@ -2024,26 +2024,23 @@
 			[(match_operand:SI 0 "register_operand" "r")
 			 (const_int -2147483648)])
 		      (label_ref (match_operand 1 ""))
-		      (pc)))]
+		      (pc)))
+   (clobber (match_scratch:SI 3 "=a"))]
   "TARGET_ABS"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(set (match_dup 3)
 	(abs:SI (match_dup 0)))
    (set (pc)
 	(if_then_else (match_op_dup 2
-			[(zero_extract:SI (match_dup 3)
-					  (const_int 1)
-					  (match_dup 4))
+			[(match_dup 3)
 			 (const_int 0)])
 		      (label_ref (match_dup 1))
 		      (pc)))]
 {
-  operands[3] = gen_reg_rtx (SImode);
-  operands[4] = GEN_INT (BITS_BIG_ENDIAN ? 0 : 31);
-  operands[2] = gen_rtx_fmt_ee (reverse_condition (GET_CODE (operands[2])),
-				VOIDmode, XEXP (operands[2], 0),
-				const0_rtx);
+  if (GET_CODE (operands[3]) == SCRATCH)
+    operands[3] = gen_reg_rtx (SImode);
+  PUT_CODE (operands[2], GET_CODE (operands[2]) == EQ ? LT : GE);
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
