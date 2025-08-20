@@ -2740,6 +2740,21 @@ struct vidwdup_def : public overloaded_base<0>
 };
 SHAPE (vidwdup)
 
+/* mve_pred16_t foo_t0(mve_pred16_t)
+
+   Example: vpnot.
+   mve_pred16_t [__arm_]vpnot(mve_pred16_t a)  */
+struct vpnot_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "p,p", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vpnot)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
    i.e. a version of the standard ternary shape in which

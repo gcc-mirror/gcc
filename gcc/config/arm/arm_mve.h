@@ -50,7 +50,6 @@
 #define vgetq_lane(__a, __idx) __arm_vgetq_lane(__a, __idx)
 
 
-#define vpnot(__a) __arm_vpnot(__a)
 #define vuninitializedq_u8(void) __arm_vuninitializedq_u8(void)
 #define vuninitializedq_u16(void) __arm_vuninitializedq_u16(void)
 #define vuninitializedq_u32(void) __arm_vuninitializedq_u32(void)
@@ -108,13 +107,6 @@
 #define __ARM_CHECK_LANEQ(__vec, __idx)		 \
   __builtin_arm_lane_check (__ARM_NUM_LANES(__vec),     \
 			    __ARM_LANEQ(__vec, __idx))
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vpnot (mve_pred16_t __a)
-{
-  return __builtin_mve_vpnotv16bi (__a);
-}
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

@@ -92,6 +92,7 @@ namespace arm_mve
     extern const function_shape *const vcvtx;
     extern const function_shape *const viddup;
     extern const function_shape *const vidwdup;
+    extern const function_shape *const vpnot;
     extern const function_shape *const vpsel;
     extern const function_shape *const vshlc;
 

@@ -146,6 +146,7 @@ extern const function_base *const vmvnq;
 extern const function_base *const vnegq;
 extern const function_base *const vornq;
 extern const function_base *const vorrq;
+extern const function_base *const vpnot;
 extern const function_base *const vpselq;
 extern const function_base *const vqabsq;
 extern const function_base *const vqaddq;

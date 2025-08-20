@@ -1209,6 +1209,25 @@ public:
   }
 };
 
+
+/* Map the function directly to mve_vpnotv16bi, and convert the result into
+   HImode like we do for vcmp.  */
+class mve_function_vpnot : public function_base
+{
+public:
+  CONSTEXPR mve_function_vpnot (void)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    rtx target = e.use_unpred_insn (CODE_FOR_mve_vpnotv16bi);
+    rtx HItarget = gen_reg_rtx (HImode);
+    emit_move_insn (HItarget, gen_lowpart (HImode, target));
+    return HItarget;
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -1497,6 +1516,7 @@ FUNCTION (vmulltq_poly, unspec_mve_function_exact_insn_vmull_poly, (VMULLTQ_POLY
 FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION_WITH_RTX_M_N_NO_F (vmvnq, NOT, VMVNQ)
 FUNCTION (vnegq, unspec_based_mve_function_exact_insn, (NEG, NEG, NEG, -1, -1, -1, VNEGQ_M_S, -1, VNEGQ_M_F, -1, -1, -1))
+FUNCTION (vpnot, mve_function_vpnot, )
 FUNCTION_WITHOUT_M_N (vpselq, VPSELQ)
 FUNCTION (vornq, unspec_based_mve_function_exact_insn_vorn, (-1, -1, VORNQ_M_S, VORNQ_M_U, VORNQ_M_F, -1, -1))
 FUNCTION_WITH_RTX_M_N_NO_N_F (vorrq, IOR, VORRQ)
