@@ -4679,6 +4679,9 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 				      val, valtype, npc, rname, parmnum, argnum,
 				      excess_precision, 0);
 	}
+      /* A NULLPTR type is just a nullptr always.  */
+      else if (TREE_CODE (TREE_TYPE (val)) == NULLPTR_TYPE)
+	parmval = omit_one_operand_loc (ploc, TREE_TYPE (val), nullptr_node, val);
       else if (promote_float_arg)
         {
 	  if (type_generic)
@@ -8983,11 +8986,13 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && coder == INTEGER_TYPE)
 	warning_at (location, OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
-
+      /* A NULLPTR type is just a nullptr always.  */
+      if (coder == NULLPTR_TYPE)
+	return omit_one_operand_loc (expr_loc, type, nullptr_node, rhs);
       /* An explicit constant 0 or type nullptr_t can convert to a pointer,
 	 or one that results from arithmetic, even including a cast to
 	 integer type.  */
-      if (!null_pointer_constant && coder != NULLPTR_TYPE)
+      else if (!null_pointer_constant)
 	switch (errtype)
 	  {
 	  case ic_argpass:
