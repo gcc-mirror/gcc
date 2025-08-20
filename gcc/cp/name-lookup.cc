@@ -3355,7 +3355,8 @@ check_local_shadow (tree decl)
 		    && TREE_CODE (old) == PARM_DECL)
 		   /* We should also give an error for
 		       [x=1]{ int x; }  */
-		   || is_capture_proxy (old)))
+		   || (is_capture_proxy (old)
+		       && !is_normal_capture_proxy (old))))
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
