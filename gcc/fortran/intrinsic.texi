@@ -6814,7 +6814,6 @@ GNU extension
 @end table
 
 
-
 @node FRACTION
 @section @code{FRACTION} --- Fractional part of the model representation
 @fnindex FRACTION
@@ -6840,14 +6839,15 @@ Elemental function
 @item @emph{Return value}:
 The return value is of the same type and kind as the argument.
 The fractional part of the model representation of @code{X} is returned;
-it is @code{X * RADIX(X)**(-EXPONENT(X))}.
+it is @code{X * REAL(RADIX(X))**(-EXPONENT(X))}.
 
 @item @emph{Example}:
 @smallexample
 program test_fraction
+  implicit none
   real :: x
   x = 178.1387e-4
-  print *, fraction(x), x * radix(x)**(-exponent(x))
+  print *, fraction(x), x * real(radix(x))**(-exponent(x))
 end program test_fraction
 @end smallexample
 
@@ -14943,54 +14943,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 
 
-@node TEAM_NUMBER
-@section @code{TEAM_NUMBER} --- Retrieve team id of given team
-@fnindex TEAM_NUMBER
-@cindex coarray, @code{TEAM_NUMBER}
-@cindex teams, index of given team
-
-@table @asis
-@item @emph{Synopsis}:
-@item @code{RESULT = TEAM_NUMBER([TEAM])}
-
-@item @emph{Description}:
-Returns the team id for the given @var{TEAM} as assigned by @code{FORM TEAM}.
-If @var{TEAM} is absent, returns the team number of the current team.
-
-@item @emph{Class}:
-Transformational function
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{TEAM} @tab (optional, intent(in)) The handle of the team for which
-the number, aka id, is desired.
-@end multitable
-
-@item @emph{Return value}:
-Default integer.  The id as given in a call @code{FORM TEAM}. Applying
-@code{TEAM_NUMBER} to the initial team will result in @code{-1} to be returned.
-Returns the id of the current team, if @var{TEAM} is null.
-
-@item @emph{Example}:
-@smallexample
-use, intrinsic :: iso_fortran_env
-type(team_type) :: t
-
-print *, team_number() ! -1
-form team (99, t)
-print *, team_number(t) ! 99
-@end smallexample
-
-@item @emph{Standard}:
-Fortran 2018 and later.
-
-@item @emph{See also}:
-@ref{GET_TEAM}, @*
-@ref{TEAM_NUMBER}
-@end table
-
-
-
 @node TANPI
 @section @code{TANPI} --- Circular tangent function
 @fnindex TANPI
@@ -15036,6 +14988,54 @@ end program test_tanpi
 @item @emph{See also}:
 @ref{ATANPI} @*
 @ref{TAN} @*
+@end table
+
+
+
+@node TEAM_NUMBER
+@section @code{TEAM_NUMBER} --- Retrieve team id of given team
+@fnindex TEAM_NUMBER
+@cindex coarray, @code{TEAM_NUMBER}
+@cindex teams, index of given team
+
+@table @asis
+@item @emph{Synopsis}:
+@item @code{RESULT = TEAM_NUMBER([TEAM])}
+
+@item @emph{Description}:
+Returns the team id for the given @var{TEAM} as assigned by @code{FORM TEAM}.
+If @var{TEAM} is absent, returns the team number of the current team.
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{TEAM} @tab (optional, intent(in)) The handle of the team for which
+the number, aka id, is desired.
+@end multitable
+
+@item @emph{Return value}:
+Default integer.  The id as given in a call @code{FORM TEAM}. Applying
+@code{TEAM_NUMBER} to the initial team will result in @code{-1} to be returned.
+Returns the id of the current team, if @var{TEAM} is null.
+
+@item @emph{Example}:
+@smallexample
+use, intrinsic :: iso_fortran_env
+type(team_type) :: t
+
+print *, team_number() ! -1
+form team (99, t)
+print *, team_number(t) ! 99
+@end smallexample
+
+@item @emph{Standard}:
+Fortran 2018 and later.
+
+@item @emph{See also}:
+@ref{GET_TEAM}, @*
+@ref{TEAM_NUMBER}
 @end table
 
 
