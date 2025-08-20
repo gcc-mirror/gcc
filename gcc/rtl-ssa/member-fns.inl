@@ -478,6 +478,36 @@ def_lookup::matching_set_or_first_def_of_next_group () const
   return first_def_of_next_group ();
 }
 
+inline use_info *
+use_lookup::prev_use () const
+{
+  return !use || comparison > 0 ? use : use->prev_use ();
+}
+
+inline use_info *
+use_lookup::next_use () const
+{
+  return !use || comparison < 0 ? use : use->next_nondebug_insn_use ();
+}
+
+inline use_info *
+use_lookup::matching_use () const
+{
+  return comparison == 0 ? use : nullptr;
+}
+
+inline use_info *
+use_lookup::matching_or_prev_use () const
+{
+  return comparison == 0 ? use : prev_use ();
+}
+
+inline use_info *
+use_lookup::matching_or_next_use () const
+{
+  return comparison == 0 ? use : next_use ();
+}
+
 inline insn_note::insn_note (insn_note_kind kind)
   : m_next_note (nullptr),
     m_kind (kind),
