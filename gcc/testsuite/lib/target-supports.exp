@@ -2342,7 +2342,7 @@ proc check_effective_target_riscv_zvfh_ok { } {
 
     # check if we can execute vector insns with the given hardware or
     # simulator
-    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &v]
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zvfh]
     if { [check_runtime ${gcc_march}_zvfh_exec {
 	int main()
 	{
@@ -2711,10 +2711,6 @@ proc remove_options_for_riscv_ztso { flags } {
     return [remove_options_for_riscv_z_ext ztso $flags]
 }
 
-proc remove_options_for_riscv_zvfh { flags } {
-    return [add_options_for_riscv_z_ext zvfh $flags]
-}
-
 proc add_options_for_riscv_zvbb { flags } {
     return [add_options_for_riscv_z_ext zvbb $flags]
 }
@@ -2728,7 +2724,7 @@ proc add_options_for_riscv_zvfh { flags } {
 }
 
 proc remove_options_for_riscv_zvfh { flags } {
-    return [add_options_for_riscv_z_ext zvfh $flags]
+    return [remove_options_for_riscv_z_ext zvfh $flags]
 }
 
 # Return 1 if the target is ia32 or x86_64.
