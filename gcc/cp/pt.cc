@@ -22537,12 +22537,16 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case OFFSET_REF:
       {
-	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	/* We should only get here for an OFFSET_REF like A::m; a .* in a
+	   template is represented as a DOTSTAR_EXPR.  */
+	gcc_checking_assert
+	  (same_type_p (TREE_TYPE (t), TREE_TYPE (TREE_OPERAND (t, 1))));
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
+	tree type = TREE_TYPE (op1);
 	r = build2 (OFFSET_REF, type, op0, op1);
 	PTRMEM_OK_P (r) = PTRMEM_OK_P (t);
-	if (!mark_used (TREE_OPERAND (r, 1), complain)
+	if (!mark_used (op1, complain)
 	    && !(complain & tf_error))
 	  RETURN (error_mark_node);
 	RETURN (r);
