@@ -12231,13 +12231,11 @@ vectorizable_comparison (vec_info *vinfo,
    vectorization.  */
 
 bool
-vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
+vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			 gimple_stmt_iterator *gsi,
 			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  if (!loop_vinfo
-      || !is_a <gcond *> (STMT_VINFO_STMT (stmt_info)))
+  if (!is_a <gcond *> (STMT_VINFO_STMT (stmt_info)))
     return false;
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_condition_def)
@@ -12302,7 +12300,7 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	  return false;
 	}
 
-      if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
+      if (!vectorizable_comparison_1 (loop_vinfo, vectype, stmt_info, code, gsi,
 				      slp_node, cost_vec))
 	return false;
 
@@ -12552,8 +12550,8 @@ vect_analyze_stmt (vec_info *vinfo,
     }
 
   ok = true;
-  if (!bb_vinfo
-      && (STMT_VINFO_RELEVANT_P (stmt_info)
+  if (bb_vinfo
+      || (STMT_VINFO_RELEVANT_P (stmt_info)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
     /* Prefer vectorizable_call over vectorizable_simd_clone_call so
        -mveclibabi= takes preference over library functions with
@@ -12561,58 +12559,31 @@ vect_analyze_stmt (vec_info *vinfo,
     ok = (vectorizable_call (vinfo, stmt_info, NULL, node, cost_vec)
 	  || vectorizable_simd_clone_call (vinfo, stmt_info, NULL, node,
 					   cost_vec)
-	  || vectorizable_conversion (vinfo, stmt_info,
-				      NULL, node, cost_vec)
-	  || vectorizable_operation (vinfo, stmt_info,
-				     NULL, node, cost_vec)
-	  || vectorizable_assignment (vinfo, stmt_info,
-				      NULL, node, cost_vec)
+	  || vectorizable_conversion (vinfo, stmt_info, NULL, node, cost_vec)
+	  || vectorizable_operation (vinfo, stmt_info, NULL, node, cost_vec)
+	  || vectorizable_assignment (vinfo, stmt_info, NULL, node, cost_vec)
 	  || vectorizable_load (vinfo, stmt_info, NULL, node, cost_vec)
 	  || vectorizable_store (vinfo, stmt_info, NULL, node, cost_vec)
-	  || vectorizable_lane_reducing (as_a <loop_vec_info> (vinfo),
-					 stmt_info, node, cost_vec)
-	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
-				     node, node_instance, cost_vec)
-	  || vectorizable_induction (as_a <loop_vec_info> (vinfo), stmt_info,
-				     node, cost_vec)
 	  || vectorizable_shift (vinfo, stmt_info, NULL, node, cost_vec)
-	  || vectorizable_condition (vinfo, stmt_info,
-				     NULL, node, cost_vec)
-	  || vectorizable_comparison (vinfo, stmt_info, NULL, node,
-				      cost_vec)
-	  || vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
-				  stmt_info, node)
-	  || vectorizable_recurr (as_a <loop_vec_info> (vinfo),
-				   stmt_info, node, cost_vec)
-	  || vectorizable_early_exit (vinfo, stmt_info, NULL, node,
-				      cost_vec));
-  else
-    {
-      if (bb_vinfo)
-	ok = (vectorizable_call (vinfo, stmt_info, NULL, node, cost_vec)
-	      || vectorizable_simd_clone_call (vinfo, stmt_info,
-					       NULL, node, cost_vec)
-	      || vectorizable_conversion (vinfo, stmt_info, NULL, node,
-					  cost_vec)
-	      || vectorizable_shift (vinfo, stmt_info,
-				     NULL, node, cost_vec)
-	      || vectorizable_operation (vinfo, stmt_info,
-					 NULL, node, cost_vec)
-	      || vectorizable_assignment (vinfo, stmt_info, NULL, node,
-					  cost_vec)
-	      || vectorizable_load (vinfo, stmt_info,
-				    NULL, node, cost_vec)
-	      || vectorizable_store (vinfo, stmt_info,
-				     NULL, node, cost_vec)
-	      || vectorizable_condition (vinfo, stmt_info,
-					 NULL, node, cost_vec)
-	      || vectorizable_comparison (vinfo, stmt_info, NULL, node,
-					  cost_vec)
-	      || vectorizable_phi (vinfo, stmt_info, node, cost_vec)
-	      || vectorizable_early_exit (vinfo, stmt_info, NULL, node,
-					  cost_vec));
-
-    }
+	  || vectorizable_condition (vinfo, stmt_info, NULL, node, cost_vec)
+	  || vectorizable_comparison (vinfo, stmt_info, NULL, node, cost_vec)
+	  || (bb_vinfo
+	      && vectorizable_phi (bb_vinfo, stmt_info, node, cost_vec))
+	  || (is_a <loop_vec_info> (vinfo)
+	      && (vectorizable_lane_reducing (as_a <loop_vec_info> (vinfo),
+					      stmt_info, node, cost_vec)
+		  || vectorizable_reduction (as_a <loop_vec_info> (vinfo),
+					     stmt_info,
+					     node, node_instance, cost_vec)
+		  || vectorizable_induction (as_a <loop_vec_info> (vinfo),
+					     stmt_info, node, cost_vec)
+		  || vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
+					  stmt_info, node)
+		  || vectorizable_recurr (as_a <loop_vec_info> (vinfo),
+					  stmt_info, node, cost_vec)
+		  || vectorizable_early_exit (as_a <loop_vec_info> (vinfo),
+					      stmt_info, NULL, node,
+					      cost_vec))));
 
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
@@ -12759,12 +12730,14 @@ vect_transform_stmt (vec_info *vinfo,
       break;
 
     case phi_info_type:
-      done = vectorizable_phi (vinfo, stmt_info, slp_node, NULL);
+      done = vectorizable_phi (as_a <bb_vec_info> (vinfo),
+			       stmt_info, slp_node, NULL);
       gcc_assert (done);
       break;
 
     case loop_exit_ctrl_vec_info_type:
-      done = vectorizable_early_exit (vinfo, stmt_info, gsi, slp_node, NULL);
+      done = vectorizable_early_exit (as_a <loop_vec_info> (vinfo),
+				      stmt_info, gsi, slp_node, NULL);
       gcc_assert (done);
       break;
 

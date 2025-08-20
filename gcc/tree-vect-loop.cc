@@ -8627,7 +8627,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
 /* Vectorizes PHIs.  */
 
 bool
-vectorizable_phi (vec_info *,
+vectorizable_phi (bb_vec_info,
 		  stmt_vec_info stmt_info,
 		  slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {

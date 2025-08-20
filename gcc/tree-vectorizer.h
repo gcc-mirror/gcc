@@ -2695,11 +2695,11 @@ extern bool vect_transform_cycle_phi (loop_vec_info, stmt_vec_info,
 				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (loop_vec_info, stmt_vec_info, slp_tree);
 extern bool vect_transform_lc_phi (loop_vec_info, stmt_vec_info, slp_tree);
-extern bool vectorizable_phi (vec_info *, stmt_vec_info, slp_tree,
+extern bool vectorizable_phi (bb_vec_info, stmt_vec_info, slp_tree,
 			      stmt_vector_for_cost *);
 extern bool vectorizable_recurr (loop_vec_info, stmt_vec_info,
 				  slp_tree, stmt_vector_for_cost *);
-extern bool vectorizable_early_exit (vec_info *, stmt_vec_info,
+extern bool vectorizable_early_exit (loop_vec_info, stmt_vec_info,
 				     gimple_stmt_iterator *,
 				     slp_tree, stmt_vector_for_cost *);
 extern bool vect_emulated_vector_p (tree);
