@@ -287,7 +287,11 @@ class SharedPointerPrinter(printer_base):
     def _get_refcounts(self):
         if self._typename == 'std::atomic':
             # A tagged pointer is stored as uintptr_t.
-            ptr_val = self._val['_M_refcount']['_M_val']['_M_i']
+            val = self._val['_M_refcount']['_M_val']
+            if val.type.is_scalar: # GCC 16 stores uintptr_t
+                ptr_val = val
+            else: # GCC 12-15 stores std::atomic<uintptr_t>
+                ptr_val = val['_M_i']
             ptr_val = ptr_val - (ptr_val % 2)  # clear lock bit
             ptr_type = find_type(self._val['_M_refcount'].type, 'pointer')
             return ptr_val.cast(ptr_type)
