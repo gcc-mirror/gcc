@@ -1,3 +1,43 @@
+2025-08-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/121553
+	* g++.dg/warn/Wshadow-19.C: Revert P2036 changes.
+	* g++.dg/warn/Wshadow-6.C: Likewise.
+	* g++.dg/warn/Wshadow-20.C: New test.
+	* g++.dg/warn/Wshadow-21.C: New test.
+
+2025-08-20  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/109071
+	PR tree-optimization/85788
+	PR tree-optimization/88771
+	PR tree-optimization/106762
+	PR tree-optimization/108770
+	PR tree-optimization/115274
+	PR tree-optimization/117179
+	* gcc.dg/pr109071.c: New test.
+	* gcc.dg/pr109071_1.c: New test.
+	* gcc.dg/pr109071_10.c: New test.
+	* gcc.dg/pr109071_11.c: New test.
+	* gcc.dg/pr109071_12.c: New test.
+	* gcc.dg/pr109071_2.c: New test.
+	* gcc.dg/pr109071_3.c: New test.
+	* gcc.dg/pr109071_4.c: New test.
+	* gcc.dg/pr109071_5.c: New test.
+	* gcc.dg/pr109071_6.c: New test.
+	* gcc.dg/pr109071_7.c: New test.
+	* gcc.dg/pr109071_8.c: New test.
+	* gcc.dg/pr109071_9.c: New test.
+	* gcc.dg/pr117375.c: New test.
+
+2025-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121572
+	* gcc.target/i386/pr121572-1a.c: New test.
+	* gcc.target/i386/pr121572-1b.c: Likewise.
+	* gcc.target/i386/pr121572-2a.c: Likewise.
+	* gcc.target/i386/pr121572-2b.c: Likewise.
+
 2025-08-19  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp26/expansion-stmt16.C: Add -fno-implicit-constexpr.

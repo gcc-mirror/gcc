@@ -1,3 +1,160 @@
+2025-08-20  Qing Zhao  <qing.zhao@oracle.com>
+
+	* common.opt.urls: Regenerate.
+
+2025-08-20  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/109071
+	PR tree-optimization/85788
+	PR tree-optimization/88771
+	PR tree-optimization/106762
+	PR tree-optimization/108770
+	PR tree-optimization/115274
+	PR tree-optimization/117179
+	* Makefile.in (OBJS): Add diagnostic-context-rich-location.o.
+	* common.opt (fdiagnostics-show-context): New option.
+	(fdiagnostics-show-context=): New option.
+	* diagnostic-context-rich-location.cc: New file.
+	* diagnostic-context-rich-location.h: New file.
+	* doc/invoke.texi (fdiagnostics-details): Add
+	documentation for the new options.
+	* gimple-array-bounds.cc (check_out_of_bounds_and_warn): Add
+	one new parameter. Use rich location with details for warning_at.
+	(array_bounds_checker::check_array_ref): Use rich location with
+	ditails for warning_at.
+	(array_bounds_checker::check_mem_ref): Add one new parameter.
+	Use rich location with details for warning_at.
+	(array_bounds_checker::check_addr_expr): Use rich location with
+	move_history_diagnostic_path for warning_at.
+	(array_bounds_checker::check_array_bounds): Call check_mem_ref with
+	one more parameter.
+	* gimple-array-bounds.h: Update prototype for check_mem_ref.
+	* gimple-ssa-warn-access.cc (warn_string_no_nul): Use rich location
+	with details for warning_at.
+	(maybe_warn_nonstring_arg): Likewise.
+	(maybe_warn_for_bound): Likewise.
+	(warn_for_access): Likewise.
+	(check_access): Likewise.
+	(pass_waccess::check_strncat): Likewise.
+	(pass_waccess::maybe_check_access_sizes): Likewise.
+	* gimple-ssa-warn-restrict.cc (pass_wrestrict::execute): Calculate
+	dominance info for diagnostics show context.
+	(maybe_diag_overlap): Use rich location with details for warning_at.
+	(maybe_diag_access_bounds): Use rich location with details for
+	warning_at.
+
+2025-08-20  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121568
+	* ipa-prop.h (build_ref_for_offset): Remove.
+	* tree-sra.cc (build_ref_for_offset): Make static.
+
+2025-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc (aarch64*-*-*): Remove aarch64-cc-fusion.o from
+	extra_objs.
+	* config/aarch64/aarch64-passes.def (pass_cc_fusion): Delete.
+	* config/aarch64/aarch64-protos.h (make_pass_cc_fusion): Delete.
+	* config/aarch64/t-aarch64 (aarch64-cc-fusion.o): Delete.
+	* config/aarch64/aarch64-cc-fusion.cc: Delete.
+	* late-combine.cc (late_combine::optimizable_set): Take a set_info *
+	rather than an insn_info * and move destination tests from...
+	(late_combine::combine_into_uses): ...here. Take a set_info * rather
+	an insn_info *.  Take the rtx set.
+	(late_combine::parallelize_insns, late_combine::combine_cc_setter)
+	(late_combine::combine_insn): New member functions.
+	(late_combine::m_parallel): New member variable.
+	* rtlanal.cc (pattern_cost): Handle sets of CC registers in the
+	same way as comparisons.
+
+2025-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/blocks.cc (function_info::create_degenerate_phi): Fix
+	inverted test of bitmap_set_bit.  Call add_live_out_use even
+	if the register was previously live-out from the predecessor block.
+	Instead...
+	(function_info::add_live_out_use): ...check here whether a live-out
+	use already exists.
+
+2025-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/accesses.h (use_lookup): New class.
+	* rtl-ssa/functions.h (function_info::find_def): Expand comment.
+	(function_info::find_use): Declare.
+	* rtl-ssa/member-fns.inl (use_lookup::prev_use, use_lookup::next_use)
+	(use_lookup::matching_use, use_lookup::matching_or_prev_use)
+	(use_lookup::matching_or_next_use): New member functions.
+	* rtl-ssa/accesses.cc (function_info::find_use): Likewise.
+
+2025-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114480
+	* cfganal.cc (compute_idf): Split processing of the initial
+	workset from the main iteration.  Use a vector for the
+	workset of the main iteration.
+
+2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121608
+	* config/avr/specs.h (LINK_RELAX_SPEC): Wrap in %{!r...}.
+
+2025-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): New,
+	copied from vect_analyze_slp_instance and only handle
+	slp_inst_kind_reduc_chain.  Inline vect_build_slp_instance.
+	(vect_analyze_slp_instance): Only handle slp_inst_kind_store.
+	Inline vect_build_slp_instance.
+	(vect_build_slp_instance): Remove now unused stmt_info parameter,
+	remove special code for store groups and reduction chains.
+	(vect_analyze_slp): Call vect_analyze_slp_reduc_chain
+	for reduction chain SLP build and adjust.
+
+2025-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_check_gather_scatter):
+	Remove restriction on epilogue of epilogue vectorization.
+
+2025-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Remove
+	fixing up pattern stmt operands and gather/scatter DR_REFs.
+	(find_in_mapping): Remove.
+
+2025-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_load_store_data): New.
+	(_slp_tree::memory_access_type): Remove.
+	(SLP_TREE_MEMORY_ACCESS_TYPE): Turn into inline function.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Do not
+	initialize SLP_TREE_MEMORY_ACCESS_TYPE.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Remove gather_scatter_info pointer argument, instead get
+	info from the SLP node.
+	(vect_build_one_gather_load_call): Get SLP node and builtin
+	decl as argument and remove uses of gather_scatter_info.
+	(vect_build_one_scatter_store_call): Likewise.
+	(vect_get_gather_scatter_ops): Remove uses of gather_scatter_info.
+	(vect_get_strided_load_store_ops): Get SLP node and remove
+	uses of gather_scatter_info.
+	(get_load_store_type): Take pointer to vect_load_store_data
+	instead of individual pointers.
+	(vectorizable_store): Adjust.  Re-use get_load_store_type
+	result from analysis time.
+	(vectorizable_load): Likewise.
+
+2025-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121572
+	* config/i386/i386-features.cc (replace_tls_call): Add a bitmap
+	argument and put the updated TLS instruction in the bitmap.
+	(ix86_get_dominator_for_reg): New.
+	(ix86_check_flags_reg): Likewise.
+	(ix86_emit_tls_call): Likewise.
+	(ix86_place_single_tls_call): Add 2 bitmap arguments for updated
+	GNU and GNU2 TLS instructions.  Call ix86_emit_tls_call to emit
+	TLS instruction.  Correct debug dump for before instruction.
+
 2025-08-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/120024

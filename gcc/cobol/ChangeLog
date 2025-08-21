@@ -1,3 +1,10 @@
+2025-08-20  Robert Dubner  <rdubner@symas.com>
+
+	* genutil.cc (get_binary_value): Fix a comment.
+	* parse.y: udf_args_valid(): Fix loc calculation.
+	* symbols.cc (assert): extend_66_capacity(): Avoid assert(e < e2) in
+	-O0 build until symbol_table expansion is fixed.
+
 2025-08-15  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.h (parser_call_exception_end): Remove obsolete comment.

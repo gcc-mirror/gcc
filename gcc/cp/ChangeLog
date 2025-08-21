@@ -1,3 +1,8 @@
+2025-08-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/121553
+	* name-lookup.cc (check_local_shadow): Check !is_normal_capture_proxy.
+
 2025-08-19  Ben Wu  <soggysocks206@gmail.com>
 
 	PR c++/120618

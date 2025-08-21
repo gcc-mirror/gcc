@@ -1,3 +1,10 @@
+2025-08-20  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (format_for_display_internal): Handle NumericDisplay
+	properly.
+	(compare_88): Fix memory access error.
+	(__gg__unstring): Likewise.
+
 2025-08-13  Mark Wielaard  <mark@klomp.org>
 
 	* configure: Regenerate.

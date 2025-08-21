@@ -1,3 +1,9 @@
+2025-08-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* intrinsic.texi: Correct the example given for FRACTION.
+	Move the TEAM_NUMBER section to after the TANPI to align
+	with the order gven in the index.
+
 2025-08-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR fortran/107421
