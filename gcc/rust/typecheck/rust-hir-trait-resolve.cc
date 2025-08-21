@@ -253,12 +253,10 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
   // They also inherit themselves as a bound this enables a trait item to
   // reference other Self::trait_items
-  auto self_hrtb
-    = TyTy::TypeBoundPredicate (trait_reference->get_mappings ().get_defid (),
-				std::move (self_subst_copy),
-				BoundPolarity::RegularBound,
-				trait_reference->get_locus ());
-  specified_bounds.push_back (self_hrtb);
+  specified_bounds.emplace_back (trait_reference->get_mappings ().get_defid (),
+				 std::move (self_subst_copy),
+				 BoundPolarity::RegularBound,
+				 trait_reference->get_locus ());
 
   // look for any
   std::vector<TyTy::TypeBoundPredicate> super_traits;
