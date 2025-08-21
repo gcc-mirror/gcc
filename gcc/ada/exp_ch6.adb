@@ -2946,7 +2946,11 @@ package body Exp_Ch6 is
 
                  and then Predicate_Tests_On_Arguments (Subp)
                then
-                  Append_To (Post_Call,
+                  --  If Actual is a view conversion to a by-copy subtype
+                  --  that is subject to a predicate, then the predicate
+                  --  check must precede copy-back. So Prepend.
+
+                  Prepend_To (Post_Call,
                     Make_Predicate_Check (Atyp, Actual));
                end if;
             end By_Ref_Predicate_Check;
