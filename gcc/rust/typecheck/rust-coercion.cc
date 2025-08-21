@@ -61,44 +61,9 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
   // see:
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs
 
-  // handle never
-  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs#L155
   if (receiver->get_kind () == TyTy::TypeKind::NEVER)
     {
-      // Subtle: If we are coercing from `!` to `?T`, where `?T` is an unbound
-      // type variable, we want `?T` to fallback to `!` if not
-      // otherwise constrained. An example where this arises:
-      //
-      //     let _: Option<?T> = Some({ return; });
-      //
-      // here, we would coerce from `!` to `?T`.
-      if (expected->has_substitutions_defined () && !expected->is_concrete ())
-	{
-	  location_t locus = mappings.lookup_location (receiver->get_ref ());
-	  TyTy::TyVar implicit_var
-	    = TyTy::TyVar::get_implicit_infer_var (locus);
-	  try_result = CoercionResult{{}, implicit_var.get_tyty ()};
-	}
-      else
-	{
-	  bool expected_is_infer_var
-	    = expected->get_kind () == TyTy::TypeKind::INFER;
-	  bool expected_is_general_infer_var
-	    = expected_is_infer_var
-	      && (static_cast<TyTy::InferType *> (expected)->get_infer_kind ()
-		  == TyTy::InferType::InferTypeKind::GENERAL);
-
-	  // FIXME this 'expected_is_general_infer_var' case needs to eventually
-	  // should go away see: compile/never_type_err1.rs
-	  //
-	  // I think we need inference obligations to say that yes we have a
-	  // general inference variable but we add the oligation to the expected
-	  // type that it could default to '!'
-	  if (expected_is_general_infer_var)
-	    try_result = CoercionResult{{}, receiver};
-	  else
-	    try_result = CoercionResult{{}, expected->clone ()};
-	}
+      try_result = coerce_never (receiver);
       return true;
     }
 
@@ -167,6 +132,44 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
     }
 
   return !try_result.is_error ();
+}
+
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::coerce_never (TyTy::BaseType *receiver)
+{
+  // handle never
+  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs#L155
+
+  // Subtle: If we are coercing from `!` to `?T`, where `?T` is an unbound
+  // type variable, we want `?T` to fallback to `!` if not
+  // otherwise constrained. An example where this arises:
+  //
+  //     let _: Option<?T> = Some({ return; });
+  //
+  // here, we would coerce from `!` to `?T`.
+  if (expected->has_substitutions_defined () && !expected->is_concrete ())
+    {
+      location_t locus = mappings.lookup_location (receiver->get_ref ());
+      TyTy::TyVar implicit_var = TyTy::TyVar::get_implicit_infer_var (locus);
+      return CoercionResult{{}, implicit_var.get_tyty ()};
+    }
+
+  bool expected_is_infer_var = expected->get_kind () == TyTy::TypeKind::INFER;
+  bool expected_is_general_infer_var
+    = expected_is_infer_var
+      && (static_cast<TyTy::InferType *> (expected)->get_infer_kind ()
+	  == TyTy::InferType::InferTypeKind::GENERAL);
+
+  // FIXME this 'expected_is_general_infer_var' case needs to eventually
+  // should go away see: compile/never_type_err1.rs
+  //
+  // I think we need inference obligations to say that yes we have a
+  // general inference variable but we add the oligation to the expected
+  // type that it could default to '!'
+  if (expected_is_general_infer_var)
+    return CoercionResult{{}, receiver};
+  else
+    return CoercionResult{{}, expected->clone ()};
 }
 
 TypeCoercionRules::CoercionResult

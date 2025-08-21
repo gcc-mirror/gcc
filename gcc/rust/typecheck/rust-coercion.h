@@ -58,6 +58,7 @@ public:
 				   bool allow_autoderef,
 				   bool is_cast_site = false);
 
+  CoercionResult coerce_never (TyTy::BaseType *receiver);
   CoercionResult coerce_unsafe_ptr (TyTy::BaseType *receiver,
 				    TyTy::PointerType *expected,
 				    Mutability mutability);
