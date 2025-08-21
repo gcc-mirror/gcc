@@ -1339,6 +1339,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (INTEGRAL_TYPE_P (type))
       (rshift (op @0 @2) @1))))
 
+/* (y << x) == x -> 0 when y != 0.  */
+(simplify
+  (eq:c (nop_convert1? (lshift @0 @1)) (nop_convert2? @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && tree_expr_nonzero_p (@0))
+   { build_zero_cst (type); }))
+
+/* (y << x) {<,<=} x -> 0 when y > 0.  */
+(for cmp (lt le)
+  (simplify
+    (cmp:c (nop_convert1? (lshift @0 @1)) (nop_convert2? @1))
+    (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	 && tree_expr_nonzero_p (@0)
+	 && tree_expr_nonnegative_p (@0))
+     { build_zero_cst (type); })))
+
+/* (y << x) != x -> 1 when y != 0.  */
+(simplify
+  (ne:c (nop_convert1? (lshift @0 @1)) (nop_convert2? @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && tree_expr_nonzero_p (@0))
+   { build_one_cst (type); }))
+
+/* (y << x) {>,>=} x -> 1 when y > 0.  */
+(for cmp (gt ge)
+  (simplify
+    (cmp:c (nop_convert1? (lshift @0 @1)) (nop_convert2? @1))
+    (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	 && tree_expr_nonzero_p (@0)
+	 && tree_expr_nonnegative_p (@0))
+     { build_one_cst (type); })))
+
 /* Fold (1 << (C - x)) where C = precision(type) - 1
    into ((1 << C) >> x). */
 (simplify
