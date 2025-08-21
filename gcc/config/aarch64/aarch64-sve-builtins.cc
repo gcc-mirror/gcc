@@ -4352,7 +4352,11 @@ function_expander::use_cond_insn (insn_code icode, unsigned int merge_argno)
   add_input_operand (icode, pred);
   for (unsigned int i = 0; i < nops; ++i)
     add_input_operand (icode, args[opno + i]);
-  add_input_operand (icode, fallback_arg);
+  if (fallback_arg == CONST0_RTX (mode)
+      && insn_operand_matches (icode, m_ops.length (), fallback_arg))
+    add_fixed_operand (fallback_arg);
+  else
+    add_input_operand (icode, fallback_arg);
   return generate_insn (icode);
 }
 
