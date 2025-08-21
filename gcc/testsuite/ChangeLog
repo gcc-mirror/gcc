@@ -1,3 +1,9 @@
+2025-08-20  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/121534
+	* gcc.target/riscv/rvv/autovec/vls/math-nearbyint-1.c: Adjust
+	scan pattern for additional instances of frflags/fsrflags.
+
 2025-08-19  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121608
+	* config/avr/specs.h (LINK_RELAX_SPEC): Wrap in %{!r...}.
+
+2025-08-20  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/121534
+	* config/riscv/riscv.md (round_pattern): save/restore fflags.
+
 2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/121118
