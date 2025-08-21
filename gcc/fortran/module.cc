@@ -7277,10 +7277,13 @@ create_int_parameter_array (const char *name, int size, gfc_expr *value,
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
   if (tmp_symtree != NULL)
     {
-      if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
+      if (tmp_symtree->n.sym->module &&
+	  strcmp (modname, tmp_symtree->n.sym->module) == 0)
 	return;
       else
-	gfc_error ("Symbol %qs already declared", name);
+	gfc_error ("Symbol %qs already declared at %L conflicts with "
+		   "symbol in %qs at %C", name,
+		   &tmp_symtree->n.sym->declared_at, modname);
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
