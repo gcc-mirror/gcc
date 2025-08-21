@@ -1,3 +1,29 @@
+2025-08-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/119085
+	* tree-sra.cc (sort_and_splice_var_accesses): Prevent total
+	scalarization if two incompatible aggregates access the same place.
+
+2025-08-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117423
+	* tree-sra.cc (analyze_access_subtree): Fix computation of grp_covered
+	flag.
+
+2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121608
+	* config/avr/specs.h (LINK_RELAX_SPEC): Wrap in %{!r...}.
+
 2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
