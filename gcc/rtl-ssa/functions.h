@@ -309,6 +309,7 @@ private:
 
   void add_live_out_use (bb_info *, set_info *);
   set_info *live_out_value (bb_info *, set_info *);
+  void commit_make_use_available (use_info *);
 
   void append_phi (ebb_info *, phi_info *);
   void remove_phi (phi_info *);
