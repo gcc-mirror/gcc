@@ -5424,6 +5424,7 @@ vectorizable_conversion (vec_info *vinfo,
   scalar_mode rhs_mode = SCALAR_TYPE_MODE (rhs_type);
   opt_scalar_mode rhs_mode_iter;
   auto_vec<std::pair<tree, tree_code>, 2> converts;
+  bool evenodd_ok = false;
 
   /* Supportable by target?  */
   switch (modifier)
@@ -5471,10 +5472,28 @@ vectorizable_conversion (vec_info *vinfo,
 	  gcc_assert (!(multi_step_cvt && op_type == binary_op));
 	  break;
 	}
-      if (supportable_widening_operation (vinfo, code, stmt_info,
-					       vectype_out, vectype_in, &code1,
-					       &code2, &multi_step_cvt,
-					       &interm_types))
+      /* Elements in a vector can only be reordered if used in a reduction
+	 operation only.  */
+      if (code == WIDEN_MULT_EXPR
+	  && loop_vinfo
+	  && !nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt_info)
+	  /* For a SLP reduction we cannot swizzle lanes, detecting a
+	     reduction chain isn't possible here.  */
+	  && SLP_TREE_LANES (slp_node) == 1)
+	{
+	  /* ???  There is no way to look for SLP uses, so work on
+	     the stmt and what the stmt-based cycle detection gives us.  */
+	  tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
+	  stmt_vec_info use_stmt_info
+	    = lhs ? loop_vinfo->lookup_single_use (lhs) : NULL;
+	  if (use_stmt_info
+	      && STMT_VINFO_REDUC_DEF (use_stmt_info))
+	    evenodd_ok = true;
+	}
+      if (supportable_widening_operation (code, vectype_out, vectype_in,
+					  evenodd_ok, &code1,
+					  &code2, &multi_step_cvt,
+					  &interm_types))
 	{
 	  /* Binary widening operation can only be supported directly by the
 	     architecture.  */
@@ -5508,18 +5527,17 @@ vectorizable_conversion (vec_info *vinfo,
 		goto unsupported;
 	      codecvt1 = tc1;
 	    }
-	  else if (!supportable_widening_operation (vinfo, code,
-						    stmt_info, vectype_out,
-						    cvt_type, &codecvt1,
+	  else if (!supportable_widening_operation (code, vectype_out,
+						    cvt_type, evenodd_ok,
+						    &codecvt1,
 						    &codecvt2, &multi_step_cvt,
 						    &interm_types))
 	    continue;
 	  else
 	    gcc_assert (multi_step_cvt == 0);
 
-	  if (supportable_widening_operation (vinfo, NOP_EXPR, stmt_info,
-					      cvt_type,
-					      vectype_in, &code1,
+	  if (supportable_widening_operation (NOP_EXPR, cvt_type,
+					      vectype_in, evenodd_ok, &code1,
 					      &code2, &multi_step_cvt,
 					      &interm_types))
 	    {
@@ -13829,6 +13847,8 @@ vect_maybe_update_slp_op_vectype (slp_tree op, tree vectype)
    are supported by the target platform either directly (via vector
    tree-codes), or via target builtins.
 
+   When EVENODD_OK then also lane-swizzling operations are considered.
+
    Output:
    - CODE1 and CODE2 are codes of vector operations to be used when
    vectorizing the operation, if available.
@@ -13839,17 +13859,14 @@ vect_maybe_update_slp_op_vectype (slp_tree op, tree vectype)
    widening operation (short in the above example).  */
 
 bool
-supportable_widening_operation (vec_info *vinfo,
-				code_helper code,
-				stmt_vec_info stmt_info,
+supportable_widening_operation (code_helper code,
 				tree vectype_out, tree vectype_in,
+				bool evenodd_ok,
 				code_helper *code1,
 				code_helper *code2,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
-  loop_vec_info loop_info = dyn_cast <loop_vec_info> (vinfo);
-  class loop *vect_loop = NULL;
   machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1 = unknown_optab, optab2 = unknown_optab;
@@ -13862,8 +13879,6 @@ supportable_widening_operation (vec_info *vinfo,
   optab optab3, optab4;
 
   *multi_step_cvt = 0;
-  if (loop_info)
-    vect_loop = LOOP_VINFO_LOOP (loop_info);
 
   switch (code.safe_as_tree_code ())
     {
@@ -13905,24 +13920,13 @@ supportable_widening_operation (vec_info *vinfo,
 	 on VEC_WIDEN_MULT_EVEN_EXPR.  If it succeeds, all the return values
 	 are properly set up for the caller.  If we fail, we'll continue with
 	 a VEC_WIDEN_MULT_LO/HI_EXPR check.  */
-      if (vect_loop
-	  && !nested_in_vect_loop_p (vect_loop, stmt_info)
-	  && supportable_widening_operation (vinfo, VEC_WIDEN_MULT_EVEN_EXPR,
-					     stmt_info, vectype_out,
-					     vectype_in, code1,
+      if (evenodd_ok
+	  && supportable_widening_operation (VEC_WIDEN_MULT_EVEN_EXPR,
+					     vectype_out, vectype_in,
+					     evenodd_ok, code1,
 					     code2, multi_step_cvt,
 					     interm_types))
-        {
-          /* Elements in a vector with vect_used_by_reduction property cannot
-             be reordered if the use chain with this property does not have the
-             same operation.  One such an example is s += a * b, where elements
-             in a and b cannot be reordered.  Here we check if the vector defined
-             by STMT is only directly used in the reduction statement.  */
-	  tree lhs = gimple_assign_lhs (vect_orig_stmt (stmt_info)->stmt);
-	  stmt_vec_info use_stmt_info = loop_info->lookup_single_use (lhs);
-	  if (use_stmt_info && STMT_VINFO_REDUC_DEF (use_stmt_info))
-	    return true;
-        }
+	return true;
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;
       break;
