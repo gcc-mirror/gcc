@@ -5034,7 +5034,7 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
      two copies of each scalar operand: {s1, s2, s1, s2}.  (NUMBER_OF_COPIES
      will be 2).
 
-     If REDUC_GROUP_SIZE > NUNITS, the scalars will be split into several
+     If GROUP_SIZE > NUNITS, the scalars will be split into several
      vectors containing the operands.
 
      For example, NUNITS is four as before, and the group size is 8
@@ -5449,9 +5449,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      # b1 = phi <b2, b0>
      a2 = operation (a1)
      b2 = operation (b1)  */
-  bool slp_reduc
-    = !REDUC_GROUP_FIRST_ELEMENT (STMT_VINFO_REDUC_DEF (reduc_info));
-  bool direct_slp_reduc;
+  const bool slp_reduc
+    = SLP_INSTANCE_KIND (slp_node_instance) != slp_inst_kind_reduc_chain;
   tree induction_index = NULL_TREE;
 
   unsigned int group_size = SLP_TREE_LANES (slp_node);
@@ -5677,9 +5676,10 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   /* True if we should implement SLP_REDUC using native reduction operations
      instead of scalar operations.  */
-  direct_slp_reduc = (reduc_fn != IFN_LAST
-		      && slp_reduc
-		      && !TYPE_VECTOR_SUBPARTS (vectype).is_constant ());
+  const bool direct_slp_reduc
+    = (reduc_fn != IFN_LAST
+       && slp_reduc
+       && !TYPE_VECTOR_SUBPARTS (vectype).is_constant ());
 
   /* In case of reduction chain, e.g.,
      # a1 = phi <a3, a0>
@@ -5700,7 +5700,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      a multiple of the SLP group size.
 
      The same is true if we couldn't use a single defuse cycle.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (STMT_VINFO_REDUC_DEF (reduc_info))
+  if (!slp_reduc
       || direct_slp_reduc
       || (slp_reduc
 	  && constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype), group_size)))
@@ -5969,7 +5969,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     }
   else if (direct_slp_reduc)
     {
-      /* Here we create one vector for each of the REDUC_GROUP_SIZE results,
+      /* Here we create one vector for each of the GROUP_SIZE results,
 	 with the elements for other SLP statements replaced with the
 	 neutral value.  We can then do a normal reduction on each vector.  */
 
@@ -5987,7 +5987,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       tree mask_type = truth_type_for (index_type);
 
       /* Create a vector that, for each element, identifies which of
-	 the REDUC_GROUP_SIZE results should use it.  */
+	 the results should use it.  */
       tree index_mask = build_int_cst (index_elt_type, group_size - 1);
       index = gimple_build (&seq, BIT_AND_EXPR, index_type, index,
 			    build_vector_from_val (index_type, index_mask));
@@ -5996,15 +5996,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	 scalar value if we have one, otherwise the initial scalar value
 	 is itself a neutral value.  */
       tree vector_identity = NULL_TREE;
-      tree neutral_op = NULL_TREE;
-      if (1)
-	{
-	  tree initial_value = NULL_TREE;
-	  if (REDUC_GROUP_FIRST_ELEMENT (STMT_VINFO_REDUC_DEF (reduc_info)))
-	    initial_value = reduc_info->reduc_initial_values[0];
-	  neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype), code,
-						 initial_value, false);
-	}
+      tree neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype), code,
+						  NULL_TREE, false);
       if (neutral_op)
 	vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							neutral_op);
@@ -6207,10 +6200,10 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
                 }
             }
 
-          /* The only case where we need to reduce scalar results in SLP, is
-             unrolling.  If the size of SCALAR_RESULTS is greater than
-             REDUC_GROUP_SIZE, we reduce them combining elements modulo
-             REDUC_GROUP_SIZE.  */
+	  /* The only case where we need to reduce scalar results in a SLP
+	     reduction, is unrolling.  If the size of SCALAR_RESULTS is
+	     greater than GROUP_SIZE, we reduce them combining elements modulo
+	     GROUP_SIZE.  */
           if (slp_reduc)
             {
               tree res, first_res, new_res;
@@ -6231,7 +6224,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
             }
           else
 	    {
-	      /* Not SLP - we have one scalar to keep in SCALAR_RESULTS.  */
+	      /* Reduction chain - we have one scalar to keep in
+		 SCALAR_RESULTS.  */
 	      new_temp = gimple_convert (&stmts, scalar_type, new_temp);
 	      scalar_results.safe_push (new_temp);
 	    }
@@ -7047,6 +7041,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool double_reduc = false;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
+  const bool reduc_chain
+    = SLP_INSTANCE_KIND (slp_node_instance) == slp_inst_kind_reduc_chain;
 
   /* Make sure it was already recognized as a reduction computation.  */
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
@@ -7256,7 +7252,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* Not supportable if the reduction variable is used in the loop, unless
      it's a reduction chain.  */
   if (STMT_VINFO_RELEVANT (stmt_info) > vect_used_in_outer
-      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+      && !reduc_chain)
     return false;
 
   /* Reductions that are not used even in an enclosing outer-loop,
@@ -7305,7 +7301,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      OK to use them in a reduction chain or when the reduction group
      has just one element.  */
   if (lane_reducing
-      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      && !reduc_chain
       && SLP_TREE_LANES (slp_node) > 1)
     {
       if (dump_enabled_p ())
@@ -7556,7 +7552,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 outer-loop vectorization is safe.  Likewise when we are vectorizing
 	 a series of reductions using SLP and the VF is one the reductions
 	 are performed in scalar order.  */
-      if (!REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      if (!reduc_chain
 	  && known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1u))
 	;
       else if (needs_fold_left_reduction_p (op.type, orig_code))
@@ -7672,7 +7668,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* For SLP reductions, see if there is a neutral value we can use.  */
   tree neutral_op = NULL_TREE;
   tree initial_value = NULL_TREE;
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL)
+  if (reduc_chain)
     initial_value = vect_phi_initial_value (reduc_def_phi);
   neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype_out),
 					 orig_code, initial_value);
@@ -7702,7 +7698,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   if (reduction_type == FOLD_LEFT_REDUCTION
       && SLP_TREE_LANES (slp_node) > 1
-      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+      && !reduc_chain)
     {
       /* We cannot use in-order reductions in this case because there is
 	 an implicit reassociation of the operations involved.  */
@@ -7730,7 +7726,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
 
   /* Check extra constraints for variable-length unchained SLP reductions.  */
-  if (!REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+  if (!reduc_chain
       && !nunits_out.is_constant ())
     {
       /* We checked above that we could build the initial vector when
@@ -7824,7 +7820,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
    own reduction accumulator since one of the main goals of unrolling a
    reduction is to reduce the aggregate loop-carried latency.  */
   if (ncopies > 1
-      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      && !reduc_chain
       && SLP_TREE_LANES (slp_node) == 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
       && reduc_chain_length == 1
@@ -8357,6 +8353,8 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   int i;
   bool nested_cycle = false;
   int vec_num;
+  const bool reduc_chain
+    = SLP_INSTANCE_KIND (slp_node_instance) == slp_inst_kind_reduc_chain;
 
   if (nested_in_vect_loop_p (loop, stmt_info))
     {
@@ -8427,7 +8425,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
       vec<stmt_vec_info> &stmts = SLP_TREE_SCALAR_STMTS (slp_node);
 
       unsigned int num_phis = stmts.length ();
-      if (REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info))
+      if (reduc_chain)
 	num_phis = 1;
       initial_values.reserve (num_phis);
       for (unsigned int i = 0; i < num_phis; ++i)
@@ -10261,8 +10259,9 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       if (!vec_stmt_p)
 	return true;
       /* For SLP reductions we vectorize the epilogue for all involved stmts
-	 together.  */
-      if (!REDUC_GROUP_FIRST_ELEMENT (stmt_info) && slp_index != 0)
+	 together.  For SLP reduction chains we only get here once.  */
+      if (SLP_INSTANCE_KIND (slp_node_instance) == slp_inst_kind_reduc_group
+	  && slp_index != 0)
 	return true;
       stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
       gcc_assert (reduc_info->is_reduc_info);
