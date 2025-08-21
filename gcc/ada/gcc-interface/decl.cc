@@ -1388,16 +1388,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      }
 	  }
 
-	/* If we are at top level and this object is of variable size,
-	   make the actual type a hidden pointer to the real type and
-	   make the initializer be a memory allocation and initialization.
-	   Likewise for objects we aren't defining (presumed to be
-	   external references from other packages), but there we do
-	   not set up an initialization.
-
-	   If the object's size overflows, make an allocator too, so that
-	   Storage_Error gets raised.  Note that we will never free
-	   such memory, so we presume it never will get allocated.  */
+	/* If we are at top level and this object is of variable size, make
+	   the actual type a reference to the real type and the initializer
+	   be a memory allocation and initialization.  Likewise for an object
+	   that we aren't defining or is imported (presumed to be an external
+	   reference from another package), but in this case we do not set up
+	   an initialization.  Likewise if the object's size is constant but
+	   too large.  In either case, this will also cause Storage_Error to
+	   be raised if the size ends up overflowing.  Note that we will never
+	   free such memory, but it will be allocated only at top level.  */
 	if (!allocatable_size_p (TYPE_SIZE_UNIT (gnu_type),
 				 global_bindings_p ()
 				 || !definition
@@ -1411,6 +1410,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					|| !definition
 					|| static_flag)))
 	  {
+	    /* Give a warning if the size is constant.  */
+	    if ((TREE_CODE (TYPE_SIZE_UNIT (gnu_type)) == INTEGER_CST
+		 || (gnu_size && TREE_CODE (gnu_size) == INTEGER_CST))
+		&& definition)
+	      {
+		if (imported_p)
+		  {
+		    post_error
+		      ("??too large object cannot be imported directly",
+		       gnat_entity);
+		    post_error ("\\??indirect import will be used instead",
+				gnat_entity);
+		  }
+		else if (global_bindings_p () || static_flag)
+		  {
+		    post_error
+		      ("??too large object cannot be allocated statically",
+		       gnat_entity);
+		    post_error ("\\??dynamic allocation will be used instead",
+				gnat_entity);
+		  }
+	      }
+
 	    if (volatile_flag && !TYPE_VOLATILE (gnu_type))
 	      gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 	    gnu_type = build_reference_type (gnu_type);
@@ -1453,21 +1475,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  }
 
 		/* Give a warning if the size is constant but too large.  */
-		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST)
-		  {
-		    if (valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
-		      {
-			post_error
-			  ("??too large object cannot be allocated statically",
-			   gnat_entity);
-			post_error ("\\??dynamic allocation will be used instead",
-				    gnat_entity);
-		      }
-
-		    else
-		      post_error ("??Storage_Error will be raised at run time!",
-				  gnat_entity);
-		  }
+		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
+		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
+		  post_error ("??Storage_Error will be raised at run time!",
+			      gnat_entity);
 
 		gnu_expr
 		  = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
