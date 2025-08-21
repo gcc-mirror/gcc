@@ -515,15 +515,6 @@ package body Ghost is
          function Is_OK_Statement
            (Stmt : Node_Id; Id : Entity_Id; Call_Arg : Node_Id) return Boolean
          is
-            procedure Check_Assignment_Policies (Assignee : Entity_Id);
-            --  Check that:
-            --  * An ignored entity is not used to modify a checked ghost
-            --    entity in an assignment.
-            --  * A checked ghost assignment is not used in an ignored ghost
-            --    region.
-            --  * The level of the ghost region depends on the level of the
-            --    ghost assignment.
-
             procedure Check_Procedure_Call_Policies (Callee : Entity_Id);
             --  Check that
             --  * the a checked call argument is not modified by an ignored
@@ -536,61 +527,6 @@ package body Ghost is
                return Boolean;
             --  Check that Call_Arg was used in the call and that the formal
             --  for that argument was either out or in-out.
-
-            -------------------------------
-            -- Check_Assignment_Policies --
-            -------------------------------
-
-            procedure Check_Assignment_Policies (Assignee : Entity_Id) is
-               A_Policy      : constant Name_Id :=
-                 Ghost_Policy_In_Effect (Assignee);
-               A_Level : constant Entity_Id :=
-                 Ghost_Assertion_Level (Assignee);
-               Id_Policy     : constant Name_Id := Ghost_Policy_In_Effect (Id);
-               Region_Policy : constant Ghost_Mode_Type :=
-                 Ghost_Config.Ghost_Mode;
-               Region_Level : constant Entity_Id :=
-                 Ghost_Config.Ghost_Mode_Assertion_Level;
-            begin
-               if A_Policy = Name_Check and then Id_Policy = Name_Ignore then
-                  Error_Msg_Sloc := Sloc (Ghost_Ref);
-
-                  Error_Msg_N (Ghost_Policy_Error_Msg, Ghost_Ref);
-                  Error_Msg_NE ("\& has ghost policy `Ignore`", Ghost_Ref, Id);
-                  Error_Msg_NE
-                    ("\& used # to modify an entity with `Check`",
-                     Ghost_Ref,
-                     Id);
-               end if;
-
-               if A_Policy = Name_Check and then Region_Policy = Ignore then
-                  Error_Msg_N (Ghost_Policy_Error_Msg, Stmt);
-                  Error_Msg_NE ("\& has ghost policy `Check`", Stmt, Assignee);
-                  Error_Msg_NE
-                    ("\& is modified in a region with `Ignore`",
-                     Stmt,
-                     Assignee);
-               end if;
-
-               if Present (Region_Level)
-                 and then not Is_Assertion_Level_Dependent
-                                (Region_Level, A_Level)
-               then
-                  Error_Msg_Sloc := Sloc (Stmt);
-
-                  Error_Msg_N (Assertion_Level_Error_Msg, Stmt);
-                  Error_Msg_Name_1 := Chars (A_Level);
-                  Error_Msg_NE ("\& has assertion level %", Stmt, Assignee);
-                  Error_Msg_Name_1 := Chars (Region_Level);
-                  Error_Msg_NE
-                    ("\& is modified within a region with %", Stmt, Id);
-                  Error_Msg_Name_1 := Chars (Region_Level);
-                  Error_Msg_NE
-                    ("\assertion level of & should depend on %",
-                     Stmt,
-                     Assignee);
-               end if;
-            end Check_Assignment_Policies;
 
             -----------------------------------
             -- Check_Procedure_Call_Policies --
@@ -683,9 +619,6 @@ package body Ghost is
 
             if Nkind (Stmt) = N_Assignment_Statement then
                if Is_Ghost_Assignment (Stmt) then
-                  Check_Assignment_Policies
-                    (Get_Enclosing_Ghost_Entity (Name (Stmt)));
-
                   return True;
                end if;
 
@@ -1872,18 +1805,60 @@ package body Ghost is
       --  where P is a package, X is a record, and Comp is an array, we need
       --  to check the ghost flags of X.
 
-      Orig_Lhs  : constant Node_Id := Name (N);
-      Id        : Entity_Id;
-      Lhs       : Node_Id;
+      procedure Check_Assignment_Policies (Assignee : Entity_Id);
+      --  Check that:
+      --  * A checked ghost assignment is not used in an ignored ghost
+      --    region.
+      --  * The level of the ghost region depends on the level of the
+      --    ghost assignment.
+
+      -------------------------------
+      -- Check_Assignment_Policies --
+      -------------------------------
+
+      procedure Check_Assignment_Policies (Assignee : Entity_Id) is
+         Assignee_Policy : constant Name_Id :=
+           Ghost_Policy_In_Effect (Assignee);
+         Assignee_Level  : constant Entity_Id :=
+           Ghost_Assertion_Level (Assignee);
+         Region_Policy   : constant Ghost_Mode_Type := Ghost_Config.Ghost_Mode;
+         Region_Level    : constant Entity_Id :=
+           Ghost_Config.Ghost_Mode_Assertion_Level;
+      begin
+         if Assignee_Policy = Name_Check and then Region_Policy = Ignore then
+            Error_Msg_N (Ghost_Policy_Error_Msg, N);
+            Error_Msg_NE ("\& has ghost policy `Check`", N, Assignee);
+            Error_Msg_NE
+              ("\& is modified in a region with `Ignore`", N, Assignee);
+         end if;
+
+         if Present (Region_Level)
+           and then not Is_Assertion_Level_Dependent
+                          (Region_Level, Assignee_Level)
+         then
+            Error_Msg_Sloc := Sloc (N);
+
+            Error_Msg_N (Assertion_Level_Error_Msg, N);
+            Error_Msg_Name_1 := Chars (Assignee_Level);
+            Error_Msg_NE ("\& has assertion level %", N, Assignee);
+            Error_Msg_Name_1 := Chars (Region_Level);
+            Error_Msg_NE
+              ("\& is modified within a region with %", N, Assignee);
+            Error_Msg_Name_1 := Chars (Region_Level);
+            Error_Msg_NE
+              ("\assertion level of & should depend on %", N, Assignee);
+         end if;
+      end Check_Assignment_Policies;
+
+      --  Local variables
+
+      Orig_Lhs : constant Node_Id := Name (N);
+      Id       : Entity_Id;
+      Lhs      : Node_Id;
+
+   --  Start of processing for Mark_And_Set_Ghost_Assignment
 
    begin
-      --  Ghost assignments are irrelevant when the expander is inactive, and
-      --  processing them in that mode can lead to spurious errors.
-
-      if not Expander_Active then
-         return;
-      end if;
-
       --  Cases where full analysis is needed, involving array indexing
       --  which would otherwise be missing array-bounds checks:
 
@@ -1919,6 +1894,11 @@ package body Ghost is
       end if;
 
       Id := Get_Enclosing_Ghost_Entity (Lhs);
+
+      if Present (Id) and then Is_Ghost_Entity (Id) then
+         Check_Assignment_Policies (Id);
+      end if;
+
       Mark_And_Set_Ghost_Region (N, Id);
    end Mark_And_Set_Ghost_Assignment;
 
