@@ -2160,7 +2160,10 @@ package body Sem_Ch5 is
       Loc       : constant Source_Ptr := Sloc (N);
       Subt      : constant Node_Id    := Subtype_Indication (N);
 
+      Assoc : Node_Id;
       Bas : Entity_Id := Empty;  -- initialize to prevent warning
+      Iter_Asp  : Node_Id;
+      Iter_Func : Node_Id;
       Typ : Entity_Id;
 
       procedure Check_Reverse_Iteration (Typ : Entity_Id);
@@ -2870,18 +2873,34 @@ package body Sem_Ch5 is
             --  in the container package. We obtain it by name for a predefined
             --  container, or through the Iterable aspect for a formal one.
 
-            if Has_Aspect (Typ, Aspect_Iterable) then
-               Set_Etype (Def_Id,
-                 Get_Cursor_Type
-                   (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)),
-                    Typ));
-
+            Iter_Asp := Find_Aspect (Typ, Aspect_Iterable);
+            if Present (Iter_Asp) then
+               Set_Etype (Def_Id, Get_Cursor_Type (Iter_Asp, Typ));
             else
                Set_Etype (Def_Id, Get_Cursor_Type (Typ));
                Check_Reverse_Iteration (Etype (Iter_Name));
             end if;
 
          end if;
+      end if;
+
+      --  Validate the ghost context of he iterator function used for the
+      --  iterable aspect.
+
+      Iter_Asp := Find_Aspect (Typ, Aspect_Iterable);
+      if Present (Iter_Asp) then
+         Assoc := First (Component_Associations (Expression (Iter_Asp)));
+         while Present (Assoc) loop
+            Iter_Func := Expression (Assoc);
+            if Nkind (Iter_Func) in N_Has_Entity
+               and then Present (Entity (Iter_Func))
+               and then Is_Ghost_Entity (Entity (Iter_Func))
+            then
+               Check_Ghost_Context (Entity (Iter_Func), Parent (N));
+            end if;
+
+            Next (Assoc);
+         end loop;
       end if;
 
       --  Preanalyze the filter. Expansion will take place when enclosing
