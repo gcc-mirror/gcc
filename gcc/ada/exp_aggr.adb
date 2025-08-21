@@ -6984,7 +6984,9 @@ package body Exp_Aggr is
                --  Choice is a single discrete value
 
                elsif Is_Discrete_Type (Etype (Choice)) then
-                  Update_Choices (Choice, Choice);
+                  if Is_Static_Expression (Choice) then
+                     Update_Choices (Choice, Choice);
+                  end if;
 
                   Temp_Siz_Exp := Make_Integer_Literal (Loc, 1);
                   Set_Is_Static_Expression (Temp_Siz_Exp);
