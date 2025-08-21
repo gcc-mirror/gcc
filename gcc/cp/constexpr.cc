@@ -7659,6 +7659,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  ctx->global->destroy_value (object);
 	  return void_node;
 	}
+
+      /* Ending the lifetime of a const object is OK.  */
+      const_object_being_modified = NULL_TREE;
     }
 
   type = TREE_TYPE (object);
