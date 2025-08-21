@@ -40,7 +40,7 @@ Michael Meissner                                <gnu@the-meissners.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
 Joseph Myers                                    <josmyers@redhat.com>
-Richard Sandiford                               <richard.sandiford@arm.com>
+Richard Sandiford                               <rdsandiford@googlemail.com>
 Bernd Schmidt                                   <bernds_cb1@t-online.de>
 Ian Lance Taylor                                <ian@airs.com>
 Jim Wilson                                      <wilson@tuliptree.org>
@@ -56,7 +56,6 @@ docs, and the testsuite related to that.
 
 aarch64 ldp/stp         Alex Coplan             <alex.coplan@arm.com>
 aarch64 port            Richard Earnshaw        <richard.earnshaw@arm.com>
-aarch64 port            Richard Sandiford       <richard.sandiford@arm.com>
 aarch64 port            Tamar Christina         <tamar.christina@arm.com>
 aarch64 port            Kyrylo Tkachov          <ktkachov@nvidia.com>
 alpha port              Richard Henderson       <rth@gcc.gnu.org>
