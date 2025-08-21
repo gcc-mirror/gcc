@@ -155,11 +155,8 @@ UnifyRules::emit_abi_mismatch (const TyTy::FnType &expected,
 TyTy::BaseType *
 UnifyRules::go ()
 {
-  TyTy::BaseType *ltype = lhs.get_ty ();
-  TyTy::BaseType *rtype = rhs.get_ty ();
-
-  ltype = lhs.get_ty ()->destructure ();
-  rtype = rhs.get_ty ()->destructure ();
+  TyTy::BaseType *ltype = lhs.get_ty ()->destructure ();
+  TyTy::BaseType *rtype = rhs.get_ty ()->destructure ();
 
   rust_debug ("unify::go ltype={%s} rtype={%s}", ltype->debug_str ().c_str (),
 	      rtype->debug_str ().c_str ());

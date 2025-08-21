@@ -629,10 +629,9 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       if (s->is_unit_check_needed () && !resolved->is_unit ())
 	{
 	  auto unit = TyTy::TupleType::get_unit_type ();
-	  resolved
-	    = unify_site (s->get_mappings ().get_hirid (),
-			  TyTy::TyWithLocation (unit),
-			  TyTy::TyWithLocation (resolved), s->get_locus ());
+	  unify_site (s->get_mappings ().get_hirid (),
+		      TyTy::TyWithLocation (unit),
+		      TyTy::TyWithLocation (resolved), s->get_locus ());
 	}
     }
 

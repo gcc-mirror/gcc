@@ -3566,7 +3566,7 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
     {
       const ParamType &pp = *static_cast<const ParamType *> (resolved);
       if (pp.can_resolve ())
-	resolved = pp.resolve ();
+	pp.resolve ();
     }
 
   // this is the new subst that this needs to pass

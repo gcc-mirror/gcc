@@ -517,9 +517,8 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	      const auto &predicate
 		= impl_block_ty->lookup_predicate (trait_ref.get_defid ());
 	      if (!predicate.is_error ())
-		impl_block_ty
-		  = associated->setup_associated_types (prev_segment, predicate,
-							nullptr, false);
+		associated->setup_associated_types (prev_segment, predicate,
+						    nullptr, false);
 	    }
 	}
 
