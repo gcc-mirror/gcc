@@ -78,7 +78,6 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
 	  TyTy::TyVar implicit_var
 	    = TyTy::TyVar::get_implicit_infer_var (locus);
 	  try_result = CoercionResult{{}, implicit_var.get_tyty ()};
-	  return true;
 	}
       else
 	{
@@ -99,9 +98,8 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
 	    try_result = CoercionResult{{}, receiver};
 	  else
 	    try_result = CoercionResult{{}, expected->clone ()};
-
-	  return true;
 	}
+      return true;
     }
 
   // unsize
