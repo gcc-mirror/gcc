@@ -294,6 +294,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     stop_source _M_stop_source;
     thread _M_thread;
   };
+
+  /// @cond undocumented
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // jthread into a variant.
+    template<>
+      struct _Never_valueless_alt<std::jthread>
+      : true_type
+      { };
+  }  // namespace __detail::__variant
+  /// @endcond
 #endif // __cpp_lib_jthread
 
 #ifdef __cpp_lib_formatters // C++ >= 23
