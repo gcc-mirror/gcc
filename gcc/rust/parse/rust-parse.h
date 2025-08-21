@@ -397,7 +397,7 @@ private:
 	      AST::AttrVec outer_attrs = AST::AttrVec (),
 	      ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::Expr>
-  null_denotation (const_TokenPtr t, AST::AttrVec outer_attrs = AST::AttrVec (),
+  null_denotation (AST::AttrVec outer_attrs = AST::AttrVec (),
 		   ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::Expr>
   null_denotation_path (AST::PathInExpression path, AST::AttrVec outer_attrs,
@@ -602,7 +602,6 @@ private:
   std::unique_ptr<AST::CallExpr>
   parse_struct_expr_tuple_partial (AST::PathInExpression path,
 				   AST::AttrVec outer_attrs);
-  AST::PathInExpression parse_path_in_expression_pratt (const_TokenPtr tok);
   std::unique_ptr<AST::ClosureExpr>
   parse_closure_expr_pratt (const_TokenPtr tok,
 			    AST::AttrVec outer_attrs = AST::AttrVec ());

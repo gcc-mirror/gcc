@@ -12155,20 +12155,12 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 	return nullptr;
     }
 
-  if (current_token->get_id () == LEFT_SHIFT)
-    {
-      lexer.split_current_token (LEFT_ANGLE, LEFT_ANGLE);
-      current_token = lexer.peek_token ();
-    }
-
-  lexer.skip_token ();
-
   ParseRestrictions null_denotation_restrictions = restrictions;
   null_denotation_restrictions.expr_can_be_stmt = false;
 
   // parse null denotation (unary part of expression)
   std::unique_ptr<AST::Expr> expr
-    = null_denotation (current_token, {}, null_denotation_restrictions);
+    = null_denotation ({}, null_denotation_restrictions);
 
   return left_denotations (std::move (expr), right_binding_power,
 			   std::move (outer_attrs), restrictions);
@@ -12236,8 +12228,7 @@ Parser<ManagedTokenSource>::parse_expr (AST::AttrVec outer_attrs,
 /* Determines action to take when finding token at beginning of expression. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Expr>
-Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
-					     AST::AttrVec outer_attrs,
+Parser<ManagedTokenSource>::null_denotation (AST::AttrVec outer_attrs,
 					     ParseRestrictions restrictions)
 {
   /* note: tok is previous character in input stream, not current one, as
@@ -12247,6 +12238,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
    * denotation and then a left denotation), null denotations handle primaries
    * and unary operands (but only prefix unary operands) */
 
+  auto tok = lexer.peek_token ();
+
   switch (tok->get_id ())
     {
     case IDENTIFIER:
@@ -12255,28 +12248,26 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
     case DOLLAR_SIGN:
     case CRATE:
     case SUPER:
+    case SCOPE_RESOLUTION:
       {
 	// DEBUG
 	rust_debug ("beginning null denotation identifier handling");
 
 	/* best option: parse as path, then extract identifier, macro,
 	 * struct/enum, or just path info from it */
-	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
+	AST::PathInExpression path = parse_path_in_expression ();
 
 	return null_denotation_path (std::move (path), std::move (outer_attrs),
 				     restrictions);
       }
-    case SCOPE_RESOLUTION:
-      {
-	// TODO: fix: this is for global paths, i.e. std::string::whatever
-	Error error (tok->get_locus (),
-		     "found null denotation scope resolution operator, and "
-		     "have not written handling for it");
-	add_error (std::move (error));
-
-	return nullptr;
-      }
     default:
+      if (tok->get_id () == LEFT_SHIFT)
+	{
+	  lexer.split_current_token (LEFT_ANGLE, LEFT_ANGLE);
+	  tok = lexer.peek_token ();
+	}
+
+      lexer.skip_token ();
       return null_denotation_not_path (std::move (tok), std::move (outer_attrs),
 				       restrictions);
     }
@@ -14440,119 +14431,6 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
   return std::unique_ptr<AST::CallExpr> (
     new AST::CallExpr (std::move (pathExpr), std::move (exprs),
 		       std::move (outer_attrs), path_locus));
-}
-
-/* Parses a path in expression with the first token passed as a parameter (as
- * it is skipped in token stream). Note that this only parses segment-first
- * paths, not global ones. */
-template <typename ManagedTokenSource>
-AST::PathInExpression
-Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
-{
-  // HACK-y way of making up for pratt-parsing consuming first token
-
-  // DEBUG
-  rust_debug ("current peek token when starting path pratt parse: '%s'",
-	      lexer.peek_token ()->get_token_description ());
-
-  // create segment vector
-  std::vector<AST::PathExprSegment> segments;
-
-  std::string initial_str;
-
-  switch (tok->get_id ())
-    {
-    case IDENTIFIER:
-      initial_str = tok->get_str ();
-      break;
-    case SUPER:
-      initial_str = Values::Keywords::SUPER;
-      break;
-    case SELF:
-      initial_str = Values::Keywords::SELF;
-      break;
-    case SELF_ALIAS:
-      initial_str = Values::Keywords::SELF_ALIAS;
-      break;
-    case CRATE:
-      initial_str = Values::Keywords::CRATE;
-      break;
-    case DOLLAR_SIGN:
-      if (lexer.peek_token ()->get_id () == CRATE)
-	{
-	  initial_str = "$crate";
-	  break;
-	}
-      gcc_fallthrough ();
-    default:
-      add_error (Error (tok->get_locus (),
-			"unrecognised token %qs in path in expression",
-			tok->get_token_description ()));
-
-      return AST::PathInExpression::create_error ();
-    }
-
-  // parse required initial segment
-  AST::PathExprSegment initial_segment (initial_str, tok->get_locus ());
-  // parse generic args (and turbofish), if they exist
-  /* use lookahead to determine if they actually exist (don't want to
-   * accidently parse over next ident segment) */
-  if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION
-      && lexer.peek_token (1)->get_id () == LEFT_ANGLE)
-    {
-      // skip scope resolution
-      lexer.skip_token ();
-
-      AST::GenericArgs generic_args = parse_path_generic_args ();
-
-      initial_segment
-	= AST::PathExprSegment (AST::PathIdentSegment (initial_str,
-						       tok->get_locus ()),
-				tok->get_locus (), std::move (generic_args));
-    }
-  if (initial_segment.is_error ())
-    {
-      // skip after somewhere?
-      // don't necessarily throw error but yeah
-
-      // DEBUG
-      rust_debug ("initial segment is error - returning null");
-
-      return AST::PathInExpression::create_error ();
-    }
-  segments.push_back (std::move (initial_segment));
-
-  // parse optional segments (as long as scope resolution operator exists)
-  const_TokenPtr t = lexer.peek_token ();
-  while (t->get_id () == SCOPE_RESOLUTION)
-    {
-      // skip scope resolution operator
-      lexer.skip_token ();
-
-      // parse the actual segment - it is an error if it doesn't exist now
-      AST::PathExprSegment segment = parse_path_expr_segment ();
-      if (segment.is_error ())
-	{
-	  // skip after somewhere?
-	  Error error (t->get_locus (),
-		       "could not parse path expression segment");
-	  add_error (std::move (error));
-
-	  return AST::PathInExpression::create_error ();
-	}
-
-      segments.push_back (std::move (segment));
-
-      t = lexer.peek_token ();
-    }
-
-  // DEBUG:
-  rust_debug (
-    "current token (just about to return path to null denotation): '%s'",
-    lexer.peek_token ()->get_token_description ());
-
-  return AST::PathInExpression (std::move (segments), {}, tok->get_locus (),
-				false);
 }
 
 // Parses a closure expression with pratt parsing (from null denotation).
