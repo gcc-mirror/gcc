@@ -14149,6 +14149,9 @@ package body Sem_Prag is
             Expr    : Node_Id;
             Nam_Arg : Node_Id;
 
+            Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
+            --  Save the Ghost-related attributes to restore on exit
+
             --------------------------
             -- Inferred_String_Type --
             --------------------------
@@ -14226,6 +14229,10 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  Set the ghost mode before analyzing all of the arguments
+
+            Set_Ghost_Mode (N);
+
             --  Continue the processing with last argument removed for now
 
             Check_Arg_Is_Identifier (Arg1);
@@ -14271,6 +14278,8 @@ package body Sem_Prag is
                   Next (Arg);
                end loop;
             end if;
+
+            Restore_Ghost_Region (Saved_Ghost_Config);
          end Annotate;
 
          -------------------------------------------------
