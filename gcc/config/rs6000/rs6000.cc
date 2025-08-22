@@ -10322,7 +10322,7 @@ can_be_rotated_to_negative_lis (HOST_WIDE_INT c, int *rot)
      rotated over the highest bit.  */
   unsigned HOST_WIDE_INT uc = c;
   int pos_one = clz_hwi ((HOST_WIDE_INT) (uc << 16) >> 16);
-  if (pos_one != 0)
+  if (pos_one > 0 && pos_one < HOST_BITS_PER_WIDE_INT)
     {
       middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
       int middle_ones = clz_hwi (~(uc << pos_one));
@@ -10585,7 +10585,7 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c, int *num_insns)
     {
       /* li/lis; rldicX */
       unsigned HOST_WIDE_INT imm = (c | ~mask);
-      if (shift != 0)
+      if (shift > 0 && shift < HOST_BITS_PER_WIDE_INT)
 	imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
 
       count_or_emit_insn (temp, GEN_INT (imm));
