@@ -1851,6 +1851,9 @@ synthesize_method (tree fndecl)
   finish_function_body (stmt);
   finish_function (/*inline_p=*/false);
 
+  /* Remember that we were defined in this module.  */
+  set_instantiating_module (fndecl);
+
   if (!DECL_DELETED_FN (fndecl))
     expand_or_defer_fn (fndecl);
 
