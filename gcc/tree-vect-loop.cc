@@ -6881,16 +6881,17 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (!type_has_mode_precision_p (type))
     return false;
 
-  stmt_vec_info reduc_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
-
   /* TODO: Support lane-reducing operation that does not directly participate
      in loop reduction.  */
-  if (!reduc_info || STMT_VINFO_REDUC_IDX (stmt_info) < 0)
+  if (!STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
+      || STMT_VINFO_REDUC_IDX (stmt_info) < 0)
     return false;
+
+  stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
 
   /* Lane-reducing pattern inside any inner loop of LOOP_VINFO is not
      recoginized.  */
-  gcc_assert (STMT_VINFO_DEF_TYPE (reduc_info) == vect_reduction_def);
+  gcc_assert (!nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt_info));
   gcc_assert (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION);
 
   for (int i = 0; i < (int) gimple_num_ops (stmt) - 1; i++)
@@ -7281,7 +7282,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   tree vectype_out = SLP_TREE_VECTYPE (slp_for_stmt_info);
   STMT_VINFO_REDUC_VECTYPE (reduc_info) = vectype_out;
-  STMT_VINFO_REDUC_VECTYPE_IN (reduc_info) = vectype_in;
 
   gimple_match_op op;
   if (!gimple_extract_op (stmt_info->stmt, &op))
@@ -8205,7 +8205,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	    }
 	}
 
-      tree reduc_vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (reduc_info);
+      tree reduc_vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
       gcc_assert (reduc_vectype_in);
 
       unsigned effec_reduc_ncopies
