@@ -644,7 +644,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   {"cpu_64", "%{" OPT_ARCH64 ":%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}}" }, \
   {"arch", "%{!march=*:-march=%(VALUE)}"},			   \
   {"arch_32", "%{" OPT_ARCH32 ":%{!march=*:-march=%(VALUE)}}"},	   \
-  {"arch_64", "%{" OPT_ARCH64 ":%{!march=*:-march=%(VALUE)}}"},
+  {"arch_64", "%{" OPT_ARCH64 ":%{!march=*:-march=%(VALUE)}}"},    \
+  {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
 /* Specs for the compiler proper */
 

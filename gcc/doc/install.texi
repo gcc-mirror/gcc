@@ -1254,6 +1254,9 @@ descriptor-based dialect.
 For RISC-V targets, possible values for @var{dialect} are @code{trad} or
 @code{desc}, which select between the traditional GNU dialect and the GNU TLS
 descriptor-based dialect.
+For i386, x86-64 targets, possible values for @var{dialect} are @code{gnu} or
+@code{gnu2}, which select between the original GNU dialect and the GNU TLS
+descriptor-based dialect.
 
 @item --enable-multiarch
 Specify whether to enable or disable multiarch support.  The default is
