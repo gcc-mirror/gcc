@@ -3796,14 +3796,20 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 	{
 	  if (insn == BB_END (bb))
 	    {
-	      /* This must be a basic block with only a label:
+	      /* This must be the beginning basic block:
+
+		 (note 4 0 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+		 (note 2 4 26 2 NOTE_INSN_FUNCTION_BEG)
+
+		 or a basic block with only a label:
 
 		 (code_label 78 11 77 3 14 (nil) [1 uses])
 		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
 
 	       */
 	      gcc_assert (NOTE_P (insn)
-			  && NOTE_KIND (insn) == NOTE_INSN_BASIC_BLOCK);
+			  && (NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG
+			      || NOTE_KIND (insn) == NOTE_INSN_BASIC_BLOCK));
 	      insn = NULL;
 	      break;
 	    }
@@ -3842,8 +3848,14 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 	    }
 	  else
 	    {
-	      /* Emit the TLS call after NOTE_INSN_BASIC_BLOCK in a
-		 basic block with only a label:
+	      /* Emit the TLS call after NOTE_INSN_FUNCTION_BEG in the
+		 beginning basic block:
+
+		 (note 4 0 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+		 (note 2 4 26 2 NOTE_INSN_FUNCTION_BEG)
+
+		 or after NOTE_INSN_BASIC_BLOCK a basic block with only
+		 a label:
 
 		 (code_label 78 11 77 3 14 (nil) [1 uses])
 		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
