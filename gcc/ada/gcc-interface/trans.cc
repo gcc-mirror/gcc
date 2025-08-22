@@ -6893,9 +6893,22 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	gnat_to_gnu_entity (gnat_temp,
-			    gnat_to_gnu (Renamed_Object (gnat_temp)),
-			    true);
+	{
+	  gnu_expr = gnat_to_gnu (Renamed_Object (gnat_temp));
+
+	  /* The elaboration of object renamings present in the source code
+	     never needs to be deferred.  But regular objects may be turned
+	     into renamings during expansion and their elaboration may need
+	     to be deferred, in which case we expect the renamed references
+	     to have been stabilized, so we do not do it again here.  */
+	  if (Present (Freeze_Node (gnat_temp)))
+	    {
+	      gcc_assert (!Comes_From_Source (gnat_node));
+	      save_gnu_tree (gnat_node, gnu_expr, true);
+	    }
+	  else
+	    gnat_to_gnu_entity (gnat_temp, gnu_expr, true);
+	}
       break;
 
     case N_Exception_Renaming_Declaration:
@@ -9818,10 +9831,15 @@ process_freeze_entity (Node_Id gnat_node)
     }
   else
     {
+      /* For an object whose elaboration is deferred, the GCC tree of the
+	 declaration, if any, is the initialization expression.  */
+      const Node_Id gnat_decl = Declaration_Node (gnat_entity);
       tree gnu_init
-	= (Nkind (Declaration_Node (gnat_entity)) == N_Object_Declaration
-	   && present_gnu_tree (Declaration_Node (gnat_entity)))
-	  ? get_gnu_tree (Declaration_Node (gnat_entity)) : NULL_TREE;
+	= (Nkind (gnat_decl) == N_Object_Declaration
+	   || Nkind (gnat_decl) == N_Object_Renaming_Declaration)
+	  && Present (Freeze_Node (gnat_entity))
+	  && present_gnu_tree (gnat_decl)
+	  ? get_gnu_tree (gnat_decl) : NULL_TREE;
 
       gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, true);
     }
