@@ -10280,16 +10280,17 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
 	  slp_tree phis_node = slp_node_instance->reduc_phis;
+	  stmt_info = SLP_TREE_REPRESENTATIVE (phis_node);
 	  for (auto exit : get_loop_exit_edges (LOOP_VINFO_LOOP (loop_vinfo)))
 	    if (exit != LOOP_VINFO_IV_EXIT (loop_vinfo))
 	      {
-		vect_create_epilog_for_reduction (loop_vinfo, reduc_info,
+		vect_create_epilog_for_reduction (loop_vinfo, stmt_info,
 						  phis_node, slp_node_instance,
 						  exit);
 		break;
 	      }
 	  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
-	    vect_create_epilog_for_reduction (loop_vinfo, reduc_info,
+	    vect_create_epilog_for_reduction (loop_vinfo, stmt_info,
 					      phis_node, slp_node_instance,
 					      LOOP_VINFO_IV_EXIT (loop_vinfo));
 	}
