@@ -1467,8 +1467,8 @@ package Einfo is
 
 --    Ghost_Assertion_Level
 --       Assertion level associated with the declaration of the entity. Its
---       value is either Empty for non-ghost entities. Standard_Level_Default
---       for Ghost entities without an assertion level or a user defined
+--       value is either Empty for non-ghost entities, Standard_Level_Default
+--       for Ghost entities without an assertion level, or a user-defined
 --       assertion level.
 
 --    Has_Aliased_Components [implementation base type only]
