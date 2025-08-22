@@ -7,9 +7,9 @@ template<auto V> int Frob () { return int (V); }
 enum { A = (unsigned int)12345, B = 0 };
 template int Frob<A> ();
 template int Frob<B> ();
-// { dg-final { scan-assembler {_Z4FrobITnDaLUej1A12345EEiv:} { target c++20 } } }
+// { dg-final { scan-assembler {_Z4FrobITnDaLUej1A12345EEiv:} { target { c++20 && { ! short_enums } } } } }
 // { dg-final { scan-assembler {_Z4FrobITnDaL8._anon_012345EEiv:} { target c++17_down } } }
-// { dg-final { scan-assembler {_Z4FrobITnDaLUej1A0EEiv:} { target c++20 } } }
+// { dg-final { scan-assembler {_Z4FrobITnDaLUej1A0EEiv:} { target { c++20 && { ! short_enums } } } } }
 // { dg-final { scan-assembler {_Z4FrobITnDaL8._anon_00EEiv:} { target c++17_down } } }
 
 enum { C = 5 } typedef X;
