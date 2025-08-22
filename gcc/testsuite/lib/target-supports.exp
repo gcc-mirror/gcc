@@ -6122,6 +6122,7 @@ foreach { armfunc armflag armdefs } {
 	v6z_arm "-march=armv6z+fp -marm" "__ARM_ARCH_6Z__ && !__thumb__"
 	v6z_thumb "-march=armv6z+fp -mthumb -mfloat-abi=softfp" "__ARM_ARCH_6Z__ && __thumb__"
 	v6m "-march=armv6-m -mthumb -mfloat-abi=soft" __ARM_ARCH_6M__
+	v7 "-march=armv7+fp" __ARM_ARCH_7__
 	v7a "-march=armv7-a+fp" __ARM_ARCH_7A__
 	v7a_arm "-march=armv7-a+fp -marm" "__ARM_ARCH_7A__ && !__thumb__"
 	v7a_fp_hard "-march=armv7-a+fp -mfpu=auto -mfloat-abi=hard" __ARM_ARCH_7A__
