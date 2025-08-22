@@ -88,15 +88,14 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
     {
     case TyTy::TypeKind::POINTER:
       {
-	TyTy::PointerType *ptr = static_cast<TyTy::PointerType *> (expected);
+	auto *ptr = expected->as<TyTy::PointerType> ();
 	try_result = coerce_unsafe_ptr (receiver, ptr, ptr->mutability ());
 	return !try_result.is_error ();
       }
 
     case TyTy::TypeKind::REF:
       {
-	TyTy::ReferenceType *ptr
-	  = static_cast<TyTy::ReferenceType *> (expected);
+	auto *ptr = expected->as<TyTy::ReferenceType> ();
 	try_result
 	  = coerce_borrowed_pointer (receiver, ptr, ptr->mutability ());
 	return !try_result.is_error ();
@@ -272,12 +271,9 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
     {
     case TyTy::TypeKind::REF:
       {
-	TyTy::ReferenceType *from
-	  = static_cast<TyTy::ReferenceType *> (receiver);
-	from_mutbl = from->mutability ();
+	from_mutbl = receiver->as<TyTy::ReferenceType> ()->mutability ();
       }
       break;
-
     default:
       {
 	rust_debug ("coerce_borrowed_pointer -- unify");
