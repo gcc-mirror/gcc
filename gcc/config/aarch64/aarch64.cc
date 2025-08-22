@@ -17770,13 +17770,12 @@ aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
 
    with the single accumulator being read and written multiple times.  */
 static bool
-aarch64_force_single_cycle (vec_info *vinfo, stmt_vec_info stmt_info)
+aarch64_force_single_cycle (vec_info *vinfo, slp_tree node)
 {
-  if (!STMT_VINFO_REDUC_DEF (stmt_info))
+  auto reduc_info = info_for_reduction (as_a <loop_vec_info> (vinfo), node);
+  if (!reduc_info)
     return false;
-
-  auto reduc_info = info_for_reduction (vinfo, stmt_info);
-  return STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
+  return VECT_REDUC_INFO_FORCE_SINGLE_CYCLE (reduc_info);
 }
 
 /* COUNT, KIND and STMT_INFO are the same as for vector_costs::add_stmt_cost
@@ -17803,7 +17802,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	= aarch64_in_loop_reduction_latency (m_vinfo, node,
 					     stmt_info, m_vec_flags);
       if (m_costing_for_scalar
-	  || aarch64_force_single_cycle (m_vinfo, stmt_info))
+	  || aarch64_force_single_cycle (m_vinfo, node))
 	/* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
 	   and then accumulate that, but at the moment the loop-carried
 	   dependency includes all copies.  */

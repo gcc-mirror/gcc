@@ -11560,20 +11560,24 @@ vectorizable_condition (vec_info *vinfo,
   if (code != COND_EXPR)
     return false;
 
-  stmt_vec_info reduc_info = NULL;
-  int reduc_index = -1;
+  int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
   vect_reduction_type reduction_type = TREE_CODE_REDUCTION;
-  bool for_reduction
-    = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)) != NULL;
+  bool nested_cycle_p = false;
+  bool for_reduction = vect_is_reduction (stmt_info);
   if (for_reduction)
     {
       if (SLP_TREE_LANES (slp_node) > 1)
 	return false;
-      reduc_info = info_for_reduction (vinfo, stmt_info);
-      reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-      reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
-      gcc_assert (reduction_type != EXTRACT_LAST_REDUCTION
-		  || reduc_index != -1);
+      /* ???  With a reduction path we do not get at the reduction info from
+	 every stmt, use the conservative default setting then.  */
+      if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
+	{
+	  vect_reduc_info reduc_info
+	    = info_for_reduction (loop_vinfo, slp_node);
+	  reduction_type = VECT_REDUC_INFO_TYPE (reduc_info);
+	  nested_cycle_p = nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
+						  stmt_info);
+	}
     }
   else
     {
@@ -11763,7 +11767,7 @@ vectorizable_condition (vec_info *vinfo,
 				       vec_num, vectype, NULL);
 	    }
 	  /* Extra inactive lanes should be safe for vect_nested_cycle.  */
-	  else if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_nested_cycle)
+	  else if (!nested_cycle_p)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
