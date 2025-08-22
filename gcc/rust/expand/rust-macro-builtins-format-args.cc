@@ -37,39 +37,42 @@ struct FormatArgsParseError
   } kind;
 };
 
-static tl::expected<FormatArgsInput, FormatArgsParseError>
-format_args_parse_arguments (AST::MacroInvocData &invoc)
+static inline tl::expected<std::string, AST::Fragment>
+format_args_parse_expr (location_t invoc_locus, AST::MacroInvocData &invoc,
+			Parser<MacroInvocLexer> &parser,
+			BuiltinMacro macro_kind)
 {
-  MacroInvocLexer lex (invoc.get_delim_tok_tree ().to_token_stream ());
-  Parser<MacroInvocLexer> parser (lex);
+  std::unique_ptr<AST::Expr> format_expr = parser.parse_expr ();
+  rust_assert (format_expr);
 
+  if (format_expr->get_expr_kind () == AST::Expr::Kind::MacroInvocation)
+    {
+      std::vector<std::unique_ptr<AST::MacroInvocation>> pending;
+      pending.emplace_back (
+	static_cast<AST::MacroInvocation *> (format_expr.release ()));
+      return tl::unexpected<AST::Fragment> (
+	make_eager_builtin_invocation (macro_kind, invoc_locus,
+				       invoc.get_delim_tok_tree (),
+				       std::move (pending)));
+    }
+
+  // TODO(Arthur): Clean this up - if we haven't parsed a string literal but a
+  // macro invocation, what do we do here? return a tl::unexpected?
+  rust_assert (format_expr->is_literal ());
+  return static_cast<AST::LiteralExpr &> (*format_expr)
+    .get_literal ()
+    .as_string ();
+}
+
+static inline tl::expected<AST::FormatArguments, FormatArgsParseError>
+format_args_parse_arguments (AST::MacroInvocData &invoc,
+			     Parser<MacroInvocLexer> &parser,
+			     TokenId last_token_id)
+{
   // TODO: check if EOF - return that format_args!() requires at least one
   // argument
 
   auto args = AST::FormatArguments ();
-  auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
-  std::unique_ptr<AST::Expr> format_expr = nullptr;
-
-  // TODO: Handle the case where we're not parsing a string literal (macro
-  // invocation for e.g.)
-  switch (parser.peek_current_token ()->get_id ())
-    {
-    case STRING_LITERAL:
-    case RAW_STRING_LITERAL:
-      format_expr = parser.parse_literal_expr ();
-    default:
-      // do nothing
-      ;
-    }
-
-  rust_assert (format_expr);
-
-  // TODO(Arthur): Clean this up - if we haven't parsed a string literal but a
-  // macro invocation, what do we do here? return a tl::unexpected?
-  auto format_str = static_cast<AST::LiteralExpr &> (*format_expr)
-		      .get_literal ()
-		      .as_string ();
-
   // TODO: Allow implicit captures ONLY if the the first arg is a string literal
   // and not a macro invocation
 
@@ -126,7 +129,7 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
       // we need to skip commas, don't we?
     }
 
-  return FormatArgsInput{std::move (format_str), std::move (args)};
+  return args;
 }
 
 tl::optional<AST::Fragment>
@@ -135,9 +138,24 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
 				   AST::InvocKind semicolon,
 				   AST::FormatArgs::Newline nl)
 {
-  auto input = format_args_parse_arguments (invoc);
+  MacroInvocLexer lex (invoc.get_delim_tok_tree ().to_token_stream ());
+  Parser<MacroInvocLexer> parser (lex);
 
-  if (!input)
+  auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
+
+  auto format_str = format_args_parse_expr (invoc_locus, invoc, parser,
+					    nl == AST::FormatArgs::Newline::Yes
+					      ? BuiltinMacro::FormatArgsNl
+					      : BuiltinMacro::FormatArgs);
+
+  if (!format_str)
+    {
+      return std::move (format_str.error ());
+    }
+
+  auto args = format_args_parse_arguments (invoc, parser, last_token_id);
+
+  if (!args)
     {
       rust_error_at (invoc_locus,
 		     "could not parse arguments to %<format_args!()%>");
@@ -173,7 +191,7 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
 
   bool append_newline = nl == AST::FormatArgs::Newline::Yes;
 
-  auto fmt_str = std::move (input->format_str);
+  auto fmt_str = std::move (format_str.value ());
   if (append_newline)
     fmt_str += '\n';
 
@@ -189,7 +207,7 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   // for creating the `template`
 
   auto fmt_args_node = AST::FormatArgs (invoc_locus, std::move (pieces),
-					std::move (input->args));
+					std::move (args.value ()));
 
   auto expanded
     = Fmt::expand_format_args (fmt_args_node,
