@@ -1,3 +1,20 @@
+2025-08-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/121627
+	* module.cc (create_int_parameter_array):  Avoid NULL
+	pointer dereference and enhance error message.
+
+2025-08-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84122
+	PR fortran/85942
+	* parse.cc (parse_derived): PDT type parameters are not allowed
+	an explicit access specification and must appear before a
+	PRIVATE statement. If a PRIVATE statement is seen, mark all the
+	other components as PRIVATE.
+	* simplify.cc (get_kind): Convert a PDT KIND component into a
+	specification expression using the default initializer.
+
 2025-08-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* intrinsic.texi: Correct the example given for FRACTION.

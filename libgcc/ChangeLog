@@ -1,3 +1,12 @@
+2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/libgcc-eabi.ver: Add __pruabi_softmpyi and
+	__pruabi_softmpyll symbols.
+	* config/pru/t-pru: Add softmpy source files.
+	* config/pru/pru-softmpy.h: New file.
+	* config/pru/softmpyi.c: New file.
+	* config/pru/softmpyll.c: New file.
+
 2025-08-13  Yang Yujie  <yangyujie@loongson.cn>
 
 	PR target/117599

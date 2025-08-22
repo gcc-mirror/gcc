@@ -1,3 +1,14 @@
+2025-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* constexpr.cc (cxx_eval_store_expression): Allow clobber of a const
+	object.
+
+2025-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120757
+	* pt.cc (tsubst_expr) [OFFSET_REF]: Don't tsubst the type.
+
 2025-08-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/121553

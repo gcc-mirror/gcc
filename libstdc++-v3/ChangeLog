@@ -1,3 +1,154 @@
+2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121496
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Do not
+	use _GLIBCXX_TSAN in _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK macro.
+	* configure: Regenerate.
+
+2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121496
+	* include/std/mutex (__timed_mutex_impl::_M_try_wait_until):
+	Change preprocessor condition to use #if instead of #ifdef.
+	(recursive_timed_mutex::_M_clocklock): Likewise.
+	* testsuite/30_threads/timed_mutex/121496.cc: New test.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/120994
+	* include/bits/version.def (aligned_accessor): Add.
+	* include/bits/version.h: Regenerate.
+	* include/std/mdspan (aligned_accessor): New class.
+	* src/c++23/std.cc.in (aligned_accessor): Add.
+	* testsuite/23_containers/mdspan/accessors/generic.cc: Add tests
+	for aligned_accessor.
+	* testsuite/23_containers/mdspan/accessors/aligned_neg.cc: New test.
+	* testsuite/23_containers/mdspan/version.cc: Add test for
+	__cpp_lib_aligned_accessor.
+	* testsuite/23_containers/mdspan/accessors/debug/aligned_access_neg.cc: New file.
+	* testsuite/23_containers/mdspan/accessors/debug/aligned_offset_neg.cc: New file.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/120994
+	* include/bits/align.h (is_sufficiently_aligned): New function.
+	* include/bits/version.def (is_sufficiently_aligned): Add.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory: Add __glibcxx_want_is_sufficiently_aligned.
+	* src/c++23/std.cc.in (is_sufficiently_aligned): Add.
+	* testsuite/20_util/headers/memory/version.cc: Add test for
+	__cpp_lib_is_sufficiently_aligned.
+	* testsuite/20_util/is_sufficiently_aligned/1.cc: New test.
+
+2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121374
+	* include/std/limits (numeric_limits<__float128>::max_digits10):
+	Fix value.
+	* testsuite/18_support/numeric_limits/128bit.cc: Check value.
+
+2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/117294
+	* testsuite/20_util/optional/cons/value_neg.cc: Prune additional
+	output for C++20 and later.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Match
+	additional error for C++20 and later.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/bits/version.def (mdspan): Set value for C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/mdspan (dims): Add.
+	* src/c++23/std.cc.in (dims): Add.
+	* testsuite/23_containers/mdspan/extents/misc.cc: Add tests.
+	* testsuite/23_containers/mdspan/version.cc: Update test.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__static_prod): Delete.
+	(__fwd_partial_prods): Compute at compile-time in O(rank), not
+	O(rank**2).
+	(__rev_partial_prods): Ditto.
+	(__size): Inline __static_prod.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__fwd_partial_prods): Reduce size of the
+	array by 1 element.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__valid_static_extent): Replace
+	numeric_limits with __int_traits.
+	(extents::_S_ctor_explicit): Ditto.
+	(extents::__static_quotient): Ditto.
+	(layout_stride::mapping::mapping): Ditto.
+	(mdspan::size): Ditto.
+	* testsuite/23_containers/mdspan/extents/class_mandates_neg.cc:
+	Update test with additional diagnostics.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (extents::operator==): Replace loop with
+	pack expansion.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__all_static): New function.
+	(__mdspan::_StaticExtents::_S_is_dyn): Inline and eliminate.
+	(__mdspan::_ExtentsStorage::_S_is_dynamic): New method.
+	(__mdspan::_ExtentsStorage::_M_extent): Use _S_is_dynamic.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__fwd_prods): Relax condition for fully-dynamic
+	extents to cover (dyn, ..., dyn, X).
+	(__rev_partial_prods): Analogous for (X, dyn, ..., dyn).
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__all_dynamic): New function.
+	(__mdspan::_StaticExtents::_S_dynamic_index): Convert to method.
+	(__mdspan::_StaticExtents::_S_dynamic_index_inv): Ditto.
+	(__mdspan::_StaticExtents): New specialization for fully dynamic
+	extents.
+	(__mdspan::__fwd_prod): New constexpr if branch to avoid
+	instantiating __fwd_partial_prods.
+	(__mdspan::__rev_prod): Ditto.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__fwd_prod): Optimize
+	for rank <= 2.
+	(__mdspan::__rev_prod): Ditto.
+	(__mdspan::__size): Refactor to use a pre-computed product, not
+	a partial product.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__static_prod): New function.
+	(__mdspan::__fwd_partial_prods): Constexpr array of partial
+	forward products.
+	(__mdspan::__fwd_partial_prods): Same for reverse partial
+	products.
+	(__mdspan::__static_extents_prod): Delete function.
+	(__mdspan::__extents_prod): Renamed from __exts_prod and refactored.
+	include/std/mdspan (__mdspan::__fwd_prod): Compute as the
+	product of pre-computed static static and the product of dynamic
+	extents.
+	(__mdspan::__rev_prod): Ditto.
+
+2025-08-21  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::_StaticExtents): Extract non IndexType
+	related code from _ExtentsStorage.
+	(__mdspan::_ExtentsStorage): Use _StaticExtents.
+	(__mdspan::__static_extents): Return reference to NTTP of _StaticExtents.
+	(__mdspan::__contains_zero): New overload.
+	(__mdspan::__exts_prod, __mdspan::__static_quotient): Use span to avoid
+	copying __sta_exts.
+
 2025-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/104874

@@ -1,3 +1,12 @@
+2025-08-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c/121478
+	* c-fold.cc (c_fully_fold_internal): Fold nullptr_t ==/!= nullptr_t.
+	* c-typeck.cc (convert_arguments): Handle conversion from nullptr_t
+	for varargs.
+	(convert_for_assignment): Handle conversions from nullptr_t to
+	pointer type specially.
+
 2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* c-parser.cc (c_parser_declaration_or_fndef): Use

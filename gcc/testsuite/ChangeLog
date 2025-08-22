@@ -1,3 +1,62 @@
+2025-08-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/121627
+	* gfortran.dg/pr121627.f90: New test.
+
+2025-08-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c/121478
+	* gcc.dg/torture/pr121478-1.c: New test.
+
+2025-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121068
+	* g++.dg/cpp2a/constexpr-dtor18.C: New test.
+
+2025-08-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f16.c: Call
+	check_effective_target_riscv_zvfh_ok rather than
+	check_effective_target_riscv_zvfh.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwmacc-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwmsac-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwnmacc-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwnmsac-run-1-f16.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_riscv_zvfh_ok): Append
+	zvfh instead of v to march.
+	(remove_options_for_riscv_zvfh): Remove duplicate and
+	call remove_ rather than add_options_for_riscv_z_ext.
+
+2025-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121619
+	* gcc.dg/pr121619.c: New test.
+
+2025-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121607
+	* gcc.target/i386/pr121607-1a.c: New test.
+	* gcc.target/i386/pr121607-1b.c: Likewise.
+
+2025-08-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84122
+	PR fortran/85942
+	* gfortran.dg/pdt_38.f03: New test.
+	* gfortran.dg/pdt_39.f03: New test.
+
+2025-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120757
+	* g++.dg/cpp1y/auto-fn66.C: New test.
+
 2025-08-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/121553

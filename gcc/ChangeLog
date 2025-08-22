@@ -1,3 +1,77 @@
+2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.cc (pru_init_libfuncs): Set softmpy libgcc
+	functions for optab multiplication entries if TARGET_OPT_MUL
+	option is not set.
+
+2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config.gcc: Include pru/t-multilib.
+	* config/pru/pru.h (MULTILIB_DEFAULTS): Define.
+	* config/pru/t-multilib: New file.
+
+2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* common/config/pru/pru-common.cc (TARGET_DEFAULT_TARGET_FLAGS):
+	Keep multiplication, FILL and ZERO instructions enabled by
+	default.
+	* config/pru/pru.md (prumov<mode>): Gate code generation on
+	TARGET_OPT_FILLZERO.
+	(mov<mode>): Ditto.
+	(zero_extendqidi2): Ditto.
+	(zero_extendhidi2): Ditto.
+	(zero_extendsidi2): Ditto.
+	(@pru_ior_fillbytes<mode>): Ditto.
+	(@pru_and_zerobytes<mode>): Ditto.
+	(@<code>di3): Ditto.
+	(mulsi3): Gate code generation on TARGET_OPT_MUL.
+	* config/pru/pru.opt: Add mmul and mfillzero options.
+	* config/pru/pru.opt.urls: Regenerate.
+	* config/rl78/rl78.opt.urls: Regenerate.
+	* doc/invoke.texi: Document new options.
+
+2025-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/121619
+	* rtl-ssa/functions.h (function_info::commit_make_use_available):
+	Declare.
+	* rtl-ssa/blocks.cc (function_info::commit_make_use_available):
+	New function.
+	* rtl-ssa/changes.cc (function_info::apply_changes_to_insn): Use it.
+
+2025-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111494
+	* gimple-fold.h (arith_code_with_undefined_signed_overflow): Declare.
+	* gimple-fold.cc (arith_code_with_undefined_signed_overflow): Export.
+	* tree-vect-stmts.cc (vectorizable_operation): Use unsigned
+	arithmetic for operations participating in a reduction.
+
+2025-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121607
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Emit the
+	TLS call after NOTE_INSN_BASIC_BLOCK in a basic block with only
+	a label.
+
+2025-08-21  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*btrue_INT_MIN):
+	Change the branch insn condition to test for a negative number
+	rather than testing for the MSB.
+
+2025-08-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_phi): Take bb_vec_info.
+	(vectorizable_early_exit): Take loop_vec_info.
+	* tree-vect-loop.cc (vectorizable_phi): Adjust.
+	* tree-vect-slp.cc (vect_slp_analyze_operations): Likewise.
+	(vectorize_slp_instance_root_stmt): Likewise.
+	* tree-vect-stmts.cc (vectorizable_early_exit): Likewise.
+	(vect_transform_stmt): Likewise.
+	(vect_analyze_stmt): Merge the sequences of vectorizable_*
+	where common.
+
 2025-08-20  Qing Zhao  <qing.zhao@oracle.com>
 
 	* common.opt.urls: Regenerate.
