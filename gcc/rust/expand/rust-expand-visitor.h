@@ -19,6 +19,7 @@
 #ifndef RUST_EXPAND_VISITOR_H
 #define RUST_EXPAND_VISITOR_H
 
+#include "rust-ast-pointer-visitor.h"
 #include "rust-ast-visitor.h"
 #include "rust-item.h"
 #include "rust-macro-expand.h"
@@ -36,7 +37,7 @@ bool is_derive (AST::Attribute &attr);
  */
 bool is_builtin (AST::Attribute &attr);
 
-class ExpandVisitor : public AST::DefaultASTVisitor
+class ExpandVisitor : public AST::PointerVisitor
 {
 public:
   ExpandVisitor (MacroExpander &expander)
@@ -46,7 +47,28 @@ public:
   /* Expand all of the macro invocations currently contained in a crate */
   void go (AST::Crate &crate);
 
-  using AST::DefaultASTVisitor::visit;
+  using AST::PointerVisitor::reseat;
+  using AST::PointerVisitor::visit;
+
+  void reseat (std::unique_ptr<AST::Expr> &ptr) override
+  {
+    maybe_expand_expr (ptr);
+  }
+
+  void reseat (std::unique_ptr<AST::Type> &ptr) override
+  {
+    maybe_expand_type (ptr);
+  }
+
+  void reseat (std::unique_ptr<AST::TypeNoBounds> &ptr) override
+  {
+    maybe_expand_type (ptr);
+  }
+
+  void reseat (std::unique_ptr<AST::Pattern> &ptr) override
+  {
+    maybe_expand_pattern (ptr);
+  }
 
   /**
    * Maybe expand a macro invocation in lieu of an expression, type or pattern.
@@ -214,7 +236,6 @@ public:
   void visit (AST::AttrInputMacro &) override;
   void visit (AST::MetaItemLitExpr &) override;
   void visit (AST::MetaItemPathExpr &) override;
-  void visit (AST::ErrorPropagationExpr &expr) override;
   void visit (AST::ArithmeticOrLogicalExpr &expr) override;
   void visit (AST::ComparisonExpr &expr) override;
   void visit (AST::LazyBooleanExpr &expr) override;
@@ -225,7 +246,6 @@ public:
   void visit (AST::StructExprStruct &expr) override;
 
   void visit (AST::CallExpr &expr) override;
-  void visit (AST::MethodCallExpr &expr) override;
   void visit (AST::ClosureExprInner &expr) override;
 
   void visit (AST::BlockExpr &expr) override;
@@ -236,7 +256,6 @@ public:
   void visit (AST::IfExprConseqElse &expr) override;
   void visit (AST::IfLetExpr &expr) override;
   void visit (AST::IfLetExprConseqElse &expr) override;
-  void visit (AST::MatchExpr &expr) override;
   void visit (AST::TupleExpr &expr) override;
   void visit (AST::TypeParam &param) override;
   void visit (AST::LifetimeWhereClauseItem &) override;

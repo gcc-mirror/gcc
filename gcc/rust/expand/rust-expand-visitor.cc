@@ -598,12 +598,6 @@ ExpandVisitor::visit (AST::MetaItemPathExpr &)
 {}
 
 void
-ExpandVisitor::visit (AST::ErrorPropagationExpr &expr)
-{
-  visit (expr.get_propagating_expr ());
-}
-
-void
 ExpandVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
   maybe_expand_expr (expr.get_left_expr_ptr ());
@@ -659,15 +653,6 @@ void
 ExpandVisitor::visit (AST::CallExpr &expr)
 {
   visit (expr.get_function_expr ());
-
-  for (auto &param : expr.get_params ())
-    maybe_expand_expr (param);
-}
-
-void
-ExpandVisitor::visit (AST::MethodCallExpr &expr)
-{
-  visit (expr.get_receiver_expr ());
 
   for (auto &param : expr.get_params ())
     maybe_expand_expr (param);
@@ -737,25 +722,6 @@ ExpandVisitor::visit (AST::IfLetExprConseqElse &expr)
 
   visit (expr.get_if_block ());
   visit (expr.get_else_block ());
-}
-
-void
-ExpandVisitor::visit (AST::MatchExpr &expr)
-{
-  visit (expr.get_scrutinee_expr ());
-
-  for (auto &match_case : expr.get_match_cases ())
-    {
-      auto &arm = match_case.get_arm ();
-
-      for (auto &pattern : arm.get_patterns ())
-	maybe_expand_pattern (pattern);
-
-      if (arm.has_match_arm_guard ())
-	maybe_expand_expr (arm.get_guard_expr_ptr ());
-
-      maybe_expand_expr (match_case.get_expr_ptr ());
-    }
 }
 
 void
