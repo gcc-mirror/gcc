@@ -29,7 +29,6 @@
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-macro-expand.h"
-#include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
 #include "rust-privacy-check.h"
@@ -46,7 +45,6 @@
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
 #include "rust-attributes.h"
-#include "rust-early-name-resolver.h"
 #include "rust-name-resolution-context.h"
 #include "rust-early-name-resolver-2.0.h"
 #include "rust-late-name-resolver-2.0.h"
@@ -643,10 +641,7 @@ Session::compile_crate (const char *filename)
     return;
 
   // resolution pipeline stage
-  if (flag_name_resolution_2_0)
-    Resolver2_0::Late (name_resolution_ctx).go (parsed_crate);
-  else
-    Resolver::NameResolution::Resolve (parsed_crate);
+  Resolver2_0::Late (name_resolution_ctx).go (parsed_crate);
 
   if (options.dump_option_enabled (CompileOptions::RESOLUTION_DUMP))
     dump_name_resolution (name_resolution_ctx);
@@ -943,24 +938,17 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
     {
       CfgStrip (cfg).go (crate);
       // Errors might happen during cfg strip pass
-      bool visitor_dirty = false;
 
-      if (flag_name_resolution_2_0)
-	{
-	  Resolver2_0::Early early (ctx);
-	  early.go (crate);
-	  macro_errors = early.get_macro_resolve_errors ();
-	  visitor_dirty = early.is_dirty ();
-	}
-      else
-	Resolver::EarlyNameResolver ().go (crate);
+      Resolver2_0::Early early (ctx);
+      early.go (crate);
+      macro_errors = early.get_macro_resolve_errors ();
 
       if (saw_errors ())
 	break;
 
       ExpandVisitor (expander).go (crate);
 
-      fixed_point_reached = !expander.has_changed () && !visitor_dirty;
+      fixed_point_reached = !expander.has_changed () && !early.is_dirty ();
       expander.reset_changed_state ();
       iterations++;
 
@@ -995,8 +983,7 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
       // HACK: we may need a final TopLevel pass
       // however, this should not count towards the recursion limit
       // and we don't need a full Early pass
-      if (flag_name_resolution_2_0)
-	Resolver2_0::TopLevel (ctx).go (crate);
+      Resolver2_0::TopLevel (ctx).go (crate);
     }
 
   // error reporting - check unused macros, get missing fragment specifiers
@@ -1191,14 +1178,6 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   mappings.insert_attribute_proc_macros (crate_num, attribute_macros);
   mappings.insert_bang_proc_macros (crate_num, bang_macros);
   mappings.insert_derive_proc_macros (crate_num, derive_macros);
-
-  // if flag_name_resolution_2_0 is enabled
-  // then we perform resolution later
-  if (!flag_name_resolution_2_0)
-    {
-      // name resolve it
-      Resolver::NameResolution::Resolve (parsed_crate);
-    }
 
   // always restore the crate_num
   mappings.set_current_crate (saved_crate_num);
