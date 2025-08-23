@@ -7745,7 +7745,7 @@ extern void module_add_import_initializers ();
 /* Where the namespace-scope decl was originally declared.  */
 extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
-extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
+extern int get_originating_module (tree, bool global_m1 = false) ATTRIBUTE_PURE;
 extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 extern void check_module_decl_linkage (tree);
 

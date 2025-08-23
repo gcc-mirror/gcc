@@ -20833,8 +20833,9 @@ path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
 {
   gcc_checking_assert (modules_p ());
 
-  if (!tinst)
+  if (!tinst || TREE_CODE (tinst->tldcl) == TEMPLATE_FOR_STMT)
     {
+      gcc_assert (!tinst || !tinst->next);
       /* Not inside an instantiation, just the regular case.  */
       *path_map_p = nullptr;
       return get_import_bitmap ();
