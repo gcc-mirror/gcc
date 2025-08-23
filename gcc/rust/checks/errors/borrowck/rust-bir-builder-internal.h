@@ -24,7 +24,6 @@
 #include "rust-hir-item.h"
 #include "rust-hir-type-check.h"
 #include "rust-hir-visitor.h"
-#include "rust-name-resolver.h"
 #include "rust-bir.h"
 #include "rust-bir-free-region.h"
 #include "rust-immutable-name-resolution-context.h"
@@ -75,7 +74,7 @@ struct BuilderContext
 
   // External context.
   Resolver::TypeCheckContext &tyctx;
-  Resolver::Resolver &resolver;
+  const Resolver2_0::NameResolutionContext &resolver;
 
   // BIR output
   BasicBlocks basic_blocks;
@@ -104,7 +103,7 @@ struct BuilderContext
 public:
   BuilderContext ()
     : tyctx (*Resolver::TypeCheckContext::get ()),
-      resolver (*Resolver::Resolver::get ())
+      resolver (Resolver2_0::ImmutableNameResolutionContext::get ().resolver ())
   {
     basic_blocks.emplace_back (); // StartBB
   }
@@ -403,69 +402,31 @@ protected: // HIR resolution helpers
 
   template <typename T> NodeId resolve_label (T &expr)
   {
-    NodeId resolved_label;
-    if (flag_name_resolution_2_0)
-      {
-	auto &nr_ctx
-	  = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-	auto res = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
-	rust_assert (res.has_value ());
-	resolved_label = res.value ();
-      }
-    else
-      {
-	bool ok = ctx.resolver.lookup_resolved_label (
-	  expr.get_mappings ().get_nodeid (), &resolved_label);
-	rust_assert (ok);
-      }
-    return resolved_label;
+    auto res = ctx.resolver.lookup (expr.get_mappings ().get_nodeid ());
+    rust_assert (res.has_value ());
+    return res.value ();
   }
 
   template <typename T> PlaceId resolve_variable (T &variable)
   {
-    NodeId variable_id;
-    if (flag_name_resolution_2_0)
-      {
-	auto &nr_ctx
-	  = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-	auto res = nr_ctx.lookup (variable.get_mappings ().get_nodeid ());
-	rust_assert (res.has_value ());
-	variable_id = res.value ();
-      }
-    else
-      {
-	bool ok = ctx.resolver.lookup_resolved_name (
-	  variable.get_mappings ().get_nodeid (), &variable_id);
-	rust_assert (ok);
-      }
-    return ctx.place_db.lookup_variable (variable_id);
+    auto res = ctx.resolver.lookup (variable.get_mappings ().get_nodeid ());
+    rust_assert (res.has_value ());
+    return ctx.place_db.lookup_variable (res.value ());
   }
 
   template <typename T>
   PlaceId resolve_variable_or_fn (T &variable, TyTy::BaseType *ty)
   {
     ty = (ty) ? ty : lookup_type (variable);
+
     // Unlike variables,
     // functions do not have to be declared in PlaceDB before use.
-    NodeId variable_id;
-    if (flag_name_resolution_2_0)
-      {
-	auto &nr_ctx
-	  = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-	auto res = nr_ctx.lookup (variable.get_mappings ().get_nodeid ());
-	rust_assert (res.has_value ());
-	variable_id = res.value ();
-      }
-    else
-      {
-	bool ok = ctx.resolver.lookup_resolved_name (
-	  variable.get_mappings ().get_nodeid (), &variable_id);
-	rust_assert (ok);
-      }
     if (ty->is<TyTy::FnType> ())
       return ctx.place_db.get_constant (ty);
-    else
-      return ctx.place_db.lookup_or_add_variable (variable_id, ty);
+
+    auto res = ctx.resolver.lookup (variable.get_mappings ().get_nodeid ());
+    rust_assert (res.has_value ());
+    return ctx.place_db.lookup_or_add_variable (res.value (), ty);
   }
 
 protected: // Implicit conversions.
