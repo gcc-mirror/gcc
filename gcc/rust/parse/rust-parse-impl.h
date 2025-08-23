@@ -13032,12 +13032,6 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
       // array or slice index expression (pseudo binary infix)
       return parse_index_expr (tok, std::move (left), std::move (outer_attrs),
 			       restrictions);
-    case FLOAT_LITERAL:
-      /* HACK: get around lexer mis-identifying '.0' or '.1' or whatever as a
-       * float literal - TODO does this happen anymore? It shouldn't. */
-      return parse_tuple_index_expr_float (tok, std::move (left),
-					   std::move (outer_attrs),
-					   restrictions);
     default:
       add_error (Error (tok->get_locus (),
 			"found unexpected token %qs in left denotation",
@@ -14568,35 +14562,6 @@ Parser<ManagedTokenSource>::parse_closure_expr_pratt (const_TokenPtr tok,
 	new AST::ClosureExprInner (std::move (expr), std::move (params), locus,
 				   has_move, std::move (outer_attrs)));
     }
-}
-
-/* Parses a tuple index expression (pratt-parsed) from a 'float' token as a
- * result of lexer misidentification. */
-template <typename ManagedTokenSource>
-std::unique_ptr<AST::TupleIndexExpr>
-Parser<ManagedTokenSource>::parse_tuple_index_expr_float (
-  const_TokenPtr tok, std::unique_ptr<AST::Expr> tuple_expr,
-  AST::AttrVec outer_attrs, ParseRestrictions restrictions ATTRIBUTE_UNUSED)
-{
-  // only works on float literals
-  if (tok->get_id () != FLOAT_LITERAL)
-    return nullptr;
-
-  // DEBUG:
-  rust_debug ("exact string form of float: '%s'", tok->get_str ().c_str ());
-
-  // get float string and remove dot and initial 0
-  std::string index_str = tok->get_str ();
-  index_str.erase (index_str.begin ());
-
-  // get int from string
-  int index = atoi (index_str.c_str ());
-
-  location_t locus = tuple_expr->get_locus ();
-
-  return std::unique_ptr<AST::TupleIndexExpr> (
-    new AST::TupleIndexExpr (std::move (tuple_expr), index,
-			     std::move (outer_attrs), locus));
 }
 
 // Returns true if the next token is END, ELSE, or EOF;
