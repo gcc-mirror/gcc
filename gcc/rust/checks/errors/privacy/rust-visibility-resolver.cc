@@ -20,16 +20,14 @@
 #include "rust-ast.h"
 #include "rust-hir.h"
 #include "rust-hir-item.h"
-#include "rust-immutable-name-resolution-context.h"
-
-// for flag_name_resolution_2_0
-#include "options.h"
+#include "rust-name-resolution-context.h"
 
 namespace Rust {
 namespace Privacy {
 
-VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings,
-					Resolver::Resolver &resolver)
+VisibilityResolver::VisibilityResolver (
+  Analysis::Mappings &mappings,
+  const Resolver2_0::NameResolutionContext &resolver)
   : mappings (mappings), resolver (resolver)
 {}
 
@@ -64,23 +62,12 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
     = Error (restriction.get_locus (),
 	     "cannot use non-module path as privacy restrictor");
 
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (flag_name_resolution_2_0)
+  NodeId ref_node_id;
+  if (auto id = resolver.lookup (ast_node_id))
     {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      if (auto id = nr_ctx.lookup (ast_node_id))
-	{
-	  ref_node_id = *id;
-	}
-      else
-	{
-	  invalid_path.emit ();
-	  return false;
-	}
+      ref_node_id = *id;
     }
-  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+  else
     {
       invalid_path.emit ();
       return false;

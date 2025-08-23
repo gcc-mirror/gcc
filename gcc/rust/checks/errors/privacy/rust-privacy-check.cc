@@ -20,7 +20,7 @@
 #include "rust-reachability.h"
 #include "rust-hir-type-check.h"
 #include "rust-hir-map.h"
-#include "rust-name-resolver.h"
+#include "rust-immutable-name-resolution-context.h"
 #include "rust-visibility-resolver.h"
 #include "rust-pub-restricted-visitor.h"
 #include "rust-privacy-reporter.h"
@@ -35,12 +35,13 @@ Resolver::resolve (HIR::Crate &crate)
 {
   PrivacyContext ctx;
   auto &mappings = Analysis::Mappings::get ();
-  auto resolver = Rust::Resolver::Resolver::get ();
+  auto &resolver
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
   auto ty_ctx = ::Rust::Resolver::TypeCheckContext::get ();
 
-  VisibilityResolver (mappings, *resolver).go (crate);
+  VisibilityResolver (mappings, resolver).go (crate);
   PubRestrictedVisitor (mappings).go (crate);
-  PrivacyReporter (mappings, *resolver, *ty_ctx).go (crate);
+  PrivacyReporter (mappings, resolver, *ty_ctx).go (crate);
 
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 
