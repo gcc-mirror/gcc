@@ -1,3 +1,11 @@
+2025-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2025-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/riscv/t-rtems: Add -mstrict-align multilibs for
+	targets without support for misaligned access in hardware.
+
 2025-08-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
