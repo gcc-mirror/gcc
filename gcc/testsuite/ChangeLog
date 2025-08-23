@@ -1,3 +1,63 @@
+2025-08-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120553
+	* gcc.target/riscv/pr120553-1.c: New test.
+	* gcc.target/riscv/pr120553-2.c: New test.
+	* gcc.target/riscv/pr120553-3.c: New test.
+	* gcc.target/riscv/pr120553-4.c: New test.
+	* gcc.target/riscv/pr120553-5.c: New test.
+	* gcc.target/riscv/pr120553-6.c: New test.
+	* gcc.target/riscv/pr120553-7.c: New test.
+	* gcc.target/riscv/pr120553-8.c: New test.
+
+2025-08-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-4-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u8-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-4-u8-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u8-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-4-u8-from-u64.rv32.c: New test.
+
+2025-08-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121635
+	* gcc.target/i386/pr121635-1a.c: New test.
+	* gcc.target/i386/pr121635-1b.c: Likewise.
+
+2025-08-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/abi/mangle83.C: Disable implicit enum test for
+	-fshort-enums.
+
+2025-08-22  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lib/target-supports.exp (arm arches): Add arm_arch_v7.
+	* g++.target/arm/pr120424.C: Require armv7 support.  Use
+	dg-add-options arm_arch_v7 instead of explicit -march=armv7.
+
 2025-08-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/121627

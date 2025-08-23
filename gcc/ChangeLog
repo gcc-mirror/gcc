@@ -1,3 +1,72 @@
+2025-08-22  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/118890
+	* config/rs6000/rs6000.cc (can_be_rotated_to_negative_lis): Add bounds
+	checks for shift counts to prevent undefined behavior.
+	(rs6000_emit_set_long_const): Likewise.
+
+2025-08-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120553
+	* ifcvt.cc (noce_try_sign_bit_splat): New function.
+	(noce_process_if_block): Use it.
+
+2025-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Pass
+	the representative of the PHIs node to
+	vect_create_epilog_for_reduction.
+
+2025-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Get
+	reduction info properly.  Adjust checks according to
+	comments.
+	(vectorizable_reduction): Do not set STMT_VINFO_REDUC_VECTYPE_IN
+	on the reduc info.
+	(vect_transform_reduction): Query STMT_VINFO_REDUC_VECTYPE_IN
+	on the actual reduction stmt, not the info.
+
+2025-08-22  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 3 for unsigned SAT_MUL.
+
+2025-08-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121635
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Emit the
+	TLS call after NOTE_INSN_FUNCTION_BEG.
+
+2025-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (get_initial_defs_for_reduction): Adjust
+	comment.
+	(vect_create_epilog_for_reduction): Get at the reduction
+	kind via the instance, re-use the slp_reduc flag instead
+	of checking REDUC_GROUP_FIRST_ELEMENT again.
+	Remove unreachable code.
+	(vectorizable_reduction): Compute a reduc_chain flag from
+	the SLP instance kind, avoid REDUC_GROUP_FIRST_ELEMENT
+	checks.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_live_operation): Check the SLP instance
+	kind instead of REDUC_GROUP_FIRST_ELEMENT.
+
+2025-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-parloops.cc (parloops_is_simple_reduction): Pass
+	in double reduction inner loop LC phis and query that.
+	(parloops_force_simple_reduction): Similar, but set it.
+	Check for valid reduction types here.
+	(valid_reduction_p): Remove.
+	(gather_scalar_reductions): Adjust, fixup double
+	reduction inner loop processing.
+
+2025-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/riscv/t-rtems: Add -mstrict-align multilibs for
+	targets without support for misaligned access in hardware.
+
 2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/pru.cc (pru_init_libfuncs): Set softmpy libgcc
