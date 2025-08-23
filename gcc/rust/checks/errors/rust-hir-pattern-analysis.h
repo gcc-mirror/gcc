@@ -26,7 +26,7 @@
 #include "rust-tyty.h"
 #include "optional.h"
 #include "rust-hir-visitor.h"
-#include "rust-name-resolver.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Analysis {
@@ -46,7 +46,7 @@ public:
 
 private:
   Resolver::TypeCheckContext &tyctx;
-  Resolver::Resolver &resolver;
+  const Resolver2_0::NameResolutionContext &resolver;
   Analysis::Mappings &mappings;
 
   virtual void visit (Lifetime &lifetime) override;
