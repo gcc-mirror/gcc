@@ -329,15 +329,13 @@ can_propagate_from (gimple *def_stmt)
    NAME.  The chain is linked via the first operand of the defining statements.
    If NAME was replaced in its only use then this function can be used
    to clean up dead stmts.  The function handles already released SSA
-   names gracefully.
-   Returns true if cleanup-cfg has to run.  */
+   names gracefully.  */
 
-static bool
+static void
 remove_prop_source_from_use (tree name)
 {
   gimple_stmt_iterator gsi;
   gimple *stmt;
-  bool cfg_changed = false;
 
   do {
     basic_block bb;
@@ -345,12 +343,12 @@ remove_prop_source_from_use (tree name)
     if (SSA_NAME_IN_FREE_LIST (name)
 	|| SSA_NAME_IS_DEFAULT_DEF (name)
 	|| !has_zero_uses (name))
-      return cfg_changed;
+      break;
 
     stmt = SSA_NAME_DEF_STMT (name);
     if (gimple_code (stmt) == GIMPLE_PHI
 	|| gimple_has_side_effects (stmt))
-      return cfg_changed;
+      break;
 
     bb = gimple_bb (stmt);
     gsi = gsi_for_stmt (stmt);
@@ -363,7 +361,6 @@ remove_prop_source_from_use (tree name)
     name = is_gimple_assign (stmt) ? gimple_assign_rhs1 (stmt) : NULL_TREE;
   } while (name && TREE_CODE (name) == SSA_NAME);
 
-  return cfg_changed;
 }
 
 /* Return the rhs of a gassign *STMT in a form of a single tree,
@@ -511,7 +508,6 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree tmp;
-  bool cfg_changed = false;
   tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
@@ -535,10 +531,10 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
       update_stmt (gsi_stmt (*gsi));
 
       if (TREE_CODE (rhs1) == SSA_NAME)
-	cfg_changed |= remove_prop_source_from_use (rhs1);
+	remove_prop_source_from_use (rhs1);
       if (TREE_CODE (rhs2) == SSA_NAME)
-	cfg_changed |= remove_prop_source_from_use (rhs2);
-      return cfg_changed ? 2 : 1;
+	remove_prop_source_from_use (rhs2);
+      return 1;
     }
 
   return 0;
@@ -554,7 +550,6 @@ forward_propagate_into_gimple_cond (gcond *stmt)
 {
   tree tmp;
   enum tree_code code = gimple_cond_code (stmt);
-  bool cfg_changed = false;
   tree rhs1 = gimple_cond_lhs (stmt);
   tree rhs2 = gimple_cond_rhs (stmt);
 
@@ -580,10 +575,10 @@ forward_propagate_into_gimple_cond (gcond *stmt)
       update_stmt (stmt);
 
       if (TREE_CODE (rhs1) == SSA_NAME)
-	cfg_changed |= remove_prop_source_from_use (rhs1);
+	remove_prop_source_from_use (rhs1);
       if (TREE_CODE (rhs2) == SSA_NAME)
-	cfg_changed |= remove_prop_source_from_use (rhs2);
-      return (cfg_changed || is_gimple_min_invariant (tmp)) ? 2 : 1;
+	remove_prop_source_from_use (rhs2);
+      return is_gimple_min_invariant (tmp) ? 2 : 1;
     }
 
   if (canonicalize_bool_cond (stmt, gimple_bb (stmt)))
@@ -3059,7 +3054,8 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       gimple_assign_set_rhs_code (stmt, TREE_CODE (orig));
       gimple_set_num_ops (stmt, 2);
       update_stmt (stmt);
-      return remove_prop_source_from_use (op0) ? 2 : 1;
+      remove_prop_source_from_use (op0);
+      return 1;
     }
   else if (code == CONSTRUCTOR
 	   || code == VECTOR_CST
@@ -3178,7 +3174,6 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       gcc_assert (code == CONSTRUCTOR || code == VECTOR_CST);
 
       /* Shuffle of a constructor.  */
-      bool ret = false;
       tree res_type
 	= build_vector_type (TREE_TYPE (TREE_TYPE (arg0)),
 			     TYPE_VECTOR_SUBPARTS (TREE_TYPE (op2)));
@@ -3197,10 +3192,10 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       gimple_assign_set_rhs_from_tree (gsi, opt);
       update_stmt (gsi_stmt (*gsi));
       if (TREE_CODE (op0) == SSA_NAME)
-	ret = remove_prop_source_from_use (op0);
+	remove_prop_source_from_use (op0);
       if (op0 != op1 && TREE_CODE (op1) == SSA_NAME)
-	ret |= remove_prop_source_from_use (op1);
-      return ret ? 2 : 1;
+	remove_prop_source_from_use (op1);
+      return 1;
     }
 
   return 0;
