@@ -2977,10 +2977,10 @@ is_combined_permutation_identity (tree mask1, tree mask2)
   return maybe_identity1 ? 1 : maybe_identity2 ? 2 : 0;
 }
 
-/* Combine a shuffle with its arguments.  Returns 1 if there were any
-   changes made, 2 if cfg-cleanup needs to run.  Else it returns 0.  */
+/* Combine a shuffle with its arguments.  Returns true if there were any
+   changes made.  */
 
-static int
+static bool
 simplify_permutation (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -2996,7 +2996,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
   op2 = gimple_assign_rhs3 (stmt);
 
   if (TREE_CODE (op2) != VECTOR_CST)
-    return 0;
+    return false;
 
   if (TREE_CODE (op0) == VECTOR_CST)
     {
@@ -3007,14 +3007,14 @@ simplify_permutation (gimple_stmt_iterator *gsi)
     {
       def_stmt = get_prop_source_stmt (op0, false, &single_use_op0);
       if (!def_stmt)
-	return 0;
+	return false;
       code = gimple_assign_rhs_code (def_stmt);
       if (code == VIEW_CONVERT_EXPR)
 	{
 	  tree rhs = gimple_assign_rhs1 (def_stmt);
 	  tree name = TREE_OPERAND (rhs, 0);
 	  if (TREE_CODE (name) != SSA_NAME)
-	    return 0;
+	    return false;
 	  if (!has_single_use (name))
 	    single_use_op0 = false;
 	  /* Here we update the def_stmt through this VIEW_CONVERT_EXPR,
@@ -3022,16 +3022,16 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	     VIEW_CONVERT_EXPR.  */
 	  def_stmt = SSA_NAME_DEF_STMT (name);
 	  if (!def_stmt || !is_gimple_assign (def_stmt))
-	    return 0;
+	    return false;
 	  if (gimple_assign_rhs_code (def_stmt) != CONSTRUCTOR)
-	    return 0;
+	    return false;
 	}
       if (!can_propagate_from (def_stmt))
-	return 0;
+	return false;
       arg0 = gimple_assign_rhs1 (def_stmt);
     }
   else
-    return 0;
+    return false;
 
   /* Two consecutive shuffles.  */
   if (code == VEC_PERM_EXPR)
@@ -3040,13 +3040,13 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       int ident;
 
       if (op0 != op1)
-	return 0;
+	return false;
       op3 = gimple_assign_rhs3 (def_stmt);
       if (TREE_CODE (op3) != VECTOR_CST)
-	return 0;
+	return false;
       ident = is_combined_permutation_identity (op3, op2);
       if (!ident)
-	return 0;
+	return false;
       orig = (ident == 1) ? gimple_assign_rhs1 (def_stmt)
 			  : gimple_assign_rhs2 (def_stmt);
       gimple_assign_set_rhs1 (stmt, unshare_expr (orig));
@@ -3054,7 +3054,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       gimple_set_num_ops (stmt, 2);
       update_stmt (stmt);
       remove_prop_source_from_use (op0);
-      return 1;
+      return true;
     }
   else if (code == CONSTRUCTOR
 	   || code == VECTOR_CST
@@ -3063,7 +3063,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       if (op0 != op1)
 	{
 	  if (TREE_CODE (op0) == SSA_NAME && !single_use_op0)
-	    return 0;
+	    return false;
 
 	  if (TREE_CODE (op1) == VECTOR_CST)
 	    arg1 = op1;
@@ -3071,36 +3071,36 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	    {
 	      gimple *def_stmt2 = get_prop_source_stmt (op1, true, NULL);
 	      if (!def_stmt2)
-		return 0;
+		return false;
 	      code2 = gimple_assign_rhs_code (def_stmt2);
 	      if (code2 == VIEW_CONVERT_EXPR)
 		{
 		  tree rhs = gimple_assign_rhs1 (def_stmt2);
 		  tree name = TREE_OPERAND (rhs, 0);
 		  if (TREE_CODE (name) != SSA_NAME)
-		    return 0;
+		    return false;
 		  if (!has_single_use (name))
-		    return 0;
+		    return false;
 		  def_stmt2 = SSA_NAME_DEF_STMT (name);
 		  if (!def_stmt2 || !is_gimple_assign (def_stmt2))
-		    return 0;
+		    return false;
 		  if (gimple_assign_rhs_code (def_stmt2) != CONSTRUCTOR)
-		    return 0;
+		    return false;
 		}
 	      else if (code2 != CONSTRUCTOR && code2 != VECTOR_CST)
-		return 0;
+		return false;
 	      if (!can_propagate_from (def_stmt2))
-		return 0;
+		return false;
 	      arg1 = gimple_assign_rhs1 (def_stmt2);
 	    }
 	  else
-	    return 0;
+	    return false;
 	}
       else
 	{
 	  /* Already used twice in this statement.  */
 	  if (TREE_CODE (op0) == SSA_NAME && num_imm_uses (op0) > 2)
-	    return 0;
+	    return false;
 	  arg1 = arg0;
 	}
 
@@ -3125,26 +3125,26 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	      if (tgt_type == NULL_TREE)
 		tgt_type = arg1_type;
 	      else if (tgt_type != arg1_type)
-		return 0;
+		return false;
 	    }
 
 	  if (!VECTOR_TYPE_P (tgt_type))
-	    return 0;
+	    return false;
 	  tree op2_type = TREE_TYPE (op2);
 
 	  /* Figure out the shrunk factor.  */
 	  poly_uint64 tgt_units = TYPE_VECTOR_SUBPARTS (tgt_type);
 	  poly_uint64 op2_units = TYPE_VECTOR_SUBPARTS (op2_type);
 	  if (maybe_gt (tgt_units, op2_units))
-	    return 0;
+	    return false;
 	  unsigned int factor;
 	  if (!constant_multiple_p (op2_units, tgt_units, &factor))
-	    return 0;
+	    return false;
 
 	  /* Build the new permutation control vector as target vector.  */
 	  vec_perm_builder builder;
 	  if (!tree_to_vec_perm_builder (&builder, op2))
-	    return 0;
+	    return false;
 	  vec_perm_indices indices (builder, 2, op2_units);
 	  vec_perm_indices new_indices;
 	  if (new_indices.new_shrunk_vector (indices, factor))
@@ -3160,7 +3160,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	      op2 = vec_perm_indices_to_tree (mask_type, new_indices);
 	    }
 	  else
-	    return 0;
+	    return false;
 
 	  /* Convert the VECTOR_CST to the appropriate vector type.  */
 	  if (tgt_type != TREE_TYPE (arg0))
@@ -3179,7 +3179,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       tree opt = fold_ternary (VEC_PERM_EXPR, res_type, arg0, arg1, op2);
       if (!opt
 	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE (opt) != VECTOR_CST))
-	return 0;
+	return false;
       /* Found VIEW_CONVERT_EXPR before, need one explicit conversion.  */
       if (res_type != TREE_TYPE (op0))
 	{
@@ -3194,10 +3194,10 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	remove_prop_source_from_use (op0);
       if (op0 != op1 && TREE_CODE (op1) == SSA_NAME)
 	remove_prop_source_from_use (op1);
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Get the BIT_FIELD_REF definition of VAL, if any, looking through
@@ -5026,12 +5026,7 @@ pass_forwprop::execute (function *fun)
 			     && simplify_rotate (&gsi))
 		      changed = true;
 		    else if (code == VEC_PERM_EXPR)
-		      {
-			int did_something = simplify_permutation (&gsi);
-			if (did_something == 2)
-			  cfg_changed = true;
-			changed = did_something != 0;
-		      }
+		      changed |= simplify_permutation (&gsi);
 		    else if (code == CONSTRUCTOR
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
 		      changed |= simplify_vector_constructor (&gsi);
