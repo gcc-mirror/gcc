@@ -500,10 +500,9 @@ forward_propagate_into_comparison_1 (gimple *stmt,
 
 /* Propagate from the ssa name definition statements of the assignment
    from a comparison at *GSI into the conditional if that simplifies it.
-   Returns 1 if the stmt was modified and 2 if the CFG needs cleanup,
-   otherwise returns 0.  */
+   Returns true if the stmt was modified.  */
 
-static int
+static bool
 forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -534,10 +533,10 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 	remove_prop_source_from_use (rhs1);
       if (TREE_CODE (rhs2) == SSA_NAME)
 	remove_prop_source_from_use (rhs2);
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Propagate from the ssa name definition statements of COND_EXPR
@@ -5020,13 +5019,7 @@ pass_forwprop::execute (function *fun)
 		      }
 
 		    if (TREE_CODE_CLASS (code) == tcc_comparison)
-		      {
-			int did_something;
-			did_something = forward_propagate_into_comparison (&gsi);
-			if (did_something == 2)
-			  cfg_changed = true;
-			changed |= did_something != 0;
-		      }
+		      changed |= forward_propagate_into_comparison (&gsi);
 		    else if ((code == PLUS_EXPR
 			      || code == BIT_IOR_EXPR
 			      || code == BIT_XOR_EXPR)
