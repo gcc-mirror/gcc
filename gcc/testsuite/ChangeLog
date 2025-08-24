@@ -1,3 +1,22 @@
+2025-08-23  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/116928
+	* g++.dg/parse/template33.C: New test.
+
+2025-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120933
+	* gcc.target/i386/noplt-gd-1.c (dg-options): Add
+	-mtls-dialect=gnu.
+	* gcc.target/i386/noplt-ld-1.c (dg-options): Likewise.
+
+2025-08-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120499
+	* g++.dg/modules/imp-member-4_a.C: New test.
+	* g++.dg/modules/imp-member-4_b.C: New test.
+	* g++.dg/modules/imp-member-4_c.C: New test.
+
 2025-08-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/120553

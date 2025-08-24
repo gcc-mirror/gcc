@@ -1,3 +1,28 @@
+2025-08-23  Sam James  <sam@gentoo.org>
+
+	PR target/120933
+	* config.gcc (supported_defaults): Add tls for i386, x86_64.
+	* config/i386/i386.h (host_detect_local_cpu): Add tls.
+	* doc/install.texi: Document --with-tls= for i386, x86_64.
+
+2025-08-23  John Ericson  <git@JohnEricson.me>
+
+	* gcc.cc (for_each_path): templated, to make passing lambdas
+	possible/easy/safe, and to have a polymorphic return type.
+	(struct add_to_obstack_info): Deleted, lambda captures replace
+	it.
+	(add_to_obstack): Moved to lambda in build_search_list.
+	(build_search_list): Has above lambda now.
+	(struct file_at_path_info):  Deleted, lambda captures replace
+	it.
+	(file_at_path): Moved to lambda in find_a_file.
+	(find_a_file): Has above lambda now.
+	(struct spec_path_info): Reamed to just struct spec_path.
+	(struct spec_path): New name.
+	(spec_path): Rnamed to spec_path::operator()
+	(spec_path::operator()): New name
+	(do_spec_1): Updated for_each_path call sites.
+
 2025-08-22  Kishan Parmar  <kishan@linux.ibm.com>
 
 	PR target/118890

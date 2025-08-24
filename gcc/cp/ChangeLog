@@ -1,3 +1,13 @@
+2025-08-23  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/116928
+	* parser.cc (cp_parser_braced_list): Set greater_than_is_operator_p.
+
+2025-08-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120499
+	* method.cc (synthesize_method): Set the instantiating module.
+
 2025-08-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/121068
