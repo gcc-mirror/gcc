@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 15.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-08-01 17:58+0000\n"
-"PO-Revision-Date: 2025-08-10 02:26+0200\n"
+"PO-Revision-Date: 2025-08-23 14:50+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.7\n"
 "X-Poedit-Bookmarks: -1,-1,-1,6017,-1,-1,-1,-1,-1,-1\n"
 
 #: cif-code.def:39
@@ -45,7 +45,7 @@ msgstr "Funktion kann nicht »inline« sein"
 
 #: cif-code.def:60
 msgid "function body can be overwritten at link time"
-msgstr "Funktionskörper kann zum Link-Zeitpunkt überschrieben werden"
+msgstr "Funktionskörper kann zum Bindezeitpunkt überschrieben werden"
 
 #: cif-code.def:64
 msgid "function not inline candidate"
@@ -89,7 +89,7 @@ msgstr "Funktion nicht »inline« deklariert und Codegröße würde wachsen"
 
 #: cif-code.def:96
 msgid "mismatched declarations during linktime optimization"
-msgstr "Unpassende Deklarationen während Linkzeit-Optimierung"
+msgstr "Unpassende Deklarationen während Bindezeit-Optimierung"
 
 #: cif-code.def:100
 msgid "variadic thunk call"
@@ -258,7 +258,7 @@ msgstr "-fuse-linker-plugin wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.cc:1115
 msgid "cannot specify -static with -fsanitize=address"
-msgstr "»-static« kann nicht mit »-fsanitize=Adresse« angegeben werden"
+msgstr "»-static« kann nicht mit »-fsanitize=address« angegeben werden"
 
 #: gcc.cc:1117
 msgid "cannot specify -static with -fsanitize=hwaddress"
@@ -343,7 +343,7 @@ msgstr "rdynamic wird nicht unterstützt"
 #: config/dragonfly.h:76 config/i386/freebsd.h:82 config/i386/freebsd64.h:35
 #: config/ia64/freebsd.h:26 config/rs6000/sysv4.h:750 config/sparc/freebsd.h:45
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
-msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwendet"
+msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwenden"
 
 #: config/lynx.h:69
 msgid "cannot use mthreads and mlegacy-threads together"
@@ -401,7 +401,7 @@ msgstr "Darwin unterstützt »-mfentry« oder verwandte Optionen nicht"
 
 #: config/i386/sol2.h:59
 msgid "-mx32 is not supported on Solaris"
-msgstr "%<-mx32%> wird unter Solaris nicht unterstützt"
+msgstr "»-mx32« wird unter Solaris nicht unterstützt"
 
 #: config/mcore/mcore.h:53
 msgid "the m210 does not have little endian support"
@@ -430,7 +430,7 @@ msgstr "»-mdata-region« benötigt das large-Speichermodell (»-mlarge«)"
 #: config/pa/pa-hpux11.h:134 config/pa/pa-hpux11.h:137 config/pa/pa64-hpux.h:29
 #: config/pa/pa64-hpux.h:32 config/pa/pa64-hpux.h:41 config/pa/pa64-hpux.h:44
 msgid "warning: consider linking with '-static' as system libraries with"
-msgstr "Warnung: Evtl. mit »-static« linken, da Systembibliotheken mit"
+msgstr "Warnung: Evtl. mit »-static« binden, da Systembibliotheken mit"
 
 #: config/pa/pa-hpux11.h:135 config/pa/pa-hpux11.h:138 config/pa/pa64-hpux.h:30
 #: config/pa/pa64-hpux.h:33 config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
@@ -497,11 +497,11 @@ msgstr "Für gnat2why wird »-c« benötigt"
 
 #: ada/gcc-interface/lang-specs.h:67
 msgid "-c required for gnat2scil"
-msgstr "Für gnat2scil wird -c benötigt"
+msgstr "Für gnat2scil wird »-c« benötigt"
 
 #: fortran/lang-specs.h:63 fortran/lang-specs.h:81
 msgid "gfortran does not support -E without -cpp"
-msgstr "gfortran unterstützt nicht -E ohne -cpp"
+msgstr "gfortran unterstützt »-E« nur zusammen mit »-cpp«"
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
 msgid "GNU Objective C no longer supports traditional compilation"
@@ -697,7 +697,7 @@ msgstr "Unpassende Argumente in Prozeduraufrufen akzeptieren."
 #: fortran/lang.opt:390
 #, no-c-format
 msgid "Eliminate multiple function invocations also for impure functions."
-msgstr "Mehrere Funktionsaufrufe auch für unreine Funktionen entfernen."
+msgstr "Mehrfache Funktionsaufrufe auch für unreine Funktionen entfernen."
 
 #: fortran/lang.opt:394
 #, no-c-format
@@ -717,7 +717,7 @@ msgstr "Eine literale BOZ-Konstante in einem ungültigen Kontext erlauben, sowie
 #: fortran/lang.opt:410
 #, no-c-format
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements."
-msgstr "Lokale Variablen und COMMON-Blöcke behandeln, als ob sie in SAVE-Anweisungen benannt worden wären."
+msgstr "Lokale Variablen und COMMON-Blöcke nicht so behandeln, als ob sie in SAVE-Anweisungen benannt worden wären."
 
 #: fortran/lang.opt:414
 #, no-c-format
@@ -727,7 +727,7 @@ msgstr "Angeben, dass Backslashes in Zeichenketten ein Fluchtzeichen einleiten."
 #: fortran/lang.opt:418
 #, no-c-format
 msgid "Produce a backtrace when a runtime error is encountered."
-msgstr "Backtrace erzeugen, wenn Laufzeitfehler auftritt."
+msgstr "Backtrace erzeugen, wenn ein Laufzeitfehler auftritt."
 
 #: fortran/lang.opt:422
 #, no-c-format
@@ -757,12 +757,12 @@ msgstr "C-Prototypen aus BIND(C)-Deklarationen generieren."
 #: fortran/lang.opt:470
 #, no-c-format
 msgid "Generate C prototypes from non-BIND(C) external procedure definitions."
-msgstr "C-Prototypen aus Nicht-BIND(C)-Deklarationen für externe Prozeduren generieren."
+msgstr "C-Prototypen aus Nicht-BIND(C)-Definitionen für externe Prozeduren generieren."
 
 #: fortran/lang.opt:474
 #, no-c-format
 msgid "Ignore 'D' in column one in fixed form."
-msgstr "»D« in Spalte eins in statischer Form ignorieren."
+msgstr "»D« in Spalte eins in fester Form ignorieren."
 
 #: fortran/lang.opt:478
 #, no-c-format
@@ -807,7 +807,7 @@ msgstr "Artspezifische Varianten der intrinsischen Ganzzahlfunktionen einschalte
 #: fortran/lang.opt:511
 #, no-c-format
 msgid "Enable legacy math intrinsics for compatibility."
-msgstr "Intrinsische Altlasten-Mathematik-Funktionen für Kompatibilität einschaltet."
+msgstr "Intrinsische Altlasten-Mathematik-Funktionen für Kompatibilität einschalten."
 
 #: fortran/lang.opt:515
 #, no-c-format
@@ -852,7 +852,7 @@ msgstr "Dollarzeichen in Entitätsnamen erlauben."
 #: fortran/lang.opt:551
 #, no-c-format
 msgid "Display the code tree after parsing."
-msgstr "Codebaum nach Analyse anzeigen."
+msgstr "Codebaum nach dem Parsen anzeigen."
 
 #: fortran/lang.opt:555
 #, no-c-format
@@ -867,7 +867,7 @@ msgstr "Die globale Symboltabelle nach dem Parsen anzeigen."
 #: fortran/lang.opt:563
 #, no-c-format
 msgid "Display the code tree after parsing; deprecated option."
-msgstr "Codebaum nach Analyse anzeigen; veraltete Option."
+msgstr "Codebaum nach dem Parsen anzeigen; veraltete Option."
 
 #: fortran/lang.opt:567
 #, no-c-format
@@ -912,7 +912,7 @@ msgstr "-ffixed-line-length-<n>\tIm festen Modus n als Zeilenlänge verwenden."
 #: fortran/lang.opt:603
 #, no-c-format
 msgid "Pad shorter fixed form lines to line width with spaces."
-msgstr "Kürzere feste Formularzeilen mit Leerzeichen auf Zeilenbreite auffüllen."
+msgstr "Kürzere Zeilen in fester Form mit Leerzeichen auf Zeilenbreite auffüllen."
 
 #: fortran/lang.opt:607
 #, no-c-format
@@ -1022,7 +1022,7 @@ msgstr "-fmax-stack-var-size=<n>\tGröße des größten Feldes, das auf dem Stap
 #: fortran/lang.opt:732
 #, no-c-format
 msgid "Put all local arrays on stack."
-msgstr "Alle lokalen Felder über Stapel übergeben."
+msgstr "Alle lokalen Felder auf dem Stapel anlegen."
 
 #: fortran/lang.opt:736
 #, no-c-format
@@ -1289,7 +1289,7 @@ msgstr "Metadaten direkt in Objektdateien einbetten"
 #: rust/lang.opt:152
 #, no-c-format
 msgid "-frust-metadata-output=<path.rox>  Path to output crate metadata"
-msgstr "-frust-metadata-output=<Pfad.rox>  Pfad, in den die Create-Metadaten geschrieben werden"
+msgstr "-frust-metadata-output=<Pfad.rox>  Pfad, in den die Crate-Metadaten geschrieben werden"
 
 #: rust/lang.opt:160
 #, no-c-format
@@ -1344,7 +1344,7 @@ msgstr "-D<Makro>[=<Wert>]\tEin <Makro> mit <Wert> definieren. Wenn nur <Makro> 
 #: c-family/c.opt:211
 #, no-c-format
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path."
-msgstr "-F <Verz>\t<Verz> an das Ende des Haupt-Einfügepfades des Frameworks anfügen."
+msgstr "-F <Verz>\t<Verz> an das Ende des Haupt-Framework-Pfads für Includedateien anfügen."
 
 #: c-family/c.opt:215
 #, no-c-format
@@ -1359,17 +1359,17 @@ msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden."
 #: c-family/c.opt:223
 #, no-c-format
 msgid "-I <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-I <Verz>\t<Verz> an das Ende des Haupteinfügepfades anfügen."
+msgstr "-I <Verz>\t<Verz> an das Ende des Hauptpfades für Includedateien anfügen."
 
 #: c-family/c.opt:227
 #, no-c-format
 msgid "Generate make dependencies."
-msgstr "Make-Abhängigkeiten erzeugen."
+msgstr "Abhängigkeiten für »make« erzeugen."
 
 #: c-family/c.opt:231
 #, no-c-format
 msgid "Generate make dependencies and compile."
-msgstr "Make-Abhängigkeiten erzeugen und Code übersetzen."
+msgstr "Abhängigkeiten für »make« erzeugen und Code übersetzen."
 
 #: c-family/c.opt:235
 #, no-c-format
@@ -1384,12 +1384,12 @@ msgstr "Fehlende Header-Dateien als generierte Dateien behandeln."
 #: c-family/c.opt:243
 #, no-c-format
 msgid "Like -M but ignore system header files."
-msgstr "Wie -M, aber System-Header-Dateien ignorieren."
+msgstr "Wie »-M«, aber System-Header-Dateien ignorieren."
 
 #: c-family/c.opt:247
 #, no-c-format
 msgid "Like -MD but ignore system header files."
-msgstr "Wie -MD, aber System-Header-Dateien ignorieren."
+msgstr "Wie »-MD«, aber System-Header-Dateien ignorieren."
 
 #: c-family/c.opt:251
 #, no-c-format
@@ -1529,7 +1529,7 @@ msgstr "Die Warnung Walloca-larger-than= ausschalten. Entspricht Walloca-larger-
 #: c-family/c.opt:378
 #, no-c-format
 msgid "Warn if conversion of the result of arithmetic might change the value even though converting the operands cannot."
-msgstr "Warnen, wenn das Ergebnis der arithmetischen Berechnungen einen falschen Wert ergeben könnte, selbst wenn die Operanden korrekt konvertiert werden."
+msgstr "Warnen, wenn die Umwandlung eines Ergebnisses von arithmetischen Berechnungen einen falschen Wert ergeben könnte, selbst wenn die Operanden korrekt umgewandelt werden."
 
 #: c-family/c.opt:386
 #, no-c-format
@@ -1584,7 +1584,7 @@ msgstr "Bei Merkmalen, die in ISO C23, aber noch nicht in ISO C11 verfügbar sin
 #: c-family/c.opt:453
 #, no-c-format
 msgid "Deprecated in favor of -Wc11-c23-compat."
-msgstr "Veraltet zugunsten von -Wc11-c23-compat."
+msgstr "Veraltet zugunsten von »-Wc11-c23-compat«."
 
 #: c-family/c.opt:457
 #, no-c-format
@@ -1721,7 +1721,7 @@ msgstr "Bei Variablen, die von »longjmp« oder »vfork« geändert werden könn
 #: c-family/c.opt:570
 #, no-c-format
 msgid "Warn about uses of a comma operator within a subscripting expression."
-msgstr "Warnen, wenn innerhalb eines Arrayindex ein Komma-Operator verwendet wird."
+msgstr "Warnen, wenn innerhalb eines Arrayindex-Ausdrucks ein Komma-Operator verwendet wird."
 
 #: c-family/c.opt:574
 #, no-c-format
@@ -1731,7 +1731,7 @@ msgstr "Bei möglicherweise geschachtelten Blockkommentaren und C++-Kommentaren,
 #: c-family/c.opt:578
 #, no-c-format
 msgid "Synonym for -Wcomment."
-msgstr "Synonym für -Wcomment."
+msgstr "Synonym für »-Wcomment«."
 
 #: c-family/c.opt:582
 #, no-c-format
@@ -1796,7 +1796,7 @@ msgstr "Warnen, wenn eine explizit vorgegebene Funktion gelöscht wird."
 #: c-family/c.opt:639
 #, no-c-format
 msgid "Warn when deleting a pointer to incomplete type."
-msgstr "Warnen, wenn ein Zeiger auf unvollständigen Typen gelöscht wird."
+msgstr "Warnen, wenn »delete« mit einem Zeiger auf einen unvollständigen Typen aufgerufen wird."
 
 #: c-family/c.opt:643
 #, no-c-format
@@ -1916,7 +1916,7 @@ msgstr "Bei Vermischung von enum/integer-Typen warnen."
 #: c-family/c.opt:746
 #, no-c-format
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr "Dieser Schalter ist veraltet; stattdessen -Werror=implicit-function-declaration verwenden."
+msgstr "Dieser Schalter ist veraltet; stattdessen »-Werror=implicit-function-declaration« verwenden."
 
 #: c-family/c.opt:750
 #, no-c-format
@@ -1946,7 +1946,7 @@ msgstr "Bei impliziten Typumwandlungen warnen, die die Präzision von Gleitkomma
 #: c-family/c.opt:775
 #, no-c-format
 msgid "Warn if testing floating point numbers for equality."
-msgstr "Bei Test von Gleitkommawerten auf Gleichheit warnen."
+msgstr "Bei Tests von Gleitkommawerten auf Gleichheit warnen."
 
 #: c-family/c.opt:779 c-family/c.opt:834
 #, no-c-format
@@ -1976,7 +1976,7 @@ msgstr "Bei Formatstrings, die keine Literale sind, warnen."
 #: c-family/c.opt:799
 #, no-c-format
 msgid "Warn about function calls with format strings that write past the end of the destination region.  Same as -Wformat-overflow=1."
-msgstr "Bei Funktionsaufrufen mit Formatzeichenketten warnen, die hinter das Ende der Zielregion schreiben. Entspricht -Wformat-overflow=1."
+msgstr "Bei Funktionsaufrufen mit Formatzeichenketten warnen, die hinter das Ende der Zielregion schreiben. Entspricht »-Wformat-overflow=1«."
 
 #: c-family/c.opt:804
 #, no-c-format
@@ -1996,7 +1996,7 @@ msgstr "Vor Vorzeichenunterschieden mit Formatfunktionen warnen."
 #: c-family/c.opt:817
 #, no-c-format
 msgid "Warn about calls to snprintf and similar functions that truncate output. Same as -Wformat-truncation=1."
-msgstr "Bei Aufrufen von snprintf und ähnlichen Funktionen warnen, wenn sie die Ausgabe abschneiden. Entspricht -Wformat-truncation=1."
+msgstr "Bei Aufrufen von snprintf und ähnlichen Funktionen warnen, wenn sie die Ausgabe abschneiden. Entspricht »-Wformat-truncation=1«."
 
 #: c-family/c.opt:822
 #, no-c-format
@@ -2086,7 +2086,7 @@ msgstr "Bei Verwendung von std::initializer_list warnen, wenn dadurch baumelnde 
 #: c-family/c.opt:905
 #, no-c-format
 msgid "Warn about nonsensical values of --param destructive-interference-size or constructive-interference-size."
-msgstr "Warnung vor unsinnigen Werten von --param destructive-interference-size oder constructive-interference-size."
+msgstr "Warnung vor unsinnigen Werten von »--param destructive-interference-size« oder »--param constructive-interference-size«."
 
 #: c-family/c.opt:910
 #, no-c-format
@@ -2141,7 +2141,7 @@ msgstr "Warnen, wenn der Leerraum am Zeilenanfang stilistisch unsauber ist, auß
 #: c-family/c.opt:965
 #, no-c-format
 msgid "Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore."
-msgstr "Warnen, wenn Zeichenkette oder Zeichenliteral gefolgt von UD-Suffix auftritt, der nicht mit Unterstrich anfängt."
+msgstr "Warnen, wenn Zeichenkette oder Zeichenliteral gefolgt von einem benutzerdefinierten Suffix auftritt, der nicht mit Unterstrich anfängt."
 
 #: c-family/c.opt:969
 #, no-c-format
@@ -2151,12 +2151,12 @@ msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs ve
 #: c-family/c.opt:973
 #, no-c-format
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false."
-msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr« oder »falsch« auswertet."
+msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »true« oder »false« auswertet."
 
 #: c-family/c.opt:977
 #, no-c-format
 msgid "Do not warn about using \"long long\" when -pedantic."
-msgstr "Nicht bei Verwendung von »long long« mit -pedantic warnen."
+msgstr "Nicht bei Verwendung von »long long« mit »-pedantic« warnen."
 
 #: c-family/c.opt:981
 #, no-c-format
@@ -2196,7 +2196,7 @@ msgstr "Warnen, wenn eine Klasse neudeklariert oder mit einem unpassenden Klasse
 #: c-family/c.opt:1019
 #, no-c-format
 msgid "Warn about declarations of entities that may be missing attributes that related entities have been declared with."
-msgstr "Bei Deklarationen von Entitys warnen, in denen Attribute fehlen, die bei verwandten Entitys jedoch angegeben wurden."
+msgstr "Bei Deklarationen von Entitäten warnen, in denen Attribute fehlen, die bei verwandten Entitäten jedoch angegeben wurden."
 
 #: c-family/c.opt:1024
 #, no-c-format
@@ -2261,7 +2261,7 @@ msgstr "Bei direkter Mehrfachvererbung warnen."
 #: c-family/c.opt:1079
 #, no-c-format
 msgid "Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for."
-msgstr "Warnen bei unsicheren Makros, die zu mehreren Anweisungen expandiert werden und innerhalb eines if, else, while, switch oder for verwendet werden."
+msgstr "Warnen bei unsicheren Makros, die zu mehreren Anweisungen expandieren und als Körper bei if, else, while, switch oder for verwendet werden."
 
 #: c-family/c.opt:1083
 #, no-c-format
@@ -2281,7 +2281,7 @@ msgstr "Bei »extern«-Deklarationen außerhalb des Dateisichtbarkeitsbereiches 
 #: c-family/c.opt:1095
 #, no-c-format
 msgid "Warn when a noexcept expression evaluates to false even though the expression can't actually throw."
-msgstr "Warnen, wenn ein »noexcept«-Ausdruck zu »falsch« auswertet, obwohl der Ausdruck nicht werfen kann."
+msgstr "Warnen, wenn ein »noexcept«-Ausdruck zu »false« auswertet, obwohl der Ausdruck nicht werfen kann."
 
 #: c-family/c.opt:1099
 #, no-c-format
@@ -2301,7 +2301,7 @@ msgstr "Bei nicht-virtuellen Destruktoren warnen."
 #: c-family/c.opt:1111
 #, no-c-format
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL."
-msgstr "Warnen, wenn NULL an Argumentstellen, die als nicht-NULL erfordernd markiert sind, übergeben wird."
+msgstr "Warnen, wenn NULL an Parameter, die nicht-NULL erfordern, übergeben wird."
 
 #: c-family/c.opt:1127
 #, no-c-format
@@ -2406,7 +2406,7 @@ msgstr "Bei Arithmetik mit Funktionszeigern warnen."
 #: c-family/c.opt:1239
 #, no-c-format
 msgid "Warn when a pointer differs in signedness in an assignment."
-msgstr "Warnen, wenn sich ein Zeiger im Vorzeichenbesitz in einer Zuweisung unterscheidet."
+msgstr "Warnen, wenn Zeiger zugewiesen werden, die auf Typen mit unterschiedlichem Vorzeichenbesitz zeigen."
 
 #: c-family/c.opt:1243
 #, no-c-format
@@ -2476,12 +2476,12 @@ msgstr "Warnen, wenn der Compiler Code umsortiert."
 #: c-family/c.opt:1295
 #, no-c-format
 msgid "Warn when an argument passed to a restrict-qualified parameter aliases with another argument."
-msgstr "Warnen, wenn ein Argument für einen »restrict«-Parameter auch in einem anderen Argument vorkommt."
+msgstr "Warnen, wenn ein Argument für einen »restrict«-Parameter ein anderes Argument überlagert."
 
 #: c-family/c.opt:1300
 #, no-c-format
 msgid "Warn whenever void-returning functions return a non-void expressions, or a return expression is missing in a function not returning void."
-msgstr "Warnen, wenn Funktionen, die void zurückgeben, einen nicht-void-Ausdruck zurückgeben, oder ein Rückgabeausdruck in einer Funktion fehlt, die nicht void zurückgibt."
+msgstr "Warnen, wenn eine Funktion mit Rückgabetyp »void« einen nicht-void-Ausdruck zurückgibt, oder wenn eine Funktion mit Rückgabetyp ungleich »void« keinen Wert zurückgibt."
 
 #: c-family/c.opt:1304
 #, no-c-format
@@ -2491,7 +2491,7 @@ msgstr "Bei Standardrückgabetyp »int« für Funktionen (C) und inkonsistenten 
 #: c-family/c.opt:1308
 #, no-c-format
 msgid "Warn on suspicious constructs involving reverse scalar storage order."
-msgstr "Bei verdächtigen Konstrukten waren, an denen die umgekehrte skalare Speicherreihenfolge beteiligt ist."
+msgstr "Bei verdächtigen Konstrukten warnen, an denen die umgekehrte skalare Speicherreihenfolge beteiligt ist."
 
 #: c-family/c.opt:1312
 #, no-c-format
@@ -2526,7 +2526,7 @@ msgstr "Warnen, wenn Schiebe-Anzahl negativ ist."
 #: c-family/c.opt:1340
 #, no-c-format
 msgid "Warn if shift count >= width of type."
-msgstr "Warnen, wenn Rechts-Schiebe-Anzahl >= Breite des Typs ist."
+msgstr "Warnen, wenn Schiebe-Anzahl >= Breite des Typs ist."
 
 #: c-family/c.opt:1344
 #, no-c-format
@@ -2546,7 +2546,7 @@ msgstr "Bei impliziten Typumwandlungen zwischen vorzeichenbehafteten und vorzeic
 #: c-family/c.opt:1360
 #, no-c-format
 msgid "Warn when overload promotes from unsigned to signed."
-msgstr "Warnen, wenn Überladung zur Umwandlung von vorzeichenbehaftet zu vorzeichenlos führt."
+msgstr "Warnen, wenn Überladung zur Umwandlung von vorzeichenlos zu vorzeichenbehaftet führt."
 
 #: c-family/c.opt:1364
 #, no-c-format
@@ -2556,7 +2556,7 @@ msgstr "Warnen, wenn Deallokationsfunktionen mit expliziter Größenangabe fehle
 #: c-family/c.opt:1368
 #, no-c-format
 msgid "Warn about divisions of two sizeof operators when the first one is applied to an array and the divisor does not equal the size of the array element."
-msgstr "Bei Divisionen von zwei %<sizeof%>-Operatoren warnen, wenn der erste auf ein Array angewendet wird und der Divisor nicht die Größe des Arrayelements ist."
+msgstr "Bei Divisionen von zwei »sizeof«-Operatoren warnen, wenn der erste auf ein Array angewendet wird und der zweite nicht die Größe des Arrayelements ist."
 
 #: c-family/c.opt:1373
 #, no-c-format
@@ -2612,7 +2612,7 @@ msgstr "Unter der Kontrolle des Object-Size-Typs warnen, wenn Pufferüberläufe 
 #: c-family/c.opt:1426
 #, no-c-format
 msgid "Warn about reading past the end of a source array in string manipulation functions like memchr and memcpy."
-msgstr "Warnen, wenn das Quellarray über das Ende hinaus gelesen wird, in Speicherfunktionen wie %<memchr%> und %<memcpy%>."
+msgstr "Warnen, wenn das Quellarray über das Ende hinaus gelesen wird, in Speicherfunktionen wie »memchr« und »memcpy«."
 
 #: c-family/c.opt:1430
 #, no-c-format
@@ -2687,7 +2687,7 @@ msgstr "Bei simple-template-id in einem Konstruktor oder Destruktor warnen."
 #: c-family/c.opt:1491
 #, no-c-format
 msgid "Warn about templates naming TU-local entities in a module."
-msgstr "Warnen, wenn Templates TU-lokale Entitys innerhalb eines Moduls benennen."
+msgstr "Warnen, wenn Templates TU-lokale Entitäten innerhalb eines Moduls benennen."
 
 #: c-family/c.opt:1495
 #, no-c-format
@@ -2842,7 +2842,7 @@ msgstr "Bei Zugriffen auf ein innenliegendes Arrayfeld der Länge 0 warnen."
 #: c-family/c.opt:1661
 #, no-c-format
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
-msgstr "Ein Synonym für -std=c89 (für C) oder -std=c++98 (für C++)."
+msgstr "Ein Synonym für »-std=c89« (für C) oder »-std=c++98« (für C++)."
 
 #: c-family/c.opt:1669
 #, no-c-format
@@ -2918,7 +2918,7 @@ msgstr "In GCC 15 entfernt. Dieser Schalter hat keine Auswirkung."
 #: c-family/c.opt:1823
 #, no-c-format
 msgid "Specify maximum error replay depth during recursive diagnosis of a constraint satisfaction failure."
-msgstr "Maximale Fehlerwiedergabetiefe während der rekursiven Diagnose eines Fehlschlags der Constraint-Erfüllung an."
+msgstr "Maximale Fehlerwiedergabetiefe während der rekursiven Diagnose eines Fehlschlags der Constraint-Erfüllung angeben."
 
 #: c-family/c.opt:1827
 #, no-c-format
@@ -2953,7 +2953,7 @@ msgstr "-fconstexpr-loop-limit=<Anzahl>\tHöchstzahl der Schleifeniterationen f�
 #: c-family/c.opt:1855
 #, no-c-format
 msgid "-fconstexpr-ops-limit=<number>\tSpecify maximum number of constexpr operations during a single constexpr evaluation."
-msgstr "-fconstexpr-ops-limit=<Anzahl>\tHöchstzahl der constexpr-Operationen pro einzelner »constexpr« angeben."
+msgstr "-fconstexpr-ops-limit=<Anzahl>\tHöchstzahl der constexpr-Operationen pro einzelner »constexpr«-Auswertung angeben."
 
 #: c-family/c.opt:1859
 #, no-c-format
@@ -3018,7 +3018,7 @@ msgstr "Hierarchische Vergleiche ausgeben, wenn die Templatetypen nicht zusammen
 #: c-family/c.opt:1924
 #, no-c-format
 msgid "Note all candidates during overload resolution failure."
-msgstr "Wenn das Auflösen von Überladungen nicht eindeutig ist, alle Kandidaten auflisten."
+msgstr "Wenn das Auflösen von Überladungen scheitert, alle Kandidaten auflisten."
 
 #: c-family/c.opt:1928
 #, no-c-format
@@ -3568,7 +3568,7 @@ msgstr "-iwithprefixbefore <Verz>\t<Verz> an das Ende des Haupt-Einfügepfades a
 #: c-family/c.opt:2525
 #, no-c-format
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)."
-msgstr "Standard-System-Einfügepfade nicht durchsuchen (die mit -isystem angegebenen werden trotzdem noch verwendet)."
+msgstr "Standard-System-Einfügepfade nicht durchsuchen (die mit »-isystem« angegebenen werden trotzdem noch verwendet)."
 
 #: c-family/c.opt:2529
 #, no-c-format
@@ -3598,12 +3598,12 @@ msgstr "Mit dem ISO-C++-Standard von 2011 übereinstimmen."
 #: c-family/c.opt:2561
 #, no-c-format
 msgid "Deprecated in favor of -std=c++11."
-msgstr "Veraltet zugunsten von -std=c++11."
+msgstr "Veraltet zugunsten von »-std=c++11«."
 
 #: c-family/c.opt:2565
 #, no-c-format
 msgid "Deprecated in favor of -std=c++14."
-msgstr "Veraltet zugunsten von -std=c++14."
+msgstr "Veraltet zugunsten von »-std=c++14«."
 
 #: c-family/c.opt:2569
 #, no-c-format
@@ -3613,7 +3613,7 @@ msgstr "Mit dem ISO-C++-Standard von 2014 übereinstimmen."
 #: c-family/c.opt:2573
 #, no-c-format
 msgid "Deprecated in favor of -std=c++17."
-msgstr "Veraltet zugunsten von -std=c++17."
+msgstr "Veraltet zugunsten von »-std=c++17«."
 
 #: c-family/c.opt:2577
 #, no-c-format
@@ -3643,7 +3643,7 @@ msgstr "Mit dem ISO-C-Standard von 2011 übereinstimmen."
 #: c-family/c.opt:2609
 #, no-c-format
 msgid "Deprecated in favor of -std=c11."
-msgstr "Veraltet zugunsten von -std=c11."
+msgstr "Veraltet zugunsten von »-std=c11«."
 
 #: c-family/c.opt:2613 c-family/c.opt:2617 c-family/c.opt:2771
 #: c-family/c.opt:2775
@@ -3659,7 +3659,7 @@ msgstr "Mit dem ISO-C-Standard von 2023 (2024 veröffentlicht) übereinstimmen."
 #: c-family/c.opt:2625
 #, no-c-format
 msgid "Deprecated in favor of -std=c23."
-msgstr "Veraltet zugunsten von -std=c23."
+msgstr "Veraltet zugunsten von »-std=c23«."
 
 #: c-family/c.opt:2629
 #, no-c-format
@@ -3679,7 +3679,7 @@ msgstr "Mit dem ISO-C-Standard von 1999 übereinstimmen."
 #: c-family/c.opt:2645
 #, no-c-format
 msgid "Deprecated in favor of -std=c99."
-msgstr "Veraltet zugunsten von -std=c99."
+msgstr "Veraltet zugunsten von »-std=c99«."
 
 #: c-family/c.opt:2649 c-family/c.opt:2654
 #, no-c-format
@@ -3694,12 +3694,12 @@ msgstr "Mit dem ISO-C++-Standard von 2011 mit GNU-Erweiterungen übereinstimmen.
 #: c-family/c.opt:2663
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu++11."
-msgstr "Veraltet zugunsten von -std=gnu++11."
+msgstr "Veraltet zugunsten von »-std=gnu++11«."
 
 #: c-family/c.opt:2667
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu++14."
-msgstr "Veraltet zugunsten von -std=gnu++14."
+msgstr "Veraltet zugunsten von »-std=gnu++14«."
 
 #: c-family/c.opt:2671
 #, no-c-format
@@ -3709,7 +3709,7 @@ msgstr "Mit dem ISO-C++-Standard von 2014 mit GNU-Erweiterungen übereinstimmen.
 #: c-family/c.opt:2675
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu++17."
-msgstr "Veraltet zugunsten von -std=gnu++17."
+msgstr "Veraltet zugunsten von »-std=gnu++17«."
 
 #: c-family/c.opt:2679
 #, no-c-format
@@ -3739,7 +3739,7 @@ msgstr "Mit dem ISO-C-Standard von von 2011 mit GNU-Erweiterungen übereinstimme
 #: c-family/c.opt:2711
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu11."
-msgstr "Veraltet zugunsten von -std=gnu11."
+msgstr "Veraltet zugunsten von »-std=gnu11«."
 
 #: c-family/c.opt:2715 c-family/c.opt:2719
 #, no-c-format
@@ -3754,7 +3754,7 @@ msgstr "Mit dem ISO-C-Standard von 2023 (veröffentlicht 2024) mit GNU-Erweiteru
 #: c-family/c.opt:2727
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu23."
-msgstr "Veraltet zugunsten von -std=gnu23."
+msgstr "Veraltet zugunsten von »-std=gnu23«."
 
 #: c-family/c.opt:2731
 #, no-c-format
@@ -3774,7 +3774,7 @@ msgstr "Mit dem ISO-C-Standard von von 1999 mit GNU-Erweiterungen übereinstimme
 #: c-family/c.opt:2747
 #, no-c-format
 msgid "Deprecated in favor of -std=gnu99."
-msgstr "Veraltet zugunsten von -std=gnu99."
+msgstr "Veraltet zugunsten von »-std=gnu99«."
 
 #: c-family/c.opt:2755
 #, no-c-format
@@ -3784,7 +3784,7 @@ msgstr "Mit dem ISO-C-Standard von 1990, wie 1994 ergänzt, übereinstimmen."
 #: c-family/c.opt:2763
 #, no-c-format
 msgid "Deprecated in favor of -std=iso9899:1999."
-msgstr "Veraltet zugunsten von -std=iso9899:1999."
+msgstr "Veraltet zugunsten von »-std=iso9899:1999«."
 
 #: c-family/c.opt:2783
 #, no-c-format
@@ -3884,7 +3884,7 @@ msgstr "Quellcode-Abdeckungsverpflichtungen wegschreiben."
 #: ada/gcc-interface/lang.opt:65
 #, no-c-format
 msgid "Synonym of -gnatk8."
-msgstr "Synonym für -gnatk8."
+msgstr "Synonym für »-gnatk8«."
 
 #: ada/gcc-interface/lang.opt:73
 #, no-c-format
@@ -4314,7 +4314,7 @@ msgstr "den C-Präprozessor verwenden, um das Modul vorzuverarbeiten"
 #: m2/lang.opt:79 m2/lang.opt:83
 #, no-c-format
 msgid "passed to the preprocessor if -fcpp is used (internal switch)"
-msgstr "wird an den Präprozessor weitergereicht, wenn -fcpp verwendet wird (interne Option)"
+msgstr "wird an den Präprozessor weitergereicht, wenn »-fcpp« verwendet wird (interne Option)"
 
 #: m2/lang.opt:87
 #, no-c-format
@@ -4489,7 +4489,7 @@ msgstr "erzwingen, dass MOD stets positiv ist und DIV abrundet"
 #: m2/lang.opt:227
 #, no-c-format
 msgid "link against the pthread library (default on)"
-msgstr "mit der pthread-Bibliothek übersetzen (Vorgabe: ein)"
+msgstr "mit der pthread-Bibliothek binden (Vorgabe: ein)"
 
 #: m2/lang.opt:231
 #, no-c-format
@@ -4539,7 +4539,7 @@ msgstr "eine gemeinsam genutzte Bibliothek aus dem Modul erzeugen"
 #: m2/lang.opt:271
 #, no-c-format
 msgid "turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
-msgstr "alle Software-Laufzeitüberprüfungen einschalten (das ist die Abkürzung für -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
+msgstr "alle Software-Laufzeitüberprüfungen einschalten (das ist die Abkürzung für »-fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue«)"
 
 #: m2/lang.opt:275
 #, no-c-format
@@ -4644,7 +4644,7 @@ msgstr "Funktionen, die Werte zurückgeben, müssen mit return-Anweisungen enden
 #: go/lang.opt:90
 #, no-c-format
 msgid "Emit debugging information related to the escape analysis pass when run with -fgo-optimize-allocs."
-msgstr "Debuginformation für den Escape-Analyse-Durchlauf ausgeben, wenn mit -fgo-optimize-allocs aufgerufen."
+msgstr "Debuginformation für den Escape-Analyse-Durchlauf ausgeben, wenn mit »-fgo-optimize-allocs« aufgerufen."
 
 #: go/lang.opt:94
 #, no-c-format
@@ -5179,7 +5179,7 @@ msgstr "Little-Endian-Code erzeugen."
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 #, no-c-format
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line."
-msgstr "Annehmen, dass Laufzeitunterstützung vorhanden ist, und daher -lsim von Linker-Kommandozeile auslassen."
+msgstr "Annehmen, dass Laufzeitunterstützung vorhanden ist, und daher »-lsim« von Binder-Kommandozeile auslassen."
 
 #: config/mcore/mcore.opt:60
 #, no-c-format
@@ -5349,7 +5349,7 @@ msgstr "Codeerzeugung von Stummeln für die Indirektion externer Symbole erzwing
 #: config/darwin.opt:92
 #, no-c-format
 msgid "-mtarget-linker <version>\tSpecify that ld64 <version> is the toolchain linker for the current invocation."
-msgstr "-mtarget-linker <Version>\tld64 <Version> als Toolchain-Linker für den aktuellen Aufruf festlegen."
+msgstr "-mtarget-linker <Version>\tld64 <Version> als Toolchain-Binder für den aktuellen Aufruf festlegen."
 
 #: config/darwin.opt:98
 #, no-c-format
@@ -5399,7 +5399,7 @@ msgstr "-client_name <Name>\tErlauben, dass die erzeugte ausführbare Datei gege
 #: config/darwin.opt:134
 #, no-c-format
 msgid "-compatibility_version <number>\tSet the version for the client interface.  Client programs must record a value less than or equal to <number>, or the binding will fail at runtime."
-msgstr "-compatibility_version <Nummer>\tMinimale Version für das Client-Interface festlegen. Clients müssen diese <Nummer> oder eine größere angeben, oder das Binden wird zur Laufzeit fehlschlagen."
+msgstr "-compatibility_version <Nummer>\tMinimale Version für das Client-Interface festlegen. Clients müssen diese <Nummer> oder eine größere angeben, oder das Binden wird zur Laufzeit scheitern."
 
 #: config/darwin.opt:138
 #, no-c-format
@@ -5414,7 +5414,7 @@ msgstr "Code und Daten, die unerreichbar von jeglichen exportierten Symbolen sin
 #: config/darwin.opt:146
 #, no-c-format
 msgid "-dylib_file install_name:file_name\tThis allows linking of a dylib with \"install_name\" but to be found in a different install position \"file_name\""
-msgstr "-dylib_file Installationsname:Dateiname\tDies ermöglicht die Verknüpfung einer Dylib mit »Installationsname«, die aber in einer anderen Installationsposition »Dateiname« zu finden ist"
+msgstr "-dylib_file Installationsname:Dateiname\tDies ermöglicht das Binden einer Dylib mit »Installationsname«, die aber in einer anderen Installationsposition »Dateiname« zu finden ist"
 
 #: config/darwin.opt:150
 #, no-c-format
@@ -5439,7 +5439,7 @@ msgstr "Eine gemeinsam genutzte Mach-O-Bibliothek (Dateityp MH_DYLIB) generieren
 #: config/darwin.opt:166
 #, no-c-format
 msgid "-exported_symbols_list <filename>\tExport global symbols in <filename> in linked output file; any symbols not mentioned will be treated as \"hidden\"."
-msgstr "-exported_symbols_list <Dateiname>\tGlobale Symbole in <Dateiname> werden aus der gelinkten Ausgabedatei exportiert, alle nicht erwähnten Symbole werden als versteckt behandelt."
+msgstr "-exported_symbols_list <Dateiname>\tGlobale Symbole in <Dateiname> werden aus der gebundenen Ausgabedatei exportiert, alle nicht erwähnten Symbole werden als versteckt behandelt."
 
 #: config/darwin.opt:170
 #, no-c-format
@@ -5459,7 +5459,7 @@ msgstr "Den normalen zweistufigen Namensraum ignorieren; Symbole in der Reihenfo
 #: config/darwin.opt:182
 #, no-c-format
 msgid "For the assembler (and linker) permit any architecture sub-variant to be used without error."
-msgstr "Dem Assembler (und Linker) erlauben, jede beliebige Architektur-Untervariante ohne Fehler zu verwenden."
+msgstr "Dem Assembler (und Binder) erlauben, jede beliebige Architektur-Untervariante ohne Fehler zu verwenden."
 
 #: config/darwin.opt:186
 #, no-c-format
@@ -5469,7 +5469,7 @@ msgstr "Das Ausgabeobjekt so festlegen, dass beim Laden dyld alle 2-stufigen Nam
 #: config/darwin.opt:190
 #, no-c-format
 msgid "-framework <name>\tThe linker should search for the framework <name> in the framework search path."
-msgstr "-framework <Name>\tDas Framework <Name> im Pfad für Frameworks suchen."
+msgstr "-framework <Name>\tDer Binder sollte das Framework <Name> im Suchpfad für Frameworks suchen."
 
 #: config/darwin.opt:198
 #, no-c-format
@@ -5504,7 +5504,7 @@ msgstr "-install_name <Name>\tLegt den Installationsnamen für eine Dylib fest."
 #: config/darwin.opt:222
 #, no-c-format
 msgid "Usually \"private extern\" (hidden) symbols are made local when linking, this command suppresses that such that they remain exported."
-msgstr "Normalerweise werden Symbole, die »private extern« (versteckt) sind, beim Linken lokal gemacht. Dieser Befehl unterdrückt das, so dass sie exportiert bleiben."
+msgstr "Normalerweise werden Symbole, die »private extern« (versteckt) sind, beim Binden lokal gemacht. Dieser Befehl unterdrückt das, so dass sie exportiert bleiben."
 
 #: config/darwin.opt:226
 #, no-c-format
@@ -5524,7 +5524,7 @@ msgstr "(Obsolet nach 10.4) -multiply_defined_unused <Behandlung>\tBot einen Mec
 #: config/darwin.opt:238
 #, no-c-format
 msgid "(Obsolete) Current linkers never dead-strip these items, so the option is not needed."
-msgstr "(Obsolet) Aktuelle Linker entfernen diese Elemente nie, daher wird diese Option nicht benötigt."
+msgstr "(Obsolet) Aktuelle Binder entfernen diese Elemente nie, daher wird diese Option nicht benötigt."
 
 #: config/darwin.opt:242
 #, no-c-format
@@ -5569,12 +5569,12 @@ msgstr "Erzeugt eine Mach-O-Datei, die für die Verwendung in eingebetteten Syst
 #: config/darwin.opt:291
 #, no-c-format
 msgid "(Obsolete) Allowed linking to proceed with \"-flat_namespace\" when a linked bundle contained a symbol also exported from the main executable."
-msgstr "(Obsolet) Erlaubte das Verlinken mit »-flat_namespace« fortzusetzen, wenn ein verlinktes Bundle ein Symbol enthält, das ebenfalls aus der Hauptausführungsdatei exportiert wurde."
+msgstr "(Obsolet) Erlaubte das Binden mit »-flat_namespace« fortzusetzen, wenn ein gebundenes Bundle ein Symbol enthält, das ebenfalls aus der Hauptausführungsdatei exportiert wurde."
 
 #: config/darwin.opt:298
 #, no-c-format
 msgid "Synonym for \"-export-dynamic\" for linker versions that support it."
-msgstr "Synonym für »-export-dynamic« für Linker-Versionen, die dies unterstützen."
+msgstr "Synonym für »-export-dynamic« für Binder-Versionen, die dies unterstützen."
 
 #: config/darwin.opt:302
 #, no-c-format
@@ -5609,7 +5609,7 @@ msgstr "-seg_addr_table <Datei>\tBasisadressen für dynamische Bibliotheken fest
 #: config/darwin.opt:327
 #, no-c-format
 msgid "(Obsolete, ld_classic only) -seg_addr_table_filename <path>."
-msgstr "(Obsolet, nur ld_classic) -seg_addr_table_filename <Pfad>."
+msgstr "(Obsolet, nur ld_classic) »-seg_addr_table_filename <Pfad>«."
 
 #: config/darwin.opt:331
 #, no-c-format
@@ -5689,7 +5689,7 @@ msgstr "-unexported_symbols_list <Datei>\tGlobale Symbole, die in <Datei> aufgel
 #: config/darwin.opt:392
 #, no-c-format
 msgid "-weak_framework <framework>\tMake a weak link to the specified framework."
-msgstr "-weak_framework <framework>\tEine schwache Verknüpfung zu dem angegebenen Rahmenwerk herstellen."
+msgstr "-weak_framework <framework>\tEine schwache Bindung zu dem angegebenen Rahmenwerk herstellen."
 
 #: config/darwin.opt:396
 #, no-c-format
@@ -5699,7 +5699,7 @@ msgstr "-weak_reference_mismatches <Auswirkung>\tAuswirkung von Symbol-Importkon
 #: config/darwin.opt:400
 #, no-c-format
 msgid "Logs which object files the linker loads."
-msgstr "Die vom Linker geladenen Objektdateien wegschreiben."
+msgstr "Die vom Binder geladenen Objektdateien wegschreiben."
 
 #: config/darwin.opt:404
 #, no-c-format
@@ -5754,7 +5754,7 @@ msgstr "ID-basierte Shared Library einschalten."
 #: config/bfin/bfin.opt:69
 #, no-c-format
 msgid "Generate code that won't be linked against any other ID shared libraries, but may be used as a shared library."
-msgstr "Code erzeugen, der nicht mit anderen ID-shared Libraries gelinkt werden würde, aber als Shared Library verwendet werden kann."
+msgstr "Code erzeugen, der nicht mit anderen ID-shared Libraries gebunden werden würde, aber als Shared Library verwendet werden kann."
 
 #: config/bfin/bfin.opt:74 config/m68k/m68k.opt:180
 #, no-c-format
@@ -5774,7 +5774,7 @@ msgstr "Erzeugung PC-relativer Aufrufe verhindern; Indirektion verwenden."
 #: config/bfin/bfin.opt:86
 #, no-c-format
 msgid "Link with the fast floating-point library."
-msgstr "Mit schneller Gleitkomma-Bibliothek linken."
+msgstr "Mit schneller Gleitkomma-Bibliothek binden."
 
 #: config/bfin/bfin.opt:90 config/arm/arm.opt:345 config/frv/frv.opt:130
 #, no-c-format
@@ -5819,17 +5819,17 @@ msgstr "Annahme, dass ICPLBs zur Laufzeit eingeschaltet sind."
 #: config/m68k/m68k-tables.opt:25
 #, no-c-format
 msgid "Known M68K CPUs (for use with the -mcpu= option):"
-msgstr "Bekannte M68K-CPUs (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte M68K-CPUs (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/m68k/m68k-tables.opt:365
 #, no-c-format
 msgid "Known M68K microarchitectures (for use with the -mtune= option):"
-msgstr "Bekannte M68K-Mikroarchitekturen (für Verwendung mit Option -mtune=):"
+msgstr "Bekannte M68K-Mikroarchitekturen (für Verwendung mit der Option »-mtune=«):"
 
 #: config/m68k/m68k-tables.opt:411
 #, no-c-format
 msgid "Known M68K ISAs (for use with the -march= option):"
-msgstr "Bekannte M68K-ISAs (für Verwendung mit Option -march=):"
+msgstr "Bekannte M68K-ISAs (für Verwendung mit der Option »-march=«):"
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:389
 #, no-c-format
@@ -6057,7 +6057,7 @@ msgstr "-mbranch-cost=N\tSprungkosten auf ungefähr N Befehle setzen."
 #: config/riscv/riscv.opt:38
 #, no-c-format
 msgid "This option is deprecated; use -fplt or -fno-plt instead."
-msgstr "Diese Option ist veraltet; verwenden Sie stattdessen -fplt oder -fno-plt."
+msgstr "Diese Option ist veraltet; verwenden Sie stattdessen »-fplt« oder »-fno-plt«."
 
 #: config/riscv/riscv.opt:42
 #, no-c-format
@@ -6072,7 +6072,7 @@ msgstr "Versuch, den Stapel an dieser Potenz von 2 auszurichten."
 #: config/riscv/riscv.opt:50
 #, no-c-format
 msgid "Supported ABIs (for use with the -mabi= option):"
-msgstr "Unterstützte ABIs (für Verwendung mit Option »-mabi=«):"
+msgstr "Unterstützte ABIs (für Verwendung mit der Option »-mabi=«):"
 
 #: config/riscv/riscv.opt:78
 #, no-c-format
@@ -6092,7 +6092,7 @@ msgstr "-march=\tCode für die angegebene RISC-V-ISA (z.B. RV64IM) erzeugen. ISA
 #: config/riscv/riscv.opt:91
 #, no-c-format
 msgid "-march=help\tPrint supported -march extensions."
-msgstr "-march=help\tUnterstützte -march-Erweiterungen ausgeben."
+msgstr "-march=help\tUnterstützte »-march«-Erweiterungen ausgeben."
 
 #: config/riscv/riscv.opt:103 config/mips/mips.opt:426
 #, no-c-format
@@ -6144,7 +6144,7 @@ msgstr "Keine Vektor-Speicherzugriffe mit falsch ausgerichtetem Elementzugriff e
 #: config/rs6000/aix64.opt:36 config/rs6000/linux64.opt:32
 #, no-c-format
 msgid "Known code models (for use with the -mcmodel= option):"
-msgstr "Bekannte Codemodelle (für Verwendung mit Option -mcmodel=):"
+msgstr "Bekannte Codemodelle (für Verwendung mit der Option »-mcmodel=«):"
 
 #: config/riscv/riscv.opt:154
 #, no-c-format
@@ -6154,7 +6154,7 @@ msgstr "%reloc()-Operatoren statt Assemblermakros verwenden, um Adressen zu lade
 #: config/riscv/riscv.opt:158 config/loongarch/loongarch.opt:278
 #, no-c-format
 msgid "Take advantage of linker relaxations to reduce the number of instructions required to materialize symbol addresses."
-msgstr "Linker-Lockerungen ausnutzen, um die Anzahl der Befehle zu reduzieren, die für das Materialisieren von Symboladressen verwendet werden."
+msgstr "Binder-Lockerungen ausnutzen, um die Anzahl der Befehle zu reduzieren, die für das Materialisieren von Symboladressen verwendet werden."
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109100
 #: config/riscv/riscv.opt:163
@@ -6181,7 +6181,7 @@ msgstr "Die angegebene Datenausrichtung verwenden."
 #: config/riscv/riscv.opt:199 config/i386/i386.opt:265
 #, no-c-format
 msgid "Known data alignment choices (for use with the -malign-data= option):"
-msgstr "Bekannte Datenausrichtungen (für Verwendung mit Option -malign-data=):"
+msgstr "Bekannte Datenausrichtungen (für Verwendung mit der Option »-malign-data=«):"
 
 #: config/riscv/riscv.opt:209 config/aarch64/aarch64.opt:313
 #: config/i386/i386.opt:1021 config/arm/arm.opt:349
@@ -6194,7 +6194,7 @@ msgstr "Angegebenen Stapelschutz-Wächter verwenden."
 #: config/arm/arm.opt:353 config/rs6000/rs6000.opt:562
 #, no-c-format
 msgid "Valid arguments to -mstack-protector-guard=:"
-msgstr "Gültige Argumente für -mstack-protector-guart=:"
+msgstr "Gültige Argumente für »-mstack-protector-guard=«:"
 
 #: config/riscv/riscv.opt:223 config/i386/i386.opt:1035
 #: config/rs6000/rs6000.opt:572
@@ -6211,7 +6211,7 @@ msgstr "Angegebenen Offset zur Addressierung des Stapelschutz-Wächters verwende
 #: config/riscv/riscv.opt:543
 #, no-c-format
 msgid "Supported ISA specs (for use with the -misa-spec= option):"
-msgstr "Unterstützte ISA-Spezifikationen (für Verwendung mit Option »-misa-spec=«):"
+msgstr "Unterstützte ISA-Spezifikationen (für Verwendung mit der Option »-misa-spec=«):"
 
 #: config/riscv/riscv.opt:556
 #, no-c-format
@@ -6261,7 +6261,7 @@ msgstr "-mrvv-max-lmul=<Zeichenkette>\tDie RVV-LMUL der Auto-Vektorisierung fest
 #: config/riscv/riscv.opt:610
 #, no-c-format
 msgid "Valid arguments to -param=vsetvl-strategy=:"
-msgstr "Gültige Argumente für -param=vsetvl-strategy=:"
+msgstr "Gültige Argumente für »-param=vsetvl-strategy=«:"
 
 #: config/riscv/riscv.opt:623
 #, no-c-format
@@ -6276,7 +6276,7 @@ msgstr "-param=riscv-two-source-permutes\tSchaltet Permutationen mit zwei Quellv
 #: config/riscv/riscv.opt:631 config/i386/i386.opt:496
 #, no-c-format
 msgid "Valid arguments to -mstringop-strategy=:"
-msgstr "Gültige Arguments für -mstringop-strategy=:"
+msgstr "Gültige Arguments für »-mstringop-strategy=«:"
 
 #: config/riscv/riscv.opt:647
 #, no-c-format
@@ -6388,7 +6388,7 @@ msgstr "Kleines Speichermodell wählen – 16-Bit-Adressen/-Zeiger (Voreinstellu
 #: config/msp430/msp430.opt:60
 #, no-c-format
 msgid "Optimize opcode sizes at link time."
-msgstr "Opcodegrößen zur Linkzeit optimieren."
+msgstr "Opcodegrößen zur Bindezeit optimieren."
 
 #: config/msp430/msp430.opt:67 config/pru/pru.opt:26
 #, no-c-format
@@ -6438,7 +6438,7 @@ msgstr "Für Bitschiebeoperationen mit konstanter Anzahl, die einen einzelnen Ma
 #: config/aarch64/aarch64.opt:70 config/loongarch/loongarch.opt:248
 #, no-c-format
 msgid "The code model option names for -mcmodel:"
-msgstr "Codemodell-Optionsnamen für -mcmodel:"
+msgstr "Codemodell-Optionsnamen für »-mcmodel«:"
 
 #: config/aarch64/aarch64.opt:87 config/i386/i386.opt:1056
 #, no-c-format
@@ -6508,7 +6508,7 @@ msgstr "-moverride=<Zeichenkette>\tNur für Powernutzer! CPU-Optimierungsparamet
 #: config/aarch64/aarch64.opt:197
 #, no-c-format
 msgid "Known AArch64 ABIs (for use with the -mabi= option):"
-msgstr "Bekannte AArch64-ABIs (für Verwendung mit Option -mabi=):"
+msgstr "Bekannte AArch64-ABIs (für Verwendung mit der Option »-mabi=«):"
 
 #: config/aarch64/aarch64.opt:207
 #, no-c-format
@@ -6538,7 +6538,7 @@ msgstr "Annäherung der reziproken Quadratwurzel einschalten. Dies reduziert die
 #: config/aarch64/aarch64.opt:238
 #, no-c-format
 msgid "Enable the square root approximation.  Enabling this reduces precision of square root results to about 16 bits for single precision and to 32 bits for double precision. If enabled, it implies -mlow-precision-recip-sqrt."
-msgstr "Annäherung der Quadratwurzel einschalten. Dies reduziert die Genauigkeit der Quadratwurzelergebnisse auf etwa 16 Bits für einfache Genauigkeit und 32 Bits für doppelte Genauigkeit. Wenn eingeschaltet, bringt es »-mlow-precition-recip-sqrt« mit sich."
+msgstr "Annäherung der Quadratwurzel einschalten. Dies reduziert die Genauigkeit der Quadratwurzelergebnisse auf etwa 16 Bits für einfache Genauigkeit und 32 Bits für doppelte Genauigkeit. Wenn eingeschaltet, bringt es »-mlow-precision-recip-sqrt« mit sich."
 
 #: config/aarch64/aarch64.opt:245
 #, no-c-format
@@ -6869,7 +6869,7 @@ msgstr "Code für die gegebene CPU planen."
 #: config/ia64/ia64.opt:126
 #, no-c-format
 msgid "Known Itanium CPUs (for use with the -mtune= option):"
-msgstr "Bekannte Itanium-CPUs (für Verwendung mit Option -mtune=):"
+msgstr "Bekannte Itanium-CPUs (für Verwendung mit der Option »-mtune=«):"
 
 #: config/ia64/ia64.opt:136
 #, no-c-format
@@ -7134,7 +7134,7 @@ msgstr "-mmcu=MCU\tZiel-System-On-Chip-Variante auswählen, die diese PRU einbet
 #: config/pru/pru.opt:35
 #, no-c-format
 msgid "Make GCC pass the --no-relax command-line option to the linker instead of the --relax option."
-msgstr "Dem Linker die Befehlszeilenoption »--no-relax« anstelle der Option »--relax« übergeben."
+msgstr "Dem Binder die Befehlszeilenoption »--no-relax« anstelle der Option »--relax« übergeben."
 
 #: config/pru/pru.opt:40
 #, no-c-format
@@ -7347,7 +7347,7 @@ msgstr "Angegebenen Assemblerdialekt verwenden."
 #: config/i386/i386.opt:286
 #, no-c-format
 msgid "Known assembler dialects (for use with the -masm= option):"
-msgstr "Bekannte Assemblerdialekte (für Verwendung mit Option »-masm=«):"
+msgstr "Bekannte Assemblerdialekte (für Verwendung mit der Option »-masm=«):"
 
 #: config/i386/i386.opt:296
 #, no-c-format
@@ -7372,7 +7372,7 @@ msgstr "Angegebenen Adressierungsmodus verwenden."
 #: config/i386/i386.opt:331
 #, no-c-format
 msgid "Known address mode (for use with the -maddress-mode= option):"
-msgstr "Bekannter Adressmodus (für Verwendung mit Option -maddress-mode=):"
+msgstr "Bekannter Adressmodus (für Verwendung mit der Option »-maddress-mode=«):"
 
 #: config/i386/i386.opt:344
 #, no-c-format
@@ -7397,7 +7397,7 @@ msgstr "Gleitkommaarithmetik mit gegebenem Befehlssatz erzeugen."
 #: config/i386/i386.opt:360
 #, no-c-format
 msgid "Valid arguments to -mfpmath=:"
-msgstr "Gültige Argumente für -mfpmath=:"
+msgstr "Gültige Argumente für »-mfpmath=«:"
 
 #: config/i386/i386.opt:393
 #, no-c-format
@@ -7507,7 +7507,7 @@ msgstr "Gegebenen Thread-lokalen Speicherdialekt verwenden."
 #: config/i386/i386.opt:528
 #, no-c-format
 msgid "Known TLS dialects (for use with the -mtls-dialect= option):"
-msgstr "Bekannte TLS-Dialekte (für Verwendung mit Option -mtls-dialect=):"
+msgstr "Bekannte TLS-Dialekte (für Verwendung mit der Option »-mtls-dialect=«):"
 
 #: config/i386/i386.opt:538
 #, no-c-format
@@ -7537,7 +7537,7 @@ msgstr "Code erzeugen, der zum angegebenen ABI passt."
 #: config/i386/i386.opt:565 config/nds32/nds32.opt:51
 #, no-c-format
 msgid "Known ABIs (for use with the -mabi= option):"
-msgstr "Bekannte ABIs (für Verwendung mit Option -mabi=):"
+msgstr "Bekannte ABIs (für Verwendung mit der Option »-mabi=«):"
 
 #: config/i386/i386.opt:575
 #, no-c-format
@@ -7552,7 +7552,7 @@ msgstr "Zu verwendendes Vektorbibliotheks-ABI."
 #: config/i386/i386.opt:583
 #, no-c-format
 msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
-msgstr "Bekannte ABIs für Vektorisierungs-Bibliothek (für Verwendung mit Schalter -mveclibabi=):"
+msgstr "Bekannte ABIs für Vektorisierungs-Bibliothek (für Verwendung mit der Option »-mveclibabi=«):"
 
 #: config/i386/i386.opt:596
 #, no-c-format
@@ -7607,7 +7607,7 @@ msgstr "Im Autovektorisierer die angegebene Breite für Vektorbefehle anstelle d
 #: config/i386/i386.opt:639
 #, no-c-format
 msgid "Known preferred register vector length (to use with the -mprefer-vector-width= option):"
-msgstr "Bekannte bevorzugte Länge von Registervektoren (für Verwendung mit der Option -mprefer-vector-width=):"
+msgstr "Bekannte bevorzugte Länge von Registervektoren (für Verwendung mit der Option »-mprefer-vector-width=«):"
 
 #: config/i386/i386.opt:655
 #, no-c-format
@@ -8047,7 +8047,7 @@ msgstr "Eingebaute PKU-Funktionen und Codeerzeugung unterstützen."
 #: config/i386/i386.opt:1025
 #, no-c-format
 msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
-msgstr "Bekannte Stapelschutz-Wächter (für Verwendung mit Option -mstack-protector-guard=):"
+msgstr "Bekannte Stapelschutz-Wächter (für Verwendung mit der Option »-mstack-protector-guard=«):"
 
 #: config/i386/i386.opt:1049
 #, no-c-format
@@ -8087,7 +8087,7 @@ msgstr "Funktionsrückkehr in Aufruf umwandeln und Thunk zurückgeben."
 #: config/i386/i386.opt:1087 config/s390/s390.opt:279
 #, no-c-format
 msgid "Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):"
-msgstr "Bekannte indirekte Sprungauswahlen (für Verwendung mit den Optionen -mindirect-branch=/-mfunction-return=):"
+msgstr "Bekannte indirekte Sprungauswahlen (für Verwendung mit den Optionen »-mindirect-branch=« und »-mfunction-return=«):"
 
 #: config/i386/i386.opt:1103
 #, no-c-format
@@ -8127,7 +8127,7 @@ msgstr "Verlassen von Funktionen mit __fentry__ instrumentieren, in instrumentie
 #: config/i386/i386.opt:1131
 #, no-c-format
 msgid "Known choices for return instrumentation with -minstrument-return=:"
-msgstr "Bekannte Werte für Rückkehr-Instrumentierung mit -minstrument-return=:"
+msgstr "Bekannte Werte für Rückkehr-Instrumentierung mit »-minstrument-return=«:"
 
 #: config/i386/i386.opt:1144
 #, no-c-format
@@ -8423,7 +8423,7 @@ msgstr "Kohärente Cachesteuerungs-Hinweise für ldcw/ldcd verwenden."
 #: config/pa/pa.opt:58
 #, no-c-format
 msgid "Disable FP regs.  Equivalent to -msoft-float."
-msgstr "Gleitkommaregister ausschalten. Äquivalent zu -msoft-float."
+msgstr "Gleitkommaregister ausschalten. Äquivalent zu »-msoft-float«."
 
 #: config/pa/pa.opt:62
 #, no-c-format
@@ -8543,7 +8543,7 @@ msgstr "Verwendung der kurzen Ladebefehle einschalten."
 #: config/v850/v850.opt:71
 #, no-c-format
 msgid "Same as: -mep -mprolog-function."
-msgstr "Das gleiche wie: -mep -mprolog-function."
+msgstr "Das gleiche wie: »-mep -mprolog-function«."
 
 #: config/v850/v850.opt:75
 #, no-c-format
@@ -8663,7 +8663,7 @@ msgstr "Multi-Threading unterstützen."
 #: config/nvptx/nvptx-gen.opt:24
 #, no-c-format
 msgid "Known PTX ISA target architectures (for use with the -misa= option):"
-msgstr "Bekannte PTX-ISA-Architekturen (für Verwendung mit Option -misa=):"
+msgstr "Bekannte PTX-ISA-Architekturen (für Verwendung mit der Option »-misa=«):"
 
 #: config/nvptx/nvptx.opt:31
 #, no-c-format
@@ -8713,7 +8713,7 @@ msgstr "Alias:"
 #: config/nvptx/nvptx.opt:125
 #, no-c-format
 msgid "Known PTX ISA versions (for use with the -mptx= option):"
-msgstr "Bekannte PTX-ISA-Versionen (für Verwendung mit Option -mptx=):"
+msgstr "Bekannte PTX-ISA-Versionen (für Verwendung mit der Option »-mptx=«):"
 
 #: config/nvptx/nvptx.opt:159
 #, no-c-format
@@ -9193,7 +9193,7 @@ msgstr "Alle indirekten Rücksprünge mit execute-in-order umschließen, um Spru
 #: config/s390/s390.opt:295
 #, no-c-format
 msgid "Generate sections .s390_indirect_jump, .s390_indirect_call, .s390_return_reg, and .s390_return_mem to contain the indirect branch locations which have been patched as part of using one of the -mindirect-branch* or -mfunction-return* options.  The sections consist of an array of 32 bit elements. Each entry holds the offset from the entry to the patched location."
-msgstr "Abschnitte .s390_indirect_jump, .s390_indirect_call, .s390_return_reg, und .s390_return_mem erzeugen, in denen die Adressen für indirekte Sprungziele gespeichert werden, die aufgrund der Optionen -mindirect-branch* oder -mfunction-return* gepatcht wurden. Die Abschnitte bestehen aus einem Array von 32-Bit-Elementen. Jedes Element enthält den Offset vom Eintrag zu der gepatchten Adresse."
+msgstr "Abschnitte .s390_indirect_jump, .s390_indirect_call, .s390_return_reg, und .s390_return_mem erzeugen, in denen die Adressen für indirekte Sprungziele gespeichert werden, die aufgrund der Optionen »-mindirect-branch*« oder »-mfunction-return*« gepatcht wurden. Die Abschnitte bestehen aus einem Array von 32-Bit-Elementen. Jedes Element enthält den Offset vom Eintrag zu der gepatchten Adresse."
 
 #: config/s390/s390.opt:304
 #, no-c-format
@@ -9238,7 +9238,7 @@ msgstr "Alle Register verwenden, dadurch keine für Interrupthandler reservieren
 #: config/rl78/rl78.opt:54
 #, no-c-format
 msgid "Enable assembler and linker relaxation.  Enabled by default at -Os."
-msgstr "Lockerung des Assemblers und Linkers einschalten. Per Vorgabe eingeschaltet bei -Os."
+msgstr "Lockerung des Assemblers und Binders einschalten. Per Vorgabe eingeschaltet bei »-Os«."
 
 #: config/rl78/rl78.opt:58
 #, no-c-format
@@ -9248,17 +9248,17 @@ msgstr "Wählt die Art der Ziel-RL78-Kerne aus (g10/g13/g14). Voreinstellung ist
 #: config/rl78/rl78.opt:77
 #, no-c-format
 msgid "Alias for -mcpu=g10."
-msgstr "Alias für --mcpu=g10."
+msgstr "Alias für »-mcpu=g10«."
 
 #: config/rl78/rl78.opt:81
 #, no-c-format
 msgid "Alias for -mcpu=g13."
-msgstr "Alias für -mcpu=g13."
+msgstr "Alias für »-mcpu=g13«."
 
 #: config/rl78/rl78.opt:85 config/rl78/rl78.opt:89
 #, no-c-format
 msgid "Alias for -mcpu=g14."
-msgstr "Alias für -mcpu=g14."
+msgstr "Alias für »-mcpu=g14«."
 
 #: config/rl78/rl78.opt:93
 #, no-c-format
@@ -9278,17 +9278,17 @@ msgstr "Bibliotheken für den Simulator bereitstellen."
 #: config/arm/arm-tables.opt:25
 #, no-c-format
 msgid "Known ARM CPUs (for use with the -mcpu= and -mtune= options):"
-msgstr "Bekannte ARM-CPUs (für Verwendung mit Optionen -mcpu= und -mtune=):"
+msgstr "Bekannte ARM-CPUs (für Verwendung mit der Optionen »-mcpu=« und »-mtune=«):"
 
 #: config/arm/arm-tables.opt:305
 #, no-c-format
 msgid "Known ARM architectures (for use with the -march= option):"
-msgstr "Bekannte ARM-Architekturen (für Verwendung mit Option -march=):"
+msgstr "Bekannte ARM-Architekturen (für Verwendung mit der Option »-march=«):"
 
 #: config/arm/arm-tables.opt:411
 #, no-c-format
 msgid "Known ARM FPUs (for use with the -mfpu= option):"
-msgstr "Bekannte ARM-FPUs (für Verwendung mit Option -mfpu=):"
+msgstr "Bekannte ARM-FPUs (für Verwendung mit der Option »-mfpu=«):"
 
 #: config/arm/arm.opt:35
 #, no-c-format
@@ -9303,7 +9303,7 @@ msgstr "ABI angeben."
 #: config/arm/arm.opt:49
 #, no-c-format
 msgid "Known ARM ABIs (for use with the -mabi= option):"
-msgstr "Bekannte ARM-ABIs (für Verwendung mit Option -mabi=):"
+msgstr "Bekannte ARM-ABIs (für Verwendung mit der Option »-mabi=«):"
 
 #: config/arm/arm.opt:68
 #, no-c-format
@@ -9348,7 +9348,7 @@ msgstr "Angeben, dass der Compiler auf sicheren Code gemäß ARMv8-M-Security-Ex
 #: config/arm/arm.opt:129 config/csky/csky.opt:77
 #, no-c-format
 msgid "Known floating-point ABIs (for use with the -mfloat-abi= option):"
-msgstr "Bekannte Gleitkomma-ABIs (für Verwendung mit Option -mfloat-abi=):"
+msgstr "Bekannte Gleitkomma-ABIs (für Verwendung mit der Option »-mfloat-abi=«):"
 
 #: config/arm/arm.opt:142
 #, no-c-format
@@ -9363,7 +9363,7 @@ msgstr "Gleitkommaformat __fp16 angeben."
 #: config/arm/arm.opt:150
 #, no-c-format
 msgid "Known __fp16 formats (for use with the -mfp16-format= option):"
-msgstr "Bekannte __fp16-Formate (für Verwendung mit der Option -mfp16-format=):"
+msgstr "Bekannte __fp16-Formate (für Verwendung mit der Option »-mfp16-format=«):"
 
 #: config/arm/arm.opt:163
 #, no-c-format
@@ -9423,7 +9423,7 @@ msgstr "Angeben, wie auf den Threadzeiger zugegriffen wird."
 #: config/arm/arm.opt:221
 #, no-c-format
 msgid "Valid arguments to -mtp=:"
-msgstr "Gültige Argumente für -mtp=:"
+msgstr "Gültige Argumente für »-mtp=«:"
 
 #: config/arm/arm.opt:243
 #, no-c-format
@@ -9734,7 +9734,7 @@ msgstr "32-Bit-Code erzeugen."
 #: config/rs6000/rs6000-tables.opt:24
 #, no-c-format
 msgid "Known CPUs (for use with the -mcpu= and -mtune= options):"
-msgstr "Bekannte CPUs (für Verwendung mit Optionen -mcpu= und -mtune=):"
+msgstr "Bekannte CPUs (für Verwendung mit der Optionen »-mcpu=« und »-mtune=«):"
 
 #: config/rs6000/476.opt:24
 #, no-c-format
@@ -9834,7 +9834,7 @@ msgstr "PowerPC V2.06 popcntd-Befehl verwenden."
 #: config/rs6000/rs6000.opt:191
 #, no-c-format
 msgid "Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions."
-msgstr "Unter -ffast-math einen FRIZ-Befehl für (double)(long long)-Umwandlungen erzeugen."
+msgstr "Unter »-ffast-math« einen FRIZ-Befehl für (double)(long long)-Umwandlungen erzeugen."
 
 #: config/rs6000/rs6000.opt:199
 #, no-c-format
@@ -9919,7 +9919,7 @@ msgstr "Alles in reguläres TOC legen."
 #: config/rs6000/rs6000.opt:305
 #, no-c-format
 msgid "Emit NOPs before global and after local entry point for -fpatchable-function-entry."
-msgstr "NOPs vor dem globalen und nach dem lokalen Einstiegspunkt für -fpatchable-function-entry generieren."
+msgstr "NOPs vor dem globalen und nach dem lokalen Einstiegspunkt für »-fpatchable-function-entry« generieren."
 
 #: config/rs6000/rs6000.opt:309
 #, no-c-format
@@ -9929,12 +9929,12 @@ msgstr "Beim Erzeugen von AltiVec-Code VRSAVE-Befehle erzeugen."
 #: config/rs6000/rs6000.opt:313
 #, no-c-format
 msgid "Deprecated option.  Use -mno-vrsave instead."
-msgstr "Veraltete Option. Stattdessen -mno-vrsave verwenden."
+msgstr "Veraltete Option. Stattdessen »-mno-vrsave« verwenden."
 
 #: config/rs6000/rs6000.opt:317
 #, no-c-format
 msgid "Deprecated option.  Use -mvrsave instead."
-msgstr "Veraltete Option. Stattdessen -mvrsave verwenden."
+msgstr "Veraltete Option. Stattdessen »-mvrsave« verwenden."
 
 #: config/rs6000/rs6000.opt:321
 #, no-c-format
@@ -10054,7 +10054,7 @@ msgstr "Ausrichtung der Strukturfelder als Standard/natürlich angeben."
 #: config/rs6000/rs6000.opt:453
 #, no-c-format
 msgid "Valid arguments to -malign-:"
-msgstr "Gültige Argumente für -malign-:"
+msgstr "Gültige Argumente für »-malign-«:"
 
 #: config/rs6000/rs6000.opt:463
 #, no-c-format
@@ -10356,7 +10356,7 @@ msgstr "Code für altes ausführbares BSS PLT erzeugen."
 #: config/rs6000/sysv4.opt:165
 #, no-c-format
 msgid "Use inline plt sequences to implement long calls and -fno-plt."
-msgstr "Inline-PLT-Sequenzen verwenden, um lange Aufrufe und -fno-plt zu implementieren."
+msgstr "Inline-PLT-Sequenzen verwenden, um lange Aufrufe und »-fno-plt« zu implementieren."
 
 #: config/rs6000/sysv4.opt:169
 #, no-c-format
@@ -10616,7 +10616,7 @@ msgstr "Bedingte Kopierbefehle für Gleitkommazahlen aktivieren."
 #: config/loongarch/loongarch.opt:206
 #, no-c-format
 msgid "Prevent optimizing block moves, which is also the default behavior of -Os."
-msgstr "Die Optimierung von Blockkopieraktionen verhindern, was auch das Standardverhalten von -Os ist."
+msgstr "Die Optimierung von Blockkopieraktionen verhindern, was auch das Standardverhalten von »-Os« ist."
 
 #: config/loongarch/loongarch.opt:214
 #, no-c-format
@@ -10626,7 +10626,7 @@ msgstr "-mmax-inline-memcpy-size=SIZE\tDie maximale Größe von inline-memcpy fe
 #: config/loongarch/loongarch.opt:218 config/mips/mips.opt:150
 #, no-c-format
 msgid "The code model option names for -mexplicit-relocs:"
-msgstr "Die Optionsnamen für Codemodelle für -mexplicit-relocs:"
+msgstr "Die Optionsnamen für Codemodelle für »-mexplicit-relocs«:"
 
 #: config/loongarch/loongarch.opt:231 config/mips/mips.opt:163
 #, no-c-format
@@ -10651,7 +10651,7 @@ msgstr "Die GOT möglichst nicht verwenden, um auf externe Symbole zuzugreifen."
 #: config/loongarch/loongarch.opt:283
 #, no-c-format
 msgid "Pass -mrelax or -mno-relax option to the assembler."
-msgstr "Die Option -mrelax oder -mno-relax an den Assembler übergeben."
+msgstr "Die Option »-mrelax« oder »-mno-relax« an den Assembler übergeben."
 
 #: config/loongarch/loongarch.opt:301
 #, no-c-format
@@ -10696,7 +10696,7 @@ msgstr "Für das newlib-Board-spezifische Laufzeitumgebung konfigurieren. Vorgab
 #: config/or1k/elf.opt:32
 #, no-c-format
 msgid "This option is ignored; it is provided for compatibility purposes only.  This used to select linker and preprocessor options for use with newlib."
-msgstr "Diese Option wird ignoriert; sie wird nur zu Kompatibilitätszwecken bereitgestellt. Sie diente zur Auswahl von Linker- und Präprozessor-Optionen für die Verwendung mit der newlib."
+msgstr "Diese Option wird ignoriert; sie wird nur zu Kompatibilitätszwecken bereitgestellt. Sie diente zur Auswahl von Binder- und Präprozessor-Optionen für die Verwendung mit der newlib."
 
 #: config/or1k/or1k.opt:29
 #, no-c-format
@@ -10746,7 +10746,7 @@ msgstr "Das Codemodell für den Zugriff auf Speicheradressen angeben. Die Angabe
 #: config/or1k/or1k.opt:77
 #, no-c-format
 msgid "Known code model types (for use with the -mcmodel= option):"
-msgstr "Bekannte Codemodelle (für Verwendung mit Option -mcmodel=):"
+msgstr "Bekannte Codemodelle (für Verwendung mit der Option »-mcmodel=«):"
 
 #: config/or1k/or1k.opt:87
 #, no-c-format
@@ -10916,12 +10916,12 @@ msgstr "Nur für Rückwärtskompatibilität erhalten."
 #: config/sol2.opt:32
 #, no-c-format
 msgid "Clear hardware capabilities when linking."
-msgstr "Hardwarefähigkeiten beim Linken löschen."
+msgstr "Hardwarefähigkeiten beim Binden löschen."
 
 #: config/sol2.opt:36
 #, no-c-format
 msgid "Pass -z text to linker."
-msgstr "»-z text« an den Linker übergeben."
+msgstr "»-z text« an den Binder übergeben."
 
 #: config/moxie/moxie.opt:31
 #, no-c-format
@@ -11036,7 +11036,7 @@ msgstr "Hardware-»prefetch«-Befehle verwenden."
 #: config/microblaze/microblaze.opt:132
 #, no-c-format
 msgid "Data referenced by offset from start of text instead of GOT (with -fPIC/-fPIE)."
-msgstr "Daten werden ausgehend vom Start des Programmcodes statt der GOT adressiert (mit -fPIC/-fPIE)."
+msgstr "Daten werden ausgehend vom Start des Programmcodes statt der GOT adressiert (mit »-fPIC« oder »-fPIE«)."
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
 #, no-c-format
@@ -11126,7 +11126,7 @@ msgstr "Ziel-CPU-Typ angeben."
 #: config/frv/frv.opt:73
 #, no-c-format
 msgid "Known FR-V CPUs (for use with the -mcpu= option):"
-msgstr "Bekannte FR-V-CPUs (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte FR-V-CPUs (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/frv/frv.opt:122
 #, no-c-format
@@ -11246,7 +11246,7 @@ msgstr "Gas veranlassen, Tomcat-Statistiken auszugeben."
 #: config/frv/frv.opt:233
 #, no-c-format
 msgid "Link with the library-pic libraries."
-msgstr "Mit Library-PIC-Bibliotheken linken."
+msgstr "Mit Library-PIC-Bibliotheken binden."
 
 #: config/frv/frv.opt:237
 #, no-c-format
@@ -11301,7 +11301,7 @@ msgstr "Strategie zur Adresserzeugung für das Codemodell angeben."
 #: config/nds32/nds32-elf.opt:7 config/nds32/nds32-linux.opt:7
 #, no-c-format
 msgid "Known cmodel types (for use with the -mcmodel= option):"
-msgstr "Bekannte Codemodelle (für Verwendung mit Option -mcmodel=):"
+msgstr "Bekannte Codemodelle (für Verwendung mit der Option »-mcmodel=«):"
 
 #: config/nds32/nds32.opt:29 config/nds32/nds32.opt:89
 #, no-c-format
@@ -11331,12 +11331,12 @@ msgstr "ABI-Art, für die der Code generiert wird: 2, 2fp+."
 #: config/nds32/nds32.opt:61
 #, no-c-format
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2."
-msgstr "Software-Gleitkomma-ABI verwenden, gleichbedeutend mit -mabi=2."
+msgstr "Software-Gleitkomma-ABI verwenden, gleichbedeutend mit »-mabi=2«."
 
 #: config/nds32/nds32.opt:65
 #, no-c-format
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2fp+."
-msgstr "Software-Gleitkomma-ABI verwenden, gleichbedeutend mit -mabi=2fp+."
+msgstr "Software-Gleitkomma-ABI verwenden, gleichbedeutend mit »-mabi=2fp+«."
 
 #: config/nds32/nds32.opt:71
 #, no-c-format
@@ -11366,7 +11366,7 @@ msgstr "Verhindern, dass $fp während der Registerallozierung alloziert wird, so
 #: config/nds32/nds32.opt:101
 #, no-c-format
 msgid "Forbid using $fp to access static and global variables.  This option strictly forbids fp-as-gp optimization regardless of '-mforce-fp-as-gp'."
-msgstr "Verbieten, dass mittels $fp auf statische oder globale Variablen zugegriffen wird. Diese Option verhindert die FP-als-GP-Optimierung, unabhängig von -mforce-fp-as-gp."
+msgstr "Verbieten, dass mittels $fp auf statische oder globale Variablen zugegriffen wird. Diese Option verhindert die FP-als-GP-Optimierung, unabhängig von »-mforce-fp-as-gp«."
 
 #: config/nds32/nds32.opt:105
 #, no-c-format
@@ -11376,7 +11376,7 @@ msgstr "Strategie zur Adresserzeugung für das Codemodell von ICT-Aufrufen angeb
 #: config/nds32/nds32.opt:109
 #, no-c-format
 msgid "Known cmodel types (for use with the -mict-model= option):"
-msgstr "Bekannte Codemodelle (für Verwendung mit Option -mict-model=):"
+msgstr "Bekannte Codemodelle (für Verwendung mit der Option »-mict-model=«):"
 
 #: config/nds32/nds32.opt:119
 #, no-c-format
@@ -11421,7 +11421,7 @@ msgstr "16-Bit-Befehle erzeugen."
 #: config/nds32/nds32.opt:151
 #, no-c-format
 msgid "Insert relax hint for linker to do relaxation."
-msgstr "Lockerungs-Hinweis an Linker übergeben, um Lockerung durchzuführen."
+msgstr "Lockerungs-Hinweis an Binder übergeben, um Lockerung durchzuführen."
 
 #: config/nds32/nds32.opt:155
 #, no-c-format
@@ -11446,7 +11446,7 @@ msgstr "Die Größe jedes Cache-Blocks (muss eine Zweierpotenz zwischen 4 und 51
 #: config/nds32/nds32.opt:175
 #, no-c-format
 msgid "Known arch types (for use with the -march= option):"
-msgstr "Bekannte Architekturen (für Verwendung mit Option -march=):"
+msgstr "Bekannte Architekturen (für Verwendung mit der Option »-march=«):"
 
 #: config/nds32/nds32.opt:197
 #, no-c-format
@@ -11456,7 +11456,7 @@ msgstr "CPU für Pipeline-Modell angeben."
 #: config/nds32/nds32.opt:201
 #, no-c-format
 msgid "Known cpu types (for use with the -mcpu= option):"
-msgstr "Bekannte CPU-Typen (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte CPU-Typen (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/nds32/nds32.opt:361
 #, no-c-format
@@ -11466,7 +11466,7 @@ msgstr "FPU-Konfigurationswert von 0 bis 7 angeben; 0 bis 3 sind wie in der FPU-
 #: config/nds32/nds32.opt:365
 #, no-c-format
 msgid "Known floating-point number of registers (for use with the -mconfig-fpu= option):"
-msgstr "Bekannte Anzahl der Gleitkomma-Register (für Verwendung mit der Option -mconfig-fpu=):"
+msgstr "Bekannte Anzahl der Gleitkomma-Register (für Verwendung mit der Option »-mconfig-fpu=«):"
 
 #: config/nds32/nds32.opt:393
 #, no-c-format
@@ -11486,7 +11486,7 @@ msgstr "Konstruktor-/Destruktor-Feature einschalten."
 #: config/nds32/nds32.opt:429
 #, no-c-format
 msgid "Guide linker to relax instructions."
-msgstr "Linker anweisen, Befehle zu lockern."
+msgstr "Binder anweisen, Befehle zu lockern."
 
 #: config/nds32/nds32.opt:433
 #, no-c-format
@@ -11506,7 +11506,7 @@ msgstr "Gleitkommabefehle doppelter Genauigkeit generieren."
 #: config/nds32/nds32.opt:445
 #, no-c-format
 msgid "Force disable hardware loop, even use -mext-dsp."
-msgstr "Ausschalten der Hardwareschleife erzwingen, selbst wenn -mext-dsp angegeben ist."
+msgstr "Ausschalten der Hardwareschleife erzwingen, selbst wenn »-mext-dsp« angegeben ist."
 
 #: config/nds32/nds32.opt:449
 #, no-c-format
@@ -11541,7 +11541,7 @@ msgstr "CPU für Planzwecke angeben."
 #: config/iq2000/iq2000.opt:51
 #, no-c-format
 msgid "Known IQ2000 CPUs (for use with the -mcpu= option):"
-msgstr "Bekannte IQ2000-CPUs (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte IQ2000-CPUs (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/iq2000/iq2000.opt:61 config/mips/mips.opt:142
 #, no-c-format
@@ -11556,7 +11556,7 @@ msgstr "Kein voreingestelltes crt0.o."
 #: config/iq2000/iq2000.opt:74 config/mips/mips.opt:442
 #, no-c-format
 msgid "Put uninitialized constants in ROM (needs -membedded-data)."
-msgstr "Uninitialisierte Konstanten im ROM ablegen (benötigt -membedded-data)."
+msgstr "Uninitialisierte Konstanten im ROM ablegen (benötigt »-membedded-data«)."
 
 #: config/csky/csky.opt:34
 #, no-c-format
@@ -11691,22 +11691,22 @@ msgstr "Planung von Funktionsprolog- und -epilogsequenzen erlauben."
 #: config/csky/csky_tables.opt:24
 #, no-c-format
 msgid "Known CSKY CPUs (for use with the -mcpu= options):"
-msgstr "Bekannte CSKY-CPUs (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte CSKY-CPUs (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/csky/csky_tables.opt:205
 #, no-c-format
 msgid "Known CSKY architectures (for use with the -march= option):"
-msgstr "Bekannte CSKY-Architekturen (für Verwendung mit Option -march=):"
+msgstr "Bekannte CSKY-Architekturen (für Verwendung mit der Option »-march=«):"
 
 #: config/csky/csky_tables.opt:227
 #, no-c-format
 msgid "Known CSKY FPUs (for use with the -mfpu= option):"
-msgstr "Bekannte CSKY-FPUs (für Verwendung mit Option -mfpu=):"
+msgstr "Bekannte CSKY-FPUs (für Verwendung mit der Option »-mfpu=«):"
 
 #: config/c6x/c6x-tables.opt:24
 #, no-c-format
 msgid "Known C6X ISAs (for use with the -march= option):"
-msgstr "Bekannte C6X ISAs (für Verwendung mit der Option -march=):"
+msgstr "Bekannte C6X ISAs (für Verwendung mit der Option »-march=«):"
 
 #: config/c6x/c6x.opt:30 config/mips/mips.opt:134
 #, no-c-format
@@ -11726,7 +11726,7 @@ msgstr "Methode für sdata-Behandlung auswählen."
 #: config/c6x/c6x.opt:46
 #, no-c-format
 msgid "Valid arguments for the -msdata= option:"
-msgstr "Gültige Argumente für die Option -msdata=:"
+msgstr "Gültige Argumente für die Option »-msdata=«:"
 
 #: config/c6x/c6x.opt:59
 #, no-c-format
@@ -11831,7 +11831,7 @@ msgstr "Prüfungen generieren, die bei Anwendung atomarer eingebauter Operatione
 #: config/cris/cris.opt:188
 #, no-c-format
 msgid "Handle atomic builtins that may be applied to unaligned data by calling library functions. Overrides -mtrap-unaligned-atomic."
-msgstr "Bibliotheksfunktionen aufrufen, wenn atomare eingebaute Operationen auf unausgerichteten Speicher angewendet werden können. Hebt -mtrap-unaligned-atomic auf."
+msgstr "Bibliotheksfunktionen aufrufen, wenn atomare eingebaute Operationen auf unausgerichteten Speicher angewendet werden können. Hebt »-mtrap-unaligned-atomic« auf."
 
 #: config/sh/superh.opt:6
 #, no-c-format
@@ -12056,7 +12056,7 @@ msgstr "ELF-FDPIC-Code erzeugen."
 #: config/sh/sh.opt:223
 #, no-c-format
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
-msgstr "Verwendung von 64-Bit Gleitkommaregistern in FMOV-Befehlen einschalten. Siehe auch -mdalign, wenn 64-Bit-Ausrichtung benötigt wird."
+msgstr "Verwendung von 64-Bit Gleitkommaregistern in FMOV-Befehlen einschalten. Siehe auch »-mdalign«, wenn 64-Bit-Ausrichtung benötigt wird."
 
 #: config/sh/sh.opt:231 config/sh/sh.opt:269
 #, no-c-format
@@ -12271,12 +12271,12 @@ msgstr "Auswählen, für welche eBPF-ISA-Version der Zielcode generiert wird."
 #: config/bpf/bpf.opt:84
 #, no-c-format
 msgid "Valid ISA versions (for use with the -mcpu= option)"
-msgstr "Gültige ISA-Versionen (für Verwendung mit der Option -mcpu=)"
+msgstr "Gültige ISA-Versionen (für Verwendung mit der Option »-mcpu=«)"
 
 #: config/bpf/bpf.opt:104
 #, no-c-format
 msgid "Known assembler dialects (for use with the -masm= option)"
-msgstr "Bekannte Assemblerdialekte (für Verwendung mit Option »-masm=«)"
+msgstr "Bekannte Assemblerdialekte (für Verwendung mit der Option »-masm=«)"
 
 #: config/bpf/bpf.opt:114
 #, no-c-format
@@ -12291,7 +12291,7 @@ msgstr "-mabi=ABI\tCode erzeugen, der zum angegebenen ABI passt."
 #: config/mips/mips.opt:36
 #, no-c-format
 msgid "Known MIPS ABIs (for use with the -mabi= option):"
-msgstr "Bekannte MIPS-ABIs (für Verwendung mit Option -mabi=):"
+msgstr "Bekannte MIPS-ABIs (für Verwendung mit der Option »-mabi=«):"
 
 #: config/mips/mips.opt:55
 #, no-c-format
@@ -12331,7 +12331,7 @@ msgstr "-mcode-readable=SETTING\tAngeben, wann Befehle zum Codezugriff erlaubt s
 #: config/mips/mips.opt:91
 #, no-c-format
 msgid "Valid arguments to -mcode-readable=:"
-msgstr "Gültige Argumente für -mcode-readable=:"
+msgstr "Gültige Argumente für »-mcode-readable=«:"
 
 #: config/mips/mips.opt:104
 #, no-c-format
@@ -12461,7 +12461,7 @@ msgstr "-mnan=CODIERUNG\tDatencodierung für IEEE-754-NaN angeben."
 #: config/mips/mips.opt:247
 #, no-c-format
 msgid "Known MIPS IEEE 754 settings (for use with the -mabs= and -mnan= options):"
-msgstr "Bekannte MIPS-IEEE-754-Einstellungen (für Verwendung mit Optionen -mabs= und -mnan=):"
+msgstr "Bekannte MIPS-IEEE-754-Einstellungen (für Verwendung mit der Optionen »-mabs=« und »-mnan=«):"
 
 #: config/mips/mips.opt:257
 #, no-c-format
@@ -12496,7 +12496,7 @@ msgstr "Code erzeugen, der sicher mit MIPS16- und microMIPS-Code gebunden werden
 #: config/mips/mips.opt:281
 #, no-c-format
 msgid "An alias for minterlink-compressed provided for backward-compatibility."
-msgstr "Alias für -minterlink-compressed; für Rückwärtskompatibilität erhalten."
+msgstr "Alias für »-minterlink-compressed«; für Rückwärtskompatibilität erhalten."
 
 #: config/mips/mips.opt:285
 #, no-c-format
@@ -12606,17 +12606,17 @@ msgstr "-mr10k-cache-barrier=EINSTELLUNG\tAngabe, wann r10k-Cachegrenzen eingef�
 #: config/mips/mips.opt:369
 #, no-c-format
 msgid "Valid arguments to -mr10k-cache-barrier=:"
-msgstr "Gültige Argumente für -mr10k-cache-barrier=:"
+msgstr "Gültige Argumente für »-mr10k-cache-barrier=«:"
 
 #: config/mips/mips.opt:382
 #, no-c-format
 msgid "Try to allow the linker to turn PIC calls into direct calls."
-msgstr "Dem Linker erlauben, PIC-Aufrufe in direkte Aufrufe umzuwandeln."
+msgstr "Dem Binder erlauben, PIC-Aufrufe in direkte Aufrufe umzuwandeln."
 
 #: config/mips/mips.opt:386
 #, no-c-format
 msgid "When generating -mabicalls code, make the code suitable for use in shared libraries."
-msgstr "Bei Erzeugung von -mabicalls den Code tauglich für gemeinsam genutzte Bibliotheken machen."
+msgstr "Bei Erzeugung von »-mabicalls« den Code tauglich für gemeinsam genutzte Bibliotheken machen."
 
 #: config/mips/mips.opt:394
 #, no-c-format
@@ -12661,12 +12661,12 @@ msgstr "Keinen Code mit unausgerichtetem load/store generieren, nur gültig für
 #: config/mips/mips.opt:434
 #, no-c-format
 msgid "Generate code with unaligned load store for R6 (alias of -mno-strict-align)."
-msgstr "Code mit unausgerichtetem load/store für R6 generieren (Alias von -mno-strict-align)."
+msgstr "Code mit unausgerichtetem load/store für R6 generieren (Alias von »-mno-strict-align«)."
 
 #: config/mips/mips.opt:438
 #, no-c-format
 msgid "Don't generate code with unaligned load store for R6 (alias of -mstrict-align)."
-msgstr "Keinen Code mit unausgerichtetem load/store für R6 generieren (Alias von -mstrict-align)."
+msgstr "Keinen Code mit unausgerichtetem load/store für R6 generieren (Alias von »-mstrict-align«)."
 
 #: config/mips/mips.opt:446
 #, no-c-format
@@ -12741,17 +12741,17 @@ msgstr "Loongson-Erweiterungsbefehle R2 (EXT2) verwenden."
 #: config/mips/mips-tables.opt:24
 #, no-c-format
 msgid "Known MIPS CPUs (for use with the -march= and -mtune= options):"
-msgstr "Bekannte MIPS-CPUs (für Verwendung mit Optionen -march= und -mtune=):"
+msgstr "Bekannte MIPS-CPUs (für Verwendung mit der Optionen »-march=« und »-mtune=«):"
 
 #: config/mips/mips-tables.opt:28
 #, no-c-format
 msgid "Known MIPS ISA levels (for use with the -mips option):"
-msgstr "Bekannte MIPS-ISA-Stufen (für Verwendung mit Option -mips):"
+msgstr "Bekannte MIPS-ISA-Stufen (für Verwendung mit der Option »-mips«):"
 
 #: config/arc/arc-tables.opt:25
 #, no-c-format
 msgid "Known ARC CPUs (for use with the -mcpu= option):"
-msgstr "Bekannte ARC-CPUs (für Verwendung mit Option -mcpu=):"
+msgstr "Bekannte ARC-CPUs (für Verwendung mit der Option »-mcpu=«):"
 
 #: config/arc/arc.opt:26
 #, no-c-format
@@ -12776,7 +12776,7 @@ msgstr "ARCompact-32-Bit-Code für ARC600-Prozessor erzeugen."
 #: config/arc/arc.opt:42
 #, no-c-format
 msgid "Same as -mA6."
-msgstr "Identisch zu -mA6."
+msgstr "Identisch zu »-mA6«."
 
 #: config/arc/arc.opt:46
 #, no-c-format
@@ -12791,7 +12791,7 @@ msgstr "ARCompact-32-Bit-Code für ARC700-Prozessor erzeugen."
 #: config/arc/arc.opt:54
 #, no-c-format
 msgid "Same as -mA7."
-msgstr "Identisch zu -mA7."
+msgstr "Identisch zu »-mA7«."
 
 #: config/arc/arc.opt:58
 #, no-c-format
@@ -12921,7 +12921,7 @@ msgstr "-mcpu=CPU\tCode für ARC-Variante CPU planen."
 #: config/arc/arc.opt:238
 #, no-c-format
 msgid "Size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os."
-msgstr "Größenoptimierungsstufe: 0:keine 1:vorteilhaft 2:regalloc 3:drop align, -Os."
+msgstr "Größenoptimierungsstufe: 0:keine 1:vorteilhaft 2:regalloc 3:drop align, »-Os«."
 
 #: config/arc/arc.opt:246
 #, no-c-format
@@ -13021,22 +13021,22 @@ msgstr "Erweiterung für 64-Bit-Zeitstempel-Befehl einschalten."
 #: config/arc/arc.opt:388
 #, no-c-format
 msgid "Pass -EB option through to linker."
-msgstr "Option -EB an den Linker übergeben."
+msgstr "Option »-EB« an den Binder übergeben."
 
 #: config/arc/arc.opt:392
 #, no-c-format
 msgid "Pass -EL option through to linker."
-msgstr "Option -EL an den Linker übergeben."
+msgstr "Option »-EL« an den Binder übergeben."
 
 #: config/arc/arc.opt:396
 #, no-c-format
 msgid "Pass -marclinux option through to linker."
-msgstr "Option -marclinux an den Linker übergeben."
+msgstr "Option »-marclinux« an den Binder übergeben."
 
 #: config/arc/arc.opt:400
 #, no-c-format
 msgid "Pass -marclinux_prof option through to linker."
-msgstr "Option -marclinux_prof an den Linker übergeben."
+msgstr "Option »-marclinux_prof« an den Binder übergeben."
 
 #: config/arc/arc.opt:409
 #, no-c-format
@@ -13116,12 +13116,12 @@ msgstr "Die Opcodes ENTER_S und LEAVE_S für ARCv2 einschalten."
 #: config/vxworks-smp.opt:25
 #, no-c-format
 msgid "Select VxWorks SMP C runtimes for linking."
-msgstr "SMP-C-Laufzeiten von VxWorks zum Linken auswählen."
+msgstr "SMP-C-Laufzeiten von VxWorks zum Binden auswählen."
 
 #: lto/lang.opt:50
 #, no-c-format
 msgid "Set linker output type (used internally during LTO optimization)."
-msgstr "Ausgabeart des Linkers festlegen (wird intern während der LTO-Optimierung verwendet)."
+msgstr "Ausgabeart des Binders festlegen (wird intern während der LTO-Optimierung verwendet)."
 
 #: lto/lang.opt:54
 #, no-c-format
@@ -13231,7 +13231,7 @@ msgstr "--help=<Klasse>\tBeschreibungen für eine bestimmte Klasse von Optionen 
 #: common.opt:420
 #, no-c-format
 msgid "Display target specific command line options (including assembler and linker options)."
-msgstr "Zielspezifische Befehlszeilenoptionen (einschließlich Assembler- und Linker-Optionen) anzeigen."
+msgstr "Zielspezifische Befehlszeilenoptionen (einschließlich Assembler- und Binder-Optionen) anzeigen."
 
 #: common.opt:472
 #, no-c-format
@@ -13261,7 +13261,7 @@ msgstr "Aggressiv auf Größe statt Geschwindigkeit optimieren."
 #: common.opt:528
 #, no-c-format
 msgid "This switch is deprecated; use -Wextra instead."
-msgstr "Dieser Schalter ist veraltet; stattdessen -Wextra verwenden."
+msgstr "Dieser Schalter ist veraltet; stattdessen »-Wextra« verwenden."
 
 #: common.opt:541
 #, no-c-format
@@ -13426,7 +13426,7 @@ msgstr "Warnen, wenn ein Zeiger oder eine Referenz auf eine lokale oder temporä
 #: common.opt:706
 #, no-c-format
 msgid "Warn about some C++ One Definition Rule violations during link time optimization."
-msgstr "Während der Optimierungen zur Linkzeit bei einigen Verletzungen der One-Definition-Rule aus C++ warnen."
+msgstr "Während der Optimierungen zur Bindezeit bei einigen Verletzungen der One-Definition-Rule aus C++ warnen."
 
 #: common.opt:710
 #, no-c-format
@@ -13436,7 +13436,7 @@ msgstr "Bei Überlauf in arithmetischen Ausdrücken warnen."
 #: common.opt:714
 #, no-c-format
 msgid "During link time optimization warn about mismatched types of global declarations."
-msgstr "Während der Optimierungen zur Linkzeit bei unpassenden Typen von globalen Deklarationen warnen."
+msgstr "Während der Optimierungen zur Bindezeit bei unpassenden Typen von globalen Deklarationen warnen."
 
 #: common.opt:718
 #, no-c-format
@@ -13461,7 +13461,7 @@ msgstr "Bei Rückgabe eines Zeigers/Referenz an lokale oder temporäre Variable 
 #: common.opt:734
 #, no-c-format
 msgid "Warn when one variable shadows another.  Same as -Wshadow=global."
-msgstr "Warnen, wenn eine Variable eine andere überdeckt. Entspricht -Wshadow=global."
+msgstr "Warnen, wenn eine Variable eine andere überdeckt. Entspricht »-Wshadow=global«."
 
 #: common.opt:738
 #, no-c-format
@@ -13546,7 +13546,7 @@ msgstr "Bei virtuellen Methoden in C++ warnen, bei denen das Schlüsselwort »fi
 #: common.opt:816
 #, no-c-format
 msgid "Warn about statements between switch's controlling expression and the first case."
-msgstr "Bei Anweisungen warnen, die zwischen »switch (...)« und dem ersten »case:« stehen."
+msgstr "Bei Anweisungen warnen, die zwischen »switch (…)« und dem ersten »case:« stehen."
 
 #: common.opt:821
 #, no-c-format
@@ -13556,7 +13556,7 @@ msgstr "Warnungen aus System-Headern nicht unterdrücken."
 #: common.opt:825
 #, no-c-format
 msgid "Warn if a comparison always evaluates to true or false."
-msgstr "Warnen, wenn ein Vergleich immer zu »wahr« oder »falsch« auswertet."
+msgstr "Warnen, wenn ein Vergleich immer zu »true« oder »false« auswertet."
 
 #: common.opt:829
 #, no-c-format
@@ -13566,12 +13566,12 @@ msgstr "Warnen, wenn ein Trampolin generiert wird."
 #: common.opt:833
 #, no-c-format
 msgid "Warn about cases where -ftrivial-auto-var-init cannot initialize an auto variable."
-msgstr "Vor Fällen warnen, in denen -ftrivial-auto-var-init eine Auto-Variable nicht initialisieren kann."
+msgstr "Vor Fällen warnen, in denen »-ftrivial-auto-var-init« eine Auto-Variable nicht initialisieren kann."
 
 #: common.opt:837
 #, no-c-format
 msgid "Warn if a comparison is always true or always false due to the limited range of the data type."
-msgstr "Warnen, wenn ein Vergleich durch beschränkten Wertebereich des Datentyps stets »wahr« oder »unwahr« ist."
+msgstr "Warnen, wenn ein Vergleich durch beschränkten Wertebereich des Datentyps stets »true« oder »false« ist."
 
 #: common.opt:841
 #, no-c-format
@@ -13586,7 +13586,7 @@ msgstr "Bei möglicherweise nicht initialisierten automatischen Variablen warnen
 #: common.opt:853
 #, no-c-format
 msgid "Enable all -Wunused- warnings."
-msgstr "Alle -Wunused- Warnungen einschalten."
+msgstr "Alle »-Wunused«-Warnungen einschalten."
 
 #: common.opt:857
 #, no-c-format
@@ -13626,7 +13626,7 @@ msgstr "Warnen, wenn eine Variable nicht verwendet wird."
 #: common.opt:885
 #, no-c-format
 msgid "Warn in case profiles in -fprofile-use do not match."
-msgstr "Warnen, wenn Profile in -fprofile-use nicht zueinander passen."
+msgstr "Warnen, wenn Profile in »-fprofile-use« nicht zueinander passen."
 
 #: common.opt:889
 #, no-c-format
@@ -13646,12 +13646,12 @@ msgstr "-fpath-coverage-limit=<Anzahl> Funktionspfade, die <Anzahl> überschreit
 #: common.opt:903
 #, no-c-format
 msgid "Warn if a function exceeds the number of paths (controlled by -fpath-coverage-limit) and path coverage give up instrumenting the function. The limit is approximate and conservative and coverage might give up even if the actual number is slightly below the limit."
-msgstr "Warnen, wenn eine Funktion die Anzahl der Pfade (gesteuert durch -fpath-coverage-limit) überschreitet und die Pfadabdeckung die Instrumentierung der Funktion aufgibt. Der Grenzwert ist annähernd und konservativ, und die Abdeckung könnte auch dann aufgeben, wenn die tatsächliche Anzahl etwas unter dem Grenzwert liegt."
+msgstr "Warnen, wenn eine Funktion die Anzahl der Pfade (gesteuert durch »-fpath-coverage-limit«) überschreitet und die Pfadabdeckung die Instrumentierung der Funktion aufgibt. Der Grenzwert ist annähernd und konservativ, und die Abdeckung könnte auch dann aufgeben, wenn die tatsächliche Anzahl etwas unter dem Grenzwert liegt."
 
 #: common.opt:910
 #, no-c-format
 msgid "Warn in case profiles in -fprofile-use do not exist."
-msgstr "Warnen, wenn Profile in -fprofile-use nicht existieren."
+msgstr "Warnen, wenn Profile in »-fprofile-use« nicht existieren."
 
 #: common.opt:914
 #, no-c-format
@@ -13756,7 +13756,7 @@ msgstr "Nach dem Erkennen von undefiniertem Verhalten versuchen, die Ausführung
 #: common.opt:1158
 #, no-c-format
 msgid "This switch is deprecated; use -fsanitize-recover= instead."
-msgstr "Dieser Schalter ist veraltet; stattdessen -fsanitize-recover= verwenden."
+msgstr "Dieser Schalter ist veraltet; stattdessen »-fsanitize-recover=« verwenden."
 
 #: common.opt:1162
 #, no-c-format
@@ -13766,7 +13766,7 @@ msgstr "Für das Bereinigen von undefiniertem Verhalten Traps statt Meldungen ve
 #: common.opt:1172
 #, no-c-format
 msgid "This switch is deprecated; use -fsanitize-trap= instead."
-msgstr "Dieser Schalter ist veraltet; stattdessen -fsanitize-trap= verwenden."
+msgstr "Dieser Schalter ist veraltet; stattdessen »-fsanitize-trap=« verwenden."
 
 #: common.opt:1176
 #, no-c-format
@@ -13866,12 +13866,12 @@ msgstr "Uninitialisierte globale Symbole in gemeinsamen Abschnitt legen."
 #: common.opt:1281
 #, no-c-format
 msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump."
-msgstr "-fcompare-debug[=<Optionen>]\tMit und ohne z.B. -gtoggle kompilieren, und den Dump der »final-insns« vergleichen."
+msgstr "-fcompare-debug[=<Optionen>]\tMit und ohne z.B. »-gtoggle« kompilieren, und den Dump der »final-insns« vergleichen."
 
 #: common.opt:1285
 #, no-c-format
 msgid "Run only the second compilation of -fcompare-debug."
-msgstr "Nur die zweite Kompilierung von -fcompare-debug laufen lassen."
+msgstr "Nur die zweite Kompilierung von »-fcompare-debug« laufen lassen."
 
 #: common.opt:1289
 #, no-c-format
@@ -14326,7 +14326,7 @@ msgstr "Alle Schleifen als parallel markieren."
 #: common.opt:1852 common.opt:1860 common.opt:3246
 #, no-c-format
 msgid "Enable loop nest transforms.  Same as -floop-nest-optimize."
-msgstr "Schleifenschachtelungs-Umwandlungen einschalten. Entspricht -floop-next-optimize."
+msgstr "Schleifenschachtelungs-Umwandlungen einschalten. Entspricht »-floop-nest-optimize«."
 
 #: common.opt:1856
 #, no-c-format
@@ -14481,7 +14481,7 @@ msgstr "-finline-stringops[=memcmp|memcpy|memmove|memset] Unterstützte mem/str-
 #: common.opt:2058
 #, no-c-format
 msgid "Equivalent to -fcf-protection=full."
-msgstr "Äquivalent zu -fcf-protection=full."
+msgstr "Äquivalent zu »-fcf-protection=full«."
 
 #: common.opt:2062
 #, no-c-format
@@ -14686,7 +14686,7 @@ msgstr "Anzahl der Cache-Einträge in der inkrementellen LTO, nach der alte Eint
 #: common.opt:2301
 #, no-c-format
 msgid "Specify the algorithm to partition symbols and vars at linktime."
-msgstr "Algorithmus, mit dem Symbole und Variablen zur Linkzeit partitioniert werden."
+msgstr "Algorithmus, mit dem Symbole und Variablen zur Bindezeit partitioniert werden."
 
 #: common.opt:2306
 #, no-c-format
@@ -14696,12 +14696,12 @@ msgstr "Kompressionsstufe <Zahl> für zlib/zstd für IL verwenden."
 #: common.opt:2314
 #, no-c-format
 msgid "Report various link-time optimization statistics."
-msgstr "Verschiedene Statistiken über Linkzeit-Optimierung ausgeben."
+msgstr "Verschiedene Statistiken über Bindezeit-Optimierung ausgeben."
 
 #: common.opt:2318
 #, no-c-format
 msgid "Report various link-time optimization statistics for WPA only."
-msgstr "Nur in WPA verschiedene Statistiken über Linkzeit-Optimierung ausgeben."
+msgstr "Nur in WPA verschiedene Statistiken über Bindezeit-Optimierung ausgeben."
 
 #: common.opt:2322
 #, no-c-format
@@ -15011,7 +15011,7 @@ msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-ge
 #: common.opt:2641
 #, no-c-format
 msgid "Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=."
-msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-gerichtete Optimierungen einschalten, und -fprofile-dir= setzen."
+msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-gerichtete Optimierungen einschalten, und »-fprofile-dir=« setzen."
 
 #: common.opt:2645
 #, no-c-format
@@ -15036,7 +15036,7 @@ msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Opt
 #: common.opt:2661
 #, no-c-format
 msgid "Enable common options for performing profile feedback directed optimizations, and set -fprofile-dir=."
-msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Optimierungen einschalten, und -fprofile-dir= setzen."
+msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Optimierungen einschalten, und »-fprofile-dir=« setzen."
 
 #: common.opt:2665
 #, no-c-format
@@ -15211,7 +15211,7 @@ msgstr "Regionen mit Pipelining ohne Pipelining neu planen."
 #: common.opt:2855
 #, no-c-format
 msgid "Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker."
-msgstr "Erlauben, dass der dynamische Linker Funktionen und Variablen mit solchen unterschiedlicher Semantik (oder Initialisierungen) gemischt platzieren darf."
+msgstr "Erlauben, dass der dynamische Binder Funktionen und Variablen mit solchen unterschiedlicher Semantik (oder Initialisierungen) gemischt platzieren darf."
 
 #: common.opt:2861
 #, no-c-format
@@ -15351,7 +15351,7 @@ msgstr "-fstack-check=[no|generic|specific]\tCode zur Stapelprüfung in das Prog
 #: common.opt:2982
 #, no-c-format
 msgid "Insert stack checking code into the program.  Same as -fstack-check=specific."
-msgstr "Code zur Stapelprüfung in das Programm einfügen. Dasselbe wie -fstack-check=specific."
+msgstr "Code zur Stapelprüfung in das Programm einfügen. Dasselbe wie »-fstack-check=specific«."
 
 #: common.opt:2986
 #, no-c-format
@@ -15401,7 +15401,7 @@ msgstr "Annehmen, dass strenge Alias-Regeln gelten."
 #: common.opt:3034
 #, no-c-format
 msgid "Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer."
-msgstr "Vorzeichenbehafteten Überlauf als undefiniertes Verhalten behandeln. Wird mit -fwrapv -fwrapv-pointer negiert."
+msgstr "Vorzeichenbehafteten Überlauf als undefiniertes Verhalten behandeln. Wird mit »-fwrapv -fwrapv-pointer« negiert."
 
 #: common.opt:3038
 #, no-c-format
@@ -15701,7 +15701,7 @@ msgstr "Optimierung für Gleitkommaarithmetik erlauben, auch wenn durch Runden e
 #: common.opt:3351
 #, no-c-format
 msgid "Same as -fassociative-math for expressions which include division."
-msgstr "Das gleiche wie -fassociative-math für Ausdrücke, die Division enthalten."
+msgstr "Das gleiche wie »-fassociative-math« für Ausdrücke, die Division enthalten."
 
 #: common.opt:3359
 #, no-c-format
@@ -15731,22 +15731,22 @@ msgstr "Einfach Abwicklungstabellen für Ausnahmebehandlung erzeugen."
 #: common.opt:3379
 #, no-c-format
 msgid "Use the bfd linker instead of the default linker."
-msgstr "BFD-Linker statt Standardlinker verwenden."
+msgstr "BFD-Binder statt Standardlinker verwenden."
 
 #: common.opt:3383
 #, no-c-format
 msgid "Use the gold linker instead of the default linker."
-msgstr "Gold-Linker statt Standardlinker verwenden."
+msgstr "Gold-Binder statt Standardlinker verwenden."
 
 #: common.opt:3387
 #, no-c-format
 msgid "Use the lld LLVM linker instead of the default linker."
-msgstr "Den LLVM-lld-Linker statt des Standardlinkers verwenden."
+msgstr "Den LLVM-lld-Binder statt des Standardlinkers verwenden."
 
 #: common.opt:3391
 #, no-c-format
 msgid "Use the Modern linker (MOLD) linker instead of the default linker."
-msgstr "Den Modernen Linker (MOLD) statt des Standardlinkers verwenden."
+msgstr "Den Modernen Binder (MOLD) statt des Standardlinkers verwenden."
 
 #: common.opt:3401
 #, no-c-format
@@ -16041,7 +16041,7 @@ msgstr "Funktionsprofilierung einschalten."
 #: common.opt:3813
 #, no-c-format
 msgid "Like -pedantic but issue errors instead of warnings."
-msgstr "Wie -pedantic, aber Fehler statt Warnungen ausgeben."
+msgstr "Wie »-pedantic«, aber Fehler statt Warnungen ausgeben."
 
 #: common.opt:3853
 #, no-c-format
@@ -16131,7 +16131,7 @@ msgstr "Rückruffunktionen statt inline-Code generieren, wenn innerhalb der Funk
 #: params.opt:55
 #, no-c-format
 msgid "Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_ for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress."
-msgstr "Aufrufen von memcpy, memset und memmove ein __asan_ oder __hwasan_ voranstellen, für -fsanitize=kernel-address oder -fsanitize=kernel-hwaddress."
+msgstr "Aufrufen von memcpy, memset und memmove ein __asan_ oder __hwasan_ voranstellen, für »-fsanitize=kernel-address« oder »-fsanitize=kernel-hwaddress«."
 
 #: params.opt:59
 #, no-c-format
@@ -16216,7 +16216,7 @@ msgstr "Wahrscheinlichkeit, dass die COMDAT-Funktion mit anderer Kompilationsein
 #: params.opt:123
 #, no-c-format
 msgid "Maximum number of namespaces to search for alternatives when name lookup fails."
-msgstr "Höchstzahl der Namensräume, in denen alternativ gesucht wird, wenn Nachschlagen eines Namens fehlschlägt."
+msgstr "Höchstzahl der Namensräume, in denen alternativ gesucht wird, wenn Nachschlagen eines Namens scheitert."
 
 #: params.opt:127
 #, no-c-format
@@ -16291,7 +16291,7 @@ msgstr "Die Anzahl der Ausführungen eines Basisblocks, der als heiß angesehen 
 #: params.opt:186
 #, no-c-format
 msgid "Whether codegen errors should be ICEs when -fchecking."
-msgstr "Ob bei -fchecking Fehler im Codegenerator als interne Compilerfehler behandelt werden sollen."
+msgstr "Ob bei »-fchecking« Fehler im Codegenerator als interne Compilerfehler behandelt werden sollen."
 
 #: params.opt:190
 #, no-c-format
@@ -16306,12 +16306,12 @@ msgstr "Höchstzahl der Parameter in einem SCoP."
 #: params.opt:198
 #, no-c-format
 msgid "Maximum number of blocks for -fharden-control-flow-redundancy."
-msgstr "Maximale Blockanzahl für -fharden-control-flow-redundancy."
+msgstr "Maximale Blockanzahl für »-fharden-control-flow-redundancy«."
 
 #: params.opt:202
 #, no-c-format
 msgid "Maximum number of blocks for in-line -fharden-control-flow-redundancy."
-msgstr "Maximale Blockanzahl für in-line -fharden-control-flow-redundancy."
+msgstr "Maximale Blockanzahl für in-line »-fharden-control-flow-redundancy«."
 
 #: params.opt:206
 #, no-c-format
@@ -16631,7 +16631,7 @@ msgstr "Höchstzahl der LTO-Partitionen, die parallel gestreamt werden."
 #: params.opt:466
 #, no-c-format
 msgid "Minimal size of a partition for LTO (in estimated instructions)."
-msgstr "Kleinste Größe einer Partition für Linkzeitoptimierung (in geschätzten Befehlen)."
+msgstr "Kleinste Größe einer Partition für Bindezeitoptimierung (in geschätzten Befehlen)."
 
 #: params.opt:470
 #, no-c-format
@@ -17301,7 +17301,7 @@ msgstr "Maximale Größe eines einzelnen Bereichs einer Speicherzusammenführung
 #: params.opt:1088
 #, no-c-format
 msgid "Maximum number of instruction distance that a small store forwarded to a larger load may stall. Value '0' disables the cost checks for the avoid-store-forwarding pass."
-msgstr "Maximaler Abstand von Befehlen, die eine kleine Speicheroperation, der an eine größere Ladeoperation weitergeleitet wird, blockieren kann. Der Wert 0 deaktiviert die Kostenüberprüfungen für den \"avoid-store-forwarding\"-Durchgang."
+msgstr "Maximaler Abstand von Befehlen, die eine kleine Speicheroperation, der an eine größere Ladeoperation weitergeleitet wird, blockieren kann. Der Wert 0 deaktiviert die Kostenüberprüfungen für den »avoid-store-forwarding«-Durchgang."
 
 #: params.opt:1092
 #, no-c-format
@@ -17512,7 +17512,7 @@ msgstr "Schleifenvektorisierung von Gleitkommabefehlen einschalten."
 #: params.opt:1266
 #, no-c-format
 msgid "Force the use of SLP when vectorizing, fail if not possible."
-msgstr "Die Verwendung von SLP bei der Vektorisierung erzwingen; fehlschlagen, wenn dies nicht möglich ist."
+msgstr "Die Verwendung von SLP bei der Vektorisierung erzwingen; scheitern, wenn dies nicht möglich ist."
 
 #: params.opt:1270
 #, no-c-format
@@ -17756,7 +17756,7 @@ msgstr ""
 msgid "Please submit a full bug report, with preprocessed source (by using -freport-bug).\n"
 msgstr ""
 "Bitte senden Sie einen vollständigen Fehlerbericht auf Englisch ein;\n"
-"inclusive vorverarbeitetem Quellcode (siehe -freport-bug).\n"
+"inclusive vorverarbeitetem Quellcode (siehe »-freport-bug«).\n"
 
 #: diagnostic.cc:976
 #, c-format
@@ -17923,7 +17923,7 @@ msgstr "  --help                   Diese Informationen anzeigen.\n"
 
 #: gcc.cc:3742
 msgid "  --target-help            Display target specific command line options (including assembler and linker options).\n"
-msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen (inklusive Assembler- und Linkeroptionen) anzeigen.\n"
+msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen (inklusive Assembler- und Binderoptionen) anzeigen.\n"
 
 #: gcc.cc:3744
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
@@ -18015,7 +18015,7 @@ msgstr "  -Wp,<Optionen>           Die durch Kommata getrennten <Optionen> an de
 
 #: gcc.cc:3769
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr "  -Wl,<Optionen>           Die durch Kommata getrennten <Optionen> an den Linker übergeben.\n"
+msgstr "  -Wl,<Optionen>           Die durch Kommata getrennten <Optionen> an den Binder übergeben.\n"
 
 #: gcc.cc:3770
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
@@ -18027,7 +18027,7 @@ msgstr "  -Xpreprocessor <Arg>     <Arg> an den Präprozessor übergeben.\n"
 
 #: gcc.cc:3772
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <Arg>           <Arg> an den Linker übergeben.\n"
+msgstr "  -Xlinker <Arg>           <Arg> an den Binder übergeben.\n"
 
 #: gcc.cc:3773
 msgid "  -save-temps              Do not delete intermediate files.\n"
@@ -18089,11 +18089,11 @@ msgstr ""
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
 msgstr ""
 "  -E                       Nur den Präprozessor ausführen, nicht Compiler, Assembler oder\n"
-"                           Linker.\n"
+"                           Binder.\n"
 
 #: gcc.cc:3789
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr "  -S                       Nur kompilieren, nicht assemblieren oder linken.\n"
+msgstr "  -S                       Nur kompilieren, nicht assemblieren oder binden.\n"
 
 #: gcc.cc:3790
 msgid "  -c                       Compile and assemble, but do not link.\n"
@@ -18108,8 +18108,8 @@ msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
 msgstr ""
-"  -pie                     Eine ausführbare Datei mit positionsunabhängigem\n"
-"                           Code erzeugen.\n"
+"  -pie                     Eine dynamisch gebundene ausführbare Datei mit\n"
+"                           positionsunabhängigem Code erzeugen.\n"
 
 #: gcc.cc:3794
 msgid "  -shared                  Create a shared library.\n"
@@ -18136,10 +18136,11 @@ msgid ""
 " other options on to these processes the -W<letter> options must be used.\n"
 msgstr ""
 "\n"
-"Optionen, die mit -g, -f, -m, -O, -W, oder --param beginnen, werden automatisch\n"
-" an die verschiedenen Subprozesse, die von %s aufgerufen werden, übergeben.\n"
-" Um weitere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
-" -W<Buchstabe> verwendet werden.\n"
+"Optionen, die mit »-g«, »-f«, »-m«, »-O«, »-W«, oder »--param« beginnen,\n"
+" werden automatisch an die verschiedenen Subprozesse, die von %s aufgerufen\n"
+" werden, übergeben.\n"
+" Um andere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
+" »-W<Buchstabe>« verwendet werden.\n"
 
 #: gcc.cc:6948
 #, c-format
@@ -18253,7 +18254,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Linkeroptionen\n"
+"Binderoptionen\n"
 "==============\n"
 "\n"
 
@@ -18263,7 +18264,7 @@ msgid ""
 "Use \"-Wl,OPTION\" to pass \"OPTION\" to the linker.\n"
 "\n"
 msgstr ""
-"»-Wl,OPTION« verwenden, um »OPTION« an den Linker zu übergeben.\n"
+"»-Wl,OPTION« verwenden, um »OPTION« an den Binder zu übergeben.\n"
 "\n"
 
 #: gcc.cc:10689
@@ -21757,7 +21758,7 @@ msgstr ""
 "\n"
 "\n"
 "/* WARNUNG: Wegen abweichender Argumente für eine externe\n"
-"   Prozedur ist diese Header-Datei nicht kompatibel mit -std=c23.\n"
+"   Prozedur ist diese Header-Datei nicht kompatibel mit »-std=c23«.\n"
 "\n"
 "   Verwenden Sie eine andere -std-Option zum Kompilieren. */\n"
 
@@ -23372,12 +23373,12 @@ msgstr "%<-mfused-madd%> ist veraltet; stattdessen %<-ffp-contract=%> verwenden"
 #: config/microblaze/microblaze.opt:87
 #, gcc-internal-format
 msgid "%qs is deprecated; use -fstack-check"
-msgstr "%qs ist veraltet; stattdessen -fstack-check verwenden"
+msgstr "%qs ist veraltet; stattdessen %<-fstack-check%> verwenden"
 
 #: config/microblaze/microblaze.opt:95
 #, gcc-internal-format
 msgid "%qs is deprecated; use -fno-zero-initialized-in-bss"
-msgstr "%qs ist veraltet; stattdessen -fno-zero-initialized-in-bss verwenden"
+msgstr "%qs ist veraltet; stattdessen %<-fno-zero-initialized-in-bss%> verwenden"
 
 #: config/arc/arc.opt:169 config/arc/arc.opt:333 config/arc/arc.opt:337
 #: config/arc/arc.opt:341 config/arc/arc.opt:348 config/arc/arc.opt:352
@@ -23390,7 +23391,7 @@ msgstr "%qs ist veraltet"
 #: lto/lang.opt:28
 #, gcc-internal-format
 msgid "unknown linker output %qs"
-msgstr "unbekannte Linkerausgabe %qs"
+msgstr "unbekannte Binderausgabe %qs"
 
 #: common.opt:1689
 #, gcc-internal-format
@@ -25405,7 +25406,7 @@ msgstr "Intervallüberlappung von %<-fdbg-cnt=%s%>: [%u, %u] und [%u, %u]"
 #: dbgcnt.cc:157
 #, gcc-internal-format
 msgid "%<-fdbg-cnt=%s:%d-%d%> has smaller upper limit than the lower"
-msgstr "%<-fdbg-cnt=%s:%d:%d%> hat kleinere obere als untere Grenze"
+msgstr "%<-fdbg-cnt=%s:%d-%d%> hat kleinere obere als untere Grenze"
 
 #: dbgcnt.cc:169
 #, gcc-internal-format
@@ -25648,7 +25649,7 @@ msgstr "Aufruf von %qs mit Attributwarnung deklariert: %s"
 #: expr.cc:13544
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %<X - Y %s 0%> to %<X %s Y%>"
-msgstr "der Compiler geht davon aus, dass kein vorzeichenbehafteter Überlauf auftritt, und vereinfacht daher %<X - Y %s 0%> zu %<X %s 0%>"
+msgstr "der Compiler geht davon aus, dass kein vorzeichenbehafteter Überlauf auftritt, und vereinfacht daher %<X - Y %s 0%> zu %<X %s Y%>"
 
 #: ext-dce.cc:1202
 #, gcc-internal-format
@@ -25871,7 +25872,7 @@ msgstr "%qs ist eine unbekannte Option für %<-save-temps%>"
 #: gcc.cc:5062
 #, gcc-internal-format
 msgid "linker hardening options not enabled by %<-fhardened%> because other link options were specified on the command line"
-msgstr "linker-Härtungsoptionen nicht durch %<-fhardened%> aktiviert, da andere Link-Optionen auf der Kommandozeile angegeben wurden"
+msgstr "Binder-Härtungsoptionen nicht durch %<-fhardened%> aktiviert, da andere Binder-Optionen auf der Kommandozeile angegeben wurden"
 
 #: gcc.cc:5086 toplev.cc:717
 #, gcc-internal-format
@@ -25896,7 +25897,7 @@ msgstr "%<-x %s%> hinter letzter Eingabedatei hat keine Auswirkung"
 #: gcc.cc:5767
 #, gcc-internal-format
 msgid "unable to locate default linker script %qs in the library search paths"
-msgstr "Standard-Linkerscript %qs kann nicht in den Bibliotheks-Suchpfaden gefunden werden"
+msgstr "Standard-Binderscript %qs kann nicht in den Bibliotheks-Suchpfaden gefunden werden"
 
 #: gcc.cc:5974
 #, gcc-internal-format
@@ -26070,7 +26071,7 @@ msgstr "%<-fuse-linker-plugin%>, aber %s nicht gefunden"
 #: gcc.cc:9301
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: linker input file unused because linking not done"
-msgstr "%s: Eingabedatei des Linkers unbenutzt, da das Linken nicht durchgeführt wird"
+msgstr "%s: Eingabedatei des Binders unbenutzt, da das Binden nicht durchgeführt wird"
 
 #. This is can be an indication the user specifed an errorneous
 #. separated option value, (or used the wrong prefix for an
@@ -26078,7 +26079,7 @@ msgstr "%s: Eingabedatei des Linkers unbenutzt, da das Linken nicht durchgeführ
 #: gcc.cc:9307
 #, gcc-internal-format
 msgid "%s: linker input file not found: %m"
-msgstr "%s: Linker-Eingabedatei nicht gefunden: %m"
+msgstr "%s: Binder-Eingabedatei nicht gefunden: %m"
 
 #: gcc.cc:9379 c-family/c-opts.cc:852
 #, gcc-internal-format
@@ -30154,7 +30155,7 @@ msgstr "%<-fstack-protector-strong%> wird von %<-fhardened%> nicht eingeschaltet
 #: opts.cc:1231
 #, gcc-internal-format
 msgid "%<-fno-fat-lto-objects%> are supported only with linker plugin"
-msgstr "%<-fno-fat-lto-objects%> werden nur mit Linker-Plugin unterstützt"
+msgstr "%<-fno-fat-lto-objects%> werden nur mit Binder-Plugin unterstützt"
 
 #: opts.cc:1239
 #, gcc-internal-format
@@ -30335,7 +30336,7 @@ msgstr "unbekannter Stapel-Überprüfungsparameter %qs"
 #: opts.cc:3290
 #, gcc-internal-format
 msgid "%<-gdwarf%s%> is ambiguous; use %<-gdwarf-%s%> for DWARF version or %<-gdwarf%> %<-g%s%> for debug level"
-msgstr "%<-gdwarf=%s%> ist mehrdeutig; verwenden Sie %<-gdwarf-%s%> für die DWARF-Version und %<-gdwarf -g%s%> für die Debugstufe"
+msgstr "%<-gdwarf%s%> ist mehrdeutig; verwenden Sie %<-gdwarf-%s%> für die DWARF-Version und %<-gdwarf -g%s%> für die Debugstufe"
 
 #: opts.cc:3301
 #, gcc-internal-format
@@ -34248,7 +34249,7 @@ msgstr "Argument des Attributs %<symver%> ist keine Zeichenkettenkonstante"
 #: c-family/c-attribs.cc:3148 d/d-attribs.cc:1126
 #, gcc-internal-format
 msgid "symver attribute argument must have format %<name@nodename%>"
-msgstr "Argument des Attributs »symver« muss das Format %<Name@Nodenname%> haben"
+msgstr "Argument des Attributs »symver« muss das Format %<Name@Knotenname%> haben"
 
 #: c-family/c-attribs.cc:3149 d/d-attribs.cc:1127
 #, gcc-internal-format
@@ -34943,12 +34944,12 @@ msgstr "Ungültige Operanden für binäres %s (%e und %e gefunden)"
 #: c-family/c-common.cc:3227
 #, gcc-internal-format
 msgid "comparison is always false due to limited range of data type"
-msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »unwahr«"
+msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »false«"
 
 #: c-family/c-common.cc:3230
 #, gcc-internal-format
 msgid "comparison is always true due to limited range of data type"
-msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »wahr«"
+msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »true«"
 
 #: c-family/c-common.cc:3332
 #, gcc-internal-format
@@ -34978,7 +34979,7 @@ msgstr "enum-Konstante in booleschem Zusammenhang"
 #: c-family/c-common.cc:3661 d/d-convert.cc:149
 #, gcc-internal-format
 msgid "the address of %qD will always evaluate as %<true%>"
-msgstr "Die Adresse von %qD wird immer zu %<wahr%> auswerten"
+msgstr "Die Adresse von %qD wird immer zu %<true%> auswerten"
 
 #: c-family/c-common.cc:3706
 #, gcc-internal-format
@@ -35004,7 +35005,7 @@ msgstr "%<?:%> mit Ganzzahlkonstanten in booleschem Kontext"
 #: c-family/c-common.cc:3780
 #, gcc-internal-format
 msgid "the compiler can assume that the address of %qD will always evaluate to %<true%>"
-msgstr "der Compiler kann davon ausgehen, dass die Adresse von %qD immer zu %<true%> evaluiert"
+msgstr "der Compiler darf davon ausgehen, dass die Adresse von %qD immer zu %<true%> evaluiert"
 
 #: c-family/c-common.cc:3816 cp/semantics.cc:1030
 #, gcc-internal-format
@@ -37029,12 +37030,12 @@ msgstr "logisches %<und%> auf nicht-boolesche Konstante angewendet"
 #: c-family/c-warn.cc:307
 #, gcc-internal-format
 msgid "logical %<or%> of collectively exhaustive tests is always true"
-msgstr "logisches %<oder%> bei gemeinsam erschöpfenden Tests ist immer »wahr«"
+msgstr "logisches %<oder%> bei gemeinsam erschöpfenden Tests ist immer »true«"
 
 #: c-family/c-warn.cc:311
 #, gcc-internal-format
 msgid "logical %<and%> of mutually exclusive tests is always false"
-msgstr "logisches %<und%> bei sich gegenseitig ausschließenden Tests ist immer »falsch«"
+msgstr "logisches %<und%> bei sich gegenseitig ausschließenden Tests ist immer »false«"
 
 #: c-family/c-warn.cc:321
 #, gcc-internal-format
@@ -38418,7 +38419,7 @@ msgstr "ungültiger Wert %qs für %<-mmacosx-version-min%>"
 #: config/darwin-driver.cc:379
 #, gcc-internal-format
 msgid "this compiler does not support PowerPC (%<-arch%> option ignored)"
-msgstr "dieser Compiler unterstützt PowerPC nicht (%<arch%>-Option wird ignoriert)"
+msgstr "dieser Compiler unterstützt PowerPC nicht (die Option %<-arch%> wird ignoriert)"
 
 #: config/darwin-driver.cc:386
 #, gcc-internal-format
@@ -38493,7 +38494,7 @@ msgstr "%<-gsplit-dwarf%> wird für dieses Ziel nicht unterstützt, wird ignorie
 #: config/darwin.cc:3449
 #, gcc-internal-format
 msgid "%<-g3%> is not supported by the debug linker in use (set to 2)"
-msgstr "%<-g3%> wird nicht vom verwendeten Debugginglinker unterstützt (wird auf 2 gesetzt)"
+msgstr "%<-g3%> wird nicht vom verwendeten Debuggingbinder unterstützt (wird auf 2 gesetzt)"
 
 #: config/darwin.cc:3541
 #, gcc-internal-format
@@ -40504,7 +40505,7 @@ msgstr "%<-fstack-check=specific%> für Thumb-1"
 #: config/arm/arm.cc:33865
 #, gcc-internal-format
 msgid "invalid fpu for target attribute or pragma %qs"
-msgstr "ungültige FPU für Zielattribut oder -pragma %qs"
+msgstr "ungültige FPU für Zielattribut oder Pragma %qs"
 
 #. This doesn't really make sense until we support
 #. general dynamic selection of the architecture and all
@@ -40517,12 +40518,12 @@ msgstr "automatische FPU-Auswahl ist hier momentan nicht erlaubt"
 #: config/arm/arm.cc:33886
 #, gcc-internal-format
 msgid "invalid architecture for target attribute or pragma %qs"
-msgstr "Ungültige Architektur für Zielattribut oder -pragma %qs"
+msgstr "Ungültige Architektur für Zielattribut oder Pragma %qs"
 
 #: config/arm/arm.cc:33900
 #, gcc-internal-format
 msgid "unknown target attribute or pragma %qs"
-msgstr "Unbekanntes Zielattribut oder -pragma %qs"
+msgstr "Unbekanntes Zielattribut oder Pragma %qs"
 
 #: config/arm/arm.cc:36137
 #, gcc-internal-format
@@ -40652,7 +40653,7 @@ msgstr "%qs ist in der AVR-LibC ein reservierter Bezeichner. Erwägen Sie %<#inc
 #: config/avr/avr.cc:1022
 #, gcc-internal-format
 msgid "%qs is a deprecated identifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> or %<#include <compat/deprecated.h>%> before using the %qs macro"
-msgstr "%qs ist in der AVR-LibC ein veralteter Bezeichner. Erwägen Sie %<#include <avr/interrupt.h>%> oder %<#include <compat&deprecated.h>%> vor der Benutzung des Makros %qs"
+msgstr "%qs ist in der AVR-LibC ein veralteter Bezeichner. Erwägen Sie %<#include <avr/interrupt.h>%> oder %<#include <compat/deprecated.h>%> vor der Benutzung des Makros %qs"
 
 #: config/avr/avr.cc:1244
 #, gcc-internal-format
@@ -42563,7 +42564,7 @@ msgstr "keine Multilib-fähige ABI %qs kann mit dem Befehlssatz %qs implementier
 #: config/loongarch/loongarch-opts.cc:533
 #, gcc-internal-format
 msgid "ABI %qs is not enabled at configure-time, the linker might report an error"
-msgstr "ABI %qs ist zur Konfigurationszeit nicht aktiviert, der Linker meldet möglicherweise einen Fehler"
+msgstr "ABI %qs ist zur Konfigurationszeit nicht aktiviert, der Binder meldet möglicherweise einen Fehler"
 
 #: config/loongarch/loongarch-opts.cc:536
 #, gcc-internal-format, gfc-internal-format
@@ -43817,7 +43818,7 @@ msgstr "%<target()%>-Attribut: tune erscheint mehr als einmal"
 #: config/riscv/riscv-target-attr.cc:228
 #, gcc-internal-format
 msgid "%<target()%> attribute: unknown TUNE %qs"
-msgstr "%<Ziel()%>-Attribut: unbekanntes TUNE %qs"
+msgstr "%<target()%>-Attribut: unbekanntes TUNE %qs"
 
 #: config/riscv/riscv-target-attr.cc:241
 #, gcc-internal-format
@@ -46188,7 +46189,7 @@ msgstr "Objekt mit volatile-Feld kann nicht in Register geladen werden"
 #: c/c-decl.cc:6163
 #, gcc-internal-format
 msgid "uninitialized %<const %D%> is invalid in C++"
-msgstr "nicht initialisiertes %<const %qD%> ist in C++ ungültig"
+msgstr "nicht initialisiertes %<const %D%> ist in C++ ungültig"
 
 #: c/c-decl.cc:6178 cp/decl.cc:9533
 #, gcc-internal-format
@@ -50048,7 +50049,7 @@ msgstr "%<atomic_default_mem_order%>-Klausel wird lexikalisch nach dem ersten %<
 #: c/c-parser.cc:28409 cp/parser.cc:52430
 #, gcc-internal-format
 msgid "%<pragma omp requires%> requires at least one clause"
-msgstr "%<pragma omp requires%> erfordert mindestens eine Klausel"
+msgstr "%<#pragma omp requires%> erfordert mindestens eine Klausel"
 
 #: c/c-parser.cc:28428
 #, gcc-internal-format
@@ -53210,7 +53211,7 @@ msgstr "keine passende Freigabefunktion für %qD"
 #: cp/call.cc:8310
 #, gcc-internal-format
 msgid "destroying delete %qD cannot be used to release the allocated memory if the initialization throws because the object is not constructed yet"
-msgstr "das zerstörende Delete für %qD kann nicht verwendet werden, um den zugewiesenen Speicher freizugeben, wenn die Initialisierung fehlschlägt, weil das Objekt noch nicht konstruiert ist"
+msgstr "das zerstörende Delete für %qD kann nicht verwendet werden, um den zugewiesenen Speicher freizugeben, wenn die Initialisierung scheitert, weil das Objekt noch nicht konstruiert ist"
 
 #: cp/call.cc:8319
 #, gcc-internal-format
@@ -54241,7 +54242,7 @@ msgstr "Zeiger auf Element %qD wird angenommen"
 #: cp/class.cc:9098
 #, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
-msgstr "(ein Zeiger auf ein Element kann nur mit %<»&%E%> erzeugt werden)"
+msgstr "(ein Zeiger auf ein Element kann nur mit %<&%E%> erzeugt werden)"
 
 #: cp/class.cc:9177
 #, gcc-internal-format
@@ -55623,7 +55624,7 @@ msgstr "Koroutinen erfordern ein Traits-Template; %<%E::%E%> wurde nicht gefunde
 #: cp/coroutines.cc:509
 #, gcc-internal-format
 msgid "perhaps %<#include <coroutine>%> is missing"
-msgstr "möglicherweise fehlt %<#include <Koroutine>%>"
+msgstr "möglicherweise fehlt %<#include <coroutine>%>"
 
 #: cp/coroutines.cc:564
 #, gcc-internal-format
@@ -56432,7 +56433,7 @@ msgstr "roher Literaloperator %q#D steht mit literalem Operatortemplate in Konfl
 #: cp/decl.cc:1955
 #, gcc-internal-format
 msgid "%q#D redeclared as different kind of entity"
-msgstr "%q#D als andere Symbolart redeklariert"
+msgstr "%q#D als andere Entitätsart redeklariert"
 
 #: cp/decl.cc:1980
 #, gcc-internal-format
@@ -56462,12 +56463,12 @@ msgstr "bisherige Deklaration als %q#D"
 #: cp/decl.cc:2047
 #, gcc-internal-format
 msgid "redeclaration of %<pragma omp declare reduction%>"
-msgstr "Redeklaration von %<pragma omp declare reduction%>"
+msgstr "Redeklaration von %<#pragma omp declare reduction%>"
 
 #: cp/decl.cc:2049
 #, gcc-internal-format
 msgid "previous %<pragma omp declare reduction%> declaration"
-msgstr "vorherige Deklaration von %<pragma omp declare reduction%>"
+msgstr "vorherige Deklaration von %<#pragma omp declare reduction%>"
 
 #: cp/decl.cc:2107
 #, gcc-internal-format
@@ -60530,12 +60531,12 @@ msgstr "Operator %<delete []%> auf unvollständigem Typ verwendet"
 #: cp/init.cc:4173
 #, gcc-internal-format
 msgid "possible problem detected in invocation of operator %<delete []%>"
-msgstr "mögliches Problem bei Aufruf von %<operator delete []%> erkannt"
+msgstr "mögliches Problem bei Aufruf des Operators %<delete []%> erkannt"
 
 #: cp/init.cc:4177
 #, gcc-internal-format
 msgid "neither the destructor nor the class-specific operator %<delete []%> will be called, even if they are declared when the class is defined"
-msgstr "weder der Destruktor noch der klassenspezifische %<operator delete []%> wird aufgerufen, auch wenn sie bei der Klassendefinition deklariert werden"
+msgstr "weder der Destruktor noch der klassenspezifische Operator %<delete []%> wird aufgerufen, auch wenn sie bei der Klassendefinition deklariert werden"
 
 #: cp/init.cc:4912
 #, gcc-internal-format
@@ -61221,7 +61222,7 @@ msgstr "%qD verweist auf die TU-lokale Funktion %qD"
 #: cp/module.cc:15089
 #, gcc-internal-format
 msgid "%qD exposes TU-local entity %qD"
-msgstr "%qD macht die TU-lokale Einheit %qD sichtbar"
+msgstr "%qD macht die TU-lokale Entität %qD sichtbar"
 
 #: cp/module.cc:15104
 #, gcc-internal-format
@@ -61495,7 +61496,7 @@ msgstr "beim Laden der ausstehenden Einheiten für %<%E%s%E%>"
 #: cp/module.cc:21314
 #, gcc-internal-format
 msgid "import of named module %qs inside language-linkage block"
-msgstr "Import eines benannten Moduls %qs innerhalb eines Sprachverlinkungsblocks"
+msgstr "Import eines benannten Moduls %qs innerhalb eines Sprachbindungsblocks"
 
 #: cp/module.cc:21345
 #, gcc-internal-format
@@ -61615,7 +61616,7 @@ msgstr "%q#D verdeckt Konstruktor für %q#D"
 #: cp/name-lookup.cc:3233
 #, gcc-internal-format
 msgid "conflicting C language linkage declaration %q#D"
-msgstr "in Konflikt stehende Deklaration %q#D mit Bindung für die Sprache \"C\""
+msgstr "in Konflikt stehende Deklaration %q#D mit Bindung für die Sprache »C«"
 
 #: cp/name-lookup.cc:3238
 #, gcc-internal-format
@@ -61854,7 +61855,7 @@ msgstr "Namensbereich-Alias %qD ist hier nicht erlaubt, %qD angenommen"
 #: cp/name-lookup.cc:9294
 #, gcc-internal-format
 msgid "exporting namespace %qD with internal linkage"
-msgstr "Namensraum %qD mit interner Verknüpfung wird exportiert"
+msgstr "Namensraum %qD mit interner Bindung wird exportiert"
 
 #: cp/name-lookup.cc:9296
 #, gcc-internal-format
@@ -64410,7 +64411,7 @@ msgstr "Ausdruck muss in runden Klammern eingeschlossen sein"
 #: cp/parser.cc:32348
 #, gcc-internal-format
 msgid "missing additional %<requires%> to start a requires-expression"
-msgstr "Fehlendes zusätzliches %<requries%>, um eine requires-expression zu beginnen"
+msgstr "Fehlendes zusätzliches %<requires%>, um eine requires-expression zu beginnen"
 
 #: cp/parser.cc:32589
 #, gcc-internal-format
@@ -64470,12 +64471,12 @@ msgstr "ISO C++ unterstützt keine Operatortemplates in Zeichenkettenliteralen, 
 #: cp/parser.cc:33859
 #, gcc-internal-format
 msgid "literal operator template %qD has invalid parameter list; expected non-type template parameter pack %<<char...>%> or single non-type parameter of class type"
-msgstr "literales Operatortemplate %qD hat ungültige Parameterliste; nicht-Typ Templateargumentpack %<<char…>%> oder einzelner Nicht-Typ-Parameter von Klassentyp erwartet"
+msgstr "literales Operatortemplate %qD hat ungültige Parameterliste; nicht-Typ-Templateargumentpack %<<char...>%> oder einzelner Nicht-Typ-Parameter von Klassentyp erwartet"
 
 #: cp/parser.cc:33865
 #, gcc-internal-format
 msgid "literal operator template %qD has invalid parameter list; expected non-type template parameter pack %<<char...>%>"
-msgstr "literales Operatortemplate %qD hat ungültige Parameterliste; Template für Nicht-Typ Argumentpack %<<char…>%> erwartet"
+msgstr "literales Operatortemplate %qD hat ungültige Parameterliste; Template für Nicht-Typ Argumentpack %<<char...>%> erwartet"
 
 #: cp/parser.cc:33905
 #, gcc-internal-format
@@ -68844,7 +68845,7 @@ msgstr "%<auto(x)%> kann nicht eingeschränkt werden"
 #: cp/typeck2.cc:2513
 #, gcc-internal-format
 msgid "%<auto(x)%> only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "%<auto{x}%> ist erst ab %<-std=c++23%> oder %<-std=gnu++23%> verfügbar"
+msgstr "%<auto(x)%> ist erst ab %<-std=c++23%> oder %<-std=gnu++23%> verfügbar"
 
 #: cp/typeck2.cc:2538
 #, gcc-internal-format
@@ -69008,7 +69009,7 @@ msgstr "Parameter vom Typ %<va_list%> {auch %qs} werden zu Zeigertypen degradier
 #: d/d-lang.cc:463
 #, gcc-internal-format
 msgid "bad argument for %<-fdebug=%>: %qs"
-msgstr "falsches Argument für %<-fdebug%>: %qs"
+msgstr "falsches Argument für %<-fdebug=%>: %qs"
 
 #: d/d-lang.cc:518
 #, gcc-internal-format
@@ -69018,12 +69019,12 @@ msgstr "falsches Argument für %<-fextern-std%>: %qs"
 #: d/d-lang.cc:541
 #, gcc-internal-format
 msgid "bad argument for %<-fmodule-file=%>: %qs"
-msgstr "falsches Argument für %<-fmodule-file%>: %qs"
+msgstr "falsches Argument für %<-fmodule-file=%>: %qs"
 
 #: d/d-lang.cc:708
 #, gcc-internal-format
 msgid "bad argument for %<-fversion=%>: %qs"
-msgstr "falsches Argument für %<-fversion%>: %qs"
+msgstr "falsches Argument für %<-fversion=%>: %qs"
 
 #: d/d-lang.cc:984
 #, gcc-internal-format
@@ -69205,7 +69206,7 @@ msgstr "Argument %qE kann nicht zur Übersetzungszeit gelesen werden"
 #: d/intrinsics.cc:446
 #, gcc-internal-format
 msgid "element index %qE is out of bounds %<[0 .. %E]%>"
-msgstr "Elementindex %qE ist außerhalb der Grenzen %<[0 .. %E%>"
+msgstr "Elementindex %qE ist außerhalb der Grenzen %<[0 .. %E]%>"
 
 #: d/intrinsics.cc:493
 #, gcc-internal-format
@@ -69457,7 +69458,7 @@ msgstr "gfc_compare_expr(): Bad basic type"
 #: fortran/arith.cc:1846
 #, gcc-internal-format, gfc-internal-format
 msgid "Unsigned exponentiation not permitted with -pedantic at %L"
-msgstr "Vorzeichenlose Potenzierung nicht erlaubt mit -pedantic bei %L"
+msgstr "Vorzeichenlose Potenzierung nicht erlaubt mit »-pedantic« bei %L"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/arith.cc:1910
@@ -71507,7 +71508,7 @@ msgstr "Nicht-konstante untere Grenze in Deklaration mit impliziter Form bei %L"
 #: fortran/decl.cc:2255
 #, gcc-internal-format
 msgid "Entity %qs at %L is incompatible with a BOZ literal constant"
-msgstr "Entity %qs bei %L ist inkompatibel zu einer BOZ-Literal-Konstante"
+msgstr "Entität %qs bei %L ist inkompatibel zu einer BOZ-Literal-Konstante"
 
 #: fortran/decl.cc:2321 fortran/decl.cc:2328
 #, gcc-internal-format, gfc-internal-format
@@ -71916,7 +71917,7 @@ msgstr "IMPORT-Anweisung bei %C"
 #: fortran/decl.cc:5140
 #, gcc-internal-format, gfc-internal-format
 msgid "Expecting list of named entities at %C"
-msgstr "Liste benannter Einträge bei %C erwartet"
+msgstr "Liste benannter Entitäten bei %C erwartet"
 
 #: fortran/decl.cc:5169
 #, gcc-internal-format
@@ -73114,7 +73115,7 @@ msgstr "Syntaxfehler in !GCC$ ATTRIBUTES-Anweisung bei %C"
 #: fortran/decl.cc:11977
 #, gcc-internal-format
 msgid "%<GCC unroll%> directive requires a non-negative integral constant less than or equal to %u at %C"
-msgstr "Direktive %<GCC unroll%> bei %2$C verlangt eine konstante Anzahl (maximal %1$u)"
+msgstr "Direktive %<GCC unroll%> verlangt eine konstante Anzahl (maximal %u), bei %C"
 
 #: fortran/decl.cc:11991
 #, gcc-internal-format, gfc-internal-format
@@ -73670,7 +73671,7 @@ msgstr "Ziel der Rang-Neuzuordnung ist kleiner als die Größe des Zeigers (%ld 
 #: fortran/expr.cc:4504
 #, gcc-internal-format, gfc-internal-format
 msgid "The assumed rank target at %L is an experimental F202y feature. Use option -std=f202y to enable"
-msgstr "Das angenommene Rangziel bei %L ist ein experimentelles Merkmal von F202y. Verwenden Sie die Option -std=f202y zum Einschalten"
+msgstr "Das angenommene Rangziel bei %L ist ein experimentelles Merkmal von F202y. Verwenden Sie die Option »-std=f202y« zum Einschalten"
 
 #: fortran/expr.cc:4516
 #, gcc-internal-format, gfc-internal-format
@@ -74872,7 +74873,7 @@ msgstr "Argument bei %L mit angenommenem Typ ist nur als erstes Argument der int
 #: fortran/intrinsic.cc:301
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank argument at %L is only permitted as actual argument to intrinsic inquiry functions or to RESHAPE. The latter is an experimental F202y feature. Use -std=f202y to enable"
-msgstr "Argument mit angenommenem Rang bei %L ist nur als tatsächliches Argument der intrinsischen Abfragefunktionen oder von RESHAPE erlaubt. Letzteres ist ein experimentelles F202y-Feature. Verwenden Sie -std=f202y, um es einzuschalten"
+msgstr "Argument mit angenommenem Rang bei %L ist nur als tatsächliches Argument der intrinsischen Abfragefunktionen oder von RESHAPE erlaubt. Letzteres ist ein experimentelles F202y-Feature. Verwenden Sie »-std=f202y«, um es einzuschalten"
 
 #: fortran/intrinsic.cc:309
 #, gcc-internal-format, gfc-internal-format
@@ -74910,17 +74911,17 @@ msgstr "Interner Fehler: make_generic(): Cannot find generic symbol %qs"
 #: fortran/intrinsic.cc:4469
 #, gcc-internal-format, gfc-internal-format
 msgid "ALLOCATED intrinsic at %L requires an array or scalar allocatable entity"
-msgstr "Das intrinsische ALLOCATED bei %L erfordert ein Feld oder eine skalar allozierbare Entity"
+msgstr "Das intrinsische ALLOCATED bei %L erfordert ein Feld oder eine skalar allozierbare Entität"
 
 #: fortran/intrinsic.cc:4482
 #, gcc-internal-format, gfc-internal-format
 msgid "Scalar entity required at %L"
-msgstr "Skalare Einheit bei %L benötigt"
+msgstr "Skalare Entität bei %L benötigt"
 
 #: fortran/intrinsic.cc:4493
 #, gcc-internal-format, gfc-internal-format
 msgid "Array entity required at %L"
-msgstr "Feldeinheit bei %L benötigt"
+msgstr "Feldentität bei %L benötigt"
 
 #: fortran/intrinsic.cc:4500
 #, gcc-internal-format
@@ -75781,7 +75782,7 @@ msgstr "Name einer Strukturkomponente oder eines Operators nach %<.%> bei %C erw
 #: fortran/match.cc:227
 #, gcc-internal-format
 msgid "%qs is neither a defined operator nor a structure component in dotted string at %C"
-msgstr "in der gepunkteten Zeichenkette bei %2$C ist %1$qs weder ein definierter Operator noch eine Strukturkomponente"
+msgstr "in der gepunkteten Zeichenkette ist %qs weder ein definierter Operator noch eine Strukturkomponente, bei %C"
 
 #: fortran/match.cc:298
 #, gcc-internal-format
@@ -75982,7 +75983,7 @@ msgstr "Falsche Bounds-Remapping-Liste bei %C"
 #: fortran/match.cc:1946
 #, gcc-internal-format, gfc-internal-format
 msgid "The bounds remapping list at %C is an experimental F202y feature. Use std=f202y to enable"
-msgstr "Die Bounds-Remapping-Liste bei %C ist eine experimentelle F202y-Funktion. Verwenden Sie -std=f202y zum Aktivieren"
+msgstr "Die Bounds-Remapping-Liste bei %C ist eine experimentelle F202y-Funktion. Verwenden Sie »-std=f202y« zum Aktivieren"
 
 #: fortran/match.cc:1952
 #, gcc-internal-format, gfc-internal-format
@@ -76909,12 +76910,12 @@ msgstr "Modul-Eigenschaft in USE-Anweisung bei %C muss entweder INTRINSIC oder N
 #: fortran/module.cc:571
 #, gcc-internal-format, gfc-internal-format
 msgid "\"::\" was expected after module nature at %C but was not found"
-msgstr "\"::\" nach Modul-Eigenschaft bei %C erwartet, aber nicht gefunden"
+msgstr "»::« nach Modul-Eigenschaft bei %C erwartet, aber nicht gefunden"
 
 #: fortran/module.cc:581
 #, gcc-internal-format, gfc-internal-format
 msgid "\"USE :: module\" at %C"
-msgstr "\"USE :: module\" bei %C"
+msgstr "»USE :: module« bei %C"
 
 #: fortran/module.cc:640
 #, gcc-internal-format, gfc-internal-format
@@ -77013,7 +77014,7 @@ msgstr "Vorherige !$OMP DECLARE REDUCTION von Modul %s bei %L"
 #: fortran/module.cc:5616
 #, gcc-internal-format
 msgid "%qs of module %qs, imported at %C, is also the name of the current program unit"
-msgstr "Bei %3$C importiertes %1$qs von Modul %2$qs ist auch der Name der aktuellen Programmeinheit"
+msgstr "Das %qs von Modul %qs, das bei %C importiert wurde, ist auch der Name der aktuellen Programmeinheit"
 
 #: fortran/module.cc:5753
 #, gcc-internal-format
@@ -77107,12 +77108,12 @@ msgstr "Verwendung des intrinsischen Moduls %qs bei %C steht mit nicht-intrinsis
 #: fortran/module.cc:7466
 #, gcc-internal-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %L is incompatible with option %qs"
-msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %L ist mit Option %qs unverträglich"
+msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %L ist mit der Option %qs unverträglich"
 
 #: fortran/module.cc:7543
 #, gcc-internal-format, gfc-internal-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %C is incompatible with option %s"
-msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %C ist mit Option %s unverträglich"
+msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %C ist mit der Option %s unverträglich"
 
 #: fortran/module.cc:7603
 #, gcc-internal-format
@@ -77172,12 +77173,12 @@ msgstr "Verwendung des nicht-intrinsischen Moduls %qs bei %C steht mit vorher ve
 #: fortran/module.cc:7748
 #, gcc-internal-format
 msgid "File %qs opened at %C is not a GNU Fortran module file"
-msgstr "Bei %2$C geöffnete Datei %1$qs ist keine GNU-Fortran-Moduldatei"
+msgstr "Geöffnete Datei %qs ist keine GNU-Fortran-Moduldatei, bei %C"
 
 #: fortran/module.cc:7769
 #, gcc-internal-format
 msgid "Cannot read module file %qs opened at %C, because it was created by a different version of GNU Fortran"
-msgstr "Bei %2$C geöffnete Moduldatei %1$qs kann nicht gelesen werden, da sie von einer anderen Version von GNU Fortran erstellt wurde"
+msgstr "Moduldatei %qs kann nicht gelesen werden, da sie von einer anderen Version von GNU Fortran erstellt wurde, bei %C"
 
 #: fortran/module.cc:7786
 #, gcc-internal-format
@@ -77449,7 +77450,7 @@ msgstr "%<(%> nach %qs bei %C erwartet"
 #: fortran/openmp.cc:2309
 #, gcc-internal-format
 msgid "Invalid expression after %<%s(%> at %C"
-msgstr "Ungültiger Ausdruck nach %<%s%> bei %C"
+msgstr "Ungültiger Ausdruck nach %<%s(%> bei %C"
 
 #: fortran/openmp.cc:2369
 #, gcc-internal-format, gfc-internal-format
@@ -77524,7 +77525,7 @@ msgstr "Doppelte Klausel mit Abhängigkeitsart SOURCE bei %C"
 #: fortran/openmp.cc:2892
 #, gcc-internal-format
 msgid "Expected %<)%> or %<omp_cur_iteration)%> at %C"
-msgstr "%<)%> oder %<omp_cur_iteration%> bei %C erwartet"
+msgstr "%<)%> oder %<omp_cur_iteration)%> bei %C erwartet"
 
 #: fortran/openmp.cc:2904
 #, gcc-internal-format, gfc-internal-format
@@ -80052,17 +80053,17 @@ msgstr "Die Direktive %<GCC unroll%> bei %C darf nur direkt vor einem Schleifenb
 #: fortran/parse.cc:6717
 #, gcc-internal-format
 msgid "%<GCC ivdep%> directive not at the start of a loop at %C"
-msgstr "Die Direktive %<GCC unroll%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
+msgstr "Die Direktive %<GCC ivdep%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
 
 #: fortran/parse.cc:6720
 #, gcc-internal-format
 msgid "%<GCC vector%> directive not at the start of a loop at %C"
-msgstr "Die Direktive %<GCC unroll%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
+msgstr "Die Direktive %<GCC vector%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
 
 #: fortran/parse.cc:6723
 #, gcc-internal-format
 msgid "%<GCC novector%> directive not at the start of a loop at %C"
-msgstr "Die Direktive %<GCC unroll%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
+msgstr "Die Direktive %<GCC novector%> bei %C darf nur direkt vor einem Schleifenbeginn stehen"
 
 #: fortran/parse.cc:6839
 #, gcc-internal-format
@@ -80460,7 +80461,7 @@ msgstr "gfc_caf_attr(): Bad array reference"
 #: fortran/primary.cc:3401
 #, gcc-internal-format
 msgid "No initializer for allocatable component %qs given in the structure constructor at %C"
-msgstr "Im Strukturkonstruktor bei %2$C wurde keine Initialisierung für allozierbare Komponente %1$qs angegeben"
+msgstr "Im Strukturkonstruktor wurde keine Initialisierung für allozierbare Komponente %qs angegeben, bei %C"
 
 #: fortran/primary.cc:3412
 #, gcc-internal-format, gfc-internal-format
@@ -80470,7 +80471,7 @@ msgstr "Strukturkonstruktor mit fehlenden optionalen Argumenten bei %C"
 #: fortran/primary.cc:3421
 #, gcc-internal-format
 msgid "No initializer for component %qs given in the structure constructor at %C"
-msgstr "Im Strukturkonstruktor bei %2$C wurde keine Initialisierung für Komponente %1$qs angegeben"
+msgstr "Im Strukturkonstruktor wurde keine Initialisierung für Komponente %qs angegeben, bei %C"
 
 #: fortran/primary.cc:3469
 #, gcc-internal-format
@@ -82121,7 +82122,7 @@ msgstr "(F202y)Fehlende oder ungültige Grenze in der ASSOCIATE-Rangzuordnung de
 #: fortran/resolve.cc:10130
 #, gcc-internal-format
 msgid "Associating entity %qs at %L is a procedure pointer"
-msgstr "Zugeordneter Name %qs bei %L ist ein Prozedurzeiger"
+msgstr "Zuordnende Entität %qs bei %L ist ein Prozedurzeiger"
 
 #: fortran/resolve.cc:10139
 #, gcc-internal-format
@@ -82131,7 +82132,7 @@ msgstr "Abgeleiteter Typ %qs kann bei %L nicht als Variable verwendet werden"
 #: fortran/resolve.cc:10156
 #, gcc-internal-format
 msgid "Associating entity %qs at %L is a procedure name"
-msgstr "Zugeordneter Name %qs bei %L ist ein Prozedurname"
+msgstr "Zuordnende Entität %qs bei %L ist ein Prozedurname"
 
 #: fortran/resolve.cc:10172
 #, gcc-internal-format, gfc-internal-format
@@ -84514,7 +84515,7 @@ msgstr "Überlappende ungleiche Initialisierungen in EQUIVALENCE bei %C"
 #: fortran/trans-array.cc:2469 fortran/trans-expr.cc:10450
 #, gcc-internal-format, gfc-internal-format
 msgid "The structure constructor at %L has been finalized. This feature was removed by f08/0011. Use -std=f2018 or -std=gnu to eliminate the finalization."
-msgstr "Der Strukturkonstruktor bei %L wurde finalisiert. Dieses Feature wurde aus f08/0011 entfernt. Verwenden Sie -std=f2018 oder -std=gnu, um die Finalisierung zu entfernen."
+msgstr "Der Strukturkonstruktor bei %L wurde finalisiert. Dieses Feature wurde aus f08/0011 entfernt. Verwenden Sie »-std=f2018« oder »-std=gnu«, um die Finalisierung zu entfernen."
 
 #. Problems occur when we get something like
 #. integer :: a(lots) = (/(i, i=1, lots)/)
@@ -85193,7 +85194,7 @@ msgstr "Hex-Zahl konnte nicht eingelesen werden"
 #: lto/lto-common.cc:2100
 #, gcc-internal-format, gfc-internal-format
 msgid "unexpected file name %s in linker resolution file. Expected %s"
-msgstr "unerwarteter Dateiname %s in Linker-Auflösungsdatei. %s erwartet"
+msgstr "unerwarteter Dateiname %s in Binder-Auflösungsdatei. %s erwartet"
 
 #: lto/lto-common.cc:2109
 #, gcc-internal-format
@@ -85228,7 +85229,7 @@ msgstr "Bytecode-Strom in Datei %qs, mit einem älteren GCC-Compiler als 10.0 er
 #: lto/lto-common.cc:2305
 #, gcc-internal-format
 msgid "cannot read %<LTO_section_decls%> from %s"
-msgstr "Fehler beim Einlesen von %<LOT_section_decls%> aus %s"
+msgstr "Fehler beim Einlesen von %<LTO_section_decls%> aus %s"
 
 #: lto/lto-common.cc:2426
 #, gcc-internal-format, gfc-internal-format
