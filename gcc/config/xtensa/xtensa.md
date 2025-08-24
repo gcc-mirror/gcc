@@ -2177,7 +2177,7 @@
 		      (label_ref (match_dup 1))
 		      (pc)))]
 {
-  operands[3] = GEN_INT ((1 << GET_MODE_BITSIZE (GET_MODE (operands[3]))) - 1);
+  operands[3] = GEN_INT (GET_MODE_MASK (GET_MODE (operands[3])));
 })
 
 (define_insn_and_split "*masktrue_const_pow2_minus_one"
