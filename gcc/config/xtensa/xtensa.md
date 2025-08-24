@@ -177,19 +177,18 @@
 ;; Addition.
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=D,D,a,a,a")
-	(plus:SI (match_operand:SI 1 "register_operand" "%d,d,r,r,r")
-		 (match_operand:SI 2 "add_operand" "d,O,r,J,N")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "add_operand")))]
   ""
-  "@
-   add.n\t%0, %1, %2
-   addi.n\t%0, %1, %d2
-   add\t%0, %1, %2
-   addi\t%0, %1, %d2
-   addmi\t%0, %1, %x2"
-  [(set_attr "type"	"arith,arith,arith,arith,arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"2,2,3,3,3")])
+  {@ [cons: =0, %1, 2; attrs: type, length]
+     [D, d, d; arith, 2] add.n\t%0, %1, %2
+     [D, d, O; arith, 2] addi.n\t%0, %1, %d2
+     [a, r, r; arith, 3] add\t%0, %1, %2
+     [a, r, J; arith, 3] addi\t%0, %1, %d2
+     [a, r, N; arith, 3] addmi\t%0, %1, %x2
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "*addsubx"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -393,18 +392,15 @@
    (set_attr "length"	"3")])
 
 (define_insn "<u>mulhisi3"
-  [(set (match_operand:SI 0 "register_operand" "=C,A")
-	(mult:SI (any_extend:SI
-		  (match_operand:HI 1 "register_operand" "%r,r"))
-		 (any_extend:SI
-		  (match_operand:HI 2 "register_operand" "r,r"))))]
+  [(set (match_operand:SI 0 "register_operand")
+	(mult:SI (any_extend:SI (match_operand:HI 1 "register_operand"))
+		 (any_extend:SI (match_operand:HI 2 "register_operand"))))]
   "TARGET_MUL16 || TARGET_MAC16"
-  "@
-   mul16<su>\t%0, %1, %2
-   <u>mul.aa.ll\t%1, %2"
-  [(set_attr "type"	"mul16,mac16")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, %1, 2; attrs: type, length]
+     [C, r, r; mul16, 3] mul16<su>\t%0, %1, %2
+     [A, r, r; mac16, 3] <u>mul.aa.ll\t%1, %2
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "muladdhisi"
   [(set (match_operand:SI 0 "register_operand" "=A")
@@ -743,16 +739,15 @@
 ;; Logical instructions.
 
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(and:SI (match_operand:SI 1 "register_operand" "%r,r")
-		(match_operand:SI 2 "mask_operand" "P,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(and:SI (match_operand:SI 1 "register_operand")
+		(match_operand:SI 2 "mask_operand")))]
   ""
-  "@
-   extui\t%0, %1, 0, %K2
-   and\t%0, %1, %2"
-  [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, %1, 2; attrs: type, length]
+     [a, r, P; arith, 3] extui\t%0, %1, 0, %K2
+     [a, r, r; arith, 3] and\t%0, %1, %2
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn_and_split "*andsi3_bitcmpl"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -946,15 +941,14 @@
 ;; Zero-extend instructions.
 
 (define_insn "zero_extend<mode>si2"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(zero_extend:SI (match_operand:HQI 1 "nonimmed_operand" "r,U")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(zero_extend:SI (match_operand:HQI 1 "nonimmed_operand")))]
   ""
-  "@
-   extui\t%0, %1, 0, <mode_bits>
-   %v1l<mode_bits>ui\t%0, %1"
-  [(set_attr "type"	"arith,load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [a, r; arith, 3] extui\t%0, %1, 0, <mode_bits>
+     [a, U; load , 3] %v1l<mode_bits>ui\t%0, %1
+  }
+  [(set_attr "mode" "SI")])
 
 
 ;; Sign-extend instructions.
@@ -972,15 +966,14 @@
 })
 
 (define_insn "extendhisi2_internal"
-  [(set (match_operand:SI 0 "register_operand" "=B,a")
-	(sign_extend:SI (match_operand:HI 1 "sext_operand" "r,U")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(sign_extend:SI (match_operand:HI 1 "sext_operand")))]
   ""
-  "@
-   sext\t%0, %1, 15
-   %v1l16si\t%0, %1"
-  [(set_attr "type"	"arith,load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [B, r; arith, 3] sext\t%0, %1, 15
+     [a, U; load , 3] %v1l16si\t%0, %1
+  }
+  [(set_attr "mode" "SI")])
 
 (define_expand "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1317,29 +1310,28 @@
 })
 
 (define_insn "movsi_internal"
-  [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,D,R,R,a,q,a,a,W,a,a,U,*a,*A")
-	(match_operand:SI 1 "move_operand" "M,D,d,R,D,d,r,r,I,Y,i,T,U,r,*A,*r"))]
+  [(set (match_operand:SI 0 "nonimmed_operand")
+	(match_operand:SI 1 "move_operand"))]
   "xtensa_valid_move (SImode, operands)"
-  "@
-   movi.n\t%0, %x1
-   mov.n\t%0, %1
-   mov.n\t%0, %1
-   %v1l32i.n\t%0, %1
-   %v0s32i.n\t%1, %0
-   %v0s32i.n\t%1, %0
-   mov\t%0, %1
-   movsp\t%0, %1
-   movi\t%0, %x1
-   movi\t%0, %1
-   const16\t%0, %t1\;const16\t%0, %b1
-   %v1l32r\t%0, %1
-   %v1l32i\t%0, %1
-   %v0s32i\t%1, %0
-   rsr\t%0, ACCLO
-   wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,load,move,load,load,store,rsr,wsr")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [ D,  M; move , 2] movi.n\t%0, %x1
+     [ D,  D; move , 2] mov.n\t%0, %1
+     [ D,  d; move , 2] ^
+     [ D,  R; load , 2] %v1l32i.n\t%0, %1
+     [ R,  D; store, 2] %v0s32i.n\t%1, %0
+     [ R,  d; store, 2] ^
+     [ a,  r; move , 3] mov\t%0, %1
+     [ q,  r; move , 3] movsp\t%0, %1
+     [ a,  I; move , 3] movi\t%0, %x1
+     [ a,  Y; load , 3] movi\t%0, %1
+     [ W,  i; move , 6] const16\t%0, %t1\;const16\t%0, %b1
+     [ a,  T; load , 3] %v1l32r\t%0, %1
+     [ a,  U; load , 3] %v1l32i\t%0, %1
+     [ U,  r; store, 3] %v0s32i\t%1, %0
+     [*a, *A; rsr  , 3] rsr\t%0, ACCLO
+     [*A, *r; wsr  , 3] wsr\t%1, ACCLO
+  }
+  [(set_attr "mode" "SI")])
 
 (define_split
   [(set (match_operand:SHI 0 "register_operand")
@@ -1389,23 +1381,22 @@
 })
 
 (define_insn "movhi_internal"
-  [(set (match_operand:HI 0 "nonimmed_operand" "=D,D,a,a,a,a,a,U,*a,*A")
-	(match_operand:HI 1 "move_operand" "M,d,r,I,Y,T,U,r,*A,*r"))]
+  [(set (match_operand:HI 0 "nonimmed_operand")
+	(match_operand:HI 1 "move_operand"))]
   "xtensa_valid_move (HImode, operands)"
-  "@
-   movi.n\t%0, %x1
-   mov.n\t%0, %1
-   mov\t%0, %1
-   movi\t%0, %x1
-   movi\t%0, %1
-   %v1l32r\t%0, %1
-   %v1l16ui\t%0, %1
-   %v0s16i\t%1, %0
-   rsr\t%0, ACCLO
-   wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,move,load,load,load,store,rsr,wsr")
-   (set_attr "mode"	"HI")
-   (set_attr "length"	"2,2,3,3,3,3,3,3,3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [ D,  M; move , 2] movi.n\t%0, %x1
+     [ D,  d; move , 2] mov.n\t%0, %1
+     [ a,  r; move , 3] mov\t%0, %1
+     [ a,  I; move , 3] movi\t%0, %x1
+     [ a,  Y; load , 3] movi\t%0, %1
+     [ a,  T; load , 3] %v1l32r\t%0, %1
+     [ a,  U; load , 3] %v1l16ui\t%0, %1
+     [ U,  r; store, 3] %v0s16i\t%1, %0
+     [*a, *A; rsr  , 3] rsr\t%0, ACCLO
+     [*A, *r; wsr  , 3] wsr\t%1, ACCLO
+  }
+  [(set_attr "mode" "HI")])
 
 ;; 8-bit Integer moves
 
@@ -1419,21 +1410,20 @@
 })
 
 (define_insn "movqi_internal"
-  [(set (match_operand:QI 0 "nonimmed_operand" "=D,D,a,a,a,U,*a,*A")
-	(match_operand:QI 1 "move_operand" "M,d,r,I,U,r,*A,*r"))]
+  [(set (match_operand:QI 0 "nonimmed_operand")
+	(match_operand:QI 1 "move_operand"))]
   "xtensa_valid_move (QImode, operands)"
-  "@
-   movi.n\t%0, %x1
-   mov.n\t%0, %1
-   mov\t%0, %1
-   movi\t%0, %x1
-   %v1l8ui\t%0, %1
-   %v0s8i\t%1, %0
-   rsr\t%0, ACCLO
-   wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,move,load,store,rsr,wsr")
-   (set_attr "mode"	"QI")
-   (set_attr "length"	"2,2,3,3,3,3,3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [ D,  M; move , 2] movi.n\t%0, %x1
+     [ D,  d; move , 2] mov.n\t%0, %1
+     [ a,  r; move , 3] mov\t%0, %1
+     [ a,  I; move , 3] movi\t%0, %x1
+     [ a,  U; load , 3] %v1l8ui\t%0, %1
+     [ U,  r; store, 3] %v0s8i\t%1, %0
+     [*a, *A; rsr  , 3] rsr\t%0, ACCLO
+     [*A, *r; wsr  , 3] wsr\t%1, ACCLO
+  }
+  [(set_attr "mode" "QI")])
 
 ;; Sub-word reloads from the constant pool.
 
@@ -1491,30 +1481,29 @@
 })
 
 (define_insn "movsf_internal"
-  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,a,D,R,a,f,a,a,W,a,U")
-	(match_operand:SF 1 "move_operand" "f,^U,f,d,T,R,d,r,r,f,Y,iF,U,r"))]
+  [(set (match_operand:SF 0 "nonimmed_operand")
+	(match_operand:SF 1 "move_operand"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
 	 && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
-  "@
-   mov.s\t%0, %1
-   %v1lsi\t%0, %1
-   %v0ssi\t%1, %0
-   mov.n\t%0, %1
-   %v1l32r\t%0, %1
-   %v1l32i.n\t%0, %1
-   %v0s32i.n\t%1, %0
-   mov\t%0, %1
-   wfr\t%0, %1
-   rfr\t%0, %1
-   movi\t%0, %y1
-   const16\t%0, %t1\;const16\t%0, %b1
-   %v1l32i\t%0, %1
-   %v0s32i\t%1, %0"
-  [(set_attr "type"	"farith,fload,fstore,move,load,load,store,move,farith,farith,load,move,load,store")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,2,3,2,2,3,3,3,3,6,3,3")])
+  {@ [cons: =0, 1; attrs: type, length]
+     [f,  f; farith, 3] mov.s\t%0, %1
+     [f, ^U; fload , 3] %v1lsi\t%0, %1
+     [U,  f; fstore, 3] %v0ssi\t%1, %0
+     [D,  d; move  , 2] mov.n\t%0, %1
+     [a,  T; load  , 3] %v1l32r\t%0, %1
+     [D,  R; load  , 2] %v1l32i.n\t%0, %1
+     [R,  d; store , 2] %v0s32i.n\t%1, %0
+     [a,  r; move  , 3] mov\t%0, %1
+     [f,  r; farith, 3] wfr\t%0, %1
+     [a,  f; farith, 3] rfr\t%0, %1
+     [a,  Y; load  , 3] movi\t%0, %y1
+     [W, iF; move  , 6] const16\t%0, %t1\;const16\t%0, %b1
+     [a,  U; load  , 3] %v1l32i\t%0, %1
+     [U,  r; store , 3] %v0s32i\t%1, %0
+  }
+  [(set_attr "mode" "SF")])
 
 (define_insn "*lsiu"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -1682,16 +1671,15 @@
 })
 
 (define_insn "ashlsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(ashift:SI (match_operand:SI 1 "register_operand" "r,r")
-		   (match_operand:SI 2 "arith_operand" "J,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashift:SI (match_operand:SI 1 "register_operand")
+		   (match_operand:SI 2 "arith_operand")))]
   ""
-  "@
-   slli\t%0, %1, %R2
-   ssl\t%2\;sll\t%0, %1"
-  [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,6")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+     [a, r, J; arith, 3] slli\t%0, %1, %R2
+     [a, r, r; arith, 6] ssl\t%2\;sll\t%0, %1
+  }
+  [(set_attr "mode" "SI")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand")
@@ -1703,35 +1691,26 @@
 		 (match_dup 1)))])
 
 (define_insn "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith_operand" "J,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
-  "@
-   srai\t%0, %1, %R2
-   ssr\t%2\;sra\t%0, %1"
-  [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,6")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+     [a, r, J; arith, 3] srai\t%0, %1, %R2
+     [a, r, r; arith, 6] ssr\t%2\;sra\t%0, %1
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith_operand" "J,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
-{
-  if (which_alternative == 0)
-    {
-      if ((INTVAL (operands[2]) & 0x1f) < 16)
-	return "srli\t%0, %1, %R2";
-      else
-	return "extui\t%0, %1, %R2, %L2";
-    }
-  return "ssr\t%2\;srl\t%0, %1";
-}
-  [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,6")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+     [a, r, J; arith, 3] << (INTVAL (operands[2]) & 0x1f) < 16 ? \"srli\t%0, %1, %R2\" : \"extui\t%0, %1, %R2, %L2\";
+     [a, r, r; arith, 6] ssr\t%2\;srl\t%0, %1
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "*shift_per_byte"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -1934,28 +1913,26 @@
    (set_attr "length"	"6")])
 
 (define_insn "rotlsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(rotate:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith_operand" "J,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(rotate:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
-  "@
-   ssai\t%L2\;src\t%0, %1, %1
-   ssl\t%2\;src\t%0, %1, %1"
-  [(set_attr "type"	"multi,multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"6,6")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+     [a, r, J; multi, 6] ssai\t%L2\;src\t%0, %1, %1
+     [a, r, r; multi, 6] ssl\t%2\;src\t%0, %1, %1
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "rotrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(rotatert:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith_operand" "J,r")))]
+  [(set (match_operand:SI 0 "register_operand")
+	(rotatert:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "arith_operand")))]
   ""
-  "@
-   ssai\t%R2\;src\t%0, %1, %1
-   ssr\t%2\;src\t%0, %1, %1"
-  [(set_attr "type"	"multi,multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"6,6")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+     [a, r, J; multi, 6] ssai\t%R2\;src\t%0, %1, %1
+     [a, r, r; multi, 6] ssr\t%2\;src\t%0, %1, %1
+  }
+  [(set_attr "mode" "SI")])
 
 
 ;; Comparisons.
