@@ -184,17 +184,6 @@ class Token : public TokenTree, public MacroMatch
 {
   // A token is a kind of token tree (except delimiter tokens)
   // A token is a kind of MacroMatch (except $ and delimiter tokens)
-#if 0
-  // TODO: improve member variables - current ones are the same as lexer token
-  // Token kind.
-  TokenId token_id;
-  // Token location.
-  location_t locus;
-  // Associated text (if any) of token.
-  std::string str;
-  // Token type hint (if any).
-  PrimitiveCoreType type_hint;
-#endif
 
   const_TokenPtr tok_ref;
 
@@ -209,53 +198,7 @@ public:
     return std::unique_ptr<Token> (clone_token_impl ());
   }
 
-#if 0
-  /* constructor from general text - avoid using if lexer const_TokenPtr is
-   * available */
-  Token (TokenId token_id, location_t locus, std::string str,
-	 PrimitiveCoreType type_hint)
-    : token_id (token_id), locus (locus), str (std::move (str)),
-      type_hint (type_hint)
-  {}
-#endif
-  // not doable with new implementation - will have to make a const_TokenPtr
-
   // Constructor from lexer const_TokenPtr
-#if 0
-  /* TODO: find workaround for std::string being nullptr - probably have to
-   * introduce new method in lexer Token, or maybe make conversion method
-   * there */
-  Token (const_TokenPtr lexer_token_ptr)
-    : token_id (lexer_token_ptr->get_id ()),
-      locus (lexer_token_ptr->get_locus ()), str (""),
-      type_hint (lexer_token_ptr->get_type_hint ())
-  {
-    // FIXME: change to "should have str" later?
-    if (lexer_token_ptr->has_str ())
-      {
-	str = lexer_token_ptr->get_str ();
-
-	// DEBUG
-	rust_debug ("ast token created with str '%s'", str.c_str ());
-      }
-    else
-      {
-	// FIXME: is this returning correct thing?
-	str = lexer_token_ptr->get_token_description ();
-
-	// DEBUG
-	rust_debug ("ast token created with string '%s'", str.c_str ());
-      }
-
-    // DEBUG
-    if (lexer_token_ptr->should_have_str () && !lexer_token_ptr->has_str ())
-      {
-	rust_debug (
-		 "BAD: for token '%s', should have string but does not!",
-		 lexer_token_ptr->get_token_description ());
-      }
-  }
-#endif
   Token (const_TokenPtr lexer_tok_ptr) : tok_ref (std::move (lexer_tok_ptr)) {}
 
   bool is_string_lit () const
@@ -283,7 +226,7 @@ public:
   std::vector<std::unique_ptr<Token>> to_token_stream () const override;
 
   TokenId get_id () const { return tok_ref->get_id (); }
-  bool has_str () const { return tok_ref->has_str (); }
+  bool should_have_str () const { return tok_ref->should_have_str (); }
   const std::string &get_str () const { return tok_ref->get_str (); }
 
   location_t get_locus () const { return tok_ref->get_locus (); }

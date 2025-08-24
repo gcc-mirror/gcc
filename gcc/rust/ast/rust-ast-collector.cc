@@ -355,7 +355,8 @@ TokenCollector::visit (MaybeNamedParam &param)
 void
 TokenCollector::visit (Token &tok)
 {
-  std::string data = tok.get_tok_ptr ()->has_str () ? tok.get_str () : "";
+  std::string data
+    = tok.get_tok_ptr ()->should_have_str () ? tok.get_str () : "";
   switch (tok.get_id ())
     {
     case IDENTIFIER:

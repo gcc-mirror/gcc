@@ -236,10 +236,11 @@ Lexer::dump_and_skip (int n)
 
 	  out << "<id=";
 	  out << tok->token_id_to_str ();
-	  out << (tok->has_str () ? (std::string (", text=") + tok->get_str ()
-				     + std::string (", typehint=")
-				     + std::string (tok->get_type_hint_str ()))
-				  : "")
+	  out << (tok->should_have_str ()
+		    ? (std::string (", text=") + tok->get_str ()
+		       + std::string (", typehint=")
+		       + std::string (tok->get_type_hint_str ()))
+		    : "")
 	      << " ";
 	  out << Linemap::location_to_string (loc) << '\n';
 	}

@@ -56,7 +56,7 @@ MacroBuiltin::offset_of_handler (location_t invoc_locus,
   parser.skip_token (COMMA);
 
   auto field_tok = parser.parse_identifier_or_keyword_token ();
-  auto invalid_field = !field_tok || !field_tok->has_str ();
+  auto invalid_field = !field_tok || !field_tok->should_have_str ();
 
   if (invalid_field)
     rust_error_at (invoc_locus, "could not parse field argument for %qs",

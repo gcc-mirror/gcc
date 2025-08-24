@@ -178,29 +178,6 @@ nfc_normalize_token_string (location_t loc, TokenId id, const std::string &str)
     return str;
 }
 
-const std::string &
-Token::get_str () const
-{
-  if (token_id_is_keyword (token_id))
-    return token_id_keyword_string (token_id);
-
-  // FIXME: attempt to return null again
-  // gcc_assert(str != NULL);
-
-  // HACK: allow referencing an empty string
-  static const std::string empty = "";
-
-  if (str == NULL)
-    {
-      rust_error_at (get_locus (),
-		     "attempted to get string for %qs, which has no string. "
-		     "returning empty string instead",
-		     get_token_description ());
-      return empty;
-    }
-  return *str;
-}
-
 namespace {
 enum class Context
 {

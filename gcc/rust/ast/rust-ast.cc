@@ -405,7 +405,7 @@ DelimTokenTree::as_string () const
 std::string
 Token::as_string () const
 {
-  if (tok_ref->has_str ())
+  if (tok_ref->should_have_str ())
     {
       std::string str = tok_ref->get_str ();
 
