@@ -1172,13 +1172,19 @@ public:
 enum which_scalar_shift {
   ss_ASRL,
   ss_LSLL,
+  ss_SQRSHR,
   ss_SQRSHRL,
   ss_SQRSHRL_SAT48,
+  ss_SQSHL,
   ss_SQSHLL,
+  ss_SRSHR,
   ss_SRSHRL,
+  ss_UQRSHL,
   ss_UQRSHLL,
   ss_UQRSHLL_SAT48,
+  ss_UQSHL,
   ss_UQSHLL,
+  ss_URSHR,
   ss_URSHRL
 };
 
@@ -1209,12 +1215,28 @@ public:
 	code = CODE_FOR_mve_lsll;
 	break;
 
+      case ss_SQRSHR:
+	code = CODE_FOR_mve_sqrshr_si;
+	break;
+
       case ss_SQRSHRL:
 	code = code_for_mve_sqrshrl_sat_di (SQRSHRL_64);
 	break;
 
       case ss_SQRSHRL_SAT48:
 	code = code_for_mve_sqrshrl_sat_di (SQRSHRL_48);
+	break;
+
+      case ss_SQSHL:
+	code = CODE_FOR_mve_sqshl_si;
+	break;
+
+      case ss_SRSHR:
+	code = CODE_FOR_mve_srshr_si;
+	break;
+
+      case ss_UQRSHL:
+	code = CODE_FOR_mve_uqrshl_si;
 	break;
 
       case ss_SQSHLL:
@@ -1233,8 +1255,16 @@ public:
 	code = code_for_mve_uqrshll_sat_di (UQRSHLL_48);
 	break;
 
+      case ss_UQSHL:
+	code = CODE_FOR_mve_uqshl_si;
+	break;
+
       case ss_UQSHLL:
 	code = CODE_FOR_mve_uqshll_di;
+	break;
+
+      case ss_URSHR:
+	code = CODE_FOR_mve_urshr_si;
 	break;
 
       case ss_URSHRL:
@@ -1437,13 +1467,19 @@ namespace arm_mve {
 
 FUNCTION (asrl, mve_function_scalar_shift, (ss_ASRL))
 FUNCTION (lsll, mve_function_scalar_shift, (ss_LSLL))
+FUNCTION (sqrshr, mve_function_scalar_shift, (ss_SQRSHR))
 FUNCTION (sqrshrl, mve_function_scalar_shift, (ss_SQRSHRL))
 FUNCTION (sqrshrl_sat48, mve_function_scalar_shift, (ss_SQRSHRL_SAT48))
+FUNCTION (sqshl, mve_function_scalar_shift, (ss_SQSHL))
 FUNCTION (sqshll, mve_function_scalar_shift, (ss_SQSHLL))
+FUNCTION (srshr, mve_function_scalar_shift, (ss_SRSHR))
 FUNCTION (srshrl, mve_function_scalar_shift, (ss_SRSHRL))
+FUNCTION (uqrshl, mve_function_scalar_shift, (ss_UQRSHL))
 FUNCTION (uqrshll, mve_function_scalar_shift, (ss_UQRSHLL))
 FUNCTION (uqrshll_sat48, mve_function_scalar_shift, (ss_UQRSHLL_SAT48))
+FUNCTION (uqshl, mve_function_scalar_shift, (ss_UQSHL))
 FUNCTION (uqshll, mve_function_scalar_shift, (ss_UQSHLL))
+FUNCTION (urshr, mve_function_scalar_shift, (ss_URSHR))
 FUNCTION (urshrl, mve_function_scalar_shift, (ss_URSHRL))
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)

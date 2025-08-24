@@ -80,12 +80,6 @@
 #define vgetq_lane_u16(__a,  __idx) __arm_vgetq_lane_u16(__a,  __idx)
 #define vgetq_lane_u32(__a,  __idx) __arm_vgetq_lane_u32(__a,  __idx)
 #define vgetq_lane_u64(__a,  __idx) __arm_vgetq_lane_u64(__a,  __idx)
-#define sqrshr(__p0, __p1) __arm_sqrshr(__p0, __p1)
-#define sqshl(__p0, __p1) __arm_sqshl(__p0, __p1)
-#define srshr(__p0, __p1) __arm_srshr(__p0, __p1)
-#define uqrshl(__p0, __p1) __arm_uqrshl(__p0, __p1)
-#define uqshl(__p0, __p1) __arm_uqshl(__p0, __p1)
-#define urshr(__p0, __p1) __arm_urshr(__p0, __p1)
 #endif
 
 /* For big-endian, GCC's vector indices are reversed within each 64 bits
@@ -236,47 +230,6 @@ __arm_vgetq_lane_u64 (uint64x2_t __a, const int __idx)
   return __a[__ARM_LANEQ(__a,__idx)];
 }
 
-__extension__ extern __inline uint32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_uqrshl (uint32_t value, int32_t shift)
-{
-  return __builtin_mve_uqrshl_si (value, shift);
-}
-
-__extension__ extern __inline int32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_sqrshr (int32_t value, int32_t shift)
-{
-  return __builtin_mve_sqrshr_si (value, shift);
-}
-
-__extension__ extern __inline uint32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_uqshl (uint32_t value, const int shift)
-{
-  return  __builtin_mve_uqshl_si (value, shift);
-}
-
-__extension__ extern __inline uint32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_urshr (uint32_t value, const int shift)
-{
-  return __builtin_mve_urshr_si (value, shift);
-}
-
-__extension__ extern __inline int32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_sqshl (int32_t value, const int shift)
-{
-  return __builtin_mve_sqshl_si (value, shift);
-}
-
-__extension__ extern __inline int32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_srshr (int32_t value, const int shift)
-{
-  return __builtin_mve_srshr_si (value, shift);
-}
 
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 

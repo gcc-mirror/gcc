@@ -4374,7 +4374,7 @@
 ;;
 (define_insn "mve_sqshl_si"
   [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
-	(ss_ashift:SI (match_operand:DI 1 "arm_general_register_operand" "0")
+	(ss_ashift:SI (match_operand:SI 1 "arm_general_register_operand" "0")
 		      (match_operand:SI 2 "immediate_operand" "Pg")))]
   "TARGET_HAVE_MVE"
   "sqshl%?\\t%1, %2"
@@ -4385,7 +4385,7 @@
 ;;
 (define_insn "mve_srshr_si"
   [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
-	(unspec:SI [(match_operand:DI 1 "arm_general_register_operand" "0")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "0")
 		    (match_operand:SI 2 "immediate_operand" "Pg")]
 	 SRSHR))]
   "TARGET_HAVE_MVE"

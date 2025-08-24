@@ -1682,6 +1682,82 @@ struct mvn_def : public overloaded_base<0>
 };
 SHAPE (mvn)
 
+/* int32_t foo(int32_t, int32_t)
+
+   Example: sqrshr.
+   int32_t [__arm_]sqrshr(int32_t value, int32_t shift)  */
+struct scalar_s32_shift_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "ss32,ss32,ss32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (scalar_s32_shift)
+
+/* int32_t foo(int32_t, const int)
+
+   Check that 'shift' is in the [1,32] range.
+
+   Example: sqshl.
+   int32_t [__arm_]sqshl(int32_t value, const int shift)  */
+struct scalar_s32_shift_imm_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "ss32,ss32,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (1, 1, 32);
+  }
+};
+SHAPE (scalar_s32_shift_imm)
+
+/* uint32_t foo(uint32_t, int32_t)
+
+   Example: uqrshl.
+   uint32_t [__arm_]uqrshl(uint32_t value, int32_t shift)  */
+struct scalar_u32_shift_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "su32,su32,ss32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (scalar_u32_shift)
+
+/* uint32_t foo(uint32_t, const int)
+
+   Check that 'shift' is in the [1,32] range.
+
+   Example: uqshl.
+   uint32_t [__arm_]uqshl(uint32_t value, const int shift)  */
+struct scalar_u32_shift_imm_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "su32,su32,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (1, 1, 32);
+  }
+};
+SHAPE (scalar_u32_shift_imm)
+
 /* int64_t foo(int64_t, int32_t)
 
    Example: asrl
