@@ -11806,6 +11806,8 @@ cp_parser_lambda_expression (cp_parser* parser,
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
+  auto gr = make_temp_override (parser->greater_than_is_operator_p, true);
+
   if (!consteval_block_p)
     {
       cp_parser_lambda_introducer (parser, lambda_expr);
