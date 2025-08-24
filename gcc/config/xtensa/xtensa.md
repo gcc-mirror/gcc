@@ -88,6 +88,7 @@
 ;; This mode iterator allows the HI and QI patterns to be defined from
 ;; the same template.
 (define_mode_iterator HQI [HI QI])
+(define_mode_attr mode_bits [(HI "16") (QI "8")])
 
 ;; This mode iterator allows the SI and HI patterns to be defined from
 ;; the same template.
@@ -944,24 +945,13 @@
 
 ;; Zero-extend instructions.
 
-(define_insn "zero_extendhisi2"
+(define_insn "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(zero_extend:SI (match_operand:HI 1 "nonimmed_operand" "r,U")))]
+	(zero_extend:SI (match_operand:HQI 1 "nonimmed_operand" "r,U")))]
   ""
   "@
-   extui\t%0, %1, 0, 16
-   %v1l16ui\t%0, %1"
-  [(set_attr "type"	"arith,load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
-
-(define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
-	(zero_extend:SI (match_operand:QI 1 "nonimmed_operand" "r,U")))]
-  ""
-  "@
-   extui\t%0, %1, 0, 8
-   %v1l8ui\t%0, %1"
+   extui\t%0, %1, 0, <mode_bits>
+   %v1l<mode_bits>ui\t%0, %1"
   [(set_attr "type"	"arith,load")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
