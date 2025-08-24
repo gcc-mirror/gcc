@@ -1054,7 +1054,8 @@ simplify_gimple_switch_label_vec (gswitch *stmt, tree index_type,
 
 static bool
 simplify_gimple_switch (gswitch *stmt,
-			vec<std::pair<int, int> > &edges_to_remove)
+			vec<std::pair<int, int> > &edges_to_remove,
+			bitmap simple_dce_worklist)
 {
   /* The optimization that we really care about is removing unnecessary
      casts.  That will let us do much better in propagating the inferred
@@ -1089,6 +1090,8 @@ simplify_gimple_switch (gswitch *stmt,
 	      if ((!min || int_fits_type_p (min, ti))
 		  && (!max || int_fits_type_p (max, ti)))
 		{
+		  bitmap_set_bit (simple_dce_worklist,
+				  SSA_NAME_VERSION (cond));
 		  gimple_switch_set_index (stmt, def);
 		  simplify_gimple_switch_label_vec (stmt, ti,
 						    edges_to_remove);
@@ -5051,7 +5054,8 @@ pass_forwprop::execute (function *fun)
 
 		case GIMPLE_SWITCH:
 		  changed |= simplify_gimple_switch (as_a <gswitch *> (stmt),
-						     edges_to_remove);
+						     edges_to_remove,
+						     simple_dce_worklist);
 		  break;
 
 		case GIMPLE_COND:
