@@ -210,7 +210,7 @@ DeriveClone::clone_enum_tuple (PathInExpression variant_path,
     }
 
   auto pattern_items = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (patterns)));
+    new TupleStructItemsNoRest (std::move (patterns)));
 
   auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
     std::unique_ptr<Pattern> (new TupleStructPattern (

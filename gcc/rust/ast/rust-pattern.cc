@@ -212,7 +212,7 @@ StructPattern::as_string () const
 }
 
 std::string
-TupleStructItemsNoRange::as_string () const
+TupleStructItemsNoRest::as_string () const
 {
   std::string str;
 
@@ -223,7 +223,7 @@ TupleStructItemsNoRange::as_string () const
 }
 
 std::string
-TupleStructItemsRange::as_string () const
+TupleStructItemsHasRest::as_string () const
 {
   std::string str ("\n  Lower patterns: ");
 
@@ -264,7 +264,7 @@ TupleStructPattern::as_string () const
 }
 
 std::string
-TuplePatternItemsMultiple::as_string () const
+TuplePatternItemsNoRest::as_string () const
 {
   std::string str;
 
@@ -275,7 +275,7 @@ TuplePatternItemsMultiple::as_string () const
 }
 
 std::string
-TuplePatternItemsRanged::as_string () const
+TuplePatternItemsHasRest::as_string () const
 {
   std::string str;
 
@@ -421,7 +421,7 @@ SlicePattern::accept_vis (ASTVisitor &vis)
 }
 
 void
-TuplePatternItemsRanged::accept_vis (ASTVisitor &vis)
+TuplePatternItemsHasRest::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -433,7 +433,7 @@ TuplePattern::accept_vis (ASTVisitor &vis)
 }
 
 void
-TuplePatternItemsMultiple::accept_vis (ASTVisitor &vis)
+TuplePatternItemsNoRest::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -517,13 +517,13 @@ StructPattern::accept_vis (ASTVisitor &vis)
 }
 
 void
-TupleStructItemsNoRange::accept_vis (ASTVisitor &vis)
+TupleStructItemsNoRest::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
 
 void
-TupleStructItemsRange::accept_vis (ASTVisitor &vis)
+TupleStructItemsHasRest::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

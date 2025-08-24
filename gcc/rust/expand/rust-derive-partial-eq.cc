@@ -146,7 +146,7 @@ DerivePartialEq::match_enum_identifier (
 	   builder.ref_pattern (
 	     std::unique_ptr<Pattern> (new PathInExpression (variant_path))));
 
-  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+  auto tuple_items = std::make_unique<TuplePatternItemsNoRest> (
     std::move (inner_ref_patterns));
 
   auto pattern = std::make_unique<TuplePattern> (std::move (tuple_items), loc);
@@ -186,9 +186,9 @@ DerivePartialEq::match_enum_tuple (PathInExpression variant_path,
     }
 
   auto self_pattern_items = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (self_patterns)));
+    new TupleStructItemsNoRest (std::move (self_patterns)));
   auto other_pattern_items = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (other_patterns)));
+    new TupleStructItemsNoRest (std::move (other_patterns)));
 
   auto self_pattern = std::unique_ptr<Pattern> (
     new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
@@ -199,7 +199,7 @@ DerivePartialEq::match_enum_tuple (PathInExpression variant_path,
 			    variant_path, std::move (other_pattern_items))),
 			  false, false, loc));
 
-  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+  auto tuple_items = std::make_unique<TuplePatternItemsNoRest> (
     vec (std::move (self_pattern), std::move (other_pattern)));
 
   auto pattern = std::make_unique<TuplePattern> (std::move (tuple_items), loc);
@@ -254,7 +254,7 @@ DerivePartialEq::match_enum_struct (PathInExpression variant_path,
 			    variant_path, loc, std::move (other_elts))),
 			  false, false, loc));
 
-  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+  auto tuple_items = std::make_unique<TuplePatternItemsNoRest> (
     vec (std::move (self_pattern), std::move (other_pattern)));
 
   auto pattern = std::make_unique<TuplePattern> (std::move (tuple_items), loc);

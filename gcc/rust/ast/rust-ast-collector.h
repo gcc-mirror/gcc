@@ -370,12 +370,12 @@ public:
   void visit (StructPatternFieldIdent &field);
   void visit (StructPattern &pattern);
   // void visit(TupleStructItems& tuple_items);
-  void visit (TupleStructItemsNoRange &tuple_items);
-  void visit (TupleStructItemsRange &tuple_items);
+  void visit (TupleStructItemsNoRest &tuple_items);
+  void visit (TupleStructItemsHasRest &tuple_items);
   void visit (TupleStructPattern &pattern);
   // void visit(TuplePatternItems& tuple_items);
-  void visit (TuplePatternItemsMultiple &tuple_items);
-  void visit (TuplePatternItemsRanged &tuple_items);
+  void visit (TuplePatternItemsNoRest &tuple_items);
+  void visit (TuplePatternItemsHasRest &tuple_items);
   void visit (TuplePattern &pattern);
   void visit (GroupedPattern &pattern);
   void visit (SlicePatternItemsNoRest &items);

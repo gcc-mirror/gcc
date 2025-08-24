@@ -2390,7 +2390,7 @@ CfgStrip::visit (AST::StructPattern &pattern)
 }
 
 void
-CfgStrip::visit (AST::TupleStructItemsNoRange &tuple_items)
+CfgStrip::visit (AST::TupleStructItemsNoRest &tuple_items)
 {
   AST::DefaultASTVisitor::visit (tuple_items);
   // can't strip individual patterns, only sub-patterns
@@ -2403,7 +2403,7 @@ CfgStrip::visit (AST::TupleStructItemsNoRange &tuple_items)
     }
 }
 void
-CfgStrip::visit (AST::TupleStructItemsRange &tuple_items)
+CfgStrip::visit (AST::TupleStructItemsHasRest &tuple_items)
 {
   AST::DefaultASTVisitor::visit (tuple_items);
   // can't strip individual patterns, only sub-patterns
@@ -2436,7 +2436,7 @@ CfgStrip::visit (AST::TupleStructPattern &pattern)
 }
 
 void
-CfgStrip::visit (AST::TuplePatternItemsMultiple &tuple_items)
+CfgStrip::visit (AST::TuplePatternItemsNoRest &tuple_items)
 {
   AST::DefaultASTVisitor::visit (tuple_items);
 
@@ -2451,7 +2451,7 @@ CfgStrip::visit (AST::TuplePatternItemsMultiple &tuple_items)
 }
 
 void
-CfgStrip::visit (AST::TuplePatternItemsRanged &tuple_items)
+CfgStrip::visit (AST::TuplePatternItemsHasRest &tuple_items)
 {
   AST::DefaultASTVisitor::visit (tuple_items);
 

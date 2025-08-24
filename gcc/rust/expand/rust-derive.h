@@ -224,11 +224,11 @@ private:
   virtual void visit (StructPatternFieldIdentPat &field) override final{};
   virtual void visit (StructPatternFieldIdent &field) override final{};
   virtual void visit (StructPattern &pattern) override final{};
-  virtual void visit (TupleStructItemsNoRange &tuple_items) override final{};
-  virtual void visit (TupleStructItemsRange &tuple_items) override final{};
+  virtual void visit (TupleStructItemsNoRest &tuple_items) override final{};
+  virtual void visit (TupleStructItemsHasRest &tuple_items) override final{};
   virtual void visit (TupleStructPattern &pattern) override final{};
-  virtual void visit (TuplePatternItemsMultiple &tuple_items) override final{};
-  virtual void visit (TuplePatternItemsRanged &tuple_items) override final{};
+  virtual void visit (TuplePatternItemsNoRest &tuple_items) override final{};
+  virtual void visit (TuplePatternItemsHasRest &tuple_items) override final{};
   virtual void visit (TuplePattern &pattern) override final{};
   virtual void visit (GroupedPattern &pattern) override final{};
   virtual void visit (SlicePatternItemsNoRest &items) override final{};

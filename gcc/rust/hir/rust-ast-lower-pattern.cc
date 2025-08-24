@@ -81,17 +81,17 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-    case AST::TupleStructItems::RANGE:
+    case AST::TupleStructItems::HAS_REST:
       {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-    case AST::TupleStructItems::NO_RANGE:
+    case AST::TupleStructItems::NO_REST:
       {
-	AST::TupleStructItemsNoRange &items_no_range
-	  = static_cast<AST::TupleStructItemsNoRange &> (items);
+	AST::TupleStructItemsNoRest &items_no_range
+	  = static_cast<AST::TupleStructItemsNoRest &> (items);
 
 	std::vector<std::unique_ptr<HIR::Pattern>> patterns;
 	patterns.reserve (items_no_range.get_patterns ().size ());
@@ -223,21 +223,20 @@ void
 ASTLoweringPattern::visit (AST::TuplePattern &pattern)
 {
   std::unique_ptr<HIR::TuplePatternItems> items;
-  switch (pattern.get_items ().get_pattern_type ())
+  switch (pattern.get_items ().get_item_type ())
     {
-    case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE:
+    case AST::TuplePatternItems::ItemType::NO_REST:
       {
-	AST::TuplePatternItemsMultiple &ref
-	  = static_cast<AST::TuplePatternItemsMultiple &> (
-	    pattern.get_items ());
+	AST::TuplePatternItemsNoRest &ref
+	  = static_cast<AST::TuplePatternItemsNoRest &> (pattern.get_items ());
 	items = lower_tuple_pattern_multiple (ref);
       }
       break;
 
-    case AST::TuplePatternItems::TuplePatternItemType::RANGED:
+    case AST::TuplePatternItems::ItemType::HAS_REST:
       {
-	AST::TuplePatternItemsRanged &ref
-	  = static_cast<AST::TuplePatternItemsRanged &> (pattern.get_items ());
+	AST::TuplePatternItemsHasRest &ref
+	  = static_cast<AST::TuplePatternItemsHasRest &> (pattern.get_items ());
 	items = lower_tuple_pattern_ranged (ref);
       }
       break;
@@ -324,16 +323,16 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 {
   std::unique_ptr<HIR::SlicePatternItems> items;
 
-  switch (pattern.get_items ().get_pattern_type ())
+  switch (pattern.get_items ().get_item_type ())
     {
-    case AST::SlicePatternItems::SlicePatternItemType::NO_REST:
+    case AST::SlicePatternItems::ItemType::NO_REST:
       {
 	auto &ref
 	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
 	items = ASTLoweringBase::lower_slice_pattern_no_rest (ref);
       }
       break;
-    case AST::SlicePatternItems::SlicePatternItemType::HAS_REST:
+    case AST::SlicePatternItems::ItemType::HAS_REST:
       {
 	auto &ref
 	  = static_cast<AST::SlicePatternItemsHasRest &> (pattern.get_items ());

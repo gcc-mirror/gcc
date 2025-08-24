@@ -797,7 +797,7 @@ public:
   // TODO: should this store location data?
 
   // Unique pointer custom clone function
-  std::unique_ptr<PatternItems> clone_tuple_items () const
+  std::unique_ptr<PatternItems> clone_pattern_items () const
   {
     return std::unique_ptr<PatternItems> (clone_pattern_items_impl ());
   }

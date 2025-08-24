@@ -228,12 +228,12 @@ public:
   virtual void visit (AST::StructPatternFieldIdent &field) override;
   virtual void visit (AST::StructPattern &pattern) override;
   //  virtual void visit(TupleStructItems& tuple_items) override;
-  virtual void visit (AST::TupleStructItemsNoRange &tuple_items) override;
-  virtual void visit (AST::TupleStructItemsRange &tuple_items) override;
+  virtual void visit (AST::TupleStructItemsNoRest &tuple_items) override;
+  virtual void visit (AST::TupleStructItemsHasRest &tuple_items) override;
   virtual void visit (AST::TupleStructPattern &pattern) override;
   //  virtual void visit(TuplePatternItems& tuple_items) override;
-  virtual void visit (AST::TuplePatternItemsMultiple &tuple_items) override;
-  virtual void visit (AST::TuplePatternItemsRanged &tuple_items) override;
+  virtual void visit (AST::TuplePatternItemsNoRest &tuple_items) override;
+  virtual void visit (AST::TuplePatternItemsHasRest &tuple_items) override;
   virtual void visit (AST::TuplePattern &pattern) override;
   virtual void visit (AST::GroupedPattern &pattern) override;
   virtual void visit (AST::SlicePatternItemsNoRest &items) override;
@@ -317,10 +317,10 @@ protected:
   attribute_handled_in_another_pass (const std::string &attribute_path) const;
 
   std::unique_ptr<TuplePatternItems>
-  lower_tuple_pattern_multiple (AST::TuplePatternItemsMultiple &pattern);
+  lower_tuple_pattern_multiple (AST::TuplePatternItemsNoRest &pattern);
 
   std::unique_ptr<TuplePatternItems>
-  lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
+  lower_tuple_pattern_ranged (AST::TuplePatternItemsHasRest &pattern);
 
   std::unique_ptr<SlicePatternItems>
   lower_slice_pattern_no_rest (AST::SlicePatternItemsNoRest &pattern);

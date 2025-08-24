@@ -278,10 +278,10 @@ public:
   void visit (AST::SlicePatternItemsNoRest &items) override;
   void visit (AST::SlicePatternItemsHasRest &items) override;
   void visit (AST::AltPattern &pattern) override;
-  void visit (AST::TupleStructItemsNoRange &tuple_items) override;
-  void visit (AST::TupleStructItemsRange &tuple_items) override;
-  void visit (AST::TuplePatternItemsMultiple &tuple_items) override;
-  void visit (AST::TuplePatternItemsRanged &tuple_items) override;
+  void visit (AST::TupleStructItemsNoRest &tuple_items) override;
+  void visit (AST::TupleStructItemsHasRest &tuple_items) override;
+  void visit (AST::TuplePatternItemsNoRest &tuple_items) override;
+  void visit (AST::TuplePatternItemsHasRest &tuple_items) override;
 
   void visit (AST::LetStmt &stmt) override;
   void visit (AST::ExprStmt &stmt) override;

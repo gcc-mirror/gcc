@@ -55,7 +55,7 @@ ok_case (Builder &builder)
   patterns.emplace_back (std::move (val));
 
   auto pattern_item = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (patterns)));
+    new TupleStructItemsNoRest (std::move (patterns)));
   auto pattern = std::unique_ptr<Pattern> (new TupleStructPattern (
     builder.path_in_expression (LangItem::Kind::RESULT_OK),
     std::move (pattern_item)));
@@ -82,7 +82,7 @@ err_case (Builder &builder)
   patterns.emplace_back (std::move (val));
 
   auto pattern_item = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (patterns)));
+    new TupleStructItemsNoRest (std::move (patterns)));
   auto pattern = std::unique_ptr<Pattern> (new TupleStructPattern (
     builder.path_in_expression (LangItem::Kind::RESULT_ERR),
     std::move (pattern_item)));

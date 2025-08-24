@@ -120,7 +120,7 @@ DeriveOrd::make_equal ()
   if (ordering == Ordering::Partial)
     {
       auto pattern_items = std::unique_ptr<TupleStructItems> (
-	new TupleStructItemsNoRange (vec (std::move (equal))));
+	new TupleStructItemsNoRest (vec (std::move (equal))));
 
       equal
 	= std::make_unique<TupleStructPattern> (builder.path_in_expression (

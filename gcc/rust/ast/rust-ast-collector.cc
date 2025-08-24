@@ -2650,13 +2650,13 @@ TokenCollector::visit (StructPattern &pattern)
 // void TokenCollector::visit(TupleStructItems& ){}
 
 void
-TokenCollector::visit (TupleStructItemsNoRange &pattern)
+TokenCollector::visit (TupleStructItemsNoRest &pattern)
 {
   visit_items_joined_by_separator (pattern.get_patterns ());
 }
 
 void
-TokenCollector::visit (TupleStructItemsRange &pattern)
+TokenCollector::visit (TupleStructItemsHasRest &pattern)
 {
   for (auto &lower : pattern.get_lower_patterns ())
     {
@@ -2683,13 +2683,13 @@ TokenCollector::visit (TupleStructPattern &pattern)
 // {}
 
 void
-TokenCollector::visit (TuplePatternItemsMultiple &pattern)
+TokenCollector::visit (TuplePatternItemsNoRest &pattern)
 {
   visit_items_joined_by_separator (pattern.get_patterns (), COMMA);
 }
 
 void
-TokenCollector::visit (TuplePatternItemsRanged &pattern)
+TokenCollector::visit (TuplePatternItemsHasRest &pattern)
 {
   for (auto &lower : pattern.get_lower_patterns ())
     {

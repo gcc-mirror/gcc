@@ -944,11 +944,11 @@ AttributeChecker::visit (AST::StructPattern &)
 // void AttributeChecker::visit(TupleStructItems& ){}
 
 void
-AttributeChecker::visit (AST::TupleStructItemsNoRange &)
+AttributeChecker::visit (AST::TupleStructItemsNoRest &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleStructItemsRange &)
+AttributeChecker::visit (AST::TupleStructItemsHasRest &)
 {}
 
 void
@@ -958,11 +958,11 @@ AttributeChecker::visit (AST::TupleStructPattern &)
 // void AttributeChecker::visit(TuplePatternItems& ){}
 
 void
-AttributeChecker::visit (AST::TuplePatternItemsMultiple &)
+AttributeChecker::visit (AST::TuplePatternItemsNoRest &)
 {}
 
 void
-AttributeChecker::visit (AST::TuplePatternItemsRanged &)
+AttributeChecker::visit (AST::TuplePatternItemsHasRest &)
 {}
 
 void

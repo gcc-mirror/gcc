@@ -101,9 +101,9 @@ EnumMatchBuilder::tuple (EnumItem &variant_raw)
   auto other_variant_path = builder.variant_path (enum_path, variant_path);
 
   auto self_pattern_items = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (self_patterns)));
+    new TupleStructItemsNoRest (std::move (self_patterns)));
   auto other_pattern_items = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (other_patterns)));
+    new TupleStructItemsNoRest (std::move (other_patterns)));
 
   auto self_pattern = std::unique_ptr<Pattern> (
     new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
@@ -114,7 +114,7 @@ EnumMatchBuilder::tuple (EnumItem &variant_raw)
       other_variant_path, std::move (other_pattern_items))),
     false, false, builder.loc));
 
-  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+  auto tuple_items = std::make_unique<TuplePatternItemsNoRest> (
     vec (std::move (self_pattern), std::move (other_pattern)));
 
   auto pattern
@@ -176,7 +176,7 @@ EnumMatchBuilder::strukt (EnumItem &variant_raw)
 					       std::move (other_elts))),
 			  false, false, builder.loc));
 
-  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+  auto tuple_items = std::make_unique<TuplePatternItemsNoRest> (
     vec (std::move (self_pattern), std::move (other_pattern)));
 
   auto pattern

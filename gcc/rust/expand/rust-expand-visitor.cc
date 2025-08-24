@@ -1067,14 +1067,14 @@ ExpandVisitor::visit (AST::AltPattern &pattern)
 }
 
 void
-ExpandVisitor::visit (AST::TupleStructItemsNoRange &tuple_items)
+ExpandVisitor::visit (AST::TupleStructItemsNoRest &tuple_items)
 {
   for (auto &sub : tuple_items.get_patterns ())
     maybe_expand_pattern (sub);
 }
 
 void
-ExpandVisitor::visit (AST::TupleStructItemsRange &tuple_items)
+ExpandVisitor::visit (AST::TupleStructItemsHasRest &tuple_items)
 {
   for (auto &sub : tuple_items.get_lower_patterns ())
     maybe_expand_pattern (sub);
@@ -1084,14 +1084,14 @@ ExpandVisitor::visit (AST::TupleStructItemsRange &tuple_items)
 }
 
 void
-ExpandVisitor::visit (AST::TuplePatternItemsMultiple &tuple_items)
+ExpandVisitor::visit (AST::TuplePatternItemsNoRest &tuple_items)
 {
   for (auto &sub : tuple_items.get_patterns ())
     maybe_expand_pattern (sub);
 }
 
 void
-ExpandVisitor::visit (AST::TuplePatternItemsRanged &tuple_items)
+ExpandVisitor::visit (AST::TuplePatternItemsHasRest &tuple_items)
 {
   for (auto &sub : tuple_items.get_lower_patterns ())
     maybe_expand_pattern (sub);

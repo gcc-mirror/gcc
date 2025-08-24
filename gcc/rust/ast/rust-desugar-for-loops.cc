@@ -51,7 +51,7 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
   patterns.emplace_back (std::move (val));
 
   auto pattern_item = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (patterns)));
+    new TupleStructItemsNoRest (std::move (patterns)));
   auto pattern = std::unique_ptr<Pattern> (new TupleStructPattern (
     builder.path_in_expression (LangItem::Kind::OPTION_SOME),
     std::move (pattern_item)));

@@ -151,7 +151,7 @@ DeriveHash::match_enum_tuple (PathInExpression variant_path,
     }
 
   auto patterns_elts = std::unique_ptr<TupleStructItems> (
-    new TupleStructItemsNoRange (std::move (self_patterns)));
+    new TupleStructItemsNoRest (std::move (self_patterns)));
   auto pattern = std::unique_ptr<Pattern> (
     new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
 			    variant_path, std::move (patterns_elts))),
