@@ -2,7 +2,7 @@
 
 	PR target/120933
 	* config.gcc (supported_defaults): Add tls for i386, x86_64.
-	* config/i386/i386.h (host_detect_local_cpu): Add tls.
+	* config/i386/i386.h (OPTION_DEFAULT_SPECS): Add tls.
 	* doc/install.texi: Document --with-tls= for i386, x86_64.
 
 2025-08-23  John Ericson  <git@JohnEricson.me>
