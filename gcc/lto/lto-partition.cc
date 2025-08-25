@@ -1167,7 +1167,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
          callgraph or IPA reference edge leaving the partition contributes into
          COST.  Every edge inside partition was earlier computed as one leaving
 	 it and thus we need to subtract it from COST.  */
-      while (last_visited_node < lto_symtab_encoder_size (partition->encoder))
+      for (; last_visited_node < lto_symtab_encoder_size (partition->encoder);
+	   last_visited_node++)
 	{
 	  int j;
 	  struct ipa_ref *ref = NULL;
@@ -1177,9 +1178,6 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	  if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	    {
 	      struct cgraph_edge *edge;
-
-
-	      last_visited_node++;
 
 	      gcc_assert (node->definition || node->weakref);
 
@@ -1197,8 +1195,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		    gcc_assert (edge_cost > 0);
 		    index = lto_symtab_encoder_lookup (partition->encoder,
 						       edge->callee);
-		    if (index != LCC_NOT_FOUND
-		        && index < last_visited_node - 1)
+		    if (index != LCC_NOT_FOUND && index < last_visited_node)
 		      cost -= edge_cost, internal += edge_cost;
 		    else
 		      cost += edge_cost;
@@ -1216,15 +1213,12 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		  gcc_assert (edge_cost > 0);
 		  index = lto_symtab_encoder_lookup (partition->encoder,
 						     edge->caller);
-		  if (index != LCC_NOT_FOUND
-		      && index < last_visited_node - 1)
+		  if (index != LCC_NOT_FOUND && index < last_visited_node)
 		    cost -= edge_cost, internal += edge_cost;
 		  else
 		    cost += edge_cost;
 		}
 	    }
-	  else
-	    last_visited_node++;
 
 	  /* Compute boundary cost of IPA REF edges and at the same time look into
 	     variables referenced from current partition and try to add them.  */
@@ -1242,8 +1236,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		  add_symbol_to_partition (partition, vnode);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   vnode);
-		if (index != LCC_NOT_FOUND
-		    && index < last_visited_node - 1)
+		if (index != LCC_NOT_FOUND && index < last_visited_node)
 		  cost--, internal++;
 		else
 		  cost++;
@@ -1255,8 +1248,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		node = dyn_cast <cgraph_node *> (ref->referred);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   node);
-		if (index != LCC_NOT_FOUND
-		    && index < last_visited_node - 1)
+		if (index != LCC_NOT_FOUND && index < last_visited_node)
 		  cost--, internal++;
 		else
 		  cost++;
@@ -1281,8 +1273,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		  add_symbol_to_partition (partition, vnode);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   vnode);
-		if (index != LCC_NOT_FOUND
-		    && index < last_visited_node - 1)
+		if (index != LCC_NOT_FOUND && index < last_visited_node)
 		  cost--, internal++;
 		else
 		  cost++;
@@ -1295,8 +1286,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		gcc_assert (node->definition);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   node);
-		if (index != LCC_NOT_FOUND
-		    && index < last_visited_node - 1)
+		if (index != LCC_NOT_FOUND && index < last_visited_node)
 		  cost--, internal++;
 		else
 		  cost++;
