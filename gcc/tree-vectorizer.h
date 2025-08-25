@@ -1518,9 +1518,6 @@ public:
      corresponding PHI.  */
   stmt_vec_info reduc_def;
 
-  /* The vector input type relevant for reduction vectorization.  */
-  tree reduc_vectype_in;
-
   /* The vector type for performing the actual reduction.  */
   tree reduc_vectype;
 

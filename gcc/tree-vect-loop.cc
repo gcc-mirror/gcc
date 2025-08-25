@@ -4798,10 +4798,10 @@ vect_is_emulated_mixed_dot_prod (slp_tree slp_node)
   if (TYPE_SIGN (TREE_TYPE (rhs1)) == TYPE_SIGN (TREE_TYPE (rhs2)))
     return false;
 
-  gcc_assert (STMT_VINFO_REDUC_VECTYPE_IN (stmt_info));
   return !directly_supported_p (DOT_PROD_EXPR,
 				SLP_TREE_VECTYPE (slp_node),
-				STMT_VINFO_REDUC_VECTYPE_IN (stmt_info),
+				SLP_TREE_VECTYPE
+				  (SLP_TREE_CHILDREN (slp_node)[0]),
 				optab_vector_mixed_sign);
 }
 
@@ -6934,8 +6934,7 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 	return false;
     }
 
-  tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
-
+  tree vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
   gcc_assert (vectype_in);
 
   /* Compute number of effective vector statements for costing.  */
@@ -7206,11 +7205,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      /* For lane-reducing operation vectorizable analysis needs the
 		 reduction PHI information.  */
 	      STMT_VINFO_REDUC_DEF (def) = phi_info;
-
-	      /* Each lane-reducing operation has its own input vectype, while
-		 reduction PHI will record the input vectype with the least
-		 lanes.  */
-	      STMT_VINFO_REDUC_VECTYPE_IN (vdef) = vectype_op;
 
 	      /* To accommodate lane-reducing operations of mixed input
 		 vectypes, choose input vectype with the least lanes for the
@@ -8025,10 +8019,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   stmt_vec_info phi_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
   int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
-  tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
-
-  if (!vectype_in)
-    vectype_in = SLP_TREE_VECTYPE (slp_node);
+  tree vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
 
   vec_num = vect_get_num_copies (loop_vinfo, slp_node, vectype_in);
 
@@ -8205,7 +8196,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	    }
 	}
 
-      tree reduc_vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
+      tree reduc_vectype_in = vectype_in;
       gcc_assert (reduc_vectype_in);
 
       unsigned effec_reduc_ncopies
