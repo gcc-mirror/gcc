@@ -664,8 +664,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__n != 0)
 	{
-	  if (size_type(this->_M_impl._M_end_of_storage
-			- this->_M_impl._M_finish) >= __n)
+	  if (__position.base() == this->_M_impl._M_finish)
+	    _M_fill_append(__n, __x);
+	  else if (size_type(this->_M_impl._M_end_of_storage
+			       - this->_M_impl._M_finish) >= __n)
 	    {
 #if __cplusplus < 201103L
 	      value_type __x_copy = __x;
@@ -758,6 +760,60 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
 	    }
 	}
+    }
+
+  template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
+    void
+    vector<_Tp, _Alloc>::
+    _M_fill_append(size_type __n, const value_type& __x)
+    {
+       if (size_type(this->_M_impl._M_end_of_storage
+		     - this->_M_impl._M_finish) >= __n)
+	 {
+	   _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
+	   this->_M_impl._M_finish =
+	     std::__uninitialized_fill_n_a(this->_M_impl._M_finish, __n, __x,
+					   _M_get_Tp_allocator());
+	   _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
+	 }
+       else
+	 {
+	   // Make local copies of these members because the compiler thinks
+	   // the allocator can alter them if 'this' is globally reachable.
+	   pointer __old_start = this->_M_impl._M_start;
+	   pointer __old_finish = this->_M_impl._M_finish;
+	   const size_type __old_size = __old_finish - __old_start;
+
+	   const size_type __len =
+	     _M_check_len(__n, "vector::_M_fill_append");
+	   pointer __new_start(this->_M_allocate(__len));
+	   pointer __new_finish(__new_start + __old_size);
+	   __try
+	     {
+	       // See _M_realloc_insert above.
+	       __new_finish = std::__uninitialized_fill_n_a(
+				__new_finish, __n, __x,
+				_M_get_Tp_allocator());
+	       std::__uninitialized_move_if_noexcept_a(
+		 __old_start, __old_finish, __new_start,
+		 _M_get_Tp_allocator());
+	     }
+	   __catch(...)
+	     {
+		std::_Destroy(__new_start + __old_size, __new_finish,
+			      _M_get_Tp_allocator());
+		_M_deallocate(__new_start, __len);
+		__throw_exception_again;
+	      }
+	   std::_Destroy(__old_start, __old_finish, _M_get_Tp_allocator());
+	   _GLIBCXX_ASAN_ANNOTATE_REINIT;
+	   _M_deallocate(__old_start,
+			 this->_M_impl._M_end_of_storage - __old_start);
+	   this->_M_impl._M_start = __new_start;
+	   this->_M_impl._M_finish = __new_finish;
+	   this->_M_impl._M_end_of_storage = __new_start + __len;
+	 }
     }
 
 #if __cplusplus >= 201103L

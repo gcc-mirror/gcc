@@ -1154,7 +1154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       resize(size_type __new_size, const value_type& __x)
       {
 	if (__new_size > size())
-	  _M_fill_insert(end(), __new_size - size(), __x);
+	  _M_fill_append(__new_size - size(), __x);
 	else if (__new_size < size())
 	  _M_erase_at_end(this->_M_impl._M_start + __new_size);
       }
@@ -1175,7 +1175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       resize(size_type __new_size, value_type __x = value_type())
       {
 	if (__new_size > size())
-	  _M_fill_insert(end(), __new_size - size(), __x);
+	  _M_fill_append(__new_size - size(), __x);
 	else if (__new_size < size())
 	  _M_erase_at_end(this->_M_impl._M_start + __new_size);
       }
@@ -2087,6 +2087,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX20_CONSTEXPR
       void
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
+
+      // Called by resize(n,x), and the _M_fill_insert(end(), n, x)
+      _GLIBCXX20_CONSTEXPR
+      void
+      _M_fill_append(size_type __n, const value_type& __x);
 
 #if __cplusplus >= 201103L
       // Called by resize(n).
