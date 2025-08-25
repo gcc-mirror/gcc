@@ -385,7 +385,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 			    == TyTy::InferType::InferTypeKind::INTEGRAL);
 	if (is_valid)
 	  {
-	    ltype->apply_primitive_type_hint (*rtype);
+	    if (commit_flag)
+	      ltype->apply_primitive_type_hint (*rtype);
 	    return rtype;
 	  }
       }
@@ -399,7 +400,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 			    == TyTy::InferType::InferTypeKind::FLOAT);
 	if (is_valid)
 	  {
-	    ltype->apply_primitive_type_hint (*rtype);
+	    if (commit_flag)
+	      ltype->apply_primitive_type_hint (*rtype);
 	    return rtype;
 	  }
       }
@@ -523,7 +525,7 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 	      }
 	  }
 
-	return type.clone ();
+	return ltype;
       }
       break;
 
@@ -1269,7 +1271,8 @@ UnifyRules::expect_bool (TyTy::BoolType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1319,7 +1322,8 @@ UnifyRules::expect_char (TyTy::CharType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1370,7 +1374,8 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1428,7 +1433,8 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1486,7 +1492,8 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1543,7 +1550,8 @@ UnifyRules::expect_isize (TyTy::ISizeType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
@@ -1593,7 +1601,8 @@ UnifyRules::expect_usize (TyTy::USizeType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
 	  {
-	    r->apply_primitive_type_hint (*ltype);
+	    if (commit_flag)
+	      r->apply_primitive_type_hint (*ltype);
 	    return ltype->clone ();
 	  }
       }
