@@ -857,11 +857,11 @@ package body Ghost is
            and then Applic_Policy = Ignore
            and then Known_To_Be_Assigned (Ref)
          then
-            Error_Msg_N  (Ghost_Policy_Error_Msg, Ref);
+            Error_Msg_N (Ghost_Policy_Error_Msg, Ref);
             Error_Msg_Sloc := Sloc (Id);
             Error_Msg_NE ("\& declared # with ghost policy `Check`", Ref, Id);
             Error_Msg_Sloc := Sloc (Ref);
-            Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Ref, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Ignore`", Ref, Id);
          end if;
 
          --  A ghost entity E shall not be referenced within an aspect
@@ -886,13 +886,12 @@ package body Ghost is
             return;
          end if;
 
-         if Is_Ignored_Ghost_Entity (Id) and then Applic_Policy = Check
-         then
-            Error_Msg_N  (Ghost_Policy_Error_Msg,  Ref);
+         if Is_Ignored_Ghost_Entity (Id) and then Applic_Policy = Check then
+            Error_Msg_N (Ghost_Policy_Error_Msg, Ref);
             Error_Msg_Sloc := Sloc (Id);
             Error_Msg_NE ("\& declared # with ghost policy `Ignore`", Ref, Id);
             Error_Msg_Sloc := Sloc (Ref);
-            Error_Msg_NE ("\& used # with ghost policy `Check`",    Ref, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Check`", Ref, Id);
          end if;
       end Check_Ghost_Policy;
 
