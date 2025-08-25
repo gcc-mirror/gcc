@@ -17,7 +17,7 @@ int f2b (void *a);
 int f2c (void *a);
 #pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (other: a) /* { dg-error "expected 'nothing' or 'need_device_ptr'" } */
 int f3 (int a);
-#pragma omp declare variant (f0) adjust_args (nothing: a) /* { dg-error "an 'adjust_args' clause requires a 'match' clause" } */
+#pragma omp declare variant (f0) adjust_args (nothing: a) /* { dg-error "expected 'match' clause" } */
 int f4 (void *a);
 #pragma omp declare variant (f1) match (construct={dispatch}) adjust_args () /* { dg-error "expected 'nothing' or 'need_device_ptr' followed by ':'" } */
 int f5 (int a);

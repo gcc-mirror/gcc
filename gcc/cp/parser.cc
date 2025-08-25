@@ -51642,41 +51642,41 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 					      append_args_tree);
 	}
   } while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL));
-
-  if ((ctx != error_mark_node && variant != error_mark_node)
-      && (has_adjust_args || append_args_tree))
+  if (variant != error_mark_node && !has_match)
     {
-      if (!has_match)
+      cp_parser_error (parser, "expected %<match%> clause");
+      variant = error_mark_node;
+    }
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+
+  /* At this point, we have completed parsing of the pragma, now it's
+     on to error checking.  */
+  if (variant == error_mark_node || ctx == error_mark_node)
+    /* Previously diagnosed error.  */
+    return attrs;
+
+  if (has_adjust_args || append_args_tree)
+    {
+      if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+				     OMP_TRAIT_CONSTRUCT_DISPATCH))
 	{
 	  error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
-		    "an %qs clause requires a %<match%> clause",
+		    "an %qs clause can only be specified if the %<dispatch%> "
+		    "selector of the construct selector set appears "
+		    "in the %<match%> clause",
 		    has_adjust_args ? "adjust_args" : "append_args");
+	  return attrs;
 	}
-      else
-	{
-	  gcc_assert (TREE_PURPOSE (attrs)
-		      == get_identifier ("omp declare variant base"));
-	  gcc_assert (TREE_PURPOSE (TREE_VALUE (attrs)) == variant);
-	  ctx = TREE_VALUE (TREE_VALUE (attrs));
-	  if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
-					 OMP_TRAIT_CONSTRUCT_DISPATCH))
-	    error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
-		      "an %qs clause can only be specified if the %<dispatch%> "
-		      "selector of the construct selector set appears "
-		      "in the %<match%> clause",
-		      has_adjust_args ? "adjust_args" : "append_args");
-	  // We might not have a DECL for the variant yet. So we store the
-	  // need_device_ptr list in the base function attribute, after loc
-	  // nodes.
-	  tree t = build_tree_list (need_device_ptr_list,
-				    NULL_TREE /* need_device_addr */);
-	  TREE_CHAIN (t) = append_args_tree;
-	  TREE_VALUE (attrs) = chainon (TREE_VALUE (attrs),
-					build_tree_list ( NULL_TREE, t));
-	}
+      // We might not have a DECL for the variant yet. So we store the
+      // need_device_ptr list in the base function attribute, after loc
+      // nodes.
+      tree t = build_tree_list (need_device_ptr_list,
+				NULL_TREE /* need_device_addr */);
+      TREE_CHAIN (t) = append_args_tree;
+      TREE_VALUE (attrs) = chainon (TREE_VALUE (attrs),
+				    build_tree_list (NULL_TREE, t));
     }
 
-  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
   return attrs;
 }
 

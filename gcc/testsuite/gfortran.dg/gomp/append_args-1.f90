@@ -56,12 +56,12 @@ contains
 
   subroutine f2b ()
     !$omp declare variant (f1c)  &
-    !$omp&     append_args ( interop ( target , targetsync) )   ! { dg-error "the 'append_args' clause at .1. can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause" } 
+    !$omp&     append_args ( interop ( target , targetsync) )   ! { dg-error "expected 'match'" } 
   end subroutine
 
   subroutine f2c (x,y)
     !$omp declare variant (fop) , append_args ( interop ( target, prefer_type ( "cuda", "hip" ) ) , interop(target)) , &
-    !$omp&     adjust_args (need_device_ptr : x, y )   ! { dg-error "the 'adjust_args' clause at .1. can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause" } 
+    !$omp&     adjust_args (need_device_ptr : x, y )   ! { dg-error "expected 'match' clause at .1." } 
     type(c_ptr) :: x, y
     value :: y
   end subroutine

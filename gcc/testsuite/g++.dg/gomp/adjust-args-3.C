@@ -2,5 +2,5 @@
 // clause is missing.
 
 void f(int *, int *, int *);
-#pragma omp declare variant(f) adjust_args(need_device_ptr: xxx)  /* { dg-error "an 'adjust_args' clause requires a 'match' clause" } */
+#pragma omp declare variant(f) adjust_args(need_device_ptr: xxx)  /* { dg-error "expected 'match' clause" } */
 void g(int *xxx, int *yyy, int *zzz);

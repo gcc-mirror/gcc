@@ -42,7 +42,7 @@ float repl4(short, short, omp_interop_t, short);
 float base4(short, short);
 /* { dg-error "variant 'repl4' and base 'base4' have incompatible types" "" { target c } .-2 }  */
 /* { dg-error "too few arguments to function 'float repl4\\(short int, short int, omp_interop_t, short int\\)'" "" { target c++ } .-3 }  */
-/* { dg-note "declared here" "" { target c++ } .-5 } */
+/* { dg-note "declared here" "" { target *-*-*} .-5 } */
 
 
 float repl5(short, short, omp_interop_t, short);
@@ -58,7 +58,7 @@ float repl6(short, short, omp_interop_t, short);
 float base6(short, short);
 /* { dg-error "variant 'repl6' and base 'base6' have incompatible types" "" { target c } .-2 }  */
 /* { dg-error "too few arguments to function 'float repl6\\(short int, short int, omp_interop_t, short int\\)'" "" { target c++ } .-3 }  */
-/* { dg-note "declared here" "" { target c++ } .-5 } */
+/* { dg-note "declared here" "" { target *-*-*} .-5 } */
 
 
 float

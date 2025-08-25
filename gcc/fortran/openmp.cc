@@ -6982,13 +6982,9 @@ gfc_match_omp_declare_variant (void)
       return MATCH_ERROR;
     }
 
-  if ((has_adjust_args || has_append_args) && !has_match)
+  if (!has_match)
     {
-      gfc_error ("the %qs clause at %L can only be specified if the "
-		 "%<dispatch%> selector of the construct selector set appears "
-		 "in the %<match%> clause",
-		 has_adjust_args ? "adjust_args" : "append_args",
-		 has_adjust_args ?  &adjust_args_loc : &append_args_loc);
+      gfc_error ("expected %<match%> clause at %C");
       return MATCH_ERROR;
     }
 

@@ -27304,6 +27304,24 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
       undeclared_variable (token->location, token->value);
       variant = error_mark_node;
     }
+  else if (TREE_CODE (variant) != FUNCTION_DECL)
+    {
+      error_at (token->location, "variant %qD is not a function",
+		variant);
+      variant = error_mark_node;
+    }
+  else if (fndecl_built_in_p (variant)
+	   && (strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+			"__builtin_", strlen ("__builtin_")) == 0
+	       || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+			   "__sync_", strlen ("__sync_")) == 0
+	       || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+			   "__atomic_", strlen ("__atomic_")) == 0))
+    {
+      error_at (token->location, "variant %qD is a built-in",
+		variant);
+      variant = error_mark_node;
+    }
 
   c_parser_consume_token (parser);
 
@@ -27377,30 +27395,6 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	    goto fail;
 	  ctx = omp_check_context_selector (match_loc, ctx,
 					    OMP_CTX_DECLARE_VARIANT);
-	  if (ctx != error_mark_node && variant != error_mark_node)
-	    {
-	      if (TREE_CODE (variant) != FUNCTION_DECL)
-		{
-		  error_at (token->location, "variant %qD is not a function",
-			    variant);
-		  variant = error_mark_node;
-		}
-	      else if (fndecl_built_in_p (variant)
-		       && (strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-				    "__builtin_", strlen ("__builtin_"))
-			     == 0
-			   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-				       "__sync_", strlen ("__sync_"))
-				== 0
-			   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-				       "__atomic_", strlen ("__atomic_"))
-				== 0))
-		{
-		  error_at (token->location, "variant %qD is a built-in",
-			    variant);
-		  variant = error_mark_node;
-		}
-	    }
 	}
       else if (ccode == adjust_args)
 	{
@@ -27542,18 +27536,64 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
       parens.require_close (parser);
   } while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL));
+  if (variant != error_mark_node && !has_match)
+    {
+      c_parser_error (parser, "expected %<match%> clause");
+      variant = error_mark_node;
+    }
   c_parser_skip_to_pragma_eol (parser);
 
-  if ((ctx != error_mark_node && variant != error_mark_node)
+  /* At this point, we have completed parsing of the pragma, now it's
+     on to error checking.  */
+  if (variant == error_mark_node || ctx == error_mark_node)
+    /* Previously diagnosed error.  */
+    return;
+
+  if ((has_adjust_args || append_args_tree)
       && !omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
-				    OMP_TRAIT_CONSTRUCT_SIMD))
+				    OMP_TRAIT_CONSTRUCT_DISPATCH))
     {
-      bool fail = false;
-      if (append_args_tree)
+      error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
+		"an %qs clause can only be specified if the "
+		"%<dispatch%> selector of the %<construct%> selector "
+		"set appears in the %<match%> clause",
+		has_adjust_args ? "adjust_args" : "append_args");
+      return;
+    }
+
+  if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+				 OMP_TRAIT_CONSTRUCT_SIMD))
+    /* Check that the base and variant have compatible types.  */
+    {
+      tree base_type = TREE_TYPE (fndecl);
+      tree variant_type = TREE_TYPE (variant);
+      bool unprototyped_variant
+	= (TYPE_ARG_TYPES (variant_type) == NULL_TREE
+	   && !TYPE_NO_NAMED_ARGS_STDARG_P (variant_type));
+
+      if (append_args_tree
+	  && TYPE_ARG_TYPES (base_type) == NULL_TREE
+	  && !TYPE_NO_NAMED_ARGS_STDARG_P (base_type))
 	{
+	  /* The base function is a pre-C23 unprototyped function.  Without
+	     a prototype, we don't know the offset where the append_args go.
+	     That offset needs to be stored with the append_args in the
+	     variant function attributes, so we cannot presently handle
+	     this case.  */
+	  sorry_at (append_args_loc,
+		    "%<append_args%> with unprototyped base function "
+		    "is not supported yet");
+	  inform (DECL_SOURCE_LOCATION (fndecl),
+		  "base function %qD declared here", fndecl);
+	  return;
+	}
+      else if (append_args_tree)
+	{
+	  /* Find nbase_args, the number of fixed arguments in the base
+	     function.  */
 	  int nappend_args = 0;
 	  int nbase_args = 0;
-	  for (tree t = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  for (tree t = TYPE_ARG_TYPES (base_type);
 	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
 	    nbase_args++;
 	  for (tree t = append_args_tree; t; t = TREE_CHAIN (t))
@@ -27564,135 +27604,117 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  append_args_tree = build_tree_list (build_int_cst (integer_type_node,
 							     nbase_args),
 					      append_args_tree);
-	  tree args, arg;
-	  args = arg = TYPE_ARG_TYPES (TREE_TYPE (variant));
-	  for (int j = 0; j < nbase_args && arg; j++, arg = TREE_CHAIN (arg))
-	    args = arg;
-	  for (int i = 0; i < nappend_args && arg; i++)
-	    arg = TREE_CHAIN (arg);
-	  tree saved_args;
-	  if (nbase_args && args)
+
+	  /* Give a specific diagnostic if the append_args parameters
+	     of the variant are of the wrong type, or missing.  The
+	     compatible types test below could fail to detect this if
+	     the variant is a varargs function.  */
+	  if (!unprototyped_variant)
 	    {
-	      saved_args = TREE_CHAIN (args);
-	      TREE_CHAIN (args) = arg;
+	      tree args = TYPE_ARG_TYPES (variant_type);
+	      for (int i = 0; args && i < nbase_args;
+		   i++, args = TREE_CHAIN (args))
+		;
+	      for (int i = 0; i < nappend_args; i++, args = TREE_CHAIN (args))
+		if (!args || !c_omp_interop_t_p (TREE_VALUE (args)))
+		  {
+		    error_at (DECL_SOURCE_LOCATION (variant),
+			      "argument %d of %qD must be of "
+			      "%<omp_interop_t%>",
+			      nbase_args + i + 1, variant);
+		    inform (append_args_loc,
+			    "%<append_args%> specified here");
+		    return;
+		  }
 	    }
-	  else
+
+	  /* Perform the "implementation defined transformation" on the type
+	     of the base function to add the append_args before checking it
+	     for compatibility with the function variant's type.  */
+	  tree args = TYPE_ARG_TYPES (base_type);
+	  tree newargs = NULL_TREE;
+	  tree lastarg = NULL_TREE;
+	  for (int j = 0; j < nbase_args; j++, args = TREE_CHAIN (args))
 	    {
-	      saved_args = args;
-	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = arg;
-	      TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant)) = 1;
+	      tree t = tree_cons (TREE_PURPOSE (args),
+				  TREE_VALUE (args), NULL_TREE);
+	      if (lastarg)
+		TREE_CHAIN (lastarg) = t;
+	      else
+		newargs = t;
+	      lastarg = t;
 	    }
-	  if (!comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
-	    fail = true;
-	  if (nbase_args && args)
-	    TREE_CHAIN (args) = saved_args;
-	  else
+	  tree type = lookup_name (get_identifier ("omp_interop_t"));
+	  type = type ? TREE_TYPE (type) : pointer_sized_int_node;
+	  for (int j = 0; j < nappend_args; j++)
 	    {
-	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_args;
-	      TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant)) = 0;
+	      tree t = tree_cons (NULL_TREE, type, NULL_TREE);
+	      if (lastarg)
+		TREE_CHAIN (lastarg) = t;
+	      else
+		newargs = t;
+	      lastarg = t;
 	    }
-	  arg = saved_args;
-	  if (!fail)
-	    for (int i = 0; i < nappend_args; i++, arg = TREE_CHAIN (arg))
-	      if (!arg || !c_omp_interop_t_p (TREE_VALUE (arg)))
-		{
-		  error_at (DECL_SOURCE_LOCATION (variant),
-			    "argument %d of %qD must be of %<omp_interop_t%>",
-			    nbase_args + i + 1, variant);
-		  inform (append_args_loc, "%<append_args%> specified here");
-		  break;
-		}
+	  TREE_CHAIN (lastarg) = args;
+
+	  /* Temporarily stuff newargs into the original base_type.  */
+	  tree saveargs = TYPE_ARG_TYPES (base_type);
+	  TYPE_ARG_TYPES (base_type) = newargs;
+	  bool fail = !comptypes (base_type, variant_type);
+	  TYPE_ARG_TYPES (base_type) = saveargs;
+
+	  if (fail)
+	    {
+	      error_at (token->location,
+			"variant %qD and base %qD have incompatible types "
+			"after %<append_args%> adjustment",
+			variant, fndecl);
+	      inform (DECL_SOURCE_LOCATION (variant),
+		      "%<declare variant%> candidate %qD declared here",
+		      variant);
+	      return;
+	    }
+	  else if (unprototyped_variant)
+	    /* If we've got an unprototyped variant, copy the transformed
+	       base arg types to the variant.  This is needed later by
+	       modify_call_for_omp_dispatch.  */
+	    TYPE_ARG_TYPES (variant_type) = newargs;
 	}
-      else
+      else  /* No append_args present.  */
 	{
-	  if (comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
+	  if (!comptypes (base_type, variant_type))
 	    {
-	      if (TYPE_ARG_TYPES (TREE_TYPE (variant)) == NULL_TREE
-		  && TYPE_ARG_TYPES (TREE_TYPE (fndecl)) != NULL_TREE)
-		{
-		  if (!append_args_tree)
-		    TYPE_ARG_TYPES (TREE_TYPE (variant))
-		      = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-		  else
-		    {
-		      tree new_args = NULL_TREE;
-		      tree arg, last_arg = NULL_TREE;
-		      for (arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-			   arg && arg != void_type_node; arg = TREE_CHAIN (arg))
-			{
-			  if (new_args == NULL_TREE)
-			    new_args = last_arg = copy_node (arg);
-			  else
-			    {
-			      TREE_CHAIN (last_arg) = copy_node (arg);
-			      last_arg = TREE_CHAIN (last_arg);
-			    }
-			}
-		      for (tree t3 = append_args_tree; t3; t3 = TREE_CHAIN (t3))
-			{
-			  tree type = lookup_name (get_identifier ("omp_interop_t"));
-			  type = type ? TREE_TYPE (type) : ptr_type_node;
-			  last_arg = tree_cons (NULL_TREE, type, last_arg);
-			}
-		      TREE_CHAIN (last_arg) = arg;
-		      TYPE_ARG_TYPES (TREE_TYPE (variant)) = new_args;
-		    }
-		}
+	      error_at (token->location,
+			"variant %qD and base %qD have incompatible types",
+			variant, fndecl);
+	      inform (DECL_SOURCE_LOCATION (variant),
+		      "%<declare variant%> candidate %qD declared here",
+		      variant);
+	      return;
 	    }
-	  else
-	    fail = true;
-	}
-      if (fail)
-	{
-	  error_at (token->location,
-		    "variant %qD and base %qD have incompatible types",
-		    variant, fndecl);
-	  variant = error_mark_node;
-	}
-    }
-  if (ctx != error_mark_node && variant != error_mark_node)
-    {
-      C_DECL_USED (variant) = 1;
-      tree construct = omp_get_context_selector_list (ctx,
-						      OMP_TRAIT_SET_CONSTRUCT);
-      omp_mark_declare_variant (match_loc, variant, construct);
-      if (omp_context_selector_matches (ctx, NULL_TREE, false))
-	{
-	  tree attr = tree_cons (get_identifier ("omp declare variant base"),
-				 build_tree_list (variant, ctx),
-				 DECL_ATTRIBUTES (fndecl));
-	  DECL_ATTRIBUTES (fndecl) = attr;
+	  else if (TYPE_ARG_TYPES (variant_type) == NULL_TREE
+		   && !TYPE_NO_NAMED_ARGS_STDARG_P (variant_type)
+		   && TYPE_ARG_TYPES (base_type) != NULL_TREE)
+	    /* If we've got an unprototyped variant but the base has
+	       a prototype, copy the base arg types to the variant.  */
+	    TYPE_ARG_TYPES (variant_type) = TYPE_ARG_TYPES (base_type);
 	}
     }
 
-  if (has_adjust_args || append_args_tree)
+  /* If we made it here, store the parsed information.  */
+  C_DECL_USED (variant) = 1;
+  tree construct = omp_get_context_selector_list (ctx,
+						  OMP_TRAIT_SET_CONSTRUCT);
+  omp_mark_declare_variant (match_loc, variant, construct);
+  if (omp_context_selector_matches (ctx, NULL_TREE, false))
     {
-      if (!has_match)
-	{
-	  error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
-		    "an %qs clause requires a %<match%> clause",
-		    has_adjust_args ? "adjust_args" : "append_args");
-	}
-      else if (ctx != error_mark_node && variant != error_mark_node)
-	{
-	  tree attr = lookup_attribute ("omp declare variant base",
-					DECL_ATTRIBUTES (fndecl));
-	  if (attr != NULL_TREE)
-	    {
-	      tree ctx = TREE_VALUE (TREE_VALUE (attr));
-	      if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
-					     OMP_TRAIT_CONSTRUCT_DISPATCH))
-		error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
-			  "an %qs clause can only be specified if the "
-			  "%<dispatch%> selector of the %<construct%> selector "
-			  "set appears in the %<match%> clause",
-			  has_adjust_args ? "adjust_args" : "append_args");
-	    }
-	}
+      tree attr = tree_cons (get_identifier ("omp declare variant base"),
+			     build_tree_list (variant, ctx),
+			     DECL_ATTRIBUTES (fndecl));
+      DECL_ATTRIBUTES (fndecl) = attr;
     }
 
-  if ((ctx != error_mark_node && variant != error_mark_node)
-      && (need_device_ptr_list || append_args_tree))
+  if (need_device_ptr_list || append_args_tree)
     {
       tree variant_decl = tree_strip_nop_conversions (variant);
       tree t = build_tree_list (need_device_ptr_list,
