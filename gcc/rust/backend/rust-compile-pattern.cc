@@ -358,8 +358,42 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
     {
     case HIR::TupleStructItems::HAS_REST:
       {
-	// TODO
-	rust_unreachable ();
+	HIR::TupleStructItemsHasRest &items_has_rest
+	  = static_cast<HIR::TupleStructItemsHasRest &> (items);
+	size_t num_patterns = items_has_rest.get_lower_patterns ().size ()
+			      + items_has_rest.get_upper_patterns ().size ();
+
+	// enums cases shouldn't reach here
+	rust_assert (num_patterns <= variant->num_fields ()
+		     && (!adt->is_enum ()));
+
+	size_t tuple_field_index = 0;
+	for (auto &pattern : items_has_rest.get_lower_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pattern->get_locus ());
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pattern, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pattern->get_locus ());
+	  }
+	tuple_field_index = variant->num_fields ()
+			    - items_has_rest.get_upper_patterns ().size ();
+	for (auto &pattern : items_has_rest.get_upper_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pattern->get_locus ());
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pattern, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pattern->get_locus ());
+	  }
       }
       break;
 
@@ -738,23 +772,52 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
     {
     case HIR::TupleStructItems::HAS_REST:
       {
-	// TODO
-	rust_unreachable ();
+	HIR::TupleStructItemsHasRest &items_has_rest
+	  = static_cast<HIR::TupleStructItemsHasRest &> (items);
+	size_t num_patterns = items_has_rest.get_lower_patterns ().size ()
+			      + items_has_rest.get_upper_patterns ().size ();
+
+	// enums cases shouldn't reach here
+	rust_assert (num_patterns <= variant->num_fields ()
+		     && (!adt->is_enum ()));
+
+	size_t tuple_field_index = 0;
+	for (auto &pattern : items_has_rest.get_lower_patterns ())
+	  {
+	    tree binding
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pattern->get_locus ());
+
+	    CompilePatternBindings::Compile (*pattern, binding, ctx);
+	  }
+
+	tuple_field_index = variant->num_fields ()
+			    - items_has_rest.get_upper_patterns ().size ();
+
+	for (auto &pattern : items_has_rest.get_upper_patterns ())
+	  {
+	    tree binding
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pattern->get_locus ());
+
+	    CompilePatternBindings::Compile (*pattern, binding, ctx);
+	  }
       }
       break;
 
     case HIR::TupleStructItems::NO_REST:
       {
-	HIR::TupleStructItemsNoRest &items_no_range
+	HIR::TupleStructItemsNoRest &items_no_rest
 	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
-
-	rust_assert (items_no_range.get_patterns ().size ()
+	rust_assert (items_no_rest.get_patterns ().size ()
 		     == variant->num_fields ());
 
 	if (adt->is_enum ())
 	  {
 	    size_t tuple_field_index = 0;
-	    for (auto &pattern : items_no_range.get_patterns ())
+	    for (auto &pattern : items_no_rest.get_patterns ())
 	      {
 		tree payload_accessor_union
 		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
@@ -776,12 +839,10 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	else
 	  {
 	    size_t tuple_field_index = 0;
-	    for (auto &pattern : items_no_range.get_patterns ())
+	    for (auto &pattern : items_no_rest.get_patterns ())
 	      {
-		tree variant_accessor = match_scrutinee_expr;
-
 		tree binding
-		  = Backend::struct_field_expression (variant_accessor,
+		  = Backend::struct_field_expression (match_scrutinee_expr,
 						      tuple_field_index++,
 						      pattern->get_locus ());
 
