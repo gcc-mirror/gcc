@@ -302,11 +302,10 @@ PathProbeType::process_impl_item_candidate (HirId id, HIR::ImplItem *item,
   if (!query_type (impl_ty_id, &impl_block_ty))
     return;
 
-  if (!receiver->can_eq (impl_block_ty, false))
-    {
-      if (!impl_block_ty->can_eq (receiver, false))
-	return;
-    }
+  if (!types_compatable (TyTy::TyWithLocation (receiver),
+			 TyTy::TyWithLocation (impl_block_ty),
+			 impl->get_locus (), false))
+    return;
 
   // lets visit the impl_item
   item->accept_vis (*this);
