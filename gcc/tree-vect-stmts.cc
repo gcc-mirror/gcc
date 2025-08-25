@@ -417,7 +417,9 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 
   /* Check if it's a not live PHI and multiple exits.  In this case
      there will be a usage later on after peeling which is needed for the
-     alternate exit.  */
+     alternate exit.
+     ???  Unless the PHI was marked live because of early
+     break, which also needs the latch def live and vectorized.  */
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
       && is_a <gphi *> (stmt)
       && gimple_bb (stmt) == LOOP_VINFO_LOOP (loop_vinfo)->header
@@ -655,21 +657,21 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
     }
   /* We are also not interested in uses on loop PHI backedges that are
      inductions.  Otherwise we'll needlessly vectorize the IV increment
-     and cause hybrid SLP for SLP inductions.  Unless the PHI is live
-     of course.  */
+     and cause hybrid SLP for SLP inductions.  */
   else if (gimple_code (stmt_vinfo->stmt) == GIMPLE_PHI
 	   && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_induction_def
-	   && ! STMT_VINFO_LIVE_P (stmt_vinfo)
 	   && (PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt,
 				      loop_latch_edge (bb->loop_father))
-	       == use))
+	       == use)
+	   && (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	       || (gimple_bb (stmt_vinfo->stmt)
+		   != LOOP_VINFO_LOOP (loop_vinfo)->header)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "induction value on backedge.\n");
       return opt_result::success ();
     }
-
 
   vect_mark_relevant (worklist, dstmt_vinfo, relevant, false);
   return opt_result::success ();
