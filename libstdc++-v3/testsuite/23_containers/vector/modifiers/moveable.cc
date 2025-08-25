@@ -109,9 +109,11 @@ test05()
   // when it doesn't reallocate the buffer.
   VERIFY(copycounter::copycount == 20 + 1);
   a.insert(a.end(), 50, c);
-  VERIFY(copycounter::copycount == 70 + 2);
+  // expect when inserting at the end (appending), where existing
+  // elements are not modified
+  VERIFY(copycounter::copycount == 70 + 1);
   a.insert(a.begin() + 50, 100, c);
-  VERIFY(copycounter::copycount == 170 + 3);
+  VERIFY(copycounter::copycount == 170 + 2);
 }
 
 
