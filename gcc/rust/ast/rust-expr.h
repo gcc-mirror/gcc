@@ -1611,6 +1611,7 @@ class TupleIndexExpr : public ExprWithoutBlock
   TupleIndex tuple_index;
 
   location_t locus;
+  bool to_strip;
 
   // i.e. pair.0
 
@@ -1622,13 +1623,15 @@ public:
   TupleIndexExpr (std::unique_ptr<Expr> tuple_expr, TupleIndex index,
 		  std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)),
-      tuple_expr (std::move (tuple_expr)), tuple_index (index), locus (locus)
+      tuple_expr (std::move (tuple_expr)), tuple_index (index), locus (locus),
+      to_strip (false)
   {}
 
   // Copy constructor requires a clone for tuple_expr
   TupleIndexExpr (TupleIndexExpr const &other)
     : ExprWithoutBlock (other), outer_attrs (other.outer_attrs),
-      tuple_index (other.tuple_index), locus (other.locus)
+      tuple_index (other.tuple_index), locus (other.locus),
+      to_strip (other.to_strip)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.tuple_expr != nullptr)
@@ -1642,6 +1645,7 @@ public:
     tuple_index = other.tuple_index;
     locus = other.locus;
     outer_attrs = other.outer_attrs;
+    to_strip = other.to_strip;
 
     // guard to prevent null dereference (only required if error state)
     if (other.tuple_expr != nullptr)
@@ -1661,8 +1665,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if tuple expr is null, so base stripping on that.
-  void mark_for_strip () override { tuple_expr = nullptr; }
-  bool is_marked_for_strip () const override { return tuple_expr == nullptr; }
+  void mark_for_strip () override { to_strip = true; }
+  bool is_marked_for_strip () const override { return to_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_tuple_expr ()
