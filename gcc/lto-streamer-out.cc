@@ -2851,16 +2851,18 @@ lto_output (void)
      section copying.  */
   for (i = 0; i < n_nodes; i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      if (snode->alias)
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *node = dyn_cast <symtab_node *> (tnode);
+      if (!node || node->alias)
 	continue;
-      if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
+
+      if (cgraph_node *node = dyn_cast <cgraph_node *> (tnode))
 	{
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
 	      && !node->clone_of)
 	    symbols_to_copy.safe_push (node);
 	}
-      else if (varpool_node *node = dyn_cast <varpool_node *> (snode))
+      else if (varpool_node *node = dyn_cast <varpool_node *> (tnode))
 	{
 	  /* Wrap symbol references inside the ctor in a type
 	     preserving MEM_REF.  */
@@ -3202,7 +3204,10 @@ produce_symtab (struct output_block *ob)
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *tnode = lsei_node (lsei);
+      symtab_node *node = dyn_cast<symtab_node*> (tnode);
+      if (!node)
+	continue;
 
       if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
@@ -3212,7 +3217,10 @@ produce_symtab (struct output_block *ob)
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *tnode = lsei_node (lsei);
+      symtab_node *node = dyn_cast<symtab_node*> (tnode);
+      if (!node)
+	continue;
 
       if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
@@ -3253,7 +3261,10 @@ produce_symtab_extension (struct output_block *ob,
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *tnode = lsei_node (lsei);
+      symtab_node *node = dyn_cast<symtab_node*> (tnode);
+      if (!node)
+	continue;
 
       if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
@@ -3263,7 +3274,10 @@ produce_symtab_extension (struct output_block *ob,
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *tnode = lsei_node (lsei);
+      symtab_node *node = dyn_cast<symtab_node*> (tnode);
+      if (!node)
+	continue;
 
       if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;

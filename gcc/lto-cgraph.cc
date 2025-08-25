@@ -82,7 +82,7 @@ lto_symtab_encoder_new (bool for_input)
   lto_symtab_encoder_t encoder = XCNEW (struct lto_symtab_encoder_d);
 
   if (!for_input)
-    encoder->map = new hash_map<symtab_node *, size_t>;
+    encoder->map = new hash_map<toplevel_node *, size_t>;
   encoder->nodes.create (0);
   return encoder;
 }
@@ -108,7 +108,7 @@ lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
 
 int
 lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
-			   symtab_node *node)
+			   toplevel_node *node)
 {
   int ref;
 
@@ -140,7 +140,7 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 
 bool
 lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
-			        symtab_node *node)
+				toplevel_node *node)
 {
   int index;
 
@@ -214,7 +214,7 @@ lto_set_symtab_encoder_encode_initializer (lto_symtab_encoder_t encoder,
 
 bool
 lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t encoder,
-				   symtab_node *node)
+				   toplevel_node *node)
 {
   int index = lto_symtab_encoder_lookup (encoder, node);
   if (index == LCC_NOT_FOUND)
@@ -226,11 +226,16 @@ lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t encoder,
 
 void
 lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t encoder,
-				     symtab_node *node)
+				     toplevel_node *node)
 {
   int index = lto_symtab_encoder_encode (encoder, node);
   if (dump_file)
-    fprintf(dump_file, "Node %s, index %d\n", node->asm_name(), index);
+    {
+      if (symtab_node* snode = dyn_cast<symtab_node*> (node))
+	fprintf (dump_file, "Node %s, index %d\n", snode->asm_name (), index);
+      else
+	fprintf (dump_file, "Asm node, index %d\n", index);
+    }
   encoder->nodes[index].in_partition = true;
 }
 
@@ -770,7 +775,10 @@ output_refs (lto_symtab_encoder_t encoder)
 
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *node = dyn_cast <symtab_node *> (tnode);
+      if (!node)
+	continue;
 
       /* IPA_REF_ALIAS references are always preserved
 	 in the boundary.  Alias node can't have other references and
@@ -895,7 +903,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
      pickle those too.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *node = lto_symtab_encoder_deref (encoder, i);
       if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
 	{
 	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
@@ -962,7 +970,11 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
      to stay to aid local calling conventions.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *node = dyn_cast <symtab_node *> (tnode);
+      if (!node)
+	continue;
+
       cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
       if (node->alias && node->analyzed)
@@ -1012,11 +1024,11 @@ output_symtab (void)
   n_nodes = lto_symtab_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *node = lto_symtab_encoder_deref (encoder, i);
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
         lto_output_node (ob, cnode, encoder);
-      else
-	lto_output_varpool_node (ob, dyn_cast<varpool_node *> (node), encoder);
+      else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
+	lto_output_varpool_node (ob, vnode, encoder);
     }
 
   /* Go over the nodes in SET again to write edges.  */
@@ -2111,7 +2123,7 @@ output_cgraph_opt_summary (void)
   n_nodes = lto_symtab_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *node = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
       if (cnode && output_cgraph_opt_summary_p (cnode))
 	count++;
@@ -2119,7 +2131,7 @@ output_cgraph_opt_summary (void)
   streamer_write_uhwi (ob, count);
   for (i = 0; i < n_nodes; i++)
     {
-      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      toplevel_node *node = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
       if (cnode && output_cgraph_opt_summary_p (cnode))
 	{

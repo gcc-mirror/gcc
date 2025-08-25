@@ -1070,8 +1070,8 @@ ipa_reference_write_optimization_summary (void)
   /* See what variables we are interested in.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      varpool_node *vnode = dyn_cast <varpool_node *> (snode);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      varpool_node *vnode = dyn_cast <varpool_node *> (tnode);
       int id;
 
       if (vnode
@@ -1089,8 +1089,8 @@ ipa_reference_write_optimization_summary (void)
   if (ltrans_statics_bitcount)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
-	symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-	cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+	toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+	cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
 	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  count++;
       }
@@ -1104,15 +1104,15 @@ ipa_reference_write_optimization_summary (void)
   if (ltrans_statics_bitcount)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
-	symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-	cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+	toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+	cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
 	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  {
 	    ipa_reference_optimization_summary_t info;
 	    int node_ref;
 
 	    info = get_reference_optimization_summary (cnode);
-	    node_ref = lto_symtab_encoder_encode (encoder, snode);
+	    node_ref = lto_symtab_encoder_encode (encoder, tnode);
 	    streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	    stream_out_bitmap (ob, info->statics_read, ltrans_statics,

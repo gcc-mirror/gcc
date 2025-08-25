@@ -43,7 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 
 vec<ltrans_partition> ltrans_partitions;
 
-static void add_symbol_to_partition (ltrans_partition part, symtab_node *node);
+static void add_symbol_to_partition (ltrans_partition part,
+				     toplevel_node *node);
 
 
 /* Helper for qsort; compare partitions and return one with smaller order.  */
@@ -266,9 +267,15 @@ contained_in_symbol (symtab_node *node)
    of other symbol definition, add the other symbol, too.  */
 
 static void
-add_symbol_to_partition (ltrans_partition part, symtab_node *node)
+add_symbol_to_partition (ltrans_partition part, toplevel_node *tnode)
 {
   symtab_node *node1;
+  symtab_node* node = dyn_cast <symtab_node*> (tnode);
+  if (!node)
+    {
+      lto_set_symtab_encoder_in_partition (part->encoder, tnode);
+      return;
+    }
 
   /* Verify that we do not try to duplicate something that cannot be.  */
   gcc_checking_assert (node->get_partitioning_class () == SYMBOL_DUPLICATE
@@ -299,21 +306,25 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
 {
   while (lto_symtab_encoder_size (partition->encoder) > (int)n_nodes)
     {
-      symtab_node *node = lto_symtab_encoder_deref (partition->encoder,
-						   n_nodes);
-      partition->symbols--;
-      cgraph_node *cnode;
+      toplevel_node *tnode = lto_symtab_encoder_deref (partition->encoder,
+						       n_nodes);
 
       /* After UNDO we no longer know what was visited.  */
       if (partition->initializers_visited)
 	delete partition->initializers_visited;
       partition->initializers_visited = NULL;
 
-      if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node))
-          && node->get_partitioning_class () == SYMBOL_PARTITION)
-	partition->insns -= ipa_size_summaries->get (cnode)->size;
-      lto_symtab_encoder_delete_node (partition->encoder, node);
-      node->aux = (void *)((size_t)node->aux - 1);
+      lto_symtab_encoder_delete_node (partition->encoder, tnode);
+
+      if (symtab_node* node = dyn_cast <symtab_node *> (tnode))
+	{
+	  partition->symbols--;
+	  cgraph_node *cnode;
+	  if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node))
+	      && node->get_partitioning_class () == SYMBOL_PARTITION)
+	    partition->insns -= ipa_size_summaries->get (cnode)->size;
+	  node->aux = (void *)((size_t)node->aux - 1);
+	}
     }
 }
 
@@ -467,16 +478,17 @@ join_partitions (ltrans_partition into, ltrans_partition from)
      before adding any symbols to other partition.  */
   for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
-      node->aux = (void *)((size_t)node->aux - 1);
+      if (symtab_node *node = dyn_cast <symtab_node*> (lsei_node (lsei)))
+	node->aux = (void *)((size_t)node->aux - 1);
     }
 
   for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *node = lsei_node (lsei);
 
-      if (symbol_partitioned_p (node))
-	continue;
+      if (symtab_node *snode = dyn_cast <symtab_node*> (node))
+	if (symbol_partitioned_p (snode))
+	  continue;
 
       add_symbol_to_partition (into, node);
     }
@@ -498,16 +510,17 @@ split_partition_into_nodes (ltrans_partition part)
 
   for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
-      node->aux = (void *)((size_t)node->aux - 1);
+      if (symtab_node *node = dyn_cast <symtab_node*> (lsei_node (lsei)))
+	node->aux = (void *)((size_t)node->aux - 1);
     }
 
   for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
+      toplevel_node *node = lsei_node (lsei);
 
-      if (node->get_partitioning_class () != SYMBOL_PARTITION
-	  || symbol_partitioned_p (node))
+      symtab_node *snode = dyn_cast <symtab_node*> (node);
+      if (snode->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (snode))
 	continue;
 
       ltrans_partition new_part = new_partition_no_push (part->name);
@@ -527,8 +540,8 @@ is_partition_reorder (ltrans_partition part)
 
   for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node *node = lsei_node (lsei);
-      if (node->no_reorder)
+      symtab_node *node = dyn_cast <symtab_node*> (lsei_node (lsei));
+      if (!node || node->no_reorder)
 	return false;
     }
   return true;
@@ -1172,8 +1185,12 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	{
 	  int j;
 	  struct ipa_ref *ref = NULL;
-	  symtab_node *snode = lto_symtab_encoder_deref (partition->encoder,
-							last_visited_node);
+	  toplevel_node *tnode = lto_symtab_encoder_deref (partition->encoder,
+							   last_visited_node);
+
+	  symtab_node* snode = dyn_cast <symtab_node*> (tnode);
+	  if (!snode)
+	    continue;
 
 	  if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	    {
@@ -1862,7 +1879,10 @@ lto_promote_cross_file_statics (void)
       for (lsei = lsei_start (encoder); !lsei_end_p (lsei);
 	   lsei_next (&lsei))
         {
-          symtab_node *node = lsei_node (lsei);
+	  toplevel_node *tnode = lsei_node (lsei);
+	  symtab_node *node = dyn_cast <symtab_node*> (tnode);
+	  if (!node)
+	    continue;
 
 	  /* If symbol is static, rename it if its assembler name
 	     clashes with anything else in this unit.  */

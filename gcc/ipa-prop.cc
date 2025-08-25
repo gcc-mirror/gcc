@@ -5576,8 +5576,8 @@ ipa_write_return_summaries (output_block *ob)
   unsigned int count = 0;
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
       ipa_return_value_summary *v;
 
       if (cnode && cnode->definition && !cnode->alias
@@ -5589,8 +5589,8 @@ ipa_write_return_summaries (output_block *ob)
 
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
       ipa_return_value_summary *v;
 
       if (cnode && cnode->definition && !cnode->alias
@@ -5865,8 +5865,8 @@ ipcp_write_transformation_summaries (void)
 
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
       if (!cnode)
 	continue;
       ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);
@@ -5879,8 +5879,8 @@ ipcp_write_transformation_summaries (void)
 
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (tnode);
       if (!cnode)
 	continue;
       ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);

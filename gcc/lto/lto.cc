@@ -381,14 +381,17 @@ lto_wpa_write_files (void)
 	       !lsei_end_p (lsei);
 	       lsei_next_in_partition (&lsei))
 	    {
-	      symtab_node *node = lsei_node (lsei);
-	      fprintf (symtab->dump_file, "%s ", node->dump_asm_name ());
+	      symtab_node *node = dyn_cast<symtab_node*> (lsei_node (lsei));
+	      if (node)
+		fprintf (symtab->dump_file, "%s ", node->dump_asm_name ());
 	    }
 	  fprintf (symtab->dump_file, "\n  Symbols in boundary: ");
 	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
 	       lsei_next (&lsei))
 	    {
-	      symtab_node *node = lsei_node (lsei);
+	      symtab_node *node = dyn_cast<symtab_node*> (lsei_node (lsei));
+	      if (!node)
+		continue;
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
 		  fprintf (symtab->dump_file, "%s ", node->dump_asm_name ());
