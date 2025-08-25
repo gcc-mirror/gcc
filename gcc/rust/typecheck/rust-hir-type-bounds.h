@@ -30,7 +30,7 @@ class TypeBoundsProbe : public TypeCheckBase
 {
 public:
   static std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
-  Probe (const TyTy::BaseType *receiver);
+  Probe (TyTy::BaseType *receiver);
 
   static bool is_bound_satisfied_for_type (TyTy::BaseType *receiver,
 					   TraitReference *ref);
@@ -46,9 +46,9 @@ private:
   void assemble_builtin_candidate (LangItem::Kind item);
 
 private:
-  TypeBoundsProbe (const TyTy::BaseType *receiver);
+  TypeBoundsProbe (TyTy::BaseType *receiver);
 
-  const TyTy::BaseType *receiver;
+  TyTy::BaseType *receiver;
   std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> trait_references;
 };
 

@@ -2209,11 +2209,10 @@ HIRCompileBase::resolve_unsized_dyn_adjustment (
   tree rvalue = expression;
   location_t rvalue_locus = locus;
 
-  const TyTy::BaseType *actual = adjustment.get_actual ();
-  const TyTy::BaseType *expected = adjustment.get_expected ();
+  auto actual = adjustment.get_actual ();
+  auto expected = adjustment.get_expected ();
 
-  const TyTy::DynamicObjectType *dyn
-    = static_cast<const TyTy::DynamicObjectType *> (expected);
+  const auto dyn = static_cast<const TyTy::DynamicObjectType *> (expected);
 
   rust_debug ("resolve_unsized_dyn_adjustment actual={%s} dyn={%s}",
 	      actual->debug_str ().c_str (), dyn->debug_str ().c_str ());

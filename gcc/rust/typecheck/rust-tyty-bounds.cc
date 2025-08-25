@@ -26,12 +26,12 @@
 namespace Rust {
 namespace Resolver {
 
-TypeBoundsProbe::TypeBoundsProbe (const TyTy::BaseType *receiver)
+TypeBoundsProbe::TypeBoundsProbe (TyTy::BaseType *receiver)
   : TypeCheckBase (), receiver (receiver)
 {}
 
 std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
-TypeBoundsProbe::Probe (const TyTy::BaseType *receiver)
+TypeBoundsProbe::Probe (TyTy::BaseType *receiver)
 {
   TypeBoundsProbe probe (receiver);
   probe.scan ();
@@ -75,9 +75,6 @@ TypeBoundsProbe::process_impl_block (
   HIR::Trait *t = TraitResolver::ResolveHirItem (impl->get_trait_ref ());
   if (t == nullptr)
     return true;
-  // DefId trait_id = t->get_mappings ().get_defid ();
-  // if (context->trait_query_in_progress (trait_id))
-  //   return true;
 
   HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
   TyTy::BaseType *impl_type = nullptr;

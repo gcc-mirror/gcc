@@ -325,7 +325,7 @@ cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
 
 AssociatedImplTrait *
 lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
-			      const TyTy::BaseType *binding, bool *ambigious)
+			      TyTy::BaseType *binding, bool *ambigious)
 {
   auto context = TypeCheckContext::get ();
 

@@ -295,8 +295,7 @@ BaseType::get_locus () const
 
 // FIXME this is missing locus
 bool
-BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
-			   bool emit_error) const
+BaseType::satisfies_bound (const TypeBoundPredicate &predicate, bool emit_error)
 {
   const Resolver::TraitReference *query = predicate.get ();
   for (const auto &bound : specified_bounds)
@@ -395,8 +394,7 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 }
 
 bool
-BaseType::bounds_compatible (const BaseType &other, location_t locus,
-			     bool emit_error) const
+BaseType::bounds_compatible (BaseType &other, location_t locus, bool emit_error)
 {
   std::vector<std::reference_wrapper<const TypeBoundPredicate>>
     unsatisfied_bounds;
@@ -1704,7 +1702,7 @@ VariantDef::clone () const
 
   auto &&discriminant_opt = has_discriminant ()
 			      ? tl::optional<std::unique_ptr<HIR::Expr>> (
-				get_discriminant ().clone_expr ())
+				  get_discriminant ().clone_expr ())
 			      : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
@@ -1720,7 +1718,7 @@ VariantDef::monomorphized_clone () const
 
   auto discriminant_opt = has_discriminant ()
 			    ? tl::optional<std::unique_ptr<HIR::Expr>> (
-			      get_discriminant ().clone_expr ())
+				get_discriminant ().clone_expr ())
 			    : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
@@ -3817,7 +3815,24 @@ OpaqueType::is_equal (const BaseType &other) const
   if (can_resolve () != other2.can_resolve ())
     return false;
 
-  return bounds_compatible (other, UNDEF_LOCATION, false);
+  if (num_specified_bounds () != other.num_specified_bounds ())
+    return false;
+
+  for (const auto &pred : specified_bounds)
+    {
+      bool found = false;
+      for (const auto &opred : other.get_specified_bounds ())
+	{
+	  found = pred.is_equal (opred);
+	  if (found)
+	    break;
+	}
+
+      if (!found)
+	return false;
+    }
+
+  return true;
 }
 
 // StrType
@@ -4268,7 +4283,21 @@ DynamicObjectType::is_equal (const BaseType &other) const
   if (num_specified_bounds () != other.num_specified_bounds ())
     return false;
 
-  return bounds_compatible (other, UNDEF_LOCATION, false);
+  for (const auto &pred : specified_bounds)
+    {
+      bool found = false;
+      for (const auto &opred : other.get_specified_bounds ())
+	{
+	  found = pred.is_equal (opred);
+	  if (found)
+	    break;
+	}
+
+      if (!found)
+	return false;
+    }
+
+  return true;
 }
 
 const std::vector<

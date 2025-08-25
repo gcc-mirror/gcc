@@ -52,7 +52,7 @@ TyTy::BaseType *cast_site (HirId id, TyTy::TyWithLocation from,
 
 AssociatedImplTrait *
 lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
-			      const TyTy::BaseType *binding,
+			      TyTy::BaseType *binding,
 			      bool *ambigious = nullptr);
 
 } // namespace Resolver

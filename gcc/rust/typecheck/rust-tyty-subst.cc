@@ -1056,7 +1056,7 @@ SubstitutionRef::monomorphize ()
       if (!pty->can_resolve ())
 	continue;
 
-      const TyTy::BaseType *binding = pty->resolve ();
+      TyTy::BaseType *binding = pty->resolve ();
       if (binding->get_kind () == TyTy::TypeKind::PARAM)
 	continue;
 

@@ -56,7 +56,7 @@ protected:
 		       TyTy::BaseType *expected, location_t lvalue_locus,
 		       location_t rvalue_locus);
 
-  tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
+  tree coerce_to_dyn_object (tree compiled_ref, TyTy::BaseType *actual,
 			     const TyTy::DynamicObjectType *ty,
 			     location_t locus);
 

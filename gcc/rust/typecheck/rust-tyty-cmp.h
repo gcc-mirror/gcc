@@ -1595,8 +1595,24 @@ public:
 	return;
       }
 
-    location_t ref_locus = mappings.lookup_location (type.get_ref ());
-    ok = base->bounds_compatible (type, ref_locus, false);
+    for (const auto &pred : base->get_specified_bounds ())
+      {
+	bool found = false;
+	for (const auto &opred : type.get_specified_bounds ())
+	  {
+	    found = pred.is_equal (opred);
+	    if (found)
+	      break;
+	  }
+
+	if (!found)
+	  {
+	    ok = false;
+	    break;
+	  }
+      }
+
+    ok = true;
   }
 
 private:

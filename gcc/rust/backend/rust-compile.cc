@@ -183,8 +183,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
 }
 
 tree
-HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
-				      const TyTy::BaseType *actual,
+HIRCompileBase::coerce_to_dyn_object (tree compiled_ref, TyTy::BaseType *actual,
 				      const TyTy::DynamicObjectType *ty,
 				      location_t locus)
 {
@@ -201,9 +200,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
   // __trait_object_ptr
   // [list of function ptrs]
 
-  std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
-    probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (actual);
-
+  auto probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (actual);
   tree address_of_compiled_ref = null_pointer_node;
   if (!actual->is_unit ())
     address_of_compiled_ref = address_expression (compiled_ref, locus);
