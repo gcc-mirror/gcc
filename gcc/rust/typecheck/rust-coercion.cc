@@ -439,7 +439,8 @@ TypeCoercionRules::select (TyTy::BaseType &autoderefed)
     = unify_site_and (autoderefed.get_ref (), TyTy::TyWithLocation (expected),
 		      TyTy::TyWithLocation (&autoderefed),
 		      UNDEF_LOCATION /* locus */, false /*emit_errors*/,
-		      false /*commit_if_ok*/, true /*infer*/, true /*cleanup*/);
+		      !try_flag /*commit_if_ok*/, try_flag /*infer*/,
+		      try_flag /*cleanup*/);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
   if (!ok)
     return false;
