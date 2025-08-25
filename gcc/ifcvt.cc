@@ -1283,13 +1283,15 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
 	 one with smaller cost.  */
       rtx and_form = gen_rtx_AND (mode, temp, GEN_INT (val_a));
       rtx shift_left = gen_rtx_ASHIFT (mode, temp, GEN_INT (ctz_hwi (val_a)));
-      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (ctz_hwi (~val_a)));
+      HOST_WIDE_INT rshift_count
+	= (clz_hwi (val_a) & (GET_MODE_PRECISION (mode).to_constant() - 1));
+      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (rshift_count));
       bool speed_p = optimize_insn_for_speed_p ();
       if (exact_log2 (val_a + 1) >= 0
 	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
 	      <= rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, LSHIFTRT, temp,
-				    GEN_INT (ctz_hwi (~val_a)),
+				    GEN_INT (rshift_count),
 				    if_info->x, false, OPTAB_WIDEN);
       else if (exact_log2 (~val_a + 1) >= 0
 	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
@@ -1333,13 +1335,15 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
 	 one with smaller cost.  */
       rtx and_form = gen_rtx_AND (mode, temp, GEN_INT (val_b));
       rtx shift_left = gen_rtx_ASHIFT (mode, temp, GEN_INT (ctz_hwi (val_b)));
-      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (ctz_hwi (~val_b)));
+      HOST_WIDE_INT rshift_count
+	= (clz_hwi (val_b) & (GET_MODE_PRECISION (mode).to_constant() - 1));
+      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (rshift_count));
       bool speed_p = optimize_insn_for_speed_p ();
       if (exact_log2 (val_b + 1) >= 0
 	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
 	      <= rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, LSHIFTRT, temp,
-				    GEN_INT (ctz_hwi (~val_b)),
+				    GEN_INT (rshift_count),
 				    if_info->x, false, OPTAB_WIDEN);
       else if (exact_log2 (~val_b + 1) >= 0
 	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
