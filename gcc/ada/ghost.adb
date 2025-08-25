@@ -515,6 +515,10 @@ package body Ghost is
          function Is_OK_Statement
            (Stmt : Node_Id; Id : Entity_Id; Call_Arg : Node_Id) return Boolean
          is
+            procedure Check_Assignment_Levels (Assignee : Entity_Id);
+            --  Check that a ghost entity on the RHS of the assignment is
+            --  assertion level dependent on the LHS.
+
             procedure Check_Procedure_Call_Policies (Callee : Entity_Id);
             --  Check that
             --  * the a checked call argument is not modified by an ignored
@@ -527,6 +531,39 @@ package body Ghost is
                return Boolean;
             --  Check that Call_Arg was used in the call and that the formal
             --  for that argument was either out or in-out.
+
+            -----------------------------
+            -- Check_Assignment_Levels --
+            -----------------------------
+
+            procedure Check_Assignment_Levels (Assignee : Entity_Id) is
+               Assignee_Level : constant Entity_Id :=
+                 Ghost_Assertion_Level (Assignee);
+               Id_Level       : constant Entity_Id :=
+                 Ghost_Assertion_Level (Id);
+            begin
+               --  SPARK RM 6.9 (13) A ghost entity E shall only be referenced
+               --  within an assignment statement whose target is a ghost
+               --  variable that is assertion-level-dependent on E.
+
+               if not Is_Assertion_Level_Dependent (Id_Level, Assignee_Level)
+               then
+                  Error_Msg_Sloc := Sloc (Ghost_Ref);
+
+                  Error_Msg_N (Assertion_Level_Error_Msg, Ghost_Ref);
+                  Error_Msg_Name_1 := Chars (Id_Level);
+                  Error_Msg_NE ("\& has assertion level %", Ghost_Ref, Id);
+                  Error_Msg_Name_1 := Chars (Assignee_Level);
+                  Error_Msg_Node_2 := Assignee;
+                  Error_Msg_NE
+                    ("\& is modifying & with %", Ghost_Ref, Id);
+                  Error_Msg_Name_1 := Chars (Assignee_Level);
+                  Error_Msg_NE
+                    ("\assertion level of & should depend on %",
+                     Ghost_Ref,
+                     Id);
+               end if;
+            end Check_Assignment_Levels;
 
             -----------------------------------
             -- Check_Procedure_Call_Policies --
@@ -619,6 +656,8 @@ package body Ghost is
 
             if Nkind (Stmt) = N_Assignment_Statement then
                if Is_Ghost_Assignment (Stmt) then
+                  Check_Assignment_Levels
+                    (Get_Enclosing_Ghost_Entity (Name (Stmt)));
                   return True;
                end if;
 
