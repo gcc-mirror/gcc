@@ -897,7 +897,7 @@ extern void lto_output_fn_decl_ref (struct lto_out_decl_state *,
 				    struct lto_output_stream *, tree);
 extern tree lto_input_var_decl_ref (lto_input_block *, lto_file_decl_data *);
 extern tree lto_input_fn_decl_ref (lto_input_block *, lto_file_decl_data *);
-extern void lto_output_toplevel_asms (void);
+extern void lto_output_toplevel_asms (lto_symtab_encoder_t);
 extern void produce_asm (struct output_block *ob);
 extern void lto_output ();
 extern void produce_asm_for_decls ();
@@ -916,7 +916,6 @@ void lto_prepare_function_for_streaming (cgraph_node *);
 
 
 /* In lto-cgraph.cc  */
-extern bool asm_nodes_output;
 lto_symtab_encoder_t lto_symtab_encoder_new (bool);
 int lto_symtab_encoder_encode (lto_symtab_encoder_t, toplevel_node *);
 void lto_symtab_encoder_delete (lto_symtab_encoder_t);

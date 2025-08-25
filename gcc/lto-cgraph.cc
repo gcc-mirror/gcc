@@ -45,9 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-thunks.h"
 #include "symtab-clones.h"
 
-/* True when asm nodes has been output.  */
-bool asm_nodes_output = false;
-
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
 
@@ -1055,15 +1052,9 @@ output_symtab (void)
 
   lto_destroy_simple_output_block (ob);
 
-  /* Emit toplevel asms.
-     When doing WPA we must output every asm just once.  Since we do not partition asm
-     nodes at all, output them to first output.  This is kind of hack, but should work
-     well.  */
-  if (!asm_nodes_output && !lto_stream_offload_p)
-    {
-      asm_nodes_output = true;
-      lto_output_toplevel_asms ();
-    }
+  /* Emit toplevel asms.  */
+  if (!lto_stream_offload_p)
+    lto_output_toplevel_asms (encoder);
 
   output_refs (encoder);
 }

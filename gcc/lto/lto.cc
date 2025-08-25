@@ -267,7 +267,6 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
 	      {
 		/* There are no free tokens, lets do the job outselves.  */
 		stream_out_partitions_1 (temp_filename, blen, min, max);
-		asm_nodes_output = true;
 		return;
 	      }
 	  }
@@ -296,7 +295,6 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
       if (jinfo != NULL && jinfo->is_connected)
 	jinfo->disconnect ();
     }
-  asm_nodes_output = true;
 #else
   stream_out_partitions_1 (temp_filename, blen, min, max);
 #endif
