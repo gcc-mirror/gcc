@@ -992,6 +992,13 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	    lto_symtab_encoder_encode (encoder, node);
 	}
     }
+
+  for (lsei = lsei_start (in_encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      toplevel_node *tnode = lsei_node (lsei);
+      if (asm_node* node = dyn_cast <asm_node*> (tnode))
+	lto_set_symtab_encoder_in_partition (encoder, node);
+    }
   lto_symtab_encoder_delete (in_encoder);
   return encoder;
 }

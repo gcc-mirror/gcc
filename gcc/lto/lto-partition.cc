@@ -88,6 +88,15 @@ new_partition (const char *name)
   return part;
 }
 
+/* If the cgraph is empty, create one cgraph node set so that there is still
+   an output file for any variables that need to be exported in a DSO.  */
+static void
+create_partition_if_empty ()
+{
+  if (!ltrans_partitions.length ())
+    new_partition ("empty");
+}
+
 /* Free memory used by ltrans partition.
    Encoder can be kept to be freed after streaming.  */
 static void
@@ -328,6 +337,33 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
     }
 }
 
+/* Insert node into its file partition.  */
+static void
+node_into_file_partition (toplevel_node* node,
+			  hash_map<lto_file_decl_data *,
+				   ltrans_partition>& pmap)
+{
+  ltrans_partition partition;
+
+  struct lto_file_decl_data *file_data = node->lto_file_data;
+
+  if (file_data)
+    {
+      ltrans_partition *slot = &pmap.get_or_insert (file_data);
+      if (*slot)
+	partition = *slot;
+      else
+	{
+	  partition = new_partition (file_data->file_name);
+	  *slot = partition;
+	}
+    }
+  else
+    partition = new_partition ("");
+
+  add_symbol_to_partition (partition, node);
+}
+
 /* Group cgrah nodes by input files.  This is used mainly for testing
    right now.  */
 
@@ -335,10 +371,7 @@ void
 lto_1_to_1_map (void)
 {
   symtab_node *node;
-  struct lto_file_decl_data *file_data;
   hash_map<lto_file_decl_data *, ltrans_partition> pmap;
-  ltrans_partition partition;
-  int npartitions = 0;
 
   FOR_EACH_SYMBOL (node)
     {
@@ -346,39 +379,36 @@ lto_1_to_1_map (void)
 	  || symbol_partitioned_p (node))
 	continue;
 
-      file_data = node->lto_file_data;
-
-      if (file_data)
-	{
-          ltrans_partition *slot = &pmap.get_or_insert (file_data);
-          if (*slot)
-	    partition = *slot;
-	  else
-	    {
-	      partition = new_partition (file_data->file_name);
-	      *slot = partition;
-	      npartitions++;
-	    }
-	}
-      else if (!file_data && ltrans_partitions.length ())
-	partition = ltrans_partitions[0];
-      else
-	{
-	  partition = new_partition ("");
-	  npartitions++;
-	}
-
-      add_symbol_to_partition (partition, node);
+      node_into_file_partition (node, pmap);
     }
 
-  /* If the cgraph is empty, create one cgraph node set so that there is still
-     an output file for any variables that need to be exported in a DSO.  */
-  if (!npartitions)
-    new_partition ("empty");
+  struct asm_node *anode;
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    node_into_file_partition (anode, pmap);
+
+  create_partition_if_empty ();
 
   /* Order partitions by order of symbols because they are linked into binary
      that way.  */
   ltrans_partitions.qsort (cmp_partitions_order);
+}
+
+/* Creates partition with all toplevel assembly.
+
+   Before toplevel asm could be partitioned, all toplevel asm was inserted
+   into first partition.
+   This function achieves similar behavior for partitionings that cannot
+   easily satisfy requirements of toplevel asm.  */
+static void
+create_asm_partition (void)
+{
+  struct asm_node *anode = symtab->first_asm_symbol ();
+  if (anode)
+    {
+      ltrans_partition partition = new_partition ("asm_nodes");
+      for (; anode; anode = anode->next)
+	add_symbol_to_partition (partition, anode);
+    }
 }
 
 /* Maximal partitioning.  Put every new symbol into new partition if possible.  */
@@ -388,7 +418,6 @@ lto_max_map (void)
 {
   symtab_node *node;
   ltrans_partition partition;
-  int npartitions = 0;
 
   FOR_EACH_SYMBOL (node)
     {
@@ -397,10 +426,10 @@ lto_max_map (void)
 	continue;
       partition = new_partition (node->asm_name ());
       add_symbol_to_partition (partition, node);
-      npartitions++;
     }
-  if (!npartitions)
-    new_partition ("empty");
+
+  create_asm_partition ();
+  create_partition_if_empty ();
 }
 
 /* Helper function for qsort; sort nodes by order.  */
@@ -1407,6 +1436,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
      symbols here (these are not accounted) or we have accounting bug.  */
   gcc_assert (next_nodes.length () || npartitions != 1 || !best_cost || best_cost == -1);
   add_sorted_nodes (next_nodes, partition);
+
+  create_asm_partition ();
 
   if (dump_file)
     {
