@@ -8607,6 +8607,13 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   variant = cp_get_callee_fndecl_nofold (STRIP_REFERENCE_REF (variant));
   input_location = save_loc;
 
+  if (variant == decl)
+    {
+      error_at (varid_loc, "variant %qD is the same as base function",
+		variant);
+      return true;
+    }
+
   if (variant)
     {
       bool fail;

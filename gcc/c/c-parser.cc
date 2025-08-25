@@ -27322,6 +27322,12 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		variant);
       variant = error_mark_node;
     }
+  else if (variant == fndecl)
+    {
+      error_at (token->location, "variant %qD is the same as base function",
+		variant);
+      variant = error_mark_node;
+    }
 
   c_parser_consume_token (parser);
 
