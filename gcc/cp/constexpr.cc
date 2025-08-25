@@ -2694,6 +2694,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
 	arg = cxx_eval_constant_expression (ctx, x, vc_prvalue,
 					    non_constant_p, overflow_p,
 					    jump_target);
+      if (*jump_target)
+	break;
       /* Check we aren't dereferencing a null pointer when calling a non-static
 	 member function, which is undefined behaviour.  */
       if (i == 0 && DECL_OBJECT_MEMBER_FUNCTION_P (fun)
@@ -2710,8 +2712,6 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
 	}
       /* Don't VERIFY_CONSTANT here.  */
       if (*non_constant_p && ctx->quiet)
-	break;
-      if (*jump_target)
 	break;
       /* Just discard ellipsis args after checking their constantitude.  */
       if (!parms)
