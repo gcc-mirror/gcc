@@ -807,8 +807,28 @@ package body Ghost is
       ------------------------
 
       procedure Check_Ghost_Policy (Id : Entity_Id; Ref : Node_Id) is
+         function Is_From_Aspect_Iterable (Ref : Node_Id) return Boolean;
+         --  Returns true when the node is contained within an Iterable aspect.
+
+         function Is_From_Aspect_Iterable (Ref : Node_Id) return Boolean is
+            P : Node_Id := Parent (Ref);
+         begin
+            while Present (P) loop
+               if Nkind (P) = N_Aspect_Specification then
+                  return Get_Aspect_Id (P) = Aspect_Iterable;
+               end if;
+               P := Parent (P);
+            end loop;
+            return False;
+         end Is_From_Aspect_Iterable;
+
+         --  Local variables
+
          Applic_Policy : Ghost_Mode_Type := Ghost_Config.Ghost_Mode;
          Ghost_Region  : constant Node_Id := Ghost_Config.Current_Region;
+
+      --  Start of processing for Check_Ghost_Policy
+
       begin
          --  The policy is allowed to change within renaming and instantiation
          --  statements.
@@ -844,6 +864,14 @@ package body Ghost is
             Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Ref, Id);
          end if;
 
+         --  A ghost entity E shall not be referenced within an aspect
+         --  specification [(including an aspect-specifying pragma)] which
+         --  specifies an aspect of an entity that is either non-ghost or not
+         --  assertion-level-dependent on E except in the following cases the
+         --  specified aspect is either Global, Depends, Refined_Global,
+         --  Refined_Depends, Initializes, Refined_State, or Iterable (SPARK RM
+         --  6.9(15)).
+
          if No (Ghost_Region)
            or else (Nkind (Ghost_Region) = N_Pragma
                     and then Get_Pragma_Id (Ghost_Region)
@@ -853,6 +881,7 @@ package body Ghost is
                               | Pragma_Refined_Depends
                               | Pragma_Initializes
                               | Pragma_Refined_State)
+           or else Is_From_Aspect_Iterable (Ref)
          then
             return;
          end if;
