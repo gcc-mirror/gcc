@@ -172,11 +172,7 @@ void
 varpool_node::remove (void)
 {
   symtab->call_varpool_removal_hooks (this);
-  if (lto_file_data)
-    {
-      lto_free_function_in_decl_state_for_node (this);
-      lto_file_data = NULL;
-    }
+  lto_free_function_in_decl_state_for_node (this);
 
   /* When streaming we can have multiple nodes associated with decl.  */
   if (symtab->state == LTO_STREAMING)

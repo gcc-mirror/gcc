@@ -953,11 +953,7 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
 	  else
 	    {
 	      DECL_INITIAL (e->decl) = error_mark_node;
-	      if (e->lto_file_data)
-		{
-		  lto_free_function_in_decl_state_for_node (e);
-		  e->lto_file_data = NULL;
-		}
+	      lto_free_function_in_decl_state_for_node (e);
 	      symtab->call_varpool_removal_hooks (dyn_cast<varpool_node *> (e));
 	    }
 	  e->remove_all_references ();

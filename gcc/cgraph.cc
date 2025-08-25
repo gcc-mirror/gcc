@@ -2220,11 +2220,7 @@ cgraph_node::release_body (bool keep_arguments)
   if (!used_as_abstract_origin && DECL_INITIAL (decl))
     DECL_INITIAL (decl) = error_mark_node;
   release_function_body (decl);
-  if (lto_file_data)
-    {
-      lto_free_function_in_decl_state_for_node (this);
-      lto_file_data = NULL;
-    }
+  lto_free_function_in_decl_state_for_node (this);
   if (flag_checking && clones)
     {
       /* It is invalid to release body before materializing clones except
@@ -2336,10 +2332,7 @@ cgraph_node::remove (void)
 	release_body ();
     }
   else
-    {
-      lto_free_function_in_decl_state_for_node (this);
-      lto_file_data = NULL;
-    }
+    lto_free_function_in_decl_state_for_node (this);
 
   decl = NULL;
   if (call_site_hash)

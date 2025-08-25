@@ -448,7 +448,6 @@ lto_free_function_in_decl_state_for_node (symtab_node *node)
       lto_free_function_in_decl_state (*slot);
       node->lto_file_data->function_decl_states->clear_slot (slot);
     }
-  node->lto_file_data = NULL;
 }
 
 
