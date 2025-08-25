@@ -648,7 +648,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Build a CONST_DECL for debugging purposes exclusively.  */
 	gnu_decl
 	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
-			     gnu_expr, true, Is_Public (gnat_entity),
+			     gnu_expr, true,
+			     Is_Public (gnat_entity),
+			     Is_Link_Once (gnat_entity),
 			     false, false, false, artificial_p,
 			     debug_info_p, NULL, gnat_entity);
       }
@@ -1196,6 +1198,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    create_var_decl (gnu_entity_name, NULL_TREE,
 				     TREE_TYPE (gnu_expr), gnu_expr,
 				     const_flag, Is_Public (gnat_entity),
+				     Is_Link_Once (gnat_entity),
 				     imported_p, static_flag, volatile_flag,
 				     artificial_p, debug_info_p, attr_list,
 				     gnat_entity, false);
@@ -1518,7 +1521,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    tree gnu_new_var
 	      = create_var_decl (create_concat_name (gnat_entity, "ALIGN"),
 				 NULL_TREE, gnu_new_type, NULL_TREE,
-				 false, false, false, false, false,
+				 false, false, false, false, false, false,
 				 true, debug_info_p && definition, NULL,
 				 gnat_entity);
 
@@ -1580,8 +1583,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		   = create_var_decl (concat_name (gnu_entity_name, "UNC"),
 				      NULL_TREE, gnu_type, gnu_expr,
 				      const_flag, Is_Public (gnat_entity),
-				      imported_p || !definition, static_flag,
-				      volatile_flag, true,
+				      Is_Link_Once (gnat_entity),
+				      imported_p || !definition,
+				      static_flag, volatile_flag, true,
 				      debug_info_p && definition,
 				      NULL, gnat_entity);
 		gnu_expr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_unc_var);
@@ -1627,8 +1631,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gnu_decl
 	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 			     gnu_expr, const_flag, Is_Public (gnat_entity),
-			     imported_p || !definition, static_flag,
-			     volatile_flag, artificial_p,
+			     Is_Link_Once (gnat_entity),
+			     imported_p || !definition,
+			     static_flag, volatile_flag, artificial_p,
 			     debug_info_p && definition, attr_list,
 			     gnat_entity);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
@@ -1675,6 +1680,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    tree gnu_corr_var
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 				 gnu_expr, true, Is_Public (gnat_entity),
+				 Is_Link_Once (gnat_entity),
 				 !definition, static_flag, volatile_flag,
 				 artificial_p, debug_info_p && definition,
 				 attr_list, gnat_entity, false);
@@ -1780,7 +1786,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      tree gnu_literal
 		= create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
 				   gnu_type, gnu_value, true, false, false,
-				   false, false, artificial_p, false,
+				   false, false, false, artificial_p, false,
 				   NULL, gnat_literal);
 	      save_gnu_tree (gnat_literal, gnu_literal, false);
 	      gnu_list
@@ -3749,7 +3755,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      = create_var_decl (create_concat_name (gnat_entity,
 							     "XVZ"),
 					 NULL_TREE, sizetype, gnu_size_unit,
-					 true, false, false, false, false,
+					 true, false, false, false, false, false,
 					 true, true, NULL, gnat_entity, false);
 		}
 
@@ -4295,8 +4301,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnu_decl
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 				 gnu_address, false, Is_Public (gnat_entity),
-				 extern_flag, false, false, artificial_p,
-				 debug_info_p, NULL, gnat_entity);
+				 Is_Link_Once (gnat_entity), extern_flag,
+				 false, false, artificial_p, debug_info_p,
+				 NULL, gnat_entity);
 	    DECL_BY_REF_P (gnu_decl) = 1;
 	  }
 
@@ -4325,6 +4332,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		= create_subprog_decl (gnu_entity_name, gnu_ext_name,
 				       gnu_type, gnu_param_list, inline_status,
 				       Is_Public (gnat_entity) || imported_p,
+				       Is_Link_Once (gnat_entity),
 				       extern_flag, artificial_p, debug_info_p,
 				       definition && imported_p, attr_list,
 				       gnat_entity);
@@ -7557,8 +7565,7 @@ static tree
 elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			bool definition, bool need_for_debug)
 {
-  const bool expr_public_p = Is_Public (gnat_entity);
-  const bool expr_global_p = expr_public_p || global_bindings_p ();
+  const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
   bool expr_variable_p, use_variable;
 
   /* If GNU_EXPR contains a placeholder, just return it.  We rely on the fact
@@ -7608,7 +7615,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
   if (need_for_debug
       && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL
       && (TREE_CONSTANT (gnu_expr)
-	  || (!expr_public_p
+	  || (!Is_Public (gnat_entity)
 	      && DECL_P (gnu_expr)
 	      && !DECL_IGNORED_P (gnu_expr))))
     need_for_debug = false;
@@ -7627,7 +7634,8 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
       tree gnu_decl
 	= create_var_decl (create_concat_name (gnat_entity, s), NULL_TREE,
 			   TREE_TYPE (gnu_expr), gnu_expr, true,
-			   expr_public_p, !definition && expr_global_p,
+			   Is_Public (gnat_entity), Is_Link_Once (gnat_entity),
+			   !definition && expr_global_p,
 			   expr_global_p, false, true,
 			   Needs_Debug_Info (gnat_entity),
 			   NULL, gnat_entity, false);

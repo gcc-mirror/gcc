@@ -427,14 +427,14 @@ gigi (Node_Id gnat_root,
   gcc_assert (t == boolean_false_node);
   t = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
 		       boolean_type_node, t, true, false, false, false, false,
-		       true, false, NULL, gnat_literal);
+		       false, true, false, NULL, gnat_literal);
   save_gnu_tree (gnat_literal, t, false);
   gnat_literal = Next_Literal (gnat_literal);
   t = UI_To_gnu (Enumeration_Rep (gnat_literal), boolean_type_node);
   gcc_assert (t == boolean_true_node);
   t = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
 		       boolean_type_node, t, true, false, false, false, false,
-		       true, false, NULL, gnat_literal);
+		       false, true, false, NULL, gnat_literal);
   save_gnu_tree (gnat_literal, t, false);
 
   /* Declare the building blocks of function nodes.  */
@@ -446,24 +446,24 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
 			   build_function_type_list (ptr_type_node, sizetype,
 						     NULL_TREE),
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
 			   build_function_type_list (void_type_node,
 						     ptr_type_node, NULL_TREE),
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
 
   realloc_decl
     = create_subprog_decl (get_identifier ("__gnat_realloc"), NULL_TREE,
 			   build_function_type_list (ptr_type_node,
 						     ptr_type_node, sizetype,
 						     NULL_TREE),
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
   tree int64_type = gnat_type_for_size (64, 0);
@@ -471,8 +471,8 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
 			   build_function_type_list (int64_type, int64_type,
 						     int64_type, NULL_TREE),
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
   strub_make_callable (mulv64_decl);
 
   tree uint64_type = gnat_type_for_size (64, 1);
@@ -480,8 +480,8 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_uns_mulv64"), NULL_TREE,
 			   build_function_type_list (uint64_type, uint64_type,
 						     uint64_type, NULL_TREE),
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
   strub_make_callable (uns_mulv64_decl);
 
   if (Enable_128bit_Types)
@@ -493,8 +493,8 @@ gigi (Node_Id gnat_root,
 							 int128_type,
 							 int128_type,
 							 NULL_TREE),
-			       NULL_TREE, is_default, true, true, true, false,
-			       false, NULL, Empty);
+			       NULL_TREE, is_default, true, false, true, true,
+			       false, false);
       strub_make_callable (mulv128_decl);
 
       tree uint128_type = gnat_type_for_size (128, 1);
@@ -504,8 +504,8 @@ gigi (Node_Id gnat_root,
 							 uint128_type,
 							 uint128_type,
 							 NULL_TREE),
-			       NULL_TREE, is_default, true, true, true, false,
-			       false, NULL, Empty);
+			       NULL_TREE, is_default, true, false, true, true,
+			       false, false);
       strub_make_callable (uns_mulv128_decl);
     }
 
@@ -526,7 +526,7 @@ gigi (Node_Id gnat_root,
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
        build_function_type_list (void_type_node, ptr_type_node, ptr_type_node,
 				 NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, false, true, true, false, false);
 
   /* Hooks to call when entering/leaving an exception handler.  */
   ftype = build_function_type_list (ptr_type_node,
@@ -534,8 +534,7 @@ gigi (Node_Id gnat_root,
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler_v1"),
 			   NULL_TREE, ftype, NULL_TREE,
-			   is_default, true, true, true, false, false, NULL,
-			   Empty);
+			   is_default, true, false, true, true, false, false);
   /* __gnat_begin_handler_v1 is not a dummy procedure, but we arrange
      for it not to throw.  */
   TREE_NOTHROW (begin_handler_decl) = 1;
@@ -546,23 +545,20 @@ gigi (Node_Id gnat_root,
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler_v1"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_default, true, true, true, false, false, NULL,
-			   Empty);
+			   is_default, true, false, true, true, false, false);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   unhandled_except_decl
     = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
 			   NULL_TREE, ftype, NULL_TREE,
-			   is_default, true, true, true, false, false, NULL,
-			   Empty);
+			   is_default, true, false, true, true, false, false);
 
   /* Indicate that it never returns.  */
   ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   reraise_zcx_decl
     = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_default, true, true, true, false, false, NULL,
-			   Empty);
+			   is_default, true, false, true, true, false, false);
   set_call_expr_flags (reraise_zcx_decl, ECF_NORETURN | ECF_XTHROW);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
@@ -572,21 +568,21 @@ gigi (Node_Id gnat_root,
     = create_var_decl (get_identifier ("OTHERS"),
 		       get_identifier ("__gnat_others_value"),
 		       char_type_node, NULL_TREE,
-		       true, false, true, false, false, true, false,
+		       true, false, false, true, false, false, true, false,
 		       NULL, Empty);
 
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
 		       char_type_node, NULL_TREE,
-		       true, false, true, false, false, true, false,
+		       true, false, false, true, false, false, true, false,
 		       NULL, Empty);
 
   unhandled_others_decl
     = create_var_decl (get_identifier ("UNHANDLED_OTHERS"),
 		       get_identifier ("__gnat_unhandled_others_value"),
 		       char_type_node, NULL_TREE,
-		       true, false, true, false, false, true, false,
+		       true, false, false, true, false, false, true, false,
 		       NULL, Empty);
 
   /* If in no exception handlers mode, all raise statements are redirected to
@@ -601,8 +597,7 @@ gigi (Node_Id gnat_root,
       tree decl
 	= create_subprog_decl
 	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE, ftype,
-	   NULL_TREE, is_default, true, true, true, false, false, NULL,
-	   Empty);
+	   NULL_TREE, is_default, true, false, true, true, false, false);
       for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
     }
@@ -764,8 +759,8 @@ build_raise_check (int check, enum exception_info_kind kind)
   ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   result
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
-			   NULL_TREE, is_default, true, true, true, false,
-			   false, NULL, Empty);
+			   NULL_TREE, is_default, true, false, true, true,
+			   false, false);
   strub_make_callable (result);
   set_call_expr_flags (result, ECF_NORETURN | ECF_XTHROW);
 
@@ -4054,7 +4049,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	  gnu_return_var
 	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
 			       gnu_return_type, NULL_TREE,
-			       false, false, false, false, false,
+			       false, false, false, false, false, false,
 			       true, false, NULL, gnat_subprog);
 	  TREE_VALUE (gnu_return_var_elmt) = gnu_return_var;
 	}
@@ -4590,7 +4585,7 @@ create_temporary (const char *prefix, tree type)
   tree gnu_temp
     = create_var_decl (create_tmp_var_name (prefix), NULL_TREE,
 		      type, NULL_TREE,
-		      false, false, false, false, false,
+		      false, false, false, false, false, false,
 		      true, false, NULL, Empty);
   return gnu_temp;
 }
@@ -5873,7 +5868,7 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
   tree exc_ptr
     = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 		       ptr_type_node, gnu_current_exc_ptr,
-		       true, false, false, false, false, true, true,
+		       true, false, false, false, false, false, true, true,
 		       NULL, gnat_node);
 
   tree prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
@@ -5888,7 +5883,7 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
 		       ptr_type_node,
 		       build_call_n_expr (begin_handler_decl, 1,
 					  exc_ptr),
-		       true, false, false, false, false,
+		       true, false, false, false, false, false,
 		       true, true, NULL, gnat_node);
 
   /* Declare and initialize the choice parameter, if present.  */
@@ -5938,7 +5933,7 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
 			   build_call_expr (builtin_decl_explicit
 					    (BUILT_IN_EH_POINTER),
 					    1, integer_zero_node),
-			   true, false, false, false, false,
+			   true, false, false, false, false, false,
 			   true, true, NULL, gnat_node);
 
       /* CODE: __gnat_end_handler_v1 (EXPTR, EXCLN, EXPRP);  */
@@ -5984,7 +5979,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
     = create_subprog_decl
       (create_concat_name (gnat_unit_entity, body_p ? "elabb" : "elabs"),
        NULL_TREE, void_ftype, NULL_TREE,
-       is_default, true, false, false, true, false, NULL, gnat_unit);
+       is_default, true, false, false, false, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
   vec_safe_push (gnu_elab_proc_stack, gnu_elab_proc_decl);
@@ -7217,7 +7212,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				 (Entity (Prefix (gnat_node)),
 				  attr == Attr_Elab_Body ? "elabb" : "elabs"),
 				 NULL_TREE, void_ftype, NULL_TREE, is_default,
-				 true, true, true, true, false, NULL,
+				 true, false, true, true, true, false, NULL,
 				 gnat_node);
 
 	gnu_result = Attribute_to_gnu (gnat_node, &gnu_result_type, attr);
@@ -11332,7 +11327,7 @@ static bool
 use_alias_for_thunk_p (tree target)
 {
   /* We cannot generate a local call in this case.  */
-  if (DECL_EXTERNAL (target))
+  if (DECL_EXTERNAL (target) || DECL_ONE_ONLY (target))
     return false;
 
   /* The call is already local in this case.  */
