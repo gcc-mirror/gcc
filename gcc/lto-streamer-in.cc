@@ -2004,6 +2004,7 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
     {
       asm_node *node = symtab->finalize_toplevel_asm (str);
       node->order = streamer_read_hwi (&ib) + order_base;
+      node->lto_file_data = file_data;
       if (node->order >= symtab->order)
 	symtab->order = node->order + 1;
     }

@@ -147,12 +147,14 @@ using dw_cfi_ref = struct dw_cfi_node *;
 enum dw_cfi_oprnd_type: int;
 enum dwarf_call_frame_info: int;
 
-/* Subclasses of symtab_node, using indentation to show the class
+/* Subclasses of toplevel_node, using indentation to show the class
    hierarchy.  */
 
-struct symtab_node;
-  struct cgraph_node;
-  struct varpool_node;
+struct toplevel_node;
+  struct asm_node;
+  struct symtab_node;
+    struct cgraph_node;
+    struct varpool_node;
 struct cgraph_edge;
 
 union section;

@@ -37,10 +37,12 @@ extern void debuginfo_early_stop (void);
 class ipa_opt_pass_d;
 typedef ipa_opt_pass_d *ipa_opt_pass;
 
-/* Symbol table consists of functions and variables.
+/* Toplevel consists of functions, variables and assembly.
    TODO: add labels and CONST_DECLs.  */
-enum symtab_type
+enum toplevel_type
 {
+  TOPLEVEL_BASE,
+  TOPLEVEL_ASM,
   SYMTAB_SYMBOL,
   SYMTAB_FUNCTION,
   SYMTAB_VARIABLE
@@ -100,18 +102,37 @@ enum symbol_partitioning_class
    SYMBOL_DUPLICATE
 };
 
+/* Base of all toplevel entries.
+   Inherited by symtab_node and asm_node.  */
+struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"))) toplevel_node {
+  /* Constructor.  */
+  explicit toplevel_node (toplevel_type t)
+    : lto_file_data (NULL), order (-1), type (t)
+  {}
+
+  /* File stream where this node is being written to.  */
+  struct lto_file_decl_data * lto_file_data;
+
+  /* Ordering of all cgraph nodes.  */
+  int order;
+
+  /* Type of the node.  */
+  ENUM_BITFIELD (toplevel_type) type : 8;
+};
+
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
-struct GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
+struct GTY ((tag ("SYMTAB_SYMBOL"),
 	    chain_next ("%h.next"), chain_prev ("%h.previous")))
-  symtab_node
+  symtab_node: public toplevel_node
 {
 public:
   friend class symbol_table;
 
   /* Constructor.  */
-  explicit symtab_node (symtab_type t)
-    : type (t), resolution (LDPR_UNKNOWN), definition (false), alias (false),
+  explicit symtab_node (toplevel_type t)
+    : toplevel_node (t),
+      resolution (LDPR_UNKNOWN), definition (false), alias (false),
       transparent_alias (false), weakref (false), cpp_implicit_alias (false),
       symver (false), analyzed (false), writeonly (false),
       refuse_visibility_changes (false), externally_visible (false),
@@ -121,9 +142,9 @@ public:
       used_from_other_partition (false), in_other_partition (false),
       address_taken (false), in_init_priority_hash (false),
       need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
-      order (-1), next_sharing_asm_name (NULL),
+      next_sharing_asm_name (NULL),
       previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
-      alias_target (NULL), lto_file_data (NULL), aux (NULL),
+      alias_target (NULL), aux (NULL),
       x_comdat_group (NULL_TREE), x_section (NULL), m_uid (-1)
   {}
 
@@ -498,9 +519,6 @@ public:
     return m_uid;
   }
 
-  /* Type of the symbol.  */
-  ENUM_BITFIELD (symtab_type) type : 8;
-
   /* The symbols resolution.  */
   ENUM_BITFIELD (ld_plugin_symbol_resolution) resolution : 8;
 
@@ -609,9 +627,6 @@ public:
   unsigned ifunc_resolver : 1;
 
 
-  /* Ordering of all symtab entries.  */
-  int order;
-
   /* Declaration representing the symbol.  */
   tree decl;
 
@@ -641,9 +656,6 @@ public:
      depending to what was known to frontend on the creation time.
      Once alias is resolved, this pointer become NULL.  */
   tree alias_target;
-
-  /* File stream where this node is being written to.  */
-  struct lto_file_decl_data * lto_file_data;
 
   void *GTY ((skip)) aux;
 
@@ -2224,13 +2236,14 @@ private:
 
 /* Every top level asm statement is put into a asm_node.  */
 
-struct GTY(()) asm_node {
+struct GTY ((tag ("TOPLEVEL_ASM"))) asm_node: public toplevel_node {
+  explicit asm_node (tree asm_str)
+    : toplevel_node (TOPLEVEL_ASM), next (NULL), asm_str (asm_str)
+  {}
   /* Next asm node.  */
   asm_node *next;
   /* String for this asm node.  */
   tree asm_str;
-  /* Ordering of all cgraph nodes.  */
-  int order;
 };
 
 /* Report whether or not THIS symtab node is a function, aka cgraph_node.  */
@@ -2251,6 +2264,47 @@ inline bool
 is_a_helper <varpool_node *>::test (symtab_node *p)
 {
   return p && p->type == SYMTAB_VARIABLE;
+}
+
+/* Report whether or not THIS toplevel node is a function, aka cgraph_node.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <cgraph_node *>::test (toplevel_node *p)
+{
+  return p && p->type == SYMTAB_FUNCTION;
+}
+
+/* Report whether or not THIS toplevel node is a variable, aka varpool_node.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <varpool_node *>::test (toplevel_node *p)
+{
+  return p && p->type == SYMTAB_VARIABLE;
+}
+
+/* Report whether or not THIS toplevel node is a symtab_node.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <symtab_node *>::test (toplevel_node *p)
+{
+  return p && p->type >= SYMTAB_SYMBOL;
+}
+
+/* Report whether or not THIS toplevel node is a toplevel assembly, aka
+   asm_node.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <asm_node *>::test (toplevel_node *p)
+{
+  return p && p->type == TOPLEVEL_ASM;
 }
 
 typedef void (*cgraph_edge_hook)(cgraph_edge *, void *);
@@ -2919,10 +2973,8 @@ symbol_table::finalize_toplevel_asm (tree asm_str)
 {
   asm_node *node;
 
-  node = ggc_cleared_alloc<asm_node> ();
-  node->asm_str = asm_str;
+  node = new (ggc_cleared_alloc<asm_node> ()) asm_node (asm_str);
   node->order = order++;
-  node->next = NULL;
 
   if (asmnodes == NULL)
     asmnodes = node;
