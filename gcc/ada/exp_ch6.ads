@@ -301,10 +301,8 @@ package Exp_Ch6 is
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
 
    function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True if the result subtype of function
-   --  Func_Id might need finalization actions. This includes build-in-place
-   --  functions with tagged result types, since they can be invoked via
-   --  dispatching calls, and descendant types may require finalization.
+   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
+   --  BIP_Collection parameter (see type BIP_Formal_Kind).
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
    --  Return True if the function returns an object of a type that has tasks.
