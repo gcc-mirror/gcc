@@ -83,20 +83,39 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
     {
     case AST::TupleStructItems::HAS_REST:
       {
-	// TODO
-	rust_unreachable ();
+	AST::TupleStructItemsHasRest &items_has_rest
+	  = static_cast<AST::TupleStructItemsHasRest &> (items);
+
+	std::vector<std::unique_ptr<HIR::Pattern>> lower_patterns;
+	lower_patterns.reserve (items_has_rest.get_lower_patterns ().size ());
+	for (auto &pattern_member : items_has_rest.get_lower_patterns ())
+	  {
+	    lower_patterns.emplace_back (
+	      ASTLoweringPattern::translate (*pattern_member));
+	  }
+
+	std::vector<std::unique_ptr<HIR::Pattern>> upper_patterns;
+	upper_patterns.reserve (items_has_rest.get_upper_patterns ().size ());
+	for (auto &pattern_member : items_has_rest.get_upper_patterns ())
+	  {
+	    upper_patterns.emplace_back (
+	      ASTLoweringPattern::translate (*pattern_member));
+	  }
+
+	lowered = new HIR::TupleStructItemsHasRest (std::move (lower_patterns),
+						    std::move (upper_patterns));
       }
       break;
 
     case AST::TupleStructItems::NO_REST:
       {
-	AST::TupleStructItemsNoRest &items_no_range
+	AST::TupleStructItemsNoRest &items_no_rest
 	  = static_cast<AST::TupleStructItemsNoRest &> (items);
 
 	std::vector<std::unique_ptr<HIR::Pattern>> patterns;
-	patterns.reserve (items_no_range.get_patterns ().size ());
+	patterns.reserve (items_no_rest.get_patterns ().size ());
 
-	for (auto &inner_pattern : items_no_range.get_patterns ())
+	for (auto &inner_pattern : items_no_rest.get_patterns ())
 	  patterns.emplace_back (
 	    ASTLoweringPattern::translate (*inner_pattern));
 

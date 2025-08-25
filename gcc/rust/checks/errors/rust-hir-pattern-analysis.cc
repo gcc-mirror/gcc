@@ -1212,16 +1212,16 @@ lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
     {
     case HIR::TupleStructItems::ItemType::NO_REST:
       {
-	HIR::TupleStructItemsNoRest &multiple
+	HIR::TupleStructItemsNoRest &items_no_rest
 	  = static_cast<HIR::TupleStructItemsNoRest &> (elems);
 
 	rust_assert (variant->get_fields ().size ()
-		     == multiple.get_patterns ().size ());
+		     == items_no_rest.get_patterns ().size ());
 
-	for (size_t i = 0; i < multiple.get_patterns ().size (); i++)
+	for (size_t i = 0; i < items_no_rest.get_patterns ().size (); i++)
 	  {
 	    fields.push_back (
-	      lower_pattern (ctx, *multiple.get_patterns ().at (i),
+	      lower_pattern (ctx, *items_no_rest.get_patterns ().at (i),
 			     variant->get_fields ().at (i)->get_field_type ()));
 	  }
 	return DeconstructedPat (ctor, arity, fields, pattern.get_locus ());
@@ -1229,8 +1229,35 @@ lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
       break;
     case HIR::TupleStructItems::ItemType::HAS_REST:
       {
-	// TODO: ranged tuple struct items
-	rust_unreachable ();
+	HIR::TupleStructItemsHasRest &items_has_rest
+	  = static_cast<HIR::TupleStructItemsHasRest &> (elems);
+
+	size_t num_patterns = items_has_rest.get_lower_patterns ().size ()
+			      + items_has_rest.get_upper_patterns ().size ();
+
+	rust_assert (num_patterns <= variant->num_fields ());
+
+	size_t i = 0;
+	for (auto &pattern_member : items_has_rest.get_lower_patterns ())
+	  {
+	    fields.push_back (lower_pattern (
+	      ctx, *pattern_member,
+	      variant->get_fields ().at (i++)->get_field_type ()));
+	  }
+	while (i < variant->num_fields ()
+		     - items_has_rest.get_upper_patterns ().size ())
+	  {
+	    fields.push_back (
+	      DeconstructedPat::make_wildcard (pattern.get_locus ()));
+	    i++;
+	  }
+	for (auto &pattern_member : items_has_rest.get_upper_patterns ())
+	  {
+	    fields.push_back (lower_pattern (
+	      ctx, *pattern_member,
+	      variant->get_fields ().at (i++)->get_field_type ()));
+	  }
+	return DeconstructedPat (ctor, arity, fields, pattern.get_locus ());
       }
       break;
     default:

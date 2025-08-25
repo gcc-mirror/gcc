@@ -202,23 +202,65 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
     {
     case HIR::TupleStructItems::HAS_REST:
       {
-	// TODO
-	rust_unreachable ();
+	HIR::TupleStructItemsHasRest &items_has_rest
+	  = static_cast<HIR::TupleStructItemsHasRest &> (items);
+	size_t pattern_min_cap = items_has_rest.get_lower_patterns ().size ()
+				 + items_has_rest.get_upper_patterns ().size ();
+	if (variant->num_fields () < pattern_min_cap)
+	  {
+	    rust_error_at (pattern.get_locus (), ErrorCode::E0023,
+			   "this pattern has %lu fields but the corresponding "
+			   "tuple variant has %lu field",
+			   (unsigned long) (pattern_min_cap),
+			   (unsigned long) variant->num_fields ());
+	    // we continue on to try and setup the types as best we can for
+	    // type checking
+	  }
+
+	// iterate the fields manually to set them up
+	size_t i = 0;
+	for (auto &pattern : items_has_rest.get_lower_patterns ())
+	  {
+	    if (i >= variant->num_fields ())
+	      break;
+
+	    TyTy::StructFieldType *field = variant->get_field_at_index (i++);
+	    TyTy::BaseType *fty = field->get_field_type ();
+
+	    // setup the type on this pattern type
+	    context->insert_type (pattern->get_mappings (), fty);
+	    TypeCheckPattern::Resolve (*pattern, fty);
+	  }
+
+	i = variant->num_fields ()
+	    - items_has_rest.get_upper_patterns ().size ();
+	for (auto &pattern : items_has_rest.get_upper_patterns ())
+	  {
+	    if (i >= variant->num_fields ())
+	      break;
+
+	    TyTy::StructFieldType *field = variant->get_field_at_index (i++);
+	    TyTy::BaseType *fty = field->get_field_type ();
+
+	    // setup the type on this pattern type
+	    context->insert_type (pattern->get_mappings (), fty);
+	    TypeCheckPattern::Resolve (*pattern, fty);
+	  }
       }
       break;
 
     case HIR::TupleStructItems::NO_REST:
       {
-	HIR::TupleStructItemsNoRest &items_no_range
+	HIR::TupleStructItemsNoRest &items_no_rest
 	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
 
-	if (items_no_range.get_patterns ().size () != variant->num_fields ())
+	if (items_no_rest.get_patterns ().size () != variant->num_fields ())
 	  {
 	    rust_error_at (
 	      pattern.get_locus (), ErrorCode::E0023,
 	      "this pattern has %lu fields but the corresponding "
 	      "tuple variant has %lu field",
-	      (unsigned long) items_no_range.get_patterns ().size (),
+	      (unsigned long) items_no_rest.get_patterns ().size (),
 	      (unsigned long) variant->num_fields ());
 	    // we continue on to try and setup the types as best we can for
 	    // type checking
@@ -226,7 +268,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
 	// iterate the fields and set them up, I wish we had ZIP
 	size_t i = 0;
-	for (auto &pattern : items_no_range.get_patterns ())
+	for (auto &pattern : items_no_rest.get_patterns ())
 	  {
 	    if (i >= variant->num_fields ())
 	      break;
