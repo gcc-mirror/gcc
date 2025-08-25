@@ -32827,11 +32827,6 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 					 tf_warning_or_error);
       if (sz < 0)
 	return;
-      if (sz == 0)
-	{
-	  error_at (loc, "empty structured binding");
-	  return;
-	}
       n = sz;
       tree auto_node = make_auto ();
       tree decomp_type = cp_build_reference_type (auto_node, true);
@@ -32843,7 +32838,8 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	= DECL_DECLARED_CONSTEXPR_P (range_decl);
       if (DECL_DECLARED_CONSTEXPR_P (decl))
 	TREE_READONLY (decl) = 1;
-      fit_decomposition_lang_decl (decl, NULL_TREE);
+      if (n)
+	fit_decomposition_lang_decl (decl, NULL_TREE);
       pushdecl (decl);
       cp_decomp this_decomp;
       this_decomp.count = n;
@@ -32864,7 +32860,7 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       DECL_NAME (decl) = for_range__identifier;
       cp_finish_decl (decl, expansion_init,
 		      /*is_constant_init*/false, NULL_TREE,
-		      LOOKUP_ONLYCONVERTING, &this_decomp);
+		      LOOKUP_ONLYCONVERTING, n ? &this_decomp : NULL);
       DECL_NAME (decl) = NULL_TREE;
     }
 

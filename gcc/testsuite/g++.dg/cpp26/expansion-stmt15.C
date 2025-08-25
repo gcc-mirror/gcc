@@ -27,11 +27,11 @@ foo (int n)
   int e = 42;
   d[0] = 42;
   template for (auto a : A {})		// { dg-warning "'template for' only available with" "" { target c++23_down } }
-    ;					// { dg-error "empty structured binding" "" { target *-*-* } .-1 }
+    ;
   template for (int b : B {})		// { dg-warning "'template for' only available with" "" { target c++23_down } }
     ;
   template for (int i : c)		// { dg-warning "'template for' only available with" "" { target c++23_down } }
-    ;					// { dg-error "empty structured binding" "" { target *-*-* } .-1 }
+    ;
   template for (int i : d)		// { dg-warning "'template for' only available with" "" { target c++23_down } }
     ;					// { dg-error "cannot decompose variable length array" "" { target *-*-* } .-1 }
   template for (auto a : C {})		// { dg-warning "'template for' only available with" "" { target c++23_down } }
