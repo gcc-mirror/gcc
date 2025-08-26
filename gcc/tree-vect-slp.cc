@@ -1389,7 +1389,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		    && (TREE_CODE_CLASS (tree_code (first_stmt_code))
 			== tcc_comparison)
 		    && (swap_tree_comparison (tree_code (first_stmt_code))
-			== tree_code (rhs_code))))
+			== tree_code (rhs_code))
+		    && (first_reduc_idx == -1
+			|| REDUC_GROUP_FIRST_ELEMENT (stmt_info))))
 	      || (ldst_p
 		  && (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		      != STMT_VINFO_GROUPED_ACCESS (first_stmt_info)))
@@ -1605,8 +1607,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (rhs_code.is_tree_code ()
-	      && TREE_CODE_CLASS ((tree_code)rhs_code) == tcc_comparison
+	  if (i != 0
+	      && first_stmt_code != rhs_code
+	      && first_stmt_code.is_tree_code ()
+	      && rhs_code.is_tree_code ()
+	      && TREE_CODE_CLASS ((tree_code)first_stmt_code) == tcc_comparison
 	      && (swap_tree_comparison ((tree_code)first_stmt_code)
 		  == (tree_code)rhs_code))
 	    swap[i] = 1;
