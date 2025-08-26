@@ -17420,10 +17420,11 @@ aarch64_bool_compound_p (vec_info *vinfo, stmt_vec_info stmt_info,
    instructions.  */
 static unsigned int
 aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
+				       slp_tree node,
 				       stmt_vec_info stmt_info,
 				       const sve_vec_cost *sve_costs)
 {
-  switch (vect_reduc_type (vinfo, stmt_info))
+  switch (vect_reduc_type (vinfo, node))
     {
     case EXTRACT_LAST_REDUCTION:
       return sve_costs->clast_cost;
@@ -17463,7 +17464,9 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
    - If VEC_FLAGS & VEC_ANY_SVE, return the loop carry latency of the
      SVE implementation.  */
 static unsigned int
-aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
+aarch64_in_loop_reduction_latency (vec_info *vinfo,
+				   slp_tree node,
+				   stmt_vec_info stmt_info,
 				   unsigned int vec_flags)
 {
   const cpu_vector_cost *vec_costs = aarch64_tune_params.vec_costs;
@@ -17476,7 +17479,8 @@ aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
   if (sve_costs)
     {
       unsigned int latency
-	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, sve_costs);
+	= aarch64_sve_in_loop_reduction_latency (vinfo, node,
+						 stmt_info, sve_costs);
       if (latency)
 	return latency;
     }
@@ -17575,7 +17579,8 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
       && sve_costs)
     {
       unsigned int latency
-	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, sve_costs);
+	= aarch64_sve_in_loop_reduction_latency (vinfo, node,
+						 stmt_info, sve_costs);
       if (latency)
 	return latency;
     }
@@ -17787,8 +17792,10 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       && vect_is_reduction (stmt_info))
     {
       unsigned int base
-	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, m_vec_flags);
-      if (aarch64_force_single_cycle (m_vinfo, stmt_info))
+	= aarch64_in_loop_reduction_latency (m_vinfo, node,
+					     stmt_info, m_vec_flags);
+      if (m_costing_for_scalar
+	  || aarch64_force_single_cycle (m_vinfo, stmt_info))
 	/* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
 	   and then accumulate that, but at the moment the loop-carried
 	   dependency includes all copies.  */
@@ -17901,7 +17908,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
      have only accounted for one.  */
   if (stmt_info
       && (kind == vector_stmt || kind == vec_to_scalar)
-      && vect_reduc_type (m_vinfo, stmt_info) == COND_REDUCTION)
+      && vect_reduc_type (m_vinfo, node) == COND_REDUCTION)
     ops->general_ops += count;
 
   /* Count the predicate operations needed by an SVE comparison.  */

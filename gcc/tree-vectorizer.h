@@ -2878,14 +2878,18 @@ vect_is_reduction (stmt_vec_info stmt_info)
 /* If STMT_INFO describes a reduction, return the vect_reduction_type
    of the reduction it describes, otherwise return -1.  */
 inline int
-vect_reduc_type (vec_info *vinfo, stmt_vec_info stmt_info)
+vect_reduc_type (vec_info *vinfo, slp_tree node)
 {
   if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo))
-    if (STMT_VINFO_REDUC_DEF (stmt_info))
-      {
-	stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
-	return int (STMT_VINFO_REDUC_TYPE (reduc_info));
-      }
+    {
+      stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
+      if (STMT_VINFO_REDUC_DEF (stmt_info))
+	{
+	  stmt_vec_info reduc_info
+	    = info_for_reduction (loop_vinfo, stmt_info);
+	  return int (STMT_VINFO_REDUC_TYPE (reduc_info));
+	}
+    }
   return -1;
 }
 
