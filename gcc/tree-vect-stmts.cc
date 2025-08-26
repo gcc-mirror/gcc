@@ -7891,7 +7891,6 @@ vectorizable_store (vec_info *vinfo,
     = ls.alignment_support_scheme;
   const int misalignment = ls.misalignment;
   const poly_int64 poffset = ls.poffset;
-  const internal_fn lanes_ifn = ls.lanes_ifn;
 
   if (slp_node->ldst_lanes
       && memory_access_type != VMAT_LOAD_STORE_LANES)
@@ -8395,6 +8394,8 @@ vectorizable_store (vec_info *vinfo,
 
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
+      const internal_fn lanes_ifn = ls.lanes_ifn;
+
       if (costing_p)
 	/* Update all incoming store operand nodes, the general handling
 	   above only handles the mask and the first store operand node.  */
@@ -9460,7 +9461,6 @@ vectorizable_load (vec_info *vinfo,
     = ls.alignment_support_scheme;
   const int misalignment = ls.misalignment;
   const poly_int64 poffset = ls.poffset;
-  const internal_fn lanes_ifn = ls.lanes_ifn;
   const vec<int> &elsvals = ls.elsvals;
 
   int maskload_elsval = 0;
@@ -10241,6 +10241,8 @@ vectorizable_load (vec_info *vinfo,
   tree vec_els = NULL_TREE;
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
+      const internal_fn lanes_ifn = ls.lanes_ifn;
+
       gcc_assert (alignment_support_scheme == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported);
 
