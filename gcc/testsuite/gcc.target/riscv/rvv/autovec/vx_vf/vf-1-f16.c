@@ -2,6 +2,7 @@
 /* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d --param=fpr2vr-cost=0" } */
 
 #include "vf_mulop.h"
+#include "vf_binop.h"
 
 DEF_VF_MULOP_CASE_0 (_Float16, +, +, add)
 DEF_VF_MULOP_CASE_0 (_Float16, -, +, sub)
@@ -15,6 +16,7 @@ DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, +, +, acc)
 DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, +, sac)
 DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, +, -, nacc)
 DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, -, nsac)
+DEF_VF_BINOP_CASE_0 (_Float16, *, mul)
 
 /* { dg-final { scan-assembler-times {vfmadd.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmsub.vf} 1 } } */
@@ -28,3 +30,4 @@ DEF_VF_MULOP_WIDEN_CASE_0 (_Float16, float, -, -, nsac)
 /* { dg-final { scan-assembler-times {vfwmsac.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfwnmacc.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfwnmsac.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfmul.vf} 1 } } */
