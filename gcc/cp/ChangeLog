@@ -1,3 +1,17 @@
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (finish_expansion_stmt): Implement C++ CWG3048
+	- Empty destructuring expansion statements.  Don't error for
+	destructuring expansion stmts if sz is 0, don't call
+	fit_decomposition_lang_decl if n is 0 and pass NULL rather than
+	this_decomp to cp_finish_decl.
+
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121601
+	* constexpr.cc (cxx_bind_parameters_in_call): Move break
+	if *jump_target before the check for null this object pointer.
+
 2025-08-23  Eczbek  <eczbek.void@gmail.com>
 
 	PR c++/116928

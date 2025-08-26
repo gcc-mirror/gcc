@@ -1,3 +1,148 @@
+2025-08-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md (@pred_mul_plus_vx_<mode>): Add new pattern to
+	generate vmacc rtl.
+	(*pred_macc_<mode>_scalar_undef): Ditto.
+	* config/riscv/autovec-opt.md (*vmacc_vx_<mode>): Add new
+	pattern to match the vmacc vx combine.
+
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121453
+	* omp-expand.cc (expand_omp_for_init_counts): Clear fd->loop.n2
+	before first zero count check if zero_iter1_bb is non-NULL upon
+	entry and fd->loop.n2 has not been written yet.
+
+2025-08-25  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	* dwarf2ctf.cc (gen_ctf_subrange_type): Use unsigned HWI for
+	array_num_elements.  Fallback to CTF_K_UNKNOWN if the array
+	type has too many elements for CTF to represent.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Boolify.
+	(pass_forwprop::execute): No longer handle 2 as the return
+	from simplify_permutation.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (forward_propagate_into_comparison): Boolify.
+	(pass_forwprop::execute): Don't handle return of 2 from
+	forward_propagate_into_comparison.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (remove_prop_source_from_use): Remove
+	return type.
+	(forward_propagate_into_comparison): Update dealing with
+	no return type of remove_prop_source_from_use.
+	(forward_propagate_into_gimple_cond): Likewise.
+	(simplify_permutation): Likewise.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (simplify_gimple_switch): Add simple_dce_worklist
+	argument. Mark the old index when doing the replacement.
+	(pass_forwprop::execute): Update call to simplify_gimple_switch.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121279
+	* gimple-fold.cc (gimple_needing_rewrite_undefined): Return
+	true for non mode precision boolean loads.
+	(rewrite_to_defined_unconditional): Handle non mode precision loads.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-loop-im.cc (execute_sm): Call
+	get_or_create_ssa_default_def for the new uninitialized
+	decl.
+
+2025-08-25  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (addsi3, <u>mulhisi3, andsi3,
+	zero_extend<mode>si2, extendhisi2_internal, movsi_internal,
+	movhi_internal, movqi_internal, movsf_internal, ashlsi3_internal,
+	ashrsi3, lshrsi3, rotlsi3, rotrsi3):
+	Rewrite in compact syntax.
+
+2025-08-25  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md
+	(The auxiliary define_split for *masktrue_const_bitcmpl):
+	Use a more concise function call, i.e.,
+	(1 << GET_MODE_BITSIZE (mode)) - 1 is equivalent to
+	GET_MODE_MASK (mode).
+
+2025-08-25  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (mode_bits):
+	New mode attribute.
+	(zero_extend<mode>si2): Use the appropriate mode iterator and
+	attribute to unify "zero_extend[hq]isi2" to this description.
+
+2025-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121638
+	* tree-vect-stmts.cc (process_use): Do not make induction
+	PHI backedge values relevant.
+
+2025-08-25  Indu Bhagat  <indu.bhagat@oracle.com>
+	    Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+
+	* asan.h (HWASAN_TAG_SIZE): Use targetm.memtag.tag_bitsize.
+	* config/i386/i386.cc (ix86_memtag_tag_size): Rename to
+	ix86_memtag_tag_bitsize.
+	(TARGET_MEMTAG_TAG_SIZE): Renamed to TARGET_MEMTAG_TAG_BITSIZE.
+	* doc/tm.texi (TARGET_MEMTAG_TAG_SIZE): Likewise.
+	* doc/tm.texi.in (TARGET_MEMTAG_TAG_SIZE): Likewise.
+	* target.def (tag_size): Rename to tag_bitsize.
+	* targhooks.cc (default_memtag_tag_size): Rename to
+	default_memtag_tag_bitsize.
+	* targhooks.h (default_memtag_tag_size): Likewise.
+
+2025-08-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_init_cumulative_args): Change
+	fntype parameter from tree to const_tree.
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Likewise.
+	(riscv_function_value): Replace with new implementation that
+	conforms to TARGET_FUNCTION_VALUE hook signature.
+	(riscv_libcall_value): New function implementing TARGET_LIBCALL_VALUE.
+	(TARGET_FUNCTION_VALUE): Define.
+	(TARGET_LIBCALL_VALUE): Define.
+	* config/riscv/riscv.h (FUNCTION_VALUE): Remove.
+	(LIBCALL_VALUE): Remove.
+
+2025-08-25  Andi Kleen  <ak@gcc.gnu.org>
+
+	* config/i386/i386-expand.cc (ix86_vgf2p8affine_shift_matrix):
+	New function to lookup shift/rotate matrixes for gf2p8affine.
+	* config/i386/i386-protos.h (ix86_vgf2p8affine_shift_matrix):
+	Declare new function.
+	* config/i386/i386.cc (ix86_shift_rotate_cost): Add cost model
+	for shift/rotate implemented using gf2p8affine.
+	* config/i386/sse.md (VI1_AVX512_3264): New mode iterator.
+	(<insn><mode>3): Add GFNI case for shift patterns.
+	(cond_<insn><mode>3): New pattern.
+	(<insn><mode>3<mask_name>): Dito.
+	(<insn>v16qi): New rotate pattern to handle XOP V16QI case
+	and GFNI.
+	(rotl<mode>3, rotr<mode>3): Exclude V16QI case.
+
+2025-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121634
+	* config/loongarch/simd.md (simd_maddw_evod_<mode>_<su>): Use
+	WVEC_HALF instead of WVEC for the mode of the sign_extend for
+	the rhs of multiplication.
+
+2025-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ifcvt.cc (noce_try_sign_bit_splat): Fix right shift computation.
+
 2025-08-23  Sam James  <sam@gentoo.org>
 
 	PR target/120933

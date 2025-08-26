@@ -1,3 +1,102 @@
+2025-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-u8.c: New test.
+
+2025-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary_run.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmacc-run-1-i8.c: New test.
+
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121453
+	* gcc.dg/gomp/pr121453.c: New test.
+
+2025-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/121656
+	* gcc.dg/pr121656.c: New file.
+
+2025-08-25  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	* gcc.dg/debug/ctf/ctf-array-7.c: New test.
+
+2025-08-25  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121279
+	* gcc.dg/torture/pr121279-1.c: New test.
+
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt15.C: Don't expect error on
+	destructuring expansion stmts with structured binding size 0.
+	* g++.dg/cpp26/expansion-stmt21.C: New test.
+	* g++.dg/cpp26/expansion-stmt22.C: New test.
+
+2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121601
+	* g++.dg/cpp26/constexpr-eh16.C: New test.
+
+2025-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121638
+	* gcc.dg/vect/pr121638.c: New testcase.
+
+2025-08-25  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.target/i386/shift-gf2p8affine-1.c: New test
+	* gcc.target/i386/shift-gf2p8affine-2.c: New test
+	* gcc.target/i386/shift-gf2p8affine-3.c: New test
+	* gcc.target/i386/shift-v16qi-4.c: New test
+	* gcc.target/i386/shift-gf2p8affine-5.c: New test
+	* gcc.target/i386/shift-gf2p8affine-6.c: New test
+	* gcc.target/i386/shift-gf2p8affine-7.c: New test
+
+2025-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121634
+	* gcc.target/loongarch/pr121634.c: New test.
+
+2025-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arm/bics_3.c: Adjust expected output
+
 2025-08-23  Eczbek  <eczbek.void@gmail.com>
 
 	PR c++/116928
