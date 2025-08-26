@@ -22104,9 +22104,9 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	case V32QImode:
 	  if (TARGET_GFNI && constant_op1)
 	    {
-	      /* Use vgf2p8affine. One extra load for the mask, but in a loop
-		 with enough registers it will be moved out. So for now don't
-		 account the constant mask load. This is not quite right
+	      /* Use vgf2p8affine.  One extra load for the mask, but in a loop
+		 with enough registers it will be moved out.  So for now don't
+		 account the constant mask load.  This is not quite right
 		 for non loop vectorization.  */
 	      extra = 0;
 	      return ix86_vec_cost (mode, cost->sse_op) + extra;

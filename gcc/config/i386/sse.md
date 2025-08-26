@@ -26994,7 +26994,7 @@
       rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], operands[2],
 						   <CODE>);
       emit_insn (gen_vgf2p8affineqb_<mode> (operands[0], operands[1], matrix,
-					    GEN_INT (0)));
+					    const0_rtx));
     }
   else
     ix86_expand_vecop_qihi (<CODE>, operands[0], operands[1], operands[2]);
@@ -27014,20 +27014,21 @@
 {
   rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], operands[2], <CODE>);
   emit_insn (gen_vgf2p8affineqb_<mode>_mask (operands[0], operands[1], matrix,
-	        GEN_INT (0), operands[4], operands[1]));
+					     const0_rtx, operands[4],
+					     operands[1]));
   DONE;
 })
 
 (define_expand "<insn><mode>3"
   [(set (match_operand:VI1_AVX512_3264 0 "register_operand")
 	(any_rotate:VI1_AVX512_3264
-	  (match_operand:VI1_AVX512_3264 1 "general_operand")
+	  (match_operand:VI1_AVX512_3264 1 "register_operand")
 	  (match_operand:SI 2 "const_int_operand")))]
   "TARGET_GFNI"
 {
   rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], operands[2], <CODE>);
   emit_insn (gen_vgf2p8affineqb_<mode> (operands[0], operands[1], matrix,
-             GEN_INT (0)));
+             const0_rtx));
   DONE;
 })
 
@@ -27073,8 +27074,9 @@
   else if (TARGET_GFNI && CONST_INT_P (operands[2]))
     {
       rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], operands[2], <CODE>);
-      emit_insn (gen_vgf2p8affineqb_v16qi (operands[0], operands[1], matrix,
-                 GEN_INT (0)));
+      emit_insn (gen_vgf2p8affineqb_v16qi (operands[0],
+					   force_reg (V16QImode, operands[1]),
+					   matrix, const0_rtx));
       DONE;
     }
   else
