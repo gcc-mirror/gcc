@@ -459,6 +459,20 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
 void
 Early::visit (AST::UseDeclaration &decl)
 {
+  // We do not want to visit the use trees, we're only looking for top level
+  // rebind. eg. `use something;` or `use something::other;`
+  if (decl.get_tree ()->get_kind () == AST::UseTree::Kind::Rebind)
+    {
+      auto &rebind = static_cast<AST::UseTreeRebind &> (*decl.get_tree ());
+      if (rebind.get_path ().get_final_segment ().is_lower_self_seg ())
+	{
+	  collect_error (
+	    Error (decl.get_locus (), ErrorCode::E0429,
+		   "%<self%> imports are only allowed within a { } list"));
+	  return;
+	}
+    }
+
   auto &imports = toplevel.get_imports_to_resolve ();
   auto current_import = imports.find (decl.get_node_id ());
   if (current_import != imports.end ())
