@@ -1,3 +1,13 @@
+2025-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121634
+	* config/loongarch/simd.md (simd_maddw_evod_<mode>_<su>): Use
+	WVEC_HALF instead of WVEC for the mode of the sign_extend for
+	the rhs of multiplication.
+
 2025-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from master:
