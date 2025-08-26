@@ -1585,8 +1585,6 @@ namespace views::__adaptor
       };
 
     template<random_access_range _Range>
-      requires (sizeof(range_difference_t<_Range>)
-		<= sizeof(iterator_t<_Range>))
       struct _CachedPosition<_Range>
       {
       private:
