@@ -61,6 +61,7 @@ public:
   void visit (AST::Function &) override;
   void visit (AST::StructStruct &) override;
   void visit (AST::UseDeclaration &) override;
+  void visit (AST::UseTreeList &) override;
 
   struct ImportData
   {

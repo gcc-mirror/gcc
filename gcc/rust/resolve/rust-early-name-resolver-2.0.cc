@@ -438,7 +438,9 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
 	// We don't want to insert `self` with `use module::self`
 	if (path.get_final_segment ().is_lower_self_seg ())
 	  {
-	    rust_assert (segments.size () > 1);
+	    // Erroneous `self` or `{self}` use declaration
+	    if (segments.size () == 1)
+	      break;
 	    declared_name = segments[segments.size () - 2].as_string ();
 	  }
 	else
@@ -469,7 +471,6 @@ Early::visit (AST::UseDeclaration &decl)
 	  collect_error (
 	    Error (decl.get_locus (), ErrorCode::E0429,
 		   "%<self%> imports are only allowed within a { } list"));
-	  return;
 	}
     }
 
@@ -496,6 +497,32 @@ Early::visit (AST::UseDeclaration &decl)
       }
 
   DefaultResolver::visit (decl);
+}
+
+void
+Early::visit (AST::UseTreeList &use_list)
+{
+  if (!use_list.has_path ())
+    {
+      for (auto &&tree : use_list.get_trees ())
+	{
+	  if (tree->get_kind () == AST::UseTree::Kind::Rebind)
+	    {
+	      auto &rebind = static_cast<AST::UseTreeRebind &> (*tree);
+	      auto path_size = rebind.get_path ().get_segments ().size ();
+	      if (path_size == 1
+		  && rebind.get_path ()
+		       .get_final_segment ()
+		       .is_lower_self_seg ())
+		{
+		  collect_error (Error (rebind.get_locus (), ErrorCode::E0431,
+					"%<self%> import can only appear in an "
+					"import list with a non-empty prefix"));
+		}
+	    }
+	}
+    }
+  DefaultResolver::visit (use_list);
 }
 
 } // namespace Resolver2_0
