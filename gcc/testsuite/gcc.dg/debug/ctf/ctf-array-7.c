@@ -1,11 +1,12 @@
-/* CTF generation for array which cannot be encoded in CTF.
+/* PR debug/121411
+   CTF generation for array which cannot be encoded in CTF.
 
    CTF encoding uses a uint32 for number of elements in an array which
    means there is a hard upper limit on sizes of arrays which can be
    represented.  Arrays with too many elements are encoded with
    CTF_K_UNKNOWN to indicate that they cannot be represented.  */
 
-/* { dg-do compile } */
+/* { dg-do compile { target { lp64 || llp64 } } } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 int   rep[0xffffffff];
