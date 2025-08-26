@@ -548,10 +548,6 @@ Session::compile_crate (const char *filename)
   handle_crate_name (filename, *ast_crate.get ());
 
   // dump options except lexer dump
-  if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
-    {
-      dump_ast_pretty (*ast_crate.get ());
-    }
   if (options.dump_option_enabled (CompileOptions::TARGET_OPTION_DUMP))
     {
       options.target_data.dump_target_options ();
@@ -559,6 +555,11 @@ Session::compile_crate (const char *filename)
 
   if (saw_errors ())
     return;
+
+  if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
+    {
+      dump_ast_pretty (*ast_crate.get ());
+    }
 
   // setup the mappings for this AST
   CrateNum current_crate = mappings.get_current_crate ();
