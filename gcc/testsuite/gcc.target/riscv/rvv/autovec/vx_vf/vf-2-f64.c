@@ -12,3 +12,4 @@
 /* { dg-final { scan-assembler-not {vfnmacc.vf} } } */
 /* { dg-final { scan-assembler-not {vfnmsac.vf} } } */
 /* { dg-final { scan-assembler-not {vfmul.vf} } } */
+/* { dg-final { scan-assembler-not {vfrdiv.vf} } } */

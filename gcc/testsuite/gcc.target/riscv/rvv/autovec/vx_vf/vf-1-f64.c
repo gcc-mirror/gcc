@@ -13,6 +13,7 @@ DEF_VF_MULOP_ACC_CASE_0 (double, -, +, sac)
 DEF_VF_MULOP_ACC_CASE_0 (double, +, -, nacc)
 DEF_VF_MULOP_ACC_CASE_0 (double, -, -, nsac)
 DEF_VF_BINOP_CASE_0 (double, *, mul)
+DEF_VF_BINOP_REVERSE_CASE_0 (double, /, rdiv)
 
 /* { dg-final { scan-assembler-times {vfmadd.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmsub.vf} 1 } } */
@@ -23,3 +24,4 @@ DEF_VF_BINOP_CASE_0 (double, *, mul)
 /* { dg-final { scan-assembler-times {vfnmacc.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfnmsac.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmul.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfrdiv.vf} 1 } } */
