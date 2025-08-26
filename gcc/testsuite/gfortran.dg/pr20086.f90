@@ -10,7 +10,7 @@
       if (line.ne.'  stiffness reformed for hello hello')STOP 2
       stop
 
- 2070  format (2x,37hstiffness reformed for this high step)
- 2090  format (2x,34hstiffness reformed for hello hello)
+ 2070  format (2x,37hstiffness reformed for this high step) ! { dg-warning "H format specifier" }
+ 2090  format (2x,34hstiffness reformed for hello hello) ! { dg-warning "H format specifier" }
 
       end

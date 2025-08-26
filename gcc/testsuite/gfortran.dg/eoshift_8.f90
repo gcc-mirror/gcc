@@ -14,5 +14,5 @@ program main
   f2 = eoshift(e,shift=n,boundary=bnd2) ! { dg-error "has invalid shape" }
   f2 = eoshift(e,shift=1,boundary="x") ! { dg-error "must be of same type and kind" }
 
-  print '(*(1H",A,1H",:","))',f2
+  !print '(*(1H",A,1H",:","))',f2
 end program main

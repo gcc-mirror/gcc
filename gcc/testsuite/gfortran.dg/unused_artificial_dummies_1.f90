@@ -32,7 +32,7 @@ contains
   subroutine foo1 (slist, i)
     character(*), dimension(*) :: slist
     integer i
-    write (slist(i), '(2hi=,i3)') i
+    write (slist(i), '(2hi=,i3)') i ! { dg-warning "H format specifier" }
   end subroutine foo1
 
 ! This tests the additions to the fix that prevent the dummies of entry thunks
