@@ -1749,7 +1749,11 @@ class StdCmpCatPrinter(printer_base):
         if self._typename == 'strong_ordering' and self._val == 0:
             name = 'equal'
         else:
-            names = {2: 'unordered', -1: 'less', 0: 'equivalent', 1: 'greater'}
+            names = {
+                -1: 'less', 0: 'equivalent', 1: 'greater',
+                # GCC 10-15 used 2 for unordered
+                -128: 'unordered', 2: 'unordered'
+            }
             name = names[int(self._val)]
         return 'std::{}::{}'.format(self._typename, name)
 

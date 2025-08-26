@@ -56,7 +56,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     enum class _Ord : type { equivalent = 0, less = -1, greater = 1 };
 
-    enum class _Ncmp : type { _Unordered = 2 };
+    enum class _Ncmp : type { unordered = -__SCHAR_MAX__ - 1 };
 
     struct __unspec
     {
@@ -66,7 +66,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   class partial_ordering
   {
-    // less=0xff, equiv=0x00, greater=0x01, unordered=0x02
+    // less=0xff, equiv=0x00, greater=0x01, unordered=0x80
     __cmp_cat::type _M_value;
 
     constexpr explicit
@@ -81,6 +81,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     friend class weak_ordering;
     friend class strong_ordering;
+
+    [[__gnu__::__always_inline__]]
+    constexpr __cmp_cat::type
+    _M_reverse() const
+    {
+      // leaves _Ncmp::unordered unchanged
+      return static_cast<__cmp_cat::type>(-_M_value);
+    }
 
   public:
     // valid values
@@ -112,12 +120,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
     [[nodiscard]]
     friend constexpr bool
     operator<=(partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_value <= 0; }
+    { return __v._M_reverse() >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
     operator>=(partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __cmp_cat::type(__v._M_value & 1) == __v._M_value; }
+    { return __v._M_value >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
@@ -132,12 +140,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
     [[nodiscard]]
     friend constexpr bool
     operator<=(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return __cmp_cat::type(__v._M_value & 1) == __v._M_value; }
+    { return 0 <= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
     operator>=(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return 0 >= __v._M_value; }
+    { return 0 <= __v._M_reverse(); }
 
     [[nodiscard]]
     friend constexpr partial_ordering
@@ -166,7 +174,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   partial_ordering::greater(__cmp_cat::_Ord::greater);
 
   inline constexpr partial_ordering
-  partial_ordering::unordered(__cmp_cat::_Ncmp::_Unordered);
+  partial_ordering::unordered(__cmp_cat::_Ncmp::unordered);
 
   class weak_ordering
   {
