@@ -3806,10 +3806,19 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 		 (code_label 78 11 77 3 14 (nil) [1 uses])
 		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
 
+		 or a basic block with only a debug marker:
+
+		 (note 3 0 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+		 (note 2 3 5 2 NOTE_INSN_FUNCTION_BEG)
+		 (debug_insn 5 2 16 2 (debug_marker) "x.c":6:3 -1 (nil))
+
 	       */
-	      gcc_assert (NOTE_P (insn)
-			  && (NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG
-			      || NOTE_KIND (insn) == NOTE_INSN_BASIC_BLOCK));
+	      gcc_assert (DEBUG_INSN_P (insn)
+			  || (NOTE_P (insn)
+			      && ((NOTE_KIND (insn)
+				   == NOTE_INSN_FUNCTION_BEG)
+				  || (NOTE_KIND (insn)
+				      == NOTE_INSN_BASIC_BLOCK))));
 	      insn = NULL;
 	      break;
 	    }
@@ -3854,11 +3863,18 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 		 (note 4 0 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
 		 (note 2 4 26 2 NOTE_INSN_FUNCTION_BEG)
 
-		 or after NOTE_INSN_BASIC_BLOCK a basic block with only
-		 a label:
+		 or after NOTE_INSN_BASIC_BLOCK in a basic block with
+		 only a label:
 
 		 (code_label 78 11 77 3 14 (nil) [1 uses])
 		 (note 77 78 54 3 [bb 3] NOTE_INSN_BASIC_BLOCK)
+
+		 or after debug marker in a basic block with only a
+		 debug marker:
+
+		 (note 3 0 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+		 (note 2 3 5 2 NOTE_INSN_FUNCTION_BEG)
+		 (debug_insn 5 2 16 2 (debug_marker) "x.c":6:3 -1 (nil))
 
 	       */
 	      insn = insn ? PREV_INSN (insn) : BB_END (bb);
