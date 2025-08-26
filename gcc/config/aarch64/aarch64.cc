@@ -17057,6 +17057,14 @@ private:
      or vector loop.  There is one entry for each tuning option of
      interest.  */
   auto_vec<aarch64_vec_op_count, 2> m_ops;
+
+  /* When doing inner-loop vectorization the constraints on the data-refs in the
+     outer-loop could limit the inner loop references.  i.e. the outerloop can
+     force the inner-loop to do a load and splat which will result in the loop
+     being entirely scalar as all lanes work on a duplicate.  Currently we don't
+     support unrolling of the inner loop independently from the outerloop during
+     outer-loop vectorization which tends to lead to pipeline bubbles.  */
+  bool m_loop_fully_scalar_dup = false;
 };
 
 aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
@@ -18079,6 +18087,28 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	analyze_loop_vinfo (loop_vinfo);
 
       m_analyzed_vinfo = true;
+      if (in_inner_loop_p)
+	m_loop_fully_scalar_dup = true;
+    }
+
+  /* Detect whether the loop is working on fully duplicated lanes.  This would
+     only be possible with inner loop vectorization since otherwise we wouldn't
+     try to vectorize.  */
+  if (in_inner_loop_p
+      && node
+      && m_loop_fully_scalar_dup
+      && SLP_TREE_LANES (node) == 1
+      && !SLP_TREE_CHILDREN (node).exists ())
+    {
+      /* Check if load is a duplicate.  */
+      if (gimple_vuse (stmt_info->stmt)
+	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_INVARIANT)
+	;
+      else if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
+	       || SLP_TREE_DEF_TYPE (node) == vect_external_def)
+	;
+      else
+	m_loop_fully_scalar_dup = false;
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  */
@@ -18445,8 +18475,19 @@ adjust_body_cost (loop_vec_info loop_vinfo,
   if (m_vec_flags & VEC_ANY_SVE)
     threshold = CEIL (threshold, aarch64_estimated_sve_vq ());
 
-  if (m_num_vector_iterations >= 1
-      && m_num_vector_iterations < threshold)
+  /* Increase the cost of the vector code if it looks like the vector code has
+     limited throughput due to outer-loop vectorization.  */
+  if (m_loop_fully_scalar_dup)
+    {
+      body_cost *= estimated_vf;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Increasing body cost to %d because vector code has"
+			 " low throughput of per iteration due to splats\n",
+			 body_cost);
+    }
+  else if (m_num_vector_iterations >= 1
+	   && m_num_vector_iterations < threshold)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
