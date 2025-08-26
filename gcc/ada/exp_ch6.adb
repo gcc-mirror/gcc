@@ -5793,11 +5793,14 @@ package body Exp_Ch6 is
    is
       Par        : constant Node_Id := Parent (N);
       Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+     --  Beware that a qualified expression around a function call cannot be
+     --  considered as transparent (like around an aggregate) because it may
+     --  cause a temporary to be created.
 
    begin
       --  Optimization: if the returned value is returned again, then no need
       --  to copy/readjust/finalize, we can just pass the value through (see
-      --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
+      --  Expand_Simple_Function_Return), and thus no attachment is needed.
       --  Note that simple return statements are distributed into conditional
       --  expressions, but we may be invoked before this distribution is done.
 

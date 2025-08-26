@@ -5198,7 +5198,8 @@ package body Exp_Ch4 is
 
       if not Expansion_Delayed (N) then
          declare
-            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+            Uncond_Par : constant Node_Id :=
+                           Unqualified_Unconditional_Parent (N);
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)
@@ -5807,7 +5808,8 @@ package body Exp_Ch4 is
 
       if not Expansion_Delayed (N) then
          declare
-            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+            Uncond_Par : constant Node_Id :=
+                           Unqualified_Unconditional_Parent (N);
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)

@@ -14915,6 +14915,37 @@ package body Exp_Util is
             when N_If_Expression =>
                exit when Node = First (Expressions (Parent_Node));
 
+            when others =>
+               exit;
+         end case;
+
+         Node        := Parent_Node;
+         Parent_Node := Parent (Node);
+      end loop;
+
+      return Parent_Node;
+   end Unconditional_Parent;
+
+   --------------------------------------
+   -- Unqualified_Unconditional_Parent --
+   --------------------------------------
+
+   function Unqualified_Unconditional_Parent (N : Node_Id) return Node_Id is
+      Node        : Node_Id := N;
+      Parent_Node : Node_Id := Parent (Node);
+
+   begin
+      loop
+         case Nkind (Parent_Node) is
+            when N_Case_Expression_Alternative =>
+               null;
+
+            when N_Case_Expression =>
+               exit when Node = Expression (Parent_Node);
+
+            when N_If_Expression =>
+               exit when Node = First (Expressions (Parent_Node));
+
             when N_Qualified_Expression =>
                null;
 
@@ -14927,7 +14958,7 @@ package body Exp_Util is
       end loop;
 
       return Parent_Node;
-   end Unconditional_Parent;
+   end Unqualified_Unconditional_Parent;
 
    -------------------------------
    -- Update_Primitives_Mapping --

@@ -1344,6 +1344,10 @@ package Exp_Util is
 
    function Unconditional_Parent (N : Node_Id) return Node_Id;
    --  Return the first parent of arbitrary node N that is not a conditional
+   --  expression, one of whose dependent expressions is N, recursively.
+
+   function Unqualified_Unconditional_Parent (N : Node_Id) return Node_Id;
+   --  Return the first parent of arbitrary node N that is not a conditional
    --  expression, one of whose dependent expressions is N, and that is not
    --  a qualified expression, whose expression is N, recursively.
 

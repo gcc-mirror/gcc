@@ -4283,7 +4283,7 @@ package body Exp_Aggr is
       --  Set the Expansion_Delayed flag in the cases where the transformation
       --  will be done top down from above.
 
-      Parent_Node := Unconditional_Parent (N);
+      Parent_Node := Unqualified_Unconditional_Parent (N);
 
       if
          --  Internal aggregates (transformed when expanding the parent),
@@ -6254,7 +6254,7 @@ package body Exp_Aggr is
       --  Set the Expansion_Delayed flag in the cases where the transformation
       --  will be done top down from above.
 
-      Parent_Node := Unconditional_Parent (N);
+      Parent_Node := Unqualified_Unconditional_Parent (N);
 
       if
          --  Internal aggregates (transformed when expanding the parent),
