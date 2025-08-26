@@ -6705,7 +6705,7 @@ arc_cannot_force_const_mem (machine_mode mode, rtx x)
 
 enum arc_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)	\
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK, ATTRS)	\
     ARC_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -6723,7 +6723,7 @@ struct GTY(()) arc_builtin_description
 static GTY(()) struct arc_builtin_description
 arc_bdesc[ARC_BUILTIN_COUNT] =
 {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)		\
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK, ATTRS)		\
   { (enum insn_code) CODE_FOR_ ## ICODE, N_ARGS, NULL_TREE },
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -6855,8 +6855,11 @@ arc_init_builtins (void)
     = build_function_type_list (long_long_integer_type_node,
 				V2SI_type_node, V2HI_type_node, NULL_TREE);
 
+  /* Create const attribute for mathematical functions.  */
+  tree attr_const = tree_cons (get_identifier ("const"), NULL, NULL);
+
   /* Add the builtins.  */
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)			\
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK, ATTRS)		\
   {									\
     int id = ARC_BUILTIN_ ## NAME;					\
     const char *Name = "__builtin_arc_" #NAME;				\
@@ -6866,7 +6869,7 @@ arc_init_builtins (void)
     if (MASK)								\
       arc_bdesc[id].fndecl						\
 	= add_builtin_function (arc_tolower(name, Name), TYPE, id,	\
-				BUILT_IN_MD, NULL, NULL_TREE);		\
+				BUILT_IN_MD, NULL, ATTRS);		\
   }
 #include "builtins.def"
 #undef DEF_BUILTIN
