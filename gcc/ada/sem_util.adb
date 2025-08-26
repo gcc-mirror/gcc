@@ -15991,14 +15991,14 @@ package body Sem_Util is
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean
    is
-      Par : Entity_Id := E2;
+      Cursor : Entity_Id := E2;
    begin
-      while Present (Par) and then Par /= Standard_Standard loop
-         if Par = E1 then
+      while Present (Cursor) and then Cursor /= Standard_Standard loop
+         if Cursor = E1 then
             return True;
          end if;
 
-         Par := Scope (Par);
+         Cursor := Scope (Cursor);
       end loop;
 
       return False;
