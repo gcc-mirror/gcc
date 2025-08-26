@@ -6412,7 +6412,7 @@ riscv_arg_partial_bytes (cumulative_args_t cum,
 
 rtx
 riscv_function_value (const_tree ret_type, const_tree fn_decl_or_type,
-		      bool outgoing)
+		      bool)
 {
   struct riscv_arg_info info;
   CUMULATIVE_ARGS args;
