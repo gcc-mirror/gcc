@@ -434,6 +434,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/checks/errors \
 	-I $(srcdir)/rust/checks/errors/privacy \
 	-I $(srcdir)/rust/checks/errors/borrowck \
+	-I $(srcdir)/rust/checks/errors/feature \
 	-I $(srcdir)/rust/util \
         -I $(srcdir)/rust/metadata \
 		-I $(srcdir)/../libgrust
@@ -503,6 +504,11 @@ rust/%.o: rust/checks/lints/%.cc
 
 # build rust/checks/errors files in rust folder
 rust/%.o: rust/checks/errors/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build feature related files in rust folder
+rust/%.o: rust/checks/errors/feature/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
