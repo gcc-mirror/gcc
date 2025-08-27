@@ -77,27 +77,66 @@ public:
 
   void visit (HIR::TuplePattern &pattern) override
   {
+    rust_assert (TREE_CODE (translated_type) == RECORD_TYPE);
     switch (pattern.get_items ().get_item_type ())
       {
       case HIR::TuplePatternItems::ItemType::NO_REST:
 	{
-	  rust_assert (TREE_CODE (translated_type) == RECORD_TYPE);
-	  auto &items = static_cast<HIR::TuplePatternItemsNoRest &> (
+	  auto &items_no_rest = static_cast<HIR::TuplePatternItemsNoRest &> (
 	    pattern.get_items ());
 
-	  size_t offs = 0;
-	  for (auto &sub : items.get_patterns ())
+	  tree field = TYPE_FIELDS (translated_type);
+	  for (auto &sub : items_no_rest.get_patterns ())
 	    {
-	      tree sub_ty = error_mark_node;
-	      tree field = TYPE_FIELDS (translated_type);
-	      for (size_t i = 0; i < offs; i++)
+	      gcc_assert (field != NULL_TREE);
+	      tree sub_ty = TREE_TYPE (field);
+	      CompileVarDecl::compile (fndecl, sub_ty, sub.get (), ctx);
+	      field = DECL_CHAIN (field);
+	    }
+	}
+	break;
+
+      case HIR::TuplePatternItems::ItemType::HAS_REST:
+	{
+	  auto &items_has_rest = static_cast<HIR::TuplePatternItemsHasRest &> (
+	    pattern.get_items ());
+
+	  // count total fields in translated_type
+	  size_t total_fields = 0;
+	  for (tree t = TYPE_FIELDS (translated_type); t; t = DECL_CHAIN (t))
+	    {
+	      total_fields++;
+	    }
+
+	  // process lower patterns
+	  tree field = TYPE_FIELDS (translated_type);
+	  for (auto &sub : items_has_rest.get_lower_patterns ())
+	    {
+	      gcc_assert (field != NULL_TREE);
+	      tree sub_ty = TREE_TYPE (field);
+	      CompileVarDecl::compile (fndecl, sub_ty, sub.get (), ctx);
+	      field = DECL_CHAIN (field);
+	    }
+
+	  // process upper patterns
+	  if (!items_has_rest.get_upper_patterns ().empty ())
+	    {
+	      size_t upper_start
+		= total_fields - items_has_rest.get_upper_patterns ().size ();
+	      field = TYPE_FIELDS (translated_type);
+	      for (size_t i = 0; i < upper_start; i++)
 		{
 		  field = DECL_CHAIN (field);
 		  gcc_assert (field != NULL_TREE);
 		}
-	      sub_ty = TREE_TYPE (field);
-	      CompileVarDecl::compile (fndecl, sub_ty, sub.get (), ctx);
-	      offs++;
+
+	      for (auto &sub : items_has_rest.get_upper_patterns ())
+		{
+		  gcc_assert (field != NULL_TREE);
+		  tree sub_ty = TREE_TYPE (field);
+		  CompileVarDecl::compile (fndecl, sub_ty, sub.get (), ctx);
+		  field = DECL_CHAIN (field);
+		}
 	    }
 	}
 	break;
