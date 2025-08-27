@@ -4,7 +4,7 @@
 #include "vf_binop.h"
 #include "vf_binop_data.h"
 
-#define T    float
+#define T    double
 #define NAME mul
 
 DEF_VF_BINOP_CASE_0_WRAP (T, *, NAME)
