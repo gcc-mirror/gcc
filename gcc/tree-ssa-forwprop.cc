@@ -1455,7 +1455,42 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
      */
   if (!operand_equal_p (dest2, src, 0)
       && !DECL_P (dest2) && !DECL_P (src))
-    return false;
+    {
+      /* If *a and *b have the same base see if
+	 the offset between the two is greater than
+	 or equal to the size of the type. */
+      poly_int64 offset1, offset2;
+      tree len = TYPE_SIZE_UNIT (TREE_TYPE (src));
+      if (len == NULL_TREE
+	  || !tree_fits_poly_int64_p (len))
+	return false;
+      tree base1 = get_addr_base_and_unit_offset (dest2, &offset1);
+      tree base2 = get_addr_base_and_unit_offset (src, &offset2);
+      poly_int64 size = tree_to_poly_int64 (len);
+      /* If we can't figure out the base or the bases are
+	 not equal then fall back to an alignment check.  */
+      if (!base1
+	  || !base2
+	  || !operand_equal_p (base1, base2))
+	{
+	  unsigned int align1 = get_object_alignment (src);
+	  unsigned int align2 = get_object_alignment (dest2);
+	  align1 /= BITS_PER_UNIT;
+	  align2 /= BITS_PER_UNIT;
+	  /* If the alignment of either object is less
+	     than the size then there is a possibility
+	     of overlapping.  */
+	  if (maybe_lt (align1, size)
+	      || maybe_lt (align2, size))
+	    return false;
+	}
+      /* Make sure [offset1, offset1 + len - 1] does
+	 not overlap with [offset2, offset2 + len - 1],
+	 it is ok if they are at the same location though.  */
+      else if (ranges_maybe_overlap_p (offset1, size, offset2, size)
+	  && !known_eq (offset2, offset1))
+	return false;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
