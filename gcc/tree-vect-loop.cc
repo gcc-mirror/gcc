@@ -8353,8 +8353,6 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
       nested_cycle = true;
     }
 
-  stmt_vec_info reduc_stmt_info = STMT_VINFO_REDUC_DEF (stmt_info);
-  reduc_stmt_info = vect_stmt_to_vectorize (reduc_stmt_info);
   stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
   gcc_assert (reduc_info->is_reduc_info);
 
