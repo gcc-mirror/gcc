@@ -8116,20 +8116,18 @@ We provide two options that you can use to build code with GNAT LLVM:
 
 * ``gprbuild`` can detect and use GNAT LLVM when it is installed.
 
-  ``gprbuild`` uses the first applicable compiler on the executable
-  search path, including GNAT LLVM.  An easy way to build with GNAT
-  LLVM is to make it available on the operating system's search path
-  before any other Ada compiler (such as the GCC version of GNAT). To
-  avoid accidentally using a different compiler than the one you want
-  to use, we recommend generating an explicit toolchain configuration
-  file with ``gprconfig`` and using it with ``gprbuild``; see the
-  *GPRbuild and GPR Companion Tools User's Guide* for details. You
-  can determine from the first line of the :file:`.ali` file
-  which version of GNAT built that file because it contains either
-  :code:`GNAT` or :code:`GNAT-LLVM`.
-
-  You can also explicitly select GNAT LLVM in your existing GPR project
-  file by adding :code:`for Toolchain_Name("Ada") use "GNAT_LLVM";`
+  ``gprbuild`` uses the first applicable compiler on the executable search
+  path, including GNAT LLVM. An easy way to build with GNAT LLVM is to make
+  it available on the operating system's search path before any other Ada
+  compiler (such as the GCC version of GNAT). To avoid accidentally using a
+  different compiler than the one you want to use, we recommend explicitly
+  selecting GNAT LLVM in your existing GPR project file by adding
+  :code:`for Toolchain_Name ("Ada") use "GNAT_LLVM";`. You can also
+  generate an explicit toolchain configuration file with ``gprconfig`` and
+  use it with ``gprbuild``; see the *GPRbuild and GPR Companion Tools
+  User's Guide* for details. You can determine from the first line of the
+  :file:`.ali` file which version of GNAT built that file because it
+  contains either :code:`GNAT` or :code:`GNAT-LLVM`.
 
 .. only:: PRO
 

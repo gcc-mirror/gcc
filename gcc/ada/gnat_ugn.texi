@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 05, 2025
+GNAT User's Guide for Native Platforms , Sep 12, 2025
 
 AdaCore
 
@@ -17653,20 +17653,18 @@ version of GNAT.
 @item 
 @code{gprbuild} can detect and use GNAT LLVM when it is installed.
 
-@code{gprbuild} uses the first applicable compiler on the executable
-search path, including GNAT LLVM.  An easy way to build with GNAT
-LLVM is to make it available on the operating system’s search path
-before any other Ada compiler (such as the GCC version of GNAT). To
-avoid accidentally using a different compiler than the one you want
-to use, we recommend generating an explicit toolchain configuration
-file with @code{gprconfig} and using it with @code{gprbuild}; see the
-`GPRbuild and GPR Companion Tools User’s Guide' for details. You
-can determine from the first line of the @code{.ali} file
-which version of GNAT built that file because it contains either
-@code{GNAT} or @code{GNAT-LLVM}.
-
-You can also explicitly select GNAT LLVM in your existing GPR project
-file by adding @code{for Toolchain_Name("Ada") use "GNAT_LLVM";}
+@code{gprbuild} uses the first applicable compiler on the executable search
+path, including GNAT LLVM. An easy way to build with GNAT LLVM is to make
+it available on the operating system’s search path before any other Ada
+compiler (such as the GCC version of GNAT). To avoid accidentally using a
+different compiler than the one you want to use, we recommend explicitly
+selecting GNAT LLVM in your existing GPR project file by adding
+@code{for Toolchain_Name ("Ada") use "GNAT_LLVM";}. You can also
+generate an explicit toolchain configuration file with @code{gprconfig} and
+use it with @code{gprbuild}; see the `GPRbuild and GPR Companion Tools
+User’s Guide' for details. You can determine from the first line of the
+@code{.ali} file which version of GNAT built that file because it
+contains either @code{GNAT} or @code{GNAT-LLVM}.
 @end itemize
 
 
@@ -30297,8 +30295,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{d2}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye
