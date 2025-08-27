@@ -4714,3 +4714,28 @@
   "TARGET_HAVE_MVE"
   "dlstp.<dlstp_elemsize>\t%|lr, %0"
   [(set_attr "type" "mve_misc")])
+
+;; Scalar shifts
+(define_insn "mve_asrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "=r")
+	(ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0")
+		     (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "asrl%?\\t%Q0, %R1, %2"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "mve_lsll"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "=r")
+	(ashift:DI (match_operand:DI 1 "arm_general_register_operand" "0")
+		   (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "lsll%?\\t%Q0, %R1, %2"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "mve_lsrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0")
+		     (match_operand:SI 2 "long_shift_imm" "Pg")))]
+  "TARGET_HAVE_MVE"
+  "lsrl%?\\t%Q0, %R1, %2"
+  [(set_attr "predicable" "yes")])

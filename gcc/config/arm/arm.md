@@ -4588,10 +4588,7 @@
       if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2]))
 	  && (REG_P (operands[2]) || INTVAL(operands[2]) != 32))
         {
-	  if (!reg_overlap_mentioned_p(operands[0], operands[1]))
-	    emit_insn (gen_movdi (operands[0], operands[1]));
-
-	  emit_insn (gen_thumb2_lsll (operands[0], operands[2]));
+	  emit_insn (gen_mve_lsll (operands[0], operands[1], operands[2]));
 	  DONE;
 	}
     }
@@ -4627,10 +4624,7 @@
   if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
       && arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
-      if (!reg_overlap_mentioned_p(operands[0], operands[1]))
-	emit_insn (gen_movdi (operands[0], operands[1]));
-
-      emit_insn (gen_thumb2_asrl (operands[0], operands[2]));
+      emit_insn (gen_mve_asrl (operands[0], operands[1], operands[2]));
       DONE;
     }
 
@@ -4662,10 +4656,7 @@
   if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
     && long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
-      if (!reg_overlap_mentioned_p(operands[0], operands[1]))
-        emit_insn (gen_movdi (operands[0], operands[1]));
-
-      emit_insn (gen_thumb2_lsrl (operands[0], operands[2]));
+      emit_insn (gen_mve_lsrl (operands[0], operands[1], operands[2]));
       DONE;
     }
 
