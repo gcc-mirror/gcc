@@ -75,4 +75,12 @@ package Ada.Strings.Wide_Wide_Unbounded.Aux is
    --  than string. The lower bound of the string value is required to be one,
    --  and this requirement is not checked.
 
+   procedure Set_Wide_Wide_String
+     (U      : out Unbounded_Wide_Wide_String;
+      Length : Positive;
+      Set    : not null access procedure (S : out Wide_Wide_String));
+   pragma Inline (Set_Wide_Wide_String);
+   --  Create an unbounded string U with the given Length, using Set to fill
+   --  the contents of U.
+
 end Ada.Strings.Wide_Wide_Unbounded.Aux;
