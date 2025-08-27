@@ -307,6 +307,18 @@ package Sem is
    --  case. We could perhaps do a more accurate job and retain some of the
    --  warnings, but it is quite a tricky job.
 
+   Ghost_Context_Checks_Disabled : Boolean := False;
+   --  This flag controls whether ghost context related checks are enabled or
+   --  disabled. Typically they are enabled however they need to be disabled in
+   --  instances where the ghost region context has not been set.
+   --
+   --  Typically this is done for pragmas where the ghostliness of the pragma
+   --  is determined by an entity specified as one of the arguments. In these
+   --  cases we need to analyze that argument before the pragma itself to
+   --  determine the ghostliness of the pragma. However at that point we have
+   --  not set the ghost region for the pragma in order to determine the ghost
+   --  context of the argument.
+
    -----------------------------------
    -- Handling of Check Suppression --
    -----------------------------------

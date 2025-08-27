@@ -932,6 +932,10 @@ package body Ghost is
    --  Start of processing for Check_Ghost_Context
 
    begin
+      if Ghost_Context_Checks_Disabled then
+         return;
+      end if;
+
       --  Class-wide pre/postconditions of ignored pragmas are preanalyzed
       --  to report errors on wrong conditions; however, ignored pragmas may
       --  also have references to ghost entities and we must disable checking

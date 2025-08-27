@@ -6439,7 +6439,14 @@ package body Sem_Prag is
             end if;
          end if;
 
+         --  We are going to check the entity that determines the ghost
+         --  region of that pragma. We need to disable the checks for ghost
+         --  context since the ghost region can only be set after analyzing
+         --  this entity.
+
+         Ghost_Context_Checks_Disabled := True;
          Analyze (Argx);
+         Ghost_Context_Checks_Disabled := False;
 
          if Nkind (Argx) not in N_Direct_Name
            and then (Nkind (Argx) /= N_Attribute_Reference
@@ -9221,8 +9228,15 @@ package body Sem_Prag is
          Check_Optional_Identifier (Arg2, Name_Entity);
          Check_Arg_Is_Local_Name (Arg2);
 
+         --  We are going to check the entity that determines the ghost
+         --  region of that pragma. We need to disable the checks for ghost
+         --  context since the ghost region can only be set after analyzing
+         --  this entity.
+
+         Ghost_Context_Checks_Disabled := True;
          Id := Get_Pragma_Arg (Arg2);
          Analyze (Id);
+         Ghost_Context_Checks_Disabled := False;
 
          if not Is_Entity_Name (Id) then
             Error_Pragma_Arg ("entity name required", Arg2);
@@ -12022,7 +12036,15 @@ package body Sem_Prag is
 
             Check_Optional_Identifier (Arg2, Name_On);
             E_Id := Get_Pragma_Arg (Arg2);
+
+            --  We are going to check the entity that determines the ghost
+            --  region of that pragma. We need to disable the checks for ghost
+            --  context since the ghost region can only be set after analyzing
+            --  this entity.
+
+            Ghost_Context_Checks_Disabled := True;
             Analyze (E_Id);
+            Ghost_Context_Checks_Disabled := False;
 
             if not Is_Entity_Name (E_Id) then
                Error_Pragma_Arg
@@ -15041,6 +15063,7 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_No_Identifiers;
             Check_Arg_Count (1);
+
             Check_Arg_Is_Local_Name (Arg1);
 
             if Debug_Flag_U then
@@ -15048,8 +15071,16 @@ package body Sem_Prag is
             end if;
 
             C_Ent := Cunit_Entity (Current_Sem_Unit);
+
+            --  We are going to check the entity that determines the ghost
+            --  region of that pragma. We need to disable the checks for ghost
+            --  context since the ghost region can only be set after analyzing
+            --  this entity.
+
+            Ghost_Context_Checks_Disabled := True;
             Analyze (Get_Pragma_Arg (Arg1));
             Nm := Entity (Get_Pragma_Arg (Arg1));
+            Ghost_Context_Checks_Disabled := False;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
@@ -22359,7 +22390,15 @@ package body Sem_Prag is
             while Present (Arg) loop
                Check_Arg_Is_Local_Name (Arg);
                Id := Get_Pragma_Arg (Arg);
+
+               --  We are going to check the entity that determines the ghost
+               --  region of that pragma. We need to disable the checks for
+               --  ghost context since the ghost region can only be set after
+               --  analyzing this entity.
+
+               Ghost_Context_Checks_Disabled := True;
                Analyze (Id);
+               Ghost_Context_Checks_Disabled := False;
 
                if not Is_Entity_Name (Id) then
                   Error_Pragma_Arg ("entity name required", Arg);
