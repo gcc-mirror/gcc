@@ -281,15 +281,96 @@ cxx_incomplete_type_inform (const_tree type)
   location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
   tree ptype = strip_top_quals (CONST_CAST_TREE (type));
 
+  /* When defining a template, current_class_type will be the pattern on
+     the template definition, while non-self-reference usages of this
+     template will be an instantiation; we should pull out the pattern to
+     compare against.  And for partial specs we should use the loc of the
+     partial spec rather than the primary template.  */
+  tree ttype = NULL_TREE;
+  tree tinfo = TYPE_TEMPLATE_INFO (ptype);
+  if (tinfo)
+    {
+      tree tmpl = TI_TEMPLATE (tinfo);
+      if (PRIMARY_TEMPLATE_P (tmpl) && TI_PARTIAL_INFO (tinfo))
+	{
+	  tree partial = TI_TEMPLATE (TI_PARTIAL_INFO (tinfo));
+	  loc = DECL_SOURCE_LOCATION (partial);
+	  ttype = TREE_TYPE (partial);
+	}
+      else
+	ttype = TREE_TYPE (tmpl);
+    }
+
   if (current_class_type
       && TYPE_BEING_DEFINED (current_class_type)
-      && same_type_p (ptype, current_class_type))
+      && (same_type_p (ptype, current_class_type)
+	  || (ttype && same_type_p (ttype, current_class_type))))
     inform (loc, "definition of %q#T is not complete until "
 	    "the closing brace", ptype);
-  else if (!TYPE_TEMPLATE_INFO (ptype))
-    inform (loc, "forward declaration of %q#T", ptype);
   else
-    inform (loc, "declaration of %q#T", ptype);
+    {
+      if (!tinfo)
+	inform (loc, "forward declaration of %q#T", ptype);
+      else
+	inform (loc, "declaration of %q#T", ptype);
+
+      /* If there's a similar-looking complete type attached
+	 to a different module, point at that as a suggestion.  */
+      if (modules_p () && TYPE_NAMESPACE_SCOPE_P (ptype))
+	{
+	  tree result = lookup_qualified_name (CP_TYPE_CONTEXT (ptype),
+					       TYPE_IDENTIFIER (ptype),
+					       LOOK_want::TYPE);
+	  if (TREE_CODE (result) == TREE_LIST)
+	    for (; result; result = TREE_CHAIN (result))
+	      {
+		tree cand = TREE_VALUE (result);
+
+		/* Typedefs are not likely intended to correspond.  */
+		if (is_typedef_decl (STRIP_TEMPLATE (cand))
+		    || DECL_ALIAS_TEMPLATE_P (cand))
+		  continue;
+
+		/* Only look at templates if type was a template.  */
+		if ((tinfo != nullptr) != (TREE_CODE (cand) == TEMPLATE_DECL))
+		  continue;
+
+		/* If we're looking for a template specialisation,
+		   only consider matching specialisations.  */
+		if (tinfo)
+		  {
+		    tree t = lookup_template_class (cand, TI_ARGS (tinfo),
+						    NULL_TREE, NULL_TREE,
+						    tf_none);
+		    if (t == error_mark_node
+			|| !CLASS_TYPE_P (t)
+			|| TYPE_BEING_DEFINED (t))
+		      continue;
+
+		    if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+		      {
+			/* An uninstantiated template: check if there is a
+			   pattern that could be used.  We don't want to
+			   call instantiate_class_template as that could
+			   cause further errors; this is just a hint.  */
+			tree part = most_specialized_partial_spec (t, tf_none);
+			cand = (part ? TI_TEMPLATE (part)
+				: CLASSTYPE_TI_TEMPLATE (t));
+		      }
+		    else
+		      cand = TYPE_NAME (t);
+		  }
+		
+		if (!COMPLETE_TYPE_P (TREE_TYPE (cand)))
+		  continue;
+
+		inform (DECL_SOURCE_LOCATION (cand),
+			"%q#T has a definition but does not correspond with "
+			"%q#T because it is attached to a different module",
+			TREE_TYPE (cand), ptype);
+	      }
+	}
+    }
 }
 
 /* Print an error message for invalid use of an incomplete type.
