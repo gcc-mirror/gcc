@@ -155,12 +155,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     [[nodiscard]]
     friend constexpr partial_ordering
     operator<=>(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    {
-      if (__v._M_value & 1)
-	return partial_ordering(__cmp_cat::_Ord(-__v._M_value));
-      else
-	return __v;
-    }
+    { return partial_ordering(__cmp_cat::_Ncmp(__v._M_reverse())); }
   };
 
   // valid values' definitions
