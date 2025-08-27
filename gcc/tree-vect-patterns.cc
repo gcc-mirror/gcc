@@ -4818,7 +4818,9 @@ vect_recog_divmod_pattern (vec_info *vinfo,
   tree q, cst;
   int prec;
 
-  if (!is_gimple_assign (last_stmt))
+  if (!is_gimple_assign (last_stmt)
+      /* The pattern will disrupt the reduction chain with multiple uses.  */
+      || vect_is_reduction (stmt_vinfo))
     return NULL;
 
   rhs_code = gimple_assign_rhs_code (last_stmt);
