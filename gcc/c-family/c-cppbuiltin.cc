@@ -1327,22 +1327,22 @@ c_cpp_builtins (cpp_reader *pfile)
 
   for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
     {
-      if (FLOATN_NX_TYPE_NODE (i) == NULL_TREE)
-	continue;
       if (c_dialect_cxx ()
 	  && cxx_dialect > cxx20
 	  && !floatn_nx_types[i].extended)
 	{
 	  char name[sizeof ("__STDCPP_FLOAT128_T__=1")];
+	  if (FLOATN_NX_TYPE_NODE (i) == NULL_TREE)
+	    {
+	      sprintf (name, "__STDCPP_FLOAT%d_T__", floatn_nx_types[i].n);
+	      cpp_warn (pfile, name);
+	      continue;
+	    }
 	  sprintf (name, "__STDCPP_FLOAT%d_T__=1", floatn_nx_types[i].n);
 	  cpp_define_warn (pfile, name);
 	}
-      else if (cxx_dialect >= cxx23)
-	{
-	  char name[sizeof ("__STDCPP_FLOAT128_T__")];
-	  sprintf (name, "__STDCPP_FLOAT%d_T__", floatn_nx_types[i].n);
-	  cpp_warn (pfile, name);
-	}
+      else if (FLOATN_NX_TYPE_NODE (i) == NULL_TREE)
+	continue;
       char prefix[20], csuffix[20];
       sprintf (prefix, "FLT%d%s", floatn_nx_types[i].n,
 	       floatn_nx_types[i].extended ? "X" : "");
