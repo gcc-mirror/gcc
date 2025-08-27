@@ -3432,7 +3432,7 @@ vectorizable_call (vec_info *vinfo,
 	}
     }
 
-  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
   internal_fn cond_fn = get_conditional_internal_fn (ifn);
   internal_fn cond_len_fn = get_len_internal_fn (ifn);
   int len_opno = internal_fn_len_index (cond_len_fn);
@@ -6452,7 +6452,7 @@ vectorizable_operation (vec_info *vinfo,
       using_emulated_vectors_p = true;
     }
 
-  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
@@ -6570,7 +6570,7 @@ vectorizable_operation (vec_info *vinfo,
   else if (arith_code_with_undefined_signed_overflow (orig_code)
 	   && ANY_INTEGRAL_TYPE_P (vectype)
 	   && TYPE_OVERFLOW_UNDEFINED (vectype)
-	   && STMT_VINFO_REDUC_IDX (stmt_info) != -1)
+	   && SLP_TREE_REDUC_IDX (slp_node) != -1)
     {
       gcc_assert (orig_code == PLUS_EXPR || orig_code == MINUS_EXPR
 		  || orig_code == MULT_EXPR || orig_code == POINTER_PLUS_EXPR);
@@ -11560,7 +11560,7 @@ vectorizable_condition (vec_info *vinfo,
   if (code != COND_EXPR)
     return false;
 
-  int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
   vect_reduction_type reduction_type = TREE_CODE_REDUCTION;
   bool nested_cycle_p = false;
   bool for_reduction = vect_is_reduction (stmt_info);

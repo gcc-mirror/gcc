@@ -5489,7 +5489,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       while (cond_node != slp_node_instance->reduc_phis)
 	{
 	  stmt_vec_info cond_info = SLP_TREE_REPRESENTATIVE (cond_node);
-	  int slp_reduc_idx;
 	  if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
 	    {
 	      gimple *vec_stmt
@@ -5497,16 +5496,9 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
 	      ccompares.safe_push
 		(std::make_pair (gimple_assign_rhs1 (vec_stmt),
-				 STMT_VINFO_REDUC_IDX (cond_info) == 2));
-	      /* ???  We probably want to have REDUC_IDX on the SLP node?
-		 We have both three and four children COND_EXPR nodes
-		 dependent on whether the comparison is still embedded
-		 as GENERIC.  So work backwards.  */
-	      slp_reduc_idx = (SLP_TREE_CHILDREN (cond_node).length () - 3
-			       + STMT_VINFO_REDUC_IDX (cond_info));
+				 SLP_TREE_REDUC_IDX (cond_node) == 2));
 	    }
-	  else
-	    slp_reduc_idx = STMT_VINFO_REDUC_IDX (cond_info);
+	  int slp_reduc_idx = SLP_TREE_REDUC_IDX (cond_node);
 	  cond_node = SLP_TREE_CHILDREN (cond_node)[slp_reduc_idx];
 	}
       gcc_assert (ccompares.length () != 0);
@@ -6874,13 +6866,12 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (!type_has_mode_precision_p (type))
     return false;
 
+  vect_reduc_info reduc_info = info_for_reduction (loop_vinfo, slp_node);
+
   /* TODO: Support lane-reducing operation that does not directly participate
      in loop reduction.  */
-  if (!STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
-      || STMT_VINFO_REDUC_IDX (stmt_info) < 0)
+  if (!reduc_info)
     return false;
-
-  vect_reduc_info reduc_info = info_for_reduction (loop_vinfo, slp_node);
 
   /* Lane-reducing pattern inside any inner loop of LOOP_VINFO is not
      recoginized.  */
@@ -7127,7 +7118,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
       stmt_vec_info vdef = vect_stmt_to_vectorize (def);
       int reduc_idx = STMT_VINFO_REDUC_IDX (vdef);
-      if (reduc_idx == -1)
+      if (STMT_VINFO_REDUC_IDX (vdef) == -1
+	  || SLP_TREE_REDUC_IDX (vdef_slp) == -1)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7196,7 +7188,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	  else if (!vectype_in)
 	    vectype_in = SLP_TREE_VECTYPE (slp_node);
 	  if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
-	    vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
+	    {
+	      gcc_assert (reduc_idx == SLP_TREE_REDUC_IDX (vdef_slp));
+	      vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
+	    }
 	}
 
       reduc_def = op.ops[reduc_idx];
@@ -7353,7 +7348,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	return false;
 
       /* When the condition uses the reduction value in the condition, fail.  */
-      if (STMT_VINFO_REDUC_IDX (stmt_info) == 0)
+      if (SLP_TREE_REDUC_IDX (slp_node) == 0)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7993,7 +7988,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
   tree vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
 
   vec_num = vect_get_num_copies (loop_vinfo, slp_node, vectype_in);
