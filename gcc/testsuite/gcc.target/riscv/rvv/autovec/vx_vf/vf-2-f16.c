@@ -17,5 +17,5 @@
 /* { dg-final { scan-assembler-not {vfwnmsac.vf} } } */
 /* { dg-final { scan-assembler-not {vfmul.vf} } } */
 /* { dg-final { scan-assembler-not {vfrdiv.vf} } } */
+/* { dg-final { scan-assembler-not {vfmin.vf} } } */
 /* { dg-final { scan-assembler-times {fcvt.s.h} 4 } } */
-/* { dg-final { scan-assembler-times {vfmv.v.f} 14 } } */

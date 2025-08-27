@@ -2065,3 +2065,22 @@
   }
   [(set_attr "type" "vfmuladd")]
 )
+
+;; vfmin.vf
+(define_insn_and_split "*vfmin_vf_<mode>"
+  [(set (match_operand:V_VLSF 0 "register_operand")
+    (smin:V_VLSF
+      (vec_duplicate:V_VLSF
+	(match_operand:<VEL> 2 "register_operand"))
+      (match_operand:V_VLSF 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_scalar (SMIN, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vfmuladd")]
+)

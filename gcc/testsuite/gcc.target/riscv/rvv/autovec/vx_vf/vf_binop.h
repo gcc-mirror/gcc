@@ -123,3 +123,84 @@
   DEF_VF_BINOP_REVERSE_CASE_1 (T, OP, NAME, BODY)
 
 #endif
+
+#define DEF_MIN_0(T)                                                           \
+  static inline T test_##T##_min_0 (T a, T b) { return a > b ? b : a; }
+
+#define DEF_MIN_1(T)                                                           \
+  static inline T test_##T##_min_1 (T a, T b) { return a >= b ? b : a; }
+
+DEF_MIN_0 (_Float16)
+DEF_MIN_0 (float)
+DEF_MIN_0 (double)
+
+DEF_MIN_1 (_Float16)
+DEF_MIN_1 (float)
+DEF_MIN_1 (double)
+
+#define MIN_FUNC_0(T) test_##T##_min_0
+#define MIN_FUNC_0_WRAP(T) MIN_FUNC_0 (T)
+
+#define MIN_FUNC_1(T) test_##T##_min_1
+#define MIN_FUNC_1_WRAP(T) MIN_FUNC_1 (T)
+
+#define DEF_VF_BINOP_CASE_2(T, FUNC, NAME)                                     \
+  void test_vf_binop_##NAME##_##FUNC##_##T##_case_2 (T *restrict out,          \
+						     T *restrict in, T f,      \
+						     unsigned n)               \
+  {                                                                            \
+    for (unsigned i = 0; i < n; i++)                                           \
+      out[i] = FUNC (in[i], f);                                                \
+  }
+#define DEF_VF_BINOP_CASE_2_WRAP(T, FUNC, NAME)                                \
+  DEF_VF_BINOP_CASE_2 (T, FUNC, NAME)
+#define RUN_VF_BINOP_CASE_2(T, NAME, FUNC, out, in, f, n)                      \
+  test_vf_binop_##NAME##_##FUNC##_##T##_case_2 (out, in, f, n)
+#define RUN_VF_BINOP_CASE_2_WRAP(T, NAME, FUNC, out, in, f, n)                 \
+  RUN_VF_BINOP_CASE_2 (T, NAME, FUNC, out, in, f, n)
+
+#define DEF_VF_BINOP_CASE_3(T, FUNC, NAME, BODY)                               \
+  void test_vf_binop_##NAME##_##FUNC##_##T##_case_3 (T *restrict out,          \
+						     T *restrict in, T f,      \
+						     unsigned n)               \
+  {                                                                            \
+    unsigned k = 0;                                                            \
+    T tmp = f + 3;                                                             \
+                                                                               \
+    while (k < n)                                                              \
+      {                                                                        \
+	tmp = tmp * 0x7.ap3;                                                   \
+	BODY (FUNC)                                                            \
+      }                                                                        \
+  }
+#define DEF_VF_BINOP_CASE_3_WRAP(T, FUNC, NAME, BODY)                          \
+  DEF_VF_BINOP_CASE_3 (T, FUNC, NAME, BODY)
+
+#define VF_BINOP_FUNC_BODY(func)                                               \
+  out[k + 0] = func (in[k + 0], tmp);                                          \
+  out[k + 1] = func (in[k + 1], tmp);                                          \
+  k += 2;
+
+#define VF_BINOP_FUNC_BODY_X4(op)                                              \
+  VF_BINOP_FUNC_BODY (op)                                                      \
+  VF_BINOP_FUNC_BODY (op)
+
+#define VF_BINOP_FUNC_BODY_X8(op)                                              \
+  VF_BINOP_FUNC_BODY_X4 (op)                                                   \
+  VF_BINOP_FUNC_BODY_X4 (op)
+
+#define VF_BINOP_FUNC_BODY_X16(op)                                             \
+  VF_BINOP_FUNC_BODY_X8 (op)                                                   \
+  VF_BINOP_FUNC_BODY_X8 (op)
+
+#define VF_BINOP_FUNC_BODY_X32(op)                                             \
+  VF_BINOP_FUNC_BODY_X16 (op)                                                  \
+  VF_BINOP_FUNC_BODY_X16 (op)
+
+#define VF_BINOP_FUNC_BODY_X64(op)                                             \
+  VF_BINOP_FUNC_BODY_X32 (op)                                                  \
+  VF_BINOP_FUNC_BODY_X32 (op)
+
+#define VF_BINOP_FUNC_BODY_X128(op)                                            \
+  VF_BINOP_FUNC_BODY_X64 (op)                                                  \
+  VF_BINOP_FUNC_BODY_X64 (op)
