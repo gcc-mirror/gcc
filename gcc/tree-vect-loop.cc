@@ -6501,7 +6501,6 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 			       stmt_vec_info stmt_info,
 			       gimple_stmt_iterator *gsi,
 			       slp_tree slp_node,
-			       gimple *reduc_def_stmt,
 			       code_helper code, internal_fn reduc_fn,
 			       int num_ops, tree vectype_in,
 			       int reduc_index, vec_loop_masks *masks,
@@ -6526,6 +6525,13 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
   gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype_out),
 			TYPE_VECTOR_SUBPARTS (vectype_in)));
 
+  /* ???  We should, when transforming the cycle PHI, record the existing
+     scalar def as vector def so looking up the vector def works.  This
+     would also allow generalizing this for reduction paths of length > 1
+     and/or SLP reductions.  */
+  slp_tree reduc_node = SLP_TREE_CHILDREN (slp_node)[reduc_index];
+  tree reduc_var = vect_get_slp_scalar_def (reduc_node, 0);
+
   /* The operands either come from a binary operation or an IFN_COND operation.
      The former is a gimple assign with binary rhs and the latter is a
      gimple call with four arguments.  */
@@ -6546,7 +6552,6 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
   gimple *sdef = vect_orig_stmt (scalar_dest_def_info)->stmt;
   tree scalar_dest = gimple_get_lhs (sdef);
   tree scalar_type = TREE_TYPE (scalar_dest);
-  tree reduc_var = gimple_phi_result (reduc_def_stmt);
 
   int vec_num = vec_oprnds0.length ();
   tree vec_elem_type = TREE_TYPE (vectype_out);
@@ -8016,8 +8021,6 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  stmt_vec_info phi_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
-  gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
   int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
   tree vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
 
@@ -8060,7 +8063,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
       internal_fn reduc_fn = STMT_VINFO_REDUC_FN (reduc_info);
       gcc_assert (code.is_tree_code () || cond_fn_p);
       return vectorize_fold_left_reduction
-	  (loop_vinfo, stmt_info, gsi, slp_node, reduc_def_phi,
+	  (loop_vinfo, stmt_info, gsi, slp_node,
 	   code, reduc_fn, op.num_ops, vectype_in,
 	   reduc_index, masks, lens);
     }
