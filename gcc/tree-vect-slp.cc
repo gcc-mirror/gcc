@@ -5312,9 +5312,8 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 		&& ((stmt_info = vect_stmt_to_vectorize (stmt_info)), true)
 		&& STMT_VINFO_RELEVANT (stmt_info) == vect_used_only_live
 		&& STMT_VINFO_LIVE_P (stmt_info)
-		&& (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
-		    || (STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
-			&& STMT_VINFO_REDUC_IDX (stmt_info) == -1)))
+		&& !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))
+		&& STMT_VINFO_REDUC_IDX (stmt_info) == -1)
 	      {
 		vec<stmt_vec_info> stmts;
 		vec<stmt_vec_info> roots = vNULL;
