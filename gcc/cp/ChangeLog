@@ -1,3 +1,12 @@
+2025-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	* class.cc (add_method): Use outer_template_args when
+	substituting outer template arguments into constraints.
+
 2025-08-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

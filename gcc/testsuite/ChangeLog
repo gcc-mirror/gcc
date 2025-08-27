@@ -1,3 +1,27 @@
+2025-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/unsigned-extend-2.c: Disable sched2 and sched3
+	and update function body to match.
+
+2025-08-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-05-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/116445
+	* gcc.target/arm/unsigned-extend-2.c: Fix dg directives.
+
+2025-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121351
+	* g++.dg/cpp2a/concepts-using7.C: New test.
+
 2025-08-25  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
