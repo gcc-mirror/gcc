@@ -7136,16 +7136,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
       if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
 	only_slp_reduc_chain = false;
-      /* For epilogue generation live members of the chain need
-         to point back to the PHI via their original stmt for
-	 info_for_reduction to work.  For SLP we need to look at
-	 all lanes here - even though we only will vectorize from
-	 the SLP node with live lane zero the other live lanes also
-	 need to be identified as part of a reduction to be able
-	 to skip code generation for them.  */
-      for (auto s : SLP_TREE_SCALAR_STMTS (vdef_slp))
-	if (STMT_VINFO_LIVE_P (s))
-	  STMT_VINFO_REDUC_DEF (vect_orig_stmt (s)) = phi_info;
       gimple_match_op op;
       if (!gimple_extract_op (vdef->stmt, &op))
 	{
@@ -7193,10 +7183,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 							    vectype_op))
 		    return false;
 		}
-
-	      /* For lane-reducing operation vectorizable analysis needs the
-		 reduction PHI information.  */
-	      STMT_VINFO_REDUC_DEF (def) = phi_info;
 
 	      /* To accommodate lane-reducing operations of mixed input
 		 vectypes, choose input vectype with the least lanes for the
@@ -10233,7 +10219,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
   /* If a stmt of a reduction is live, vectorize it via
      vect_create_epilog_for_reduction.  vectorizable_reduction assessed
      validity so just trigger the transform here.  */
-  if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
+  if (vect_is_reduction (slp_node))
     {
       if (!vec_stmt_p)
 	return true;
