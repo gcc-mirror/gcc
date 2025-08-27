@@ -8143,5 +8143,4 @@ GNAT.
 
 .. only:: PRO
 
-  It provides the same runtimes with the exception that light runtimes
-  are not currently included with the native compilers.
+  It provides the same runtimes.
