@@ -921,9 +921,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_BoundArgs>(__args)...);
     }
 
-#ifdef __cpp_lib_bind_front // C++ >= 20
+#if __cplusplus >= 202002L
   template<size_t, typename _Tp>
-  struct _Indexed_bound_arg
+    struct _Indexed_bound_arg
     {
       [[no_unique_address]] _Tp _M_val;
     };
@@ -931,24 +931,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _IndexedArgs>
     struct _Bound_arg_storage : _IndexedArgs...
     {
-      template<typename _Fd, typename _Self, typename... _CallArgs>
+      template<bool _Back, typename _Fd, typename _Self, typename... _CallArgs>
 	static constexpr
 	decltype(auto)
-	_S_apply_front(_Fd&& __fd, _Self&& __self, _CallArgs&&... __call_args)
+	_S_apply(_Fd&& __fd, _Self&& __self, _CallArgs&&... __call_args)
 	{
-	  return std::invoke(std::forward<_Fd>(__fd),
-			     __like_t<_Self, _IndexedArgs>(__self)._M_val...,
-			     std::forward<_CallArgs>(__call_args)...);
-	}
-
-      template<typename _Fd, typename _Self, typename... _CallArgs>
-	static constexpr
-	decltype(auto)
-	_S_apply_back(_Fd&& __fd, _Self&& __self, _CallArgs&&... __call_args)
-	{
-	  return std::invoke(std::forward<_Fd>(__fd),
-			     std::forward<_CallArgs>(__call_args)...,
-			     __like_t<_Self, _IndexedArgs>(__self)._M_val...);
+	  if constexpr (_Back)
+	    return std::__invoke(std::forward<_Fd>(__fd),
+				 std::forward<_CallArgs>(__call_args)...,
+				 __like_t<_Self, _IndexedArgs>(__self)._M_val...);
+	  else
+	    return std::__invoke(std::forward<_Fd>(__fd),
+				 __like_t<_Self, _IndexedArgs>(__self)._M_val...,
+				 std::forward<_CallArgs>(__call_args)...);
 	}
     };
 
@@ -970,9 +965,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-  template<typename _Fd, typename... _BoundArgs>
-    struct _Bind_front
+  template<bool _Back, typename _Fd, typename... _BoundArgs>
+    class _Binder
     {
+      template<typename _Self, typename... _CallArgs>
+	using _Result_t = __conditional_t<
+	  _Back,
+	  invoke_result<__like_t<_Self, _Fd>,
+			_CallArgs..., __like_t<_Self, _BoundArgs>...>,
+	  invoke_result<__like_t<_Self, _Fd>,
+			__like_t<_Self, _BoundArgs>..., _CallArgs...>>::type;
+
+      template<typename _Self, typename... _CallArgs>
+	static consteval bool
+	_S_noexcept_invocable()
+	{
+	  if constexpr (_Back)
+	    return is_nothrow_invocable_v< __like_t<_Self, _Fd>,
+		     _CallArgs..., __like_t<_Self, _BoundArgs>...>;
+	  else
+	    return is_nothrow_invocable_v<__like_t<_Self, _Fd>,
+		     __like_t<_Self, _BoundArgs>..., _CallArgs...>;
+	}
+
+    public:
       static_assert(is_move_constructible_v<_Fd>);
       static_assert((is_move_constructible_v<_BoundArgs> && ...));
 
@@ -980,7 +996,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // instead of the copy/move constructor.
       template<typename _Fn, typename... _Args>
 	explicit constexpr
-	_Bind_front(int, _Fn&& __fn, _Args&&... __args)
+	_Binder(int, _Fn&& __fn, _Args&&... __args)
 	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
 			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
 	: _M_fd(std::forward<_Fn>(__fn)),
@@ -989,43 +1005,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_explicit_this_parameter
       template<typename _Self, typename... _CallArgs>
-	constexpr
-	invoke_result_t<__like_t<_Self, _Fd>, __like_t<_Self, _BoundArgs>..., _CallArgs...>
+	constexpr _Result_t<_Self, _CallArgs...>
 	operator()(this _Self&& __self, _CallArgs&&... __call_args)
-	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
-					__like_t<_Self, _BoundArgs>..., _CallArgs...>)
+	noexcept(_S_noexcept_invocable<_Self, _CallArgs...>())
 	{
-	  return _S_call(__like_t<_Self, _Bind_front>(__self),
+	  return _S_call(__like_t<_Self, _Binder>(__self),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
 #else
       template<typename... _CallArgs>
 	requires true
-	constexpr
-	invoke_result_t<_Fd&, _BoundArgs&..., _CallArgs...>
+	constexpr _Result_t<_Binder&, _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &
-	noexcept(is_nothrow_invocable_v<_Fd&, _BoundArgs&..., _CallArgs...>)
+	noexcept(_S_noexcept_invocable<_Binder&, _CallArgs...>())
 	{
 	  return _S_call(*this, std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
 	requires true
-	constexpr
-	invoke_result_t<const _Fd&, const _BoundArgs&..., _CallArgs...>
+	constexpr _Result_t<const _Binder&, _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &
-	noexcept(is_nothrow_invocable_v<const _Fd&, const _BoundArgs&...,
-					_CallArgs...>)
+	noexcept(_S_noexcept_invocable<const _Binder&, _CallArgs...>())
 	{
 	  return _S_call(*this, std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
 	requires true
-	constexpr
-	invoke_result_t<_Fd, _BoundArgs..., _CallArgs...>
+	constexpr _Result_t<_Binder&&, _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &&
-	noexcept(is_nothrow_invocable_v<_Fd, _BoundArgs..., _CallArgs...>)
+	noexcept(_S_noexcept_invocable<_Binder&&, _CallArgs...>())
 	{
 	  return _S_call(std::move(*this),
 			 std::forward<_CallArgs>(__call_args)...);
@@ -1033,11 +1043,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _CallArgs>
 	requires true
-	constexpr
-	invoke_result_t<const _Fd, const _BoundArgs..., _CallArgs...>
+	constexpr _Result_t<const _Binder&&, _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &&
-	noexcept(is_nothrow_invocable_v<const _Fd, const _BoundArgs...,
-					_CallArgs...>)
+	noexcept(_S_noexcept_invocable<const _Binder&&, _CallArgs...>())
 	{
 	  return _S_call(std::move(*this),
 			 std::forward<_CallArgs>(__call_args)...);
@@ -1066,15 +1074,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	decltype(auto)
 	_S_call(_Tp&& __g, _CallArgs&&... __call_args)
 	{
-	  if constexpr (sizeof...(_BoundArgs) == 1)
-	    return std::invoke(std::forward<_Tp>(__g)._M_fd,
-			       std::forward<_Tp>(__g)._M_bound_args,
-			       std::forward<_CallArgs>(__call_args)...);
-	  else
-	    return _BoundArgsStorage::_S_apply_front(
+	  if constexpr (sizeof...(_BoundArgs) > 1)
+	    return _BoundArgsStorage::template _S_apply<_Back>(
 		      std::forward<_Tp>(__g)._M_fd,
 		      std::forward<_Tp>(__g)._M_bound_args,
 		      std::forward<_CallArgs>(__call_args)...);
+	  else if constexpr (sizeof...(_BoundArgs) == 0)
+	    return std::__invoke(std::forward<_Tp>(__g)._M_fd,
+				 std::forward<_CallArgs>(__call_args)...);
+	  else if constexpr (_Back) // sizeof...(_BoundArgs) == 1
+	    return std::__invoke(std::forward<_Tp>(__g)._M_fd,
+				 std::forward<_CallArgs>(__call_args)...,
+				 std::forward<_Tp>(__g)._M_bound_args);
+	  else // !_Back && sizeof...(_BoundArgs) == 1
+	    return std::__invoke(std::forward<_Tp>(__g)._M_fd,
+				 std::forward<_Tp>(__g)._M_bound_args,
+				 std::forward<_CallArgs>(__call_args)...);
+
 	}
 
       [[no_unique_address]] _Fd _M_fd;
@@ -1082,8 +1098,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Fn, typename... _Args>
-    using _Bind_front_t = _Bind_front<decay_t<_Fn>, decay_t<_Args>...>;
+    using _Bind_front_t = _Binder<false, decay_t<_Fn>, decay_t<_Args>...>;
 
+  // for zero bounds args behavior of bind_front and bind_back is the same,
+  // so reuse _Bind_front_t, i.e. _Binder<false, ...>
+  template<typename _Fn, typename... _Args>
+    using _Bind_back_t
+      = _Binder<(sizeof...(_Args) > 0), decay_t<_Fn>, decay_t<_Args>...>;
+#endif // __cplusplus >= 202002L
+
+#ifdef __cpp_lib_bind_front // C++ >= 20
   /** Create call wrapper by partial application of arguments to function.
    *
    * The result of `std::bind_front(f, args...)` is a function object that
@@ -1105,62 +1129,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_bind_front
 
 #ifdef __cpp_lib_bind_back // C++ >= 23
-  template<typename _Fd, typename... _BoundArgs>
-    struct _Bind_back
-    {
-      static_assert(is_move_constructible_v<_Fd>);
-      static_assert((is_move_constructible_v<_BoundArgs> && ...));
-
-      // First parameter is to ensure this constructor is never used
-      // instead of the copy/move constructor.
-      template<typename _Fn, typename... _Args>
-	explicit constexpr
-	_Bind_back(int, _Fn&& __fn, _Args&&... __args)
-	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
-			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
-	: _M_fd(std::forward<_Fn>(__fn)),
-	  _M_bound_args(__make_bound_args<_BoundArgs...>(std::forward<_Args>(__args)...))
-	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
-
-      template<typename _Self, typename... _CallArgs>
-	constexpr
-	invoke_result_t<__like_t<_Self, _Fd>, _CallArgs..., __like_t<_Self, _BoundArgs>...>
-	operator()(this _Self&& __self, _CallArgs&&... __call_args)
-	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
-					_CallArgs..., __like_t<_Self, _BoundArgs>...>)
-	{
-	  return _S_call(__like_t<_Self, _Bind_back>(__self),
-			 std::forward<_CallArgs>(__call_args)...);
-	}
-
-    private:
-      using _BoundArgsStorage
-	// _BoundArgs are required to be move-constructible, so this is valid.
-	= decltype(__make_bound_args<_BoundArgs...>(std::declval<_BoundArgs>()...));
-
-      template<typename _Tp, typename... _CallArgs>
-	static constexpr
-	decltype(auto)
-	_S_call(_Tp&& __g, _CallArgs&&... __call_args)
-	{
-	  if constexpr (sizeof...(_BoundArgs) == 1)
-	    return std::invoke(std::forward<_Tp>(__g)._M_fd,
-			       std::forward<_CallArgs>(__call_args)...,
-			       std::forward<_Tp>(__g)._M_bound_args);
-	  else
-	    return _BoundArgsStorage::_S_apply_back(
-		      std::forward<_Tp>(__g)._M_fd,
-		      std::forward<_Tp>(__g)._M_bound_args,
-		      std::forward<_CallArgs>(__call_args)...);
-	}
-
-      [[no_unique_address]] _Fd _M_fd;
-      [[no_unique_address]] _BoundArgsStorage _M_bound_args;
-    };
-
-  template<typename _Fn, typename... _Args>
-    using _Bind_back_t = _Bind_back<decay_t<_Fn>, decay_t<_Args>...>;
-
   /** Create call wrapper by partial application of arguments to function.
    *
    * The result of `std::bind_back(f, args...)` is a function object that
