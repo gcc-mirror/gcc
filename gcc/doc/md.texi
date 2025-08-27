@@ -8684,6 +8684,11 @@ This pattern tags an object that begins at the address specified by
 operand 0, has the byte size indicated by the operand 2, and uses the
 tag from operand 1.
 
+@cindex @code{compose_tag} instruction pattern
+This pattern composes a tagged address specified by operand 1 with
+mode @code{ptr_mode}, with an integer operand 2 representing the tag
+offset.  It returns the result in operand 0 with mode @code{ptr_mode}.
+
 @cindex @code{clear_cache} instruction pattern
 @item @samp{clear_cache}
 This pattern, if defined, flushes the instruction cache for a region of

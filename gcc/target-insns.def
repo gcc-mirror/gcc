@@ -47,6 +47,7 @@ DEF_TARGET_INSN (call_value_pop, (rtx x0, rtx x1, rtx opt2, rtx opt3,
 DEF_TARGET_INSN (casesi, (rtx x0, rtx x1, rtx x2, rtx x3, rtx x4))
 DEF_TARGET_INSN (check_stack, (rtx x0))
 DEF_TARGET_INSN (clear_cache, (rtx x0, rtx x1))
+DEF_TARGET_INSN (compose_tag, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (doloop_begin, (rtx x0, rtx x1))
 DEF_TARGET_INSN (doloop_end, (rtx x0, rtx x1))
 DEF_TARGET_INSN (eh_return, (rtx x0))
