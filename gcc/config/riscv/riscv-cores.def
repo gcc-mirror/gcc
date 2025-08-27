@@ -113,7 +113,7 @@ RISCV_CORE("xt-c908v",        "rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_"
 			      "zvfh_sstc_svinval_svnapot_svpbmt__xtheadba_"
 			      "xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_"
 			      "xtheadfmemidx_xtheadmac_xtheadmemidx_"
-			      "xtheadmempair_xtheadsync_xtheadvdot",
+			      "xtheadmempair_xtheadsync",
 			      "xt-c908")
 RISCV_CORE("xt-c910",         "rv64imafdc_zicntr_zicsr_zifencei_zihpm_zfh_"
 			      "xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
@@ -121,7 +121,7 @@ RISCV_CORE("xt-c910",         "rv64imafdc_zicntr_zicsr_zifencei_zihpm_zfh_"
 			      "xtheadmemidx_xtheadmempair_xtheadsync",
 			      "xt-c910")
 RISCV_CORE("xt-c910v2",       "rv64imafdc_zicbom_zicbop_zicboz_zicntr_zicond_"
-			      "zicsr_zifencei _zihintntl_zihintpause_zihpm_"
+			      "zicsr_zifencei_zihintntl_zihintpause_zihpm_"
 			      "zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_"
 			      "zbs_sscofpmf_sstc_svinval_svnapot_svpbmt_"
 			      "xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
@@ -135,13 +135,13 @@ RISCV_CORE("xt-c920",         "rv64imafdc_zicntr_zicsr_zifencei_zihpm_zfh_"
 			      "xtheadvector",
 			      "xt-c910")
 RISCV_CORE("xt-c920v2",       "rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicond_"
-			      "zicsr_zifencei _zihintntl_zihintpause_zihpm_"
+			      "zicsr_zifencei_zihintntl_zihintpause_zihpm_"
 			      "zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_"
 			      "zbs_zvfbfmin_zvfbfwma_zvfh_sscofpmf_sstc_"
 			      "svinval_svnapot_svpbmt_xtheadba_xtheadbb_"
 			      "xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_"
 			      "xtheadmac_xtheadmemidx_xtheadmempair_"
-			      "xtheadsync_xtheadvdot",
+			      "xtheadsync",
 			       "xt-c920v2")
 
 RISCV_CORE("tt-ascalon-d8",   "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_"
