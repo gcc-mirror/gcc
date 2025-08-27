@@ -4314,6 +4314,35 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
   if (!possible)
     return NULL;
 
+  if (vect_is_reduction (stmt_vinfo))
+    {
+      int op_uses = alg.op[0] != alg_zero;
+      for (int i = 1; i < alg.ops; i++)
+	switch (alg.op[i])
+	  {
+	  case alg_add_t_m2:
+	  case alg_sub_t_m2:
+	    if (synth_shift_p && alg.log[i])
+	      return NULL;
+	    else
+	      op_uses++;
+	    break;
+	  case alg_add_t2_m:
+	  case alg_sub_t2_m:
+	    op_uses++;
+	    break;
+	  default:
+	    break;
+	  }
+      if (variant == add_variant)
+	op_uses++;
+      /* When we'll synthesize more than a single use of the reduction
+	 operand the reduction constraints are violated.  Avoid this
+	 situation.  */
+      if (op_uses > 1)
+	return NULL;
+    }
+
   if (!target_supports_mult_synth_alg (&alg, variant, vectype, synth_shift_p))
     return NULL;
 
