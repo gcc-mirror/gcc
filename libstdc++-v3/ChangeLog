@@ -1,3 +1,45 @@
+2025-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::_CachedPosition): Remove
+	additional size constraint on the offset-based partial
+	specialization.
+
+2025-08-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/90192
+	* include/bits/stl_vector.h (vector<T>::_M_fill_append): Declare.
+	(vector<T>::fill): Use _M_fill_append instead of _M_fill_insert.
+	* include/bits/vector.tcc (vector<T>::_M_fill_append): Define
+	(vector<T>::_M_fill_insert): Delegate to _M_fill_append when
+	elements are appended.
+	* testsuite/23_containers/vector/modifiers/moveable.cc: Updated
+	copycount for inserting at the end (appending).
+	* testsuite/23_containers/vector/modifiers/resize.cc: New test.
+	* testsuite/backward/hash_set/check_construct_destroy.cc: Updated
+	copycount, the hash_set constructor uses insert to fill buckets
+	with nullptrs.
+
+2025-08-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/move.h (std::__like_impl, std::__like_t): Make
+	available in c++11.
+	* include/std/functional (std::_Indexed_bound_arg)
+	(std::_Bound_arg_storage, std::__make_bound_args): Define.
+	(std::_Bind_front, std::_Bind_back): Use _Bound_arg_storage.
+	* testsuite/20_util/function_objects/bind_back/1.cc: Expand
+	test to cover cases of 0, 1, many bound args.
+	* testsuite/20_util/function_objects/bind_back/111327.cc: Likewise.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Likewise.
+	* testsuite/20_util/function_objects/bind_front/111327.cc: Likewise.
+
+2025-08-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/stop_token (__variant::_Never_valueless_alt): Declare.
+	(__variant::_Never_valueless_alt<std::stop_token>)
+	(__variant::_Never_valueless_alt<std::stop_source>): Define.
+	* include/std/thread: (__variant::_Never_valueless_alt): Declare.
+	(__variant::_Never_valueless_alt<std::jthread>): Define.
+
 2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/121496

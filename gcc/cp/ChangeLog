@@ -1,3 +1,15 @@
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* decl.cc (omp_declare_variant_finalize_one): Error if variant
+	is the same as base.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_finish_omp_declare_variant): Structure diagnostic
+	code similarly to C front end.  Make check for a missing "match"
+	clause unconditional.
+
 2025-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* pt.cc (finish_expansion_stmt): Implement C++ CWG3048

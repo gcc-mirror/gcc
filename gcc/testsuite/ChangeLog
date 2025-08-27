@@ -1,3 +1,114 @@
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* gcc.dg/gomp/declare-variant-3.c: New.
+	* gfortran.dg/gomp/declare-variant-22.f90: New.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/append-args-1.c: Adjust expected output.
+	* g++.dg/gomp/adjust-args-1.C: Likewise.
+	* g++.dg/gomp/adjust-args-3.C: Likewise.
+	* gcc.dg/gomp/adjust-args-1.c: Likewise:
+	* gcc.dg/gomp/append-args-1.c: Likewise.
+	* gcc.dg/gomp/unprototyped-variant.c: New.
+	* gfortran.dg/gomp/adjust-args-1.f90: Adjust expected output.
+	* gfortran.dg/gomp/append_args-1.f90: Likewise.
+
+2025-08-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/arch-25.c: Use wildcards to simplify/eliminate
+	dg-error directives.
+	* gcc.target/riscv/arch-ss-2.c: Similarly.
+	* gcc.target/riscv/arch-zilsd-2.c: Similarly.
+	* gcc.target/riscv/arch-zilsd-3.c: Similarly.
+
+2025-08-26  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	* gcc.dg/debug/ctf/ctf-array-7.c: Restrict to lp64,llp64
+	targets.
+
+2025-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/unsigned-extend-2.c: Disable sched2 and sched3
+	and update function body to match.
+
+2025-08-26  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vect_unroll-1.c: New test.
+	* gcc.target/i386/vect_unroll-2.c: New test.
+	* gcc.target/i386/vect_unroll-3.c: New test.
+	* gcc.target/i386/vect_unroll-4.c: New test.
+	* gcc.target/i386/vect_unroll-5.c: New test.
+	* gcc.target/i386/vect_unroll-6.c: New file.
+
+2025-08-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfrdiv.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h: Add support for reverse
+	variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_data.h: Add data for
+	reverse variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfrdiv-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfrdiv-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfrdiv-run-1-f64.c: New test.
+
+2025-08-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* gcc.target/aarch64/pr121290.c: New test.
+
+2025-08-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfmul.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_run.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmul-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmul-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmul-run-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-mul-2.c: Adjust scan
+	dump.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-mul-3.c: Likewise.
+
+2025-08-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/bics_3.c: Add some additional tests that
+	cannot be folded to a bit manipulation.
+
+2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121659
+	* gcc.dg/vect/pr121659.c: New testcase.
+
+2025-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/121658
+	* gcc.target/i386/pr121658.c: New test.
+
 2025-08-26  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check

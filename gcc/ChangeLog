@@ -1,3 +1,96 @@
+2025-08-26  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::ix86_vector_costs):
+	Addd new memeber m_num_reduc, m_prefer_unroll.
+	(ix86_vector_costs::add_stmt_cost): Set m_prefer_unroll and
+	m_num_reduc
+	(ix86_vector_costs::finish_cost): Determine
+	m_suggested_unroll_vector with consideration of
+	reduc_lat_mult_thr, m_num_reduction and
+	ix86_vect_unroll_limit.
+	* config/i386/i386.h (enum ix86_reduc_unroll_factor): New
+	enum.
+	(processor_costs): Add reduc_lat_mult_thr and
+	vect_unroll_limit.
+	* config/i386/x86-tune-costs.h: Initialize
+	reduc_lat_mult_thr and vect_unroll_limit.
+	* config/i386/i386.opt: Add -param=ix86-vect-unroll-limit.
+
+2025-08-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfrdiv_vf_<mode>): Add new pattern to
+	combine vec_duplicate + vfdiv.vv into vfrdiv.vf.
+	* config/riscv/vector.md (@pred_<optab><mode>_reverse_scalar): Allow VLS
+	modes.
+
+2025-08-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* config/aarch64/aarch64.cc
+	(class aarch64_vector_costs ): Add m_loop_fully_scalar_dup.
+	(aarch64_vector_costs::add_stmt_cost): Detect invariant inner loops.
+	(adjust_body_cost): Adjust final costing if m_loop_fully_scalar_dup.
+
+2025-08-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfmul_vf_<mode>): Add new pattern to
+	combine vec_duplicate + vfmul.vv into vfmul.vf.
+	* config/riscv/vector.md (@pred_<optab><mode>_scalar): Allow VLS modes.
+
+2025-08-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_arg_partial_bytes): Remove name
+	from unused parameter.
+
+2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_reduc_type): Get SLP node as argument.
+	* config/aarch64/aarch64.cc (aarch64_sve_in_loop_reduction_latency):
+	Take SLO node as argument and adjust.
+	(aarch64_in_loop_reduction_latency): Likewise.
+	(aarch64_detect_vector_stmt_subtype): Adjust.
+	(aarch64_vector_costs::count_ops): Likewise.  Treat reductions
+	during scalar costing as single-cycle.
+
+2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121659
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Do not allow
+	matching up comparison operators by swapping if that would
+	disturb STMT_VINFO_REDUC_IDX.  Make sure to only
+	actually mark operands for swapping when there was a
+	mismatch and we're not processing the first stmt.
+
+2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Access lanes_ifn
+	only when VMAT_LOAD_STORE_LANES.
+	(vectorizable_load): Likewise.
+
+2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (stmt_vec_info_::reduc_vectype_in): Remove.
+	(STMT_VINFO_REDUC_VECTYPE_IN): Likewise.
+	* tree-vect-loop.cc (vect_is_emulated_mixed_dot_prod): Get
+	at the input vectype via the SLP node child.
+	(vectorizable_lane_reducing): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_reduction): Do not set STMT_VINFO_REDUC_VECTYPE_IN.
+
+2025-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/121658
+	* config/i386/sse.md (<insn><mode>3 any_shift): Use const0_rtx
+	instead of GEN_INT (0).
+	(cond_<insn><mode> any_shift): Likewise.  Formatting fix.
+	(<insn><mode>3 any_rotate): Use register_operand predicate instead of
+	general_operand for match_operand 1.  Use const0_rtx instead of
+	GEN_INT (0).
+	(<insn>v16qi3 any_rotate): Use force_reg on operands[1].  Formatting
+	fix.
+	* config/i386/i386.cc (ix86_shift_rotate_cost): Comment formatting
+	fixes.
+
 2025-08-26  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/vector.md (@pred_mul_plus_vx_<mode>): Add new pattern to

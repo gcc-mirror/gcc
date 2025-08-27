@@ -1,3 +1,15 @@
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* c-parser.cc (c_finish_omp_declare_variant): Error if variant
+	is the same as base.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_finish_omp_declare_variant): Rework diagnostic
+	code.  Do not record variant if there are errors.  Make check for
+	a missing "match" clause unconditional.
+
 2025-08-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c/121478
