@@ -14213,7 +14213,7 @@ apply_deduced_return_type (tree fco, tree return_type)
                                result);
   DECL_RESULT (fco) = result;
 
-  if (!processing_template_decl)
+  if (!uses_template_parms (fco))
     if (function *fun = DECL_STRUCT_FUNCTION (fco))
       {
 	bool aggr = aggregate_value_p (result, fco);
