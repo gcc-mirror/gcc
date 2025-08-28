@@ -23,6 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define BID_128RES
 #include "bid_div_macros.h"
+#include <fenv.h>
 
 
 BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (UINT128, bid128_rem, x, y)
@@ -34,8 +35,15 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (UINT128, bid128_rem, x, y)
      int_float f64, fx;
      int exponent_x, exponent_y, diff_expon, bin_expon_cx, scale,
        scale0;
+     int old_rm, rm_changed=0;
 
   // unpack arguments, check for NaN or Infinity
+
+// Set it to round-to-nearest (if different)
+if ((old_rm=fegetround()) != FE_TONEAREST) {
+  rm_changed=1;
+  fesetround(FE_TONEAREST);
+}
 
 valid_y = unpack_BID128_value (&sign_y, &exponent_y, &CY, y);
 
@@ -52,6 +60,8 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 #endif
   res.w[1] = CX.w[1] & QUIET_MASK64;
   res.w[0] = CX.w[0];
+  // restore the rounding mode back if it has been changed
+  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
     // x is Infinity?
@@ -66,6 +76,8 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #endif
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 
@@ -79,6 +91,8 @@ if ((!CY.w[1]) && (!CY.w[0])) {
   // x=y=0, return NaN
   res.w[1] = 0x7c00000000000000ull;
   res.w[0] = 0;
+  // restore the rounding mode back if it has been changed
+  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 if (valid_y || ((y.w[1] & NAN_MASK64) == INFINITY_MASK64)) {
@@ -89,6 +103,8 @@ if (valid_y || ((y.w[1] & NAN_MASK64) == INFINITY_MASK64)) {
 
   res.w[1] = sign_x | (((UINT64) exponent_x) << 49);
   res.w[0] = 0;
+  // restore the rounding mode back if it has been changed
+  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 }
@@ -103,6 +119,8 @@ if (!valid_y) {
 #endif
     res.w[1] = CY.w[1] & QUIET_MASK64;
     res.w[0] = CY.w[0];
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is Infinity?
@@ -110,6 +128,8 @@ if (!valid_y) {
     // return x
     res.w[1] = x.w[1];
     res.w[0] = x.w[0];
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is 0
@@ -119,6 +139,8 @@ if (!valid_y) {
 #endif
   res.w[1] = 0x7c00000000000000ull;
   res.w[0] = 0;
+  // restore the rounding mode back if it has been changed
+  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 
@@ -130,6 +152,8 @@ if (diff_expon <= 0) {
   if (diff_expon > 34) {
     // |x|<|y| in this case
     res = x;
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // set exponent of y to exponent_x, scale coefficient_y
@@ -139,6 +163,8 @@ if (diff_expon <= 0) {
   if (P256.w[2] || P256.w[3]) {
     // |x|<|y| in this case
     res = x;
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 
@@ -147,6 +173,8 @@ if (diff_expon <= 0) {
   if (__unsigned_compare_ge_128 (P256, CX2)) {
     // |x|<|y| in this case
     res = x;
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 
@@ -164,6 +192,8 @@ if (diff_expon <= 0) {
   }
 
   get_BID128_very_fast (&res, sign_x, exponent_x, CR);
+  // restore the rounding mode back if it has been changed
+  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
   // 2^64
@@ -200,6 +230,8 @@ while (diff_expon > 0) {
   // check for remainder == 0
   if (!CX.w[1] && !CX.w[0]) {
     get_BID128_very_fast (&res, sign_x, exponent_y, CX);
+    // restore the rounding mode back if it has been changed
+    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 }
@@ -213,5 +245,7 @@ if ((__unsigned_compare_gt_128 (CX2, CY))
 }
 
 get_BID128_very_fast (&res, sign_x, exponent_y, CX);
+// restore the rounding mode back if it has been changed
+if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 }
