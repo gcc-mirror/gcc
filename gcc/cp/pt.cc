@@ -22321,6 +22321,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      if (DECL_NAME (t) == this_identifier && current_class_ptr)
 		RETURN (current_class_ptr);
 
+	      /* Parameters of non-templates map to themselves (e.g. in
+		 expansion statement body).  */
+	      if (DECL_CONTEXT (t) && !uses_template_parms (DECL_CONTEXT (t)))
+		RETURN (t);
+
 	      /* This can happen for a parameter name used later in a function
 		 declaration (such as in a late-specified return type).  Just
 		 make a dummy decl, since it's only used for its type.  */
