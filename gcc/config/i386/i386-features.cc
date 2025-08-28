@@ -3103,6 +3103,8 @@ struct redundant_pattern
   auto_bitmap insns;
   /* The broadcast inner scalar.  */
   rtx val;
+  /* The actual redundant source value for UNSPEC_TLSDESC.  */
+  rtx tlsdesc_val;
   /* The inner scalar mode.  */
   machine_mode mode;
   /* The instruction which sets the inner scalar.  Nullptr if the inner
@@ -4155,6 +4157,8 @@ public:
 private:
   /* The redundant source value.  */
   rtx val;
+  /* The actual redundant source value for UNSPEC_TLSDESC.  */
+  rtx tlsdesc_val;
   /* The instruction which defines the redundant value.  */
   rtx_insn *def_insn;
   /* Mode of the destination of the candidate redundant instruction.  */
@@ -4168,7 +4172,35 @@ private:
   bool candidate_gnu_tls_p (rtx_insn *, attr_tls64);
   bool candidate_gnu2_tls_p (rtx, attr_tls64);
   bool candidate_vector_p (rtx);
+  rtx_insn *tls_set_insn_from_symbol (const_rtx, const_rtx);
 }; // class pass_x86_cse
+
+/* Return the instruction which sets REG from TLS_SYMBOL.  */
+
+rtx_insn *
+pass_x86_cse::tls_set_insn_from_symbol (const_rtx reg,
+					const_rtx tls_symbol)
+{
+  rtx_insn *set_insn = nullptr;
+  for (df_ref ref = DF_REG_DEF_CHAIN (REGNO (reg));
+       ref;
+       ref = DF_REF_NEXT_REG (ref))
+    {
+      if (DF_REF_IS_ARTIFICIAL (ref))
+	return nullptr;
+
+      set_insn = DF_REF_INSN (ref);
+      if (get_attr_tls64 (set_insn) != TLS64_LEA)
+	return nullptr;
+
+      rtx tls_set = PATTERN (set_insn);
+      rtx tls_src = XVECEXP (SET_SRC (tls_set), 0, 0);
+      if (!rtx_equal_p (tls_symbol, tls_src))
+	return nullptr;
+    }
+
+  return set_insn;
+}
 
 /* Return true and output def_insn, val, mode, scalar_mode and kind if
    INSN is UNSPEC_TLS_GD or UNSPEC_TLS_LD_BASE.  */
@@ -4226,29 +4258,71 @@ pass_x86_cse::candidate_gnu2_tls_p (rtx set, attr_tls64 tls64)
   if (!TARGET_64BIT || !cfun->machine->tls_descriptor_call_multiple_p)
     return false;
 
-  /* Record GNU2 TLS CALLs for 64-bit:
+  rtx tls_symbol;
+  rtx_insn *set_insn;
+  rtx src = SET_SRC (set);
+  val = src;
+  tlsdesc_val = src;
+  kind = X86_CSE_TLSDESC;
 
-     (set (reg/f:DI 104)
-	  (plus:DI (unspec:DI [
-		      (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
-		      (reg:DI 114)
-		      (reg/f:DI 7 sp)] UNSPEC_TLSDESC)
-		   (const:DI (unspec:DI [
-				(symbol_ref:DI ("e") [flags 0x1a])
-			     ] UNSPEC_DTPOFF))))
+  if (tls64 == TLS64_COMBINE)
+    {
+      /* Record 64-bit TLS64_COMBINE:
 
-     (set (reg/f:DI 104)
-	  (plus:DI (unspec:DI [
-		      (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
-		      (unspec:DI [
-			 (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
-		      ] UNSPEC_TLSDESC)
-		      (reg/f:DI 7 sp)] UNSPEC_TLSDESC)
-		   (const:DI (unspec:DI [
-				(symbol_ref:DI ("e") [flags 0x1a])
-			     ] UNSPEC_DTPOFF))))
+	 (set (reg/f:DI 104)
+	      (plus:DI (unspec:DI [
+			  (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
+			  (reg:DI 114)
+			  (reg/f:DI 7 sp)] UNSPEC_TLSDESC)
+		       (const:DI (unspec:DI [
+				    (symbol_ref:DI ("e") [flags 0x1a])
+				  ] UNSPEC_DTPOFF))))
 
-     and
+	 (set (reg/f:DI 104)
+	      (plus:DI (unspec:DI [
+			  (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
+			  (unspec:DI [
+			     (symbol_ref:DI ("_TLS_MODULE_BASE_") [flags 0x10])
+			  ] UNSPEC_TLSDESC)
+			  (reg/f:DI 7 sp)] UNSPEC_TLSDESC)
+		       (const:DI (unspec:DI [
+				    (symbol_ref:DI ("e") [flags 0x1a])
+				 ] UNSPEC_DTPOFF))))
+     */
+
+      scalar_mode = mode = GET_MODE (src);
+      rtx src0 = XEXP (src, 0);
+      tls_symbol = XVECEXP (src0, 0, 0);
+      rtx src1 = XVECEXP (src0, 0, 1);
+      if (REG_P (src1))
+	{
+	  set_insn = tls_set_insn_from_symbol (src1, tls_symbol);
+	  gcc_assert (set_insn);
+	}
+      else
+	{
+	  set_insn = nullptr;
+	  gcc_assert (GET_CODE (src1) == UNSPEC
+		      && XINT (src1, 1) == UNSPEC_TLSDESC
+		      && SYMBOL_REF_P (XVECEXP (src1, 0, 0))
+		      && rtx_equal_p (XVECEXP (src1, 0, 0), tls_symbol));
+	}
+
+      /* Use TLS_SYMBOL and
+
+	 (const:DI (unspec:DI [
+		      (symbol_ref:DI ("e") [flags 0x1a])
+		   ] UNSPEC_DTPOFF))
+
+	 as VAL to check if 2 patterns have the same source.  */
+
+      rtvec vec = gen_rtvec (2, tls_symbol, XEXP (src, 1));
+      val = gen_rtx_UNSPEC (mode, vec, UNSPEC_TLSDESC);
+      def_insn = set_insn;
+      return true;
+    }
+
+  /* Record 64-bit TLS_CALL:
 
      (set (reg:DI 101)
 	  (unspec:DI [(symbol_ref:DI ("foo") [flags 0x50])
@@ -4257,70 +4331,33 @@ pass_x86_cse::candidate_gnu2_tls_p (rtx set, attr_tls64 tls64)
 
    */
 
-  rtx src = SET_SRC (set);
-  val = src;
-  if (tls64 != TLS64_CALL)
-    src = XEXP (src, 0);
-
-  kind = X86_CSE_TLSDESC;
   gcc_assert (GET_CODE (src) == UNSPEC);
-  rtx tls_symbol = XVECEXP (src, 0, 0);
+  tls_symbol = XVECEXP (src, 0, 0);
   src = XVECEXP (src, 0, 1);
   scalar_mode = mode = GET_MODE (src);
-  if (REG_P (src))
-    {
-      /* All definitions of reg:DI 129 in
+  gcc_assert (REG_P (src));
 
-	 (set (reg:DI 110)
-	      (unspec:DI [(symbol_ref:DI ("foo"))
-			  (reg:DI 129)
-			  (reg/f:DI 7 sp)] UNSPEC_TLSDESC))
+  /* All definitions of reg:DI 129 in
 
-	 should have the same source as in
+     (set (reg:DI 110)
+	  (unspec:DI [(symbol_ref:DI ("foo"))
+		      (reg:DI 129)
+		      (reg/f:DI 7 sp)] UNSPEC_TLSDESC))
 
-	 (set (reg:DI 129)
-	      (unspec:DI [(symbol_ref:DI ("foo"))] UNSPEC_TLSDESC))
+     should have the same source as in
 
-       */
+     (set (reg:DI 129)
+	  (unspec:DI [(symbol_ref:DI ("foo"))] UNSPEC_TLSDESC))
 
-      df_ref ref;
-      rtx_insn *set_insn = nullptr;
-      for (ref = DF_REG_DEF_CHAIN (REGNO (src));
-	   ref;
-	   ref = DF_REF_NEXT_REG (ref))
-	{
-	  if (DF_REF_IS_ARTIFICIAL (ref))
-	    break;
+   */
 
-	  set_insn = DF_REF_INSN (ref);
-	  tls64 = get_attr_tls64 (set_insn);
-	  if (tls64 != TLS64_LEA)
-	    {
-	      set_insn = nullptr;
-	      break;
-	    }
+  set_insn = tls_set_insn_from_symbol (src, tls_symbol);
+  if (!set_insn)
+    return false;
 
-	  rtx tls_set = PATTERN (set_insn);
-	  rtx tls_src = XVECEXP (SET_SRC (tls_set), 0, 0);
-	  if (!rtx_equal_p (tls_symbol, tls_src))
-	    {
-	      set_insn = nullptr;
-	      break;
-	    }
-	}
-
-      if (!set_insn)
-	return false;
-
-      def_insn = set_insn;
-    }
-  else if (GET_CODE (src) == UNSPEC
-	   && XINT (src, 1) == UNSPEC_TLSDESC
-	   && SYMBOL_REF_P (XVECEXP (src, 0, 0)))
-    def_insn = nullptr;
-  else
-    gcc_unreachable ();
-
+  /* Use TLS_SYMBOL as VAL to check if 2 patterns have the same source.  */
+  val = tls_symbol;
+  def_insn = set_insn;
   return true;
 }
 
@@ -4395,6 +4432,8 @@ pass_x86_cse::x86_cse (void)
 	  if (!set && !CALL_P (insn))
 	    continue;
 
+	  tlsdesc_val = nullptr;
+
 	  attr_tls64 tls64 = get_attr_tls64 (insn);
 	  switch (tls64)
 	    {
@@ -4466,6 +4505,10 @@ pass_x86_cse::x86_cse (void)
 	  load = new redundant_pattern;
 
 	  load->val = copy_rtx (val);
+	  if (tlsdesc_val)
+	    load->tlsdesc_val = copy_rtx (tlsdesc_val);
+	  else
+	    load->tlsdesc_val = nullptr;
 	  load->mode = scalar_mode;
 	  load->size = GET_MODE_SIZE (mode);
 	  load->def_insn = def_insn;
@@ -4560,7 +4603,7 @@ pass_x86_cse::x86_cse (void)
 		{
 		case X86_CSE_TLSDESC:
 		  ix86_place_single_tls_call (load->broadcast_reg,
-					      load->val,
+					      load->tlsdesc_val,
 					      load->kind,
 					      load->bbs,
 					      updated_gnu_tls_insns,
@@ -4606,7 +4649,9 @@ pass_x86_cse::x86_cse (void)
 		case X86_CSE_TLS_LD_BASE:
 		case X86_CSE_TLSDESC:
 		  ix86_place_single_tls_call (load->broadcast_reg,
-					      load->val,
+					      (load->kind == X86_CSE_TLSDESC
+					       ? load->tlsdesc_val
+					       : load->val),
 					      load->kind,
 					      load->bbs,
 					      updated_gnu_tls_insns,
