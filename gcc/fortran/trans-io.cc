@@ -2499,7 +2499,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	      for (c = ts->u.derived->components; c; c = c->next)
 		{
 		  /* Ignore hidden string lengths.  */
-		  if (c->name[0] == '_')
+		  if (c->name[0] == '_'
+		      || c->attr.pdt_kind || c->attr.pdt_len)
 		    continue;
 
 		  field = c->backend_decl;

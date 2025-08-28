@@ -3870,6 +3870,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   bool assumed_seen = false;
   bool deferred_seen = false;
   bool spec_error = false;
+  bool alloc_seen = false;
+  bool ptr_seen = false;
   int kind_value, i;
   gfc_expr *kind_expr;
   gfc_component *c1, *c2;
@@ -4201,6 +4203,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (c1->ts.type == BT_CLASS)
 	CLASS_DATA (c2)->as = gfc_copy_array_spec (CLASS_DATA (c1)->as);
 
+      if (c1->attr.allocatable)
+	alloc_seen = true;
+
+      if (c1->attr.pointer)
+	ptr_seen = true;
+
       /* Determine if an array spec is parameterized. If so, substitute
 	 in the parameter expressions for the bounds and set the pdt_array
 	 attribute. Notice that this attribute must be unconditionally set
@@ -4271,7 +4279,16 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  if (c2->attr.allocatable)
 	    instance->attr.alloc_comp = 1;
 	}
+      else if (!(c2->attr.pdt_kind || c2->attr.pdt_len || c2->attr.pdt_string
+		 || c2->attr.pdt_array) && c1->initializer)
+	c2->initializer = gfc_copy_expr (c1->initializer);
     }
+
+  if (alloc_seen)
+    instance->attr.alloc_comp = 1;
+  if (ptr_seen)
+    instance->attr.pointer_comp = 1;
+
 
   gfc_commit_symbol (instance);
   if (ext_param_list)

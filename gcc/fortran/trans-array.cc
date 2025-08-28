@@ -10896,6 +10896,16 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  gfc_add_modify (&fnblock, comp, tse.expr);
 		}
 	    }
+	  else if (c->initializer && !c->attr.pdt_string && !c->attr.pdt_array
+		   && !c->as && !(c->ts.type == BT_DERIVED
+				  && c->ts.u.derived->attr.pdt_type))   /* Take care of arrays.  */
+	    {
+	      gfc_se tse;
+	      gfc_expr *c_expr;
+	      c_expr = c->initializer;
+	      gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+	      gfc_add_modify (&fnblock, comp, tse.expr);
+	    }
 
 	  if (c->attr.pdt_string)
 	    {
