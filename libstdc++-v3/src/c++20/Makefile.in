@@ -432,7 +432,7 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc
 
-sources = tzdb.cc format.cc atomic.cc clock.cc
+sources = tzdb.cc format.cc atomic.cc clock.cc syncbuf.cc
 @GLIBCXX_HOSTED_FALSE@libc__20convenience_la_SOURCES = 
 @GLIBCXX_HOSTED_TRUE@libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
 
