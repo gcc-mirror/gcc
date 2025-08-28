@@ -228,6 +228,8 @@ in the following sections.
 -fcontract-evaluation-semantic=@r{[}ignore@r{|}observe@r{|}enforce@r{|}quick_enforce@r{]}
 -fcontracts-conservative-ipa  -fcontract-checks-outlined
 -fcontract-disable-optimized-checks
+-fcontracts-client-check=@r{[}none@r{|}pre@r{|}all@r{]}
+-fcontracts-definition-check=@r{[}on@r{|}off@r{]}
 -fcoroutines  -fdiagnostics-all-candidates
 -fno-elide-constructors
 -fno-enforce-eh-specs
@@ -3380,6 +3382,24 @@ the checking and the remainder of the function body.
 When @code{pre} and @code{post} condition checks are outlined (using
 @option{-fcontract-checks-outlined}), this option disables the optimisation 
 steps for those functions which can avoid unwanted elision of checking steps.
+
+@opindex fcontracts-client-check
+@item -fcontracts-client-check=@var{mode}
+This option enables insertion of checks at call sites (caller-side checking).
+
+The value of @var{mode} determines which contract checks are made:
+'@code{none}' No caller/client side checking (default)
+
+'@code{pre}' Preconditions are checked at the caller/client side.
+
+'@code{all}' Both pre and post-conditions are checked at the caller/client side.
+
+@opindex fcontracts-definition-check
+@item -fcontracts-definition-check=@var{mode}
+This option introduces the ability to disable callee/definition-side checks,
+which are otherwise enabled by default when the contracts feature is active.
+
+The variable @var{mode} has the values '@code{on}' and '@code{off}'.
 
 @opindex fcoroutines
 @opindex fno-coroutines

@@ -140,6 +140,18 @@ enum detection_mode : uint16_t {
   (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) \
    && CONTRACT_HELPER (NODE) == ldf_contract_post)
 
+#define DECL_IS_WRAPPER_FN_P(NODE) \
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) && \
+   DECL_CONTRACT_WRAPPER (NODE))
+
+/* Allow specifying a sub-set of contract kinds to copy.  */
+enum contract_match_kind
+{
+  cmk_all,
+  cmk_pre,
+  cmk_post
+};
+
 /* contracts.cc */
 
 extern void init_contracts			(void);
@@ -150,7 +162,7 @@ extern tree finish_contract_condition		(cp_expr);
 extern void update_late_contract		(tree, tree, cp_expr);
 extern void check_redecl_contract		(tree, tree);
 extern tree invalidate_contract			(tree);
-extern tree copy_and_remap_contracts		(tree, tree);
+extern tree copy_and_remap_contracts		(tree, tree, contract_match_kind = cmk_all);
 extern tree constify_contract_access		(tree);
 extern tree view_as_const			(tree);
 
@@ -180,15 +192,11 @@ extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_outlined_contracts	(tree);
 extern void set_contract_functions		(tree, tree, tree);
 
+extern tree maybe_contract_wrap_call		(tree, tree);
+extern bool emit_contract_wrapper_func		(bool);
 extern void maybe_emit_violation_handler_wrappers (void);
 
 extern tree build_contract_check		(tree);
-
-inline void
-set_decl_contracts (tree decl, tree contract_attrs)
-{
-  set_fn_contract_specifiers (decl, contract_attrs);
-}
 
 /* Test if EXP is a contract const wrapper node.  */
 

@@ -1107,6 +1107,12 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-checks-outlined)
 fcontract-disable-optimized-checks
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-disable-optimized-checks)
 
+fcontracts-client-check=
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontracts-client-check)
+
+fcontracts-definition-check=
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontracts-definition-check)
+
 fcoroutines
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcoroutines)
 

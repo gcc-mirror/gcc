@@ -5893,6 +5893,12 @@ c_parse_final_cleanups (void)
 	   importer.  */
 	continue;
 
+      /* Emit wrappers where needed, and if that causes more to be added then
+	 make sure we account for possible additional instantiations.  */
+      if (flag_contracts)
+	if (emit_contract_wrapper_func (/*done*/false))
+	  reconsider = true;
+
       /* Write out virtual tables as required.  Writing out the
 	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
@@ -6106,7 +6112,10 @@ c_parse_final_cleanups (void)
     }
 
   if (flag_contracts)
-    maybe_emit_violation_handler_wrappers ();
+    {
+      emit_contract_wrapper_func (/*done*/true);
+      maybe_emit_violation_handler_wrappers ();
+    }
 
   /* All templates have been instantiated.  */
   at_eof = 2;

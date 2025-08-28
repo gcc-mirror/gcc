@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-type-mismatch.h"
 #include "tristate.h"
 #include "tree-pretty-print-markup.h"
+#include "contracts.h" // maybe_contract_wrap_call
 
 /* The various kinds of conversion.  */
 
@@ -4932,7 +4933,7 @@ implicit_conversion_error (location_t loc, tree type, tree expr,
 	   && !CP_AGGREGATE_TYPE_P (type))
     error_at (loc, "designated initializers cannot be used with a "
 	      "non-aggregate type %qT", type);
-  else 
+  else
     {
       auto_diagnostic_group d;
       if (is_stub_object (expr))
@@ -11577,7 +11578,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
     }
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
-    return fn;
+    return maybe_contract_wrap_call (fndecl, fn);
 
   /* 5.2.2/11: If a function call is a prvalue of object type: if the
      function call is either the operand of a decltype-specifier or the
@@ -11589,6 +11590,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       fn = require_complete_type (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;
+      fn = maybe_contract_wrap_call (fndecl, fn);
 
       if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
 	{
@@ -11596,6 +11598,8 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	  maybe_warn_parm_abi (TREE_TYPE (fn), loc);
 	}
     }
+  else
+    fn = maybe_contract_wrap_call (fndecl, fn);
   return convert_from_reference (fn);
 }
 
