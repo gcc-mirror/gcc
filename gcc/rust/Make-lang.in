@@ -151,15 +151,6 @@ GRS_OBJS = \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-resolve-builtins.o \
-    rust/rust-ast-resolve.o \
-    rust/rust-ast-resolve-base.o \
-    rust/rust-ast-resolve-item.o \
-    rust/rust-ast-resolve-pattern.o \
-    rust/rust-ast-resolve-expr.o \
-    rust/rust-ast-resolve-type.o \
-    rust/rust-ast-resolve-path.o \
-    rust/rust-ast-resolve-stmt.o \
-    rust/rust-ast-resolve-struct-expr-field.o \
     rust/rust-forever-stack.o \
     rust/rust-hir-type-check.o \
     rust/rust-privacy-check.o \
