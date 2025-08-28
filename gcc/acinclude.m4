@@ -481,6 +481,11 @@ AC_DEFUN([gcc_GAS_FLAGS],
     dnl Always pass -arch ppc to assembler.
     gcc_cv_as_flags="-arch ppc"
     ;;
+  amdgcn*)
+    dnl Currently, only the llvm-mc assembler is supported.
+    dnl Add flags to ensure an amdgcn ELF file is written.
+    gcc_cv_as_flags="--filetype=obj -triple=amdgcn--amdhsa"
+    ;;
   *)
     gcc_cv_as_flags=" "
     ;;

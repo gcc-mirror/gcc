@@ -25638,6 +25638,9 @@ else
   powerpc*-*-darwin*)
         gcc_cv_as_flags="-arch ppc"
     ;;
+  amdgcn*)
+            gcc_cv_as_flags="--filetype=obj -triple=amdgcn--amdhsa"
+    ;;
   *)
     gcc_cv_as_flags=" "
     ;;

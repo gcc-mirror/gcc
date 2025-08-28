@@ -4065,6 +4065,7 @@ AMD GCN GPU target.
 Instead of GNU Binutils, you need to install LLVM and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
+@file{bin/llvm-objdump} to @file{amdgcn-amdhsa/bin/objdump},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
 @file{bin/amdgcn-amdhsa-ranlib}.
