@@ -5880,6 +5880,7 @@ gfc_resolve_ref (gfc_expr *expr)
   int current_part_dimension, n_components, seen_part_dimension, dim;
   gfc_ref *ref, **prev, *array_ref;
   bool equal_length;
+  gfc_symbol *last_pdt = NULL;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5926,6 +5927,11 @@ gfc_resolve_ref (gfc_expr *expr)
   seen_part_dimension = 0;
   n_components = 0;
   array_ref = NULL;
+
+  if (expr->expr_type == EXPR_VARIABLE
+      && expr->symtree->n.sym->ts.type == BT_DERIVED
+      && expr->symtree->n.sym->ts.u.derived->attr.pdt_type)
+    last_pdt = expr->symtree->n.sym->ts.u.derived;
 
   for (ref = expr->ref; ref; ref = ref->next)
     {
@@ -5982,6 +5988,38 @@ gfc_resolve_ref (gfc_expr *expr)
 			     "attribute at %L", &expr->where);
 		  return false;
 		}
+	    }
+
+	  /* Sometimes the component in a component reference is that of the
+	     pdt_template. Point to the component of pdt_type instead. This
+	     ensures that the component gets a backend_decl in translation.  */
+	  if (last_pdt)
+	    {
+	      gfc_component *cmp = last_pdt->components;
+	      for (; cmp; cmp = cmp->next)
+		if (!strcmp (cmp->name, ref->u.c.component->name))
+		  {
+		    ref->u.c.component = cmp;
+		    break;
+		  }
+	      ref->u.c.sym = last_pdt;
+	    }
+
+	  /* Convert pdt_templates, if necessary, and update 'last_pdt'.  */
+	  if (ref->u.c.component->ts.type == BT_DERIVED)
+	    {
+	      if (ref->u.c.component->ts.u.derived->attr.pdt_template)
+		{
+		  if (gfc_get_pdt_instance (ref->u.c.component->param_list,
+					    &ref->u.c.component->ts.u.derived,
+					    NULL) != MATCH_YES)
+		    return false;
+		  last_pdt = ref->u.c.component->ts.u.derived;
+		}
+	      else if (ref->u.c.component->ts.u.derived->attr.pdt_type)
+		last_pdt = ref->u.c.component->ts.u.derived;
+	      else
+		last_pdt = NULL;
 	    }
 
 	  n_components++;

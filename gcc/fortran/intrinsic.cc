@@ -5466,6 +5466,9 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
   if (ts->type == BT_UNKNOWN)
     goto bad;
 
+  if (from_ts.type == BT_DERIVED && from_ts.u.derived->attr.pdt_type)
+    *ts = from_ts;
+
   expr->do_not_warn = ! wflag;
 
   /* NULL and zero size arrays get their type here, unless they already have a
