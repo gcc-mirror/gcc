@@ -54,9 +54,24 @@ namespace std _GLIBCXX_VISIBILITY(default)
   {
     using type = signed char;
 
-    enum class _Ord : type { equivalent = 0, less = -1, greater = 1 };
+    enum class _Ord : type
+    {
+      equivalent = 0, less = -1, greater = 1,
+      // value remains unchanged when negated
+      unordered = -__SCHAR_MAX__ - 1
+    };
 
-    enum class _Ncmp : type { unordered = -__SCHAR_MAX__ - 1 };
+    template<typename _Ordering>
+      [[__gnu__::__always_inline__]]
+      constexpr _Ord
+      __ord(_Ordering __o) noexcept
+      { return _Ord(__o._M_value); }
+
+    template<typename _Ordering>
+      [[__gnu__::__always_inline__]]
+      constexpr _Ordering
+      __make(_Ord __o) noexcept
+      { return _Ordering(__o); }
 
     struct __unspec
     {
@@ -74,21 +89,18 @@ namespace std _GLIBCXX_VISIBILITY(default)
     : _M_value(__cmp_cat::type(__v))
     { }
 
-    constexpr explicit
-    partial_ordering(__cmp_cat::_Ncmp __v) noexcept
-    : _M_value(__cmp_cat::type(__v))
-    { }
-
-    friend class weak_ordering;
-    friend class strong_ordering;
-
     [[__gnu__::__always_inline__]]
     constexpr __cmp_cat::type
     _M_reverse() const
     {
-      // leaves _Ncmp::unordered unchanged
+      // leaves _Ord::unordered unchanged
       return static_cast<__cmp_cat::type>(-_M_value);
     }
+
+    friend constexpr __cmp_cat::_Ord
+    __cmp_cat::__ord<partial_ordering>(partial_ordering) noexcept;
+    friend constexpr partial_ordering
+    __cmp_cat::__make<partial_ordering>(__cmp_cat::_Ord) noexcept;
 
   public:
     // valid values
@@ -155,7 +167,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     [[nodiscard]]
     friend constexpr partial_ordering
     operator<=>(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return partial_ordering(__cmp_cat::_Ncmp(__v._M_reverse())); }
+    { return partial_ordering(__cmp_cat::_Ord(__v._M_reverse())); }
   };
 
   // valid values' definitions
@@ -169,7 +181,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   partial_ordering::greater(__cmp_cat::_Ord::greater);
 
   inline constexpr partial_ordering
-  partial_ordering::unordered(__cmp_cat::_Ncmp::unordered);
+  partial_ordering::unordered(__cmp_cat::_Ord::unordered);
 
   class weak_ordering
   {
@@ -179,7 +191,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
     weak_ordering(__cmp_cat::_Ord __v) noexcept : _M_value(__cmp_cat::type(__v))
     { }
 
-    friend class strong_ordering;
+    friend constexpr __cmp_cat::_Ord
+    __cmp_cat::__ord<weak_ordering>(weak_ordering) noexcept;
+    friend constexpr weak_ordering
+    __cmp_cat::__make<weak_ordering>(__cmp_cat::_Ord) noexcept;
 
   public:
     // valid values
@@ -189,7 +204,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     [[nodiscard]]
     constexpr operator partial_ordering() const noexcept
-    { return partial_ordering(__cmp_cat::_Ord(_M_value)); }
+    { return __cmp_cat::__make<partial_ordering>(__cmp_cat::_Ord(_M_value)); }
 
     // comparisons
     [[nodiscard]]
@@ -271,6 +286,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
     : _M_value(__cmp_cat::type(__v))
     { }
 
+    friend constexpr __cmp_cat::_Ord
+    __cmp_cat::__ord<strong_ordering>(strong_ordering) noexcept;
+    friend constexpr strong_ordering
+    __cmp_cat::__make<strong_ordering>(__cmp_cat::_Ord) noexcept;
+
   public:
     // valid values
     static const strong_ordering less;
@@ -280,11 +300,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     [[nodiscard]]
     constexpr operator partial_ordering() const noexcept
-    { return partial_ordering(__cmp_cat::_Ord(_M_value)); }
+    { return __cmp_cat::__make<partial_ordering>(__cmp_cat::_Ord(_M_value)); }
 
     [[nodiscard]]
     constexpr operator weak_ordering() const noexcept
-    { return weak_ordering(__cmp_cat::_Ord(_M_value)); }
+    { return __cmp_cat::__make<weak_ordering>(__cmp_cat::_Ord(_M_value)); }
 
     // comparisons
     [[nodiscard]]
@@ -584,26 +604,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       constexpr weak_ordering
       __fp_weak_ordering(_Tp __e, _Tp __f)
       {
-	// Returns an integer with the same sign as the argument, and magnitude
-	// indicating the classification: zero=1 subnorm=2 norm=3 inf=4 nan=5
-	auto __cat = [](_Tp __fp) -> int {
-	  const int __sign = __builtin_signbit(__fp) ? -1 : 1;
-	  if (__builtin_isnormal(__fp))
-	    return (__fp == 0 ? 1 : 3) * __sign;
-	  if (__builtin_isnan(__fp))
-	    return 5 * __sign;
-	  if (int __inf = __builtin_isinf_sign(__fp))
-	    return 4 * __inf;
-	  return 2 * __sign;
-	};
-
-	auto __po = __e <=> __f;
-	if (is_lt(__po))
-	  return weak_ordering::less;
-	else if (is_gt(__po))
-	  return weak_ordering::greater;
-	else if (__po == partial_ordering::equivalent)
-	  return weak_ordering::equivalent;
+	auto __po = __cmp_cat::__ord(__e <=> __f);
+	if (__po != __cmp_cat::_Ord::unordered)
+	  return __cmp_cat::__make<weak_ordering>(__po);
 	else  // unordered, at least one argument is NaN
 	  {
 	    // return -1 for negative nan, +1 for positive nan, 0 otherwise.
@@ -612,13 +615,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 		? __builtin_signbit(__fp) ? -1 : 1
 		: 0;
 	    };
-	    auto __ord = __isnan_sign(__e) <=> __isnan_sign(__f);
-	    if (is_eq(__ord))
-	      return weak_ordering::equivalent;
-	    else if (is_lt(__ord))
-	      return weak_ordering::less;
-	    else
-	      return weak_ordering::greater;
+	    return __isnan_sign(__e) <=> __isnan_sign(__f);
 	  }
       }
 
