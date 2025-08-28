@@ -2507,7 +2507,7 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 
 static tree
 vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
-			     basic_block bb, int *bound)
+			     basic_block bb, poly_int64 *bound)
 {
   dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   tree var;
@@ -2555,11 +2555,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     misalign_in_elems);
       iters = fold_build2 (BIT_AND_EXPR, type, iters, align_in_elems_minus_1);
       iters = fold_convert (niters_type, iters);
-      unsigned HOST_WIDE_INT align_in_elems_c;
-      if (align_in_elems.is_constant (&align_in_elems_c))
-	*bound = align_in_elems_c - 1;
-      else
-	*bound = -1;
+      *bound = align_in_elems;
     }
 
   if (dump_enabled_p ())
@@ -2728,8 +2724,8 @@ vect_build_loop_niters (loop_vec_info loop_vinfo, bool *new_var_p)
 
 static tree
 vect_gen_scalar_loop_niters (tree niters_prolog, int int_niters_prolog,
-			     int bound_prolog, poly_int64 bound_epilog, int th,
-			     poly_uint64 *bound_scalar,
+			     poly_int64 bound_prolog, poly_int64 bound_epilog,
+			     int th, poly_uint64 *bound_scalar,
 			     bool check_profitability)
 {
   tree type = TREE_TYPE (niters_prolog);
@@ -3257,11 +3253,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   /* Generate the number of iterations for the prolog loop.  We do this here
      so that we can also get the upper bound on the number of iterations.  */
   tree niters_prolog;
-  int bound_prolog = 0;
+  poly_int64 bound_prolog = 0;
   if (prolog_peeling)
     {
       niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
-						    &bound_prolog);
+						   &bound_prolog);
       /* If algonment peeling is known, we will always execute prolog.  */
       if (TREE_CODE (niters_prolog) == INTEGER_CST)
 	prob_prolog = profile_probability::always ();
@@ -3404,7 +3400,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
 
 	  scale_bbs_frequencies (&bb_after_prolog, 1, prob_prolog);
-	  scale_loop_profile (prolog, prob_prolog, bound_prolog - 1);
+	  scale_loop_profile (prolog, prob_prolog,
+			      estimated_poly_value (bound_prolog) - 1);
 	}
 
       /* Update init address of DRs.  */
@@ -3429,7 +3426,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       /* Prolog iterates at most bound_prolog times, latch iterates at
 	 most bound_prolog - 1 times.  */
-      record_niter_bound (prolog, bound_prolog - 1, false, true);
+      if (bound_prolog.is_constant ())
+	record_niter_bound (prolog, bound_prolog.to_constant () - 1, false,
+			    true);
       delete_update_ssa ();
       adjust_vec_debug_stmts ();
       scev_reset ();
