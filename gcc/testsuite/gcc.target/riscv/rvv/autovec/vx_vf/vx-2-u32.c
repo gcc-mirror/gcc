@@ -23,3 +23,4 @@ TEST_TERNARY_VX_UNSIGNED_0(T)
 /* { dg-final { scan-assembler-not {vssubu.vx} } } */
 /* { dg-final { scan-assembler-not {vaaddu.vx} } } */
 /* { dg-final { scan-assembler-not {vmacc.vx} } } */
+/* { dg-final { scan-assembler-not {vnmsac.vx} } } */
