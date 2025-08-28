@@ -1,3 +1,45 @@
+2025-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* libsupc++/compare
+	(operator<=>(__cmp_cat::__unspec, partial_ordering)):
+	Implement using _M_reverse.
+
+2025-08-27  Nathan Myers  <ncm@cantrip.org>
+
+	* include/std/chrono (gps_clock::now, tai_clock::now): Remove
+	inline definitions.
+	* src/c++20/clock.cc (gps_clock::now, tai_clock::now): New file
+	for out-of-line now() impls.
+	* src/c++20/Makefile.am: Mention clock.cc.
+	* src/c++20/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: add mangled now() symbols.
+
+2025-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* libsupc++/compare (_Ncmp::_Unordered): Rename and change the value
+	to minimum value of signed char.
+	(_Ncomp::unordered): Renamed from _Unordered, the name is reserved
+	by partial_ordered::unordered.
+	(partial_ordering::_M_reverse()): Define.
+	(operator<=(partial_ordering, __cmp_cat::__unspec))
+	(operator>=(__cmp_cat::__unspec, partial_ordering)): Implemented
+	in terms of negated _M_value.
+	(operator>=(partial_ordering, __cmp_cat::__unspec))
+	(operator<=(__cmp_cat::__unspec, partial_ordering)): Directly
+	compare _M_value, as unordered value is negative.
+	(partial_ordering::unordered): Handle _Ncmp::unoredred rename.
+	* python/libstdcxx/v6/printers.py: Add -128 as integer value
+	for unordered, keeping 2 to preserve backward compatibility.
+
+2025-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/funcwrap.h (__polyfunc::_Mo_base): Reorder _M_manage
+	and _M_storage members. Make _M_destroy protected and remove friend
+	declaration.
+	* testsuite/20_util/copyable_function/call.cc: Add test for aliasing
+	base class.
+	* testsuite/20_util/move_only_function/call.cc: Likewise.
+
 2025-08-26  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__detail::_CachedPosition): Remove

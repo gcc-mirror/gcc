@@ -1,3 +1,32 @@
+2025-08-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121695
+	* tree-if-conv.cc (factor_out_operators): Fix typo
+	in assignment of the phi.
+
+2025-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_transform_cycle_phi): Remove
+	unused reduc_stmt_info.
+
+2025-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121686
+	* tree-vect-slp.cc (vect_analyze_slp): Consider all only-live
+	non-reduction defs for discovery.
+
+2025-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121668
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Emit the
+	TLS call after debug marker.
+
+2025-08-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-cores.def (xt-c908v): Drop xtheadvdot.
+	(xt-c910v2): Remove extraenous whitespace.
+	(xt-c920v2): Drop xtheadvdot and remove extraeonous whitespace.
+
 2025-08-26  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/i386.cc (ix86_vector_costs::ix86_vector_costs):

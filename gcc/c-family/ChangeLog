@@ -1,3 +1,11 @@
+2025-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/121520
+	* c-cppbuiltin.cc (c_cpp_builtins): Properly call cpp_warn
+	for __STDCPP_FLOAT<NN>_T__ if FLOATN_NX_TYPE_NODE (i) is NULL
+	for C++23 for non-extended types and don't call cpp_warn for
+	extended types.
+
 2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* c-attribs.cc (add_no_sanitize_value): Use 'sanitize_code_type'

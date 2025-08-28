@@ -1,3 +1,63 @@
+2025-08-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/nozicond-2.c: Remove xfails.
+
+2025-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/114611
+	* gfortran.dg/aliasing_dummy_1.f90: Accommodate errors
+	and warnings as needed.
+	* gfortran.dg/eoshift_8.f90: Likewise.
+	* gfortran.dg/g77/f77-edit-h-out.f: Likewise.
+	* gfortran.dg/hollerith_1.f90: Likewise.
+	* gfortran.dg/io_constraints_1.f90: Likewise.
+	* gfortran.dg/io_constraints_2.f90: Likewise.
+	* gfortran.dg/longline.f: Likewise.
+	* gfortran.dg/pr20086.f90: Likewise.
+	* gfortran.dg/unused_artificial_dummies_1.f90: Likewise.
+	* gfortran.dg/x_slash_1.f: Likewise.
+
+2025-08-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121695
+	* gcc.dg/torture/pr121695-1.c: New test.
+
+2025-08-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmul-run-1-f64.c: Fix type.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfrdiv-run-1-f32.c: Remove
+	useless dg directives.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfrdiv-run-1-f64.c: Likewise.
+
+2025-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121686
+	* gcc.dg/vect/pr121686.c: New testcase.
+
+2025-08-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/121684
+	* c-c++-common/hwasan/unprotected-allocas-0.c: Mark
+	using_vararray and using_alloca as noclone too.
+
+2025-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121668
+	* gcc.target/i386/pr121668-1a.c: New test.
+
+2025-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/121656
+	* gcc.dg/pr121656.c: Moved to ...
+	* gcc.dg/torture/pr121656.c: Here.
+	(dg-options): Removed.
+	(foo): Replace weak attribute with noipa attribute.
+
+2025-08-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/mcpu-xt-c908v.c: Drop xtheadvdot.
+	* gcc.target/riscv/mcpu-xt-c920v2.c: Drop xtheadvdot.
+
 2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118839

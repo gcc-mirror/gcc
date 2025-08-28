@@ -1,3 +1,10 @@
+2025-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/114611
+	* io.cc: Issue an error on use of the H descriptor in
+	a format with -std=f95 or higher. Otherwise, issue a
+	warning.
+
 2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118839
