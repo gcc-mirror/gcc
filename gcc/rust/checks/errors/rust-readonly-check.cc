@@ -144,12 +144,22 @@ ReadonlyChecker::collect_assignment_tuple (TuplePattern &tuple_pattern,
     {
     case HIR::TuplePatternItems::ItemType::NO_REST:
       {
-	auto &items = static_cast<HIR::TuplePatternItemsNoRest &> (
+	auto &items_no_rest = static_cast<HIR::TuplePatternItemsNoRest &> (
 	  tuple_pattern.get_items ());
-	for (auto &sub : items.get_patterns ())
+	for (auto &sub : items_no_rest.get_patterns ())
 	  {
 	    collect_assignment (*sub, has_init_expr);
 	  }
+      }
+      break;
+    case HIR::TuplePatternItems::ItemType::HAS_REST:
+      {
+	auto &items_has_rest = static_cast<HIR::TuplePatternItemsHasRest &> (
+	  tuple_pattern.get_items ());
+	for (auto &sub : items_has_rest.get_lower_patterns ())
+	  collect_assignment (*sub, has_init_expr);
+	for (auto &sub : items_has_rest.get_upper_patterns ())
+	  collect_assignment (*sub, has_init_expr);
       }
       break;
     default:
