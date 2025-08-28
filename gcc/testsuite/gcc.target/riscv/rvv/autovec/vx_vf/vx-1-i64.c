@@ -27,3 +27,4 @@ TEST_TERNARY_VX_SIGNED_0(T)
      "-O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m4"
    } } } } */
 /* { dg-final { scan-assembler-times {vmacc.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vnmsac.vx} 1 } } */
