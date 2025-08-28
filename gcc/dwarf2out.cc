@@ -12997,9 +12997,25 @@ output_one_line_info_table (dw_line_info_table *table)
 
 	    view++;
 
-	    dw2_asm_output_data (1, DW_LNS_fixed_advance_pc, "fixed advance PC, increment view to %i", view);
-	    dw2_asm_output_delta (2, line_label, prev_label,
-				  "from %s to %s", prev_label, line_label);
+	    if (HAVE_AS_LEB128)
+	      {
+		/* Using DW_LNS_advance_pc with label delta is only valid if
+		   Minimum Instruction Length in the header is 1, but that is
+		   what we use on all targets.  */
+		dw2_asm_output_data (1, DW_LNS_advance_pc,
+				     "advance PC, increment view to %i", view);
+		dw2_asm_output_delta_uleb128 (line_label, prev_label,
+					      "from %s to %s", prev_label,
+					      line_label);
+	      }
+	    else
+	      {
+		dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
+				     "fixed advance PC, increment view to %i",
+				     view);
+		dw2_asm_output_delta (2, line_label, prev_label,
+				      "from %s to %s", prev_label, line_label);
+	      }
 
 	    prev_addr = ent;
 	    break;
