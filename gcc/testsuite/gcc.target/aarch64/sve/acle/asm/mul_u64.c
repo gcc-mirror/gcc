@@ -334,6 +334,16 @@ TEST_UNIFORM_Z (mul_1op1_u64_z_tied2, svuint64_t,
 		z0 = svmul_z (p0, svdup_u64 (1), z0))
 
 /*
+** mul_1op1n_u64_z:
+**	movprfx	z0\.d, p0/z, z0\.d
+**	mov	z0\.d, p0/m, x0
+**	ret
+*/
+TEST_UNIFORM_ZX (mul_1op1n_u64_z, svuint64_t, uint64_t,
+	z0 = svmul_n_u64_z (p0, svdup_u64 (1), x0),
+	z0 = svmul_z (p0, svdup_u64 (1), x0))
+
+/*
 ** mul_2_u64_z_tied1:
 **	movprfx	z0.d, p0/z, z0.d
 **	lsl	z0.d, p0/m, z0.d, #1
