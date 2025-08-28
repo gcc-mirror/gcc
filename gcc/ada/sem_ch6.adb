@@ -436,11 +436,20 @@ package body Sem_Ch6 is
 
             Set_Parent (New_Body, Parent (N));
 
+            --  Disable Ghost checks for this early analysis on the expression.
+            --  We have not analyzed the new body of the expression function
+            --  yet so the ghost region is not set up properly for the ghost
+            --  context checks yet. Avoid the checks for now as the expression
+            --  will be re-analyzed when the expression function is replaced
+            --  with the function body.
+
+            Ghost_Context_Checks_Disabled := True;
             Freeze_Expr_Types
               (Def_Id => Def_Id,
                Typ    => Typ,
                Expr   => Expr,
                N      => N);
+            Ghost_Context_Checks_Disabled := False;
          end if;
 
          --  For navigation purposes, indicate that the function is a body
