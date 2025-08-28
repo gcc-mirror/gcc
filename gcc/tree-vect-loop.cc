@@ -1729,6 +1729,17 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 	}
     }
 
+  if (!integer_onep (info->assumptions))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Loop to be versioned with niter assumption ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, info->assumptions);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
+
   return opt_result::success ();
 }
 
