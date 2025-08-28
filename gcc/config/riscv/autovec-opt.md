@@ -1846,6 +1846,28 @@
   }
   [(set_attr "type" "vimuladd")])
 
+(define_insn_and_split "*vnmsac_vx_<mode>"
+ [(set (match_operand:V_VLSI 0 "register_operand")
+   (minus:V_VLSI
+    (match_operand:V_VLSI   3 "register_operand")
+    (mult:V_VLSI
+     (vec_duplicate:V_VLSI
+      (match_operand:<VEL>   1 "register_operand"))
+     (match_operand:V_VLSI   2 "register_operand"))))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vnmsac_vx (<MODE>mode);
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
+		 RVV_VUNDEF(<MODE>mode)};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::TERNARY_OP, ops);
+
+    DONE;
+  }
+  [(set_attr "type" "vimuladd")])
+
 
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
