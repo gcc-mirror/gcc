@@ -1,3 +1,11 @@
+2025-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-08-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120499
+	* method.cc (synthesize_method): Set the instantiating module.
+
 2025-08-26  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

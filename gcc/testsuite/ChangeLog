@@ -1,3 +1,13 @@
+2025-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-08-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120499
+	* g++.dg/modules/imp-member-4_a.C: New test.
+	* g++.dg/modules/imp-member-4_b.C: New test.
+	* g++.dg/modules/imp-member-4_c.C: New test.
+
 2025-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
