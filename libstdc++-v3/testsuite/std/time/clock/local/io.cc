@@ -125,6 +125,14 @@ test_parse()
   VERIFY( tp.time_since_epoch() == 0s );
 }
 
+// LWG 4257. Stream insertion for chrono::local_time should be constrained
+template<typename T>
+concept ostream_insertable = requires (std::ostream& o, const T& t) { o << t; };
+using D = std::chrono::duration<double>;
+static_assert( ostream_insertable<std::chrono::local_days> );
+static_assert( ostream_insertable<std::chrono::local_seconds> );
+static_assert( ! ostream_insertable<std::chrono::local_time<D>> );
+
 int main()
 {
   test_ostream();

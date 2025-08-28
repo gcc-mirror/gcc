@@ -37,7 +37,6 @@
 #if __cplusplus >= 202002L
 
 #include <sstream> // ostringstream
-#include <iomanip> // setw, setfill
 #include <format>
 #include <charconv> // from_chars
 #include <stdexcept> // __sso_string
@@ -4014,6 +4013,9 @@ namespace __detail
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os,
 	       const local_time<_Duration>& __lt)
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4257. Stream insertion for chrono::local_time should be constrained
+    requires requires(const sys_time<_Duration>& __st) { __os << __st; }
     {
       __os << sys_time<_Duration>{__lt.time_since_epoch()};
       return __os;
