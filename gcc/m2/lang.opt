@@ -172,7 +172,15 @@ specify the module mangled prefix name for all modules in the following include 
 
 fm2-pathnameI
 Modula-2 Joined
-; For internal use only: used by the driver to copy the user facing -I option
+; For internal use only: used by the driver to copy the user facing -I option in order
+
+fm2-pathname-root=
+Modula-2 Joined
+add include paths for all the library names in -flibs= to this directory root
+
+fm2-pathname-rootI=
+Modula-2 Joined
+; For internal use only: used by the driver to copy the user facing -I option in order
 
 fm2-plugin
 Modula-2
