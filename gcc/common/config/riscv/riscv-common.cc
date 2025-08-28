@@ -1626,7 +1626,7 @@ riscv_ext_is_subset (struct cl_target_option *opts,
   for (const auto &riscv_ext_info : riscv_ext_infos)
     {
       const auto &ext_info = riscv_ext_info.second;
-      if (ext_info.check_opts (opts) && !ext_info.check_opts (subset))
+      if (!ext_info.check_opts (opts) && ext_info.check_opts (subset))
 	return false;
     }
   return true;
