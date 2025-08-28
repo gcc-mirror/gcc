@@ -2674,6 +2674,25 @@ access_in_bounds_of_type_p (tree type, poly_uint64 size, poly_uint64 offset)
   return true;
 }
 
+/* Return whether an access at [off, refsz[ to an object spanning [0, size[
+   accesses storage outside of the object.  */
+
+static bool
+ref_outside_object_p (tree size, poly_offset_int off, tree refsz)
+{
+  if (size == NULL_TREE
+      || refsz == NULL_TREE
+      || !poly_int_tree_p (size)
+      || !poly_int_tree_p (refsz)
+      || maybe_le (wi::to_poly_offset (size), off)
+      || maybe_gt (off + wi::to_poly_offset (refsz),
+		   wi::to_poly_offset (size)))
+    return true;
+  /* Now we are sure the whole base of the access is inside
+     the object.  */
+  return false;
+}
+
 /* Return true if EXPR can trap, as in dereferencing an invalid pointer
    location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
    This routine expects only GIMPLE lhs or rhs input.  */
@@ -2771,17 +2790,23 @@ tree_could_trap_p (tree expr)
 	    return maybe_le (TREE_STRING_LENGTH (base), off);
 	  tree size = DECL_SIZE_UNIT (base);
 	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
-	  if (size == NULL_TREE
-	      || refsz == NULL_TREE
-	      || !poly_int_tree_p (size)
-	      || !poly_int_tree_p (refsz)
-	      || maybe_le (wi::to_poly_offset (size), off)
-	      || maybe_gt (off + wi::to_poly_offset (refsz),
-			   wi::to_poly_offset (size)))
+	  return ref_outside_object_p (size, off, refsz);
+	}
+      if (cfun
+	  && TREE_CODE (TREE_TYPE (cfun->decl)) == METHOD_TYPE
+	  && ((TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
+	       && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (expr, 0))
+	       && (SSA_NAME_VAR (TREE_OPERAND (expr, 0))
+		   == DECL_ARGUMENTS (cfun->decl)))
+	      || TREE_OPERAND (expr, 0) == DECL_ARGUMENTS (cfun->decl)))
+	{
+	  poly_offset_int off = mem_ref_offset (expr);
+	  if (maybe_lt (off, 0))
 	    return true;
-	  /* Now we are sure the whole base of the access is inside
-	     the object.  */
-	  return false;
+	  tree size = TYPE_SIZE_UNIT
+			(TYPE_METHOD_BASETYPE (TREE_TYPE (cfun->decl)));
+	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
+	  return ref_outside_object_p (size, off, refsz);
 	}
       return true;
 
