@@ -1662,7 +1662,7 @@ VariantDef::clone () const
 
   auto &&discriminant_opt = has_discriminant ()
 			      ? tl::optional<std::unique_ptr<HIR::Expr>> (
-				  get_discriminant ().clone_expr ())
+				get_discriminant ().clone_expr ())
 			      : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
@@ -1678,7 +1678,7 @@ VariantDef::monomorphized_clone () const
 
   auto discriminant_opt = has_discriminant ()
 			    ? tl::optional<std::unique_ptr<HIR::Expr>> (
-				get_discriminant ().clone_expr ())
+			      get_discriminant ().clone_expr ())
 			    : tl::nullopt;
 
   return new VariantDef (id, defid, identifier, ident, type,
