@@ -1398,6 +1398,7 @@
   }
   [(set_attr "type" "vmov,vlde,vste")
    (set_attr "mode" "<VT:MODE>")
+   (set (attr "merge_op_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))])
 
@@ -1435,6 +1436,7 @@
   }
   [(set_attr "type" "vlde,vste,vmov")
    (set_attr "mode" "<MODE>")
+   (set (attr "merge_op_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )
@@ -1485,6 +1487,7 @@
 }
   [(set_attr "type" "vlde,vste,vmov")
    (set_attr "mode" "<VLS_AVL_REG:MODE>")
+   (set (attr "merge_op_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )
