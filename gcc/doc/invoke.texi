@@ -17872,6 +17872,9 @@ Instructions number above which STFL stall penalty can be compensated.
 The maximum number of use and def visits when discovering a STV chain before
 the discovery is aborted.
 
+@item ix86-vect-unroll-limit
+Limit how much the autovectorizer may unroll a loop.
+
 @end table
 
 @end table
