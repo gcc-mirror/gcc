@@ -60,6 +60,7 @@ extern bool xtensa_tls_referenced_p (rtx);
 extern enum rtx_code xtensa_shlrd_which_direction (rtx, rtx);
 extern bool xtensa_split1_finished_p (void);
 extern void xtensa_split_DI_reg_imm (rtx *);
+extern char *xtensa_bswapsi2_output (rtx_insn *, const char *);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, int);

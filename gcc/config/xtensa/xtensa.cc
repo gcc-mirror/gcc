@@ -2645,6 +2645,94 @@ xtensa_split_DI_reg_imm (rtx *operands)
 }
 
 
+/* Return the asm output string of bswapsi2_internal insn pattern.
+   It does this by scanning backwards for the BB from the specified insn,
+   and if an another bswapsi2_internal is found, it omits the instruction
+   to set SAR to 8. If not found, or if a CALL, JUMP, ASM, or other insn
+   that clobbers SAR is found first, prepend an instruction to set SAR to
+   8 as usual.  */
+
+static int
+xtensa_bswapsi2_output_1 (rtx_insn *insn)
+{
+  int icode;
+  rtx pat;
+  const char *iname;
+
+  /* CALL insn do not preserve SAR.
+     JUMP insn only appear at the end of BB, so they do not need to be
+     considered when scanning backwards.  */
+  if (CALL_P (insn))
+    return -1;
+
+  switch (icode = INSN_CODE (insn))
+    {
+    /* rotate insns clobber SAR.  */
+    case CODE_FOR_rotlsi3:
+    case CODE_FOR_rotrsi3:
+      return -1;
+    /* simple shift insns clobber SAR if non-immediate shift amounts.  */
+    case CODE_FOR_ashlsi3_internal:
+    case CODE_FOR_ashrsi3:
+    case CODE_FOR_lshrsi3:
+      if (! CONST_INT_P (XEXP (SET_SRC (PATTERN (insn)), 1)))
+	return -1;
+      break;
+    /* this insn always set SAR to 8.  */
+    case CODE_FOR_bswapsi2_internal:
+      return 1;
+    default:
+      break;
+    }
+
+  /* "*shift_per_byte" and "*shlrd_*" complex shift insns clobber SAR.  */
+  if (icode >= CODE_FOR_nothing
+      && (! strcmp (iname = insn_data[icode].name, "*shift_per_byte")
+	  || ! strncmp (iname, "*shlrd_", 7)))
+    return -1;
+
+  /* asm statements may also clobber SAR, so they are anything goes.  */
+  if (NONJUMP_INSN_P (insn))
+    switch (GET_CODE (pat = PATTERN (insn)))
+      {
+      case SET:
+	return GET_CODE (SET_SRC (pat)) == ASM_OPERANDS ? -1 : 0;
+      case PARALLEL:
+	return (GET_CODE (pat = XVECEXP (pat, 0, 0)) == SET
+		&& GET_CODE (SET_SRC (pat)) == ASM_OPERANDS)
+	       || GET_CODE (pat) == ASM_OPERANDS
+	       || GET_CODE (pat) == ASM_INPUT ? -1 : 0;
+      case ASM_OPERANDS:
+	return -1;
+      default:
+	break;
+    }
+
+  /* All other insns are not interested in SAR.  */
+  return 0;
+}
+
+char *
+xtensa_bswapsi2_output (rtx_insn *insn, const char *output)
+{
+  static char result[128];
+  int i;
+
+  strcpy (result, "ssai\t8\n\t");
+  while ((insn = prev_nonnote_nondebug_insn_bb (insn)))
+    if ((i = xtensa_bswapsi2_output_1 (insn)) < 0)
+      break;
+    else if (i > 0)
+      {
+	result[0] = '\0';
+	break;
+      }
+  strcat (result, output);
+
+  return result;
+}
+
+
 /* Try to split an integer value into what are suitable for two consecutive
    immediate addition instructions, ADDI or ADDMI.  */
 

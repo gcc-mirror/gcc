@@ -649,36 +649,15 @@
 })
 
 (define_insn "bswapsi2_internal"
-  [(set (match_operand:SI 0 "register_operand" "=a,&a")
-	(bswap:SI (match_operand:SI 1 "register_operand" "0,r")))
-   (clobber (match_scratch:SI 2 "=&a,X"))]
+  [(set (match_operand:SI 0 "register_operand")
+	(bswap:SI (match_operand:SI 1 "register_operand")))
+   (clobber (match_scratch:SI 2))]
   "!optimize_debug && optimize > 1 && !optimize_size"
-{
-  rtx_insn *prev_insn = prev_nonnote_nondebug_insn (insn);
-  const char *init = "ssai\t8\;";
-  static char result[128];
-  if (prev_insn && NONJUMP_INSN_P (prev_insn))
-    {
-      rtx x = PATTERN (prev_insn);
-      if (GET_CODE (x) == PARALLEL && XVECLEN (x, 0) == 2
-	  && GET_CODE (XVECEXP (x, 0, 0)) == SET
-	  && GET_CODE (XVECEXP (x, 0, 1)) == CLOBBER)
-	{
-	  x = XEXP (XVECEXP (x, 0, 0), 1);
-	  if (GET_CODE (x) == BSWAP && GET_MODE (x) == SImode)
-	    init = "";
-	}
-    }
-  sprintf (result,
-	   (which_alternative == 0)
-	   ? "%s" "srli\t%%2, %%1, 16\;src\t%%2, %%2, %%1\;src\t%%2, %%2, %%2\;src\t%%0, %%1, %%2"
-	   : "%s" "srli\t%%0, %%1, 16\;src\t%%0, %%0, %%1\;src\t%%0, %%0, %%0\;src\t%%0, %%1, %%0",
-	   init);
-  return result;
-}
-   [(set_attr "type"	"arith,arith")
-    (set_attr "mode"	"SI")
-    (set_attr "length"	"15,15")])
+  {@ [cons: =0, 1, =2; attrs: type, length]
+     [ a, 0, &a; arith, 15] << xtensa_bswapsi2_output (insn, "srli\t%2, %1, 16\;src\t%2, %2, %1\;src\t%2, %2, %2\;src\t%0, %1, %2");
+     [&a, r,  X; arith, 15] << xtensa_bswapsi2_output (insn, "srli\t%0, %1, 16\;src\t%0, %0, %1\;src\t%0, %0, %0\;src\t%0, %1, %0");
+  }
+  [(set_attr "mode" "SI")])
 
 (define_expand "bswapdi2"
   [(set (match_operand:DI 0 "register_operand" "")
