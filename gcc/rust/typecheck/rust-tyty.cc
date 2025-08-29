@@ -358,33 +358,12 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate, bool emit_error)
 	  const auto *item_ref = lookup->get_raw_item ();
 	  TyTy::BaseType *bound_ty = item_ref->get_tyty ();
 
-	  // compare the types
-	  if (!bound_ty->can_eq (impl_item_ty, false))
-	    {
-	      if (!impl_item_ty->can_eq (bound_ty, false))
-		{
-		  if (emit_error)
-		    {
-		      rich_location r (line_table,
-				       mappings.lookup_location (get_ref ()));
-		      r.add_range (predicate.get_locus ());
-		      r.add_range (mappings.lookup_location (i.get_hirid ()));
-
-		      std::string rich_msg
-			= "expected " + bound_ty->destructure ()->get_name ()
-			  + ", found "
-			  + impl_item_ty->destructure ()->get_name ();
-		      r.add_fixit_replace (rich_msg.c_str ());
-
-		      rust_error_at (
-			r, ErrorCode::E0271,
-			"type mismatch, expected %qs but got %qs",
-			bound_ty->destructure ()->get_name ().c_str (),
-			impl_item_ty->destructure ()->get_name ().c_str ());
-		    }
-		  return false;
-		}
-	    }
+	  if (!Resolver::types_compatable (
+		TyTy::TyWithLocation (bound_ty, predicate.get_locus ()),
+		TyTy::TyWithLocation (impl_item_ty, item->get_locus ()),
+		mappings.lookup_location (get_ref ()), false /*emit-error*/,
+		false /*check-bounds*/))
+	    return false;
 	}
 
       return true;
