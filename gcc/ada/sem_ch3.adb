@@ -4632,7 +4632,10 @@ package body Sem_Ch3 is
             Set_Has_Delayed_Freeze (T);
 
          elsif not Preanalysis_Active then
-            Freeze_Before (N, T);
+            --  Do_Freeze_Profile matters in the case of an object
+            --  of an anonymous access-to-subprogram type.
+
+            Freeze_Before (N, T, Do_Freeze_Profile => False);
          end if;
       end if;
 

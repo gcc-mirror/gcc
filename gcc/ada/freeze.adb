@@ -6790,6 +6790,27 @@ package body Freeze is
 
       Set_Is_Frozen (E);
 
+      --  Freeze profile of anonymous access-to-subprogram type
+
+      if Do_Freeze_Profile
+        and then Ekind (E) = E_Anonymous_Access_Subprogram_Type
+      then
+         declare
+            Skip_Because_In_Generic : constant Boolean :=
+              In_Generic_Scope (E) or else
+                (Is_Itype (E)
+                  and then Nkind (Parent (Associated_Node_For_Itype (E)))
+                    = N_Generic_Subprogram_Declaration);
+         begin
+            if not Skip_Because_In_Generic then
+               if not Freeze_Profile (Designated_Type (E)) then
+                  goto Leave;
+               end if;
+               Freeze_Subprogram (Designated_Type (E));
+            end if;
+         end;
+      end if;
+
       --  Case of entity being frozen is other than a type
 
       if not Is_Type (E) then
@@ -11032,7 +11053,10 @@ package body Freeze is
       E   : Entity_Id;
       N   : Node_Id) return Boolean
    is
-      Decl : constant Node_Id := Original_Node (Unit_Declaration_Node (E));
+      Decl : constant Node_Id :=
+        (if Ekind (E) = E_Subprogram_Type and then No (Parent (E))
+          then Empty
+          else Original_Node (Unit_Declaration_Node (E)));
 
       function Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate
         (N : Node_Id) return Traverse_Result;
