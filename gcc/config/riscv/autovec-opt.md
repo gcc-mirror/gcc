@@ -2066,7 +2066,7 @@
 				   riscv_vector::BINARY_OP_FRM_DYN, operands);
     DONE;
   }
-  [(set_attr "type" "vfmuladd")]
+  [(set_attr "type" "vfmul")]
 )
 
 ;; vfrdiv.vf
@@ -2085,7 +2085,7 @@
 				   riscv_vector::BINARY_OP_FRM_DYN, operands);
     DONE;
   }
-  [(set_attr "type" "vfmuladd")]
+  [(set_attr "type" "vfdiv")]
 )
 
 ;; vfmin.vf
@@ -2104,5 +2104,43 @@
 				   riscv_vector::BINARY_OP, operands);
     DONE;
   }
-  [(set_attr "type" "vfmuladd")]
+  [(set_attr "type" "vfminmax")]
+)
+
+(define_insn_and_split "*vfmin_vf_ieee_<mode>"
+  [(set (match_operand:V_VLSF 0 "register_operand")
+    (unspec:V_VLSF [
+      (vec_duplicate:V_VLSF
+	(match_operand:<VEL> 2 "register_operand"))
+      (match_operand:V_VLSF 1 "register_operand")
+      ] UNSPEC_VFMIN))]
+  "TARGET_VECTOR && !HONOR_SNANS (<MODE>mode) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_scalar (UNSPEC_VFMIN, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vfminmax")]
+)
+
+(define_insn_and_split "*vfmin_vf_ieee_<mode>"
+  [(set (match_operand:V_VLSF 0 "register_operand")
+    (unspec:V_VLSF [
+      (match_operand:V_VLSF 1 "register_operand")
+      (vec_duplicate:V_VLSF
+	(match_operand:<VEL> 2 "register_operand"))
+      ] UNSPEC_VFMIN))]
+  "TARGET_VECTOR && !HONOR_SNANS (<MODE>mode) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_scalar (UNSPEC_VFMIN, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vfminmax")]
 )
