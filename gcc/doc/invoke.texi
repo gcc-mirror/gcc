@@ -22940,7 +22940,7 @@ Compile for the CDNA3 gfx950 devices. (Experimental)
 
 @item gfx9-generic
 Compile generic code for Vega devices, executable on the following subset of
-GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c. (Experimental)
+GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c.
 
 @item gfx9-4-generic
 Compile generic code for CDNA3 devices, executable on the following subset of
@@ -22969,7 +22969,7 @@ Compile for RDNA2 gfx1036 devices (GFX10 series).
 
 @item gfx10-3-generic
 Compile generic code for GFX10-3 devices, executable on gfx1030,
-gfx1031, gfx1032, gfx1033, gfx1034, gfx1035, and gfx1036. (Experimental)
+gfx1031, gfx1032, gfx1033, gfx1034, gfx1035, and gfx1036.
 
 @item gfx1100
 Compile for RDNA3 gfx1100 devices (GFX11 series).
@@ -22997,7 +22997,7 @@ Compile for RDNA3 gfx1153 devices (GFX11 series). (Experimental)
 
 @item gfx11-generic
 Compile generic code for GFX11 devices, executable on gfx1100, gfx1101,
-gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153. (Experimental)
+gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153.
 @end table
 
 @opindex msram-ecc
