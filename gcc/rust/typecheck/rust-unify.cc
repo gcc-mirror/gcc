@@ -24,6 +24,15 @@
 namespace Rust {
 namespace Resolver {
 
+static TyTy::BaseType *
+unify_error_type_node ()
+{
+  static TyTy::BaseType *error = nullptr;
+  if (error == nullptr)
+    error = new TyTy::ErrorType (0);
+  return error;
+}
+
 UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 			location_t locus, bool commit_flag, bool emit_error,
 			bool check_bounds, bool infer,
@@ -184,7 +193,7 @@ UnifyRules::go ()
 		{
 		  // already emitted an error
 		  emit_error = false;
-		  return new TyTy::ErrorType (0);
+		  return unify_error_type_node ();
 		}
 	    }
 	  else if (rtype->num_specified_bounds () > 0)
@@ -193,7 +202,7 @@ UnifyRules::go ()
 		{
 		  // already emitted an error
 		  emit_error = false;
-		  return new TyTy::ErrorType (0);
+		  return unify_error_type_node ();
 		}
 	    }
 	}
@@ -339,10 +348,10 @@ UnifyRules::go ()
       return expect_const (static_cast<TyTy::ConstType *> (ltype), rtype);
 
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
 
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -445,10 +454,10 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
       break;
 
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
 
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -471,17 +480,17 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 	TyTy::ADTType &type = *static_cast<TyTy::ADTType *> (rtype);
 	if (ltype->get_adt_kind () != type.get_adt_kind ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	if (ltype->get_identifier ().compare (type.get_identifier ()) != 0)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	if (ltype->number_of_variants () != type.number_of_variants ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	for (size_t i = 0; i < type.number_of_variants (); ++i)
@@ -491,7 +500,7 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 
 	    if (a->num_fields () != b->num_fields ())
 	      {
-		return new TyTy::ErrorType (0);
+		return unify_error_type_node ();
 	      }
 
 	    for (size_t j = 0; j < a->num_fields (); j++)
@@ -507,7 +516,7 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 				     TyTy::TyWithLocation (other_field_ty));
 		if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 		  {
-		    return new TyTy::ErrorType (0);
+		    return unify_error_type_node ();
 		  }
 	      }
 	  }
@@ -530,7 +539,7 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 					    TyTy::TyWithLocation (pb));
 		if (res->get_kind () == TyTy::TypeKind::ERROR)
 		  {
-		    return new TyTy::ErrorType (0);
+		    return unify_error_type_node ();
 		  }
 	      }
 	  }
@@ -563,9 +572,9 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -610,9 +619,9 @@ UnifyRules::expect_str (TyTy::StrType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -641,7 +650,7 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (other_base_type));
 	if (base_resolved->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	// rust is permissive about mutablity here you can always go from
@@ -649,7 +658,7 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
 	bool mutability_ok = ltype->is_mutable () ? type.is_mutable () : true;
 	if (!mutability_ok)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	return new TyTy::ReferenceType (ltype->get_ref (), ltype->get_ty_ref (),
@@ -682,9 +691,9 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -713,7 +722,7 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (other_base_type));
 	if (base_resolved->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	// rust is permissive about mutablity here you can always go from
@@ -721,7 +730,7 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
 	bool mutability_ok = ltype->is_mutable () ? type.is_mutable () : true;
 	if (!mutability_ok)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	return new TyTy::PointerType (ltype->get_ref (), ltype->get_ty_ref (),
@@ -754,9 +763,9 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -819,9 +828,9 @@ UnifyRules::expect_param (TyTy::ParamType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -847,7 +856,7 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (type.get_element_type ()));
 
 	if (element_unify->get_kind () == TyTy::TypeKind::ERROR)
-	  return new TyTy::ErrorType (0);
+	  return unify_error_type_node ();
 
 	bool save_emit_error = emit_error;
 	emit_error = false;
@@ -857,7 +866,7 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	emit_error = save_emit_error;
 
 	if (capacity_unify->get_kind () != TyTy::TypeKind::CONST)
-	  return new TyTy::ErrorType (0);
+	  return unify_error_type_node ();
 
 	TyTy::ConstType *capacity_type_unify
 	  = static_cast<TyTy::ConstType *> (capacity_unify);
@@ -892,9 +901,9 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -953,9 +962,9 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -978,7 +987,7 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 	TyTy::FnType &type = *static_cast<TyTy::FnType *> (rtype);
 	if (ltype->num_params () != type.num_params ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
@@ -990,7 +999,7 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 						  TyTy::TyWithLocation (b));
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
-		return new TyTy::ErrorType (0);
+		return unify_error_type_node ();
 	      }
 	  }
 
@@ -999,7 +1008,7 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (type.get_return_type ()));
 	if (unified_return->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	// ABI match? see
@@ -1010,7 +1019,7 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 	      {
 		emit_abi_mismatch (*ltype, type);
 	      }
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	// DEF Id match? see https://github.com/Rust-GCC/gccrs/issues/2053
@@ -1043,9 +1052,9 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1068,7 +1077,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 	TyTy::FnPtr &type = *static_cast<TyTy::FnPtr *> (rtype);
 	if (ltype->num_params () != type.num_params ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
@@ -1080,7 +1089,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 						  TyTy::TyWithLocation (b));
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
-		return new TyTy::ErrorType (0);
+		return unify_error_type_node ();
 	      }
 	  }
 
@@ -1089,7 +1098,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (type.get_return_type ()));
 	if (unified_return->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	return ltype;
@@ -1107,12 +1116,12 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (other_ret_type));
 	if (unified_result->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	if (ltype->num_params () != type.num_params ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
@@ -1125,7 +1134,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 				 TyTy::TyWithLocation (other_param));
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
-		return new TyTy::ErrorType (0);
+		return unify_error_type_node ();
 	      }
 	  }
 
@@ -1144,12 +1153,12 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (other_ret_type));
 	if (unified_result->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	if (ltype->num_params () != type.get_num_params ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
@@ -1162,7 +1171,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 				 TyTy::TyWithLocation (other_param));
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
-		return new TyTy::ErrorType (0);
+		return unify_error_type_node ();
 	      }
 	  }
 
@@ -1192,9 +1201,9 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1217,7 +1226,7 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 	TyTy::TupleType &type = *static_cast<TyTy::TupleType *> (rtype);
 	if (ltype->num_fields () != type.num_fields ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	std::vector<TyTy::TyVar> fields;
@@ -1230,7 +1239,7 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 	      = resolve_subtype (TyTy::TyWithLocation (bo),
 				 TyTy::TyWithLocation (fo));
 	    if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
-	      return new TyTy::ErrorType (0);
+	      return unify_error_type_node ();
 
 	    fields.emplace_back (unified_ty->get_ref ());
 	  }
@@ -1264,9 +1273,9 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1315,9 +1324,9 @@ UnifyRules::expect_bool (TyTy::BoolType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1366,9 +1375,9 @@ UnifyRules::expect_char (TyTy::CharType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1425,9 +1434,9 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1484,9 +1493,9 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1543,9 +1552,9 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1594,9 +1603,9 @@ UnifyRules::expect_isize (TyTy::ISizeType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1645,9 +1654,9 @@ UnifyRules::expect_usize (TyTy::USizeType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1668,7 +1677,7 @@ UnifyRules::expect_never (TyTy::NeverType *ltype, TyTy::BaseType *rtype)
     default:
       return rtype;
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1718,9 +1727,9 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
 
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1768,9 +1777,9 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1794,12 +1803,12 @@ UnifyRules::expect_dyn (TyTy::DynamicObjectType *ltype, TyTy::BaseType *rtype)
 	  = *static_cast<TyTy::DynamicObjectType *> (rtype);
 	if (ltype->num_specified_bounds () != type.num_specified_bounds ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	if (!ltype->bounds_compatible (type, locus, true))
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	return ltype;
@@ -1830,9 +1839,9 @@ UnifyRules::expect_dyn (TyTy::DynamicObjectType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1855,7 +1864,7 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 	TyTy::ClosureType &type = *static_cast<TyTy::ClosureType *> (rtype);
 	if (ltype->get_def_id () != type.get_def_id ())
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	TyTy::BaseType *args_res
@@ -1863,7 +1872,7 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (&type.get_parameters ()));
 	if (args_res->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	TyTy::BaseType *res
@@ -1871,7 +1880,7 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (&type.get_result_type ()));
 	if (res == nullptr || res->get_kind () == TyTy::TypeKind::ERROR)
 	  {
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	  }
 
 	return ltype;
@@ -1902,9 +1911,9 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
     case TyTy::OPAQUE:
     case TyTy::CONST:
     case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 TyTy::BaseType *
@@ -1914,7 +1923,7 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
     {
       TyTy::OpaqueType *ro = rtype->as<TyTy::OpaqueType> ();
       if (!ltype->is_equal (*ro))
-	return new TyTy::ErrorType (0);
+	return unify_error_type_node ();
 
       if (ltype->can_resolve () && ro->can_resolve ())
 	{
@@ -1924,7 +1933,7 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
 	  auto res = resolve_subtype (TyTy::TyWithLocation (lr),
 				      TyTy::TyWithLocation (rr));
 	  if (res->get_kind () == TyTy::TypeKind::ERROR)
-	    return new TyTy::ErrorType (0);
+	    return unify_error_type_node ();
 	}
       else if (ltype->can_resolve ())
 	{
@@ -1943,7 +1952,7 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
       auto res = resolve_subtype (TyTy::TyWithLocation (underly),
 				  TyTy::TyWithLocation (rtype));
       if (res->get_kind () == TyTy::TypeKind::ERROR)
-	return new TyTy::ErrorType (0);
+	return unify_error_type_node ();
     }
   else
     {
@@ -1957,7 +1966,7 @@ TyTy::BaseType *
 UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
 {
   if (rtype->get_kind () != TyTy::TypeKind::CONST)
-    return new TyTy::ErrorType (0);
+    return unify_error_type_node ();
 
   TyTy::ConstType &lhs = *ltype;
   TyTy::ConstType &rhs = *static_cast<TyTy::ConstType *> (rtype);
@@ -1965,7 +1974,7 @@ UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
   auto res = resolve_subtype (TyTy::TyWithLocation (lhs.get_ty ()),
 			      TyTy::TyWithLocation (rhs.get_ty ()));
   if (res->get_kind () == TyTy::TypeKind::ERROR)
-    return new TyTy::ErrorType (0);
+    return unify_error_type_node ();
 
   tree lv = lhs.get_value ();
   tree rv = rhs.get_value ();
@@ -1984,7 +1993,7 @@ UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
 				      lhs.get_combined_refs ());
 	}
 
-      return new TyTy::ErrorType (0);
+      return unify_error_type_node ();
     }
 
   bool equal = operand_equal_p (lv, rv, 0);
@@ -2017,7 +2026,7 @@ UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
 				  rhs.get_combined_refs ());
     }
 
-  return new TyTy::ErrorType (0);
+  return unify_error_type_node ();
 }
 
 } // namespace Resolver
