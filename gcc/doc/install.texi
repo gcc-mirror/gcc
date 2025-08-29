@@ -4068,7 +4068,12 @@ Instead of GNU Binutils, you need to install LLVM and copy
 @file{bin/llvm-objdump} to @file{amdgcn-amdhsa/bin/objdump},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
-@file{bin/amdgcn-amdhsa-ranlib}.
+@file{bin/amdgcn-amdhsa-ranlib}.  The LLVM version is required for the
+assembler (llvm-mc) and linker (lld); however, for the others, the respective
+GNU Binutils counterpart can be used instead.  While all mentioned programs are
+required when building GCC, the installed GCC compiler only needs the assembler
+and linker; @code{nm}, @code{ar}, and @code{ranlib} are required when installing
+@code{gcc-nm}, @code{gcc-ar}, and @code{gcc-ranlib}.
 
 The required version of LLVM depends on the devices that you want to support.
 As the list of ISAs is long, GCC by default only builds a subset of the
@@ -4092,8 +4097,7 @@ ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and
 @code{gfx11-generic} reduce the number of required multilibs but note
 that @code{gfx9-generic} does not include @code{gfx908} or @code{gfx90a},
 that linking specific ISA code with generic code is currently not supported,
-and that only a future ROCm release (newer than 6.3.3) will be able to execute
-generic code.
+and that only ROCm 6.4.0 or newer is able to execute generic code.
 
 Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
 the device console output for GFX10 and GFX11 devices; post-4.5.0
