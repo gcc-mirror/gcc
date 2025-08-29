@@ -6206,7 +6206,11 @@ package body Exp_Util is
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
          elsif Is_Implicit_Full_View (Utyp) then
-            Utyp := Underlying_Type (Root_Type (Btyp));
+            if Is_Derived_Type (Btyp) then
+               Utyp := Underlying_Type (Root_Type (Btyp));
+            else
+               Utyp := Underlying_Type (Root_Type (Full_View (Btyp)));
+            end if;
 
             if Is_Protected_Type (Utyp) then
                Utyp := Corresponding_Record_Type (Utyp);
@@ -10033,7 +10037,8 @@ package body Exp_Util is
    begin
       return (not Is_Tagged_Type (T) and then Is_Derived_Type (T))
                or else
-                 (Is_Private_Type (T) and then Present (Full_View (T))
+                 (Is_Private_Type (T)
+                   and then Present (Full_View (T))
                    and then not Is_Tagged_Type (Full_View (T))
                    and then Is_Derived_Type (Full_View (T))
                    and then Etype (Full_View (T)) /= T);
