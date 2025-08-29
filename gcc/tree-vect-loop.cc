@@ -170,8 +170,8 @@ static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
    considered a polynomial evolution.  */
 
 static bool
-vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
-                             tree * step)
+vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn,
+			     stmt_vec_info stmt_info)
 {
   tree init_expr;
   tree step_expr;
@@ -195,8 +195,8 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
     dump_printf_loc (MSG_NOTE, vect_location, "step: %T,  init: %T\n",
 		     step_expr, init_expr);
 
-  *init = init_expr;
-  *step = step_expr;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_info) = init_expr;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info) = step_expr;
 
   if (TREE_CODE (step_expr) != INTEGER_CST
       && (TREE_CODE (step_expr) != SSA_NAME
@@ -227,7 +227,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
    For neg induction, return a fake step as integer -1.  */
 static bool
 vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
-				gphi* loop_phi_node, tree *init, tree *step)
+				gphi* loop_phi_node)
 {
   tree init_expr, ev_expr, result, op1, op2;
   gimple* def;
@@ -242,7 +242,6 @@ vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
   if (!INTEGRAL_TYPE_P (TREE_TYPE (init_expr)))
     return false;
 
-  *init = init_expr;
   result = PHI_RESULT (loop_phi_node);
 
   if (TREE_CODE (ev_expr) != SSA_NAME
@@ -251,12 +250,13 @@ vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
     return false;
 
   enum tree_code t_code = gimple_assign_rhs_code (def);
+  tree step;
   switch (t_code)
     {
     case NEGATE_EXPR:
       if (gimple_assign_rhs1 (def) != result)
 	return false;
-      *step = build_int_cst (TREE_TYPE (init_expr), -1);
+      step = build_int_cst (TREE_TYPE (init_expr), -1);
       STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_neg;
       break;
 
@@ -268,7 +268,7 @@ vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
       if (TREE_CODE (op2) != INTEGER_CST
 	  || op1 != result)
 	return false;
-      *step = op2;
+      step = op2;
       if (t_code == LSHIFT_EXPR)
 	STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_shl;
       else if (t_code == RSHIFT_EXPR)
@@ -282,8 +282,8 @@ vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
       return false;
     }
 
-  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_info) = *init;
-  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info) = *step;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_info) = init_expr;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info) = step;
 
   return true;
 }
@@ -378,7 +378,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 			      bool slp)
 {
   basic_block bb = loop->header;
-  tree init, step;
   auto_vec<stmt_vec_info, 64> worklist;
   gphi_iterator gsi;
   bool double_reduc, reduc_chain;
@@ -408,28 +407,21 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 
       /* Analyze the evolution function.  */
       access_fn = analyze_scalar_evolution (loop, def);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Access function of PHI: %T\n", access_fn);
       if (access_fn)
-	{
-	  STRIP_NOPS (access_fn);
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Access function of PHI: %T\n", access_fn);
-	  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo)
-	    = initial_condition_in_loop_num (access_fn, loop->num);
-	  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo)
-	    = evolution_part_in_loop_num (access_fn, loop->num);
-	}
+	STRIP_NOPS (access_fn);
 
       if ((!access_fn
 	   || vect_inner_phi_in_double_reduction_p (loop_vinfo, phi)
-	   || !vect_is_simple_iv_evolution (loop->num, access_fn,
-					    &init, &step)
+	   || !vect_is_simple_iv_evolution (loop->num, access_fn, stmt_vinfo)
 	   || (LOOP_VINFO_LOOP (loop_vinfo) != loop
-	       && TREE_CODE (step) != INTEGER_CST))
+	       && (TREE_CODE (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo))
+		   != INTEGER_CST)))
 	  /* Only handle nonlinear iv for same loop.  */
 	  && (LOOP_VINFO_LOOP (loop_vinfo) != loop
-	      || !vect_is_nonlinear_iv_evolution (loop, stmt_vinfo,
-						  phi, &init, &step)))
+	      || !vect_is_nonlinear_iv_evolution (loop, stmt_vinfo, phi)))
 	{
 	  worklist.safe_push (stmt_vinfo);
 	  continue;
