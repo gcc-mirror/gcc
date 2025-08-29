@@ -3313,6 +3313,42 @@
 				    (const_int 8)
 				    (const_int 9))))])
 
+(define_insn_and_split "*eqne_in_range"
+  [(set (pc)
+	(if_then_else (match_operator 4 "alt_ubranch_operator"
+			[(plus:SI (match_operand:SI 0 "register_operand" "r")
+				  (match_operand:SI 1 "const_int_operand" "i"))
+			 (match_operand:SI 2 "const_int_operand" "i")])
+		      (label_ref (match_operand 3 ""))
+		      (pc)))
+   (clobber (match_scratch:SI 5 "=&a"))]
+  "TARGET_MINMAX && TARGET_CLAMPS
+   && INTVAL (operands[1]) * 2 - INTVAL (operands[2]) == 1
+   && IN_RANGE (exact_log2 (INTVAL (operands[1])), 7, 22)"
+  "#"
+  "&& 1"
+  [(set (match_dup 5)
+	(smin:SI (smax:SI (match_dup 0)
+			  (match_dup 1))
+		 (match_dup 2)))
+   (set (pc)
+	(if_then_else (match_op_dup 4
+			[(match_dup 0)
+			 (match_dup 5)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
+{
+  HOST_WIDE_INT v = INTVAL (operands[1]);
+  operands[1] = GEN_INT (-v);
+  operands[2] = GEN_INT (v - 1);
+  PUT_CODE (operands[4], GET_CODE (operands[4]) == GTU ? NE : EQ);
+  if (GET_CODE (operands[5]) == SCRATCH)
+    operands[5] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"6")])
+
 (define_split
   [(clobber (match_operand 0 "register_operand"))]
   "HARD_REGISTER_P (operands[0])
