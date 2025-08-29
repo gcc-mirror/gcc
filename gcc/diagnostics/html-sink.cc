@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/buffering.h"
 #include "diagnostics/paths.h"
 #include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 #include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"
@@ -1320,6 +1321,8 @@ html_builder::end_group ()
 void
 html_builder::flush_to_file (FILE *outf)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::html_builder::flush_to_file");
   if (m_html_gen_opts.m_javascript)
     {
       gcc_assert (m_head_element);
@@ -1389,6 +1392,9 @@ public:
   on_report_diagnostic (const diagnostic_info &diagnostic,
 			enum kind orig_diag_kind) final override
   {
+    DIAGNOSTICS_LOG_SCOPE_PRINTF0
+      (get_logger (),
+       "diagnostics::html_sink::on_report_diagnostic");
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagram &d) final override

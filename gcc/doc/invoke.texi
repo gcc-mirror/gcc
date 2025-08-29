@@ -37907,6 +37907,16 @@ compilation which is to be used as input to the next stage: for example,
 the output of the preprocessor, which is the input to the compiler
 proper.
 
+@vindex GCC_DIAGNOSTICS_LOG
+@item GCC_DIAGNOSTICS_LOG
+If @env{GCC_DIAGNOSTICS_LOG} is set, then additional information
+about the diagnostics subsystem will be emitted.  If it is set to an empty
+value, then the information will be written to stderr; otherwise, GCC will
+attempt to open that file and write the information there.
+
+The precise content and format of the information is subject to change;
+it is intended for use by GCC developers, rather than end-users.
+
 @vindex GCC_COMPARE_DEBUG
 @item GCC_COMPARE_DEBUG
 Setting @env{GCC_COMPARE_DEBUG} is nearly equivalent to passing

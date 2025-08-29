@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/buffering.h"
 #include "diagnostics/file-cache.h"
 #include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -211,6 +212,7 @@ context::initialize (int n_opts)
   m_diagrams.m_theme = nullptr;
   m_original_argv = nullptr;
   m_diagnostic_buffer = nullptr;
+  m_logger = nullptr;
 
   enum diagnostic_text_art_charset text_art_charset
     = DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI;
@@ -222,6 +224,27 @@ context::initialize (int n_opts)
 	text_art_charset = DIAGNOSTICS_TEXT_ART_CHARSET_ASCII;
     }
   set_text_art_charset (text_art_charset);
+
+  if (const char *name = getenv ("GCC_DIAGNOSTICS_LOG"))
+    {
+      if (name[0] != '\0')
+	{
+	  /* Try to write a log to the named path.  */
+	  if (FILE *outfile = fopen (name, "w"))
+	    m_logger = new logging::logger
+	      (output_file (outfile, true,
+			    label_text::take (xstrdup (name))));
+	}
+      else
+	/* Write a log to stderr.  */
+	m_logger = new logging::logger
+	  (output_file
+	   (stderr, false,
+	    label_text::borrow ("stderr")));
+    }
+
+  if (m_logger)
+    m_logger->log_printf ("diagnostics::context::initialize");
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -329,6 +352,15 @@ context::initialize_input_context (diagnostic_input_charset_callback ccb,
 void
 context::finish ()
 {
+  if (m_logger)
+    {
+      m_logger->log_printf ("diagnostics::context::finish");
+      /* We're cleaning up the logger before this function exits,
+	 so we can't use auto_inc_depth here.  */
+      m_logger->inc_depth ();
+      dump (m_logger->get_stream (), m_logger->get_indent ());
+    }
+
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
      sinks.  */
@@ -381,45 +413,48 @@ context::finish ()
 
   freeargv (m_original_argv);
   m_original_argv = nullptr;
+
+  delete m_logger;
+  m_logger = nullptr;
 }
 
 /* Dump state of this diagnostics::context to OUT, for debugging.  */
 
 void
-context::dump (FILE *outfile) const
+context::dump (FILE *outfile, int indent) const
 {
-  dumping::emit_heading (outfile, 0, "diagnostics::context");
-  m_diagnostic_counters.dump (outfile, 2);
-  dumping::emit_heading (outfile, 2, "reference printer");
+  dumping::emit_heading (outfile, indent, "diagnostics::context");
+  m_diagnostic_counters.dump (outfile, indent + 2);
+  dumping::emit_heading (outfile, indent + 2, "reference printer");
   if (m_reference_printer)
-    m_reference_printer->dump (outfile, 4);
+    m_reference_printer->dump (outfile, indent + 4);
   else
-    dumping::emit_none (outfile, 4);
-  dumping::emit_heading (outfile, 2, "output sinks");
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "output sinks");
   if (m_sinks.length () > 0)
     {
       for (unsigned i = 0; i < m_sinks.length (); ++i)
 	{
-	  dumping::emit_indent (outfile, 4);
+	  dumping::emit_indent (outfile, indent + 4);
 	  const sink *s = m_sinks[i];
 	  fprintf (outfile, "sink %i (", i);
 	  s->dump_kind (outfile);
 	  fprintf (outfile, "):\n");
-	  s->dump (outfile, 6);
+	  s->dump (outfile, indent + 6);
 	}
     }
   else
-    dumping::emit_none (outfile, 4);
-  dumping::emit_heading (outfile, 2, "diagnostic buffer");
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "diagnostic buffer");
   if (m_diagnostic_buffer)
-    m_diagnostic_buffer->dump (outfile, 4);
+    m_diagnostic_buffer->dump (outfile, indent + 4);
   else
-    dumping::emit_none (outfile, 4);
-  dumping::emit_heading (outfile, 2, "file cache");
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "file cache");
   if (m_file_cache)
-    m_file_cache->dump (outfile, 4);
+    m_file_cache->dump (outfile, indent + 4);
   else
-    dumping::emit_none (outfile, 4);
+    dumping::emit_none (outfile, indent + 4);
 }
 
 /* Return true if sufficiently severe diagnostics have been seen that
@@ -445,6 +480,9 @@ context::remove_all_output_sinks ()
 void
 context::set_sink (std::unique_ptr<sink> sink_)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_logger, "diagnostics::context::set_sink");
+  if (m_logger)
+    sink_->dump (m_logger->get_stream (), m_logger->get_indent ());
   remove_all_output_sinks ();
   m_sinks.safe_push (sink_.release ());
 }
@@ -460,6 +498,9 @@ context::get_sink (size_t idx) const
 void
 context::add_sink (std::unique_ptr<sink> sink_)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_logger, "diagnostics::context::add_sink");
+  if (m_logger)
+    sink_->dump (m_logger->get_stream (), m_logger->get_indent ());
   m_sinks.safe_push (sink_.release ());
 }
 
@@ -662,6 +703,19 @@ const char *
 get_text_for_kind (enum kind kind)
 {
   return diagnostic_kind_text[static_cast<int> (kind)];
+}
+
+static const char *const diagnostic_kind_debug_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (#K),
+#include "diagnostics/kinds.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+  "must-not-happen"
+};
+
+const char *
+get_debug_string_for_kind (enum kind kind)
+{
+  return diagnostic_kind_debug_text[static_cast<int> (kind)];
 }
 
 static const char *const diagnostic_kind_color[] = {
@@ -1276,6 +1330,9 @@ context::emit_diagnostic_with_group_va (enum kind kind,
 bool
 context::report_diagnostic (diagnostic_info *diagnostic)
 {
+  auto logger = get_logger ();
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (logger, "diagnostics::context::report_diagnostic");
+
   enum kind orig_diag_kind = diagnostic->m_kind;
 
   /* Every call to report_diagnostic should be within a
@@ -1290,6 +1347,8 @@ context::report_diagnostic (diagnostic_info *diagnostic)
   if (was_warning && m_inhibit_warnings)
     {
       inhibit_notes_in_group ();
+      if (m_logger)
+	m_logger->log_printf ("rejecting: inhibiting warnings");
       return false;
     }
 
@@ -1305,7 +1364,11 @@ context::report_diagnostic (diagnostic_info *diagnostic)
     }
 
   if (diagnostic->m_kind == kind::note && m_inhibit_notes_p)
-    return false;
+    {
+      if (m_logger)
+	m_logger->log_printf ("rejecting: inhibiting notes");
+      return false;
+    }
 
   /* If the user requested that warnings be treated as errors, so be
      it.  Note that we do this before the next block so that
@@ -1322,6 +1385,8 @@ context::report_diagnostic (diagnostic_info *diagnostic)
      stack.  .  */
   if (!diagnostic_enabled (diagnostic))
     {
+      if (m_logger)
+	m_logger->log_printf ("rejecting: diagnostic not enabled");
       inhibit_notes_in_group ();
       return false;
     }
@@ -1330,13 +1395,21 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       && ((!m_warn_system_headers
 	   && diagnostic->m_iinfo.m_allsyslocs)
 	  || m_inhibit_warnings))
-    /* Bail if the warning is not to be reported because all locations in the
-       inlining stack (if there is one) are in system headers.  */
-    return false;
+    {
+      /* Bail if the warning is not to be reported because all locations in the
+	 inlining stack (if there is one) are in system headers.  */
+      if (m_logger)
+	m_logger->log_printf ("rejecting: warning in system header");
+      return false;
+    }
 
   if (diagnostic->m_kind == kind::note && notes_inhibited_in_group ())
-    /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
-    return false;
+    {
+      /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
+      if (m_logger)
+	m_logger->log_printf ("rejecting: notes inhibited within group");
+      return false;
+    }
 
   if (diagnostic->m_kind != kind::note && diagnostic->m_kind != kind::ice)
     check_max_errors (false);
@@ -1397,8 +1470,13 @@ context::report_diagnostic (diagnostic_info *diagnostic)
 
   /* Is this the initial diagnostic within the stack of groups?  */
   if (m_diagnostic_groups.m_emission_count == 0)
-    for (auto sink_ : m_sinks)
-      sink_->on_begin_group ();
+    {
+      DIAGNOSTICS_LOG_SCOPE_PRINTF0
+	(get_logger (),
+	 "diagnostics::context: beginning group");
+      for (auto sink_ : m_sinks)
+	sink_->on_begin_group ();
+    }
   m_diagnostic_groups.m_emission_count++;
 
   va_list *orig_args = diagnostic->m_message.m_args_ptr;
@@ -1557,6 +1635,13 @@ context::diagnostic_impl (rich_location *richloc,
 			  const char *gmsgid,
 			  va_list *ap, enum kind kind)
 {
+  logging::log_function_params
+    (m_logger, "diagnostics::context::diagnostic_impl")
+    .log_param_option_id ("option_id", opt_id)
+    .log_param_kind ("kind", kind)
+    .log_param_string ("gmsgid", gmsgid);
+  logging::auto_inc_depth depth_sentinel (m_logger);
+
   diagnostic_info diagnostic;
   if (kind == diagnostics::kind::permerror)
     {
@@ -1574,7 +1659,11 @@ context::diagnostic_impl (rich_location *richloc,
 	diagnostic.m_option_id = opt_id;
     }
   diagnostic.m_metadata = metadata;
-  return report_diagnostic (&diagnostic);
+
+  bool ret = report_diagnostic (&diagnostic);
+  if (m_logger)
+    m_logger->log_bool_return ("diagnostics::context::diagnostic_impl", ret);
+  return ret;
 }
 
 /* Implement inform_n, warning_n, and error_n, as documented and
@@ -1588,6 +1677,13 @@ context::diagnostic_n_impl (rich_location *richloc,
 			    const char *plural_gmsgid,
 			    va_list *ap, enum kind kind)
 {
+  logging::log_function_params
+    (m_logger, "diagnostics::context::diagnostic_n_impl")
+    .log_param_option_id ("option_id", opt_id)
+    .log_param_kind ("kind", kind)
+    .log_params_n_gmsgids (n, singular_gmsgid, plural_gmsgid);
+  logging::auto_inc_depth depth_sentinel (m_logger);
+
   diagnostic_info diagnostic;
   unsigned long gtn;
 
@@ -1604,7 +1700,11 @@ context::diagnostic_n_impl (rich_location *richloc,
   if (kind == diagnostics::kind::warning)
     diagnostic.m_option_id = opt_id;
   diagnostic.m_metadata = metadata;
-  return report_diagnostic (&diagnostic);
+
+  bool ret = report_diagnostic (&diagnostic);
+  if (m_logger)
+    m_logger->log_bool_return ("diagnostics::context::diagnostic_n_impl", ret);
+  return ret;
 }
 
 
@@ -1706,8 +1806,13 @@ context::end_group ()
 	 If any diagnostics were emitted, give the context a chance
 	 to do something.  */
       if (m_diagnostic_groups.m_emission_count > 0)
-	for (auto sink_ : m_sinks)
-	  sink_->on_end_group ();
+	{
+	  DIAGNOSTICS_LOG_SCOPE_PRINTF0
+	    (get_logger (),
+	     "diagnostics::context::end_group: ending group");
+	  for (auto sink_ : m_sinks)
+	    sink_->on_end_group ();
+	}
       m_diagnostic_groups.m_emission_count = 0;
     }
   /* We're popping one level, so might need to stop inhibiting notes.  */

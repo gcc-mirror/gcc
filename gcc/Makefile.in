@@ -1864,6 +1864,7 @@ OBJS-libcommon = \
 	diagnostics/sarif-sink.o \
 	diagnostics/text-sink.o \
 	diagnostics/lazy-paths.o \
+	diagnostics/logging.o \
 	diagnostics/macro-unwinding.o \
 	diagnostics/option-classifier.o \
 	diagnostics/paths.o \
