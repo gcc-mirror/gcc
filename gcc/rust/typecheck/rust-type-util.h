@@ -28,7 +28,8 @@ namespace Resolver {
 bool query_type (HirId reference, TyTy::BaseType **result);
 
 bool types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		       location_t unify_locus, bool emit_errors);
+		       location_t unify_locus, bool emit_errors,
+		       bool check_bounds = true);
 
 TyTy::BaseType *unify_site (HirId id, TyTy::TyWithLocation lhs,
 			    TyTy::TyWithLocation rhs, location_t unify_locus);
@@ -37,7 +38,7 @@ TyTy::BaseType *unify_site_and (HirId id, TyTy::TyWithLocation lhs,
 				TyTy::TyWithLocation rhs,
 				location_t unify_locus, bool emit_errors,
 				bool commit_if_ok, bool implicit_infer_vars,
-				bool cleanup);
+				bool cleanup, bool check_bounds = true);
 
 TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
 			       TyTy::TyWithLocation rhs,

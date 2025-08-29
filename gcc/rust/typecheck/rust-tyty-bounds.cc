@@ -81,11 +81,10 @@ TypeBoundsProbe::process_impl_block (
   if (!query_type (impl_ty_id, &impl_type))
     return true;
 
-  if (!receiver->can_eq (impl_type, false))
-    {
-      if (!impl_type->can_eq (receiver, false))
-	return true;
-    }
+  if (!types_compatable (TyTy::TyWithLocation (receiver),
+			 TyTy::TyWithLocation (impl_type), impl->get_locus (),
+			 false /*emit_errors*/, false /*check-bounds*/))
+    return true;
 
   possible_trait_paths.emplace_back (&impl->get_trait_ref (), impl);
   return true;

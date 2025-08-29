@@ -26,22 +26,24 @@ namespace Resolver {
 
 UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 			location_t locus, bool commit_flag, bool emit_error,
-			bool infer, std::vector<CommitSite> &commits,
+			bool check_bounds, bool infer,
+			std::vector<CommitSite> &commits,
 			std::vector<InferenceSite> &infers)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
-    emit_error (emit_error), infer_flag (infer), commits (commits),
-    infers (infers), mappings (Analysis::Mappings::get ()),
-    context (*TypeCheckContext::get ())
+    emit_error (emit_error), infer_flag (infer),
+    check_bounds_flag (check_bounds), commits (commits), infers (infers),
+    mappings (Analysis::Mappings::get ()), context (*TypeCheckContext::get ())
 {}
 
 TyTy::BaseType *
 UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		     location_t locus, bool commit_flag, bool emit_error,
-		     bool infer, std::vector<CommitSite> &commits,
+		     bool check_bounds, bool infer,
+		     std::vector<CommitSite> &commits,
 		     std::vector<InferenceSite> &infers)
 {
-  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, infer, commits,
-		infers);
+  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, infer, check_bounds,
+		commits, infers);
 
   TyTy::BaseType *result = r.go ();
   commits.emplace_back (lhs.get_ty (), rhs.get_ty (), result);
@@ -60,7 +62,7 @@ UnifyRules::resolve_subtype (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs)
 {
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, locus, commit_flag, emit_error, infer_flag,
-			   commits, infers);
+			   check_bounds_flag, commits, infers);
 
   // If the recursive call resulted in an error and would have emitted an error
   // message, disable error emission for the current level to avoid duplicate
@@ -161,30 +163,34 @@ UnifyRules::go ()
   rust_debug ("unify::go ltype={%s} rtype={%s}", ltype->debug_str ().c_str (),
 	      rtype->debug_str ().c_str ());
 
-  // check bounds
-  bool ltype_is_placeholder = ltype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
-  bool rtype_is_placeholder = rtype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
-  bool types_equal = ltype->is_equal (*rtype);
-  bool should_check_bounds
-    = !types_equal && !(ltype_is_placeholder || rtype_is_placeholder);
-  if (should_check_bounds)
+  if (check_bounds_flag)
     {
-      if (ltype->num_specified_bounds () > 0)
+      bool ltype_is_placeholder
+	= ltype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+      bool rtype_is_placeholder
+	= rtype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+      bool types_equal = ltype->is_equal (*rtype);
+      bool should_check_bounds
+	= !types_equal && !(ltype_is_placeholder || rtype_is_placeholder);
+      if (should_check_bounds)
 	{
-	  if (!ltype->bounds_compatible (*rtype, locus, emit_error))
+	  if (ltype->num_specified_bounds () > 0)
 	    {
-	      // already emitted an error
-	      emit_error = false;
-	      return new TyTy::ErrorType (0);
+	      if (!ltype->bounds_compatible (*rtype, locus, emit_error))
+		{
+		  // already emitted an error
+		  emit_error = false;
+		  return new TyTy::ErrorType (0);
+		}
 	    }
-	}
-      else if (rtype->num_specified_bounds () > 0)
-	{
-	  if (!rtype->bounds_compatible (*ltype, locus, emit_error))
+	  else if (rtype->num_specified_bounds () > 0)
 	    {
-	      // already emitted an error
-	      emit_error = false;
-	      return new TyTy::ErrorType (0);
+	      if (!rtype->bounds_compatible (*ltype, locus, emit_error))
+		{
+		  // already emitted an error
+		  emit_error = false;
+		  return new TyTy::ErrorType (0);
+		}
 	    }
 	}
     }
