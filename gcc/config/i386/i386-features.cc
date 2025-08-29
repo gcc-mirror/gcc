@@ -4291,34 +4291,22 @@ pass_x86_cse::candidate_gnu2_tls_p (rtx set, attr_tls64 tls64)
      */
 
       scalar_mode = mode = GET_MODE (src);
-      rtx src0 = XEXP (src, 0);
-      tls_symbol = XVECEXP (src0, 0, 0);
-      rtx src1 = XVECEXP (src0, 0, 1);
-      if (REG_P (src1))
-	{
-	  set_insn = tls_set_insn_from_symbol (src1, tls_symbol);
-	  gcc_assert (set_insn);
-	}
-      else
-	{
-	  set_insn = nullptr;
-	  gcc_assert (GET_CODE (src1) == UNSPEC
-		      && XINT (src1, 1) == UNSPEC_TLSDESC
-		      && SYMBOL_REF_P (XVECEXP (src1, 0, 0))
-		      && rtx_equal_p (XVECEXP (src1, 0, 0), tls_symbol));
-	}
 
-      /* Use TLS_SYMBOL and
+      /* Since the first operand of PLUS in the source TLS_COMBINE
+	 pattern is unused, use the second operand of PLUS:
 
 	 (const:DI (unspec:DI [
 		      (symbol_ref:DI ("e") [flags 0x1a])
 		   ] UNSPEC_DTPOFF))
 
-	 as VAL to check if 2 patterns have the same source.  */
-
-      rtvec vec = gen_rtvec (2, tls_symbol, XEXP (src, 1));
-      val = gen_rtx_UNSPEC (mode, vec, UNSPEC_TLSDESC);
-      def_insn = set_insn;
+	 as VAL to check if 2 TLS_COMBINE patterns have the same
+	 source.  */
+      val = XEXP (src, 1);
+      gcc_assert (GET_CODE (val) == CONST
+		  && GET_CODE (XEXP (val, 0)) == UNSPEC
+		      && XINT (XEXP (val, 0), 1) == UNSPEC_DTPOFF
+		      && SYMBOL_REF_P (XVECEXP (XEXP (val, 0), 0, 0)));
+      def_insn = nullptr;
       return true;
     }
 
