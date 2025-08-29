@@ -11382,6 +11382,23 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
 
   return cost;
 }
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+bool
+ix86_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
+				     unsigned int align,
+				     enum by_pieces_operation op,
+				     bool speed_p)
+{
+  /* Return true when we are currently expanding memcpy/memset epilogue
+     with move_by_pieces or store_by_pieces.  */
+  if (cfun->machine->by_pieces_in_use)
+    return true;
+
+  return default_use_by_pieces_infrastructure_p (size, align, op,
+						 speed_p);
+}
 
 /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
    this is used for to form addresses to local data when -fPIC is in
@@ -27933,6 +27950,10 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_INSN_COST ix86_insn_cost
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  ix86_use_by_pieces_infrastructure_p
 
 #undef TARGET_OVERLAP_OP_BY_PIECES_P
 #define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true

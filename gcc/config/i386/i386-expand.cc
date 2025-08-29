@@ -8241,8 +8241,10 @@ expand_cpymem_epilogue (rtx destmem, rtx srcmem,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       move_by_pieces (destmem, srcmem, epilogue_size, destalign,
 		      RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 8)
@@ -8487,9 +8489,11 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       store_by_pieces (destmem, epilogue_size, setmem_epilogue_gen_val,
 		       vec_value ? vec_value : value, destalign, true,
 		       RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 32)
