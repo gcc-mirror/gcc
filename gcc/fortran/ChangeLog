@@ -1,3 +1,30 @@
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82843
+	* intrinsic.cc (gfc_convert_type_warn): If the 'from_ts' is a
+	PDT instance, copy the derived type to the target ts.
+	* resolve.cc (gfc_resolve_ref): A PDT component in a component
+	reference can be that of the pdt_template. Unconditionally use
+	component of the PDT instance to ensure that the backend_decl
+	is set during translation. Likewise if a component is
+	encountered that is a PDT template type, use the component
+	parmeters to convert to the correct PDT instance.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82205
+	* decl.cc (gfc_get_pdt_instance): Copy the default initializer
+	for components that are not PDT parameters or parameterized. If
+	any component is a pointer or allocatable set the attributes
+	'pointer_comp' or 'alloc_comp' of the new PDT instance.
+	* primary.cc (gfc_match_rvalue): Implement the correct form of
+	PDT constructors with 'name (type parms)(component values)'.
+	* trans-array.cc (structure_alloc_comps): Apply scalar default
+	initializers. Array initializers await the coming change in PDT
+	representation.
+	* trans-io.cc (transfer_expr): Do not output the type parms of
+	a PDT in list directed output.
+
 2025-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/114611

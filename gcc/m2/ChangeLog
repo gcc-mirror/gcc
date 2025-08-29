@@ -1,3 +1,34 @@
+2025-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121629
+	* gm2-compiler/PathName.mod: Add copyright notice.
+	* gm2-lang.cc (named_path): Add field lib_root.
+	(push_back_Ipath): Set lib_root false.
+	(push_back_lib_root): New function.
+	(get_dir_sep_size): Ditto.
+	(add_path_component): Ditto.
+	(add_one_import_path): Ditto.
+	(add_non_dialect_specific_path): Ditto.
+	(foreach_lib_gen_import_path): Ditto.
+	(get_module_source_dir): Ditto.
+	(add_default_include_paths): Ditto.
+	(assign_flibs): Ditto.
+	(m2_pathname_root): Ditto.
+	(add_m2_import_paths): Remove function.
+	(gm2_langhook_post_options): Call assign_flibs.
+	Check np.lib_root and call foreach_lib_gen_import_path.
+	Replace call to add_m2_import_paths with a call to
+	add_default_include_paths.
+	(gm2_langhook_handle_option): Add case OPT_fm2_pathname_rootI_.
+	* gm2spec.cc (named_path): Add field lib_root.
+	(push_back_Ipath): Set lib_root false.
+	(push_back_lib_root): New function.
+	(add_m2_I_path): Add OPT_fm2_pathname_rootI_ option
+	if np.lib_root.
+	(lang_specific_driver): Add case OPT_fm2_pathname_root_.
+	* lang.opt (fm2-pathname-root=): New option.
+	(fm2-pathname-rootI=): Ditto.
+
 2025-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121354

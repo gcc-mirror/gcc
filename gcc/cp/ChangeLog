@@ -1,3 +1,30 @@
+2025-08-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107953
+	* parser.cc (cp_parser_lambda_expression): Set
+	greater_than_is_operator_p.
+
+2025-08-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119844
+	* typeck2.cc (cxx_incomplete_type_inform): Add explanation when
+	a similar type is complete but attached to a different module.
+	Also fix handling of partial specs and templates.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121583
+	* semantics.cc (apply_deduced_return_type): Adjust
+	fun->returns*_struct when !uses_template_parms (fco) instead of
+	when !processing_template_decl.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/121575
+	* pt.cc (tsubst_expr) <case PARM_DECL>: If DECL_CONTEXT (t) isn't a
+	template return t for PARM_DECLs without local specialization.
+
 2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118839

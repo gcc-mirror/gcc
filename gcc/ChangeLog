@@ -1,3 +1,72 @@
+2025-08-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/115201
+	* passes.def: Move cleanup_eh before first tail_recursion.
+
+2025-08-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfmin_vf_<mode>): Add new pattern to
+	combine vec_duplicate + vfmin.vv into vfmin.vf.
+	* config/riscv/vector.md (@pred_<optab><mode>_scalar): Allow VLS modes.
+
+2025-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_form): Dump
+	niter assumption used for versioning.
+
+2025-08-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR middle-end/66462
+	* config/aarch64/aarch64.md (isinf<mode>2): Add new expander.
+	* config/aarch64/iterators.md (mantissa_bits): Add new mode_attr.
+
+2025-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Do not get
+	reduc_var as argument, instead compute it here.
+	(vect_transform_reduction): Adjust.
+
+2025-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121629
+	* doc/gm2.texi (Module Search Path): New section.
+	(Compiler options): New option -fm2-pathname-root=.
+	New option -fm2-pathname-rootI.
+
+2025-08-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR debug/119367
+	* acinclude.m4 (gcc_GAS_FLAGS): For gcn, use "--filetype=obj
+	-triple=amdgcn--amdhsa", if supported.
+	* configure: Regenerate.
+	* doc/install.texi (amdgcn-*-*): Also add llvm-objdump to the list of
+	to-be-copied files.
+
+2025-08-28  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-patterns.cc (vect_synth_mult_by_constant): Avoid
+	in cases that introduce multiple uses of reduction operands.
+
+2025-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Avoid
+	for stmts participating in a reduction.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/119367
+	* configure.ac (gcc_cv_as_leb128): Add fallback using readelf.
+	Grammar fix in comment.
+	* configure: Regenerate.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/119367
+	* dwarf2out.cc (output_one_line_info_table) <case LI_adv_address>: If
+	HAVE_AS_LEB128, use DW_LNS_advance_pc with dw2_asm_output_delta_uleb128
+	instead of DW_LNS_fixed_advance_pc with dw2_asm_output_delta.
+
 2025-08-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/121695

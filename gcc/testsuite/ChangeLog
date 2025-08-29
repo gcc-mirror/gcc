@@ -1,3 +1,74 @@
+2025-08-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107953
+	* g++.dg/cpp2a/lambda-targ18.C: New test.
+
+2025-08-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-2.c: Adjust scan
+	dump.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfmin.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h: Add support for
+	function variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_data.h: Add data for
+	vfmin.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmin-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmin-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmin-run-1-f64.c: New test.
+
+2025-08-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR middle-end/66462
+	* gcc.target/aarch64/pr66462.c: Add new test.
+
+2025-08-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119844
+	* g++.dg/modules/pr119844_a.C: New test.
+	* g++.dg/modules/pr119844_b.C: New test.
+	* g++.dg/template/incomplete13.C: New file.
+
+2025-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121629
+	* gm2/switches/pathnameroot/pass/switches-pathnameroot-pass.exp: New test.
+	* gm2/switches/pathnameroot/pass/test.mod: New test.
+	* gm2/switches/pathnameroot/pass/testlib/m2/foo.def: New test.
+	* gm2/switches/pathnameroot/pass/testlib/m2/foo.mod: New test.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121583
+	* g++.dg/cpp26/expansion-stmt23.C: New test.
+	* g++.dg/cpp26/expansion-stmt24.C: New test.
+
+2025-08-28  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/121575
+	* g++.dg/cpp26/expansion-stmt20.C: New test.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82843
+	* gfortran.dg/pdt_40.f03: New test.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82205
+	* gfortran.dg/pdt_22.f03: Use the correct for PDT constructors.
+	* gfortran.dg/pdt_23.f03: Likewise.
+	* gfortran.dg/pdt_3.f03: Likewise.
+
 2025-08-27  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/nozicond-2.c: Remove xfails.

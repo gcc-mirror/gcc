@@ -1,3 +1,59 @@
+2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119670
+	* acinclude.m4 (GLIBCXX_CHECK_DEBUGGING): Check for facilities
+	needed by <debugging>.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_DEBUGGING.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def (debugging): Add.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Add new header.
+	* src/c++26/Makefile.am: Add new file.
+	* src/c++26/Makefile.in: Regenerate.
+	* include/std/debugging: New file.
+	* src/c++26/debugging.cc: New file.
+	* testsuite/19_diagnostics/debugging/breakpoint.cc: New test.
+	* testsuite/19_diagnostics/debugging/breakpoint_if_debugging.cc:
+	New test.
+	* testsuite/19_diagnostics/debugging/is_debugger_present.cc: New
+	test.
+	* testsuite/19_diagnostics/debugging/is_debugger_present-2.cc:
+	New test.
+
+2025-08-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: New test.
+
+2025-08-28  Weslley da Silva Pereira  <weslley.spereira@gmail.com>
+
+	* include/std/complex (polar, __complex_sqrt, pow)
+	(__complex_pow_unsigned): Use explicit conversions from int to
+	the complex value_type.
+
+2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121046
+	* include/std/bitset (bitset(const CharT*, ...)): Add
+	constraints on CharT type.
+	* testsuite/23_containers/bitset/lwg4294.cc: New test.
+
+2025-08-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::_Ord): Add unordered enumerator.
+	(__cmp_cat::_Ncmp): Remove.
+	(__cmp_cat::__ord, __cmp_cat::__make):  Define.
+	(partial_ordering::partial_ordering(__cmp_cat::_Ncmp)): Remove.
+	(operator<=>(__cmp_cat::__unspec, partial_ordering))
+	(partial_ordering::unordered): Replace _Ncmp with _Ord.
+	(std::partial_ordering, std::weak_ordering, std::strong_ordering):
+	Befriend __ord and __make helpers, remove friend declartions for
+	other orderings.
+	(__compare::__fp_weak_ordering): Remove unused __cat variable.
+	Simplify ordering conversions.
+
 2025-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* libsupc++/compare
