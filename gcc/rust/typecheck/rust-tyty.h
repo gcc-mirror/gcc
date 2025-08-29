@@ -110,18 +110,6 @@ public:
   virtual std::string as_string () const = 0;
   virtual std::string get_name () const = 0;
 
-  // similar to unify but does not actually perform type unification but
-  // determines whether they are compatible. Consider the following
-  //
-  // fn foo<T>() -> T { ... }
-  // fn foo() -> i32 { ... }
-  //
-  // when the function has been substituted they can be considered equal.
-  //
-  // It can also be used to optional emit errors for trait item compatibility
-  // checks
-  virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
-
   // Check value equality between two ty. Type inference rules are ignored. Two
   //   ty are considered equal if they're of the same kind, and
   //     1. (For ADTs, arrays, tuples, refs) have the same underlying ty
@@ -325,8 +313,6 @@ public:
 
   std::string as_string () const override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 
   InferTypeKind get_infer_kind () const;
@@ -356,8 +342,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 
@@ -399,8 +383,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 
@@ -453,8 +435,6 @@ public:
 
   std::string as_string () const override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 
   std::string get_symbol () const override final;
@@ -493,8 +473,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 
@@ -554,8 +532,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -849,8 +825,6 @@ public:
 
   std::string as_string () const override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   std::string get_identifier () const { return identifier; }
@@ -1001,8 +975,6 @@ public:
 
   std::string get_identifier () const { return identifier; }
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
@@ -1115,8 +1087,6 @@ public:
 
   std::string as_string () const override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
@@ -1192,8 +1162,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final { return as_string (); }
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
@@ -1243,8 +1211,6 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
@@ -1287,8 +1253,6 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
@@ -1317,8 +1281,6 @@ public:
 
   std::string get_name () const override final;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 };
 
@@ -1346,8 +1308,6 @@ public:
   std::string as_string () const override;
 
   std::string get_name () const override final;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   IntKind get_int_kind () const;
 
@@ -1385,8 +1345,6 @@ public:
 
   std::string get_name () const override final;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   UintKind get_uint_kind () const;
 
   BaseType *clone () const final override;
@@ -1419,8 +1377,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   FloatKind get_float_kind () const;
 
   BaseType *clone () const final override;
@@ -1446,8 +1402,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 };
 
@@ -1466,8 +1420,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 };
 
@@ -1484,8 +1436,6 @@ public:
 
   std::string as_string () const override;
   std::string get_name () const override final;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 };
@@ -1504,8 +1454,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1529,8 +1477,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1565,8 +1511,6 @@ public:
   std::string as_string () const override;
 
   std::string get_name () const override final;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1609,8 +1553,6 @@ public:
 
   std::string as_string () const override;
   std::string get_name () const override final;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1657,8 +1599,6 @@ public:
 
   std::string as_string () const override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
   BaseType *clone () const final override;
 
   std::string get_name () const override final;
@@ -1680,8 +1620,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 
@@ -1731,8 +1669,6 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
 

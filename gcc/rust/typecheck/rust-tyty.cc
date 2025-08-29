@@ -16,29 +16,23 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-tyty.h"
-
-#include "optional.h"
 #include "rust-tyty-subst.h"
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-location.h"
-#include "rust-linemap.h"
-
+#include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-reference.h"
 #include "rust-hir-trait-resolve.h"
-#include "rust-tyty-cmp.h"
-#include "rust-type-util.h"
-#include "rust-hir-type-bounds.h"
-#include "print-tree.h"
 #include "tree-pretty-print.h"
 
+#include "optional.h"
 #include "options.h"
-#include "rust-system.h"
 #include "tree.h"
 #include "fold-const.h"
-#include <string>
 
 namespace Rust {
 namespace TyTy {
@@ -1090,13 +1084,6 @@ InferType::as_string () const
   return "<infer::error>";
 }
 
-bool
-InferType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  InferCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 InferType::clone () const
 {
@@ -1385,12 +1372,6 @@ std::string
 ErrorType::as_string () const
 {
   return "<tyty::error>";
-}
-
-bool
-ErrorType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  return get_kind () == other->get_kind ();
 }
 
 BaseType *
@@ -1777,13 +1758,6 @@ ADTType::as_string () const
 }
 
 bool
-ADTType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ADTCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 ADTType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -2014,13 +1988,6 @@ TupleType::get_field (size_t index) const
 }
 
 bool
-TupleType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  TupleCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 TupleType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -2100,13 +2067,6 @@ FnType::as_string () const
 
   std::string ret_str = type->as_string ();
   return "fn" + subst_as_string () + " (" + params_str + ") -> " + ret_str;
-}
-
-bool
-FnType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  FnCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 bool
@@ -2312,13 +2272,6 @@ FnPtr::as_string () const
 }
 
 bool
-FnPtr::can_eq (const BaseType *other, bool emit_errors) const
-{
-  FnptrCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 FnPtr::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -2372,13 +2325,6 @@ ClosureType::as_string () const
 {
   std::string params_buf = parameters->as_string ();
   return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string () + "}";
-}
-
-bool
-ClosureType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ClosureCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 bool
@@ -2483,13 +2429,6 @@ ArrayType::as_string () const
 }
 
 bool
-ArrayType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ArrayCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 ArrayType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -2561,13 +2500,6 @@ std::string
 SliceType::as_string () const
 {
   return "[" + get_element_type ()->as_string () + "]";
-}
-
-bool
-SliceType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  SliceCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 bool
@@ -2657,13 +2589,6 @@ BoolType::as_string () const
   return "bool";
 }
 
-bool
-BoolType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  BoolCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 BoolType::clone () const
 {
@@ -2728,13 +2653,6 @@ IntType::as_string () const
     }
   rust_unreachable ();
   return "__unknown_int_type";
-}
-
-bool
-IntType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  IntCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -2815,13 +2733,6 @@ UintType::as_string () const
   return "__unknown_uint_type";
 }
 
-bool
-UintType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  UintCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 UintType::clone () const
 {
@@ -2894,13 +2805,6 @@ FloatType::as_string () const
   return "__unknown_float_type";
 }
 
-bool
-FloatType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  FloatCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 FloatType::clone () const
 {
@@ -2956,13 +2860,6 @@ USizeType::as_string () const
   return "usize";
 }
 
-bool
-USizeType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  USizeCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 USizeType::clone () const
 {
@@ -3007,13 +2904,6 @@ ISizeType::as_string () const
   return "isize";
 }
 
-bool
-ISizeType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ISizeCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 ISizeType::clone () const
 {
@@ -3056,13 +2946,6 @@ std::string
 CharType::as_string () const
 {
   return "char";
-}
-
-bool
-CharType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  CharCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -3176,13 +3059,6 @@ ReferenceType::get_name () const
 {
   return std::string ("&") + (is_mutable () ? "mut" : "") + " "
 	 + get_base ()->get_name ();
-}
-
-bool
-ReferenceType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ReferenceCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 bool
@@ -3341,13 +3217,6 @@ PointerType::get_name () const
 }
 
 bool
-PointerType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  PointerCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 PointerType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -3455,13 +3324,6 @@ ParamType::get_name () const
     return get_symbol ();
 
   return destructure ()->get_name ();
-}
-
-bool
-ParamType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ParamCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -3606,13 +3468,6 @@ std::string
 ConstType::as_string () const
 {
   return get_name ();
-}
-
-bool
-ConstType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  ConstCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -3768,13 +3623,6 @@ OpaqueType::get_name () const
   return "impl " + raw_bounds_as_name ();
 }
 
-bool
-OpaqueType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  OpaqueCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
 BaseType *
 OpaqueType::clone () const
 {
@@ -3861,13 +3709,6 @@ StrType::as_string () const
 }
 
 bool
-StrType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  StrCmp r (this, emit_errors);
-  return r.can_eq (other);
-}
-
-bool
 StrType::is_equal (const BaseType &other) const
 {
   return get_kind () == other.get_kind ();
@@ -3909,13 +3750,6 @@ std::string
 NeverType::as_string () const
 {
   return "!";
-}
-
-bool
-NeverType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  NeverCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -3971,13 +3805,6 @@ PlaceholderType::as_string () const
 {
   return "<placeholder:" + (can_resolve () ? resolve ()->as_string () : "")
 	 + ">";
-}
-
-bool
-PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  PlaceholderCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
@@ -4116,12 +3943,6 @@ ProjectionType::as_string () const
   return "<Projection=" + subst_as_string () + "::" + base->as_string () + ">";
 }
 
-bool
-ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  return base->can_eq (other, emit_errors);
-}
-
 BaseType *
 ProjectionType::clone () const
 {
@@ -4233,13 +4054,6 @@ std::string
 DynamicObjectType::as_string () const
 {
   return "dyn [" + raw_bounds_as_string () + "]";
-}
-
-bool
-DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
-{
-  DynamicCmp r (this, emit_errors);
-  return r.can_eq (other);
 }
 
 BaseType *
