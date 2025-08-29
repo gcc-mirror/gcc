@@ -5054,6 +5054,16 @@ package body Sem_Prag is
       --  Common checks for pragmas that appear within a main program
       --  (Priority, Main_Storage, Time_Slice, Relative_Deadline, CPU).
 
+      procedure Check_Inconsistent_Argument_Ghostliness
+        (Arg1               : Entity_Id;
+         Arg2               : Entity_Id;
+         Ghost_Error_Posted : in out Boolean);
+      --  Reports an error and sets Ghost_Error_Posted when:
+      --  * One argument is ghost and the other is not ghost
+      --  * One argument is checked ghost and the other is ignored ghost
+      --
+      --  Checks are avoided when Ghost_Error_Posted is already set.
+
       procedure Check_Interrupt_Or_Attach_Handler;
       --  Common processing for first argument of pragma Interrupt_Handler or
       --  pragma Attach_Handler.
@@ -6033,9 +6043,10 @@ package body Sem_Prag is
          --  Flag set when an error concerning the illegal mix of Ghost and
          --  non-Ghost variables is emitted.
 
-         Ghost_Id : Entity_Id := Empty;
-         --  The entity of the first Ghost variable encountered while
-         --  processing the arguments of the pragma.
+         First_Arg_Id : Entity_Id := Empty;
+         --  The entity of the first variable encountered while processing the
+         --  arguments of the pragma. This is used as a reference for assessing
+         --  the ghostliness of other arguments.
 
       begin
          GNAT_Pragma;
@@ -6073,40 +6084,21 @@ package body Sem_Prag is
                      Set_Has_Pragma_Unused (Arg_Id);
                   end if;
 
-                  --  A pragma that applies to a Ghost entity becomes Ghost for
-                  --  the purposes of legality checks and removal of ignored
-                  --  Ghost code.
-
-                  Mark_Ghost_Pragma (N, Arg_Id);
-
-                  --  Capture the entity of the first Ghost variable being
+                  --  Capture the entity of the first variable being
                   --  processed for error detection purposes.
 
-                  if Is_Ghost_Entity (Arg_Id) then
-                     if No (Ghost_Id) then
-                        Ghost_Id := Arg_Id;
-                     end if;
+                  if No (First_Arg_Id) then
+                     First_Arg_Id := Arg_Id;
 
-                  --  Otherwise the variable is non-Ghost. It is illegal to mix
-                  --  references to Ghost and non-Ghost entities
-                  --  (SPARK RM 6.9).
+                     --  A pragma that applies to a Ghost entity becomes Ghost
+                     --  for the purposes of legality checks and removal of
+                     --  ignored Ghost code.
 
-                  elsif Present (Ghost_Id)
-                    and then not Ghost_Error_Posted
-                  then
-                     Ghost_Error_Posted := True;
-
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("pragma % cannot mention ghost and non-ghost "
-                        & "variables", N);
-
-                     Error_Msg_Sloc := Sloc (Ghost_Id);
-                     Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-                     Error_Msg_Sloc := Sloc (Arg_Id);
-                     Error_Msg_NE ("\& # declared as non-ghost", N, Arg_Id);
+                     Mark_Ghost_Pragma (N, Arg_Id);
                   end if;
+
+                  Check_Inconsistent_Argument_Ghostliness
+                    (First_Arg_Id, Arg_Id, Ghost_Error_Posted);
 
                --  Warn if already flagged as Unused or Unmodified
 
@@ -6149,9 +6141,10 @@ package body Sem_Prag is
          --  Flag set when an error concerning the illegal mix of Ghost and
          --  non-Ghost names is emitted.
 
-         Ghost_Id : Entity_Id := Empty;
-         --  The entity of the first Ghost name encountered while processing
-         --  the arguments of the pragma.
+         First_Arg_Id : Entity_Id := Empty;
+         --  The entity of the first variable encountered while processing the
+         --  arguments of the pragma. This is used as a reference for assessing
+         --  the ghostliness of other arguments.
 
       begin
          GNAT_Pragma;
@@ -6214,6 +6207,19 @@ package body Sem_Prag is
                if Is_Entity_Name (Arg_Expr) then
                   Arg_Id := Entity (Arg_Expr);
 
+                  --  Capture the entity of the first variable being
+                  --  processed for error detection purposes.
+
+                  if No (First_Arg_Id) then
+                     First_Arg_Id := Arg_Id;
+
+                     --  A pragma that applies to a Ghost entity becomes Ghost
+                     --  for the purposes of legality checks and removal of
+                     --  ignored Ghost code.
+
+                     Mark_Ghost_Pragma (N, Arg_Id);
+                  end if;
+
                   --  Warn if already flagged as Unused or Unreferenced and
                   --  skip processing the argument.
 
@@ -6253,36 +6259,8 @@ package body Sem_Prag is
 
                      Mark_Ghost_Pragma (N, Arg_Id);
 
-                     --  Capture the entity of the first Ghost name being
-                     --  processed for error detection purposes.
-
-                     if Is_Ghost_Entity (Arg_Id) then
-                        if No (Ghost_Id) then
-                           Ghost_Id := Arg_Id;
-                        end if;
-
-                     --  Otherwise the name is non-Ghost. It is illegal to mix
-                     --  references to Ghost and non-Ghost entities
-                     --  (SPARK RM 6.9).
-
-                     elsif Present (Ghost_Id)
-                       and then not Ghost_Error_Posted
-                     then
-                        Ghost_Error_Posted := True;
-
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_N
-                          ("pragma % cannot mention ghost and non-ghost "
-                           & "names", N);
-
-                        Error_Msg_Sloc := Sloc (Ghost_Id);
-                        Error_Msg_NE
-                          ("\& # declared as ghost", N, Ghost_Id);
-
-                        Error_Msg_Sloc := Sloc (Arg_Id);
-                        Error_Msg_NE
-                          ("\& # declared as non-ghost", N, Arg_Id);
-                     end if;
+                     Check_Inconsistent_Argument_Ghostliness
+                       (First_Arg_Id, Arg_Id, Ghost_Error_Posted);
                   end if;
                end if;
 
@@ -7011,6 +6989,91 @@ package body Sem_Prag is
               ("??pragma% is only effective in main program", N);
          end if;
       end Check_In_Main_Program;
+
+      ---------------------------------------------
+      -- Check_Inconsistent_Argument_Ghostliness --
+      ---------------------------------------------
+
+      procedure Check_Inconsistent_Argument_Ghostliness
+        (Arg1               : Entity_Id;
+         Arg2               : Entity_Id;
+         Ghost_Error_Posted : in out Boolean)
+      is
+
+         procedure Report_Ghost_Argument_Mismatch
+            (Ghost_Arg : Entity_Id; Non_Ghost_Arg : Entity_Id);
+         --  Constructs an error message when both a ghost and a non-ghost
+         --  argument are used in the same pragma.
+
+         procedure Report_Ghost_Policy_Mismatch
+            (Checked_Arg : Entity_Id; Ignored_Arg : Entity_Id);
+         --  Constructs an error message when both a checked ghost and an
+         --  ignored ghost argument are used in the same pragma.
+
+         ------------------------------------
+         -- Report_Ghost_Argument_Mismatch --
+         ------------------------------------
+
+         procedure Report_Ghost_Argument_Mismatch
+            (Ghost_Arg : Entity_Id; Non_Ghost_Arg : Entity_Id) is
+
+         begin
+            Error_Msg_Name_1 := Pname;
+            Error_Msg_N
+               ("pragma % cannot mention ghost and non-ghost " & "variables",
+               N);
+
+            Error_Msg_Sloc := Sloc (Ghost_Arg);
+            Error_Msg_NE ("\& # declared as ghost", N, Ghost_Arg);
+
+            Error_Msg_Sloc := Sloc (Non_Ghost_Arg);
+            Error_Msg_NE ("\& # declared as non-ghost", N, Non_Ghost_Arg);
+         end Report_Ghost_Argument_Mismatch;
+
+         ----------------------------------
+         -- Report_Ghost_Policy_Mismatch --
+         ----------------------------------
+
+         procedure Report_Ghost_Policy_Mismatch
+            (Checked_Arg : Entity_Id; Ignored_Arg : Entity_Id) is
+
+         begin
+            Error_Msg_Name_1 := Pname;
+            Error_Msg_N
+               ("pragma % cannot mention checked ghost and ignored ghost "
+               & "variables",
+               N);
+
+            Error_Msg_Sloc := Sloc (Checked_Arg);
+            Error_Msg_NE
+               ("\& # declared with a checked policy", N, Checked_Arg);
+
+            Error_Msg_Sloc := Sloc (Ignored_Arg);
+            Error_Msg_NE
+               ("\& # declared with an ignored policy", N, Ignored_Arg);
+         end Report_Ghost_Policy_Mismatch;
+      begin
+         if Ghost_Error_Posted then
+            null;
+         elsif Is_Ghost_Entity (Arg1) and then not Is_Ghost_Entity (Arg2) then
+            Report_Ghost_Argument_Mismatch (Arg1, Arg2);
+            Ghost_Error_Posted := True;
+         elsif not Is_Ghost_Entity (Arg1) and then Is_Ghost_Entity (Arg2)
+         then
+            Report_Ghost_Argument_Mismatch (Arg2, Arg1);
+            Ghost_Error_Posted := True;
+         elsif Is_Checked_Ghost_Entity (Arg1)
+            and then Is_Ignored_Ghost_Entity (Arg2)
+         then
+            Report_Ghost_Policy_Mismatch (Arg1, Arg2);
+            Ghost_Error_Posted := True;
+         elsif Is_Ignored_Ghost_Entity (Arg1)
+            and then Is_Checked_Ghost_Entity (Arg2)
+         then
+            Report_Ghost_Policy_Mismatch (Arg2, Arg1);
+            Ghost_Error_Posted := True;
+         end if;
+      end Check_Inconsistent_Argument_Ghostliness;
 
       ---------------------------------------
       -- Check_Interrupt_Or_Attach_Handler --
@@ -10688,9 +10751,10 @@ package body Sem_Prag is
          --  Flag set when an error concerning the illegal mix of Ghost and
          --  non-Ghost subprograms is emitted.
 
-         Ghost_Id : Entity_Id := Empty;
-         --  The entity of the first Ghost subprogram encountered while
-         --  processing the arguments of the pragma.
+         First_Arg_Id : Entity_Id := Empty;
+         --  The entity of the first variable encountered while processing the
+         --  arguments of the pragma. This is used as a reference for assessing
+         --  the ghostliness of other arguments.
 
          procedure Check_Inline_Always_Placement (Spec_Id : Entity_Id);
          --  Verify the placement of pragma Inline_Always with respect to the
@@ -11178,36 +11242,21 @@ package body Sem_Prag is
                   end if;
             end case;
 
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Ghost_Pragma (N, Subp);
-
-            --  Capture the entity of the first Ghost subprogram being
+            --  Capture the entity of the first variable being
             --  processed for error detection purposes.
 
-            if Is_Ghost_Entity (Subp) then
-               if No (Ghost_Id) then
-                  Ghost_Id := Subp;
-               end if;
+            if No (First_Arg_Id) then
+               First_Arg_Id := Subp;
 
-            --  Otherwise the subprogram is non-Ghost. It is illegal to mix
-            --  references to Ghost and non-Ghost entities (SPARK RM 6.9).
+               --  A pragma that applies to a Ghost entity becomes Ghost
+               --  for the purposes of legality checks and removal of
+               --  ignored Ghost code.
 
-            elsif Present (Ghost_Id) and then not Ghost_Error_Posted then
-               Ghost_Error_Posted := True;
-
-               Error_Msg_Name_1 := Pname;
-               Error_Msg_N
-                 ("pragma % cannot mention ghost and non-ghost subprograms",
-                  N);
-
-               Error_Msg_Sloc := Sloc (Ghost_Id);
-               Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-               Error_Msg_Sloc := Sloc (Subp);
-               Error_Msg_NE ("\& # declared as non-ghost", N, Subp);
+               Mark_Ghost_Pragma (N, Subp);
             end if;
+
+            Check_Inconsistent_Argument_Ghostliness
+              (First_Arg_Id, Subp, Ghost_Error_Posted);
          end Set_Inline_Flags;
 
       --  Start of processing for Process_Inline
@@ -22377,9 +22426,10 @@ package body Sem_Prag is
             --  Flag set when an error concerning the illegal mix of Ghost and
             --  non-Ghost subprograms is emitted.
 
-            Ghost_Id : Entity_Id := Empty;
-            --  The entity of the first Ghost procedure encountered while
-            --  processing the arguments of the pragma.
+            First_Arg_Id : Entity_Id := Empty;
+            --  The entity of the first variable encountered while processing
+            --  the arguments of the pragma. This is used as a reference for
+            --  assessing the ghostliness of other arguments.
 
          begin
             Ada_2005_Pragma;
@@ -22476,41 +22526,21 @@ package body Sem_Prag is
                            Set_No_Return (E);
                         end if;
 
-                        --  A pragma that applies to a Ghost entity becomes
-                        --  Ghost for the purposes of legality checks and
-                        --  removal of ignored Ghost code.
+                        --  Capture the entity of the first variable being
+                        --  processed for error detection purposes.
 
-                        Mark_Ghost_Pragma (N, E);
+                        if No (First_Arg_Id) then
+                           First_Arg_Id := E;
 
-                        --  Capture the entity of the first Ghost procedure
-                        --  being processed for error detection purposes.
+                           --  A pragma that applies to a Ghost entity becomes
+                           --  Ghost for the purposes of legality checks and
+                           --  removal of ignored Ghost code.
 
-                        if Is_Ghost_Entity (E) then
-                           if No (Ghost_Id) then
-                              Ghost_Id := E;
-                           end if;
-
-                        --  Otherwise the subprogram is non-Ghost. It is
-                        --  illegal to mix references to Ghost and non-Ghost
-                        --  entities (SPARK RM 6.9).
-
-                        elsif Present (Ghost_Id)
-                          and then not Ghost_Error_Posted
-                        then
-                           Ghost_Error_Posted := True;
-
-                           Error_Msg_Name_1 := Pname;
-                           Error_Msg_N
-                             ("pragma % cannot mention ghost and non-ghost "
-                              & "procedures", N);
-
-                           Error_Msg_Sloc := Sloc (Ghost_Id);
-                           Error_Msg_NE
-                             ("\& # declared as ghost", N, Ghost_Id);
-
-                           Error_Msg_Sloc := Sloc (E);
-                           Error_Msg_NE ("\& # declared as non-ghost", N, E);
+                           Mark_Ghost_Pragma (N, E);
                         end if;
+
+                        Check_Inconsistent_Argument_Ghostliness
+                          (First_Arg_Id, E, Ghost_Error_Posted);
 
                         --  Set flag on any alias as well
 
@@ -27985,9 +28015,10 @@ package body Sem_Prag is
             --  Flag set when an error concerning the illegal mix of Ghost and
             --  non-Ghost types is emitted.
 
-            Ghost_Id : Entity_Id := Empty;
-            --  The entity of the first Ghost type encountered while processing
-            --  the arguments of the pragma.
+            First_Arg_Id : Entity_Id := Empty;
+            --  The entity of the first variable encountered while processing
+            --  the arguments of the pragma. This is used as a reference for
+            --  assessing the ghostliness of other arguments.
 
          begin
             GNAT_Pragma;
@@ -28002,43 +28033,25 @@ package body Sem_Prag is
                if Is_Entity_Name (Arg_Expr) then
                   Arg_Id := Entity (Arg_Expr);
 
-                  if Is_Type (Arg_Id) then
-                     Set_Has_Pragma_Unreferenced_Objects (Arg_Id);
+                  --  Capture the entity of the first Ghost type being
+                  --  processed for error detection purposes.
+
+                  if No (First_Arg_Id) then
+                     First_Arg_Id := Arg_Id;
 
                      --  A pragma that applies to a Ghost entity becomes Ghost
                      --  for the purposes of legality checks and removal of
                      --  ignored Ghost code.
 
                      Mark_Ghost_Pragma (N, Arg_Id);
+                  end if;
 
-                     --  Capture the entity of the first Ghost type being
-                     --  processed for error detection purposes.
+                  if Is_Type (Arg_Id) then
+                     Set_Has_Pragma_Unreferenced_Objects (Arg_Id);
 
-                     if Is_Ghost_Entity (Arg_Id) then
-                        if No (Ghost_Id) then
-                           Ghost_Id := Arg_Id;
-                        end if;
+                     Check_Inconsistent_Argument_Ghostliness
+                       (First_Arg_Id, Arg_Id, Ghost_Error_Posted);
 
-                     --  Otherwise the type is non-Ghost. It is illegal to mix
-                     --  references to Ghost and non-Ghost entities
-                     --  (SPARK RM 6.9).
-
-                     elsif Present (Ghost_Id)
-                       and then not Ghost_Error_Posted
-                     then
-                        Ghost_Error_Posted := True;
-
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_N
-                          ("pragma % cannot mention ghost and non-ghost types",
-                           N);
-
-                        Error_Msg_Sloc := Sloc (Ghost_Id);
-                        Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-                        Error_Msg_Sloc := Sloc (Arg_Id);
-                        Error_Msg_NE ("\& # declared as non-ghost", N, Arg_Id);
-                     end if;
                   else
                      Error_Pragma_Arg
                        ("argument for pragma% must be type or subtype", Arg);

@@ -283,6 +283,7 @@ package Sem_Prag is
         Pragma_Favor_Top_Level              => True,
         Pragma_Import                       => True,
         Pragma_Independent_Components       => True,
+        Pragma_Inline                       => True,
         Pragma_Interface                    => True,
         Pragma_No_Return                    => True,
         Pragma_Obsolescent                  => True,
