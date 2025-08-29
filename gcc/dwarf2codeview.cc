@@ -6748,9 +6748,22 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
   c = first_child;
   do
     {
+      dw_attr_node *upper_bound;
+
       c = dw_get_die_sib (c);
       if (dw_get_die_tag (c) != DW_TAG_subrange_type)
 	continue;
+
+      /* Check that each DW_TAG_subrange_type DIE has a DW_AT_upper_bound
+	 attribute that's an unsigned integer.  This is the case for C and
+	 C++, but not for other languages such as Ada.  */
+      upper_bound = get_AT (c, DW_AT_upper_bound);
+      if (!upper_bound)
+	return 0;
+
+      if (AT_class (upper_bound) != dw_val_class_unsigned_const
+	  && AT_class (upper_bound) != dw_val_class_unsigned_const_implicit)
+	return 0;
 
       dimensions++;
     }
