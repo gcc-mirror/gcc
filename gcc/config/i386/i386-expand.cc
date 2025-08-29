@@ -8405,8 +8405,8 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 
 /* Callback routine for store_by_pieces.  Return the RTL of a register
    containing GET_MODE_SIZE (MODE) bytes in the RTL register op_p which
-   is a word or a word vector register.  If PREV_P isn't nullptr, it
-   has the RTL info from the previous iteration.  */
+   is an integer or a word vector register.  If PREV_P isn't nullptr,
+   it has the RTL info from the previous iteration.  */
 
 static rtx
 setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
@@ -8435,10 +8435,6 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
   rtx op = (rtx) op_p;
   machine_mode op_mode = GET_MODE (op);
 
-  gcc_assert (op_mode == word_mode
-	      || (VECTOR_MODE_P (op_mode)
-		  && GET_MODE_INNER (op_mode) == word_mode));
-
   if (VECTOR_MODE_P (mode))
     {
       gcc_assert (GET_MODE_INNER (mode) == QImode);
@@ -8460,16 +8456,17 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
       return tmp;
     }
 
-  target = gen_reg_rtx (word_mode);
   if (VECTOR_MODE_P (op_mode))
     {
+      gcc_assert (GET_MODE_INNER (op_mode) == word_mode);
+      target = gen_reg_rtx (word_mode);
       op = gen_rtx_SUBREG (word_mode, op, 0);
       emit_move_insn (target, op);
     }
   else
     target = op;
 
-  if (mode == word_mode)
+  if (mode == GET_MODE (target))
     return target;
 
   rtx tmp = gen_reg_rtx (mode);
