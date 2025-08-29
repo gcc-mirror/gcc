@@ -3522,7 +3522,9 @@ ParamType::is_equal (const BaseType &other) const
     return false;
 
   if (can_resolve ())
-    return resolve ()->can_eq (other2.resolve (), false);
+    return Resolver::types_compatable (TyTy::TyWithLocation (resolve ()),
+				       TyTy::TyWithLocation (other2.resolve ()),
+				       UNKNOWN_LOCATION, false, false);
 
   return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
