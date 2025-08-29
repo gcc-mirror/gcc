@@ -1569,6 +1569,74 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
   return changed;
 }
 
+/* Optimizes builtin memcmps for small constant sizes.
+   GSI_P is the GSI for the call. STMT is the call itself.
+   */
+
+static bool
+simplify_builtin_memcmp (gimple_stmt_iterator *gsi_p, gcall *stmt)
+{
+  /* Make sure memcmp arguments are the correct type.  */
+  if (gimple_call_num_args (stmt) != 3)
+    return false;
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (arg1)))
+    return false;
+  if (!POINTER_TYPE_P (TREE_TYPE (arg2)))
+    return false;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (len)))
+    return false;
+
+  /* The return value of the memcmp has to be used
+     equality comparison to zero. */
+  tree res = gimple_call_lhs (stmt);
+
+  if (!res || !use_in_zero_equality (res))
+    return false;
+
+  unsigned HOST_WIDE_INT leni;
+
+  if (tree_fits_uhwi_p (len)
+      && (leni = tree_to_uhwi (len)) <= GET_MODE_SIZE (word_mode)
+      && pow2p_hwi (leni))
+    {
+      leni *= CHAR_TYPE_SIZE;
+      unsigned align1 = get_pointer_alignment (arg1);
+      unsigned align2 = get_pointer_alignment (arg2);
+      unsigned align = MIN (align1, align2);
+      scalar_int_mode mode;
+      if (int_mode_for_size (leni, 1).exists (&mode)
+	  && (align >= leni || !targetm.slow_unaligned_access (mode, align)))
+	{
+	  location_t loc = gimple_location (stmt);
+	  tree type, off;
+	  type = build_nonstandard_integer_type (leni, 1);
+	  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), leni));
+	  tree ptrtype = build_pointer_type_for_mode (char_type_node,
+						      ptr_mode, true);
+	  off = build_int_cst (ptrtype, 0);
+	  arg1 = build2_loc (loc, MEM_REF, type, arg1, off);
+	  arg2 = build2_loc (loc, MEM_REF, type, arg2, off);
+	  tree tem1 = fold_const_aggregate_ref (arg1);
+	  if (tem1)
+	    arg1 = tem1;
+	  tree tem2 = fold_const_aggregate_ref (arg2);
+	  if (tem2)
+	    arg2 = tem2;
+	  res = fold_convert_loc (loc, TREE_TYPE (res),
+				  fold_build2_loc (loc, NE_EXPR,
+						   boolean_type_node,
+						   arg1, arg2));
+	  gimplify_and_update_call_from_tree (gsi_p, res);
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* *GSI_P is a GIMPLE_CALL to a builtin function.
    Optimize
    memcpy (p, "abcd", 4);
@@ -1606,6 +1674,9 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 
   switch (DECL_FUNCTION_CODE (callee2))
     {
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMCMP_EQ:
+      return simplify_builtin_memcmp (gsi_p, as_a<gcall*>(stmt2));
     case BUILT_IN_MEMCHR:
       if (gimple_call_num_args (stmt2) == 3
 	  && (res = gimple_call_lhs (stmt2)) != nullptr
