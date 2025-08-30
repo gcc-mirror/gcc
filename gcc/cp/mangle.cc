@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "flags.h"
 #include "attribs.h"
+#include "contracts.h"
 
 /* Debugging support.  */
 

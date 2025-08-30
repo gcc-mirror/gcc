@@ -131,38 +131,20 @@ struct contract_mode
   } u;
 };
 
-extern contract_role *get_contract_role	(const char *);
-extern contract_role *add_contract_role	(const char *,
-					 contract_semantic,
-					 contract_semantic,
-					 contract_semantic,
-					 bool = true);
-extern void validate_contract_role	(contract_role *);
-extern void setup_default_contract_role	(bool = true);
-extern contract_semantic lookup_concrete_semantic (const char *);
-
 /* Map a source level semantic or level name to its value, or invalid.  */
 extern contract_semantic map_contract_semantic	(const char *);
 extern contract_level map_contract_level	(const char *);
 
 /* Check if an attribute is a cxx contract attribute.  */
-extern bool cxx_contract_attribute_p (const_tree);
-extern bool cp_contract_assertion_p (const_tree);
-
-/* Returns the default role.  */
-
-inline contract_role *
-get_default_contract_role ()
-{
-  return get_contract_role ("default");
-}
+extern bool cxx_contract_attribute_p		(const_tree);
+extern bool cp_contract_assertion_p		(const_tree);
 
 /* Handle various command line arguments related to semantic mapping.  */
-extern void handle_OPT_fcontract_build_level_ (const char *);
+extern void handle_OPT_fcontract_build_level_	(const char *);
 extern void handle_OPT_fcontract_assumption_mode_ (const char *);
 extern void handle_OPT_fcontract_continuation_mode_ (const char *);
-extern void handle_OPT_fcontract_role_ (const char *);
-extern void handle_OPT_fcontract_semantic_ (const char *);
+extern void handle_OPT_fcontract_role_		(const char *);
+extern void handle_OPT_fcontract_semantic_	(const char *);
 
 enum contract_matching_context
 {
@@ -277,29 +259,79 @@ enum contract_matching_context
 #define DECL_IS_POST_FN_P(NODE) \
   (DECL_ABSTRACT_ORIGIN (NODE) && DECL_POST_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
 
+/* contracts.cc */
+extern void emit_assertion			(tree);
+
 extern void remove_contract_attributes		(tree);
+extern bool all_attributes_are_contracts_p	(tree);
+extern tree finish_contract_attribute		(tree, tree);
 extern void copy_contract_attributes		(tree, tree);
+extern bool diagnose_misapplied_contracts	(tree);
 extern void remap_contracts			(tree, tree, tree, bool);
+extern tree splice_out_contracts		(tree);
+extern void inherit_base_contracts		(tree, tree);
+
+extern tree make_postcondition_variable		(cp_expr);
+extern tree make_postcondition_variable		(cp_expr, tree);
 extern void maybe_update_postconditions		(tree);
 extern void rebuild_postconditions		(tree);
 extern bool check_postcondition_result		(tree, tree, location_t);
-extern tree get_precondition_function		(tree);
-extern tree get_postcondition_function		(tree);
+
+extern tree grok_contract			(tree, tree, tree, cp_expr,
+						 location_t);
+extern tree finish_contract_condition		(cp_expr);
+extern void update_late_contract		(tree, tree, tree);
+extern tree invalidate_contract			(tree);
 extern void duplicate_contracts			(tree, tree);
+
 extern void match_deferred_contracts		(tree);
 extern void defer_guarded_contract_match	(tree, tree, tree);
-extern bool diagnose_misapplied_contracts	(tree);
-extern tree finish_contract_attribute		(tree, tree);
-extern tree invalidate_contract			(tree);
-extern void update_late_contract		(tree, tree, tree);
-extern tree splice_out_contracts		(tree);
-extern bool all_attributes_are_contracts_p	(tree);
-extern void inherit_base_contracts		(tree, tree);
+
+extern tree get_precondition_function		(tree);
+extern tree get_postcondition_function		(tree);
 extern void start_function_contracts		(tree);
 extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_contracts		(tree);
 extern void set_contract_functions		(tree, tree, tree);
+
 extern tree build_contract_check		(tree);
-extern void emit_assertion			(tree);
+
+/* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
+
+inline tree
+find_contract (tree attrs)
+{
+  while (attrs && !cxx_contract_attribute_p (attrs))
+    attrs = TREE_CHAIN (attrs);
+  return attrs;
+}
+
+inline void
+set_decl_contracts (tree decl, tree contract_attrs)
+{
+  remove_contract_attributes (decl);
+  DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), contract_attrs);
+}
+
+/* Returns the computed semantic of the node.  */
+
+inline contract_semantic
+get_contract_semantic (const_tree t)
+{
+  return (contract_semantic) (TREE_LANG_FLAG_3 (CONTRACT_CHECK (t))
+      | (TREE_LANG_FLAG_2 (t) << 1)
+      | (TREE_LANG_FLAG_0 ((t)) << 2));
+}
+
+/* Sets the computed semantic of the node.  */
+
+inline void
+set_contract_semantic (tree t, contract_semantic semantic)
+{
+  TREE_LANG_FLAG_3 (CONTRACT_CHECK (t)) = semantic & 0x01;
+  TREE_LANG_FLAG_2 (t) = (semantic & 0x02) >> 1;
+  TREE_LANG_FLAG_0 (t) = (semantic & 0x04) >> 2;
+}
+
 
 #endif /* ! GCC_CP_CONTRACT_H */

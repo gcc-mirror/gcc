@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "omp-general.h"
 #include "pretty-print-markup.h"
+#include "contracts.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */

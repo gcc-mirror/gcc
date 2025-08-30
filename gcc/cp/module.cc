@@ -232,6 +232,7 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
+#include "contracts.h"
 /* This TU doesn't need or want to see the networking.  */
 #define CODY_NETWORKING 0
 #include "mapper-client.h"

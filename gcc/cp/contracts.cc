@@ -159,7 +159,7 @@ bool valid_configs[CCS_MAYBE + 1][CCS_MAYBE + 1] = {
   { 0, 1, 0, 0, 1, },
 };
 
-void
+static void
 validate_contract_role (contract_role *role)
 {
   gcc_assert (role);
@@ -171,7 +171,7 @@ validate_contract_role (contract_role *role)
 		"the %<default%> semantic");
 }
 
-contract_semantic
+static contract_semantic
 lookup_concrete_semantic (const char *name)
 {
   if (strcmp (name, "ignore") == 0)
@@ -210,7 +210,9 @@ role_name_equal (contract_role *role, const char *name)
   return role_name_equal (role->name, name);
 }
 
-contract_role *
+static void setup_default_contract_role (bool update = true);
+
+static contract_role *
 get_contract_role (const char *name)
 {
   for (int i = 0; i < max_custom_roles; ++i)
@@ -227,12 +229,12 @@ get_contract_role (const char *name)
   return NULL;
 }
 
-contract_role *
+static contract_role *
 add_contract_role (const char *name,
 		   contract_semantic des,
 		   contract_semantic aus,
 		   contract_semantic axs,
-		   bool update)
+		   bool update = true)
 {
   for (int i = 0; i < max_custom_roles; ++i)
     {
@@ -271,7 +273,7 @@ get_concrete_axiom_semantic ()
   return flag_contract_assumption_mode ? CCS_ASSUME : CCS_IGNORE;
 }
 
-void
+static void
 setup_default_contract_role (bool update)
 {
   contract_semantic check = get_concrete_check ();
@@ -489,6 +491,14 @@ handle_OPT_fcontract_semantic_ (const char *arg)
   else
     error ("%<-fcontract-semantic=%> level must be default, audit, or axiom");
   validate_contract_role (role);
+}
+
+/* Returns the default role.  */
+
+static contract_role *
+get_default_contract_role ()
+{
+  return get_contract_role ("default");
 }
 
 /* Convert a contract CONFIG into a contract_mode.  */

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "intl.h"
 #include "toplev.h"
+#include "contracts.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\

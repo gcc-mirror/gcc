@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 #include "coroutines.h"
+#include "contracts.h"
 #include "gcc-urlifier.h"
 #include "diagnostic-highlight-colors.h"
 #include "pretty-print-markup.h"

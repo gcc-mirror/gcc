@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "tree-inline.h"
 #include "escaped_string.h"
+#include "contracts.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
