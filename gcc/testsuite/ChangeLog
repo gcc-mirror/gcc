@@ -1,3 +1,10 @@
+2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr120691.c: New test.
+
 2025-08-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
