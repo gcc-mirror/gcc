@@ -24,15 +24,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define BID_128RES
 #include "bid_div_macros.h"
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
+#include <fenv.h>
+
 #define FE_ALL_FLAGS FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW|FE_UNDERFLOW|FE_INEXACT
 #endif
-#include <stdio.h>
-#include <fenv.h>
 
 extern UINT32 convert_table[5][128][2];
 extern SINT8 factors[][2];
 extern UINT8 packed_10000_zeros[];
-
 
 BID128_FUNCTION_ARG2 (bid128_div, x, y)
 
@@ -46,18 +45,10 @@ BID128_FUNCTION_ARG2 (bid128_div, x, y)
        digits_q, amount;
      int nzeros, i, j, k, d5;
      unsigned rmode;
-     int old_rm, rm_changed=0;
-
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
      fexcept_t binaryflags = 0;
 #endif
 
-// Set it to round-to-nearest (if different)
-if ((old_rm=fegetround()) != FE_TONEAREST) {
-  rm_changed=1;
-  fesetround(FE_TONEAREST);
-}
-  
 valid_y = unpack_BID128_value (&sign_y, &exponent_y, &CY, y);
 
   // unpack arguments, check for NaN or Infinity
@@ -71,8 +62,6 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 #endif
   res.w[1] = (CX.w[1]) & QUIET_MASK64;
   res.w[0] = CX.w[0];
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
     // x is Infinity?
@@ -86,8 +75,6 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #endif
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is NaN?
@@ -98,8 +85,6 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
     res.w[1] = ((x.w[1] ^ y.w[1]) & 0x8000000000000000ull) |
       0x7800000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 }
@@ -112,8 +97,6 @@ if ((y.w[1] & 0x7800000000000000ull) < 0x7800000000000000ull) {
     // x=y=0, return NaN
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // return 0
@@ -125,8 +108,6 @@ if ((y.w[1] & 0x7800000000000000ull) < 0x7800000000000000ull) {
     exponent_x = 0;
   res.w[1] |= (((UINT64) exponent_x) << 49);
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 }
@@ -141,8 +122,6 @@ if (!valid_y) {
 #endif
     res.w[1] = CY.w[1] & QUIET_MASK64;
     res.w[0] = CY.w[0];
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is Infinity?
@@ -150,8 +129,6 @@ if (!valid_y) {
     // return +/-0
     res.w[1] = sign_x ^ sign_y;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is 0, return +/-Inf
@@ -161,8 +138,6 @@ if (!valid_y) {
   res.w[1] =
     ((x.w[1] ^ y.w[1]) & 0x8000000000000000ull) | 0x7800000000000000ull;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -211,8 +186,6 @@ if (__unsigned_compare_gt_128 (CY, CX)) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // get number of decimal digits in CQ
@@ -406,8 +379,6 @@ if (!CA4.w[0] && !CA4.w[1])
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
   (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 #endif
@@ -498,8 +469,6 @@ if (diff_expon >= 0) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
   (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 
 }
@@ -508,8 +477,6 @@ get_BID128 (&res, sign_x ^ sign_y, diff_expon, CQ, &rnd_mode, pfpsf);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-// restore the rounding mode back if it has been changed
-if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 }
 
@@ -529,16 +496,9 @@ TYPE0_FUNCTION_ARGTYPE1_ARGTYPE2 (UINT128, bid128dd_div, UINT64, x,
        digits_q, amount;
      int nzeros, i, j, k, d5;
      unsigned rmode;
-     int old_rm, rm_changed=0;
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
      fexcept_t binaryflags = 0;
 #endif
-
-// Set it to round-to-nearest (if different)
-if ((old_rm=fegetround()) != FE_TONEAREST) {
-  rm_changed=1;
-  fesetround(FE_TONEAREST);
-}
 
 valid_y = unpack_BID64 (&sign_y, &exponent_y, &CY.w[0], y);
 
@@ -559,8 +519,6 @@ if ((x & NAN_MASK64) == NAN_MASK64) {
   res.w[0] = (CX.w[0] & 0x0003ffffffffffffull);
   __mul_64x64_to_128 (res, res.w[0], power10_table_128[18].w[0]);
   res.w[1] |= ((CX.w[0]) & 0xfc00000000000000ull);
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 	   // x is Infinity?
@@ -574,17 +532,13 @@ if (((x) & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #endif
   res.w[1] = 0x7c00000000000000ull;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
-  BID_RETURN (res);
+    BID_RETURN (res);
   }
   if ((((y) & 0x7c00000000000000ull) != 0x7c00000000000000ull)) {
   // otherwise return +/-Inf
   res.w[1] =
     (((x) ^ (y)) & 0x8000000000000000ull) | 0x7800000000000000ull;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
   }
 }
@@ -597,8 +551,6 @@ if ((((y) & 0x7800000000000000ull) != 0x7800000000000000ull)) {
   // x=y=0, return NaN
   res.w[1] = 0x7c00000000000000ull;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 	   // return 0
@@ -614,8 +566,6 @@ else if (exponent_x < 0)
   exponent_x = 0;
 res.w[1] |= (((UINT64) exponent_x) << 49);
 res.w[0] = 0;
-// restore the rounding mode back if it has been changed
-if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 }
 }
@@ -633,17 +583,13 @@ if (!valid_y) {
   res.w[0] = (CY.w[0] & 0x0003ffffffffffffull);
   __mul_64x64_to_128 (res, res.w[0], power10_table_128[18].w[0]);
   res.w[1] |= ((CY.w[0]) & 0xfc00000000000000ull);
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
-  BID_RETURN (res);
+    BID_RETURN (res);
   }
   // y is Infinity?
   if (((y) & 0x7800000000000000ull) == 0x7800000000000000ull) {
     // return +/-0
     res.w[1] = sign_x ^ sign_y;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is 0, return +/-Inf
@@ -653,8 +599,6 @@ if (!valid_y) {
 #ifdef SET_STATUS_FLAGS
   __set_status_flags (pfpsf, ZERO_DIVIDE_EXCEPTION);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -703,8 +647,6 @@ if (__unsigned_compare_gt_128 (CY, CX)) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // get number of decimal digits in CQ
@@ -901,8 +843,6 @@ __div_256_by_128 (&CQ, &CA4, CY);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 #endif
@@ -992,8 +932,6 @@ if (diff_expon >= 0) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
   (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 
 }
@@ -1002,8 +940,6 @@ get_BID128 (&res, sign_x ^ sign_y, diff_expon, CQ, &rnd_mode, pfpsf);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-// restore the rounding mode back if it has been changed
-if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 }
 
@@ -1019,16 +955,9 @@ BID128_FUNCTION_ARGTYPE1_ARG128 (bid128dq_div, UINT64, x, y)
        digits_q, amount;
      int nzeros, i, j, k, d5;
      unsigned rmode;
-     int old_rm, rm_changed=0;
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
      fexcept_t binaryflags = 0;
 #endif
-
-// Set it to round-to-nearest (if different)
-if ((old_rm=fegetround()) != FE_TONEAREST) {
-  rm_changed=1;
-  fesetround(FE_TONEAREST);
-}
 
 valid_y = unpack_BID128_value (&sign_y, &exponent_y, &CY, y);
 
@@ -1049,8 +978,6 @@ if ((x & NAN_MASK64) == NAN_MASK64) {
   res.w[0] = (CX.w[0] & 0x0003ffffffffffffull);
   __mul_64x64_to_128 (res, res.w[0], power10_table_128[18].w[0]);
   res.w[1] |= ((CX.w[0]) & 0xfc00000000000000ull);
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 	   // x is Infinity?
@@ -1064,8 +991,6 @@ if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #endif
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   if (((y.w[1] & 0x7c00000000000000ull) != 0x7c00000000000000ull)) {
@@ -1073,8 +998,6 @@ if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
   res.w[1] =
     ((x ^ y.w[1]) & 0x8000000000000000ull) | 0x7800000000000000ull;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
   }
 }
@@ -1087,8 +1010,6 @@ if ((y.w[1] & INFINITY_MASK64) != INFINITY_MASK64) {
     // x=y=0, return NaN
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // return 0
@@ -1100,8 +1021,6 @@ if ((y.w[1] & INFINITY_MASK64) != INFINITY_MASK64) {
     exponent_x = 0;
   res.w[1] |= (((UINT64) exponent_x) << 49);
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 }
@@ -1118,8 +1037,6 @@ if (!valid_y) {
 #endif
     res.w[1] = CY.w[1] & QUIET_MASK64;
     res.w[0] = CY.w[0];
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is Infinity?
@@ -1127,8 +1044,6 @@ if (!valid_y) {
     // return +/-0
     res.w[1] = sign_x ^ sign_y;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is 0, return +/-Inf
@@ -1138,8 +1053,6 @@ if (!valid_y) {
 #ifdef SET_STATUS_FLAGS
   __set_status_flags (pfpsf, ZERO_DIVIDE_EXCEPTION);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -1188,8 +1101,6 @@ if (__unsigned_compare_gt_128 (CY, CX)) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // get number of decimal digits in CQ
@@ -1389,8 +1300,6 @@ __div_256_by_128 (&CQ, &CA4, CY);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 #endif
@@ -1480,8 +1389,6 @@ if (diff_expon >= 0) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
   (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 
@@ -1489,8 +1396,6 @@ get_BID128 (&res, sign_x ^ sign_y, diff_expon, CQ, &rnd_mode, pfpsf);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-// restore the rounding mode back if it has been changed
-if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 
 }
@@ -1506,16 +1411,10 @@ BID128_FUNCTION_ARG128_ARGTYPE2 (bid128qd_div, x, UINT64, y)
      int exponent_x, exponent_y, bin_index, bin_expon, diff_expon, ed2,
        digits_q, amount;
      int nzeros, i, j, k, d5, rmode;
-     int old_rm, rm_changed=0;
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
      fexcept_t binaryflags = 0;
 #endif
 
-// Set it to round-to-nearest (if different)
-if ((old_rm=fegetround()) != FE_TONEAREST) {
-  rm_changed=1;
-  fesetround(FE_TONEAREST);
-}
 
 valid_y = unpack_BID64 (&sign_y, &exponent_y, &CY.w[0], y);
 	// unpack arguments, check for NaN or Infinity
@@ -1529,8 +1428,6 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 #endif
   res.w[1] = (CX.w[1]) & QUIET_MASK64;
   res.w[0] = CX.w[0];
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
     // x is Infinity?
@@ -1544,8 +1441,6 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #endif
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is NaN?
@@ -1556,8 +1451,6 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
     res.w[1] = ((x.w[1] ^ y) & 0x8000000000000000ull) |
       0x7800000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 }
@@ -1570,8 +1463,6 @@ if ((y & 0x7800000000000000ull) < 0x7800000000000000ull) {
     // x=y=0, return NaN
     res.w[1] = 0x7c00000000000000ull;
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // return 0
@@ -1583,8 +1474,6 @@ if ((y & 0x7800000000000000ull) < 0x7800000000000000ull) {
     exponent_x = 0;
   res.w[1] |= (((UINT64) exponent_x) << 49);
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 }
@@ -1601,17 +1490,13 @@ if (!valid_y) {
   res.w[0] = (CY.w[0] & 0x0003ffffffffffffull);
   __mul_64x64_to_128 (res, res.w[0], power10_table_128[18].w[0]);
   res.w[1] |= ((CY.w[0]) & 0xfc00000000000000ull);
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
-  BID_RETURN (res);
+    BID_RETURN (res);
   }
   // y is Infinity?
   if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
     // return +/-0
     res.w[1] = ((x.w[1] ^ y) & 0x8000000000000000ull);
     res.w[0] = 0;
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // y is 0
@@ -1620,8 +1505,6 @@ if (!valid_y) {
 #endif
   res.w[1] = (sign_x ^ sign_y) | INFINITY_MASK64;
   res.w[0] = 0;
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -1670,8 +1553,6 @@ if (__unsigned_compare_gt_128 (CY, CX)) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
   // get number of decimal digits in CQ
@@ -1868,8 +1749,6 @@ __div_256_by_128 (&CQ, &CA4, CY);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-    // restore the rounding mode back if it has been changed
-    if (rm_changed) fesetround(old_rm);
     BID_RETURN (res);
   }
 #endif
@@ -1959,8 +1838,6 @@ if (diff_expon >= 0) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
   (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-  // restore the rounding mode back if it has been changed
-  if (rm_changed) fesetround(old_rm);
   BID_RETURN (res);
 
 }
@@ -1969,8 +1846,6 @@ get_BID128 (&res, sign_x ^ sign_y, diff_expon, CQ, &rnd_mode, pfpsf);
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
-// restore the rounding mode back if it has been changed
-if (rm_changed) fesetround(old_rm);
 BID_RETURN (res);
 
 }
