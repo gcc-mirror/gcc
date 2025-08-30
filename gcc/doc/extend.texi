@@ -16523,8 +16523,9 @@ invoke undefined behavior at run time.  Warnings for out of bound
 accesses for vector subscription can be enabled with
 @option{-Warray-bounds}.
 
-Vector comparison is supported with standard comparison
-operators: @code{==, !=, <, <=, >, >=}. Comparison operands can be
+Vector comparison is supported with standard comparison operators:
+@code{==}, @code{!=}, @code{<}, @code{<=}, @code{>}, and
+@code{>=}. Comparison operands can be
 vector expressions of integer-type or real-type. Comparison between
 integer-type vectors and real-type vectors are not supported.  The
 result of the comparison is a vector of the same width and number of
