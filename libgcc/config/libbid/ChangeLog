@@ -1,3 +1,16 @@
+2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/120691
+	* bid128_div.c: Fix _Decimal128 arithmetic error under
+	FE_UPWARD.
+	* bid128_rem.c: Ditto.
+	* bid128_sqrt.c: Ditto.
+	* bid64_div.c (bid64_div): Ditto.
+	* bid64_sqrt.c (bid64_sqrt): Ditto.
+
 2025-05-23  Release Manager
 
 	* GCC 14.3.0 released.
