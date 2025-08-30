@@ -31926,7 +31926,7 @@ aarch64_expand_reversed_crc_using_pmull (scalar_mode crc_mode,
 
 /* Expand the spaceship optab for floating-point operands.
 
-   If the result is compared against (-1, 0, 1 , 2), expand into
+   If the result is compared against (-1, 0, 1, -128), expand into
    fcmpe + conditional branch insns.
 
    Otherwise (the result is just stored as an integer), expand into
@@ -31965,7 +31965,7 @@ aarch64_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx hint)
       emit_jump (end_label);
 
       emit_label (un_label);
-      emit_move_insn (dest, const2_rtx);
+      emit_move_insn (dest, GEN_INT (-128));
       emit_jump (end_label);
 
       emit_label (gt_label);

@@ -2399,7 +2399,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
     <bb 5> [local count: 134217728]:  // middle_bb
 
     <bb 6> [local count: 1073741824]:  // phi_bb
-    # SR.27_4 = PHI <0(2), -1(3), 1(4), 2(5)>
+    # SR.27_4 = PHI <0(2), -1(3), 1(4), -128(5)>
     _2 = SR.27_4 > 0;  */
 
 static bool
@@ -2412,8 +2412,10 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       || TYPE_UNSIGNED (TREE_TYPE (phires))
       || !tree_fits_shwi_p (arg0)
       || !tree_fits_shwi_p (arg1)
-      || !IN_RANGE (tree_to_shwi (arg0), -1, 2)
-      || !IN_RANGE (tree_to_shwi (arg1), -1, 2))
+      || (!IN_RANGE (tree_to_shwi (arg0), -1, 1)
+	  && tree_to_shwi (arg0) != -128)
+      || (!IN_RANGE (tree_to_shwi (arg1), -1, 1)
+	  && tree_to_shwi (arg1) != -128))
     return false;
 
   basic_block phi_bb = gimple_bb (phi);
@@ -2431,40 +2433,48 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
   tree lhs, rhs;
   gimple *orig_use_stmt = use_stmt;
   tree orig_use_lhs = NULL_TREE;
-  int prec = TYPE_PRECISION (TREE_TYPE (phires));
-  bool is_cast = false;
+  tree temps[2] = { NULL_TREE, NULL_TREE };
 
-  /* Deal with the case when match.pd has rewritten the (res & ~1) == 0
-     into res <= 1 and has left a type-cast for signed types.  */
+  /* Handle std::partial_ordering::_M_reverse(), i.e.
+     _1 = (unsigned char) phires;
+     _2 = -_1;
+     _3 = (signed char) _2;
+     and uses of _3 in comparison instead of phires.  */
   if (gimple_assign_cast_p (use_stmt))
     {
       orig_use_lhs = gimple_assign_lhs (use_stmt);
-      /* match.pd would have only done this for a signed type,
-	 so the conversion must be to an unsigned one.  */
+      temps[0] = orig_use_lhs;
       tree ty1 = TREE_TYPE (gimple_assign_rhs1 (use_stmt));
       tree ty2 = TREE_TYPE (orig_use_lhs);
 
       if (!TYPE_UNSIGNED (ty2) || !INTEGRAL_TYPE_P (ty2))
 	return false;
-      if (TYPE_PRECISION (ty1) > TYPE_PRECISION (ty2))
+      if (TYPE_PRECISION (ty2) != 8 || TYPE_PRECISION (ty1) < 8)
 	return false;
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
 	return false;
       if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
 	return false;
 
-      is_cast = true;
-    }
-  else if (is_gimple_assign (use_stmt)
-	   && gimple_assign_rhs_code (use_stmt) == BIT_AND_EXPR
-	   && TREE_CODE (gimple_assign_rhs2 (use_stmt)) == INTEGER_CST
-	   && (wi::to_wide (gimple_assign_rhs2 (use_stmt))
-	       == wi::shifted_mask (1, prec - 1, false, prec)))
-    {
-      /* For partial_ordering result operator>= with unspec as second
-	 argument is (res & 1) == res, folded by match.pd into
-	 (res & ~1) == 0.  */
+      if (!is_gimple_assign (use_stmt)
+	  || gimple_assign_rhs_code (use_stmt) != NEGATE_EXPR)
+	return false;
+
       orig_use_lhs = gimple_assign_lhs (use_stmt);
+      temps[1] = orig_use_lhs;
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
+	return false;
+      if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
+	return false;
+
+      if (!gimple_assign_cast_p (use_stmt))
+	return false;
+
+      orig_use_lhs = gimple_assign_lhs (use_stmt);
+      tree ty3 = TREE_TYPE (orig_use_lhs);
+
+      if (!useless_type_conversion_p (ty3, ty1))
+	return false;
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
 	return false;
       if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
@@ -2514,51 +2524,6 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       || !tree_fits_shwi_p (rhs)
       || !IN_RANGE (tree_to_shwi (rhs), -1, 1))
     return false;
-
-  if (is_cast)
-    {
-      if (TREE_CODE (rhs) != INTEGER_CST)
-	return false;
-      /* As for -ffast-math we assume the 2 return to be
-	 impossible, canonicalize (unsigned) res <= 1U or
-	 (unsigned) res < 2U into res >= 0 and (unsigned) res > 1U
-	 or (unsigned) res >= 2U as res < 0.  */
-      switch (cmp)
-	{
-	case LE_EXPR:
-	  if (!integer_onep (rhs))
-	    return false;
-	  cmp = GE_EXPR;
-	  break;
-	case LT_EXPR:
-	  if (wi::ne_p (wi::to_widest (rhs), 2))
-	    return false;
-	  cmp = GE_EXPR;
-	  break;
-	case GT_EXPR:
-	  if (!integer_onep (rhs))
-	    return false;
-	  cmp = LT_EXPR;
-	  break;
-	case GE_EXPR:
-	  if (wi::ne_p (wi::to_widest (rhs), 2))
-	    return false;
-	  cmp = LT_EXPR;
-	  break;
-	default:
-	  return false;
-	}
-      rhs = build_zero_cst (TREE_TYPE (phires));
-    }
-  else if (orig_use_lhs)
-    {
-      if ((cmp != EQ_EXPR && cmp != NE_EXPR) || !integer_zerop (rhs))
-	return false;
-      /* As for -ffast-math we assume the 2 return to be
-	 impossible, canonicalize (res & ~1) == 0 into
-	 res >= 0 and (res & ~1) != 0 as res < 0.  */
-      cmp = cmp == EQ_EXPR ? GE_EXPR : LT_EXPR;
-    }
 
   if (!empty_block_p (middle_bb))
     return false;
@@ -2672,12 +2637,12 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	return false;
       if (e1->flags & EDGE_TRUE_VALUE)
 	{
-	  if (tree_to_shwi (arg0) != 2
+	  if (tree_to_shwi (arg0) != -128
 	      || absu_hwi (tree_to_shwi (arg1)) != 1
 	      || wi::to_widest (arg1) == wi::to_widest (arg2))
 	    return false;
 	}
-      else if (tree_to_shwi (arg1) != 2
+      else if (tree_to_shwi (arg1) != -128
 	       || absu_hwi (tree_to_shwi (arg0)) != 1
 	       || wi::to_widest (arg0) == wi::to_widest (arg2))
 	return false;
@@ -2797,13 +2762,11 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       if (integer_onep (rhs))
 	res_cmp = one_cmp == LT_EXPR ? GE_EXPR : LE_EXPR;
       else if (integer_zerop (rhs))
-	{
-	  if (HONOR_NANS (TREE_TYPE (lhs1)) && orig_use_lhs)
-	    negate_p = true;
-	  res_cmp = one_cmp == LT_EXPR ? GT_EXPR : LT_EXPR;
-	}
+	res_cmp = one_cmp == LT_EXPR ? GT_EXPR : LT_EXPR;
       else
 	return false;
+      if (HONOR_NANS (TREE_TYPE (lhs1)))
+	negate_p = true;
       break;
     case LE_EXPR:
       if (integer_zerop (rhs))
@@ -2812,6 +2775,8 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	res_cmp = one_cmp == LT_EXPR ? GT_EXPR : LT_EXPR;
       else
 	return false;
+      if (HONOR_NANS (TREE_TYPE (lhs1)))
+	negate_p = true;
       break;
     case GT_EXPR:
       if (integer_minus_onep (rhs))
@@ -2820,28 +2785,20 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	res_cmp = one_cmp;
       else
 	return false;
-      if (HONOR_NANS (TREE_TYPE (lhs1)))
-	negate_p = true;
       break;
     case GE_EXPR:
       if (integer_zerop (rhs))
-	{
-	  if (HONOR_NANS (TREE_TYPE (lhs1)) && !orig_use_lhs)
-	    negate_p = true;
-	  res_cmp = one_cmp == LT_EXPR ? LE_EXPR : GE_EXPR;
-	}
+	res_cmp = one_cmp == LT_EXPR ? LE_EXPR : GE_EXPR;
       else if (integer_onep (rhs))
-	{
-	  if (HONOR_NANS (TREE_TYPE (lhs1)))
-	    negate_p = true;
-	  res_cmp = one_cmp;
-	}
+	res_cmp = one_cmp;
       else
 	return false;
       break;
     default:
       gcc_unreachable ();
     }
+  if (orig_use_lhs)
+    res_cmp = swap_tree_comparison (res_cmp);
 
   tree clhs1 = lhs1, crhs1 = rhs1;
   if (negate_p)
@@ -2883,31 +2840,68 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       use_operand_p use_p;
       imm_use_iterator iter;
       bool has_debug_uses = false;
-      bool has_cast_debug_uses = false;
+      bool has_cast1_debug_uses = false;
+      bool has_neg_debug_uses = false;
+      bool has_cast2_debug_uses = false;
       FOR_EACH_IMM_USE_FAST (use_p, iter, phires)
 	{
 	  gimple *use_stmt = USE_STMT (use_p);
-	  if (orig_use_lhs && use_stmt == orig_use_stmt)
-	    continue;
-	  gcc_assert (is_gimple_debug (use_stmt));
-	  has_debug_uses = true;
-	  break;
+	  if (is_gimple_debug (use_stmt))
+	    {
+	      has_debug_uses = true;
+	      break;
+	    }
 	}
       if (orig_use_lhs)
 	{
-	  if (!has_debug_uses || is_cast)
-	    FOR_EACH_IMM_USE_FAST (use_p, iter, orig_use_lhs)
-	      {
-		gimple *use_stmt = USE_STMT (use_p);
-		gcc_assert (is_gimple_debug (use_stmt));
-		has_debug_uses = true;
-		if (is_cast)
-		  has_cast_debug_uses = true;
-	      }
-	  gimple_stmt_iterator gsi = gsi_for_stmt (orig_use_stmt);
-	  tree zero = build_zero_cst (TREE_TYPE (orig_use_lhs));
-	  gimple_assign_set_rhs_with_ops (&gsi, INTEGER_CST, zero);
-	  update_stmt (orig_use_stmt);
+	  FOR_EACH_IMM_USE_FAST (use_p, iter, temps[0])
+	    {
+	      gimple *use_stmt = USE_STMT (use_p);
+	      if (is_gimple_debug (use_stmt))
+		{
+		  has_debug_uses = true;
+		  has_cast1_debug_uses = true;
+		  break;
+		}
+	    }
+	  FOR_EACH_IMM_USE_FAST (use_p, iter, temps[1])
+	    {
+	      gimple *use_stmt = USE_STMT (use_p);
+	      if (is_gimple_debug (use_stmt))
+		{
+		  has_debug_uses = true;
+		  has_cast1_debug_uses = true;
+		  has_neg_debug_uses = true;
+		  break;
+		}
+	    }
+	  FOR_EACH_IMM_USE_FAST (use_p, iter, orig_use_lhs)
+	    {
+	      gimple *use_stmt = USE_STMT (use_p);
+	      if (is_gimple_debug (use_stmt))
+		{
+		  has_debug_uses = true;
+		  has_cast1_debug_uses = true;
+		  has_neg_debug_uses = true;
+		  has_cast2_debug_uses = true;
+		  break;
+		}
+	    }
+	  if (has_debug_uses)
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (orig_use_stmt);
+	      tree zero = build_zero_cst (TREE_TYPE (temps[0]));
+	      gimple_assign_set_rhs_with_ops (&gsi, INTEGER_CST, zero);
+	      update_stmt (orig_use_stmt);
+	      gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (temps[1]));
+	      zero = build_zero_cst (TREE_TYPE (temps[1]));
+	      gimple_assign_set_rhs_with_ops (&gsi, INTEGER_CST, zero);
+	      update_stmt (SSA_NAME_DEF_STMT (temps[1]));
+	      gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (orig_use_lhs));
+	      zero = build_zero_cst (TREE_TYPE (orig_use_lhs));
+	      gimple_assign_set_rhs_with_ops (&gsi, INTEGER_CST, zero);
+	      update_stmt (SSA_NAME_DEF_STMT (orig_use_lhs));
+	    }
 	}
 
       if (has_debug_uses)
@@ -2917,10 +2911,10 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	     # DEBUG D#2 => i_2(D) == j_3(D) ? 0 : D#1
 	     where > stands for the comparison that yielded 1
 	     and replace debug uses of phi result with that D#2.
-	     Ignore the value of 2 if !HONOR_NANS, because if NaNs
+	     Ignore the value of -128 if !HONOR_NANS, because if NaNs
 	     aren't expected, all floating point numbers should be
 	     comparable.  If HONOR_NANS, emit something like:
-	     # DEBUG D#1 => i_2(D) < j_3(D) ? -1 : 2
+	     # DEBUG D#1 => i_2(D) < j_3(D) ? -1 : -128
 	     # DEBUG D#2 => i_2(D) > j_3(D) ? 1 : D#1
 	     # DEBUG D#3 => i_2(D) == j_3(D) ? 0 : D#2
 	     instead.  */
@@ -2933,7 +2927,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	      tree t = build2 (one_cmp == LT_EXPR ? GT_EXPR : LT_EXPR,
 			       boolean_type_node, lhs1, rhs2);
 	      t = build3 (COND_EXPR, type, t, minus_one,
-			  build_int_cst (type, 2));
+			  build_int_cst (type, -128));
 	      gimple *g = gimple_build_debug_bind (temp3, t, phi);
 	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	      minus_one = temp3;
@@ -2950,35 +2944,46 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	  g = gimple_build_debug_bind (temp2, t, phi);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	  replace_uses_by (phires, temp2);
-	  if (orig_use_lhs)
+	  if (has_cast1_debug_uses)
 	    {
-	      if (has_cast_debug_uses
-		  || (HONOR_NANS (TREE_TYPE (lhs1)) && !is_cast))
-		{
-		  tree temp3 = make_node (DEBUG_EXPR_DECL);
-		  DECL_ARTIFICIAL (temp3) = 1;
-		  TREE_TYPE (temp3) = TREE_TYPE (orig_use_lhs);
-		  SET_DECL_MODE (temp3, TYPE_MODE (type));
-		  if (has_cast_debug_uses)
-		    t = fold_convert (TREE_TYPE (temp3), temp2);
-		  else
-		    t = build2 (BIT_AND_EXPR, TREE_TYPE (temp3),
-				temp2, build_int_cst (TREE_TYPE (temp3),
-						      ~1));
-		  g = gimple_build_debug_bind (temp3, t, phi);
-		  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-		  replace_uses_by (orig_use_lhs, temp3);
-		}
-	      else
-		replace_uses_by (orig_use_lhs, temp2);
+	      tree temp3 = build_debug_expr_decl (TREE_TYPE (temps[0]));
+	      t = fold_convert (TREE_TYPE (temps[0]), temp2);
+	      g = gimple_build_debug_bind (temp3, t, phi);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      replace_uses_by (temps[0], temp3);
+	      temp2 = temp3;
+	    }
+	  if (has_neg_debug_uses)
+	    {
+	      tree temp3 = build_debug_expr_decl (TREE_TYPE (temps[1]));
+	      t = fold_build1 (NEGATE_EXPR, TREE_TYPE (temps[1]), temp2);
+	      g = gimple_build_debug_bind (temp3, t, phi);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      replace_uses_by (temps[1], temp3);
+	      temp2 = temp3;
+	    }
+	  if (has_cast2_debug_uses)
+	    {
+	      tree temp3 = build_debug_expr_decl (TREE_TYPE (orig_use_lhs));
+	      t = fold_convert (TREE_TYPE (orig_use_lhs), temp2);
+	      g = gimple_build_debug_bind (temp3, t, phi);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      replace_uses_by (orig_use_lhs, temp3);
 	    }
 	}
     }
 
   if (orig_use_lhs)
     {
-      gimple_stmt_iterator gsi = gsi_for_stmt (orig_use_stmt);
+      gimple_stmt_iterator gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (orig_use_lhs));
       gsi_remove (&gsi, true);
+      gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (temps[1]));
+      gsi_remove (&gsi, true);
+      gsi = gsi_for_stmt (orig_use_stmt);
+      gsi_remove (&gsi, true);
+      release_ssa_name (orig_use_lhs);
+      release_ssa_name (temps[1]);
+      release_ssa_name (temps[0]);
     }
 
   gimple_stmt_iterator psi = gsi_for_stmt (phi);

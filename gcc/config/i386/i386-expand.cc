@@ -3151,7 +3151,7 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 }
 
 /* Expand floating point op0 <=> op1, i.e.
-   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : 2.  */
+   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : -128.  */
 
 void
 ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
@@ -3264,7 +3264,7 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
   if (l2)
     {
       emit_label (l2);
-      emit_move_insn (dest, op2 == const0_rtx ? const2_rtx : op2);
+      emit_move_insn (dest, op2 == const0_rtx ? GEN_INT (-128) : op2);
     }
   emit_label (lend);
 }
