@@ -1,3 +1,128 @@
+2025-08-29  Sirui Mu  <msrlancern@gmail.com>
+
+	* g++.dg/cpp1z/array-condition-expr.C: New test.
+
+2025-08-29  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/bswap-SSAI8.c: New.
+
+2025-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93330
+	* gfortran.dg/argument_checking_15.f90: Adjust dg-pattern.
+	* gfortran.dg/bounds_check_strlen_7.f90: Add dg-pattern.
+	* gfortran.dg/char_length_3.f90: Adjust options.
+	* gfortran.dg/whole_file_24.f90: Add dg-pattern.
+	* gfortran.dg/whole_file_29.f90: Likewise.
+	* gfortran.dg/argument_checking_27.f90: New test.
+
+2025-08-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Add vfmin.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-5-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-5-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-5-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-6-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-6-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-6-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f64.c: New test.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121096
+	* gcc.target/i386/memcpy-strategy-14.c: New test.
+	* gcc.target/i386/memcpy-strategy-15.c: Likewise.
+	* gcc.target/i386/memset-strategy-10.c: Likewise.
+	* gcc.target/i386/memset-strategy-11.c: Likewise.
+	* gcc.target/i386/memset-strategy-12.c: Likewise.
+	* gcc.target/i386/memset-strategy-13.c: Likewise.
+	* gcc.target/i386/memset-strategy-14.c: Likewise.
+	* gcc.target/i386/memset-strategy-15.c: Likewise.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121108
+	* gcc.target/i386/memset-strategy-16.c: New test.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121694
+	* gcc.target/i386/pr121668-1b.c: New test.
+	* gcc.target/i386/pr121694-1a.c: Likewise.
+	* gcc.target/i386/pr121694-1b.c: Likewise.
+
+2025-08-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp26/decomp26.C: Add -fimplicit-constexpr.
+
+2025-08-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/120643
+	* gcc.target/i386/vect-pragma-target-1.c: Add `-mno-sse3 -mtune=generic`
+	to the options.
+	* gcc.target/i386/vect-pragma-target-2.c: Likewise.
+
+2025-08-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/121713
+	* gcc.target/aarch64/vld2-1.c: Update the number of "after previous"
+	checks.
+
+2025-08-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vnmsac.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-u8.c: New test.
+
+2025-08-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vnmsac.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vnmsac-run-1-i8.c: New test.
+
+2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr120691.c: New test.
+
 2025-08-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107953

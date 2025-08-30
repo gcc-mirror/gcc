@@ -1,3 +1,7 @@
+2025-08-29  Sirui Mu  <msrlancern@gmail.com>
+
+	* typeck.cc (cp_build_array_ref): Handle 0[arr] earlier.
+
 2025-08-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107953

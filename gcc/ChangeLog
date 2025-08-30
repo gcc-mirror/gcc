@@ -1,3 +1,150 @@
+2025-08-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121709
+	* doc/gm2.texi (Module Search Path): Reflect the new
+	search order.
+
+2025-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostics/logging.o.
+	* diagnostic-global-context.cc: Include "diagnostics/logging.h".
+	(log_function_params, auto_inc_log_depth): New "using" decls.
+	(verbatim): Add logging.
+	(emit_diagnostic): Likewise.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist_meta): Likewise.
+	(inform): Likewise.
+	(inform_n): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_meta): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(permerror_opt): Likewise.
+	* diagnostics/context.cc: Include "diagnostics/logging.h".
+	(context::initialize): Initialize m_logger.  Add logging.
+	(context::finish): Add logging.  Clean up m_logger.
+	(context::dump): Add indent param.
+	(context::set_sink): Add logging.
+	(context::add_sink): Add logging.
+	(diagnostic_kind_debug_text): New.
+	(get_debug_string_for_kind): New.
+	(context::report_diagnostic): Add logging.
+	(context::diagnostic_impl): Likewise.
+	(context::diagnostic_n_impl): Likewise.
+	(context::end_group): Likewise.
+	* diagnostics/context.h: Include "diagnostics/logging.h".
+	(context::dump): Add indent param.
+	(context::get_logger): New accessor.
+	(context::classify_diagnostics): Add logging.
+	(context::push_diagnostics): Likewise.
+	(context::pop_diagnostics): Likewise.
+	(context::m_logger): New field.
+	* diagnostics/html-sink.cc: Include "diagnostics/logging.h".
+	(html_builder::flush_to_file): Add logging.
+	(html_sink::on_report_diagnostic): Likewise.
+	* diagnostics/kinds.h (get_debug_string_for_kind): New decl.
+	* diagnostics/logging.cc: New file.
+	* diagnostics/logging.h: New file.
+	* diagnostics/output-file.h: Include "label-text.h".
+	* diagnostics/sarif-sink.cc: Include "diagnostics/logging.h".
+	(sarif_builder::flush_to_object): Add logging.
+	(sarif_builder::flush_to_file): Likewise.
+	(sarif_sink::on_report_diagnostic): Likewise.
+	* diagnostics/sink.h (sink::get_logger): New.
+	* diagnostics/text-sink.cc: Include "diagnostics/logging.h".
+	(text_sink::on_report_diagnostic): Add logging.
+	* doc/invoke.texi (Environment Variables): Document
+	GCC_DIAGNOSTICS_LOG.
+	* opts-diagnostic.cc: Include "diagnostics/logging.h".
+	(handle_OPT_fdiagnostics_add_output_): Add loggging.
+	(handle_OPT_fdiagnostics_set_output_): Likewise.
+
+2025-08-29  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_bswapsi2_output):
+	New function prototype.
+	* config/xtensa/xtensa.cc
+	(xtensa_bswapsi2_output_1, xtensa_bswapsi2_output):
+	New functions.
+	* config/xtensa/xtensa.md (bswapsi2_internal):
+	Rewrite in compact syntax and use xtensa_bswapsi2_output() as asm
+	output.
+
+2025-08-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121548
+	* config/riscv/riscv-avlprop.cc (get_insn_vtype_mode): Assert
+	MODE_IDX is smaller than the number of operands.
+	(simplify_replace_vlmax_avl): Similarly.
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Similarly.
+	* config/riscv/vector.md: Override merge_op_idx computation
+	for simple moves, just like is done for avl_type_idx and mode_idx.
+
+2025-08-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md
+	(*vfmin_vf_ieee_<mode>): Add new patterns to combine vec_duplicate +
+	vfmin.vv (unspec) into vfmin.vf.
+	(*vfmul_vf_<mode>, *vfrdiv_vf_<mode>, *vfmin_vf_<mode>): Fix attribute
+	types.
+	* config/riscv/vector.md (@pred_<ieee_fmaxmin_op><mode>_scalar): Allow
+	VLS modes.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121096
+	* config/i386/i386-expand.cc (expand_cpymem_epilogue): Set and
+	clear by_pieces_in_use when using by_pieces op.
+	(expand_setmem_epilogue): Likewise.
+	* config/i386/i386.cc (ix86_use_by_pieces_infrastructure_p): New.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Likewise.
+	* config/i386/i386.h (machine_function): Add by_pieces_in_use.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121108
+	* config/i386/i386-expand.cc (setmem_epilogue_gen_val): Don't
+	assert op_mode == word_mode and handle any integer modes.
+
+2025-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121694
+	* config/i386/i386-features.cc (redundant_pattern): Add
+	tlsdesc_val.
+	(pass_x86_cse): Likewise.
+	(pass_x86_cse::tls_set_insn_from_symbol): New member function.
+	(pass_x86_cse::candidate_gnu2_tls_p): Set tlsdesc_val.  For
+	TLS64_COMBINE, match both UNSPEC_TLSDESC and UNSPEC_DTPOFF
+	symbols.  For TLS64_CALL, match the UNSPEC_TLSDESC sumbol.
+	(pass_x86_cse::x86_cse): Initialize the tlsdesc_val field in
+	load.  Pass the tlsdesc_val field to ix86_place_single_tls_call
+	for X86_CSE_TLSDESC.
+
+2025-08-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/invoke.texi (AMD GCN Options: -march): Remove '(experimental)'
+	from gfx-{9,10-3,11}-generic.
+
+2025-08-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn): Clarify which binaries must be the
+	LLVM version and which must be installed. Update version data for
+	ROCm for generic architectures.
+
+2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/invoke.texi: Document -param=ix86-vect-unroll-limit.
+
+2025-08-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*vnmsac_vx_<mode>): Add new
+	pattern to combine to vx.
+	* config/riscv/vector.md (@pred_vnmsac_vx_<mode>): Add new
+	pattern to generate rtl.
+	(*pred_nmsac_<mode>_scalar_undef): Ditto.
+
 2025-08-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/115201

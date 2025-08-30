@@ -1,3 +1,20 @@
+2025-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93330
+	* interface.cc (get_sym_storage_size): Add argument size_known to
+	indicate that the storage size could be successfully determined.
+	(get_expr_storage_size): Likewise.
+	(gfc_compare_actual_formal): Use them to handle zero-sized dummy
+	and actual arguments.
+	If a character formal argument has the pointer or allocatable
+	attribute, or is an array that is not assumed or explicit size,
+	we generate an error by default unless -std=legacy is specified,
+	which falls back to just giving a warning.
+	If -Wcharacter-truncation is given, warn on a character actual
+	argument longer than the dummy.  Generate an error for too short
+	scalar character arguments if -std=f* is given instead of just a
+	warning.
+
 2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82843
