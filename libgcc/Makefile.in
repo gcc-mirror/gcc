@@ -232,7 +232,8 @@ version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 
 ifeq ($(decimal_float),yes)
 ifeq ($(enable_decimal_float),bid)
-DECNUMINC = -I$(srcdir)/config/libbid -DENABLE_DECIMAL_BID_FORMAT
+DECNUMINC = -I$(srcdir)/config/$(cpu_type) -I$(srcdir)/config/libbid \
+	    -DENABLE_DECIMAL_BID_FORMAT
 else
 DECNUMINC = -I$(srcdir)/../libdecnumber/$(enable_decimal_float) \
 	    -I$(srcdir)/../libdecnumber

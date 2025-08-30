@@ -43,6 +43,9 @@ BID128_FUNCTION_ARG1 (bid128_sqrt, x)
      fexcept_t binaryflags = 0;
 #endif
 
+     // Set the rounding mode to round-to-nearest (if different)
+     DFP_INIT_ROUNDMODE;
+
   // unpack arguments, check for NaN or Infinity
 if (!unpack_BID128_value (&sign_x, &exponent_x, &CX, x)) {
 res.w[1] = CX.w[1];
@@ -54,6 +57,8 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
   res.w[1] = CX.w[1] & QUIET_MASK64;
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
     // x is Infinity?
@@ -66,6 +71,8 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
   }
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
     // x is 0 otherwise
@@ -74,6 +81,8 @@ res.w[1] =
   sign_x |
   ((((UINT64) (exponent_x + DECIMAL_EXPONENT_BIAS_128)) >> 1) << 49);
 res.w[0] = 0;
+// restore the rounding mode back if it has been changed
+DFP_RESTORE_ROUNDMODE;
 BID_RETURN (res);
 }
 if (sign_x) {
@@ -82,6 +91,8 @@ if (sign_x) {
 #ifdef SET_STATUS_FLAGS
   __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -117,6 +128,8 @@ if (CS.w[0] * CS.w[0] == A10.w[0]) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
+    // restore the rounding mode back if it has been changed
+    DFP_RESTORE_ROUNDMODE;
     BID_RETURN (res);
   }
 }
@@ -288,6 +301,8 @@ get_BID128_fast (&res, 0,
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
+// restore the rounding mode back if it has been changed
+DFP_RESTORE_ROUNDMODE;
 BID_RETURN (res);
 }
 
@@ -302,9 +317,13 @@ BID128_FUNCTION_ARGTYPE1 (bid128d_sqrt, UINT64, x)
      int_float fx, f64;
      int exponent_x, bin_expon_cx;
      int digits, scale, exponent_q;
+
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
      fexcept_t binaryflags = 0;
 #endif
+
+     // Set the rounding mode to round-to-nearest (if different)
+     DFP_INIT_ROUNDMODE;
 
 	// unpack arguments, check for NaN or Infinity
    // unpack arguments, check for NaN or Infinity
@@ -321,6 +340,8 @@ if ((x & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
   res.w[0] = (CX.w[0] & 0x0003ffffffffffffull);
   __mul_64x64_to_128 (res, res.w[0], power10_table_128[18].w[0]);
   res.w[1] |= ((CX.w[0]) & 0xfc00000000000000ull);
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
 	   // x is Infinity?
@@ -332,6 +353,8 @@ if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
   }
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
 	   // x is 0 otherwise
@@ -342,6 +365,8 @@ res.w[1] =
   sign_x | ((((UINT64) (exponent_x + DECIMAL_EXPONENT_BIAS_128)) >> 1)
 	    << 49);
 res.w[0] = 0;
+// restore the rounding mode back if it has been changed
+DFP_RESTORE_ROUNDMODE;
 BID_RETURN (res);
 }
 if (sign_x) {
@@ -350,6 +375,8 @@ if (sign_x) {
 #ifdef SET_STATUS_FLAGS
   __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
+  // restore the rounding mode back if it has been changed
+  DFP_RESTORE_ROUNDMODE;
   BID_RETURN (res);
 }
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
@@ -387,6 +414,8 @@ if (CS.w[0] * CS.w[0] == A10.w[0]) {
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
     (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
+    // restore the rounding mode back if it has been changed
+    DFP_RESTORE_ROUNDMODE;
     BID_RETURN (res);
   }
 }
@@ -558,6 +587,8 @@ get_BID128_fast (&res, 0, (exponent_q + DECIMAL_EXPONENT_BIAS_128) >> 1,
 #ifdef UNCHANGED_BINARY_STATUS_FLAGS
 (void) fesetexceptflag (&binaryflags, FE_ALL_FLAGS);
 #endif
+// restore the rounding mode back if it has been changed
+DFP_RESTORE_ROUNDMODE;
 BID_RETURN (res);
 
 

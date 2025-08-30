@@ -559,6 +559,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 // #define HPUX_OS
 
+#include <dfp-machine.h>
+
 // If DECIMAL_CALL_BY_REFERENCE is defined then numerical arguments and results
 // are passed by reference otherwise they are passed by value (except that
 // a pointer is always passed to the status flags)
