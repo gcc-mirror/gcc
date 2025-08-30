@@ -11253,9 +11253,9 @@ c_parser_generic_selection (c_parser *parser)
 			 "incomplete type before C2Y");
 
 	  if (c_type_variably_modified_p (assoc.type))
-	    error_at (assoc.type_location,
-		      "%<_Generic%> association has "
-		      "variable length type");
+	    pedwarn_c23 (assoc.type_location, OPT_Wpedantic,
+			 "ISO C does not support %<_Generic%> association with "
+			 "variably-modified type before C2Y");
 	}
 
       if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))

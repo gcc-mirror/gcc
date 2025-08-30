@@ -11,7 +11,7 @@ f (int n)
   _Generic (n, default: 1, default: 2); /* { dg-error "duplicate .*default.* case" } */
 
   /* Variably-modified type not ok.  */
-  _Generic (n, int[n]: 0, default: 1);	/* { dg-error "variable length type" } */
+  _Generic (n, int[n]: 0, default: 1);	/* { dg-error "variably-modified" } */
   /* Type must be complete.  */
   _Generic (n, struct incomplete: 0, default: 1); /* { dg-error "incomplete type" } */
   _Generic (n, void: 0, default: 1); /* { dg-error "incomplete type" } */
