@@ -717,24 +717,25 @@
 		 (match_operand:SI 2 "reg_or_const_int_operand")))]
   ""
 {
+  /* We may be able to find a faster sequence, if so, then we are
+     done.  Otherwise let expansion continue normally.  */
+  if (CONST_INT_P (operands[2])
+      && ((!TARGET_64BIT && synthesize_add (operands))
+	  || (TARGET_64BIT && synthesize_add_extended (operands))))
+    DONE;
+
+  /* Constants have already been handled already.  */
   if (TARGET_64BIT)
     {
-      rtx t = gen_reg_rtx (DImode);
-
-      if (CONST_INT_P (operands[2]) && !SMALL_OPERAND (operands[2]))
-	operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_addsi3_extended (t, operands[1], operands[2]));
-      t = gen_lowpart (SImode, t);
-      SUBREG_PROMOTED_VAR_P (t) = 1;
-      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
-      emit_move_insn (operands[0], t);
+      rtx tdest = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (tdest, operands[1], operands[2]));
+      tdest = gen_lowpart (SImode, tdest);
+      SUBREG_PROMOTED_VAR_P (tdest) = 1;
+      SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+      emit_move_insn (operands[0], tdest);
       DONE;
     }
 
-  /* We may be able to find a faster sequence, if so, then we are
-     done.  Otherwise let expansion continue normally.  */
-  if (CONST_INT_P (operands[2]) && synthesize_add (operands))
-    DONE;
 })
 
 (define_expand "adddi3"

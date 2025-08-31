@@ -15466,6 +15466,92 @@ synthesize_add (rtx operands[3])
   return true;
 }
 
+/*  Synthesize OPERANDS[0] = OPERANDS[1] + OPERANDS[2].
+
+    For 32-bit object cases with a 64-bit target.
+
+    OPERANDS[0] and OPERANDS[1] will be a REG and may be the same
+    REG.
+
+    OPERANDS[2] is a CONST_INT.
+
+    Return TRUE if the operation was fully synthesized and the caller
+    need not generate additional code.  Return FALSE if the operation
+    was not synthesized and the caller is responsible for emitting the
+    proper sequence.  */
+
+
+bool
+synthesize_add_extended (rtx operands[3])
+{
+
+/*  If operands[2] is a 12-bit signed immediate,
+    no synthesis needs to be done.  */
+
+  if (SMALL_OPERAND (INTVAL (operands[2])))
+    return false;
+
+  HOST_WIDE_INT ival = INTVAL (operands[2]);
+  int budget1 = riscv_const_insns (operands[2], true);
+  int budget2 = riscv_const_insns (GEN_INT (-INTVAL (operands[2])), true);
+
+/*  If operands[2] can be split into two 12-bit signed immediates,
+    split add into two adds.  */
+
+  if (SUM_OF_TWO_S12 (ival))
+    {
+      HOST_WIDE_INT saturated = HOST_WIDE_INT_M1U << (IMM_BITS - 1);
+
+      if (ival >= 0)
+	saturated = ~saturated;
+
+      ival -= saturated;
+
+      rtx temp = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (temp, operands[1], GEN_INT (saturated)));
+      temp = gen_lowpart (SImode, temp);
+      SUBREG_PROMOTED_VAR_P (temp) = 1;
+      SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
+      emit_insn (gen_rtx_SET (operands[0], temp));
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (t, operands[0], GEN_INT (ival)));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      return true;
+    }
+
+
+/*  If the negated value is cheaper to synthesize, subtract that from
+    operands[1]. */
+
+  if (budget2 < budget1)
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (tmp, GEN_INT (-INTVAL (operands[2]))));
+
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_subsi3_extended (t, operands[1], tmp));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      return true;
+    }
+
+  rtx tsrc = force_reg (SImode, operands[2]);
+  rtx tdest = gen_reg_rtx (DImode);
+  emit_insn (gen_addsi3_extended (tdest, operands[1], tsrc));
+  tdest = gen_lowpart (SImode, tdest);
+  SUBREG_PROMOTED_VAR_P (tdest) = 1;
+  SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+  emit_move_insn (operands[0], tdest);
+  return true;
+
+}
+
+
 /*
     HINT : argument specify the target cache
 
