@@ -1,3 +1,46 @@
+2025-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121698
+	* tree-ssa-phiopt.cc (spaceship_replacement): Adjust
+	to handle spaceship unordered value -128 rather than 2 and
+	stmts from the new std::partial_order::_M_reverse() instead
+	of (_M_value & ~1) == _M_value etc.
+	* doc/md.texi (spaceship@var{m}4): Use -128 instead of 2.
+	* tree-ssa-math-opts.cc (optimize_spaceship): Adjust comments
+	that libstdc++ unordered value is -128 rather than 2 and use
+	that as the default unordered value.
+	* config/i386/i386-expand.cc (ix86_expand_fp_spaceship): Use
+	GEN_INT (-128) instead of const2_rtx and adjust comment accordingly.
+	* config/aarch64/aarch64.cc (aarch64_expand_fp_spaceship): Likewise.
+	* config/s390/s390.cc (s390_expand_fp_spaceship): Likewise.
+
+2025-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Vector Extensions): Improve markup for list
+	of operators.
+
+2025-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Update "Object-Oriented
+	Programming and the Objective-C Language" reference.
+
+2025-08-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121725
+	* config/i386/i386-features.cc
+	(pass_x86_cse::candidate_gnu2_tls_p): Use the UNSPEC_DTPOFF
+	operand to check source operand in TLS64_COMBINE pattern.
+
+2025-08-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/116651
+	PR tree-optimization/93265
+	PR tree-optimization/103647
+	PR tree-optimization/52171
+	* tree-ssa-forwprop.cc (simplify_builtin_memcmp): New function.
+	(simplify_builtin_call): Call simplify_builtin_memcmp for memcmp
+	memcmp_eq builtins.
+
 2025-08-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121709

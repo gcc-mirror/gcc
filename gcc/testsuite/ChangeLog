@@ -1,3 +1,35 @@
+2025-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121698
+	* gcc.dg/pr94589-2.c: Adjust for expected unordered value -128
+	rather than 2 and negations in unsigned char instead of and with
+	~1 and comparison against original value.
+	* gcc.dg/pr94589-4.c: Likewise.
+	* gcc.dg/pr94589-5.c: Likewise.
+	* gcc.dg/pr94589-6.c: Likewise.
+
+2025-08-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121725
+	* gcc.target/i386/pr121725-1a.c: New test.
+	* gcc.target/i386/pr121725-1b.c: Likewise.
+
+2025-08-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/116651
+	PR tree-optimization/93265
+	PR tree-optimization/103647
+	PR tree-optimization/52171
+	* gcc.target/i386/pr44130.c: Add an inline-asm clobber.
+	* g++.dg/tree-ssa/vector-compare-1.C: New test.
+
+2025-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2025-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr120691.c: New test.
+
 2025-08-29  Sirui Mu  <msrlancern@gmail.com>
 
 	* g++.dg/cpp1z/array-condition-expr.C: New test.
