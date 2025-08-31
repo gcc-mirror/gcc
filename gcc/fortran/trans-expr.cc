@@ -6520,6 +6520,20 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 
   gcc_assert (fsym && fsym->attr.value && !fsym->attr.dimension);
 
+  if (e && e->ts.type == BT_DERIVED && e->ts.u.derived->attr.pdt_type)
+    {
+      tmp = gfc_create_var (TREE_TYPE (parmse->expr), "PDT");
+      gfc_add_modify (&parmse->pre, tmp, parmse->expr);
+      gfc_add_expr_to_block (&parmse->pre,
+			     gfc_copy_alloc_comp (e->ts.u.derived,
+						  parmse->expr, tmp,
+						  e->rank, 0));
+      parmse->expr = tmp;
+      tmp = gfc_deallocate_pdt_comp (e->ts.u.derived, tmp, e->rank);
+      gfc_add_expr_to_block (&parmse->post, tmp);
+      return;
+    }
+
   /* Absent actual argument for optional scalar dummy.  */
   if ((e == NULL || e->expr_type == EXPR_NULL) && fsym->attr.optional)
     {

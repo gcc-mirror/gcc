@@ -10710,6 +10710,15 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 				  cdecl, NULL_TREE);
 	  dcmp = fold_convert (TREE_TYPE (comp), dcmp);
 
+	  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pdt_type
+	      && !c->attr.allocatable)
+	    {
+	      tmp = gfc_copy_alloc_comp (c->ts.u.derived, comp, dcmp,
+					 0, 0);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	      continue;
+	    }
+
 	  if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
 	      tree ftn_tree;
@@ -10829,7 +10838,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 					   false, false, size, NULL_TREE);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
-	  else if (c->attr.pdt_array)
+	  else if (c->attr.pdt_array
+		   && !c->attr.allocatable && !c->attr.pointer)
 	    {
 	      tmp = duplicate_allocatable (dcmp, comp, ctype,
 					   c->as ? c->as->rank : 0,
