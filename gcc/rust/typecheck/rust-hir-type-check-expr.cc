@@ -1090,6 +1090,8 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 
 	auto capacity_expr_ty
 	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
+	if (capacity_expr_ty->is<TyTy::ErrorType> ())
+	  return;
 
 	context->insert_type (elems.get_num_copies_expr ().get_mappings (),
 			      expected_ty);

@@ -322,7 +322,13 @@ public:
 
   void push_loop_context (Bvariable *var) { loop_value_stack.push_back (var); }
 
-  Bvariable *peek_loop_context () { return loop_value_stack.back (); }
+  bool have_loop_context () const { return !loop_value_stack.empty (); }
+
+  Bvariable *peek_loop_context ()
+  {
+    rust_assert (!loop_value_stack.empty ());
+    return loop_value_stack.back ();
+  }
 
   Bvariable *pop_loop_context ()
   {
@@ -336,7 +342,11 @@ public:
     loop_begin_labels.push_back (label);
   }
 
-  tree peek_loop_begin_label () { return loop_begin_labels.back (); }
+  tree peek_loop_begin_label ()
+  {
+    rust_assert (!loop_begin_labels.empty ());
+    return loop_begin_labels.back ();
+  }
 
   tree pop_loop_begin_label ()
   {

@@ -891,6 +891,10 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 void
 CompileExpr::visit (HIR::ContinueExpr &expr)
 {
+  translated = error_mark_node;
+  if (!ctx->have_loop_context ())
+    return;
+
   tree label = ctx->peek_loop_begin_label ();
   if (expr.has_label ())
     {
@@ -2000,13 +2004,11 @@ CompileExpr::array_copied_expr (location_t expr_locus,
       return error_mark_node;
     }
 
-  ctx->push_const_context ();
-  tree capacity_expr = CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
-  ctx->pop_const_context ();
-
+  auto capacity_tyty = array_tyty.get_capacity ();
+  tree capacity_expr = capacity_tyty->get_value ();
   if (!TREE_CONSTANT (capacity_expr))
     {
-      rust_error_at (expr_locus, "non const num copies %qT", array_type);
+      rust_error_at (expr_locus, "non const num copies %qT", capacity_expr);
       return error_mark_node;
     }
 
