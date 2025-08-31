@@ -3971,73 +3971,6 @@ use_in_zero_equality (tree res, bool exclusive)
   return first_use;
 }
 
-/* Handle a call to memcmp.  We try to handle small comparisons by
-   converting them to load and compare, and replacing the call to memcmp
-   with a __builtin_memcmp_eq call where possible.
-   return true when call is transformed, return false otherwise.  */
-
-bool
-strlen_pass::handle_builtin_memcmp ()
-{
-  gcall *stmt = as_a <gcall *> (gsi_stmt (m_gsi));
-  tree res = gimple_call_lhs (stmt);
-
-  if (!res || !use_in_zero_equality (res))
-    return false;
-
-  tree arg1 = gimple_call_arg (stmt, 0);
-  tree arg2 = gimple_call_arg (stmt, 1);
-  tree len = gimple_call_arg (stmt, 2);
-  unsigned HOST_WIDE_INT leni;
-
-  if (tree_fits_uhwi_p (len)
-      && (leni = tree_to_uhwi (len)) <= GET_MODE_SIZE (word_mode)
-      && pow2p_hwi (leni))
-    {
-      leni *= CHAR_TYPE_SIZE;
-      unsigned align1 = get_pointer_alignment (arg1);
-      unsigned align2 = get_pointer_alignment (arg2);
-      unsigned align = MIN (align1, align2);
-      scalar_int_mode mode;
-      if (int_mode_for_size (leni, 1).exists (&mode)
-	  && (align >= leni || !targetm.slow_unaligned_access (mode, align)))
-	{
-	  location_t loc = gimple_location (stmt);
-	  tree type, off;
-	  type = build_nonstandard_integer_type (leni, 1);
-	  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), leni));
-	  tree ptrtype = build_pointer_type_for_mode (char_type_node,
-						      ptr_mode, true);
-	  off = build_int_cst (ptrtype, 0);
-
-	  /* Create unaligned types if needed. */
-	  tree type1 = type, type2 = type;
-	  if (TYPE_ALIGN (type1) > align1)
-	    type1 = build_aligned_type (type1, align1);
-	  if (TYPE_ALIGN (type2) > align2)
-	    type2 = build_aligned_type (type2, align2);
-
-	  arg1 = build2_loc (loc, MEM_REF, type1, arg1, off);
-	  arg2 = build2_loc (loc, MEM_REF, type2, arg2, off);
-	  tree tem1 = fold_const_aggregate_ref (arg1);
-	  if (tem1)
-	    arg1 = tem1;
-	  tree tem2 = fold_const_aggregate_ref (arg2);
-	  if (tem2)
-	    arg2 = tem2;
-	  res = fold_convert_loc (loc, TREE_TYPE (res),
-				  fold_build2_loc (loc, NE_EXPR,
-						   boolean_type_node,
-						   arg1, arg2));
-	  gimplify_and_update_call_from_tree (&m_gsi, res);
-	  return true;
-	}
-    }
-
-  gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
-  return true;
-}
-
 /* Given strinfo IDX for ARG, sets LENRNG[] to the range of lengths
    of the string(s) referenced by ARG if it can be determined.
    If the length cannot be determined, sets *SIZE to the size of
@@ -5526,10 +5459,6 @@ strlen_pass::check_and_optimize_call (bool *zero_write)
       break;
     case BUILT_IN_MEMSET:
       if (handle_builtin_memset (zero_write))
-	return false;
-      break;
-    case BUILT_IN_MEMCMP:
-      if (handle_builtin_memcmp ())
 	return false;
       break;
     case BUILT_IN_STRCMP:
