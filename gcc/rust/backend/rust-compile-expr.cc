@@ -828,6 +828,10 @@ CompileExpr::visit (HIR::BreakExpr &expr)
     {
       tree compiled_expr = CompileExpr::Compile (expr.get_expr (), ctx);
 
+      translated = error_mark_node;
+      if (!ctx->have_loop_context ())
+	return;
+
       Bvariable *loop_result_holder = ctx->peek_loop_context ();
       tree result_reference
 	= Backend::var_expression (loop_result_holder,
