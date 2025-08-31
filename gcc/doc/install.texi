@@ -3803,8 +3803,7 @@ Microsoft Windows:
 @item
 The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{https://osdn.net/projects/mingw/,,MinGW} and
-@uref{https://www.mingw-w64.org/,,mingw-w64} projects.
+the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
 @end itemize
 
 @item
