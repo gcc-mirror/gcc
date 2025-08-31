@@ -14314,6 +14314,54 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      /* Anonymous types can't be forward-declared.  */
 	      && !IDENTIFIER_ANON_P (DECL_NAME (not_tmpl)))
 	    dep->set_flag_bit<DB_IS_PENDING_BIT> ();
+
+	  /* Namespace-scope functions can be found by ADL by template
+	     instantiations in this module.  We need to create bindings
+	     for them so that name lookup recognises they exist, if they
+	     won't be discarded.  add_binding_entity is too early to do
+	     this for GM functions, because if nobody ends up using them
+	     we'll have leftover bindings laying around, and it's tricky
+	     to delete them and any namespaces they've implicitly created
+	     deps on.  The downside is this means we don't pick up on
+	     using-decls, but by [module.global.frag] p3.6 we don't have
+	     to.  */
+	  if (ek == EK_DECL
+	      && !for_binding
+	      && !dep->is_import ()
+	      && !dep->is_tu_local ()
+	      && DECL_NAMESPACE_SCOPE_P (decl)
+	      && DECL_DECLARES_FUNCTION_P (decl)
+	      /* Compiler-generated functions won't participate in ADL.  */
+	      && !DECL_ARTIFICIAL (decl)
+	      /* A hidden friend doesn't need a binding.  */
+	      && !(DECL_LANG_SPECIFIC (not_tmpl)
+		   && DECL_UNIQUE_FRIEND_P (not_tmpl)))
+	    {
+	      /* This will only affect GM functions.  */
+	      gcc_checking_assert (!DECL_LANG_SPECIFIC (not_tmpl)
+				   || !DECL_MODULE_PURVIEW_P (not_tmpl));
+	      /* We shouldn't see any instantiations or specialisations.  */
+	      gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
+				   || !DECL_USE_TEMPLATE (decl));
+
+	      tree ns = CP_DECL_CONTEXT (decl);
+	      tree name = DECL_NAME (decl);
+	      depset *binding = find_binding (ns, name);
+	      if (!binding)
+		{
+		  binding = make_binding (ns, name);
+		  add_namespace_context (binding, ns);
+
+		  depset **slot = binding_slot (ns, name, /*insert=*/true);
+		  *slot = binding;
+		}
+
+	      binding->deps.safe_push (dep);
+	      dep->deps.safe_push (binding);
+	      dump (dumper::DEPEND)
+		&& dump ("Built ADL binding for %C:%N",
+			 TREE_CODE (decl), decl);
+	    }
 	}
 
       if (!dep->is_import ())
@@ -14488,7 +14536,10 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 
       if ((!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
 	  && !((flags & WMB_Using) && (flags & WMB_Purview)))
-	/* Ignore entities not within the module purview.  */
+	/* Ignore entities not within the module purview.  We'll need to
+	   create bindings for any non-discarded function calls for ADL,
+	   but it's simpler to handle that at the point of use rather
+	   than trying to clear out bindings after the fact.  */
 	return false;
 
       if (!header_module_p () && data->hash->is_tu_local_entity (decl))
@@ -14997,6 +15048,9 @@ depset::hash::add_deduction_guides (tree decl)
 
       binding->deps.safe_push (dep);
       dep->deps.safe_push (binding);
+      dump (dumper::DEPEND)
+	&& dump ("Built binding for deduction guide %C:%N",
+		 TREE_CODE (decl), decl);
     }
 }
 
