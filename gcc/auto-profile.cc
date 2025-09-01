@@ -228,6 +228,45 @@ struct string_compare
   }
 };
 
+/* Store the summary information for the profile.  */
+struct summary_info
+{
+  /* There are currently 16 hard-coded percentiles in the GCOV format.  */
+  static constexpr unsigned NUM_PERCENTILES = 16;
+
+  /* The detailed summary is a histogram-based calculation of the minimum
+     execution count required to belong to a certain set of percentile of
+     counts.  */
+  struct detailed_summary
+  {
+    /* The percentile that this represents (multiplied by 1,000,000).  */
+    uint32_t cutoff;
+    /* The minimum execution count required to belong to this percentile.  */
+    uint64_t min_count;
+    /* The number of samples which belong to this percentile.  */
+    uint64_t num_counts;
+  };
+
+  /* The sum of execution counts of all samples.  */
+  uint64_t total_count;
+  /* The maximum individual count.  */
+  uint64_t max_count;
+  /* The maximum head count across all functions.  */
+  uint64_t max_function_count;
+  /* The number of lines that have samples.  */
+  uint64_t num_counts;
+  /* The number of functions that have samples.  */
+  uint64_t num_functions;
+  /* The percentile threshold information.  */
+  detailed_summary detailed_summaries[NUM_PERCENTILES];
+
+  /* Read profile.  Return TRUE on success.  */
+  bool read ();
+
+  /* Get the minimum count required for percentile CUTOFF.  */
+  uint64_t get_threshold_count (uint32_t cutoff);
+};
+
 /* Store a string array, indexed by string position in the array.  */
 class string_table
 {
@@ -672,6 +711,9 @@ private:
   auto_vec <function_instance *> duplicate_functions_;
 };
 
+/* Store the summary information from the GCOV file.  */
+static summary_info *afdo_summary_info;
+
 /* Store the strings read from the profile data file.  */
 static string_table *afdo_string_table;
 
@@ -916,6 +958,47 @@ get_normalized_path (const char *path, bool from_gcov = false)
        normalized with lrealpath ().  */
     return from_gcov ? path : lrealpath (path);
   return lbasename (path);
+}
+
+/* Member functions for summary_info.  */
+
+bool
+summary_info::read ()
+{
+  if (gcov_read_unsigned () != GCOV_TAG_AFDO_SUMMARY)
+    return false;
+
+  total_count = gcov_read_counter ();
+  max_count = gcov_read_counter ();
+  max_function_count = gcov_read_counter ();
+  num_counts = gcov_read_counter ();
+  num_functions = gcov_read_counter ();
+  uint64_t num_detailed_summaries = gcov_read_counter ();
+  gcc_checking_assert (num_detailed_summaries == NUM_PERCENTILES);
+  for (uint64_t i = 0; i < num_detailed_summaries; i++)
+    {
+      detailed_summaries[i].cutoff = gcov_read_unsigned ();
+      detailed_summaries[i].min_count = gcov_read_counter ();
+      detailed_summaries[i].num_counts = gcov_read_counter ();
+    }
+
+  return !gcov_is_error ();
+}
+
+/* Get the minimum count required for percentile CUTOFF.  */
+
+uint64_t
+summary_info::get_threshold_count (uint32_t cutoff)
+{
+  /* The cutoffs stored in the GCOV are fractions multiplied by 1,000,000.  */
+  gcc_checking_assert (cutoff <= 1'000'000);
+  unsigned idx = 0;
+  /* Find the first cutoff at least as high as CUTOFF.  */
+  for (; idx < NUM_PERCENTILES; idx++)
+    if (detailed_summaries[idx].cutoff >= cutoff)
+      break;
+  idx = std::min (NUM_PERCENTILES - 1, idx);
+  return detailed_summaries[idx].min_count;
 }
 
 /* Member functions for string_table.  */
@@ -2626,8 +2709,6 @@ function_instance::read_function_instance (function_instance_stack *stack,
       unsigned num_targets = gcov_read_unsigned ();
       gcov_type count = gcov_read_counter ();
       s->pos_counts[offset].count = count;
-      afdo_profile_info->sum_max = std::max (afdo_profile_info->sum_max,
-					     count);
 
       for (unsigned j = 0; j < stack->length (); j++)
         (*stack)[j]->total_count_ += count;
@@ -2907,7 +2988,7 @@ autofdo_source_profile::read ()
 		     "auto-profile contains duplicated function instance %s",
 		     afdo_string_table->get_symbol_name (s->symbol_name ()));
     }
-  int hot_frac = param_hot_bb_count_fraction;
+  afdo_profile_info->sum_max = afdo_summary_info->max_count;
   /* Scale up the profile, but leave some bits in case some counts gets
      bigger than sum_max eventually.  */
   if (afdo_profile_info->sum_max)
@@ -2915,22 +2996,25 @@ autofdo_source_profile::read ()
       = MAX (((gcov_type)1 << (profile_count::n_bits - 10))
 	     / afdo_profile_info->sum_max, 1);
   afdo_profile_info->cutoff *= afdo_count_scale;
-  afdo_hot_bb_threshold
-    = hot_frac
-      ? afdo_profile_info->sum_max * afdo_count_scale / hot_frac
-      : (gcov_type)profile_count::max_count;
+  /* Derive the hot count threshold from the profile summary.  */
+  afdo_hot_bb_threshold = afdo_summary_info->get_threshold_count (
+			    param_hot_bb_count_ws_permille * 1000)
+			  * afdo_count_scale;
   set_hot_bb_threshold (afdo_hot_bb_threshold);
   if (dump_file)
-    fprintf (dump_file, "Max count in profile %" PRIu64 "\n"
-			"Setting scale %" PRIu64 "\n"
-			"Scaled max count %" PRIu64 "\n"
-			"Cutoff %" PRIu64 "\n"
-			"Hot count threshold %" PRIu64 "\n\n",
-	     (int64_t)afdo_profile_info->sum_max,
-	     (int64_t)afdo_count_scale,
-	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale),
-	     (int64_t)afdo_profile_info->cutoff,
-	     (int64_t)afdo_hot_bb_threshold);
+    fprintf (dump_file,
+	     "Max count in profile %" PRIu64 "\n"
+	     "Setting scale %" PRIu64 "\n"
+	     "Scaled max count %" PRIu64 "\n"
+	     "Cutoff %" PRIu64 "\n"
+	     "Unscaled hot count threshold %" PRIu64 "\n"
+	     "Hot count threshold %" PRIu64 "\n\n",
+	     (int64_t) afdo_profile_info->sum_max, (int64_t) afdo_count_scale,
+	     (int64_t) (afdo_profile_info->sum_max * afdo_count_scale),
+	     (int64_t) afdo_profile_info->cutoff,
+	     (int64_t) afdo_summary_info->get_threshold_count (
+	       param_hot_bb_count_ws_permille * 1000),
+	     (int64_t) afdo_hot_bb_threshold);
   afdo_profile_info->sum_max *= afdo_count_scale;
   return true;
 }
@@ -3071,6 +3155,14 @@ read_profile (void)
 
   /* Skip the empty integer.  */
   gcov_read_unsigned ();
+
+  /* summary_info.  */
+  afdo_summary_info = new summary_info ();
+  if (!afdo_summary_info->read ())
+    {
+      error ("cannot read summary information from %s", auto_profile_file);
+      return;
+    }
 
   /* string_table.  */
   afdo_string_table = new string_table ();
@@ -4512,6 +4604,7 @@ end_auto_profile (void)
 {
   delete autofdo::afdo_source_profile;
   delete autofdo::afdo_string_table;
+  delete autofdo::afdo_summary_info;
   profile_info = NULL;
 }
 
