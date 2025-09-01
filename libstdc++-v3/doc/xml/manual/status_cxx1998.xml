@@ -1063,77 +1063,81 @@ mainline GCC, not in any particular release.
      applicable.  This list is probably incomplet and inkorrekt.
    </para>
    <para>
-     <emphasis>[1.9]/11 #3</emphasis> If <code>isatty(3)</code> is true, then
-      interactive stream support is implied.
+     <emphasis>1.9 [intro.execution]/11 #3</emphasis> If <code>isatty(3)</code>
+     is true, then interactive stream support is implied.
    </para>
    <para>
-     <emphasis>[17.4.4.5]</emphasis> Non-reentrant functions are probably best
-      discussed in the various sections on multithreading (see above).
+     <emphasis>17.4.4.5 [lib.reentrancy]</emphasis> Non-reentrant functions are
+     probably best discussed in the various sections on multithreading (see above).
    </para>
    <!-- [17.4.4.8]/3 says any function that doesn't have an exception-spec
 	can throw whatever we want; see also its footnote.  Let's list those
 	in the sections where the function itself occurs.
    -->
-   <para><emphasis>[18.1]/4</emphasis> The type of <code>NULL</code> is described
-      under <link linkend="std.support.types.null">Support</link>.
+   <para><emphasis>18.1 [lib.support.types]/4</emphasis> The type of
+      <code>NULL</code> is described under
+      <link linkend="std.support.types.null">Support</link>.
    </para>
-   <para><emphasis>[18.3]/8</emphasis> Even though it's listed in the library
-      sections, libstdc++ has zero control over what the cleanup code hands
-      back to the runtime loader.  Talk to the compiler people.  :-)
+   <para><emphasis>18.3 [lib.support.start.term]/8</emphasis> Even though it's
+      listed in the library sections, libstdc++ has zero control over what the
+      cleanup code hands back to the runtime loader.  Talk to the compiler people.
+      :-)
    </para>
-   <para><emphasis>[18.4.2.1]/5</emphasis> (bad_alloc),
-      <emphasis>[18.5.2]/5</emphasis> (bad_cast),
-      <emphasis>[18.5.3]/5</emphasis> (bad_typeid),
-      <emphasis>[18.6.1]/8</emphasis> (exception),
-      <emphasis>[18.6.2.1]/5</emphasis> (bad_exception):  The <code>what()</code>
-      member function of class <code>std::exception</code>, and these other
-      classes publicly derived from it, returns the name of the
+   <para><emphasis>18.4.2.1 [lib.bad.alloc]/5</emphasis> (bad_alloc),
+      <emphasis>18.5.2 [lib.bad.cast]/5</emphasis> (bad_cast),
+      <emphasis>18.5.3 [lib.bad.typeid]/5</emphasis> (bad_typeid),
+      <emphasis>18.6.1 [lib.exception]/8</emphasis> (exception),
+      <emphasis>18.6.2.1 [lib.bad.exception]/5</emphasis> (bad_exception):
+      The <code>what()</code> member function of class <code>std::exception</code>,
+      and these other classes publicly derived from it, returns the name of the
       class, e.g. <literal>"std::bad_alloc"</literal>.
    </para>
-   <para><emphasis>[18.5.1]/7</emphasis> The return value of
+   <para><emphasis>18.5.1 [lib.type.info]/7</emphasis> The return value of
       <code>std::type_info::name()</code> is the mangled type name.
       You will need to call <code>c++filt</code> and pass the names as
       command-line parameters to demangle them, or call a
       <link linkend="manual.ext.demangle">runtime demangler function</link>.
    </para>
-   <para><emphasis>[20.1.5]/5</emphasis> <emphasis>"Implementors are encouraged to
-      supply libraries that can accept allocators that encapsulate more
-      general memory models and that support non-equal instances.  In such
-      implementations, any requirements imposed on allocators by containers
-      beyond those requirements that appear in Table 32, and the semantics
-      of containers and algorithms when allocator instances compare
-      non-equal, are implementation-defined."</emphasis>  There is experimental
-      support for non-equal allocators in the standard containers in C++98
-      mode. There are no additional requirements on allocators. It is undefined
-      behaviour to swap two containers if their allocators are not equal.
+   <para><emphasis>20.1.5 [lib.allocator.requirements]/5</emphasis>
+      <emphasis>"Implementors are encouraged to supply libraries that can
+      accept allocators that encapsulate more general memory models and that
+      support non-equal instances.  In such implementations, any requirements
+      imposed on allocators by containers beyond those requirements that appear
+      in Table 32, and the semantics of containers and algorithms when allocator
+      instances compare non-equal, are implementation-defined."</emphasis>
+      There is experimental support for non-equal allocators in the standard
+      containers in C++98  mode. There are no additional requirements on
+      allocators. It is undefined behaviour to swap two containers if their
+      allocators are not equal.
    </para>
-   <para><emphasis>[21.1.3.1]/3,4</emphasis>,
-      <emphasis>[21.1.3.2]/2</emphasis>,
-      <emphasis>[21.3]/6 basic_string::iterator, basic_string::const_iterator</emphasis>,
-      <emphasis>[23.*]'s foo::iterator</emphasis>,
-      <emphasis>[27.*]'s foo::*_type</emphasis>,
+   <para><emphasis>21.1.3.1 [lib.char.traits.specializations.char]/3,4</emphasis>,
+      <emphasis>21.1.3.2 [lib.char.traits.specializations.wchar.t]/2</emphasis>,
+      <emphasis>21.3 [lib.basic.string]/6 basic_string::iterator,
+      basic_string::const_iterator</emphasis>,
+      <emphasis>23.* [lib.containers]'s foo::iterator</emphasis>,
+      <emphasis>27.* [lib.input.output]'s foo::*_type</emphasis>,
       <emphasis>others...</emphasis>
       Nope, these types are called implementation-defined because you
       shouldn't be taking advantage of their underlying types.  Listing them
       here would defeat the purpose.  :-)
    </para>
-   <para><emphasis>[21.1.3.1]/5</emphasis> I don't really know about
-      the <type>mbstate_t</type> stuff... see
+   <para><emphasis>21.1.3.1 [lib.char.traits.specializations.char]/5</emphasis>
+      I don't really know about the <type>mbstate_t</type> stuff... see
       the <link linkend="std.localization.facet.codecvt"><code>codecvt</code>
       notes</link> for what does exist.
    </para>
-   <para><emphasis>[22.*]</emphasis> Anything and everything we have on locale
-      implementation will be described under
+   <para><emphasis>22.* [lib.localization]</emphasis> Anything and everything
+      we have on locale implementation will be described under
       <link linkend="std.localization.locales.locale">Localization</link>.
    </para>
-   <para><emphasis>[23.*]</emphasis> All of the containers in this clause
-     define <type>size_type</type> as <type>std::size_t</type> and
+   <para><emphasis>23.* [lib.containers]</emphasis> All of the containers in
+     this clause define <type>size_type</type> as <type>std::size_t</type> and
      <type>difference_type</type> as <type>std::ptrdiff_t</type>.
    </para>
-   <para><emphasis>[26.2.8]/9</emphasis> I have no idea what
-      <code>complex&lt;T&gt;</code>'s <code>pow(0,0)</code> returns.
+   <para><emphasis>26.2.8 [lib.complex.transcendentals/9</emphasis> I have no
+      idea what <code>complex&lt;T&gt;</code>'s <code>pow(0,0)</code> returns.
    </para>
-   <para><emphasis>[27.4.2.4]/2</emphasis> Calling
+   <para><emphasis>27.4.2.4 [lib.ios.members.static/2</emphasis> Calling
       <code>std::ios_base::sync_with_stdio</code> after I/O has already been
       performed on the standard stream objects will
       flush the buffers, and <!-- this line might go away -->
@@ -1142,18 +1146,19 @@ mainline GCC, not in any particular release.
       on the <code>--enable-libio</code> choice:  for stdio, if the written
       data is already in the stdio buffer, the data may be completely safe!
    </para>
-   <para><emphasis>[27.6.1.1.2]</emphasis>,
-      <emphasis>[27.6.2.3]</emphasis> The I/O sentry ctor and dtor can perform
-      additional work than the minimum required.  We are not currently taking
-      advantage of this yet.
+   <para><emphasis>27.6.1.1.2 [lib.istream::sentry]</emphasis>,
+      <emphasis>27.6.2.3 [lib.ostream::sentry]</emphasis> The I/O sentry ctor
+      and dtor can perform additional work than the minimum required. We are
+      not currently taking  advantage of this yet.
    </para>
-   <para><emphasis>[27.7.1.3]/16</emphasis>,
-      <emphasis>[27.8.1.4]/10</emphasis>
+   <para><emphasis>27.7.1.3 [lib.stringbuf.virtuals]/16</emphasis>,
+      <emphasis>27.8.1.4 [lib.filebuf.virtuals]/10</emphasis>
       The effects of <code>pubsetbuf/setbuf</code> are described in the
       <link linkend="std.io">Input and Output</link> chapter.
    </para>
-   <para><emphasis>[27.8.1.4]/16</emphasis> Calling <code>fstream::sync</code> when
-      a get area exists will... whatever <code>fflush()</code> does, I think.
+   <para><emphasis>27.8.1.4 [lib.filebuf.virtuals]/16</emphasis> Calling
+      <code>fstream::sync</code> when a get area exists will... whatever
+      <code>fflush()</code> does, I think.
    </para>
 
 </section>

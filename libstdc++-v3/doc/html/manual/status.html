@@ -69,61 +69,65 @@ mainline GCC, not in any particular release.
      For each entry, we give the section number of the standard, when
      applicable.  This list is probably incomplet and inkorrekt.
    </p><p>
-     <span class="emphasis"><em>[1.9]/11 #3</em></span> If <code class="code">isatty(3)</code> is true, then
-      interactive stream support is implied.
+     <span class="emphasis"><em>1.9 [intro.execution]/11 #3</em></span> If <code class="code">isatty(3)</code>
+     is true, then interactive stream support is implied.
    </p><p>
-     <span class="emphasis"><em>[17.4.4.5]</em></span> Non-reentrant functions are probably best
-      discussed in the various sections on multithreading (see above).
-   </p><p><span class="emphasis"><em>[18.1]/4</em></span> The type of <code class="code">NULL</code> is described
-      under <a class="link" href="support.html#std.support.types.null" title="NULL">Support</a>.
-   </p><p><span class="emphasis"><em>[18.3]/8</em></span> Even though it's listed in the library
-      sections, libstdc++ has zero control over what the cleanup code hands
-      back to the runtime loader.  Talk to the compiler people.  :-)
-   </p><p><span class="emphasis"><em>[18.4.2.1]/5</em></span> (bad_alloc),
-      <span class="emphasis"><em>[18.5.2]/5</em></span> (bad_cast),
-      <span class="emphasis"><em>[18.5.3]/5</em></span> (bad_typeid),
-      <span class="emphasis"><em>[18.6.1]/8</em></span> (exception),
-      <span class="emphasis"><em>[18.6.2.1]/5</em></span> (bad_exception):  The <code class="code">what()</code>
-      member function of class <code class="code">std::exception</code>, and these other
-      classes publicly derived from it, returns the name of the
+     <span class="emphasis"><em>17.4.4.5 [lib.reentrancy]</em></span> Non-reentrant functions are
+     probably best discussed in the various sections on multithreading (see above).
+   </p><p><span class="emphasis"><em>18.1 [lib.support.types]/4</em></span> The type of
+      <code class="code">NULL</code> is described under
+      <a class="link" href="support.html#std.support.types.null" title="NULL">Support</a>.
+   </p><p><span class="emphasis"><em>18.3 [lib.support.start.term]/8</em></span> Even though it's
+      listed in the library sections, libstdc++ has zero control over what the
+      cleanup code hands back to the runtime loader.  Talk to the compiler people.
+      :-)
+   </p><p><span class="emphasis"><em>18.4.2.1 [lib.bad.alloc]/5</em></span> (bad_alloc),
+      <span class="emphasis"><em>18.5.2 [lib.bad.cast]/5</em></span> (bad_cast),
+      <span class="emphasis"><em>18.5.3 [lib.bad.typeid]/5</em></span> (bad_typeid),
+      <span class="emphasis"><em>18.6.1 [lib.exception]/8</em></span> (exception),
+      <span class="emphasis"><em>18.6.2.1 [lib.bad.exception]/5</em></span> (bad_exception):
+      The <code class="code">what()</code> member function of class <code class="code">std::exception</code>,
+      and these other classes publicly derived from it, returns the name of the
       class, e.g. <code class="literal">"std::bad_alloc"</code>.
-   </p><p><span class="emphasis"><em>[18.5.1]/7</em></span> The return value of
+   </p><p><span class="emphasis"><em>18.5.1 [lib.type.info]/7</em></span> The return value of
       <code class="code">std::type_info::name()</code> is the mangled type name.
       You will need to call <code class="code">c++filt</code> and pass the names as
       command-line parameters to demangle them, or call a
       <a class="link" href="ext_demangling.html" title="Chapter 28. Demangling">runtime demangler function</a>.
-   </p><p><span class="emphasis"><em>[20.1.5]/5</em></span> <span class="emphasis"><em>"Implementors are encouraged to
-      supply libraries that can accept allocators that encapsulate more
-      general memory models and that support non-equal instances.  In such
-      implementations, any requirements imposed on allocators by containers
-      beyond those requirements that appear in Table 32, and the semantics
-      of containers and algorithms when allocator instances compare
-      non-equal, are implementation-defined."</em></span>  There is experimental
-      support for non-equal allocators in the standard containers in C++98
-      mode. There are no additional requirements on allocators. It is undefined
-      behaviour to swap two containers if their allocators are not equal.
-   </p><p><span class="emphasis"><em>[21.1.3.1]/3,4</em></span>,
-      <span class="emphasis"><em>[21.1.3.2]/2</em></span>,
-      <span class="emphasis"><em>[21.3]/6 basic_string::iterator, basic_string::const_iterator</em></span>,
-      <span class="emphasis"><em>[23.*]'s foo::iterator</em></span>,
-      <span class="emphasis"><em>[27.*]'s foo::*_type</em></span>,
+   </p><p><span class="emphasis"><em>20.1.5 [lib.allocator.requirements]/5</em></span>
+      <span class="emphasis"><em>"Implementors are encouraged to supply libraries that can
+      accept allocators that encapsulate more general memory models and that
+      support non-equal instances.  In such implementations, any requirements
+      imposed on allocators by containers beyond those requirements that appear
+      in Table 32, and the semantics of containers and algorithms when allocator
+      instances compare non-equal, are implementation-defined."</em></span>
+      There is experimental support for non-equal allocators in the standard
+      containers in C++98  mode. There are no additional requirements on
+      allocators. It is undefined behaviour to swap two containers if their
+      allocators are not equal.
+   </p><p><span class="emphasis"><em>21.1.3.1 [lib.char.traits.specializations.char]/3,4</em></span>,
+      <span class="emphasis"><em>21.1.3.2 [lib.char.traits.specializations.wchar.t]/2</em></span>,
+      <span class="emphasis"><em>21.3 [lib.basic.string]/6 basic_string::iterator,
+      basic_string::const_iterator</em></span>,
+      <span class="emphasis"><em>23.* [lib.containers]'s foo::iterator</em></span>,
+      <span class="emphasis"><em>27.* [lib.input.output]'s foo::*_type</em></span>,
       <span class="emphasis"><em>others...</em></span>
       Nope, these types are called implementation-defined because you
       shouldn't be taking advantage of their underlying types.  Listing them
       here would defeat the purpose.  :-)
-   </p><p><span class="emphasis"><em>[21.1.3.1]/5</em></span> I don't really know about
-      the <span class="type">mbstate_t</span> stuff... see
+   </p><p><span class="emphasis"><em>21.1.3.1 [lib.char.traits.specializations.char]/5</em></span>
+      I don't really know about the <span class="type">mbstate_t</span> stuff... see
       the <a class="link" href="facets.html#std.localization.facet.codecvt" title="codecvt"><code class="code">codecvt</code>
       notes</a> for what does exist.
-   </p><p><span class="emphasis"><em>[22.*]</em></span> Anything and everything we have on locale
-      implementation will be described under
+   </p><p><span class="emphasis"><em>22.* [lib.localization]</em></span> Anything and everything
+      we have on locale implementation will be described under
       <a class="link" href="localization.html#std.localization.locales.locale" title="locale">Localization</a>.
-   </p><p><span class="emphasis"><em>[23.*]</em></span> All of the containers in this clause
-     define <span class="type">size_type</span> as <span class="type">std::size_t</span> and
+   </p><p><span class="emphasis"><em>23.* [lib.containers]</em></span> All of the containers in
+     this clause define <span class="type">size_type</span> as <span class="type">std::size_t</span> and
      <span class="type">difference_type</span> as <span class="type">std::ptrdiff_t</span>.
-   </p><p><span class="emphasis"><em>[26.2.8]/9</em></span> I have no idea what
-      <code class="code">complex&lt;T&gt;</code>'s <code class="code">pow(0,0)</code> returns.
-   </p><p><span class="emphasis"><em>[27.4.2.4]/2</em></span> Calling
+   </p><p><span class="emphasis"><em>26.2.8 [lib.complex.transcendentals/9</em></span> I have no
+      idea what <code class="code">complex&lt;T&gt;</code>'s <code class="code">pow(0,0)</code> returns.
+   </p><p><span class="emphasis"><em>27.4.2.4 [lib.ios.members.static/2</em></span> Calling
       <code class="code">std::ios_base::sync_with_stdio</code> after I/O has already been
       performed on the standard stream objects will
       flush the buffers, and 
@@ -131,16 +135,17 @@ mainline GCC, not in any particular release.
       the previously-written I/O is destroyed in this process depends mostly
       on the <code class="code">--enable-libio</code> choice:  for stdio, if the written
       data is already in the stdio buffer, the data may be completely safe!
-   </p><p><span class="emphasis"><em>[27.6.1.1.2]</em></span>,
-      <span class="emphasis"><em>[27.6.2.3]</em></span> The I/O sentry ctor and dtor can perform
-      additional work than the minimum required.  We are not currently taking
-      advantage of this yet.
-   </p><p><span class="emphasis"><em>[27.7.1.3]/16</em></span>,
-      <span class="emphasis"><em>[27.8.1.4]/10</em></span>
+   </p><p><span class="emphasis"><em>27.6.1.1.2 [lib.istream::sentry]</em></span>,
+      <span class="emphasis"><em>27.6.2.3 [lib.ostream::sentry]</em></span> The I/O sentry ctor
+      and dtor can perform additional work than the minimum required. We are
+      not currently taking  advantage of this yet.
+   </p><p><span class="emphasis"><em>27.7.1.3 [lib.stringbuf.virtuals]/16</em></span>,
+      <span class="emphasis"><em>27.8.1.4 [lib.filebuf.virtuals]/10</em></span>
       The effects of <code class="code">pubsetbuf/setbuf</code> are described in the
       <a class="link" href="io.html" title="Chapter 13.  Input and Output">Input and Output</a> chapter.
-   </p><p><span class="emphasis"><em>[27.8.1.4]/16</em></span> Calling <code class="code">fstream::sync</code> when
-      a get area exists will... whatever <code class="code">fflush()</code> does, I think.
+   </p><p><span class="emphasis"><em>27.8.1.4 [lib.filebuf.virtuals]/16</em></span> Calling
+      <code class="code">fstream::sync</code> when a get area exists will... whatever
+      <code class="code">fflush()</code> does, I think.
    </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.2011"></a>C++ 2011</h3></div></div></div><p>
 <a id="status.iso.200x"></a> 
 This table is based on the table of contents of ISO/IEC
