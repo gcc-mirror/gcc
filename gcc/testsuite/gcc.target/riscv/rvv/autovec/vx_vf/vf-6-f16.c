@@ -4,3 +4,4 @@
 #include "vf-5-f16.c"
 
 /* { dg-final { scan-assembler-not {vfmin.vf} } } */
+/* { dg-final { scan-assembler-not {vfmax.vf} } } */
