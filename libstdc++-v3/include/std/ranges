@@ -51,6 +51,7 @@
 #include <utility>
 #include <variant>
 #endif
+#include <bits/binders.h>
 #include <bits/ranges_util.h>
 #include <bits/refwrap.h>
 
@@ -1047,14 +1048,15 @@ namespace views::__adaptor
   template<typename _Adaptor, typename... _Args>
     struct _Partial : _RangeAdaptorClosure<_Partial<_Adaptor, _Args...>>
     {
-      tuple<_Args...> _M_args;
+      using _Binder = _Bind_back_t<_Adaptor, _Args...>;
+      [[no_unique_address]] _Binder _M_binder;
 
       // First parameter is to ensure this constructor is never used
       // instead of the copy/move constructor.
       template<typename... _Ts>
 	constexpr
 	_Partial(int, _Ts&&... __args)
-	  : _M_args(std::forward<_Ts>(__args)...)
+	  : _M_binder(0, _Adaptor(), std::forward<_Ts>(__args)...)
 	{ }
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
@@ -1065,75 +1067,21 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(this _Self&& __self, _Range&& __r)
 	{
-	  auto __forwarder = [&__r] (auto&&... __args) {
-	    return _Adaptor{}(std::forward<_Range>(__r),
-			      std::forward<decltype(__args)>(__args)...);
-	  };
-	  return std::apply(__forwarder, __like_t<_Self, _Partial>(__self)._M_args);
+	  return _Binder::_S_call(__like_t<_Self, _Partial>(__self)._M_binder,
+				  std::forward<_Range>(__r));
 	}
 #else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
 	operator()(_Range&& __r) const &
-	{
-	  auto __forwarder = [&__r] (const auto&... __args) {
-	    return _Adaptor{}(std::forward<_Range>(__r), __args...);
-	  };
-	  return std::apply(__forwarder, _M_args);
-	}
+	{ return _Binder::_S_call(_M_binder, std::forward<_Range>(__r)); }
 
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, _Args...>
 	constexpr auto
 	operator()(_Range&& __r) &&
-	{
-	  auto __forwarder = [&__r] (auto&... __args) {
-	    return _Adaptor{}(std::forward<_Range>(__r), std::move(__args)...);
-	  };
-	  return std::apply(__forwarder, _M_args);
-	}
-
-      template<typename _Range>
-	constexpr auto
-	operator()(_Range&& __r) const && = delete;
-#endif
-    };
-
-  // A lightweight specialization of the above primary template for
-  // the common case where _Adaptor accepts a single extra argument.
-  template<typename _Adaptor, typename _Arg>
-    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure<_Partial<_Adaptor, _Arg>>
-    {
-      _Arg _M_arg;
-
-      template<typename _Tp>
-	constexpr
-	_Partial(int, _Tp&& __arg)
-	  : _M_arg(std::forward<_Tp>(__arg))
-	{ }
-
-#if __cpp_explicit_this_parameter
-      template<typename _Self, typename _Range>
-	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Arg>>
-	constexpr auto
-	operator()(this _Self&& __self, _Range&& __r)
-	{
-	  return _Adaptor{}(std::forward<_Range>(__r),
-			    __like_t<_Self, _Partial>(__self)._M_arg);
-	}
-#else
-      template<typename _Range>
-	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
-	constexpr auto
-	operator()(_Range&& __r) const &
-	{ return _Adaptor{}(std::forward<_Range>(__r), _M_arg); }
-
-      template<typename _Range>
-	requires __adaptor_invocable<_Adaptor, _Range, _Arg>
-	constexpr auto
-	operator()(_Range&& __r) &&
-	{ return _Adaptor{}(std::forward<_Range>(__r), std::move(_M_arg)); }
+	{ return _Binder::_S_call(std::move(_M_binder), std::forward<_Range>(__r)); }
 
       template<typename _Range>
 	constexpr auto
@@ -1150,12 +1098,13 @@ namespace views::__adaptor
       && (is_trivially_copy_constructible_v<_Args> && ...)
     struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure<_Partial<_Adaptor, _Args...>>
     {
-      tuple<_Args...> _M_args;
+      using _Binder = _Bind_back_t<_Adaptor, _Args...>;
+      [[no_unique_address]] _Binder _M_binder;
 
       template<typename... _Ts>
 	constexpr
 	_Partial(int, _Ts&&... __args)
-	  : _M_args(std::forward<_Ts>(__args)...)
+	  : _M_binder(0, _Adaptor(), std::forward<_Ts>(__args)...)
 	{ }
 
       // Invoke _Adaptor with arguments __r, const _M_args&... regardless
@@ -1164,36 +1113,7 @@ namespace views::__adaptor
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
 	operator()(_Range&& __r) const
-	{
-	  auto __forwarder = [&__r] (const auto&... __args) {
-	    return _Adaptor{}(std::forward<_Range>(__r), __args...);
-	  };
-	  return std::apply(__forwarder, _M_args);
-	}
-
-      static constexpr bool _S_has_simple_call_op = true;
-    };
-
-  // A lightweight specialization of the above template for the common case
-  // where _Adaptor accepts a single extra argument.
-  template<typename _Adaptor, typename _Arg>
-    requires __adaptor_has_simple_extra_args<_Adaptor, _Arg>
-      && is_trivially_copy_constructible_v<_Arg>
-    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure<_Partial<_Adaptor, _Arg>>
-    {
-      _Arg _M_arg;
-
-      template<typename _Tp>
-	constexpr
-	_Partial(int, _Tp&& __arg)
-	  : _M_arg(std::forward<_Tp>(__arg))
-	{ }
-
-      template<typename _Range>
-	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
-	constexpr auto
-	operator()(_Range&& __r) const
-	{ return _Adaptor{}(std::forward<_Range>(__r), _M_arg); }
+	{ return _Binder::_S_call(_M_binder, std::forward<_Range>(__r)); }
 
       static constexpr bool _S_has_simple_call_op = true;
     };

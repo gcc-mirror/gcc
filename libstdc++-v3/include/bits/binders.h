@@ -186,11 +186,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void operator()(_CallArgs&&...) const && = delete;
 #endif
 
-    private:
-      using _BoundArgsStorage
-	// _BoundArgs are required to be move-constructible, so this is valid.
-	= decltype(__make_bound_args<_BoundArgs...>(std::declval<_BoundArgs>()...));
-
       template<typename _Tp, typename... _CallArgs>
 	static constexpr
 	decltype(auto)
@@ -213,6 +208,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 std::forward<_Tp>(__g)._M_bound_args,
 				 std::forward<_CallArgs>(__call_args)...);
 	}
+
+    private:
+      using _BoundArgsStorage
+	// _BoundArgs are required to be move-constructible, so this is valid.
+	= decltype(__make_bound_args<_BoundArgs...>(std::declval<_BoundArgs>()...));
 
       [[no_unique_address]] _Fd _M_fd;
       [[no_unique_address]] _BoundArgsStorage _M_bound_args;
