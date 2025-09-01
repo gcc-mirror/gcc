@@ -1,0 +1,49 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  testjob:
+    runs-on: sourceware-runner
+    outputs:
+      styleoutput: ${{ steps.check_gnu_style.outputs.styleresult }}
+      verifyoutput: ${{ steps.gcc_verify.outputs.verifyresult }}
+    steps:
+      - name: install dependencies
+        run: |
+          echo "Installing node.js"
+          apt-get update
+          apt-get install -qq -y nodejs git python3 python3-git python3-termcolor python3-unidiff
+
+      # Checkout GCC sources, request an history depth of 100,
+      # hopefully sufficient for all patch series (the default is 1)
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - name: check GNU style
+        id: check_gnu_style
+        continue-on-error: true
+        run: |
+          echo "Running check_GNU_style.py"
+          git fetch origin ${FORGEJO_BASE_REF}:${FORGEJO_BASE_REF}
+          for sha in $(git rev-list ${FORGEJO_BASE_REF}..${FORGEJO_SHA})
+          do
+            echo "Checking GNU style for $sha"
+            git show $sha | ./contrib/check_GNU_style.py -
+          done
+          echo "styleresult=pass" | tee -a $FORGEJO_OUTPUT
+
+      - name: gcc-verify
+        id: gcc_verify
+        continue-on-error: true
+        run: |
+          echo "Running gcc-verify check"
+          ./contrib/gcc-changelog/git_check_commit.py ${FORGEJO_BASE_REF}..${FORGEJO_SHA}
+          echo "verifyresult=pass" | tee -a $FORGEJO_OUTPUT
+
+      - name: final-result
+        run: |
+          echo "Computing final result"
+          test "${{ steps.check_gnu_style.outputs.styleresult }}" = "pass"
+          test "${{ steps.gcc_verify.outputs.verifyresult }}" = "pass"
