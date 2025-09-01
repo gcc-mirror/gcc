@@ -1315,12 +1315,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Up>
     constexpr _Tp&&
     get(pair<_Tp, _Up>&& __p) noexcept
-    { return std::move(__p.first); }
+    { return std::forward<_Tp>(__p.first); }
 
   template <typename _Tp, typename _Up>
     constexpr const _Tp&&
     get(const pair<_Tp, _Up>&& __p) noexcept
-    { return std::move(__p.first); }
+    { return std::forward<const _Tp>(__p.first); }
 
   template <typename _Tp, typename _Up>
     constexpr _Tp&
@@ -1335,12 +1335,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Up>
     constexpr _Tp&&
     get(pair<_Up, _Tp>&& __p) noexcept
-    { return std::move(__p.second); }
+    { return std::forward<_Tp>(__p.second); }
 
   template <typename _Tp, typename _Up>
     constexpr const _Tp&&
     get(const pair<_Up, _Tp>&& __p) noexcept
-    { return std::move(__p.second); }
+    { return std::forward<const _Tp>(__p.second); }
 #endif // __glibcxx_tuples_by_type
 
 
