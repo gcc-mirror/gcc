@@ -1,3 +1,16 @@
+2025-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using_exceptions.xml: Update link to
+	Boost's "Exception-Safety"
+	* doc/html/manual/using_exceptions.html: Rebuild.
+
+2025-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++26/debugging.cc [_GLIBCXX_HAVE_SYS_PTRACE_H]: Include
+	<sys/types.h>.
+	(breakpoint) [__i386__ || __x86_64__]: Use "int 0x03" instead of
+	"int3".
+
 2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/119670

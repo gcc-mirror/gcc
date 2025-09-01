@@ -1,3 +1,20 @@
+2025-08-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (alt_ubranch_operator):
+	New predicate.
+	* config/xtensa/xtensa.md (*eqne_in_range):
+	New insn_and_split pattern.
+
+2025-08-31  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (synthesize_add_extended): Prototype.
+	* config/riscv/riscv.cc (synthesize_add_extended): New function.
+	* config/riscv/riscv.md (addsi3): For RV64, try synthesize_add_extended.
+
+2025-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Drop MinGW.
+
 2025-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/121698

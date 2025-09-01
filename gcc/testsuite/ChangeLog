@@ -1,3 +1,39 @@
+2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99709
+	* gfortran.dg/pdt_41.f03: New test.
+
+2025-08-31  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* gcc.target/riscv/add-synthesis-2.c: New test.
+
+2025-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-5-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u16-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u32-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u8-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-5-u8-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-5-u8-from-u64.c: New test.
+
 2025-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/121698

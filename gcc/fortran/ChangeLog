@@ -1,3 +1,13 @@
+2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99709
+	* trans-array.cc (structure_alloc_comps): For the case
+	COPY_ALLOC_COMP, do a deep copy of non-allocatable PDT arrays
+	Suppress the use of 'duplicate_allocatable' for PDT arrays.
+	* trans-expr.cc (conv_dummy_value): When passing to a PDT dummy
+	with the VALUE attribute, do a deep copy to ensure that
+	parameterized components are reallocated.
+
 2025-08-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93330
