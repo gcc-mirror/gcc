@@ -3053,15 +3053,17 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   mask_mode = get_mask_mode (data_mode);
   rtx mask = gen_reg_rtx (mask_mode);
   rtx max_sel = gen_const_vector_dup (sel_mode, nunits);
+  bool overlap = reg_overlap_mentioned_p (target, op1);
+  rtx tmp_target = overlap ? gen_reg_rtx (data_mode) : target;
 
   /* Step 1: generate a mask that should select everything >= nunits into the
    * mask.  */
   expand_vec_cmp (mask, GEU, sel_mod, max_sel);
 
-  /* Step2: gather every op0 values indexed by sel into target,
+  /* Step2: gather every op0 values indexed by sel into TMP_TARGET,
 	    we don't need to care about the result of the element
 	    whose index >= nunits.  */
-  emit_vlmax_gather_insn (target, op0, sel_mod);
+  emit_vlmax_gather_insn (tmp_target, op0, sel_mod);
 
   /* Step3: shift the range from (nunits, max_of_mode] to
 	    [0, max_of_mode - nunits].  */
@@ -3071,7 +3073,10 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 
   /* Step4: gather those into the previously masked-out elements
 	    of target.  */
-  emit_vlmax_masked_gather_mu_insn (target, op1, tmp, mask);
+  emit_vlmax_masked_gather_mu_insn (tmp_target, op1, tmp, mask);
+
+  if (overlap)
+    emit_move_insn (tmp_target, target);
 }
 
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST for RVV.  */
