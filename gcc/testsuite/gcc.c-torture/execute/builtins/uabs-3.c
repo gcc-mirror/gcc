@@ -1,4 +1,4 @@
-/* Test for builtin uabs, ulabs, ullabs, uimaxabs.  Test for __builtin versions. */
+/* Test for builtin uabs, ulabs, ullabs, umaxabs.  Test for __builtin versions. */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 
 #include <limits.h>
@@ -92,28 +92,28 @@ main_test (void)
     abort ();
   if (__builtin_ullabs (__LONG_LONG_MAX__) != __LONG_LONG_MAX__)
     link_error ();
-  if (__builtin_uimaxabs (imax0) != 0)
+  if (__builtin_umaxabs (imax0) != 0)
     abort ();
-  if (__builtin_uimaxabs (0) != 0)
+  if (__builtin_umaxabs (0) != 0)
     link_error ();
-  if (__builtin_uimaxabs (imax1) != 1)
+  if (__builtin_umaxabs (imax1) != 1)
     abort ();
-  if (__builtin_uimaxabs (1) != 1)
+  if (__builtin_umaxabs (1) != 1)
     link_error ();
-  if (__builtin_uimaxabs (imaxm1) != 1)
+  if (__builtin_umaxabs (imaxm1) != 1)
     abort ();
-  if (__builtin_uimaxabs (-1) != 1)
+  if (__builtin_umaxabs (-1) != 1)
     link_error ();
-  if (__builtin_uimaxabs (imaxmin) != INTMAX_MAX)
+  if (__builtin_umaxabs (imaxmin) != INTMAX_MAX)
     abort ();
-  if (__builtin_uimaxabs (imaxmin - 1) != (uintmax_t) 1 + INTMAX_MAX)
+  if (__builtin_umaxabs (imaxmin - 1) != (uintmax_t) 1 + INTMAX_MAX)
     abort ();
-  if (__builtin_uimaxabs (-INTMAX_MAX) != INTMAX_MAX)
+  if (__builtin_umaxabs (-INTMAX_MAX) != INTMAX_MAX)
     link_error ();
-  if (__builtin_uimaxabs (-INTMAX_MAX - 1) != (uintmax_t) 1 + INTMAX_MAX)
+  if (__builtin_umaxabs (-INTMAX_MAX - 1) != (uintmax_t) 1 + INTMAX_MAX)
     link_error ();
-  if (__builtin_uimaxabs (imaxmax) != INTMAX_MAX)
+  if (__builtin_umaxabs (imaxmax) != INTMAX_MAX)
     abort ();
-  if (__builtin_uimaxabs (INTMAX_MAX) != INTMAX_MAX)
+  if (__builtin_umaxabs (INTMAX_MAX) != INTMAX_MAX)
     link_error ();
 }

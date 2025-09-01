@@ -10679,7 +10679,7 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
     case BUILT_IN_UABS:
     case BUILT_IN_ULABS:
     case BUILT_IN_ULLABS:
-    case BUILT_IN_UIMAXABS:
+    case BUILT_IN_UMAXABS:
       return fold_builtin_abs (loc, arg0, type);
 
     CASE_FLT_FN (BUILT_IN_CONJ):
