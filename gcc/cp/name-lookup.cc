@@ -9273,6 +9273,9 @@ push_namespace (tree name, bool make_inline)
 		  gcc_checking_assert (!(tree)slot || (tree)slot == ctx);
 		  slot = ctx;
 		}
+
+	      if (module_purview_p ())
+		DECL_MODULE_PURVIEW_P (ctx) = true;
 	    }
 	}
 
