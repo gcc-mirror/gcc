@@ -3016,7 +3016,7 @@ autovectorize_vector_modes (vector_modes *modes, bool)
     machine_mode mode;
     while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
      {
-	if (vls_mode_valid_p (mode))
+	if (vls_mode_valid_p (mode, /* allow_up_to_lmul_8 */ false))
 	  modes->safe_push (mode);
 
 	i++;
@@ -5181,26 +5181,27 @@ cmp_lmul_gt_one (machine_mode mode)
    Then we can have the condition for VLS mode in fixed-vlmax, aka:
      PRECISION (VLSmode) < VLEN / (64 / PRECISION(VLS_inner_mode)).  */
 bool
-vls_mode_valid_p (machine_mode vls_mode)
+vls_mode_valid_p (machine_mode vls_mode, bool allow_up_to_lmul_8)
 {
   if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
 
   if (rvv_vector_bits == RVV_VECTOR_BITS_SCALABLE)
     {
-      if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL
-	  && !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
-			 GET_MODE_PRECISION (vls_mode)))
-	/* We enable VLS modes which are aligned with TARGET_MAX_LMUL and
-	   BITS_PER_RISCV_VECTOR.
+      if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL)
+	return true;
+      if (allow_up_to_lmul_8)
+	return true;
+      /* We enable VLS modes which are aligned with TARGET_MAX_LMUL and
+	 BITS_PER_RISCV_VECTOR.
 
-	   e.g. When TARGET_MAX_LMUL = 1 and BITS_PER_RISCV_VECTOR = (128,128).
-	   We enable VLS modes have fixed size <= 128bit.  Since ordered_p is
-	   false between VLA modes with size = (128, 128) bits and VLS mode
-	   with size = 128 bits, we will end up with multiple ICEs in
-	   middle-end generic codes.  */
-	return false;
-      return true;
+	 e.g. When TARGET_MAX_LMUL = 1 and BITS_PER_RISCV_VECTOR = (128,128).
+	 We enable VLS modes have fixed size <= 128bit.  Since ordered_p is
+	 false between VLA modes with size = (128, 128) bits and VLS mode
+	 with size = 128 bits, we will end up with multiple ICEs in
+	 middle-end generic codes.  */
+      return !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
+			 GET_MODE_PRECISION (vls_mode));
     }
 
   if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL)
