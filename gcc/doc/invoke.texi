@@ -15651,7 +15651,7 @@ If omitted, it defaults to @file{fbdata.afdo} in the current directory.
 
 Producing an AutoFDO profile data file requires running your program
 with the @command{perf} utility on a supported GNU/Linux target system.
-For more information, see @uref{https://perf.wiki.kernel.org/}.
+For more information, see @uref{https://perfwiki.github.io/main/}.
 
 E.g.
 @smallexample
