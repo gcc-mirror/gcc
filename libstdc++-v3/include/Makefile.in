@@ -544,6 +544,7 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_ios.tcc \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_string.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_string.tcc \
+@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/binders.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/charconv.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/chrono.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/chrono_io.h \
