@@ -110,7 +110,7 @@ else version (Posix)
         else version (PPC)
         {
             import core.sys.darwin.mach.thread_act :
-             PPC_THREAD_STATE32, PPC_THREAD_STATE32_COUNT, ppc_thread_state32_t;
+             PPC_THREAD_STATE, PPC_THREAD_STATE_COUNT, ppc_thread_state_t;
         }
         else version (PPC64)
         {
