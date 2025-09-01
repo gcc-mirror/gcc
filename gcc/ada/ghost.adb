@@ -561,22 +561,19 @@ package body Ghost is
                --  within an assignment statement whose target is a ghost
                --  variable that is assertion-level-dependent on E.
 
-               if not Is_Assertion_Level_Dependent (Id_Level, Assignee_Level)
+               if not Is_Assertion_Level_Dependent (Assignee_Level, Id_Level)
                then
-                  Error_Msg_Sloc := Sloc (Ghost_Ref);
-
                   Error_Msg_N (Assertion_Level_Error_Msg, Ghost_Ref);
                   Error_Msg_Name_1 := Chars (Id_Level);
-                  Error_Msg_NE ("\& has assertion level %", Ghost_Ref, Id);
+                  Error_Msg_N ("\& has assertion level %", Ghost_Ref);
                   Error_Msg_Name_1 := Chars (Assignee_Level);
                   Error_Msg_Node_2 := Assignee;
-                  Error_Msg_NE
-                    ("\& is modifying & with %", Ghost_Ref, Id);
-                  Error_Msg_Name_1 := Chars (Assignee_Level);
+                  Error_Msg_NE ("\& is modifying & with %", Ghost_Ref, Id);
+                  Error_Msg_Name_1 := Chars (Id_Level);
                   Error_Msg_NE
                     ("\assertion level of & should depend on %",
                      Ghost_Ref,
-                     Id);
+                     Assignee);
                end if;
             end Check_Assignment_Levels;
 
