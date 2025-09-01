@@ -148,7 +148,6 @@ GRS_OBJS = \
 	rust/rust-ice-finalizer.o \
     rust/rust-late-name-resolver-2.0.o \
 	rust/rust-immutable-name-resolution-context.o \
-    rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-resolve-builtins.o \
     rust/rust-forever-stack.o \

@@ -27,7 +27,6 @@
 #include "rust-macro.h"
 #include "rust-parse.h"
 #include "rust-cfg-strip.h"
-#include "rust-early-name-resolver.h"
 #include "rust-proc-macro.h"
 #include "rust-token-tree-desugar.h"
 

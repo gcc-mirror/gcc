@@ -22,7 +22,6 @@
 #include "rust-ast.h"
 #include "rust-cfg-strip.h"
 #include "rust-diagnostics.h"
-#include "rust-early-name-resolver.h"
 #include "rust-expr.h"
 #include "rust-lex.h"
 #include "rust-macro-builtins.h"
