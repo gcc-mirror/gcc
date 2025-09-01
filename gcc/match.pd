@@ -3695,6 +3695,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       bool c2_is_type_precision_p = c2 == prec;
      }
      (if (widen_prec > prec && c2_is_type_precision_p && c4_is_max_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	WT x = (WT)a * (WT)b;
+	NT hi = x >> (sizeof(NT) * 8);
+	NT lo = (NT)x;
+	return lo | -!!hi;
+      } while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
+   (convert1?
+    (bit_ior (convert? (negate (convert (ne (convert (rshift @3 INTEGER_CST@2))
+					    integer_zerop))))
+	     (convert (widen_mult:c@3 (convert@4 @0)
+				      (convert@5 @1)))))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      unsigned cvt4_prec = TYPE_PRECISION (TREE_TYPE (@4));
+      unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
+      bool widen_mult_p = cvt4_prec == cvt5_prec && widen_prec == cvt5_prec * 2;
+
+      unsigned c2 = tree_to_uhwi (@2);
+      unsigned prec = TYPE_PRECISION (type);
+      bool c2_is_type_precision_p = c2 == prec;
+     }
+     (if (widen_mult_p && c2_is_type_precision_p)))))
 )
 
 /* The boundary condition for case 10: IMM = 1:

@@ -6529,6 +6529,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case BIT_IOR_EXPR:
+	      match_unsigned_saturation_mul (&gsi, as_a<gassign *> (stmt));
 	      match_saturation_add_with_assign (&gsi, as_a<gassign *> (stmt));
 	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
 	      /* fall-through  */
