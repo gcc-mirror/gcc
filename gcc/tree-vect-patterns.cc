@@ -6032,16 +6032,17 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
      This is null if the operation is unconditional.  */
   tree mask = vect_get_load_store_mask (stmt_info);
 
+  /* DR analysis nailed down the vector type for the access.  */
+  tree gs_vectype = STMT_VINFO_VECTYPE (stmt_info);
+
   /* Make sure that the target supports an appropriate internal
      function for the gather/scatter operation.  */
   gather_scatter_info gs_info;
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info)
+  if (!vect_check_gather_scatter (stmt_info, gs_vectype, loop_vinfo, &gs_info)
       || gs_info.ifn == IFN_LAST)
     return NULL;
 
   /* Convert the mask to the right form.  */
-  tree gs_vectype = get_vectype_for_scalar_type (loop_vinfo,
-						 gs_info.element_type);
   if (mask)
     mask = vect_convert_mask_for_vectype (mask, gs_vectype, stmt_info,
 					  loop_vinfo);
@@ -6103,8 +6104,7 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   stmt_vec_info pattern_stmt_info = loop_vinfo->add_stmt (pattern_stmt);
   loop_vinfo->move_dr (pattern_stmt_info, stmt_info);
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  *type_out = vectype;
+  *type_out = gs_vectype;
   vect_pattern_detected ("gather/scatter pattern", stmt_info->stmt);
 
   return pattern_stmt;

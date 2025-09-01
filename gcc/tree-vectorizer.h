@@ -2622,8 +2622,8 @@ extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
 				      tree, int, internal_fn *, tree *,
 				      vec<int> * = nullptr);
-extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
-				       gather_scatter_info *,
+extern bool vect_check_gather_scatter (stmt_vec_info, tree,
+				       loop_vec_info, gather_scatter_info *,
 				       vec<int> * = nullptr);
 extern void vect_describe_gather_scatter_call (stmt_vec_info,
 					       gather_scatter_info *);

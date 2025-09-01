@@ -4554,12 +4554,13 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 }
 
 /* Return true if a non-affine read or write in STMT_INFO is suitable for a
-   gather load or scatter store.  Describe the operation in *INFO if so.
-   If it is suitable and ELSVALS is nonzero store the supported else values
-   in the vector it points to.  */
+   gather load or scatter store with VECTYPE.  Describe the operation in *INFO
+   if so.  If it is suitable and ELSVALS is nonzero store the supported else
+   values in the vector it points to.  */
 
 bool
-vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
+vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
+			   loop_vec_info loop_vinfo,
 			   gather_scatter_info *info, vec<int> *elsvals)
 {
   HOST_WIDE_INT scale = 1;
@@ -4568,7 +4569,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
   tree decl = NULL_TREE, base, off;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree memory_type = TREE_TYPE (DR_REF (dr));
   machine_mode pmode;
   int punsignedp, reversep, pvolatilep = 0;
@@ -5273,7 +5273,7 @@ vect_analyze_data_refs (vec_info *vinfo, bool *fatal)
       if (gatherscatter != SG_NONE)
 	{
 	  gather_scatter_info gs_info;
-	  if (!vect_check_gather_scatter (stmt_info,
+	  if (!vect_check_gather_scatter (stmt_info, vectype,
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (vinfo,

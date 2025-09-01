@@ -891,7 +891,9 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
 	{
 	  gather_scatter_info gs_info;
-	  if (!vect_check_gather_scatter (stmt_vinfo, loop_vinfo, &gs_info))
+	  if (!vect_check_gather_scatter (stmt_vinfo,
+					  STMT_VINFO_VECTYPE (stmt_vinfo),
+					  loop_vinfo, &gs_info))
 	    gcc_unreachable ();
 	  opt_result res
 	    = process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
@@ -1738,7 +1740,8 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info, tree vectype,
 				    unsigned int group_size,
 				    bool single_element_p)
 {
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info, elsvals)
+  if (!vect_check_gather_scatter (stmt_info, vectype,
+				  loop_vinfo, gs_info, elsvals)
       || gs_info->ifn == IFN_LAST)
     {
       if (!vect_truncate_gather_scatter_offset (stmt_info, vectype, loop_vinfo,

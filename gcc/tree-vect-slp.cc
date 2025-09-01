@@ -641,7 +641,7 @@ vect_slp_child_index_for_operand (const gimple *stmt, int op,
    swapping operands of father node of this one, return 1; if everything is
    ok return 0.  */
 static int
-vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
+vect_get_and_check_slp_defs (vec_info *vinfo, tree vectype, unsigned char swap,
 			     bool *skip_args,
 			     vec<stmt_vec_info> stmts, unsigned stmt_num,
 			     vec<slp_oprnd_info> *oprnds_info)
@@ -711,7 +711,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	{
 	  gcc_assert (STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 	  if (!is_a <loop_vec_info> (vinfo)
-	      || !vect_check_gather_scatter (stmt_info,
+	      || !vect_check_gather_scatter (stmt_info, vectype,
 					     as_a <loop_vec_info> (vinfo),
 					     first ? &oprnd_info->first_gs_info
 					     : &gs_info))
@@ -2618,7 +2618,8 @@ out:
   slp_oprnd_info oprnd_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
-      int res = vect_get_and_check_slp_defs (vinfo, swap[i], skip_args,
+      int res = vect_get_and_check_slp_defs (vinfo, vectype,
+					     swap[i], skip_args,
 					     stmts, i, &oprnds_info);
       if (res != 0)
 	matches[(res == -1) ? 0 : i] = false;
