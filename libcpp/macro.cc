@@ -733,6 +733,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 		   "%<__COUNTER__%> expanded inside directive with "
 		   "%<-fdirectives-only%>");
       number = pfile->counter++;
+      if (number == 0x80000000U)
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "%<__COUNTER__%> expanded more than 2147483648 times");
       break;
 
     case BT_HAS_ATTRIBUTE:
