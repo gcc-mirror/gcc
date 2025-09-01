@@ -188,8 +188,11 @@ namespace __detail
 	  case grep:
 	  case egrep:
 	    return __f;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch" // do not warn about non-enumerator
 	  case _FlagT(0):
 	    return __f | ECMAScript;
+#pragma GCC diagnostic pop
 	  default:
 	    std::__throw_regex_error(_S_grammar, "conflicting grammar options");
 	  }
