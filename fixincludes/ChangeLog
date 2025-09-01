@@ -1,3 +1,14 @@
+2025-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/118009
+	PR bootstrap/119089
+	* inclhack.def (pthread_incomplete_struct_argument): Add bypass.
+	* fixincl.tpl: Remove reference to svn in comment.
+	* fixincl.x: Regenerate.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.
