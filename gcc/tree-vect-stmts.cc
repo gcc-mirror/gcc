@@ -12601,10 +12601,8 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
-  if (! STMT_VINFO_DATA_REF (stmt_info))
-    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
-  else
-    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
+  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
+  STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
@@ -12650,6 +12648,8 @@ vect_analyze_stmt (vec_info *vinfo,
 					      stmt_info, NULL, node,
 					      cost_vec))));
 
+  STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
+
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
@@ -12693,10 +12693,7 @@ vect_transform_stmt (vec_info *vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing statement: %G", stmt_info->stmt);
 
-  if (! STMT_VINFO_DATA_REF (stmt_info))
-    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
-  else
-    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
+  STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
 
   switch (SLP_TREE_TYPE (slp_node))
     {
