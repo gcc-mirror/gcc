@@ -283,4 +283,6 @@
 #undef SUBTARGET_DRIVER_SELF_SPECS
 #define SUBTARGET_DRIVER_SELF_SPECS	\
 "%{m64:-maix64} %<m64",			\
-"%{m32:-maix32} %<m32"
+"%{m32:-maix32} %<m32",			\
+"%{fstack-protector*: %<fstack-protector* \
+   %estack-protector not supported on AIX}"
