@@ -10029,10 +10029,12 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo, basic_block exit_bb,
     {
       /* Emit:
 
-	 SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>
+	 SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN - (BIAS + 1)>
 
-	 where VEC_LHS is the vectorized live-out result and MASK is
-	 the loop mask for the final iteration.  */
+	 where VEC_LHS is the vectorized live-out result, LEN is the length of
+	 the vector, BIAS is the load-store bias.  The bias should not be used
+	 at all since we are not using load/store operations, but LEN will be
+	 REALLEN + BIAS, so subtract it to get to the correct position.  */
       gcc_assert (SLP_TREE_LANES (slp_node) == 1);
       gimple_seq tem = NULL;
       gimple_stmt_iterator gsi = gsi_last (tem);
@@ -10041,18 +10043,18 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo, basic_block exit_bb,
 				    1, vectype, 0, 1);
       gimple_seq_add_seq (&stmts, tem);
 
-      /* BIAS - 1.  */
+      /* BIAS + 1.  */
       signed char biasval = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-      tree bias_minus_one
-	= int_const_binop (MINUS_EXPR,
+      tree bias_plus_one
+	= int_const_binop (PLUS_EXPR,
 			   build_int_cst (TREE_TYPE (len), biasval),
 			   build_one_cst (TREE_TYPE (len)));
 
-      /* LAST_INDEX = LEN + (BIAS - 1).  */
-      tree last_index = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (len),
-				     len, bias_minus_one);
+      /* LAST_INDEX = LEN - (BIAS + 1).  */
+      tree last_index = gimple_build (&stmts, MINUS_EXPR, TREE_TYPE (len),
+				     len, bias_plus_one);
 
-      /* SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>.  */
+      /* SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN - (BIAS + 1)>.  */
       tree scalar_res
 	= gimple_build (&stmts, CFN_VEC_EXTRACT, TREE_TYPE (vectype),
 			vec_lhs_phi, last_index);
