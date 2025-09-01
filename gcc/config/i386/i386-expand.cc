@@ -20826,7 +20826,8 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
   rtx rperm[8], vperm;
   unsigned i;
 
-  if (!TARGET_AVX || d->vmode != V8SFmode || !d->one_operand_p)
+  if (!TARGET_AVX || !d->one_operand_p
+      || (d->vmode != V8SImode && d->vmode != V8SFmode))
     return false;
 
   /* We can only permute within the 128-bit lane.  */
@@ -20856,7 +20857,15 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
 
   vperm = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, rperm));
   vperm = force_reg (V8SImode, vperm);
-  emit_insn (gen_avx_vpermilvarv8sf3 (d->target, d->op0, vperm));
+  rtx target = d->target;
+  rtx op0 = d->op0;
+  if (d->vmode == V8SImode)
+    {
+      target = lowpart_subreg (V8SFmode, target, V8SImode);
+      op0 = lowpart_subreg (V8SFmode, op0, V8SImode);
+    }
+
+  emit_insn (gen_avx_vpermilvarv8sf3 (target, op0, vperm));
 
   return true;
 }

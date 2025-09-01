@@ -20603,6 +20603,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
   switch (mode)
     {
     case E_V8DFmode:
+    case E_V8DImode:
       /* In the 512-bit DFmode case, we can only move elements within
          a 128-bit lane.  First fill the second part of the mask,
 	 then fallthru.  */
@@ -20621,6 +20622,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V4DFmode:
+    case E_V4DImode:
       /* In the 256-bit DFmode case, we can only move elements within
          a 128-bit lane.  */
       for (i = 0; i < 2; ++i)
@@ -20638,6 +20640,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       break;
 
     case E_V16SFmode:
+    case E_V16SImode:
       /* In 512 bit SFmode case, permutation in the upper 256 bits
 	 must mirror the permutation in the lower 256-bits.  */
       for (i = 0; i < 8; ++i)
@@ -20646,6 +20649,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V8SFmode:
+    case E_V8SImode:
       /* In 256 bit SFmode case, we have full freedom of
          movement within the low 128-bit lane, but the high 128-bit
          lane must mirror the exact same pattern.  */
@@ -20656,7 +20660,9 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V2DFmode:
+    case E_V2DImode:
     case E_V4SFmode:
+    case E_V4SImode:
       /* In the 128-bit case, we've full freedom in the placement of
 	 the elements from the source operand.  */
       for (i = 0; i < nelt; ++i)
