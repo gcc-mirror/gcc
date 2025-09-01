@@ -127,7 +127,7 @@ public:
 	add_any_comma ();
 	fprintf (m_logger->get_stream (),
 		 "%s: " HOST_SIZE_T_PRINT_HEX,
-		 name, (size_t)value);
+		 name, (fmt_size_t)value);
       }
     return *this;
   }
