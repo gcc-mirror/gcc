@@ -4077,8 +4077,7 @@ vect_recog_vector_vector_shift_pattern (vec_info *vinfo,
   lhs = gimple_assign_lhs (last_stmt);
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (TREE_CODE (oprnd0) != SSA_NAME
-      || TREE_CODE (oprnd1) != SSA_NAME
+  if (TREE_CODE (oprnd1) != SSA_NAME
       || TYPE_MODE (TREE_TYPE (oprnd0)) == TYPE_MODE (TREE_TYPE (oprnd1))
       || !INTEGRAL_TYPE_P (TREE_TYPE (oprnd0))
       || !type_has_mode_precision_p (TREE_TYPE (oprnd1))
