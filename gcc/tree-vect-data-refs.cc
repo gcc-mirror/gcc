@@ -5797,8 +5797,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	      to be vector_size.
    BSI - location where the new update stmt is to be placed.
    STMT_INFO - the original scalar memory-access stmt that is being vectorized.
-   BUMP - optional. The offset by which to bump the pointer. If not given,
-	  the offset is assumed to be vector_size.
+   UPDATE - The offset by which to bump the pointer.
 
    Output: Return NEW_DATAREF_PTR as illustrated above.
 
@@ -5807,18 +5806,13 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 tree
 bump_vector_ptr (vec_info *vinfo,
 		 tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
-		 stmt_vec_info stmt_info, tree bump)
+		 stmt_vec_info stmt_info, tree update)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree update = TYPE_SIZE_UNIT (vectype);
   gimple *incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
-
-  if (bump)
-    update = bump;
 
   if (TREE_CODE (dataref_ptr) == SSA_NAME)
     new_dataref_ptr = copy_ssa_name (dataref_ptr);
