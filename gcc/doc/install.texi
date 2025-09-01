@@ -4100,7 +4100,8 @@ and that only ROCm 6.4.0 or newer is able to execute generic code.
 
 Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
 the device console output for GFX10 and GFX11 devices; post-4.5.0
-commit 2ef1a37e7 [Mar 25, 2025] fixes a SIMD math issue).
+commits 2ef1a37e7 [Mar 25, 2025], f13e8e215 [Aug 8, 2025], and
+bd409f3c1 [Aug 27, 2025] fix SIMD math issues).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
