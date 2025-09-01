@@ -3304,8 +3304,6 @@ improve_allocation (void)
 	   assigning hard register to allocno A even without spilling
 	   conflicting allocnos.  */
 	continue;
-      auto_bitmap allocnos_to_spill;
-      HARD_REG_SET soft_conflict_regs = {};
       mode = ALLOCNO_MODE (a);
       nwords = ALLOCNO_NUM_OBJECTS (a);
       /* Process each allocno conflicting with A and update the cost
@@ -3331,40 +3329,24 @@ improve_allocation (void)
 	      ALLOCNO_COLOR_DATA (conflict_a)->temp = check;
 	      if ((conflict_hregno = ALLOCNO_HARD_REGNO (conflict_a)) < 0)
 		continue;
-	      auto spill_a = ira_soft_conflict (a, conflict_a);
-	      if (spill_a)
-		{
-		  if (!bitmap_set_bit (allocnos_to_spill,
-				       ALLOCNO_NUM (spill_a)))
-		    continue;
-		  ira_loop_border_costs border_costs (spill_a);
-		  spill_cost = border_costs.spill_inside_loop_cost ();
-		}
+	      spill_cost = ALLOCNO_UPDATED_MEMORY_COST (conflict_a);
+	      k = (ira_class_hard_reg_index
+		   [ALLOCNO_CLASS (conflict_a)][conflict_hregno]);
+	      ira_assert (k >= 0);
+	      if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
+		  != NULL)
+		spill_cost -= allocno_costs[k];
 	      else
-		{
-		  spill_cost = ALLOCNO_UPDATED_MEMORY_COST (conflict_a);
-		  k = (ira_class_hard_reg_index
-		       [ALLOCNO_CLASS (conflict_a)][conflict_hregno]);
-		  ira_assert (k >= 0);
-		  if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
-		      != NULL)
-		    spill_cost -= allocno_costs[k];
-		  else
-		    spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
-		  spill_cost
-		    += allocno_copy_cost_saving (conflict_a, conflict_hregno);
-		}
+		spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
+	      spill_cost
+		+= allocno_copy_cost_saving (conflict_a, conflict_hregno);
 	      conflict_nregs = hard_regno_nregs (conflict_hregno,
 						 ALLOCNO_MODE (conflict_a));
 	      auto note_conflict = [&](int r)
 		{
 		  if (check_hard_reg_p (a, r,
 					conflicting_regs, profitable_hard_regs))
-		    {
-		      if (spill_a)
-			SET_HARD_REG_BIT (soft_conflict_regs, r);
-		      costs[r] += spill_cost;
-		    }
+		    costs[r] += spill_cost;
 		};
 	      for (r = conflict_hregno;
 		   r >= 0 && (int) end_hard_regno (mode, r) > conflict_hregno;
@@ -3396,7 +3378,6 @@ improve_allocation (void)
 	   by spilling some conflicting allocnos does not improve the
 	   allocation cost.  */
 	continue;
-      spill_soft_conflicts (a, allocnos_to_spill, soft_conflict_regs, best);
       nregs = hard_regno_nregs (best, mode);
       /* Now spill conflicting allocnos which contain a hard register
 	 of A when we assign the best chosen hard register to it.  */
