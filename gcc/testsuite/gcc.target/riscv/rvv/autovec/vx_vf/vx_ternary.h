@@ -12,12 +12,16 @@ typedef signed __int128 int128_t;
 #endif
 
 #define DEF_VX_TERNARY_CASE_0(T, OP_1, OP_2, NAME)                        \
-void                                                                      \
+T                                                                         \
 test_vx_ternary_##NAME##_##T##_case_0 (T * restrict vd, T * restrict vs2, \
                                        T rs1, unsigned n)                 \
 {                                                                         \
-  for (unsigned i = 0; i < n; i++)                                        \
+  unsigned i;                                                             \
+                                                                          \
+  for (i = 0; i < n; i++)                                                 \
     vd[i] = vd[i] OP_2 vs2[i] OP_1 rs1;                                   \
+                                                                          \
+  return vs2[i - 1];                                                      \
 }
 #define DEF_VX_TERNARY_CASE_0_WRAP(T, OP_1, OP_2, NAME) \
   DEF_VX_TERNARY_CASE_0(T, OP_1, OP_2, NAME)
