@@ -4076,6 +4076,11 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
       c2->ts = c1->ts;
       c2->attr = c1->attr;
+      if (c1->tb)
+	{
+	  c2->tb = gfc_get_tbp ();
+	  c2->tb = c1->tb;
+	}
 
       /* The order of declaration of the type_specs might not be the
 	 same as that of the components.  */
@@ -4162,6 +4167,17 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("Kind %d not supported for type %s at %C",
 			 c2->ts.kind, gfc_basic_typename (c2->ts.type));
 	      goto error_return;
+	    }
+	  if (c2->attr.proc_pointer && c2->attr.function
+	      && c1->ts.interface && c1->ts.interface->ts.kind == 0)
+	    {
+	      c2->ts.interface = gfc_new_symbol ("", gfc_current_ns);
+	      c2->ts.interface->result = c2->ts.interface;
+	      c2->ts.interface->ts = c2->ts;
+	      c2->ts.interface->attr.flavor = FL_PROCEDURE;
+	      c2->ts.interface->attr.function = 1;
+	      c2->attr.function = 1;
+	      c2->attr.if_source = IFSRC_UNKNOWN;
 	    }
 	}
 
@@ -7572,6 +7588,9 @@ match_ppc_decl (void)
 	  c->tb->where = gfc_current_locus;
 	  *c->tb = *tb;
 	}
+
+      if (saved_kind_expr)
+	c->kind_expr = gfc_copy_expr (saved_kind_expr);
 
       /* Set interface.  */
       if (proc_if != NULL)

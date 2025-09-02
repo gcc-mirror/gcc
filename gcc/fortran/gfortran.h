@@ -1916,6 +1916,7 @@ typedef struct gfc_typebound_proc
 }
 gfc_typebound_proc;
 
+#define gfc_get_tbp() XCNEW (gfc_typebound_proc)
 
 /* Symbol nodes.  These are important things.  They are what the
    standard refers to as "entities".  The possibly multiple names that
