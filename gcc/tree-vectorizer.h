@@ -2923,13 +2923,9 @@ vect_reduc_type (vec_info *vinfo, slp_tree node)
 {
   if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo))
     {
-      stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
-      if (STMT_VINFO_REDUC_DEF (stmt_info))
-	{
-	  vect_reduc_info reduc_info
-	    = info_for_reduction (loop_vinfo, node);
-	  return int (VECT_REDUC_INFO_TYPE (reduc_info));
-	}
+      vect_reduc_info reduc_info = info_for_reduction (loop_vinfo, node);
+      if (reduc_info)
+	return int (VECT_REDUC_INFO_TYPE (reduc_info));
     }
   return -1;
 }
