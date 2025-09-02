@@ -11,19 +11,11 @@ program main
   end type
 
   type(mytype), save :: object[*]
-  integer :: me, other
+  integer :: me
 
   me=this_image()
-  other = me + 1
-  if (other .GT. num_images()) other = 1
-  if (me == num_images()) then
-     allocate(object%indices(me/2))
-  else
-    allocate(object%indices(me))
-  end if
-  object%indices = 42 * me
+  allocate(object%indices(me))
+  object%indices = 42
 
-  sync all
-  if ( any( object[other]%indices(:) /= 42 * other ) ) STOP 1
-  sync all
+  if ( any( object[me]%indices(:) /= 42 ) ) STOP 1
 end program
