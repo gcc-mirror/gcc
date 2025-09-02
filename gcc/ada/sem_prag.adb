@@ -14455,9 +14455,15 @@ package body Sem_Prag is
 
                --  Perform preanalysis to deal with embedded Loop_Entry
                --  attributes.
+               --
+               --  But ignore the ghost context checks for now. The expression
+               --  will be reanalyzed with the correct ghost region once the
+               --  pragma has been converted to pragma check.
 
+               Ghost_Context_Checks_Disabled := True;
                Preanalyze_And_Resolve_Assert_Expression
                   (Arg_Check, Any_Boolean);
+               Ghost_Context_Checks_Disabled := False;
             end if;
 
             --  Implement Assert[_And_Cut]/Assume/Loop_Invariant by generating
