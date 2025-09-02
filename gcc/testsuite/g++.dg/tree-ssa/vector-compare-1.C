@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11 && non_strict_align } } }
 // { dg-options "-O2 -fdump-tree-optimized" }
 
 // PR tree-optimization/116651
