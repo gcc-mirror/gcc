@@ -6,7 +6,7 @@
 /* { dg-final { scan-assembler-times "foo\tv5" 4 { target { aarch64*-*-* } } } } */
 #elif defined (__arm__)
 # define FPR "{d5}"
-/* { dg-additional-options "-march=armv7-a+fp -mfloat-abi=hard" { target arm*-*-* } } */
+/* { dg-additional-options "-mcpu=unset -march=armv7-a+fp -mfloat-abi=hard" { target arm*-*-* } } */
 /* { dg-final { scan-assembler-times "foo\ts10" 4 { target { arm*-*-* } } } } */
 #elif defined (__powerpc__) || defined (__POWERPC__)
 # define FPR "{5}"
