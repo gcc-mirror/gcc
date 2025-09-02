@@ -20240,7 +20240,12 @@ package body Sem_Util is
          elsif Is_Tagged_Type (Typ) then
             return True;
 
-         --  Case of nondiscriminated record
+         --  Case of record type with no components
+
+         elsif No (First_Component (Typ)) then
+            return False;
+
+         --  Case of record type with components
 
          else
             declare
