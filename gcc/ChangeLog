@@ -1,3 +1,8 @@
+2025-09-01  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_array_type): Don't try to
+	encode non-C-style arrays.
+
 2025-08-31  Benjamin Wu  <bwu25@cs.washington.edu>
 
 	Backported from master:
