@@ -34217,7 +34217,7 @@ package body Sem_Prag is
            or else P_Nam = Name_Assertion
            or else (P_Nam = Name_Statement_Assertions
                     and then Is_Statement_Assertion (Nam))
-           or else (Present (Level) and then Entity (P_Arg) = Level)
+           or else (Present (Level) and then P_Nam = Chars (Level))
          then
             return Chars (Get_Pragma_Arg (Last (Assocs)));
          end if;
