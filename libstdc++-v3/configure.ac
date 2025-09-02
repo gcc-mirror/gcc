@@ -587,6 +587,9 @@ GLIBCXX_CHECK_FILEBUF_NATIVE_HANDLES
 # For std::text_encoding
 GLIBCXX_CHECK_TEXT_ENCODING
 
+# For std::is_debugger_present
+GLIBCXX_CHECK_DEBUGGING
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

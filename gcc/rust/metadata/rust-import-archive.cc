@@ -683,7 +683,7 @@ public:
 
   const Header &operator* () const { return this->header_; }
 
-  const Header *operator-> () const { return &this->header_; }
+  const Header *operator->() const { return &this->header_; }
 
   Archive_iterator &operator++ ()
   {

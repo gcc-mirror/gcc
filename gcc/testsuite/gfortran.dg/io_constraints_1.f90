@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f95" }
+! { dg-options "-std=legacy" }
 ! Part I of the test  of the IO constraints patch, which fixes PRs:
 ! PRs 25053, 25063, 25064, 25066, 25067, 25068, 25069, 25307 and 20862.
 !
@@ -7,7 +7,7 @@
 !
 module fails
 
- 2000 format (1h , 2i6)                        ! { dg-error "Format statement in module" }
+ 2000 format (2i6)  ! { dg-error "Format statement in module" }
 
 end module fails
 
@@ -21,7 +21,7 @@ contains
   subroutine foo (i)
     integer :: i
     write (*, 100) i
- 100 format (1h , "i=", i6)                     ! { dg-warning "The H format specifier at ... is a Fortran 95 deleted feature" }
+ 100 format ("i=", i6)
   end subroutine foo
 
 end module global
@@ -33,7 +33,7 @@ end module global
 
 ! Appending to a USE associated namelist is an extension.
 
- NAMELIST /NL/ a,b                              ! { dg-error "already is USE associated" }
+ NAMELIST /NL/ a,b 
 
  a=1 ; b=2
 
@@ -54,7 +54,7 @@ end module global
 
 ! R912
 !Was correctly picked up before patch.
- write(6, NML=NL, iostat = ierr)                ! { dg-error "requires default INTEGER" }
+ write(6, NML=NL, iostat = ierr)
 
 ! Constraints
 !Was correctly picked up before patch.

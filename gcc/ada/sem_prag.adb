@@ -436,8 +436,7 @@ package body Sem_Prag is
       Arg1      : constant Node_Id   :=
         First (Pragma_Argument_Associations (N));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Errors        : Nat;
@@ -492,7 +491,7 @@ package body Sem_Prag is
             End_Scope;
          end if;
 
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_Ghost_Region (Saved_Ghost_Config);
       end if;
 
       Set_Is_Analyzed_Pragma (N);
@@ -607,8 +606,7 @@ package body Sem_Prag is
 
       CCases : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       CCase         : Node_Id;
@@ -695,7 +693,7 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
@@ -2464,8 +2462,7 @@ package body Sem_Prag is
       Exceptional_Contracts : constant Node_Id :=
         Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Exceptional_Contract : Node_Id;
@@ -2556,7 +2553,7 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Exceptional_Cases_In_Decl_Part;
 
    -------------------------------------
@@ -2772,8 +2769,7 @@ package body Sem_Prag is
       Exit_Contracts : constant Node_Id :=
         Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Exit_Contract : Node_Id;
@@ -2863,7 +2859,7 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Exit_Cases_In_Decl_Part;
 
    --------------------------------------------
@@ -3688,8 +3684,7 @@ package body Sem_Prag is
       Pack_Id   : constant Entity_Id := Defining_Entity (Pack_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Pack_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
    begin
@@ -3713,7 +3708,7 @@ package body Sem_Prag is
       Preanalyze_And_Resolve (Expr, Standard_Boolean);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -5766,7 +5761,7 @@ package body Sem_Prag is
 
             begin
                if Pname = Name_Pre_Class then
-                  if Is_Ignored (N) then
+                  if Is_Ignored_In_Codegen (N) then
                      Set_Ignored_Class_Preconditions (Subp_Id,
                        New_Copy_Tree (Expr));
                   else
@@ -5774,7 +5769,7 @@ package body Sem_Prag is
                   end if;
 
                else
-                  if Is_Ignored (N) then
+                  if Is_Ignored_In_Codegen (N) then
                      Set_Ignored_Class_Postconditions (Subp_Id,
                        New_Copy_Tree (Expr));
                   else
@@ -12987,7 +12982,9 @@ package body Sem_Prag is
                   --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
 
-                  if Ghost_Mode > None or else Is_Ghost_Entity (Pack_Id) then
+                  if Ghost_Config.Ghost_Mode > None
+                    or else Is_Ghost_Entity (Pack_Id)
+                  then
                      Set_Is_Ghost_Entity (State_Id);
                   end if;
 
@@ -14302,7 +14299,7 @@ package body Sem_Prag is
                      --  cannot occur within a Ghost subprogram or package
                      --  (SPARK RM 6.9(16)).
 
-                     if Ghost_Mode > None then
+                     if Ghost_Config.Ghost_Mode > None then
                         Error_Pragma
                           ("pragma % cannot appear within ghost subprogram or "
                            & "package");
@@ -14871,25 +14868,15 @@ package body Sem_Prag is
                   Set_Is_Ignored (N, False);
 
                else
-                  --  In CodePeer mode and GNATprove mode, we need to
-                  --  consider all assertions, unless they are disabled,
-                  --  because transformations of the AST may depend on
-                  --  assertions being checked.
+                  Set_Is_Checked (N, False);
+                  Set_Is_Ignored (N, True);
 
-                  if CodePeer_Mode or GNATprove_Mode then
-                     Set_Is_Checked (N, True);
-                     Set_Is_Ignored (N, False);
-                  else
-                     Set_Is_Checked (N, False);
-                     Set_Is_Ignored (N, True);
-                  end if;
                end if;
             end Handle_Dynamic_Predicate_Check;
 
             --  Local variables
 
-            Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-            Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+            Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
             --  Save the Ghost-related attributes to restore on exit
 
             Cname : Name_Id;
@@ -15047,7 +15034,7 @@ package body Sem_Prag is
             --  False at compile time, and we do not want to delete this
             --  warning when we delete the if statement.
 
-            if Expander_Active and Is_Ignored (N) then
+            if Expander_Active and Is_Ignored_In_Codegen (N) then
                Eloc := Sloc (Expr);
 
                Rewrite (N,
@@ -15100,7 +15087,7 @@ package body Sem_Prag is
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
-            Restore_Ghost_Region (Saved_GM, Saved_IGR);
+            Restore_Ghost_Region (Saved_Ghost_Config);
          end Check;
 
          --------------------------
@@ -16246,10 +16233,10 @@ package body Sem_Prag is
             Cond :=
               New_Occurrence_Of
                 (Boolean_Literals
-                  (Expander_Active and then not Is_Ignored (N)),
+                  (Expander_Active and then not Is_Ignored_In_Codegen (N)),
                  Loc);
 
-            if not Is_Ignored (N) then
+            if not Is_Ignored_In_Codegen (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
@@ -18720,7 +18707,7 @@ package body Sem_Prag is
                   --  region (SPARK RM 6.9(6)).
 
                   if Is_False (Expr_Value (Expr))
-                    and then Ghost_Mode > None
+                     and then Ghost_Config.Ghost_Mode > None
                   then
                      Error_Pragma
                        ("pragma % with value False cannot appear in enabled "
@@ -28323,8 +28310,7 @@ package body Sem_Prag is
 
       Expr : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Errors        : Nat;
@@ -28417,7 +28403,7 @@ package body Sem_Prag is
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
    ---------------------------------------
@@ -28437,8 +28423,7 @@ package body Sem_Prag is
       Arg1      : constant Node_Id   :=
         First (Pragma_Argument_Associations (N));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Errors        : Nat;
@@ -28561,7 +28546,7 @@ package body Sem_Prag is
 
          Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_Ghost_Region (Saved_Ghost_Config);
       end if;
 
       Set_Is_Analyzed_Pragma (N);
@@ -31803,8 +31788,7 @@ package body Sem_Prag is
 
       Variants : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Variant       : Node_Id;
@@ -31899,7 +31883,7 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Subprogram_Variant_In_Decl_Part;
 
    ------------------------------------
@@ -32195,20 +32179,8 @@ package body Sem_Prag is
                   when Name_Ignore
                      | Name_Off
                   =>
-                     --  In CodePeer mode and GNATprove mode, we need to
-                     --  consider all assertions, unless they are disabled.
-                     --  Force Is_Checked on ignored assertions, in particular
-                     --  because transformations of the AST may depend on
-                     --  assertions being checked (e.g. the translation of
-                     --  attribute 'Loop_Entry).
-
-                     if CodePeer_Mode or GNATprove_Mode then
-                        Set_Is_Checked (N, True);
-                        Set_Is_Ignored (N, False);
-                     else
-                        Set_Is_Checked (N, False);
-                        Set_Is_Ignored (N, True);
-                     end if;
+                     Set_Is_Checked (N, False);
+                     Set_Is_Ignored (N, True);
 
                   when Name_Check
                      | Name_On
@@ -34270,113 +34242,123 @@ package body Sem_Prag is
      (N     : Node_Id;
       Eloc  : Source_Ptr)
    is
-      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
-      Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
-      Arg2  : constant Node_Id := Next (Arg1);
+      Arg1    : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1x   : constant Node_Id := Get_Pragma_Arg (Arg1);
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (N);
 
-      Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
-      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
+      procedure Emit_Compile_Time_Message (Msg_Arg : Node_Id);
+      --  Emit the pragma a as diagnostic message. New_Line characters are
+      --  considered separators for those messages where the following lines
+      --  are considered as continuation messages for the same diagnostic.
+
+      -------------------------------
+      -- Emit_Compile_Time_Message --
+      -------------------------------
+
+      procedure Emit_Compile_Time_Message (Msg_Arg : Node_Id) is
+         --  We have already verified that the Msg_Arg is a static
+         --  string expression. Its string value must be retrieved
+         --  explicitly if it is a declared constant, otherwise it has
+         --  been constant-folded previously.
+
+         Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+         Str     : constant String_Id :=
+           Strval (Expr_Value_S (Get_Pragma_Arg (Msg_Arg)));
+         Str_Len : constant Nat := String_Length (Str);
+
+         Force : constant Boolean :=
+           Prag_Id = Pragma_Compile_Time_Warning
+           and then Is_Spec_Name (Unit_Name (Current_Sem_Unit))
+           and then (Ekind (Cent) /= E_Package
+                     or else not In_Private_Part (Cent));
+         --  Set True if this is the warning case, and we are in the
+         --  visible part of a package spec, or in a subprogram spec,
+         --  in which case we want to force the client to see the
+         --  warning, even though it is not in the main unit.
+
+         Msg_Ctrl : Bounded_String (6);
+         --  Control characters for the message.
+         --  The longest value contains 6 characters: "\<<~!!"
+
+         C    : Character;
+         CC   : Char_Code;
+         Cont : Boolean;
+         Ptr  : Nat;
+
+      begin
+         --  Loop through segments of message separated by line feeds.
+         --  We output these segments as separate messages with
+         --  continuation marks for all but the first.
+
+         Cont := False;
+         Ptr := 1;
+         loop
+            Error_Msg_Strlen := 0;
+            Msg_Ctrl.Length := 0;
+
+            --  Loop to copy characters from argument to error message
+            --  string buffer.
+
+            loop
+               exit when Ptr > Str_Len;
+               CC := Get_String_Char (Str, Ptr);
+               Ptr := Ptr + 1;
+
+               --  Ignore wide chars ??? else store character
+
+               if In_Character_Range (CC) then
+                  C := Get_Character (CC);
+                  exit when C = ASCII.LF;
+                  Error_Msg_Strlen := Error_Msg_Strlen + 1;
+                  Error_Msg_String (Error_Msg_Strlen) := C;
+               end if;
+            end loop;
+
+            --  Here with one line ready to go
+
+            Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
+
+            if Cont then
+               Append (Msg_Ctrl, "\");
+            end if;
+
+            Append (Msg_Ctrl, "<<~");
+
+            --  If this is a warning in a spec, then we want clients
+            --  to see the warning, so mark the message with the
+            --  special sequence !! to force the warning. In the case
+            --  of a package spec, we do not force this if we are in
+            --  the private part of the spec.
+
+            if Force then
+               Append (Msg_Ctrl, "!!");
+            end if;
+
+            --  Error, rather than warning, or in a body, so we do not
+            --  need to force visibility for client (error will be
+            --  output in any case, and this is the situation in which
+            --  we do not want a client to get a warning, since the
+            --  warning is in the body or the spec private part).
+
+            Error_Msg
+              (To_String (Msg_Ctrl), Eloc, N, Is_Compile_Time_Pragma => True);
+
+            --  The next lines are considered continuation messages
+
+            Cont := True;
+
+            exit when Ptr > Str_Len;
+         end loop;
+      end Emit_Compile_Time_Message;
+
+   --  Start of processing for Validate_Compile_Time_Warning_Or_Error
 
    begin
       Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
       if Compile_Time_Known_Value (Arg1x) then
          if Is_True (Expr_Value (Arg1x)) then
-
-            --  We have already verified that the second argument is a static
-            --  string expression. Its string value must be retrieved
-            --  explicitly if it is a declared constant, otherwise it has
-            --  been constant-folded previously.
-
-            declare
-               Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-               Str     : constant String_Id :=
-                           Strval (Expr_Value_S (Get_Pragma_Arg (Arg2)));
-               Str_Len : constant Nat       := String_Length (Str);
-
-               Force : constant Boolean :=
-                         Prag_Id = Pragma_Compile_Time_Warning
-                           and then Is_Spec_Name (Unit_Name (Current_Sem_Unit))
-                           and then (Ekind (Cent) /= E_Package
-                                      or else not In_Private_Part (Cent));
-               --  Set True if this is the warning case, and we are in the
-               --  visible part of a package spec, or in a subprogram spec,
-               --  in which case we want to force the client to see the
-               --  warning, even though it is not in the main unit.
-
-               C    : Character;
-               CC   : Char_Code;
-               Cont : Boolean;
-               Ptr  : Nat;
-
-            begin
-               --  Loop through segments of message separated by line feeds.
-               --  We output these segments as separate messages with
-               --  continuation marks for all but the first.
-
-               Cont := False;
-               Ptr  := 1;
-               loop
-                  Error_Msg_Strlen := 0;
-
-                  --  Loop to copy characters from argument to error message
-                  --  string buffer.
-
-                  loop
-                     exit when Ptr > Str_Len;
-                     CC := Get_String_Char (Str, Ptr);
-                     Ptr := Ptr + 1;
-
-                     --  Ignore wide chars ??? else store character
-
-                     if In_Character_Range (CC) then
-                        C := Get_Character (CC);
-                        exit when C = ASCII.LF;
-                        Error_Msg_Strlen := Error_Msg_Strlen + 1;
-                        Error_Msg_String (Error_Msg_Strlen) := C;
-                     end if;
-                  end loop;
-
-                  --  Here with one line ready to go
-
-                  Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
-
-                  --  If this is a warning in a spec, then we want clients
-                  --  to see the warning, so mark the message with the
-                  --  special sequence !! to force the warning. In the case
-                  --  of a package spec, we do not force this if we are in
-                  --  the private part of the spec.
-
-                  if Force then
-                     if Cont = False then
-                        Error_Msg
-                           ("<<~!!", Eloc, N, Is_Compile_Time_Pragma => True);
-                        Cont := True;
-                     else
-                        Error_Msg
-                           ("\<<~!!", Eloc, N, Is_Compile_Time_Pragma => True);
-                     end if;
-
-                  --  Error, rather than warning, or in a body, so we do not
-                  --  need to force visibility for client (error will be
-                  --  output in any case, and this is the situation in which
-                  --  we do not want a client to get a warning, since the
-                  --  warning is in the body or the spec private part).
-
-                  else
-                     if Cont = False then
-                        Error_Msg
-                           ("<<~", Eloc, N, Is_Compile_Time_Pragma => True);
-                        Cont := True;
-                     else
-                        Error_Msg
-                           ("\<<~", Eloc, N, Is_Compile_Time_Pragma => True);
-                     end if;
-                  end if;
-
-                  exit when Ptr > Str_Len;
-               end loop;
-            end;
+            Emit_Compile_Time_Message (Next (Arg1));
          end if;
 
       --  Arg1x is not known at compile time, so possibly issue an error
@@ -35101,7 +35083,17 @@ package body Sem_Prag is
          begin
             Set_Scope (T.Scope);
             Reset_Analyzed_Flags (T.Prag);
-            Validate_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            if Nkind (T.Prag) = N_Pragma then
+               Validate_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            else
+               pragma Assert (Nkind (Original_Node (T.Prag)) = N_Pragma);
+
+               --  The pragma was likely removed in ignored ghost code. Check
+               --  the original node instead.
+
+               Validate_Compile_Time_Warning_Or_Error
+                 (Original_Node (T.Prag), T.Eloc);
+            end if;
             Unset_Scope (T.Scope);
          end;
       end loop;

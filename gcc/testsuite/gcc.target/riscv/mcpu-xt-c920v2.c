@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xt-c920v2" { target { rv64 } } } */
-/* XuanTie C920v2 => rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei _zihintntl_zihintpause_zihpm_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_zvfh_sscofpmf_sstc_svinval_svnapot_svpbmt_xtheadba_xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_xtheadsync_xtheadvdot */
+/* XuanTie C920v2 => rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei _zihintntl_zihintpause_zihpm_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_zvfh_sscofpmf_sstc_svinval_svnapot_svpbmt_xtheadba_xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_xtheadsync */
 
 #if !((__riscv_xlen == 64)		\
       && !defined(__riscv_32e)		\
@@ -45,8 +45,7 @@
       && defined(__riscv_xtheadcmo)		\
       && defined(__riscv_xtheadcondmov)		\
       && defined(__riscv_xtheadfmemidx)		\
-      && defined(__riscv_xtheadsync)		\
-      && defined(__riscv_xtheadvdot))
+      && defined(__riscv_xtheadsync))
 #error "unexpected arch"
 #endif
 

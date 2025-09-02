@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "flags.h"
 #include "opts.h"
+#include "asan.h"
 
 /* Fix and Continue.
 
@@ -1298,6 +1299,39 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
      SYMBOL_FLAG_EXTERNAL.  */
   default_encode_section_info (decl, rtl, first);
 
+  if (CONSTANT_CLASS_P (decl))
+    {
+      bool is_str = TREE_CODE (decl) == STRING_CST;
+      rtx sym_ref = XEXP (rtl, 0);
+
+      /* Unless this is a string cst or we are in an anchored section we have
+	 nothing more to do here.  */
+      if (!is_str && !SYMBOL_REF_HAS_BLOCK_INFO_P (sym_ref))
+	return;
+
+      tree sym_decl = SYMBOL_REF_DECL (sym_ref);
+      const char *name = XSTR (sym_ref, 0);
+      gcc_checking_assert (strncmp ("*lC", name, 3) == 0);
+
+      char *buf;
+      if (is_str)
+	{
+	  bool for_asan = (flag_sanitize & SANITIZE_ADDRESS)
+			   && asan_protect_global (CONST_CAST_TREE (decl));
+	  /* When we are generating code for sanitized strings, the string
+	     internal symbols are made visible in the object.  */
+	  buf = xasprintf ("*%c.str.%s", for_asan ? 'l' : 'L', &name[3]);
+	}
+      else
+	/* Lets identify anchored constants with a different prefix, for the
+	   sake of inspection only.  */
+	buf = xasprintf ("*LaC%s", &name[3]);
+      if (sym_decl)
+	DECL_NAME (sym_decl) = get_identifier (buf);
+      XSTR (sym_ref, 0) = ggc_strdup (buf);
+      free (buf);
+    }
+
   if (! VAR_OR_FUNCTION_DECL_P (decl))
     return;
 
@@ -1683,6 +1717,17 @@ machopic_select_section (tree decl,
 
   ro = TREE_READONLY (decl) || TREE_CONSTANT (decl) ;
 
+  /* Trump categorize_decl_for_section () for ASAN stuff - the Darwin
+     categorisations are special.  */
+  if (flag_sanitize & SANITIZE_ADDRESS)
+    {
+      if (TREE_CODE (decl) == STRING_CST
+	  && asan_protect_global (CONST_CAST_TREE (decl)))
+	{
+	  return darwin_sections[asan_string_section];
+	}
+    }
+
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
@@ -1699,7 +1744,12 @@ machopic_select_section (tree decl,
       break;
 
     case SECCAT_RODATA_MERGE_STR_INIT:
-      base_section = darwin_mergeable_string_section (DECL_INITIAL (decl), align);
+      if ((flag_sanitize & SANITIZE_ADDRESS)
+	   && asan_protect_global (CONST_CAST_TREE (decl)))
+	/* or !flag_merge_constants */
+	return darwin_sections[asan_string_section];
+      else
+	return darwin_mergeable_string_section (DECL_INITIAL (decl), align);
       break;
 
     case SECCAT_RODATA_MERGE_CONST:
@@ -3297,11 +3347,16 @@ darwin_use_anchors_for_symbol_p (const_rtx symbol)
 {
   if (DARWIN_SECTION_ANCHORS && flag_section_anchors)
     {
-      section *sect;
-      /* If the section contains a zero-sized object it's ineligible.  */
-      sect = SYMBOL_REF_BLOCK (symbol)->sect;
-      /* This should have the effect of disabling anchors for vars that follow
-         any zero-sized one, in a given section.  */
+      tree decl = SYMBOL_REF_DECL (symbol);
+      /* If the symbol would be linker-visible, then it can split at that
+	 so we must disallow.  This is more strict than the default impl.
+	 TODO: add other cases.  */
+      if (decl && DECL_P (decl)
+	  && (TREE_PUBLIC (decl) || !DECL_ARTIFICIAL (decl)))
+	return false;
+
+      /* We mark sections containing unsuitable entries.  */
+      section *sect = SYMBOL_REF_BLOCK (symbol)->sect;
       if (sect->common.flags & SECTION_NO_ANCHOR)
 	return false;
 

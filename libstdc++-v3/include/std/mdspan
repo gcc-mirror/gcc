@@ -36,10 +36,14 @@
 #include <span>
 #include <array>
 #include <type_traits>
-#include <limits>
 #include <utility>
 
+#if __cplusplus > 202302L
+#include <bits/align.h>
+#endif
+
 #define __glibcxx_want_mdspan
+#define __glibcxx_want_aligned_accessor
 #include <bits/version.h>
 
 #ifdef __glibcxx_mdspan
@@ -49,49 +53,66 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __mdspan
   {
-    template<typename _IndexType, array _Extents>
-      class _ExtentsStorage
+    consteval bool
+    __all_static(std::span<const size_t> __extents)
+    {
+      for(auto __ext : __extents)
+	if (__ext == dynamic_extent)
+	  return false;
+      return true;
+    }
+
+    consteval bool
+    __all_dynamic(std::span<const size_t> __extents)
+    {
+      for(auto __ext : __extents)
+	if (__ext != dynamic_extent)
+	  return false;
+      return true;
+    }
+
+    template<array _Extents>
+      class _StaticExtents
       {
       public:
-	static consteval bool
-	_S_is_dyn(size_t __ext) noexcept
-	{ return __ext == dynamic_extent; }
-
-	template<typename _OIndexType>
-	  static constexpr _IndexType
-	  _S_int_cast(const _OIndexType& __other) noexcept
-	  { return _IndexType(__other); }
-
 	static constexpr size_t _S_rank = _Extents.size();
 
-	// For __r in [0, _S_rank], _S_dynamic_index[__r] is the number
+	// For __r in [0, _S_rank], _S_dynamic_index(__r) is the number
 	// of dynamic extents up to (and not including) __r.
 	//
 	// If __r is the index of a dynamic extent, then
 	// _S_dynamic_index[__r] is the index of that extent in
 	// _M_dyn_exts.
-	static constexpr auto _S_dynamic_index = [] consteval
+	static constexpr size_t
+	_S_dynamic_index(size_t __r) noexcept
+	{ return _S_dynamic_index_data[__r]; }
+
+	static constexpr auto _S_dynamic_index_data = [] consteval
 	{
 	  array<size_t, _S_rank+1> __ret;
 	  size_t __dyn = 0;
 	  for (size_t __i = 0; __i < _S_rank; ++__i)
 	    {
 	      __ret[__i] = __dyn;
-	      __dyn += _S_is_dyn(_Extents[__i]);
+	      __dyn += (_Extents[__i] == dynamic_extent);
 	    }
 	  __ret[_S_rank] = __dyn;
 	  return __ret;
 	}();
 
-	static constexpr size_t _S_rank_dynamic = _S_dynamic_index[_S_rank];
+	static constexpr size_t _S_rank_dynamic = _S_dynamic_index(_S_rank);
 
-	// For __r in [0, _S_rank_dynamic), _S_dynamic_index_inv[__r] is the
+	// For __r in [0, _S_rank_dynamic), _S_dynamic_index_inv(__r) is the
 	// index of the __r-th dynamic extent in _Extents.
-	static constexpr auto _S_dynamic_index_inv = [] consteval
+	static constexpr size_t
+	_S_dynamic_index_inv(size_t __r) noexcept
+	{ return _S_dynamic_index_inv_data[__r]; }
+
+	static constexpr auto _S_dynamic_index_inv_data = [] consteval
 	{
 	  array<size_t, _S_rank_dynamic> __ret;
 	  for (size_t __i = 0, __r = 0; __i < _S_rank; ++__i)
-	    if (_S_is_dyn(_Extents[__i]))
+	    if (_Extents[__i] == dynamic_extent)
 	      __ret[__r++] = __i;
 	  return __ret;
 	}();
@@ -99,15 +120,66 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr size_t
 	_S_static_extent(size_t __r) noexcept
 	{ return _Extents[__r]; }
+      };
+
+    template<array _Extents>
+      requires (__all_dynamic<_Extents>())
+      class _StaticExtents<_Extents>
+      {
+      public:
+	static constexpr size_t _S_rank = _Extents.size();
+
+	static constexpr size_t
+	_S_dynamic_index(size_t __r) noexcept
+	{ return __r; }
+
+	static constexpr size_t _S_rank_dynamic = _S_rank;
+
+	static constexpr size_t
+	_S_dynamic_index_inv(size_t __k) noexcept
+	{ return __k; }
+
+	static constexpr size_t
+	_S_static_extent(size_t) noexcept
+	{ return dynamic_extent; }
+      };
+
+    template<typename _IndexType, array _Extents>
+      class _ExtentsStorage : public _StaticExtents<_Extents>
+      {
+      private:
+	using _S_base = _StaticExtents<_Extents>;
+
+      public:
+	using _S_base::_S_rank;
+	using _S_base::_S_rank_dynamic;
+	using _S_base::_S_dynamic_index;
+	using _S_base::_S_dynamic_index_inv;
+	using _S_base::_S_static_extent;
+
+	static constexpr bool
+	_S_is_dynamic(size_t __r) noexcept
+	{
+	  if constexpr (__all_static(_Extents))
+	    return false;
+	  else if constexpr (__all_dynamic(_Extents))
+	    return true;
+	  else
+	    return _Extents[__r] == dynamic_extent;
+	}
+
+	template<typename _OIndexType>
+	  static constexpr _IndexType
+	  _S_int_cast(const _OIndexType& __other) noexcept
+	  { return _IndexType(__other); }
 
 	constexpr _IndexType
 	_M_extent(size_t __r) const noexcept
 	{
-	  auto __se = _Extents[__r];
-	  if (__se == dynamic_extent)
-	    return _M_dyn_exts[_S_dynamic_index[__r]];
+	  if (_S_is_dynamic(__r))
+	    return _M_dyn_exts[_S_dynamic_index(__r)];
 	  else
-	    return __se;
+	    return _S_static_extent(__r);
 	}
 
 	template<size_t _OtherRank, typename _GetOtherExtent>
@@ -116,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    if constexpr (_OtherRank == _S_rank)
 	      for (size_t __i = 0; __i < _S_rank; ++__i)
-		if (_Extents[__i] != dynamic_extent
+		if (!_S_is_dynamic(__i)
 		    && !cmp_equal(_Extents[__i], _S_int_cast(__get_extent(__i))))
 		  return false;
 	    return true;
@@ -131,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 		size_t __di = __i;
 		if constexpr (_OtherRank != _S_rank_dynamic)
-		  __di = _S_dynamic_index_inv[__i];
+		  __di = _S_dynamic_index_inv(__i);
 		_M_dyn_exts[__i] = _S_int_cast(__get_extent(__di));
 	      }
 	  }
@@ -157,18 +229,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      { return __exts[__i]; });
 	  }
 
-	static constexpr span<const size_t>
-	_S_static_extents(size_t __begin, size_t __end) noexcept
-	{
-	  return {_Extents.data() + __begin, _Extents.data() + __end};
-	}
+	static constexpr const array<size_t, _S_rank>&
+	_S_static_extents() noexcept
+	{ return _Extents; }
 
 	constexpr span<const _IndexType>
 	_M_dynamic_extents(size_t __begin, size_t __end) const noexcept
 	requires (_Extents.size() > 0)
 	{
-	  return {_M_dyn_exts + _S_dynamic_index[__begin],
-		  _M_dyn_exts + _S_dynamic_index[__end]};
+	  return {_M_dyn_exts + _S_dynamic_index(__begin),
+		  _M_dyn_exts + _S_dynamic_index(__end)};
 	}
 
       private:
@@ -184,24 +254,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<size_t _Extent, typename _IndexType>
       concept
       __valid_static_extent = _Extent == dynamic_extent
-	|| _Extent <= numeric_limits<_IndexType>::max();
-  }
+	|| _Extent <= __gnu_cxx::__int_traits<_IndexType>::__max;
 
-  namespace __mdspan
-  {
     template<typename _Extents>
-      constexpr span<const size_t>
-      __static_extents(size_t __begin = 0, size_t __end = _Extents::rank())
-      noexcept
-      { return _Extents::_S_storage::_S_static_extents(__begin, __end); }
+      constexpr const array<size_t, _Extents::rank()>&
+      __static_extents() noexcept
+      { return _Extents::_S_storage::_S_static_extents(); }
+
+    // Pre-compute: \prod_{i = 0}^r _Extents[i], for r = 0,..., n (exclusive)
+    template<array _Extents>
+      constexpr auto __fwd_partial_prods = [] consteval
+	{
+	  constexpr size_t __rank = _Extents.size();
+	  std::array<size_t, __rank> __ret;
+	  size_t __prod = 1;
+	  for (size_t __r = 0; __r < __rank; ++__r)
+	    {
+	      __ret[__r] = __prod;
+	      if (size_t __ext = _Extents[__r]; __ext != dynamic_extent)
+		__prod *= __ext;
+	    }
+	  return __ret;
+	}();
+
+    // Pre-compute: \prod_{i = r+1}^{n-1} _Extents[i]
+    template<array _Extents>
+      constexpr auto __rev_partial_prods = [] consteval
+	{
+	  constexpr size_t __rank = _Extents.size();
+	  std::array<size_t, __rank> __ret;
+	  size_t __prod = 1;
+	  for (size_t __r = __rank; __r > 0; --__r)
+	    {
+	      __ret[__r - 1] = __prod;
+	      if (size_t __ext = _Extents[__r - 1]; __ext != dynamic_extent)
+		__prod *= __ext;
+	    }
+	  return __ret;
+	}();
 
     template<typename _Extents>
       constexpr span<const typename _Extents::index_type>
       __dynamic_extents(const _Extents& __exts, size_t __begin = 0,
 			size_t __end = _Extents::rank()) noexcept
-      {
-	return __exts._M_exts._M_dynamic_extents(__begin, __end);
-      }
+      { return __exts._M_exts._M_dynamic_extents(__begin, __end); }
   }
 
   template<typename _IndexType, size_t... _Extents>
@@ -212,7 +308,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(
 	  (__mdspan::__valid_static_extent<_Extents, _IndexType> && ...),
 	  "Extents must either be dynamic or representable as IndexType");
-
     public:
       using index_type = _IndexType;
       using size_type = make_unsigned_t<index_type>;
@@ -257,8 +352,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_ctor_explicit()
 	{
 	  return (_S_is_less_dynamic(_Extents, _OExtents) || ...)
-	    || (numeric_limits<index_type>::max()
-		< numeric_limits<_OIndexType>::max());
+	    || (__gnu_cxx::__int_traits<index_type>::__max
+		< __gnu_cxx::__int_traits<_OIndexType>::__max);
 	}
 
       template<size_t... _OExtents>
@@ -313,16 +408,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return false;
 	  else
 	    {
-	      for (size_t __i = 0; __i < __self.rank(); ++__i)
-		if (!cmp_equal(__self.extent(__i), __other.extent(__i)))
-		  return false;
-	      return true;
+	      auto __impl = [&__self, &__other]<size_t... _Counts>(
+		  index_sequence<_Counts...>)
+		{ return (cmp_equal(__self.extent(_Counts),
+				    __other.extent(_Counts)) && ...); };
+	      return __impl(make_index_sequence<__self.rank()>());
 	    }
 	}
 
     private:
-      friend span<const size_t>
-      __mdspan::__static_extents<extents>(size_t, size_t);
+      friend const array<size_t, rank()>&
+      __mdspan::__static_extents<extents>();
 
       friend span<const index_type>
       __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t);
@@ -347,6 +443,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
       }
 
+    template<typename _Tp, size_t _Nm>
+      consteval bool
+      __contains_zero(const array<_Tp, _Nm>& __exts) noexcept
+      { return __contains_zero(span<const _Tp>(__exts)); }
+
     template<typename _Extents>
       constexpr bool
       __empty(const _Extents& __exts) noexcept
@@ -359,51 +460,75 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
       }
 
-    constexpr size_t
-    __static_extents_prod(const auto& __sta_exts) noexcept
-    {
-      size_t __ret = 1;
-      for (auto __factor : __sta_exts)
-	if (__factor != dynamic_extent)
-	  __ret *= __factor;
-      return __ret;
-    }
-
     template<typename _Extents>
       constexpr typename _Extents::index_type
-      __exts_prod(const _Extents& __exts, size_t __begin, size_t __end) noexcept
+      __extents_prod(const _Extents& __exts, size_t __sta_prod, size_t __begin,
+		     size_t __end) noexcept
       {
-	using _IndexType = typename _Extents::index_type;
+	if (__sta_prod == 0)
+	  return 0;
 
-	size_t __ret = 1;
-	if constexpr (_Extents::rank_dynamic() != _Extents::rank())
-	  {
-	    auto __sta_exts = __static_extents<_Extents>(__begin, __end);
-	    __ret = __static_extents_prod(__sta_exts);
-	    if (__ret == 0)
-	      return 0;
-	  }
-
+	size_t __ret = __sta_prod;
 	if constexpr (_Extents::rank_dynamic() > 0)
 	  for (auto __factor : __dynamic_extents(__exts, __begin, __end))
 	    __ret *= size_t(__factor);
-	return _IndexType(__ret);
+	return static_cast<typename _Extents::index_type>(__ret);
+      }
+
+    // Preconditions: _r < _Extents::rank()
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __fwd_prod(const _Extents& __exts, size_t __r) noexcept
+      {
+	constexpr size_t __rank = _Extents::rank();
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	if constexpr (__rank == 1)
+	  return 1;
+	else if constexpr (__rank == 2)
+	  return __r == 0 ? 1 : __exts.extent(0);
+	else if constexpr (__all_dynamic(std::span(__sta_exts).first(__rank-1)))
+	  return __extents_prod(__exts, 1, 0, __r);
+	else
+	  {
+	    size_t __sta_prod = __fwd_partial_prods<__sta_exts>[__r];
+	    return __extents_prod(__exts, __sta_prod, 0, __r);
+	  }
+      }
+
+    // Preconditions: _r < _Extents::rank()
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __rev_prod(const _Extents& __exts, size_t __r) noexcept
+      {
+	constexpr size_t __rank = _Extents::rank();
+	constexpr auto& __sta_exts = __static_extents<_Extents>();
+	if constexpr (__rank == 1)
+	  return 1;
+	else if constexpr (__rank == 2)
+	  return __r == 0 ? __exts.extent(1) : 1;
+	else if constexpr (__all_dynamic(std::span(__sta_exts).last(__rank-1)))
+	  return __extents_prod(__exts, 1, __r + 1, __rank);
+	else
+	  {
+	    size_t __sta_prod = __rev_partial_prods<__sta_exts>[__r];
+	    return __extents_prod(__exts, __sta_prod, __r + 1, __rank);
+	  }
       }
 
     template<typename _Extents>
       constexpr typename _Extents::index_type
-      __fwd_prod(const _Extents& __exts, size_t __r) noexcept
-      { return __exts_prod(__exts, 0, __r); }
-
-    template<typename _Extents>
-      constexpr typename _Extents::index_type
-      __rev_prod(const _Extents& __exts, size_t __r) noexcept
-      { return __exts_prod(__exts, __r + 1, __exts.rank()); }
-
-    template<typename _Extents>
-      constexpr typename _Extents::index_type
       __size(const _Extents& __exts) noexcept
-      { return __fwd_prod(__exts, __exts.rank()); }
+      {
+	constexpr size_t __sta_prod = [] {
+	  span<const size_t> __sta_exts = __static_extents<_Extents>();
+	  size_t __ret = 1;
+	  for(auto __ext : __sta_exts)
+	    if (__ext != dynamic_extent)
+	      __ret *= __ext;
+	  return __ret;
+	}();
+	return __extents_prod(__exts, __sta_prod, 0, _Extents::rank());
+      }
 
     template<typename _IndexType, size_t... _Counts>
       auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
@@ -413,6 +538,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IndexType, size_t _Rank>
     using dextents = decltype(__mdspan::__build_dextents_type<_IndexType>(
 	make_index_sequence<_Rank>()));
+
+#if __glibcxx_mdspan >= 202406L
+  template<size_t _Rank, typename _IndexType = size_t>
+    using dims = dextents<_IndexType, _Rank>;
+#endif
 
   template<typename... _Integrals>
     requires (is_convertible_v<_Integrals, size_t> && ...)
@@ -470,9 +600,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Extents,
              typename _IndexType = typename _Extents::index_type>
       consteval _IndexType
-      __static_quotient(_IndexType __nom = numeric_limits<_IndexType>::max())
+      __static_quotient(_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>
+						    ::__max)
       {
-	auto __sta_exts = __static_extents<_Extents>();
+	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
 	for (auto __factor : __sta_exts)
 	  {
 	    if (__factor != dynamic_extent)
@@ -919,12 +1050,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(__mdspan::__representable_size<_OExtents, index_type>,
 	    "The size of StridedMapping::extents_type must be representable as"
 	    " index_type");
-	  if constexpr (cmp_greater(numeric_limits<_OIndexType>::max(),
-				    numeric_limits<index_type>::max()))
-	    __glibcxx_assert(!cmp_less(numeric_limits<index_type>::max(),
-				       __other.required_span_size())
-		&& "other.required_span_size() must be representable"
-		   " as index_type");
+	  if constexpr (cmp_greater(__gnu_cxx::__int_traits<_OIndexType>::__max,
+				    __gnu_cxx::__int_traits<index_type>::__max))
+	    __glibcxx_assert(!cmp_less(
+		__gnu_cxx::__int_traits<index_type>::__max,
+		__other.required_span_size())
+	      && "other.required_span_size() must be representable"
+		 " as index_type");
 	  if constexpr (extents_type::rank() > 0)
 	    for (size_t __i = 0; __i < extents_type::rank(); ++__i)
 	      _M_strides[__i] = index_type(__other.stride(__i));
@@ -1056,6 +1188,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       offset(data_handle_type __p, size_t __i) const noexcept
       { return __p + __i; }
     };
+
+#ifdef __glibcxx_aligned_accessor
+  template<typename _ElementType, size_t _ByteAlignment>
+    struct aligned_accessor
+    {
+      static_assert(has_single_bit(_ByteAlignment),
+	"ByteAlignment must be a power of two");
+      static_assert(_ByteAlignment >= alignof(_ElementType));
+
+      using offset_policy = default_accessor<_ElementType>;
+      using element_type = _ElementType;
+      using reference = element_type&;
+      using data_handle_type = element_type*;
+
+      static constexpr size_t byte_alignment = _ByteAlignment;
+
+      constexpr
+      aligned_accessor() noexcept = default;
+
+      template<typename _OElementType, size_t _OByteAlignment>
+	requires (_OByteAlignment >= byte_alignment) 
+	    && is_convertible_v<_OElementType(*)[], element_type(*)[]>
+	constexpr
+	aligned_accessor(aligned_accessor<_OElementType, _OByteAlignment>)
+	noexcept
+	{ }
+
+      template<typename _OElementType>
+	requires is_convertible_v<_OElementType(*)[], element_type(*)[]>
+	constexpr explicit
+	aligned_accessor(default_accessor<_OElementType>) noexcept
+	{ }
+
+      template<typename _OElementType>
+	requires is_convertible_v<element_type(*)[], _OElementType(*)[]>
+	constexpr
+	operator default_accessor<_OElementType>() const noexcept
+	{ return {}; }
+
+      constexpr reference
+      access(data_handle_type __p, size_t __i) const noexcept
+      { return std::assume_aligned<byte_alignment>(__p)[__i]; }
+
+      constexpr typename offset_policy::data_handle_type
+      offset(data_handle_type __p, size_t __i) const noexcept
+      { return std::assume_aligned<byte_alignment>(__p) + __i; }
+    };
+#endif
 
   namespace __mdspan
   {
@@ -1241,16 +1421,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size() const noexcept
       {
 	__glibcxx_assert(cmp_less_equal(_M_mapping.required_span_size(),
-					numeric_limits<size_t>::max()));
+					__gnu_cxx::__int_traits<size_t>
+						 ::__max));
 	return size_type(__mdspan::__size(extents()));
       }
 
       [[nodiscard]]
       constexpr bool
       empty() const noexcept
-      {
-	return __mdspan::__empty(extents());
-      }
+      { return __mdspan::__empty(extents()); }
 
       friend constexpr void
       swap(mdspan& __x, mdspan& __y) noexcept
@@ -1299,7 +1478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr bool
       is_strided() const noexcept(noexcept(_M_mapping.is_strided()))
-      { return _M_mapping. is_strided(); }
+      { return _M_mapping.is_strided(); }
 
       constexpr index_type
       stride(rank_type __r) const { return _M_mapping.stride(__r); }

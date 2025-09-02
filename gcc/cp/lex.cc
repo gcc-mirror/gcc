@@ -172,7 +172,7 @@ init_operators (void)
   /* This loop iterates backwards because we need to move the
      assignment operators down to their correct slots.  I.e. morally
      equivalent to an overlapping memmove where dest > src.  Slot
-     zero is for error_mark, so hae no operator. */
+     zero is for error_mark, so has no operator.  */
   for (unsigned ix = OVL_OP_MAX; --ix;)
     {
       ovl_op_info_t *op_ptr = &ovl_op_info[false][ix];
@@ -367,6 +367,61 @@ cxx_init (void)
   class_type_node = ridpointers[(int) RID_CLASS];
 
   cxx_init_decl_processing ();
+
+  if (warn_keyword_macro)
+    {
+      for (unsigned int i = 0; i < num_c_common_reswords; ++i)
+	/* For C++ none of the keywords in [lex.key] starts with underscore,
+	   don't register anything like that.  Don't complain about
+	   ObjC or Transactional Memory keywords.  */
+	if (c_common_reswords[i].word[0] == '_')
+	  continue;
+	else if (c_common_reswords[i].disable & (D_TRANSMEM | D_OBJC))
+	  continue;
+	else
+	  {
+	    tree id = get_identifier (c_common_reswords[i].word);
+	    if (IDENTIFIER_KEYWORD_P (id)
+		/* Don't register keywords with spaces.  */
+		&& IDENTIFIER_POINTER (id)[IDENTIFIER_LENGTH (id) - 1] != ' ')
+	      cpp_warn (parse_in, IDENTIFIER_POINTER (id),
+			IDENTIFIER_LENGTH (id));
+	  }
+      if (cxx_dialect >= cxx11)
+	{
+	  cpp_warn (parse_in, "final");
+	  cpp_warn (parse_in, "override");
+	  cpp_warn (parse_in, "noreturn");
+	  if (cxx_dialect < cxx26)
+	    cpp_warn (parse_in, "carries_dependency");
+	}
+      if (cxx_dialect >= cxx14)
+	cpp_warn (parse_in, "deprecated");
+      if (cxx_dialect >= cxx17)
+	{
+	  cpp_warn (parse_in, "fallthrough");
+	  cpp_warn (parse_in, "maybe_unused");
+	  cpp_warn (parse_in, "nodiscard");
+	}
+      if (cxx_dialect >= cxx20)
+	{
+	  cpp_warn (parse_in, "likely");
+	  cpp_warn (parse_in, "unlikely");
+	  cpp_warn (parse_in, "no_unique_address");
+	}
+      if (flag_modules)
+	{
+	  cpp_warn (parse_in, "import");
+	  cpp_warn (parse_in, "module");
+	}
+      if (cxx_dialect >= cxx23)
+	cpp_warn (parse_in, "assume");
+      if (cxx_dialect >= cxx26)
+	{
+	  cpp_warn (parse_in, "replaceable_if_eligible");
+	  cpp_warn (parse_in, "trivially_relocatable_if_eligible");
+	}
+    }
 
   if (c_common_init () == false)
     {

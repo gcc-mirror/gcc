@@ -62,9 +62,9 @@ struct V0Path
   }
 };
 
-static std::string
-v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
-	 const Resolver::CanonicalPath &path);
+static std::string v0_path (Rust::Compile::Context *ctx,
+			    const TyTy::BaseType *ty,
+			    const Resolver::CanonicalPath &path);
 
 static std::string
 v0_tuple_prefix (const TyTy::BaseType *ty)
@@ -148,7 +148,8 @@ v0_complex_type_prefix (Context *ctx, const TyTy::BaseType *ty)
   // TODO: generics
   switch (ty->get_kind ())
     {
-      case TyTy::TypeKind::ADT: {
+    case TyTy::TypeKind::ADT:
+      {
 	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (ty);
 	return v0_path (ctx, ty, adt->get_ident ().path);
       }
@@ -387,7 +388,8 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
       {
 	switch (impl_item->first->get_impl_item_type ())
 	  {
-	    case HIR::ImplItem::FUNCTION: {
+	  case HIR::ImplItem::FUNCTION:
+	    {
 	      HIR::Function *fn
 		= static_cast<HIR::Function *> (impl_item->first);
 	      v0path
@@ -408,7 +410,8 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
       {
 	switch (trait_item.value ()->get_item_kind ())
 	  {
-	    case HIR::TraitItem::FUNC: {
+	  case HIR::TraitItem::FUNC:
+	    {
 	      auto fn = static_cast<HIR::TraitItemFunc *> (*trait_item);
 	      rust_unreachable ();
 	      v0path = v0_function_path (v0path, ctx, ty,
@@ -428,7 +431,8 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
     else if (auto item = mappings.lookup_hir_item (hir_id))
       switch (item.value ()->get_item_kind ())
 	{
-	  case HIR::Item::ItemKind::Function: {
+	case HIR::Item::ItemKind::Function:
+	  {
 	    HIR::Function *fn = static_cast<HIR::Function *> (*item);
 	    v0path
 	      = v0_function_path (v0path, ctx, ty, fn->get_generic_params (),

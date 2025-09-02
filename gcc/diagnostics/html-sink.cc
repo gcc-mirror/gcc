@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/output-file.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/paths.h"
+#include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 #include "diagnostics/client-data-hooks.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"
@@ -59,6 +61,16 @@ html_generation_options::html_generation_options ()
   m_show_state_diagrams_sarif (false),
   m_show_state_diagrams_dot_src (false)
 {
+}
+
+void
+html_generation_options::dump (FILE *outfile, int indent) const
+{
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_css);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_javascript);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_sarif);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_dot_src);
 }
 
 class html_builder;
@@ -115,6 +127,8 @@ public:
 		pretty_printer &pp,
 		const line_maps *line_maps,
 		const html_generation_options &html_gen_opts);
+
+  void dump (FILE *out, int indent) const;
 
   void
   set_main_input_filename (const char *name);
@@ -223,11 +237,12 @@ make_span (std::string class_)
 void
 html_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*shtml_sink_buffer:\n", indent, "");
+  dumping::emit_heading (out, indent, "html_sink_buffer");
   int idx = 0;
   for (auto &result : m_results)
     {
-      fprintf (out, "%*sresult[%i]:\n", indent + 2, "", idx);
+      dumping::emit_indent (out, indent + 2);
+      fprintf (out, "result[%i]:\n", idx);
       result->dump (out);
       fprintf (out, "\n");
       ++idx;
@@ -470,6 +485,13 @@ html_builder::html_builder (context &dc,
 }
 
 void
+html_builder::dump (FILE *out, int indent) const
+{
+  dumping::emit_heading (out, indent, "HTML generation options");
+  m_html_gen_opts.dump (out, indent + 2);
+}
+
+void
 html_builder::set_main_input_filename (const char *name)
 {
   gcc_assert (m_title_element);
@@ -539,7 +561,7 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
     }
 }
 
-// For ease of comparison with experimental-nesting-show-levels=yes
+// For ease of comparison with show-nesting-levels=yes
 
 static void
 add_nesting_level_attr (xml::element &element,
@@ -1018,10 +1040,11 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   // Add any metadata as a suffix to the message
   if (diagnostic.m_metadata)
-    {
-      xp.add_text (" ");
-      xp.append (make_element_for_metadata (*diagnostic.m_metadata));
-    }
+    if (auto e = make_element_for_metadata (*diagnostic.m_metadata))
+      {
+	xp.add_text (" ");
+	xp.append (std::move (e));
+      }
 
   // Add any option as a suffix to the message
 
@@ -1234,6 +1257,9 @@ html_builder::make_element_for_metadata (const metadata &m)
 	(make_metadata_element (std::move (label), std::move (url)));
     }
 
+  if (span_metadata->m_children.empty ())
+    return nullptr;
+
   return span_metadata;
 }
 
@@ -1295,6 +1321,8 @@ html_builder::end_group ()
 void
 html_builder::flush_to_file (FILE *outf)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::html_builder::flush_to_file");
   if (m_html_gen_opts.m_javascript)
     {
       gcc_assert (m_head_element);
@@ -1329,8 +1357,9 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*shtml_sink\n", indent, "");
     sink::dump (out, indent);
+    dumping::emit_heading (out, indent, "html_builder");
+    m_builder.dump (out, indent + 2);
   }
 
   void
@@ -1363,6 +1392,9 @@ public:
   on_report_diagnostic (const diagnostic_info &diagnostic,
 			enum kind orig_diag_kind) final override
   {
+    DIAGNOSTICS_LOG_SCOPE_PRINTF0
+      (get_logger (),
+       "diagnostics::html_sink::on_report_diagnostic");
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagram &d) final override
@@ -1435,12 +1467,10 @@ public:
   {
     m_builder.flush_to_file (m_output_file.get_open_file ());
   }
-  void dump (FILE *out, int indent) const override
+  void dump_kind (FILE *out) const override
   {
-    fprintf (out, "%*shtml_file_sink: %s\n",
-	     indent, "",
+    fprintf (out, "html_file_sink: %s",
 	     m_output_file.get_filename ());
-    sink::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -1603,6 +1633,10 @@ private:
     : html_sink (dc, line_maps, html_gen_opts)
     {
     }
+    void dump_kind (FILE *out) const final override
+    {
+      fprintf (out, "html_buffered_sink");
+    }
     bool machine_readable_stderr_p () const final override
     {
       return true;
@@ -1702,6 +1736,7 @@ html_sink_cc_tests ()
 }
 
 } // namespace selftest
-} // namespace diagnostics
 
 #endif /* CHECKING_P */
+
+} // namespace diagnostics

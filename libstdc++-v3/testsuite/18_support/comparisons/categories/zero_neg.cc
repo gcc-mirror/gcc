@@ -23,6 +23,16 @@
 // C++20 [cmp.categories.pre]
 // "an argument other than a literal 0 is undefined"
 
+struct PtrConv
+{
+  template<typename T>
+  consteval operator T*()
+  { return nullptr; }
+
+  consteval operator std::nullptr_t()
+  { return nullptr; }
+};
+
 void
 test01()
 {
@@ -48,6 +58,12 @@ test01()
   std::partial_ordering::equivalent == nullptr;
   std::weak_ordering::equivalent == nullptr;
   std::strong_ordering::equivalent == nullptr;
+
+  constexpr PtrConv c;
+  // requires two user-defined conversion
+  std::partial_ordering::equivalent == c; // { dg-error "no match for 'operator=='" }
+  std::weak_ordering::equivalent == c;    // { dg-error "no match for 'operator=='" }
+  std::strong_ordering::equivalent == c;  // { dg-error "no match for 'operator=='" }
 }
 
 // { dg-prune-output "reinterpret_cast.* is not a constant expression" }

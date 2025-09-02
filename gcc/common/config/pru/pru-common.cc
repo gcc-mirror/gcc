@@ -28,7 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS		(MASK_OPT_LOOP)
+#define TARGET_DEFAULT_TARGET_FLAGS \
+  (MASK_OPT_LOOP | MASK_OPT_MUL | MASK_OPT_FILLZERO)
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info

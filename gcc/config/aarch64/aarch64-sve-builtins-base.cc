@@ -214,7 +214,8 @@ public:
   expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
-    insn_code icode = code_for_aarch64_pred_fac (m_unspec, e.vector_mode (0));
+    insn_code icode = code_for_aarch64_pred_fac_acle (m_unspec,
+						      e.vector_mode (0));
     return e.use_exact_insn (icode);
   }
 
@@ -497,10 +498,10 @@ public:
       {
 	bool unsigned_p = e.type_suffix (0).unsigned_p;
 	rtx_code code = get_rtx_code (m_code, unsigned_p);
-	return e.use_exact_insn (code_for_aarch64_pred_cmp (code, mode));
+	return e.use_exact_insn (code_for_aarch64_pred_cmp_acle (code, mode));
       }
 
-    insn_code icode = code_for_aarch64_pred_fcm (m_unspec_for_fp, mode);
+    insn_code icode = code_for_aarch64_pred_fcm_acle (m_unspec_for_fp, mode);
     return e.use_exact_insn (icode);
   }
 
@@ -542,7 +543,7 @@ public:
 
     /* If the argument is a constant that the unwidened comparisons
        can handle directly, use them instead.  */
-    insn_code icode = code_for_aarch64_pred_cmp (code, mode);
+    insn_code icode = code_for_aarch64_pred_cmp_acle (code, mode);
     rtx op2 = unwrap_const_vec_duplicate (e.args[3]);
     if (CONSTANT_P (op2)
 	&& insn_data[icode].operand[4].predicate (op2, DImode))
@@ -581,7 +582,8 @@ public:
   expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
-    return e.use_exact_insn (code_for_aarch64_pred_fcmuo (e.vector_mode (0)));
+    auto mode = e.vector_mode (0);
+    return e.use_exact_insn (code_for_aarch64_pred_fcmuo_acle (mode));
   }
 };
 
@@ -1048,6 +1050,23 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    machine_mode mode = e.vector_mode (0);
+    if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+      {
+	gcc_assert (e.pred == PRED_none);
+
+	rtx src = e.args[0];
+	if (GET_CODE (src) == CONST_INT)
+	  return (src == const0_rtx
+		  ? CONST0_RTX (VNx16BImode)
+		  : aarch64_ptrue_all (e.type_suffix (0).element_bytes));
+
+	rtx dest = e.get_reg_target ();
+	src = force_reg (GET_MODE (src), src);
+	aarch64_emit_sve_pred_vec_duplicate (mode, dest, src);
+	return dest;
+      }
+
     if (e.pred == PRED_none || e.pred == PRED_x)
       /* There's no benefit to using predicated instructions for _x here.  */
       return e.use_unpred_insn (e.direct_optab_handler (vec_duplicate_optab));
@@ -1056,7 +1075,6 @@ public:
        the duplicate of the function argument and the "false" value
        is the value of inactive lanes.  */
     insn_code icode;
-    machine_mode mode = e.vector_mode (0);
     if (valid_for_const_vector_p (GET_MODE_INNER (mode), e.args.last ()))
       /* Duplicate the constant to fill a vector.  The pattern optimizes
 	 various cases involving constant operands, falling back to SEL
@@ -1197,8 +1215,7 @@ public:
     if (mode != e.vector_mode (0))
       {
 	rtx data_dupq = aarch64_expand_sve_dupq (NULL, mode, vq_reg);
-	return aarch64_convert_sve_data_to_pred (e.possible_target,
-						 e.vector_mode (0), data_dupq);
+	return aarch64_convert_sve_data_to_pred (e.possible_target, data_dupq);
       }
 
     return aarch64_expand_sve_dupq (e.possible_target, mode, vq_reg);
@@ -1259,9 +1276,10 @@ public:
 	index = target;
       }
 
-    e.args[0] = gen_lowpart (VNx2DImode, e.args[0]);
+    e.args[0] = aarch64_sve_reinterpret (VNx2DImode, e.args[0]);
     e.args[1] = index;
-    return e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
+    rtx res = e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
+    return aarch64_sve_reinterpret (mode, res);
   }
 };
 
@@ -2857,7 +2875,10 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_aarch64_sve_rev (e.vector_mode (0)));
+    auto mode = e.vector_mode (0);
+    return e.use_exact_insn (e.type_suffix (0).bool_p
+			     ? code_for_aarch64_sve_rev_acle (mode)
+			     : code_for_aarch64_sve_rev (mode));
   }
 };
 
@@ -3248,7 +3269,7 @@ public:
     unsigned int unpacks = m_high_p ? UNSPEC_UNPACKSHI : UNSPEC_UNPACKSLO;
     insn_code icode;
     if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-      icode = code_for_aarch64_sve_punpk (unpacku, mode);
+      icode = code_for_aarch64_sve_punpk_acle (unpacku);
     else
       {
 	int unspec = e.type_suffix (0).unsigned_p ? unpacku : unpacks;

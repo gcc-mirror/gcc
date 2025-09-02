@@ -268,6 +268,12 @@ SubstMapperInternal::visit (TyTy::ParamType &type)
 }
 
 void
+SubstMapperInternal::visit (TyTy::ConstType &type)
+{
+  resolved = type.handle_substitions (mappings);
+}
+
+void
 SubstMapperInternal::visit (TyTy::PlaceholderType &type)
 {
   rust_assert (type.can_resolve ());
@@ -374,7 +380,7 @@ SubstMapperInternal::visit (TyTy::DynamicObjectType &type)
 void
 SubstMapperInternal::visit (TyTy::OpaqueType &type)
 {
-  resolved = type.handle_substitions (mappings);
+  resolved = type.clone ();
 }
 
 // SubstMapperFromExisting

@@ -20,7 +20,6 @@
 #define RUST_DESUGAR_FOR_LOOPS_H
 
 #include "rust-ast-builder.h"
-#include "rust-ast-visitor.h"
 #include "rust-expr.h"
 
 namespace Rust {
@@ -69,15 +68,14 @@ namespace AST {
 // of the way the typechecker is currently structured, where it will fetch name
 // resolution information in order to typecheck paths - which technically isn't
 // necessary.
-class DesugarForLoops : public DefaultASTVisitor
+class DesugarForLoops
 {
-  using DefaultASTVisitor::visit;
-
 public:
-  DesugarForLoops ();
-  void go (AST::Crate &);
+  static void go (std::unique_ptr<Expr> &ptr);
 
 private:
+  DesugarForLoops ();
+
   struct DesugarCtx
   {
     DesugarCtx (location_t loc) : builder (Builder (loc)), loc (loc) {}
@@ -85,10 +83,8 @@ private:
     Builder builder;
     location_t loc;
 
-    MatchArm make_match_arm (std::unique_ptr<Pattern> &&pattern);
     MatchCase make_break_arm ();
     MatchCase make_continue_arm ();
-    std::unique_ptr<Stmt> statementify (std::unique_ptr<Expr> &&expr);
 
     constexpr static const char *continue_pattern_id = "#val";
     constexpr static const char *next_value_id = "#__next";
@@ -96,10 +92,7 @@ private:
     constexpr static const char *result_id = "#result";
   };
 
-  std::unique_ptr<Expr> desugar (AST::ForLoopExpr &expr);
-  void maybe_desugar_expr (std::unique_ptr<Expr> &expr);
-
-  void visit (AST::BlockExpr &) override;
+  std::unique_ptr<Expr> desugar (ForLoopExpr &expr);
 };
 
 } // namespace AST

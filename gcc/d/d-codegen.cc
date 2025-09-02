@@ -1939,11 +1939,7 @@ build_filename_from_loc (const Loc &loc)
   if (filename == NULL)
     filename = d_function_chain->module->srcfile.toChars ();
 
-  unsigned length = strlen (filename);
-  tree str = build_string (length, filename);
-  TREE_TYPE (str) = make_array_type (Type::tchar, length + 1);
-
-  return build_address (str);
+  return build_string_literal (filename);
 }
 
 /* Builds a CALL_EXPR at location LOC in the source file to call LIBCALL when

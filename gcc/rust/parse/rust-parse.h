@@ -17,6 +17,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef RUST_PARSE_H
 #define RUST_PARSE_H
 
+#include "rust-ast.h"
 #include "rust-item.h"
 #include "rust-lex.h"
 #include "rust-ast-full.h"
@@ -33,12 +34,19 @@ class ParseLifetimeParamError
 class ParseLifetimeError
 {
 };
+
+enum class AnonConstError
+{
+  InvalidSizeExpr,
+};
+
 enum class ParseLoopLabelError
 {
   NOT_LOOP_LABEL,
   MISSING_COLON,
 };
-enum ParseSelfError
+
+enum class ParseSelfError
 {
   SELF_PTR,
   PARSING,
@@ -165,6 +173,12 @@ public:
 		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
+  tl::expected<AST::AnonConst, AnonConstError> parse_anon_const ();
+
+  std::unique_ptr<AST::ConstBlock>
+  parse_const_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+			  location_t loc = UNKNOWN_LOCATION);
+
   bool is_macro_rules_def (const_TokenPtr t);
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
@@ -222,7 +236,7 @@ private:
 
   // Path-related
   AST::SimplePath parse_simple_path ();
-  AST::SimplePathSegment parse_simple_path_segment ();
+  AST::SimplePathSegment parse_simple_path_segment (int base_peek = 0);
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
   AST::PathIdentSegment parse_path_ident_segment ();
@@ -644,6 +658,9 @@ private:
   std::unique_ptr<AST::ReturnExpr>
   parse_return_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
+  std::unique_ptr<AST::TryExpr>
+  parse_try_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		  location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::BreakExpr>
   parse_break_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
@@ -762,11 +779,15 @@ private:
     }
     ~InlineModuleStackScope () { parser.inline_module_stack.pop_back (); }
   };
+
+  // don't want to make things *only* AttributeParser uses public
+  // TODO: fold more of AttributeParser into Parser?
+  friend class ::Rust::AST::AttributeParser;
 };
 
-std::string
-extract_module_path (const AST::AttrVec &inner_attrs,
-		     const AST::AttrVec &outer_attrs, const std::string &name);
+std::string extract_module_path (const AST::AttrVec &inner_attrs,
+				 const AST::AttrVec &outer_attrs,
+				 const std::string &name);
 
 /**
  * Check if a MacroMatch is allowed to follow the last parsed MacroMatch.
@@ -776,12 +797,8 @@ extract_module_path (const AST::AttrVec &inner_attrs,
  *
  * @return true if the follow-up is valid, false otherwise
  */
-bool
-is_match_compatible (const AST::MacroMatch &last_match,
-		     const AST::MacroMatch &current_match);
+bool is_match_compatible (const AST::MacroMatch &last_match,
+			  const AST::MacroMatch &current_match);
 } // namespace Rust
-
-// as now template, include implementations of all methods
-#include "rust-parse-impl.h"
 
 #endif // RUST_PARSE_H

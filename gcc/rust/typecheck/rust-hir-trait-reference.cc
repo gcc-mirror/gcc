@@ -342,7 +342,15 @@ TraitReference::on_resolved ()
 {
   for (auto &item : item_refs)
     {
-      item.on_resolved ();
+      if (item.get_trait_item_type ()
+	  == TraitItemReference::TraitItemType::TYPE)
+	item.on_resolved ();
+    }
+  for (auto &item : item_refs)
+    {
+      if (item.get_trait_item_type ()
+	  != TraitItemReference::TraitItemType::TYPE)
+	item.on_resolved ();
     }
 }
 
@@ -424,7 +432,13 @@ TraitReference::trait_has_generics () const
   return !trait_substs.empty ();
 }
 
-std::vector<TyTy::SubstitutionParamMapping>
+std::vector<TyTy::SubstitutionParamMapping> &
+TraitReference::get_trait_substs ()
+{
+  return trait_substs;
+}
+
+const std::vector<TyTy::SubstitutionParamMapping> &
 TraitReference::get_trait_substs () const
 {
   return trait_substs;

@@ -263,8 +263,7 @@ PublicInterface::write_to_path (const std::string &path) const
   FILE *nfd = fopen (path.c_str (), "wb");
   if (nfd == NULL)
     {
-      rust_error_at (UNDEF_LOCATION,
-		     "failed to open file %qs for writing: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to open file %qs for writing: %s",
 		     path.c_str (), xstrerror (errno));
       return;
     }

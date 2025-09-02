@@ -209,10 +209,17 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 					     path.get_locus ());
 }
 
+ASTLoweringType::ASTLoweringType (bool default_to_static_lifetime,
+				  bool impl_trait_allowed)
+  : ASTLoweringBase (), default_to_static_lifetime (default_to_static_lifetime),
+    impl_trait_allowed (impl_trait_allowed), translated (nullptr)
+{}
+
 HIR::Type *
-ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime)
+ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime,
+			    bool impl_trait_allowed)
 {
-  ASTLoweringType resolver (default_to_static_lifetime);
+  ASTLoweringType resolver (default_to_static_lifetime, impl_trait_allowed);
   type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
@@ -260,7 +267,8 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
 
       HIR::Type *param_type
 	= ASTLoweringType::translate (param.get_type (),
-				      default_to_static_lifetime);
+				      default_to_static_lifetime,
+				      impl_trait_allowed);
 
       HIR::MaybeNamedParam p (param.get_name (), kind,
 			      std::unique_ptr<HIR::Type> (param_type),
@@ -272,7 +280,8 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
   if (fntype.has_return_type ())
     {
       return_type = ASTLoweringType::translate (fntype.get_return_type (),
-						default_to_static_lifetime);
+						default_to_static_lifetime,
+						impl_trait_allowed);
     }
 
   auto crate_num = mappings.get_current_crate ();
@@ -292,8 +301,8 @@ ASTLoweringType::visit (AST::TupleType &tuple)
   std::vector<std::unique_ptr<HIR::Type>> elems;
   for (auto &e : tuple.get_elems ())
     {
-      HIR::Type *t
-	= ASTLoweringType::translate (*e, default_to_static_lifetime);
+      HIR::Type *t = ASTLoweringType::translate (*e, default_to_static_lifetime,
+						 impl_trait_allowed);
       elems.push_back (std::unique_ptr<HIR::Type> (t));
     }
 
@@ -323,7 +332,8 @@ ASTLoweringType::visit (AST::ArrayType &type)
 {
   HIR::Type *translated_type
     = ASTLoweringType::translate (type.get_elem_type (),
-				  default_to_static_lifetime);
+				  default_to_static_lifetime,
+				  impl_trait_allowed);
   HIR::Expr *array_size = ASTLoweringExpr::translate (type.get_size_expr ());
 
   auto crate_num = mappings.get_current_crate ();
@@ -343,9 +353,9 @@ ASTLoweringType::visit (AST::ReferenceType &type)
   HIR::Lifetime lifetime
     = lower_lifetime (type.get_lifetime (), default_to_static_lifetime);
 
-  HIR::Type *base_type
-    = ASTLoweringType::translate (type.get_base_type (),
-				  default_to_static_lifetime);
+  HIR::Type *base_type = ASTLoweringType::translate (type.get_base_type (),
+						     default_to_static_lifetime,
+						     impl_trait_allowed);
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -364,7 +374,8 @@ ASTLoweringType::visit (AST::RawPointerType &type)
 {
   HIR::Type *base_type
     = ASTLoweringType::translate (type.get_type_pointed_to (),
-				  default_to_static_lifetime);
+				  default_to_static_lifetime,
+				  impl_trait_allowed);
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -384,9 +395,9 @@ ASTLoweringType::visit (AST::RawPointerType &type)
 void
 ASTLoweringType::visit (AST::SliceType &type)
 {
-  HIR::Type *base_type
-    = ASTLoweringType::translate (type.get_elem_type (),
-				  default_to_static_lifetime);
+  HIR::Type *base_type = ASTLoweringType::translate (type.get_elem_type (),
+						     default_to_static_lifetime,
+						     impl_trait_allowed);
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -463,7 +474,8 @@ void
 ASTLoweringType::visit (AST::ParenthesisedType &type)
 {
   auto *inner = ASTLoweringType::translate (*type.get_type_in_parens (),
-					    default_to_static_lifetime);
+					    default_to_static_lifetime,
+					    impl_trait_allowed);
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -480,6 +492,9 @@ ASTLoweringType::visit (AST::ParenthesisedType &type)
 void
 ASTLoweringType::visit (AST::ImplTraitType &type)
 {
+  if (!impl_trait_allowed)
+    emit_impl_trait_error (type.get_locus ());
+
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
   for (auto &bound : type.get_type_param_bounds ())
     {
@@ -499,9 +514,12 @@ ASTLoweringType::visit (AST::ImplTraitType &type)
 void
 ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
 {
+  if (!impl_trait_allowed)
+    emit_impl_trait_error (type.get_locus ());
+
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
 
-  auto b = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
+  auto b = ASTLoweringTypeBounds::translate (*type.get_trait_bound ().get ());
   bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
 
   auto crate_num = mappings.get_current_crate ();
@@ -511,6 +529,15 @@ ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
 
   translated
     = new HIR::ImplTraitType (mapping, std::move (bounds), type.get_locus ());
+}
+
+void
+ASTLoweringType::emit_impl_trait_error (location_t locus)
+{
+  rich_location r (line_table, locus);
+  rust_error_at (r, ErrorCode::E0562,
+		 "%<impl Trait%> not allowed outside of function and inherent "
+		 "method return types");
 }
 
 HIR::GenericParam *
@@ -593,7 +620,8 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
   translated
     = new HIR::TypeParam (mapping, param.get_type_representation (),
 			  param.get_locus (), std::move (type_param_bounds),
-			  std::move (type), param.get_outer_attrs ());
+			  std::move (type), param.get_outer_attrs (),
+			  param.from_impl_trait ());
 }
 
 HIR::TypeParamBound *

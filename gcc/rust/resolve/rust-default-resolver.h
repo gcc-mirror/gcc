@@ -39,6 +39,7 @@ public:
 
   virtual ~DefaultResolver () {}
 
+  void visit (AST::Crate &) override;
   // First, our lexical scope expressions - these visit their sub nodes, always
   // these nodes create new scopes and ribs - they are often used to declare new
   // variables, such as a for loop's iterator, or a function's arguments
@@ -46,20 +47,35 @@ public:
   void visit (AST::Module &) override;
   void visit (AST::Function &) override;
   void visit (AST::ForLoopExpr &expr) override;
+  virtual void visit_if_let_patterns (AST::IfLetExpr &expr);
+  void visit (AST::IfLetExpr &expr) override;
+  void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::Trait &) override;
+  // used to handle Self insertion in TopLevel
+  virtual void maybe_insert_big_self (AST::Impl &) {}
+  virtual void visit_impl_type (AST::Type &type) { visit (type); }
   void visit (AST::InherentImpl &) override;
   void visit (AST::TraitImpl &) override;
 
   void visit (AST::TypeParam &) override;
 
+  virtual void visit_extern_crate (AST::ExternCrate &, AST::Crate &, CrateNum);
+  void visit (AST::ExternCrate &) override;
+
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &) override;
   void visit (AST::TupleStruct &) override;
+  void visit (AST::EnumItem &) override;
+  void visit (AST::EnumItemTuple &) override;
+  void visit (AST::EnumItemStruct &) override;
+  void visit (AST::EnumItemDiscriminant &) override;
   void visit (AST::Enum &) override;
   void visit (AST::Union &) override;
   void visit (AST::TypeAlias &) override;
 
   // Visitors that visit their expression node(s)
+  virtual void visit_closure_params (AST::ClosureExpr &);
+  virtual void visit (AST::ClosureExpr &);
   void visit (AST::ClosureExprInner &) override;
   void visit (AST::ClosureExprInnerTyped &) override;
   void visit (AST::MatchExpr &) override;

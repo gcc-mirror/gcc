@@ -71,8 +71,7 @@ private:
 
 #if CHECKING_P
 namespace selftest {
-void
-rust_privacy_ctx_test (void);
+void rust_privacy_ctx_test (void);
 }
 #endif // !CHECKING_P
 

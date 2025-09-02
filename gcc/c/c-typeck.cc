@@ -137,6 +137,7 @@ static void record_maybe_used_decl (tree);
 static bool comptypes_internal (const_tree, const_tree,
 				struct comptypes_data *data);
 static bool comptypes_check_for_composite (tree t1, tree t2);
+static bool handle_counted_by_p (tree);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
@@ -641,7 +642,8 @@ struct composite_cache {
 };
 
 tree
-composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
+composite_type_internal (tree t1, tree t2, tree cond,
+			 struct composite_cache* cache)
 {
   enum tree_code code1;
   enum tree_code code2;
@@ -686,8 +688,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
       {
 	tree pointed_to_1 = TREE_TYPE (t1);
 	tree pointed_to_2 = TREE_TYPE (t2);
-	tree target = composite_type_internal (pointed_to_1,
-					       pointed_to_2, cache);
+	tree target = composite_type_internal (pointed_to_1, pointed_to_2,
+					       cond, cache);
 	t1 = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
 	t1 = c_build_type_attribute_variant (t1, attributes);
 	return qualify_type (t1, t2);
@@ -695,25 +697,20 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 
     case ARRAY_TYPE:
       {
-	tree elt = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
-					    cache);
-	int quals;
-	tree unqual_elt;
 	tree d1 = TYPE_DOMAIN (t1);
 	tree d2 = TYPE_DOMAIN (t2);
-	bool d1_variable, d2_variable;
-	bool d1_zero, d2_zero;
-	bool t1_complete, t2_complete;
 
 	/* We should not have any type quals on arrays at all.  */
 	gcc_assert (!TYPE_QUALS_NO_ADDR_SPACE (t1)
 		    && !TYPE_QUALS_NO_ADDR_SPACE (t2));
 
-	t1_complete = COMPLETE_TYPE_P (t1);
-	t2_complete = COMPLETE_TYPE_P (t2);
+	bool t1_complete = COMPLETE_TYPE_P (t1);
+	bool t2_complete = COMPLETE_TYPE_P (t2);
 
-	d1_zero = d1 == NULL_TREE || !TYPE_MAX_VALUE (d1);
-	d2_zero = d2 == NULL_TREE || !TYPE_MAX_VALUE (d2);
+	bool d1_zero = d1 == NULL_TREE || !TYPE_MAX_VALUE (d1);
+	bool d2_zero = d2 == NULL_TREE || !TYPE_MAX_VALUE (d2);
+
+	bool d1_variable, d2_variable;
 
 	d1_variable = (!d1_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d1)) != INTEGER_CST
@@ -722,10 +719,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
 
-	bool use1 = TYPE_DOMAIN (t1)
-		    && (d2_variable || d2_zero || !d1_variable);
-	bool use2 = TYPE_DOMAIN (t2)
-		    && (d1_variable || d1_zero || !d2_variable);
+	bool use1 = d1 && (d2_variable || d2_zero || !d1_variable);
+	bool use2 = d2 && (d1_variable || d1_zero || !d2_variable);
 
 	/* If the first is an unspecified size pick the other one.  */
 	if (d2_variable && c_type_unspecified_p (t1))
@@ -734,25 +729,53 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	    use1 = false;
 	  }
 
-	/* Save space: see if the result is identical to one of the args.  */
-	if (elt == TREE_TYPE (t1) && use1)
-	  return c_build_type_attribute_variant (t1, attributes);
-	if (elt == TREE_TYPE (t2) && use2)
-	  return c_build_type_attribute_variant (t2, attributes);
+	/* If both are VLAs but not unspecified and we are in the
+	   conditional operator, we create a conditional to select
+	   the size of the active branch.  */
+	bool use0 = cond && d1_variable && !c_type_unspecified_p (t1)
+			 && d2_variable && !c_type_unspecified_p (t2);
 
-	if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return c_build_type_attribute_variant (t1, attributes);
-	if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return c_build_type_attribute_variant (t2, attributes);
+	tree td;
+	tree elt = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+					    cond, cache);
+
+	if (!use0)
+	  {
+	    /* Save space: see if the result is identical to one of the args.  */
+	    if (elt == TREE_TYPE (t1) && use1)
+	      return c_build_type_attribute_variant (t1, attributes);
+	    if (elt == TREE_TYPE (t2) && use2)
+	      return c_build_type_attribute_variant (t2, attributes);
+
+	    if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	      return c_build_type_attribute_variant (t1, attributes);
+	    if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	      return c_build_type_attribute_variant (t2, attributes);
+
+	    td = TYPE_DOMAIN (use1 ? t1 : t2);
+	  }
+	else
+	  {
+	    /* Not used in C.  */
+	    gcc_assert (size_zero_node == TYPE_MIN_VALUE (d1));
+	    gcc_assert (size_zero_node == TYPE_MIN_VALUE (d2));
+
+	    tree d = fold_build3_loc (UNKNOWN_LOCATION, COND_EXPR, sizetype,
+				      cond, TYPE_MAX_VALUE (d1),
+				      TYPE_MAX_VALUE (d2));
+
+	    td = build_index_type (d);
+	  }
 
 	/* Merge the element types, and have a size if either arg has
 	   one.  We may have qualifiers on the element types.  To set
 	   up TYPE_MAIN_VARIANT correctly, we need to form the
 	   composite of the unqualified types and add the qualifiers
 	   back at the end.  */
-	quals = TYPE_QUALS (strip_array_types (elt));
-	unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
-	t1 = c_build_array_type (unqual_elt, TYPE_DOMAIN (use1 ? t1 : t2));
+	int quals = TYPE_QUALS (strip_array_types (elt));
+	tree unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
+
+	t1 = c_build_array_type (unqual_elt, td);
 
 	/* Check that a type which has a varying outermost dimension
 	   got marked has having a variable size.  */
@@ -819,7 +842,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	      gcc_assert (DECL_NAME (a) == DECL_NAME (b));
 	      gcc_checking_assert (!DECL_NAME (a) || comptypes (ta, tb));
 
-	      tree t = composite_type_internal (ta, tb, cache);
+	      tree t = composite_type_internal (ta, tb, cond, cache);
 	      tree f = build_decl (input_location, FIELD_DECL, DECL_NAME (a), t);
 
 	      DECL_PACKED (f) = DECL_PACKED (a);
@@ -876,8 +899,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
       /* Function types: prefer the one that specified arg types.
 	 If both do, merge the arg types.  Also merge the return types.  */
       {
-	tree valtype = composite_type_internal (TREE_TYPE (t1),
-						TREE_TYPE (t2), cache);
+	tree valtype = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+						cond, cache);
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
 	int len;
@@ -956,7 +979,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 		      {
 			TREE_VALUE (n) = composite_type_internal (TREE_TYPE (memb),
 								  TREE_VALUE (p2),
-								  cache);
+								  cond, cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
@@ -979,14 +1002,14 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 			TREE_VALUE (n)
 				= composite_type_internal (TREE_TYPE (memb),
 							   TREE_VALUE (p1),
-							   cache);
+							   cond, cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
 		      }
 		  }
 	      }
-	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cache);
+	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cond, cache);
 	  parm_done: ;
 	  }
 
@@ -1001,16 +1024,23 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 }
 
 tree
-composite_type (tree t1, tree t2)
+composite_type_cond (tree t1, tree t2, tree cond)
 {
   gcc_checking_assert (comptypes_check_for_composite (t1, t2));
 
   struct composite_cache cache = { };
-  tree n = composite_type_internal (t1, t2, &cache);
+  tree n = composite_type_internal (t1, t2, cond, &cache);
 
   gcc_checking_assert (comptypes_check_for_composite (n, t1));
   gcc_checking_assert (comptypes_check_for_composite (n, t2));
   return n;
+}
+
+
+tree
+composite_type (tree t1, tree t2)
+{
+  return composite_type_cond (t1, t2, NULL_TREE);
 }
 
 /* Return the type of a conditional expression between pointers to
@@ -1020,7 +1050,7 @@ composite_type (tree t1, tree t2)
    true; if that isn't so, this may crash.  */
 
 static tree
-common_pointer_type (tree t1, tree t2)
+common_pointer_type (tree t1, tree t2, tree cond)
 {
   tree attributes;
   unsigned target_quals;
@@ -1047,8 +1077,8 @@ common_pointer_type (tree t1, tree t2)
      qualifiers of the two types' targets.  */
   tree pointed_to_1 = TREE_TYPE (t1);
   tree pointed_to_2 = TREE_TYPE (t2);
-  tree target = composite_type (TYPE_MAIN_VARIANT (pointed_to_1),
-				TYPE_MAIN_VARIANT (pointed_to_2));
+  tree target = composite_type_cond (TYPE_MAIN_VARIANT (pointed_to_1),
+				     TYPE_MAIN_VARIANT (pointed_to_2), cond);
 
   /* Strip array types to get correct qualifier for pointers to arrays */
   quals1 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_1));
@@ -1970,6 +2000,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		ft2 = DECL_BIT_FIELD_TYPE (s2);
 	      }
 
+	    if (!ft1 || !ft2)
+	      return false;
+
 	    if (TREE_CODE (ft1) == ERROR_MARK || TREE_CODE (ft2) == ERROR_MARK)
 	      return false;
 
@@ -2454,6 +2487,10 @@ struct c_expr
 default_function_array_read_conversion (location_t loc, struct c_expr exp)
 {
   mark_exp_read (exp.value);
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
+  if (TREE_CODE (exp.value) == COMPONENT_REF
+      && handle_counted_by_p (exp.value))
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value);
   return default_function_array_conversion (loc, exp);
 }
 
@@ -2555,6 +2592,11 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   bool force_non_npc = false;
   if (read_p)
     mark_exp_read (exp.value);
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
+  if (read_p && TREE_CODE (exp.value) == COMPONENT_REF
+      && handle_counted_by_p (exp.value))
+    exp.value = handle_counted_by_for_component_ref (loc, exp.value);
+
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
@@ -2648,6 +2690,20 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   return exp;
 }
 
+/* Wrapper for the overload above, same arguments but for tree rather than
+   c_expr.  This is important for hardbools to decay to bools.  */
+
+static inline tree
+convert_lvalue_to_rvalue (location_t loc, tree val,
+			  bool convert_p, bool read_p, bool for_init = false)
+{
+  struct c_expr expr;
+  memset (&expr, 0, sizeof (expr));
+  expr.value = val;
+  expr = convert_lvalue_to_rvalue (loc, expr, convert_p, read_p, for_init);
+  return expr.value;
+}
+
 /* EXP is an expression of integer type.  Apply the integer promotions
    to it and return the promoted value.  */
 
@@ -2718,6 +2774,10 @@ default_conversion (tree exp)
   tree promoted_type;
 
   mark_exp_read (exp);
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
+  if (TREE_CODE (exp) == COMPONENT_REF
+      && handle_counted_by_p (exp))
+    exp = handle_counted_by_for_component_ref (EXPR_LOCATION (exp), exp);
 
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
@@ -2936,10 +2996,63 @@ should_suggest_deref_p (tree datum_type)
     return false;
 }
 
-/* For a SUBDATUM field of a structure or union DATUM, generate a REF to
-   the object that represents its counted_by per the attribute counted_by
-   attached to this field if it's a flexible array member field, otherwise
-   return NULL_TREE.
+/* Give a component ref REF, decide whether we should handle its counted_by
+   attribute based on its context:
+   Do not handle counted_by when in offsetof, typeof and alignof operator.  */
+
+static bool
+handle_counted_by_p (tree ref)
+{
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+  tree datum = TREE_OPERAND (ref, 0);
+  /* If the component_ref is build for a offsetof, i.e., the datum
+     of the component_ref is a indirect_ref of null_pointer_node,
+     we should not generate call to .ACCESS_WITH_SIZE.  */
+  if (TREE_CODE (datum) == INDIRECT_REF
+      && TREE_OPERAND (datum, 0) == null_pointer_node)
+    return false;
+  if (in_typeof || in_alignof)
+    return false;
+  return true;
+}
+
+/* Given a component ref REF, if there is a counted_by attribute attached,
+   issue error when the element_type is a structure or union including a
+   flexible array member.  */
+
+static void
+check_counted_by_attribute (location_t loc, tree ref)
+{
+  tree subdatum = TREE_OPERAND (ref, 1);
+  tree sub_type = TREE_TYPE (subdatum);
+
+  if (!c_flexible_array_member_type_p (sub_type)
+      && TREE_CODE (sub_type) != POINTER_TYPE)
+    return;
+
+  tree element_type = TREE_TYPE (sub_type);
+
+  tree attr_counted_by = lookup_attribute ("counted_by",
+					   DECL_ATTRIBUTES (subdatum));
+  if (attr_counted_by)
+    {
+      /* Issue error when the element_type is a structure or
+	union including a flexible array member.  */
+      if (RECORD_OR_UNION_TYPE_P (element_type)
+	  && TYPE_INCLUDES_FLEXARRAY (element_type))
+	{
+	  error_at (loc,
+		    "%<counted_by%> attribute is not allowed for a pointer to"
+		    " structure or union with flexible array member");
+	  return;
+	}
+    }
+}
+
+/* For a SUBDATUM field of a structure or union DATUM, generate a REF
+   to the object that represents its counted_by per the attribute
+   counted_by attached to this field if it's a flexible array member
+   or a pointer field, otherwise return NULL_TREE.
    Set COUNTED_BY_TYPE to the TYPE of the counted_by field.
    For example, if:
 
@@ -2954,13 +3067,16 @@ should_suggest_deref_p (tree datum_type)
     the ref to the object that represents its element count will be:
 
     &(p->k)
-
 */
+
 static tree
-build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
+build_counted_by_ref (tree datum, tree subdatum,
+		      tree *counted_by_type)
 {
   tree type = TREE_TYPE (datum);
-  if (!c_flexible_array_member_type_p (TREE_TYPE (subdatum)))
+  tree sub_type = TREE_TYPE (subdatum);
+  if (!c_flexible_array_member_type_p (sub_type)
+      && TREE_CODE (sub_type) != POINTER_TYPE)
     return NULL_TREE;
 
   tree attr_counted_by = lookup_attribute ("counted_by",
@@ -2991,8 +3107,11 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 }
 
 /* Given a COMPONENT_REF REF with the location LOC, the corresponding
-   COUNTED_BY_REF, and the COUNTED_BY_TYPE, generate an INDIRECT_REF
-   to a call to the internal function .ACCESS_WITH_SIZE.
+   COUNTED_BY_REF, and the COUNTED_BY_TYPE, generate the corresponding
+   call to the internal function .ACCESS_WITH_SIZE.
+
+   A: For the Flexible Array Member, Generate an INDIRECT_REF to a call to
+   the internal function .ACCESS_WITH_SIZE.
 
    REF
 
@@ -3002,11 +3121,24 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 			TYPE_SIZE_UNIT for element)
 
    NOTE: The return type of this function is the POINTER type pointing
-   to the original flexible array type.
-   Then the type of the INDIRECT_REF is the original flexible array type.
-
+   to the original flexible array type.  Then the type of the INDIRECT_REF
+   is the original flexible array type.
    The type of the first argument of this function is a POINTER type
    to the original flexible array type.
+
+   B: For pointers with counted_by, generate a call to the internal function
+   .ACCESS_WITH_SIZE.
+
+    REF
+
+    to:
+
+    .ACCESS_WITH_SIZE (REF, COUNTED_BY_REF, (* TYPE_OF_SIZE)0,
+		       TYPE_SIZE_UNIT for element)
+
+   NOTE: The return type of this function is the original pointer type.
+   The type of the first argument of this function is the original
+   pointer type.
 
    The 3rd argument of the call is a constant 0 with the pointer TYPE whose
    pointee type is the TYPE of the object pointed by COUNTED_BY_REF.
@@ -3020,16 +3152,25 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 				       tree counted_by_ref,
 				       tree counted_by_type)
 {
-  gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
-  /* The result type of the call is a pointer to the flexible array type.  */
-  tree result_type = c_build_pointer_type (TREE_TYPE (ref));
+  gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref))
+	      || TREE_CODE (TREE_TYPE (ref)) == POINTER_TYPE);
+
+  bool is_fam = c_flexible_array_member_type_p (TREE_TYPE (ref));
+
+  /* The result type of the call is a pointer to the flexible array type;
+     or is the original ponter type to the pointer field with counted_by.  */
+  tree result_type = is_fam ? c_build_pointer_type (TREE_TYPE (ref))
+		     : TREE_TYPE (ref);
+
   tree element_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ref)));
 
-  tree first_param
-    = c_fully_fold (array_to_pointer_conversion (loc, ref), false, NULL);
+  tree first_param = is_fam
+		     ? c_fully_fold (array_to_pointer_conversion (loc, ref),
+				     false, NULL)
+		     : ref;
   tree second_param
     = c_fully_fold (counted_by_ref, false, NULL);
-  tree third_param = build_int_cst (build_pointer_type (counted_by_type), 0);
+  tree third_param = build_int_cst (c_build_pointer_type (counted_by_type), 0);
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
@@ -3040,7 +3181,8 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 				    element_size);
 
   /* Wrap the call with an INDIRECT_REF with the flexible array type.  */
-  call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
+  if (is_fam)
+    call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
   SET_EXPR_LOCATION (call, loc);
   return call;
 }
@@ -3057,6 +3199,11 @@ handle_counted_by_for_component_ref (location_t loc, tree ref)
   tree datum = TREE_OPERAND (ref, 0);
   tree subdatum = TREE_OPERAND (ref, 1);
   tree counted_by_type = NULL_TREE;
+
+  if (!(c_flexible_array_member_type_p (TREE_TYPE (ref))
+	|| TREE_CODE (TREE_TYPE (ref)) == POINTER_TYPE))
+    return ref;
+
   tree counted_by_ref = build_counted_by_ref (datum, subdatum,
 					      &counted_by_type);
   if (counted_by_ref)
@@ -3076,8 +3223,7 @@ handle_counted_by_for_component_ref (location_t loc, tree ref)
 
 tree
 build_component_ref (location_t loc, tree datum, tree component,
-		     location_t component_loc, location_t arrow_loc,
-		     bool handle_counted_by)
+		     location_t component_loc, location_t arrow_loc)
 {
   tree type = TREE_TYPE (datum);
   enum tree_code code = TREE_CODE (type);
@@ -3149,8 +3295,6 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  int quals;
 	  tree subtype;
 	  bool use_datum_quals;
-	  /* Do not handle counted_by when in typeof and alignof operator.  */
-	  handle_counted_by = handle_counted_by && !in_typeof && !in_alignof;
 
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
@@ -3171,8 +3315,7 @@ build_component_ref (location_t loc, tree datum, tree component,
 			NULL_TREE);
 	  SET_EXPR_LOCATION (ref, loc);
 
-	  if (handle_counted_by)
-	    ref = handle_counted_by_for_component_ref (loc, ref);
+	  check_counted_by_attribute (loc, ref);
 
 	  if (TREE_READONLY (subdatum)
 	      || (use_datum_quals && TREE_READONLY (datum)))
@@ -3358,6 +3501,11 @@ build_array_ref (location_t loc, tree array, tree index)
 
   bool was_vector = VECTOR_TYPE_P (TREE_TYPE (array));
   bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, index);
+
+  /* We only generate a call to .ACCESS_WITH_SIZE when it is a read.  */
+  if (TREE_CODE (array) == COMPONENT_REF
+      && handle_counted_by_p (array))
+    array = handle_counted_by_for_component_ref (loc, array);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
@@ -4531,6 +4679,9 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 				      val, valtype, npc, rname, parmnum, argnum,
 				      excess_precision, 0);
 	}
+      /* A NULLPTR type is just a nullptr always.  */
+      else if (TREE_CODE (TREE_TYPE (val)) == NULLPTR_TYPE)
+	parmval = omit_one_operand_loc (ploc, TREE_TYPE (val), nullptr_node, val);
       else if (promote_float_arg)
         {
 	  if (type_generic)
@@ -4926,7 +5077,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
       if (!addr_space_superset (as0, as1, &as_common))
 	gcc_unreachable ();
 
-      common_type = common_pointer_type (TREE_TYPE (op0), TREE_TYPE (op1));
+      common_type = common_pointer_type (TREE_TYPE (op0), TREE_TYPE (op1), NULL_TREE);
       op0 = convert (common_type, op0);
       op1 = convert (common_type, op1);
     }
@@ -5271,7 +5422,9 @@ cas_loop:
   /* newval = old + val;  */
   if (rhs_type != rhs_semantic_type)
     val = build1 (EXCESS_PRECISION_EXPR, nonatomic_rhs_semantic_type, val);
-  rhs = build_binary_op (loc, modifycode, old, val, true);
+  rhs = build_binary_op (loc, modifycode,
+			 convert_lvalue_to_rvalue (loc, old, true, true),
+			 val, true);
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
     {
       tree eptype = TREE_TYPE (rhs);
@@ -5727,7 +5880,48 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    goto return_build_unary_op;
 	  }
 
-	if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
+	tree true_res;
+	if (c_hardbool_type_attr (TREE_TYPE (arg), NULL, &true_res))
+	  {
+	    tree larg = stabilize_reference (arg);
+	    tree sarg = save_expr (larg);
+	    switch (code)
+	      {
+	      case PREINCREMENT_EXPR:
+		val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, true_res);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		break;
+	      case POSTINCREMENT_EXPR:
+		val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, true_res);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), val, sarg);
+		val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		break;
+	      case PREDECREMENT_EXPR:
+		{
+		  tree rarg = convert_lvalue_to_rvalue (location, sarg,
+							true, true);
+		  rarg = invert_truthvalue_loc (location, rarg);
+		  rarg = convert (TREE_TYPE (sarg), rarg);
+		  val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, rarg);
+		}
+		break;
+	      case POSTDECREMENT_EXPR:
+		{
+		  tree rarg = convert_lvalue_to_rvalue (location, sarg,
+							true, true);
+		  rarg = invert_truthvalue_loc (location, rarg);
+		  tree iarg = convert (TREE_TYPE (larg), rarg);
+		  val = build2 (MODIFY_EXPR, TREE_TYPE (larg), larg, iarg);
+		  val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), val, sarg);
+		  val = build2 (COMPOUND_EXPR, TREE_TYPE (larg), sarg, val);
+		}
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    TREE_SIDE_EFFECTS (val) = 1;
+	  }
+	else if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
 	  val = boolean_increment (code, arg);
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
@@ -6380,7 +6574,10 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       addr_space_t as_common;
 
       if (comp_target_types (colon_loc, type1, type2))
-	result_type = common_pointer_type (type1, type2);
+	{
+	  ifexp = save_expr (ifexp);
+	  result_type = common_pointer_type (type1, type2, ifexp);
+	}
       else if (null_pointer_constant_p (orig_op1))
 	result_type = type2;
       else if (null_pointer_constant_p (orig_op2))
@@ -7337,8 +7534,10 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 		clear_decl_read = true;
 	    }
 
-	  newrhs = build_binary_op (location,
-				    modifycode, lhs, newrhs, true);
+	  newrhs = build_binary_op (location, modifycode,
+				    convert_lvalue_to_rvalue (location, lhs,
+							      true, true),
+				    newrhs, true);
 	  if (clear_decl_read)
 	    DECL_READ_P (lhs) = 0;
 
@@ -8787,11 +8986,13 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && coder == INTEGER_TYPE)
 	warning_at (location, OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
-
+      /* A NULLPTR type is just a nullptr always.  */
+      if (coder == NULLPTR_TYPE)
+	return omit_one_operand_loc (expr_loc, type, nullptr_node, rhs);
       /* An explicit constant 0 or type nullptr_t can convert to a pointer,
 	 or one that results from arithmetic, even including a cast to
 	 integer type.  */
-      if (!null_pointer_constant && coder != NULLPTR_TYPE)
+      else if (!null_pointer_constant)
 	switch (errtype)
 	  {
 	  case ic_argpass:
@@ -12730,11 +12931,9 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	    }
 	  else
 	    {
-	      struct c_expr expr;
-	      memset (&expr, 0, sizeof (expr));
-	      expr.value = input;
-	      expr = convert_lvalue_to_rvalue (loc, expr, true, false);
-	      input = c_fully_fold (expr.value, false, NULL);
+	      input = c_fully_fold (convert_lvalue_to_rvalue (loc, input,
+							      true, false),
+				    false, NULL);
 
 	      if (input != error_mark_node && VOID_TYPE_P (TREE_TYPE (input)))
 		{
@@ -14390,7 +14589,7 @@ build_binary_op (location_t location, enum tree_code code,
 	     Otherwise, the targets must be compatible
 	     and both must be object or both incomplete.  */
 	  if (comp_target_types (location, type0, type1))
-	    result_type = common_pointer_type (type0, type1);
+	    result_type = common_pointer_type (type0, type1, NULL_TREE);
 	  else if (!addr_space_superset (as0, as1, &as_common))
 	    {
 	      error_at (location, "comparison of pointers to "
@@ -14529,7 +14728,7 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  if (comp_target_types (location, type0, type1))
 	    {
-	      result_type = common_pointer_type (type0, type1);
+	      result_type = common_pointer_type (type0, type1, NULL_TREE);
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
 		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
 		pedwarn_c99 (location, OPT_Wpedantic,
@@ -15356,12 +15555,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  /* If the array section is pointer based and the pointer
 	     itself is _Atomic qualified, we need to atomically load
 	     the pointer.  */
-	  c_expr expr;
-	  memset (&expr, 0, sizeof (expr));
-	  expr.value = ret;
-	  expr = convert_lvalue_to_rvalue (OMP_CLAUSE_LOCATION (c),
-					   expr, false, false);
-	  ret = expr.value;
+	  ret = convert_lvalue_to_rvalue (OMP_CLAUSE_LOCATION (c),
+					  ret, false, false);
 	}
       return ret;
     }
@@ -16204,7 +16399,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       /* We've reached the end of a list of expanded nodes.  Reset the group
 	 start pointer.  */
       if (c == grp_sentinel)
-	grp_start_p = NULL;
+	{
+	  if (grp_start_p
+	      && OMP_CLAUSE_HAS_ITERATORS (*grp_start_p))
+	    for (tree gc = *grp_start_p; gc != grp_sentinel;
+		 gc = OMP_CLAUSE_CHAIN (gc))
+	      OMP_CLAUSE_ITERATORS (gc) = OMP_CLAUSE_ITERATORS (*grp_start_p);
+	  grp_start_p = NULL;
+	}
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -16962,6 +17164,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	  if (OMP_CLAUSE_ITERATORS (c)
+	      && c_omp_finish_iterators (OMP_CLAUSE_ITERATORS (c)))
+	    {
+	      t = error_mark_node;
+	      break;
+	    }
+	  /* FALLTHRU */
 	case OMP_CLAUSE__CACHE_:
 	  {
 	    using namespace omp_addr_tokenizer;
@@ -17689,6 +17898,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
+
+  if (grp_start_p
+      && OMP_CLAUSE_HAS_ITERATORS (*grp_start_p))
+    for (tree gc = *grp_start_p; gc; gc = OMP_CLAUSE_CHAIN (gc))
+      OMP_CLAUSE_ITERATORS (gc) = OMP_CLAUSE_ITERATORS (*grp_start_p);
 
   if (simdlen
       && safelen

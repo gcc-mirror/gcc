@@ -130,7 +130,7 @@
  (and (match_code "mem")
       (match_test "smalloffset_mem_p (op)")))
 
-(define_memory_constraint "T"
+(define_special_memory_constraint "T"
  "Memory in a literal pool (addressable with an L32R instruction)."
  (and (match_code "mem")
       (match_test "!TARGET_CONST16 && constantpool_mem_p (op)")))

@@ -7,7 +7,7 @@ void run (void (*)());
 ** bar.0:
 **	...
 **	hint	40 // chkfeat x16
-**	tbnz	w16, 0, (\.L[0-9]+)
+**	cbnz	x16, (\.L[0-9]+)
 **	...
 **	mrs	(x[0-9]+), s3_3_c2_c5_1 // gcspr_el0
 **	subs	x[0-9]+, x[0-9]+, \2

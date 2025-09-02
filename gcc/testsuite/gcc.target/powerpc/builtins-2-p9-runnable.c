@@ -21,7 +21,7 @@ int main() {
 
   /* Returns a vector with each element containing the parity of the low-order
      bit of each of the bytes in that element.  Note results are always
-     returned in an unsinged type, per the ABI spec.  */
+     returned in an unsigned type, per the ABI spec.  */
   vsia = (vector int) {0x10101010, 0x10101011, 0x10101111, 0x10111111};
   vsiexpt = (vector unsigned int){0x0, 0x1, 0x0, 0x1};
 

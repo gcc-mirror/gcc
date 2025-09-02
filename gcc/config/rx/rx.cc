@@ -1648,15 +1648,19 @@ mark_frame_related (rtx insn)
 static void
 add_pop_cfi_notes (rtx_insn *insn, unsigned int high, unsigned int low)
 {
-  rtx t = plus_constant (Pmode, stack_pointer_rtx,
-                        (high - low + 1) * UNITS_PER_WORD);
+  rtx src = stack_pointer_rtx;
+  rtx t;
+  for (unsigned int i = low; i <= high; i++)
+    {
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (word_mode, i));
+      if (i == FRAME_POINTER_REGNUM && frame_pointer_needed)
+	src = frame_pointer_rtx;
+    }
+  t = plus_constant (Pmode, src, (high - low + 1) * UNITS_PER_WORD);
   t = gen_rtx_SET (stack_pointer_rtx, t);
   add_reg_note (insn, REG_CFA_ADJUST_CFA, t);
   RTX_FRAME_RELATED_P (insn) = 1;
-  for (unsigned int i = low; i <= high; i++)
-    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (word_mode, i));
 }
-
 
 static bool
 ok_for_max_constant (HOST_WIDE_INT val)
@@ -1816,36 +1820,17 @@ rx_expand_prologue (void)
 	}
     }
 
-  /* If needed, set up the frame pointer.  */
-  if (frame_pointer_needed)
-    gen_safe_add (frame_pointer_rtx, stack_pointer_rtx,
-		  GEN_INT (- (HOST_WIDE_INT) frame_size), true);
-
-  /* Allocate space for the outgoing args.
-     If the stack frame has not already been set up then handle this as well.  */
-  if (stack_size)
+  if (stack_size || frame_size)
     {
-      if (frame_size)
-	{
-	  if (frame_pointer_needed)
-	    gen_safe_add (stack_pointer_rtx, frame_pointer_rtx,
-			  GEN_INT (- (HOST_WIDE_INT) stack_size), true);
-	  else
-	    gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
-			  GEN_INT (- (HOST_WIDE_INT) (frame_size + stack_size)),
-			  true);
-	}
-      else
-	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
-		      GEN_INT (- (HOST_WIDE_INT) stack_size), true);
+      gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+		    GEN_INT (- (HOST_WIDE_INT) (stack_size + frame_size)),
+		    true);
     }
-  else if (frame_size)
+  if (frame_pointer_needed)
     {
-      if (! frame_pointer_needed)
-	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
-		      GEN_INT (- (HOST_WIDE_INT) frame_size), true);
-      else
-	gen_safe_add (stack_pointer_rtx, frame_pointer_rtx, NULL_RTX, true);
+      gen_safe_add (frame_pointer_rtx, stack_pointer_rtx,
+		    GEN_INT ((HOST_WIDE_INT) stack_size),
+		    true);
     }
 }
 

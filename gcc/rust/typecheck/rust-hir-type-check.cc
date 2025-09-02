@@ -26,11 +26,7 @@
 #include "rust-hir-type-check-struct-field.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
-extern bool
-saw_errors (void);
+extern bool saw_errors (void);
 
 namespace Rust {
 namespace Resolver {
@@ -165,7 +161,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
-      TypeCheckBase::ResolveGenericParams (function.get_generic_params (),
+      TypeCheckBase::ResolveGenericParams (HIR::Item::ItemKind::Function,
+					   fn.get_locus (),
+					   function.get_generic_params (),
 					   substitutions, false /*is_foreign*/,
 					   ABI::RUST);
     }
@@ -231,7 +229,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	      break;
 
 	    case HIR::SelfParam::IMM_REF:
-	      case HIR::SelfParam::MUT_REF: {
+	    case HIR::SelfParam::MUT_REF:
+	      {
 		auto mutability
 		  = self_param.get_self_kind () == HIR::SelfParam::IMM_REF
 		      ? Mutability::Imm
@@ -275,26 +274,13 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  auto &mappings = Analysis::Mappings::get ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  tl::optional<CanonicalPath> canonical_path;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (fn.get_mappings ().get_nodeid ());
 
-      canonical_path
-	= nr_ctx.values.to_canonical_path (fn.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path
-	= mappings.lookup_canonical_path (fn.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path);
-
-  RustIdent ident{*canonical_path, fn.get_locus ()};
+  RustIdent ident{canonical_path, fn.get_locus ()};
   auto resolved = new TyTy::FnType (
     fn.get_mappings ().get_hirid (), fn.get_mappings ().get_defid (),
     function.get_function_name ().as_string (), ident,

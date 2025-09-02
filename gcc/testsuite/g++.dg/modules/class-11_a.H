@@ -1,6 +1,7 @@
 // Check for some additional lang_type flags that we'd missed.
 // { dg-additional-options "-fmodule-header -fabi-version=21 -Wabi=15" }
 // { dg-module-cmi {} }
+// { dg-skip-if "test assumes that structs have padding" { default_packed } }
 
 #if __cpp_trivial_relocatability < 202502L
 #define trivially_relocatable_if_eligible __trivially_relocatable_if_eligible
@@ -20,7 +21,7 @@ struct pr106381 {
 struct L1 : pr106381 {
   char x;  // { dg-warning "offset" "" { target c++14 } }
 };
-static_assert(sizeof(L1) == sizeof(pr106381));
+static_assert(sizeof(L1) == sizeof(pr106381), "");
 
 
 struct pr120012 {
@@ -33,4 +34,4 @@ struct pr120012 {
 struct L2 : pr120012 {
   unsigned char y;  // { dg-warning "offset" "" { target c++20 } }
 };
-static_assert(sizeof(L2) > sizeof(pr120012));
+static_assert(sizeof(L2) > sizeof(pr120012), "");

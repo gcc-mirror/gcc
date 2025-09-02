@@ -73,7 +73,7 @@ public:
   virtual void visit (AttrInputLiteral &attr_input) = 0;
   virtual void visit (AttrInputMacro &attr_input) = 0;
   virtual void visit (MetaItemLitExpr &meta_item) = 0;
-  virtual void visit (MetaItemPathLit &meta_item) = 0;
+  virtual void visit (MetaItemPathExpr &meta_item) = 0;
   virtual void visit (BorrowExpr &expr) = 0;
   virtual void visit (DereferenceExpr &expr) = 0;
   virtual void visit (ErrorPropagationExpr &expr) = 0;
@@ -104,6 +104,8 @@ public:
   virtual void visit (FieldAccessExpr &expr) = 0;
   virtual void visit (ClosureExprInner &expr) = 0;
   virtual void visit (BlockExpr &expr) = 0;
+  virtual void visit (AnonConst &expr) = 0;
+  virtual void visit (ConstBlock &expr) = 0;
   virtual void visit (ClosureExprInnerTyped &expr) = 0;
   virtual void visit (ContinueExpr &expr) = 0;
   virtual void visit (BreakExpr &expr) = 0;
@@ -114,6 +116,7 @@ public:
   virtual void visit (RangeFromToInclExpr &expr) = 0;
   virtual void visit (RangeToInclExpr &expr) = 0;
   virtual void visit (ReturnExpr &expr) = 0;
+  virtual void visit (TryExpr &expr) = 0;
   virtual void visit (BoxExpr &expr) = 0;
   virtual void visit (UnsafeBlockExpr &expr) = 0;
   virtual void visit (LoopExpr &expr) = 0;
@@ -209,6 +212,8 @@ public:
   virtual void visit (TuplePatternItemsRanged &tuple_items) = 0;
   virtual void visit (TuplePattern &pattern) = 0;
   virtual void visit (GroupedPattern &pattern) = 0;
+  virtual void visit (SlicePatternItemsNoRest &items) = 0;
+  virtual void visit (SlicePatternItemsHasRest &items) = 0;
   virtual void visit (SlicePattern &pattern) = 0;
   virtual void visit (AltPattern &pattern) = 0;
 
@@ -235,6 +240,7 @@ public:
 
   // special AST nodes for certain builtin macros such as `asm!()`
   virtual void visit (FormatArgs &fmt) = 0;
+  virtual void visit (OffsetOf &fmt) = 0;
 
   // TODO: rust-cond-compilation.h visiting? not currently used
 };
@@ -264,7 +270,7 @@ public:
   virtual void visit (AST::AttrInputLiteral &attr_input) override;
   virtual void visit (AST::AttrInputMacro &attr_input) override;
   virtual void visit (AST::MetaItemLitExpr &meta_item) override;
-  virtual void visit (AST::MetaItemPathLit &meta_item) override;
+  virtual void visit (AST::MetaItemPathExpr &meta_item) override;
   virtual void visit (AST::BorrowExpr &expr) override;
   virtual void visit (AST::DereferenceExpr &expr) override;
   virtual void visit (AST::ErrorPropagationExpr &expr) override;
@@ -293,6 +299,8 @@ public:
   virtual void visit (AST::FieldAccessExpr &expr) override;
   virtual void visit (AST::ClosureExprInner &expr) override;
   virtual void visit (AST::BlockExpr &expr) override;
+  virtual void visit (AST::AnonConst &expr) override;
+  virtual void visit (AST::ConstBlock &expr) override;
   virtual void visit (AST::ClosureExprInnerTyped &expr) override;
   virtual void visit (AST::ContinueExpr &expr) override;
   virtual void visit (AST::BreakExpr &expr) override;
@@ -303,6 +311,7 @@ public:
   virtual void visit (AST::RangeFromToInclExpr &expr) override;
   virtual void visit (AST::RangeToInclExpr &expr) override;
   virtual void visit (AST::ReturnExpr &expr) override;
+  virtual void visit (AST::TryExpr &expr) override;
   virtual void visit (AST::BoxExpr &expr) override;
   virtual void visit (AST::UnsafeBlockExpr &expr) override;
   virtual void visit (AST::LoopExpr &expr) override;
@@ -379,6 +388,8 @@ public:
   virtual void visit (AST::TuplePatternItemsRanged &tuple_items) override;
   virtual void visit (AST::TuplePattern &pattern) override;
   virtual void visit (AST::GroupedPattern &pattern) override;
+  virtual void visit (AST::SlicePatternItemsNoRest &items) override;
+  virtual void visit (AST::SlicePatternItemsHasRest &items) override;
   virtual void visit (AST::SlicePattern &pattern) override;
   virtual void visit (AST::AltPattern &pattern) override;
   virtual void visit (AST::EmptyStmt &stmt) override;
@@ -402,6 +413,7 @@ public:
   virtual void visit (AST::FunctionParam &param) override;
   virtual void visit (AST::VariadicParam &param) override;
   virtual void visit (AST::FormatArgs &fmt) override;
+  virtual void visit (AST::OffsetOf &fmt) override;
 
   template <typename T> void visit (T &node) { node.accept_vis (*this); }
 

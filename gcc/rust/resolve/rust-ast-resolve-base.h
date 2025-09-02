@@ -21,6 +21,8 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
+#include "rust-expr.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
 #include "rust-location.h"
@@ -56,7 +58,7 @@ public:
   void visit (AST::AttrInputLiteral &);
   void visit (AST::AttrInputMacro &);
   void visit (AST::MetaItemLitExpr &);
-  void visit (AST::MetaItemPathLit &);
+  void visit (AST::MetaItemPathExpr &);
   void visit (AST::BorrowExpr &);
   void visit (AST::DereferenceExpr &);
   void visit (AST::ErrorPropagationExpr &);
@@ -85,6 +87,8 @@ public:
   void visit (AST::FieldAccessExpr &);
   void visit (AST::ClosureExprInner &);
   void visit (AST::BlockExpr &);
+  void visit (AST::AnonConst &);
+  void visit (AST::ConstBlock &);
   void visit (AST::ClosureExprInnerTyped &);
   void visit (AST::ContinueExpr &);
   void visit (AST::BreakExpr &);
@@ -96,6 +100,7 @@ public:
   void visit (AST::RangeToInclExpr &);
   void visit (AST::BoxExpr &);
   void visit (AST::ReturnExpr &);
+  void visit (AST::TryExpr &);
   void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);
   void visit (AST::WhileLoopExpr &);
@@ -181,6 +186,8 @@ public:
   void visit (AST::TuplePatternItemsRanged &);
   void visit (AST::TuplePattern &);
   void visit (AST::GroupedPattern &);
+  void visit (AST::SlicePatternItemsNoRest &);
+  void visit (AST::SlicePatternItemsHasRest &);
   void visit (AST::SlicePattern &);
   void visit (AST::AltPattern &);
 
@@ -207,6 +214,7 @@ public:
   void visit (AST::SelfParam &param);
 
   void visit (AST::FormatArgs &fmt);
+  void visit (AST::OffsetOf &offset_of);
 
 protected:
   ResolverBase ()

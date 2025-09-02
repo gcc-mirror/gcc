@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "function.h"
 #include "tristate.h"
-#include "contracts.h"
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
@@ -453,6 +452,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
       PACK_INDEX_PARENTHESIZED_P (in PACK_INDEX_*)
       MUST_NOT_THROW_NOEXCEPT_P (in MUST_NOT_THROW_EXPR)
+      CONSTEVAL_BLOCK_P (in STATIC_ASSERT)
+      LAMBDA_EXPR_CONSTEVAL_BLOCK_P (in LAMBDA_EXPR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -474,6 +475,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
       STATIC_INIT_DECOMP_BASE_P (in the TREE_LIST for {static,tls}_aggregates)
       MUST_NOT_THROW_THROW_P (in MUST_NOT_THROW_EXPR)
+      LAMBDA_EXPR_CONST_QUAL_P (in LAMBDA_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -1433,6 +1435,10 @@ struct GTY (()) tree_deferred_noexcept {
 #define STATIC_ASSERT_SOURCE_LOCATION(NODE) \
   (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->location)
 
+/* True if this static assert represents a C++26 consteval block.  */
+#define CONSTEVAL_BLOCK_P(NODE) \
+  TREE_LANG_FLAG_0 (STATIC_ASSERT_CHECK (NODE))
+
 struct GTY (()) tree_static_assert {
   struct tree_base base;
   tree condition;
@@ -1546,6 +1552,17 @@ enum cp_lambda_default_capture_mode_type {
    capture proxy for that node.  */
 #define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
+
+/* True iff this lambda was created for a consteval block.  */
+#define LAMBDA_EXPR_CONSTEVAL_BLOCK_P(NODE) \
+  TREE_LANG_FLAG_0 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True if we should add "const" when figuring out the type of an entity
+   in a lambda.  This is false in the parameter-declaration-clause of
+   a lambda; after that, it will remain false if the mutable keyword is
+   present.  */
+#define LAMBDA_EXPR_CONST_QUAL_P(NODE) \
+  TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
@@ -1963,6 +1980,8 @@ struct GTY(()) saved_scope {
      of consteval if statement.  Also set while processing an immediate
      invocation.  */
   BOOL_BITFIELD consteval_if_p : 1;
+  /* Nonzero if we are parsing the substatement of expansion-statement.  */
+  BOOL_BITFIELD expansion_stmt : 1;
 
   int unevaluated_operand;
   int inhibit_evaluation_warnings;
@@ -2036,6 +2055,7 @@ extern GTY(()) struct saved_scope *scope_chain;
 
 #define in_discarded_stmt scope_chain->discarded_stmt
 #define in_consteval_if_p scope_chain->consteval_if_p
+#define in_expansion_stmt scope_chain->expansion_stmt
 
 #define current_ref_temp_count scope_chain->ref_temp_count
 
@@ -2320,7 +2340,8 @@ enum languages { lang_c, lang_cplusplus };
 /* Nonzero if NODE, a TYPE, has no name for linkage purposes.  */
 #define TYPE_UNNAMED_P(NODE)					\
   (TYPE_ANON_P (NODE)						\
-   && !IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+   && !IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE))     \
+   && !enum_with_enumerator_for_linkage_p (NODE))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -5681,6 +5702,19 @@ decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 #define RANGE_FOR_NOVECTOR(NODE) TREE_LANG_FLAG_5 (RANGE_FOR_STMT_CHECK (NODE))
 
+/* TEMPLATE_FOR_STMT accessors.  These give access to the declarator,
+   expression, body, and scope of the statement, respectively.  */
+#define TEMPLATE_FOR_DECL(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 0)
+#define TEMPLATE_FOR_EXPR(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 1)
+#define TEMPLATE_FOR_BODY(NODE)	\
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 2)
+#define TEMPLATE_FOR_SCOPE(NODE) \
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 3)
+#define TEMPLATE_FOR_INIT_STMT(NODE) \
+  TREE_OPERAND (TEMPLATE_FOR_STMT_CHECK (NODE), 4)
+
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 
@@ -6792,9 +6826,11 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
 
   /* The original node.  TLDCL can be a DECL (for a function or static
      data member), a TYPE (for a class), depending on what we were
-     asked to instantiate, or a TREE_LIST with the template as PURPOSE
-     and the template args as VALUE, if we are substituting for
-     overload resolution.  In all these cases, TARGS is NULL.
+     asked to instantiate, a TEMPLATE_FOR_STMT (for instantiation
+     of expansion stmt body outside of templates) or a TREE_LIST with
+     the template as PURPOSE and the template args as VALUE, if we are
+     substituting for overload resolution.  In all these cases, TARGS
+     is NULL.
      However, to avoid creating TREE_LIST objects for substitutions if
      we can help, we store PURPOSE and VALUE in TLDCL and TARGS,
      respectively.  So TLDCL stands for TREE_LIST or DECL (the
@@ -7268,6 +7304,7 @@ extern void omp_declare_variant_finalize	(tree, tree);
 struct cp_decomp { tree decl; unsigned int count; };
 extern void cp_finish_decl			(tree, tree, bool, tree, int, cp_decomp * = nullptr);
 extern tree lookup_decomp_type			(tree);
+HOST_WIDE_INT cp_decomp_size			(location_t, tree, tsubst_flags_t);
 extern bool cp_finish_decomp			(tree, cp_decomp *, bool = false);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
@@ -7288,6 +7325,7 @@ extern tree xref_tag				(tag_types, tree,
 						 bool tpl_header_p = false);
 extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
+extern bool enum_with_enumerator_for_linkage_p	(tree);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
 extern tree build_enumerator			(tree, tree, tree, tree, location_t);
@@ -7750,8 +7788,12 @@ extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
+extern tree cp_build_range_for_decls (location_t, tree, tree *, bool);
 extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 				  tree, bool);
+extern tree build_range_temp (tree);
+extern tree cp_perform_range_for_lookup	(tree, tree *, tree *,
+					 tsubst_flags_t = tf_warning_or_error);
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &,
 				      bool);
@@ -7764,6 +7806,8 @@ extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
 extern tree attr_chainon (tree, tree);
+extern tree maybe_add_dummy_lambda_op (tree);
+extern void remove_dummy_lambda_op (tree, tree);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);
@@ -7968,6 +8012,7 @@ extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
 extern tree add_extra_args			(tree, tree, tsubst_flags_t, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
+extern void finish_expansion_stmt		(tree, tree, tsubst_flags_t, tree);
 
 /* in rtti.cc */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
@@ -8068,6 +8113,7 @@ public:
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
+extern tree do_pushlevel			(scope_kind);
 extern void break_maybe_infinite_loop		(void);
 extern void add_decl_expr			(tree);
 extern tree maybe_cleanup_point_expr_void	(tree);
@@ -8094,7 +8140,7 @@ extern void find_range_for_decls		(tree[3]);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);
 extern void finish_range_for_decl		(tree, tree, tree);
-extern void finish_range_for_stmt		(tree);
+extern tree begin_template_for_scope		(tree *);
 extern tree finish_break_stmt			(void);
 extern tree finish_continue_stmt		(void);
 extern tree begin_switch_stmt			(void);
@@ -8243,10 +8289,11 @@ extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
 extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
-						 bool, bool);
+						 bool, bool, bool = false);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
+extern tree finish_structured_binding_size	(location_t, tree, tsubst_flags_t);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
 extern tree finish_trait_type			(enum cp_trait_kind, tree, tree, tsubst_flags_t);
 extern tree build_lambda_expr                   (void);
@@ -8268,7 +8315,7 @@ extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, int);
 extern void maybe_generic_this_capture		(tree, tree);
 extern tree maybe_resolve_dummy			(tree, bool);
-extern tree current_nonlambda_function		(void);
+extern tree current_nonlambda_function		(bool = false);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(bool = false);
 extern tree current_lambda_expr			(void);
@@ -8291,6 +8338,7 @@ extern void record_lambda_scope			(tree lambda);
 extern void record_lambda_scope_discriminator	(tree lambda);
 extern void record_lambda_scope_sig_discriminator (tree lambda, tree fn);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
+extern void push_capture_proxies		(tree, bool = false);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
 extern tree lambda_regenerating_args		(tree);
@@ -9060,50 +9108,6 @@ extern tree coro_get_destroy_function		(tree);
 extern tree coro_get_ramp_function		(tree);
 
 extern tree co_await_get_resume_call		(tree await_expr);
-
-
-/* contracts.cc */
-extern tree make_postcondition_variable		(cp_expr);
-extern tree make_postcondition_variable		(cp_expr, tree);
-extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
-extern tree finish_contract_condition		(cp_expr);
-
-/* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
-
-inline tree
-find_contract (tree attrs)
-{
-  while (attrs && !cxx_contract_attribute_p (attrs))
-    attrs = TREE_CHAIN (attrs);
-  return attrs;
-}
-
-inline void
-set_decl_contracts (tree decl, tree contract_attrs)
-{
-  remove_contract_attributes (decl);
-  DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), contract_attrs);
-}
-
-/* Returns the computed semantic of the node.  */
-
-inline contract_semantic
-get_contract_semantic (const_tree t)
-{
-  return (contract_semantic) (TREE_LANG_FLAG_3 (CONTRACT_CHECK (t))
-      | (TREE_LANG_FLAG_2 (t) << 1)
-      | (TREE_LANG_FLAG_0 ((t)) << 2));
-}
-
-/* Sets the computed semantic of the node.  */
-
-inline void
-set_contract_semantic (tree t, contract_semantic semantic)
-{
-  TREE_LANG_FLAG_3 (CONTRACT_CHECK (t)) = semantic & 0x01;
-  TREE_LANG_FLAG_2 (t) = (semantic & 0x02) >> 1;
-  TREE_LANG_FLAG_0 (t) = (semantic & 0x04) >> 2;
-}
 
 /* Inline bodies.  */
 

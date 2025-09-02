@@ -5759,7 +5759,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #if __cplusplus >= 201103L
   // N2722 + DR 915.
   template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline _Tp
     min(initializer_list<_Tp> __l)
     {
@@ -5769,7 +5769,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline _Tp
     min(initializer_list<_Tp> __l, _Compare __comp)
     {
@@ -5779,7 +5779,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline _Tp
     max(initializer_list<_Tp> __l)
     {
@@ -5789,7 +5789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline _Tp
     max(initializer_list<_Tp> __l, _Compare __comp)
     {

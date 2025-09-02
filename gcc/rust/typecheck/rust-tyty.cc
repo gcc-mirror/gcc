@@ -19,6 +19,7 @@
 #include "rust-tyty.h"
 
 #include "optional.h"
+#include "rust-tyty-subst.h"
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-location.h"
@@ -30,9 +31,14 @@
 #include "rust-tyty-cmp.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
+#include "print-tree.h"
+#include "tree-pretty-print.h"
 
 #include "options.h"
 #include "rust-system.h"
+#include "tree.h"
+#include "fold-const.h"
+#include <string>
 
 namespace Rust {
 namespace TyTy {
@@ -113,6 +119,9 @@ TypeKindFormat::to_string (TypeKind kind)
 
     case TypeKind::OPAQUE:
       return "Opaque";
+
+    case TypeKind::CONST:
+      return "Const";
 
     case TypeKind::ERROR:
       return "ERROR";
@@ -223,6 +232,7 @@ BaseType::is_unit () const
     case OPAQUE:
     case STR:
     case DYNAMIC:
+    case CONST:
     case ERROR:
       return false;
 
@@ -230,11 +240,13 @@ BaseType::is_unit () const
     case NEVER:
       return true;
 
-      case TUPLE: {
+    case TUPLE:
+      {
 	return x->as<const TupleType> ()->num_fields () == 0;
       }
 
-      case ADT: {
+    case ADT:
+      {
 	auto adt = x->as<const ADTType> ();
 	if (adt->is_enum ())
 	  return false;
@@ -438,11 +450,10 @@ BaseType::inherit_bounds (
     }
 }
 
-const BaseType *
-BaseType::get_root () const
+BaseType *
+BaseType::get_root ()
 {
-  // FIXME this needs to be it its own visitor class with a vector adjustments
-  const TyTy::BaseType *root = this;
+  TyTy::BaseType *root = this;
 
   if (const auto r = root->try_as<const ReferenceType> ())
     {
@@ -546,17 +557,14 @@ BaseType::destructure () const
 	{
 	  x = p->get ();
 	}
-      // else if (auto p = x->try_as<const OpaqueType> ())
-      //   {
-      //     auto pr = p->resolve ();
+      else if (auto p = x->try_as<const OpaqueType> ())
+	{
+	  auto pr = p->resolve ();
+	  if (pr == x)
+	    return pr;
 
-      //     rust_debug ("XXXXXX")
-
-      //     if (pr == x)
-      //       return pr;
-
-      //     x = pr;
-      //   }
+	  x = pr;
+	}
       else
 	{
 	  return x;
@@ -575,7 +583,7 @@ BaseType::monomorphized_clone () const
     {
       TyVar elm = arr->get_var_element_type ().monomorphized_clone ();
       return new ArrayType (arr->get_ref (), arr->get_ty_ref (), ident.locus,
-			    arr->get_capacity_expr (), elm,
+			    arr->get_capacity (), elm,
 			    arr->get_combined_refs ());
     }
   else if (auto slice = x->try_as<const SliceType> ())
@@ -824,7 +832,8 @@ BaseType::is_concrete () const
     }
   else if (auto arr = x->try_as<const ArrayType> ())
     {
-      return arr->get_element_type ()->is_concrete ();
+      return arr->get_element_type ()->is_concrete ()
+	     && arr->get_capacity ()->is_concrete ();
     }
   else if (auto slice = x->try_as<const SliceType> ())
     {
@@ -852,6 +861,10 @@ BaseType::is_concrete () const
       if (closure->get_parameters ().is_concrete ())
 	return false;
       return closure->get_result_type ().is_concrete ();
+    }
+  else if (auto const_type = x->try_as<const ConstType> ())
+    {
+      return const_type->get_value () != error_mark_node;
     }
   else if (x->is<InferType> () || x->is<BoolType> () || x->is<CharType> ()
 	   || x->is<IntType> () || x->is<UintType> () || x->is<FloatType> ()
@@ -891,31 +904,36 @@ BaseType::has_substitutions_defined () const
     case TUPLE:
     case PARAM:
     case PLACEHOLDER:
+    case CONST:
     case OPAQUE:
       return false;
 
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.has_substitutions ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const FnType &fn = *static_cast<const FnType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.has_substitutions ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const ADTType &adt = *static_cast<const ADTType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.has_substitutions ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const ClosureType &closure = *static_cast<const ClosureType *> (x);
 	const SubstitutionRef &ref
 	  = static_cast<const SubstitutionRef &> (closure);
@@ -953,31 +971,36 @@ BaseType::needs_generic_substitutions () const
     case TUPLE:
     case PARAM:
     case PLACEHOLDER:
+    case CONST:
     case OPAQUE:
       return false;
 
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.needs_substitution ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const FnType &fn = *static_cast<const FnType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.needs_substitution ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const ADTType &adt = *static_cast<const ADTType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.needs_substitution ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const ClosureType &closure = *static_cast<const ClosureType *> (x);
 	const SubstitutionRef &ref
 	  = static_cast<const SubstitutionRef &> (closure);
@@ -996,28 +1019,32 @@ BaseType::get_subst_argument_mappings () const
   const TyTy::BaseType *x = destructure ();
   switch (x->get_kind ())
     {
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const auto &p = *static_cast<const ProjectionType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const auto &fn = *static_cast<const FnType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const auto &adt = *static_cast<const ADTType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const auto &closure = *static_cast<const ClosureType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (closure);
 	return ref.get_substitution_arguments ();
@@ -1140,13 +1167,15 @@ InferType::default_type (BaseType **type) const
 	case GENERAL:
 	  return false;
 
-	  case INTEGRAL: {
+	case INTEGRAL:
+	  {
 	    ok = context->lookup_builtin ("i32", type);
 	    rust_assert (ok);
 	    return ok;
 	  }
 
-	  case FLOAT: {
+	case FLOAT:
+	  {
 	    ok = context->lookup_builtin ("f64", type);
 	    rust_assert (ok);
 	    return ok;
@@ -1269,7 +1298,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       default_hint.kind = hint.get_kind ();
       break;
 
-      case INT: {
+    case INT:
+      {
 	infer_kind = INTEGRAL;
 	default_hint.kind = hint.get_kind ();
 	default_hint.shint = TypeHint::SignedHint::SIGNED;
@@ -1294,7 +1324,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       }
       break;
 
-      case UINT: {
+    case UINT:
+      {
 	infer_kind = INTEGRAL;
 	default_hint.kind = hint.get_kind ();
 	default_hint.shint = TypeHint::SignedHint::UNSIGNED;
@@ -1319,7 +1350,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       }
       break;
 
-      case TypeKind::FLOAT: {
+    case TypeKind::FLOAT:
+      {
 	infer_kind = FLOAT;
 	default_hint.shint = TypeHint::SignedHint::SIGNED;
 	default_hint.kind = hint.get_kind ();
@@ -1800,11 +1832,9 @@ ADTType::is_equal (const BaseType &other) const
 	  const SubstitutionParamMapping &a = substitutions.at (i);
 	  const SubstitutionParamMapping &b = other2->substitutions.at (i);
 
-	  const ParamType *aa = a.get_param_ty ();
-	  const ParamType *bb = b.get_param_ty ();
-	  BaseType *aaa = aa->resolve ();
-	  BaseType *bbb = bb->resolve ();
-	  if (!aaa->is_equal (*bbb))
+	  const auto &aa = a.get_param_ty ();
+	  const auto &bb = b.get_param_ty ();
+	  if (!aa->is_equal (*bb))
 	    return false;
 	}
     }
@@ -1992,7 +2022,7 @@ TupleType::get_name () const
   std::string fields_buffer;
   for (const TyVar &field : get_fields ())
     {
-      fields_buffer += field.get_tyty ()->as_string ();
+      fields_buffer += field.get_tyty ()->get_name ();
       bool has_next = (i + 1) < get_fields ().size ();
       fields_buffer += has_next ? ", " : "";
       i++;
@@ -2129,9 +2159,8 @@ FnType::is_equal (const BaseType &other) const
 	  const SubstitutionParamMapping &a = get_substs ().at (i);
 	  const SubstitutionParamMapping &b = ofn.get_substs ().at (i);
 
-	  const ParamType *pa = a.get_param_ty ();
-	  const ParamType *pb = b.get_param_ty ();
-
+	  const auto *pa = a.get_param_ty ();
+	  const auto *pb = b.get_param_ty ();
 	  if (!pa->is_equal (*pb))
 	    return false;
 	}
@@ -2470,7 +2499,8 @@ ArrayType::accept_vis (TyConstVisitor &vis) const
 std::string
 ArrayType::as_string () const
 {
-  return "[" + get_element_type ()->as_string () + ":" + "CAPACITY" + "]";
+  return "[" + get_element_type ()->as_string () + "; " + capacity->as_string ()
+	 + "]";
 }
 
 bool
@@ -2509,7 +2539,7 @@ ArrayType::get_var_element_type () const
 BaseType *
 ArrayType::clone () const
 {
-  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
+  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity,
 			element_type, get_combined_refs ());
 }
 
@@ -2525,6 +2555,13 @@ ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
   auto base = ref->get_element_type ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
   ref->element_type = TyVar::subst_covariant_var (base, concrete);
+
+  // handle capacity type
+  auto cap = ref->get_capacity ();
+  BaseType *concrete_cap
+    = Resolver::SubstMapperInternal::Resolve (cap, mappings);
+  rust_assert (concrete_cap->get_kind () == TyTy::TypeKind::CONST);
+  ref->capacity = static_cast<TyTy::ConstType *> (concrete_cap);
 
   return ref;
 }
@@ -3382,32 +3419,25 @@ PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 // PARAM Type
 
 ParamType::ParamType (std::string symbol, location_t locus, HirId ref,
-		      HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
-  : BaseType (ref, ref, KIND,
-	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
-	       locus},
-	      specified_bounds, refs),
-    is_trait_self (false), symbol (symbol), param (param)
+  : BaseGeneric (ref, ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		  locus},
+		 specified_bounds, refs),
+    is_trait_self (false), symbol (symbol)
 {}
 
 ParamType::ParamType (bool is_trait_self, std::string symbol, location_t locus,
-		      HirId ref, HirId ty_ref, HIR::GenericParam &param,
+		      HirId ref, HirId ty_ref,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
-  : BaseType (ref, ty_ref, KIND,
-	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
-	       locus},
-	      specified_bounds, refs),
-    is_trait_self (is_trait_self), symbol (symbol), param (param)
+  : BaseGeneric (ref, ty_ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		  locus},
+		 specified_bounds, refs),
+    is_trait_self (is_trait_self), symbol (symbol)
 {}
-
-HIR::GenericParam &
-ParamType::get_generic_param ()
-{
-  return param;
-}
 
 bool
 ParamType::can_resolve () const
@@ -3459,7 +3489,7 @@ BaseType *
 ParamType::clone () const
 {
   return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
-			get_ty_ref (), param, get_specified_bounds (),
+			get_ty_ref (), get_specified_bounds (),
 			get_combined_refs ());
 }
 
@@ -3529,12 +3559,12 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
   ParamType *p = static_cast<ParamType *> (clone ());
   subst_mappings.on_param_subst (*p, arg);
 
-  // there are two cases one where we substitute directly to a new PARAM and
-  // otherwise
-  if (arg.get_tyty ()->get_kind () == TyTy::TypeKind::PARAM)
+  const BaseType *resolved = arg.get_tyty ();
+  if (resolved->get_kind () == TyTy::TypeKind::PARAM)
     {
-      p->set_ty_ref (arg.get_tyty ()->get_ref ());
-      return p;
+      const ParamType &pp = *static_cast<const ParamType *> (resolved);
+      if (pp.can_resolve ())
+	resolved = pp.resolve ();
     }
 
   // this is the new subst that this needs to pass
@@ -3554,6 +3584,157 @@ bool
 ParamType::is_implicit_self_trait () const
 {
   return is_trait_self;
+}
+
+// ConstType
+
+ConstType::ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty,
+		      tree value,
+		      std::vector<TypeBoundPredicate> specified_bounds,
+		      location_t locus, HirId ref, HirId ty_ref,
+		      std::set<HirId> refs)
+  : BaseGeneric (ref, ty_ref, KIND,
+		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID,
+						    symbol.empty () ? "<n/a>"
+								    : symbol),
+		  locus},
+		 specified_bounds, refs),
+    const_kind (kind), ty (ty), value (value), symbol (symbol)
+{}
+
+void
+ConstType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+void
+ConstType::set_value (tree v)
+{
+  value = v;
+  const_kind = ConstType::ConstKind::Value;
+}
+
+std::string
+ConstType::as_string () const
+{
+  return get_name ();
+}
+
+bool
+ConstType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  ConstCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+ConstType::clone () const
+{
+  return new ConstType (const_kind, symbol, ty, value, get_specified_bounds (),
+			ident.locus, ref, ty_ref, get_combined_refs ());
+}
+
+std::string
+ConstType::get_symbol () const
+{
+  return symbol;
+}
+
+bool
+ConstType::can_resolve () const
+{
+  return false;
+}
+
+BaseType *
+ConstType::resolve () const
+{
+  rust_unreachable ();
+  return nullptr;
+}
+
+static std::string
+generate_tree_str (tree value)
+{
+  char *buf = nullptr;
+  size_t size = 0;
+
+  FILE *stream = open_memstream (&buf, &size);
+  if (!stream)
+    return "<error>";
+
+  print_generic_stmt (stream, value, TDF_NONE);
+  fclose (stream);
+
+  std::string result = (buf ? std::string (buf, size) : "<error>");
+  free (buf);
+
+  if (!result.empty () && result.back () == '\n')
+    result.pop_back ();
+
+  return result;
+}
+
+std::string
+ConstType::get_name () const
+{
+  if (value == error_mark_node)
+    {
+      switch (get_const_kind ())
+	{
+	case Rust::TyTy::ConstType::Decl:
+	  return "ConstType:<" + get_ty ()->get_name () + " " + get_symbol ()
+		 + ">";
+
+	case Rust::TyTy::ConstType::Infer:
+	  return "ConstType:<" + get_ty ()->get_name () + " ?" + ">";
+
+	default:
+	  return "ConstType:<" + get_ty ()->get_name () + " - <error>" + ">";
+	}
+    }
+
+  return generate_tree_str (value);
+}
+
+bool
+ConstType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+
+  const ConstType &rhs = static_cast<const ConstType &> (other);
+  if (!get_ty ()->is_equal (*rhs.get_ty ()))
+    return false;
+
+  tree lv = get_value ();
+  tree rv = rhs.get_value ();
+
+  return operand_equal_p (lv, rv, 0);
+}
+
+ConstType *
+ConstType::handle_substitions (SubstitutionArgumentMappings &mappings)
+{
+  SubstitutionArg arg = SubstitutionArg::error ();
+  bool found = mappings.get_argument_for_symbol (this, &arg);
+  if (found && !arg.is_error ())
+    {
+      TyTy::BaseType *subst = arg.get_tyty ();
+      rust_assert (subst->is<TyTy::ConstType> ());
+      return static_cast<TyTy::ConstType *> (subst);
+    }
+
+  return this;
 }
 
 // OpaqueType
@@ -3624,28 +3805,7 @@ BaseType *
 OpaqueType::resolve () const
 {
   TyVar var (get_ty_ref ());
-  BaseType *r = var.get_tyty ();
-
-  while (r->get_kind () == TypeKind::OPAQUE)
-    {
-      OpaqueType *rr = static_cast<OpaqueType *> (r);
-      if (!rr->can_resolve ())
-	break;
-
-      TyVar v (rr->get_ty_ref ());
-      BaseType *n = v.get_tyty ();
-
-      // fix infinite loop
-      if (r == n)
-	break;
-
-      r = n;
-    }
-
-  if (r->get_kind () == TypeKind::OPAQUE && (r->get_ref () == r->get_ty_ref ()))
-    return TyVar (r->get_ty_ref ()).get_tyty ();
-
-  return r;
+  return var.get_tyty ();
 }
 
 bool
@@ -3655,39 +3815,7 @@ OpaqueType::is_equal (const BaseType &other) const
   if (can_resolve () != other2.can_resolve ())
     return false;
 
-  if (can_resolve ())
-    return resolve ()->can_eq (other2.resolve (), false);
-
   return bounds_compatible (other, UNDEF_LOCATION, false);
-}
-
-OpaqueType *
-OpaqueType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
-{
-  // SubstitutionArg arg = SubstitutionArg::error ();
-  // bool ok = subst_mappings.get_argument_for_symbol (this, &arg);
-  // if (!ok || arg.is_error ())
-  //   return this;
-
-  // OpaqueType *p = static_cast<OpaqueType *> (clone ());
-  // subst_mappings.on_param_subst (*p, arg);
-
-  // // there are two cases one where we substitute directly to a new PARAM and
-  // // otherwise
-  // if (arg.get_tyty ()->get_kind () == TyTy::TypeKind::PARAM)
-  //   {
-  //     p->set_ty_ref (arg.get_tyty ()->get_ref ());
-  //     return p;
-  //   }
-
-  // // this is the new subst that this needs to pass
-  // p->set_ref (mappings.get_next_hir_id ());
-  // p->set_ty_ref (arg.get_tyty ()->get_ref ());
-
-  // return p;
-
-  rust_unreachable ();
-  return nullptr;
 }
 
 // StrType

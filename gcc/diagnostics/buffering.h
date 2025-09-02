@@ -36,7 +36,7 @@ class sink;
    A diagnostics::buffer can be:
 
    * flushed to the diagnostics::context, which issues
-   the diagnostics within the buffer to the output format
+   the diagnostics within the buffer to the output sinks
    and checks for limits such as -fmax-errors=, or
 
    * moved to another diagnostics::buffer, which moves the diagnostics
@@ -45,13 +45,13 @@ class sink;
    source buffer, or
 
    * cleared, which discards any diagnostics within the buffer
-   without issuing them to the output format.
+   without issuing them to the output sinks.
 
-   Since a buffer needs to contain output-format-specific data,
-   it's not possible to change the output format of the
+   Since a buffer needs to contain sink-specific data,
+   it's not possible to change the output sink(s) of the
    diagnostics::context once any buffers are non-empty.
 
-   To simplify implementing output formats, it's not possible
+   To simplify implementing output sinks, it's not possible
    to change buffering on a diagnostics::context whilst within a
    diagnostic group.  */
 

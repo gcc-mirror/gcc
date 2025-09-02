@@ -28,9 +28,6 @@
 #include "rust-tyty.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -73,7 +70,9 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
     {
-      resolve_generic_params (function.get_generic_params (), substitutions,
+      resolve_generic_params (HIR::Item::ItemKind::Function,
+			      function.get_locus (),
+			      function.get_generic_params (), substitutions,
 			      true /*is_foreign*/, parent.get_abi ());
     }
 
@@ -203,7 +202,9 @@ TypeCheckImplItem::visit (HIR::Function &function)
   auto binder_pin = context->push_lifetime_binder ();
 
   if (function.has_generics ())
-    resolve_generic_params (function.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Function,
+			    function.get_locus (),
+			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
@@ -266,7 +267,8 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      self_type = self->clone ();
 	      break;
 
-	      case HIR::SelfParam::IMM_REF: {
+	    case HIR::SelfParam::IMM_REF:
+	      {
 		tl::optional<TyTy::Region> region;
 		if (self_param.has_lifetime ())
 		  {
@@ -290,7 +292,8 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      }
 	      break;
 
-	      case HIR::SelfParam::MUT_REF: {
+	    case HIR::SelfParam::MUT_REF:
+	      {
 		tl::optional<TyTy::Region> region;
 		if (self_param.has_lifetime ())
 		  {
@@ -336,25 +339,13 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  tl::optional<CanonicalPath> canonical_path;
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
 
-      canonical_path = nr_ctx.values.to_canonical_path (
-	function.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	function.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, function.get_locus ()};
+  RustIdent ident{canonical_path, function.get_locus ()};
   auto fnType = new TyTy::FnType (
     function.get_mappings ().get_hirid (),
     function.get_mappings ().get_defid (),
@@ -410,7 +401,8 @@ TypeCheckImplItem::visit (HIR::TypeAlias &alias)
   auto binder_pin = context->push_lifetime_binder ();
 
   if (alias.has_generics ())
-    resolve_generic_params (alias.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::TypeAlias, alias.get_locus (),
+			    alias.get_generic_params (), substitutions);
 
   TyTy::BaseType *actual_type
     = TypeCheckType::Resolve (alias.get_type_aliased ());
@@ -494,10 +486,9 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
       rich_location r (line_table, constant.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
-      rust_error_at (
-	r, "constant %qs has an incompatible type for trait %qs",
-	constant.get_identifier ().as_string ().c_str (),
-	trait_reference.get_name ().c_str ());
+      rust_error_at (r, "constant %qs has an incompatible type for trait %qs",
+		     constant.get_identifier ().as_string ().c_str (),
+		     trait_reference.get_name ().c_str ());
     }
 }
 
@@ -545,10 +536,9 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
       rich_location r (line_table, type.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
-      rust_error_at (
-	r, "type alias %qs has an incompatible type for trait %qs",
-	type.get_new_type_name ().as_string ().c_str (),
-	trait_reference.get_name ().c_str ());
+      rust_error_at (r, "type alias %qs has an incompatible type for trait %qs",
+		     type.get_new_type_name ().as_string ().c_str (),
+		     trait_reference.get_name ().c_str ());
     }
 
   // its actually a projection, since we need a way to actually bind the

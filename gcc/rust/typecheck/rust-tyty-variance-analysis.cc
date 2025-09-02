@@ -199,9 +199,7 @@ GenericTyPerCrateCtx::debug_print_solutions ()
 	    {
 	      if (i > solution_index)
 		result += ", ";
-	      result += param.get_generic_param ()
-			  .get_type_representation ()
-			  .as_string ();
+	      result += param.get_type_representation ().as_string ();
 	      result += "=";
 	      result += solutions[i].as_string ();
 	      i++;
@@ -239,8 +237,7 @@ GenericTyVisitorCtx::process_type (ADTType &ty)
   first_type = first_lifetime + ty.get_used_arguments ().get_regions ().size ();
 
   for (auto &param : ty.get_substs ())
-    param_names.push_back (
-      param.get_generic_param ().get_type_representation ().as_string ());
+    param_names.push_back (param.get_type_representation ().as_string ());
 
   for (const auto &variant : ty.get_variants ())
     {

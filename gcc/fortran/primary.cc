@@ -4055,6 +4055,67 @@ gfc_match_rvalue (gfc_expr **result)
 	  break;
 	}
 
+      /* Check to see if this is a PDT constructor.  The format of these
+	 constructors is rather unusual:
+		name (type_params)(component_values)
+	 where, component_values excludes the type_params. With the present
+	 gfortran representation this is rather awkward because the two are not
+	 distinguished, other than by their attributes.  */
+      if (sym->attr.generic)
+	{
+	  gfc_symtree *pdt_st;
+	  gfc_symbol *pdt_sym;
+	  gfc_actual_arglist *ctr_arglist, *tmp;
+	  gfc_component *c;
+
+	  /* Obtain the template.  */
+	  gfc_find_sym_tree (gfc_dt_upper_string (name), NULL, 1, &pdt_st);
+	  if (pdt_st && pdt_st->n.sym && pdt_st->n.sym->attr.pdt_template)
+	    {
+	      pdt_sym = pdt_st->n.sym;
+
+	      /* Generate this instance using the type parameters from the
+		 first argument list and return the parameter list in
+		 ctr_arglist.  */
+	      m = gfc_get_pdt_instance (actual_arglist, &pdt_sym, &ctr_arglist);
+	      if (m != MATCH_YES)
+		{
+		  m = MATCH_ERROR;
+		  break;
+		}
+	      /* Now match the component_values.  */
+	      m = gfc_match_actual_arglist (0, &actual_arglist);
+	      if (m != MATCH_YES)
+		{
+		  m = MATCH_ERROR;
+		  break;
+		}
+
+	      /* Make sure that the component names are in place so that this
+		 list can be safely appended to the type parameters.  */
+	      tmp = actual_arglist;
+	      for (c = pdt_sym->components; c && tmp; c = c->next)
+		{
+		  if (c->attr.pdt_kind || c->attr.pdt_len)
+		    continue;
+		  tmp->name = c->name;
+		  tmp = tmp->next;
+		}
+
+	      gfc_get_ha_sym_tree (gfc_dt_lower_string (pdt_sym->name) ,
+				   &symtree);
+	      symtree->n.sym = pdt_sym;
+	      symtree->n.sym->ts.u.derived = pdt_sym;
+	      symtree->n.sym->ts.type = BT_DERIVED;
+
+	      /* Do the appending.  */
+	      for (tmp = ctr_arglist; tmp && tmp->next;)
+		tmp = tmp->next;
+	      tmp->next = actual_arglist;
+	      actual_arglist = ctr_arglist;
+	    }
+	}
+
       gfc_get_ha_sym_tree (name, &symtree);	/* Can't fail */
       sym = symtree->n.sym;
 

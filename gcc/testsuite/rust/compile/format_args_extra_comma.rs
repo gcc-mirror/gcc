@@ -35,7 +35,6 @@ pub mod core {
 
         impl Display for i32 {
             fn fmt(&self, _: &mut Formatter) -> Result {
-                // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
                 Result
             }
         }

@@ -19,6 +19,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-ast-full-decls.h"
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-path.h"
 #include "rust-token.h"
 #include "rust-expr.h"
@@ -223,10 +224,10 @@ DefaultASTVisitor::visit (AST::SimplePath &path)
 }
 
 void
-DefaultASTVisitor::visit (AST::MetaItemPathLit &meta_item)
+DefaultASTVisitor::visit (AST::MetaItemPathExpr &meta_item)
 {
   visit (meta_item.get_path ());
-  visit (meta_item.get_literal ());
+  visit (meta_item.get_expr ());
 }
 
 void
@@ -449,10 +450,28 @@ DefaultASTVisitor::visit (AST::BlockExpr &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+
+  if (expr.has_label ())
+    visit (expr.get_label ());
+
   for (auto &stmt : expr.get_statements ())
     visit (stmt);
+
   if (expr.has_tail_expr ())
     visit (expr.get_tail_expr ());
+}
+
+void
+DefaultASTVisitor::visit (AST::ConstBlock &expr)
+{
+  visit (expr.get_const_expr ());
+}
+
+void
+DefaultASTVisitor::visit (AST::AnonConst &expr)
+{
+  if (!expr.is_deferred ())
+    visit (expr.get_inner_expr ());
 }
 
 void
@@ -462,7 +481,7 @@ DefaultASTVisitor::visit (AST::ClosureExprInnerTyped &expr)
   for (auto &param : expr.get_params ())
     visit (param);
   visit (expr.get_return_type ());
-  visit (expr.get_definition_block ());
+  visit (expr.get_definition_expr ());
 }
 
 void
@@ -538,6 +557,13 @@ DefaultASTVisitor::visit (AST::ReturnExpr &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::TryExpr &expr)
+{
+  visit_outer_attrs (expr);
+  visit (expr.get_block_expr ());
+}
+
+void
 DefaultASTVisitor::visit (AST::BoxExpr &expr)
 {
   visit_outer_attrs (expr);
@@ -582,7 +608,10 @@ DefaultASTVisitor::visit (AST::WhileLetLoopExpr &expr)
   visit_outer_attrs (expr);
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
-  visit (expr.get_loop_label ());
+
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
+
   visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_block ());
 }
@@ -680,33 +709,40 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
     {
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    visit (operand.get_in ().expr);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    visit (operand.get_out ().expr);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    visit (operand.get_in_out ().expr);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split = operand.get_split_in_out ();
 	    visit (split.in_expr);
 	    visit (split.out_expr);
 	    break;
 	  }
-	  case RegisterType::Const: {
-	    visit (operand.get_const ().anon_const.expr);
+	case RegisterType::Const:
+	  {
+	    visit (operand.get_const ().anon_const.get_inner_expr ());
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    visit (operand.get_sym ().expr);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    visit (operand.get_label ().expr);
 	    break;
 	  }
@@ -755,7 +791,8 @@ DefaultASTVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 void
 DefaultASTVisitor::visit (AST::Visibility &vis)
 {
-  visit (vis.get_path ());
+  if (vis.has_path ())
+    visit (vis.get_path ());
 }
 
 void
@@ -922,7 +959,7 @@ DefaultASTVisitor::visit (AST::EnumItem &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemTuple &item)
 {
-  visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   for (auto &field : item.get_tuple_fields ())
     visit (field);
 }
@@ -930,7 +967,7 @@ DefaultASTVisitor::visit (AST::EnumItemTuple &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemStruct &item)
 {
-  visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   for (auto &field : item.get_struct_fields ())
     visit (field);
 }
@@ -938,7 +975,7 @@ DefaultASTVisitor::visit (AST::EnumItemStruct &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemDiscriminant &item)
 {
-  visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   visit (item.get_expr ());
 }
 
@@ -1179,8 +1216,8 @@ DefaultASTVisitor::visit (AST::LiteralPattern &pattern)
 void
 DefaultASTVisitor::visit (AST::IdentifierPattern &pattern)
 {
-  if (pattern.has_pattern_to_bind ())
-    visit (pattern.get_pattern_to_bind ());
+  if (pattern.has_subpattern ())
+    visit (pattern.get_subpattern ());
 }
 
 void
@@ -1310,10 +1347,25 @@ DefaultASTVisitor::visit (AST::GroupedPattern &pattern)
 }
 
 void
+DefaultASTVisitor::visit (AST::SlicePatternItemsNoRest &items)
+{
+  for (auto &item : items.get_patterns ())
+    visit (item);
+}
+
+void
+DefaultASTVisitor::visit (AST::SlicePatternItemsHasRest &items)
+{
+  for (auto &item : items.get_lower_patterns ())
+    visit (item);
+  for (auto &item : items.get_upper_patterns ())
+    visit (item);
+}
+
+void
 DefaultASTVisitor::visit (AST::SlicePattern &pattern)
 {
-  for (auto &item : pattern.get_items ())
-    visit (item);
+  visit (pattern.get_items ());
 }
 
 void
@@ -1451,6 +1503,12 @@ void
 DefaultASTVisitor::visit (AST::FormatArgs &)
 {
   // FIXME: Do we have anything to do? any subnodes to visit? Probably, right?
+}
+
+void
+DefaultASTVisitor::visit (AST::OffsetOf &offset_of)
+{
+  visit (offset_of.get_type ());
 }
 
 void

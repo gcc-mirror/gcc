@@ -19,12 +19,15 @@
 #ifndef RUST_HIR_EXPR_H
 #define RUST_HIR_EXPR_H
 
+#include "rust-ast.h"
 #include "rust-hir-expr-abstract.h"
 #include "rust-hir-literal.h"
 #include "rust-common.h"
 #include "rust-hir-bound.h"
 #include "rust-hir-attrs.h"
 #include "rust-expr.h"
+#include "rust-hir-map.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 namespace HIR {
@@ -1800,6 +1803,92 @@ protected:
   }
 };
 
+class AnonConst : public ExprWithBlock
+{
+public:
+  enum class Kind
+  {
+    Explicit,
+    DeferredInference
+  };
+
+  AnonConst (Analysis::NodeMapping mappings, std::unique_ptr<Expr> &&expr,
+	     location_t locus = UNKNOWN_LOCATION);
+  AnonConst (Analysis::NodeMapping mappings,
+	     location_t locus = UNKNOWN_LOCATION);
+  AnonConst (const AnonConst &other);
+  AnonConst operator= (const AnonConst &other);
+
+  std::string as_string () const override;
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::AnonConst;
+  }
+
+  location_t get_locus () const override { return locus; }
+
+  Expr &get_inner_expr ()
+  {
+    rust_assert (kind == Kind::Explicit);
+    return *expr.value ();
+  }
+
+  const Expr &get_inner_expr () const
+  {
+    rust_assert (kind == Kind::Explicit);
+    return *expr.value ();
+  }
+
+  bool is_deferred () const { return kind == Kind::DeferredInference; }
+
+private:
+  location_t locus;
+  Kind kind;
+  tl::optional<std::unique_ptr<Expr>> expr;
+
+  AnonConst *clone_expr_with_block_impl () const override
+  {
+    return new AnonConst (*this);
+  }
+};
+
+class ConstBlock : public ExprWithBlock
+{
+public:
+  ConstBlock (Analysis::NodeMapping mappings, AnonConst &&expr,
+	      location_t locus = UNKNOWN_LOCATION,
+	      AST::AttrVec outer_attrs = {});
+  ConstBlock (const ConstBlock &other);
+  ConstBlock operator= (const ConstBlock &other);
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::ConstBlock;
+  }
+
+  location_t get_locus () const override { return locus; }
+  AnonConst &get_const_expr () { return expr; }
+  const AnonConst &get_const_expr () const { return expr; }
+
+private:
+  AnonConst expr;
+  location_t locus;
+
+  ConstBlock *clone_expr_with_block_impl () const override
+  {
+    return new ConstBlock (*this);
+  }
+};
+
 // HIR node representing continue expression within loops
 class ContinueExpr : public ExprWithoutBlock
 {
@@ -2631,6 +2720,8 @@ public:
   Expr &get_guard_expr () { return *guard_expr; }
 
   location_t get_locus () const { return locus; }
+
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 };
 
 /* A "match case" - a correlated match arm and resulting expression. Not
@@ -2823,6 +2914,22 @@ public:
 
   OperatorExprMeta (HIR::ComparisonExpr &expr);
 
+  OperatorExprMeta (const OperatorExprMeta &other)
+    : node_mappings (other.node_mappings),
+      lvalue_mappings (other.lvalue_mappings),
+      rvalue_mappings (other.rvalue_mappings), locus (other.locus)
+  {}
+
+  OperatorExprMeta &operator= (const OperatorExprMeta &other)
+  {
+    node_mappings = other.node_mappings;
+    lvalue_mappings = other.lvalue_mappings;
+    rvalue_mappings = other.rvalue_mappings;
+    locus = other.locus;
+
+    return *this;
+  }
+
   const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
 
   const Analysis::NodeMapping &get_lvalue_mappings () const
@@ -2830,11 +2937,22 @@ public:
     return lvalue_mappings;
   }
 
+  const Analysis::NodeMapping &get_rvalue_mappings () const
+  {
+    return rvalue_mappings;
+  }
+
+  bool has_rvalue_mappings () const
+  {
+    return rvalue_mappings.get_hirid () != UNKNOWN_HIRID;
+  }
+
   location_t get_locus () const { return locus; }
 
 private:
-  const Analysis::NodeMapping node_mappings;
-  const Analysis::NodeMapping lvalue_mappings;
+  Analysis::NodeMapping node_mappings;
+  Analysis::NodeMapping lvalue_mappings;
+  Analysis::NodeMapping rvalue_mappings;
   location_t locus;
 };
 
@@ -2890,18 +3008,6 @@ class InlineAsmRegClass
   // this placeholder is to be removed when the definations
   // of the above enums are made in a later PR/patch.
   std::string placeholder;
-};
-
-struct AnonConst
-{
-  NodeId id;
-  std::unique_ptr<Expr> expr;
-
-  AnonConst (NodeId id, std::unique_ptr<Expr> expr);
-
-  AnonConst (const AnonConst &other);
-
-  AnonConst operator= (const AnonConst &other);
 };
 
 class InlineAsmOperand
@@ -2992,8 +3098,9 @@ public:
     Label operator= (const struct Label &other);
   };
 
-private:
   using RegisterType = AST::InlineAsmOperand::RegisterType;
+
+private:
   AST::InlineAsmOperand::RegisterType register_type;
 
   tl::optional<struct In> in;
@@ -3037,13 +3144,24 @@ public:
   RegisterType get_register_type () const { return register_type; }
 
   // Potentially unsafe without get_register_type() check
-  struct In get_in () const { return in.value (); }
-  struct Out get_out () const { return out.value (); }
-  struct InOut get_in_out () const { return in_out.value (); }
-  struct SplitInOut get_split_in_out () const { return split_in_out.value (); }
-  struct Const get_const () const { return cnst.value (); }
-  struct Sym get_sym () const { return sym.value (); }
-  struct Label get_label () const { return label.value (); }
+  const struct In &get_in () const { return in.value (); }
+  const struct Out &get_out () const { return out.value (); }
+  const struct InOut &get_in_out () const { return in_out.value (); }
+  const struct SplitInOut &get_split_in_out () const
+  {
+    return split_in_out.value ();
+  }
+  const struct Const &get_const () const { return cnst.value (); }
+  const struct Sym &get_sym () const { return sym.value (); }
+  const struct Label &get_label () const { return label.value (); }
+
+  struct In &get_in () { return in.value (); }
+  struct Out &get_out () { return out.value (); }
+  struct InOut &get_in_out () { return in_out.value (); }
+  struct SplitInOut &get_split_in_out () { return split_in_out.value (); }
+  struct Const &get_const () { return cnst.value (); }
+  struct Sym &get_sym () { return sym.value (); }
+  struct Label &get_label () { return label.value (); }
 };
 
 // Inline Assembly Node
@@ -3059,7 +3177,7 @@ public:
   std::vector<AST::TupleTemplateStr> template_strs;
   std::vector<HIR::InlineAsmOperand> operands;
   std::vector<AST::TupleClobber> clobber_abi;
-  std::set<AST::InlineAsmOption> options;
+  std::set<AST::InlineAsm::Option> options;
 
   std::vector<location_t> line_spans;
 
@@ -3090,11 +3208,11 @@ public:
     return template_strs;
   }
 
-  std::vector<HIR::InlineAsmOperand> get_operands () { return operands; }
+  std::vector<HIR::InlineAsmOperand> &get_operands () { return operands; }
 
   std::vector<AST::TupleClobber> get_clobber_abi () { return clobber_abi; }
 
-  std::set<AST::InlineAsmOption> get_options () { return options; }
+  std::set<AST::InlineAsm::Option> get_options () { return options; }
 
   bool is_simple_asm ()
   {
@@ -3113,9 +3231,45 @@ public:
 	     std::vector<AST::TupleTemplateStr> template_strs,
 	     std::vector<HIR::InlineAsmOperand> operands,
 	     std::vector<AST::TupleClobber> clobber_abi,
-	     std::set<AST::InlineAsmOption> options,
+	     std::set<AST::InlineAsm::Option> options,
 	     Analysis::NodeMapping mappings,
 	     AST::AttrVec outer_attribs = AST::AttrVec ());
+};
+
+class OffsetOf : public ExprWithoutBlock
+{
+public:
+  OffsetOf (std::unique_ptr<Type> &&type, Identifier field,
+	    Analysis::NodeMapping mappings, location_t loc)
+    : ExprWithoutBlock (mappings), type (std::move (type)), field (field),
+      loc (loc)
+  {}
+
+  OffsetOf (const OffsetOf &other)
+    : ExprWithoutBlock (other), type (other.type->clone_type ()),
+      field (other.field), loc (other.loc)
+  {}
+
+  OffsetOf &operator= (const OffsetOf &other);
+
+  ExprWithoutBlock *clone_expr_without_block_impl () const override;
+  std::string as_string () const override;
+
+  void accept_vis (HIRExpressionVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
+
+  ExprType get_expression_type () const override { return ExprType::OffsetOf; }
+
+  location_t get_locus () const override { return loc; }
+
+  Type &get_type () { return *type; }
+  const Type &get_type () const { return *type; }
+  const Identifier &get_field () const { return field; }
+
+private:
+  std::unique_ptr<Type> type;
+  Identifier field;
+  location_t loc;
 };
 
 struct LlvmOperand

@@ -48,6 +48,8 @@ public:
   void visit (HIR::IfExpr &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::BlockExpr &expr) override;
+  void visit (HIR::AnonConst &expr) override;
+  void visit (HIR::ConstBlock &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
   void visit (HIR::StructExprStruct &struct_expr) override;
   void visit (HIR::StructExprStructFields &struct_expr) override;
@@ -70,6 +72,7 @@ public:
   void visit (HIR::ClosureExpr &expr) override;
   void visit (HIR::InlineAsm &expr) override;
   void visit (HIR::LlvmInlineAsm &expr) override;
+  void visit (HIR::OffsetOf &expr) override;
 
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}

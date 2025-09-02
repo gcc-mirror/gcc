@@ -2032,3 +2032,9 @@ GFORTRAN_15.2 {
     _gfortran_mmaxloc1_16_m16;
     _gfortran_smaxloc1_16_m16;
 } GFORTRAN_15;
+
+GFORTRAN_16 {
+  global:
+    _gfortran_string_split;
+    _gfortran_string_split_char4;
+} GFORTRAN_15.2;

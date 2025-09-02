@@ -314,9 +314,8 @@ works with the Apple/NeXT Objective-C runtime library.
 
 There is no formal written standard for Objective-C or Objective-C++@.
 The authoritative manual on traditional Objective-C (1.0) is
-``Object-Oriented Programming and the Objective-C Language'':
-@uref{https://gnustep.github.io/@/resources/@/documentation/@/ObjectivCBook.pdf}
-is the original NeXTstep document.
+``Object-Oriented Programming and the Objective-C Language''
+(@uref{https://www.gnustep.org/@/resources/@/documentation/@/ObjectivCBook.pdf}).
 
 The Objective-C exception and synchronization syntax (that is, the
 keywords @code{@@try}, @code{@@throw}, @code{@@catch},

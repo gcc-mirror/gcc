@@ -315,15 +315,14 @@ function_info::add_live_out_use (bb_info *bb, set_info *def)
 
   // If the end of the block already has an artificial use, that use
   // acts to make DEF live at the appropriate point.
-  use_info *use = def->last_nondebug_insn_use ();
-  if (use && use->insn () == bb->end_insn ())
+  if (find_use (def, bb->end_insn ()).matching_use ())
     return;
 
   // Currently there is no need to maintain a backward link from the end
   // instruction to the list of live-out uses.  Such a list would be
   // expensive to update if it was represented using the usual insn_info
   // access arrays.
-  use = allocate<use_info> (bb->end_insn (), def->resource (), def);
+  auto *use = allocate<use_info> (bb->end_insn (), def->resource (), def);
   use->set_is_live_out_use (true);
   add_use (use);
 }
@@ -358,6 +357,41 @@ function_info::live_out_value (bb_info *bb, set_info *set)
       }
 
   return set;
+}
+
+// Make USE's definition available at USE, if it isn't already.  Assume that
+// the caller has properly used make_use_available to check that this is
+// possible.
+void
+function_info::commit_make_use_available (use_info *use)
+{
+  // We only need to handle single dominating definitions here.
+  // Other cases are handled by degenerate phis, with create_degenerate_phi
+  // creating any necessary live-out uses.
+  set_info *def = use->def ();
+  if (def
+      && use->is_reg ()
+      && is_single_dominating_def (def)
+      && use->ebb () != def->ebb ())
+    {
+      // If USE's EBB has DEF's EBB as its single predecessor, it's enough
+      // to add a live-out use to the former's predecessor block.  Otherwise,
+      // conservatively add a live-out use at the end of DEF's block, so that
+      // DEF cannot move further down.  Doing a minimal yet accurate update
+      // would be an O(n.log(n)) operation in the worst case.
+      auto ebb_cfg_bb = def->ebb ()->first_bb ()->cfg_bb ();
+      if (single_pred_p (ebb_cfg_bb))
+	{
+	  bb_info *pred_bb = this->bb (single_pred (ebb_cfg_bb));
+	  if (pred_bb->ebb () == def->ebb ())
+	    {
+	      add_live_out_use (pred_bb, def);
+	      return;
+	    }
+	}
+      add_live_out_use (def->bb (), def);
+      return;
+    }
 }
 
 // Add PHI to EBB and enter it into the function's hash table.
@@ -540,12 +574,12 @@ function_info::create_degenerate_phi (ebb_info *ebb, set_info *def)
       basic_block pred_cfg_bb = single_pred (ebb->first_bb ()->cfg_bb ());
       bb_info *pred_bb = this->bb (pred_cfg_bb);
 
-      if (!bitmap_set_bit (DF_LR_IN (ebb->first_bb ()->cfg_bb ()), regno))
+      if (bitmap_set_bit (DF_LR_IN (ebb->first_bb ()->cfg_bb ()), regno))
 	{
 	  // The register was not previously live on entry to EBB and
 	  // might not have been live on exit from PRED_BB either.
-	  if (bitmap_set_bit (DF_LR_OUT (pred_cfg_bb), regno))
-	    add_live_out_use (pred_bb, def);
+	  bitmap_set_bit (DF_LR_OUT (pred_cfg_bb), regno);
+	  add_live_out_use (pred_bb, def);
 	}
       else
 	{

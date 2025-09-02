@@ -70,7 +70,8 @@ public:
   {
     switch (pattern.get_items ().get_item_type ())
       {
-	case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+      case HIR::TuplePatternItems::ItemType::MULTIPLE:
+	{
 	  rust_assert (TREE_CODE (translated_type) == RECORD_TYPE);
 	  auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	    pattern.get_items ());

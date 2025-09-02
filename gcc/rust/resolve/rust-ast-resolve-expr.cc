@@ -315,6 +315,18 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 }
 
 void
+ResolveExpr::visit (AST::AnonConst &expr)
+{
+  ResolveExpr::go (expr.get_inner_expr (), prefix, canonical_prefix);
+}
+
+void
+ResolveExpr::visit (AST::ConstBlock &expr)
+{
+  ResolveExpr::go (expr.get_const_expr (), prefix, canonical_prefix);
+}
+
+void
 translate_operand (AST::InlineAsm &expr, const CanonicalPath &prefix,
 		   const CanonicalPath &canonical_prefix)
 {
@@ -324,38 +336,46 @@ translate_operand (AST::InlineAsm &expr, const CanonicalPath &prefix,
     {
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    auto in = operand.get_in ();
 	    ResolveExpr::go (*in.expr, prefix, canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    auto out = operand.get_out ();
 	    ResolveExpr::go (*out.expr, prefix, canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    auto in_out = operand.get_in_out ();
 	    ResolveExpr::go (*in_out.expr, prefix, canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split_in_out = operand.get_split_in_out ();
 	    ResolveExpr::go (*split_in_out.in_expr, prefix, canonical_prefix);
 	    ResolveExpr::go (*split_in_out.out_expr, prefix, canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::Const: {
+	case RegisterType::Const:
+	  {
 	    auto anon_const = operand.get_const ().anon_const;
-	    ResolveExpr::go (*anon_const.expr, prefix, canonical_prefix);
+	    ResolveExpr::go (anon_const.get_inner_expr (), prefix,
+			     canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    auto sym = operand.get_sym ();
 	    ResolveExpr::go (*sym.expr, prefix, canonical_prefix);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    auto label = operand.get_label ();
 	    ResolveExpr::go (*label.expr, prefix, canonical_prefix);
 	    break;
@@ -766,7 +786,7 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
 
   resolver->push_closure_context (expr.get_node_id ());
 
-  ResolveExpr::go (expr.get_definition_block (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_definition_expr (), prefix, canonical_prefix);
 
   resolver->pop_closure_context ();
 

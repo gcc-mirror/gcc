@@ -4,7 +4,7 @@ pub trait Sized {}
 struct Foo<A, B>(A, B);
 
 impl<T> Foo<i32, T> {
-    fn test(a: T) -> T {
+    fn test(a: T) -> T { // { dg-error "duplicate definitions with name .test." }
         a
     }
 }

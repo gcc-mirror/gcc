@@ -3803,6 +3803,7 @@ fix = {
     hackname  = pthread_incomplete_struct_argument;
     files     = pthread.h;
     select    = "struct __jmp_buf_tag";
+    bypass    = "bits/types/struct___jmp_buf_tag.h";
     c_fix     = format;
     c_fix_arg = "%1 *%2%3";
     c_fix_arg = "^(extern int __sigsetjmp \\(struct __jmp_buf_tag) "
@@ -4472,13 +4473,13 @@ fix = {
 
 /*
  *  Arrange for stdio.h to use stdarg.h to define __gnuc_va_list.
- *  On 4BSD-derived systems, stdio.h defers to machine/ansi.h; that's
- *  OK too.
+ *  On 4BSD-derived systems, stdio.h defers to machine/ansi.h, that's
+ *  OK too. Modern macOS includes _stdio.h, and does not need the fix.
  */
 fix = {
     hackname = stdio_stdarg_h;
     files    = stdio.h;
-    bypass   = "include.*(stdarg\.h|machine/ansi\.h)";
+    bypass   = "include.*(stdarg\.h|machine/ansi\.h|_stdio\.h)";
     /*
      * On Solaris 10, this fix is unncessary; <stdio.h> includes
      * <iso/stdio_iso.h>, which includes <sys/va_list.h>.
@@ -4499,12 +4500,12 @@ fix = {
  *  of __gnuc_va_list, __DJ_va_list, or _G_va_list is taken to
  *  indicate that the header knows what it's doing -- under SUSv2,
  *  stdio.h is required to define va_list, and we shouldn't break
- *  that.
+ *  that. Modern macOS includes _stdio.h, and does not need the fix.
  */
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
-    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
+    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list|_stdio.h';
     /* 
      * On Solaris 10, the definition in 
      * <stdio.h> is guarded appropriately by the _XPG4 feature macro; 

@@ -28,16 +28,14 @@ namespace HIR {
 
 /* Checks whether the name of a field already exists.  Returns true
    and produces an error if so.  */
-bool
-struct_field_name_exists (std::vector<HIR::StructField> &fields,
-			  HIR::StructField &new_field);
+bool struct_field_name_exists (std::vector<HIR::StructField> &fields,
+			       HIR::StructField &new_field);
 
 /**
  * Lowers a Visibility from the AST into an HIR Visibility, desugaring it in
  * the process
  */
-Visibility
-translate_visibility (const AST::Visibility &vis);
+Visibility translate_visibility (const AST::Visibility &vis);
 
 /**
  * Main base class used for lowering AST to HIR.

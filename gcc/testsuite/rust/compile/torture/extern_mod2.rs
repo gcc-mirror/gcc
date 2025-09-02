@@ -12,6 +12,12 @@ mod no_leading_equal;
 #[path       =     "modules/valid_path.rs"]
 mod extra_spaces;
 
+#[path = ""]  // { dg-error "path attributes must contain a filename" }
+mod empty_path; // { dg-error "no candidate found" }
+
+#[path = "          "]  // { dg-error "path attributes must contain a filename" }
+mod path_with_spaces; // { dg-error "no candidate found" }
+
 #[path] // { dg-error "path attributes must contain a filename" }
 mod error; // { dg-error "no candidate found" }
 

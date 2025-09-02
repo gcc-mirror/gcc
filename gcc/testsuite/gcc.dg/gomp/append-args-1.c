@@ -15,56 +15,60 @@ typedef enum omp_interop_t
 } omp_interop_t;
 
 
-/* (A) No prototype for the variant but for the base function.  */
+/* (A) No prototype for the variant but for the base function.
+   This is OK, the unprototyped decl is compatible with the modified
+   argument list.  */
 
 void variant_fn1();
 #pragma omp declare variant(variant_fn1) match(construct={dispatch}) append_args(interop(target)) \
                                          adjust_args(need_device_ptr: x,y)
 void bar1(int *x, int *y);
-/* { dg-error "variant 'variant_fn1' and base 'bar1' have incompatible types" "" { target *-*-* } .-3 }  */
 
 
 void variant_fn2();
 #pragma omp declare variant(variant_fn2) match(construct={dispatch}) append_args(interop(target))
 void bar2(int *x, int *y);
-/* { dg-error "variant 'variant_fn2' and base 'bar2' have incompatible types" "" { target *-*-* } .-2 }  */
 
 
 
-/* (B) No prototype for the variant nor for the base function.  */
+/* (B) No prototype for the variant nor for the base function.
+   The declarations are compatible, but adjust_args requires a prototyped
+   base function so that we know where in the arglist to insert the additional
+   omp_interop_t arguments.  */
 
-void variant_fn3();  /* { dg-error "argument 1 of 'variant_fn3' must be of 'omp_interop_t'" }  */
+void variant_fn3();
 #pragma omp declare variant(variant_fn3) match(construct={dispatch}) append_args(interop(target)) \
                                          adjust_args(need_device_ptr: x,y)
 void bar3();
 /* { dg-error "'x' undeclared here \\(not in a function\\)" "" { target *-*-* } .-2 }  */
 /* { dg-error "'y' undeclared here \\(not in a function\\)" "" { target *-*-* } .-3 }  */
-/* { dg-note "'append_args' specified here" "" { target *-*-* } .-5 }  */
+/* { dg-message "'append_args' with unprototyped base function" "" { target *-*-* } .-5 }  */
 
 
-void variant_fn4();  /* { dg-error "argument 1 of 'variant_fn4' must be of 'omp_interop_t'" }  */
+void variant_fn4();
 #pragma omp declare variant(variant_fn4) match(construct={dispatch}) append_args(interop(target))
 void bar4();
-/* { dg-note "'append_args' specified here" "" { target *-*-* } .-2 }  */
+/* { dg-message "'append_args' with unprototyped base function" "" { target *-*-* } .-2 }  */
 
 
 
-/* (C) Only a prototype on the variant-function side.  */
+/* (C) Only a prototype on the variant-function side.  Again, the base
+   function requires a prototype with append_args.  */
 
 void variant_fn5(omp_interop_t, omp_interop_t);
 #pragma omp declare variant(variant_fn5) match(construct={dispatch}) append_args(interop(target)) \
                                          adjust_args(need_device_ptr: x,y)
 void bar5();
-/* { dg-error "variant 'variant_fn5' and base 'bar5' have incompatible types" "" { target *-*-* } .-3 }  */
+/* { dg-message "'append_args' with unprototyped base function" "" { target *-*-* } .-3 }  */
 
 
 void variant_fn6(omp_interop_t, omp_interop_t);
 #pragma omp declare variant(variant_fn6) match(construct={dispatch}) append_args(interop(target))
 void bar6();
-/* { dg-error "variant 'variant_fn6' and base 'bar6' have incompatible types" "" { target *-*-* } .-2 }  */
+/* { dg-message "'append_args' with unprototyped base function" "" { target *-*-* } .-2 }  */
 
 
 void variant_fn7(int *, int, omp_interop_t, omp_interop_t);
 #pragma omp declare variant(variant_fn7) match(construct={dispatch}) append_args(interop(target))
 void bar7();
-/* { dg-error "variant 'variant_fn7' and base 'bar7' have incompatible types" "" { target *-*-* } .-2 }  */
+/* { dg-message "'append_args' with unprototyped base function" "" { target *-*-* } .-2 }  */

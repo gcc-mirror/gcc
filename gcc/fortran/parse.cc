@@ -242,6 +242,7 @@ decode_specification_statement (void)
       break;
 
     case 'g':
+      match ("generic", gfc_match_generic, ST_GENERIC);
       break;
 
     case 'i':
@@ -3937,6 +3938,7 @@ parse_derived (void)
   gfc_state_data s;
   gfc_symbol *sym;
   gfc_component *c, *lock_comp = NULL, *event_comp = NULL;
+  bool pdt_parameters;
 
   accept_statement (ST_DERIVED_DECL);
   push_state (&s, COMP_DERIVED, gfc_new_block);
@@ -3945,8 +3947,10 @@ parse_derived (void)
   seen_private = 0;
   seen_sequence = 0;
   seen_component = 0;
+  pdt_parameters = false;
 
   compiling_type = 1;
+
 
   while (compiling_type)
     {
@@ -3960,6 +3964,31 @@ parse_derived (void)
 	case ST_PROCEDURE:
 	  accept_statement (st);
 	  seen_component = 1;
+	  /* Type parameters must not have an explicit access specification
+	     and must be placed before a PRIVATE statement. If a PRIVATE
+	     statement is encountered after type parameters, mark the remaining
+	     components as PRIVATE. */
+	  for (c = gfc_current_block ()->components; c; c = c->next)
+	    if (!c->next && (c->attr.pdt_kind || c->attr.pdt_len))
+	      {
+		pdt_parameters = true;
+		if (c->attr.access != ACCESS_UNKNOWN)
+		  {
+		    gfc_error ("Access specification of a type parameter at "
+			       "%C is not allowed");
+		    c->attr.access = ACCESS_PUBLIC;
+		    break;
+		  }
+		if (seen_private)
+		  {
+		    gfc_error ("The type parameter at %C must come before a "
+			       "PRIVATE statement");
+		    break;
+		  }
+	      }
+	    else if (pdt_parameters && seen_private
+		     && !(c->attr.pdt_kind || c->attr.pdt_len))
+	      c->attr.access = ACCESS_PRIVATE;
 	  break;
 
 	case ST_FINAL:
@@ -3985,7 +4014,7 @@ endType:
 	      break;
 	    }
 
-	  if (seen_component)
+	  if (seen_component && !pdt_parameters)
 	    {
 	      gfc_error ("PRIVATE statement at %C must precede "
 			 "structure components");
@@ -3995,7 +4024,10 @@ endType:
 	  if (seen_private)
 	    gfc_error ("Duplicate PRIVATE statement at %C");
 
-	  s.sym->component_access = ACCESS_PRIVATE;
+	  if (pdt_parameters)
+	    s.sym->component_access = ACCESS_PUBLIC;
+	  else
+	    s.sym->component_access = ACCESS_PRIVATE;
 
 	  accept_statement (ST_PRIVATE);
 	  seen_private = 1;
@@ -4530,6 +4562,11 @@ declSt:
 	  break;
 	}
 
+      accept_statement (st);
+      st = next_statement ();
+      goto loop;
+
+    case ST_GENERIC:
       accept_statement (st);
       st = next_statement ();
       goto loop;

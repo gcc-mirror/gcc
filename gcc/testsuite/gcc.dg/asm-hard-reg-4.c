@@ -1,11 +1,12 @@
-/* { dg-do compile { target aarch64*-*-* arm*-*-* powerpc*-*-* riscv*-*-* s390*-*-* x86_64-*-* } } */
+/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* powerpc*-*-* riscv*-*-* s390*-*-* x86_64-*-* } } */
+/* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
 
 #if defined (__aarch64__)
 # define FPR "{d5}"
 /* { dg-final { scan-assembler-times "foo\tv5" 4 { target { aarch64*-*-* } } } } */
 #elif defined (__arm__)
 # define FPR "{d5}"
-/* { dg-additional-options "-march=armv7-a+fp -mfloat-abi=hard" { target arm*-*-* } } */
+/* { dg-additional-options "-mcpu=unset -march=armv7-a+fp -mfloat-abi=hard" { target arm*-*-* } } */
 /* { dg-final { scan-assembler-times "foo\ts10" 4 { target { arm*-*-* } } } } */
 #elif defined (__powerpc__) || defined (__POWERPC__)
 # define FPR "{5}"
@@ -16,9 +17,9 @@
 #elif defined (__s390__)
 # define FPR "{f5}"
 /* { dg-final { scan-assembler-times "foo\t%f5" 4 { target { s390*-*-* } } } } */
-#elif defined (__x86_64__)
+#elif defined (__i386__) || defined (__x86_64__)
 # define FPR "{xmm5}"
-/* { dg-final { scan-assembler-times "foo\t%xmm5" 4 { target { x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t%xmm5" 4 { target { i?86-*-* x86_64-*-* } } } } */
 #endif
 
 float

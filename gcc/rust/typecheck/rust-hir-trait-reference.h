@@ -224,7 +224,9 @@ public:
 
   bool trait_has_generics () const;
 
-  std::vector<TyTy::SubstitutionParamMapping> get_trait_substs () const;
+  std::vector<TyTy::SubstitutionParamMapping> &get_trait_substs ();
+
+  const std::vector<TyTy::SubstitutionParamMapping> &get_trait_substs () const;
 
   bool satisfies_bound (const TraitReference &reference) const;
 

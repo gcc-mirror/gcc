@@ -39,6 +39,14 @@ mloop
 Target Mask(OPT_LOOP)
 Allow (or do not allow) gcc to use the LOOP instruction.
 
+mmul
+Target Mask(OPT_MUL)
+Allow (or do not allow) gcc to use the PRU multiplier unit.
+
+mfillzero
+Target Mask(OPT_FILLZERO)
+Allow (or do not allow) gcc to use the FILL and ZERO instructions.
+
 mabi=
 Target RejectNegative Joined Enum(pru_abi_t) Var(pru_current_abi) Init(PRU_ABI_GNU) Save
 Select target ABI variant.

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "hash-map.h"
 #include "coroutines.h"
+#include "contracts.h"
 
 /* ================= Debug. ================= */
 

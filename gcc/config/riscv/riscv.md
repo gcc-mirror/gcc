@@ -712,24 +712,45 @@
    (set_attr "mode" "SI")])
 
 (define_expand "addsi3"
-  [(set (match_operand:SI          0 "register_operand" "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand" " r,r")
-		 (match_operand:SI 2 "arith_operand"    " r,I")))]
+  [(set (match_operand:SI          0 "register_operand")
+	(plus:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "reg_or_const_int_operand")))]
   ""
 {
+  /* We may be able to find a faster sequence, if so, then we are
+     done.  Otherwise let expansion continue normally.  */
+  if (CONST_INT_P (operands[2])
+      && ((!TARGET_64BIT && synthesize_add (operands))
+	  || (TARGET_64BIT && synthesize_add_extended (operands))))
+    DONE;
+
+  /* Constants have already been handled already.  */
   if (TARGET_64BIT)
     {
-      rtx t = gen_reg_rtx (DImode);
-      emit_insn (gen_addsi3_extended (t, operands[1], operands[2]));
-      t = gen_lowpart (SImode, t);
-      SUBREG_PROMOTED_VAR_P (t) = 1;
-      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
-      emit_move_insn (operands[0], t);
+      rtx tdest = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (tdest, operands[1], operands[2]));
+      tdest = gen_lowpart (SImode, tdest);
+      SUBREG_PROMOTED_VAR_P (tdest) = 1;
+      SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+      emit_move_insn (operands[0], tdest);
       DONE;
     }
+
 })
 
-(define_insn "adddi3"
+(define_expand "adddi3"
+  [(set (match_operand:DI          0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "reg_or_const_int_operand")))]
+  "TARGET_64BIT"
+{
+  /* We may be able to find a faster sequence, if so, then we are
+     done.  Otherwise let expansion continue normally.  */
+  if (CONST_INT_P (operands[2]) && synthesize_add (operands))
+    DONE;
+})
+
+(define_insn "*adddi3"
   [(set (match_operand:DI          0 "register_operand" "=r,r")
 	(plus:DI (match_operand:DI 1 "register_operand" " r,r")
 		 (match_operand:DI 2 "arith_operand"    " r,I")))]
@@ -2293,12 +2314,16 @@
       rtx abs_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx coeff_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx tmp_reg = gen_reg_rtx (<ANYF:MODE>mode);
+      rtx fflags = gen_reg_rtx (SImode);
 
       riscv_emit_move (tmp_reg, operands[1]);
       riscv_emit_move (coeff_reg,
 		       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
       emit_insn (gen_abs<ANYF:mode>2 (abs_reg, operands[1]));
 
+      /* fp compare can set invalid flag for NaN, so backup fflags.  */
+      if (flag_trapping_math)
+        emit_insn (gen_riscv_frflags (fflags));
       riscv_expand_conditional_branch (label, LT, abs_reg, coeff_reg);
 
       emit_jump_insn (gen_jump (end_label));
@@ -2324,6 +2349,14 @@
       emit_insn (gen_copysign<ANYF:mode>3 (tmp_reg, abs_reg, operands[1]));
 
       emit_label (end_label);
+
+      /* Restore fflags, but after label.  This is slightly different
+         than glibc implementation which only needs to restore under
+         the label, since it checks for NaN first, meaning following fp
+         compare can't raise fp exceptons and thus not clobber fflags.  */
+      if (flag_trapping_math)
+        emit_insn (gen_riscv_fsflags (fflags));
+
       riscv_emit_move (operands[0], tmp_reg);
     }
 
@@ -4402,11 +4435,21 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand 0 "prefetch_operand" "Qr")
-             (match_operand 1 "imm5_operand" "i")
-             (match_operand 2 "const_int_operand" "n"))]
-  "TARGET_ZICBOP"
+  [(prefetch (match_operand 0 "prefetch_operand" "Qr,ZD")
+	     (match_operand 1 "imm5_operand" "i,i")
+	     (match_operand 2 "const_int_operand" "n,n"))]
+  "TARGET_ZICBOP || TARGET_XMIPSCBOP"
 {
+  if (TARGET_XMIPSCBOP)
+    {
+      /* Mips Prefetch write is nop for p8700.  */
+      if (operands[1] != CONST0_RTX (GET_MODE (operands[1])))
+	return "nop";
+
+      operands[1] = riscv_prefetch_cookie (operands[1], operands[2]);
+      return "mips.pref\t%1,%a0";
+    }
+
   switch (INTVAL (operands[1]))
   {
     case 0:

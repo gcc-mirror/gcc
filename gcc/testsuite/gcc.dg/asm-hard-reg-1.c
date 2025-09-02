@@ -22,10 +22,11 @@
 /* { dg-final { scan-assembler-times "foo\t%r4" 8 { target { s390*-*-* } } } } */
 #elif defined (__x86_64__)
 # define GPR "{rcx}"
-/* { dg-final { scan-assembler-times "foo\t%cl" 2 { target { x86_64-*-* } } } } */
-/* { dg-final { scan-assembler-times "foo\t%cx" 2 { target { x86_64-*-* } } } } */
-/* { dg-final { scan-assembler-times "foo\t%ecx" 2 { target { x86_64-*-* } } } } */
-/* { dg-final { scan-assembler-times "foo\t%rcx" 2 { target { x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t%cl" 2 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t%cx" 2 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t%ecx" 2 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "foo\t%rcx" 2 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "foo\t%ecx" 4 { target { { i?86-*-* x86_64-*-* } && { ! lp64 } } } } } */
 #endif
 
 char

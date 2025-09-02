@@ -34,6 +34,22 @@ with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 separate (Par)
 package body Util is
 
+   ------------
+   -- Append --
+   ------------
+
+   procedure Append
+     (Def_Ids : in out Defining_Identifiers; Def_Id : Entity_Id)
+   is
+   begin
+      if Def_Ids.Num_Idents >= Defining_Identifiers_Array'Last then
+         raise Program_Error;
+      end if;
+
+      Def_Ids.Num_Idents := Def_Ids.Num_Idents + 1;
+      Def_Ids.Idents (Def_Ids.Num_Idents) := Def_Id;
+   end Append;
+
    ---------------------
    -- Bad_Spelling_Of --
    ---------------------
@@ -690,6 +706,19 @@ package body Util is
          Discard_Junk_Node (P_Constraint_Opt);
       end if;
    end No_Constraint;
+
+   ---------------
+   -- P_Def_Ids --
+   ---------------
+
+   procedure P_Def_Ids (Def_Ids : out Defining_Identifiers) is
+      pragma Assert (Def_Ids.Num_Idents = 0);
+   begin
+      loop
+         Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
+         exit when not Comma_Present;
+      end loop;
+   end P_Def_Ids;
 
    ---------------------
    -- Pop_Scope_Stack --

@@ -187,13 +187,18 @@ ResolvePathRef::resolve_with_node_id (
     }
 
   // Handle unit struct
+  tree resolved_item = error_mark_node;
   if (lookup->get_kind () == TyTy::TypeKind::ADT)
-    return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						  expr_locus);
+    resolved_item
+      = attempt_constructor_expression_lookup (lookup, ctx, mappings,
+					       expr_locus);
+
+  if (!error_operand_p (resolved_item))
+    return resolved_item;
 
   // let the query system figure it out
-  tree resolved_item = query_compile (ref, lookup, final_segment, mappings,
-				      expr_locus, is_qualified_path);
+  resolved_item = query_compile (ref, lookup, final_segment, mappings,
+				 expr_locus, is_qualified_path);
   if (resolved_item != error_mark_node)
     {
       TREE_USED (resolved_item) = 1;
@@ -209,36 +214,24 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
-  rust_assert (ok);
+  if (!ok)
+    return error_mark_node;
 
   // need to look up the reference for this identifier
 
   // this can fail because it might be a Constructor for something
   // in that case the caller should attempt ResolvePathType::Compile
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
+  auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
 
-      if (!resolved)
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-
-      ref_node_id = *resolved;
-    }
-  else
-    {
-      if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
-						       &ref_node_id))
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-    }
+  if (!resolved)
+    return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						  expr_locus);
 
   return resolve_with_node_id (final_segment, mappings, expr_locus,
-			       is_qualified_path, ref_node_id);
+			       is_qualified_path, *resolved);
 }
 
 tree
@@ -336,11 +329,18 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  rust_assert (lookup->is<TyTy::FnType> ());
 	  auto fn = lookup->as<TyTy::FnType> ();
 	  rust_assert (fn->get_num_type_params () > 0);
-	  auto &self = fn->get_substs ().at (0);
-	  auto receiver = self.get_param_ty ();
+	  TyTy::SubstitutionParamMapping &self = fn->get_substs ().at (0);
+	  TyTy::BaseGeneric *receiver = self.get_param_ty ();
+	  TyTy::BaseType *r = receiver;
+	  if (!receiver->can_resolve ())
+	    {
+	      bool ok
+		= ctx->get_tyctx ()->lookup_type (receiver->get_ref (), &r);
+	      rust_assert (ok);
+	    }
+
 	  auto candidates
-	    = Resolver::PathProbeImplTrait::Probe (receiver, final_segment,
-						   trait_ref);
+	    = Resolver::PathProbeImplTrait::Probe (r, final_segment, trait_ref);
 	  if (candidates.size () == 0)
 	    {
 	      // this means we are defaulting back to the trait_item if

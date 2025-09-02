@@ -231,14 +231,7 @@ DeriveHash::visit_enum (Enum &item)
   auto cases = std::vector<MatchCase> ();
   auto type_name = item.get_identifier ().as_string ();
 
-  auto intrinsic = ptrify (
-    builder.path_in_expression ({"core", "intrinsics", "discriminant_value"},
-				true));
-
-  auto let_discr
-    = builder.let (builder.identifier_pattern (DeriveHash::discr), nullptr,
-		   builder.call (std::move (intrinsic),
-				 builder.identifier ("self")));
+  auto let_discr = builder.discriminant_value (DeriveHash::discr);
 
   auto discr_hash = builder.statementify (
     hash_call (builder.ref (builder.identifier (DeriveHash::discr))));

@@ -1,3 +1,130 @@
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* c-parser.cc (c_finish_omp_declare_variant): Error if variant
+	is the same as base.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_finish_omp_declare_variant): Rework diagnostic
+	code.  Do not record variant if there are errors.  Make check for
+	a missing "match" clause unconditional.
+
+2025-08-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c/121478
+	* c-fold.cc (c_fully_fold_internal): Fold nullptr_t ==/!= nullptr_t.
+	* c-typeck.cc (convert_arguments): Handle conversion from nullptr_t
+	for varargs.
+	(convert_for_assignment): Handle conversions from nullptr_t to
+	pointer type specially.
+
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-parser.cc (c_parser_declaration_or_fndef): Use
+	'sanitize_code_type' instead of 'unsigned int'.
+
+2025-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	PR target/121520
+	* c-decl.cc (c_init_decl_processing): Use cpp_warn instead of
+	cpp_lookup and NODE_WARN bit setting.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-tree.h (handle_counted_by_for_component_ref): New prototype of
+	build_component_ref and handle_counted_by_for_component_ref.
+	* c-parser.cc (c_parser_postfix_expression): Call the new prototypes
+	of build_component_ref and handle_counted_by_for_component_ref,
+	update comments.
+	* c-typeck.cc (default_function_array_read_conversion): Likewise.
+	(convert_lvalue_to_rvalue): Likewise.
+	(default_conversion): Likewise.
+	(handle_counted_by_p): Update comments.
+	(handle_counted_by_for_component_ref): Delete one argument.
+	(build_component_ref): Delete one argument. Delete the call to
+	handle_counted_by_for_component_ref completely.
+	(build_array_ref): Generate call to .ACCESS_WITH_SIZE for array.
+
+2025-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (verify_counted_by_attribute): Change the 2nd argument
+	to a vector of fields with counted_by attribute. Verify all fields
+	in this vector.
+	(finish_struct): Collect all the fields with counted_by attribute
+	to a vector and pass this vector to verify_counted_by_attribute.
+	* c-tree.h (handle_counted_by_for_component_ref): New prototype of
+	handle_counted_by_form_component_ref.
+	* c-parser.cc (c_parser_postfix_expression): Call the new prototype
+	of handle_counted_by_for_component_ref.
+	* c-typeck.cc (default_function_array_read_conversion): Only generate
+	call to .ACCESS_WITH_SIZE for a pointer field when it's a read.
+	(convert_lvalue_to_rvalue): Likewise.
+	(default_conversion): Likewise.
+	(handle_counted_by_p): New routine.
+	(check_counted_by_attribute): New routine.
+	(build_counted_by_ref): Handle pointers with counted_by.
+	(build_access_with_size_for_counted_by): Handle pointers with counted_by.
+	(handle_counted_by_for_component_ref): Add one more argument.
+	(build_component_ref): Call the new prototype of
+	handle_counted_by_for_component_ref.
+
+2025-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/120778
+	* c-decl.cc (c_init_decl_processing): Mark cpp nodes corresponding
+	to keywords as NODE_WARN if warn_keyword_macro.
+
+2025-08-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-tree.h (C_BOOLEAN_TYPE_P): Cover hardbools as well.
+	* c-typeck.cc (convert_lvalue_to_rvalue): New overload and
+	wrapper.
+	(build_atomic_assign, build_modify_expr): Use it.
+	(build_asm_expr, handle_omp-array_sections_1): Simplify with
+	it.
+	(build_unary_op): Handle hardbools.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/108931
+	* c-typeck.cc (composite_type_cond): Renamed from
+	composite_type with argument for condition
+	(composite_type): New function.
+	(composite_type_internal): Implement new logic.
+	(build_conditional_expr): Pass condition.
+	(common_pointer_type): Adapt.
+	(pointer_diff): Adapt.
+	(build_binary_op): Adapt.
+
+2025-08-06  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/121217
+	* c-typeck.cc (tagged_types_tu_compatible_p): Add check.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_from_to): Parse 'iterator' modifier.
+	* c-typeck.cc (c_finish_omp_clauses): Finish iterators for to/from
+	clauses.
+
+2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_variable_list): Use location of the
+	map expression as the clause location.
+	(c_parser_omp_clause_map): Parse 'iterator' modifier.
+	* c-typeck.cc (c_finish_omp_clauses): Finish iterators.  Apply
+	iterators to generated clauses.
+
+2025-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (get_parm_array_spec): Remove.
+	(push_parm_decl): Do not add `arg spec` attribute.
+	(build_arg_spec_attribute): New function.
+	(grokdeklarator): Add `arg spec` attribute.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-errors.cc: Update usage of "diagnostic_info" to explicitly

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-sources c_f_pointer_shape_tests_2_driver.c }
+! { dg-additional-sources c_f_pointer_shape_tests_driver.c }
 ! Verify that the optional SHAPE parameter to c_f_pointer can be of any
 ! valid integer kind.  We don't test all kinds here since it would be 
 ! difficult to know what kinds are valid for the architecture we're running on.

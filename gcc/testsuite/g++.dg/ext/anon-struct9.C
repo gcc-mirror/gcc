@@ -1,5 +1,5 @@
 // PR c++/96636
-// { dg-options "" }
+// { dg-options "-Wno-non-c-typedef-for-linkage" }
 
 typedef class {
   class a {};

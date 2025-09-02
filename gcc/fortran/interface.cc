@@ -3007,14 +3007,16 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 }
 
 
-/* Returns the storage size of a symbol (formal argument) or
-   zero if it cannot be determined.  */
+/* Returns the storage size of a symbol (formal argument) or sets argument
+   size_known to false if it cannot be determined.  */
 
 static unsigned long
-get_sym_storage_size (gfc_symbol *sym)
+get_sym_storage_size (gfc_symbol *sym, bool *size_known)
 {
   int i;
   unsigned long strlen, elements;
+
+  *size_known = false;
 
   if (sym->ts.type == BT_CHARACTER)
     {
@@ -3029,7 +3031,10 @@ get_sym_storage_size (gfc_symbol *sym)
     strlen = 1;
 
   if (symbol_rank (sym) == 0)
-    return strlen;
+    {
+      *size_known = true;
+      return strlen;
+    }
 
   elements = 1;
   if (sym->as->type != AS_EXPLICIT)
@@ -3046,23 +3051,27 @@ get_sym_storage_size (gfc_symbol *sym)
 		  - mpz_get_si (sym->as->lower[i]->value.integer) + 1L;
     }
 
+  *size_known = true;
+
   return strlen*elements;
 }
 
 
-/* Returns the storage size of an expression (actual argument) or
-   zero if it cannot be determined. For an array element, it returns
-   the remaining size as the element sequence consists of all storage
+/* Returns the storage size of an expression (actual argument) or sets argument
+   size_known to false if it cannot be determined.  For an array element, it
+   returns the remaining size as the element sequence consists of all storage
    units of the actual argument up to the end of the array.  */
 
 static unsigned long
-get_expr_storage_size (gfc_expr *e)
+get_expr_storage_size (gfc_expr *e, bool *size_known)
 {
   int i;
   long int strlen, elements;
   long int substrlen = 0;
   bool is_str_storage = false;
   gfc_ref *ref;
+
+  *size_known = false;
 
   if (e == NULL)
     return 0;
@@ -3083,7 +3092,10 @@ get_expr_storage_size (gfc_expr *e)
     strlen = 1; /* Length per element.  */
 
   if (e->rank == 0 && !e->ref)
-    return strlen;
+    {
+      *size_known = true;
+      return strlen;
+    }
 
   elements = 1;
   if (!e->ref)
@@ -3092,7 +3104,10 @@ get_expr_storage_size (gfc_expr *e)
 	return 0;
       for (i = 0; i < e->rank; i++)
 	elements *= mpz_get_si (e->shape[i]);
-      return elements*strlen;
+      {
+	*size_known = true;
+	return elements*strlen;
+      }
     }
 
   for (ref = e->ref; ref; ref = ref->next)
@@ -3231,6 +3246,8 @@ get_expr_storage_size (gfc_expr *e)
 	}
     }
 
+  *size_known = true;
+
   if (substrlen)
     return (is_str_storage) ? substrlen + (elements-1)*strlen
 			    : elements*strlen;
@@ -3331,7 +3348,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_array_spec *fas, *aas;
   bool pointer_dummy, pointer_arg, allocatable_arg;
   bool procptr_dummy, optional_dummy, allocatable_dummy;
-
+  bool actual_size_known = false;
+  bool formal_size_known = false;
   bool ok = true;
 
   actual = *ap;
@@ -3584,20 +3602,39 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
 		       f->sym->ts.u.cl->length->value.integer) != 0))
 	{
+	  long actual_len, formal_len;
+	  actual_len = mpz_get_si (a->expr->ts.u.cl->length->value.integer);
+	  formal_len = mpz_get_si (f->sym->ts.u.cl->length->value.integer);
+
 	  if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
-	    gfc_warning (0, "Character length mismatch (%ld/%ld) between actual "
-			 "argument and pointer or allocatable dummy argument "
-			 "%qs at %L",
-			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
-			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
-			 f->sym->name, &a->expr->where);
+	    {
+	      /* Emit a warning for -std=legacy and an error otherwise. */
+	      if (gfc_option.warn_std == 0)
+		gfc_warning (0, "Character length mismatch (%ld/%ld) between "
+			     "actual argument and pointer or allocatable "
+			     "dummy argument %qs at %L", actual_len, formal_len,
+			     f->sym->name, &a->expr->where);
+	      else
+		gfc_error ("Character length mismatch (%ld/%ld) between "
+			   "actual argument and pointer or allocatable "
+			   "dummy argument %qs at %L", actual_len, formal_len,
+			   f->sym->name, &a->expr->where);
+	    }
 	  else if (where)
-	    gfc_warning (0, "Character length mismatch (%ld/%ld) between actual "
-			 "argument and assumed-shape dummy argument %qs "
-			 "at %L",
-			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
-			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
-			 f->sym->name, &a->expr->where);
+	    {
+	      /* Emit a warning for -std=legacy and an error otherwise. */
+	      if (gfc_option.warn_std == 0)
+		gfc_warning (0, "Character length mismatch (%ld/%ld) between "
+			     "actual argument and assumed-shape dummy argument "
+			     "%qs at %L", actual_len, formal_len,
+			     f->sym->name, &a->expr->where);
+	      else
+		gfc_error ("Character length mismatch (%ld/%ld) between "
+			   "actual argument and assumed-shape dummy argument "
+			   "%qs at %L", actual_len, formal_len,
+			   f->sym->name, &a->expr->where);
+
+	    }
 	  ok = false;
 	  goto match;
 	}
@@ -3622,21 +3659,74 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (a->expr->expr_type == EXPR_NULL && a->expr->ts.type == BT_UNKNOWN)
 	goto skip_size_check;
 
-      actual_size = get_expr_storage_size (a->expr);
-      formal_size = get_sym_storage_size (f->sym);
-      if (actual_size != 0 && actual_size < formal_size
+      actual_size = get_expr_storage_size (a->expr, &actual_size_known);
+      formal_size = get_sym_storage_size (f->sym, &formal_size_known);
+
+      if (actual_size_known && formal_size_known
+	  && actual_size != formal_size
+	  && a->expr->ts.type == BT_CHARACTER
+	  && f->sym->attr.flavor != FL_PROCEDURE)
+	{
+	  /* F2018:15.5.2.4:
+	     (3) "The length type parameter values of a present actual argument
+	     shall agree with the corresponding ones of the dummy argument that
+	     are not assumed, except for the case of the character length
+	     parameter of an actual argument of type character with default
+	     kind or C character kind associated with a dummy argument that is
+	     not assumed-shape or assumed-rank."
+
+	     (4) "If a present scalar dummy argument is of type character with
+	     default kind or C character kind, the length len of the dummy
+	     argument shall be less than or equal to the length of the actual
+	     argument.  The dummy argument becomes associated with the leftmost
+	     len characters of the actual argument.  If a present array dummy
+	     argument is of type character with default kind or C character
+	     kind and is not assumed-shape or assumed-rank, it becomes
+	     associated with the leftmost characters of the actual argument
+	     element sequence."
+
+	     As an extension we treat kind=4 character similarly to kind=1.  */
+
+	  if (actual_size > formal_size)
+	    {
+	      if (a->expr->ts.type == BT_CHARACTER && where
+		  && (!f->sym->as || f->sym->as->type == AS_EXPLICIT))
+		gfc_warning (OPT_Wcharacter_truncation,
+			     "Character length of actual argument longer "
+			     "than of dummy argument %qs (%lu/%lu) at %L",
+			     f->sym->name, actual_size, formal_size,
+			     &a->expr->where);
+	      goto skip_size_check;
+	    }
+
+	  if (a->expr->ts.type == BT_CHARACTER && where && !f->sym->as)
+	    {
+	      /* Emit warning for -std=legacy/gnu and an error otherwise. */
+	      if (gfc_notification_std (GFC_STD_LEGACY) == ERROR)
+		{
+		  gfc_error ("Character length of actual argument shorter "
+			     "than of dummy argument %qs (%lu/%lu) at %L",
+			     f->sym->name, actual_size, formal_size,
+			     &a->expr->where);
+		  ok = false;
+		  goto match;
+		}
+	      else
+		gfc_warning (0, "Character length of actual argument shorter "
+			     "than of dummy argument %qs (%lu/%lu) at %L",
+			     f->sym->name, actual_size, formal_size,
+			     &a->expr->where);
+	      goto skip_size_check;
+	    }
+	}
+
+      if (actual_size_known && formal_size_known
+	  && actual_size < formal_size
+	  && f->sym->as
 	  && a->expr->ts.type != BT_PROCEDURE
 	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
-	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
-	    {
-	      gfc_warning (0, "Character length of actual argument shorter "
-			   "than of dummy argument %qs (%lu/%lu) at %L",
-			   f->sym->name, actual_size, formal_size,
-			   &a->expr->where);
-	      goto skip_size_check;
-	    }
-          else if (where)
+	  if (where)
 	    {
 	      /* Emit a warning for -std=legacy and an error otherwise. */
 	      if (gfc_option.warn_std == 0)

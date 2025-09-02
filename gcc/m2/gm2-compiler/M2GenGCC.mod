@@ -2903,9 +2903,6 @@ END CheckStop ;
 *)
 
 PROCEDURE FoldBecomes (p: WalkAction; bb: BasicBlock; quad: CARDINAL) ;
-VAR
-   op            : QuadOperator ;
-   des, op2, expr: CARDINAL ;
 BEGIN
    IF DeclaredOperandsBecomes (p, quad)
    THEN
@@ -6442,37 +6439,52 @@ END ResolveHigh ;
 
 
 (*
+   IsUnboundedArray - return TRUE if symbol is an unbounded array.
+*)
+
+PROCEDURE IsUnboundedArray (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF IsParameter (sym) OR IsVar (sym)
+   THEN
+      RETURN IsUnbounded (GetType (sym))
+   END ;
+   RETURN FALSE
+END IsUnboundedArray ;
+
+
+(*
    FoldHigh - if the array is not dynamic then we should be able to
               remove the HighOp quadruple and assign op1 with
-              the known compile time HIGH(op3).
+              the known compile time HIGH(array).
 *)
 
 PROCEDURE FoldHigh (tokenno: CARDINAL; p: WalkAction;
-                    quad: CARDINAL; op1, dim, op3: CARDINAL) ;
+                    quad: CARDINAL; op1, dim, array: CARDINAL) ;
 VAR
    t       : tree ;
    location: location_t ;
 BEGIN
-   (* firstly ensure that any constant literal is declared *)
-   TryDeclareConstant(tokenno, op3) ;
-   location := TokenToLocation(tokenno) ;
-   IF GccKnowsAbout(op3) AND CompletelyResolved(op3)
+   (* Firstly ensure that any constant literal is declared.  *)
+   TryDeclareConstant (tokenno, array) ;
+   location := TokenToLocation (tokenno) ;
+   IF (NOT IsUnboundedArray (array)) AND
+      GccKnowsAbout (array) AND CompletelyResolved (array)
    THEN
-      t := ResolveHigh(tokenno, dim, op3) ;
-      (* fine, we can take advantage of this and fold constants *)
-      IF IsConst(op1) AND (t#tree(NIL))
+      t := ResolveHigh (tokenno, dim, array) ;
+      (* We can take advantage of this and fold constants.  *)
+      IF IsConst (op1) AND (t # tree (NIL))
       THEN
-         PutConst(op1, Cardinal) ;
-         AddModGcc(op1,
-                   DeclareKnownConstant(location, GetCardinalType(),
-                                        ToCardinal(location, t))) ;
-         p(op1) ;
+         PutConst (op1, Cardinal) ;
+         AddModGcc (op1,
+                    DeclareKnownConstant (location, GetCardinalType (),
+                                          ToCardinal (location, t))) ;
+         p (op1) ;
          NoChange := FALSE ;
-         SubQuad(quad)
+         SubQuad (quad)
       ELSE
-         (* we can still fold the expression, but not the assignment, however, we will
-            not do this here but in CodeHigh
-         *)
+         (* We can still fold the expression but not the assignment,
+            we will not do this here but in CodeHigh when the result
+            can be stored.  *)
       END
    END
 END FoldHigh ;
@@ -8154,8 +8166,6 @@ VAR
    rightpos,
    typepos,
    indrxpos        : CARDINAL ;
-   length,
-   newstr          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, indrxpos, op, left, type, right,

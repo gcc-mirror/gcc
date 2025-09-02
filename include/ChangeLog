@@ -1,3 +1,10 @@
+2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120503
+	PR c++/120824
+	* demangle.h (enum demangle_component_type): Add enumeration
+	DEMANGLE_COMPONENT_UNNAMED_ENUM.
+
 2025-07-09  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* doubly-linked-list.h: New file.

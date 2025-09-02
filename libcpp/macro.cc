@@ -733,6 +733,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 		   "%<__COUNTER__%> expanded inside directive with "
 		   "%<-fdirectives-only%>");
       number = pfile->counter++;
+      if (number == 0x80000000U)
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "%<__COUNTER__%> expanded more than 2147483648 times");
       break;
 
     case BT_HAS_ATTRIBUTE:
@@ -1003,7 +1006,10 @@ stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count)
   /* Ignore the final \ of invalid string literals.  */
   if (backslash_count & 1)
     {
-      cpp_error (pfile, CPP_DL_WARNING,
+      cpp_error (pfile,
+		 CPP_OPTION (pfile, cplusplus)
+		 && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26
+		 ? CPP_DL_PEDWARN : CPP_DL_WARNING,
 		 "invalid string literal, ignoring final %<\\%>");
       dest--;
     }
@@ -1068,7 +1074,7 @@ paste_tokens (cpp_reader *pfile, location_t location,
       /* Mandatory error for all apart from assembler.  */
       if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
-			     "pasting \"%.*s\" and \"%.*s\" does not give "
+			     "pasting %<%.*s%> and %<%.*s%> does not give "
 			     "a valid preprocessing token",
 			     (int) (lhsend - buf), buf,
 			     (int) (end - rhsstart), rhsstart);
@@ -3408,7 +3414,14 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 {
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
-    return true;
+    {
+      /* Ignore NODE_WARN on -Wkeyword-macro registered identifiers though
+	 or during cpp_define.  */
+      if (!CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	  && (!CPP_OPTION (pfile, cpp_warn_keyword_macro)
+	      || !cpp_keyword_p (node)))
+	return true;
+    }
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
@@ -3946,6 +3959,27 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
   if (name_loc)
     macro->line = name_loc;
 
+  /* Handle -Wkeyword-macro registered identifiers.  */
+  if (CPP_OPTION (pfile, cpp_warn_keyword_macro)
+      && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+      && cpp_keyword_p (node))
+    {
+      if (macro->fun_like
+	  && CPP_OPTION (pfile, cplusplus)
+	  && (strcmp ((const char *) NODE_NAME (node), "likely") == 0
+	      || strcmp ((const char *) NODE_NAME (node), "unlikely") == 0))
+	/* likely and unlikely can be defined as function-like macros.  */;
+      else if (CPP_OPTION (pfile, cpp_pedantic)
+	       && CPP_OPTION (pfile, cplusplus)
+	       && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	cpp_pedwarning_with_line (pfile, CPP_W_KEYWORD_MACRO, macro->line, 0,
+				  "keyword %qs defined as macro",
+				  NODE_NAME (node));
+      else
+	cpp_warning_with_line (pfile, CPP_W_KEYWORD_MACRO, macro->line, 0,
+			       "keyword %qs defined as macro",
+			       NODE_NAME (node));
+    }
   if (cpp_macro_p (node))
     {
       if (CPP_OPTION (pfile, warn_unused_macros))
@@ -3954,12 +3988,12 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
       if (warn_of_redefinition (pfile, node, macro))
 	{
           const enum cpp_warning_reason reason
-	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))
-	    ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
+	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN)
+	       ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE);
 
 	  bool warned
-	    =  cpp_pedwarning_with_line (pfile, reason, macro->line, 0,
-					 "%qs redefined", NODE_NAME (node));
+	    = cpp_pedwarning_with_line (pfile, reason, macro->line, 0,
+					"%qs redefined", NODE_NAME (node));
 
 	  if (warned && cpp_user_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE, node->value.macro->line,
@@ -3968,6 +4002,11 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
 	}
       _cpp_free_definition (node);
     }
+  else if ((node->flags & NODE_WARN)
+	   && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
+	   && !cpp_keyword_p (node))
+    cpp_error_with_line (pfile, CPP_DL_WARNING, macro->line, 0,
+			 "%qs defined", NODE_NAME (node));
 
   /* Enter definition in hash table.  */
   node->type = NT_USER_MACRO;

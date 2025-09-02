@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-expr.h"
+#include "rust-backend.h"
+#include "rust-compile-type.h"
 #include "rust-compile-struct-field-expr.h"
 #include "rust-compile-pattern.h"
 #include "rust-compile-resolve-path.h"
@@ -30,8 +32,11 @@
 #include "realmpfr.h"
 #include "convert.h"
 #include "print-tree.h"
+#include "rust-hir-expr.h"
 #include "rust-system.h"
+#include "rust-tree.h"
 #include "rust-tyty.h"
+#include "tree-core.h"
 
 namespace Rust {
 namespace Compile {
@@ -375,6 +380,31 @@ CompileExpr::visit (HIR::LlvmInlineAsm &expr)
 }
 
 void
+CompileExpr::visit (HIR::OffsetOf &expr)
+{
+  TyTy::BaseType *type = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_type ().get_mappings ().get_hirid (), &type))
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  auto compiled_ty = TyTyResolveCompile::compile (ctx, type);
+
+  rust_assert (TREE_CODE (compiled_ty) == RECORD_TYPE);
+
+  // Create an identifier node for the field
+  auto field_id = Backend::get_identifier_node (expr.get_field ().as_string ());
+
+  // And now look it up and get its value for `byte_position`
+  auto field = Backend::lookup_field (compiled_ty, field_id);
+  auto field_value = TREE_VALUE (field);
+
+  translated = byte_position (field_value);
+}
+
+void
 CompileExpr::visit (HIR::IfExprConseqElse &expr)
 {
   TyTy::BaseType *if_type = nullptr;
@@ -441,6 +471,18 @@ CompileExpr::visit (HIR::BlockExpr &expr)
 }
 
 void
+CompileExpr::visit (HIR::AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+CompileExpr::visit (HIR::ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
+}
+
+void
 CompileExpr::visit (HIR::UnsafeBlockExpr &expr)
 {
   expr.get_block_expr ().accept_vis (*this);
@@ -471,6 +513,8 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
       rust_error_at (struct_expr.get_locus (), "unknown type");
       return;
     }
+  if (!tyty->is<TyTy::ADTType> ())
+    return;
 
   // it must be an ADT
   rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
@@ -669,6 +713,15 @@ void
 CompileExpr::visit (HIR::LoopExpr &expr)
 {
   TyTy::BaseType *block_tyty = nullptr;
+  fncontext fnctx = ctx->peek_fn ();
+  if (ctx->const_context_p () && !DECL_DECLARED_CONSTEXPR_P (fnctx.fndecl))
+    {
+      rich_location r (line_table, expr.get_locus ());
+      rust_error_at (r, ErrorCode::E0658,
+		     "%<loop%> is not allowed in const context");
+      return;
+    }
+
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 				       &block_tyty))
     {
@@ -676,7 +729,6 @@ CompileExpr::visit (HIR::LoopExpr &expr)
       return;
     }
 
-  fncontext fnctx = ctx->peek_fn ();
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
@@ -701,7 +753,8 @@ CompileExpr::visit (HIR::LoopExpr &expr)
 	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
     }
 
-  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label
+    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
   tree loop_begin_label_decl
     = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
@@ -743,7 +796,8 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
 				    start_location, end_location);
   ctx->push_block (loop_block);
 
-  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label
+    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
   tree loop_begin_label_decl
     = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
@@ -787,25 +841,16 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 
   if (expr.has_label ())
     {
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  if (auto id
-	      = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
-	    resolved_node_id = *id;
+      NodeId resolved_node_id;
+      if (auto id
+	  = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
+	{
+	  resolved_node_id = *id;
 	}
       else
-	{
-	  NodeId tmp = UNKNOWN_NODEID;
-	  if (ctx->get_resolver ()->lookup_resolved_label (
-		expr.get_label ().get_mappings ().get_nodeid (), &tmp))
-	    resolved_node_id = tmp;
-	}
-
-      if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (
 	    expr.get_label ().get_locus (),
@@ -849,26 +894,16 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
   tree label = ctx->peek_loop_begin_label ();
   if (expr.has_label ())
     {
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  if (auto id
-	      = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
-	    resolved_node_id = *id;
+      NodeId resolved_node_id;
+      if (auto id
+	  = nr_ctx.lookup (expr.get_label ().get_mappings ().get_nodeid ()))
+	{
+	  resolved_node_id = *id;
 	}
       else
-	{
-	  NodeId tmp = UNKNOWN_NODEID;
-
-	  if (ctx->get_resolver ()->lookup_resolved_label (
-		expr.get_label ().get_mappings ().get_nodeid (), &tmp))
-	    resolved_node_id = tmp;
-	}
-
-      if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (
 	    expr.get_label ().get_locus (),
@@ -1130,9 +1165,8 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   // setup the end label so the cases can exit properly
   tree fndecl = fnctx.fndecl;
   location_t end_label_locus = expr.get_locus (); // FIXME
-  tree end_label
-    = Backend::label (fndecl, "" /* empty creates an artificial label */,
-		      end_label_locus);
+  // tl::nullopt creates an artificial label
+  tree end_label = Backend::label (fndecl, tl::nullopt, end_label_locus);
   tree end_label_decl_statement
     = Backend::label_definition_statement (end_label);
 
@@ -1325,6 +1359,28 @@ CompileExpr::visit (HIR::CallExpr &expr)
   };
 
   auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+  if (ctx->const_context_p ())
+    {
+      if (!FUNCTION_POINTER_TYPE_P (TREE_TYPE (fn_address)))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "calls in constants are limited to constant "
+			 "functions, tuple structs and tuple variants");
+	  return;
+	}
+
+      if (TREE_CODE (fn_address) == ADDR_EXPR)
+	{
+	  tree fndecl = TREE_OPERAND (fn_address, 0);
+	  if (!DECL_DECLARED_CONSTEXPR_P (fndecl))
+	    {
+	      rust_error_at (expr.get_locus (),
+			     "calls in constants are limited to constant "
+			     "functions, tuple structs and tuple variants");
+	      return;
+	    }
+	}
+    }
 
   // is this a closure call?
   bool possible_trait_call
@@ -1883,7 +1939,8 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
   HIR::ArrayElems &elements = expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
 	translated
@@ -2032,7 +2089,8 @@ HIRCompileBase::resolve_adjustements (
 	  return error_mark_node;
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  {
 	    if (!RS_DST_FLAG (TREE_TYPE (e)))
 	      {
 		e = address_expression (e, locus);
@@ -2474,23 +2532,12 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   if (is_block_expr)
     {
       auto body_mappings = function_body.get_mappings ();
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	  auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
+      auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
 
-	  rust_assert (candidate.has_value ());
-	}
-      else
-	{
-	  Resolver::Rib *rib = nullptr;
-	  bool ok
-	    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-						   &rib);
-	  rust_assert (ok);
-	}
+      rust_assert (candidate.has_value ());
     }
 
   tree enclosing_scope = NULL_TREE;

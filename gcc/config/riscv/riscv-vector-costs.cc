@@ -275,13 +275,13 @@ loop_invariant_op_p (class loop *loop,
 /* Return true if the variable should be counted into liveness.  */
 static bool
 variable_vectorized_p (class loop *loop, stmt_vec_info stmt_info,
-		       slp_tree node ATTRIBUTE_UNUSED, tree var, bool lhs_p)
+		       slp_tree node, tree var, bool lhs_p)
 {
   if (!var)
     return false;
   gimple *stmt = STMT_VINFO_STMT (stmt_info);
   stmt_info = vect_stmt_to_vectorize (stmt_info);
-  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+  enum stmt_vec_info_type type = SLP_TREE_TYPE (node);
   if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
     {
       if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE
@@ -400,7 +400,7 @@ costs::compute_local_live_ranges (
 		  pair &live_range
 		    = live_ranges->get_or_insert (lhs, &existed_p);
 		  gcc_assert (!existed_p);
-		  if (STMT_VINFO_MEMORY_ACCESS_TYPE (program_point.stmt_info)
+		  if (SLP_TREE_MEMORY_ACCESS_TYPE (*node)
 		      == VMAT_LOAD_STORE_LANES)
 		    point = get_first_lane_point (program_points,
 						  program_point.stmt_info);
@@ -418,8 +418,7 @@ costs::compute_local_live_ranges (
 		      bool existed_p = false;
 		      pair &live_range
 			= live_ranges->get_or_insert (var, &existed_p);
-		      if (STMT_VINFO_MEMORY_ACCESS_TYPE (
-			    program_point.stmt_info)
+		      if (SLP_TREE_MEMORY_ACCESS_TYPE (*node)
 			  == VMAT_LOAD_STORE_LANES)
 			point = get_last_lane_point (program_points,
 						     program_point.stmt_info);
@@ -602,13 +601,13 @@ get_store_value (gimple *stmt)
 /* Return true if additional vector vars needed.  */
 bool
 costs::need_additional_vector_vars_p (stmt_vec_info stmt_info,
-				      slp_tree node ATTRIBUTE_UNUSED)
+				      slp_tree node)
 {
-  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+  enum stmt_vec_info_type type = SLP_TREE_TYPE (node);
   if (type == load_vec_info_type || type == store_vec_info_type)
     {
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
-	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+	  && mat_gather_scatter_p (SLP_TREE_MEMORY_ACCESS_TYPE (node)))
 	return true;
 
       machine_mode mode = TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info));
@@ -694,7 +693,7 @@ costs::update_local_live_ranges (
 	  if (!node)
 	    continue;
 
-	  if (STMT_VINFO_TYPE (stmt_info) == undef_vec_info_type)
+	  if (SLP_TREE_TYPE (*node) == undef_vec_info_type)
 	    continue;
 
 	  for (j = 0; j < gimple_phi_num_args (phi); j++)
@@ -773,7 +772,7 @@ costs::update_local_live_ranges (
 	  slp_tree *node = vinfo_slp_map.get (stmt_info);
 	  if (!node)
 	    continue;
-	  enum stmt_vec_info_type type = STMT_VINFO_TYPE (stmt_info);
+	  enum stmt_vec_info_type type = SLP_TREE_TYPE (*node);
 	  if (need_additional_vector_vars_p (stmt_info, *node))
 	    {
 	      /* For non-adjacent load/store STMT, we will potentially
@@ -1086,7 +1085,7 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
    load/store.  */
 static int
 segment_loadstore_group_size (enum vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info)
+			      stmt_vec_info stmt_info, slp_tree node)
 {
   if (stmt_info
       && (kind == vector_load || kind == vector_store)
@@ -1094,7 +1093,7 @@ segment_loadstore_group_size (enum vect_cost_for_stmt kind,
     {
       stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
       if (stmt_info
-	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_LOAD_STORE_LANES)
+	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_LOAD_STORE_LANES)
 	return DR_GROUP_SIZE (stmt_info);
     }
   return 0;
@@ -1108,7 +1107,7 @@ segment_loadstore_group_size (enum vect_cost_for_stmt kind,
 unsigned
 costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
 			 stmt_vec_info stmt_info,
-			 slp_tree, tree vectype, int stmt_cost)
+			 slp_tree node, tree vectype, int stmt_cost)
 {
   const cpu_vector_cost *costs = get_vector_costs ();
   switch (kind)
@@ -1131,7 +1130,8 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
 		 each vector in the group.  Here we additionally add permute
 		 costs for each.  */
 	      /* TODO: Indexed and ordered/unordered cost.  */
-	      int group_size = segment_loadstore_group_size (kind, stmt_info);
+	      int group_size = segment_loadstore_group_size (kind, stmt_info,
+							     node);
 	      if (group_size > 1)
 		{
 		  switch (group_size)

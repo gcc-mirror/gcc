@@ -103,7 +103,7 @@ extern hash_set <tree> *asan_used_labels;
    independently here.  */
 /* How many bits are used to store a tag in a pointer.
    The default version uses the entire top byte of a pointer (i.e. 8 bits).  */
-#define HWASAN_TAG_SIZE targetm.memtag.tag_size ()
+#define HWASAN_TAG_SIZE targetm.memtag.tag_bitsize ()
 /* Tag Granule of HWASAN shadow stack.
    This is the size in real memory that each byte in the shadow memory refers
    to.  I.e. if a variable is X bytes long in memory then its tag in shadow
@@ -242,9 +242,10 @@ asan_protect_stack_decl (tree decl)
    remove all flags mentioned in "no_sanitize" of DECL_ATTRIBUTES.  */
 
 inline bool
-sanitize_flags_p (unsigned int flag, const_tree fn = current_function_decl)
+sanitize_flags_p (sanitize_code_type flag,
+		  const_tree fn = current_function_decl)
 {
-  unsigned int result_flags = flag_sanitize & flag;
+  sanitize_code_type result_flags = flag_sanitize & flag;
   if (result_flags == 0)
     return false;
 

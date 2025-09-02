@@ -123,7 +123,7 @@ NUMEDCHAR  [BPVZ90/,]+{COUNT}?
 NUMEDCHARS {NUMEDCHAR}([.]?{NUMEDCHAR})*
 NUMED     ([+-]{NUMEDCHARS}+)|({NUMEDCHARS}+[+-])
 CURRENCY [A-Zfhijklmoqtuwy\x80-\xFF]{-}[ABCDEGNPRSVXZ]
-NUMEDCUR (([.]?[-$0B/Z*+,P9()V+–]|{CURRENCY}+|{COUNT})+([.][$0B/Z*+P9()V+\–])*)+
+NUMEDCUR (([.]?[$0B/Z*+,P9()V+-]|{CURRENCY}+|{COUNT})+([.][$0B/Z*+P9()V+-])*)+
 
 NUMEDITED         {NUMED}|{NUMEDCUR}
 EDITED   {ALPHED}|{NUMED}|{NUMEDCUR}
@@ -1673,16 +1673,17 @@ B-SHIFT-RC
 		    p += 2;
 		    while( ISSPACE(*p) ) p++;
 		    cbl_name_t name2;
-		    std::transform( p, p + sizeof(name2), name2,
-				    []( char ch ) {
-				      switch(ch) {
-				      case '-':
-				      case '_': return ch;
-				      default:
-					if( ISALNUM(ch) ) return ch;
-				      }
-				      return '\0';
-				    } );
+                    const char *pend = p + sizeof(name2);
+                    char *pout = name2;
+                    while( p < pend ) {
+                      char ch = *p++;
+                      if( ISALNUM(ch) || ch == '-' || ch == '_' )  {
+                        *pout++ = ch;
+                      } else {
+                        *pout++  = '\0';
+                        break;
+                      }
+                    }
 		    symbol_elem_t *e = symbol_file(PROGRAM, name2);
 		    /*
 		     * For NAME IN FILENAME, we want the parser to handle it.

@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<_Derived*>(this)->_M_timedlock(__ts);
 	}
 
-#ifdef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+#if _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
       template<typename _Duration>
 	bool
 	_M_try_lock_until(const chrono::time_point<chrono::steady_clock,
@@ -377,7 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_timedlock(const __gthread_time_t& __ts)
       { return !__gthread_recursive_mutex_timedlock(&_M_mutex, &__ts); }
 
-#ifdef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+#if _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
       bool
       _M_clocklock(clockid_t __clockid, const __gthread_time_t& __ts)
       { return !pthread_mutex_clocklock(&_M_mutex, __clockid, &__ts); }

@@ -2211,14 +2211,14 @@
 ;; - FDOT (2-way, indexed) (FP8DOT2)
 ;; -------------------------------------------------------------------------
 (define_insn "@aarch64_sve_dot<mode>"
-  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
-	(unspec:SVE_FULL_HSF
-	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+  [(set (match_operand:SVE_FULL_HSF_FP8_FDOT 0 "register_operand")
+	(unspec:SVE_FULL_HSF_FP8_FDOT
+	  [(match_operand:SVE_FULL_HSF_FP8_FDOT 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (reg:DI FPM_REGNUM)]
 	  UNSPEC_DOT_FP8))]
-  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  ""
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , w ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b
@@ -2226,15 +2226,15 @@
 )
 
 (define_insn "@aarch64_sve_dot_lane<mode>"
-  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
-	(unspec:SVE_FULL_HSF
-	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+  [(set (match_operand:SVE_FULL_HSF_FP8_FDOT 0 "register_operand")
+	(unspec:SVE_FULL_HSF_FP8_FDOT
+	  [(match_operand:SVE_FULL_HSF_FP8_FDOT 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (match_operand:SI 4 "const_int_operand")
 	   (reg:DI FPM_REGNUM)]
 	  UNSPEC_DOT_LANE_FP8))]
-  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  ""
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , y ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b[%4]
      [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b[%4]
@@ -4068,10 +4068,55 @@
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_operand:SVE_FULL_BHI 3 "register_operand")
-	      (match_operand:SVE_FULL_BHI 4 "register_operand")]
+	     [(match_operand:VNx16QI_ONLY 3 "register_operand")
+	      (match_operand:VNx16QI_ONLY 4 "register_operand")]
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
+  {@ [ cons: =0, 1  , 3, 4; attrs: pred_clobber ]
+     [ &Upa    , Upl, w, w; yes                 ] <sve_int_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+     [ ?Upl    , 0  , w, w; yes                 ] ^
+     [ Upa     , Upl, w, w; no                  ] ^
+  }
+)
+
+(define_expand "@aarch64_pred_<sve_int_op><mode>"
+  [(parallel
+     [(set (match_operand:VNx16BI 0 "register_operand")
+	   (and:VNx16BI
+	     (subreg:VNx16BI
+	       (unspec:<VPRED>
+		 [(match_operand:<VPRED> 1 "register_operand")
+		  (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+		  (unspec:<VPRED>
+		    [(match_operand:VNx8HI_ONLY 3 "register_operand")
+		     (match_operand:VNx8HI_ONLY 4 "register_operand")]
+		    SVE2_MATCH)]
+		 UNSPEC_PRED_Z)
+	       0)
+	     (match_dup 5)))
+      (clobber (reg:CC_NZC CC_REGNUM))])]
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
+  {
+    operands[5] = aarch64_ptrue_all (GET_MODE_UNIT_SIZE (<MODE>mode));
+  }
+)
+
+(define_insn "*aarch64_pred_<sve_int_op><mode>"
+  [(set (match_operand:VNx16BI 0 "register_operand")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_operand:<VPRED> 1 "register_operand")
+	       (match_operand:SI 2 "aarch64_sve_ptrue_flag")
+	       (unspec:<VPRED>
+		 [(match_operand:VNx8HI_ONLY 3 "register_operand")
+		  (match_operand:VNx8HI_ONLY 4 "register_operand")]
+		 SVE2_MATCH)]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 5 "aarch64_ptrue_all_operand")))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE2 && TARGET_NON_STREAMING"
   {@ [ cons: =0, 1  , 3, 4; attrs: pred_clobber ]
@@ -4107,6 +4152,45 @@
 	      (match_dup 3)]
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))]
+  "TARGET_SVE2
+   && TARGET_NON_STREAMING
+   && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
+  "<sve_int_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
+)
+
+(define_insn_and_rewrite "*aarch64_pred_<sve_int_op><mode>_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand" "Upl")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
+	   (unspec:<VPRED>
+	     [(match_operand 6)
+	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
+	      (unspec:<VPRED>
+		[(match_operand:VNx8HI_ONLY 2 "register_operand" "w")
+		 (match_operand:VNx8HI_ONLY 3 "register_operand" "w")]
+		SVE2_MATCH)]
+	     UNSPEC_PRED_Z)]
+	  UNSPEC_PTEST))
+   (set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(and:VNx16BI
+	  (subreg:VNx16BI
+	    (unspec:<VPRED>
+	      [(match_dup 6)
+	       (match_dup 7)
+	       (unspec:<VPRED>
+		 [(match_dup 2)
+		  (match_dup 3)]
+		 SVE2_MATCH)]
+	      UNSPEC_PRED_Z)
+	    0)
+	  (match_operand:<VPRED> 8 "aarch64_ptrue_all_operand")))]
   "TARGET_SVE2
    && TARGET_NON_STREAMING
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"

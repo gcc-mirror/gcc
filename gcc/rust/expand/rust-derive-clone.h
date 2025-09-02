@@ -29,7 +29,7 @@ class DeriveClone : DeriveVisitor
 public:
   DeriveClone (location_t loc);
 
-  std::unique_ptr<AST::Item> go (Item &item);
+  std::unique_ptr<Item> go (Item &item);
 
 private:
   std::unique_ptr<Item> expanded;
@@ -80,10 +80,10 @@ private:
   MatchCase clone_enum_struct (PathInExpression variant_path,
 			       const EnumItemStruct &variant);
 
-  virtual void visit_struct (StructStruct &item);
-  virtual void visit_tuple (TupleStruct &item);
-  virtual void visit_enum (Enum &item);
-  virtual void visit_union (Union &item);
+  virtual void visit_struct (StructStruct &item) override;
+  virtual void visit_tuple (TupleStruct &item) override;
+  virtual void visit_enum (Enum &item) override;
+  virtual void visit_union (Union &item) override;
 };
 
 } // namespace AST

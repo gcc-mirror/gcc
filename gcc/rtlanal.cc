@@ -5740,7 +5740,8 @@ pattern_cost (rtx pat, bool speed)
 	  rtx x = XVECEXP (pat, 0, i);
 	  if (GET_CODE (x) == SET)
 	    {
-	      if (GET_CODE (SET_SRC (x)) == COMPARE)
+	      if (GET_CODE (SET_SRC (x)) == COMPARE
+		  || GET_MODE_CLASS (GET_MODE (SET_DEST (x))) == MODE_CC)
 		{
 		  if (comparison)
 		    return 0;
@@ -6974,6 +6975,26 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
+}
+
+/* Return true if INSN is the second element of a pair of macro-fused
+   single_sets, both of which having the same register output as another.  */
+bool
+single_output_fused_pair_p (rtx_insn *insn)
+{
+  rtx set, prev_set;
+  rtx_insn *prev;
+
+  return INSN_P (insn)
+	 && SCHED_GROUP_P (insn)
+	 && (prev = prev_nonnote_nondebug_insn (insn))
+	 && (set = single_set (insn)) != NULL_RTX
+	 && (prev_set = single_set (prev))
+	     != NULL_RTX
+	 && REG_P (SET_DEST (set))
+	 && REG_P (SET_DEST (prev_set))
+	 && (!reload_completed
+	     || REGNO (SET_DEST (set)) == REGNO (SET_DEST (prev_set)));
 }
 
 /* Return true if X is register asm.  */

@@ -19,8 +19,8 @@
 # define GPR1 "{eax}"
 # define GPR2 "{ebx}"
 # define GPR3 "{ecx}"
-/* { dg-final { scan-assembler-times "foo\t4\\(%esp\\),%ecx" 1 { target { i?86-*-* } } } } */
-/* { dg-final { scan-assembler-times "bar\t%ebx,\\(%eax\\)" 1 { target { i?86-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t4\\(%esp\\),%ecx" 1 { target { { i?86-*-* x86_64-*-* } && { ia32 } } } } } */
+/* { dg-final { scan-assembler-times "bar\t%ebx,\\(%eax\\)" 1 { target { { i?86-*-* x86_64-*-* } && { ia32 } } } } } */
 #elif defined (__powerpc__) || defined (__POWERPC__)
 # define GPR1 "{r4}"
 # define GPR2 "{r5}"
@@ -43,8 +43,10 @@
 # define GPR1 "{eax}"
 # define GPR2 "{ebx}"
 # define GPR3 "{rcx}"
-/* { dg-final { scan-assembler-times "foo\t%eax,%rcx" 1 { target { x86_64-*-* } } } } */
-/* { dg-final { scan-assembler-times "bar\t%ebx,\\(%rsi\\)" 1 { target { x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\t%eax,%rcx" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "bar\t%ebx,\\(%rsi\\)" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "foo\t%eax,%ecx" 1 { target { { i?86-*-* x86_64-*-* } && x32 } } } } */
+/* { dg-final { scan-assembler-times "bar\t%ebx,\\(%esi\\)" 1 { target { { i?86-*-* x86_64-*-* } && x32 } } } } */
 #endif
 
 void

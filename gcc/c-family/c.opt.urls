@@ -508,6 +508,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Winvalid-utf8)
 Wjump-misses-init
 UrlSuffix(gcc/Warning-Options.html#index-Wjump-misses-init)
 
+Wkeyword-macro
+UrlSuffix(gcc/Warning-Options.html#index-Wkeyword-macro)
+
 Wleading-whitespace=
 UrlSuffix(gcc/Warning-Options.html#index-Wleading-whitespace_003d)
 
@@ -609,6 +612,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-noexcept)
 
 Wnoexcept-type
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-noexcept-type)
+
+Wnon-c-typedef-for-linkage
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-non-c-typedef-for-linkage)
 
 Wnon-template-friend
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-non-template-friend)

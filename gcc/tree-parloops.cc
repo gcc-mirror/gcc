@@ -205,170 +205,6 @@ parloops_valid_reduction_input_p (stmt_vec_info def_stmt_info)
 	      && !is_loop_header_bb_p (gimple_bb (def_stmt_info->stmt))));
 }
 
-/* Detect SLP reduction of the form:
-
-   #a1 = phi <a5, a0>
-   a2 = operation (a1)
-   a3 = operation (a2)
-   a4 = operation (a3)
-   a5 = operation (a4)
-
-   #a = phi <a5>
-
-   PHI is the reduction phi node (#a1 = phi <a5, a0> above)
-   FIRST_STMT is the first reduction stmt in the chain
-   (a2 = operation (a1)).
-
-   Return TRUE if a reduction chain was detected.  */
-
-static bool
-parloops_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
-			   gimple *first_stmt)
-{
-  class loop *loop = (gimple_bb (phi))->loop_father;
-  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
-  enum tree_code code;
-  gimple *loop_use_stmt = NULL;
-  stmt_vec_info use_stmt_info;
-  tree lhs;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-  int nloop_uses, size = 0, n_out_of_loop_uses;
-  bool found = false;
-
-  if (loop != vect_loop)
-    return false;
-
-  auto_vec<stmt_vec_info, 8> reduc_chain;
-  lhs = PHI_RESULT (phi);
-  code = gimple_assign_rhs_code (first_stmt);
-  while (1)
-    {
-      nloop_uses = 0;
-      n_out_of_loop_uses = 0;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-        {
-	  gimple *use_stmt = USE_STMT (use_p);
-	  if (is_gimple_debug (use_stmt))
-	    continue;
-
-          /* Check if we got back to the reduction phi.  */
-	  if (use_stmt == phi)
-            {
-	      loop_use_stmt = use_stmt;
-              found = true;
-              break;
-            }
-
-          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-            {
-	      loop_use_stmt = use_stmt;
-	      nloop_uses++;
-            }
-           else
-             n_out_of_loop_uses++;
-
-           /* There are can be either a single use in the loop or two uses in
-              phi nodes.  */
-           if (nloop_uses > 1 || (n_out_of_loop_uses && nloop_uses))
-             return false;
-        }
-
-      if (found)
-        break;
-
-      /* We reached a statement with no loop uses.  */
-      if (nloop_uses == 0)
-	return false;
-
-      /* This is a loop exit phi, and we haven't reached the reduction phi.  */
-      if (gimple_code (loop_use_stmt) == GIMPLE_PHI)
-        return false;
-
-      if (!is_gimple_assign (loop_use_stmt)
-	  || code != gimple_assign_rhs_code (loop_use_stmt)
-	  || !flow_bb_inside_loop_p (loop, gimple_bb (loop_use_stmt)))
-        return false;
-
-      /* Insert USE_STMT into reduction chain.  */
-      use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
-      reduc_chain.safe_push (use_stmt_info);
-
-      lhs = gimple_assign_lhs (loop_use_stmt);
-      size++;
-   }
-
-  if (!found || loop_use_stmt != phi || size < 2)
-    return false;
-
-  /* Swap the operands, if needed, to make the reduction operand be the second
-     operand.  */
-  lhs = PHI_RESULT (phi);
-  for (unsigned i = 0; i < reduc_chain.length (); ++i)
-    {
-      gassign *next_stmt = as_a <gassign *> (reduc_chain[i]->stmt);
-      if (gimple_assign_rhs2 (next_stmt) == lhs)
-	{
-	  tree op = gimple_assign_rhs1 (next_stmt);
-	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
-
-	  /* Check that the other def is either defined in the loop
-	     ("vect_internal_def"), or it's an induction (defined by a
-	     loop-header phi-node).  */
-	  if (def_stmt_info
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
-	      && parloops_valid_reduction_input_p (def_stmt_info))
-	    {
-	      lhs = gimple_assign_lhs (next_stmt);
-	      continue;
-	    }
-
-	  return false;
-	}
-      else
-	{
-          tree op = gimple_assign_rhs2 (next_stmt);
-	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
-
-          /* Check that the other def is either defined in the loop
-            ("vect_internal_def"), or it's an induction (defined by a
-            loop-header phi-node).  */
-	  if (def_stmt_info
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
-	      && parloops_valid_reduction_input_p (def_stmt_info))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "swapping oprnds: %G", (gimple *) next_stmt);
-
-	      swap_ssa_operands (next_stmt,
-				 gimple_assign_rhs1_ptr (next_stmt),
-                                 gimple_assign_rhs2_ptr (next_stmt));
-	      update_stmt (next_stmt);
-	    }
-	  else
-	    return false;
-        }
-
-      lhs = gimple_assign_lhs (next_stmt);
-    }
-
-  /* Build up the actual chain.  */
-  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
-    {
-      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
-      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
-    }
-  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
-  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
-
-  /* Save the chain for further analysis in SLP detection.  */
-  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
-  REDUC_GROUP_SIZE (reduc_chain[0]) = size;
-
-  return true;
-}
-
 /* Return true if we need an in-order reduction for operation CODE
    on type TYPE.  NEED_WRAPPING_INTEGRAL_OVERFLOW is true if integer
    overflow must wrap.  */
@@ -455,7 +291,8 @@ static stmt_vec_info
 parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			  bool *double_reduc,
 			  bool need_wrapping_integral_overflow,
-			  enum vect_reduction_type *v_reduc_type)
+			  enum vect_reduction_type *v_reduc_type,
+			  hash_set<gphi *> &double_reduc_inner_lc_phis)
 {
   gphi *phi = as_a <gphi *> (phi_info->stmt);
   class loop *loop = (gimple_bb (phi))->loop_father;
@@ -549,8 +386,7 @@ parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  /* We can have more than one loop-closed PHI.  */
 	  lcphis.safe_push (as_a <gphi *> (use_stmt));
 	  if (nested_in_vect_loop
-	      && (STMT_VINFO_DEF_TYPE (loop_info->lookup_stmt (use_stmt))
-		  == vect_double_reduction_def))
+	      && double_reduc_inner_lc_phis.contains (as_a <gphi *> (use_stmt)))
 	    inner_loop_of_double_reduc = true;
 	}
     }
@@ -836,19 +672,6 @@ parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return def_stmt_info;
     }
 
-  /* Try to find SLP reduction chain.  */
-  if (! nested_in_vect_loop
-      && code != COND_EXPR
-      && orig_code != MINUS_EXPR
-      && parloops_is_slp_reduction (loop_info, phi, def_stmt))
-    {
-      if (dump_enabled_p ())
-        report_ploop_op (MSG_NOTE, def_stmt,
-			 "reduction: detected reduction chain: ");
-
-      return def_stmt_info;
-    }
-
   /* Look for the expression computing loop_arg from loop PHI result.  */
   if (check_reduction_path (vect_location, loop, phi, loop_arg, code))
     return def_stmt_info;
@@ -869,20 +692,20 @@ parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 stmt_vec_info
 parloops_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			     bool *double_reduc,
-			     bool need_wrapping_integral_overflow)
+			     bool need_wrapping_integral_overflow,
+			     hash_set<gphi *> &double_reduc_inner_lc_phis)
 {
   enum vect_reduction_type v_reduc_type;
   stmt_vec_info def_info
     = parloops_is_simple_reduction (loop_info, phi_info, double_reduc,
 				need_wrapping_integral_overflow,
-				&v_reduc_type);
-  if (def_info)
-    {
-      STMT_VINFO_REDUC_TYPE (phi_info) = v_reduc_type;
-      STMT_VINFO_REDUC_DEF (phi_info) = def_info;
-      STMT_VINFO_REDUC_TYPE (def_info) = v_reduc_type;
-      STMT_VINFO_REDUC_DEF (def_info) = phi_info;
-    }
+				&v_reduc_type, double_reduc_inner_lc_phis);
+  /* Parallelization would reassociate the operation, which isn't
+     allowed for in-order reductions.  */
+  if (v_reduc_type == FOLD_LEFT_REDUCTION)
+    return NULL;
+  if (def_info && *double_reduc)
+    double_reduc_inner_lc_phis.add (as_a <gphi *> (def_info->stmt));
   return def_info;
 }
 
@@ -3290,18 +3113,6 @@ set_reduc_phi_uids (reduction_info **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* Return true if the type of reduction performed by STMT_INFO is suitable
-   for this pass.  */
-
-static bool
-valid_reduction_p (stmt_vec_info stmt_info)
-{
-  /* Parallelization would reassociate the operation, which isn't
-     allowed for in-order reductions.  */
-  vect_reduction_type reduc_type = STMT_VINFO_REDUC_TYPE (stmt_info);
-  return reduc_type != FOLD_LEFT_REDUCTION;
-}
-
 /* Detect all reductions in the LOOP, insert them into REDUCTION_LIST.  */
 
 static void
@@ -3311,6 +3122,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   loop_vec_info simple_loop_info;
   auto_vec<gphi *, 4> double_reduc_phis;
   auto_vec<gimple *, 4> double_reduc_stmts;
+  hash_set<gphi *> double_reduc_inner_lc_phis;
 
   vec_info_shared shared;
   vect_loop_form_info info;
@@ -3334,14 +3146,15 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       stmt_vec_info reduc_stmt_info
 	= parloops_force_simple_reduction (simple_loop_info,
 					   simple_loop_info->lookup_stmt (phi),
-					   &double_reduc, true);
-      if (!reduc_stmt_info || !valid_reduction_p (reduc_stmt_info))
+					   &double_reduc, true,
+					   double_reduc_inner_lc_phis);
+      if (!reduc_stmt_info)
 	continue;
 
       if (double_reduc)
 	{
-	  if (loop->inner->inner != NULL)
-	    continue;
+	  /* vect_analyze_loop_form guarantees this.  */
+	  gcc_assert (loop->inner->inner == NULL);
 
 	  double_reduc_phis.safe_push (phi);
 	  double_reduc_stmts.safe_push (reduc_stmt_info->stmt);
@@ -3350,52 +3163,44 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
       build_new_reduction (reduction_list, reduc_stmt_info->stmt, phi);
     }
-  delete simple_loop_info;
 
   if (!double_reduc_phis.is_empty ())
     {
-      vec_info_shared shared;
-      vect_loop_form_info info;
-      if (vect_analyze_loop_form (loop->inner, NULL, &info))
+      gphi *phi;
+      unsigned int i;
+
+      FOR_EACH_VEC_ELT (double_reduc_phis, i, phi)
 	{
-	  simple_loop_info
-	    = vect_create_loop_vinfo (loop->inner, &shared, &info);
-	  gphi *phi;
-	  unsigned int i;
+	  affine_iv iv;
+	  tree res = PHI_RESULT (phi);
+	  bool double_reduc;
 
-	  FOR_EACH_VEC_ELT (double_reduc_phis, i, phi)
-	    {
-	      affine_iv iv;
-	      tree res = PHI_RESULT (phi);
-	      bool double_reduc;
+	  use_operand_p use_p;
+	  gimple *inner_stmt;
+	  bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
+	  gcc_assert (single_use_p);
+	  if (gimple_code (inner_stmt) != GIMPLE_PHI)
+	    continue;
+	  gphi *inner_phi = as_a <gphi *> (inner_stmt);
+	  if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
+			 &iv, true))
+	    continue;
 
-	      use_operand_p use_p;
-	      gimple *inner_stmt;
-	      bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
-	      gcc_assert (single_use_p);
-	      if (gimple_code (inner_stmt) != GIMPLE_PHI)
-		continue;
-	      gphi *inner_phi = as_a <gphi *> (inner_stmt);
-	      if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
-			     &iv, true))
-		continue;
+	  stmt_vec_info inner_phi_info
+	    = simple_loop_info->lookup_stmt (inner_phi);
+	  stmt_vec_info inner_reduc_stmt_info
+	    = parloops_force_simple_reduction (simple_loop_info,
+					       inner_phi_info,
+					       &double_reduc, true,
+					       double_reduc_inner_lc_phis);
+	  gcc_assert (!double_reduc);
+	  if (!inner_reduc_stmt_info)
+	    continue;
 
-	      stmt_vec_info inner_phi_info
-		= simple_loop_info->lookup_stmt (inner_phi);
-	      stmt_vec_info inner_reduc_stmt_info
-		= parloops_force_simple_reduction (simple_loop_info,
-						   inner_phi_info,
-						   &double_reduc, true);
-	      gcc_assert (!double_reduc);
-	      if (!inner_reduc_stmt_info
-		  || !valid_reduction_p (inner_reduc_stmt_info))
-		continue;
-
-	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
-	    }
-	  delete simple_loop_info;
+	  build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
 	}
     }
+  delete simple_loop_info;
 
  gather_done:
   if (reduction_list->is_empty ())

@@ -1,0 +1,7 @@
+DEFINITION MODULE foo ;
+
+CONST
+   SomeValue = 123 ;
+
+
+END foo.

@@ -1,3 +1,20 @@
+2025-08-05  Marc Poulhiès  <dkm@kataplop.net>
+
+	* libproc_macro_internal/ffistring.h (FFIString__new): Likewise.
+	(FFIString__drop): Likewise.
+	* libproc_macro_internal/ident.h (Ident__new): Likewise.
+	(Ident__new_raw): Likewise.
+	(Ident__drop): Likewise.
+	(Ident__clone): Likewise.
+	* libproc_macro_internal/literal.h (Literal__from_string): Likewise.
+	* libproc_macro_internal/proc_macro.h (bridge_is_available): Likewise.
+	* libproc_macro_internal/tokenstream.h (TokenStream__new): Likewise.
+	(TokenStream__with_capacity): Likewise.
+	(TokenSream__push): Likewise.
+	(TokenStream__from_string): Likewise.
+	(TokenStream__clone): Likewise.
+	(TokenStream__drop): Likewise.
+
 2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* libformat_parser/Makefile.am: Avoid using --config as it is unsupported by cargo 1.49.

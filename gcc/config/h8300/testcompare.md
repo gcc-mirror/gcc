@@ -28,7 +28,7 @@
 ;;
 (define_insn ""
   [(set (reg:CCZ CC_REG)
-	(eq (zero_extract:HSI (match_operand:HSI 0 "register_operand" "r")
+	(eq:CCZ (zero_extract:HSI (match_operand:HSI 0 "register_operand" "r")
 			      (const_int 1)
 			      (match_operand 1 "const_int_operand" "n"))
 	    (const_int 0)))]
@@ -54,7 +54,7 @@
 
 (define_insn "*tsthi_upper"
   [(set (reg:CCZN CC_REG)
-	(compare (and:HI (match_operand:HI 0 "register_operand" "r")
+	(compare:CCZN (and:HI (match_operand:HI 0 "register_operand" "r")
 			 (const_int -256))
 		 (const_int 0)))]
   "reload_completed"
@@ -63,7 +63,7 @@
 
 (define_insn "*tsthi_upper_z"
   [(set (reg:CCZ CC_REG)
-	(compare (and:HI (match_operand:HI 0 "register_operand" "r")
+	(compare:CCZ (and:HI (match_operand:HI 0 "register_operand" "r")
 			 (const_int -256))
 		 (const_int 0)))]
   "reload_completed"
@@ -72,7 +72,7 @@
 
 (define_insn "*tstsi_upper"
   [(set (reg:CCZN CC_REG)
-	(compare (and:SI (match_operand:SI 0 "register_operand" "r")
+	(compare:CCZN (and:SI (match_operand:SI 0 "register_operand" "r")
 			 (const_int -65536))
 		 (const_int 0)))]
   "reload_completed"
@@ -81,7 +81,7 @@
 
 (define_insn "*cmp<mode>_c"
   [(set (reg:CCC CC_REG)
-	(ltu (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
+	(ltu:CCC (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
 	     (match_operand:QHSI 1 "h8300_src_operand" "rQi")))]
   "reload_completed"
   {
@@ -97,7 +97,7 @@
 
 (define_insn "*cmpqi_z"
   [(set (reg:CCZ CC_REG)
-	(eq (match_operand:QI 0 "h8300_dst_operand" "rQ")
+	(eq:CCZ (match_operand:QI 0 "h8300_dst_operand" "rQ")
 	    (match_operand:QI 1 "h8300_src_operand" "rQi")))]
   "reload_completed"
   { return "cmp.b	%X1,%X0"; }
@@ -105,7 +105,7 @@
 
 (define_insn "*cmphi_z"
   [(set (reg:CCZ CC_REG)
-	(eq (match_operand:HI 0 "h8300_dst_operand" "rQ")
+	(eq:CCZ (match_operand:HI 0 "h8300_dst_operand" "rQ")
 	    (match_operand:HI 1 "h8300_src_operand" "rQi")))]
   "reload_completed"
   { return "cmp.w	%T1,%T0"; }
@@ -113,7 +113,7 @@
 
 (define_insn "*cmpsi_z"
   [(set (reg:CCZ CC_REG)
-	(eq (match_operand:SI 0 "h8300_dst_operand" "rQ")
+	(eq:CCZ (match_operand:SI 0 "h8300_dst_operand" "rQ")
 	    (match_operand:SI 1 "h8300_src_operand" "rQi")))]
   "reload_completed"
   { return "cmp.l	%S1,%S0"; }
@@ -121,7 +121,7 @@
 
 (define_insn "*cmpqi"
   [(set (reg:CC CC_REG)
-	(compare (match_operand:QI 0 "h8300_dst_operand" "rQ")
+	(compare:CC (match_operand:QI 0 "h8300_dst_operand" "rQ")
 		 (match_operand:QI 1 "h8300_src_operand" "rQi")))]
   "reload_completed"
   "cmp.b	%X1,%X0"
@@ -129,7 +129,7 @@
 
 (define_insn "*cmphi"
   [(set (reg:CC CC_REG)
-	(compare (match_operand:HI 0 "h8300_dst_operand" "rU,rQ")
+	(compare:CC (match_operand:HI 0 "h8300_dst_operand" "rU,rQ")
 		 (match_operand:HI 1 "h8300_src_operand" "P3>X,rQi")))]
   "reload_completed"
 {
@@ -150,7 +150,7 @@
 
 (define_insn "cmpsi"
   [(set (reg:CC CC_REG)
-	(compare (match_operand:SI 0 "h8300_dst_operand" "r,rQ")
+	(compare:CC (match_operand:SI 0 "h8300_dst_operand" "r,rQ")
 		 (match_operand:SI 1 "h8300_src_operand" "P3>X,rQi")))]
   "reload_completed"
 {
@@ -176,7 +176,7 @@
 (define_peephole2
   [(match_scratch:QHSI 1 "r")
    (set (reg:CC CC_REG)
-	(compare (match_operand:QHSI 0 "memory_operand" "")
+	(compare:CC (match_operand:QHSI 0 "memory_operand" "")
 		 (const_int 0)))]
   "!mode_dependent_address_p (XEXP (operands[0], 0), MEM_ADDR_SPACE (operands[0]))"
   [(parallel [(set (reg:CCZN CC_REG) (compare:CCZN (match_dup 0) (const_int 0)))
@@ -187,7 +187,7 @@
 (define_peephole2
   [(match_scratch:QHSI 1 "r")
    (set (reg:CC CC_REG)
-	(compare (match_operand:QHSI 0 "memory_operand" "")
+	(compare:CC (match_operand:QHSI 0 "memory_operand" "")
 		 (const_int 0)))]
   "mode_dependent_address_p (XEXP (operands[0], 0), MEM_ADDR_SPACE (operands[0]))"
   [(parallel [(set (match_dup 1) (match_dup 0)) (clobber (reg:CC CC_REG))])

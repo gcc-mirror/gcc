@@ -1,3 +1,21 @@
+2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/118009
+	PR bootstrap/119089
+	* inclhack.def (pthread_incomplete_struct_argument): Add bypass.
+	* fixincl.tpl: Remove reference to svn in comment.
+	* fixincl.x: Regenerate.
+
+2025-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (stdio_va_list): Skip on recent darwin.
+
+2025-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (stdio_stdarg_h): Skip on darwin.
+
 2024-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Revert:

@@ -243,7 +243,7 @@ package Ghost is
    --  WARNING: this is a separate front end pass, care should be taken to keep
    --  it optimized.
 
-   procedure Restore_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id);
+   procedure Restore_Ghost_Region (Config : Ghost_Config_Type);
    pragma Inline (Restore_Ghost_Region);
    --  Restore a Ghost region to a previous state described by mode Mode and
    --  ignored region start node N. This routine must be used in conjunction

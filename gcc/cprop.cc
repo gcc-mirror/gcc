@@ -1525,6 +1525,7 @@ static bool
 bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 {
   rtx_insn *insn;
+  rtx setcc_src, setcc_dest;
   rtx note;
   edge e, edest;
   bool change;
@@ -1533,7 +1534,19 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
   unsigned i;
   edge_iterator ei;
 
-  insn = (setcc != NULL) ? setcc : jump;
+  if (setcc != NULL)
+    {
+      rtx set = single_set (setcc);
+      setcc_dest = SET_DEST (set);
+      setcc_src = SET_SRC (set);
+      insn = setcc;
+    }
+  else
+    {
+      setcc_dest = NULL;
+      setcc_src = NULL;
+      insn = jump;
+    }
 
   /* Determine set of register uses in INSN.  */
   reg_use_count = 0;
@@ -1608,9 +1621,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  src = SET_SRC (pc_set (jump));
 
 	  if (setcc != NULL)
-	    src = simplify_replace_rtx (src,
-					SET_DEST (PATTERN (setcc)),
-					SET_SRC (PATTERN (setcc)));
+	    src = simplify_replace_rtx (src, setcc_dest, setcc_src);
 
 	  new_rtx = simplify_replace_rtx (src, reg_used, set->src);
 
@@ -1716,10 +1727,11 @@ bypass_conditional_jumps (void)
 	      {
 		if (setcc)
 		  break;
-		if (GET_CODE (PATTERN (insn)) != SET)
+		rtx singleset = single_set (insn);
+		if (singleset == NULL_RTX)
 		  break;
 
-		dest = SET_DEST (PATTERN (insn));
+		dest = SET_DEST (singleset);
 		if (REG_P (dest))
 		  setcc = insn;
 		else

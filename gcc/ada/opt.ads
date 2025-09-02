@@ -746,9 +746,20 @@ package Opt is
    --  Possible legal modes that can be set by aspect/pragma Ghost as well as
    --  value None, which indicates that no such aspect/pragma applies.
 
-   Ghost_Mode : Ghost_Mode_Type := None;
+   type Ghost_Config_Type is record
+      Ghost_Mode : Ghost_Mode_Type := None;
+      --  The current Ghost mode in effect
+
+      Ignored_Ghost_Region : Node_Id := Empty;
+      --  The start of the current ignored Ghost region. This value must always
+      --  reflect the starting node of the outermost ignored Ghost region. If a
+      --  nested ignored Ghost region is entered, the value must remain
+      --  unchanged.
+   end record;
+
+   Ghost_Config : Ghost_Config_Type;
    --  GNAT
-   --  The current Ghost mode in effect
+   --  All relevant Ghost mode settings
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
@@ -809,12 +820,6 @@ package Opt is
    --  Set True to ignore unrecognized y, V, w switches. Can be set True by
    --  use of -gnateu, causing subsequent unrecognized switches to result in
    --  a warning rather than an error.
-
-   Ignored_Ghost_Region : Node_Id := Empty;
-   --  GNAT
-   --  The start of the current ignored Ghost region. This value must always
-   --  reflect the starting node of the outermost ignored Ghost region. If a
-   --  nested ignored Ghost region is entered, the value must remain unchanged.
 
    Implicit_Packing : Boolean := False;
    --  GNAT

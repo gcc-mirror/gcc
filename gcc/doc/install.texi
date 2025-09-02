@@ -302,7 +302,7 @@ released on 2017-05-06.
 The gcobol documentation is maintained as manpages using troff
 mdoc. GNU groff is required to convert them to PDF format.  Conversion
 to HTML is done with mandoc, available at
-@uref{http://mdocml.bsd.lv/}.
+@uref{https://mandoc.bsd.lv}.
 
 Because ISO COBOL defines strict requirements for numerical precision,
 gcobol requires hardware with 128-bit computation instructions.  This
@@ -393,7 +393,7 @@ Note binutils 2.35 or newer is required for LTO to work correctly
 with GNU libtool that includes doing a bootstrap with LTO enabled.
 
 @item gzip version 1.2.4 (or later) or
-@itemx bzip2 version 1.0.2 (or later)
+@itemx xz version 5.0 (or later)
 
 Necessary to uncompress GCC @command{tar} files when source code is
 obtained via HTTPS mirror sites.
@@ -1254,6 +1254,9 @@ descriptor-based dialect.
 For RISC-V targets, possible values for @var{dialect} are @code{trad} or
 @code{desc}, which select between the traditional GNU dialect and the GNU TLS
 descriptor-based dialect.
+For i386, x86-64 targets, possible values for @var{dialect} are @code{gnu} or
+@code{gnu2}, which select between the original GNU dialect and the GNU TLS
+descriptor-based dialect.
 
 @item --enable-multiarch
 Specify whether to enable or disable multiarch support.  The default is
@@ -1558,23 +1561,23 @@ for riscv*-*-elf*.  The accepted values and meanings are given below.
 Every config is constructed with four components: architecture string, ABI,
 reuse rule with architecture string and reuse rule with sub-extension.
 
-Example 1: Add multi-lib suppport for rv32i with ilp32.
+Example 1: Add multi-lib support for rv32i with ilp32.
 @smallexample
 rv32i-ilp32--
 @end smallexample
 
-Example 2: Add multi-lib suppport for rv32i with ilp32 and rv32imafd with ilp32.
+Example 2: Add multi-lib support for rv32i with ilp32 and rv32imafd with ilp32.
 @smallexample
 rv32i-ilp32--;rv32imafd-ilp32--
 @end smallexample
 
-Example 3: Add multi-lib suppport for rv32i with ilp32; rv32im with ilp32 and
+Example 3: Add multi-lib support for rv32i with ilp32; rv32im with ilp32 and
 rv32ic with ilp32 will reuse this multi-lib set.
 @smallexample
 rv32i-ilp32-rv32im-c
 @end smallexample
 
-Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
+Example 4: Add multi-lib support for rv64ima with lp64; rv64imaf with lp64,
 rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 @smallexample
 rv64ima-lp64--f,c,fc
@@ -1585,13 +1588,13 @@ rv64ima-lp64--f,c,fc
 config options, @var{val} is a comma separated list of possible code model,
 currently we support medlow and medany.
 
-Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 5: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow
 @end smallexample
 
-Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 6: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model; rv64ima with lp64 and medany code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow,medany
@@ -1720,7 +1723,7 @@ libraries.  This option is only supported on Epiphany targets.
 
 @item --with-fpmath=@var{isa}
 This options sets @option{-mfpmath=sse} by default and specifies the default
-ISA for floating-point arithmetics.  You can select either @samp{sse} which
+ISA for floating-point arithmetic.  You can select either @samp{sse} which
 enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
 This option is only supported on i386 and x86-64 targets.
 
@@ -1887,8 +1890,8 @@ Produce code conforming to version 20191213.
 In the absence of this configuration option the default version is 20191213.
 
 @item --enable-__cxa_atexit
-Define if you want to use @code{__cxa_atexit}, rather than atexit, to
-register C++ destructors for local statics and global objects.
+Define if you want to use @code{__cxa_atexit}, rather than @code{atexit},
+to register C++ destructors for local statics and global objects.
 This is essential for fully standards-compliant handling of
 destructors, but requires @code{__cxa_atexit} in libc.  This option is
 currently only available on systems with GNU libc.  When enabled, this
@@ -3800,8 +3803,7 @@ Microsoft Windows:
 @item
 The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{https://osdn.net/projects/mingw/,,MinGW} and
-@uref{https://www.mingw-w64.org/,,mingw-w64} projects.
+the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
 @end itemize
 
 @item
@@ -4062,9 +4064,15 @@ AMD GCN GPU target.
 Instead of GNU Binutils, you need to install LLVM and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
+@file{bin/llvm-objdump} to @file{amdgcn-amdhsa/bin/objdump},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
-@file{bin/amdgcn-amdhsa-ranlib}.
+@file{bin/amdgcn-amdhsa-ranlib}.  The LLVM version is required for the
+assembler (llvm-mc) and linker (lld); however, for the others, the respective
+GNU Binutils counterpart can be used instead.  While all mentioned programs are
+required when building GCC, the installed GCC compiler only needs the assembler
+and linker; @code{nm}, @code{ar}, and @code{ranlib} are required when installing
+@code{gcc-nm}, @code{gcc-ar}, and @code{gcc-ranlib}.
 
 The required version of LLVM depends on the devices that you want to support.
 As the list of ISAs is long, GCC by default only builds a subset of the
@@ -4088,12 +4096,12 @@ ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and
 @code{gfx11-generic} reduce the number of required multilibs but note
 that @code{gfx9-generic} does not include @code{gfx908} or @code{gfx90a},
 that linking specific ISA code with generic code is currently not supported,
-and that only a future ROCm release (newer than 6.3.3) will be able to execute
-generic code.
+and that only ROCm 6.4.0 or newer is able to execute generic code.
 
 Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
 the device console output for GFX10 and GFX11 devices; post-4.5.0
-commit 2ef1a37e7 [Mar 25, 2025] fixes a SIMD math issue).
+commits 2ef1a37e7 [Mar 25, 2025], f13e8e215 [Aug 8, 2025], and
+bd409f3c1 [Aug 27, 2025] fix SIMD math issues).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
@@ -5163,13 +5171,6 @@ respects, this target is the same as the
 @end html
 @anchor{windows}
 @heading Microsoft Windows
-
-@subheading Intel 16-bit versions
-The 16-bit versions of Microsoft Windows, such as Windows 3.1, are not
-supported.
-
-However, the 32-bit port has limited support for Microsoft
-Windows 3.11 in the Win32s environment, as a target only.  See below.
 
 @subheading Intel 32-bit versions
 The 32-bit versions of Windows, including Windows 95, Windows NT, Windows

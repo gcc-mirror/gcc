@@ -729,6 +729,8 @@ enum gfc_isym_id
   GFC_ISYM_COSPI,
   GFC_ISYM_SINPI,
   GFC_ISYM_TANPI,
+
+  GFC_ISYM_SPLIT,
 };
 
 enum init_local_logical
@@ -1914,6 +1916,7 @@ typedef struct gfc_typebound_proc
 }
 gfc_typebound_proc;
 
+#define gfc_get_tbp() XCNEW (gfc_typebound_proc)
 
 /* Symbol nodes.  These are important things.  They are what the
    standard refers to as "entities".  The possibly multiple names that
@@ -2942,7 +2945,7 @@ typedef struct gfc_equiv_list
    upwards, if *low is NULL the selection is *high downwards.
 
    This structure has separate fields to allow single and double linked
-   lists of CASEs at the same time.  The singe linked list along the NEXT
+   lists of CASEs at the same time.  The single linked list along the NEXT
    field is a list of cases for a single CASE label.  The double linked
    list along the LEFT/RIGHT fields is used to detect overlap and to
    build a table of the cases for SELECT constructs with a CHARACTER

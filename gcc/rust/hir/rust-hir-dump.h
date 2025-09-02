@@ -146,6 +146,8 @@ private:
   virtual void visit (FieldAccessExpr &) override;
   virtual void visit (ClosureExpr &) override;
   virtual void visit (BlockExpr &) override;
+  virtual void visit (AnonConst &) override;
+  virtual void visit (ConstBlock &) override;
   virtual void visit (ContinueExpr &) override;
   virtual void visit (BreakExpr &) override;
   virtual void visit (RangeFromToExpr &) override;
@@ -167,6 +169,7 @@ private:
   virtual void visit (AsyncBlockExpr &) override;
   virtual void visit (InlineAsm &) override;
   virtual void visit (LlvmInlineAsm &) override;
+  virtual void visit (OffsetOf &) override;
 
   virtual void visit (TypeParam &) override;
   virtual void visit (ConstGenericParam &) override;
@@ -252,7 +255,6 @@ private:
 } // namespace Rust
 
 // In the global namespace to make it easier to call from debugger
-void
-debug (Rust::HIR::FullVisitable &v);
+void debug (Rust::HIR::FullVisitable &v);
 
 #endif // !RUST_HIR_DUMP_H

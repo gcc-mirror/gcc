@@ -2550,6 +2550,14 @@ static bool isLeafString (decl_node__opaque n);
 static DynamicStrings_String getLiteralStringContents (decl_node__opaque n);
 
 /*
+   getStringChar - if the string is delimited by single
+                   or double quotes then strip both
+                   quotes from the string.
+*/
+
+static DynamicStrings_String getStringChar (decl_node__opaque n);
+
+/*
    getStringContents - return the string contents of a constant, literal,
                        string or a constexp node.
 */
@@ -2569,7 +2577,13 @@ static nameKey_Name addNames (decl_node__opaque a, decl_node__opaque b);
 static decl_node__opaque resolveString (decl_node__opaque n);
 
 /*
-   foldBinary -
+   addQuotes - adds delimiter quote char to string.
+*/
+
+static DynamicStrings_String addQuotes (DynamicStrings_String s, char quote);
+
+/*
+   foldBinary - attempt to fold binary + for string constants.
 */
 
 static decl_node__opaque foldBinary (decl_nodeT k, decl_node__opaque l, decl_node__opaque r, decl_node__opaque res);
@@ -7590,6 +7604,32 @@ static DynamicStrings_String getLiteralStringContents (decl_node__opaque n)
 
 
 /*
+   getStringChar - if the string is delimited by single
+                   or double quotes then strip both
+                   quotes from the string.
+*/
+
+static DynamicStrings_String getStringChar (decl_node__opaque n)
+{
+  DynamicStrings_String s;
+
+  s = getString (n);
+  if (((DynamicStrings_char (s, 0)) == '\'') && ((DynamicStrings_char (s, -1)) == '\''))
+    {
+      s = DynamicStrings_Slice (s, 1, -1);
+    }
+  else if (((DynamicStrings_char (s, 0)) == '"') && ((DynamicStrings_char (s, -1)) == '"'))
+    {
+      /* avoid dangling else.  */
+      s = DynamicStrings_Slice (s, 1, -1);
+    }
+  return s;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    getStringContents - return the string contents of a constant, literal,
                        string or a constexp node.
 */
@@ -7608,7 +7648,7 @@ static DynamicStrings_String getStringContents (decl_node__opaque n)
   else if (isString (n))
     {
       /* avoid dangling else.  */
-      return getString (n);
+      return getStringChar (n);
     }
   else if (isConstExp (n))
     {
@@ -7672,11 +7712,29 @@ static decl_node__opaque resolveString (decl_node__opaque n)
 
 
 /*
-   foldBinary -
+   addQuotes - adds delimiter quote char to string.
+*/
+
+static DynamicStrings_String addQuotes (DynamicStrings_String s, char quote)
+{
+  DynamicStrings_String qs;
+
+  s = DynamicStrings_ConCatChar (s, quote);
+  qs = DynamicStrings_InitStringChar (quote);
+  qs = DynamicStrings_ConCat (qs, DynamicStrings_Mark (s));
+  return qs;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   foldBinary - attempt to fold binary + for string constants.
 */
 
 static decl_node__opaque foldBinary (decl_nodeT k, decl_node__opaque l, decl_node__opaque r, decl_node__opaque res)
 {
+  char qc;
   decl_node__opaque n;
   DynamicStrings_String ls;
   DynamicStrings_String rs;
@@ -7686,7 +7744,12 @@ static decl_node__opaque foldBinary (decl_nodeT k, decl_node__opaque l, decl_nod
     {
       ls = getStringContents (l);
       rs = getStringContents (r);
+      qc = '\'';
+      /* Add unquoted contents.  */
       ls = DynamicStrings_Add (ls, rs);
+      /* Add quote.  */
+      ls = addQuotes (ls, qc);
+      /* Build new string.  */
       n = static_cast<decl_node__opaque> (decl_makeString (nameKey_makekey (DynamicStrings_string (ls))));
       ls = DynamicStrings_KillString (ls);
       rs = DynamicStrings_KillString (rs);
@@ -22789,7 +22852,7 @@ static decl_node__opaque doDupExpr (decl_node__opaque n)
         break;
 
       case decl_length:
-        M2RTS_HALT (-1);
+        M2RTS_HALT (-1);  /* length should have been converted into unary.  */
         __builtin_unreachable ();
         break;
 

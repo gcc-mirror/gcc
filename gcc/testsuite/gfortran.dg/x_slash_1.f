@@ -18,7 +18,7 @@ c Line 2 has nothing but x editing, followed by a slash.
 c Line 3 has x editing finished off by a 1h*
 
        write (10, 100)
- 100   format (1h1,58x,1h!,/,60x,/,59x,1h*,/)
+ 100   format (1h1,58x,1h!,/,60x,/,59x,1h*,/) ! { dg-warning "H format specifier" }
        rewind (10)
 
        read (10, 200) a
@@ -42,7 +42,7 @@ c Line 3 has tabs to the left of present position.
 
        write (10, 101)
  101   format (1h1,58x,1h#,/,t38,2x,1h ,tr10,9x,1h$,/,
-     >         6habcdef,tl4,2x,6hghijkl,t1,59x,1h*)
+     >         6habcdef,tl4,2x,6hghijkl,t1,59x,1h*) ! { dg-warning "H format specifier" }
        rewind (10)
 
        read (10, 200) a

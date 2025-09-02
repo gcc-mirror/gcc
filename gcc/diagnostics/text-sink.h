@@ -51,6 +51,12 @@ public:
   {}
   ~text_sink ();
 
+  text_sink *dyn_cast_text_sink () final override { return this; }
+
+  void dump_kind (FILE *out) const override
+  {
+    fprintf (out, "text_sink");
+  }
   void dump (FILE *out, int indent) const override;
 
   std::unique_ptr<per_sink_buffer>
@@ -126,6 +132,8 @@ public:
   {
     return m_source_printing;
   }
+
+  static const char *maybe_line_and_column (int line, int col);
 
 protected:
   void print_any_cwe (const diagnostic_info &diagnostic);

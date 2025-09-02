@@ -693,4 +693,52 @@ sat_u_mul_##NT##_from_##WT##_fmt_1 (NT a, NT b) \
   sat_u_mul_##NT##_from_##WT##_fmt_1 (a, b)
 #define RUN_SAT_U_MUL_FMT_1_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_1(NT, WT, a, b)
 
+#define DEF_SAT_U_MUL_FMT_2(T)               \
+T __attribute__((noinline))                  \
+sat_u_mul_##T##_fmt_2 (T a, T b)             \
+{                                            \
+  T result;                                  \
+  if (__builtin_mul_overflow(a, b, &result)) \
+    return -1;                               \
+  else                                       \
+    return result;                           \
+}
+
+#define DEF_SAT_U_MUL_FMT_2_WRAP(T) DEF_SAT_U_MUL_FMT_2(T)
+#define RUN_SAT_U_MUL_FMT_2(T, a, b) sat_u_mul_##T##_fmt_2 (a, b)
+#define RUN_SAT_U_MUL_FMT_2_WRAP(T, a, b) RUN_SAT_U_MUL_FMT_2(T, a, b)
+
+#define DEF_SAT_U_MUL_FMT_3(NT, WT)             \
+NT __attribute__((noinline))                    \
+sat_u_mul_##NT##_from_##WT##_fmt_3 (NT a, NT b) \
+{                                               \
+  WT x = (WT)a * (WT)b;                         \
+  if ((x >> sizeof(a) * 8) == 0)                \
+    return (NT)x;                               \
+  else                                          \
+    return (NT)-1;                              \
+}
+
+#define DEF_SAT_U_MUL_FMT_3_WRAP(NT, WT) DEF_SAT_U_MUL_FMT_3(NT, WT)
+#define RUN_SAT_U_MUL_FMT_3(NT, WT, a, b) \
+  sat_u_mul_##NT##_from_##WT##_fmt_3 (a, b)
+#define RUN_SAT_U_MUL_FMT_3_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_3(NT, WT, a, b)
+
+#define DEF_SAT_U_MUL_FMT_4(NT, WT)             \
+NT __attribute__((noinline))                    \
+sat_u_mul_##NT##_from_##WT##_fmt_4 (NT a, NT b) \
+{                                               \
+  WT x = (WT)a * (WT)b;                         \
+  NT max = -1;                                  \
+  if (x >= (WT)(max))                           \
+    return max;                                 \
+  else                                          \
+    return (NT)x;                               \
+}
+
+#define DEF_SAT_U_MUL_FMT_4_WRAP(NT, WT) DEF_SAT_U_MUL_FMT_4(NT, WT)
+#define RUN_SAT_U_MUL_FMT_4(NT, WT, a, b) \
+  sat_u_mul_##NT##_from_##WT##_fmt_4 (a, b)
+#define RUN_SAT_U_MUL_FMT_4_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_4(NT, WT, a, b)
+
 #endif

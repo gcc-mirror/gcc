@@ -12,6 +12,12 @@ UrlSuffix(gcc/PRU-Options.html#index-mno-relax-1)
 mloop
 UrlSuffix(gcc/PRU-Options.html#index-mloop)
 
+mmul
+UrlSuffix(gcc/PRU-Options.html#index-mmul)
+
+mfillzero
+UrlSuffix(gcc/PRU-Options.html#index-mfillzero)
+
 mabi=
 UrlSuffix(gcc/PRU-Options.html#index-mabi-4)
 

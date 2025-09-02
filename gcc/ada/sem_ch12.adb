@@ -4900,8 +4900,7 @@ package body Sem_Ch12 is
       Loc        : constant Source_Ptr := Sloc (N);
       Is_Abbrev  : constant Boolean    :=
                      Is_Abbreviated_Instance (Defining_Entity (N));
-      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -5680,7 +5679,7 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
       Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
 
@@ -5695,7 +5694,7 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_Ghost_Region (Saved_Ghost_Config);
          Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
          Style_Check := Saved_Style_Check;
    end Analyze_Package_Instantiation;
@@ -6340,8 +6339,7 @@ package body Sem_Ch12 is
 
       --  Local variables
 
-      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -6736,7 +6734,7 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
       Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
 
    exception
@@ -6750,7 +6748,7 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_Ghost_Region (Saved_Ghost_Config);
          Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
    end Analyze_Subprogram_Instantiation;
 
@@ -12874,8 +12872,7 @@ package body Sem_Ch12 is
       --  the package body.
 
       Saved_CS   : constant Config_Switches_Type     := Save_Config_Switches;
-      Saved_GM   : constant Ghost_Mode_Type          := Ghost_Mode;
-      Saved_IGR  : constant Node_Id                  := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       Saved_ISMP : constant Boolean                  :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_LSST : constant Suppress_Stack_Entry_Ptr :=
@@ -13405,7 +13402,7 @@ package body Sem_Ch12 is
 
       Expander_Mode_Restore;
       Restore_Config_Switches (Saved_CS);
-      Restore_Ghost_Region    (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region    (Saved_Ghost_Config);
       Restore_SPARK_Mode      (Saved_SM, Saved_SMP);
       Restore_Warnings        (Saved_Warn);
    end Instantiate_Package_Body;
@@ -13436,8 +13433,7 @@ package body Sem_Ch12 is
       --  the subprogram body.
 
       Saved_CS   : constant Config_Switches_Type     := Save_Config_Switches;
-      Saved_GM   : constant Ghost_Mode_Type          := Ghost_Mode;
-      Saved_IGR  : constant Node_Id                  := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       Saved_ISMP : constant Boolean                  :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_LSST : constant Suppress_Stack_Entry_Ptr :=
@@ -13740,7 +13736,7 @@ package body Sem_Ch12 is
 
       Expander_Mode_Restore;
       Restore_Config_Switches (Saved_CS);
-      Restore_Ghost_Region    (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region    (Saved_Ghost_Config);
       Restore_SPARK_Mode      (Saved_SM, Saved_SMP);
       Restore_Warnings        (Saved_Warn);
    end Instantiate_Subprogram_Body;

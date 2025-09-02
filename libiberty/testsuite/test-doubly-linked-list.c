@@ -155,19 +155,26 @@ bool check(const char *op,
   bool success = true;
   bool res;
 
-  l_print (wrapper->first);
+#define DUMP_LIST 0
+
+  if (DUMP_LIST)
+    l_print (wrapper->first);
+
   res = run_test (expect, wrapper, false);
   printf ("%s: test-linked-list::%s: check forward conformity\n",
 	  res ? "PASS": "FAIL", op);
   success &= res;
 
-  l_reverse_print (wrapper->last);
+  if (DUMP_LIST)
+    l_reverse_print (wrapper->last);
+
   res = run_test (expect, wrapper, true);
   printf ("%s: test-linked-list::%s: check backward conformity\n",
 	  res ? "PASS": "FAIL", op);
   success &= res;
 
-  printf("\n");
+  if (DUMP_LIST)
+    printf("\n");
 
   return success;
 }

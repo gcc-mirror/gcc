@@ -182,7 +182,8 @@ Dump::visit (const Statement &stmt)
   statement_place = stmt.get_place ();
   switch (stmt.get_kind ())
     {
-      case Statement::Kind::ASSIGNMENT: {
+    case Statement::Kind::ASSIGNMENT:
+      {
 	visit_place (stmt.get_place ());
 	stream << " = ";
 	stmt.get_expr ().accept_vis (*this);

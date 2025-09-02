@@ -15,6 +15,6 @@ foo (void *frame, uword_t uirrv)
 
 void
 __attribute__((interrupt))
-UINTR_hanlder (struct __uintr_frame *frame, uword_t uirrv)
+UINTR_handler (struct __uintr_frame *frame, uword_t uirrv)
 {
 }

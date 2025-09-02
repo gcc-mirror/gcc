@@ -120,6 +120,51 @@ Target RejectNegative Alias(misa=,sm_89)
 march-map=sm_90a
 Target RejectNegative Alias(misa=,sm_89)
 
+march-map=sm_100
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_100f
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_100a
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_101
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_101f
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_101a
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_103
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_103f
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_103a
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_120
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_120f
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_120a
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_121
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_121f
+Target RejectNegative Alias(misa=,sm_89)
+
+march-map=sm_121a
+Target RejectNegative Alias(misa=,sm_89)
+
 Enum
 Name(ptx_version) Type(enum ptx_version)
 Known PTX ISA versions (for use with the -mptx= option):

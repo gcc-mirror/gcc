@@ -170,6 +170,8 @@ public:
   }
 
   void visit (OpaqueType &type) override {}
+
+  void visit (ConstType &type) override {}
 };
 
 /** Per crate context for generic type variance analysis. */

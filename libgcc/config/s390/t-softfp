@@ -1,0 +1,2 @@
+LIB2ADD += $(srcdir)/config/s390/sfp-exceptions.c
+softfp_extras := fixtfbitint floatbitinttf

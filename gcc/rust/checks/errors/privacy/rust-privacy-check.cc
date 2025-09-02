@@ -25,8 +25,7 @@
 #include "rust-pub-restricted-visitor.h"
 #include "rust-privacy-reporter.h"
 
-extern bool
-saw_errors (void);
+extern bool saw_errors (void);
 
 namespace Rust {
 namespace Privacy {

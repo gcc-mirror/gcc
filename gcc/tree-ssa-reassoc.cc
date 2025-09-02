@@ -7167,9 +7167,10 @@ reassociate_bb (basic_block bb)
 
 		  /* If the target support FMA, rank_ops_for_fma will detect if
 		     the chain has fmas and rearrange the ops if so.  */
-		  if (direct_internal_fn_supported_p (IFN_FMA,
-						      TREE_TYPE (lhs),
-						      opt_type)
+		  if (!reassoc_insert_powi_p
+		      && direct_internal_fn_supported_p (IFN_FMA,
+							 TREE_TYPE (lhs),
+							 opt_type)
 		      && (rhs_code == PLUS_EXPR || rhs_code == MINUS_EXPR))
 		    {
 		      mult_num = rank_ops_for_fma (&ops);
@@ -7200,7 +7201,8 @@ reassociate_bb (basic_block bb)
 			 to make sure the ones that get the double
 			 binary op are chosen wisely.  */
 		      int len = ops.length ();
-		      if (len >= 3
+		      if (!reassoc_insert_powi_p
+			  && len >= 3
 			  && (!has_fma
 			      /* width > 1 means ranking ops results in better
 				 parallelism.  Check current value to avoid

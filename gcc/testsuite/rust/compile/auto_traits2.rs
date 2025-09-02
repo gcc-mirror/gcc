@@ -15,7 +15,7 @@ fn foo(a: &(dyn A + Send + Sync)) {
 struct S;
 
 impl A for S {
-    fn a_method(&self) {} // { dg-warning "unused name" }
+    fn a_method(&self) {}
 }
 
 fn main() {

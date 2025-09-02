@@ -1,5 +1,6 @@
 // { dg-do link }
 // { dg-additional-sources " linkage1-main.cc" }
+// { dg-additional-options "-Wno-non-c-typedef-for-linkage" }
 
 // Copyright 2002 Free Software Foundation
 

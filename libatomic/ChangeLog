@@ -1,3 +1,8 @@
+2025-07-31  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/linux/aarch64/host-config.h (__ifunc_arg_t):
+	Remove sys/ifunc.h and add new fields _hwcap3 and _hwcap4.
+
 2025-05-22  Alexandre Oliva  <oliva@adacore.com>
 
 	* configure.tgt: Set partial_libatomic on *-*-vxworks*.

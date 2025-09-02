@@ -1096,7 +1096,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	    "-fdiagnostics-urls=never",
 	    "-fdiagnostics-path-format=separate-events",
 	    "-fdiagnostics-text-art-charset=none",
-	    "-fno-diagnostics-show-event-links"
+	    "-fno-diagnostics-show-event-links",
+	    "-fno-diagnostics-show-nesting"
 	    /* We don't put "-fno-diagnostics-show-highlight-colors" here
 	       as -fdiagnostics-color=never makes it redundant.  */
 	  };
@@ -1876,7 +1877,7 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 }
 
 int
-compiler_diagnostic_option_manager::
+compiler_diagnostic_option_id_manager::
 option_enabled_p (diagnostics::option_id opt_id) const
 {
   return option_enabled (opt_id.m_idx, m_lang_mask, m_opts);

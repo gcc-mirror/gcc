@@ -1,5 +1,3 @@
-// { dg-options "-frust-name-resolution-2.0" }
-
 mod a {
     pub mod b {
         pub fn foo() {}

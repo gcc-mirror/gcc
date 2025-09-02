@@ -70,6 +70,9 @@
 /* Define to 1 if you have the `cosl' function. */
 #undef HAVE_COSL
 
+/* Define to 1 if you have the <debugapi.h> header file. */
+#undef HAVE_DEBUGAPI_H
+
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRNLEN
@@ -434,6 +437,9 @@
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/ptrace.h> header file. */
+#undef HAVE_SYS_PTRACE_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H
@@ -846,6 +852,9 @@
 /* Define if nl_langinfo_l should be used for std::text_encoding. */
 #undef _GLIBCXX_USE_NL_LANGINFO_L
 
+/* Define if /proc/self/status should be used for <debugging>. */
+#undef _GLIBCXX_USE_PROC_SELF_STATUS
+
 /* Define if pthreads_num_processors_np is available in <pthread.h>. */
 #undef _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP
 
@@ -861,6 +870,9 @@
 
 /* Define if POSIX read/write locks are available in <gthr.h>. */
 #undef _GLIBCXX_USE_PTHREAD_RWLOCK_T
+
+/* Define if ptrace should be used for std::is_debugger_present. */
+#undef _GLIBCXX_USE_PTRACE
 
 /* Define if /dev/random and /dev/urandom are available for the random_device
    of TR1 (Chapter 5.1). */

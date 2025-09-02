@@ -3,6 +3,7 @@
 /* { dg-do assemble } */
 /* { dg-options "-save-temps" } */
 /* { dg-require-effective-target arm_coproc3_ok } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "arm_acle.h"
 #if (__ARM_ARCH < 8 || !defined (__ARM_ARCH_ISA_ARM)) \
@@ -15,4 +16,21 @@ uint64_t test_mrrc (void)
   return __arm_mrrc (10, 5, 3);
 }
 
-/* { dg-final { scan-assembler "mrrc\tp10, #5, r\[r0-9\]*, r\[r0-9\]*, CR3\n" } } */
+/*
+** test_mrrc:
+** ...
+**	mrrc	p10, #5, r[0-9]+, r[0-9]+, CR3
+** ...
+*/
+
+uint64_t test_mrrc_pr121464 (void)
+{
+  return __arm_mrrc (15, 9, 7);
+}
+
+/*
+** test_mrrc_pr121464:
+** ...
+**	mrrc	p15, #9, r[0-9]+, r[0-9]+, CR7
+** ...
+*/

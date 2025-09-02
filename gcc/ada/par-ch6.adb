@@ -1384,20 +1384,16 @@ package body Ch6 is
       Specification_List : List_Id;
       Specification_Node : Node_Id;
       Scan_State         : Saved_Scan_State;
-      Num_Idents         : Nat;
-      Ident              : Nat;
       Ident_Sloc         : Source_Ptr;
       Not_Null_Present   : Boolean := False;
       Not_Null_Sloc      : Source_Ptr;
 
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
-      --  This array holds the list of defining identifiers. The upper bound
-      --  of 4096 is intended to be essentially infinite, and we do not even
-      --  bother to check for it being exceeded.
-
    begin
       Specification_List := New_List;
       Specification_Loop : loop
+         declare
+            Def_Ids : Defining_Identifiers;
+            Ident   : Pos;
          begin
             if Token = Tok_Pragma then
                Error_Msg_SC ("pragma not allowed in formal part");
@@ -1406,8 +1402,7 @@ package body Ch6 is
 
             Ignore (Tok_Left_Paren);
             Ident_Sloc := Token_Ptr;
-            Idents (1) := P_Defining_Identifier (C_Comma_Colon);
-            Num_Idents := 1;
+            Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
 
             Ident_Loop : loop
                exit Ident_Loop when Token = Tok_Colon;
@@ -1457,8 +1452,7 @@ package body Ch6 is
                --  Here if a comma is present, or to be assumed
 
                T_Comma;
-               Num_Idents := Num_Idents + 1;
-               Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
+               Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
             end loop Ident_Loop;
 
             --  Fall through the loop on encountering a colon, or deciding
@@ -1466,12 +1460,7 @@ package body Ch6 is
 
             T_Colon;
 
-            --  If there are multiple identifiers, we repeatedly scan the
-            --  type and initialization expression information by resetting
-            --  the scan pointer (so that we get completely separate trees
-            --  for each occurrence).
-
-            if Num_Idents > 1 then
+            if Def_Ids.Num_Idents > 1 then
                Save_Scan_State (Scan_State);
             end if;
 
@@ -1482,7 +1471,8 @@ package body Ch6 is
             Ident_List_Loop : loop
                Specification_Node :=
                  New_Node (N_Parameter_Specification, Ident_Sloc);
-               Set_Defining_Identifier (Specification_Node, Idents (Ident));
+               Set_Defining_Identifier
+                 (Specification_Node, Def_Ids.Idents (Ident));
 
                --  Scan possible ALIASED for Ada 2012 (AI-142)
 
@@ -1574,12 +1564,12 @@ package body Ch6 is
                   Set_Prev_Ids (Specification_Node, True);
                end if;
 
-               if Ident < Num_Idents then
+               if Ident < Def_Ids.Num_Idents then
                   Set_More_Ids (Specification_Node, True);
                end if;
 
                Append (Specification_Node, Specification_List);
-               exit Ident_List_Loop when Ident = Num_Idents;
+               exit Ident_List_Loop when Ident = Def_Ids.Num_Idents;
                Ident := Ident + 1;
                Restore_Scan_State (Scan_State);
             end loop Ident_List_Loop;

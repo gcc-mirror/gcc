@@ -4965,6 +4965,10 @@ prepare_function_start (void)
 
   /* Indicate we have no need of a frame pointer yet.  */
   frame_pointer_needed = 0;
+
+  /* Reset the cache of the "extended" flag in the target's
+     _BitInt info struct.  */
+  bitint_extended = -1;
 }
 
 void

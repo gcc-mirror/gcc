@@ -21,6 +21,7 @@
 
 #include "rust-bir-builder-internal.h"
 #include "rust-bir-builder-expr-stmt.h"
+#include "rust-hir-expr.h"
 
 namespace Rust {
 namespace BIR {
@@ -133,6 +134,8 @@ protected:
   void visit (HIR::MethodCallExpr &expr) override { rust_unreachable (); }
   void visit (HIR::FieldAccessExpr &expr) override { rust_unreachable (); }
   void visit (HIR::BlockExpr &expr) override { rust_unreachable (); }
+  void visit (HIR::AnonConst &expr) override { rust_unreachable (); }
+  void visit (HIR::ConstBlock &expr) override { rust_unreachable (); }
   void visit (HIR::ClosureExpr &expr) override { rust_unreachable (); }
   void visit (HIR::ContinueExpr &expr) override { rust_unreachable (); }
   void visit (HIR::BreakExpr &expr) override { rust_unreachable (); }
@@ -154,6 +157,7 @@ protected:
   void visit (HIR::AsyncBlockExpr &expr) override { rust_unreachable (); }
   void visit (HIR::InlineAsm &expr) override { rust_unreachable (); }
   void visit (HIR::LlvmInlineAsm &expr) override { rust_unreachable (); }
+  void visit (HIR::OffsetOf &expr) override { rust_unreachable (); }
   void visit (HIR::TypeParam &param) override { rust_unreachable (); }
   void visit (HIR::ConstGenericParam &param) override { rust_unreachable (); }
   void visit (HIR::LifetimeWhereClauseItem &item) override

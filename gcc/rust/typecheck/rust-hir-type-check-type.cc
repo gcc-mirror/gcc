@@ -29,6 +29,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
 #include "rust-system.h"
+#include "rust-compile-base.h"
 
 namespace Rust {
 namespace Resolver {
@@ -335,19 +336,13 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  seg->get_lang_item ());
       else
 	{
-	  // FIXME: HACK: ARTHUR: Remove this
-	  if (flag_name_resolution_2_0)
-	    {
-	      auto &nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
-			       .resolver ();
+	  auto &nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	      // assign the ref_node_id if we've found something
-	      nr_ctx.lookup (ast_node_id)
-		.map (
-		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
-	    }
-	  else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	    resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
+	  // assign the ref_node_id if we've found something
+	  nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
 	}
 
       // ref_node_id is the NodeId that the segments refers to.
@@ -549,8 +544,7 @@ TypeCheckType::resolve_segments (
       bool selfResolveOk = false;
 
       if (first_segment && tySegIsBigSelf
-	  && context->block_context ().is_in_context ()
-	  && context->block_context ().peek ().is_impl_block ())
+	  && context->block_context ().is_in_context ())
 	{
 	  TypeCheckBlockContextItem ctx = context->block_context ().peek ();
 	  TyTy::BaseType *lookup = nullptr;
@@ -695,6 +689,7 @@ TypeCheckType::visit (HIR::ParenthesisedType &type)
 void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
+  auto element_type = TypeCheckType::Resolve (type.get_element_type ());
   auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());
   if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
     return;
@@ -704,16 +699,38 @@ TypeCheckType::visit (HIR::ArrayType &type)
   rust_assert (ok);
   context->insert_type (type.get_size_expr ().get_mappings (), expected_ty);
 
-  unify_site (type.get_size_expr ().get_mappings ().get_hirid (),
-	      TyTy::TyWithLocation (expected_ty),
-	      TyTy::TyWithLocation (capacity_type,
-				    type.get_size_expr ().get_locus ()),
-	      type.get_size_expr ().get_locus ());
+  TyTy::ConstType *const_type = nullptr;
+  if (capacity_type->get_kind () == TyTy::TypeKind::CONST)
+    {
+      const_type = static_cast<TyTy::ConstType *> (capacity_type);
 
-  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
-  translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				    type.get_locus (), type.get_size_expr (),
-				    TyTy::TyVar (base->get_ref ()));
+      unify_site (type.get_size_expr ().get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (expected_ty),
+		  TyTy::TyWithLocation (const_type->get_ty (),
+					type.get_size_expr ().get_locus ()),
+		  type.get_size_expr ().get_locus ());
+    }
+  else
+    {
+      HirId size_id = type.get_size_expr ().get_mappings ().get_hirid ();
+      unify_site (size_id, TyTy::TyWithLocation (expected_ty),
+		  TyTy::TyWithLocation (capacity_type,
+					type.get_size_expr ().get_locus ()),
+		  type.get_size_expr ().get_locus ());
+
+      auto ctx = Compile::Context::get ();
+      tree capacity_expr = Compile::HIRCompileBase::query_compile_const_expr (
+	ctx, capacity_type, type.get_size_expr ());
+
+      const_type = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "",
+					expected_ty, capacity_expr, {},
+					type.get_size_expr ().get_locus (),
+					size_id, size_id);
+    }
+
+  translated
+    = new TyTy::ArrayType (type.get_mappings ().get_hirid (), type.get_locus (),
+			   const_type, TyTy::TyVar (element_type->get_ref ()));
 }
 
 void
@@ -850,10 +867,9 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
   if (param.has_type ())
     TypeCheckType::Resolve (param.get_type ());
 
-  resolved
-    = new TyTy::ParamType (param.get_type_representation ().as_string (),
-			   param.get_locus (),
-			   param.get_mappings ().get_hirid (), param, {});
+  resolved = new TyTy::ParamType (param.get_type_representation ().as_string (),
+				  param.get_locus (),
+				  param.get_mappings ().get_hirid (), {});
 
   if (resolve_trait_bounds)
     apply_trait_bounds (param, resolved);
@@ -872,7 +888,7 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
       HirId implicit_id = mappings.get_next_hir_id ();
       TyTy::ParamType *p
 	= new TyTy::ParamType (param.get_type_representation ().as_string (),
-			       param.get_locus (), implicit_id, param,
+			       param.get_locus (), implicit_id,
 			       {} /*empty specified bounds*/);
       context->insert_implicit_type (implicit_id, p);
 
@@ -908,7 +924,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 	{
 	  switch (bound->get_bound_type ())
 	    {
-	      case HIR::TypeParamBound::BoundType::TRAITBOUND: {
+	    case HIR::TypeParamBound::BoundType::TRAITBOUND:
+	      {
 		HIR::TraitBound &b = static_cast<HIR::TraitBound &> (*bound);
 
 		TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
@@ -920,7 +937,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 		  {
 		    switch (predicate.get_polarity ())
 		      {
-			case BoundPolarity::AntiBound: {
+		      case BoundPolarity::AntiBound:
+			{
 			  bool found = predicates.find (predicate.get_id ())
 				       != predicates.end ();
 			  if (found)
@@ -937,7 +955,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 			}
 			break;
 
-			default: {
+		      default:
+			{
 			  if (predicates.find (predicate.get_id ())
 			      == predicates.end ())
 			    {
@@ -1033,7 +1052,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     {
       switch (bound->get_bound_type ())
 	{
-	  case HIR::TypeParamBound::BoundType::TRAITBOUND: {
+	case HIR::TypeParamBound::BoundType::TRAITBOUND:
+	  {
 	    auto *b = static_cast<HIR::TraitBound *> (bound.get ());
 
 	    TyTy::TypeBoundPredicate predicate
@@ -1042,7 +1062,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	      specified_bounds.push_back (std::move (predicate));
 	  }
 	  break;
-	  case HIR::TypeParamBound::BoundType::LIFETIME: {
+	case HIR::TypeParamBound::BoundType::LIFETIME:
+	  {
 	    if (auto param = binding->try_as<TyTy::ParamType> ())
 	      {
 		auto *b = static_cast<HIR::Lifetime *> (bound.get ());
@@ -1071,23 +1092,15 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 
   // then lookup the reference_node_id
   NodeId ref_node_id = UNKNOWN_NODEID;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      if (auto id = nr_ctx.lookup (ast_node_id))
-	ref_node_id = *id;
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+  if (auto id = nr_ctx.lookup (ast_node_id))
+    {
+      ref_node_id = *id;
     }
   else
-    {
-      NodeId id = UNKNOWN_NODEID;
-
-      if (resolver->lookup_resolved_type (ast_node_id, &id))
-	ref_node_id = id;
-    }
-
-  if (ref_node_id == UNKNOWN_NODEID)
     {
       // FIXME
       rust_error_at (UNDEF_LOCATION,

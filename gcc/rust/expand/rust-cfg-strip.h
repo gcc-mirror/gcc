@@ -172,6 +172,8 @@ public:
   void visit (AST::TuplePatternItemsMultiple &tuple_items) override;
   void visit (AST::TuplePatternItemsRanged &tuple_items) override;
   void visit (AST::GroupedPattern &pattern) override;
+  void visit (AST::SlicePatternItemsNoRest &items) override;
+  void visit (AST::SlicePatternItemsHasRest &items) override;
   void visit (AST::SlicePattern &pattern) override;
   void visit (AST::AltPattern &pattern) override;
 

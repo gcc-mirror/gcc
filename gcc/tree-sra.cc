@@ -1291,19 +1291,16 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
       return NULL;
     }
 
-  /* We need to dive through V_C_Es in order to get the size of its parameter
-     and not the result type.  Ada produces such statements.  We are also
-     capable of handling the topmost V_C_E but not any of those buried in other
-     handled components.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-
-  if (contains_view_convert_expr_p (expr))
+  /* We are capable of handling the topmost V_C_E but not any of those
+     buried in other handled components.  */
+  if (contains_view_convert_expr_p (TREE_CODE (expr) == VIEW_CONVERT_EXPR
+				    ? TREE_OPERAND (expr, 0) : expr))
     {
       disqualify_base_of_expr (expr, "V_C_E under a different handled "
 			       "component.");
       return NULL;
     }
+
   if (TREE_THIS_VOLATILE (expr))
     {
       disqualify_base_of_expr (expr, "part of a volatile reference.");
@@ -1323,6 +1320,7 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
       ret = create_access (expr, stmt, write);
       break;
 
@@ -1884,7 +1882,7 @@ make_fancy_name (tree expr)
    the current one as specified by INSERT_AFTER.  This function is not capable
    of handling bitfields.  */
 
-tree
+static tree
 build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
@@ -4085,12 +4083,6 @@ get_access_for_expr (tree expr)
   HOST_WIDE_INT offset, max_size;
   tree base;
   bool reverse;
-
-  /* FIXME: This should not be necessary but Ada produces V_C_Es with a type of
-     a different size than the size of its argument and we need the latter
-     one.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-    expr = TREE_OPERAND (expr, 0);
 
   base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
 				  &reverse);

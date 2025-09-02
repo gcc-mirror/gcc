@@ -73,6 +73,9 @@ GRS_OBJS = \
     rust/rust-lex.o \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
+    rust/rust-parse-impl-proc-macro.o \
+    rust/rust-parse-impl-macro.o \
+    rust/rust-parse-impl-lexer.o \
     rust/rust-ast.o \
     rust/rust-ast-formatting.o \
     rust/rust-path.o \
@@ -81,6 +84,7 @@ GRS_OBJS = \
     rust/rust-ast-dump.o \
     rust/rust-ast-collector.o \
     rust/rust-ast-visitor.o \
+    rust/rust-hir-visitor.o \
     rust/rust-hir-dump.o \
     rust/rust-session-manager.o \
     rust/rust-compile.o \
@@ -92,14 +96,15 @@ GRS_OBJS = \
     rust/rust-cfg-strip.o \
     rust/rust-expand-visitor.o \
     rust/rust-ast-builder.o \
-    rust/rust-ast-builder-type.o \
     rust/rust-derive.o \
+    rust/rust-derive-cmp-common.o \
     rust/rust-derive-clone.o \
     rust/rust-derive-copy.o \
     rust/rust-derive-debug.o \
     rust/rust-derive-default.o \
     rust/rust-derive-partial-eq.o \
     rust/rust-derive-eq.o \
+    rust/rust-derive-ord.o \
     rust/rust-derive-hash.o \
     rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
@@ -113,6 +118,7 @@ GRS_OBJS = \
     rust/rust-macro-builtins-log-debug.o \
     rust/rust-macro-builtins-test-bench.o \
     rust/rust-macro-builtins-format-args.o \
+    rust/rust-macro-builtins-offset-of.o \
     rust/rust-macro-builtins-location.o \
     rust/rust-macro-builtins-include.o \
     rust/rust-token-tree-desugar.o \
@@ -123,7 +129,6 @@ GRS_OBJS = \
     rust/rust-keyword-values.o \
     rust/rust-abi.o \
     rust/rust-token-converter.o \
-    rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
@@ -204,6 +209,7 @@ GRS_OBJS = \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
     rust/rust-readonly-check.o \
+    rust/rust-readonly-check2.o \
     rust/rust-hir-type-check-path.o \
     rust/rust-unsafe-checker.o \
     rust/rust-hir-pattern-analysis.o \
@@ -237,11 +243,16 @@ GRS_OBJS = \
     rust/rust-punycode.o \
     rust/rust-unwrap-segment.o \
     rust/rust-edition.o \
+    rust/rust-ggc.o \
 	rust/rust-expand-format-args.o \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \
+	rust/rust-expression-yeast.o \
 	rust/rust-desugar-for-loops.o \
+	rust/rust-desugar-while-let.o \
 	rust/rust-desugar-question-mark.o \
+	rust/rust-desugar-apit.o \
+	rust/rust-desugar-try-block.o \
     $(END)
 # removed object files from here
 

@@ -19,8 +19,8 @@
 # the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Check that names in the file are sorted
-# alphabetically by surname.
+# Check that names in the file are sorted alphabetically by surname, name
+# bugzilla handle and email (in this order).
 
 import locale
 import sys

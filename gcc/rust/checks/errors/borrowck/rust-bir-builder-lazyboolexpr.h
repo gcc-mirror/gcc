@@ -169,6 +169,14 @@ public:
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
   }
+  void visit (HIR::AnonConst &expr) override
+  {
+    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
+  }
+  void visit (HIR::ConstBlock &expr) override
+  {
+    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
+  }
   void visit (HIR::UnsafeBlockExpr &expr) override
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
@@ -208,6 +216,7 @@ public:
 
   void visit (HIR::InlineAsm &expr) override {}
   void visit (HIR::LlvmInlineAsm &expr) override {}
+  void visit (HIR::OffsetOf &expr) override {}
 
 protected: // Illegal at this position.
   void visit (HIR::StructExprFieldIdentifier &field) override

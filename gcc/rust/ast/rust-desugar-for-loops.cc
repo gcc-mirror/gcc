@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-desugar-for-loops.h"
-#include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-hir-map.h"
 #include "rust-path.h"
@@ -31,32 +30,10 @@ namespace AST {
 
 DesugarForLoops::DesugarForLoops () {}
 
-void
-DesugarForLoops::go (AST::Crate &crate)
-{
-  DefaultASTVisitor::visit (crate);
-}
-
-static void
-replace_for_loop (std::unique_ptr<Expr> &for_loop,
-		  std::unique_ptr<Expr> &&expanded)
-{
-  for_loop = std::move (expanded);
-}
-
-MatchArm
-DesugarForLoops::DesugarCtx::make_match_arm (std::unique_ptr<Pattern> &&path)
-{
-  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
-  patterns.emplace_back (std::move (path));
-
-  return MatchArm (std::move (patterns), loc);
-}
-
 MatchCase
 DesugarForLoops::DesugarCtx::make_break_arm ()
 {
-  auto arm = make_match_arm (std::unique_ptr<Pattern> (new PathInExpression (
+  auto arm = builder.match_arm (std::unique_ptr<Pattern> (new PathInExpression (
     builder.path_in_expression (LangItem::Kind::OPTION_NONE))));
 
   auto break_expr
@@ -79,7 +56,7 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
     builder.path_in_expression (LangItem::Kind::OPTION_SOME),
     std::move (pattern_item)));
 
-  auto val_arm = make_match_arm (std::move (pattern));
+  auto val_arm = builder.match_arm (std::move (pattern));
 
   auto next = builder.identifier (DesugarCtx::next_value_id);
 
@@ -91,14 +68,8 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
   return MatchCase (std::move (val_arm), std::move (assignment));
 }
 
-std::unique_ptr<Stmt>
-DesugarForLoops::DesugarCtx::statementify (std::unique_ptr<Expr> &&expr)
-{
-  return std::unique_ptr<Stmt> (new ExprStmt (std::move (expr), loc, true));
-}
-
 std::unique_ptr<Expr>
-DesugarForLoops::desugar (AST::ForLoopExpr &expr)
+DesugarForLoops::desugar (ForLoopExpr &expr)
 {
   auto ctx = DesugarCtx (expr.get_locus ());
 
@@ -140,10 +111,10 @@ DesugarForLoops::desugar (AST::ForLoopExpr &expr)
 
   auto loop_stmts = std::vector<std::unique_ptr<Stmt>> ();
   loop_stmts.emplace_back (std::move (let_next));
-  loop_stmts.emplace_back (ctx.statementify (std::move (match_next)));
+  loop_stmts.emplace_back (ctx.builder.statementify (std::move (match_next)));
   loop_stmts.emplace_back (std::move (let_pat));
   loop_stmts.emplace_back (
-    ctx.statementify (expr.get_loop_block ().clone_expr ()));
+    ctx.builder.statementify (expr.get_loop_block ().clone_expr ()));
 
   // loop {
   //     <let_next>;
@@ -170,34 +141,18 @@ DesugarForLoops::desugar (AST::ForLoopExpr &expr)
 }
 
 void
-DesugarForLoops::maybe_desugar_expr (std::unique_ptr<Expr> &expr)
+DesugarForLoops::go (std::unique_ptr<Expr> &ptr)
 {
-  if (expr->get_expr_kind () == AST::Expr::Kind::Loop)
-    {
-      auto &loop = static_cast<AST::BaseLoopExpr &> (*expr);
+  rust_assert (ptr->get_expr_kind () == Expr::Kind::Loop);
 
-      if (loop.get_loop_kind () == AST::BaseLoopExpr::Kind::For)
-	{
-	  auto &for_loop = static_cast<AST::ForLoopExpr &> (loop);
+  auto &loop = static_cast<BaseLoopExpr &> (*ptr);
 
-	  auto desugared = desugar (for_loop);
+  rust_assert (loop.get_loop_kind () == BaseLoopExpr::Kind::For);
 
-	  replace_for_loop (expr, std::move (desugared));
-	}
-    }
-}
+  auto &for_loop = static_cast<ForLoopExpr &> (loop);
+  auto desugared = DesugarForLoops ().desugar (for_loop);
 
-void
-DesugarForLoops::visit (AST::BlockExpr &block)
-{
-  for (auto &stmt : block.get_statements ())
-    if (stmt->get_stmt_kind () == AST::Stmt::Kind::Expr)
-      maybe_desugar_expr (static_cast<AST::ExprStmt &> (*stmt).get_expr_ptr ());
-
-  if (block.has_tail_expr ())
-    maybe_desugar_expr (block.get_tail_expr_ptr ());
-
-  DefaultASTVisitor::visit (block);
+  ptr = std::move (desugared);
 }
 
 } // namespace AST

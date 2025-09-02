@@ -3938,6 +3938,7 @@
    v_cmpx%E1\t%2, %3
    v_cmpx%E1\t%2, %3"
   [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a,vopc,vopc")
+   (set_attr "vcmp" "vcmp,vcmp,vcmpx,vcmpx,vcmp,vcmp,vcmpx,vcmpx")
    (set_attr "length" "4,8,4,8,8,8,4,8")
    (set_attr "rdna" "*,*,no,no,*,*,yes,yes")])
 
@@ -3992,6 +3993,7 @@
    v_cmpx%E1\t%2, %3
    v_cmpx%E1\t%2, %3"
   [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a,vopc,vopc")
+   (set_attr "vcmp" "vcmp,vcmp,vcmpx,vcmpx,vcmp,vcmp,vcmpx,vcmpx")
    (set_attr "length" "4,8,4,8,8,8,4,8")
    (set_attr "rdna" "*,*,no,no,*,*,yes,yes")])
 
@@ -4050,6 +4052,7 @@
    v_cmpx%E1\t%2, %3
    v_cmpx%E1\t%2, %3"
   [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vopc,vopc")
+   (set_attr "vcmp" "vcmp,vcmp,vcmpx,vcmpx,vcmp,vcmpx,vcmpx")
    (set_attr "length" "4,8,4,8,8,4,8")
    (set_attr "rdna" "*,*,no,no,*,yes,yes")])
 
@@ -4073,6 +4076,7 @@
    v_cmpx%E1\t%2, %3
    v_cmpx%E1\t%2, %3"
   [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vopc,vopc")
+   (set_attr "vcmp" "vcmp,vcmp,vcmpx,vcmpx,vcmp,vcmpx,vcmpx")
    (set_attr "length" "4,8,4,8,8,4,8")
    (set_attr "rdna" "*,*,no,no,*,yes,yes")])
 

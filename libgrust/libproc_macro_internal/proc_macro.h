@@ -96,8 +96,7 @@ struct ProcmacroArray
   Procmacro *macros;
 };
 
-extern "C" bool
-bridge_is_available ();
+extern "C" bool bridge_is_available ();
 
 } // namespace ProcMacro
 

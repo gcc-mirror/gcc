@@ -1,5 +1,5 @@
 /* The modulo constraints we generate for the niter expression
-     (unsinged long)ubound - (unsigned long)lbound
+     (unsigned long)ubound - (unsigned long)lbound
    end up with a modulo that we cannot represent in the expression
    type we are using (int64_t), so we run into the codegen error
    where ISL generates a modulo/divide by sth that doesn't fit the

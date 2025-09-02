@@ -1,0 +1,48 @@
+#include <unistd.h>
+#include <string.h>
+#include <sys/mman.h>
+
+/* Allocate memory buffer of size LEN with a protected page
+   following right after the buffer end so that any memory
+   accesses past the end of the buffer would trigger SEGFAUL.  */
+void *allocate_mem (size_t len)
+{
+  size_t pagesize = sysconf (_SC_PAGESIZE);
+  char *m = mmap (NULL, pagesize * 2,
+		  PROT_READ | PROT_WRITE,
+		  MAP_PRIVATE | MAP_ANONYMOUS,
+		  -1, 0);
+  mprotect (m + pagesize, pagesize, PROT_NONE);
+  m = m + pagesize - len;
+  memset(m, 0, len);
+  return m;
+}
+
+int impl ()
+{
+  return 0;
+}
+
+#ifndef _IFUNC_ARG_HWCAP
+#define _IFUNC_ARG_HWCAP (1ULL << 62)
+#endif
+
+void
+__init_cpu_features_resolver (unsigned long hwcap, const void *arg);
+
+static void *
+fun_resolver (uint64_t a0, const uint64_t *a1)
+{
+  ifunc_arg_t *arg = allocate_mem (sizeof (ifunc_arg_t));
+  arg->size = sizeof (ifunc_arg_t);
+  /* Call this function with synthetic ifunc_arg_t arg.  */
+  __init_cpu_features_resolver (_IFUNC_ARG_HWCAP, arg);
+  return (void *)(uintptr_t)impl;
+}
+
+int fun (void) __attribute__ ((ifunc ("fun_resolver")));
+
+int main (int argc, char *argv[])
+{
+  return fun ();
+}

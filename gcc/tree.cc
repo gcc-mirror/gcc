@@ -323,9 +323,9 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_IS_DEVICE_PTR  */
   1, /* OMP_CLAUSE_INCLUSIVE  */
   1, /* OMP_CLAUSE_EXCLUSIVE  */
-  2, /* OMP_CLAUSE_FROM  */
-  2, /* OMP_CLAUSE_TO  */
-  2, /* OMP_CLAUSE_MAP  */
+  3, /* OMP_CLAUSE_FROM  */
+  3, /* OMP_CLAUSE_TO  */
+  3, /* OMP_CLAUSE_MAP (update walk_tree_1 if this is changed)  */
   1, /* OMP_CLAUSE_HAS_DEVICE_ADDR  */
   1, /* OMP_CLAUSE_DOACROSS  */
   3, /* OMP_CLAUSE__MAPPER_BINDING_  */
@@ -6639,6 +6639,18 @@ tree_fits_poly_uint64_p (const_tree t)
 	  && wi::fits_uhwi_p (wi::to_widest (t)));
 }
 
+/* Return true if T is an INTEGER_CST whose numerical value (extended according
+   to TYPE_UNSIGNED) fits in a sanitize_code_type (uint64_t).  */
+
+bool
+tree_fits_sanitize_code_type_p (const_tree t)
+{
+  if (t == NULL_TREE)
+    return false;
+  return (TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_uhwi_p (wi::to_widest (t)));
+}
+
 /* T is an INTEGER_CST whose numerical value (extended according to
    TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  Return that
    HOST_WIDE_INT.  */
@@ -6658,6 +6670,17 @@ unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));
+  return TREE_INT_CST_LOW (t);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in a sanitize_code_type.  Return that
+   sanitize_code_type.  */
+
+sanitize_code_type
+tree_to_sanitize_code_type (const_tree t)
+{
+  gcc_assert (tree_fits_sanitize_code_type_p (t));
   return TREE_INT_CST_LOW (t);
 }
 
@@ -11769,6 +11792,9 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
     case OMP_CLAUSE:
       {
 	int len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
+	/* Do not walk the iterator operand of OpenMP MAP clauses.  */
+	if (OMP_CLAUSE_HAS_ITERATORS (t))
+	  len--;
 	for (int i = 0; i < len; i++)
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (t, i));
 	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (t));

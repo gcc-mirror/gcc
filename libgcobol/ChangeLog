@@ -1,3 +1,83 @@
+2025-08-20  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (format_for_display_internal): Handle NumericDisplay
+	properly.
+	(compare_88): Fix memory access error.
+	(__gg__unstring): Likewise.
+
+2025-08-13  Mark Wielaard  <mark@klomp.org>
+
+	* configure: Regenerate.
+
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (get_binary_value_local): Use the new routine.
+	* stringbin.cc (int_from_string): Removed.
+	(__gg__packed_to_binary): Implement new routine.
+	* stringbin.h (__gg__packed_to_binary): Likewise.
+
+2025-08-13  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (int128_to_field): Use the new routine.
+	(get_binary_value_local): Use the new routine.
+	(format_for_display_internal): Formatting.
+	(__gg__get_file_descriptor): Likewise.
+	* stringbin.cc (string_from_combined): Formatting.
+	(packed_from_combined): Likewise.
+	(int_from_string): New routine.
+	(__gg__numeric_display_to_binary): Likewise.
+	* stringbin.h (__gg__numeric_display_to_binary): Likewise.
+
+2025-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (NUMERIC_DISPLAY_SIGN_BIT): New comment; new constant.
+	(EBCDIC_MINUS): New constant.
+	(EBCDIC_PLUS): Likewise.
+	(EBCDIC_ZERO): Likewise.
+	(EBCDIC_NINE): Likewise.
+	(PACKED_NYBBLE_PLUS): Likewise.
+	(PACKED_NYBBLE_MINUS): Likewise.
+	(PACKED_NYBBLE_UNSIGNED): Likewise.
+	(NUMERIC_DISPLAY_SIGN_BIT_ASCII): Likewise.
+	(NUMERIC_DISPLAY_SIGN_BIT_EBCDIC): Likewise.
+	(SEPARATE_PLUS): Likewise.
+	(SEPARATE_MINUS): Likewise.
+	(ZONED_ZERO): Likewise.
+	(ZONE_SIGNED_EBCDIC): Likewise.
+	* configure: Regenerate.
+	* libgcobol.cc (turn_sign_bit_on): Handle new EBCDIC sign convention.
+	(turn_sign_bit_off): Likewise.
+	(is_sign_bit_on): Likewise.
+	(int128_to_field): EBCDIC NumericDisplay conversion.
+	(get_binary_value_local): Likewise.
+	(format_for_display_internal): Likewise.
+	(normalize_id): Likewise.
+	(__gg__inspect_format_1): Convert EBCDIC negative numbers to positive.
+	* stringbin.cc (packed_from_combined): Quell cppcheck warning.
+
+2025-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+
+2025-08-08  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (int128_to_field): Switch to the new routine.
+	* stringbin.cc (packed_from_combined): Implement the new routine.
+	(__gg__binary_to_packed): Likewise.
+	* stringbin.h (__gg__binary_to_packed): Likewise.
+
+2025-08-07  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Include new stringbin.cc file.
+	* Makefile.in: Regenerated.
+	* libgcobol.cc (__gg__power_of_ten): Improve error message.
+	(__gg__binary_to_string): Deleted.
+	(__gg__binary_to_string_internal): Deleted.
+	(int128_to_field): Use new conversion routine.
+	(__gg__move): Use new conversion routine.
+	* stringbin.cc: New file. Implements new conversion routine.
+	* stringbin.h: New file. Likewise.
+
 2025-07-13  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (PTRCAST): Moved here from libgcobol.h.

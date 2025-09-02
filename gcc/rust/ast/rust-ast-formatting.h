@@ -35,23 +35,18 @@ enum AttrMode
   INNER
 };
 
-std::string
-indent_spaces (enum indent_mode mode);
+std::string indent_spaces (enum indent_mode mode);
 
 // Gets a string in a certain delim type.
-std::string
-get_string_in_delims (std::string str_input, DelimType delim_type);
+std::string get_string_in_delims (std::string str_input, DelimType delim_type);
 
-std::string
-get_mode_dump_desc (AttrMode mode);
+std::string get_mode_dump_desc (AttrMode mode);
 
 // Adds lines below adding attributes
-std::string
-append_attributes (std::vector<Attribute> attrs, AttrMode mode);
+std::string append_attributes (std::vector<Attribute> attrs, AttrMode mode);
 
 // Removes the beginning and end quotes of a quoted string.
-std::string
-unquote_string (std::string input);
+std::string unquote_string (std::string input);
 
 } // namespace AST
 } // namespace Rust

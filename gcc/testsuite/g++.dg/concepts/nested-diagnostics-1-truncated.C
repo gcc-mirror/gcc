@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 // { dg-options "-fconcepts" }
-// { dg-additional-options "-fdiagnostics-set-output=text:experimental-nesting=yes,experimental-nesting-show-locations=no" }
+// { dg-additional-options "-fdiagnostics-set-output=text:show-nesting=yes,show-nesting-locations=no" }
 
 struct dog {};
 struct cat {};

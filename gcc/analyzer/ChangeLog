@@ -1,3 +1,9 @@
+2025-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* pending-diagnostic.cc: Include "diagnostics/logging.h".
+	(diagnostic_emission_context::warn): Add logging.
+	(diagnostic_emission_context::inform): Likewise.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-point.cc: Make diagnostics::context::m_source_printing

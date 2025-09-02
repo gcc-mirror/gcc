@@ -1543,7 +1543,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
-  __extension__({                                                              \
+  __extension__ ({                                                             \
     struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
     if (!LANG_DECL_HAS_MIN (NODE))                                             \
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
@@ -1554,7 +1554,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    template, not just on a FUNCTION_DECL.  So when looking for things in
    lang_decl_fn, look down through a TEMPLATE_DECL into its result.  */
 #define LANG_DECL_FN_CHECK(NODE)                                               \
-  __extension__({                                                              \
+  __extension__ ({                                                             \
     struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
     if (!DECL_DECLARES_FUNCTION_P (NODE) || lt->u.base.selector != lds_fn)     \
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
@@ -1562,7 +1562,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
   })
 
 #define LANG_DECL_NS_CHECK(NODE)                                               \
-  __extension__({                                                              \
+  __extension__ ({                                                             \
     struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
     if (TREE_CODE (NODE) != NAMESPACE_DECL || lt->u.base.selector != lds_ns)   \
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
@@ -1570,7 +1570,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
   })
 
 #define LANG_DECL_PARM_CHECK(NODE)                                             \
-  __extension__({                                                              \
+  __extension__ ({                                                             \
     struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
     if (TREE_CODE (NODE) != PARM_DECL || lt->u.base.selector != lds_parm)      \
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
@@ -1578,7 +1578,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
   })
 
 #define LANG_DECL_DECOMP_CHECK(NODE)                                           \
-  __extension__({                                                              \
+  __extension__ ({                                                             \
     struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
     if (!VAR_P (NODE) || lt->u.base.selector != lds_decomp)                    \
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
@@ -2060,8 +2060,8 @@ struct GTY (()) rust_cxx_saved_binding
 // forked from gcc/cp/name-lookup.h resort_type_member_vec
 
 /* needed for GTY annotation */
-extern void
-resort_type_member_vec (void *, void *, gt_pointer_operator, void *);
+extern void resort_type_member_vec (void *, void *, gt_pointer_operator,
+				    void *);
 
 // forked from gcc/cp/cp-tree.h saved_scope
 
@@ -2895,8 +2895,7 @@ enum compare_bounds_t
   bounds_first
 };
 
-extern tree
-convert_to_void (tree expr, impl_conv_void implicit);
+extern tree convert_to_void (tree expr, impl_conv_void implicit);
 
 // The lvalue-to-rvalue conversion (7.1) is applied if and only if the
 // expression is a glvalue of volatile-qualified type and it is one of the
@@ -2911,63 +2910,52 @@ convert_to_void (tree expr, impl_conv_void implicit);
 //   operands are one of these expressions, or
 // * comma expression (8.19) where the right operand is one of these
 //   expressions.
-extern tree
-mark_discarded_use (tree expr);
+extern tree mark_discarded_use (tree expr);
 
 // Mark EXP as read, not just set, for set but not used -Wunused warning
 // purposes.
-extern void
-mark_exp_read (tree exp);
+extern void mark_exp_read (tree exp);
 
 // We've seen an actual use of EXPR.  Possibly replace an outer variable
 // reference inside with its constant value or a lambda capture.
-extern tree
-mark_use (tree expr, bool rvalue_p, bool read_p, location_t loc,
-	  bool reject_builtin);
+extern tree mark_use (tree expr, bool rvalue_p, bool read_p, location_t loc,
+		      bool reject_builtin);
 
 // Called whenever the expression EXPR is used in an rvalue context.
 // When REJECT_BUILTIN is true the expression is checked to make sure
 // it doesn't make it possible to obtain the address of a GCC built-in
 // function with no library fallback (or any of its bits, such as in
 // a conversion to bool).
-extern tree
-mark_rvalue_use (tree, location_t = UNKNOWN_LOCATION,
-		 bool reject_builtin = true);
+extern tree mark_rvalue_use (tree, location_t = UNKNOWN_LOCATION,
+			     bool reject_builtin = true);
 
 // Called whenever an expression is used in an lvalue context.
-extern tree
-mark_lvalue_use (tree expr);
+extern tree mark_lvalue_use (tree expr);
 
 // As above, but don't consider this use a read.
-extern tree
-mark_lvalue_use_nonread (tree expr);
+extern tree mark_lvalue_use_nonread (tree expr);
 
 // We are using a reference VAL for its value. Bash that reference all the way
 // down to its lowest form.
-extern tree
-convert_from_reference (tree val);
+extern tree convert_from_reference (tree val);
 
 // Subroutine of convert_to_void.  Warn if we're discarding something with
 // attribute [[nodiscard]].
-extern void
-maybe_warn_nodiscard (tree expr, impl_conv_void implicit);
+extern void maybe_warn_nodiscard (tree expr, impl_conv_void implicit);
 
-extern location_t
-expr_loc_or_loc (const_tree t, location_t or_loc);
+extern location_t expr_loc_or_loc (const_tree t, location_t or_loc);
 
-extern location_t
-expr_loc_or_input_loc (const_tree t);
+extern location_t expr_loc_or_input_loc (const_tree t);
 
 // FN is the callee of a CALL_EXPR or AGGR_INIT_EXPR; return the FUNCTION_DECL
 // if we can.
-extern tree
-get_fndecl_from_callee (tree fn);
+extern tree get_fndecl_from_callee (tree fn);
 
 // FIXME some helpers from HIRCompileBase could probably be moved here over time
 
 // Return an expression for the address of BASE[INDEX], used in offset intrinsic
-extern tree
-pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
+extern tree pointer_offset_expression (tree base_tree, tree index_tree,
+				       location_t locus);
 
 /* A tree node, together with a location, so that we can track locations
    (and ranges) during parsing.
@@ -2978,11 +2966,9 @@ pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
 
 extern location_t rs_expr_location (const_tree);
 
-extern int
-is_empty_class (tree type);
+extern int is_empty_class (tree type);
 
-extern bool
-is_really_empty_class (tree, bool);
+extern bool is_really_empty_class (tree, bool);
 
 extern bool builtin_valid_in_constant_expr_p (const_tree);
 
@@ -2990,15 +2976,13 @@ extern bool maybe_constexpr_fn (tree);
 
 extern bool var_in_maybe_constexpr_fn (tree);
 
-extern int
-rs_type_quals (const_tree type);
+extern int rs_type_quals (const_tree type);
 
 inline bool type_unknown_p (const_tree);
 
 extern bool decl_maybe_constant_var_p (tree);
 
-extern void
-init_modules ();
+extern void init_modules ();
 
 extern bool var_in_constexpr_fn (tree);
 
@@ -3006,11 +2990,9 @@ inline tree ovl_first (tree) ATTRIBUTE_PURE;
 
 inline bool type_unknown_p (const_tree);
 
-extern tree
-lookup_add (tree fns, tree lookup);
+extern tree lookup_add (tree fns, tree lookup);
 
-extern tree
-ovl_make (tree fn, tree next = NULL_TREE);
+extern tree ovl_make (tree fn, tree next = NULL_TREE);
 
 extern int is_overloaded_fn (tree) ATTRIBUTE_PURE;
 
@@ -3024,19 +3006,15 @@ extern tree make_conv_op_name (tree);
 
 extern int type_memfn_quals (const_tree);
 
-struct c_fileinfo *
-get_fileinfo (const char *);
+struct c_fileinfo *get_fileinfo (const char *);
 
-extern tree
-cxx_make_type (enum tree_code CXX_MEM_STAT_INFO);
+extern tree cxx_make_type (enum tree_code CXX_MEM_STAT_INFO);
 
-extern tree
-build_cplus_array_type (tree, tree, int is_dep = -1);
+extern tree build_cplus_array_type (tree, tree, int is_dep = -1);
 
 extern bool is_byte_access_type (tree);
 
-extern bool
-comptypes (tree, tree, int);
+extern bool comptypes (tree, tree, int);
 
 extern tree canonical_eh_spec (tree);
 
@@ -3046,8 +3024,7 @@ extern bool rs_tree_equal (tree, tree);
 
 extern bool compparms (const_tree, const_tree);
 
-extern tree
-rs_build_qualified_type_real (tree, int, tsubst_flags_t);
+extern tree rs_build_qualified_type_real (tree, int, tsubst_flags_t);
 #define rs_build_qualified_type(TYPE, QUALS)                                   \
   rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
 extern bool cv_qualified_p (const_tree);
@@ -3056,21 +3033,18 @@ extern bool similar_type_p (tree, tree);
 
 extern bool rs_tree_equal (tree, tree);
 
-extern bool
-vector_targets_convertible_p (const_tree t1, const_tree t2);
+extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 
 extern bool comp_ptr_ttypes_const (tree, tree, compare_bounds_t);
 
-extern tree
-get_class_binding_direct (tree, tree, bool want_type = false);
+extern tree get_class_binding_direct (tree, tree, bool want_type = false);
 
 extern tree skip_artificial_parms_for (const_tree, tree);
 
-extern void
-lang_check_failed (const char *, int,
-		   const char *) ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
+extern void lang_check_failed (const char *, int,
+			       const char *) ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 
 extern tree default_init_uninitialized_part (tree);
 
@@ -3088,8 +3062,7 @@ extern tree in_class_defaulted_default_constructor (tree);
 
 extern bool is_instantiation_of_constexpr (tree);
 
-extern bool
-check_for_uninitialized_const_var (tree, bool, tsubst_flags_t);
+extern bool check_for_uninitialized_const_var (tree, bool, tsubst_flags_t);
 
 extern bool reduced_constant_expression_p (tree);
 
@@ -3108,19 +3081,17 @@ extern tree is_bitfield_expr_with_lowered_type (const_tree);
 
 extern tree convert_bitfield_to_declared_type (tree);
 
-extern tree
-cp_fold_maybe_rvalue (tree, bool);
+extern tree cp_fold_maybe_rvalue (tree, bool);
 
 extern tree maybe_undo_parenthesized_ref (tree);
 
-extern tree
-fold_offsetof (tree, tree = size_type_node, tree_code ctx = ERROR_MARK);
+extern tree fold_offsetof (tree, tree = size_type_node,
+			   tree_code ctx = ERROR_MARK);
 
 extern tree cp_truthvalue_conversion (tree, tsubst_flags_t);
 
-extern tree
-fold_non_dependent_expr (tree, tsubst_flags_t = tf_warning_or_error,
-			 bool = false, tree = NULL_TREE);
+extern tree fold_non_dependent_expr (tree, tsubst_flags_t = tf_warning_or_error,
+				     bool = false, tree = NULL_TREE);
 
 extern int char_type_p (tree);
 
@@ -3163,13 +3134,11 @@ extern tree build_new_constexpr_heap_type (tree, tree, tree);
 
 extern bool is_empty_field (tree);
 
-extern bool
-in_immediate_context ();
+extern bool in_immediate_context ();
 
 extern tree cp_get_callee_fndecl_nofold (tree);
 
-extern bool
-cxx_mark_addressable (tree, bool = false);
+extern bool cxx_mark_addressable (tree, bool = false);
 
 extern tree fold_builtin_source_location (location_t);
 
@@ -3183,25 +3152,22 @@ extern bool glvalue_p (const_tree);
 
 extern cp_lvalue_kind lvalue_kind (const_tree);
 
-extern tree
-decl_constant_value (tree, bool);
+extern tree decl_constant_value (tree, bool);
 
 extern tree lookup_enumerator (tree, tree);
 
-extern int
-is_class_type (tree, int);
+extern int is_class_type (tree, int);
 
 extern tree braced_lists_to_strings (tree, tree);
 
-extern tree
-fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
+extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t,
+								 int, tree *);
 
 extern bool layout_compatible_type_p (tree, tree);
 
 extern tree finish_underlying_type (tree);
 
-extern tree
-c_common_type_for_mode (machine_mode, int);
+extern tree c_common_type_for_mode (machine_mode, int);
 
 extern bool std_layout_type_p (const_tree);
 
@@ -3213,25 +3179,21 @@ extern void note_failed_type_completion_for_satisfaction (tree);
 
 extern tree complete_type_or_maybe_complain (tree, tree, tsubst_flags_t);
 
-extern bool
-next_common_initial_seqence (tree &, tree &);
+extern bool next_common_initial_seqence (tree &, tree &);
 
 extern bool null_member_pointer_value_p (tree);
 
-extern tree
-fold_builtin_is_corresponding_member (location_t, int, tree *);
+extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 
 extern tree cp_fold_rvalue (tree);
 
-extern tree
-maybe_constant_value (tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_value (tree, tree = NULL_TREE, bool = false);
 
 extern tree lvalue_type (tree);
 
 extern void lvalue_error (location_t, enum lvalue_use);
 
-extern tree
-cp_fold_maybe_rvalue (tree, bool);
+extern tree cp_fold_maybe_rvalue (tree, bool);
 
 extern tree get_first_fn (tree) ATTRIBUTE_PURE;
 
@@ -3253,13 +3215,12 @@ enum
   ce_exact
 };
 
-extern tree
-rs_build_qualified_type_real (tree, int, tsubst_flags_t);
+extern tree rs_build_qualified_type_real (tree, int, tsubst_flags_t);
 #define rs_build_qualified_type(TYPE, QUALS)                                   \
   rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
 
-extern tree
-rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
+extern tree rs_walk_subtrees (tree *, int *, walk_tree_fn, void *,
+			      hash_set<tree> *);
 #define rs_walk_tree(tp, func, data, pset)                                     \
   walk_tree_1 (tp, func, data, pset, rs_walk_subtrees)
 #define rs_walk_tree_without_duplicates(tp, func, data)                        \
@@ -3351,11 +3312,9 @@ gnu_vector_type_p (const_tree type)
   return TREE_CODE (type) == VECTOR_TYPE && !TYPE_INDIVISIBLE_P (type);
 }
 
-extern vec<tree, va_gc> *
-make_tree_vector (void);
+extern vec<tree, va_gc> *make_tree_vector (void);
 
-extern void
-release_tree_vector (vec<tree, va_gc> *);
+extern void release_tree_vector (vec<tree, va_gc> *);
 
 /* Simplified unique_ptr clone to release a tree vec on exit.  */
 
@@ -3373,7 +3332,7 @@ public:
   releasing_vec &operator= (const releasing_vec &);
 
   vec_t &operator* () const { return *v; }
-  vec_t *operator-> () const { return v; }
+  vec_t *operator->() const { return v; }
   vec_t *get () const { return v; }
   operator vec_t * () const { return v; }
   vec_t **operator& () { return &v; }
@@ -3442,8 +3401,7 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
   cxx_incomplete_type_diagnostic (value, type, diagnostics::kind::error);
 }
 
-extern location_t
-location_of (tree t);
+extern location_t location_of (tree t);
 
 /* Helpers for IMPLICIT_RVALUE_P to look through automatic dereference.  */
 
@@ -3465,23 +3423,18 @@ set_implicit_rvalue_p (tree ot)
 }
 
 namespace Compile {
-extern tree
-maybe_constant_init (tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_init (tree, tree = NULL_TREE, bool = false);
 
-extern void
-explain_invalid_constexpr_fn (tree fun);
+extern void explain_invalid_constexpr_fn (tree fun);
 
 extern bool potential_constant_expression (tree);
 
-extern bool
-literal_type_p (tree t);
+extern bool literal_type_p (tree t);
 
-extern bool
-maybe_constexpr_fn (tree t);
+extern bool maybe_constexpr_fn (tree t);
 
-extern tree
-fold_non_dependent_init (tree, tsubst_flags_t = tf_warning_or_error,
-			 bool = false, tree = NULL_TREE);
+extern tree fold_non_dependent_init (tree, tsubst_flags_t = tf_warning_or_error,
+				     bool = false, tree = NULL_TREE);
 } // namespace Compile
 
 } // namespace Rust

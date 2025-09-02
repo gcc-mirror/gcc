@@ -3151,7 +3151,7 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 }
 
 /* Expand floating point op0 <=> op1, i.e.
-   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : 2.  */
+   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : -128.  */
 
 void
 ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
@@ -3264,7 +3264,7 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
   if (l2)
     {
       emit_label (l2);
-      emit_move_insn (dest, op2 == const0_rtx ? const2_rtx : op2);
+      emit_move_insn (dest, op2 == const0_rtx ? GEN_INT (-128) : op2);
     }
   emit_label (lend);
 }
@@ -8241,8 +8241,10 @@ expand_cpymem_epilogue (rtx destmem, rtx srcmem,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       move_by_pieces (destmem, srcmem, epilogue_size, destalign,
 		      RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 8)
@@ -8405,8 +8407,8 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 
 /* Callback routine for store_by_pieces.  Return the RTL of a register
    containing GET_MODE_SIZE (MODE) bytes in the RTL register op_p which
-   is a word or a word vector register.  If PREV_P isn't nullptr, it
-   has the RTL info from the previous iteration.  */
+   is an integer or a word vector register.  If PREV_P isn't nullptr,
+   it has the RTL info from the previous iteration.  */
 
 static rtx
 setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
@@ -8435,10 +8437,6 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
   rtx op = (rtx) op_p;
   machine_mode op_mode = GET_MODE (op);
 
-  gcc_assert (op_mode == word_mode
-	      || (VECTOR_MODE_P (op_mode)
-		  && GET_MODE_INNER (op_mode) == word_mode));
-
   if (VECTOR_MODE_P (mode))
     {
       gcc_assert (GET_MODE_INNER (mode) == QImode);
@@ -8460,16 +8458,17 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
       return tmp;
     }
 
-  target = gen_reg_rtx (word_mode);
   if (VECTOR_MODE_P (op_mode))
     {
+      gcc_assert (GET_MODE_INNER (op_mode) == word_mode);
+      target = gen_reg_rtx (word_mode);
       op = gen_rtx_SUBREG (word_mode, op, 0);
       emit_move_insn (target, op);
     }
   else
     target = op;
 
-  if (mode == word_mode)
+  if (mode == GET_MODE (target))
     return target;
 
   rtx tmp = gen_reg_rtx (mode);
@@ -8490,9 +8489,11 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       store_by_pieces (destmem, epilogue_size, setmem_epilogue_gen_val,
 		       vec_value ? vec_value : value, destalign, true,
 		       RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 32)
@@ -9574,8 +9575,9 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case vector_loop:
       need_zero_guard = true;
       unroll_factor = 4;
-      /* Get the vector mode to move MOVE_MAX bytes.  */
-      nunits = MOVE_MAX / GET_MODE_SIZE (word_mode);
+      /* Get the vector mode to move STORE_MAX_PIECES/MOVE_MAX bytes.  */
+      nunits = issetmem ? STORE_MAX_PIECES : MOVE_MAX;
+      nunits /= GET_MODE_SIZE (word_mode);
       if (nunits > 1)
 	{
 	  move_mode = mode_for_vector (word_mode, nunits).require ();
@@ -27031,6 +27033,109 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
   rtvec vec = gen_rtvec (4, tmp0, tmp1, tmp2, GEN_INT (idx));
   emit_move_insn (target, gen_rtx_UNSPEC (mode, vec, UNSPEC_VTERNLOG));
   return target;
+}
+
+/* GF2P8AFFINEQB matrixes to implement shift and rotate.  */
+
+static const uint64_t matrix_ashift[8] =
+{
+  0,
+  0x0001020408102040, /* 1 l */
+  0x0000010204081020, /* 2 l */
+  0x0000000102040810, /* 3 l */
+  0x0000000001020408, /* 4 l */
+  0x0000000000010204, /* 5 l */
+  0x0000000000000102, /* 6 l */
+  0x0000000000000001  /* 7 l */
+};
+
+static const uint64_t matrix_lshiftrt[8] =
+{
+  0,
+  0x0204081020408000, /* 1 r */
+  0x0408102040800000, /* 2 r */
+  0x0810204080000000, /* 3 r */
+  0x1020408000000000, /* 4 r */
+  0x2040800000000000, /* 5 r */
+  0x4080000000000000, /* 6 r */
+  0x8000000000000000  /* 7 r */
+};
+
+static const uint64_t matrix_ashiftrt[8] =
+{
+  0,
+  0x0204081020408080, /* 1 r */
+  0x0408102040808080, /* 2 r */
+  0x0810204080808080, /* 3 r */
+  0x1020408080808080, /* 4 r */
+  0x2040808080808080, /* 5 r */
+  0x4080808080808080, /* 6 r */
+  0x8080808080808080  /* 7 r */
+};
+
+static const uint64_t matrix_rotate[8] =
+{
+  0,
+  0x8001020408102040, /* 1 rol8 */
+  0x4080010204081020, /* 2 rol8 */
+  0x2040800102040810, /* 3 rol8 */
+  0x1020408001020408, /* 4 rol8 */
+  0x0810204080010204, /* 5 rol8 */
+  0x0408102040800102, /* 6 rol8 */
+  0x0204081020408001  /* 7 rol8 */
+};
+
+static const uint64_t matrix_rotatert[8] =
+{
+  0,
+  0x0204081020408001, /* 1 ror8 */
+  0x0408102040800102, /* 2 ror8 */
+  0x0810204080010204, /* 3 ror8 */
+  0x1020408001020408, /* 4 ror8 */
+  0x2040800102040810, /* 5 ror8 */
+  0x4080010204081020, /* 6 ror8 */
+  0x8001020408102040  /* 7 ror8 */
+};
+
+/* Return rtx to load a 64bit GF2P8AFFINE GP(2) matrix implementing a shift
+   for CODE and shift count COUNT into register with vector of size of SRC.  */
+
+rtx
+ix86_vgf2p8affine_shift_matrix (rtx src, rtx count, enum rtx_code code)
+{
+  machine_mode mode = GET_MODE (src);
+  const uint64_t *matrix;
+  unsigned shift = INTVAL (count) & 7;
+  gcc_assert (shift > 0 && shift < 8);
+
+  switch (code)
+    {
+    case ASHIFT:
+      matrix = matrix_ashift;
+      break;
+    case ASHIFTRT:
+      matrix = matrix_ashiftrt;
+      break;
+    case LSHIFTRT:
+      matrix = matrix_lshiftrt;
+      break;
+    case ROTATE:
+      matrix = matrix_rotate;
+      break;
+    case ROTATERT:
+      matrix = matrix_rotatert;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  int nelts = GET_MODE_NUNITS (mode);
+  rtvec vec = rtvec_alloc (nelts);
+  uint64_t ma = matrix[shift];
+  for (int i = 0; i < nelts; i++)
+    RTVEC_ELT (vec, i) = gen_int_mode ((ma >> ((i % 8) * 8)) & 0xff, QImode);
+
+  return force_reg (mode, gen_rtx_CONST_VECTOR (mode, vec));
 }
 
 /* Trunc a vector to a narrow vector, like v4di -> v4si.  */

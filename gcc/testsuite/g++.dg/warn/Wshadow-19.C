@@ -10,7 +10,7 @@ foo (int x)
     extern int y;				// { dg-warning "declaration of 'y' shadows a previous local" }
   }
 #if __cplusplus >= 201102L
-  auto fn = [x] () { extern int x; return 0; };	// { dg-warning "declaration of 'x' shadows a lambda capture" "" { target c++11 } }
+  auto fn = [x] () { extern int x; return 0; };    // { dg-warning "declaration of 'x' shadows a lambda capture" "" { target c++11 } }
 #endif
 }
 

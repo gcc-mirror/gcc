@@ -45,7 +45,7 @@ typedef int [[__extension__ __extension__]] b2; /* { dg-error {'extension' attri
 typedef int [[__extension__ unknown_attribute]] b3; /* { dg-error {'unknown_attribute' attribute ignored} } */
 typedef int [[__extension__ gnu:vector_size(4)]] b4; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
-typedef int [[__extension__ gnu JOIN2(:,:) vector_size (4)]] b5; /* { dg-error {pasting ":" and ":" does not give a valid preprocessing token} } */
+typedef int [[__extension__ gnu JOIN2(:,:) vector_size (4)]] b5; /* { dg-error {pasting ':' and ':' does not give a valid preprocessing token} } */
 /* { dg-error {expected '\]' before ':'} "" { target *-*-* } .-1 } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-2 } */
 typedef int [[__extension__ gnu : : vector_size (4)]] b6; /* { dg-error {expected '\]' before ':'} } */
@@ -81,7 +81,7 @@ typedef int [[gnu :: vector_size (4)]] b18; /* { dg-error {attributes before C23
 typedef int [[gnu FOO vector_size (4)]] b19; /* { dg-error {attributes before C23} } */
 typedef int [[gnu :: vector_size (sizeof (void (*)(...)))]] b20; /* { dg-error {attributes before C23} } */
 /* { dg-error {requires a named argument before} "" { target *-*-* } .-1 } */
-typedef int [[gnu JOIN2(:,:) vector_size (4)]] b21; /* { dg-error {pasting ":" and ":" does not give a valid preprocessing token} } */
+typedef int [[gnu JOIN2(:,:) vector_size (4)]] b21; /* { dg-error {pasting ':' and ':' does not give a valid preprocessing token} } */
 /* { dg-error {expected '\]' before ':'} "" { target *-*-* } .-1 } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-2 } */
 /* { dg-error {attributes before C23} "" { target *-*-* } .-3 } */

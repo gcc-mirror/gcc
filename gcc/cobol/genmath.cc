@@ -394,7 +394,6 @@ fast_add( size_t nC, cbl_num_result_t *C,
     {
     Analyze();
     // All targets are non-PICTURE binaries:
-    //gg_insert_into_assembler("# DUBNER addition START");
     tree term_type = largest_binary_term(nA, A);
     if( term_type )
       {

@@ -3595,22 +3595,71 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  return (T)x;
       }
       while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
-   (convert@4 (min (widen_mult:c@3 (convert@5 (convert @0))
-				   (convert@6 (convert @1)))
+   (convert (min (widen_mult:c@3 (convert@4 (convert @0))
+				 (convert@5 (convert @1)))
 		   INTEGER_CST@2))
-   (if (types_match (type, @0, @1) && types_match (type, @4))
+   (if (types_match (type, @0, @1))
     (with
      {
       unsigned prec = TYPE_PRECISION (type);
       unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      unsigned cvt4_prec = TYPE_PRECISION (TREE_TYPE (@4));
       unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
-      unsigned cvt6_prec = TYPE_PRECISION (TREE_TYPE (@6));
       wide_int c2 = wi::to_wide (@2);
       wide_int max = wi::mask (prec, false, widen_prec);
       bool c2_is_max_p = wi::eq_p (c2, max);
-      bool widen_mult_p = cvt5_prec == cvt6_prec && widen_prec == cvt6_prec * 2;
+      bool widen_mult_p = cvt4_prec == cvt5_prec && widen_prec == cvt5_prec * 2;
      }
      (if (widen_prec > prec && c2_is_max_p && widen_mult_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   (convert (min (mult:c@3 (convert @0) (convert @1)) INTEGER_CST@2))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      wide_int c2 = wi::to_wide (@2);
+      wide_int max = wi::mask (prec, false, widen_prec);
+      bool c2_is_max_p = wi::eq_p (c2, max);
+     }
+     (if (widen_prec > prec && c2_is_max_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	T result;
+	if (__builtin_mul_overflow (X, Y, &result))
+	  return -1;
+	else
+	  return result;
+      }
+      while T can be uint8_t, uint16_t, uint32_t and uint64_t.  */
+   (cond^ (ne (imagpart (IFN_MUL_OVERFLOW:c@2 @0 @1)) integer_zerop)
+	   integer_minus_onep (realpart @2))
+   (if (types_match (type, @0, @1))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	WT x = (WT)a * (WT)b;
+	if ((x >> sizeof(a) * 8) == 0)
+	  return (T)x;
+	else
+	  return (T)-1;
+      }
+      while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
+   (convert (cond^ (eq (rshift (mult:c@3 (convert @0) (convert @1))
+			       INTEGER_CST@2)
+		       integer_zerop)
+		   @3 INTEGER_CST@4))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      wide_int c4 = wi::to_wide (@4);
+      wide_int max = wi::mask (prec, false, widen_prec);
+      bool c4_is_max_p = wi::eq_p (c4, max);
+      unsigned c2 = tree_to_uhwi (@2);
+      bool c2_is_type_precision_p = c2 == prec;
+     }
+     (if (widen_prec > prec && c2_is_type_precision_p && c4_is_max_p)))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
@@ -5496,16 +5545,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (convert @0)))
 
 /* Strip inner integral conversions that do not change precision or size, or
-   zero-extend while keeping the same size (for bool-to-char).  */
+   zero-extend while keeping the same size (for bool-to-char).
+   However, keep this conversion if the result is an extended _BitInt,
+   since it may rely on this conversion to extend properly.  */
+
 (simplify
   (view_convert (convert@0 @1))
+  (with {
+    bool extended_bitint = false;
+    if (BITINT_TYPE_P (TREE_TYPE (@0)))
+      {
+	struct bitint_info info;
+	extended_bitint
+	  = targetm.c.bitint_type_info (TYPE_PRECISION (TREE_TYPE (@0)),
+							&info);
+	extended_bitint = extended_bitint && info.extended;
+      }
+   }
   (if ((INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
        && (INTEGRAL_TYPE_P (TREE_TYPE (@1)) || POINTER_TYPE_P (TREE_TYPE (@1)))
+       && !extended_bitint
        && TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))
        && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1))
 	   || (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (TREE_TYPE (@1))
 	       && TYPE_UNSIGNED (TREE_TYPE (@1)))))
-   (view_convert @1)))
+   (view_convert @1))))
 
 /* Simplify a view-converted empty or single-element constructor.  */
 (simplify

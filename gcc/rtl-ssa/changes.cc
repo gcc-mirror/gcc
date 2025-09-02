@@ -713,7 +713,11 @@ function_info::apply_changes_to_insn (insn_change &change,
 
   // Add all uses, now that their position is final.
   for (use_info *use : change.new_uses)
-    add_use (use);
+    {
+      if (use->def ())
+	commit_make_use_available (use);
+      add_use (use);
+    }
 
   // Copy the uses and definitions.
   unsigned int num_defs = change.new_defs.size ();

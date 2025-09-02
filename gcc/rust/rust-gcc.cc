@@ -91,12 +91,6 @@ Bvariable::error_variable ()
 
 // A helper function to create a GCC identifier from a C++ string.
 
-static inline tree
-get_identifier_from_string (const std::string &str)
-{
-  return get_identifier_with_length (str.data (), str.length ());
-}
-
 namespace Backend {
 
 // Define the built-in functions that are exposed to GCCRust.
@@ -609,7 +603,7 @@ fill_in_fields (tree fill, const std::vector<typed_identifier> &fields,
   tree *pp = &field_trees;
   for (const auto &p : fields)
     {
-      tree name_tree = get_identifier_from_string (p.name);
+      tree name_tree = p.name.as_tree ();
       tree type_tree = p.type;
       if (error_operand_p (type_tree))
 	return error_mark_node;
@@ -675,7 +669,7 @@ fill_in_array (tree fill, tree element_type, tree length_tree)
 // Return a named version of a type.
 
 tree
-named_type (const std::string &name, tree type, location_t location)
+named_type (GGC::Ident name, tree type, location_t location)
 {
   if (error_operand_p (type))
     return error_mark_node;
@@ -688,15 +682,14 @@ named_type (const std::string &name, tree type, location_t location)
 	  || TREE_CODE (type) == COMPLEX_TYPE
 	  || TREE_CODE (type) == BOOLEAN_TYPE))
     {
-      tree decl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-			      get_identifier_from_string (name), type);
+      tree decl
+	= build_decl (BUILTINS_LOCATION, TYPE_DECL, name.as_tree (), type);
       TYPE_NAME (type) = decl;
       return type;
     }
 
   tree copy = build_variant_type_copy (type);
-  tree decl
-    = build_decl (location, TYPE_DECL, get_identifier_from_string (name), copy);
+  tree decl = build_decl (location, TYPE_DECL, name.as_tree (), copy);
   DECL_ORIGINAL_TYPE (decl) = type;
   TYPE_NAME (copy) = decl;
   return copy;
@@ -823,6 +816,12 @@ tree
 char_constant_expression (char c)
 {
   return build_int_cst (char_type_node, c);
+}
+
+tree
+size_constant_expression (size_t val)
+{
+  return size_int (val);
 }
 
 // Make a constant boolean expression.
@@ -1505,6 +1504,34 @@ array_index_expression (tree array_tree, tree index_tree, location_t location)
   return ret;
 }
 
+// Return an expression representing SLICE[INDEX]
+
+tree
+slice_index_expression (tree slice_tree, tree index_tree, location_t location)
+{
+  if (error_operand_p (slice_tree) || error_operand_p (index_tree))
+    return error_mark_node;
+
+  // A slice is created in TyTyResolvecompile::create_slice_type_record
+  // For example:
+  //   &[i32] is turned directly into a struct { i32* data, usize len };
+  //   [i32] is also turned into struct { i32* data, usize len }
+
+  // it should have RS_DST_FLAG set to 1
+  rust_assert (RS_DST_FLAG_P (TREE_TYPE (slice_tree)));
+
+  tree data_field = struct_field_expression (slice_tree, 0, location);
+  tree data_field_deref = build_fold_indirect_ref_loc (location, data_field);
+
+  tree element_type = TREE_TYPE (data_field_deref);
+  tree data_pointer = TREE_OPERAND (data_field_deref, 0);
+  rust_assert (POINTER_TYPE_P (TREE_TYPE (data_pointer)));
+  tree data_offset_expr
+    = Rust::pointer_offset_expression (data_pointer, index_tree, location);
+
+  return build1_loc (location, INDIRECT_REF, element_type, data_offset_expr);
+}
+
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
 call_expression (tree fn, const std::vector<tree> &fn_args, tree chain_expr,
@@ -1876,7 +1903,8 @@ non_zero_size_type (tree type)
 	}
       return rust_non_zero_struct;
 
-      case ARRAY_TYPE: {
+    case ARRAY_TYPE:
+      {
 	tree element_type = non_zero_size_type (TREE_TYPE (type));
 	return build_array_type_nelts (element_type, 1);
       }
@@ -1923,9 +1951,9 @@ convert_tree (tree type_tree, tree expr_tree, location_t location)
 // Make a global variable.
 
 Bvariable *
-global_variable (const std::string &var_name, const std::string &asm_name,
-		 tree type_tree, bool is_external, bool is_hidden,
-		 bool in_unique_section, location_t location)
+global_variable (GGC::Ident var_name, GGC::Ident asm_name, tree type_tree,
+		 bool is_external, bool is_hidden, bool in_unique_section,
+		 location_t location)
 {
   if (error_operand_p (type_tree))
     return Bvariable::error_variable ();
@@ -1935,8 +1963,7 @@ global_variable (const std::string &var_name, const std::string &asm_name,
   if ((is_external || !is_hidden) && int_size_in_bytes (type_tree) == 0)
     type_tree = non_zero_size_type (type_tree);
 
-  tree decl = build_decl (location, VAR_DECL,
-			  get_identifier_from_string (var_name), type_tree);
+  tree decl = build_decl (location, VAR_DECL, var_name.as_tree (), type_tree);
   if (is_external)
     DECL_EXTERNAL (decl) = 1;
   else
@@ -1944,11 +1971,11 @@ global_variable (const std::string &var_name, const std::string &asm_name,
   if (!is_hidden)
     {
       TREE_PUBLIC (decl) = 1;
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier_from_string (asm_name));
+      SET_DECL_ASSEMBLER_NAME (decl, asm_name.as_tree ());
     }
   else
     {
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier_from_string (asm_name));
+      SET_DECL_ASSEMBLER_NAME (decl, asm_name.as_tree ());
     }
 
   TREE_USED (decl) = 1;
@@ -1988,13 +2015,12 @@ global_variable_set_init (Bvariable *var, tree expr_tree)
 // Make a local variable.
 
 Bvariable *
-local_variable (tree function, const std::string &name, tree type_tree,
+local_variable (tree function, GGC::Ident name, tree type_tree,
 		Bvariable *decl_var, location_t location)
 {
   if (error_operand_p (type_tree))
     return Bvariable::error_variable ();
-  tree decl = build_decl (location, VAR_DECL, get_identifier_from_string (name),
-			  type_tree);
+  tree decl = build_decl (location, VAR_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = function;
 
   if (decl_var != NULL)
@@ -2009,13 +2035,12 @@ local_variable (tree function, const std::string &name, tree type_tree,
 // Make a function parameter variable.
 
 Bvariable *
-parameter_variable (tree function, const std::string &name, tree type_tree,
+parameter_variable (tree function, GGC::Ident name, tree type_tree,
 		    location_t location)
 {
   if (error_operand_p (type_tree))
     return Bvariable::error_variable ();
-  tree decl = build_decl (location, PARM_DECL,
-			  get_identifier_from_string (name), type_tree);
+  tree decl = build_decl (location, PARM_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = function;
   DECL_ARG_TYPE (decl) = type_tree;
 
@@ -2026,13 +2051,12 @@ parameter_variable (tree function, const std::string &name, tree type_tree,
 // Make a static chain variable.
 
 Bvariable *
-static_chain_variable (tree fndecl, const std::string &name, tree type_tree,
+static_chain_variable (tree fndecl, GGC::Ident name, tree type_tree,
 		       location_t location)
 {
   if (error_operand_p (type_tree))
     return Bvariable::error_variable ();
-  tree decl = build_decl (location, PARM_DECL,
-			  get_identifier_from_string (name), type_tree);
+  tree decl = build_decl (location, PARM_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = fndecl;
   DECL_ARG_TYPE (decl) = type_tree;
   TREE_USED (decl) = 1;
@@ -2123,10 +2147,10 @@ temporary_variable (tree fndecl, tree bind_tree, tree type_tree, tree init_tree,
 // Make a label.
 
 tree
-label (tree func_tree, const std::string &name, location_t location)
+label (tree func_tree, tl::optional<GGC::Ident> name, location_t location)
 {
   tree decl;
-  if (name.empty ())
+  if (!name.has_value ())
     {
       if (DECL_STRUCT_FUNCTION (func_tree) == NULL)
 	push_struct_function (func_tree);
@@ -2139,7 +2163,7 @@ label (tree func_tree, const std::string &name, location_t location)
     }
   else
     {
-      tree id = get_identifier_from_string (name);
+      tree id = name->as_tree ();
       decl = build_decl (location, LABEL_DECL, id, void_type_node);
       DECL_CONTEXT (decl) = func_tree;
     }
@@ -2178,7 +2202,7 @@ label_address (tree label, location_t location)
 // Declare or define a new function.
 
 tree
-function (tree functype, const std::string &name, const std::string &asm_name,
+function (tree functype, GGC::Ident name, tl::optional<GGC::Ident> asm_name,
 	  unsigned int flags, location_t location)
 {
   if (error_operand_p (functype))
@@ -2186,13 +2210,13 @@ function (tree functype, const std::string &name, const std::string &asm_name,
 
   gcc_assert (FUNCTION_POINTER_TYPE_P (functype));
   functype = TREE_TYPE (functype);
-  tree id = get_identifier_from_string (name);
+  tree id = name.as_tree ();
   if (error_operand_p (id))
     return error_mark_node;
 
   tree decl = build_decl (location, FUNCTION_DECL, id, functype);
-  if (!asm_name.empty ())
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier_from_string (asm_name));
+  if (asm_name.has_value ())
+    SET_DECL_ASSEMBLER_NAME (decl, asm_name->as_tree ());
 
   if ((flags & function_is_declaration) != 0)
     DECL_EXTERNAL (decl) = 1;
@@ -2235,7 +2259,7 @@ function_defer_statement (tree function, tree undefer_tree, tree defer_tree,
     push_cfun (DECL_STRUCT_FUNCTION (function));
 
   tree stmt_list = NULL;
-  tree label = Backend::label (function, "", location);
+  tree label = Backend::label (function, tl::nullopt, location);
   tree label_def = label_definition_statement (label);
   append_to_statement_list (label_def, &stmt_list);
 
@@ -2340,6 +2364,32 @@ write_global_definitions (const std::vector<tree> &type_decls,
   wrapup_global_declarations (defs, i);
 
   delete[] defs;
+}
+
+tree
+lookup_field (const_tree type, tree component)
+{
+  tree field;
+
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (DECL_NAME (field) == NULL_TREE
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree anon = lookup_field (TREE_TYPE (field), component);
+
+	  if (anon)
+	    return tree_cons (NULL_TREE, field, anon);
+	}
+
+      if (DECL_NAME (field) == component)
+	break;
+    }
+
+  if (field == NULL_TREE)
+    return NULL_TREE;
+
+  return tree_cons (NULL_TREE, field, NULL_TREE);
 }
 
 } // namespace Backend

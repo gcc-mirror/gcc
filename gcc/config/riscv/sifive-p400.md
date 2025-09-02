@@ -153,10 +153,13 @@
        (eq_attr "type" "fmove,fcvt"))
   "p400_float_pipe,sifive_p400_fpu")
 
+;; We need something for HF so that we don't abort during
+;; scheduling if someone was to ask for p400 scheduling, but
+;; enable the various HF mode extensions.
 (define_insn_reservation "sifive_p400_fdiv_s" 18
   (and (eq_attr "tune" "sifive_p400")
        (eq_attr "type" "fdiv,fsqrt")
-       (eq_attr "mode" "SF"))
+       (eq_attr "mode" "HF,SF"))
   "sifive_p400_FM, sifive_p400_fdiv*5")
 
 (define_insn_reservation "sifive_p400_fdiv_d" 31
@@ -178,3 +181,18 @@
 (define_bypass 1 "sifive_p400_f2i"
   "sifive_p400_branch,sifive_p400_sfb_alu,sifive_p400_mul,
    sifive_p400_div,sifive_p400_alu,sifive_p400_cpop")
+
+
+;; Someone familiar with the p400 uarch needs to put
+;; these into the right reservations.  This is just a placeholder
+;; for everything I found that had no mapping to a reservation.
+;;
+;; Note that even if the processor does not implementat a particular
+;; instruction it should still have suitable reservations, even if
+;; they are just dummies like this one.
+(define_insn_reservation "sifive_p400_unknown" 1
+  (and (eq_attr "tune" "sifive_p400")
+       (eq_attr "type" "ghost,vfrecp,vclmul,vldm,vmffs,vclmulh,vlsegde,vfcvtitof,vsm4k,vfcvtftoi,vfdiv,vsm3c,vsm4r,viwmuladd,vfwredu,vcpop,vfwmuladd,vstux,vsshift,vfwcvtftof,vfncvtftof,vfwmaccbf16,vext,vssegte,rdvl,vaeskf1,vfslide1up,vmov,vimovvx,vaesef,vfsqrt,viminmax,vfwcvtftoi,vssegtox,vfclass,viwmul,vector,vgmul,vsm3me,vfcmp,vstm,vfredo,vfwmul,vaeskf2,vstox,vfncvtbf16,vislide1up,vgather,vldox,viwred,vctz,vghsh,vsts,vslidedown,vfmerge,vicmp,vsmul,vlsegdff,vfalu,vfmov,vislide1down,vfminmax,vcompress,vldr,vldff,vlsegdux,vimuladd,vsalu,vidiv,sf_vqmacc,vfslide1down,vaesem,vimerge,vfncvtftoi,vfwcvtitof,vicalu,vaesz,sf_vc_se,vsha2cl,vmsfs,vldux,vmidx,vslideup,vired,vlde,vfwredo,vfmovfv,vbrev,vfncvtitof,rdfrm,vsetvl,vssegts,vimul,vialu,vbrev8,vfwalu,rdvlenb,sf_vfnrclip,vclz,vnclip,sf_vc,vimov,vste,vfmuladd,vfmovvf,vwsll,vsetvl_pre,vlds,vlsegds,vmiota,vmalu,wrvxrm,wrfrm,viwalu,vaesdm,vssegtux,vaesdf,vimovxv,vror,vnshift,vstr,vaalu,vsha2ms,crypto,vfwcvtbf16,vlsegdox,vrol,vandn,vfsgnj,vmpop,vfredu,vsha2ch,vshift,vrev8,vfmul"))
+  "p400_int_pipe+sifive_p400_ialu")
+
+

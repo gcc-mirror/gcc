@@ -86,3 +86,9 @@ GCC_9.0.0 {
   __gnu_eqsf2
   __gnu_eqdf2
 }
+
+%inherit GCC_16.0.0 GCC_9.0.0
+GCC_16.0.0 {
+  __pruabi_softmpyi
+  __pruabi_softmpyll
+}

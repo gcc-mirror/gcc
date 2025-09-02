@@ -4241,6 +4241,39 @@ match_unsigned_saturation_mul (gimple_stmt_iterator *gsi, gassign *stmt)
 						    ops[0], ops[1]);
 }
 
+/* Try to match saturation unsigned mul, aka:
+     _6 = .MUL_OVERFLOW (a_4(D), b_5(D));
+     _2 = IMAGPART_EXPR <_6>;
+     if (_2 != 0)
+       goto <bb 4>; [35.00%]
+     else
+       goto <bb 3>; [65.00%]
+
+     <bb 3> [local count: 697932184]:
+     _1 = REALPART_EXPR <_6>;
+
+     <bb 4> [local count: 1073741824]:
+     # _3 = PHI <18446744073709551615(2), _1(3)>
+     =>
+     _3 = .SAT_MUL (a_4(D), b_5(D));  */
+
+static bool
+match_saturation_mul (gimple_stmt_iterator *gsi, gphi *phi)
+{
+  if (gimple_phi_num_args (phi) != 2)
+    return false;
+
+  tree ops[2];
+  tree phi_result = gimple_phi_result (phi);
+
+  if (!gimple_unsigned_integer_sat_mul (phi_result, ops, NULL))
+    return false;
+
+  return build_saturation_binary_arith_call_and_insert (gsi, IFN_SAT_MUL,
+							phi_result, ops[0],
+							ops[1]);
+}
+
 /*
  * Try to match saturation unsigned sub.
  *  <bb 2> [local count: 1073741824]:
@@ -6052,9 +6085,9 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
    conditional jump sequence.  If the
    <bb 6> [local count: 1073741824]:
    above has a single PHI like:
-   # _27 = PHI<0(2), -1(3), 2(4), 1(5)>
+   # _27 = PHI<0(2), -1(3), -128(4), 1(5)>
    then replace it with effectively
-   _1 = .SPACESHIP (a_2(D), b_3(D), 1);
+   _1 = .SPACESHIP (a_2(D), b_3(D), -128);
    _27 = _1;  */
 
 static void
@@ -6185,7 +6218,7 @@ optimize_spaceship (gcond *stmt)
      than 0 as last .SPACESHIP argument to tell backends it might
      consider different code generation and just cast the result
      of .SPACESHIP to the PHI result.  X above is some value
-     other than -1, 0, 1, for libstdc++ 2, for libc++ -127.  */
+     other than -1, 0, 1, for libstdc++ -128, for libc++ -127.  */
   tree arg3 = integer_zero_node;
   edge e = EDGE_SUCC (bb0, 0);
   if (e->dest == bb1)
@@ -6212,7 +6245,8 @@ optimize_spaceship (gcond *stmt)
       && integer_zerop (gimple_phi_arg_def_from_edge (phi, e))
       && EDGE_COUNT (bbp->preds) == (HONOR_NANS (TREE_TYPE (arg1)) ? 4 : 3))
     {
-      HOST_WIDE_INT argval = SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1)) ? 2 : -1;
+      HOST_WIDE_INT argval
+	= SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1)) ? -128 : -1;
       for (unsigned i = 0; phi && i < EDGE_COUNT (bbp->preds) - 1; ++i)
 	{
 	  edge e3 = i == 0 ? e1 : i == 1 ? em1 : e2;
@@ -6271,7 +6305,7 @@ optimize_spaceship (gcond *stmt)
   if (HONOR_NANS (TREE_TYPE (arg1)))
     {
       if (arg3 == integer_zero_node)
-	wmax = wi::two (TYPE_PRECISION (integer_type_node));
+	wmin = wi::shwi (-128, TYPE_PRECISION (integer_type_node));
       else if (tree_int_cst_sgn (arg3) < 0)
 	wmin = wi::to_wide (arg3);
       else
@@ -6417,7 +6451,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
       if (match_saturation_add (&gsi, phi)
 	  || match_saturation_sub (&gsi, phi)
-	  || match_saturation_trunc (&gsi, phi))
+	  || match_saturation_trunc (&gsi, phi)
+	  || match_saturation_mul (&gsi, phi))
 	remove_phi_node (&psi, /* release_lhs_p */ false);
     }
 

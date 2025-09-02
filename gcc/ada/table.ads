@@ -223,9 +223,6 @@ package Table is
       --  the official interfaces (since a modification to Last may require a
       --  reallocation of the table).
 
-      Max : Int;
-      --  Subscript of the maximum entry in the currently allocated table
-
       type Saved_Table is record
          Last_Val : Int;
          Max      : Int;

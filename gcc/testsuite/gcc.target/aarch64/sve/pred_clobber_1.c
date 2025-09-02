@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=neoverse-n2" } */
+/* { dg-options "-O2 -mcpu=neoverse-n2 -fdisable-rtl-combine" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #pragma GCC target "+sve"

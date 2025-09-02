@@ -36,6 +36,9 @@ class sink
 public:
   virtual ~sink () {}
 
+  virtual text_sink *dyn_cast_text_sink () { return nullptr; }
+
+  virtual void dump_kind (FILE *out) const = 0;
   virtual void dump (FILE *out, int indent) const;
 
   /* Vfunc for notifying this format what the primary input file is,
@@ -86,6 +89,8 @@ public:
   }
 
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
+  logging::logger *get_logger () { return m_context.get_logger (); }
 
 protected:
   sink (context &dc)

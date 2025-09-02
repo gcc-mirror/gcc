@@ -27,18 +27,18 @@
 #if __has_include(<sys/auxv.h>)
 #include <sys/auxv.h>
 
-#if __has_include(<sys/ifunc.h>)
-#include <sys/ifunc.h>
-#else
+/* The following struct is ABI-correct description of the 2nd argument for an
+   ifunc resolver as per SYSVABI spec (see link below).  It is safe to extend
+   it with new fields.  The ifunc resolver implementations must always check
+   the runtime size of the buffer using the value in the _size field.
+   https://github.com/ARM-software/abi-aa/blob/main/sysvabi64/sysvabi64.rst.  */
 typedef struct __ifunc_arg_t {
   unsigned long _size;
   unsigned long _hwcap;
   unsigned long _hwcap2;
+  unsigned long _hwcap3;
+  unsigned long _hwcap4;
 } __ifunc_arg_t;
-#endif
-
-#if __has_include(<asm/hwcap.h>)
-#include <asm/hwcap.h>
 
 /* Architecture features used in Function Multi Versioning.  */
 struct {
@@ -46,196 +46,64 @@ struct {
   /* As features grows new fields could be added.  */
 } __aarch64_cpu_features __attribute__((visibility("hidden"), nocommon));
 
-#ifndef _IFUNC_ARG_HWCAP
 #define _IFUNC_ARG_HWCAP (1ULL << 62)
-#endif
-#ifndef AT_HWCAP
 #define AT_HWCAP 16
-#endif
-#ifndef HWCAP_FP
-#define HWCAP_FP (1 << 0)
-#endif
-#ifndef HWCAP_ASIMD
-#define HWCAP_ASIMD (1 << 1)
-#endif
-#ifndef HWCAP_EVTSTRM
-#define HWCAP_EVTSTRM (1 << 2)
-#endif
-#ifndef HWCAP_AES
-#define HWCAP_AES (1 << 3)
-#endif
-#ifndef HWCAP_PMULL
-#define HWCAP_PMULL (1 << 4)
-#endif
-#ifndef HWCAP_SHA1
-#define HWCAP_SHA1 (1 << 5)
-#endif
-#ifndef HWCAP_SHA2
-#define HWCAP_SHA2 (1 << 6)
-#endif
-#ifndef HWCAP_CRC32
-#define HWCAP_CRC32 (1 << 7)
-#endif
-#ifndef HWCAP_ATOMICS
-#define HWCAP_ATOMICS (1 << 8)
-#endif
-#ifndef HWCAP_FPHP
-#define HWCAP_FPHP (1 << 9)
-#endif
-#ifndef HWCAP_ASIMDHP
-#define HWCAP_ASIMDHP (1 << 10)
-#endif
-#ifndef HWCAP_CPUID
-#define HWCAP_CPUID (1 << 11)
-#endif
-#ifndef HWCAP_ASIMDRDM
-#define HWCAP_ASIMDRDM (1 << 12)
-#endif
-#ifndef HWCAP_JSCVT
-#define HWCAP_JSCVT (1 << 13)
-#endif
-#ifndef HWCAP_FCMA
-#define HWCAP_FCMA (1 << 14)
-#endif
-#ifndef HWCAP_LRCPC
-#define HWCAP_LRCPC (1 << 15)
-#endif
-#ifndef HWCAP_DCPOP
-#define HWCAP_DCPOP (1 << 16)
-#endif
-#ifndef HWCAP_SHA3
-#define HWCAP_SHA3 (1 << 17)
-#endif
-#ifndef HWCAP_SM3
-#define HWCAP_SM3 (1 << 18)
-#endif
-#ifndef HWCAP_SM4
-#define HWCAP_SM4 (1 << 19)
-#endif
-#ifndef HWCAP_ASIMDDP
-#define HWCAP_ASIMDDP (1 << 20)
-#endif
-#ifndef HWCAP_SHA512
-#define HWCAP_SHA512 (1 << 21)
-#endif
-#ifndef HWCAP_SVE
-#define HWCAP_SVE (1 << 22)
-#endif
-#ifndef HWCAP_ASIMDFHM
-#define HWCAP_ASIMDFHM (1 << 23)
-#endif
-#ifndef HWCAP_DIT
-#define HWCAP_DIT (1 << 24)
-#endif
-#ifndef HWCAP_ILRCPC
-#define HWCAP_ILRCPC (1 << 26)
-#endif
-#ifndef HWCAP_FLAGM
-#define HWCAP_FLAGM (1 << 27)
-#endif
-#ifndef HWCAP_SSBS
-#define HWCAP_SSBS (1 << 28)
-#endif
-#ifndef HWCAP_SB
-#define HWCAP_SB (1 << 29)
-#endif
-#ifndef HWCAP_PACA
-#define HWCAP_PACA (1 << 30)
-#endif
-#ifndef HWCAP_PACG
-#define HWCAP_PACG (1UL << 31)
-#endif
-
-#ifndef AT_HWCAP2
 #define AT_HWCAP2 26
-#endif
-#ifndef HWCAP2_DCPODP
-#define HWCAP2_DCPODP (1 << 0)
-#endif
-#ifndef HWCAP2_SVE2
-#define HWCAP2_SVE2 (1 << 1)
-#endif
-#ifndef HWCAP2_SVEAES
-#define HWCAP2_SVEAES (1 << 2)
-#endif
-#ifndef HWCAP2_SVEPMULL
-#define HWCAP2_SVEPMULL (1 << 3)
-#endif
-#ifndef HWCAP2_SVEBITPERM
-#define HWCAP2_SVEBITPERM (1 << 4)
-#endif
-#ifndef HWCAP2_SVESHA3
-#define HWCAP2_SVESHA3 (1 << 5)
-#endif
-#ifndef HWCAP2_SVESM4
-#define HWCAP2_SVESM4 (1 << 6)
-#endif
-#ifndef HWCAP2_FLAGM2
-#define HWCAP2_FLAGM2 (1 << 7)
-#endif
-#ifndef HWCAP2_FRINT
-#define HWCAP2_FRINT (1 << 8)
-#endif
-#ifndef HWCAP2_SVEI8MM
-#define HWCAP2_SVEI8MM (1 << 9)
-#endif
-#ifndef HWCAP2_SVEF32MM
-#define HWCAP2_SVEF32MM (1 << 10)
-#endif
-#ifndef HWCAP2_SVEF64MM
-#define HWCAP2_SVEF64MM (1 << 11)
-#endif
-#ifndef HWCAP2_SVEBF16
-#define HWCAP2_SVEBF16 (1 << 12)
-#endif
-#ifndef HWCAP2_I8MM
-#define HWCAP2_I8MM (1 << 13)
-#endif
-#ifndef HWCAP2_BF16
-#define HWCAP2_BF16 (1 << 14)
-#endif
-#ifndef HWCAP2_DGH
-#define HWCAP2_DGH (1 << 15)
-#endif
-#ifndef HWCAP2_RNG
-#define HWCAP2_RNG (1 << 16)
-#endif
-#ifndef HWCAP2_BTI
-#define HWCAP2_BTI (1 << 17)
-#endif
-#ifndef HWCAP2_MTE
-#define HWCAP2_MTE (1 << 18)
-#endif
-#ifndef HWCAP2_RPRES
-#define HWCAP2_RPRES (1 << 21)
-#endif
-#ifndef HWCAP2_MTE3
-#define HWCAP2_MTE3 (1 << 22)
-#endif
-#ifndef HWCAP2_SME
-#define HWCAP2_SME (1 << 23)
-#endif
-#ifndef HWCAP2_SME_I16I64
-#define HWCAP2_SME_I16I64 (1 << 24)
-#endif
-#ifndef HWCAP2_SME_F64F64
-#define HWCAP2_SME_F64F64 (1 << 25)
-#endif
-#ifndef HWCAP2_WFXT
-#define HWCAP2_WFXT (1UL << 31)
-#endif
-#ifndef HWCAP2_EBF16
-#define HWCAP2_EBF16 (1UL << 32)
-#endif
-#ifndef HWCAP2_SVE_EBF16
-#define HWCAP2_SVE_EBF16 (1UL << 33)
-#endif
-#ifndef HWCAP2_SME2
-#define HWCAP2_SME2 (1UL << 37)
-#endif
-#ifndef HWCAP2_LRCPC3
-#define HWCAP2_LRCPC3	(1UL << 46)
-#endif
+#define AT_HWCAP3 29
+#define AT_HWCAP4 30
+
+#define HWCAP_FP		(1 << 0)
+#define HWCAP_ASIMD		(1 << 1)
+#define HWCAP_PMULL		(1 << 4)
+#define HWCAP_SHA2		(1 << 6)
+#define HWCAP_CRC32		(1 << 7)
+#define HWCAP_ATOMICS		(1 << 8)
+#define HWCAP_FPHP		(1 << 9)
+#define HWCAP_ASIMDHP		(1 << 10)
+#define HWCAP_ASIMDRDM		(1 << 12)
+#define HWCAP_JSCVT		(1 << 13)
+#define HWCAP_FCMA		(1 << 14)
+#define HWCAP_LRCPC		(1 << 15)
+#define HWCAP_DCPOP		(1 << 16)
+#define HWCAP_SHA3		(1 << 17)
+#define HWCAP_SM3		(1 << 18)
+#define HWCAP_SM4		(1 << 19)
+#define HWCAP_ASIMDDP		(1 << 20)
+#define HWCAP_SVE		(1 << 22)
+#define HWCAP_ASIMDFHM		(1 << 23)
+#define HWCAP_DIT		(1 << 24)
+#define HWCAP_ILRCPC		(1 << 26)
+#define HWCAP_FLAGM		(1 << 27)
+#define HWCAP_SSBS		(1 << 28)
+#define HWCAP_SB		(1 << 29)
+
+#define HWCAP2_DCPODP		(1 << 0)
+#define HWCAP2_SVE2		(1 << 1)
+#define HWCAP2_SVEPMULL		(1 << 3)
+#define HWCAP2_SVEBITPERM	(1 << 4)
+#define HWCAP2_SVESHA3		(1 << 5)
+#define HWCAP2_SVESM4		(1 << 6)
+#define HWCAP2_FLAGM2		(1 << 7)
+#define HWCAP2_FRINT		(1 << 8)
+#define HWCAP2_SVEF32MM		(1 << 10)
+#define HWCAP2_SVEF64MM		(1 << 11)
+#define HWCAP2_I8MM		(1 << 13)
+#define HWCAP2_BF16		(1 << 14)
+#define HWCAP2_RNG		(1 << 16)
+#define HWCAP2_BTI		(1 << 17)
+#define HWCAP2_MTE		(1 << 18)
+#define HWCAP2_SME		(1 << 23)
+#define HWCAP2_SME_I16I64	(1 << 24)
+#define HWCAP2_SME_F64F64	(1 << 25)
+#define HWCAP2_WFXT		(1UL << 31)
+#define HWCAP2_CSSC		(1UL << 34)
+#define HWCAP2_SME2		(1UL << 37)
+#define HWCAP2_MOPS		(1UL << 43)
+#define HWCAP2_LRCPC3		(1UL << 46)
+
+#define __IFUNC_ARG_SIZE_HWCAP2 (sizeof (unsigned long) * 3)
+#define __IFUNC_ARG_SIZE_HWCAP3 (sizeof (unsigned long) * 4)
+#define __IFUNC_ARG_SIZE_HWCAP4 (sizeof (unsigned long) * 5)
 
 static void
 __init_cpu_features_constructor (unsigned long hwcap,
@@ -247,8 +115,14 @@ __init_cpu_features_constructor (unsigned long hwcap,
 #define extractBits(val, start, number) \
   (val & ((1UL << number) - 1UL) << start) >> start
   unsigned long hwcap2 = 0;
-  if (hwcap & _IFUNC_ARG_HWCAP)
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP2)
     hwcap2 = arg->_hwcap2;
+  unsigned long hwcap3 __attribute__ ((unused)) = 0;
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP3)
+    hwcap3 = arg->_hwcap3;
+  unsigned long hwcap4 __attribute__ ((unused)) = 0;
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP4)
+    hwcap4 = arg->_hwcap4;
   if (hwcap & HWCAP_CRC32)
     setCPUFeature(FEAT_CRC);
   if (hwcap & HWCAP_PMULL)
@@ -269,10 +143,6 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_DIT);
   if (hwcap & HWCAP_ASIMDRDM)
     setCPUFeature(FEAT_RDM);
-  if (hwcap & HWCAP_AES)
-    setCPUFeature(FEAT_AES);
-  if (hwcap & HWCAP_SHA1)
-    setCPUFeature(FEAT_SHA1);
   if (hwcap & HWCAP_SHA2)
     setCPUFeature(FEAT_SHA2);
   if (hwcap & HWCAP_JSCVT)
@@ -282,19 +152,9 @@ __init_cpu_features_constructor (unsigned long hwcap,
   if (hwcap & HWCAP_SB)
     setCPUFeature(FEAT_SB);
   if (hwcap & HWCAP_SSBS)
-    {
-      setCPUFeature(FEAT_SSBS);
-      setCPUFeature(FEAT_SSBS2);
-    }
+    setCPUFeature(FEAT_SSBS2);
   if (hwcap2 & HWCAP2_MTE)
-    {
-      setCPUFeature(FEAT_MEMTAG);
-      setCPUFeature(FEAT_MEMTAG2);
-    }
-  if (hwcap2 & HWCAP2_MTE3)
-    setCPUFeature(FEAT_MEMTAG3);
-  if (hwcap2 & HWCAP2_SVEAES)
-    setCPUFeature(FEAT_SVE_AES);
+    setCPUFeature(FEAT_MEMTAG2);
   if (hwcap2 & HWCAP2_SVEPMULL)
     setCPUFeature(FEAT_SVE_PMULL128);
   if (hwcap2 & HWCAP2_SVEBITPERM)
@@ -311,24 +171,14 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_RNG);
   if (hwcap2 & HWCAP2_I8MM)
     setCPUFeature(FEAT_I8MM);
-  if (hwcap2 & HWCAP2_EBF16)
-    setCPUFeature(FEAT_EBF16);
-  if (hwcap2 & HWCAP2_SVE_EBF16)
-    setCPUFeature(FEAT_SVE_EBF16);
-  if (hwcap2 & HWCAP2_DGH)
-    setCPUFeature(FEAT_DGH);
   if (hwcap2 & HWCAP2_FRINT)
     setCPUFeature(FEAT_FRINTTS);
-  if (hwcap2 & HWCAP2_SVEI8MM)
-    setCPUFeature(FEAT_SVE_I8MM);
   if (hwcap2 & HWCAP2_SVEF32MM)
     setCPUFeature(FEAT_SVE_F32MM);
   if (hwcap2 & HWCAP2_SVEF64MM)
     setCPUFeature(FEAT_SVE_F64MM);
   if (hwcap2 & HWCAP2_BTI)
     setCPUFeature(FEAT_BTI);
-  if (hwcap2 & HWCAP2_RPRES)
-    setCPUFeature(FEAT_RPRES);
   if (hwcap2 & HWCAP2_WFXT)
     setCPUFeature(FEAT_WFXT);
   if (hwcap2 & HWCAP2_SME)
@@ -339,6 +189,10 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_SME_I64);
   if (hwcap2 & HWCAP2_SME_F64F64)
     setCPUFeature(FEAT_SME_F64);
+  if (hwcap2 & HWCAP2_MOPS)
+    setCPUFeature(FEAT_MOPS);
+  if (hwcap2 & HWCAP2_CSSC)
+    setCPUFeature(FEAT_CSSC);
   if (hwcap & HWCAP_FP)
     {
       setCPUFeature(FEAT_FP);
@@ -355,8 +209,6 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_RCPC3);
   if (hwcap2 & HWCAP2_BF16)
     setCPUFeature(FEAT_BF16);
-  if (hwcap2 & HWCAP2_SVEBF16)
-    setCPUFeature(FEAT_SVE_BF16);
   if (hwcap & HWCAP_SVE)
     setCPUFeature(FEAT_SVE);
   if (hwcap2 & HWCAP2_SVE2)
@@ -383,20 +235,26 @@ __init_cpu_features(void)
 {
   unsigned long hwcap;
   unsigned long hwcap2;
+  unsigned long hwcap3;
+  unsigned long hwcap4;
 
   /* CPU features already initialized.  */
   if (__atomic_load_n (&__aarch64_cpu_features.features, __ATOMIC_RELAXED))
     return;
-  hwcap = getauxval(AT_HWCAP);
-  hwcap2 = getauxval(AT_HWCAP2);
+  hwcap = getauxval (AT_HWCAP);
+  hwcap2 = getauxval (AT_HWCAP2);
+  hwcap3 = getauxval (AT_HWCAP3);
+  hwcap4 = getauxval (AT_HWCAP4);
+
   __ifunc_arg_t arg;
-  arg._size = sizeof(__ifunc_arg_t);
+  arg._size = sizeof (__ifunc_arg_t);
   arg._hwcap = hwcap;
   arg._hwcap2 = hwcap2;
-  __init_cpu_features_constructor(hwcap | _IFUNC_ARG_HWCAP, &arg);
+  arg._hwcap3 = hwcap3;
+  arg._hwcap4 = hwcap4;
+  __init_cpu_features_constructor (hwcap | _IFUNC_ARG_HWCAP, &arg);
 #undef extractBits
 #undef getCPUFeature
 #undef setCPUFeature
 }
-#endif /* __has_include(<asm/hwcap.h>)  */
 #endif /* __has_include(<sys/auxv.h>)  */

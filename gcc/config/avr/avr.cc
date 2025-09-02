@@ -411,6 +411,29 @@ avr_to_int_mode (rtx x)
 }
 
 
+/* Return the pattern of INSN, but with added (clobber (reg:CC REG_CC)).
+   The pattern of INSN must be a PARALLEL or a SET.  INSN is unchanged.  */
+
+rtx
+avr_add_ccclobber (rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == SET || GET_CODE (pat) == PARALLEL);
+
+  int newlen = GET_CODE (pat) == SET ? 2 : 1 + XVECLEN (pat, 0);
+  rtx newpat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (newlen));
+  rtx elt0 = GET_CODE (pat) == SET ? pat : XVECEXP (pat, 0, 0);
+
+  XVECEXP (newpat, 0, 0) = copy_rtx (elt0);
+  XVECEXP (newpat, 0, newlen - 1) = gen_rtx_CLOBBER (VOIDmode, cc_reg_rtx);
+
+  for (int i = 1; i < newlen - 1; ++i)
+    XVECEXP (newpat, 0, i) = copy_rtx (XVECEXP (pat, 0, i));
+
+  return newpat;
+}
+
+
 /* Return true if hard register REG supports the ADIW and SBIW instructions.  */
 
 bool
@@ -427,13 +450,6 @@ static bool
 avr_ld_regno_p (int regno)
 {
   return TEST_HARD_REG_CLASS (LD_REGS, regno);
-}
-
-
-static bool
-ra_in_progress ()
-{
-  return avropt_lra_p ? lra_in_progress : reload_in_progress;
 }
 
 
@@ -2324,8 +2340,8 @@ avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   if (avr_log.legitimate_address_p)
     {
       avr_edump ("\n%?: ret=%d, mode=%m strict=%d "
-		 "reload_completed=%d ra_in_progress=%d %s:",
-		 ok, mode, strict, reload_completed, ra_in_progress (),
+		 "reload_completed=%d lra_in_progress=%d %s:",
+		 ok, mode, strict, reload_completed, lra_in_progress,
 		 reg_renumber ? "(reg_renumber)" : "");
 
       if (GET_CODE (x) == PLUS
@@ -2392,88 +2408,6 @@ avr_legitimize_address (rtx x, rtx oldx, machine_mode mode)
     }
 
   return x;
-}
-
-
-/* Implement `LEGITIMIZE_RELOAD_ADDRESS'.  */
-/* This will allow register R26/27 to be used where it is no worse than normal
-   base pointers R28/29 or R30/31.  For example, if base offset is greater
-   than 63 bytes or for R++ or --R addressing.  */
-
-rtx
-avr_legitimize_reload_address (rtx *px, machine_mode mode, int opnum,
-			       int type, int addr_type, int /*ind_levels*/,
-			       rtx (*mk_memloc)(rtx,int))
-{
-  rtx x = *px;
-
-  if (avr_log.legitimize_reload_address)
-    avr_edump ("\n%?:%m %r\n", mode, x);
-
-  if (1 && (GET_CODE (x) == POST_INC
-	    || GET_CODE (x) == PRE_DEC))
-    {
-      push_reload (XEXP (x, 0), XEXP (x, 0), &XEXP (x, 0), &XEXP (x, 0),
-		   POINTER_REGS, GET_MODE (x), GET_MODE (x), 0, 0,
-		   opnum, RELOAD_OTHER);
-
-      if (avr_log.legitimize_reload_address)
-	avr_edump (" RCLASS.1 = %R\n IN = %r\n OUT = %r\n",
-		   POINTER_REGS, XEXP (x, 0), XEXP (x, 0));
-
-      return x;
-    }
-
-  if (GET_CODE (x) == PLUS
-      && REG_P (XEXP (x, 0))
-      && reg_equiv_constant (REGNO (XEXP (x, 0))) == 0
-      && CONST_INT_P (XEXP (x, 1))
-      && INTVAL (XEXP (x, 1)) >= 1)
-    {
-      bool fit = INTVAL (XEXP (x, 1)) <= MAX_LD_OFFSET (mode);
-
-      if (fit)
-	{
-	  if (reg_equiv_address (REGNO (XEXP (x, 0))) != 0)
-	    {
-	      int regno = REGNO (XEXP (x, 0));
-	      rtx mem = mk_memloc (x, regno);
-
-	      push_reload (XEXP (mem, 0), NULL_RTX, &XEXP (mem, 0), NULL,
-			   POINTER_REGS, Pmode, VOIDmode, 0, 0,
-			   1, (enum reload_type) addr_type);
-
-	      if (avr_log.legitimize_reload_address)
-		avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
-			   POINTER_REGS, XEXP (mem, 0), NULL_RTX);
-
-	      push_reload (mem, NULL_RTX, &XEXP (x, 0), NULL,
-			   BASE_POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
-			   opnum, (enum reload_type) type);
-
-	      if (avr_log.legitimize_reload_address)
-		avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
-			   BASE_POINTER_REGS, mem, NULL_RTX);
-
-	      return x;
-	    }
-	}
-      else if (! (frame_pointer_needed
-		  && XEXP (x, 0) == frame_pointer_rtx))
-	{
-	  push_reload (x, NULL_RTX, px, NULL,
-		       POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
-		       opnum, (enum reload_type) type);
-
-	  if (avr_log.legitimize_reload_address)
-	    avr_edump (" RCLASS.3 = %R\n IN = %r\n OUT = %r\n",
-		       POINTER_REGS, x, NULL_RTX);
-
-	  return x;
-	}
-    }
-
-  return NULL_RTX;
 }
 
 
@@ -12824,6 +12758,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case SIGN_EXTEND:
+      if (GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+	{
+	  // "*sext.ashift<QIPSI:mode><HISI:mode>2_split"
+	  int m0 = GET_MODE_SIZE (GET_MODE (XEXP (x, 0)));
+	  int m1 = GET_MODE_SIZE (mode);
+	  *total = COSTS_N_INSNS (m0 * INTVAL (XEXP (XEXP (x, 0), 1))
+				  + m1 - m0);
+	  return true;
+	}
       *total = COSTS_N_INSNS (n_bytes + 2
 			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
       *total += avr_operand_rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
@@ -13936,8 +13880,8 @@ extra_constraint_Q (rtx x)
 	    || xx == arg_pointer_rtx);
 
       if (avr_log.constraints)
-	avr_edump ("\n%?=%d reload_completed=%d ra_in_progress=%d\n %r\n",
-		   ok, reload_completed, ra_in_progress (), x);
+	avr_edump ("\n%?=%d reload_completed=%d lra_in_progress=%d\n %r\n",
+		   ok, reload_completed, lra_in_progress, x);
     }
 
   return ok;
@@ -14141,17 +14085,6 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (GET_MODE_SIZE (mode) == 1)
     return true;
-
-  /* FIXME: Ideally, the following test is not needed.
-	However, it turned out that it can reduce the number
-	of spill fails.  AVR and it's poor endowment with
-	address registers is extreme stress test for reload.  */
-
-  if (GET_MODE_SIZE (mode) >= 4
-      && regno + GET_MODE_SIZE (mode) >= REG_30
-      // This problem only concerned the old reload.
-      && ! avropt_lra_p)
-    return false;
 
   /* All modes larger than 8 bits should start in an even register.  */
 
@@ -14418,6 +14351,13 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
   // Output the label that precedes the table.
 
   ASM_OUTPUT_ALIGN (stream, 1);
+
+  char s_labl[40];
+  targetm.asm_out.generate_internal_label (s_labl, "L",
+					   CODE_LABEL_NUMBER (labl));
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, s_labl,
+			     AVR_HAVE_JMP_CALL ? "object" : "function");
+
   targetm.asm_out.internal_label (stream, "L", CODE_LABEL_NUMBER (labl));
 
   // Output the table's content.
@@ -14907,8 +14847,8 @@ avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
   if (avr_log.legitimate_address_p)
     {
       avr_edump ("\n%?: ret=%b, mode=%m strict=%d "
-		 "reload_completed=%d ra_in_progress=%d %s:",
-		 ok, mode, strict, reload_completed, ra_in_progress (),
+		 "reload_completed=%d lra_in_progress=%d %s:",
+		 ok, mode, strict, reload_completed, lra_in_progress,
 		 reg_renumber ? "(reg_renumber)" : "");
 
       if (GET_CODE (x) == PLUS
@@ -14984,10 +14924,11 @@ avr_addr_space_convert (rtx src, tree type_old, tree type_new)
 
       /* Linearize memory: RAM has bit 23 set.  When as_new = __flashx then
 	 this is basically UB since __flashx mistreats RAM addresses, but there
-	 is no way to bail out.  (Though -Waddr-space-convert will tell.)  */
+	 is no way to bail out.  (Though -Waddr-space-convert will tell.)
+	 ...but PR121277 is confusing, in particular when NULL is coming in. */
 
       int msb = ADDR_SPACE_GENERIC_P (as_old)
-	? 0x80
+	? as_new == ADDR_SPACE_MEMX ? 0x80 : 0x00
 	: avr_addrspace[as_old].segment;
 
       src = force_reg (Pmode, src);
@@ -15085,10 +15026,16 @@ avr_convert_to_type (tree type, tree expr)
 	  const char *name_old = avr_addrspace[as_old].name;
 	  const char *name_new = avr_addrspace[as_new].name;
 
-	  warning (OPT_Waddr_space_convert,
-		   "conversion from address space %qs to address space %qs",
-		   ADDR_SPACE_GENERIC_P (as_old) ? "generic" : name_old,
-		   ADDR_SPACE_GENERIC_P (as_new) ? "generic" : name_new);
+	  // Be relaxed when NULL is used, and when 0x0 stands for
+	  // address 0x0.
+	  bool nowarn = (expr == null_pointer_node
+			 && (as_new == ADDR_SPACE_FLASHX
+			     || as_new == ADDR_SPACE_FLASH));
+	  if (!nowarn)
+	    warning (OPT_Waddr_space_convert,
+		     "conversion from address space %qs to address space %qs",
+		     ADDR_SPACE_GENERIC_P (as_old) ? "generic" : name_old,
+		     ADDR_SPACE_GENERIC_P (as_new) ? "generic" : name_new);
 
 	  return fold_build1_loc (loc, ADDR_SPACE_CONVERT_EXPR, type, expr);
 	}
@@ -16679,15 +16626,6 @@ avr_unwind_word_mode ()
   return Pmode;
 }
 
-
-/* Implement `TARGET_LRA_P'.  */
-
-static bool
-avr_use_lra_p ()
-{
-  return avropt_lra_p;
-}
-
 
 
 /* Initialize the GCC target structure.  */
@@ -16828,9 +16766,6 @@ avr_use_lra_p ()
 
 #undef  TARGET_CONVERT_TO_TYPE
 #define TARGET_CONVERT_TO_TYPE avr_convert_to_type
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P avr_use_lra_p
 
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p

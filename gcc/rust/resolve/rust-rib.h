@@ -188,6 +188,8 @@ public:
      * restriction that you cannot `use` items from the Prelude
      */
     Prelude,
+    /* Generic rib, used to store generics */
+    Generics,
   } kind;
 
   static std::string kind_to_string (Rib::Kind kind)
@@ -214,9 +216,13 @@ public:
 	return "Forward type param ban";
       case Rib::Kind::ConstParamType:
 	return "Const Param Type";
-      default:
-	rust_unreachable ();
+      case Kind::Prelude:
+	return "Prelude";
+      case Kind::Generics:
+	return "Generics";
       }
+
+    rust_unreachable ();
   }
 
   Rib (Kind kind);

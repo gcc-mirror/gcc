@@ -24,6 +24,7 @@
 #include "rust-hir-type-check.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-casts.h"
+#include "rust-mapping-common.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
 #include "rust-hir-type-bounds.h"
@@ -37,14 +38,13 @@ bool
 query_type (HirId reference, TyTy::BaseType **result)
 {
   auto &mappings = Analysis::Mappings::get ();
-  auto &resolver = *Resolver::get ();
   TypeCheckContext *context = TypeCheckContext::get ();
-
-  if (context->query_in_progress (reference))
-    return false;
 
   if (context->lookup_type (reference, result))
     return true;
+
+  if (context->query_in_progress (reference))
+    return false;
 
   context->insert_query (reference);
 
@@ -103,18 +103,13 @@ query_type (HirId reference, TyTy::BaseType **result)
 	  NodeId ref_node_id = UNKNOWN_NODEID;
 	  NodeId ast_node_id = ty.get_mappings ().get_nodeid ();
 
-	  if (flag_name_resolution_2_0)
-	    {
-	      auto &nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
-			       .resolver ();
+	  auto &nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-	      // assign the ref_node_id if we've found something
-	      nr_ctx.lookup (ast_node_id)
-		.map (
-		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
-	    }
-	  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
-	    resolver.lookup_resolved_type (ast_node_id, &ref_node_id);
+	  // assign the ref_node_id if we've found something
+	  nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
 
 	  if (ref_node_id != UNKNOWN_NODEID)
 	    {
@@ -192,10 +187,12 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
 
-  rust_debug (
-    "unify_site_and commit %s infer %s id={%u} expected={%s} expr={%s}",
-    commit_if_ok ? "true" : "false", implicit_infer_vars ? "true" : "false", id,
-    expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+  rust_debug_loc (
+    unify_locus,
+    "begin unify_site_and commit %s infer %s id={%u} expected={%s} expr={%s}",
+    commit_if_ok ? "true" : "false", implicit_infer_vars ? "true" : "false",
+    id == UNKNOWN_HIRID ? 0 : id, expected->debug_str ().c_str (),
+    expr->debug_str ().c_str ());
 
   std::vector<UnifyRules::CommitSite> commits;
   std::vector<UnifyRules::InferenceSite> infers;
@@ -203,6 +200,15 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
     = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
 			   emit_errors, implicit_infer_vars, commits, infers);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
+
+  rust_debug_loc (unify_locus,
+		  "unify_site_and done ok=%s commit %s infer %s id={%u} "
+		  "expected={%s} expr={%s}",
+		  ok ? "true" : "false", commit_if_ok ? "true" : "false",
+		  implicit_infer_vars ? "true" : "false",
+		  id == UNKNOWN_HIRID ? 0 : id, expected->debug_str ().c_str (),
+		  expr->debug_str ().c_str ());
+
   if (ok && commit_if_ok)
     {
       for (auto &c : commits)

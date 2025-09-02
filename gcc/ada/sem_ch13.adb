@@ -4799,7 +4799,7 @@ package body Sem_Ch13 is
                     and then not Is_Ignored_Ghost_Entity (E)
                   then
                      if A_Id = Aspect_Pre then
-                        if Is_Ignored (Aspect) then
+                        if Is_Ignored_In_Codegen (Aspect) then
                            Set_Ignored_Class_Preconditions (E,
                              New_Copy_Tree (Expr));
                         else
@@ -4813,7 +4813,7 @@ package body Sem_Ch13 is
                      elsif No (Class_Postconditions (E))
                        and then No (Ignored_Class_Postconditions (E))
                      then
-                        if Is_Ignored (Aspect) then
+                        if Is_Ignored_In_Codegen (Aspect) then
                            Set_Ignored_Class_Postconditions (E,
                              New_Copy_Tree (Expr));
                         else
@@ -10282,8 +10282,7 @@ package body Sem_Ch13 is
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Expr : Node_Id;
@@ -10449,7 +10448,7 @@ package body Sem_Ch13 is
             --  which is needed to generate the corresponding predicate
             --  function.
 
-            if Is_Ignored_Ghost_Pragma (Prag) then
+            if Is_Ignored_Ghost_Pragma_In_Codegen (Prag) then
                Add_Condition (New_Occurrence_Of (Standard_True, Sloc (Prag)));
 
             else
@@ -10490,7 +10489,8 @@ package body Sem_Ch13 is
 
                   --  "and"-in the Arg2 condition to evolving expression
 
-                  if not Is_Ignored_Ghost_Pragma (Prag) then
+                  if not Is_Ignored_Ghost_Pragma_In_Codegen (Prag)
+                  then
                      Add_Condition (Arg2_Copy);
                   end if;
                end;
@@ -11090,7 +11090,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       if Restore_Scope then
          Pop_Scope;
@@ -11110,8 +11110,7 @@ package body Sem_Ch13 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Func_Decl : Node_Id;
@@ -11192,7 +11191,7 @@ package body Sem_Ch13 is
       Insert_After (Parent (Typ), Func_Decl);
       Analyze (Func_Decl);
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       return Func_Decl;
    end Build_Predicate_Function_Declaration;

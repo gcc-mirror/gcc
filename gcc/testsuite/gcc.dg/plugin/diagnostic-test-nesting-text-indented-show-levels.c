@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-set-output=text:experimental-nesting=yes,experimental-nesting-show-levels=yes" } */
+/* { dg-options "-fdiagnostics-set-output=text:show-nesting=yes,show-nesting-levels=yes" } */
 
 extern void foo (void);
 

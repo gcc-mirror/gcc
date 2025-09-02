@@ -164,6 +164,17 @@ namespace __debug
 	       _CharT __zero, _CharT __one = _CharT('1'))
 	: _Base(__str, __pos, __n, __zero, __one) { }
 
+#ifdef __cpp_lib_bitset // ... from string_view
+      template<class _CharT, class _Traits>
+	constexpr explicit
+	bitset(std::basic_string_view<_CharT, _Traits> __s,
+	  std::basic_string_view<_CharT, _Traits>::size_type __position = 0,
+	  std::basic_string_view<_CharT, _Traits>::size_type __n =
+	    std::basic_string_view<_CharT, _Traits>::npos,
+	  _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
+	: _Base(__s, __position, __n, __zero, __one) { }
+#endif
+
       _GLIBCXX23_CONSTEXPR
       bitset(const _Base& __x) : _Base(__x) { }
 

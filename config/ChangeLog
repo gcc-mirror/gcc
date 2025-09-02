@@ -1,3 +1,8 @@
+2025-08-10  Ijaz, Abdul B  <abdul.b.ijaz@intel.com>
+
+	* lib-link.m4: Handle dash in the library name for
+	AC_LIB_LINKFLAGS_BODY.
+
 2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
 
 	* bootstrap-native.mk: New file.

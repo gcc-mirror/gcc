@@ -2254,6 +2254,32 @@ proc check_effective_target_riscv_xtheadvector { } {
 }
 
 
+# Return 1 if we can execute code when using dg-add-options riscv_b
+
+proc check_effective_target_riscv_b_ok { } {
+    # If the target already supports zbb without any added options,
+    # we may assume we can execute just fine.
+    # Technically we should really check for zba/zbs too, but I haven't
+    # seen a design that implements a subset of zba/zbb/zbs yet.
+    if { [check_effective_target_riscv_zbb] } {
+	return 1
+    }
+
+    # check if we can execute bitmanip insns with the given hardware or
+    # simulator
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &b]
+    if { [check_runtime ${gcc_march}_exec {
+	  int main() {  asm("sh2add t0, a0, a1"); return 0; } } "-march=${gcc_march}"] } {
+	return 1
+    }
+
+    # Possible future extensions: If the target is a simulator, dg-add-options
+    # might change its config to make it allow vector insns, or we might use
+    # options to set special elf flags / sections to effect that.
+
+    return 0
+}
+
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {
@@ -2316,7 +2342,7 @@ proc check_effective_target_riscv_zvfh_ok { } {
 
     # check if we can execute vector insns with the given hardware or
     # simulator
-    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &v]
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zvfh]
     if { [check_runtime ${gcc_march}_zvfh_exec {
 	int main()
 	{
@@ -2685,10 +2711,6 @@ proc remove_options_for_riscv_ztso { flags } {
     return [remove_options_for_riscv_z_ext ztso $flags]
 }
 
-proc remove_options_for_riscv_zvfh { flags } {
-    return [add_options_for_riscv_z_ext zvfh $flags]
-}
-
 proc add_options_for_riscv_zvbb { flags } {
     return [add_options_for_riscv_z_ext zvbb $flags]
 }
@@ -2702,7 +2724,7 @@ proc add_options_for_riscv_zvfh { flags } {
 }
 
 proc remove_options_for_riscv_zvfh { flags } {
-    return [add_options_for_riscv_z_ext zvfh $flags]
+    return [remove_options_for_riscv_z_ext zvfh $flags]
 }
 
 # Return 1 if the target is ia32 or x86_64.
@@ -4617,7 +4639,7 @@ proc add_options_for_vect_early_break { flags } {
 
     if { [check_effective_target_arm_v8_neon_ok] } {
 	global et_arm_v8_neon_flags
-	return "$flags $et_arm_v8_neon_flags -mcpu=unset -march=armv8-a"
+	return "$flags $et_arm_v8_neon_flags"
     }
 
     if { [check_effective_target_sse4] } {
@@ -5440,7 +5462,7 @@ proc add_options_for_arm_v8_neon { flags } {
 	return "$flags"
     }
     global et_arm_v8_neon_flags
-    return "$flags $et_arm_v8_neon_flags -mcpu=unset -march=armv8-a"
+    return "$flags $et_arm_v8_neon_flags"
 }
 
 # Add the options needed for ARMv8.1 Adv.SIMD.  Also adds the ARMv8 NEON
@@ -5511,25 +5533,26 @@ proc add_options_for_arm_vfp3 { flags } {
 # best options to add.
 
 proc check_effective_target_arm_neon_ok_nocache { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
     global et_arm_neon_flags
     set et_arm_neon_flags ""
-    if { [check_effective_target_arm32] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp" "-mfpu=neon -mfloat-abi=softfp -mcpu=unset -march=armv7-a" "-mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard -mcpu=unset -march=armv7-a"} {
-	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
-		#include <arm_neon.h>
-		int dummy;
-		#ifndef __ARM_NEON__
-		#error not NEON
-		#endif
-		/* Avoid the case where a test adds -mfpu=neon, but the toolchain is
-		   configured for -mcpu=arm926ej-s, for example.  */
-		#if __ARM_ARCH < 7 || __ARM_ARCH_PROFILE == 'M'
-		#error Architecture does not support NEON.
-		#endif
-	    } "$flags"] } {
-		set et_arm_neon_flags $flags
-		return 1
-	    }
+    foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp" "-mfpu=neon -mfloat-abi=softfp -mcpu=unset -march=armv7-a" "-mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard -mcpu=unset -march=armv7-a"} {
+	if { [check_no_compiler_messages_nocache arm_neon_ok object {
+	    #include <arm_neon.h>
+	    int dummy;
+	    #ifndef __ARM_NEON__
+	    #error not NEON
+	    #endif
+	    /* Avoid the case where a test adds -mfpu=neon, but the toolchain is
+	    configured for -mcpu=arm926ej-s, for example.  */
+	    #if __ARM_ARCH < 7 || __ARM_ARCH_PROFILE == 'M'
+	    #error Architecture does not support NEON.
+	    #endif
+	} "$flags"] } {
+	    set et_arm_neon_flags $flags
+	    return 1
 	}
     }
 
@@ -5715,8 +5738,7 @@ proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     global et_arm_neon_fp16_flags
     global et_arm_neon_flags
     set et_arm_neon_fp16_flags ""
-    if { [check_effective_target_arm32]
-	 && [check_effective_target_arm_neon_ok] } {
+    if { [check_effective_target_arm_neon_ok] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp16"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp"
 		       "-mfp16-format=ieee"
@@ -5754,8 +5776,7 @@ proc check_effective_target_arm_neon_softfp_fp16_ok_nocache { } {
     global et_arm_neon_softfp_fp16_flags
     global et_arm_neon_flags
     set et_arm_neon_softfp_fp16_flags ""
-    if { [check_effective_target_arm32]
-	 && [check_effective_target_arm_neon_ok] } {
+    if { [check_effective_target_arm_neon_ok] } {
 	foreach flags {"-mfpu=neon-fp16 -mfloat-abi=softfp"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp -mfp16-format=ieee"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_softfp_fp16_ok object {
@@ -5898,22 +5919,20 @@ proc check_effective_target_arm_fp16_none_ok { } {
 proc check_effective_target_arm_v8_neon_ok_nocache { } {
     global et_arm_v8_neon_flags
     set et_arm_v8_neon_flags ""
-    if { [check_effective_target_arm32] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp-armv8" "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
-	    if { [check_no_compiler_messages_nocache arm_v8_neon_ok object {
-		#if __ARM_ARCH < 8
-		#error not armv8 or later
-		#endif
-		#include "arm_neon.h"
-		void
-		foo ()
-		{
-		  __asm__ volatile ("vrintn.f32 q0, q0");
-		}
-	    } "$flags -mcpu=unset -march=armv8-a"] } {
-		set et_arm_v8_neon_flags $flags
-		return 1
+    foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp-armv8" "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
+	if { [check_no_compiler_messages_nocache arm_v8_neon_ok object {
+	    #if __ARM_ARCH < 8
+	    #error not armv8 or later
+	    #endif
+	    #include "arm_neon.h"
+	    void
+	    foo ()
+	    {
+		__asm__ volatile ("vrintn.f32 q0, q0");
 	    }
+	} "$flags -mcpu=unset -march=armv8-a"] } {
+	    set et_arm_v8_neon_flags "$flags -mcpu=unset -march=armv8-a"
+	    return 1
 	}
     }
 
@@ -5934,8 +5953,7 @@ proc check_effective_target_arm_neonv2_ok_nocache { } {
     global et_arm_neonv2_flags
     global et_arm_neon_flags
     set et_arm_neonv2_flags ""
-    if { [check_effective_target_arm32]
-	 && [check_effective_target_arm_neon_ok] } {
+    if { [check_effective_target_arm_neon_ok] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-vfpv4" "-mfpu=neon-vfpv4 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neonv2_ok object {
 		#include "arm_neon.h"
@@ -6100,6 +6118,7 @@ foreach { armfunc armflag armdefs } {
 	v6z_arm "-march=armv6z+fp -marm" "__ARM_ARCH_6Z__ && !__thumb__"
 	v6z_thumb "-march=armv6z+fp -mthumb -mfloat-abi=softfp" "__ARM_ARCH_6Z__ && __thumb__"
 	v6m "-march=armv6-m -mthumb -mfloat-abi=soft" __ARM_ARCH_6M__
+	v7 "-march=armv7+fp" __ARM_ARCH_7__
 	v7a "-march=armv7-a+fp" __ARM_ARCH_7A__
 	v7a_arm "-march=armv7-a+fp -marm" "__ARM_ARCH_7A__ && !__thumb__"
 	v7a_fp_hard "-march=armv7-a+fp -mfpu=auto -mfloat-abi=hard" __ARM_ARCH_7A__
@@ -8846,7 +8865,7 @@ proc check_effective_target_vect_pack_trunc { } {
       expr { [istarget powerpc*-*-*]
 	     || [check_effective_target_x86]
 	     || [istarget aarch64*-*-*]
-	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
+	     || ([check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
@@ -8872,7 +8891,7 @@ proc check_effective_target_vect_unpack { } {
 	     || [istarget aarch64*-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
+	     || ([check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
@@ -9559,8 +9578,7 @@ proc check_effective_target_vect_condition { } {
 	     || [check_effective_target_x86]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || ([istarget arm*-*-*]
-		 && [check_effective_target_arm_neon_ok])
+	     || [check_effective_target_arm_neon_ok]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || [istarget amdgcn-*-*]
@@ -9578,8 +9596,7 @@ proc check_effective_target_vect_cond_mixed { } {
       expr { [check_effective_target_x86]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
-	     || ([istarget arm*-*-*]
-		 && [check_effective_target_arm_neon_ok])
+	     || [check_effective_target_arm_neon_ok]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
@@ -9760,8 +9777,7 @@ proc available_vector_sizes { } {
 	    lappend result [aarch64_sve_bits]
 	}
 	lappend result 128 64
-    } elseif { [istarget arm*-*-*]
-		&& [check_effective_target_arm_neon_ok] } {
+    } elseif { [check_effective_target_arm_neon_ok] } {
 	lappend result 128 64
     } elseif { [check_effective_target_x86] } {
 	if { [check_avx_available] && ![check_prefer_avx128] } {
@@ -12522,10 +12538,16 @@ proc check_effective_target_aarch64_gas_has_build_attributes { } {
 # various architecture extensions via the .arch_extension pseudo-op.
 
 set exts {
-    "bf16" "cmpbr" "crc" "crypto" "dotprod" "f32mm" "f64mm" "fp" "fp8"
-    "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut" "sb" "simd"
-    "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1" "ssve-fp8dot2"
-    "ssve-fp8dot4" "ssve-fp8fma" "sve-b16b16" "sve" "sve2"
+    "bf16" "cmpbr" "crc" "crypto" "dotprod" "f32mm" "f64mm" "faminmax"
+    "fp" "fp8" "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut"
+    "sb" "simd" "sve-b16b16" "sve" "sve2"
+}
+
+# We don't support SME without SVE2, so we'll use armv9 as the base
+# archiecture for SME and the features that require it.
+set exts_sve2 {
+    "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1"
+    "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma"
 }
 
 foreach { aarch64_ext } $exts {
@@ -12535,6 +12557,20 @@ foreach { aarch64_ext } $exts {
 		return [check_no_compiler_messages aarch64_FUNC_assembler object {
 			__asm__ (".arch_extension FUNC");
 		} "-march=armv8-a+FUNC"]
+	  } else {
+		return 0
+	  }
+	}
+    }]
+}
+
+foreach { aarch64_ext } $exts_sve2 {
+    eval [string map [list FUNC $aarch64_ext] {
+	proc check_effective_target_aarch64_asm_FUNC_ok { } {
+	  if { [istarget aarch64*-*-*] } {
+		return [check_no_compiler_messages aarch64_FUNC_assembler object {
+			__asm__ (".arch_extension FUNC");
+		} "-march=armv9-a+FUNC"]
 	  } else {
 		return 0
 	  }

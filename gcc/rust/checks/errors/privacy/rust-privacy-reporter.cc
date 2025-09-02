@@ -157,7 +157,8 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
     {
     case ModuleVisibility::Public:
       break;
-      case ModuleVisibility::Restricted: {
+    case ModuleVisibility::Restricted:
+      {
 	// If we are in the crate, everything is restricted correctly, but we
 	// can't get a module for it
 	if (!current_module.has_value ())
@@ -215,12 +216,14 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::USIZE:
     case TyTy::ISIZE:
     case TyTy::ADT:
-      case TyTy::STR: {
+    case TyTy::STR:
+      {
 	auto ref_id = ty->get_ref ();
 	if (auto lookup_id = mappings.lookup_hir_to_node (ref_id))
 	  return check_for_privacy_violation (*lookup_id, locus);
-	rust_unreachable ();
       }
+      break;
+
     case TyTy::REF:
       return recursive_check (
 	static_cast<const TyTy::ReferenceType *> (ty)->get_base ());
@@ -243,7 +246,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 	   static_cast<const TyTy::TupleType *> (ty)->get_fields ())
 	recursive_check (param.get_tyty ());
       return;
-      case TyTy::PLACEHOLDER: {
+    case TyTy::PLACEHOLDER:
+      {
 	const auto p = static_cast<const TyTy::PlaceholderType *> (ty);
 	if (!p->can_resolve ())
 	  return;
@@ -272,6 +276,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::INFER:
       return;
     case TyTy::OPAQUE:
+      return;
+    case TyTy::CONST:
       return;
     case TyTy::ERROR:
       return;
@@ -308,6 +314,12 @@ PrivacyReporter::visit (HIR::InlineAsm &)
 void
 PrivacyReporter::visit (HIR::LlvmInlineAsm &)
 {}
+
+void
+PrivacyReporter::visit (HIR::OffsetOf &expr)
+{
+  // TODO: Do we have to do anything?
+}
 
 void
 PrivacyReporter::visit (HIR::TypePath &path)
@@ -413,7 +425,8 @@ PrivacyReporter::visit (HIR::ArrayExpr &expr)
   HIR::ArrayElems &elements = expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	auto &elems = static_cast<HIR::ArrayElemsValues &> (elements);
 	for (auto &value : elems.get_values ())
 	  value->accept_vis (*this);
@@ -515,6 +528,18 @@ PrivacyReporter::visit (HIR::BlockExpr &expr)
 
   if (expr.has_final_expr ())
     expr.get_final_expr ().accept_vis (*this);
+}
+
+void
+PrivacyReporter::visit (HIR::AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+PrivacyReporter::visit (HIR::ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
 }
 
 void

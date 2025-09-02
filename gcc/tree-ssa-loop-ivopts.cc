@@ -132,6 +132,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "dbgcnt.h"
 #include "cfganal.h"
+#include "gimple-fold.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -147,7 +148,7 @@ along with GCC; see the file COPYING3.  If not see
    The average trip count is computed from profile data if it
    exists. */
 
-static inline HOST_WIDE_INT
+static inline unsigned HOST_WIDE_INT
 avg_loop_niter (class loop *loop)
 {
   HOST_WIDE_INT niter = estimated_stmt_executions_int (loop);
@@ -4213,7 +4214,9 @@ adjust_setup_cost (struct ivopts_data *data, int64_t cost,
     return cost;
   else if (optimize_loop_for_speed_p (data->current_loop))
     {
-      int64_t niters = (int64_t) avg_loop_niter (data->current_loop);
+      uint64_t niters = avg_loop_niter (data->current_loop);
+      if (niters > (uint64_t) cost)
+	return (round_up_p && cost != 0) ? 1 : 0;
       return (cost + (round_up_p ? niters - 1 : 0)) / niters;
     }
   else
@@ -7250,7 +7253,24 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 
   base = unshare_expr (cand->iv->base);
 
-  create_iv (base, PLUS_EXPR, unshare_expr (cand->iv->step),
+  /* The step computation could invoke UB when the loop does not iterate.
+     Avoid inserting it on the preheader in its native form but rewrite
+     it to a well-defined form.  This also helps masking SCEV issues
+     which freely re-associates the IV computations when building up
+     CHRECs without much regard for signed overflow invoking UB.  */
+  gimple_seq stmts = NULL;
+  tree step = force_gimple_operand (unshare_expr (cand->iv->step), &stmts,
+				    true, NULL_TREE);
+  if (stmts)
+    {
+      for (auto gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
+	if (gimple_needing_rewrite_undefined (gsi_stmt (gsi)))
+	  rewrite_to_defined_unconditional (&gsi);
+      gsi_insert_seq_on_edge_immediate
+	(loop_preheader_edge (data->current_loop), stmts);
+    }
+
+  create_iv (base, PLUS_EXPR, step,
 	     cand->var_before, data->current_loop,
 	     &incr_pos, after, &cand->var_before, &cand->var_after);
 }
@@ -7277,7 +7297,7 @@ create_new_ivs (struct ivopts_data *data, class iv_ca *set)
       if (data->loop_loc != UNKNOWN_LOCATION)
 	fprintf (dump_file, " at %s:%d", LOCATION_FILE (data->loop_loc),
 		 LOCATION_LINE (data->loop_loc));
-      fprintf (dump_file, ", " HOST_WIDE_INT_PRINT_DEC " avg niters",
+      fprintf (dump_file, ", " HOST_WIDE_INT_PRINT_UNSIGNED " avg niters",
 	       avg_loop_niter (data->current_loop));
       fprintf (dump_file, ", %lu IVs:\n", bitmap_count_bits (set->cands));
       EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)

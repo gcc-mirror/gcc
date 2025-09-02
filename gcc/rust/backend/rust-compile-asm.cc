@@ -74,33 +74,71 @@ CompileAsm::asm_construct_string_tree (HIR::InlineAsm &expr)
   return Backend::string_constant_expression (result);
 }
 
+tl::optional<std::reference_wrapper<HIR::Expr>>
+get_out_expr (HIR::InlineAsmOperand &operand)
+{
+  switch (operand.get_register_type ())
+    {
+    case HIR::InlineAsmOperand::RegisterType::Out:
+      return *operand.get_out ().expr;
+    case HIR::InlineAsmOperand::RegisterType::InOut:
+      return *operand.get_in_out ().expr;
+    case HIR::InlineAsmOperand::RegisterType::SplitInOut:
+      return *operand.get_split_in_out ().out_expr;
+    case HIR::InlineAsmOperand::RegisterType::Const:
+    case HIR::InlineAsmOperand::RegisterType::Sym:
+    case HIR::InlineAsmOperand::RegisterType::Label:
+    case HIR::InlineAsmOperand::RegisterType::In:
+      break;
+    }
+  return tl::nullopt;
+}
+
 tree
 CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
 
   tree head = NULL_TREE;
-  for (auto &output : expr.get_operands ())
+  for (auto &operand : expr.get_operands ())
     {
-      if (output.get_register_type ()
-	  == AST::InlineAsmOperand::RegisterType::Out)
-	{
-	  auto out = output.get_out ();
+      tl::optional<std::reference_wrapper<HIR::Expr>> out_expr
+	= get_out_expr (operand);
+      if (!out_expr.has_value ())
+	continue;
 
-	  tree out_tree = CompileExpr::Compile (*out.expr, this->ctx);
-	  // expects a tree list
-	  // TODO: This assumes that the output is a register
-	  std::string expr_name = "=r";
-	  auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
-	  head
-	    = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
-					      out_tree));
+      tree out_tree = CompileExpr::Compile (*out_expr, this->ctx);
+      // expects a tree list
+      // TODO: This assumes that the output is a register
+      std::string expr_name = "=r";
+      auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
+      head = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
+					     out_tree));
 
-	  /*Backend::debug (head);*/
-	  /*head = chainon (head, out_tree);*/
-	}
+      /*Backend::debug (head);*/
+      /*head = chainon (head, out_tree);*/
     }
   return head;
+}
+
+tl::optional<std::reference_wrapper<HIR::Expr>>
+get_in_expr (HIR::InlineAsmOperand &operand)
+{
+  switch (operand.get_register_type ())
+    {
+    case HIR::InlineAsmOperand::RegisterType::In:
+      return *operand.get_in ().expr;
+    case HIR::InlineAsmOperand::RegisterType::InOut:
+      return *operand.get_in_out ().expr;
+    case HIR::InlineAsmOperand::RegisterType::SplitInOut:
+      return *operand.get_split_in_out ().in_expr;
+    case HIR::InlineAsmOperand::RegisterType::Const:
+    case HIR::InlineAsmOperand::RegisterType::Sym:
+    case HIR::InlineAsmOperand::RegisterType::Label:
+    case HIR::InlineAsmOperand::RegisterType::Out:
+      break;
+    }
+  return tl::nullopt;
 }
 
 tree
@@ -108,23 +146,22 @@ CompileAsm::asm_construct_inputs (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
   tree head = NULL_TREE;
-  for (auto &input : expr.get_operands ())
+  for (auto &operand : expr.get_operands ())
     {
-      if (input.get_register_type () == AST::InlineAsmOperand::RegisterType::In)
-	{
-	  auto in = input.get_in ();
+      tl::optional<std::reference_wrapper<HIR::Expr>> in_expr
+	= get_in_expr (operand);
+      if (!in_expr.has_value ())
+	continue;
 
-	  tree in_tree = CompileExpr::Compile (*in.expr, this->ctx);
-	  // expects a tree list
-	  // TODO: This assumes that the input is a register
-	  std::string expr_name = "r";
-	  auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
-	  head
-	    = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
-					      in_tree));
+      tree in_tree = CompileExpr::Compile (*in_expr, this->ctx);
+      // expects a tree list
+      // TODO: This assumes that the input is a register
+      std::string expr_name = "r";
+      auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
+      head = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
+					     in_tree));
 
-	  /*head = chainon (head, out_tree);*/
-	}
+      /*head = chainon (head, out_tree);*/
     }
   return head;
 }

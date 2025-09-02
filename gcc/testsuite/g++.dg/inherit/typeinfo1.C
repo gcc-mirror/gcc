@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-non-c-typedef-for-linkage" }
+
 typedef struct {
    virtual const char *blah() {
      return "Heya::blah";

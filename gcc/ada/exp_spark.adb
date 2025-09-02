@@ -1128,8 +1128,7 @@ package body Exp_SPARK is
       Wrapper_Decl_List : List_Id;
       Wrapper_Body_List : List_Id := No_List;
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
    begin
@@ -1253,7 +1252,7 @@ package body Exp_SPARK is
          end if;
       end if;
 
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end SPARK_Freeze_Type;
 
 end Exp_SPARK;

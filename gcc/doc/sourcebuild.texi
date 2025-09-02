@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2025 Free Software Foundation, Inc.
+cc Copyright (C) 2002-2025 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2562,6 +2562,12 @@ Test system has an integer register width of 64 bits.
 
 @item riscv_a
 Test target architecture has support for the A extension.
+
+@item riscv_b_ok
+Test target architecture can execute code with B extension enabled.
+
+@item riscv_v_ok
+Test target architecture can execute code with V extension enabled.
 
 @item riscv_zaamo
 Test target architecture has support for the zaamo extension.

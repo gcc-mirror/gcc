@@ -36,9 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* optinfo_item's ctor.  Takes ownership of TEXT.  */
 
-optinfo_item::optinfo_item (enum optinfo_item_kind kind, location_t location,
+optinfo_item::optinfo_item (enum kind kind_, location_t location,
 			    char *text)
-: m_kind (kind), m_location (location), m_text (text)
+: m_kind (kind_), m_location (location), m_text (text)
 {
 }
 
@@ -52,19 +52,19 @@ optinfo_item::~optinfo_item ()
 /* Get a string from KIND.  */
 
 const char *
-optinfo_kind_to_string (enum optinfo_kind kind)
+optinfo::kind_to_string (enum kind kind_)
 {
-  switch (kind)
+  switch (kind_)
     {
     default:
       gcc_unreachable ();
-    case OPTINFO_KIND_SUCCESS:
+    case kind::success:
       return "success";
-    case OPTINFO_KIND_FAILURE:
+    case kind::failure:
       return "failure";
-    case OPTINFO_KIND_NOTE:
+    case kind::note:
       return "note";
-    case OPTINFO_KIND_SCOPE:
+    case kind::scope:
       return "scope";
     }
 }
@@ -91,19 +91,19 @@ optinfo::add_item (std::unique_ptr<optinfo_item> item)
 
 /* Get MSG_* flags corresponding to KIND.  */
 
-static dump_flags_t
-optinfo_kind_to_dump_flag (enum optinfo_kind kind)
+dump_flags_t
+optinfo::kind_to_dump_flag (enum kind kind_)
 {
-  switch (kind)
+  switch (kind_)
     {
     default:
       gcc_unreachable ();
-    case OPTINFO_KIND_SUCCESS:
+    case kind::success:
       return MSG_OPTIMIZED_LOCATIONS;
-    case OPTINFO_KIND_FAILURE:
+    case kind::failure:
       return MSG_MISSED_OPTIMIZATION;
-    case OPTINFO_KIND_NOTE:
-    case OPTINFO_KIND_SCOPE:
+    case kind::note:
+    case kind::scope:
       return MSG_NOTE;
     }
 }
@@ -114,7 +114,7 @@ optinfo_kind_to_dump_flag (enum optinfo_kind kind)
 void
 optinfo::emit_for_opt_problem () const
 {
-  dump_flags_t dump_kind = optinfo_kind_to_dump_flag (get_kind ());
+  dump_flags_t dump_kind = kind_to_dump_flag (get_kind ());
   dump_kind |= MSG_PRIORITY_REEMITTED;
 
   /* Re-emit to "immediate" destinations, without creating a new optinfo.  */
@@ -134,14 +134,14 @@ void
 optinfo::handle_dump_file_kind (dump_flags_t dump_kind)
 {
   /* Any optinfo for a "scope" should have been emitted separately.  */
-  gcc_assert (m_kind != OPTINFO_KIND_SCOPE);
+  gcc_assert (m_kind != kind::scope);
 
   if (dump_kind & MSG_OPTIMIZED_LOCATIONS)
-    m_kind = OPTINFO_KIND_SUCCESS;
+    m_kind = kind::success;
   else if (dump_kind & MSG_MISSED_OPTIMIZATION)
-    m_kind = OPTINFO_KIND_FAILURE;
+    m_kind = kind::failure;
   else if (dump_kind & MSG_NOTE)
-    m_kind = OPTINFO_KIND_NOTE;
+    m_kind = kind::note;
 }
 
 /* Return true if any of the active optinfo destinations make use

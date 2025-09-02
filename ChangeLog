@@ -1,3 +1,45 @@
+2025-08-28  Yuao Ma  <c8ef@outlook.com>
+
+	* MAINTAINERS: add myself to write after approval
+
+2025-08-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* MAINTAINERS: Update my email address and stand down as AArch64
+	maintainer.
+
+2025-08-18  Spencer Abson  <spencer.abson@student.manchester.ac.uk>
+
+	* MAINTAINERS: Update my email address.
+
+2025-08-17  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Switch around Andrew Pinski's entries in
+	Contributing under DCO.
+
+2025-08-16  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2025-08-14  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2025-08-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* MAINTAINERS (Andrew Pinski): Update email address.
+
+2025-08-07  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* .gitignore: Remove 'libgrust/*/target/'.
+
+2025-08-01  Luis Machado  <luis.machado.foss@gmail.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
 2025-07-22  Patrick Palka  <ppalka@redhat.com>
 
 	* MAINTAINERS: Add myself as C++ front end reviewer.

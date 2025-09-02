@@ -290,6 +290,7 @@ extern rtx ix86_tls_module_base (void);
 extern bool ix86_gpr_tls_address_pattern_p (rtx);
 extern bool ix86_tls_address_pattern_p (rtx);
 extern rtx ix86_rewrite_tls_address (rtx);
+extern rtx ix86_tls_get_addr (void);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
@@ -430,8 +431,7 @@ extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
   (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
-extern rtl_opt_pass *make_pass_remove_redundant_vector_load
-  (gcc::context *);
+extern rtl_opt_pass *make_pass_x86_cse (gcc::context *);
 extern rtl_opt_pass *make_pass_apx_nf_convert (gcc::context *);
 extern rtl_opt_pass *make_pass_align_tight_loops (gcc::context *);
 
@@ -448,3 +448,4 @@ extern void ix86_set_handled_components (sbitmap);
 /* In i386-expand.cc.  */
 bool ix86_check_builtin_isa_match (unsigned int, HOST_WIDE_INT*,
 				   HOST_WIDE_INT*);
+rtx ix86_vgf2p8affine_shift_matrix (rtx, rtx, enum rtx_code);

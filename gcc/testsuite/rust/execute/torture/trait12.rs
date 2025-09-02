@@ -16,7 +16,6 @@ struct Identity;
 
 impl<'a, T> FnLike<&'a T, &'a T> for Identity {
     fn call(&self, arg: &'a T) -> &'a T {
-        // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
         arg
     }
 }

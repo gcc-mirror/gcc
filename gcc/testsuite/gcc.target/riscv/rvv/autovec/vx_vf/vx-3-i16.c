@@ -2,10 +2,12 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d --param=gpr2vr-cost=15" } */
 
 #include "vx_binary.h"
+#include "vx_ternary.h"
 
 #define T int16_t
 
 TEST_BINARY_VX_SIGNED_0(T)
+TEST_TERNARY_VX_SIGNED_0(T)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
@@ -21,3 +23,5 @@ TEST_BINARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-not {vsadd.vx} } } */
 /* { dg-final { scan-assembler-not {vssub.vx} } } */
 /* { dg-final { scan-assembler-not {vaadd.vx} } } */
+/* { dg-final { scan-assembler-not {vmacc.vx} } } */
+/* { dg-final { scan-assembler-not {vnmsac.vx} } } */

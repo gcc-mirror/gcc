@@ -19,6 +19,7 @@
 #ifndef RUST_PRIVACY_REPORTER_H
 #define RUST_PRIVACY_REPORTER_H
 
+#include "rust-hir-expr.h"
 #include "rust-hir-map.h"
 #include "rust-hir-visitor.h"
 #include "rust-mapping-common.h"
@@ -106,6 +107,8 @@ types
   virtual void visit (HIR::MethodCallExpr &expr);
   virtual void visit (HIR::FieldAccessExpr &expr);
   virtual void visit (HIR::BlockExpr &expr);
+  virtual void visit (HIR::AnonConst &expr);
+  virtual void visit (HIR::ConstBlock &expr);
   virtual void visit (HIR::ContinueExpr &expr);
   virtual void visit (HIR::BreakExpr &expr);
   virtual void visit (HIR::RangeFromToExpr &expr);
@@ -126,6 +129,7 @@ types
   virtual void visit (HIR::AsyncBlockExpr &expr);
   virtual void visit (HIR::InlineAsm &expr);
   virtual void visit (HIR::LlvmInlineAsm &expr);
+  virtual void visit (HIR::OffsetOf &expr);
 
   virtual void visit (HIR::EnumItemTuple &);
   virtual void visit (HIR::EnumItemStruct &);

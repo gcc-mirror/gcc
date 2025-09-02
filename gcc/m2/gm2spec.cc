@@ -158,10 +158,12 @@ static const char *m2_path_name = "";
 typedef struct named_path_s {
   std::vector<const char*>path;
   const char *name;
+  bool lib_root;
 } named_path;
 
 static std::vector<named_path>Ipaths;
 
+/* push_back_Ipath pushes a named path to the Ipaths global variable.  */
 
 static void
 push_back_Ipath (const char *arg)
@@ -171,6 +173,7 @@ push_back_Ipath (const char *arg)
       named_path np;
       np.path.push_back (arg);
       np.name = m2_path_name;
+      np.lib_root = false;
       Ipaths.push_back (np);
     }
   else
@@ -183,9 +186,23 @@ push_back_Ipath (const char *arg)
 	  named_path np;
 	  np.path.push_back (arg);
 	  np.name = m2_path_name;
+	  np.lib_root = false;
 	  Ipaths.push_back (np);
 	}
     }
+}
+
+/* push_back_lib_root pushes a lib_root onto the Ipaths vector.
+   The ordering of the -fm2_add_lib_root=, -I and named paths
+   must be preserved.  */
+
+static void
+push_back_lib_root (const char *arg)
+{
+  named_path np;
+  np.name = arg;
+  np.lib_root = true;
+  Ipaths.push_back (np);
 }
 
 /* Return whether strings S1 and S2 are both NULL or both the same
@@ -379,15 +396,18 @@ convert_abbreviations (const char *libraries)
   return full_libraries;
 }
 
-/* add_m2_I_path appends -fm2-pathname and -fm2-pathnameI options to
-   the command line which are contructed in the saved Ipaths.  */
+/* add_m2_I_path appends -fm2-pathname, -fm2-pathnameI and -fm2-add-lib-root
+   options to the command line which are contructed in the saved Ipaths.
+   The order of these options must be maintained.  */
 
 static void
 add_m2_I_path (void)
 {
   for (auto np : Ipaths)
     {
-      if (strcmp (np.name, "") == 0)
+      if (np.lib_root)
+	append_option (OPT_fm2_pathname_rootI_, safe_strdup (np.name), 1);
+      else if (strcmp (np.name, "") == 0)
 	append_option (OPT_fm2_pathname_, safe_strdup ("-"), 1);
       else
 	append_option (OPT_fm2_pathname_, safe_strdup (np.name), 1);
@@ -576,6 +596,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  m2_path_name = decoded_options[i].arg;
 	  break;
+	case OPT_fm2_pathname_root_:
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
+	  push_back_lib_root (decoded_options[i].arg);
+	  break;
 	case OPT__help:
 	case OPT__help_:
 	  /* Let gcc.cc handle this, as it has a really
@@ -738,7 +762,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	error ("%qs and %qs cannot both be enabled",
 	       "-fgen-module-list=", "-fuse-list=");
     }
-
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */

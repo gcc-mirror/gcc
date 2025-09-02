@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "diagnostics/output-spec.h"
+#include "diagnostics/logging.h"
 #include "opts.h"
 #include "options.h"
 
@@ -78,6 +79,8 @@ handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
   gcc_assert (line_table);
 
   const char *const option_name = "-fdiagnostics-add-output=";
+  DIAGNOSTICS_LOG_SCOPE_PRINTF2 (dc.get_logger (),
+				 "handling: %s%s", option_name, arg);
   opt_spec_context ctxt (opts, dc, line_table, loc, option_name);
   auto sink = ctxt.parse_and_make_sink (arg, dc);
   if (!sink)
@@ -97,6 +100,8 @@ handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
   gcc_assert (line_table);
 
   const char *const option_name = "-fdiagnostics-set-output=";
+  DIAGNOSTICS_LOG_SCOPE_PRINTF2 (dc.get_logger (),
+				 "handling: %s%s", option_name, arg);
   opt_spec_context ctxt (opts, dc, line_table, loc, option_name);
   auto sink = ctxt.parse_and_make_sink (arg, dc);
   if (!sink)

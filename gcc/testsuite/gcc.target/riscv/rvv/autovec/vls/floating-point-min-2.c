@@ -39,5 +39,5 @@ DEF_MINMAX_VX (min, 128, double, <)
 DEF_MINMAX_VX (min, 256, double, <)
 DEF_MINMAX_VX (min, 512, double, <)
 
-/* { dg-final { scan-assembler-times {vfmin\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 30 } } */
+/* { dg-final { scan-assembler-times {vfmin\.vf\s+v[0-9]+,\s*v[0-9]+,\s*f[ast]?[0-9]+} 30 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */

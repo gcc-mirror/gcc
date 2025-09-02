@@ -178,7 +178,7 @@ libgcobol_la_LIBADD =
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_OBJECTS = charmaps.lo \
 @BUILD_LIBGCOBOL_TRUE@	constants.lo gfileio.lo gmath.lo \
 @BUILD_LIBGCOBOL_TRUE@	intrinsic.lo io.lo libgcobol.lo \
-@BUILD_LIBGCOBOL_TRUE@	valconv.lo
+@BUILD_LIBGCOBOL_TRUE@	stringbin.lo valconv.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -404,6 +404,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	intrinsic.cc				\
 @BUILD_LIBGCOBOL_TRUE@	io.cc					\
 @BUILD_LIBGCOBOL_TRUE@	libgcobol.cc				\
+@BUILD_LIBGCOBOL_TRUE@	stringbin.cc				\
 @BUILD_LIBGCOBOL_TRUE@	valconv.cc
 
 @BUILD_LIBGCOBOL_TRUE@WARN_CFLAGS = -W -Wall -Wwrite-strings
@@ -526,6 +527,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/intrinsic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgcobol.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringbin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/valconv.Plo@am__quote@
 
 .cc.o:

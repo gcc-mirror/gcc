@@ -1,3 +1,16 @@
+2025-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/121516
+	* libgccjit++.h (context::new_struct_type): Replace use of
+	&fields[0] with fields.data ().
+	(context::new_function): Likewise for params.
+	(context::new_rvalue): Likewise for elements.
+	(context::new_call): Likewise for args.
+	(block::end_with_switch): Likewise for cases.
+	(block::end_with_extended_asm_goto): Likewise for goto_blocks.
+	(context::new_struct_ctor): Likewise for fields and values.
+	(context::new_array_ctor): Likewise for values.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.cc: Update usage of "diagnostic_info" to

@@ -190,6 +190,7 @@ pass_warn_recursion::execute (function *func)
   if (find_function_exit (entry_bb) || m_calls->length () == 0)
     return 0;
 
+  auto_diagnostic_group d;
   if (warning_at (DECL_SOURCE_LOCATION (func->decl),
 		  OPT_Winfinite_recursion,
 		  "infinite recursion detected"))

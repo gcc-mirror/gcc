@@ -22,6 +22,7 @@
 #include "rust-derive-debug.h"
 #include "rust-derive-default.h"
 #include "rust-derive-eq.h"
+#include "rust-derive-ord.h"
 #include "rust-derive-partial-eq.h"
 #include "rust-derive-hash.h"
 
@@ -59,10 +60,11 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::Hash:
       return vec (DeriveHash (loc).go (item));
     case BuiltinMacro::Ord:
+      return vec (DeriveOrd (DeriveOrd::Ordering::Total, loc).go (item));
     case BuiltinMacro::PartialOrd:
+      return vec (DeriveOrd (DeriveOrd::Ordering::Partial, loc).go (item));
     default:
-      rust_sorry_at (loc, "unimplemented builtin derive macro");
-      return {};
+      rust_unreachable ();
     };
 }
 
@@ -79,7 +81,8 @@ DeriveVisitor::setup_impl_generics (
     {
       switch (generic->get_kind ())
 	{
-	  case GenericParam::Kind::Lifetime: {
+	case GenericParam::Kind::Lifetime:
+	  {
 	    LifetimeParam &lifetime_param = (LifetimeParam &) *generic.get ();
 
 	    Lifetime l = builder.new_lifetime (lifetime_param.get_lifetime ());
@@ -91,7 +94,8 @@ DeriveVisitor::setup_impl_generics (
 	  }
 	  break;
 
-	  case GenericParam::Kind::Type: {
+	case GenericParam::Kind::Type:
+	  {
 	    TypeParam &type_param = (TypeParam &) *generic.get ();
 
 	    std::unique_ptr<Type> associated_type = builder.single_type_path (
@@ -104,7 +108,8 @@ DeriveVisitor::setup_impl_generics (
 	    std::vector<std::unique_ptr<TypeParamBound>> extra_bounds;
 
 	    if (extra_bound)
-	      extra_bounds.emplace_back (std::move (*extra_bound));
+	      extra_bounds.emplace_back (
+		extra_bound.value ()->clone_type_param_bound ());
 
 	    auto impl_type_param
 	      = builder.new_type_param (type_param, std::move (extra_bounds));
@@ -113,17 +118,20 @@ DeriveVisitor::setup_impl_generics (
 	  }
 	  break;
 
-	  case GenericParam::Kind::Const: {
-	    rust_unreachable ();
+	case GenericParam::Kind::Const:
+	  {
+	    ConstGenericParam &const_param
+	      = (ConstGenericParam &) *generic.get ();
 
-	    // TODO
-	    // const ConstGenericParam *const_param
-	    //   = (const ConstGenericParam *) generic.get ();
-	    // std::unique_ptr<Expr> const_expr = nullptr;
+	    std::unique_ptr<Type> associated_type
+	      = builder.single_type_path (const_param.get_name ().as_string ());
 
-	    // GenericArg type_arg
-	    //   = GenericArg::create_const (std::move (const_expr));
-	    // generic_args.push_back (std::move (type_arg));
+	    GenericArg type_arg
+	      = GenericArg::create_type (std::move (associated_type));
+	    generic_args.push_back (std::move (type_arg));
+
+	    auto impl_const_param = builder.new_const_param (const_param);
+	    impl_generics.push_back (std::move (impl_const_param));
 	  }
 	  break;
 	}

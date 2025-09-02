@@ -47,6 +47,27 @@ ASTLoweringBase::visit (AST::ErrorPropagationExpr &expr)
 }
 
 void
+ASTLoweringBase::visit (AST::TryExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for try-blocks");
+  rust_unreachable ();
+}
+
+void
+ASTLoweringBase::visit (AST::ForLoopExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for for-loops");
+  rust_unreachable ();
+}
+
+void
+ASTLoweringBase::visit (AST::WhileLetLoopExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (), "missing desugar for while-let loops");
+  rust_unreachable ();
+}
+
+void
 ASTLoweringBase::visit (AST::Token &)
 {}
 void
@@ -115,7 +136,7 @@ void
 ASTLoweringBase::visit (AST::MetaItemLitExpr &)
 {}
 void
-ASTLoweringBase::visit (AST::MetaItemPathLit &)
+ASTLoweringBase::visit (AST::MetaItemPathExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::BorrowExpr &)
@@ -201,6 +222,12 @@ void
 ASTLoweringBase::visit (AST::BlockExpr &)
 {}
 void
+ASTLoweringBase::visit (AST::AnonConst &)
+{}
+void
+ASTLoweringBase::visit (AST::ConstBlock &)
+{}
+void
 ASTLoweringBase::visit (AST::ClosureExprInnerTyped &)
 {}
 void
@@ -243,12 +270,6 @@ ASTLoweringBase::visit (AST::LoopExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::WhileLoopExpr &)
-{}
-void
-ASTLoweringBase::visit (AST::WhileLetLoopExpr &)
-{}
-void
-ASTLoweringBase::visit (AST::ForLoopExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::IfExpr &)
@@ -474,6 +495,12 @@ void
 ASTLoweringBase::visit (AST::GroupedPattern &)
 {}
 void
+ASTLoweringBase::visit (AST::SlicePatternItemsNoRest &)
+{}
+void
+ASTLoweringBase::visit (AST::SlicePatternItemsHasRest &)
+{}
+void
 ASTLoweringBase::visit (AST::SlicePattern &)
 {}
 void
@@ -549,6 +576,10 @@ ASTLoweringBase::visit (AST::SelfParam &param)
 
 void
 ASTLoweringBase::visit (AST::FormatArgs &fmt)
+{}
+
+void
+ASTLoweringBase::visit (AST::OffsetOf &offset_of)
 {}
 
 HIR::Lifetime
@@ -648,12 +679,14 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
     {
       switch (arg.get_kind ())
 	{
-	  case AST::GenericArg::Kind::Type: {
+	case AST::GenericArg::Kind::Type:
+	  {
 	    auto type = ASTLoweringType::translate (arg.get_type ());
 	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
 	    break;
 	  }
-	  case AST::GenericArg::Kind::Const: {
+	case AST::GenericArg::Kind::Const:
+	  {
 	    auto expr = ASTLoweringExpr::translate (arg.get_expression ());
 	    const_args.emplace_back (
 	      HIR::ConstGenericArg (std::unique_ptr<HIR::Expr> (expr),
@@ -887,7 +920,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
   std::unique_ptr<HIR::RangePatternBound> hir_bound = nullptr;
   switch (bound.get_bound_type ())
     {
-      case AST::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case AST::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	AST::RangePatternBoundLiteral &ref
 	  = static_cast<AST::RangePatternBoundLiteral &> (bound);
 
@@ -898,7 +932,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
 					     ref.get_has_minus ()));
       }
       break;
-      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+    case AST::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
 	HIR::PathInExpression *path
@@ -908,7 +943,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
 	  new HIR::RangePatternBoundPath (*path));
       }
       break;
-      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case AST::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
 	HIR::QualifiedPathInExpression *qualpath

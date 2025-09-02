@@ -423,12 +423,6 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 }
 
 void
-ASTLoweringExprWithBlock::visit (AST::ForLoopExpr &expr)
-{
-  rust_unreachable ();
-}
-
-void
 ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
 {
   HIR::Expr *branch_value

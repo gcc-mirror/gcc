@@ -61,6 +61,7 @@ public:
   void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
   void visit (TyTy::PointerType &) override { rust_unreachable (); }
   void visit (TyTy::ParamType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstType &) override { rust_unreachable (); }
   void visit (TyTy::StrType &) override { rust_unreachable (); }
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
@@ -92,6 +93,7 @@ public:
   void visit (TyTy::ReferenceType &type) override;
   void visit (TyTy::PointerType &type) override;
   void visit (TyTy::ParamType &type) override;
+  void visit (TyTy::ConstType &type) override;
   void visit (TyTy::PlaceholderType &type) override;
   void visit (TyTy::ProjectionType &type) override;
   void visit (TyTy::ClosureType &type) override;
@@ -145,6 +147,7 @@ public:
   void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
   void visit (TyTy::PointerType &) override { rust_unreachable (); }
   void visit (TyTy::ParamType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstType &) override { rust_unreachable (); }
   void visit (TyTy::StrType &) override { rust_unreachable (); }
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
   void visit (TyTy::PlaceholderType &) override { rust_unreachable (); }
@@ -185,12 +188,13 @@ public:
   void visit (const TyTy::ReferenceType &) override {}
   void visit (const TyTy::PointerType &) override {}
   void visit (const TyTy::ParamType &) override {}
+  void visit (const TyTy::ConstType &) override {}
   void visit (const TyTy::StrType &) override {}
   void visit (const TyTy::NeverType &) override {}
   void visit (const TyTy::PlaceholderType &) override {}
   void visit (const TyTy::ProjectionType &) override {}
   void visit (const TyTy::DynamicObjectType &) override {}
-  void visit (const TyTy::OpaqueType &type) override {}
+  void visit (const TyTy::OpaqueType &) override {}
 
 private:
   GetUsedSubstArgs ();

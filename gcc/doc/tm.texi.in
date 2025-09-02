@@ -37,6 +37,8 @@ through the macros defined in the @file{.h} file.
 * Trampolines::         Code set up at run time to enter a nested function.
 * Library Calls::       Controlling how library routines are implicitly called.
 * Addressing Modes::    Defining addressing modes valid for memory operands.
+* Vectorization::       Controlling how the vectorizer operates.
+* OpenMP and OpenACC::  Defining how OpenMP and OpenACC features should work.
 * Anchored Addresses::  Defining how @option{-fsection-anchors} should work.
 * Condition Code::      Defining how insns update the condition code.
 * Costs::               Defining relative costs of different operations.
@@ -1251,10 +1253,10 @@ the smaller of @var{computed} and @code{BIGGEST_ALIGNMENT}
 
 @defmac MAX_FIXED_MODE_SIZE
 An integer expression for the size in bits of the largest integer
-machine mode that should actually be used.  All integer machine modes of
-this size or smaller can be used for structures and unions with the
-appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
-(DImode)} is assumed.
+machine mode that should actually be used by GCC internally.
+All integer machine modes of this size or smaller can be used for
+structures and unions with the appropriate sizes.  If this macro is
+undefined, @code{MAX (BITS_PER_WORD * 2, 64)} is assumed.
 @end defmac
 
 @defmac STACK_SAVEAREA_MODE (@var{save_level})
@@ -4273,6 +4275,10 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_BUILTIN_RECIPROCAL
 
+@node Vectorization
+@section Vectorization
+@cindex Vectorization
+
 @hook TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
@@ -4310,6 +4316,12 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
 
 @hook TARGET_VECTORIZE_BUILTIN_SCATTER
+
+@hook TARGET_VECTORIZE_PREFER_GATHER_SCATTER
+
+@node OpenMP and OpenACC
+@section OpenMP and OpenACC
+@cindex OpenMP and OpenACC
 
 @hook TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
 
@@ -8124,7 +8136,7 @@ maintainer is familiar with.
 
 @hook TARGET_MEMTAG_CAN_TAG_ADDRESSES
 
-@hook TARGET_MEMTAG_TAG_SIZE
+@hook TARGET_MEMTAG_TAG_BITSIZE
 
 @hook TARGET_MEMTAG_GRANULE_SIZE
 

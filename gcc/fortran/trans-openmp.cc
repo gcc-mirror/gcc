@@ -9735,6 +9735,12 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 			 variant_proc_name, &odv->where);
 	      variant_proc_sym = NULL;
 	    }
+	  else if (variant_proc_sym == ns->proc_name)
+	    {
+	      gfc_error ("variant %qs at %L is the same as base function",
+			 variant_proc_name, &odv->where);
+	      variant_proc_sym = NULL;
+	    }
 	  else if (omp_get_context_selector (set_selectors,
 					     OMP_TRAIT_SET_CONSTRUCT,
 					     OMP_TRAIT_CONSTRUCT_SIMD)

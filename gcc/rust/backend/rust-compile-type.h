@@ -50,6 +50,7 @@ public:
   void visit (const TyTy::ReferenceType &) override;
   void visit (const TyTy::PointerType &) override;
   void visit (const TyTy::ParamType &) override;
+  void visit (const TyTy::ConstType &) override;
   void visit (const TyTy::StrType &) override;
   void visit (const TyTy::NeverType &) override;
   void visit (const TyTy::PlaceholderType &) override;

@@ -143,7 +143,7 @@ optrecord_json_writer::add_record (const optinfo *optinfo)
   add_record (obj);
 
   /* Potentially push the scope.  */
-  if (optinfo->get_kind () == OPTINFO_KIND_SCOPE)
+  if (optinfo->get_kind () == optinfo::kind::scope)
     {
       json::array *children = new json::array ();
       obj->set ("children", children);
@@ -334,7 +334,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
   obj->set ("impl_location",
 	    impl_location_to_json (optinfo->get_impl_location ()));
 
-  const char *kind_str = optinfo_kind_to_string (optinfo->get_kind ());
+  const char *kind_str = optinfo::kind_to_string (optinfo->get_kind ());
   obj->set_string ("kind", kind_str);
   json::array *message = new json::array ();
   obj->set ("message", message);
@@ -345,12 +345,12 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	{
 	default:
 	  gcc_unreachable ();
-	case OPTINFO_ITEM_KIND_TEXT:
+	case optinfo_item::kind::text:
 	  {
 	    message->append_string (item->get_text ());
 	  }
 	  break;
-	case OPTINFO_ITEM_KIND_TREE:
+	case optinfo_item::kind::tree:
 	  {
 	    json::object *json_item = new json::object ();
 	    json_item->set_string ("expr", item->get_text ());
@@ -363,7 +363,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    message->append (json_item);
 	  }
 	  break;
-	case OPTINFO_ITEM_KIND_GIMPLE:
+	case optinfo_item::kind::gimple:
 	  {
 	    json::object *json_item = new json::object ();
 	    json_item->set_string ("stmt", item->get_text ());
@@ -376,7 +376,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    message->append (json_item);
 	  }
 	  break;
-	case OPTINFO_ITEM_KIND_SYMTAB_NODE:
+	case optinfo_item::kind::symtab_node:
 	  {
 	    json::object *json_item = new json::object ();
 	    json_item->set_string ("symtab_node", item->get_text ());

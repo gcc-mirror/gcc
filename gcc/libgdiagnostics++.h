@@ -477,6 +477,9 @@ public:
   void
   take_global_graph (graph g);
 
+  void
+  set_debug_physical_locations (bool value);
+
   diagnostic_manager *m_inner;
   bool m_owned;
 };
@@ -924,6 +927,13 @@ manager::take_global_graph (graph g)
   diagnostic_manager_take_global_graph (m_inner,
 					g.m_inner);
   g.m_owned = false;
+}
+
+inline void
+manager::set_debug_physical_locations (bool value)
+{
+  diagnostic_manager_set_debug_physical_locations (m_inner,
+						   value ? 1 : 0);
 }
 
 // class graph

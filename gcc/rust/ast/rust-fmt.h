@@ -266,11 +266,10 @@ enum ParseMode
 
 extern "C" {
 
-FormatArgsHandle
-collect_pieces (const char *input, bool append_newline, ParseMode parse_mode);
+FormatArgsHandle collect_pieces (const char *input, bool append_newline,
+				 ParseMode parse_mode);
 
-FormatArgsHandle
-clone_pieces (const FormatArgsHandle &);
+FormatArgsHandle clone_pieces (const FormatArgsHandle &);
 
 void destroy_pieces (FormatArgsHandle);
 

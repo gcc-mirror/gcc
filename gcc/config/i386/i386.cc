@@ -11382,6 +11382,23 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
 
   return cost;
 }
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+bool
+ix86_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
+				     unsigned int align,
+				     enum by_pieces_operation op,
+				     bool speed_p)
+{
+  /* Return true when we are currently expanding memcpy/memset epilogue
+     with move_by_pieces or store_by_pieces.  */
+  if (cfun->machine->by_pieces_in_use)
+    return true;
+
+  return default_use_by_pieces_infrastructure_p (size, align, op,
+						 speed_p);
+}
 
 /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
    this is used for to form addresses to local data when -fPIC is in
@@ -12439,9 +12456,31 @@ ix86_tls_index (void)
 
 static GTY(()) rtx ix86_tls_symbol;
 
-static rtx
+rtx
 ix86_tls_get_addr (void)
 {
+  if (cfun->machine->call_saved_registers
+      == TYPE_NO_CALLER_SAVED_REGISTERS)
+    {
+      /* __tls_get_addr doesn't preserve vector registers.  When a
+	 function with no_caller_saved_registers attribute calls
+	 __tls_get_addr, YMM and ZMM registers will be clobbered.
+	 Issue an error and suggest -mtls-dialect=gnu2 in this case.  */
+      if (cfun->machine->func_type == TYPE_NORMAL)
+	error (G_("%<-mtls-dialect=gnu2%> must be used with a function"
+		  " with the %<no_caller_saved_registers%> attribute"));
+      else
+	error (cfun->machine->func_type == TYPE_EXCEPTION
+	       ? G_("%<-mtls-dialect=gnu2%> must be used with an"
+		    " exception service routine")
+	       : G_("%<-mtls-dialect=gnu2%> must be used with an"
+		    " interrupt service routine"));
+      /* Don't issue the same error twice.  */
+      cfun->machine->func_type = TYPE_NORMAL;
+      cfun->machine->call_saved_registers
+	= TYPE_DEFAULT_CALL_SAVED_REGISTERS;
+    }
+
   if (!ix86_tls_symbol)
     {
       const char *sym
@@ -20007,7 +20046,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree utype, ures, vce;
 	utype = unsigned_type_for (TREE_TYPE (arg0));
 	/* PABSB/W/D/Q store the unsigned result in dst, use ABSU_EXPR
-	   instead of ABS_EXPR to hanlde overflow case(TYPE_MIN).  */
+	   instead of ABS_EXPR to handle overflow case(TYPE_MIN).  */
 	ures = gimple_build (&stmts, ABSU_EXPR, utype, arg0);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	loc = gimple_location (stmt);
@@ -21491,8 +21530,7 @@ ix86_hard_regno_nregs (unsigned int regno, machine_mode mode)
   /* Register pair for mask registers.  */
   if (mode == P2QImode || mode == P2HImode)
     return 2;
-  if (mode == V64SFmode || mode == V64SImode)
-    return 4;
+
   return 1;
 }
 
@@ -22081,6 +22119,15 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	    }
 	  /* FALLTHRU */
 	case V32QImode:
+	  if (TARGET_GFNI && constant_op1)
+	    {
+	      /* Use vgf2p8affine.  One extra load for the mask, but in a loop
+		 with enough registers it will be moved out.  So for now don't
+		 account the constant mask load.  This is not quite right
+		 for non loop vectorization.  */
+	      extra = 0;
+	      return ix86_vec_cost (mode, cost->sse_op) + extra;
+	    }
 	  if (TARGET_AVX2)
 	    /* Use vpbroadcast.  */
 	    extra = cost->sse_op;
@@ -22114,6 +22161,11 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	  else
 	    count = 9;
 	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
+
+	case V64QImode:
+	  /* Ignore the mask load for GF2P8AFFINEQB.  */
+	  extra = 0;
+	  return ix86_vec_cost (mode, cost->sse_op) + extra;
 
 	case V2DImode:
 	case V4DImode:
@@ -23132,7 +23184,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	     So current solution is make constant disp as cheap as possible.  */
 	  if (GET_CODE (addr) == PLUS
 	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode)
-	      /* Only hanlde (reg + disp) since other forms of addr are mostly LEA,
+	      /* Only handle (reg + disp) since other forms of addr are mostly LEA,
 		 there's no additional cost for the plus of disp.  */
 	      && register_operand (XEXP (addr, 0), Pmode))
 	    {
@@ -25211,20 +25263,14 @@ asm_preferred_eh_data_format (int code, int global)
   return DW_EH_PE_absptr;
 }
 
-/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+/* Worker for ix86_builtin_vectorization_cost and the fallback calls
+   from ix86_vector_costs::add_stmt_cost.  */
 static int
-ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
-                                 tree vectype, int)
+ix86_default_vector_cost (enum vect_cost_for_stmt type_of_cost,
+			  machine_mode mode)
 {
-  bool fp = false;
-  machine_mode mode = TImode;
+  bool fp = FLOAT_MODE_P (mode);
   int index;
-  if (vectype != NULL)
-    {
-      fp = FLOAT_TYPE_P (vectype);
-      mode = TYPE_MODE (vectype);
-    }
-
   switch (type_of_cost)
     {
       case scalar_stmt:
@@ -25283,14 +25329,14 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      COSTS_N_INSNS
 				 (ix86_cost->gather_static
 				  + ix86_cost->gather_per_elt
-				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2);
+				    * GET_MODE_NUNITS (mode)) / 2);
 
       case vector_scatter_store:
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->scatter_static
 				  + ix86_cost->scatter_per_elt
-				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2);
+				    * GET_MODE_NUNITS (mode)) / 2);
 
       case cond_branch_taken:
         return ix86_cost->cond_taken_branch_cost;
@@ -25308,7 +25354,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	{
-	  int n = TYPE_VECTOR_SUBPARTS (vectype);
+	  int n = GET_MODE_NUNITS (mode);
 	  /* N - 1 element inserts into an SSE vector, the possible
 	     GPR -> XMM move is accounted for in add_stmt_cost.  */
 	  if (GET_MODE_BITSIZE (mode) <= 128)
@@ -25334,6 +25380,17 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       default:
         gcc_unreachable ();
     }
+}
+
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int
+ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+				 tree vectype, int)
+{
+  machine_mode mode = TImode;
+  if (vectype != NULL)
+    mode = TYPE_MODE (vectype);
+  return ix86_default_vector_cost (type_of_cost, mode);
 }
 
 
@@ -25768,15 +25825,20 @@ private:
   unsigned m_num_sse_needed[3];
   /* Number of 256-bit vector permutation.  */
   unsigned m_num_avx256_vec_perm[3];
+  /* Number of reductions for FMA/DOT_PROD_EXPR/SAD_EXPR  */
+  unsigned m_num_reduc[X86_REDUC_LAST];
+  /* Don't do unroll if m_prefer_unroll is false, default is true.  */
+  bool m_prefer_unroll;
 };
 
 ix86_vector_costs::ix86_vector_costs (vec_info* vinfo, bool costing_for_scalar)
   : vector_costs (vinfo, costing_for_scalar),
     m_num_gpr_needed (),
     m_num_sse_needed (),
-    m_num_avx256_vec_perm ()
-{
-}
+    m_num_avx256_vec_perm (),
+    m_num_reduc (),
+    m_prefer_unroll (true)
+{}
 
 /* Implement targetm.vectorize.create_costs.  */
 
@@ -25789,7 +25851,7 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				  stmt_vec_info stmt_info, slp_tree node,
-				  tree vectype, int misalign,
+				  tree vectype, int,
 				  vect_cost_model_location where)
 {
   unsigned retval = 0;
@@ -26073,6 +26135,125 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	}
     }
 
+  /* Record number of load/store/gather/scatter in vectorized body.  */
+  if (where == vect_body && !m_costing_for_scalar)
+    {
+      switch (kind)
+	{
+	  /* Emulated gather/scatter or any scalarization.  */
+	case scalar_load:
+	case scalar_stmt:
+	case scalar_store:
+	case vector_gather_load:
+	case vector_scatter_store:
+	  m_prefer_unroll = false;
+	  break;
+
+	case vector_stmt:
+	case vec_to_scalar:
+	  /* Count number of reduction FMA and "real" DOT_PROD_EXPR,
+	     unroll in the vectorizer will enable partial sum.  */
+	  if (stmt_info
+	      && vect_is_reduction (stmt_info)
+	      && stmt_info->stmt)
+	    {
+	      /* Handle __builtin_fma.  */
+	      if (gimple_call_combined_fn (stmt_info->stmt) == CFN_FMA)
+		{
+		  m_num_reduc[X86_REDUC_FMA] += count;
+		  break;
+		}
+
+	      if (!is_gimple_assign (stmt_info->stmt))
+		break;
+
+	      tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
+	      machine_mode inner_mode = GET_MODE_INNER (mode);
+	      tree rhs1, rhs2;
+	      bool native_vnni_p = true;
+	      gimple* def;
+	      machine_mode mode_rhs;
+	      switch (subcode)
+		{
+		case PLUS_EXPR:
+		case MINUS_EXPR:
+		  if (!fp || !flag_associative_math
+		      || flag_fp_contract_mode != FP_CONTRACT_FAST)
+		    break;
+
+		  /* FMA condition for different modes.  */
+		  if (((inner_mode == DFmode || inner_mode == SFmode)
+		       && !TARGET_FMA && !TARGET_AVX512VL)
+		      || (inner_mode == HFmode && !TARGET_AVX512FP16)
+		      || (inner_mode == BFmode && !TARGET_AVX10_2))
+		    break;
+
+		  /* MULT_EXPR + PLUS_EXPR/MINUS_EXPR is transformed
+		     to FMA/FNMA after vectorization.  */
+		  rhs1 = gimple_assign_rhs1 (stmt_info->stmt);
+		  rhs2 = gimple_assign_rhs2 (stmt_info->stmt);
+		  if (subcode == PLUS_EXPR
+		      && TREE_CODE (rhs1) == SSA_NAME
+		      && (def = SSA_NAME_DEF_STMT (rhs1), true)
+		      && is_gimple_assign (def)
+		      && gimple_assign_rhs_code (def) == MULT_EXPR)
+		    m_num_reduc[X86_REDUC_FMA] += count;
+		  else if (TREE_CODE (rhs2) == SSA_NAME
+			   && (def = SSA_NAME_DEF_STMT (rhs2), true)
+			   && is_gimple_assign (def)
+			   && gimple_assign_rhs_code (def) == MULT_EXPR)
+		    m_num_reduc[X86_REDUC_FMA] += count;
+		  break;
+
+		  /* Vectorizer lane_reducing_op_p supports DOT_PROX_EXPR,
+		     WIDEN_SUM_EXPR and SAD_EXPR, x86 backend only supports
+		     SAD_EXPR (usad{v16qi,v32qi,v64qi}) and DOT_PROD_EXPR.  */
+		case DOT_PROD_EXPR:
+		  rhs1 = gimple_assign_rhs1 (stmt_info->stmt);
+		  mode_rhs = TYPE_MODE (TREE_TYPE (rhs1));
+		  if (mode_rhs == QImode)
+		    {
+		      rhs2 = gimple_assign_rhs2 (stmt_info->stmt);
+		      signop signop1_p = TYPE_SIGN (TREE_TYPE (rhs1));
+		      signop signop2_p = TYPE_SIGN (TREE_TYPE (rhs2));
+
+		      /* vpdpbusd.  */
+		      if (signop1_p != signop2_p)
+			native_vnni_p
+			  = (GET_MODE_SIZE (mode) == 64
+			     ? TARGET_AVX512VNNI
+			     : ((TARGET_AVX512VNNI && TARGET_AVX512VL)
+				|| TARGET_AVXVNNI));
+		      else
+			/* vpdpbssd.  */
+			native_vnni_p
+			  = (GET_MODE_SIZE (mode) == 64
+			     ? TARGET_AVX10_2
+			     : (TARGET_AVXVNNIINT8 || TARGET_AVX10_2));
+		    }
+		  m_num_reduc[X86_REDUC_DOT_PROD] += count;
+
+		  /* Dislike to do unroll and partial sum for
+		     emulated DOT_PROD_EXPR.  */
+		  if (!native_vnni_p)
+		    m_num_reduc[X86_REDUC_DOT_PROD] += 3 * count;
+		  break;
+
+		case SAD_EXPR:
+		  m_num_reduc[X86_REDUC_SAD] += count;
+		  break;
+
+		default:
+		  break;
+		}
+	    }
+
+	default:
+	  break;
+	}
+    }
+
+
   combined_fn cfn;
   if ((kind == vector_stmt || kind == scalar_stmt)
       && stmt_info
@@ -26128,32 +26309,23 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
      (AGU and load ports).  Try to account for this by scaling the
      construction cost by the number of elements involved.  */
   if ((kind == vec_construct || kind == vec_to_scalar)
-      && ((stmt_info
-	   && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
-	       || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
-	   && ((STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
-		&& (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
+      && ((node
+	   && (((SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_ELEMENTWISE
+		 || (SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_STRIDED_SLP
+		     && SLP_TREE_LANES (node) == 1))
+		&& (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF
+					(SLP_TREE_REPRESENTATIVE (node))))
 		    != INTEGER_CST))
-	       || (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info)
-		   == VMAT_GATHER_SCATTER)))
-	  || (node
-	      && (((SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_ELEMENTWISE
-		    || (SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_STRIDED_SLP
-			&& SLP_TREE_LANES (node) == 1))
-		   && (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF
-					     (SLP_TREE_REPRESENTATIVE (node))))
-		      != INTEGER_CST))
-		  || (SLP_TREE_MEMORY_ACCESS_TYPE (node)
-		      == VMAT_GATHER_SCATTER)))))
+	       || mat_gather_scatter_p (SLP_TREE_MEMORY_ACCESS_TYPE (node))))))
     {
-      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      stmt_cost = ix86_default_vector_cost (kind, mode);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
     }
   else if ((kind == vec_construct || kind == scalar_to_vec)
 	   && node
 	   && SLP_TREE_DEF_TYPE (node) == vect_external_def)
     {
-      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      stmt_cost = ix86_default_vector_cost (kind, mode);
       unsigned i;
       tree op;
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
@@ -26217,7 +26389,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  TREE_VISITED (op) = 0;
     }
   if (stmt_cost == -1)
-    stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+    stmt_cost = ix86_default_vector_cost (kind, mode);
 
   if (kind == vec_perm && vectype
       && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32)
@@ -26288,6 +26460,41 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 	  && (exact_log2 (LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant ())
 	      > ceil_log2 (LOOP_VINFO_INT_NITERS (loop_vinfo))))
 	m_costs[vect_body] = INT_MAX;
+
+      bool any_reduc_p = false;
+      for (int i = 0; i != X86_REDUC_LAST; i++)
+	if (m_num_reduc[i])
+	  {
+	    any_reduc_p = true;
+	    break;
+	  }
+
+      if (any_reduc_p
+	  /* Not much gain for loop with gather and scatter.  */
+	  && m_prefer_unroll
+	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+	{
+	  unsigned unroll_factor
+	    = OPTION_SET_P (ix86_vect_unroll_limit)
+	    ? ix86_vect_unroll_limit
+	    : ix86_cost->vect_unroll_limit;
+
+	  if (unroll_factor > 1)
+	    {
+	      for (int i = 0 ; i != X86_REDUC_LAST; i++)
+		{
+		  if (m_num_reduc[i])
+		    {
+		      unsigned tmp = CEIL (ix86_cost->reduc_lat_mult_thr[i],
+					   m_num_reduc[i]);
+		      unroll_factor = MIN (unroll_factor, tmp);
+		    }
+		}
+
+	      m_suggested_unroll_factor  = 1 << ceil_log2 (unroll_factor);
+	    }
+	}
+
     }
 
   ix86_vect_estimate_reg_pressure ();
@@ -27171,9 +27378,9 @@ ix86_memtag_can_tag_addresses ()
   return ix86_lam_type != lam_none && TARGET_LP64;
 }
 
-/* Implement TARGET_MEMTAG_TAG_SIZE.  */
+/* Implement TARGET_MEMTAG_TAG_BITSIZE.  */
 unsigned char
-ix86_memtag_tag_size ()
+ix86_memtag_tag_bitsize ()
 {
   return IX86_HWASAN_TAG_SIZE;
 }
@@ -27744,6 +27951,10 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
 
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  ix86_use_by_pieces_infrastructure_p
+
 #undef TARGET_OVERLAP_OP_BY_PIECES_P
 #define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true
 
@@ -28147,8 +28358,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_MEMTAG_UNTAGGED_POINTER
 #define TARGET_MEMTAG_UNTAGGED_POINTER ix86_memtag_untagged_pointer
 
-#undef TARGET_MEMTAG_TAG_SIZE
-#define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
+#undef TARGET_MEMTAG_TAG_BITSIZE
+#define TARGET_MEMTAG_TAG_BITSIZE ix86_memtag_tag_bitsize
 
 #undef TARGET_GEN_CCMP_FIRST
 #define TARGET_GEN_CCMP_FIRST ix86_gen_ccmp_first

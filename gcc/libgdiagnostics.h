@@ -1115,6 +1115,16 @@ diagnostic_node_set_label_via_msg_buf (diagnostic_node *node,
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
   LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2);
 
+/* If non-zero, print debugging information to stderr when
+   creating diagnostic_physical_location instances.
+
+   Added in LIBGDIAGNOSTICS_ABI_5.  */
+#define LIBDIAGNOSTICS_HAVE_diagnostic_manager_set_debug_physical_locations
+
+extern void
+diagnostic_manager_set_debug_physical_locations (diagnostic_manager *mgr,
+						 int value);
+
 /* DEFERRED:
    - thread-safety
    - plural forms

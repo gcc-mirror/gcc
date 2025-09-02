@@ -17,9 +17,16 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// The current purpose of this pass is to substitute definitions into
-// all uses, so that the definition can be removed.  However, it could
-// be extended to handle other combination-related optimizations in future.
+// This pass currently has two purposes:
+//
+// - to substitute definitions into all uses, so that the definition
+//   can be removed.
+//
+// - to try to parallelise sets of condition-code registers with a
+//   related instruction (see combine_cc_setter for details).
+//
+// However, it could be extended to handle other combination-related
+// optimizations in future.
 //
 // The pass can run before or after register allocation.  When running
 // before register allocation, it tries to avoid cases that are likely
@@ -111,12 +118,18 @@ public:
   unsigned int execute (function *);
 
 private:
-  rtx optimizable_set (insn_info *);
+  rtx optimizable_set (set_info *);
   bool check_register_pressure (insn_info *, rtx);
   bool check_uses (set_info *, rtx);
-  bool combine_into_uses (insn_info *, insn_info *);
+  bool combine_into_uses (set_info *, rtx, insn_info *);
+  bool parallelize_insns (set_info *, rtx, set_info *, rtx);
+  bool combine_cc_setter (set_info *, rtx);
+  bool combine_insn (insn_info *, insn_info *);
 
   auto_vec<insn_info *> m_worklist;
+
+  // A spare PARALLEL rtx, or null if none.
+  rtx m_parallel = NULL_RTX;
 };
 
 insn_combination::insn_combination (set_info *def, rtx dest, rtx src)
@@ -454,11 +467,26 @@ insn_combination::run ()
   return true;
 }
 
-// See whether INSN is a single_set that we can optimize.  Return the
-// set if so, otherwise return null.
+// DEF is the result of calling single_set_info on its instruction.
+// See whether that instruction is a single_set that we can optimize.
+// Return the set if so, otherwise return null.
 rtx
-late_combine::optimizable_set (insn_info *insn)
+late_combine::optimizable_set (set_info *def)
 {
+  // For simplicity, don't try to handle sets of multiple hard registers.
+  // And for correctness, don't remove any assignments to the stack or
+  // frame pointers, since that would implicitly change the set of valid
+  // memory locations between this assignment and the next.
+  //
+  // Removing assignments to the hard frame pointer would invalidate
+  // backtraces.
+  if (!def->is_reg ()
+      || def->regno () == STACK_POINTER_REGNUM
+      || def->regno () == FRAME_POINTER_REGNUM
+      || def->regno () == HARD_FRAME_POINTER_REGNUM)
+    return NULL_RTX;
+
+  auto *insn = def->insn ();
   if (!insn->can_be_optimized ()
       || insn->is_asm ()
       || insn->is_call ()
@@ -467,7 +495,16 @@ late_combine::optimizable_set (insn_info *insn)
       || !can_move_insn_p (insn))
     return NULL_RTX;
 
-  return single_set (insn->rtl ());
+  rtx set = single_set (insn->rtl ());
+  if (!set)
+    return NULL_RTX;
+
+  // For simplicity, don't try to handle subreg destinations.
+  rtx dest = SET_DEST (set);
+  if (!REG_P (dest) || REG_NREGS (dest) != 1 || def->regno () != REGNO (dest))
+    return NULL_RTX;
+
+  return set;
 }
 
 // Suppose that we can replace all uses of SET_DEST (SET) with SET_SRC (SET),
@@ -643,35 +680,13 @@ late_combine::check_uses (set_info *def, rtx set)
   return true;
 }
 
-// Try to remove INSN by substituting a definition into all uses.
-// If the optimization moves any instructions before CURSOR, add those
-// instructions to the end of m_worklist.
+// Try to remove DEF's instruction by substituting DEF into all uses.
+// SET is the rtx set associated with DEF.  If the optimization moves any
+// instructions before CURSOR, add those instructions to the end of m_worklist.
 bool
-late_combine::combine_into_uses (insn_info *insn, insn_info *cursor)
+late_combine::combine_into_uses (set_info *def, rtx set, insn_info *cursor)
 {
-  // For simplicity, don't try to handle sets of multiple hard registers.
-  // And for correctness, don't remove any assignments to the stack or
-  // frame pointers, since that would implicitly change the set of valid
-  // memory locations between this assignment and the next.
-  //
-  // Removing assignments to the hard frame pointer would invalidate
-  // backtraces.
-  set_info *def = single_set_info (insn);
-  if (!def
-      || !def->is_reg ()
-      || def->regno () == STACK_POINTER_REGNUM
-      || def->regno () == FRAME_POINTER_REGNUM
-      || def->regno () == HARD_FRAME_POINTER_REGNUM)
-    return false;
-
-  rtx set = optimizable_set (insn);
-  if (!set)
-    return false;
-
-  // For simplicity, don't try to handle subreg destinations.
-  rtx dest = SET_DEST (set);
-  if (!REG_P (dest) || def->regno () != REGNO (dest))
-    return false;
+  auto *insn = def->insn ();
 
   // Don't prolong the live ranges of allocatable hard registers, or put
   // them into more complicated instructions.  Failing to prevent this
@@ -698,6 +713,158 @@ late_combine::combine_into_uses (insn_info *insn, insn_info *cursor)
   return true;
 }
 
+// CC_SET is a single_set that sets (only) CC_DEF; OTHER_SET is likewise
+// a single_set that sets (only) OTHER_DEF.  CC_SET is known to set a
+// condition-code register and the instruction that contains CC_SET is
+// known to use OTHER_DEF.  Try to do CC_SET and OTHER_SET in parallel.
+bool
+late_combine::parallelize_insns (set_info *cc_def, rtx cc_set,
+				 set_info *other_def, rtx other_set)
+{
+  auto attempt = crtl->ssa->new_change_attempt ();
+
+  insn_info *cc_insn = cc_def->insn ();
+  insn_info *other_insn = other_def->insn ();
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "trying to parallelize insn %d and insn %d\n",
+	     other_insn->uid (), cc_insn->uid ());
+
+  // Try to substitute OTHER_SET into CC_INSN.
+  insn_change_watermark rtl_watermark;
+  rtx_insn *cc_rtl = cc_insn->rtl ();
+  insn_propagation prop (cc_rtl, SET_DEST (other_set), SET_SRC (other_set));
+  if (!prop.apply_to_pattern (&PATTERN (cc_rtl))
+      || prop.num_replacements == 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "-- failed to substitute all uses of r%d\n",
+		 other_def->regno ());
+      return false;
+    }
+
+  // Restrict the uses to those outside notes.
+  use_array cc_uses = remove_note_accesses (attempt, cc_insn->uses ());
+  use_array other_set_uses = remove_note_accesses (attempt,
+						   other_insn->uses ());
+
+  // Remove the use of the substituted value.
+  cc_uses = remove_uses_of_def (attempt, cc_uses, other_def);
+
+  // Get the list of uses for the new instruction.
+  insn_change cc_change (cc_insn);
+  cc_change.new_uses = merge_access_arrays (attempt, other_set_uses, cc_uses);
+  if (!cc_change.new_uses.is_valid ())
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "-- cannot merge uses\n");
+      return false;
+    }
+
+  // The instruction initially defines just two registers.  recog can add
+  // extra clobbers if necessary.
+  auto_vec<access_info *, 2> new_defs;
+  new_defs.quick_push (cc_def);
+  new_defs.quick_push (other_def);
+  sort_accesses (new_defs);
+  cc_change.new_defs = def_array (access_array (new_defs));
+
+  // Make sure there is somewhere that the new instruction could live.
+  auto other_change = insn_change::delete_insn (other_insn);
+  insn_change *changes[] = { &other_change, &cc_change };
+  cc_change.move_range = cc_insn->ebb ()->insn_range ();
+  if (!restrict_movement (cc_change, ignore_changing_insns (changes)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "-- cannot satisfy all definitions and uses\n");
+      return false;
+    }
+
+  // Tentatively install the new pattern.  By convention, the CC set
+  // must be first.
+  if (m_parallel)
+    {
+      XVECEXP (m_parallel, 0, 0) = cc_set;
+      XVECEXP (m_parallel, 0, 1) = other_set;
+    }
+  else
+    {
+      rtvec vec = gen_rtvec (2, cc_set, other_set);
+      m_parallel = gen_rtx_PARALLEL (VOIDmode, vec);
+    }
+  validate_change (cc_rtl, &PATTERN (cc_rtl), m_parallel, 1);
+
+  // These routines report failures themselves.
+  if (!recog (attempt, cc_change, ignore_changing_insns (changes))
+      || !changes_are_worthwhile (changes)
+      || !crtl->ssa->verify_insn_changes (changes))
+    return false;
+
+  remove_reg_equal_equiv_notes (cc_rtl);
+  confirm_change_group ();
+  crtl->ssa->change_insns (changes);
+  m_parallel = NULL_RTX;
+  return true;
+}
+
+// CC_SET is a single_set that sets (only) CC_DEF.  See whether CC_DEF
+// is a definition of a condition-code register and try to optimize it
+// with related instructions if so.  Return true if something changed.
+//
+// This function looks for sequences of the form:
+//
+//    A: (set (reg R1) X1)
+//    B: ...instructions that might change the value of X1...
+//    C: (set (reg CC) X2) // X2 uses R1
+//
+// and tries to change them to:
+//
+//    C': [(set (reg CC) X2')
+//         (set (reg R1) X1)]
+//    B: ...instructions that might change the value of X1...
+//
+// where X2' is the result of replacing R1 with X1 in X2.
+//
+// Combine can handle this optimization if B doesn't exist and if A and
+// C are in the same BB.  This pass instead handles cases where B does
+// exist and cases where A and C are in different BBs of the same EBB.
+bool
+late_combine::combine_cc_setter (set_info *cc_def, rtx cc_set)
+{
+  // Check for a set of a CC register.  This isn't needed for correctness;
+  // it's just a way of narrowing the search space.  It could be relaxed if
+  // there are other situations that would benefit from the same optimization.
+  if (!HARD_REGISTER_NUM_P (cc_def->regno ())
+      || GET_MODE_CLASS (cc_def->mode()) != MODE_CC)
+    return false;
+
+  // Search the registers used by the CC setter for an easily-substitutable
+  // def-use chain.
+  for (use_info *other_use : cc_def->insn ()->uses ())
+    if (auto *other_def = other_use->def ())
+      if (other_use->regno () != cc_def->regno ()
+	  && other_def->ebb () == cc_def->ebb ()
+	  && other_def == single_set_info (other_def->insn ()))
+	if (rtx other_set = optimizable_set (other_def))
+	  if (parallelize_insns (cc_def, cc_set, other_def, other_set))
+	    return true;
+
+  return false;
+}
+
+// Try to optimize INSN in some way.  If the optimization moves any
+// instructions before CURSOR, and if further optimizations might be
+// possible on those instructions, add them to the end of m_worklist.
+bool
+late_combine::combine_insn (insn_info *insn, insn_info *cursor)
+{
+  if (set_info *def = single_set_info (insn))
+    if (rtx set = optimizable_set (def))
+      return (combine_into_uses (def, set, cursor)
+	      || combine_cc_setter (def, set));
+
+  return false;
+}
+
 // Run the pass on function FN.
 unsigned int
 late_combine::execute (function *fn)
@@ -715,7 +882,7 @@ late_combine::execute (function *fn)
       if (!insn->is_artificial ())
 	{
 	  insn_info *prev = insn->prev_nondebug_insn ();
-	  if (combine_into_uses (insn, prev))
+	  if (combine_insn (insn, prev))
 	    {
 	      // Any instructions that get added to the worklist were
 	      // previously after PREV.  Thus if we were able to move
@@ -725,7 +892,7 @@ late_combine::execute (function *fn)
 	      // the worklist should be free of backwards dependencies,
 	      // even if it isn't necessarily in RPO.
 	      for (unsigned int i = 0; i < m_worklist.length (); ++i)
-		combine_into_uses (m_worklist[i], prev);
+		combine_insn (m_worklist[i], prev);
 	      m_worklist.truncate (0);
 	      insn = prev;
 	    }

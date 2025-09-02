@@ -42,4 +42,5 @@ void func3(float32x2x2_t *p, const float *p1, const float *p2)
     *p = vld2_lane_f32(p2, v, 1);
 }
 
-/* { dg-final { scan-tree-dump-times "after previous" 3 "forwprop1" } } */
+/* 2 copy props for each function  */
+/* { dg-final { scan-tree-dump-times "after previous" 6 "forwprop1" } } */

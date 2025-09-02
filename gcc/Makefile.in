@@ -187,8 +187,6 @@ C_STRICT_WARN = @c_strict_warn@
 
 NOEXCEPTION_FLAGS = @noexception_flags@
 
-ALIASING_FLAGS = @aliasing_flags@
-
 # This is set by --disable-maintainer-mode (default) to "#"
 # FIXME: 'MAINT' will always be set to an empty string, no matter if
 # --disable-maintainer-mode is used or not.  This is because the
@@ -1622,6 +1620,7 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
+	diagnostic-context-rich-location.o \
 	multiple_target.o \
 	omp-offload.o \
 	omp-expand.o \
@@ -1858,12 +1857,14 @@ OBJS-libcommon = \
 	diagnostics/color.o \
 	diagnostics/context.o \
 	diagnostics/digraphs.o \
+	diagnostics/dumping.o \
 	diagnostics/file-cache.o \
 	diagnostics/output-spec.o \
 	diagnostics/html-sink.o \
 	diagnostics/sarif-sink.o \
 	diagnostics/text-sink.o \
 	diagnostics/lazy-paths.o \
+	diagnostics/logging.o \
 	diagnostics/macro-unwinding.o \
 	diagnostics/option-classifier.o \
 	diagnostics/paths.o \
@@ -3402,6 +3403,9 @@ gengtype-lex.cc : gengtype-lex.l
 	  echo '#else'                     >> $@.tmp; \
 	  echo '#include "bconfig.h"'      >> $@.tmp; \
 	  echo '#endif'                    >> $@.tmp; \
+	  echo '#define FLEX_SCANNER'      >> $@.tmp; \
+	  echo '#include "system.h"'       >> $@.tmp; \
+	  echo '#undef FLEX_SCANNER'       >> $@.tmp; \
 	  cat $@ >> $@.tmp; \
 	  mv $@.tmp $@; \
 	}
@@ -3720,7 +3724,7 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
 	 implement-c.texi implement-cxx.texi gcov-tool.texi gcov-dump.texi \
-	 lto-dump.texi riscv-ext.texi
+	 lto-dump.texi riscv-ext.texi riscv-mcpu.texi riscv-mtune.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,

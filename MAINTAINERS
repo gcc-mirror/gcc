@@ -40,7 +40,7 @@ Michael Meissner                                <gnu@the-meissners.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
 Joseph Myers                                    <josmyers@redhat.com>
-Richard Sandiford                               <richard.sandiford@arm.com>
+Richard Sandiford                               <rdsandiford@googlemail.com>
 Bernd Schmidt                                   <bernds_cb1@t-online.de>
 Ian Lance Taylor                                <ian@airs.com>
 Jim Wilson                                      <wilson@tuliptree.org>
@@ -56,7 +56,6 @@ docs, and the testsuite related to that.
 
 aarch64 ldp/stp         Alex Coplan             <alex.coplan@arm.com>
 aarch64 port            Richard Earnshaw        <richard.earnshaw@arm.com>
-aarch64 port            Richard Sandiford       <richard.sandiford@arm.com>
 aarch64 port            Tamar Christina         <tamar.christina@arm.com>
 aarch64 port            Kyrylo Tkachov          <ktkachov@nvidia.com>
 alpha port              Richard Henderson       <rth@gcc.gnu.org>
@@ -276,7 +275,7 @@ check in changes outside of the parts of the compiler they maintain.
                         Reviewers
 
 aarch64 port            Alex Coplan             <alex.coplan@arm.com>
-aarch64 port            Andrew Pinski           <pinskia@gmail.com>
+aarch64 port            Andrew Pinski           <andrew.pinski@oss.qualcomm.com>
 arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
@@ -333,7 +332,7 @@ from other maintainers or reviewers.
 Name                            BZ account      Email
 
 Soumya AR                       soumyaa         <soumyaa@nvidia.com>
-Spencer Abson                   sabson          <spencer.abson@arm.com>
+Spencer Abson                   sabson          <spencer.abson@student.manchester.ac.uk>
 Mark G. Adams                   mgadams         <mark.g.adams@sympatico.ca>
 Ajit Kumar Agarwal              aagarwa         <aagarwa1@linux.ibm.com>
 Pedro Alves                     palves          <palves@redhat.com>
@@ -566,6 +565,7 @@ Fariborz Jahanian               -               <fjahanian@apple.com>
 Martin Jambor                   jamborm         <mjambor@suse.cz>
 Sam James                       sjames          <sam@gentoo.org>
 Surya Kumari Jangala            jskumari        <jskumari@linux.ibm.com>
+Avinash Jayakar                 avinashd        <avinashd@linux.ibm.com>
 Jakub Jelinek                   jakub           <jakub@redhat.com>
 Andrew Jenner                   andrewjenner    <andrew@codesourcery.com>
 Saurabh Jha                     saurabhjha      <saurabh.jha@arm.com>
@@ -628,6 +628,7 @@ James Lemke                     jwlemke         <jim@lemke.org>
 Ilya Leoshkevich                iii             <iii@linux.ibm.com>
 Kriang Lerdsuwanakij            lerdsuwa        <lerdsuwa@users.sourceforge.net>
 Pan Li                          -               <pan2.li@intel.com>
+Pengfei Li                      pfustc          <pengfei.li2@arm.com>
 Renlin Li                       renlin          <renlin.li@arm.com>
 Xinliang David Li               davidxl         <davidxl@google.com>
 Kewen Lin                       linkw           <linkw@gcc.gnu.org>
@@ -652,8 +653,9 @@ Bin Bin Lv                      shlb            <shlb@linux.ibm.com>
 Christophe Lyon                 clyon           <christophe.lyon@arm.com>
 Jin Ma                          majin           <jinma@linux.alibaba.com>
 Jun Ma                          junma           <junma@linux.alibaba.com>
+Yuao Ma                         -               <yuao@gcc.gnu.org>
 Andrew MacLeod                  -               <amacleod@redhat.com>
-Luis Machado                    luisgpm         <luisgpm@br.ibm.com>
+Luis Machado                    luisgpm         <luis.machado.foss@gmail.com>
 Ziga Mahkovec                   ziga            <ziga.mahkovec@klika.si>
 Vladimir Makarov                vmakarov        <vmakarov@redhat.com>
 David Malcolm                   dmalcolm        <dmalcolm@redhat.com>
@@ -730,10 +732,11 @@ Fernando Pereira                pronesto        <pronesto@gmail.com>
 Nicola Pero                     nicola          <nicola.pero@meta-innovation.com>
 Sebastian Perta                 -               <sebastian.perta@renesas.com>
 Sebastian Peryt                 speryt          <sebastian.peryt@intel.com>
+Mikael Pettersson               mikpe           <mikpelinux@gmail.com>
 Johannes Pfau                   jpfau           <johannespfau@gmail.com>
 Gerald Pfeifer                  gerald          <gerald@pfeifer.com>
 Kaushik Phatak                  kaushikp        <kaushik.phatak@kpitcummins.com>
-Andrew Pinski                   pinskia         <pinskia@gmail.com>
+Andrew Pinski                   pinskia         <andrew.pinski@qualcomm.com>
 Nicolas Pitre                   nico            <nico@cam.org>
 Michael Ploujnikov              plouj           <michael.ploujnikov@oracle.com>
 Paul Pluzhnikov                 ppluzhnikov     <ppluzhnikov@google.com>
@@ -953,10 +956,13 @@ Jeff Law                                        <jeffreyalaw@gmail.com>
 Jeff Law                                        <jlaw@tachyum.com>
 Jeff Law                                        <jlaw@ventanamicro.com>
 H.J. Lu                                         <hjl.tools@gmail.com>
+Yuao Ma                                         <yuao@gcc.gnu.org>
 Matthew Malcomson                               <mmalcomson@nvidia.com>
 Immad Mir                                       <mir@sourceware.org>
 Gaius Mulley                                    <gaiusmod2@gmail.com>
 Szabolcs Nagy                                   <nsz@gcc.gnu.org>
+Mikael Pettersson                               <mikpelinux@gmail.com>
+Andrew Pinski                                   <andrew.pinski@oss.qualcomm.com>
 Andrew Pinski                                   <quic_apinski@quicinc.com>
 Siddhesh Poyarekar                              <siddhesh@gotplt.org>
 Ramana Radhakrishnan                            <ramanara@nvidia.com>

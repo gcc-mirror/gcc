@@ -8,9 +8,10 @@
 !
 program p
    character(120) :: buffer
-   integer :: i(4)
+   integer :: i(3)
    type t(a)
       integer, len :: a
+      integer :: z = 4
    end type
    type t2(b)
       integer, len :: b
@@ -18,6 +19,10 @@ program p
    end type
    type(t2(3)) :: x
    write (buffer,*) x
-   read (buffer,*) i
-   if (any (i .ne. [3,1,1,1])) STOP 1
+   read (buffer, *) i
+   if (any (i .ne. [4,4,4])) stop 1
+   x%r = [t(1)(3),t(1)(2),t(1)(1)]
+   write (buffer,*) x
+   read (buffer, *) i
+   if (any (i .ne. [3,2,1])) stop 2
 end

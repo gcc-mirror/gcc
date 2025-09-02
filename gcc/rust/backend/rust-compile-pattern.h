@@ -17,7 +17,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-base.h"
+#include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {
@@ -43,12 +45,10 @@ public:
   void visit (HIR::StructPattern &) override;
   void visit (HIR::TupleStructPattern &) override;
   void visit (HIR::TuplePattern &) override;
+  void visit (HIR::IdentifierPattern &) override;
+  void visit (HIR::SlicePattern &) override;
 
   // Always succeeds
-  void visit (HIR::IdentifierPattern &) override
-  {
-    check_expr = boolean_true_node;
-  }
   void visit (HIR::WildcardPattern &) override
   {
     check_expr = boolean_true_node;
@@ -56,7 +56,6 @@ public:
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::QualifiedPathInExpression &) override {}
-  void visit (HIR::SlicePattern &) override {}
 
   CompilePatternCheckExpr (Context *ctx, tree match_scrutinee_expr)
     : HIRCompileBase (ctx), match_scrutinee_expr (match_scrutinee_expr),
@@ -78,11 +77,25 @@ public:
     pattern.accept_vis (compiler);
   }
 
+  tree make_struct_access (TyTy::ADTType *adt, TyTy::VariantDef *variant,
+			   const Identifier &ident, int variant_index);
+
+  void handle_struct_pattern_ident (HIR::StructPatternField &pat,
+				    TyTy::ADTType *adt,
+				    TyTy::VariantDef *variant,
+				    int variant_index);
+  void handle_struct_pattern_ident_pat (HIR::StructPatternField &pat,
+					TyTy::ADTType *adt,
+					TyTy::VariantDef *variant,
+					int variant_index);
+  void handle_struct_pattern_tuple_pat (HIR::StructPatternField &pat);
+
   void visit (HIR::StructPattern &pattern) override;
   void visit (HIR::TupleStructPattern &pattern) override;
   void visit (HIR::ReferencePattern &pattern) override;
   void visit (HIR::IdentifierPattern &) override;
   void visit (HIR::TuplePattern &pattern) override;
+  void visit (HIR::SlicePattern &) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::AltPattern &) override {}
@@ -90,7 +103,6 @@ public:
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
   void visit (HIR::RangePattern &) override {}
-  void visit (HIR::SlicePattern &) override {}
   void visit (HIR::WildcardPattern &) override {}
 
 protected:

@@ -1850,7 +1850,12 @@ run_all_tests ()
 }
 
 } // namespace diagnostics::changes::selftest
+
+#endif /* CHECKING_P */
+
 } // namespace diagnostics::changes
+
+#if CHECKING_P
 
 namespace selftest { // diagnostics::selftest
 
@@ -1863,6 +1868,7 @@ changes_cc_tests ()
 }
 
 } // namespace selftest
-} // namespace diagnostics
 
 #endif /* CHECKING_P */
+
+} // namespace diagnostics

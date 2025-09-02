@@ -39,5 +39,5 @@ DEF_OP_VI_15 (mul, 128, double, *)
 DEF_OP_VI_15 (mul, 256, double, *)
 DEF_OP_VI_15 (mul, 512, double, *)
 
-/* { dg-final { scan-assembler-times {vfmul\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 30 } } */
+/* { dg-final { scan-assembler-times {vfmul\.vf\s+v[0-9]+,\s*v[0-9]+,\s*f[ast]?[0-9]+} 30 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */

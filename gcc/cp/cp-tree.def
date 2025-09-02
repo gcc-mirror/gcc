@@ -299,6 +299,11 @@ DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 4)
    templates.  */
 DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 6)
 
+/* Used to represent an expansion-statement.  The operands are
+   TEMPLATE_FOR_DECL, TEMPLATE_FOR_EXPR, TEMPLATE_FOR_BODY,
+   TEMPLATE_FOR_SCOPE, and TEMPLATE_FOR_INIT_STMT, respectively.  */
+DEFTREECODE (TEMPLATE_FOR_STMT, "template_for_stmt", tcc_statement, 5)
+
 /* Used to represent an expression statement.  Use `EXPR_STMT_EXPR' to
    obtain the expression.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)

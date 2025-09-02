@@ -22,9 +22,6 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -54,23 +51,13 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
   NodeId ref_node_id = UNKNOWN_NODEID;
   bool maybe_item = false;
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
-	{
-	  ref_node_id = *id;
-	  maybe_item = true;
-	}
-    }
-  else
+  if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
     {
-      maybe_item |= resolver->lookup_resolved_name (
-	pattern.get_mappings ().get_nodeid (), &ref_node_id);
-      maybe_item |= resolver->lookup_resolved_type (
-	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+      ref_node_id = *id;
+      maybe_item = true;
     }
 
   bool path_is_const_item = false;
@@ -213,13 +200,15 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
@@ -333,13 +322,15 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    // TODO
 	    rust_unreachable ();
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    HIR::StructPatternFieldIdentPat &ident
 	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field);
 
@@ -358,7 +349,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT: {
+	case HIR::StructPatternField::ItemType::IDENT:
+	  {
 	    HIR::StructPatternFieldIdent &ident
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field);
 
@@ -397,7 +389,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    case HIR::StructPatternField::ItemType::IDENT:
 	    case HIR::StructPatternField::ItemType::IDENT_PAT:
 	      break;
-	      default: {
+	    default:
+	      {
 		auto first_elem
 		  = struct_pattern_elems.get_struct_pattern_fields ()
 		      .at (0)
@@ -457,25 +450,27 @@ void
 TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 {
   std::unique_ptr<HIR::TuplePatternItems> items;
+
+  // Check whether parent is tuple
+  auto resolved_parent = parent->destructure ();
+  if (resolved_parent->get_kind () != TyTy::TUPLE)
+    {
+      rust_error_at (pattern.get_locus (), "expected %s, found tuple",
+		     parent->as_string ().c_str ());
+      return;
+    }
+  TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (resolved_parent);
+
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	auto &ref = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
-
-	auto resolved_parent = parent->destructure ();
-	if (resolved_parent->get_kind () != TyTy::TUPLE)
-	  {
-	    rust_error_at (pattern.get_locus (), "expected %s, found tuple",
-			   parent->as_string ().c_str ());
-	    break;
-	  }
 
 	const auto &patterns = ref.get_patterns ();
 	size_t nitems_to_resolve = patterns.size ();
 
-	TyTy::TupleType &par
-	  = *static_cast<TyTy::TupleType *> (resolved_parent);
 	if (patterns.size () != par.get_fields ().size ())
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
@@ -498,12 +493,55 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
       }
       break;
 
-      case HIR::TuplePatternItems::ItemType::RANGED: {
-	// HIR::TuplePatternItemsRanged &ref
-	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
-	//     pattern.get_items ().get ());
-	// TODO
-	rust_unreachable ();
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
+	HIR::TuplePatternItemsRanged &ref
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+
+	const auto &lower = ref.get_lower_patterns ();
+	const auto &upper = ref.get_upper_patterns ();
+	size_t min_size_required = lower.size () + upper.size ();
+
+	// Ensure that size of lower and upper patterns <= parent size
+	if (min_size_required > par.get_fields ().size ())
+	  {
+	    emit_pattern_size_error (pattern, par.get_fields ().size (),
+				     min_size_required);
+	    // TODO attempt to continue to do typechecking even after wrong size
+	    break;
+	  }
+
+	// Resolve lower patterns
+	std::vector<TyTy::TyVar> pattern_elems;
+	for (size_t i = 0; i < lower.size (); i++)
+	  {
+	    auto &p = lower[i];
+	    TyTy::BaseType *par_type = par.get_field (i);
+
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
+	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	  }
+
+	// Pad pattern_elems until needing to resolve upper patterns
+	size_t rest_end = par.get_fields ().size () - upper.size ();
+	for (size_t i = lower.size (); i < rest_end; i++)
+	  {
+	    TyTy::BaseType *par_type = par.get_field (i);
+	    pattern_elems.push_back (TyTy::TyVar (par_type->get_ref ()));
+	  }
+
+	// Resolve upper patterns
+	for (size_t i = 0; i < upper.size (); i++)
+	  {
+	    auto &p = upper[i];
+	    TyTy::BaseType *par_type = par.get_field (rest_end + i);
+
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
+	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	  }
+
+	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
+				       pattern.get_locus (), pattern_elems);
       }
       break;
     }
@@ -512,8 +550,18 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::LiteralPattern &pattern)
 {
-  infered = resolve_literal (pattern.get_mappings (), pattern.get_literal (),
-			     pattern.get_locus ());
+  TyTy::BaseType *resolved
+    = resolve_literal (pattern.get_mappings (), pattern.get_literal (),
+		       pattern.get_locus ());
+  if (resolved->get_kind () == TyTy::TypeKind::ERROR)
+    {
+      infered = resolved;
+      return;
+    }
+
+  infered = unify_site (pattern.get_mappings ().get_hirid (),
+			TyTy::TyWithLocation (parent),
+			TyTy::TyWithLocation (resolved), pattern.get_locus ());
 }
 
 void
@@ -538,6 +586,11 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      TypeCheckPattern::Resolve (pattern.get_subpattern (), parent);
+    }
+
   if (!pattern.get_is_ref ())
     {
       infered = parent;
@@ -580,8 +633,72 @@ TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 {
-  rust_sorry_at (pattern.get_locus (),
-		 "type checking qualified path patterns not supported");
+  auto resolved_parent = parent->destructure ();
+  TyTy::BaseType *parent_element_ty = nullptr;
+  switch (resolved_parent->get_kind ())
+    {
+    case TyTy::ARRAY:
+      {
+	auto &array_ty_ty = static_cast<TyTy::ArrayType &> (*parent);
+	parent_element_ty = array_ty_ty.get_element_type ();
+	auto capacity = array_ty_ty.get_capacity ();
+	tree cap = capacity->get_value ();
+	if (error_operand_p (cap))
+	  {
+	    rust_error_at (parent->get_locus (),
+			   "capacity of array %qs is not known at compile time",
+			   array_ty_ty.get_name ().c_str ());
+	    break;
+	  }
+	auto cap_wi = wi::to_wide (cap).to_uhwi ();
+	if (cap_wi != pattern.get_items ().size ())
+	  {
+	    rust_error_at (pattern.get_locus (), ErrorCode::E0527,
+			   "pattern requires %lu elements but array has %lu",
+			   (unsigned long) pattern.get_items ().size (),
+			   (unsigned long) cap_wi);
+	    break;
+	  }
+	break;
+      }
+    case TyTy::SLICE:
+      {
+	auto &slice_ty_ty = static_cast<TyTy::SliceType &> (*parent);
+	parent_element_ty = slice_ty_ty.get_element_type ();
+	break;
+      }
+    case TyTy::REF:
+      {
+	auto &ref_ty_ty = static_cast<TyTy::ReferenceType &> (*parent);
+	const TyTy::SliceType *slice = nullptr;
+	if (!ref_ty_ty.is_dyn_slice_type (&slice))
+	  {
+	    rust_error_at (pattern.get_locus (), "expected %s, found slice",
+			   parent->as_string ().c_str ());
+	    return;
+	  }
+	parent_element_ty = slice->get_element_type ();
+	break;
+      }
+    default:
+      {
+	rust_error_at (pattern.get_locus (), "expected %s, found slice",
+		       parent->as_string ().c_str ());
+	return;
+      }
+    }
+
+  rust_assert (parent_element_ty != nullptr);
+  // infered inherits array/slice typing from parent
+  infered = parent->clone ();
+  infered->set_ref (pattern.get_mappings ().get_hirid ());
+
+  // Type check every item in the SlicePattern against parent's element ty
+  // TODO update this after adding support for RestPattern in SlicePattern
+  for (const auto &item : pattern.get_items ())
+    {
+      TypeCheckPattern::Resolve (*item, parent_element_ty);
+    }
 }
 
 void
@@ -608,7 +725,8 @@ TypeCheckPattern::typecheck_range_pattern_bound (
   TyTy::BaseType *resolved_bound = nullptr;
   switch (bound.get_bound_type ())
     {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case HIR::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
 	HIR::Literal lit = ref.get_literal ();
@@ -617,14 +735,16 @@ TypeCheckPattern::typecheck_range_pattern_bound (
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
 	resolved_bound = TypeCheckExpr::Resolve (ref.get_path ());
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
 	resolved_bound = TypeCheckExpr::Resolve (ref.get_qualified_path ());

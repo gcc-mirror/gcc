@@ -29,44 +29,59 @@ class Base
 class Derived : public Base
 { };
 
-template<template<typename T> typename Accessor>
+template<typename RhsAccessor, typename LhsAccessor, bool ExpectConvertible>
+  constexpr void
+  check_convertible()
+  {
+    RhsAccessor rhs;
+    [[maybe_unused]] LhsAccessor lhs(rhs);
+    static_assert(std::is_nothrow_constructible_v<LhsAccessor, RhsAccessor>);
+    static_assert(std::is_convertible_v<RhsAccessor, LhsAccessor> == ExpectConvertible);
+  }
+
+template<template<typename T> typename LhsAccessor,
+	 template<typename T> typename RhsAccessor = LhsAccessor,
+	 bool ExpectConvertible = true>
   constexpr bool
   test_ctor()
   {
     // T -> T
-    static_assert(std::is_nothrow_constructible_v<Accessor<double>,
-						  Accessor<double>>);
-    static_assert(std::is_convertible_v<Accessor<double>, Accessor<double>>);
+    check_convertible<RhsAccessor<double>, LhsAccessor<double>,
+		      ExpectConvertible>();
 
     // T -> const T
-    static_assert(std::is_convertible_v<Accessor<double>,
-					Accessor<const double>>);
-    static_assert(std::is_convertible_v<Accessor<Derived>,
-					Accessor<const Derived>>);
+    check_convertible<RhsAccessor<double>, LhsAccessor<const double>,
+		      ExpectConvertible>();
+    check_convertible<RhsAccessor<Derived>, LhsAccessor<const Derived>,
+		      ExpectConvertible>();
 
     // const T -> T
-    static_assert(!std::is_constructible_v<Accessor<double>,
-					   Accessor<const double>>);
-    static_assert(!std::is_constructible_v<Accessor<Derived>,
-					   Accessor<const Derived>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<double>,
+					   RhsAccessor<const double>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Derived>,
+					   RhsAccessor<const Derived>>);
 
     // T <-> volatile T
-    static_assert(std::is_convertible_v<Accessor<int>, Accessor<volatile int>>);
-    static_assert(!std::is_constructible_v<Accessor<int>,
-					   Accessor<volatile int>>);
+    check_convertible<RhsAccessor<int>, LhsAccessor<volatile int>,
+		      ExpectConvertible>();
+    static_assert(!std::is_constructible_v<LhsAccessor<int>,
+					   RhsAccessor<volatile int>>);
 
     // size difference
-    static_assert(!std::is_constructible_v<Accessor<char>, Accessor<int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<char>,
+					   RhsAccessor<int>>);
 
     // signedness
-    static_assert(!std::is_constructible_v<Accessor<int>,
-					   Accessor<unsigned int>>);
-    static_assert(!std::is_constructible_v<Accessor<unsigned int>,
-					   Accessor<int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<int>,
+					   RhsAccessor<unsigned int>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<unsigned int>,
+					   RhsAccessor<int>>);
 
     // Derived <-> Base
-    static_assert(!std::is_constructible_v<Accessor<Base>, Accessor<Derived>>);
-    static_assert(!std::is_constructible_v<Accessor<Derived>, Accessor<Base>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Base>,
+					   RhsAccessor<Derived>>);
+    static_assert(!std::is_constructible_v<LhsAccessor<Derived>,
+					   RhsAccessor<Base>>);
     return true;
   }
 
@@ -82,9 +97,35 @@ template<template<typename T> typename Accessor>
 
 static_assert(test_properties<std::default_accessor>());
 
+#ifdef __glibcxx_aligned_accessor
+template<size_t Mult>
+struct OverAlignedAccessorTrait
+{
+  template<typename T>
+    using type = std::aligned_accessor<T, Mult*alignof(T)>;
+};
+
+static_assert(test_properties<OverAlignedAccessorTrait<1>::type>());
+static_assert(test_properties<OverAlignedAccessorTrait<2>::type>());
+static_assert(test_ctor<OverAlignedAccessorTrait<2>::type,
+			std::default_accessor, false>());
+static_assert(test_ctor<OverAlignedAccessorTrait<2>::type,
+			OverAlignedAccessorTrait<4>::type>());
+static_assert(test_ctor<std::default_accessor,
+			OverAlignedAccessorTrait<2>::type>());
+static_assert(!std::is_constructible_v<std::aligned_accessor<char, 4>,
+				       std::aligned_accessor<char, 2>>);
+#endif
+
 template<typename A>
   constexpr size_t
   accessor_alignment = alignof(typename A::element_type);
+
+#ifdef __glibcxx_aligned_accessor
+template<typename T, size_t N>
+  constexpr size_t
+  accessor_alignment<std::aligned_accessor<T, N>> = N;
+#endif
 
 template<typename Accessor>
   constexpr void
@@ -121,5 +162,10 @@ main()
 {
   test_all<std::default_accessor<double>>();
   static_assert(test_all<std::default_accessor<double>>());
+
+#ifdef __glibcxx_aligned_accessor
+  test_all<typename OverAlignedAccessorTrait<4>::type<double>>();
+  static_assert(test_all<typename OverAlignedAccessorTrait<4>::type<double>>());
+#endif
   return 0;
 }

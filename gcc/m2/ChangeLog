@@ -1,3 +1,97 @@
+2025-08-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121709
+	* gm2-lang.cc (concat_component): New function.
+	(find_cpp_entry): Ditto.
+	(lookup_cpp_default): Ditto.
+	(add_default_include_paths): Rewrite.
+	(m2_pathname_root): Remove.
+
+2025-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121629
+	* gm2-compiler/PathName.mod: Add copyright notice.
+	* gm2-lang.cc (named_path): Add field lib_root.
+	(push_back_Ipath): Set lib_root false.
+	(push_back_lib_root): New function.
+	(get_dir_sep_size): Ditto.
+	(add_path_component): Ditto.
+	(add_one_import_path): Ditto.
+	(add_non_dialect_specific_path): Ditto.
+	(foreach_lib_gen_import_path): Ditto.
+	(get_module_source_dir): Ditto.
+	(add_default_include_paths): Ditto.
+	(assign_flibs): Ditto.
+	(m2_pathname_root): Ditto.
+	(add_m2_import_paths): Remove function.
+	(gm2_langhook_post_options): Call assign_flibs.
+	Check np.lib_root and call foreach_lib_gen_import_path.
+	Replace call to add_m2_import_paths with a call to
+	add_default_include_paths.
+	(gm2_langhook_handle_option): Add case OPT_fm2_pathname_rootI_.
+	* gm2spec.cc (named_path): Add field lib_root.
+	(push_back_Ipath): Set lib_root false.
+	(push_back_lib_root): New function.
+	(add_m2_I_path): Add OPT_fm2_pathname_rootI_ option
+	if np.lib_root.
+	(lang_specific_driver): Add case OPT_fm2_pathname_root_.
+	* lang.opt (fm2-pathname-root=): New option.
+	(fm2-pathname-rootI=): Ditto.
+
+2025-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121354
+	* gm2-compiler/M2GenGCC.mod (FoldHigh): Rewrite.
+	(IsUnboundedArray): New procedure function.
+
+2025-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121314
+	* mc-boot/GFormatStrings.cc (PerformFormatString): Rebuilt.
+	* mc-boot/GM2EXCEPTION.cc (M2EXCEPTION_M2Exception): Rebuilt.
+	* mc-boot/GSFIO.cc (SFIO_GetFileName): Rebuilt.
+	* mc-boot/GSFIO.h (SFIO_GetFileName): Rebuilt.
+	* mc-boot/Gdecl.cc: Rebuilt.
+	* mc-boot/GmcFileName.h: Rebuilt.
+	* mc/decl.mod (getStringChar): New procedure function.
+	(getStringContents): Call getStringChar.
+	(addQuotes): New procedure function.
+	(foldBinary): Call addQuotes to add delimiting quotes
+	to the new string.
+
+2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldBecomes): Remove all
+	local variables.
+	(CodeIndrX): Remove length.
+	Remove newstr.
+	* gm2-compiler/M2Range.mod (FoldTypeIndrX): Remove desType.
+
+2025-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121289
+	* gm2-compiler/M2Students.def (CheckVariableAgainstKeyword): New
+	parameter tok.
+	* gm2-compiler/M2Students.mod (CheckVariableAgainstKeyword): New
+	parameter tok.
+	Pass tok to PerformVariableKeywordCheck.
+	(PerformVariableKeywordCheck): New parameter tok.
+	Pass tok to MetaErrorStringT0.
+	* gm2-compiler/P2SymBuild.mod (BuildVariable): Pass tok to
+	CheckVariableAgainstKeyword.
+	* gm2-libs-iso/LowLong.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/LowReal.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/LowShort.mod (except): Replace with ...
+	(exceptSrc): ... this.
+	* gm2-libs-iso/Processes.mod (Wait): Replace from with fromCor.
+	* gm2-libs-iso/RndFile.mod (EndPos): Replace end with endP.
+	* gm2-libs/SCmdArgs.mod (GetArg): Replace start with startPos.
+	Replace end with endPos.
+	(NArg): Replace start with startPos.
+	Replace end with endPos.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* gm2-gcc/m2linemap.cc: Update usage of "diagnostic_info" to

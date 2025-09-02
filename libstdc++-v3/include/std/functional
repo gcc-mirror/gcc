@@ -922,6 +922,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #ifdef __cpp_lib_bind_front // C++ >= 20
+  template<size_t, typename _Tp>
+  struct _Indexed_bound_arg
+    {
+      [[no_unique_address]] _Tp _M_val;
+    };
+
+  template<typename... _IndexedArgs>
+    struct _Bound_arg_storage : _IndexedArgs...
+    {
+      template<typename _Fd, typename _Self, typename... _CallArgs>
+	static constexpr
+	decltype(auto)
+	_S_apply_front(_Fd&& __fd, _Self&& __self, _CallArgs&&... __call_args)
+	{
+	  return std::invoke(std::forward<_Fd>(__fd),
+			     __like_t<_Self, _IndexedArgs>(__self)._M_val...,
+			     std::forward<_CallArgs>(__call_args)...);
+	}
+
+      template<typename _Fd, typename _Self, typename... _CallArgs>
+	static constexpr
+	decltype(auto)
+	_S_apply_back(_Fd&& __fd, _Self&& __self, _CallArgs&&... __call_args)
+	{
+	  return std::invoke(std::forward<_Fd>(__fd),
+			     std::forward<_CallArgs>(__call_args)...,
+			     __like_t<_Self, _IndexedArgs>(__self)._M_val...);
+	}
+    };
+
+  template<typename... _BoundArgs, typename... _Args>
+    constexpr auto
+    __make_bound_args(_Args&&... __args)
+    {
+      if constexpr (sizeof...(_BoundArgs) == 1)
+	// pack has one element, so return copy of arg
+	return (_BoundArgs(std::forward<_Args>(__args)), ...);
+      else
+	{
+	  auto __impl = [&]<size_t... _Inds>(index_sequence<_Inds...>)
+	  {
+	    return _Bound_arg_storage<_Indexed_bound_arg<_Inds, _BoundArgs>...>
+		   { {_BoundArgs(std::forward<_Args>(__args))}... };
+	  };
+	  return __impl(index_sequence_for<_BoundArgs...>());
+	}
+    }
 
   template<typename _Fd, typename... _BoundArgs>
     struct _Bind_front
@@ -937,7 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
 			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
 	: _M_fd(std::forward<_Fn>(__fn)),
-	  _M_bound_args(std::forward<_Args>(__args)...)
+	  _M_bound_args(__make_bound_args<_BoundArgs...>(std::forward<_Args>(__args)...))
 	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
 
 #if __cpp_explicit_this_parameter
@@ -948,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
 					__like_t<_Self, _BoundArgs>..., _CallArgs...>)
 	{
-	  return _S_call(__like_t<_Self, _Bind_front>(__self), _BoundIndices(),
+	  return _S_call(__like_t<_Self, _Bind_front>(__self),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
 #else
@@ -959,8 +1006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_CallArgs&&... __call_args) &
 	noexcept(is_nothrow_invocable_v<_Fd&, _BoundArgs&..., _CallArgs...>)
 	{
-	  return _S_call(*this, _BoundIndices(),
-	      std::forward<_CallArgs>(__call_args)...);
+	  return _S_call(*this, std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
@@ -971,8 +1017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<const _Fd&, const _BoundArgs&...,
 					_CallArgs...>)
 	{
-	  return _S_call(*this, _BoundIndices(),
-	      std::forward<_CallArgs>(__call_args)...);
+	  return _S_call(*this, std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
@@ -982,8 +1027,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_CallArgs&&... __call_args) &&
 	noexcept(is_nothrow_invocable_v<_Fd, _BoundArgs..., _CallArgs...>)
 	{
-	  return _S_call(std::move(*this), _BoundIndices(),
-	      std::forward<_CallArgs>(__call_args)...);
+	  return _S_call(std::move(*this),
+			 std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
@@ -994,8 +1039,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<const _Fd, const _BoundArgs...,
 					_CallArgs...>)
 	{
-	  return _S_call(std::move(*this), _BoundIndices(),
-	      std::forward<_CallArgs>(__call_args)...);
+	  return _S_call(std::move(*this),
+			 std::forward<_CallArgs>(__call_args)...);
 	}
 
       template<typename... _CallArgs>
@@ -1012,20 +1057,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     private:
-      using _BoundIndices = index_sequence_for<_BoundArgs...>;
+      using _BoundArgsStorage
+	// _BoundArgs are required to be move-constructible, so this is valid.
+	= decltype(__make_bound_args<_BoundArgs...>(std::declval<_BoundArgs>()...));
 
-      template<typename _Tp, size_t... _Ind, typename... _CallArgs>
+      template<typename _Tp, typename... _CallArgs>
 	static constexpr
 	decltype(auto)
-	_S_call(_Tp&& __g, index_sequence<_Ind...>, _CallArgs&&... __call_args)
+	_S_call(_Tp&& __g, _CallArgs&&... __call_args)
 	{
-	  return std::invoke(std::forward<_Tp>(__g)._M_fd,
-	      std::get<_Ind>(std::forward<_Tp>(__g)._M_bound_args)...,
-	      std::forward<_CallArgs>(__call_args)...);
+	  if constexpr (sizeof...(_BoundArgs) == 1)
+	    return std::invoke(std::forward<_Tp>(__g)._M_fd,
+			       std::forward<_Tp>(__g)._M_bound_args,
+			       std::forward<_CallArgs>(__call_args)...);
+	  else
+	    return _BoundArgsStorage::_S_apply_front(
+		      std::forward<_Tp>(__g)._M_fd,
+		      std::forward<_Tp>(__g)._M_bound_args,
+		      std::forward<_CallArgs>(__call_args)...);
 	}
 
       [[no_unique_address]] _Fd _M_fd;
-      [[no_unique_address]] std::tuple<_BoundArgs...> _M_bound_args;
+      [[no_unique_address]] _BoundArgsStorage _M_bound_args;
     };
 
   template<typename _Fn, typename... _Args>
@@ -1066,7 +1119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
 			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
 	: _M_fd(std::forward<_Fn>(__fn)),
-	  _M_bound_args(std::forward<_Args>(__args)...)
+	  _M_bound_args(__make_bound_args<_BoundArgs...>(std::forward<_Args>(__args)...))
 	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
 
       template<typename _Self, typename... _CallArgs>
@@ -1076,25 +1129,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
 					_CallArgs..., __like_t<_Self, _BoundArgs>...>)
 	{
-	  return _S_call(__like_t<_Self, _Bind_back>(__self), _BoundIndices(),
+	  return _S_call(__like_t<_Self, _Bind_back>(__self),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
 
     private:
-      using _BoundIndices = index_sequence_for<_BoundArgs...>;
+      using _BoundArgsStorage
+	// _BoundArgs are required to be move-constructible, so this is valid.
+	= decltype(__make_bound_args<_BoundArgs...>(std::declval<_BoundArgs>()...));
 
-      template<typename _Tp, size_t... _Ind, typename... _CallArgs>
+      template<typename _Tp, typename... _CallArgs>
 	static constexpr
 	decltype(auto)
-	_S_call(_Tp&& __g, index_sequence<_Ind...>, _CallArgs&&... __call_args)
+	_S_call(_Tp&& __g, _CallArgs&&... __call_args)
 	{
-	  return std::invoke(std::forward<_Tp>(__g)._M_fd,
-	      std::forward<_CallArgs>(__call_args)...,
-	      std::get<_Ind>(std::forward<_Tp>(__g)._M_bound_args)...);
+	  if constexpr (sizeof...(_BoundArgs) == 1)
+	    return std::invoke(std::forward<_Tp>(__g)._M_fd,
+			       std::forward<_CallArgs>(__call_args)...,
+			       std::forward<_Tp>(__g)._M_bound_args);
+	  else
+	    return _BoundArgsStorage::_S_apply_back(
+		      std::forward<_Tp>(__g)._M_fd,
+		      std::forward<_Tp>(__g)._M_bound_args,
+		      std::forward<_CallArgs>(__call_args)...);
 	}
 
       [[no_unique_address]] _Fd _M_fd;
-      [[no_unique_address]] std::tuple<_BoundArgs...> _M_bound_args;
+      [[no_unique_address]] _BoundArgsStorage _M_bound_args;
     };
 
   template<typename _Fn, typename... _Args>

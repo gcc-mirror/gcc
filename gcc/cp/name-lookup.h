@@ -198,6 +198,7 @@ enum scope_kind {
   sk_catch,	     /* A catch-block.  */
   sk_for,	     /* The scope of the variable declared in a
 			init-statement.  */
+  sk_template_for,   /* Ditto for expansion statements.  */
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
   sk_stmt_expr,	     /* GNU statement expression block.  */
@@ -214,6 +215,7 @@ enum scope_kind {
 			"template <>", this scope is always empty.  */
   sk_transaction,    /* A synchronized or atomic statement.  */
   sk_omp,	     /* An OpenMP structured block.  */
+  sk_lambda,	     /* A lambda scope.  */
   sk_count	     /* Number of scope_kind enumerations.  */
 };
 
@@ -287,7 +289,7 @@ struct GTY(()) cp_binding_level {
   /* The kind of scope that this object represents.  However, a
       SK_TEMPLATE_SPEC scope is represented with KIND set to
       SK_TEMPLATE_PARMS and EXPLICIT_SPEC_P set to true.  */
-  ENUM_BITFIELD (scope_kind) kind : 4;
+  ENUM_BITFIELD (scope_kind) kind : 5;
 
   /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
       only valid if KIND == SK_TEMPLATE_PARMS.  */
@@ -315,7 +317,7 @@ struct GTY(()) cp_binding_level {
      parent scope.  */
   unsigned artificial : 1;
 
-  /* 21 bits left to fill a 32-bit word.  */
+  /* 20 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */

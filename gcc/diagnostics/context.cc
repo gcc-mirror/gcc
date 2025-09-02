@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/logical-locations.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/file-cache.h"
+#include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -170,18 +172,24 @@ context::initialize (int n_opts)
   m_text_callbacks.m_html_start_span
     = default_start_span_fn<to_html>;
   m_text_callbacks.m_end_diagnostic = default_text_finalizer;
-  m_option_mgr = nullptr;
+  m_option_id_mgr = nullptr;
   m_urlifier_stack = new auto_vec<urlifier_stack_node> ();
   m_last_location = UNKNOWN_LOCATION;
   m_client_aux_data = nullptr;
   m_lock = 0;
   m_inhibit_notes_p = false;
+
   m_source_printing.colorize_source_p = false;
   m_source_printing.show_labels_p = false;
   m_source_printing.show_line_numbers_p = false;
   m_source_printing.min_margin_width = 0;
   m_source_printing.show_ruler_p = false;
   m_source_printing.show_event_links_p = false;
+
+  m_column_options.m_column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
+  m_column_options.m_column_origin = 1;
+  m_column_options.m_tabstop = 8;
+
   m_report_bug = false;
   m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_none;
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))
@@ -192,9 +200,6 @@ context::initialize (int n_opts)
 	m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2;
       /* Silently ignore unrecognized values.  */
     }
-  m_column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
-  m_column_origin = 1;
-  m_tabstop = 8;
   m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   m_fixits_change_set = nullptr;
   m_diagnostic_groups.m_group_nesting_depth = 0;
@@ -207,6 +212,7 @@ context::initialize (int n_opts)
   m_diagrams.m_theme = nullptr;
   m_original_argv = nullptr;
   m_diagnostic_buffer = nullptr;
+  m_logger = nullptr;
 
   enum diagnostic_text_art_charset text_art_charset
     = DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI;
@@ -218,6 +224,27 @@ context::initialize (int n_opts)
 	text_art_charset = DIAGNOSTICS_TEXT_ART_CHARSET_ASCII;
     }
   set_text_art_charset (text_art_charset);
+
+  if (const char *name = getenv ("GCC_DIAGNOSTICS_LOG"))
+    {
+      if (name[0] != '\0')
+	{
+	  /* Try to write a log to the named path.  */
+	  if (FILE *outfile = fopen (name, "w"))
+	    m_logger = new logging::logger
+	      (output_file (outfile, true,
+			    label_text::take (xstrdup (name))));
+	}
+      else
+	/* Write a log to stderr.  */
+	m_logger = new logging::logger
+	  (output_file
+	   (stderr, false,
+	    label_text::borrow ("stderr")));
+    }
+
+  if (m_logger)
+    m_logger->log_printf ("diagnostics::context::initialize");
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -284,6 +311,33 @@ context::urls_init (int value)
 	(m_reference_printer->get_url_format ());
 }
 
+void
+context::set_show_nesting (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_nesting (val);
+}
+
+void
+context::set_show_nesting_locations (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_locations_in_nesting (val);
+}
+
+void
+context::set_show_nesting_levels (bool val)
+{
+  for (auto sink_ : m_sinks)
+    if (sink_->follows_reference_printer_p ())
+      if (auto text_sink_ = sink_->dyn_cast_text_sink ())
+	text_sink_->set_show_nesting_levels (val);
+}
+
 /* Create the file_cache, if not already created, and tell it how to
    translate files on input.  */
 void
@@ -298,6 +352,15 @@ context::initialize_input_context (diagnostic_input_charset_callback ccb,
 void
 context::finish ()
 {
+  if (m_logger)
+    {
+      m_logger->log_printf ("diagnostics::context::finish");
+      /* We're cleaning up the logger before this function exits,
+	 so we can't use auto_inc_depth here.  */
+      m_logger->inc_depth ();
+      dump (m_logger->get_stream (), m_logger->get_indent ());
+    }
+
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
      sinks.  */
@@ -337,8 +400,8 @@ context::finish ()
       m_client_data_hooks = nullptr;
     }
 
-  delete m_option_mgr;
-  m_option_mgr = nullptr;
+  delete m_option_id_mgr;
+  m_option_id_mgr = nullptr;
 
   if (m_urlifier_stack)
     {
@@ -350,38 +413,48 @@ context::finish ()
 
   freeargv (m_original_argv);
   m_original_argv = nullptr;
+
+  delete m_logger;
+  m_logger = nullptr;
 }
 
 /* Dump state of this diagnostics::context to OUT, for debugging.  */
 
 void
-context::dump (FILE *out) const
+context::dump (FILE *outfile, int indent) const
 {
-  fprintf (out, "diagnostics::context:\n");
-  m_diagnostic_counters.dump (out, 2);
-  fprintf (out, "  reference printer:\n");
-  m_reference_printer->dump (out, 4);
-  fprintf (out, "  output sinks:\n");
+  dumping::emit_heading (outfile, indent, "diagnostics::context");
+  m_diagnostic_counters.dump (outfile, indent + 2);
+  dumping::emit_heading (outfile, indent + 2, "reference printer");
+  if (m_reference_printer)
+    m_reference_printer->dump (outfile, indent + 4);
+  else
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "output sinks");
   if (m_sinks.length () > 0)
     {
       for (unsigned i = 0; i < m_sinks.length (); ++i)
 	{
-	  fprintf (out, "  sink %i:\n", i);
-	  m_sinks[i]->dump (out, 4);
+	  dumping::emit_indent (outfile, indent + 4);
+	  const sink *s = m_sinks[i];
+	  fprintf (outfile, "sink %i (", i);
+	  s->dump_kind (outfile);
+	  fprintf (outfile, "):\n");
+	  s->dump (outfile, indent + 6);
 	}
     }
   else
-    fprintf (out, "    (none):\n");
-  fprintf (out, "  diagnostic buffer:\n");
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "diagnostic buffer");
   if (m_diagnostic_buffer)
-    m_diagnostic_buffer->dump (out, 4);
+    m_diagnostic_buffer->dump (outfile, indent + 4);
   else
-    fprintf (out, "    (none):\n");
-  fprintf (out, "  file cache:\n");
+    dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "file cache");
   if (m_file_cache)
-    m_file_cache->dump (out, 4);
+    m_file_cache->dump (outfile, indent + 4);
   else
-    fprintf (out, "    (none):\n");
+    dumping::emit_none (outfile, indent + 4);
 }
 
 /* Return true if sufficiently severe diagnostics have been seen that
@@ -407,6 +480,9 @@ context::remove_all_output_sinks ()
 void
 context::set_sink (std::unique_ptr<sink> sink_)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_logger, "diagnostics::context::set_sink");
+  if (m_logger)
+    sink_->dump (m_logger->get_stream (), m_logger->get_indent ());
   remove_all_output_sinks ();
   m_sinks.safe_push (sink_.release ());
 }
@@ -422,6 +498,9 @@ context::get_sink (size_t idx) const
 void
 context::add_sink (std::unique_ptr<sink> sink_)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_logger, "diagnostics::context::add_sink");
+  if (m_logger)
+    sink_->dump (m_logger->get_stream (), m_logger->get_indent ());
   m_sinks.safe_push (sink_.release ());
 }
 
@@ -465,11 +544,11 @@ context::set_original_argv (unique_argv original_argv)
 }
 
 void
-context::set_option_manager (std::unique_ptr<option_manager> mgr,
-			     unsigned lang_mask)
+context::set_option_id_manager (std::unique_ptr<option_id_manager> mgr,
+				unsigned lang_mask)
 {
-  delete m_option_mgr;
-  m_option_mgr = mgr.release ();
+  delete m_option_id_mgr;
+  m_option_id_mgr = mgr.release ();
   m_lang_mask = lang_mask;
 }
 
@@ -626,6 +705,19 @@ get_text_for_kind (enum kind kind)
   return diagnostic_kind_text[static_cast<int> (kind)];
 }
 
+static const char *const diagnostic_kind_debug_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (#K),
+#include "diagnostics/kinds.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+  "must-not-happen"
+};
+
+const char *
+get_debug_string_for_kind (enum kind kind)
+{
+  return diagnostic_kind_debug_text[static_cast<int> (kind)];
+}
+
 static const char *const diagnostic_kind_color[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T, C) (C),
 #include "diagnostics/kinds.def"
@@ -671,11 +763,22 @@ convert_column_unit (file_cache &fc,
     }
 }
 
+/* Given an expanded_location, convert the column (which is in 1-based bytes)
+   to the requested units and origin.  Return -1 if the column is
+   invalid (<= 0).  */
+int
+column_options::convert_column (file_cache &fc,
+				expanded_location s) const
+{
+  int one_based_col = convert_column_unit (fc, m_column_unit, m_tabstop, s);
+  if (one_based_col <= 0)
+    return -1;
+  return one_based_col + (m_column_origin - 1);
+}
+
 column_policy::column_policy (const context &dc)
 : m_file_cache (dc.get_file_cache ()),
-  m_column_unit (dc.m_column_unit),
-  m_column_origin (dc.m_column_origin),
-  m_tabstop (dc.m_tabstop)
+  m_column_options (dc.get_column_options ())
 {
 }
 
@@ -685,11 +788,7 @@ column_policy::column_policy (const context &dc)
 int
 column_policy::converted_column (expanded_location s) const
 {
-  int one_based_col = convert_column_unit (m_file_cache,
-					   m_column_unit, m_tabstop, s);
-  if (one_based_col <= 0)
-    return -1;
-  return one_based_col + (m_column_origin - 1);
+  return m_column_options.convert_column (m_file_cache, s);
 }
 
 /* Return a string describing a location e.g. "foo.c:42:10".  */
@@ -711,7 +810,7 @@ column_policy::get_location_text (const expanded_location &s,
 	col = converted_column (s);
     }
 
-  const char *line_col = maybe_line_and_column (line, col);
+  const char *line_col = text_sink::maybe_line_and_column (line, col);
   return label_text::take (build_message_string ("%s%s%s:%s", locus_cs, file,
 						 line_col, locus_ce));
 }
@@ -1098,7 +1197,7 @@ context::get_any_inlining_info (diagnostic_info *diagnostic)
     /* Retrieve the locations into which the expression about to be
        diagnosed has been inlined, including those of all the callers
        all the way down the inlining stack.  */
-    m_set_locations_cb (this, diagnostic);
+    m_set_locations_cb (*this, diagnostic);
   else
     {
       /* When there's no callback use just the one location provided
@@ -1231,6 +1330,9 @@ context::emit_diagnostic_with_group_va (enum kind kind,
 bool
 context::report_diagnostic (diagnostic_info *diagnostic)
 {
+  auto logger = get_logger ();
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (logger, "diagnostics::context::report_diagnostic");
+
   enum kind orig_diag_kind = diagnostic->m_kind;
 
   /* Every call to report_diagnostic should be within a
@@ -1245,11 +1347,13 @@ context::report_diagnostic (diagnostic_info *diagnostic)
   if (was_warning && m_inhibit_warnings)
     {
       inhibit_notes_in_group ();
+      if (m_logger)
+	m_logger->log_printf ("rejecting: inhibiting warnings");
       return false;
     }
 
   if (m_adjust_diagnostic_info)
-    m_adjust_diagnostic_info (this, diagnostic);
+    m_adjust_diagnostic_info (*this, diagnostic);
 
   if (diagnostic->m_kind == kind::pedwarn)
     {
@@ -1260,7 +1364,11 @@ context::report_diagnostic (diagnostic_info *diagnostic)
     }
 
   if (diagnostic->m_kind == kind::note && m_inhibit_notes_p)
-    return false;
+    {
+      if (m_logger)
+	m_logger->log_printf ("rejecting: inhibiting notes");
+      return false;
+    }
 
   /* If the user requested that warnings be treated as errors, so be
      it.  Note that we do this before the next block so that
@@ -1277,6 +1385,8 @@ context::report_diagnostic (diagnostic_info *diagnostic)
      stack.  .  */
   if (!diagnostic_enabled (diagnostic))
     {
+      if (m_logger)
+	m_logger->log_printf ("rejecting: diagnostic not enabled");
       inhibit_notes_in_group ();
       return false;
     }
@@ -1285,13 +1395,21 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       && ((!m_warn_system_headers
 	   && diagnostic->m_iinfo.m_allsyslocs)
 	  || m_inhibit_warnings))
-    /* Bail if the warning is not to be reported because all locations in the
-       inlining stack (if there is one) are in system headers.  */
-    return false;
+    {
+      /* Bail if the warning is not to be reported because all locations in the
+	 inlining stack (if there is one) are in system headers.  */
+      if (m_logger)
+	m_logger->log_printf ("rejecting: warning in system header");
+      return false;
+    }
 
   if (diagnostic->m_kind == kind::note && notes_inhibited_in_group ())
-    /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
-    return false;
+    {
+      /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
+      if (m_logger)
+	m_logger->log_printf ("rejecting: notes inhibited within group");
+      return false;
+    }
 
   if (diagnostic->m_kind != kind::note && diagnostic->m_kind != kind::ice)
     check_max_errors (false);
@@ -1352,8 +1470,13 @@ context::report_diagnostic (diagnostic_info *diagnostic)
 
   /* Is this the initial diagnostic within the stack of groups?  */
   if (m_diagnostic_groups.m_emission_count == 0)
-    for (auto sink_ : m_sinks)
-      sink_->on_begin_group ();
+    {
+      DIAGNOSTICS_LOG_SCOPE_PRINTF0
+	(get_logger (),
+	 "diagnostics::context: beginning group");
+      for (auto sink_ : m_sinks)
+	sink_->on_begin_group ();
+    }
   m_diagnostic_groups.m_emission_count++;
 
   va_list *orig_args = diagnostic->m_message.m_args_ptr;
@@ -1385,6 +1508,8 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       sink_->on_report_diagnostic (*diagnostic, orig_diag_kind);
     }
 
+  const int tabstop = get_column_options ().m_tabstop;
+
   switch (m_extra_output_kind)
     {
     default:
@@ -1393,14 +1518,14 @@ context::report_diagnostic (diagnostic_info *diagnostic)
       print_parseable_fixits (get_file_cache (),
 			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
-			      m_tabstop);
+			      tabstop);
       pp_flush (m_reference_printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
       print_parseable_fixits (get_file_cache (),
 			      m_reference_printer, diagnostic->m_richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
-			      m_tabstop);
+			      tabstop);
       pp_flush (m_reference_printer);
       break;
     }
@@ -1510,6 +1635,13 @@ context::diagnostic_impl (rich_location *richloc,
 			  const char *gmsgid,
 			  va_list *ap, enum kind kind)
 {
+  logging::log_function_params
+    (m_logger, "diagnostics::context::diagnostic_impl")
+    .log_param_option_id ("option_id", opt_id)
+    .log_param_kind ("kind", kind)
+    .log_param_string ("gmsgid", gmsgid);
+  logging::auto_inc_depth depth_sentinel (m_logger);
+
   diagnostic_info diagnostic;
   if (kind == diagnostics::kind::permerror)
     {
@@ -1527,7 +1659,11 @@ context::diagnostic_impl (rich_location *richloc,
 	diagnostic.m_option_id = opt_id;
     }
   diagnostic.m_metadata = metadata;
-  return report_diagnostic (&diagnostic);
+
+  bool ret = report_diagnostic (&diagnostic);
+  if (m_logger)
+    m_logger->log_bool_return ("diagnostics::context::diagnostic_impl", ret);
+  return ret;
 }
 
 /* Implement inform_n, warning_n, and error_n, as documented and
@@ -1541,6 +1677,13 @@ context::diagnostic_n_impl (rich_location *richloc,
 			    const char *plural_gmsgid,
 			    va_list *ap, enum kind kind)
 {
+  logging::log_function_params
+    (m_logger, "diagnostics::context::diagnostic_n_impl")
+    .log_param_option_id ("option_id", opt_id)
+    .log_param_kind ("kind", kind)
+    .log_params_n_gmsgids (n, singular_gmsgid, plural_gmsgid);
+  logging::auto_inc_depth depth_sentinel (m_logger);
+
   diagnostic_info diagnostic;
   unsigned long gtn;
 
@@ -1557,7 +1700,11 @@ context::diagnostic_n_impl (rich_location *richloc,
   if (kind == diagnostics::kind::warning)
     diagnostic.m_option_id = opt_id;
   diagnostic.m_metadata = metadata;
-  return report_diagnostic (&diagnostic);
+
+  bool ret = report_diagnostic (&diagnostic);
+  if (m_logger)
+    m_logger->log_bool_return ("diagnostics::context::diagnostic_n_impl", ret);
+  return ret;
 }
 
 
@@ -1659,8 +1806,13 @@ context::end_group ()
 	 If any diagnostics were emitted, give the context a chance
 	 to do something.  */
       if (m_diagnostic_groups.m_emission_count > 0)
-	for (auto sink_ : m_sinks)
-	  sink_->on_end_group ();
+	{
+	  DIAGNOSTICS_LOG_SCOPE_PRINTF0
+	    (get_logger (),
+	     "diagnostics::context::end_group: ending group");
+	  for (auto sink_ : m_sinks)
+	    sink_->on_end_group ();
+	}
       m_diagnostic_groups.m_emission_count = 0;
     }
   /* We're popping one level, so might need to stop inhibiting notes.  */
@@ -1682,9 +1834,15 @@ context::pop_nesting_level ()
 }
 
 void
+context::set_nesting_level (int new_level)
+{
+  m_diagnostic_groups.m_diagnostic_nesting_level = new_level;
+}
+
+void
 sink::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sprinter:\n", indent, "");
+  dumping::emit_heading (out, indent, "printer");
   m_printer->dump (out, indent + 2);
 }
 
@@ -1771,19 +1929,19 @@ counters::counters ()
 void
 counters::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*scounts:\n", indent, "");
+  dumping::emit_heading (out, indent, "counts");
   bool none = true;
   for (int i = 0; i < static_cast<int> (kind::last_diagnostic_kind); i++)
     if (m_count_for_kind[i] > 0)
       {
-	fprintf (out, "%*s%s%i\n",
-		 indent + 2, "",
+	dumping::emit_indent (out, indent + 2);
+	fprintf (out, "%s%i\n",
 		 get_text_for_kind (static_cast<enum kind> (i)),
 		 m_count_for_kind[i]);
 	none = false;
       }
   if (none)
-    fprintf (out, "%*s(none)\n", indent + 2, "");
+    dumping::emit_none (out, indent + 2);
 }
 
 void
@@ -2009,8 +2167,8 @@ assert_location_text (const char *expected_loc_text,
 			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
   diagnostics::selftest::test_context dc;
-  dc.m_column_unit = column_unit;
-  dc.m_column_origin = origin;
+  dc.get_column_options ().m_column_unit = column_unit;
+  dc.get_column_options ().m_column_origin = origin;
 
   expanded_location xloc;
   xloc.file = filename;
@@ -2046,8 +2204,8 @@ test_get_location_text ()
   assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
   assert_location_text ("foo.c:", "foo.c", 0, 10, false);
 
-  diagnostics::maybe_line_and_column (INT_MAX, INT_MAX);
-  diagnostics::maybe_line_and_column (INT_MIN, INT_MIN);
+  diagnostics::text_sink::maybe_line_and_column (INT_MAX, INT_MAX);
+  diagnostics::text_sink::maybe_line_and_column (INT_MIN, INT_MIN);
 
   {
     /* In order to test display columns vs byte columns, we need to create a
@@ -2130,9 +2288,10 @@ context_cc_tests ()
 }
 
 } // namespace diagnostics::selftest
-} // namespace diagnostics
 
 #endif /* #if CHECKING_P */
+
+} // namespace diagnostics
 
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop

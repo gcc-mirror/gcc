@@ -37,7 +37,7 @@ baz ()
 {
   std::allocator<int> a;
   auto b = a.allocate (2);
-  new (b) long (42);		// { dg-error "accessing value of 'heap ' through a 'long int' glvalue in a constant expression" }
+  new (b) long (42);		// { dg-error "accessing value of 'int \\\[2\\\]' object through a 'long int' glvalue in a constant expression" }
   a.deallocate (b, 2);
   return true;
 }

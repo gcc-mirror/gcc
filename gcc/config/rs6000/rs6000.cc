@@ -5174,6 +5174,7 @@ public:
 
 protected:
   void update_target_cost_per_stmt (vect_cost_for_stmt, stmt_vec_info,
+				    slp_tree node,
 				    vect_cost_model_location, unsigned int);
   void density_test (loop_vec_info);
   void adjust_vect_cost_per_loop (loop_vec_info);
@@ -5321,6 +5322,7 @@ rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
 void
 rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 					       stmt_vec_info stmt_info,
+					       slp_tree node,
 					       vect_cost_model_location where,
 					       unsigned int orig_count)
 {
@@ -5381,12 +5383,12 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 	 or may not need to apply.  When finalizing the cost of the loop,
 	 the extra penalty is applied when the load density heuristics
 	 are satisfied.  */
-      if (kind == vec_construct && stmt_info
-	  && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
-	  && (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
-	      || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_STRIDED_SLP))
+      if (kind == vec_construct && node
+	  && SLP_TREE_TYPE (node) == load_vec_info_type
+	  && (SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_ELEMENTWISE
+	      || SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_STRIDED_SLP))
 	{
-	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  tree vectype = SLP_TREE_VECTYPE (node);
 	  unsigned int nunits = vect_nunits_for_cost (vectype);
 	  /* As PR103702 shows, it's possible that vectorizer wants to do
 	     costings for only one unit here, it's no need to do any
@@ -5415,7 +5417,7 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 
 unsigned
 rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, slp_tree,
+				 stmt_vec_info stmt_info, slp_tree node,
 				 tree vectype, int misalign,
 				 vect_cost_model_location where)
 {
@@ -5433,7 +5435,7 @@ rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
       retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
       m_costs[where] += retval;
 
-      update_target_cost_per_stmt (kind, stmt_info, where, orig_count);
+      update_target_cost_per_stmt (kind, stmt_info, node, where, orig_count);
     }
 
   return retval;
@@ -10318,15 +10320,18 @@ can_be_rotated_to_negative_lis (HOST_WIDE_INT c, int *rot)
 
   /* case b. xx0..01..1xx: some of 15 x's (and some of 16 0's) are
      rotated over the highest bit.  */
-  int pos_one = clz_hwi ((c << 16) >> 16);
-  middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
-  int middle_ones = clz_hwi (~(c << pos_one));
-  if (middle_zeros >= 16 && middle_ones >= 33)
+  unsigned HOST_WIDE_INT uc = c;
+  int pos_one = clz_hwi ((HOST_WIDE_INT) (uc << 16) >> 16);
+  if (pos_one > 0 && pos_one < HOST_BITS_PER_WIDE_INT)
     {
-      *rot = pos_one;
-      return true;
+      middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
+      int middle_ones = clz_hwi (~(uc << pos_one));
+      if (middle_zeros >= 16 && middle_ones >= 33)
+	{
+	  *rot = pos_one;
+	  return true;
+	}
     }
-
   return false;
 }
 
@@ -10443,7 +10448,8 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   if (lz >= HOST_BITS_PER_WIDE_INT)
     return false;
 
-  int middle_ones = clz_hwi (~(c << lz));
+  unsigned HOST_WIDE_INT uc = c;
+  int middle_ones = clz_hwi (~(uc << lz));
   if (tz + lz + middle_ones >= ones
       && (tz - lz) < HOST_BITS_PER_WIDE_INT
       && tz < HOST_BITS_PER_WIDE_INT)
@@ -10477,7 +10483,7 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   if (!IN_RANGE (pos_first_1, 1, HOST_BITS_PER_WIDE_INT-1))
     return false;
 
-  middle_ones = clz_hwi (~c << pos_first_1);
+  middle_ones = clz_hwi ((~(unsigned HOST_WIDE_INT) c) << pos_first_1);
   middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_first_1));
   if (pos_first_1 < HOST_BITS_PER_WIDE_INT
       && middle_ones + middle_zeros < HOST_BITS_PER_WIDE_INT
@@ -10579,7 +10585,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c, int *num_insns)
     {
       /* li/lis; rldicX */
       unsigned HOST_WIDE_INT imm = (c | ~mask);
-      imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
+      if (shift > 0 && shift < HOST_BITS_PER_WIDE_INT)
+	imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
 
       count_or_emit_insn (temp, GEN_INT (imm));
       if (shift != 0)

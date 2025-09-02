@@ -648,6 +648,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Callback>
     stop_callback(stop_token, _Callback) -> stop_callback<_Callback>;
 
+  /// @cond undocumented
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // stop_token or stop_source into a variant.
+    template<>
+      struct _Never_valueless_alt<std::stop_token>
+      : true_type
+      { };
+
+    template<>
+      struct _Never_valueless_alt<std::stop_source>
+      : true_type
+      { };
+  }  // namespace __detail::__variant
+  /// @endcond
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_jthread

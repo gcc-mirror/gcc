@@ -1218,13 +1218,15 @@ expr_noexcept_p (tree expr, tsubst_flags_t complain)
     return true;
 }
 
-/* Explain why EXPR is not noexcept.  */
+/* If EXPR is not noexcept, explain why.  */
 
-void explain_not_noexcept (tree expr)
+void
+explain_not_noexcept (tree expr)
 {
   tree fn = cp_walk_tree_without_duplicates (&expr, check_noexcept_r, 0);
-  gcc_assert (fn);
-  if (DECL_P (fn))
+  if (!fn)
+    /* The call was noexcept, nothing to do.  */;
+  else if (DECL_P (fn))
     inform (DECL_SOURCE_LOCATION (fn), "%qD is not %<noexcept%>", fn);
   else
     inform (location_of (fn), "%qT is not %<noexcept%>", TREE_TYPE (fn));

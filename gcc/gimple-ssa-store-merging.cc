@@ -1033,7 +1033,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 	 source when rsize < range.  */
       if (n->range == orig_range
 	  /* There're case like 0x300000200 for uint32->uint64 cast,
-	     Don't hanlde this.  */
+	     Don't handle this.  */
 	  && n->range == TYPE_PRECISION (n->type)
 	  && ((orig_range == 32
 	       && optab_handler (rotl_optab, SImode) != CODE_FOR_nothing)
@@ -1043,7 +1043,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 	{
 	  uint64_t range = (orig_range / BITS_PER_UNIT) * BITS_PER_MARKER;
 	  uint64_t count = (tmp_n & MARKER_MASK) * BITS_PER_MARKER;
-	  /* .i.e. hanlde 0x203040506070800 when lower byte is zero.  */
+	  /* .i.e. handle 0x203040506070800 when lower byte is zero.  */
 	  if (!count)
 	    {
 	      for (uint64_t i = 1; i != range / BITS_PER_MARKER; i++)
@@ -1055,6 +1055,8 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 		      if (count <= range / BITS_PER_MARKER)
 			{
 			  count = (count + i) * BITS_PER_MARKER % range;
+			  if (!count)
+			    return NULL;
 			  break;
 			}
 		      else

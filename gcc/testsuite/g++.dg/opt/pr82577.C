@@ -3,7 +3,9 @@
 
 #if __cplusplus > 201500L
 // register is no longer a keyword in C++17.
-#define register
+#define reg
+#else
+#define reg register
 #endif
 
 class a {
@@ -14,8 +16,8 @@ struct c {
   int d;
   a e;
 } f;
-void fn1(register c *g) {
-  register int *h;
+void fn1(reg c *g) {
+  reg int *h;
   do
     (h) = g->e.b() + (g)->d;
   while (&f);

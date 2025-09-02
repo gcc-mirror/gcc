@@ -1,7 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-mips16 -mcode-readable=yes" } */
+/* { dg-options "(-mips16) -mabi=32 -mcode-readable=yes" } */
 
-int __attribute__ ((noinline))
+MIPS16 int __attribute__ ((noinline))
 frob (int i)
 {
   switch (i)
@@ -22,7 +22,7 @@ frob (int i)
   return i;
 }
 
-int
+MIPS16 int
 main (int argc, char **argv)
 {
   asm ("" : "+r" (argc));

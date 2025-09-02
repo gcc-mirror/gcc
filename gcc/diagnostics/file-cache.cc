@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cpplib.h"
 #include "diagnostics/file-cache.h"
+#include "diagnostics/dumping.h"
 #include "selftest.h"
 
 #ifndef HAVE_ICONV
@@ -473,7 +474,8 @@ file_cache::dump (FILE *out, int indent) const
 {
   for (size_t i = 0; i < m_num_file_slots; ++i)
     {
-      fprintf (out, "%*sslot[%i]:\n", indent, "", (int)i);
+      dumping::emit_indent (out, indent);
+      fprintf (out, "slot[%i]:\n", (int)i);
       m_file_slots[i].dump (out, indent + 2);
     }
 }
@@ -541,27 +543,38 @@ file_cache_slot::dump (FILE *out, int indent) const
 {
   if (!m_file_path)
     {
-      fprintf (out, "%*s(unused)\n", indent, "");
+      dumping::emit_indent (out, indent);
+      fprintf (out, "(unused)\n");
       return;
     }
-  fprintf (out, "%*sfile_path: %s\n", indent, "", m_file_path);
-  fprintf (out, "%*sfp: %p\n", indent, "", (void *)m_fp);
-  fprintf (out, "%*sneeds_read_p: %i\n", indent, "", (int)needs_read_p ());
-  fprintf (out, "%*sneeds_grow_p: %i\n", indent, "", (int)needs_grow_p ());
-  fprintf (out, "%*suse_count: %i\n", indent, "", m_use_count);
-  fprintf (out, "%*ssize: %zi\n", indent, "", m_size);
-  fprintf (out, "%*snb_read: %zi\n", indent, "", m_nb_read);
-  fprintf (out, "%*sstart_line_idx: %zi\n", indent, "", m_line_start_idx);
-  fprintf (out, "%*sline_num: %zi\n", indent, "", m_line_num);
-  fprintf (out, "%*smissing_trailing_newline: %i\n",
-	   indent, "", (int)m_missing_trailing_newline);
-  fprintf (out, "%*sline records (%i):\n",
-	   indent, "", m_line_record.length ());
+  dumping::emit_string_field (out, indent, "file_path", m_file_path);
+  {
+    dumping::emit_indent (out, indent);
+    fprintf (out, "fp: %p\n", (void *)m_fp);
+  }
+  dumping::emit_bool_field (out, indent, "needs_read_p", needs_read_p ());
+  dumping::emit_bool_field (out, indent, "needs_grow_p", needs_grow_p ());
+  dumping::emit_unsigned_field (out, indent, "use_count", m_use_count);
+  dumping::emit_size_t_field (out, indent, "size", m_size);
+  dumping::emit_size_t_field (out, indent, "nb_read", m_nb_read);
+  dumping::emit_size_t_field (out, indent, "start_line_idx", m_line_start_idx);
+  dumping::emit_size_t_field (out, indent, "line_num", m_line_num);
+  dumping::emit_bool_field (out, indent, "missing_trailing_newline",
+			    m_missing_trailing_newline);
+  {
+    dumping::emit_indent (out, indent);
+    fprintf (out, "line records (%i):\n", m_line_record.length ());
+  }
   int idx = 0;
   for (auto &line : m_line_record)
-    fprintf (out, "%*s[%i]: line %zi: byte offsets: %zi-%zi\n",
-	     indent + 2, "",
-	     idx++, line.line_num, line.start_pos, line.end_pos);
+    {
+      dumping::emit_indent (out, indent);
+      fprintf (out, ("[%i]:"
+		     " line " HOST_SIZE_T_PRINT_DEC ":"
+		     " byte offsets: " HOST_SIZE_T_PRINT_DEC
+		     "-" HOST_SIZE_T_PRINT_DEC "\n"),
+	       idx++, line.line_num, line.start_pos, line.end_pos);
+    }
 }
 
 /* Returns TRUE iff the cache would need to be filled with data coming

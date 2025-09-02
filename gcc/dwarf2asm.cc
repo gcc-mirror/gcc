@@ -1041,7 +1041,7 @@ dw2_output_indirect_constant_1 (const char *sym, tree id)
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
   /* Disable ASan for decl because redzones cause ABI breakage between GCC and
      libstdc++ for `.LDFCM*' variables.  See PR 78651 for details.  */
-  unsigned int save_flag_sanitize = flag_sanitize;
+  sanitize_code_type save_flag_sanitize = flag_sanitize;
   flag_sanitize &= ~(SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS
 		     | SANITIZE_KERNEL_ADDRESS);
   /* And also temporarily disable -fsection-anchors.  These indirect constants

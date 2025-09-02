@@ -48,19 +48,19 @@ contains
   subroutine foo1 (slist, i)
     character(*), dimension(*) :: slist
     integer i
-    write (slist(i), '(2hi=,i3)') i
+    write (slist(i), '(2hi=,i3)') i ! { dg-warning "H format specifier" }
   end subroutine foo1
 
   subroutine foo2 (slist, i)
     character(5), dimension(:) :: slist
     integer i
-    write (slist(i), '(2hi=,i3)') i
+    write (slist(i), '(2hi=,i3)') i ! { dg-warning "H format specifier" }
   end subroutine foo2
 
   subroutine foo3 (slist, i)
     character(5), dimension(:,:) :: slist
     integer i
-    write (slist(1,1), '(2hi=,i3)') i
+    write (slist(1,1), '(2hi=,i3)') i ! { dg-warning "H format specifier" }
   end subroutine foo3
 
 end program test_lex

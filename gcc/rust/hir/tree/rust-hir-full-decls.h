@@ -95,6 +95,8 @@ class FieldAccessExpr;
 struct ClosureParam;
 class ClosureExpr;
 class BlockExpr;
+class AnonConst;
+class ConstBlock;
 class ContinueExpr;
 class BreakExpr;
 class RangeExpr;
@@ -123,10 +125,10 @@ class AwaitExpr;
 class AsyncBlockExpr;
 class InlineAsmReg;
 class InlineAsmRegClass;
-struct AnonConst;
 class InlineAsmOperand;
 class InlineAsm;
 class LlvmInlineAsm;
+class OffsetOf;
 
 // rust-stmt.h
 class EmptyStmt;

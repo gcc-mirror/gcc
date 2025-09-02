@@ -60,6 +60,12 @@ void
 TypeCheckStmt::visit (HIR::ConstantItem &constant)
 {
   TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+  if (!constant.has_expr ())
+    {
+      infered = type;
+      return;
+    }
+
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
   infered = coercion_site (

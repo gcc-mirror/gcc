@@ -62,6 +62,11 @@ PatternDeclaration::go (AST::Pattern &pattern, Rib::ItemType type,
 void
 PatternDeclaration::visit (AST::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      pattern.get_subpattern ().accept_vis (*this);
+    }
+
   Mutability mut = pattern.get_is_mut () ? Mutability::Mut : Mutability::Imm;
   add_new_binding (pattern.get_ident (), pattern.get_node_id (),
 		   BindingTypeInfo (mut, pattern.get_is_ref (),
@@ -94,13 +99,15 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
   AST::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case AST::TupleStructItems::RANGE: {
+    case AST::TupleStructItems::RANGE:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case AST::TupleStructItems::NO_RANGE: {
+    case AST::TupleStructItems::NO_RANGE:
+      {
 	auto &items_no_range
 	  = static_cast<AST::TupleStructItemsNoRange &> (items);
 
@@ -123,7 +130,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
+	case AST::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    AST::StructPatternFieldTuplePat &tuple
 	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
 
@@ -131,7 +139,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT_PAT: {
+	case AST::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    AST::StructPatternFieldIdentPat &ident
 	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
 
@@ -139,7 +148,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT: {
+	case AST::StructPatternField::ItemType::IDENT:
+	  {
 	    auto &ident = static_cast<AST::StructPatternFieldIdent &> (*field);
 
 	    Mutability mut
@@ -160,7 +170,8 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_pattern_type ())
     {
-      case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+    case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE:
+      {
 	auto &ref = static_cast<AST::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 
@@ -169,7 +180,8 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
       }
       break;
 
-      case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
+    case AST::TuplePatternItems::TuplePatternItemType::RANGED:
+      {
 	auto &ref
 	  = static_cast<AST::TuplePatternItemsRanged &> (pattern.get_items ());
 
@@ -348,14 +360,16 @@ resolve_range_pattern_bound (AST::RangePatternBound &bound)
       // Nothing to resolve for a literal.
       break;
 
-      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+    case AST::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
 	ResolvePath::go (ref.get_path ());
       }
       break;
 
-      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case AST::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
 	ResolvePath::go (ref.get_qualified_path ());
@@ -374,9 +388,30 @@ PatternDeclaration::visit (AST::RangePattern &pattern)
 void
 PatternDeclaration::visit (AST::SlicePattern &pattern)
 {
-  for (auto &p : pattern.get_items ())
+  auto &items = pattern.get_items ();
+  switch (items.get_pattern_type ())
     {
-      p->accept_vis (*this);
+    case AST::SlicePatternItems::SlicePatternItemType::NO_REST:
+      {
+	auto &ref
+	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
+
+	for (auto &p : ref.get_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
+
+    case AST::SlicePatternItems::SlicePatternItemType::HAS_REST:
+      {
+	auto &ref
+	  = static_cast<AST::SlicePatternItemsHasRest &> (pattern.get_items ());
+
+	for (auto &p : ref.get_lower_patterns ())
+	  p->accept_vis (*this);
+	for (auto &p : ref.get_upper_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
     }
 }
 

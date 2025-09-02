@@ -116,7 +116,7 @@ ResolverBase::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-ResolverBase::visit (AST::MetaItemPathLit &)
+ResolverBase::visit (AST::MetaItemPathExpr &)
 {}
 
 void
@@ -232,6 +232,14 @@ ResolverBase::visit (AST::BlockExpr &)
 {}
 
 void
+ResolverBase::visit (AST::AnonConst &)
+{}
+
+void
+ResolverBase::visit (AST::ConstBlock &)
+{}
+
+void
 ResolverBase::visit (AST::ClosureExprInnerTyped &)
 {}
 
@@ -273,6 +281,10 @@ ResolverBase::visit (AST::BoxExpr &)
 
 void
 ResolverBase::visit (AST::ReturnExpr &)
+{}
+
+void
+ResolverBase::visit (AST::TryExpr &)
 {}
 
 void
@@ -572,6 +584,14 @@ ResolverBase::visit (AST::GroupedPattern &)
 {}
 
 void
+ResolverBase::visit (AST::SlicePatternItemsNoRest &)
+{}
+
+void
+ResolverBase::visit (AST::SlicePatternItemsHasRest &)
+{}
+
+void
 ResolverBase::visit (AST::SlicePattern &)
 {}
 
@@ -661,6 +681,10 @@ ResolverBase::visit (AST::FunctionParam &)
 
 void
 ResolverBase::visit (AST::FormatArgs &fmt)
+{}
+
+void
+ResolverBase::visit (AST::OffsetOf &offset_of)
 {}
 
 } // namespace Resolver

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-operators.h"
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
+#include "rust-macro-invoc-lexer.h"
 
 /* Compilation unit used for various AST-related functions that would make
  * the headers too long if they were defined inline and don't receive any
@@ -249,27 +250,31 @@ Attribute::get_traits_to_derive ()
   auto &input = get_attr_input ();
   switch (input.get_attr_input_type ())
     {
-      case AST::AttrInput::META_ITEM: {
+    case AST::AttrInput::META_ITEM:
+      {
 	auto &meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
 	for (auto &current : meta.get_items ())
 	  {
 	    // HACK: Find a better way to achieve the downcast.
 	    switch (current->get_kind ())
 	      {
-		case AST::MetaItemInner::Kind::MetaItem: {
+	      case AST::MetaItemInner::Kind::MetaItem:
+		{
 		  // Let raw pointer go out of scope without freeing, it doesn't
 		  // own the data anyway
 		  auto meta_item
 		    = static_cast<AST::MetaItem *> (current.get ());
 		  switch (meta_item->get_item_kind ())
 		    {
-		      case AST::MetaItem::ItemKind::Path: {
+		    case AST::MetaItem::ItemKind::Path:
+		      {
 			auto path
 			  = static_cast<AST::MetaItemPath *> (meta_item);
 			result.push_back (path->get_path ());
 		      }
 		      break;
-		      case AST::MetaItem::ItemKind::Word: {
+		    case AST::MetaItem::ItemKind::Word:
+		      {
 			auto word = static_cast<AST::MetaWord *> (meta_item);
 			// Convert current word to path
 			current = std::make_unique<AST::MetaItemPath> (
@@ -283,7 +288,7 @@ Attribute::get_traits_to_derive ()
 		      break;
 		    case AST::MetaItem::ItemKind::ListPaths:
 		    case AST::MetaItem::ItemKind::NameValueStr:
-		    case AST::MetaItem::ItemKind::PathLit:
+		    case AST::MetaItem::ItemKind::PathExpr:
 		    case AST::MetaItem::ItemKind::Seq:
 		    case AST::MetaItem::ItemKind::ListNameValueStr:
 		    default:
@@ -620,7 +625,7 @@ ConstantItem::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "const " + identifier;
+  str += "const " + identifier.as_string ();
 
   // DEBUG: null pointer check
   if (type == nullptr)
@@ -782,7 +787,8 @@ UseTreeGlob::as_string () const
       return "*";
     case GLOBAL:
       return "::*";
-      case PATH_PREFIXED: {
+    case PATH_PREFIXED:
+      {
 	std::string path_str = path.as_string ();
 	return path_str + "::*";
       }
@@ -805,7 +811,8 @@ UseTreeList::as_string () const
     case GLOBAL:
       path_str = "::{";
       break;
-      case PATH_PREFIXED: {
+    case PATH_PREFIXED:
+      {
 	path_str = path.as_string () + "::{";
 	break;
       }
@@ -1272,6 +1279,25 @@ BlockExpr::as_string () const
 }
 
 std::string
+AnonConst::as_string () const
+{
+  std::string str = "AnonConst: ";
+
+  if (kind == AnonConst::Kind::DeferredInference)
+    str += "_";
+  else
+    str += expr.value ()->as_string ();
+
+  return str;
+}
+
+std::string
+ConstBlock::as_string () const
+{
+  return "ConstBlock: " + expr.as_string ();
+}
+
+std::string
 TraitImpl::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -1614,6 +1640,19 @@ ReturnExpr::as_string () const
 
   if (has_returned_expr ())
     str += return_expr->as_string ();
+
+  return str;
+}
+
+std::string
+TryExpr::as_string () const
+{
+  /* TODO: find way to incorporate outer attrs - may have to represent in
+   * different style (i.e. something more like BorrowExpr: \n outer attrs) */
+
+  std::string str ("try ");
+
+  str += block_expr->as_string ();
 
   return str;
 }
@@ -2714,7 +2753,7 @@ ImplTraitTypeOneBound::as_string () const
 {
   std::string str ("ImplTraitTypeOneBound: \n TraitBound: ");
 
-  return str + trait_bound.as_string ();
+  return str + trait_bound->as_string ();
 }
 
 std::string
@@ -2736,7 +2775,7 @@ std::string
 ArrayType::as_string () const
 {
   // TODO: rewrite to work with non-linearisable types and exprs
-  return "[" + elem_type->as_string () + "; " + size->as_string () + "]";
+  return "[" + elem_type->as_string () + "; " + size.as_string () + "]";
 }
 
 std::string
@@ -3477,13 +3516,24 @@ DelimTokenTree::parse_to_meta_item () const
   return new AttrInputMetaItemContainer (std::move (meta_items));
 }
 
+AttributeParser::AttributeParser (
+  std::vector<std::unique_ptr<Token>> token_stream, int stream_start_pos)
+  : lexer (new MacroInvocLexer (std::move (token_stream))),
+    parser (new Parser<MacroInvocLexer> (*lexer))
+{
+  if (stream_start_pos)
+    lexer->skip_token (stream_start_pos - 1);
+}
+
+AttributeParser::~AttributeParser () {}
+
 std::unique_ptr<MetaItemInner>
 AttributeParser::parse_meta_item_inner ()
 {
   // if first tok not identifier, not a "special" case one
-  if (peek_token ()->get_id () != IDENTIFIER)
+  if (lexer->peek_token ()->get_id () != IDENTIFIER)
     {
-      switch (peek_token ()->get_id ())
+      switch (lexer->peek_token ()->get_id ())
 	{
 	case CHAR_LITERAL:
 	case STRING_LITERAL:
@@ -3504,48 +3554,46 @@ AttributeParser::parse_meta_item_inner ()
 	  return parse_path_meta_item ();
 
 	default:
-	  rust_error_at (peek_token ()->get_locus (),
+	  rust_error_at (lexer->peek_token ()->get_locus (),
 			 "unrecognised token '%s' in meta item",
-			 get_token_description (peek_token ()->get_id ()));
+			 get_token_description (
+			   lexer->peek_token ()->get_id ()));
 	  return nullptr;
 	}
     }
 
   // else, check for path
-  if (peek_token (1)->get_id () == SCOPE_RESOLUTION)
+  if (lexer->peek_token (1)->get_id () == SCOPE_RESOLUTION)
     {
       // path
       return parse_path_meta_item ();
     }
 
-  auto ident = peek_token ()->as_string ();
-  auto ident_locus = peek_token ()->get_locus ();
+  auto ident = lexer->peek_token ()->get_str ();
+  auto ident_locus = lexer->peek_token ()->get_locus ();
 
-  if (is_end_meta_item_tok (peek_token (1)->get_id ()))
+  if (is_end_meta_item_tok (lexer->peek_token (1)->get_id ()))
     {
       // meta word syntax
-      skip_token ();
+      lexer->skip_token ();
       return std::unique_ptr<MetaWord> (new MetaWord (ident, ident_locus));
     }
 
-  if (peek_token (1)->get_id () == EQUAL)
+  if (lexer->peek_token (1)->get_id () == EQUAL)
     {
       // maybe meta name value str syntax - check next 2 tokens
-      if (peek_token (2)->get_id () == STRING_LITERAL
-	  && is_end_meta_item_tok (peek_token (3)->get_id ()))
+      if (lexer->peek_token (2)->get_id () == STRING_LITERAL
+	  && is_end_meta_item_tok (lexer->peek_token (3)->get_id ()))
 	{
 	  // meta name value str syntax
-	  auto &value_tok = peek_token (2);
-	  auto value = value_tok->as_string ();
+	  const_TokenPtr value_tok = lexer->peek_token (2);
+	  auto value = value_tok->get_str ();
 	  auto locus = value_tok->get_locus ();
 
-	  skip_token (2);
-
-	  // remove the quotes from the string value
-	  std::string raw_value = unquote_string (std::move (value));
+	  lexer->skip_token (2);
 
 	  return std::unique_ptr<MetaNameValueStr> (
-	    new MetaNameValueStr (ident, ident_locus, std::move (raw_value),
+	    new MetaNameValueStr (ident, ident_locus, std::move (value),
 				  locus));
 	}
       else
@@ -3555,16 +3603,16 @@ AttributeParser::parse_meta_item_inner ()
 	}
     }
 
-  if (peek_token (1)->get_id () != LEFT_PAREN)
+  if (lexer->peek_token (1)->get_id () != LEFT_PAREN)
     {
-      rust_error_at (peek_token (1)->get_locus (),
+      rust_error_at (lexer->peek_token (1)->get_locus (),
 		     "unexpected token '%s' after identifier in attribute",
-		     get_token_description (peek_token (1)->get_id ()));
+		     get_token_description (lexer->peek_token (1)->get_id ()));
       return nullptr;
     }
 
   // is it one of those special cases like not?
-  if (peek_token ()->get_id () == IDENTIFIER)
+  if (lexer->peek_token ()->get_id () == IDENTIFIER)
     {
       return parse_path_meta_item ();
     }
@@ -3643,49 +3691,46 @@ AttributeParser::is_end_meta_item_tok (TokenId id) const
 std::unique_ptr<MetaItem>
 AttributeParser::parse_path_meta_item ()
 {
-  SimplePath path = parse_simple_path ();
+  SimplePath path = parser->parse_simple_path ();
   if (path.is_empty ())
     {
-      rust_error_at (peek_token ()->get_locus (),
+      rust_error_at (lexer->peek_token ()->get_locus (),
 		     "failed to parse simple path in attribute");
       return nullptr;
     }
 
-  switch (peek_token ()->get_id ())
+  switch (lexer->peek_token ()->get_id ())
     {
-      case LEFT_PAREN: {
+    case LEFT_PAREN:
+      {
 	std::vector<std::unique_ptr<MetaItemInner>> meta_items
 	  = parse_meta_item_seq ();
 
 	return std::unique_ptr<MetaItemSeq> (
 	  new MetaItemSeq (std::move (path), std::move (meta_items)));
       }
-      case EQUAL: {
-	skip_token ();
+    case EQUAL:
+      {
+	lexer->skip_token ();
 
-	location_t locus = peek_token ()->get_locus ();
-	Literal lit = parse_literal ();
-	if (lit.is_error ())
-	  {
-	    rust_error_at (peek_token ()->get_locus (),
-			   "failed to parse literal in attribute");
-	    return nullptr;
-	  }
-	LiteralExpr expr (std::move (lit), {}, locus);
-	// stream_pos++;
-	/* shouldn't be required anymore due to parsing literal actually
-	 * skipping the token */
-	return std::unique_ptr<MetaItemPathLit> (
-	  new MetaItemPathLit (std::move (path), std::move (expr)));
+	std::unique_ptr<Expr> expr = parser->parse_expr ();
+
+	// handle error
+	// parse_expr should already emit an error and return nullptr
+	if (!expr)
+	  return nullptr;
+
+	return std::unique_ptr<MetaItemPathExpr> (
+	  new MetaItemPathExpr (std::move (path), std::move (expr)));
       }
     case COMMA:
       // just simple path
       return std::unique_ptr<MetaItemPath> (
 	new MetaItemPath (std::move (path)));
     default:
-      rust_error_at (peek_token ()->get_locus (),
+      rust_error_at (lexer->peek_token ()->get_locus (),
 		     "unrecognised token '%s' in meta item",
-		     get_token_description (peek_token ()->get_id ()));
+		     get_token_description (lexer->peek_token ()->get_id ()));
       return nullptr;
     }
 }
@@ -3695,41 +3740,41 @@ AttributeParser::parse_path_meta_item ()
 std::vector<std::unique_ptr<MetaItemInner>>
 AttributeParser::parse_meta_item_seq ()
 {
-  int vec_length = token_stream.size ();
   std::vector<std::unique_ptr<MetaItemInner>> meta_items;
 
-  if (peek_token ()->get_id () != LEFT_PAREN)
+  if (lexer->peek_token ()->get_id () != LEFT_PAREN)
     {
-      rust_error_at (peek_token ()->get_locus (),
+      rust_error_at (lexer->peek_token ()->get_locus (),
 		     "missing left paren in delim token tree");
       return {};
     }
-  skip_token ();
+  lexer->skip_token ();
 
-  while (stream_pos < vec_length && peek_token ()->get_id () != RIGHT_PAREN)
+  while (lexer->peek_token ()->get_id () != END_OF_FILE
+	 && lexer->peek_token ()->get_id () != RIGHT_PAREN)
     {
       std::unique_ptr<MetaItemInner> inner = parse_meta_item_inner ();
       if (inner == nullptr)
 	{
-	  rust_error_at (peek_token ()->get_locus (),
+	  rust_error_at (lexer->peek_token ()->get_locus (),
 			 "failed to parse inner meta item in attribute");
 	  return {};
 	}
       meta_items.push_back (std::move (inner));
 
-      if (peek_token ()->get_id () != COMMA)
+      if (lexer->peek_token ()->get_id () != COMMA)
 	break;
 
-      skip_token ();
+      lexer->skip_token ();
     }
 
-  if (peek_token ()->get_id () != RIGHT_PAREN)
+  if (lexer->peek_token ()->get_id () != RIGHT_PAREN)
     {
-      rust_error_at (peek_token ()->get_locus (),
+      rust_error_at (lexer->peek_token ()->get_locus (),
 		     "missing right paren in delim token tree");
       return {};
     }
-  skip_token ();
+  lexer->skip_token ();
 
   return meta_items;
 }
@@ -3752,130 +3797,19 @@ DelimTokenTree::to_token_stream () const
   return tokens;
 }
 
-Literal
-AttributeParser::parse_literal ()
-{
-  const std::unique_ptr<Token> &tok = peek_token ();
-  switch (tok->get_id ())
-    {
-    case CHAR_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::CHAR, tok->get_type_hint ());
-    case STRING_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::STRING,
-		      tok->get_type_hint ());
-    case BYTE_CHAR_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE, tok->get_type_hint ());
-    case BYTE_STRING_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE_STRING,
-		      tok->get_type_hint ());
-    case RAW_STRING_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::RAW_STRING,
-		      tok->get_type_hint ());
-    case INT_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::INT, tok->get_type_hint ());
-    case FLOAT_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::FLOAT, tok->get_type_hint ());
-    case TRUE_LITERAL:
-      skip_token ();
-      return Literal ("true", Literal::BOOL, tok->get_type_hint ());
-    case FALSE_LITERAL:
-      skip_token ();
-      return Literal ("false", Literal::BOOL, tok->get_type_hint ());
-    default:
-      rust_error_at (tok->get_locus (), "expected literal - found '%s'",
-		     get_token_description (tok->get_id ()));
-      return Literal::create_error ();
-    }
-}
-
-SimplePath
-AttributeParser::parse_simple_path ()
-{
-  bool has_opening_scope_res = false;
-  if (peek_token ()->get_id () == SCOPE_RESOLUTION)
-    {
-      has_opening_scope_res = true;
-      skip_token ();
-    }
-
-  std::vector<SimplePathSegment> segments;
-
-  SimplePathSegment segment = parse_simple_path_segment ();
-  if (segment.is_error ())
-    {
-      rust_error_at (
-	peek_token ()->get_locus (),
-	"failed to parse simple path segment in attribute simple path");
-      return SimplePath::create_empty ();
-    }
-  segments.push_back (std::move (segment));
-
-  while (peek_token ()->get_id () == SCOPE_RESOLUTION)
-    {
-      skip_token ();
-
-      SimplePathSegment segment = parse_simple_path_segment ();
-      if (segment.is_error ())
-	{
-	  rust_error_at (
-	    peek_token ()->get_locus (),
-	    "failed to parse simple path segment in attribute simple path");
-	  return SimplePath::create_empty ();
-	}
-      segments.push_back (std::move (segment));
-    }
-  segments.shrink_to_fit ();
-
-  return SimplePath (std::move (segments), has_opening_scope_res);
-}
-
-SimplePathSegment
-AttributeParser::parse_simple_path_segment ()
-{
-  const std::unique_ptr<Token> &tok = peek_token ();
-  switch (tok->get_id ())
-    {
-    case IDENTIFIER:
-      skip_token ();
-      return SimplePathSegment (tok->as_string (), tok->get_locus ());
-    case SUPER:
-      skip_token ();
-      return SimplePathSegment ("super", tok->get_locus ());
-    case SELF:
-      skip_token ();
-      return SimplePathSegment ("self", tok->get_locus ());
-    case CRATE:
-      skip_token ();
-      return SimplePathSegment ("crate", tok->get_locus ());
-    case DOLLAR_SIGN:
-      if (peek_token (1)->get_id () == CRATE)
-	{
-	  skip_token (1);
-	  return SimplePathSegment ("$crate", tok->get_locus ());
-	}
-      gcc_fallthrough ();
-    default:
-      rust_error_at (tok->get_locus (),
-		     "unexpected token '%s' in simple path segment",
-		     get_token_description (tok->get_id ()));
-      return SimplePathSegment::create_error ();
-    }
-}
-
 std::unique_ptr<MetaItemLitExpr>
 AttributeParser::parse_meta_item_lit ()
 {
-  location_t locus = peek_token ()->get_locus ();
-  LiteralExpr lit_expr (parse_literal (), {}, locus);
+  std::unique_ptr<LiteralExpr> lit_expr = parser->parse_literal_expr ({});
+
+  // TODO: return nullptr instead?
+  if (!lit_expr)
+    lit_expr = std::unique_ptr<LiteralExpr> (
+      new LiteralExpr (Literal::create_error (), {},
+		       lexer->peek_token ()->get_locus ()));
+
   return std::unique_ptr<MetaItemLitExpr> (
-    new MetaItemLitExpr (std::move (lit_expr)));
+    new MetaItemLitExpr (std::move (*lit_expr)));
 }
 
 bool
@@ -4084,10 +4018,12 @@ MetaNameValueStr::check_cfg_predicate (const Session &session) const
 }
 
 bool
-MetaItemPathLit::check_cfg_predicate (const Session &session) const
+MetaItemPathExpr::check_cfg_predicate (const Session &session) const
 {
+  // FIXME: Accept path expressions
+  rust_assert (expr->is_literal ());
   return session.options.target_data.has_key_value_pair (path.as_string (),
-							 lit.as_string ());
+							 expr->as_string ());
 }
 
 std::vector<std::unique_ptr<Token>>
@@ -4175,8 +4111,10 @@ MetaListNameValueStr::to_attribute () const
 }
 
 Attribute
-MetaItemPathLit::to_attribute () const
+MetaItemPathExpr::to_attribute () const
 {
+  rust_assert (expr->is_literal ());
+  auto &lit = static_cast<LiteralExpr &> (*expr);
   return Attribute (path, std::unique_ptr<AttrInputLiteral> (
 			    new AttrInputLiteral (lit)));
 }
@@ -4279,11 +4217,12 @@ AttrInputMacro::AttrInputMacro (const AttrInputMacro &oth)
   : macro (oth.macro->clone_macro_invocation_impl ())
 {}
 
-void
+AttrInputMacro &
 AttrInputMacro::operator= (const AttrInputMacro &oth)
 {
   macro = std::unique_ptr<MacroInvocation> (
     oth.macro->clone_macro_invocation_impl ());
+  return *this;
 }
 
 /* Visitor implementations - these are short but inlining can't happen anyway
@@ -4345,7 +4284,7 @@ MetaItemLitExpr::accept_vis (ASTVisitor &vis)
 }
 
 void
-MetaItemPathLit::accept_vis (ASTVisitor &vis)
+MetaItemPathExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4513,6 +4452,18 @@ BlockExpr::accept_vis (ASTVisitor &vis)
 }
 
 void
+AnonConst::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstBlock::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 ClosureExprInnerTyped::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
@@ -4568,6 +4519,12 @@ RangeToInclExpr::accept_vis (ASTVisitor &vis)
 
 void
 ReturnExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+TryExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -5010,11 +4967,23 @@ FormatArgs::accept_vis (ASTVisitor &vis)
   vis.visit (*this);
 }
 
+void
+OffsetOf::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
 std::string
 FormatArgs::as_string () const
 {
   // FIXME(Arthur): Improve
   return "FormatArgs";
+}
+
+std::string
+OffsetOf::as_string () const
+{
+  return "OffsetOf(" + type->as_string () + ", " + field.as_string () + ")";
 }
 
 location_t
@@ -5047,7 +5016,8 @@ FormatArgs::get_outer_attrs ()
   rust_unreachable ();
 }
 
-void FormatArgs::set_outer_attrs (std::vector<Attribute>)
+void
+FormatArgs::set_outer_attrs (std::vector<Attribute>)
 {
   rust_unreachable ();
 }
@@ -5058,6 +5028,24 @@ FormatArgs::clone_expr_impl () const
   std::cerr << "[ARTHUR] cloning FormatArgs! " << std::endl;
 
   return new FormatArgs (*this);
+}
+
+std::vector<Attribute> &
+OffsetOf::get_outer_attrs ()
+{
+  rust_unreachable ();
+}
+
+void
+OffsetOf::set_outer_attrs (std::vector<Attribute>)
+{
+  rust_unreachable ();
+}
+
+Expr *
+OffsetOf::clone_expr_impl () const
+{
+  return new OffsetOf (*this);
 }
 
 } // namespace AST

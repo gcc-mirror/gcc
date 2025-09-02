@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check.h"
+#include "rust-mapping-common.h"
+#include "rust-system.h"
 #include "rust-tyty.h"
 
 namespace Rust {
@@ -47,14 +49,30 @@ TyVar::get_implicit_infer_var (location_t locus)
   auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
-  InferType *infer = new InferType (mappings.get_next_hir_id (),
-				    InferType::InferTypeKind::GENERAL,
-				    InferType::TypeHint::Default (), locus);
-  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
-					       UNKNOWN_NODEID,
-					       infer->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			infer);
+  HirId next = mappings.get_next_hir_id ();
+  auto infer = new InferType (next, InferType::InferTypeKind::GENERAL,
+			      InferType::TypeHint::Default (), locus);
+
+  context->insert_implicit_type (infer->get_ref (), infer);
+  mappings.insert_location (infer->get_ref (), locus);
+
+  return TyVar (infer->get_ref ());
+}
+
+TyVar
+TyVar::get_implicit_const_infer_var (const ConstType &const_type,
+				     location_t locus)
+{
+  auto &mappings = Analysis::Mappings::get ();
+  auto context = Resolver::TypeCheckContext::get ();
+
+  HirId next = mappings.get_next_hir_id ();
+  auto infer
+    = new ConstType (ConstType::ConstKind::Infer, const_type.get_symbol (),
+		     const_type.get_ty (), error_mark_node,
+		     const_type.get_specified_bounds (), locus, next, next, {});
+
+  context->insert_implicit_type (infer->get_ref (), infer);
   mappings.insert_location (infer->get_ref (), locus);
 
   return TyVar (infer->get_ref ());

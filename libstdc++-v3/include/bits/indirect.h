@@ -286,8 +286,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto&&
       operator*(this _Self&& __self) noexcept
       {
-	__glibcxx_assert(__self._M_objp != nullptr);
-	return std::forward_like<_Self>(*((_Self)__self)._M_objp);
+	// n.b. [allocator.requirements.general] p22 implies
+	// dereferencing const pointer is same as pointer
+	const indirect& __iself = (const indirect&)__self;
+	__glibcxx_assert(__iself._M_objp != nullptr);
+	return std::forward_like<_Self>(*__iself._M_objp);
       }
 
       constexpr const_pointer

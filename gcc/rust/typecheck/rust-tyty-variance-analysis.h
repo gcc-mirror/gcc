@@ -41,9 +41,10 @@ private:
   std::unique_ptr<GenericTyPerCrateCtx> private_ctx;
 };
 
-std::vector<size_t>
-query_field_regions (const ADTType *parent, size_t variant_index,
-		     size_t field_index, const FreeRegions &parent_regions);
+std::vector<size_t> query_field_regions (const ADTType *parent,
+					 size_t variant_index,
+					 size_t field_index,
+					 const FreeRegions &parent_regions);
 
 /** Variance semilattice */
 class Variance

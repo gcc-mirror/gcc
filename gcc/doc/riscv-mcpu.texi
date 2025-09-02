@@ -1,0 +1,69 @@
+@c Copyright (C) 2025 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+@c This file is generated automatically using
+@c  gcc/config/riscv/gen-riscv-mcpu-texi.cc from:
+@c       gcc/config/riscv/riscv-cores.def
+
+@c Please *DO NOT* edit manually.
+
+@samp{Core Name}
+
+@opindex mcpu
+@item -mcpu=@var{processor-string}
+Use architecture of and optimize the output for the given processor, specified
+by particular CPU name. Permissible values for this option are:
+
+
+@samp{sifive-e20},
+
+@samp{sifive-e21},
+
+@samp{sifive-e24},
+
+@samp{sifive-e31},
+
+@samp{sifive-e34},
+
+@samp{sifive-e76},
+
+@samp{sifive-s21},
+
+@samp{sifive-s51},
+
+@samp{sifive-s54},
+
+@samp{sifive-s76},
+
+@samp{sifive-u54},
+
+@samp{sifive-u74},
+
+@samp{sifive-x280},
+
+@samp{sifive-p450},
+
+@samp{sifive-p670},
+
+@samp{thead-c906},
+
+@samp{xt-c908},
+
+@samp{xt-c908v},
+
+@samp{xt-c910},
+
+@samp{xt-c910v2},
+
+@samp{xt-c920},
+
+@samp{xt-c920v2},
+
+@samp{tt-ascalon-d8},
+
+@samp{xiangshan-nanhu},
+
+@samp{xiangshan-kunminghu},
+
+@samp{mips-p8700}.

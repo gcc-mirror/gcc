@@ -88,6 +88,9 @@ static const BuiltinAttrDefinition __definitions[]
 
      {Attrs::RUSTC_LAYOUT_SCALAR_VALID_RANGE_START, CODE_GENERATION},
 
+     // TODO: be careful about calling functions marked with this?
+     {Attrs::RUSTC_ARGS_REQUIRED_CONST, CODE_GENERATION},
+
      {Attrs::PRELUDE_IMPORT, NAME_RESOLUTION},
 
      {Attrs::RUSTC_DIAGNOSTIC_ITEM, STATIC_ANALYSIS},
@@ -95,7 +98,10 @@ static const BuiltinAttrDefinition __definitions[]
 
      {Attrs::FUNDAMENTAL, TYPE_CHECK},
      {Attrs::NON_EXHAUSTIVE, TYPE_CHECK},
-     {Attrs::RUSTFMT, EXTERNAL}};
+     {Attrs::RUSTFMT, EXTERNAL},
+
+     {Attrs::TEST, CODE_GENERATION},
+     {Attrs::SIMD_TEST, CODE_GENERATION}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
@@ -221,7 +227,8 @@ check_doc_attribute (const AST::Attribute &attribute)
       break;
       // FIXME: Handle them as well
 
-      case AST::AttrInput::TOKEN_TREE: {
+    case AST::AttrInput::TOKEN_TREE:
+      {
 	// FIXME: This doesn't check for #[doc(alias(...))]
 	const auto &option = static_cast<const AST::DelimTokenTree &> (
 	  attribute.get_attr_input ());
@@ -388,7 +395,7 @@ AttributeChecker::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemPathLit &)
+AttributeChecker::visit (AST::MetaItemPathExpr &)
 {}
 
 void

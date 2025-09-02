@@ -9,6 +9,6 @@ mod intrinsics {
 }
 
 pub fn main () -> i32 {
-    abort();
+    intrinsics::abort();
     0
 }

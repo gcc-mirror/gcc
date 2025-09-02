@@ -25,7 +25,7 @@ IMPLEMENTATION MODULE M2Students ;
 FROM SymbolTable IMPORT FinalSymbol, IsVar, IsProcedure, IsModule,
                         GetMainModule, IsType, NulSym, IsRecord, GetSymName, GetNth, GetNthProcedure, GetDeclaredMod, NoOfParam ;
 FROM NameKey IMPORT GetKey, WriteKey, MakeKey, IsSameExcludingCase, NulName, makekey, KeyToCharStar ;
-FROM M2MetaError IMPORT MetaErrorString0, MetaError2 ;
+FROM M2MetaError IMPORT MetaErrorStringT0, MetaError2 ;
 FROM Lists IMPORT List, InitList, IsItemInList, IncludeItemIntoList ;
 FROM M2Reserved IMPORT IsReserved, toktype ;
 FROM DynamicStrings IMPORT String, InitString, KillString, ToUpper, InitStringCharStar, string, Mark, ToUpper, Dup ;
@@ -78,11 +78,11 @@ END IsNotADuplicateName ;
                                  as a keyword except for its case.
 *)
 
-PROCEDURE CheckVariableAgainstKeyword (name: Name) ;
+PROCEDURE CheckVariableAgainstKeyword (tok: CARDINAL; name: Name) ;
 BEGIN
    IF StyleChecking
    THEN
-      PerformVariableKeywordCheck (name)
+      PerformVariableKeywordCheck (tok, name)
    END
 END CheckVariableAgainstKeyword ;
 
@@ -91,7 +91,7 @@ END CheckVariableAgainstKeyword ;
    PerformVariableKeywordCheck - performs the check and constructs the metaerror notes if appropriate.
 *)
 
-PROCEDURE PerformVariableKeywordCheck (name: Name) ;
+PROCEDURE PerformVariableKeywordCheck (tok: CARDINAL; name: Name) ;
 VAR
    upper : Name ;
    token : toktype ;
@@ -105,9 +105,11 @@ BEGIN
    THEN
       IF IsNotADuplicateName (name)
       THEN
-         MetaErrorString0 (Sprintf2 (Mark (InitString ('either the identifier has the same name as a keyword or alternatively a keyword has the wrong case ({%%K%s} and {!%%O:{%%K%s}})')),
-                                     upperS, orig)) ;
-         MetaErrorString0 (Sprintf1 (Mark (InitString ('the symbol name {!%%O:{%%K%s}} is legal as an identifier, however as such it might cause confusion and is considered bad programming practice')), orig))
+         MetaErrorStringT0 (tok,
+                            Sprintf2 (Mark (InitString ('either the identifier has the same name as a keyword or alternatively a keyword has the wrong case ({%%K%s} and {!%%O:{%%K%s}})')),
+                                      upperS, orig)) ;
+         MetaErrorStringT0 (tok,
+                            Sprintf1 (Mark (InitString ('the symbol name {!%%O:{%%K%s}} is legal as an identifier, however as such it might cause confusion and is considered bad programming practice')), orig))
       END
    END ;
    upperS := KillString (upperS) ;

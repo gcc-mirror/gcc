@@ -18,7 +18,6 @@
 
 #include "rust-ast-builder.h"
 #include "optional.h"
-#include "rust-ast-builder-type.h"
 #include "rust-ast.h"
 #include "rust-common.h"
 #include "rust-expr.h"
@@ -29,7 +28,6 @@
 #include "rust-pattern.h"
 #include "rust-system.h"
 #include "rust-token.h"
-#include <memory>
 
 namespace Rust {
 namespace AST {
@@ -332,6 +330,12 @@ Builder::block () const
 }
 
 std::unique_ptr<BlockExpr>
+Builder::block (std::unique_ptr<Expr> &&tail_expr) const
+{
+  return block (tl::nullopt, std::move (tail_expr));
+}
+
+std::unique_ptr<BlockExpr>
 Builder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		std::unique_ptr<Expr> &&tail_expr) const
 {
@@ -442,6 +446,14 @@ Builder::field_access (std::unique_ptr<Expr> &&instance,
     new FieldAccessExpr (std::move (instance), field, {}, loc));
 }
 
+std::unique_ptr<StructPatternField>
+Builder::struct_pattern_ident_pattern (std::string field_name,
+				       std::unique_ptr<Pattern> &&pattern)
+{
+  return std::make_unique<StructPatternFieldIdentPat> (
+    field_name, std::move (pattern), std::vector<Attribute> (), loc);
+}
+
 std::unique_ptr<Pattern>
 Builder::wildcard () const
 {
@@ -482,9 +494,14 @@ MatchCase
 Builder::match_case (std::unique_ptr<Pattern> &&pattern,
 		     std::unique_ptr<Expr> &&expr)
 {
-  return MatchCase (match_arm (std::move (pattern)), std::move (expr));
+  return match_case (match_arm (std::move (pattern)), std::move (expr));
 }
 
+MatchCase
+Builder::match_case (MatchArm &&arm, std::unique_ptr<Expr> &&expr)
+{
+  return MatchCase (std::move (arm), std::move (expr));
+}
 std::unique_ptr<Expr>
 Builder::loop (std::vector<std::unique_ptr<Stmt>> &&stmts)
 {
@@ -523,11 +540,14 @@ Builder::generic_type_param (
 				      std::vector<Attribute> ());
 }
 
-std::unique_ptr<Type>
-Builder::new_type (Type &type)
+std::unique_ptr<Stmt>
+Builder::discriminant_value (std::string binding_name, std::string instance)
 {
-  Type *t = ASTTypeBuilder::build (type);
-  return std::unique_ptr<Type> (t);
+  auto intrinsic = ptrify (
+    path_in_expression ({"core", "intrinsics", "discriminant_value"}, true));
+
+  return let (identifier_pattern (binding_name), nullptr,
+	      call (std::move (intrinsic), identifier (instance)));
 }
 
 std::unique_ptr<GenericParam>
@@ -547,6 +567,16 @@ Builder::new_lifetime_param (LifetimeParam &param)
 }
 
 std::unique_ptr<GenericParam>
+Builder::new_const_param (ConstGenericParam &param) const
+{
+  return std::make_unique<ConstGenericParam> (param.get_name (),
+					      param.get_type ().clone_type (),
+					      param.get_default_value (),
+					      param.get_outer_attrs (),
+					      param.get_locus ());
+}
+
+std::unique_ptr<GenericParam>
 Builder::new_type_param (
   TypeParam &param, std::vector<std::unique_ptr<TypeParamBound>> extra_bounds)
 {
@@ -557,7 +587,7 @@ Builder::new_type_param (
   std::unique_ptr<Type> type = nullptr;
 
   if (param.has_type ())
-    type = new_type (param.get_type ());
+    type = param.get_type ().reconstruct ();
 
   for (auto &&extra_bound : extra_bounds)
     type_param_bounds.emplace_back (std::move (extra_bound));
@@ -566,7 +596,8 @@ Builder::new_type_param (
     {
       switch (b->get_bound_type ())
 	{
-	  case TypeParamBound::TypeParamBoundType::TRAIT: {
+	case TypeParamBound::TypeParamBoundType::TRAIT:
+	  {
 	    const TraitBound &tb = (const TraitBound &) *b.get ();
 	    const TypePath &path = tb.get_type_path ();
 
@@ -591,7 +622,8 @@ Builder::new_type_param (
 	      {
 		switch (seg->get_type ())
 		  {
-		    case TypePathSegment::REG: {
+		  case TypePathSegment::REG:
+		    {
 		      const TypePathSegment &segment
 			= (const TypePathSegment &) (*seg.get ());
 		      TypePathSegment *s = new TypePathSegment (
@@ -603,7 +635,8 @@ Builder::new_type_param (
 		    }
 		    break;
 
-		    case TypePathSegment::GENERIC: {
+		  case TypePathSegment::GENERIC:
+		    {
 		      TypePathSegmentGeneric &generic
 			= (TypePathSegmentGeneric &) (*seg.get ());
 
@@ -617,7 +650,8 @@ Builder::new_type_param (
 		    }
 		    break;
 
-		    case TypePathSegment::FUNCTION: {
+		  case TypePathSegment::FUNCTION:
+		    {
 		      rust_unreachable ();
 		      // TODO
 		      // const TypePathSegmentFunction &fn
@@ -639,7 +673,8 @@ Builder::new_type_param (
 	  }
 	  break;
 
-	  case TypeParamBound::TypeParamBoundType::LIFETIME: {
+	case TypeParamBound::TypeParamBoundType::LIFETIME:
+	  {
 	    const Lifetime &l = (const Lifetime &) *b.get ();
 
 	    auto bl = new Lifetime (l.get_lifetime_type (),
@@ -682,7 +717,7 @@ Builder::new_generic_args (GenericArgs &args)
   for (auto &binding : args.get_binding_args ())
     {
       Type &t = *binding.get_type_ptr ().get ();
-      std::unique_ptr<Type> ty = new_type (t);
+      std::unique_ptr<Type> ty = t.reconstruct ();
       GenericArgsBinding b (binding.get_identifier (), std::move (ty),
 			    binding.get_locus ());
       binding_args.push_back (std::move (b));
@@ -690,19 +725,25 @@ Builder::new_generic_args (GenericArgs &args)
 
   for (auto &arg : args.get_generic_args ())
     {
+      tl::optional<GenericArg> new_arg = tl::nullopt;
+
       switch (arg.get_kind ())
 	{
-	  case GenericArg::Kind::Type: {
-	    std::unique_ptr<Type> ty = new_type (arg.get_type ());
-	    GenericArg arg = GenericArg::create_type (std::move (ty));
-	  }
+	case GenericArg::Kind::Type:
+	  new_arg = GenericArg::create_type (arg.get_type ().reconstruct ());
 	  break;
-
-	default:
-	  // FIXME
-	  rust_unreachable ();
+	case GenericArg::Kind::Either:
+	  new_arg
+	    = GenericArg::create_ambiguous (arg.get_path (), arg.get_locus ());
+	  break;
+	case GenericArg::Kind::Const:
+	  new_arg
+	    = GenericArg::create_const (arg.get_expression ().clone_expr ());
+	  // FIXME: Use `reconstruct()` here, not `clone_expr()`
 	  break;
 	}
+
+      generic_args.emplace_back (*new_arg);
     }
 
   return GenericArgs (std::move (lifetime_args), std::move (generic_args),

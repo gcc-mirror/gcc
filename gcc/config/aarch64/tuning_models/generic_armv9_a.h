@@ -26,7 +26,7 @@
 static const struct cpu_addrcost_table generic_armv9_a_addrcost_table =
 {
     {
-      1, /* hi  */
+      0, /* hi  */
       0, /* si  */
       0, /* di  */
       1, /* ti  */

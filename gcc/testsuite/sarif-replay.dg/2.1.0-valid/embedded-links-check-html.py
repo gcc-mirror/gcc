@@ -25,4 +25,4 @@ def test_generated_html(html_tree):
     assert_tag(msg[1], 'a')
     assert msg[1].text == 'link'
     assert msg[1].get('href') == 'http://www.example.com'
-    assert msg[1].tail == '. '
+    assert msg[1].tail == '.'

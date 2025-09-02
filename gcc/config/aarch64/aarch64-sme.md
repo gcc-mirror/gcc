@@ -62,6 +62,10 @@
 ;; (b) they are sometimes used conditionally, particularly in streaming-
 ;; compatible code.
 ;;
+;; To prevent the latter from upsetting the assembler, we emit the literal
+;; encodings of "SMSTART SM" and "SMSTOP SM" when compiling without
+;; TARGET_SME.
+;;
 ;; =========================================================================
 
 ;; -------------------------------------------------------------------------
@@ -161,7 +165,9 @@
    (clobber (reg:VNx16BI P14_REGNUM))
    (clobber (reg:VNx16BI P15_REGNUM))]
   ""
-  "smstart\tsm"
+  {
+    return TARGET_SME ? "smstart\tsm" : ".inst 0xd503437f // smstart sm";
+  }
 )
 
 ;; Turn off streaming mode.  This clobbers all SVE state.
@@ -196,7 +202,9 @@
    (clobber (reg:VNx16BI P14_REGNUM))
    (clobber (reg:VNx16BI P15_REGNUM))]
   ""
-  "smstop\tsm"
+  {
+    return TARGET_SME ? "smstop\tsm" : ".inst 0xd503427f // smstop sm";
+  }
 )
 
 ;; -------------------------------------------------------------------------
@@ -392,7 +400,8 @@
     auto label = gen_label_rtx ();
     auto tpidr2 = gen_rtx_REG (DImode, R16_REGNUM);
     emit_insn (gen_aarch64_read_tpidr2 (tpidr2));
-    auto jump = emit_likely_jump_insn (gen_aarch64_cbznedi1 (tpidr2, label));
+    auto pat = aarch64_gen_compare_zero_and_branch (NE, tpidr2, label);
+    auto jump = emit_likely_jump_insn (pat);
     JUMP_LABEL (jump) = label;
 
     aarch64_restore_za (operands[0]);

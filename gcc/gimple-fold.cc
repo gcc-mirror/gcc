@@ -6762,10 +6762,10 @@ fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree), bitmap dce_bitmap
    which can produce *&x = 0.  */
 
 bool
-fold_stmt_inplace (gimple_stmt_iterator *gsi)
+fold_stmt_inplace (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
 {
   gimple *stmt = gsi_stmt (*gsi);
-  bool changed = fold_stmt_1 (gsi, true, no_follow_ssa_edges);
+  bool changed = fold_stmt_1 (gsi, true, valueize);
   gcc_assert (gsi_stmt (*gsi) == stmt);
   return changed;
 }
@@ -10484,7 +10484,7 @@ gimple_fold_indirect_ref (tree t)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.  */
 
-static bool
+bool
 arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
@@ -10520,6 +10520,20 @@ gimple_needing_rewrite_undefined (gimple *stmt)
       && !POINTER_TYPE_P (lhs_type))
     return false;
   tree rhs = gimple_assign_rhs1 (stmt);
+  /* Boolean loads need special handling as they are treated as a full MODE load
+     and don't mask off the bits for the precision.  */
+  if (gimple_assign_load_p (stmt)
+      /* Booleans are the integral type which has this non-masking issue. */
+      && TREE_CODE (lhs_type) == BOOLEAN_TYPE
+      /* Only non mode precision booleans are need the masking.  */
+      && !type_has_mode_precision_p (lhs_type)
+      /* BFR should be the correct thing and just grab the precision.  */
+      && TREE_CODE (rhs) != BIT_FIELD_REF
+      /* Bit-fields loads don't need a rewrite as the masking
+	 happens for them.  */
+      && (TREE_CODE (rhs) != COMPONENT_REF
+	  || !DECL_BIT_FIELD (TREE_OPERAND (rhs, 1))))
+    return true;
   /* VCE from integral types to a integral types but with
      a smaller precision need to be changed into casts
      to be well defined. */
@@ -10558,6 +10572,57 @@ rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
   gimple_seq stmts = NULL;
+  tree lhs = gimple_assign_lhs (stmt);
+
+  /* Boolean loads need to be rewritten to be a load from the same mode
+     and then a cast to the other type so the other bits are masked off
+     correctly since the load was done conditionally. It is similar to the VCE
+     case below.  */
+  if (gimple_assign_load_p (stmt)
+      && TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+
+      /* Double check that gimple_needing_rewrite_undefined was called.  */
+      /* Bit-fields loads will do the masking so don't need the rewriting.  */
+      gcc_assert (TREE_CODE (rhs) != COMPONENT_REF
+		  || !DECL_BIT_FIELD (TREE_OPERAND (rhs, 1)));
+      /* BFR is like a bit field load and will do the correct thing.  */
+      gcc_assert (TREE_CODE (lhs) != BIT_FIELD_REF);
+      /* Complex boolean types are not valid so REAL/IMAG part will
+	 never show up. */
+      gcc_assert (TREE_CODE (rhs) != REALPART_EXPR
+		  && TREE_CODE (lhs) != IMAGPART_EXPR);
+
+      auto bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (rhs)));
+      tree new_type = build_nonstandard_integer_type (bits, true);
+      location_t loc = gimple_location (stmt);
+      tree mem_ref = fold_build1_loc (loc, VIEW_CONVERT_EXPR, new_type, rhs);
+      /* Replace the original load with a new load and a new lhs. */
+      tree new_lhs = make_ssa_name (new_type);
+      gimple_assign_set_rhs1 (stmt, mem_ref);
+      gimple_assign_set_lhs (stmt, new_lhs);
+
+      if (in_place)
+	  update_stmt (stmt);
+      else
+	{
+	  gimple_set_modified (stmt, true);
+	  gimple_seq_add_stmt (&stmts, stmt);
+	}
+
+      /* Build the conversion statement.  */
+      gimple *cvt = gimple_build_assign (lhs, NOP_EXPR, new_lhs);
+      if (in_place)
+	{
+	  gsi_insert_after (gsi, cvt, GSI_SAME_STMT);
+	  update_stmt (stmt);
+	}
+      else
+	gimple_seq_add_stmt (&stmts, cvt);
+      return stmts;
+    }
+
   /* VCE from integral types to another integral types but with
      smaller precisions need to be changed into casts
      to be well defined. */
@@ -10579,7 +10644,6 @@ rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
 	}
       return stmts;
     }
-  tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
   if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
     gimple_assign_set_rhs_code (stmt, ABSU_EXPR);

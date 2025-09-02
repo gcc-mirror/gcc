@@ -58,6 +58,9 @@ CompileStmt::visit (HIR::LetStmt &stmt)
       return;
     }
 
+  rust_debug_loc (stmt.get_locus (), "   -> LetStmt %s",
+		  ty->as_string ().c_str ());
+
   // setup var decl nodes
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;

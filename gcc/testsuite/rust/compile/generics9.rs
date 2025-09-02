@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
 struct Foo<A, B = (A, B)>(A, B);
 // { dg-error "type parameters with a default cannot use forward declared identifiers" "" { target *-*-* } .-1 }
 

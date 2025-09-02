@@ -391,6 +391,13 @@ public:
     return default_value.value ();
   }
 
+  tl::optional<GenericArg> &get_default_value () { return default_value; }
+
+  const tl::optional<GenericArg> &get_default_value () const
+  {
+    return default_value;
+  }
+
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
@@ -779,6 +786,11 @@ public:
   {
     return new TypePathSegment (*this);
   }
+  virtual TypePathSegment *reconstruct_impl () const
+  {
+    return new TypePathSegment (lang_item, ident_segment,
+				has_separating_scope_resolution, locus);
+  }
 
 public:
   virtual ~TypePathSegment () {}
@@ -789,6 +801,11 @@ public:
   std::unique_ptr<TypePathSegment> clone_type_path_segment () const
   {
     return std::unique_ptr<TypePathSegment> (clone_type_path_segment_impl ());
+  }
+  // Unique pointer custom reconstruct function
+  std::unique_ptr<TypePathSegment> reconstruct () const
+  {
+    return reconstruct_base (this);
   }
 
   TypePathSegment (PathIdentSegment ident_segment,
@@ -810,6 +827,15 @@ public:
     : lang_item (tl::nullopt),
       ident_segment (PathIdentSegment (std::move (segment_name), locus)),
       locus (locus),
+      has_separating_scope_resolution (has_separating_scope_resolution),
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
+  {}
+
+  // General constructor
+  TypePathSegment (tl::optional<LangItem::Kind> lang_item,
+		   tl::optional<PathIdentSegment> ident_segment,
+		   bool has_separating_scope_resolution, location_t locus)
+    : lang_item (lang_item), ident_segment (ident_segment), locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
@@ -968,11 +994,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  GenericArgs &get_generic_args ()
-  {
-    rust_assert (has_generic_args ());
-    return generic_args;
-  }
+  GenericArgs &get_generic_args () { return generic_args; }
 
   // Use covariance to override base class method
   TypePathSegmentGeneric *clone_type_path_segment_impl () const override
@@ -1149,6 +1171,11 @@ protected:
   {
     return new TypePath (*this);
   }
+  TypePath *reconstruct_impl () const override
+  {
+    return new TypePath (reconstruct_vec (segments), locus,
+			 has_opening_scope_resolution);
+  }
 
 public:
   /* Returns whether the TypePath has an opening scope resolution operator
@@ -1214,6 +1241,8 @@ public:
   TypePath &operator= (TypePath &&other) = default;
 
   std::string as_string () const override;
+
+  std::string make_debug_string () const;
 
   /* Converts TypePath to SimplePath if possible (i.e. no generic or function
    * arguments). Otherwise returns an empty SimplePath. */
@@ -1437,6 +1466,12 @@ protected:
   QualifiedPathInType *clone_type_no_bounds_impl () const override
   {
     return new QualifiedPathInType (*this);
+  }
+  QualifiedPathInType *reconstruct_impl () const override
+  {
+    return new QualifiedPathInType (path_type,
+				    associated_segment->reconstruct (),
+				    reconstruct_vec (segments), locus);
   }
 
 public:

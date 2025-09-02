@@ -76,6 +76,10 @@ along with GCC; see the file COPYING3.  If not see
    the same indirect address eventually.  */
 int cse_not_expected;
 
+/* Cache of the "extended" flag in the target's _BitInt description
+   for use during expand.  */
+int bitint_extended = -1;
+
 static bool block_move_libcall_safe_for_call_parm (void);
 static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned,
 					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
@@ -11280,6 +11284,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
      when reading from SSA_NAMEs of vars.  */
 #define EXTEND_BITINT(expr) \
   ((TREE_CODE (type) == BITINT_TYPE					\
+    && !bitint_extended							\
     && reduce_bit_field							\
     && mode != BLKmode							\
     && modifier != EXPAND_MEMORY					\
@@ -11291,6 +11296,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
   type = TREE_TYPE (exp);
   mode = TYPE_MODE (type);
   unsignedp = TYPE_UNSIGNED (type);
+  if (TREE_CODE (type) == BITINT_TYPE && bitint_extended == -1)
+    {
+      struct bitint_info info;
+      bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+      bitint_extended = info.extended;
+    }
 
   treeop0 = treeop1 = treeop2 = NULL_TREE;
   if (!VL_EXP_CLASS_P (exp))

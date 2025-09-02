@@ -854,6 +854,18 @@ promote_function_mode (const_tree type, machine_mode mode, int *punsignedp,
 
   switch (TREE_CODE (type))
     {
+    case BITINT_TYPE:
+      if (TYPE_MODE (type) == BLKmode)
+	return mode;
+
+      struct bitint_info info;
+      bool ok;
+      ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+
+      if (!info.extended)
+	return mode;
+      /* FALLTHRU */
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
     case POINTER_TYPE:   case REFERENCE_TYPE:
@@ -893,6 +905,18 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
 
   switch (code)
     {
+    case BITINT_TYPE:
+      if (TYPE_MODE (type) == BLKmode)
+	return mode;
+
+      struct bitint_info info;
+      bool ok;
+      ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+
+      if (!info.extended)
+	return mode;
+      /* FALLTHRU */
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
       /* Values of these types always have scalar mode.  */

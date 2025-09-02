@@ -205,7 +205,7 @@ EarlyNameResolver::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaItemPathLit &)
+EarlyNameResolver::visit (AST::MetaItemPathExpr &)
 {}
 
 void

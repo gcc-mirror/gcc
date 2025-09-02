@@ -30,14 +30,16 @@ class TypeCastRules
 public:
   static TypeCoercionRules::CoercionResult resolve (location_t locus,
 						    TyTy::TyWithLocation from,
-						    TyTy::TyWithLocation to);
+						    TyTy::TyWithLocation to,
+						    bool emit_error = true);
+
+  static void emit_cast_error (location_t locus, TyTy::TyWithLocation from,
+			       TyTy::TyWithLocation to);
 
 protected:
-  TypeCoercionRules::CoercionResult check ();
+  TypeCoercionRules::CoercionResult check (bool emit_error);
   TypeCoercionRules::CoercionResult cast_rules ();
   TypeCoercionRules::CoercionResult check_ptr_ptr_cast ();
-
-  void emit_cast_error () const;
 
 protected:
   TypeCastRules (location_t locus, TyTy::TyWithLocation from,

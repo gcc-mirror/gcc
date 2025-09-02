@@ -5,3 +5,5 @@ softfp_int_modes := si di
 softfp_extensions :=
 softfp_truncations :=
 softfp_exclude_libgcc2 := n
+
+SHLIB_MAPFILES += $(srcdir)/config/loongarch/libgcc-loongarch.ver

@@ -4,7 +4,7 @@
 /* XuanTie C908v => rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_zifencei_
 zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_sstc_svinval_svnapot_svpbmt_xtheadba_
 xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_xtheadmac_
-xtheadmemidx_xtheadmempair_xtheadsync_xtheadvdot */
+xtheadmemidx_xtheadmempair_xtheadsync */
 
 #if !((__riscv_xlen == 64)		\
       && !defined(__riscv_32e)		\
@@ -39,8 +39,7 @@ xtheadmemidx_xtheadmempair_xtheadsync_xtheadvdot */
       && defined(__riscv_xtheadmac)		\
       && defined(__riscv_xtheadmemidx)		\
       && defined(__riscv_xtheadmempair)		\
-      && defined(__riscv_xtheadsync)		\
-      && defined (__riscv__xtheadvdot))
+      && defined(__riscv_xtheadsync))
 #error "unexpected arch"
 #endif
 

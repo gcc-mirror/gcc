@@ -441,7 +441,7 @@ PROCEDURE Wait ;
 VAR
    calling,
    best   : ProcessId ;
-   from   : COROUTINE ;
+   fromCor: COROUTINE ;
 BEGIN
    IF debugging
    THEN
@@ -451,17 +451,17 @@ BEGIN
    OnWaitingQueue (calling) ;
    best := chooseProcess () ;
    currentId := best ;
-   from := calling^.context ;
+   fromCor := calling^.context ;
    IF debugging
    THEN
       displayProcesses ("Wait about to perform IOTRANSFER")
    END ;
-   IOTRANSFER (from, currentId^.context) ;
+   IOTRANSFER (fromCor, currentId^.context) ;
    IF debugging
    THEN
       displayProcesses ("Wait after IOTRANSFER")
    END ;
-   currentId^.context := from ;
+   currentId^.context := fromCor ;
    currentId := calling ;
    OnReadyQueue (calling) ;
    IF debugging

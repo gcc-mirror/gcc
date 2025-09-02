@@ -1,4 +1,4 @@
-/* { dg-do compile { target aarch64*-*-* powerpc64*-*-* riscv64-*-* s390*-*-* x86_64-*-* } } */
+/* { dg-do compile { target { { aarch64*-*-* powerpc64*-*-* riscv64-*-* s390*-*-* } || { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } } */
 
 typedef int V __attribute__ ((vector_size (4 * sizeof (int))));
 

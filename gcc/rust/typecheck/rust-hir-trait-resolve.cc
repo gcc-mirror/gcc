@@ -22,9 +22,6 @@
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 
-// used for flag_name_resolution_2_0
-#include "options.h"
-
 namespace Rust {
 namespace Resolver {
 
@@ -123,27 +120,15 @@ bool
 TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
 				      HIR::Trait **resolved) const
 {
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   NodeId ref;
-  bool ok;
-  if (flag_name_resolution_2_0)
+  if (auto ref_opt = nr_ctx.lookup (path.get_mappings ().get_nodeid ()))
     {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      auto ref_opt = nr_ctx.lookup (path.get_mappings ().get_nodeid ());
-
-      if ((ok = ref_opt.has_value ()))
-	ref = *ref_opt;
+      ref = *ref_opt;
     }
   else
-    {
-      auto path_nodeid = path.get_mappings ().get_nodeid ();
-      ok = resolver->lookup_resolved_type (path_nodeid, &ref)
-	   || resolver->lookup_resolved_name (path_nodeid, &ref)
-	   || resolver->lookup_resolved_macro (path_nodeid, &ref);
-    }
-
-  if (!ok)
     {
       rust_error_at (path.get_locus (), "Failed to resolve path to node-id");
       return false;
@@ -224,7 +209,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	  // handling.
 	  break;
 
-	  case HIR::GenericParam::GenericKind::TYPE: {
+	case HIR::GenericParam::GenericKind::TYPE:
+	  {
 	    auto &typaram = static_cast<HIR::TypeParam &> (*generic_param);
 	    bool is_self
 	      = typaram.get_type_representation ().as_string ().compare ("Self")
@@ -287,7 +273,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
 	      auto predicate = get_predicate_from_bound (
 		b->get_path (),
-		tl::nullopt /*this will setup a PLACEHOLDER for self*/);
+		tl::nullopt /*this will setup a PLACEHOLDER for self*/,
+		BoundPolarity::RegularBound, false, true);
 	      if (predicate.is_error ())
 		return &TraitReference::error_node ();
 
@@ -443,10 +430,26 @@ TraitItemReference::associated_type_set (TyTy::BaseType *ty) const
 {
   rust_assert (get_trait_item_type () == TraitItemType::TYPE);
 
+  // this isnt super safe there are cases like the FnTraits where the type is
+  // set to the impls placeholder associated type. For example
+  //
+  // type Output = F::Output; -- see the fn trait impls in libcore
+  //
+  // then this projection ends up resolving back to this placeholder so it just
+  // ends up being cyclical
+
   TyTy::BaseType *item_ty = get_tyty ();
   rust_assert (item_ty->get_kind () == TyTy::TypeKind::PLACEHOLDER);
   TyTy::PlaceholderType *placeholder
     = static_cast<TyTy::PlaceholderType *> (item_ty);
+
+  if (ty->is<TyTy::ProjectionType> ())
+    {
+      const auto &projection = *static_cast<const TyTy::ProjectionType *> (ty);
+      const auto resolved = projection.get ();
+      if (resolved == item_ty)
+	return;
+    }
 
   placeholder->set_associated_type (ty->get_ty_ref ());
 }
@@ -543,7 +546,8 @@ AssociatedImplTrait::setup_associated_types (
 	  // handling.
 	  break;
 
-	  case HIR::GenericParam::GenericKind::TYPE: {
+	case HIR::GenericParam::GenericKind::TYPE:
+	  {
 	    TyTy::BaseType *l = nullptr;
 	    bool ok = context->lookup_type (
 	      generic_param->get_mappings ().get_hirid (), &l);
@@ -580,8 +584,8 @@ AssociatedImplTrait::setup_associated_types (
 	}
       else
 	{
-	  TyTy::ParamType *param = p.get_param_ty ();
-	  TyTy::BaseType *resolved = param->destructure ();
+	  auto param = p.get_param_ty ();
+	  auto resolved = param->destructure ();
 	  subst_args.push_back (TyTy::SubstitutionArg (&p, resolved));
 	  param_mappings[param->get_symbol ()] = resolved->get_ref ();
 	}
@@ -609,8 +613,8 @@ AssociatedImplTrait::setup_associated_types (
       if (i == 0)
 	continue;
 
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      TyTy::BaseType *r = p->resolve ();
+      const auto p = arg.get_param_ty ();
+      auto r = p->resolve ();
       if (!r->is_concrete ())
 	{
 	  r = SubstMapperInternal::Resolve (r, infer_arguments);
@@ -626,8 +630,8 @@ AssociatedImplTrait::setup_associated_types (
       if (i == 0)
 	continue;
 
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      TyTy::BaseType *r = p->resolve ();
+      const auto p = arg.get_param_ty ();
+      auto r = p->resolve ();
       if (!r->is_concrete ())
 	{
 	  r = SubstMapperInternal::Resolve (r, infer_arguments);
@@ -753,7 +757,8 @@ TraitItemReference::is_object_safe () const
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   switch (get_trait_item_type ())
     {
-      case TraitItemReference::TraitItemType::FN: {
+    case TraitItemReference::TraitItemType::FN:
+      {
 	// lets be boring and just check that this is indeed a method will do
 	// for now
 	const HIR::TraitItem *item = get_hir_trait_item ();

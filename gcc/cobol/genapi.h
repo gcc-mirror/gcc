@@ -536,8 +536,6 @@ void parser_exception_raise(ec_type_t ec);
 void parser_call_exception( cbl_label_t *name );
 void parser_call_exception_end( cbl_label_t *name );
 
-//void parser_stash_exceptions(const cbl_enabled_exceptions_array_t *enabled);
-
 void parser_match_exception(cbl_field_t *index);
 void parser_check_fatal_exception();
 void parser_clear_exception();

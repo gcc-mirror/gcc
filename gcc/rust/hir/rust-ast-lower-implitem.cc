@@ -138,7 +138,8 @@ ASTLowerImplItem::visit (AST::Function &function)
 
   std::unique_ptr<HIR::Type> return_type
     = function.has_return_type () ? std::unique_ptr<HIR::Type> (
-	ASTLoweringType::translate (function.get_return_type ()))
+	ASTLoweringType::translate (function.get_return_type (), false,
+				    true /* impl trait is allowed here*/))
 				  : nullptr;
 
   Defaultness defaultness
@@ -274,7 +275,16 @@ ASTLowerTraitItem::visit (AST::Function &func)
       auto hir_param
 	= HIR::FunctionParam (mapping, std::move (translated_pattern),
 			      std::move (translated_type), param.get_locus ());
-      function_params.push_back (hir_param);
+      function_params.push_back (std::move (hir_param));
+    }
+
+  if (func.has_self_param ())
+    {
+      // insert mappings for self
+      // TODO: Is this correct ? Looks fishy
+      mappings.insert_hir_self_param (&*self_param);
+      mappings.insert_location (self_param->get_mappings ().get_hirid (),
+				self_param->get_locus ());
     }
 
   HIR::TraitFunctionDecl decl (func.get_function_name (),
@@ -300,14 +310,6 @@ ASTLowerTraitItem::visit (AST::Function &func)
     = new HIR::TraitItemFunc (mapping, std::move (decl), std::move (block_expr),
 			      func.get_outer_attrs (), func.get_locus ());
   translated = trait_item;
-  if (func.has_self_param ())
-    {
-      // insert mappings for self
-      // TODO: Is this correct ? Looks fishy
-      mappings.insert_hir_self_param (&*self_param);
-      mappings.insert_location (self_param->get_mappings ().get_hirid (),
-				self_param->get_locus ());
-    }
 
   // add the mappings for the function params at the end
   for (auto &param : trait_item->get_decl ().get_function_params ())

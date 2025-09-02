@@ -417,6 +417,26 @@ ConstChecker::visit (BlockExpr &expr)
 }
 
 void
+ConstChecker::visit (AnonConst &expr)
+{
+  const_context.enter (expr.get_mappings ().get_hirid ());
+
+  expr.get_inner_expr ().accept_vis (*this);
+
+  const_context.exit ();
+}
+
+void
+ConstChecker::visit (ConstBlock &expr)
+{
+  const_context.enter (expr.get_mappings ().get_hirid ());
+
+  expr.get_const_expr ().accept_vis (*this);
+
+  const_context.exit ();
+}
+
+void
 ConstChecker::visit (ContinueExpr &)
 {}
 
@@ -538,6 +558,10 @@ ConstChecker::visit (InlineAsm &)
 
 void
 ConstChecker::visit (LlvmInlineAsm &)
+{}
+
+void
+ConstChecker::visit (OffsetOf &)
 {}
 
 void

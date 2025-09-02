@@ -118,7 +118,7 @@ private:
   virtual void visit (LiteralExpr &expr) override final{};
   virtual void visit (AttrInputLiteral &attr_input) override final{};
   virtual void visit (MetaItemLitExpr &meta_item) override final{};
-  virtual void visit (MetaItemPathLit &meta_item) override final{};
+  virtual void visit (MetaItemPathExpr &meta_item) override final{};
   virtual void visit (BorrowExpr &expr) override final{};
   virtual void visit (DereferenceExpr &expr) override final{};
   virtual void visit (ErrorPropagationExpr &expr) override final{};
@@ -147,6 +147,8 @@ private:
   virtual void visit (FieldAccessExpr &expr) override final{};
   virtual void visit (ClosureExprInner &expr) override final{};
   virtual void visit (BlockExpr &expr) override final{};
+  virtual void visit (AnonConst &expr) override final{};
+  virtual void visit (ConstBlock &expr) override final{};
   virtual void visit (ClosureExprInnerTyped &expr) override final{};
   virtual void visit (ContinueExpr &expr) override final{};
   virtual void visit (BreakExpr &expr) override final{};
@@ -157,6 +159,7 @@ private:
   virtual void visit (RangeFromToInclExpr &expr) override final{};
   virtual void visit (RangeToInclExpr &expr) override final{};
   virtual void visit (ReturnExpr &expr) override final{};
+  virtual void visit (TryExpr &expr) override final{};
   virtual void visit (BoxExpr &expr) override final{};
   virtual void visit (UnsafeBlockExpr &expr) override final{};
   virtual void visit (LoopExpr &expr) override final{};
@@ -228,6 +231,8 @@ private:
   virtual void visit (TuplePatternItemsRanged &tuple_items) override final{};
   virtual void visit (TuplePattern &pattern) override final{};
   virtual void visit (GroupedPattern &pattern) override final{};
+  virtual void visit (SlicePatternItemsNoRest &items) override final{};
+  virtual void visit (SlicePatternItemsHasRest &items) override final{};
   virtual void visit (SlicePattern &pattern) override final{};
   virtual void visit (AltPattern &pattern) override final{};
   virtual void visit (EmptyStmt &stmt) override final{};
@@ -251,6 +256,7 @@ private:
   virtual void visit (FunctionParam &param) override final{};
   virtual void visit (VariadicParam &param) override final{};
   virtual void visit (FormatArgs &param) override final{};
+  virtual void visit (OffsetOf &param) override final{};
 };
 
 } // namespace AST

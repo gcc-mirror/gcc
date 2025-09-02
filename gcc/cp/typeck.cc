@@ -3973,7 +3973,6 @@ tree
 cp_build_array_ref (location_t loc, tree array, tree idx,
 		    tsubst_flags_t complain)
 {
-  tree first = NULL_TREE;
   tree ret;
 
   if (idx == 0)
@@ -3986,6 +3985,21 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
   if (TREE_TYPE (array) == error_mark_node
       || TREE_TYPE (idx) == error_mark_node)
     return error_mark_node;
+
+  /* 0[array] */
+  if (TREE_CODE (TREE_TYPE (idx)) == ARRAY_TYPE)
+    {
+      std::swap (array, idx);
+
+      tree first = NULL_TREE;
+      if (flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (array))
+	idx = first = save_expr (idx);
+      ret = cp_build_array_ref (loc, array, idx, complain);
+
+      if (first)
+	ret = build2 (COMPOUND_EXPR, TREE_TYPE (ret), first, ret);
+      return ret;
+    }
 
   /* If ARRAY is a COMPOUND_EXPR or COND_EXPR, move our reference
      inside it.  */
@@ -4066,14 +4080,6 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 
   bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, idx);
 
-  /* 0[array] */
-  if (TREE_CODE (TREE_TYPE (idx)) == ARRAY_TYPE)
-    {
-      std::swap (array, idx);
-      if (flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (array))
-	idx = first = save_expr (idx);
-    }
-
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
       tree rval, type;
@@ -4149,17 +4155,16 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
-      if (first)
-	ret = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (ret), first, ret);
       return ret;
     }
 
   {
     tree ar = cp_default_conversion (array, complain);
     tree ind = cp_default_conversion (idx, complain);
+    tree first = NULL_TREE;
 
-    if (!processing_template_decl
-	&& !first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
+    if (!processing_template_decl && flag_strong_eval_order == 2
+	&& TREE_SIDE_EFFECTS (ind))
       ar = first = save_expr (ar);
 
     /* Put the integer in IND to simplify error checking.  */
@@ -4287,7 +4292,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
-	  int flag_sanitize_save;
+	  sanitize_code_type flag_sanitize_save;
 	case ptrmemfunc_vbit_in_pfn:
 	  e1 = cp_build_binary_op (input_location,
 				   BIT_AND_EXPR, idx, integer_one_node,

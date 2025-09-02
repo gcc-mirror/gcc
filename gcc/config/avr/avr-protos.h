@@ -146,7 +146,6 @@ extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, rtx_code, rtx_code);
 extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, rtx_code, rtx_code);
 extern rtx avr_incoming_return_addr_rtx (void);
-extern rtx avr_legitimize_reload_address (rtx*, machine_mode, int, int, int, int, rtx (*)(rtx,int));
 extern bool avr_adiw_reg_p (rtx);
 extern bool avr_mem_flash_p (rtx);
 extern bool avr_mem_flashx_p (rtx);
@@ -168,6 +167,8 @@ regmask (machine_mode mode, unsigned regno)
 
 extern void avr_fix_inputs (rtx*, unsigned, unsigned);
 extern bool avr_emit3_fix_outputs (rtx (*)(rtx,rtx,rtx), rtx*, unsigned, unsigned);
+extern rtx avr_add_ccclobber (rtx_insn *);
+#define DONE_ADD_CCC emit (avr_add_ccclobber (curr_insn)); DONE;
 
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;
@@ -208,6 +209,7 @@ extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_ifelse (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_split_nzb (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_split_after_peephole2 (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_2moves (gcc::context *);
 #ifdef RTX_CODE
 extern bool avr_casei_sequence_check_operands (rtx *xop);
 extern bool avr_split_fake_addressing_move (rtx_insn *insn, rtx *operands);
@@ -238,7 +240,6 @@ typedef struct
   unsigned insn_addresses :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;
-  unsigned legitimize_reload_address :1;
   unsigned progmem :1;
   unsigned rtx_costs :1;
 } avr_log_t;

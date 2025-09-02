@@ -921,7 +921,8 @@ package body Exp_Ch6 is
      --  in accessibility.adb (which can cause the extra formal parameter
      --  needed for the check(s) generated here to be missing in the case
      --  of a tagged result type); this is a workaround and can
-     --  prevent generation of a required check.
+     --  prevent generation of a required check (or even a required
+     --  legality check - see "statically too deep" check below).
 
       if No (Extra_Accessibility_Of_Result (Func)) then
          return;
@@ -968,6 +969,15 @@ package body Exp_Ch6 is
                   Discrim_Level :=
                     Accessibility_Level (Discr_Exp, Level => Dynamic_Level);
                   Analyze (Discrim_Level);
+
+                  if Nkind (Discrim_Level) = N_Integer_Literal
+                    and then Intval (Discrim_Level) > Scope_Depth (Func)
+                  then
+                     Error_Msg_N
+                        ("level of type of access discriminant value of "
+                         & "return expression is statically too deep",
+                         Enclosing_Declaration_Or_Statement (Exp));
+                  end if;
 
                   Insert_Action (Exp,
                     Make_Raise_Program_Error (Loc,
@@ -8089,7 +8099,7 @@ package body Exp_Ch6 is
               Get_Class_Wide_Pragma (Id, Pragma_Precondition);
 
          begin
-            if No (Prag) or else Is_Ignored (Prag) then
+            if No (Prag) or else Is_Ignored_In_Codegen (Prag) then
                return;
             end if;
 

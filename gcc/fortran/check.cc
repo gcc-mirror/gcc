@@ -5559,6 +5559,27 @@ gfc_check_scan (gfc_expr *x, gfc_expr *y, gfc_expr *z, gfc_expr *kind)
   return true;
 }
 
+bool
+gfc_check_split (gfc_expr *string, gfc_expr *set, gfc_expr *pos, gfc_expr *back)
+{
+  if (!type_check (string, 0, BT_CHARACTER))
+    return false;
+
+  if (!type_check (set, 1, BT_CHARACTER))
+    return false;
+
+  if (!type_check (pos, 2, BT_INTEGER) || !scalar_check (pos, 2))
+    return false;
+
+  if (back != NULL
+      && (!type_check (back, 3, BT_LOGICAL) || !scalar_check (back, 3)))
+    return false;
+
+  if (!same_type_check (string, 0, set, 1))
+    return false;
+
+  return true;
+}
 
 bool
 gfc_check_secnds (gfc_expr *r)
@@ -6060,7 +6081,8 @@ gfc_check_c_associated (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
 
 
 bool
-gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
+gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape,
+		       gfc_expr *lower)
 {
   symbol_attribute attr;
   const char *msg;
@@ -6129,6 +6151,43 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
 	      mpz_clear (size);
 	      gfc_error ("SHAPE argument at %L to C_F_POINTER must have the same "
 			"size as the RANK of FPTR", &shape->where);
+	      return false;
+	    }
+	  mpz_clear (size);
+	}
+    }
+
+  if (lower
+      && !gfc_notify_std (GFC_STD_F2023, "LOWER argument at %L to C_F_POINTER",
+			  &lower->where))
+    return false;
+
+  if (!shape && lower)
+    {
+      gfc_error ("Unexpected LOWER argument at %L to C_F_POINTER "
+		 "with scalar FPTR",
+		 &lower->where);
+      return false;
+    }
+
+  if (lower && !rank_check (lower, 3, 1))
+    return false;
+
+  if (lower && !type_check (lower, 3, BT_INTEGER))
+    return false;
+
+  if (lower)
+    {
+      mpz_t size;
+      if (gfc_array_size (lower, &size))
+	{
+	  if (mpz_cmp_ui (size, fptr->rank) != 0)
+	    {
+	      mpz_clear (size);
+	      gfc_error (
+		"LOWER argument at %L to C_F_POINTER must have the same "
+		"size as the RANK of FPTR",
+		&lower->where);
 	      return false;
 	    }
 	  mpz_clear (size);

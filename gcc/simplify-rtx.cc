@@ -8333,18 +8333,56 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	return XEXP (XEXP (op, 0), 0);
     }
 
-  /* Attempt to simplify WORD_MODE SUBREGs of bitwise expressions.  */
-  if (outermode == word_mode
-      && (GET_CODE (op) == IOR || GET_CODE (op) == XOR || GET_CODE (op) == AND)
-      && SCALAR_INT_MODE_P (innermode))
+  auto distribute_subreg = [&](rtx op)
     {
-      rtx op0 = simplify_subreg (outermode, XEXP (op, 0), innermode, byte);
-      rtx op1 = simplify_subreg (outermode, XEXP (op, 1), innermode, byte);
-      if (op0 && op1)
-	return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
-    }
+      return simplify_subreg (outermode, op, innermode, byte);
+    };
 
+  /* Try distributing the subreg through logic operations, if that
+     leads to all subexpressions being simplified.  For example,
+     distributing the outer subreg in:
+
+       (subreg:SI (not:QI (subreg:QI (reg:SI X) <lowpart>)) 0)
+
+     gives:
+
+       (not:SI (reg:SI X))
+
+     This should be a win if the outermode is word_mode, since logical
+     operations on word_mode should (a) be no more expensive than logical
+     operations on subword modes and (b) are likely to be cheaper than
+     logical operations on multiword modes.
+
+     Otherwise, handle the case where the subreg is non-narrowing and does
+     not change the number of words.  The non-narrowing condition ensures
+     that we don't convert word_mode operations to subword operations.  */
   scalar_int_mode int_outermode, int_innermode;
+  if (is_a <scalar_int_mode> (outermode, &int_outermode)
+      && is_a <scalar_int_mode> (innermode, &int_innermode)
+      && (outermode == word_mode
+	  || ((GET_MODE_PRECISION (int_outermode)
+	       >= GET_MODE_PRECISION (int_innermode))
+	      && (CEIL (GET_MODE_SIZE (int_outermode), UNITS_PER_WORD)
+		  <= CEIL (GET_MODE_SIZE (int_innermode), UNITS_PER_WORD)))))
+    switch (GET_CODE (op))
+      {
+      case NOT:
+	if (rtx op0 = distribute_subreg (XEXP (op, 0)))
+	  return simplify_gen_unary (GET_CODE (op), outermode, op0, outermode);
+	break;
+
+      case AND:
+      case IOR:
+      case XOR:
+	if (rtx op0 = distribute_subreg (XEXP (op, 0)))
+	  if (rtx op1 = distribute_subreg (XEXP (op, 1)))
+	    return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
+	break;
+
+      default:
+	break;
+      }
+
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)
       && known_eq (byte, subreg_lowpart_offset (int_outermode, int_innermode)))
@@ -8394,9 +8432,45 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && VECTOR_MODE_P (innermode)
       && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
       && known_eq (GET_MODE_UNIT_SIZE (outermode),
-		    GET_MODE_UNIT_SIZE (innermode)))
+		   GET_MODE_UNIT_SIZE (innermode)))
     return simplify_gen_relational (GET_CODE (op), outermode, innermode,
 				    XEXP (op, 0), XEXP (op, 1));
+
+  /* Distribute non-paradoxical subregs through logic ops in cases where
+     one term disappears.
+
+     (subreg:M1 (and:M2 X C1)) -> (subreg:M1 X)
+     (subreg:M1 (ior:M2 X C1)) -> (subreg:M1 C1)
+     (subreg:M1 (xor:M2 X C1)) -> (subreg:M1 (not:M2 X))
+
+     if M2 is no smaller than M1 and (subreg:M1 C1) is all-ones.
+
+     (subreg:M1 (and:M2 X C2)) -> (subreg:M1 C2)
+     (subreg:M1 (ior/xor:M2 X C2)) -> (subreg:M1 X)
+
+     if M2 is no smaller than M1 and (subreg:M1 C2) is zero.  */
+  if (known_ge (innersize, outersize)
+      && GET_MODE_CLASS (outermode) == GET_MODE_CLASS (innermode)
+      && (GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR)
+      && CONSTANT_P (XEXP (op, 1)))
+    {
+      rtx op1_subreg = distribute_subreg (XEXP (op, 1));
+      if (op1_subreg == CONSTM1_RTX (outermode))
+	{
+	  if (GET_CODE (op) == IOR)
+	    return op1_subreg;
+	  rtx op0 = XEXP (op, 0);
+	  if (GET_CODE (op) == XOR)
+	    op0 = simplify_gen_unary (NOT, innermode, op0, innermode);
+	  return simplify_gen_subreg (outermode, op0, innermode, byte);
+	}
+
+      if (op1_subreg == CONST0_RTX (outermode))
+	return (GET_CODE (op) == AND
+		? op1_subreg
+		: distribute_subreg (XEXP (op, 0)));
+    }
+
   return NULL_RTX;
 }
 
@@ -8415,14 +8489,10 @@ simplify_context::simplify_gen_subreg (machine_mode outermode, rtx op,
 
   if (GET_CODE (op) == SUBREG
       || GET_CODE (op) == CONCAT
-      || GET_MODE (op) == VOIDmode)
-    return NULL_RTX;
-
-  if (MODE_COMPOSITE_P (outermode)
-      && (CONST_SCALAR_INT_P (op)
-	  || CONST_DOUBLE_AS_FLOAT_P (op)
-	  || CONST_FIXED_P (op)
-	  || GET_CODE (op) == CONST_VECTOR))
+      || CONST_SCALAR_INT_P (op)
+      || CONST_DOUBLE_AS_FLOAT_P (op)
+      || CONST_FIXED_P (op)
+      || GET_CODE (op) == CONST_VECTOR)
     return NULL_RTX;
 
   if (validate_subreg (outermode, innermode, op, byte))
@@ -8668,6 +8738,74 @@ test_scalar_int_ext_ops (machine_mode bmode, machine_mode smode)
 				     lowpart_subreg (bmode, sreg, smode),
 				     bmode),
 		 sreg);
+
+  /* Test extensions, followed by logic ops, followed by truncations.  */
+  rtx bsubreg = lowpart_subreg (bmode, sreg, smode);
+  rtx smask = gen_int_mode (GET_MODE_MASK (smode), bmode);
+  rtx inv_smask = gen_int_mode (~GET_MODE_MASK (smode), bmode);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (AND, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 sreg);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (AND, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
+		 const0_rtx);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (IOR, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 constm1_rtx);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (IOR, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
+		 sreg);
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (XOR, bmode,
+						      bsubreg, smask),
+				 bmode),
+		 lowpart_subreg (smode,
+				 gen_rtx_NOT (bmode, bsubreg),
+				 bmode));
+  ASSERT_RTX_EQ (lowpart_subreg (smode,
+				 simplify_gen_binary (XOR, bmode,
+						      bsubreg, inv_smask),
+				 bmode),
+		 sreg);
+
+  if (known_le (GET_MODE_PRECISION (bmode), BITS_PER_WORD))
+    {
+      rtx breg1 = make_test_reg (bmode);
+      rtx breg2 = make_test_reg (bmode);
+      rtx ssubreg1 = lowpart_subreg (smode, breg1, bmode);
+      rtx ssubreg2 = lowpart_subreg (smode, breg2, bmode);
+      rtx not_1 = simplify_gen_unary (NOT, smode, ssubreg1, smode);
+      rtx and_12 = simplify_gen_binary (AND, smode, ssubreg1, ssubreg2);
+      rtx ior_12 = simplify_gen_binary (IOR, smode, ssubreg1, ssubreg2);
+      rtx xor_12 = simplify_gen_binary (XOR, smode, ssubreg1, ssubreg2);
+      rtx and_n12 = simplify_gen_binary (AND, smode, not_1, ssubreg2);
+      rtx ior_n12 = simplify_gen_binary (IOR, smode, not_1, ssubreg2);
+      rtx xor_12_c = simplify_gen_binary (XOR, smode, xor_12, const1_rtx);
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, not_1, smode),
+		     gen_rtx_NOT (bmode, breg1));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, and_12, smode),
+		     gen_rtx_AND (bmode, breg1, breg2));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, ior_12, smode),
+		     gen_rtx_IOR (bmode, breg1, breg2));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, xor_12, smode),
+		     gen_rtx_XOR (bmode, breg1, breg2));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, and_n12, smode),
+		     gen_rtx_AND (bmode, gen_rtx_NOT (bmode, breg1), breg2));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, ior_n12, smode),
+		     gen_rtx_IOR (bmode, gen_rtx_NOT (bmode, breg1), breg2));
+      ASSERT_RTX_EQ (lowpart_subreg (bmode, xor_12_c, smode),
+		     gen_rtx_XOR (bmode,
+				  gen_rtx_XOR (bmode, breg1, breg2),
+				  const1_rtx));
+    }
 }
 
 /* Verify more simplifications of integer extension/truncation.

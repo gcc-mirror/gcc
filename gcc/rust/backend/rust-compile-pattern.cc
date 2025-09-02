@@ -22,6 +22,11 @@
 #include "rust-constexpr.h"
 #include "rust-compile-type.h"
 #include "print-tree.h"
+#include "rust-diagnostics.h"
+#include "rust-hir-pattern-abstract.h"
+#include "rust-hir-pattern.h"
+#include "rust-system.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {
@@ -107,7 +112,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
   tree result = NULL_TREE;
   switch (bound.get_bound_type ())
     {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case HIR::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
 	HIR::LiteralExpr litexpr (mappings, ref.get_literal (), locus,
@@ -117,7 +123,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_path (), ctx);
@@ -127,7 +134,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_qualified_path (), ctx);
@@ -204,6 +212,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 
   rust_assert (adt->number_of_variants () > 0);
   TyTy::VariantDef *variant = nullptr;
+  tree variant_accesser_expr = nullptr;
   if (adt->is_enum ())
     {
       // lookup the variant
@@ -218,15 +227,21 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 
       // find expected discriminant
       // // need to access qualifier the field, if we use QUAL_UNION_TYPE this
-      // // would be DECL_QUALIFIER i think. For now this will just access the
-      // // first record field and its respective qualifier because it will
-      // // always be set because this is all a big special union
+      // // would be DECL_QUALIFIER i think.
       HIR::Expr &discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
       tree scrutinee_expr_qualifier_expr
 	= Backend::struct_field_expression (match_scrutinee_expr, 0,
+					    pattern.get_path ().get_locus ());
+
+      // access variant data
+      tree scrutinee_union_expr
+	= Backend::struct_field_expression (match_scrutinee_expr, 1,
+					    pattern.get_path ().get_locus ());
+      variant_accesser_expr
+	= Backend::struct_field_expression (scrutinee_union_expr, variant_index,
 					    pattern.get_path ().get_locus ());
 
       check_expr
@@ -240,6 +255,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
   else
     {
       variant = adt->get_variants ().at (0);
+      variant_accesser_expr = match_scrutinee_expr;
       check_expr = boolean_true_node;
     }
 
@@ -248,13 +264,15 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    // TODO
 	    rust_unreachable ();
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    HIR::StructPatternFieldIdentPat &ident
 	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
 
@@ -263,11 +281,8 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 					nullptr, &offs);
 	    rust_assert (ok);
 
-	    // we may be offsetting by + 1 here since the first field in the
-	    // record is always the discriminator
-	    offs += adt->is_enum ();
 	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr, offs,
+	      = Backend::struct_field_expression (variant_accesser_expr, offs,
 						  ident.get_locus ());
 
 	    tree check_expr_sub
@@ -279,7 +294,8 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT: {
+	case HIR::StructPatternField::ItemType::IDENT:
+	  {
 	    // ident pattern always matches - do nothing
 	  }
 	  break;
@@ -338,44 +354,70 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
 
-	size_t tuple_field_index = 0;
-	for (auto &pattern : items_no_range.get_patterns ())
+	if (adt->is_enum ())
 	  {
-	    // find payload union field of scrutinee
-	    tree payload_ref
-	      = Backend::struct_field_expression (match_scrutinee_expr, 1,
-						  pattern->get_locus ());
+	    size_t tuple_field_index = 0;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		// find payload union field of scrutinee
+		tree payload_ref
+		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						      pattern->get_locus ());
 
-	    tree variant_ref
-	      = Backend::struct_field_expression (payload_ref, variant_index,
-						  pattern->get_locus ());
+		tree variant_ref
+		  = Backend::struct_field_expression (payload_ref,
+						      variant_index,
+						      pattern->get_locus ());
 
-	    tree field_expr
-	      = Backend::struct_field_expression (variant_ref,
-						  tuple_field_index++,
-						  pattern->get_locus ());
+		tree field_expr
+		  = Backend::struct_field_expression (variant_ref,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
-	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (*pattern, field_expr, ctx);
-	    check_expr = Backend::arithmetic_or_logical_expression (
-	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
-	      check_expr_sub, pattern->get_locus ());
+		tree check_expr_sub
+		  = CompilePatternCheckExpr::Compile (*pattern, field_expr,
+						      ctx);
+		check_expr = Backend::arithmetic_or_logical_expression (
+		  ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+		  check_expr_sub, pattern->get_locus ());
+	      }
 	  }
+	else
+	  {
+	    // For non-enum TupleStructPatterns
+	    size_t tuple_field_index = 0;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		tree field_expr
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      tuple_field_index++,
+						      pattern->get_locus ());
+
+		tree check_expr_sub
+		  = CompilePatternCheckExpr::Compile (*pattern, field_expr,
+						      ctx);
+		check_expr = Backend::arithmetic_or_logical_expression (
+		  ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+		  check_expr_sub, pattern->get_locus ());
+	      }
+	  }
+	break;
       }
-      break;
     }
 }
 
@@ -386,13 +428,57 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::RANGED: {
-	// TODO
-	gcc_unreachable ();
+    case HIR::TuplePatternItems::RANGED:
+      {
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	size_t tuple_field_index = 0;
+
+	// lookup the type to find out number of fields
+	TyTy::BaseType *ty = nullptr;
+	bool ok = ctx->get_tyctx ()->lookup_type (
+	  pattern.get_mappings ().get_hirid (), &ty);
+	rust_assert (ok);
+	rust_assert (ty->get_kind () == TyTy::TypeKind::TUPLE);
+
+	// compile check expr for lower patterns
+	for (auto &pat : items.get_lower_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pat->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pat, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pat->get_locus ());
+	  }
+
+	// skip the fields that are not checked
+	tuple_field_index = static_cast<TyTy::TupleType &> (*ty).num_fields ()
+			    - items.get_upper_patterns ().size ();
+
+	// compile check expr for upper patterns
+	for (auto &pat : items.get_upper_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pat->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pat, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pat->get_locus ());
+	  }
       }
       break;
 
-      case HIR::TuplePatternItems::MULTIPLE: {
+    case HIR::TuplePatternItems::MULTIPLE:
+      {
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 	size_t tuple_field_index = 0;
@@ -411,6 +497,99 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 	      check_expr_sub, pat->get_locus ());
 	  }
       }
+    }
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::IdentifierPattern &pattern)
+{
+  if (pattern.has_subpattern ())
+    {
+      check_expr = CompilePatternCheckExpr::Compile (pattern.get_subpattern (),
+						     match_scrutinee_expr, ctx);
+    }
+  else
+    {
+      check_expr = boolean_true_node;
+    }
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::SlicePattern &pattern)
+{
+  check_expr = boolean_true_node;
+
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (pattern.get_mappings ().get_hirid (),
+				      &lookup);
+  rust_assert (ok);
+
+  // pattern must either be ArrayType or SliceType, should be already confirmed
+  // by type checking
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE
+	       || lookup->get_kind () == TyTy::REF);
+
+  size_t array_element_index = 0;
+  switch (lookup->get_kind ())
+    {
+    case TyTy::TypeKind::ARRAY:
+      for (auto &pattern_member : pattern.get_items ())
+	{
+	  tree array_index_tree
+	    = Backend::size_constant_expression (array_element_index++);
+	  tree element_expr
+	    = Backend::array_index_expression (match_scrutinee_expr,
+					       array_index_tree,
+					       pattern.get_locus ());
+	  tree check_expr_sub
+	    = CompilePatternCheckExpr::Compile (*pattern_member, element_expr,
+						ctx);
+	  check_expr = Backend::arithmetic_or_logical_expression (
+	    ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	    check_expr_sub, pattern.get_locus ());
+	}
+      break;
+    case TyTy::TypeKind::SLICE:
+      rust_sorry_at (
+	pattern.get_locus (),
+	"SlicePattern matching against non-ref slices are not yet supported");
+      break;
+    case TyTy::TypeKind::REF:
+      {
+	rust_assert (RS_DST_FLAG_P (TREE_TYPE (match_scrutinee_expr)));
+	tree size_field
+	  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+					      pattern.get_locus ());
+
+	// First compare the size
+	check_expr = Backend::comparison_expression (
+	  ComparisonOperator::EQUAL, size_field,
+	  build_int_cst (size_type_node, pattern.get_items ().size ()),
+	  pattern.get_locus ());
+
+	// Then compare each element in the slice pattern
+	for (auto &pattern_member : pattern.get_items ())
+	  {
+	    tree slice_index_tree
+	      = Backend::size_constant_expression (array_element_index++);
+	    tree element_expr
+	      = Backend::slice_index_expression (match_scrutinee_expr,
+						 slice_index_tree,
+						 pattern.get_locus ());
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pattern_member, element_expr,
+						  ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pattern.get_locus ());
+	  }
+      }
+      break;
+    default:
+      rust_unreachable ();
     }
 }
 
@@ -449,13 +628,15 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
@@ -504,6 +685,71 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
     }
 }
 
+tree
+CompilePatternBindings::make_struct_access (TyTy::ADTType *adt,
+					    TyTy::VariantDef *variant,
+					    const Identifier &ident,
+					    int variant_index)
+{
+  size_t offs = 0;
+  auto ok = variant->lookup_field (ident.as_string (), nullptr, &offs);
+  rust_assert (ok);
+
+  if (adt->is_enum ())
+    {
+      tree payload_accessor_union
+	= Backend::struct_field_expression (match_scrutinee_expr, 1,
+					    ident.get_locus ());
+
+      tree variant_accessor
+	= Backend::struct_field_expression (payload_accessor_union,
+					    variant_index, ident.get_locus ());
+
+      return Backend::struct_field_expression (variant_accessor, offs,
+					       ident.get_locus ());
+    }
+  else
+    {
+      tree variant_accessor = match_scrutinee_expr;
+
+      return Backend::struct_field_expression (variant_accessor, offs,
+					       ident.get_locus ());
+    }
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_ident (
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
+{
+  HIR::StructPatternFieldIdent &ident
+    = static_cast<HIR::StructPatternFieldIdent &> (pat);
+
+  auto identifier = ident.get_identifier ();
+  tree binding = make_struct_access (adt, variant, identifier, variant_index);
+
+  ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (), binding);
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_ident_pat (
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
+{
+  auto &pattern = static_cast<HIR::StructPatternFieldIdentPat &> (pat);
+
+  tree binding = make_struct_access (adt, variant, pattern.get_identifier (),
+				     variant_index);
+  CompilePatternBindings::Compile (pattern.get_pattern (), binding, ctx);
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_tuple_pat (
+  HIR::StructPatternField &pat)
+{
+  rust_unreachable ();
+}
+
 void
 CompilePatternBindings::visit (HIR::StructPattern &pattern)
 {
@@ -539,54 +785,14 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
-	    // TODO
-	    rust_unreachable ();
-	  }
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  handle_struct_pattern_tuple_pat (*field);
 	  break;
-
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    rust_unreachable ();
-	  }
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  handle_struct_pattern_ident_pat (*field, adt, variant, variant_index);
 	  break;
-
-	  case HIR::StructPatternField::ItemType::IDENT: {
-	    HIR::StructPatternFieldIdent &ident
-	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
-
-	    size_t offs = 0;
-	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
-					nullptr, &offs);
-	    rust_assert (ok);
-
-	    tree binding = error_mark_node;
-	    if (adt->is_enum ())
-	      {
-		tree payload_accessor_union
-		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
-						      ident.get_locus ());
-
-		tree variant_accessor
-		  = Backend::struct_field_expression (payload_accessor_union,
-						      variant_index,
-						      ident.get_locus ());
-
-		binding
-		  = Backend::struct_field_expression (variant_accessor, offs,
-						      ident.get_locus ());
-	      }
-	    else
-	      {
-		tree variant_accessor = match_scrutinee_expr;
-		binding
-		  = Backend::struct_field_expression (variant_accessor, offs,
-						      ident.get_locus ());
-	      }
-
-	    ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (),
-					 binding);
-	  }
+	case HIR::StructPatternField::ItemType::IDENT:
+	  handle_struct_pattern_ident (*field, adt, variant, variant_index);
 	  break;
 	}
     }
@@ -605,6 +811,12 @@ CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
 void
 CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      CompilePatternBindings::Compile (pattern.get_subpattern (),
+				       match_scrutinee_expr, ctx);
+    }
+
   if (!pattern.get_is_ref ())
     {
       ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
@@ -631,7 +843,8 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::RANGED: {
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
 	size_t tuple_idx = 0;
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
@@ -674,7 +887,8 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
@@ -695,9 +909,64 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      default: {
+    default:
+      {
 	rust_unreachable ();
       }
+    }
+}
+
+void
+CompilePatternBindings::visit (HIR::SlicePattern &pattern)
+{
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (pattern.get_mappings ().get_hirid (),
+				      &lookup);
+  rust_assert (ok);
+
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ARRAY
+	       || lookup->get_kind () == TyTy::TypeKind::SLICE
+	       || lookup->get_kind () == TyTy::REF);
+
+  size_t array_element_index = 0;
+  switch (lookup->get_kind ())
+    {
+    case TyTy::TypeKind::ARRAY:
+      for (auto &pattern_member : pattern.get_items ())
+	{
+	  tree array_index_tree
+	    = Backend::size_constant_expression (array_element_index++);
+	  tree element_expr
+	    = Backend::array_index_expression (match_scrutinee_expr,
+					       array_index_tree,
+					       pattern.get_locus ());
+	  CompilePatternBindings::Compile (*pattern_member, element_expr, ctx);
+	}
+      break;
+    case TyTy::TypeKind::SLICE:
+      rust_sorry_at (
+	pattern.get_locus (),
+	"SlicePattern matching against non-ref slices are not yet supported");
+      break;
+    case TyTy::TypeKind::REF:
+      {
+	for (auto &pattern_member : pattern.get_items ())
+	  {
+	    tree slice_index_tree
+	      = Backend::size_constant_expression (array_element_index++);
+	    tree element_expr
+	      = Backend::slice_index_expression (match_scrutinee_expr,
+						 slice_index_tree,
+						 pattern.get_locus ());
+	    CompilePatternBindings::Compile (*pattern_member, element_expr,
+					     ctx);
+	  }
+	break;
+      }
+    default:
+      rust_unreachable ();
     }
 }
 
@@ -755,7 +1024,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::RANGED: {
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
 	size_t tuple_idx = 0;
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
@@ -799,7 +1069,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
@@ -821,7 +1092,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      default: {
+    default:
+      {
 	rust_unreachable ();
       }
     }

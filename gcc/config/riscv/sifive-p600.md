@@ -157,10 +157,13 @@
        (eq_attr "type" "fmove,fcvt"))
   "float_pipe,sifive_p600_fpu")
 
+;; We need something for HF so that we don't abort during
+;; scheduling if someone was to ask for p600 scheduling, but
+;; enable the various HF mode extensions.
 (define_insn_reservation "sifive_p600_fdiv_s" 11
   (and (eq_attr "tune" "sifive_p600")
        (eq_attr "type" "fdiv,fsqrt")
-       (eq_attr "mode" "SF"))
+       (eq_attr "mode" "HF,SF"))
   "sifive_p600_FM, sifive_p600_fdiv*5")
 
 (define_insn_reservation "sifive_p600_fdiv_d" 19
@@ -182,3 +185,15 @@
 (define_bypass 1 "sifive_p600_f2i"
   "sifive_p600_branch,sifive_p600_sfb_alu,sifive_p600_mul,
    sifive_p600_div,sifive_p600_alu,sifive_p600_cpop")
+
+;; Someone familiar with the p600 uarch needs to put
+;; these into the right reservations.  This is just a placeholder
+;; for everything I found that had no mapping to a reservation.
+;;
+;; Note that even if the processor does not implementat a particular
+;; instruction it should still have suitable reservations, even if
+;; they are just dummies like this one.
+(define_insn_reservation "sifive_p600_unknown" 1
+  (and (eq_attr "tune" "sifive_p600")
+       (eq_attr "type" "vicmp,vssegte,vbrev8,vfwalu,vimov,vmpop,vaesdf,vislide1up,vror,vsha2cl,vrol,vslideup,vimuladd,vclmul,vaesef,vext,vlsegdff,vfmuladd,vfclass,vmsfs,vfcmp,vsmul,vsm3me,vmalu,vshift,viwmuladd,vfslide1up,vlsegde,vsm4k,wrvxrm,vislide1down,vsm3c,vfwmuladd,vaesdm,vclmulh,vfwcvtftof,vfwredu,vfredo,sf_vfnrclip,vaesz,vwsll,vmiota,vctz,vsetvl_pre,vstm,vidiv,vssegtux,vfwmul,vcompress,vste,vired,vlsegds,vaesem,vfminmax,ghost,vandn,crypto,vfmul,vialu,vfmovvf,rdfrm,vldff,vfmerge,vsshift,vnclip,sf_vqmacc,vnshift,vfdiv,vfslide1down,vfncvtitof,vfsqrt,vimovxv,vstr,vfwcvtbf16,vfwcvtitof,vbrev,vssegtox,vssegts,vcpop,vmffs,viwmul,vldr,vmidx,rdvlenb,vfalu,vslidedown,vlde,vfsgnj,vfmov,viwalu,vsha2ch,vfncvtbf16,vfcvtitof,rdvl,vsetvl,vsha2ms,vector,vstux,vimerge,vclz,sf_vc,vfcvtftoi,viminmax,vsm4r,sf_vc_se,wrfrm,vstox,vfmovfv,vfncvtftoi,vimul,vsalu,vmov,vgmul,vgather,vldux,vlsegdox,vfncvtftof,vimovvx,vghsh,vldm,vldox,vfwcvtftoi,vlds,vfrecp,vaeskf2,vsts,vfredu,vicalu,vaalu,vfwmaccbf16,vrev8,vfwredo,vlsegdux,viwred,vaeskf1"))
+  "int_pipe+sifive_p600_ialu")

@@ -105,8 +105,7 @@ public:
 };
 
 extern "C" {
-bool
-Literal__from_string (FFIString str, Literal *lit);
+bool Literal__from_string (FFIString str, Literal *lit);
 }
 } // namespace ProcMacro
 

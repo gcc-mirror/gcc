@@ -44,10 +44,10 @@ private:
   copy_impl (std::string name,
 	     const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
-  virtual void visit_struct (StructStruct &item);
-  virtual void visit_tuple (TupleStruct &item);
-  virtual void visit_enum (Enum &item);
-  virtual void visit_union (Union &item);
+  virtual void visit_struct (StructStruct &item) override;
+  virtual void visit_tuple (TupleStruct &item) override;
+  virtual void visit_enum (Enum &item) override;
+  virtual void visit_union (Union &item) override;
 };
 
 } // namespace AST

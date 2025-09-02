@@ -19,9 +19,7 @@
 #ifndef RUST_DESUGAR_QUESTION_MARK
 #define RUST_DESUGAR_QUESTION_MARK
 
-#include "rust-ast-visitor.h"
 #include "rust-expr.h"
-#include "rust-stmt.h"
 
 namespace Rust {
 namespace AST {
@@ -56,21 +54,15 @@ namespace AST {
 //   }
 // }
 // ```
-class DesugarQuestionMark : public DefaultASTVisitor
+class DesugarQuestionMark
 {
-  using DefaultASTVisitor::visit;
-
 public:
-  DesugarQuestionMark ();
-  void go (AST::Crate &);
+  static void go (std::unique_ptr<Expr> &ptr);
 
 private:
-  void desugar_and_replace (std::unique_ptr<Expr> &ptr);
-  std::unique_ptr<Expr> desugar (ErrorPropagationExpr &);
+  DesugarQuestionMark ();
 
-  void visit (AST::ExprStmt &) override;
-  void visit (AST::CallExpr &) override;
-  void visit (AST::LetStmt &) override;
+  std::unique_ptr<Expr> desugar (ErrorPropagationExpr &);
 };
 
 } // namespace AST

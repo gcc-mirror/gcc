@@ -1851,6 +1851,9 @@ synthesize_method (tree fndecl)
   finish_function_body (stmt);
   finish_function (/*inline_p=*/false);
 
+  /* Remember that we were defined in this module.  */
+  set_instantiating_module (fndecl);
+
   if (!DECL_DELETED_FN (fndecl))
     expand_or_defer_fn (fndecl);
 
@@ -1952,7 +1955,8 @@ build_trait_object (tree type, tsubst_flags_t complain)
 }
 
 /* [func.require] Build an expression of INVOKE(FN_TYPE, ARG_TYPES...).  If the
-   given is not invocable, returns error_mark_node.  */
+   given is not invocable, returns error_mark_node, unless COMPLAIN includes
+   tf_error.  */
 
 tree
 build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
@@ -2460,21 +2464,13 @@ bool
 is_trivially_xible (enum tree_code code, tree to, tree from,
 		    bool explain/*=false*/)
 {
-  /* In some cases, when producing errors is_xible_helper may not return
-     error_mark_node, so check if it looks like we've already emitted any
-     diagnostics to ensure we don't do so multiple times.  */
-  int errs = errorcount + sorrycount;
-
   tree expr = is_xible_helper (code, to, from, explain);
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
 
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
-  if (explain && errs == (errorcount + sorrycount))
-    {
-      gcc_assert (nt);
-      inform (location_of (nt), "%qE is non-trivial", nt);
-    }
+  if (explain && nt)
+    inform (location_of (nt), "%qE is non-trivial", nt);
   return !nt;
 }
 
@@ -2487,9 +2483,6 @@ bool
 is_nothrow_xible (enum tree_code code, tree to, tree from,
 		  bool explain/*=false*/)
 {
-  /* As with is_trivially_xible.  */
-  int errs = errorcount + sorrycount;
-
   ++cp_noexcept_operand;
   tree expr = is_xible_helper (code, to, from, explain);
   --cp_noexcept_operand;
@@ -2497,11 +2490,8 @@ is_nothrow_xible (enum tree_code code, tree to, tree from,
     return false;
 
   bool is_noexcept = expr_noexcept_p (expr, tf_none);
-  if (explain && errs == (errorcount + sorrycount))
-    {
-      gcc_assert (!is_noexcept);
-      explain_not_noexcept (expr);
-    }
+  if (explain && !is_noexcept)
+    explain_not_noexcept (expr);
   return is_noexcept;
 }
 
@@ -2601,12 +2591,10 @@ is_nothrow_convertible (tree from, tree to, bool explain/*=false*/)
   tree expr = is_convertible_helper (from, to, explain);
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
+
   bool is_noexcept = expr_noexcept_p (expr, tf_none);
-  if (explain)
-    {
-      gcc_assert (!is_noexcept);
-      explain_not_noexcept (expr);
-    }
+  if (explain && !is_noexcept)
+    explain_not_noexcept (expr);
   return is_noexcept;
 }
 

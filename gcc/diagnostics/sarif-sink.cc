@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/paths.h"
 #include "diagnostics/sink.h"
 #include "diagnostics/buffering.h"
+#include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 #include "json.h"
 #include "cpplib.h"
 #include "diagnostics/logical-locations.h"
@@ -704,6 +706,14 @@ sarif_serialization_format_json::write_to_file (FILE *outf,
   fprintf (outf, "\n");
 }
 
+void
+sarif_serialization_format_json::dump (FILE *outfile, int indent) const
+{
+  dumping::emit_indent (outfile, indent);
+  fprintf (outfile, "json\n");
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_formatted);
+}
+
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
    and -fdiagnostics-format=sarif-file).
 
@@ -759,6 +769,8 @@ public:
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts);
   ~sarif_builder ();
+
+  void dump (FILE *out, int indent) const;
 
   void set_printer (pretty_printer &printer)
   {
@@ -1674,7 +1686,7 @@ sarif_builder::sarif_builder (diagnostics::context &dc,
     (std::make_unique<sarif_array_of_unique<sarif_logical_location>> ()),
   m_run_graphs
     (std::make_unique<sarif_array_of_unique<sarif_graph>> ()),
-  m_tabstop (dc.m_tabstop),
+  m_tabstop (dc.get_column_options ().m_tabstop),
   m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
   m_next_result_idx (0),
@@ -1697,6 +1709,15 @@ sarif_builder::~sarif_builder ()
       sarif_artifact *artifact_obj = iter.second;
       delete artifact_obj;
     }
+}
+
+void
+sarif_builder::dump (FILE *out, int indent) const
+{
+  dumping::emit_heading (out, indent, "serialization format");
+  m_serialization_format->dump (out, indent + 2);
+  dumping::emit_heading (out, indent, "SARIF generation options");
+  m_sarif_gen_opts.dump (out, indent + 2);
 }
 
 /* Functions at which to stop the backtrace print.  It's not
@@ -1924,6 +1945,8 @@ report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
 std::unique_ptr<sarif_log>
 sarif_builder::flush_to_object ()
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::sarif_builder::flush_to_object");
   m_invocation_obj->prepare_to_flush (*this);
   std::unique_ptr<sarif_log> top
     = make_top_level_object (std::move (m_invocation_obj),
@@ -1939,6 +1962,8 @@ sarif_builder::flush_to_object ()
 void
 sarif_builder::flush_to_file (FILE *outf)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::sarif_builder::flush_to_file");
   std::unique_ptr<sarif_log> top = flush_to_object ();
   m_serialization_format->write_to_file (outf, *top);
 }
@@ -3803,11 +3828,12 @@ sarif_builder::make_artifact_content_object (const char *text) const
 void
 sarif_sink_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*ssarif_sink_buffer:\n", indent, "");
+  dumping::emit_heading (out, indent, "sarif_sink_buffer");
   int idx = 0;
   for (auto &result : m_results)
     {
-      fprintf (out, "%*sresult[%i]:\n", indent + 2, "", idx);
+      dumping::emit_indent (out, indent + 2);
+      fprintf (out, "result[%i]:\n", idx);
       result->dump (out, true);
       fprintf (out, "\n");
       ++idx;
@@ -3862,8 +3888,9 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*ssarif_sink\n", indent, "");
     sink::dump (out, indent);
+    dumping::emit_heading (out, indent, "sarif_builder");
+    m_builder.dump (out, indent + 2);
   }
 
   void
@@ -3918,6 +3945,9 @@ public:
   on_report_diagnostic (const diagnostic_info &diagnostic,
 			enum kind orig_diag_kind) final override
   {
+    DIAGNOSTICS_LOG_SCOPE_PRINTF0
+      (get_logger (),
+       "diagnostics::sarif_sink::on_report_diagnostic");
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagram &d) final override
@@ -3973,6 +4003,10 @@ public:
   {
     m_builder.flush_to_file (m_stream);
   }
+  void dump_kind (FILE *out) const override
+  {
+    fprintf (out, "sarif_stream_sink");
+  }
   bool machine_readable_stderr_p () const final override
   {
     return m_stream == stderr;
@@ -4001,12 +4035,10 @@ public:
   {
     m_builder.flush_to_file (m_output_file.get_open_file ());
   }
-  void dump (FILE *out, int indent) const override
+  void dump_kind (FILE *out) const override
   {
-    fprintf (out, "%*ssarif_file_sink: %s\n",
-	     indent, "",
+    fprintf (out, "sarif_file_sink: %s",
 	     m_output_file.get_filename ());
-    sink::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -4319,6 +4351,29 @@ sarif_generation_options::sarif_generation_options ()
 {
 }
 
+static const char *
+get_dump_string_for_sarif_version (enum sarif_version version)
+{
+  switch (version)
+    {
+    default:
+      gcc_unreachable ();
+    case sarif_version::v2_1_0:
+      return "v2_1_0";
+    case sarif_version::v2_2_prerelease_2024_08_08:
+      return "v2_2_prerelease_2024_08_08";
+    }
+}
+
+void
+sarif_generation_options::dump (FILE *outfile, int indent) const
+{
+  dumping::emit_string_field (outfile, indent,
+			      "m_version",
+			      get_dump_string_for_sarif_version (m_version));
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_state_graph);
+}
+
 #if CHECKING_P
 
 namespace selftest {
@@ -4406,10 +4461,10 @@ public:
   test_sarif_diagnostic_context (const char *main_input_filename,
 				 const sarif_generation_options &sarif_gen_opts)
   {
-    auto sink_ = std::make_unique<buffered_sink> (*this,
-						  line_table,
-						  true,
-						  sarif_gen_opts);
+    auto sink_ = std::make_unique<sarif_buffered_sink> (*this,
+							line_table,
+							true,
+							sarif_gen_opts);
     m_sink = sink_.get (); // borrowed
     init_sarif_sink (*this, std::move (sink_));
     m_sink->set_main_input_filename (main_input_filename);
@@ -4424,10 +4479,10 @@ public:
   sarif_result &get_result (size_t idx) { return m_sink->get_result (idx); }
 
 private:
-  class buffered_sink : public sarif_sink
+  class sarif_buffered_sink : public sarif_sink
   {
   public:
-    buffered_sink (context &dc,
+    sarif_buffered_sink (context &dc,
 		   const line_maps *line_maps,
 		   bool formatted,
 		   const sarif_generation_options &sarif_gen_opts)
@@ -4435,6 +4490,10 @@ private:
 		  std::make_unique<sarif_serialization_format_json> (formatted),
 		  sarif_gen_opts)
     {
+    }
+    void dump_kind (FILE *out) const final override
+    {
+      fprintf (out, "sarif_buffered_sink");
     }
     bool machine_readable_stderr_p () const final override
     {
@@ -4446,7 +4505,7 @@ private:
     }
   };
 
-  buffered_sink *m_sink; // borrowed
+  sarif_buffered_sink *m_sink; // borrowed
 };
 
 /* Test making a sarif_location for a complex rich_location
@@ -5072,6 +5131,7 @@ sarif_sink_cc_tests ()
 }
 
 } // namespace diagnostics::selftest
-} // namespace diagnostics
 
 #endif /* CHECKING_P */
+
+} // namespace diagnostics

@@ -69,7 +69,7 @@ gcov_position (void)
 
 /* Return nonzero if the error flag is set.  */
 /* We need to expose this function when compiling for gcov-tool.  */
-#ifndef IN_GCOV_TOOL
+#if !defined (IN_GCOV_TOOL) && !defined (IN_GCC)
 static inline
 #endif
 int

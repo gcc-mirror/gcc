@@ -1128,11 +1128,16 @@ handle_hardbool_attribute (tree *node, tree name, tree args,
     }
 
   tree orig = *node;
-  *node = build_duplicate_type (orig);
+  /* Drop qualifiers from the base type.  Keep attributes, so that, in the odd
+     chance attributes are applicable and relevant to the base type, if they
+     are specified first, or through a typedef, they wouldn't be dropped on the
+     floor here.  */
+  tree unqual = build_qualified_type (orig, TYPE_UNQUALIFIED);
+  *node = build_distinct_type_copy (unqual);
 
   TREE_SET_CODE (*node, ENUMERAL_TYPE);
-  ENUM_UNDERLYING_TYPE (*node) = orig;
-  TYPE_CANONICAL (*node) = TYPE_CANONICAL (orig);
+  ENUM_UNDERLYING_TYPE (*node) = unqual;
+  SET_TYPE_STRUCTURAL_EQUALITY (*node);
 
   tree false_value;
   if (args)
@@ -1191,7 +1196,13 @@ handle_hardbool_attribute (tree *node, tree name, tree args,
 
   gcc_checking_assert (!TYPE_CACHED_VALUES_P (*node));
   TYPE_VALUES (*node) = values;
-  TYPE_NAME (*node) = orig;
+  TYPE_NAME (*node) = unqual;
+
+  if (TYPE_QUALS (orig) != TYPE_QUALS (*node))
+    {
+      *node = build_qualified_type (*node, TYPE_QUALS (orig));
+      TYPE_NAME (*node) = orig;
+    }
 
   return NULL_TREE;
 }
@@ -1409,23 +1420,24 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 /* Add FLAGS for a function NODE to no_sanitize_flags in DECL_ATTRIBUTES.  */
 
 void
-add_no_sanitize_value (tree node, unsigned int flags)
+add_no_sanitize_value (tree node, sanitize_code_type flags)
 {
   tree attr = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (node));
   if (attr)
     {
-      unsigned int old_value = tree_to_uhwi (TREE_VALUE (attr));
+      sanitize_code_type old_value =
+	tree_to_sanitize_code_type (TREE_VALUE (attr));
       flags |= old_value;
 
       if (flags == old_value)
 	return;
 
-      TREE_VALUE (attr) = build_int_cst (unsigned_type_node, flags);
+      TREE_VALUE (attr) = build_int_cst (uint64_type_node, flags);
     }
   else
     DECL_ATTRIBUTES (node)
       = tree_cons (get_identifier ("no_sanitize"),
-		   build_int_cst (unsigned_type_node, flags),
+		   build_int_cst (uint64_type_node, flags),
 		   DECL_ATTRIBUTES (node));
 }
 
@@ -1436,7 +1448,7 @@ static tree
 handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
-  unsigned int flags = 0;
+  sanitize_code_type flags = 0;
   *no_add_attrs = true;
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -1473,7 +1485,7 @@ handle_no_sanitize_address_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_ADDRESS);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_ADDRESS);
 
   return NULL_TREE;
 }
@@ -1489,7 +1501,7 @@ handle_no_sanitize_thread_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_THREAD);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_THREAD);
 
   return NULL_TREE;
 }
@@ -1506,7 +1518,7 @@ handle_no_address_safety_analysis_attribute (tree *node, tree name, tree, int,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
-    add_no_sanitize_value (*node, SANITIZE_ADDRESS);
+    add_no_sanitize_value (*node, (sanitize_code_type) SANITIZE_ADDRESS);
 
   return NULL_TREE;
 }
@@ -2906,21 +2918,52 @@ handle_counted_by_attribute (tree *node, tree name,
 		" declaration %q+D", name, decl);
       *no_add_attrs = true;
     }
-  /* This attribute only applies to field with array type.  */
-  else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+  /* This attribute only applies to a field with array type or pointer type.  */
+  else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
+	   && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-		"%qE attribute is not allowed for a non-array field",
-		name);
+		"%qE attribute is not allowed for a non-array"
+		" or non-pointer field", name);
       *no_add_attrs = true;
     }
   /* This attribute only applies to a C99 flexible array member type.  */
-  else if (! c_flexible_array_member_type_p (TREE_TYPE (decl)))
+  else if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	   && !c_flexible_array_member_type_p (TREE_TYPE (decl)))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"%qE attribute is not allowed for a non-flexible"
 		" array member field", name);
       *no_add_attrs = true;
+    }
+  /* This attribute cannot be applied to a pointer to void type.  */
+  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == VOID_TYPE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute is not allowed for a pointer to void",
+		name);
+      *no_add_attrs = true;
+    }
+  /* This attribute cannot be applied to a pointer to function type.  */
+  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == FUNCTION_TYPE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute is not allowed for a pointer to"
+		" function", name);
+      *no_add_attrs = true;
+    }
+  /* This attribute cannot be applied to a pointer to structure or union
+     with flexible array member.  */
+  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+	   && RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
+	   && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (TREE_TYPE (decl))))
+    {
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "%qE attribute is not allowed for a pointer to"
+		  " structure or union with flexible array member", name);
+	*no_add_attrs = true;
     }
   /* The argument should be an identifier.  */
   else if (TREE_CODE (argval) != IDENTIFIER_NODE)
@@ -2930,7 +2973,8 @@ handle_counted_by_attribute (tree *node, tree name,
       *no_add_attrs = true;
     }
   /* Issue error when there is a counted_by attribute with a different
-     field as the argument for the same flexible array member field.  */
+     field as the argument for the same flexible array member or
+     pointer field.  */
   else if (old_counted_by != NULL_TREE)
     {
       tree old_fieldname = TREE_VALUE (TREE_VALUE (old_counted_by));
@@ -4120,10 +4164,11 @@ handle_argspec_attribute (tree *, tree, tree args, int, bool *)
 {
   /* Verify the attribute has one or two arguments and their kind.  */
   gcc_assert (args && TREE_CODE (TREE_VALUE (args)) == STRING_CST);
-  for (tree next = TREE_CHAIN (args); next; next = TREE_CHAIN (next))
+  if (TREE_CHAIN (args))
     {
-      tree val = TREE_VALUE (next);
-      gcc_assert (DECL_P (val) || EXPR_P (val));
+      tree val = TREE_VALUE (TREE_CHAIN (args));
+      gcc_assert (!TREE_CHAIN (TREE_CHAIN (args)));
+      gcc_assert (TYPE_P (val));
     }
   return NULL_TREE;
 }
@@ -5736,6 +5781,71 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
   return NULL_TREE;
 }
 
+
+/* This function builds a string which is concatenated to SPEC and returns
+   list of variably bounds corresponding to an array/VLA parameter with
+   type TYPE.  The string consists of one dollar symbol for each specified
+   variable bound, one asterisk for each unspecified variable bound,
+   a space for an array of unknown size (only possibly for the outermost),
+   and a zero for a zero-sized array.
+
+   The chainof variable bounds starts with the most significant bound.
+   For example, the TYPE T[2][m][3][n] will produce "$$" and (m, (n, nil)).  */
+
+static tree
+build_arg_spec (tree type, std::string *spec)
+{
+  while (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return NULL_TREE;
+
+  tree list = build_arg_spec (TREE_TYPE (type), spec);
+
+  if (!COMPLETE_TYPE_P (type))
+    {
+      (*spec) += ' ';
+      return list;
+    }
+
+  tree mval = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+
+  if (!mval)
+    {
+     (*spec) += '0';
+     return list;
+    }
+
+  if (TREE_CODE (mval) == COMPOUND_EXPR
+      && integer_zerop (TREE_OPERAND (mval, 0))
+      && integer_zerop (TREE_OPERAND (mval, 1)))
+    {
+      (*spec) += '*';
+      return list;
+    }
+
+  if (TREE_CODE (mval) == INTEGER_CST)
+    return list;
+
+  /* A variable bound.  */
+  (*spec) += '$';
+
+  mval = array_type_nelts_top (type);
+
+  /* Remove NOP_EXPR and SAVE_EXPR to uncover possible PARM_DECLS.  */
+  if (TREE_CODE (mval) == NOP_EXPR)
+    mval = TREE_OPERAND (mval, 0);
+   if (TREE_CODE (mval) == SAVE_EXPR)
+    {
+      mval = TREE_OPERAND (mval, 0);
+      if (TREE_CODE (mval) == NOP_EXPR)
+	mval = TREE_OPERAND (mval, 0);
+    }
+
+  return tree_cons (NULL_TREE, mval, list);
+}
+
 /* Extract attribute "arg spec" from each FNDECL argument that has it,
    build a single attribute access corresponding to all the arguments,
    and return the result.  SKIP_VOIDPTR set to ignore void* parameters
@@ -5812,15 +5922,16 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       argspec = TREE_VALUE (argspec);
 
       /* The attribute arg spec string.  */
-      tree str = TREE_VALUE (argspec);
-      const char *s = TREE_STRING_POINTER (str);
+      const char *s = TREE_STRING_POINTER (TREE_VALUE (argspec));
+      bool static_p = s && (0 == strcmp("static", s));
 
       /* Collect the list of nonnull arguments which use "[static ..]".  */
-      if (s != NULL && s[0] == '[' && s[1] == 's')
+      if (static_p)
 	nnlist = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
 						      argpos + 1), nnlist);
 
-      /* Create the attribute access string from the arg spec string,
+      tree argvbs;
+      /* Create the attribute access string from the arg spec data,
 	 optionally followed by position of the VLA bound argument if
 	 it is one.  */
       {
@@ -5831,21 +5942,52 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 	    specend = 1;
 	  }
 
-	/* Format the access string in place.  */
-	int len = snprintf (NULL, 0, "%c%u%s",
-			    attr_access::mode_chars[access_deferred],
-			    argpos, s);
-	spec.resize (specend + len + 1);
-	sprintf (&spec[specend], "%c%u%s",
-		 attr_access::mode_chars[access_deferred],
-		 argpos, s);
+	spec += attr_access::mode_chars[access_deferred];
+	spec += std::to_string (argpos);
+	spec += '[';
+	tree type = TREE_VALUE (TREE_CHAIN (argspec));
+	argvbs = build_arg_spec (type, &spec);
+
+	/* Postprocess the string to bring it in the format expected
+	   by the code handling the access attribute.  First, we
+	   add 's' if the array was declared as [static ...].  */
+	if (static_p)
+	  {
+	    size_t send = spec.length();
+
+	    if (spec[send - 1] == '[')
+	      {
+		spec += 's';
+	      }
+	    else
+	      {
+		/* If there is a symbol, we need to swap the order.  */
+		spec += spec[send - 1];
+		spec[send - 1] = 's';
+	      }
+	  }
+
+	/* If the outermost bound is an integer constant, we need to write
+	   the size  if it is constant.  */
+	if (type && TYPE_DOMAIN (type))
+	  {
+	    tree mval = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	    if (mval && TREE_CODE (mval) == INTEGER_CST)
+	      {
+		char buf[40];
+		unsigned HOST_WIDE_INT n = tree_to_uhwi (mval) + 1;
+		sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
+		spec += buf;
+	      }
+	  }
+	spec += ']';
+
 	/* Trim the trailing NUL.  */
-	spec.resize (specend + len);
+	spec.resize (spec.length ());
       }
 
       /* The (optional) list of expressions denoting the VLA bounds
 	 N in ARGTYPE <arg>[Ni]...[Nj]...[Nk].  */
-      tree argvbs = TREE_CHAIN (argspec);
       if (argvbs)
 	{
 	  spec += ',';

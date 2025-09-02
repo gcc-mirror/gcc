@@ -130,7 +130,6 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info;
   STMT_VINFO_DEF_TYPE (pattern_stmt_info)
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
-  STMT_VINFO_TYPE (pattern_stmt_info) = STMT_VINFO_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
       gcc_assert (!vectype
@@ -4078,8 +4077,7 @@ vect_recog_vector_vector_shift_pattern (vec_info *vinfo,
   lhs = gimple_assign_lhs (last_stmt);
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (TREE_CODE (oprnd0) != SSA_NAME
-      || TREE_CODE (oprnd1) != SSA_NAME
+  if (TREE_CODE (oprnd1) != SSA_NAME
       || TYPE_MODE (TREE_TYPE (oprnd0)) == TYPE_MODE (TREE_TYPE (oprnd1))
       || !INTEGRAL_TYPE_P (TREE_TYPE (oprnd0))
       || !type_has_mode_precision_p (TREE_TYPE (oprnd1))
@@ -4314,6 +4312,42 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
 				       hwval, &alg, &variant, MAX_COST);
   if (!possible)
     return NULL;
+
+  if (vect_is_reduction (stmt_vinfo))
+    {
+      int op_uses = alg.op[0] != alg_zero;
+      for (int i = 1; i < alg.ops; i++)
+	switch (alg.op[i])
+	  {
+	  case alg_add_t_m2:
+	  case alg_sub_t_m2:
+	    if (synth_shift_p && alg.log[i])
+	      return NULL;
+	    else
+	      op_uses++;
+	    break;
+	  case alg_add_t2_m:
+	  case alg_sub_t2_m:
+	    op_uses++;
+	    /* Fallthru.  */
+	  case alg_shift:
+	    if (synth_shift_p && alg.log[i])
+	      return NULL;
+	    break;
+	  case alg_add_factor:
+	  case alg_sub_factor:
+	    return NULL;
+	  default:
+	    break;
+	  }
+      if (variant == add_variant)
+	op_uses++;
+      /* When we'll synthesize more than a single use of the reduction
+	 operand the reduction constraints are violated.  Avoid this
+	 situation.  */
+      if (op_uses > 1)
+	return NULL;
+    }
 
   if (!target_supports_mult_synth_alg (&alg, variant, vectype, synth_shift_p))
     return NULL;
@@ -4819,7 +4853,9 @@ vect_recog_divmod_pattern (vec_info *vinfo,
   tree q, cst;
   int prec;
 
-  if (!is_gimple_assign (last_stmt))
+  if (!is_gimple_assign (last_stmt)
+      /* The pattern will disrupt the reduction chain with multiple uses.  */
+      || vect_is_reduction (stmt_vinfo))
     return NULL;
 
   rhs_code = gimple_assign_rhs_code (last_stmt);
@@ -6003,16 +6039,17 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
      This is null if the operation is unconditional.  */
   tree mask = vect_get_load_store_mask (stmt_info);
 
+  /* DR analysis nailed down the vector type for the access.  */
+  tree gs_vectype = STMT_VINFO_VECTYPE (stmt_info);
+
   /* Make sure that the target supports an appropriate internal
      function for the gather/scatter operation.  */
   gather_scatter_info gs_info;
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info)
+  if (!vect_check_gather_scatter (stmt_info, gs_vectype, loop_vinfo, &gs_info)
       || gs_info.ifn == IFN_LAST)
     return NULL;
 
   /* Convert the mask to the right form.  */
-  tree gs_vectype = get_vectype_for_scalar_type (loop_vinfo,
-						 gs_info.element_type);
   if (mask)
     mask = vect_convert_mask_for_vectype (mask, gs_vectype, stmt_info,
 					  loop_vinfo);
@@ -6074,8 +6111,7 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   stmt_vec_info pattern_stmt_info = loop_vinfo->add_stmt (pattern_stmt);
   loop_vinfo->move_dr (pattern_stmt_info, stmt_info);
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  *type_out = vectype;
+  *type_out = gs_vectype;
   vect_pattern_detected ("gather/scatter pattern", stmt_info->stmt);
 
   return pattern_stmt;

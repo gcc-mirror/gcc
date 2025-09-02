@@ -1129,13 +1129,16 @@ data_desc:
       break;
 
     case FMT_H:
-      if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
+      if (!(gfc_option.allow_std & GFC_STD_LEGACY))
 	{
-	  if (mode != MODE_FORMAT)
-	    format_locus.nextc += format_string_pos;
-	  gfc_warning (0, "The H format specifier at %L is"
-		       " a Fortran 95 deleted feature", &format_locus);
+	  error = G_("The H format specifier at %L is a Fortran 95 deleted"
+		     " feature");
+	  goto syntax;
 	}
+      if (mode != MODE_FORMAT)
+	format_locus.nextc += format_string_pos;
+      gfc_warning (0, "The H format specifier at %L is"
+		   " a Fortran 95 deleted feature", &format_locus);
       if (mode == MODE_STRING)
 	{
 	  format_string += value;
@@ -1144,7 +1147,7 @@ data_desc:
 	}
       else
 	{
-	  while (repeat >0)
+	  while (repeat > 0)
 	   {
 	     next_char (INSTRING_WARN);
 	     repeat -- ;

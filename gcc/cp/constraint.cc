@@ -3176,8 +3176,7 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
 	  inform (loc, "%qT is not invocable, because", t1);
 	else
 	  inform (loc, "%qT is not invocable by %qT, because", t1, t2);
-	tree call = build_invoke (t1, t2, tf_error);
-	gcc_assert (call == error_mark_node);
+	build_invoke (t1, t2, tf_error);
       }
       break;
     case CPTK_IS_LAYOUT_COMPATIBLE:
@@ -3304,6 +3303,9 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       break;
     case CPTK_TYPE_ORDER:
       inform (loc, "%qT and %qT cannot be ordered", t1, t2);
+      break;
+    case CPTK_STRUCTURED_BINDING_SIZE:
+      inform (loc, "%qT is not destructurable", t1);
       break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "%qT is not a reference that binds to a temporary "

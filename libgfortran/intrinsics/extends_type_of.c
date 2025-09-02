@@ -58,7 +58,7 @@ is_extension_of (struct vtype *v1, struct vtype *v2)
 
   while (v1)
     {
-      if (v1->hash == v2->hash) return 1;
+      if (v1 == v2) return 1;
       v1 = v1->extends;
     }
   return 0;

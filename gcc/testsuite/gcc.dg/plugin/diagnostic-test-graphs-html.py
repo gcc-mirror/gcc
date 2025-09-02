@@ -26,7 +26,7 @@ def test_result_graph(html_tree):
     assert message.attrib['id'] == 'gcc-diag-0-message'
 
     assert message[0].tag == make_tag('strong')
-    assert message[0].tail == ' this is a placeholder error, with graphs '
+    assert message[0].tail == ' this is a placeholder error, with graphs'
 
     graph = diag.find("./xhtml:div[@class='gcc-directed-graph']", ns)
     assert graph is not None

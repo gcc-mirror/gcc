@@ -1,4 +1,5 @@
 // PR c++/68679
+// { dg-additional-options "-Wno-non-c-typedef-for-linkage" }
 
 typedef struct {
   struct {

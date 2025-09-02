@@ -11959,7 +11959,10 @@ current_t::udf_args_valid( const cbl_label_t *L,
     if( arg.field ) { // else omitted
       auto tgt = cbl_field_of(symbol_at(udf.linkage_fields.at(i).isym));
       if( ! valid_move(tgt, arg.field) ) {
-	auto loc = symbol_field_location(field_index(arg.field));
+	auto loc = current_location;
+        if( ! is_temporary(arg.field) ) {
+          loc = symbol_field_location(field_index(arg.field));
+        }
 	error_msg(loc, "FUNCTION %s argument %zu, '%s' cannot be passed to %s, type %s",
 		  L->name, i, arg.field->pretty_name(),
 		  tgt->pretty_name(), 3 + cbl_field_type_str(tgt->type) );

@@ -34,7 +34,7 @@ fn print_str(s: &str) {
     }
 }
 
-// { dg-final { scan-assembler {"abheyho"} } }
+// { dg-final { scan-assembler {"abheyho(\\0)?"} } }
 static S: &str = concat!("a", 'b', a!(), a!(b c d e f a!()), '\0');
 
 fn main() {

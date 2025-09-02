@@ -1,4 +1,5 @@
 // { dg-require-weak "" }
+// { dg-additional-options "-Wno-non-c-typedef-for-linkage" }
 
 typedef struct {
   // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN4Heya4blahEv" } }

@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_TYPE_CHECK_EXPR
 #define RUST_HIR_TYPE_CHECK_EXPR
 
+#include "rust-hir-expr.h"
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-visitor.h"
 #include "rust-tyty.h"
@@ -30,6 +31,11 @@ class TypeCheckExpr : private TypeCheckBase, private HIR::HIRExpressionVisitor
 {
 public:
   static TyTy::BaseType *Resolve (HIR::Expr &expr);
+
+  static TyTy::BaseType *
+  ResolveOpOverload (LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr,
+		     TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+		     HIR::PathIdentSegment specified_segment);
 
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::TupleExpr &expr) override;
@@ -46,6 +52,8 @@ public:
   void visit (HIR::IfExpr &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::BlockExpr &expr) override;
+  void visit (HIR::AnonConst &expr) override;
+  void visit (HIR::ConstBlock &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
   void visit (HIR::ArrayIndexExpr &expr) override;
   void visit (HIR::ArrayExpr &expr) override;
@@ -71,6 +79,7 @@ public:
   void visit (HIR::ClosureExpr &expr) override;
   void visit (HIR::InlineAsm &expr) override;
   void visit (HIR::LlvmInlineAsm &expr) override;
+  void visit (HIR::OffsetOf &expr) override;
 
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}
@@ -107,7 +116,8 @@ protected:
 			      TyTy::BaseType **result);
 
   HIR::PathIdentSegment resolve_possible_fn_trait_call_method_name (
-    TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associated_predicate);
+    const TyTy::BaseType &receiver,
+    TyTy::TypeBoundPredicate *associated_predicate);
 
 private:
   TypeCheckExpr ();

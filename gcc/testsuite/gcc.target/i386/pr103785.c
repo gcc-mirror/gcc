@@ -11,7 +11,10 @@ struct wrapper_t
 
 struct wrapper_t **table;
 
-__attribute__ ((weak, regparm (2)))
+#ifndef __x86_64__
+__attribute__ ((regparm (2)))
+#endif
+__attribute__ ((weak))
 void
 update (long k, long e)
 {

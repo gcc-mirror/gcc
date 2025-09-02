@@ -1,3 +1,297 @@
+2025-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121727
+	* trans-expr.cc (gfc_const_length_character_type_p): New helper
+	function.
+	(conv_dummy_value): Use it to determine if a character actual
+	argument has a constant length.  If a character actual argument is
+	constant and longer than the dummy, truncate it at compile time.
+
+2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99709
+	* trans-array.cc (structure_alloc_comps): For the case
+	COPY_ALLOC_COMP, do a deep copy of non-allocatable PDT arrays
+	Suppress the use of 'duplicate_allocatable' for PDT arrays.
+	* trans-expr.cc (conv_dummy_value): When passing to a PDT dummy
+	with the VALUE attribute, do a deep copy to ensure that
+	parameterized components are reallocated.
+
+2025-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93330
+	* interface.cc (get_sym_storage_size): Add argument size_known to
+	indicate that the storage size could be successfully determined.
+	(get_expr_storage_size): Likewise.
+	(gfc_compare_actual_formal): Use them to handle zero-sized dummy
+	and actual arguments.
+	If a character formal argument has the pointer or allocatable
+	attribute, or is an array that is not assumed or explicit size,
+	we generate an error by default unless -std=legacy is specified,
+	which falls back to just giving a warning.
+	If -Wcharacter-truncation is given, warn on a character actual
+	argument longer than the dummy.  Generate an error for too short
+	scalar character arguments if -std=f* is given instead of just a
+	warning.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82843
+	* intrinsic.cc (gfc_convert_type_warn): If the 'from_ts' is a
+	PDT instance, copy the derived type to the target ts.
+	* resolve.cc (gfc_resolve_ref): A PDT component in a component
+	reference can be that of the pdt_template. Unconditionally use
+	component of the PDT instance to ensure that the backend_decl
+	is set during translation. Likewise if a component is
+	encountered that is a PDT template type, use the component
+	parmeters to convert to the correct PDT instance.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82205
+	* decl.cc (gfc_get_pdt_instance): Copy the default initializer
+	for components that are not PDT parameters or parameterized. If
+	any component is a pointer or allocatable set the attributes
+	'pointer_comp' or 'alloc_comp' of the new PDT instance.
+	* primary.cc (gfc_match_rvalue): Implement the correct form of
+	PDT constructors with 'name (type parms)(component values)'.
+	* trans-array.cc (structure_alloc_comps): Apply scalar default
+	initializers. Array initializers await the coming change in PDT
+	representation.
+	* trans-io.cc (transfer_expr): Do not output the type parms of
+	a PDT in list directed output.
+
+2025-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/114611
+	* io.cc: Issue an error on use of the H descriptor in
+	a format with -std=f95 or higher. Otherwise, issue a
+	warning.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Error if variant
+	is the same as base.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_declare_variant): Make check for a
+	missing "match" clause unconditional.
+
+2025-08-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/121627
+	* module.cc (create_int_parameter_array):  Avoid NULL
+	pointer dereference and enhance error message.
+
+2025-08-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84122
+	PR fortran/85942
+	* parse.cc (parse_derived): PDT type parameters are not allowed
+	an explicit access specification and must appear before a
+	PRIVATE statement. If a PRIVATE statement is seen, mark all the
+	other components as PRIVATE.
+	* simplify.cc (get_kind): Convert a PDT KIND component into a
+	specification expression using the default initializer.
+
+2025-08-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* intrinsic.texi: Correct the example given for FRACTION.
+	Move the TEAM_NUMBER section to after the TANPI to align
+	with the order gven in the index.
+
+2025-08-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/107421
+	* trans-common.cc (build_common_decl): Call set_decl_tls_model
+	after processing a variable.
+	* trans-decl.cc (gfc_finish_var_decl): Likewise.
+	(get_proc_pointer_decl): Likewise.
+
+2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* resolve.cc (was_declared): Add subroutine attribute.
+
+2025-08-12  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_c_f_pointer): Check lower arg legitimacy.
+	* intrinsic.cc (add_subroutines): Teach c_f_pointer about lower arg.
+	* intrinsic.h (gfc_check_c_f_pointer): Add lower arg.
+	* intrinsic.texi: Update lower arg for c_f_pointer.
+	* trans-intrinsic.cc (conv_isocbinding_subroutine): Add logic handle lower.
+
+2025-08-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121398
+	* resolve.cc (check_pdt_args): New function.
+	(check_generic_tbp_ambiguity): Use it to ensure that args to
+	typebound procedures that do not have the same declared type as
+	the containing derived type have 'pass1/2' set to null. This
+	avoids false ambiguity errors.
+	(resolve_typebound_procedure): Do not generate a wrong type
+	error for typebound procedures marked as pass if they are of a
+	different declared type to the containing pdt_type.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_case): Fix comment typo, singe -> single.
+
+2025-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121182
+	* decl.cc (match_generic_stmt): New function based on original
+	gfc_match_generic but feeding namespace rather than typebound
+	generics.
+	(match_typebound_generic): Renamed original gfc_match_generic.
+	(gfc_match_generic): New function that selects between type
+	bound generic and other generic statements and calls one of the
+	above two functions as appropriate.
+	* parse.cc (decode_specification_statement): Allow generic
+	statements.
+	(parse_spec): Accept a generic statement in a specification
+	block.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of
+	the polymorphic associate variable's array descriptor offset.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (trans_array_constructor): Remove the update of
+	the array descriptor upper bound after array constructor
+	expansion.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_conv_expr_descriptor): Remove
+	isolated initialization of the span field before passing to
+	the function that will do the initialization.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Don't default
+	initialize the span of local pointer arrays.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of the
+	span field of the associate variable's array descriptor.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-expr.cc (gfc_trans_pointer_assignment): Remove overwrite
+	of the span after assignment of the array descriptor in the
+	polymorphic function result to non-polymorphic pointer case.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_se): Remove field use_offset.
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): Remove use_offset
+	initialization.
+	(gfc_conv_procedure_call): Likewise.
+	* trans-stmt.cc (trans_associate_var): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Use the
+	offset setter instead of generating a write to the offset.
+	(gfc_conv_array_parameter): Use the offset setter instead of
+	generating a write to the value returned by the offset getter.
+	* trans-expr.cc (gfc_trans_alloc_subarray_assign): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_descriptor_data_addr): Remove.
+	* trans-array.h (gfc_conv_descriptor_data_addr): Remove.
+	* trans-decl.cc (gfc_trans_deferred_vars): Use
+	gfc_conv_descriptor_data_get.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_finalize_tree_expr): Use the data setter instead
+	of writing to the value returned by the data getter.
+	* trans-decl.cc (gfc_trans_deferred_vars): Likewise.
+	* trans-stmt.cc (trans_associate_var): Use the data setter
+	instead of writing to the value dereferenced from the data
+	address.
+
+2025-08-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Fix closing brace in
+	a comment.
+
+2025-07-31  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/121342
+	* trans-expr.cc (gfc_conv_subref_array_arg): Remove offset
+	update.
+	(gfc_conv_procedure_call): For polymorphic functions, move the
+	scalarizer descriptor information...
+	* trans-array.cc (gfc_add_loop_ss_code): ... here, and evaluate
+	the bounds to fresh variables.
+	(get_class_info_from_ss): Remove offset update.
+	(gfc_conv_ss_startstride): Don't set a zero value for function
+	result upper bounds.
+	(late_set_loop_bounds): New.
+	(gfc_conv_loop_setup): If the bounds of a function result have
+	been set, and no other array provided loop bounds for a
+	dimension, use the function result bounds as loop bounds for
+	that dimension.
+	(gfc_set_delta): Don't skip delta setting for polymorphic
+	function results.
+
+2025-07-30  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_array_init_size): Remove the nelems
+	argument.
+	(gfc_array_allocate): Update caller.  Remove the nelems
+	argument.
+	* trans-stmt.cc (gfc_trans_allocate): Update caller.  Remove the
+	nelems variable.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_split): Argument check for SPLIT.
+	* gfortran.h (enum gfc_isym_id): Define GFC_ISYM_SPLIT.
+	* intrinsic.cc (add_subroutines): Register SPLIT intrinsic.
+	* intrinsic.h (gfc_check_split): New decl.
+	(gfc_resolve_split): Ditto.
+	* intrinsic.texi: SPLIT documentation.
+	* iresolve.cc (gfc_resolve_split): Add resolved_sym for SPLIT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Add decl for
+	SPLIT in libgfortran.
+	* trans-intrinsic.cc (conv_intrinsic_split): SPLIT codegen.
+	(gfc_conv_intrinsic_subroutine): Handle SPLIT case.
+	* trans.h (GTY): Declare gfor_fndecl_string_split{, _char4}.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_trans_assignment_1): Use the same condition
+	to set the is_alloc_lhs flag and to decide to generate
+	reallocation code.  Add explicit call to gfc_fix_class_refs
+	before evaluating the condition.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-array.cc (set_factored_descriptor_value): Also trigger
+	the saving of the previously selected reference on encountering
+	an INDIRECT_REF.  Extract the saving code...
+	(save_ref): ... here as a new function.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_get_class_from_expr): Give up class
+	container lookup on the second COMPONENT_REF after an array
+	descriptor.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc: Make diagnostics::context::m_source_printing private.
@@ -147,7 +441,7 @@
 
 2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/106135
+	PR fortran/106035
 	* decl.cc (build_sym): Emit an error if a symbol associated by
 	an IMPORT, ONLY or IMPORT, all statement is being redeclared.
 	(gfc_match_import): Parse and check the F2018 versions of the

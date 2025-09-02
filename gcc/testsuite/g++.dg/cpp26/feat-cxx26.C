@@ -395,8 +395,8 @@
 
 #ifndef __cpp_structured_bindings
 #  error "__cpp_structured_bindings"
-#elif __cpp_structured_bindings != 202403
-#  error "__cpp_structured_bindings != 202403"
+#elif __cpp_structured_bindings != 202411
+#  error "__cpp_structured_bindings != 202411"
 #endif
 
 #ifndef __cpp_template_template_args
@@ -651,4 +651,10 @@
 #  error "__cpp_trivial_relocatability"
 #elif __cpp_trivial_relocatability != 202502
 #  error "__cpp_trivial_relocatability != 202502"
+#endif
+
+#ifndef __cpp_expansion_statements
+#  error "__cpp_expansion_statements"
+#elif __cpp_expansion_statements != 202506
+#  error "__cpp_expansion_statements != 202506"
 #endif

@@ -324,6 +324,11 @@
              "store,storex34,load,atomic,atomicwait,cmpswapx2,no"
              (const_string "no"))
 
+; Identify v_cmp and v_cmpx instructions for "Manually Inserted Wait State"
+; handling.
+
+(define_attr "vcmp" "vcmp,vcmpx,no" (const_string "no"))
+
 ; Identify instructions that require "Manually Inserted Wait State" if
 ; a previous instruction writes to VCC.  The number gives the number of NOPs.
 
@@ -422,6 +427,15 @@
   [(const_int 0)]
   ""
   "s_nop\t0x0"
+  [(set_attr "type" "sopp")])
+
+; Variant of 'nop' that accepts a count argument.
+; s_nop accepts 0x0 to 0xf for 1 to 16 nops; however,
+; as %0 prints decimals, only 0 to 9 (= 1 to 10 nops) can be used.
+(define_insn "nops"
+  [(match_operand 0 "const_int_operand")]
+  ""
+  "s_nop\t0x%0"
   [(set_attr "type" "sopp")])
 
 ; FIXME: What should the value of the immediate be? Zero is disallowed, so
@@ -566,6 +580,7 @@
   [(set_attr "type" "sop1,vop1,vop3a,sopk,vopc,mult,smem,smem,smem,flat,flat,
 		     flat,flat,flat,flat")
    (set_attr "flatmemaccess" "*,*,*,*,*,*,*,*,*,load,load,store,load,load,store")
+   (set_attr "vcmp" "*,*,*,*,vcmp,*,*,*,*,*,*,*,*,*,*")
    (set_attr "exec" "*,*,none,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "length" "4,4,4,4,4,8,12,12,12,12,12,12,12,12,12")
    (set_attr "xnack" "*,*,*,*,*,*,off,on,*,off,on,*,off,on,*")
@@ -1089,6 +1104,7 @@
    s_cmp%D1\t%2, %3
    v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "sopc,vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_insn "cstoredi4_vector"
@@ -1099,6 +1115,7 @@
   ""
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_expand "cbranchdi4"
@@ -1125,6 +1142,7 @@
   ""
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
+   (set_attr "vcmp" "vcmp")
    (set_attr "length" "8")])
 
 (define_expand "cbranch<mode>4"
@@ -2165,7 +2183,7 @@
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_load%o0\t%0, %A1%O1 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
 		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
@@ -2177,7 +2195,7 @@
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_load%o0\t%0, %A1%O1 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
 		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
@@ -2224,7 +2242,7 @@
 		    : TARGET_WBINVL1_CACHE
 		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architectire unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
@@ -2232,7 +2250,7 @@
 		    : TARGET_WBINVL1_CACHE
 		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;global_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architecture unspecified");
 	  }
 	break;
@@ -2252,7 +2270,8 @@
 		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;"
+		      "flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  case 2:
@@ -2263,7 +2282,8 @@
 		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
 		    : TARGET_TARGET_SC_CACHE
-		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1\;"
+		    ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
+		      "global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  }
@@ -2347,7 +2367,7 @@
             ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
             : "error: cache architecture unspecified");
 	  case 2:
@@ -2360,7 +2380,7 @@
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
             : "error: cache architecture unspecified");
@@ -2382,7 +2402,7 @@
             ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\t0\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  case 2:
@@ -2395,7 +2415,7 @@
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
 	    : TARGET_TARGET_SC_CACHE
-            ? "buffer_inv sc1\;"
+            ? "buffer_wbl2\tsc0\;s_waitcnt\tvmcnt(0)\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
             : "error: cache architecture unspecified");

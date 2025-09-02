@@ -1,4 +1,4 @@
-/* { dg-options "-mcompact-branches=never -mno-abicalls -G4" } */
+/* { dg-options "-mcompact-branches=never -mno-mips16 -mno-abicalls -G4" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" "-O1" "-Os" } { "" } } */
 /* { dg-final { scan-assembler "beq.*\n\tlw" } } */
 /* { dg-final { scan-assembler-times "\\(foo\\)" 2 } } */
@@ -19,7 +19,7 @@ int foo;
 
 extern void t (int, int, int*);
 
-void
+NOMIPS16 void
 f (struct list **ptr)
 {
   if (gr)

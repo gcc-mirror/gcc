@@ -246,7 +246,7 @@ public:
   void visit (AttrInputLiteral &attr_input);
   void visit (AttrInputMacro &attr_input);
   void visit (MetaItemLitExpr &meta_item);
-  void visit (MetaItemPathLit &meta_item);
+  void visit (MetaItemPathExpr &meta_item);
   void visit (BorrowExpr &expr);
   void visit (DereferenceExpr &expr);
   void visit (ErrorPropagationExpr &expr);
@@ -277,6 +277,8 @@ public:
   void visit (ClosureParam &param);
   void visit (ClosureExprInner &expr);
   void visit (BlockExpr &expr);
+  void visit (AnonConst &expr);
+  void visit (ConstBlock &expr);
   void visit (ClosureExprInnerTyped &expr);
   void visit (ContinueExpr &expr);
   void visit (BreakExpr &expr);
@@ -287,6 +289,7 @@ public:
   void visit (RangeFromToInclExpr &expr);
   void visit (RangeToInclExpr &expr);
   void visit (ReturnExpr &expr);
+  void visit (TryExpr &expr);
   void visit (BoxExpr &expr);
   void visit (UnsafeBlockExpr &expr);
   void visit (LoopExpr &expr);
@@ -375,6 +378,8 @@ public:
   void visit (TuplePatternItemsRanged &tuple_items);
   void visit (TuplePattern &pattern);
   void visit (GroupedPattern &pattern);
+  void visit (SlicePatternItemsNoRest &items);
+  void visit (SlicePatternItemsHasRest &items);
   void visit (SlicePattern &pattern);
   void visit (AltPattern &pattern);
 
@@ -400,6 +405,7 @@ public:
   void visit (BareFunctionType &type);
 
   void visit (FormatArgs &fmt);
+  void visit (OffsetOf &offset_of);
 };
 } // namespace AST
 

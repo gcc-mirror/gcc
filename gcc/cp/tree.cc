@@ -1186,7 +1186,12 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       for (t = m; t; t = TYPE_NEXT_VARIANT (t))
 	if (TREE_TYPE (t) == elt_type
 	    && TYPE_NAME (t) == NULL_TREE
-	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE
+	    && (!TYPE_USER_ALIGN (t)
+		|| (TYPE_USER_ALIGN (elt_type)
+		    && TYPE_ALIGN (t) == TYPE_ALIGN (elt_type)))
+	    && !TREE_DEPRECATED (t)
+	    && !TREE_UNAVAILABLE (t))
 	  break;
       if (!t)
 	{
@@ -6394,8 +6399,8 @@ decl_linkage (tree decl)
   if (NAMESPACE_SCOPE_P (decl)
       && (!DECL_NAME (decl) || IDENTIFIER_ANON_P (DECL_NAME (decl))))
     {
-      if (TREE_CODE (decl) == TYPE_DECL && !TYPE_ANON_P (TREE_TYPE (decl)))
-	/* This entity has a typedef name for linkage purposes.  */;
+      if (TREE_CODE (decl) == TYPE_DECL && !TYPE_UNNAMED_P (TREE_TYPE (decl)))
+	/* This entity has a name for linkage purposes.  */;
       else if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_IS_BASE (decl))
 	/* Namespace-scope structured bindings can have linkage.  */;
       else if (TREE_CODE (decl) == NAMESPACE_DECL && cxx_dialect >= cxx11)

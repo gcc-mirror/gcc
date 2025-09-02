@@ -1,5 +1,5 @@
 /* { dg-do compile { target { *-*-linux* && tls_get_addr_via_got } } } */
-/* { dg-options "-fpic -fno-plt" } */
+/* { dg-options "-fpic -fno-plt -mtls-dialect=gnu" } */
 
 extern __thread int gd;
 

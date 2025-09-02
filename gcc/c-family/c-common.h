@@ -747,7 +747,7 @@ enum cxx_dialect {
   cxx26
 };
 
-/* The C++ dialect being used. C++98 is the default.  */
+/* The C++ dialect being used.  C++17 is the default.  */
 extern enum cxx_dialect cxx_dialect;
 
 /* Maximum template instantiation depth.  This limit is rather
@@ -1713,7 +1713,7 @@ extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
 
 extern int c_flt_eval_method (bool ts18661_p);
-extern void add_no_sanitize_value (tree node, unsigned int flags);
+extern void add_no_sanitize_value (tree node, sanitize_code_type flags);
 
 extern void maybe_add_include_fixit (rich_location *, const char *, bool);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,

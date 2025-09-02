@@ -576,6 +576,25 @@ HIRCompileBase::compile_constant_expr (
 }
 
 tree
+HIRCompileBase::query_compile_const_expr (Context *ctx, TyTy::BaseType *expr_ty,
+					  HIR::Expr &const_value_expr)
+{
+  HIRCompileBase c (ctx);
+
+  ctx->push_const_context ();
+
+  HirId expr_id = const_value_expr.get_mappings ().get_hirid ();
+  location_t locus = const_value_expr.get_locus ();
+  tree capacity_expr = HIRCompileBase::compile_constant_expr (
+    ctx, expr_id, expr_ty, expr_ty, Resolver::CanonicalPath::create_empty (),
+    const_value_expr, locus, locus);
+
+  ctx->pop_const_context ();
+
+  return fold_expr (capacity_expr);
+}
+
+tree
 HIRCompileBase::indirect_expression (tree expr, location_t locus)
 {
   if (expr == error_mark_node)
@@ -677,8 +696,12 @@ HIRCompileBase::compile_function (
   std::string ir_symbol_name
     = canonical_path.get () + fntype->subst_as_string ();
 
+  rust_debug_loc (locus, "--> Compiling [%s] - %s", ir_symbol_name.c_str (),
+		  fntype->get_name ().c_str ());
+
   // we don't mangle the main fn since we haven't implemented the main shim
-  bool is_main_fn = fn_name.compare ("main") == 0 && is_root_item;
+  bool is_main_fn = fn_name.compare ("main") == 0 && is_root_item
+		    && canonical_path.size () <= 2;
   if (is_main_fn)
     {
       rust_assert (!main_identifier_node);
@@ -687,14 +710,9 @@ HIRCompileBase::compile_function (
     }
   std::string asm_name = fn_name;
 
-  auto &mappings = Analysis::Mappings::get ();
-
-  if (flag_name_resolution_2_0)
-    ir_symbol_name = mappings.get_current_crate_name () + "::" + ir_symbol_name;
-
   unsigned int flags = 0;
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
-				   "" /* asm_name */, flags, locus);
+				   tl::nullopt /* asm_name */, flags, locus);
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_substitutions_defined (),
 		visibility, qualifiers, outer_attrs);
@@ -812,11 +830,12 @@ HIRCompileBase::compile_constant_item (
   // machineary that we already have. This means the best approach is to
   // make a _fake_ function with a block so it can hold onto temps then
   // use our constexpr code to fold it completely or error_mark_node
-  Backend::typed_identifier receiver;
+  Backend::typed_identifier receiver ("", NULL_TREE, UNKNOWN_LOCATION);
   tree compiled_fn_type = Backend::function_type (
     receiver, {}, {Backend::typed_identifier ("_", const_type, locus)}, NULL,
     locus);
-  tree fndecl = Backend::function (compiled_fn_type, ident, "", 0, locus);
+  tree fndecl
+    = Backend::function (compiled_fn_type, ident, tl::nullopt, 0, locus);
   TREE_READONLY (fndecl) = 1;
 
   tree enclosing_scope = NULL_TREE;

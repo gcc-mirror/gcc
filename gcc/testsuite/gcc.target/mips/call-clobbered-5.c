@@ -4,7 +4,7 @@
 
 void bar (void);
 float a;
-float
+NOMIPS16 float
 foo ()
 {
   float b = a + 1.0f;

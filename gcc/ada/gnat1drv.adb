@@ -503,11 +503,6 @@ procedure Gnat1drv is
 
          Operating_Mode := Check_Semantics;
 
-         --  Enable assertions, since they give valuable extra information for
-         --  formal verification.
-
-         Assertions_Enabled := True;
-
          --  Disable validity checks, since it generates code raising
          --  exceptions for invalid data, which confuses GNATprove. Invalid
          --  data is directly detected by GNATprove's flow analysis.

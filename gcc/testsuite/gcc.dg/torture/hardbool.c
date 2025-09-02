@@ -21,8 +21,12 @@ typedef unsigned char __attribute__ ((__hardbool__ (1, 0))) zbool;
 
 struct hs {
   hbool a[2];
+#ifndef NO_BITFIELDS
   hbool x:2;
   hbool y:5;
+#else
+  hbool x, y;
+#endif
   zbool z:1;
 };
 
@@ -56,6 +60,30 @@ int ghs(hbool s) {
 }
 
 int t = (hbool)2;
+
+hbool add1(hbool *s) {
+  return *s += 1;
+}
+
+hbool preinc(hbool *s) {
+  return ++*s;
+}
+
+hbool postinc(hbool *s) {
+  return (*s)++;
+}
+
+hbool sub1(hbool *s) {
+  return *s -= 1;
+}
+
+hbool predec(hbool *s) {
+  return --*s;
+}
+
+hbool postdec(hbool *s) {
+  return (*s)--;
+}
 
 void check_pfalse (hbool *p)
 {
@@ -114,5 +142,43 @@ int main () {
   check_vtrue (h2 (2));
   check_vtrue (h2 (1));
   check_vfalse (h2 (0));
-}
 
+  hbool v;
+  v = 0;
+  check_vtrue (add1 (&v));
+  assert (v);
+  v = 0;
+  check_vtrue (preinc (&v));
+  assert (v);
+  v = 0;
+  check_vfalse (postinc (&v));
+  assert (v);
+  v = 0;
+  check_vtrue (sub1 (&v));
+  assert (v);
+  v = 0;
+  check_vtrue (predec (&v));
+  assert (v);
+  v = 0;
+  check_vfalse (postdec (&v));
+  assert (v);
+  
+  v = 1;
+  check_vtrue (add1 (&v));
+  assert (v);
+  v = 1;
+  check_vtrue (preinc (&v));
+  assert (v);
+  v = 1;
+  check_vtrue (postinc (&v));
+  assert (v);
+  v = 1;
+  check_vfalse (sub1 (&v));
+  assert (!v);
+  v = 1;
+  check_vfalse (predec (&v));
+  assert (!v);
+  v = 1;
+  check_vtrue (postdec (&v));
+  assert (!v);
+}

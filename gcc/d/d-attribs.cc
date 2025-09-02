@@ -1406,7 +1406,7 @@ d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  unsigned int flags = 0;
+  sanitize_code_type flags = 0;
   for (; args; args = TREE_CHAIN (args))
     {
       tree id = TREE_VALUE (args);
@@ -1424,16 +1424,17 @@ d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
      merge existing flags if no_sanitize was previously handled.  */
   if (tree attr = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (*node)))
     {
-      unsigned int old_value = tree_to_uhwi (TREE_VALUE (attr));
+      sanitize_code_type old_value =
+	tree_to_sanitize_code_type (TREE_VALUE (attr));
       flags |= old_value;
 
       if (flags != old_value)
-	TREE_VALUE (attr) = build_int_cst (d_uint_type, flags);
+	TREE_VALUE (attr) = build_int_cst (d_ulong_type, flags);
     }
   else
     {
       DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("no_sanitize"),
-					   build_int_cst (d_uint_type, flags),
+					   build_int_cst (d_ulong_type, flags),
 					   DECL_ATTRIBUTES (*node));
     }
 

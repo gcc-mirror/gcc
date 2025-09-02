@@ -5,7 +5,7 @@
 module vars
   integer :: d_dim = 4
   integer :: mat_dim = 256
-  integer, parameter :: ftype = kind(0.0d0)
+  integer, parameter :: ftype = kind(0.0)
 end module
 
   use vars
@@ -34,7 +34,7 @@ end module
 
   real, allocatable :: matrix (:,:)
   type(thytype(ftype, 4, 4)) :: w
-  type(x(8,4,256)) :: q
+  type(x(ftype,ftype,256)) :: q
   class(mytype(ftype, :)), allocatable :: cz
 
   w%d = reshape ([(real(i), i = 1, d_dim*d_dim)],[d_dim,d_dim])
@@ -57,21 +57,21 @@ end module
   matrix = w%d
 
 ! TODO - for some reason, using w%d directly in the source causes a seg fault.
-  allocate (cz, source = mytype(ftype, d_dim, 0, matrix))
+  allocate (cz, source = mytype(ftype, d_dim)( 0, matrix))
   select type (cz)
     type is (mytype(ftype, *))
       if (int (sum (cz%d)) .ne. 136) STOP 11
-    type is (thytype(ftype, *, 8))
+    type is (thytype(ftype, *, ftype))
       STOP 12
   end select
   deallocate (cz)
 
-  allocate (thytype(ftype, d_dim*2, 8) :: cz)
+  allocate (thytype(ftype, d_dim*2, ftype) :: cz)
   cz%d = reshape ([(i*10, i = 1, cz%b**2)], [cz%b,cz%b])
   select type (cz)
     type is (mytype(ftype, *))
       STOP 13
-    type is (thytype(ftype, *, 8))
+    type is (thytype(ftype, *, ftype))
       if (int (sum (cz%d)) .ne. 20800) STOP 14
   end select
 

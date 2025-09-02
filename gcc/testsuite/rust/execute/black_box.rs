@@ -21,10 +21,11 @@ pub fn black_box<T>(mut dummy: T) -> T {
     dummy
 }
 
-fn main() {
+fn main() -> i32 {
     let dummy: i32 = 42;
     let result = black_box(dummy);
     unsafe {
         printf("Value is: %i\n\0" as *const str as *const i8, result);
     }
+    0
 }

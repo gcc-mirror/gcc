@@ -2355,6 +2355,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
 	 loop entry as not to be warned for.  */
       tree uninit = create_tmp_reg (TREE_TYPE (aux->tmp_var));
       suppress_warning (uninit, OPT_Wuninitialized);
+      uninit = get_or_create_ssa_default_def (cfun, uninit);
       load = gimple_build_assign (aux->tmp_var, uninit);
     }
   lim_data = init_lim_data (load);

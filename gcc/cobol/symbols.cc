@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// cppcheck-suppress-file duplicateBreak
+
 #include "config.h"
 #include <fstream> // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
@@ -500,13 +502,13 @@ symbol_elem_cmp( const void *K, const void *E )
       }
       return strcasecmp(key.name, elem.name);
     }
-    // break; // This break not needed if all options do a return.
+    break;
   case SymSpecial:
     return special_pair_cmp(k->elem.special, e->elem.special)? 0 : 1;
-    // break; // This break not needed after return.
+    break;
   case SymAlphabet:
     return strcasecmp(k->elem.alphabet.name, e->elem.alphabet.name);
-    // break; // This break not needed after return.
+    break;
   case SymFile:
     // If the key is global, so must be the found element.
     if( (cbl_file_of(k)->attr & global_e) == global_e &&
@@ -514,7 +516,7 @@ symbol_elem_cmp( const void *K, const void *E )
       return 1;
     }
     return strcasecmp(k->elem.file.name, e->elem.file.name);
-    // break; // This break not needed after return.
+    break;
   }
   assert(k->type == SymField);
 
@@ -1596,7 +1598,17 @@ extend_66_capacity( cbl_field_t *alias ) {
   symbol_elem_t *e = symbol_at(alias->parent);
   symbol_elem_t *e2 =
     reinterpret_cast<symbol_elem_t*>(const_cast<char*>(alias->data.picture));
+#ifndef __OPTIMIZE__
+#pragma message "The assert(e < e2) needs fixing"
+  // The following assert fails when valgrind is involved.  This is the known
+  // problem of expecting mmap() to put new memory maps after older memory
+  // maps; that assumption fails when valgrind is involved.
+
+  // For now I am defeating the assert when using -O0 so that I can run the
+  // NIST "make valgrind" tests.  But this should be fixed so that the
+  // symbol table index is used, not the entry locations.
   assert(e < e2);
+#endif
   alias->data.picture = NULL;
 
   capacity_of cap;

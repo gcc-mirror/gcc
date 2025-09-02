@@ -2774,12 +2774,12 @@ clear_failure_queue (void)
 
    Returns the value returned by CALLBACK.  */
 
-static void *
+template<typename fun>
+auto *
 for_each_path (const struct path_prefix *paths,
 	       bool do_multi,
 	       size_t extra_space,
-	       void *(*callback) (char *, void *),
-	       void *callback_info)
+	       fun && callback)
 {
   struct prefix_list *pl;
   const char *multi_dir = NULL;
@@ -2788,7 +2788,7 @@ for_each_path (const struct path_prefix *paths,
   const char *multi_suffix;
   const char *just_multi_suffix;
   char *path = NULL;
-  void *ret = NULL;
+  decltype (callback (nullptr)) ret;
   bool skip_multi_dir = false;
   bool skip_multi_os_dir = false;
 
@@ -2839,7 +2839,7 @@ for_each_path (const struct path_prefix *paths,
 	  if (!skip_multi_dir)
 	    {
 	      memcpy (path + len, multi_suffix, suffix_len + 1);
-	      ret = callback (path, callback_info);
+	      ret = callback (path);
 	      if (ret)
 		break;
 	    }
@@ -2850,7 +2850,7 @@ for_each_path (const struct path_prefix *paths,
 	      && pl->require_machine_suffix == 2)
 	    {
 	      memcpy (path + len, just_multi_suffix, just_suffix_len + 1);
-	      ret = callback (path, callback_info);
+	      ret = callback (path);
 	      if (ret)
 		break;
 	    }
@@ -2860,7 +2860,7 @@ for_each_path (const struct path_prefix *paths,
 	      && !pl->require_machine_suffix && multiarch_dir)
 	    {
 	      memcpy (path + len, multiarch_suffix, multiarch_len + 1);
-	      ret = callback (path, callback_info);
+	      ret = callback (path);
 	      if (ret)
 		break;
 	    }
@@ -2888,7 +2888,7 @@ for_each_path (const struct path_prefix *paths,
 	      else
 		path[len] = '\0';
 
-	      ret = callback (path, callback_info);
+	      ret = callback (path);
 	      if (ret)
 		break;
 	    }
@@ -2934,31 +2934,6 @@ for_each_path (const struct path_prefix *paths,
   return ret;
 }
 
-/* Callback for build_search_list.  Adds path to obstack being built.  */
-
-struct add_to_obstack_info {
-  struct obstack *ob;
-  bool check_dir;
-  bool first_time;
-};
-
-static void *
-add_to_obstack (char *path, void *data)
-{
-  struct add_to_obstack_info *info = (struct add_to_obstack_info *) data;
-
-  if (info->check_dir && !is_directory (path))
-    return NULL;
-
-  if (!info->first_time)
-    obstack_1grow (info->ob, PATH_SEPARATOR);
-
-  obstack_grow (info->ob, path, strlen (path));
-
-  info->first_time = false;
-  return NULL;
-}
-
 /* Add or change the value of an environment variable, outputting the
    change to standard error if in verbose mode.  */
 static void
@@ -2979,16 +2954,26 @@ static char *
 build_search_list (const struct path_prefix *paths, const char *prefix,
 		   bool check_dir, bool do_multi)
 {
-  struct add_to_obstack_info info;
-
-  info.ob = &collect_obstack;
-  info.check_dir = check_dir;
-  info.first_time = true;
+  struct obstack *const ob = &collect_obstack;
+  bool first_time = true;
 
   obstack_grow (&collect_obstack, prefix, strlen (prefix));
   obstack_1grow (&collect_obstack, '=');
 
-  for_each_path (paths, do_multi, 0, add_to_obstack, &info);
+  /* Callback adds path to obstack being built.  */
+  for_each_path (paths, do_multi, 0, [&](char *path) -> void*
+    {
+      if (check_dir && !is_directory (path))
+	return NULL;
+
+      if (!first_time)
+	obstack_1grow (ob, PATH_SEPARATOR);
+
+      obstack_grow (ob, path, strlen (path));
+
+      first_time = false;
+      return NULL;
+    });
 
   obstack_1grow (&collect_obstack, '\0');
   return XOBFINISH (&collect_obstack, char *);
@@ -3022,42 +3007,6 @@ access_check (const char *name, int mode)
   return access (name, mode);
 }
 
-/* Callback for find_a_file.  Appends the file name to the directory
-   path.  If the resulting file exists in the right mode, return the
-   full pathname to the file.  */
-
-struct file_at_path_info {
-  const char *name;
-  const char *suffix;
-  int name_len;
-  int suffix_len;
-  int mode;
-};
-
-static void *
-file_at_path (char *path, void *data)
-{
-  struct file_at_path_info *info = (struct file_at_path_info *) data;
-  size_t len = strlen (path);
-
-  memcpy (path + len, info->name, info->name_len);
-  len += info->name_len;
-
-  /* Some systems have a suffix for executable files.
-     So try appending that first.  */
-  if (info->suffix_len)
-    {
-      memcpy (path + len, info->suffix, info->suffix_len + 1);
-      if (access_check (path, info->mode) == 0)
-	return path;
-    }
-
-  path[len] = '\0';
-  if (access_check (path, info->mode) == 0)
-    return path;
-
-  return NULL;
-}
 
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
    access to check permissions.  If DO_MULTI is true, search multilib
@@ -3068,8 +3017,6 @@ static char *
 find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
 	     bool do_multi)
 {
-  struct file_at_path_info info;
-
   /* Find the filename in question (special case for absolute paths).  */
 
   if (IS_ABSOLUTE_PATH (name))
@@ -3080,15 +3027,38 @@ find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
       return NULL;
     }
 
-  info.name = name;
-  info.suffix = (mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "";
-  info.name_len = strlen (info.name);
-  info.suffix_len = strlen (info.suffix);
-  info.mode = mode;
+  const char *suffix = (mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "";
+  const int name_len = strlen (name);
+  const int suffix_len = strlen (suffix);
 
-  return (char*) for_each_path (pprefix, do_multi,
-				info.name_len + info.suffix_len,
-				file_at_path, &info);
+
+  /* Callback appends the file name to the directory path.  If the
+     resulting file exists in the right mode, return the full pathname
+     to the file.  */
+  return for_each_path (pprefix, do_multi,
+			name_len + suffix_len,
+			[=](char *path) -> char*
+    {
+      size_t len = strlen (path);
+
+      memcpy (path + len, name, name_len);
+      len += name_len;
+
+      /* Some systems have a suffix for executable files.
+	 So try appending that first.  */
+      if (suffix_len)
+	{
+	  memcpy (path + len, suffix, suffix_len + 1);
+	  if (access_check (path, mode) == 0)
+	    return path;
+	}
+
+      path[len] = '\0';
+      if (access_check (path, mode) == 0)
+	return path;
+
+      return NULL;
+    });
 }
 
 /* Specialization of find_a_file for programs that also takes into account
@@ -6008,25 +5978,26 @@ do_self_spec (const char *spec)
 
 /* Callback for processing %D and %I specs.  */
 
-struct spec_path_info {
+struct spec_path {
   const char *option;
   const char *append;
   size_t append_len;
   bool omit_relative;
   bool separate_options;
   bool realpaths;
+
+  void *operator() (char *path);
 };
 
-static void *
-spec_path (char *path, void *data)
+void *
+spec_path::operator() (char *path)
 {
-  struct spec_path_info *info = (struct spec_path_info *) data;
   size_t len = 0;
   char save = 0;
 
   /* The path must exist; we want to resolve it to the realpath so that this
      can be embedded as a runpath.  */
-  if (info->realpaths)
+  if (realpaths)
      path = lrealpath (path);
 
   /* However, if we failed to resolve it - perhaps because there was a bogus
@@ -6034,23 +6005,23 @@ spec_path (char *path, void *data)
   if (!path)
     return NULL;
 
-  if (info->omit_relative && !IS_ABSOLUTE_PATH (path))
+  if (omit_relative && !IS_ABSOLUTE_PATH (path))
     return NULL;
 
-  if (info->append_len != 0)
+  if (append_len != 0)
     {
       len = strlen (path);
-      memcpy (path + len, info->append, info->append_len + 1);
+      memcpy (path + len, append, append_len + 1);
     }
 
   if (!is_directory (path))
     return NULL;
 
-  do_spec_1 (info->option, 1, NULL);
-  if (info->separate_options)
+  do_spec_1 (option, 1, NULL);
+  if (separate_options)
     do_spec_1 (" ", 0, NULL);
 
-  if (info->append_len == 0)
+  if (append_len == 0)
     {
       len = strlen (path);
       save = path[len - 1];
@@ -6062,7 +6033,7 @@ spec_path (char *path, void *data)
   do_spec_1 (" ", 0, NULL);
 
   /* Must not damage the original path.  */
-  if (info->append_len == 0)
+  if (append_len == 0)
     path[len - 1] = save;
 
   return NULL;
@@ -6250,7 +6221,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	     that we search for startfiles.  */
 	  case 'D':
 	    {
-	      struct spec_path_info info;
+	      struct spec_path info;
 
 	      info.option = "-L";
 	      info.append_len = 0;
@@ -6267,13 +6238,13 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      info.separate_options = false;
 	      info.realpaths = false;
 
-	      for_each_path (&startfile_prefixes, true, 0, spec_path, &info);
+	      for_each_path (&startfile_prefixes, true, 0, info);
 	    }
 	    break;
 
 	  case 'P':
 	    {
-	      struct spec_path_info info;
+	      struct spec_path info;
 
 	      info.option = RUNPATH_OPTION;
 	      info.append_len = 0;
@@ -6282,7 +6253,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      /* We want to embed the actual paths that have the libraries.  */
 	      info.realpaths = true;
 
-	      for_each_path (&startfile_prefixes, true, 0, spec_path, &info);
+	      for_each_path (&startfile_prefixes, true, 0, info);
 	    }
 	    break;
 
@@ -6561,7 +6532,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	  case 'I':
 	    {
-	      struct spec_path_info info;
+	      struct spec_path info;
 
 	      if (multilib_dir)
 		{
@@ -6609,8 +6580,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      info.separate_options = true;
 	      info.realpaths = false;
 
-	      for_each_path (&include_prefixes, false, info.append_len,
-			     spec_path, &info);
+	      for_each_path (&include_prefixes, false, info.append_len, info);
 
 	      info.append = "include-fixed";
 	      if (*sysroot_hdrs_suffix_spec)
@@ -6623,14 +6593,13 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  info.append = concat (info.append, dir_separator_str,
 					multiarch_dir, NULL);
 		  info.append_len = strlen (info.append);
-		  for_each_path (&include_prefixes, false, info.append_len,
-				 spec_path, &info);
+		  for_each_path (&include_prefixes, false,
+				 info.append_len, info);
 
 		  info.append = "include-fixed";
 		}
 	      info.append_len = strlen (info.append);
-	      for_each_path (&include_prefixes, false, info.append_len,
-			     spec_path, &info);
+	      for_each_path (&include_prefixes, false, info.append_len, info);
 	    }
 	    break;
 

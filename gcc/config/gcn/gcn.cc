@@ -54,6 +54,7 @@
 #include "gimple.h"
 #include "cgraph.h"
 #include "case-cfn-macros.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -183,6 +184,11 @@ gcn_option_override (void)
 
   if (flag_sram_ecc == HSACO_ATTR_DEFAULT)
     flag_sram_ecc = gcn_devices[gcn_arch].sramecc_default;
+
+  /* TODO: This seems to produce tighter loops, but the testsuites expects it
+     to be set to '2', so I'll leave it default for now.
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_vect_partial_vector_usage, 1);  */
 }
 
 /* }}}  */
@@ -5789,44 +5795,18 @@ gcn_libc_has_function (enum function_class fn_class,
   return bsd_libc_has_function (fn_class, type);
 }
 
-/* }}}  */
-/* {{{ md_reorg pass.  */
-
-/* Identify V_CMPX from the "type" attribute;
-   note: this will also match 'v_cmp %E1 vcc'.  */
+/* Implement TARGET_VECTORIZE_PREFER_GATHER_SCATTER. */
 
 static bool
-gcn_cmpx_insn_p (attr_type type)
+gcn_prefer_gather_scatter (machine_mode ARG_UNUSED (mode),
+			   int ARG_UNUSED (scale),
+			   unsigned int ARG_UNUSED (group_size))
 {
-  switch (type)
-    {
-    case TYPE_VOPC:
-      return true;
-    case TYPE_MUBUF:
-    case TYPE_MTBUF:
-    case TYPE_FLAT:
-    case TYPE_VOP3P_MAI:
-    case TYPE_UNKNOWN:
-    case TYPE_SOP1:
-    case TYPE_SOP2:
-    case TYPE_SOPK:
-    case TYPE_SOPC:
-    case TYPE_SOPP:
-    case TYPE_SMEM:
-    case TYPE_DS:
-    case TYPE_VOP2:
-    case TYPE_VOP1:
-    case TYPE_VOP3A:
-    case TYPE_VOP3B:
-    case TYPE_VOP_SDWA:
-    case TYPE_VOP_DPP:
-    case TYPE_MULT:
-    case TYPE_VMULT:
-      return false;
-    }
-  gcc_unreachable ();
-  return false;
+  return true;
 }
+
+/* }}}  */
+/* {{{ md_reorg pass.  */
 
 /* Identify VMEM instructions from their "type" attribute.  */
 
@@ -6356,19 +6336,59 @@ gcn_md_reorg (void)
 		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
 	    nops_rqd = ivccwait - prev_insn->age;
 
+	  /* NOTE: The following condition for adding wait state exists, but
+	     GCC does not access the special registers using their SGPR#.
+	     Thus, no action is required here.  The following wait-state
+	     condition exists at least for VEGA/gfx900+ to CDNA3:
+		Mixed use of VCC: alias vs. SGPR# - v_readlane,
+		v_readfirstlane, v_cmp, v_add_*i/u, v_sub_*i/u, v_div_*scale
+		followed by VALU reads VCC as constant requires 1 wait state.
+		(As carry-in, it requires none.)
+		[VCC can be accessed by name or logical SGPR that holds it.]  */
+
+	  /* Testing indicates that CDNA3 requires an s_nop between
+	     e.g. 'v_cmp_eq_u64 vcc, v[4:5], v[8:9]' and 'v_mov_b32 v0, vcc_lo'.
+	     Thus: add it between v_cmp writing VCC and VALU read of VCC.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 1
+	      && iunit == UNIT_VECTOR
+	      && (hard_reg_set_intersect_p
+		  (depregs, reg_class_contents[(int)VCC_CONDITIONAL_REG]))
+	      && get_attr_vcmp (prev_insn->insn) == VCMP_VCMP)
+	    nops_rqd = 1 - prev_insn->age;
+
+	  /* CDNA3: VALU writes SGPR/VCC: v_readlane, v_readfirstlane, v_cmp,
+	     v_add_*i/u, v_sub_*i/u, v_div_*scale - followed by:
+	     - VALU reads SGPR as constant requires 1 waite state
+	     - VALU reads SGPR as carry-in requires no waite state
+	     - v_readlane/v_writelane reads SGPR as lane select requires 4 wait
+	       states.  */
+	  if (TARGET_CDNA3_NOPS
+	      && (prev_insn->age + nops_rqd) < 4
+	      && iunit == UNIT_VECTOR
+	      && prev_insn->unit == UNIT_VECTOR
+	      && hard_reg_set_intersect_p
+		   (depregs, reg_class_contents[(int) SGPR_SRC_REGS]))
+	    {
+	      if (get_attr_laneselect (insn) != LANESELECT_NO)
+		nops_rqd = 4 - prev_insn->age;
+	      else if ((prev_insn->age + nops_rqd) < 1)
+		nops_rqd = 1 - prev_insn->age;
+	    }
+
 	  /* CDNA3: v_cmpx followed by
 	     - V_readlane, v_readfirstlane, v_writelane requires 4 wait states
 	     - VALU reads EXEC as constant requires 2 wait states
 	     - other VALU requires no wait state  */
 	  if (TARGET_CDNA3_NOPS
 	      && (prev_insn->age + nops_rqd) < 4
-	      && gcn_cmpx_insn_p (prev_insn->type)
+	      && get_attr_vcmp (prev_insn->insn) == VCMP_VCMPX
 	      && get_attr_laneselect (insn) != LANESELECT_NO)
 	    nops_rqd = 4 - prev_insn->age;
 	  else if (TARGET_CDNA3_NOPS
 		   && (prev_insn->age + nops_rqd) < 2
 		   && iunit == UNIT_VECTOR
-		   && gcn_cmpx_insn_p (prev_insn->type)
+		   && get_attr_vcmp (prev_insn->insn) == VCMP_VCMPX
 		   && TEST_HARD_REG_BIT (ireads, EXECZ_REG))
 	    nops_rqd = 2 - prev_insn->age;
 
@@ -6436,8 +6456,8 @@ gcn_md_reorg (void)
 	}
 
       /* Insert the required number of NOPs.  */
-      for (int i = nops_rqd; i > 0; i--)
-	emit_insn_after (gen_nop (), last_insn);
+      if (nops_rqd > 0)
+	emit_insn_after (gen_nops (GEN_INT (nops_rqd-1)), last_insn);
 
       /* Age the previous instructions.  We can also ignore writes to
          registers subsequently overwritten.  */
@@ -7283,6 +7303,11 @@ print_operand_address (FILE *file, rtx mem)
    H - print second part of a multi-reg value (high-part of 2-reg value)
    J - print third part of a multi-reg value
    K - print fourth part of a multi-reg value
+   R   Print a scalar register number as an integer.  Temporary hack.
+   V - Print a vector register number as an integer.  Temporary hack.
+
+   Additionally, the standard builtin c, n, a, and l exist; see gccint's
+   "Output Templates and Operand Substitution" for details.
  */
 
 void
@@ -8131,6 +8156,8 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_vectorize_builtin_vectorized_function
 #undef  TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE gcn_vectorize_get_mask_mode
+#undef  TARGET_VECTORIZE_PREFER_GATHER_SCATTER
+#define TARGET_VECTORIZE_PREFER_GATHER_SCATTER gcn_prefer_gather_scatter
 #undef  TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE gcn_vectorize_preferred_simd_mode
 #undef  TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT

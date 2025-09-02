@@ -6798,6 +6798,11 @@ Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
 instructions followed an additional Newton-Raphson step instead of
 doing a floating-point division.
 
+@cindex @code{target("80387")} function attribute, x86
+@item 80387
+@itemx no-80387
+Generate code containing 80387 instructions for floating point.
+
 @cindex @code{target("general-regs-only")} function attribute, x86
 @item general-regs-only
 Generate code which uses only the general registers.
@@ -7135,78 +7140,6 @@ align them on any target.
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
 
-@cindex @code{counted_by} variable attribute
-@item counted_by (@var{count})
-The @code{counted_by} attribute may be attached to the C99 flexible array
-member of a structure.  It indicates that the number of the elements of the
-array is given by the field "@var{count}" in the same structure as the
-flexible array member.
-
-This attribute is available only in C for now.
-In C++ this attribute is ignored.
-
-GCC may use this information to improve detection of object size information
-for such structures and provide better results in compile-time diagnostics
-and runtime features like the array bound sanitizer and
-the @code{__builtin_dynamic_object_size}.
-
-For instance, the following code:
-
-@smallexample
-struct P @{
-  size_t count;
-  char other;
-  char array[] __attribute__ ((counted_by (count)));
-@} *p;
-@end smallexample
-
-@noindent
-specifies that the @code{array} is a flexible array member whose number of
-elements is given by the field @code{count} in the same structure.
-
-The field that represents the number of the elements should have an
-integer type.  Otherwise, the compiler reports an error and ignores
-the attribute.
-
-When the field that represents the number of the elements is assigned a
-negative integer value, the compiler treats the value as zero.
-
-An explicit @code{counted_by} annotation defines a relationship between
-two objects, @code{p->array} and @code{p->count}, and there are the
-following requirements on the relationship between this pair:
-
-@itemize @bullet
-@item
-@code{p->count} must be initialized before the first reference to
-@code{p->array};
-
-@item
-@code{p->array} has @emph{at least} @code{p->count} number of elements
-available all the time.  This relationship must hold even after any of
-these related objects are updated during the program.
-@end itemize
-
-It's the programmer's responsibility to make sure the above requirements to
-be kept all the time.  Otherwise the compiler reports warnings and
-the results of the array bound sanitizer and the
-@code{__builtin_dynamic_object_size} built-in are undefined.
-
-One important feature of the attribute is that a reference to the flexible
-array member field uses the latest value assigned to the field that
-represents the number of the elements before that reference.  For example,
-
-@smallexample
-  p->count = val1;
-  p->array[20] = 0;  // ref1 to p->array
-  p->count = val2;
-  p->array[30] = 0;  // ref2 to p->array
-@end smallexample
-
-@noindent
-In the above, @code{ref1} uses @code{val1} as the number of the elements in
-@code{p->array}, and @code{ref2} uses @code{val2} as the number of elements
-in @code{p->array}.
-
 @cindex @code{alloc_size} variable attribute
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})
@@ -7285,6 +7218,109 @@ but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Function Attributes}.
 @xref{Common Type Attributes}.
+
+@cindex @code{counted_by} variable attribute
+@item counted_by (@var{count})
+The @code{counted_by} attribute may be attached to the C99 flexible array
+member, or a pointer field of a structure.  It indicates that the number
+of the elements of the array that is held by the flexible array member
+field, or is pointed to by the pointer field, is given by the field
+"@var{count}" in the same structure as the flexible array member or the
+pointer field.
+
+This attribute is available only in C for now.
+In C++ this attribute is ignored.
+
+GCC may use this information to improve detection of object size information
+for such structures and provide better results in compile-time diagnostics
+and runtime features like the array bound sanitizer and
+the @code{__builtin_dynamic_object_size}.
+
+For instance, the following code:
+
+@smallexample
+struct P @{
+  size_t count;
+  char other;
+  char array[] __attribute__ ((counted_by (count)));
+@} *p;
+@end smallexample
+
+@noindent
+specifies that the @code{array} is a flexible array member whose number
+of elements is given by the field @code{count} in the same structure.
+
+@smallexample
+struct PP @{
+  size_t count2;
+  char other1;
+  char *array2 __attribute__ ((counted_by (count2)));
+  int other2;
+@} *pp;
+@end smallexample
+
+@noindent
+specifies that the @code{array2} is an array that is pointed by the
+pointer field, and its number of elements is given by the field
+@code{count2} in the same structure.
+
+The field that represents the number of the elements should have an
+integer type.  Otherwise, the compiler reports an error and ignores
+the attribute.
+
+When the field that represents the number of the elements is assigned a
+negative integer value, the compiler treats the value as zero.
+
+The @code{counted_by} attribute is not allowed for a pointer to @code{void},
+a pointer to function, or a pointer to a structure or union that includes
+a flexible array member.  However, it is allowed for a pointer to
+non-void incomplete structure or union types, as long as the type could
+be completed before the first reference to the pointer.
+
+An explicit @code{counted_by} annotation defines a relationship between
+two objects, @code{p->array} and @code{p->count}, and there are the
+following requirements on the relationship between this pair:
+
+@itemize @bullet
+@item
+@code{p->count} must be initialized before the first reference to
+@code{p->array};
+
+@item
+@code{p->array} has @emph{at least} @code{p->count} number of elements
+available all the time.  This relationship must hold even after any of
+these related objects are updated during the program.
+@end itemize
+
+In addition to the above requirements, there is one more requirement
+between this pair if and only if @code{p->array} is an array that is
+pointed by the pointer field:
+
+@code{p->array} and @code{p->count} can only be changed by changing the
+whole structure at the same time.
+
+It's the programmer's responsibility to make sure the above requirements to
+be kept all the time.  Otherwise the compiler reports warnings and
+the results of the array bound sanitizer and the
+@code{__builtin_dynamic_object_size} built-in are undefined.
+
+One important feature of the attribute is that a reference to the flexible
+array member field uses the latest value assigned to the field that
+represents the number of the elements before that reference.  For example,
+
+@smallexample
+  p->count = val1;
+  p->array[20] = 0;  // ref1 to p->array
+  p->count = val2;
+  p->array[30] = 0;  // ref2 to p->array
+@end smallexample
+
+@noindent
+In the above, @code{ref1} uses @code{val1} as the number of the elements in
+@code{p->array}, and @code{ref2} uses @code{val2} as the number of elements
+in @code{p->array}.
+
+Note, however, the above feature is not valid for the pointer field.
 
 @cindex @code{deprecated} variable attribute
 @item deprecated
@@ -16487,8 +16523,9 @@ invoke undefined behavior at run time.  Warnings for out of bound
 accesses for vector subscription can be enabled with
 @option{-Warray-bounds}.
 
-Vector comparison is supported with standard comparison
-operators: @code{==, !=, <, <=, >, >=}. Comparison operands can be
+Vector comparison is supported with standard comparison operators:
+@code{==}, @code{!=}, @code{<}, @code{<=}, @code{>}, and
+@code{>=}. Comparison operands can be
 vector expressions of integer-type or real-type. Comparison between
 integer-type vectors and real-type vectors are not supported.  The
 result of the comparison is a vector of the same width and number of
@@ -17216,7 +17253,8 @@ is computed.
 
 @smallexample
 struct V @{ char buf1[10]; int b; char buf2[10]; @} var;
-char *p = &var.buf1[1], *q = &var.b;
+char *p = &var.buf1[1];
+int *q = &var.b;
 
 /* Here the object p points to is var.  */
 assert (__builtin_object_size (p, 0) == sizeof (var) - 1);
@@ -30813,6 +30851,12 @@ efficient implementation of @code{std::make_integer_sequence}.
 @defbuiltin{bool __is_same (@var{type1}, @var{type2})}
 A binary type trait: @code{true} whenever the @var{type1} and
 @var{type2} refer to the same type.
+@enddefbuiltin
+
+@defbuiltin{size_t __builtin_structured_binding_size (@var{type})}
+This trait returns the structured binding size ([dcl.struct.bind])
+of @var{type}.  If a type does not have a structured binding size,
+an error is diagnosed unless it is used in SFINAE contexts.
 @enddefbuiltin
 
 

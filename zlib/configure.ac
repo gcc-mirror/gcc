@@ -1,6 +1,6 @@
 dnl Process this with autoconf to create configure
 
-AC_INIT([zlib], [1.1.4])
+AC_INIT([zlib], [1.3.1])
 AC_CONFIG_SRCDIR([zlib.h])
 
 if test -n "${with_target_subdir}"; then

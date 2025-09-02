@@ -289,7 +289,8 @@ CfgStrip::maybe_strip_generic_args (AST::GenericArgs &args)
     {
       switch (arg.get_kind ())
 	{
-	  case AST::GenericArg::Kind::Type: {
+	case AST::GenericArg::Kind::Type:
+	  {
 	    auto &type = arg.get_type ();
 	    type.accept_vis (*this);
 
@@ -298,7 +299,8 @@ CfgStrip::maybe_strip_generic_args (AST::GenericArgs &args)
 			     "cannot strip type in this position");
 	    break;
 	  }
-	  case AST::GenericArg::Kind::Const: {
+	case AST::GenericArg::Kind::Const:
+	  {
 	    auto &expr = arg.get_expression ();
 	    expr.accept_vis (*this);
 
@@ -1190,7 +1192,7 @@ CfgStrip::visit (AST::ClosureExprInnerTyped &expr)
     rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   // can't strip expression itself, but can strip sub-expressions
-  auto &definition_block = expr.get_definition_block ();
+  auto &definition_block = expr.get_definition_expr ();
   definition_block.accept_vis (*this);
   if (definition_block.is_marked_for_strip ())
     rust_error_at (definition_block.get_locus (),
@@ -1763,16 +1765,17 @@ CfgStrip::visit (AST::Module &module)
       return;
     }
 
-  // A loaded module might have inner attributes
-  if (module.get_kind () == AST::Module::ModuleKind::LOADED)
+  if (module.get_kind () == AST::Module::UNLOADED)
     {
-      // strip test based on inner attrs
-      expand_cfg_attrs (module.get_inner_attrs ());
-      if (fails_cfg_with_expand (module.get_inner_attrs ()))
-	{
-	  module.mark_for_strip ();
-	  return;
-	}
+      module.load_items ();
+    }
+
+  // strip test based on inner attrs
+  expand_cfg_attrs (module.get_inner_attrs ());
+  if (fails_cfg_with_expand (module.get_inner_attrs ()))
+    {
+      module.mark_for_strip ();
+      return;
     }
 
   // strip items if required
@@ -2260,12 +2263,12 @@ void
 CfgStrip::visit (AST::IdentifierPattern &pattern)
 {
   // can only strip sub-patterns of the inner pattern to bind
-  if (!pattern.has_pattern_to_bind ())
+  if (!pattern.has_subpattern ())
     return;
 
   AST::DefaultASTVisitor::visit (pattern);
 
-  auto &sub_pattern = pattern.get_pattern_to_bind ();
+  auto &sub_pattern = pattern.get_subpattern ();
   if (sub_pattern.is_marked_for_strip ())
     rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");
@@ -2475,17 +2478,41 @@ CfgStrip::visit (AST::GroupedPattern &pattern)
 }
 
 void
+CfgStrip::visit (AST::SlicePatternItemsNoRest &items)
+{
+  AST::DefaultASTVisitor::visit (items);
+  // can't strip individual patterns, only sub-patterns
+  for (auto &pattern : items.get_patterns ())
+    {
+      if (pattern->is_marked_for_strip ())
+	rust_error_at (pattern->get_locus (),
+		       "cannot strip pattern in this position");
+    }
+}
+
+void
+CfgStrip::visit (AST::SlicePatternItemsHasRest &items)
+{
+  AST::DefaultASTVisitor::visit (items);
+  // can't strip individual patterns, only sub-patterns
+  for (auto &pattern : items.get_lower_patterns ())
+    {
+      if (pattern->is_marked_for_strip ())
+	rust_error_at (pattern->get_locus (),
+		       "cannot strip pattern in this position");
+    }
+  for (auto &pattern : items.get_upper_patterns ())
+    {
+      if (pattern->is_marked_for_strip ())
+	rust_error_at (pattern->get_locus (),
+		       "cannot strip pattern in this position");
+    }
+}
+
+void
 CfgStrip::visit (AST::SlicePattern &pattern)
 {
   AST::DefaultASTVisitor::visit (pattern);
-  // can't strip individual patterns, only sub-patterns
-  for (auto &item : pattern.get_items ())
-    {
-      if (item->is_marked_for_strip ())
-	rust_error_at (item->get_locus (),
-		       "cannot strip pattern in this position");
-      // TODO: quit stripping now? or keep going?
-    }
 }
 
 void

@@ -49,13 +49,12 @@ private:
   static enum MangleVersion version;
 };
 
-std::string
-legacy_mangle_item (const TyTy::BaseType *ty,
-		    const Resolver::CanonicalPath &path);
+std::string legacy_mangle_item (const TyTy::BaseType *ty,
+				const Resolver::CanonicalPath &path);
 
-std::string
-v0_mangle_item (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
-		const Resolver::CanonicalPath &path);
+std::string v0_mangle_item (Rust::Compile::Context *ctx,
+			    const TyTy::BaseType *ty,
+			    const Resolver::CanonicalPath &path);
 
 } // namespace Compile
 } // namespace Rust

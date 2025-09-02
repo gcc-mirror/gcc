@@ -24,6 +24,7 @@
 #include "rust-ast.h"
 #include "rust-item.h"
 #include "rust-operators.h"
+#include <initializer_list>
 
 namespace Rust {
 namespace AST {
@@ -47,6 +48,19 @@ vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2)
 
   v.emplace_back (std::move (t1));
   v.emplace_back (std::move (t2));
+
+  return v;
+}
+
+template <typename T>
+std::vector<std::unique_ptr<T>>
+vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2, std::unique_ptr<T> &&t3)
+{
+  auto v = std::vector<std::unique_ptr<T>> ();
+
+  v.emplace_back (std::move (t1));
+  v.emplace_back (std::move (t2));
+  v.emplace_back (std::move (t3));
 
   return v;
 }
@@ -116,6 +130,9 @@ public:
 				    = nullptr) const;
   /* Create an empty block */
   std::unique_ptr<BlockExpr> block () const;
+
+  /* Create a block with just a tail expression */
+  std::unique_ptr<BlockExpr> block (std::unique_ptr<Expr> &&tail_expr) const;
 
   /* Create an early return expression with an optional expression */
   std::unique_ptr<Expr> return_expr (std::unique_ptr<Expr> &&to_return
@@ -254,6 +271,10 @@ public:
   std::unique_ptr<Expr> field_access (std::unique_ptr<Expr> &&instance,
 				      std::string field) const;
 
+  std::unique_ptr<StructPatternField>
+  struct_pattern_ident_pattern (std::string field_name,
+				std::unique_ptr<Pattern> &&pattern);
+
   /* Create a wildcard pattern (`_`) */
   std::unique_ptr<Pattern> wildcard () const;
   /* Create a reference pattern (`&pattern`) */
@@ -268,6 +289,7 @@ public:
   MatchArm match_arm (std::unique_ptr<Pattern> &&pattern);
   MatchCase match_case (std::unique_ptr<Pattern> &&pattern,
 			std::unique_ptr<Expr> &&expr);
+  MatchCase match_case (MatchArm &&arm, std::unique_ptr<Expr> &&expr);
 
   /* Create a loop expression */
   std::unique_ptr<Expr> loop (std::vector<std::unique_ptr<Stmt>> &&stmts);
@@ -285,10 +307,19 @@ public:
 		      std::vector<std::unique_ptr<TypeParamBound>> &&bounds,
 		      std::unique_ptr<Type> &&type = nullptr);
 
-  static std::unique_ptr<Type> new_type (Type &type);
+  /**
+   * Create a let statement with the discriminant value of a given enum
+   * instance. This helper exists since it is a common operation in a lot of the
+   * derive implementations, and it sucks to repeat all the steps every time.
+   */
+  std::unique_ptr<Stmt> discriminant_value (std::string binding_name,
+					    std::string instance = "self");
 
   static std::unique_ptr<GenericParam>
   new_lifetime_param (LifetimeParam &param);
+
+  std::unique_ptr<GenericParam>
+  new_const_param (ConstGenericParam &param) const;
 
   static std::unique_ptr<GenericParam> new_type_param (
     TypeParam &param,
@@ -298,11 +329,13 @@ public:
 
   static GenericArgs new_generic_args (GenericArgs &args);
 
-private:
-  /**
-   * Location of the generated AST nodes
-   */
+  /* Location of the generated AST nodes */
   location_t loc;
+
+private:
+  /* Some constexpr helpers for some of the builders */
+  static constexpr std::initializer_list<const char *> discriminant_value_path
+    = {"core", "intrinsics", "discriminant_value"};
 };
 
 } // namespace AST

@@ -17,8 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-early-name-resolver-2.0.h"
-#include "rust-ast-full.h"
+#include "optional.h"
+#include "options.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-map.h"
+#include "rust-item.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-attributes.h"
 #include "rust-finalize-imports-2.0.h"
@@ -62,8 +65,9 @@ Early::go (AST::Crate &crate)
   // We now proceed with resolving macros, which can be nested in almost any
   // items
   textual_scope.push ();
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+
+  visit (crate);
+
   textual_scope.pop ();
 }
 
@@ -74,8 +78,9 @@ Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
   if (!resolved.has_value ())
     return false;
 
-  auto result
-    = Analysis::Mappings::get ().lookup_ast_module (resolved->get_node_id ());
+  auto result = Analysis::Mappings::get ().lookup_glob_container (
+    resolved->get_node_id ());
+
   if (!result)
     return false;
 
@@ -249,7 +254,12 @@ Early::visit (AST::Module &module)
 void
 Early::visit (AST::MacroInvocation &invoc)
 {
-  auto path = invoc.get_invoc_data ().get_path ();
+  auto &path = invoc.get_invoc_data ().get_path ();
+
+  // We special case the `offset_of!()` macro if the flag is here, otherwise
+  // we accept whatever `offset_of!()` definition we resolved to.
+  auto resolve_offset_of
+    = flag_assume_builtin_offset_of && (path.as_string () == "offset_of");
 
   if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
     for (auto &pending_invoc : invoc.get_pending_eager_invocations ())
@@ -272,14 +282,16 @@ Early::visit (AST::MacroInvocation &invoc)
   // we won't have changed `definition` from `nullopt` if there are more
   // than one segments in our path
   if (!definition.has_value ())
-    definition = ctx.resolve_path (path.get_segments (), Namespace::Macros);
+    definition = ctx.resolve_path (path, Namespace::Macros);
 
-  // if the definition still does not have a value, then it's an error
+  // if the definition still does not have a value, then it's an error - unless
+  // we should automatically resolve offset_of!() calls
   if (!definition.has_value ())
     {
-      collect_error (Error (invoc.get_locus (), ErrorCode::E0433,
-			    "could not resolve macro invocation %qs",
-			    path.as_string ().c_str ()));
+      if (!resolve_offset_of)
+	collect_error (Error (invoc.get_locus (), ErrorCode::E0433,
+			      "could not resolve macro invocation %qs",
+			      path.as_string ().c_str ()));
       return;
     }
 
@@ -314,8 +326,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	  auto traits = attr.get_traits_to_derive ();
 	  for (auto &trait : traits)
 	    {
-	      auto definition = ctx.resolve_path (trait.get ().get_segments (),
-						  Namespace::Macros);
+	      auto definition
+		= ctx.resolve_path (trait.get (), Namespace::Macros);
 	      if (!definition.has_value ())
 		{
 		  // FIXME: Change to proper error message
@@ -337,8 +349,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		 ->lookup_builtin (name)
 		 .is_error ()) // Do not resolve builtins
 	{
-	  auto definition = ctx.resolve_path (attr.get_path ().get_segments (),
-					      Namespace::Macros);
+	  auto definition
+	    = ctx.resolve_path (attr.get_path (), Namespace::Macros);
 	  if (!definition.has_value ())
 	    {
 	      // FIXME: Change to proper error message
@@ -350,7 +362,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	  auto pm_def = mappings.lookup_attribute_proc_macro_def (
 	    definition->get_node_id ());
 
-	  rust_assert (pm_def.has_value ());
+	  if (!pm_def.has_value ())
+	    return;
 
 	  mappings.insert_attribute_proc_macro_invocation (attr.get_path (),
 							   pm_def.value ());
@@ -392,12 +405,12 @@ void
 Early::finalize_glob_import (NameResolutionContext &ctx,
 			     const Early::ImportPair &mapping)
 {
-  auto module = Analysis::Mappings::get ().lookup_ast_module (
-    mapping.data.module ().get_node_id ());
-  rust_assert (module);
+  auto container = Analysis::Mappings::get ().lookup_glob_container (
+    mapping.data.container ().get_node_id ());
 
-  GlobbingVisitor glob_visitor (ctx);
-  glob_visitor.go (module.value ());
+  rust_assert (container);
+
+  GlobbingVisitor (ctx).go (container.value ());
 }
 
 void
@@ -419,7 +432,8 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
       declared_name = rebind.get_identifier ().as_string ();
       locus = rebind.get_identifier ().get_locus ();
       break;
-      case AST::UseTreeRebind::NewBindType::NONE: {
+    case AST::UseTreeRebind::NewBindType::NONE:
+      {
 	const auto &segments = path.get_segments ();
 	// We don't want to insert `self` with `use module::self`
 	if (path.get_final_segment ().is_lower_self_seg ())

@@ -1,5 +1,5 @@
 /* { dg-do run { target { ! avr_tiny } } } */
-/* { dg-additional-options "-std=c99 -mlra" } */
+/* { dg-additional-options "-std=c99" } */
 
 __attribute__((noipa))
 void func2 (long long a1, long long a2, long b)

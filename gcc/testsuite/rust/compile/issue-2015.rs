@@ -1,4 +1,5 @@
-// { dg-additional-options "-frust-compile-until=lowering" }
+#[lang = "sized"]
+trait Sized {}
 
 macro_rules! impl_foo {
 	() => { impl Foo }

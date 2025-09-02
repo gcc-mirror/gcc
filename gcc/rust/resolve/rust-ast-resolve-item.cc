@@ -453,7 +453,8 @@ ResolveItem::visit (AST::ConstantItem &constant)
   resolve_visibility (constant.get_visibility ());
 
   ResolveType::go (constant.get_type ());
-  ResolveExpr::go (constant.get_expr (), path, cpath);
+  if (constant.has_expr ())
+    ResolveExpr::go (constant.get_expr (), path, cpath);
 }
 
 void
@@ -608,10 +609,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
     }
   else
     {
-      std::string seg_buf = "<impl " + self_cpath.get () + ">";
-      CanonicalPath seg
-	= CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
-      cpath = canonical_prefix.append (seg);
+      cpath = canonical_prefix.append (impl_type_seg);
     }
 
   // done setup paths
@@ -732,13 +730,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
     }
   else
     {
-      std::string projection_str = canonical_projection.get ();
-      std::string seg_buf
-	= "<impl " + projection_str.substr (1, projection_str.size () - 2)
-	  + ">";
-      CanonicalPath seg
-	= CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
-      cpath = canonical_prefix.append (seg);
+      cpath = canonical_prefix.append (canonical_projection);
     }
 
   // DONE setup canonical-path
@@ -838,29 +830,32 @@ ResolveItem::resolve_extern_item (AST::ExternalItem &item)
   ResolveExternItem::go (item, prefix, canonical_prefix);
 }
 
-static void
-flatten_glob (const AST::UseTreeGlob &glob, std::vector<Import> &imports);
-static void
-flatten_rebind (const AST::UseTreeRebind &glob, std::vector<Import> &imports);
-static void
-flatten_list (const AST::UseTreeList &glob, std::vector<Import> &imports);
+static void flatten_glob (const AST::UseTreeGlob &glob,
+			  std::vector<Import> &imports);
+static void flatten_rebind (const AST::UseTreeRebind &glob,
+			    std::vector<Import> &imports);
+static void flatten_list (const AST::UseTreeList &glob,
+			  std::vector<Import> &imports);
 
 static void
 flatten (const AST::UseTree *tree, std::vector<Import> &imports)
 {
   switch (tree->get_kind ())
     {
-      case AST::UseTree::Glob: {
+    case AST::UseTree::Glob:
+      {
 	auto glob = static_cast<const AST::UseTreeGlob *> (tree);
 	flatten_glob (*glob, imports);
 	break;
       }
-      case AST::UseTree::Rebind: {
+    case AST::UseTree::Rebind:
+      {
 	auto rebind = static_cast<const AST::UseTreeRebind *> (tree);
 	flatten_rebind (*rebind, imports);
 	break;
       }
-      case AST::UseTree::List: {
+    case AST::UseTree::List:
+      {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
 	flatten_list (*list, imports);
 	break;

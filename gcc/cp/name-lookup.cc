@@ -3351,8 +3351,12 @@ check_local_shadow (tree decl)
 	}
       /* Don't complain if it's from an enclosing function.  */
       else if (DECL_CONTEXT (old) == current_function_decl
-	       && TREE_CODE (decl) != PARM_DECL
-	       && TREE_CODE (old) == PARM_DECL)
+	       && ((TREE_CODE (decl) != PARM_DECL
+		    && TREE_CODE (old) == PARM_DECL)
+		   /* We should also give an error for
+		       [x=1]{ int x; }  */
+		   || (is_capture_proxy (old)
+		       && !is_normal_capture_proxy (old))))
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
@@ -3408,7 +3412,9 @@ check_local_shadow (tree decl)
 	 detected elsewhere.  */
       else if (VAR_P (old)
 	       && old_scope == current_binding_level->level_chain
-	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
+	       && (old_scope->kind == sk_cond
+		   || old_scope->kind == sk_for
+		   || old_scope->kind == sk_template_for))
 	{
 	  if (name_independent_decl_p (decl))
 	    return old;
@@ -4626,6 +4632,7 @@ cp_binding_level_descriptor (cp_binding_level *scope)
     "try-scope",
     "catch-scope",
     "for-scope",
+    "template-for-scope",
     "cond-init-scope",
     "stmt-expr-scope",
     "function-parameter-scope",
@@ -4635,7 +4642,8 @@ cp_binding_level_descriptor (cp_binding_level *scope)
     "template-parameter-scope",
     "template-explicit-spec-scope",
     "transaction-scope",
-    "openmp-scope"
+    "openmp-scope",
+    "lambda-scope"
   };
   static_assert (ARRAY_SIZE (scope_kind_names) == sk_count,
 		 "must keep names aligned with scope_kind enum");
@@ -4720,12 +4728,14 @@ begin_scope (scope_kind kind, tree entity)
     case sk_try:
     case sk_catch:
     case sk_for:
+    case sk_template_for:
     case sk_cond:
     case sk_class:
     case sk_scoped_enum:
     case sk_transaction:
     case sk_omp:
     case sk_stmt_expr:
+    case sk_lambda:
       scope->keep = keep_next_level_flag;
       break;
 
@@ -5347,7 +5357,8 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 			OVL_EXPORT_P (old.get_using ()) = true;
 		    }
 		  else if (!DECL_LANG_SPECIFIC (inner)
-			   || !DECL_MODULE_PURVIEW_P (inner))
+			   || !DECL_MODULE_PURVIEW_P (inner)
+			   || (exporting_p && !DECL_MODULE_EXPORT_P (inner)))
 		    /* We need to re-insert this function as a revealed
 		       (possibly exported) declaration.  We can't remove
 		       the existing decl because that will change any
@@ -5369,7 +5380,8 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		  found = true;
 		  if (revealing_p
 		      && (!DECL_LANG_SPECIFIC (inner)
-			  || !DECL_MODULE_PURVIEW_P (inner)))
+			  || !DECL_MODULE_PURVIEW_P (inner)
+			  || (exporting_p && !DECL_MODULE_EXPORT_P (inner))))
 		    found = false;
 		  break;
 		}

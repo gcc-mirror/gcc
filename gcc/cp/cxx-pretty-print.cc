@@ -2137,6 +2137,29 @@ cxx_pretty_printer::statement (tree t)
       pp_needs_newline (this) = true;
       break;
 
+    case TEMPLATE_FOR_STMT:
+      pp_cxx_ws_string (this, "template for");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      if (TEMPLATE_FOR_INIT_STMT (t))
+	{
+	  statement (TEMPLATE_FOR_INIT_STMT (t));
+	  pp_needs_newline (this) = false;
+	  pp_cxx_whitespace (this);
+	}
+      statement (TEMPLATE_FOR_DECL (t));
+      pp_space (this);
+      pp_needs_newline (this) = false;
+      pp_colon (this);
+      pp_space (this);
+      statement (TEMPLATE_FOR_EXPR (t));
+      pp_cxx_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (TEMPLATE_FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
       /* expression-statement:
 	    expression(opt) ;  */
     case EXPR_STMT:

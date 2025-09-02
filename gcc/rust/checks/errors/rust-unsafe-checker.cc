@@ -540,6 +540,18 @@ UnsafeChecker::visit (BlockExpr &expr)
 }
 
 void
+UnsafeChecker::visit (AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+UnsafeChecker::visit (ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
+}
+
+void
 UnsafeChecker::visit (ContinueExpr &)
 {}
 
@@ -679,6 +691,12 @@ UnsafeChecker::visit (LlvmInlineAsm &expr)
   rust_error_at (
     expr.get_locus (), ErrorCode::E0133,
     "use of inline assembly is unsafe and requires unsafe function or block");
+}
+
+void
+UnsafeChecker::visit (OffsetOf &expr)
+{
+  // nothing to do, offset_of!() is safe
 }
 
 void

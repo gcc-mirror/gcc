@@ -120,9 +120,25 @@ static int
 get_kind (bt type, gfc_expr *k, const char *name, int default_kind)
 {
   int kind;
+  gfc_expr *tmp;
 
   if (k == NULL)
     return default_kind;
+
+  if (k->expr_type == EXPR_VARIABLE
+      && k->symtree->n.sym->ts.type == BT_DERIVED
+      && k->symtree->n.sym->ts.u.derived->attr.pdt_type)
+    {
+      gfc_ref *ref;
+      for (ref = k->ref; ref; ref = ref->next)
+	if (!ref->next && ref->type == REF_COMPONENT
+	    && ref->u.c.component->attr.pdt_kind
+	    && ref->u.c.component->initializer)
+	  {
+	    tmp = gfc_copy_expr (ref->u.c.component->initializer);
+	    gfc_replace_expr (k, tmp);
+	  }
+    }
 
   if (k->expr_type != EXPR_CONSTANT)
     {

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "optional.h"
+#include "rust-common.h"
 #include "rust-hir-expr.h"
 #include "rust-system.h"
 #include "rust-tyty-call.h"
@@ -31,9 +32,9 @@
 #include "rust-hir-type-check-item.h"
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
-
-// for flag_name_resolution_2_0
-#include "options.h"
+#include "rust-compile-base.h"
+#include "rust-tyty-util.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -55,6 +56,19 @@ TypeCheckExpr::Resolve (HIR::Expr &expr)
   resolver.infered->set_ref (ref);
   resolver.context->insert_type (expr.get_mappings (), resolver.infered);
 
+  return resolver.infered;
+}
+
+TyTy::BaseType *
+TypeCheckExpr::ResolveOpOverload (LangItem::Kind lang_item_type,
+				  HIR::OperatorExprMeta expr,
+				  TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+				  HIR::PathIdentSegment specified_segment)
+{
+  TypeCheckExpr resolver;
+
+  resolver.resolve_operator_overload (lang_item_type, expr, lhs, rhs,
+				      specified_segment);
   return resolver.infered;
 }
 
@@ -373,7 +387,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   switch (expr.get_expr_type ())
     {
     case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      case ArithmeticOrLogicalOperator::RIGHT_SHIFT: {
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      {
 	TyTy::TyWithLocation from (rhs, expr.get_rhs ().get_locus ());
 	TyTy::TyWithLocation to (lhs, expr.get_lhs ().get_locus ());
 	infered = cast_site (expr.get_mappings ().get_hirid (), from, to,
@@ -381,7 +396,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       }
       break;
 
-      default: {
+    default:
+      {
 	infered = unify_site (
 	  expr.get_mappings ().get_hirid (),
 	  TyTy::TyWithLocation (lhs, expr.get_lhs ().get_locus ()),
@@ -470,7 +486,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
   // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
   switch (expr.get_expr_type ())
     {
-      case NegationOperator::NEGATE: {
+    case NegationOperator::NEGATE:
+      {
 	bool valid
 	  = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
 	    || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
@@ -492,7 +509,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
       }
       break;
 
-      case NegationOperator::NOT: {
+    case NegationOperator::NOT:
+      {
 	bool valid
 	  = (negated_expr_ty->get_kind () == TyTy::TypeKind::BOOL)
 	    || (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
@@ -643,6 +661,33 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 }
 
 void
+TypeCheckExpr::visit (HIR::AnonConst &expr)
+{
+  if (!expr.is_deferred ())
+    {
+      infered = TypeCheckExpr::Resolve (expr.get_inner_expr ());
+      return;
+    }
+
+  auto locus = expr.get_locus ();
+  auto infer_ty_var = TyTy::TyVar::get_implicit_infer_var (locus);
+
+  HirId next = mappings.get_next_hir_id ();
+  infered = new TyTy::ConstType (TyTy::ConstType::ConstKind::Infer, "",
+				 infer_ty_var.get_tyty (), error_mark_node, {},
+				 locus, next, next, {});
+
+  context->insert_implicit_type (infered->get_ref (), infered);
+  mappings.insert_location (infered->get_ref (), locus);
+}
+
+void
+TypeCheckExpr::visit (HIR::ConstBlock &expr)
+{
+  infered = TypeCheckExpr::Resolve (expr.get_const_expr ());
+}
+
+void
 TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE;
@@ -790,38 +835,45 @@ typecheck_inline_asm_operand (HIR::InlineAsm &expr)
     {
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    auto in = operand.get_in ();
 	    TypeCheckExpr::Resolve (*in.expr);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    auto out = operand.get_out ();
 	    TypeCheckExpr::Resolve (*out.expr);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    auto in_out = operand.get_in_out ();
 	    TypeCheckExpr::Resolve (*in_out.expr);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split_in_out = operand.get_split_in_out ();
 	    TypeCheckExpr::Resolve (*split_in_out.in_expr);
 	    TypeCheckExpr::Resolve (*split_in_out.out_expr);
 	    break;
 	  }
-	  case RegisterType::Const: {
+	case RegisterType::Const:
+	  {
 	    auto anon_const = operand.get_const ().anon_const;
-	    TypeCheckExpr::Resolve (*anon_const.expr);
+	    TypeCheckExpr::Resolve (anon_const.get_inner_expr ());
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    auto sym = operand.get_sym ();
 	    TypeCheckExpr::Resolve (*sym.expr);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    auto label = operand.get_label ();
 	    TypeCheckExpr::Resolve (*label.expr);
 	    break;
@@ -837,7 +889,7 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
   // NOTE: Hoise out if we have noreturn as an option
   // to return a never type
   // TODO : new keyword for memory seems sooooo shaky
-  if (expr.options.count (AST::InlineAsmOption::NORETURN) == 1)
+  if (expr.options.count (AST::InlineAsm::Option::NORETURN) == 1)
     infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   else
     infered = TyTy::TupleType::get_unit_type ();
@@ -854,6 +906,19 @@ TypeCheckExpr::visit (HIR::LlvmInlineAsm &expr)
 
   // Black box hint is unit type
   infered = TyTy::TupleType::get_unit_type ();
+}
+
+void
+TypeCheckExpr::visit (HIR::OffsetOf &expr)
+{
+  TypeCheckType::Resolve (expr.get_type ());
+
+  // FIXME: Does offset_of always return a usize?
+  TyTy::BaseType *size_ty;
+  bool ok = context->lookup_builtin ("usize", &size_ty);
+  rust_assert (ok);
+
+  infered = size_ty;
 }
 
 void
@@ -960,7 +1025,10 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   bool ok = context->lookup_builtin ("usize", &size_ty);
   rust_assert (ok);
 
-  bool maybe_simple_array_access = index_expr_ty->can_eq (size_ty, false);
+  bool maybe_simple_array_access
+    = types_compatable (TyTy::TyWithLocation (index_expr_ty),
+			TyTy::TyWithLocation (size_ty), expr.get_locus (),
+			false);
   if (maybe_simple_array_access
       && direct_array_expr_ty->get_kind () == TyTy::TypeKind::ARRAY)
     {
@@ -996,8 +1064,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   rich_location r (line_table, expr.get_locus ());
   r.add_range (expr.get_array_expr ().get_locus ());
   r.add_range (expr.get_index_expr ().get_locus ());
-  rust_error_at (r, ErrorCode::E0277,
-		 "the type %qs cannot be indexed by %qs",
+  rust_error_at (r, ErrorCode::E0277, "the type %qs cannot be indexed by %qs",
 		 array_expr_ty->get_name ().c_str (),
 		 index_expr_ty->get_name ().c_str ());
 }
@@ -1007,35 +1074,40 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 {
   auto &elements = expr.get_internal_elements ();
 
+  TyTy::BaseType *expected_ty = nullptr;
+  bool ok = context->lookup_builtin ("usize", &expected_ty);
+  rust_assert (ok);
+
   HIR::Expr *capacity_expr = nullptr;
   TyTy::BaseType *element_type = nullptr;
+  TyTy::BaseType *capacity_type = nullptr;
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::COPIED: {
+    case HIR::ArrayElems::ArrayExprType::COPIED:
+      {
 	HIR::ArrayElemsCopied &elems
 	  = static_cast<HIR::ArrayElemsCopied &> (elements);
 	element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
 
-	auto capacity_type
+	auto capacity_expr_ty
 	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
 
-	TyTy::BaseType *expected_ty = nullptr;
-	bool ok = context->lookup_builtin ("usize", &expected_ty);
-	rust_assert (ok);
 	context->insert_type (elems.get_num_copies_expr ().get_mappings (),
 			      expected_ty);
 
-	unify_site (expr.get_mappings ().get_hirid (),
-		    TyTy::TyWithLocation (expected_ty),
-		    TyTy::TyWithLocation (
-		      capacity_type, elems.get_num_copies_expr ().get_locus ()),
-		    expr.get_locus ());
+	unify_site (
+	  expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (expected_ty),
+	  TyTy::TyWithLocation (capacity_expr_ty,
+				elems.get_num_copies_expr ().get_locus ()),
+	  expr.get_locus ());
 
 	capacity_expr = &elems.get_num_copies_expr ();
+	capacity_type = expected_ty;
       }
       break;
 
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
 
@@ -1068,17 +1140,26 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 					      UNDEF_LOCATION, {});
 
 	// mark the type for this implicit node
-	TyTy::BaseType *expected_ty = nullptr;
-	bool ok = context->lookup_builtin ("usize", &expected_ty);
-	rust_assert (ok);
 	context->insert_type (mapping, expected_ty);
+	capacity_type = expected_ty;
       }
       break;
     }
 
-  infered = new TyTy::ArrayType (expr.get_mappings ().get_hirid (),
-				 expr.get_locus (), *capacity_expr,
-				 TyTy::TyVar (element_type->get_ref ()));
+  rust_assert (capacity_expr);
+  rust_assert (capacity_type);
+  auto ctx = Compile::Context::get ();
+  tree capacity_value
+    = Compile::HIRCompileBase::query_compile_const_expr (ctx, capacity_type,
+							 *capacity_expr);
+  HirId size_id = capacity_expr->get_mappings ().get_hirid ();
+  TyTy::ConstType *const_type
+    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "", expected_ty,
+			   capacity_value, {}, capacity_expr->get_locus (),
+			   size_id, size_id);
+  infered
+    = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), expr.get_locus (),
+			   const_type, TyTy::TyVar (element_type->get_ref ()));
 }
 
 // empty struct
@@ -1408,26 +1489,11 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   // store the expected fntype
   context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
-			Resolver2_0::Definition (resolved_node_id));
-    }
-  // set up the resolved name on the path
-  else if (resolver->get_name_scope ().decl_was_declared_here (
-	     resolved_node_id))
-    {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
-  else
-    {
-      resolver->insert_resolved_misc (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
+  nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		    Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   infered = function_ret_tyty;
@@ -1702,16 +1768,22 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 {
-  TypeCheckContextItem current_context = context->peek_context ();
-  TyTy::FnType *current_context_fndecl = current_context.get_context_type ();
-
+  std::vector<TyTy::SubstitutionParamMapping> subst_refs;
   HirId ref = expr.get_mappings ().get_hirid ();
   DefId id = expr.get_mappings ().get_defid ();
-  RustIdent ident{current_context_fndecl->get_ident ().path, expr.get_locus ()};
+  RustIdent ident{CanonicalPath::create_empty (), expr.get_locus ()};
 
-  // get from parent context
-  std::vector<TyTy::SubstitutionParamMapping> subst_refs
-    = current_context_fndecl->clone_substs ();
+  if (context->have_function_context ())
+    {
+      TypeCheckContextItem current_context = context->peek_context ();
+      TyTy::FnType *current_context_fndecl
+	= current_context.get_context_type ();
+
+      ident = RustIdent{current_context_fndecl->get_ident ().path,
+			expr.get_locus ()};
+
+      subst_refs = current_context_fndecl->clone_substs ();
+    }
 
   std::vector<TyTy::TyVar> parameter_types;
   for (auto &p : expr.get_params ())
@@ -1763,19 +1835,12 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   // Resolve closure captures
 
   std::set<NodeId> captures;
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      if (auto opt_cap = nr_ctx.mappings.lookup_captures (closure_node_id))
-	for (auto cap : opt_cap.value ())
-	  captures.insert (cap);
-    }
-  else
-    {
-      captures = resolver->get_captures (closure_node_id);
-    }
+  if (auto opt_cap = nr_ctx.mappings.lookup_captures (closure_node_id))
+    for (auto cap : opt_cap.value ())
+      captures.insert (cap);
 
   infered = new TyTy::ClosureType (ref, id, ident, closure_args, result_type,
 				   subst_refs, captures);
@@ -1826,7 +1891,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   args.get_type_args ().push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
 
   // apply the arguments
-  predicate.apply_generic_arguments (&args, false);
+  predicate.apply_generic_arguments (&args, false, false);
 
   // finally inherit the trait bound
   infered->inherit_bounds ({predicate});
@@ -1845,7 +1910,16 @@ TypeCheckExpr::resolve_operator_overload (
   // probe for the lang-item
   if (!lang_item_defined)
     return false;
+
   DefId &respective_lang_item_id = lang_item_defined.value ();
+  auto def_lookup = mappings.lookup_defid (respective_lang_item_id);
+  rust_assert (def_lookup.has_value ());
+
+  HIR::Item *def_item = def_lookup.value ();
+  rust_assert (def_item->get_item_kind () == HIR::Item::ItemKind::Trait);
+  HIR::Trait &trait = *static_cast<HIR::Trait *> (def_item);
+  TraitReference *defid_trait_reference = TraitResolver::Resolve (trait);
+  rust_assert (!defid_trait_reference->is_error ());
 
   // we might be in a static or const context and unknown is fine
   TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();
@@ -1889,15 +1963,49 @@ TypeCheckExpr::resolve_operator_overload (
 
   if (selected_candidates.size () > 1)
     {
-      // mutliple candidates
-      rich_location r (line_table, expr.get_locus ());
-      for (auto &c : resolved_candidates)
-	r.add_range (c.candidate.locus);
+      auto infer
+	= TyTy::TyVar::get_implicit_infer_var (expr.get_locus ()).get_tyty ();
+      auto trait_subst = defid_trait_reference->get_trait_substs ();
+      rust_assert (trait_subst.size () > 0);
 
-      rust_error_at (
-	r, "multiple candidates found for possible operator overload");
+      TyTy::TypeBoundPredicate pred (respective_lang_item_id, trait_subst,
+				     BoundPolarity::RegularBound,
+				     expr.get_locus ());
 
-      return false;
+      std::vector<TyTy::SubstitutionArg> mappings;
+      auto &self_param_mapping = trait_subst[0];
+      mappings.push_back (TyTy::SubstitutionArg (&self_param_mapping, lhs));
+
+      if (rhs != nullptr)
+	{
+	  rust_assert (trait_subst.size () == 2);
+	  auto &rhs_param_mapping = trait_subst[1];
+	  mappings.push_back (TyTy::SubstitutionArg (&rhs_param_mapping, lhs));
+	}
+
+      std::map<std::string, TyTy::BaseType *> binding_args;
+      binding_args["Output"] = infer;
+
+      TyTy::SubstitutionArgumentMappings arg_mappings (mappings, binding_args,
+						       TyTy::RegionParamList (
+							 trait_subst.size ()),
+						       expr.get_locus ());
+      pred.apply_argument_mappings (arg_mappings, false);
+
+      infer->inherit_bounds ({pred});
+      DeferredOpOverload defer (expr.get_mappings ().get_hirid (),
+				lang_item_type, specified_segment, pred, expr);
+      context->insert_deferred_operator_overload (std::move (defer));
+
+      if (rhs != nullptr)
+	lhs = unify_site (expr.get_mappings ().get_hirid (),
+			  TyTy::TyWithLocation (lhs),
+			  TyTy::TyWithLocation (rhs), expr.get_locus ());
+
+      infered = unify_site (expr.get_mappings ().get_hirid (),
+			    TyTy::TyWithLocation (lhs),
+			    TyTy::TyWithLocation (infer), expr.get_locus ());
+      return true;
     }
 
   // Get the adjusted self
@@ -2040,19 +2148,11 @@ TypeCheckExpr::resolve_operator_overload (
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
 
   // set up the resolved name on the path
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
-			Resolver2_0::Definition (resolved_node_id));
-    }
-  else
-    {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
-    }
+  nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		    Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   infered = function_ret_tyty;
@@ -2062,16 +2162,13 @@ TypeCheckExpr::resolve_operator_overload (
 
 HIR::PathIdentSegment
 TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
-  TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associated_predicate)
+  const TyTy::BaseType &receiver,
+  TyTy::TypeBoundPredicate *associated_predicate)
 {
-  // Question
-  // do we need to probe possible bounds here? I think not, i think when we
-  // support Fn traits they are explicitly specified
-
   // FIXME
   // the logic to map the FnTrait to their respective call trait-item is
   // duplicated over in the backend/rust-compile-expr.cc
-  for (auto &bound : receiver.get_specified_bounds ())
+  for (const auto &bound : receiver.get_specified_bounds ())
     {
       bool found_fn = bound.get_name ().compare ("Fn") == 0;
       bool found_fn_mut = bound.get_name ().compare ("FnMut") == 0;
@@ -2091,6 +2188,34 @@ TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
 	{
 	  *associated_predicate = bound;
 	  return HIR::PathIdentSegment ("call_once");
+	}
+    }
+
+  if (receiver.is<TyTy::ReferenceType> ())
+    {
+      const auto &ref = static_cast<const TyTy::ReferenceType &> (receiver);
+      const auto &underlying = *ref.get_base ();
+      for (const auto &bound : underlying.get_specified_bounds ())
+	{
+	  bool found_fn = bound.get_name ().compare ("Fn") == 0;
+	  bool found_fn_mut = bound.get_name ().compare ("FnMut") == 0;
+	  bool found_fn_once = bound.get_name ().compare ("FnOnce") == 0;
+
+	  if (found_fn)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call");
+	    }
+	  else if (found_fn_mut)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call_mut");
+	    }
+	  else if (found_fn_once)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call_once");
+	    }
 	}
     }
 
@@ -2220,32 +2345,15 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), fn);
 
   // set up the resolved name on the path
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      auto existing = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
-      if (existing)
-	rust_assert (*existing == resolved_node_id);
-      else
-	nr_ctx.map_usage (Resolver2_0::Usage (
-			    expr.get_mappings ().get_nodeid ()),
-			  Resolver2_0::Definition (resolved_node_id));
-    }
+  auto existing = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
+  if (existing)
+    rust_assert (*existing == resolved_node_id);
   else
-    {
-      NodeId existing = UNKNOWN_NODEID;
-      bool ok
-	= resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
-					  &existing);
-
-      if (ok)
-	rust_assert (existing == resolved_node_id);
-      else
-	resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-					resolved_node_id);
-    }
+    nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+		      Resolver2_0::Definition (resolved_node_id));
 
   // return the result of the function back
   *result = function_ret_tyty;

@@ -18983,7 +18983,8 @@ cmse_nonsecure_call_inline_register_clear (void)
 	      call = SET_SRC (call);
 
 	  /* Check if it is a cmse_nonsecure_call.  */
-	  unspec = XEXP (call, 0);
+	  unspec = XVECEXP (pat, 0, 2);
+
 	  if (GET_CODE (unspec) != UNSPEC
 	      || XINT (unspec, 1) != UNSPEC_NONSECURE_MEM)
 	    continue;
@@ -19010,7 +19011,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	  /* Make sure the register used to hold the function address is not
 	     cleared.  */
-	  address = RTVEC_ELT (XVEC (unspec, 0), 0);
+	  address = XEXP (call, 0);
 	  gcc_assert (MEM_P (address));
 	  gcc_assert (REG_P (XEXP (address, 0)));
 	  address_regnum = REGNO (XEXP (address, 0));

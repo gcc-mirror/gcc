@@ -1,3 +1,4 @@
 softfp_float_modes += tf
 softfp_extensions += sftf dftf
 softfp_truncations += tfsf tfdf
+softfp_extras += floatbitinttf fixtfbitint

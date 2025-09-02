@@ -40,4 +40,4 @@ f1 (int v, int w)
   foo (i, j);
 }
 
-/* { dg-final { scan-assembler ".rodata.cst16" } } */
+/* { dg-final { scan-assembler ".rodata.cst16" { xfail { sparc*-*-solaris2* && { ! gas } } } } } */

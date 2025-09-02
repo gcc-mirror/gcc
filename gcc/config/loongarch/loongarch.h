@@ -270,7 +270,9 @@ along with GCC; see the file COPYING3.  If not see
   if (GET_MODE_CLASS (MODE) == MODE_INT \
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
     { \
-      if ((MODE) == SImode) \
+      if ((MODE) == SImode \
+	  && !(TYPE && TREE_CODE (TYPE) == BITINT_TYPE \
+	       && TYPE_PRECISION (TYPE) < 32)) \
 	(UNSIGNEDP) = 0; \
       (MODE) = Pmode; \
     }
@@ -822,8 +824,6 @@ typedef struct {
   while (0)
 
 #define CASE_VECTOR_MODE Pmode
-
-#define CASE_VECTOR_SHORTEN_MODE(MIN, MAX, BODY) Pmode
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #ifndef DEFAULT_SIGNED_CHAR

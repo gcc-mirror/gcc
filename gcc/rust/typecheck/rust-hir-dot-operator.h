@@ -65,6 +65,22 @@ public:
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
+  struct impl_item_candidate
+  {
+    HIR::Function *item;
+    HIR::ImplBlock *impl_block;
+    TyTy::FnType *ty;
+  };
+
+  struct trait_item_candidate
+  {
+    const HIR::TraitItemFunc *item;
+    const HIR::Trait *trait;
+    TyTy::FnType *ty;
+    const TraitReference *reference;
+    const TraitItemReference *item_ref;
+  };
+
 protected:
   MethodResolver (bool autoderef_flag,
 		  const HIR::PathIdentSegment &segment_name);
@@ -76,6 +92,25 @@ protected:
 private:
   std::vector<Adjustment>
   append_adjustments (const std::vector<Adjustment> &adjustments) const;
+
+  std::vector<impl_item_candidate>
+  assemble_inherent_impl_candidates (const TyTy::BaseType &receiver);
+
+  void assemble_trait_impl_candidates (
+    const TyTy::BaseType &receiver,
+    std::vector<impl_item_candidate> &impl_candidates,
+    std::vector<trait_item_candidate> &trait_candidates);
+
+  bool try_select_predicate_candidates (TyTy::BaseType &receiver);
+
+  bool try_select_inherent_impl_candidates (
+    TyTy::BaseType &receiver,
+    const std::vector<impl_item_candidate> &candidates,
+    bool trait_impl_blocks_only);
+
+  bool try_select_trait_impl_candidates (
+    TyTy::BaseType &receiver,
+    const std::vector<trait_item_candidate> &candidates);
 
 private:
   // search

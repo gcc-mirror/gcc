@@ -9,7 +9,7 @@ pub trait Foo {
 pub struct Bar;
 
 impl Foo for Bar {
-    default fn foo(&self) -> bool { // { dg-warning "unused" }
+    default fn foo(&self) -> bool {
         true
     }
 }

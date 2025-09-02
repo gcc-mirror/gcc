@@ -67,7 +67,8 @@ public:
       });
 
     ResolveType::go (constant.get_type ());
-    ResolveExpr::go (constant.get_expr (), prefix, canonical_prefix);
+    if (constant.has_expr ())
+      ResolveExpr::go (constant.get_expr (), prefix, canonical_prefix);
   }
 
   void visit (AST::LetStmt &stmt) override

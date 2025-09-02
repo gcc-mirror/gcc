@@ -2878,8 +2878,7 @@ package body Freeze is
    is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
       --  Save the Ghost-related attributes to restore on exit
 
       Atype  : Entity_Id;
@@ -4813,6 +4812,8 @@ package body Freeze is
                  and then Convention (F_Type) = Convention_Ada
                  and then not Has_Warnings_Off (F_Type)
                  and then not Has_Size_Clause (F_Type)
+                 and then Present (Esize (F_Type))
+                 and then Esize (F_Type) = 8
                then
                   Error_Msg_N
                     ("& is an 8-bit Ada Boolean?x?", Formal);
@@ -8358,12 +8359,12 @@ package body Freeze is
       --  and Per-Object Expressions" will suppress the insertion, and the
       --  freeze node will be dropped on the floor.
 
-      if Saved_GM = Ignore
-        and then Ghost_Mode /= Ignore
-        and then Present (Ignored_Ghost_Region)
+      if Saved_Ghost_Config.Ghost_Mode = Ignore
+        and then Ghost_Config.Ghost_Mode /= Ignore
+        and then Present (Ghost_Config.Ignored_Ghost_Region)
       then
          Insert_Actions
-           (Assoc_Node   => Ignored_Ghost_Region,
+           (Assoc_Node   => Ghost_Config.Ignored_Ghost_Region,
             Ins_Actions  => Result,
             Spec_Expr_OK => True);
 
@@ -8371,7 +8372,7 @@ package body Freeze is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_Ghost_Region (Saved_Ghost_Config);
 
       return Result;
    end Freeze_Entity;

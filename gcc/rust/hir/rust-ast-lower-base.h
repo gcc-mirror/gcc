@@ -20,6 +20,8 @@
 #define RUST_AST_LOWER_BASE
 
 #include "rust-ast.h"
+#include "rust-builtin-ast-nodes.h"
+#include "rust-expr.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -63,6 +65,9 @@ public:
   // Special casing nodes that should never reach the HIR lowering stage
   virtual void visit (AST::MacroInvocation &) override final;
   virtual void visit (AST::ErrorPropagationExpr &) override final;
+  virtual void visit (AST::ForLoopExpr &) override final;
+  virtual void visit (AST::TryExpr &) override final;
+  virtual void visit (AST::WhileLetLoopExpr &) override final;
 
   // visitor impl
   // rust-ast.h
@@ -101,7 +106,7 @@ public:
   virtual void visit (AST::AttrInputLiteral &attr_input) override;
   virtual void visit (AST::AttrInputMacro &attr_input) override;
   virtual void visit (AST::MetaItemLitExpr &meta_item) override;
-  virtual void visit (AST::MetaItemPathLit &meta_item) override;
+  virtual void visit (AST::MetaItemPathExpr &meta_item) override;
   virtual void visit (AST::BorrowExpr &expr) override;
   virtual void visit (AST::DereferenceExpr &expr) override;
   virtual void visit (AST::NegationExpr &expr) override;
@@ -131,6 +136,8 @@ public:
   virtual void visit (AST::FieldAccessExpr &expr) override;
   virtual void visit (AST::ClosureExprInner &expr) override;
   virtual void visit (AST::BlockExpr &expr) override;
+  virtual void visit (AST::AnonConst &expr) override;
+  virtual void visit (AST::ConstBlock &expr) override;
   virtual void visit (AST::ClosureExprInnerTyped &expr) override;
   virtual void visit (AST::ContinueExpr &expr) override;
   virtual void visit (AST::BreakExpr &expr) override;
@@ -145,8 +152,6 @@ public:
   virtual void visit (AST::UnsafeBlockExpr &expr) override;
   virtual void visit (AST::LoopExpr &expr) override;
   virtual void visit (AST::WhileLoopExpr &expr) override;
-  virtual void visit (AST::WhileLetLoopExpr &expr) override;
-  virtual void visit (AST::ForLoopExpr &expr) override;
   virtual void visit (AST::IfExpr &expr) override;
   virtual void visit (AST::IfExprConseqElse &expr) override;
   virtual void visit (AST::IfLetExpr &expr) override;
@@ -231,6 +236,8 @@ public:
   virtual void visit (AST::TuplePatternItemsRanged &tuple_items) override;
   virtual void visit (AST::TuplePattern &pattern) override;
   virtual void visit (AST::GroupedPattern &pattern) override;
+  virtual void visit (AST::SlicePatternItemsNoRest &items) override;
+  virtual void visit (AST::SlicePatternItemsHasRest &items) override;
   virtual void visit (AST::SlicePattern &pattern) override;
   virtual void visit (AST::AltPattern &pattern) override;
 
@@ -259,6 +266,7 @@ public:
   virtual void visit (AST::SelfParam &param) override;
 
   virtual void visit (AST::FormatArgs &fmt) override;
+  virtual void visit (AST::OffsetOf &offset_of) override;
 
 protected:
   ASTLoweringBase ()

@@ -12,7 +12,7 @@
 
 char tag_of (void * x) { return ((unsigned long long)x) >> 56; }
 
-int __attribute__ ((noinline))
+int __attribute__ ((noinline,noclone))
 using_alloca (int num)
 {
   int retval = 0;
@@ -25,7 +25,7 @@ using_alloca (int num)
   return retval;
 }
 
-int __attribute__ ((noinline))
+int __attribute__ ((noinline,noclone))
 using_vararray (int num)
 {
   int retval = 0;

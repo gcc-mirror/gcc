@@ -14,7 +14,5 @@ void cond1(int cond, int x, int y, int z)
   sink2(x, y);
 }
 
-/* { dg-final { scan-assembler-times "csel\tw0, w0, w1" 1 } } */
-/* { dg-final { scan-assembler-times "csel\tw1, w3, w2" 1 } } */
-
+/* { dg-final { scan-assembler-times "csel" 2 } } */
 /* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_convert_multiple_sets" 1 "ce1" } } */

@@ -22,6 +22,8 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+// [time]
+
 /** @file include/chrono
  *  This is a Standard C++ Library header.
  *  @ingroup chrono
@@ -42,12 +44,16 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#define __glibcxx_want_chrono
+#define __glibcxx_want_chrono_udls
+#include <bits/version.h>
+
 #include <bits/chrono.h>
 
-#if __cplusplus >= 202002L
+#if __cpp_lib_bitops >= 201907L
 # include <bit> // __countr_zero
 #endif
-#if __cplusplus >= 202002L && _GLIBCXX_HOSTED
+#if __cpp_lib_chrono >= 201803L && _GLIBCXX_HOSTED
 # include <sstream>
 # include <string>
 # include <vector>
@@ -55,10 +61,6 @@
 # include <bits/shared_ptr.h>
 # include <bits/unique_ptr.h>
 #endif
-
-#define __glibcxx_want_chrono
-#define __glibcxx_want_chrono_udls
-#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -79,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   namespace chrono
   {
-#if __cplusplus >= 202002L
+#if __cpp_lib_chrono >= 201803L
     /// @addtogroup chrono
     /// @{
     struct local_t { };
@@ -175,13 +177,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using period                    = system_clock::period;
       using duration                  = chrono::duration<rep, period>;
       using time_point                = chrono::time_point<tai_clock>;
-      static constexpr bool is_steady = false; // XXX true for CLOCK_TAI?
+      static constexpr bool is_steady = false;
 
-      // TODO move into lib, use CLOCK_TAI on linux, add extension point.
       [[nodiscard]]
       static time_point
-      now()
-      { return from_utc(utc_clock::now()); }
+      now();  // in src/c++20/clock.cc
 
       template<typename _Duration>
 	[[nodiscard]]
@@ -215,13 +215,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using period                    = system_clock::period;
       using duration                  = chrono::duration<rep, period>;
       using time_point                = chrono::time_point<gps_clock>;
-      static constexpr bool is_steady = false; // XXX
+      static constexpr bool is_steady = false;
 
-      // TODO move into lib, add extension point.
       [[nodiscard]]
       static time_point
-      now()
-      { return from_utc(utc_clock::now()); }
+      now();  // in src/c++20/clock.cc
 
       template<typename _Duration>
 	[[nodiscard]]
@@ -3321,7 +3319,7 @@ namespace __detail
 #endif // C++20
   } // namespace chrono
 
-#if __cplusplus >= 202002L
+#if __cpp_lib_chrono >= 201803L
   inline namespace literals
   {
   inline namespace chrono_literals
@@ -3350,7 +3348,7 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#if __cplusplus >= 202002L && _GLIBCXX_HOSTED
+#if __cpp_lib_chrono >= 201803L && _GLIBCXX_HOSTED
 # include <bits/chrono_io.h>
 #endif
 

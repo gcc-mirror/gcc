@@ -30,6 +30,8 @@ struct html_generation_options
 {
   html_generation_options ();
 
+  void dump (FILE *out, int indent) const;
+
   bool m_css;
   bool m_javascript;
 

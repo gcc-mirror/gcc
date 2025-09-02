@@ -2555,6 +2555,10 @@ GLIBCXX_3.4.35 {
     _ZNSt8__detail17__wait_until_implEPKvRNS_16__wait_args_baseERKNSt6chrono8durationI[lx]St5ratioIL[lx]1EL[lx]1000000000EEEE;
     _ZNSt8__detail11__wait_args22_M_load_proxy_wait_valEPKv;
 
+    # std::chrono::gps_clock::now, tai_clock::now
+    _ZNSt6chrono9gps_clock3nowEv;
+    _ZNSt6chrono9tai_clock3nowEv;
+
     # __gnu_debug::_Safe_iterator_base and _Safe_sequence_base const
     _ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPKNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_singleEPKNS_19_Safe_sequence_baseEb;

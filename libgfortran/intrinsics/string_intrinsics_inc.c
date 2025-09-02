@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define string_verify SUFFIX(string_verify)
 #define string_trim SUFFIX(string_trim)
 #define string_minmax SUFFIX(string_minmax)
+#define string_split SUFFIX(string_split)
 #define zero_length_string SUFFIX(zero_length_string)
 #define compare_string SUFFIX(compare_string)
 
@@ -72,6 +73,10 @@ export_proto(string_trim);
 extern void string_minmax (gfc_charlen_type *, CHARTYPE **, int, int, ...);
 export_proto(string_minmax);
 
+extern gfc_charlen_type string_split (gfc_charlen_type, const CHARTYPE *,
+				      gfc_charlen_type, const CHARTYPE *,
+				      gfc_charlen_type, GFC_LOGICAL_4);
+export_proto (string_split);
 
 /* Use for functions which can return a zero-length string.  */
 static CHARTYPE zero_length_string = 0;
@@ -457,5 +462,52 @@ string_minmax (gfc_charlen_type *rlen, CHARTYPE **dest, int op, int nargs, ...)
       memcpy (tmp, res, reslen * sizeof (CHARTYPE));
       MEMSET (&tmp[reslen], ' ', *rlen - reslen);
       *dest = tmp;
+    }
+}
+
+gfc_charlen_type
+string_split (gfc_charlen_type stringlen, const CHARTYPE *string,
+	      gfc_charlen_type setlen, const CHARTYPE *set,
+	      gfc_charlen_type pos, GFC_LOGICAL_4 back)
+{
+  gfc_charlen_type i, j;
+
+  if (!back)
+    {
+      if (pos > stringlen)
+	runtime_error ("If BACK is present with the value false, the value of "
+		       "POS shall be in the range [0, LEN (STRING)], "
+		       "where POS = %ld and LEN (STRING) = %ld",
+		       pos, stringlen);
+
+      for (i = pos + 1; i <= stringlen; i++)
+	{
+	  for (j = 0; j < setlen; j++)
+	    {
+	      if (string[i - 1] == set[j])
+		return i;
+	    }
+	}
+
+      return stringlen + 1;
+    }
+  else
+    {
+      if (pos < 1 || pos > (stringlen + 1))
+	runtime_error ("If BACK is present with the value true, the value of "
+		       "POS shall be in the range [1, LEN (STRING) + 1], "
+		       "where POS = %ld and LEN (STRING) = %ld",
+		       pos, stringlen);
+
+      for (i = pos - 1; i != 0; i--)
+	{
+	  for (j = 0; j < setlen; j++)
+	    {
+	      if (string[i - 1] == set[j])
+		return i;
+	    }
+	}
+
+      return 0;
     }
 }

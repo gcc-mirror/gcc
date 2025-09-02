@@ -31,7 +31,7 @@
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
 #define RUST_ATTRIBUTE_GCC_DIAG(m, n)                                          \
   __attribute__ ((__format__ (__gcc_tdiag__, m, n)))                           \
-    __attribute__ ((__nonnull__ (m)))
+  __attribute__ ((__nonnull__ (m)))
 #else
 #define RUST_ATTRIBUTE_GCC_DIAG(m, n)
 #endif
@@ -119,10 +119,8 @@ rust_error_at(rich_location *richloc, const ErrorCode, const char *fmt, ...)
 // These interfaces provide a way for the front end to ask for
 // the open/close quote characters it should use when formatting
 // diagnostics (warnings, errors).
-extern const char *
-rust_open_quote ();
-extern const char *
-rust_close_quote ();
+extern const char *rust_open_quote ();
+extern const char *rust_close_quote ();
 
 // These interfaces are used by utilities above to pass warnings and
 // errors (once format specifiers have been expanded) to the back end,
@@ -185,7 +183,7 @@ struct Error
   Error (Kind kind, location_t locus, std::string message)
     : kind (kind), locus (locus), message (std::move (message))
   {
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // simple location + error code
   Error (Kind kind, location_t locus, ErrorCode code, std::string message)
@@ -193,13 +191,13 @@ struct Error
       message (std::move (message))
   {
     is_errorcode = true;
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // rich location
   Error (Kind kind, rich_location *richlocus, std::string message)
     : kind (kind), richlocus (richlocus), message (std::move (message))
   {
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // rich location + error code
   Error (Kind kind, rich_location *richlocus, ErrorCode code,
@@ -208,7 +206,7 @@ struct Error
       message (std::move (message))
   {
     is_errorcode = true;
-    message.shrink_to_fit ();
+    this->message.shrink_to_fit ();
   }
   // simple location
   Error (location_t locus, std::string message)
@@ -306,8 +304,7 @@ struct Error
 
 #define rust_sorry_at(location, ...) sorry_at (location, __VA_ARGS__)
 
-void
-rust_debug_loc (const location_t location, const char *fmt,
-		...) ATTRIBUTE_PRINTF_2;
+void rust_debug_loc (const location_t location, const char *fmt,
+		     ...) ATTRIBUTE_PRINTF_2;
 
 #endif // !defined(RUST_DIAGNOSTICS_H)

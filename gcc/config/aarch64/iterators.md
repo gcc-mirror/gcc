@@ -455,6 +455,7 @@
 (define_mode_iterator VCVTFPM [V4HF V8HF V4SF])
 
 ;; Iterators for single modes, for "@" patterns.
+(define_mode_iterator VNx16BI_ONLY [VNx16BI])
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx16SI_ONLY [VNx16SI])
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
@@ -541,6 +542,12 @@
 ;; Fully-packed SVE floating-point vector modes that have 16-bit or 32-bit
 ;; elements.
 (define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
+
+;; Like SVE_FULL_HSF, but selectively enables those modes that are valid
+;; for the variant of the SVE2 FP8 FDOT instruction associated with that
+;; mode.
+(define_mode_iterator SVE_FULL_HSF_FP8_FDOT [(VNx4SF "TARGET_SSVE_FP8DOT4")
+					     (VNx8HF "TARGET_SSVE_FP8DOT2")])
 
 ;; Partial SVE floating-point vector modes that have 16-bit or 32-bit
 ;; elements.
@@ -930,7 +937,6 @@
     UNSPEC_UZP2Q	; Used in aarch64-sve.md.
     UNSPEC_ZIP1Q	; Used in aarch64-sve.md.
     UNSPEC_ZIP2Q	; Used in aarch64-sve.md.
-    UNSPEC_TRN1_CONV	; Used in aarch64-sve.md.
     UNSPEC_COND_CMPEQ_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGE_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGT_WIDE ; Used in aarch64-sve.md.
@@ -1185,6 +1191,9 @@
     UNSPEC_LUTI2	; Used in aarch64-simd.md.
     UNSPEC_LUTI4	; Used in aarch64-simd.md.
 
+    ;; All used in aarch64-sve.md
+    UNSPEC_PERMUTE_PRED
+
     ;; All used in aarch64-sve2.md
     UNSPEC_ADDQV
     UNSPEC_ANDQV
@@ -1330,6 +1339,8 @@
 (define_mode_attr short_mask [(HI "65535") (QI "255")])
 
 (define_mode_attr half_mask [(HI "255") (SI "65535") (DI "4294967295")])
+
+(define_mode_attr mantissa_bits [(SF "23") (DF "52")])
 
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
@@ -2977,19 +2988,15 @@
 
 (define_code_iterator INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
+;; Inverse comparisons must have the same constraint so that
+;; branches can be redirected during late compilation.
 (define_code_attr cmpbr_imm_constraint [
-    (eq "Uc0")
-    (ne "Uc0")
-    (gt "Uc0")
-    (gtu "Uc0")
-    (lt "Uc0")
-    (ltu "Uc0")
+    (eq "Uc0") (ne "Uc0")
+    (lt "Uc0") (ge "Uc0")
+    (ltu "Uc0") (geu "Uc0")
 
-    (ge "Uc1")
-    (geu "Uc1")
-
-    (le "Uc2")
-    (leu "Uc2")
+    (gt "Uc1") (le "Uc1")
+    (gtu "Uc1") (leu "Uc1")
 ])
 
 (define_code_attr fix_trunc_optab [(fix "fix_trunc")
@@ -3876,6 +3883,8 @@
 (define_int_iterator SVE_BRK_BINARY [UNSPEC_BRKN UNSPEC_BRKPA UNSPEC_BRKPB])
 
 (define_int_iterator SVE_PITER [UNSPEC_PFIRST UNSPEC_PNEXT])
+
+(define_int_iterator PNEXT_ONLY [UNSPEC_PNEXT])
 
 (define_int_iterator MATMUL [UNSPEC_SMATMUL UNSPEC_UMATMUL
 			     UNSPEC_USMATMUL])

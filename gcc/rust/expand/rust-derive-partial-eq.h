@@ -21,6 +21,7 @@
 
 #include "rust-derive.h"
 #include "rust-path.h"
+#include "rust-derive-cmp-common.h"
 
 namespace Rust {
 namespace AST {
@@ -30,7 +31,7 @@ class DerivePartialEq : DeriveVisitor
 public:
   DerivePartialEq (location_t loc);
 
-  std::vector<std::unique_ptr<AST::Item>> go (Item &item);
+  std::vector<std::unique_ptr<Item>> go (Item &item);
 
 private:
   std::vector<std::unique_ptr<Item>> expanded;
@@ -43,21 +44,8 @@ private:
     std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
     const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
-  std::unique_ptr<AssociatedItem> eq_fn (std::unique_ptr<Expr> &&cmp_expression,
+  std::unique_ptr<AssociatedItem> eq_fn (std::unique_ptr<BlockExpr> &&block,
 					 std::string type_name);
-
-  /**
-   * A pair of two expressions from each instance being compared. E.g. this
-   * could be `self.0` and `other.0`, or `self.field` and `other.field`
-   */
-  struct SelfOther
-  {
-    std::unique_ptr<Expr> self_expr;
-    std::unique_ptr<Expr> other_expr;
-  };
-
-  SelfOther tuple_indexes (int idx);
-  SelfOther field_acccesses (const std::string &field_name);
 
   /**
    * Build a suite of equality arithmetic expressions chained together by a
@@ -73,10 +61,13 @@ private:
   MatchCase match_enum_struct (PathInExpression variant_path,
 			       const EnumItemStruct &variant);
 
-  virtual void visit_struct (StructStruct &item);
-  virtual void visit_tuple (TupleStruct &item);
-  virtual void visit_enum (Enum &item);
-  virtual void visit_union (Union &item);
+  constexpr static const char *self_discr = "#self_discr";
+  constexpr static const char *other_discr = "#other_discr";
+
+  virtual void visit_struct (StructStruct &item) override;
+  virtual void visit_tuple (TupleStruct &item) override;
+  virtual void visit_enum (Enum &item) override;
+  virtual void visit_union (Union &item) override;
 };
 
 } // namespace AST

@@ -1,4 +1,4 @@
-/* { dg-do run { target { rv64 } } } */
+/* { dg-do run { target { rv64 && riscv_b_ok } } } */
 /* { dg-additional-options "-march=rv64gcb -std=gnu23" } */
 
 __attribute__ ((noipa)) _Bool

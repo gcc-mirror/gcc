@@ -28,6 +28,8 @@ LIB2ADD += \
 	$(srcdir)/config/pru/lib2divSI.c \
 	$(srcdir)/config/pru/lib2bitcountHI.c \
 	$(srcdir)/config/pru/mpyll.S \
+	$(srcdir)/config/pru/softmpyll.c \
+	$(srcdir)/config/pru/softmpyi.c \
 	$(srcdir)/config/pru/gef.c \
 	$(srcdir)/config/pru/gtf.c \
 	$(srcdir)/config/pru/lef.c \

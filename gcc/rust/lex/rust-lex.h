@@ -263,8 +263,7 @@ private:
 #if CHECKING_P
 
 namespace selftest {
-void
-rust_input_source_test ();
+void rust_input_source_test ();
 
 } // namespace selftest
 

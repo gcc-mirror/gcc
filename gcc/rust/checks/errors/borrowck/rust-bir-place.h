@@ -53,7 +53,7 @@ using Variance = TyTy::VarianceAnalysis::Variance;
 /** A unique identifier for a loan in the BIR. */
 struct LoanId
 {
-  uint32_t value;
+  size_t value;
   // some overloads for comparision
   bool operator== (const LoanId &rhs) const { return value == rhs.value; }
   bool operator!= (const LoanId &rhs) const { return !(operator== (rhs)); }
@@ -217,7 +217,7 @@ public:
   const T &operator[] (I pid) const { return internal_vector[pid.value]; }
 
   void push_back (T &&param) { internal_vector.push_back (std::move (param)); }
-  template <typename... Args> void emplace_back (Args &&... args)
+  template <typename... Args> void emplace_back (Args &&...args)
   {
     internal_vector.emplace_back (std::forward<Args> (args)...);
   }
@@ -471,14 +471,16 @@ private:
       case TyTy::FNDEF:
       case TyTy::NEVER:
 	return true;
-	case TyTy::TUPLE: {
+      case TyTy::TUPLE:
+	{
 	  auto &fields = ty->as<TyTy::TupleType> ()->get_fields ();
 	  return std::all_of (fields.begin (), fields.end (),
 			      [] (const TyTy::TyVar &field) {
 				return is_type_copy (field.get_tyty ());
 			      });
 	}
-	case TyTy::ARRAY: {
+      case TyTy::ARRAY:
+	{
 	  return is_type_copy (ty->as<TyTy::ArrayType> ()->get_element_type ());
 	}
       case TyTy::INFER:
@@ -491,6 +493,7 @@ private:
       case TyTy::PROJECTION: // TODO: DUNNO
       case TyTy::CLOSURE:    // TODO: DUNNO
       case TyTy::DYNAMIC:    // TODO: dunno
+      case TyTy::CONST:
       case TyTy::OPAQUE:
 	return false;
       }

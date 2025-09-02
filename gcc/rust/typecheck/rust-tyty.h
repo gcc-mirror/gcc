@@ -19,6 +19,7 @@
 #ifndef RUST_TYTY
 #define RUST_TYTY
 
+#include "optional.h"
 #include "rust-hir-map.h"
 #include "rust-common.h"
 #include "rust-identifier.h"
@@ -29,6 +30,7 @@
 #include "rust-tyty-region.h"
 #include "rust-system.h"
 #include "rust-hir.h"
+#include "tree.h"
 
 namespace Rust {
 
@@ -56,6 +58,7 @@ enum TypeKind
   REF,
   POINTER,
   PARAM,
+  CONST,
   ARRAY,
   SLICE,
   FNDEF,
@@ -78,8 +81,7 @@ enum TypeKind
   ERROR
 };
 
-extern bool
-is_primitive_type_kind (TypeKind kind);
+extern bool is_primitive_type_kind (TypeKind kind);
 
 class TypeKindFormat
 {
@@ -165,8 +167,7 @@ public:
 
   void debug () const;
 
-  // FIXME this will eventually go away
-  const BaseType *get_root () const;
+  BaseType *get_root ();
 
   // This will get the monomorphized type from Params, Placeholders or
   // Projections if available or error
@@ -268,8 +269,8 @@ public:
   {}
 
   WARN_UNUSED_RESULT virtual size_t get_num_params () const = 0;
-  WARN_UNUSED_RESULT virtual BaseType *
-  get_param_type_at (size_t index) const = 0;
+  WARN_UNUSED_RESULT virtual BaseType *get_param_type_at (size_t index) const
+    = 0;
   WARN_UNUSED_RESULT virtual BaseType *get_return_type () const = 0;
 };
 
@@ -365,18 +366,34 @@ public:
   std::string get_name () const override final;
 };
 
-class ParamType : public BaseType
+class BaseGeneric : public BaseType
+{
+public:
+  virtual std::string get_symbol () const = 0;
+
+  virtual bool can_resolve () const = 0;
+
+  virtual BaseType *resolve () const = 0;
+
+protected:
+  BaseGeneric (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+	       std::vector<TypeBoundPredicate> specified_bounds,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, kind, ident, specified_bounds, refs)
+  {}
+};
+
+class ParamType : public BaseGeneric
 {
 public:
   static constexpr auto KIND = TypeKind::PARAM;
 
   ParamType (std::string symbol, location_t locus, HirId ref,
-	     HIR::GenericParam &param,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
   ParamType (bool is_trait_self, std::string symbol, location_t locus,
-	     HirId ref, HirId ty_ref, HIR::GenericParam &param,
+	     HirId ref, HirId ty_ref,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
@@ -389,13 +406,11 @@ public:
 
   BaseType *clone () const final override;
 
-  std::string get_symbol () const;
+  std::string get_symbol () const override final;
 
-  HIR::GenericParam &get_generic_param ();
+  bool can_resolve () const override final;
 
-  bool can_resolve () const;
-
-  BaseType *resolve () const;
+  BaseType *resolve () const override final;
 
   std::string get_name () const override final;
 
@@ -409,7 +424,58 @@ public:
 private:
   bool is_trait_self;
   std::string symbol;
-  HIR::GenericParam &param;
+};
+
+class ConstType : public BaseGeneric
+{
+public:
+  static constexpr auto KIND = TypeKind::CONST;
+
+  enum ConstKind
+  {
+    Decl,
+    Value,
+    Infer,
+    Error
+  };
+
+  ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty, tree value,
+	     std::vector<TypeBoundPredicate> specified_bounds, location_t locus,
+	     HirId ref, HirId ty_ref,
+	     std::set<HirId> refs = std::set<HirId> ());
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  ConstKind get_const_kind () const { return const_kind; }
+  TyTy::BaseType *get_ty () const { return ty; }
+  tree get_value () const { return value; }
+
+  void set_value (tree value);
+
+  std::string as_string () const override;
+
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+
+  BaseType *clone () const final override;
+
+  std::string get_symbol () const override final;
+
+  bool can_resolve () const override final;
+
+  BaseType *resolve () const override final;
+
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  ConstType *handle_substitions (SubstitutionArgumentMappings &mappings);
+
+private:
+  ConstKind const_kind;
+  TyTy::BaseType *ty;
+  tree value;
+  std::string symbol;
 };
 
 class OpaqueType : public BaseType
@@ -441,8 +507,6 @@ public:
   std::string get_name () const override final;
 
   bool is_equal (const BaseType &other) const override;
-
-  OpaqueType *handle_substitions (SubstitutionArgumentMappings &mappings);
 };
 
 class StructFieldType
@@ -541,14 +605,15 @@ public:
 
   std::string get_name () const;
 
-  // check that this predicate is object-safe see:
+  // check that this  is object-safe see:
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   bool is_object_safe (bool emit_error, location_t locus) const;
 
   void apply_generic_arguments (HIR::GenericArgs *generic_args,
-				bool has_associated_self);
+				bool has_associated_self, bool is_super_trait);
 
-  void apply_argument_mappings (SubstitutionArgumentMappings &arguments);
+  void apply_argument_mappings (SubstitutionArgumentMappings &arguments,
+				bool is_super_trait);
 
   bool contains_item (const std::string &search) const;
 
@@ -595,6 +660,9 @@ private:
   };
 
   TypeBoundPredicate (mark_is_error);
+
+  void get_trait_hierachy (
+    std::function<void (const Resolver::TraitReference &)> callback) const;
 
   DefId reference;
   location_t locus;
@@ -1156,19 +1224,18 @@ class ArrayType : public BaseType
 public:
   static constexpr auto KIND = TypeKind::ARRAY;
 
-  ArrayType (HirId ref, location_t locus, HIR::Expr &capacity_expr, TyVar base,
+  ArrayType (HirId ref, location_t locus, ConstType *capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      element_type (base), capacity_expr (capacity_expr)
+      element_type (base), capacity (capacity)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, location_t locus,
-	     HIR::Expr &capacity_expr, TyVar base,
-	     std::set<HirId> refs = std::set<HirId> ())
+  ArrayType (HirId ref, HirId ty_ref, location_t locus, ConstType *capacity,
+	     TyVar base, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      element_type (base), capacity_expr (capacity_expr)
+      element_type (base), capacity (capacity)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1187,15 +1254,13 @@ public:
 
   BaseType *clone () const final override;
 
-  HIR::Expr &get_capacity_expr () const { return capacity_expr; }
+  ConstType *get_capacity () const { return capacity; }
 
   ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   TyVar element_type;
-  // FIXME: I dont think this should be in tyty - tyty should already be const
-  // evaluated
-  HIR::Expr &capacity_expr;
+  ConstType *capacity;
 };
 
 class SliceType : public BaseType

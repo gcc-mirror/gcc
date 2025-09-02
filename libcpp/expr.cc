@@ -1460,6 +1460,7 @@ _cpp_parse_expr (cpp_reader *pfile, const char *dir,
   location_t virtual_location = 0;
 
   pfile->state.skip_eval = 0;
+  pfile->state.comma_ok = 0;
 
   /* Set up detection of #if ! defined().  */
   pfile->mi_ind_cmacro = 0;
@@ -1521,6 +1522,10 @@ _cpp_parse_expr (cpp_reader *pfile, const char *dir,
 	  lex_count--;
 	  continue;
 
+	case CPP_OPEN_PAREN:
+	  pfile->state.comma_ok++;
+	  break;
+
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
 	    SYNTAX_ERROR2_AT (op.loc,
@@ -1574,13 +1579,16 @@ _cpp_parse_expr (cpp_reader *pfile, const char *dir,
 	case CPP_CLOSE_PAREN:
 	  if (pfile->state.in_directive == 3 && top == pfile->op_stack)
 	    goto embed_done;
+	  pfile->state.comma_ok--;
 	  continue;
 	case CPP_OR_OR:
 	  if (!num_zerop (top->value))
 	    pfile->state.skip_eval++;
 	  break;
-	case CPP_AND_AND:
 	case CPP_QUERY:
+	  pfile->state.comma_ok++;
+	  /* FALLTHRU */
+	case CPP_AND_AND:
 	  if (num_zerop (top->value))
 	    pfile->state.skip_eval++;
 	  break;
@@ -1592,6 +1600,8 @@ _cpp_parse_expr (cpp_reader *pfile, const char *dir,
 	    pfile->state.skip_eval++;
 	  else
 	    pfile->state.skip_eval--;
+	  pfile->state.comma_ok--;
+	  break;
 	default:
 	  break;
 	}
@@ -2209,8 +2219,10 @@ num_binary_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
 
       /* Comma.  */
     default: /* case CPP_COMMA: */
-      if (CPP_PEDANTIC (pfile) && (!CPP_OPTION (pfile, c99)
-				   || !pfile->state.skip_eval))
+      if (CPP_PEDANTIC (pfile)
+	  && (CPP_OPTION (pfile, cplusplus)
+	      ? !pfile->state.comma_ok
+	      : (!CPP_OPTION (pfile, c99) || !pfile->state.skip_eval)))
 	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
 			"comma operator in operand of #%s",
 			pfile->state.in_directive == 3

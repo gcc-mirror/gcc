@@ -25,18 +25,6 @@
 #include "rust-parse.h"
 
 namespace Rust {
-std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
-  {AST::InlineAsmOption::PURE, "pure"},
-  {AST::InlineAsmOption::NOMEM, "nomem"},
-  {AST::InlineAsmOption::READONLY, "readonly"},
-  {AST::InlineAsmOption::PRESERVES_FLAGS, "preserves_flags"},
-  {AST::InlineAsmOption::NORETURN, "noreturn"},
-  {AST::InlineAsmOption::NOSTACK, "nostack"},
-  {AST::InlineAsmOption::MAY_UNWIND, "may_unwind"},
-  {AST::InlineAsmOption::ATT_SYNTAX, "att_syntax"},
-  {AST::InlineAsmOption::RAW, "raw"},
-};
-
 std::set<std::string> potentially_nonpromoted_keywords
   = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 
@@ -396,6 +384,7 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
   auto token = parser.peek_current_token ();
+  location_t locus = token->get_locus ();
 
   if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "inout"))
     {
@@ -413,10 +402,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
-      // TODO: Not sure how to use parse_expr
-      if (!check_identifier (parser, ""))
-	rust_unreachable ();
-      // auto expr = parse_format_string (inline_asm_ctx);
+      std::unique_ptr<AST::Expr> in_expr = parser.parse_expr ();
+      rust_assert (in_expr != nullptr);
 
       std::unique_ptr<AST::Expr> out_expr;
 
@@ -426,10 +413,18 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	    {
 	      // auto result = parse_format_string (inline_asm_ctx);
 
-	      if (!check_identifier (parser, ""))
-		rust_unreachable ();
-	      // out_expr = parser.parse_expr();
+	      out_expr = parser.parse_expr ();
+
+	      AST::InlineAsmOperand::SplitInOut splitinout (
+		reg, false, std::move (in_expr), std::move (out_expr));
+
+	      inline_asm_ctx.inline_asm.operands.emplace_back (splitinout,
+							       locus);
+
+	      return inline_asm_ctx;
 	    }
+
+	  rust_unreachable ();
 
 	  // TODO: Rembmer to pass in clone_expr() instead of nullptr
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L135
@@ -444,6 +439,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	}
       else
 	{
+	  AST::InlineAsmOperand::InOut inout (reg, false, std::move (in_expr));
+	  inline_asm_ctx.inline_asm.operands.emplace_back (inout, locus);
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L137
 	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: false
 	  // }
@@ -500,7 +497,7 @@ parse_reg_operand_unexpected (InlineAsmContext inline_asm_ctx)
 }
 
 void
-check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
+check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsm::Option option)
 {
   auto &parser = inline_asm_ctx.parser;
   auto &inline_asm = inline_asm_ctx.inline_asm;
@@ -509,7 +506,7 @@ check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
       // TODO: report an error of duplication
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "the %qs option was already provided",
-		     InlineAsmOptionMap[option].c_str ());
+		     AST::InlineAsm::option_to_string (option).c_str ());
       return;
     }
   else
@@ -536,39 +533,40 @@ parse_options (InlineAsmContext &inline_asm_ctx)
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PURE);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::PURE);
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOMEM);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NOMEM);
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::READONLY);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::READONLY);
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PRESERVES_FLAGS);
+	  check_and_set (inline_asm_ctx,
+			 AST::InlineAsm::Option::PRESERVES_FLAGS);
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NORETURN);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NORETURN);
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOSTACK);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NOSTACK);
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::MAY_UNWIND);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::MAY_UNWIND);
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::ATT_SYNTAX);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::ATT_SYNTAX);
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::RAW);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::RAW);
 	}
       else
 	{
@@ -807,7 +805,8 @@ expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 	      auto next_argument = piece.next_argument._0;
 	      switch (piece.next_argument._0.position.tag)
 		{
-		  case Fmt::ffi::Position::Tag::ArgumentImplicitlyIs: {
+		case Fmt::ffi::Position::Tag::ArgumentImplicitlyIs:
+		  {
 		    auto idx = next_argument.position.argument_implicitly_is._0;
 		    /*auto trait = next_argument.format;*/
 		    /*auto arg = arguments.at (idx);*/
@@ -829,6 +828,11 @@ expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 		  }
 		  break;
 		case Fmt::ffi::Position::Tag::ArgumentIs:
+		  {
+		    auto idx = next_argument.position.argument_is._0;
+		    transformed_template_str += "%" + std::to_string (idx);
+		    break;
+		  }
 		case Fmt::ffi::Position::Tag::ArgumentNamed:
 		  rust_sorry_at (inline_asm.get_locus (),
 				 "unhandled argument position specifier");
@@ -933,7 +937,9 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
     {
       if (!parser.skip_token (COMMA))
 	{
-	  break;
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "expected token %qs", ";");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
       // Ok after the comma is good, we better be parsing correctly
       // everything in here, which is formatted string in ABNF

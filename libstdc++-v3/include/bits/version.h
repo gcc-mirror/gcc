@@ -815,6 +815,16 @@
 #endif /* !defined(__cpp_lib_assume_aligned) && defined(__glibcxx_want_assume_aligned) */
 #undef __glibcxx_want_assume_aligned
 
+#if !defined(__cpp_lib_is_sufficiently_aligned)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_is_sufficiently_aligned 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_is_sufficiently_aligned)
+#   define __cpp_lib_is_sufficiently_aligned 202411L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_is_sufficiently_aligned) && defined(__glibcxx_want_is_sufficiently_aligned) */
+#undef __glibcxx_want_is_sufficiently_aligned
+
 #if !defined(__cpp_lib_atomic_flag_test)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_flag_test 201907L
@@ -1125,7 +1135,12 @@
 #undef __glibcxx_want_span
 
 #if !defined(__cpp_lib_mdspan)
-# if (__cplusplus >= 202100L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_mdspan 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_mdspan)
+#   define __cpp_lib_mdspan 202406L
+#  endif
+# elif (__cplusplus >= 202100L)
 #  define __glibcxx_mdspan 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_mdspan)
 #   define __cpp_lib_mdspan 202207L
@@ -1133,6 +1148,16 @@
 # endif
 #endif /* !defined(__cpp_lib_mdspan) && defined(__glibcxx_want_mdspan) */
 #undef __glibcxx_want_mdspan
+
+#if !defined(__cpp_lib_aligned_accessor)
+# if (__cplusplus >  202302L) && (__glibcxx_assume_aligned && __glibcxx_is_sufficiently_aligned)
+#  define __glibcxx_aligned_accessor 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_aligned_accessor)
+#   define __cpp_lib_aligned_accessor 202411L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_aligned_accessor) && defined(__glibcxx_want_aligned_accessor) */
+#undef __glibcxx_want_aligned_accessor
 
 #if !defined(__cpp_lib_ssize)
 # if (__cplusplus >= 202002L)
@@ -2108,6 +2133,16 @@
 # endif
 #endif /* !defined(__cpp_lib_constexpr_new) && defined(__glibcxx_want_constexpr_new) */
 #undef __glibcxx_want_constexpr_new
+
+#if !defined(__cpp_lib_debugging)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_debugging 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_debugging)
+#   define __cpp_lib_debugging 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_debugging) && defined(__glibcxx_want_debugging) */
+#undef __glibcxx_want_debugging
 
 #if !defined(__cpp_lib_fstream_native_handle)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED

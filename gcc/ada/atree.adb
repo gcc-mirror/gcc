@@ -1802,12 +1802,12 @@ package body Atree is
 
       --  The Ghost node is created within a Ghost region
 
-      if Ghost_Mode = Check then
+      if Ghost_Config.Ghost_Mode = Check then
          if Nkind (N) in N_Entity then
             Set_Is_Checked_Ghost_Entity (N);
          end if;
 
-      elsif Ghost_Mode = Ignore then
+      elsif Ghost_Config.Ghost_Mode = Ignore then
          if Nkind (N) in N_Entity then
             Set_Is_Ignored_Ghost_Entity (N);
          end if;

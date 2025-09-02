@@ -1302,19 +1302,13 @@ package body Ch3 is
       Ident_Sloc       : Source_Ptr;
       Scan_State       : Saved_Scan_State;
       List_OK          : Boolean := True;
-      Ident            : Nat;
       Init_Expr        : Node_Id;
       Init_Loc         : Source_Ptr;
       Con_Loc          : Source_Ptr;
       Not_Null_Present : Boolean := False;
 
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
-      --  Used to save identifiers in the identifier list. The upper bound
-      --  of 4096 is expected to be infinite in practice, and we do not even
-      --  bother to check if this upper bound is exceeded.
-
-      Num_Idents : Nat := 1;
-      --  Number of identifiers stored in Idents
+      Def_Ids : Defining_Identifiers;
+      Ident   : Pos;
 
       function Identifier_Starts_Statement return Boolean;
       --  Called with Token being an identifier that might start a declaration
@@ -1389,10 +1383,9 @@ package body Ch3 is
 
       procedure No_List is
       begin
-         if Num_Idents > 1 then
+         if Def_Ids.Num_Idents > 1 then
             Error_Msg_N
-              ("identifier list not allowed for RENAMES",
-               Idents (2));
+              ("identifier list not allowed for RENAMES", Def_Ids.Idents (2));
          end if;
 
          List_OK := False;
@@ -1443,7 +1436,7 @@ package body Ch3 is
 
       Ident_Sloc := Token_Ptr;
       Save_Scan_State (Scan_State); -- at first identifier
-      Idents (1) := P_Defining_Identifier (C_Comma_Colon);
+      Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
 
       --  If we have a colon after the identifier, then we can assume that
       --  this is in fact a valid identifier declaration and can steam ahead.
@@ -1455,8 +1448,7 @@ package body Ch3 is
 
       elsif Token = Tok_Comma then
          while Comma_Present loop
-            Num_Idents := Num_Idents + 1;
-            Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
+            Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
          end loop;
 
          Save_Scan_State (Scan_State); -- at colon
@@ -1510,7 +1502,7 @@ package body Ch3 is
          Decl_Node :=
            New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
          Set_Name (Decl_Node, P_Name);
-         Set_Defining_Identifier (Decl_Node, Idents (1));
+         Set_Defining_Identifier (Decl_Node, Def_Ids.Idents (1));
 
          P_Aspect_Specifications (Decl_Node, Semicolon => False);
 
@@ -1917,7 +1909,7 @@ package body Ch3 is
             end if;
          end if;
 
-         Set_Defining_Identifier (Decl_Node, Idents (Ident));
+         Set_Defining_Identifier (Decl_Node, Def_Ids.Idents (Ident));
          P_Aspect_Specifications (Decl_Node, Semicolon => False);
 
          --  Allow initialization expression to follow aspects (note that in
@@ -1945,17 +1937,17 @@ package body Ch3 is
          T_Semicolon;
 
          if List_OK then
-            if Ident < Num_Idents then
-               Set_More_Ids (Decl_Node, True);
-            end if;
-
             if Ident > 1 then
                Set_Prev_Ids (Decl_Node, True);
+            end if;
+
+            if Ident < Def_Ids.Num_Idents then
+               Set_More_Ids (Decl_Node, True);
             end if;
          end if;
 
          Append (Decl_Node, Decls);
-         exit Ident_Loop when Ident = Num_Idents;
+         exit Ident_Loop when Ident = Def_Ids.Num_Idents;
          Restore_Scan_State (Scan_State);
          T_Colon;
          Ident := Ident + 1;
@@ -3191,14 +3183,7 @@ package body Ch3 is
       Specification_List : List_Id;
       Ident_Sloc         : Source_Ptr;
       Scan_State         : Saved_Scan_State;
-      Num_Idents         : Nat;
       Not_Null_Present   : Boolean;
-      Ident              : Nat;
-
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
-      --  This array holds the list of defining identifiers. The upper bound
-      --  of 4096 is intended to be essentially infinite, and we do not even
-      --  bother to check for it being exceeded.
 
    begin
       if Token = Tok_Left_Paren then
@@ -3207,97 +3192,91 @@ package body Ch3 is
          P_Pragmas_Misplaced;
 
          Specification_Loop : loop
+            declare
+               Def_Ids : Defining_Identifiers;
+               Ident   : Pos;
+            begin
+               Ident_Sloc := Token_Ptr;
+               P_Def_Ids (Def_Ids);
 
-            Ident_Sloc := Token_Ptr;
-            Idents (1) := P_Defining_Identifier (C_Comma_Colon);
-            Num_Idents := 1;
+               if Def_Ids.Num_Idents > 1 then
+                  Save_Scan_State (Scan_State);
+               end if;
 
-            while Comma_Present loop
-               Num_Idents := Num_Idents + 1;
-               Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
-            end loop;
+               T_Colon;
 
-            --  If there are multiple identifiers, we repeatedly scan the
-            --  type and initialization expression information by resetting
-            --  the scan pointer (so that we get completely separate trees
-            --  for each occurrence).
+               --  Loop through defining identifiers in list
 
-            if Num_Idents > 1 then
-               Save_Scan_State (Scan_State);
-            end if;
-
-            T_Colon;
-
-            --  Loop through defining identifiers in list
-
-            Ident := 1;
-            Ident_Loop : loop
-               Specification_Node :=
-                 New_Node (N_Discriminant_Specification, Ident_Sloc);
-               Set_Defining_Identifier (Specification_Node, Idents (Ident));
-               Not_Null_Present :=  --  Ada 2005 (AI-231, AI-447)
-                 P_Null_Exclusion (Allow_Anonymous_In_95 => True);
-
-               if Token = Tok_Access then
-                  if Ada_Version = Ada_83 then
-                     Error_Msg_SC
-                       ("(Ada 83) access discriminant not allowed!");
-                  end if;
-
-                  Set_Discriminant_Type
-                    (Specification_Node,
-                     P_Access_Definition (Not_Null_Present));
-
-               --  Catch ouf-of-order keywords
-
-               elsif Token = Tok_Constant then
-                  Scan;
+               Ident := 1;
+               Ident_Loop : loop
+                  Specification_Node :=
+                    New_Node (N_Discriminant_Specification, Ident_Sloc);
+                  Set_Defining_Identifier
+                    (Specification_Node, Def_Ids.Idents (Ident));
+                  Not_Null_Present :=  --  Ada 2005 (AI-231, AI-447)
+                    P_Null_Exclusion (Allow_Anonymous_In_95 => True);
 
                   if Token = Tok_Access then
-                     Error_Msg_SC -- CODEFIX
-                       ("ACCESS must come before CONSTANT");
+                     if Ada_Version = Ada_83 then
+                        Error_Msg_SC
+                          ("(Ada 83) access discriminant not allowed!");
+                     end if;
+
                      Set_Discriminant_Type
                        (Specification_Node,
                         P_Access_Definition (Not_Null_Present));
 
+                  --  Catch ouf-of-order keywords
+
+                  elsif Token = Tok_Constant then
+                     Scan;
+
+                     if Token = Tok_Access then
+                        Error_Msg_SC -- CODEFIX
+                          ("ACCESS must come before CONSTANT");
+                        Set_Discriminant_Type
+                          (Specification_Node,
+                           P_Access_Definition (Not_Null_Present));
+
+                     else
+                        Error_Msg_SC ("misplaced CONSTANT");
+                     end if;
+
                   else
-                     Error_Msg_SC ("misplaced CONSTANT");
+                     Set_Discriminant_Type
+                       (Specification_Node, P_Subtype_Mark);
+                     No_Constraint;
+                     Set_Null_Exclusion_Present  -- Ada 2005 (AI-231)
+                       (Specification_Node, Not_Null_Present);
                   end if;
 
-               else
-                  Set_Discriminant_Type
-                    (Specification_Node, P_Subtype_Mark);
-                  No_Constraint;
-                  Set_Null_Exclusion_Present  -- Ada 2005 (AI-231)
-                    (Specification_Node, Not_Null_Present);
-               end if;
+                  Set_Expression
+                    (Specification_Node, Init_Expr_Opt (True));
 
-               Set_Expression
-                 (Specification_Node, Init_Expr_Opt (True));
+                  if Token = Tok_With then
+                     P_Aspect_Specifications
+                       (Specification_Node, Semicolon => False);
+                  end if;
 
-               if Token = Tok_With then
-                  P_Aspect_Specifications
-                    (Specification_Node, Semicolon => False);
-               end if;
+                  if Ident > 1 then
+                     Set_Prev_Ids (Specification_Node, True);
+                  end if;
 
-               if Ident > 1 then
-                  Set_Prev_Ids (Specification_Node, True);
-               end if;
+                  if Ident < Def_Ids.Num_Idents then
+                     Set_More_Ids (Specification_Node, True);
+                  end if;
 
-               if Ident < Num_Idents then
-                  Set_More_Ids (Specification_Node, True);
-               end if;
+                  Append (Specification_Node, Specification_List);
+                  exit Ident_Loop when Ident = Def_Ids.Num_Idents;
+                  Ident := Ident + 1;
+                  Restore_Scan_State (Scan_State);
+                  T_Colon;
+               end loop Ident_Loop;
 
-               Append (Specification_Node, Specification_List);
-               exit Ident_Loop when Ident = Num_Idents;
-               Ident := Ident + 1;
-               Restore_Scan_State (Scan_State);
-               T_Colon;
-            end loop Ident_Loop;
-
-            exit Specification_Loop when Token /= Tok_Semicolon;
-            Scan; -- past ;
-            P_Pragmas_Misplaced;
+               exit Specification_Loop when Token /= Tok_Semicolon;
+               Scan; -- past ;
+               P_Pragmas_Misplaced;
+            end;
          end loop Specification_Loop;
 
          T_Right_Paren;
@@ -3770,14 +3749,10 @@ package body Ch3 is
       Decl_Node        : Node_Id := Empty;  -- initialize to prevent warning
       Scan_State       : Saved_Scan_State;
       Not_Null_Present : Boolean := False;
-      Num_Idents       : Nat;
-      Ident            : Nat;
       Ident_Sloc       : Source_Ptr;
 
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
-      --  This array holds the list of defining identifiers. The upper bound
-      --  of 4096 is intended to be essentially infinite, and we do not even
-      --  bother to check for it being exceeded.
+      Def_Ids : Defining_Identifiers;
+      Ident   : Pos;
 
    begin
       if Token /= Tok_Identifier then
@@ -3788,20 +3763,9 @@ package body Ch3 is
 
       Ident_Sloc := Token_Ptr;
       Check_Bad_Layout;
-      Idents (1) := P_Defining_Identifier (C_Comma_Colon);
-      Num_Idents := 1;
+      P_Def_Ids (Def_Ids);
 
-      while Comma_Present loop
-         Num_Idents := Num_Idents + 1;
-         Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
-      end loop;
-
-      --  If there are multiple identifiers, we repeatedly scan the
-      --  type and initialization expression information by resetting
-      --  the scan pointer (so that we get completely separate trees
-      --  for each occurrence).
-
-      if Num_Idents > 1 then
+      if Def_Ids.Num_Idents > 1 then
          Save_Scan_State (Scan_State);
       end if;
 
@@ -3817,7 +3781,7 @@ package body Ch3 is
 
          begin
             Decl_Node := New_Node (N_Component_Declaration, Ident_Sloc);
-            Set_Defining_Identifier (Decl_Node, Idents (Ident));
+            Set_Defining_Identifier (Decl_Node, Def_Ids.Idents (Ident));
 
             if Token = Tok_Constant then
                Error_Msg_SC ("constant component not permitted");
@@ -3876,7 +3840,7 @@ package body Ch3 is
                Set_Prev_Ids (Decl_Node, True);
             end if;
 
-            if Ident < Num_Idents then
+            if Ident < Def_Ids.Num_Idents then
                Set_More_Ids (Decl_Node, True);
             end if;
 
@@ -3890,7 +3854,7 @@ package body Ch3 is
                end if;
          end;
 
-         exit Ident_Loop when Ident = Num_Idents;
+         exit Ident_Loop when Ident = Def_Ids.Num_Idents;
          Ident := Ident + 1;
          Restore_Scan_State (Scan_State);
          T_Colon;

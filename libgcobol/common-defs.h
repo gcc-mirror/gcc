@@ -52,12 +52,53 @@
 // COBOL tables can have up to seven subscripts
 #define MAXIMUM_TABLE_DIMENSIONS 7
 
-// This bit gets turned on in the first or last byte (depending on the leading_e attribute
-// phrase) of a NumericDisplay to indicate that the value is negative.
+/*  COBOL has the concept of Numeric Display values, which use an entire byte
+    per digit.  IBM also calls this "Zoned Decimal".
+    
+    In ASCII, the digits are '0' through '9' (0x30 through 0x39'.  Signed
+    values are indicated by turning on the 0x40 bit in either the first
+    byte (for LEADING variables) or the last byte (for TRAILING).
 
-// When running the EBCDIC character set, the meaning of this bit is flipped,
-// because an EBCDIC zero is 0xF0, while ASCII is 0x30
-#define NUMERIC_DISPLAY_SIGN_BIT 0x40
+    In IBM EBCDIC, the representation is slightly more complex, because the
+    concept of Zone carries a little more information.  Unsigned numbers are
+    made up of just the EBCDIC digits '0' through '9' (0xF0 through 0xF9).
+
+    The TRAILING signed value +1234 has the byte sequence 0xF1 0xF2 0xF3 0xC3.
+    The TRAILING signed value -1234 has the byte sequence 0xF1 0xF2 0xF3 0xD3.
+    The LEADING  signed value +1234 has the byte sequence 0xC1 0xF2 0xF3 0xF3.
+    The LEADING  signed value -1234 has the byte sequence 0xD1 0xF2 0xF3 0xF3.
+
+    Note that for IBM EBCDIC, the nybble indicating sign has the same meaning
+    as for COMP-3/packed-decimal numbers.
+
+    The effective result of this is that for ASCII, the byte carrying the sign
+    is made negative by turning on the 0x40 bit.
+
+    For EBCDIC, the value must be constructed properly as a positive value by
+    setting the high nybble of the sign-carrying byte to 0xC0, after which the
+    value is flagged negative by turning on the 0x10 bit, turning the 0xC0 to
+    0xD0. */
+
+#define EBCDIC_MINUS (0x60)
+#define EBCDIC_PLUS  (0x4E)
+#define EBCDIC_ZERO  (0xF0)
+#define EBCDIC_NINE  (0xF9)
+
+#define PACKED_NYBBLE_PLUS     0x0C
+#define PACKED_NYBBLE_MINUS    0x0D
+#define PACKED_NYBBLE_UNSIGNED 0x0F
+
+#define NUMERIC_DISPLAY_SIGN_BIT_ASCII  0x40
+#define NUMERIC_DISPLAY_SIGN_BIT_EBCDIC 0x10
+
+#define NUMERIC_DISPLAY_SIGN_BIT (__gg__ebcdic_codeset_in_use ? \
+                                  NUMERIC_DISPLAY_SIGN_BIT_EBCDIC : \
+                                  NUMERIC_DISPLAY_SIGN_BIT_ASCII)
+
+#define SEPARATE_PLUS  (__gg__ebcdic_codeset_in_use ? EBCDIC_PLUS  : '+')
+#define SEPARATE_MINUS (__gg__ebcdic_codeset_in_use ? EBCDIC_MINUS : '-')
+#define ZONED_ZERO (__gg__ebcdic_codeset_in_use ? EBCDIC_ZERO : '0')
+#define ZONE_SIGNED_EBCDIC (0xC0)
 
 #define LEVEL01 (1)
 #define LEVEL49 (49)

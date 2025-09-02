@@ -21,6 +21,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -82,6 +83,8 @@ public:
   void visit (AST::IfLetExpr &expr) override;
   void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::BlockExpr &expr) override;
+  void visit (AST::AnonConst &expr) override;
+  void visit (AST::ConstBlock &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override;
   void visit (AST::PathInExpression &expr) override;
   void visit (AST::QualifiedPathInExpression &expr) override;
@@ -108,7 +111,6 @@ public:
   void visit (AST::FieldAccessExpr &expr) override;
   void visit (AST::LoopExpr &expr) override;
   void visit (AST::WhileLoopExpr &expr) override;
-  void visit (AST::ForLoopExpr &expr) override;
   void visit (AST::BreakExpr &expr) override;
   void visit (AST::ContinueExpr &expr) override;
   void visit (AST::BorrowExpr &expr) override;
@@ -124,8 +126,9 @@ public:
   void visit (AST::InlineAsm &expr) override;
   void visit (AST::LlvmInlineAsm &expr) override;
 
-  // Extra visitor for FormatArgs nodes
+  // Extra visitor for builtin macro nodes
   void visit (AST::FormatArgs &fmt) override;
+  void visit (AST::OffsetOf &offset_of) override;
 
 private:
   ASTLoweringExpr ();

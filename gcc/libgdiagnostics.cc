@@ -639,7 +639,8 @@ struct diagnostic_manager
 public:
   diagnostic_manager ()
   : m_current_diag (nullptr),
-    m_prev_diag_logical_loc (nullptr)
+    m_prev_diag_logical_loc (nullptr),
+    m_debug_physical_locations (false)
   {
     linemap_init (&m_line_table, BUILTINS_LOCATION);
     m_line_table.m_reallocator = xrealloc;
@@ -747,6 +748,9 @@ public:
   new_location_from_file_and_line (const diagnostic_file *file,
 				   diagnostic_line_num_t line_num)
   {
+    if (m_debug_physical_locations)
+      fprintf (stderr, "new_location_from_file_and_line (%s, %i)",
+	       file->get_name (), line_num);
     ensure_linemap_for_file_and_line (file, line_num);
     location_t loc = linemap_position_for_column (&m_line_table, 0);
     return new_location (loc);
@@ -757,6 +761,9 @@ public:
 				      diagnostic_line_num_t line_num,
 				      diagnostic_column_num_t column_num)
   {
+    if (m_debug_physical_locations)
+      fprintf (stderr, "new_location_from_file_line_column (%s, %i, %i)",
+	       file->get_name (), line_num, column_num);
     ensure_linemap_for_file_and_line (file, line_num);
     location_t loc = linemap_position_for_column (&m_line_table, column_num);
     return new_location (loc);
@@ -767,10 +774,21 @@ public:
 			   const diagnostic_physical_location *loc_start,
 			   const diagnostic_physical_location *loc_end)
   {
+    if (m_debug_physical_locations)
+      fprintf (stderr, "new_location_from_range (%p, %p, %p)",
+	       (const void *)loc_caret,
+	       (const void *)loc_start,
+	       (const void *)loc_end);
     return new_location
       (m_line_table.make_location (as_location_t (loc_caret),
 				   as_location_t (loc_start),
 				   as_location_t (loc_end)));
+  }
+
+  void
+  set_debug_physical_locations (bool value)
+  {
+    m_debug_physical_locations = value;
   }
 
   const diagnostic_logical_location *
@@ -874,11 +892,17 @@ private:
       linemap_add (&m_line_table, LC_ENTER, false, file->get_name (), 0);
     else
       {
-	line_map *map
-	  = const_cast<line_map *>
-	    (linemap_add (&m_line_table, LC_RENAME_VERBATIM, false,
-			  file->get_name (), 0));
-	((line_map_ordinary *)map)->included_from = UNKNOWN_LOCATION;
+	line_map_ordinary *last_map
+	  = LINEMAPS_LAST_ORDINARY_MAP (&m_line_table);
+	if (last_map->to_file != file->get_name ()
+	    || linenum < last_map->to_line)
+	  {
+	    line_map *map
+	      = const_cast<line_map *>
+	      (linemap_add (&m_line_table, LC_RENAME_VERBATIM, false,
+			    file->get_name (), 0));
+	    ((line_map_ordinary *)map)->included_from = UNKNOWN_LOCATION;
+	  }
       }
     linemap_line_start (&m_line_table, linenum, 100);
   }
@@ -888,11 +912,19 @@ private:
   {
     if (loc == UNKNOWN_LOCATION)
       return nullptr;
+    if (m_debug_physical_locations)
+      fprintf (stderr, ": new_location (%lx)", loc);
     if (diagnostic_physical_location **slot = m_location_t_map.get (loc))
-      return *slot;
+      {
+	if (m_debug_physical_locations)
+	  fprintf (stderr, ": cache hit: %p\n", (const void *)*slot);
+	return *slot;
+      }
     diagnostic_physical_location *phys_loc
       = new diagnostic_physical_location (this, loc);
     m_location_t_map.put (loc, phys_loc);
+    if (m_debug_physical_locations)
+      fprintf (stderr, ": cache miss: %p\n", (const void *)phys_loc);
     return phys_loc;
   }
 
@@ -909,6 +941,7 @@ private:
   const diagnostic *m_current_diag;
   const diagnostic_logical_location *m_prev_diag_logical_loc;
   std::unique_ptr<diagnostics::changes::change_set> m_change_set;
+  bool m_debug_physical_locations;
 };
 
 class impl_rich_location : public rich_location
@@ -1221,7 +1254,8 @@ public:
     m_level (level),
     m_rich_loc (diag_mgr.get_line_table ()),
     m_logical_loc (nullptr),
-    m_path (nullptr)
+    m_path (nullptr),
+    m_nesting_level (0)
   {
     m_metadata.set_lazy_digraphs (&m_graphs);
   }
@@ -1325,6 +1359,9 @@ public:
     return m_graphs;
   }
 
+  int get_nesting_level () const { return m_nesting_level; }
+  void set_nesting_level (int value) { m_nesting_level = value; }
+
 private:
   diagnostic_manager &m_diag_mgr;
   enum diagnostic_level m_level;
@@ -1335,6 +1372,7 @@ private:
   std::vector<std::unique_ptr<range_label>> m_labels;
   std::vector<std::unique_ptr<impl_rule>> m_rules;
   std::unique_ptr<diagnostic_execution_path> m_path;
+  int m_nesting_level;
 };
 
 static enum diagnostics::kind
@@ -1624,8 +1662,9 @@ GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
 GCC_DIAGNOSTIC_POP
     info.m_metadata = diag.get_metadata ();
     info.m_x_data = &diag;
+    m_dc.set_nesting_level (diag.get_nesting_level ());
     diagnostic_report_diagnostic (&m_dc, &info);
-
+    m_dc.set_nesting_level (0);
     m_dc.end_group ();
   }
 
@@ -1900,7 +1939,8 @@ diagnostic_manager_debug_dump_file (diagnostic_manager *,
 	fprintf (out, ", sarif_source_language=\"%s\"",
 		 file->get_sarif_source_language ());
       if (const content_buffer *buf = file->get_content ())
-	fprintf (out, ", content=(size=%zi)", buf->m_sz);
+	fprintf (out, ", content=(size=" HOST_SIZE_T_PRINT_DEC ")",
+		 buf->m_sz);
       fprintf (out, ")");
     }
   else
@@ -2971,4 +3011,24 @@ private_diagnostic_execution_path_add_event_3 (diagnostic_execution_path *path,
 	 std::unique_ptr <diagnostic_message_buffer> (msg_buf));
 
   return as_diagnostic_event_id (result);
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_manager_set_debug_physical_locations (diagnostic_manager *mgr,
+						 int value)
+{
+  FAIL_IF_NULL (mgr);
+  mgr->set_debug_physical_locations (value);
+}
+
+/* Private entrypoint.  */
+
+void
+private_diagnostic_set_nesting_level (diagnostic *diag,
+				      int nesting_level)
+{
+  FAIL_IF_NULL (diag);
+  diag->set_nesting_level (nesting_level);
 }

@@ -717,7 +717,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
   hashval_t result;
   int i;
   vn_reference_op_t vro;
-  poly_int64 off = -1;
+  poly_offset_int off = -1;
   bool deref = false;
 
   FOR_EACH_VEC_ELT (vr1->operands, i, vro)
@@ -736,7 +736,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
 	{
 	  if (maybe_ne (off, -1)
 	      && maybe_ne (off, 0))
-	    hstate.add_poly_int (off);
+	    hstate.add_poly_hwi (off.force_shwi ());
 	  off = -1;
 	  if (deref
 	      && vro->opcode == ADDR_EXPR)
@@ -850,7 +850,7 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
   j = 0;
   do
     {
-      poly_int64 off1 = 0, off2 = 0;
+      poly_offset_int off1 = 0, off2 = 0;
       vn_reference_op_t vro1, vro2;
       vn_reference_op_s tem1, tem2;
       bool deref1 = false, deref2 = false;
@@ -1219,7 +1219,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 		  offset = 0;
 		}
 	      else
-		offset += pop->off * BITS_PER_UNIT;
+		offset += poly_offset_int (pop->off) * BITS_PER_UNIT;
 	      op0_p = NULL;
 	      break;
 	    }
@@ -1270,7 +1270,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    offset += op->off * BITS_PER_UNIT;
+	    offset += poly_offset_int (op->off) * BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
@@ -3549,8 +3549,100 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
       /* Find the common base of ref and the lhs.  lhs_ops already
          contains valueized operands for the lhs.  */
+      poly_int64 extra_off = 0;
       i = vr->operands.length () - 1;
       j = lhs_ops.length () - 1;
+
+      /* The base should be always equal due to the above check.  */
+      if (! vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
+	return (void *)-1;
+      i--, j--;
+
+      /* The 2nd component should always exist and be a MEM_REF.  */
+      if (!(i >= 0 && j >= 0))
+	;
+      else if (vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
+	i--, j--;
+      else if (vr->operands[i].opcode == MEM_REF
+	       && lhs_ops[j].opcode == MEM_REF
+	       && known_ne (lhs_ops[j].off, -1)
+	       && known_ne (vr->operands[i].off, -1))
+	{
+	  bool found = false;
+	  /* When we ge a mismatch at a MEM_REF that is not the sole component
+	     try finding a match in one of the outer components and continue
+	     stripping there.  This happens when addresses of components get
+	     forwarded into dereferences.  */
+	  if (i > 0)
+	    {
+	      int temi = i - 1;
+	      extra_off = vr->operands[i].off;
+	      while (temi >= 0
+		     && known_ne (vr->operands[temi].off, -1))
+		{
+		  if (vr->operands[temi].type
+		      && lhs_ops[j].type
+		      && (TYPE_MAIN_VARIANT (vr->operands[temi].type)
+			  == TYPE_MAIN_VARIANT (lhs_ops[j].type)))
+		    {
+		      i = temi;
+		      /* Strip the component that was type matched to
+			 the MEM_REF.  */
+		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      i--, j--;
+		      /* Strip further equal components.  */
+		      found = true;
+		      break;
+		    }
+		  extra_off += vr->operands[temi].off;
+		  temi--;
+		}
+	    }
+	  if (!found && j > 0)
+	    {
+	      int temj = j - 1;
+	      extra_off = -lhs_ops[j].off;
+	      while (temj >= 0
+		     && known_ne (lhs_ops[temj].off, -1))
+		{
+		  if (vr->operands[i].type
+		      && lhs_ops[temj].type
+		      && (TYPE_MAIN_VARIANT (vr->operands[i].type)
+			  == TYPE_MAIN_VARIANT (lhs_ops[temj].type)))
+		    {
+		      j = temj;
+		      /* Strip the component that was type matched to
+			 the MEM_REF.  */
+		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      i--, j--;
+		      /* Strip further equal components.  */
+		      found = true;
+		      break;
+		    }
+		  extra_off += -lhs_ops[temj].off;
+		  temj--;
+		}
+	    }
+	  /* When the LHS is already at the outermost level simply
+	     adjust for any offset difference.  Further lookups
+	     will fail when there's too gross of a type compatibility
+	     issue.  */
+	  if (!found && j == 0)
+	    {
+	      extra_off = vr->operands[i].off - lhs_ops[j].off;
+	      i--, j--;
+	      found = true;
+	    }
+	  /* If we did find a match we'd eventually append a MEM_REF
+	     as component.  Don't.  */
+	  if (!found)
+	    return (void *)-1;
+	}
+      else
+	return (void *)-1;
+
+      /* Strip further common components, attempting to consume lhs_ops
+	 in full.  */
       while (j >= 0 && i >= 0
 	     && vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
 	{
@@ -3558,25 +3650,15 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  j--;
 	}
 
-      /* ???  The innermost op should always be a MEM_REF and we already
-         checked that the assignment to the lhs kills vr.  Thus for
-	 aggregate copies using char[] types the vn_reference_op_eq
-	 may fail when comparing types for compatibility.  But we really
-	 don't care here - further lookups with the rewritten operands
-	 will simply fail if we messed up types too badly.  */
-      poly_int64 extra_off = 0;
-      if (j == 0 && i >= 0
-	  && lhs_ops[0].opcode == MEM_REF
-	  && maybe_ne (lhs_ops[0].off, -1))
+      /* When we still didn't manage to strip off all components from
+	 lhs_op, opportunistically continue for those we can handle
+	 via extra_off.  Note this is an attempt to fixup secondary
+	 copies after we hit the !found && j == 0 case above.  */
+      while (j != -1
+	     && known_ne (lhs_ops[j].off, -1U))
 	{
-	  if (known_eq (lhs_ops[0].off, vr->operands[i].off))
-	    i--, j--;
-	  else if (vr->operands[i].opcode == MEM_REF
-		   && maybe_ne (vr->operands[i].off, -1))
-	    {
-	      extra_off = vr->operands[i].off - lhs_ops[0].off;
-	      i--, j--;
-	    }
+	  extra_off += -lhs_ops[j].off;
+	  j--;
 	}
 
       /* i now points to the first additional op.
@@ -5511,7 +5593,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 			  if (result)
 			    {
 			      bool changed = set_ssa_val_to (lhs, result);
-			      vn_nary_op_insert_stmt (stmt, result);
+			      if (TREE_CODE (result) == SSA_NAME)
+				vn_nary_op_insert_stmt (stmt, result);
 			      return changed;
 			    }
 			}
@@ -5527,7 +5610,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 			  if (result)
 			    {
 			      bool changed = set_ssa_val_to (lhs, result);
-			      vn_nary_op_insert_stmt (stmt, result);
+			      if (TREE_CODE (result) == SSA_NAME)
+				vn_nary_op_insert_stmt (stmt, result);
 			      return changed;
 			    }
 			}
@@ -5567,6 +5651,55 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
+    case BIT_FIELD_REF:
+      if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
+	{
+	  tree op0 = TREE_OPERAND (rhs1, 0);
+	  gassign *ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op0));
+	  if (ass
+	      && !gimple_has_volatile_ops (ass)
+	      && vn_get_stmt_kind (ass) == VN_REFERENCE)
+	    {
+	      tree last_vuse = gimple_vuse (ass);
+	      tree op = gimple_assign_rhs1 (ass);
+	      /* Avoid building invalid and unexpected refs.  */
+	      if (TREE_CODE (op) != TARGET_MEM_REF
+		  && TREE_CODE (op) != BIT_FIELD_REF
+		  && TREE_CODE (op) != REALPART_EXPR
+		  && TREE_CODE (op) != IMAGPART_EXPR)
+		{
+		  tree op = build3 (BIT_FIELD_REF, TREE_TYPE (rhs1),
+				    gimple_assign_rhs1 (ass),
+				    TREE_OPERAND (rhs1, 1),
+				    TREE_OPERAND (rhs1, 2));
+		  tree result = vn_reference_lookup (op, gimple_vuse (ass),
+						     default_vn_walk_kind,
+						     NULL, true, &last_vuse);
+		  if (result
+		      && useless_type_conversion_p (type, TREE_TYPE (result)))
+		    return set_ssa_val_to (lhs, result);
+		  else if (result
+			   && TYPE_SIZE (type)
+			   && TYPE_SIZE (TREE_TYPE (result))
+			   && operand_equal_p (TYPE_SIZE (type),
+					       TYPE_SIZE (TREE_TYPE (result))))
+		    {
+		      gimple_match_op match_op (gimple_match_cond::UNCOND,
+						VIEW_CONVERT_EXPR,
+						type, result);
+		      result = vn_nary_build_or_lookup (&match_op);
+		      if (result)
+			{
+			  bool changed = set_ssa_val_to (lhs, result);
+			  if (TREE_CODE (result) == SSA_NAME)
+			    vn_nary_op_insert_stmt (stmt, result);
+			  return changed;
+			}
+		    }
+		}
+	    }
+	}
+      break;
     case TRUNC_DIV_EXPR:
       if (TYPE_UNSIGNED (type))
 	break;
@@ -5597,7 +5730,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  if (result)
 		    {
 		      bool changed = set_ssa_val_to (lhs, result);
-		      vn_nary_op_insert_stmt (stmt, result);
+		      if (TREE_CODE (result) == SSA_NAME)
+			vn_nary_op_insert_stmt (stmt, result);
 		      return changed;
 		    }
 		}

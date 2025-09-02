@@ -286,10 +286,15 @@
   (and (match_code "const_int")
        (match_test "UINTVAL (op) <= 7")))
 
-;; An immediate that fits into 24 bits.
-(define_predicate "aarch64_imm24"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (UINTVAL (op), 0, 0xffffff)")))
+;; An immediate that fits into 24 bits, but needs splitting.
+(define_predicate "aarch64_split_imm24"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT i = UINTVAL (op);
+  return (IN_RANGE (i, 0, 0xffffff)
+          && !aarch64_move_imm (i, mode)
+          && !aarch64_uimm12_shift (i));
+})
 
 (define_predicate "aarch64_mem_pair_offset"
   (and (match_code "const_int")
@@ -1078,3 +1083,19 @@
 (define_predicate "aarch64_maskload_else_operand"
   (and (match_code "const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+;; Check for a VNx16BI predicate that is a canonical PTRUE for the given
+;; predicate mode.
+(define_special_predicate "aarch64_ptrue_all_operand"
+  (and (match_code "const_vector")
+       (match_test "aarch64_ptrue_all_mode (op) == mode")))
+
+(define_predicate "aarch64_reg_Uc0_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "satisfies_constraint_Uc0 (op)"))))
+
+(define_predicate "aarch64_reg_Uc1_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "satisfies_constraint_Uc1 (op)"))))

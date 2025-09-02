@@ -500,7 +500,7 @@ class ANALYZE
     int level;
     inline static int analyze_level=1;
   public:
-    ANALYZE(const char *func_) : func(func_)
+    ANALYZE(const char *func_) : func(func_) // cppcheck-suppress noExplicitConstructor
       {
       level = 0;
       if( getenv("Analyze") )

@@ -24,12 +24,14 @@
 #include "rust-hir-full-decls.h"
 #include "rust-tyty-bounds.h"
 #include "rust-tyty-region.h"
+#include "rust-ast.h"
 #include "optional.h"
 
 namespace Rust {
 namespace TyTy {
 
 class ParamType;
+class BaseGeneric;
 
 struct RegionConstraints
 {
@@ -44,22 +46,24 @@ class SubstitutionArgumentMappings;
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (HIR::TypeParam &generic, ParamType *param);
+  SubstitutionParamMapping (HIR::GenericParam &generic, BaseGeneric *param);
 
   SubstitutionParamMapping (const SubstitutionParamMapping &other);
 
   std::string as_string () const;
 
   bool fill_param_ty (SubstitutionArgumentMappings &subst_mappings,
-		      location_t locus);
+		      location_t locus, bool needs_bounds_check = true);
 
   SubstitutionParamMapping clone () const;
 
-  ParamType *get_param_ty ();
+  BaseGeneric *get_param_ty ();
+  const BaseGeneric *get_param_ty () const;
 
-  const ParamType *get_param_ty () const;
+  HIR::GenericParam &get_generic_param ();
+  const HIR::GenericParam &get_generic_param () const;
 
-  HIR::TypeParam &get_generic_param ();
+  Identifier get_type_representation () const;
 
   // this is used for the backend to override the HirId ref of the param to
   // what the concrete type is for the rest of the context
@@ -76,8 +80,8 @@ public:
   bool need_substitution () const;
 
 private:
-  HIR::TypeParam &generic;
-  ParamType *param;
+  HIR::GenericParam &generic;
+  BaseGeneric *param;
 };
 
 /**
@@ -147,13 +151,11 @@ public:
 
   SubstitutionArg &operator= (const SubstitutionArg &other);
 
-  BaseType *get_tyty ();
-
-  const BaseType *get_tyty () const;
+  BaseType *get_tyty () const;
 
   const SubstitutionParamMapping *get_param_mapping () const;
 
-  const ParamType *get_param_ty () const;
+  const BaseGeneric *get_param_ty () const;
 
   static SubstitutionArg error ();
 
@@ -165,7 +167,7 @@ public:
 
 private:
   const SubstitutionParamMapping *param;
-  const ParamType *original_param;
+  const BaseGeneric *original_param;
   BaseType *argument;
 };
 
@@ -205,7 +207,7 @@ public:
 
   bool is_error () const;
 
-  bool get_argument_for_symbol (const ParamType *param_to_find,
+  bool get_argument_for_symbol (const BaseGeneric *param_to_find,
 				SubstitutionArg *argument) const;
 
   /** Return type parameter index for symbol */

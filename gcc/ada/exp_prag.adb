@@ -134,7 +134,9 @@ package body Exp_Prag is
       --      Analyze_xxx_In_Decl_Part). The second part of the analysis will
       --      not happen if the pragma is rewritten.
 
-      if Assertion_Expression_Pragma (Prag_Id) and then Is_Ignored (N) then
+      if Assertion_Expression_Pragma (Prag_Id)
+        and then Is_Ignored_In_Codegen (N)
+      then
          return;
 
       --  Rewrite the pragma into a null statement when it is ignored using
@@ -143,7 +145,7 @@ package body Exp_Prag is
 
       elsif Should_Ignore_Pragma_Sem (N)
         or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
-                  and then Ignore_Rep_Clauses)
+                 and then Ignore_Rep_Clauses)
       then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
          return;
@@ -480,7 +482,7 @@ package body Exp_Prag is
    begin
       --  Nothing to do if pragma is ignored
 
-      if Is_Ignored (N) then
+      if Is_Ignored_In_Codegen (N) then
          return;
       end if;
 
@@ -1837,7 +1839,7 @@ package body Exp_Prag is
       --  Do nothing if pragma is not enabled. If pragma is disabled, it has
       --  already been rewritten as a Null statement.
 
-      if Is_Ignored (CCs) then
+      if Is_Ignored_In_Codegen (CCs) then
          return;
 
       --  Guard against malformed contract cases
@@ -2538,7 +2540,7 @@ package body Exp_Prag is
       --  Nothing to do when the pragma is ignored because its semantics are
       --  suppressed.
 
-      if Is_Ignored (IC_Prag) then
+      if Is_Ignored_In_Codegen (IC_Prag) then
          return;
 
       --  Nothing to do when the pragma or its argument are illegal because
@@ -3001,7 +3003,7 @@ package body Exp_Prag is
       --  Also do this in CodePeer mode, because the expanded code is too
       --  complicated for CodePeer to analyse.
 
-      if Is_Ignored (N)
+      if Is_Ignored_In_Codegen (N)
         or else Chars (Last_Var) = Name_Structural
         or else CodePeer_Mode
       then
@@ -3391,7 +3393,7 @@ package body Exp_Prag is
       --  Do nothing if pragma is not present or is disabled.
       --  Also ignore structural variants for execution.
 
-      if Is_Ignored (Prag)
+      if Is_Ignored_In_Codegen (Prag)
         or else Chars (Nlists.Last (Choices (Last_Variant))) = Name_Structural
       then
          return;

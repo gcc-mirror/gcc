@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "diagnostics/event-id.h"
+#include "diagnostics/logging.h"
 #include "cpplib.h"
 #include "digraph.h"
 #include "ordered-hash-map.h"
@@ -88,6 +89,12 @@ diagnostic_emission_context::get_pending_diagnostic () const
 bool
 diagnostic_emission_context::warn (const char *gmsgid, ...)
 {
+  auto dc_logger = global_dc->get_logger ();
+  diagnostics::logging::log_function_params
+    (dc_logger, "ana::diagnostic_emission_context::warn")
+    .log_param_string ("gmsgid", gmsgid);
+  diagnostics::logging::auto_inc_depth depth_sentinel (dc_logger);
+
   const pending_diagnostic &pd = get_pending_diagnostic ();
   auto_diagnostic_group d;
   va_list ap;
@@ -97,6 +104,11 @@ diagnostic_emission_context::warn (const char *gmsgid, ...)
 						   pd.get_controlling_option (),
 						   gmsgid, &ap);
   va_end (ap);
+
+  if (dc_logger)
+    dc_logger->log_bool_return ("ana::diagnostic_emission_context::warn",
+				result);
+
   return result;
 }
 
@@ -106,6 +118,12 @@ diagnostic_emission_context::warn (const char *gmsgid, ...)
 void
 diagnostic_emission_context::inform (const char *gmsgid, ...)
 {
+  auto dc_logger = global_dc->get_logger ();
+  diagnostics::logging::log_function_params
+    (dc_logger, "ana::diagnostic_emission_context::inform")
+    .log_param_string ("gmsgid", gmsgid);
+  diagnostics::logging::auto_inc_depth depth_sentinel (dc_logger);
+
   const pending_diagnostic &pd = get_pending_diagnostic ();
   auto_diagnostic_group d;
   va_list ap;

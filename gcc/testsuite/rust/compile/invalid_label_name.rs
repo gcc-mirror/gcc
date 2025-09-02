@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-name-resolution-2.0" }
 pub fn function() {
     'continue: loop {
         // { dg-error "invalid label name .'continue." "" { target *-*-* } .-1 }

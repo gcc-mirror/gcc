@@ -268,7 +268,8 @@ convert_to_void (tree expr, impl_conv_void implicit)
     return expr;
   switch (TREE_CODE (expr))
     {
-      case COND_EXPR: {
+    case COND_EXPR:
+      {
 	/* The two parts of a cond expr might be separate lvalues.  */
 	tree op1 = TREE_OPERAND (expr, 1);
 	tree op2 = TREE_OPERAND (expr, 2);
@@ -294,7 +295,8 @@ convert_to_void (tree expr, impl_conv_void implicit)
 	break;
       }
 
-      case COMPOUND_EXPR: {
+    case COMPOUND_EXPR:
+      {
 	/* The second part of a compound expr contains the value.  */
 	tree op1 = TREE_OPERAND (expr, 1);
 	tree new_op1;
@@ -323,7 +325,8 @@ convert_to_void (tree expr, impl_conv_void implicit)
       maybe_warn_nodiscard (expr, implicit);
       break;
 
-      case INDIRECT_REF: {
+    case INDIRECT_REF:
+      {
 	tree type = TREE_TYPE (expr);
 	int is_reference = TYPE_REF_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
 	int is_volatile = TYPE_VOLATILE (type);
@@ -518,7 +521,8 @@ convert_to_void (tree expr, impl_conv_void implicit)
 	break;
       }
 
-      case VAR_DECL: {
+    case VAR_DECL:
+      {
 	/* External variables might be incomplete.  */
 	tree type = TREE_TYPE (expr);
 	int is_complete = COMPLETE_TYPE_P (type);
@@ -1485,7 +1489,8 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void *data)
      parameter pack.  ??? Should some of these be in cp_walk_subtrees?  */
   switch (TREE_CODE (t))
     {
-      case DECL_EXPR: {
+    case DECL_EXPR:
+      {
 	tree decl = DECL_EXPR_DECL (t);
 	if (is_typedef_decl (decl))
 	  /* Since we stop at typedefs above, we need to look through them at
@@ -1506,7 +1511,8 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 0;
       return NULL_TREE;
 
-      case DECLTYPE_TYPE: {
+    case DECLTYPE_TYPE:
+      {
 	/* When traversing a DECLTYPE_TYPE_EXPR, we need to set
 	   type_pack_expansion_p to false so that any placeholders
 	   within the expression don't get marked as parameter packs.  */
@@ -1970,7 +1976,8 @@ rs_tree_equal (tree t1, tree t2)
     case SAVE_EXPR:
       return rs_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
 
-      case CALL_EXPR: {
+    case CALL_EXPR:
+      {
 	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2))
 	  return false;
 
@@ -1996,7 +2003,8 @@ rs_tree_equal (tree t1, tree t2)
 	return true;
       }
 
-      case TARGET_EXPR: {
+    case TARGET_EXPR:
+      {
 	tree o1 = TREE_OPERAND (t1, 0);
 	tree o2 = TREE_OPERAND (t2, 0);
 
@@ -2067,7 +2075,8 @@ rs_tree_equal (tree t1, tree t2)
     case tcc_expression:
     case tcc_vl_exp:
     case tcc_reference:
-      case tcc_statement: {
+    case tcc_statement:
+      {
 	int n = rs_tree_operand_length (t1);
 	if (TREE_CODE_CLASS (code1) == tcc_vl_exp
 	    && n != TREE_OPERAND_LENGTH (t2))
@@ -2095,7 +2104,11 @@ rs_tree_equal (tree t1, tree t2)
 
 /* TRUE iff TYPE is publicly & uniquely derived from PARENT.  */
 
-bool publicly_uniquely_derived_p (tree, tree) { return false; }
+bool
+publicly_uniquely_derived_p (tree, tree)
+{
+  return false;
+}
 
 // forked from gcc/cp/typeck.cc comp_except_types
 
@@ -3375,7 +3388,11 @@ release_tree_vector (vec<tree, va_gc> *vec)
 
 /* As above, but also check value-dependence of the expression as a whole.  */
 
-bool instantiation_dependent_expression_p (tree) { return false; }
+bool
+instantiation_dependent_expression_p (tree)
+{
+  return false;
+}
 
 // forked from gcc/cp/cvt.cc cp_get_callee
 
@@ -3425,7 +3442,11 @@ scalarish_type_p (const_tree t)
    constructors are deleted.  This function implements the ABI notion of
    non-trivial copy, which has diverged from the one in the standard.  */
 
-bool type_has_nontrivial_copy_init (const_tree) { return false; }
+bool
+type_has_nontrivial_copy_init (const_tree)
+{
+  return false;
+}
 
 // forked from gcc/cp/tree.cc build_local_temp
 
@@ -3448,7 +3469,11 @@ build_local_temp (tree type)
 /* Returns true iff DECL is a capture proxy for a normal capture
    (i.e. without explicit initializer).  */
 
-bool is_normal_capture_proxy (tree) { return false; }
+bool
+is_normal_capture_proxy (tree)
+{
+  return false;
+}
 
 // forked from gcc/cp/c-common.cc reject_gcc_builtin
 
@@ -3522,7 +3547,8 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
     case BIT_NOT_EXPR:
       return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
 
-      case COMPONENT_REF: {
+    case COMPONENT_REF:
+      {
 	tree field;
 
 	field = TREE_OPERAND (exp, 1);
@@ -3909,7 +3935,8 @@ retry:
       break;
 
     case OFFSET_TYPE:
-      bad_member : {
+    bad_member:
+      {
 	tree member = TREE_OPERAND (value, 1);
 	if (is_overloaded_fn (member))
 	  member = get_first_fn (member);
@@ -3994,13 +4021,21 @@ decl_constant_var_p (tree decl)
 /* Returns true iff DECL is a variable or function declared with an auto type
    that has not yet been deduced to a real type.  */
 
-bool undeduced_auto_decl (tree) { return false; }
+bool
+undeduced_auto_decl (tree)
+{
+  return false;
+}
 
 // forked from gcc/cp/decl.cc require_deduced_type
 
 /* Complain if DECL has an undeduced return type.  */
 
-bool require_deduced_type (tree, tsubst_flags_t) { return true; }
+bool
+require_deduced_type (tree, tsubst_flags_t)
+{
+  return true;
+}
 
 /* Return the location of a tree passed to %+ formats.  */
 
@@ -4290,10 +4325,9 @@ struct GTY ((for_user)) source_location_table_entry
 
 } // namespace Rust
 
-extern void
-gt_pch_nx (Rust::source_location_table_entry &);
-extern void
-gt_pch_nx (Rust::source_location_table_entry *, gt_pointer_operator, void *);
+extern void gt_pch_nx (Rust::source_location_table_entry &);
+extern void gt_pch_nx (Rust::source_location_table_entry *, gt_pointer_operator,
+		       void *);
 
 namespace Rust {
 
@@ -4421,7 +4455,8 @@ lvalue_kind (const_tree ref)
     case VIEW_CONVERT_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
-      case ARRAY_REF: {
+    case ARRAY_REF:
+      {
 	tree op1 = TREE_OPERAND (ref, 0);
 	if (TREE_CODE (TREE_TYPE (op1)) == ARRAY_TYPE)
 	  {
@@ -4518,7 +4553,8 @@ lvalue_kind (const_tree ref)
       op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1));
       break;
 
-      case COND_EXPR: {
+    case COND_EXPR:
+      {
 	tree op1 = TREE_OPERAND (ref, 1);
 	if (!op1)
 	  op1 = TREE_OPERAND (ref, 0);

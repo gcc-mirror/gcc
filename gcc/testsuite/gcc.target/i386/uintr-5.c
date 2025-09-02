@@ -7,6 +7,6 @@
 typedef unsigned int uword_t __attribute__ ((mode (__word__)));
 
 void
-UINTR_hanlder (struct __uintr_frame *frame, uword_t uirrv)
+UINTR_handler (struct __uintr_frame *frame, uword_t uirrv)
 {
 }

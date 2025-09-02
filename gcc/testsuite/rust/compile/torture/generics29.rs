@@ -5,7 +5,6 @@ struct Foo<A, B>(A, B);
 
 impl Foo<i32, f32> {
     fn test<X>(self, a: X) -> X {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         a
     }
 }

@@ -17,11 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-type.h"
-#include "rust-compile-expr.h"
 #include "rust-constexpr.h"
-#include "rust-gcc.h"
+#include "rust-compile-base.h"
 
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 
 namespace Rust {
@@ -121,6 +121,13 @@ TyTyResolveCompile::visit (const TyTy::InferType &type)
 
   if (orig == lookup)
     {
+      TyTy::BaseType *def = nullptr;
+      if (type.default_type (&def))
+	{
+	  translated = TyTyResolveCompile::compile (ctx, def);
+	  return;
+	}
+
       translated = error_mark_node;
       return;
     }
@@ -130,6 +137,12 @@ TyTyResolveCompile::visit (const TyTy::InferType &type)
 
 void
 TyTyResolveCompile::visit (const TyTy::ParamType &)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::ConstType &)
 {
   translated = error_mark_node;
 }
@@ -189,7 +202,7 @@ TyTyResolveCompile::visit (const TyTy::ClosureType &type)
 void
 TyTyResolveCompile::visit (const TyTy::FnType &type)
 {
-  Backend::typed_identifier receiver;
+  Backend::typed_identifier receiver ("", NULL_TREE, UNKNOWN_LOCATION);
   std::vector<Backend::typed_identifier> parameters;
   std::vector<Backend::typed_identifier> results;
 
@@ -454,7 +467,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
     }
 
   tree struct_type_record = Backend::struct_type (fields);
-  translated = Backend::named_type (type.as_string (), struct_type_record,
+  translated = Backend::named_type (type.get_name (), struct_type_record,
 				    type.get_ident ().locus);
 }
 
@@ -463,26 +476,15 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 {
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
+  TyTy::ConstType *const_capacity = type.get_capacity ();
+  tree folded_capacity_expr = const_capacity->get_value ();
 
-  ctx->push_const_context ();
+  // build_index_type takes the maximum index, which is one less than
+  // the length.
+  tree index_type_tree = build_index_type (
+    fold_build2 (MINUS_EXPR, sizetype, folded_capacity_expr, size_one_node));
 
-  HIR::Expr &hir_capacity_expr = type.get_capacity_expr ();
-  TyTy::BaseType *capacity_expr_ty = nullptr;
-  bool ok = ctx->get_tyctx ()->lookup_type (
-    hir_capacity_expr.get_mappings ().get_hirid (), &capacity_expr_ty);
-  rust_assert (ok);
-  tree capacity_expr = HIRCompileBase::compile_constant_expr (
-    ctx, hir_capacity_expr.get_mappings ().get_hirid (), capacity_expr_ty,
-    capacity_expr_ty, Resolver::CanonicalPath::create_empty (),
-    hir_capacity_expr, type.get_locus (), hir_capacity_expr.get_locus ());
-
-  ctx->pop_const_context ();
-
-  tree folded_capacity_expr = fold_expr (capacity_expr);
-
-  translated = Backend::array_type (element_type, folded_capacity_expr);
-  if (translated != error_mark_node)
-    translated = ctx->insert_compiled_type (translated);
+  translated = build_array_type (element_type, index_type_tree, false);
 }
 
 void
@@ -755,7 +757,9 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
 void
 TyTyResolveCompile::visit (const TyTy::OpaqueType &type)
 {
-  translated = error_mark_node;
+  rust_assert (type.can_resolve ());
+  auto underlying = type.resolve ();
+  translated = TyTyResolveCompile::compile (ctx, underlying, trait_object_mode);
 }
 
 tree

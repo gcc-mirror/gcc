@@ -38,6 +38,9 @@ public:
     const Resolver::CanonicalPath &canonical_path, HIR::Expr &const_value_expr,
     location_t locus, location_t expr_locus);
 
+  static tree query_compile_const_expr (Context *ctx, TyTy::BaseType *expr_ty,
+					HIR::Expr &const_value_expr);
+
 protected:
   HIRCompileBase (Context *ctx) : ctx (ctx) {}
 

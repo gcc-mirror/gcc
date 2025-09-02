@@ -1319,6 +1319,9 @@
   (ior (match_operand 0 "nonimmediate_operand")
        (match_test "const_vec_duplicate_p (op)")))
 
+(define_predicate "const_vec_dup_operand"
+       (match_test "const_vec_duplicate_p (op)"))
+
 ;; Return true when OP is either register operand, or any
 ;; CONST_VECTOR.
 (define_predicate "reg_or_const_vector_operand"
@@ -1714,9 +1717,13 @@
 (define_predicate "div_operator"
   (match_code "div"))
 
-;; Return true if this is a and, ior or xor operation.
+;; Return true if this is an and, ior or xor operation.
 (define_predicate "logic_operator"
   (match_code "and,ior,xor"))
+
+;; Return true if this is an and operation.
+(define_predicate "and_operator"
+  (match_code "and"))
 
 ;; Return true if this is a plus, minus, and, ior or xor operation.
 (define_predicate "plusminuslogic_operator"
@@ -1740,8 +1747,12 @@
 (define_predicate "compare_operator"
   (match_code "compare"))
 
-(define_predicate "extract_operator"
-  (match_code "zero_extract,sign_extract"))
+(define_predicate "extract_high_operator"
+  (match_code "zero_extract,sign_extract,ashiftrt,lshiftrt")
+{
+  return (const8_operand (XEXP (op, 1), VOIDmode)
+	  && (BINARY_P (op) || const8_operand (XEXP (op, 2), VOIDmode)));
+})
 
 ;; Return true if OP is a memory operand, aligned to
 ;; less than its natural alignment.

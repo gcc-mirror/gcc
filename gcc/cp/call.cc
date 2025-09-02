@@ -7904,28 +7904,6 @@ extract_call_expr (tree call)
     call = TREE_OPERAND (call, 0);
   if (TREE_CODE (call) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (call);
-  if (cxx_dialect >= cxx20)
-    switch (TREE_CODE (call))
-      {
-	/* C++20 rewritten comparison operators.  */
-      case TRUTH_NOT_EXPR:
-	call = TREE_OPERAND (call, 0);
-	break;
-      case LT_EXPR:
-      case LE_EXPR:
-      case GT_EXPR:
-      case GE_EXPR:
-      case SPACESHIP_EXPR:
-	{
-	  tree op0 = TREE_OPERAND (call, 0);
-	  if (integer_zerop (op0))
-	    call = TREE_OPERAND (call, 1);
-	  else
-	    call = op0;
-	}
-	break;
-      default:;
-      }
 
   if (TREE_CODE (call) != CALL_EXPR
       && TREE_CODE (call) != AGGR_INIT_EXPR
@@ -15054,7 +15032,10 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
 
   /* P2718R0 - in C++23 for-range-initializer, extend all temps.  */
   if (DECL_NAME (decl) == for_range__identifier
-      && flag_range_for_ext_temps)
+      && flag_range_for_ext_temps
+      /* Iterating expansion statement decl is static right now, but that
+	 could change depending on CWG3044 and CWG3043.  */
+      && !TREE_STATIC (decl))
     {
       gcc_checking_assert (!cond_guard);
       return extend_all_temps (decl, init, cleanups);

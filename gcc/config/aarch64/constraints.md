@@ -312,15 +312,9 @@
 
 (define_constraint "Uc1"
   "@internal
-  A constraint that matches the integers 1...64."
+  A constraint that matches the integers 0...62."
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, 1, 64)")))
-
-(define_constraint "Uc2"
-  "@internal
-  A constraint that matches the integers -1...62."
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, -1, 62)")))
+       (match_test "IN_RANGE (ival, 0, 62)")))
 
 (define_constraint "Up3"
   "@internal

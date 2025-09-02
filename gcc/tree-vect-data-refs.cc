@@ -1448,17 +1448,20 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
   if (loop_vinfo
       && dr_safe_speculative_read_required (stmt_info))
     {
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      auto vectype_size
+      /* The required target alignment must be a power-of-2 value and is
+	 computed as the product of vector element size, VF and group size.
+	 We compute the constant part first as VF may be a variable.  For
+	 variable VF, the power-of-2 check of VF is deferred to runtime.  */
+      auto align_factor_c
 	= TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
-      poly_uint64 new_alignment = vf * vectype_size;
-      /* If we have a grouped access we require that the alignment be N * elem.  */
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	new_alignment *= DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
+	align_factor_c *= DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
 
-      unsigned HOST_WIDE_INT target_alignment;
-      if (new_alignment.is_constant (&target_alignment)
-	  && pow2p_hwi (target_alignment))
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      poly_uint64 new_alignment = vf * align_factor_c;
+
+      if ((vf.is_constant () && pow2p_hwi (new_alignment.to_constant ()))
+	  || (!vf.is_constant () && pow2p_hwi (align_factor_c)))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -1467,7 +1470,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	      dump_dec (MSG_NOTE, new_alignment);
 	      dump_printf (MSG_NOTE, " bytes.\n");
 	    }
-	  vector_alignment = target_alignment;
+	  vector_alignment = new_alignment;
 	}
     }
 
@@ -1856,21 +1859,14 @@ vect_get_data_access_cost (vec_info *vinfo, dr_vec_info *dr_info,
 			   stmt_vector_for_cost *prologue_cost_vec)
 {
   stmt_vec_info stmt_info = dr_info->stmt;
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  int ncopies;
-
-  if (PURE_SLP_STMT (stmt_info))
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, STMT_VINFO_VECTYPE (stmt_info));
 
   if (DR_IS_READ (dr_info->dr))
-    vect_get_load_cost (vinfo, stmt_info, NULL, ncopies,
+    vect_get_load_cost (vinfo, stmt_info, NULL, 1,
 			alignment_support_scheme, misalignment, true,
 			inside_cost, outside_cost, prologue_cost_vec,
 			body_cost_vec, false);
   else
-    vect_get_store_cost (vinfo,stmt_info, NULL, ncopies,
+    vect_get_store_cost (vinfo,stmt_info, NULL, 1,
 			 alignment_support_scheme, misalignment, inside_cost,
 			 body_cost_vec);
 
@@ -2445,6 +2441,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      - The cost of peeling (the extra runtime checks, the increase
        in code size).  */
 
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
@@ -2453,9 +2450,18 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_info = dr_info->stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      do_peeling
-	= vector_alignment_reachable_p (dr_info,
-					LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+
+      /* With variable VF, unsafe speculative read can be avoided for known
+	 inbounds DRs as long as partial vectors are used.  */
+      if (!vf.is_constant ()
+	  && dr_safe_speculative_read_required (stmt_info)
+	  && DR_SCALAR_KNOWN_BOUNDS (dr_info))
+	{
+	  dr_set_safe_speculative_read_required (stmt_info, false);
+	  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	}
+
+      do_peeling = vector_alignment_reachable_p (dr_info, vf);
       if (do_peeling)
         {
 	  if (known_alignment_for_access_p (dr_info, vectype))
@@ -2495,7 +2501,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      poly_uint64 nscalars = npeel_tmp;
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
-		  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 		  unsigned group_size = 1;
 		  if (STMT_SLP_TYPE (stmt_info)
 		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -2964,41 +2969,28 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                   break;
                 }
 
-	      /* At present we don't support versioning for alignment
-		 with variable VF, since there's no guarantee that the
-		 VF is a power of two.  We could relax this if we added
-		 a way of enforcing a power-of-two size.  */
-	      unsigned HOST_WIDE_INT size;
-	      if (!GET_MODE_SIZE (TYPE_MODE (vectype)).is_constant (&size))
-		{
-		  do_versioning = false;
-		  break;
-		}
-
 	      /* Forcing alignment in the first iteration is no good if
 		 we don't keep it across iterations.  For now, just disable
 		 versioning in this case.
 		 ?? We could actually unroll the loop to achieve the required
 		 overall step alignment, and forcing the alignment could be
 		 done by doing some iterations of the non-vectorized loop.  */
-	      if (!multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-			       * DR_STEP_ALIGNMENT (dr),
+	      if (!multiple_p (vf * DR_STEP_ALIGNMENT (dr),
 			       DR_TARGET_ALIGNMENT (dr_info)))
 		{
 		  do_versioning = false;
 		  break;
 		}
 
-              /* The rightmost bits of an aligned address must be zeros.
-                 Construct the mask needed for this test.  For example,
-                 GET_MODE_SIZE for the vector mode V4SI is 16 bytes so the
-                 mask must be 15 = 0xf. */
-	      int mask = size - 1;
+	      /* Use "mask = DR_TARGET_ALIGNMENT - 1" to test rightmost address
+		 bits for runtime alignment check.  For example, for 16 bytes
+		 target alignment the mask is 15 = 0xf.  */
+	      poly_uint64 mask = DR_TARGET_ALIGNMENT (dr_info) - 1;
 
 	      /* FORNOW: use the same mask to test all potentially unaligned
 		 references in the loop.  */
-	      if (LOOP_VINFO_PTR_MASK (loop_vinfo)
-		  && LOOP_VINFO_PTR_MASK (loop_vinfo) != mask)
+	      if (maybe_ne (LOOP_VINFO_PTR_MASK (loop_vinfo), 0U)
+		  && maybe_ne (LOOP_VINFO_PTR_MASK (loop_vinfo), mask))
 		{
 		  do_versioning = false;
 		  break;
@@ -4438,8 +4430,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
    MASKED_P is true if the load or store is conditional.  MEMORY_TYPE is
    the type of the memory elements being loaded or stored.  OFFSET_TYPE
    is the type of the offset that is being applied to the invariant
-   base address.  SCALE is the amount by which the offset should
-   be multiplied *after* it has been converted to address width.
+   base address.  If OFFSET_TYPE is scalar the function chooses an
+   appropriate vector type for it.  SCALE is the amount by which the
+   offset should be multiplied *after* it has been converted to address width.
 
    Return true if the function is supported, storing the function id in
    *IFN_OUT and the vector type for the offset in *OFFSET_VECTYPE_OUT.
@@ -4482,9 +4475,15 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 
   for (;;)
     {
-      tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
-      if (!offset_vectype)
-	return false;
+      tree offset_vectype;
+      if (VECTOR_TYPE_P (offset_type))
+	offset_vectype = offset_type;
+      else
+	{
+	  offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
+	  if (!offset_vectype)
+	    return false;
+	}
 
       /* Test whether the target supports this combination.  */
       if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
@@ -4515,10 +4514,15 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	  return true;
 	}
 
+      /* For fixed offset vector type we're done.  */
+      if (VECTOR_TYPE_P (offset_type))
+	return false;
+
       if (TYPE_PRECISION (offset_type) >= POINTER_SIZE
 	  && TYPE_PRECISION (offset_type) >= element_bits)
 	return false;
 
+      /* Try a larger offset vector type.  */
       offset_type = build_nonstandard_integer_type
 	(TYPE_PRECISION (offset_type) * 2, TYPE_UNSIGNED (offset_type));
     }
@@ -4527,7 +4531,7 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 /* STMT_INFO is a call to an internal gather load or scatter store function.
    Describe the operation in INFO.  */
 
-static void
+void
 vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 				   gather_scatter_info *info)
 {
@@ -4542,7 +4546,6 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 		     (call, internal_fn_alias_ptr_index (info->ifn));
   info->offset = gimple_call_arg
 		  (call, internal_fn_offset_index (info->ifn));
-  info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = NULL_TREE;
   info->scale = TREE_INT_CST_LOW (gimple_call_arg
 				  (call, internal_fn_scale_index (info->ifn)));
@@ -4551,12 +4554,13 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 }
 
 /* Return true if a non-affine read or write in STMT_INFO is suitable for a
-   gather load or scatter store.  Describe the operation in *INFO if so.
-   If it is suitable and ELSVALS is nonzero store the supported else values
-   in the vector it points to.  */
+   gather load or scatter store with VECTYPE.  Describe the operation in *INFO
+   if so.  If it is suitable and ELSVALS is nonzero store the supported else
+   values in the vector it points to.  */
 
 bool
-vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
+vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
+			   loop_vec_info loop_vinfo,
 			   gather_scatter_info *info, vec<int> *elsvals)
 {
   HOST_WIDE_INT scale = 1;
@@ -4565,7 +4569,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
   tree decl = NULL_TREE, base, off;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree memory_type = TREE_TYPE (DR_REF (dr));
   machine_mode pmode;
   int punsignedp, reversep, pvolatilep = 0;
@@ -4593,13 +4596,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	}
       masked_p = (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE);
     }
-
-  /* ???  For epilogues we adjust DR_REF to make the following stmt-based
-     analysis work, but this adjustment doesn't work for epilogues of
-     epilogues during transform, so disable gather/scatter in that case.  */
-  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-      && LOOP_VINFO_EPILOGUE_P (LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo)))
-    return false;
 
   /* True if we should aim to use internal functions rather than
      built-in functions.  */
@@ -4872,7 +4868,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
      get_object_alignment (DR_REF (dr)));
 
   info->offset = off;
-  info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = offset_vectype;
   info->scale = scale;
   info->element_type = TREE_TYPE (vectype);
@@ -5278,7 +5273,7 @@ vect_analyze_data_refs (vec_info *vinfo, bool *fatal)
       if (gatherscatter != SG_NONE)
 	{
 	  gather_scatter_info gs_info;
-	  if (!vect_check_gather_scatter (stmt_info,
+	  if (!vect_check_gather_scatter (stmt_info, vectype,
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (vinfo,
@@ -5802,8 +5797,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	      to be vector_size.
    BSI - location where the new update stmt is to be placed.
    STMT_INFO - the original scalar memory-access stmt that is being vectorized.
-   BUMP - optional. The offset by which to bump the pointer. If not given,
-	  the offset is assumed to be vector_size.
+   UPDATE - The offset by which to bump the pointer.
 
    Output: Return NEW_DATAREF_PTR as illustrated above.
 
@@ -5812,18 +5806,13 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 tree
 bump_vector_ptr (vec_info *vinfo,
 		 tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
-		 stmt_vec_info stmt_info, tree bump)
+		 stmt_vec_info stmt_info, tree update)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree update = TYPE_SIZE_UNIT (vectype);
   gimple *incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
-
-  if (bump)
-    update = bump;
 
   if (TREE_CODE (dataref_ptr) == SSA_NAME)
     new_dataref_ptr = copy_ssa_name (dataref_ptr);
@@ -6539,9 +6528,9 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
 enum dr_alignment_support
 vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 			       tree vectype, int misalignment,
-			       gather_scatter_info *gs_info)
+			       bool is_gather_scatter)
 {
-  data_reference *dr = dr_info ? dr_info->dr : nullptr;
+  data_reference *dr = dr_info->dr;
   stmt_vec_info stmt_info = dr_info->stmt;
   machine_mode mode = TYPE_MODE (vectype);
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -6622,7 +6611,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
         }
     } */
 
-  if (dr && DR_IS_READ (dr))
+  if (DR_IS_READ (dr))
     {
       if (can_implement_p (vec_realign_load_optab, mode)
 	  && (!targetm.vectorize.builtin_mask_for_load
@@ -6650,40 +6639,8 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 
   bool is_packed = false;
   tree type = TREE_TYPE (DR_REF (dr));
-  bool is_gather_scatter = gs_info != nullptr;
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
-    {
-      if (!is_gather_scatter || dr != nullptr)
-	is_packed = not_size_aligned (DR_REF (dr));
-      else
-	{
-	  /* Gather-scatter accesses normally perform only component accesses
-	     so alignment is irrelevant for them.  Targets like riscv do care
-	     about scalar alignment in vector accesses, though, so check scalar
-	     alignment here.  We determined the alias pointer as well as the
-	     base alignment during pattern recognition and can re-use it here.
-
-	     As we do not have an analyzed dataref we only know the alignment
-	     of the reference itself and nothing about init, steps, etc.
-	     For now don't try harder to determine misalignment and
-	     just assume it is unknown.  We consider the type packed if its
-	     scalar alignment is lower than the natural alignment of a vector
-	     element's type.  */
-
-	  gcc_assert (!GATHER_SCATTER_LEGACY_P (*gs_info));
-	  gcc_assert (dr == nullptr);
-
-	  tree inner_vectype = TREE_TYPE (vectype);
-
-	  unsigned HOST_WIDE_INT scalar_align
-	    = tree_to_uhwi (gs_info->alias_ptr);
-	  unsigned HOST_WIDE_INT inner_vectype_sz
-	    = tree_to_uhwi (TYPE_SIZE (inner_vectype));
-
-	  bool is_misaligned = scalar_align < inner_vectype_sz;
-	  is_packed = scalar_align > 1 && is_misaligned;
-	}
-    }
+    is_packed = not_size_aligned (DR_REF (dr));
   if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
 						     is_packed,
 						     is_gather_scatter))

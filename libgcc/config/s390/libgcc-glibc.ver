@@ -114,3 +114,17 @@ GCC_4.1.0 {
   __floatditf
 %endif
 }
+
+%ifdef __s390x__
+%inherit GCC_16.0.0 GCC_4.1.0
+GCC_16.0.0 {
+  __mulbitint3
+  __divmodbitint4
+  __fixsfbitint
+  __fixdfbitint
+  __fixtfbitint
+  __floatbitintsf
+  __floatbitintdf
+  __floatbitinttf
+}
+%endif

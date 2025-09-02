@@ -15,19 +15,19 @@ program p
    type(t(:)), allocatable :: x
    allocate (t(2) :: x)
 
-   x = t(2,'ab')
+   x = t(2)('ab')
    write (buffer, *) x%c ! Tests the fix for PR82720
    read (buffer, *) chr
    if (trim (chr) .ne. 'ab') STOP 1
 
-   x = t(3,'xyz')
+   x = t(3)('xyz')
    if (len (x%c) .ne. 3) STOP 2
-   write (buffer, *) x   ! Tests the fix for PR82719
-   read (buffer, *) i, chr
-   if (i .ne. 3) STOP 3
+   write (buffer, *) x   ! Tests the fix for PR82719. PDT IO was incorrect (PRs 84143/84432).
+   read (buffer, *) chr
+!   if (i .ne. 3) STOP 3
    if (chr .ne. 'xyz') STOP 4
 
-   buffer = " 3  lmn"
-   read (buffer, *) x   ! Some thought will be needed for PDT reads.
+   buffer = "lmn"
+   read (buffer, *) x    ! PDT IO was incorrect (PRs 84143/84432).
    if (x%c .ne. 'lmn') STOP 5
 end

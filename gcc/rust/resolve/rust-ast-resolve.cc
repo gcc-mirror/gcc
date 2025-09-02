@@ -24,8 +24,7 @@
 #include "rust-ast-resolve-expr.h"
 #include "rust-ast-resolve-struct-expr-field.h"
 
-extern bool
-saw_errors (void);
+extern bool saw_errors (void);
 
 namespace Rust {
 namespace Resolver {

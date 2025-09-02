@@ -266,6 +266,27 @@ TypePath::as_simple_path () const
 		     locus);
 }
 
+std::string
+TypePath::make_debug_string () const
+{
+  rust_assert (!segments.empty ());
+
+  std::string output;
+
+  for (const auto &segment : segments)
+    {
+      if (segment != nullptr && !segment->is_lang_item ()
+	  && !segment->is_error ())
+	{
+	  if (!output.empty () || has_opening_scope_resolution_op ())
+	    output.append ("::");
+	  output.append (segment->get_ident_segment ().as_string ());
+	}
+    }
+
+  return output;
+}
+
 // hopefully definition here will prevent circular dependency issue
 TraitBound *
 TypePath::to_trait_bound (bool in_parens) const

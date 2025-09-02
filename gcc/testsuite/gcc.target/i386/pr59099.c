@@ -13,10 +13,17 @@ struct s
 };
 
 
-void* f (struct s *, struct s *) __attribute__ ((noinline, regparm(1)));
+void* f (struct s *, struct s *)
+#ifndef __x86_64__
+__attribute__ ((regparm(1)))
+#endif
+__attribute__ ((noinline))
+;
 
 void*
+#ifndef __x86_64__
 __attribute__ ((regparm(1)))
+#endif
 f (struct s *p, struct s *p2)
 {
   void *gp, *gp1;

@@ -19,6 +19,7 @@
 #include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-expr.h"
 #include "rust-hir-map.h"
 #include "rust-late-name-resolver-2.0.h"
 #include "rust-default-resolver.h"
@@ -33,7 +34,9 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-Late::Late (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
+Late::Late (NameResolutionContext &ctx)
+  : DefaultResolver (ctx), funny_error (false), block_big_self (false)
+{}
 
 static NodeId
 next_node_id ()
@@ -114,8 +117,7 @@ Late::go (AST::Crate &crate)
 {
   setup_builtin_types ();
 
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+  visit (crate);
 }
 
 void
@@ -140,24 +142,21 @@ Late::visit (AST::ForLoopExpr &expr)
   ctx.bindings.exit ();
 
   visit (expr.get_iterator_expr ());
-  visit (expr.get_loop_label ());
+
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
+
   visit (expr.get_loop_block ());
 }
 
 void
-Late::visit (AST::IfLetExpr &expr)
+Late::visit_if_let_patterns (AST::IfLetExpr &expr)
 {
-  visit_outer_attrs (expr);
+  ctx.bindings.enter (BindingSource::IfLet);
 
-  ctx.bindings.enter (BindingSource::Let);
-
-  for (auto &pattern : expr.get_patterns ())
-    visit (pattern);
+  DefaultResolver::visit_if_let_patterns (expr);
 
   ctx.bindings.exit ();
-
-  visit (expr.get_value_expr ());
-  visit (expr.get_if_block ());
 }
 
 void
@@ -214,42 +213,77 @@ Late::visit (AST::LetStmt &let)
 }
 
 void
-Late::visit (AST::IdentifierPattern &identifier)
+Late::visit (AST::WhileLetLoopExpr &while_let)
+{
+  DefaultASTVisitor::visit_outer_attrs (while_let);
+
+  if (while_let.has_loop_label ())
+    visit (while_let.get_loop_label ());
+
+  // visit expression before pattern
+  // this makes variable shadowing work properly
+  visit (while_let.get_scrutinee_expr ());
+
+  ctx.bindings.enter (BindingSource::WhileLet);
+
+  for (auto &pattern : while_let.get_patterns ())
+    visit (pattern);
+
+  ctx.bindings.exit ();
+
+  visit (while_let.get_loop_block ());
+}
+
+static void
+visit_identifier_as_pattern (NameResolutionContext &ctx,
+			     const Identifier &ident, location_t locus,
+			     NodeId node_id, bool is_ref, bool is_mut)
 {
   // do we insert in labels or in values
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
 
-  if (ctx.bindings.peek ().is_and_bound (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_and_bound (ident))
     {
       if (ctx.bindings.peek ().get_source () == BindingSource::Param)
 	rust_error_at (
-	  identifier.get_locus (), ErrorCode::E0415,
+	  locus, ErrorCode::E0415,
 	  "identifier %qs is bound more than once in the same parameter list",
-	  identifier.as_string ().c_str ());
+	  ident.as_string ().c_str ());
       else
 	rust_error_at (
-	  identifier.get_locus (), ErrorCode::E0416,
+	  locus, ErrorCode::E0416,
 	  "identifier %qs is bound more than once in the same pattern",
-	  identifier.as_string ().c_str ());
+	  ident.as_string ().c_str ());
       return;
     }
 
-  ctx.bindings.peek ().insert_ident (identifier.get_ident ());
+  ctx.bindings.peek ().insert_ident (ident.as_string (), locus, is_ref, is_mut);
 
-  if (ctx.bindings.peek ().is_or_bound (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_or_bound (ident))
     {
-      // FIXME: map usage instead
-      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
-						  identifier.get_node_id ());
+      auto res = ctx.values.get (ident);
+      rust_assert (res.has_value () && !res->is_ambiguous ());
+      ctx.map_usage (Usage (node_id), Definition (res->get_node_id ()));
     }
   else
     {
       // We do want to ignore duplicated data because some situations rely on
       // it.
-      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
-						  identifier.get_node_id ());
+      std::ignore = ctx.values.insert_shadowable (ident, node_id);
     }
+}
+
+void
+Late::visit (AST::IdentifierPattern &identifier)
+{
+  DefaultResolver::visit (identifier);
+
+  visit_identifier_as_pattern (ctx, identifier.get_ident (),
+			       identifier.get_locus (),
+			       identifier.get_node_id (),
+			       identifier.get_is_ref (),
+			       identifier.get_is_mut ());
 }
 
 void
@@ -279,9 +313,9 @@ Late::visit_function_params (AST::Function &function)
 void
 Late::visit (AST::StructPatternFieldIdent &field)
 {
-  // We do want to ignore duplicated data because some situations rely on it.
-  std::ignore = ctx.values.insert_shadowable (field.get_identifier (),
-					      field.get_node_id ());
+  visit_identifier_as_pattern (ctx, field.get_identifier (), field.get_locus (),
+			       field.get_node_id (), field.is_ref (),
+			       field.is_mut ());
 }
 
 void
@@ -375,7 +409,8 @@ Late::visit (AST::IdentifierExpr &expr)
     }
   else if (funny_error)
     {
-      diagnostics::text_finalizer (global_dc) = Resolver::funny_ice_text_finalizer;
+      diagnostics::text_finalizer (global_dc)
+	= Resolver::funny_ice_text_finalizer;
       emit_diagnostic (diagnostics::kind::ice_nobt, expr.get_locus (), -1,
 		       "are you trying to break %s? how dare you?",
 		       expr.as_string ().c_str ());
@@ -477,6 +512,16 @@ Late::visit (AST::PathInExpression &expr)
 }
 
 void
+Late::visit_impl_type (AST::Type &type)
+{
+  // TODO: does this have to handle reentrancy?
+  rust_assert (!block_big_self);
+  block_big_self = true;
+  visit (type);
+  block_big_self = false;
+}
+
+void
 Late::visit (AST::TypePath &type)
 {
   // should we add type path resolution in `ForeverStack` directly? Since it's
@@ -486,6 +531,16 @@ Late::visit (AST::TypePath &type)
 
   DefaultResolver::visit (type);
 
+  // prevent "impl Self {}" and similar
+  if (type.get_segments ().size () == 1
+      && !type.get_segments ().front ()->is_lang_item ()
+      && type.get_segments ().front ()->is_big_self_seg () && block_big_self)
+    {
+      rust_error_at (type.get_locus (),
+		     "%<Self%> is not valid in the self type of an impl block");
+      return;
+    }
+
   // this *should* mostly work
   // TODO: make sure typepath-like path resolution (?) is working
   auto resolved = ctx.resolve_path (type, Namespace::Types);
@@ -493,15 +548,16 @@ Late::visit (AST::TypePath &type)
   if (!resolved.has_value ())
     {
       if (!ctx.lookup (type.get_segments ().front ()->get_node_id ()))
-	rust_error_at (type.get_locus (), "could not resolve type path %qs",
-		       type.as_string ().c_str ());
+	rust_error_at (type.get_locus (), ErrorCode::E0412,
+		       "could not resolve type path %qs",
+		       type.make_debug_string ().c_str ());
       return;
     }
 
   if (resolved->is_ambiguous ())
     {
       rust_error_at (type.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
-		     type.as_string ().c_str ());
+		     type.make_debug_string ().c_str ());
       return;
     }
 
@@ -518,6 +574,62 @@ Late::visit (AST::TypePath &type)
 }
 
 void
+Late::visit (AST::Visibility &vis)
+{
+  if (!vis.has_path ())
+    return;
+
+  AST::SimplePath &path = vis.get_path ();
+
+  rust_assert (path.get_segments ().size ());
+  auto &first_seg = path.get_segments ()[0];
+
+  auto mode = ResolutionMode::Normal;
+
+  if (path.has_opening_scope_resolution ())
+    {
+      if (get_rust_edition () == Edition::E2015)
+	mode = ResolutionMode::FromRoot;
+      else
+	mode = ResolutionMode::FromExtern;
+    }
+  else if (!first_seg.is_crate_path_seg () && !first_seg.is_super_path_seg ()
+	   && !first_seg.is_lower_self_seg ())
+    {
+      if (get_rust_edition () == Edition::E2015)
+	{
+	  mode = ResolutionMode::FromRoot;
+	}
+      else
+	{
+	  rust_error_at (path.get_locus (),
+			 "relative paths are not supported in visibilities in "
+			 "2018 edition or later");
+	  return;
+	}
+    }
+
+  auto res = ctx.resolve_path (path.get_segments (), mode, Namespace::Types);
+
+  if (!res.has_value ())
+    {
+      rust_error_at (path.get_locus (), ErrorCode::E0433,
+		     "could not resolve path %qs", path.as_string ().c_str ());
+      return;
+    }
+
+  // TODO: is this possible?
+  if (res->is_ambiguous ())
+    {
+      rust_error_at (path.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     path.as_string ().c_str ());
+      return;
+    }
+
+  ctx.map_usage (Usage (path.get_node_id ()), Definition (res->get_node_id ()));
+}
+
+void
 Late::visit (AST::Trait &trait)
 {
   // kind of weird how this is done
@@ -528,13 +640,6 @@ Late::visit (AST::Trait &trait)
 		 Definition (trait.get_node_id ()));
 
   DefaultResolver::visit (trait);
-}
-
-void
-Late::visit (AST::StructStruct &s)
-{
-  auto s_vis = [this, &s] () { AST::DefaultASTVisitor::visit (s); };
-  ctx.scoped (Rib::Kind::Item, s.get_node_id (), s_vis);
 }
 
 void
@@ -613,51 +718,27 @@ Late::visit (AST::GenericArg &arg)
   DefaultResolver::visit (arg);
 }
 
-template <class Closure>
-static void
-add_captures (Closure &closure, NameResolutionContext &ctx)
+void
+Late::visit_closure_params (AST::ClosureExpr &closure)
 {
+  ctx.bindings.enter (BindingSource::Param);
+
+  DefaultResolver::visit_closure_params (closure);
+
+  ctx.bindings.exit ();
+}
+
+void
+Late::visit (AST::ClosureExpr &expr)
+{
+  // add captures
   auto vals = ctx.values.peek ().get_values ();
   for (auto &val : vals)
     {
-      ctx.mappings.add_capture (closure.get_node_id (),
-				val.second.get_node_id ());
+      ctx.mappings.add_capture (expr.get_node_id (), val.second.get_node_id ());
     }
-}
 
-void
-Late::visit (AST::ClosureExprInner &closure)
-{
-  add_captures (closure, ctx);
-
-  visit_outer_attrs (closure);
-
-  ctx.bindings.enter (BindingSource::Param);
-
-  for (auto &param : closure.get_params ())
-    visit (param);
-
-  ctx.bindings.exit ();
-
-  visit (closure.get_definition_expr ());
-}
-
-void
-Late::visit (AST::ClosureExprInnerTyped &closure)
-{
-  add_captures (closure, ctx);
-
-  visit_outer_attrs (closure);
-
-  ctx.bindings.enter (BindingSource::Param);
-
-  for (auto &param : closure.get_params ())
-    visit (param);
-
-  ctx.bindings.exit ();
-
-  visit (closure.get_return_type ());
-  visit (closure.get_definition_block ());
+  DefaultResolver::visit (expr);
 }
 
 } // namespace Resolver2_0

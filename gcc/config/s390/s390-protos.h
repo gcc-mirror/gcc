@@ -128,6 +128,8 @@ extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
 extern rtx s390_expand_merge_perm_const (machine_mode, bool);
 extern void s390_expand_merge (rtx, rtx, rtx, bool);
+extern void s390_expand_int_spaceship (rtx, rtx, rtx, rtx);
+extern void s390_expand_fp_spaceship (rtx, rtx, rtx, rtx);
 extern rtx s390_build_signbit_mask (machine_mode);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_back_chain_rtx (void);

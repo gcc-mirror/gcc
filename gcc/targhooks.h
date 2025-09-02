@@ -310,7 +310,7 @@ extern bool speculation_safe_value_not_needed (bool);
 extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
 
 extern bool default_memtag_can_tag_addresses ();
-extern uint8_t default_memtag_tag_size ();
+extern uint8_t default_memtag_tag_bitsize ();
 extern uint8_t default_memtag_granule_size ();
 extern rtx default_memtag_insert_random_tag (rtx, rtx);
 extern rtx default_memtag_add_tag (rtx, poly_int64, uint8_t);

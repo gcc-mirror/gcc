@@ -15,7 +15,7 @@ void f(B) { }
 struct C
 {
   typedef struct { }* D;
-  typedef enum { e }* E;
+  typedef enum { }* E;
 };
 
 // { dg-final { scan-assembler "_Z2g1PN1CUt_E" } }
@@ -31,7 +31,7 @@ void h2(T t) { }
 
 inline void j()
 {
-  typedef enum { f }* F;
+  typedef enum { }* F;
 // { dg-final { scan-assembler "_Z2h1IPZ1jvEUt_EvT_" } }
   h1(F());
   typedef struct { }* G;

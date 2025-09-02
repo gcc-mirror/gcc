@@ -4643,6 +4643,28 @@ END getLiteralStringContents ;
 
 
 (*
+   getStringChar - if the string is delimited by single
+                   or double quotes then strip both
+                   quotes from the string.
+*)
+
+PROCEDURE getStringChar (n: node) : String ;
+VAR
+   s: String ;
+BEGIN
+   s := getString (n) ;
+   IF (DynamicStrings.char (s, 0) = "'") AND (DynamicStrings.char (s, -1) = "'")
+   THEN
+      s := DynamicStrings.Slice (s, 1, -1)
+   ELSIF (DynamicStrings.char (s, 0) = '"') AND (DynamicStrings.char (s, -1) = '"')
+   THEN
+      s := DynamicStrings.Slice (s, 1, -1)
+   END ;
+   RETURN s
+END getStringChar ;
+
+
+(*
    getStringContents - return the string contents of a constant, literal,
                        string or a constexp node.
 *)
@@ -4657,7 +4679,7 @@ BEGIN
       RETURN getLiteralStringContents (n)
    ELSIF isString (n)
    THEN
-      RETURN getString (n)
+      RETURN getStringChar (n)
    ELSIF isConstExp (n)
    THEN
       RETURN getStringContents (n^.unaryF.arg)
@@ -4709,11 +4731,27 @@ END resolveString ;
 
 
 (*
-   foldBinary -
+   addQuotes - adds delimiter quote char to string.
+*)
+
+PROCEDURE addQuotes (s: String; quote: CHAR) : String ;
+VAR
+   qs: String ;
+BEGIN
+   s := DynamicStrings.ConCatChar (s, quote) ;
+   qs := DynamicStrings.InitStringChar (quote) ;
+   qs := DynamicStrings.ConCat (qs, DynamicStrings.Mark (s)) ;
+   RETURN qs
+END addQuotes ;
+
+
+(*
+   foldBinary - attempt to fold binary + for string constants.
 *)
 
 PROCEDURE foldBinary (k: nodeT; l, r: node; res: node) : node ;
 VAR
+   qc: CHAR ;
    n : node ;
    ls,
    rs: String ;
@@ -4723,7 +4761,12 @@ BEGIN
    THEN
       ls := getStringContents (l) ;
       rs := getStringContents (r) ;
+      qc := "'" ;
+      (* Add unquoted contents.  *)
       ls := DynamicStrings.Add (ls, rs) ;
+      (* Add quote.  *)
+      ls := addQuotes (ls, qc) ;
+      (* Build new string.  *)
       n := makeString (makekey (DynamicStrings.string (ls))) ;
       ls := DynamicStrings.KillString (ls) ;
       rs := DynamicStrings.KillString (rs)

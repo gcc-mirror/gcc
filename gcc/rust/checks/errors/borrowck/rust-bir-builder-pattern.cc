@@ -101,7 +101,8 @@ PatternBindingBuilder::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::TUPLE_PAT: {
+	case HIR::StructPatternField::TUPLE_PAT:
+	  {
 	    auto tuple
 	      = static_cast<HIR::StructPatternFieldTuplePat *> (field.get ());
 
@@ -123,7 +124,8 @@ PatternBindingBuilder::visit (HIR::StructPattern &pattern)
 	    tuple->get_tuple_pattern ().accept_vis (*this);
 	    break;
 	  }
-	  case HIR::StructPatternField::IDENT_PAT: {
+	case HIR::StructPatternField::IDENT_PAT:
+	  {
 	    auto ident_field
 	      = static_cast<HIR::StructPatternFieldIdentPat *> (field.get ());
 	    TyTy::StructFieldType *field_ty = nullptr;
@@ -139,7 +141,8 @@ PatternBindingBuilder::visit (HIR::StructPattern &pattern)
 	    ident_field->get_pattern ().accept_vis (*this);
 	    break;
 	  }
-	  case HIR::StructPatternField::IDENT: {
+	case HIR::StructPatternField::IDENT:
+	  {
 	    auto ident_field
 	      = static_cast<HIR::StructPatternFieldIdent *> (field.get ());
 	    TyTy::StructFieldType *field_ty = nullptr;
@@ -199,13 +202,15 @@ PatternBindingBuilder::visit (HIR::TuplePattern &pattern)
   size_t index = 0;
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::MULTIPLE: {
+    case HIR::TuplePatternItems::MULTIPLE:
+      {
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 	visit_tuple_fields (items.get_patterns (), saved, index);
 	break;
       }
-      case HIR::TuplePatternItems::RANGED: {
+    case HIR::TuplePatternItems::RANGED:
+      {
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
 
@@ -244,7 +249,8 @@ PatternBindingBuilder::visit (HIR::TupleStructPattern &pattern)
   size_t index = 0;
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	auto &items
 	  = static_cast<HIR::TupleStructItemsRange &> (pattern.get_items ());
 
@@ -261,7 +267,8 @@ PatternBindingBuilder::visit (HIR::TupleStructPattern &pattern)
 	visit_tuple_fields (items.get_upper_patterns (), saved, index);
 	break;
       }
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	auto &items
 	  = static_cast<HIR::TupleStructItemsNoRange &> (pattern.get_items ());
 	visit_tuple_fields (items.get_patterns (), saved, index);

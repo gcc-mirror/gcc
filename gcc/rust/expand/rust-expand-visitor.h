@@ -28,14 +28,12 @@ namespace Rust {
 /**
  * Whether or not an attribute is a derive attribute
  */
-bool
-is_derive (AST::Attribute &attr);
+bool is_derive (AST::Attribute &attr);
 
 /**
  * Whether or not an attribute is builtin
  */
-bool
-is_builtin (AST::Attribute &attr);
+bool is_builtin (AST::Attribute &attr);
 
 class ExpandVisitor : public AST::DefaultASTVisitor
 {
@@ -107,7 +105,7 @@ public:
    */
   template <typename T, typename U>
   void expand_macro_children (MacroExpander::ContextType ctx, T &values,
-			      std::function<U (AST::SingleASTNode)> extractor)
+			      U (AST::SingleASTNode::*extractor) (void))
   {
     expander.push_context (ctx);
 
@@ -123,7 +121,7 @@ public:
    */
   template <typename T, typename U>
   void expand_macro_children (T &values,
-			      std::function<U (AST::SingleASTNode)> extractor)
+			      U (AST::SingleASTNode::*extractor) (void))
   {
     for (auto it = values.begin (); it != values.end ();)
       {
@@ -140,7 +138,7 @@ public:
 	    it = values.erase (it);
 	    for (auto &node : final_fragment.get_nodes ())
 	      {
-		U new_node = extractor (node);
+		U new_node = (node.*extractor) ();
 		if (new_node != nullptr)
 		  {
 		    it = values.insert (it, std::move (new_node));
@@ -211,7 +209,7 @@ public:
   void visit (AST::AttrInputLiteral &) override;
   void visit (AST::AttrInputMacro &) override;
   void visit (AST::MetaItemLitExpr &) override;
-  void visit (AST::MetaItemPathLit &) override;
+  void visit (AST::MetaItemPathExpr &) override;
   void visit (AST::ErrorPropagationExpr &expr) override;
   void visit (AST::ArithmeticOrLogicalExpr &expr) override;
   void visit (AST::ComparisonExpr &expr) override;

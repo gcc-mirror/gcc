@@ -82,11 +82,9 @@ public:
  *
  * @param The path to the shared object file to load.
  */
-const std::vector<ProcMacro::Procmacro>
-load_macros (std::string path);
+const std::vector<ProcMacro::Procmacro> load_macros (std::string path);
 
-std::string
-generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id);
+std::string generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id);
 
 } // namespace Rust
 

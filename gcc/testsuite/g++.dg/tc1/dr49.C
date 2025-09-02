@@ -10,8 +10,8 @@ template struct R<&p>; // OK
 template struct S<&p>; // OK due to parameter adjustment
 
 int *ptr;
-template struct R<ptr>; // { dg-error "argument" }
-template struct S<ptr>; // { dg-error "argument" }
+template struct R<ptr>; // { dg-error "template argument|constant expression" }
+template struct S<ptr>; // { dg-error "template argument|constant expression" }
 
 int v[5];
 template struct R<v>; // OK due to implicit argument conversion

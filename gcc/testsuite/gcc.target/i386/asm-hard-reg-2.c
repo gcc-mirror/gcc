@@ -8,7 +8,7 @@ test (void)
 #ifdef __x86_64__
   int z __attribute__ ((mode (TI)));
 #else
-  long z;
+  long long z;
 #endif
 
   __asm__ __volatile__ ("" : "=A" (z), "={rbx}" (y));

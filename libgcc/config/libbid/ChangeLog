@@ -1,3 +1,26 @@
+2025-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/120691
+	* bid128_div.c: Fix _Decimal128 arithmetic error under
+	FE_UPWARD.
+	* bid128_rem.c: Ditto.
+	* bid128_sqrt.c: Ditto.
+	* bid64_div.c (bid64_div): Ditto.
+	* bid64_sqrt.c (bid64_sqrt): Ditto.
+
+2025-08-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/120691
+	* bid128_div.c: Fix _Decimal128 arithmetic error under
+	FE_UPWARD.
+	* bid128_rem.c: Ditto.
+	* bid128_sqrt.c: Ditto.
+	* bid64_div.c (bid64_div): Ditto.
+	* bid64_sqrt.c (bid64_sqrt): Ditto.
+
 2025-07-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* bid_binarydecimal.c (__mul_10x256_to_256): Mark c3 as being

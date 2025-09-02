@@ -9,7 +9,7 @@ typedef __INTPTR_TYPE__ intptr_t;
 void f0 (double[!copysign (~2, 3)]);
 
 void f1 (double[!copysign (~2, 3)]);
-void f1 (double[1]);                    // { dg-warning "-Warray-parameter" }
+void f1 (double[1]);                    // { dg-warning "-Wvla-parameter" }
 
 void f2 (int[(int)+1.0]);
 void f2 (int[(int)+1.1]);
@@ -21,4 +21,4 @@ extern struct S *sp;
 
 void f3 (int[(intptr_t)((char*)sp->a - (char*)sp)]);
 void f3 (int[(intptr_t)((char*)&sp->a[0] - (char*)sp)]);
-void f3 (int[(intptr_t)((char*)&sp->a[1] - (char*)sp)]);   // { dg-warning "-Warray-parameter" }
+void f3 (int[(intptr_t)((char*)&sp->a[1] - (char*)sp)]);   // { dg-warning "-Wvla-parameter" }

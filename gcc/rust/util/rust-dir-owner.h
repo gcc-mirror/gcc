@@ -26,8 +26,7 @@
 namespace Rust {
 
 // extracts the owned subdirectory name from a file name
-bool
-get_file_subdir (const std::string &filename, std::string &subdir);
+bool get_file_subdir (const std::string &filename, std::string &subdir);
 
 } // namespace Rust
 

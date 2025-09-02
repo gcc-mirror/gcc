@@ -20,6 +20,7 @@
 #include "optional.h"
 #include "rust-canonical-path.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-item.h"
 #include "rust-hir-type-check-enumitem.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
@@ -32,9 +33,6 @@
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
 #include "rust-tyty-variance-analysis.h"
-
-// for flag_name_resolution_2_0
-#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -121,8 +119,8 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
 	}
       else
 	{
-	  TyTy::ParamType *param = p.get_param_ty ();
-	  TyTy::BaseType *resolved = param->destructure ();
+	  auto param = p.get_param_ty ();
+	  auto resolved = param->destructure ();
 	  args.push_back (TyTy::SubstitutionArg (&p, resolved));
 	}
     }
@@ -170,7 +168,9 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (struct_decl.has_generics ())
-    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Struct,
+			    struct_decl.get_locus (),
+			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
@@ -195,25 +195,11 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   // get the path
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      path = nr_ctx.values
-	       .to_canonical_path (struct_decl.get_mappings ().get_nodeid ())
-	       .value ();
-    }
-  else
-    {
-      path
-	= mappings
-	    .lookup_canonical_path (struct_decl.get_mappings ().get_nodeid ())
-	    .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, struct_decl.get_locus ()};
 
@@ -255,7 +241,9 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (struct_decl.has_generics ())
-    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Struct,
+			    struct_decl.get_locus (),
+			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
@@ -276,27 +264,11 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-      auto canonical_path = nr_ctx.types.to_canonical_path (
-	struct_decl.get_mappings ().get_nodeid ());
-
-      if (!canonical_path.has_value ())
-	rust_unreachable ();
-      path = canonical_path.value ();
-    }
-  else
-    {
-      path
-	= mappings
-	    .lookup_canonical_path (struct_decl.get_mappings ().get_nodeid ())
-	    .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, struct_decl.get_locus ()};
 
@@ -337,7 +309,8 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (enum_decl.has_generics ())
-    resolve_generic_params (enum_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Enum, enum_decl.get_locus (),
+			    enum_decl.get_generic_params (), substitutions);
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = enum_decl.get_outer_attrs ();
@@ -367,26 +340,14 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 	}
     }
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   // get the path
-  tl::optional<CanonicalPath> canonical_path;
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (enum_decl.get_mappings ().get_nodeid ());
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path = nr_ctx.types.to_canonical_path (
-	enum_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	enum_decl.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, enum_decl.get_locus ()};
+  RustIdent ident{canonical_path, enum_decl.get_locus ()};
 
   // multi variant ADT
   auto *type
@@ -409,7 +370,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (union_decl.has_generics ())
-    resolve_generic_params (union_decl.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Union, union_decl.get_locus (),
+			    union_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : union_decl.get_where_clause ().get_items ())
@@ -431,26 +393,14 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 			    ty_variant->get_field_type ());
     }
 
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
   // get the path
-  tl::optional<CanonicalPath> canonical_path;
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (union_decl.get_mappings ().get_nodeid ());
 
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      canonical_path = nr_ctx.types.to_canonical_path (
-	union_decl.get_mappings ().get_nodeid ());
-    }
-  else
-    {
-      canonical_path = mappings.lookup_canonical_path (
-	union_decl.get_mappings ().get_nodeid ());
-    }
-
-  rust_assert (canonical_path.has_value ());
-
-  RustIdent ident{*canonical_path, union_decl.get_locus ()};
+  RustIdent ident{canonical_path, union_decl.get_locus ()};
 
   // there is only a single variant
   std::vector<TyTy::VariantDef *> variants;
@@ -569,8 +519,9 @@ TypeCheckItem::visit (HIR::Function &function)
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
-    resolve_generic_params (function.get_generic_params (),
-			    substitutions); // TODO resolve constraints
+    resolve_generic_params (HIR::Item::ItemKind::Function,
+			    function.get_locus (),
+			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
@@ -607,24 +558,11 @@ TypeCheckItem::visit (HIR::Function &function)
 	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  auto path = CanonicalPath::create_empty ();
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-  // FIXME: HACK: ARTHUR: Disgusting
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-      auto canonical_path = nr_ctx.values.to_canonical_path (
-	function.get_mappings ().get_nodeid ());
-
-      path = canonical_path.value ();
-    }
-  else
-    {
-      path = mappings
-	       .lookup_canonical_path (function.get_mappings ().get_nodeid ())
-	       .value ();
-    }
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
 
   RustIdent ident{path, function.get_locus ()};
 
@@ -745,13 +683,33 @@ TypeCheckItem::visit (HIR::ExternBlock &extern_block)
     }
 }
 
+void
+TypeCheckItem::visit (HIR::ExternCrate &extern_crate)
+{
+  if (extern_crate.references_self ())
+    return;
+
+  auto &mappings = Analysis::Mappings::get ();
+  CrateNum num
+    = mappings.lookup_crate_name (extern_crate.get_referenced_crate ())
+	.value ();
+  HIR::Crate &crate = mappings.get_hir_crate (num);
+
+  CrateNum saved_crate_num = mappings.get_current_crate ();
+  mappings.set_current_crate (num);
+  for (auto &item : crate.get_items ())
+    TypeCheckItem::Resolve (*item);
+  mappings.set_current_crate (saved_crate_num);
+}
+
 std::pair<std::vector<TyTy::SubstitutionParamMapping>, TyTy::RegionConstraints>
 TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 						 bool &failure_flag)
 {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (impl_block.has_generics ())
-    resolve_generic_params (impl_block.get_generic_params (), substitutions);
+    resolve_generic_params (HIR::Item::ItemKind::Impl, impl_block.get_locus (),
+			    impl_block.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : impl_block.get_where_clause ().get_items ())

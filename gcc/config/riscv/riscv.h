@@ -71,7 +71,7 @@ extern const char *riscv_arch_help (int argc, const char **argv);
   {"tune", "%{!mtune=*:"						\
 	   "  %{!mcpu=*:-mtune=%(VALUE)}"				\
 	   "  %{mcpu=*:-mtune=%:riscv_default_mtune(%* %(VALUE))}}" },	\
-  {"arch", "%{!march=*:"						\
+  {"arch", "%{!march=*|march=unset:"					\
 	   "  %{!mcpu=*:-march=%(VALUE)}"				\
 	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}" },	\
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" },				\
@@ -111,13 +111,19 @@ extern const char *riscv_arch_help (int argc, const char **argv);
 %(subtarget_asm_spec)" \
 ASM_MISA_SPEC
 
+/* Drop all -march=* options before -march=unset.  */
+#define ARCH_UNSET_CLEANUP_SPECS  \
+  "%{march=unset:%<march=*} "  \
+
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS					\
+ARCH_UNSET_CLEANUP_SPECS \
 "%{march=help:%:riscv_arch_help()} "				\
 "%{print-supported-extensions:%:riscv_arch_help()} "		\
 "%{-print-supported-extensions:%:riscv_arch_help()} "		\
 "%{march=*:%:riscv_expand_arch(%*)} "				\
-"%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
+"%{!march=*|march=unset:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} " \
+"%{march=unset:%{!mcpu=*:%eAt least one valid -mcpu option must be given after -march=unset}} "
 
 #define LOCAL_LABEL_PREFIX	"."
 #define USER_LABEL_PREFIX	""
@@ -759,12 +765,6 @@ enum reg_class
 
 #define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
-#define LIBCALL_VALUE(MODE) \
-  riscv_function_value (NULL_TREE, NULL_TREE, MODE)
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  riscv_function_value (VALTYPE, FUNC, VOIDmode)
-
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
 
@@ -1318,5 +1318,16 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 #define TARGET_CLONES_ATTR_SEPARATOR '#'
 
 #define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
+
+/* mips pref valid offset range.  */
+#define MIPS_RISCV_9BIT_OFFSET_P(OFFSET) (IN_RANGE (OFFSET, 0, 511))
+
+/* mips pref cache hint type.  */
+typedef enum {
+    ICACHE_HINT = 0 << 3,
+    DCACHE_HINT = 1 << 3,
+    SCACHE_HINT = 2 << 3,
+    TCACHE_HINT = 3 << 3
+} CacheHint;
 
 #endif /* ! GCC_RISCV_H */
