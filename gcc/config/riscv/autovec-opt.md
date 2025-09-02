@@ -1824,7 +1824,7 @@
   }
   [(set_attr "type" "vimerge")])
 
-(define_insn_and_split "*vmacc_vx_<mode>"
+(define_insn_and_split "*mul_plus_vx_<mode>"
  [(set (match_operand:V_VLSI 0 "register_operand")
    (plus:V_VLSI
     (mult:V_VLSI
@@ -1838,8 +1838,8 @@
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_mul_plus_vx (<MODE>mode);
-    rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
-		 RVV_VUNDEF(<MODE>mode)};
+    rtx v_undef = RVV_VUNDEF(<MODE>mode);
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3], v_undef};
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::TERNARY_OP, ops);
 
     DONE;
