@@ -4329,7 +4329,14 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
 	  case alg_add_t2_m:
 	  case alg_sub_t2_m:
 	    op_uses++;
+	    /* Fallthru.  */
+	  case alg_shift:
+	    if (synth_shift_p && alg.log[i])
+	      return NULL;
 	    break;
+	  case alg_add_factor:
+	  case alg_sub_factor:
+	    return NULL;
 	  default:
 	    break;
 	  }
