@@ -25,3 +25,4 @@ TEST_TERNARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-not {vaadd.vx} } } */
 /* { dg-final { scan-assembler-not {vmacc.vx} } } */
 /* { dg-final { scan-assembler-not {vnmsac.vx} } } */
+/* { dg-final { scan-assembler-not {vmadd.vx} } } */
