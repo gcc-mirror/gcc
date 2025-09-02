@@ -204,22 +204,66 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
       {
 	HIR::TupleStructItemsHasRest &items_has_rest
 	  = static_cast<HIR::TupleStructItemsHasRest &> (items);
-	size_t pattern_min_cap = items_has_rest.get_lower_patterns ().size ()
-				 + items_has_rest.get_upper_patterns ().size ();
+	auto &lower_patterns = items_has_rest.get_lower_patterns ();
+	auto &upper_patterns = items_has_rest.get_upper_patterns ();
+	size_t pattern_min_cap
+	  = lower_patterns.size () + upper_patterns.size ();
 	if (variant->num_fields () < pattern_min_cap)
 	  {
-	    rust_error_at (pattern.get_locus (), ErrorCode::E0023,
-			   "this pattern has %lu fields but the corresponding "
-			   "tuple variant has %lu field",
-			   (unsigned long) (pattern_min_cap),
-			   (unsigned long) variant->num_fields ());
+	    if (!lower_patterns.empty ())
+	      {
+		// TODO initialize rich_locus with loc of ADT definition instead
+		rich_location rich_locus (line_table,
+					  lower_patterns[0]->get_locus ());
+		for (auto &pattern : lower_patterns)
+		  {
+		    if (pattern == lower_patterns[0])
+		      continue;
+		    rich_locus.add_range (pattern->get_locus (),
+					  SHOW_RANGE_WITH_CARET);
+		  }
+		for (auto &pattern : upper_patterns)
+		  {
+		    rich_locus.add_range (pattern->get_locus (),
+					  SHOW_RANGE_WITH_CARET);
+		  }
+		rust_error_at (rich_locus, ErrorCode::E0023,
+			       "this pattern has %lu %s but the corresponding "
+			       "tuple variant has %lu %s",
+			       (unsigned long) (pattern_min_cap),
+			       pattern_min_cap == 1 ? "field" : "fields",
+			       (unsigned long) variant->num_fields (),
+			       variant->num_fields () == 1 ? "field"
+							   : "fields");
+	      }
+	    else
+	      {
+		// TODO initialize rich_locus with loc of ADT definition instead
+		rich_location rich_locus (line_table,
+					  upper_patterns[0]->get_locus ());
+		for (auto &pattern : upper_patterns)
+		  {
+		    if (pattern == upper_patterns[0])
+		      continue;
+		    rich_locus.add_range (pattern->get_locus (),
+					  SHOW_RANGE_WITH_CARET);
+		  }
+		rust_error_at (rich_locus, ErrorCode::E0023,
+			       "this pattern has %lu %s but the corresponding "
+			       "tuple variant has %lu %s",
+			       (unsigned long) (pattern_min_cap),
+			       pattern_min_cap == 1 ? "field" : "fields",
+			       (unsigned long) variant->num_fields (),
+			       variant->num_fields () == 1 ? "field"
+							   : "fields");
+	      }
 	    // we continue on to try and setup the types as best we can for
 	    // type checking
 	  }
 
 	// iterate the fields manually to set them up
 	size_t i = 0;
-	for (auto &pattern : items_has_rest.get_lower_patterns ())
+	for (auto &pattern : lower_patterns)
 	  {
 	    if (i >= variant->num_fields ())
 	      break;
@@ -232,9 +276,8 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 	    TypeCheckPattern::Resolve (*pattern, fty);
 	  }
 
-	i = variant->num_fields ()
-	    - items_has_rest.get_upper_patterns ().size ();
-	for (auto &pattern : items_has_rest.get_upper_patterns ())
+	i = variant->num_fields () - upper_patterns.size ();
+	for (auto &pattern : upper_patterns)
 	  {
 	    if (i >= variant->num_fields ())
 	      break;
@@ -253,15 +296,41 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
       {
 	HIR::TupleStructItemsNoRest &items_no_rest
 	  = static_cast<HIR::TupleStructItemsNoRest &> (items);
+	auto &patterns = items_no_rest.get_patterns ();
 
-	if (items_no_rest.get_patterns ().size () != variant->num_fields ())
+	if (patterns.size () != variant->num_fields ())
 	  {
-	    rust_error_at (
-	      pattern.get_locus (), ErrorCode::E0023,
-	      "this pattern has %lu fields but the corresponding "
-	      "tuple variant has %lu field",
-	      (unsigned long) items_no_rest.get_patterns ().size (),
-	      (unsigned long) variant->num_fields ());
+	    if (patterns.empty ())
+	      {
+		rust_error_at (pattern.get_locus (), ErrorCode::E0023,
+			       "this pattern has %lu %s but the corresponding "
+			       "tuple variant has %lu %s",
+			       (unsigned long) patterns.size (),
+			       patterns.size () == 1 ? "field" : "fields",
+			       (unsigned long) variant->num_fields (),
+			       variant->num_fields () == 1 ? "field"
+							   : "fields");
+	      }
+	    else
+	      {
+		rich_location rich_locus (line_table,
+					  patterns[0]->get_locus ());
+		for (auto &pattern : items_no_rest.get_patterns ())
+		  {
+		    if (pattern == patterns[0])
+		      continue;
+		    rich_locus.add_range (pattern->get_locus (),
+					  SHOW_RANGE_WITH_CARET);
+		  }
+		rust_error_at (rich_locus, ErrorCode::E0023,
+			       "this pattern has %lu %s but the corresponding "
+			       "tuple variant has %lu %s",
+			       (unsigned long) patterns.size (),
+			       patterns.size () == 1 ? "field" : "fields",
+			       (unsigned long) variant->num_fields (),
+			       variant->num_fields () == 1 ? "field"
+							   : "fields");
+	      }
 	    // we continue on to try and setup the types as best we can for
 	    // type checking
 	  }
