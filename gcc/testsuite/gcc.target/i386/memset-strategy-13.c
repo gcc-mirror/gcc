@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -mno-sse -mstringop-strategy=unrolled_loop" } */
+/* { dg-options "-Os -mno-sse -mstringop-strategy=unrolled_loop -fasynchronous-unwind-tables -fdwarf2-cfi-asm" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target { ! ia32 } } {^\t?\.} } } */
 
