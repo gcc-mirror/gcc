@@ -665,6 +665,15 @@
 #endif /* !defined(__cpp_lib_chrono) && defined(__glibcxx_want_chrono) */
 #undef __glibcxx_want_chrono
 
+#if !defined(__cpp_lib_chrono_cxx20)
+# if (__cplusplus >= 202002L)
+#  define __glibcxx_chrono_cxx20 201800L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_cxx20)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_chrono_cxx20) && defined(__glibcxx_want_chrono_cxx20) */
+#undef __glibcxx_want_chrono_cxx20
+
 #if !defined(__cpp_lib_execution)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_execution 201902L

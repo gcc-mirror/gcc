@@ -595,6 +595,16 @@ ftms = {
 };
 
 ftms = {
+  // Unofficial macro for C++20 chrono features supported for old string ABI.
+  name = chrono_cxx20;
+  values = {
+    v = 201800;
+    cxxmin = 20;
+    no_stdname = yes;
+  };
+};
+
+ftms = {
   name = execution;
   values = {
     v = 201902;  // FIXME: should be 201603L
