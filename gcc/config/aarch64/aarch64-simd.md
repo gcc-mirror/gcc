@@ -6678,7 +6678,7 @@
 	(SAT_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:SD_HSDI
 	    (match_operand:SD_HSDI 1 "register_operand" "w")
-	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))))]
   "TARGET_SIMD"
   "<shrn_op>shrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
@@ -6700,7 +6700,7 @@
 	(ALL_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:VQN
 	    (match_operand:VQN 1 "register_operand")
-	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
@@ -6731,7 +6731,7 @@
 	      (<TRUNCEXTEND>:<DWI>
 	        (match_operand:SD_HSDI 1 "register_operand" "w"))
 	      (match_operand:<DWI> 3 "aarch64_int_rnd_operand"))
-	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
   "<shrn_op>rshrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
@@ -6746,7 +6746,7 @@
 	      (<TRUNCEXTEND>:<V2XWIDE>
 	        (match_operand:SD_HSDI 1 "register_operand"))
 	      (match_dup 3))
-	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))))]
   "TARGET_SIMD"
   {
     /* Use this expander to create the rounding constant vector, which is
@@ -6766,7 +6766,7 @@
 	      (<TRUNCEXTEND>:<V2XWIDE>
 	        (match_operand:VQN 1 "register_operand"))
 	      (match_dup 3))
-	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))))]
   "TARGET_SIMD"
   {
     if (<CODE> == TRUNCATE
@@ -6808,7 +6808,7 @@
 	  (smax:SD_HSDI
 	    (ashiftrt:SD_HSDI
 	      (match_operand:SD_HSDI 1 "register_operand" "w")
-	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))
 	    (const_int 0))
 	  (const_int <half_mask>)))]
   "TARGET_SIMD"
@@ -6819,7 +6819,7 @@
 (define_expand "aarch64_sqshrun_n<mode>"
   [(match_operand:<VNARROWQ> 0 "register_operand")
    (match_operand:SD_HSDI 1 "register_operand")
-   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
+   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
     rtx dst = gen_reg_rtx (<MODE>mode);
@@ -6837,7 +6837,7 @@
 	    (smax:VQN
 	      (ashiftrt:VQN
 		(match_operand:VQN 1 "register_operand")
-		(match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+		(match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))
 	      (match_dup 3))
 	    (match_dup 4))))]
   "TARGET_SIMD"
@@ -6879,7 +6879,7 @@
 		(sign_extend:<DWI>
 		  (match_operand:SD_HSDI 1 "register_operand" "w"))
 		(match_operand:<DWI> 3 "aarch64_int_rnd_operand"))
-	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))
 	    (const_int 0))
 	  (const_int <half_mask>)))]
   "TARGET_SIMD
@@ -6891,7 +6891,7 @@
 (define_expand "aarch64_sqrshrun_n<mode>"
   [(match_operand:<VNARROWQ> 0 "register_operand")
    (match_operand:SD_HSDI 1 "register_operand")
-   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
+   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
     int prec = GET_MODE_UNIT_PRECISION (<DWI>mode);
@@ -6914,7 +6914,7 @@
 		  (sign_extend:<V2XWIDE>
 		    (match_operand:VQN 1 "register_operand"))
 		  (match_dup 3))
-		(match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+		(match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>"))
 	      (match_dup 4))
 	    (match_dup 5))))]
   "TARGET_SIMD"
