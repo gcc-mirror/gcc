@@ -52,6 +52,7 @@ test_vx_ternary_##NAME##_##T##_case_1 (T * restrict vd, T * restrict vs2, \
 
 #define TEST_TERNARY_VX_UNSIGNED_0(T)                              \
   DEF_VX_TERNARY_CASE_0_WRAP(T, *, +, macc)                        \
+  DEF_VX_TERNARY_CASE_1_WRAP(T, *, +, madd)                        \
   DEF_VX_TERNARY_CASE_0_WRAP(T, *, -, nmsac)                       \
 
 #endif
