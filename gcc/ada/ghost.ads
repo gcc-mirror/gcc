@@ -59,7 +59,7 @@ package Ghost is
      (Actual : Node_Id;
       Formal : Entity_Id);
    --  Check that if Actual contains references to ghost entities, generic
-   --  formal parameter Formal is ghost (SPARK RM 6.9(10)).
+   --  formal parameter Formal is ghost (SPARK RM 6.9(13)).
 
    procedure Check_Ghost_Formal_Procedure_Or_Package
      (N          : Node_Id;
@@ -68,7 +68,7 @@ package Ghost is
       Is_Default : Boolean := False);
    --  Verify that if generic formal procedure (resp. package) Formal is ghost,
    --  then Actual is not Empty and also a ghost procedure (resp. package)
-   --  (SPARK RM 6.9(13-14)). The error if any is located on N. If
+   --  (SPARK RM 6.9(16-17)). The error if any is located on N. If
    --  Is_Default is False, N and Actual represent the actual parameter in an
    --  instantiation. Otherwise, they represent the default subprogram of a
    --  formal subprogram declaration.
@@ -79,7 +79,7 @@ package Ghost is
       Is_Default : Boolean := False);
    --  Verify that if Formal (either an IN OUT generic formal parameter, or an
    --  IN generic formal parameter of access-to-variable type) is ghost, then
-   --  Actual is a ghost object (SPARK RM 6.9(13-14)). Is_Default is True when
+   --  Actual is a ghost object (SPARK RM 6.9(16-17)). Is_Default is True when
    --  Actual is the default expression of the formal object declaration.
 
    procedure Check_Ghost_Overriding
@@ -126,7 +126,7 @@ package Ghost is
       (Self : Entity_Id; Other : Entity_Id) return Boolean;
    --  Check that assertion level Self is assertion-level-dependent with Other.
    --
-   --  According to SPARK RM 6.9(5) this means that
+   --  According to SPARK RM 6.9(6) this means that
    --  * Either Self or Other has the default assertion level.
    --  * Self either is or depends on Other
    --  * Self either is or depends on Static
@@ -262,7 +262,7 @@ package Ghost is
 
    procedure Remove_Ignored_Ghost_Code;
    --  Remove all code marked as ignored Ghost from the trees of all qualifying
-   --  units (SPARK RM 6.9(4)).
+   --  units (SPARK RM 6.9(5)).
    --
    --  WARNING: this is a separate front end pass, care should be taken to keep
    --  it optimized.

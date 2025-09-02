@@ -10217,7 +10217,7 @@ package body Sem_Ch3 is
                end if;
 
                --  A type extension is automatically Ghost when one of its
-               --  progenitors is Ghost (SPARK RM 6.9(9)). This property is
+               --  progenitors is Ghost (SPARK RM 6.9(10)). This property is
                --  also inherited when the parent type is Ghost, but this is
                --  done in Build_Derived_Type as the mechanism also handles
                --  untagged derivations.
@@ -10541,7 +10541,7 @@ package body Sem_Ch3 is
       end if;
 
       --  A derived type becomes Ghost when its parent type is also Ghost
-      --  (SPARK RM 6.9(9)). Note that the Ghost-related attributes are not
+      --  (SPARK RM 6.9(10)). Note that the Ghost-related attributes are not
       --  directly inherited because the Ghost policy in effect may differ.
 
       if Is_Ghost_Entity (Parent_Type) then

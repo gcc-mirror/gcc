@@ -226,7 +226,7 @@ package body Ghost is
       Policy := Ghost_Policy_In_Effect (Prev_Id);
 
       --  The Ghost policy in effect at the point of declaration and at the
-      --  point of completion must match (SPARK RM 6.9(16)).
+      --  point of completion must match (SPARK RM 6.9(19)).
 
       if Is_Checked_Ghost_Entity (Prev_Id)
         and then Policy = Name_Ignore
@@ -260,7 +260,7 @@ package body Ghost is
 
       function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
       --  Determine whether node Context denotes a Ghost-friendly context where
-      --  a Ghost entity can safely reside (SPARK RM 6.9(10)).
+      --  a Ghost entity can safely reside (SPARK RM 6.9(13)).
 
       function In_Aspect_Or_Pragma_Predicate (N : Node_Id) return Boolean;
       --  Return True iff N is enclosed in an aspect or pragma Predicate
@@ -486,8 +486,8 @@ package body Ghost is
                return True;
 
             --  An assertion expression pragma is Ghost when it contains a
-            --  reference to a Ghost entity (SPARK RM 6.9(10)), except for
-            --  predicate pragmas (SPARK RM 6.9(11)).
+            --  reference to a Ghost entity (SPARK RM 6.9(13)), except for
+            --  predicate pragmas (SPARK RM 6.9(14)).
 
             elsif Is_Valid_Assertion_Kind (Prag_Nam)
               and then Assertion_Expression_Pragma (Prag_Id)
@@ -500,14 +500,14 @@ package body Ghost is
                return True;
 
             --  A pragma that applies to a Ghost construct or specifies an
-            --  aspect of a Ghost entity is a Ghost pragma (SPARK RM 6.9(3))
+            --  aspect of a Ghost entity is a Ghost pragma (SPARK RM 6.9(4))
 
             elsif Is_Ghost_Pragma (Prag) then
                return True;
 
             --  Several pragmas that may apply to a non-Ghost entity are
             --  treated as Ghost when they contain a reference to a Ghost
-            --  entity (SPARK RM 6.9(11)).
+            --  entity (SPARK RM 6.9(18)).
 
             elsif Prag_Nam
                   in Name_Global
@@ -728,11 +728,11 @@ package body Ghost is
                   return True;
 
                --  A reference to a Ghost entity can appear within an aspect
-               --  specification (SPARK RM 6.9(10)). The precise checking will
+               --  specification (SPARK RM 6.9(13)). The precise checking will
                --  occur when analyzing the corresponding pragma. We make an
                --  exception for predicate aspects other than Ghost_Predicate
                --  that only allow referencing a Ghost entity when the
-               --  corresponding type declaration is Ghost (SPARK RM 6.9(11)).
+               --  corresponding type declaration is Ghost (SPARK RM 6.9(14)).
 
                elsif Nkind (Par) = N_Aspect_Specification
                  and then
@@ -743,7 +743,7 @@ package body Ghost is
                   return True;
 
                --  A Ghost type may be referenced in a use or use_type clause
-               --  (SPARK RM 6.9(10)).
+               --  (SPARK RM 6.9(13)).
 
                elsif Present (Parent (Par))
                  and then Nkind (Parent (Par)) in N_Use_Package_Clause
@@ -863,7 +863,7 @@ package body Ghost is
          end if;
 
          --  The Ghost policy in effect a the point of declaration and at the
-         --  point of use must match (SPARK RM 6.9(15)).
+         --  point of use must match (SPARK RM 6.9(18)).
 
          if Is_Checked_Ghost_Entity (Id)
            and then Applic_Policy = Ignore
@@ -882,7 +882,7 @@ package body Ghost is
          --  assertion-level-dependent on E except in the following cases the
          --  specified aspect is either Global, Depends, Refined_Global,
          --  Refined_Depends, Initializes, Refined_State, or Iterable (SPARK RM
-         --  6.9(15)).
+         --  6.9(14)).
 
          if No (Ghost_Region)
            or else (Nkind (Ghost_Region) = N_Pragma
@@ -965,7 +965,7 @@ package body Ghost is
       end if;
 
       --  If the Ghost entity appears in a non-Ghost context and affects
-      --  its behavior or value (SPARK RM 6.9(10,11)).
+      --  its behavior or value (SPARK RM 6.9(13,14)).
 
       if not Is_OK_Ghost_Context (Ghost_Ref) then
          Error_Msg_N ("ghost entity cannot appear in this context", Ghost_Ref);
@@ -1210,7 +1210,7 @@ package body Ghost is
       Deriv_Typ := Find_Dispatching_Type (Subp);
 
       --  A Ghost primitive of a non-Ghost type extension cannot override an
-      --  inherited non-Ghost primitive (SPARK RM 6.9(8)).
+      --  inherited non-Ghost primitive (SPARK RM 6.9(10)).
 
       if Is_Ghost_Entity (Subp)
          and then Present (Deriv_Typ)
@@ -1228,7 +1228,7 @@ package body Ghost is
       end if;
 
       --  A non-Ghost primitive of a type extension cannot override an
-      --  inherited Ghost primitive (SPARK RM 6.9(8)).
+      --  inherited Ghost primitive (SPARK RM 6.9(10)).
 
       if Is_Ghost_Entity (Over_Subp)
         and then not Is_Ghost_Entity (Subp)
@@ -1249,7 +1249,7 @@ package body Ghost is
          --  When a tagged type is either non-Ghost or checked Ghost and
          --  one of its primitives overrides an inherited operation, the
          --  overridden operation of the ancestor type must be ignored Ghost
-         --  if the primitive is ignored Ghost (SPARK RM 6.9(19)).
+         --  if the primitive is ignored Ghost (SPARK RM 6.9(21)).
 
          if Is_Ignored_Ghost_Entity (Subp) then
 
@@ -1288,7 +1288,7 @@ package body Ghost is
          --  When a tagged type is either non-Ghost or checked Ghost and
          --  one of its primitives overrides an inherited operation, the
          --  the primitive of the tagged type must be ignored Ghost if the
-         --  overridden operation is ignored Ghost (SPARK RM 6.9(19)).
+         --  overridden operation is ignored Ghost (SPARK RM 6.9(21)).
 
          elsif Is_Ignored_Ghost_Entity (Over_Subp) then
 
@@ -1341,7 +1341,7 @@ package body Ghost is
       end if;
 
       --  The Ghost policy in effect at the point of declaration of a primitive
-      --  operation and a tagged type must match (SPARK RM 6.9(20)).
+      --  operation and a tagged type must match (SPARK RM 6.9(21)).
 
       if Is_Checked_Ghost_Entity (Prim)
         and then Is_Ignored_Ghost_Entity (Typ)
@@ -1407,7 +1407,7 @@ package body Ghost is
       end if;
 
       --  The Ghost policy in effect at the point of an ignored abstract state
-      --  cannot be check (SPARK RM 6.9(19)).
+      --  cannot be check (SPARK RM 6.9(20)).
 
       if Is_Ignored_Ghost_Entity (State_Id)
         and then Is_Checked_Ghost_Entity (Constit_Id)
@@ -1466,14 +1466,14 @@ package body Ghost is
             Conc_Typ := Typ;
          end if;
 
-         --  A Ghost type cannot be concurrent (SPARK RM 6.9(21)). Verify this
+         --  A Ghost type cannot be concurrent (SPARK RM 6.9(22)). Verify this
          --  legality rule first to give a finer-grained diagnostic.
 
          if Present (Conc_Typ) then
             Error_Msg_N ("ghost type & cannot be concurrent", Conc_Typ);
          end if;
 
-         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(9))
 
          if Is_Effectively_Volatile (Full_Typ) then
             Error_Msg_N ("ghost type & cannot be volatile", Full_Typ);
@@ -2068,7 +2068,7 @@ package body Ghost is
       end if;
 
       --  The Ghost policy in effect at the point of declaration and at the
-      --  point of completion must match (SPARK RM 6.9(16)).
+      --  point of completion must match (SPARK RM 6.9(18)).
 
       Check_Ghost_Completion (Prev_Id => Spec_Id, Compl_Id => Body_Id);
 
@@ -2118,7 +2118,7 @@ package body Ghost is
       end if;
 
       --  The Ghost policy in effect at the point of declaration and at the
-      --  point of completion must match (SPARK RM 6.9(16)).
+      --  point of completion must match (SPARK RM 6.9(18)).
 
       Check_Ghost_Completion
         (Prev_Id  => Prev_Id,

@@ -2946,7 +2946,7 @@ package body Sem_Ch12 is
       end case;
 
       --  Check for correct use of Ghost entities in generic
-      --  instantiations (SPARK RM 6.9(10)).
+      --  instantiations (SPARK RM 6.9(13)).
 
       Check_Ghost_Context_In_Generic_Association
         (Actual => Match,
@@ -4099,7 +4099,7 @@ package body Sem_Ch12 is
          end if;
 
          --  The default for a ghost generic formal procedure should be a ghost
-         --  procedure (SPARK RM 6.9(13)).
+         --  procedure (SPARK RM 6.9(16)).
 
          if Ekind (Nam) = E_Procedure then
             declare
@@ -11704,7 +11704,7 @@ package body Sem_Ch12 is
          Formal_Pack := Defining_Unit_Name (Specification (Analyzed_Formal));
 
          --  The actual for a ghost generic formal package should be a ghost
-         --  package (SPARK RM 6.9(14)).
+         --  package (SPARK RM 6.9(16)).
 
          Check_Ghost_Formal_Procedure_Or_Package
            (N      => Actual,
@@ -12023,7 +12023,7 @@ package body Sem_Ch12 is
          end if;
 
          --  The actual for a ghost generic formal procedure should be a ghost
-         --  procedure (SPARK RM 6.9(14)).
+         --  procedure (SPARK RM 6.9(16)).
 
          if Present (Act_E)
            and then Ekind (Act_E) = E_Procedure
@@ -12530,7 +12530,7 @@ package body Sem_Ch12 is
          end if;
 
          --  The actual for a ghost generic formal IN OUT parameter should be a
-         --  ghost object (SPARK RM 6.9(14)).
+         --  ghost object (SPARK RM 6.9(16)).
 
          Check_Ghost_Formal_Variable
            (Actual => Actual,

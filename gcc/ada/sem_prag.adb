@@ -13287,7 +13287,7 @@ package body Sem_Prag is
                procedure Check_Ghost_Synchronous is
                begin
                   --  A synchronized abstract state cannot be Ghost and vice
-                  --  versa (SPARK RM 6.9(21)).
+                  --  versa (SPARK RM 6.9(22)).
 
                   if Ghost_Seen and Synchronous_Seen then
                      SPARK_Msg_N ("synchronized state cannot be ghost", State);
@@ -14854,7 +14854,7 @@ package body Sem_Prag is
                   if Kind = Name_Ghost then
 
                      --  The Ghost policy must be either Check or Ignore
-                     --  (SPARK RM 6.9(6)).
+                     --  (SPARK RM 6.9(8)).
 
                      if Chars (Policy) not in Name_Check | Name_Ignore then
                         Error_Pragma_Arg
@@ -14864,7 +14864,7 @@ package body Sem_Prag is
 
                      --  Pragma Assertion_Policy specifying a Ghost policy
                      --  cannot occur within a Ghost subprogram or package
-                     --  (SPARK RM 6.9(16)).
+                     --  (SPARK RM 6.9(19)).
 
                      if Ghost_Config.Ghost_Mode > None then
                         Error_Pragma
@@ -19238,7 +19238,7 @@ package body Sem_Prag is
                   end if;
 
                --  Task unit declared without a definition cannot be subject to
-               --  pragma Ghost (SPARK RM 6.9(21)).
+               --  pragma Ghost (SPARK RM 6.9(22)).
 
                elsif Nkind (Stmt) in
                        N_Single_Task_Declaration | N_Task_Type_Declaration
@@ -19334,7 +19334,7 @@ package body Sem_Prag is
             end if;
 
             --  Protected and task types cannot be subject to pragma Ghost
-            --  (SPARK RM 6.9(21)).
+            --  (SPARK RM 6.9(22)).
 
             if Nkind (Context) in N_Protected_Body | N_Protected_Definition
             then
@@ -19392,7 +19392,7 @@ package body Sem_Prag is
 
                   --  The full declaration of a deferred constant cannot be
                   --  subject to pragma Ghost unless the deferred declaration
-                  --  is also Ghost (SPARK RM 6.9(9)).
+                  --  is also Ghost (SPARK RM 6.9(11)).
 
                   if Ekind (Prev_Id) = E_Constant then
                      Error_Msg_Name_1 := Pname;
@@ -19410,7 +19410,7 @@ package body Sem_Prag is
 
                   --  The full declaration of a type cannot be subject to
                   --  pragma Ghost unless the partial view is also Ghost
-                  --  (SPARK RM 6.9(9)).
+                  --  (SPARK RM 6.9(11)).
 
                   else
                      Error_Msg_NE (Fix_Error
@@ -19421,7 +19421,7 @@ package body Sem_Prag is
                end if;
 
             --  A synchronized object cannot be subject to pragma Ghost
-            --  (SPARK RM 6.9(21)).
+            --  (SPARK RM 6.9(22)).
 
             elsif Ekind (Id) = E_Variable then
                if Is_Protected_Type (Etype (Id)) then
@@ -19451,7 +19451,7 @@ package body Sem_Prag is
                      Is_Ghost := False;
 
                      --  "Ghostness" cannot be turned off once enabled within a
-                     --  region (SPARK RM 6.9(6)).
+                     --  region (SPARK RM 6.9(8)).
 
                      if Ghost_Config.Ghost_Mode > None  then
                         Error_Pragma
