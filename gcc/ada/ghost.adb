@@ -1913,12 +1913,14 @@ package body Ghost is
               ("\& is modified in a region with `Ignore`", N, Assignee);
          end if;
 
+         --  If an assignment to a part of a ghost variable occurs in a ghost
+         --  entity, then the variable should be assertion-level-dependent on
+         --  this entity (SPARK RM 6.9(18)).
+
          if Present (Region_Level)
            and then not Is_Assertion_Level_Dependent
-                          (Region_Level, Assignee_Level)
+                          (Assignee_Level, Region_Level)
          then
-            Error_Msg_Sloc := Sloc (N);
-
             Error_Msg_N (Assertion_Level_Error_Msg, N);
             Error_Msg_Name_1 := Chars (Assignee_Level);
             Error_Msg_NE ("\& has assertion level %", N, Assignee);
