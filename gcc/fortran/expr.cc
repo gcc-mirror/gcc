@@ -5911,6 +5911,7 @@ gfc_spec_list_type (gfc_actual_arglist *param_list, gfc_symbol *derived)
   gfc_component *c;
   bool seen_assumed = false;
   bool seen_deferred = false;
+  bool seen_len = false;
 
   if (derived == NULL)
     {
@@ -5932,10 +5933,12 @@ gfc_spec_list_type (gfc_actual_arglist *param_list, gfc_symbol *derived)
 	    return SPEC_EXPLICIT;
 	  seen_assumed = param_list->spec_type == SPEC_ASSUMED;
 	  seen_deferred = param_list->spec_type == SPEC_DEFERRED;
+	  if (c->attr.pdt_len)
+	    seen_len = true;
 	  if (seen_assumed && seen_deferred)
 	    return SPEC_EXPLICIT;
 	}
-      res = seen_assumed ? SPEC_ASSUMED : SPEC_DEFERRED;
+      res = (seen_assumed || !seen_len) ? SPEC_ASSUMED : SPEC_DEFERRED;
     }
   return res;
 }
