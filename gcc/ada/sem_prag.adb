@@ -14845,6 +14845,22 @@ package body Sem_Prag is
                            ("invalid assertion kind for pragma%",
                            Arg);
                      end if;
+
+                     --  An Assertion_Policy pragma specifying an
+                     --  Assertion_Level policy shall not occur within a ghost
+                     --  subprogram or package associated to an assertion level
+                     --  which depends on this level (SPARK RM 6.9(19)).
+
+                     if Ghost_Config.Ghost_Mode > None
+                       and then Is_Same_Or_Depends_On_Level
+                                  (Ghost_Config.Ghost_Mode_Assertion_Level,
+                                   Level)
+                     then
+                        Error_Msg_Name_2 := Chars (Level);
+                        Error_Pragma
+                          ("pragma % cannot appear within ghost subprogram or "
+                           & "package that depends on %");
+                     end if;
                   end if;
 
                   Check_Arg_Is_One_Of (Arg, Policy_Names);
