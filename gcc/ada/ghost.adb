@@ -278,9 +278,9 @@ package body Ghost is
          --
          --    * Be subject to pragma Ghost
 
-         function Is_OK_Pragma (Prag : Node_Id; Id : Entity_Id) return Boolean;
-         --  Determine whether node Prag is a suitable context for a reference
-         --  to a Ghost entity Id. To qualify as such, Prag must either
+         function Is_OK_Pragma (Prag : Node_Id) return Boolean;
+         --  Determine whether node Prag is a suitable context for a ghost
+         --  reference. To qualify as such, Prag must either
          --
          --    * Be an assertion expression pragma
          --
@@ -424,44 +424,10 @@ package body Ghost is
          -- Is_OK_Pragma --
          ------------------
 
-         function Is_OK_Pragma (Prag : Node_Id; Id : Entity_Id) return Boolean
+         function Is_OK_Pragma (Prag : Node_Id) return Boolean
          is
-            procedure Check_Policies;
-            --  Verify that the Ghost policy in effect at the point of the
-            --  declaration of Ghost entity Id (if present) is the same as
-            --  the assertion policy for the pragma. Emit an error if this
-            --  is not the case.
-
-            --------------------
-            -- Check_Policies --
-            --------------------
-
-            procedure Check_Policies is
-            begin
-               --  If the Ghost policy in effect at the point of the
-               --  declaration of Ghost entity Id is Ignore, then the assertion
-               --  policy of the pragma must be Ignore (SPARK RM 6.9(20)).
-
-               if Present (Id)
-                 and then not Is_Checked_Ghost_Entity (Id)
-                 and then not Is_Ignored (Prag)
-               then
-                  Error_Msg_N (Ghost_Policy_Error_Msg, Ghost_Ref);
-                  Error_Msg_NE
-                    ("\ghost entity & has policy `Ignore`",
-                     Ghost_Ref, Ghost_Id);
-                  Error_Msg_N
-                    ("\assertion expression has policy `Check`",
-                     Ghost_Ref);
-               end if;
-            end Check_Policies;
-
-            --  Local variables
-
             Prag_Id  : Pragma_Id;
             Prag_Nam : Name_Id;
-
-         --  Start of processing for Is_OK_Pragma
 
          begin
             if Nkind (Prag) /= N_Pragma then
@@ -493,10 +459,6 @@ package body Ghost is
               and then Assertion_Expression_Pragma (Prag_Id)
               and then Prag_Id /= Pragma_Predicate
             then
-               --  Ensure that the assertion policy and the Ghost policy are
-               --  compatible (SPARK RM 6.9(20)).
-
-               Check_Policies;
                return True;
 
             --  A pragma that applies to a Ghost construct or specifies an
@@ -781,7 +743,7 @@ package body Ghost is
                elsif Is_OK_Declaration (Par) then
                   return True;
 
-               elsif Is_OK_Pragma (Par, Ghost_Id) then
+               elsif Is_OK_Pragma (Par) then
                   return True;
 
                elsif Is_OK_Statement (Par, Ghost_Id, Prev) then
