@@ -1618,8 +1618,16 @@ simplify_builtin_memcmp (gimple_stmt_iterator *gsi_p, gcall *stmt)
 	  tree ptrtype = build_pointer_type_for_mode (char_type_node,
 						      ptr_mode, true);
 	  off = build_int_cst (ptrtype, 0);
-	  arg1 = build2_loc (loc, MEM_REF, type, arg1, off);
-	  arg2 = build2_loc (loc, MEM_REF, type, arg2, off);
+
+	  /* Create unaligned types if needed. */
+	  tree type1 = type, type2 = type;
+	  if (TYPE_ALIGN (type1) > align1)
+	    type1 = build_aligned_type (type1, align1);
+	  if (TYPE_ALIGN (type2) > align2)
+	    type2 = build_aligned_type (type2, align2);
+
+	  arg1 = build2_loc (loc, MEM_REF, type1, arg1, off);
+	  arg2 = build2_loc (loc, MEM_REF, type2, arg2, off);
 	  tree tem1 = fold_const_aggregate_ref (arg1);
 	  if (tem1)
 	    arg1 = tem1;
