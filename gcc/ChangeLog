@@ -1,3 +1,161 @@
+2025-09-01  Jonathan Grant  <jg@jguk.org>
+
+	* doc/install.texi (Configuration): Fix spelling of "support"
+	and "floating-point arithmetic".
+
+2025-09-01  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_array_type): Don't try to
+	encode non-C-style arrays.
+
+2025-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def: Implement C2Y N3577 - Rename s/uimaxabs/umaxabs/.
+	(BUILT_IN_UIMAXABS): Rename to ...
+	(BUILT_IN_UMAXABS): ... this.  Change second argument to "umaxabs".
+	* builtins.cc (fold_builtin_1): Use BUILT_IN_UMAXABS rather than
+	BUILT_IN_UIMAXABS.
+
+2025-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Optimize Options): Update the perfwiki web
+	address.
+
+2025-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* diagnostics/logging.h (log_param_location_t): Cast
+	location_t value to fmt_size_t.
+
+2025-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not claim cfi instruction support even
+	if the assembler has it.
+
+2025-09-01  Yoshinori Sato  <yoshinori.sato@nifty.com>
+
+	PR target/89828
+	* config/rx/rx.cc (add_pop_cfi_notes): Release the frame pointer if it is
+	used.
+	(rx_expand_prologue): Redesigned stack pointer and frame pointer update
+	process.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121744
+	* tree-vect-patterns.cc (vect_recog_vector_vector_shift_pattern):
+	Allow constant left operand.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Use SLP_TREE_REDUC_IDX for following the SLP graph and
+	for identifying whether we use the 'else' in a COND.
+	(vectorizable_lane_reducing): Simplify check of whether
+	we are in a reduction.
+	(vectorizable_reduction): Add sanity checking around
+	SLP_TREE_REDUC_IDX and use it where it looks appropriate.
+	(vect_transform_reduction): Use SLP_TREE_REDUC_IDX.
+	* tree-vect-stmts.cc (vectorizable_call): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_condition): Likewise.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Check
+	vect_is_reduction on the SLP node rather than
+	STMT_VINFO_REDUC_DEF on the stmt.
+	(vectorizable_reduction): Do not set STMT_VINFO_REDUC_DEF
+	on live stmts.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_reduc_info): New.
+	(create_info_for_reduction): Likewise.
+	(VECT_REDUC_INFO_TYPE): Likewise.
+	(VECT_REDUC_INFO_CODE): Likewise.
+	(VECT_REDUC_INFO_FN): Likewise.
+	(VECT_REDUC_INFO_SCALAR_RESULTS): Likewise.
+	(VECT_REDUC_INFO_INITIAL_VALUES): Likewise.
+	(VECT_REDUC_INFO_REUSED_ACCUMULATOR): Likewise.
+	(VECT_REDUC_INFO_INDUC_COND_INITIAL_VAL): Likewise.
+	(VECT_REDUC_INFO_EPILOGUE_ADJUSTMENT): Likewise.
+	(VECT_REDUC_INFO_FORCE_SINGLE_CYCLE): Likewise.
+	(VECT_REDUC_INFO_RESULT_POS): Likewise.
+	(VECT_REDUC_INFO_VECTYPE): Likewise.
+	(STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL): Remove.
+	(STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT): Likewise.
+	(STMT_VINFO_FORCE_SINGLE_CYCLE): Likewise.
+	(STMT_VINFO_REDUC_FN): Likewise.
+	(STMT_VINFO_REDUC_VECTYPE): Likewise.
+	(vect_reusable_accumulator::reduc_info): Adjust.
+	(vect_reduc_type): Adjust.
+	(_slp_tree::cycle_info): New member.
+	(SLP_TREE_REDUC_IDX): Likewise.
+	(vect_reduc_info_s): Move/copy data from ...
+	(_stmt_vec_info): ... here.
+	(_loop_vec_info::redcu_infos): New member.
+	(info_for_reduction): Adjust to take SLP node.
+	(vect_reduc_type): Adjust.
+	(vect_is_reduction): Add overload for SLP node.
+	* tree-vectorizer.cc (vec_info::new_stmt_vec_info):
+	Do not initialize removed members.
+	(vec_info::free_stmt_vec_info): Do not release them.
+	* tree-vect-stmts.cc (vectorizable_condition): Adjust.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize
+	cycle info.
+	(vect_build_slp_tree_2): Compute SLP reduc_idx and store
+	it.  Create, populate and propagate reduction info.
+	(vect_print_slp_tree): Print cycle info.
+	(vect_analyze_slp_reduc_chain): Set cycle info on the
+	manual added conversion node.
+	(vect_optimize_slp_pass::start_choosing_layouts): Adjust.
+	* tree-vect-loop.cc (_loop_vec_info::~_loop_vec_info):
+	Release reduction infos.
+	(info_for_reduction): Get the reduction info from
+	the vector in the loop_vinfo.
+	(vect_create_epilog_for_reduction): Adjust.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise, deal with nested
+	cycles not part of a double reduction have no reduction info.
+	* config/aarch64/aarch64.cc (aarch64_force_single_cycle):
+	Use VECT_REDUC_INFO_FORCE_SINGLE_CYCLE, get SLP node and use
+	that.
+	(aarch64_vector_costs::count_ops): Adjust.
+
+2025-09-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR target/121392
+	* doc/install.texi (amdgcn): Mention Newlib commit
+	that fixes another SIMD issue.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_is_simple_iv_evolution): Get
+	stmt_info and store into STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED
+	and STMT_VINFO_LOOP_PHI_EVOLUTION_PART here.  Drop unused
+	output parameters.
+	(vect_is_nonlinear_iv_evolution): Likewise.
+	(vect_analyze_scalar_cycles_1): Remove redundant setting
+	of STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED and
+	STMT_VINFO_LOOP_PHI_EVOLUTION_PART.
+
+2025-09-01  Cui, Lili  <lili.cui@intel.com>
+
+	PR rtl-optimization/117838
+	* ira-color.cc (improve_allocation): Remove soft conflict related code.
+
+2025-09-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121699
+	* config/i386/predicates.md (const_vec_dup_operand): New
+	predicate.
+	* config/i386/sse.md (cond_<insn><mode>): Fix predicate of
+	operands[3], and fix wrong operands passed to
+	ix86_vgf2p8affine_shift_matrix and
+	gen_vgf2p8affineqb_<mode>_mask.
+
 2025-08-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/predicates.md (alt_ubranch_operator):

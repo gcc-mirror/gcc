@@ -1,3 +1,12 @@
+2025-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121727
+	* trans-expr.cc (gfc_const_length_character_type_p): New helper
+	function.
+	(conv_dummy_value): Use it to determine if a character actual
+	argument has a constant length.  If a character actual argument is
+	constant and longer than the dummy, truncate it at compile time.
+
 2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/99709

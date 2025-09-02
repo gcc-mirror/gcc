@@ -1,3 +1,71 @@
+2025-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/c2y-counter-1.c: New test.
+
+2025-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/lib/abs.c (uimaxabs): Rename to ...
+	(umaxabs): ... this.
+	* gcc.c-torture/execute/builtins/uabs-2.c (uimaxabs): Rename to ...
+	(umaxabs): ... this.
+	(main_test): Use umaxabs instead of uimaxabs.
+	* gcc.c-torture/execute/builtins/uabs-3.c (main_test): Use umaxabs
+	instead of uimaxabs.
+
+2025-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121727
+	* gfortran.dg/value_10.f90: New test.
+
+2025-09-01  Yoshinori Sato  <yoshinori.sato@nifty.com>
+
+	PR target/89828
+	* gcc.dg/pr89828.c: New.
+
+2025-09-01  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.target/i386/shift-gf2p8affine-1.c: Use -march=x86-64
+	-mtune-generic.
+	* gcc.target/i386/shift-gf2p8affine-2.c: Dito.
+	* gcc.target/i386/shift-gf2p8affine-3.c: Dito.
+	* gcc.target/i386/shift-gf2p8affine-5.c: Dito.
+	* gcc.target/i386/shift-gf2p8affine-6.c: Dito.
+	* gcc.target/i386/shift-gf2p8affine-7.c: Dito.
+
+2025-09-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_neon_ok_nocache): Add "-mcpu=unset
+	-march=armv8-a" to et_arm_v8_neon_flags.
+	(add_options_for_vect_early_break): Remove useless "-mcpu=unset
+	-march=armv8-a".
+	(add_options_for_arm_v8_neon): Likewise.
+
+2025-09-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Remove arm32 check.
+	Add istarget arm*-*-* check.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Likewise.
+	(check_effective_target_arm_neon_softfp_fp16_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_neonv2_ok_nocache): Likewise.
+	(check_effective_target_vect_pack_trunc): Remove istarget arm*-*-*
+	check.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_condition): Likewise.
+	(check_effective_target_vect_cond_mixed): Likewise.
+	(available_vector_sizes): Likewise.
+
+2025-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121744
+	* gcc.dg/vect/pr121744-1.c: New testcase.
+
+2025-09-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr121699.c: New test.
+
 2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/99709

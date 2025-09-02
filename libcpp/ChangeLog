@@ -1,3 +1,9 @@
+2025-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* macro.cc: Implement C2Y N3457 - The __COUNTER__ predefined macro.
+	(_cpp_builtin_macro_text): Diagnose if __COUNTER__ reaches
+	2147483648 value.
+
 2025-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/120778
