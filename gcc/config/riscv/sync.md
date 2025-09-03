@@ -376,7 +376,19 @@
    (match_operand:SI 3 "const_int_operand")] ;; model
   "TARGET_ZAAMO || TARGET_ZALRSC"
   {
-    if (TARGET_ZAAMO)
+    if (TARGET_ZAAMO && TARGET_64BIT && <MODE>mode == SImode)
+      {
+	rtx t = gen_reg_rtx (DImode);
+	emit_insn (gen_amo_atomic_exchange_extended (t,
+						     operands[1],
+						     operands[2],
+						     operands[3]));
+	t = gen_lowpart (SImode, t);
+	SUBREG_PROMOTED_VAR_P (t) = 1;
+	SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+	emit_move_insn (operands[0], t);
+      }
+    else if (TARGET_ZAAMO)
       emit_insn (gen_amo_atomic_exchange<mode> (operands[0], operands[1],
 					    operands[2], operands[3]));
     else
@@ -395,6 +407,19 @@
 	(match_operand:GPR 2 "reg_or_0_operand" "rJ"))]
   "TARGET_ZAAMO"
   "amoswap.<amo>%A3\t%0,%z2,%1"
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 4))])
+
+(define_insn "amo_atomic_exchange_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+    (sign_extend:DI (unspec_volatile:SI
+      [(match_operand:SI 1 "memory_operand" "+A")
+       (match_operand:SI 3 "const_int_operand")] ;; model
+      UNSPEC_SYNC_EXCHANGE)))
+   (set (match_dup 1)
+    (match_operand:SI 2 "reg_or_0_operand" "rJ"))]
+  "TARGET_64BIT && TARGET_ZAAMO"
+  "amoswap.w%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
    (set (attr "length") (const_int 4))])
 
