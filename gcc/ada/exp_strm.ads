@@ -26,7 +26,9 @@
 --  Routines to build stream subprograms for composite types
 
 with Exp_Tss; use Exp_Tss;
+with Rtsfind; use Rtsfind;
 with Types;   use Types;
+with Uintp;          use Uintp;
 
 package Exp_Strm is
 
@@ -138,4 +140,32 @@ package Exp_Strm is
    --  always null), and Pnam is the name of the constructed procedure.
    --  Used by Exp_Dist to generate stream-oriented attributes for RACWs.
 
+   type Status is (Primitives, Possible_Sizes);
+
+   type Sizes is array (Positive range <>) of Nat;
+
+   type Primitive_Result
+     (S   : Status;
+      Len : Natural)
+   is record
+      case S is
+         when Primitives =>
+            Input : RE_Id;
+            Write : RE_Id;
+
+         when Possible_Sizes =>
+            List : Sizes (1 .. Len);
+      end case;
+   end record;
+
+   --------------------
+   -- Get_Primitives --
+   --------------------
+
+   function Get_Primitives
+     (P_Type : Entity_Id; P_Size : Uint) return Primitive_Result;
+   --  If P_Type supports a stream size of P_Size, returns the corresponding
+   --  input and write primitives. Otherwise, returns a list of the stream
+   --  sizes P_Type supports, in nondecreasing order and with possible
+   --  duplicates.
 end Exp_Strm;

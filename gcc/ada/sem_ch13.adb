@@ -37,6 +37,7 @@ with Errid;            use Errid;
 with Errout;           use Errout;
 with Exp_Ch3;          use Exp_Ch3;
 with Exp_Disp;         use Exp_Disp;
+with Exp_Strm;         use Exp_Strm;
 with Exp_Tss;          use Exp_Tss;
 with Exp_Util;         use Exp_Util;
 with Expander;         use Expander;
@@ -8366,32 +8367,59 @@ package body Sem_Ch13 is
 
             if Duplicate_Clause then
                null;
-
+            elsif No (Size) then
+               Error_Msg_N ("invalid argument for Stream_Size aspect", Nam);
             elsif Is_Elementary_Type (U_Ent) then
-               --  Size will be empty if we already detected an error
-               --  (e.g. Expr is of the wrong type); we might as well
-               --  give the useful hint below even in that case.
-
-               if No (Size) or else
-                 (Size /= System_Storage_Unit
-                  and then Size /= System_Storage_Unit * 2
-                  and then Size /= System_Storage_Unit * 3
-                  and then Size /= System_Storage_Unit * 4
-                  and then Size /= System_Storage_Unit * 8)
-               then
-                  Error_Msg_N
-                    ("stream size for elementary type must be 8, 16, 24, " &
-                     "32 or 64", N);
-
-               elsif Known_RM_Size (U_Ent) and then RM_Size (U_Ent) > Size then
-                  Error_Msg_Uint_1 := RM_Size (U_Ent);
-                  Error_Msg_N
-                    ("stream size for elementary type must be 8, 16, 24, " &
-                     "32 or 64 and at least ^", N);
-               end if;
-
                Set_Has_Stream_Size_Clause (U_Ent);
 
+               declare
+                  Minimum_Size : constant Uint :=
+                    (if Known_RM_Size (U_Ent)
+                     then RM_Size (U_Ent)
+                     else Uint_0);
+
+                  Size_Or_Zero : constant Uint :=
+                    (if Size < Minimum_Size then Uint_0 else Size);
+                  --  If the requested size is smaller than the RM size of the
+                  --  type, we pass zero to Get_Primitives. That will always
+                  --  give us the list of supported sizes we need to report an
+                  --  error.
+
+                  P : constant Primitive_Result :=
+                    Get_Primitives (U_Ent, Size_Or_Zero);
+
+                  Error_Text : Bounded_String;
+
+                  In_First_Iteration : Boolean := True;
+                  Previous_Value : Nat := 0;
+               begin
+                  case P.S is
+                     when Possible_Sizes =>
+                        Error_Msg_N ("unsupported stream size", N);
+
+                        Append
+                          (Error_Text,
+                           "\supported stream sizes for this type: ");
+                        for Sz of P.List loop
+                           if Minimum_Size <= Sz and then Sz /= Previous_Value
+                           then
+                              if In_First_Iteration then
+                                 In_First_Iteration := False;
+                              else
+                                 Append (Error_Text, ", ");
+                              end if;
+
+                              Append (Error_Text, Sz);
+
+                              Previous_Value := Sz;
+                           end if;
+                        end loop;
+                        Error_Msg_N (To_String (Error_Text), N);
+
+                     when others =>
+                        null;
+                  end case;
+               end;
             else
                Error_Msg_N ("Stream_Size cannot be given for &", Nam);
             end if;
