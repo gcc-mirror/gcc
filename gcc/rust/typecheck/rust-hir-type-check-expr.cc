@@ -2034,24 +2034,6 @@ TypeCheckExpr::resolve_operator_overload (
   rust_debug ("is_impl_item_candidate: %s",
 	      resolved_candidate.is_impl_candidate () ? "true" : "false");
 
-  if (resolved_candidate.is_impl_candidate ())
-    {
-      auto infer_arguments = TyTy::SubstitutionArgumentMappings::error ();
-      HIR::ImplBlock &impl = *resolved_candidate.item.impl.parent;
-      TyTy::BaseType *impl_self_infer
-	= TypeCheckItem::ResolveImplBlockSelfWithInference (impl,
-							    expr.get_locus (),
-							    &infer_arguments);
-      if (impl_self_infer->get_kind () == TyTy::TypeKind::ERROR)
-	{
-	  return false;
-	}
-      if (!infer_arguments.is_empty ())
-	{
-	  lookup = SubstMapperInternal::Resolve (lookup, infer_arguments);
-	}
-    }
-
   // in the case where we resolve to a trait bound we have to be careful we are
   // able to do so there is a case where we are currently resolving the deref
   // operator overload function which is generic and this might resolve to the
