@@ -8512,7 +8512,12 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 				       argse.string_length);
       else if (arg->expr->ts.type == BT_CLASS)
 	{
-	  class_ref = TREE_OPERAND (argse.expr, 0);
+	  if (UNLIMITED_POLY (source_expr)
+	      && DECL_LANG_SPECIFIC (source_expr->symtree->n.sym->backend_decl))
+	    class_ref = GFC_DECL_SAVED_DESCRIPTOR
+	      (source_expr->symtree->n.sym->backend_decl);
+	  else
+	    class_ref = TREE_OPERAND (argse.expr, 0);
 	  tmp = gfc_class_vtab_size_get (class_ref);
 	  if (UNLIMITED_POLY (arg->expr))
 	    tmp = gfc_resize_class_size_with_len (&argse.pre, class_ref, tmp);
