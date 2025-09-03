@@ -715,9 +715,7 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
 	    return unify_error_type_node ();
 	  }
 
-	return new TyTy::ReferenceType (ltype->get_ref (), ltype->get_ty_ref (),
-					TyTy::TyVar (base_resolved->get_ref ()),
-					ltype->mutability ());
+	return ltype;
       }
       break;
 
@@ -787,9 +785,7 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
 	    return unify_error_type_node ();
 	  }
 
-	return new TyTy::PointerType (ltype->get_ref (), ltype->get_ty_ref (),
-				      TyTy::TyVar (base_resolved->get_ref ()),
-				      ltype->mutability ());
+	return ltype;
       }
       break;
 
@@ -983,12 +979,7 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
 			     TyTy::TyWithLocation (type.get_element_type ()));
 
 	if (element_unify->get_kind () != TyTy::TypeKind::ERROR)
-	  {
-	    return new TyTy::SliceType (type.get_ref (), type.get_ty_ref (),
-					type.get_ident ().locus,
-					TyTy::TyVar (
-					  element_unify->get_ref ()));
-	  }
+	  return ltype;
       }
       break;
 
@@ -1298,8 +1289,7 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 	    fields.emplace_back (unified_ty->get_ref ());
 	  }
 
-	return new TyTy::TupleType (type.get_ref (), type.get_ty_ref (),
-				    type.get_ident ().locus, fields);
+	return ltype;
       }
       break;
 
@@ -1459,8 +1449,7 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
 	TyTy::IntType &type = *static_cast<TyTy::IntType *> (rtype);
 	bool is_valid = ltype->get_int_kind () == type.get_int_kind ();
 	if (is_valid)
-	  return new TyTy::IntType (type.get_ref (), type.get_ty_ref (),
-				    type.get_int_kind ());
+	  return ltype;
       }
       break;
 
@@ -1518,8 +1507,7 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
 	TyTy::UintType &type = *static_cast<TyTy::UintType *> (rtype);
 	bool is_valid = ltype->get_uint_kind () == type.get_uint_kind ();
 	if (is_valid)
-	  return new TyTy::UintType (type.get_ref (), type.get_ty_ref (),
-				     type.get_uint_kind ());
+	  return ltype;
       }
       break;
 
@@ -1577,8 +1565,7 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
 	TyTy::FloatType &type = *static_cast<TyTy::FloatType *> (rtype);
 	bool is_valid = ltype->get_float_kind () == type.get_float_kind ();
 	if (is_valid)
-	  return new TyTy::FloatType (type.get_ref (), type.get_ty_ref (),
-				      type.get_float_kind ());
+	  return ltype;
       }
       break;
 
