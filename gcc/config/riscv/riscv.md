@@ -1912,6 +1912,7 @@
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
   "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF
    && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   "@
    #
@@ -1938,7 +1939,8 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF"
   "@
    #
    lhu\t%0,%1"
@@ -2000,7 +2002,7 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_XTHEADMEMIDX"
+  "TARGET_64BIT && !TARGET_XTHEADMEMIDX && !TARGET_XANDESPERF"
   "@
    sext.w\t%0,%1
    lw\t%0,%1"
@@ -2017,7 +2019,8 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF"
   "@
    #
    l<SHORT:size>\t%0,%1"
@@ -3109,6 +3112,7 @@
       || TARGET_XVENTANACONDOPS || TARGET_SFB_ALU)
      && (INTVAL (operands[2]) == 1))
    && !TARGET_XTHEADBB
+   && !TARGET_XANDESPERF
    && !(TARGET_64BIT
         && (INTVAL (operands[3]) > 0)
         && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
@@ -3494,9 +3498,9 @@
 	    (label_ref (match_operand 1))
 	    (pc)))
    (clobber (match_scratch:X 4 "=&r"))]
-  ""
-  "#"
-  "reload_completed"
+   "!TARGET_XANDESPERF"
+   "#"
+   "&& reload_completed"
   [(set (match_dup 4)
 	(ashift:X (match_dup 2) (match_dup 3)))
    (set (pc)
@@ -4932,6 +4936,7 @@
 ;; Vendor extensions
 (include "thead.md")
 (include "corev.md")
+(include "andes.md")
 ;; Pipeline models
 (include "generic.md")
 (include "xiangshan.md")

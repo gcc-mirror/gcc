@@ -3933,6 +3933,10 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   if (MEM_P (op))
     return 0;
 
+  /* Andes bfo patterns.  */
+  if (TARGET_XANDESPERF)
+    return COSTS_N_INSNS (1);
+
   if (unsigned_p && GET_MODE (op) == QImode)
     /* We can use ANDI.  */
     return COSTS_N_INSNS (1);
@@ -4162,6 +4166,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case AND:
+      /* Andes bfo patterns.  */
+      if (TARGET_XANDESPERF && GET_CODE (XEXP (x, 0)) == ASHIFT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
       /* slli.uw pattern for zba.  */
       if (TARGET_ZBA && TARGET_64BIT && mode == DImode
 	  && GET_CODE (XEXP (x, 0)) == ASHIFT)
@@ -4221,6 +4231,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case ZERO_EXTRACT:
+      /* Andes bbcs patterns.  */
+      if (TARGET_XANDESPERF
+	  && (outer_code == NE || outer_code == EQ))
+	{
+	  *total = 0;
+	  return true;
+	}
       /* This is an SImode shift.  */
       if (outer_code == SET
 	  && CONST_INT_P (XEXP (x, 1))
@@ -4246,6 +4263,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && CONST_INT_P (XEXP (x, 2)))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Andes bfo patterns.  */
+      if (TARGET_XANDESPERF)
+	{
+	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
       return false;
@@ -4414,6 +4437,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		return true;
 	      }
 	  } while (false);
+	}
+
+      /* Andes lea patterns.  */
+      if (TARGET_XANDESPERF
+	  && ((TARGET_64BIT && GET_CODE (XEXP (x, 0)) == AND)
+	      || GET_CODE (XEXP (x, 0)) == ASHIFT))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
 	}
 
       if (float_mode_p)

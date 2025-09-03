@@ -4364,7 +4364,7 @@
 			      (umax "%3,%4")
 			      (mult "%3,%4")])
 
-(define_code_attr sz [(sign_extend "s") (zero_extend "z")])
+(define_code_attr sz [(sign_extend "s") (zero_extend "z") (sign_extract "s") (zero_extract "z")])
 
 ;; VLS modes that has NUNITS < 32.
 (define_mode_iterator VLS_AVL_IMM [
