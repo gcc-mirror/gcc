@@ -1101,6 +1101,8 @@ public:
 
   Unsafety get_unsafety () const { return unsafety; }
 
+  FnPtr *handle_substitions (SubstitutionArgumentMappings &mappings);
+
 private:
   std::vector<TyVar> params;
   TyVar result_type;

@@ -310,15 +310,15 @@ SubstMapperInternal::visit (TyTy::SliceType &type)
 {
   resolved = type.handle_substitions (mappings);
 }
+void
+SubstMapperInternal::visit (TyTy::FnPtr &type)
+{
+  resolved = type.handle_substitions (mappings);
+}
 
 // nothing to do for these
 void
 SubstMapperInternal::visit (TyTy::InferType &type)
-{
-  resolved = type.clone ();
-}
-void
-SubstMapperInternal::visit (TyTy::FnPtr &type)
 {
   resolved = type.clone ();
 }

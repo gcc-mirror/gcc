@@ -2314,6 +2314,40 @@ FnPtr::clone () const
 		    get_unsafety (), get_combined_refs ());
 }
 
+FnPtr *
+FnPtr::handle_substitions (SubstitutionArgumentMappings &mappings)
+{
+  auto &mappings_table = Analysis::Mappings::get ();
+
+  auto fn = clone ()->as<FnPtr> ();
+  fn->set_ref (mappings_table.get_next_hir_id ());
+  fn->set_ty_ref (mappings_table.get_next_hir_id ());
+
+  if (!fn->result_type.get_tyty ()->is_concrete ())
+    {
+      BaseType *concrete
+	= Resolver::SubstMapperInternal::Resolve (fn->result_type.get_tyty (),
+						  mappings);
+      fn->result_type
+	= TyVar::subst_covariant_var (fn->result_type.get_tyty (), concrete);
+    }
+
+  for (size_t i = 0; i < fn->params.size (); i++)
+    {
+      TyVar &field = fn->params.at (i);
+      if (!field.get_tyty ()->is_concrete ())
+	{
+	  BaseType *concrete
+	    = Resolver::SubstMapperInternal::Resolve (field.get_tyty (),
+						      mappings);
+	  fn->params[i]
+	    = TyVar::subst_covariant_var (field.get_tyty (), concrete);
+	}
+    }
+
+  return fn;
+}
+
 void
 ClosureType::accept_vis (TyVisitor &vis)
 {
