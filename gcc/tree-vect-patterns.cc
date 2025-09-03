@@ -5363,7 +5363,7 @@ vect_recog_mod_var_pattern (vec_info *vinfo,
   gimple *pattern_stmt, *def_stmt;
   enum tree_code rhs_code;
 
-  if (!is_gimple_assign (last_stmt))
+  if (!is_gimple_assign (last_stmt) || vect_is_reduction (stmt_vinfo))
     return NULL;
 
   rhs_code = gimple_assign_rhs_code (last_stmt);
