@@ -1,3 +1,25 @@
+2025-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.cc: Include contracts.h
+	* coroutines.cc: Likewise.
+	* cp-gimplify.cc: Likewise.
+	* decl.cc: Likewise.
+	* decl2.cc: Likewise.
+	* mangle.cc: Likewise.
+	* module.cc: Likewise.
+	* pt.cc: Likewise.
+	* search.cc: Likewise.
+	* semantics.cc: Likewise.
+	* contracts.cc (validate_contract_role, setup_default_contract_role,
+	add_contract_role, get_concrete_axiom_semantic,
+	get_default_contract_role): Make static.
+	* cp-tree.h (make_postcondition_variable, grok_contract,
+	finish_contract_condition, find_contract, set_decl_contracts,
+	get_contract_semantic, set_contract_semantic): Move to contracts.h.
+	* contracts.h (get_contract_role, add_contract_role,
+	validate_contract_role, setup_default_contract_role,
+	lookup_concrete_semantic, get_default_contract_role): Remove.
+
 2025-08-29  Sirui Mu  <msrlancern@gmail.com>
 
 	* typeck.cc (cp_build_array_ref): Handle 0[arr] earlier.

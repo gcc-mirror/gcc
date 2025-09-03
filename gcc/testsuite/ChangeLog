@@ -1,3 +1,71 @@
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89707
+	* gfortran.dg/pdt_43.f03: New test.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87669
+	* gfortran.dg/pdt_42.f03: New test.
+
+2025-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/asm-hard-reg-4.c: On Arm, unset the CPU before
+	setting the arch.
+	* gcc.dg/asm-hard-reg-error-3.c: Similarly.  Also add
+	floating-point instructions to aid hard-float variants.
+	Match on arm* not just arm.
+
+2025-09-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	* gcc.target/riscv/rvv/autovec/pr121742.c: New test.
+
+2025-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/spaceship-fp-1.c: Expect .SPACESHIP call with
+	-128 as last argument instead of 2.
+	(TEST): Use -128 instead of 2.
+	* gcc.target/s390/spaceship-fp-2.c: Expect .SPACESHIP call with
+	-128 as last argument instead of 2.
+	(TEST): Use -128 instead of 2.
+
+2025-09-02  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbb-sext.c: New test.
+
+2025-09-02  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zba-shadd.c: New test functions.
+
+2025-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/memset-strategy-10.c (dg-options): Add
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.
+	* gcc.target/i386/memset-strategy-13.c: Likewise.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121754
+	* gcc.dg/vect/pr121754.c: New testcase.
+	* gcc.target/aarch64/vect-pr121754.c: Likewise.
+
+2025-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121663
+	* gcc.dg/pr121663.c: New test.
+
+2025-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tree-ssa/cswtch-6.c (dg-final): xfail on
+	sparc*-*-solaris2* && !gas.
+	* gcc.dg/tree-ssa/cswtch-7.c: Likewise.
+
+2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* g++.dg/tree-ssa/vector-compare-1.C: Restrict to
+	non_strict_align targets.
+
 2025-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/c2y-counter-1.c: New test.

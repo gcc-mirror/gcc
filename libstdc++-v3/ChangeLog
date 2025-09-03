@@ -1,3 +1,18 @@
+2025-09-02  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/bits/utility.h (_Index_tuple): Move to <type_traits>.
+	(_Build_index_tuple): Ditto.
+	* include/std/type_traits (_Index_tuple): Ditto.
+	(_Build_index_tuple): Ditto.
+
+2025-09-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::__literal_zero): Rename
+	from __unspec.
+	(__cmp_cat::__unspec): Rename to __literal_zero.
+	(operator==, operator<, operator>, operator<=, operator>=):
+	Replace __cmp_cat::__unspec to __cmp_cat::__literal_zero.
+
 2025-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/using_exceptions.xml: Update link to

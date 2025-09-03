@@ -1,3 +1,21 @@
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89707
+	* decl.cc (gfc_get_pdt_instance): Copy the typebound procedure
+	field from the PDT template. If the template interface has
+	kind=0, provide the new instance with an interface with a type
+	spec that points to that of the parameterized component.
+	(match_ppc_decl): When 'saved_kind_expr' this is a PDT and the
+	expression should be copied to the component kind_expr.
+	* gfortran.h: Define gfc_get_tbp.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87669
+	* expr.cc (gfc_spec_list_type): If no LEN components are seen,
+	unconditionally return 'SPEC_ASSUMED'. This suppresses an
+	invalid error in match.cc(gfc_match_type_is).
+
 2025-09-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121727

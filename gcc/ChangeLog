@@ -1,3 +1,102 @@
+2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-ccp.cc (optimize_memcmp_eq): New function.
+	(pass_fold_builtins::execute): Call optimize_memcmp_eq
+	for memcmp.
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_memcmp): Remove.
+	(strlen_pass::check_and_optimize_call): Don't call handle_builtin_memcmp.
+
+2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_memcmp): Create
+	unaligned types if the alignment of the pointers is less
+	than the alignment of the new type.
+
+2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (simplify_builtin_memcmp): Create
+	unaligned types if the alignment of the pointers is less
+	than the alignment of the new type.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121753
+	* tree-vect-patterns.cc (vect_synth_mult_by_constant): Properly
+	bail when synth_shift_p and an alg_shift use.  Handle other
+	problematic cases.
+
+2025-09-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (is_vlmax_len_p): Properly handle VLS
+	modes.
+	(imm_avl_p): Fix VLS length check.
+	(expand_strided_load): Use is_vlmax_len_p.
+	(expand_strided_store): Ditto.
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute):
+	Use GET_MODE_NUNITS / NF as avl.
+
+2025-09-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	* config/riscv/riscv-v.cc (expand_vec_perm): Use temporary if
+	op1 and target overlap.
+
+2025-09-02  Andrew Stubbs  <ams@baylibre.com>
+
+	* doc/options.texi: Document NoOffload.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_transform_stmt): Clear
+	STMT_VINFO_VECTYPE for all stmts.
+	(vect_analyze_stmt): Likewise.  But restore at the end again.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121754
+	* tree-vectorizer.h (vect_reduc_type): Simplify to not ICE
+	on nested cycles.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (bump_vector_ptr): Remove the
+	STMT_VINFO_VECTYPE use, bump is always specified.
+
+2025-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_check_gather_scatter): Add
+	vectype parameter.
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Get
+	vectype as parameter.
+	(vect_analyze_data_refs): Adjust.
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern): Likewise.
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Get vectype
+	as parameter, pass down.
+	(vect_build_slp_tree_2): Adjust.
+	* tree-vect-stmts.cc (vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_use_strided_gather_scatters_p): Likewise.
+
+2025-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Put counted_by
+	in alphabetical order.
+
+2025-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121663
+	* tree-cfg.cc (assign_discriminator): Change map argument type
+	from hash_map with int_hash <int64_t, -1, -2> to one with
+	int_hash <unsigned, -1U, -2U>.  Cast LOCATION_LINE to unsigned.
+	Return early for (unsigned) LOCATION_LINE above -3U.
+	(assign_discriminators): Change map type from hash_map with
+	int_hash <int64_t, -1, -2> to one with int_hash <unsigned, -1U, -2U>.
+
+2025-09-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/gen-riscv-ext-opt.cc (version_t): Remove unused
+	struct.
+	(print_ext_doc_entry): Remove unused function.
+
 2025-09-01  Jonathan Grant  <jg@jguk.org>
 
 	* doc/install.texi (Configuration): Fix spelling of "support"
