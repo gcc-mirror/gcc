@@ -44,6 +44,9 @@ TargetVariable
 int riscv_sv_subext
 
 TargetVariable
+int riscv_xandes_subext
+
+TargetVariable
 int riscv_xcv_subext
 
 TargetVariable
@@ -399,6 +402,18 @@ Mask(SVADU) Var(riscv_sv_subext)
 Mask(SVADE) Var(riscv_sv_subext)
 
 Mask(SVBARE) Var(riscv_sv_subext)
+
+Mask(XANDESPERF) Var(riscv_xandes_subext)
+
+Mask(XANDESBFHCVT) Var(riscv_xandes_subext)
+
+Mask(XANDESVBFHCVT) Var(riscv_xandes_subext)
+
+Mask(XANDESVSINTLOAD) Var(riscv_xandes_subext)
+
+Mask(XANDESVPACKFPH) Var(riscv_xandes_subext)
+
+Mask(XANDESVDOT) Var(riscv_xandes_subext)
 
 Mask(XCVALU) Var(riscv_xcv_subext)
 
