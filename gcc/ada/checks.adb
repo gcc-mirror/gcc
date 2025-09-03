@@ -1539,21 +1539,18 @@ package body Checks is
          return;
       end if;
 
-      --  Suppress checks if the subtypes are the same. The check must be
-      --  preserved in an assignment to a formal, because the constraint is
-      --  given by the actual.
+      --  Suppress checks if the subtypes are the same and constrained. The
+      --  check must be preserved in an assignment to a formal, because the
+      --  constraint is given by the actual.
 
       if Nkind (Original_Node (N)) /= N_Allocator
+        and then (if Do_Access then Designated_Type (Typ) else Typ) = S_Typ
+        and then Is_Constrained (S_Typ)
         and then (No (Lhs)
                    or else not Is_Entity_Name (Lhs)
                    or else No (Param_Entity (Lhs)))
       then
-         if (Etype (N) = Typ
-              or else (Do_Access and then Designated_Type (Typ) = S_Typ))
-           and then (No (Lhs) or else not Is_Aliased_View (Lhs))
-         then
-            return;
-         end if;
+         return;
 
       --  We can also eliminate checks on allocators with a subtype mark that
       --  coincides with the context type. The context type may be a subtype
