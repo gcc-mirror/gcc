@@ -265,6 +265,15 @@ package body Exp_Attr is
    --  the implementation base type of this type (Typ). If found, return the
    --  pragma node, otherwise return Empty if no pragma is found.
 
+   function Interunit_Ref_OK
+     (Subp_Unit, Attr_Ref_Unit : Node_Id) return Boolean;
+   --  Returns True if it is ok to refer to a cached subprogram declared in
+   --  Subp_Unit from the point of an attribute reference occurring in
+   --  Attr_Ref_Unit. Both arguments are usually N_Compilation_Nodes,
+   --  although there are cases where Subp_Unit might be a type declared in
+   --  package Standard (in which case the In_Same_Extended_Unit call will
+   --  return False).
+
    function Is_Constrained_Packed_Array (Typ : Entity_Id) return Boolean;
    --  Utility for array attributes, returns true on packed constrained
    --  arrays, and on access to same.
@@ -278,20 +287,6 @@ package body Exp_Attr is
    function Is_User_Defined_Enumeration_Type (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a user-defined enumeration type, in the sense
    --  that its literals are declared in the source.
-
-   function Interunit_Ref_OK
-     (Subp_Unit, Attr_Ref_Unit : Node_Id) return Boolean is
-       (In_Same_Extended_Unit (Subp_Unit, Attr_Ref_Unit)
-         --  If subp declared in unit body, then we don't want to refer
-         --  to it from within unit spec so return False in that case.
-         and then not (not Is_Body (Unit (Attr_Ref_Unit))
-                       and Is_Body (Unit (Subp_Unit))));
-   --  Returns True if it is ok to refer to a cached subprogram declared in
-   --  Subp_Unit from the point of an attribute reference occurring in
-   --  Attr_Ref_Unit. Both arguments are usually N_Compilation_Nodes,
-   --  although there are cases where Subp_Unit might be a type declared in
-   --  package Standard (in which case the In_Same_Extended_Unit call will
-   --  return False).
 
    package body Cached_Attribute_Ops is
 
@@ -2020,7 +2015,12 @@ package body Exp_Attr is
 
                   pragma Assert (Present (Insertion_Point));
                end if;
-               Ancestor := Parent (Ancestor);
+
+               if Nkind (Ancestor) = N_Subunit then
+                  Ancestor := Corresponding_Stub (Ancestor);
+               else
+                  Ancestor := Parent (Ancestor);
+               end if;
             end loop;
 
             if Present (Insertion_Point) then
@@ -9599,6 +9599,31 @@ package body Exp_Attr is
 
       return Empty;
    end Get_Stream_Convert_Pragma;
+
+   ----------------------
+   -- Interunit_Ref_OK --
+   ----------------------
+
+   function Interunit_Ref_OK
+     (Subp_Unit, Attr_Ref_Unit : Node_Id) return Boolean is
+
+      function Unit_Is_Body_Or_Subunit (U : Node_Id) return Boolean is
+        (Is_Body (Unit (U)) or else Nkind (Unit (U)) = N_Subunit);
+   begin
+      if not In_Same_Extended_Unit (Subp_Unit, Attr_Ref_Unit) then
+         return False;
+
+      --  If subp declared in unit body, then we don't want to refer
+      --  to it from within unit spec so return False in that case.
+
+      elsif Unit_Is_Body_Or_Subunit (Subp_Unit)
+        and then not Unit_Is_Body_Or_Subunit (Attr_Ref_Unit)
+      then
+         return False;
+      end if;
+
+      return True;
+   end Interunit_Ref_OK;
 
    ---------------------------------
    -- Is_Constrained_Packed_Array --
