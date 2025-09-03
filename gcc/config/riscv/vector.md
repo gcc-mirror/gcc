@@ -7250,8 +7250,8 @@
 	  (any_widen_binop:VWEXTF
 	    (float_extend:VWEXTF
 	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr,   vr"))
-	    (float_extend:VWEXTF
-	      (vec_duplicate:<V_DOUBLE_TRUNC>
+	    (vec_duplicate:VWEXTF
+	      (float_extend:<VEL>
 		(match_operand:<VSUBEL> 4 "register_operand"       "    f,    f"))))
 	  (match_operand:VWEXTF 2 "vector_merge_operand"           "   vu,    0")))]
   "TARGET_VECTOR"
