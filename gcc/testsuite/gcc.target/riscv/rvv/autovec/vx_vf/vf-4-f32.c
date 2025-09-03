@@ -18,4 +18,5 @@
 /* { dg-final { scan-assembler-not {vfmul.vf} } } */
 /* { dg-final { scan-assembler-not {vfrdiv.vf} } } */
 /* { dg-final { scan-assembler-not {vfmin.vf} } } */
+/* { dg-final { scan-assembler-not {vfmax.vf} } } */
 /* { dg-final { scan-assembler {fcvt.d.s} } } */

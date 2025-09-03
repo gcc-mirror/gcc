@@ -130,6 +130,12 @@
 #define DEF_MIN_1(T)                                                           \
   static inline T test_##T##_min_1 (T a, T b) { return a >= b ? b : a; }
 
+#define DEF_MAX_0(T)                                                           \
+  static inline T test_##T##_max_0 (T a, T b) { return a > b ? a : b; }
+
+#define DEF_MAX_1(T)                                                           \
+  static inline T test_##T##_max_1 (T a, T b) { return a >= b ? a : b; }
+
 DEF_MIN_0 (_Float16)
 DEF_MIN_0 (float)
 DEF_MIN_0 (double)
@@ -138,11 +144,25 @@ DEF_MIN_1 (_Float16)
 DEF_MIN_1 (float)
 DEF_MIN_1 (double)
 
+DEF_MAX_0 (_Float16)
+DEF_MAX_0 (float)
+DEF_MAX_0 (double)
+
+DEF_MAX_1 (_Float16)
+DEF_MAX_1 (float)
+DEF_MAX_1 (double)
+
 #define MIN_FUNC_0(T) test_##T##_min_0
 #define MIN_FUNC_0_WRAP(T) MIN_FUNC_0 (T)
 
 #define MIN_FUNC_1(T) test_##T##_min_1
 #define MIN_FUNC_1_WRAP(T) MIN_FUNC_1 (T)
+
+#define MAX_FUNC_0(T) test_##T##_max_0
+#define MAX_FUNC_0_WRAP(T) MAX_FUNC_0 (T)
+
+#define MAX_FUNC_1(T) test_##T##_max_1
+#define MAX_FUNC_1_WRAP(T) MAX_FUNC_1 (T)
 
 #define DEF_VF_BINOP_CASE_2(T, FUNC, NAME)                                     \
   void test_vf_binop_##NAME##_##FUNC##_##T##_case_2 (T *restrict out,          \
