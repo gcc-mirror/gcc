@@ -1864,8 +1864,13 @@
   [(set (match_operand:BF    0 "register_operand" "=f")
 	(float_truncate:BF
 	   (match_operand:SF 1 "register_operand" " f")))]
-  "TARGET_ZFBFMIN"
-  "fcvt.bf16.s\t%0,%1"
+  "TARGET_ZFBFMIN || TARGET_XANDESBFHCVT"
+{
+  if (TARGET_ZFBFMIN)
+    return "fcvt.bf16.s\t%0,%1";
+  else
+    return "nds.fcvt.bf16.s\t%0,%1";
+}
   [(set_attr "type" "fcvt")
    (set_attr "mode" "BF")])
 
@@ -2052,8 +2057,13 @@
   [(set (match_operand:SF    0 "register_operand" "=f")
 	(float_extend:SF
 	   (match_operand:BF 1 "register_operand" " f")))]
-  "TARGET_ZFBFMIN"
-  "fcvt.s.bf16\t%0,%1"
+  "TARGET_ZFBFMIN || TARGET_XANDESBFHCVT"
+{
+  if (TARGET_ZFBFMIN)
+    return "fcvt.s.bf16\t%0,%1";
+  else
+    return "nds.fcvt.s.bf16\t%0,%1";
+}
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
 
