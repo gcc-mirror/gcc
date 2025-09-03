@@ -23034,6 +23034,28 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 		      && TYPE_REVERSE_STORAGE_ORDER (type),
 		      context_die);
 
+  /* Add bit stride information to boolean vectors of single bits so that
+     elements can be correctly read and displayed by a debugger.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type))
+    {
+      enum machine_mode tmode = TYPE_MODE_RAW (type);
+      if (GET_MODE_CLASS (tmode) == MODE_VECTOR_BOOL)
+	{
+	  /* Calculate bit-size of element based on mnode.  */
+	  poly_uint16 bit_size = exact_div (GET_MODE_BITSIZE (tmode),
+					    GET_MODE_NUNITS (tmode));
+	  /* Set bit stride in the array type DIE.  */
+	  add_AT_unsigned (array_die, DW_AT_bit_stride, bit_size.coeffs[0]);
+	  /* Find DIE corresponding to the element type so that we could
+	     add DW_AT_bit_size to it.  */
+	  dw_die_ref elem_die = get_AT_ref (array_die, DW_AT_type);
+	  /* Avoid adding DW_AT_bit_size twice.  */
+	  if (get_AT (elem_die, DW_AT_bit_size) == NULL)
+	    add_AT_unsigned (elem_die, DW_AT_bit_size,
+			     TYPE_PRECISION (element_type));
+	}
+    }
+
   add_gnat_descriptive_type_attribute (array_die, type, context_die);
   if (TYPE_ARTIFICIAL (type))
     add_AT_flag (array_die, DW_AT_artificial, 1);
