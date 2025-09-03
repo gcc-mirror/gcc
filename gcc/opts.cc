@@ -2097,11 +2097,10 @@ enable_fdo_optimizations (struct gcc_options *opts,
       SET_OPTION_IF_UNSET (opts, opts_set, flag_branch_probabilities, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_values, value);
     }
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_loops, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_peel_loops, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_tracer, value);
   SET_OPTION_IF_UNSET (opts, opts_set, flag_value_profile_transformations,
 		       value);
+
+  /* Enable IPA optimizatins that makes effective use of profile data.  */
   SET_OPTION_IF_UNSET (opts, opts_set, flag_inline_functions, value);
   SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_cp, value);
   if (value)
@@ -2109,21 +2108,33 @@ enable_fdo_optimizations (struct gcc_options *opts,
       SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_cp_clone, 1);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, 1);
     }
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_predictive_commoning, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_split_loops, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_unswitch_loops, value);
+
   SET_OPTION_IF_UNSET (opts, opts_set, flag_gcse_after_reload, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_vectorize, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_slp_vectorize, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_version_loops_for_strides, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
-		       VECT_COST_MODEL_DYNAMIC);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribute_patterns,
-		       value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_loop_interchange, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_jam, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribution, value);
-  SET_OPTION_IF_UNSET (opts, opts_set, flag_optimize_crc, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tracer, value);
+
+  /* Loop optimizations uses profile feedback to determine their profitability
+     and thus it makes sense to enable them by default even at -O2.
+     Auto-profile, in its current form, is not very good on determining
+     iteration counts and thus only real profile feedback is used.  */
+  if (!autofdo)
+    {
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_loops, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_peel_loops, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_predictive_commoning, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_split_loops, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_unswitch_loops, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_vectorize, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_slp_vectorize, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_version_loops_for_strides, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
+			   VECT_COST_MODEL_DYNAMIC);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribute_patterns,
+			   value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_loop_interchange, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_jam, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribution, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_optimize_crc, value);
+    }
 }
 
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
