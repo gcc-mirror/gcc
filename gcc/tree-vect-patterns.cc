@@ -7074,14 +7074,32 @@ vect_mark_pattern_stmts (vec_info *vinfo,
 	{
 	  bool found = false;
 	  if (gimple_extract_op (s, &op))
-	    for (unsigned i = 0; i < op.num_ops; ++i)
-	      if (op.ops[i] == lookfor)
+	    {
+	      for (unsigned i = 0; i < op.num_ops; ++i)
+		if (op.ops[i] == lookfor)
+		  {
+		    STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+		    lookfor = gimple_get_lhs (s);
+		    found = true;
+		    break;
+		  }
+	      /* Try harder to find a mid-entry into an earlier pattern
+		 sequence.  This means that the initial 'lookfor' was
+		 bogus.  */
+	      if (!found)
 		{
-		  STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
-		  lookfor = gimple_get_lhs (s);
-		  found = true;
-		  break;
+		  for (unsigned i = 0; i < op.num_ops; ++i)
+		    if (TREE_CODE (op.ops[i]) == SSA_NAME)
+		      if (auto def = vinfo->lookup_def (op.ops[i]))
+			if (vect_is_reduction (def))
+			  {
+			    STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+			    lookfor = gimple_get_lhs (s);
+			    found = true;
+			    break;
+			  }
 		}
+	    }
 	  if (s == pattern_stmt)
 	    {
 	      if (!found && dump_enabled_p ())
