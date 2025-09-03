@@ -1,3 +1,16 @@
+2025-09-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-08-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121548
+	* config/riscv/riscv-avlprop.cc (get_insn_vtype_mode): Assert
+	MODE_IDX is smaller than the number of operands.
+	(simplify_replace_vlmax_avl): Similarly.
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Similarly.
+	* config/riscv/vector.md: Override merge_op_idx computation
+	for simple moves, just like is done for avl_type_idx and mode_idx.
+
 2025-09-01  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (get_type_num_array_type): Don't try to
