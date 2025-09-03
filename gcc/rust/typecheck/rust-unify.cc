@@ -1146,6 +1146,16 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 	    return unify_error_type_node ();
 	  }
 
+	if (ltype->get_abi () != type.get_abi ())
+	  {
+	    return unify_error_type_node ();
+	  }
+
+	if (ltype->get_unsafety () != type.get_unsafety ())
+	  {
+	    return unify_error_type_node ();
+	  }
+
 	return ltype;
       }
       break;
@@ -1182,6 +1192,25 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 		return unify_error_type_node ();
 	      }
 	  }
+
+	// FIXME
+	//
+	// there is a bug in:
+	// testsuite/rust/compile/try-catch-unwind-{new,old}.rs I think the test
+	//
+	// case is wrong because it should be taking an FnOnce which probably
+	// didnt exist at the time in gccrs
+	//
+	// if (ltype->get_abi () != type.get_abi ())
+	//   {
+	//     return unify_error_type_node ();
+	//   }
+
+	// FIXME fntype needs to track unsafe or not
+	// if (ltype->get_unsafety () != type.get_unsafety ())
+	//   {
+	//     return unify_error_type_node ();
+	//   }
 
 	return ltype;
       }

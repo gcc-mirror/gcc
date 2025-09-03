@@ -105,9 +105,12 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
       params.emplace_back (ptype->get_ref ());
     }
 
-  translated = new TyTy::FnPtr (fntype.get_mappings ().get_hirid (),
-				fntype.get_locus (), std::move (params),
-				TyTy::TyVar (return_type->get_ref ()));
+  translated
+    = new TyTy::FnPtr (fntype.get_mappings ().get_hirid (), fntype.get_locus (),
+		       std::move (params),
+		       TyTy::TyVar (return_type->get_ref ()),
+		       fntype.get_function_qualifiers ().get_abi (),
+		       fntype.get_function_qualifiers ().get_unsafety ());
 }
 
 void

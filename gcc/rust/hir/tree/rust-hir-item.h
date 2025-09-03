@@ -452,6 +452,7 @@ public:
   bool is_unsafe () const { return unsafety == Unsafety::Unsafe; }
   bool is_async () const { return async_status == Async::Yes; }
 
+  Unsafety get_unsafety () const { return unsafety; }
   ABI get_abi () const { return abi; }
 };
 

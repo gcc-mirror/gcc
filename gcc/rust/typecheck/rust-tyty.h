@@ -1046,19 +1046,22 @@ public:
   static constexpr auto KIND = TypeKind::FNPTR;
 
   FnPtr (HirId ref, location_t locus, std::vector<TyVar> params,
-	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
+	 TyVar result_type, ABI abi, Unsafety unsafety,
+	 std::set<HirId> refs = std::set<HirId> ())
     : CallableTypeInterface (ref, ref, TypeKind::FNPTR,
 			     {Resolver::CanonicalPath::create_empty (), locus},
 			     refs),
-      params (std::move (params)), result_type (result_type)
+      params (std::move (params)), result_type (result_type), abi (abi),
+      unsafety (unsafety)
   {}
 
   FnPtr (HirId ref, HirId ty_ref, location_t locus, std::vector<TyVar> params,
-	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
+	 TyVar result_type, ABI abi, Unsafety unsafety,
+	 std::set<HirId> refs = std::set<HirId> ())
     : CallableTypeInterface (ref, ty_ref, TypeKind::FNPTR,
 			     {Resolver::CanonicalPath::create_empty (), locus},
 			     refs),
-      params (params), result_type (result_type)
+      params (params), result_type (result_type), abi (abi), unsafety (unsafety)
   {}
 
   std::string get_name () const override final { return as_string (); }
@@ -1094,9 +1097,15 @@ public:
   std::vector<TyVar> &get_params () { return params; }
   const std::vector<TyVar> &get_params () const { return params; }
 
+  ABI get_abi () const { return abi; }
+
+  Unsafety get_unsafety () const { return unsafety; }
+
 private:
   std::vector<TyVar> params;
   TyVar result_type;
+  ABI abi;
+  Unsafety unsafety;
 };
 
 class ClosureType : public CallableTypeInterface, public SubstitutionRef

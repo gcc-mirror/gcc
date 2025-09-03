@@ -608,8 +608,8 @@ BaseType::monomorphized_clone () const
 
       TyVar retty = fn->get_var_return_type ().monomorphized_clone ();
       return new FnPtr (fn->get_ref (), fn->get_ty_ref (), ident.locus,
-			std::move (cloned_params), retty,
-			fn->get_combined_refs ());
+			std::move (cloned_params), retty, fn->get_abi (),
+			fn->get_unsafety (), fn->get_combined_refs ());
     }
   else if (auto adt = x->try_as<const ADTType> ())
     {
@@ -2268,7 +2268,13 @@ FnPtr::as_string () const
       params_str += p.get_tyty ()->as_string () + " ,";
     }
 
-  return "fnptr (" + params_str + ") -> " + get_return_type ()->as_string ();
+  std::string unsafety = "";
+  if (get_unsafety () == Unsafety::Unsafe)
+    unsafety = "unsafe ";
+
+  std::string abi = get_string_from_abi (get_abi ());
+  return unsafety + "abi:" + abi + " " + "fnptr (" + params_str + ") -> "
+	 + get_return_type ()->as_string ();
 }
 
 bool
@@ -2304,8 +2310,8 @@ FnPtr::clone () const
     cloned_params.emplace_back (p.get_ref ());
 
   return new FnPtr (get_ref (), get_ty_ref (), ident.locus,
-		    std::move (cloned_params), result_type,
-		    get_combined_refs ());
+		    std::move (cloned_params), result_type, get_abi (),
+		    get_unsafety (), get_combined_refs ());
 }
 
 void
