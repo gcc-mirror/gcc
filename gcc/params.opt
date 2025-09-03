@@ -462,7 +462,7 @@ Common Joined UInteger Var(param_min_partition_size) Init(10000) Param
 Minimal size of a partition for LTO (in estimated instructions).
 
 -param=lto-partitions=
-Common Joined UInteger Var(param_lto_partitions) Init(128) IntegerRange(1, 65536) Param
+Common Joined UInteger Var(param_lto_partitions) Init(512) IntegerRange(1, 65536) Param
 Number of partitions the program should be split to.
 
 Enum
