@@ -3875,22 +3875,6 @@ afdo_annotate_cfg (void)
 	  set_bb_annotated (bb, &annotated_bb);
 	}
     }
-  /* We try to preserve static profile for BBs with 0
-     afdo samples, but if even static profile agrees with 0,
-     consider it final so propagation works better.  */
-  for (basic_block bb : zero_bbs)
-    if (!bb->count.nonzero_p ())
-      {
-	update_count_by_afdo_count (&bb->count, 0);
-	set_bb_annotated (bb, &annotated_bb);
-	if (dump_file)
-	  {
-	    fprintf (dump_file, "  Annotating bb %i with count ", bb->index);
-	    bb->count.dump (dump_file);
-	    fprintf (dump_file,
-		     " (has 0 count in both static and afdo profile)\n");
-	  }
-      }
   /* Exit without clobbering static profile if there was no
      non-zero count.  */
   if (!profile_found)
@@ -3926,31 +3910,47 @@ afdo_annotate_cfg (void)
       free_dominance_info (CDI_POST_DOMINATORS);
       return;
     }
+  /* We try to preserve static profile for BBs with 0
+     afdo samples, but if even static profile agrees with 0,
+     consider it final so propagation works better.  */
+  for (basic_block bb : zero_bbs)
+    if (!bb->count.nonzero_p ())
+      {
+	update_count_by_afdo_count (&bb->count, 0);
+	set_bb_annotated (bb, &annotated_bb);
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Annotating bb %i with count ", bb->index);
+	    bb->count.dump (dump_file);
+	    fprintf (dump_file,
+		     " (has 0 count in both static and afdo profile)\n");
+	  }
+      }
 
   /* Update profile.  */
   if (head_count > 0)
-  {
-    update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
-				head_count);
-    set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun), &annotated_bb);
-    if (!is_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, annotated_bb)
-	|| ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-	   > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
-      {
-	ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count
-	    = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-	set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
-			  &annotated_bb);
-      }
-    if (!is_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun), annotated_bb)
-	|| ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-	   > EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count)
-      {
-	EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count
-	    = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-	set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
-      }
-  }
+    {
+      update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
+				  head_count);
+      set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun), &annotated_bb);
+      if (!is_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, annotated_bb)
+	  || ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+	     > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
+	{
+	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count
+	      = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+	  set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
+			    &annotated_bb);
+	}
+      if (!is_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun), annotated_bb)
+	  || ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+	     > EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count)
+	{
+	  EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count
+	      = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+	  set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
+	}
+    }
 
   /* Calculate, propagate count and probability information on CFG.  */
   afdo_calculate_branch_prob (&annotated_bb);
