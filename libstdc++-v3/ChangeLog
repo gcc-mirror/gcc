@@ -1,3 +1,33 @@
+2025-09-03  Yihan Wang  <yronglin777@gmail.com>
+
+	* include/std/expected (expected(U&&)): Add missing constraint
+	as per LWG 4222.
+	* testsuite/20_util/expected/lwg4222.cc: New test.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121745
+	* include/bits/stl_pair.h (get): Use forward instead of move in
+	std::get<T> overloads for rvalue pairs.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: Check all value
+	categories and cv-qualification.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110853
+	* include/bits/stl_pair.h [C++20] (pair(const T1&, const T2&)):
+	Use std::type_identity_t<T1> for first parameter.
+	* testsuite/20_util/pair/cons/110853.cc: New test.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (chrono_cxx20): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono: Check __glibcxx_chrono_cxx20 instead of
+	__cpp_lib_chrono for C++20 features that don't require the new
+	std::string ABI and/or can be used for freestanding.
+	* src/c++20/clock.cc: Adjust preprocessor condition.
+
 2025-09-02  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* include/bits/utility.h (_Index_tuple): Move to <type_traits>.

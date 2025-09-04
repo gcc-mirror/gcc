@@ -1,3 +1,132 @@
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/andes.def: Add nds_fcvt_s_bf16 and nds_fcvt_bf16_s.
+	* config/riscv/riscv.md (truncsfbf2): Add TARGET_XANDESBFHCVT support.
+	(extendbfsf2): Ditto.
+	* config/riscv/riscv-builtins.cc: New AVAIL andesbfhcvt.
+	Add new define RISCV_ATYPE_BF and RISCV_ATYPE_SF.
+	* config/riscv/riscv-ftypes.def: New DEF_RISCV_FTYPE.
+
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/constraints.md (Ou07): New constraint.
+	(ads_Bext): New constraint.
+	* config/riscv/iterators.md (ANYLE32): New iterator.
+	(sizen): New iterator.
+	(sh_limit): New iterator.
+	(sh_bit): New iterator.
+	(cs): New iterator.
+	* config/riscv/predicates.md (ads_branch_bbcs_operand): New predicate.
+	(ads_branch_bimm_operand): New predicate.
+	(ads_imm_extract_operand): New predicate.
+	(ads_extract_size_imm_si): New predicate.
+	(ads_extract_size_imm_di): New predicate.
+	(const_int5_operand): New predicate.
+	* config/riscv/riscv-builtins.cc:
+	Add new AVAIL andesperf32 and andesperf64.
+	Add new define RISCV_ATYPE_DI.
+	* config/riscv/riscv-ftypes.def: New DEF_RISCV_FTYPE.
+	* config/riscv/riscv.cc
+	(riscv_extend_cost): Cost for pattern 'bfo'.
+	(riscv_rtx_costs): Cost for XAndesperf extension.
+	* config/riscv/riscv.md: Add support for XAndesperf to patterns
+	zero_extendsidi2_internal, zero_extendhi2, extendsidi2_internal,
+	extend<SHORT:mode><SUPERQI:mode>2, <any_extract:optab><GPR:mode>3
+	and branch_on_bit.
+	* config/riscv/vector-iterators.md
+	(sz): Add sign_extract and zero_extract.
+	* config/riscv/andes.def: New file for vender Andes.
+	* config/riscv/andes.md: New file for vender Andes.
+
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv-ext.def: Include riscv-ext-andes.def.
+	* config/riscv/riscv-ext.opt (riscv_xandes_subext): New variable.
+	(XANDESPERF) : New mask.
+	(XANDESBFHCVT): Ditto.
+	(XANDESVBFHCVT): Ditto.
+	(XANDESVSINTLOAD): Ditto.
+	(XANDESVPACKFPH): Ditto.
+	(XANDESVDOT): Ditto.
+	* config/riscv/t-riscv: Add riscv-ext-andes.def.
+	* doc/riscv-ext.texi: Regenerated.
+	* config/riscv/riscv-ext-andes.def: New file.
+
+2025-09-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfmax_vf_<mode>): Rename into...
+	(*vf<optab>_vf_<mode>): New pattern to combine vec_duplicate +
+	vf{min,max}.vv into vf{max,min}.vf.
+	* J: New file.
+
+2025-09-03  Austin Law  <austinklaw@gmail.com>
+
+	PR target/121213
+	* config/riscv/sync.md (amo_atomic_exchange_extended<mode>):
+	Separate insn with sign extension for 64 bit targets.
+
+2025-09-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profile.cc (ipa_profile): Dump profile_info.
+
+2025-09-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.cc (enable_fdo_optimizations): Do not auto-enabele loop
+	optimizations with AutoFDO.
+
+2025-09-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.opt (-param=lto-partitions=): INcrease default value from 128 to 512.
+
+2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* config/aarch64/aarch64-simd.md (aarch64_<shrn_op>shrn_n<mode>):
+	Use aarch64_simd_shift_imm_offset_<vn_mode> instead of
+	aarch64_simd_shift_imm_offset_<ve_mode> predicate.
+	(aarch64_<shrn_op>shrn_n<mode> VQN define_expand): Likewise.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode>): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqshrun_n<mode>_insn): Likewise.
+	(aarch64_sqshrun_n<mode>): Likewise.
+	(aarch64_sqshrun_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqrshrun_n<mode>_insn): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	* config/aarch64/iterators.md (vn_mode): Handle DI, SI, HI modes.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121756
+	* tree-ssa-sink.cc (select_best_block): Avoid irreducible
+	regions in otherwise same loop depth.
+	(statement_sink_location): When sinking a VDEF, never place
+	that into an irreducible region.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_cond_expr_convert_pattern):
+	Do not set any vector types.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121767
+	* tree-vect-patterns.cc (vect_recog_mod_var_pattern): Disable
+	for reductions.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121758
+	* tree-vect-patterns.cc (vect_mark_pattern_stmts): Try
+	harder to find a reduction continuation.
+
+2025-09-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121355
+	* fold-const.cc (split_address_to_core_and_offset): Handle an MEM_REF after the call
+	to get_inner_reference.
+
 2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* tree-ssa-ccp.cc (optimize_memcmp_eq): New function.

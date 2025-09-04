@@ -1,3 +1,105 @@
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/xandes/xandesbfhcvt-1.c: New test.
+	* gcc.target/riscv/xandes/xandesbfhcvt-2.c: New test.
+
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/riscv.exp: Add runtest for subdir xandes.
+	* gcc.target/riscv/xandes/xandesperf-1.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-10.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-2.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-3.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-4.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-5.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-6.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-7.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-8.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-9.c: New test.
+	* gcc.target/riscv/xandes/xandesperf-11.c: New file.
+
+2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/xandes/xandes-predef-1.c: New test.
+	* gcc.target/riscv/xandes/xandes-predef-2.c: New test.
+	* gcc.target/riscv/xandes/xandes-predef-3.c: New test.
+	* gcc.target/riscv/xandes/xandes-predef-4.c: New test.
+	* gcc.target/riscv/xandes/xandes-predef-5.c: New test.
+	* gcc.target/riscv/xandes/xandes-predef-6.c: New test.
+	Co-author: Lino Hsing-Yu Peng (linopeng@andestech.com)
+	Co-author: Kai Kai-Yi Weng (kaiweng@andestech.com).
+
+2025-09-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-2.c: Adjust scan
+	dump.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfmax. Also add
+	missing scan-dump for vfmul.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Add vfmax.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h: Add max functions.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_data.h: Add data for
+	vfmax.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmax-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmax-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmax-run-1-f64.c: New test.
+
+2025-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121263
+	* gfortran.dg/transfer_class_5.f90: New test.
+
+2025-09-03  Austin Law  <austinklaw@gmail.com>
+
+	PR target/121213
+	* gcc.target/riscv/amo/pr121213.c: Remove xfail.
+
+2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: Use dg-assemble directive.
+
+2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: New test.
+
+2025-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97740
+	* g++.dg/cpp0x/constexpr-97740a.C: New test.
+	* g++.dg/cpp0x/constexpr-97740b.C: New test.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121756
+	* gcc.dg/torture/pr121756.c: New testcase.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121767
+	* gcc.dg/vect/pr121767.c: New testcase.
+
+2025-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121758
+	* gcc.dg/vect/pr121758.c: New testcase.
+
+2025-09-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121355
+	* gcc.dg/tree-ssa/ptrdiff-1.c: New test.
+
 2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89707
