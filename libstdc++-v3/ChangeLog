@@ -1,3 +1,46 @@
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_set/pr115285.cc: Include
+	missing header for std::vector.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h (_Compiler::_S_validate): Add
+	diagnostic pragma to disable -Wswitch warning.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121496
+	* include/std/mutex (__timed_mutex_impl::_M_try_wait_until):
+	Change preprocessor condition to use #if instead of #ifdef.
+	(recursive_timed_mutex::_M_clocklock): Likewise.
+	* testsuite/30_threads/timed_mutex/121496.cc: New test.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121374
+	* include/std/limits (numeric_limits<__float128>::max_digits10):
+	Fix value.
+	* testsuite/18_support/numeric_limits/128bit.cc: Check value.
+
+2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121097
+	* include/c_global/cmath (hypot): Use __promote_3 instead of
+	__promoted.
+
 2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
