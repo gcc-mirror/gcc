@@ -2997,6 +2997,10 @@ export namespace std
   using std::conditional_t;
   using std::conjunction;
   using std::conjunction_v;
+#if __cpp_lib_constant_wrapper
+  using std::constant_wrapper;
+  using std::cw;
+#endif
   using std::decay;
   using std::decay_t;
   using std::disjunction;

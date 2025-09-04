@@ -394,6 +394,14 @@ ftms = {
 };
 
 ftms = {
+  name = constant_wrapper;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = has_unique_object_representations;
   values = {
     v = 201606;
