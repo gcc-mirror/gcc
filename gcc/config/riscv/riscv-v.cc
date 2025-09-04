@@ -3076,7 +3076,7 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   emit_vlmax_masked_gather_mu_insn (tmp_target, op1, tmp, mask);
 
   if (overlap)
-    emit_move_insn (tmp_target, target);
+    emit_move_insn (target, tmp_target);
 }
 
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST for RVV.  */
