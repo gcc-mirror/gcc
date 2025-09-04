@@ -5378,26 +5378,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 				  edge loop_exit)
 {
   vect_reduc_info reduc_info = info_for_reduction (loop_vinfo, slp_node);
-  /* For double reductions we need to get at the inner loop reduction
-     stmt which has the meta info attached.  Our stmt_info is that of the
-     loop-closed PHI of the inner loop which we remember as
-     def for the reduction PHI generation.  */
-  bool double_reduc = false;
-  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
-    {
-      double_reduc = true;
-      stmt_info = loop_vinfo->lookup_def (gimple_phi_arg_def
-					    (stmt_info->stmt, 0));
-      stmt_info = vect_stmt_to_vectorize (stmt_info);
-    }
   code_helper code = VECT_REDUC_INFO_CODE (reduc_info);
   internal_fn reduc_fn = VECT_REDUC_INFO_FN (reduc_info);
   tree vectype;
   machine_mode mode;
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *outer_loop = NULL;
   basic_block exit_bb;
-  tree scalar_dest;
-  tree scalar_type;
   gimple *new_phi = NULL, *phi = NULL;
   gimple_stmt_iterator exit_gsi;
   tree new_temp = NULL_TREE, new_name, new_scalar_dest;
@@ -5406,8 +5391,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   tree bitsize;
   tree def;
   tree orig_name, scalar_result;
-  imm_use_iterator imm_iter, phi_imm_iter;
-  use_operand_p use_p, phi_use_p;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
   gimple *use_stmt;
   auto_vec<tree> reduc_inputs;
   int j, i;
@@ -5424,11 +5409,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   unsigned int group_size = SLP_TREE_LANES (slp_node);
 
-  if (nested_in_vect_loop_p (loop, stmt_info))
+  bool double_reduc = false;
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
-      outer_loop = loop;
-      loop = loop->inner;
-      gcc_assert (double_reduc);
+      double_reduc = true;
+      gcc_assert (slp_reduc);
     }
 
   vectype = VECT_REDUC_INFO_VECTYPE (reduc_info);
@@ -5467,6 +5453,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      masked vectors, but do not provide fold_extract_last.  */
   if (VECT_REDUC_INFO_TYPE (reduc_info) == COND_REDUCTION)
     {
+      gcc_assert (!double_reduc);
       auto_vec<std::pair<tree, bool>, 2> ccompares;
       slp_tree cond_node = slp_node_instance->root;
       while (cond_node != slp_node_instance->reduc_phis)
@@ -5587,8 +5574,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   /* 2.1 Create new loop-exit-phis to preserve loop-closed form:
          v_out1 = phi <VECT_DEF>
          Store them in NEW_PHIS.  */
-  if (double_reduc)
-    loop = outer_loop;
   /* We need to reduce values in all exits.  */
   exit_bb = loop_exit->dest;
   exit_gsi = gsi_after_labels (exit_bb);
@@ -5611,25 +5596,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
     }
 
-  /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3
-         (i.e. when reduc_fn is not available) and in the final adjustment
-	 code (if needed).  Also get the original scalar reduction variable as
-         defined in the loop.  In case STMT is a "pattern-stmt" (i.e. - it
-         represents a reduction pattern), the tree-code and scalar-def are
-         taken from the original stmt that the pattern-stmt (STMT) replaces.
-         Otherwise (it is a regular reduction) - the tree-code and scalar-def
-         are taken from STMT.  */
+  /* 2.2 Get the original scalar reduction variable as defined in the loop.
+	 In case STMT is a "pattern-stmt" (i.e. - it represents a reduction
+	 pattern), the scalar-def is taken from the original stmt that the
+	 pattern-stmt (STMT) replaces.  */
 
-  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-  if (orig_stmt_info != stmt_info)
-    {
-      /* Reduction pattern  */
-      gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
-      gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) == stmt_info);
-    }
-
-  scalar_dest = gimple_get_lhs (orig_stmt_info->stmt);
-  scalar_type = TREE_TYPE (scalar_dest);
+  tree scalar_dest = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
+  tree scalar_type = TREE_TYPE (scalar_dest);
   scalar_results.truncate (0);
   scalar_results.reserve_exact (group_size);
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
@@ -6255,9 +6228,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     loop_vinfo->reusable_accumulators.put (scalar_results[0],
 					   { orig_reduc_input, reduc_info });
 
-  if (double_reduc)
-    loop = outer_loop;
-
   /* 2.6  Handle the loop-exit phis.  Replace the uses of scalar loop-exit
           phis with new adjusted scalar results, i.e., replace use <s_out0>
           with use <s_out4>.
@@ -6288,36 +6258,20 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   for (k = 0; k < live_out_stmts.size (); k++)
     {
       stmt_vec_info scalar_stmt_info = vect_orig_stmt (live_out_stmts[k]);
-      scalar_dest = gimple_get_lhs (scalar_stmt_info->stmt);
+      tree scalar_dest = gimple_get_lhs (scalar_stmt_info->stmt);
 
       /* Find the loop-closed-use at the loop exit of the original scalar
          result.  (The reduction result is expected to have two immediate uses,
-         one at the latch block, and one at the loop exit).  For double
-         reductions we are looking for exit phis of the outer loop.  */
+	 one at the latch block, and one at the loop exit).  Note with
+	 early break we can have two exit blocks, so pick the correct PHI.  */
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
-        {
-          if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
-	    {
-	      if (!is_gimple_debug (USE_STMT (use_p))
-		  && gimple_bb (USE_STMT (use_p)) == loop_exit->dest)
-		phis.safe_push (USE_STMT (use_p));
-	    }
-          else
-            {
-              if (double_reduc && gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
-                {
-                  tree phi_res = PHI_RESULT (USE_STMT (use_p));
-
-                  FOR_EACH_IMM_USE_FAST (phi_use_p, phi_imm_iter, phi_res)
-                    {
-                      if (!flow_bb_inside_loop_p (loop,
-                                             gimple_bb (USE_STMT (phi_use_p)))
-			  && !is_gimple_debug (USE_STMT (phi_use_p)))
-                        phis.safe_push (USE_STMT (phi_use_p));
-                    }
-                }
-            }
-        }
+	if (!is_gimple_debug (USE_STMT (use_p))
+	    && !flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
+	  {
+	    gcc_assert (is_a <gphi *> (USE_STMT (use_p)));
+	    if (gimple_bb (USE_STMT (use_p)) == loop_exit->dest)
+	      phis.safe_push (USE_STMT (use_p));
+	  }
 
       FOR_EACH_VEC_ELT (phis, i, exit_phi)
         {
