@@ -82,5 +82,23 @@ test01()
   static_assert( is_dynamic_span<int>(s12) );
 
   std::span s13(a.data(), std::integral_constant<size_t, 3>{});
-  static_assert( is_static_span<long, 3>(s13));
+  static_assert( is_static_span<long, 3>(s13) );
+
+  std::span s14(a.data(), true);
+  static_assert( is_dynamic_span<long>(s14) );
+
+  std::span s15(a.data(), std::true_type{});
+  static_assert( is_dynamic_span<long>(s15) );
+
+#if __glibcxx_constant_wrapper
+  auto c5 = std::constant_wrapper<5>{};
+  std::span s16(a.data(), c5);
+  static_assert( is_static_span<long, 5>(s16) );
+
+  std::span s17(a.data(), std::cw<4>);
+  static_assert( is_static_span<long, 4>(s17) );
+
+  std::span s18(a.data(), std::cw<true>);
+  static_assert( is_static_span<long, 1>(s18) );
+#endif
 }

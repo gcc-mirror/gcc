@@ -480,7 +480,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Tp>
-      concept __integral_constant_like = is_integral_v<decltype(_Tp::value)>
+      concept __integral_constant_like =
+	is_integral_v<remove_cvref_t<decltype(_Tp::value)>>
 	&& !is_same_v<bool, remove_const_t<decltype(_Tp::value)>>
 	&& convertible_to<_Tp, decltype(_Tp::value)>
 	&& equality_comparable_with<_Tp, decltype(_Tp::value)>
