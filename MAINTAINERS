@@ -277,6 +277,7 @@ check in changes outside of the parts of the compiler they maintain.
 aarch64 port            Alice Carlotti          <alice.carlotti@arm.com>
 aarch64 port            Alex Coplan             <alex.coplan@arm.com>
 aarch64 port            Andrew Pinski           <andrew.pinski@oss.qualcomm.com>
+aarch64 port            Wilco Dijkstra          <wilco.dijkstra@arm.com>
 arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
@@ -447,7 +448,7 @@ Jerry DeLisle                   jvdelisle       <jvdelisle@gcc.gnu.org>
 DJ Delorie                      dj              <dj@delorie.com>
 Chris Demetriou                 cgd             <cgd@google.com>
 Sameera Deshpande               sameerad        <sameera.deshpande@linaro.org>
-Wilco Dijkstra                  wilco           <wdijkstr@arm.com>
+Wilco Dijkstra                  wilco           <wilco.dijkstra@arm.com>
 Dimitar Dimitrov                dimitar         <dimitar@dinux.eu>
 Benoit Dupont de Dinechin       bd3             <benoit.dupont-de-dinechin@st.com>
 Lehua Ding                      -               <lehua.ding@rivai.ai>
