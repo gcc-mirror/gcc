@@ -98,6 +98,7 @@
 #define __glibcxx_want_tuple_element_t
 #define __glibcxx_want_tuples_by_type
 #define __glibcxx_want_unreachable
+#define __glibcxx_want_observable_checkpoint
 #define __glibcxx_want_tuple_like
 #define __glibcxx_want_constrained_equality
 #include <bits/version.h>
@@ -231,6 +232,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
     __builtin_unreachable();
 #endif
+  }
+#endif
+
+
+#ifdef __cpp_lib_observable_checkpoint // C++ >= 26
+  /// Informs the compiler that prior actions are considered observable.
+  /**
+   * This may be used to limit the extent to which optimisations based on the
+   * assumed unreachability of undefined behaviour can propagate to earlier
+   * code.
+   *
+   * @since C++26
+   */
+  [[__gnu__::__always_inline__]]
+  inline void
+  observable_checkpoint() noexcept
+  {
+    return __builtin_observable_checkpoint();
   }
 #endif
 

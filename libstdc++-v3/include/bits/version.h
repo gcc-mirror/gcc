@@ -2181,6 +2181,16 @@
 #endif /* !defined(__cpp_lib_unreachable) */
 #undef __glibcxx_want_unreachable
 
+#if !defined(__cpp_lib_observable_checkpoint)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_observable_checkpoint))
+#  define __glibcxx_observable_checkpoint 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_observable_checkpoint)
+#   define __cpp_lib_observable_checkpoint 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_observable_checkpoint) && defined(__glibcxx_want_observable_checkpoint) */
+#undef __glibcxx_want_observable_checkpoint
+
 #if !defined(__cpp_lib_algorithm_default_value_type)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_algorithm_default_value_type 202403L

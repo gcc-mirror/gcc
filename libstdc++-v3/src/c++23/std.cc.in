@@ -3337,6 +3337,9 @@ export namespace std
 #if __cpp_lib_unreachable
   using std::unreachable;
 #endif
+#if __cpp_lib_observable_checkpoint
+  using std::observable_checkpoint;
+#endif
 }
 
 // <valarray>

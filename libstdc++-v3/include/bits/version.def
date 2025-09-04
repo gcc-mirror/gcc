@@ -1951,6 +1951,15 @@ ftms = {
 };
 
 ftms = {
+  name = observable_checkpoint;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_observable_checkpoint)";
+  };
+};
+
+ftms = {
   name = algorithm_default_value_type;
   values = {
     v = 202403;
