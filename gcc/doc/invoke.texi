@@ -15287,8 +15287,8 @@ You can always override
 the automatic decision to do link-time optimization
 by passing @option{-fno-lto} to the link command.
 
-To make whole program optimization effective, it is necessary to make
-certain whole program assumptions.  The compiler needs to know
+To make whole-program optimization effective, it is necessary to make
+certain assumptions.  The compiler needs to know
 what functions and variables can be accessed by libraries and runtime
 outside of the link-time optimized unit.  When supported by the linker,
 the linker plugin (see @option{-fuse-linker-plugin}) passes information
@@ -19447,14 +19447,14 @@ code generation is forced, a final binary is produced, and the intermediate
 code for later link-time optimization is stripped. When multiple object files
 are linked together the resulting code is better optimized than with
 link-time optimizations disabled (for example, cross-module inlining
-happens), but most of benefits of whole program optimizations are lost.
+happens), but most of the benefits of whole-program optimizations are lost.
 
 During the incremental link (by @option{-r}) the linker plugin defaults to
 @option{rel}.  GNU Binutils 2.44 or later is needed to incrementally link
 LTO objects and non-LTO objects into a single mixed object file.  If any
 of the object files in an incremental link cannot be used for link-time
 optimization, the linker plugin issues a warning and uses @samp{nolto-rel}.
-To maintain whole program optimization, link such objects into a static
+To maintain whole-program optimization, link such objects into a static
 library instead.
 
 @opindex fuse-ld=bfd
