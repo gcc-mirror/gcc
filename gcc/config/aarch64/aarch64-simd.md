@@ -1788,6 +1788,14 @@
   enum rtx_code cmp_operator;
   rtx cmp_fmt;
 
+  /* SVE has native D-forms of the MIN/MAX instructions.  */
+  if (TARGET_SVE)
+    {
+      emit_insn (gen_<su><maxmin>v2di3_as_sve (operands[0], operands[1],
+					       operands[2]));
+      DONE;
+    }
+
   switch (<CODE>)
     {
     case UMIN:

@@ -1931,6 +1931,11 @@
 			   (VNx8SI "VNx8HI") (VNx16SI "VNx16QI")
 			   (VNx8DI "VNx8HI")])
 
+;; Suffix mapping Advanced SIMD modes to be expanded as SVE instructions.
+(define_mode_attr sve_di_suf [(VNx16QI "") (VNx8HI "") (VNx4SI "") (VNx2DI "")
+			      (VNx8QI "") (VNx4QI "") (VNx2QI "") (VNx4HI "")
+			      (VNx2HI "") (VNx2SI "") (V2DI "_as_sve")])
+
 ;; Register suffix narrowed modes for VQN.
 (define_mode_attr Vntype [(V8HI "8b") (V4SI "4h")
 			  (V2DI "2s")])
