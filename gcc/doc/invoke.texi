@@ -19060,7 +19060,7 @@ available for the latter code to run.  If compiling all code,
 including library code, with @option{-fsplit-stack} is not an option,
 then the linker can fix up these calls so that the code compiled
 without @option{-fsplit-stack} always has a large stack.  Support for
-this is implemented in the gold linker in GNU binutils release 2.21
+this is implemented in the gold linker in GNU Binutils release 2.21
 and later.
 
 @opindex fstrub=disable
@@ -26904,7 +26904,7 @@ arithmetic instead of IEEE single and double precision.
 @itemx -mno-explicit-relocs
 Older Alpha assemblers provided no way to generate symbol relocations
 except via assembler macros.  Use of these macros does not allow
-optimal instruction scheduling.  GNU binutils as of version 2.12
+optimal instruction scheduling.  GNU Binutils as of version 2.12
 supports a new syntax that allows the compiler to explicitly mark
 which relocations should apply to which instructions.  This option
 is mostly useful for debugging, as GCC detects the capabilities of
