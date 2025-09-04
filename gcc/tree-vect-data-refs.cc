@@ -4324,7 +4324,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	{
 	  if (!operand_equal_p (DR_STEP (dr_info_a->dr),
 				DR_STEP (dr_info_b->dr), 0))
-	    length_factor = scalar_loop_iters;
+	    {
+	      length_factor = scalar_loop_iters;
+	      if (TREE_CODE (length_factor) == SCEV_NOT_KNOWN)
+		return opt_result::failure_at (vect_location,
+					       "Unsupported alias check on"
+					       " uncounted loop\n");
+	    }
 	  else
 	    length_factor = size_int (vect_factor);
 	  segment_length_a = vect_vfa_segment_size (dr_info_a, length_factor);
