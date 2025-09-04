@@ -44,6 +44,27 @@ static void t_fin (double x, bool res)
     __builtin_abort ();
 }
 
+static void t_nanf (float x, bool res)
+{
+  if (__builtin_isnan (x) != res)
+    __builtin_abort ();
+  if (__builtin_isnan (-x) != res)
+    __builtin_abort ();
+  if (fetestexcept (FE_INVALID))
+    __builtin_abort ();
+}
+
+static void t_nan (double x, bool res)
+{
+  if (__builtin_isnan (x) != res)
+    __builtin_abort ();
+  if (__builtin_isnan (-x) != res)
+    __builtin_abort ();
+  if (fetestexcept (FE_INVALID))
+    __builtin_abort ();
+}
+
+
 int
 main ()
 {
@@ -72,6 +93,18 @@ main ()
   t_fin (__builtin_inf (), 0);
   t_fin (__builtin_nans (""), 0);
   t_fin (__builtin_nan (""), 0);
+
+  t_nanf (0.0f, 0);
+  t_nanf (1.0f, 0);
+  t_nanf (__builtin_inff (), 0);
+  t_nanf (__builtin_nansf (""), 1);
+  t_nanf (__builtin_nanf (""), 1);
+
+  t_nan (0.0, 0);
+  t_nan (1.0, 0);
+  t_nan (__builtin_inf (), 0);
+  t_nan (__builtin_nans (""), 1);
+  t_nan (__builtin_nan (""), 1);
 
   return 0;
 }
