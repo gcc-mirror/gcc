@@ -6998,14 +6998,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vectype_in = NULL_TREE;
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum vect_def_type cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
   int i;
   int ncopies;
   bool single_defuse_cycle = false;
-  bool nested_cycle = false;
-  bool double_reduc = false;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
   const bool reduc_chain
@@ -7022,53 +7019,53 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
     {
-      if (is_a <gphi *> (stmt_info->stmt))
-	{
-	  /* We eventually need to set a vector type on invariant
-	     arguments.  */
-	  unsigned j;
-	  slp_tree child;
-	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
-	    if (!vect_maybe_update_slp_op_vectype
-		   (child, SLP_TREE_VECTYPE (slp_node)))
-	      {
-		if (dump_enabled_p ())
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "incompatible vector types for "
-				   "invariants\n");
-		return false;
-	      }
-	  /* Analysis for double-reduction is done on the outer
-	     loop PHI, nested cycles have no further restrictions.  */
-	  SLP_TREE_TYPE (slp_node) = cycle_phi_info_type;
-	}
-      else
-	SLP_TREE_TYPE (slp_node) = reduc_vec_info_type;
+      gcc_assert (is_a <gphi *> (stmt_info->stmt));
+      /* We eventually need to set a vector type on invariant arguments.  */
+      unsigned j;
+      slp_tree child;
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
+	if (!vect_maybe_update_slp_op_vectype (child,
+					       SLP_TREE_VECTYPE (slp_node)))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector types for "
+			       "invariants\n");
+	    return false;
+	  }
+      /* Analysis for double-reduction is done on the outer
+	 loop PHI, nested cycles have no further restrictions.  */
+      SLP_TREE_TYPE (slp_node) = cycle_phi_info_type;
       return true;
     }
 
-  stmt_vec_info phi_info = stmt_info;
   if (!is_a <gphi *> (stmt_info->stmt))
     {
+      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def);
       SLP_TREE_TYPE (slp_node) = reduc_vec_info_type;
       return true;
     }
+
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  stmt_vec_info phi_info = stmt_info;
+  bool double_reduc = false;
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
+      /* We arrive here for both the inner loop LC PHI and the
+	 outer loop PHI.  The latter is what we want to analyze the
+	 reduction with.  The LC PHI is handled by vectorizable_lc_phi.  */
       if (gimple_bb (stmt_info->stmt) != loop->header)
-	{
-	  /* For SLP we arrive here for both the inner loop LC PHI and
-	     the outer loop PHI.  The latter is what we want to analyze
-	     the reduction with.  The LC PHI is handled by
-	     vectorizable_lc_phi.  */
-	  return gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) == 2;
-	}
+	return false;
+
+      /* Set loop and phi_info to the inner loop.  */
       use_operand_p use_p;
       gimple *use_stmt;
       bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
 				 &use_p, &use_stmt);
       gcc_assert (res);
       phi_info = loop_vinfo->lookup_stmt (use_stmt);
+      loop = loop->inner;
+      double_reduc = true;
     }
 
   slp_node_instance->reduc_phis = slp_node;
@@ -7084,9 +7081,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      and compute the reduction chain length.  Discover the real
      reduction operation stmt on the way (stmt_info and slp_for_stmt_info).  */
   tree reduc_def
-    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
-			     loop_latch_edge
-			       (gimple_bb (reduc_def_phi)->loop_father));
+    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi, loop_latch_edge (loop));
   unsigned reduc_chain_length = 0;
   bool only_slp_reduc_chain = true;
   stmt_info = NULL;
@@ -7094,7 +7089,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   slp_tree vdef_slp = slp_node_instance->root;
   /* For double-reductions we start SLP analysis at the inner loop LC PHI
      which is the def of the outer loop live stmt.  */
-  if (VECT_REDUC_INFO_DEF_TYPE (reduc_info) == vect_double_reduction_def)
+  if (double_reduc)
     vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[0];
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
@@ -7182,12 +7177,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
   /* PHIs should not participate in patterns.  */
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
-
-  if (nested_in_vect_loop_p (loop, stmt_info))
-    {
-      loop = loop->inner;
-      nested_cycle = true;
-    }
 
   /* STMT_VINFO_REDUC_DEF doesn't point to the first but the last
      element.  */
@@ -7435,13 +7424,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
 
-  if (nested_cycle)
-    {
-      gcc_assert (VECT_REDUC_INFO_DEF_TYPE (reduc_info)
-		  == vect_double_reduction_def);
-      double_reduc = true;
-    }
-
   /* 4.2. Check support for the epilog operation.
 
           If STMT represents a reduction pattern, then the type of the
@@ -7578,14 +7560,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
       else
 	{
-	  if (!nested_cycle || double_reduc)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "no reduc code for scalar code.\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "no reduc code for scalar code.\n");
 
-	      return false;
-	    }
+	  return false;
 	}
     }
   else if (reduction_type == COND_REDUCTION)
@@ -7603,7 +7582,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   VECT_REDUC_INFO_FN (reduc_info) = reduc_fn;
 
   if (reduction_type != EXTRACT_LAST_REDUCTION
-      && (!nested_cycle || double_reduc)
       && reduc_fn == IFN_LAST
       && !nunits_out.is_constant ())
     {
