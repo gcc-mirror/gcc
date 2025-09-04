@@ -19450,13 +19450,12 @@ link-time optimizations disabled (for example, cross-module inlining
 happens), but most of benefits of whole program optimizations are lost.
 
 During the incremental link (by @option{-r}) the linker plugin defaults to
-@option{rel}. With current interfaces to GNU Binutils it is however not
-possible to incrementally link LTO objects and non-LTO objects into a single
-mixed object file.  If any of object files in incremental link cannot
-be used for link-time optimization, the linker plugin issues a warning and
-uses @samp{nolto-rel}. To maintain whole program optimization, it is
-recommended to link such objects into static library instead. Alternatively it
-is possible to use H.J. Lu's binutils with support for mixed objects.
+@option{rel}.  GNU Binutils 2.44 or later is needed to incrementally link
+LTO objects and non-LTO objects into a single mixed object file.  If any
+of the object files in an incremental link cannot be used for link-time
+optimization, the linker plugin issues a warning and uses @samp{nolto-rel}.
+To maintain whole program optimization, link such objects into a static
+library instead.
 
 @opindex fuse-ld=bfd
 @item -fuse-ld=bfd
