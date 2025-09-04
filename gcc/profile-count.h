@@ -1212,8 +1212,18 @@ public:
       /* Be sure that ret is not local if num is global.
 	 Also ensure that ret is not global0 when num is global.  */
       if (num.ipa_p ())
-	ret.m_quality = MAX (ret.m_quality,
-			     num == num.ipa () ? GUESSED : num.m_quality);
+	{
+	  /* This is common case of AFDO scaling when we upgrade
+	     GLOBAL0_AFDO function to AFDO.  Be sure that result
+	     is AFDO and not GUESSED (which is unnecesarily low).  */
+	  if (num.m_quality == AFDO
+	      && (ret.m_quality != GUESSED
+		  && ret.m_quality != GUESSED_LOCAL))
+	    ret.m_quality = AFDO;
+	  else
+	    ret.m_quality = MAX (ret.m_quality,
+				 num == num.ipa () ? GUESSED : num.m_quality);
+	}
       return ret;
     }
 
