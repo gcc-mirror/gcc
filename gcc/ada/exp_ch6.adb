@@ -9093,6 +9093,27 @@ package body Exp_Ch6 is
       --  tagged, the called function itself must perform the allocation of
       --  the return object, so we pass parameters indicating that.
 
+      --  But that's also the case when the result subtype needs finalization
+      --  actions because the caller side allocation may result in undesirable
+      --  finalization. Consider the following example:
+      --
+      --    function Make_Lim_Ctrl return Lim_Ctrl is
+      --    begin
+      --       return Result : Lim_Ctrl := raise Program_Error do
+      --          null;
+      --       end return;
+      --    end Make_Lim_Ctrl;
+      --
+      --    Obj : Lim_Ctrl_Ptr := new Lim_Ctrl'(Make_Lim_Ctrl);
+      --
+      --  Even though the size of limited controlled type Lim_Ctrl is known,
+      --  allocating Obj at the caller side will chain Obj on Lim_Ctrl_Ptr's
+      --  finalization collection. The subsequent call to Make_Lim_Ctrl will
+      --  fail during the initialization actions for Result, which means that
+      --  Result (and Obj by extension) should not be finalized. However Obj
+      --  will be finalized when access type Lim_Ctrl_Ptr goes out of scope
+      --  since it is already attached on the its finalization collection.
+
       if Needs_BIP_Alloc_Form (Function_Id) then
          Temp_Init := Empty;
 
@@ -9257,7 +9278,11 @@ package body Exp_Ch6 is
          end if;
       end;
 
-      --  Add implicit actuals for the BIP formal parameters, if any
+      --  When the function has a controlling result, an allocation-form
+      --  parameter must be passed indicating that the caller is allocating
+      --  the result object. This is needed because such a function can be
+      --  called as a dispatching operation and must be treated similarly
+      --  to functions with unconstrained result subtypes.
 
       Add_Unconstrained_Actuals_To_Build_In_Place_Call
         (Func_Call,
@@ -9281,14 +9306,6 @@ package body Exp_Ch6 is
 
       Add_Access_Actual_To_Build_In_Place_Call
         (Func_Call, Function_Id, Return_Obj_Actual);
-
-      --  If the allocation is done in the caller, create a custom Allocate
-      --  procedure if need be.
-
-      if not Needs_BIP_Alloc_Form (Function_Id) then
-         Build_Allocate_Deallocate_Proc
-           (Declaration_Node (Return_Obj_Access), Mark => Allocator);
-      end if;
 
       --  Finally, replace the allocator node with a reference to the temp
 
@@ -9751,7 +9768,7 @@ package body Exp_Ch6 is
          --  ensure that the heap allocation can properly chain the object
          --  and later finalize it when the library unit goes out of scope.
 
-         if Needs_BIP_Collection (Function_Id) then
+         if Needs_BIP_Collection (Func_Call) then
             Build_Finalization_Collection
               (Typ            => Ptr_Typ,
                For_Lib_Level  => True,
@@ -10314,12 +10331,6 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
-      --  No need for BIP_Collection if allocation is always done in the caller
-
-      if not Needs_BIP_Alloc_Form (Func_Id) then
-         return False;
-      end if;
-
       --  A formal for the finalization collection is needed for build-in-place
       --  functions whose result type needs finalization or is a tagged type.
       --  Tagged primitive build-in-place functions need such a formal because
@@ -10344,6 +10355,12 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      --  See Make_Build_In_Place_Call_In_Allocator for the rationale
+
+      if Needs_BIP_Collection (Func_Id) then
+         return True;
+      end if;
+
       --  A formal giving the allocation method is needed for build-in-place
       --  functions whose result type is returned on the secondary stack or
       --  is a tagged type. Tagged primitive build-in-place functions need

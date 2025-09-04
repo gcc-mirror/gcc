@@ -4758,18 +4758,18 @@ package body Exp_Ch7 is
 
       --  We mark the secondary stack if it is used in this construct, and
       --  we're not returning a function result on the secondary stack, except
-      --  that a build-in-place function that only conditionally returns on
-      --  the secondary stack will also need a mark. A run-time test for doing
-      --  the release call is needed in the case where the build-in-place
-      --  function has a BIP_Alloc_Form parameter (see Create_Finalizer).
+      --  that a build-in-place function that might or might not return on the
+      --  secondary stack always needs a mark. A run-time test is required in
+      --  the case where the build-in-place function has a BIP_Alloc extra
+      --  parameter (see Create_Finalizer).
 
       Needs_Sec_Stack_Mark   : constant Boolean :=
-                                 Uses_Sec_Stack (Scop)
-                                   and then
-                                 (not Sec_Stack_Needed_For_Return (Scop)
-                                   or else
-                                     (Is_Build_In_Place_Function (Scop)
-                                       and then Needs_BIP_Alloc_Form (Scop)));
+                                   (Uses_Sec_Stack (Scop)
+                                     and then
+                                       not Sec_Stack_Needed_For_Return (Scop))
+                                 or else
+                                   (Is_Build_In_Place_Function (Scop)
+                                     and then Needs_BIP_Alloc_Form (Scop));
 
       Needs_Custom_Cleanup   : constant Boolean :=
                                  Nkind (N) = N_Block_Statement
