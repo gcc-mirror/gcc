@@ -622,12 +622,12 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
   tree ltype = (bitint_extended && abi_load_p) ? atype : m_limb_type;
 
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (var));
-  if (as != TYPE_ADDR_SPACE (ltype))
-    ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
-					 | ENCODE_QUAL_ADDR_SPACE (as));
   tree ret;
   if (DECL_P (var) && tree_fits_uhwi_p (idx))
     {
+      if (as != TYPE_ADDR_SPACE (ltype))
+	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+				      | ENCODE_QUAL_ADDR_SPACE (as));
       tree ptype = build_pointer_type (strip_array_types (TREE_TYPE (var)));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
       ret = build2 (MEM_REF, ltype,
@@ -638,6 +638,9 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
     }
   else if (TREE_CODE (var) == MEM_REF && tree_fits_uhwi_p (idx))
     {
+      if (as != TYPE_ADDR_SPACE (ltype))
+	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+				      | ENCODE_QUAL_ADDR_SPACE (as));
       ret
 	= build2 (MEM_REF, ltype, unshare_expr (TREE_OPERAND (var, 0)),
 		  size_binop (PLUS_EXPR, TREE_OPERAND (var, 1),
@@ -650,6 +653,10 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
     }
   else
     {
+      ltype = m_limb_type;
+      if (as != TYPE_ADDR_SPACE (ltype))
+	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+				      | ENCODE_QUAL_ADDR_SPACE (as));
       var = unshare_expr (var);
       if (TREE_CODE (TREE_TYPE (var)) != ARRAY_TYPE
 	  || !useless_type_conversion_p (m_limb_type,
@@ -657,16 +664,7 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
 	{
 	  unsigned HOST_WIDE_INT nelts
 	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var))), limb_prec);
-
-	  /* Build the array type with m_limb_type from the right address
-	     space.  */
-	  tree limb_type_a = m_limb_type;
-	  if (as != TYPE_ADDR_SPACE (m_limb_type))
-	    limb_type_a = build_qualified_type (m_limb_type,
-						TYPE_QUALS (m_limb_type)
-						| ENCODE_QUAL_ADDR_SPACE (as));
-
-	  tree atype = build_array_type_nelts (limb_type_a, nelts);
+	  tree atype = build_array_type_nelts (ltype, nelts);
 	  var = build1 (VIEW_CONVERT_EXPR, atype, var);
 	}
       ret = build4 (ARRAY_REF, ltype, var, idx, NULL_TREE, NULL_TREE);
