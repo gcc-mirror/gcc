@@ -161,7 +161,7 @@ along with GCC; see the file COPYING3.  If not see
 static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *,
 						unsigned *);
 static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
-					       bool *, bool *, bool);
+					       gphi **, bool *, bool);
 
 
 /* Function vect_is_simple_iv_evolution.
@@ -288,39 +288,6 @@ vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
   return true;
 }
 
-/* Return true if PHI, described by STMT_INFO, is the inner PHI in
-   what we are assuming is a double reduction.  For example, given
-   a structure like this:
-
-      outer1:
-	x_1 = PHI <x_4(outer2), ...>;
-	...
-
-      inner:
-	x_2 = PHI <x_1(outer1), ...>;
-	...
-	x_3 = ...;
-	...
-
-      outer2:
-	x_4 = PHI <x_3(inner)>;
-	...
-
-   outer loop analysis would treat x_1 as a double reduction phi and
-   this function would then return true for x_2.  */
-
-static bool
-vect_inner_phi_in_double_reduction_p (loop_vec_info loop_vinfo, gphi *phi)
-{
-  use_operand_p use_p;
-  ssa_op_iter op_iter;
-  FOR_EACH_PHI_ARG (use_p, phi, op_iter, SSA_OP_USE)
-    if (stmt_vec_info def_info = loop_vinfo->lookup_def (USE_FROM_PTR (use_p)))
-      if (STMT_VINFO_DEF_TYPE (def_info) == vect_double_reduction_def)
-	return true;
-  return false;
-}
-
 /* Returns true if Phi is a first-order recurrence. A first-order
    recurrence is a non-reduction recurrence relation in which the value of
    the recurrence in the current loop iteration equals a value defined in
@@ -380,7 +347,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
   basic_block bb = loop->header;
   auto_vec<stmt_vec_info, 64> worklist;
   gphi_iterator gsi;
-  bool double_reduc, reduc_chain;
 
   DUMP_VECT_SCOPE ("vect_analyze_scalar_cycles");
 
@@ -394,14 +360,18 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
       tree def = PHI_RESULT (phi);
       stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (phi);
 
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G",
-			 (gimple *) phi);
-
       /* Skip virtual phi's.  The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
       if (virtual_operand_p (def))
 	continue;
+
+      /* Skip already analyzed inner loop PHIs of double reductions.  */
+      if (VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_vinfo)))
+	continue;
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G",
+			 (gimple *) phi);
 
       STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_unknown_def_type;
 
@@ -414,7 +384,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 	STRIP_NOPS (access_fn);
 
       if ((!access_fn
-	   || vect_inner_phi_in_double_reduction_p (loop_vinfo, phi)
 	   || !vect_is_simple_iv_evolution (loop->num, access_fn, stmt_vinfo)
 	   || (LOOP_VINFO_LOOP (loop_vinfo) != loop
 	       && (TREE_CODE (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo))
@@ -455,51 +424,68 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
       gcc_assert (!virtual_operand_p (def)
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
+      gphi *double_reduc;
+      bool reduc_chain;
       stmt_vec_info reduc_stmt_info
 	= vect_is_simple_reduction (loop_vinfo, stmt_vinfo, &double_reduc,
 				    &reduc_chain, slp);
-      if (reduc_stmt_info)
+      if (reduc_stmt_info && double_reduc)
         {
-	  STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
-	  STMT_VINFO_REDUC_DEF (reduc_stmt_info) = stmt_vinfo;
-	  if (double_reduc)
+	  bool inner_chain;
+	  stmt_vec_info inner_phi_info
+	      = loop_vinfo->lookup_stmt (double_reduc);
+	  /* ???  Pass down flag we're the inner loop of a double reduc.  */
+	  stmt_vec_info inner_reduc_info
+	    = vect_is_simple_reduction (loop_vinfo, inner_phi_info,
+					NULL, &inner_chain, slp);
+	  if (inner_reduc_info)
 	    {
+	      STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
+	      STMT_VINFO_REDUC_DEF (reduc_stmt_info) = stmt_vinfo;
+	      STMT_VINFO_REDUC_DEF (inner_phi_info) = inner_reduc_info;
+	      STMT_VINFO_REDUC_DEF (inner_reduc_info) = inner_phi_info;
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Detected double reduction.\n");
 
-              STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_double_reduction_def;
+	      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_double_reduction_def;
 	      STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_double_reduction_def;
+	      STMT_VINFO_DEF_TYPE (inner_phi_info) = vect_nested_cycle;
 	      /* Make it accessible for SLP vectorization.  */
 	      LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt_info);
-            }
-          else
-            {
-              if (loop != LOOP_VINFO_LOOP (loop_vinfo))
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_NOTE, vect_location,
-				     "Detected vectorizable nested cycle.\n");
+	    }
+	  else if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Unknown def-use cycle pattern.\n");
+	}
+      else if (reduc_stmt_info)
+	{
+	  STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
+	  STMT_VINFO_REDUC_DEF (reduc_stmt_info) = stmt_vinfo;
+	  if (loop != LOOP_VINFO_LOOP (loop_vinfo))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Detected vectorizable nested cycle.\n");
 
-                  STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_nested_cycle;
-                }
-              else
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_NOTE, vect_location,
-				     "Detected reduction.\n");
+	      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_nested_cycle;
+	    }
+	  else
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Detected reduction.\n");
 
-                  STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_reduction_def;
-		  STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_reduction_def;
-                  /* Store the reduction cycles for possible vectorization in
-                     loop-aware SLP if it was not detected as reduction
-		     chain.  */
-		  if (! reduc_chain)
-		    LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push
-		      (reduc_stmt_info);
-                }
-            }
-        }
+	      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_reduction_def;
+	      STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_reduction_def;
+	      /* Store the reduction cycles for possible vectorization in
+		 loop-aware SLP if it was not detected as reduction
+		 chain.  */
+	      if (! reduc_chain)
+		LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push
+		    (reduc_stmt_info);
+	    }
+	}
       else if (vect_phi_first_order_recurrence_p (loop_vinfo, loop, phi))
 	STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_first_order_recurrence;
       else
@@ -3768,14 +3754,18 @@ check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 
 static stmt_vec_info
 vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
-			  bool *double_reduc, bool *reduc_chain_p, bool slp)
+			  gphi **double_reduc, bool *reduc_chain_p, bool slp)
 {
   gphi *phi = as_a <gphi *> (phi_info->stmt);
   gimple *phi_use_stmt = NULL;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
 
-  *double_reduc = false;
+  /* When double_reduc is NULL we are testing the inner loop of a
+     double reduction.  */
+  bool inner_loop_of_double_reduc = double_reduc == NULL;
+  if (double_reduc)
+    *double_reduc = NULL;
   *reduc_chain_p = false;
   STMT_VINFO_REDUC_TYPE (phi_info) = TREE_CODE_REDUCTION;
 
@@ -3831,7 +3821,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
     = flow_loop_nested_p (LOOP_VINFO_LOOP (loop_info), loop);
   unsigned nlatch_def_loop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
-  bool inner_loop_of_double_reduc = false;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, latch_def)
     {
       gimple *use_stmt = USE_STMT (use_p);
@@ -3840,14 +3829,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	nlatch_def_loop_uses++;
       else
-	{
-	  /* We can have more than one loop-closed PHI.  */
-	  lcphis.safe_push (as_a <gphi *> (use_stmt));
-	  if (nested_in_vect_loop
-	      && (STMT_VINFO_DEF_TYPE (loop_info->lookup_stmt (use_stmt))
-		  == vect_double_reduction_def))
-	    inner_loop_of_double_reduc = true;
-	}
+	/* We can have more than one loop-closed PHI.  */
+	lcphis.safe_push (as_a <gphi *> (use_stmt));
     }
 
   /* If we are vectorizing an inner reduction we are executing that
@@ -3916,7 +3899,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
             report_vect_op (MSG_NOTE, def_stmt,
 			    "detected double reduction: ");
 
-          *double_reduc = true;
+	  *double_reduc = as_a <gphi *> (phi_use_stmt);
 	  return def_stmt_info;
         }
 
