@@ -30173,10 +30173,12 @@ c_parser_transaction (c_parser *parser, enum rid keyword)
   if (flag_tm)
     stmt = c_finish_transaction (loc, stmt, this_in);
   else
-    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
-	"%<__transaction_atomic%> without transactional memory support enabled"
-	: "%<__transaction_relaxed %> "
-	"without transactional memory support enabled"));
+    error_at (loc, 
+	      keyword == RID_TRANSACTION_ATOMIC
+	      ? G_("%<__transaction_atomic%> without transactional memory "
+		   "support enabled")
+	      : G_("%<__transaction_relaxed%> without transactional memory "
+		   "support enabled"));
 
   return stmt;
 }
@@ -30240,10 +30242,12 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
   parser->in_transaction = old_in;
 
   if (!flag_tm)
-    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
-	"%<__transaction_atomic%> without transactional memory support enabled"
-	: "%<__transaction_relaxed %> "
-	"without transactional memory support enabled"));
+    error_at (loc,
+	      keyword == RID_TRANSACTION_ATOMIC
+	      ? G_("%<__transaction_atomic%> without transactional memory "
+		   "support enabled")
+	      : G_("%<__transaction_relaxed%> without transactional memory "
+		   "support enabled"));
 
   set_c_expr_source_range (&ret, loc, loc);
 

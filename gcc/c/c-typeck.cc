@@ -3717,8 +3717,8 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
 	  && C_TYPE_DEFINED_IN_STRUCT (TREE_TYPE (ref)))
 	{
 	  warning_at (loc, OPT_Wc___compat,
-		      ("enum constant defined in struct or union "
-		       "is not visible in C++"));
+		      "enum constant defined in struct or union "
+		      "is not visible in C++");
 	  inform (DECL_SOURCE_LOCATION (ref), "enum constant defined here");
 	}
 
@@ -6421,9 +6421,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	  && TREE_CODE (t2) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (t1) != TYPE_MAIN_VARIANT (t2))
 	warning_at (colon_loc, OPT_Wc___compat,
-		    ("different enum types in conditional is "
-		     "invalid in C++: %qT vs %qT"),
-		    t1, t2);
+		    "different enum types in conditional is "
+		    "invalid in C++: %qT vs %qT", t1, t2);
     }
 
   if (warn_zero_as_null_pointer_constant
