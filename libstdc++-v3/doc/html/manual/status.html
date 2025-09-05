@@ -1118,7 +1118,8 @@ since C++14 and the implementation is complete.
       The effect of calling the mathematical special functions with large
       inputs should be documented here.
    </p><p>
-      <span class="emphasis"><em>30.10.2.1 [fs.conform.9945]</em></span>
+      <span class="emphasis"><em>30.10.2.1 [fs.conform.9945]</em></span>,
+      <span class="emphasis"><em>30.10.2.2 [fs.conform.os]</em></span>
       The behavior of the filesystem library implementation will depend on
       the target operating system. Some features will not be supported
       on some targets. Symbolic links and file permissions
@@ -1154,7 +1155,20 @@ since C++14 and the implementation is complete.
       Specifically, it is not possible to rename a directory to replace another
       directory (POSIX requires that to work if the directory being
       replaced is empty).
-    </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="iso.2017.par2ts"></a>Parallelism 2 TS</h5></div></div></div><p>
+   </p><p>
+      <span class="emphasis"><em>30.10.29.2 [fs.enum.file_type]</em></span>,
+      <span class="emphasis"><em>30.10.34.3 [fs.op.copy]</em></span>,
+      <span class="emphasis"><em>30.10.34.35 [fs.op.status]</em></span>
+      No additional file types are supported, and there are no
+      implementation-defined enumerators in
+      <code class="code">std::filesystem::file_type</code>.
+   </p><p>
+     <span class="emphasis"><em>30.10.32 [fs.class.directory_iterator]</em></span>,
+     <span class="emphasis"><em>30.10.33 [fs.class.rec.dir.itr]</em></span>
+     Any directory-like file types supported by
+     <code class="code">opendir</code>/<code class="code">readdir</code>
+     (or <code class="code">_wopendir</code>/<code class="code">_wreaddir</code> on Windows).
+   </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="iso.2017.par2ts"></a>Parallelism 2 TS</h5></div></div></div><p>
         <span class="emphasis"><em>9.3 [parallel.simd.abi]</em></span>
         <code class="code">max_fixed_size&lt;T&gt;</code> is 32, except when targetting
         AVX512BW and <code class="code">sizeof(T)</code> is 1.
