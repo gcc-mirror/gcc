@@ -5234,7 +5234,7 @@ get_supported_else_vals (enum insn_code icode, unsigned else_index,
 			 vec<int> &else_vals)
 {
   const struct insn_data_d *data = &insn_data[icode];
-  if ((char)else_index >= data->n_operands)
+  if ((int) else_index >= data->n_operands || (int) else_index == -1)
     return;
 
   machine_mode else_mode = data->operand[else_index].mode;
@@ -5305,6 +5305,26 @@ internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
   if (ok && elsvals)
     get_supported_else_vals
       (icode, internal_fn_else_index (IFN_MASK_GATHER_LOAD), *elsvals);
+
+  return ok;
+}
+
+/* Return true if the target supports a strided load/store function IFN
+   with VECTOR_TYPE.  If supported and ELSVALS is nonzero the supported else
+   values will be added to the vector ELSVALS points to.  */
+
+bool
+internal_strided_fn_supported_p (internal_fn ifn, tree vector_type,
+				 vec<int> *elsvals)
+{
+  machine_mode mode = TYPE_MODE (vector_type);
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+
+  bool ok = icode != CODE_FOR_nothing;
+
+  if (ok && elsvals)
+    get_supported_else_vals (icode, internal_fn_else_index (ifn), *elsvals);
 
   return ok;
 }
