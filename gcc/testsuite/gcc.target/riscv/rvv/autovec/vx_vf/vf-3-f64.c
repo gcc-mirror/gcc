@@ -16,6 +16,7 @@ DEF_VF_BINOP_CASE_1 (double, *, mul, VF_BINOP_BODY_X128)
 DEF_VF_BINOP_CASE_1 (double, +, add, VF_BINOP_BODY_X128)
 DEF_VF_BINOP_CASE_1 (double, -, sub, VF_BINOP_BODY_X128)
 DEF_VF_BINOP_REVERSE_CASE_1 (double, /, rdiv, VF_BINOP_REVERSE_BODY_X128)
+DEF_VF_BINOP_REVERSE_CASE_1 (double, -, rsub, VF_BINOP_REVERSE_BODY_X128)
 DEF_VF_BINOP_CASE_3_WRAP (double, MIN_FUNC_0_WRAP (double), min,
 			  VF_BINOP_FUNC_BODY_X128)
 DEF_VF_BINOP_CASE_3_WRAP (double, MIN_FUNC_1_WRAP (double), min,
@@ -37,5 +38,6 @@ DEF_VF_BINOP_CASE_3_WRAP (double, MAX_FUNC_1_WRAP (double), max,
 /* { dg-final { scan-assembler {vfadd.vf} } } */
 /* { dg-final { scan-assembler {vfsub.vf} } } */
 /* { dg-final { scan-assembler {vfrdiv.vf} } } */
+/* { dg-final { scan-assembler {vfrsub.vf} } } */
 /* { dg-final { scan-assembler {vfmin.vf} } } */
 /* { dg-final { scan-assembler {vfmax.vf} } } */
