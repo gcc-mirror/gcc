@@ -1860,7 +1860,7 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
     {
     invalid_nargs:
       if (!ctx->quiet)
-	error_at (loc, "call to %qD function with incorrect"
+	error_at (loc, "call to %qD function with incorrect "
 		  "number of arguments", fndecl);
       *non_constant_p = true;
       return call;
