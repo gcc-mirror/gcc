@@ -37,7 +37,7 @@
 						   unsigned n)                 \
   {                                                                            \
     for (unsigned i = 0; i < n; i++)                                           \
-      out[i] = (T2) f * (T2) in[i];                                            \
+      out[i] = (T2) f OP (T2) in[i];                                           \
   }
 #define DEF_VF_BINOP_WIDEN_CASE_0_WRAP(T1, T2, OP, NAME)                       \
   DEF_VF_BINOP_WIDEN_CASE_0 (T1, T2, OP, NAME)

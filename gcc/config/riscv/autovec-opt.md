@@ -2170,6 +2170,29 @@
   [(set_attr "type" "vfwmul")]
 )
 
+;; vfwadd.vf
+(define_insn_and_split "*vfwadd_vf_<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+    (plus:VWEXTF
+      (float_extend:VWEXTF
+	(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
+      (vec_duplicate:VWEXTF
+	(float_extend:<VEL>
+	  (match_operand:<VSUBEL> 2 "register_operand")))))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_dual_widen_scalar (PLUS,
+								    <MODE>mode),
+				   riscv_vector::BINARY_OP_FRM_DYN, operands);
+
+    DONE;
+  }
+  [(set_attr "type" "vfwalu")]
+)
+
 ;; vfadd.vf
 (define_insn_and_split "*vfadd_vf_<mode>"
   [(set (match_operand:V_VLSF 0 "register_operand")
