@@ -10493,10 +10493,10 @@ package body Sem_Attr is
                         Fold_Uint (N, Expr_Value (Expression (S)), Static);
 
                      --  If no size is specified, then we simply use the object
-                     --  size in the VADS_Size case (e.g. Natural'Size is equal
-                     --  to Integer'Size, not one less).
+                     --  size (when known) in the VADS_Size case (for example,
+                     --  Natural'Size is equal to Integer'Size, not one less).
 
-                     else
+                     elsif Known_Esize (P_TypeA) then
                         Fold_Uint (N, Esize (P_TypeA), Static);
                      end if;
                   end;
