@@ -13,6 +13,7 @@
 /* { dg-final { scan-assembler-not {vfnmsac.vf} } } */
 /* { dg-final { scan-assembler-not {vfmul.vf} } } */
 /* { dg-final { scan-assembler-not {vfadd.vf} } } */
+/* { dg-final { scan-assembler-not {vfsub.vf} } } */
 /* { dg-final { scan-assembler-not {vfrdiv.vf} } } */
 /* { dg-final { scan-assembler-not {vfmin.vf} } } */
 /* { dg-final { scan-assembler-not {vfmax.vf} } } */

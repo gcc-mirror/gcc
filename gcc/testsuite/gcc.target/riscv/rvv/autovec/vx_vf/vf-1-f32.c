@@ -18,6 +18,7 @@ DEF_VF_MULOP_WIDEN_CASE_0 (float, double, +, -, nacc)
 DEF_VF_MULOP_WIDEN_CASE_0 (float, double, -, -, nsac)
 DEF_VF_BINOP_CASE_0 (float, *, mul)
 DEF_VF_BINOP_CASE_0 (float, +, add)
+DEF_VF_BINOP_CASE_0 (float, -, sub)
 DEF_VF_BINOP_REVERSE_CASE_0 (float, /, rdiv)
 DEF_VF_BINOP_CASE_2_WRAP (float, MIN_FUNC_0_WRAP (float), min)
 DEF_VF_BINOP_CASE_2_WRAP (float, MIN_FUNC_1_WRAP (float), min)
@@ -39,6 +40,7 @@ DEF_VF_BINOP_WIDEN_CASE_0 (float, double, *, mul)
 /* { dg-final { scan-assembler-times {vfwnmsac.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmul.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfadd.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfsub.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfrdiv.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmin.vf} 2 } } */
 /* { dg-final { scan-assembler-times {vfmax.vf} 2 } } */

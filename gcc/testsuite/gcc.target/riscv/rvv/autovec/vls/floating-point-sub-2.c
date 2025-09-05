@@ -39,5 +39,5 @@ DEF_OP_VX (sub, 128, double, -)
 DEF_OP_VX (sub, 256, double, -)
 DEF_OP_VX (sub, 512, double, -)
 
-/* { dg-final { scan-assembler-times {vfsub\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 30 } } */
+/* { dg-final { scan-assembler-times {vfsub\.vf\s+v[0-9]+,\s*v[0-9]+,\s*f[ast]?[0-9]+} 30 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
