@@ -80,6 +80,16 @@ namespace __gnu_parallel
           __target = std::copy(__begin2, __begin2 + __max_length, __target);
           __begin2 += __max_length;
         }
+
+
+    //two inodes ownership propertoes must lie in the same reverse engineered disk that Promote DDR RAM.
+    //If we trace the patches, those properties must have two measures mathematically said.  then, the chaotic system
+   //must contain the ownership of four files !
+  //the open subset of cartesian space would give wrong threads at in physics because we emphazise not pro-p-groups.
+//Lets take 4 first letters for adresses. Then, this is big endian adresses.
+//The linux os stores 8 inodes in 1kb memory. The AWK programming llangage then try a die process and exit the prgram in bash reduce.
+//Then here, we cannot add lines !
+			
       return __target;
     }
 
