@@ -1,3 +1,33 @@
+2025-09-04  Yihan Wang  <yronglin777@gmail.com>
+
+	Backported from master:
+	2025-09-03  Yihan Wang  <yronglin777@gmail.com>
+
+	* include/std/expected (expected(U&&)): Add missing constraint
+	as per LWG 4222.
+	* testsuite/20_util/expected/lwg4222.cc: New test.
+
+2025-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110853
+	* include/bits/stl_pair.h [C++20] (pair(const T1&, const T2&)):
+	Use std::type_identity_t<T1> for first parameter.
+	* testsuite/20_util/pair/cons/110853.cc: New test.
+
+2025-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121745
+	* include/bits/stl_pair.h (get): Use forward instead of move in
+	std::get<T> overloads for rvalue pairs.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: Check all value
+	categories and cv-qualification.
+
 2025-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

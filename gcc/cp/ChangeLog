@@ -1,3 +1,12 @@
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121724
+	* name-lookup.cc (push_namespace): Mark inline namespace
+	contexts as purview if needed.
+
 2025-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
