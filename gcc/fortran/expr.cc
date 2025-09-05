@@ -4769,6 +4769,52 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
 
   memset (&lvalue, '\0', sizeof (gfc_expr));
 
+  if (sym && sym->attr.pdt_template && comp && comp->initializer)
+    {
+      int i, flag;
+      gfc_expr *param_expr;
+      flag = 0;
+
+      if (comp->as && comp->as->type == AS_EXPLICIT
+	  && !(comp->ts.type == BT_DERIVED
+	       && comp->ts.u.derived->attr.pdt_template))
+	{
+	  /* Are the bounds of the array parameterized?  */
+	  for (i = 0; i < comp->as->rank; i++)
+	    {
+	      param_expr = gfc_copy_expr (comp->as->lower[i]);
+	      if (gfc_simplify_expr (param_expr, 1)
+		  && param_expr->expr_type != EXPR_CONSTANT)
+		flag++;
+	      gfc_free_expr (param_expr);
+	      param_expr = gfc_copy_expr (comp->as->upper[i]);
+	      if (gfc_simplify_expr (param_expr, 1)
+		  && param_expr->expr_type != EXPR_CONSTANT)
+		flag++;
+	      gfc_free_expr (param_expr);
+	    }
+	}
+
+      /* Is the character length parameterized?  */
+      if (comp->ts.type == BT_CHARACTER && comp->ts.u.cl->length)
+	{
+	  param_expr = gfc_copy_expr (comp->ts.u.cl->length);
+	  if (gfc_simplify_expr (param_expr, 1)
+	      && param_expr->expr_type != EXPR_CONSTANT)
+	    flag++;
+	  gfc_free_expr (param_expr);
+	}
+
+      if (flag)
+	{
+	  gfc_error ("The component %qs at %L of derived type %qs has "
+		     "paramterized type or array length parameters, which is "
+		     "not compatible with a default initializer",
+		      comp->name, &comp->initializer->where, sym->name);
+	  return false;
+	}
+    }
+
   lvalue.expr_type = EXPR_VARIABLE;
   lvalue.ts = sym->ts;
   if (sym->as)
