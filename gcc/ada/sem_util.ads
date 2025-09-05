@@ -1506,6 +1506,8 @@ package Sem_Util is
    --  for which the Extended_Access aspect has been specified, either
    --  explicitly or by inheritance.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean;
    --  Return True if Subp is a function with side effects, ie. it has a
    --  (direct or inherited) pragma Side_Effects with static value True.
