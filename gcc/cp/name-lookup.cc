@@ -8957,20 +8957,34 @@ pop_nested_namespace (tree ns)
 static void
 add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 {
+  /* Find if this using already exists.  */
+  tree old = NULL_TREE;
   if (usings)
-    for (unsigned ix = usings->length (); ix--;)
-      if ((*usings)[ix] == target)
-	return;
+    for (tree t : *usings)
+      if (USING_DECL_DECLS (t) == target)
+	{
+	  old = t;
+	  break;
+	}
 
+  tree decl = old;
+  if (!decl)
+    {
+      decl = build_lang_decl (USING_DECL, NULL_TREE, NULL_TREE);
+      USING_DECL_DECLS (decl) = target;
+    }
+
+  /* Update purviewness and exportedness in case that has changed.  */
   if (modules_p ())
     {
-      tree u = build_lang_decl (USING_DECL, NULL_TREE, NULL_TREE);
-      USING_DECL_DECLS (u) = target;
-      DECL_MODULE_EXPORT_P (u) = module_exporting_p ();
-      DECL_MODULE_PURVIEW_P (u) = module_purview_p ();
-      target = u;
+      if (module_purview_p ())
+	DECL_MODULE_PURVIEW_P (decl) = true;
+      if (module_exporting_p ())
+	DECL_MODULE_EXPORT_P (decl) = true;
     }
-  vec_safe_push (usings, target);
+
+  if (!old)
+    vec_safe_push (usings, decl);
 }
 
 /* Convenience overload for the above, taking the user as its first

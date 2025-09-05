@@ -3633,6 +3633,7 @@ enum module_state_counts
   MSC_pendings,
   MSC_entities,
   MSC_namespaces,
+  MSC_using_directives,
   MSC_bindings,
   MSC_macros,
   MSC_inits,
@@ -3853,6 +3854,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_namespaces (elf_out *to, vec<depset *> spaces,
 			 unsigned, unsigned *crc_ptr);
   bool read_namespaces (unsigned);
+
+  unsigned write_using_directives (elf_out *to, depset::hash &,
+				   vec<depset *> spaces, unsigned *crc_ptr);
+  bool read_using_directives (unsigned);
 
   void intercluster_seed (trees_out &sec, unsigned index, depset *dep);
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
@@ -14691,16 +14696,21 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   data.partitions = partitions;
   data.hash = this;
 
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+  for (tree binding : *DECL_NAMESPACE_BINDINGS (ns))
     {
       data.binding = nullptr;
       data.met_namespace = false;
-      if (walk_module_binding (*iter, partitions, add_binding_entity, &data))
+      if (walk_module_binding (binding, partitions, add_binding_entity, &data))
 	count++;
     }
+
+  /* Seed any using-directives so that we emit the relevant namespaces.  */
+  for (tree udir : NAMESPACE_LEVEL (ns)->using_directives)
+    if (TREE_CODE (udir) == USING_DECL && DECL_MODULE_EXPORT_P (udir))
+      {
+	make_dependency (USING_DECL_DECLS (udir), depset::EK_NAMESPACE);
+	count++;
+      }
 
   if (count)
     dump () && dump ("Found %u entries", count);
@@ -17128,14 +17138,10 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
   bytes_out sec (to);
   sec.begin ();
 
-  hash_map<tree, unsigned> ns_map;
-
   for (unsigned ix = 0; ix != num; ix++)
     {
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
-
-      ns_map.put (ns, ix);
 
       /* This could be an anonymous namespace even for a named module,
 	 since we can still emit no-linkage decls.  */
@@ -17178,31 +17184,6 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	}
     }
 
-  /* Now write exported using-directives, as a sequence of 1-origin indices in
-     the spaces array (not entity indices): First the using namespace, then the
-     used namespaces.  And then a zero terminating the list.  :: is
-     represented as index -1.  */
-  auto emit_one_ns = [&](unsigned ix, tree ns) {
-    for (auto udir: NAMESPACE_LEVEL (ns)->using_directives)
-      {
-	if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
-	  continue;
-	tree ns2 = USING_DECL_DECLS (udir);
-	dump() && dump ("Writing using-directive in %N for %N",
-			ns, ns2);
-	sec.u (ix);
-	sec.u (*ns_map.get (ns2) + 1);
-      }
-  };
-  emit_one_ns (-1, global_namespace);
-  for (unsigned ix = 0; ix != num; ix++)
-    {
-      depset *b = spaces[ix];
-      tree ns = b->get_entity ();
-      emit_one_ns (ix + 1, ns);
-    }
-  sec.u (0);
-
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
   dump.outdent ();
 }
@@ -17220,8 +17201,6 @@ module_state::read_namespaces (unsigned num)
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
-
-  tree *ns_map = XALLOCAVEC (tree, num);
 
   for (unsigned ix = 0; ix != num; ix++)
     {
@@ -17284,8 +17263,6 @@ module_state::read_namespaces (unsigned num)
 	DECL_ATTRIBUTES (inner)
 	  = tree_cons (get_identifier ("abi_tag"), tags, DECL_ATTRIBUTES (inner));
 
-      ns_map[ix] = inner;
-
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
       if (DECL_MODULE_IMPORT_P (inner))
@@ -17301,41 +17278,79 @@ module_state::read_namespaces (unsigned num)
 	}
     }
 
-  /* Read the exported using-directives.  */
-  while (unsigned ix = sec.u ())
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;
+  return true;
+}
+
+unsigned
+module_state::write_using_directives (elf_out *to, depset::hash &table,
+				      vec<depset *> spaces, unsigned *crc_p)
+{
+  dump () && dump ("Writing using-directives");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  unsigned num = 0;
+  auto emit_one_ns = [&](depset *parent_dep)
     {
-      tree ns;
-      if (ix == (unsigned)-1)
-	ns = global_namespace;
-      else
+      tree parent = parent_dep->get_entity ();
+      for (auto udir : NAMESPACE_LEVEL (parent)->using_directives)
 	{
-	  if (--ix >= num)
-	    {
-	      sec.set_overrun ();
-	      break;
-	    }
-	  ns = ns_map [ix];
+	  if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
+	    continue;
+	  tree target = USING_DECL_DECLS (udir);
+	  depset *target_dep = table.find_dependency (target);
+	  gcc_checking_assert (target_dep);
+
+	  dump () && dump ("Writing using-directive in %N for %N",
+			   parent, target);
+	  write_namespace (sec, parent_dep);
+	  write_namespace (sec, target_dep);
+	  ++num;
 	}
-      unsigned ix2 = sec.u ();
-      if (--ix2 >= num)
-	{
-	  sec.set_overrun ();
-	  break;
-	}
-      tree ns2 = ns_map [ix2];
-      if (directness)
-	{
-	  dump() && dump ("Reading using-directive in %N for %N",
-			  ns, ns2);
-	  /* In an export import this will mark the using-directive as
-	     exported, so it will be emitted again.  */
-	  add_using_namespace (ns, ns2);
-	}
-      else
-	/* Ignore using-directives from indirect imports, we only want them
-	   from our own imports.  */
-	dump() && dump ("Ignoring using-directive in %N for %N",
-			ns, ns2);
+    };
+
+  emit_one_ns (table.find_dependency (global_namespace));
+  for (depset *parent_dep : spaces)
+    emit_one_ns (parent_dep);
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".udi"), crc_p);
+  dump.outdent ();
+
+  return num;
+}
+
+bool
+module_state::read_using_directives (unsigned num)
+{
+  if (!bitmap_bit_p ((*modules)[0]->imports, mod))
+    {
+      dump () && dump ("Ignoring using-directives because module %M "
+		       "is not visible in this TU", this);
+      return true;
+    }
+
+  bytes_in sec;
+
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".udi"))
+    return false;
+
+  dump () && dump ("Reading using-directives");
+  dump.indent ();
+
+  for (unsigned ix = 0; ix != num; ++ix)
+    {
+      tree parent = read_namespace (sec);
+      tree target = read_namespace (sec);
+      if (sec.get_overrun ())
+	break;
+
+      dump () && dump ("Read using-directive in %N for %N", parent, target);
+      add_using_namespace (parent, target);
     }
 
   dump.outdent ();
@@ -19857,6 +19872,7 @@ module_state::write_counts (elf_out *to, unsigned counts[MSC_HWM],
       dump ("Pendings %u", counts[MSC_pendings]);
       dump ("Entities %u", counts[MSC_entities]);
       dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Using-directives %u", counts[MSC_using_directives]);
       dump ("Macros %u", counts[MSC_macros]);
       dump ("Initializers %u", counts[MSC_inits]);
     }
@@ -19883,6 +19899,7 @@ module_state::read_counts (unsigned counts[MSC_HWM])
       dump ("Pendings %u", counts[MSC_pendings]);
       dump ("Entities %u", counts[MSC_entities]);
       dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Using-directives %u", counts[MSC_using_directives]);
       dump ("Macros %u", counts[MSC_macros]);
       dump ("Initializers %u", counts[MSC_inits]);
     }
@@ -20165,7 +20182,8 @@ ool_cmp (const void *a_, const void *b_)
      qualified-names	    : binding value(s)
      MOD_SNAME_PFX.README   : human readable, strings
      MOD_SNAME_PFX.ENV      : environment strings, strings
-     MOD_SNAME_PFX.nms 	    : namespace hierarchy
+     MOD_SNAME_PFX.nms      : namespace hierarchy
+     MOD_SNAME_PFX.udi      : namespace using-directives
      MOD_SNAME_PFX.bnd      : binding table
      MOD_SNAME_PFX.spc      : specialization table
      MOD_SNAME_PFX.imp      : import table
@@ -20410,6 +20428,11 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   /* Write the namespaces.  */
   if (counts[MSC_namespaces])
     write_namespaces (to, spaces, counts[MSC_namespaces], &crc);
+
+  /* Write any using-directives.  */
+  if (counts[MSC_namespaces])
+    counts[MSC_using_directives]
+      = write_using_directives (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
   counts[MSC_bindings] = write_bindings (to, sccs, &crc);
@@ -20662,9 +20685,14 @@ module_state::read_language (bool outermost)
 			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
     ok = false;
 
-  /* Read the namespace hierarchy. */
+  /* Read the namespace hierarchy.  */
   if (ok && counts[MSC_namespaces]
       && !read_namespaces (counts[MSC_namespaces]))
+    ok = false;
+
+  /* Read any using-directives.  */
+  if (ok && counts[MSC_using_directives]
+      && !read_using_directives (counts[MSC_using_directives]))
     ok = false;
 
   if (ok && !read_bindings (counts[MSC_bindings],
@@ -21753,14 +21781,14 @@ direct_import (module_state *import, cpp_reader *reader)
     if (!import->do_import (reader, true))
       gcc_unreachable ();
 
+  (*modules)[0]->set_import (import, import->exported_p);
+
   if (import->loadedness < ML_LANGUAGE)
     {
       if (!keyed_table)
 	keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
       import->read_language (true);
     }
-
-  (*modules)[0]->set_import (import, import->exported_p);
 
   dump.pop (n);
   timevar_stop (TV_MODULE_IMPORT);
