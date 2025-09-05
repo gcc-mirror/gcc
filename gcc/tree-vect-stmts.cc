@@ -11387,8 +11387,9 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
 					true, &n_perms, nullptr);
-	  inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
-					  slp_node, 0, vect_body);
+	  if (n_perms != 0)
+	    inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
+					    slp_node, 0, vect_body);
 	}
       else
 	{

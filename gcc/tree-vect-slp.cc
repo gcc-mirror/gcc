@@ -8701,8 +8701,9 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
 
   /* Since we replace all stmts of a possibly longer scalar reduction
      chain account for the extra scalar stmts for that.  */
-  record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
-		    instance->root_stmts[0], 0, vect_body);
+  if (!instance->remain_defs.is_empty ())
+    record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
+		      instance->root_stmts[0], 0, vect_body);
   return true;
 }
 
@@ -11370,7 +11371,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   if (nperms < 0)
     return false;
 
-  if (!gsi)
+  if (!gsi && nperms != 0)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
 
   return true;
