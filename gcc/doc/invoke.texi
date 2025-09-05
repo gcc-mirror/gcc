@@ -21275,6 +21275,9 @@ passes).
 @item note
 Enable other detailed optimization information (only available in
 certain passes).
+@item folding
+Enable dumping information about match-and-simplify (match.pd) patterns,
+when they are applied.
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
 and @option{lineno}.
