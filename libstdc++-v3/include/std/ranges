@@ -2935,7 +2935,7 @@ namespace views::__adaptor
 	  }
 
 	  constexpr _Inner_iter&
-	  _M_get_inner()
+	  _M_get_inner() noexcept
 	  {
 	    if constexpr (forward_iterator<_Inner_iter>)
 	      return _M_inner;
@@ -2944,7 +2944,7 @@ namespace views::__adaptor
 	  }
 
 	  constexpr const _Inner_iter&
-	  _M_get_inner() const
+	  _M_get_inner() const noexcept
 	  {
 	    if constexpr (forward_iterator<_Inner_iter>)
 	      return _M_inner;

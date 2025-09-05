@@ -240,6 +240,17 @@ test15()
   constexpr decltype(views::join(views::single(views::single(0))).begin()) it;
 }
 
+void
+test16()
+{
+  // PR libstdc++/121804 - join_view::iterator::_M_get_inner should be noexcept
+  std::vector<std::vector<int>> vv;
+  ranges::join_view j{vv};
+  auto jit = j.begin();
+  static_assert(noexcept(ranges::iter_move(jit)));
+  static_assert(noexcept(ranges::iter_swap(jit, jit)));
+}
+
 int
 main()
 {
@@ -258,4 +269,5 @@ main()
   test13();
   test14();
   test15();
+  test16();
 }
