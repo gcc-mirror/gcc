@@ -817,8 +817,6 @@ is_record_area( const cbl_field_t *field ) {
   return 0 == memcmp(field->name, stem, sizeof(stem)-1);
 }
 
-bool is_register_field( const cbl_field_t *field );
-
 static inline bool
 is_constant( const cbl_field_t *field ) {
   return field->has_attr(constant_e);

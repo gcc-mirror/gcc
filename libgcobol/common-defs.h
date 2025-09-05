@@ -211,7 +211,7 @@ enum cbl_field_attr_t : uint64_t {
   function_e        = 0x0000000100,
   quoted_e          = 0x0000000200,
   filler_e          = 0x0000000400,
-  _spare_e          = 0x0000000800, //
+  register_e        = 0x0000000800, // Data definition is found in constants.cc
   intermediate_e    = 0x0000001000, // Compiler-defined temporary variable
   embiggened_e      = 0x0000002000, // redefined numeric made 64-bit by USAGE POINTER
   all_alpha_e       = 0x0000004000, // FldAlphanumeric, but all A's
