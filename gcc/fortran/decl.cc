@@ -3952,6 +3952,16 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	}
 
+      if (kind_expr && kind_expr->expr_type == EXPR_VARIABLE
+	  && kind_expr->ts.type != BT_INTEGER
+	  && kind_expr->symtree->n.sym->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("The type parameter expression at %L must be of INTEGER "
+		     "type and not %s", &kind_expr->where,
+		     gfc_basic_typename (kind_expr->symtree->n.sym->ts.type));
+	  goto error_return;
+	}
+
       /* Store the current parameter expressions in a temporary actual
 	 arglist 'list' so that they can be substituted in the corresponding
 	 expressions in the PDT instance.  */
