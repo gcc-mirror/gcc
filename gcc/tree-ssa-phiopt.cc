@@ -323,6 +323,13 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
 
   tree arg0 = gimple_phi_arg_def (phi, e0->dest_idx);
   tree arg1 = gimple_phi_arg_def (phi, e1->dest_idx);
+  location_t narg0_loc = gimple_location (phi);
+  location_t narg1_loc = gimple_location (phi);
+  if (gimple_phi_arg_location (phi, e0->dest_idx) != UNKNOWN_LOCATION)
+    narg0_loc = gimple_phi_arg_location (phi, e0->dest_idx);
+  if (gimple_phi_arg_location (phi, e1->dest_idx) != UNKNOWN_LOCATION)
+    narg1_loc = gimple_phi_arg_location (phi, e1->dest_idx);
+
   gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
 
   /* Arugments that are the same don't have anything to be
@@ -365,6 +372,8 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
     return false;
   if (!is_factor_profitable (arg0_def_stmt, merge, new_arg0))
     return false;
+  if (gimple_has_location (arg0_def_stmt))
+    narg0_loc = gimple_location (arg0_def_stmt);
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {
@@ -385,9 +394,21 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
 	return false;
 
       new_arg1 = arg1_op.ops[0];
-
       if (!is_factor_profitable (arg1_def_stmt, merge, new_arg1))
 	return false;
+      if (gimple_has_location (arg1_def_stmt))
+	narg1_loc = gimple_location (arg1_def_stmt);
+
+      /* Chose the location for the new statement if the phi location is unknown.  */
+      if (locus == UNKNOWN_LOCATION)
+	{
+	  if (narg0_loc == UNKNOWN_LOCATION
+	      && narg1_loc != UNKNOWN_LOCATION)
+	    locus = narg1_loc;
+	  else if (narg0_loc != UNKNOWN_LOCATION
+		   && narg1_loc == UNKNOWN_LOCATION)
+	    locus = narg0_loc;
+	}
     }
   else
     {
@@ -472,6 +493,10 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       /* Drop the overlow that fold_convert might add. */
       if (TREE_OVERFLOW (new_arg1))
 	new_arg1 = drop_tree_overflow (new_arg1);
+
+      /* The locus of the new statement is arg0 defining statement. */
+      if (gimple_has_location (arg0_def_stmt))
+	locus = gimple_location (arg0_def_stmt);
     }
 
   /* If types of new_arg0 and new_arg1 are different bailout.  */
@@ -497,6 +522,8 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       return false;
     }
 
+  if (locus != UNKNOWN_LOCATION)
+    annotate_all_with_location (seq, locus);
   gsi = gsi_after_labels (gimple_bb (phi));
   gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
 
@@ -525,8 +552,8 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       release_defs (arg1_def_stmt);
     }
 
-  add_phi_arg (newphi, new_arg0, e0, locus);
-  add_phi_arg (newphi, new_arg1, e1, locus);
+  add_phi_arg (newphi, new_arg0, e0, narg0_loc);
+  add_phi_arg (newphi, new_arg1, e1, narg1_loc);
 
   /* Remove the original PHI stmt.  */
   gsi = gsi_for_stmt (phi);
