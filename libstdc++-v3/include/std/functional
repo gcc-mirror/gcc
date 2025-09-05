@@ -1256,6 +1256,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator()(_RandomAccessIterator2 __first,
 		   _RandomAccessIterator2 __last) const
 	{
+#ifdef __glibcxx_concepts // >= C++20
+	  // Value types must be the same for hash function and predicate
+	  // to give consistent results for lookup in the map.
+	  static_assert(is_same_v<iter_value_t<_RAIter>,
+				  iter_value_t<_RandomAccessIterator2>>);
+#endif
 	  const auto& __pred = this->_M_pred();
 	  auto __patlen = _M_pat_end - _M_pat;
 	  if (__patlen == 0)
@@ -1317,6 +1323,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator()(_RandomAccessIterator2 __first,
 	       _RandomAccessIterator2 __last) const
     {
+#ifdef __glibcxx_concepts // >= C++20
+      // Value types must be the same for hash function and predicate
+      // to give consistent results for lookup in the map.
+      static_assert(is_same_v<iter_value_t<_RAIter>,
+			      iter_value_t<_RandomAccessIterator2>>);
+#endif
       auto __patlen = _M_pat_end - _M_pat;
       if (__patlen == 0)
 	return std::make_pair(__first, __first);
