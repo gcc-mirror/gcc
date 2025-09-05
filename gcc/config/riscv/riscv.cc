@@ -3596,7 +3596,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       /* This test can fail if (for example) we want a HF and Z[v]fh is
 	 not enabled.  In that case we just want to let the standard
 	 expansion path run.  */
-      if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode))
+      if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode)
+	  && convert_optab_handler (vec_extract_optab, vmode, smode))
 	{
 	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
 	  rtx int_reg = dest;
