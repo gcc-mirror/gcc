@@ -7881,7 +7881,7 @@ vectorizable_store (vec_info *vinfo,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  vect_load_store_data _ls_data;
+  vect_load_store_data _ls_data{};
   vect_load_store_data &ls = slp_node->get_data (_ls_data);
   if (cost_vec
       && !get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask_node,
@@ -9451,7 +9451,7 @@ vectorizable_load (vec_info *vinfo,
   else
     group_size = 1;
 
-  vect_load_store_data _ls_data;
+  vect_load_store_data _ls_data{};
   vect_load_store_data &ls = slp_node->get_data (_ls_data);
   if (cost_vec
       && !get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask_node,
