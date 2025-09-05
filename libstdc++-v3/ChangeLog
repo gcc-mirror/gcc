@@ -1,3 +1,70 @@
+2025-09-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::_Iterator::_M_satisfy):
+	Adjust to handle non-std::optional _M_inner as per before LWG 3569.
+	(join_view::_Iterator::_M_get_inner): New.
+	(join_view::_Iterator::_M_inner): Don't wrap in std::optional if
+	the iterator is forward.  Initialize.
+	(join_view::_Iterator::operator*): Use _M_get_inner instead
+	of *_M_inner.
+	(join_view::_Iterator::operator++): Likewise.
+	(join_view::_Iterator::iter_move): Likewise.
+	(join_view::_Iterator::iter_swap): Likewise.
+
+2025-09-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/binders.h (_Binder::_S_call): Make public.
+	* include/std/ranges (ranges::_Partial<_Adaptor, _Args...>):
+	Replace tuple<_Args...> with _Bind_back_t<_Adaptor, _Args...>.
+	(ranges::_Partial<_Adaptor, _Arg>): Remove.
+
+2025-09-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/Makefile.am: Add bits/binders.h
+	* include/Makefile.in: Add bits/binders.h
+	* include/std/functional (std::_Indexed_bound_arg, std::_Binder)
+	(std::__make_bound_args, std::_Bind_front_t, std::_Bind_back_t):
+	Moved to bits/binders.h file, that is now included.
+	* include/bits/binders.h: New file.
+
+2025-09-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/functional: (std::_Indexed_bound_arg): Fixed
+	indentation.
+	(__Bound_arg_storage::_S_apply_front)
+	(__Bound_arg_storage::_S_apply_front): Merged into _S_apply.
+	(__Bound_arg_storage::_S_apply): Merged above, add _Back template
+	parameter, replace std::invoke with std::__invoke.
+	(std::_Bind_front): Renamed to std::_Binder and add _Back
+	template parameter.
+	(std::_Binder): Renamed from std::_Bind_front.
+	(_Binder::_Result_t, _Binder::_S_noexcept_invoke): Define.
+	(_Binder::operator()): Use _Result_t and _S_noexcept_invoke.
+	(_Binder::_S_call): Handle zero args specially, replace std::invoke
+	with std::__invoke.
+	(std::_Bind_front_t, std::_Bind_back_t): Defined in terms
+	of _Binder.
+	(std::_Bind_back): Merged into _Binder.
+	* testsuite/20_util/function_objects/bind_back/1.cc: New tests.
+	* testsuite/20_util/function_objects/bind_back/111327.cc: Updated
+	error messages.
+	* testsuite/20_util/function_objects/bind_front/1.cc: New tests.
+	* testsuite/20_util/function_objects/bind_front/111327.cc: Updated
+	error messages.
+
+2025-09-04  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (layout_left::mapping::operator()): Add
+	_GLIBCXX_RESOLVE_LIB_DEFECTS marker for 4314.
+	(layout_left::mapping::operator()): Ditto.
+	(layout_stride::mapping::operator()): Ditto.
+
+2025-09-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/status.html: Regenerated the file.
+	* doc/xml/manual/status_cxx1998.xml: Add stable name to
+	each entry.
+
 2025-09-03  Yihan Wang  <yronglin777@gmail.com>
 
 	* include/std/expected (expected(U&&)): Add missing constraint

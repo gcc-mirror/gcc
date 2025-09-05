@@ -1,3 +1,145 @@
+2025-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vmadd.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-u8.c: New test.
+
+2025-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vmadd.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmadd-run-1-i8.c: New test.
+
+2025-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_ternary.h: Adjust the
+	vmacc.vx to avoid generating vmadd.
+
+2025-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/121732
+	PR target/117013
+	* g++.target/aarch64/spaceship_1.C: Adjust expected fn bodies
+	for _Z8ss_floatff and _Z9ss_doubledd.
+
+2025-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/121775
+	* gcc.target/arm/simd/vset_lane_u8.c: New test.
+
+2025-09-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	PR target/121780
+	PR target/121781
+	* gcc.target/riscv/rvv/autovec/pr121780.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121781.c: New test.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121768
+	* gcc.dg/vect/pr121768.c: New testcase.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121685
+	* g++.dg/vect/pr121685-1.cc: New testcase.
+
+2025-09-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/107051
+	* gcc.dg/tree-ssa/copy-prop-aggregate-union-1.c: New test.
+
+2025-09-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/110812
+	* gcc.target/riscv/lto/pr110812_0.c: New test.
+	* gcc.target/riscv/lto/pr110812_1.c: New test.
+	* gcc.target/riscv/lto/riscv-lto.exp: New test driver.
+	* gcc.target/riscv/lto/riscv_vector.h: New header wrapper.
+
+2025-09-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/can_inline_p_test-01.c: New test.
+	* gcc.target/riscv/can_inline_p_test-02.c: New test.
+	* gcc.target/riscv/can_inline_p_test-03.c: New test.
+	* gcc.target/riscv/can_inline_p_test-04.c: New test.
+	* gcc.target/riscv/riscv_vector.h: New header wrapper for vector
+	tests.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61247
+	* gcc.dg/vect/vect-pr61247.c: New testcase.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121740
+	* gcc.dg/tree-ssa/ssa-fre-104.c: Un-XFAIL.
+	* gcc.dg/tree-ssa/ssa-fre-110.c: New testcase.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* g++.dg/modules/adl-4_a.C: Test should pass.
+	* g++.dg/modules/adl-4_b.C: Test should pass.
+	* g++.dg/modules/adl-6_a.C: New test.
+	* g++.dg/modules/adl-6_b.C: New test.
+	* g++.dg/modules/adl-6_c.C: New test.
+	* g++.dg/modules/adl-7_a.C: New test.
+	* g++.dg/modules/adl-7_b.C: New test.
+	* g++.dg/modules/adl-7_c.C: New test.
+	* g++.dg/modules/adl-8_a.C: New test.
+	* g++.dg/modules/adl-8_b.C: New test.
+	* g++.dg/modules/adl-8_c.C: New test.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121724
+	* g++.dg/modules/namespace-12_a.C: New test.
+	* g++.dg/modules/namespace-12_b.C: New test.
+
+2025-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/112728
+	* gcc.dg/scantest-lto.c: Omit unwind frames.
+
 2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
 
 	* gcc.target/riscv/xandes/xandesbfhcvt-1.c: New test.

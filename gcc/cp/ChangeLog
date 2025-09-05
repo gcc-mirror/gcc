@@ -1,3 +1,23 @@
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* cp-tree.h (get_originating_module): Adjust parameter names.
+	* module.cc (path_of_instantiation): Handle C++26 expansion
+	statements.
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Handle
+	exported declarations attached to the same module of an
+	associated entity with the same innermost non-inline namespace,
+	and non-exported functions on the instantiation path.
+	(name_lookup::search_adl): Build mapping of namespace to modules
+	that associated entities are attached to; remove now-unneeded
+	instantiation path handling.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121724
+	* name-lookup.cc (push_namespace): Mark inline namespace
+	contexts as purview if needed.
+
 2025-09-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/97740

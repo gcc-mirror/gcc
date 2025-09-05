@@ -1,3 +1,159 @@
+2025-09-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*vmacc_vx_<mode>): Rename to
+	handle both the macc and madd.
+	(*mul_plus_vx_<mode>): Add madd pattern.
+	* config/riscv/vector.md (@pred_mul_plus_vx_<mode>): Rename to
+	handle both the macc and madd.
+	(*pred_macc_<mode>_scalar_undef): Remove.
+	(*pred_nmsac_<mode>_scalar_undef): Remove.
+	(*pred_mul_plus_vx<mode>_undef): Add new pattern to handle
+	both the vmacc and vmadd.
+	(@pred_mul_plus_vx<mode>): Ditto.
+
+2025-09-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_annotate_cfg): Apply zero_bbs after early
+	exit for missing profile; fix formating
+
+2025-09-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.cc (inline_call): If function with
+	AFDO profile is inlined into function with
+	GUESSED_GLOBAL0_AFDO or GUESSED_GLOBAL0_ADJUSTED, scale
+	caller to AFDO profile.
+	* profile-count.h (profile_count::apply_scale): If num is AFDO
+	and den is not GUESSED, make result AFDO rather then GUESSED.
+
+2025-09-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* builtins.cc (interclass_mathfn_icode): Add support for isnan
+	optab.
+	(expand_builtin): Add BUILT_IN_ISNAN to expand isnan optab.
+	(fold_builtin_interclass_mathfn): Expand BUILT_IN_ISNAN only after
+	checking for a valid optab.
+	(fold_builtin_classify): Move generic BUILT_IN_ISNAN expansion
+	to fold_builtin_interclass_mathfn.
+	(fold_builtin_1): For BUILT_IN_ISNAN first try fold_builtin_classify,
+	then fold_builtin_interclass_mathfn.
+	* optabs.def: Add isnan optab.
+	* doc/md.texi: Document isnan.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Remove unnecessary code around double reductions.
+
+2025-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/121775
+	* config/arm/neon.md (vec_set<mode>_internal, all variants):
+	validate the immediate operand that indicates the lane to
+	modify.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Eliminate
+	nested_cycle in favor of double_reduc and set that where
+	it makes most sense.  Remove never taken paths and always
+	true conditions.
+
+2025-09-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	PR target/121780
+	PR target/121781
+	* config/riscv/riscv-v.cc (expand_vec_perm): Swap target and
+	tmp_target.
+
+2025-09-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-loop-manip.cc (vect_gen_prolog_loop_niters):
+	Change prolog bound to poly_int64.
+	(vect_gen_scalar_loop_niters): Ditto.
+	(vect_do_peeling): Use poly estimate for frequency scaling.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121768
+	* tree-vect-loop.cc (vect_inner_phi_in_double_reduction_p): Remove.
+	(vect_analyze_scalar_cycles_1): Analyze inner loops of
+	double reductions immediately and only mark fully recognized
+	double reductions.  Skip already analyzed inner loops.
+	(vect_is_simple_reduction): Change double_reduc from a flag
+	to an output of the inner loop PHI and to whether we are
+	processing an inner loop of a double reduction.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121685
+	* tree-eh.cc (ref_outside_object_p): Split out from ...
+	(tree_could_trap_p): ... here.  Assume the this pointer
+	of a method refers to an object of at least size of its
+	base type.
+
+2025-09-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/107051
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Allow for
+	memory sharing the same base if they known not to overlap over
+	the size.
+
+2025-09-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/110812
+	* config/riscv/riscv-c.cc (pragma_intrinsic_flags): Remove struct.
+	(riscv_pragma_intrinsic_flags_pollute): Remove function.
+	(riscv_pragma_intrinsic_flags_restore): Remove function.
+	(riscv_pragma_intrinsic): Simplify to only call handle_pragma_vector.
+	* config/riscv/riscv-vector-builtins.cc (pragma_intrinsic_flags):
+	Move struct definition here from riscv-c.cc.
+	(riscv_pragma_intrinsic_flags_pollute): Move and adapt from
+	riscv-c.cc, add zvfbfmin, zvfhmin and vector_elen_bf_16 support.
+	(riscv_pragma_intrinsic_flags_restore): Move from riscv-c.cc.
+	(rvv_switcher::rvv_switcher): Add pollute_flags parameter to
+	control flag manipulation.
+	(rvv_switcher::~rvv_switcher): Restore flags conditionally.
+	(register_builtin_types): Use rvv_switcher without polluting flags.
+	(get_required_extensions): Remove function.
+	(check_required_extensions): Simplify to only check type validity.
+	(function_instance::function_returns_void_p): Move implementation
+	from header.
+	(function_builder::add_function): Register placeholder for LTO.
+	(init_builtins): Simplify and handle LTO case.
+	(reinit_builtins): Remove function.
+	(handle_pragma_vector): Remove extension checking.
+	* config/riscv/riscv-vector-builtins.h
+	(function_instance::function_returns_void_p): Add declaration.
+	(function_call_info::function_returns_void_p): Remove inline
+	implementation.
+
+2025-09-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_is_subset): Fix
+	inverted logic in extension subset check.
+
+2025-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117599
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Move
+	build_qualified_type calls into the if/else if/else bodies, for
+	the last one set ltype to m_limb_type first, drop limb_type_a
+	and use ltype instead.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61247
+	* tree-scalar-evolution.cc (simplify_peeled_chrec):
+	Handle the case of a converted peeled chrec.
+
+2025-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121740
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Allow skipping
+	may-defs from CTORs.  Do not skip may-defs with storage-order
+	issues or (partial) must-defs.
+
 2025-09-03  Kuan-Lin Chen  <rufus@andestech.com>
 
 	* config/riscv/andes.def: Add nds_fcvt_s_bf16 and nds_fcvt_bf16_s.
