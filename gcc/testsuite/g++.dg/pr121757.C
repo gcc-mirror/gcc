@@ -1,4 +1,5 @@
 // { dg-require-effective-target shared }
+// { dg-require-effective-target lto }
 // { dg-options "-O2 -flto -shared" }
 
 struct QAbstractFileEngine {
