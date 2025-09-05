@@ -255,6 +255,9 @@ the GCC 14 release series.
       <span class="emphasis"><em>20.7.2.0 [util.smartptr.weakptr]</em></span>
       <code class="code">what()</code> returns <code class="literal">"bad_weak_ptr"</code>.
    </p><p>
+      <span class="emphasis"><em>20.8.11.1 [func.wrap.badcall]</em></span>
+      <code class="code">what()</code> returns <code class="literal">"bad_function_call"</code>.
+   </p><p>
       <span class="emphasis"><em>20.8.9.1.3 [func.bind.place]/1</em></span> There are 29
       placeholders defined and the placeholder types are
       <code class="literal">CopyAssignable</code>.
@@ -1054,7 +1057,11 @@ since C++14 and the implementation is complete.
       <code class="literal">"std::visit: variant is valueless"</code>,
       or <code class="literal">"std::visit&lt;R&gt;: variant is valueless"</code>.
    </p><p>
-      <span class="emphasis"><em>23.12.5.2 [memory.resource.pool.options]</em></span>
+      <span class="emphasis"><em>23.8.2 [any.bad_any_cast]</em></span>
+      <code class="code">what()</code> returns <code class="literal">"bad any_cast"</code>.
+   </p><p>
+      <span class="emphasis"><em>23.12.5 [mem.res.pool.options]</em></span>,
+      <span class="emphasis"><em>23.12.5 [mem.res.pool.mem]</em></span>
       Let S equal <code class="code">numeric_limits&lt;size_t&gt;::digits</code>.
       The limit for maximum number of blocks in a chunk is given by
       <span class="mathphrase">2<sup>N</sup>-1</span>,
@@ -1065,7 +1072,7 @@ since C++14 and the implementation is complete.
       otherwise 3072 when <span class="mathphrase">S &gt; 16</span>,
       otherwise 768.
    </p><p>
-      <span class="emphasis"><em>23.12.6.1 [memory.resource.monotonic.buffer.ctor]</em></span>
+      <span class="emphasis"><em>23.12.6.1 [mem.res.monotonic.buffer.ctor]</em></span>
       The default <code class="code">next_buffer_size</code> is <code class="code">128 * sizeof(void*)</code>.
       The default growth factor is <code class="code">1.5</code>.
    </p><p>
@@ -1100,8 +1107,11 @@ since C++14 and the implementation is complete.
       races depends on the target C library that provides the function.
    </p><p>
       <span class="emphasis"><em>29.9.5 [sf.cmath]</em></span>
-      The effect of calling the mathematical special functions with large
-      inputs should be documented here.
+      Calling the mathematical special functions with large inputs is supported
+      but the results may be imprecise.
+   </p><p>
+      <span class="emphasis"><em>30.7.5.2.3 [ostream.inserters]</em></span>
+      NTCTS for <code class="code">nullptr_t</code> is <code class="literal">"nullptr"</code>.
    </p><p>
       <span class="emphasis"><em>30.10.2.1 [fs.conform.9945]</em></span>,
       <span class="emphasis"><em>30.10.2.2 [fs.conform.os]</em></span>

@@ -2918,7 +2918,13 @@ since C++14 and the implementation is complete.
    </para>
 
    <para>
-      <emphasis>23.12.5.2 [memory.resource.pool.options]</emphasis>
+      <emphasis>23.8.2 [any.bad_any_cast]</emphasis>
+      <code>what()</code> returns <literal>"bad any_cast"</literal>.
+   </para>
+
+   <para>
+      <emphasis>23.12.5 [mem.res.pool.options]</emphasis>,
+      <emphasis>23.12.5 [mem.res.pool.mem]</emphasis>
       Let S equal <code>numeric_limits&lt;size_t&gt;::digits</code>.
       The limit for maximum number of blocks in a chunk is given by
       <inlineequation><mathphrase>2<superscript>N</superscript>-1</mathphrase></inlineequation>,
@@ -2931,7 +2937,7 @@ since C++14 and the implementation is complete.
    </para>
 
    <para>
-      <emphasis>23.12.6.1 [memory.resource.monotonic.buffer.ctor]</emphasis>
+      <emphasis>23.12.6.1 [mem.res.monotonic.buffer.ctor]</emphasis>
       The default <code>next_buffer_size</code> is <code>128 * sizeof(void*)</code>.
       The default growth factor is <code>1.5</code>.
    </para>
@@ -2981,8 +2987,13 @@ since C++14 and the implementation is complete.
 
    <para>
       <emphasis>29.9.5 [sf.cmath]</emphasis>
-      The effect of calling the mathematical special functions with large
-      inputs should be documented here.
+      Calling the mathematical special functions with large inputs is supported
+      but the results may be imprecise.
+   </para>
+
+   <para>
+      <emphasis>30.7.5.2.3 [ostream.inserters]</emphasis>
+      NTCTS for <code>nullptr_t</code> is <literal>"nullptr"</literal>.
    </para>
 
    <para>
