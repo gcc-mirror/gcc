@@ -10210,7 +10210,7 @@ vectorizable_load (vec_info *vinfo,
       if (!costing_p)
 	{
 	  if (!diff_first_stmt_info)
-	    msq = vect_setup_realignment (vinfo, first_stmt_info, gsi,
+	    msq = vect_setup_realignment (vinfo, first_stmt_info, vectype, gsi,
 					  &realignment_token,
 					  alignment_support_scheme, NULL_TREE,
 					  &at_loop);
@@ -10813,8 +10813,8 @@ vectorizable_load (vec_info *vinfo,
 					 stmt_info, diff);
 	  if (alignment_support_scheme == dr_explicit_realign)
 	    {
-	      msq = vect_setup_realignment (vinfo,
-					    first_stmt_info_for_drptr, gsi,
+	      msq = vect_setup_realignment (vinfo, first_stmt_info_for_drptr,
+					    vectype, gsi,
 					    &realignment_token,
 					    alignment_support_scheme,
 					    dataref_ptr, &at_loop);
@@ -11167,8 +11167,8 @@ vectorizable_load (vec_info *vinfo,
 	    tree vs = size_int (TYPE_VECTOR_SUBPARTS (vectype));
 
 	    if (compute_in_loop)
-	      msq = vect_setup_realignment (vinfo, first_stmt_info, gsi,
-					    &realignment_token,
+	      msq = vect_setup_realignment (vinfo, first_stmt_info, vectype,
+					    gsi, &realignment_token,
 					    dr_explicit_realign,
 					    dataref_ptr, NULL);
 

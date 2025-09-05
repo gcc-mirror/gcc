@@ -2647,7 +2647,7 @@ extern bool vect_grouped_load_supported (tree, bool, unsigned HOST_WIDE_INT);
 extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT,
 					      bool, vec<int> * = nullptr);
 extern tree vect_setup_realignment (vec_info *,
-				    stmt_vec_info, gimple_stmt_iterator *,
+				    stmt_vec_info, tree, gimple_stmt_iterator *,
 				    tree *, enum dr_alignment_support, tree,
 	                            class loop **);
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
