@@ -5582,7 +5582,16 @@ c_decl_attributes (tree *node, tree attributes, int flags)
   tree last_decl = lookup_last_decl (*node);
   if (last_decl == error_mark_node)
     last_decl = NULL_TREE;
-  return decl_attributes (node, attributes, flags, last_decl);
+  tree attr = decl_attributes (node, attributes, flags, last_decl);
+  if (VAR_P (*node) && DECL_THREAD_LOCAL_P (*node))
+    {
+      // tls_model attribute can set a stronger TLS access model.
+      tls_model model = DECL_TLS_MODEL (*node);
+      tls_model default_model = decl_default_tls_model (*node);
+      if (default_model > model)
+	set_decl_tls_model (*node, default_model);
+    }
+  return attr;
 }
 
 
@@ -8181,8 +8190,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	    TREE_PUBLIC (decl) = extern_ref;
 	  }
 
+	// NB: Set a tentative TLS model to avoid tls_model attribute
+	// warnings due to lack of thread storage duration.  It will
+	// be updated by c_decl_attributes later.
 	if (threadp)
-	  set_decl_tls_model (decl, decl_default_tls_model (decl));
+	  set_decl_tls_model (decl, TLS_MODEL_REAL);
       }
 
     if ((storage_class == csc_extern
