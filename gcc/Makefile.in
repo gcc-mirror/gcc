@@ -1448,6 +1448,7 @@ OBJS = \
 	dce.o \
 	ddg.o \
 	debug.o \
+	dep-fusion.o \
 	df-core.o \
 	df-problems.o \
 	df-scan.o \

@@ -587,8 +587,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules
 -fcx-limited-range -fcx-method
 -fdata-sections  -fdce  -fdelayed-branch
--fdelete-null-pointer-checks  -fdevirtualize  -fdevirtualize-speculatively
--fdevirtualize-at-ltrans  -fdse
+-fdelete-null-pointer-checks  -fdep-fusion -fdevirtualize
+-fdevirtualize-speculatively  -fdevirtualize-at-ltrans  -fdse
 -fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects
 -ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style}
 -ffinite-loops
@@ -13108,7 +13108,7 @@ also turns on the following optimization flags:
 -fcode-hoisting
 -fcrossjumping
 -fcse-follow-jumps  -fcse-skip-blocks
--fdelete-null-pointer-checks
+-fdelete-null-pointer-checks -fdep-fusion
 -fdevirtualize  -fdevirtualize-speculatively
 -fexpensive-optimizations
 -ffinite-loops
@@ -16025,6 +16025,15 @@ Enabled by default with @option{-funroll-loops}.
 Performs a target dependent pass over the instruction stream to schedule
 instructions of same type together because target machine can execute them
 more efficiently if they are adjacent to each other in the instruction flow.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@opindex fdep-fusion
+@item -fdep-fusion
+Detect macro-op fusible pairs consisting of single-use instructions and their
+uses, and place such pairs together in the instruction stream to increase
+fusion opportunities in hardware.  This pass is executed once before register
+allocation, and another time before register renaming.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 

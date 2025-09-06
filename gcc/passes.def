@@ -516,6 +516,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_rtl_avoid_store_forwarding);
       NEXT_PASS (pass_early_remat);
+      NEXT_PASS (pass_dep_fusion);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);
       /* In the following, some passes are tied to 'pass_postreload' and others
@@ -537,6 +538,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_sched_fusion);
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
+	  NEXT_PASS (pass_dep_fusion);
 	  NEXT_PASS (pass_regrename);
 	  NEXT_PASS (pass_fold_mem_offsets);
 	  NEXT_PASS (pass_cprop_hardreg);
