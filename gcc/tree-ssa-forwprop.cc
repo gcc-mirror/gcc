@@ -1680,6 +1680,75 @@ simplify_builtin_memcmp (gimple_stmt_iterator *gsi_p, gcall *stmt)
   return false;
 }
 
+/* Optimizes builtin memchrs for small constant sizes with a const string.
+   GSI_P is the GSI for the call. STMT is the call itself.
+   */
+
+static bool
+simplify_builtin_memchr (gimple_stmt_iterator *gsi_p, gcall *stmt)
+{
+  if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+    return false;
+
+  if (gimple_call_num_args (stmt) != 3)
+    return false;
+
+  tree res = gimple_call_lhs (stmt);
+  if (!res || !use_in_zero_equality (res))
+    return false;
+
+  tree ptr = gimple_call_arg (stmt, 0);
+  if (TREE_CODE (ptr) != ADDR_EXPR
+      || TREE_CODE (TREE_OPERAND (ptr, 0)) != STRING_CST)
+    return false;
+
+  unsigned HOST_WIDE_INT slen
+    = TREE_STRING_LENGTH (TREE_OPERAND (ptr, 0));
+  /* It must be a non-empty string constant.  */
+  if (slen < 2)
+    return false;
+
+  /* For -Os, only simplify strings with a single character.  */
+  if (!optimize_bb_for_speed_p (gimple_bb (stmt))
+      && slen > 2)
+    return false;
+
+  tree size = gimple_call_arg (stmt, 2);
+  /* Size must be a constant which is <= UNITS_PER_WORD and
+     <= the string length.  */
+  if (!tree_fits_uhwi_p (size))
+    return false;
+
+  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+  if (sz == 0 || sz > UNITS_PER_WORD || sz >= slen)
+    return false;
+
+  tree ch = gimple_call_arg (stmt, 1);
+  location_t loc = gimple_location (stmt);
+  if (!useless_type_conversion_p (char_type_node,
+				  TREE_TYPE (ch)))
+    ch = fold_convert_loc (loc, char_type_node, ch);
+  const char *p = TREE_STRING_POINTER (TREE_OPERAND (ptr, 0));
+  unsigned int isize = sz;
+  tree *op = XALLOCAVEC (tree, isize);
+  for (unsigned int i = 0; i < isize; i++)
+    {
+      op[i] = build_int_cst (char_type_node, p[i]);
+      op[i] = fold_build2_loc (loc, EQ_EXPR, boolean_type_node,
+			       op[i], ch);
+    }
+  for (unsigned int i = isize - 1; i >= 1; i--)
+    op[i - 1] = fold_convert_loc (loc, boolean_type_node,
+				  fold_build2_loc (loc,
+						   BIT_IOR_EXPR,
+						   boolean_type_node,
+						   op[i - 1],
+						   op[i]));
+  res = fold_convert_loc (loc, TREE_TYPE (res), op[0]);
+  gimplify_and_update_call_from_tree (gsi_p, res);
+  return true;
+}
+
 /* *GSI_P is a GIMPLE_CALL to a builtin function.
    Optimize
    memcpy (p, "abcd", 4);
@@ -1713,72 +1782,13 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
     return false;
   stmt1 = SSA_NAME_DEF_STMT (vuse);
 
-  tree res;
-
   switch (DECL_FUNCTION_CODE (callee2))
     {
     case BUILT_IN_MEMCMP:
     case BUILT_IN_MEMCMP_EQ:
       return simplify_builtin_memcmp (gsi_p, as_a<gcall*>(stmt2));
     case BUILT_IN_MEMCHR:
-      if (gimple_call_num_args (stmt2) == 3
-	  && (res = gimple_call_lhs (stmt2)) != nullptr
-	  && use_in_zero_equality (res) != nullptr
-	  && CHAR_BIT == 8
-	  && BITS_PER_UNIT == 8)
-	{
-	  tree ptr = gimple_call_arg (stmt2, 0);
-	  if (TREE_CODE (ptr) != ADDR_EXPR
-	      || TREE_CODE (TREE_OPERAND (ptr, 0)) != STRING_CST)
-	    break;
-	  unsigned HOST_WIDE_INT slen
-	    = TREE_STRING_LENGTH (TREE_OPERAND (ptr, 0));
-	  /* It must be a non-empty string constant.  */
-	  if (slen < 2)
-	    break;
-	  /* For -Os, only simplify strings with a single character.  */
-	  if (!optimize_bb_for_speed_p (gimple_bb (stmt2))
-	      && slen > 2)
-	    break;
-	  tree size = gimple_call_arg (stmt2, 2);
-	  /* Size must be a constant which is <= UNITS_PER_WORD and
-	     <= the string length.  */
-	  if (TREE_CODE (size) != INTEGER_CST)
-	    break;
-
-	  if (!tree_fits_uhwi_p (size))
-	    break;
-
-	  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
-	  if (sz == 0 || sz > UNITS_PER_WORD || sz >= slen)
-	    break;
-
-	  tree ch = gimple_call_arg (stmt2, 1);
-	  location_t loc = gimple_location (stmt2);
-	  if (!useless_type_conversion_p (char_type_node,
-					  TREE_TYPE (ch)))
-	    ch = fold_convert_loc (loc, char_type_node, ch);
-	  const char *p = TREE_STRING_POINTER (TREE_OPERAND (ptr, 0));
-	  unsigned int isize = sz;
-	  tree *op = XALLOCAVEC (tree, isize);
-	  for (unsigned int i = 0; i < isize; i++)
-	    {
-	      op[i] = build_int_cst (char_type_node, p[i]);
-	      op[i] = fold_build2_loc (loc, EQ_EXPR, boolean_type_node,
-				       op[i], ch);
-	    }
-	  for (unsigned int i = isize - 1; i >= 1; i--)
-	    op[i - 1] = fold_convert_loc (loc, boolean_type_node,
-					  fold_build2_loc (loc,
-							   BIT_IOR_EXPR,
-							   boolean_type_node,
-							   op[i - 1],
-							   op[i]));
-	  res = fold_convert_loc (loc, TREE_TYPE (res), op[0]);
-	  gimplify_and_update_call_from_tree (gsi_p, res);
-	  return true;
-	}
-      break;
+      return simplify_builtin_memchr (gsi_p, as_a<gcall*>(stmt2));
 
     case BUILT_IN_MEMSET:
       if (gimple_call_num_args (stmt2) == 3)
