@@ -121,7 +121,7 @@ test_deduction_from_constant()
   verify(std::extents(1, c2), std::extents<size_t, dyn, 2>{1});
   verify(std::extents(c2), std::extents<size_t, 2>{});
   verify(std::extents(1, c2), std::extents<size_t, dyn, 2>{1});
-  verify(std::extents(std::cw<true>, c2), std::extents<size_t, 1, 2>{});
+  verify(std::extents(std::cw<true>, c2), std::extents<size_t, dyn, 2>{1});
 #endif
   return true;
 }

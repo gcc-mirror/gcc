@@ -99,6 +99,6 @@ test01()
   static_assert( is_static_span<long, 4>(s17) );
 
   std::span s18(a.data(), std::cw<true>);
-  static_assert( is_static_span<long, 1>(s18) );
+  static_assert( is_dynamic_span<long>(s18) );
 #endif
 }

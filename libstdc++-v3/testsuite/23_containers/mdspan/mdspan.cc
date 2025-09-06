@@ -304,8 +304,7 @@ test_from_pointer_and_constant()
   auto c3 = std::constant_wrapper<3>{};
   verify(std::mdspan(ptr, 2, c3), std::extents(2, i3));
   verify(std::mdspan(ptr, 2, std::cw<3>), std::extents(2, i3));
-  verify(std::mdspan(ptr, std::cw<true>, std::cw<3>),
-	 std::extents(std::cw<1>, i3));
+  verify(std::mdspan(ptr, std::cw<true>, std::cw<3>), std::extents(1, i3));
 #endif
   return true;
 }
