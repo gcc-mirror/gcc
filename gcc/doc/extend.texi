@@ -5904,8 +5904,7 @@ accordingly to point to the start of the vector table before any functions with
 this attribute are invoked.  Usually a good place to do the initialization is
 the startup routine.  The TBR relative vector table can have at max 256 function
 entries.  The jumps to these functions are generated using a SH2A specific,
-non delayed branch instruction JSR/N @@(disp8,TBR).  You must use GAS and GLD
-from GNU binutils version 2.7 or later for this attribute to work correctly.
+non delayed branch instruction JSR/N @@(disp8,TBR).
 
 In an application, for a function being called once, this attribute
 saves at least 8 bytes of code; and if other successive calls are being
@@ -7924,9 +7923,6 @@ variable should be placed into the eight-bit data section.
 The compiler generates more efficient code for certain operations
 on data in the eight-bit data area.  Note the eight-bit data area is limited to
 256 bytes of data.
-
-You must use GAS and GLD from GNU binutils version 2.7 or later for
-this attribute to work correctly.
 
 @cindex @code{tiny_data} variable attribute, H8/300
 @cindex tiny data section on the H8/300H and H8S
