@@ -1,3 +1,23 @@
+2025-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/121804
+	* include/std/ranges (join_view::_Iterator::_M_get_inner):
+	Mark noexcept.
+	* testsuite/std/ranges/adaptors/join.cc (test16): New test.
+
+2025-09-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx2011.xml: Add entry for bad_function_call.
+	* doc/xml/manual/status_cxx2017.xml: Add entries for bad_any_cast
+	and nullptr_t output. Update entry for sf.cmath. Fix stable name for
+	mem.res.
+
+2025-09-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate the file.
+	* doc/xml/manual/status_cxx2017.xml: Addd more entires.
+
 2025-09-04  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (join_view::_Iterator::_M_satisfy):

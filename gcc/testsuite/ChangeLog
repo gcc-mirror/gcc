@@ -1,3 +1,75 @@
+2025-09-05  Sam James  <sam@gentoo.org>
+
+	PR rtl-optimization/121757
+	* g++.dg/pr121757.C: Add dg-require-effective-target for lto.
+
+2025-09-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121510
+	* gcc.target/riscv/rvv/autovec/pr121510.c: New test.
+
+2025-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/121757
+	* g++.dg/pr121757.C: New test.
+
+2025-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/121695
+	PR testsuite/52641
+	* gcc.dg/torture/pr121695-1.c: int -> int32_t etc.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/fixed-point/bitint-1.c: Expect also error about _Sat used
+	without _Fract/_Accum.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/118567
+	* gcc.target/powerpc/vsx-vectorize-9.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-10.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-11.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-12.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-13.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-14.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-15.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-16.c: New test.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/118567
+	* gcc.target/powerpc/vsx-vectorize-1.c: Remove includes, checking
+	part of main1 and main.
+	* gcc.target/powerpc/vsx-vectorize-2.c: Remove includes, replace
+	bar definition with declaration, remove main.
+	* gcc.target/powerpc/vsx-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-5.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-6.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-7.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-8.c: Likewise.
+
+2025-09-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/usminmax_di.c: New test.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84432
+	PR fortran/114815
+	* gfortran.dg/pdt_26.f03: Update with default no initializer.
+	* gfortran.dg/pdt_27.f03: Change to test non-conforming
+	initializers.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83762
+	PR fortran/102457
+	* gfortran.dg/pdt_44.f03: New test.
+	* gfortran.dg/pr95090.f90: Give the PDT parameter a value to
+	suppress the type error.
+
 2025-09-04  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check

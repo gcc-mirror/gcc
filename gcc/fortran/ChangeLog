@@ -1,3 +1,22 @@
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84432
+	PR fortran/114815
+	* expr.cc (gfc_check_assign_symbol): Check that components in a
+	PDT with a default initializer have type and length parameters
+	that reduce to constant integer expressions.
+	* trans-expr.cc (gfc_trans_assignment_1): Parameterized
+	components cannot have default initializers so they must be
+	allocated after initialization.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83762
+	PR fortran/102457
+	* decl.cc (gfc_get_pdt_instance): Check that variable PDT parm
+	expressions are of type integer. Note that the symbol must be
+	tested since the expression often appears as BT_PROCEDURE.
+
 2025-09-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121263

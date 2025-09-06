@@ -1,3 +1,62 @@
+2025-09-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR middle-end/121806
+	* gcc.cc (for_each_path): Initialize return value.
+
+2025-09-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121510
+	* config/riscv/riscv.cc (riscv_legitimize_move): Check if we can
+	vec_extract.
+
+2025-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/121757
+	* rtl-ssa/accesses.h (clobber_group::lookup_clobber): New member
+	function.
+	* rtl-ssa/accesses.cc (clobber_group::lookup_clobber): Likewise.
+	(clobber_group::prev_clobber, clobber_group::next_clobber)
+	(function_info::add_clobber): Use it.
+
+2025-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121794
+	* config/avr/avr.cc (avr_out_compare): Only use zero_reg
+	when there is no other sequence of the same length.
+	(avr_out_plus_ext): Same.
+	(avr_out_plus_1): Same.
+
+2025-09-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vectorizable_bb_reduc_epilogue): Do not
+	cost zero remaining scalar stmts.
+	(vectorizable_slp_permutation): Do not cost zero actual
+	permutations.
+	* tree-vect-stmts.cc (vectorizable_load): Likewise.
+
+2025-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121802
+	* tree-vectorizer.h (vect_setup_realignment): Add vectype
+	argument.
+	* tree-vect-data-refs.cc (vect_setup_realignment): Replace
+	local vectype with argument.
+	* tree-vect-stmts.cc (vectorizable_load): Adjust.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* J: Remove.
+
+2025-09-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (sve_di_suf): New mode attribute.
+	* config/aarch64/aarch64-sve.md (<optab><mode>3 SVE_INT_BINARY_MULTI):
+	Rename to...
+	(<optab><mode>3<sve_di_suf>): ... This.  Use SVE_I_SIMD_DI mode
+	iterator.
+	* config/aarch64/aarch64-simd.md (<su><maxmin>v2di3): Use the above
+	for TARGET_SVE.
+
 2025-09-04  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec-opt.md (*vmacc_vx_<mode>): Rename to

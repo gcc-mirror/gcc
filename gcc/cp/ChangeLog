@@ -1,3 +1,8 @@
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_cxa_builtin_fn): Add missing word separating
+	space into invalid_nargs diagnostics.
+
 2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/117658

@@ -1,3 +1,24 @@
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (pushtag): Remove ()s around string literal
+	in call to diagnostic function.
+	(diagnose_mismatched_decls): Likewise.
+	(c_check_switch_jump_warnings): Likewise.
+	(grokdeclarator): Likewise.
+	(warn_cxx_compat_finish_struct): Likewise.
+	(build_enumerator): Formatting fix.
+	(declspecs_add_type): Remove ()s around string literal
+	in call to diagnostic function, simplify
+	"both %<something%> and %<something%>" starting format
+	strings to "both %qs and %qs" with appropriate arguments.
+	Formatting fixes.
+	* c-typeck.cc (build_external_ref): Remove ()s around string
+	literal in call to diagnostic function.
+	(build_conditional_expr): Likewise.
+	* c-parser.cc (c_parser_transaction): Use G_() around string
+	literals.  Formatting fix.
+	(c_parser_transaction_expression): Likewise.
+
 2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118839
