@@ -16,5 +16,5 @@ program p
    allocate (t2(3) :: x)            ! Used to segfault in trans-array.c.
    if (x%b .ne. 3) STOP 1
    if (x%b .ne. size (x%r, 1)) STOP 2
-   if (any (x%r%a .ne. 1)) STOP 3
+   if (x%r%a .ne. 1) STOP 3
 end
