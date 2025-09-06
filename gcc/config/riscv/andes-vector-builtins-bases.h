@@ -27,6 +27,8 @@ namespace bases {
 extern const function_base *const nds_vfwcvt_s;
 extern const function_base *const nds_vfncvt_bf16;
 extern const function_base *const nds_vfncvt_bf16_frm;
+extern const function_base *const nds_vln8;
+extern const function_base *const nds_vlnu8;
 }
 
 } // end namespace riscv_vector

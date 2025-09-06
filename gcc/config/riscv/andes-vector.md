@@ -20,6 +20,7 @@
 (define_c_enum "unspec" [
   UNSPEC_NDS_VFWCVTBF16
   UNSPEC_NDS_VFNCVTBF16
+  UNSPEC_NDS_INTLOAD
 ])
 
 ;;  ....................
@@ -76,3 +77,29 @@
    (set (attr "avl_type_idx") (const_int 5))
    (set (attr "ma") (const_int INVALID_ATTRIBUTE))
    (set_attr "mode" "<NDS_V_DOUBLE_TRUNC_BF>")])
+
+;; Vector INT4 Load Extension.
+
+(define_insn "@pred_intload_mov<su><mode>"
+  [(set (match_operand:NDS_QVI 0 "nonimmediate_operand"       "=vr,  vr, vd")
+    (if_then_else:NDS_QVI
+      (unspec:<VM>
+	[(match_operand:<VM> 1 "vector_mask_operand"        "vmWc1, Wc1, vm")
+	 (match_operand 4 "vector_length_operand"           "   rK,  rK, rK")
+	 (match_operand 5 "const_int_operand"               "    i,   i,  i")
+	 (match_operand 6 "const_int_operand"               "    i,   i,  i")
+	 (match_operand 7 "const_int_operand"               "    i,   i,  i")
+	 (reg:SI VL_REGNUM)
+	 (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (unspec:NDS_QVI
+	[(any_extend:NDS_QVI (match_operand:VOID 3 "memory_operand" "m,  m,  m"))]
+	  UNSPEC_NDS_INTLOAD)
+      (match_operand:NDS_QVI 2 "vector_merge_operand"               "0, vu, vu")))]
+  "(TARGET_VECTOR && TARGET_XANDESVSINTLOAD
+    && register_operand (operands[0], <MODE>mode))"
+  "@
+   nds.vln<u>8.v\t%0,%3%p1
+   nds.vln<u>8.v\t%0,%3
+   nds.vln<u>8.v\t%0,%3,%1.t"
+  [(set_attr "type" "vlde,vlde,vlde")
+   (set_attr "mode" "<MODE>")])

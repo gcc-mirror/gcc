@@ -43,4 +43,9 @@ DEF_RVV_FUNCTION (nds_vfncvt_bf16, narrow_alu, none_tu_preds, f32_to_bf16_nf_w_o
 DEF_RVV_FUNCTION (nds_vfncvt_bf16_frm, narrow_alu_frm, none_tu_preds, f32_to_bf16_nf_w_ops)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS XANDESVSINTLOAD_EXT
+DEF_RVV_FUNCTION (nds_vln8, alu, full_preds, q_v_void_const_ptr_ops)
+DEF_RVV_FUNCTION (nds_vlnu8, alu, full_preds, qu_v_void_const_ptr_ops)
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_RVV_FUNCTION

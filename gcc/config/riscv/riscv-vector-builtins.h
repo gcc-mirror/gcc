@@ -132,6 +132,7 @@ enum required_ext
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
   XSFVCP_EXT, /* XSFVCP extension*/
   XANDESVBFHCVT_EXT,    /* XANDESVBFHCVT extension */
+  XANDESVSINTLOAD_EXT,  /* XANDESVSINTLOAD extension */
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
@@ -175,6 +176,8 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "xsfvcp";
     case XANDESVBFHCVT_EXT:
       return "xandesvbfhcvt";
+    case XANDESVSINTLOAD_EXT:
+      return "xandesvsintload";
     default:
       gcc_unreachable ();
   }
@@ -222,6 +225,8 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_XSFVCP;
     case XANDESVBFHCVT_EXT:
       return TARGET_XANDESVBFHCVT;
+    case XANDESVSINTLOAD_EXT:
+      return TARGET_XANDESVSINTLOAD;
     default:
       gcc_unreachable ();
   }

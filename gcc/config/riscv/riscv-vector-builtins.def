@@ -758,6 +758,7 @@ DEF_RVV_BASE_TYPE (size_ptr, build_pointer_type (size_type_node))
 DEF_RVV_BASE_TYPE (tuple_subpart, get_tuple_subpart_type (type_idx))
 DEF_RVV_BASE_TYPE (xfqf_float, get_xfqf_float_type (type_idx))
 DEF_RVV_BASE_TYPE (scalar_float, get_scalar_float_type (type_idx))
+DEF_RVV_BASE_TYPE (void_const_ptr, const_ptr_type_node)
 
 DEF_RVV_VXRM_ENUM (RNU, VXRM_RNU)
 DEF_RVV_VXRM_ENUM (RNE, VXRM_RNE)

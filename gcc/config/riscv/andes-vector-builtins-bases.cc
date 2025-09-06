@@ -81,9 +81,36 @@ public:
   }
 };
 
+/* Implements Andes vln8.v/vln8.v.  */
+template <bool SIGN>
+class nds_nibbleload : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (SIGN)
+      return e.use_contiguous_load_insn (
+	code_for_pred_intload_mov (SIGN_EXTEND, e.vector_mode ()));
+    return e.use_contiguous_load_insn (
+      code_for_pred_intload_mov (ZERO_EXTEND, e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const nds_vfwcvtbf16_f nds_vfwcvt_s_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<NO_FRM> nds_vfncvt_bf16_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<HAS_FRM> nds_vfncvt_bf16_frm_obj;
+static CONSTEXPR const nds_nibbleload<true> nds_vln8_obj;
+static CONSTEXPR const nds_nibbleload<false> nds_vlnu8_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -93,5 +120,6 @@ static CONSTEXPR const nds_vfncvtbf16_f<HAS_FRM> nds_vfncvt_bf16_frm_obj;
 BASE (nds_vfwcvt_s)
 BASE (nds_vfncvt_bf16)
 BASE (nds_vfncvt_bf16_frm)
-
+BASE (nds_vln8)
+BASE (nds_vlnu8)
 } // end namespace riscv_vector
