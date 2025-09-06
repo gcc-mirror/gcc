@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The inline plan is applied on given function body by inline_transform.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
