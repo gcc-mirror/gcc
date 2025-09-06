@@ -577,6 +577,7 @@ piecewise_construct, "<utility>", cxx11
 piecewise_construct_t, "<utility>", cxx11
 to_underlying, "<utility>", cxx23
 unreachable, "<utility>", cxx23
+observable_checkpoint, "<utility>", cxx26
 # <variant>
 bad_variant_access, "<variant>", cxx17
 holds_alternative, "<variant>", cxx17

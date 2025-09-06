@@ -8427,6 +8427,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       expand_builtin_unreachable ();
       return const0_rtx;
 
+    case BUILT_IN_OBSERVABLE_CHKPT:
+      /* Generate no code.  */
+      return const0_rtx;
+
     CASE_FLT_FN (BUILT_IN_SIGNBIT):
     case BUILT_IN_SIGNBITD32:
     case BUILT_IN_SIGNBITD64:

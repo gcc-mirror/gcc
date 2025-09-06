@@ -952,6 +952,7 @@
 <utility>,in_range,1,cxx20
 <utility>,to_underlying,1,cxx23
 <utility>,unreachable,1,cxx23
+<utility>,observable_checkpoint,1,cxx26
 <utility>,integer_sequence,1,cxx14
 <utility>,index_sequence,1,cxx14
 <utility>,make_integer_sequence,1,cxx14
