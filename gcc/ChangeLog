@@ -1,3 +1,14 @@
+2025-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121794
+	* config/avr/avr.cc (avr_out_compare): Only use zero_reg
+	when there is no other sequence of the same length.
+	(avr_out_plus_ext): Same.
+	(avr_out_plus_1): Same.
+
 2025-09-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
