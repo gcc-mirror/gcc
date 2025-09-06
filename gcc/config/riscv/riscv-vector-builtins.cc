@@ -52,6 +52,7 @@
 #include "riscv-vector-builtins-shapes.h"
 #include "riscv-vector-builtins-bases.h"
 #include "sifive-vector-builtins-bases.h"
+#include "andes-vector-builtins-bases.h"
 
 using namespace riscv_vector;
 
@@ -3080,6 +3081,22 @@ static CONSTEXPR const rvv_op_info all_v_scalar_ptr_index_ops
      rvv_arg_type_info (RVV_BASE_void), /* Return type  */
      scalar_ptr_index_args /* Args */};
 
+/* A static operand information for vector_type func (vector_type)
+ * function registration.  */
+static CONSTEXPR const rvv_op_info f32_to_bf16_nf_w_ops
+  = {f32_ops,						      /* Types */
+     OP_TYPE_s,						      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_bfloat_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration.  */
+static CONSTEXPR const rvv_op_info bf16_to_f32_wf_v_ops
+  = {f32_ops,				  /* Types */
+     OP_TYPE_bf16,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     bf_w_v_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type).
    Some insns just supports SEW=32, such as the crypto vector Zvkg extension.
  * function registration.  */
@@ -3449,6 +3466,10 @@ static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
   {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
 #include "sifive-vector-builtins-functions.def"
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
+#include "andes-vector-builtins-functions.def"
+
 };
 
 /* The RVV types, with their built-in

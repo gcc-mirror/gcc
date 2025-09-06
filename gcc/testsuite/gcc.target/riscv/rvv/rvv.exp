@@ -43,6 +43,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xsfvector/*.\[cS\]]] \
 	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.\[cS\]]] \
 	"" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xandesvector/*.\[cS\]]] \
+	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
@@ -147,6 +149,16 @@ set AUTOVEC_TEST_OPTS [list \
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vx_vf/*.\[cS\]]] \
     "$op" ""
+}
+
+set POLICY [list {policy} {non-policy} ]
+set OVERLOAD [list {overloaded} {non-overloaded} ]
+foreach po $POLICY {
+  foreach ov $OVERLOAD {
+    # For Andes Vector feature tests
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xandesvector/$po/$ov/*.\[cS\]]] \
+      "" $CFLAGS
+  }
 }
 
 # All done.
