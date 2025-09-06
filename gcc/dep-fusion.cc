@@ -75,6 +75,10 @@ pass_dep_fusion::gate (function *)
 unsigned int
 pass_dep_fusion::execute (function *fn)
 {
+  // If the target has no macro fusion, there is nothing to be done.
+  if (!targetm.sched.macro_fusion_pair_p)
+    return 0;
+
   // Initialization.
   calculate_dominance_info (CDI_DOMINATORS);
   df_analyze ();
