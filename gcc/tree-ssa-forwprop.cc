@@ -1751,6 +1751,216 @@ simplify_builtin_memchr (gimple_stmt_iterator *gsi_p, gcall *stmt)
 
 /* *GSI_P is a GIMPLE_CALL to a builtin function.
    Optimize
+   memcpy (p, "abcd", 4); // STMT1
+   memset (p + 4, ' ', 3); // STMT2
+   into
+   memcpy (p, "abcd   ", 7);
+   call if the latter can be stored by pieces during expansion.
+*/
+
+static bool
+simplify_builtin_memcpy_memset (gimple_stmt_iterator *gsi_p, gcall *stmt2)
+{
+  if (gimple_call_num_args (stmt2) != 3
+      || gimple_call_lhs (stmt2)
+      || CHAR_BIT != 8
+      || BITS_PER_UNIT != 8)
+    return false;
+
+  tree vuse = gimple_vuse (stmt2);
+  if (vuse == NULL)
+    return false;
+  gimple *stmt1 = SSA_NAME_DEF_STMT (vuse);
+
+  tree callee1;
+  tree ptr1, src1, str1, off1, len1, lhs1;
+  tree ptr2 = gimple_call_arg (stmt2, 0);
+  tree val2 = gimple_call_arg (stmt2, 1);
+  tree len2 = gimple_call_arg (stmt2, 2);
+  tree diff, vdef, new_str_cst;
+  gimple *use_stmt;
+  unsigned int ptr1_align;
+  unsigned HOST_WIDE_INT src_len;
+  char *src_buf;
+  use_operand_p use_p;
+
+  if (!tree_fits_shwi_p (val2)
+      || !tree_fits_uhwi_p (len2)
+      || compare_tree_int (len2, 1024) == 1)
+    return false;
+
+  if (is_gimple_call (stmt1))
+    {
+      /* If first stmt is a call, it needs to be memcpy
+	 or mempcpy, with string literal as second argument and
+	 constant length.  */
+      callee1 = gimple_call_fndecl (stmt1);
+      if (callee1 == NULL_TREE
+	  || !fndecl_built_in_p (callee1, BUILT_IN_NORMAL)
+	  || gimple_call_num_args (stmt1) != 3)
+	return false;
+      if (DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMCPY
+	  && DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMPCPY)
+	return false;
+      ptr1 = gimple_call_arg (stmt1, 0);
+      src1 = gimple_call_arg (stmt1, 1);
+      len1 = gimple_call_arg (stmt1, 2);
+      lhs1 = gimple_call_lhs (stmt1);
+      if (!tree_fits_uhwi_p (len1))
+	return false;
+      str1 = string_constant (src1, &off1, NULL, NULL);
+      if (str1 == NULL_TREE)
+	return false;
+      if (!tree_fits_uhwi_p (off1)
+	  || compare_tree_int (off1, TREE_STRING_LENGTH (str1) - 1) > 0
+	  || compare_tree_int (len1, TREE_STRING_LENGTH (str1)
+				     - tree_to_uhwi (off1)) > 0
+	  || TREE_CODE (TREE_TYPE (str1)) != ARRAY_TYPE
+	  || TYPE_MODE (TREE_TYPE (TREE_TYPE (str1)))
+	     != TYPE_MODE (char_type_node))
+	return false;
+    }
+  else if (gimple_assign_single_p (stmt1))
+    {
+      /* Otherwise look for length 1 memcpy optimized into
+	 assignment.  */
+      ptr1 = gimple_assign_lhs (stmt1);
+      src1 = gimple_assign_rhs1 (stmt1);
+      if (TREE_CODE (ptr1) != MEM_REF
+	  || TYPE_MODE (TREE_TYPE (ptr1)) != TYPE_MODE (char_type_node)
+	  || !tree_fits_shwi_p (src1))
+	return false;
+      ptr1 = build_fold_addr_expr (ptr1);
+      STRIP_USELESS_TYPE_CONVERSION (ptr1);
+      callee1 = NULL_TREE;
+      len1 = size_one_node;
+      lhs1 = NULL_TREE;
+      off1 = size_zero_node;
+      str1 = NULL_TREE;
+    }
+  else
+    return false;
+
+  diff = constant_pointer_difference (ptr1, ptr2);
+  if (diff == NULL && lhs1 != NULL)
+    {
+      diff = constant_pointer_difference (lhs1, ptr2);
+      if (DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY
+	  && diff != NULL)
+	diff = size_binop (PLUS_EXPR, diff,
+			   fold_convert (sizetype, len1));
+    }
+  /* If the difference between the second and first destination pointer
+     is not constant, or is bigger than memcpy length, bail out.  */
+  if (diff == NULL
+      || !tree_fits_uhwi_p (diff)
+      || tree_int_cst_lt (len1, diff)
+      || compare_tree_int (diff, 1024) == 1)
+    return false;
+
+  /* Use maximum of difference plus memset length and memcpy length
+     as the new memcpy length, if it is too big, bail out.  */
+  src_len = tree_to_uhwi (diff);
+  src_len += tree_to_uhwi (len2);
+  if (src_len < tree_to_uhwi (len1))
+    src_len = tree_to_uhwi (len1);
+  if (src_len > 1024)
+    return false;
+
+  /* If mempcpy value is used elsewhere, bail out, as mempcpy
+     with bigger length will return different result.  */
+  if (lhs1 != NULL_TREE
+      && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY
+      && (TREE_CODE (lhs1) != SSA_NAME
+	  || !single_imm_use (lhs1, &use_p, &use_stmt)
+	  || use_stmt != stmt2))
+    return false;
+
+  /* If anything reads memory in between memcpy and memset
+     call, the modified memcpy call might change it.  */
+  vdef = gimple_vdef (stmt1);
+  if (vdef != NULL
+      && (!single_imm_use (vdef, &use_p, &use_stmt)
+	  || use_stmt != stmt2))
+    return false;
+
+  ptr1_align = get_pointer_alignment (ptr1);
+  /* Construct the new source string literal.  */
+  src_buf = XALLOCAVEC (char, src_len + 1);
+  if (callee1)
+    memcpy (src_buf,
+	    TREE_STRING_POINTER (str1) + tree_to_uhwi (off1),
+	    tree_to_uhwi (len1));
+  else
+    src_buf[0] = tree_to_shwi (src1);
+  memset (src_buf + tree_to_uhwi (diff),
+	  tree_to_shwi (val2), tree_to_uhwi (len2));
+  src_buf[src_len] = '\0';
+  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
+     handle embedded '\0's.  */
+  if (strlen (src_buf) != src_len)
+    return false;
+  rtl_profile_for_bb (gimple_bb (stmt2));
+  /* If the new memcpy wouldn't be emitted by storing the literal
+     by pieces, this optimization might enlarge .rodata too much,
+     as commonly used string literals couldn't be shared any
+     longer.  */
+  if (!can_store_by_pieces (src_len,
+			    builtin_strncpy_read_str,
+			    src_buf, ptr1_align, false))
+    return false;
+
+  new_str_cst = build_string_literal (src_len, src_buf);
+  if (callee1)
+    {
+      /* If STMT1 is a mem{,p}cpy call, adjust it and remove
+	 memset call.  */
+      if (lhs1 && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY)
+	gimple_call_set_lhs (stmt1, NULL_TREE);
+      gimple_call_set_arg (stmt1, 1, new_str_cst);
+      gimple_call_set_arg (stmt1, 2,
+			   build_int_cst (TREE_TYPE (len1), src_len));
+      update_stmt (stmt1);
+      unlink_stmt_vdef (stmt2);
+      gsi_replace (gsi_p, gimple_build_nop (), false);
+      fwprop_invalidate_lattice (gimple_get_lhs (stmt2));
+      release_defs (stmt2);
+      if (lhs1 && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY)
+	{
+	  fwprop_invalidate_lattice (lhs1);
+	  release_ssa_name (lhs1);
+	}
+      return true;
+    }
+  else
+    {
+      /* Otherwise, if STMT1 is length 1 memcpy optimized into
+	 assignment, remove STMT1 and change memset call into
+	 memcpy call.  */
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt1);
+
+      if (!is_gimple_val (ptr1))
+	ptr1 = force_gimple_operand_gsi (gsi_p, ptr1, true, NULL_TREE,
+					 true, GSI_SAME_STMT);
+      tree fndecl = builtin_decl_explicit (BUILT_IN_MEMCPY);
+      gimple_call_set_fndecl (stmt2, fndecl);
+      gimple_call_set_fntype (stmt2,
+			      TREE_TYPE (fndecl));
+      gimple_call_set_arg (stmt2, 0, ptr1);
+      gimple_call_set_arg (stmt2, 1, new_str_cst);
+      gimple_call_set_arg (stmt2, 2,
+			   build_int_cst (TREE_TYPE (len2), src_len));
+      unlink_stmt_vdef (stmt1);
+      gsi_remove (&gsi, true);
+      fwprop_invalidate_lattice (gimple_get_lhs (stmt1));
+      release_defs (stmt1);
+      update_stmt (stmt2);
+      return false;
+    }
+}
+
+/* *GSI_P is a GIMPLE_CALL to a builtin function.
+   Optimize
    memcpy (p, "abcd", 4);
    memset (p + 4, ' ', 3);
    into
@@ -1774,13 +1984,9 @@ simplify_builtin_memchr (gimple_stmt_iterator *gsi_p, gcall *stmt)
 static bool
 simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk)
 {
-  gimple *stmt1, *stmt2 = gsi_stmt (*gsi_p);
+  gimple *stmt2 = gsi_stmt (*gsi_p);
   enum built_in_function other_atomic = END_BUILTINS;
   enum tree_code atomic_op = ERROR_MARK;
-  tree vuse = gimple_vuse (stmt2);
-  if (vuse == NULL)
-    return false;
-  stmt1 = SSA_NAME_DEF_STMT (vuse);
 
   switch (DECL_FUNCTION_CODE (callee2))
     {
@@ -1798,199 +2004,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 	  if (optimize_aggr_zeroprop (gsi_p, full_walk))
 	    return true;
 	}
-      if (gimple_call_num_args (stmt2) != 3
-	  || gimple_call_lhs (stmt2)
-	  || CHAR_BIT != 8
-	  || BITS_PER_UNIT != 8)
-	break;
-      else
-	{
-	  tree callee1;
-	  tree ptr1, src1, str1, off1, len1, lhs1;
-	  tree ptr2 = gimple_call_arg (stmt2, 0);
-	  tree val2 = gimple_call_arg (stmt2, 1);
-	  tree len2 = gimple_call_arg (stmt2, 2);
-	  tree diff, vdef, new_str_cst;
-	  gimple *use_stmt;
-	  unsigned int ptr1_align;
-	  unsigned HOST_WIDE_INT src_len;
-	  char *src_buf;
-	  use_operand_p use_p;
-
-	  if (!tree_fits_shwi_p (val2)
-	      || !tree_fits_uhwi_p (len2)
-	      || compare_tree_int (len2, 1024) == 1)
-	    break;
-	  if (is_gimple_call (stmt1))
-	    {
-	      /* If first stmt is a call, it needs to be memcpy
-		 or mempcpy, with string literal as second argument and
-		 constant length.  */
-	      callee1 = gimple_call_fndecl (stmt1);
-	      if (callee1 == NULL_TREE
-		  || !fndecl_built_in_p (callee1, BUILT_IN_NORMAL)
-		  || gimple_call_num_args (stmt1) != 3)
-		break;
-	      if (DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMCPY
-		  && DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMPCPY)
-		break;
-	      ptr1 = gimple_call_arg (stmt1, 0);
-	      src1 = gimple_call_arg (stmt1, 1);
-	      len1 = gimple_call_arg (stmt1, 2);
-	      lhs1 = gimple_call_lhs (stmt1);
-	      if (!tree_fits_uhwi_p (len1))
-		break;
-	      str1 = string_constant (src1, &off1, NULL, NULL);
-	      if (str1 == NULL_TREE)
-		break;
-	      if (!tree_fits_uhwi_p (off1)
-		  || compare_tree_int (off1, TREE_STRING_LENGTH (str1) - 1) > 0
-		  || compare_tree_int (len1, TREE_STRING_LENGTH (str1)
-					     - tree_to_uhwi (off1)) > 0
-		  || TREE_CODE (TREE_TYPE (str1)) != ARRAY_TYPE
-		  || TYPE_MODE (TREE_TYPE (TREE_TYPE (str1)))
-		     != TYPE_MODE (char_type_node))
-		break;
-	    }
-	  else if (gimple_assign_single_p (stmt1))
-	    {
-	      /* Otherwise look for length 1 memcpy optimized into
-		 assignment.  */
-    	      ptr1 = gimple_assign_lhs (stmt1);
-	      src1 = gimple_assign_rhs1 (stmt1);
-	      if (TREE_CODE (ptr1) != MEM_REF
-		  || TYPE_MODE (TREE_TYPE (ptr1)) != TYPE_MODE (char_type_node)
-		  || !tree_fits_shwi_p (src1))
-		break;
-	      ptr1 = build_fold_addr_expr (ptr1);
-	      STRIP_USELESS_TYPE_CONVERSION (ptr1);
-	      callee1 = NULL_TREE;
-	      len1 = size_one_node;
-	      lhs1 = NULL_TREE;
-	      off1 = size_zero_node;
-	      str1 = NULL_TREE;
-	    }
-	  else
-	    break;
-
-	  diff = constant_pointer_difference (ptr1, ptr2);
-	  if (diff == NULL && lhs1 != NULL)
-	    {
-	      diff = constant_pointer_difference (lhs1, ptr2);
-	      if (DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY
-		  && diff != NULL)
-		diff = size_binop (PLUS_EXPR, diff,
-				   fold_convert (sizetype, len1));
-	    }
-	  /* If the difference between the second and first destination pointer
-	     is not constant, or is bigger than memcpy length, bail out.  */
-	  if (diff == NULL
-	      || !tree_fits_uhwi_p (diff)
-	      || tree_int_cst_lt (len1, diff)
-	      || compare_tree_int (diff, 1024) == 1)
-	    break;
-
-	  /* Use maximum of difference plus memset length and memcpy length
-	     as the new memcpy length, if it is too big, bail out.  */
-	  src_len = tree_to_uhwi (diff);
-	  src_len += tree_to_uhwi (len2);
-	  if (src_len < tree_to_uhwi (len1))
-	    src_len = tree_to_uhwi (len1);
-	  if (src_len > 1024)
-	    break;
-
-	  /* If mempcpy value is used elsewhere, bail out, as mempcpy
-	     with bigger length will return different result.  */
-	  if (lhs1 != NULL_TREE
-	      && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY
-	      && (TREE_CODE (lhs1) != SSA_NAME
-		  || !single_imm_use (lhs1, &use_p, &use_stmt)
-		  || use_stmt != stmt2))
-	    break;
-
-	  /* If anything reads memory in between memcpy and memset
-	     call, the modified memcpy call might change it.  */
-	  vdef = gimple_vdef (stmt1);
-	  if (vdef != NULL
-	      && (!single_imm_use (vdef, &use_p, &use_stmt)
-		  || use_stmt != stmt2))
-	    break;
-
-	  ptr1_align = get_pointer_alignment (ptr1);
-	  /* Construct the new source string literal.  */
-	  src_buf = XALLOCAVEC (char, src_len + 1);
-	  if (callee1)
-	    memcpy (src_buf,
-		    TREE_STRING_POINTER (str1) + tree_to_uhwi (off1),
-		    tree_to_uhwi (len1));
-	  else
-	    src_buf[0] = tree_to_shwi (src1);
-	  memset (src_buf + tree_to_uhwi (diff),
-		  tree_to_shwi (val2), tree_to_uhwi (len2));
-	  src_buf[src_len] = '\0';
-	  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
-	     handle embedded '\0's.  */
-	  if (strlen (src_buf) != src_len)
-	    break;
-	  rtl_profile_for_bb (gimple_bb (stmt2));
-	  /* If the new memcpy wouldn't be emitted by storing the literal
-	     by pieces, this optimization might enlarge .rodata too much,
-	     as commonly used string literals couldn't be shared any
-	     longer.  */
-	  if (!can_store_by_pieces (src_len,
-				    builtin_strncpy_read_str,
-				    src_buf, ptr1_align, false))
-	    break;
-
-	  new_str_cst = build_string_literal (src_len, src_buf);
-	  if (callee1)
-	    {
-	      /* If STMT1 is a mem{,p}cpy call, adjust it and remove
-		 memset call.  */
-	      if (lhs1 && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY)
-		gimple_call_set_lhs (stmt1, NULL_TREE);
-	      gimple_call_set_arg (stmt1, 1, new_str_cst);
-	      gimple_call_set_arg (stmt1, 2,
-				   build_int_cst (TREE_TYPE (len1), src_len));
-	      update_stmt (stmt1);
-	      unlink_stmt_vdef (stmt2);
-	      gsi_replace (gsi_p, gimple_build_nop (), false);
-	      fwprop_invalidate_lattice (gimple_get_lhs (stmt2));
-	      release_defs (stmt2);
-	      if (lhs1 && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY)
-		{
-		  fwprop_invalidate_lattice (lhs1);
-		  release_ssa_name (lhs1);
-		}
-	      return true;
-	    }
-	  else
-	    {
-	      /* Otherwise, if STMT1 is length 1 memcpy optimized into
-		 assignment, remove STMT1 and change memset call into
-		 memcpy call.  */
-	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt1);
-
-	      if (!is_gimple_val (ptr1))
-		ptr1 = force_gimple_operand_gsi (gsi_p, ptr1, true, NULL_TREE,
-						 true, GSI_SAME_STMT);
-	      tree fndecl = builtin_decl_explicit (BUILT_IN_MEMCPY);
-	      gimple_call_set_fndecl (stmt2, fndecl);
-	      gimple_call_set_fntype (as_a <gcall *> (stmt2),
-				      TREE_TYPE (fndecl));
-	      gimple_call_set_arg (stmt2, 0, ptr1);
-	      gimple_call_set_arg (stmt2, 1, new_str_cst);
-	      gimple_call_set_arg (stmt2, 2,
-				   build_int_cst (TREE_TYPE (len2), src_len));
-	      unlink_stmt_vdef (stmt1);
-	      gsi_remove (&gsi, true);
-	      fwprop_invalidate_lattice (gimple_get_lhs (stmt1));
-	      release_defs (stmt1);
-	      update_stmt (stmt2);
-	      return false;
-	    }
-	}
-      break;
+      return simplify_builtin_memcpy_memset (gsi_p, as_a<gcall*>(stmt2));
 
  #define CASE_ATOMIC(NAME, OTHER, OP) \
     case BUILT_IN_##NAME##_1:						\
