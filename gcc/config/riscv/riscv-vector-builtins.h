@@ -134,6 +134,7 @@ enum required_ext
   XANDESVBFHCVT_EXT,    /* XANDESVBFHCVT extension */
   XANDESVSINTLOAD_EXT,  /* XANDESVSINTLOAD extension */
   XANDESVPACKFPH_EXT,   /* XANDESVPACKFPH extension */
+  XANDESVDOT_EXT,       /* XANDESVDOT extension */
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
@@ -181,6 +182,8 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "xandesvsintload";
     case XANDESVPACKFPH_EXT:
       return "xandesvpackfph";
+    case XANDESVDOT_EXT:
+      return "xandesvdot";
     default:
       gcc_unreachable ();
   }
@@ -232,6 +235,8 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_XANDESVSINTLOAD;
     case XANDESVPACKFPH_EXT:
       return TARGET_XANDESVPACKFPH;
+    case XANDESVDOT_EXT:
+      return TARGET_XANDESVDOT;
     default:
       gcc_unreachable ();
   }

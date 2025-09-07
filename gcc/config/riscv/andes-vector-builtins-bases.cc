@@ -123,6 +123,33 @@ public:
   }
 };
 
+/* Implements Andes vdot.  */
+template<rtx_code EXTEND>
+class nds_vd4dot : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_widen_ternop_insn
+      (code_for_pred_nds_vd4dot (EXTEND, e.vector_mode ()));
+  }
+};
+
+/* Implements vwmacc<su><su>.  */
+class nds_vd4dotsu : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_widen_ternop_insn
+      (code_for_pred_nds_vd4dotsu (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const nds_vfwcvtbf16_f nds_vfwcvt_s_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<NO_FRM> nds_vfncvt_bf16_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<HAS_FRM> nds_vfncvt_bf16_frm_obj;
@@ -132,6 +159,9 @@ static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADT, NO_FRM> nds_vfpmadt_obj;
 static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADB, NO_FRM> nds_vfpmadb_obj;
 static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADT, HAS_FRM> nds_vfpmadt_frm_obj;
 static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADB, HAS_FRM> nds_vfpmadb_frm_obj;
+static CONSTEXPR const nds_vd4dot<SIGN_EXTEND> nds_vd4dots_obj;
+static CONSTEXPR const nds_vd4dot<ZERO_EXTEND> nds_vd4dotu_obj;
+static CONSTEXPR const nds_vd4dotsu nds_vd4dotsu_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -147,4 +177,7 @@ BASE (nds_vfpmadt)
 BASE (nds_vfpmadb)
 BASE (nds_vfpmadt_frm)
 BASE (nds_vfpmadb_frm)
+BASE (nds_vd4dots)
+BASE (nds_vd4dotu)
+BASE (nds_vd4dotsu)
 } // end namespace riscv_vector

@@ -56,4 +56,11 @@ DEF_RVV_FUNCTION (nds_vfpmadt_frm, alu_frm, full_preds, f16_vvw_ops)
 DEF_RVV_FUNCTION (nds_vfpmadb_frm, alu_frm, full_preds, f16_vvw_ops)
 #undef REQUIRED_EXTENSIONS
 
+/* Andes Vector Dot Product Extension (XAndesVDot).  */
+#define REQUIRED_EXTENSIONS XANDESVDOT_EXT
+DEF_RVV_FUNCTION (nds_vd4dots, alu, full_preds, qexti_vvvv_ops)
+DEF_RVV_FUNCTION (nds_vd4dotsu, alu, full_preds, qexti_su_vvvv_ops)
+DEF_RVV_FUNCTION (nds_vd4dotu, alu, full_preds, qextu_vvvv_ops)
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_RVV_FUNCTION

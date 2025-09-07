@@ -697,6 +697,19 @@ static CONSTEXPR const rvv_arg_type_info vvv_args[]
 
 /* A list of args for vector_type func (vector_type, vector_type, vector_type)
  * function.  */
+static CONSTEXPR const rvv_arg_type_info vqq_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector), rvv_arg_type_info_end};
+
+static CONSTEXPR const rvv_arg_type_info su_vqq_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_unsigned_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, vector_type, vector_type)
+ * function.  */
 static CONSTEXPR const rvv_arg_type_info vxv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_scalar),
      rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
@@ -3146,6 +3159,24 @@ static CONSTEXPR const rvv_op_info f16_vvw_ops
      OP_TYPE_vf,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qexti_vvvv_ops
+  = {qexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vqq_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qexti_su_vvvv_ops
+  = {qexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_vqq_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qextu_vvvv_ops
+  = {qextu_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vqq_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type).
    Some insns just supports SEW=32, such as the crypto vector Zvkg extension.

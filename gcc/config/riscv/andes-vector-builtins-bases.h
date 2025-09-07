@@ -33,6 +33,9 @@ extern const function_base *const nds_vfpmadt;
 extern const function_base *const nds_vfpmadb;
 extern const function_base *const nds_vfpmadt_frm;
 extern const function_base *const nds_vfpmadb_frm;
+extern const function_base *const nds_vd4dots;
+extern const function_base *const nds_vd4dotu;
+extern const function_base *const nds_vd4dotsu;
 }
 
 } // end namespace riscv_vector

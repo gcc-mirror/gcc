@@ -23,6 +23,7 @@
   UNSPEC_NDS_INTLOAD
   UNSPEC_NDS_VFPMADT
   UNSPEC_NDS_VFPMADB
+  UNSPEC_NDS_VD4DOT
 ])
 
 (define_int_iterator NDS_VFPMAD [UNSPEC_NDS_VFPMADT UNSPEC_NDS_VFPMADB])
@@ -135,3 +136,55 @@
    (set_attr "enabled" "yes")
    (set (attr "frm_mode")
 	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
+
+;; Vector Dot Product Extension
+
+(define_insn "@pred_nds_vd4dot<su><mode>"
+  [(set (match_operand:VQEXTI 0 "register_operand"                    "=&vr")
+	(if_then_else:VQEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"             "vmWc1")
+	     (match_operand 5 "vector_length_operand"                "   rK")
+	     (match_operand 6 "const_int_operand"                    "    i")
+	     (match_operand 7 "const_int_operand"                    "    i")
+	     (match_operand 8 "const_int_operand"                    "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VQEXTI
+	    [(any_extend:VQEXTI
+	       (match_operand:<NDS_QUAD_FIX> 3 "register_operand" " vr"))
+	     (any_extend:VQEXTI
+	       (match_operand:<NDS_QUAD_FIX> 4 "register_operand" " vr"))
+	     (any_extend:VQEXTI
+	       (match_operand:VQEXTI 2 "register_operand" " 0"))]
+	     UNSPEC_NDS_VD4DOT)
+	  (match_dup 2)))]
+  "TARGET_VECTOR && TARGET_XANDESVDOT"
+  "nds.vd4dot<su>.vv\t%0,%3,%4%p1"
+  [(set_attr "type" "viwmuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_nds_vd4dotsu<mode>"
+  [(set (match_operand:VQEXTI 0 "register_operand"                    "=&vr")
+	(if_then_else:VQEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"             "vmWc1")
+	     (match_operand 5 "vector_length_operand"                "   rK")
+	     (match_operand 6 "const_int_operand"                    "    i")
+	     (match_operand 7 "const_int_operand"                    "    i")
+	     (match_operand 8 "const_int_operand"                    "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VQEXTI
+	    [(sign_extend:VQEXTI
+	       (match_operand:<NDS_QUAD_FIX> 3 "register_operand" " vr"))
+	     (zero_extend:VQEXTI
+	       (match_operand:<NDS_QUAD_FIX> 4 "register_operand" " vr"))
+	     (sign_extend:VQEXTI
+	       (match_operand:VQEXTI 2 "register_operand" " 0"))]
+	    UNSPEC_NDS_VD4DOT)
+	  (match_dup 2)))]
+  "TARGET_VECTOR && TARGET_XANDESVDOT"
+  "nds.vd4dotsu.vv\t%0,%3,%4%p1"
+  [(set_attr "type" "viwmuladd")
+   (set_attr "mode" "<MODE>")])
