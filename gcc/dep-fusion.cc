@@ -61,9 +61,9 @@ public:
   {}
 
   // opt_pass methods:
-  opt_pass *clone () override { return new pass_dep_fusion (m_ctxt); }
-  bool gate (function *) override;
-  unsigned int execute (function *) override;
+  opt_pass *clone () final override { return new pass_dep_fusion (m_ctxt); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 };
 
 bool
