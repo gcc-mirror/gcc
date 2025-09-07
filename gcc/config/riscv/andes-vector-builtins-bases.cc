@@ -106,11 +106,32 @@ public:
   }
 };
 
+template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
+class nds_vfpmad : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+  bool may_require_frm_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_nds_vfpmad (UNSPEC,
+						       e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const nds_vfwcvtbf16_f nds_vfwcvt_s_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<NO_FRM> nds_vfncvt_bf16_obj;
 static CONSTEXPR const nds_vfncvtbf16_f<HAS_FRM> nds_vfncvt_bf16_frm_obj;
 static CONSTEXPR const nds_nibbleload<true> nds_vln8_obj;
 static CONSTEXPR const nds_nibbleload<false> nds_vlnu8_obj;
+static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADT, NO_FRM> nds_vfpmadt_obj;
+static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADB, NO_FRM> nds_vfpmadb_obj;
+static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADT, HAS_FRM> nds_vfpmadt_frm_obj;
+static CONSTEXPR const nds_vfpmad <UNSPEC_NDS_VFPMADB, HAS_FRM> nds_vfpmadb_frm_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -122,4 +143,8 @@ BASE (nds_vfncvt_bf16)
 BASE (nds_vfncvt_bf16_frm)
 BASE (nds_vln8)
 BASE (nds_vlnu8)
+BASE (nds_vfpmadt)
+BASE (nds_vfpmadb)
+BASE (nds_vfpmadt_frm)
+BASE (nds_vfpmadb_frm)
 } // end namespace riscv_vector

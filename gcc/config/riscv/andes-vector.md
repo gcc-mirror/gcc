@@ -21,7 +21,12 @@
   UNSPEC_NDS_VFWCVTBF16
   UNSPEC_NDS_VFNCVTBF16
   UNSPEC_NDS_INTLOAD
+  UNSPEC_NDS_VFPMADT
+  UNSPEC_NDS_VFPMADB
 ])
+
+(define_int_iterator NDS_VFPMAD [UNSPEC_NDS_VFPMADT UNSPEC_NDS_VFPMADB])
+(define_int_attr nds_tb [(UNSPEC_NDS_VFPMADT "t") (UNSPEC_NDS_VFPMADB "b")])
 
 ;;  ....................
 ;;
@@ -103,3 +108,30 @@
    nds.vln<u>8.v\t%0,%3,%1.t"
   [(set_attr "type" "vlde,vlde,vlde")
    (set_attr "mode" "<MODE>")])
+
+;; Vector Packed FP16.
+
+(define_insn "@pred_nds_vfpmad<nds_tb><mode>"
+  [(set (match_operand:VHF 0 "register_operand"               "=&vr, &vr")
+	(if_then_else:VHF
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1, vmWc1")
+	     (match_operand 5 "vector_length_operand"          "   rK,    rK")
+	     (match_operand 6 "const_int_operand"              "    i,     i")
+	     (match_operand 7 "const_int_operand"              "    i,     i")
+	     (match_operand 8 "const_int_operand"              "    i,     i")
+	     (match_operand 9 "const_int_operand"              "    i,     i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)
+	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VHF
+	    [(match_operand:VHF 3 "register_operand" "vr, vr")
+	     (match_operand:SF 4 "register_operand"   " f,  f")] NDS_VFPMAD)
+	  (match_operand:VHF 2 "vector_merge_operand"   "vu,  0")))]
+  "TARGET_VECTOR && TARGET_XANDESVPACKFPH"
+  "nds.vfpmad<nds_tb>.vf\t%0,%4,%3%p1"
+  [(set_attr "type" "vfmuladd")
+   (set_attr "mode" "<MODE>")
+   (set_attr "enabled" "yes")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])

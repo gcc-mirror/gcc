@@ -584,6 +584,12 @@ static const rvv_type_info qu_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of FP16 will be registered for intrinsic functions.  */
+static const rvv_type_info f16_ops[] = {
+#define DEF_RVV_F16_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -1240,6 +1246,12 @@ static CONSTEXPR const rvv_arg_type_info sf_vc_fvw_args[]
 /* A list of args for vector_type func (const void_type *) function.  */
 static CONSTEXPR const rvv_arg_type_info void_const_ptr_args[]
   = {rvv_arg_type_info (RVV_BASE_void_const_ptr), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, widen_lmul1_scalar)
+   function.  */
+static CONSTEXPR const rvv_arg_type_info vw_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_float32), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -3129,6 +3141,12 @@ static CONSTEXPR const rvv_op_info qu_v_void_const_ptr_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      void_const_ptr_args /* Args */};
 
+static CONSTEXPR const rvv_op_info f16_vvw_ops
+  = {f16_ops,				  /* Types */
+     OP_TYPE_vf,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vw_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type).
    Some insns just supports SEW=32, such as the crypto vector Zvkg extension.
  * function registration.  */
@@ -3416,6 +3434,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##MASK,                                                        \
     VECTOR_TYPE_##SIGNED,                                                      \
     VECTOR_TYPE_##UNSIGNED,                                                    \
+    VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_INVALID,                                                       \

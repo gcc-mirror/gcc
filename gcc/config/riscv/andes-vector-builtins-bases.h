@@ -29,6 +29,10 @@ extern const function_base *const nds_vfncvt_bf16;
 extern const function_base *const nds_vfncvt_bf16_frm;
 extern const function_base *const nds_vln8;
 extern const function_base *const nds_vlnu8;
+extern const function_base *const nds_vfpmadt;
+extern const function_base *const nds_vfpmadb;
+extern const function_base *const nds_vfpmadt_frm;
+extern const function_base *const nds_vfpmadb_frm;
 }
 
 } // end namespace riscv_vector

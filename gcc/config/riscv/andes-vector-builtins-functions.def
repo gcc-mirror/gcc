@@ -48,4 +48,12 @@ DEF_RVV_FUNCTION (nds_vln8, alu, full_preds, q_v_void_const_ptr_ops)
 DEF_RVV_FUNCTION (nds_vlnu8, alu, full_preds, qu_v_void_const_ptr_ops)
 #undef REQUIRED_EXTENSIONS
 
+/* Prefix name for `__riscv_nds_`.  */
+#define REQUIRED_EXTENSIONS XANDESVPACKFPH_EXT
+DEF_RVV_FUNCTION (nds_vfpmadt, alu, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadb, alu, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadt_frm, alu_frm, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadb_frm, alu_frm, full_preds, f16_vvw_ops)
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_RVV_FUNCTION
