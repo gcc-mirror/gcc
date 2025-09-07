@@ -48,6 +48,15 @@ case "${target}" in
   power*-*-freebsd*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  powerpc64le-*linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	case "$ac_configure_args" in
+	  *--with-long-double-format=ieee*)
+	    ;;
+	  *)
+	    LIBDRUNTIME_ONLY=yes
+	esac
+	;;
   power*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	LIBDRUNTIME_ONLY=yes
