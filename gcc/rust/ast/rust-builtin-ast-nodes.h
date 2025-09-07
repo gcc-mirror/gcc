@@ -134,6 +134,7 @@ public:
 
   FormatArgumentKind get_kind () const { return kind; }
   const Expr &get_expr () const { return *expr; }
+  Expr &get_expr () { return *expr; }
 
 private:
   FormatArgument (FormatArgumentKind::Kind kind, tl::optional<Identifier> ident,
@@ -163,6 +164,11 @@ public:
 
   void push (FormatArgument &&elt) { args.emplace_back (std::move (elt)); }
   const FormatArgument at (size_t idx) const { return args.at (idx); }
+
+  const std::vector<FormatArgument> &get_args () const { return args; }
+  std::vector<FormatArgument> &get_args () { return args; }
+  size_t size () const { return args.size (); }
+  bool empty () const { return args.empty (); }
 
 private:
   std::vector<FormatArgument> args;
@@ -200,6 +206,7 @@ public:
 
   const Fmt::Pieces &get_template () const { return template_pieces; }
   const FormatArguments &get_arguments () const { return arguments; }
+  FormatArguments &get_arguments () { return arguments; }
   virtual location_t get_locus () const override;
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::FormatArgs; }

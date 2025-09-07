@@ -2997,8 +2997,216 @@ TokenCollector::visit (BareFunctionType &type)
 void
 TokenCollector::visit (AST::FormatArgs &fmt)
 {
-  rust_sorry_at (fmt.get_locus (), "%s:%u: unimplemented FormatArgs visitor",
-		 __FILE__, __LINE__);
+  push (Rust::Token::make_identifier (fmt.get_locus (), "format_args"));
+  push (Rust::Token::make (EXCLAM, fmt.get_locus ()));
+  push (Rust::Token::make (LEFT_PAREN, fmt.get_locus ()));
+
+  std::string reconstructed_template = "\"";
+  const auto &template_pieces = fmt.get_template ();
+
+  for (const auto &piece : template_pieces.get_pieces ())
+    {
+      if (piece.tag == Fmt::ffi::Piece::Tag::String)
+	{
+	  std::string literal = piece.string._0.to_string ();
+	  for (char c : literal)
+	    {
+	      if (c == '"' || c == '\\')
+		{
+		  reconstructed_template += '\\';
+		}
+	      else if (c == '\n')
+		{
+		  reconstructed_template += "\\n";
+		  continue;
+		}
+	      else if (c == '\r')
+		{
+		  reconstructed_template += "\\r";
+		  continue;
+		}
+	      else if (c == '\t')
+		{
+		  reconstructed_template += "\\t";
+		  continue;
+		}
+	      reconstructed_template += c;
+	    }
+	}
+      else if (piece.tag == Fmt::ffi::Piece::Tag::NextArgument)
+	{
+	  reconstructed_template += "{";
+
+	  const auto &argument = piece.next_argument._0;
+	  const auto &position = argument.position;
+
+	  switch (position.tag)
+	    {
+	    case Fmt::ffi::Position::Tag::ArgumentImplicitlyIs:
+	      break;
+	    case Fmt::ffi::Position::Tag::ArgumentIs:
+	      reconstructed_template
+		+= std::to_string (position.argument_is._0);
+	      break;
+	    case Fmt::ffi::Position::Tag::ArgumentNamed:
+	      reconstructed_template += position.argument_named._0.to_string ();
+	      break;
+	    }
+
+	  // Add format specifiers if any (like :?, :x, etc.)
+	  const auto &format_spec = argument.format;
+
+	  bool has_format_spec = false;
+	  std::string format_part;
+
+	  // For now, skipping the complex format specifications that use FFIOpt
+	  // since FFIOpt::get_opt() has a bug.
+
+	  // Alignment
+	  if (format_spec.align != Fmt::ffi::Alignment::AlignUnknown)
+	    {
+	      has_format_spec = true;
+	      switch (format_spec.align)
+		{
+		case Fmt::ffi::Alignment::AlignLeft:
+		  format_part += "<";
+		  break;
+		case Fmt::ffi::Alignment::AlignRight:
+		  format_part += ">";
+		  break;
+		case Fmt::ffi::Alignment::AlignCenter:
+		  format_part += "^";
+		  break;
+		case Fmt::ffi::Alignment::AlignUnknown:
+		  break;
+		}
+	    }
+
+	  // Alternate flag
+	  if (format_spec.alternate)
+	    {
+	      has_format_spec = true;
+	      format_part += "#";
+	    }
+
+	  // Zero pad flag
+	  if (format_spec.zero_pad)
+	    {
+	      has_format_spec = true;
+	      format_part += "0";
+	    }
+
+	  // Width
+	  if (format_spec.width.tag != Fmt::ffi::Count::Tag::CountImplied)
+	    {
+	      has_format_spec = true;
+	      switch (format_spec.width.tag)
+		{
+		case Fmt::ffi::Count::Tag::CountIs:
+		  format_part += std::to_string (format_spec.width.count_is._0);
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsParam:
+		  format_part
+		    += std::to_string (format_spec.width.count_is_param._0)
+		       + "$";
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsName:
+		  format_part
+		    += format_spec.width.count_is_name._0.to_string () + "$";
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsStar:
+		  format_part += "*";
+		  break;
+		case Fmt::ffi::Count::Tag::CountImplied:
+		  break;
+		}
+	    }
+
+	  // Precision
+	  if (format_spec.precision.tag != Fmt::ffi::Count::Tag::CountImplied)
+	    {
+	      has_format_spec = true;
+	      format_part += ".";
+	      switch (format_spec.precision.tag)
+		{
+		case Fmt::ffi::Count::Tag::CountIs:
+		  format_part
+		    += std::to_string (format_spec.precision.count_is._0);
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsParam:
+		  format_part
+		    += std::to_string (format_spec.precision.count_is_param._0)
+		       + "$";
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsName:
+		  format_part
+		    += format_spec.precision.count_is_name._0.to_string ()
+		       + "$";
+		  break;
+		case Fmt::ffi::Count::Tag::CountIsStar:
+		  format_part += "*";
+		  break;
+		case Fmt::ffi::Count::Tag::CountImplied:
+		  break;
+		}
+	    }
+
+	  // Type/trait (like ?, x, X, etc.)
+	  std::string type_str = format_spec.ty.to_string ();
+	  if (!type_str.empty ())
+	    {
+	      has_format_spec = true;
+	      format_part += type_str;
+	    }
+
+	  // Add the format specification if any
+	  if (has_format_spec)
+	    {
+	      reconstructed_template += ":";
+	      reconstructed_template += format_part;
+	    }
+
+	  reconstructed_template += "}";
+	}
+    }
+  reconstructed_template += "\"";
+
+  push (Rust::Token::make_string (fmt.get_locus (), reconstructed_template));
+
+  // Visit format arguments if any exist
+  auto &arguments = fmt.get_arguments ();
+  if (!arguments.empty ())
+    {
+      push (Rust::Token::make (COMMA, fmt.get_locus ()));
+
+      auto &args = arguments.get_args ();
+      for (size_t i = 0; i < args.size (); ++i)
+	{
+	  if (i > 0)
+	    {
+	      push (Rust::Token::make (COMMA, fmt.get_locus ()));
+	    }
+
+	  auto kind = args[i].get_kind ();
+
+	  // Handle named arguments: name = expr
+	  if (kind.kind == FormatArgumentKind::Kind::Named)
+	    {
+	      auto ident = kind.get_ident ().as_string ();
+	      push (Rust::Token::make_identifier (fmt.get_locus (),
+						  std::move (ident)));
+	      push (Rust::Token::make (EQUAL, fmt.get_locus ()));
+	    }
+	  // Note: Captured arguments are handled implicitly in the template
+	  // reconstruction They don't need explicit "name =" syntax in the
+	  // reconstructed macro call
+
+	  auto &expr = args[i].get_expr ();
+	  expr.accept_vis (*this);
+	}
+    }
+
+  push (Rust::Token::make (RIGHT_PAREN, fmt.get_locus ()));
 }
 
 void
