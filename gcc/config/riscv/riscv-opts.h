@@ -57,10 +57,10 @@ enum riscv_microarchitecture_type {
   sifive_7,
   sifive_p400,
   sifive_p600,
-  tt_ascalon_d8,
   xiangshan,
   generic_ooo,
   mips_p8700,
+  tt_ascalon_d8,
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
 
