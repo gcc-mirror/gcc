@@ -1,3 +1,11 @@
+2025-09-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84119
+	* resolve.cc (reset_array_ref_to_scalar): New function using
+	chunk broken out from gfc_resolve_ref.
+	(gfc_resolve_ref): Call the new function, the first time for
+	PDT type parameters and the second time for LEN inquiry refs.
+
 2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84432

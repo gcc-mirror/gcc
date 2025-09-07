@@ -1,3 +1,37 @@
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121702
+	* module.cc (enum module_state_counts): New counter.
+	(depset::hash::add_namespace_entities): Seed using-directive
+	targets for later streaming.
+	(module_state::write_namespaces): Don't handle using-directives
+	here.
+	(module_state::read_namespaces): Likewise.
+	(module_state::write_using_directives): New function.
+	(module_state::read_using_directives): New function.
+	(module_state::write_counts): Log using-directives.
+	(module_state::read_counts): Likewise.
+	(module_state::write_begin): Stream using-directives.
+	(module_state::read_language): Read using-directives if
+	directly importing.
+	(module_state::direct_import): Update current TU import list
+	before calling read_language.
+	* name-lookup.cc (add_using_namespace): Fix lookup of previous
+	using-directives.
+	* parser.cc (cp_parser_import_declaration): Don't set
+	MK_EXPORTING when performing import_module.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121705
+	PR c++/117658
+	* module.cc (depset::hash::make_dependency): Make bindings for
+	GM functions.
+	(depset::hash::add_binding_entity): Adjust comment.
+	(depset::hash::add_deduction_guides): Add log.
+	* ptree.cc (cxx_print_xnode): Handle friend functions where
+	TI_TEMPLATE is an OVERLOAD or IDENTIFIER.
+
 2025-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* constexpr.cc (cxx_eval_cxa_builtin_fn): Add missing word separating

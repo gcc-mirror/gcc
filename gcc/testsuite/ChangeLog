@@ -1,3 +1,57 @@
+2025-09-06  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vln8.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vln8.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vln8.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vln8.c: New test.
+
+2025-09-06  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add regression for xandesvector.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfncvtbf16s.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfwcvtsbf16.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfncvtbf16s.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfwcvtsbf16.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfncvtbf16s.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfwcvtsbf16.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfncvtbf16s.c: New test.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfwcvtsbf16.c: New test.
+
+2025-09-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84119
+	* gfortran.dg/pdt_20.f03: Modify to deal with scalar type parm.
+
+2025-09-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/108466
+	* gcc.dg/uninit-pr108466-1.c: New test.
+
+2025-09-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbb-sext.c: Include stdint-gcc.h instead of
+	stdint.h.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121702
+	* g++.dg/modules/namespace-10_c.C: Add check for log dump.
+	* g++.dg/modules/namespace-13_a.C: New test.
+	* g++.dg/modules/namespace-13_b.C: New test.
+	* g++.dg/modules/namespace-13_c.C: New test.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121705
+	PR c++/117658
+	* g++.dg/modules/default-arg-4_a.C: XFAIL bogus errors.
+	* g++.dg/modules/default-arg-4_b.C: Likewise.
+	* g++.dg/modules/default-arg-5_a.C: Remove duplicate test.
+	* g++.dg/modules/default-arg-5_b.C: Likewise.
+	* g++.dg/modules/adl-9_a.C: New test.
+	* g++.dg/modules/adl-9_b.C: New test.
+	* g++.dg/modules/gmf-5.C: New test.
+
 2025-09-05  Sam James  <sam@gentoo.org>
 
 	PR rtl-optimization/121757

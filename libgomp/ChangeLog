@@ -1,3 +1,8 @@
+2025-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in: Fix up formatting of __cplusplus >= 201103L
+	guarded code from libstc++ style to GCC/libgomp style.
+
 2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* target.c (gomp_update): Call gomp_merge_iterator_maps.  Free

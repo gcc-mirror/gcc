@@ -1,3 +1,130 @@
+2025-09-06  Sam James  <sam@gentoo.org>
+
+	* doc/generic.texi (TYPE_CANONICAL): Don't mention long-removed
+	--param verify-canonical-types.
+
+2025-09-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/121835
+	* dep-fusion.cc (pass_dep_fusion::execute): Return early if
+	macro_fusion_pair_p is null.
+
+2025-09-06  Artemiy Volkov  <artemiyv@acm.org>
+
+	* Makefile.in (OBJS): Add dep-fusion.o.
+	* common.opt (fdep-fusion): Add option.
+	* dep-fusion.cc: New pass.
+	* doc/invoke.texi: Document it.
+	* opts.cc (default_options_table): Enable it at -O2+ and -Os.
+	* passes.def: Insert two instances of dep_fusion.
+	* tree-pass.h (make_pass_dep_fusion): Declare new function.
+
+2025-09-06  Sam James  <sam@gentoo.org>
+
+	* doc/invoke.texi (x86 Options): Fix '-momit-leaf-frame-pointer' typo.
+
+2025-09-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (simplify_builtin_call): Factor out
+	the memcpy followed by a memset optimization to ...
+	(simplify_builtin_memcpy_memset): Here. New function.
+
+2025-09-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (simplify_builtin_call): Factor out the memchr
+	optimization to ...
+	(simplify_builtin_memchr): Here. New function.
+
+2025-09-06  Simon Martin  <simon@nasilyan.com>
+
+	* ipa-inline-transform.cc: Define INCLUDE_ALGORITHM.
+
+2025-09-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Prerequisites): Properly capitalize
+	GNU Binutils.
+	(Configuration): Ditto.
+	(Building): Ditto.
+	(Specific): Ditto.
+
+2025-09-06  Sam James  <sam@gentoo.org>
+
+	* doc/invoke.texi: Say 'whole-program' consistently where
+	appropriate.
+
+2025-09-06  Sam James  <sam@gentoo.org>
+
+	* doc/invoke.texi: Capitalize 'GNU Binutils' consistently.
+
+2025-09-06  Sam James  <sam@gentoo.org>
+
+	PR ipa/116410
+	* doc/invoke.texi (Link Options): Update -flinker-output= text
+	to reflect GNU Binutils changes. Fix grammar.
+
+2025-09-06  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/andes-vector-builtins-bases.cc
+	(nds_nibbleload): New class.
+	* config/riscv/andes-vector-builtins-bases.h (nds_vln8): New def.
+	(nds_vlnu8): Ditto.
+	* config/riscv/andes-vector-builtins-functions.def (nds_vln8): Ditto.
+	(nds_vlnu8): Ditto.
+	* config/riscv/andes-vector.md (@pred_intload_mov<su><mode>): New pattern.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_Q_OPS): New def.
+	(DEF_RVV_QU_OPS): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(q_v_void_const_ptr_ops): New operand information.
+	(qu_v_void_const_ptr_ops): Ditto.
+	* config/riscv/riscv-vector-builtins.def (void_const_ptr): New def.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): Ditto.
+	(required_ext_to_isa_name): Add case XANDESVSINTLOAD_EXT.
+	(required_extensions_specified): Ditto.
+	* config/riscv/vector-iterators.md (NDS_QVI): New iterator.
+
+2025-09-06  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* common/config/riscv/riscv-common.cc:
+	Turn on VECTOR_ELEN_BF_16 for XAndesvbfhcvt.
+	* config.gcc: Add extra_objs andes-vector-builtins-bases.o
+	and extra_headers andes_vector.h.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(BASE_NAME_MAX_LEN): Increase size to 20.
+	* config/riscv/riscv-vector-builtins.cc
+	(f32_to_bf16_nf_w_ops): New operand information.
+	(f32_to_bf16_nf_w_ops): New operand information.
+	(DEF_RVV_FUNCTION): New def.
+	* config/riscv/riscv-vector-builtins.def (bf16): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): Ditto.
+	(required_ext_to_isa_name): Add case XANDESVBFHCVT_EXT.
+	(required_extensions_specified): Ditto.
+	* config/riscv/t-riscv: Add andes-vector-builtins-functions.def,
+	andes-vector-builtins-bases.h and andes-vector-builtins-bases.o.
+	* config/riscv/vector-iterators.md (NDS_VWEXTBF): New iterator.
+	(NDS_V_DOUBLE_TRUNC_BF): New attr.
+	* config/riscv/andes-vector-builtins-bases.cc: New file.
+	* config/riscv/andes-vector-builtins-bases.h: New file.
+	* config/riscv/andes-vector-builtins-functions.def: New file.
+	* config/riscv/andes_vector.h: New file.
+	* config/riscv/andes-vector.md: New file.
+	* config/riscv/vector.md: Include andes_vector.md.
+
+2025-09-06  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Update.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add tt_ascalon_d8.
+	* config/riscv/riscv.md: Update tune attribute and include
+	tt-ascalon-d8.md.
+	* config/riscv/tt-ascalon-d8.md: New file.
+
+2025-09-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/108466
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Give better
+	locations to the new phi args and the new statement.
+
 2025-09-05  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR middle-end/121806
