@@ -1467,11 +1467,17 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
       tree base1 = get_addr_base_and_unit_offset (dest2, &offset1);
       tree base2 = get_addr_base_and_unit_offset (src, &offset2);
       poly_int64 size = tree_to_poly_int64 (len);
+      /* If the bases are 2 different decls,
+	 then there can be no overlapping.  */
+      if (base1 && base2
+	  && DECL_P (base1) && DECL_P (base2)
+	  && base1 != base2)
+	;
       /* If we can't figure out the base or the bases are
 	 not equal then fall back to an alignment check.  */
-      if (!base1
-	  || !base2
-	  || !operand_equal_p (base1, base2))
+      else if (!base1
+	       || !base2
+	       || !operand_equal_p (base1, base2))
 	{
 	  unsigned int align1 = get_object_alignment (src);
 	  unsigned int align2 = get_object_alignment (dest2);
