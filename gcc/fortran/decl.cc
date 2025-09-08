@@ -3817,6 +3817,9 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 	  copy = gfc_copy_expr (param->expr);
 	  *e = *copy;
 	  free (copy);
+	  /* Catch variables declared without a value expression.  */
+	  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_PROCEDURE)
+	    e->ts = e->symtree->n.sym->ts;
 	}
     }
 
