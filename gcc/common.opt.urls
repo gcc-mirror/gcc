@@ -553,6 +553,9 @@ UrlSuffix(gcc/Code-Gen-Options.html#index-fdelete-dead-exceptions)
 fdelete-null-pointer-checks
 UrlSuffix(gcc/Optimize-Options.html#index-fdelete-null-pointer-checks)
 
+fdep-fusion
+UrlSuffix(gcc/Optimize-Options.html#index-fdep-fusion)
+
 fdevirtualize-at-ltrans
 UrlSuffix(gcc/Optimize-Options.html#index-fdevirtualize-at-ltrans)
 
