@@ -1,9 +1,7 @@
-// { dg-do run { target c++26 } }
-// { dg-require-cstdint "" }
+// { dg-do compile { target c++26 } }
+// { dg-require-cpp-feature-test __cpp_lib_philox_engine }
 
-// 29.5.4 Random Number Engine Class Templates
-// 29.5.4.5 Class Template philox_engine
-
+// N5014 29.5.4.5 Class Template philox_engine
 
 #include <random>
 
@@ -16,11 +14,17 @@ test01()
 		     0xBB67AE85> testType;
 
   typedef testType::result_type result_type;
+  static_assert( std::is_same_v<result_type, std::uint_fast32_t> );
 }
 
-int
-main()
+void
+test02()
 {
-  test01();
-  return 0;
+  typedef std::philox_engine<std::uint_fast64_t,
+		     64, 4, 10, 0xCA5A826395121157,
+		     0x9E3779B97F4A7C15, 0xD2E7470EE14C6C93,
+		      0xBB67AE8584CAA73B> testType;
+
+  typedef testType::result_type result_type;
+  static_assert( std::is_same_v<result_type, std::uint_fast64_t> );
 }

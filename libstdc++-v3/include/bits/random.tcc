@@ -907,197 +907,129 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-#if __cpp_lib_philox_engine
+#if __glibcxx_philox_engine // >= C++26
 
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  _UIntType
-  philox_engine<_UIntType,
-  __w, __n, __r, __consts...>::_S_mulhi(_UIntType __a, _UIntType __b)
-  {
-    const __uint128_t __num =
-	static_cast<__uint128_t>(__a) * static_cast<__uint128_t>(__b);
-    return static_cast<_UIntType>((__num >> __w) & max());
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  _UIntType
-  philox_engine<_UIntType,
-  __w, __n, __r, __consts...>::_S_mullo(_UIntType __a, _UIntType __b)
-  {
-    return static_cast<_UIntType>((__a * __b) & max());
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  void
-  philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_transition()
-  {
-    ++_M_i;
-    if (_M_i == __n)
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    _UIntType
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::
+    _S_mulhi(_UIntType __a, _UIntType __b)
     {
+      const __uint128_t __num =
+	  static_cast<__uint128_t>(__a) * static_cast<__uint128_t>(__b);
+      return static_cast<_UIntType>((__num >> __w) & max());
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    _UIntType
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::
+    _S_mullo(_UIntType __a, _UIntType __b)
+    {
+      return static_cast<_UIntType>((__a * __b) & max());
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_transition()
+    {
+      ++_M_i;
+      if (_M_i != __n)
+	return;
+
       _M_philox();
       if constexpr (__n == 4)
-      {
-	__uint128_t __uh =
-	  (static_cast<__uint128_t>(_M_x[1]) << __w)
-		| (static_cast<__uint128_t>(_M_x[0]) + 1);
-	__uint128_t __lh =
-	  ((static_cast<__uint128_t>(_M_x[3]) << __w)
-		| (_M_x[2]));
-	__uint128_t __bigMask =
-	  (static_cast<__uint128_t>(1) << ((2 * __w) - 1))
-	        | ((static_cast<__uint128_t>(1) << ((2 * __w) - 1)) - 1);
-	if ((__uh & __bigMask) == 0)
 	{
-	  ++__lh;
-	  __uh = 0;
+	  __uint128_t __uh =
+	    (static_cast<__uint128_t>(_M_x[1]) << __w)
+		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
+	  __uint128_t __lh =
+	    ((static_cast<__uint128_t>(_M_x[3]) << __w)
+		  | (_M_x[2]));
+	  __uint128_t __bigMask =
+	    (static_cast<__uint128_t>(1) << ((2 * __w) - 1))
+		  | ((static_cast<__uint128_t>(1) << ((2 * __w) - 1)) - 1);
+	  if ((__uh & __bigMask) == 0)
+	    {
+	      ++__lh;
+	      __uh = 0;
+	    }
+	  _M_x[0] = __uh & max();
+	  _M_x[1] = (__uh >> (__w)) & max();
+	  _M_x[2] = __lh & max();
+	  _M_x[3] = (__lh >> (__w)) & max();
 	}
-	_M_x[0] = __uh & max();
-	_M_x[1] = (__uh >> (__w)) & max();
-	_M_x[2] = __lh & max();
-	_M_x[3] = (__lh >> (__w)) & max();
-      } else
-      {
-	__uint128_t __num =
-		(static_cast<__uint128_t>(_M_x[1]) << __w)
-		| (static_cast<__uint128_t>(_M_x[0]) + 1);
-	_M_x[0] = __num & max();
-	_M_x[1] = (__num >> __w) & max();
-      }
+      else
+	{
+	  __uint128_t __num =
+		  (static_cast<__uint128_t>(_M_x[1]) << __w)
+		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
+	  _M_x[0] = __num & max();
+	  _M_x[1] = (__num >> __w) & max();
+	}
       _M_i = 0;
     }
-  }
 
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  void
-  philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_philox()
-  {
-    array<_UIntType, __n> __outputSeq{};
-    for (size_t __j = 0; __j < __n; ++__j)
-      __outputSeq[__j] = _M_x[__j];
-    for (unsigned long __j = 0; __j < __r; ++__j)
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_philox()
     {
-      array<_UIntType, __n> __intermedSeq{};
-      if constexpr (__n == 4)
-      {
-	__intermedSeq[0] = __outputSeq[2];
-	__intermedSeq[1] = __outputSeq[1];
-	__intermedSeq[2] = __outputSeq[0];
-	__intermedSeq[3] = __outputSeq[3];
-      } else
-      {
-	__intermedSeq[0] = __outputSeq[0];
-	__intermedSeq[1] = __outputSeq[1];
-      }
-      for (unsigned long __k = 0; __k < (__n/2); ++__k)
-      {
-	__outputSeq[2*__k]= _S_mulhi(__intermedSeq[2*__k], multipliers[__k])
-	  ^ (((_M_k[__k] + (__j * round_consts[__k])) & max()))
-	  ^ __intermedSeq[2*__k+1];
+      array<_UIntType, __n> __outputSeq = _M_x;
+      for (size_t __j = 0; __j < __r; ++__j)
+	{
+	  array<_UIntType, __n> __intermedSeq{};
+	  if constexpr (__n == 4)
+	    {
+	      __intermedSeq[0] = __outputSeq[2];
+	      __intermedSeq[1] = __outputSeq[1];
+	      __intermedSeq[2] = __outputSeq[0];
+	      __intermedSeq[3] = __outputSeq[3];
+	    }
+	  else
+	    {
+	      __intermedSeq[0] = __outputSeq[0];
+	      __intermedSeq[1] = __outputSeq[1];
+	    }
+	  for (unsigned long __k = 0; __k < (__n/2); ++__k)
+	    {
+	      __outputSeq[2*__k]
+		= _S_mulhi(__intermedSeq[2*__k], multipliers[__k])
+		    ^ (((_M_k[__k] + (__j * round_consts[__k])) & max()))
+		    ^ __intermedSeq[2*__k+1];
 
-	__outputSeq[(2*__k)+1]= _S_mullo(__intermedSeq[2*__k],
-	  multipliers[__k]);
-      }
+	      __outputSeq[(2*__k)+1]
+		= _S_mullo(__intermedSeq[2*__k], multipliers[__k]);
+	    }
+	}
+      _M_y = __outputSeq;
     }
-    for (unsigned long __j = 0; __j < __n; ++__j)
-      _M_y[__j] = __outputSeq[__j];
-  }
 
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  philox_engine<_UIntType,
-	__w, __n, __r, __consts...>::philox_engine(result_type __value)
-  {
-    std::fill(_M_x.begin(), _M_x.end(), 0);
-    std::fill(_M_k.begin(), _M_k.end(), 0);
-    std::fill(_M_y.begin(), _M_y.end(), 0);
-    _M_k[0] = __value & max();
-    _M_i = __n - 1;
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  void
-  philox_engine<_UIntType,
-  __w, __n, __r, __consts...>::seed(result_type __value)
-  {
-    std::fill(_M_x.begin(), _M_x.end(), 0);
-    std::fill(_M_k.begin(), _M_k.end(), 0);
-    std::fill(_M_y.begin(), _M_y.end(), 0);
-    _M_k[0] = __value & max();
-    _M_i = __n - 1;
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  void
-  philox_engine<_UIntType, __w,
-  __n, __r, __consts...>::set_counter(const array<result_type, __n>& __counter)
-  {
-    for (unsigned long long __j = 0; __j < __n; ++__j)
-      _M_x[__j] = __counter[__n - 1 - __j] & max();
-    _M_i = __n - 1;
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
   template<typename _Sseq>
-  auto
-  philox_engine<_UIntType, __w, __n, __r, __consts...>::seed(_Sseq& __q)
-  -> _If_seed_seq<_Sseq>
-  {
-    std::fill(_M_k.begin(), _M_k.end(), 0);
-    const unsigned long long __p = 1 + ((__w - 1)/ 32);
-    uint_least32_t __tmpArr[(__n / 2) * __p];
-    __q.generate(__tmpArr + 0, __tmpArr + ((__n / 2) *__p));
-    for (unsigned long long __k = 0; __k < (__n/2); ++__k)
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::seed(_Sseq& __q)
+    requires __is_seed_seq<_Sseq>
     {
-      unsigned long long __precalc = 0;
-      for (unsigned long long __j = 0; __j < __p; ++__j)
-      {
-	unsigned long long __multiplicand = (1ull << (32 * __j));
-	__precalc += (__tmpArr[__k*__p + __j] * __multiplicand) & max();
-      }
-      _M_k[__k] = __precalc;
+      seed(0);
+
+      const unsigned __p = 1 + ((__w - 1) / 32);
+      uint_least32_t __tmpArr[(__n/2) * __p];
+      __q.generate(__tmpArr + 0, __tmpArr + ((__n/2) * __p));
+      for (unsigned __k = 0; __k < (__n/2); ++__k)
+	{
+	  unsigned long long __precalc = 0;
+	  for (unsigned __j = 0; __j < __p; ++__j)
+	    {
+	      unsigned long long __multiplicand = (1ull << (32 * __j));
+	      __precalc += (__tmpArr[__k * __p + __j] * __multiplicand) & max();
+	    }
+	  _M_k[__k] = __precalc;
+	}
     }
-    std::fill(_M_x.begin(), _M_x.end(), 0);
-    std::fill(_M_y.begin(), _M_y.end(), 0);
-    _M_i = __n - 1;
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  void
-  philox_engine<_UIntType,
-	__w, __n, __r, __consts...>::discard(unsigned long long __z)
-  {
-    for (unsigned long long __j = 0; __j < __z; ++__j)
-      _M_transition();
-  }
-
-  template<class _UIntType,
-	size_t __w, size_t __n,
-	size_t __r, _UIntType... __consts>
-  _UIntType
-  philox_engine<_UIntType, __w, __n, __r, __consts...>::operator()()
-  {
-    _M_transition();
-    return _M_y[_M_i];
-  }
-
-#endif
+#endif // philox_engine
 
   template<typename _IntType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&

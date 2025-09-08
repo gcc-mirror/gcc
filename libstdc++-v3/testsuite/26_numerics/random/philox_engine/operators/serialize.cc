@@ -1,13 +1,11 @@
 // { dg-do run { target c++26 } }
-// { dg-require-cstdint "" }
+// { dg-require-cpp-feature-test __cpp_lib_philox_engine }
 
-// 29.5.4 Random Number Engine Class Templates
-// 29.5.4.5 Class Template philox_engine
+// N5014 29.5.4.5 Class Template philox_engine
 
 #include <sstream>
 #include <random>
 #include <testsuite_hooks.h>
-#include <iostream>
 
 void
 test01()
@@ -45,5 +43,4 @@ int
 main()
 {
   test01();
-  return 0;
 }

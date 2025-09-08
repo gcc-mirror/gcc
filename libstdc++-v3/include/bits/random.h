@@ -32,8 +32,8 @@
 #define _RANDOM_H 1
 
 #include <vector>
+#include <bits/ios_base.h>
 #include <bits/uniform_int_dist.h>
-#include <iomanip>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1689,21 +1689,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__lhs == __rhs); }
 #endif
 
-#if __cpp_lib_philox_engine
-
+#if __glibcxx_philox_engine // >= C++26
   /**
-   * @brief: A discrete pseudorandom number generator based off of weakened
-   * cryptographic primitives.
+   * @brief A discrete pseudorandom number generator with weak cryptographic
+   * properties
    *
-   * This algorithm was intended to be used for highly parallel random number
-   * generation, and is capable of immensely long periods.  It provides "Crush-
-   * resistance", denoting an ability to pass the TestU01 Suite's "Big Crush"
-   * test, demonstrating significant apparent entropy.  It is not intended for
-   * cryptographic use and should not be used for such, despite being based on
-   * cryptographic primitives.
+   * This algorithm was designed to be used for highly parallel random number
+   * generation, and is capable of immensely long periods.  It provides
+   * "Crush-resistance", denoting an ability to pass the TestU01 Suite's
+   * "Big Crush" test, demonstrating significant apparent entropy.
    *
-   * The two four-word definitions are likely the best use for this algorithm,
-   * and are given below as defaults.
+   * It is not intended for cryptographic use and should not be used for such,
+   * despite being based on cryptographic primitives.
+   *
+   * The typedefs `philox4x32` and `philox4x64` are provided as suitable
+   * defaults for most use cases, providing high-quality random numbers
+   * with reasonable performance.
    *
    * This algorithm was created by John Salmon, Mark Moraes, Ron Dror, and
    * David Shaw as a product of D.E. Shaw Research.
@@ -1717,9 +1718,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @headerfile random
    * @since C++26
    */
-  template<class _UIntType, size_t __w,
-	      size_t __n, size_t __r,
-	      _UIntType... __consts>
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
     class philox_engine
     {
       static_assert(__n == 2 || __n == 4,
@@ -1729,42 +1729,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(0 < __r, "a number of rounds must be specified");
       static_assert((0 < __w && __w <= numeric_limits<_UIntType>::digits),
 	      "specified bitlength must match input type");
-      template<typename _Sseq>
-	using _If_seed_seq
-	  = __detail::_If_seed_seq_for<_Sseq, philox_engine, _UIntType>;
 
-      private:
-	// the ordering here is essential to functionality.
-	/** @brief an internal unpacking function for %philox_engine.  */
-	template <size_t __ind0, size_t __ind1>
-	  static constexpr
-	  array<_UIntType, __n / 2>
-	  _S_popArray()
-	  {
-	    if constexpr (__n == 4)
-	      return {__consts...[__ind0], __consts...[__ind1]};
-	    else
-	      return {__consts...[__ind0]};
-	  }
+      template<typename _Sseq>
+	static constexpr bool __is_seed_seq = requires {
+	  typename __detail::_If_seed_seq_for<_Sseq, philox_engine, _UIntType>;
+	};
+
+      template <size_t __ind0, size_t __ind1>
+	static constexpr
+	array<_UIntType, __n / 2>
+	_S_popArray()
+	{
+	  if constexpr (__n == 4)
+	    return {__consts...[__ind0], __consts...[__ind1]};
+	  else
+	    return {__consts...[__ind0]};
+	}
 
       public:
-	/** Type of template param.  */
 	using result_type = _UIntType;
 	// public members
 	static constexpr size_t word_size = __w;
 	static constexpr size_t word_count = __n;
 	static constexpr size_t round_count = __r;
-	static constexpr array<result_type, __n / 2> multipliers =
-	   philox_engine::_S_popArray<0,2>();
-	static constexpr array<result_type, __n / 2> round_consts =
-	   philox_engine::_S_popArray<1,3>();
+	static constexpr array<result_type, __n / 2> multipliers
+	  = _S_popArray<0,2>();
+	static constexpr array<result_type, __n / 2> round_consts
+	  = _S_popArray<1,3>();
 
-	/** @brief returns the minimum value possible.  */
+	/// The minimum value that this engine can return
 	static constexpr result_type
 	min()
 	{ return 0; }
 
-	/** @brief returns the maximum value possible.  */
+	/// The maximum value that this engine can return
 	static constexpr result_type
 	max()
 	{
@@ -1776,16 +1774,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// constructors
 	philox_engine()
 	: philox_engine(default_seed)
-	{}
+	{ }
 
 	explicit
-	philox_engine(result_type __value);
+	philox_engine(result_type __value)
+	: _M_x{}, _M_y{}, _M_k{}, _M_i(__n - 1)
+	{ _M_k[0] = __value & max(); }
 
 	/** @brief seed sequence constructor for %philox_engine
 	  *
-	  *  @params __q the seed sequence
+	  *  @param __q the seed sequence
 	  */
-	template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
+	template<typename _Sseq> requires __is_seed_seq<_Sseq>
 	  explicit
 	  philox_engine(_Sseq& __q)
 	  {
@@ -1793,56 +1793,64 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
 	void
-	seed(result_type value = default_seed);
+	seed(result_type __value = default_seed)
+	{
+	  _M_x = {};
+	  _M_y = {};
+	  _M_k = {};
+	  _M_k[0] = __value & max();
+	  _M_i = __n - 1;
+	}
 
 	/** @brief seeds %philox_engine by seed sequence
 	  *
-	  * @params __q the seed sequence
+	  * @param __q the seed sequence
 	  */
 	template<typename _Sseq>
-	  _If_seed_seq<_Sseq>
-	  seed(_Sseq& __q);
+	  void
+	  seed(_Sseq& __q) requires __is_seed_seq<_Sseq>;
 
 	/** @brief sets the internal counter "cleartext"
 	  *
-	  * @params __counter std::array of len N
+	  * @param __counter std::array of len N
 	  */
 	void
-	set_counter(const array<result_type, __n>& __counter);
+	set_counter(const array<result_type, __n>& __counter)
+	{
+	  for (size_t __j = 0; __j < __n; ++__j)
+	    _M_x[__j] = __counter[__n - 1 - __j] & max();
+	  _M_i = __n - 1;
+	}
 
 	/** @brief compares two %philox_engine objects
 	  *
-	  * @params __x A %philox_engine object
-	  * @params __y A %philox_engine object
-	  *
-	  * @returns true if the objects will produce an identical stream, false
-	  * otherwise
+	  * @returns true if the objects will produce an identical stream,
+	  *          false otherwise
 	  */
 	friend bool
-	operator==(const philox_engine& __x, const philox_engine& __y)
-	{
-	  return (std::equal(__x._M_x.begin(), __x._M_x.end(),
-		__y._M_x.begin(), __y._M_x.end())
-	      && std::equal(__x._M_y.begin(), __x._M_y.end(),
-		__y._M_y.begin(), __y._M_y.end())
-	      && std::equal(__x._M_k.begin(), __x._M_k.end(),
-		__y._M_k.begin(), __y._M_k.end())
-	      && __x._M_i == __y._M_i);
-	}
+	operator==(const philox_engine&, const philox_engine&) = default;
 
 	/** @brief outputs a single w-bit number and handles state advancement
 	  *
 	  * @returns return_type
 	  */
-	_UIntType
-	operator()();
+	result_type
+	operator()()
+	{
+	  _M_transition();
+	  return _M_y[_M_i];
+	}
 
 	/** @brief discards __z numbers
 	  *
-	  * @params __z number of iterations to discard
+	  * @param __z number of iterations to discard
 	  */
 	void
-	discard(unsigned long long __z);
+	discard(unsigned long long __z)
+	{
+	  while (__z--)
+	    _M_transition();
+	}
 
 	/** @brief outputs the state of the generator
 	 *
@@ -1853,22 +1861,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 */
 	template<typename _CharT, typename _Traits>
 	  friend basic_ostream<_CharT, _Traits>&
-	    operator<<(basic_ostream<_CharT, _Traits>& __os,
-	      const philox_engine& __x)
-	      {
-		const typename ios_base::fmtflags __flags = __os.flags();
-		const _CharT __fill = __os.fill();
-		__os.flags(ios_base::dec | ios_base::left);
-		__os.fill(__os.widen(' '));
-		for (auto &__subkey : __x._M_k)
-		  __os << __subkey << ' ';
-		for (auto &__ctr : __x._M_x)
-		  __os << __ctr << ' ';
-		__os << __x._M_i;
-		__os.flags(__flags);
-		__os.fill(__fill);
-		return __os;
-	      }
+	  operator<<(basic_ostream<_CharT, _Traits>& __os,
+		     const philox_engine& __x)
+	  {
+	    const typename ios_base::fmtflags __flags = __os.flags();
+	    const _CharT __fill = __os.fill();
+	    __os.flags(ios_base::dec | ios_base::left);
+	    _CharT __space = __os.widen(' ');
+	    __os.fill(__space);
+	    for (auto& __subkey : __x._M_k)
+	      __os << __subkey << __space;
+	    for (auto& __ctr : __x._M_x)
+	      __os << __ctr << __space;
+	    __os << __x._M_i;
+	    __os.flags(__flags);
+	    __os.fill(__fill);
+	    return __os;
+	  }
 
 	/** @brief takes input to set the state of the %philox_engine object
 	  *
@@ -1879,38 +1888,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  */
 	template <typename _CharT, typename _Traits>
 	  friend basic_istream<_CharT, _Traits>&
-	    operator>>(basic_istream<_CharT, _Traits>& __is,
-	      philox_engine& __x)
+	  operator>>(basic_istream<_CharT, _Traits>& __is,
+		     philox_engine& __x)
+	  {
+	    const typename ios_base::fmtflags __flags = __is.flags();
+	    __is.flags(ios_base::dec | ios_base::skipws);
+	    for (auto& __subkey : __x._M_k)
+	      __is >> __subkey;
+	    for (auto& __ctr : __x._M_x)
+	      __is >> __ctr;
+	    array<_UIntType, __n> __tmpCtr = __x._M_x;
+	    unsigned char __setIndex = 0;
+	    for (size_t __j = 0; __j < __x._M_x.size(); ++__j)
 	      {
-		const typename ios_base::fmtflags __flags = __is.flags();
-		__is.flags(ios_base::dec | ios_base::skipws);
-		for (auto &__subkey : __x._M_k)
-		  __is >> __subkey;
-		for (auto &__ctr : __x._M_x)
-		  __is >> __ctr;
-		array<_UIntType, __n> __tmpCtr = __x._M_x;
-		unsigned char __setIndex = 0;
-		for (size_t __j = 0; __j < __x._M_x.size(); ++__j)
-		{
-		  if (__x._M_x[__j] > 0)
+		if (__x._M_x[__j] > 0)
 		  {
 		    __setIndex = __j;
 		    break;
 		  }
-		}
-		for (size_t __j = 0; __j <= __setIndex; ++__j)
-		{
-		  if (__j != __setIndex)
-		    __x._M_x[__j] = max();
-		  else
-		    --__x._M_x[__j];
-		}
-		__x._M_philox();
-		__x._M_x = __tmpCtr;
-		__is >> __x._M_i;
-		__is.flags(__flags);
-		return __is;
 	      }
+	    for (size_t __j = 0; __j <= __setIndex; ++__j)
+	      {
+		if (__j != __setIndex)
+		  __x._M_x[__j] = max();
+		else
+		  --__x._M_x[__j];
+	      }
+	    __x._M_philox();
+	    __x._M_x = __tmpCtr;
+	    __is >> __x._M_i;
+	    __is.flags(__flags);
+	    return __is;
+	  }
+
       private:
 	// private state variables
 	array<_UIntType, __n> _M_x;
@@ -1918,39 +1928,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	array<_UIntType, __n> _M_y;
 	unsigned long long _M_i = 0;
 
-	/** @brief Takes the high values of the product of __a, __b
-	  *
-	  * @params __a an unsigned integer
-	  * @params __b an unsigned integer
-	  *
-	  * @returns an unsigned integer of at most bitlength W
-	  */
-	static
-	_UIntType
+	// The high W bits of the product of __a and __b
+	static _UIntType
 	_S_mulhi(_UIntType __a, _UIntType __b); // (A*B)/2^W
 
-	/** @brief Takes the low values of the product of __a, __b
-	  *
-	  * @params __a an unsigned integer
-	  * @params __b an unsigned integer
-	  *
-	  * @returns an unsigned integer of at most bitlength W
-	  */
-	static
-	_UIntType
+	// The low W bits of the product of __a and __b
+	static _UIntType
 	_S_mullo(_UIntType __a, _UIntType __b); // (A*B)%2^W
 
-	/** @brief an R-round substitution/Feistel Network hybrid for
-	  * %philox_engine
-	  */
+	// An R-round substitution/Feistel Network hybrid for philox_engine
 	void
 	_M_philox();
 
-	/** @brief an internal transition function for the %philox_engine.  */
+	// The transition function
 	void
 	_M_transition();
     };
-
 #endif
 
   /**
@@ -2007,17 +2000,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef minstd_rand0 default_random_engine;
 
-#if __cpp_lib_philox_engine
+#if __glibcxx_philox_engine
 
+  /// 32-bit four-word Philox engine.
   typedef philox_engine<
     uint_fast32_t,
     32, 4, 10,
     0xCD9E8D57, 0x9E3779B9,
     0xD2511F53, 0xBB67AE85> philox4x32;
 
-  /**
-   * Alternative Philox instance (64 bit)
-   */
+  /// 64-bit four-word Philox engine.
   typedef philox_engine<
     uint_fast64_t,
     64, 4, 10,

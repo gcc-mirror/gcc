@@ -1,11 +1,15 @@
 // { dg-do run { target c++26 } }
-// { dg-require-cstdint "" }
+// { dg-require-cpp-feature-test __cpp_lib_philox_engine }
 
-// 29.5.4 Random Number Engine Class Templates
-// 29.5.4.5 Class Template philox_engine
+// N5014 29.5.6 Engines and engine adaptors with predefined parameters
 
 #include <random>
 #include <testsuite_hooks.h>
+
+using test_type = std::philox_engine<std::uint_fast64_t, 64, 4, 10,
+				     0xCA5A826395121157, 0x9E3779B97F4A7C15,
+				     0xD2E7470EE14C6C93, 0xBB67AE8584CAA73B>;
+static_assert( std::is_same_v<test_type, std::philox4x64> );
 
 void
 test01()
@@ -19,5 +23,4 @@ test01()
 int main()
 {
   test01();
-  return 0;
 }

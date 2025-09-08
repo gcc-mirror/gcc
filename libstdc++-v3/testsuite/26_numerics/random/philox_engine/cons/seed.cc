@@ -1,20 +1,51 @@
 // { dg-do run { target c++26 } }
-// { dg-require-cstdint "" }
+// { dg-require-cpp-feature-test __cpp_lib_philox_engine }
 
 #include <random>
+#include <testsuite_hooks.h>
+
+int f(int x)
+{
+  std::seed_seq sq(&x, &x + 1);
+  auto rnd = std::philox4x32(sq);
+  return std::uniform_int_distribution<int>()(rnd);
+}
+
+int g(int x)
+{
+  std::seed_seq sq(&x, &x + 1);
+  auto rnd = std::philox4x32();
+  rnd.seed(sq);
+  return std::uniform_int_distribution<int>()(rnd);
+}
 
 void
 test01()
 {
-  unsigned long seed = 2;
-  std::philox_engine<std::uint_fast32_t,
-		     32, 4, 10, 0xCD9E8D57,
-		     0x9E3779B9, 0xD2511F53,
-		     0xBB67AE85> philox4x32seeded(seed);
+  const int f1 = f(0);
+  const int f2 = f(0);
+
+  const int g1 = g(0);
+  const int g2 = g(0);
+
+  VERIFY( f1 == f2 );
+  VERIFY( g1 == g2 );
+  VERIFY( f1 == g1 );
+}
+
+void
+test02()
+{
+  std::philox4x64 e1(25);
+  std::philox4x64 e2;
+  VERIFY( e2 != e1 );
+  e2.seed(25);
+  VERIFY( e2 == e1 );
+
 }
 
 int main()
 {
   test01();
-  return 0;
+  test02();
 }
