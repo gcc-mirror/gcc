@@ -1,3 +1,14 @@
+2025-09-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c++/107393
+	* decl.cc (grokvardecl): Set a tentative TLS model which will be
+	updated by cplus_decl_attributes later.
+	* decl2.cc (cplus_decl_attributes): Update TLS model with the
+	default TLS access model if the default TLS access model is
+	stronger.
+	* pt.cc (tsubst_decl): Set TLS model only after processing a
+	variable.
+
 2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121702

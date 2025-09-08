@@ -1,3 +1,75 @@
+2025-09-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121841
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Allow
+	two different decls as bases as non-overlapping bases.
+
+2025-09-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* dep-fusion.cc: Mark clone, gate and execute methods as final.
+
+2025-09-07  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/andes-vector-builtins-bases.cc (nds_vd4dot): New class.
+	(class nds_vd4dotsu): New class.
+	* config/riscv/andes-vector-builtins-bases.h: New def.
+	* config/riscv/andes-vector-builtins-functions.def (nds_vd4dots): Ditto.
+	(nds_vd4dotsu): Ditto.
+	(nds_vd4dotu): Ditto.
+	* config/riscv/andes-vector.md
+	(@pred_nds_vd4dot<su><mode>): New pattern.
+	(@pred_nds_vd4dotsu<mode>): New pattern.
+	* config/riscv/genrvv-type-indexer.cc (main): Modify sew of QUAD_FIX,
+	QUAD_FIX_SIGNED and QUAD_FIX_UNSIGNED.
+	* config/riscv/riscv-vector-builtins.cc
+	(qexti_vvvv_ops): New operand information.
+	(qexti_su_vvvv_ops): New operand information.
+	(qextu_vvvv_ops): New operand information.
+	* config/riscv/riscv-vector-builtins.h (XANDESVDOT_EXT): New def.
+	(required_ext_to_isa_name): Add case XANDESVDOT_EXT.
+	(required_extensions_specified): Ditto.
+	(struct function_group_info): Ditto.
+	* config/riscv/vector-iterators.md (NDS_QUAD_FIX): New iterator.
+
+2025-09-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-opts.h (riscv_microarchitecture_type): Fix ordering.
+
+2025-09-07  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* common/config/riscv/riscv-common.cc:
+	Turn on VECTOR_ELEN_FP_16 for XAndesvpackfph.
+	* config/riscv/andes-vector-builtins-bases.cc (nds_vfpmad): New class.
+	* config/riscv/andes-vector-builtins-bases.h: New def.
+	* config/riscv/andes-vector-builtins-functions.def (nds_vfpmadt): Ditto.
+	(nds_vfpmadb): Ditto.
+	(nds_vfpmadt_frm): Ditto.
+	(nds_vfpmadb_frm): Ditto.
+	* config/riscv/andes-vector.md (@pred_nds_vfpmad<nds_tb><mode>):
+	New pattern.
+	* config/riscv/riscv-vector-builtins-types.def
+	(DEF_RVV_F16_OPS): New def.
+	* config/riscv/riscv-vector-builtins.cc (f16_ops): Ditto
+	* config/riscv/riscv-vector-builtins.def (float32_type_node): Ditto.
+	* config/riscv/riscv-vector-builtins.h (XANDESVPACKFPH_EXT): Ditto.
+	(required_ext_to_isa_name): Add case XANDESVPACKFPH_EXT.
+	(required_extensions_specified): Ditto.
+	* config/riscv/vector-iterators.md (VHF): New iterator.
+
+2025-09-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121794
+	* config/avr/avr.md (cmpqi3): Use cpi R,0 if possible.
+
+2025-09-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*vnmsac_vx_<mode>): Rename from.
+	(*mul_minus_vx_<mode>): Rename to and add nmsub support.
+	* config/riscv/vector.md (@pred_vnmsac_vx_<mode>): Rename from.
+	(@pred_mul_minus_vx_<mode>): Rename to and add nmsub support.
+	(*pred_nmsac_<mode>_scalar_undef): Rename from.
+	(*pred_mul_minus_vx<mode>_undef): Rename to and add nmsub support.
+
 2025-09-06  Sam James  <sam@gentoo.org>
 
 	* doc/generic.texi (TYPE_CANONICAL): Don't mention long-removed

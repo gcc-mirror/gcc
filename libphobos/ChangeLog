@@ -1,3 +1,12 @@
+2025-09-07  Sam James  <sam@gentoo.org>
+
+	* configure.tgt: Add hppa[12]*-*-linux* as a supported target.
+
+2025-09-07  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.tgt: Add powerpc64le-linux-gnu as a supported target
+	when configured with --with-long-double-format=ieee.
+
 2025-09-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* libdruntime/core/thread/osthread.d: Use PPC_THREAD_STATE
