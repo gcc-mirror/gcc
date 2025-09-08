@@ -659,7 +659,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* int_mul */
   {COSTS_N_INSNS (13), COSTS_N_INSNS (13)},	/* int_div */
   8,						/* issue_rate */
-  3,						/* branch_cost */
+  4,						/* branch_cost */
   4,						/* memory_cost */
   4,						/* fmv_cost */
   false,					/* slow_unaligned_access */
