@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-manip.h"
 #include "dumpfile.h"
 #include "sreal.h"
+#include "tree-cfg.h"
+#include "tree-pass.h"
 
 static void copy_loops_to (class loop **, int,
 			   class loop *);
@@ -1615,7 +1617,15 @@ create_preheader (class loop *loop, int flags)
 	     just a single successor and a normal edge.  */
           if ((flags & CP_SIMPLE_PREHEADERS)
 	      && ((single_entry->flags & EDGE_COMPLEX)
-		  || !single_succ_p (single_entry->src)))
+		  || !single_succ_p (single_entry->src)
+		  /* We document LOOPS_HAVE_PREHEADERS as to forming a
+		     natural place to move code outside of the loop, so it
+		     should not end with a control instruction.  */
+		  /* ???  This, and below JUMP_P check needs to be a new
+		     CFG hook.  */
+		  || (cfun->curr_properties & PROP_gimple
+		      && !gsi_end_p (gsi_last_bb (single_entry->src))
+		      && stmt_ends_bb_p (*gsi_last_bb (single_entry->src)))))
             need_forwarder_block = true;
           /* If we want fallthru preheaders, also create forwarder block when
              preheader ends with a jump or has predecessors from loop.  */
