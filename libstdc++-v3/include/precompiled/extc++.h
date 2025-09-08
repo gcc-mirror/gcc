@@ -37,7 +37,6 @@
 #endif
 #include <ext/alloc_traits.h>
 #include <ext/atomicity.h>
-#include <ext/cast.h>
 #include <ext/iterator>
 #include <ext/numeric_traits.h>
 #include <ext/pointer.h>
