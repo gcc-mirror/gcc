@@ -1459,6 +1459,21 @@ get_live_virtual_operand_on_edge (edge e)
   while (1);
 }
 
+/* Remove the single succ/pred forwarder block BB.  */
+
+static void
+vect_remove_forwarder (basic_block bb)
+{
+  edge pred = single_pred_edge (bb);
+  edge succ = single_succ_edge (bb);
+  basic_block to = single_succ (bb);
+  edge e = redirect_edge_and_branch (pred, to);
+  gcc_assert  (e == pred);
+  copy_phi_arg_into_existing_phi (succ, e);
+  delete_basic_block (bb);
+  set_immediate_dominator (CDI_DOMINATORS, to, pred->src);
+}
+
 /* Given LOOP this function generates a new copy of it and puts it
    on E which is either the entry or exit of LOOP.  If SCALAR_LOOP is
    non-NULL, assume LOOP and SCALAR_LOOP are equivalent and copy the
@@ -1858,11 +1873,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
       /* And remove the non-necessary forwarder again.  Keep the other
          one so we have a proper pre-header for the loop at the exit edge.  */
-      redirect_edge_pred (single_succ_edge (preheader),
-			  single_pred (preheader));
-      delete_basic_block (preheader);
-      set_immediate_dominator (CDI_DOMINATORS, scalar_loop->header,
-			       loop_preheader_edge (scalar_loop)->src);
+      vect_remove_forwarder (preheader);
 
       /* Finally after wiring the new epilogue we need to update its main exit
 	 to the original function exit we recorded.  Other exits are already
@@ -1920,11 +1931,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       if (scalar_loop != loop)
 	{
 	  /* Remove the non-necessary forwarder of scalar_loop again.  */
-	  redirect_edge_pred (single_succ_edge (preheader),
-			      single_pred (preheader));
-	  delete_basic_block (preheader);
-	  set_immediate_dominator (CDI_DOMINATORS, scalar_loop->header,
-				   loop_preheader_edge (scalar_loop)->src);
+	  vect_remove_forwarder (preheader);
 	  preheader = split_edge (loop_preheader_edge (loop));
 	  entry_e = single_pred_edge (preheader);
 	}
@@ -1939,11 +1946,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
       /* And remove the non-necessary forwarder again.  Keep the other
          one so we have a proper pre-header for the loop at the exit edge.  */
-      redirect_edge_pred (single_succ_edge (new_preheader),
-			  single_pred (new_preheader));
-      delete_basic_block (new_preheader);
-      set_immediate_dominator (CDI_DOMINATORS, new_loop->header,
-			       loop_preheader_edge (new_loop)->src);
+      vect_remove_forwarder (new_preheader);
 
       /* Update dominators for multiple exits.  */
       if (multiple_exits_p)
