@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=c23" } */
+/* { dg-options "-std=gnu23" } */
 
 void
 foo (void)
