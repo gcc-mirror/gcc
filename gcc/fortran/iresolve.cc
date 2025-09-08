@@ -3000,30 +3000,28 @@ gfc_resolve_sqrt (gfc_expr *f, gfc_expr *x)
 /* Resolve the g77 compatibility function STAT AND FSTAT.  */
 
 void
-gfc_resolve_stat (gfc_expr *f, gfc_expr *n ATTRIBUTE_UNUSED,
-		  gfc_expr *a ATTRIBUTE_UNUSED)
+gfc_resolve_stat (gfc_expr *f, gfc_expr *n ATTRIBUTE_UNUSED, gfc_expr *a)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  f->ts.kind = a->ts.kind;
   f->value.function.name = gfc_get_string (PREFIX ("stat_i%d"), f->ts.kind);
 }
 
 
 void
-gfc_resolve_lstat (gfc_expr *f, gfc_expr *n ATTRIBUTE_UNUSED,
-		   gfc_expr *a ATTRIBUTE_UNUSED)
+gfc_resolve_lstat (gfc_expr *f, gfc_expr *n ATTRIBUTE_UNUSED, gfc_expr *a)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  f->ts.kind = a->ts.kind;
   f->value.function.name = gfc_get_string (PREFIX ("lstat_i%d"), f->ts.kind);
 }
 
 
 void
-gfc_resolve_fstat (gfc_expr *f, gfc_expr *n, gfc_expr *a ATTRIBUTE_UNUSED)
+gfc_resolve_fstat (gfc_expr *f, gfc_expr *n, gfc_expr *a)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  f->ts.kind = a->ts.kind;
   if (n->ts.kind != f->ts.kind)
     gfc_convert_type (n, &f->ts, 2);
 
@@ -4159,7 +4157,9 @@ void
 gfc_resolve_stat_sub (gfc_code *c)
 {
   const char *name;
-  name = gfc_get_string (PREFIX ("stat_i%d_sub"), gfc_default_integer_kind);
+  gfc_typespec *ts;
+  ts = &c->ext.actual->next->expr->ts;
+  name = gfc_get_string (PREFIX ("stat_i%d_sub"), ts->kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
@@ -4168,7 +4168,9 @@ void
 gfc_resolve_lstat_sub (gfc_code *c)
 {
   const char *name;
-  name = gfc_get_string (PREFIX ("lstat_i%d_sub"), gfc_default_integer_kind);
+  gfc_typespec *ts;
+  ts = &c->ext.actual->next->expr->ts;
+  name = gfc_get_string (PREFIX ("lstat_i%d_sub"), ts->kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 

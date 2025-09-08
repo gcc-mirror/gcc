@@ -5871,6 +5871,125 @@ gfc_conv_intrinsic_findloc (gfc_se *se, gfc_expr *expr)
 
 }
 
+/* Emit code for fstat, lstat and stat intrinsic subroutines.  */
+
+static tree
+conv_intrinsic_fstat_lstat_stat_sub (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se se, se_stat;
+  tree unit;
+  tree name, slen;
+  tree vals;
+  tree arg3 = NULL_TREE;
+  tree stat = NULL_TREE ;
+  tree present = NULL_TREE;
+  tree tmp;
+  int kind;
+
+  gfc_init_block (&block);
+  gfc_init_se (&se, NULL);
+
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_FSTAT:
+      /* Deal with the UNIT argument.  */
+      gfc_conv_expr (&se, code->ext.actual->expr);
+      gfc_add_block_to_block (&block, &se.pre);
+      unit = gfc_evaluate_now (se.expr, &block);
+      unit = gfc_build_addr_expr (NULL_TREE, unit);
+      gfc_add_block_to_block (&block, &se.post);
+      break;
+
+    case GFC_ISYM_LSTAT:
+    case GFC_ISYM_STAT:
+      /* Deal with the NAME argument.  */
+      gfc_conv_expr (&se, code->ext.actual->expr);
+      gfc_conv_string_parameter (&se);
+      gfc_add_block_to_block (&block, &se.pre);
+      name = se.expr;
+      slen = se.string_length;
+      gfc_add_block_to_block (&block, &se.post);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Deal with the VALUES argument.  */
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr_descriptor (&se, code->ext.actual->next->expr);
+  vals = gfc_build_addr_expr (NULL_TREE, se.expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  gfc_add_block_to_block (&block, &se.post);
+  kind = code->ext.actual->next->expr->ts.kind;
+
+  /* Deal with an optional STATUS.  */
+  if (code->ext.actual->next->next->expr)
+    {
+      gfc_init_se (&se_stat, NULL);
+      gfc_conv_expr (&se_stat, code->ext.actual->next->next->expr);
+      stat = gfc_create_var (gfc_get_int_type (kind), "_stat");
+      arg3 = gfc_build_addr_expr (NULL_TREE, stat);
+
+      /* Handle case of status being an optional dummy.  */
+      gfc_symbol *sym = code->ext.actual->next->next->expr->symtree->n.sym;
+      if (sym->attr.dummy && sym->attr.optional)
+	{
+	  present = gfc_conv_expr_present (sym);
+	  arg3 = fold_build3_loc (input_location, COND_EXPR,
+				  TREE_TYPE (arg3), present, arg3,
+				  fold_convert (TREE_TYPE (arg3),
+						null_pointer_node));
+	}
+    }
+
+  /* Call library function depending on KIND of VALUES argument.  */
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_FSTAT:
+      tmp = (kind == 4 ? gfor_fndecl_fstat_i4_sub : gfor_fndecl_fstat_i8_sub);
+      break;
+    case GFC_ISYM_LSTAT:
+      tmp = (kind == 4 ? gfor_fndecl_lstat_i4_sub : gfor_fndecl_lstat_i8_sub);
+      break;
+    case GFC_ISYM_STAT:
+      tmp = (kind == 4 ? gfor_fndecl_stat_i4_sub : gfor_fndecl_stat_i8_sub);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (code->resolved_isym->id == GFC_ISYM_FSTAT)
+    tmp = build_call_expr_loc (input_location, tmp, 3, unit, vals,
+			       stat ? arg3 : null_pointer_node);
+  else
+    tmp = build_call_expr_loc (input_location, tmp, 4, name, vals,
+			       stat ? arg3 : null_pointer_node, slen);
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* Handle kind conversion of status.  */
+  if (stat && stat != se_stat.expr)
+    {
+      stmtblock_t block2;
+
+      gfc_init_block (&block2);
+      gfc_add_modify (&block2, se_stat.expr,
+		      fold_convert (TREE_TYPE (se_stat.expr), stat));
+
+      if (present)
+	{
+	  tmp = build3_v (COND_EXPR, present, gfc_finish_block (&block2),
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else
+	gfc_add_block_to_block (&block, &block2);
+    }
+
+  return gfc_finish_block (&block);
+}
+
 /* Emit code for minval or maxval intrinsic.  There are many different cases
    we need to handle.  For performance reasons we sometimes create two
    loops instead of one, where the second one is much simpler.
@@ -13350,6 +13469,12 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
 
     case GFC_ISYM_FREE:
       res = conv_intrinsic_free (code);
+      break;
+
+    case GFC_ISYM_FSTAT:
+    case GFC_ISYM_LSTAT:
+    case GFC_ISYM_STAT:
+      res = conv_intrinsic_fstat_lstat_stat_sub (code);
       break;
 
     case GFC_ISYM_RANDOM_INIT:
