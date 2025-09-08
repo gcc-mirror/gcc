@@ -27250,11 +27250,10 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     case floor_optab:
     case ceil_optab:
     case btrunc_optab:
-      if (((SSE_FLOAT_MODE_P (mode1)
-	    && TARGET_SSE_MATH
-	    && TARGET_SSE4_1)
-	   || mode1 == HFmode)
-	  && !flag_trapping_math)
+      if ((SSE_FLOAT_MODE_P (mode1)
+	   && TARGET_SSE_MATH
+	   && TARGET_SSE4_1)
+	  || mode1 == HFmode)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 
