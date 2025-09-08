@@ -1465,11 +1465,32 @@ and <function>chrono::parse</function> is supported since 14.1.
    </para>
 
    <para>
+      <emphasis>16.4.2.4 [compliance]</emphasis> The implementation is
+      freestanding if the <code>-ffreestanding</code> compiler flag is used, 
+      and hosted otherwise.
+   </para>
+
+   <para>
       <emphasis>16.4.2.4 [compliance]</emphasis>
       The support for always lock-free integral atomic types and presence of
       <code>atomic_signed_lock_free</code> and
       <code>atomic_unsigned_lock_free</code> type aliases depends on the
       target.
+   </para>
+
+   <para>
+      <emphasis>27.5.11 [time.duration.io]</emphasis>
+      The <literal>"μs"</literal> (<literal>"\u00b5\u0073"</literal>) is used
+      for <code>std::micro</code> <code>Period::type</code> if the macro
+      <code>_GLIBCXX_USE_ALT_MICROSECONDS_SUFFIX</code> is defined to a value
+      other than zero before inclusion of the <code>chrono</code> header,
+      <literal>"us"</literal> is used otherwise.
+   </para>
+
+   <para>
+      <emphasis>29.8.2.2 [stringbuf.cons]</emphasis> Sequence pointers are
+      initialized to null pointers by the
+      <code>basic_stringbuf(ios_base::openmode)</code> constructor.
    </para>
 
    <para>
@@ -1502,6 +1523,14 @@ and <function>chrono::parse</function> is supported since 14.1.
       <emphasis>31.7.5 [atomics.ref.pointer]</emphasis>
       The value of <code>required_alignment</code> member is equal to
       <code>alignof(value_type)</code>.
+   </para>
+
+   <para>
+      <emphasis>32.7.3 [thread.sema.cnt]</emphasis> The value of default
+      argument for the <code>least_max_value</code> parameter depends on the
+      target operating system and platform, however the value of
+      <code>counting_semaphore&lt;&gt;::max()</code> is greater than or equal
+      to <code>numeric_limits&lt;int&gt;::max()</code>.
    </para>
 
 </section>

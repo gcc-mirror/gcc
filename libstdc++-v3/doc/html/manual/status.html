@@ -1767,11 +1767,26 @@ and <code class="function">chrono::parse</code> is supported since 14.1.
       Behavior</a>. This section only documents behaviour which is new in
       the 2020 standard.
    </p><p>
+      <span class="emphasis"><em>16.4.2.4 [compliance]</em></span> The implementation is
+      freestanding if the <code class="code">-ffreestanding</code> compiler flag is used, 
+      and hosted otherwise.
+   </p><p>
       <span class="emphasis"><em>16.4.2.4 [compliance]</em></span>
       The support for always lock-free integral atomic types and presence of
       <code class="code">atomic_signed_lock_free</code> and
       <code class="code">atomic_unsigned_lock_free</code> type aliases depends on the
       target.
+   </p><p>
+      <span class="emphasis"><em>27.5.11 [time.duration.io]</em></span>
+      The <code class="literal">"μs"</code> (<code class="literal">"\u00b5\u0073"</code>) is used
+      for <code class="code">std::micro</code> <code class="code">Period::type</code> if the macro
+      <code class="code">_GLIBCXX_USE_ALT_MICROSECONDS_SUFFIX</code> is defined to a value
+      other than zero before inclusion of the <code class="code">chrono</code> header,
+      <code class="literal">"us"</code> is used otherwise.
+   </p><p>
+      <span class="emphasis"><em>29.8.2.2 [stringbuf.cons]</em></span> Sequence pointers are
+      initialized to null pointers by the
+      <code class="code">basic_stringbuf(ios_base::openmode)</code> constructor.
    </p><p>
       <span class="emphasis"><em>31.7.1 [atomics.ref.generic.general]</em></span>,
       <span class="emphasis"><em>31.7.3 [atomics.ref.int]</em></span>,
@@ -1796,6 +1811,12 @@ and <code class="function">chrono::parse</code> is supported since 14.1.
       <span class="emphasis"><em>31.7.5 [atomics.ref.pointer]</em></span>
       The value of <code class="code">required_alignment</code> member is equal to
       <code class="code">alignof(value_type)</code>.
+   </p><p>
+      <span class="emphasis"><em>32.7.3 [thread.sema.cnt]</em></span> The value of default
+      argument for the <code class="code">least_max_value</code> parameter depends on the
+      target operating system and platform, however the value of
+      <code class="code">counting_semaphore&lt;&gt;::max()</code> is greater than or equal
+      to <code class="code">numeric_limits&lt;int&gt;::max()</code>.
    </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.2023"></a>C++ 2023</h3></div></div></div><p>
 In this implementation the <code class="literal">-std=gnu++23</code> or
 <code class="literal">-std=c++23</code> flag must be used to enable language
