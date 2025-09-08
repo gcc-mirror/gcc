@@ -1453,4 +1453,57 @@ time zones and UTC are supported since 13.1,
 and <function>chrono::parse</function> is supported since 14.1.
 </para>
 
+<section xml:id="iso.2020.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+   <para>For behaviour which is also specified by previous standards,
+      see <link linkend="iso.1998.specific">C++ 1998/2003 Implementation
+      Specific Behavior</link>, <link linkend="iso.2011.specific">C++
+      2011 Implementation Specific Behavior</link>, and
+      <link linkend="iso.2017.specific">C++ 2017 Implementation Specific
+      Behavior</link>. This section only documents behaviour which is new in
+      the 2020 standard.
+   </para>
+
+   <para>
+      <emphasis>16.4.2.4 [compliance]</emphasis>
+      The support for always lock-free integral atomic types and presence of
+      <code>atomic_signed_lock_free</code> and
+      <code>atomic_unsigned_lock_free</code> type aliases depends on the
+      target.
+   </para>
+
+   <para>
+      <emphasis>31.7.1 [atomics.ref.generic.general]</emphasis>,
+      <emphasis>31.7.3 [atomics.ref.int]</emphasis>,
+      <emphasis>31.7.4 [atomics.ref.float]</emphasis>,
+      <emphasis>31.7.5 [atomics.ref.pointer]</emphasis>
+      The values of <code>is_always_lock_free</code> members depend on the
+      target and cannot be listed here.
+   </para>
+
+   <para>
+      <emphasis>31.7.1 [atomics.ref.generic.general]</emphasis>
+      If <code>sizeof(T)</code> is equal to either <code>1</code>,
+      <code>2</code>, <code>4</code>, <code>8</code>, or <code>16</code>,
+      then the value of <code>required_alignment</code> member is equal to
+      the maximum of <code>alignof(T)</code> and <code>sizeof(T)</code>.
+      Otherwise <code>required_alignment</code> value is <code>alignof(T)</code>.
+   </para>
+
+   <para>
+      <emphasis>31.7.3 [atomics.ref.int]</emphasis>
+      The value of <code>required_alignment</code> member is equal to the
+      maximum of <code>alignof(value_type)</code> and
+      <code>sizeof(value_type)</code>.
+   </para>
+
+   <para>
+      <emphasis>31.7.4 [atomics.ref.float]</emphasis>,
+      <emphasis>31.7.5 [atomics.ref.pointer]</emphasis>
+      The value of <code>required_alignment</code> member is equal to
+      <code>alignof(value_type)</code>.
+   </para>
+
+</section>
+
 </section>
