@@ -40,6 +40,7 @@
 #pragma GCC system_header
 #endif
 
+#include <bits/c++config.h>
 #if _GLIBCXX_HOSTED
 #  include <iosfwd>
 #endif
