@@ -1,4 +1,8 @@
+! { dg-require-effective-target pie }
 ! { dg-additional-options "-fdump-ipa-whole-program" }
+! Add -fPIE or -mno-direct-extern-access to disable direct access to
+! external symbol from executable.
+! { dg-additional-options "-fPIE" { target { ! { i?86-*-* x86_64-*-* } } } }
 ! { dg-additional-options "-mno-direct-extern-access" { target { i?86-*-* x86_64-*-* } } }
 
 integer :: i
