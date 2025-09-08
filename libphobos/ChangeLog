@@ -1,3 +1,22 @@
+2025-09-07  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2025-09-07  Sam James  <sam@gentoo.org>
+
+	* configure.tgt: Add hppa[12]*-*-linux* as a supported target.
+
+2025-09-07  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2025-05-06  Sam James  <sam@gentoo.org>
+
+	* configure.tgt: Add sparc64-unknown-linux-gnu as a supported target.
+
+2025-09-07  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.tgt: Add powerpc64le--linux-gnu as a supported target
+	when configured with --with-long-double-format=ieee.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.

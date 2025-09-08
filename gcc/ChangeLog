@@ -1,3 +1,11 @@
+2025-09-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-09-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121794
+	* config/avr/avr.md (cmpqi3): Use cpi R,0 if possible.
+
 2025-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
