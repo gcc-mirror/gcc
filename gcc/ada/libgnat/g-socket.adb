@@ -1958,7 +1958,7 @@ package body GNAT.Sockets is
 
    procedure Listen_Socket
      (Socket : Socket_Type;
-      Length : Natural := 15)
+      Length : Natural := SOSC.BACKLOG_MAX)
    is
       Res : constant C.int := C_Listen (C.int (Socket), C.int (Length));
    begin

@@ -1791,6 +1791,9 @@ struct sockaddr_un {
 #define SIZEOF_sockaddr_un (sizeof (struct sockaddr_un))
 CND(SIZEOF_sockaddr_un, "struct sockaddr_un")
 
+#define BACKLOG_MAX 15
+CND(BACKLOG_MAX, "number of outstanding connections in the socket's listen queue")
+
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set")
 CND(FD_SETSIZE, "Max fd value")
