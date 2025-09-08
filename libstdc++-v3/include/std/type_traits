@@ -4648,12 +4648,12 @@ template<typename _Ret, typename _Fn, typename... _Args>
       }
   };
 
-  template<_CwFixedValue _X, typename>
+  template<_CwFixedValue _Xv, typename>
   struct constant_wrapper : _CwOperators
   {
-    static constexpr const auto& value = _X._M_data;
+    static constexpr const auto& value = _Xv._M_data;
     using type = constant_wrapper;
-    using value_type = typename decltype(_X)::_S_type;
+    using value_type = typename decltype(_Xv)::_S_type;
 
     template<_ConstExprParam _Right>
       constexpr auto
