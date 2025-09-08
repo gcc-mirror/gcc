@@ -2442,8 +2442,14 @@ dump_ada_node (pretty_printer *pp, tree node, tree type, int spc,
 			  break;
 		      }
 
-		  dump_ada_node (pp, ref_type, ref_type, spc, is_access,
-				 true);
+		  /* Dump anonymous tagged types specially.  */
+		  if (TYPE_NAME (ref_type)
+		      || (!RECORD_OR_UNION_TYPE_P (ref_type)
+			  && TREE_CODE (ref_type) != ENUMERAL_TYPE))
+		    dump_ada_node (pp, ref_type, ref_type, spc, is_access,
+				   true);
+		  else
+		    dump_anonymous_type_name (pp, ref_type);
 		}
 	    }
 	}
@@ -2699,7 +2705,16 @@ dump_nested_type (pretty_printer *pp, tree field, tree t, int spc)
     {
     case POINTER_TYPE:
       tmp = TREE_TYPE (field_type);
-      dump_forward_type (pp, tmp, t, spc);
+      decl = get_underlying_decl (tmp);
+      if (TYPE_NAME (tmp) || !decl || DECL_NAME (decl))
+	dump_forward_type (pp, tmp, t, spc);
+      else if (DECL_SOURCE_FILE (decl) == DECL_SOURCE_FILE (t)
+	       && !TREE_VISITED (decl))
+	{
+	  /* Generate full declaration.  */
+	  dump_nested_type (pp, decl, t, spc);
+	  TREE_VISITED (decl) = 1;
+	}
       break;
 
     case ARRAY_TYPE:
@@ -2773,6 +2788,11 @@ dump_nested_type (pretty_printer *pp, tree field, tree t, int spc)
     default:
       break;
     }
+
+  /* Make sure not to output the nested type twice in C++.  */
+  decl = get_underlying_decl (field_type);
+  if (decl)
+    TREE_VISITED (decl) = 1;
 }
 
 /* Hash table of overloaded names that we cannot support.  It is needed even
