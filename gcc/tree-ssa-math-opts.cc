@@ -1632,7 +1632,27 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
   tree result = make_ssa_name (type);
-  gassign *stmt = gimple_build_assign (result, NOP_EXPR, val);
+  tree rhs = val;
+
+  if (TREE_CODE (val) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (val);
+
+      if (is_gimple_assign (def)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
+	{
+	  tree cast_rhs = gimple_assign_rhs1 (def);
+	  unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (cast_rhs));
+	  unsigned type_prec = TYPE_PRECISION (type);
+	  unsigned val_prec = TYPE_PRECISION (TREE_TYPE (val));
+
+	  if (type_prec >= rhs_prec && val_prec >= rhs_prec)
+	    rhs = cast_rhs;
+	}
+    }
+
+  gassign *stmt = gimple_build_assign (result, NOP_EXPR, rhs);
+
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
