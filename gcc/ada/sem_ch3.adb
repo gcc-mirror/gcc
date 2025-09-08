@@ -1542,7 +1542,6 @@ package body Sem_Ch3 is
          Analyze_Component_Declaration (Decl);
 
          Set_Analyzed (Decl);
-         Mutate_Ekind            (Tag, E_Component);
          Set_Is_Tag              (Tag);
          Set_Is_Aliased          (Tag);
          Set_Is_Independent      (Tag);
@@ -1583,7 +1582,6 @@ package body Sem_Ch3 is
             Analyze_Component_Declaration (Decl);
 
             Set_Analyzed (Decl);
-            Mutate_Ekind            (Offset, E_Component);
             Set_Is_Aliased          (Offset);
             Set_Is_Independent      (Offset);
             Set_Related_Type        (Offset, Iface);
