@@ -2832,7 +2832,7 @@ out:
 
       /* See which SLP operand a reduction chain continues on.  We want
 	 to chain even PHIs but not backedges.  */
-      if (VECTORIZABLE_CYCLE_DEF (oprnd_info->first_dt)
+      if (STMT_VINFO_REDUC_DEF (oprnd_info->def_stmts[0])
 	  || STMT_VINFO_REDUC_IDX (oprnd_info->def_stmts[0]) != -1)
 	{
 	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)

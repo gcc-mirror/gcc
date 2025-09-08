@@ -460,8 +460,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 	}
       else if (reduc_stmt_info)
 	{
-	  STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
-	  STMT_VINFO_REDUC_DEF (reduc_stmt_info) = stmt_vinfo;
 	  if (loop != LOOP_VINFO_LOOP (loop_vinfo))
 	    {
 	      if (dump_enabled_p ())
@@ -472,6 +470,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 	    }
 	  else
 	    {
+	      STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
+	      STMT_VINFO_REDUC_DEF (reduc_stmt_info) = stmt_vinfo;
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Detected reduction.\n");
