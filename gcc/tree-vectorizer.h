@@ -289,6 +289,10 @@ struct vect_load_store_data : vect_data {
   } gs;
   tree strided_offset_vectype; // VMAT_GATHER_SCATTER_IFN, originally strided
   tree ls_type; // VMAT_GATHER_SCATTER_IFN
+  /* This is set to a supported offset vector type if we don't support the
+     originally requested offset type.  In that case there will be an
+     additional offset conversion before the gather/scatter.  */
+  tree supported_offset_vectype; // VMAT_GATHER_SCATTER_IFN
   auto_vec<int> elsvals;
   /* True if the load requires a load permutation.  */
   bool slp_perm;    // SLP_TREE_LOAD_PERMUTATION
@@ -2589,7 +2593,7 @@ extern opt_result vect_analyze_data_ref_accesses (vec_info *, vec<int> *);
 extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
 				      tree, int, internal_fn *, tree *,
-				      vec<int> * = nullptr);
+				      tree *, vec<int> * = nullptr);
 extern bool vect_check_gather_scatter (stmt_vec_info, tree,
 				       loop_vec_info, gather_scatter_info *,
 				       vec<int> * = nullptr);

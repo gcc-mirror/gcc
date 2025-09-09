@@ -4425,6 +4425,143 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   return opt_result::success ();
 }
 
+/* Structure to hold information about a supported gather/scatter
+   configuration.  */
+struct gather_scatter_config
+{
+  internal_fn ifn;
+  tree offset_vectype;
+  vec<int> elsvals;
+};
+
+/* Determine which gather/scatter IFN is supported for the given parameters.
+   IFN_MASK_GATHER_LOAD, IFN_GATHER_LOAD, and IFN_MASK_LEN_GATHER_LOAD
+   are mutually exclusive, so we only need to find one.  Return the
+   supported IFN or IFN_LAST if none are supported.  */
+
+static internal_fn
+vect_gather_scatter_which_ifn (bool read_p, bool masked_p,
+			       tree vectype, tree memory_type,
+			       tree offset_vectype, int scale,
+			       vec<int> *elsvals)
+{
+  /* Work out which functions to try.  */
+  internal_fn ifn, alt_ifn, alt_ifn2;
+  if (read_p)
+    {
+      ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
+      alt_ifn = IFN_MASK_GATHER_LOAD;
+      alt_ifn2 = IFN_MASK_LEN_GATHER_LOAD;
+    }
+  else
+    {
+      ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
+      alt_ifn = IFN_MASK_SCATTER_STORE;
+      alt_ifn2 = IFN_MASK_LEN_SCATTER_STORE;
+    }
+
+  if (!offset_vectype)
+    return IFN_LAST;
+
+  if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
+					      offset_vectype, scale, elsvals))
+    return ifn;
+  if (internal_gather_scatter_fn_supported_p (alt_ifn, vectype, memory_type,
+					      offset_vectype, scale, elsvals))
+    return alt_ifn;
+  if (internal_gather_scatter_fn_supported_p (alt_ifn2, vectype, memory_type,
+					      offset_vectype, scale, elsvals))
+    return alt_ifn2;
+
+  return IFN_LAST;
+}
+
+/* Collect all supported offset vector types for a gather load or scatter
+   store.  READ_P is true for loads and false for stores.  MASKED_P is true
+   if the load or store is conditional.  VECTYPE is the data vector type.
+   MEMORY_TYPE is the type of the memory elements being loaded or stored,
+   and OFFSET_TYPE is the type of the offset.
+   SCALE is the amount by which the offset should be multiplied.
+
+   Return a vector of all configurations the target supports (which can
+   be none).  */
+
+static auto_vec<gather_scatter_config>
+vect_gather_scatter_get_configs (vec_info *vinfo, bool read_p, bool masked_p,
+				 tree vectype, tree memory_type,
+				 tree offset_type, int scale)
+{
+  auto_vec<gather_scatter_config> configs;
+
+  auto_vec<tree, 8> offset_types_to_try;
+
+  /* Try all sizes from the offset type's precision up to POINTER_SIZE.  */
+  for (unsigned int bits = TYPE_PRECISION (offset_type);
+       bits <= POINTER_SIZE;
+       bits *= 2)
+    {
+      /* Signed variant.  */
+      offset_types_to_try.safe_push
+	(build_nonstandard_integer_type (bits, 0));
+      /* Unsigned variant.  */
+      offset_types_to_try.safe_push
+	(build_nonstandard_integer_type (bits, 1));
+    }
+
+  /* Once we find which IFN works for one offset type, we know that it
+     will work for other offset types as well.  Then we can perform
+     the checks for the remaining offset types with only that IFN.
+     However, we might need to try different offset types to find which
+     IFN is supported, since the check is offset-type-specific.  */
+  internal_fn ifn = IFN_LAST;
+
+  /* Try each offset type.  */
+  for (unsigned int i = 0; i < offset_types_to_try.length (); i++)
+    {
+      tree offset_type = offset_types_to_try[i];
+      tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
+      if (!offset_vectype)
+	continue;
+
+      vec<int> elsvals = vNULL;
+
+      /* If we haven't determined which IFN is supported yet, try all three
+	 to find which one the target supports.  */
+      if (ifn == IFN_LAST)
+	{
+	  ifn = vect_gather_scatter_which_ifn (read_p, masked_p,
+					       vectype, memory_type,
+					       offset_vectype, scale, &elsvals);
+	  if (ifn != IFN_LAST)
+	    {
+	      /* Found which IFN is supported.  Save this configuration.  */
+	      gather_scatter_config config;
+	      config.ifn = ifn;
+	      config.offset_vectype = offset_vectype;
+	      config.elsvals = elsvals;
+	      configs.safe_push (config);
+	    }
+	}
+      else
+	{
+	  /* We already know which IFN is supported, just check if this
+	     offset type works with it.  */
+	  if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
+						      offset_vectype, scale,
+						      &elsvals))
+	    {
+	      gather_scatter_config config;
+	      config.ifn = ifn;
+	      config.offset_vectype = offset_vectype;
+	      config.elsvals = elsvals;
+	      configs.safe_push (config);
+	    }
+	}
+    }
+
+  return configs;
+}
+
 /* Check whether we can use an internal function for a gather load
    or scatter store.  READ_P is true for loads and false for stores.
    MASKED_P is true if the load or store is conditional.  MEMORY_TYPE is
@@ -4436,15 +4573,21 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
    Return true if the function is supported, storing the function id in
    *IFN_OUT and the vector type for the offset in *OFFSET_VECTYPE_OUT.
+   If we support an offset vector type with different signedness than
+   OFFSET_TYPE store it in SUPPORTED_OFFSET_VECTYPE.
 
-   If we can use gather and store the possible else values in ELSVALS.  */
+   If we can use gather/scatter and ELSVALS is nonzero, store the possible
+   else values in ELSVALS.  */
 
 bool
 vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 			  tree vectype, tree memory_type, tree offset_type,
 			  int scale, internal_fn *ifn_out,
-			  tree *offset_vectype_out, vec<int> *elsvals)
+			  tree *offset_vectype_out,
+			  tree *supported_offset_vectype,
+			  vec<int> *elsvals)
 {
+  *supported_offset_vectype = NULL_TREE;
   unsigned int memory_bits = tree_to_uhwi (TYPE_SIZE (memory_type));
   unsigned int element_bits = vector_element_bits (vectype);
   if (element_bits != memory_bits)
@@ -4452,80 +4595,64 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
        memory elements.  */
     return false;
 
-  /* Work out which function we need.  */
-  internal_fn ifn, alt_ifn, alt_ifn2;
-  if (read_p)
-    {
-      ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
-      alt_ifn = IFN_MASK_GATHER_LOAD;
-      /* When target supports MASK_LEN_GATHER_LOAD, we always
-	 use MASK_LEN_GATHER_LOAD regardless whether len and
-	 mask are valid or not.  */
-      alt_ifn2 = IFN_MASK_LEN_GATHER_LOAD;
-    }
-  else
-    {
-      ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
-      alt_ifn = IFN_MASK_SCATTER_STORE;
-      /* When target supports MASK_LEN_SCATTER_STORE, we always
-	 use MASK_LEN_SCATTER_STORE regardless whether len and
-	 mask are valid or not.  */
-      alt_ifn2 = IFN_MASK_LEN_SCATTER_STORE;
-    }
+  /* Get the original offset vector type for comparison.  */
+  tree offset_vectype = VECTOR_TYPE_P (offset_type)
+    ? offset_type : get_vectype_for_scalar_type (vinfo, offset_type);
 
-  for (;;)
-    {
-      tree offset_vectype;
-      if (VECTOR_TYPE_P (offset_type))
-	offset_vectype = offset_type;
-      else
-	{
-	  offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
-	  if (!offset_vectype)
-	    return false;
-	}
+  offset_type = TREE_TYPE (offset_vectype);
 
-      /* Test whether the target supports this combination.  */
-      if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
-						  offset_vectype, scale,
-						  elsvals))
+  /* Get all supported configurations for this data vector type.  */
+  auto_vec<gather_scatter_config> configs
+    = vect_gather_scatter_get_configs (vinfo, read_p, masked_p, vectype,
+				       memory_type, offset_type, scale);
+
+  if (configs.is_empty ())
+    return false;
+
+  /* First, try to find a configuration that matches our offset type
+     (no conversion needed).  */
+  for (unsigned int i = 0; i < configs.length (); i++)
+    {
+      if (TYPE_SIGN (configs[i].offset_vectype) == TYPE_SIGN (offset_vectype))
 	{
-	  *ifn_out = ifn;
-	  *offset_vectype_out = offset_vectype;
+	  *ifn_out = configs[i].ifn;
+	  *offset_vectype_out = configs[i].offset_vectype;
+	  if (elsvals)
+	    *elsvals = configs[i].elsvals;
 	  return true;
 	}
-      else if (!masked_p
-	       && internal_gather_scatter_fn_supported_p (alt_ifn, vectype,
-							  memory_type,
-							  offset_vectype,
-							  scale, elsvals))
-	{
-	  *ifn_out = alt_ifn;
-	  *offset_vectype_out = offset_vectype;
-	  return true;
-	}
-      else if (internal_gather_scatter_fn_supported_p (alt_ifn2, vectype,
-						       memory_type,
-						       offset_vectype, scale,
-						       elsvals))
-	{
-	  *ifn_out = alt_ifn2;
-	  *offset_vectype_out = offset_vectype;
-	  return true;
-	}
-
-      /* For fixed offset vector type we're done.  */
-      if (VECTOR_TYPE_P (offset_type))
-	return false;
-
-      if (TYPE_PRECISION (offset_type) >= POINTER_SIZE
-	  && TYPE_PRECISION (offset_type) >= element_bits)
-	return false;
-
-      /* Try a larger offset vector type.  */
-      offset_type = build_nonstandard_integer_type
-	(TYPE_PRECISION (offset_type) * 2, TYPE_UNSIGNED (offset_type));
     }
+
+  /* No direct match.  This means we try to find a sign-swapped offset
+     vectype.  */
+  unsigned int offset_precision = TYPE_PRECISION (TREE_TYPE (offset_vectype));
+  unsigned int needed_precision
+    = TYPE_UNSIGNED (offset_vectype) ? offset_precision * 2 : POINTER_SIZE;
+  needed_precision = std::min (needed_precision, (unsigned) POINTER_SIZE);
+
+  enum tree_code tmp;
+  for (unsigned int i = 0; i < configs.length (); i++)
+    {
+      unsigned int precision
+	= TYPE_PRECISION (TREE_TYPE (configs[i].offset_vectype));
+      if (precision >= needed_precision
+	  && (supportable_convert_operation (CONVERT_EXPR,
+					     configs[i].offset_vectype,
+					     offset_vectype, &tmp)
+	      || (needed_precision == offset_precision
+		  && tree_nop_conversion_p (configs[i].offset_vectype,
+					    offset_vectype))))
+	{
+	  *ifn_out = configs[i].ifn;
+	  *offset_vectype_out = offset_vectype;
+	  *supported_offset_vectype = configs[i].offset_vectype;
+	  if (elsvals)
+	    *elsvals = configs[i].elsvals;
+	  return true;
+	}
+    }
+
+  return false;
 }
 
 /* STMT_INFO is a call to an internal gather load or scatter store function.
@@ -4678,6 +4805,7 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 
   base = fold_convert (sizetype, base);
   base = size_binop (PLUS_EXPR, base, size_int (pbytepos));
+  tree tmp_offset_vectype;
 
   /* OFF at this point may be either a SSA_NAME or some tree expression
      from get_inner_reference.  Try to peel off loop invariants from it
@@ -4752,12 +4880,14 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 						signed_char_type_node,
 						new_scale, &ifn,
 						&offset_vectype,
+						&tmp_offset_vectype,
 						elsvals)
 		  && !vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 						masked_p, vectype, memory_type,
 						unsigned_char_type_node,
 						new_scale, &ifn,
 						&offset_vectype,
+						&tmp_offset_vectype,
 						elsvals))
 		break;
 	      scale = new_scale;
@@ -4781,7 +4911,9 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 	      && vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 					   masked_p, vectype, memory_type,
 					   TREE_TYPE (off), scale, &ifn,
-					   &offset_vectype, elsvals))
+					   &offset_vectype,
+					   &tmp_offset_vectype,
+					   elsvals))
 	    break;
 
 	  if (TYPE_PRECISION (TREE_TYPE (op0))
@@ -4835,7 +4967,9 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
     {
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
 				     vectype, memory_type, offtype, scale,
-				     &ifn, &offset_vectype, elsvals))
+				     &ifn, &offset_vectype,
+				     &tmp_offset_vectype,
+				     elsvals))
 	ifn = IFN_LAST;
       decl = NULL_TREE;
     }
