@@ -369,9 +369,7 @@ package Aspects is
       others                            => False);
 
    --  The following array indicates aspects that specify operational
-   --  characteristics, and thus are view-specific. Representation
-   --  aspects break privacy, as they are needed during expansion and
-   --  code generation.
+   --  characteristics, and thus are view-specific.
    --  List is currently incomplete ???
 
    Operational_Aspect : constant array (Aspect_Id) of Boolean :=
