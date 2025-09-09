@@ -31,6 +31,7 @@ DEF_VF_BINOP_CASE_3_WRAP (float, MAX_FUNC_1_WRAP (float), max,
 			  VF_BINOP_FUNC_BODY_X128)
 DEF_VF_BINOP_WIDEN_CASE_1 (float, double, *, mul)
 DEF_VF_BINOP_WIDEN_CASE_1 (float, double, +, add)
+DEF_VF_BINOP_WIDEN_CASE_1 (float, double, -, sub)
 DEF_VF_BINOP_WIDEN_CASE_3 (float, double, +, add)
 
 /* { dg-final { scan-assembler {vfmadd.vf} } } */
@@ -54,4 +55,5 @@ DEF_VF_BINOP_WIDEN_CASE_3 (float, double, +, add)
 /* { dg-final { scan-assembler {vfmax.vf} } } */
 /* { dg-final { scan-assembler {vfwmul.vf} } } */
 /* { dg-final { scan-assembler {vfwadd.vf} } } */
+/* { dg-final { scan-assembler {vfwsub.vf} } } */
 /* { dg-final { scan-assembler {vfwadd.wf} } } */
