@@ -3935,6 +3935,10 @@ staticp (tree arg)
       else
 	return NULL;
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      return staticp (TREE_OPERAND (arg, 0));
+
     case COMPOUND_LITERAL_EXPR:
       return TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (arg)) ? arg : NULL;
 
