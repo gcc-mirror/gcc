@@ -1,10 +1,10 @@
 // { dg-additional-options "-fmodules-ts" }
 module;
 
-export module frist;
+export module frist;  // { dg-message "declared here" }
 // { dg-module-cmi "!frist" }
 
-import frist; // { dg-error {cannot import module.* in its own purview} }
+import frist; // { dg-error {module 'frist' depends on itself} }
 
 module foo.second; // { dg-error "only permitted as" }
 

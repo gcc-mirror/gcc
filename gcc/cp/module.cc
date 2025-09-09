@@ -3667,8 +3667,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
+  /* For a named module interface A.B, parent is A and name is B.
+     For a partition M:P, parent is M and name is P.
+     For an implementation unit I, parent is I's interface and name is NULL.
+     Otherwise parent is NULL and name will be the flatname.  */
   module_state *parent;
-  tree name;		/* Name of the module.  */
+  tree name;
 
   slurping *slurp;	/* Data for loading.  */
 
@@ -3782,7 +3786,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
 
  public:
-  bool check_not_purview (location_t loc);
+  bool check_circular_import (location_t loc);
 
  public:
   void mangle (bool include_partition);
@@ -15996,20 +16000,19 @@ recursive_lazy (unsigned snum = ~0u)
   return false;
 }
 
-/* If THIS is the current purview, issue an import error and return false.  */
+/* If THIS has an interface dependency on itself, report an error and
+   return false.  */
 
 bool
-module_state::check_not_purview (location_t from)
+module_state::check_circular_import (location_t from)
 {
-  module_state *imp = this_module ();
-  if (imp && !imp->name)
-    imp = imp->parent;
-  if (imp == this)
+  if (this == this_module ())
     {
       /* Cannot import the current module.  */
       auto_diagnostic_group d;
-      error_at (from, "cannot import module in its own purview");
-      inform (loc, "module %qs declared here", get_flatname ());
+      error_at (from, "module %qs depends on itself", get_flatname ());
+      if (!header_module_p ())
+	inform (loc, "module %qs declared here", get_flatname ());
       return false;
     }
   return true;
@@ -16320,7 +16323,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (sec.get_overrun ())
 	    break;
 
-	  if (!imp->check_not_purview (loc))
+	  if (!imp->check_circular_import (floc))
 	    continue;
 
 	  if (imp->loadedness == ML_NONE)
@@ -21535,6 +21538,12 @@ module_state::do_import (cpp_reader *reader, bool outermost)
 {
   gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
 
+  /* If this TU is a partition of the module we're importing,
+     that module is the primary module interface.  */
+  if (this_module ()->is_partition ()
+      && this == get_primary (this_module ()))
+    module_p = true;
+
   loc = linemap_module_loc (line_table, loc, get_flatname ());
 
   if (lazy_open >= lazy_limit)
@@ -21807,7 +21816,17 @@ void
 import_module (module_state *import, location_t from_loc, bool exporting_p,
 	       tree, cpp_reader *reader)
 {
-  if (!import->check_not_purview (from_loc))
+  /* A non-partition implementation unit has no name.  */
+  if (!this_module ()->name && this_module ()->parent == import)
+    {
+      auto_diagnostic_group d;
+      error_at (from_loc, "import of %qs within its own implementation unit",
+		import->get_flatname());
+      inform (import->loc, "module declared here");
+      return;
+    }
+
+  if (!import->check_circular_import (from_loc))
     return;
 
   if (!import->is_header () && current_lang_depth ())
@@ -21829,7 +21848,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
       from_loc = ordinary_loc_of (line_table, from_loc);
       linemap_module_reparent (line_table, import->loc, from_loc);
     }
-  gcc_checking_assert (!import->module_p);
+
   gcc_checking_assert (import->is_direct () && import->has_location ());
 
   direct_import (import, reader);
@@ -22322,7 +22341,10 @@ preprocess_module (module_state *module, location_t from_loc,
 	linemap_module_reparent (line_table, module->loc, from_loc);
       else
 	{
-	  module->loc = from_loc;
+	  /* Don't overwrite the location if we're importing ourselves
+	     after already having seen a module-declaration.  */
+	  if (!(is_import && module->is_module ()))
+	    module->loc = from_loc;
 	  if (!module->flatname)
 	    module->set_flatname ();
 	}
