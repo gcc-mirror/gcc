@@ -935,7 +935,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // noexcept for consistency with other layouts.
       template<typename _OExtents>
 	requires is_constructible_v<extents_type, _OExtents>
-	constexpr explicit(extents_type::rank() > 0)
+	constexpr explicit(!(extents_type::rank() == 0
+	                     && is_convertible_v<_OExtents, extents_type>))
 	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ __glibcxx_assert(*this == __other); }
@@ -1102,7 +1103,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _OExtents>
 	requires is_constructible_v<extents_type, _OExtents>
-	constexpr explicit(extents_type::rank() > 0)
+	constexpr explicit(!(extents_type::rank() == 0
+	                     && is_convertible_v<_OExtents, extents_type>))
 	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ __glibcxx_assert(*this == __other); }
@@ -1920,18 +1922,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _OExtents>
 	  requires is_constructible_v<_OExtents, extents_type>
-	  constexpr explicit(_OExtents::rank() > 0)
+	  constexpr explicit(!(_OExtents::rank() == 0
+			       && is_convertible_v<_OExtents, extents_type>))
 	  mapping(const typename layout_stride::mapping<_OExtents>& __other)
 	  : _M_storage(__other)
 	  { __glibcxx_assert(*this == __other); }
 
-	template<typename _LeftpadMapping>
-	  requires __mdspan::__is_left_padded_mapping<_LeftpadMapping>
+	template<typename _LeftPaddedMapping>
+	  requires __mdspan::__is_left_padded_mapping<_LeftPaddedMapping>
 	      && is_constructible_v<extents_type,
-				    typename _LeftpadMapping::extents_type>
-	  constexpr explicit(_S_rank > 1 && (padding_value != dynamic_extent
-		|| _LeftpadMapping::padding_value == dynamic_extent))
-	  mapping(const _LeftpadMapping& __other)
+				    typename _LeftPaddedMapping::extents_type>
+	  constexpr explicit(
+	   !is_convertible_v<typename _LeftPaddedMapping::extents_type,
+			     extents_type>
+	   || _S_rank > 1 && (padding_value != dynamic_extent
+		|| _LeftPaddedMapping::padding_value == dynamic_extent))
+	  mapping(const _LeftPaddedMapping& __other)
 	  : _M_storage(layout_left{}, __other)
 	  { }
 
@@ -2081,7 +2087,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _OExtents>
 	  requires is_constructible_v<_OExtents, extents_type>
-	  constexpr explicit(_OExtents::rank() > 0)
+	  constexpr explicit(!(_OExtents::rank() == 0
+			       && is_convertible_v<_OExtents, extents_type>))
 	  mapping(const typename layout_stride::mapping<_OExtents>& __other)
 	  : _M_storage(__other)
 	  { __glibcxx_assert(*this == __other); }
@@ -2090,8 +2097,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  requires __mdspan::__is_right_padded_mapping<_RightPaddedMapping>
 	      && is_constructible_v<extents_type,
 				    typename _RightPaddedMapping::extents_type>
-	  constexpr explicit(_S_rank > 1 && (padding_value != dynamic_extent
-		|| _RightPaddedMapping::padding_value == dynamic_extent))
+	  constexpr explicit(
+	    !is_convertible_v<typename _RightPaddedMapping::extents_type,
+			      extents_type>
+	    || _S_rank > 1 && (padding_value != dynamic_extent
+		 || _RightPaddedMapping::padding_value == dynamic_extent))
 	  mapping(const _RightPaddedMapping& __other)
 	  : _M_storage(layout_right{}, __other)
 	  { }
@@ -2638,7 +2648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	else
 	  __glibcxx_assert(__idx <= __ext.extent(0));
-      }
+}
 
     template<typename _IndexType, size_t _Extent, typename _Slice>
       constexpr void

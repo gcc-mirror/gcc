@@ -149,7 +149,6 @@ is_same_mapping(const auto& lhs, const auto& rhs)
 enum class ConversionRule
 {
   Never,
-  Always,
   Regular
 };
 
@@ -159,8 +158,6 @@ should_convert(auto rule)
 {
   if constexpr (rule == ConversionRule::Never)
     return false;
-  if constexpr (rule == ConversionRule::Always)
-    return true;
   else
     return std::is_convertible_v<typename From::extents_type,
 				 typename To::extents_type>;
@@ -184,7 +181,7 @@ template<typename LayoutTo, typename Esta, typename Edyn, typename Ewrong>
 
     // There's a twist when both mappings are left-padded. There's two distinct
     // ctors: a defaulted copy ctor and a constrained template that enables
-    // construction from left-padded mappings even if their layout_type is
+    // construction from left-padded mappings even if their layout_type (padding) is
     // different. The two ctors have different rules regarding conversion.
 
     if constexpr (!std::same_as<LayoutTo, LayoutFrom>)
@@ -329,7 +326,7 @@ template<template<size_t> typename Layout>
 
     auto check = []<typename To>(To, auto m)
     {
-      constexpr auto cr = std::cw<ConversionRule::Always>;
+      constexpr auto cr = std::cw<ConversionRule::Regular>;
       check_convertible_variants<To, E1, E2, E3>(m, cr);
     };
 
@@ -350,7 +347,7 @@ template<template<size_t> typename Layout>
 
     auto check = []<typename To>(To, auto m)
     {
-      constexpr auto cr = std::cw<ConversionRule::Always>;
+      constexpr auto cr = std::cw<ConversionRule::Regular>;
       check_convertible_variants<To, E1, E2, E3>(m, cr);
     };
 
@@ -373,7 +370,7 @@ template<template<size_t> typename Layout>
     typename Layout<6>::mapping<E1> msta{E1{}};
     typename Layout<dyn>::mapping<E1> mdyn{E1{}};
 
-    constexpr auto calways = std::cw<ConversionRule::Always>;
+    constexpr auto cregular = std::cw<ConversionRule::Regular>;
     constexpr auto cnever = std::cw<ConversionRule::Never>;
 
     auto check = []<typename To>(To, auto m, auto cr)
@@ -381,7 +378,7 @@ template<template<size_t> typename Layout>
 
     check(Layout<6>{}, msta, cnever);
     check(Layout<6>{}, mdyn, cnever);
-    check(Layout<dyn>{}, msta, calways);
+    check(Layout<dyn>{}, msta, cregular);
     check(Layout<dyn>{}, mdyn, cnever);
   }
 
