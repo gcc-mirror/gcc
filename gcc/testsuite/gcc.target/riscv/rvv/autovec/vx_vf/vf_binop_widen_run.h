@@ -5,19 +5,23 @@
 
 #define N 512
 
+#ifdef SINGLE
+#define TIN T2
+#else
+#define TIN T1
+#endif
+
 int main ()
 {
   T1 f;
-  T1 in[N];
+  TIN in[N];
   T2 out[N];
-  T2 out2[N];
 
   f = LIMIT % 8723;
   for (int i = 0; i < N; i++) 
     {
       in[i] = LIMIT + i & 1964;
       out[i] = LIMIT + i & 628;
-      out2[i] = LIMIT + i & 628;
       asm volatile ("" ::: "memory");
     }
 

@@ -253,4 +253,34 @@ DEF_MAX_1 (double)
       }                                                                        \
   }
 
+#define DEF_VF_BINOP_WIDEN_CASE_2(T1, T2, OP, NAME)                            \
+  void test_vf_binop_widen_##NAME##_##T1##_case_2 (T2 *restrict out,           \
+						   T2 *restrict in, T1 f,      \
+						   unsigned n)                 \
+  {                                                                            \
+    for (unsigned i = 0; i < n; i++)                                           \
+      out[i] = (T2) f OP in[i];                                                \
+  }
+#define DEF_VF_BINOP_WIDEN_CASE_2_WRAP(T1, T2, OP, NAME)                       \
+  DEF_VF_BINOP_WIDEN_CASE_2 (T1, T2, OP, NAME)
+#define RUN_VF_BINOP_WIDEN_CASE_2(T1, T2, NAME, out, in, f, n)                 \
+  test_vf_binop_widen_##NAME##_##T1##_case_2 (out, in, f, n)
+#define RUN_VF_BINOP_WIDEN_CASE_2_WRAP(T1, T2, NAME, out, in, f, n)            \
+  RUN_VF_BINOP_WIDEN_CASE_2 (T1, T2, NAME, out, in, f, n)
+
+#define DEF_VF_BINOP_WIDEN_CASE_3(TYPE1, TYPE2, OP, NAME)                      \
+  void test_vf_binop_widen_##NAME##_##TYPE1##_##TYPE2##_case_3 (               \
+    TYPE2 *__restrict dst, TYPE2 *__restrict dst2, TYPE2 *__restrict dst3,     \
+    TYPE2 *__restrict dst4, TYPE1 *__restrict a, TYPE2 *__restrict b,          \
+    TYPE1 *__restrict a2, TYPE2 *__restrict b2, int n)                         \
+  {                                                                            \
+    for (int i = 0; i < n; i++)                                                \
+      {                                                                        \
+	dst[i] = (TYPE2) * a OP b[i];                                          \
+	dst2[i] = (TYPE2) * a2 OP b[i];                                        \
+	dst3[i] = (TYPE2) * a2 OP b2[i];                                       \
+	dst4[i] = (TYPE2) * a OP b2[i];                                        \
+      }                                                                        \
+  }
+
 #endif

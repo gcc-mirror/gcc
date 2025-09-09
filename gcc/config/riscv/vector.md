@@ -7325,10 +7325,10 @@
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
 	  (plus_minus:VWEXTF
-	    (match_operand:VWEXTF 3 "register_operand"            " vr, vr, vr, vr")
-	    (float_extend:VWEXTF
-	      (vec_duplicate:<V_DOUBLE_TRUNC>
-		(match_operand:<VSUBEL> 4 "register_operand"      "  f,  f,  f,  f"))))
+	    (vec_duplicate:VWEXTF
+	      (float_extend:<VEL>
+		(match_operand:<VSUBEL> 4 "register_operand"      "  f,  f,  f,  f")))
+	    (match_operand:VWEXTF 3 "register_operand"            " vr, vr, vr, vr"))
 	  (match_operand:VWEXTF 2 "vector_merge_operand"          " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "vfw<insn>.wf\t%0,%3,%4%p1"
