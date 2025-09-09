@@ -6787,10 +6787,6 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 	avgpr = MAX_NORMAL_AVGPR_COUNT;
     }
 
-  /* SIMD32 devices count double in wavefront64 mode.  */
-  if (TARGET_WAVE64_COMPAT)
-    vgpr *= 2;
-
   /* Round up to the allocation block size.  */
   int vgpr_block_size = TARGET_VGPR_GRANULARITY;
   if (vgpr % vgpr_block_size)
