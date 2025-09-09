@@ -578,20 +578,20 @@ package body Ghost is
                      Id);
                end if;
 
-               if not Is_Assertion_Level_Dependent (Id_Level, Call_Level) then
-                  Error_Msg_Sloc := Sloc (Ghost_Ref);
+               --  An out or in out mode actual parameter and the subprogram
+               --  shall have matching assertion levels SPARK RM 6.9 (15).
 
+               if Id_Level /= Call_Level then
                   Error_Msg_N (Assertion_Level_Error_Msg, Ghost_Ref);
                   Error_Msg_Name_1 := Chars (Id_Level);
-                  Error_Msg_NE ("\& has assertion level %", Ghost_Ref, Id);
+                  Error_Msg_N ("\& has assertion level %", Ghost_Ref);
                   Error_Msg_Name_1 := Chars (Call_Level);
-                  Error_Msg_NE
-                    ("\& is modified # by a procedure with %", Ghost_Ref, Id);
-                  Error_Msg_Name_1 := Chars (Call_Level);
-                  Error_Msg_NE
-                    ("\assertion level of & should depend on %",
-                     Ghost_Ref,
-                     Id);
+                  Error_Msg_Node_2 := Callee;
+                  Error_Msg_N
+                    ("\& is modified by & with %", Ghost_Ref);
+                  Error_Msg_N
+                    ("\the levels of the call and call arguments must match",
+                     Ghost_Ref);
                end if;
             end Check_Procedure_Call_Policies;
 
