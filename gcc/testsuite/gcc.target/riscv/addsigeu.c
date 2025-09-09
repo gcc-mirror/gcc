@@ -19,8 +19,9 @@ addsigeu (int_t w, int_t x, int_t y, int_t z)
 	add[w]	a0,a1,a2
  */
 
-/* { dg-final { scan-rtl-dump-times "Conversion succeeded on pass 1\\." 1 "ce1" { xfail rv64 } } } */
-/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_try_addcc" 1 "ce1" { xfail rv64 } } } */
-/* { dg-final { scan-assembler-times "\\s(?:sgtu|sltu)\\s" 1 { xfail rv64 } } } */
+/* { dg-final { scan-rtl-dump-times "Conversion succeeded on pass 1\\." 1 "ce1" } } */
+/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_try_addcc" 1 "ce1" { target { rv32 } } } } */
+/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_convert_multiple_sets" 1 "ce1" { target { rv64 } } } } */
+/* { dg-final { scan-assembler-times "\\s(?:sgtu|sltu)\\s" 1 } } */
 /* { dg-final { scan-assembler-not "\\s(?:seqz|snez)\\s" } } */
-/* { dg-final { scan-assembler-not "\\s(?:bgeu|bgtu|bleu|bltu)\\s" { xfail rv64 } } } */
+/* { dg-final { scan-assembler-not "\\s(?:bgeu|bgtu|bleu|bltu)\\s" } } */
