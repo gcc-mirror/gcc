@@ -1,3 +1,74 @@
+2025-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (constant_wrapper): Rename template
+	parameter to avoid BADNAME.
+
+2025-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120698
+	* doc/xml/manual/configure.xml: Do not claim that vtv is enabled
+	by default.
+	* doc/html/manual/configure.html: Regenerate.
+
+2025-09-08  Nathan Myers  <ncm@cantrip.org>
+
+	* src/c++20/Makefile.in: Mention syncbuf.lo.
+
+2025-09-08  Nathan Myers  <ncm@cantrip.org>
+
+	* include/std/syncstream: (syncbuf<>::__mutex) Remove _S_get_mutex,
+	use extern function instead.
+	* src/c++20/syncbuf.cc: Define global __syncbuf_get_mutex.
+	* src/c++20/Makefile.am: Mention syncbuf.cc.
+	* src/c++20/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Mention mangled __syncbuf_get_mutex.
+
+2025-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121827
+	* include/precompiled/extc++.h: Don't include ext/cast.h which is an
+	internal header.
+	* include/ext/pointer.h: Include bits/c++config.h before
+	#if _GLIBCXX_HOSTED.
+
+2025-09-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using_exceptions.xml: Update link to "Tunables"
+	section in the Glibc manual.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
+2025-09-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/span (__integral_constant_like): Allow the member
+	`value` of a constant wrapping type to be a const reference of
+	an integer.
+	* testsuite/23_containers/mdspan/extents/misc.cc: Add test for
+	cw and constant_wrapper.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+	* testsuite/23_containers/span/deduction.cc: Ditto.
+
+2025-09-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/version.def (constant_wrapper): Add.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits (_CwFixedValue): New class.
+	(_IndexSequence): New struct.
+	(_BuildIndexSequence): New struct.
+	(_ConstExprParam): New concept.
+	(_CwOperators): New struct.
+	(constant_wrapper): New struct.
+	(cw): New global constant.
+	* src/c++23/std.cc.in (constant_wrapper): Add.
+	(cw): Add.
+	* testsuite/20_util/constant_wrapper/adl.cc: New test.
+	* testsuite/20_util/constant_wrapper/ex.cc: New test.
+	* testsuite/20_util/constant_wrapper/generic.cc: New test.
+	* testsuite/20_util/constant_wrapper/instantiate.cc: New test.
+	* testsuite/20_util/constant_wrapper/op_comma_neg.cc: New test.
+	* testsuite/20_util/constant_wrapper/version.cc: New test.
+	* testsuite/20_util/constant_wrapper/other_wrappers.cc: New file.
+
 2025-09-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/121804

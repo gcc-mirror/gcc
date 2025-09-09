@@ -1,3 +1,12 @@
+2025-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c/107419
+	* c-decl.cc (c_decl_attributes): Update TLS model with the
+	default TLS access model if the default TLS access model is
+	stronger.
+	(grokdeclarator): Set a tentative TLS model which will be
+	updated by c_decl_attributes later.
+
 2025-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.cc (pushtag): Remove ()s around string literal

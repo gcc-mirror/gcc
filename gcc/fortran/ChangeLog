@@ -1,3 +1,10 @@
+2025-09-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84008
+	* decl.cc (insert_parameter_exprs): Correct the typespec of new
+	variable declarations, where the type is set to BT_PROCEDURE as
+	a precaution for resolution of the whole program unit.
+
 2025-09-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84119

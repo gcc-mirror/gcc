@@ -1,3 +1,107 @@
+2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107997
+	PR tree-optimization/121844
+	* tree-ssa-loop-ivopts.cc (allow_ip_end_pos_p): Do not allow
+	IP_END for latches ending with a control stmt.
+	(create_new_iv): Do not split the latch edge, instead assert
+	that's not necessary.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfwadd_vf_<mode>): New pattern to
+	combine float_extend + vec_duplicate + vfwadd.vv into vfwadd.vf.
+
+2025-09-08  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* config/riscv/riscv.cc (tt_ascalon_d8_tune_info): Increase branch_cost
+	from 3 to 4.
+
+2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121830
+	* tree-vect-loop.cc (vect_analyze_scalar_cycles_1): Only
+	set STMT_VINFO_REDUC_DEF on reductions.
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Identify reduction
+	PHIs by a set STMT_VINFO_REDUC_DEF instead of their def type.
+
+2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121829
+	* tree-vect-loop-manip.cc (vect_remove_forwarder): New
+	function.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Use it.
+
+2025-09-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/114892
+	* doc/invoke.texi (Developer Options): Document -folding option
+	for -fdump-tree-*.
+
+2025-09-08  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-cp.cc (gather_count_of_non_rec_edges): Check count
+	initialization before adding to total.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfrsub_vf_<mode>): New pattern to
+	combine vec_duplicate + vfsub.vv into vfrsub.vf.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfsub_vf_<mode>): New pattern to
+	combine vec_duplicate + vfsub.vv into vfsub.vf.
+	* config/riscv/vector.md (@pred_<optab><mode>_scalar): Allow VLS modes.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfadd_vf_<mode>): New pattern to
+	combine vec_duplicate + vfadd.vv into vfadd.vf.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfwmul_vf_<mode>): New pattern to
+	combine float_extend + vec_duplicate + vfmul.vv into vfmul.vf.
+	* config/riscv/vector.md (*@pred_dual_widen_<optab><mode>_scalar):
+	Swap operands to match the RTL emitted by expand, i.e. first
+	float_extend then vec_duplicate.
+
+2025-09-08  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfmin_vf_ieee_<mode>): Rename into...
+	(*v<ieee_fmaxmin_op>_vf_<mode>): New pattern to combine vec_duplicate +
+	vf{max,min}.vv (unspec) into vf{max,min}.vf.
+
+2025-09-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (SH Function Attributes): Remove reference to
+	GNU Binutils 2.7 requirement.
+	(H8/300 Variable Attributes): Ditto.
+
+2025-09-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/87900
+	* tree-ssa-strlen.cc  (strlen_pass::handle_assign): Add RHS argument.
+	For empty constructor RHS, see if can combine with a previous malloc into
+	a calloc.
+	(strlen_pass::check_and_optimize_call): Update call to handle_assign;
+	passing NULL_TREE for RHS.
+	(strlen_pass::check_and_optimize_stmt): Update call to handle_assign.
+
+2025-09-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/83022
+	* tree-ssa-strlen.cc (last_stmt_ptr_check): New function.
+	(allow_memset_malloc_to_calloc): New function.
+	(strlen_pass::handle_builtin_memset): Check to see if it is a good
+	idea to do the malloc+memset->calloc optimization.
+	(printf_strlen_execute): Free post dom info.
+
+2025-09-08  Sam James  <sam@gentoo.org>
+
+	* common.opt.urls: Regenerate.
+
 2025-09-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/121841
