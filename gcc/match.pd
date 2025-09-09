@@ -9747,6 +9747,7 @@ and,
 			 ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
 	    tree elt = ctor_single_nonzero_element (ctor); }
       (if (elt
+	   && types_match (type, TREE_TYPE (elt))
 	   && !HONOR_SNANS (type)
 	   && !HONOR_SIGNED_ZEROS (type))
 	{ elt; }))))
