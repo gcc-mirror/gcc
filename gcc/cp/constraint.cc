@@ -3360,7 +3360,7 @@ maybe_diagnose_standard_trait (location_t loc, tree expr)
 	}
     }
 
-  if (TREE_CODE (expr) == TRAIT_EXPR)
+  if (expr && TREE_CODE (expr) == TRAIT_EXPR)
     {
       diagnose_trait_expr (loc, expr, args);
       return true;
