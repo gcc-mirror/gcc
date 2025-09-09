@@ -285,38 +285,38 @@
 (define_insn_reservation "tt_ascalon_d8_vec_idiv_half" 16
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vidiv")
-       (eq_attr "mode" "HF"))
+       (eq_attr "sew" "16"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 (define_insn_reservation "tt_ascalon_d8_vec_idiv_single" 13
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vidiv")
-       (eq_attr "mode" "SF"))
+       (eq_attr "sew" "32"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 (define_insn_reservation "tt_ascalon_d8_vec_idiv_double" 20
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vidiv")
-       (eq_attr "mode" "DF"))
+       (eq_attr "sew" "64"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 ;; Vector float divisions and sqrt
 (define_insn_reservation "tt_ascalon_d8_vec_float_divsqrt_half" 11
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vfdiv,vfsqrt")
-       (eq_attr "mode" "HF"))
+       (eq_attr "sew" "16"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 (define_insn_reservation "tt_ascalon_d8_vec_float_divsqrt_single" 10
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vfdiv,vfsqrt")
-       (eq_attr "mode" "SF"))
+       (eq_attr "sew" "32"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 (define_insn_reservation "tt_ascalon_d8_vec_float_divsqrt_double" 17
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vfdiv,vfsqrt")
-       (eq_attr "mode" "DF"))
+       (eq_attr "sew" "64"))
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 ;; Vector mask operations.
