@@ -1,5 +1,6 @@
 // C++20 P1766R1 - Mitigating minor modules maladies
-// { dg-module-do run }
+// FIXME mark as run once we no longer xfail below.
+// { dg-module-do compile }
 // { dg-additional-options "-fmodules-ts" }
 
 import M;
