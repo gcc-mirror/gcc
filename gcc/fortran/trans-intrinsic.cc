@@ -5878,8 +5878,9 @@ conv_intrinsic_fstat_lstat_stat_sub (gfc_code *code)
 {
   stmtblock_t block;
   gfc_se se, se_stat;
-  tree unit;
-  tree name, slen;
+  tree unit = NULL_TREE;
+  tree name = NULL_TREE;
+  tree slen = NULL_TREE;
   tree vals;
   tree arg3 = NULL_TREE;
   tree stat = NULL_TREE ;
