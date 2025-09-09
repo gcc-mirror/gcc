@@ -3730,7 +3730,9 @@ build_min_non_dep_op_overload (enum tree_code op,
 	     rebuild the <=>.  Note that both OVERLOAD and the provided arguments
 	     in this case already correspond to the selected operator<=>.  */
 
-	  tree spaceship_non_dep = CALL_EXPR_ARG (non_dep, reversed ? 1 : 0);
+	  tree spaceship_non_dep = (TREE_CODE (non_dep) == CALL_EXPR
+				    ? CALL_EXPR_ARG (non_dep, reversed ? 1 : 0)
+				    : TREE_OPERAND (non_dep, reversed ? 1 : 0));
 	  gcc_checking_assert (TREE_CODE (spaceship_non_dep) == CALL_EXPR);
 	  tree spaceship_op0 = va_arg (p, tree);
 	  tree spaceship_op1 = va_arg (p, tree);
@@ -3744,8 +3746,19 @@ build_min_non_dep_op_overload (enum tree_code op,
 						    TREE_VALUE (overload),
 						    spaceship_op0,
 						    spaceship_op1);
-	  tree op1 = CALL_EXPR_ARG (non_dep, reversed ? 0 : 1);
+	  tree op1 = (TREE_CODE (non_dep) == CALL_EXPR
+		      ? CALL_EXPR_ARG (non_dep, reversed ? 0 : 1)
+		      : TREE_OPERAND (non_dep, reversed ? 0 : 1));
 	  gcc_checking_assert (integer_zerop (op1));
+
+	  if (TREE_CODE (non_dep) != CALL_EXPR)
+	    {
+	      gcc_checking_assert (COMPARISON_CLASS_P (non_dep));
+	      if (reversed)
+		std::swap (op0, op1);
+	      return build_min_non_dep (TREE_CODE (non_dep), non_dep, op0, op1);
+	    }
+
 	  vec_safe_push (args, op0);
 	  vec_safe_push (args, op1);
 	  overload = CALL_EXPR_FN (non_dep);

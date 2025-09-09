@@ -1,13 +1,11 @@
-// Verify phase 1 lookup works properly for rewritten non-dependent conditional
-// operator expressions.
+// PR c++/121779
+// A version of operator-8.C where the operator<=> return type is int.
 
 // { dg-do compile { target c++20 } }
 
-#include <compare>
-
 struct A {
   bool operator==(int);
-  std::strong_ordering operator<=>(int);
+  int operator<=>(int);
 };
 
 template<class T>
