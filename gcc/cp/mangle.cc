@@ -2185,7 +2185,7 @@ write_real_cst (const tree value)
   if (words == 0)
     {
       /* _Float16 and std::bfloat16_t are the only supported types smaller than
-         32 bits.  */
+	 32 bits.  */
       gcc_assert (bits == 16);
       sprintf (buffer, "%04lx", (unsigned long) target_real[0]);
       write_chars (buffer, 4);
