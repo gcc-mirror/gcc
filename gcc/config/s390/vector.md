@@ -697,13 +697,15 @@
 
 ; vlgvb, vlgvh, vlgvf, vlgvg
 (define_insn "*vec_extract<mode>_plus"
-  [(set (match_operand:<non_vec>       0 "nonimmediate_operand" "=d")
+  [(set (match_operand:<non_vec>  0 "register_operand" "=d")
 	(vec_select:<non_vec>
-	 (match_operand:V              1 "register_operand"      "v")
-	 (plus:SI (match_operand:SI    2 "nonmemory_operand"     "a")
-	  (parallel [(match_operand:SI 3 "const_int_operand"     "n")]))))]
-  "TARGET_VX"
-  "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
+	  (match_operand:V        1 "register_operand"  "v")
+	    (parallel
+	      [(plus:SI
+		(match_operand:SI 2 "register_operand"  "a")
+		(match_operand:SI 3 "const_int_operand" "J"))])))]
+  "TARGET_VX && UINTVAL (operands[3]) < 4096"
+  "vlgv<bhfgq>\t%0,%v1,%3(%2)"
   [(set_attr "op_type" "VRS")])
 
 (define_expand "vec_init<mode><non_vec_l>"
@@ -750,6 +752,19 @@
 }
   [(set_attr "op_type" "VRS")
    (set_attr "mnemonic" "vlgv<bhfgq>")])
+
+(define_insn "*vec_extract<mode>_plus_zero_extend"
+  [(set (match_operand:DI           0 "register_operand" "=d")
+	(zero_extend:DI
+	  (vec_select:<non_vec>
+	    (match_operand:VLGV_DI  1 "register_operand"  "v")
+	      (parallel
+		[(plus:SI
+		  (match_operand:SI 2 "register_operand"  "a")
+		  (match_operand:SI 3 "const_int_operand" "J"))]))))]
+  "TARGET_VX && UINTVAL (operands[3]) < 4096"
+  "vlgv<bhfgq>\t%0,%v1,%3(%2)"
+  [(set_attr "op_type" "VRS")])
 
 (define_insn "*vec_vllezlf<mode>"
   [(set (match_operand:V_HW_4              0 "register_operand" "=v")
