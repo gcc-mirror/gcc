@@ -1,3 +1,12 @@
+2025-09-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-09-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121510
+	* config/riscv/riscv.cc (riscv_legitimize_move): Check if we can
+	vec_extract.
+
 2025-09-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
