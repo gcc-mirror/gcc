@@ -11994,6 +11994,12 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (cfun->machine->interrupt_handler_p)
     return false;
 
+  /* Don't use sibcall if a non-vector CC function is being called
+     from a vector CC function.  */
+  if ((riscv_cc) crtl->abi->id () == RISCV_CC_V
+      && (riscv_cc) expr_callee_abi (exp).id () != RISCV_CC_V)
+    return false;
+
   /* Don't use sibcalls in the large model, because a sibcall instruction
      expanding and a epilogue expanding both use RISCV_PROLOGUE_TEMP
      register.  */
