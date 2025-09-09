@@ -401,7 +401,7 @@ enum reg_class
 #define INDEX_REG_CLASS NO_REGS
 
 /* The small_register_classes_for_mode_p hook must always return true for
-   Xtrnase, because all of the 16 AR registers may be explicitly used in
+   Xtensa, because all of the 16 AR registers may be explicitly used in
    the RTL, as either incoming or outgoing arguments.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
