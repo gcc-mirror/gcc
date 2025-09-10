@@ -6600,15 +6600,62 @@ gimple_lower_bitint (void)
 	      if (is_gimple_assign (SSA_NAME_DEF_STMT (s)))
 		switch (gimple_assign_rhs_code (SSA_NAME_DEF_STMT (s)))
 		  {
+		  case REALPART_EXPR:
 		  case IMAGPART_EXPR:
 		    {
-		      tree rhs1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s));
+		      gimple *ds = SSA_NAME_DEF_STMT (s);
+		      tree rhs1 = gimple_assign_rhs1 (ds);
 		      rhs1 = TREE_OPERAND (rhs1, 0);
 		      if (TREE_CODE (rhs1) == SSA_NAME)
 			{
 			  gimple *g = SSA_NAME_DEF_STMT (rhs1);
 			  if (optimizable_arith_overflow (g))
-			    continue;
+			    {
+			      if (gimple_assign_rhs_code (ds) == IMAGPART_EXPR)
+				continue;
+			      if (gimple_store_p (use_stmt))
+				{
+				  /* Punt if the cast use of IMAGPART_EXPR stmt
+				     appears before the store use_stmt, because
+				     optimizable arith overflow can't be
+				     lowered at the store location in that case.
+				     See PR121828.  */
+				  gimple_stmt_iterator gsi
+				    = gsi_for_stmt (use_stmt);
+				  unsigned int cnt = 0;
+				  do
+				    {
+				      gsi_prev_nondebug (&gsi);
+				      if (gsi_end_p (gsi))
+					break;
+				      gimple *g2 = gsi_stmt (gsi);
+				      if (g2 == ds)
+					break;
+				      if (++cnt == 64)
+					break;
+				      if (!gimple_assign_cast_p (g2))
+					continue;
+				      tree rhs2 = gimple_assign_rhs1 (g2);
+				      if (TREE_CODE (rhs2) != SSA_NAME)
+					continue;
+				      gimple *g3 = SSA_NAME_DEF_STMT (rhs2);
+				      if (!is_gimple_assign (g3))
+					continue;
+				      if (gimple_assign_rhs_code (g3)
+					  != IMAGPART_EXPR)
+					continue;
+				      rhs2 = gimple_assign_rhs1 (g3);
+				      rhs2 = TREE_OPERAND (rhs2, 0);
+				      if (rhs2 != rhs1)
+					continue;
+				      cnt = 64;
+				      break;
+				    }
+				  while (1);
+				  if (cnt == 64)
+				    break;
+				}
+			    }
 			}
 		    }
 		    /* FALLTHRU */
@@ -6619,7 +6666,6 @@ gimple_lower_bitint (void)
 		  case EXACT_DIV_EXPR:
 		  case TRUNC_MOD_EXPR:
 		  case FIX_TRUNC_EXPR:
-		  case REALPART_EXPR:
 		    if (gimple_store_p (use_stmt)
 			&& is_gimple_assign (use_stmt)
 			&& !gimple_has_volatile_ops (use_stmt)
