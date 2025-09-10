@@ -2190,6 +2190,13 @@ package body Sprint is
                Indent_End;
             end if;
 
+            if Present (Finally_Statements (Node)) then
+               Write_Indent_Str ("finally");
+               Indent_Begin;
+               Sprint_Node_List (Finally_Statements (Node));
+               Indent_End;
+            end if;
+
             Sprint_At_End_Proc (Node);
 
          when N_Identifier =>
