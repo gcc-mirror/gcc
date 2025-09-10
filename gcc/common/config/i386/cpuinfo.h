@@ -628,6 +628,8 @@ get_intel_cpu (struct __processor_model *cpu_model,
 	break;
       case 0xcc:
 	/* Panther Lake.  */
+      case 0xd5:
+	/* Wildcat Lake.  */
 	cpu = "pantherlake";
 	CHECK___builtin_cpu_is ("corei7");
 	CHECK___builtin_cpu_is ("pantherlake");
