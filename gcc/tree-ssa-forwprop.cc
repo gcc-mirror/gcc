@@ -1458,6 +1458,72 @@ split_core_and_offset_size (tree expr,
   return core;
 }
 
+/* Returns a new src based on the
+   copy `DEST = SRC` and for the old SRC2.
+   Returns null if SRC2 is not related to DEST.  */
+
+static tree
+new_src_based_on_copy (tree src2, tree dest, tree src)
+{
+  /* If the second src is not exactly the same as dest,
+     try to handle it seperately; see it is address/size equivalent.
+     Handles `a` and `a.b` and `MEM<char[N]>(&a)` which all have
+     the same size and offsets as address/size equivalent.
+     This allows copying over a memcpy and also one for copying
+     where one field is the same size as the whole struct.  */
+  if (operand_equal_p (dest, src2))
+    return src;
+  /* A VCE can't be used with imag/real or BFR so reject them early. */
+  if (TREE_CODE (src) == IMAGPART_EXPR
+      || TREE_CODE (src) == REALPART_EXPR
+      || TREE_CODE (src) == BIT_FIELD_REF)
+    return NULL_TREE;
+  tree core1, core2;
+  poly_int64 bytepos1, bytepos2;
+  poly_int64 bytesize1, bytesize2;
+  tree toffset1, toffset2;
+  int reversep1 = 0;
+  int reversep2 = 0;
+  poly_int64 diff = 0;
+  core1 = split_core_and_offset_size (dest, &bytesize1, &bytepos1,
+					  &toffset1, &reversep1);
+  core2 = split_core_and_offset_size (src2, &bytesize2, &bytepos2,
+					  &toffset2, &reversep2);
+  if (!core1 || !core2)
+    return NULL_TREE;
+  if (reversep1 != reversep2)
+    return NULL_TREE;
+  /* The sizes of the 2 accesses need to be the same. */
+  if (!known_eq (bytesize1, bytesize2))
+    return NULL_TREE;
+  if (!operand_equal_p (core1, core2, 0))
+    return NULL_TREE;
+
+  if (toffset1 && toffset2)
+    {
+      tree type = TREE_TYPE (toffset1);
+      if (type != TREE_TYPE (toffset2))
+	toffset2 = fold_convert (type, toffset2);
+
+      tree tdiff = fold_build2 (MINUS_EXPR, type, toffset1, toffset2);
+      if (!cst_and_fits_in_hwi (tdiff))
+	return NULL_TREE;
+
+      diff = int_cst_value (tdiff);
+    }
+  else if (toffset1 || toffset2)
+    {
+      /* If only one of the offsets is non-constant, the difference cannot
+	 be a constant.  */
+      return NULL_TREE;
+    }
+  diff += bytepos1 - bytepos2;
+  /* The offset between the 2 need to be 0. */
+  if (!known_eq (diff, 0))
+    return NULL_TREE;
+  return fold_build1 (VIEW_CONVERT_EXPR,TREE_TYPE (src2), src);
+}
+
 /* Helper function for optimize_agr_copyprop.
    For aggregate copies in USE_STMT, see if DEST
    is on the lhs of USE_STMT and replace it with SRC. */
@@ -1474,66 +1540,9 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
   /* If the new store is `src2 = src2;` skip over it. */
   if (operand_equal_p (src2, dest2, 0))
     return false;
-  /* If the second src is not exactly the same as dest,
-     try to handle it seperately; see it is address/size equivalent.
-     Handles `a` and `a.b` and `MEM<char[N]>(&a)` which all have
-     the same size and offsets as address/size equivalent.
-     This allows copying over a memcpy and also one for copying
-     where one field is the same size as the whole struct.  */
-  if (!operand_equal_p (dest, src2, 0))
-    {
-      /* A VCE can't be used with imag/real or BFR so reject them early. */
-      if (TREE_CODE (src) == IMAGPART_EXPR
-	  || TREE_CODE (src) == REALPART_EXPR
-	  || TREE_CODE (src) == BIT_FIELD_REF)
-	return false;
-      tree core1, core2;
-      poly_int64 bytepos1, bytepos2;
-      poly_int64 bytesize1, bytesize2;
-      tree toffset1, toffset2;
-      int reversep1 = 0;
-      int reversep2 = 0;
-      poly_int64 diff = 0;
-      core1 = split_core_and_offset_size (dest, &bytesize1, &bytepos1,
-					  &toffset1, &reversep1);
-      core2 = split_core_and_offset_size (src2, &bytesize2, &bytepos2,
-					  &toffset2, &reversep2);
-      if (!core1 || !core2)
-	return false;
-      if (reversep1 != reversep2)
-	return false;
-      /* The sizes of the 2 accesses need to be the same. */
-      if (!known_eq (bytesize1, bytesize2))
-	return false;
-      if (!operand_equal_p (core1, core2, 0))
-	return false;
-
-      if (toffset1 && toffset2)
-	{
-	  tree type = TREE_TYPE (toffset1);
-	  if (type != TREE_TYPE (toffset2))
-	    toffset2 = fold_convert (type, toffset2);
-
-	  tree tdiff = fold_build2 (MINUS_EXPR, type, toffset1, toffset2);
-	  if (!cst_and_fits_in_hwi (tdiff))
-	    return false;
-
-	  diff = int_cst_value (tdiff);
-	}
-      else if (toffset1 || toffset2)
-	{
-	  /* If only one of the offsets is non-constant, the difference cannot
-	     be a constant.  */
-	  return false;
-	}
-      diff += bytepos1 - bytepos2;
-      /* The offset between the 2 need to be 0. */
-      if (!known_eq (diff, 0))
-	return false;
-      src = fold_build1_loc (gimple_location (use_stmt),
-			     VIEW_CONVERT_EXPR,
-			     TREE_TYPE (src2), src);
-    }
+  src = new_src_based_on_copy (src2, dest, src);
+  if (!src)
+    return false;
   /* For 2 memory refences and using a temporary to do the copy,
      don't remove the temporary as the 2 memory references might overlap.
      Note t does not need to be decl as it could be field.
@@ -1634,8 +1643,10 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
 	  || is_gimple_min_invariant (*argptr)
 	  || TYPE_VOLATILE (TREE_TYPE (*argptr)))
 	continue;
-      if (!operand_equal_p (*argptr, dest, 0))
+      tree newsrc = new_src_based_on_copy (*argptr, dest, src);
+      if (!newsrc)
 	continue;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Simplified\n  ");
@@ -1643,7 +1654,7 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
 	  fprintf (dump_file, "after previous\n  ");
 	  print_gimple_stmt (dump_file, defstmt, 0, dump_flags);
 	}
-      *argptr = unshare_expr (src);
+      *argptr = unshare_expr (newsrc);
       changed = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
