@@ -2931,6 +2931,18 @@ Switches for ``gnatprep``
   don't specify a value, the symbol is defined to be ``True``. You can
   use this switch instead of providing a definition file.
 
+.. index:: -e (gnatprep)
+
+:switch:`-e`
+  Causes both preprocessor lines and the lines deleted by
+  preprocessing to be replaced by empty comment lines marked
+  with ``"--!"`` (and no other text) in the output source file,
+  preserving line numbers in the output file. This option can
+  be useful as an alternative to :switch:`-b` and :switch:`-c`
+  when compilation style switches like :switch:`-gnatyu` or
+  :switch:`-gnatyM` are used (to avoid warnings about multiple
+  blank lines or lines too long).
+
 .. index:: -r (gnatprep)
 
 :switch:`-r`
@@ -3248,7 +3260,7 @@ that relate to integrated preprocessing.
     Causes both preprocessor lines and the lines deleted by
     preprocessing to be replaced by blank lines, preserving the line number.
     This switch is always implied; however, if specified after :switch:`-c`
-    it cancels the effect of :switch:`-c`.
+    or :switch:`-e` it cancels the effect of those switches.
 
   :switch:`-c`
     Causes both preprocessor lines and the lines deleted
@@ -3264,6 +3276,12 @@ that relate to integrated preprocessing.
     literal string, an Ada identifier or any Ada reserved word. A
     symbol declared with this switch replaces a symbol with the same
     name defined in a definition file.
+
+
+  :switch:`-e`
+    Causes both preprocessor lines and the lines deleted by
+    preprocessing to be replaced by empty comment lines marked
+    with '`--!`' (and no other text) in the output source file,
 
 
   :switch:`-s`
@@ -3306,12 +3324,19 @@ that relate to integrated preprocessing.
   This switch is similar to switch :switch:`-D` of ``gnatprep``.
 
 
-:switch:`-gnateG`
+.. index:: -gnateG (gcc)
+
+:switch:`-gnateG[bce]`
   When integrated preprocessing is performed on source file :file:`filename.extension`,
   create or overwrite :file:`filename.extension.prep` to contain
   the result of the preprocessing.
   For example if the source file is :file:`foo.adb` then
   the output file is :file:`foo.adb.prep`.
+  An optional character (b, c, or e) can be appended to indicate that filtered
+  lines are to be replaced by blank lines, comments, or empty comments (see
+  documentation above about :switch:`-b`, :switch:`-c`, and :switch:`-e`).
+  If one of those switches is given in a preprocessor data file, then it
+  will override any option included with :switch:`-gnateG`.
 
 
 .. _Mixed_Language_Programming:

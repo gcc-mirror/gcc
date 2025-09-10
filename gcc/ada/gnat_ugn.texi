@@ -4628,6 +4628,23 @@ don’t specify a value, the symbol is defined to be @code{True}. You can
 use this switch instead of providing a definition file.
 @end table
 
+@geindex -e (gnatprep)
+
+
+@table @asis
+
+@item @code{-e}
+
+Causes both preprocessor lines and the lines deleted by
+preprocessing to be replaced by empty comment lines marked
+with @code{"--!"} (and no other text) in the output source file,
+preserving line numbers in the output file. This option can
+be useful as an alternative to @code{-b} and @code{-c}
+when compilation style switches like @code{-gnatyu} or
+@code{-gnatyM} are used (to avoid warnings about multiple
+blank lines or lines too long).
+@end table
+
 @geindex -r (gnatprep)
 
 
@@ -5023,7 +5040,7 @@ Finally, switches similar to those of @code{gnatprep} may optionally appear:
 Causes both preprocessor lines and the lines deleted by
 preprocessing to be replaced by blank lines, preserving the line number.
 This switch is always implied; however, if specified after @code{-c}
-it cancels the effect of @code{-c}.
+or @code{-e} it cancels the effect of those switches.
 
 @item @code{-c}
 
@@ -5040,6 +5057,12 @@ reserved word aside from @code{if}, @code{else}, @code{elsif}, @code{end},
 literal string, an Ada identifier or any Ada reserved word. A
 symbol declared with this switch replaces a symbol with the same
 name defined in a definition file.
+
+@item @code{-e}
+
+Causes both preprocessor lines and the lines deleted by
+preprocessing to be replaced by empty comment lines marked
+with ‘@cite{–!}’ (and no other text) in the output source file,
 
 @item @code{-s}
 
@@ -5088,14 +5111,25 @@ symbol with the same name either in a definition file or specified with a
 switch @code{-D} in the preprocessor data file.
 
 This switch is similar to switch @code{-D} of @code{gnatprep}.
+@end table
 
-@item @code{-gnateG}
+@geindex -gnateG (gcc)
+
+
+@table @asis
+
+@item @code{-gnateG[bce]}
 
 When integrated preprocessing is performed on source file @code{filename.extension},
 create or overwrite @code{filename.extension.prep} to contain
 the result of the preprocessing.
 For example if the source file is @code{foo.adb} then
 the output file is @code{foo.adb.prep}.
+An optional character (b, c, or e) can be appended to indicate that filtered
+lines are to be replaced by blank lines, comments, or empty comments (see
+documentation above about @code{-b}, @code{-c}, and @code{-e}).
+If one of those switches is given in a preprocessor data file, then it
+will override any option included with @code{-gnateG}.
 @end table
 
 @node Mixed Language Programming,GNAT and Other Compilation Models,Conditional Compilation,The GNAT Compilation Model
@@ -9155,9 +9189,13 @@ information.
 
 @table @asis
 
-@item @code{-gnateG}
+@item @code{-gnateG[bce]}
 
-Save result of preprocessing in a text file.
+Save result of preprocessing in a text file. An optional character (b, c,
+or e) can be appended to indicate that filtered lines are to be replaced by
+blank lines, comment lines that include the filtered line, or empty comment
+lines (”–!”), respectively. The default is to replace filtered lines with
+blank lines.
 @end table
 
 @geindex -gnateH (gcc)
@@ -30295,8 +30333,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye

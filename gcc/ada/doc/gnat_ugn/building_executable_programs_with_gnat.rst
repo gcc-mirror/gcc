@@ -1608,8 +1608,12 @@ Alphabetical List of All Switches
 
 .. index:: -gnateG  (gcc)
 
-:switch:`-gnateG`
-  Save result of preprocessing in a text file.
+:switch:`-gnateG[bce]`
+  Save result of preprocessing in a text file. An optional character (b, c,
+  or e) can be appended to indicate that filtered lines are to be replaced by
+  blank lines, comment lines that include the filtered line, or empty comment
+  lines ("--!"), respectively. The default is to replace filtered lines with
+  blank lines.
 
 
 .. index:: -gnateH  (gcc)

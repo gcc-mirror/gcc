@@ -735,7 +735,7 @@ package body GPrep is
 
       loop
          begin
-            Switch := GNAT.Command_Line.Getopt ("D: a b c C r s T u v");
+            Switch := GNAT.Command_Line.Getopt ("D: a b c C e r s T u v");
 
             case Switch is
                when ASCII.NUL =>
@@ -754,6 +754,9 @@ package body GPrep is
 
                when 'c' =>
                   Opt.Comment_Deleted_Lines := True;
+
+               when 'e' =>
+                  Opt.Empty_Comment_Deleted_Lines := True;
 
                when 'C' =>
                   Opt.Replace_In_Comments := True;
@@ -831,6 +834,7 @@ package body GPrep is
       Write_Line ("   -c  Keep preprocessor lines as comments");
       Write_Line ("   -C  Do symbol replacements within comments");
       Write_Line ("   -D  Associate symbol with value");
+      Write_Line ("   -e  Replace preprocessor lines by empty comment lines");
       Write_Line ("   -r  Generate Source_Reference pragma");
       Write_Line ("   -s  Print a sorted list of symbol names and values");
       Write_Line ("   -T  Use LF as line terminators");

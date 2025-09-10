@@ -54,29 +54,31 @@ package body Prepcomp is
    pragma Warnings (On);
 
    type Preproc_Data is record
-      Mapping      : Symbol_Table.Instance;
-      File_Name    : File_Name_Type := No_File;
-      Deffile      : String_Id      := No_String;
-      Undef_False  : Boolean        := False;
-      Always_Blank : Boolean        := False;
-      Comments     : Boolean        := False;
-      No_Deletion  : Boolean        := False;
-      List_Symbols : Boolean        := False;
-      Processed    : Boolean        := False;
+      Mapping        : Symbol_Table.Instance;
+      File_Name      : File_Name_Type := No_File;
+      Deffile        : String_Id      := No_String;
+      Undef_False    : Boolean        := False;
+      Always_Blank   : Boolean        := False;
+      Comments       : Boolean        := False;
+      Empty_Comments : Boolean        := False;
+      No_Deletion    : Boolean        := False;
+      List_Symbols   : Boolean        := False;
+      Processed      : Boolean        := False;
    end record;
    --  Structure to keep the preprocessing data for a file name or for the
    --  default (when Name_Id = No_Name).
 
    No_Preproc_Data : constant Preproc_Data :=
-     (Mapping      => No_Mapping,
-      File_Name    => No_File,
-      Deffile      => No_String,
-      Undef_False  => False,
-      Always_Blank => False,
-      Comments     => False,
-      No_Deletion  => False,
-      List_Symbols => False,
-      Processed    => False);
+     (Mapping        => No_Mapping,
+      File_Name      => No_File,
+      Deffile        => No_String,
+      Undef_False    => False,
+      Always_Blank   => False,
+      Comments       => False,
+      Empty_Comments => False,
+      No_Deletion    => False,
+      List_Symbols   => False,
+      Processed      => False);
 
    Default_Data : Preproc_Data := No_Preproc_Data;
    --  The preprocessing data to be used when no specific preprocessing data
@@ -169,6 +171,17 @@ package body Prepcomp is
          Current_Data := No_Preproc_Data;
          No_Preprocessing := False;
          Current_Data.Processed := True;
+
+         if Opt.Blank_Deleted_Lines then
+            Current_Data.Always_Blank := True;
+
+         elsif Opt.Comment_Deleted_Lines then
+            Current_Data.Comments := True;
+
+         elsif Opt.Empty_Comment_Deleted_Lines then
+            Current_Data.Empty_Comments := True;
+
+         end if;
 
          --  Start with an empty, initialized mapping table; use Prep.Mapping,
          --  because Prep.Index_Of uses Prep.Mapping.
@@ -376,6 +389,15 @@ package body Prepcomp is
 
                      if Name_Len = 1 then
                         Current_Data.Comments := True;
+                        OK := True;
+                     end if;
+
+                  when 'e' =>
+
+                     --  Replace removed lines with empty comment lines ("--!")
+
+                     if Name_Len = 1 then
+                        Current_Data.Empty_Comments := True;
                         OK := True;
                      end if;
 
@@ -601,12 +623,22 @@ package body Prepcomp is
 
       --  Set the preprocessing flags according to the preprocessing data
 
-      if Current_Data.Comments and not Current_Data.Always_Blank then
-         Comment_Deleted_Lines := True;
-         Blank_Deleted_Lines   := False;
+      if Current_Data.Comments then
+         Comment_Deleted_Lines       := True;
+         Empty_Comment_Deleted_Lines := False;
+         Blank_Deleted_Lines         := False;
+
+      elsif Current_Data.Always_Blank then
+         Comment_Deleted_Lines       := False;
+         Empty_Comment_Deleted_Lines := False;
+         Blank_Deleted_Lines         := True;
+
+      --  By default, emit empty comment lines in place of deleted lines
+
       else
-         Comment_Deleted_Lines := False;
-         Blank_Deleted_Lines   := True;
+         Comment_Deleted_Lines       := False;
+         Empty_Comment_Deleted_Lines := True;
+         Blank_Deleted_Lines         := False;
       end if;
 
       No_Deletion                 := Current_Data.No_Deletion;
