@@ -126,10 +126,18 @@ fi
 sort -t ':' $skip1 "$now" > "$now_s"
 sort -t ':' $skip1 "$before" > "$before_s"
 
-# Report non-unique test names, but print the two lists only if they
-# are different.
-sed '/^$/d' "$now_s"    | uniq -cd > "$now_u"
-sed '/^$/d' "$before_s" | uniq -cd > "$before_u"
+# Report non-unique test names and print the diff between the two
+# lists if they are different.
+#
+# If the results include several configurations (schedule of
+# variations), we report duplicates several times with different
+# target/tool prefixes because at this stage we do not know if the
+# target and/or tool prefix was inserted.
+# If we used the input files (so generally several times the same
+# results in one section per target), we would incorreclty detect
+# duplicates (as many as targets)
+grep -E '^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|UNSUPPORTED|UNTESTED|ERROR):' "$now_s"    | uniq -cd > "$now_u"
+grep -E '^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|UNSUPPORTED|UNTESTED|ERROR):' "$before_s" | uniq -cd > "$before_u"
 
 same_uniq=" now"
 cmp -s "$before_u" "$now_u" && same_uniq=""
@@ -142,8 +150,8 @@ if [ -s "$now_u" ]; then
 fi
 
 if [ -s "$before_u" -a "x$same_uniq" != "x" ]; then
-    echo "Non-unique test names before: (Eeek!)"
-    cat "$before_u"
+    echo "Changes to non-unique test names:"
+    diff -u "$before_u" "$now_u" | grep -E '^[-\\+] '
     echo
     exit_status=1
 fi
