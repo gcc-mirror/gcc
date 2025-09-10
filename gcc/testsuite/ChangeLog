@@ -1,3 +1,121 @@
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99682
+	PR c++/121808
+	* g++.dg/modules/circ-1_c.C: Adjust diagnostic.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/mod-decl-2_b.C: Likewise.
+	* g++.dg/modules/pr99174.H: Likewise.
+	* g++.dg/modules/import-3_a.C: New test.
+	* g++.dg/modules/import-3_b.C: New test.
+	* g++.dg/modules/import-3_c.C: New test.
+	* g++.dg/modules/mod-decl-9.C: New test.
+	* g++.dg/modules/part-10_a.C: New test.
+	* g++.dg/modules/part-10_b.C: New test.
+	* g++.dg/modules/part-10_c.C: New test.
+	* g++.dg/modules/part-10_d.C: New test.
+
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR testsuite/121872
+	* g++.dg/modules/default-arg-4_b.C: Change run to compile.
+
+2025-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121779
+	* g++.dg/lookup/operator-8.C: Remove outdated comment about
+	this test failing.
+	* g++.dg/lookup/operator-8a.C: New test.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* gfortran.dg/stat_3.f90: Extend argument checking.
+	* gfortran.dg/stat_4.f90: New test.
+
+2025-09-09  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	* gcc.dg/debug/ctf/ctf-struct-3.c: New test.
+
+2025-09-09  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfwsub.vf.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h
+	(DEF_VF_BINOP_WIDEN_CASE_0, DEF_VF_BINOP_WIDEN_CASE_1): Swap operands.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_widen_run.h: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwsub-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwsub-run-1-f32.c: New test.
+
+2025-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121678
+	* g++.dg/ext/pr121678.C: New test.
+	* gcc.dg/pr121678.c: New test.
+
+2025-09-09  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfwadd.wf.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h: Add support for single
+	widening variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop_widen_run.h: Add support
+	for single widening variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwadd-run-2-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwadd-run-2-f32.c: New test.
+
+2025-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2025-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/bcax_d.c: Add tests for DImode arguments.
+
+2025-09-09  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121829
+	* gcc.dg/torture/pr121829.c: New testcase.
+
+2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* g++.dg/abi/pr121801.C: New test.
+
+2025-09-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121861
+	* gcc.target/i386/pr121861-1a.c: New file.
+	* gcc.target/i386/pr121861-1b.c: Likewise.
+
+2025-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx256_avoid_vec_perm-3.c: New test.
+	* gcc.target/i386/avx256_avoid_vec_perm-4.c: New test.
+	* gcc.target/i386/avx512bw-vpalignr-4.c: Adjust testcase.
+	* gcc.target/i386/avx512vl-vpalignr-4.c: Ditto.
+
+2025-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx256_avoid_vec_perm.c: Adjust testcase.
+	* gcc.target/i386/avx256_avoid_vec_perm-2.c: New test.
+	* gcc.target/i386/avx256_avoid_vec_perm-5.c: New test.
+
 2025-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121532

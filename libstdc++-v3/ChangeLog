@@ -1,3 +1,16 @@
+2025-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_CwFixedValue::_S_type): Rename to
+	__type.
+	(constant_wrapper): Rename template parameter in declaration to
+	match later definition.
+
+2025-09-09  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/xml/manual/using_exceptions.xml: Replace "Tunables" link
+	with one that does not have an anchor.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
 2025-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (constant_wrapper): Rename template

@@ -1,3 +1,37 @@
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Init
+	some variables.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* check.cc (error_unsupported_kind): Helper function to report an
+	unsupported kind of an argument.
+	(check_minrange4): Helper function to report if an integer variable
+	does not have a decimal range of at least four.
+	(gfc_check_fstat): Adjust checks for generalization of instrinsic
+	function FSTAT.
+	(gfc_check_fstat_sub): Likewise for subroutine FSTAT.
+	(gfc_check_stat): Likewise for functio STAT.
+	(gfc_check_stat_sub): Likewise for subroutine STAT.
+	* intrinsic.texi: Document generalized versions of intrinsics
+	STAT/LSTAT/FSTAT.
+	* iresolve.cc (gfc_resolve_stat): STAT function result shall have
+	the same kind as the VALUES argument.
+	(gfc_resolve_lstat): Likewise for LSTAT.
+	(gfc_resolve_fstat): Likewise for FSTAT.
+	(gfc_resolve_stat_sub): Resolve proper library subroutine for STAT.
+	(gfc_resolve_lstat_sub): Likewise for LSTAT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Declare
+	fndecls for required subroutines in runtine library.
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Emit
+	runtime wrapper code for the library functions, taking care of
+	possible kind conversion of the optional STATUS argument of the
+	subroutine versions of the intrinsics.
+	(gfc_conv_intrinsic_subroutine): Use it.
+	* trans.h (GTY): Declare prototypes.
+
 2025-09-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84008

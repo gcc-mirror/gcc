@@ -1,3 +1,561 @@
+2025-09-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Check for warning about call to
+	the abstract equality function of a component type, for both array
+	and record enclosing types.
+	(Warn_On_Abstract_Equality_For_Component): New procedure to issue
+	a warning when an abstract equality function of a component type
+	will be called and result in Program_Error.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch5.adb (Make_Call): Mark generated nodes as coming from source.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Incomplete_Type_Decl): Remove incorrect
+	comment.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Is_OK_Pragma): Use the
+	Suppressed_Ghost_Policy_Check_Pragma list for ignoring certain
+	pragmas.
+	* sem_prag.ads (Suppressed_Ghost_Policy_Check_Pragma): New variable
+	to store the pragmas that could be ignored when checking for
+	consitant ghost policy.
+
+2025-09-09  Tonu Naks  <naks@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-crtl.ads (read, write): remove import
+	* libgnat/s-crtl__mingw.adb: body for windows
+	* libgnat/s-crtl.adb: body for all the other targets
+	* Makefile.rtl: configure s-crtl.adb/libgnat/s-crtl__mingw.adb
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Alphabetize.
+	(GNATBIND_OBJS): Add ada/libgnat/s-crtl.o.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* contracts.adb: Use the In_Codegen function instead.
+	* exp_ch3.adb: Likewise.
+	* exp_ch5.adb: Likewise.
+	* exp_ch6.adb: Likewise.
+	* exp_ch7.adb: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_disp.adb: Likewise.
+	* exp_util.adb: Likewise.
+	* freeze.adb: Likewise.
+	* ghost.adb: Likewise.
+	* inline.adb: Likewise.
+	* repinfo.adb: Likewise.
+	* sem_ch10.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_elab.adb: Likewise.
+	* sem_res.adb: Likewise.
+	* sem_util.adb (Predicates_Ignored_In_Codegen): Add new function for
+	the Predicates_Ignored property.
+	(Predicates_Enabled): Use Predicates_Ignored_In_Codegen instead.
+	* sem_util.ads (Predicates_Ignored_In_Codegen): New function.
+	(Is_Ignored_In_Codegen): Add documentation on how _In_Codegen
+	functions should be used.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Copy_And_Swap): Improve comments.
+
+2025-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Needs_One_Actual): Add support for untagged record
+	types when the sources are compiled with Core Extensions allowed.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): Fix comment.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Check_Nonoverridable_Aspects): Remove if statement.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Check_Nonoverridable_Aspects): Improve documentation
+	comment.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Completion): Add location info
+	to the policy messages.
+	(Check_Ghost_Policy): Likwise.
+
+2025-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Rewrite_Attribute_Proc_Call): Add new parameter
+	to calls to Create_Extra_Formals.
+	(Expand_N_Attribute_Reference): Ditto.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Ditto.
+	* exp_ch6.adb (Expand_Call_Helper): Ditto.
+	* exp_disp.adb (Expand_Dispatching_Call): Ditto.
+	* freeze.adb (Check_Itype): Ditto.
+	(Freeze_Expression): Ditto.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Ditto.
+	(Create_Extra_Formals): Add new formal, and use it to determine
+	if the creation of the extra formals can be deferred. Add the
+	new parameter to calls to Create_Extra_Formals.
+	(Is_Unsupported_Extra_Actuals_Call): Adjust the code to improve
+	its performance when the result is known.
+	(Is_Unsupported_Extra_Formals_Entity): Ditto. Add new formal
+	* sem_ch6.ads (Create_Extra_Formals): Add new formal.
+	(Is_Unsupported_Extra_Formals_Entity): Ditto.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Indicate an out of
+	bounds index error also in the case of a missing index.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Definitions): Create a temporary
+	pragma for the non-task and access type cases.
+
+2025-09-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch7.adb (New_Private_Type): Remove useless statements.
+
+2025-09-09  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* targparm.adb (Get_Target_Parameters): Address type declaration doesn't
+	ends anymore with a semicolon.
+	* libgnat/a-cdlili.ads: Replace Preelaborable_Initialization.
+	* libgnat/a-cidlli.ads: Likewise.
+	* libgnat/a-cihama.ads: Likewise.
+	* libgnat/a-cihase.ads: Likewise.
+	* libgnat/a-cimutr.ads: Likewise.
+	* libgnat/a-ciorma.ads: Likewise.
+	* libgnat/a-ciormu.ads: Likewise.
+	* libgnat/a-ciorse.ads: Likewise.
+	* libgnat/a-cohama.ads: Likewise.
+	* libgnat/a-cohase.ads: Likewise.
+	* libgnat/a-coinho.ads: Likewise.
+	* libgnat/a-coinho__shared.ads: Likewise.
+	* libgnat/a-coinve.ads: Likewise.
+	* libgnat/a-comutr.ads: Likewise.
+	* libgnat/a-convec.ads: Likewise.
+	* libgnat/a-coorma.ads: Likewise.
+	* libgnat/a-coormu.ads: Likewise.
+	* libgnat/a-coorse.ads: Likewise.
+	* libgnat/a-crdlli.ads: Likewise.
+	* libgnat/a-except.ads: Likewise.
+	* libgnat/a-finali.ads: Likewise.
+	* libgnat/a-ngcoty.ads: Likewise.
+	* libgnat/a-strbou.ads: Likewise.
+	* libgnat/a-stream.ads: Likewise.
+	* libgnat/a-strmap.ads: Likewise.
+	* libgnat/a-strunb.ads: Likewise.
+	* libgnat/a-strunb__shared.ads: Likewise.
+	* libgnat/a-ststio.ads: Likewise.
+	* libgnat/a-stwibo.ads: Likewise.
+	* libgnat/a-stwima.ads: Likewise.
+	* libgnat/a-stwiun.ads: Likewise.
+	* libgnat/a-stwiun__shared.ads: Likewise.
+	* libgnat/a-stzbou.ads: Likewise.
+	* libgnat/a-stzmap.ads: Likewise.
+	* libgnat/a-stzunb.ads: Likewise.
+	* libgnat/a-stzunb__shared.ads: Likewise.
+	* libgnat/a-tags.ads: Likewise.
+	* libgnat/i-cstrin.ads: Likewise.
+	* libgnat/s-stopoo.ads: Likewise.
+	* libgnat/s-stposu.ads: Likewise.
+	* libgnat/system-aix.ads: Likewise.
+	* libgnat/system-darwin-arm.ads: Likewise.
+	* libgnat/system-darwin-ppc.ads: Likewise.
+	* libgnat/system-darwin-x86.ads: Likewise.
+	* libgnat/system-djgpp.ads: Likewise.
+	* libgnat/system-dragonfly-x86_64.ads: Likewise.
+	* libgnat/system-freebsd.ads: Likewise.
+	* libgnat/system-gnu.ads: Likewise.
+	* libgnat/system-hpux-ia64.ads: Likewise.
+	* libgnat/system-hpux.ads: Likewise.
+	* libgnat/system-linux-alpha.ads: Likewise.
+	* libgnat/system-linux-arm.ads: Likewise.
+	* libgnat/system-linux-hppa.ads: Likewise.
+	* libgnat/system-linux-ia64.ads: Likewise.
+	* libgnat/system-linux-loongarch.ads: Likewise.
+	* libgnat/system-linux-m68k.ads: Likewise.
+	* libgnat/system-linux-mips.ads: Likewise.
+	* libgnat/system-linux-ppc.ads: Likewise.
+	* libgnat/system-linux-riscv.ads: Likewise.
+	* libgnat/system-linux-s390.ads: Likewise.
+	* libgnat/system-linux-sh4.ads: Likewise.
+	* libgnat/system-linux-sparc.ads: Likewise.
+	* libgnat/system-linux-x86.ads: Likewise.
+	* libgnat/system-lynxos178-ppc.ads: Likewise.
+	* libgnat/system-lynxos178-x86.ads: Likewise.
+	* libgnat/system-mingw.ads: Likewise.
+	* libgnat/system-qnx-arm.ads: Likewise.
+	* libgnat/system-rtems.ads: Likewise.
+	* libgnat/system-solaris-sparc.ads: Likewise.
+	* libgnat/system-solaris-x86.ads: Likewise.
+	* libgnat/system-vxworks-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-arm.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+
+2025-09-09  Marc Poulhiès  <poulhies@adacore.com>
+
+	* s-pack.adb.tmpl: Typo fix in comment.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Set Mark_Ghost_Code individually
+	based on the semantics of each pragma.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Mark_Ghost_Declaration_Or_Body): Mark ghost
+	entity explicitly as ignored or checked.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Policy): ignore ghost policy changes
+	within instantiation statements.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Policy): Use the policy in affect for
+	the identifier at the current moment instead of the region
+	around it when checking a policy change for a procedure call.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Mark_And_Set_Ghost_Declaration): apply the
+	ghost policy and level from the declaration only if the declaration
+	has an explicit ghost aspect/pragma.
+
+2025-09-09  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_ch13.adb (Check_Nonoverridable_Aspect_Subprograms): Add the new
+	legality check in Check_Nonoverridable_Aspect_Subprograms for
+	nonoverridable aspects to check whether the denoted subprograms satisfy
+	MR 13.1.1(18.4/6), otherwise we emit an error. Fix spacing.
+	* sem_ch6.adb (New_Overloaded_Entity): Set Is_Primitive flag
+	for inherited primitives, and filter out homonym candidates without a
+	function specification as parents.
+
+2025-09-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Interrupt_Or_Attach_Handler): Refine test for
+	protected procedures; fix typo in comment.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Is_OK_Pragma): mark the context of ignored ghost
+	pragmas as OK.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Assertion_Level_From_Arg): Ensure that assertion level
+	is stored as the entity for its reference.
+	(Enables_Ghostness): Derive the result from whether or not the
+	an argument indicated an assertion level.
+	* tbuild.adb (Make_Assertion_Level): ensure that assertion levels
+	have a standard scope.
+
+2025-09-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Make_Bignum_Block): Check restriction No_Secondary_Stack.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_util.adb (Policy_In_Effect): Add special handling
+	for Runtime and Static values.
+
+2025-09-09  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* exp_ch3.adb (Init_Formals): Remove the check on Global_No_Tasking.
+	* sem.adb: Fix typo.
+
+2025-09-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Container_Aggr_Code.To_Int): Replace existing
+	conditional expression with call to Expr_Value.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): add default
+	assertion level to assertion aspects.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+
+2025-09-09  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch6.adb (Check_BIP_Actuals, Process_Node): Disable checks.
+
+2025-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* aspects.ads (Aspect_Unsigned_Base_Range): New aspect.
+	* checks.adb (Determine_Range): Handle types with unsigned base range aspect.
+	(Enable_Overflow_Check): ditto
+	(Apply_Arithmetic_Overflow_Strict): ditto
+	* debug.adb (d_o): Document new usage.
+	* einfo.ads (Has_Unsigned_Base_Range_Aspect): New flag.
+	* exp_attr.adb (Expand_N_Attribute_Reference): No action since
+	it has been already handled at this stage.
+	* exp_ch4.adb (Expand_N_Op_Add): Generate aritmetic overflow check on
+	unsigned base range type operands.
+	(Expand_N_Op_Subtract): ditto
+	(Expand_N_Op_Multiply): ditto
+	(Expand_N_Op_Minus): ditto
+	* gen_il-fields.ads (Has_Unsigned_Base_Range_Aspect): New flag.
+	* gen_il-gen-gen_entities.adb (Has_Unsigned_Base_Range_Aspect): New flag.
+	* gen_il-internals.adb (Has_Unsigned_Base_Range_Aspect): New flag.
+	* gnat1drv.adb (Adjust_Global_Switches): Handle -gnatd_o
+	* par-prag.adb (Pragma_Unsigned_Base_Range): No action since it will
+	be entirely handled by the semantic analyzer.
+	* rtsfind.ads (RE_Id): Add RE_Uns_[Add|Subtract|Multiply]_With_ Ovflo_Check
+	* sem_attr.ads (Attribute_Unsigned_Base_Range): Added to the set of
+	implementation defined attributes.
+	* sem_attr.adb (Analyze_Attribute): Analyze attribute Unsigned_Base_Range.
+	(Eval_Attribute): Evaluate attribute Unsigned_Base_Range.
+	* sem_ch13.adb (Analyze_One_Aspect): Defer checks for this aspect to
+	the analysis of the corresponding pragma.
+	* sem_ch3.ads (Unsigned_Base_Range_Type_Declaration): New subprogram.
+	* sem_ch3.adb (Build_Derived_Numeric_Type): Inherit flag
+	Has_Unsigned_Base_Range_Aspect.
+	(Unsigned_Base_Range_Type_Declaration): New subprogram.
+	(Has_Pragma_Unsigned_Base_Range): New subprogram.
+	* sem_prag.adb (Analyze_Pragma): Handle Pragma_Unsigned_Base_Range.
+	* snames.adb-tmpl (Get_Pragma_Id): Handle Name_Unsigned_Base_Range.
+	(Is_Pragma_Name): ditto.
+	* snames.ads-tmpl (Name_Unsigned_Base_Range): New name.
+	(Attribute_Unsigned_Base_Range): New attribute.
+	(Pragma_Unsigned_Base_Range): New pragma.
+	* libgnat/s-aridou.ads (Add_With_Ovflo_Check): New routine for Double_Uns.
+	(Subtract_With_Ovflo_Check): ditto.
+	(Multiply_With_Ovflo_Check): ditto.
+	* libgnat/s-aridou.adb (Add_With_Ovflo_Check): ditto.
+	(Subtract_With_Ovflo_Check): ditto.
+	(Multiply_With_Ovflo_Check): ditto.
+	* libgnat/s-arit64.ads (Uns_Add_With_Ovflo_Check64): New subprogram.
+	(Uns_Subtract_With_Ovflo_Check64): ditto.
+	(Uns_Multiply_With_Ovflo_Check64): ditto.
+	* libgnat/s-arit64.adb (Uns_Add_With_Ovflo_Check64): New subprogram.
+	(Uns_Subtract_With_Ovflo_Check64): ditto.
+	(Uns_Multiply_With_Ovflo_Check64): ditto.
+	* libgnat/s-arit128.ads (Uns_Add_With_Ovflo_Check128): New subprogram.
+	(Uns_Subtract_With_Ovflo_Check128): ditto.
+	(Uns_Multiply_With_Ovflo_Check128): ditto.
+	* libgnat/s-arit128.adb (Uns_Add_With_Ovflo_Check128): New subprogram.
+	(Uns_Subtract_With_Ovflo_Check128): ditto.
+	(Uns_Multiply_With_Ovflo_Check128): ditto.
+	* doc/gnat_rm/gnat_language_extensions.rst: Document unsigned
+	base range.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-09  Viljar Indus  <indus@adacore.com>
+
+	* atree.adb (Mark_New_Ghost_Node): Store the assertion level on the
+	entity.
+	* contracts.adb (Analyze_Package_Contract): Add support for multiple
+	pragma Initial_Condition orginating from multiple assertion levels.
+	* cstand.adb (Make_Assertion_Level_Definition): New function that
+	creates a new Assertion_Level and adds it to the Assertion_Levels
+	table.
+	(Create_Standard): Add definitions for assertion levels defined in
+	Standard.
+	(Print_Standard): Add assertion level pragmas do the output.
+	* exp_ch6.adb (Check_Subprogram_Variant): Add support for multiple
+	Subprogram_Variant pragmas created by assertion levels.
+	* einfo.ads: add info for the new nodes and attributes.
+	* exp_prag.adb (Consequence_Error): Fix error message string
+	corruption caused by another call to the internal strings during
+	the call to Make_Procedure_Call_Statement.
+	(Expand_Pragma_Initial_Condition): Ensure all ghost related
+	attributes are copied to the new pragma.
+	(Expand_Pragma_Loop_Variant): Likewise.
+	(Expand_Pragma_Subprogram_Variant). Likewise. Additionally
+	create a new Subprogram_Variant function for each pragma associated
+	with an assertion level.
+	* exp_util.adb (Add_DIC_Check): Ensure all ghost related attributes
+	are copied to the new pragma.
+	(Build_DIC_Procedure_Body): Add support for mutliple DIC pragmas
+	created from assertion levels.
+	* gen_il-fields.ads:
+	(Aspect_Ghost_Assertion_Level): New field.
+	(Original_Aspect): New field.
+	(Original_Pragma): New field.
+	(Pragma_Ghost_Assertion_Level): New field.
+	(Child_Levels): New field.
+	(Ghost_Assertion_Level): New field.
+	(Parent_Levels): New field.
+	* gen_il-gen-gen_entities.adb:
+	Add Ghost_Assertion_Level field for all entities
+	Add new E_Assertion_Level entity for storing assertion levels.
+	* gen_il-gen-gen_nodes.adb:
+	Add Aspect_Ghost_Assertion_Level for N_Aspect to store the
+	assertion level associated with the aspect.
+	Add Original_Aspect to store the original aspect where the aspect
+	that was transformed from an aspect with an assertion level
+	origninated from.
+	Add Pragma_Ghost_Assertion_Level and Original_Pragma to store
+	the same information for N_Prama nodes.
+	* gen_il-types.ads: Add new entity kind E_Assertion_Level
+	* ghost.adb (Assertion_Level_Error_Msg): Create constant for
+	error messages using the same main error message.
+	(Ghost_Policy_Error_Msg): Likewise.
+	(Assertion_Level_To_Name): New subprogram.
+	(Check_Valid_Ghost_Declaration): New subprogram.
+	(Get_Ghost_Aspect): New subprogram.
+	(Get_Ghost_Assertion_Level): New subprogram.
+	(Ghost_Policy_In_Effect): New subprogram.
+	(Install_Ghost_Region): New subprogram.
+	(Mark_And_Set_Ghost_Region): New subprogram.
+	(Mark_Ghost_Declaration_Or_Body): Add new argument for assertion
+	levels.
+	(Check_Ghost_Completion): Update ghost policy calculation with
+	assertion levels. Refactor error message.
+	(Is_OK_Statement): Add new checks for valid assertion policies and
+	assertion levels.
+	(Is_OK_Pragma): Refactor the calculation of valid ghost pragmas.
+	(Check_Ghost_Policy): Make the checks ghost region based.
+	(Check_Ghost_Context): Refactor the order of checks.
+	(Check_Ghost_Formal_Procedure_Or_Package): Relax the checks for
+	overriding procedures. Now only ignored subprograms cannot be
+	overridden by checked or non-ghost subprograms.
+	(Check_Ghost_Primitive): Relax conditions for primitve operations.
+	Now only checked primitive subprograms are considered invalid for
+	ignored tagged types. Add assertion level compatibility checks.
+	(Check_Ghost_Refinement): Relax conditions for ghost refinements.
+	Add assertion level compatibility checks for refinements.
+	(Install_Ghost_Region): Store the current region and the assertion
+	for that region in the ghost config.
+	(Enables_Ghostness): Refactor implementation to support assertion
+	levels.
+	(Is_Subject_To_Ghost): Simplify implementation.
+	(Mark_And_Set_Ghost_Assignment): Refactor implementation.
+	(Mark_And_Set_Ghost_Body): Add support for assertion levels.
+	(Mark_And_Set_Ghost_Completion): Likewise.
+	(Mark_And_Set_Ghost_Declaration): Likwise.
+	(Mark_And_Set_Ghost_Instantiation): Likwise.
+	(Mark_And_Set_Ghost_Procedure_Call): Refactor implementation.
+	(Mark_Ghost_Declaration_Or_Body): Add support for assertion levels.
+	(Set_Ghost_Mode): Likwise.
+	* ghost.ads (Assertion_Level_From_Arg): New subprogram.
+	(Install_Ghost_Region): Add argument Level for assertrion levels.
+	(Is_Assertion_Level_Dependent): New subprogram.
+	* lib-xref.ads: Add new mapping for E_Assertion_Level entities.
+	* opt.ads (Ghost_Config_Type): Add new members Ghost_Assertion_Mode
+	and Current_Region to the structure.
+	* par-prag.adb (Prag): Add new pragma name Assertion_Level.
+	* rtsfind.adb (Load_RTU): Update the arguments for the call to
+	Install_Ghost_Region.
+	* sem.adb (Do_Analyze): Likewise.
+	* sem_ch13.adb (Convert_Aspect_With_Assertion_Levels): New
+	subprogram.
+	(Make_Aitem_Pragma): Copy ghost mode attributes from the aspect to
+	the pragma.
+	(Analyze_Aspect_Specifications): Convert aspects that have an
+	assertion level association in the aspects without the association
+	and the original supported syntax and with the assertion level
+	stored on the aspect node.
+	Updated duplicate detection to avoid duplicates being called on
+	aspects with assertion levels that orginated from the same aspect.
+	* sem_prag.adb (Apply_Check_Policy): New subprogram.
+	(Get_Applicable_Policy): New subprogram.
+	(Mark_Is_Checked): New subprogram.
+	(Mark_Is_Disabled): New subprogram.
+	(Mark_Is_Ignored): New subprgram.
+	(Check_Arg_Is_One_Of): Remove versions that had a specific number
+	of arguments and replace them with a list one.
+	(Create_Pragma_Without_Assertion_Level): New subprogram.
+	(Assertion_Level_Pragma_Comes_From_Source): New subprogram.
+	(Analyze_Pragma): Replace aspects that have an assertion level
+	with aspects without them where the level is stored on the pragma
+	node.
+	(Abstract_State): Add support for assertion levels in ghost
+	Abstract_State pragmas.
+	(Assert): Update argument handling for Assert like pragmas.
+	(Assertion_Level): Add a new section to support the analysis of
+	pragma Assertion_Level.
+	(Assertion_Policy): Add support for setting the policy for assertion
+	levels.
+	(Check): Update argument handling. Update the assertion policy
+	application process.
+	(Check_Policy): Add support for assertion levels. Add check_policy
+	pragmas for assertion_level dependencis also to the stack of
+	known Check_Policy pragmas.
+	(Default_Initial_Condition): Reject the use of DIC with assertion
+	levels. Update duplication checks.
+	(Ghost): Add support for assertion levels. Fix issue where
+	assertion levels with Ghost => False were treated as ghost.
+	(Predicate): Update the policy handling of Ghost_Predicate.
+	(Analyze_Refined_State_In_Decl_Part): Create a new ghost region
+	for analyzing Refined_State.
+	(Check_Applicable_Policy): Refactor the implementation. Break it
+	down to Get_Applicable_Policy and Apply_Check_Policy.
+	(Check_Kind): Removed. Replaced by Get_Applicable_Policy and
+	Apply_Check_Policy.
+	(Initialize): Initialize the table storing all know assertion
+	levels.
+	* sem_prag.ads (Find_Assertion_Level): New subprogram.
+	(Insert_Assertion_Level): New subprogram.
+	(Check_Applicable_Policy): Add new argument Level.
+	(Check_Kind): Removed. Merged with Get_Applicable_Policy.
+	(Get_Assertion_Level): New subprogram.
+	(Is_Valid_Assertion_Level): New subprogram.
+	* sem_util.adb (Copy_Assertion_Policy_Attributes): New function
+	for copying the ghost related attributes from one pragma to
+	another.
+	(Copy_Subprogram_Spec): Additionally copy the level from the spec.
+	(Depends_On_Level): New function for checking if one level depends
+	on another level.
+	(From_Same_Aspect): New function for checking whether the aspects
+	orignate from the same original aspect.
+	(From_Same_Pragma): New function for checking whether the pragmas
+	originate from the same original aspect or pragma.
+	(Get_Subprogram_Entity): Avoid crash when being called when the
+	entity has not been set for the subprogram.
+	(Has_Assertion_Level_Argument): New function for checking whether
+	the aspect or a pragma has an argument that is using an assertion
+	level association.
+	(Policy_In_Effect): add an additional argument for the level that
+	should be checked along with the assertion name.
+	* sem_util.ads (Copy_Assertion_Policy_Attributes): New function.
+	(Depends_On_Level): Likewise.
+	(From_Same_Aspect): Likewise.
+	(From_Same_Pragma): Likewise.
+	(Has_Assertion_Level_Argument): Likewise.
+	(Is_Same_Or_Depends_On_Level): Likewise.
+	(Policy_In_Effect): Add new argument Level.
+	* sinfo.ads: Add documentation for all the new attributes that
+	were added to the nodes and entities.
+	* snames.ads-tmpl: Add new entries for Name_Assertion_Level,
+	Name_uDefault_Assertion_Level and Pragma_Assertion_Level.
+	* stand.ads: Add new entities for the predefined assertion levels.
+	(Standard_Level_Static): Definition for the predefined Static
+	level that is always ignored.
+	(Standard_Level_Runtime): Defintion for the predefined Runtime
+	level that is always checked.
+	(Standard_Level_Default): Definition for the implicit Default
+	level that is given for ghost entities that were not associated
+	with an assertion level (e.g. Ghost => True).
+	* tbuild.adb (Make_Assertion_Level): New function for constructin
+	an assertion level.
+	* tbuild.ads (Make_Assertion_Level): Likewise.
+
 2025-08-04  Viljar Indus  <indus@adacore.com>
 
 	* contracts.adb: Use Is_Ignored_In_Codegen instead of just

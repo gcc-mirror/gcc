@@ -1,3 +1,91 @@
+2025-09-09  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Correct the Max ISA VGPRs counts for
+	GFX10 and GFX11 devices.
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Remove the wave64
+	VGPR count fudge.
+
+2025-09-09  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Enable the "mode" parameter
+	and ensure that "target" is a register for most of the builtins.
+
+2025-09-09  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	* dwarf2ctf.cc (ctf_get_AT_data_member_location) Use AT_unsigned
+	when fetching AT_bit_offset and AT_data_member_location.  Simplify.
+	(ctf_die_bitsize): Return unsigned HOST_WIDE_INT instead of
+	uint32_t.
+	(gen_ctf_base_type, gen_ctf_sou_type, gen_ctf_enumeration_type):
+	Adapt accordingly.
+
+2025-09-09  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfwsub_vf_<mode>): New pattern to
+	combine float_extend + vec_duplicate + vfwsub.vv into vfwsub.vf.
+
+2025-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121678
+	* tree.cc (staticp): Handle REALPART_EXPR and IMAGPART_EXPR.
+
+2025-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Note that an option
+	enabled by -Wextra is for C and ObjC only.
+
+2025-09-09  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfwadd_wf_<mode>): New pattern to
+	combine float_extend + vec_duplicate + vfadd.vv into vfwadd.wf.
+	* config/riscv/vector.md
+	(@pred_single_widen_<plus_minus:optab><mode>_scalar): Swap and reorder
+	operands to match the RTL emitted by expand.
+
+2025-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2025-07-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (*bcaxqdi4): New
+	define_insn_and_split.
+
+2025-09-09  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121829
+	* tree-vect-loop-manip.cc (vect_remove_forwarder): New
+	function.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Use it.
+
+2025-09-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121861
+	* config/i386/i386.cc (ix86_optab_supported_p): Drop
+	!flag_trapping_math check for floor_optab, ceil_optab and
+	btrunc_optab.
+
+2025-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (expand_vec_perm_vpermil): Extend
+	to handle V8SImode.
+	* config/i386/i386.cc (avx_vpermilp_parallel): Extend to
+	handle vector integer modes with same vector size and same
+	component size.
+	* config/i386/sse.md
+	(<sse2_avx_avx512f>_vpermilp<mode><mask_name>): Ditto.
+	(V48_AVX): New mode iterator.
+	(ssefltmodesuffix): Extend for V16SI/V8DI/V16SF/V8DF.
+
+2025-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Check permutation index for vec_perm, don't count it if we
+	know it's not a cross-lane permutation.
+
 2025-09-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/107997
