@@ -2149,21 +2149,21 @@ _GLIBCXX_END_NAMESPACE_ALGO
       if (__first1 == __last1 || __first2 == __last2)
 	return __first1;
 
+      __decltype(*__first2) __first2_val(*__first2);
+      __decltype(__gnu_cxx::__ops::bind2nd(__predicate, __first2_val))
+	__match_first = __gnu_cxx::__ops::bind2nd(__predicate, __first2_val);
+
       // Test for a pattern of length 1.
       _ForwardIterator2 __p1(__first2);
       if (++__p1 == __last2)
-	return std::__find_if(__first1, __last1,
-			      __gnu_cxx::__ops::bind2nd(__predicate,
-							*__first2));
+	return std::__find_if(__first1, __last1, __match_first);
 
       // General case.
       _ForwardIterator1 __current = __first1;
 
       for (;;)
 	{
-	  __first1 =
-	    std::__find_if(__first1, __last1,
-			   __gnu_cxx::__ops::bind2nd(__predicate, *__first2));
+	  __first1 = std::__find_if(__first1, __last1, __match_first);
 
 	  if (__first1 == __last1)
 	    return __last1;
@@ -2184,6 +2184,7 @@ _GLIBCXX_END_NAMESPACE_ALGO
 	}
       return __first1;
     }
+#undef __match_first
 
 #if __cplusplus >= 201103L
   template<typename _ForwardIterator1, typename _ForwardIterator2,
@@ -2208,18 +2209,14 @@ _GLIBCXX_END_NAMESPACE_ALGO
       std::advance(__last2, std::distance(__first1, __last1));
       for (_ForwardIterator1 __scan = __first1; __scan != __last1; ++__scan)
 	{
-	  if (__scan != std::__find_if(__first1, __scan,
-				       __gnu_cxx::__ops::bind1st(__pred,
-								 *__scan)))
+	  auto&& __scan_val = *__scan;
+	  auto __scaneq = __gnu_cxx::__ops::bind1st(__pred, __scan_val);
+	  if (__scan != std::__find_if(__first1, __scan, __scaneq))
 	    continue; // We've seen this one before.
 
-	  auto __matches
-	    = std::__count_if(__first2, __last2,
-			      __gnu_cxx::__ops::bind1st(__pred, *__scan));
-	  if (0 == __matches ||
-	      std::__count_if(__scan, __last1,
-			      __gnu_cxx::__ops::bind1st(__pred, *__scan))
-	      != __matches)
+	  auto __matches = std::__count_if(__first2, __last2, __scaneq);
+	  if (0 == __matches
+		|| std::__count_if(__scan, __last1, __scaneq) != __matches)
 	    return false;
 	}
       return true;

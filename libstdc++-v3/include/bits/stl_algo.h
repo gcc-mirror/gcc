@@ -3531,18 +3531,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
       for (_ForwardIterator1 __scan = __first1; __scan != __last1; ++__scan)
 	{
-	  if (__scan != std::__find_if(__first1, __scan,
-				       __gnu_cxx::__ops::bind1st(__pred,
-								 *__scan)))
+	  auto&& __scan_val = *__scan;
+	  auto __scaneq = __gnu_cxx::__ops::bind1st(__pred, __scan_val);
+	  if (__scan != std::__find_if(__first1, __scan, __scaneq))
 	    continue; // We've seen this one before.
 
-	  auto __matches = std::__count_if(__first2, __last2,
-					   __gnu_cxx::__ops::bind1st(__pred,
-								     *__scan));
+	  auto __matches = std::__count_if(__first2, __last2, __scaneq);
 	  if (0 == __matches
-	      || std::__count_if(__scan, __last1,
-				 __gnu_cxx::__ops::bind1st(__pred, *__scan))
-	      != __matches)
+		|| std::__count_if(__scan, __last1, __scaneq) != __matches)
 	    return false;
 	}
       return true;
