@@ -259,7 +259,7 @@ DEF_MAX_1 (double)
 						   unsigned n)                 \
   {                                                                            \
     for (unsigned i = 0; i < n; i++)                                           \
-      out[i] = (T2) f OP in[i];                                                \
+      out[i] = in[i] OP (T2) f;                                                \
   }
 #define DEF_VF_BINOP_WIDEN_CASE_2_WRAP(T1, T2, OP, NAME)                       \
   DEF_VF_BINOP_WIDEN_CASE_2 (T1, T2, OP, NAME)
@@ -276,10 +276,10 @@ DEF_MAX_1 (double)
   {                                                                            \
     for (int i = 0; i < n; i++)                                                \
       {                                                                        \
-	dst[i] = (TYPE2) * a OP b[i];                                          \
-	dst2[i] = (TYPE2) * a2 OP b[i];                                        \
-	dst3[i] = (TYPE2) * a2 OP b2[i];                                       \
-	dst4[i] = (TYPE2) * a OP b2[i];                                        \
+	dst[i] = b[i] OP (TYPE2) * a;                                          \
+	dst2[i] = b[i] OP (TYPE2) * a2;                                        \
+	dst3[i] = b2[i] OP (TYPE2) * a2;                                       \
+	dst4[i] = b2[i] OP (TYPE2) * a;                                        \
       }                                                                        \
   }
 

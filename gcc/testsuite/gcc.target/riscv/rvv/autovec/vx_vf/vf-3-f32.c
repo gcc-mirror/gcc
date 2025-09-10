@@ -33,6 +33,7 @@ DEF_VF_BINOP_WIDEN_CASE_1 (float, double, *, mul)
 DEF_VF_BINOP_WIDEN_CASE_1 (float, double, +, add)
 DEF_VF_BINOP_WIDEN_CASE_1 (float, double, -, sub)
 DEF_VF_BINOP_WIDEN_CASE_3 (float, double, +, add)
+DEF_VF_BINOP_WIDEN_CASE_3 (float, double, -, sub)
 
 /* { dg-final { scan-assembler {vfmadd.vf} } } */
 /* { dg-final { scan-assembler {vfmsub.vf} } } */
@@ -57,3 +58,4 @@ DEF_VF_BINOP_WIDEN_CASE_3 (float, double, +, add)
 /* { dg-final { scan-assembler {vfwadd.vf} } } */
 /* { dg-final { scan-assembler {vfwsub.vf} } } */
 /* { dg-final { scan-assembler {vfwadd.wf} } } */
+/* { dg-final { scan-assembler {vfwsub.wf} } } */

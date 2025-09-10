@@ -26,4 +26,5 @@
 /* { dg-final { scan-assembler-not {vfwadd.vf} } } */
 /* { dg-final { scan-assembler-not {vfwsub.vf} } } */
 /* { dg-final { scan-assembler-not {vfwadd.wf} } } */
-/* { dg-final { scan-assembler-times {fcvt.d.s} 8 } } */
+/* { dg-final { scan-assembler-not {vfwsub.wf} } } */
+/* { dg-final { scan-assembler-times {fcvt.d.s} 9 } } */
