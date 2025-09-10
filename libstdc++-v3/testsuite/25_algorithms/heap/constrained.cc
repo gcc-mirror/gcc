@@ -53,17 +53,17 @@ test01()
 
       iter = ranges::pop_heap(rx, pred, proj);
       VERIFY( iter == rx.end() );
-      VERIFY( *(iter-1) == 50 );
-      VERIFY( ranges::is_heap_until(rx, pred, proj) == iter-1 );
+      VERIFY( *ranges::prev(iter) == 50 );
+      VERIFY( ranges::is_heap_until(rx, pred, proj) == ranges::prev(iter) );
 
-      iter = ranges::pop_heap(rx.begin(), iter-1, pred, proj);
-      VERIFY( iter+1 == rx.end() );
-      VERIFY( *(iter-1) == 49 );
-      VERIFY( ranges::is_heap_until(rx, pred, proj) == iter-1 );
+      iter = ranges::pop_heap(rx.begin(), ranges::prev(iter), pred, proj);
+      VERIFY( ranges::next(iter) == rx.end() );
+      VERIFY( *ranges::prev(iter) == 49 );
+      VERIFY( ranges::is_heap_until(rx, pred, proj) == ranges::prev(iter) );
 
-      *(iter-1) = i;
+      *ranges::prev(iter) = i;
       iter = ranges::push_heap(rx.begin(), iter, pred, proj);
-      VERIFY( iter+1 == rx.end() );
+      VERIFY( ranges::next(iter) == rx.end() );
       VERIFY( ranges::is_heap_until(rx, pred, proj) == iter );
 
       *iter = 2*i;
@@ -71,9 +71,9 @@ test01()
       VERIFY( iter == rx.end() );
       VERIFY( ranges::is_heap_until(rx, pred, proj) == iter );
 
-      *(rx.begin()+1) *= -1;
+      *ranges::next(rx.begin()) *= -1;
       VERIFY( !ranges::is_heap(rx, pred, proj) );
-      *(rx.begin()+1) *= -1;
+      *ranges::next(rx.begin()) *= -1;
       VERIFY( ranges::is_heap(rx, pred, proj) );
 
       iter = ranges::sort_heap(rx, pred, proj);

@@ -243,7 +243,7 @@ test08()
 
   long b[10]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   test_range<long, ra_test_wrapper> rb(b);
-  ranges::subrange sized = {rb.begin(), rb.begin()+6};
+  ranges::subrange sized = {rb.begin(), ranges::next(rb.begin(), 6)};
   using Sized = decltype(sized);
   static_assert( ranges::random_access_range<Sized> );
   static_assert( ranges::sized_range<Sized> );

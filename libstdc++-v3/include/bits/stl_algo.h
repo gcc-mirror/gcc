@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__unary_pred(--__backTrack))
 	    {
 	      if (--__remainder == 0)
-		return (__first - __count); // Success
+		return __first - _DistanceType(__count); // Success
 	    }
 	  __remainder = __count + 1 - (__first - __backTrack);
 	}
@@ -1258,9 +1258,12 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	    {
 	      if (__is_pod(_ValueType) && __k == 1)
 		{
+		  _RandomAccessIterator __mid = __p + _Distance(__n - 1);
+		  _RandomAccessIterator __end = __mid;
+		  ++__end;
 		  _ValueType __t = _GLIBCXX_MOVE(*__p);
-		  _GLIBCXX_MOVE3(__p + 1, __p + __n, __p);
-		  *(__p + __n - 1) = _GLIBCXX_MOVE(__t);
+		  _GLIBCXX_MOVE3(__p + _Distance(1), __end, __p);
+		  *__mid = _GLIBCXX_MOVE(__t);
 		  return __ret;
 		}
 	      _RandomAccessIterator __q = __p + __k;
@@ -1281,8 +1284,11 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	      __k = __n - __k;
 	      if (__is_pod(_ValueType) && __k == 1)
 		{
-		  _ValueType __t = _GLIBCXX_MOVE(*(__p + __n - 1));
-		  _GLIBCXX_MOVE_BACKWARD3(__p, __p + __n - 1, __p + __n);
+		  _RandomAccessIterator __mid = __p + _Distance(__n - 1);
+		  _RandomAccessIterator __end = __mid;
+		  ++__end;
+		  _ValueType __t = _GLIBCXX_MOVE(*__mid);
+		  _GLIBCXX_MOVE_BACKWARD3(__p, __mid, __end);
 		  *__p = _GLIBCXX_MOVE(__t);
 		  return __ret;
 		}
@@ -1770,15 +1776,18 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     __insertion_sort(_RandomAccessIterator __first,
 		     _RandomAccessIterator __last, _Compare __comp)
     {
-      if (__first == __last) return;
+      if (__first == __last)
+	return;
 
-      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+      typedef iterator_traits<_RandomAccessIterator> _IterTraits;
+      typedef typename _IterTraits::difference_type _Dist;
+
+      for (_RandomAccessIterator __i = __first + _Dist(1); __i != __last; ++__i)
 	{
 	  if (__comp(__i, __first))
 	    {
-	      typename iterator_traits<_RandomAccessIterator>::value_type
-		__val = _GLIBCXX_MOVE(*__i);
-	      _GLIBCXX_MOVE_BACKWARD3(__first, __i, __i + 1);
+	      typename _IterTraits::value_type __val = _GLIBCXX_MOVE(*__i);
+	      _GLIBCXX_MOVE_BACKWARD3(__first, __i, __i + _Dist(1));
 	      *__first = _GLIBCXX_MOVE(__val);
 	    }
 	  else
@@ -1812,10 +1821,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     __final_insertion_sort(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last, _Compare __comp)
     {
-      if (__last - __first > int(_S_threshold))
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+	__threshold = _S_threshold;
+
+      if (__last - __first > __threshold)
 	{
-	  std::__insertion_sort(__first, __first + int(_S_threshold), __comp);
-	  std::__unguarded_insertion_sort(__first + int(_S_threshold), __last,
+	  std::__insertion_sort(__first, __first + __threshold, __comp);
+	  std::__unguarded_insertion_sort(__first + __threshold, __last,
 					  __comp);
 	}
       else
@@ -1851,10 +1863,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     __unguarded_partition_pivot(_RandomAccessIterator __first,
 				_RandomAccessIterator __last, _Compare __comp)
     {
-      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
-      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+      typedef iterator_traits<_RandomAccessIterator> _IterTraits;
+      typedef typename _IterTraits::difference_type _Dist;
+
+      _RandomAccessIterator __mid = __first + _Dist((__last - __first) / 2);
+      _RandomAccessIterator __second = __first + _Dist(1);
+      std::__move_median_to_first(__first, __second, __mid, __last - _Dist(1),
 				  __comp);
-      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+      return std::__unguarded_partition(__second, __last, __first, __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
@@ -1916,11 +1932,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 		  _RandomAccessIterator __last, _Size __depth_limit,
 		  _Compare __comp)
     {
+      _RandomAccessIterator __after_nth = __nth;
+      ++__after_nth;
+
       while (__last - __first > 3)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      std::__heap_select(__first, __nth + 1, __last, __comp);
+	      std::__heap_select(__first, __after_nth, __last, __comp);
 	      // Place the nth largest element in its final position.
 	      std::iter_swap(__first, __nth);
 	      return;
@@ -3822,7 +3841,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	{
 	  if (__n2 <= 0)
 	    return __first;
-	  auto __last = __first + __n2;
+	  typename iterator_traits<_InputIterator>::difference_type __d = __n2;
+	  auto __last = __first + __d;
 	  std::for_each(__first, __last, std::move(__f));
 	  return __last;
 	}
@@ -4544,6 +4564,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       if (__first == __last)
 	return;
 
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_Dist;
+
 #if RAND_MAX < __INT_MAX__
       if (__builtin_expect((__last - __first) >= RAND_MAX / 4, 0))
 	{
@@ -4551,14 +4574,15 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	  // instead of using rand() for all the random numbers needed.
 	  unsigned __xss
 	    = (unsigned)std::rand() ^ ((unsigned)std::rand() << 15);
-	  for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	  for (_RandomAccessIterator __i = __first + _Dist(1); __i != __last;
+	       ++__i)
 	    {
 	      __xss += !__xss;
 	      __xss ^= __xss << 13;
 	      __xss ^= __xss >> 17;
 	      __xss ^= __xss << 5;
-	      _RandomAccessIterator __j = __first
-					    + (__xss % ((__i - __first) + 1));
+	      _RandomAccessIterator __j
+		= __first + _Dist(__xss % ((__i - __first) + 1));
 	      if (__i != __j)
 		std::iter_swap(__i, __j);
 	    }
@@ -4566,11 +4590,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	}
 #endif
 
-      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+      for (_RandomAccessIterator __i = __first + _Dist(1); __i != __last; ++__i)
 	{
 	  // XXX rand() % N is not uniformly distributed
-	  _RandomAccessIterator __j = __first
-					+ (std::rand() % ((__i - __first) + 1));
+	  _RandomAccessIterator __j
+	    = __first + _Dist(std::rand() % ((__i - __first) + 1));
 	  if (__i != __j)
 	    std::iter_swap(__i, __j);
 	}
@@ -4611,9 +4635,14 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
       if (__first == __last)
 	return;
-      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_Dist;
+
+      for (_RandomAccessIterator __i = __first + _Dist(1); __i != __last; ++__i)
 	{
-	  _RandomAccessIterator __j = __first + __rand((__i - __first) + 1);
+	  _RandomAccessIterator __j
+	    = __first + _Dist(__rand((__i - __first) + 1));
 	  if (__i != __j)
 	    std::iter_swap(__i, __j);
 	}

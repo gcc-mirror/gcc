@@ -1345,7 +1345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  if (__j < 0)
 	    {
-	      const auto __match = __first + __i + 1;
+	      const auto __match = __first + __diff_type(__i + 1);
 	      return std::make_pair(__match, __match + __patlen);
 	    }
 	  __i += std::max(_M_bad_char_shift(__first[__i]),

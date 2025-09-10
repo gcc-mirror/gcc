@@ -900,7 +900,7 @@ namespace ranges
 		if constexpr (assignable_from<_It&, _Sent>)
 		  __it = std::move(__bound);
 		else if constexpr (random_access_iterator<_It>)
-		  __it += 0;
+		  __it += iter_difference_t<_It>(0);
 		return __n;
 	      }
 	    else if (__diff > 0 ? __n >= __diff : __n <= __diff)
@@ -920,7 +920,7 @@ namespace ranges
 	      {
 		// inline any possible side effects of advance(it, n)
 		if constexpr (random_access_iterator<_It>)
-		  __it += 0;
+		  __it += iter_difference_t<_It>(0);
 		return 0;
 	      }
 	  }

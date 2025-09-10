@@ -1150,10 +1150,12 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       if (__n <= 0)
 	return __first;
 
-      __glibcxx_requires_can_increment(__first, __n);
+      typename iterator_traits<_OutputIterator>::difference_type __d = __n;
+      __glibcxx_requires_can_increment(__first, __d);
 
-      std::__fill_a(__first, __first + __n, __value);
-      return __first + __n;
+      _OutputIterator __last = __first + __d;
+      std::__fill_a(__first, __last, __value);
+      return __last;
     }
 
   /**
@@ -1310,11 +1312,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	__newlast1(_RAI1 __first1, _RAI1 __last1,
 		   _RAI2 __first2, _RAI2 __last2)
 	{
-	  const typename iterator_traits<_RAI1>::difference_type
-	    __diff1 = __last1 - __first1;
-	  const typename iterator_traits<_RAI2>::difference_type
-	    __diff2 = __last2 - __first2;
-	  return __diff2 < __diff1 ? __first1 + __diff2 : __last1;
+	  typedef typename iterator_traits<_RAI1>::difference_type _Diff1;
+	  typedef typename iterator_traits<_RAI2>::difference_type _Diff2;
+	  const _Diff1 __diff1 = __last1 - __first1;
+	  const _Diff2 __diff2 = __last2 - __first2;
+	  return __diff2 < __diff1 ? __first1 + _Diff1(__diff2) : __last1;
 	}
 
       template<typename _RAI>

@@ -47,7 +47,8 @@ test01()
       ranges::shuffle(c, g1);
       ranges::shuffle(ranges::begin(r), ranges::end(r), g2);
 
-      for (unsigned middle = 0; middle < std::min(size, 10U); ++middle)
+      for (std::ptrdiff_t middle = 0, end = std::min(size, 10U);
+	   middle < end; ++middle)
 	{
 	  auto res1 = ranges::partial_sort(c.begin(), c.begin()+middle, c.end(),
 					   {}, std::negate<>{});

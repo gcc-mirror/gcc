@@ -43,7 +43,7 @@ test01()
 	     17, 8, 18, 9, 19 };
   const int N = sizeof(s1) / sizeof(V);
   Container con(s1, s1 + N);
-  std::partial_sort(con.begin(), con.begin() + 10, con.end());
+  std::partial_sort(con.begin(), std::next(con.begin(), 10), con.end());
   VERIFY( s1[0].ok );
   for(int i = 1; i < 10; ++i)
     VERIFY( s1[i].val > s1[i - 1].val && s1[i].ok );
@@ -59,7 +59,7 @@ test02()
 	     17, 8, 18, 9, 19 };
   const int N = sizeof(s1) / sizeof(V);
   Container con(s1, s1 + N);
-  std::partial_sort(con.begin(), con.begin() + 10, con.end(),
+  std::partial_sort(con.begin(), std::next(con.begin(), 10), con.end(),
 		    __gnu_test::order);
   VERIFY( s1[0].ok );
   for(int i = 1; i < 10; ++i)
