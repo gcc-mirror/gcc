@@ -28915,13 +28915,13 @@ package body Sem_Prag is
             null;
 
          --------------------
-         -- Unknown_Pragma --
+         -- Pragma_Unknown --
          --------------------
 
          --  Should be impossible, since the case of an unknown pragma is
          --  separately processed before the case statement is entered.
 
-         when Unknown_Pragma =>
+         when Pragma_Unknown =>
             raise Program_Error;
       end case;
 
@@ -34811,7 +34811,7 @@ package body Sem_Prag is
       Pragma_Warnings                       =>  0,
       Pragma_Weak_External                  =>  0,
       Pragma_Wide_Character_Encoding        =>  0,
-      Unknown_Pragma                        =>  0);
+      Pragma_Unknown                        =>  0);
 
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean is
       Id : Pragma_Id;

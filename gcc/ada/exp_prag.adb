@@ -191,8 +191,7 @@ package body Exp_Prag is
          when Pragma_Suppress_Initialization =>
             Expand_Pragma_Suppress_Initialization (N);
 
-         --  All other pragmas need no expander action (includes
-         --  Unknown_Pragma).
+         --  All other pragmas need no expander action
 
          when others => null;
       end case;

@@ -2046,7 +2046,7 @@ package Snames is
 
       --  The value to represent an unknown or unrecognized pragma
 
-      Unknown_Pragma);
+      Pragma_Unknown);
 
    -----------------------------------
    -- Queuing Policy ID definitions --
@@ -2167,7 +2167,7 @@ package Snames is
    --  to call this function with a name that is not the name of a check.
 
    function Get_Pragma_Id (N : Name_Id) return Pragma_Id;
-   --  Returns Id of pragma corresponding to given name. Returns Unknown_Pragma
+   --  Returns Id of pragma corresponding to given name. Returns Pragma_Unknown
    --  if N is not a name of a known (Ada defined or GNAT-specific) pragma.
    --  Note that the function also works correctly for names of pragmas that
    --  are not included in the main list of pragma Names (e.g. Name_CPU returns

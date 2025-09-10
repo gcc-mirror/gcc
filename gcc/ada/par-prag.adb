@@ -305,7 +305,7 @@ begin
    --  it is a semantic error, not a syntactic one (we have already checked
    --  the syntax for the unrecognized pragma as required by (RM 2.8(11)).
 
-   if Prag_Id = Unknown_Pragma then
+   if Prag_Id = Pragma_Unknown then
       return Pragma_Node;
    end if;
 
@@ -1622,12 +1622,12 @@ begin
          null;
 
       --------------------
-      -- Unknown_Pragma --
+      -- Pragma_Unknown --
       --------------------
 
       --  Should be impossible, since we excluded this case earlier on
 
-      when Unknown_Pragma =>
+      when Pragma_Unknown =>
          raise Program_Error;
 
    end case;

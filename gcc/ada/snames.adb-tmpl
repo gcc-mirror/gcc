@@ -286,7 +286,7 @@ package body Snames is
          when First_Pragma_Name .. Last_Pragma_Name =>
             return Pragma_Id'Val (N - First_Pragma_Name);
          when others                                =>
-            return Unknown_Pragma;
+            return Pragma_Unknown;
       end case;
    end Get_Pragma_Id;
 

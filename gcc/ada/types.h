@@ -57,6 +57,9 @@ typedef Int Pos;
 /* 8-bit unsigned integer */
 typedef unsigned char Byte;
 
+/* 16-bit unsigned integer */
+typedef unsigned short Word;
+
 /* 8-Bit Character and String Types:  */
 
 /* 8-bit character type */
