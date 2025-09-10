@@ -67,10 +67,10 @@ public:
     } kind;
 
     static ImportKind Glob (AST::SimplePath &&to_resolve, Rib &values_rib,
-			    Rib &types_rib, Rib &macros_rib)
+			    Rib &types_rib, Rib &macros_rib, bool is_prelude)
     {
       return ImportKind (Kind::Glob, std::move (to_resolve), values_rib,
-			 types_rib, macros_rib);
+			 types_rib, macros_rib, is_prelude);
     }
 
     static ImportKind Simple (AST::SimplePath &&to_resolve, Rib &values_rib,
@@ -84,8 +84,10 @@ public:
 			      AST::UseTreeRebind &&rebind, Rib &values_rib,
 			      Rib &types_rib, Rib &macros_rib)
     {
-      return ImportKind (Kind::Rebind, std::move (to_resolve), values_rib,
-			 types_rib, macros_rib, std::move (rebind));
+      return ImportKind (
+	Kind::Rebind, std::move (to_resolve), values_rib, types_rib, macros_rib,
+	false /* is_prelude: rebind imports can never be preludes */,
+	std::move (rebind));
     }
 
     // The path for `Early` to resolve.
@@ -98,13 +100,17 @@ public:
     Rib &types_rib;
     Rib &macros_rib;
 
+    // Can only be true if we are dealing with a glob import with the
+    // #[prelude_import] attribute
+    bool is_prelude = false;
+
   private:
     ImportKind (Kind kind, AST::SimplePath &&to_resolve, Rib &values_rib,
-		Rib &types_rib, Rib &macros_rib,
+		Rib &types_rib, Rib &macros_rib, bool is_prelude = false,
 		tl::optional<AST::UseTreeRebind> &&rebind = tl::nullopt)
       : kind (kind), to_resolve (std::move (to_resolve)),
 	rebind (std::move (rebind)), values_rib (values_rib),
-	types_rib (types_rib), macros_rib (macros_rib)
+	types_rib (types_rib), macros_rib (macros_rib), is_prelude (is_prelude)
     {}
   };
 
