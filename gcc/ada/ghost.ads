@@ -221,6 +221,11 @@ package Ghost is
    --  Install the Ghost mode of the instantiation. This routine starts a Ghost
    --  region and must be used with routine Restore_Ghost_Region.
 
+   procedure Check_Procedure_Call_Argument_Levels (N : Node_Id);
+   --  Check that the variable being modified by a call argument inside a ghost
+   --  region is assertion-level-dependent on the ghost region (SPARK RM
+   --  6.9(18)).
+
    procedure Mark_And_Set_Ghost_Procedure_Call (N : Node_Id);
    --  Mark procedure call N as Ghost when:
    --

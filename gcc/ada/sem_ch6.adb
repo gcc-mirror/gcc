@@ -1899,6 +1899,7 @@ package body Sem_Ch6 is
 
    <<Leave>>
       Restore_Ghost_Region (Saved_Ghost_Config);
+      Check_Procedure_Call_Argument_Levels (N);
    end Analyze_Procedure_Call;
 
    ------------------------------
