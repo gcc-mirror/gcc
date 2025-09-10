@@ -1019,6 +1019,8 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
   while (!walker.stmts_to_fixup.is_empty ())
     {
       gimple *stmt = walker.stmts_to_fixup.pop ();
+      if (!gimple_bb (stmt))
+	continue;
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
