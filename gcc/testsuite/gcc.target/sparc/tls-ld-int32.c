@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" }
+/* { dg-options "-O2 -fPIC" }
 /* { dg-add-options tls } */
 /* { dg-skip-if "native tls expected" { tls_emulated } } */
 
