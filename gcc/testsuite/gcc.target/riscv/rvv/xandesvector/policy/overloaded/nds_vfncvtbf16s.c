@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv32gv_xandesvbfhcvt -mabi=ilp32 -O3 -fno-schedule-insns -fno-schedule-insns2" { target { rv32 } } } */
 /* { dg-options "-march=rv64gv_xandesvbfhcvt -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2" { target { rv64 } } } */
 
-#include <andes_vector.h>
+#include "andes_vector.h"
 
 vbfloat16mf4_t test_nds_vfncvt_bf16_s_bf16mf4_tu(vbfloat16mf4_t vd, vfloat32mf2_t vs2, size_t vl) {
     return __riscv_nds_vfncvt_bf16_tu(vd, vs2, vl);
