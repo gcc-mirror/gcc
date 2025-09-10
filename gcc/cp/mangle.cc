@@ -2203,6 +2203,29 @@ write_real_cst (const tree value)
   else
     i = words - 1, limit = -1, dir = -1;
 
+  if (GET_MODE_PRECISION (SCALAR_FLOAT_TYPE_MODE (type)) == 80
+      && abi_check (21))
+    {
+      /* For -fabi-version=21 and above mangle
+	 Intel/Motorola extended format 1.0L as
+	 3fff8000000000000000
+	 rather than the previous
+	 0000000000003fff8000000000000000 (x86_64)
+	 00003fff8000000000000000 (ia32)
+	 3fff00008000000000000000 (m68k -mc68020)
+	 i.e. without any embedded padding bits.  */
+      if (words == 4)
+	i += dir;
+      else
+	gcc_assert (words == 3);
+      unsigned long val = (unsigned long) target_real[i];
+      if (REAL_MODE_FORMAT (SCALAR_FLOAT_TYPE_MODE (type))->signbit_ro == 95)
+	val >>= 16;
+      sprintf (buffer, "%04lx", val);
+      write_chars (buffer, 4);
+      i += dir;
+    }
+
   for (; i != limit; i += dir)
     {
       sprintf (buffer, "%08lx", (unsigned long) target_real[i]);
