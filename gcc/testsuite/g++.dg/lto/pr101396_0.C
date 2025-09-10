@@ -6,7 +6,9 @@ enum A : __UINT32_TYPE__ { // { dg-lto-warning "6: type 'A' violates the C\\+\\+
   c
 };
 
-int main()
+int g(enum A x)
 {
-  return (int) A::a;
+  return (int) x;
 }
+
+int main() {}
