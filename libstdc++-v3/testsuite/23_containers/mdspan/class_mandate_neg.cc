@@ -35,7 +35,7 @@ test_element_type_mismatch()
 static_assert(test_element_type_mismatch());
 
 // { dg-prune-output "Extents must be a specialization of std::extents" }
-// { dg-prune-output "no type named '_S_storage'" }
+// { dg-prune-output "no type named '_Storage'" }
 // { dg-prune-output "non-constant condition" }
 // { dg-prune-output "static assertion failed" }
 // { dg-prune-output "__glibcxx_assert" }
