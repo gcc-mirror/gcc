@@ -43,38 +43,46 @@ test_format()
   s = std::format("{:%G-W%V-%u}", 2022y/January/3);
   VERIFY( s == "2022-W01-1" );
 
+  std::chrono::month Quindecember(17);
   // %U: Week number for weeks starting on Sunday
   s = std::format("Day {:%w (%a) of Week %U of %Y}", 2022y/January/1);
   VERIFY( s == "Day 6 (Sat) of Week 00 of 2022" );
   s = std::format("Day {:%w (%a) of Week %U of %Y}", 2022y/January/2);
   VERIFY( s == "Day 0 (Sun) of Week 01 of 2022" );
+  s = std::format("Day {:%w (%a) of Week %U of %Y}", 2022y/Quindecember/20);
+  VERIFY( s == "Day 1 (Mon) of Week 73 of 2022" );
   // %W: Week number for weeks starting on Monday
   s = std::format("Day {:%u (%a) of Week %W of %Y}", 2022y/January/2);
   VERIFY( s == "Day 7 (Sun) of Week 00 of 2022" );
   s = std::format("Day {:%u (%a) of Week %W of %Y}", 2022y/January/3);
   VERIFY( s == "Day 1 (Mon) of Week 01 of 2022" );
+  s = std::format("Day {:%w (%a) of Week %U of %Y}", 2022y/Quindecember/20);
+  VERIFY( s == "Day 1 (Mon) of Week 73 of 2022" );
 
+  // %G: ISO week-calendar year (ISO 8601)
   // %V: ISO week number (ISO 8601).
-  s = std::format("W{:%V}", 1977y/1/1);
-  VERIFY( s == "W53" );
-  s = std::format("W{:%V}", 1977y/1/2);
-  VERIFY( s == "W53" );
-  s = std::format("W{:%V}", 1977y/12/31);
-  VERIFY( s == "W52" );
-  s = std::format("W{:%V}", 1978y/1/1);
-  VERIFY( s == "W52" );
-  s = std::format("W{:%V}", 1978y/1/2);
-  VERIFY( s == "W01" );
-  s = std::format("W{:%V}", 1978y/12/31);
-  VERIFY( s == "W52" );
-  s = std::format("W{:%V}", 1979y/1/1);
-  VERIFY( s == "W01" );
-  s = std::format("W{:%V}", 1979y/12/30);
-  VERIFY( s == "W52" );
-  s = std::format("W{:%V}", 1979y/12/31);
-  VERIFY( s == "W01" );
-  s = std::format("W{:%V}", 1980y/1/1);
-  VERIFY( s == "W01" );
+  s = std::format("{:%G-W%V}", 1977y/1/1);
+  VERIFY( s == "1976-W53" );
+  s = std::format("{:%G-W%V}", 1977y/1/2);
+  VERIFY( s == "1976-W53" );
+  s = std::format("{:%G-W%V}", 1977y/12/31);
+  VERIFY( s == "1977-W52" );
+  s = std::format("{:%G-W%V}", 1978y/1/1);
+  VERIFY( s == "1977-W52" );
+  s = std::format("{:%G-W%V}", 1978y/1/2);
+  VERIFY( s == "1978-W01" );
+  s = std::format("{:%G-W%V}", 1978y/12/31);
+  VERIFY( s == "1978-W52" );
+  s = std::format("{:%G-W%V}", 1979y/1/1);
+  VERIFY( s == "1979-W01" );
+  s = std::format("{:%G-W%V}", 1979y/12/30);
+  VERIFY( s == "1979-W52" );
+  s = std::format("{:%G-W%V}", 1979y/12/31);
+  VERIFY( s == "1980-W01" );
+  s = std::format("{:%G-W%V}", 1980y/1/1);
+  VERIFY( s == "1980-W01" );
+  s = std::format("{:%G-W%V}", 1980y/18/20);
+  VERIFY( s == "1981-W26" );
 
   s = std::format("{:%x}", 2022y/December/19);
   VERIFY( s == "12/19/22" );
