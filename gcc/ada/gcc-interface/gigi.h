@@ -116,7 +116,7 @@ extern tree get_unpadded_type (Entity_Id gnat_entity);
     record is guaranteed to get.  GNAT_NODE is used for the position of the
     associated TYPE_DECL.  */
 extern tree make_aligning_type (tree type, unsigned int align, tree size,
-				unsigned int base_align, int room, Node_Id);
+				unsigned int base_align, int room, Node_Id gnat_node);
 
 /* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
    as the field type of a packed record if IN_RECORD is true, or as the
