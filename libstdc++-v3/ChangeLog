@@ -1,3 +1,10 @@
+2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h: Remove blank line.
+
 2025-09-09  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:
