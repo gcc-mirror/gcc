@@ -572,12 +572,12 @@ namespace __format
 
 	  auto __finalize = [this, &__spec, &__def] {
 	    using enum _ChronoParts;
-            _ChronoParts __checked 
+	    _ChronoParts __checked
 	      = __spec._M_debug ? _YearMonthDay|_IndexedWeekday
-	                        : _Month|_Weekday;
+				: _Month|_Weekday;
 	    // n.b. for calendar types __def._M_needed contains only parts
 	    // copied from the input, remaining ones are computed, and thus ok
-	    __spec._M_needs_ok_check 
+	    __spec._M_needs_ok_check
 	      = __spec._M_needs(__def._M_needed & __checked);
 	    _M_spec = __spec;
 	  };
@@ -693,7 +693,8 @@ namespace __format
 		  break;
 		case 'g':
 		case 'G':
-		  __needed = _LocalDays|_Weekday;
+		case 'V':
+		  __needed = _LocalDays|_Year|_DayOfYear|_Weekday;
 		  break;
 		case 'H':
 		case 'I':
@@ -741,9 +742,8 @@ namespace __format
 		  __allowed_mods = _Mod_O;
 		  break;
 		case 'U':
-		case 'V':
 		case 'W':
-		  __needed = _LocalDays|_Year|_DayOfYear|_Weekday;
+		  __needed = _DayOfYear|_Weekday;
 		  __allowed_mods = _Mod_O;
 		  break;
 		case 'x':
@@ -1147,7 +1147,8 @@ namespace __format
 		  break;
 		case 'g':
 		case 'G':
-		  __out = _M_g_G(__t, std::move(__out), __c == 'G');
+		case 'V':
+		  __out = _M_g_G_V(__t, std::move(__out), __c);
 		  break;
 		case 'H':
 		case 'I':
@@ -1189,9 +1190,8 @@ namespace __format
 		  __out = _M_u_w(__t._M_weekday, std::move(__out), __c);
 		  break;
 		case 'U':
-		case 'V':
 		case 'W':
-		  __out = _M_U_V_W(__t, std::move(__out), __c);
+		  __out = _M_U_W(__t, std::move(__out), __c);
 		  break;
 		case 'z':
 		  __out = _M_z(__t._M_zone_offset, std::move(__out), (bool)__mod);
@@ -1441,18 +1441,47 @@ namespace __format
 
       template<typename _OutIter>
 	_OutIter
-	_M_g_G(const _ChronoData<_CharT>& __t, _OutIter __out,
-	       bool __full) const
+	_M_g_G_V(const _ChronoData<_CharT>& __t, _OutIter __out,
+		_CharT __conv) const
 	{
-	  // %g last two decimal digits of the ISO week-based year.
-	  // %G ISO week-based year.
+	  // %g  last two decimal digits of the ISO week-based year.
+	  // %G  ISO week-based year.
+	  // %V  ISO week-based week number as a decimal number.
+	  // %OV Locale's alternative numeric rep.
+
+	  // ISO week-based year of __t is the year that contains the nearest
+	  // Thursday. The ISO week of __t is the number of weeks since
+	  // January 1 of that year.
+
 	  using namespace chrono;
-	  auto __d = __t._M_ldays;
-	  // Move to nearest Thursday:
-	  __d -= (__t._M_weekday - Monday) - days(3);
-	  // ISO week-based year is the year that contains that Thursday:
-	  year __y = year_month_day(__d).year();
-	  return _M_C_y_Y(__y, std::move(__out), "yY"[__full]);
+	  // Offset of the nearest Thursday:
+	  const days __offset = (__t._M_weekday - Monday) - days(3);
+	  // Nearest Thursday as local days:
+	  const local_days __ild = __t._M_ldays - __offset;
+	  // Day of year of nearest Thursday:
+	  days __idoy = __t._M_day_of_year - __offset;
+
+	  // Year of nearest Thursday:
+	  year __iyear;
+	  if (__idoy <= days(0))
+	    __iyear = __t._M_year - years(1);
+	  else if (__idoy <= days(365))
+	    __iyear = __t._M_year;
+	  else if (__idoy == days(366) && __t._M_year.is_leap())
+	    __iyear = __t._M_year;
+	  else if (__idoy <= days(730))
+	    __iyear = __t._M_year + years(1);
+	  else [[unlikely]]
+	    __iyear = year_month_day(__ild).year();
+
+	  if (__conv != 'V')
+	    return _M_C_y_Y(__iyear, std::move(__out), "yY"[__conv == 'G']);
+
+	  if (__iyear != __t._M_year)
+	    __idoy = __ild - local_days(__iyear/January/0);
+
+	  const auto __wi = chrono::floor<weeks>(__idoy - days(1)).count() + 1;
+	  return __format::__write(std::move(__out), _S_two_digits(__wi));
 	}
 
       template<typename _OutIter>
@@ -1709,35 +1738,19 @@ namespace __format
 
       template<typename _OutIter>
 	_OutIter
-	_M_U_V_W(const _ChronoData<_CharT>& __t, _OutIter __out,
-		 _CharT __conv) const
+	_M_U_W(const _ChronoData<_CharT>& __t, _OutIter __out,
+	       _CharT __conv) const
 	{
 	  // %U  Week number of the year as a decimal number, from first Sunday.
 	  // %OU Locale's alternative numeric rep.
-	  // %V  ISO week-based week number as a decimal number.
-	  // %OV Locale's alternative numeric rep.
 	  // %W  Week number of the year as a decimal number, from first Monday.
 	  // %OW Locale's alternative numeric rep.
-	  using namespace chrono;
 
-	  auto __d = __t._M_ldays;
-	  local_days __first; // First day of week 1.
-	  if (__conv == 'V') // W01 begins on Monday before first Thursday.
-	    {
-	      // Move to nearest Thursday:
-	      __d -= (__t._M_weekday - Monday) - days(3);
-	      // ISO week of __t is number of weeks since January 1 of the
-	      // same year as that nearest Thursday.
-	      __first = local_days(year_month_day(__d).year()/January/1);
-	    }
-	  else
-	    {
-	      const weekday __weekstart = __conv == 'U' ? Sunday : Monday;
-	      __first = local_days(__t._M_year/January/__weekstart[1]);
-	    }
-	  auto __weeks = chrono::floor<weeks>(__d - __first);
-	  __string_view __sv = _S_two_digits(__weeks.count() + 1);
-	  return __format::__write(std::move(__out), __sv);
+	  using namespace chrono;
+	  const weekday __weekstart = __conv == 'U' ? Sunday : Monday;
+	  const days __offset = __t._M_weekday - __weekstart;
+	  auto __weeks = chrono::floor<weeks>(__t._M_day_of_year - __offset - days(1));
+	  return __format::__write(std::move(__out), _S_two_digits(__weeks.count() + 1));
 	}
 
       template<typename _OutIter>
