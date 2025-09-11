@@ -773,11 +773,19 @@ package Rtsfind is
      RE_Scaled_Divide64,                 -- System.Arith_64
      RE_Subtract_With_Ovflo_Check64,     -- System.Arith_64
 
+     RE_Uns_Add_With_Ovflo_Check64,      -- System.Arith_64
+     RE_Uns_Multiply_With_Ovflo_Check64, -- System.Arith_64
+     RE_Uns_Subtract_With_Ovflo_Check64, -- System.Arith_64
+
      RE_Add_With_Ovflo_Check128,         -- System.Arith_128
      RE_Double_Divide128,                -- System.Arith_128
      RE_Multiply_With_Ovflo_Check128,    -- System.Arith_128
      RE_Subtract_With_Ovflo_Check128,    -- System.Arith_128
      RE_Scaled_Divide128,                -- System.Arith_128
+
+     RE_Uns_Add_With_Ovflo_Check128,      -- System.Arith_128
+     RE_Uns_Multiply_With_Ovflo_Check128, -- System.Arith_128
+     RE_Uns_Subtract_With_Ovflo_Check128, -- System.Arith_128
 
      RE_Assert_Failure,                  -- System.Assertions
      RE_Raise_Assert_Failure,            -- System.Assertions
@@ -2421,11 +2429,19 @@ package Rtsfind is
      RE_Scaled_Divide64                  => System_Arith_64,
      RE_Subtract_With_Ovflo_Check64      => System_Arith_64,
 
+     RE_Uns_Add_With_Ovflo_Check64       => System_Arith_64,
+     RE_Uns_Multiply_With_Ovflo_Check64  => System_Arith_64,
+     RE_Uns_Subtract_With_Ovflo_Check64  => System_Arith_64,
+
      RE_Add_With_Ovflo_Check128          => System_Arith_128,
      RE_Double_Divide128                 => System_Arith_128,
      RE_Multiply_With_Ovflo_Check128     => System_Arith_128,
      RE_Subtract_With_Ovflo_Check128     => System_Arith_128,
      RE_Scaled_Divide128                 => System_Arith_128,
+
+     RE_Uns_Add_With_Ovflo_Check128      => System_Arith_128,
+     RE_Uns_Multiply_With_Ovflo_Check128 => System_Arith_128,
+     RE_Uns_Subtract_With_Ovflo_Check128 => System_Arith_128,
 
      RE_Assert_Failure                   => System_Assertions,
      RE_Raise_Assert_Failure             => System_Assertions,

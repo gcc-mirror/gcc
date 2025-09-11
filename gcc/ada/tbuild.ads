@@ -60,6 +60,10 @@ package Tbuild is
    --  effect (e.g. a call to the parser to parse a list of compilation
    --  units), but the List_Id value is not required.
 
+   function Make_Assertion_Level
+     (Loc : Source_Ptr; Nam : Name_Id) return Entity_Id;
+   --  Create a new Defining_Identifier node for an Assertion_Level
+
    function Make_Byte_Aligned_Attribute_Reference
      (Sloc           : Source_Ptr;
       Prefix         : Node_Id;

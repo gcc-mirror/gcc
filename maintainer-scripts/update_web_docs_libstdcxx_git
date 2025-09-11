@@ -35,8 +35,9 @@ cd $WORKDIR
 git -C $GITROOT archive master $GETTHIS | tar xf -
 cd $GETTHIS
 
-# copy the tree to the onlinedocs area, preserve directory structure
-find . -depth -print | cpio -pd $WWWDIR 2>&1 | egrep -v "$FILTER"
+# Copy the tree to the libstdc++ onlinedocs area and remove orphans (taking
+# care to keep some directories coming from a different source).
+rsync -ahv --delete-after -f '- /images/*' -f '- /libstdc*' -f '- latest-doxygen' . $WWWDIR 2>&1 | egrep -v "$FILTER"
 
 err=${PIPESTATUS[1]}
 if [ $err -gt 0 ]; then
@@ -45,4 +46,3 @@ fi
 
 cd /
 /bin/rm -rf $WORKDIR
-

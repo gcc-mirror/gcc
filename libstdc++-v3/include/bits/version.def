@@ -394,6 +394,14 @@ ftms = {
 };
 
 ftms = {
+  name = constant_wrapper;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = has_unique_object_representations;
   values = {
     v = 201606;
@@ -591,6 +599,16 @@ ftms = {
     v = 201611;
     cxxmin = 17;
     hosted = yes;
+  };
+};
+
+ftms = {
+  // Unofficial macro for C++20 chrono features supported for old string ABI.
+  name = chrono_cxx20;
+  values = {
+    v = 201800;
+    cxxmin = 20;
+    no_stdname = yes;
   };
 };
 

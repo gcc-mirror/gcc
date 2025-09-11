@@ -891,7 +891,9 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
 	{
 	  gather_scatter_info gs_info;
-	  if (!vect_check_gather_scatter (stmt_vinfo, loop_vinfo, &gs_info))
+	  if (!vect_check_gather_scatter (stmt_vinfo,
+					  STMT_VINFO_VECTYPE (stmt_vinfo),
+					  loop_vinfo, &gs_info))
 	    gcc_unreachable ();
 	  opt_result res
 	    = process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
@@ -1738,7 +1740,8 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info, tree vectype,
 				    unsigned int group_size,
 				    bool single_element_p)
 {
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info, elsvals)
+  if (!vect_check_gather_scatter (stmt_info, vectype,
+				  loop_vinfo, gs_info, elsvals)
       || gs_info->ifn == IFN_LAST)
     {
       if (!vect_truncate_gather_scatter_offset (stmt_info, vectype, loop_vinfo,
@@ -3432,7 +3435,7 @@ vectorizable_call (vec_info *vinfo,
 	}
     }
 
-  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
   internal_fn cond_fn = get_conditional_internal_fn (ifn);
   internal_fn cond_len_fn = get_len_internal_fn (ifn);
   int len_opno = internal_fn_len_index (cond_len_fn);
@@ -6452,7 +6455,7 @@ vectorizable_operation (vec_info *vinfo,
       using_emulated_vectors_p = true;
     }
 
-  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
@@ -6570,7 +6573,7 @@ vectorizable_operation (vec_info *vinfo,
   else if (arith_code_with_undefined_signed_overflow (orig_code)
 	   && ANY_INTEGRAL_TYPE_P (vectype)
 	   && TYPE_OVERFLOW_UNDEFINED (vectype)
-	   && STMT_VINFO_REDUC_IDX (stmt_info) != -1)
+	   && SLP_TREE_REDUC_IDX (slp_node) != -1)
     {
       gcc_assert (orig_code == PLUS_EXPR || orig_code == MINUS_EXPR
 		  || orig_code == MULT_EXPR || orig_code == POINTER_PLUS_EXPR);
@@ -10207,7 +10210,7 @@ vectorizable_load (vec_info *vinfo,
       if (!costing_p)
 	{
 	  if (!diff_first_stmt_info)
-	    msq = vect_setup_realignment (vinfo, first_stmt_info, gsi,
+	    msq = vect_setup_realignment (vinfo, first_stmt_info, vectype, gsi,
 					  &realignment_token,
 					  alignment_support_scheme, NULL_TREE,
 					  &at_loop);
@@ -10810,8 +10813,8 @@ vectorizable_load (vec_info *vinfo,
 					 stmt_info, diff);
 	  if (alignment_support_scheme == dr_explicit_realign)
 	    {
-	      msq = vect_setup_realignment (vinfo,
-					    first_stmt_info_for_drptr, gsi,
+	      msq = vect_setup_realignment (vinfo, first_stmt_info_for_drptr,
+					    vectype, gsi,
 					    &realignment_token,
 					    alignment_support_scheme,
 					    dataref_ptr, &at_loop);
@@ -11164,8 +11167,8 @@ vectorizable_load (vec_info *vinfo,
 	    tree vs = size_int (TYPE_VECTOR_SUBPARTS (vectype));
 
 	    if (compute_in_loop)
-	      msq = vect_setup_realignment (vinfo, first_stmt_info, gsi,
-					    &realignment_token,
+	      msq = vect_setup_realignment (vinfo, first_stmt_info, vectype,
+					    gsi, &realignment_token,
 					    dr_explicit_realign,
 					    dataref_ptr, NULL);
 
@@ -11384,8 +11387,9 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
 					true, &n_perms, nullptr);
-	  inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
-					  slp_node, 0, vect_body);
+	  if (n_perms != 0)
+	    inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
+					    slp_node, 0, vect_body);
 	}
       else
 	{
@@ -11560,20 +11564,24 @@ vectorizable_condition (vec_info *vinfo,
   if (code != COND_EXPR)
     return false;
 
-  stmt_vec_info reduc_info = NULL;
-  int reduc_index = -1;
+  int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
   vect_reduction_type reduction_type = TREE_CODE_REDUCTION;
-  bool for_reduction
-    = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)) != NULL;
+  bool nested_cycle_p = false;
+  bool for_reduction = vect_is_reduction (stmt_info);
   if (for_reduction)
     {
       if (SLP_TREE_LANES (slp_node) > 1)
 	return false;
-      reduc_info = info_for_reduction (vinfo, stmt_info);
-      reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-      reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
-      gcc_assert (reduction_type != EXTRACT_LAST_REDUCTION
-		  || reduc_index != -1);
+      /* ???  With a reduction path we do not get at the reduction info from
+	 every stmt, use the conservative default setting then.  */
+      if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
+	{
+	  vect_reduc_info reduc_info
+	    = info_for_reduction (loop_vinfo, slp_node);
+	  reduction_type = VECT_REDUC_INFO_TYPE (reduc_info);
+	  nested_cycle_p = nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
+						  stmt_info);
+	}
     }
   else
     {
@@ -11763,7 +11771,7 @@ vectorizable_condition (vec_info *vinfo,
 				       vec_num, vectype, NULL);
 	    }
 	  /* Extra inactive lanes should be safe for vect_nested_cycle.  */
-	  else if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_nested_cycle)
+	  else if (!nested_cycle_p)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12594,10 +12602,8 @@ vect_analyze_stmt (vec_info *vinfo,
         gcc_unreachable ();
     }
 
-  if (! STMT_VINFO_DATA_REF (stmt_info))
-    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
-  else
-    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (node);
+  tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
+  STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
@@ -12643,6 +12649,8 @@ vect_analyze_stmt (vec_info *vinfo,
 					      stmt_info, NULL, node,
 					      cost_vec))));
 
+  STMT_VINFO_VECTYPE (stmt_info) = saved_vectype;
+
   if (!ok)
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
@@ -12686,10 +12694,7 @@ vect_transform_stmt (vec_info *vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing statement: %G", stmt_info->stmt);
 
-  if (! STMT_VINFO_DATA_REF (stmt_info))
-    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
-  else
-    STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
+  STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
 
   switch (SLP_TREE_TYPE (slp_node))
     {

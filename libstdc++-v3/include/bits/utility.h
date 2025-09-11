@@ -137,26 +137,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using tuple_element_t = typename tuple_element<__i, _Tp>::type;
 #endif
 
-  // Stores a tuple of indices.  Used by tuple and pair, and by bind() to
-  // extract the elements in a tuple.
-  template<size_t... _Indexes> struct _Index_tuple { };
-
-  // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
-  template<size_t _Num>
-    struct _Build_index_tuple
-    {
-#if __has_builtin(__make_integer_seq)
-      template<typename, size_t... _Indices>
-	using _IdxTuple = _Index_tuple<_Indices...>;
-
-      // Clang defines __make_integer_seq for this purpose.
-      using __type = __make_integer_seq<_IdxTuple, size_t, _Num>;
-#else
-      // For GCC and other compilers, use __integer_pack instead.
-      using __type = _Index_tuple<__integer_pack(_Num)...>;
-#endif
-    };
-
 #ifdef __glibcxx_integer_sequence // C++ >= 14
 
   /// Class template integer_sequence

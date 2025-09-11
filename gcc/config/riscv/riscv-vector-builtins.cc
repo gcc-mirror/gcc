@@ -52,6 +52,7 @@
 #include "riscv-vector-builtins-shapes.h"
 #include "riscv-vector-builtins-bases.h"
 #include "sifive-vector-builtins-bases.h"
+#include "andes-vector-builtins-bases.h"
 
 using namespace riscv_vector;
 
@@ -571,6 +572,24 @@ static const rvv_type_info xfqf_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all vint8m_t will be registered for intrinsic functions.  */
+static const rvv_type_info q_ops[] = {
+#define DEF_RVV_Q_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all vuint8m_t will be registered for intrinsic functions.  */
+static const rvv_type_info qu_ops[] = {
+#define DEF_RVV_QU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of FP16 will be registered for intrinsic functions.  */
+static const rvv_type_info f16_ops[] = {
+#define DEF_RVV_F16_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -675,6 +694,19 @@ static CONSTEXPR const rvv_arg_type_info vv_args[]
 static CONSTEXPR const rvv_arg_type_info vvv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, vector_type, vector_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info vqq_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector), rvv_arg_type_info_end};
+
+static CONSTEXPR const rvv_arg_type_info su_vqq_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_vector),
+     rvv_arg_type_info (RVV_BASE_quad_fixed_unsigned_vector),
+     rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type, vector_type, vector_type)
  * function.  */
@@ -1223,6 +1255,16 @@ static CONSTEXPR const rvv_arg_type_info sf_vc_fvw_args[]
      rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info (RVV_BASE_scalar_float),
      rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (const void_type *) function.  */
+static CONSTEXPR const rvv_arg_type_info void_const_ptr_args[]
+  = {rvv_arg_type_info (RVV_BASE_void_const_ptr), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, widen_lmul1_scalar)
+   function.  */
+static CONSTEXPR const rvv_arg_type_info vw_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_float32), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -3080,6 +3122,62 @@ static CONSTEXPR const rvv_op_info all_v_scalar_ptr_index_ops
      rvv_arg_type_info (RVV_BASE_void), /* Return type  */
      scalar_ptr_index_args /* Args */};
 
+/* A static operand information for vector_type func (vector_type)
+ * function registration.  */
+static CONSTEXPR const rvv_op_info f32_to_bf16_nf_w_ops
+  = {f32_ops,						      /* Types */
+     OP_TYPE_s,						      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_bfloat_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration.  */
+static CONSTEXPR const rvv_op_info bf16_to_f32_wf_v_ops
+  = {f32_ops,				  /* Types */
+     OP_TYPE_bf16,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     bf_w_v_args /* Args */};
+
+/* A static operand information for vector_type func (const void_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info q_v_void_const_ptr_ops
+  = {q_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     void_const_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (const void_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info qu_v_void_const_ptr_ops
+  = {qu_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     void_const_ptr_args /* Args */};
+
+static CONSTEXPR const rvv_op_info f16_vvw_ops
+  = {f16_ops,				  /* Types */
+     OP_TYPE_vf,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qexti_vvvv_ops
+  = {qexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vqq_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qexti_su_vvvv_ops
+  = {qexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_vqq_args /* Args */};
+
+static CONSTEXPR const rvv_op_info qextu_vvvv_ops
+  = {qextu_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vqq_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type).
    Some insns just supports SEW=32, such as the crypto vector Zvkg extension.
  * function registration.  */
@@ -3376,6 +3474,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_INVALID,                                                       \
+    VECTOR_TYPE_INVALID,                                                       \
     VECTOR_TYPE_##SIGNED_EEW8_INDEX,                                           \
     VECTOR_TYPE_##EEW8_INDEX,                                                  \
     VECTOR_TYPE_##EEW16_INDEX,                                                 \
@@ -3449,6 +3548,10 @@ static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
   {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
 #include "sifive-vector-builtins-functions.def"
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
+#include "andes-vector-builtins-functions.def"
+
 };
 
 /* The RVV types, with their built-in
@@ -3474,6 +3577,71 @@ static hash_table<registered_function_hasher> *function_table;
 static hash_table<non_overloaded_registered_function_hasher>
   *non_overloaded_function_table;
 
+struct pragma_intrinsic_flags
+{
+  int intrinsic_riscv_isa_flags;
+  int intrinsic_riscv_base_subext;
+
+  int intrinsic_riscv_vector_elen_flags;
+  int intrinsic_riscv_zvl_subext;
+  int intrinsic_riscv_zvf_subext;
+};
+
+static void
+riscv_pragma_intrinsic_flags_pollute (struct pragma_intrinsic_flags *flags)
+{
+  /* We already defer the required extension checking to expantion time, so we
+     only need to pollute those flags that might affect the type registration.
+
+     e.g. zvfbmin and zvfhmin are required to define the vector bf16 and f16,
+	  and VECTOR_ELEN* also required for vector interger and floating
+	  type.  */
+  flags->intrinsic_riscv_isa_flags = riscv_isa_flags;
+  flags->intrinsic_riscv_base_subext = riscv_base_subext;
+  flags->intrinsic_riscv_vector_elen_flags = riscv_vector_elen_flags;
+  flags->intrinsic_riscv_zvl_subext = riscv_zvl_subext;
+  flags->intrinsic_riscv_zvf_subext = riscv_zvf_subext;
+
+  riscv_zvf_subext = riscv_zvf_subext
+    | MASK_ZVFBFMIN
+    | MASK_ZVFHMIN;
+
+  riscv_isa_flags = riscv_isa_flags
+    | MASK_VECTOR;
+
+  riscv_base_subext = riscv_base_subext
+    | MASK_MUL;
+
+  riscv_zvl_subext = riscv_zvl_subext
+    | MASK_ZVL32B
+    | MASK_ZVL64B
+    | MASK_ZVL128B
+    | MASK_ZVL256B
+    | MASK_ZVL512B
+    | MASK_ZVL1024B
+    | MASK_ZVL2048B
+    | MASK_ZVL4096B;
+
+  riscv_vector_elen_flags = riscv_vector_elen_flags
+    | MASK_VECTOR_ELEN_32
+    | MASK_VECTOR_ELEN_64
+    | MASK_VECTOR_ELEN_FP_16
+    | MASK_VECTOR_ELEN_FP_32
+    | MASK_VECTOR_ELEN_FP_64
+    | MASK_VECTOR_ELEN_BF_16;
+}
+
+static void
+riscv_pragma_intrinsic_flags_restore (struct pragma_intrinsic_flags *flags)
+{
+  riscv_isa_flags = flags->intrinsic_riscv_isa_flags;
+  riscv_base_subext = flags->intrinsic_riscv_base_subext;
+
+  riscv_vector_elen_flags = flags->intrinsic_riscv_vector_elen_flags;
+  riscv_zvl_subext = flags->intrinsic_riscv_zvl_subext;
+  riscv_zvf_subext = flags->intrinsic_riscv_zvf_subext;
+}
+
 /* RAII class for enabling enough RVV features to define the built-in
    types and implement the riscv_vector.h pragma.
 
@@ -3486,21 +3654,42 @@ static hash_table<non_overloaded_registered_function_hasher>
 class rvv_switcher
 {
 public:
-  rvv_switcher ();
+  rvv_switcher (bool pollute_flags = true);
   ~rvv_switcher ();
 
 private:
   bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
+  struct pragma_intrinsic_flags backup_flags;
+  bool m_pollute_flags;
 };
 
-rvv_switcher::rvv_switcher ()
+static void
+register_builtin_types_on_null ();
+
+rvv_switcher::rvv_switcher (bool pollute_flags)
+  : m_pollute_flags (pollute_flags)
 {
+  if (m_pollute_flags)
+    {
+      riscv_pragma_intrinsic_flags_pollute (&backup_flags);
+      riscv_option_override ();
+    }
+
   /* Set have_regs_of_mode before targetm.init_builtins ().  */
   memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
     if (riscv_v_ext_vector_mode_p ((machine_mode) i))
       have_regs_of_mode[i] = true;
+
+  /* Not necessary to adjust mode and register type if we don't pollute
+     flags.  */
+  if (m_pollute_flags)
+    {
+      init_adjust_machine_modes ();
+
+      register_builtin_types_on_null ();
+    }
 }
 
 rvv_switcher::~rvv_switcher ()
@@ -3508,6 +3697,15 @@ rvv_switcher::~rvv_switcher ()
   /* Recover back have_regs_of_mode.  */
   memcpy (have_regs_of_mode, m_old_have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
+
+  if (m_pollute_flags)
+    {
+      riscv_pragma_intrinsic_flags_restore (&backup_flags);
+
+      /* Re-initialize after the flags are restored.  */
+      riscv_option_override ();
+      init_adjust_machine_modes ();
+    }
 }
 
 /* Add attribute NAME to ATTRS.  */
@@ -3664,26 +3862,10 @@ register_tuple_type (vector_type_index type, vector_type_index subpart_type,
 static void
 register_builtin_types ()
 {
-  /* Get type node from get_typenode_from_name to prevent we have different type
-     node define in different target libraries, e.g. int32_t defined as
-     `long` in RV32/newlib-stdint, but `int` for RV32/glibc-stdint.h.
-     NOTE: uint[16|32|64]_type_node already defined in tree.h.  */
-  tree int8_type_node = get_typenode_from_name (INT8_TYPE);
-  tree uint8_type_node = get_typenode_from_name (UINT8_TYPE);
-  tree int16_type_node = get_typenode_from_name (INT16_TYPE);
-  tree int32_type_node = get_typenode_from_name (INT32_TYPE);
-  tree int64_type_node = get_typenode_from_name (INT64_TYPE);
-
-  machine_mode mode;
-#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
-		     ARGS...)                                                  \
-  mode = VECTOR_MODE##mode;                                                    \
-  register_builtin_type (VECTOR_TYPE_##NAME, SCALAR_TYPE##_type_node, mode);
-#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
-			   NF, VECTOR_SUFFIX)                                  \
-  register_tuple_type (VECTOR_TYPE_##NAME, VECTOR_TYPE_##SUBPART_TYPE,         \
-		       SCALAR_TYPE##_type_node, NF);
-#include "riscv-vector-builtins.def"
+  /* Don't pollute flags at this stage to make sure we only register type with
+     what we want so far, we will register all type if necessary later.   */
+  rvv_switcher rvv (/* pollute_flags */ false);
+  register_builtin_types_on_null ();
 }
 
 /* Similar as register_builtin_types but perform the registration if and
@@ -3795,25 +3977,15 @@ required_extensions_p (enum rvv_base_type type)
   gcc_unreachable ();
 }
 
-static uint64_t
-get_required_extensions (vector_type_index type_idx)
-{
-  for (unsigned int i = 0; all_ops[i].index != NUM_VECTOR_TYPES; i++)
-    if (type_idx == all_ops[i].index)
-      return all_ops[i].required_extensions;
-  for (unsigned int i = 0; b_ops[i].index != NUM_VECTOR_TYPES; i++)
-    if (type_idx == b_ops[i].index)
-      return b_ops[i].required_extensions;
-  gcc_unreachable ();
-}
-
 /* Check whether all the RVV_REQUIRE_* values in REQUIRED_EXTENSIONS are
-   enabled.  */
+   enabled.
+   TODO: We defer the required extensions to expantion time, this function is
+	 only doing the legality now, and we may rename this function and moving
+	 to another layer.  */
 static bool
 check_required_extensions (const function_instance &instance)
 {
   rvv_type_info type_info = instance.type;
-  uint64_t required_extensions = type_info.required_extensions;
   const rvv_op_info *op_info = instance.op_info;
 
   if (required_extensions_p (op_info->ret.base_type))
@@ -3822,48 +3994,18 @@ check_required_extensions (const function_instance &instance)
 	= op_info->ret.get_function_type_index (type_info.index);
       if (ret_type_idx == NUM_VECTOR_TYPES)
 	return false;
-      required_extensions |= get_required_extensions (ret_type_idx);
     }
 
   for (unsigned i = 0; op_info->args[i].base_type != NUM_BASE_TYPES; ++i)
     {
       if (!required_extensions_p (op_info->args[i].base_type))
 	continue;
-
       enum vector_type_index vector_type
 	= op_info->args[i].get_function_type_index (type_info.index);
       if (vector_type == NUM_VECTOR_TYPES)
 	return false;
-      required_extensions |= get_required_extensions (vector_type);
-
-      /* According to RVV ISA, EEW=64 index of indexed loads/stores require
-	 XLEN = 64.  */
-      if (op_info->args[i].base_type == RVV_BASE_eew64_index)
-	required_extensions |= RVV_REQUIRE_RV64BIT;
     }
 
-  uint64_t isa_flags = 0;
-
-  if (TARGET_VECTOR_ELEN_BF_16)
-    isa_flags |= RVV_REQUIRE_ELEN_BF_16;
-  if (TARGET_VECTOR_ELEN_FP_16)
-    isa_flags |= RVV_REQUIRE_ELEN_FP_16;
-  if (TARGET_VECTOR_ELEN_FP_32)
-    isa_flags |= RVV_REQUIRE_ELEN_FP_32;
-  if (TARGET_VECTOR_ELEN_FP_64)
-    isa_flags |= RVV_REQUIRE_ELEN_FP_64;
-  if (TARGET_VECTOR_ELEN_64)
-    isa_flags |= RVV_REQUIRE_ELEN_64;
-  if (TARGET_64BIT)
-    isa_flags |= RVV_REQUIRE_RV64BIT;
-  if (TARGET_FULL_V)
-    isa_flags |= RVV_REQUIRE_FULL_V;
-  if (TARGET_MIN_VLEN > 32)
-    isa_flags |= RVV_REQUIRE_MIN_VLEN_64;
-
-  uint64_t missing_extensions = required_extensions & ~isa_flags;
-  if (missing_extensions != 0)
-    return false;
   return true;
 }
 
@@ -4042,6 +4184,12 @@ tree
 function_instance::get_return_type () const
 {
   return op_info->ret.get_tree_type (type.index);
+}
+
+bool
+function_instance::function_returns_void_p () const
+{
+  return get_return_type () == void_type_node;
 }
 
 tree
@@ -4316,7 +4464,7 @@ function_builder::add_function (const function_instance &instance,
      nodes and remove the target hook. For now, however, we need to appease the
      validation and return a non-NULL, non-error_mark_node node, so we
      arbitrarily choose integer_zero_node.  */
-  tree decl = placeholder_p
+  tree decl = placeholder_p || in_lto_p
 		? integer_zero_node
 		: simulate_builtin_function_decl (input_location, name, fntype,
 						  code, NULL, attrs);
@@ -5094,28 +5242,15 @@ builtin_type_p (const_tree type)
 void
 init_builtins ()
 {
-  rvv_switcher rvv;
-  if (!TARGET_VECTOR)
-    return;
-  register_builtin_types ();
   if (in_lto_p)
+    /* "pragma vector" will register type during the process. */
     handle_pragma_vector ();
-}
-
-/* Reinitialize builtins similar to init_builtins,  but only the null
-   builtin types will be registered.  */
-void
-reinit_builtins ()
-{
-  rvv_switcher rvv;
-
-  if (!TARGET_VECTOR)
-    return;
-
-  register_builtin_types_on_null ();
-
-  if (in_lto_p)
-    handle_pragma_vector ();
+  else
+    {
+      if (!TARGET_VECTOR)
+	return;
+      register_builtin_types ();
+    }
 }
 
 /* Implement TARGET_VERIFY_TYPE_CONTEXT for RVV types.  */
@@ -5281,10 +5416,7 @@ handle_pragma_vector ()
   function_table = new hash_table<registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-  {
-    if (function_groups[i].match (function_groups[i].required_extensions))
-      builder.register_function_group (function_groups[i]);
-  }
+    builder.register_function_group (function_groups[i]);
 }
 
 /* Return the function decl with RVV function subcode CODE, or error_mark_node

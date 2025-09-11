@@ -355,6 +355,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "template", TI_TEMPLATE (node), indent+4);
       print_node (file, "args", TI_ARGS (node), indent+4);
       if (TI_TEMPLATE (node)
+	  && TREE_CODE (TI_TEMPLATE (node)) == TEMPLATE_DECL
 	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE (node)))
 	print_node (file, "partial", TI_PARTIAL_INFO (node), indent+4);
       if (TI_PENDING_TEMPLATE_FLAG (node))

@@ -307,7 +307,7 @@ package body Targparm is
 
          --  Test for type Address is private
 
-         elsif Looking_At_Skip ("   type Address is private;") then
+         elsif Looking_At_Skip ("   type Address is private") then
             Opt.Address_Is_Private := True;
             goto Line_Loop_Continue;
 

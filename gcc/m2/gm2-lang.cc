@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "m2-tree.h"
 #include "convert.h"
 #include "rtegraph.h"
+#include "cppdefault.h"
 
 static void write_globals (void);
 
@@ -60,6 +61,7 @@ static bool allow_libraries = true;
 static const char *flibs = nullptr;
 static const char *iprefix = nullptr;
 static const char *imultilib = nullptr;
+static const char *target_system_root = nullptr;
 static std::vector<named_path>Ipaths;
 static std::vector<const char*>isystem;
 static std::vector<const char*>iquote;
@@ -537,17 +539,86 @@ get_module_source_dir (void)
   return lib;
 }
 
+/* concat_component returns a string containing the path left/right.
+   Pre-requisite, left and right are null terminated strings.  The contents of
+   left and right are held on the heap.  Post-requisite, left and right are
+   freed and a new combined string is malloced.  */
+
+static char *
+concat_component (char *left, char *right)
+{
+  size_t len = strlen (left)
+    + strlen (right)
+    + get_dir_sep_size ()
+    + 1;
+  char *new_str = (char *) xmalloc (len);
+  strcpy (new_str, left);
+  add_path_component (new_str, right);
+  free (left);
+  free (right);
+  return new_str;
+}
+
+/* find_cpp_entry return the element of the cpp_include_defaults array
+   whose fname matches name.  */
+
+static const struct default_include *
+find_cpp_entry (const char *name)
+{
+  const struct default_include *p;
+
+  for (p = cpp_include_defaults; p->fname; p++)
+    if (strcmp (p->fname, name) == 0)
+      return p;
+  return NULL;
+}
+
+/* lookup_cpp_default lookup the entry in cppdefault then add the directory to
+   the m2 search path.  It also honours sysroot, imultilib and imultiarch.  */
+
+static void
+lookup_cpp_default (const char *sysroot, const char *flibs, const char *name)
+{
+  const struct default_include *p = find_cpp_entry (name);
+
+  if (p != NULL)
+    {
+      char *full_str = xstrdup (p->fname);
+
+      /* Should this directory start with the sysroot?  */
+      if (sysroot && p->add_sysroot)
+	full_str = concat_component (xstrdup (sysroot), full_str);
+      /* Should we append the imultilib component?  */
+      if (p->multilib == 1 && imultilib)
+	full_str = concat_component (full_str, xstrdup (imultilib));
+      /* Or append the imultiarch component?  */
+      else if (p->multilib == 2 && imultiarch)
+	full_str = concat_component (full_str, xstrdup (imultiarch));
+      else
+	full_str = xstrdup (p->fname);
+      foreach_lib_gen_import_path (flibs, full_str);
+      free (full_str);
+    }
+}
+
 /* add_default_include_paths add include paths for site wide definition modules
    and also gcc version specific definition modules.  */
 
 static void
 add_default_include_paths (const char *flibs)
 {
-  /* Add the site wide include path.  */
-  foreach_lib_gen_import_path (flibs, PREFIX_INCLUDE_DIR);
+  /* Follow the order found in cppdefaults.cc.  */
+#ifdef LOCAL_INCLUDE_DIR
+  lookup_cpp_default (target_system_root, flibs, LOCAL_INCLUDE_DIR);
+#endif
+#ifdef PREFIX_INCLUDE_DIR
+  lookup_cpp_default (target_system_root, flibs, PREFIX_INCLUDE_DIR);
+#endif
   /* Add the gcc version specific include path.  */
-  foreach_lib_gen_import_path (flibs,
-			       get_module_source_dir ());
+  foreach_lib_gen_import_path (flibs, get_module_source_dir ());
+#ifdef NATIVE_SYSTEM_HEADER_DIR
+  lookup_cpp_default (target_system_root, flibs, NATIVE_SYSTEM_HEADER_DIR);
+#endif
 }
 
 /* assign_flibs assign flibs to a default providing that allow_libraries
@@ -564,26 +635,6 @@ assign_flibs (void)
 	flibs = "m2pim,m2iso,m2cor,m2log";
     }
 }
-
-/* m2_pathname_root creates a new set of include paths for the
-   subdirectory m2 inside libroot.  The ordering of the paths
-   follows the dialect library order.  */
-
-static void
-m2_pathname_root (const char *libroot)
-{
-  const char *copy_flibs = flibs;
-
-  if (copy_flibs == NULL)
-    {
-      if (iso)
-	copy_flibs = "m2iso,m2cor,m2pim,m2log";
-      else
-	copy_flibs = "m2pim,m2iso,m2cor,m2log";
-    }
-  foreach_lib_gen_import_path (copy_flibs, libroot);
-}
-
 
 /* Handle gm2 specific options.  Return 0 if we didn't do anything.  */
 
@@ -858,7 +909,7 @@ gm2_langhook_handle_option (
       return 1;
       break;
     case OPT_isysroot:
-      /* Otherwise, ignored, at least for now. */
+      target_system_root = arg;
       return 1;
       break;
     case OPT_fm2_whole_program:

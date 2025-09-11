@@ -18,7 +18,8 @@ END MODULE m
 PROGRAM main
   USE m
   IMPLICIT NONE
-  CALL test ('') ! 0 length, but not absent argument.
+                  ! 0 length, but not absent argument.
+  CALL test ('')  ! { dg-warning "Character length of actual argument" }
 END PROGRAM main
 
 ! { dg-output "shorter than the declared one for dummy argument 'opt' \\(0/5\\)" }

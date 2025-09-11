@@ -191,8 +191,7 @@ package body Exp_Prag is
          when Pragma_Suppress_Initialization =>
             Expand_Pragma_Suppress_Initialization (N);
 
-         --  All other pragmas need no expander action (includes
-         --  Unknown_Pragma).
+         --  All other pragmas need no expander action
 
          when others => null;
       end case;
@@ -1520,7 +1519,7 @@ package body Exp_Prag is
       is
          Cond  : Node_Id;
          Error : Node_Id;
-
+         Str   : String_Id;
       begin
          --  Generate:
          --    Flag and then not Conseq
@@ -1540,12 +1539,17 @@ package body Exp_Prag is
          Store_String_Chars ("failed contract case at ");
          Store_String_Chars (Build_Location_String (Sloc (Conseq)));
 
+         --  Store the string value as the call to RTE can cause a new unit to
+         --  be loaded which causes new strings to be created.
+
+         Str := End_String;
+
          Error :=
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
              Parameter_Associations => New_List (
-               Make_String_Literal (Loc, End_String)));
+               Make_String_Literal (Loc, Str)));
 
          if No (Checks) then
             Checks :=
@@ -2516,6 +2520,7 @@ package body Exp_Prag is
       Call         : Node_Id;
       Call_List    : List_Id;
       Call_Loc     : Source_Ptr;
+      Check_Prag   : Node_Id;
       Expr         : Node_Id;
       Loc          : Source_Ptr;
       Proc_Body    : Node_Id;
@@ -2604,6 +2609,20 @@ package body Exp_Prag is
       --       pragma Check (Initial_Condition, <Expr>);
       --    end <Pack_Id>Initial_Condition;
 
+      Check_Prag :=
+        Make_Pragma
+          (Loc,
+           Chars                        => Name_Check,
+           Pragma_Argument_Associations =>
+             New_List
+               (Make_Pragma_Argument_Association
+                  (Loc,
+                   Expression =>
+                     Make_Identifier (Loc, Name_Initial_Condition)),
+                Make_Pragma_Argument_Association
+                  (Loc, Expression => New_Copy_Tree (Expr))));
+      Copy_Assertion_Policy_Attributes (Check_Prag, IC_Prag);
+
       Proc_Body :=
         Make_Subprogram_Body (Loc,
           Specification              =>
@@ -2611,15 +2630,7 @@ package body Exp_Prag is
           Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Make_Pragma (Loc,
-                  Chars                        => Name_Check,
-                  Pragma_Argument_Associations => New_List (
-                    Make_Pragma_Argument_Association (Loc,
-                      Expression =>
-                        Make_Identifier (Loc, Name_Initial_Condition)),
-                    Make_Pragma_Argument_Association (Loc,
-                      Expression => New_Copy_Tree (Expr)))))));
+              Statements => New_List (Check_Prag)));
 
       Append_To (Body_List, Proc_Body);
 
@@ -2943,6 +2954,7 @@ package body Exp_Prag is
                      Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
+         Copy_Assertion_Policy_Attributes (Prag, N);
 
          --  Generate:
          --    if Curr /= Old then
@@ -3221,6 +3233,11 @@ package body Exp_Prag is
       --  Prev_Decl and is stored in this parameter for a next call to this
       --  routine. Is_Last is True when there are no more variants to process.
 
+      function Variants_Function_Name (Prag : Node_Id) return Name_Id;
+      --  The name of the variants function is either
+      --  * _variants: if no assertion level was associated with the pragma.
+      --  * _variants_<Assertion_Level> otherwise.
+
       ----------------------
       -- Formal_Param_Map --
       ----------------------
@@ -3264,11 +3281,11 @@ package body Exp_Prag is
          Expr_Typ : constant Entity_Id  := Etype (Expr);
          Loc      : constant Source_Ptr := Sloc (Expr);
 
-         Old_Id    : Entity_Id;
-         Old_Decl  : Node_Id;
-         Curr_Id   : Entity_Id;
-         Curr_Decl : Node_Id;
-         Prag      : Node_Id;
+         Old_Id     : Entity_Id;
+         Old_Decl   : Node_Id;
+         Curr_Id    : Entity_Id;
+         Curr_Decl  : Node_Id;
+         Check_Prag : Node_Id;
 
       begin
          --  Create temporaries that store the old values of the associated
@@ -3308,7 +3325,7 @@ package body Exp_Prag is
          --  Generate:
          --    pragma Check (Variant, Curr <|> Old);
 
-         Prag :=
+         Check_Prag :=
            Make_Pragma (Loc,
              Chars                        => Name_Check,
              Pragma_Argument_Associations => New_List (
@@ -3323,6 +3340,7 @@ package body Exp_Prag is
                      Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
+         Copy_Assertion_Policy_Attributes (Check_Prag, Prag);
 
          --  Generate:
          --    if Curr /= Old then
@@ -3335,7 +3353,7 @@ package body Exp_Prag is
             --  pragma.
 
             if Is_Last then
-               If_Stmt := Prag;
+               If_Stmt := Check_Prag;
             else
                If_Stmt :=
                  Make_If_Statement (Loc,
@@ -3343,7 +3361,7 @@ package body Exp_Prag is
                      Make_Op_Ne (Loc,
                        Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
                        Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
-                   Then_Statements => New_List (Prag));
+                   Then_Statements => New_List (Check_Prag));
             end if;
 
             --  Generate:
@@ -3352,7 +3370,7 @@ package body Exp_Prag is
             --    end if;
 
          elsif Is_Last then
-            Set_Else_Statements (If_Stmt, New_List (Prag));
+            Set_Else_Statements (If_Stmt, New_List (Check_Prag));
 
             --  Generate:
             --    elsif Curr /= Old then
@@ -3369,9 +3387,29 @@ package body Exp_Prag is
               Make_Op_Ne (Loc,
                 Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
                 Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
-              Then_Statements => New_List (Prag)));
+              Then_Statements => New_List (Check_Prag)));
          end if;
       end Process_Variant;
+
+      ----------------------------
+      -- Variants_Function_Name --
+      ----------------------------
+
+      function Variants_Function_Name (Prag : Node_Id) return Name_Id is
+      begin
+         if Present (Pragma_Ghost_Assertion_Level (Prag))
+           and then Pragma_Ghost_Assertion_Level (Prag)
+                    /= Standard_Level_Default
+         then
+            Get_Name_String (Name_uVariants);
+            Add_Str_To_Name_Buffer ("_");
+            Get_Name_String_And_Append
+              (Chars (Pragma_Ghost_Assertion_Level (Prag)));
+            return Name_Enter;
+         else
+            return Name_uVariants;
+         end if;
+      end Variants_Function_Name;
 
       --  Local variables
 
@@ -3386,6 +3424,7 @@ package body Exp_Prag is
       Proc_Bod     : Node_Id;
       Proc_Decl    : Node_Id;
       Proc_Id      : Entity_Id;
+      Proc_Nam     : Name_Id;
       Proc_Spec    : Node_Id;
       Variant      : Node_Id;
 
@@ -3411,7 +3450,9 @@ package body Exp_Prag is
       --  variant expressions captured at the start of subprogram with their
       --  values at the recursive call of the subprogram.
 
-      Proc_Id := Make_Defining_Identifier (Loc, Name_uVariants);
+      Proc_Nam := Variants_Function_Name (Prag);
+
+      Proc_Id := Make_Defining_Identifier (Loc, Proc_Nam);
 
       Proc_Spec :=
         Make_Procedure_Specification

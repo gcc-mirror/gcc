@@ -4528,7 +4528,7 @@ gcn_expand_cmp_swap (tree exp, rtx target)
 
 static rtx
 gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
-		      machine_mode /*mode */ , int ignore,
+		      machine_mode mode, int ignore,
 		      struct gcn_builtin_description *)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -4620,6 +4620,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4631,6 +4633,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  SFmode,
@@ -4642,6 +4646,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4653,6 +4659,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4664,6 +4672,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4675,6 +4685,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4686,6 +4698,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg1 = force_reg (V64SFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64SFmode,
@@ -4701,6 +4715,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64DFmode,
@@ -4716,6 +4732,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4727,6 +4745,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4738,6 +4758,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4749,6 +4771,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -6762,10 +6786,6 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
       if (avgpr < MAX_NORMAL_AVGPR_COUNT)
 	avgpr = MAX_NORMAL_AVGPR_COUNT;
     }
-
-  /* SIMD32 devices count double in wavefront64 mode.  */
-  if (TARGET_WAVE64_COMPAT)
-    vgpr *= 2;
 
   /* Round up to the allocation block size.  */
   int vgpr_block_size = TARGET_VGPR_GRANULARITY;

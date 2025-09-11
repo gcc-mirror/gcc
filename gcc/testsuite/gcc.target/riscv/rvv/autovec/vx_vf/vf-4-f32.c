@@ -16,5 +16,15 @@
 /* { dg-final { scan-assembler-not {vfwnmacc.vf} } } */
 /* { dg-final { scan-assembler-not {vfwnmsac.vf} } } */
 /* { dg-final { scan-assembler-not {vfmul.vf} } } */
+/* { dg-final { scan-assembler-not {vfadd.vf} } } */
+/* { dg-final { scan-assembler-not {vfsub.vf} } } */
 /* { dg-final { scan-assembler-not {vfrdiv.vf} } } */
+/* { dg-final { scan-assembler-not {vfrsub.vf} } } */
+/* { dg-final { scan-assembler-not {vfmin.vf} } } */
+/* { dg-final { scan-assembler-not {vfmax.vf} } } */
+/* { dg-final { scan-assembler-not {vfwmul.vf} } } */
+/* { dg-final { scan-assembler-not {vfwadd.vf} } } */
+/* { dg-final { scan-assembler-not {vfwsub.vf} } } */
+/* { dg-final { scan-assembler-not {vfwadd.wf} } } */
+/* { dg-final { scan-assembler-not {vfwsub.wf} } } */
 /* { dg-final { scan-assembler {fcvt.d.s} } } */

@@ -57,7 +57,6 @@ test01()
       decltype(bind_back(std::declval<const F&>(), std::declval<const int&>(), std::declval<const float&>()))
       >);
 
-
   // Reference wrappers should be handled:
   static_assert(!std::is_same_v<
       decltype(bind_back(std::declval<F>(), std::declval<int&>())),
@@ -197,6 +196,21 @@ testCallArgs(Args... args)
   VERIFY( q.as_const && q.as_lvalue );
   q = cg(std::move(ci));
   VERIFY( q.as_const && ! q.as_lvalue );
+
+  struct S
+  {
+    int operator()(long, long, Args...) const { return 1; }
+    int operator()(int, void*, Args...) const { return 2; }
+  };
+
+  S s;
+  // literal zero can be converted to any pointer, so (int, void*)
+  // is best candidate
+  VERIFY( s(0, 0, args...) == 2 );
+  // both arguments are bound to int&&, and no longer can be
+  // converted to pointer, (long, long) is only candidate
+  VERIFY( bind_back(s)(0, 0, args...) == 1 );
+  VERIFY( bind_back(s, args...)(0, 0) == 1 );
 }
 
 void

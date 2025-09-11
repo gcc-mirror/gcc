@@ -71,8 +71,8 @@ package Ada.Tags is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
-   type Tag is private;
-   pragma Preelaborable_Initialization (Tag);
+   type Tag is private
+   with Preelaborable_Initialization;
 
    No_Tag : constant Tag;
 

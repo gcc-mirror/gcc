@@ -773,7 +773,17 @@ ipa_profile (void)
   gcov_type threshold;
 
   if (dump_file)
-    dump_histogram (dump_file, histogram);
+    {
+      if (profile_info)
+	{
+	  fprintf (dump_file,
+		   "runs: %i sum_max: %" PRId64 " cutoff: %" PRId64"\n",
+		   profile_info->runs, profile_info->sum_max, profile_info->cutoff);
+	  fprintf (dump_file, "hot bb threshold: %" PRId64 "\n",
+		   get_hot_bb_threshold ());
+	}
+      dump_histogram (dump_file, histogram);
+    }
   for (i = 0; i < (int)histogram.length (); i++)
     {
       overall_time += ((widest_int)histogram[i]->count) * histogram[i]->time;

@@ -1,3 +1,12 @@
+2025-09-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Improve non-unique tests report when testing
+	several configurations.
+
+2025-09-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Report non-unique test names.
+
 2025-08-17  Filip Kastl  <fkastl@suse.cz>
 
 	* check-MAINTAINERS.py: Document the way the script sorts

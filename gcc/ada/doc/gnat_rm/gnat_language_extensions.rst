@@ -581,6 +581,29 @@ Restricting the position of controlling parameter offers several advantages:
 
 * The result of a function is never a controlling result.
 
+``Unsigned_Base_Range`` aspect
+------------------------------
+
+A new pragma/aspect, ``Unsigned_Base_Range``, is introduced to explicitly
+enforce the use of an unsigned base type for signed integer types.
+RM-3.5.4(9) mandates a symmetric base range for signed integer types. This
+requirement often requires the use of larger data types for arithmetic
+operations, potentially introducing undesirable run-time overhead and
+performance penalties, particularly in embedded systems. For instance,
+on a 64-bit architecture, a 64-bit multiplication can be performed with
+a single hardware instruction, whereas a 128-bit multiplication requires
+multiple instructions and intermediate steps.
+
+Here is an example of this feature:
+
+.. code-block:: ada
+
+  type Uns_64 is range 0 .. 2 ** 64 - 1
+    with Size => 64,
+         Unsigned_Base_Range => True;
+
+It ensures that arithmetic operations of type ``Uns_64`` are carried
+out using 64 bits.
 
 .. _Experimental_Language_Extensions:
 

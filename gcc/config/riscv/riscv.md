@@ -672,7 +672,7 @@
 ;; Microarchitectures we know how to tune for.
 ;; Keep this in sync with enum riscv_microarchitecture.
 (define_attr "tune"
-  "generic,sifive_7,sifive_p400,sifive_p600,xiangshan,generic_ooo,mips_p8700"
+  "generic,sifive_7,sifive_p400,sifive_p600,xiangshan,generic_ooo,mips_p8700,tt_ascalon_d8"
   (const (symbol_ref "((enum attr_tune) riscv_microarchitecture)")))
 
 ;; Describe a user's asm statement.
@@ -717,24 +717,25 @@
 		 (match_operand:SI 2 "reg_or_const_int_operand")))]
   ""
 {
+  /* We may be able to find a faster sequence, if so, then we are
+     done.  Otherwise let expansion continue normally.  */
+  if (CONST_INT_P (operands[2])
+      && ((!TARGET_64BIT && synthesize_add (operands))
+	  || (TARGET_64BIT && synthesize_add_extended (operands))))
+    DONE;
+
+  /* Constants have already been handled already.  */
   if (TARGET_64BIT)
     {
-      rtx t = gen_reg_rtx (DImode);
-
-      if (CONST_INT_P (operands[2]) && !SMALL_OPERAND (operands[2]))
-	operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_addsi3_extended (t, operands[1], operands[2]));
-      t = gen_lowpart (SImode, t);
-      SUBREG_PROMOTED_VAR_P (t) = 1;
-      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
-      emit_move_insn (operands[0], t);
+      rtx tdest = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (tdest, operands[1], operands[2]));
+      tdest = gen_lowpart (SImode, tdest);
+      SUBREG_PROMOTED_VAR_P (tdest) = 1;
+      SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+      emit_move_insn (operands[0], tdest);
       DONE;
     }
 
-  /* We may be able to find a faster sequence, if so, then we are
-     done.  Otherwise let expansion continue normally.  */
-  if (CONST_INT_P (operands[2]) && synthesize_add (operands))
-    DONE;
 })
 
 (define_expand "adddi3"
@@ -1863,8 +1864,13 @@
   [(set (match_operand:BF    0 "register_operand" "=f")
 	(float_truncate:BF
 	   (match_operand:SF 1 "register_operand" " f")))]
-  "TARGET_ZFBFMIN"
-  "fcvt.bf16.s\t%0,%1"
+  "TARGET_ZFBFMIN || TARGET_XANDESBFHCVT"
+{
+  if (TARGET_ZFBFMIN)
+    return "fcvt.bf16.s\t%0,%1";
+  else
+    return "nds.fcvt.bf16.s\t%0,%1";
+}
   [(set_attr "type" "fcvt")
    (set_attr "mode" "BF")])
 
@@ -1911,6 +1917,7 @@
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
   "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF
    && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   "@
    #
@@ -1937,7 +1944,8 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF"
   "@
    #
    lhu\t%0,%1"
@@ -1999,7 +2007,7 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_XTHEADMEMIDX"
+  "TARGET_64BIT && !TARGET_XTHEADMEMIDX && !TARGET_XANDESPERF"
   "@
    sext.w\t%0,%1
    lw\t%0,%1"
@@ -2016,7 +2024,8 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+   && !TARGET_XANDESPERF"
   "@
    #
    l<SHORT:size>\t%0,%1"
@@ -2048,8 +2057,13 @@
   [(set (match_operand:SF    0 "register_operand" "=f")
 	(float_extend:SF
 	   (match_operand:BF 1 "register_operand" " f")))]
-  "TARGET_ZFBFMIN"
-  "fcvt.s.bf16\t%0,%1"
+  "TARGET_ZFBFMIN || TARGET_XANDESBFHCVT"
+{
+  if (TARGET_ZFBFMIN)
+    return "fcvt.s.bf16\t%0,%1";
+  else
+    return "nds.fcvt.s.bf16\t%0,%1";
+}
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
 
@@ -3108,6 +3122,7 @@
       || TARGET_XVENTANACONDOPS || TARGET_SFB_ALU)
      && (INTVAL (operands[2]) == 1))
    && !TARGET_XTHEADBB
+   && !TARGET_XANDESPERF
    && !(TARGET_64BIT
         && (INTVAL (operands[3]) > 0)
         && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
@@ -3493,9 +3508,9 @@
 	    (label_ref (match_operand 1))
 	    (pc)))
    (clobber (match_scratch:X 4 "=&r"))]
-  ""
-  "#"
-  "reload_completed"
+   "!TARGET_XANDESPERF"
+   "#"
+   "&& reload_completed"
   [(set (match_dup 4)
 	(ashift:X (match_dup 2) (match_dup 3)))
    (set (pc)
@@ -4931,6 +4946,7 @@
 ;; Vendor extensions
 (include "thead.md")
 (include "corev.md")
+(include "andes.md")
 ;; Pipeline models
 (include "generic.md")
 (include "xiangshan.md")
@@ -4940,3 +4956,4 @@
 (include "sifive-p600.md")
 (include "generic-vector-ooo.md")
 (include "generic-ooo.md")
+(include "tt-ascalon-d8.md")

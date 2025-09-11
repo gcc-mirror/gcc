@@ -445,6 +445,7 @@ package Gen_IL.Types is
       --  Concrete entity types:
 
       E_Void,
+      E_Assertion_Level,
       E_Component,
       E_Constant,
       E_Discriminant,

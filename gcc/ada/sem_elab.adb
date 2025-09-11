@@ -11199,7 +11199,7 @@ package body Sem_Elab is
         (Id : Entity_Id) return Extended_Ghost_Mode
       is
       begin
-         return To_Ghost_Mode (Is_Ignored_Ghost_Entity (Id));
+         return To_Ghost_Mode (Is_Ignored_Ghost_Entity_In_Codegen (Id));
       end Ghost_Mode_Of_Entity;
 
       ------------------------

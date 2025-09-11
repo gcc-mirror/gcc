@@ -40,8 +40,9 @@ package System.Storage_Pools
   with Pure
 is
    type Root_Storage_Pool is abstract
-     new Ada.Finalization.Limited_Controlled with private;
-   pragma Preelaborable_Initialization (Root_Storage_Pool);
+     new Ada.Finalization.Limited_Controlled with private
+   with
+     Preelaborable_Initialization;
 
    procedure Allocate
      (Pool                     : in out Root_Storage_Pool;

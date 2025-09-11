@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "tree-inline.h"
 #include "escaped_string.h"
+#include "contracts.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
@@ -2012,6 +2013,15 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	if (*decl == pattern)
 	  TREE_UNAVAILABLE (tmpl) = true;
       }
+
+  if (VAR_P (*decl) && CP_DECL_THREAD_LOCAL_P (*decl))
+    {
+      // tls_model attribute can set a stronger TLS access model.
+      tls_model model = DECL_TLS_MODEL (*decl);
+      tls_model default_model = decl_default_tls_model (*decl);
+      if (default_model > model)
+	set_decl_tls_model (*decl, default_model);
+    }
 }
 
 /* Walks through the namespace- or function-scope anonymous union

@@ -11382,6 +11382,23 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
 
   return cost;
 }
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+bool
+ix86_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
+				     unsigned int align,
+				     enum by_pieces_operation op,
+				     bool speed_p)
+{
+  /* Return true when we are currently expanding memcpy/memset epilogue
+     with move_by_pieces or store_by_pieces.  */
+  if (cfun->machine->by_pieces_in_use)
+    return true;
+
+  return default_use_by_pieces_infrastructure_p (size, align, op,
+						 speed_p);
+}
 
 /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
    this is used for to form addresses to local data when -fPIC is in
@@ -20586,6 +20603,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
   switch (mode)
     {
     case E_V8DFmode:
+    case E_V8DImode:
       /* In the 512-bit DFmode case, we can only move elements within
          a 128-bit lane.  First fill the second part of the mask,
 	 then fallthru.  */
@@ -20604,6 +20622,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V4DFmode:
+    case E_V4DImode:
       /* In the 256-bit DFmode case, we can only move elements within
          a 128-bit lane.  */
       for (i = 0; i < 2; ++i)
@@ -20621,6 +20640,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       break;
 
     case E_V16SFmode:
+    case E_V16SImode:
       /* In 512 bit SFmode case, permutation in the upper 256 bits
 	 must mirror the permutation in the lower 256-bits.  */
       for (i = 0; i < 8; ++i)
@@ -20629,6 +20649,7 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V8SFmode:
+    case E_V8SImode:
       /* In 256 bit SFmode case, we have full freedom of
          movement within the low 128-bit lane, but the high 128-bit
          lane must mirror the exact same pattern.  */
@@ -20639,7 +20660,9 @@ avx_vpermilp_parallel (rtx par, machine_mode mode)
       /* FALLTHRU */
 
     case E_V2DFmode:
+    case E_V2DImode:
     case E_V4SFmode:
+    case E_V4SImode:
       /* In the 128-bit case, we've full freedom in the placement of
 	 the elements from the source operand.  */
       for (i = 0; i < nelt; ++i)
@@ -26375,8 +26398,63 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     stmt_cost = ix86_default_vector_cost (kind, mode);
 
   if (kind == vec_perm && vectype
-      && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32)
-    m_num_avx256_vec_perm[where]++;
+      && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32
+      /* BIT_FIELD_REF <vect_**, 64, 0> 0 times vec_perm costs 0 in body.  */
+      && count != 0)
+    {
+      bool real_perm = true;
+      unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+      if (node
+	  && SLP_TREE_LOAD_PERMUTATION (node).exists ()
+	  /* Loop vectorization will have 4 times vec_perm
+	     with index as {0, 0, 0, 0}.
+	     But it actually generates
+	     vec_perm_expr <vect, vect, 0, 0, 0, 0>
+	     vec_perm_expr <vect, vect, 1, 1, 1, 1>
+	     vec_perm_expr <vect, vect, 2, 2, 2, 2>
+	     Need to be handled separately.  */
+	  && is_a <bb_vec_info> (m_vinfo))
+	{
+	  unsigned half = nunits / 2;
+	  unsigned i = 0;
+	  bool allsame = true;
+	  unsigned first = SLP_TREE_LOAD_PERMUTATION (node)[0];
+	  bool cross_lane_p = false;
+	  for (i = 0 ; i != SLP_TREE_LANES (node); i++)
+	    {
+	      unsigned tmp = SLP_TREE_LOAD_PERMUTATION (node)[i];
+	      /* allsame is just a broadcast.  */
+	      if (tmp != first)
+		allsame = false;
+
+	      /* 4 times vec_perm with number of lanes multiple of nunits.  */
+	      tmp = tmp & (nunits - 1);
+	      unsigned index = i & (nunits - 1);
+	      if ((index < half && tmp >= half)
+		  || (index >= half && tmp < half))
+		cross_lane_p = true;
+
+	      if (!allsame && cross_lane_p)
+		break;
+	    }
+
+	  if (i == SLP_TREE_LANES (node))
+	    real_perm = false;
+	}
+
+      if (real_perm)
+	{
+	  m_num_avx256_vec_perm[where] += count;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Detected avx256 cross-lane permutation: ");
+	      if (stmt_info)
+		print_gimple_expr (dump_file, stmt_info->stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, " \n");
+	    }
+	}
+    }
 
   /* Penalize DFmode vector operations for Bonnell.  */
   if (TARGET_CPU_P (BONNELL) && kind == vector_stmt
@@ -27172,11 +27250,10 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     case floor_optab:
     case ceil_optab:
     case btrunc_optab:
-      if (((SSE_FLOAT_MODE_P (mode1)
-	    && TARGET_SSE_MATH
-	    && TARGET_SSE4_1)
-	   || mode1 == HFmode)
-	  && !flag_trapping_math)
+      if ((SSE_FLOAT_MODE_P (mode1)
+	   && TARGET_SSE_MATH
+	   && TARGET_SSE4_1)
+	  || mode1 == HFmode)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 
@@ -27933,6 +28010,10 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_INSN_COST ix86_insn_cost
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  ix86_use_by_pieces_infrastructure_p
 
 #undef TARGET_OVERLAP_OP_BY_PIECES_P
 #define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true

@@ -67,7 +67,7 @@ ullabs (long long x)
 
 __attribute__ ((__noinline__))
 uintmax_t
-uimaxabs (intmax_t x)
+umaxabs (intmax_t x)
 {
   ABORT_INSIDE_MAIN;
   return x < 0 ? -(uintmax_t) x : x;

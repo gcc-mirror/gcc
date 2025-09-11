@@ -27,7 +27,7 @@ module syntax_rules
 contains
   subroutine syntax_init_from_ifile ()
     type(string_t) :: string
-       string = line_get_string_advance ("")
+       string = line_get_string_advance ("") ! { dg-warning "Character length of actual argument shorter" }
   end subroutine syntax_init_from_ifile
 end module syntax_rules
 end

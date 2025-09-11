@@ -3151,7 +3151,7 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 }
 
 /* Expand floating point op0 <=> op1, i.e.
-   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : 2.  */
+   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : -128.  */
 
 void
 ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
@@ -3264,7 +3264,7 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
   if (l2)
     {
       emit_label (l2);
-      emit_move_insn (dest, op2 == const0_rtx ? const2_rtx : op2);
+      emit_move_insn (dest, op2 == const0_rtx ? GEN_INT (-128) : op2);
     }
   emit_label (lend);
 }
@@ -8241,8 +8241,10 @@ expand_cpymem_epilogue (rtx destmem, rtx srcmem,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       move_by_pieces (destmem, srcmem, epilogue_size, destalign,
 		      RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 8)
@@ -8405,8 +8407,8 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 
 /* Callback routine for store_by_pieces.  Return the RTL of a register
    containing GET_MODE_SIZE (MODE) bytes in the RTL register op_p which
-   is a word or a word vector register.  If PREV_P isn't nullptr, it
-   has the RTL info from the previous iteration.  */
+   is an integer or a word vector register.  If PREV_P isn't nullptr,
+   it has the RTL info from the previous iteration.  */
 
 static rtx
 setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
@@ -8435,10 +8437,6 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
   rtx op = (rtx) op_p;
   machine_mode op_mode = GET_MODE (op);
 
-  gcc_assert (op_mode == word_mode
-	      || (VECTOR_MODE_P (op_mode)
-		  && GET_MODE_INNER (op_mode) == word_mode));
-
   if (VECTOR_MODE_P (mode))
     {
       gcc_assert (GET_MODE_INNER (mode) == QImode);
@@ -8460,16 +8458,17 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
       return tmp;
     }
 
-  target = gen_reg_rtx (word_mode);
   if (VECTOR_MODE_P (op_mode))
     {
+      gcc_assert (GET_MODE_INNER (op_mode) == word_mode);
+      target = gen_reg_rtx (word_mode);
       op = gen_rtx_SUBREG (word_mode, op, 0);
       emit_move_insn (target, op);
     }
   else
     target = op;
 
-  if (mode == word_mode)
+  if (mode == GET_MODE (target))
     return target;
 
   rtx tmp = gen_reg_rtx (mode);
@@ -8490,9 +8489,11 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
       unsigned HOST_WIDE_INT countval = UINTVAL (count);
       unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
       unsigned int destalign = MEM_ALIGN (destmem);
+      cfun->machine->by_pieces_in_use = true;
       store_by_pieces (destmem, epilogue_size, setmem_epilogue_gen_val,
 		       vec_value ? vec_value : value, destalign, true,
 		       RETURN_BEGIN);
+      cfun->machine->by_pieces_in_use = false;
       return;
     }
   if (max_size > 32)
@@ -20825,7 +20826,8 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
   rtx rperm[8], vperm;
   unsigned i;
 
-  if (!TARGET_AVX || d->vmode != V8SFmode || !d->one_operand_p)
+  if (!TARGET_AVX || !d->one_operand_p
+      || (d->vmode != V8SImode && d->vmode != V8SFmode))
     return false;
 
   /* We can only permute within the 128-bit lane.  */
@@ -20855,7 +20857,15 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
 
   vperm = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, rperm));
   vperm = force_reg (V8SImode, vperm);
-  emit_insn (gen_avx_vpermilvarv8sf3 (d->target, d->op0, vperm));
+  rtx target = d->target;
+  rtx op0 = d->op0;
+  if (d->vmode == V8SImode)
+    {
+      target = lowpart_subreg (V8SFmode, target, V8SImode);
+      op0 = lowpart_subreg (V8SFmode, op0, V8SImode);
+    }
+
+  emit_insn (gen_avx_vpermilvarv8sf3 (target, op0, vperm));
 
   return true;
 }

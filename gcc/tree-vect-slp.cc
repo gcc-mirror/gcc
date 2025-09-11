@@ -126,6 +126,8 @@ _slp_tree::_slp_tree ()
   this->avoid_stlf_fail = false;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
   SLP_TREE_REPRESENTATIVE (this) = NULL;
+  this->cycle_info.id = -1;
+  this->cycle_info.reduc_idx = -1;
   SLP_TREE_REF_COUNT (this) = 1;
   this->failed = NULL;
   this->max_nunits = 1;
@@ -639,7 +641,7 @@ vect_slp_child_index_for_operand (const gimple *stmt, int op,
    swapping operands of father node of this one, return 1; if everything is
    ok return 0.  */
 static int
-vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
+vect_get_and_check_slp_defs (vec_info *vinfo, tree vectype, unsigned char swap,
 			     bool *skip_args,
 			     vec<stmt_vec_info> stmts, unsigned stmt_num,
 			     vec<slp_oprnd_info> *oprnds_info)
@@ -709,7 +711,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	{
 	  gcc_assert (STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 	  if (!is_a <loop_vec_info> (vinfo)
-	      || !vect_check_gather_scatter (stmt_info,
+	      || !vect_check_gather_scatter (stmt_info, vectype,
 					     as_a <loop_vec_info> (vinfo),
 					     first ? &oprnd_info->first_gs_info
 					     : &gs_info))
@@ -2616,7 +2618,8 @@ out:
   slp_oprnd_info oprnd_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
-      int res = vect_get_and_check_slp_defs (vinfo, swap[i], skip_args,
+      int res = vect_get_and_check_slp_defs (vinfo, vectype,
+					     swap[i], skip_args,
 					     stmts, i, &oprnds_info);
       if (res != 0)
 	matches[(res == -1) ? 0 : i] = false;
@@ -2735,6 +2738,7 @@ out:
 
   stmt_info = stmts[0];
 
+  int reduc_idx = -1;
   int gs_scale = 0;
   tree gs_base = NULL_TREE;
 
@@ -2824,6 +2828,33 @@ out:
 	  oprnd_info->ops = vNULL;
 	  children.safe_push (invnode);
 	  continue;
+	}
+
+      /* See which SLP operand a reduction chain continues on.  We want
+	 to chain even PHIs but not backedges.  */
+      if (STMT_VINFO_REDUC_DEF (oprnd_info->def_stmts[0])
+	  || STMT_VINFO_REDUC_IDX (oprnd_info->def_stmts[0]) != -1)
+	{
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
+	    {
+	      if (oprnd_info->first_dt == vect_double_reduction_def)
+		reduc_idx = i;
+	    }
+	  else if (is_a <gphi *> (stmt_info->stmt)
+		   && gimple_phi_num_args
+			(as_a <gphi *> (stmt_info->stmt)) != 1)
+	    ;
+	  else if (STMT_VINFO_REDUC_IDX (stmt_info) == -1
+		   && STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def)
+	    ;
+	  else if (reduc_idx == -1)
+	    reduc_idx = i;
+	  else
+	    /* For .COND_* reduction operations the else value can be the
+	       same as one of the operation operands.  The other def
+	       stmts have been moved, so we can't check easily.  Check
+	       it's a call at least.  */
+	    gcc_assert (is_a <gcall *> (stmt_info->stmt));
 	}
 
       /* When we have a masked load with uniform mask discover this
@@ -3157,6 +3188,41 @@ fail:
   SLP_TREE_CHILDREN (node).splice (children);
   SLP_TREE_GS_SCALE (node) = gs_scale;
   SLP_TREE_GS_BASE (node) = gs_base;
+  if (reduc_idx != -1)
+    {
+      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) != -1
+		  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
+		  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def);
+      SLP_TREE_REDUC_IDX (node) = reduc_idx;
+      node->cycle_info.id = SLP_TREE_CHILDREN (node)[reduc_idx]->cycle_info.id;
+    }
+  /* When reaching the reduction PHI, create a vect_reduc_info.  */
+  else if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	    || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
+	   && is_a <gphi *> (STMT_VINFO_STMT (stmt_info)))
+    {
+      loop_vec_info loop_vinfo = as_a <loop_vec_info> (vinfo);
+      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) == -1);
+      node->cycle_info.id = loop_vinfo->reduc_infos.length ();
+      vect_reduc_info reduc_info = new vect_reduc_info_s ();
+      loop_vinfo->reduc_infos.safe_push (reduc_info);
+      stmt_vec_info reduc_phi = stmt_info;
+      /* ???  For double reductions vect_is_simple_reduction stores the
+	 reduction type and code on the inner loop header PHI.  */
+      if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
+	{
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
+				     &use_p, &use_stmt);
+	  gcc_assert (res);
+	  reduc_phi = loop_vinfo->lookup_stmt (use_stmt);
+	}
+      VECT_REDUC_INFO_DEF_TYPE (reduc_info) = STMT_VINFO_DEF_TYPE (stmt_info);
+      VECT_REDUC_INFO_TYPE (reduc_info) = STMT_VINFO_REDUC_TYPE (reduc_phi);
+      VECT_REDUC_INFO_CODE (reduc_info) = STMT_VINFO_REDUC_CODE (reduc_phi);
+      VECT_REDUC_INFO_FN (reduc_info) = IFN_LAST;
+    }
   return node;
 }
 
@@ -3185,8 +3251,12 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 					 SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_VECTYPE (node))
     dump_printf (metadata, " %T", SLP_TREE_VECTYPE (node));
-  dump_printf (metadata, "%s\n",
+  dump_printf (metadata, "%s",
 	       node->avoid_stlf_fail ? " (avoid-stlf-fail)" : "");
+  if (node->cycle_info.id != -1 || node->cycle_info.reduc_idx != -1)
+    dump_printf (metadata, " cycle %d, link %d", node->cycle_info.id,
+		 node->cycle_info.reduc_idx);
+  dump_printf (metadata, "\n");
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
     {
       if (SLP_TREE_PERMUTE_P (node))
@@ -4241,6 +4311,8 @@ vect_analyze_slp_reduc_chain (vec_info *vinfo,
 					       TREE_TYPE
 					       (gimple_assign_lhs (scalar_def)),
 					       group_size);
+	      SLP_TREE_REDUC_IDX (conv) = 0;
+	      conv->cycle_info.id = node->cycle_info.id;
 	      SLP_TREE_CHILDREN (conv).quick_push (node);
 	      SLP_INSTANCE_TREE (new_instance) = conv;
 	      /* We also have to fake this conversion stmt as SLP reduction
@@ -6719,10 +6791,12 @@ vect_optimize_slp_pass::start_choosing_layouts ()
       {
 	stmt_vec_info stmt_info
 	  = SLP_TREE_REPRESENTATIVE (SLP_INSTANCE_TREE (instance));
-	stmt_vec_info reduc_info = info_for_reduction (m_vinfo, stmt_info);
+	vect_reduc_info reduc_info
+	  = info_for_reduction (as_a <loop_vec_info> (m_vinfo),
+				SLP_INSTANCE_TREE (instance));
 	if (needs_fold_left_reduction_p (TREE_TYPE
 					   (gimple_get_lhs (stmt_info->stmt)),
-					 STMT_VINFO_REDUC_CODE (reduc_info)))
+					 VECT_REDUC_INFO_CODE (reduc_info)))
 	  {
 	    unsigned int node_i = SLP_INSTANCE_TREE (instance)->vertex;
 	    m_partitions[m_vertices[node_i].partition].layout = 0;
@@ -8627,8 +8701,9 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
 
   /* Since we replace all stmts of a possibly longer scalar reduction
      chain account for the extra scalar stmts for that.  */
-  record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
-		    instance->root_stmts[0], 0, vect_body);
+  if (!instance->remain_defs.is_empty ())
+    record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
+		      instance->root_stmts[0], 0, vect_body);
   return true;
 }
 
@@ -11296,7 +11371,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   if (nperms < 0)
     return false;
 
-  if (!gsi)
+  if (!gsi && nperms != 0)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
 
   return true;

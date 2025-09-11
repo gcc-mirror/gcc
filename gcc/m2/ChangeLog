@@ -1,3 +1,12 @@
+2025-08-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121709
+	* gm2-lang.cc (concat_component): New function.
+	(find_cpp_entry): Ditto.
+	(lookup_cpp_default): Ditto.
+	(add_default_include_paths): Rewrite.
+	(m2_pathname_root): Remove.
+
 2025-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121629

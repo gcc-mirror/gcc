@@ -98,7 +98,7 @@ test_deduction(Extents... exts)
 }
 
 constexpr bool
-test_integral_constant_deduction()
+test_deduction_from_constant()
 {
   auto verify = [](auto actual, auto expected)
     {
@@ -106,13 +106,23 @@ test_integral_constant_deduction()
       VERIFY(actual == expected);
     };
 
-  constexpr auto c1 = std::integral_constant<size_t, 1>{};
-  constexpr auto c2 = std::integral_constant<int, 2>{};
+  constexpr auto i1 = std::integral_constant<size_t, 1>{};
+  constexpr auto i2 = std::integral_constant<int, 2>{};
 
   verify(std::extents(1), std::extents<size_t, dyn>{1});
-  verify(std::extents(c1), std::extents<size_t, 1>{});
+  verify(std::extents(i1), std::extents<size_t, 1>{});
+  verify(std::extents(i2), std::extents<size_t, 2>{});
+  verify(std::extents(std::true_type{}, 2), std::dextents<size_t, 2>{1, 2});
+  verify(std::extents(std::false_type{}, 2), std::dextents<size_t, 2>{0, 2});
+
+#if __glibcxx_constant_wrapper
+  constexpr auto c2 = std::constant_wrapper<2>{};
   verify(std::extents(c2), std::extents<size_t, 2>{});
-  verify(std::extents(c1, 2), std::extents<size_t, 1, dyn>{2});
+  verify(std::extents(1, c2), std::extents<size_t, dyn, 2>{1});
+  verify(std::extents(c2), std::extents<size_t, 2>{});
+  verify(std::extents(1, c2), std::extents<size_t, dyn, 2>{1});
+  verify(std::extents(std::cw<true>, c2), std::extents<size_t, dyn, 2>{1});
+#endif
   return true;
 }
 
@@ -123,7 +133,7 @@ test_deduction_all()
   test_deduction<1>(1);
   test_deduction<2>(1.0, 2.0f);
   test_deduction<3>(int(1), short(2), size_t(3));
-  test_integral_constant_deduction();
+  test_deduction_from_constant();
   return true;
 }
 

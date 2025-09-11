@@ -90,6 +90,8 @@ public:
 
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
+  logging::logger *get_logger () { return m_context.get_logger (); }
+
 protected:
   sink (context &dc)
   : m_context (dc),

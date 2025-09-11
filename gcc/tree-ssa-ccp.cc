@@ -155,6 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "tree-ssa-strlen.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -4221,6 +4222,36 @@ public:
 
 }; // class pass_fold_builtins
 
+/* Optimize memcmp STMT into memcmp_eq if it is only used with
+   `== 0` or `!= 0`. */
+
+static void
+optimize_memcmp_eq (gcall *stmt)
+{
+  /* Make sure memcmp arguments are the correct type.  */
+  if (gimple_call_num_args (stmt) != 3)
+    return;
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (arg1)))
+    return;
+  if (!POINTER_TYPE_P (TREE_TYPE (arg2)))
+    return;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (len)))
+    return;
+  /* The return value of the memcmp has to be used
+     equality comparison to zero. */
+  tree res = gimple_call_lhs (stmt);
+
+  if (!res || !use_in_zero_equality (res))
+    return;
+
+  gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
+  update_stmt (stmt);
+}
+
 unsigned int
 pass_fold_builtins::execute (function *fun)
 {
@@ -4284,6 +4315,10 @@ pass_fold_builtins::execute (function *fun)
 		    break;
 		  gsi_next (&i);
 		  continue;
+
+		case BUILT_IN_MEMCMP:
+		  optimize_memcmp_eq (as_a<gcall*>(stmt));
+		  break;
 
 		case BUILT_IN_UNREACHABLE:
 		  if (optimize_unreachable (i))

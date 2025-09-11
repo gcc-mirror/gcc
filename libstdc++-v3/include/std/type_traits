@@ -41,6 +41,7 @@
 
 #define __glibcxx_want_bool_constant
 #define __glibcxx_want_bounded_array_traits
+#define __glibcxx_want_constant_wrapper
 #define __glibcxx_want_has_unique_object_representations
 #define __glibcxx_want_integral_constant_callable
 #define __glibcxx_want_is_aggregate
@@ -4279,6 +4280,398 @@ template<typename _Ret, typename _Fn, typename... _Args>
   /// @endcond
 
 #endif // C++2a
+
+#if __cplusplus >= 201103L
+  // Stores a tuple of indices.  Used by tuple and pair, and by bind() to
+  // extract the elements in a tuple.
+  template<size_t... _Indexes> struct _Index_tuple { };
+
+  // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
+  template<size_t _Num>
+    struct _Build_index_tuple
+    {
+#if __has_builtin(__make_integer_seq)
+      template<typename, size_t... _Indices>
+	using _IdxTuple = _Index_tuple<_Indices...>;
+
+      // Clang defines __make_integer_seq for this purpose.
+      using __type = __make_integer_seq<_IdxTuple, size_t, _Num>;
+#else
+      // For GCC and other compilers, use __integer_pack instead.
+      using __type = _Index_tuple<__integer_pack(_Num)...>;
+#endif
+    };
+#endif // C++11
+
+#ifdef __cpp_lib_constant_wrapper // C++ >= 26
+  template<typename _Tp>
+    struct _CwFixedValue
+    {
+      using __type = _Tp;
+
+      constexpr
+      _CwFixedValue(__type __v) noexcept
+      : _M_data(__v) { }
+
+      __type _M_data;
+    };
+
+  template<typename _Tp, size_t _Extent>
+    struct _CwFixedValue<_Tp[_Extent]>
+    {
+      using __type = _Tp[_Extent];
+
+      constexpr
+      _CwFixedValue(_Tp (&__arr)[_Extent]) noexcept
+        : _CwFixedValue(__arr, typename _Build_index_tuple<_Extent>::__type())
+      { }
+
+      template<size_t... _Indices>
+	constexpr
+	_CwFixedValue(_Tp (&__arr)[_Extent], _Index_tuple<_Indices...>) noexcept
+	  : _M_data{__arr[_Indices]...}
+	{ }
+
+      _Tp _M_data[_Extent];
+    };
+
+  template<typename _Tp, size_t _Extent>
+    _CwFixedValue(_Tp (&)[_Extent]) -> _CwFixedValue<_Tp[_Extent]>;
+
+  template<_CwFixedValue _Xv,
+	   typename = typename decltype(_CwFixedValue(_Xv))::__type>
+    struct constant_wrapper;
+
+  template<typename _Tp>
+    concept _ConstExprParam = requires
+    {
+      typename constant_wrapper<_Tp::value>;
+    };
+
+  struct _CwOperators
+  {
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator+(_Tp) noexcept -> constant_wrapper<(+_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator-(_Tp) noexcept -> constant_wrapper<(-_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator~(_Tp) noexcept -> constant_wrapper<(~_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator!(_Tp) noexcept -> constant_wrapper<(!_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator&(_Tp) noexcept -> constant_wrapper<(&_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      friend constexpr auto
+      operator*(_Tp) noexcept -> constant_wrapper<(*_Tp::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator+(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value + _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator-(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value - _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator*(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value * _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator/(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value / _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator%(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value % _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator<<(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value << _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator>>(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value >> _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator&(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value & _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator|(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value | _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator^(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value ^ _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      requires (!is_constructible_v<bool, decltype(_Left::value)>
+		|| !is_constructible_v<bool, decltype(_Right::value)>)
+      friend constexpr auto
+      operator&&(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value && _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      requires (!is_constructible_v<bool, decltype(_Left::value)>
+		|| !is_constructible_v<bool, decltype(_Right::value)>)
+      friend constexpr auto
+      operator||(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value || _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator<=>(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value <=> _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator<(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value < _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator<=(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value <= _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator==(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value == _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator!=(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value != _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator>(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value > _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator>=(_Left, _Right) noexcept
+	-> constant_wrapper<(_Left::value >= _Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator,(_Left, _Right) noexcept = delete;
+
+    template<_ConstExprParam _Left, _ConstExprParam _Right>
+      friend constexpr auto
+      operator->*(_Left, _Right) noexcept
+	-> constant_wrapper<_Left::value->*(_Right::value)>
+      { return {}; }
+
+    template<_ConstExprParam _Tp, _ConstExprParam... _Args>
+      constexpr auto
+      operator()(this _Tp, _Args...) noexcept
+      requires
+	requires(_Args...) { constant_wrapper<_Tp::value(_Args::value...)>(); }
+      { return constant_wrapper<_Tp::value(_Args::value...)>{}; }
+
+    template<_ConstExprParam _Tp, _ConstExprParam... _Args>
+      constexpr auto
+      operator[](this _Tp, _Args...) noexcept
+	-> constant_wrapper<(_Tp::value[_Args::value...])>
+      { return {}; }
+
+    template<_ConstExprParam _Tp>
+      constexpr auto
+      operator++(this _Tp) noexcept
+      requires requires(_Tp::value_type __x) { ++__x; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return ++__x; }()>{};
+      }
+
+    template<_ConstExprParam _Tp>
+      constexpr auto
+      operator++(this _Tp, int) noexcept
+      requires requires(_Tp::value_type __x) { __x++; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x++; }()>{};
+      }
+
+    template<_ConstExprParam _Tp>
+      constexpr auto
+      operator--(this _Tp) noexcept
+      requires requires(_Tp::value_type __x) { --__x; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return --__x; }()>{};
+      }
+
+    template<_ConstExprParam _Tp>
+      constexpr auto
+      operator--(this _Tp, int) noexcept
+      requires requires(_Tp::value_type __x) { __x--; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x--; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator+=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x += _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x += _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator-=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x -= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x -= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator*=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x *= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x *= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator/=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x /= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x /= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator%=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x %= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x %= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator&=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x &= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x &= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator|=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x |= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x |= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator^=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x ^= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x ^= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator<<=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x <<= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x <<= _Right::value; }()>{};
+      }
+
+    template<_ConstExprParam _Tp, _ConstExprParam _Right>
+      constexpr auto
+      operator>>=(this _Tp, _Right) noexcept
+      requires requires(_Tp::value_type __x) { __x >>= _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = _Tp::value; return __x >>= _Right::value; }()>{};
+      }
+  };
+
+  template<_CwFixedValue _Xv, typename>
+  struct constant_wrapper : _CwOperators
+  {
+    static constexpr const auto& value = _Xv._M_data;
+    using type = constant_wrapper;
+    using value_type = typename decltype(_Xv)::__type;
+
+    template<_ConstExprParam _Right>
+      constexpr auto
+      operator=(_Right) const noexcept
+      requires requires(value_type __x) { __x = _Right::value; }
+      {
+	return constant_wrapper<
+	  [] { auto __x = value; return __x = _Right::value; }()>{};
+      }
+
+    constexpr
+    operator decltype(auto)() const noexcept
+    { return value; }
+  };
+
+  template<_CwFixedValue _Tp>
+    constexpr auto cw = constant_wrapper<_Tp>{};
+#endif
 
   /// @} group metaprogramming
 

@@ -73,9 +73,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       __make(_Ord __o) noexcept
       { return _Ordering(__o); }
 
-    struct __unspec
+    struct __literal_zero
     {
-      consteval __unspec(__unspec*) noexcept { }
+      consteval __literal_zero(__literal_zero*) noexcept { }
     };
   }
 
@@ -112,7 +112,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     // comparisons
     [[nodiscard]]
     friend constexpr bool
-    operator==(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator==(partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value == 0; }
 
     [[nodiscard]]
@@ -121,52 +121,52 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator< (partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value == -1; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator> (partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value == 1; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=(partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_reverse() >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator>=(partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (__cmp_cat::__unspec, partial_ordering __v) noexcept
+    operator< (__cmp_cat::__literal_zero, partial_ordering __v) noexcept
     { return __v._M_value == 1; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (__cmp_cat::__unspec, partial_ordering __v) noexcept
+    operator> (__cmp_cat::__literal_zero, partial_ordering __v) noexcept
     { return __v._M_value == -1; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    operator<=(__cmp_cat::__literal_zero, partial_ordering __v) noexcept
     { return 0 <= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    operator>=(__cmp_cat::__literal_zero, partial_ordering __v) noexcept
     { return 0 <= __v._M_reverse(); }
 
     [[nodiscard]]
     friend constexpr partial_ordering
-    operator<=>(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=>(partial_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v; }
 
     [[nodiscard]]
     friend constexpr partial_ordering
-    operator<=>(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    operator<=>(__cmp_cat::__literal_zero, partial_ordering __v) noexcept
     { return partial_ordering(__cmp_cat::_Ord(__v._M_reverse())); }
   };
 
@@ -209,7 +209,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     // comparisons
     [[nodiscard]]
     friend constexpr bool
-    operator==(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator==(weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value == 0; }
 
     [[nodiscard]]
@@ -218,52 +218,52 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator< (weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value < 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator> (weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value > 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=(weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value <= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator>=(weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (__cmp_cat::__unspec, weak_ordering __v) noexcept
+    operator< (__cmp_cat::__literal_zero, weak_ordering __v) noexcept
     { return 0 < __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (__cmp_cat::__unspec, weak_ordering __v) noexcept
+    operator> (__cmp_cat::__literal_zero, weak_ordering __v) noexcept
     { return 0 > __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    operator<=(__cmp_cat::__literal_zero, weak_ordering __v) noexcept
     { return 0 <= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    operator>=(__cmp_cat::__literal_zero, weak_ordering __v) noexcept
     { return 0 >= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr weak_ordering
-    operator<=>(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=>(weak_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v; }
 
     [[nodiscard]]
     friend constexpr weak_ordering
-    operator<=>(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    operator<=>(__cmp_cat::__literal_zero, weak_ordering __v) noexcept
     { return weak_ordering(__cmp_cat::_Ord(-__v._M_value)); }
   };
 
@@ -309,7 +309,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     // comparisons
     [[nodiscard]]
     friend constexpr bool
-    operator==(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator==(strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value == 0; }
 
     [[nodiscard]]
@@ -318,52 +318,52 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator< (strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value < 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator> (strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value > 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=(strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value <= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator>=(strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v._M_value >= 0; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator< (__cmp_cat::__unspec, strong_ordering __v) noexcept
+    operator< (__cmp_cat::__literal_zero, strong_ordering __v) noexcept
     { return 0 < __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator> (__cmp_cat::__unspec, strong_ordering __v) noexcept
+    operator> (__cmp_cat::__literal_zero, strong_ordering __v) noexcept
     { return 0 > __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    operator<=(__cmp_cat::__literal_zero, strong_ordering __v) noexcept
     { return 0 <= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr bool
-    operator>=(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    operator>=(__cmp_cat::__literal_zero, strong_ordering __v) noexcept
     { return 0 >= __v._M_value; }
 
     [[nodiscard]]
     friend constexpr strong_ordering
-    operator<=>(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    operator<=>(strong_ordering __v, __cmp_cat::__literal_zero) noexcept
     { return __v; }
 
     [[nodiscard]]
     friend constexpr strong_ordering
-    operator<=>(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    operator<=>(__cmp_cat::__literal_zero, strong_ordering __v) noexcept
     { return strong_ordering(__cmp_cat::_Ord(-__v._M_value)); }
   };
 

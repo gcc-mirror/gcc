@@ -66,12 +66,12 @@ is
      Aggregate         => (Empty          => Empty,
                            Add_Unnamed    => Append,
                            New_Indexed    => New_Vector,
-                           Assign_Indexed => Replace_Element);
+                           Assign_Indexed => Replace_Element),
+     Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Vector);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private
+   with
+     Preelaborable_Initialization;
 
    Empty_Vector : constant Vector;
 

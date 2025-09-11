@@ -87,8 +87,8 @@ ctf_get_AT_data_member_location (dw_die_ref die)
   /* The field location (in bits) can be determined from
      either a DW_AT_data_member_location attribute or a
      DW_AT_data_bit_offset attribute.  */
-  if (get_AT (die, DW_AT_data_bit_offset))
-    field_location = get_AT_unsigned (die, DW_AT_data_bit_offset);
+  if ((attr = get_AT (die, DW_AT_data_bit_offset)))
+    field_location = AT_unsigned (attr);
   else
     {
       attr = get_AT (die, DW_AT_data_member_location);
@@ -102,16 +102,12 @@ ctf_get_AT_data_member_location (dw_die_ref die)
 		      == dw_val_class_unsigned_const);
 	  field_location = descr->dw_loc_oprnd1.v.val_unsigned * 8;
 	}
-      else
-	{
-	  attr = get_AT (die, DW_AT_data_member_location);
-	  if (attr && AT_class (attr) == dw_val_class_const)
-	    field_location = AT_int (attr) * 8;
-	  else
-	    field_location = (get_AT_unsigned (die,
-					   DW_AT_data_member_location)
-			      * 8);
-	}
+      else if (attr && AT_class (attr) == dw_val_class_const)
+	field_location = AT_int (attr) * 8;
+      else if (attr)
+	field_location = AT_unsigned (attr) * 8;
+
+      /* Otherwise the location is non-existant, e.g. for union members.  */
     }
 
   return field_location;
@@ -199,7 +195,7 @@ gen_ctf_unknown_type (ctf_container_ref ctfc)
    If no DW_AT_byte_size nor DW_AT_bit_size are defined, this function
    returns 0.  */
 
-static uint32_t
+static unsigned HOST_WIDE_INT
 ctf_die_bitsize (dw_die_ref die)
 {
   dw_attr_node *attr_byte_size = get_AT (die, DW_AT_byte_size);
@@ -225,7 +221,9 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
   ctf_encoding_t ctf_encoding = {0, 0, 0};
 
   unsigned int encoding = get_AT_unsigned (type, DW_AT_encoding);
-  unsigned int bit_size = ctf_die_bitsize (type);
+  /* Bit size for the base types handled here should never be extremely large
+     (BITSIZE_MAXWIDTH at the upper end for _BitInt).  */
+  unsigned int bit_size = (unsigned int) ctf_die_bitsize (type);
   const char * name_string = get_AT_string (type, DW_AT_name);
 
   switch (encoding)
@@ -514,7 +512,7 @@ gen_ctf_modifier_type (ctf_container_ref ctfc, dw_die_ref modifier)
 static ctf_dtdef_ref
 gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 {
-  uint32_t bit_size = ctf_die_bitsize (sou);
+  unsigned HOST_WIDE_INT bit_size = ctf_die_bitsize (sou);
   int declaration_p = get_AT_flag (sou, DW_AT_declaration);
   const char *sou_name = get_AT_string (sou, DW_AT_name);
 
@@ -564,7 +562,7 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 	    {
 	      dw_attr_node *attr;
 	      HOST_WIDE_INT bitpos = 0;
-	      HOST_WIDE_INT bitsize = ctf_die_bitsize (c);
+	      unsigned HOST_WIDE_INT bitsize = ctf_die_bitsize (c);
 	      HOST_WIDE_INT bit_offset;
 
 	      /* The bit offset is given in bits and it may be
@@ -581,7 +579,7 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 		    bitpos = field_location + bit_offset;
 		  else
 		    {
-		      HOST_WIDE_INT bit_size;
+		      unsigned HOST_WIDE_INT bit_size;
 
 		      attr = get_AT (c, DW_AT_byte_size);
 		      if (attr)
@@ -730,7 +728,7 @@ static ctf_dtdef_ref
 gen_ctf_enumeration_type (ctf_container_ref ctfc, dw_die_ref enumeration)
 {
   const char *enum_name = get_AT_string (enumeration, DW_AT_name);
-  unsigned int bit_size = ctf_die_bitsize (enumeration);
+  unsigned HOST_WIDE_INT bit_size = ctf_die_bitsize (enumeration);
   unsigned int signedness = get_AT_unsigned (enumeration, DW_AT_encoding);
   int declaration_p = get_AT_flag (enumeration, DW_AT_declaration);
 

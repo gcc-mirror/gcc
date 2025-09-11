@@ -1,5 +1,6 @@
 /* { dg-do compile { target lto } }
 /* { dg-options "-O2 -flto" } */
+/* { dg-additional-options "-fno-unwind-tables -fno-asynchronous-unwind-tables" { target *-*-darwin* } } */
 
 void foo ()
 {

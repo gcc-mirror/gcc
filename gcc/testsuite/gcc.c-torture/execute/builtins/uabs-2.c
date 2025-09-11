@@ -1,4 +1,4 @@
-/* Test for builtin uabs, ulabs, ullabs, uimaxabs.  */
+/* Test for builtin uabs, ulabs, ullabs, umaxabs.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 
 #include <limits.h>
@@ -9,7 +9,7 @@ typedef unsigned __INTMAX_TYPE__ uintmax_t;
 extern unsigned int uabs (int);
 extern unsigned long ulabs (long);
 extern unsigned long long ullabs (long long);
-extern uintmax_t uimaxabs (intmax_t);
+extern uintmax_t umaxabs (intmax_t);
 extern void abort (void);
 extern void link_error (void);
 
@@ -96,28 +96,28 @@ main_test (void)
     abort ();
   if (ullabs (__LONG_LONG_MAX__) != __LONG_LONG_MAX__)
     link_error ();
-  if (uimaxabs (imax0) != 0)
+  if (umaxabs (imax0) != 0)
     abort ();
-  if (uimaxabs (0) != 0)
+  if (umaxabs (0) != 0)
     link_error ();
-  if (uimaxabs (imax1) != 1)
+  if (umaxabs (imax1) != 1)
     abort ();
-  if (uimaxabs (1) != 1)
+  if (umaxabs (1) != 1)
     link_error ();
-  if (uimaxabs (imaxm1) != 1)
+  if (umaxabs (imaxm1) != 1)
     abort ();
-  if (uimaxabs (-1) != 1)
+  if (umaxabs (-1) != 1)
     link_error ();
-  if (uimaxabs (imaxmin) != INTMAX_MAX)
+  if (umaxabs (imaxmin) != INTMAX_MAX)
     abort ();
-  if (uimaxabs (imaxmin - 1) != (uintmax_t) 1 + INTMAX_MAX)
+  if (umaxabs (imaxmin - 1) != (uintmax_t) 1 + INTMAX_MAX)
     abort ();
-  if (uimaxabs (-INTMAX_MAX) != INTMAX_MAX)
+  if (umaxabs (-INTMAX_MAX) != INTMAX_MAX)
     link_error ();
-  if (uimaxabs (-INTMAX_MAX - 1) != (uintmax_t) 1 + INTMAX_MAX)
+  if (umaxabs (-INTMAX_MAX - 1) != (uintmax_t) 1 + INTMAX_MAX)
     link_error ();
-  if (uimaxabs (imaxmax) != INTMAX_MAX)
+  if (umaxabs (imaxmax) != INTMAX_MAX)
     abort ();
-  if (uimaxabs (INTMAX_MAX) != INTMAX_MAX)
+  if (umaxabs (INTMAX_MAX) != INTMAX_MAX)
     link_error ();
 }

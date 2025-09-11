@@ -1095,10 +1095,14 @@ struct discrim_entry
 
 location_t
 assign_discriminator (location_t loc, unsigned int bb_id,
-		      hash_map<int_hash <int64_t, -1, -2>, discrim_entry> &map)
+		      hash_map<int_hash <unsigned, -1U, -2U>,
+			       discrim_entry> &map)
 {
   bool existed;
-  discrim_entry &e = map.get_or_insert (LOCATION_LINE (loc), &existed);
+  if ((unsigned) LOCATION_LINE (loc) >= -2U)
+    return loc;
+  discrim_entry &e
+    = map.get_or_insert ((unsigned) LOCATION_LINE (loc), &existed);
   gcc_checking_assert (!has_discriminator (loc));
   if (!existed)
     {
@@ -1121,7 +1125,7 @@ assign_discriminator (location_t loc, unsigned int bb_id,
 static void
 assign_discriminators (void)
 {
-  hash_map<int_hash <int64_t, -1, -2>, discrim_entry> map (13);
+  hash_map<int_hash <unsigned, -1U, -2U>, discrim_entry> map (13);
   unsigned int bb_id = 0;
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)

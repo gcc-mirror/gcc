@@ -397,8 +397,7 @@ guarantee that @code{TYPE_CANONICAL} will point to the canonical type,
 use @code{SET_TYPE_STRUCTURAL_EQUALITY} to make sure that the new
 type--and any type constructed based on it--requires structural
 equality. If you suspect that the canonical type system is
-miscomparing types, pass @code{--param verify-canonical-types=1} to
-the compiler or configure with @code{--enable-checking} to force the
+miscomparing types, configure with @code{--enable-checking} to force the
 compiler to verify its canonical-type comparisons against the
 structural comparisons; the compiler will then print any warnings if
 the canonical types miscompare.

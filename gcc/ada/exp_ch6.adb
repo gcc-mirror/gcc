@@ -1423,13 +1423,6 @@ package body Exp_Ch6 is
       Formal : Entity_Id;
 
    begin
-      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
-                                        | N_Function_Call
-                                        | N_Procedure_Call_Statement);
-      pragma Assert (Extra_Formals_Known (Subp_Id)
-        or else not Expander_Active
-        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
-
       --  In CodePeer_Mode, the tree for `'Elab_Spec` procedures will be
       --  malformed because GNAT does not perform the usual expansion that
       --  results in the importation of external elaboration procedure symbols.
@@ -1446,6 +1439,13 @@ package body Exp_Ch6 is
       then
          return True;
       end if;
+
+      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
+                                        | N_Function_Call
+                                        | N_Procedure_Call_Statement);
+      pragma Assert (Extra_Formals_Known (Subp_Id)
+        or else not Expander_Active
+        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
 
       Formal := First_Formal_With_Extras (Subp_Id);
       Actual := First_Actual (Subp_Call);
@@ -4027,7 +4027,8 @@ package body Exp_Ch6 is
 
       procedure Check_Subprogram_Variant;
       --  Emit a call to the internally generated procedure with checks for
-      --  aspect Subprogram_Variant, if present and enabled.
+      --  aspect Subprogram_Variant, if present and enabled. Multiple calls are
+      --  added when the subprogram was using Assertion_Levels.
 
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
@@ -4312,7 +4313,7 @@ package body Exp_Ch6 is
 
          --  Local variables
 
-         Variant_Prag : constant Node_Id :=
+         Variant_Prag : Node_Id :=
            Get_Pragma (Current_Scope, Pragma_Subprogram_Variant);
 
          New_Call     : Node_Id;
@@ -4320,8 +4321,10 @@ package body Exp_Ch6 is
          Variant_Proc : Entity_Id;
 
       begin
-         if Present (Variant_Prag) and then Is_Checked (Variant_Prag) then
-
+         while Present (Variant_Prag)
+           and then Is_Checked (Variant_Prag)
+           and then Pragma_Name (Variant_Prag) = Name_Subprogram_Variant
+         loop
             Pragma_Arg1 :=
               Expression (First (Pragma_Argument_Associations (Variant_Prag)));
 
@@ -4330,12 +4333,13 @@ package body Exp_Ch6 is
             --  run-time execution.
 
             if Nkind (Pragma_Arg1) = N_Aggregate then
-               pragma Assert
-                 (Chars
-                    (First
-                      (Choices
-                         (First (Component_Associations (Pragma_Arg1))))) =
-                  Name_Structural);
+               pragma
+                 Assert
+                   (Chars
+                      (First
+                         (Choices
+                            (First (Component_Associations (Pragma_Arg1)))))
+                      = Name_Structural);
                return;
             end if;
 
@@ -4345,7 +4349,8 @@ package body Exp_Ch6 is
             Variant_Proc := Entity (Pragma_Arg1);
 
             New_Call :=
-              Make_Procedure_Call_Statement (Loc,
+              Make_Procedure_Call_Statement
+                (Loc,
                  Name                   =>
                    New_Occurrence_Of (Variant_Proc, Loc),
                  Parameter_Associations =>
@@ -4353,9 +4358,13 @@ package body Exp_Ch6 is
 
             Insert_Action (Call_Node, New_Call);
 
-            pragma Assert (Etype (New_Call) /= Any_Type
-              or else Serious_Errors_Detected > 0);
-         end if;
+            pragma
+              Assert
+                (Etype (New_Call) /= Any_Type
+                   or else Serious_Errors_Detected > 0);
+
+            Variant_Prag := Next_Pragma (Variant_Prag);
+         end loop;
       end Check_Subprogram_Variant;
 
       ---------------------------
@@ -4707,7 +4716,7 @@ package body Exp_Ch6 is
       --  of init procs were added when they were built.
 
       if not Extra_Formals_Known (Subp) then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          --  If the previous call to Create_Extra_Formals could not add the
          --  extra formals, then we must defer adding the extra actuals of
@@ -4776,7 +4785,7 @@ package body Exp_Ch6 is
         and then Extra_Formals_Known (Subp)
         and then Present (Extra_Formals (Subp))
       then
-         Create_Extra_Actuals (N);
+         Create_Extra_Actuals (Call_Node);
 
          --  Mark the call as an expanded build-in-place call; required
          --  to avoid adding the extra formals twice.
@@ -5219,10 +5228,10 @@ package body Exp_Ch6 is
          null;
 
       elsif not Defer_Extra_Actuals then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          if Extra_Formals_Known (Subp) then
-            Create_Extra_Actuals (N);
+            Create_Extra_Actuals (Call_Node);
          end if;
       end if;
 
@@ -5238,7 +5247,7 @@ package body Exp_Ch6 is
       --  the current subprogram is called.
 
       if Is_Subprogram (Subp)
-        and then not Is_Ignored_Ghost_Entity (Subp)
+        and then not Is_Ignored_Ghost_Entity_In_Codegen (Subp)
         and then Same_Or_Aliased_Subprograms (Subp, Current_Scope)
       then
          Check_Subprogram_Variant;
@@ -7265,7 +7274,7 @@ package body Exp_Ch6 is
 
       elsif (not Needs_Secondary_Stack (R_Type)
               and then not Is_Secondary_Stack_Thunk (Scope_Id))
-        or else Is_Ignored_Ghost_Entity (Scope_Id)
+        or else Is_Ignored_Ghost_Entity_In_Codegen (Scope_Id)
       then
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will
@@ -10265,11 +10274,18 @@ package body Exp_Ch6 is
                begin
                   pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
 
-                  --  Build-in-place function calls return their result by
-                  --  reference.
+                  --  Do not attempt to verify the return type in CodePeer_Mode
+                  --  as CodePeer_Mode is missing some expansion code that
+                  --  results in trees that would be considered malformed for
+                  --  GCC but aren't for GNAT2SCIL.
 
-                  pragma Assert (not Is_Build_In_Place_Function (Subp)
-                    or else Returns_By_Ref (Subp));
+                  if not CodePeer_Mode then
+                    --  Build-in-place function calls return their result by
+                    --  reference.
+
+                     pragma Assert (not Is_Build_In_Place_Function (Subp)
+                       or else Returns_By_Ref (Subp));
+                  end if;
                end;
 
             --  Skip generic bodies

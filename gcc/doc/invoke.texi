@@ -587,8 +587,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules
 -fcx-limited-range -fcx-method
 -fdata-sections  -fdce  -fdelayed-branch
--fdelete-null-pointer-checks  -fdevirtualize  -fdevirtualize-speculatively
--fdevirtualize-at-ltrans  -fdse
+-fdelete-null-pointer-checks  -fdep-fusion -fdevirtualize
+-fdevirtualize-speculatively  -fdevirtualize-at-ltrans  -fdse
 -fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects
 -ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style}
 -ffinite-loops
@@ -6690,7 +6690,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wstring-compare
 -Wtype-limits
 -Wuninitialized
--Wunterminated-string-initialization
+-Wunterminated-string-initialization @r{(C/ObjC only)}
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
@@ -13108,7 +13108,7 @@ also turns on the following optimization flags:
 -fcode-hoisting
 -fcrossjumping
 -fcse-follow-jumps  -fcse-skip-blocks
--fdelete-null-pointer-checks
+-fdelete-null-pointer-checks -fdep-fusion
 -fdevirtualize  -fdevirtualize-speculatively
 -fexpensive-optimizations
 -ffinite-loops
@@ -15287,8 +15287,8 @@ You can always override
 the automatic decision to do link-time optimization
 by passing @option{-fno-lto} to the link command.
 
-To make whole program optimization effective, it is necessary to make
-certain whole program assumptions.  The compiler needs to know
+To make whole-program optimization effective, it is necessary to make
+certain assumptions.  The compiler needs to know
 what functions and variables can be accessed by libraries and runtime
 outside of the link-time optimized unit.  When supported by the linker,
 the linker plugin (see @option{-fuse-linker-plugin}) passes information
@@ -15651,7 +15651,7 @@ If omitted, it defaults to @file{fbdata.afdo} in the current directory.
 
 Producing an AutoFDO profile data file requires running your program
 with the @command{perf} utility on a supported GNU/Linux target system.
-For more information, see @uref{https://perf.wiki.kernel.org/}.
+For more information, see @uref{https://perfwiki.github.io/main/}.
 
 E.g.
 @smallexample
@@ -16025,6 +16025,15 @@ Enabled by default with @option{-funroll-loops}.
 Performs a target dependent pass over the instruction stream to schedule
 instructions of same type together because target machine can execute them
 more efficiently if they are adjacent to each other in the instruction flow.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@opindex fdep-fusion
+@item -fdep-fusion
+Detect macro-op fusible pairs consisting of single-use instructions and their
+uses, and place such pairs together in the instruction stream to increase
+fusion opportunities in hardware.  This pass is executed once before register
+allocation, and another time before register renaming.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -19060,7 +19069,7 @@ available for the latter code to run.  If compiling all code,
 including library code, with @option{-fsplit-stack} is not an option,
 then the linker can fix up these calls so that the code compiled
 without @option{-fsplit-stack} always has a large stack.  Support for
-this is implemented in the gold linker in GNU binutils release 2.21
+this is implemented in the gold linker in GNU Binutils release 2.21
 and later.
 
 @opindex fstrub=disable
@@ -19447,16 +19456,15 @@ code generation is forced, a final binary is produced, and the intermediate
 code for later link-time optimization is stripped. When multiple object files
 are linked together the resulting code is better optimized than with
 link-time optimizations disabled (for example, cross-module inlining
-happens), but most of benefits of whole program optimizations are lost.
+happens), but most of the benefits of whole-program optimizations are lost.
 
 During the incremental link (by @option{-r}) the linker plugin defaults to
-@option{rel}. With current interfaces to GNU Binutils it is however not
-possible to incrementally link LTO objects and non-LTO objects into a single
-mixed object file.  If any of object files in incremental link cannot
-be used for link-time optimization, the linker plugin issues a warning and
-uses @samp{nolto-rel}. To maintain whole program optimization, it is
-recommended to link such objects into static library instead. Alternatively it
-is possible to use H.J. Lu's binutils with support for mixed objects.
+@option{rel}.  GNU Binutils 2.44 or later is needed to incrementally link
+LTO objects and non-LTO objects into a single mixed object file.  If any
+of the object files in an incremental link cannot be used for link-time
+optimization, the linker plugin issues a warning and uses @samp{nolto-rel}.
+To maintain whole-program optimization, link such objects into a static
+library instead.
 
 @opindex fuse-ld=bfd
 @item -fuse-ld=bfd
@@ -21267,6 +21275,9 @@ passes).
 @item note
 Enable other detailed optimization information (only available in
 certain passes).
+@item folding
+Enable dumping information about match-and-simplify (match.pd) patterns,
+when they are applied.
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
 and @option{lineno}.
@@ -22940,7 +22951,7 @@ Compile for the CDNA3 gfx950 devices. (Experimental)
 
 @item gfx9-generic
 Compile generic code for Vega devices, executable on the following subset of
-GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c. (Experimental)
+GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c.
 
 @item gfx9-4-generic
 Compile generic code for CDNA3 devices, executable on the following subset of
@@ -22969,7 +22980,7 @@ Compile for RDNA2 gfx1036 devices (GFX10 series).
 
 @item gfx10-3-generic
 Compile generic code for GFX10-3 devices, executable on gfx1030,
-gfx1031, gfx1032, gfx1033, gfx1034, gfx1035, and gfx1036. (Experimental)
+gfx1031, gfx1032, gfx1033, gfx1034, gfx1035, and gfx1036.
 
 @item gfx1100
 Compile for RDNA3 gfx1100 devices (GFX11 series).
@@ -22997,7 +23008,7 @@ Compile for RDNA3 gfx1153 devices (GFX11 series). (Experimental)
 
 @item gfx11-generic
 Compile generic code for GFX11 devices, executable on gfx1100, gfx1101,
-gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153. (Experimental)
+gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153.
 @end table
 
 @opindex msram-ecc
@@ -26905,7 +26916,7 @@ arithmetic instead of IEEE single and double precision.
 @itemx -mno-explicit-relocs
 Older Alpha assemblers provided no way to generate symbol relocations
 except via assembler macros.  Use of these macros does not allow
-optimal instruction scheduling.  GNU binutils as of version 2.12
+optimal instruction scheduling.  GNU Binutils as of version 2.12
 supports a new syntax that allows the compiler to explicitly mark
 which relocations should apply to which instructions.  This option
 is mostly useful for debugging, as GCC detects the capabilities of
@@ -36646,7 +36657,7 @@ The option is similar to @option{-mmemcpy-strategy=} except that it is to contro
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up, and restore frame pointers and
 makes an extra register available in leaf functions.  The option
-@option{-fomit-leaf-frame-pointer} removes the frame pointer for leaf functions,
+@option{-momit-leaf-frame-pointer} removes the frame pointer for leaf functions,
 which might make debugging harder.
 
 @opindex mtls-direct-seg-refs
@@ -37906,6 +37917,16 @@ files.  GCC uses temporary files to hold the output of one stage of
 compilation which is to be used as input to the next stage: for example,
 the output of the preprocessor, which is the input to the compiler
 proper.
+
+@vindex GCC_DIAGNOSTICS_LOG
+@item GCC_DIAGNOSTICS_LOG
+If @env{GCC_DIAGNOSTICS_LOG} is set, then additional information
+about the diagnostics subsystem will be emitted.  If it is set to an empty
+value, then the information will be written to stderr; otherwise, GCC will
+attempt to open that file and write the information there.
+
+The precise content and format of the information is subject to change;
+it is intended for use by GCC developers, rather than end-users.
 
 @vindex GCC_COMPARE_DEBUG
 @item GCC_COMPARE_DEBUG

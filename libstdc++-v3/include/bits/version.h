@@ -430,6 +430,16 @@
 #endif /* !defined(__cpp_lib_byte) && defined(__glibcxx_want_byte) */
 #undef __glibcxx_want_byte
 
+#if !defined(__cpp_lib_constant_wrapper)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_constant_wrapper 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constant_wrapper)
+#   define __cpp_lib_constant_wrapper 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constant_wrapper) && defined(__glibcxx_want_constant_wrapper) */
+#undef __glibcxx_want_constant_wrapper
+
 #if !defined(__cpp_lib_has_unique_object_representations)
 # if (__cplusplus >= 201703L) && (defined(_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP))
 #  define __glibcxx_has_unique_object_representations 201606L
@@ -664,6 +674,15 @@
 # endif
 #endif /* !defined(__cpp_lib_chrono) && defined(__glibcxx_want_chrono) */
 #undef __glibcxx_want_chrono
+
+#if !defined(__cpp_lib_chrono_cxx20)
+# if (__cplusplus >= 202002L)
+#  define __glibcxx_chrono_cxx20 201800L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_cxx20)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_chrono_cxx20) && defined(__glibcxx_want_chrono_cxx20) */
+#undef __glibcxx_want_chrono_cxx20
 
 #if !defined(__cpp_lib_execution)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED

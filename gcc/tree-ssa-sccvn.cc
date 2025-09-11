@@ -2810,8 +2810,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 possible clobber.  In this case we can ignore the clobber
 	 and return the found value.  */
       if (!gimple_has_volatile_ops (def_stmt)
-	  && is_gimple_reg_type (TREE_TYPE (lhs))
-	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	  && ((is_gimple_reg_type (TREE_TYPE (lhs))
+	       && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	       && !storage_order_barrier_p (lhs)
+	       && !reverse_storage_order_for_component_p (lhs))
+	      || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == CONSTRUCTOR)
 	  && (ref->ref || data->orig_ref.ref)
 	  && !data->mask
 	  && data->partial_defs.is_empty ()
@@ -2820,7 +2823,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 			   ref->size)
 	  && multiple_p (get_object_alignment (lhs), ref->size))
 	{
+	  HOST_WIDE_INT offset2i, size2i;
+	  poly_int64 offset = ref->offset;
+	  poly_int64 maxsize = ref->max_size;
+
+	  gcc_assert (lhs_ref_ok);
+	  tree base2 = ao_ref_base (&lhs_ref);
+	  poly_int64 offset2 = lhs_ref.offset;
+	  poly_int64 size2 = lhs_ref.size;
+	  poly_int64 maxsize2 = lhs_ref.max_size;
+
 	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs) == CONSTRUCTOR)
+	    rhs = integer_zero_node;
 	  /* ???  We may not compare to ahead values which might be from
 	     a different loop iteration but only to loop invariants.  Use
 	     CONSTANT_CLASS_P (unvalueized!) as conservative approximation.
@@ -2830,6 +2845,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     value though.  */
 	  if (data->same_val
 	      && !operand_equal_p (data->same_val, rhs))
+	    ;
+	  /* When this is a (partial) must-def, leave it to handling
+	     below in case we are interested in the value.  */
+	  else if (!(*disambiguate_only > TR_TRANSLATE)
+		   && base2
+		   && known_eq (maxsize2, size2)
+		   && adjust_offsets_for_equal_base_address (base, &offset,
+							     base2, &offset2)
+		   && offset2.is_constant (&offset2i)
+		   && size2.is_constant (&size2i)
+		   && maxsize.is_constant (&maxsizei)
+		   && offset.is_constant (&offseti)
+		   && ranges_known_overlap_p (offseti, maxsizei, offset2i,
+					      size2i))
 	    ;
 	  else if (CONSTANT_CLASS_P (rhs))
 	    {

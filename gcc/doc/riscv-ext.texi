@@ -722,4 +722,28 @@
 @tab 1.0
 @tab Mips Prefetch extension
 
+@item xandesperf
+@tab 5.0
+@tab Andes performace extension
+
+@item xandesbfhcvt
+@tab 5.0
+@tab Andes bfloat16 conversion extension
+
+@item xandesvbfhcvt
+@tab 5.0
+@tab Andes vector bfloat16 conversion extension
+
+@item xandesvsintload
+@tab 5.0
+@tab Andes vector INT4 load extension
+
+@item xandesvpackfph
+@tab 5.0
+@tab Andes vector packed FP16 extension
+
+@item xandesvdot
+@tab 5.0
+@tab Andes vector dot product extension
+
 @end multitable

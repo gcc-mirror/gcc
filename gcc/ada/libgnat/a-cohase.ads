@@ -62,12 +62,12 @@ is
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty       => Empty,
-                            Add_Unnamed => Include);
+                            Add_Unnamed => Include),
+      Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Set);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private
+   with
+      Preelaborable_Initialization;
 
    function "=" (Left, Right : Cursor) return Boolean;
    --  The representation of cursors includes a component used to optimize

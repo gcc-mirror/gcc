@@ -225,6 +225,12 @@ tree gfor_fndecl_iargc;
 tree gfor_fndecl_kill;
 tree gfor_fndecl_kill_sub;
 tree gfor_fndecl_is_contiguous0;
+tree gfor_fndecl_fstat_i4_sub;
+tree gfor_fndecl_fstat_i8_sub;
+tree gfor_fndecl_lstat_i4_sub;
+tree gfor_fndecl_lstat_i8_sub;
+tree gfor_fndecl_stat_i4_sub;
+tree gfor_fndecl_stat_i8_sub;
 
 
 /* Intrinsic functions implemented in Fortran.  */
@@ -3910,6 +3916,34 @@ gfc_build_intrinsic_function_decls (void)
 	gfc_int4_type_node, 1, pvoid_type_node);
   DECL_PURE_P (gfor_fndecl_is_contiguous0) = 1;
   TREE_NOTHROW (gfor_fndecl_is_contiguous0) = 1;
+
+  gfor_fndecl_fstat_i4_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("fstat_i4_sub")), void_type_node,
+	3, gfc_pint4_type_node, gfc_pint4_type_node, gfc_pint4_type_node);
+
+  gfor_fndecl_fstat_i8_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("fstat_i8_sub")), void_type_node,
+	3, gfc_pint8_type_node, gfc_pint8_type_node, gfc_pint8_type_node);
+
+  gfor_fndecl_lstat_i4_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("lstat_i4_sub")), void_type_node,
+	4, pchar_type_node, gfc_pint4_type_node, gfc_pint4_type_node,
+	gfc_charlen_type_node);
+
+  gfor_fndecl_lstat_i8_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("lstat_i8_sub")), void_type_node,
+	4, pchar_type_node, gfc_pint8_type_node, gfc_pint8_type_node,
+	gfc_charlen_type_node);
+
+  gfor_fndecl_stat_i4_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("stat_i4_sub")), void_type_node,
+	4, pchar_type_node, gfc_pint4_type_node, gfc_pint4_type_node,
+	gfc_charlen_type_node);
+
+  gfor_fndecl_stat_i8_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("stat_i8_sub")), void_type_node,
+	4, pchar_type_node, gfc_pint8_type_node, gfc_pint8_type_node,
+	gfc_charlen_type_node);
 }
 
 

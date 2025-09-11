@@ -291,6 +291,8 @@ package body Gen_IL.Internals is
             return "Has_RACW";
          when Has_SP_Choice =>
             return "Has_SP_Choice";
+         when Has_Unsigned_Base_Range_Aspect =>
+            return "Has_Unsigned_Base_Range_Aspect";
          when Ignore_SPARK_Mode_Pragmas =>
             return "Ignore_SPARK_Mode_Pragmas";
          when Is_CPP_Class =>

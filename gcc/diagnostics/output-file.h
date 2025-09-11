@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_OUTPUT_FILE_H
 #define GCC_DIAGNOSTICS_OUTPUT_FILE_H
 
+#include "label-text.h"
+
 namespace diagnostics {
 
 /* RAII class for wrapping a FILE * that could be borrowed or owned,

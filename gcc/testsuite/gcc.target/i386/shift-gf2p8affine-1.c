@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mgfni -mavx512vl -mavx512bw -mavx512f -O3" } */
+/* { dg-options "-mgfni -mavx512vl -mavx512bw -mavx512f -O3 -march=x86-64 -mtune=generic" } */
 /* { dg-final { scan-assembler-times "vgf2p8affineqb" 14 } } */
 
 #ifndef N

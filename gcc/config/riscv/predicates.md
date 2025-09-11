@@ -483,6 +483,10 @@
   (ior (match_operand 0 "const_int6_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "const_int5_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
 (define_predicate "const_int5s_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -16, 15)")))
@@ -728,3 +732,41 @@
 (define_predicate "reg_or_const_int_operand"
   (ior (match_operand 0 "const_int_operand")
        (match_operand 0 "register_operand")))
+
+;; Branch-on-bit for AndesPerf.
+(define_predicate "ads_branch_bbcs_operand"
+  (match_code "const_int")
+{
+  if (TARGET_XANDESPERF && (INTVAL (op) >= 0))
+    {
+      if (TARGET_64BIT && INTVAL (op) <= 63)
+	return true;
+      else if (INTVAL (op) <=31)
+	return true;
+      else
+	return false;
+    }
+
+  return false;
+})
+
+;; Branch on small immediate range.
+(define_predicate "ads_branch_bimm_operand"
+  (match_code "const_int")
+{
+  if (TARGET_XANDESPERF)
+    return satisfies_constraint_Ou07 (op);
+  else
+    return false;
+})
+
+(define_predicate "ads_imm_extract_operand"
+  (match_test "satisfies_constraint_ads__Bext (op)"))
+
+(define_predicate "ads_extract_size_imm_si"
+  (and (match_code "const_int")
+	   (match_test "IN_RANGE (INTVAL (op), 1, 32)")))
+
+(define_predicate "ads_extract_size_imm_di"
+  (and (match_code "const_int")
+	   (match_test "IN_RANGE (INTVAL (op), 1, 64)")))

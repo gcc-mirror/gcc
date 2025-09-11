@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mgfni -mavx512vl -mavx512bw -mavx512f -O3 -Wno-shift-count-negative" } */
+/* { dg-options "-mgfni -mavx512vl -mavx512bw -mavx512f -O3 -Wno-shift-count-negative -march=x86-64 -mtune=generic" } */
 
 #include <string.h>
 

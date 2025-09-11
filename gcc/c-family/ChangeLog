@@ -1,3 +1,12 @@
+2025-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/121544
+	* c-ada-spec.cc (dump_ada_node) <POINTER_TYPE>: Dump the name of
+	anonymous tagged pointed-to types specially.
+	(dump_nested_type) <POINTER_TYPE>: Recurse on anonymous pointed-to
+	types declared in the same file.
+	Set TREE_VISITED on the underlying DECL of the field type, if any.
+
 2025-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/121520

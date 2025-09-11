@@ -196,6 +196,21 @@ testCallArgs(Args... args)
   VERIFY( q.as_const && q.as_lvalue );
   q = cg(std::move(ci));
   VERIFY( q.as_const && ! q.as_lvalue );
+
+  struct S
+  {
+    int operator()(Args..., long, long) const { return 1; }
+    int operator()(Args..., int, void*) const { return 2; }
+  };
+
+  S s;
+  // literal zero can be converted to any pointer, so (int, void*)
+  // is best candidate
+  VERIFY( s(args..., 0, 0) == 2 );
+  // both arguments are bound to int&&, and no longer can be
+  // converted to pointer, (long, long) is only candidate
+  VERIFY( bind_front(s)(args..., 0, 0) == 1 );
+  VERIFY( bind_front(s, args...)(0, 0) == 1 );
 }
 
 void

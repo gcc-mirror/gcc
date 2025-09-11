@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/source-printing-options.h"
 #include "diagnostics/column-options.h"
 #include "diagnostics/counters.h"
+#include "diagnostics/logging.h"
 
 namespace diagnostics {
 
@@ -275,8 +276,10 @@ public:
 
   void finish ();
 
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
+  logging::logger *get_logger () { return m_logger; }
 
   bool execution_failed_p () const;
 
@@ -335,18 +338,35 @@ public:
 		       enum kind new_kind,
 		       location_t where)
   {
+    logging::log_function_params
+      (m_logger, "diagnostics::context::classify_diagnostics")
+      .log_param_option_id ("option_id", opt_id)
+      .log_param_kind ("new_kind", new_kind)
+      .log_param_location_t ("where", where);
+    logging::auto_inc_depth depth_sentinel (m_logger);
+
     return m_option_classifier.classify_diagnostic (this,
 						    opt_id,
 						    new_kind,
 						    where);
   }
 
-  void push_diagnostics (location_t where ATTRIBUTE_UNUSED)
+  void push_diagnostics (location_t where)
   {
+    logging::log_function_params
+      (m_logger, "diagnostics::context::push_diagnostics")
+      .log_param_location_t ("where", where);
+    logging::auto_inc_depth depth_sentinel (m_logger);
+
     m_option_classifier.push ();
   }
   void pop_diagnostics (location_t where)
   {
+    logging::log_function_params
+      (m_logger, "diagnostics::context::pop_diagnostics")
+      .log_param_location_t ("where", where);
+    logging::auto_inc_depth depth_sentinel (m_logger);
+
     m_option_classifier.pop (where);
   }
 
@@ -826,6 +846,11 @@ private:
      later (if the buffer is flushed), moved to other buffers, or
      discarded (if the buffer is cleared).  */
   buffer *m_diagnostic_buffer;
+
+  /* Owned by the context.
+     Debugging option: if non-NULL, report information to the logger
+     on what the context is doing.  */
+  logging::logger *m_logger;
 };
 
 /* Client supplied function to announce a diagnostic

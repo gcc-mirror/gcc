@@ -17,3 +17,7 @@ qux ()
 {
   return foo () + bar <int> () + baz <int> ();
 }
+
+export using ::foo;
+export using ::bar;
+export using ::baz;

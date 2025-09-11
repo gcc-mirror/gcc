@@ -1002,6 +1002,17 @@ package body Sem_Ch13 is
       --  aspect has the proper profile. If the name is overloaded, check that
       --  some interpretation is legal.
 
+      procedure Check_Nonoverridable_Aspect_Subprograms
+        (ASN      : Node_Id;
+         E        : Entity_Id;
+         Original : Entity_Id := Empty);
+      --  RM 13.1.1(18.4/6) requires checking that if any of the subprograms
+      --  denoted by a nonoverridable aspect ASN has a parameter or result of
+      --  either type E or access E, then all denoted subprograms are
+      --  primitive. If missing, Original is initialized with ASN and will not
+      --  change during the recursive exploration of aggregate aspects, it is
+      --  used to improve the error message.
+
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
       --  optional Boolean, this routines creates the corresponding pragma
@@ -1204,6 +1215,200 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Indexing_Functions;
+
+      ---------------------------------------------
+      -- Check_Nonoverridable_Aspect_Subprograms --
+      ---------------------------------------------
+
+      procedure Check_Nonoverridable_Aspect_Subprograms
+        (ASN      : Node_Id;
+         E        : Entity_Id;
+         Original : Node_Id := Empty)
+      is
+         Expr : constant Node_Id   := Expression (ASN);
+         Kind : constant Node_Kind := Nkind (Expr);
+
+         function Required_To_Be_Primitive (Subp : Entity_Id) return Boolean;
+         --  This function returns True if Subp, belonging to a nonoverridable
+         --  aspect of the entity E, is required to be a primitive operation.
+         --  Specifically, whenever either its return type or any of its
+         --  formals are of either type E or access E.
+
+         function Required_To_Be_Primitive (Subp : Entity_Id) return Boolean is
+            Return_Typ  : constant Entity_Id := Etype (Subp);
+            Last_Formal : constant Entity_Id := Last_Entity (Subp);
+            Cursor      : Entity_Id          := First_Entity (Subp);
+         begin
+            if Return_Typ = E
+              or else (Ekind (Return_Typ) in Access_Kind
+                        and then Directly_Designated_Type (Return_Typ) = E)
+            then
+               return True;
+
+            elsif Present (Cursor) then
+               loop
+                  if Etype (Cursor) = E
+                    or else (Ekind (Cursor) in Access_Kind
+                              and then Directly_Designated_Type (Cursor) = E)
+                  then
+                     return True;
+                  end if;
+
+                  exit when Cursor = Last_Formal;
+
+                  Cursor := Next_Entity (Cursor);
+               end loop;
+            end if;
+
+            return False;
+         end Required_To_Be_Primitive;
+
+         --  Local Variables
+
+         Valid   : Boolean   := True;
+         Problem : Entity_Id := Empty;
+
+      --  Start of processing for Check_Nonoverridable_Aspect_Subprograms
+
+      begin
+         --  If the aspect specification was effectively inherited from the
+         --  parent type (so constructed anew by analysis), then no point
+         --  in validating.
+
+         if not Comes_From_Source (ASN) then
+            return;
+         end if;
+
+         --  If the expression is neither an aggregate nor a node denoting an
+         --  entity, then also no point in validating.
+
+         if Kind not in N_Aggregate | N_Has_Entity then
+            return;
+         end if;
+
+         --  Original should point to ASN if this is the first recursive call
+
+         if No (Original) then
+            Check_Nonoverridable_Aspect_Subprograms
+              (ASN => ASN,
+               E => E,
+               Original => ASN);
+            return;
+         end if;
+
+         if Kind = N_Aggregate then
+            declare
+               Aggregate_List : constant List_Id :=
+                 Component_Associations (Expr);
+               Current : Node_Id := First (Aggregate_List);
+            begin
+               --  Each component association must be checked separately
+
+               while Present (Current) loop
+
+                  Check_Nonoverridable_Aspect_Subprograms
+                    (ASN      => Current,
+                     E        => E,
+                     Original => Original);
+
+                  Next (Current);
+               end loop;
+            end;
+
+         else
+            --  Some expressions may be unanalyzed, as some nonoverridable
+            --  aspects allow forward references. For instance, when the type E
+            --  is defined inside a package body.
+
+            if No (Entity (Expr)) then
+               Analyze (Expr);
+            end if;
+
+            declare
+               Subp : constant Entity_Id := Entity (Expr);
+            begin
+
+               --  No point in validating a node that does not represent a
+               --  subprogram here.
+
+               if not Is_Subprogram (Subp) then
+                  return;
+               end if;
+
+               if not Is_Overloaded (Expr) then
+                  Valid := (if Required_To_Be_Primitive (Subp)
+                             then Is_Primitive (Subp));
+
+                  Problem := Subp;
+
+               else
+                  declare
+                     Found : Boolean := False;
+                     I     : Interp_Index;
+                     It    : Interp;
+                  begin
+                     --  Check whether there is at least one interpretation
+                     --  that is required to be primitive. We iterate over all
+                     --  possible interpretations, as some may be removed.
+
+                     Get_First_Interp (Expr, I, It);
+                     while Present (It.Nam) loop
+
+                        --  If the current interpretation is not declared
+                        --  within the scope of E, then it should not be
+                        --  considered, see RM 13.1.1(8/6).
+
+                        if not Within_Scope (It.Nam, Scope (E)) then
+                           Remove_Interp (I);
+
+                        else
+                           Found := Found
+                             or else Required_To_Be_Primitive (It.Nam);
+                        end if;
+
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                     if Found then
+
+                        --  To satisfy the legality rule in RM 13.1.1(18.2/5),
+                        --  if there's at least one interpretation that's
+                        --  primitive, then all of them must be primitive;
+                        --  otherwise we emit an error.
+
+                        Get_First_Interp (Expr, I, It);
+                        pragma Warnings (Off, Valid); -- Valid not always True
+                        while Valid and then Present (It.Nam) loop
+
+                           Valid := Valid and then Is_Primitive (It.Nam);
+                           Problem := It.Nam;
+
+                           Get_Next_Interp (I, It);
+                        end loop;
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+
+         if not Valid then
+            declare
+               Operation_Kind : constant String :=
+                 (if Comes_From_Source (Problem)
+                   then "declared"
+                   else "inherited");
+            begin
+               Error_Msg_Name_1 := Chars (Identifier (Original));
+               Error_Msg_Name_2 := Chars (E);
+               Error_Msg_Name_3 := Chars (Problem);
+               Error_Msg_Sloc := Sloc (Problem);
+               Error_Msg_N ("nonoverridable aspect % of type % requires % "
+                            & Operation_Kind
+                            & "# to be a primitive operation",
+                            Original);
+            end;
+         end if;
+      end Check_Nonoverridable_Aspect_Subprograms;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -1547,6 +1752,14 @@ package body Sem_Ch13 is
 
                if Present (Ritem) then
                   Analyze (Ritem);
+               end if;
+
+               --  All nonoverriding aspects need further legality checks
+
+               if A_Id in Nonoverridable_Aspect_Id
+                 and then Ada_Version >= Ada_2022
+               then
+                  Check_Nonoverridable_Aspect_Subprograms (ASN, E);
                end if;
             end if;
          end if;
@@ -1959,6 +2172,14 @@ package body Sem_Ch13 is
             --  and raise Aspect_Exit. If Typ is left Empty, then any static
             --  expression is allowed. Includes checking that the expression
             --  does not raise Constraint_Error.
+
+            procedure Convert_Aspect_With_Assertion_Levels (Aspect : Node_Id);
+            --  If an Aspect is using an association with an Assertion_Level
+            --  analyze the aspect with the level and convert it into an aspect
+            --  without the Assertion_Level. In the case the aspect has
+            --  associations with Assertion_Levels then multiple aspects are
+            --  created and each one will point to the original aspect that
+            --  they were created from in the Original_Aspect field.
 
             function Directly_Specified
               (Id : Entity_Id; A : Aspect_Id) return Boolean;
@@ -3114,6 +3335,73 @@ package body Sem_Ch13 is
                end case;
             end Check_Expr_Is_OK_Static_Expression;
 
+            ------------------------------------------
+            -- Convert_Aspect_With_Assertion_Levels --
+            ------------------------------------------
+
+            procedure Convert_Aspect_With_Assertion_Levels (Aspect : Node_Id)
+            is
+               Assoc      : Node_Id;
+               Assocs     : List_Id;
+               Choice     : Node_Id;
+               Level      : Entity_Id;
+               Sub_Expr   : Node_Id;
+               New_Aspect : Node_Id;
+            begin
+               Assocs := Component_Associations (Expression (Aspect));
+               Assoc := First (Assocs);
+
+               if Present (Expressions (Expression (Aspect))) then
+                  Error_Msg_N
+                    ("wrong syntax for argument of %", Expression (Aspect));
+                  Error_Msg_N
+                    ("\aspect with Assertion_Level can only contain "
+                     & "contain Assertion_Level associations",
+                     Expression (Aspect));
+               end if;
+
+               while Present (Assoc) loop
+                  if List_Length (Choices (Assoc)) > 1 then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_N ("wrong syntax for argument of %", Assoc);
+                     Error_Msg_N
+                       ("\only one Assertion_Level can be associated "
+                        & "with an expression",
+                        Assoc);
+                  end if;
+
+                  Choice := First (Choices (Assoc));
+
+                  if Nkind (Choice) /= N_Identifier then
+                     Error_Msg_N ("wrong syntax for argument of %", Assoc);
+                     Error_Msg_N
+                       ("\association must denote an Assertion_Level", Assoc);
+                  end if;
+
+                  Level := Get_Assertion_Level (Chars (Choice));
+
+                  Sub_Expr := Expression (Assoc);
+                  New_Aspect :=
+                    Make_Aspect_Specification
+                      (Sloc       => Sloc (Assoc),
+                       Identifier => New_Copy_Tree (Id),
+                       Expression => Sub_Expr);
+
+                  Check_Applicable_Policy (New_Aspect, Level);
+
+                  Set_Aspect_Ghost_Assertion_Level (New_Aspect, Level);
+
+                  Insert_After (Aspect, New_Aspect);
+
+                  --  Store the Original_Aspect for the detection of
+                  --  duplicates.
+
+                  Set_Original_Aspect (New_Aspect, Aspect);
+
+                  Next (Assoc);
+               end loop;
+            end Convert_Aspect_With_Assertion_Levels;
+
             ------------------------
             -- Directly_Specified --
             ------------------------
@@ -3160,11 +3448,10 @@ package body Sem_Ch13 is
 
                --  Set additional semantic fields
 
-               if Is_Ignored (Aspect) then
-                  Set_Is_Ignored (Aitem);
-               elsif Is_Checked (Aspect) then
-                  Set_Is_Checked (Aitem);
-               end if;
+               Set_Is_Checked (Aitem, Is_Checked (Aspect));
+               Set_Is_Ignored (Aitem, Is_Ignored (Aspect));
+               Set_Pragma_Ghost_Assertion_Level
+                  (Aitem, Aspect_Ghost_Assertion_Level (Aspect));
 
                Set_Corresponding_Aspect (Aitem, Aspect);
                Set_From_Aspect_Specification (Aitem);
@@ -3185,7 +3472,24 @@ package body Sem_Ch13 is
             --  as such for later reference in the tree. This also sets the
             --  Is_Ignored and Is_Checked flags appropriately.
 
-            Check_Applicable_Policy (Aspect);
+            if Is_Valid_Assertion_Kind (Nam) then
+               if Is_Checked (Aspect) or else Is_Ignored (Aspect) then
+                  null;
+
+               --  If the Aspect has at least one Assertion_Level argument
+               --  then split the original Aspect into multiple aspects each
+               --  with an associated Assertion_Level.
+
+               elsif Has_Assertion_Level_Argument (Aspect) then
+                  Convert_Aspect_With_Assertion_Levels (Aspect);
+                  goto Continue;
+               else
+                  Check_Applicable_Policy (Aspect);
+                  Set_Aspect_Ghost_Assertion_Level
+                    (Aspect, Standard_Level_Default);
+               end if;
+
+            end if;
 
             if Is_Disabled (Aspect) then
                goto Continue;
@@ -3249,8 +3553,11 @@ package body Sem_Ch13 is
             if No_Duplicates_Allowed (A_Id) then
                Anod := First (L);
                while Anod /= Aspect loop
-                  if Comes_From_Source (Aspect)
-                    and then Same_Aspect (A_Id, Get_Aspect_Id (Anod))
+
+                  if (Comes_From_Source (Aspect)
+                     or else (Original_Aspect (Aspect) /= Anod
+                              and then not From_Same_Aspect (Aspect, Anod)))
+                     and then Same_Aspect (A_Id, Get_Aspect_Id (Anod))
                   then
                      Error_Msg_Name_1 := Nam;
                      Error_Msg_Sloc := Sloc (Anod);
@@ -3260,12 +3567,12 @@ package body Sem_Ch13 is
                      if Class_Present (Anod) = Class_Present (Aspect) then
                         if not Class_Present (Anod) then
                            Error_Msg_NE
-                             ("aspect% for & previously given#",
-                              Id, E);
+                             ("aspect% for & previously given#", Id, E);
                         else
                            Error_Msg_NE
                              ("aspect `%''Class` for & previously given#",
-                              Id, E);
+                              Id,
+                              E);
                         end if;
                      end if;
                   end if;
@@ -4796,7 +5103,7 @@ package body Sem_Ch13 is
                   if Class_Present (Aspect)
                     and then A_Id in Aspect_Pre | Aspect_Post
                     and then Is_Subprogram (E)
-                    and then not Is_Ignored_Ghost_Entity (E)
+                    and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
                   then
                      if A_Id = Aspect_Pre then
                         if Is_Ignored_In_Codegen (Aspect) then
@@ -5101,6 +5408,12 @@ package body Sem_Ch13 is
                      Analyze_Aspect_Static;
                      goto Continue;
 
+                  --  GNAT Core Extension: Checks for this aspect are performed
+                  --  when the corresponding pragma is analyzed.
+
+                  elsif A_Id = Aspect_Unsigned_Base_Range then
+                     null;
+
                   --  Ada 2022 (AI12-0279)
 
                   elsif A_Id = Aspect_Yield then
@@ -5280,14 +5593,28 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
 
-                  --  All other cases, generate attribute definition
+                  --  Generate an attribute definition for access types
 
-                  else
+                  elsif Is_Access_Type (E) then
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
                          Chars      => Name_Storage_Size,
                          Expression => Relocate_Node (Expr));
+
+                  --  This is likely a misplaced aspect. Create a pragma to
+                  --  emit the actual error.
+
+                  else
+                     Aitem :=
+                       Make_Aitem_Pragma
+                         (Pragma_Argument_Associations =>
+                            New_List
+                              (Make_Pragma_Argument_Association
+                                 (Loc, Expression => Relocate_Node (Expr))),
+                          Pragma_Name                  => Name_Storage_Size);
+                     Insert_Pragma (Aitem);
+                     goto Continue;
                   end if;
 
                when Aspect_External_Initialization =>
@@ -12513,8 +12840,8 @@ package body Sem_Ch13 is
       elsif No (Next_Formal (First_Formal (Subp))) then
          Error_Msg_Sloc := Sloc (Subp);
          Illegal_Indexing
-            ("at least two parameters required for indexing function "
-             & "defined #");
+           ("at least two parameters required for indexing function "
+            & "defined #");
          return;
 
       elsif not Subp_Is_Dispatching_Op_Of_Typ
@@ -12525,7 +12852,7 @@ package body Sem_Ch13 is
       then
          Illegal_Indexing
            ("indexing aspect requires function with first formal "
-             & "applying to type& or its class-wide type");
+            & "applying to type& or its class-wide type");
          return;
 
       elsif Aspect = Aspect_Constant_Indexing
@@ -12534,7 +12861,7 @@ package body Sem_Ch13 is
       then
          Illegal_Indexing
            ("Constant_Indexing must apply to function with "
-             & "access-to-constant formal");
+            & "access-to-constant formal");
          return;
       end if;
 
@@ -12543,8 +12870,8 @@ package body Sem_Ch13 is
       if Aspect = Aspect_Variable_Indexing then
          if not Has_Implicit_Dereference (Ret_Type) then
             Illegal_Indexing
-               ("function for Variable_Indexing must return "
-                & "a reference type");
+              ("function for Variable_Indexing must return "
+               & "a reference type");
             return;
 
          elsif Is_Access_Constant

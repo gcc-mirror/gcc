@@ -8318,7 +8318,7 @@ s390_expand_int_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
 }
 
 /* Expand floating-point op0 = op1 <=> op2, i.e.,
-   op0 = op1 == op2 ? 0 : op1 < op2 ? -1 : op1 > op2 ? 1 : 2.
+   op0 = op1 == op2 ? 0 : op1 < op2 ? -1 : op1 > op2 ? 1 : -128.
 
    If op3 equals const0_rtx, then we are interested in the compare only (see
    test spaceship-fp-4.c).  Otherwise, op3 is a CONST_INT different than
@@ -8368,7 +8368,7 @@ s390_expand_fp_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
     {
       emit_jump (l_end);
       emit_label (l_unordered);
-      rtx unord_val = op3 == const0_rtx ? const2_rtx : op3;
+      rtx unord_val = op3 == const0_rtx ? GEN_INT (-128) : op3;
       emit_move_insn (op0, unord_val);
     }
   emit_label (l_end);

@@ -1455,13 +1455,17 @@ PIM4 dialect.  This is a temporary implementation situation.
 
 This section describes the default module search path and how this
 might be changed.  By default the compiler will search the current
-directory, site wide modules and lastly gcc version specific modules.
+directory, local include dir, prefix include dir, gcc version specific
+modules and lastly native system header dir.  The exact location and
+whether all these directories are used depends upon the configuration
+options used when building GCC.
 
 The @samp{-I} option option can be used to introduce new directories
 in the module search path and for convenience the options @samp{-flibs=}
 and @samp{-fm2-pathname-root=} are also provided.
 
-The site wide modules are located at @var{prefix}@file{/include/m2}
+The site wide modules are typically located at
+@var{prefix}@file{/include/m2}
 whereas the version specific modules are located in
 @var{libsubdir}@file{/m2}.  Both of these @file{/m2} directories
 are organized such that the non dialect specific modules are at the

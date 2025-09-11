@@ -189,6 +189,9 @@
 (define_predicate "ubranch_operator"
   (match_code "ltu,geu"))
 
+(define_predicate "alt_ubranch_operator"
+  (match_code "gtu,leu"))
+
 (define_predicate "boolean_operator"
   (match_code "eq,ne"))
 

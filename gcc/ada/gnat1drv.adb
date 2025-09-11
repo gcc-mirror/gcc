@@ -175,6 +175,12 @@ procedure Gnat1drv is
          Disable_ALI_File := True;
       end if;
 
+      --  -gnatd_o disables backend overflow checks on target; used for testing
+
+      if Debug_Flag_Underscore_O then
+         Backend_Overflow_Checks_On_Target := False;
+      end if;
+
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
       --  to be treated as warnings instead of errors.
 

@@ -97,15 +97,15 @@ is
       Aggregate         => (Empty          => Empty,
                             Add_Unnamed    => Append,
                             New_Indexed    => New_Vector,
-                            Assign_Indexed => Replace_Element);
-
-   pragma Preelaborable_Initialization (Vector);
+                            Assign_Indexed => Replace_Element),
+      Preelaborable_Initialization;
    --  Vector type, to be instantiated by users of this package. If an object
    --  of type Vector is not otherwise initialized, it is initialized to
    --  Empty_Vector.
 
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private
+   with
+      Preelaborable_Initialization;
    --  Cursor pointing into an instance of vector. If an object of type Cursor
    --  is not otherwise initialized, it is initialized to No_Element
 

@@ -32,6 +32,16 @@ with Types; use Types;
 
 package Ghost is
 
+   function Assertion_Level_From_Arg (Arg : Node_Id) return Entity_Id;
+   --  Returns the assertion level for the given pragma or aspect based on
+   --  the argument Arg. Which is either
+   --
+   --  * Standard_Level_Default if there was no argument or the argument
+   --    evaluated to True.
+   --  * Assertion_Level if the argument was referencing a user defined
+   --    Assertion_Level.
+   --  * Empty othrwise since we are not dealing with a ghost entity.
+
    procedure Check_Ghost_Completion
      (Prev_Id  : Entity_Id;
       Compl_Id : Entity_Id);
@@ -90,7 +100,9 @@ package Ghost is
       Constit    : Node_Id;
       Constit_Id : Entity_Id);
    --  Verify that the Ghost policy of constituent Constit_Id is compatible
-   --  with the Ghost policy of abstract state State_I.
+   --  with the Ghost policy of abstract state State_Id.
+   --
+   --  Additionally verify that the Ghost_Assertion_Levels are compatible.
 
    procedure Check_Ghost_Type (Typ : Entity_Id);
    --  Verify that Ghost type Typ is neither concurrent, nor effectively
@@ -102,10 +114,22 @@ package Ghost is
    procedure Initialize;
    --  Initialize internal tables
 
-   procedure Install_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id);
+   procedure Install_Ghost_Region
+     (Mode  : Ghost_Mode_Type;
+      N     : Node_Id;
+      Level : Entity_Id);
    pragma Inline (Install_Ghost_Region);
    --  Install a Ghost region described by mode Mode and ignored region start
    --  node N.
+
+   function Is_Assertion_Level_Dependent
+      (Self : Entity_Id; Other : Entity_Id) return Boolean;
+   --  Check that assertion level Self is assertion-level-dependent with Other.
+   --
+   --  According to SPARK RM 6.9(5) this means that
+   --  * Either Self or Other has the default assertion level.
+   --  * Self either is or depends on Other
+   --  * Self either is or depends on Static
 
    function Is_Ghost_Assignment (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes an assignment statement whose

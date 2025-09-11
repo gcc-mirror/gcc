@@ -4,50 +4,6 @@
 #include <stdio.h>
 #include "riscv-opts.h"
 
-struct version_t
-{
-  int major;
-  int minor;
-  version_t (int major, int minor,
-	     enum riscv_isa_spec_class spec = ISA_SPEC_CLASS_NONE)
-    : major (major), minor (minor)
-  {}
-  bool operator<(const version_t &other) const
-  {
-    if (major != other.major)
-      return major < other.major;
-    return minor < other.minor;
-  }
-
-  bool operator== (const version_t &other) const
-  {
-    return major == other.major && minor == other.minor;
-  }
-};
-
-static void
-print_ext_doc_entry (const std::string &ext_name, const std::string &full_name,
-		     const std::string &desc,
-		     const std::vector<version_t> &supported_versions)
-{
-  // Implementation of the function to print the documentation entry
-  // for the extension.
-  std::set<version_t> unique_versions;
-  for (const auto &version : supported_versions)
-    unique_versions.insert (version);
-  printf ("@item %s\n", ext_name.c_str ());
-  printf ("@tab");
-  for (const auto &version : unique_versions)
-    {
-      printf (" %d.%d", version.major, version.minor);
-    }
-  printf ("\n");
-  printf ("@tab %s", full_name.c_str ());
-  if (desc.size ())
-    printf (", %s", desc.c_str ());
-  printf ("\n\n");
-}
-
 int
 main ()
 {

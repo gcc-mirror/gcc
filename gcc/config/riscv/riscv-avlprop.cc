@@ -156,6 +156,7 @@ get_insn_vtype_mode (rtx_insn *rinsn)
   extract_insn_cached (rinsn);
   int mode_idx = get_attr_mode_idx (rinsn);
   gcc_assert (mode_idx != INVALID_ATTRIBUTE);
+  gcc_assert (mode_idx < recog_data.n_operands);
   return GET_MODE (recog_data.operand[mode_idx]);
 }
 
@@ -205,6 +206,7 @@ simplify_replace_vlmax_avl (rtx_insn *rinsn, rtx new_avl)
     {
       int index = get_attr_avl_type_idx (rinsn);
       gcc_assert (index != INVALID_ATTRIBUTE);
+      gcc_assert (index < recog_data.n_operands);
       validate_change_or_fail (rinsn, recog_data.operand_loc[index],
 			       get_avl_type_rtx (avl_type::NONVLMAX), false);
     }
@@ -361,6 +363,8 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	     is not depend on.  */
 	  extract_insn_cached (use_insn->rtl ());
 	  int merge_op_idx = get_attr_merge_op_idx (use_insn->rtl ());
+	  gcc_assert (merge_op_idx == INVALID_ATTRIBUTE
+		      || merge_op_idx < recog_data.n_operands);
 	  if (merge_op_idx != INVALID_ATTRIBUTE
 	      && !satisfies_constraint_vu (recog_data.operand[merge_op_idx])
 	      && refers_to_regno_p (set->regno (),
@@ -531,7 +535,14 @@ pass_avlprop::execute (function *fn)
 	      && !m_avl_propagations->get (candidate.second)
 	      && imm_avl_p (vtype_mode))
 	    {
-	      rtx new_avl = gen_int_mode (GET_MODE_NUNITS (vtype_mode), Pmode);
+	      /* For segmented operations AVL refers to a single register and
+		 not all NF registers.  Therefore divide the mode size by NF
+		 to obtain the proper AVL.  */
+	      int nf = 1;
+	      if (riscv_v_ext_tuple_mode_p (vtype_mode))
+		nf = get_nf (vtype_mode);
+	      rtx new_avl = gen_int_mode
+	      (GET_MODE_NUNITS (vtype_mode).to_constant () / nf, Pmode);
 	      simplify_replace_vlmax_avl (rinsn, new_avl);
 	    }
 	}

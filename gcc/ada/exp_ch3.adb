@@ -2145,7 +2145,7 @@ package body Exp_Ch3 is
          end if;
 
          if Policy_In_Effect (Name_Assert) = Name_Check
-           and then not Predicates_Ignored (Etype (Discr))
+           and then not Predicates_Ignored_In_Codegen (Etype (Discr))
          then
             Prepend_To (Res, Make_Predicate_Check (Typ, Val));
          end if;
@@ -5878,7 +5878,7 @@ package body Exp_Ch3 is
       --  the subtype.
 
       if not No_Exception_Handlers_Set
-        and then not Predicates_Ignored (Typ)
+        and then not Predicates_Ignored_In_Codegen (Typ)
       then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
@@ -6592,7 +6592,7 @@ package body Exp_Ch3 is
 
             Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Elmt) loop
-               Create_Extra_Formals (Node (Elmt));
+               Create_Extra_Formals (Node (Elmt), Related_Nod => N);
                Next_Elmt (Elmt);
             end loop;
 
@@ -6609,7 +6609,7 @@ package body Exp_Ch3 is
                  and then Find_Dispatching_Type (E) = Typ
                  and then not Contains (Primitive_Operations (Typ), E)
                then
-                  Create_Extra_Formals (E);
+                  Create_Extra_Formals (E, Related_Nod => N);
                end if;
 
                Next_Entity (E);
@@ -10786,11 +10786,9 @@ package body Exp_Ch3 is
                        or else (Is_Record_Type (Typ)
                                  and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-                     not Global_No_Tasking
-                       and then
-                     (Has_Task (Typ)
-                        or else (Is_Record_Type (Typ)
-                                   and then Is_Task_Record_Type (Typ)));
+                     Has_Task (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Task_Record_Type (Typ));
       Formals : List_Id;
 
    begin

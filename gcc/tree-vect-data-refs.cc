@@ -4554,12 +4554,13 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
 }
 
 /* Return true if a non-affine read or write in STMT_INFO is suitable for a
-   gather load or scatter store.  Describe the operation in *INFO if so.
-   If it is suitable and ELSVALS is nonzero store the supported else values
-   in the vector it points to.  */
+   gather load or scatter store with VECTYPE.  Describe the operation in *INFO
+   if so.  If it is suitable and ELSVALS is nonzero store the supported else
+   values in the vector it points to.  */
 
 bool
-vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
+vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
+			   loop_vec_info loop_vinfo,
 			   gather_scatter_info *info, vec<int> *elsvals)
 {
   HOST_WIDE_INT scale = 1;
@@ -4568,7 +4569,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
   tree decl = NULL_TREE, base, off;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree memory_type = TREE_TYPE (DR_REF (dr));
   machine_mode pmode;
   int punsignedp, reversep, pvolatilep = 0;
@@ -5273,7 +5273,7 @@ vect_analyze_data_refs (vec_info *vinfo, bool *fatal)
       if (gatherscatter != SG_NONE)
 	{
 	  gather_scatter_info gs_info;
-	  if (!vect_check_gather_scatter (stmt_info,
+	  if (!vect_check_gather_scatter (stmt_info, vectype,
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (vinfo,
@@ -5797,8 +5797,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	      to be vector_size.
    BSI - location where the new update stmt is to be placed.
    STMT_INFO - the original scalar memory-access stmt that is being vectorized.
-   BUMP - optional. The offset by which to bump the pointer. If not given,
-	  the offset is assumed to be vector_size.
+   UPDATE - The offset by which to bump the pointer.
 
    Output: Return NEW_DATAREF_PTR as illustrated above.
 
@@ -5807,18 +5806,13 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 tree
 bump_vector_ptr (vec_info *vinfo,
 		 tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
-		 stmt_vec_info stmt_info, tree bump)
+		 stmt_vec_info stmt_info, tree update)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree update = TYPE_SIZE_UNIT (vectype);
   gimple *incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
-
-  if (bump)
-    update = bump;
 
   if (TREE_CODE (dataref_ptr) == SSA_NAME)
     new_dataref_ptr = copy_ssa_name (dataref_ptr);
@@ -6124,13 +6118,12 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
    Return value - the result of the loop-header phi node.  */
 
 tree
-vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info,
+vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info, tree vectype,
 			gimple_stmt_iterator *gsi, tree *realignment_token,
 			enum dr_alignment_support alignment_support_scheme,
 			tree init_addr,
 			class loop **at_loop)
 {
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   struct data_reference *dr = dr_info->dr;

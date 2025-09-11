@@ -8595,7 +8595,7 @@ If this pattern is not defined, a call to the library function
 
 @cindex @code{spaceship@var{m}4} instruction pattern
 @item @samp{spaceship@var{m}4}
-Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
+Initialize output operand 0 with mode of integer type to -1, 0, 1 or -128
 if operand 1 with mode @var{m} compares less than operand 2, equal to
 operand 2, greater than operand 2 or is unordered with operand 2.
 Operand 3 should be @code{const0_rtx} if the result is used in comparisons,
@@ -8603,7 +8603,7 @@ Operand 3 should be @code{const0_rtx} if the result is used in comparisons,
 is integral unsigned, @code{constm1_rtx} if the result is used as integer
 value and the comparison is integral signed and some other @code{CONST_INT}
 if the result is used as integer value and the comparison is floating point.
-In the last case, instead of setting output operand 0 to 2 for unordered,
+In the last case, instead of setting output operand 0 to -128 for unordered,
 set it to operand 3.
 @var{m} should be a scalar floating point mode.
 
@@ -8613,6 +8613,12 @@ This pattern is not allowed to @code{FAIL}.
 @item @samp{isfinite@var{m}2}
 Return 1 if operand 1 is a finite floating point number and 0
 otherwise.  @var{m} is a scalar floating point mode.  Operand 0
+has mode @code{SImode}, and operand 1 has mode @var{m}.
+
+@cindex @code{isnan@var{m}2} instruction pattern
+@item @samp{isnan@var{m}2}
+Return 1 if operand 1 is a @code{NaN} and 0 otherwise.
+@var{m} is a scalar floating point mode.  Operand 0
 has mode @code{SImode}, and operand 1 has mode @var{m}.
 
 @cindex @code{isnormal@var{m}2} instruction pattern

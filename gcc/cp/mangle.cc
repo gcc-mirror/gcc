@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "flags.h"
 #include "attribs.h"
+#include "contracts.h"
 
 /* Debugging support.  */
 
@@ -2175,10 +2176,23 @@ write_real_cst (const tree value)
   int i, limit, dir;
 
   tree type = TREE_TYPE (value);
-  int words = GET_MODE_BITSIZE (SCALAR_FLOAT_TYPE_MODE (type)) / 32;
+  int bits = GET_MODE_BITSIZE (SCALAR_FLOAT_TYPE_MODE (type));
+  int words = bits / 32;
 
   real_to_target (target_real, &TREE_REAL_CST (value),
 		  TYPE_MODE (type));
+
+  if (words == 0)
+    {
+      /* _Float16 and std::bfloat16_t are the only supported types smaller than
+         32 bits.  */
+      gcc_assert (bits == 16);
+      sprintf (buffer, "%04lx", (unsigned long) target_real[0]);
+      write_chars (buffer, 4);
+      return;
+    }
+
+  gcc_assert (bits % 32 == 0);
 
   /* The value in target_real is in the target word order,
      so we must write it out backward if that happens to be
@@ -2188,6 +2202,29 @@ write_real_cst (const tree value)
     i = 0, limit = words, dir = 1;
   else
     i = words - 1, limit = -1, dir = -1;
+
+  if (GET_MODE_PRECISION (SCALAR_FLOAT_TYPE_MODE (type)) == 80
+      && abi_check (21))
+    {
+      /* For -fabi-version=21 and above mangle
+	 Intel/Motorola extended format 1.0L as
+	 3fff8000000000000000
+	 rather than the previous
+	 0000000000003fff8000000000000000 (x86_64)
+	 00003fff8000000000000000 (ia32)
+	 3fff00008000000000000000 (m68k -mc68020)
+	 i.e. without any embedded padding bits.  */
+      if (words == 4)
+	i += dir;
+      else
+	gcc_assert (words == 3);
+      unsigned long val = (unsigned long) target_real[i];
+      if (REAL_MODE_FORMAT (SCALAR_FLOAT_TYPE_MODE (type))->signbit_ro == 95)
+	val >>= 16;
+      sprintf (buffer, "%04lx", val);
+      write_chars (buffer, 4);
+      i += dir;
+    }
 
   for (; i != limit; i += dir)
     {

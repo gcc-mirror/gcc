@@ -581,7 +581,8 @@ package body Sem_Ch6 is
          --  Ghost subprogram.
 
          if Inside_A_Generic then
-            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
+            Set_Has_Completion
+              (Def_Id, not Is_Ignored_Ghost_Entity_In_Codegen (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
             Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
@@ -3864,7 +3865,7 @@ package body Sem_Ch6 is
       --  Separate spec is not present
 
       if No (Spec_Id) then
-         Create_Extra_Formals (Body_Id);
+         Create_Extra_Formals (Body_Id, Related_Nod => N);
 
       --  Separate spec is present; deal with freezing issues
 
@@ -3883,7 +3884,7 @@ package body Sem_Ch6 is
            and then Is_Build_In_Place_Function (Spec_Id)
            and then not Has_BIP_Formals (Spec_Id)
          then
-            Create_Extra_Formals (Spec_Id);
+            Create_Extra_Formals (Spec_Id, Related_Nod => N);
             pragma Assert (not Expander_Active
               or else Extra_Formals_Known (Spec_Id));
             Compute_Returns_By_Ref (Spec_Id);
@@ -3907,7 +3908,7 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else Operating_Mode = Check_Semantics
-                      or else Is_Ignored_Ghost_Entity (Spec_Id))
+                      or else Is_Ignored_Ghost_Entity_In_Codegen (Spec_Id))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
@@ -3933,7 +3934,7 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
          then
             Set_Has_Delayed_Freeze (Spec_Id);
-            Create_Extra_Formals (Spec_Id);
+            Create_Extra_Formals (Spec_Id, Related_Nod => N);
             Freeze_Before (N, Spec_Id);
          end if;
       end if;
@@ -7752,6 +7753,7 @@ package body Sem_Ch6 is
               or else not Is_Dispatching_Operation (Subp)
               or else No (Find_Dispatching_Type (Subp))
               or else not Is_Interface (Find_Dispatching_Type (Subp))
+              or else Parent (Subp) not in N_Subprogram_Specification_Id
             then
                null;
 
@@ -8549,7 +8551,10 @@ package body Sem_Ch6 is
    -- Create_Extra_Formals --
    --------------------------
 
-   procedure Create_Extra_Formals (E : Entity_Id) is
+   procedure Create_Extra_Formals
+     (E           : Entity_Id;
+      Related_Nod : Node_Id := Empty)
+   is
       First_Extra : Entity_Id := Empty;
       Formal      : Entity_Id;
       Last_Extra  : Entity_Id := Empty;
@@ -8823,7 +8828,8 @@ package body Sem_Ch6 is
       use Deferred_Extra_Formals_Support;
 
       Can_Be_Deferred  : constant Boolean :=
-                           not Is_Unsupported_Extra_Formals_Entity (E);
+                           not Is_Unsupported_Extra_Formals_Entity (E,
+                                 Related_Nod);
       Alias_Formal     : Entity_Id := Empty;
       Alias_Subp       : Entity_Id := Empty;
       Formal_Type      : Entity_Id;
@@ -8906,7 +8912,7 @@ package body Sem_Ch6 is
          pragma Assert (Is_Generic_Instance (E)
            = Is_Generic_Instance (Ultimate_Alias (E)));
 
-         Create_Extra_Formals (Ultimate_Alias (E));
+         Create_Extra_Formals (Ultimate_Alias (E), Related_Nod);
          pragma Assert (not Expander_Active
            or else Extra_Formals_Known (Ultimate_Alias (E)));
 
@@ -9079,7 +9085,7 @@ package body Sem_Ch6 is
          --  function Parent_Subprogram).
 
          if Ultimate_Alias (Parent_Subp) /= Ref_E then
-            Create_Extra_Formals (Parent_Subp);
+            Create_Extra_Formals (Parent_Subp, Related_Nod);
          end if;
 
          Parent_Formal := First_Formal (Parent_Subp);
@@ -9114,7 +9120,7 @@ package body Sem_Ch6 is
       --  Ensure that the ultimate alias has all its extra formals
 
       elsif Present (Alias_Subp) then
-         Create_Extra_Formals (Alias_Subp);
+         Create_Extra_Formals (Alias_Subp, Related_Nod);
          Alias_Formal := First_Formal (Alias_Subp);
       end if;
 
@@ -11772,16 +11778,18 @@ package body Sem_Ch6 is
          Is_Primitive := False;
 
          if not Comes_From_Source (S) then
+            if Present (Derived_Type) then
 
-            --  Add an inherited primitive for an untagged derived type to
-            --  Derived_Type's list of primitives. Tagged primitives are
-            --  dealt with in Check_Dispatching_Operation. Do this even when
-            --  Extensions_Allowed is False to issue better error messages.
+               --  Add an inherited primitive for an untagged derived type to
+               --  Derived_Type's list of primitives. Tagged primitives are
+               --  dealt with in Check_Dispatching_Operation. Do this even when
+               --  Extensions_Allowed is False to issue better error messages.
 
-            if Present (Derived_Type)
-              and then not Is_Tagged_Type (Derived_Type)
-            then
-               Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
+               if not Is_Tagged_Type (Derived_Type) then
+                  Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
+               end if;
+
+               Set_Is_Primitive (S);
             end if;
 
          --  If subprogram is at library level, it is not primitive operation
@@ -13111,8 +13119,8 @@ package body Sem_Ch6 is
                      --  formals of the enclosing scope are available before
                      --  adding the extra actuals of this call.
 
-                     Create_Extra_Formals (Scop_Id);
-                     Create_Extra_Formals (Call_Id);
+                     Create_Extra_Formals (Scop_Id, Related_Nod => Call_Node);
+                     Create_Extra_Formals (Call_Id, Related_Nod => Call_Node);
 
                      pragma Assert (Extra_Formals_Known (Scop_Id));
                      pragma Assert (Extra_Formals_Known (Call_Id));
@@ -13285,8 +13293,11 @@ package body Sem_Ch6 is
       is
          Comp_Unit : constant Entity_Id :=
                        Cunit_Entity (Get_Source_Unit (Call_Node));
+
       begin
-         return not Underlying_Types_Available (Id)
+         return Expander_Active
+           and then not Extra_Formals_Known (Id)
+           and then not Underlying_Types_Available (Id)
            and then Is_Compilation_Unit (Comp_Unit)
            and then Ekind (Comp_Unit) in E_Package
                                        | E_Package_Body
@@ -13305,12 +13316,18 @@ package body Sem_Ch6 is
       --  (AI05-0151-1/08).
 
       function Is_Unsupported_Extra_Formals_Entity
-        (Id : Entity_Id) return Boolean
+        (Id          : Entity_Id;
+         Related_Nod : Node_Id := Empty) return Boolean
       is
+         Ref_Node  : constant Node_Id := (if Present (Related_Nod) then
+                                             Related_Nod
+                                          else Id);
          Comp_Unit : constant Entity_Id :=
-                       Cunit_Entity (Get_Source_Unit (Id));
+                       Cunit_Entity (Get_Source_Unit (Ref_Node));
       begin
-         return not Underlying_Types_Available (Id)
+         return Expander_Active
+           and then not Extra_Formals_Known (Id)
+           and then not Underlying_Types_Available (Id)
            and then Is_Compilation_Unit (Comp_Unit)
            and then Ekind (Comp_Unit) in E_Package_Body
                                        | E_Subprogram_Body;

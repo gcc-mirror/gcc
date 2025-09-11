@@ -383,7 +383,7 @@ Necessary to build the lexical analysis module.
 Necessary for creating some of the generated source files for GCC@.
 If in doubt, use a recent GNU awk version.
 
-@item GNU binutils
+@item GNU Binutils
 
 Necessary in some circumstances, optional in others.  See the
 host/target specific instructions for your platform for the exact
@@ -1561,23 +1561,23 @@ for riscv*-*-elf*.  The accepted values and meanings are given below.
 Every config is constructed with four components: architecture string, ABI,
 reuse rule with architecture string and reuse rule with sub-extension.
 
-Example 1: Add multi-lib suppport for rv32i with ilp32.
+Example 1: Add multi-lib support for rv32i with ilp32.
 @smallexample
 rv32i-ilp32--
 @end smallexample
 
-Example 2: Add multi-lib suppport for rv32i with ilp32 and rv32imafd with ilp32.
+Example 2: Add multi-lib support for rv32i with ilp32 and rv32imafd with ilp32.
 @smallexample
 rv32i-ilp32--;rv32imafd-ilp32--
 @end smallexample
 
-Example 3: Add multi-lib suppport for rv32i with ilp32; rv32im with ilp32 and
+Example 3: Add multi-lib support for rv32i with ilp32; rv32im with ilp32 and
 rv32ic with ilp32 will reuse this multi-lib set.
 @smallexample
 rv32i-ilp32-rv32im-c
 @end smallexample
 
-Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
+Example 4: Add multi-lib support for rv64ima with lp64; rv64imaf with lp64,
 rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 @smallexample
 rv64ima-lp64--f,c,fc
@@ -1588,13 +1588,13 @@ rv64ima-lp64--f,c,fc
 config options, @var{val} is a comma separated list of possible code model,
 currently we support medlow and medany.
 
-Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 5: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow
 @end smallexample
 
-Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 6: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model; rv64ima with lp64 and medany code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow,medany
@@ -1723,7 +1723,7 @@ libraries.  This option is only supported on Epiphany targets.
 
 @item --with-fpmath=@var{isa}
 This options sets @option{-mfpmath=sse} by default and specifies the default
-ISA for floating-point arithmetics.  You can select either @samp{sse} which
+ISA for floating-point arithmetic.  You can select either @samp{sse} which
 enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
 This option is only supported on i386 and x86-64 targets.
 
@@ -1867,7 +1867,7 @@ On MIPS targets, make @option{-mno-msa} the default when no
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional
-SVR4-based MIPS ABIs and require support from GNU binutils
+SVR4-based MIPS ABIs and require support from GNU Binutils
 and the runtime C library.
 
 @item --with-stack-clash-protection-guard-size=@var{size}
@@ -3302,7 +3302,7 @@ Build runtime libraries using the compiler from the previous step.
 
 Note that if an error occurs in any step the make process will exit.
 
-If you are not building GNU binutils in the same source tree as GCC,
+If you are not building GNU Binutils in the same source tree as GCC,
 you will need a cross-assembler and cross-linker installed before
 configuring GCC@.  Put them in the directory
 @file{@var{prefix}/@var{target}/bin}.  Here is a table of the tools
@@ -3803,8 +3803,7 @@ Microsoft Windows:
 @item
 The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{https://osdn.net/projects/mingw/,,MinGW} and
-@uref{https://www.mingw-w64.org/,,mingw-w64} projects.
+the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
 @end itemize
 
 @item
@@ -4068,7 +4067,12 @@ Instead of GNU Binutils, you need to install LLVM and copy
 @file{bin/llvm-objdump} to @file{amdgcn-amdhsa/bin/objdump},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
-@file{bin/amdgcn-amdhsa-ranlib}.
+@file{bin/amdgcn-amdhsa-ranlib}.  The LLVM version is required for the
+assembler (llvm-mc) and linker (lld); however, for the others, the respective
+GNU Binutils counterpart can be used instead.  While all mentioned programs are
+required when building GCC, the installed GCC compiler only needs the assembler
+and linker; @code{nm}, @code{ar}, and @code{ranlib} are required when installing
+@code{gcc-nm}, @code{gcc-ar}, and @code{gcc-ranlib}.
 
 The required version of LLVM depends on the devices that you want to support.
 As the list of ISAs is long, GCC by default only builds a subset of the
@@ -4092,12 +4096,12 @@ ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and
 @code{gfx11-generic} reduce the number of required multilibs but note
 that @code{gfx9-generic} does not include @code{gfx908} or @code{gfx90a},
 that linking specific ISA code with generic code is currently not supported,
-and that only a future ROCm release (newer than 6.3.3) will be able to execute
-generic code.
+and that only ROCm 6.4.0 or newer is able to execute generic code.
 
 Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
 the device console output for GFX10 and GFX11 devices; post-4.5.0
-commit 2ef1a37e7 [Mar 25, 2025] fixes a SIMD math issue).
+commits 2ef1a37e7 [Mar 25, 2025], f13e8e215 [Aug 8, 2025], and
+bd409f3c1 [Aug 27, 2025] fix SIMD math issues).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
@@ -4225,7 +4229,7 @@ This configuration is intended for embedded systems.
 @heading *-*-freebsd*
 FreeBSD using the ELF file format with DWARF 2 debugging.
 
-We recommend bootstrapping against the latest GNU binutils or the
+We recommend bootstrapping against the latest GNU Binutils or the
 version found in the @file{devel/binutils} port. This also has been
 known to enable additional features and improve overall testsuite
 results.
@@ -4702,7 +4706,7 @@ Andes NDS32 target in big endian mode.
 @heading nvptx-*-none
 Nvidia PTX target.
 
-Instead of GNU binutils, you will need to install
+Instead of GNU Binutils, you will need to install
 @uref{https://github.com/SourceryTools/nvptx-tools,,nvptx-tools}.
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
@@ -4755,7 +4759,7 @@ The OpenRISC 1000 32-bit processor with delay slots.
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
-You will need GNU binutils 2.20 or newer.
+You will need GNU Binutils 2.20 or newer.
 
 @html
 <hr />
@@ -4941,15 +4945,15 @@ assembler in @file{/usr/bin/as} work almost as well, though.  To use GNU
 --with-as=@//usr/@/gnu/@/bin/@/as}.
 
 For linking, the Solaris linker is preferred.  If you want to use the
-GNU linker instead, the version in Solaris 11.4, from GNU binutils
+GNU linker instead, the version in Solaris 11.4, from GNU Binutils
 2.30.1 or newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}),
 works.  However, it
 generally lacks platform specific features, so better stay with Solaris
-@command{ld}.  When using the version from GNU binutils 2.44, there's
+@command{ld}.  When using the version from GNU Binutils 2.44, there's
 an important caveat: binutils @emph{must} be configured with
 @code{CONFIG_SHELL=/bin/bash}, otherwise the linker's built-in linker
 scripts get corrupted on x86.  To use the LTO linker plugin
-(@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU binutils
+(@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU Binutils
 @emph{must} be configured with @option{--enable-largefile}.  To use
 Solaris @command{ld}, we recommend to configure with
 @option{--without-gnu-ld --with-ld=@//usr/@/bin/@/ld} to guarantee the
@@ -4964,7 +4968,7 @@ corruption at runtime in some cases for C++ programs.
 
 To enable symbol versioning in @samp{libstdc++} and other runtime
 libraries with the Solaris linker, you need to have any version of GNU
-@command{c++filt}, which is part of GNU binutils.  Symbol versioning
+@command{c++filt}, which is part of GNU Binutils.  Symbol versioning
 will be disabled if no appropriate version is found.  Solaris
 @command{c++filt} from the Solaris Studio compilers does @emph{not}
 work.
@@ -5003,7 +5007,7 @@ in @uref{prerequisites.html,,the prerequisites}.
 @end html
 @anchor{sparc-sun-solaris2}
 @heading sparc-sun-solaris2*
-When GCC is configured to use GNU binutils 2.14 or later, the binaries
+When GCC is configured to use GNU Binutils 2.14 or later, the binaries
 produced are smaller than the ones produced using Solaris native tools;
 this difference is quite significant for binaries containing debugging
 information.
@@ -5215,7 +5219,7 @@ with Microsoft's C++ compiler and there are no plans to make it do so.
 The Cygwin native compiler can be configured to target any 32-bit x86
 cpu architecture desired; the default is i686-pc-cygwin.  It should be
 used with as up-to-date a version of binutils as possible; use either
-the latest official GNU binutils release in the Cygwin distribution,
+the latest official GNU Binutils release in the Cygwin distribution,
 or version 2.20 or above if building your own.
 
 @html

@@ -40,15 +40,15 @@ pragma Warnings (On);
 package Ada.Finalization is
    pragma Pure;
 
-   type Controlled is abstract tagged private;
-   pragma Preelaborable_Initialization (Controlled);
+   type Controlled is abstract tagged private
+   with Preelaborable_Initialization;
 
    procedure Initialize (Object : in out Controlled) is null;
    procedure Adjust     (Object : in out Controlled) is null;
    procedure Finalize   (Object : in out Controlled) is null;
 
-   type Limited_Controlled is abstract tagged limited private;
-   pragma Preelaborable_Initialization (Limited_Controlled);
+   type Limited_Controlled is abstract tagged limited private
+   with Preelaborable_Initialization;
 
    procedure Initialize (Object : in out Limited_Controlled) is null;
    procedure Finalize   (Object : in out Limited_Controlled) is null;

@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The inline plan is applied on given function body by inline_transform.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -344,6 +345,40 @@ inline_call (struct cgraph_edge *e, bool update_original,
   to = e->caller;
   if (to->inlined_to)
     to = to->inlined_to;
+
+  /* In case callee has AFDO profile but caller has GLOBAL0 we need
+     to re-scale it so it can have non-zero AFDO profile.  */
+  if (callee->count.quality () == AFDO
+      && e->count.nonzero_p ()
+      && (to->count.quality () == GUESSED_GLOBAL0_AFDO
+	  || to->count.quality () == GUESSED_GLOBAL0_ADJUSTED))
+    {
+      profile_count num = callee->count;
+      profile_count den = e->count;
+      profile_count::adjust_for_ipa_scaling (&num, &den);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Rescalling profile of caller %s "
+		   "to allow non-zero AFDO counts:",
+		   to->dump_name ());
+	  den.dump (dump_file);
+	  fprintf (dump_file, " -> ");
+	  num.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      to->apply_scale (num, den);
+      to->frequency = std::max (to->frequency, callee->frequency);
+      /* Do not update original, so possible additional calls of callee
+	 are handled reasonably well.  */
+      update_original = false;
+      gcc_checking_assert (to->count.quality () == AFDO);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Scaled profile of %s: ", to->dump_name ());
+	  to->count.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+    }
   if (to->thunk)
     {
       struct cgraph_node *target = to->callees->callee;

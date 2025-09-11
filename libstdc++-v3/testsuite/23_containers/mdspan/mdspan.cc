@@ -280,7 +280,7 @@ test_from_pointer_and_shape()
 }
 
 constexpr bool
-test_from_pointer_and_integral_constant()
+test_from_pointer_and_constant()
 {
   std::array<double, 6> buffer{};
   double * ptr = buffer.data();
@@ -292,12 +292,20 @@ test_from_pointer_and_integral_constant()
       VERIFY(actual.extents() == expected.extents());
     };
 
-  auto c3 = std::integral_constant<int, 3>{};
-  auto c6 = std::integral_constant<int, 6>{};
+  auto i3 = std::integral_constant<int, 3>{};
+  auto i6 = std::integral_constant<int, 6>{};
 
   verify(std::mdspan(ptr, 6), std::extents(6));
-  verify(std::mdspan(ptr, c6), std::extents(c6));
-  verify(std::mdspan(ptr, 2, c3), std::extents(2, c3));
+  verify(std::mdspan(ptr, i6), std::extents(i6));
+  verify(std::mdspan(ptr, 2, i3), std::extents(2, i3));
+  verify(std::mdspan(ptr, std::true_type{}, i3), std::extents(1, i3));
+
+#if __glibcxx_constant_wrapper
+  auto c3 = std::constant_wrapper<3>{};
+  verify(std::mdspan(ptr, 2, c3), std::extents(2, i3));
+  verify(std::mdspan(ptr, 2, std::cw<3>), std::extents(2, i3));
+  verify(std::mdspan(ptr, std::cw<true>, std::cw<3>), std::extents(1, i3));
+#endif
   return true;
 }
 
@@ -729,8 +737,8 @@ main()
   test_from_pointer_and_shape();
   static_assert(test_from_pointer_and_shape());
 
-  test_from_pointer_and_integral_constant();
-  static_assert(test_from_pointer_and_integral_constant());
+  test_from_pointer_and_constant();
+  static_assert(test_from_pointer_and_constant());
 
   test_from_extents();
   static_assert(test_from_extents());

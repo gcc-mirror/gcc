@@ -971,7 +971,7 @@ package body Exp_Disp is
          pragma Assert (Is_Frozen (Typ));
 
          if Extra_Formals_Known (Subp) then
-            Create_Extra_Formals (Subp_Typ);
+            Create_Extra_Formals (Subp_Typ, Related_Nod => Call_Node);
 
          --  Extra formals were previously deferred
 
@@ -6056,7 +6056,7 @@ package body Exp_Disp is
                     --  Skip ignored Ghost subprograms as those will be removed
                     --  from the executable.
 
-                    and then not Is_Ignored_Ghost_Entity (E)
+                    and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
                   then
                      pragma Assert
                        (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);

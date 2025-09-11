@@ -1,6 +1,6 @@
-/* { dg-do compile { target arm-*-* s390-*-* } } */
+/* { dg-do compile { target arm*-*-* s390-*-* } } */
 /* { dg-options "-std=c99" } we need long long */
-/* { dg-additional-options "-march=armv7-a -marm" { target arm-*-* } } */
+/* { dg-additional-options "-mcpu=unset -march=armv7-a+fp -marm" { target arm*-*-* } } */
 
 /* Test register pairs.  */
 

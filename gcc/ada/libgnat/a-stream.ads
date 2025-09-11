@@ -36,8 +36,8 @@
 package Ada.Streams is
    pragma Pure;
 
-   type Root_Stream_Type is abstract tagged limited private;
-   pragma Preelaborable_Initialization (Root_Stream_Type);
+   type Root_Stream_Type is abstract tagged limited private
+   with Preelaborable_Initialization;
 
    type Stream_Element is mod 2 ** Standard'Storage_Unit;
 

@@ -35,7 +35,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace chrono
 {
-#if __cpp_lib_chrono >= 201803L && _GLIBCXX_HOSTED
+#if defined __glibcxx_chrono_cxx20 && _GLIBCXX_HOSTED
   // TODO use CLOCK_TAI on linux, add extension point.
   time_point<tai_clock>
   tai_clock::now()

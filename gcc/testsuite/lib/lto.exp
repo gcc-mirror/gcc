@@ -659,9 +659,9 @@ proc lto-execute-1 { src1 sid } {
     set i 1
     set done 0
     while { !$done } {
-	set names [glob -nocomplain -types f -- "${dir}/${base}_${i}.*"]
+	set names [glob -nocomplain -types f -- "${dir}/${base}_${i}.{c,C,ii,\[fF\]{,90,95,03,08},d,m,mm}"]
 	if { [llength ${names}] > 1 } {
-	    warning "lto-execute: more than one file matched ${dir}/${base}_${i}.*"
+	    warning "lto-execute: more than one file matched ${dir}/${base}_${i}.{c,C,ii,\[fF\]{,90,95,03,08},d,m,mm}"
 	}
 	if { [llength ${names}] == 1 } {
 	    lappend src_list [lindex ${names} 0]

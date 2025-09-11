@@ -4052,13 +4052,13 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated integer binary operations that have an immediate form.
-(define_expand "<optab><mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+(define_expand "<optab><mode>3<sve_di_suf>"
+  [(set (match_operand:SVE_I_SIMD_DI 0 "register_operand")
+	(unspec:SVE_I_SIMD_DI
 	  [(match_dup 3)
-	   (SVE_INT_BINARY_MULTI:SVE_I
-	     (match_operand:SVE_I 1 "register_operand")
-	     (match_operand:SVE_I 2 "aarch64_sve_<sve_imm_con>_operand"))]
+	   (SVE_INT_BINARY_MULTI:SVE_I_SIMD_DI
+	     (match_operand:SVE_I_SIMD_DI 1 "register_operand")
+	     (match_operand:SVE_I_SIMD_DI 2 "aarch64_sve_<sve_imm_con>_operand"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {

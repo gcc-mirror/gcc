@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/text-sink.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 #include "text-art/theme.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
@@ -205,6 +206,11 @@ void
 text_sink::on_report_diagnostic (const diagnostic_info &diagnostic,
 				 enum kind orig_diag_kind)
 {
+  auto logger = get_logger ();
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0
+    (logger,
+     "diagnostics::text_sink::on_report_diagnostic");
+
   pretty_printer *pp = get_printer ();
 
   (*text_starter (&m_context)) (*this, &diagnostic);

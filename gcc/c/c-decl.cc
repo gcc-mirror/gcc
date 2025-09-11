@@ -1726,8 +1726,8 @@ pushtag (location_t loc, tree name, tree type)
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wc___compat,
-			  ("using %qD as both a typedef and a tag is "
-			   "invalid in C++"), b->decl)
+			  "using %qD as both a typedef and a tag is "
+			  "invalid in C++", b->decl)
 	      && b->locus != UNKNOWN_LOCATION)
 	    inform (b->locus, "originally defined here");
 	}
@@ -2630,9 +2630,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  && !DECL_EXTERNAL (olddecl))
 	warned |= warning_at (DECL_SOURCE_LOCATION (newdecl),
 			      OPT_Wc___compat,
-			      ("duplicate declaration of %qD is "
-			       "invalid in C++"),
-			      newdecl);
+			      "duplicate declaration of %qD is "
+			      "invalid in C++", newdecl);
     }
 
   /* warnings */
@@ -4368,8 +4367,8 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
 		{
 		  saw_error = true;
 		  error_at (case_loc,
-			    ("switch jumps into scope of identifier with "
-			     "variably modified type"));
+			    "switch jumps into scope of identifier with "
+			    "variably modified type");
 		  emitted = true;
 		}
 	      else if (flag_openmp
@@ -5583,7 +5582,16 @@ c_decl_attributes (tree *node, tree attributes, int flags)
   tree last_decl = lookup_last_decl (*node);
   if (last_decl == error_mark_node)
     last_decl = NULL_TREE;
-  return decl_attributes (node, attributes, flags, last_decl);
+  tree attr = decl_attributes (node, attributes, flags, last_decl);
+  if (VAR_P (*node) && DECL_THREAD_LOCAL_P (*node))
+    {
+      // tls_model attribute can set a stronger TLS access model.
+      tls_model model = DECL_TLS_MODEL (*node);
+      tls_model default_model = decl_default_tls_model (*node);
+      if (default_model > model)
+	set_decl_tls_model (*node, default_model);
+    }
+  return attr;
 }
 
 
@@ -7768,8 +7776,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (declarator->id_loc, OPT_Wc___compat,
-			      ("using %qD as both a typedef and a tag is "
-			       "invalid in C++"), decl)
+			      "using %qD as both a typedef and a tag is "
+			      "invalid in C++", decl)
 		  && b->locus != UNKNOWN_LOCATION)
 		inform (b->locus, "originally defined here");
 	    }
@@ -8182,8 +8190,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	    TREE_PUBLIC (decl) = extern_ref;
 	  }
 
+	// NB: Set a tentative TLS model to avoid tls_model attribute
+	// warnings due to lack of thread storage duration.  It will
+	// be updated by c_decl_attributes later.
 	if (threadp)
-	  set_decl_tls_model (decl, decl_default_tls_model (decl));
+	  set_decl_tls_model (decl, TLS_MODEL_REAL);
       }
 
     if ((storage_class == csc_extern
@@ -8220,7 +8231,8 @@ grokdeclarator (const struct c_declarator *declarator,
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
 
-    if (storage_class == csc_register)
+    if (storage_class == csc_register
+	&& TREE_CODE (type) != FUNCTION_TYPE)
       {
 	C_DECL_REGISTER (decl) = 1;
 	DECL_REGISTER (decl) = 1;
@@ -8267,9 +8279,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	&& TYPE_NAME (TREE_TYPE (decl)) == NULL_TREE)
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
-		  ("non-local variable %qD with anonymous type is "
-		   "questionable in C++"),
-		  decl);
+		  "non-local variable %qD with anonymous type is "
+		  "questionable in C++", decl);
 
     return decl;
   }
@@ -9130,9 +9141,8 @@ warn_cxx_compat_finish_struct (tree fieldlist, enum tree_code code,
 	      && tset.contains (DECL_NAME (x)))
 	    {
 	      warning_at (DECL_SOURCE_LOCATION (x), OPT_Wc___compat,
-			  ("using %qD as both field and typedef name is "
-			   "invalid in C++"),
-			  x);
+			  "using %qD as both field and typedef name is "
+			  "invalid in C++", x);
 	      /* FIXME: It would be nice to report the location where
 		 the typedef name is used.  */
 	    }
@@ -10331,9 +10341,9 @@ build_enumerator (location_t decl_loc, location_t loc,
 	   overflows.)  */
 	warned_range = pedwarn (loc, OPT_Wpedantic,
 				"enumerator value outside the range of %qs",
-				(TYPE_UNSIGNED (TREE_TYPE (value))
-				 ? "uintmax_t"
-				 : "intmax_t"));
+				TYPE_UNSIGNED (TREE_TYPE (value))
+				? "uintmax_t"
+				: "intmax_t");
       if (!warned_range && !int_fits_type_p (value, integer_type_node))
 	pedwarn_c11 (loc, OPT_Wpedantic,
 		     "ISO C restricts enumerator values to range of %<int%> "
@@ -11955,8 +11965,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  if (specs->typespec_word == cts_double)
 		    {
 		      error_at (loc,
-				("both %<long long%> and %<double%> in "
-				 "declaration specifiers"));
+				"both %qs and %qs in declaration specifiers",
+				"long long", "double");
 		      break;
 		    }
 		  pedwarn_c90 (loc, OPT_Wlong_long,
@@ -11967,61 +11977,60 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		}
 	      if (specs->short_p)
 		error_at (loc,
-			  ("both %<long%> and %<short%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "short");
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<long%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<long%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "void");
 	      else if (specs->typespec_word == cts_int_n)
 		error_at (loc,
-			  ("both %<long%> and %<__int%d%> in "
-			   "declaration specifiers"),
-			  int_n_data[specs->u.int_n_idx].bitsize);
+			  "both %qs and %<__int%d%> in declaration specifiers",
+			  "long", int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<long%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Bool");
 	      else if (specs->typespec_word == cts_bitint)
 		error_at (loc,
-			  ("both %<long%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_BitInt");
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
-			  ("both %<long%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "char");
 	      else if (specs->typespec_word == cts_float)
 		error_at (loc,
-			  ("both %<long%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "float");
 	      else if (specs->typespec_word == cts_floatn_nx)
 		error_at (loc,
-			  ("both %<long%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "long",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
-			  ("both %<long%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<long%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<long%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<long%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Decimal64x");
 	      else
 		{
 		  specs->long_p = true;
@@ -12032,65 +12041,64 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      dupe = specs->short_p;
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<short%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "short");
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<short%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<short%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "void");
 	      else if (specs->typespec_word == cts_int_n)
 		error_at (loc,
-			  ("both %<short%> and %<__int%d%> in "
-			   "declaration specifiers"),
-			  int_n_data[specs->u.int_n_idx].bitsize);
+			  "both %qs and %<__int%d%> in declaration specifiers",
+			  "short", int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<short%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Bool");
 	      else if (specs->typespec_word == cts_bitint)
 		error_at (loc,
-			  ("both %<short%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_BitInt");
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
-			  ("both %<short%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "char");
 	      else if (specs->typespec_word == cts_float)
 		error_at (loc,
-			  ("both %<short%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "float");
 	      else if (specs->typespec_word == cts_double)
 		error_at (loc,
-			  ("both %<short%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "double");
 	      else if (specs->typespec_word == cts_floatn_nx)
 		error_at (loc,
-			  ("both %<short%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "short",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->typespec_word == cts_dfloat32)
                 error_at (loc,
-			  ("both %<short%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<short%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<short%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<short%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Decimal64x");
 	      else
 		{
 		  specs->short_p = true;
@@ -12101,52 +12109,52 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      dupe = specs->signed_p;
 	      if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<signed%> and %<unsigned%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "unsigned");
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<signed%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<signed%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "void");
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<signed%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Bool");
 	      else if (specs->typespec_word == cts_float)
 		error_at (loc,
-			  ("both %<signed%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "float");
 	      else if (specs->typespec_word == cts_double)
 		error_at (loc,
-			  ("both %<signed%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "double");
 	      else if (specs->typespec_word == cts_floatn_nx)
 		error_at (loc,
-			  ("both %<signed%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "signed",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
-			  ("both %<signed%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<signed%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<signed%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<signed%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Decimal64x");
 	      else
 		{
 		  specs->signed_p = true;
@@ -12157,52 +12165,52 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      dupe = specs->unsigned_p;
 	      if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<unsigned%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "unsigned");
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<unsigned%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<unsigned%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "void");
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Bool");
 	      else if (specs->typespec_word == cts_float)
 		error_at (loc,
-			  ("both %<unsigned%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "float");
 	      else if (specs->typespec_word == cts_double)
 		error_at (loc,
-			  ("both %<unsigned%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "double");
 	      else if (specs->typespec_word == cts_floatn_nx)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "unsigned",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Decimal64x");
 	      else
 		{
 		  specs->unsigned_p = true;
@@ -12216,48 +12224,48 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			     "ISO C90 does not support complex types");
 	      if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<complex%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<complex%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "void");
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<complex%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Bool");
 	      else if (specs->typespec_word == cts_bitint)
 		error_at (loc,
-			  ("both %<complex%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_BitInt");
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
-			  ("both %<complex%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<complex%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<complex%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<complex%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Decimal64x");
 	      else if (specs->typespec_word == cts_fract)
 		error_at (loc,
-			  ("both %<complex%> and %<_Fract%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Fract");
 	      else if (specs->typespec_word == cts_accum)
 		error_at (loc,
-			  ("both %<complex%> and %<_Accum%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Accum");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<complex%> and %<_Sat%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Sat");
 	      else
 		{
 		  specs->complex_p = true;
@@ -12269,72 +12277,69 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C does not support saturating types");
 	      if (specs->typespec_word == cts_int_n)
-	        {
-		  error_at (loc,
-			    ("both %<_Sat%> and %<__int%d%> in "
-			     "declaration specifiers"),
-			    int_n_data[specs->u.int_n_idx].bitsize);
-	        }
+		error_at (loc,
+			  "both %qs and %<__int%d%> in declaration specifiers",
+			  "_Sat", int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
-			  ("both %<_Sat%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "__auto_type");
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
-			  ("both %<_Sat%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "void");
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Bool");
 	      else if (specs->typespec_word == cts_bitint)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_BitInt");
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
-			  ("both %<_Sat%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "char");
 	      else if (specs->typespec_word == cts_int)
 		error_at (loc,
-			  ("both %<_Sat%> and %<int%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "int");
 	      else if (specs->typespec_word == cts_float)
 		error_at (loc,
-			  ("both %<_Sat%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "float");
 	      else if (specs->typespec_word == cts_double)
 		error_at (loc,
-			  ("both %<_Sat%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "double");
 	      else if (specs->typespec_word == cts_floatn_nx)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "_Sat",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Decimal32%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Decimal32");
 	      else if (specs->typespec_word == cts_dfloat64)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Decimal64%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Decimal64");
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Decimal128%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Decimal128");
 	      else if (specs->typespec_word == cts_dfloat64x)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Decimal64x%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Decimal64x");
 	      else if (specs->complex_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<complex%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "complex");
 	      else
 		{
 		  specs->saturating_p = true;
@@ -12381,28 +12386,28 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_AUTO_TYPE:
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "__auto_type");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "__auto_type");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "__auto_type");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "__auto_type");
 	      else if (specs->complex_p)
 		error_at (loc,
-			  ("both %<complex%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "__auto_type");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<__auto_type%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "__auto_type");
 	      else
 		{
 		  specs->typespec_word = cts_auto_type;
@@ -12425,19 +12430,16 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<__int%d%> and %<long%> in "
-			   "declaration specifiers"),
-			  int_n_data[specs->u.int_n_idx].bitsize);
+			  "both %<__int%d%> and %qs in declaration specifiers",
+			  int_n_data[specs->u.int_n_idx].bitsize, "long");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<__int%d%> in "
-			   "declaration specifiers"),
-			  int_n_data[specs->u.int_n_idx].bitsize);
+			  "both %qs and %<__int%d%> in declaration specifiers",
+			  "_Sat", int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<__int%d%> and %<short%> in "
-			   "declaration specifiers"),
-			  int_n_data[specs->u.int_n_idx].bitsize);
+			  "both %<__int%d%> and %qs in declaration specifiers",
+			  int_n_data[specs->u.int_n_idx].bitsize, "short");
 	      else if (! int_n_enabled_p[specs->u.int_n_idx])
 		{
 		  specs->typespec_word = cts_int_n;
@@ -12454,28 +12456,28 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_VOID:
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "void");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "void");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "void");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "void");
 	      else if (specs->complex_p)
 		error_at (loc,
-			  ("both %<complex%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "void");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<void%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "void");
 	      else
 		{
 		  specs->typespec_word = cts_void;
@@ -12488,28 +12490,28 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			     "ISO C90 does not support boolean types");
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_Bool");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_Bool");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "_Bool");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "_Bool");
 	      else if (specs->complex_p)
 		error_at (loc,
-			  ("both %<complex%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_Bool");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Bool%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_Bool");
 	      else
 		{
 		  specs->typespec_word = cts_bool;
@@ -12519,16 +12521,16 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_CHAR:
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "char");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "char");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<char%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "char");
 	      else
 		{
 		  specs->typespec_word = cts_char;
@@ -12538,8 +12540,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_INT:
 	      if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<int%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "int");
 	      else
 		{
 		  specs->typespec_word = cts_int;
@@ -12549,24 +12551,24 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_FLOAT:
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "float");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "float");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "float");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "float");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<float%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "float");
 	      else
 		{
 		  specs->typespec_word = cts_float;
@@ -12576,24 +12578,24 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_DOUBLE:
 	      if (specs->long_long_p)
 		error_at (loc,
-			  ("both %<long long%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long long", "double");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "double");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "signed", "double");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "unsigned", "double");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<double%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "double");
 	      else
 		{
 		  specs->typespec_word = cts_double;
@@ -12607,59 +12609,59 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			     "ISO C does not support the %<_Float%d%s%> type"
 			     " before C23",
 			     floatn_nx_types[specs->u.floatn_nx_idx].n,
-			     (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			      ? "x"
-			      : ""));
+			     floatn_nx_types[specs->u.floatn_nx_idx].extended
+			     ? "x"
+			     : "");
 
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "long",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "short",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->signed_p)
 		error_at (loc,
-			  ("both %<signed%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "signed",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->unsigned_p)
 		error_at (loc,
-			  ("both %<unsigned%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "unsigned",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_Float%d%s%> in "
-			   "declaration specifiers"),
+			  "both %qs and %<_Float%d%s%> in declaration "
+			  "specifiers", "_Sat",
 			  floatn_nx_types[specs->u.floatn_nx_idx].n,
-			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+			  floatn_nx_types[specs->u.floatn_nx_idx].extended
+			  ? "x"
+			  : "");
 	      else if (FLOATN_NX_TYPE_NODE (specs->u.floatn_nx_idx) == NULL_TREE)
 		{
 		  specs->typespec_word = cts_floatn_nx;
 		  error_at (loc,
 			    "%<_Float%d%s%> is not supported on this target",
 			    floatn_nx_types[specs->u.floatn_nx_idx].n,
-			    (floatn_nx_types[specs->u.floatn_nx_idx].extended
-			     ? "x"
-			     : ""));
+			    floatn_nx_types[specs->u.floatn_nx_idx].extended
+			    ? "x"
+			    : "");
 		}
 	      else
 		{
@@ -12683,39 +12685,32 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  str = "_Decimal64x";
 		if (specs->long_long_p)
 		  error_at (loc,
-			    ("both %<long long%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "long long", str);
 		if (specs->long_p)
 		  error_at (loc,
-			    ("both %<long%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "long", str);
 		else if (specs->short_p)
 		  error_at (loc,
-			    ("both %<short%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "short", str);
 		else if (specs->signed_p)
 		  error_at (loc,
-			    ("both %<signed%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "signed", str);
 		else if (specs->unsigned_p)
 		  error_at (loc,
-			    ("both %<unsigned%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "unsigned", str);
                 else if (specs->complex_p)
                   error_at (loc,
-			    ("both %<complex%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "complex", str);
                 else if (specs->saturating_p)
                   error_at (loc,
-			    ("both %<_Sat%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "_Sat", str);
 		else if (i == RID_DFLOAT32)
 		  specs->typespec_word = cts_dfloat32;
 		else if (i == RID_DFLOAT64)
@@ -12728,8 +12723,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      }
 	      if (!targetm.decimal_float_supported_p ())
 		error_at (loc,
-			  ("decimal floating-point not supported "
-			   "for this target"));
+			  "decimal floating-point not supported "
+			  "for this target");
 	      pedwarn_c11 (loc, OPT_Wpedantic,
 			   "ISO C does not support decimal floating-point "
 			   "before C23");
@@ -12744,9 +12739,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  str = "_Accum";
                 if (specs->complex_p)
                   error_at (loc,
-			    ("both %<complex%> and %qs in "
-			     "declaration specifiers"),
-			    str);
+			    "both %qs and %qs in declaration specifiers",
+			    "complex", str);
 		else if (i == RID_FRACT)
 		    specs->typespec_word = cts_fract;
 		else
@@ -12762,20 +12756,20 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_BITINT:
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<long%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "long", "_BitInt");
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<short%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "short", "_BitInt");
 	      else if (specs->complex_p)
 		error_at (loc,
-			  ("both %<complex%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "complex", "_BitInt");
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<_BitInt%> in "
-			   "declaration specifiers"));
+			  "both %qs and %qs in declaration specifiers",
+			  "_Sat", "_BitInt");
 	      else
 		{
 		  specs->typespec_word = cts_bitint;
@@ -12834,6 +12828,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     error_at (loc, "two or more data types in declaration specifiers");
   else if (TREE_CODE (type) == TYPE_DECL)
     {
+      mark_decl_used (type, false);
       specs->type = TREE_TYPE (type);
       if (TREE_TYPE (type) != error_mark_node)
 	{

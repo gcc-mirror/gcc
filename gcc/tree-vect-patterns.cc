@@ -1140,8 +1140,7 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
 	{
 	  op2 = vect_recog_temp_ssa_var (type, NULL);
 	  gimple* nop_stmt = gimple_build_assign (op2, NOP_EXPR, match[2]);
-	  append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt,
-				  get_vectype_for_scalar_type (vinfo, type));
+	  append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt);
 	}
     }
 
@@ -1150,11 +1149,10 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
   temp = vect_recog_temp_ssa_var (type, NULL);
   cond_stmt = gimple_build_assign (temp, build3 (COND_EXPR, type, match[3],
 						 op1, op2));
-  append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt,
-			  get_vectype_for_scalar_type (vinfo, type));
+  append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt);
   new_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
   pattern_stmt = gimple_build_assign (new_lhs, code, temp);
-  *type_out = STMT_VINFO_VECTYPE (stmt_vinfo);
+  *type_out = NULL_TREE;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -4077,8 +4075,7 @@ vect_recog_vector_vector_shift_pattern (vec_info *vinfo,
   lhs = gimple_assign_lhs (last_stmt);
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (TREE_CODE (oprnd0) != SSA_NAME
-      || TREE_CODE (oprnd1) != SSA_NAME
+  if (TREE_CODE (oprnd1) != SSA_NAME
       || TYPE_MODE (TREE_TYPE (oprnd0)) == TYPE_MODE (TREE_TYPE (oprnd1))
       || !INTEGRAL_TYPE_P (TREE_TYPE (oprnd0))
       || !type_has_mode_precision_p (TREE_TYPE (oprnd1))
@@ -4330,7 +4327,14 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
 	  case alg_add_t2_m:
 	  case alg_sub_t2_m:
 	    op_uses++;
+	    /* Fallthru.  */
+	  case alg_shift:
+	    if (synth_shift_p && alg.log[i])
+	      return NULL;
 	    break;
+	  case alg_add_factor:
+	  case alg_sub_factor:
+	    return NULL;
 	  default:
 	    break;
 	  }
@@ -5357,7 +5361,7 @@ vect_recog_mod_var_pattern (vec_info *vinfo,
   gimple *pattern_stmt, *def_stmt;
   enum tree_code rhs_code;
 
-  if (!is_gimple_assign (last_stmt))
+  if (!is_gimple_assign (last_stmt) || vect_is_reduction (stmt_vinfo))
     return NULL;
 
   rhs_code = gimple_assign_rhs_code (last_stmt);
@@ -6033,16 +6037,17 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
      This is null if the operation is unconditional.  */
   tree mask = vect_get_load_store_mask (stmt_info);
 
+  /* DR analysis nailed down the vector type for the access.  */
+  tree gs_vectype = STMT_VINFO_VECTYPE (stmt_info);
+
   /* Make sure that the target supports an appropriate internal
      function for the gather/scatter operation.  */
   gather_scatter_info gs_info;
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info)
+  if (!vect_check_gather_scatter (stmt_info, gs_vectype, loop_vinfo, &gs_info)
       || gs_info.ifn == IFN_LAST)
     return NULL;
 
   /* Convert the mask to the right form.  */
-  tree gs_vectype = get_vectype_for_scalar_type (loop_vinfo,
-						 gs_info.element_type);
   if (mask)
     mask = vect_convert_mask_for_vectype (mask, gs_vectype, stmt_info,
 					  loop_vinfo);
@@ -6104,8 +6109,7 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   stmt_vec_info pattern_stmt_info = loop_vinfo->add_stmt (pattern_stmt);
   loop_vinfo->move_dr (pattern_stmt_info, stmt_info);
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  *type_out = vectype;
+  *type_out = gs_vectype;
   vect_pattern_detected ("gather/scatter pattern", stmt_info->stmt);
 
   return pattern_stmt;
@@ -7068,14 +7072,32 @@ vect_mark_pattern_stmts (vec_info *vinfo,
 	{
 	  bool found = false;
 	  if (gimple_extract_op (s, &op))
-	    for (unsigned i = 0; i < op.num_ops; ++i)
-	      if (op.ops[i] == lookfor)
+	    {
+	      for (unsigned i = 0; i < op.num_ops; ++i)
+		if (op.ops[i] == lookfor)
+		  {
+		    STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+		    lookfor = gimple_get_lhs (s);
+		    found = true;
+		    break;
+		  }
+	      /* Try harder to find a mid-entry into an earlier pattern
+		 sequence.  This means that the initial 'lookfor' was
+		 bogus.  */
+	      if (!found)
 		{
-		  STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
-		  lookfor = gimple_get_lhs (s);
-		  found = true;
-		  break;
+		  for (unsigned i = 0; i < op.num_ops; ++i)
+		    if (TREE_CODE (op.ops[i]) == SSA_NAME)
+		      if (auto def = vinfo->lookup_def (op.ops[i]))
+			if (vect_is_reduction (def))
+			  {
+			    STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+			    lookfor = gimple_get_lhs (s);
+			    found = true;
+			    break;
+			  }
 		}
+	    }
 	  if (s == pattern_stmt)
 	    {
 	      if (!found && dump_enabled_p ())

@@ -608,6 +608,10 @@ package Einfo is
 --       determine if there actually is an active Suppress or Unsuppress pragma
 --       that applies to the entity.
 
+--    Child_Levels
+--       Assrtion levels that depend on the given level are considered to be
+--        the child levels of that level.
+
 --    Class_Postconditions
 --       Defined on subprogram entities. Set if the subprogram has class-wide
 --       postconditions. Denotes the (and-then) expression built by merging
@@ -1461,6 +1465,12 @@ package Einfo is
 --       associates generic parameters with the corresponding instances, in
 --       those cases where the instance is an entity.
 
+--    Ghost_Assertion_Level
+--       Assertion level associated with the declaration of the entity. Its
+--       value is either Empty for non-ghost entities. Standard_Level_Default
+--       for Ghost entities without an assertion level or a user defined
+--       assertion level.
+
 --    Has_Aliased_Components [implementation base type only]
 --       Defined in array type entities. Indicates that the component type
 --       of the array is aliased. Should this also be set for records to
@@ -2163,6 +2173,11 @@ package Einfo is
 --       full view that has explicit discriminants, and both flag will be set
 --       on the partial view, to ensure that discriminants are properly
 --       inherited in certain contexts.
+
+--    Has_Unsigned_Base_Range_Aspect [base type only]
+--       Defined in integer types. Set in the base type of an integer type for
+--       which the type has an Unsigned_Base_Range of True (whether by an
+--       aspect_specification, a pragma, or inheritance).
 
 --    Has_Visible_Refinement
 --       Defined in E_Abstract_State entities. Set when a state has at least
@@ -4008,6 +4023,10 @@ package Einfo is
 --       used when obtaining the formal kind of a formal parameter (the result
 --       is one of E_[In/Out/In_Out]_Parameter).
 
+--    Parent_Levels
+--       Assrtion levels that the given level depends on are considered to be
+--       parent levels of that level.
+
 --    Parent_Subtype [base type only]
 --       Defined in E_Record_Type. Set only for derived tagged types, in which
 --       case it points to the subtype of the parent type. This is the type
@@ -5243,6 +5262,10 @@ package Einfo is
    --    Number_Dimensions                     (synth)
    --    (plus type attributes)
 
+   --  E_Assertion_Level
+   --    Child_Levels
+   --    Parent_Levels
+
    --  E_Block
    --    Renamed_Entity $$$
    --    Renamed_Object $$$
@@ -6112,6 +6135,7 @@ package Einfo is
    --    Static_Discrete_Predicate
    --    Has_Biased_Representation
    --    Has_Shift_Operator                   (base type only)
+   --    Has_Unsigned_Base_Range_Aspect       (base type only)
    --    No_Predicate_On_Actual
    --    No_Dynamic_Predicate_On_Actual
    --    Type_Low_Bound                       (synth)

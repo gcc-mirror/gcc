@@ -1,3 +1,9 @@
+2025-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_libstdcxx_git: Copy our "inner" documentation
+	into the web area using rsync instead of cpio and remove orphaned
+	files.
+
 2025-07-04  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Stop doing GCC 12 snapshots.

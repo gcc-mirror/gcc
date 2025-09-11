@@ -21,6 +21,8 @@ void testf (void)
   xxxxx[5] = __builtin_copysignf (-0.0, Yf[5]);
   xxxxx[6] = __builtin_copysignf (__builtin_inff (), Yf[6]);
   xxxxx[7] = __builtin_copysignf (-__builtin_nanf (""), Yf[7]);
+
+  asm("":"=m"(xxxxx));
   for (i = 0; i < 8; ++i)
     if (__builtin_memcmp (xxxxx+i, Zf+i, sizeof(float)) != 0)
       abort ();

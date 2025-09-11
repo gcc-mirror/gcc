@@ -38,6 +38,7 @@ enum class kind
 };
 
 extern const char *get_text_for_kind (enum diagnostics::kind);
+extern const char *get_debug_string_for_kind (enum diagnostics::kind);
 extern const char *get_color_for_kind (enum diagnostics::kind);
 
 } // namespace diagnostics

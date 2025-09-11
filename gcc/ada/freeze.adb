@@ -4685,7 +4685,9 @@ package body Freeze is
 
          --  Declaring too big an array in disabled ghost code is OK
 
-         if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
+         if Is_Array_Type (Typ)
+           and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
+         then
             Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;
@@ -5180,7 +5182,7 @@ package body Freeze is
               and then Convention (Desig) /= Convention_Protected
             then
                Set_Is_Frozen (Desig);
-               Create_Extra_Formals (Desig);
+               Create_Extra_Formals (Desig, Related_Nod => Rec);
             end if;
          end Check_Itype;
 
@@ -8786,7 +8788,7 @@ package body Freeze is
               and then Nkind (Parent (N)) = N_Function_Call
               and then not Has_Foreign_Convention (Nam)
             then
-               Create_Extra_Formals (Nam);
+               Create_Extra_Formals (Nam, Related_Nod => N);
             end if;
 
          when others =>

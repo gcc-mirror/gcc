@@ -659,7 +659,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* int_mul */
   {COSTS_N_INSNS (13), COSTS_N_INSNS (13)},	/* int_div */
   8,						/* issue_rate */
-  3,						/* branch_cost */
+  4,						/* branch_cost */
   4,						/* memory_cost */
   4,						/* fmv_cost */
   false,					/* slow_unaligned_access */
@@ -3686,7 +3686,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	 not enabled.  In that case we just want to let the standard
 	 expansion path run.  */
       if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode)
-	  && gen_lowpart_common (vmode, SUBREG_REG (src)))
+	  && gen_lowpart_common (vmode, SUBREG_REG (src))
+	  && convert_optab_handler (vec_extract_optab, vmode, smode))
 	{
 	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
 	  rtx int_reg = dest;
@@ -3933,6 +3934,10 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   if (MEM_P (op))
     return 0;
 
+  /* Andes bfo patterns.  */
+  if (TARGET_XANDESPERF)
+    return COSTS_N_INSNS (1);
+
   if (unsigned_p && GET_MODE (op) == QImode)
     /* We can use ANDI.  */
     return COSTS_N_INSNS (1);
@@ -4162,6 +4167,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case AND:
+      /* Andes bfo patterns.  */
+      if (TARGET_XANDESPERF && GET_CODE (XEXP (x, 0)) == ASHIFT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
       /* slli.uw pattern for zba.  */
       if (TARGET_ZBA && TARGET_64BIT && mode == DImode
 	  && GET_CODE (XEXP (x, 0)) == ASHIFT)
@@ -4221,6 +4232,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case ZERO_EXTRACT:
+      /* Andes bbcs patterns.  */
+      if (TARGET_XANDESPERF
+	  && (outer_code == NE || outer_code == EQ))
+	{
+	  *total = 0;
+	  return true;
+	}
       /* This is an SImode shift.  */
       if (outer_code == SET
 	  && CONST_INT_P (XEXP (x, 1))
@@ -4246,6 +4264,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && CONST_INT_P (XEXP (x, 2)))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Andes bfo patterns.  */
+      if (TARGET_XANDESPERF)
+	{
+	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
       return false;
@@ -4414,6 +4438,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		return true;
 	      }
 	  } while (false);
+	}
+
+      /* Andes lea patterns.  */
+      if (TARGET_XANDESPERF
+	  && ((TARGET_64BIT && GET_CODE (XEXP (x, 0)) == AND)
+	      || GET_CODE (XEXP (x, 0)) == ASHIFT))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
 	}
 
       if (float_mode_p)
@@ -15465,6 +15498,92 @@ synthesize_add (rtx operands[3])
   emit_insn (gen_rtx_SET (operands[0], x));
   return true;
 }
+
+/*  Synthesize OPERANDS[0] = OPERANDS[1] + OPERANDS[2].
+
+    For 32-bit object cases with a 64-bit target.
+
+    OPERANDS[0] and OPERANDS[1] will be a REG and may be the same
+    REG.
+
+    OPERANDS[2] is a CONST_INT.
+
+    Return TRUE if the operation was fully synthesized and the caller
+    need not generate additional code.  Return FALSE if the operation
+    was not synthesized and the caller is responsible for emitting the
+    proper sequence.  */
+
+
+bool
+synthesize_add_extended (rtx operands[3])
+{
+
+/*  If operands[2] is a 12-bit signed immediate,
+    no synthesis needs to be done.  */
+
+  if (SMALL_OPERAND (INTVAL (operands[2])))
+    return false;
+
+  HOST_WIDE_INT ival = INTVAL (operands[2]);
+  int budget1 = riscv_const_insns (operands[2], true);
+  int budget2 = riscv_const_insns (GEN_INT (-INTVAL (operands[2])), true);
+
+/*  If operands[2] can be split into two 12-bit signed immediates,
+    split add into two adds.  */
+
+  if (SUM_OF_TWO_S12 (ival))
+    {
+      HOST_WIDE_INT saturated = HOST_WIDE_INT_M1U << (IMM_BITS - 1);
+
+      if (ival >= 0)
+	saturated = ~saturated;
+
+      ival -= saturated;
+
+      rtx temp = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (temp, operands[1], GEN_INT (saturated)));
+      temp = gen_lowpart (SImode, temp);
+      SUBREG_PROMOTED_VAR_P (temp) = 1;
+      SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
+      emit_insn (gen_rtx_SET (operands[0], temp));
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (t, operands[0], GEN_INT (ival)));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      return true;
+    }
+
+
+/*  If the negated value is cheaper to synthesize, subtract that from
+    operands[1]. */
+
+  if (budget2 < budget1)
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (tmp, GEN_INT (-INTVAL (operands[2]))));
+
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_subsi3_extended (t, operands[1], tmp));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      return true;
+    }
+
+  rtx tsrc = force_reg (SImode, operands[2]);
+  rtx tdest = gen_reg_rtx (DImode);
+  emit_insn (gen_addsi3_extended (tdest, operands[1], tsrc));
+  tdest = gen_lowpart (SImode, tdest);
+  SUBREG_PROMOTED_VAR_P (tdest) = 1;
+  SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+  emit_move_insn (operands[0], tdest);
+  return true;
+
+}
+
 
 /*
     HINT : argument specify the target cache

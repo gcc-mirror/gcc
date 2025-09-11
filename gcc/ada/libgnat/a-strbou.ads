@@ -75,8 +75,9 @@ is
 
       Max_Length : constant Positive := Max;
 
-      type Bounded_String is private;
-      pragma Preelaborable_Initialization (Bounded_String);
+      type Bounded_String is private
+      with
+        Preelaborable_Initialization;
 
       Null_Bounded_String : constant Bounded_String;
       --  Null_Bounded_String represents the null string. If an object of type

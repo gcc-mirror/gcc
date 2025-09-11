@@ -1,3 +1,165 @@
+2025-09-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121859
+	* constraint.cc (maybe_diagnose_standard_trait): Check if expr
+	is non-null.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_real_cst): Mangle Intel/Motorola extended
+	80-bit formats using 20 hex digits instead of 24 or 32.
+
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99682
+	PR c++/121808
+	* module.cc (class module_state): Add comment to 'parent'.
+	(module_state::check_not_purview): Rename to...
+	(module_state::check_circular_import): ...this.  Only handle
+	interface dependencies, adjust diagnostic message.
+	(module_state::read_imports): Use new function.  Pass location
+	of import as from_loc instead of the module location.
+	(module_state::do_import): Set module_p when importing the
+	primary interface for the current module.
+	(import_module): Split out check for imports in own unit.
+	Remove incorrect assertion.
+	(preprocess_module): Don't overwrite module-decl location with
+	later import.
+
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (this_module): New function.
+	(import_entity_module): Use it.
+	(trees_out::decl_node): Likewise.
+	(get_module): Likewise.
+	(module_state::check_not_purview): Likewise.
+	(module_state::read_imports): Likewise.
+	(module_state::read_using_directives): Likewise.
+	(module_state::read_initial): Likewise.
+	(get_import_bitmap): Likewise.
+	(module_may_redeclare): Likewise.
+	(direct_import): Likewise.
+	(declare_module): Likewise.
+	(name_pending_imports): Likewise.
+	(preprocess_module): Likewise.
+	(finish_module_processing): Likewise.
+	(late_finish_module): Likewise.
+
+2025-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121779
+	* tree.cc (build_min_non_dep_op_overload): Handle comparison
+	operator expressions rewritten from a <=> that returns a
+	non-class type.
+
+2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* mangle.cc (write_real_cst): Handle 16-bit real and assert
+	that reals have 16 bits or a multiple of 32 bits.
+
+2025-09-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c++/107393
+	* decl.cc (grokvardecl): Set a tentative TLS model which will be
+	updated by cplus_decl_attributes later.
+	* decl2.cc (cplus_decl_attributes): Update TLS model with the
+	default TLS access model if the default TLS access model is
+	stronger.
+	* pt.cc (tsubst_decl): Set TLS model only after processing a
+	variable.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121702
+	* module.cc (enum module_state_counts): New counter.
+	(depset::hash::add_namespace_entities): Seed using-directive
+	targets for later streaming.
+	(module_state::write_namespaces): Don't handle using-directives
+	here.
+	(module_state::read_namespaces): Likewise.
+	(module_state::write_using_directives): New function.
+	(module_state::read_using_directives): New function.
+	(module_state::write_counts): Log using-directives.
+	(module_state::read_counts): Likewise.
+	(module_state::write_begin): Stream using-directives.
+	(module_state::read_language): Read using-directives if
+	directly importing.
+	(module_state::direct_import): Update current TU import list
+	before calling read_language.
+	* name-lookup.cc (add_using_namespace): Fix lookup of previous
+	using-directives.
+	* parser.cc (cp_parser_import_declaration): Don't set
+	MK_EXPORTING when performing import_module.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121705
+	PR c++/117658
+	* module.cc (depset::hash::make_dependency): Make bindings for
+	GM functions.
+	(depset::hash::add_binding_entity): Adjust comment.
+	(depset::hash::add_deduction_guides): Add log.
+	* ptree.cc (cxx_print_xnode): Handle friend functions where
+	TI_TEMPLATE is an OVERLOAD or IDENTIFIER.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_cxa_builtin_fn): Add missing word separating
+	space into invalid_nargs diagnostics.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* cp-tree.h (get_originating_module): Adjust parameter names.
+	* module.cc (path_of_instantiation): Handle C++26 expansion
+	statements.
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Handle
+	exported declarations attached to the same module of an
+	associated entity with the same innermost non-inline namespace,
+	and non-exported functions on the instantiation path.
+	(name_lookup::search_adl): Build mapping of namespace to modules
+	that associated entities are attached to; remove now-unneeded
+	instantiation path handling.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121724
+	* name-lookup.cc (push_namespace): Mark inline namespace
+	contexts as purview if needed.
+
+2025-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97740
+	* pt.cc (tsubst_expr) <case COMPONENT_REF>: Don't check access
+	when the given member is already a FIELD_DECL.
+
+2025-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.cc: Include contracts.h
+	* coroutines.cc: Likewise.
+	* cp-gimplify.cc: Likewise.
+	* decl.cc: Likewise.
+	* decl2.cc: Likewise.
+	* mangle.cc: Likewise.
+	* module.cc: Likewise.
+	* pt.cc: Likewise.
+	* search.cc: Likewise.
+	* semantics.cc: Likewise.
+	* contracts.cc (validate_contract_role, setup_default_contract_role,
+	add_contract_role, get_concrete_axiom_semantic,
+	get_default_contract_role): Make static.
+	* cp-tree.h (make_postcondition_variable, grok_contract,
+	finish_contract_condition, find_contract, set_decl_contracts,
+	get_contract_semantic, set_contract_semantic): Move to contracts.h.
+	* contracts.h (get_contract_role, add_contract_role,
+	validate_contract_role, setup_default_contract_role,
+	lookup_concrete_semantic, get_default_contract_role): Remove.
+
+2025-08-29  Sirui Mu  <msrlancern@gmail.com>
+
+	* typeck.cc (cp_build_array_ref): Handle 0[arr] earlier.
+
 2025-08-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107953

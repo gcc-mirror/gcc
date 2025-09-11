@@ -63,20 +63,37 @@ imm_avl_p (machine_mode mode)
 {
   poly_uint64 nunits = GET_MODE_NUNITS (mode);
 
+  /* For segmented operations AVL refers to a single register and not all NF
+     registers.  Therefore divide the mode size by NF before checking if it is
+     in range.  */
+  int nf = 1;
+  if (riscv_v_ext_tuple_mode_p (mode))
+    nf = get_nf (mode);
+
   return nunits.is_constant ()
 	   /* The vsetivli can only hold register 0~31.  */
-	   ? (IN_RANGE (nunits.to_constant (), 0, 31))
+	   ? (IN_RANGE (nunits.to_constant () / nf, 0, 31))
 	   /* Only allowed in VLS-VLMAX mode.  */
 	   : false;
 }
 
-/* Return true if LEN is equal to NUNITS that out of the range [0, 31].  */
+/* Return true if LEN equals the number of units in MODE if MODE is either a
+   VLA mode or MODE is a VLS mode its size equals the vector size.
+   In that case we can emit a VLMAX insn which can be optimized more easily
+   by the vsetvl pass.  */
+
 static bool
 is_vlmax_len_p (machine_mode mode, rtx len)
 {
   poly_int64 value;
+  if (poly_int_rtx_p (len, &value)
+      && known_eq (value, GET_MODE_NUNITS (mode))
+      && known_eq (GET_MODE_UNIT_SIZE (mode) * value, BYTES_PER_RISCV_VECTOR))
+    return true;
+
   return poly_int_rtx_p (len, &value)
-	 && known_eq (value, GET_MODE_NUNITS (mode));
+    && !GET_MODE_NUNITS (mode).is_constant ()
+    && known_eq (value, GET_MODE_NUNITS (mode));
 }
 
 /* Helper functions for insn_flags && insn_types */
@@ -3047,7 +3064,7 @@ can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   if (riscv_v_ext_vls_mode_p (vector_mode)
-      && multiple_p (TARGET_MIN_VLEN * TARGET_MAX_LMUL,
+      && multiple_p ((TARGET_MIN_VLEN * TARGET_MAX_LMUL) / BITS_PER_UNIT,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   return false;
@@ -3313,15 +3330,17 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   mask_mode = get_mask_mode (data_mode);
   rtx mask = gen_reg_rtx (mask_mode);
   rtx max_sel = gen_const_vector_dup (sel_mode, nunits);
+  bool overlap = reg_overlap_mentioned_p (target, op1);
+  rtx tmp_target = overlap ? gen_reg_rtx (data_mode) : target;
 
   /* Step 1: generate a mask that should select everything >= nunits into the
    * mask.  */
   expand_vec_cmp (mask, GEU, sel_mod, max_sel);
 
-  /* Step2: gather every op0 values indexed by sel into target,
+  /* Step2: gather every op0 values indexed by sel into TMP_TARGET,
 	    we don't need to care about the result of the element
 	    whose index >= nunits.  */
-  emit_vlmax_gather_insn (target, op0, sel_mod);
+  emit_vlmax_gather_insn (tmp_target, op0, sel_mod);
 
   /* Step3: shift the range from (nunits, max_of_mode] to
 	    [0, max_of_mode - nunits].  */
@@ -3331,7 +3350,10 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 
   /* Step4: gather those into the previously masked-out elements
 	    of target.  */
-  emit_vlmax_masked_gather_mu_insn (target, op1, tmp, mask);
+  emit_vlmax_masked_gather_mu_insn (tmp_target, op1, tmp, mask);
+
+  if (overlap)
+    emit_move_insn (target, tmp_target);
 }
 
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST for RVV.  */
@@ -4465,13 +4487,11 @@ expand_strided_load (machine_mode mode, rtx *ops)
   int idx = 4;
   get_else_operand (ops[idx++]);
   rtx len = ops[idx];
-  poly_int64 len_val;
 
   insn_code icode = code_for_pred_strided_load (mode);
   rtx emit_ops[] = {v_reg, mask, gen_rtx_MEM (mode, base), stride};
 
-  if (poly_int_rtx_p (len, &len_val)
-      && known_eq (len_val, GET_MODE_NUNITS (mode)))
+  if (is_vlmax_len_p (mode, len))
     emit_vlmax_insn (icode, BINARY_OP_TAMA, emit_ops);
   else
     {
@@ -4489,11 +4509,9 @@ expand_strided_store (machine_mode mode, rtx *ops)
   rtx stride = ops[1];
   rtx mask = ops[3];
   rtx len = ops[4];
-  poly_int64 len_val;
   rtx vl_type;
 
-  if (poly_int_rtx_p (len, &len_val)
-      && known_eq (len_val, GET_MODE_NUNITS (mode)))
+  if (is_vlmax_len_p (mode, len))
     {
       len = gen_reg_rtx (Pmode);
       emit_vlmax_vsetvl (mode, len);

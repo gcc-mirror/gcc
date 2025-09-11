@@ -2954,6 +2954,9 @@ struct GTY(()) machine_function {
   /* True if this is a recursive function.  */
   BOOL_BITFIELD recursive_function : 1;
 
+  /* True if by_pieces op is currently in use.  */
+  BOOL_BITFIELD by_pieces_in_use : 1;
+
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;
 

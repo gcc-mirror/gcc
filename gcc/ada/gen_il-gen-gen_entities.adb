@@ -63,6 +63,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (First_Rep_Item, Node_Id),
         Sm (Freeze_Node, Node_Id),
         Sm (From_Limited_With, Flag),
+        Sm (Ghost_Assertion_Level, Node_Id),
         Sm (Has_Aliased_Components, Flag, Impl_Base_Type_Only),
         Sm (Has_Alignment_Clause, Flag),
         Sm (Has_All_Calls_Remote, Flag),
@@ -496,6 +497,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Static_Predicate, Flag),
         Sm (Has_Static_Predicate_Aspect, Flag),
         Sm (Has_Unknown_Discriminants, Flag),
+        Sm (Has_Unsigned_Base_Range_Aspect, Flag,
+            Pre => "Is_Type (N)"),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Abstract_Type, Flag),
         Sm (Is_Actual_Subtype, Flag),
@@ -1343,6 +1346,17 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
+
+   Cc (E_Assertion_Level, Entity_Kind,
+       --  An assertion level. Used to associate a level indicator to an
+       --  assertion like construct. Constructs assigned with a certain level
+       --  can be disabled through pragma Assertion_Policy. Levels can form a
+       --  hierarchy. A declaration of a level can include a list of levels
+       --  this level depends on known as the Parent_Levels. An opposite list
+       --  is also kept to store all the levels that depend on it known as the
+       --  Child_Levels.
+       (Sm (Child_Levels, Elist_Id),
+        Sm (Parent_Levels, Elist_Id)));
 
    --  Union types. These don't fit into the normal parent/child hierarchy
    --  above.

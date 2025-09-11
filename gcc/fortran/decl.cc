@@ -3817,6 +3817,9 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 	  copy = gfc_copy_expr (param->expr);
 	  *e = *copy;
 	  free (copy);
+	  /* Catch variables declared without a value expression.  */
+	  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_PROCEDURE)
+	    e->ts = e->symtree->n.sym->ts;
 	}
     }
 
@@ -3952,6 +3955,16 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	}
 
+      if (kind_expr && kind_expr->expr_type == EXPR_VARIABLE
+	  && kind_expr->ts.type != BT_INTEGER
+	  && kind_expr->symtree->n.sym->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("The type parameter expression at %L must be of INTEGER "
+		     "type and not %s", &kind_expr->where,
+		     gfc_basic_typename (kind_expr->symtree->n.sym->ts.type));
+	  goto error_return;
+	}
+
       /* Store the current parameter expressions in a temporary actual
 	 arglist 'list' so that they can be substituted in the corresponding
 	 expressions in the PDT instance.  */
@@ -4076,6 +4089,11 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
       c2->ts = c1->ts;
       c2->attr = c1->attr;
+      if (c1->tb)
+	{
+	  c2->tb = gfc_get_tbp ();
+	  c2->tb = c1->tb;
+	}
 
       /* The order of declaration of the type_specs might not be the
 	 same as that of the components.  */
@@ -4162,6 +4180,17 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("Kind %d not supported for type %s at %C",
 			 c2->ts.kind, gfc_basic_typename (c2->ts.type));
 	      goto error_return;
+	    }
+	  if (c2->attr.proc_pointer && c2->attr.function
+	      && c1->ts.interface && c1->ts.interface->ts.kind == 0)
+	    {
+	      c2->ts.interface = gfc_new_symbol ("", gfc_current_ns);
+	      c2->ts.interface->result = c2->ts.interface;
+	      c2->ts.interface->ts = c2->ts;
+	      c2->ts.interface->attr.flavor = FL_PROCEDURE;
+	      c2->ts.interface->attr.function = 1;
+	      c2->attr.function = 1;
+	      c2->attr.if_source = IFSRC_UNKNOWN;
 	    }
 	}
 
@@ -7572,6 +7601,9 @@ match_ppc_decl (void)
 	  c->tb->where = gfc_current_locus;
 	  *c->tb = *tb;
 	}
+
+      if (saved_kind_expr)
+	c->kind_expr = gfc_copy_expr (saved_kind_expr);
 
       /* Set interface.  */
       if (proc_if != NULL)

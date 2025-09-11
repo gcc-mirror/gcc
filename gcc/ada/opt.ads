@@ -755,6 +755,18 @@ package Opt is
       --  reflect the starting node of the outermost ignored Ghost region. If a
       --  nested ignored Ghost region is entered, the value must remain
       --  unchanged.
+
+      Ghost_Mode_Assertion_Level : Entity_Id := Empty;
+      --  The Assertion_Level that is applied to the current ghost region.
+      --  It is either:
+      --  * Empty - when there is no ghost region
+      --  * Assertion_Level - if the ghost aspect/pragama had an
+      --    Assertion_Levle associated with it.
+      --  * Standard_Default_Level - if the ghost aspect/pragama did not have
+      --    an Assertion_Level associated to it.
+
+      Current_Region : Node_Id := Empty;
+      --  Latest ghost region
    end record;
 
    Ghost_Config : Ghost_Config_Type;

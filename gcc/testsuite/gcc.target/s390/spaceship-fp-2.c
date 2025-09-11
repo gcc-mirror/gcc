@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-options "-O2 -mzarch -march=z13 -ffinite-math-only -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times {\.SPACESHIP \([^,]+, [^,]+, 2\)} 3 optimized } } */
+/* { dg-final { scan-tree-dump-times {\.SPACESHIP \([^,]+, [^,]+, -128\)} 3 optimized } } */
 /* { dg-final { scan-assembler-times {\tc[edx]br\t} 3 } } */
 /* { dg-final { scan-assembler-not {\tbrc} } } */
 /* { dg-final { scan-assembler-not {\tk[edx]br\t} } } */
@@ -15,7 +15,7 @@
     else if (x > y)		\
       return 1;			\
     else			\
-      return 2;			\
+      return -128;		\
   }
 
 TEST (float, float)

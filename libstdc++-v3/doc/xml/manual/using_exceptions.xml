@@ -545,7 +545,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://www.boost.org/community/exception_safety.html">
+	      xlink:href="https://www.boost.org/doc/user-guide/exception-safety.html">
 	Exception-Safety in Generic Components
 	</link>
       </title>
@@ -622,7 +622,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://www.gnu.org/software/libc/manual/html_node/Tunables.html">
+	      xlink:href="https://sourceware.org/glibc/manual/latest/html_node/Tunables.html">
       Tunables, The GNU C Library
 	</link>
       </title>

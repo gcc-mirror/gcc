@@ -529,6 +529,12 @@ code generation.
 @item Param
 This is an option that is a parameter.
 
+@item NoOffload
+This option will not be passed through from the host compiler to any offload
+target compilers via the LTO mechanism.  It is intended for use with
+optimization tuning parameters where settings appropriate for the host system
+are likely to harm the performance of the offload device.
+
 @item Undocumented
 The option is deliberately missing documentation and should not
 be included in the @option{--help} output.

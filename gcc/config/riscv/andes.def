@@ -1,0 +1,14 @@
+// XANDESPERF
+/* Andes Performance Extension */
+RISCV_BUILTIN (nds_ffbsi, "nds_ffb_32", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_USI_USI, andesperf32),
+RISCV_BUILTIN (nds_ffbdi, "nds_ffb_64", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_UDI_UDI, andesperf64),
+RISCV_BUILTIN (nds_ffzmismsi, "nds_ffzmism_32", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_USI_USI, andesperf32),
+RISCV_BUILTIN (nds_ffzmismdi, "nds_ffzmism_64", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_UDI_UDI, andesperf64),
+RISCV_BUILTIN (nds_ffmismsi, "nds_ffmism_32", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_USI_USI, andesperf32),
+RISCV_BUILTIN (nds_ffmismdi, "nds_ffmism_64", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_UDI_UDI, andesperf64),
+RISCV_BUILTIN (nds_flmismsi, "nds_flmism_32", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_USI_USI, andesperf32),
+RISCV_BUILTIN (nds_flmismdi, "nds_flmism_64", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_UDI_UDI, andesperf64),
+
+/* Andes Scalar BFLOAT16 Conversion Extension */
+RISCV_BUILTIN_NO_PREFIX (extendbfsf2, "nds_fcvt_s_bf16", RISCV_BUILTIN_DIRECT, RISCV_SF_FTYPE_BF, andesbfhcvt),
+RISCV_BUILTIN_NO_PREFIX (truncsfbf2, "nds_fcvt_bf16_s", RISCV_BUILTIN_DIRECT, RISCV_BF_FTYPE_SF, andesbfhcvt),

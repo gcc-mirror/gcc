@@ -4364,7 +4364,7 @@
 			      (umax "%3,%4")
 			      (mult "%3,%4")])
 
-(define_code_attr sz [(sign_extend "s") (zero_extend "z")])
+(define_code_attr sz [(sign_extend "s") (zero_extend "z") (sign_extract "s") (zero_extract "z")])
 
 ;; VLS modes that has NUNITS < 32.
 (define_mode_iterator VLS_AVL_IMM [
@@ -4986,4 +4986,40 @@
 (define_mode_attr SF_XFW [
   (RVVM4HI "HF") (RVVM2HI "HF") (RVVM1HI "HF") (RVVMF2HI "HF") (RVVMF4HI "HF")
   (RVVM4SI "SF") (RVVM2SI "SF") (RVVM1SI "SF") (RVVMF2SI "SF")
+])
+
+(define_mode_iterator NDS_VWEXTBF [
+  (RVVM8SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVM4SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVM2SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVM1SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_attr NDS_V_DOUBLE_TRUNC_BF [
+  (RVVM8SF "RVVM4BF") (RVVM4SF "RVVM2BF") (RVVM2SF "RVVM1BF")
+  (RVVM1SF "RVVMF2BF") (RVVMF2SF "RVVMF4BF")
+])
+
+(define_mode_iterator NDS_QVI [
+  RVVM8QI RVVM4QI RVVM2QI RVVM1QI
+  RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VHF [
+  RVVM8HF RVVM4HF RVVM2HF RVVM1HF RVVMF2HF
+  (RVVMF4HF "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_attr NDS_QUAD_FIX [
+  (RVVM8SI "RVVM8QI") (RVVM4SI "RVVM4QI") (RVVM2SI "RVVM2QI")
+  (RVVM1SI "RVVM1QI") (RVVMF2SI "RVVMF2QI") (RVVM8DI "RVVM8HI")
+  (RVVM4DI "RVVM4HI") (RVVM2DI "RVVM2HI") (RVVM1DI "RVVM1HI")
+
+  (V1SI "V1QI") (V2SI "V2QI") (V4SI "V4QI") (V8SI "V8QI") (V16SI "V16QI")
+  (V32SI "V32QI") (V64SI "V64QI") (V128SI "V128QI") (V256SI "V256QI")
+  (V512SI "V512QI") (V1024SI "V1024QI")
+  (V1DI "V1HI") (V2DI "V2HI") (V4DI "V4HI") (V8DI "V8HI") (V16DI "V16HI")
+  (V32DI "V32HI") (V64DI "V64HI") (V128DI "V128HI") (V256DI "V256HI")
+  (V512DI "V512HI")
 ])

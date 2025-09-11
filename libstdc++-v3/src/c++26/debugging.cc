@@ -33,6 +33,7 @@
 #endif
 
 #if _GLIBCXX_HAVE_SYS_PTRACE_H
+# include <sys/types.h> // for darwin ptrace
 # include <sys/ptrace.h>
 # include <errno.h>
 #endif
@@ -138,7 +139,7 @@ std::breakpoint() noexcept
   __builtin_debugtrap(); // Clang
 #elif defined(__i386__) || defined(__x86_64__)
   // nop is for GDB, see https://sourceware.org/bugzilla/show_bug.cgi?id=31194
-  __asm__ volatile ("int3\n\tnop");
+  __asm__ volatile ("int $0x3\n\tnop");
 #elifdef __thumb__
   __asm__ volatile (".inst 0xde01");
 #elifdef __aarch64__

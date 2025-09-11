@@ -2614,6 +2614,11 @@ mainline GCC, not in any particular release.
    </para>
 
    <para>
+      <emphasis>20.8.11.1 [func.wrap.badcall]</emphasis>
+      <code>what()</code> returns <literal>"bad_function_call"</literal>.
+   </para>
+
+   <para>
       <emphasis>20.8.9.1.3 [func.bind.place]/1</emphasis> There are 29
       placeholders defined and the placeholder types are
       <literal>CopyAssignable</literal>.

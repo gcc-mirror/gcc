@@ -131,6 +131,10 @@ enum required_ext
   XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
   XSFVCP_EXT, /* XSFVCP extension*/
+  XANDESVBFHCVT_EXT,    /* XANDESVBFHCVT extension */
+  XANDESVSINTLOAD_EXT,  /* XANDESVSINTLOAD extension */
+  XANDESVPACKFPH_EXT,   /* XANDESVPACKFPH extension */
+  XANDESVDOT_EXT,       /* XANDESVDOT extension */
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
@@ -172,6 +176,14 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "xsfvfnrclipxfqf";
     case XSFVCP_EXT:
       return "xsfvcp";
+    case XANDESVBFHCVT_EXT:
+      return "xandesvbfhcvt";
+    case XANDESVSINTLOAD_EXT:
+      return "xandesvsintload";
+    case XANDESVPACKFPH_EXT:
+      return "xandesvpackfph";
+    case XANDESVDOT_EXT:
+      return "xandesvdot";
     default:
       gcc_unreachable ();
   }
@@ -217,6 +229,14 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_XSFVFNRCLIPXFQF;
     case XSFVCP_EXT:
       return TARGET_XSFVCP;
+    case XANDESVBFHCVT_EXT:
+      return TARGET_XANDESVBFHCVT;
+    case XANDESVSINTLOAD_EXT:
+      return TARGET_XANDESVSINTLOAD;
+    case XANDESVPACKFPH_EXT:
+      return TARGET_XANDESVPACKFPH;
+    case XANDESVDOT_EXT:
+      return TARGET_XANDESVDOT;
     default:
       gcc_unreachable ();
   }
@@ -377,6 +397,7 @@ public:
   bool any_type_float_p () const;
 
   tree get_return_type () const;
+  bool function_returns_void_p () const;
   tree get_arg_type (unsigned opno) const;
 
   /* The properties of the function.  (The explicit "enum"s are required
@@ -432,21 +453,12 @@ class function_call_info : public function_instance
 public:
   function_call_info (location_t, const function_instance &, tree);
 
-  bool function_returns_void_p ();
-
   /* The location of the call.  */
   location_t location;
 
   /* The FUNCTION_DECL that is being called.  */
   tree fndecl;
 };
-
-/* Return true if the function has no return value.  */
-inline bool
-function_call_info::function_returns_void_p ()
-{
-  return TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node;
-}
 
 /* A class for folding a gimple function call.  */
 class gimple_folder : public function_call_info

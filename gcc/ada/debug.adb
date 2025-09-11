@@ -152,7 +152,7 @@ package body Debug is
    --  d_l  Disable strict alignment of array types with aliased component
    --  d_m  Run adareducer on crash
    --  d_n
-   --  d_o
+   --  d_o  Disable Backend_Overflow_Checks_On_Target; used for testing.
    --  d_p  Ignore assertion pragmas for elaboration
    --  d_q  Do not enforce freezing for equality operator of boolean subtype
    --  d_r  Disable the use of the return slot in functions
@@ -994,6 +994,9 @@ package body Debug is
 
    --  d_l  The compiler does not enforce the strict alignment of array types
    --       that are declared with an aliased component.
+
+   --  d_o  The compiler disables Backend_Overflow_Checks_On_Target; used to
+   --       test the frontend support on targets without overflow checks.
 
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and

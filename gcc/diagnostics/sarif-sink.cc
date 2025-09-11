@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/sink.h"
 #include "diagnostics/buffering.h"
 #include "diagnostics/dumping.h"
+#include "diagnostics/logging.h"
 #include "json.h"
 #include "cpplib.h"
 #include "diagnostics/logical-locations.h"
@@ -1944,6 +1945,8 @@ report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
 std::unique_ptr<sarif_log>
 sarif_builder::flush_to_object ()
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::sarif_builder::flush_to_object");
   m_invocation_obj->prepare_to_flush (*this);
   std::unique_ptr<sarif_log> top
     = make_top_level_object (std::move (m_invocation_obj),
@@ -1959,6 +1962,8 @@ sarif_builder::flush_to_object ()
 void
 sarif_builder::flush_to_file (FILE *outf)
 {
+  DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				 "diagnostics::sarif_builder::flush_to_file");
   std::unique_ptr<sarif_log> top = flush_to_object ();
   m_serialization_format->write_to_file (outf, *top);
 }
@@ -3940,6 +3945,9 @@ public:
   on_report_diagnostic (const diagnostic_info &diagnostic,
 			enum kind orig_diag_kind) final override
   {
+    DIAGNOSTICS_LOG_SCOPE_PRINTF0
+      (get_logger (),
+       "diagnostics::sarif_sink::on_report_diagnostic");
     m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagram &d) final override

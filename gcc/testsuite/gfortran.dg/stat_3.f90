@@ -44,3 +44,16 @@ subroutine sub2 ()
   call lstat (name, status=perr, values= pbuf)
   call fstat (unit, status=perr, values= pbuf)
 end
+
+subroutine sub3 ()
+  implicit none
+  integer(1)          :: ierr1, unit1 = 10
+  integer(2)          :: buff2(13)
+  integer(4)          :: buff4(13)
+  integer(8)          :: buff8(13)
+  character(len=32)   :: name = "/etc/passwd"
+  ierr1 = stat (name,values=buff2)               ! { dg-error "with kind 2" }
+  call fstat (unit1, values=buff2)               ! { dg-error "with kind 2" }
+  call fstat (unit1, values=buff4, status=ierr1) ! { dg-error "at least four" }
+  call lstat (name,  values=buff8, status=ierr1) ! { dg-error "at least four" }
+end

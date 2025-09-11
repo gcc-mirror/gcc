@@ -1,6 +1,6 @@
 // P1061R10 - Structured Bindings can introduce a Pack
 // { dg-do compile { target c++11 } }
-// { dg-options "" }
+// { dg-options "-fno-implicit-constexpr" }
 // { dg-final { scan-assembler "_ZZ3fooI1AEivE1a:" } }
 // { dg-final { scan-assembler "_ZZ3fooI1AEivE1b:" } }
 // { dg-final { scan-assembler "_ZZ3fooI1AEivE1c:" } }

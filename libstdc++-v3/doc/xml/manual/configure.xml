@@ -438,7 +438,7 @@
     </para>
  </listitem></varlistentry>
 
- <varlistentry><term><code>--enable-vtable-verify</code>[default]</term>
+ <varlistentry><term><code>--enable-vtable-verify</code></term>
  <listitem>
     <para>Use <code>-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual

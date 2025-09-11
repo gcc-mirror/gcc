@@ -101,6 +101,121 @@ with System.Case_Util;
 
 package body Sem_Prag is
 
+   ----------------------------------
+   -- Handling of Assertion Levels --
+   ----------------------------------
+
+   --  Assertion levels are special entities declared using pragma
+   --  Assertion_Level. Assertion levels can be used in most Assertion_Kind
+   --  pragmas to associate a given level with a given list of existing
+   --  arguments. E.g.
+   --
+   --     pragma Assert (Level1 => (Expr1, "Msg1"),
+   --                    Level2 => (Expr2, "Msg2"));
+   --
+   --  Assertion levels can also be used in pragma Assertion_Policy and
+   --  Check_Policy as a valid policy name. E.g.
+   --
+   --  pragma Assertion_Policy (Level1 => Check);
+
+   --------------------------------
+   -- Declaring Assertion Levels --
+   --------------------------------
+
+   --  Assertion levels are declared using configuration level pragma
+   --  Assertion_Level. We create a new E_Assertion_Level entity for each
+   --  pragma and add each unique level to the Assertion_Levels table.
+   --
+   --  A pragma can be declared with dependencies. e.g.
+   --
+   --     pragma Assertion_Level (L1);
+   --     pragma Assertion_Level (L2, Depends => L1);
+   --     pragma Assertion_Level (L3, Depends => L2);
+   --
+   --  Levels that a level depends are called parent levels. Levels that depend
+   --  on a given level are called child levels. These dependencies are stored
+   --  in an E_Assertion_Level entity as attributes Parent_Levels and
+   --  Child_Levels.
+   --
+   --  When a pragma with the same level name is declared, we check that the
+   --  assertion level is declared with the same dependencies as the existing
+   --  level. Otherwise an error is raised.
+
+   package Assertion_Levels is new Table.Table (
+     Table_Component_Type => Entity_Id,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 30,
+     Table_Increment      => 200,
+     Table_Name           => "Assertion_Levels");
+
+   -------------------------------------------
+   -- Applying Policies to Assertion Levels --
+   -------------------------------------------
+
+   --  When a policy is applied to an assertion level, all assertions
+   --  associated with that level are subjected to the same policy. Depending
+   --  on the policy value, the same policy is applied to its dependencies.
+   --
+   --  Consider the following assertion levels:
+   --
+   --     pragma Assertion_Level (L1);
+   --     pragma Assertion_Level (L2, Depends => L1);
+   --     pragma Assertion_Level (L3, Depends => L2);
+   --
+   --  When policy Check (or On) is applied to an assertion level, it is also
+   --  applied to all of its transitive parent levels. For example
+   --
+   --      pragma Assertion_Policy (L3 => Check);
+   --
+   --  applies policy Check to L2 and L1.
+   --
+   --  When policy Ignore (or Off) is applied to an assertion level, it is also
+   --  applied to all of its transitive child levels. For example
+   --
+   --     pragma Assertion_Policy (L1 => Ignore);
+   --
+   --  applies the policy Ignore for L2 and L3.
+   --
+   --  Note that assertion levels are not allowed to have the same name as any
+   --  other Assertion_Kind defined in the RM in order to avoid unintentional
+   --  name overloading.
+
+   --------------------------------------------------
+   -- Handling of Assertions with Assertion Levels --
+   --------------------------------------------------
+
+   --  Each Assertion pragma (see Is_Valid_Assertion) supports a new syntax
+   --  where the existing arguments can be associated with an assertion level.
+   --
+   --  Each association is converted into a new pragma with the same name but
+   --  without the level argument, and the old pragma is rewritten as N_Null.
+   --  An applicable policy for those pragmas is calculated by looking at the
+   --  first active Check_Policy that either matches the pragma name or the
+   --  name of the Assertion_Level. The following policy-based attributes are
+   --  set for the given pramga:
+   --
+   --  * Is_Checked - Based on the policy
+   --  * Is_Ignored - Based on the policy
+   --  * Is_Disabled - Based on the policy
+   --  * Pragma_Ghost_Assertion_Level - level associated with the assertion.
+   --  * Original_Pragma - reference to the original pragma that had the
+   --    Assertion_Levels.
+   --
+   --  For example, the following pragma:
+   --
+   --     pragma Assert (L1 => (Expr1, "Msg1"),
+   --                    L2 => (Expr2, "Msg2"));
+   --
+   --  is rewritten as:
+   --
+   --     null; -- The original pragma
+   --     pragma Assert (Expr1, "Msg1");
+   --     pragma Assert (Expr2, "Msg2");
+   --
+   --  Each of the new pragmas is analyzed according to its existing semantic
+   --  rules.
+
    ----------------------------------------------
    -- Common Handling of Import-Export Pragmas --
    ----------------------------------------------
@@ -212,6 +327,14 @@ package body Sem_Prag is
    --  Query whether a particular item appears in a mixed list of nodes and
    --  entities. It is assumed that all nodes in the list have entities.
 
+   procedure Apply_Check_Policy (N : Node_Id; Policy : Name_Id);
+   --  Set the Is_Checked, Is_Ignored, Is_Disabled attributes on node N
+   --  based on the Policy. e.g.
+   --
+   --  * When Name_Ignore (or Name_Off) is used the node is marked as ignored.
+   --  * When Name_Check (or Name_On) is used the node is marked as checked.
+   --  * When Name_Disable is used the node is marked as disabled.
+
    procedure Check_Postcondition_Use_In_Inlined_Subprogram
      (Prag    : Node_Id;
       Spec_Id : Entity_Id);
@@ -266,6 +389,11 @@ package body Sem_Prag is
    --  set, the routine reports duplicate pragmas. The routine returns Empty
    --  when reaching the start of the node chain.
 
+   function Get_Applicable_Policy
+     (Nam : Name_Id; Level : Entity_Id) return Name_Id;
+   --  Return the name of the Check_Policy applied to the name or the level
+   --  associated with the node.
+
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
    --  original one, following the renaming chain) is returned. Otherwise the
@@ -280,6 +408,15 @@ package body Sem_Prag is
    --  Subsidiary to the analysis of pragmas Depends and Refined_Depends.
    --  Determine whether dependency clause Clause is surrounded by extra
    --  parentheses. If this is the case, issue an error message.
+
+   procedure Mark_Is_Checked (N : Node_Id);
+   --  Sets Is_Checked and unsets Is_Ignored
+
+   procedure Mark_Is_Disabled (N : Node_Id);
+   --  Sets Is_Disabled and Is_Ignored and unsets Is_Checked
+
+   procedure Mark_Is_Ignored (N : Node_Id);
+   --  Sets Is_Ignored and unsets Is_Checked
 
    procedure Record_Possible_Body_Reference
      (State_Id : Entity_Id;
@@ -4830,16 +4967,10 @@ package body Sem_Prag is
         (Arg                : Node_Id;
          N1, N2             : Name_Id);
       procedure Check_Arg_Is_One_Of
-        (Arg                : Node_Id;
-         N1, N2, N3         : Name_Id);
-      procedure Check_Arg_Is_One_Of
-        (Arg                : Node_Id;
-         N1, N2, N3, N4     : Name_Id);
-      procedure Check_Arg_Is_One_Of
-        (Arg                : Node_Id;
-         N1, N2, N3, N4, N5 : Name_Id);
+        (Arg   : Node_Id;
+         Names : Name_List);
       --  Check the specified argument Arg to make sure that it is an
-      --  identifier whose name matches either N1 or N2 (or N3, N4, N5 if
+      --  identifier whose name matches either N1 or N2 (or a list of names is
       --  present). If not then give error and raise Pragma_Exit.
 
       procedure Check_Arg_Is_Queuing_Policy (Arg : Node_Id);
@@ -4994,6 +5125,11 @@ package body Sem_Prag is
       --  Check an Unchecked_Union variant for lack of nested variants and
       --  presence of at least one component. UU_Typ is the related Unchecked_
       --  Union type.
+
+      function Create_Pragma_Without_Assertion_Level
+        (Expr : Node_Id) return Node_Id;
+      --  Creates a new pragma from an Assertion_Level association argument
+      --  with the same name as the orignal pragma.
 
       procedure Ensure_Aggregate_Form (Arg : Node_Id);
       --  Subsidiary routine to the processing of pragmas Abstract_State,
@@ -5450,6 +5586,19 @@ package body Sem_Prag is
          --  a class-wide precondition only if one of its ancestors has an
          --  explicit class-wide precondition.
 
+         function Assertion_Level_Pragma_Comes_From_Source
+           (N : Node_Id) return Boolean
+         is (Present (Original_Pragma (N))
+             and then Present (Original_Node (Original_Pragma (N)))
+             and then Comes_From_Source (Original_Node (Original_Pragma (N))));
+         --  Determine whether a pragma was originally from source and used an
+         --  assertion level.
+         --
+         --  When the pragma was using an Assertion_Level it was replaced by
+         --  a new pragma where the Original_Pragma points to the original
+         --  pragma node which was removed from the tree and replaced by a
+         --  null node.
+
          -----------------------------
          -- Inherits_Class_Wide_Pre --
          -----------------------------
@@ -5543,7 +5692,9 @@ package body Sem_Prag is
          --  rewriting the pragma identifier. This allows the retrieval of the
          --  original pragma name by routine Original_Aspect_Pragma_Name.
 
-         if Comes_From_Source (N) then
+         if Comes_From_Source (N)
+           or else Assertion_Level_Pragma_Comes_From_Source (N)
+         then
             if Pname in Name_Pre | Name_Pre_Class then
                Is_Pre_Post := True;
                Set_Class_Present (N, Pname = Name_Pre_Class);
@@ -6445,45 +6596,18 @@ package body Sem_Prag is
       end Check_Arg_Is_One_Of;
 
       procedure Check_Arg_Is_One_Of
-        (Arg        : Node_Id;
-         N1, N2, N3 : Name_Id)
+        (Arg   : Node_Id;
+         Names : Name_List)
       is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) not in N1 | N2 | N3 then
-            Error_Pragma_Arg ("invalid argument for pragma%", Argx);
+         if (for some Name of Names => Chars (Argx) = Name) then
+            return;
          end if;
-      end Check_Arg_Is_One_Of;
 
-      procedure Check_Arg_Is_One_Of
-        (Arg                : Node_Id;
-         N1, N2, N3, N4     : Name_Id)
-      is
-         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
-      begin
-         Check_Arg_Is_Identifier (Argx);
-
-         if Chars (Argx) not in N1 | N2 | N3 | N4 then
-            Error_Pragma_Arg ("invalid argument for pragma%", Argx);
-         end if;
-      end Check_Arg_Is_One_Of;
-
-      procedure Check_Arg_Is_One_Of
-        (Arg                : Node_Id;
-         N1, N2, N3, N4, N5 : Name_Id)
-      is
-         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
-      begin
-         Check_Arg_Is_Identifier (Argx);
-
-         if Chars (Argx) not in N1 | N2 | N3 | N4 | N5 then
-            Error_Pragma_Arg ("invalid argument for pragma%", Argx);
-         end if;
+         Error_Pragma_Arg ("invalid argument for pragma%", Argx);
       end Check_Arg_Is_One_Of;
 
       ---------------------------------
@@ -6899,12 +7023,14 @@ package body Sem_Prag is
          Handler_Proc := Find_Unique_Parameterless_Procedure (Arg1_X, Arg1);
          Proc_Scope := Scope (Handler_Proc);
 
-         if Ekind (Proc_Scope) /= E_Protected_Type then
+         if Nkind (Parent (Subprogram_Spec (Handler_Proc))) /=
+           N_Protected_Definition
+         then
             Error_Pragma_Arg
               ("argument of pragma% must be protected procedure", Arg1);
          end if;
 
-         --  For pragma case (as opposed to access case), check placement.
+         --  For pragma case (as opposed to aspect case), check placement.
          --  We don't need to do that for aspects, because we have the
          --  check that they aspect applies an appropriate procedure.
 
@@ -7601,6 +7727,114 @@ package body Sem_Prag is
             Next_Non_Pragma (Comp);
          end loop;
       end Check_Variant;
+
+      -------------------------------------------
+      -- Create_Pragma_Without_Assertion_Level --
+      -------------------------------------------
+
+      function Create_Pragma_Without_Assertion_Level
+        (Expr : Node_Id) return Node_Id
+      is
+         function Aggregate_To_Associations (N : Node_Id) return List_Id;
+         --  Converts an Aggregate into a list of
+         --  Pragma_Argument_Associations.
+
+         procedure Validate_Assertion_Level_Aggregate (N : Node_Id);
+         --  Handle invalid syntax scenarios for an Aggregate containing
+         --  Assertion_Levels.
+
+         -------------------------------
+         -- Aggregate_To_Associations --
+         -------------------------------
+
+         function Aggregate_To_Associations (N : Node_Id) return List_Id is
+            Args      : constant List_Id := New_List;
+            Comp_Assn : Node_Id;
+            Comp_Expr : Node_Id;
+            Comp_Expr_Repl : Node_Id;
+            Choice    : Node_Id;
+         begin
+            pragma Assert (Nkind (N) = N_Aggregate);
+            Validate_Assertion_Level_Aggregate (N);
+
+            Comp_Expr := First (Expressions (N));
+            while Present (Comp_Expr) loop
+               --  Remove the expression from the list so that it can be
+               --  inserted into the new Pragma_Argument_Association.
+
+               Comp_Expr_Repl := Comp_Expr;
+               Next (Comp_Expr);
+               Remove (Comp_Expr_Repl);
+               Append_To
+                 (Args,
+                  Make_Pragma_Argument_Association
+                    (Sloc (Comp_Expr_Repl),
+                     Expression => Comp_Expr_Repl));
+            end loop;
+
+            Comp_Assn := First (Component_Associations (N));
+            while Present (Comp_Assn) loop
+               Choice := First (Choices (Comp_Assn));
+               Append_To
+                 (Args,
+                  Make_Pragma_Argument_Association
+                    (Sloc (Comp_Assn),
+                     Chars      => Chars (Choice),
+                     Expression => Expression (Comp_Assn)));
+               Next (Comp_Assn);
+            end loop;
+            return Args;
+         end Aggregate_To_Associations;
+
+         ----------------------------------------
+         -- Validate_Assertion_Level_Aggregate --
+         ----------------------------------------
+
+         procedure Validate_Assertion_Level_Aggregate (N : Node_Id) is
+            Comp_Assn : Node_Id;
+            Choice    : Node_Id;
+         begin
+            Comp_Assn := First (Component_Associations (N));
+            while Present (Comp_Assn) loop
+               if List_Length (Choices (Comp_Assn)) /= 1 then
+                  Error_Pragma_Arg
+                    ("only one Assertion_Level can be associated "
+                     & "with an expression",
+                     Comp_Assn);
+               end if;
+
+               Choice := First (Choices (Comp_Assn));
+
+               if Nkind (Choice) /= N_Identifier then
+                  Error_Pragma_Arg
+                    ("\association must denote an Assertion_Level", Comp_Assn);
+               end if;
+               Next (Comp_Assn);
+            end loop;
+         end Validate_Assertion_Level_Aggregate;
+
+         --  Local variables
+
+         Args : List_Id;
+
+      --  Start of proessing for Create_Pragma_Without_Assertion_Level
+
+      begin
+         if Nkind (Expr) in N_Aggregate then
+            Validate_Assertion_Level_Aggregate (Expr);
+            Args := Aggregate_To_Associations (Expr);
+         else
+            Args :=
+              New_List
+                (Make_Pragma_Argument_Association (Sloc (Expr),
+                   Expression => Expr));
+         end if;
+
+         return
+           Make_Pragma (Sloc (N),
+              Chars                        => Pname,
+              Pragma_Argument_Associations => Args);
+      end Create_Pragma_Without_Assertion_Level;
 
       ---------------------------
       -- Ensure_Aggregate_Form --
@@ -8530,6 +8764,8 @@ package body Sem_Prag is
          Check_No_Identifiers;
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
+
+         Mark_Ghost_Pragma (N, Current_Scope);
 
          if CodePeer_Mode then
             Rewrite (N, Make_Null_Statement (Loc));
@@ -12336,6 +12572,13 @@ package body Sem_Prag is
 
       end Set_Ravenscar_Profile;
 
+      --  Local variables
+
+      Assoc     : Node_Id;
+      Last_Prag : Node_Id;
+      Level     : Entity_Id;
+      Sub_Prag  : Node_Id;
+
    --  Start of processing for Analyze_Pragma
 
    begin
@@ -12429,8 +12672,7 @@ package body Sem_Prag is
       elsif Is_Rewrite_Substitution (N)
         and then Nkind (Original_Node (N)) = N_Pragma
       then
-         Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
-         Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+         Set_Pragma_Ghost_Assertion_Level (N, Original_Node (N));
 
       --  Skip querying the applicable policy at this point for dynamic
       --  predicate checks since they rely on the policy applicable in
@@ -12446,22 +12688,67 @@ package body Sem_Prag is
 
       --  Otherwise query the applicable policy at this point
 
-      else
-         Check_Applicable_Policy (N);
+      elsif Is_Valid_Assertion_Kind (Pname) then
+         --  If the pragma is using Assertion_Level associations, analyze the
+         --  applicable policies for that pragma and then convert it into a
+         --  pragma without assertion levels. Analyze the new pragma with
+         --  policy-related attributes (Is_Checked/Is_Ignored/Is_Disabled)
+         --  already set.
 
-         --  If pragma is disabled, rewrite as NULL and skip analysis
+         if Has_Assertion_Level_Argument (N) then
+            Assoc := First (Pragma_Argument_Associations (N));
+            Last_Prag := N;
+            while Present (Assoc) loop
+               Level := Get_Assertion_Level (Chars (Assoc));
+               Sub_Prag :=
+                  Create_Pragma_Without_Assertion_Level (Expression (Assoc));
 
-         if Is_Disabled (N) then
+               --  Set policy based attributes based on the pragma name and the
+               --  assertion level.
+
+               Check_Applicable_Policy (Sub_Prag, Level);
+
+               --  Store the Level on the pragma node for easier access
+
+               Set_Pragma_Ghost_Assertion_Level (Sub_Prag, Level);
+
+               --  Store the Original_Pragma for the detection of
+               --  duplicates.
+
+               Set_Original_Pragma (Sub_Prag, N);
+
+               --  Insert the created pragmas in the same order after the
+               --  original pragma and analyze them later.
+
+               Insert_After (Last_Prag, Sub_Prag);
+               Last_Prag := Sub_Prag;
+
+               Next (Assoc);
+            end loop;
+
+            --  Remove the original pragma and continue processing all
+            --  of the new sub-pragmas.
+
             Rewrite (N, Make_Null_Statement (Loc));
             Analyze (N);
             raise Pragma_Exit;
+
+         --  Otherwise apply the policy based attributes based on the pragma
+         --  name.
+
+         else
+            Check_Applicable_Policy (N, Empty);
+            Set_Pragma_Ghost_Assertion_Level
+              (N, Standard_Level_Default);
          end if;
       end if;
 
-      --  Mark assertion pragmas as Ghost depending on their enclosing context
+      --  If the pragma is disabled, rewrite it as NULL and skip its analysis
 
-      if Assertion_Expression_Pragma (Prag_Id) then
-         Mark_Ghost_Pragma (N, Current_Scope);
+      if Is_Disabled (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         raise Pragma_Exit;
       end if;
 
       --  Preset arguments
@@ -13090,6 +13377,12 @@ package body Sem_Prag is
 
                            if Present (State_Id) then
                               Set_Is_Ghost_Entity (State_Id);
+
+                              --  Amend the Assertion_Level coming from the
+                              --  package.
+
+                              Set_Ghost_Assertion_Level
+                                 (State_Id, Standard_Level_Default);
                            end if;
 
                         --  Synchronous
@@ -13170,7 +13463,26 @@ package body Sem_Prag is
 
                         elsif Chars (Opt_Nam) = Name_Part_Of then
                            Analyze_Part_Of_Option (Opt);
+                        elsif Chars (Opt_Nam) = Name_Ghost then
+                           Check_Duplicate_Option (Opt, Ghost_Seen);
+                           Check_Ghost_Synchronous;
 
+                           if Present (State_Id) then
+                              Set_Is_Ghost_Entity (State_Id);
+
+                              --  Amend the Assertion_Level coming from the
+                              --  package.
+
+                              if Nkind (Expression (Opt)) /= N_Identifier then
+                                 Error_Pragma_Arg
+                                   ("level name must be an identifier", N);
+                              end if;
+
+                              Set_Ghost_Assertion_Level
+                                (State_Id,
+                                 Get_Assertion_Level
+                                   (Chars (Expression (Opt))));
+                           end if;
                         else
                            SPARK_Msg_N ("invalid state option", Opt);
                         end if;
@@ -14022,8 +14334,13 @@ package body Sem_Prag is
 
             --  Local variables
 
-            Expr     : Node_Id;
-            New_Args : List_Id;
+            Args        : Args_List (1 .. 2);
+            Arg_Check   : Node_Id renames Args (1);
+            Arg_Message : Node_Id renames Args (2);
+            Check_Prag  : Node_Id;
+            New_Args    : List_Id;
+            Names       : constant Name_List (1 .. 2) :=
+               (Name_Check, Name_Message);
 
          --  Start of processing for Assert
 
@@ -14041,25 +14358,26 @@ package body Sem_Prag is
 
             Check_At_Least_N_Arguments (1);
             Check_At_Most_N_Arguments (2);
-            Check_Arg_Order ((Name_Check, Name_Message));
-            Check_Optional_Identifier (Arg1, Name_Check);
-            Expr := Get_Pragma_Arg (Arg1);
+            Gather_Associations (Names, Args);
+            Check_Arg_Order (Names);
+            Mark_Ghost_Pragma (N, Current_Scope);
 
             --  Special processing for Loop_Invariant, Loop_Variant or for
             --  other cases where a Loop_Entry attribute is present. If the
             --  assertion pragma contains attribute Loop_Entry, ensure that
             --  the related pragma is within a loop.
 
-            if        Prag_Id = Pragma_Loop_Invariant
+            if Prag_Id = Pragma_Loop_Invariant
               or else Prag_Id = Pragma_Loop_Variant
-              or else Contains_Loop_Entry (Expr)
+              or else Contains_Loop_Entry (Arg_Check)
             then
                Check_Loop_Pragma_Placement;
 
                --  Perform preanalysis to deal with embedded Loop_Entry
                --  attributes.
 
-               Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression
+                  (Arg_Check, Any_Boolean);
             end if;
 
             --  Implement Assert[_And_Cut]/Assume/Loop_Invariant by generating
@@ -14079,29 +14397,185 @@ package body Sem_Prag is
             New_Args := New_List (
               Make_Pragma_Argument_Association (Loc,
                 Expression => Make_Identifier (Loc, Pname)),
-              Make_Pragma_Argument_Association (Sloc (Expr),
-                Expression => Expr));
+              Make_Pragma_Argument_Association (Sloc (Arg_Check),
+                Expression => Arg_Check));
 
-            if Arg_Count > 1 then
-               Check_Optional_Identifier (Arg2, Name_Message);
+            if Present (Arg_Message) then
 
                --  Provide semantic annotations for optional argument, for
                --  ASIS use, before rewriting.
                --  Is this still needed???
 
-               Preanalyze_And_Resolve (Expression (Arg2), Standard_String);
+               Preanalyze_And_Resolve (Arg_Message, Standard_String);
                Append_To (New_Args, New_Copy_Tree (Arg2));
             end if;
 
             --  Rewrite as Check pragma
 
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => New_Args));
+            Check_Prag :=
+               Make_Pragma
+                 (Loc,
+                  Chars                        => Name_Check,
+                  Pragma_Argument_Associations => New_Args);
+            Copy_Assertion_Policy_Attributes (Check_Prag, N);
+            Rewrite (N, Check_Prag);
 
             Analyze (N);
          end Assert;
+
+         ---------------------
+         -- Assertion_Level --
+         ---------------------
+
+         --  pragma Assertion_Level (LEVEL_IDENTIFIER
+         --                          [, depends => DEPENDENCY_DESCRIPTOR]);
+         --
+         --  DEPENDENCY_DESCRIPTOR ::= LEVEL_IDENTIFIER | LEVEL_IDENTIFIER_LIST
+         --
+         --  LEVEL_IDENTIFIER_LIST ::= '[' LEVEL_IDENTIFIER
+         --                             {, LEVEL_IDENTIFIER} ']'
+
+         when Pragma_Assertion_Level => Assertion_Level : declare
+            procedure Add_Dependencies
+               (Level : Entity_Id; Parent_Level : Entity_Id);
+            --  Adds the following dependencies:
+            --  * Adds Parent_Level to the Parent_Levels of Level
+            --  * Adds Level to the Child_Levels of Parent_Level
+
+            procedure Check_Known_Level_Name
+               (Level : Entity_Id; Ref : Node_Id);
+            --  Raise an error if the level has not be declared before
+
+            procedure Check_Valid_Level_Name (Nam : Name_Id);
+            --  Raise an error if the name matches a valid assertion kind.
+            --
+            --  This is to avoid the ambigiouty in Assertion_Policy if either
+            --  the level or the assertion kind is affected by the policy.
+
+            procedure Check_Valid_Level_Node (N : Node_Id);
+            --  Raise an error if the node is not a simple identifier
+
+            ----------------------
+            -- Add_Dependencies --
+            ----------------------
+
+            procedure Add_Dependencies
+               (Level : Entity_Id; Parent_Level : Entity_Id)
+            is
+               Parent_Level_List : Elist_Id;
+               Child_Levels_List : Elist_Id;
+            begin
+               if No (Parent_Levels (Level)) then
+                  Set_Parent_Levels (Level, New_Elmt_List);
+               end if;
+               Parent_Level_List := Parent_Levels (Level);
+               Append_Elmt (Parent_Level, Parent_Level_List);
+
+               if No (Child_Levels (Parent_Level)) then
+                  Set_Child_Levels (Parent_Level, New_Elmt_List);
+               end if;
+               Child_Levels_List := Child_Levels (Parent_Level);
+               Append_Elmt (Level, Child_Levels_List);
+            end Add_Dependencies;
+
+            ----------------------------
+            -- Check_Known_Level_Name --
+            ----------------------------
+
+            procedure Check_Known_Level_Name
+               (Level : Entity_Id; Ref : Node_Id) is
+            begin
+               if No (Level) then
+                  Error_Msg_Name_1 := Chars (Ref);
+                  Error_Msg_N ("unknown assertion level &", Ref);
+                  raise Pragma_Exit;
+               end if;
+            end Check_Known_Level_Name;
+
+            ----------------------------
+            -- Check_Valid_Level_Name --
+            ----------------------------
+
+            procedure Check_Valid_Level_Name (Nam : Name_Id) is
+            begin
+               if Is_Valid_Assertion_Kind (Nam) then
+                  Error_Pragma_Arg
+                     ("level name cannot match an assertion kind", Arg1);
+               end if;
+            end Check_Valid_Level_Name;
+
+            ----------------------------
+            -- Check_Valid_Level_Node --
+            ----------------------------
+
+            procedure Check_Valid_Level_Node (N : Node_Id) is
+            begin
+               if Nkind (N) /= N_Identifier then
+                  Error_Pragma_Arg ("level name must be an identifier", N);
+               end if;
+            end Check_Valid_Level_Node;
+
+            --  Local variables
+
+            Dep       : Node_Id;
+            Dep_Id    : Entity_Id;
+            Dep_Arg   : Node_Id;
+            Level_Arg : Node_Id;
+            Level_Id  : Entity_Id;
+            Level_Nam : Name_Id;
+
+         --  Start of processing for Pragma_Assertion_Level
+
+         begin
+            GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (2);
+
+            Check_No_Identifier (Arg1);
+
+            Level_Arg := Expression (Arg1);
+            Check_Valid_Level_Node (Level_Arg);
+
+            Level_Nam := Chars (Level_Arg);
+            Check_Valid_Level_Name (Level_Nam);
+
+            Level_Id := Make_Assertion_Level (Loc, Level_Nam);
+
+            Set_Parent (Level_Id, Level_Arg);
+            Set_Entity (Level_Arg, Level_Id);
+
+            if Arg_Count = 2 then
+               Check_Identifier (Arg2, Name_Depends);
+
+               Dep_Arg := Expression (Arg2);
+
+               if Nkind (Dep_Arg) = N_Identifier then
+                  Dep_Id := Get_Assertion_Level (Chars (Dep_Arg));
+                  Check_Known_Level_Name (Dep_Id, Dep_Arg);
+                  Add_Dependencies (Level_Id, Dep_Id);
+               elsif Nkind (Dep_Arg) = N_Aggregate then
+                  Dep := First (Expressions (Dep_Arg));
+                  while Present (Dep) loop
+                     Check_Valid_Level_Node (Dep);
+                     Dep_Id := Get_Assertion_Level (Chars (Dep));
+                     Check_Known_Level_Name (Dep_Id, Dep);
+                     Add_Dependencies (Level_Id, Dep_Id);
+
+                     Next (Dep);
+                  end loop;
+               else
+                  Error_Pragma_Arg
+                    ("depends argument must be either "
+                     & "an identifier or "
+                     & "an aggregate of identifiers", Dep_Arg);
+               end if;
+            end if;
+
+            --  Register the new Assertion_Level
+
+            Insert_Assertion_Level (Level_Id);
+         end Assertion_Level;
 
          ----------------------
          -- Assertion_Policy --
@@ -14115,7 +14589,9 @@ package body Sem_Prag is
          --      ASSERTION_KIND => POLICY_IDENTIFIER
          --   {, ASSERTION_KIND => POLICY_IDENTIFIER});
 
-         --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
+         --  ASSERTION_KIND ::= RM_ASSERTION_KIND |
+         --                     ID_ASSERTION_KIND |
+         --                     LEVEL_IDENTIFIER
 
          --  RM_ASSERTION_KIND ::= Assert                     |
          --                        Static_Predicate           |
@@ -14194,8 +14670,13 @@ package body Sem_Prag is
 
             --  Local variables
 
+            Policy_Names : constant Name_List :=
+              (Name_Check, Name_Disable, Name_Ignore, Name_Suppressible);
+
             Arg    : Node_Id;
+            Id     : Node_Id;
             Kind   : Name_Id;
+            Level  : Entity_Id;
             LocP   : Source_Ptr;
             Policy : Node_Id;
 
@@ -14222,8 +14703,7 @@ package body Sem_Prag is
               and then (Nkind (Arg1) /= N_Pragma_Argument_Association
                          or else Chars (Arg1) = No_Name)
             then
-               Check_Arg_Is_One_Of (Arg1,
-                 Name_Check, Name_Disable, Name_Ignore, Name_Suppressible);
+               Check_Arg_Is_One_Of (Arg1, Policy_Names);
 
                Resolve_Suppressible (Arg1);
 
@@ -14272,15 +14752,22 @@ package body Sem_Prag is
                   --  Check Kind and Policy have allowed forms
 
                   Kind   := Chars (Arg);
+                  Id := Make_Identifier (LocP, Kind);
                   Policy := Get_Pragma_Arg (Arg);
 
                   if not Is_Valid_Assertion_Kind (Kind) then
-                     Error_Pragma_Arg
-                       ("invalid assertion kind for pragma%", Arg);
+                     Set_Entity (Id, Get_Assertion_Level (Kind));
+                     Level := Entity (Id);
+                     if No (Level)
+                       or else Ekind (Level) /= E_Assertion_Level
+                     then
+                        Error_Pragma_Arg
+                           ("invalid assertion kind for pragma%",
+                           Arg);
+                     end if;
                   end if;
 
-                  Check_Arg_Is_One_Of (Arg,
-                    Name_Check, Name_Disable, Name_Ignore, Name_Suppressible);
+                  Check_Arg_Is_One_Of (Arg, Policy_Names);
 
                   Resolve_Suppressible (Arg);
 
@@ -14321,7 +14808,7 @@ package body Sem_Prag is
                       Chars                        => Name_Check_Policy,
                       Pragma_Argument_Associations => New_List (
                          Make_Pragma_Argument_Association (LocP,
-                           Expression => Make_Identifier (LocP, Kind)),
+                           Expression => Id),
                          Make_Pragma_Argument_Association (LocP,
                            Expression => Policy))));
 
@@ -14864,12 +15351,10 @@ package body Sem_Prag is
                pragma Assert (Has_Dynamic_Predicate_Aspect (Typ));
 
                if not Predicates_Ignored (Typ) then
-                  Set_Is_Checked (N, True);
-                  Set_Is_Ignored (N, False);
+                  Mark_Is_Checked (N);
 
                else
-                  Set_Is_Checked (N, False);
-                  Set_Is_Ignored (N, True);
+                  Mark_Is_Ignored (N);
 
                end if;
             end Handle_Dynamic_Predicate_Check;
@@ -14879,11 +15364,16 @@ package body Sem_Prag is
             Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
             --  Save the Ghost-related attributes to restore on exit
 
+            Names : constant Name_List (1 .. 3) :=
+               (Name_Name, Name_Check, Name_Message);
+
+            Args        : Args_List (1 .. 3);
+            Arg_Name    : Node_Id renames Args (1);
+            Arg_Check   : Node_Id renames Args (2);
+            Arg_Message : Node_Id renames Args (3);
+
             Cname : Name_Id;
             Eloc  : Source_Ptr;
-            Expr  : Node_Id;
-            Str   : Node_Id;
-            pragma Warnings (Off, Str);
 
          --  Start of processing for Pragma_Check
 
@@ -14892,22 +15382,19 @@ package body Sem_Prag is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are marked as Ghost.
 
+            Mark_Ghost_Pragma (N, Current_Scope);
+
             Set_Ghost_Mode (N);
 
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments (3);
-            Check_Optional_Identifier (Arg1, Name_Name);
-            Check_Optional_Identifier (Arg2, Name_Check);
 
-            if Arg_Count = 3 then
-               Check_Optional_Identifier (Arg3, Name_Message);
-               Str := Get_Pragma_Arg (Arg3);
-            end if;
+            Gather_Associations (Names, Args);
 
-            Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
-            Check_Arg_Is_Identifier (Arg1);
-            Cname := Chars (Get_Pragma_Arg (Arg1));
+            Rewrite_Assertion_Kind (Arg_Name);
+            Check_Arg_Is_Identifier (Arg_Name);
+            Cname := Chars (Arg_Name);
 
             --  Check forbidden name Assertions or Statement_Assertions
 
@@ -14915,12 +15402,12 @@ package body Sem_Prag is
                when Name_Assertions =>
                   Error_Pragma_Arg
                     ("""Assertions"" is not allowed as a check kind for "
-                     & "pragma%", Arg1);
+                     & "pragma%", Arg_Name);
 
                when Name_Statement_Assertions =>
                   Error_Pragma_Arg
                     ("""Statement_Assertions"" is not allowed as a check kind "
-                     & "for pragma%", Arg1);
+                     & "for pragma%", Arg_Name);
 
                when others =>
                   null;
@@ -14938,8 +15425,7 @@ package body Sem_Prag is
             elsif Is_Rewrite_Substitution (N)
               and then Nkind (Original_Node (N)) = N_Pragma
             then
-               Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
-               Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+               Copy_Assertion_Policy_Attributes (N, Original_Node (N));
 
             --  Internally added dynamic predicate checks require checking the
             --  applicable policy at the point of the type declaration of their
@@ -14954,33 +15440,17 @@ package body Sem_Prag is
             --  Otherwise query the applicable policy at this point
 
             else
-               case Check_Kind (Cname) is
-                  when Name_Ignore =>
-                     Set_Is_Ignored (N, True);
-                     Set_Is_Checked (N, False);
+               Apply_Check_Policy (N, Get_Applicable_Policy (Cname, Empty));
 
-                  when Name_Check =>
-                     Set_Is_Ignored (N, False);
-                     Set_Is_Checked (N, True);
+               --  For disable, rewrite pragma as null statement and skip
+               --  rest of the analysis of the pragma.
 
-                  --  For disable, rewrite pragma as null statement and skip
-                  --  rest of the analysis of the pragma.
-
-                  when Name_Disable =>
-                     Rewrite (N, Make_Null_Statement (Loc));
-                     Analyze (N);
-                     raise Pragma_Exit;
-
-                  --  No other possibilities
-
-                  when others =>
-                     raise Program_Error;
-               end case;
+               if Is_Disabled (N) then
+                  Rewrite (N, Make_Null_Statement (Loc));
+                  Analyze (N);
+                  raise Pragma_Exit;
+               end if;
             end if;
-
-            --  If check kind was not Disable, then continue pragma analysis
-
-            Expr := Get_Pragma_Arg (Arg2);
 
             --  Mark the pragma (or, if rewritten from an aspect, the original
             --  aspect) as enabled. Nothing to do for an internally generated
@@ -15005,8 +15475,8 @@ package body Sem_Prag is
             --  expression is only evaluated if the check fails and
             --  Assertion_Error is to be raised.
 
-            if Arg_Count = 3 then
-               Preanalyze_And_Resolve (Str, Standard_String);
+            if Present (Arg_Message) then
+               Preanalyze_And_Resolve (Arg_Message, Standard_String);
             end if;
 
             --  Now you might think we could just do the same with the Boolean
@@ -15035,14 +15505,14 @@ package body Sem_Prag is
             --  warning when we delete the if statement.
 
             if Expander_Active and Is_Ignored_In_Codegen (N) then
-               Eloc := Sloc (Expr);
+               Eloc := Sloc (Arg_Check);
 
                Rewrite (N,
                  Make_If_Statement (Eloc,
                    Condition =>
                      Make_And_Then (Eloc,
                        Left_Opnd  => Make_Identifier (Eloc, Name_False),
-                       Right_Opnd => Expr),
+                       Right_Opnd => Arg_Check),
                    Then_Statements => New_List (
                      Make_Null_Statement (Eloc))));
 
@@ -15083,7 +15553,7 @@ package body Sem_Prag is
 
             else
                In_Assertion_Expr := In_Assertion_Expr + 1;
-               Analyze_And_Resolve (Expr, Any_Boolean);
+               Analyze_And_Resolve (Arg_Check, Any_Boolean);
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
@@ -15157,7 +15627,90 @@ package body Sem_Prag is
          --  new form syntax.
 
          when Pragma_Check_Policy => Check_Policy : declare
-            Kind : Node_Id;
+            procedure Get_All_Child_Levels
+               (Level : Entity_Id;
+                Deps  : in out Elist_Id);
+            --  Add all of the transitive children of the given Level to the
+            --  Deps list.
+
+            procedure Get_All_Parent_Levels
+               (Level : Entity_Id;
+                Deps  : in out Elist_Id);
+            --  Add all of the transitive parents of the given Level to the
+            --  Deps list.
+
+            --------------------------
+            -- Get_All_Child_Levels --
+            --------------------------
+
+            procedure Get_All_Child_Levels
+               (Level : Entity_Id;
+                Deps : in out Elist_Id)
+            is
+               It : Elmt_Id;
+               Child_Lvl : Entity_Id;
+            begin
+               if No (Child_Levels (Level)) then
+                  return;
+               end if;
+
+               It := First_Elmt (Child_Levels (Level));
+               while Present (It) loop
+                  Child_Lvl := Node (It);
+                  if not Contains (Deps, Child_Lvl) then
+                     Append_New_Elmt (Child_Lvl, Deps);
+                     Get_All_Child_Levels (Child_Lvl, Deps);
+                  end if;
+
+                  Next_Elmt (It);
+               end loop;
+            end Get_All_Child_Levels;
+
+            ---------------------------
+            -- Get_All_Parent_Levels --
+            ---------------------------
+
+            procedure Get_All_Parent_Levels
+               (Level : Entity_Id;
+                Deps : in out Elist_Id)
+            is
+               It : Elmt_Id;
+               D : Entity_Id;
+            begin
+               if No (Parent_Levels (Level)) then
+                  return;
+               end if;
+
+               It := First_Elmt (Parent_Levels (Level));
+               while Present (It) loop
+                  D := Node (It);
+
+                  if not Contains (Deps, D) then
+                     Append_New_Elmt (D, Deps);
+                     Get_All_Parent_Levels (D, Deps);
+                  end if;
+
+                  Next_Elmt (It);
+               end loop;
+            end Get_All_Parent_Levels;
+
+            --  Local variables
+
+            Policy_Names : constant Name_List :=
+              (Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+
+            Affected_Levels   : Elist_Id := New_Elmt_List;
+            Depends_On_Static : Boolean := False;
+
+            Kind       : Node_Id;
+            Level      : Entity_Id;
+            L          : Entity_Id;
+            L_It       : Elmt_Id;
+            L_Id       : Node_Id;
+            New_P      : Node_Id;
+            Policy_Nam : Name_Id;
+
+         --  Start of processing for Pragma Check_Policy
 
          begin
             GNAT_Pragma;
@@ -15199,14 +15752,91 @@ package body Sem_Prag is
                --  Check policy
 
                Check_Optional_Identifier (Arg2, Name_Policy);
-               Check_Arg_Is_One_Of
-                 (Arg2,
-                  Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+               Check_Arg_Is_One_Of (Arg2, Policy_Names);
+
+               Policy_Nam := Chars (Get_Pragma_Arg (Arg2));
 
                --  And chain pragma on the Check_Policy_List for search
 
                Set_Next_Pragma (N, Opt.Check_Policy_List);
                Opt.Check_Policy_List := N;
+
+               --  For Assertion_Levels create new policies for all of the
+               --  level dependencies.
+
+               if Present (Entity (Kind))
+                 and then Ekind (Entity (Kind)) = E_Assertion_Level
+               then
+                  Level := Entity (Kind);
+
+                  Depends_On_Static :=
+                    Depends_On_Level (Level, Standard_Level_Static);
+
+                  if Policy_Nam in Name_On | Name_Check then
+                     if Level = Standard_Level_Static then
+                        Error_Pragma_Arg
+                          ("policy for `Static` cannot be changed to `Check`",
+                           Arg1);
+                     elsif Depends_On_Static then
+                        Error_Pragma_Arg
+                          ("Policy for a level that depends on `Static` "
+                           & "cannot be changed to `Check`",
+                           Arg1);
+                     end if;
+                  end if;
+
+                  if Policy_Nam in Name_Off | Name_Ignore
+                     and then Level = Standard_Level_Runtime
+                  then
+                     Error_Pragma_Arg
+                        ("policy for `Runtime` cannot be changed to `Ignore`",
+                        Arg1);
+                  end if;
+
+                  --  For Assertion_Levels create new policyies for all of the
+                  --  level dependencies.
+
+                  if Policy_Nam in Name_On | Name_Check then
+
+                     --  Activating a level activates all levels that it
+                     --  depends on (Parent_Levels).
+
+                     Get_All_Parent_Levels (Level, Affected_Levels);
+                  elsif Policy_Nam in Name_Off | Name_Ignore then
+
+                     --  Deactivating a level deactivates all levels that
+                     --  depend on it (Child_Levels)
+
+                     Get_All_Child_Levels (Level, Affected_Levels);
+                  end if;
+
+                  L_It := First_Elmt (Affected_Levels);
+                  while Present (L_It) loop
+                     L := Node (L_It);
+                     L_Id := Make_Identifier (Sloc (Arg1), Chars (L));
+                     Set_Entity (L_Id, L);
+                     New_P :=
+                       Make_Pragma (Sloc (N),
+                         Chars                        => Name_Check_Policy,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Sloc (Arg1),
+                             Expression => L_Id),
+                           Make_Pragma_Argument_Association (Sloc (Arg2),
+                             Expression =>
+                               New_Copy_Tree (Get_Pragma_Arg (Arg2)))));
+
+                     --  We have collected the unique list of all transitive
+                     --  Parent_Levels or Child_Levels. Avoid calculating
+                     --  them again.
+
+                     Set_Analyzed (New_P);
+
+                     Set_Next_Pragma (New_P, Opt.Check_Policy_List);
+                     Opt.Check_Policy_List := New_P;
+
+                     Next_Elmt (L_It);
+                  end loop;
+               end if;
 
             --  For the new syntax, what we do is to convert each argument to
             --  an old syntax equivalent. We do that because we want to chain
@@ -15218,8 +15848,6 @@ package body Sem_Prag is
                   Arg   : Node_Id;
                   Argx  : Node_Id;
                   LocP  : Source_Ptr;
-                  New_P : Node_Id;
-
                begin
                   Arg := Arg1;
                   while Present (Arg) loop
@@ -16362,6 +16990,21 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (2);  -- Accounts for implicit type arg
 
+            --  The value "null" cannot be associated with an assertion level
+            --  as it has no runtime semantics.
+
+            if Present (Pragma_Ghost_Assertion_Level (N))
+               and then Pragma_Ghost_Assertion_Level (N)
+                        /= Standard_Level_Default
+               and then Present (Arg1)
+               and then Nkind (Get_Pragma_Arg (Arg1)) = N_Null
+            then
+               Error_Pragma_Arg
+                  ("null argument cannot be used together "
+                  & "with assertion levels",
+                  Arg1);
+            end if;
+
             Typ  := Empty;
             Stmt := Prev (N);
             while Present (Stmt) loop
@@ -16369,7 +17012,9 @@ package body Sem_Prag is
                --  Skip prior pragmas, but check for duplicates
 
                if Nkind (Stmt) = N_Pragma then
-                  if Pragma_Name (Stmt) = Pname then
+                  if Pragma_Name (Stmt) = Pname
+                     and then not From_Same_Pragma (N, Stmt)
+                  then
                      Duplication_Error
                        (Prag => N,
                         Prev => Stmt);
@@ -18020,7 +18665,8 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All_Extensions);
+            Check_Arg_Is_One_Of
+              (Arg1, (Name_On, Name_Off, Name_All_Extensions));
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
                Ada_Version := Ada_With_Core_Extensions;
@@ -18225,7 +18871,7 @@ package body Sem_Prag is
 
             if Arg_Count = 2 then
                Check_Arg_Is_One_Of
-                 (Arg2, Name_As_Is, Name_Uppercase, Name_Lowercase);
+                 (Arg2, (Name_As_Is, Name_Uppercase, Name_Lowercase));
 
                case Chars (Get_Pragma_Arg (Arg2)) is
                   when Name_As_Is     =>
@@ -18470,12 +19116,15 @@ package body Sem_Prag is
          -- Ghost --
          -----------
 
-         --  pragma Ghost [ (static_boolean_EXPRESSION) ];
+         --  pragma Ghost [ (static_boolean_EXPRESSION
+         --                  | Assertion_Level) ];
 
          when Pragma_Ghost => Ghost : declare
             Context   : Node_Id;
             Expr      : Node_Id;
             Id        : Entity_Id;
+            Is_Ghost  : Boolean := True;
+            Level     : Entity_Id;
             Orig_Stmt : Node_Id;
             Prev_Id   : Entity_Id;
             Stmt      : Node_Id;
@@ -18699,30 +19348,48 @@ package body Sem_Prag is
             if Present (Arg1) then
                Expr := Get_Pragma_Arg (Arg1);
 
-               Analyze_And_Resolve (Expr, Standard_Boolean);
+               if Nkind (Expr) /= N_Identifier
+                 or else No (Get_Assertion_Level (Chars (Expr)))
+               then
+                  Analyze_And_Resolve (Expr, Standard_Boolean);
 
-               if Is_OK_Static_Expression (Expr) then
-
-                  --  "Ghostness" cannot be turned off once enabled within a
-                  --  region (SPARK RM 6.9(6)).
-
-                  if Is_False (Expr_Value (Expr))
-                     and then Ghost_Config.Ghost_Mode > None
-                  then
-                     Error_Pragma
-                       ("pragma % with value False cannot appear in enabled "
-                        & "ghost region");
+                  if not Is_OK_Static_Expression (Expr) then
+                     Error_Pragma_Arg
+                        ("expression of pragma % must be static", Expr);
                   end if;
 
-               --  Otherwise the expression is not static
+                  if Is_False (Expr_Value (Expr)) then
+                     Is_Ghost := False;
 
-               else
-                  Error_Pragma_Arg
-                    ("expression of pragma % must be static", Expr);
+                     --  "Ghostness" cannot be turned off once enabled within a
+                     --  region (SPARK RM 6.9(6)).
+
+                     if Ghost_Config.Ghost_Mode > None  then
+                        Error_Pragma
+                          ("pragma % with value False cannot appear in enabled"
+                          & " ghost region");
+                     end if;
+                  end if;
                end if;
             end if;
 
-            Set_Is_Ghost_Entity (Id);
+            Level := Assertion_Level_From_Arg (Arg1);
+
+            --  Associate the assertion level before determing the kind of
+            --  ghost entity we should mark the entity as.
+
+            Set_Ghost_Assertion_Level (Id, Level);
+
+            --  Store it on the pragma node as well
+
+            Set_Pragma_Ghost_Assertion_Level (N, Level);
+
+            --  Mark it as a Ghost entity unless it was explicitly marked with
+            --  pragma Ghost (False).
+
+            if Is_Ghost then
+               Set_Is_Ghost_Entity (Id);
+            end if;
          end Ghost;
 
          ------------
@@ -18943,17 +19610,17 @@ package body Sem_Prag is
             Proc_Id : Entity_Id;
             Typ     : Entity_Id;
 
+            Impl_Names : constant Name_List := (Name_By_Any,
+               Name_By_Entry,
+               Name_By_Protected_Procedure,
+               Name_Optional);
          begin
             Ada_2012_Pragma;
             Check_Arg_Count (2);
             Check_No_Identifiers;
             Check_Arg_Is_Identifier (Arg1);
             Check_Arg_Is_Local_Name (Arg1);
-            Check_Arg_Is_One_Of (Arg2,
-              Name_By_Any,
-              Name_By_Entry,
-              Name_By_Protected_Procedure,
-              Name_Optional);
+            Check_Arg_Is_One_Of (Arg2, Impl_Names);
 
             --  Extract the name of the local procedure
 
@@ -20875,6 +21542,11 @@ package body Sem_Prag is
          when Pragma_Loop_Optimize => Loop_Optimize : declare
             Hint : Node_Id;
 
+            Hint_Names : constant Name_List := (Name_Ivdep,
+                                                Name_No_Unroll,
+                                                Name_Unroll,
+                                                Name_No_Vector,
+                                                Name_Vector);
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
@@ -20882,11 +21554,7 @@ package body Sem_Prag is
 
             Hint := First (Pragma_Argument_Associations (N));
             while Present (Hint) loop
-               Check_Arg_Is_One_Of (Hint, Name_Ivdep,
-                                          Name_No_Unroll,
-                                          Name_Unroll,
-                                          Name_No_Vector,
-                                          Name_Vector);
+               Check_Arg_Is_One_Of (Hint, Hint_Names);
                Next (Hint);
             end loop;
 
@@ -20911,6 +21579,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
+            Mark_Ghost_Pragma (N, Current_Scope);
 
             --  Process all increasing / decreasing expressions
 
@@ -22238,7 +22907,7 @@ package body Sem_Prag is
          when Pragma_Optimize =>
             Check_No_Identifiers;
             Check_Arg_Count (1);
-            Check_Arg_Is_One_Of (Arg1, Name_Time, Name_Space, Name_Off);
+            Check_Arg_Is_One_Of (Arg1, (Name_Time, Name_Space, Name_Off));
 
          ------------------------
          -- Optimize_Alignment --
@@ -23158,12 +23827,18 @@ package body Sem_Prag is
             --  removal of ignored Ghost code.
 
             if From_Aspect_Specification (N)
-              and then Get_Aspect_Id
-                         (Chars (Identifier (Corresponding_Aspect (N))))
-                = Aspect_Ghost_Predicate
+              and then Get_Aspect_Id (Corresponding_Aspect (N))
+                       = Aspect_Ghost_Predicate
             then
-               Mark_Ghost_Pragma
-                 (N, Name_To_Ghost_Mode (Policy_In_Effect (Name_Ghost)));
+               --  For Ghost_Predicate we have already analyzed the applicable
+               --  ghost policy already and set the policy using Is_Checked and
+               --  Is_Ignored.
+
+               if Is_Ignored (N) then
+                  Mark_Ghost_Pragma (N, Opt.Ignore);
+               else
+                  Mark_Ghost_Pragma (N, Opt.Check);
+               end if;
             else
                Mark_Ghost_Pragma (N, Typ);
             end if;
@@ -25675,7 +26350,7 @@ package body Sem_Prag is
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
-               Check_Arg_Is_One_Of (Arg1, Name_Auto, Name_On, Name_Off);
+               Check_Arg_Is_One_Of (Arg1, (Name_Auto, Name_On, Name_Off));
                Mode := Chars (Get_Pragma_Arg (Arg1));
             else
                Mode := Name_On;
@@ -27145,7 +27820,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_Error, Name_Warn, Name_Allow);
+            Check_Arg_Is_One_Of (Arg1, (Name_Error, Name_Warn, Name_Allow));
 
             --  Suppress/Unsuppress can appear as a configuration pragma, or in
             --  a declarative part or a package spec.
@@ -27341,6 +28016,69 @@ package body Sem_Prag is
             if In_Extended_Main_Code_Unit (Main_Unit_Entity) then
                Unreserve_All_Interrupts := True;
             end if;
+
+         --------------------------------
+         -- Pragma_Unsigned_Base_Range --
+         --------------------------------
+
+         when Pragma_Unsigned_Base_Range => Unsigned_Base_Range : declare
+            Arg       : Node_Id;
+            E         : Entity_Id := Empty;
+            Expr      : Node_Id := Empty;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments  (2);
+
+            Arg := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_Identifier (Arg);
+
+            Analyze (Arg);
+            E := Entity (Arg);
+
+            if Present (Arg2) then
+               Check_Arg_Is_OK_Static_Expression (Arg2, Standard_Boolean);
+               Expr := Get_Pragma_Arg (Arg2);
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+            end if;
+
+            if not Core_Extensions_Allowed then
+               Error_Msg_GNAT_Extension
+                 ("'Unsigned_'Base_'Range", Sloc (N),
+                  Is_Core_Extension => True);
+               return;
+
+            elsif not Is_Integer_Type (E)
+              or else Is_Modular_Integer_Type (E)
+            then
+               Error_Pragma_Arg
+                 ("cannot apply pragma %",
+                  "\& is not a signed integer type",
+                  Arg1);
+
+            elsif Is_Derived_Type (E) then
+               Error_Pragma_Arg
+                 ("pragma % cannot apply to derived type", Arg1);
+            end if;
+
+            Check_First_Subtype (Arg1);
+
+            --  Create the new unsigned integer base type entity, and apply
+            --  the constraint to create the first subtype of E.
+
+            Unsigned_Base_Range_Type_Declaration (E,
+              Def => Type_Definition (Parent (E)));
+
+            Set_Direct_Primitive_Operations (Base_Type (E), New_Elmt_List);
+            Set_Direct_Primitive_Operations (E,
+              Direct_Primitive_Operations (Base_Type (E)));
+            Ensure_Freeze_Node (Base_Type (E));
+            Set_First_Subtype_Link (Freeze_Node (Base_Type (E)), E);
+            Set_Has_Delayed_Freeze (E);
+
+            Set_Has_Unsigned_Base_Range_Aspect (Base_Type (E));
+         end Unsigned_Base_Range;
 
          ----------------
          -- Unsuppress --
@@ -28177,13 +28915,13 @@ package body Sem_Prag is
             null;
 
          --------------------
-         -- Unknown_Pragma --
+         -- Pragma_Unknown --
          --------------------
 
          --  Should be impossible, since the case of an unknown pragma is
          --  separately processed before the case statement is entered.
 
-         when Unknown_Pragma =>
+         when Pragma_Unknown =>
             raise Program_Error;
       end case;
 
@@ -30875,6 +31613,9 @@ package body Sem_Prag is
       --  A list that contains all refined states processed so far. The list is
       --  used to detect duplicate refinements.
 
+      Saved_Ghost_Config : constant Ghost_Config_Type := Ghost_Config;
+      --  Ghost configuration before starting to process this pragma
+
       procedure Analyze_Refinement_Clause (Clause : Node_Id);
       --  Perform full analysis of a single refinement clause
 
@@ -31634,6 +32375,10 @@ package body Sem_Prag is
          return;
       end if;
 
+      --  Get the Ghost context from the pragma before analyzing its parts
+
+      Set_Ghost_Mode (N);
+
       --  Save the scenario for examination by the ABE Processing phase
 
       Record_Elaboration_Scenario (N);
@@ -31677,6 +32422,8 @@ package body Sem_Prag is
       Report_Unrefined_States (Available_States);
 
       Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Region (Saved_Ghost_Config);
    end Analyze_Refined_State_In_Decl_Part;
 
    ---------------------------------------------
@@ -32002,6 +32749,30 @@ package body Sem_Prag is
       return False;
    end Appears_In;
 
+   ------------------------
+   -- Apply_Check_Policy --
+   ------------------------
+
+   procedure Apply_Check_Policy (N : Node_Id; Policy : Name_Id) is
+   begin
+      case Policy is
+         when Name_Ignore | Name_Off =>
+            Mark_Is_Ignored (N);
+
+         when Name_Check | Name_On =>
+            Mark_Is_Checked (N);
+
+         when Name_Disable =>
+            Mark_Is_Disabled (N);
+
+         --  That should be exhaustive, the null here is a defence
+         --  against a malformed tree from previous errors.
+
+         when others =>
+            null;
+      end case;
+   end Apply_Check_Policy;
+
    -----------------------------------
    -- Build_Pragma_Check_Equivalent --
    -----------------------------------
@@ -32142,84 +32913,18 @@ package body Sem_Prag is
    -- Check_Applicable_Policy --
    -----------------------------
 
-   procedure Check_Applicable_Policy (N : Node_Id) is
-      PP     : Node_Id;
-      Policy : Name_Id;
-
-      Ename : constant Name_Id := Original_Aspect_Pragma_Name (N);
+   procedure Check_Applicable_Policy (N : Node_Id; Level : Entity_Id := Empty)
+   is
+      Nam : constant Name_Id := Original_Aspect_Pragma_Name (N);
 
    begin
       --  No effect if not valid assertion kind name
 
-      if not Is_Valid_Assertion_Kind (Ename) then
+      if not Is_Valid_Assertion_Kind (Nam) then
          return;
       end if;
 
-      --  Loop through entries in check policy list
-
-      PP := Opt.Check_Policy_List;
-      while Present (PP) loop
-         declare
-            PPA : constant List_Id := Pragma_Argument_Associations (PP);
-            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
-
-         begin
-            if Ename = Pnm
-              or else Pnm = Name_Assertion
-              or else (Pnm = Name_Statement_Assertions
-                        and then Ename in Name_Assert
-                                        | Name_Assert_And_Cut
-                                        | Name_Assume
-                                        | Name_Loop_Invariant
-                                        | Name_Loop_Variant)
-            then
-               Policy := Chars (Get_Pragma_Arg (Last (PPA)));
-
-               case Policy is
-                  when Name_Ignore
-                     | Name_Off
-                  =>
-                     Set_Is_Checked (N, False);
-                     Set_Is_Ignored (N, True);
-
-                  when Name_Check
-                     | Name_On
-                  =>
-                     Set_Is_Checked (N, True);
-                     Set_Is_Ignored (N, False);
-
-                  when Name_Disable =>
-                     Set_Is_Ignored  (N, True);
-                     Set_Is_Checked  (N, False);
-                     Set_Is_Disabled (N, True);
-
-                  --  That should be exhaustive, the null here is a defence
-                  --  against a malformed tree from previous errors.
-
-                  when others =>
-                     null;
-               end case;
-
-               return;
-            end if;
-
-            PP := Next_Pragma (PP);
-         end;
-      end loop;
-
-      --  If there are no specific entries that matched, then we let the
-      --  setting of assertions govern. Note that this provides the needed
-      --  compatibility with the RM for the cases of assertion, invariant,
-      --  precondition, predicate, and postcondition. Note also that
-      --  Assertions_Enabled is forced in CodePeer mode and GNATprove mode.
-
-      if Assertions_Enabled then
-         Set_Is_Checked (N, True);
-         Set_Is_Ignored (N, False);
-      else
-         Set_Is_Checked (N, False);
-         Set_Is_Ignored (N, True);
-      end if;
+      Apply_Check_Policy (N, Get_Applicable_Policy (Nam, Level));
    end Check_Applicable_Policy;
 
    -------------------------------
@@ -32266,69 +32971,6 @@ package body Sem_Prag is
         ("illegal combination of external properties (SPARK RM 7.1.2(6))",
          Item);
    end Check_External_Properties;
-
-   ----------------
-   -- Check_Kind --
-   ----------------
-
-   function Check_Kind (Nam : Name_Id) return Name_Id is
-      PP : Node_Id;
-
-   begin
-      --  Loop through entries in check policy list
-
-      PP := Opt.Check_Policy_List;
-      while Present (PP) loop
-         declare
-            PPA : constant List_Id := Pragma_Argument_Associations (PP);
-            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
-
-         begin
-            if Nam = Pnm
-              or else (Pnm = Name_Assertion
-                        and then Is_Valid_Assertion_Kind (Nam))
-              or else (Pnm = Name_Statement_Assertions
-                        and then Nam in Name_Assert
-                                      | Name_Assert_And_Cut
-                                      | Name_Assume
-                                      | Name_Loop_Invariant
-                                      | Name_Loop_Variant)
-            then
-               case Chars (Get_Pragma_Arg (Last (PPA))) is
-                  when Name_Check
-                     | Name_On
-                  =>
-                     return Name_Check;
-
-                  when Name_Ignore
-                     | Name_Off
-                  =>
-                     return Name_Ignore;
-
-                  when Name_Disable =>
-                     return Name_Disable;
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-            else
-               PP := Next_Pragma (PP);
-            end if;
-         end;
-      end loop;
-
-      --  If there are no specific entries that matched, then we let the
-      --  setting of assertions govern. Note that this provides the needed
-      --  compatibility with the RM for the cases of assertion, invariant,
-      --  precondition, predicate, and postcondition.
-
-      if Assertions_Enabled then
-         return Name_Check;
-      else
-         return Name_Ignore;
-      end if;
-   end Check_Kind;
 
    ---------------------------
    -- Check_Missing_Part_Of --
@@ -33047,6 +33689,21 @@ package body Sem_Prag is
       end if;
    end Duplication_Error;
 
+   --------------------------
+   -- Find_Assertion_Level --
+   --------------------------
+
+   function Find_Assertion_Level (Nam : Name_Id) return Entity_Id is
+   begin
+      for J in Assertion_Levels.First .. Assertion_Levels.Last loop
+         if Chars (Assertion_Levels.Table (J)) = Nam then
+            return Assertion_Levels.Table (J);
+         end if;
+      end loop;
+
+      return Empty;
+   end Find_Assertion_Level;
+
    ------------------------------
    -- Find_Encapsulating_State --
    ------------------------------
@@ -33195,10 +33852,9 @@ package body Sem_Prag is
          if Nkind (Stmt) = N_Pragma then
             if Do_Checks
               and then Original_Aspect_Pragma_Name (Stmt) = Prag_Nam
+              and then not From_Same_Pragma (Prag, Stmt)
             then
-               Duplication_Error
-                 (Prag => Prag,
-                  Prev => Stmt);
+               Duplication_Error (Prag => Prag, Prev => Stmt);
             end if;
 
          --  Emit an error when a refinement pragma appears on an expression
@@ -33361,10 +34017,11 @@ package body Sem_Prag is
          --  Skip prior pragmas, but check for duplicates
 
          if Nkind (Stmt) = N_Pragma then
-            if Do_Checks and then Pragma_Name (Stmt) = Prag_Nam then
-               Duplication_Error
-                 (Prag => Prag,
-                  Prev => Stmt);
+            if Do_Checks
+              and then Pragma_Name (Stmt) = Prag_Nam
+              and then not From_Same_Pragma (Prag, Stmt)
+            then
+               Duplication_Error (Prag => Prag, Prev => Stmt);
             end if;
 
          --  Skip internally generated code
@@ -33430,6 +34087,80 @@ package body Sem_Prag is
       end if;
    end Find_Related_Package_Or_Body;
 
+   ---------------------------
+   -- Get_Applicable_Policy --
+   ---------------------------
+
+   function Get_Applicable_Policy
+     (Nam : Name_Id; Level : Entity_Id) return Name_Id
+   is
+      function Is_Statement_Assertion (Nam : Name_Id) return Boolean
+      is (Nam
+          in Name_Assert
+           | Name_Assert_And_Cut
+           | Name_Assume
+           | Name_Loop_Invariant
+           | Name_Loop_Variant);
+
+      --  Local variables
+
+      Assocs      : List_Id;
+      P_Arg       : Node_Id;
+      P_Nam       : Name_Id;
+      Policy_Prag : Node_Id;
+
+   --  Start of processing for Get_Applicable_Policy
+
+   begin
+      --  Runtime level should always be checked irregardless of other
+      --  policies that are applied.
+
+      if Level = Standard_Level_Runtime then
+         return Name_Check;
+
+      --  Static level or levels that depend on Static should never be
+      --  checked irregardless of other policies that are applied.
+
+      elsif Level = Standard_Level_Static
+        or else Depends_On_Level (Level, Standard_Level_Static)
+      then
+         return Name_Ignore;
+      end if;
+
+      --  Loop through entries in check policy list
+
+      Policy_Prag := Opt.Check_Policy_List;
+      while Present (Policy_Prag) loop
+         Assocs := Pragma_Argument_Associations (Policy_Prag);
+         P_Arg := Get_Pragma_Arg (First (Assocs));
+         P_Nam := Chars (P_Arg);
+
+         if P_Nam = Nam
+           or else P_Nam = Name_Assertion
+           or else (P_Nam = Name_Statement_Assertions
+                    and then Is_Statement_Assertion (Nam))
+           or else (Present (Level) and then Entity (P_Arg) = Level)
+         then
+            return Chars (Get_Pragma_Arg (Last (Assocs)));
+         end if;
+
+         Policy_Prag := Next_Pragma (Policy_Prag);
+      end loop;
+
+      --  If there are no specific entries that matched, then we let the
+      --  setting of assertions govern. Note that this provides the
+      --  needed compatibility with the RM for the cases of assertion,
+      --  invariant, precondition, predicate, and postcondition. Note
+      --  also that Assertions_Enabled is forced in CodePeer mode and
+      --  GNATprove mode.
+
+      if Assertions_Enabled then
+         return Name_Check;
+      else
+         return Name_Ignore;
+      end if;
+   end Get_Applicable_Policy;
+
    ------------------
    -- Get_Argument --
    ------------------
@@ -33461,6 +34192,19 @@ package body Sem_Prag is
          return Empty;
       end if;
    end Get_Argument;
+
+   -------------------------
+   -- Get_Assertion_Level --
+   -------------------------
+
+   function Get_Assertion_Level (Nam : Name_Id) return Entity_Id is
+   begin
+      if Nam = No_Name then
+         return Empty;
+      end if;
+
+      return Find_Assertion_Level (Nam);
+   end Get_Assertion_Level;
 
    -------------------------
    -- Get_Base_Subprogram --
@@ -33602,6 +34346,7 @@ package body Sem_Prag is
    begin
       Externals.Init;
       Compile_Time_Warnings_Errors.Init;
+      Assertion_Levels.Init;
    end Initialize;
 
    --------
@@ -33612,6 +34357,79 @@ package body Sem_Prag is
    begin
       Dummy := Dummy + 1;
    end ip;
+
+   ----------------------------
+   -- Insert_Assertion_Level --
+   ----------------------------
+
+   procedure Insert_Assertion_Level (Level : Entity_Id) is
+      Nam : constant Name_Id := Chars (Level);
+
+      Dupl : constant Entity_Id := Find_Assertion_Level (Nam);
+
+      function Same_Dependencies (Self, Other : Entity_Id) return Boolean;
+      --  Check that both levels have the same number of dependencies and the
+      --  names of the dependencies match.
+
+      -----------------------
+      -- Same_Dependencies --
+      -----------------------
+
+      function Same_Dependencies (Self, Other : Entity_Id) return Boolean is
+         Other_El    : Elmt_Id;
+         Other_Level : Entity_Id;
+         Self_El     : Elmt_Id;
+         Self_Level  : Entity_Id;
+
+      begin
+         pragma Assert (Ekind (Self) = E_Assertion_Level);
+         pragma Assert (Ekind (Other) = E_Assertion_Level);
+
+         if List_Length (Parent_Levels (Self))
+           /= List_Length (Parent_Levels (Other))
+         then
+            return False;
+         end if;
+
+         if No (Parent_Levels (Self)) then
+            return True;
+         end if;
+
+         --  Check that dependencies match.
+         --  Note that we are checking for positional and element matching.
+         --  The positional part could be relaxed.
+
+         Self_El := First_Elmt (Parent_Levels (Self));
+         Other_El := First_Elmt (Parent_Levels (Other));
+         while Present (Self_El) loop
+            Self_Level := Node (Self_El);
+            Other_Level := Node (Other_El);
+
+            if Chars (Self_Level) /= Chars (Other_Level) then
+               return False;
+            end if;
+
+            Next_Elmt (Self_El);
+            Next_Elmt (Other_El);
+         end loop;
+
+         return True;
+      end Same_Dependencies;
+
+   --  Start of processing for Insert_Assertion_Level
+
+   begin
+      if No (Dupl) then
+         Assertion_Levels.Append (Level);
+      else
+         if not Same_Dependencies (Level, Dupl) then
+            Error_Msg_N
+              ("conflicting Assertion_Level definition for &", Level);
+            Error_Msg_Sloc := Sloc (Dupl);
+            Error_Msg_NE ("\differs from existing definition #", Level, Dupl);
+         end if;
+      end if;
+   end Insert_Assertion_Level;
 
    -----------------------------
    -- Is_Config_Static_String --
@@ -33753,6 +34571,7 @@ package body Sem_Prag is
       Pragma_Annotate                       => 93,
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,
+      Pragma_Assertion_Level                =>  0,
       Pragma_Assertion_Policy               =>  0,
       Pragma_Assume                         => -1,
       Pragma_Assume_No_Invalid_Values       =>  0,
@@ -33978,6 +34797,7 @@ package body Sem_Prag is
       Pragma_Unreferenced                   =>  0,
       Pragma_Unreferenced_Objects           =>  0,
       Pragma_Unreserve_All_Interrupts       =>  0,
+      Pragma_Unsigned_Base_Range            =>  0,
       Pragma_Unsuppress                     =>  0,
       Pragma_Unused                         =>  0,
       Pragma_Use_VADS_Size                  =>  0,
@@ -33991,7 +34811,7 @@ package body Sem_Prag is
       Pragma_Warnings                       =>  0,
       Pragma_Weak_External                  =>  0,
       Pragma_Wide_Character_Encoding        =>  0,
-      Unknown_Pragma                        =>  0);
+      Pragma_Unknown                        =>  0);
 
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean is
       Id : Pragma_Id;
@@ -34207,6 +35027,15 @@ package body Sem_Prag is
       end case;
    end Is_Valid_Assertion_Kind;
 
+   ------------------------------
+   -- Is_Valid_Assertion_Level --
+   ------------------------------
+
+   function Is_Valid_Assertion_Level (Nam : Name_Id) return Boolean is
+   begin
+      return Present (Get_Assertion_Level (Nam));
+   end Is_Valid_Assertion_Level;
+
    --------------------------------------
    -- Process_Compilation_Unit_Pragmas --
    --------------------------------------
@@ -34374,6 +35203,37 @@ package body Sem_Prag is
          Error_Msg_N ("?_c?condition is not known at compile time", Arg1x);
       end if;
    end Validate_Compile_Time_Warning_Or_Error;
+
+   ---------------------
+   -- Mark_Is_Checked --
+   ---------------------
+
+   procedure Mark_Is_Checked (N : Node_Id) is
+   begin
+      Set_Is_Checked (N, True);
+      Set_Is_Ignored (N, False);
+   end Mark_Is_Checked;
+
+   ----------------------
+   -- Mark_Is_Disabled --
+   ----------------------
+
+   procedure Mark_Is_Disabled (N : Node_Id) is
+   begin
+      Set_Is_Ignored (N, True);
+      Set_Is_Checked (N, False);
+      Set_Is_Disabled (N, True);
+   end Mark_Is_Disabled;
+
+   ---------------------
+   -- Mark_Is_Ignored --
+   ---------------------
+
+   procedure Mark_Is_Ignored (N : Node_Id) is
+   begin
+      Set_Is_Checked (N, False);
+      Set_Is_Ignored (N, True);
+   end Mark_Is_Ignored;
 
    ------------------------------------
    -- Record_Possible_Body_Reference --

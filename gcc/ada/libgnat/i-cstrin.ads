@@ -62,8 +62,9 @@ is
    --  coming from who knows where, it seems a good idea to turn off any
    --  strict aliasing assumptions for this type.
 
-   type chars_ptr is private;
-   pragma Preelaborable_Initialization (chars_ptr);
+   type chars_ptr is private
+   with
+     Preelaborable_Initialization;
 
    type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
