@@ -1,3 +1,14 @@
+2025-09-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121859
+	* constraint.cc (maybe_diagnose_standard_trait): Check if expr
+	is non-null.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_real_cst): Mangle Intel/Motorola extended
+	80-bit formats using 20 hex digits instead of 24 or 32.
+
 2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/99682

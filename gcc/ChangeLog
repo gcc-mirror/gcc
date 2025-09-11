@@ -1,3 +1,63 @@
+2025-09-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81540
+	PR target/49857
+	* common/config/avr/avr-common.cc: Disable -ftree-switch-conversion.
+
+2025-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
+	Change "Xtrnase" in the comment to "Xtensa".
+
+2025-09-10  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/121878
+	* config/riscv/tt-ascalon-d8.md (tt_ascalon_d8_vec_idiv_half): Test the
+	Selected Element Width (SEW) rather than the mode.
+	(tt_ascalon_d8_vec_idiv_single): Likewise.
+	(tt_ascalon_d8_vec_idiv_double): Likewise.
+	(tt_ascalon_d8_vec_float_divsqrt_half): Likewise.
+	(tt_ascalon_d8_vec_float_divsqrt_single): Likewise.
+	(tt_ascalon_d8_vec_float_divsqrt_double): Likewise.
+
+2025-09-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Fix
+	load/store bias handling.
+
+2025-09-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/autovec-opt.md (*vfwsub_wf_<mode>): New pattern to
+	combine float_extend + vec_duplicate + vfsub.vv into vfwsub.wf.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121828
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For REALPART_EXPR
+	consumed by store in the same bb and with REALPART_EXPR from
+	optimizable_arith_overflow, don't add REALPART_EXPR lhs to
+	the m_names bitmap only if the cast from IMAGPART_EXPR doesn't
+	appear in between the REALPART_EXPR and the store.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121831
+	* expr.cc (raw_data_cst_read_str): New function.
+	(store_constructor) <case ARRAY_TYPE>: Handle RAW_DATA_CST.
+
+2025-09-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.h (CLZ_DEFINED_VALUE_AT_ZERO): Adjust and
+	return 2.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Return 2.
+	* config/s390/s390.md (clzsi2): Implement.
+	(ctzsi2): Implement.
+
+2025-09-10  Maximilian Immanuel Brandtner  <maxbr@linux.ibm.com>
+
+	* config/s390/vector.md (*vec_extract<mode>_plus_zero_extend):
+	Fix define insn.
+
 2025-09-09  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/gcn-devices.def: Correct the Max ISA VGPRs counts for

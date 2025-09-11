@@ -1,3 +1,79 @@
+2025-09-10  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c2y-function-qual-1.c, gcc.dg/c2y-incomplete-1.c,
+	gcc.dg/c2y-inline-1.c, gcc.dg/c2y-pointer-1.c,
+	gcc.dg/c2y-register-array-1.c, gcc.dg/c2y-storage-class-1.c,
+	gcc.dg/c2y-struct-empty-1.c: New tests.
+
+2025-09-10  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/121878
+	* gcc.target/riscv/pr121878.c: New test.
+
+2025-09-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.dg/vect/nodump-extractlast-1.c: New test.
+
+2025-09-10  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/Wreturn-nested-1.c: New test.
+	* gcc.dg/Wreturn-nested-2.c: New test.
+	* gcc.dg/Wtrampolines-2.c: New test.
+	* gcc.dg/Wtrampolines-3.c: New test.
+
+2025-09-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfwsub.wf.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_binop.h
+	(DEF_VF_BINOP_WIDEN_CASE_2, DEF_VF_BINOP_WIDEN_CASE_3): Swap operands.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwsub-run-2-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfwsub-run-2-f32.c: New test.
+
+2025-09-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121859
+	* g++.dg/cpp2a/concepts-traits5.C: New test.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/lto.exp (lto-execute-1): Search for _1.* etc. files
+	only with a list of known extensions.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121828
+	* gcc.dg/bitint-126.c: New test.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121831
+	* g++.dg/lto/pr121831_0.C: New test.
+	* g++.dg/lto/pr121831_1.C: New test.
+
+2025-09-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.dg/vect/pr109011-2.c: Fix expected outcome.
+	* gcc.dg/vect/pr109011-4.c: Fix expected outcome.
+	* gcc.target/s390/ffs-1.c: New test.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.target/i386/mangle-ldbl-1.C: New test.
+	* g++.target/i386/mangle-ldbl-2.C: New test.
+	* g++.target/m68k/mangle-ldbl-1.C: New test.
+	* g++.target/m68k/mangle-ldbl-2.C: New test.
+
+2025-09-10  Maximilian Immanuel Brandtner  <maxbr@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-extract-3.c: New test.
+
 2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/99682

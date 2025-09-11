@@ -1,3 +1,19 @@
+2025-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/121885
+	* snames.ads-tmpl (Pragma_Id): Rename Unknown_Pragma to
+	Pragma_Unknown for the sake of XSnamesT.
+	* snames.adb-tmpl (Get_Pragma_Id): Adjust to above renaming.
+	* snames.h-tmpl (Attribute_Id): Change underlying type to Byte.
+	(Get_Attribute_Id): Use Byte as return value.
+	(Pragma_Id): Change underlying type to Word.
+	(Get_Pragma_Id): Use Word as return value.
+	* types.h (Word): New typedef.
+	* exp_prag.adb (Expand_N_Pragma): Remove useless comment.
+	* par-prag.adb (Prag): Adjust to above renaming.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	(Sig_Flags): Likewise.
+
 2025-09-09  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Eq): Check for warning about call to

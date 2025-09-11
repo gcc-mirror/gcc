@@ -1,3 +1,56 @@
+2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h: Remove blank line.
+
+2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (boyer_moore_searcher::operator()): Add
+	static_assert.
+	(boyer_moore_horspool_searcher::operator()): Likewise.
+	* testsuite/20_util/function_objects/121782.cc: New test.
+
+2025-09-10  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (_ExtentsStorage::_Base): New name for
+	_S_base.
+	(_ExtentsStorage::_Storage): New name for _S_storage.
+	(extents::_Storage): New name for _S_storage.
+	(layout_stride::mapping::_Strides): New name for
+	_S_stries_t.
+	* testsuite/23_containers/mdspan/class_mandate_neg.cc: Update
+	test to the new error message.
+
+2025-09-10  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/span (__integral_constant_like): Use
+	remove_cvref_t before checking if _Tp::value is boolean.
+	* testsuite/23_containers/mdspan/extents/misc.cc: Update test.
+	* testsuite/23_containers/mdspan/mdspan.cc: Ditto.
+	* testsuite/23_containers/span/deduction.cc: Ditto.
+
+2025-09-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121765
+	* include/std/format (__format::_Drop_iter): Define.
+	(_Iter_for_t::type): Change alias to _Drop_iter.
+	(__format::__format_padded): Return __fc.out() for
+	_Drop_iter.
+	* testsuite/std/format/pr121765.cc: New test.
+
+2025-09-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx2020.xml: Add more entires.
+
+2025-09-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/index.html: Regenerated.
+	* doc/html/manual/index.html: Regenerated.
+	* doc/html/manual/intro.html: Regenerated.
+	* doc/html/manual/status.html: Regenatered.
+	* doc/xml/manual/status_cxx2020.xml: Add iso.2020.specific
+	section with atomic_ref documentation.
+
 2025-09-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (_CwFixedValue::_S_type): Rename to
