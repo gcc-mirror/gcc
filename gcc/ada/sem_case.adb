@@ -3890,6 +3890,7 @@ package body Sem_Case is
                return True;
 
             when N_Empty
+               | N_Allocator
                | N_Statement_Other_Than_Procedure_Call
                | N_Procedure_Call_Statement
                | N_Declaration
