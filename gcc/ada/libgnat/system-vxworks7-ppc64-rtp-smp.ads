@@ -120,9 +120,6 @@ package System is
 
 private
 
-   pragma Linker_Options ("--specs=vxworks7-ppc64-rtp-base-link.spec");
-   --  Define the symbol wrs_rtp_base
-
    type Address is mod Memory_Size;
    for Address'Size use Standard'Address_Size;
 
