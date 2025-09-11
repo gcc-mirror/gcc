@@ -106,7 +106,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
@@ -157,7 +157,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
@@ -214,7 +214,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_rbegin<_Tp>)
@@ -272,7 +272,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_rend<_Tp>)
@@ -342,7 +342,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
@@ -422,7 +422,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_empty<_Tp>)
@@ -468,7 +468,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_data<_Tp>)

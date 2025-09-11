@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  };
 
 	template<typename _Tp>
-	  static constexpr bool
+	  static consteval bool
 	  _S_noexcept()
 	  {
 	    if constexpr (__adl_imove<_Tp>)
@@ -884,7 +884,7 @@ namespace ranges
     {
     private:
       template<typename _Tp, typename _Up>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__adl_iswap<_Tp, _Up>)

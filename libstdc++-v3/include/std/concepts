@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       private:
 	template<typename _Tp, typename _Up>
-	  static constexpr bool
+	  static consteval bool
 	  _S_noexcept()
 	  {
 	    if constexpr (__adl_swap<_Tp, _Up>)
