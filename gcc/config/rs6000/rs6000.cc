@@ -4947,7 +4947,6 @@ rs6000_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_pac
    target.  */
 static bool
 rs6000_builtin_support_vector_misalignment (machine_mode mode,
-					    const_tree type,
 					    int misalignment,
 					    bool is_packed,
 					    bool is_gather_scatter)
@@ -4973,13 +4972,13 @@ rs6000_builtin_support_vector_misalignment (machine_mode mode,
 	{
 	  /* Misalignment factor is unknown at compile time but we know
 	     it's word aligned.  */
-	  if (rs6000_vector_alignment_reachable (type, is_packed))
-            {
-              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
+	  if (rs6000_vector_alignment_reachable (NULL_TREE, is_packed))
+	    {
+	      int element_size = GET_MODE_UNIT_BITSIZE (mode);
 
-              if (element_size == 64 || element_size == 32)
-               return true;
-            }
+	      if (element_size == 64 || element_size == 32)
+		return true;
+	    }
 
 	  return false;
 	}

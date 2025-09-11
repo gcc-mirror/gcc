@@ -11058,7 +11058,6 @@ void loongarch_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 
 static bool
 loongarch_builtin_support_vector_misalignment (machine_mode mode,
-					       const_tree type,
 					       int misalignment,
 					       bool is_packed,
 					       bool is_gather_scatter)
@@ -11072,7 +11071,7 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
       if (misalignment == -1)
 	return false;
     }
-  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+  return default_builtin_support_vector_misalignment (mode, misalignment,
 						      is_packed,
 						      is_gather_scatter);
 }

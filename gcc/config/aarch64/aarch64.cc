@@ -355,7 +355,6 @@ static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (machine_mode);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
-							 const_tree type,
 							 int misalignment,
 							 bool is_packed,
 							 bool is_gather_scatter);
@@ -24564,7 +24563,7 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
    target.  */
 static bool
 aarch64_builtin_support_vector_misalignment (machine_mode mode,
-					     const_tree type, int misalignment,
+					     int misalignment,
 					     bool is_packed,
 					     bool is_gather_scatter)
 {
@@ -24581,7 +24580,7 @@ aarch64_builtin_support_vector_misalignment (machine_mode mode,
       if (misalignment == -1)
 	return false;
     }
-  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+  return default_builtin_support_vector_misalignment (mode, misalignment,
 						      is_packed,
 						      is_gather_scatter);
 }

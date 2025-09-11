@@ -6522,7 +6522,8 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
    alignment.
    If CHECK_ALIGNED_ACCESSES is TRUE, check if the access is supported even
    it is aligned, i.e., check if it is possible to vectorize it with different
-   alignment.  If GS_INFO is passed we are dealing with a gather/scatter.  */
+   alignment.  If IS_GATHER_SCATTER is true we are dealing with a
+   gather/scatter.  */
 
 enum dr_alignment_support
 vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
@@ -6636,11 +6637,13 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	}
     }
 
-  bool is_packed = false;
-  tree type = TREE_TYPE (DR_REF (dr));
-  if (misalignment == DR_MISALIGNMENT_UNKNOWN)
-    is_packed = not_size_aligned (DR_REF (dr));
-  if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
+  bool is_packed = not_size_aligned (DR_REF (dr));
+  if (misalignment == DR_MISALIGNMENT_UNKNOWN
+      && is_gather_scatter)
+    misalignment = (get_object_alignment (DR_REF (dr))
+		    % (GET_MODE_BITSIZE (GET_MODE_INNER (mode))))
+      / BITS_PER_UNIT;
+  if (targetm.vectorize.support_vector_misalignment (mode, misalignment,
 						     is_packed,
 						     is_gather_scatter))
     return dr_unaligned_supported;

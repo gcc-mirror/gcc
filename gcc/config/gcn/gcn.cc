@@ -5368,14 +5368,13 @@ gcn_preferred_vector_alignment (const_tree type)
 
 static bool
 gcn_vectorize_support_vector_misalignment (machine_mode ARG_UNUSED (mode),
-					   const_tree ARG_UNUSED (type),
 					   int ARG_UNUSED (misalignment),
 					   bool is_packed,
 					   bool ARG_UNUSED (is_gather_scatter))
 {
   /* All Flat and Global load instructions support arbitrary alignment, so
      the types and such are irrelevant (Buffer instructions are not used).  */
- 
+
   /* Disallow packed accesses because expand attempts to take scalar subregs of
      vector registers, which is nonsense.
      Testcase: gfortran.dg/recursive_alloc_comp_4.f08   */

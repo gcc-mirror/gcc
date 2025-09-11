@@ -1551,8 +1551,6 @@ default_builtin_vector_alignment_reachable (const_tree /*type*/, bool is_packed)
    is_packed is true if the memory access is defined in a packed struct.  */
 bool
 default_builtin_support_vector_misalignment (machine_mode mode,
-					     const_tree type
-					     ATTRIBUTE_UNUSED,
 					     int misalignment
 					     ATTRIBUTE_UNUSED,
 					     bool is_packed

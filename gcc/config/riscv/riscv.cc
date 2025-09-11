@@ -12659,12 +12659,11 @@ riscv_estimated_poly_value (poly_int64 val,
 /* Return true if the vector misalignment factor is supported by the
    target.  */
 bool
-riscv_support_vector_misalignment (machine_mode mode, const_tree type,
-				   int misalignment, bool is_packed,
-				   bool is_gather_scatter)
+riscv_support_vector_misalignment (machine_mode mode, int misalignment,
+				   bool is_packed, bool is_gather_scatter)
 {
   /* IS_PACKED is true if the corresponding scalar element is not naturally
-     aligned.  If the misalignment is unknown and the the access is packed
+     aligned.  If the misalignment is unknown and the access is packed
      we defer to the default hook which will check if movmisalign is present.
      Movmisalign, in turn, depends on TARGET_VECTOR_MISALIGN_SUPPORTED.  */
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
@@ -12676,12 +12675,12 @@ riscv_support_vector_misalignment (machine_mode mode, const_tree type,
     {
       /* If we know that misalignment is a multiple of the element size, we're
 	 good.  */
-      if (misalignment % TYPE_ALIGN_UNIT (type) == 0)
+      if (misalignment % (GET_MODE_UNIT_SIZE (mode)) == 0)
 	return true;
     }
 
   /* Otherwise fall back to movmisalign again.  */
-  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+  return default_builtin_support_vector_misalignment (mode, misalignment,
 						      is_packed,
 						      is_gather_scatter);
 }
