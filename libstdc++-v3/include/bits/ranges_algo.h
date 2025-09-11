@@ -1685,7 +1685,7 @@ namespace ranges
 			{
 			  auto __mid = ranges::next(__p, __n - 1);
 			  auto __end = ranges::next(__mid);
-			  auto __t = ranges::iter_move(__p);
+			  iter_value_t<_Iter> __t(ranges::iter_move(__p));
 			  ranges::move(ranges::next(__p), __end, __p);
 			  *__mid = std::move(__t);
 			  return {std::move(__ret), std::move(__lasti)};
@@ -1713,7 +1713,7 @@ namespace ranges
 			{
 			  auto __mid = ranges::next(__p, __n - 1);
 			  auto __end = ranges::next(__mid);
-			  auto __t = ranges::iter_move(__mid);
+			  iter_value_t<_Iter> __t(ranges::iter_move(__mid));
 			  ranges::move_backward(__p, __mid, __end);
 			  *__p = std::move(__t);
 			  return {std::move(__ret), std::move(__lasti)};
