@@ -28148,6 +28148,21 @@
    (set_attr "prefix" "vex,vex,vex,evex,evex,evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+
+(define_insn_and_split "*avx_vbroadcastf128_<mode>_perm"
+  [(set (match_operand:V_256 0 "register_operand")
+	(vec_select:V_256
+	  (vec_concat:V_256
+	    (match_operand:<ssehalfvecmode> 1 "memory_operand")
+	    (match_operand:<ssehalfvecmode> 2 "general_operand"))
+	  (match_parallel 3 "avx_vbroadcast128_operand"
+	    [(match_operand 4 "const_int_operand")])))]
+  "TARGET_AVX && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat: V_256 (match_dup 1) (match_dup 1)))])
+
 ;; For broadcast[i|f]32x2.  Yes there is no v4sf version, only v4si.
 (define_mode_iterator VI4F_BRCST32x2
   [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")

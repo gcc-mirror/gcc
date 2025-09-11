@@ -2077,6 +2077,25 @@
   return true;
 })
 
+;; Return true if OP is a parallel for a vbroadcastf128 permute.
+(define_predicate "avx_vbroadcast128_operand"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int i, nelt = XVECLEN (op, 0);
+  int half = nelt / 2;
+
+  for (i = 0; i < nelt; ++i)
+    {
+      int index = INTVAL (XVECEXP (op, 0, i));
+      if ((i < half && index != i)
+	  || (i >= half && index != (i - half)))
+	return false;
+    }
+
+  return true;
+})
+
 ;; Return true if OP is a parallel for a palignr permute.
 (define_predicate "palignr_operand"
   (and (match_code "parallel")
