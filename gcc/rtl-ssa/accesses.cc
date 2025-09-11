@@ -398,22 +398,20 @@ set_node::print (pretty_printer *pp) const
 clobber_info *
 clobber_group::prev_clobber (insn_info *insn) const
 {
-  auto &tree = const_cast<clobber_tree &> (m_clobber_tree);
-  int comparison = lookup_clobber (tree, insn);
+  int comparison = lookup_clobber (insn);
   if (comparison <= 0)
-    return dyn_cast<clobber_info *> (tree.root ()->prev_def ());
-  return tree.root ();
+    return dyn_cast<clobber_info *> (m_clobber_tree.root ()->prev_def ());
+  return m_clobber_tree.root ();
 }
 
 // See the comment above the declaration.
 clobber_info *
 clobber_group::next_clobber (insn_info *insn) const
 {
-  auto &tree = const_cast<clobber_tree &> (m_clobber_tree);
-  int comparison = lookup_clobber (tree, insn);
+  int comparison = lookup_clobber (insn);
   if (comparison >= 0)
-    return dyn_cast<clobber_info *> (tree.root ()->next_def ());
-  return tree.root ();
+    return dyn_cast<clobber_info *> (m_clobber_tree.root ()->next_def ());
+  return m_clobber_tree.root ();
 }
 
 // See the comment above the declaration.
@@ -436,6 +434,17 @@ clobber_group::print (pretty_printer *pp) const
   pp_newline_and_indent (pp, 2);
   m_clobber_tree.print (pp, print_clobber);
   pp_indentation (pp) -= 4;
+}
+
+// A wrapper around rtl_ssa::lookup_clobber that ensures that the root
+// of the splay tree always has the correct group.
+int
+clobber_group::lookup_clobber (insn_info *insn) const
+{
+  auto &tree = const_cast<clobber_tree &> (m_clobber_tree);
+  int result = rtl_ssa::lookup_clobber (tree, insn);
+  tree->update_group (const_cast<clobber_group *> (this));
+  return result;
 }
 
 // See the comment above the declaration.
@@ -659,13 +668,9 @@ function_info::add_clobber (clobber_info *clobber, clobber_group *group)
   // Search for either the previous or next clobber in the group.
   // The result is less than zero if CLOBBER should come before NEIGHBOR
   // or greater than zero if CLOBBER should come after NEIGHBOR.
-  int comparison = lookup_clobber (group->m_clobber_tree, clobber->insn ());
+  int comparison = group->lookup_clobber (clobber->insn ());
   gcc_checking_assert (comparison != 0);
   clobber_info *neighbor = group->m_clobber_tree.root ();
-
-  // Since HEIGHBOR is now the root of the splay tree, its group needs
-  // to be up-to-date.
-  neighbor->update_group (group);
 
   // If CLOBBER comes before NEIGHBOR, insert CLOBBER to NEIGHBOR's left,
   // otherwise insert CLOBBER to NEIGHBOR's right.
