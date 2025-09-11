@@ -1769,6 +1769,108 @@ optimize_agr_copyprop (gimple *stmt)
     }
 }
 
+/* Simple DSE of the lhs from a clobber STMT.
+   This is used mostly to clean up from optimize_agr_copyprop and
+   to remove (exactly one) extra copy that might later on confuse SRA.
+   An example is:
+   ;; write to a and such.
+   b = a; // This statement is to be removed
+   b = {CLOBBER};
+   SRA will totally scalarize b (which means also a) here for the extra copy
+   which is not something welcomed. So removing the copy will
+   allow SRA to move the scalarization of a further down or not at all.
+   */
+static void
+do_simple_agr_dse (gassign *stmt, bool full_walk)
+{
+  /* Don't do this while in -Og as we want to keep around the copy
+     for debuggability.  */
+  if (optimize_debug)
+    return;
+  ao_ref read;
+  basic_block bb = gimple_bb (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  /* Only handle clobbers of a full decl.  */
+  if (!DECL_P (lhs))
+    return;
+  ao_ref_init (&read, lhs);
+  tree vuse = gimple_vuse (stmt);
+  unsigned limit = full_walk ? param_sccvn_max_alias_queries_per_access : 4;
+  while (limit)
+    {
+      gimple *ostmt = SSA_NAME_DEF_STMT (vuse);
+      /* Don't handle phis, just declare to be done. */
+      if (is_a<gphi*>(ostmt) || gimple_nop_p (ostmt))
+	break;
+      basic_block obb = gimple_bb (ostmt);
+      /* If the clobber is not fully dominating the statement define,
+	 then it is not "simple" to detect if the define is fully clobbered.  */
+      if (obb != bb && !dominated_by_p (CDI_DOMINATORS, bb, obb))
+	return;
+      gimple *use_stmt;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_vdef (ostmt))
+	{
+	  basic_block ubb = gimple_bb (use_stmt);
+	  if (stmt == use_stmt)
+	    continue;
+	  /* The use needs to be dominating the clobber. */
+	  if ((ubb != bb && !dominated_by_p (CDI_DOMINATORS, bb, ubb))
+	      || ref_maybe_used_by_stmt_p (use_stmt, &read, false))
+	    return;
+	  /* Count the above alias lookup towards the limit. */
+	  limit--;
+	  if (limit == 0)
+	    return;
+	}
+      vuse = gimple_vuse (ostmt);
+
+      /* This an assignment store to the clobbered decl,
+	 then maybe remove it. A call is not handled here as
+	 the rhs will not make a difference for SRA. */
+      if (is_a <gassign*>(ostmt)
+	  && gimple_store_p (ostmt)
+	  && !gimple_clobber_p (ostmt)
+	  && lhs == gimple_assign_lhs (ostmt))
+	{
+	  /* Don't remove stores/statements that are needed for non-call
+	      eh to work.  */
+	  if (stmt_unremovable_because_of_non_call_eh_p (cfun, ostmt))
+	    return;
+	  /* If we delete a stmt that could throw, mark the block
+	     in to_purge to cleanup afterwards.  */
+	  if (stmt_could_throw_p (cfun, ostmt))
+	    bitmap_set_bit (to_purge, obb->index);
+	  gimple_stmt_iterator gsi = gsi_for_stmt (ostmt);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Removing dead store stmt ");
+	      print_gimple_stmt (dump_file, ostmt, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  unlink_stmt_vdef (ostmt);
+	  release_defs (ostmt);
+	  gsi_remove (&gsi, true);
+	  statistics_counter_event (cfun, "delete dead store", 1);
+	  /* Only remove the first store previous statement. */
+	  return;
+	}
+      /* If the statement uses or maybe writes to the decl,
+	 then nothing is to be removed. Don't know if the write
+	 to the decl is partial write or a full one so the need
+	 to stop.
+	 e.g.
+	 b.c = a;
+	   Easier to stop here rather than do a full partial
+	   dse of this statement.
+	 b = {CLOBBER}; */
+      if (stmt_may_clobber_ref_p_1 (ostmt, &read, false)
+	  || ref_maybe_used_by_stmt_p (ostmt, &read, false))
+	return;
+      limit--;
+    }
+}
+
 /* Optimizes builtin memcmps for small constant sizes.
    GSI_P is the GSI for the call. STMT is the call itself.
    */
@@ -5495,7 +5597,9 @@ pass_forwprop::execute (function *fun)
 		  {
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
-		    if (gimple_store_p (stmt))
+		    if (gimple_clobber_p (stmt))
+		      do_simple_agr_dse (as_a<gassign*>(stmt), full_walk);
+		    else if (gimple_store_p (stmt))
 		      {
 			optimize_aggr_zeroprop (stmt, full_walk);
 			if (gimple_assign_load_p (stmt))

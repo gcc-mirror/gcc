@@ -63,4 +63,4 @@ end program main
 
 ! There is a clobber for tc, so we should manage to optimize away the associated initialization constant (but not other
 ! initialization constants).
-! { dg-final { scan-tree-dump-not "123456789" "optimized" { target __OPTIMIZE__ } } }
+! { dg-final { scan-tree-dump-not "= 123456789" "optimized" { target __OPTIMIZE__ } } }
