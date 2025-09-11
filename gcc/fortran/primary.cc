@@ -3057,12 +3057,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	if (comp->ts.type == BT_CLASS)
 	  {
+	    dimension = CLASS_DATA (comp)->attr.dimension;
 	    codimension = CLASS_DATA (comp)->attr.codimension;
 	    pointer = CLASS_DATA (comp)->attr.class_pointer;
 	    allocatable = CLASS_DATA (comp)->attr.allocatable;
 	  }
 	else
 	  {
+	    dimension = comp->attr.dimension;
 	    codimension = comp->attr.codimension;
 	    if (expr->ts.type == BT_CLASS && strcmp (comp->name, "_data") == 0)
 	      pointer = comp->attr.class_pointer;
