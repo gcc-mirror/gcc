@@ -36275,7 +36275,7 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
   cp_parser_require_end_of_template_parameter_list (parser);
 
   /* Manage template requirements */
-  if (flag_concepts)
+  if (flag_concepts && current_template_parms)
   {
     tree reqs = get_shorthand_constraints (current_template_parms);
     if (tree treqs = cp_parser_requires_clause_opt (parser, false))
