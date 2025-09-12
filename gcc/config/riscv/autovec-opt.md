@@ -1868,6 +1868,48 @@
   }
   [(set_attr "type" "vimuladd")])
 
+(define_insn_and_split "*widen_first_<any_extend:su>_vx_<mode>"
+ [(set (match_operand:VWEXTI_D     0 "register_operand")
+       (vec_duplicate:VWEXTI_D
+	 (any_extend:<VEL>
+	   (match_operand:<VSUBEL> 1 "register_operand"))))]
+  "TARGET_VECTOR && TARGET_64BIT && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx extend_scalar = gen_reg_rtx (<VEL>mode);
+    emit_insn (gen_<any_extend:extend_name><vsubel><vel>2 (extend_scalar,
+							   operands[1]));
+
+    insn_code icode = code_for_pred_broadcast (<MODE>mode);
+    rtx vec_dup_ops[] = {operands[0], extend_scalar};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, vec_dup_ops);
+
+    DONE;
+  })
+
+(define_insn_and_split "*widen_<any_widen_binop:optab>_<any_extend:su>_vx_<mode>"
+ [(set (match_operand:VWEXTI_D             0 "register_operand")
+       (any_widen_binop:VWEXTI_D
+	 (any_extend:VWEXTI_D
+	   (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
+	 (vec_duplicate:VWEXTI_D
+	   (any_extend:<VEL>
+	     (match_operand:<VSUBEL>       2 "register_operand")))))]
+  "TARGET_VECTOR && TARGET_64BIT && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_dual_widen_scalar (<any_widen_binop:CODE>,
+						       <any_extend:CODE>,
+						       <MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+
+    DONE;
+  }
+  [(set_attr "type" "viwalu")])
 
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
