@@ -542,6 +542,7 @@ get_equiv (rtx x)
   rtx res;
 
   if (! REG_P (x) || (regno = REGNO (x)) < FIRST_PSEUDO_REGISTER
+      || regno >= ira_reg_equiv_len
       || ! ira_reg_equiv[regno].defined_p
       || ! ira_reg_equiv[regno].profitable_p
       || lra_get_regno_hard_regno (regno) >= 0)
