@@ -1306,7 +1306,9 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports,
 		    /* For lookups on the instantiation path we can see any
 		       module-linkage declaration; otherwise we should only
 		       see exported decls.  */
-		    if (!on_inst_path)
+		    if (on_inst_path)
+		      bind = STAT_DECL (bind);
+		    else
 		      bind = STAT_VISIBLE (bind);
 		  }
 
