@@ -2932,11 +2932,13 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 	      {
 		delete loop_vinfo;
 		loop_vinfo = unroll_vinfo;
-		LOOP_VINFO_USER_UNROLL (loop_vinfo) = user_unroll > 1;
 	      }
 	    else
 	      delete unroll_vinfo;
 	  }
+
+	/* Record that we have honored a user unroll factor.  */
+	LOOP_VINFO_USER_UNROLL (loop_vinfo) = user_unroll > 1;
     }
 
   /* Remember the autodetected vector mode.  */
