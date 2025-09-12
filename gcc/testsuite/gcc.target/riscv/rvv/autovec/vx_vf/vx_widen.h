@@ -28,7 +28,8 @@ test_vx_widen_binary_##NAME##_##WT##_##NT##_case_0 (WT * restrict vd,   \
 #define RUN_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, NAME, vd, vs2, rs1, n) \
   RUN_VX_WIDEN_BINARY_CASE_0(WT, NT, NAME, vd, vs2, rs1, n)
 
-#define TEST_WIDEN_BINARY_VX_UNSIGNED(WT, NT) \
-  DEF_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, +, add)
+#define TEST_WIDEN_BINARY_VX_UNSIGNED(WT, NT)     \
+  DEF_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, +, add) \
+  DEF_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, -, sub)
 
 #endif

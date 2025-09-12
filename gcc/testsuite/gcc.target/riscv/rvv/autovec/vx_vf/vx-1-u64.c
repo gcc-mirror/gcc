@@ -33,3 +33,4 @@ TEST_WIDEN_BINARY_VX_UNSIGNED(T, NT)
 /* { dg-final { scan-assembler-times {vmadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vnmsub.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vwaddu.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vwsubu.vx} 1 } } */
