@@ -26301,8 +26301,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
     case TRAIT_TYPE:
-      /* Cannot deduce anything from TYPEOF_TYPE, DECLTYPE_TYPE,
-	 or TRAIT_TYPE nodes.  */
+    case PACK_INDEX_TYPE:
+      /* These are non-deduced contexts.  */
       return unify_success (explain_p);
 
     case ERROR_MARK:
