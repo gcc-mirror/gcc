@@ -1655,37 +1655,39 @@ CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
 				      const TyTy::BaseType *tyty)
 {
   rust_assert (expr.get_lit_type () == HIR::Literal::INT);
-  const auto literal_value = expr.get_literal ();
-
+  const auto &literal_value = expr.get_literal ();
   tree type = TyTyResolveCompile::compile (ctx, tyty);
 
+  std::string s = literal_value.as_string ();
+  s.erase (std::remove (s.begin (), s.end (), '_'), s.end ());
+
+  int base = 0;
   mpz_t ival;
-  if (mpz_init_set_str (ival, literal_value.as_string ().c_str (), 10) != 0)
+  if (mpz_init_set_str (ival, s.c_str (), base) != 0)
     {
-      rust_error_at (expr.get_locus (), "bad number in literal");
+      rust_error_at (expr.get_locus (), "failed to load number literal");
       return error_mark_node;
     }
+  if (expr.is_negative ())
+    mpz_neg (ival, ival);
 
-  mpz_t type_min;
-  mpz_t type_max;
+  mpz_t type_min, type_max;
   mpz_init (type_min);
   mpz_init (type_max);
   get_type_static_bounds (type, type_min, type_max);
 
-  if (expr.is_negative ())
-    {
-      mpz_neg (ival, ival);
-    }
   if (mpz_cmp (ival, type_min) < 0 || mpz_cmp (ival, type_max) > 0)
     {
       rust_error_at (expr.get_locus (),
 		     "integer overflows the respective type %qs",
 		     tyty->get_name ().c_str ());
+      mpz_clear (type_min);
+      mpz_clear (type_max);
+      mpz_clear (ival);
       return error_mark_node;
     }
 
   tree result = wide_int_to_tree (type, wi::from_mpz (type, ival, true));
-
   mpz_clear (type_min);
   mpz_clear (type_max);
   mpz_clear (ival);

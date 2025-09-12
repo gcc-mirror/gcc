@@ -101,12 +101,54 @@ struct constexpr_global_ctx
   auto_vec<tree, 16> heap_vars;
   /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
   vec<tree> *cleanups;
+  /* If non-null, only allow modification of existing values of the variables
+     in this set.  Set by modifiable_tracker, below.  */
+  hash_set<tree> *modifiable;
   /* Number of heap VAR_DECL deallocations.  */
   unsigned heap_dealloc_count;
   /* Constructor.  */
   constexpr_global_ctx ()
     : constexpr_ops_count (0), cleanups (NULL), heap_dealloc_count (0)
   {}
+
+  tree get_value (tree t)
+  {
+    if (tree *p = values.get (t))
+      if (*p != void_node)
+	return *p;
+    return NULL_TREE;
+  }
+  tree *get_value_ptr (tree t, bool initializing)
+  {
+    if (modifiable && !modifiable->contains (t))
+      return nullptr;
+    if (tree *p = values.get (t))
+      {
+	if (*p != void_node)
+	  return p;
+	else if (initializing)
+	  {
+	    *p = NULL_TREE;
+	    return p;
+	  }
+      }
+    return nullptr;
+  }
+  void put_value (tree t, tree v)
+  {
+    bool already_in_map = values.put (t, v);
+    if (!already_in_map && modifiable)
+      modifiable->add (t);
+  }
+  void destroy_value (tree t)
+  {
+    if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL
+	|| TREE_CODE (t) == RESULT_DECL)
+      values.put (t, void_node);
+    else
+      values.remove (t);
+  }
+  void clear_value (tree t) { values.remove (t); }
 };
 
 /* In constexpr.cc */
@@ -457,6 +499,7 @@ save_fundef_copy (tree fun, tree copy)
 
 static tree constant_value_1 (tree decl, bool strict_p,
 			      bool return_aggregate_cst_ok_p, bool unshare_p);
+static tree decl_really_constant_value (tree decl, bool unshare_p /*= true*/);
 tree decl_constant_value (tree decl, bool unshare_p);
 
 static void non_const_var_error (location_t loc, tree r);
@@ -1925,30 +1968,40 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	}
     /* fall through */
     case CONST_DECL:
-      {
-	/* We used to not check lval for CONST_DECL, but darwin.cc uses
-	   CONST_DECL for aggregate constants.  */
-	if (lval)
-	  return t;
-	else if (t == ctx->object)
-	  return ctx->ctor;
-	if (VAR_P (t))
-	  if (tree *p = ctx->global->values.get (t))
-	    if (*p != NULL_TREE)
-	      {
-		r = *p;
-		break;
-	      }
+      /* We used to not check lval for CONST_DECL, but darwin.cc uses
+	 CONST_DECL for aggregate constants.  */
+      if (lval)
+	return t;
+      else if (t == ctx->object)
+	return ctx->ctor;
+      if (VAR_P (t))
+	{
+	  if (tree v = ctx->global->get_value (t))
+	    {
+	      r = v;
+	      break;
+	    }
+	}
+      if (COMPLETE_TYPE_P (TREE_TYPE (t))
+	  && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/ false))
+	{
+	  /* If the class is empty, we aren't actually loading anything.  */
+	  r = build_constructor (TREE_TYPE (t), NULL);
+	  TREE_CONSTANT (r) = true;
+	}
+      else if (ctx->strict)
+	r = decl_really_constant_value (t, /*unshare_p=*/false);
+      else
 	r = decl_constant_value (t, /*unshare_p=*/false);
-	if (TREE_CODE (r) == TARGET_EXPR
-	    && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
-	  r = TARGET_EXPR_INITIAL (r);
-	if (DECL_P (r))
-	  {
+      if (TREE_CODE (r) == TARGET_EXPR
+	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
+	r = TARGET_EXPR_INITIAL (r);
+      if (DECL_P (r) && !(VAR_P (t) && TYPE_REF_P (TREE_TYPE (t))))
+	{
+	  if (!ctx->quiet)
 	    non_const_var_error (loc, r);
-	    return r;
-	  }
-      }
+	  *non_constant_p = true;
+	}
       break;
 
     case PARM_DECL:
@@ -4024,6 +4077,17 @@ constant_value_1 (tree decl, bool, bool, bool unshare_p)
   return unshare_p ? unshare_expr (decl) : decl;
 }
 
+/* Like scalar_constant_value, but can also return aggregate initializers.
+ If UNSHARE_P, return an unshared copy of the initializer.  */
+
+tree
+decl_really_constant_value (tree decl, bool unshare_p /*= true*/)
+{
+  return constant_value_1 (decl, /*strict_p=*/true,
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
+}
+
 // A more relaxed version of decl_really_constant_value, used by the
 // common C/C++ code.
 tree
@@ -4037,15 +4101,38 @@ decl_constant_value (tree decl, bool unshare_p)
 static void
 non_const_var_error (location_t loc, tree r)
 {
-  error_at (loc,
-	    "the value of %qD is not usable in a constant "
-	    "expression",
-	    r);
+  tree type = TREE_TYPE (r);
+
   /* Avoid error cascade.  */
   if (DECL_INITIAL (r) == error_mark_node)
     return;
-
-  // more in cp/constexpr.cc
+  if (DECL_DECLARED_CONSTEXPR_P (r))
+    inform (DECL_SOURCE_LOCATION (r), "%qD used in its own initializer", r);
+  else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+    {
+      if (!DECL_INITIAL (r) || !TREE_CONSTANT (DECL_INITIAL (r))
+	  || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r))
+	inform (DECL_SOURCE_LOCATION (r),
+		"%qD was not initialized with a constant "
+		"expression",
+		r);
+      else
+	gcc_unreachable ();
+    }
+  else if (TYPE_REF_P (type))
+    inform (DECL_SOURCE_LOCATION (r),
+	    "%qD was not initialized with a constant "
+	    "expression",
+	    r);
+  else
+    {
+      if (!DECL_DECLARED_CONSTEXPR_P (r))
+	inform (DECL_SOURCE_LOCATION (r), "%qD was not declared %<constexpr%>",
+		r);
+      else
+	inform (DECL_SOURCE_LOCATION (r),
+		"%qD does not have integral or enumeration type", r);
+    }
 }
 
 static tree
