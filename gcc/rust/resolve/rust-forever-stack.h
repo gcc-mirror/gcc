@@ -668,6 +668,8 @@ public:
   tl::optional<Rib::Definition> get (const Identifier &name);
   tl::optional<Rib::Definition> get_lang_prelude (const Identifier &name);
   tl::optional<Rib::Definition> get_lang_prelude (const std::string &name);
+  tl::optional<Rib::Definition> get_from_prelude (NodeId prelude,
+						  const Identifier &name);
 
   /**
    * Resolve a path to its definition in the current `ForeverStack`

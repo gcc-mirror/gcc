@@ -343,6 +343,17 @@ ForeverStack<N>::get_lang_prelude (const std::string &name)
   return lang_prelude.rib.get (name);
 }
 
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::get_from_prelude (NodeId prelude, const Identifier &name)
+{
+  auto starting_point = dfs_node (root, prelude);
+  if (!starting_point)
+    return tl::nullopt;
+
+  return get (*starting_point, name);
+}
+
 template <>
 tl::optional<Rib::Definition> inline ForeverStack<Namespace::Labels>::get (
   const Identifier &name)

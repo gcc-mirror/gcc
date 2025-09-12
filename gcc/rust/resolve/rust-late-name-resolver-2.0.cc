@@ -346,7 +346,17 @@ Late::visit (AST::IdentifierExpr &expr)
 	{
 	  resolved = type;
 	}
-      else
+      else if (!resolved && ctx.prelude)
+	{
+	  resolved
+	    = ctx.values.get_from_prelude (*ctx.prelude, expr.get_ident ());
+
+	  if (!resolved)
+	    resolved
+	      = ctx.types.get_from_prelude (*ctx.prelude, expr.get_ident ());
+	}
+
+      if (!resolved)
 	{
 	  rust_error_at (expr.get_locus (), ErrorCode::E0425,
 			 "cannot find value %qs in this scope",
