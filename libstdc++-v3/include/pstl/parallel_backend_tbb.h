@@ -521,7 +521,7 @@ class __root_task
     friend class __func_task<_Func>;
 };
 
-#else  // TBB_INTERFACE_VERSION <= 12000
+#else  // TBB_INTERFACE_VERSION > 12000
 class __task : public tbb::detail::d1::task
 {
   protected:
@@ -656,10 +656,16 @@ class __func_task : public __task
 
         _PSTL_ASSERT(__parent != nullptr);
         _PSTL_ASSERT(__parent->_M_refcount.load(std::memory_order_relaxed) > 0);
-        if (--__parent->_M_refcount == 0)
+
+        auto __refcount = --__parent->_M_refcount;
+
+        // Placing the deallocation after the refcount decrement allows another thread to proceed with tree
+        // folding concurrently with this task cleanup.
+        __alloc.deallocate(this, *__ed);
+
+        if (__refcount == 0)
         {
             _PSTL_ASSERT(__next == nullptr);
-            __alloc.deallocate(this, *__ed);
             return __parent;
         }
 
