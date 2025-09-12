@@ -2026,6 +2026,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
      without permutation.  */
   if (! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
     first_dr_info = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
+
   if (STMT_VINFO_STRIDED_P (first_stmt_info))
     /* Try to use consecutive accesses of as many elements as possible,
        separated by the stride, until we have a complete vector.
@@ -2089,15 +2090,10 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		(vinfo, stmt_info, vectype, vls_type, 1,
 		 &neg_ldst_offset);
 	  else
-	    {
-	      /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
-		 separated by the stride, until we have a complete vector.
-		 Fall back to scalar accesses if that isn't possible.  */
-	      if (multiple_p (nunits, group_size))
-		*memory_access_type = VMAT_STRIDED_SLP;
-	      else
-		*memory_access_type = VMAT_ELEMENTWISE;
-	    }
+	    /* We can fall back to VMAT_STRIDED_SLP since that does
+	       not care whether the stride between the group instances
+	       is positive or negative.  */
+	    *memory_access_type = VMAT_STRIDED_SLP;
 	}
       else if (cmp == 0 && loop_vinfo)
 	{
