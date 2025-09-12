@@ -4989,6 +4989,73 @@ simplify_op:
   return t;
 }
 
+static bool
+resolve_conditional (gfc_expr *expr)
+{
+  gfc_expr *condition, *true_expr, *false_expr;
+
+  condition = expr->value.conditional.condition;
+  true_expr = expr->value.conditional.true_expr;
+  false_expr = expr->value.conditional.false_expr;
+
+  if (!gfc_resolve_expr (condition) || !gfc_resolve_expr (true_expr)
+      || !gfc_resolve_expr (false_expr))
+    return false;
+
+  if (condition->ts.type != BT_LOGICAL || condition->rank != 0)
+    {
+      gfc_error (
+	"Condition in conditional expression must be a scalar logical at %L",
+	&condition->where);
+      return false;
+    }
+
+  if (true_expr->ts.type != false_expr->ts.type)
+    {
+      gfc_error ("expr at %L and expr at %L in conditional expression "
+		 "must have the same declared type",
+		 &true_expr->where, &false_expr->where);
+      return false;
+    }
+
+  if (true_expr->ts.kind != false_expr->ts.kind)
+    {
+      gfc_error ("expr at %L and expr at %L in conditional expression "
+		 "must have the same kind parameter",
+		 &true_expr->where, &false_expr->where);
+      return false;
+    }
+
+  if (true_expr->rank != false_expr->rank)
+    {
+      gfc_error ("expr at %L and expr at %L in conditional expression "
+		 "must have the same rank",
+		 &true_expr->where, &false_expr->where);
+      return false;
+    }
+
+  /* TODO: support more data types for conditional expressions  */
+  if (true_expr->ts.type != BT_INTEGER && true_expr->ts.type != BT_LOGICAL
+      && true_expr->ts.type != BT_REAL && true_expr->ts.type != BT_COMPLEX)
+    {
+      gfc_error ("Sorry, only integer, logical, real and complex types "
+		 "are currently supported for conditional expressions at %L",
+		 &expr->where);
+      return false;
+    }
+
+  if (true_expr->rank > 0)
+    {
+      gfc_error ("Sorry, array is currently unsupported for conditional "
+		 "expressions at %L",
+		 &expr->where);
+      return false;
+    }
+
+  expr->ts = true_expr->ts;
+  expr->rank = true_expr->rank;
+  return true;
+}
 
 /************** Array resolution subroutines **************/
 
@@ -8038,6 +8105,10 @@ gfc_resolve_expr (gfc_expr *e)
     {
     case EXPR_OP:
       t = resolve_operator (e);
+      break;
+
+    case EXPR_CONDITIONAL:
+      t = resolve_conditional (e);
       break;
 
     case EXPR_FUNCTION:

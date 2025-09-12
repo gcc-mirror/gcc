@@ -767,6 +767,16 @@ show_expr (gfc_expr *p)
 
       break;
 
+    case EXPR_CONDITIONAL:
+      fputc ('(', dumpfile);
+      show_expr (p->value.conditional.condition);
+      fputs (" ? ", dumpfile);
+      show_expr (p->value.conditional.true_expr);
+      fputs (" : ", dumpfile);
+      show_expr (p->value.conditional.false_expr);
+      fputc (')', dumpfile);
+      break;
+
     case EXPR_COMPCALL:
       show_compcall (p);
       break;

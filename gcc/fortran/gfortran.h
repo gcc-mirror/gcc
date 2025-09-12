@@ -176,8 +176,19 @@ enum gfc_source_form
 
 /* Expression node types.  */
 enum expr_t
-  { EXPR_UNKNOWN = 0, EXPR_OP = 1, EXPR_FUNCTION, EXPR_CONSTANT, EXPR_VARIABLE,
-  EXPR_SUBSTRING, EXPR_STRUCTURE, EXPR_ARRAY, EXPR_NULL, EXPR_COMPCALL, EXPR_PPC
+{
+  EXPR_UNKNOWN = 0,
+  EXPR_OP = 1,
+  EXPR_FUNCTION,
+  EXPR_CONSTANT,
+  EXPR_VARIABLE,
+  EXPR_SUBSTRING,
+  EXPR_STRUCTURE,
+  EXPR_ARRAY,
+  EXPR_NULL,
+  EXPR_COMPCALL,
+  EXPR_PPC,
+  EXPR_CONDITIONAL,
 };
 
 /* Array types.  */
@@ -2809,8 +2820,14 @@ typedef struct gfc_expr
     character;
 
     gfc_constructor_base constructor;
-  }
-  value;
+
+    struct
+    {
+      struct gfc_expr *condition;
+      struct gfc_expr *true_expr;
+      struct gfc_expr *false_expr;
+    } conditional;
+  } value;
 
   /* Used to store PDT expression lists associated with expressions.  */
   gfc_actual_arglist *param_list;
@@ -3925,7 +3942,10 @@ bool gfc_is_ptr_fcn (gfc_expr *);
 gfc_expr *gfc_get_expr (void);
 gfc_expr *gfc_get_array_expr (bt type, int kind, locus *);
 gfc_expr *gfc_get_null_expr (locus *);
-gfc_expr *gfc_get_operator_expr (locus *, gfc_intrinsic_op,gfc_expr *, gfc_expr *);
+gfc_expr *gfc_get_operator_expr (locus *, gfc_intrinsic_op, gfc_expr *,
+				 gfc_expr *);
+gfc_expr *gfc_get_conditional_expr (locus *, gfc_expr *, gfc_expr *,
+				    gfc_expr *);
 gfc_expr *gfc_get_structure_constructor_expr (bt, int, locus *);
 gfc_expr *gfc_get_constant_expr (bt, int, locus *);
 gfc_expr *gfc_get_character_expr (int, locus *, const char *, gfc_charlen_t len);

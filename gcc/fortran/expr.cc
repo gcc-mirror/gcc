@@ -116,6 +116,25 @@ gfc_get_operator_expr (locus *where, gfc_intrinsic_op op,
   return e;
 }
 
+/* Get a new expression node that is an conditional expression node.  */
+
+gfc_expr *
+gfc_get_conditional_expr (locus *where, gfc_expr *condition,
+			  gfc_expr *true_expr, gfc_expr *false_expr)
+{
+  gfc_expr *e;
+
+  e = gfc_get_expr ();
+  e->expr_type = EXPR_CONDITIONAL;
+  e->value.conditional.condition = condition;
+  e->value.conditional.true_expr = true_expr;
+  e->value.conditional.false_expr = false_expr;
+
+  if (where)
+    e->where = *where;
+
+  return e;
+}
 
 /* Get a new expression node that is an structure constructor
    of given type and kind.  */
@@ -393,6 +412,15 @@ gfc_copy_expr (gfc_expr *p)
 
       break;
 
+    case EXPR_CONDITIONAL:
+      q->value.conditional.condition
+	= gfc_copy_expr (p->value.conditional.condition);
+      q->value.conditional.true_expr
+	= gfc_copy_expr (p->value.conditional.true_expr);
+      q->value.conditional.false_expr
+	= gfc_copy_expr (p->value.conditional.false_expr);
+      break;
+
     case EXPR_FUNCTION:
       q->value.function.actual =
 	gfc_copy_actual_arglist (p->value.function.actual);
@@ -500,6 +528,12 @@ free_expr0 (gfc_expr *e)
 	gfc_free_expr (e->value.op.op1);
       if (e->value.op.op2 != NULL)
 	gfc_free_expr (e->value.op.op2);
+      break;
+
+    case EXPR_CONDITIONAL:
+      gfc_free_expr (e->value.conditional.condition);
+      gfc_free_expr (e->value.conditional.true_expr);
+      gfc_free_expr (e->value.conditional.false_expr);
       break;
 
     case EXPR_FUNCTION:
@@ -1083,6 +1117,11 @@ gfc_is_constant_expr (gfc_expr *e)
 	      && (e->value.op.op2 == NULL
 		  || gfc_is_constant_expr (e->value.op.op2)));
 
+    case EXPR_CONDITIONAL:
+      return gfc_is_constant_expr (e->value.conditional.condition)
+	     && gfc_is_constant_expr (e->value.conditional.true_expr)
+	     && gfc_is_constant_expr (e->value.conditional.false_expr);
+
     case EXPR_VARIABLE:
       /* The only context in which this can occur is in a parameterized
 	 derived type declaration, so returning true is OK.  */
@@ -1354,6 +1393,43 @@ simplify_intrinsic_op (gfc_expr *p, int type)
   return true;
 }
 
+/* Try to collapse conditional expressions.  */
+
+static bool
+simplify_conditional (gfc_expr *p, int type)
+{
+  gfc_expr *condition, *true_expr, *false_expr;
+
+  condition = p->value.conditional.condition;
+  true_expr = p->value.conditional.true_expr;
+  false_expr = p->value.conditional.false_expr;
+
+  if (!gfc_simplify_expr (condition, type)
+      || !gfc_simplify_expr (true_expr, type)
+      || !gfc_simplify_expr (false_expr, type))
+    return false;
+
+  if (!gfc_is_constant_expr (condition))
+    return true;
+
+  p->value.conditional.condition = NULL;
+  p->value.conditional.true_expr = NULL;
+  p->value.conditional.false_expr = NULL;
+
+  if (condition->value.logical)
+    {
+      gfc_replace_expr (p, true_expr);
+      gfc_free_expr (false_expr);
+    }
+  else
+    {
+      gfc_replace_expr (p, false_expr);
+      gfc_free_expr (true_expr);
+    }
+  gfc_free_expr (condition);
+
+  return true;
+}
 
 /* Subroutine to simplify constructor expressions.  Mutually recursive
    with gfc_simplify_expr().  */
@@ -2459,6 +2535,11 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	return false;
       break;
 
+    case EXPR_CONDITIONAL:
+      if (!simplify_conditional (p, type))
+	return false;
+      break;
+
     case EXPR_VARIABLE:
       /* Only substitute array parameter variables if we are in an
 	 initialization expression, or we want a subsection.  */
@@ -3133,6 +3214,20 @@ gfc_check_init_expr (gfc_expr *e)
 
       break;
 
+    case EXPR_CONDITIONAL:
+      t = gfc_check_init_expr (e->value.conditional.condition);
+      if (!t)
+	break;
+      t = gfc_check_init_expr (e->value.conditional.true_expr);
+      if (!t)
+	break;
+      t = gfc_check_init_expr (e->value.conditional.false_expr);
+      if (t)
+	t = gfc_simplify_expr (e, 0);
+      else
+	t = false;
+      break;
+
     case EXPR_FUNCTION:
       t = false;
 
@@ -3607,6 +3702,20 @@ check_restricted (gfc_expr *e)
       if (t)
 	t = gfc_simplify_expr (e, 0);
 
+      break;
+
+    case EXPR_CONDITIONAL:
+      t = check_restricted (e->value.conditional.condition);
+      if (!t)
+	break;
+      t = check_restricted (e->value.conditional.true_expr);
+      if (!t)
+	break;
+      t = check_restricted (e->value.conditional.false_expr);
+      if (t)
+	t = gfc_simplify_expr (e, 0);
+      else
+	t = false;
       break;
 
     case EXPR_FUNCTION:
@@ -5697,6 +5806,15 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
       if (gfc_traverse_expr (expr->value.op.op1, sym, func, f))
 	return true;
       if (gfc_traverse_expr (expr->value.op.op2, sym, func, f))
+	return true;
+      break;
+
+    case EXPR_CONDITIONAL:
+      if (gfc_traverse_expr (expr->value.conditional.condition, sym, func, f))
+	return true;
+      if (gfc_traverse_expr (expr->value.conditional.true_expr, sym, func, f))
+	return true;
+      if (gfc_traverse_expr (expr->value.conditional.false_expr, sym, func, f))
 	return true;
       break;
 

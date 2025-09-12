@@ -3622,7 +3622,9 @@ static const mstring expr_types[] = {
     minit ("ARRAY", EXPR_ARRAY),
     minit ("NULL", EXPR_NULL),
     minit ("COMPCALL", EXPR_COMPCALL),
-    minit (NULL, -1)
+    minit ("PPC", EXPR_PPC),
+    minit ("CONDITIONAL", EXPR_CONDITIONAL),
+    minit (NULL, -1),
 };
 
 /* INTRINSIC_ASSIGN is missing because it is used as an index for
@@ -3841,6 +3843,12 @@ mio_expr (gfc_expr **ep)
 	  bad_module ("Bad operator");
 	}
 
+      break;
+
+    case EXPR_CONDITIONAL:
+      mio_expr (&e->value.conditional.condition);
+      mio_expr (&e->value.conditional.true_expr);
+      mio_expr (&e->value.conditional.false_expr);
       break;
 
     case EXPR_FUNCTION:

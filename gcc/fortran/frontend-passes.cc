@@ -5218,6 +5218,11 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	    for (a = (*e)->value.function.actual; a; a = a->next)
 	      WALK_SUBEXPR (a->expr);
 	    break;
+	  case EXPR_CONDITIONAL:
+	    WALK_SUBEXPR ((*e)->value.conditional.condition);
+	    WALK_SUBEXPR ((*e)->value.conditional.true_expr);
+	    WALK_SUBEXPR ((*e)->value.conditional.false_expr);
+	    break;
 	  case EXPR_COMPCALL:
 	  case EXPR_PPC:
 	    WALK_SUBEXPR ((*e)->value.compcall.base_object);
