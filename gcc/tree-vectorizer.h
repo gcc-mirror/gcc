@@ -288,6 +288,7 @@ struct vect_load_store_data : vect_data {
   } gs;
   tree strided_offset_vectype; // VMAT_GATHER_SCATTER_IFN, originally strided
   auto_vec<int> elsvals;
+  unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
 };
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of

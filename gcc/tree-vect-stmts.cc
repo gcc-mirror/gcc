@@ -9478,6 +9478,7 @@ vectorizable_load (vec_info *vinfo,
 
   /* ???  The following checks should really be part of
      get_load_store_type.  */
+  unsigned n_perms = -1U;
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
       && !((memory_access_type == VMAT_ELEMENTWISE
 	    || mat_gather_scatter_p (memory_access_type))
@@ -9485,7 +9486,7 @@ vectorizable_load (vec_info *vinfo,
     {
       slp_perm = true;
 
-      if (!loop_vinfo)
+      if (!loop_vinfo && cost_vec)
 	{
 	  /* In BB vectorization we may not actually use a loaded vector
 	     accessing elements in excess of DR_GROUP_SIZE.  */
@@ -9508,17 +9509,21 @@ vectorizable_load (vec_info *vinfo,
 	    }
 	}
 
-      auto_vec<tree> tem;
-      unsigned n_perms;
-      if (!vect_transform_slp_perm_load (vinfo, slp_node, tem, NULL, vf,
-					 true, &n_perms))
+      if (cost_vec)
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-			     vect_location,
-			     "unsupported load permutation\n");
-	  return false;
+	  if (!vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
+					     true, &n_perms))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				 vect_location,
+				 "unsupported load permutation\n");
+	      return false;
+	    }
+	  ls.n_perms = n_perms;
 	}
+      else
+	n_perms = ls.n_perms;
     }
 
   if (slp_node->ldst_lanes
@@ -9989,18 +9994,19 @@ vectorizable_load (vec_info *vinfo,
 	}
       if (slp_perm)
 	{
-	  unsigned n_perms;
 	  if (costing_p)
 	    {
-	      unsigned n_loads;
-	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
-					    true, &n_perms, &n_loads);
+	      gcc_assert (n_perms != -1U);
 	      inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
 					       slp_node, 0, vect_body);
 	    }
 	  else
-	    vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-					  false, &n_perms);
+	    {
+	      unsigned n_perms2;
+	      vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
+					    false, &n_perms2);
+	      gcc_assert (n_perms == n_perms2);
+	    }
 	}
 
       if (costing_p)
@@ -11378,25 +11384,24 @@ vectorizable_load (vec_info *vinfo,
 
   if (slp_perm)
     {
-      unsigned n_perms;
       /* For SLP we know we've seen all possible uses of dr_chain so
 	 direct vect_transform_slp_perm_load to DCE the unused parts.
 	 ???  This is a hack to prevent compile-time issues as seen
 	 in PR101120 and friends.  */
       if (costing_p)
 	{
-	  vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
-					true, &n_perms, nullptr);
+	  gcc_assert (n_perms != -1U);
 	  if (n_perms != 0)
 	    inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
 					    slp_node, 0, vect_body);
 	}
       else
 	{
+	  unsigned n_perms2;
 	  bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
-						  gsi, vf, false, &n_perms,
+						  gsi, vf, false, &n_perms2,
 						  nullptr, true);
-	  gcc_assert (ok);
+	  gcc_assert (ok && n_perms == n_perms2);
 	}
       dr_chain.release ();
     }
