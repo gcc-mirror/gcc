@@ -64,8 +64,6 @@ static bool vect_transform_slp_perm_load_1 (vec_info *, slp_tree,
 static int vectorizable_slp_permutation_1 (vec_info *, gimple_stmt_iterator *,
 					   slp_tree, lane_permutation_t &,
 					   vec<slp_tree> &, bool);
-static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
-					  slp_tree, stmt_vector_for_cost *);
 static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
 static bool vect_slp_can_convert_to_external (const vec<stmt_vec_info> &);
 
@@ -8072,6 +8070,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 					       false, cost_vec))
 	    return false;
 	}
+      SLP_TREE_TYPE (node) = permute_info_type;
       return true;
     }
 
@@ -11359,7 +11358,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
      [ { 0, 2 }, { 0, 3 } ]
    Where currently only a subset is supported by code generating below.  */
 
-static bool
+bool
 vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 			      slp_tree node, stmt_vector_for_cost *cost_vec)
 {
@@ -11596,37 +11595,20 @@ vect_schedule_slp_node (vec_info *vinfo,
 	}
     }
 
-  /* Handle purely internal nodes.  */
-  if (SLP_TREE_PERMUTE_P (node))
+  if (dump_enabled_p ())
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "------>vectorizing SLP permutation node\n");
-      /* ???  the transform kind was stored to STMT_VINFO_TYPE which might
-	 be shared with different SLP nodes (but usually it's the same
-	 operation apart from the case the stmt is only there for denoting
-	 the actual scalar lane defs ...).  So do not call vect_transform_stmt
-	 but open-code it here (partly).  */
-      bool done = vectorizable_slp_permutation (vinfo, &si, node, NULL);
-      gcc_assert (done);
-      stmt_vec_info slp_stmt_info;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, slp_stmt_info)
-	if (slp_stmt_info && STMT_VINFO_LIVE_P (slp_stmt_info))
-	  {
-	    done = vectorizable_live_operation (vinfo, slp_stmt_info, node,
-						instance, i, true, NULL);
-	    gcc_assert (done);
-	  }
-    }
-  else
-    {
-      if (dump_enabled_p ())
+      if (stmt_info)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "------>vectorizing SLP node starting from: %G",
 			 stmt_info->stmt);
-      vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+      else
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "------>vectorizing SLP node:\n");
+	  vect_print_slp_tree (MSG_NOTE, vect_location, node);
+	}
     }
+  vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.

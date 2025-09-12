@@ -12731,11 +12731,8 @@ vect_transform_stmt (vec_info *vinfo,
 
   gcc_assert (slp_node);
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "------>vectorizing statement: %G", stmt_info->stmt);
-
-  STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
+  if (stmt_info)
+    STMT_VINFO_VECTYPE (stmt_info) = NULL_TREE;
 
   switch (SLP_TREE_TYPE (slp_node))
     {
@@ -12842,6 +12839,11 @@ vect_transform_stmt (vec_info *vinfo,
     case loop_exit_ctrl_vec_info_type:
       done = vectorizable_early_exit (as_a <loop_vec_info> (vinfo),
 				      stmt_info, gsi, slp_node, NULL);
+      gcc_assert (done);
+      break;
+
+    case permute_info_type:
+      done = vectorizable_slp_permutation (vinfo, gsi, slp_node, NULL);
       gcc_assert (done);
       break;
 

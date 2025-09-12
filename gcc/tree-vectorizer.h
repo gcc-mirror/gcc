@@ -242,7 +242,8 @@ enum stmt_vec_info_type {
   lc_phi_info_type,
   phi_info_type,
   recurr_info_type,
-  loop_exit_ctrl_vec_info_type
+  loop_exit_ctrl_vec_info_type,
+  permute_info_type
 };
 
 /************************************************************************
@@ -2755,6 +2756,8 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> 
 					  gimple_stmt_iterator *, poly_uint64,
 					  bool, unsigned *,
 					  unsigned * = nullptr, bool = false);
+extern bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
+					  slp_tree, stmt_vector_for_cost *);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
 extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);
