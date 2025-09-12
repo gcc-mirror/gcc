@@ -1,3 +1,17 @@
+2025-09-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97740
+	* g++.dg/cpp0x/constexpr-97740a.C: New test.
+	* g++.dg/cpp0x/constexpr-97740b.C: New test.
+
+2025-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/121757
+	* g++.dg/pr121757.C: New test.
+
 2025-09-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

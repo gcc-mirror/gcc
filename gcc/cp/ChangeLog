@@ -1,3 +1,12 @@
+2025-09-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97740
+	* pt.cc (tsubst_expr) <case COMPONENT_REF>: Don't check access
+	when the given member is already a FIELD_DECL.
+
 2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

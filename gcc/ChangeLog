@@ -1,3 +1,12 @@
+2025-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/121757
+	* rtl-ssa/accesses.h (clobber_group::lookup_clobber): New member
+	function.
+	* rtl-ssa/accesses.cc (clobber_group::lookup_clobber): Likewise.
+	(clobber_group::prev_clobber, clobber_group::next_clobber)
+	(function_info::add_clobber): Use it.
+
 2025-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
