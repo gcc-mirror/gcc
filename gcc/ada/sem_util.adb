@@ -29615,11 +29615,7 @@ package body Sem_Util is
 
    begin
       Pref := N;
-      while Nkind (Pref) in N_Explicit_Dereference
-                          | N_Indexed_Component
-                          | N_Selected_Component
-                          | N_Slice
-      loop
+      while Has_Prefix (Pref) loop
          Pref := Prefix (Pref);
       end loop;
 
