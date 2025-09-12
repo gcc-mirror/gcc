@@ -74,6 +74,8 @@ set plugin_test_list [list \
 	  crash-test-ice-in-header-sarif-2.2.c \
 	  crash-test-ice-sarif.c \
 	  crash-test-ice-stderr.c \
+	  crash-test-nested-ice.c \
+	  crash-test-nested-write-through-null.c \
 	  crash-test-write-through-null-sarif.c \
 	  crash-test-write-through-null-stderr.c } \
     { diagnostic_group_plugin.cc \
