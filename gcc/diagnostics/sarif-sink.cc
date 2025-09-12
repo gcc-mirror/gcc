@@ -1980,6 +1980,7 @@ maybe_get_sarif_level (enum kind diag_kind)
     {
     case kind::warning:
       return "warning";
+    case kind::fatal:
     case kind::error:
       return "error";
     case kind::note:

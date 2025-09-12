@@ -463,9 +463,8 @@ context::dump (FILE *outfile, int indent) const
 bool
 context::execution_failed_p () const
 {
-  /* Equivalent to (seen_error () || werrorcount), but on
-     this context, rather than global_dc.  */
-  return (diagnostic_count (kind::error)
+  return (diagnostic_count (kind::fatal)
+	  || diagnostic_count (kind::error)
 	  || diagnostic_count (kind::sorry)
 	  || diagnostic_count (kind::werror));
 }
