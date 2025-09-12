@@ -12336,7 +12336,7 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   gimple *orig_stmt = STMT_VINFO_STMT (vect_orig_stmt (stmt_info));
   gcond *cond_stmt = as_a <gcond *>(orig_stmt);
 
-  tree cst = build_zero_cst (vectype);
+  tree vectype_out = vectype;
   auto bb = gimple_bb (cond_stmt);
   edge exit_true_edge = EDGE_SUCC (bb, 0);
   if (exit_true_edge->flags & EDGE_FALSE_VALUE)
@@ -12353,10 +12353,37 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   bool flipped = flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
 					exit_true_edge->dest);
 
+  /* See if we support ADDHN and use that for the reduction.  */
+  internal_fn ifn = IFN_VEC_TRUNC_ADD_HIGH;
+  bool addhn_supported_p
+    = direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_BOTH);
+  tree narrow_type = NULL_TREE;
+  if (addhn_supported_p)
+    {
+      /* Calculate the narrowing type for the result.  */
+      auto halfprec = TYPE_PRECISION (TREE_TYPE (vectype)) / 2;
+      auto unsignedp = TYPE_UNSIGNED (TREE_TYPE (vectype));
+      tree itype = build_nonstandard_integer_type (halfprec, unsignedp);
+      tree tmp_type = build_vector_type (itype, TYPE_VECTOR_SUBPARTS (vectype));
+      narrow_type = truth_type_for (tmp_type);
+
+      if (direct_optab_handler (cbranch_optab, TYPE_MODE (narrow_type))
+	  == CODE_FOR_nothing)
+	{
+	  if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "can't use ADDHN reduction because cbranch for "
+			       "the narrowed type is not supported by the "
+			       "target.\n");
+	  addhn_supported_p = false;
+	}
+    }
+
   /* Analyze only.  */
   if (cost_vec)
     {
-      if (direct_optab_handler (cbranch_optab, mode) == CODE_FOR_nothing)
+      if (!addhn_supported_p
+	  && direct_optab_handler (cbranch_optab, mode) == CODE_FOR_nothing)
 	{
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12462,10 +12489,22 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
       while (workset.length () > 1)
 	{
-	  new_temp = make_temp_ssa_name (vectype, NULL, "vexit_reduc");
 	  tree arg0 = workset.pop ();
 	  tree arg1 = workset.pop ();
-	  new_stmt = gimple_build_assign (new_temp, BIT_IOR_EXPR, arg0, arg1);
+	  if (addhn_supported_p && workset.length () == 0)
+	    {
+	      new_stmt = gimple_build_call_internal (ifn, 2, arg0, arg1);
+	      vectype_out = narrow_type;
+	      new_temp = make_temp_ssa_name (vectype_out, NULL, "vexit_reduc");
+	      gimple_call_set_lhs (as_a <gcall *> (new_stmt), new_temp);
+	      gimple_call_set_nothrow (as_a <gcall *> (new_stmt), true);
+	    }
+	  else
+	    {
+	      new_temp = make_temp_ssa_name (vectype_out, NULL, "vexit_reduc");
+	      new_stmt
+		= gimple_build_assign (new_temp, BIT_IOR_EXPR, arg0, arg1);
+	    }
 	  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt,
 				       &cond_gsi);
 	  workset.quick_insert (0, new_temp);
@@ -12488,6 +12527,7 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
   gcc_assert (new_temp);
 
+  tree cst = build_zero_cst (vectype_out);
   gimple_cond_set_condition (cond_stmt, NE_EXPR, new_temp, cst);
   update_stmt (orig_stmt);
 
