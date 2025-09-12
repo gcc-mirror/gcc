@@ -1,3 +1,9 @@
+2025-09-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c++/121889
+	* decl2.cc (cplus_decl_attributes): Don't upgrade TLS model if
+	TLS model isn't set yet.
+
 2025-09-10  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121859

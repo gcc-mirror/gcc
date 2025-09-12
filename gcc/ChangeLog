@@ -1,3 +1,97 @@
+2025-09-11  Trevor Gross  <tmgross@umich.edu>
+
+	* doc/libgcc.texi (Comparison functions): Document functions as
+	returning CMPtype.
+
+2025-09-11  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR middle-end/66462
+	* config/aarch64/aarch64.md (isfinite<mode>2): Add new expander.
+
+2025-09-11  Matteo Nicoli  <matteo.nicoli001@gmail.com>
+
+	PR tree-optimization/121595
+	* match.pd (fabs(a + 0.0) -> fabs (a)): Optimization pattern limited to
+	the -fno-trapping-math case.
+
+2025-09-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (atomic_compare_and_swapti_scq):
+	Require LSX.  Change the operands for the output, the memory,
+	and the expected value to LSX vector modes.  Add a FCCmode
+	output to indicate if CAS has written the desired value into
+	memory.  Use LSX to atomically load both words of the 16B value
+	in memory.
+	(atomic_compare_and_swapti): Pun the modes to satisify
+	the new atomic_compare_and_swapti_scq implementation.  Read the
+	bool return value from the FCC instead of performing a
+	comparision.
+
+2025-09-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand): Call
+	reg_or_0_operand for checking the sanity of %t.
+
+2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121703
+	* tree-vect-stmts.cc (vectorizable_store): Value-initialize ls.
+	(vectorizable_load): Likewise.
+
+2025-09-11  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/riscv.cc (riscv_function_ok_for_sibcall):
+	Suppress cross calling convention sibcall optimization from
+	the vector calling convention variant.
+
+2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121829
+	* cfgloopmanip.cc (create_preheader): Ensure we can insert
+	at the end of a preheader.
+
+2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121870
+	* tree-ssa-propagate.cc
+	(substitute_and_fold_engine::substitute_and_fold): Skip
+	removed stmts from noreturn fixup.
+
+2025-09-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (*<bitmanip_minmax_cmp_insn>_cmp_<mode>3):
+	New min/max ifcvt pattern.
+	* config/riscv/iterators.md (minu): New iterator.
+	* config/riscv/riscv.cc (riscv_noce_conversion_profitable_p):
+	Remove riscv-specific adjustment.
+
+2025-09-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets_1): Add use_cond_earliest
+	param.
+	(noce_convert_multiple_sets): Set use_cond_earliest.
+	(noce_process_if_block): Just use original cost.
+	(noce_find_if_block): Use insn_cost (jump_insn).
+
+2025-09-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-selftests.cc (riscv_run_selftests): Call
+	run_vectorize_related_mode_selftests.
+	(test_vectorize_related_mode): New function to test
+	vectorize_related_mode behavior.
+	(run_vectorize_related_mode_selftests): New function to run all
+	vectorize_related_mode tests.
+	(run_vectorize_related_mode_vla_selftests): New function to test
+	VLA modes.
+	(run_vectorize_related_mode_vls_rv64gcv_selftests): New function to
+	test VLS modes on rv64gcv.
+	(run_vectorize_related_mode_vls_rv32gc_zve32x_zvl256b_selftests):
+	New function to test VLS modes on rv32gc_zve32x_zvl256b.
+	(run_vectorize_related_mode_vls_selftests): New function to run all
+	VLS mode tests.
+	* config/riscv/riscv-v.cc (can_find_related_mode_p): Fix VLS type
+	handling by converting TARGET_MIN_VLEN from bits to bytes.
+
 2025-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81540

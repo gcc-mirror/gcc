@@ -1,3 +1,222 @@
+2025-09-11  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/g-socket.adb (Listen_Socket): Change default value.
+	* libgnat/g-socket.ads (Listen_Socket): Likewise.
+	* s-oscons-tmplt.c (BACKLOG_MAX): New.
+
+2025-09-11  Marc Poulhiès  <poulhies@adacore.com>
+
+	* env.c (__gnat_clearenv): Adjust comment.
+	* libgnarl/a-intnam__bsd.ads: Fix copyright date.
+
+2025-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Give a
+	warning for huge imported objects as well.
+
+2025-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_ALIGN_OK): Delete.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Do not set it.
+	* gcc-interface/gigi.h (standard_datatypes): Add ADT_tag_name_id.
+	(tag_name_id): New macro.
+	(type_is_tagged_or_cw_equivalent): New inline predicate.
+	* gcc-interface/trans.cc (gigi): Initialize tag_name_id.
+	(gnat_to_gnu) <N_Unchecked_Type_Conversion>: Replace tests on
+	TYPE_ALIGN_OK with calls to type_is_tagged_or_cw_equivalent.
+	(addressable_p): Likewise.
+	* gcc-interface/utils.cc (convert): Likewise.
+	* gcc-interface/utils2.cc (build_binary_op): Likewise.
+
+2025-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.cc (gnat_get_array_descr_info): In the record
+	type case, bail out if the original array type cannot be retrieved.
+
+2025-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (standard_datatypes): Add ADT_uns_mulv64_decl
+	and ADT_uns_mulv128_decl.
+	(uns_mulv64_decl): New macro.
+	(uns_mulv128_decl): Likewise.
+	* gcc-interface/trans.cc (gigi): Create the uns_mulv64_decl and
+	uns_mulv128_decl declarations.
+	(gnat_to_gnu) <N_Op_Add>: Perform an overflow check for unsigned
+	integer addition, subtraction and multiplication if required.
+	<N_Op_Minus>: Perform an overflow check for unsigned integer
+	negation if required.
+	(build_unary_op_trapv): Add support for unsigned types.
+	(build_binary_op_trapv): Likewise.
+	<MINUS_EXPR>: Perform the check if the LHS is zero in the signed
+	case as well.
+
+2025-09-11  Steve Baird  <baird@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): After building the tree for a
+	predicate check, call Prepend_To instead of Append_To so that the
+	check is performed before, instead of after, the corresponding
+	parameter copy-back.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb: Create a ghost region for pragma annotate before
+	analyzing its arguments.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Check ghost context
+	of Iterable functions when handling iterator specifications with an
+	Iterable aspect.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Policy): Update coding style.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Policy): Avoid triggering a ghost
+	policy error if the policy is referenced within the Iterable
+	aspect.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Is_OK_Statement): Check the levels of the
+	assignee with the levels of the entity are ghost level dependent.
+	(Check_Assignement_Levels): New function for checking the level
+	dependencies.
+
+2025-09-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Ghost_Assertion_Level): Fix comment.
+
+2025-09-11  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Mark_And_Set_Ghost_Assignment): Create a ghost region
+	for an assigment irregardless of whether the expander is active.
+	Relocate the Assignment validity checks from Is_OK_Statement to
+	this subprogram.
+
+2025-09-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Container_Aggr_Code.Build_Size_Expr): In the case
+	of an association with a single choice, only call Update_Choices when
+	the choice expression is nonstatic.
+
+2025-09-11  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_Assign_With_Target_Names.Replace_Target):
+	Remove code setting Entity to Empty.
+	* sinfo.ads (Has_Target_Names):
+	Improve comment: add "@" to clarify what "target name"
+	means, and remove the content-free phrase "and must
+	be expanded accordingly."
+
+2025-09-11  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.adb (Root_Type): Do not deal with missing Etype.
+
+2025-09-11  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.adb (Root_Type): Deal with missing Etype.
+	(Root_Type_If_Set): Likewise.
+
+2025-09-11  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Protect call to Associated_Storage_Pool
+	since it cannot be used when the Etype is not set.
+	* sem_ch3.adb (Access_Type_Declaration): Ditto.
+	* sem_aux.adb (Is_Derived_Type): Protect call to Root_Type since it
+	cannot be used when the Etype is not set.
+
+2025-09-11  Tonu Naks  <naks@adacore.com>
+
+	* libgnat/s-crtl.ads: define unsigned
+	* libgnat/s-crtl__mingw.adb (read, write): change arg type
+
+2025-09-11  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Change "=" to ">=" in
+	size comparison for Implicit_Packing mode.
+	Keep it as "=" for giving error messages.
+	* opt.ads (Implicit_Packing): Minor: correct obsolete
+	comment.
+
+2025-09-11  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Report_Null_Array_Constraint_Error): Adjust code
+	for reporting the error on enumeration types.
+	(Resolve_Null_Array_Aggregate): On multidimiensional arrays, avoid
+	reporting the same error several times. Flag the node as raising
+	constraint error when the bounds are known and some of them is
+	known to raise constraint error.
+
+2025-09-11  Bob Duff  <duff@adacore.com>
+
+	* atree.ads (Node_To_Fetch_From_If_Set): Alternative to
+	Node_To_Fetch_From that returns Empty in error cases.
+	For use only in Treepr.
+	* treepr.adb (Print_Entity_Field): Avoid printing field
+	if Node_To_Fetch_From_If_Set returns Empty.
+	* einfo-utils.ads (Base_Type_If_Set): Alternative to
+	Base_Type that returns Empty in error cases.
+	(Implementation_Base_Type_If_Set): Likewise.
+	(Root_Type_If_Set): Likewise.
+	(Underlying_Type): Use more accurate result subtype.
+	* einfo-utils.adb (Base_Type): Add Asserts.
+	(Implementation_Base_Type): Add Assert; minor cleanup.
+	(Root_Type): Add Assert; minor cleanup. Remove Assert that
+	is redundant with predicate.
+	(Base_Type_If_Set): Body of new function.
+	(Implementation_Base_Type_If_Set): Body of new function.
+	(Root_Type_If_Set): Body of new function.
+
+2025-09-11  Johannes Kliemann  <kliemann@adacore.com>
+
+	* adaint.c: Add functions to disable and enable signals on QNX.
+	* libgnarl/s-taprop__qnx.adb (Create_Task): Disable
+	signals when calling pthread_create.
+
+2025-09-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Test for absence of user-defined
+	equality on type being compared (for both array and record types)
+	as a condition for checking for abstract equality on component
+	types. Add a "???" comment about current limitations on issuing
+	the new warning.
+	(Warn_On_Abstract_Equality_For_Component): Remove temporary disabling
+	of the warning. Improve comment on declaration.
+
+2025-09-11  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants, Process_Full_View): Fix
+	comments.
+
+2025-09-11  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Remove strict analysis condition.
+
+2025-09-11  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* par-load.adb (Load): Better warning message.
+
+2025-09-11  Tucker Taft  <taft@adacore.com>
+
+	* exp_attr.adb
+	(Build_Array_VS_Func and Build_Record_VS_Func): Pass in the
+	Attr as the Related_Node parametr when calling
+	Make_Temporary for the Func_Id for the array and record
+	Valid_Scalars local functions.
+
+2025-09-11  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.ads (Find_Type_Name): Improve documentation comment.
+
+2025-09-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Warn_On_Abstract_Equality_For_Component): Temporarily
+	disable warning.
+
 2025-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121885

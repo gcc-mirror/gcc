@@ -1,3 +1,82 @@
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71945
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_S_chk):
+	Trap if a reference count cannot be incremented any higher.
+	(_Sp_counted_base::_M_add_ref_copy): Use _S_chk.
+	(_Sp_counted_base::_M_add_weak_ref): Likewise.
+	(_Sp_counted_base<_S_mutex>::_M_add_ref_lock_nothrow): Likewise.
+	(_Sp_counted_base<_S_atomic>::_M_add_ref_lock_nothrow): Likewise.
+	(_Sp_counted_base<_S_single>::_M_add_ref_copy): Use _S_chk.
+
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71945
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base::_M_get_use_count): Cast _M_use_count to
+	unsigned before returning as long.
+	(_Sp_counted_base<_S_single>::_M_add_ref_copy): Use atomic
+	helper function to adjust ref count using unsigned arithmetic.
+	(_Sp_counted_base<_S_single>::_M_weak_release): Likewise.
+	(_Sp_counted_base<_S_single>::_M_get_use_count): Cast
+	_M_use_count to unsigned before returning as long.
+	(_Sp_counted_base<_S_single>::_M_add_ref_lock_nothrow): Use
+	_M_add_ref_copy to do increment using unsigned arithmetic.
+	(_Sp_counted_base<_S_single>::_M_release): Use atomic helper and
+	_M_weak_release to do decrements using unsigned arithmetic.
+	(_Sp_counted_base<_S_mutex>::_M_release): Add comment.
+	(_Sp_counted_base<_S_single>::_M_weak_add_ref): Remove
+	specialization.
+
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121148
+	* config/cpu/generic/atomicity_mutex/atomicity.h
+	(__exchange_and_add): Call __exchange_and_add_single.
+	* include/ext/atomicity.h (__exchange_and_add_single): Use an
+	unsigned type for the addition.
+	* libsupc++/Makefile.am (atomicity.o): Compile with -fwrapv.
+	* libsupc++/Makefile.in: Regenerate.
+
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (_IterMove::_S_noexcept)
+	(_IterSwap::_S_noexcept): Change constexpr to consteval.
+	* include/bits/ranges_base.h (_Begin::_S_noexcept)
+	(_End::_S_noexcept, _RBegin::_S_noexcept, _REnd::_S_noexcept)
+	(_Size::_S_noexcept, _Empty::_S_noexcept, _Data::_S_noexcept):
+	Likewise.
+	* include/std/concepts (_Swap::_S_noexcept): Likewise.
+
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (__detail::__to_unsigned_like)
+	(__access::__possible_const_range, __access::__as_const)
+	(__distance_fn::operator(), __next_fn::operator())
+	(__prev_fn::operator()): Add always_inline attribute.
+	(_Begin::operator(), _End::operator(), _RBegin::operator())
+	(_REnd::operator(), _Size::operator(), _SSize::operator())
+	(_Empty::operator(), _Data::operator(), _SSize::operator()):
+	Likewise. Move nodiscard attribute to start of declaration.
+
+2025-09-11  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/shared_ptr_base.h (__weak_ptr): Avoid calling
+	lock() when converting or assigning a weak_ptr<Derived> to
+	a weak_ptr<Base> in case Base is not a virtual base of Derived.
+	This logic is centralized in _S_safe_upcast, called by the
+	various converting constructors/assignment operators.
+	(_S_safe_upcast): New helper function.
+	* testsuite/20_util/weak_ptr/cons/virtual_bases.cc: New test.
+
+2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream: Remove trailing whitespace.
+
+2025-09-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/year_month_day/io.cc: Additional tests.
+
 2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_ptr.h: Remove blank line.

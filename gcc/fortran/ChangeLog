@@ -1,3 +1,9 @@
+2025-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121616
+	* primary.cc (gfc_variable_attr): Properly set dimension attribute
+	from a component ref.
+
 2025-09-09  Harald Anlauf  <anlauf@gmx.de>
 
 	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Init
