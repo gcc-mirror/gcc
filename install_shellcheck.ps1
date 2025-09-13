@@ -1,4 +1,4 @@
-# Shellcheck Installation Script for Windows
+# Spellcheck Installation Script for Windows
 # This script tries multiple methods to install shellcheck
 
 Write-Host "========================================" -ForegroundColor Green
@@ -32,10 +32,10 @@ if (Test-Shellcheck) {
 Write-Host "Shellcheck not found. Attempting installation..." -ForegroundColor Yellow
 Write-Host ""
 
-# Method 1: Try winget
+# Method 1: Try winget (Windows Package Manager)
 Write-Host "Method 1: Trying Windows Package Manager (winget)..." -ForegroundColor Cyan
 try {
-    $wingetResult = & winget install --id koalaman.shellcheck --accept-source-agreements --accept-package-agreements 2>&1
+    & winget install --id koalaman.shellcheck --accept-source-agreements --accept-package-agreements 2>&1 | Out-Null
     Write-Host "Winget installation attempted. Checking result..." -ForegroundColor Yellow
     
     # Wait a moment for installation to complete
@@ -54,7 +54,7 @@ catch {
 Write-Host ""
 Write-Host "Method 2: Checking for Chocolatey..." -ForegroundColor Cyan
 try {
-    $chocoVersion = & choco --version 2>$null
+    $null = & choco --version 2>$null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Chocolatey found. Installing shellcheck..." -ForegroundColor Yellow
         & choco install shellcheck -y
