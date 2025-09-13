@@ -15592,16 +15592,16 @@ This option is enabled by @option{-fauto-profile}.
 
 @opindex fprofile-partial-training
 @item -fprofile-partial-training
-With @code{-fprofile-use} all portions of programs not executed during train
-run are optimized aggressively for size rather than speed.  In some cases it is
-not practical to train all possible hot paths in the program. (For
-example, program may contain functions specific for a given hardware and
-training may not cover all hardware configurations program is run on.)  With
-@code{-fprofile-partial-training} profile feedback is ignored for all
-functions not executed during the train run, leading them to be optimized as if
-they were compiled without profile feedback. This leads to better performance
-when train run is not representative but also leads to significantly bigger
-code.
+With @code{-fprofile-use} all portions of programs not executed during
+training runs are optimized aggressively for size rather than speed.
+In some cases it is not practical to train all possible hot paths in
+the program. (For example, it may contain functions specific to a
+given hardware and training may not cover all hardware configurations
+the program later runs on.)  With @code{-fprofile-partial-training}
+profile feedback is ignored for all functions not executed during the
+training runs, causing them to be optimized as if they were compiled
+without profile feedback. This leads to better performance when the
+training is not representative at the cost of significantly bigger code.
 
 @opindex fprofile-use
 @item -fprofile-use
