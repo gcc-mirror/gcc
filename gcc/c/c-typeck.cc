@@ -3696,7 +3696,8 @@ mark_decl_used (tree ref, bool address)
   if (static_p)
     C_DECL_USED (ref) = 1;
 
-  if (nonloc_p)
+  if (nonloc_p && (VAR_OR_FUNCTION_DECL_P (ref)
+		   || TREE_CODE (ref) == PARM_DECL))
     DECL_NONLOCAL (ref) = 1;
 
   /* Nothing to do anymore.  */
