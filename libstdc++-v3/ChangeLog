@@ -1,3 +1,12 @@
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117276
+	* include/pstl/parallel_backend_tbb.h (__func_task::finalize):
+	Make deallocation unconditional.
+
 2025-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

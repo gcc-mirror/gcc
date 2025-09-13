@@ -1,3 +1,12 @@
+2025-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121795
+	* g++.dg/cpp26/pack-indexing17.C: New test.
+	* g++.dg/cpp26/pack-indexing17a.C: New test.
+
 2025-09-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
