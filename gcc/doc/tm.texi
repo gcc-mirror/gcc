@@ -9579,9 +9579,10 @@ It is false if we must use @command{collect2}.
 
 @deftypevr {Target Hook} bool TARGET_DTORS_FROM_CXA_ATEXIT
 This value is true if the target wants destructors to be queued to be
-run from __cxa_atexit.  If this is the case then, for each priority level,
-a new constructor will be entered that registers the destructors for that
-level with __cxa_atexit (and there will be no destructors emitted).
+run from @code{__cxa_atexit}.  If this is the case then, for each
+priority level, a new constructor will be entered that registers the
+destructors for that level with @code{__cxa_atexit} (and there will be
+no destructors emitted).
 It is false the method implied by @code{have_ctors_dtors} is used.
 @end deftypevr
 
