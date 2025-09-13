@@ -3527,7 +3527,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
 	{
-	  if (!c_mark_addressable (array, true))
+	  if (!c_mark_addressable (array, true, true))
 	    return error_mark_node;
 	}
       /* An array that is indexed by a constant value which is not within
@@ -3538,19 +3538,28 @@ build_array_ref (location_t loc, tree array, tree index)
 	  && TYPE_DOMAIN (TREE_TYPE (array))
 	  && !int_fits_type_p (index, TYPE_DOMAIN (TREE_TYPE (array))))
 	{
-	  if (!c_mark_addressable (array))
+	  if (!c_mark_addressable (array, false, true))
 	    return error_mark_node;
+	  /* ISO C2Y disallows a negative integer constant expression index
+	     when array subscripting has an operand of array type.  */
+	  if (flag_isoc2y
+	      && !TREE_OVERFLOW (index)
+	      && tree_int_cst_sgn (index) < 0)
+	    error_at (loc, "array subscript is negative");
 	}
 
-      if ((pedantic || warn_c90_c99_compat)
+      if ((pedantic || warn_c90_c99_compat || warn_c23_c2y_compat)
 	  && ! was_vector)
 	{
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
-	  if (VAR_P (foo) && C_DECL_REGISTER (foo))
-	    pedwarn (loc, OPT_Wpedantic,
-		     "ISO C forbids subscripting %<register%> array");
+	  if ((VAR_P (foo) && C_DECL_REGISTER (foo))
+	      || (TREE_CODE (foo) == COMPOUND_LITERAL_EXPR
+		  && C_DECL_REGISTER (COMPOUND_LITERAL_EXPR_DECL (foo))))
+	    pedwarn_c23 (loc, OPT_Wpedantic,
+			 "ISO C forbids subscripting %<register%> array "
+			 "before C2Y");
 	  else if (!lvalue_p (foo))
 	    pedwarn_c90 (loc, OPT_Wpedantic,
 			 "ISO C90 forbids subscripting non-lvalue "
@@ -6257,10 +6266,11 @@ lvalue_or_else (location_t loc, const_tree ref, enum lvalue_use use)
    is for ARRAY_REF construction - in that case we don't want
    to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
    it is fine to use ARRAY_REFs for vector subscripts on vector
-   register variables.  */
+   register variables.  If OVERRIDE_REGISTER, clear DECL_REGISTER rather
+   than producing an error for taking the address of a register.  */
 
 bool
-c_mark_addressable (tree exp, bool array_ref_p)
+c_mark_addressable (tree exp, bool array_ref_p, bool override_register)
 {
   tree x = exp;
 
@@ -6293,8 +6303,13 @@ c_mark_addressable (tree exp, bool array_ref_p)
       case COMPOUND_LITERAL_EXPR:
 	if (C_DECL_REGISTER (COMPOUND_LITERAL_EXPR_DECL (x)))
 	  {
-	    error ("address of register compound literal requested");
-	    return false;
+	    if (override_register)
+	      DECL_REGISTER (COMPOUND_LITERAL_EXPR_DECL (x)) = 0;
+	    else
+	      {
+		error ("address of register compound literal requested");
+		return false;
+	      }
 	  }
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
@@ -6323,6 +6338,13 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	  {
 	    if (TREE_PUBLIC (x) || is_global_var (x))
 	      error ("address of global register variable %qD requested", x);
+	    else if (override_register && !DECL_HARD_REGISTER (x))
+	      {
+		DECL_REGISTER (x) = 0;
+		TREE_ADDRESSABLE (x) = 1;
+		mark_decl_used (x, true);
+		return true;
+	      }
 	    else
 	      error ("address of register variable %qD requested", x);
 	    return false;

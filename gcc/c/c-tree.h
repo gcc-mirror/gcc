@@ -813,7 +813,7 @@ extern bool comptypes_same_p (tree, tree);
 extern bool comptypes_equiv_p (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern int comptypes_check_enum_int (tree, tree, bool *);
-extern bool c_mark_addressable (tree, bool = false);
+extern bool c_mark_addressable (tree, bool = false, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree c_type_promotes_to (tree);
 extern struct c_expr default_function_array_conversion (location_t,
