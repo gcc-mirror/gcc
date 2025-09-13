@@ -8,6 +8,9 @@
 #elif defined __AVR__
 # define R0 "20"
 # define R1 "24"
+#elif defined __PRU__
+# define R0 "0"
+# define R1 "4"
 #else
 # define R0 "0"
 # define R1 "1"
