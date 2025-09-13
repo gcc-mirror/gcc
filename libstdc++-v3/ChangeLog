@@ -1,3 +1,78 @@
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121913
+	* include/bits/ranges_algo.h (__rotate_fn::operator()): Use
+	ranges::iter_move(it) instead of std::move(*it).
+	* testsuite/25_algorithms/rotate/121913.cc: New test.
+
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121890
+	* include/bits/ranges_algo.h (ranges::rotate, ranges::shuffle)
+	(__insertion_sort, __unguarded_partition_pivot, __introselect):
+	Use ranges::next to advance iterators. Use local variables in
+	rotate to avoid duplicate expressions.
+	(ranges::push_heap, ranges::pop_heap, ranges::partial_sort)
+	(ranges::partial_sort_copy): Use ranges::prev.
+	(__final_insertion_sort): Use iter_difference_t<Iter>
+	for operand of operator+ on iterator.
+	* include/bits/ranges_base.h (ranges::advance): Use iterator's
+	difference_type for all iterator arithmetic.
+	* include/bits/stl_algo.h (__search_n_aux, __rotate)
+	(__insertion_sort, __unguarded_partition_pivot, __introselect)
+	(__final_insertion_sort, for_each_n, random_shuffle): Likewise.
+	Use local variables in __rotate to avoid duplicate expressions.
+	* include/bits/stl_algobase.h (__fill_n_a, __lc_rai::__newlast1):
+	Likewise.
+	* include/bits/stl_heap.h (push_heap): Likewise.
+	(__is_heap_until): Add static_assert.
+	(__is_heap): Convert distance to difference_type.
+	* include/std/functional (boyer_moore_searcher::operator()): Use
+	iterator's difference_type for iterator arithmetic.
+	* testsuite/util/testsuite_iterators.h
+	(random_access_iterator_wrapper): Add deleted overloads of
+	operators that should be called with difference_type.
+	* testsuite/24_iterators/range_operations/advance.cc: Use
+	ranges::next.
+	* testsuite/25_algorithms/heap/constrained.cc: Use ranges::next
+	and ranges::prev.
+	* testsuite/25_algorithms/nth_element/58800.cc: Use std::next.
+	* testsuite/25_algorithms/nth_element/constrained.cc: Use
+	ptrdiff_t for loop variable.
+	* testsuite/25_algorithms/nth_element/random_test.cc: Use
+	iterator's difference_type instead of int.
+	* testsuite/25_algorithms/partial_sort/check_compare_by_value.cc:
+	Use std::next.
+	* testsuite/25_algorithms/partial_sort/constrained.cc: Use
+	ptrdiff_t for loop variable.
+	* testsuite/25_algorithms/partial_sort/random_test.cc: Use
+	iterator's difference_type instead of int.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc:
+	Use ptrdiff_t for loop variable.
+	* testsuite/25_algorithms/partial_sort_copy/random_test.cc:
+	Use iterator's difference_type instead of int.
+	* testsuite/std/ranges/adaptors/drop.cc: Use ranges::next.
+	* testsuite/25_algorithms/fill_n/diff_type.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/diff_type.cc:
+	New test.
+
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117276
+	* include/pstl/parallel_backend_tbb.h (__func_task::finalize):
+	Make deallocation unconditional.
+
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121046
+	* include/debug/bitset (bitset(const CharT*, ...)): Add
+	constraints on CharT type.
+
+2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/cpu/generic/atomicity_mutex/atomicity.h
+	(__exchange_and_add): Use const_cast to remove volatile.
+
 2025-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71945

@@ -1,3 +1,58 @@
+2025-09-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* lra-constraints.cc (get_equiv): Bounds check before accessing
+	data in ira_reg_equiv.
+
+2025-09-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* match.pd: New NARROW_CLIP variant for SAT_TRUNC.
+	* tree-vect-patterns.cc (gimple_unsigned_integer_narrow_clip):
+	Add new decl for NARROW_CLIP.
+	(vect_recog_sat_trunc_pattern): Add NARROW_CLIP check.
+
+2025-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/120063
+	* diagnostics/context.cc (context::execution_failed_p): Also treat
+	any kind::fatal errors as leading to failed execution.
+	* diagnostics/sarif-sink.cc (maybe_get_sarif_level): Handle
+	kind::fatal as SARIF level "error".
+
+2025-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/121876
+	* diagnostics/buffering.cc (context::set_diagnostic_buffer): Add
+	early reject of the no-op case.
+
+2025-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121865
+	* ipa-free-lang-data.cc (find_decls_types_r): Don't walk into
+	DECL_CHAIN for any DECL.
+
+2025-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-pure-const.cc (check_stmt): Minor formatting tweaks.
+	(pass_data_nothrow): Fix pasto in description.
+
+2025-09-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* internal-fn.def (VEC_TRUNC_ADD_HIGH): New.
+	* doc/generic.texi: Document it.
+	* optabs.def (vec_trunc_add_high): New.
+	* doc/md.texi: Document it.
+	* tree-vect-stmts.cc (vectorizable_early_exit): Use addhn if supported.
+
+2025-09-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_addh_narrow<mode>): New.
+
+2025-09-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vect_analyze_loop_1): If the unroll pragma was set
+	mark it as handled.
+	* doc/extend.texi (pragma GCC unroll): Update documentation.
+
 2025-09-11  Trevor Gross  <tmgross@umich.edu>
 
 	* doc/libgcc.texi (Comparison functions): Document functions as

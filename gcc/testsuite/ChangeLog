@@ -1,3 +1,159 @@
+2025-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/121532
+	* ada/acats-4/tests/cxa/cxai034.a: Use Long_Switch_To_New_Task
+	constant instead of Switch_To_New_Task in delay statements.
+	* ada/acats-4/tests/cxa/cxai035.a: Likewise.
+	* ada/acats-4/tests/cxa/cxai036.a: Likewise.
+
+2025-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121795
+	* g++.dg/cpp26/pack-indexing17.C: New test.
+	* g++.dg/cpp26/pack-indexing17a.C: New test.
+
+2025-09-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/120378
+	* gcc.target/riscv/rvv/autovec/pr120378-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120378-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120378-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120378-4.c: New test.
+
+2025-09-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/121888
+	* gcc.target/sparc/tls-ld-int16.c: Compile with -fPIC.
+	* gcc.target/sparc/tls-ld-int32.c: Likewise.
+	* gcc.target/sparc/tls-ld-int64.c: Likewise.
+	* gcc.target/sparc/tls-ld-int8.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint16.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint32.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint8.c: Likewise.
+
+2025-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/120063
+	* gcc.dg/fatal-error.c: New test.
+	* gcc.dg/fatal-error-html.py: New test.
+	* gcc.dg/fatal-error-sarif.py: New test.
+
+2025-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/121876
+	* gcc.dg/plugin/crash-test-nested-ice-html.py: New test.
+	* gcc.dg/plugin/crash-test-nested-ice-sarif.py: New test.
+	* gcc.dg/plugin/crash-test-nested-ice.c: New test.
+	* gcc.dg/plugin/crash-test-nested-write-through-null-html.py: New test.
+	* gcc.dg/plugin/crash-test-nested-write-through-null-sarif.py: New test.
+	* gcc.dg/plugin/crash-test-nested-write-through-null.c: New test.
+	* gcc.dg/plugin/crash_test_plugin.cc: Add "nested" argument, and when
+	set, inject the problem within a nested diagnostic.
+	* gcc.dg/plugin/plugin.exp: Add crash-test-nested-ice.c and
+	crash-test-nested-write-through-null.c.
+
+2025-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Rename to...
+	* gcc.dg/plugin/crash-test-write-through-null-sarif.c: ...this.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: Rename to...
+	* gcc.dg/plugin/crash-test-write-through-null-stderr.c: ...this.
+	* gcc.dg/plugin/plugin.exp: Update for above renamings.  Sort the
+	test files for crash_test_plugin.cc alphabetically.
+
+2025-09-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vd4dots.c:
+	Adjust ABI specification.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vd4dotsu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vd4dotu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfncvtbf16s.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfpmadb.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfpmadt.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfwcvtsbf16.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vln8.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vd4dots.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vd4dotsu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vd4dotu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfncvtbf16s.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfpmadb.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfpmadt.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfwcvtsbf16.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vln8.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vd4dots.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vd4dotsu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vd4dotu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfncvtbf16s.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfpmadb.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfpmadt.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfwcvtsbf16.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vln8.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vd4dots.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vd4dotsu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vd4dotu.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfncvtbf16s.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfpmadb.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfpmadt.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfwcvtsbf16.c:
+	Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vln8.c:
+	Likewise.
+
+2025-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121893
+	* g++.dg/modules/adl-10_a.C: New test.
+	* g++.dg/modules/adl-10_b.C: New test.
+
+2025-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121865
+	* g++.dg/lto/pr101396_0.C: Ensure A will be walked into (and
+	isn't constant-folded out of the GIMPLE for the function).
+	* g++.dg/lto/pr101396_1.C: Add message.
+	* g++.dg/modules/lto-4_a.C: New test.
+	* g++.dg/modules/lto-4_b.C: New test.
+
+2025-09-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vect-early-break-addhn_1.c: New test.
+	* gcc.target/aarch64/vect-early-break-addhn_2.c: New test.
+	* gcc.target/aarch64/vect-early-break-addhn_3.c: New test.
+	* gcc.target/aarch64/vect-early-break-addhn_4.c: New test.
+
+2025-09-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vect-addhn_1.c: New test.
+
 2025-09-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121616

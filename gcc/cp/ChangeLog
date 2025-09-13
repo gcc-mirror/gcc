@@ -1,3 +1,15 @@
+2025-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121795
+	* pt.cc (unify) <case PACK_INDEX_TYPE>: New non-deduced context
+	case.
+
+2025-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121893
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Unwrap the
+	STAT_HACK also when on_inst_path.
+
 2025-09-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR c++/121889
