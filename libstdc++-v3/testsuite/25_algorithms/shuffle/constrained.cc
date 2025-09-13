@@ -86,9 +86,27 @@ test02()
   ranges::shuffle(w, g);
 }
 
+struct non_default_sentinel_t { };
+
+template<std::input_or_output_iterator I>
+bool operator==(const I& i, non_default_sentinel_t)
+{ return i == std::default_sentinel; }
+
+void
+test03()
+{
+  // PR libstdc++/121917 - ranges::shuffle incorrectly requires its arguments
+  // to model sized_sentinel_for
+  int a[2]{};
+  std::counted_iterator iter(a, 2);
+  std::default_random_engine e;
+  std::ranges::shuffle(iter, non_default_sentinel_t{}, e);
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

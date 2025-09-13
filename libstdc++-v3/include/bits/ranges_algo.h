@@ -1968,40 +1968,43 @@ namespace ranges
 	using __uc_type
 	  = common_type_t<typename remove_reference_t<_Gen>::result_type, __ud_type>;
 
-	const __uc_type __urngrange = __g.max() - __g.min();
-	const __uc_type __urange = __uc_type(__last - __first);
-
-	if (__urngrange / __urange >= __urange)
-	  // I.e. (__urngrange >= __urange * __urange) but without wrap issues.
+	if constexpr (sized_sentinel_for<_Sent, _Iter>)
 	  {
-	    _Iter __i = ranges::next(__first);
+	    const __uc_type __urngrange = __g.max() - __g.min();
+	    const __uc_type __urange = __uc_type(__last - __first);
 
-	    // Since we know the range isn't empty, an even number of elements
-	    // means an uneven number of elements /to swap/, in which case we
-	    // do the first one up front:
-
-	    if ((__urange % 2) == 0)
+	    if (__urngrange / __urange >= __urange)
+	      // I.e. (__urngrange >= __urange * __urange) but without wrap issues.
 	      {
-		__distr_type __d{0, 1};
-		ranges::iter_swap(__i++, ranges::next(__first, __d(__g)));
+		_Iter __i = ranges::next(__first);
+
+		// Since we know the range isn't empty, an even number of elements
+		// means an uneven number of elements /to swap/, in which case we
+		// do the first one up front:
+
+		if ((__urange % 2) == 0)
+		  {
+		    __distr_type __d{0, 1};
+		    ranges::iter_swap(__i++, ranges::next(__first, __d(__g)));
+		  }
+
+		// Now we know that __last - __i is even, so we do the rest in pairs,
+		// using a single distribution invocation to produce swap positions
+		// for two successive elements at a time:
+
+		while (__i != __last)
+		  {
+		    const __uc_type __swap_range = __uc_type(__i - __first) + 1;
+
+		    const pair<_DistanceType, _DistanceType> __pospos =
+		      __gen_two_uniform_ints(__swap_range, __swap_range + 1, __g);
+
+		    ranges::iter_swap(__i++, ranges::next(__first, __pospos.first));
+		    ranges::iter_swap(__i++, ranges::next(__first, __pospos.second));
+		  }
+
+		return __i;
 	      }
-
-	    // Now we know that __last - __i is even, so we do the rest in pairs,
-	    // using a single distribution invocation to produce swap positions
-	    // for two successive elements at a time:
-
-	    while (__i != __last)
-	      {
-		const __uc_type __swap_range = __uc_type(__i - __first) + 1;
-
-		const pair<_DistanceType, _DistanceType> __pospos =
-		  __gen_two_uniform_ints(__swap_range, __swap_range + 1, __g);
-
-		ranges::iter_swap(__i++, ranges::next(__first, __pospos.first));
-		ranges::iter_swap(__i++, ranges::next(__first, __pospos.second));
-	      }
-
-	    return __i;
 	  }
 
 	__distr_type __d;
@@ -2021,8 +2024,15 @@ namespace ranges
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Gen&& __g) const
       {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::forward<_Gen>(__g));
+	if constexpr (sized_range<_Range>
+		      && !sized_sentinel_for<sentinel_t<_Range>,
+					     iterator_t<_Range>>)
+	  return (*this)(ranges::begin(__r),
+			 ranges::begin(__r) + ranges::size(__r),
+			 std::forward<_Gen>(__g));
+	else
+	  return (*this)(ranges::begin(__r), ranges::end(__r),
+			 std::forward<_Gen>(__g));
       }
   };
 
