@@ -1,3 +1,18 @@
+2025-09-13  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/asm-hard-reg-error-1.c: Enable test for PRU, and define
+	registers for PRU.
+	* gcc.dg/asm-hard-reg-error-4.c: Define hard regs for PRU.
+	* gcc.dg/asm-hard-reg-error-5.c: Ditto.
+
+2025-09-13  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-array-negative-1.c, gcc.dg/c23-register-array-1.c,
+	gcc.dg/c23-register-array-2.c, gcc.dg/c23-register-array-3.c,
+	gcc.dg/c23-register-array-4.c, gcc.dg/c2y-array-negative-1.c,
+	gcc.dg/c2y-register-array-2.c, gcc.dg/c2y-register-array-3.c: New
+	tests.
+
 2025-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121532

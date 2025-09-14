@@ -1,3 +1,20 @@
+2025-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* target.def (dtors_from_cxa_atexit): Properly mark up
+	__cxa_atexit as code.
+	* doc/tm.texi: Regenerate.
+
+2025-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR rtl-optimization/121205
+	* lra-constraints.cc (curr_insn_transform): Stop processing on
+	error.
+
+2025-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Optimize Options): Editorial changes around
+	-fprofile-partial-training.
+
 2025-09-12  Jeff Law  <jlaw@ventanamicro.com>
 
 	* lra-constraints.cc (get_equiv): Bounds check before accessing

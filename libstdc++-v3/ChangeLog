@@ -1,3 +1,12 @@
+2025-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/121917
+	* include/bits/ranges_algo.h (__shuffle_fn::operator()): Only
+	consider the two-at-a-time PRNG optimization if the range is
+	sized.
+	* testsuite/25_algorithms/shuffle/constrained.cc (test03): New
+	test.
+
 2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/121913

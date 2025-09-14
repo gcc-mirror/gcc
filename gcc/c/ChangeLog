@@ -1,3 +1,13 @@
+2025-09-13  Joseph Myers  <josmyers@redhat.com>
+
+	* c-typeck.cc (c_mark_addressable): New parameter
+	override_register.
+	(build_array_ref): Update calls to c_mark_addressable.  Give error
+	in C2Y mode for negative array indices when array expression is an
+	array not a pointer.  Use pedwarn_c23 for subscripting register
+	array; diagnose that also for register compound literal.
+	* c-tree.h (c_mark_addressable): Update prototype.
+
 2025-09-10  Martin Uecker  <uecker@tugraz.at>
 
 	* c-tree.h: Add new macro C_DECL_NONLOCAL_CONTEXT and prototype
