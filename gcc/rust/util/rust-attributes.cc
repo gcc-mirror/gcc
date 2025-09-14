@@ -78,6 +78,7 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::DOC, HIR_LOWERING},
      {Attrs::MUST_USE, STATIC_ANALYSIS},
      {Attrs::LANG, HIR_LOWERING},
+     {Attrs::LINK_NAME, CODE_GENERATION},
      {Attrs::LINK_SECTION, CODE_GENERATION},
      {Attrs::NO_MANGLE, CODE_GENERATION},
      {Attrs::REPR, CODE_GENERATION},

@@ -24,6 +24,9 @@
 
 namespace Rust {
 
+// forward declare
+class Identifier;
+
 namespace GGC {
 
 class Ident
@@ -33,6 +36,7 @@ class Ident
 public:
   Ident (const char *str);
   Ident (const std::string &str);
+  Ident (const Rust::Identifier &ident);
 
   bool operator== (const Ident &other) const { return inner == other.inner; }
   bool operator== (const std::string &other) const;

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ggc.h"
+#include "rust-ast.h"
 #include "stringpool.h"
 
 namespace Rust {
@@ -28,6 +29,8 @@ Ident::Ident (const char *str) : inner (get_identifier (str)) {}
 Ident::Ident (const std::string &str)
   : inner (get_identifier_with_length (str.c_str (), str.length ()))
 {}
+
+Ident::Ident (const Rust::Identifier &ident) : Ident (ident.as_string ()) {}
 
 bool
 Ident::operator== (const std::string &other) const

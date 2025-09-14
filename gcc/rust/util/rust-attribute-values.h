@@ -36,6 +36,7 @@ public:
   static constexpr auto &DOC = "doc";
   static constexpr auto &MUST_USE = "must_use";
   static constexpr auto &LANG = "lang";
+  static constexpr auto &LINK_NAME = "link_name";
   static constexpr auto &LINK_SECTION = "link_section";
   static constexpr auto &NO_MANGLE = "no_mangle";
   static constexpr auto &REPR = "repr";
