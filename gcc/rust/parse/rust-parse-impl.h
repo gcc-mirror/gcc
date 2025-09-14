@@ -10483,15 +10483,21 @@ Parser<ManagedTokenSource>::parse_pattern ()
     return first;
 
   std::vector<std::unique_ptr<AST::Pattern>> alts;
-  alts.push_back (std::move (first));
+  if (first != nullptr)
+    alts.push_back (std::move (first));
 
   do
     {
       lexer.skip_token ();
-      alts.push_back (parse_pattern_no_alt ());
+      auto follow = parse_pattern_no_alt ();
+      if (follow != nullptr)
+	alts.push_back (std::move (follow));
     }
 
   while (lexer.peek_token ()->get_id () == PIPE);
+
+  if (alts.empty ())
+    return nullptr;
 
   /* alternates */
   return std::unique_ptr<AST::Pattern> (
