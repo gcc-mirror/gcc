@@ -735,7 +735,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 
       if (TREE_CODE (t) == FUNCTION_DECL)
 	{
-	  fld_worklist_push (DECL_ARGUMENTS (t), fld);
+	  for (tree arg = DECL_ARGUMENTS (t); arg; arg = DECL_CHAIN (arg))
+	    fld_worklist_push (arg, fld);
 	  fld_worklist_push (DECL_RESULT (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)
