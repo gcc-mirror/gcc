@@ -24,6 +24,7 @@
 #include <chrono>
 #include <thread>
 #include <atomic>
+#include <initializer_list>
 #include <testsuite_hooks.h>
 
 void test01()
@@ -90,9 +91,30 @@ test03()
   s.try_acquire_for(timeout);
 }
 
+// Prove semaphore doesn't suffer from PR116586
+template <typename Clock>
+void
+test_relative(std::chrono::nanoseconds offset)
+{
+  std::binary_semaphore sem(1);
+  VERIFY(sem.try_acquire_for(offset));
+  VERIFY(!sem.try_acquire_for(offset));
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  using namespace std::chrono;
+  for (const nanoseconds offset : {
+      nanoseconds{0},
+      nanoseconds{-10ms},
+      nanoseconds{-10s}
+    }) {
+    test_relative<std::chrono::system_clock>(offset);
+    test_relative<std::chrono::system_clock>(offset - std::chrono::system_clock::now().time_since_epoch());
+    test_relative<std::chrono::steady_clock>(offset);
+    test_relative<std::chrono::steady_clock>(offset - std::chrono::steady_clock::now().time_since_epoch());
+  }
 }
