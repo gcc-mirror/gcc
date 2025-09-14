@@ -3493,8 +3493,10 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 
   regno = x86_64_ms_abi_int_parameter_registers[cum->regno];
 
-  /* Only floating point modes are passed in anything but integer regs.  */
-  if (TARGET_SSE && (mode == SFmode || mode == DFmode))
+  /* Only floating point modes less than 64 bits are passed in anything but
+     integer regs.  Larger floating point types are excluded as the Windows
+     ABI requires vreg args can be shadowed in GPRs (for red zone / varargs). */
+  if (TARGET_SSE && (mode == HFmode || mode == SFmode || mode == DFmode))
     {
       if (named)
 	{
@@ -4317,7 +4319,6 @@ function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 	case 16:
 	  if (valtype != NULL_TREE
 	      && !VECTOR_INTEGER_TYPE_P (valtype)
-	      && !VECTOR_INTEGER_TYPE_P (valtype)
 	      && !INTEGRAL_TYPE_P (valtype)
 	      && !VECTOR_FLOAT_TYPE_P (valtype))
 	    break;
@@ -4327,9 +4328,10 @@ function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 	  break;
 	case 8:
 	case 4:
+	case 2:
 	  if (valtype != NULL_TREE && AGGREGATE_TYPE_P (valtype))
 	    break;
-	  if (mode == SFmode || mode == DFmode)
+	  if (mode == HFmode || mode == SFmode || mode == DFmode)
 	    regno = FIRST_SSE_REG;
 	  break;
 	default:
