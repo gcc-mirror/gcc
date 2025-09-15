@@ -2028,7 +2028,7 @@ namespace ranges
 		      && !sized_sentinel_for<sentinel_t<_Range>,
 					     iterator_t<_Range>>)
 	  return (*this)(ranges::begin(__r),
-			 ranges::begin(__r) + ranges::size(__r),
+			 ranges::begin(__r) + ranges::distance(__r),
 			 std::forward<_Gen>(__g));
 	else
 	  return (*this)(ranges::begin(__r), ranges::end(__r),

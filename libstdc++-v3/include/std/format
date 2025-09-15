@@ -1440,7 +1440,7 @@ namespace __format
 	      else if constexpr (ranges::random_access_range<_Rg>)
 		{
 		  ranges::iterator_t<_Rg> __first = ranges::begin(__rg);
-		  ranges::subrange __sub(__first, __first + __w);
+		  ranges::subrange __sub(__first, ranges::next(__first, __w));
 		  return _M_format_escaped(_String(from_range, __sub), __fc);
 		}
 	      else if (__w <= __n)
