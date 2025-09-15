@@ -3663,7 +3663,7 @@
 	       (match_operand:VFT_BFP           2 "register_operand")
 	       (const_int 4)]
 	      UNSPEC_FMAX))]
-  "TARGET_VXE")
+  "TARGET_VXE && !flag_signaling_nans")
 
 ; fmin
 (define_expand "fmin<mode>3"
@@ -3672,7 +3672,7 @@
 	       (match_operand:VFT_BFP           2 "register_operand")
 	       (const_int 4)]
 	      UNSPEC_FMIN))]
-  "TARGET_VXE")
+  "TARGET_VXE && !flag_signaling_nans")
 
 ; reduc_plus
 (define_expand "reduc_plus_scal_<mode>"
@@ -3764,7 +3764,7 @@
 	(unspec:V2DF [(match_dup 1) (match_dup 2) (const_int 4)] REDUC_FMINMAX))
    (set (match_operand:DF 0 "register_operand" "")
 	(vec_select:DF (match_dup 3) (parallel [(const_int 0)])))]
-  "TARGET_VX"
+  "TARGET_VX && !flag_trapping_math"
 {
   operands[2] = gen_reg_rtx (V2DFmode);
   operands[3] = gen_reg_rtx (V2DFmode);
@@ -3787,7 +3787,7 @@
 	(unspec:V4SF [(match_dup 3) (match_dup 4) (const_int 4)] REDUC_FMINMAX))
    (set (match_operand:SF 0 "register_operand")
 	(vec_select:SF (match_dup 5) (parallel [(const_int 0)])))]
-   "TARGET_VXE"
+   "TARGET_VXE && !flag_trapping_math"
 {
   operands[2] = gen_reg_rtx (V4SFmode);
   operands[3] = gen_reg_rtx (V4SFmode);

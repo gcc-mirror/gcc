@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch -march=z14 -ftree-vectorize -fdump-tree-optimized" } */
+/* { dg-options "-O3 -mzarch -march=z14 -ftree-vectorize -fdump-tree-optimized -fno-trapping-math" } */
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) > (b) ? (b) : (a))

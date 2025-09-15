@@ -1,7 +1,7 @@
 /* Check fmin/fmax expanders for scalars on VXE targets.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=z14 -mzarch" } */
+/* { dg-options "-O2 -march=z14 -mzarch -fno-trapping-math" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
