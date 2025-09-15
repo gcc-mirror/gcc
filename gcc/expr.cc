@@ -9960,6 +9960,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
       else if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	       && optimize >= 2
 	       && SCALAR_INT_MODE_P (mode)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (treeop0))
 	       && (GET_MODE_SIZE (as_a <scalar_int_mode> (mode))
 		   > GET_MODE_SIZE (as_a <scalar_int_mode> (GET_MODE (op0))))
 	       && get_range_pos_neg (treeop0,

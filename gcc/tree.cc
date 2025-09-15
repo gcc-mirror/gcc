@@ -14708,7 +14708,7 @@ verify_type (const_tree t)
 int
 get_range_pos_neg (tree arg, gimple *stmt)
 {
-  if (arg == error_mark_node)
+  if (arg == error_mark_node || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
     return 3;
 
   int prec = TYPE_PRECISION (TREE_TYPE (arg));
