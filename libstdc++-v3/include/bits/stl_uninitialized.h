@@ -1265,9 +1265,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_move(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
     {
-      return std::uninitialized_copy
-	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-	 _GLIBCXX_MAKE_MOVE_ITERATOR(__last), __result);
+      return std::uninitialized_copy(std::make_move_iterator(__first),
+				     std::make_move_iterator(__last),
+				     __result);
     }
 
   /**
@@ -1284,9 +1284,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_move_n(_InputIterator __first, _Size __count,
 			 _ForwardIterator __result)
     {
-      auto __res = std::__uninitialized_copy_n_pair
-	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-	 __count, __result);
+      auto __res
+	= std::__uninitialized_copy_n_pair(std::make_move_iterator(__first),
+					   __count, __result);
       return {__res.first.base(), __res.second};
     }
 #endif // __glibcxx_raw_memory_algorithms
