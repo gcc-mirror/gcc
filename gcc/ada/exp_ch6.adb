@@ -6249,7 +6249,6 @@ package body Exp_Ch6 is
 
       procedure Prepend_Constructor_Procedure_Prologue
         (Spec_Id : Entity_Id; Body_Id : Entity_Id; L : List_Id);
-
       --  If N is the body of a constructor procedure (that is, a procedure
       --  named in a Constructor aspect specification for the type of the
       --  procedure's first parameter), then prepend and analyze the
@@ -6352,6 +6351,8 @@ package body Exp_Ch6 is
          if not Is_Constructor_Procedure then
             return; -- the usual case
          end if;
+
+         Push_Scope (Spec_Id);
 
          --  Initialize the first parameter.
          --  First_Param_Type is a record type (tagged or untagged) or
@@ -6621,6 +6622,8 @@ package body Exp_Ch6 is
 
             Insert_List_Before_And_Analyze (First (L), Init_List);
          end;
+
+         Pop_Scope;
       end Prepend_Constructor_Procedure_Prologue;
 
       --  Local variables
