@@ -12690,7 +12690,8 @@ package body Sem_Prag is
       --  Pragma Unsigned_Base_Range temporarily disabled
 
       if not Is_Pragma_Name (Pname)
-        or else Pname = Name_Unsigned_Base_Range
+        or else (Pname = Name_Unsigned_Base_Range
+                  and then not Debug_Flag_Dot_U)
       then
          declare
             Msg_Issued : Boolean := False;
@@ -28154,12 +28155,23 @@ package body Sem_Prag is
             then
                Error_Pragma_Arg
                  ("cannot apply pragma %",
-                  "\& is not a signed integer type",
-                  Arg1);
+                  "\& is not a signed integer type", Arg1);
 
             elsif Is_Derived_Type (E) then
                Error_Pragma_Arg
                  ("pragma % cannot apply to derived type", Arg1);
+
+            elsif Is_Generic_Type (E) then
+               Error_Pragma_Arg
+                 ("pragma % cannot apply to formal type", Arg1);
+
+            elsif Present (Expr)
+              and then Is_False (Expr_Value (Expr))
+              and then Ekind (Base_Type (E)) = E_Modular_Integer_Type
+              and then Has_Unsigned_Base_Range_Aspect (Base_Type (E))
+            then
+               Error_Pragma_Arg
+                 ("pragma % can only confirm previous True value", Arg1);
             end if;
 
             Check_First_Subtype (Arg1);
@@ -28167,17 +28179,19 @@ package body Sem_Prag is
             --  Create the new unsigned integer base type entity, and apply
             --  the constraint to create the first subtype of E.
 
-            Unsigned_Base_Range_Type_Declaration (E,
-              Def => Type_Definition (Parent (E)));
+            if No (Expr) or else Is_True (Expr_Value (Expr)) then
+               Unsigned_Base_Range_Type_Declaration (E,
+                 Def => Type_Definition (Parent (E)));
 
-            Set_Direct_Primitive_Operations (Base_Type (E), New_Elmt_List);
-            Set_Direct_Primitive_Operations (E,
-              Direct_Primitive_Operations (Base_Type (E)));
-            Ensure_Freeze_Node (Base_Type (E));
-            Set_First_Subtype_Link (Freeze_Node (Base_Type (E)), E);
-            Set_Has_Delayed_Freeze (E);
+               Set_Direct_Primitive_Operations (Base_Type (E), New_Elmt_List);
+               Set_Direct_Primitive_Operations (E,
+                 Direct_Primitive_Operations (Base_Type (E)));
+               Ensure_Freeze_Node (Base_Type (E));
+               Set_First_Subtype_Link (Freeze_Node (Base_Type (E)), E);
+               Set_Has_Delayed_Freeze (E);
 
-            Set_Has_Unsigned_Base_Range_Aspect (Base_Type (E));
+               Set_Has_Unsigned_Base_Range_Aspect (Base_Type (E));
+            end if;
          end Unsigned_Base_Range;
 
          ----------------

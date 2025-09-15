@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;          use Atree;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -282,7 +283,9 @@ package body Aspects is
    begin
       --  Aspect Unsigned_Base_Range temporarily disabled
 
-      if Name = Name_Unsigned_Base_Range then
+      if Name = Name_Unsigned_Base_Range
+        and then not Debug_Flag_Dot_U
+      then
          return No_Aspect;
       end if;
 

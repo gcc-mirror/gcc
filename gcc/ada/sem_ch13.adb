@@ -3590,6 +3590,7 @@ package body Sem_Ch13 is
                             | Aspect_Effective_Reads
                             | Aspect_Effective_Writes
                             | Aspect_Preelaborable_Initialization
+                            | Aspect_Unsigned_Base_Range
             then
                Error_Msg_Name_1 := Nam;
 
@@ -3701,6 +3702,13 @@ package body Sem_Ch13 is
                     and then Nkind (Prefix (Expr)) = N_Identifier
                     and then Chars (Prefix (Expr)) = Name_Standard
                   then
+                     Delay_Required := False;
+
+                  --  For Unsigned_Base_Range aspect, do not delay becase we
+                  --  need to process it before any type or subtype derivation
+                  --  is analyzed.
+
+                  elsif A_Id in Aspect_Unsigned_Base_Range then
                      Delay_Required := False;
 
                   --  All other cases are delayed

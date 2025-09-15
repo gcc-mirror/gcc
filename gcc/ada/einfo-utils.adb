@@ -333,7 +333,8 @@ package body Einfo.Utils is
 
    function Is_Modular_Integer_Type             (Id : E) return B is
    begin
-      return Ekind (Id) in Modular_Integer_Kind;
+      return Ekind (Id) in Modular_Integer_Kind
+        and then not Has_Unsigned_Base_Range_Aspect (Base_Type (Id));
    end Is_Modular_Integer_Type;
 
    function Is_Named_Access_Type                (Id : E) return B is
@@ -393,7 +394,10 @@ package body Einfo.Utils is
 
    function Is_Signed_Integer_Type              (Id : E) return B is
    begin
-      return Ekind (Id) in Signed_Integer_Kind;
+      return Ekind (Id) in Signed_Integer_Kind
+        or else
+          (Ekind (Id) in Modular_Integer_Kind
+             and then Has_Unsigned_Base_Range_Aspect (Base_Type (Id)));
    end Is_Signed_Integer_Type;
 
    function Is_Subprogram                       (Id : E) return B is

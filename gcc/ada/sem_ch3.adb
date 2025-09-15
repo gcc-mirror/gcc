@@ -11287,7 +11287,13 @@ package body Sem_Ch3 is
       --  not. It is OK for the new bound we are creating, but not for
       --  the old one??? Still if it never happens, no problem.
 
-      Analyze_And_Resolve (Bound, Base_Type (Par_T));
+      --  This must be disabled on unsigned base range types because their
+      --  base type is a modular type, and their type is a signed integer
+      --  type.
+
+      if not Has_Unsigned_Base_Range_Aspect (Base_Type (Par_T)) then
+         Analyze_And_Resolve (Bound, Base_Type (Par_T));
+      end if;
 
       if Nkind (Bound) in N_Integer_Literal | N_Real_Literal then
          New_Bound := New_Copy (Bound);

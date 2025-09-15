@@ -5757,6 +5757,7 @@ package Einfo is
    --    Non_Binary_Modulus                   (base type only)
    --    Has_Biased_Representation
    --    Has_Shift_Operator                   (base type only)
+   --    Has_Unsigned_Base_Range_Aspect       (base type only)
    --    No_Predicate_On_Actual
    --    No_Dynamic_Predicate_On_Actual
    --    Type_Low_Bound                       (synth)
