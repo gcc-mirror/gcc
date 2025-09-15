@@ -1963,13 +1963,16 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
    VECTYPE is the vector type that the vectorized statements will use.
 
    If ELSVALS is nonzero the supported else values will be stored in the
-   vector ELSVALS points to.  */
+   vector ELSVALS points to.
+
+   For loads PERM_OK indicates whether we can code generate a
+   SLP_TREE_LOAD_PERMUTATION on the node.  */
 
 static bool
 get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     tree vectype, slp_tree slp_node,
 		     bool masked_p, vec_load_store_type vls_type,
-		     vect_load_store_data *ls)
+		     bool perm_ok, vect_load_store_data *ls)
 {
   vect_memory_access_type *memory_access_type = &ls->memory_access_type;
   poly_int64 *poffset = &ls->poffset;
@@ -2153,17 +2156,13 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       /* For single-element interleaving also fall back to elementwise
 	 access in case we did not lower a permutation and cannot
 	 code generate it.  */
-      auto_vec<tree> temv;
-      unsigned n_perms;
       if (loop_vinfo
 	  && single_element_p
 	  && SLP_TREE_LANES (slp_node) == 1
 	  && (*memory_access_type == VMAT_CONTIGUOUS
 	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	  && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
-	  && !vect_transform_slp_perm_load
-	  (loop_vinfo, slp_node, temv, NULL,
-	   LOOP_VINFO_VECT_FACTOR (loop_vinfo), true, &n_perms))
+	  && !perm_ok)
 	{
 	  *memory_access_type = VMAT_ELEMENTWISE;
 	  if (dump_enabled_p ())
@@ -2314,11 +2313,13 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
      on nearby locations.  Or, even if it's a win over scalar code,
      it might not be a win over vectorizing at a lower VF, if that
      allows us to use contiguous accesses.  */
-  if ((*memory_access_type == VMAT_ELEMENTWISE
-       || *memory_access_type == VMAT_STRIDED_SLP)
+  if (loop_vinfo
+      && (*memory_access_type == VMAT_ELEMENTWISE
+	  || *memory_access_type == VMAT_STRIDED_SLP)
       && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
       && SLP_TREE_LANES (slp_node) == 1
-      && loop_vinfo)
+      && (!SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
+	  || single_element_p))
     {
       gather_scatter_info gs_info;
       if (vect_use_strided_gather_scatters_p (stmt_info, vectype, loop_vinfo,
@@ -7881,7 +7882,7 @@ vectorizable_store (vec_info *vinfo,
   vect_load_store_data &ls = slp_node->get_data (_ls_data);
   if (cost_vec
       && !get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask_node,
-			       vls_type, &_ls_data))
+			       vls_type, false, &_ls_data))
     return false;
   /* Temporary aliases to analysis data, should not be modified through
      these.  */
@@ -9447,11 +9448,17 @@ vectorizable_load (vec_info *vinfo,
   else
     group_size = 1;
 
+  bool perm_ok = true;
+  unsigned n_perms = -1U;
+  if (cost_vec && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+    perm_ok = vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
+					    true, &n_perms);
+
   vect_load_store_data _ls_data{};
   vect_load_store_data &ls = slp_node->get_data (_ls_data);
   if (cost_vec
       && !get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask_node,
-			       VLS_LOAD, &ls))
+			       VLS_LOAD, perm_ok, &ls))
     return false;
   /* Temporary aliases to analysis data, should not be modified through
      these.  */
@@ -9474,11 +9481,12 @@ vectorizable_load (vec_info *vinfo,
 
   /* ???  The following checks should really be part of
      get_load_store_type.  */
-  unsigned n_perms = -1U;
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
       && !((memory_access_type == VMAT_ELEMENTWISE
 	    || mat_gather_scatter_p (memory_access_type))
-	   && SLP_TREE_LANES (slp_node) == 1))
+	   && SLP_TREE_LANES (slp_node) == 1
+	   && (!grouped_load
+	       || !DR_GROUP_NEXT_ELEMENT (first_stmt_info))))
     {
       slp_perm = true;
 
@@ -9507,8 +9515,7 @@ vectorizable_load (vec_info *vinfo,
 
       if (cost_vec)
 	{
-	  if (!vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
-					     true, &n_perms))
+	  if (!perm_ok)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION,
