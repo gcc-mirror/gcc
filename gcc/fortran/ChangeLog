@@ -1,3 +1,24 @@
+2025-09-14  Yuao Ma  <c8ef@outlook.com>
+
+	* dump-parse-tree.cc (show_expr): Add support for EXPR_CONDITIONAL.
+	* expr.cc (gfc_get_conditional_expr): Add cond-expr constructor.
+	(gfc_copy_expr, free_expr0, gfc_is_constant_expr,
+	simplify_conditional, gfc_simplify_expr, gfc_check_init_expr,
+	check_restricted, gfc_traverse_expr): Add support for EXPR_CONDITIONAL.
+	* frontend-passes.cc (gfc_expr_walker): Ditto.
+	* gfortran.h (enum expr_t): Add EXPR_CONDITIONAL.
+	(gfc_get_operator_expr): Format fix.
+	(gfc_get_conditional_expr): New decl.
+	* matchexp.cc
+	(match_conditional, match_primary): Parsing for EXPR_CONDITIONAL.
+	* module.cc (mio_expr): Add support for EXPR_CONDITIONAL.
+	* resolve.cc (resolve_conditional, gfc_resolve_expr): Ditto.
+	* trans-array.cc (gfc_walk_conditional_expr, gfc_walk_subexpr): Ditto.
+	* trans-expr.cc
+	(gfc_conv_conditional_expr): Codegen for EXPR_CONDITIONAL.
+	(gfc_apply_interface_mapping_to_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Add support for EXPR_CONDITIONAL.
+
 2025-09-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121616

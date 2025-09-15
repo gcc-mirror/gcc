@@ -1,3 +1,35 @@
+2025-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/121935
+	* ipa-free-lang-data.cc (find_decls_types_r): Visit DECL_ARGUMENTS
+	chain manually.
+
+2025-09-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (stmt_vec_info_type::permute_info_type): Add.
+	(vectorizable_slp_permutation): Declare.
+	* tree-vect-slp.cc (vectorizable_slp_permutation): Export.
+	(vect_slp_analyze_node_operations_1): Set permute_info_type
+	on permute nodes successfully analyzed.
+	(vect_schedule_slp_node): Dispatch to vect_transform_stmt
+	for all nodes.
+	* tree-vect-stmts.cc (vect_transform_stmt): Remove redundant
+	dump, handle permute_info_type.
+
+2025-09-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_load_store_type): Use VMAT_STRIDED_SLP
+	for negative stride accesses when VMAT_CONTIGUOUS_REVERSE
+	isn't applicable.
+
+2025-09-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_load_store_data::n_perms): New.
+	* tree-vect-stmts.cc (vectorizable_load): Analyze
+	SLP_TREE_LOAD_PERMUTATION only once and remember n_perms.
+	Verify the transform-time n_perms against the value stored
+	during analysis.
+
 2025-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* target.def (dtors_from_cxa_atexit): Properly mark up
