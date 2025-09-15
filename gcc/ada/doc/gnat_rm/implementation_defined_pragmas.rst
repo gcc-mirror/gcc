@@ -466,6 +466,10 @@ of Ada from 2005 on. In GNAT, it is implemented in all versions
 of Ada, and the DISABLE policy is an implementation-defined
 addition.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Assert_And_Cut
 =====================
 
@@ -490,6 +494,25 @@ a subprogram into sections for the purposes of testing or
 formal verification. The pragma also serves as useful
 documentation.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
+Pragma Assertion_Level
+=======================
+
+Syntax::
+
+  pragma Assertion_Level (LEVEL_IDENTIFIER
+                          [, depends => DEPENDENCY_DESCRIPTOR]);
+
+  DEPENDENCY_DESCRIPTOR ::= LEVEL_IDENTIFIER | LEVEL_IDENTIFIER_LIST
+
+  LEVEL_IDENTIFIER_LIST ::= '[' LEVEL_IDENTIFIER {, LEVEL_IDENTIFIER} ']'
+
+For the semantics of this pragma, see the SPARK 2014 Reference Manual,
+section 11.4.3.
+
 Pragma Assertion_Policy
 =======================
 
@@ -501,7 +524,7 @@ Syntax::
       ASSERTION_KIND => POLICY_IDENTIFIER
    {, ASSERTION_KIND => POLICY_IDENTIFIER});
 
-  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
+  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND | ASSERTION_LEVEL
 
   RM_ASSERTION_KIND ::= Assert                    |
                         Static_Predicate          |
@@ -540,6 +563,10 @@ implementation-defined pragma in earlier versions of Ada.
 The assertion kinds ``RM_ASSERTION_KIND`` are those defined in
 the Ada standard. The assertion kinds ``ID_ASSERTION_KIND``
 are implementation defined additions recognized by the GNAT compiler.
+
+Additionally the pragma can apply to an assertion level defined by the
+``Assertion_Level`` pragma. For more details see the SPARK 2014 Reference
+Manual, section 11.4.2.
 
 The pragma applies in both cases to pragmas and aspects with matching
 names, e.g. ``Pre`` applies to the Pre aspect, and ``Precondition``
@@ -607,6 +634,10 @@ This assumption cannot be proved from the program itself,
 but it acts as a useful run-time check that the assumption
 is met, and documents the need to ensure that it is met by
 reference to information outside the program.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Assume_No_Invalid_Values
 ===============================
@@ -1297,6 +1328,10 @@ call, as determined by the corresponding case guard evaluating to True,
 and that the consequence for this case should hold when the subprogram
 returns.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Convention_Identifier
 ============================
 .. index:: Conventions, synonyms
@@ -1505,6 +1540,10 @@ pragmas can be enabled either by use of the command line switch *-gnata*
 or by use of the pragma ``Check_Policy`` with a first argument of
 ``Debug``.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Debug_Policy
 ===================
 
@@ -1533,6 +1572,10 @@ Syntax:
 
 For the semantics of this pragma, see the entry for aspect
 ``Default_Initial_Condition`` in the SPARK 2014 Reference Manual, section 7.3.3.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Default_Scalar_Storage_Order
 ===================================
@@ -2922,6 +2965,10 @@ Syntax:
 For the semantics of this pragma, see the entry for aspect ``Initial_Condition``
 in the SPARK 2014 Reference Manual, section 7.1.6.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Initialize_Scalars
 =========================
 .. index:: debugging with Initialize_Scalars
@@ -3273,6 +3320,10 @@ invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
 of the Type_Invariant aspect.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Keep_Names
 =================
@@ -3651,6 +3702,10 @@ may be used to refer to the value of an expression on entry to the loop. This
 attribute can only be used within the expression of a ``Loop_Invariant``
 pragma. For full details, see documentation of attribute ``Loop_Entry``.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Loop_Optimize
 ====================
 
@@ -3752,6 +3807,10 @@ statements.
 
 The ``Loop_Entry`` attribute may be used within the expressions of the
 ``Loop_Variant`` pragma to refer to values on entry to the loop.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Machine_Attribute
 ========================
@@ -4627,6 +4686,10 @@ if there is no separate subprogram declaration, then it can
 appear at the start of the declarations in a subprogram body
 (preceded only by other pragmas).
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Postcondition
 ====================
 .. index:: Postcondition
@@ -4799,6 +4862,10 @@ use of the pragma identifier ``Check``. Historically, pragma
 Ada 2012, and has been retained in its original form for
 compatibility purposes.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Post_Class
 =================
 .. index:: Post
@@ -4833,6 +4900,10 @@ aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is ``Post'Class``, not
 ``Post_Class``.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 Pragma Pre
 ==========
 .. index:: Pre
@@ -4856,6 +4927,10 @@ subprogram declaration (only other pragmas may intervene), or
 if there is no separate subprogram declaration, then it can
 appear at the start of the declarations in a subprogram body
 (preceded only by other pragmas).
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Precondition
 ===================
@@ -4917,6 +4992,10 @@ use of the pragma identifier ``Check``. Historically, pragma
 Ada 2012, and has been retained in its original form for
 compatibility purposes.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 .. _Pragma-Predicate:
 
 Pragma Predicate
@@ -4976,6 +5055,10 @@ fundamentally changed (for example a membership test
 ``A in B`` would not take into account a predicate
 defined for subtype B). When following this approach, the
 use of predicates should be avoided.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Predicate_Failure
 ========================
@@ -5073,6 +5156,10 @@ using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is ``Pre'Class``, not
 ``Pre_Class``.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Priority_Specific_Dispatching
 ====================================
@@ -5561,6 +5648,10 @@ Syntax:
 
 For the semantics of this pragma, see the entry for aspect ``Refined_Post`` in
 the SPARK 2014 Reference Manual, section 7.2.7.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 .. _Pragma-Refined_State:
 
@@ -6547,6 +6638,9 @@ The ``Subprogram_Variant`` pragma is intended to be an exact replacement for
 the implementation-defined ``Subprogram_Variant`` aspect, and shares its
 restrictions and semantics.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Subtitle
 ===============
@@ -6975,6 +7069,10 @@ does not permit a string parameter, and it is
 controlled by the assertion identifier ``Type_Invariant``
 rather than ``Invariant``.
 
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
+
 .. _Pragma-Type_Invariant_Class:
 
 Pragma Type_Invariant_Class
@@ -7003,6 +7101,10 @@ using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is ``Type_Invariant'Class``,
 not ``Type_Invariant_Class``.
+
+This is an assertion kind pragma that can associate a set of its arguments
+with an assertion level. See SPARK 2014 Reference Manual, section
+11.4.2.
 
 Pragma Unchecked_Union
 ======================
