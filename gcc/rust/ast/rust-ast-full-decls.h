@@ -195,7 +195,6 @@ class Enum;
 class Union;
 class ConstantItem;
 class StaticItem;
-class TraitItemConst;
 class TraitItemType;
 class Trait;
 class Impl;

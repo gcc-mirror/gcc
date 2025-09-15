@@ -318,10 +318,10 @@ ASTLowerTraitItem::visit (AST::Function &func)
 }
 
 void
-ASTLowerTraitItem::visit (AST::TraitItemConst &constant)
+ASTLowerTraitItem::visit (AST::ConstantItem &constant)
 {
   HIR::Type *type = ASTLoweringType::translate (constant.get_type ());
-  HIR::Expr *expr = constant.has_expression ()
+  HIR::Expr *expr = constant.has_expr ()
 		      ? ASTLoweringExpr::translate (constant.get_expr ())
 		      : nullptr;
 

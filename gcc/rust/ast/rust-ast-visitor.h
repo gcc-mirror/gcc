@@ -164,7 +164,6 @@ public:
   virtual void visit (Union &union_item) = 0;
   virtual void visit (ConstantItem &const_item) = 0;
   virtual void visit (StaticItem &static_item) = 0;
-  virtual void visit (TraitItemConst &item) = 0;
   virtual void visit (TraitItemType &item) = 0;
   virtual void visit (Trait &trait) = 0;
   virtual void visit (InherentImpl &impl) = 0;
@@ -349,7 +348,6 @@ public:
   virtual void visit (AST::Union &union_item) override;
   virtual void visit (AST::ConstantItem &const_item) override;
   virtual void visit (AST::StaticItem &static_item) override;
-  virtual void visit (AST::TraitItemConst &item) override;
   virtual void visit (AST::TraitItemType &item) override;
   virtual void visit (AST::Trait &trait) override;
   virtual void visit (AST::InherentImpl &impl) override;

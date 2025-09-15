@@ -189,7 +189,6 @@ public:
   virtual void visit (AST::Union &union_item) override;
   virtual void visit (AST::ConstantItem &const_item) override;
   virtual void visit (AST::StaticItem &static_item) override;
-  virtual void visit (AST::TraitItemConst &item) override;
   virtual void visit (AST::TraitItemType &item) override;
   virtual void visit (AST::Trait &trait) override;
   virtual void visit (AST::InherentImpl &impl) override;

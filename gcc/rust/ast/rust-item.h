@@ -2541,7 +2541,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if type or expression are null, so base stripping on that.
+  // Invalid if type and expression are null, so base stripping on that.
   void mark_for_strip () override
   {
     type = nullptr;
@@ -2552,7 +2552,7 @@ public:
     return type == nullptr && const_expr == nullptr;
   }
 
-  bool has_expr () { return const_expr != nullptr; }
+  bool has_expr () const { return const_expr != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_expr ()
@@ -2716,123 +2716,6 @@ protected:
   StaticItem *clone_item_impl () const override
   {
     return new StaticItem (*this);
-  }
-};
-
-// Constant item within traits
-class TraitItemConst : public TraitItem
-{
-  std::vector<Attribute> outer_attrs;
-  Identifier name;
-  std::unique_ptr<Type> type;
-
-  // bool has_expression;
-  std::unique_ptr<Expr> expr;
-
-public:
-  // Whether the constant item has an associated expression.
-  bool has_expression () const { return expr != nullptr; }
-
-  TraitItemConst (Identifier name, std::unique_ptr<Type> type,
-		  std::unique_ptr<Expr> expr,
-		  std::vector<Attribute> outer_attrs, location_t locus)
-    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)), type (std::move (type)), expr (std::move (expr))
-  {}
-
-  // Copy constructor with clones
-  TraitItemConst (TraitItemConst const &other)
-    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
-      name (other.name)
-  {
-    node_id = other.node_id;
-
-    // guard to prevent null dereference
-    if (other.expr != nullptr)
-      expr = other.expr->clone_expr ();
-
-    // guard to prevent null dereference (only for error state)
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-  }
-
-  // Overloaded assignment operator to clone
-  TraitItemConst &operator= (TraitItemConst const &other)
-  {
-    TraitItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    name = other.name;
-    locus = other.locus;
-    node_id = other.node_id;
-
-    // guard to prevent null dereference
-    if (other.expr != nullptr)
-      expr = other.expr->clone_expr ();
-    else
-      expr = nullptr;
-
-    // guard to prevent null dereference (only for error state)
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-    else
-      type = nullptr;
-
-    return *this;
-  }
-
-  // move constructors
-  TraitItemConst (TraitItemConst &&other) = default;
-  TraitItemConst &operator= (TraitItemConst &&other) = default;
-
-  std::string as_string () const override;
-
-  location_t get_locus () const override { return locus; }
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // Invalid if type is null, so base stripping on that.
-  void mark_for_strip () override { type = nullptr; }
-  bool is_marked_for_strip () const override { return type == nullptr; }
-
-  // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-
-  bool has_expr () const { return expr != nullptr; }
-
-  // TODO: is this better? Or is a "vis_block" better?
-  Expr &get_expr ()
-  {
-    rust_assert (has_expr ());
-    return *expr;
-  }
-
-  std::unique_ptr<Expr> &get_expr_ptr ()
-  {
-    rust_assert (has_expr ());
-    return expr;
-  }
-
-  // TODO: is this better? Or is a "vis_block" better?
-  Type &get_type ()
-  {
-    rust_assert (type != nullptr);
-    return *type;
-  }
-
-  std::unique_ptr<Type> &get_type_ptr ()
-  {
-    rust_assert (type != nullptr);
-    return type;
-  }
-
-  Identifier get_identifier () const { return name; }
-
-protected:
-  // Clone function implementation as (not pure) virtual method
-  TraitItemConst *clone_associated_item_impl () const override
-  {
-    return new TraitItemConst (*this);
   }
 };
 

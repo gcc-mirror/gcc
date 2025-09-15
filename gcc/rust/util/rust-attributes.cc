@@ -799,10 +799,6 @@ AttributeChecker::visit (AST::StaticItem &item)
 }
 
 void
-AttributeChecker::visit (AST::TraitItemConst &)
-{}
-
-void
 AttributeChecker::visit (AST::TraitItemType &)
 {}
 

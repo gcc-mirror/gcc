@@ -205,7 +205,6 @@ private:
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::StaticItem &static_item) override;
-  void visit (AST::TraitItemConst &item) override;
   void visit (AST::TraitItemType &item) override;
   void visit (AST::Trait &trait) override;
   void visit (AST::InherentImpl &impl) override;

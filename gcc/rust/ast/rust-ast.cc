@@ -652,14 +652,8 @@ ConstantItem::as_string () const
     }
   str += "\n  Type: " + type->as_string ();
 
-  // DEBUG: null pointer check
-  if (const_expr == nullptr)
-    {
-      rust_debug ("something really terrible has gone wrong - null "
-		  "pointer expr in const item.");
-      return "NULL_POINTER_MARK";
-    }
-  str += "\n  Expression: " + const_expr->as_string ();
+  if (has_expr ())
+    str += "\n  Expression: " + const_expr->as_string ();
 
   return str + "\n";
 }
@@ -3050,20 +3044,6 @@ ExternalStaticItem::as_string () const
 }
 
 std::string
-TraitItemConst::as_string () const
-{
-  // TODO: rewrite to work with non-linearisable exprs
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  str += "\nconst " + name.as_string () + " : " + type->as_string ();
-
-  if (has_expression ())
-    str += " = " + expr->as_string ();
-
-  return str;
-}
-
-std::string
 TraitItemType::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
@@ -4759,12 +4739,6 @@ ConstantItem::accept_vis (ASTVisitor &vis)
 
 void
 StaticItem::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-TraitItemConst::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

@@ -2069,38 +2069,6 @@ CfgStrip::visit (AST::StaticItem &static_item)
 }
 
 void
-CfgStrip::visit (AST::TraitItemConst &item)
-{
-  // initial test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  AST::DefaultASTVisitor::visit (item);
-
-  // strip any sub-types
-  auto &type = item.get_type ();
-
-  if (type.is_marked_for_strip ())
-    rust_error_at (type.get_locus (), "cannot strip type in this position");
-
-  /* strip any internal sub-expressions - expression itself isn't
-   * allowed to have external attributes in this position so can't be
-   * stripped */
-  if (item.has_expression ())
-    {
-      auto &expr = item.get_expr ();
-      if (expr.is_marked_for_strip ())
-	rust_error_at (expr.get_locus (),
-		       "cannot strip expression in this position - outer "
-		       "attributes not allowed");
-    }
-}
-
-void
 CfgStrip::visit (AST::TraitItemType &item)
 {
   // initial test based on outer attrs

@@ -1025,15 +1025,6 @@ DefaultASTVisitor::visit (AST::StaticItem &static_item)
 }
 
 void
-DefaultASTVisitor::visit (AST::TraitItemConst &item)
-{
-  visit_outer_attrs (item);
-  visit (item.get_type ());
-  if (item.has_expr ())
-    visit (item.get_expr ());
-}
-
-void
 DefaultASTVisitor::visit (AST::TraitItemType &item)
 {
   visit_outer_attrs (item);

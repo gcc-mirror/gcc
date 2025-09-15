@@ -330,7 +330,6 @@ public:
   void visit (ConstantItem &const_item);
   void visit (StaticItem &static_item);
   void visit (SelfParam &param);
-  void visit (TraitItemConst &item);
   void visit (TraitItemType &item);
   void visit (Trait &trait);
   void visit (InherentImpl &impl);

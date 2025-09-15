@@ -908,15 +908,6 @@ ExpandVisitor::visit (AST::StaticItem &static_item)
 }
 
 void
-ExpandVisitor::visit (AST::TraitItemConst &const_item)
-{
-  maybe_expand_type (const_item.get_type_ptr ());
-
-  if (const_item.has_expr ())
-    maybe_expand_expr (const_item.get_expr_ptr ());
-}
-
-void
 ExpandVisitor::visit (AST::Trait &trait)
 {
   for (auto &generic : trait.get_generic_params ())

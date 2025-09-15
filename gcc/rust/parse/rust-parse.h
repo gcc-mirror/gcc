@@ -372,7 +372,7 @@ private:
 					   AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TraitItemType>
   parse_trait_type (AST::AttrVec outer_attrs, AST::Visibility);
-  std::unique_ptr<AST::TraitItemConst>
+  std::unique_ptr<AST::ConstantItem>
   parse_trait_const (AST::AttrVec outer_attrs);
 
   tl::expected<std::unique_ptr<AST::Param>, ParseSelfError> parse_self_param ();

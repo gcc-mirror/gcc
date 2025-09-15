@@ -1004,15 +1004,6 @@ PointerVisitor::visit (AST::StaticItem &static_item)
 }
 
 void
-PointerVisitor::visit (AST::TraitItemConst &item)
-{
-  visit_outer_attrs (item);
-  reseat (item.get_type_ptr ());
-  if (item.has_expr ())
-    reseat (item.get_expr_ptr ());
-}
-
-void
 PointerVisitor::visit (AST::TraitItemType &item)
 {
   visit_outer_attrs (item);

@@ -2172,19 +2172,6 @@ TokenCollector::visit (SelfParam &param)
 }
 
 void
-TokenCollector::visit (TraitItemConst &item)
-{
-  auto id = item.get_identifier ().as_string ();
-  indentation ();
-  push (Rust::Token::make (CONST, item.get_locus ()));
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
-  push (Rust::Token::make (COLON, UNDEF_LOCATION));
-  visit (item.get_type ());
-  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
-  newline ();
-}
-
-void
 TokenCollector::visit (TraitItemType &item)
 {
   visit_items_as_lines (item.get_outer_attrs ());

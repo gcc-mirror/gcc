@@ -5219,7 +5219,7 @@ Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs,
 
 // Parses a constant trait item.
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::TraitItemConst>
+std::unique_ptr<AST::ConstantItem>
 Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
@@ -5257,10 +5257,9 @@ Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
       return nullptr;
     }
 
-  return std::unique_ptr<AST::TraitItemConst> (
-    new AST::TraitItemConst (std::move (ident), std::move (type),
-			     std::move (const_body), std::move (outer_attrs),
-			     locus));
+  return std::unique_ptr<AST::ConstantItem> (new AST::ConstantItem (
+    std::move (ident), AST::Visibility::create_private (), std::move (type),
+    std::move (const_body), std::move (outer_attrs), locus));
 }
 
 /* Parses a struct "impl" item (both inherent impl and trait impl can be
