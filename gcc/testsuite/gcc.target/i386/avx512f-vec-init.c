@@ -4,7 +4,6 @@
 /* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  2 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */

@@ -2,8 +2,8 @@
 /* { dg-options "-O2 -march=skylake-avx512 -fdump-tree-optimized -DTYPE=uint32" } */
 /* { dg-final { scan-tree-dump-times ".COND_SHR" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times ".COND_SHL" 2 "optimized" } } */
-/* { dg-final { scan-assembler-times "vpsrlvd"  1 } } */
-/* { dg-final { scan-assembler-times "vpsllvd"  1 } } */
+/* { dg-final { scan-assembler-times "vpsrld"  1 } } */
+/* { dg-final { scan-assembler-times "vpslld"  1 } } */
 /* { dg-final { scan-assembler-times "vpsrlvd"  1 } } */
 /* { dg-final { scan-assembler-times "vpsllvd"  1 } } */
 

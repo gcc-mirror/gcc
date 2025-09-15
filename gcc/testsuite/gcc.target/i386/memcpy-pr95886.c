@@ -74,7 +74,7 @@ void cpy_123406789 (void *d)
   __builtin_memcpy (d, a1234067890, 9);
 }
 
-/* { dg-final { scan-rtl-dump-times "const_int 578437695685198337" 1 "expand"} } */
+/* { dg-final { scan-rtl-dump-times "const_int 578437674277470721" 1 "expand"} } */
 
 
 const char a1234507890[10] = { 1, 2, 3, 4, 5, 0, 7, 8, 9 };

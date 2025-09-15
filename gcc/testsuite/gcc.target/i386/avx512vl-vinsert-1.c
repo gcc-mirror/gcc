@@ -95,4 +95,4 @@ f8 (V4 x, double y)
 /* { dg-final { scan-assembler-not "vinserti64x2" } } */
 /* { dg-final { scan-assembler-not "vinsertf64x2" } } */
 /* { dg-final { scan-assembler-not "vextracti64x2" } } */
-/* { dg-final { scan-assembler-not "vextracti64x2" } } */
+/* { dg-final { scan-assembler-not "vextractf64x2" } } */

@@ -10,10 +10,10 @@
 /* { dg-final { scan-assembler-times "vpmovsxbd" 7 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovzxbd" 5 { target { ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovzxbd" 7 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovsxbd" 5 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovsxbd" 7 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovzxbd" 5 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovzxbd" 7 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw" 4 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw" 5 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovzxbw" 4 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovzxbw" 5 { target { ! ia32 } } } } */
 
 #include <x86intrin.h>
 

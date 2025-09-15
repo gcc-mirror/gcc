@@ -4,7 +4,7 @@
 /* { dg-final { scan-tree-dump-times ".COND_SHL" 2 "optimized" } } */
 /* { dg-final { scan-assembler-times "vpsrlq"  1 } } */
 /* { dg-final { scan-assembler-times "vpsllq"  1 } } */
-/* { dg-final { scan-assembler-times "vpsrlq"  1 } } */
-/* { dg-final { scan-assembler-times "vpsllq"  1 } } */
+/* { dg-final { scan-assembler-times "vpsrlvq"  1 } } */
+/* { dg-final { scan-assembler-times "vpsllvq"  1 } } */
 
 #include "cond_op_shift_d-1.c"
