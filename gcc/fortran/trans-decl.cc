@@ -4908,21 +4908,24 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	{
 	  is_pdt_type = true;
 	  gfc_init_block (&tmpblock);
-	  if (!(sym->attr.dummy
-		|| sym->attr.pointer
-		|| sym->attr.allocatable))
+	  if (!sym->attr.dummy && !sym->attr.pointer)
 	    {
-	      tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
-					   sym->backend_decl,
-					   sym->as ? sym->as->rank : 0,
-					   sym->param_list);
-	      gfc_add_expr_to_block (&tmpblock, tmp);
-	      if (!sym->attr.result)
+	      if (!sym->attr.allocatable)
+		{
+		  tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
+					       sym->backend_decl,
+					       sym->as ? sym->as->rank : 0,
+					       sym->param_list);
+		  gfc_add_expr_to_block (&tmpblock, tmp);
+		}
+
+	      if (!sym->attr.result && !sym->ts.u.derived->attr.alloc_comp)
 		tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,
 					       sym->backend_decl,
 					       sym->as ? sym->as->rank : 0);
 	      else
 		tmp = NULL_TREE;
+
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), tmp);
 	    }
 	  else if (sym->attr.dummy)
