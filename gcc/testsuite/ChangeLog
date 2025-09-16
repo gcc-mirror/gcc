@@ -1,3 +1,35 @@
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: Use dg-assemble directive.
+
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: New test.
+
+2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121906
+	* gcc.target/loongarch/pr121906.c: New test.
+
+2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* g++.dg/abi/pr121801.C: New test.
+
 2025-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

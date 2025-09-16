@@ -1,3 +1,25 @@
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu)
+	<N_Object_Renaming_Declaration>: Deal with objects whose elaboration
+	is deferred.
+	(process_freeze_entity): Deal with renamed objects whose elaboration
+	is deferred.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Remove undocumented test
+	on Is_Aliased_View applied to the left-hand side to skip the check
+	in the case where the subtypes are the same, and replace it with a
+	test that the subtypes are constrained.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Finalize_Address): In an untagged derivation, call
+	Root_Type on the full view of the base type if the partial view is
+	itself not a derived type.
+	(Is_Untagged_Derivation): Minor formatting tweak.
+
 2025-09-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_aggr.adb (Build_Container_Aggr_Code.Build_Size_Expr): In the case

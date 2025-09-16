@@ -1,3 +1,43 @@
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* config/aarch64/aarch64-simd.md (aarch64_<shrn_op>shrn_n<mode>):
+	Use aarch64_simd_shift_imm_offset_<vn_mode> instead of
+	aarch64_simd_shift_imm_offset_<ve_mode> predicate.
+	(aarch64_<shrn_op>shrn_n<mode> VQN define_expand): Likewise.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode>): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqshrun_n<mode>_insn): Likewise.
+	(aarch64_sqshrun_n<mode>): Likewise.
+	(aarch64_sqshrun_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqrshrun_n<mode>_insn): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	* config/aarch64/iterators.md (vn_mode): Handle DI, SI, HI modes.
+
+2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add avr32eb14, avr32eb20,
+	avr32eb28, avr32eb32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121906
+	* config/loongarch/loongarch.md (*bstrins_<mode>_for_ior_mask):
+	Always create a new pseudo for the input register of the bstrins
+	instruction.
+
 2025-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/121757
