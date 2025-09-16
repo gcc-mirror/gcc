@@ -1937,12 +1937,17 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	tree gnu_ptr = gnu_prefix;
 	tree gnu_obj_type;
 
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+        if (Is_Extended_Access_Type (Etype (Prefix (gnat_node)))
+            && !Is_Constrained (Etype (gnat_node)))
+          gnu_result_type = get_unpadded_extended_type (Etype (gnat_node));
+        else
+          gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	/* If this is fat pointer, the object must have been allocated with the
-	   template in front of the array.  So compute the template address; do
-	   it by converting to a thin pointer.  */
-	if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_ptr)))
+	/* If this is fat or extended pointer, the object must have been
+	   allocated with the template in front of the array.  So compute the
+	   template address; do it by converting to a thin pointer.  */
+	if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_ptr))
+            || TYPE_IS_EXTENDED_POINTER_P (TREE_TYPE (gnu_ptr)))
 	  gnu_ptr
 	    = convert (build_pointer_type
 		       (TYPE_OBJECT_RECORD_TYPE
