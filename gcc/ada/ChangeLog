@@ -1,3 +1,341 @@
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114065
+	PR ada/121953
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) [x32-linux]: Replace
+	libgnarl/s-osinte__x32.adb with libgnarl/s-osinte__posix.adb.
+	* libgnarl/s-osinte__x32.adb: Delete.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu)
+	<N_Object_Renaming_Declaration>: Deal with objects whose elaboration
+	is deferred.
+	(process_freeze_entity): Deal with renamed objects whose elaboration
+	is deferred.
+
+2025-09-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.ads (Make_Build_In_Place_Call_In_Allocator): Simplify comment.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Remove obsolete
+	comment about not being able to allocate fixed-size controlled results
+	on the caller side, and replace another obsolete comment with a simpler
+	comment. Call Build_Allocate_Deallocate_Proc when the function doesn't
+	need a BIPalloc formal to ensure that function results with controlled
+	parts allocated on the caller side will be chained for finalization.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Call Needs_BIP_Collection
+	on the function's Entity_Id rather than the function call.
+	(Needs_BIP_Collection): If a BIP function doesn't need a BIPalloc formal
+	then it doesn't need a BIP collection either; return False in that case.
+	(Needs_BIP_Alloc_Form): Remove test of Needs_BIP_Collection.
+	* exp_ch7.adb (Expand_Cleanup_Actions): Move test of Uses_Sec_Stack
+	to be the first conjunct in setting of Needs_Sec_Stack_Mark, and put
+	the other tests in a disjunction subsidiary to that. Improve preceding
+	comment.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Remove undocumented test
+	on Is_Aliased_View applied to the left-hand side to skip the check
+	in the case where the subtypes are the same, and replace it with a
+	test that the subtypes are constrained.
+
+2025-09-15  Jose Ruiz  <ruiz@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst:
+	clarify that hardening options are not supported by the
+	LLVM back end.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Disable context checks for
+	the preanalysis of the expression for Loop_Invariant pragmas
+	as the ghost region for the pragma has not been set up yet.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Get_Applicable_Policy): Match assertion levels
+	by name.
+
+2025-09-15  Steve Baird  <baird@adacore.com>
+
+	* freeze.adb (Freeze_Entity): In the case of an anonymous
+	access-to-subprogram type where Do_Freeze_Profile is True, freeze
+	the designated subprogram type.
+	(Should_Freeze_Type): Do not call Unit_Declaration_Node with
+	a parentless argument.
+	* sem_ch3.adb (Analyze_Object_Declaration): When calling
+	Freeze_Before, override the default value for Do_Freeze_Profile.
+	This is needed in some cases to prevent premature freezing in the
+	case of an object of an anonymous access-to-subprogram type.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add ghost level check to
+	Assertion_Policy.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Assignment_Policies): The level of the assignee
+	should depend on the level of the region.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Is_Ok_Pragma): Remove calls to Check_Policies.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* contracts.adb: Update SPARK RM reference numbers.
+	* freeze.adb: Likewise.
+	* ghost.adb: Likewise.
+	* ghost.ads: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_prag.adb: Likwise.
+	* sem_res.adb: Likewise.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Check_Inconsistent_Argument_Ghostliness):
+	new method for handling the ghost constency errors between
+	different arguments. Use this method in the processing for
+	pragmas Unused, Unrefefrenced, Unreferenced_Objects, Inline and
+	No_Return.
+	* sem_prag.ads (Suppressed_Ghost_Policy_Check_Pragma): add
+	missing entry for pragma Inline.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Assignee_Levels): Fix the condition and improve
+	error message handling.
+
+2025-09-15  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-c_time$(objext) and
+	s-c_time$(objext).
+	(Aarch64/Android): Do not use s-osinte__android.adb.
+	(SPARC/Solaris): Do not use s-osprim__solaris.adb.
+	(x86/Solaris): Likewise.
+	(LynxOS178): Do not use s-parame__posix2008.ads.
+	(RTEMS): Likewise.
+	(x32/Linux): Likewise, as well as s-linux__x32.ads.  Replace
+	s-osprim__x32.adb with s-osprim__posix.adb.
+	(LIBGNAT_OBJS): Remove cal.o.
+	* cal.c: Delete.
+	* doc/gnat_rm/the_gnat_library.rst (GNAT.C_Time): New entry.
+	(GNAT.Calendar): Do not mention the obsolete conversion functions.
+	* impunit.adb (Non_Imp_File_Names_95): Add g-c_time.
+	* libgnarl/a-exetim__posix.adb: Add with clause for System.C_Time
+	(Clock): Use type and functions from System.C_Time.
+	* libgnarl/s-linux.ads: Remove with clause for System.Parameters.
+	Remove declarations of C time types.
+	* libgnarl/s-linux__alpha.ads: Likewise.
+	* libgnarl/s-linux__android-aarch64.ads: Likewise.
+	* libgnarl/s-linux__android-arm.ads: Likewise.
+	* libgnarl/s-linux__hppa.ads: Likewise.
+	* libgnarl/s-linux__loongarch.ads: Likewise.
+	* libgnarl/s-linux__mips.ads: Likewise.
+	* libgnarl/s-linux__riscv.ads: Likewise.
+	* libgnarl/s-linux__sparc.ads: Likewise.
+	* libgnarl/s-osinte__aix.ads: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__cheribsd.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__solaris.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.ads: Likewise.
+	* libgnarl/s-qnx.ads: Likewise.
+	* libgnarl/s-linux__x32.ads: Delete.
+	* libgnarl/s-osinte__darwin.adb (To_Duration): Remove.
+	(To_Timespec): Likewise.
+	* libgnarl/s-osinte__aix.adb: Likewise.
+	* libgnarl/s-osinte__dragonfly.adb: Likewise.
+	* libgnarl/s-osinte__freebsd.adb: Likewise.
+	* libgnarl/s-osinte__gnu.adb: Likewise.
+	* libgnarl/s-osinte__lynxos178.adb: Likewise.
+	* libgnarl/s-osinte__posix.adb: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__solaris.adb: Likewise.
+	* libgnarl/s-osinte__vxworks.adb: Likewise.
+	* libgnarl/s-osinte__x32.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Add with clause for System.C_Time.
+	(Monotonic_Clock): Use type and functions from System.C_Time.
+	(RT_Resolution): Likewise.
+	(Timed_Sleep): Likewise.
+	(Timed_Delay): Likewise.
+	* libgnarl/s-taprop__vxworks.adb: Likewise.
+	* libgnarl/s-tpopmo.adb: Likewise.
+	* libgnarl/s-osinte__android.adb: Delete.
+	* libgnat/g-c_time.ads: New file.
+	* libgnat/g-calend.adb: Delegate to System.C_Time.
+	* libgnat/g-calend.ads: Likewise.
+	* libgnat/g-socket.adb: Likewise.
+	* libgnat/g-socthi.adb: Likewise.
+	* libgnat/g-socthi__vxworks.adb: Likewise.
+	* libgnat/g-sothco.ads: Likewise.
+	* libgnat/g-spogwa.adb: Likewise.
+	* libgnat/s-c_time.adb: New file.
+	* libgnat/s-c_time.ads: Likewise.
+	* libgnat/s-optide.adb: Import nanosleep here.
+	* libgnat/s-os_lib.ads (time_t): Remove.
+	(To_Ada): Adjust.
+	(To_C): Likewise.
+	* libgnat/s-os_lib.adb: Likewise.
+	* libgnat/s-osprim__darwin.adb: Delegate to System.C_Time.
+	* libgnat/s-osprim__posix.adb: Likewise.
+	* libgnat/s-osprim__posix2008.adb: Likewise.
+	* libgnat/s-osprim__rtems.adb: Likewise.
+	* libgnat/s-osprim__unix.adb: Likewise.
+	* libgnat/s-osprim__solaris.adb: Delete.
+	* libgnat/s-osprim__x32.adb: Likewise.
+	* libgnat/s-parame.ads (time_t_bits): Remove.
+	* libgnat/s-parame__hpux.ads: Likewise.
+	* libgnat/s-parame__vxworks.ads: Likewise.
+	* libgnat/s-parame__posix2008.ads: Delete.
+	* s-oscons-tmplt.c (SIZEOF_tv_nsec): New constant.
+	* gnat_rm.texi: Regenerate.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Finalize_Address): In an untagged derivation, call
+	Root_Type on the full view of the base type if the partial view is
+	itself not a derived type.
+	(Is_Untagged_Derivation): Minor formatting tweak.
+
+2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Unqualified_Unconditional_Parent): New function.
+	* exp_util.adb (Unconditional_Parent): Do not look through qualified
+	expressions.
+	(Unqualified_Unconditional_Parent): New function identical to the
+	original Unconditional_Parent.
+	* exp_aggr.adb (Convert_To_Assignments): Replace Unconditional_Parent
+	with Unqualified_Unconditional_Parent.
+	(Expand_Array_Aggregate): Likewse.
+	* exp_ch4.adb (Expand_N_Case_Expression): Likewise.
+	(Expand_N_If_Expression): Likewise.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not bypass an enclosing
+	qualified expression in the parent chain.
+
+2025-09-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Fix section of Finalizable.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Disable ghost
+	checks during the early freeze.
+
+2025-09-15  Steve Baird  <baird@adacore.com>
+
+	* aspects.ads: Define Super aspect; allow Initialize aspect
+	specification on a subprogram body.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Rewrite Make
+	attribute implementation.
+	* exp_ch3.adb (Initialization_Control): Delete Initialization_Mode
+	and Make_Mode_Literal (those declarations were moved to the spec).
+	(Build_Record_Init_Proc): For a constructor type, component
+	initialization (other than for the tag component, if any) must be
+	performed by calling the single-argument constructor procedure.
+	(Requires_Init_Proc): Return True for a constructor type.
+	* exp_ch3.ads (Make_Mode_Literal, Initialization_Mode): New, moved
+	from the body of this package.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Declare, implement, and
+	call a new local procedure, Prepend_Constructor_Procedure_Prologue
+	in order to generate component initialization for a constructor
+	procedure.
+	* sem_attr.adb (Analyze_Attribute): Improve the error message
+	generated for a 'Make attribute reference if GNAT extensions are
+	not all allowed.
+	* sem_ch13.adb (Analyze_One_Aspect): Improved implementation of
+	aspect specifications for Initialize, Constructor, and Super
+	aspects. For Super, there was no previous implementation.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* atree.adb (Mark_New_Ghost_Node): Set Is_Implicit_Ghost for
+	all newly created nodes.
+	* gen_il-fields.ads (Is_Implicit_Ghost): New attribute.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Add Is_Implicit_Ghost
+	attribute.
+	* ghost.adb (Ghost_Policy_In_Effect): Implicit_Ghost_Entities inside
+	pragmas get the ghost mode from the region isntead of the global
+	ghost policy.
+	(Ghost_Assertion_Level_In_Effect): New function that returns the
+	applicable assertion level for the given entity in a similar manner
+	as Ghost_Policy_In_Effect.
+	(Install_Ghost_Region): Set Is_Inside_Statement_Or_Pragma attribute.
+	(Mark_And_Set_Ghost_Body): Update the logic for deriving the ghost
+	region.
+	(Set_Ghost_Mode): Ignored pragmas attached to checked ghost entities
+	now create an ignored ghost region. Pragmas attached to non-ghost
+	entities create the ghost region based on the policy applied to the
+	given pragma.
+	* opt.ads (Ghost_Config_Type): add new attribute
+	Is_Inside_Statement_Or_Pragama to track whether we should take the
+	active ghost mode from the ghost region for implicit ghost entities.
+	* sem_prag.adb (Analyze_Pragma): Mark entities that have an explicit
+	ghost pragma as non-implicit ghost.
+
+2025-09-15  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Remove the note on light runtimes.
+
+2025-09-15  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Move
+	recommendation of Toolchain_Name up.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-15  Vadim Godunko  <godunko@adacore.com>
+
+	* bindgen.adb (Gen_Adafinal): Don't generate call of adafinal
+	when use of standard library suppressed.
+
+2025-09-15  Vadim Godunko  <godunko@adacore.com>
+
+	* bindgen.adb (Gen_Adafinal): Don't generate code when
+	use of standard library suppressed.
+
+2025-09-15  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/a-swunau.ads (Set_Wide_String): New subprogram.
+	* libgnat/a-swunau.adb (Set_Wide_String): Likewise.
+	* libgnat/a-swunau__shared.adb (Set_Wide_String): Likewise.
+	* libgnat/a-szunau.ads (Set_Wide_Wide_String): Likewise.
+	* libgnat/a-szunau.adb (Set_Wide_Wide_String): Likewise.
+	* libgnat/a-szunau__shared.adb (Set_Wide_Wide_String): Likewise.
+
+2025-09-15  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Ghost_Context): Avoid context checks when they
+	are globally disabled.
+	* sem.ads (Ghost_Context_Checks_Disabled): New flag to control
+	whether ghost context checks are activated or not.
+	* sem_prag.adb (Analyze_Pragma): Disable ghost context checks for
+	pragmas that determine their ghostliness based on one of its arguments.
+
+2025-09-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.ads (Is_Ancestor_Package): Fix documentation comment.
+	* sem_util.adb (Is_Ancestor_Package): Rename local object.
+
 2025-09-11  Marc Poulhiès  <poulhies@adacore.com>
 
 	* libgnat/g-socket.adb (Listen_Socket): Change default value.

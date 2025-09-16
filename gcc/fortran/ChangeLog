@@ -1,3 +1,14 @@
+2025-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83763
+	* trans-decl.cc (gfc_trans_deferred_vars): Ensure that the
+	parameterized components of PDTs that do not have allocatable
+	components are deallocated on leaving scope.
+	* trans-expr.cc (gfc_trans_assignment_1): Do a dependency check
+	on PDT assignments. If there is a dependency between lhs and
+	rhs, deallocate the lhs parameterized components after the rhs
+	has been evaluated.
+
 2025-09-14  Yuao Ma  <c8ef@outlook.com>
 
 	* dump-parse-tree.cc (show_expr): Add support for EXPR_CONDITIONAL.

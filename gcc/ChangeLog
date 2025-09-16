@@ -1,3 +1,79 @@
+2025-09-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_CMODEL, SET_CMODEL): Define.
+
+2025-09-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure.ac: Adjust base register in linker test for large
+	TOC support.
+	* configure: Rebuild.
+
+2025-09-15  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Remove unnecessary cast of unsigned
+	SAT_MUL for widen-mul.
+
+2025-09-15  Pan Li  <pan2.li@intel.com>
+
+	* tree-ssa-math-opts.cc (build_and_insert_cast): Refine
+	the cast insert by check the rhs of val.
+
+2025-09-15  David Faust  <david.faust@oracle.com>
+
+	PR debug/121411
+	PR debug/121903
+	* ctfc.h (ctf_add_sou): Change size arg from size_t to uHWI.
+	* ctfc.cc (ctf_add_sou): Likewise.
+
+2025-09-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121751
+	PR tree-optimization/121418
+	PR tree-optimization/121417
+	* tree-ssa-forwprop.cc (split_core_and_offset_size): New function.
+	(optimize_agr_copyprop_1): Allow for the same
+	address but different type accesses via a VCE.
+
+2025-09-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* match.pd: Add type check to reduc(ctor) pattern.
+
+2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add avr32eb14, avr32eb20,
+	avr32eb28, avr32eb32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-09-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121934
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): If a
+	single instruction can store or move the whole block of memory,
+	use vector instruction and don't align destination.
+
+2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121906
+	* config/loongarch/loongarch.md (*bstrins_<mode>_for_ior_mask):
+	Always create a new pseudo for the input register of the bstrins
+	instruction.
+
+2025-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121904
+	* tree.cc (get_range_pos_neg): Return 3 if arg doesn't have
+	scalar integral type.
+	* expr.cc (expand_expr_real_2) <CASE_CONVERT>: Only choose between
+	sign and zero extension based on costs for scalar integral inner
+	types.
+
+2025-09-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/121391
+	* gimplify.cc (gimplify_asm_expr): In case an asm operand is an
+	error node, bail out early.
+
 2025-09-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/121935

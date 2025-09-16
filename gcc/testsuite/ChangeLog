@@ -1,3 +1,85 @@
+2025-09-15  Clément Chigot  <chigot@adacore.com>
+
+	* gcc.target/aarch64/pr113356.C: Move to ...
+	* g++.target/aarch64/pr113356.C: ... here.
+
+2025-09-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/widen-mul-0.c: New test.
+	* gcc.target/riscv/sat/widen-mul-1.c: New test.
+	* gcc.target/riscv/sat/widen-mul-2.c: New test.
+	* gcc.target/riscv/sat/widen-mul-3.c: New test.
+	* gcc.target/riscv/sat/widen-mul.h: New test.
+
+2025-09-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121751
+	PR tree-optimization/121418
+	PR tree-optimization/121417
+	* gcc.dg/tree-ssa/copy-prop-aggregate-1.c: New test.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-memcpy-1.c: New test.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-memcpy-2.c: New test.
+
+2025-09-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* gcc.target/aarch64/torture/pr121772.c: New test.
+
+2025-09-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/121934
+	* gcc.target/i386/pr121934-1a.c: New test.
+	* gcc.target/i386/pr121934-1b.c: Likewise.
+	* gcc.target/i386/pr121934-2a.c: Likewise.
+	* gcc.target/i386/pr121934-2b.c: Likewise.
+	* gcc.target/i386/pr121934-3a.c: Likewise.
+	* gcc.target/i386/pr121934-3b.c: Likewise.
+	* gcc.target/i386/pr121934-4a.c: Likewise.
+	* gcc.target/i386/pr121934-4b.c: Likewise.
+	* gcc.target/i386/pr121934-5a.c: Likewise.
+	* gcc.target/i386/pr121934-5b.c: Likewise.
+
+2025-09-15  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/121906
+	* gcc.target/loongarch/pr121906.c: New test.
+
+2025-09-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/andes_vector.h: New file.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfncvtbf16s.c
+	(#include): Use local andes_vector.h instead of system header.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/non-overloaded/nds_vfwcvtsbf16.c
+	(#include): Likewise.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/andes_vector.h: New file.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfncvtbf16s.c
+	(#include): Use local andes_vector.h instead of system header.
+	* gcc.target/riscv/rvv/xandesvector/non-policy/overloaded/nds_vfwcvtsbf16.c
+	(#include): Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/andes_vector.h: New file.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfncvtbf16s.c
+	(#include): Use local andes_vector.h instead of system header.
+	* gcc.target/riscv/rvv/xandesvector/policy/non-overloaded/nds_vfwcvtsbf16.c
+	(#include): Likewise.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/andes_vector.h: New file.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfncvtbf16s.c
+	(#include): Use local andes_vector.h instead of system header.
+	* gcc.target/riscv/rvv/xandesvector/policy/overloaded/nds_vfwcvtsbf16.c
+	(#include): Likewise.
+	* gcc.target/riscv/rvv/xsfvector/sifive_vector.h: New file.
+	* gcc.target/riscv/rvv/xtheadvector/riscv_th_vector.h: New file.
+	* gcc.target/riscv/rvv/xtheadvector/riscv_vector.h: New file.
+
+2025-09-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/pr121391-1.c: New test.
+	* gcc.dg/pr121391-2.c: New test.
+
+2025-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83763
+	* gfortran.dg/pdt_46.f03: New test.
+
 2025-09-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/121935

@@ -1,3 +1,7 @@
+2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	* mangle.cc (write_real_cst): Replace 8 spaces with Tab.
+
 2025-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/121795
