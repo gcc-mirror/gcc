@@ -356,7 +356,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	      // FIXME: Change to proper error message
 	      collect_error (
 		Error (attr.get_locus (),
-		       "could not resolve attribute macro invocation"));
+		       "could not resolve attribute macro invocation %qs",
+		       name.c_str ()));
 	      return;
 	    }
 	  auto pm_def = mappings.lookup_attribute_proc_macro_def (
