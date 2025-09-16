@@ -10592,19 +10592,11 @@ package body Exp_Ch6 is
 
                begin
                   pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
-
-                  --  Do not attempt to verify the return type in CodePeer_Mode
-                  --  as CodePeer_Mode is missing some expansion code that
-                  --  results in trees that would be considered malformed for
-                  --  GCC but aren't for GNAT2SCIL.
-
-                  if not CodePeer_Mode then
                     --  Build-in-place function calls return their result by
                     --  reference.
 
-                     pragma Assert (not Is_Build_In_Place_Function (Subp)
-                       or else Returns_By_Ref (Subp));
-                  end if;
+                  pragma Assert (not Is_Build_In_Place_Function (Subp)
+                    or else Returns_By_Ref (Subp));
                end;
 
             --  Skip generic bodies
@@ -10714,7 +10706,14 @@ package body Exp_Ch6 is
 
       pragma Assert (Serious_Errors_Detected = 0);
 
-      Check_Calls (N);
+      --  Do not attempt to verify the return type in CodePeer_Mode
+      --  as CodePeer_Mode is missing some expansion code that
+      --  results in trees that would be considered malformed for
+      --  GCC but aren't for GNAT2SCIL.
+
+      if not CodePeer_Mode then
+         Check_Calls (N);
+      end if;
    end Validate_Subprogram_Calls;
 
    --------------
