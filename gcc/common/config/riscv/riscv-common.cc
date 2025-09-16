@@ -262,67 +262,21 @@ struct riscv_ext_version
   int minor_version;
 };
 
-struct riscv_profiles
-{
+/* Information about one Profile we know about.  */
+struct riscv_profiles {
+  /* This Profile's name.  */
   const char *profile_name;
+
+  /* This Profile's arch canonical string.  */
   const char *profile_string;
 };
 
-/* This table records the mapping form RISC-V Profiles into march string.  */
 static const riscv_profiles riscv_profiles_table[] =
 {
-  /* RVI20U only contains the base extension 'i' as mandatory extension.  */
-  {"rvi20u64", "rv64i"},
-  {"rvi20u32", "rv32i"},
-
-  /* RVA20U contains the 'i,m,a,f,d,c,zicsr,zicntr,ziccif,ziccrse,ziccamoa,
-     zicclsm,za128rs' as mandatory extensions.  */
-  {"rva20u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_za128rs"},
-
-  /* RVA22U contains the 'i,m,a,f,d,c,zicsr,zihintpause,zba,zbb,zbs,zicntr,
-     zihpm,ziccif,ziccrse,ziccamoa, zicclsm,zic64b,za64rs,zicbom,zicbop,zicboz,
-     zfhmin,zkt' as mandatory extensions.  */
-  {"rva22u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
-   "_zicboz_zfhmin_zkt"},
-
-  /* RVA23 contains all mandatory base ISA for RVA22U64 and the new extension
-     'v,zihintntl,zvfhmin,zvbb,zvkt,zicond,zimop,zcmop,zfa,zawrs' as mandatory
-     extensions.  */
-  {"rva23u64", "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
-   "_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl_zicond_zimop_zcmop_zcb"
-   "_zfa_zawrs_supm"},
-
-  /* RVA23S contains all mandatory base ISA for RVA23U64 and the privileged
-     extensions as mandatory extensions.  */
-  {"rva23s64", "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
-   "_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl_zicond_zimop_zcmop_zcb"
-   "_zfa_zawrs_svbare_svade_ssccptr_sstvecd_sstvala_sscounterenw_svpbmt"
-   "_svinval_svnapot_sstc_sscofpmf_ssnpm_ssu64xl_sha_supm"
-  },
-
-  /* RVB23 contains all mandatory base ISA for RVA22U64 and the new extension
-     'zihintntl,zicond,zimop,zcmop,zfa,zawrs' as mandatory
-     extensions.  */
-  {"rvb23u64", "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
-   "_zicboz_zfhmin_zkt_zihintntl_zicond_zimop_zcmop_zcb"
-   "_zfa_zawrs"},
-
-  /* RVB23S contains all mandatory base ISA for RVB23U64 and the privileged
-     extensions as mandatory extensions.  */
-  {"rvb23s64", "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
-   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
-   "_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl_zicond_zimop_zcmop_zcb"
-   "_zfa_zawrs_svbare_svade_ssccptr_sstvecd_sstvala_sscounterenw_svpbmt"
-   "_svinval_svnapot_sstc_sscofpmf_ssu64xl_supm"
-  },
-
-  /* Terminate the list.  */
-  {NULL, NULL}
+#define RISCV_PROFILE(PROFILE_NAME, ARCH) \
+    {PROFILE_NAME, ARCH},
+#include "../../../config/riscv/riscv-profiles.def"
+    {NULL, NULL}
 };
 
 static const riscv_cpu_info riscv_cpu_tables[] =
