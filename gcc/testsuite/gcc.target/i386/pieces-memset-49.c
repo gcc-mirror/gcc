@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune=sapphirerapids -march=x86-64 -mavx2" } */
+/* { dg-options "-O2 -mtune=znver5 -march=x86-64 -mavx2" } */
 
 extern char *dst;
 
