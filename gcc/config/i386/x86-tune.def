@@ -583,6 +583,8 @@ DEF_TUNE (X86_TUNE_AVX256_AVOID_VEC_PERM,
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX512 ops are split into two AVX256 ops.  */
 DEF_TUNE (X86_TUNE_AVX512_SPLIT_REGS, "avx512_split_regs", m_ZNVER4)
 
+/* It's better to align MOVE_MAX with prefer_vector_width to reduce
+   risk of STLF stalls(small store followed by big load.)  */
 /* X86_TUNE_AVX256_MOVE_BY_PIECES: Optimize move_by_pieces with 256-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX256_MOVE_BY_PIECES, "avx256_move_by_pieces",
@@ -596,14 +598,12 @@ DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
 /* X86_TUNE_AVX512_MOVE_BY_PIECES: Optimize move_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_MOVE_BY_PIECES, "avx512_move_by_pieces",
-	  m_SAPPHIRERAPIDS | m_GRANITERAPIDS | m_GRANITERAPIDS_D
-	  | m_ZNVER4 | m_ZNVER5)
+	   m_ZNVER4 | m_ZNVER5)
 
 /* X86_TUNE_AVX512_STORE_BY_PIECES: Optimize store_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_STORE_BY_PIECES, "avx512_store_by_pieces",
-	  m_SAPPHIRERAPIDS | m_GRANITERAPIDS | m_GRANITERAPIDS_D
-	  | m_ZNVER4 | m_ZNVER5)
+	  m_ZNVER4 | m_ZNVER5)
 
 /*****************************************************************************/
 /*****************************************************************************/
