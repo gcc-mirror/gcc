@@ -1528,6 +1528,66 @@ new_src_based_on_copy (tree src2, tree dest, tree src)
   return fold_build1 (VIEW_CONVERT_EXPR,TREE_TYPE (src2), src);
 }
 
+/* Returns true if SRC and DEST are the same address such that
+   `SRC == DEST;` is considered a nop. This is more than an
+   operand_equal_p check as it needs to be similar to
+   new_src_based_on_copy.  */
+
+static bool
+same_for_assignment (tree src, tree dest)
+{
+  if (operand_equal_p (dest, src, 0))
+    return true;
+  /* if both dest and src2 are decls, then we know these 2
+     accesses can't be the same.  */
+  if (DECL_P (dest) && DECL_P (src))
+    return false;
+
+  tree core1, core2;
+  poly_int64 bytepos1, bytepos2;
+  poly_int64 bytesize1, bytesize2;
+  tree toffset1, toffset2;
+  int reversep1 = 0;
+  int reversep2 = 0;
+  poly_int64 diff = 0;
+  core1 = split_core_and_offset_size (dest, &bytesize1, &bytepos1,
+				      &toffset1, &reversep1);
+  core2 = split_core_and_offset_size (src, &bytesize2, &bytepos2,
+				      &toffset2, &reversep2);
+  if (!core1 || !core2)
+    return false;
+  if (reversep1 != reversep2)
+    return false;
+  /* The sizes of the 2 accesses need to be the same. */
+  if (!known_eq (bytesize1, bytesize2))
+    return false;
+  if (!operand_equal_p (core1, core2, 0))
+    return false;
+  if (toffset1 && toffset2)
+    {
+      tree type = TREE_TYPE (toffset1);
+      if (type != TREE_TYPE (toffset2))
+	toffset2 = fold_convert (type, toffset2);
+
+      tree tdiff = fold_build2 (MINUS_EXPR, type, toffset1, toffset2);
+      if (!cst_and_fits_in_hwi (tdiff))
+	return false;
+
+      diff = int_cst_value (tdiff);
+    }
+  else if (toffset1 || toffset2)
+    {
+      /* If only one of the offsets is non-constant, the difference cannot
+	 be a constant.  */
+      return false;
+    }
+  diff += bytepos1 - bytepos2;
+  /* The offset between the 2 need to be 0. */
+  if (!known_eq (diff, 0))
+    return false;
+  return true;
+}
+
 /* Helper function for optimize_agr_copyprop.
    For aggregate copies in USE_STMT, see if DEST
    is on the lhs of USE_STMT and replace it with SRC. */
@@ -1542,7 +1602,7 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
   tree dest2 = gimple_assign_lhs (use_stmt);
   tree src2 = gimple_assign_rhs1 (use_stmt);
   /* If the new store is `src2 = src2;` skip over it. */
-  if (operand_equal_p (src2, dest2, 0))
+  if (same_for_assignment (src2, dest2))
     return false;
   src = new_src_based_on_copy (src2, dest, src);
   if (!src)
@@ -1702,7 +1762,7 @@ optimize_agr_copyprop (gimple_stmt_iterator *gsip)
   tree dest = gimple_assign_lhs (stmt);
   tree src = gimple_assign_rhs1 (stmt);
   /* If the statement is `src = src;` then ignore it. */
-  if (operand_equal_p (dest, src, 0))
+  if (same_for_assignment (dest, src))
     return false;
 
   tree vdef = gimple_vdef (stmt);
