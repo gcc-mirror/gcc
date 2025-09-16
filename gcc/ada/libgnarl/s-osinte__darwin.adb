@@ -31,10 +31,9 @@
 
 --  This is a Darwin Threads version of this package
 
-with Interfaces.C.Extensions;
+with Interfaces.C; use Interfaces.C;
 
 package body System.OS_Interface is
-   use Interfaces.C;
 
    ------------------------
    -- To_Target_Priority --
