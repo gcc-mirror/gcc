@@ -37,8 +37,8 @@ main (void)
   ASSERT_EQ (test_fclass_f (-f_normal), 0b110);
   ASSERT_EQ (test_fclass_f (f_subnormal), 0b100);
   ASSERT_EQ (test_fclass_f (-f_subnormal), 0b100);
-  ASSERT_EQ (test_fclass_f (f_qnan), 0);
-  ASSERT_EQ (test_fclass_f (f_snan), 0);
+  ASSERT_EQ (test_fclass_f (f_qnan), 0b1000);
+  ASSERT_EQ (test_fclass_f (f_snan), 0b1000);
 
   ASSERT_EQ (test_fclass_d (d_inf), 0b001);
   ASSERT_EQ (test_fclass_d (-d_inf), 0b001);
@@ -48,6 +48,6 @@ main (void)
   ASSERT_EQ (test_fclass_d (-d_normal), 0b110);
   ASSERT_EQ (test_fclass_d (d_subnormal), 0b100);
   ASSERT_EQ (test_fclass_d (-d_subnormal), 0b100);
-  ASSERT_EQ (test_fclass_d (d_qnan), 0);
-  ASSERT_EQ (test_fclass_d (d_snan), 0);
+  ASSERT_EQ (test_fclass_d (d_qnan), 0b1000);
+  ASSERT_EQ (test_fclass_d (d_snan), 0b1000);
 }

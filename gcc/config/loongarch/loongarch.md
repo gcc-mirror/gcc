@@ -4193,17 +4193,18 @@
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
 
-(define_int_iterator FCLASS_MASK [68 136 952])
+(define_int_iterator FCLASS_MASK [68 136 952 3])
 (define_int_attr fclass_optab
   [(68	"isinf")
    (136	"isnormal")
-   (952	"isfinite")])
+   (952	"isfinite")
+   (3	"isnan")])
 
 (define_expand "<FCLASS_MASK:fclass_optab><ANYF:mode>2"
   [(match_operand:SI   0 "register_operand" "=r")
    (match_operand:ANYF 1 "register_operand" " f")
    (const_int FCLASS_MASK)]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && (<FCLASS_MASK> != 3 || flag_signaling_nans)"
   {
     rtx ft0 = gen_reg_rtx (SImode);
     rtx t0 = gen_reg_rtx (word_mode);
