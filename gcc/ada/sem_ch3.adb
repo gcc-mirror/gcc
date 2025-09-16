@@ -21993,7 +21993,7 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  AI-419: verify that the use of "limited" is consistent
+      --  RM 7.3 (10.1/3): verify that the use of "limited" is consistent
 
       declare
          Orig_Decl : constant Node_Id := Original_Node (N);
@@ -22009,7 +22009,9 @@ package body Sem_Ch3 is
               and then Limited_Present (Type_Definition (Orig_Decl))
             then
                Error_Msg_N
-                 ("full view of non-limited extension cannot be limited", N);
+                 ("full view of implicitly limited extension must be "
+                  & "implicitly limited",
+                  N);
 
             --  Conversely, if the partial view carries the limited keyword,
             --  the full view must as well, even if it may be redundant.
@@ -22018,7 +22020,8 @@ package body Sem_Ch3 is
               and then not Limited_Present (Type_Definition (Orig_Decl))
             then
                Error_Msg_N
-                 ("full view of limited extension must be explicitly limited",
+                 ("full view of explicitly limited extension must be "
+                  & "explicitly limited",
                   N);
             end if;
          end if;
