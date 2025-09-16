@@ -5383,7 +5383,7 @@ namespace views::__adaptor
   {
     // Yields tuple<_Tp, ..., _Tp> with _Nm elements.
     template<typename _Tp, size_t _Nm>
-      using __repeated_tuple = decltype(std::tuple_cat(std::declval<array<_Tp, _Nm>>()));
+      using __repeated_tuple = typename __make_tuple<array<_Tp, _Nm>>::__type;
 
     // For a functor F that is callable with N arguments, the expression
     // declval<__unarize<F, N>>(x) is equivalent to declval<F>(x, ..., x).
