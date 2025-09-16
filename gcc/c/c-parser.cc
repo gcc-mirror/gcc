@@ -3222,7 +3222,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       else
 	fnbody = c_parser_compound_statement (parser, &endloc);
       tree fndecl = current_function_decl;
-      if (nested)
+      if (nested && specs->declspec_il == cdil_none)
 	{
 	  tree decl = current_function_decl;
 	  /* Mark nested functions as needing static-chain initially.
@@ -3234,6 +3234,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  finish_function (endloc);
 	  c_pop_function_context ();
 	  add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
+	}
+      else if (nested)
+	{
+	  if (specs->declspec_il == cdil_rtl)
+	    error ("%<__RTL%> function cannot be a nested function");
+	  else
+	    error ("%<__GIMPLE%> function cannot be a nested function");
+	  finish_function (endloc);
+	  c_pop_function_context ();
 	}
       else
 	{
