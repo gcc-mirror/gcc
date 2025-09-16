@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, December 2010.  */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
-/* { dg-additional-options "-Wno-objc-root-class" } */
+/* { dg-additional-sources "load-category-1a.m" } */
 
 #include <stdlib.h>
 #include <objc/objc.h>
