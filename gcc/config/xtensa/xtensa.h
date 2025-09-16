@@ -583,15 +583,15 @@ typedef struct xtensa_args
    for use as a base or index register in operand addresses.  */
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
-#define REGNO_OK_FOR_BASE_P(NUM) \
-  (GP_REG_P (NUM) || GP_REG_P ((unsigned) reg_renumber[NUM]))
+#define REGNO_OK_FOR_BASE_P(NUM) GP_REG_P (NUM)
 
 /* C expressions that are nonzero if X (assumed to be a `reg' RTX) is
    valid for use as a base or index register.  */
 
 #define BASE_REG_P(X, STRICT)						\
   ((!(STRICT) && ! HARD_REGISTER_P (X))					\
-   || REGNO_OK_FOR_BASE_P (REGNO (X)))
+   || regno_ok_for_base_p (REGNO (X), VOIDmode, ADDR_SPACE_GENERIC,	\
+			   UNKNOWN, UNKNOWN))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
