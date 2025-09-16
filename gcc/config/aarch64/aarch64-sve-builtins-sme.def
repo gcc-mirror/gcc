@@ -20,24 +20,28 @@
 /* Code organization: See block comment at the top of
    aarch64-sve-builtins.def.  */
 
+/* Define an SME function group.
+   See `struct function_group_info` for the meaning of each argument.  */
 #ifndef DEF_SME_FUNCTION_GS
 #define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   DEF_SME_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUPS, PREDS, unused)
 #endif
 
-#ifndef DEF_SME_FUNCTION
-#define DEF_SME_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SME_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, none, PREDS, unused)
-#endif
+/* Same as `DEF_SME_FUNCTION_GS` above, but with GROUPS = none.  */
+#define DEF_SME_FUNCTION(NAME, SHAPE, TYPES,       PREDS) \
+    DEF_SME_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 
+/* Define an SME function that operates on ZA.
+   See `function_group_info` for the meaning of each argument.  */
 #ifndef DEF_SME_ZA_FUNCTION_GS
 #define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS) \
-  DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUP, PREDS, unused)
+   DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUP, PREDS, unused)
 #endif
 
+/* Same as `DEF_SME_ZA_FUNCTION_GS` above, but with GROUPS = none.  */
 #ifndef DEF_SME_ZA_FUNCTION
-#define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, none, PREDS, unused)
+#define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES,       PREDS) \
+DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, none, PREDS, unused)
 #endif
 
 #define REQUIRED_EXTENSIONS streaming_compatible (0)

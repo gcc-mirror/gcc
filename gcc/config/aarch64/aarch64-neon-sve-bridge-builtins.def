@@ -17,8 +17,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Define an SVE function with a Neon bridge.
+   See the fields in `function_group_info` for the meaning of each argument.  */
 #ifndef DEF_NEON_SVE_FUNCTION
-#define DEF_NEON_SVE_FUNCTION(A, B, C, D, E)
+#define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS)
 #endif
 
 DEF_NEON_SVE_FUNCTION (svset_neonq, set_neonq, all_data, none, none)

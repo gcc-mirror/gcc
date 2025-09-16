@@ -18,8 +18,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Define an AdvSIMD (NEON) type.
+   See `aarch64_simd_type_info` for the meaning of each argument.  */
 #ifndef DEF_SIMD_TYPE
-#define DEF_SIMD_TYPE(A, B, C, D)
+#define DEF_SIMD_TYPE(NAME, MODE, QUALIFIERS, LEN)
 #endif
 
 DEF_SIMD_TYPE (Int8x8_t, V8QI, none, 10)

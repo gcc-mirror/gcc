@@ -38,43 +38,61 @@
        streaming mode only.  This usually means it uses the ZA or ZT0 registers,
        or other SME state.  */
 
+/* Define an SVE mode suffix.
+   See the fields in `mode_suffix_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_MODE
-#define DEF_SVE_MODE(A, B, C, D)
+#define DEF_SVE_MODE(NAME, BASE, DISPLACEMENT, UNITS)
 #endif
 
+/* Define an SVE vector or predicate type.
+   See the fields in `vector_type_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_TYPE
-#define DEF_SVE_TYPE(A, B, C, D)
+#define DEF_SVE_TYPE(ACLE_NAME, NCHARS, ABI_NAME, SCALAR_TYPE)
 #endif
 
+/* Define an SVE type suffix.
+   See the fields in `type_suffix_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_TYPE_SUFFIX
-#define DEF_SVE_TYPE_SUFFIX(A, B, C, D, E)
+#define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE)
 #endif
 
+/* Define an SME ZA type suffix.
+   See the fields in `type_suffix_info` for the meaning of each argument.  */
 #ifndef DEF_SME_ZA_SUFFIX
-#define DEF_SME_ZA_SUFFIX(A, B, C)
+#define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE)
 #endif
 
+/* Define an SVE group suffix.
+   See the fields in `group_suffix_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_GROUP_SUFFIX
-#define DEF_SVE_GROUP_SUFFIX(A, B, C)
+#define DEF_SVE_GROUP_SUFFIX(NAME, VG, VECTORS_PER_TUPLE)
 #endif
 
+/* Define an SVE function group.
+   See the fields in `function_group_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_FUNCTION_GS_FPM
-#define DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, F)
+#define DEF_SVE_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE)
 #endif
 
+/* Same as `DEF_SVE_FUNCTION_GS_FPM` above, but with FPM = unused.  */
 #ifndef DEF_SVE_FUNCTION_GS
-#define DEF_SVE_FUNCTION_GS(A, B, C, D, E) \
-  DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, unused)
+#define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+   DEF_SVE_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUPS, PREDS, unused)
 #endif
 
+/* Define an SVE type suffix, with associated 64-bit and 128-bit types for
+   compatability with Neon.
+   See the fields in `type_suffix_info` for the meaning of each argument.  */
 #ifndef DEF_SVE_NEON_TYPE_SUFFIX
-#define DEF_SVE_NEON_TYPE_SUFFIX(A, B, C, D, E, F, G) \
-  DEF_SVE_TYPE_SUFFIX(A, B, C, D, E)
+#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE, NEON64,  \
+								     NEON128) \
+	    DEF_SVE_TYPE_SUFFIX (NAME, ACLE_TYPE, CLASS, BITS, MODE)
 #endif
 
+/* Same as `DEF_SVE_FUNCTION_GS` above, but with GROUPS = none.  */
 #ifndef DEF_SVE_FUNCTION
-#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES,       PREDS) \
+    DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 #endif
 
 DEF_SVE_MODE (n, none, none, none)

@@ -20,6 +20,24 @@
 /* Code organization: See block comment at the top of
    aarch64-sve-builtins.def.  */
 
+/* Define an SVE function group.
+   See the fields in `function_group_info` for the meaning of each argument.  */
+#ifndef DEF_SVE_FUNCTION_GS_FPM
+#define DEF_SVE_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE)
+#endif
+
+/* Same as `DEF_SVE_FUNCTION_GS_FPM` above, but with FPM = unused.  */
+#ifndef DEF_SVE_FUNCTION_GS
+#define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+   DEF_SVE_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUPS, PREDS, unused)
+#endif
+
+/* Same as `DEF_SVE_FUNCTION_GS` above, but with GROUPS = none.  */
+#ifndef DEF_SVE_FUNCTION
+#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES,       PREDS) \
+    DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+#endif
+
 #define REQUIRED_EXTENSIONS ssve (0)
 DEF_SVE_FUNCTION (svabd, binary_opt_n, all_arith, mxz)
 DEF_SVE_FUNCTION (svabs, unary, all_float_and_signed, mxz)
