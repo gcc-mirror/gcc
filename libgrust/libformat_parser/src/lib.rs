@@ -83,87 +83,19 @@ pub mod ffi {
         }
     }
 
-    #[repr(C)]
-    pub struct FFIOpt<T> {
-        val: MaybeUninit<T>,
-        is_some: bool
-    }
-
-    impl<T> Clone for FFIOpt<T>
-    where
-        T: Clone
-    {
-        fn clone(&self) -> Self {
-            match self.get_opt_ref() {
-                Some(r) => FFIOpt::new_val(r.clone()),
-                None => FFIOpt::new_none()
-            }
-        }
-    }
-
-    impl<T> PartialEq for FFIOpt<T>
-    where
-        T: PartialEq
-    {
-        fn eq(&self, other: &Self) -> bool {
-            match (self.get_opt_ref(), other.get_opt_ref()) {
-                (Some(a), Some(b)) => a.eq(b),
-                _ => false
-            }
-        }
-    }
-
-    impl<T> Eq for FFIOpt<T>
-    where
-        T: Eq
-    {}
-
-    impl<T> Drop for FFIOpt<T>
-    {
-        fn drop(&mut self) {
-            if self.is_some {
-                unsafe { std::ptr::drop_in_place(self.val.as_mut_ptr()) }
-            }
-        }
+    // https://github.com/rust-lang/rfcs/blob/master/text/2195-really-tagged-unions.md
+    #[repr(u8)]
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    pub enum FFIOpt<T> {
+        Some(T),
+        None
     }
 
     impl<T> IntoFFI<FFIOpt<T>> for Option<T> {
         fn into_ffi(self) -> FFIOpt<T> {
             match self {
-                Some(v) => FFIOpt::new_val(v),
-                None => FFIOpt::new_none()
-            }
-        }
-    }
-
-    impl<T> FFIOpt<T> {
-        pub fn new_val(v: T) -> Self {
-            FFIOpt {
-                val: MaybeUninit::new(v),
-                is_some: true
-            }
-        }
-
-        pub fn new_none() -> Self {
-            FFIOpt {
-                val: MaybeUninit::uninit(),
-                is_some: false
-            }
-        }
-
-        pub fn get_opt_ref(&self) -> Option<&T> {
-            if self.is_some {
-                Some(unsafe {&*self.val.as_ptr()})
-            } else {
-                None
-            }
-        }
-
-        pub fn get_opt_ref_mut(&mut self) -> Option<&mut T> {
-            if self.is_some {
-                Some(unsafe {&mut *self.val.as_mut_ptr()})
-            } else {
-                None
+                Some(v) => FFIOpt::Some(v),
+                None => FFIOpt::None
             }
         }
     }

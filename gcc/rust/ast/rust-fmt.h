@@ -83,38 +83,41 @@ public:
   const T *end () const { return data + len; }
 };
 
-template <typename T> class FFIOpt
+// https://github.com/rust-lang/rfcs/blob/master/text/2195-really-tagged-unions.md
+template <typename T,
+	  typename =
+	    typename std::enable_if<std::is_standard_layout<T>::value>::type>
+class FFIOpt
 {
-  struct alignas (T) Inner
-  {
-    char data[sizeof (T)];
-  } inner;
-  bool is_some;
-
 public:
-  template <typename U> FFIOpt (U &&val) : is_some (true)
+  template <typename U>
+  FFIOpt (U &&val) : some{Some::KIND, std::forward<U> (val)}
+  {}
+
+  FFIOpt () : none{None::KIND} {}
+
+  FFIOpt (const FFIOpt &other)
   {
-    new (inner.data) T (std::forward<U> (val));
+    if (other.has_value ())
+      new (&some) Some{Some::KIND, other.some.val};
+    else
+      new (&none) None{None::KIND};
   }
 
-  FFIOpt () : is_some (false) {}
-
-  FFIOpt (const FFIOpt &other) : is_some (other.is_some)
+  FFIOpt (FFIOpt &&other)
   {
-    if (is_some)
-      new (inner.data) T (*(const T *) other.inner.data);
-  }
-
-  FFIOpt (FFIOpt &&other) : is_some (other.is_some)
-  {
-    if (is_some)
-      new (inner.data) T (std::move (*(const T *) other.inner.data));
+    if (other.has_value ())
+      new (&some) Some{Some::KIND, std::move (other.some.val)};
+    else
+      new (&none) None{None::KIND};
   }
 
   ~FFIOpt ()
   {
-    if (is_some)
-      ((T *) inner.data)->~T ();
+    if (has_value ())
+      some.~Some ();
+    else
+      none.~None ();
   }
 
   FFIOpt &operator= (const FFIOpt &other)
@@ -133,13 +136,43 @@ public:
 
   tl::optional<std::reference_wrapper<T>> get_opt ()
   {
-    return (T *) inner.data;
+    if (has_value ())
+      return std::ref (some.val);
+    else
+      return tl::nullopt;
   }
 
   tl::optional<std::reference_wrapper<const T>> get_opt () const
   {
-    return (const T *) inner.data;
+    if (has_value ())
+      return std::ref (some.val);
+    else
+      return tl::nullopt;
   }
+
+  bool has_value () const { return some.kind == Some::KIND; }
+
+  operator bool () const { return has_value (); }
+
+private:
+  struct Some
+  {
+    static constexpr uint8_t KIND = 0;
+    uint8_t kind;
+    T val;
+  };
+
+  struct None
+  {
+    static constexpr uint8_t KIND = 1;
+    uint8_t kind;
+  };
+
+  union
+  {
+    Some some;
+    None none;
+  };
 };
 
 struct RustHamster
