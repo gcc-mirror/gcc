@@ -5460,9 +5460,7 @@ namespace views::__adaptor
   public:
     using iterator_category = input_iterator_tag;
     using iterator_concept = decltype(_S_iter_concept());
-    using value_type = conditional_t<_Nm == 2,
-				     pair<range_value_t<_Base>, range_value_t<_Base>>,
-				     __detail::__repeated_tuple<range_value_t<_Base>, _Nm>>;
+    using value_type = __detail::__repeated_tuple<range_value_t<_Base>, _Nm>;
     using difference_type = range_difference_t<_Base>;
 
     _Iterator() = default;
