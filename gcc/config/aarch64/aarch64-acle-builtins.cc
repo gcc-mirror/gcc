@@ -150,9 +150,6 @@ constexpr const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     MODE, \
     NEON64, \
     NEON128 },
-#define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE) \
-  DEF_SVE_NEON_TYPE_SUFFIX (NAME, ACLE_TYPE, CLASS, BITS, MODE, \
-			    ARM_NEON_H_TYPES_LAST, ARM_NEON_H_TYPES_LAST)
 #define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE) \
   { "_" #NAME, \
     NUM_VECTOR_TYPES, \

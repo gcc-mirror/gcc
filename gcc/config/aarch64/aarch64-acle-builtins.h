@@ -209,7 +209,8 @@ enum mode_suffix_index
    element size.  */
 enum type_suffix_index
 {
-#define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE) \
+#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE, \
+				 NEON64, NEON128)		     \
   TYPE_SUFFIX_ ## NAME,
 #define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE) \
   TYPE_SUFFIX_ ## NAME,

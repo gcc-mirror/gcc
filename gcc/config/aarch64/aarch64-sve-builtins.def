@@ -52,9 +52,15 @@
 
 /* Define an SVE type suffix.
    See the fields in `type_suffix_info` for the meaning of each argument.  */
-#ifndef DEF_SVE_TYPE_SUFFIX
-#define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE)
+#ifndef DEF_SVE_NEON_TYPE_SUFFIX
+#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE, \
+				 NEON64, NEON128)
 #endif
+
+/* Same as `DEF_SVE_NEON_TYPE_SUFFIX`, but with NEON64 and NEON128 = LAST.  */
+#define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE) \
+  DEF_SVE_NEON_TYPE_SUFFIX (NAME, ACLE_TYPE, CLASS, BITS, MODE, \
+			    ARM_NEON_H_TYPES_LAST, ARM_NEON_H_TYPES_LAST)
 
 /* Define an SME ZA type suffix.
    See the fields in `type_suffix_info` for the meaning of each argument.  */
@@ -78,15 +84,6 @@
 #ifndef DEF_SVE_FUNCTION_GS
 #define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
    DEF_SVE_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUPS, PREDS, unused)
-#endif
-
-/* Define an SVE type suffix, with associated 64-bit and 128-bit types for
-   compatability with Neon.
-   See the fields in `type_suffix_info` for the meaning of each argument.  */
-#ifndef DEF_SVE_NEON_TYPE_SUFFIX
-#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE, NEON64,  \
-								     NEON128) \
-	    DEF_SVE_TYPE_SUFFIX (NAME, ACLE_TYPE, CLASS, BITS, MODE)
 #endif
 
 /* Same as `DEF_SVE_FUNCTION_GS` above, but with GROUPS = none.  */
