@@ -1,3 +1,12 @@
+2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* mangle.cc (write_real_cst): Handle 16-bit real and assert
+	that reals have 16 bits or a multiple of 32 bits.
+
 2025-08-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Support AVR32DA28S, AVR32DA32S,
+	AVR32DA48S, AVR64DA28S, AVR64DA32S, AVR64DA48S AVR64DA64S,
+	AVR128DA28S, AVR128DA32S, AVR128DA48S, AVR128DA64S,
+	AVR32EB14, AVR32EB20, AVR32EB28, AVR32EB32.
+	* doc/avr-mmcu.texi: Rebuild.
+
 2025-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
