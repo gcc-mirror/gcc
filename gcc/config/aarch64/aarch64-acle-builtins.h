@@ -111,8 +111,7 @@ const unsigned int CP_WRITE_ZT0 = 1U << 10;
    "vector types" for brevity.  */
 enum vector_type_index
 {
-#define DEF_SVE_TYPE(ACLE_NAME, NCHARS, ABI_NAME, SCALAR_TYPE) \
-  VECTOR_TYPE_ ## ACLE_NAME,
+#define DEF_SVE_TYPE(ACLE_NAME, ...) VECTOR_TYPE_##ACLE_NAME,
 #include "aarch64-sve-builtins.def"
   NUM_VECTOR_TYPES
 };
@@ -199,7 +198,7 @@ enum type_class_index
    and the first type suffix.  */
 enum mode_suffix_index
 {
-#define DEF_SVE_MODE(NAME, BASE, DISPLACEMENT, UNITS) MODE_##NAME,
+#define DEF_SVE_MODE(NAME, ...) MODE_##NAME,
 #include "aarch64-sve-builtins.def"
   MODE_none
 };
@@ -209,11 +208,8 @@ enum mode_suffix_index
    element size.  */
 enum type_suffix_index
 {
-#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE, \
-				 NEON64, NEON128)		     \
-  TYPE_SUFFIX_ ## NAME,
-#define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE) \
-  TYPE_SUFFIX_ ## NAME,
+#define DEF_SVE_NEON_TYPE_SUFFIX(NAME, ...) TYPE_SUFFIX_##NAME,
+#define DEF_SME_ZA_SUFFIX(NAME, ...) TYPE_SUFFIX_##NAME,
 #include "aarch64-sve-builtins.def"
   NUM_TYPE_SUFFIXES
 };
@@ -223,7 +219,7 @@ enum type_suffix_index
    and the number of vectors in the largest tuple argument.  */
 enum group_suffix_index
 {
-#define DEF_SVE_GROUP_SUFFIX(NAME, VG, VECTORS_PER_TUPLE) GROUP_##NAME,
+#define DEF_SVE_GROUP_SUFFIX(NAME, ...) GROUP_##NAME,
 #include "aarch64-sve-builtins.def"
   GROUP_none,
   NUM_GROUP_SUFFIXES
