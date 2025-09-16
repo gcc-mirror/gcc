@@ -1,3 +1,36 @@
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: Use dg-assemble directive.
+
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* gcc.target/aarch64/simd/pr121749.c: New test.
+
+2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* g++.dg/abi/pr121801.C: New test.
+
+2025-09-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-cmp-emu-1.c: New test.
+	* gcc.target/s390/vector/vec-cmp-emu-2.c: New test.
+	* gcc.target/s390/vector/vec-cmp-emu-3.c: New test.
+
 2025-08-30  liuhongt  <hongtao.liu@intel.com>
 
 	Revert:

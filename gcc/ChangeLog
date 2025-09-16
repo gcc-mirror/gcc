@@ -1,3 +1,46 @@
+2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/121749
+	* config/aarch64/aarch64-simd.md (aarch64_<shrn_op>shrn_n<mode>):
+	Use aarch64_simd_shift_imm_offset_<vn_mode> instead of
+	aarch64_simd_shift_imm_offset_<ve_mode> predicate.
+	(aarch64_<shrn_op>shrn_n<mode> VQN define_expand): Likewise.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode>): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqshrun_n<mode>_insn): Likewise.
+	(aarch64_sqshrun_n<mode>): Likewise.
+	(aarch64_sqshrun_n<mode> VQN define_expand): Likewise.
+	(aarch64_sqrshrun_n<mode>_insn): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	* config/aarch64/iterators.md (vn_mode): Handle DI, SI, HI modes.
+
+2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add avr32eb14, avr32eb20,
+	avr32eb28, avr32eb32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-09-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (V_HW): Enable V1TI unconditionally and
+	add TI.
+	(vec_cmpu<VIT_HW:mode><VIT_HW:mode>): Add 128-bit integer
+	variants.
+	(*vec_cmpeq<mode><mode>_nocc_emu): Emulate operation.
+	(*vec_cmpgt<mode><mode>_nocc_emu): Emulate operation.
+	(*vec_cmpgtu<mode><mode>_nocc_emu): Emulate operation.
+
 2025-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
