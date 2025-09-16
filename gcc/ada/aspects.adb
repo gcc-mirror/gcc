@@ -280,6 +280,12 @@ package body Aspects is
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id is
    begin
+      --  Aspect Unsigned_Base_Range temporarily disabled
+
+      if Name = Name_Unsigned_Base_Range then
+         return No_Aspect;
+      end if;
+
       return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
 
