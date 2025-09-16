@@ -1190,7 +1190,7 @@ constant_pointer_difference (tree p1, tree p2)
 /* Helper function for optimize_aggr_zeroprop.
    Props the zeroing (memset, VAL) that was done in DEST+OFFSET:LEN
    (DEFSTMT) into the STMT.  Returns true if the STMT was updated.  */
-static bool
+static void
 optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
 			  tree dest, poly_int64 offset, tree val,
 			  poly_offset_int len)
@@ -1214,29 +1214,29 @@ optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
 		: TYPE_SIZE_UNIT (TREE_TYPE (src2)));
 	/* Can only handle zero memsets. */
 	if (!integer_zerop (val))
-	  return false;
+	  return;
      }
    else
-     return false;
+     return;
 
   if (len2 == NULL_TREE
       || !poly_int_tree_p (len2))
-    return false;
+    return;
 
   src2 = get_addr_base_and_unit_offset (src2, &offset2);
   if (src2 == NULL_TREE
       || maybe_lt (offset2, offset))
-    return false;
+    return;
 
   if (!operand_equal_p (dest, src2, 0))
-    return false;
+    return;
 
   /* [ dest + offset, dest + offset + len - 1 ] is set to val.
      Make sure that
      [ dest + offset2, dest + offset2 + len2 - 1 ] is a subset of that.  */
   if (maybe_gt (wi::to_poly_offset (len2) + (offset2 - offset),
 		len))
-    return false;
+    return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1282,8 +1282,6 @@ optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
   /* Mark the bb for eh cleanup if needed.  */
   if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
     bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
-
-  return true;
 }
 
 /* Optimize
@@ -1295,19 +1293,18 @@ optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
    Similarly for memset (&a, ..., sizeof (a)); instead of a = {};
    and/or memcpy (&b, &a, sizeof (a)); instead of b = a;  */
 
-static bool
+static void
 optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
 {
   ao_ref read;
   gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
-    return false;
+    return;
 
   tree dest = NULL_TREE;
   tree val = integer_zero_node;
   tree len = NULL_TREE;
   bool can_use_tbba = true;
-  bool changed = false;
 
   if (gimple_call_builtin_p (stmt, BUILT_IN_MEMSET)
       && TREE_CODE (gimple_call_arg (stmt, 0)) == ADDR_EXPR
@@ -1362,7 +1359,7 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
     }
 
   if (dest == NULL_TREE)
-    return false;
+    return;
 
   if (len == NULL_TREE)
     len = (TREE_CODE (dest) == COMPONENT_REF
@@ -1370,13 +1367,13 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
 	   : TYPE_SIZE_UNIT (TREE_TYPE (dest)));
   if (len == NULL_TREE
       || !poly_int_tree_p (len))
-    return false;
+    return;
 
   /* This store needs to be on the byte boundary and pointing to an object.  */
   poly_int64 offset;
   tree dest_base = get_addr_base_and_unit_offset (dest, &offset);
   if (dest_base == NULL_TREE)
-    return false;
+    return;
 
   /* Setup the worklist.  */
   auto_vec<std::pair<tree, unsigned>> worklist;
@@ -1409,13 +1406,11 @@ optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
 						    new_limit));
 	      }
 
-	  if (optimize_aggr_zeroprop_1 (stmt, use_stmt, dest_base, offset,
-					 val, wi::to_poly_offset (len)))
-	   changed = true;
+	   optimize_aggr_zeroprop_1 (stmt, use_stmt, dest_base, offset,
+				     val, wi::to_poly_offset (len));
 	}
     }
 
-  return changed;
 }
 
 /* Returns the pointer to the base of the object of the
@@ -1591,22 +1586,22 @@ same_for_assignment (tree src, tree dest)
 /* Helper function for optimize_agr_copyprop.
    For aggregate copies in USE_STMT, see if DEST
    is on the lhs of USE_STMT and replace it with SRC. */
-static bool
+static void
 optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
 			 tree dest, tree src)
 {
   gcc_assert (gimple_assign_load_p (use_stmt)
 	      && gimple_store_p (use_stmt));
   if (gimple_has_volatile_ops (use_stmt))
-    return false;
+    return;
   tree dest2 = gimple_assign_lhs (use_stmt);
   tree src2 = gimple_assign_rhs1 (use_stmt);
   /* If the new store is `src2 = src2;` skip over it. */
   if (same_for_assignment (src2, dest2))
-    return false;
+    return;
   src = new_src_based_on_copy (src2, dest, src);
   if (!src)
-    return false;
+    return;
   /* For 2 memory refences and using a temporary to do the copy,
      don't remove the temporary as the 2 memory references might overlap.
      Note t does not need to be decl as it could be field.
@@ -1634,7 +1629,7 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
       tree len = TYPE_SIZE_UNIT (TREE_TYPE (src));
       if (len == NULL_TREE
 	  || !tree_fits_poly_int64_p (len))
-	return false;
+	return;
       tree base1 = get_addr_base_and_unit_offset (dest2, &offset1);
       tree base2 = get_addr_base_and_unit_offset (src, &offset2);
       poly_int64 size = tree_to_poly_int64 (len);
@@ -1659,14 +1654,14 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
 	     of overlapping.  */
 	  if (maybe_lt (align1, size)
 	      || maybe_lt (align2, size))
-	    return false;
+	    return;
 	}
       /* Make sure [offset1, offset1 + len - 1] does
 	 not overlap with [offset2, offset2 + len - 1],
 	 it is ok if they are at the same location though.  */
       else if (ranges_maybe_overlap_p (offset1, size, offset2, size)
 	  && !known_eq (offset2, offset1))
-	return false;
+	return;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1689,13 +1684,12 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
   if (maybe_clean_or_replace_eh_stmt (orig_stmt, use_stmt))
     bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
   statistics_counter_event (cfun, "copy prop for aggregate", 1);
-  return true;
 }
 
 /* Helper function for optimize_agr_copyprop_1, propagate aggregates
    into the arguments of USE_STMT if the argument matches with DEST;
    replacing it with SRC.  */
-static bool
+static void
 optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
 			   tree dest, tree src)
 {
@@ -1728,7 +1722,6 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
     }
   if (changed)
     update_stmt (call);
-  return changed;
 }
 
 /* Optimizes
@@ -1748,39 +1741,34 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
    call_func(..., SRC, ...);
 
 */
-static bool
+static void
 optimize_agr_copyprop (gimple_stmt_iterator *gsip)
 {
   gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
-    return false;
+    return;
 
   /* Can't prop if the statement could throw.  */
   if (stmt_could_throw_p (cfun, stmt))
-    return false;
+    return;
 
   tree dest = gimple_assign_lhs (stmt);
   tree src = gimple_assign_rhs1 (stmt);
   /* If the statement is `src = src;` then ignore it. */
   if (same_for_assignment (dest, src))
-    return false;
+    return;
 
   tree vdef = gimple_vdef (stmt);
   imm_use_iterator iter;
   gimple *use_stmt;
-  bool changed = false;
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
     {
       if (gimple_assign_load_p (use_stmt)
-	  && gimple_store_p (use_stmt)
-	  && optimize_agr_copyprop_1 (stmt, use_stmt, dest, src))
-	changed = true;
-      else if (is_gimple_call (use_stmt)
-	       && optimize_agr_copyprop_arg (stmt, as_a<gcall*>(use_stmt),
-					     dest, src))
-	changed = true;
+	  && gimple_store_p (use_stmt))
+	optimize_agr_copyprop_1 (stmt, use_stmt, dest, src);
+      else if (is_gimple_call (use_stmt))
+	optimize_agr_copyprop_arg (stmt, as_a<gcall*>(use_stmt), dest, src);
     }
-  return changed;
 }
 
 /* Optimizes builtin memcmps for small constant sizes.
@@ -2180,8 +2168,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 	{
 	  /* Try to prop the zeroing/value of the memset to memcpy
 	     if the dest is an address and the value is a constant. */
-	  if (optimize_aggr_zeroprop (gsi_p, full_walk))
-	    return true;
+	  optimize_aggr_zeroprop (gsi_p, full_walk);
 	}
       return simplify_builtin_memcpy_memset (gsi_p, as_a<gcall*>(stmt2));
 
@@ -5323,19 +5310,13 @@ pass_forwprop::execute (function *fun)
 		  {
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
-		    if (gimple_store_p (stmt) && optimize_aggr_zeroprop (&gsi, full_walk))
+		    if (gimple_store_p (stmt))
 		      {
-			changed = true;
-			break;
+			optimize_aggr_zeroprop (&gsi, full_walk);
+			if (gimple_assign_load_p (stmt))
+			  optimize_agr_copyprop (&gsi);
 		      }
-		    if (gimple_assign_load_p (stmt) && gimple_store_p (stmt)
-			&& optimize_agr_copyprop (&gsi))
-		      {
-			changed = true;
-			break;
-		      }
-
-		    if (TREE_CODE_CLASS (code) == tcc_comparison)
+		    else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		      changed |= forward_propagate_into_comparison (&gsi);
 		    else if ((code == PLUS_EXPR
 			      || code == BIT_IOR_EXPR
