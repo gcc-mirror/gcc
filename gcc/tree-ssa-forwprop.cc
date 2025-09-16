@@ -1473,6 +1473,10 @@ new_src_based_on_copy (tree src2, tree dest, tree src)
      where one field is the same size as the whole struct.  */
   if (operand_equal_p (dest, src2))
     return src;
+  /* if both dest and src2 are decls, then we know these 2
+     accesses can't be the same.  */
+  if (DECL_P (dest) && DECL_P (src2))
+    return NULL_TREE;
   /* A VCE can't be used with imag/real or BFR so reject them early. */
   if (TREE_CODE (src) == IMAGPART_EXPR
       || TREE_CODE (src) == REALPART_EXPR
