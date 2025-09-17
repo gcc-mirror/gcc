@@ -1,3 +1,26 @@
+2025-09-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-09-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* lra-constraints.cc (get_equiv): Bounds check before accessing
+	data in ira_reg_equiv.
+
+2025-09-16  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121602
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::fold_active_lanes_to): Add force_vector
+	statement.
+
+2025-09-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-08-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/121464
+	* config/arm/arm.md (arm_<mrrc>, arm_<mcrr>): Fix operand check.
+
 2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

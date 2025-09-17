@@ -1,3 +1,26 @@
+2025-09-16  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121602
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Likewise.
+
+2025-09-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-08-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/121464
+	* gcc.target/arm/acle/mcrr.c: Update testcase.
+	* gcc.target/arm/acle/mcrr2.c: Likewise.
+	* gcc.target/arm/acle/mrrc.c: Likewise.
+	* gcc.target/arm/acle/mrrc2.c: Likewise.
+
 2025-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
