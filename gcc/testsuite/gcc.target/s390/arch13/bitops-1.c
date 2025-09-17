@@ -2,10 +2,12 @@
 
 /* and with complement */
 
-int
+int i32;
+
+void
 ncrk (int a, int b)
 {
-  return a & ~b;
+  i32 = a & ~b;
 }
 
 /* { dg-final { scan-assembler-times "\tncrk\t" 1 } } */
@@ -20,10 +22,10 @@ ncgrk (long long a, long long b)
 
 /* or with complement */
 
-int
+void
 ocrk (int a, int b)
 {
-  return a | ~b;
+  i32 = a | ~b;
 }
 
 /* { dg-final { scan-assembler-times "\tocrk\t" 1 } } */
@@ -38,10 +40,10 @@ ocgrk (long long a, long long b)
 
 /* nand */
 
-int
+void
 nnrk (int a, int b)
 {
-  return ~(a & b);
+  i32 = ~(a & b);
 }
 
 /* { dg-final { scan-assembler-times "\tnnrk\t" 1 } } */
@@ -56,10 +58,10 @@ nngrk (long long a, long long b)
 
 /* nor */
 
-int
+void
 nork (int a, int b)
 {
-  return ~(a | b);
+  i32 = ~(a | b);
 }
 
 /* { dg-final { scan-assembler-times "\tnork\t" 1 } } */
@@ -74,10 +76,10 @@ nogrk (long long a, long long b)
 
 /* nxor */
 
-int
+void
 nxrk (int a, int b)
 {
-  return ~(a ^ b);
+  i32 = ~(a ^ b);
 }
 
 /* { dg-final { scan-assembler-times "\tnxrk\t" 1 } } */
