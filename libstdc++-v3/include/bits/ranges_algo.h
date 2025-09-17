@@ -1529,7 +1529,7 @@ namespace ranges
 	  }
 	else // indirectly_copyable_storable<_Iter, _Out>
 	  {
-	    auto __value = *__first;
+	    iter_value_t<_Iter> __value(*__first);
 	    *__result = __value;
 	    while (++__first != __last)
 	      {
@@ -2075,9 +2075,9 @@ namespace ranges
 	else
 	  {
 	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+	    iter_value_t<_Iter> __value(ranges::iter_move(ranges::prev(__last)));
 	    __detail::__push_heap(__first, (__last - __first) - 1,
-				  0, ranges::iter_move(ranges::prev(__last)),
-				  __comp_proj);
+				  0, std::move(__value), __comp_proj);
 	    return __last;
 	  }
       }
@@ -4219,7 +4219,7 @@ namespace ranges
 	auto __first = ranges::begin(__r);
 	auto __last = ranges::end(__r);
 	__glibcxx_assert(__first != __last);
-	auto __result = *__first;
+	range_value_t<_Range> __result(*__first);
 	while (++__first != __last)
 	  {
 	    auto&& __tmp = *__first;

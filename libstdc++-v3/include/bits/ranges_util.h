@@ -761,7 +761,7 @@ namespace ranges
 	auto __first = ranges::begin(__r);
 	auto __last = ranges::end(__r);
 	__glibcxx_assert(__first != __last);
-	auto __result = *__first;
+	range_value_t<_Range> __result(*__first);
 	while (++__first != __last)
 	  {
 	    auto&& __tmp = *__first;
