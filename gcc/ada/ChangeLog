@@ -1,3 +1,42 @@
+2025-09-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_strm.ads (Get_Primitives): New function.
+	* exp_strm.adb (Get_Primitives): Likewise.
+	(Build_Elementary_Input_Call, Build_Elementary_Write_Call): use
+	Get_Primitives.
+	(Has_Stream_Standard_Rep): Add formal parameter and rename to...
+	(Is_Stream_Standard_Rep): New function.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Fix error
+	emission.
+
+2025-09-16  Gary Dismukes  <dismukes@adacore.com>
+
+	Revert:
+	2025-09-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.ads (Make_Build_In_Place_Call_In_Allocator): Simplify comment.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Remove obsolete
+	comment about not being able to allocate fixed-size controlled results
+	on the caller side, and replace another obsolete comment with a simpler
+	comment. Call Build_Allocate_Deallocate_Proc when the function doesn't
+	need a BIPalloc formal to ensure that function results with controlled
+	parts allocated on the caller side will be chained for finalization.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Call Needs_BIP_Collection
+	on the function's Entity_Id rather than the function call.
+	(Needs_BIP_Collection): If a BIP function doesn't need a BIPalloc formal
+	then it doesn't need a BIP collection either; return False in that case.
+	(Needs_BIP_Alloc_Form): Remove test of Needs_BIP_Collection.
+	* exp_ch7.adb (Expand_Cleanup_Actions): Move test of Uses_Sec_Stack
+	to be the first conjunct in setting of Needs_Sec_Stack_Mark, and put
+	the other tests in a disjunction subsidiary to that. Improve preceding
+	comment.
+
+2025-09-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR ada/114065
+	* libgnarl/s-osinte__darwin.adb: Add and reference clause
+	for Interfaces.C, remove clause for Interfaces.C.Extensions.
+
 2025-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/114065

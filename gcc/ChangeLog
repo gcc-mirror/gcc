@@ -1,3 +1,64 @@
+2025-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wimplicit-fallthrough=): Document that also C23
+	provides a standard way to suppress the warning with [[fallthrough]];.
+
+2025-09-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (#include):
+	Add "addresses.h".
+	* config/xtensa/xtensa.h (REGNO_OK_FOR_BASE_P):
+	Simplify to just a call to GP_REG_P().
+	(BASE_REG_P): Replace REGNO_OK_FOR_BASE_P() with the equivalent
+	call to regno_ok_for_base_p().
+
+2025-09-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR middle-end/66462
+	* config/aarch64/aarch64.md (isnan<mode>2): Add new expander.
+
+2025-09-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_load_store_type): Get in a flag
+	whether a SLP_TREE_LOAD_PERMUTATION on the node can be
+	code generated and use it.  Fix the condition on using
+	strided gather/scatter to avoid dropping a meaningful
+	permutation.
+	(vectorizable_store): Adjust.
+	(vectorizable_load): Analyze the permutation early and
+	pass the result down to get_load_store_type.  Fix the
+	condition on when we are allowed to elide a load permutation.
+
+2025-09-16  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121602
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::fold_active_lanes_to): Add force_vector
+	statement.
+
+2025-09-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config.gcc: Accept RISC-V profiles in `--with-arch`.
+	* config/riscv/arch-canonicalize: Add profile detection and
+	skip canonicalization for profiles.
+
+2025-09-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (struct riscv_profiles): Add comments.
+	(RISCV_PROFILE): Removed.
+	* config/riscv/riscv-profiles.def: New file.
+
+2025-09-16  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: Imply zicsr.
+
+2025-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/predicates.md (avx_vbroadcast128_operand): New
+	predicate.
+	* config/i386/sse.md (*avx_vbroadcastf128_<mode>_perm): New
+	pre_reload splitter.
+
 2025-09-15  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/rs6000/vxworks.h (TARGET_CMODEL, SET_CMODEL): Define.

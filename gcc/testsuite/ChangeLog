@@ -1,3 +1,61 @@
+2025-09-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c/121421
+	* gcc.dg/gimplefe-error-16.c: New test.
+
+2025-09-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR middle-end/66462
+	* gcc.target/aarch64/pr66462.c: Update test.
+
+2025-09-16  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121602
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Likewise.
+
+2025-09-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512bw-vpackssdw-1.c:
+	Fix xmm/ymm mask tests.
+	* gcc.target/i386/avx512bw-vpacksswb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpackusdw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpackuswb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpermw-1.c: Test xmm.
+	* gcc.target/i386/avx512bw-vpmulhw-1.c:
+	Fix xmm/ymm mask tests.
+	* gcc.target/i386/avx512f-vec-init.c: Remove duplicate test.
+	* gcc.target/i386/avx512fp16-13.c: Fix test for aligned load.
+	* gcc.target/i386/avx512fp16-conjugation-1.c: Revise the test
+	to test more precisely on masks.
+	* gcc.target/i386/avx512fp16vl-conjugation-1.c: Ditto.
+	* gcc.target/i386/avx512vbmi-vpermb-1.c: Test xmm.
+	* gcc.target/i386/avx512vl-vcvtpd2ps-1.c: Fix scan asm.
+	* gcc.target/i386/avx512vl-vinsert-1.c: Fix typo.
+	* gcc.target/i386/avx512vl-vpmulld-1.c:
+	Fix xmm/ymm mask tests.
+	* gcc.target/i386/avx512vl-vptestmd-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-1.c: Fix typo.
+	* gcc.target/i386/cond_op_shift_q-1.c: Test both vpsra{,v}
+	and vpsll{,v}.
+	* gcc.target/i386/cond_op_shift_ud-1.c: Ditto.
+	* gcc.target/i386/cond_op_shift_uq-1.c: Ditto.
+	* gcc.target/i386/memcpy-pr95886.c: Fix the wrong const int.
+	* gcc.target/i386/part-vect-sqrtph-1.c: Remove duplicate test.
+	* gcc.target/i386/pr107432-7.c: Test vpmov{s,z}xbw instead of
+	vpmov{s,z}xbd.
+	* gcc.target/i386/pr88828-0.c: Fix pblendw scan asm.
+
+2025-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx_vbroadcastf128.c: New test.
+
 2025-09-15  Clément Chigot  <chigot@adacore.com>
 
 	* gcc.target/aarch64/pr113356.C: Move to ...

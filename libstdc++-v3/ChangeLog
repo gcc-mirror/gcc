@@ -1,3 +1,45 @@
+2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__detail::__repeated_tuple): Use
+	__make_tuple helper alias directly, instead of doing overload
+	resolution on std::tuple_cat.
+	* include/std/tuple (__make_tuple_impl): Remove.
+	(__do_make_tuple): Replace recursion with _Index_tuple and pack
+	expansion.
+	(__make_tuple): Adjust to new __do_make_tuple definition.
+	(__combine_tuples<tuple<T1s...>, tuple<T2s...>, Rem...>): Replace
+	with a partial specialization for exactly two tuples and a
+	partial specialization for three or more tuples.
+
+2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121913
+	* include/bits/ranges_algo.h (__rotate_fn::operator()): Use
+	auto_value_t<_Iter> instead of deduced type.
+
+2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121956
+	* include/std/ranges (adjacent_view::_Iterator::value_type):
+	Always define as std::tuple<T, N>, not std::pair<T, T>.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc: Check value type
+	of views::pairwise.
+
+2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (uninitialized_move)
+	(uninitialized_move_n): Replace _GLIBCXX_MAKE_MOVE_ITERATOR with
+	std::make_move_iterator.
+
+2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119820
+	* include/bits/ranges_algo.h (__shuffle_fn): Use
+	ranges::distance to get difference type value to add to
+	iterator.
+	* include/std/format (__formatter_str::_M_format_range):
+	Use ranges::next to increment iterator by a size_t value.
+
 2025-09-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/121917
