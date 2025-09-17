@@ -4255,7 +4255,11 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
 
   int num_candidates = 0;
   for (auto iter = candidates; iter; iter = iter->next)
-    ++num_candidates;
+    {
+      if (only_viable_p.is_true () && iter->viable != 1)
+	break;
+      ++num_candidates;
+    }
 
   inform_n (loc,
 	    num_candidates, "there is %i candidate", "there are %i candidates",
