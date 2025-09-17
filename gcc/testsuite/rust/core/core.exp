@@ -1,0 +1,37 @@
+# Copyright (C) 2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compile test libcore, no torture testing.
+#
+# Skip torture testing for now, as it'd be slow
+
+# Load support procs.
+load_lib rust-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+set saved-dg-do-what-default ${dg-do-what-default}
+
+set dg-do-what-default "compile"
+set individual_timeout 600
+dg-additional-files [lsort [glob -nocomplain $srcdir/../../libgrust/rustc-lib/*]]
+dg-runtest $srcdir/../../libgrust/rustc-lib/core/src/lib.rs "-frust-edition=2018 -frust-crate=core -frust-compile-until=astvalidation -w" ""
+set dg-do-what-default ${saved-dg-do-what-default}
+
+# All done.
+dg-finish
