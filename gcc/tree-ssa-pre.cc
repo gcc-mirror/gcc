@@ -908,7 +908,8 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
 /* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
-bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig)
+bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig,
+				 bool copy_values = false)
 {
   bitmap_set_t result = bitmap_set_new ();
   bitmap_iterator bi;
@@ -917,12 +918,15 @@ bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig)
   bitmap_and_compl (&result->expressions, &dest->expressions,
 		    &orig->expressions);
 
-  FOR_EACH_EXPR_ID_IN_SET (result, i, bi)
-    {
-      pre_expr expr = expression_for_id (i);
-      unsigned int value_id = get_expr_value_id (expr);
-      bitmap_set_bit (&result->values, value_id);
-    }
+  if (copy_values)
+    bitmap_copy (&result->values, &dest->values);
+  else
+    FOR_EACH_EXPR_ID_IN_SET (result, i, bi)
+      {
+	pre_expr expr = expression_for_id (i);
+	unsigned int value_id = get_expr_value_id (expr);
+	bitmap_set_bit (&result->values, value_id);
+      }
 
   return result;
 }
@@ -2076,7 +2080,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   edge e;
   edge_iterator ei;
 
-  bool was_visited = BB_VISITED (block);
   bool changed = ! BB_VISITED (block);
   bool any_max_on_edge = false;
 
@@ -2118,6 +2121,20 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	    first = e;
 	  else if (BB_VISITED (e->dest))
 	    worklist.quick_push (e);
+	  else if (0 && !(e->flags & EDGE_DFS_BACK))
+	    {
+	      /* When our reverse iteration order does not match up with
+		 a forward DFS which can in happen with unfortunate
+		 choices of fake edges to exits from infinite loops, we
+		 have to avoid intermangling two ANTIC iterations by
+		 using ANTIC_IN computed in the previous iteration.
+		 As we cannot easily do this stabilize the iteration by
+		 not allowing a MAX set on such edge initially.  */
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "ANTIC_IN is uncomputed on non-DFS_BACK "
+			 "%d->%d\n", e->src->index, e->dest->index);
+	      worklist.quick_push (e);
+	    }
 	  else
 	    {
 	      /* Unvisited successors get their ANTIC_IN replaced by the
@@ -2192,8 +2209,13 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
   prune_clobbered_mems (ANTIC_OUT, block, any_max_on_edge);
 
-  /* Generate ANTIC_OUT - TMP_GEN.  */
-  S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block));
+  /* Generate ANTIC_OUT - TMP_GEN.  Note when there's a MAX solution
+     on one edge do not prune values as we need to consider the resulting
+     expression set MAX as well.  This avoids a later growing ANTIC_IN
+     value-set during iteration, when the explicitly represented
+     expression set grows.  */
+  S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block),
+				       any_max_on_edge);
 
   /* Start ANTIC_IN with EXP_GEN - TMP_GEN.  */
   ANTIC_IN (block) = bitmap_set_subtract_expressions (EXP_GEN (block),
@@ -2206,35 +2228,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
   /* clean (ANTIC_IN (block)) is defered to after the iteration converged
      because it can cause non-convergence, see for example PR81181.  */
-
-  /* Intersect ANTIC_IN with the old ANTIC_IN.  This is required until
-     we properly represent the maximum expression set, thus not prune
-     values without expressions during the iteration.  */
-  if (was_visited
-      && bitmap_and_into (&ANTIC_IN (block)->values, &old->values))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "warning: intersecting with old ANTIC_IN "
-		 "shrinks the set\n");
-      /* Prune expressions not in the value set.  */
-      bitmap_iterator bi;
-      unsigned int i;
-      unsigned int to_clear = -1U;
-      FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (block), i, bi)
-	{
-	  if (to_clear != -1U)
-	    {
-	      bitmap_clear_bit (&ANTIC_IN (block)->expressions, to_clear);
-	      to_clear = -1U;
-	    }
-	  pre_expr expr = expression_for_id (i);
-	  unsigned int value_id = get_expr_value_id (expr);
-	  if (!bitmap_bit_p (&ANTIC_IN (block)->values, value_id))
-	    to_clear = i;
-	}
-      if (to_clear != -1U)
-	bitmap_clear_bit (&ANTIC_IN (block)->expressions, to_clear);
-    }
 
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
