@@ -870,7 +870,13 @@
     enum memmodel model = memmodel_from_int (INTVAL (operands[1]));
     if (is_mm_acquire (model))
       return "dmb\\tishld";
+    else if (is_mm_release (model))
+      return "dmb\\tishld\;dmb\\tishst";
     else
       return "dmb\\tish";
   }
+  [(set (attr "length")
+    (if_then_else
+     (match_test "is_mm_release (memmodel_from_int (INTVAL (operands[1])))")
+      (const_int 8) (const_int 4)))]
 )
