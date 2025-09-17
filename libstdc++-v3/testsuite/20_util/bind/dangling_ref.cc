@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wsystem-headers" }
 #include <functional>
 
 int f();
