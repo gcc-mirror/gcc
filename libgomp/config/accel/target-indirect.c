@@ -25,73 +25,52 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <assert.h>
-#include <string.h>
 #include "libgomp.h"
 
-struct indirect_map_t
-{
-  void *host_addr;
-  void *target_addr;
-};
+void *GOMP_INDIRECT_ADDR_MAP = NULL;
 
-typedef struct indirect_map_t *hash_entry_type;
+#define USE_HASHTAB_LOOKUP
+
+#ifdef USE_HASHTAB_LOOKUP
+
+#include <string.h>  /* For memset.  */
+
+/* Use a hashtab to lookup the target address instead of using a linear
+   search.
+
+   With newer libgomp on the host the hash is already initialized on the host
+   (i.e plugin/plugin-gcn.c). Thus, build_indirect_map is only used as
+   fallback with older glibc.  */
+
+void *GOMP_INDIRECT_ADDR_HMAP = NULL;
+
+typedef unsigned __int128 hash_entry_type;
+#define INDIRECT_DEV_ADDR(p) ((void*) (uintptr_t) (p >> 64))
+#define INDIRECT_HOST_ADDR(p) ((void *) (uintptr_t) p)
+#define SET_INDIRECT_HOST_ADDR(p, host) p = (((unsigned __int128) (uintptr_t) host))
+#define SET_INDIRECT_ADDRS(p, h, d) \
+  p = (((unsigned __int128) h) + (((unsigned __int128) d) << 64))
+
+/* Besides the sizes, also the endianness either needs to agree or
+   host-device memcpy needs to take care of this.  */
+_Static_assert (sizeof (unsigned __int128) == 2*sizeof(void*),
+		"indirect_target_map_t size mismatch");
 
 static inline void * htab_alloc (size_t size) { return gomp_malloc (size); }
-static inline void htab_free (void *ptr) { free (ptr); }
+static inline void htab_free (void *ptr) { __builtin_unreachable (); }
 
 #include "hashtab.h"
 
 static inline hashval_t
 htab_hash (hash_entry_type element)
 {
-  return hash_pointer (element->host_addr);
+  return hash_pointer (INDIRECT_HOST_ADDR (element));
 }
 
 static inline bool
 htab_eq (hash_entry_type x, hash_entry_type y)
 {
-  return x->host_addr == y->host_addr;
-}
-
-void **GOMP_INDIRECT_ADDR_MAP = NULL;
-
-/* Use a hashtab to lookup the target address instead of using a linear
-   search.  */
-#define USE_HASHTAB_LOOKUP
-
-#ifdef USE_HASHTAB_LOOKUP
-
-static htab_t indirect_htab = NULL;
-
-/* Build the hashtab used for host->target address lookups.  */
-
-void
-build_indirect_map (void)
-{
-  size_t num_ind_funcs = 0;
-  void **map_entry;
-
-  if (!GOMP_INDIRECT_ADDR_MAP)
-    return;
-
-  if (!indirect_htab)
-    {
-      /* Count the number of entries in the NULL-terminated address map.  */
-      for (map_entry = GOMP_INDIRECT_ADDR_MAP; *map_entry;
-	   map_entry += 2, num_ind_funcs++);
-
-      /* Build hashtab for address lookup.  */
-      indirect_htab = htab_create (num_ind_funcs);
-      map_entry = GOMP_INDIRECT_ADDR_MAP;
-
-      for (int i = 0; i < num_ind_funcs; i++, map_entry += 2)
-	{
-	  struct indirect_map_t element = { *map_entry, NULL };
-	  hash_entry_type *slot = htab_find_slot (&indirect_htab, &element,
-						  INSERT);
-	  *slot = (hash_entry_type) map_entry;
-	}
-    }
+  return INDIRECT_HOST_ADDR (x) == INDIRECT_HOST_ADDR (y);
 }
 
 void *
@@ -101,11 +80,42 @@ GOMP_target_map_indirect_ptr (void *ptr)
   if (!ptr)
     return ptr;
 
-  assert (indirect_htab);
+  assert (GOMP_INDIRECT_ADDR_HMAP);
 
-  struct indirect_map_t element = { ptr, NULL };
-  hash_entry_type entry = htab_find (indirect_htab, &element);
-  return entry ? entry->target_addr : ptr;
+  hash_entry_type element;
+  SET_INDIRECT_HOST_ADDR (element, ptr);
+  hash_entry_type entry = htab_find ((htab_t) GOMP_INDIRECT_ADDR_HMAP, element);
+  return entry ? INDIRECT_DEV_ADDR (entry) : ptr;
+}
+
+/* Build the hashtab used for host->target address lookups.  */
+
+void
+build_indirect_map (void)
+{
+  size_t num_ind_funcs = 0;
+  uint64_t *map_entry;
+
+  if (!GOMP_INDIRECT_ADDR_MAP || GOMP_INDIRECT_ADDR_HMAP)
+    return;
+
+  /* Count the number of entries in the NULL-terminated address map.  */
+  for (map_entry = (uint64_t *) GOMP_INDIRECT_ADDR_MAP; *map_entry;
+    map_entry += 2, num_ind_funcs++);
+
+  /* Build hashtab for address lookup.  */
+  htab_t indirect_htab = htab_create (num_ind_funcs);
+  GOMP_INDIRECT_ADDR_HMAP = (void *) indirect_htab;
+
+  map_entry = GOMP_INDIRECT_ADDR_MAP;
+  for (int i = 0; i < num_ind_funcs; i++, map_entry += 2)
+    {
+      hash_entry_type element;
+      SET_INDIRECT_ADDRS (element, *map_entry, *(map_entry + 1));
+      hash_entry_type *slot = htab_find_slot (&indirect_htab, element,
+					      INSERT);
+      *slot = element;
+    }
 }
 
 #else

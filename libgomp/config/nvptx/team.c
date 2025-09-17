@@ -31,6 +31,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
+extern void *GOMP_INDIRECT_ADDR_MAP;
+
 struct gomp_thread *nvptx_thrs __attribute__((shared,nocommon));
 int __gomp_team_num __attribute__((shared,nocommon));
 
@@ -71,10 +75,10 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
       nvptx_thrs = alloca (ntids * sizeof (*nvptx_thrs));
       memset (nvptx_thrs, 0, ntids * sizeof (*nvptx_thrs));
 
-      /* Initialize indirect function support.  */
+      /* Initialize indirect function support for older libgomp.  */
       unsigned int block_id;
       asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-      if (block_id == 0)
+      if (UNLIKELY (GOMP_INDIRECT_ADDR_MAP != NULL && block_id == 0))
 	build_indirect_map ();
 
       /* Find the low-latency heap details ....  */
