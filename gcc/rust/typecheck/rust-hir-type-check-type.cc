@@ -720,19 +720,32 @@ TypeCheckType::visit (HIR::ArrayType &type)
   else
     {
       HirId size_id = type.get_size_expr ().get_mappings ().get_hirid ();
-      unify_site (size_id, TyTy::TyWithLocation (expected_ty),
-		  TyTy::TyWithLocation (capacity_type,
-					type.get_size_expr ().get_locus ()),
-		  type.get_size_expr ().get_locus ());
+      TyTy::BaseType *result
+	= unify_site (size_id, TyTy::TyWithLocation (expected_ty),
+		      TyTy::TyWithLocation (capacity_type,
+					    type.get_size_expr ().get_locus ()),
+		      type.get_size_expr ().get_locus ());
 
-      auto ctx = Compile::Context::get ();
-      tree capacity_expr = Compile::HIRCompileBase::query_compile_const_expr (
-	ctx, capacity_type, type.get_size_expr ());
+      if (result->is<TyTy::ErrorType> ())
+	{
+	  const_type
+	    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Error, "",
+				   expected_ty, error_mark_node, {},
+				   type.get_size_expr ().get_locus (), size_id,
+				   size_id);
+	}
+      else
+	{
+	  auto ctx = Compile::Context::get ();
+	  tree capacity_expr
+	    = Compile::HIRCompileBase::query_compile_const_expr (
+	      ctx, capacity_type, type.get_size_expr ());
 
-      const_type = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "",
-					expected_ty, capacity_expr, {},
-					type.get_size_expr ().get_locus (),
-					size_id, size_id);
+	  const_type = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
+					    "", expected_ty, capacity_expr, {},
+					    type.get_size_expr ().get_locus (),
+					    size_id, size_id);
+	}
     }
 
   translated
