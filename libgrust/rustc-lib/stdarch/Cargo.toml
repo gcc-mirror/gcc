@@ -1,0 +1,21 @@
+[workspace]
+members = [
+  "crates/stdarch-verify",
+  "crates/core_arch",
+  "crates/std_detect",
+  "crates/stdarch-gen",
+  "examples/"
+]
+exclude = [
+  "crates/wasm-assert-instr-tests"
+]
+
+[profile.release]
+debug = true
+opt-level = 3
+incremental = true
+
+[profile.bench]
+debug = 1
+opt-level = 3
+incremental = true
