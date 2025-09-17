@@ -27,13 +27,14 @@
 
 # Header files whose pathnames contain any of the following patterns
 # are considered as standard headers: usr/include, g++-include,
-# include/g++, include/c++/<version>, gcc-lib/<anything>/include.
+# include/g++, include/c++/<version>, gcc-lib/<anything>/include,
+# lib/gcc/<anything>/include.
 
 gawk ${EXCLUDEPATT+-vexclude="$EXCLUDEPATT"} \
      ${INCLUDEPATT+-vinclude="$INCLUDEPATT"} '
 BEGIN { 
   skipping = 0; 
-  cppline = "^# [0-9]+ \"[^\"]*/(usr/include|g\\+\\+-include|include/g\\+\\+|include/c\\+\\+/[^/]+|gcc-lib/[^\"]+/include|gcc/include)/([^\"]+)\"( [1-4])*$"
+  cppline = "^# [0-9]+ \"[^\"]*/(usr/include|g\\+\\+-include|include/g\\+\\+|include/c\\+\\+/[^/]+|gcc-lib/[^\"]+/include|lib/gcc/[^\"]+/include|gcc/include)/([^\"]+)\"( [1-4])*$"
 }
 !skipping && $0 ~ cppline && 
 (exclude == "" || $3 !~ exclude) && (include == "" || $3 ~ include) {
