@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
-
+// { dg-additional-options "-Wsystem-headers" }
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
 // Copyright (C) 2008-2025 Free Software Foundation, Inc.
