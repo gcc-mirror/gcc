@@ -5361,15 +5361,15 @@ variable or array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_copyin(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_copyin(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_copyin_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_copyin_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5406,14 +5406,14 @@ backward compatibility with OpenACC 2.0; use @ref{acc_copyin} instead.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_present_or_copyin(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_present_or_copyin(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_pcopyin(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_pcopyin(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @end multitable
 
@@ -5445,15 +5445,15 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_create(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_create(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_create_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_create_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5490,14 +5490,14 @@ backward compatibility with OpenACC 2.0; use @ref{acc_create} instead.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_present_or_create(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_present_or_create(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_pcreate(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_pcreate(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @end multitable
 
@@ -5530,27 +5530,27 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_copyout(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5584,27 +5584,27 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_delete(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_delete(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_delete_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_delete_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_delete_finalize(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_delete_finalize(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
-@item @emph{Interface}: @tab @code{subroutine acc_delete_async_finalize(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_finalize_async(a, async)}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
-@item @emph{Interface}: @tab @code{subroutine acc_delete_async_finalize(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_finalize_async(a, len, async)}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5637,15 +5637,15 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_update_device(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_update_device(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_update_device_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_update_device_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5678,15 +5678,15 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_update_self(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item @emph{Interface}: @tab @code{subroutine acc_update_self(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item @emph{Interface}: @tab @code{subroutine acc_update_self_async(a, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @item @emph{Interface}: @tab @code{subroutine acc_update_self_async(a, len, async)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
@@ -5829,10 +5829,10 @@ a @code{false} is return to indicate the mapped memory is not present.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{function acc_is_present(a)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{logical acc_is_present}
 @item @emph{Interface}: @tab @code{function acc_is_present(a, len)}
-@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{type(*), dimension(..) :: a}
 @item                   @tab @code{integer len}
 @item                   @tab @code{logical acc_is_present}
 @end multitable
