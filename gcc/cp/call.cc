@@ -4104,15 +4104,18 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%#qD (rewritten)", msg, fn);
   else
     inform (cloc, "%s%#qD", msg, fn);
+
+  auto_diagnostic_nesting_level sentinel;
+
   if (fn != candidate->fn)
     {
       cloc = location_of (candidate->fn);
       inform (cloc, "inherited here");
     }
+
   /* Give the user some information about why this candidate failed.  */
   if (candidate->reason != NULL)
     {
-      auto_diagnostic_nesting_level sentinel;
       struct rejection_reason *r = candidate->reason;
 
       switch (r->code)
@@ -4172,10 +4175,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 		  "class type is invalid");
 	  break;
 	case rr_constraint_failure:
-	  {
-	    auto_diagnostic_nesting_level sentinel;
-	    diagnose_constraints (cloc, fn, NULL_TREE);
-	  }
+	  diagnose_constraints (cloc, fn, NULL_TREE);
 	  break;
 	case rr_inherited_ctor:
 	  inform (cloc, "an inherited constructor is not a candidate for "
