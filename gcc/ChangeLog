@@ -1,3 +1,11 @@
+2025-09-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-09-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* lra-constraints.cc (get_equiv): Bounds check before accessing
+	data in ira_reg_equiv.
+
 2025-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-mcus.def: Support AVR32DA28S, AVR32DA32S,
