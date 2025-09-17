@@ -98,6 +98,7 @@
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "hash-map.h"
+#include "aarch64-sched-dispatch.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -19251,6 +19252,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set, param_fully_pipelined_fma,
 			 1);
 
+  /* If dispatch scheduling is enabled, the dispatch_constraints in the
+     tune_params struct must be defined.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_DISPATCH_SCHED)
+    gcc_assert (aarch64_tune_params.dispatch_constraints != NULL);
+
   /* TODO: SME codegen without SVE2 is not supported, once this support is added
      remove this 'sorry' and the implicit enablement of SVE2 in the checks for
      streaming mode above in this function.  */
@@ -32465,6 +32472,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
+
+#undef TARGET_SCHED_DISPATCH
+#define TARGET_SCHED_DISPATCH aarch64_sched_dispatch
+
+#undef TARGET_SCHED_DISPATCH_DO
+#define TARGET_SCHED_DISPATCH_DO aarch64_sched_dispatch_do
 
 #undef TARGET_DWARF_FRAME_REG_MODE
 #define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
