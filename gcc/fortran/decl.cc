@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "parse.h"
 #include "constructor.h"
 #include "target.h"
+#include "flags.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
@@ -12816,9 +12817,17 @@ gfc_match_gcc_builtin (void)
 
   if (gfc_match (" if ( '%n' ) ", target) == MATCH_YES)
     {
-      const char *abi = targetm.get_multilib_abi_name ();
-      if (abi == NULL || strcmp (abi, target) != 0)
-	return MATCH_YES;
+      if (strcmp (target, "fastmath") == 0)
+	{
+	  if (!fast_math_flags_set_p (&global_options))
+	    return MATCH_YES;
+	}
+      else
+	{
+	  const char *abi = targetm.get_multilib_abi_name ();
+	  if (abi == NULL || strcmp (abi, target) != 0)
+	    return MATCH_YES;
+	}
     }
 
   if (gfc_vectorized_builtins == NULL)

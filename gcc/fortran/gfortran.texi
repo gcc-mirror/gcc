@@ -3454,6 +3454,13 @@ for the built-in that should be vectorized.  Example usage:
 !GCC$ builtin (sinf) attributes simd (notinbranch) if('x86_64')
 @end smallexample
 
+The special target @code{'fastmath'} is used to specify the vector
+implementation is only valid if fast-math is enabled:
+
+@smallexample
+!GCC$ builtin (exp) attributes simd (notinbranch) if('fastmath')
+@end smallexample
+
 The purpose of the directive is to provide an API among the GCC compiler and
 the GNU C Library which would define vector implementations of math routines.
 
