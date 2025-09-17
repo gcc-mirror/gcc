@@ -37,6 +37,7 @@ set_defaults (replay_options &replay_opts)
   replay_opts.m_echo_file = false;
   replay_opts.m_json_comments = false;
   replay_opts.m_verbose = false;
+  replay_opts.m_debug_physical_locations = false;
   replay_opts.m_diagnostics_colorize = DIAGNOSTIC_COLORIZE_IF_TTY;
 }
 
