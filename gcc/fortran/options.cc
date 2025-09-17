@@ -504,7 +504,12 @@ gfc_post_options (const char **pfilename)
 	flag_inline_matmul_limit = 30;
     }
 
-  /* Optimization implies front end optimization, unless the user
+  /* We can only have a 32-bit or a 64-bit version of BLAS, not both.  */
+
+  if (flag_external_blas && flag_external_blas64)
+    gfc_fatal_error ("32- and 64-bit version of BLAS cannot both be specified");
+
+  /* Optimizationx implies front end optimization, unless the user
      specified it directly.  */
 
   if (flag_frontend_optimize == -1)

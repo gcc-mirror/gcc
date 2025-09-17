@@ -3672,6 +3672,8 @@ extern int gfc_character_storage_size;
 #define gfc_integer_4_kind 4
 #define gfc_real_4_kind 4
 
+#define gfc_integer_8_kind 8
+
 /* symbol.cc */
 void gfc_clear_new_implicit (void);
 bool gfc_add_new_implicit_range (int, int);

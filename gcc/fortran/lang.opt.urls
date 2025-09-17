@@ -295,6 +295,9 @@ LangUrlSuffix_Fortran(gfortran/Developer-Options.html#index-fdump-parse-tree)
 fexternal-blas
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fexternal-blas)
 
+fexternal-blas64
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fexternal-blas64)
+
 ff2c
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-ff2c)
 
