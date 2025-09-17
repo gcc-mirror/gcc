@@ -10162,14 +10162,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case PRECONDITION_STMT:
     case POSTCONDITION_STMT:
       {
-	contract_semantic semantic = get_contract_semantic (t);
-	if (semantic == CCS_IGNORE)
+	if (contract_ignored_p (t))
 	  break;
 
 	if (!cxx_eval_assert (ctx, CONTRACT_CONDITION (t),
 			      G_("contract predicate is false in "
 				 "constant expression"),
-			      EXPR_LOCATION (t), checked_contract_p (semantic),
+			      EXPR_LOCATION (t), contract_evaluated_p (t),
 			      non_constant_p, overflow_p))
 	  *non_constant_p = true;
 	r = void_node;

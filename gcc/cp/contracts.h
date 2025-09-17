@@ -334,4 +334,19 @@ set_contract_semantic (tree t, contract_semantic semantic)
 }
 
 
+/* Will this contract be ignored.  */
+
+inline bool
+contract_ignored_p (const_tree contract)
+{
+  return (get_contract_semantic (contract) <= CCS_IGNORE);
+}
+
+/* Will this contract be evaluated?  */
+
+inline bool
+contract_evaluated_p (const_tree contract)
+{
+  return (get_contract_semantic (contract) >= CCS_NEVER);
+}
 #endif /* ! GCC_CP_CONTRACT_H */
