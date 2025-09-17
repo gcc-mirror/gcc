@@ -986,6 +986,30 @@ is_parm (tree decl)
   return (TREE_CODE (decl) == PARM_DECL);
 }
 
+/* Copy the TREE_THIS_NOTRAP flag from OLD to T if it is appropriate to do so.
+   T and OLD must be both either INDIRECT_REF or MEM_REF.  */
+
+static void
+maybe_copy_this_notrap (copy_body_data *id, tree t, tree old)
+{
+  gcc_assert (TREE_CODE (t) == TREE_CODE (old));
+
+  /* We cannot blindly propagate the TREE_THIS_NOTRAP flag if we have remapped
+     a parameter as the property might be valid only for the parameter itself,
+     typically when it is passed by reference.  But we propagate the flag when
+     this is the dereference of an entire object done in a type that has self-
+     referential size, to avoid the static size check in tree_could_trap_p.  */
+  if (TREE_THIS_NOTRAP (old)
+      && (!is_parm (TREE_OPERAND (old, 0))
+	  || (!id->transform_parameter && is_parm (TREE_OPERAND (t, 0)))
+	  || ((TREE_CODE (t) == INDIRECT_REF
+	       || integer_zerop (TREE_OPERAND (t, 1)))
+	      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	      && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
+	      && type_contains_placeholder_p (TREE_TYPE (t)))))
+    TREE_THIS_NOTRAP (t) = 1;
+}
+
 /* Remap the dependence CLIQUE from the source to the destination function
    as specified in ID.  */
 
@@ -1118,13 +1142,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	        = remap_dependence_clique (id, MR_DEPENDENCE_CLIQUE (old));
 	      MR_DEPENDENCE_BASE (*tp) = MR_DEPENDENCE_BASE (old);
 	    }
-	  /* We cannot propagate the TREE_THIS_NOTRAP flag if we have
-	     remapped a parameter as the property might be valid only
-	     for the parameter itself.  */
-	  if (TREE_THIS_NOTRAP (old)
-	      && (!is_parm (TREE_OPERAND (old, 0))
-		  || (!id->transform_parameter && is_parm (ptr))))
-	    TREE_THIS_NOTRAP (*tp) = 1;
+	  maybe_copy_this_notrap (id, *tp, old);
 	  REF_REVERSE_STORAGE_ORDER (*tp) = REF_REVERSE_STORAGE_ORDER (old);
 	  *walk_subtrees = 0;
 	  return NULL;
@@ -1352,13 +1370,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 		      TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 		      TREE_READONLY (*tp) = TREE_READONLY (old);
-		      /* We cannot propagate the TREE_THIS_NOTRAP flag if we
-			 have remapped a parameter as the property might be
-			 valid only for the parameter itself.  */
-		      if (TREE_THIS_NOTRAP (old)
-			  && (!is_parm (TREE_OPERAND (old, 0))
-			      || (!id->transform_parameter && is_parm (ptr))))
-		        TREE_THIS_NOTRAP (*tp) = 1;
+		      maybe_copy_this_notrap (id, *tp, old);
 		    }
 		}
 	      *walk_subtrees = 0;
@@ -1384,13 +1396,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		= remap_dependence_clique (id, MR_DEPENDENCE_CLIQUE (old));
 	      MR_DEPENDENCE_BASE (*tp) = MR_DEPENDENCE_BASE (old);
 	    }
-	  /* We cannot propagate the TREE_THIS_NOTRAP flag if we have
-	     remapped a parameter as the property might be valid only
-	     for the parameter itself.  */
-	  if (TREE_THIS_NOTRAP (old)
-	      && (!is_parm (TREE_OPERAND (old, 0))
-		  || (!id->transform_parameter && is_parm (ptr))))
-	    TREE_THIS_NOTRAP (*tp) = 1;
+	  maybe_copy_this_notrap (id, *tp, old);
 	  REF_REVERSE_STORAGE_ORDER (*tp) = REF_REVERSE_STORAGE_ORDER (old);
 	  *walk_subtrees = 0;
 	  return NULL;
