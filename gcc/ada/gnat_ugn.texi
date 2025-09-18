@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 29, 2025
+GNAT User's Guide for Native Platforms , Oct 06, 2025
 
 AdaCore
 
@@ -12181,7 +12181,7 @@ is the current list of constructs regarded as redundant:
 Assignment of an item to itself.
 
 @item 
-Type conversion that converts an expression to its own type.
+Type conversion that converts an expression to its own subtype.
 
 @item 
 Use of the attribute @code{Base} where @code{typ'Base} is the same
@@ -30333,8 +30333,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye

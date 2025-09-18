@@ -3755,7 +3755,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * Assignment of an item to itself.
 
-  * Type conversion that converts an expression to its own type.
+  * Type conversion that converts an expression to its own subtype.
 
   * Use of the attribute ``Base`` where ``typ'Base`` is the same
     as ``typ``.
