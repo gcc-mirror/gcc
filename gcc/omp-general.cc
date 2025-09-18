@@ -2727,7 +2727,7 @@ omp_dynamic_cond (tree ctx, tree supercontext)
 
       /* The user condition is not dynamic if it is constant.  */
       if (!tree_fits_shwi_p (expr))
-	user_cond = expr;
+	user_cond = unshare_expr (expr);
     }
 
   /* Build the "target_device" part of the dynamic selector.  In the
