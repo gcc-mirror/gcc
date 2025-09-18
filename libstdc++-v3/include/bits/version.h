@@ -2372,4 +2372,14 @@
 #endif /* !defined(__cpp_lib_constexpr_exceptions) && defined(__glibcxx_want_constexpr_exceptions) */
 #undef __glibcxx_want_constexpr_exceptions
 
+#if !defined(__cpp_lib_start_lifetime_as)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_start_lifetime_as 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime_as)
+#   define __cpp_lib_start_lifetime_as 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_start_lifetime_as) && defined(__glibcxx_want_start_lifetime_as) */
+#undef __glibcxx_want_start_lifetime_as
+
 #undef __glibcxx_want_all
