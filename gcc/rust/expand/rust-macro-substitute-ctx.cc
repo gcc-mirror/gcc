@@ -108,6 +108,12 @@ SubstituteCtx::substitute_metavar (
   return true;
 }
 
+static bool
+is_builtin_metavariable (AST::Token &token)
+{
+  return token.get_id () == CRATE;
+}
+
 bool
 SubstituteCtx::check_repetition_amount (size_t pattern_start,
 					size_t pattern_end,
@@ -125,6 +131,10 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 	      || frag_token->get_id () == IDENTIFIER)
 	    {
 	      auto it = fragments.find (frag_token->get_str ());
+
+	      if (is_builtin_metavariable (*frag_token))
+		continue;
+
 	      if (it == fragments.end ())
 		{
 		  // If the repetition is not anything we know (ie no declared
@@ -136,6 +146,7 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 				 frag_token->get_str ().c_str ());
 
 		  is_valid = false;
+		  continue;
 		}
 
 	      auto &fragment = *it->second;
