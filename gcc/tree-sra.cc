@@ -1678,7 +1678,13 @@ scan_function (void)
 		  /* If the STMT is a call to DEFERRED_INIT, avoid setting
 		     cannot_scalarize_away_bitmap.  */
 		  if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
-		    ret |= !!build_access_from_expr_1 (t, stmt, true);
+		    {
+		      struct access *access
+			= build_access_from_expr_1 (t, stmt, true);
+		      if (access)
+			access->grp_assignment_write = 1;
+		      ret |= access != NULL;
+		    }
 		  else
 		    ret |= build_access_from_expr (t, stmt, true);
 		}
