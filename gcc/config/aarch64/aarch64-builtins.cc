@@ -812,8 +812,12 @@ const char *aarch64_scalar_builtin_types[] = {
 extern const aarch64_simd_type_info aarch64_simd_types[];
 extern GTY(()) aarch64_simd_type_info_trees aarch64_simd_types_trees[];
 
-#define DEF_SIMD_TYPE(E, M, Q, G) \
-  {E, "__" #E, #G "__" #E, E_##M##mode, qualifier_##Q},
+#define DEF_SIMD_TYPE(NAME, MODE, QUALIFIERS, LEN) \
+  {/* .type       = */ NAME,			   \
+   /* .name       = */ "__" #NAME,		   \
+   /* .mangle     = */ #LEN "__" #NAME,		   \
+   /* .mode       = */ MODE##mode,		   \
+   /* .qualifiers = */ qualifier_##QUALIFIERS},
 const struct aarch64_simd_type_info aarch64_simd_types[] = {
 #include "aarch64-simd-builtin-types.def"
 };
