@@ -4588,6 +4588,7 @@
       if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2]))
 	  && (REG_P (operands[2]) || INTVAL(operands[2]) != 32))
         {
+	  operands[2] = convert_modes (QImode, SImode, operands[2], 0);
 	  emit_insn (gen_mve_lsll (operands[0], operands[1], operands[2]));
 	  DONE;
 	}
@@ -4624,6 +4625,7 @@
   if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
       && arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
+      operands[2] = convert_modes (QImode, SImode, operands[2], 0);
       emit_insn (gen_mve_asrl (operands[0], operands[1], operands[2]));
       DONE;
     }

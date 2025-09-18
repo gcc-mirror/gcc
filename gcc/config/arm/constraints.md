@@ -35,9 +35,8 @@
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
 ;;			 Dj, Ds, Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
-;;		     Rg, Ri
-;; in all states: Pg
+;; in Thumb-2 state: Ha, Pg, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Ra, Rb,
+;;		     Rd, Rf, Rg, Ri
 
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Uh, Ut, Uv, Un, Um, Us, Uo, Up, Uf, Ux, Ul, Uz
