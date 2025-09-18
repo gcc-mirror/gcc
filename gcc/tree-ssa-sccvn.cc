@@ -4699,12 +4699,17 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 	    = BASIC_BLOCK_FOR_FN (cfun, vno->u.values->valid_dominated_by_p[0]);
 	  vn_pval *nval = vno->u.values;
 	  vn_pval **next = &vno->u.values;
-	  bool found = false;
+	  vn_pval *ins = NULL;
+	  vn_pval *ins_at = NULL;
+	  /* Find an existing value to append to.  */
 	  for (vn_pval *val = (*slot)->u.values; val; val = val->next)
 	    {
 	      if (expressions_equal_p (val->result, nval->result))
 		{
-		  found = true;
+		  /* Limit the number of places we register a predicate
+		     as valid.  */
+		  if (val->n > 8)
+		    return *slot;
 		  for (unsigned i = 0; i < val->n; ++i)
 		    {
 		      basic_block val_bb
@@ -4718,33 +4723,45 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 			gcc_assert (!dominated_by_p (CDI_DOMINATORS,
 						     val_bb, vno_bb));
 		    }
-		  /* Append value.  */
-		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
-						     sizeof (vn_pval)
-						     + val->n * sizeof (int));
-		  (*next)->next = NULL;
-		  (*next)->result = val->result;
-		  (*next)->n = val->n + 1;
-		  memcpy ((*next)->valid_dominated_by_p,
+		  /* Append the location.  */
+		  ins_at = val;
+		  ins = (vn_pval *) obstack_alloc (&vn_tables_obstack,
+						   sizeof (vn_pval)
+						   + val->n * sizeof (int));
+		  ins->next = NULL;
+		  ins->result = val->result;
+		  ins->n = val->n + 1;
+		  memcpy (ins->valid_dominated_by_p,
 			  val->valid_dominated_by_p,
 			  val->n * sizeof (int));
-		  (*next)->valid_dominated_by_p[val->n] = vno_bb->index;
-		  next = &(*next)->next;
+		  ins->valid_dominated_by_p[val->n] = vno_bb->index;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Appending predicate to value.\n");
-		  continue;
+		  break;
 		}
-	      /* Copy other predicated values.  */
-	      *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
-						 sizeof (vn_pval)
-						 + (val->n-1) * sizeof (int));
-	      memcpy (*next, val, sizeof (vn_pval) + (val->n-1) * sizeof (int));
-	      (*next)->next = NULL;
+	    }
+	  /* Copy the rest of the value chain.  */
+	  for (vn_pval *val = (*slot)->u.values; val; val = val->next)
+	    {
+	      if (val == ins_at)
+		/* Replace the node we appended to.  */
+		*next = ins;
+	      else
+		{
+		  /* Copy other predicated values.  */
+		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
+						     sizeof (vn_pval)
+						     + ((val->n-1)
+							* sizeof (int)));
+		  memcpy (*next, val,
+			  sizeof (vn_pval) + (val->n-1) * sizeof (int));
+		  (*next)->next = NULL;
+		}
 	      next = &(*next)->next;
 	    }
-	  if (!found)
+	  /* Append the value if we didn't find it.  */
+	  if (!ins_at)
 	    *next = nval;
-
 	  *slot = vno;
 	  vno->next = last_inserted_nary;
 	  last_inserted_nary = vno;
@@ -4819,7 +4836,8 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 				     tree result, unsigned int value_id,
 				     edge pred_e)
 {
-  gcc_assert (can_track_predicate_on_edge (pred_e));
+  if (flag_checking)
+    gcc_assert (can_track_predicate_on_edge (pred_e));
 
   if (dump_file && (dump_flags & TDF_DETAILS)
       /* ???  Fix dumping, but currently we only get comparisons.  */
@@ -5258,7 +5276,11 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
 	      }
 	    succe = e;
 	  }
-      if (succe)
+      if (succe
+	  /* Limit the number of edges we check, we should bring in
+	     context from the iteration and compute the single
+	     executable incoming edge when visiting a block.  */
+	  && EDGE_COUNT (succe->dest->preds) < 8)
 	{
 	  /* Verify the reached block is only reached through succe.
 	     If there is only one edge we can spare us the dominator
