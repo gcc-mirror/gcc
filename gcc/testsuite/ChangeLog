@@ -1,3 +1,120 @@
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/analyzer/unique_ptr-1.C: Rename to...
+	* g++.dg/analyzer/std-unique_ptr-1.C: ...this.
+	* g++.dg/analyzer/unique_ptr-2.C: Rename to...
+	* g++.dg/analyzer/std-unique_ptr-2.C: ...this.
+
+2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121962
+	* gcc.dg/torture/pr121962-1.c: New test.
+
+2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/copy-prop-aggregate-arg-2.c: New test.
+
+2025-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/matmul_blas_3.f90: New test.
+
+2025-09-17  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR tree-optimization/58727
+	* gcc.target/riscv/pr58727.c: New test.
+
+2025-09-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr84830.c: Turn into GIMPLE unit test for PRE.
+
+2025-09-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/arch13/bitops-1.c: Do not return a 32bit value
+	but write it to memory.
+	* gcc.target/s390/arch13/bitops-2.c: Ditto.
+	* gcc.target/s390/md/andc-splitter-2.c: Adjust scan assembler
+	directive because sign extends are folded, now.
+
+2025-09-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/special/load-category-1.m: Add second source.
+	* objc.dg/special/load-category-2.m: Likewise.
+	* objc.dg/special/load-category-3.m: Likewise.
+	* objc.dg/special/unclaimed-category-1.m: Likewise.
+	* objc.dg/special/special.exp: Rewrite to make use of generic
+	testsuite facilities.
+
+2025-09-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/fp16-aapcs.c: New test.
+	* gcc.target/arm/fp16-aapcs-1.c: Removed.
+	* gcc.target/arm/fp16-aapcs-2.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
+
+2025-09-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwmulu.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: Add test
+	data for vwmulu.vx run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vwmulu-run-1-u64.c: New test.
+
+2025-09-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwsubu.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vwsubu-run-1-u64.c: New test.
+
+2025-09-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwaddu.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vwaddu-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_vx_run.h: New test.
+
+2025-09-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512bw-vpmovuswb-2.c: Correct res_ref2
+	array size.
+	* gcc.target/i386/avx512bw-vpmovwb-2.c: Ditto.
+
+2025-09-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/vect-epilogues-4.c: Fix for epilogue
+	vect tree dump.
+
 2025-09-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c/121421

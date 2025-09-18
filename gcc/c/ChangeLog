@@ -1,3 +1,10 @@
+2025-09-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Initialize
+	SSA operands for each stmt.
+	(c_parser_gimple_compound_statement): Append stmts without
+	updating SSA operands.
+
 2025-09-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c/121421

@@ -1,3 +1,25 @@
+2025-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111861
+	* include/bits/ranges_algo.h (ranges::unique_copy): When
+	initializing a value type object from *iter, use
+	direct-initialization and don't use a deduced type.
+	(ranges::push_heap): Use direct-initialization when initializing
+	a value type object from ranges::iter_move.
+	(ranges::max): As in ranges::unique_copy.
+	* include/bits/ranges_util.h (ranges::min): Likewise.
+
+2025-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/bind/dangling_ref.cc: Compile with
+	-Wsystem-headers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/lwg4148.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc:
+	Likewise.
+
 2025-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (__detail::__repeated_tuple): Use

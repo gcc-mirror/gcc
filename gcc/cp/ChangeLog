@@ -1,3 +1,20 @@
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidate): Consolidate instances of
+	auto_diagnostic_nesting_level into one, above the "inherited here"
+	message so that any such message is nested within the note,
+	and any messages emitted due to the switch on rejection_reason are
+	similarly nested within the note.
+
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidates): Copy the filtering logic on viable
+	candidates from the printing loop to the counting loop, so that
+	num_candidates matches the number of iterations of the latter
+	loop.
+
 2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
 
 	* mangle.cc (write_real_cst): Replace 8 spaces with Tab.

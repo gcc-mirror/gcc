@@ -1,3 +1,16 @@
+2025-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (optimize_namespace): Handle
+	flag_external_blas64.
+	(call_external_blas): If flag_external_blas is set, use
+	gfc_integer_4_kind as the argument kind, gfc_integer_8_kind otherwise.
+	* gfortran.h (gfc_integer_8_kind): Define.
+	* invoke.texi: Document -fexternal-blas64.
+	* lang.opt: Add -fexternal-blas64.
+	* lang.opt.urls: Regenerated.
+	* options.cc (gfc_post_options): -fexternal-blas is incompatible
+	with -fexternal-blas64.
+
 2025-09-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83763

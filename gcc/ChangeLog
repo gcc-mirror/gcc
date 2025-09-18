@@ -1,3 +1,54 @@
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.cc (set_defaults): Initialize
+	m_debug_physical_locations.
+
+2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121962
+	* tree-ssa-forwprop.cc (same_for_assignment): New function.
+	(optimize_agr_copyprop_1): Use same_for_assignment to check for
+	nop copies.
+	(optimize_agr_copyprop): Likewise.
+
+2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (new_src_based_on_copy): An early out
+	if both are decls.
+
+2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Split out
+	the case where `operand_equal_p (dest, src2)` is false into ...
+	(new_src_based_on_copy): This. New function.
+	(optimize_agr_copyprop_arg): Use new_src_based_on_copy
+	instead of operand_equal_p to find the new src.
+
+2025-09-17  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR tree-optimization/58727
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	In (A & C1) | C2, if (C1|C2) results in a constant with a single bit
+	clear, then adjust C1 appropriately.
+
+2025-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.cc (maybe_copy_this_notrap): New function.  Also copy
+	the TREE_THIS_NOTRAP flag for parameters when the argument is a full
+	object and the parameter's type is self-referential.
+	(remap_gimple_op_r): Call maybe_copy_this_notrap.
+	(copy_tree_body_r): Likewise.
+
+2025-09-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*widen_first_<any_extend:su>_vx_<mode>):
+	Add helper bridge pattern for vwaddu.vx combine.
+	(*widen_<any_widen_binop:optab>_<any_extend:su>_vx_<mode>): Add
+	new pattern to match vwaddu.vx combine.
+	* config/riscv/iterators.md: Add code attr to get extend CODE.
+	* config/riscv/vector-iterators.md: Add Dmode iterator for
+	widen.
+
 2025-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi (Wimplicit-fallthrough=): Document that also C23
