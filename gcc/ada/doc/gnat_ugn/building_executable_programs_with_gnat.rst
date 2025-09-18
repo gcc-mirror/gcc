@@ -1937,13 +1937,13 @@ Alphabetical List of All Switches
   Ignore representation clauses. When this switch is used,
   representation clauses are treated as comments. This is useful
   when initially porting code where you want to ignore rep clause
-  problems, and also for compiling foreign code (particularly
-  for use with ASIS). The representation clauses that are ignored
-  are: enumeration_representation_clause, record_representation_clause,
-  and attribute_definition_clause for the following attributes:
-  Address, Alignment, Bit_Order, Component_Size, Machine_Radix,
-  Object_Size, Scalar_Storage_Order, Size, Small, Stream_Size,
-  and Value_Size. Pragma Default_Scalar_Storage_Order is also ignored.
+  problems, and also for compiling foreign code. The representation
+  clauses that are ignored are: enumeration_representation_clause,
+  record_representation_clause, and attribute_definition_clause for the
+  following attributes: Address, Alignment, Bit_Order, Component_Size,
+  Machine_Radix, Object_Size, Scalar_Storage_Order, Size, Small,
+  Stream_Size, and Value_Size.
+  Pragma Default_Scalar_Storage_Order is also ignored.
   Note that this option should be used only for compiling -- the
   code is likely to malfunction at run time.
 

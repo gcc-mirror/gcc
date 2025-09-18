@@ -377,7 +377,8 @@ may have been set by a call to ``Ada.Command_Line.Set_Exit_Status``).
 *
   "The mechanisms for building and running partitions.  See 10.2(24)."
 
-GNAT itself supports programs with only a single partition. The PolyORB product (which also includes an implementation of the PCS) provides a completely flexible method for building and running programs consisting of multiple partitions. See the separate PolyORB user guide for details.
+GNAT itself supports programs with only a single partition. The PolyORB product (which also includes an implementation of the PCS) provides a completely flexible method for building and running programs consisting of multiple partitions. **NB!** See the note in :ref:`polyORB` regarding the lifetime
+of this product.
 
 *
   "The details of program execution, including program
@@ -390,8 +391,7 @@ See separate section on compilation model.
   implementation.  See 10.2(28)."
 
 Passive partitions are supported on targets where shared memory is
-provided by the operating system. See the PolyORB user guide for
-further details.
+provided by the operating system. **NB!** See the note in :ref:`polyORB` regarding the lifetime of this product.
 
 *
   "The information returned by ``Exception_Message``.  See 11.4.1(10)."
@@ -1185,27 +1185,29 @@ Unknown.
   programs.  See E(5)."
 
 The PolyORB product provides means creating and executing
-distributed programs. See the PolyORB user guide for further details.
+distributed programs. **NB!** See the note in :ref:`polyORB` regarding the lifetime of this product.
 
 *
   "Any events that can result in a partition becoming
   inaccessible.  See E.1(7)."
 
 See the PolyORB user guide for full details on such events.
+**NB!** Consider the note in :ref:`polyORB` regarding the lifetime
+of this product.
 
 *
   "The scheduling policies, treatment of priorities, and management of
   shared resources between partitions in certain cases.  See E.1(11)."
 
 See the PolyORB user guide for full details on these aspects of
-multi-partition execution.
+multi-partition execution. **NB!** Consider the note in :ref:`polyORB` regarding the lifetime of this product.
 
 *
   "Whether the execution of the remote subprogram is
   immediately aborted as a result of cancellation.  See E.4(13)."
 
 See the PolyORB user guide for details on the effect of abort in
-a distributed application.
+a distributed application.  **NB!** Consider the note in :ref:`polyORB` regarding the lifetime of this product.
 
 *
   "The range of type System.RPC.Partition_Id.  See E.5(14)."
@@ -1216,7 +1218,7 @@ System.RPC.Partition_ID'Last is Integer'Last. See source file :file:`s-rpc.ads`.
   "Implementation-defined interfaces in the PCS.  See E.5(26)."
 
 See the PolyORB user guide for a full description of all
-implementation defined interfaces.
+implementation defined interfaces.  **NB!** See the note in :ref:`polyORB` regarding the lifetime of this product.
 
 *
   "The values of named numbers in the package

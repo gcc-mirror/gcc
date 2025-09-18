@@ -1218,7 +1218,8 @@ RM E.5(28-29): Partition Communication Subsystem
   should allow them to block until the corresponding subprogram body
   returns."
 
-A separately supplied PCS that can be used with GNAT when combined with the PolyORB product.
+A separately supplied PCS that can be used with GNAT when combined with the PolyORB product (NB! See the note in :ref:`polyORB` regarding the lifetime
+of this product).
 
   "The ``Write`` operation on a stream of type ``Params_Stream_Type``
   should raise ``Storage_Error`` if it runs out of space trying to

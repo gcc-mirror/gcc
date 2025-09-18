@@ -398,9 +398,8 @@ The analyzed pragma is retained in the tree, but not otherwise processed
 by any part of the GNAT compiler, except to generate corresponding note
 lines in the generated ALI file. For the format of these note lines, see
 the compiler source file lib-writ.ads. This pragma is intended for use by
-external tools, including ASIS. The use of pragma Annotate does not
-affect the compilation process in any way. This pragma may be used as
-a configuration pragma.
+external tools. The use of pragma Annotate does not affect the compilation
+process in any way. This pragma may be used as a configuration pragma.
 
 Pragma Assert
 =============

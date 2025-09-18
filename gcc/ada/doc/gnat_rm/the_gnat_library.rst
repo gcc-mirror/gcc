@@ -2047,7 +2047,8 @@ technically an implementation-defined addition).
 
 This package provides facilities for partition interfacing.  It
 is used primarily in a distribution context when using Annex E
-with ``PolyORB``.
+with ``PolyORB``.  **NB!** See the note in :ref:`polyORB` regarding
+the lifetime of this product.
 
 .. _`System.Pool_Global_(s-pooglo.ads)`:
 

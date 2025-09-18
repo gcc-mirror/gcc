@@ -5,9 +5,19 @@ Obsolescent Features
 ********************
 
 This chapter describes features that are provided by GNAT, but are
-considered obsolescent since there are preferred ways of achieving
-the same effect. These features are provided solely for historical
-compatibility purposes.
+considered obsolescent since there are other, more appropriate, ways
+of achieving the same effect. These features are provided solely for
+historical compatibility purposes.
+
+.. _polyORB:
+
+PolyORB
+========
+
+AWS is a deprecated product. It will be baselined with the GNAT Pro
+release 28. After this release, there will be no new versions of this
+product. Contact your sales representative or send a message to
+sales@adacore.com to get recommendations for replacements.
 
 .. _pragma_No_Run_Time:
 

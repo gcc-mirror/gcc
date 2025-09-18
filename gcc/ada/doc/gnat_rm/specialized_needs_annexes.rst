@@ -17,7 +17,7 @@ Ada 95, Ada 2005, Ada 2012, and Ada 2022 define a number of Specialized Needs An
 *Distributed Systems (Annex E)*
   Stub generation is fully implemented in the GNAT compiler.  In addition,
   a complete compatible PCS is available as part of ``PolyORB``,
-  a separate product. Note, that PolyORB is a deprecated product and will be eventually replaced with other technologies such as ``RTI``.
+  a separate product. **NB!** See the note in :ref:`polyORB` regarding the lifetime of this product.
 
 
 *Information Systems (Annex F)*
