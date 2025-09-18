@@ -3930,6 +3930,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 					   complain);
 	  rval = build_conditional_expr (input_location, ifexp, rval,
 					 alloc_node, complain);
+	  /* If there's no offset between data_addr and alloc_node, append it
+	     to help -Wmismatched-new-delete at -O0.  */
+	  if (!cookie_size)
+	    rval = build2 (COMPOUND_EXPR, TREE_TYPE (alloc_node),
+			   rval, alloc_node);
 	}
 
       /* Perform the allocation before anything else, so that ALLOC_NODE

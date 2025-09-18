@@ -140,9 +140,8 @@ void warn_x1_array_mismatch ()
     delete p;                 // { dg-warning "'static void X1::operator delete\\(void\\*\\)' called on pointer returned from a mismatched allocation function" }
   }
   {
-    // The following requires optimization (see warn_x1_array_mismatch()).
     X1 *p = new (std::nothrow) X1[3];
-    delete p;                 // { dg-warning "'static void X1::operator delete\\(void\\*\\)' called on pointer returned from a mismatched allocation function" "pr?????" { xfail *-*-* } }
+    delete p;                 // { dg-warning "'static void X1::operator delete\\(void\\*\\)' called on pointer returned from a mismatched allocation function" }
   }
 }
 
