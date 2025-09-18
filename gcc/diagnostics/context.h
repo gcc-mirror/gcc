@@ -47,6 +47,7 @@ namespace diagnostics {
   class diagram;
   class sink;
     class text_sink;
+  class metadata;
 
   class source_effect_info;
 

@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "diagnostic.h"
 #include "diagnostics/macro-unwinding.h"
 #include "diagnostics/text-sink.h"
 #include "intl.h"

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
-#include "diagnostic.h"
 #include "diagnostics/selftest-paths.h"
 
 #if CHECKING_P

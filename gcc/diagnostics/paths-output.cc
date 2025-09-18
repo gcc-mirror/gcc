@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
-#include "diagnostic.h"
 #include "diagnostics/macro-unwinding.h"
 #include "intl.h"
 #include "diagnostics/paths.h"
