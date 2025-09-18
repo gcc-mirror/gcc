@@ -963,7 +963,11 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   auto attrs = parser.parse_outer_attributes ();
   auto expr = parser.parse_expr (std::move (attrs));
   if (expr == nullptr)
-    return AST::Fragment::create_error ();
+    {
+      for (auto error : parser.get_errors ())
+	error.emit ();
+      return AST::Fragment::create_error ();
+    }
 
   // FIXME: make this an error for some edititons
   if (parser.peek_current_token ()->get_id () == SEMICOLON)
@@ -1152,11 +1156,7 @@ MacroExpander::transcribe_rule (
 
   // emit any errors
   if (parser.has_errors ())
-    {
-      for (auto &err : parser.get_errors ())
-	rust_error_at (err.locus, "%s", err.message.c_str ());
-      return AST::Fragment::create_error ();
-    }
+    return AST::Fragment::create_error ();
 
   // are all the tokens used?
   bool did_delimit = parser.skip_token (last_token_id);
