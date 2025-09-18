@@ -1459,7 +1459,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 	  scalar_mask = def;
       }
 
-  unsigned int nvectors = vect_get_num_copies (loop_vinfo, slp_node, vectype);
+  unsigned int nvectors = vect_get_num_copies (loop_vinfo, slp_node);
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
   machine_mode vecmode = TYPE_MODE (vectype);

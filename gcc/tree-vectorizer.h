@@ -2296,13 +2296,10 @@ vect_get_num_vectors (poly_uint64 nunits, tree vectype)
 }
 
 /* Return the number of vectors in the context of vectorization region VINFO,
-   needed for a group of statements, whose size is specified by lanes of NODE,
-   if NULL, it is 1.  The statements are supposed to be interleaved together
-   with no gap, and all operate on vectors of type VECTYPE, if NULL, the
-   vectype of NODE is used.  */
+   needed for a group of statements and a vector type as specified by NODE.  */
 
 inline unsigned int
-vect_get_num_copies (vec_info *vinfo, slp_tree node, tree vectype = NULL)
+vect_get_num_copies (vec_info *vinfo, slp_tree node)
 {
   poly_uint64 vf;
 
@@ -2311,25 +2308,10 @@ vect_get_num_copies (vec_info *vinfo, slp_tree node, tree vectype = NULL)
   else
     vf = 1;
 
-  if (node)
-    {
-      vf *= SLP_TREE_LANES (node);
-      if (!vectype)
-	vectype = SLP_TREE_VECTYPE (node);
-    }
+  vf *= SLP_TREE_LANES (node);
+  tree vectype = SLP_TREE_VECTYPE (node);
 
   return vect_get_num_vectors (vf, vectype);
-}
-
-/* Return the number of copies needed for loop vectorization when
-   a statement operates on vectors of type VECTYPE.  This is the
-   vectorization factor divided by the number of elements in
-   VECTYPE and is always known at compile time.  */
-
-inline unsigned int
-vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
-{
-  return vect_get_num_copies (loop_vinfo, NULL, vectype);
 }
 
 /* Update maximum unit count *MAX_NUNITS so that it accounts for
