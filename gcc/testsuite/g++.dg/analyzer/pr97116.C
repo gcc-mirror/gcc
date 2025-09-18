@@ -3,7 +3,7 @@
 
 struct foo
 {
-  foo (int i) : m_i (i) {} // { dg-message "argument 'this' of 'foo::foo\\(int\\)' must be non-null" "note" }
+  foo (int i) : m_i (i) {}
 
   int get () const { return m_i; } // { dg-message "argument 'this' of '\[^\n\]*' must be non-null" "note" }
   
@@ -15,8 +15,7 @@ struct foo
 
 void test_1 (void)
 {
-  foo *p = new(NULL) foo (42); // { dg-warning "non-null expected" "warning" }
-  // { dg-message "argument 'this'( \\(\[^\n\]*\\))? NULL where non-null expected" "final event" { target *-*-* } .-1 }
+  foo *p = new(NULL) foo (42); // { dg-warning "dereference of NULL" "warning" }
 }
 
 int test_2 (void)

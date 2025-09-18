@@ -3566,9 +3566,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     = (std_placement && flag_lifetime_dse > 1
        && !processing_template_decl
        && !is_empty_type (elt_type)
-       && !*init
-       && (!CLASS_TYPE_P (elt_type)
-	   || type_has_non_user_provided_default_constructor (elt_type)));
+       && (!*init || CLASS_TYPE_P (elt_type)));
 
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
