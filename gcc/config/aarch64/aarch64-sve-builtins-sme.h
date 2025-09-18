@@ -44,6 +44,7 @@ namespace aarch64_sve
     extern const function_base *const svldr_zt;
     extern const function_base *const svluti2_lane_zt;
     extern const function_base *const svluti4_lane_zt;
+    extern const function_base *const svluti4_zt;
     extern const function_base *const svmla_za;
     extern const function_base *const svmla_lane_za;
     extern const function_base *const svmls_za;
@@ -75,6 +76,8 @@ namespace aarch64_sve
     extern const function_base *const svwrite_za;
     extern const function_base *const svwrite_hor_za;
     extern const function_base *const svwrite_ver_za;
+    extern const function_base *const svwrite_zt;
+    extern const function_base *const svwrite_lane_zt;
     extern const function_base *const svundef_za;
     extern const function_base *const svvdot_lane_za;
     extern const function_base *const svzero_mask_za;

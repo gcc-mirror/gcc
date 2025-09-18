@@ -253,6 +253,12 @@ DEF_SME_ZA_FUNCTION_GS (svzero, inherent_za_slice, d_za, vg2, none)
 DEF_SME_ZA_FUNCTION_GS (svzero, inherent_za_slice, d_za, vg4, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_LUTv2)
+DEF_SME_FUNCTION_GS (svwrite_zt,      write_zt,      all_data,  none, none)
+DEF_SME_FUNCTION_GS (svwrite_lane_zt, write_lane_zt, all_data,  none, none)
+DEF_SME_FUNCTION_GS (svluti4_zt,      luti4_zt,      b_integer, x4,   none)
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_SME_ZA_FUNCTION
 #undef DEF_SME_ZA_FUNCTION_GS
 #undef DEF_SME_FUNCTION
