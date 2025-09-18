@@ -2219,6 +2219,12 @@ the Half-precision floating-point instructions (HP), Floating-point Extension
 (FP) along with M-Profile Vector Extension (MVE). Some multilibs may be
 incompatible with these options.
 
+@item arm_v8_1m_mve_nofp_ok
+ARM target supports options to generate instructions from ARMv8.1-M
+with the M-Profile Vector Extension (MVE) but without the
+Half-precision floating-point instructions (HP) and Floating-point
+Extension (FP). Some multilibs may be incompatible with these options.
+
 @item arm_mve_hw
 Test system supports executing MVE instructions.
 

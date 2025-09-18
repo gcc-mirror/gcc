@@ -1685,9 +1685,7 @@ arm_init_fp16_builtins (void)
   arm_fp16_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (arm_fp16_type_node) = GET_MODE_PRECISION (HFmode);
   layout_type (arm_fp16_type_node);
-  if (arm_fp16_format)
-    (*lang_hooks.types.register_builtin_type) (arm_fp16_type_node,
-					       "__fp16");
+  (*lang_hooks.types.register_builtin_type) (arm_fp16_type_node, "__fp16");
 }
 
 void

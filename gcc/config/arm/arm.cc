@@ -3923,12 +3923,18 @@ arm_option_reconfigure_globals (void)
   arm_arch_bf16 = bitmap_bit_p (arm_active_target.isa, isa_bit_bf16);
 
   arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
-  if (arm_fp16_inst)
+
+  /* Set arm_fp16_format to IEEE if the target has fp16 support unless user
+     forced ARM_FP16_FORMAT_NONE.  */
+  if (arm_fp16_inst && (arm_fp16_format != ARM_FP16_FORMAT_NONE))
     {
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 	error ("selected fp16 options are incompatible");
       arm_fp16_format = ARM_FP16_FORMAT_IEEE;
     }
+
+  if (arm_fp16_format == ARM_FP16_FORMAT_DEFAULT)
+    arm_fp16_format = ARM_FP16_FORMAT_NONE;
 
   arm_arch_cde = 0;
   arm_arch_cde_coproc = 0;
@@ -29639,11 +29645,7 @@ arm_vector_mode_supported_p (machine_mode mode)
     return true;
 
   if (TARGET_HAVE_MVE
-      && (VALID_MVE_SI_MODE (mode) || VALID_MVE_PRED_MODE (mode)))
-    return true;
-
-  if (TARGET_HAVE_MVE_FLOAT
-      && (mode == V2DFmode || mode == V4SFmode || mode == V8HFmode))
+      && (VALID_MVE_MODE (mode) || VALID_MVE_PRED_MODE (mode)))
     return true;
 
   return false;
