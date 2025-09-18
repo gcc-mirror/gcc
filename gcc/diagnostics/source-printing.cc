@@ -213,7 +213,7 @@ class exploc_with_display_col : public expanded_location
       {
 	/* m_display_col is now the final column of the byte.
 	   If escaping has happened, we may want the first column instead.  */
-	if (aspect != LOCATION_ASPECT_FINISH)
+	if (aspect != location_aspect::finish)
 	  {
 	    expanded_location prev_exploc (exploc);
 	    prev_exploc.column--;
@@ -1260,14 +1260,14 @@ make_range (diagnostics::file_cache &fc,
     = {"", end_line, end_col, nullptr, false};
   return layout_range (exploc_with_display_col (fc,
 						start_exploc, def_policy (),
-						LOCATION_ASPECT_START),
+						location_aspect::start),
 		       exploc_with_display_col (fc,
 						finish_exploc, def_policy (),
-						LOCATION_ASPECT_FINISH),
+						location_aspect::finish),
 		       SHOW_RANGE_WITHOUT_CARET,
 		       exploc_with_display_col (fc,
 						start_exploc, def_policy (),
-						LOCATION_ASPECT_CARET),
+						location_aspect::caret),
 		       0, nullptr);
 }
 
@@ -1758,7 +1758,7 @@ layout::layout (const diagnostics::source_print_policy &source_policy,
   m_primary_loc (richloc.get_range (0)->m_loc),
   m_exploc (m_file_cache,
 	    richloc.get_expanded_location (0), m_char_policy,
-	    LOCATION_ASPECT_CARET),
+	    location_aspect::caret),
   m_layout_ranges (richloc.get_num_locations ()),
   m_fixit_hints (richloc.get_num_fixit_hints ()),
   m_line_spans (1 + richloc.get_num_locations ()),
@@ -1819,13 +1819,13 @@ layout::maybe_add_location_range (const location_range *loc_range,
   /* Expand the various locations.  */
   expanded_location start
     = linemap_client_expand_location_to_spelling_point
-    (m_line_table, src_range.m_start, LOCATION_ASPECT_START);
+    (m_line_table, src_range.m_start, location_aspect::start);
   expanded_location finish
     = linemap_client_expand_location_to_spelling_point
-    (m_line_table, src_range.m_finish, LOCATION_ASPECT_FINISH);
+    (m_line_table, src_range.m_finish, location_aspect::finish);
   expanded_location caret
     = linemap_client_expand_location_to_spelling_point
-    (m_line_table, loc_range->m_loc, LOCATION_ASPECT_CARET);
+    (m_line_table, loc_range->m_loc, location_aspect::caret);
 
   /* If any part of the range isn't in the same file as the primary
      location of this diagnostic, ignore the range.  */
@@ -1858,14 +1858,14 @@ layout::maybe_add_location_range (const location_range *loc_range,
      but it may require further sanitization.  */
   layout_range ri (exploc_with_display_col (m_file_cache,
 					    start, m_char_policy,
-					    LOCATION_ASPECT_START),
+					    location_aspect::start),
 		   exploc_with_display_col (m_file_cache,
 					    finish, m_char_policy,
-					    LOCATION_ASPECT_FINISH),
+					    location_aspect::finish),
 		   range_display_kind,
 		   exploc_with_display_col (m_file_cache,
 					    caret, m_char_policy,
-					    LOCATION_ASPECT_CARET),
+					    location_aspect::caret),
 		   original_idx, loc_range->m_label);
 
   /* If we have a range that finishes before it starts (perhaps

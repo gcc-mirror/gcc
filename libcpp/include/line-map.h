@@ -1459,11 +1459,11 @@ void line_table_dump (FILE *, const line_maps *,
 
 /* An enum for distinguishing the various parts within a location_t.  */
 
-enum location_aspect
+enum class location_aspect
 {
-  LOCATION_ASPECT_CARET,
-  LOCATION_ASPECT_START,
-  LOCATION_ASPECT_FINISH
+  caret,
+  start,
+  finish
 };
 
 /* The rich_location class requires a way to expand location_t instances.

@@ -112,16 +112,16 @@ expand_location_1 (const line_maps *set,
 	default:
 	  gcc_unreachable ();
 	  /* Fall through.  */
-	case LOCATION_ASPECT_CARET:
+	case location_aspect::caret:
 	  break;
-	case LOCATION_ASPECT_START:
+	case location_aspect::start:
 	  {
 	    location_t start = get_start (loc);
 	    if (start != loc)
 	      return expand_location_1 (set, start, expansion_point_p, aspect);
 	  }
 	  break;
-	case LOCATION_ASPECT_FINISH:
+	case location_aspect::finish:
 	  {
 	    location_t finish = get_finish (loc);
 	    if (finish != loc)
@@ -148,9 +148,9 @@ get_source_text_between (diagnostics::file_cache &fc,
 			 location_t start, location_t end)
 {
   expanded_location expstart
-    = expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
+    = expand_location_to_spelling_point (start, location_aspect::start);
   expanded_location expend
-    = expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
+    = expand_location_to_spelling_point (end, location_aspect::finish);
 
   /* If the locations are in different files or the end comes before the
      start, give up and return nothing.  */
@@ -258,7 +258,7 @@ expanded_location
 expand_location (location_t loc)
 {
   return expand_location_1 (line_table, loc, /*expansion_point_p=*/true,
-			    LOCATION_ASPECT_CARET);
+			    location_aspect::caret);
 }
 
 /* Expand the source location LOC into a human readable location.  If
@@ -911,10 +911,10 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 
       expanded_location start
 	= expand_location_to_spelling_point (src_range.m_start,
-					     LOCATION_ASPECT_START);
+					     location_aspect::start);
       expanded_location finish
 	= expand_location_to_spelling_point (src_range.m_finish,
-					     LOCATION_ASPECT_FINISH);
+					     location_aspect::finish);
       if (start.file != finish.file)
 	return "range endpoints are in different files";
       if (start.line != finish.line)
