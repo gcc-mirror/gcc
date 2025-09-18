@@ -7374,7 +7374,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if (STMT_VINFO_LIVE_P (phi_info))
     return false;
 
-  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  ncopies = vect_get_num_copies (loop_vinfo, slp_node);
 
   gcc_assert (ncopies >= 1);
 
@@ -8247,7 +8247,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
     /* Leave the scalar phi in place.  */
     return true;
 
-  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  vec_num = vect_get_num_copies (loop_vinfo, slp_node);
 
   /* Check whether we should use a single PHI node and accumulate
      vectors to one before the backedge.  */
@@ -8502,7 +8502,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
 /* Vectorizes PHIs.  */
 
 bool
-vectorizable_phi (bb_vec_info,
+vectorizable_phi (bb_vec_info vinfo,
 		  stmt_vec_info stmt_info,
 		  slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
@@ -8553,7 +8553,7 @@ vectorizable_phi (bb_vec_info,
 	 for the scalar and the vector PHIs.  This avoids artificially
 	 favoring the vector path (but may pessimize it in some cases).  */
       if (gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) > 1)
-	record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+	record_stmt_cost (cost_vec, vect_get_num_copies (vinfo, slp_node),
 			  vector_stmt, slp_node, vectype, 0, vect_body);
       SLP_TREE_TYPE (slp_node) = phi_info_type;
       return true;
@@ -8657,7 +8657,7 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     return false;
 
   tree vectype = SLP_TREE_VECTYPE (slp_node);
-  unsigned ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  unsigned ncopies = vect_get_num_copies (loop_vinfo, slp_node);
   poly_int64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned dist = SLP_TREE_LANES (slp_node);
   /* We need to be able to make progress with a single vector.  */
@@ -9566,6 +9566,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	}
     }
 
+  unsigned nvects = vect_get_num_copies (loop_vinfo, slp_node);
   if (cost_vec) /* transformation not required.  */
     {
       unsigned inside_cost = 0, prologue_cost = 0;
@@ -9584,8 +9585,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	    return false;
 	  }
       /* loop cost for vec_loop.  */
-      inside_cost = record_stmt_cost (cost_vec,
-				      SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+      inside_cost = record_stmt_cost (cost_vec, nvects,
 				      vector_stmt, slp_node, 0, vect_body);
       /* prologue cost for vec_init (if not nested) and step.  */
       prologue_cost = record_stmt_cost (cost_vec, 1 + !nested_in_vect_loop,
@@ -9645,7 +9645,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
     }
 
   /* Now generate the IVs.  */
-  unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   gcc_assert (multiple_p (nunits * nvects, group_size));
   unsigned nivs;
   unsigned HOST_WIDE_INT const_nunits;
@@ -10195,7 +10194,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
      all the slp vectors. Calculate which slp vector it is and the index
      within.  */
   int num_scalar = SLP_TREE_LANES (slp_node);
-  int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  int num_vec = vect_get_num_copies (vinfo, slp_node);
   poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
 
   /* Calculate which vector contains the result, and which lane of
@@ -10223,7 +10222,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				 "the loop.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
-	  else if (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
+	  else if (num_vec > 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

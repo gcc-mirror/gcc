@@ -112,7 +112,6 @@ _slp_tree::_slp_tree ()
   SLP_TREE_SCALAR_STMTS (this) = vNULL;
   SLP_TREE_SCALAR_OPS (this) = vNULL;
   SLP_TREE_VEC_DEFS (this) = vNULL;
-  SLP_TREE_NUMBER_OF_VEC_STMTS (this) = 0;
   SLP_TREE_CHILDREN (this) = vNULL;
   SLP_TREE_LOAD_PERMUTATION (this) = vNULL;
   SLP_TREE_LANE_PERMUTATION (this) = vNULL;
@@ -8042,17 +8041,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    slp_instance node_instance,
 				    stmt_vector_for_cost *cost_vec)
 {
-  /* Calculate the number of vector statements to be created for the scalar
-     stmts in this node.  It is the number of scalar elements in one scalar
-     iteration (DR_GROUP_SIZE) multiplied by VF divided by the number of
-     elements in a vector.  For single-defuse-cycle, lane-reducing op, and
-     PHI statement that starts reduction comprised of only lane-reducing ops,
-     the number is more than effective vector statements actually required.  */
-  if (SLP_TREE_VECTYPE (node))
-    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
-  else
-    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
-
   /* Handle purely internal nodes.  */
   if (SLP_TREE_PERMUTE_P (node))
     {
@@ -8220,7 +8208,7 @@ vect_scalar_ops_slice_hash::equal (const value_type &s1,
    by NODE.  */
 
 static void
-vect_prologue_cost_for_slp (slp_tree node,
+vect_prologue_cost_for_slp (vec_info *vinfo, slp_tree node,
 			    stmt_vector_for_cost *cost_vec)
 {
   /* There's a special case of an existing vector, that costs nothing.  */
@@ -8234,14 +8222,15 @@ vect_prologue_cost_for_slp (slp_tree node,
   unsigned group_size = SLP_TREE_SCALAR_OPS (node).length ();
   unsigned HOST_WIDE_INT const_nunits;
   unsigned nelt_limit;
+  unsigned nvectors = vect_get_num_copies (vinfo, node);
   auto ops = &SLP_TREE_SCALAR_OPS (node);
-  auto_vec<unsigned int> starts (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
+  auto_vec<unsigned int> starts (nvectors);
   if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
       && ! multiple_p (const_nunits, group_size))
     {
       nelt_limit = const_nunits;
       hash_set<vect_scalar_ops_slice_hash> vector_ops;
-      for (unsigned int i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
+      for (unsigned int i = 0; i < nvectors; ++i)
 	if (!vector_ops.add ({ ops, i * nelt_limit, nelt_limit }))
 	  starts.quick_push (i * nelt_limit);
     }
@@ -8395,10 +8384,8 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      continue;
 	    }
 
-	  SLP_TREE_NUMBER_OF_VEC_STMTS (child)
-		= vect_get_num_copies (vinfo, child);
 	  /* And cost them.  */
-	  vect_prologue_cost_for_slp (child, cost_vec);
+	  vect_prologue_cost_for_slp (vinfo, child, cost_vec);
 	}
 
   /* If this node or any of its children can't be vectorized, try pruning
@@ -10337,7 +10324,7 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
   vector_type = SLP_TREE_VECTYPE (op_node);
 
-  unsigned int number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (op_node);
+  unsigned int number_of_vectors = vect_get_num_copies (vinfo, op_node);
   SLP_TREE_VEC_DEFS (op_node).create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
 
@@ -10562,7 +10549,7 @@ vect_get_slp_vect_def (slp_tree slp_node, unsigned i)
 void
 vect_get_slp_defs (slp_tree slp_node, vec<tree> *vec_defs)
 {
-  vec_defs->create (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node));
+  vec_defs->create (SLP_TREE_VEC_DEFS (slp_node).length ());
   vec_defs->splice (SLP_TREE_VEC_DEFS (slp_node));
 }
 
@@ -10616,7 +10603,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 
   mode = TYPE_MODE (vectype);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  unsigned int nstmts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+  unsigned int nstmts = vect_get_num_copies (vinfo, node);
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
@@ -10816,7 +10803,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   if (n_loads)
     {
       if (repeating_p)
-	*n_loads = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+	*n_loads = nstmts;
       else
 	{
 	  /* Enforced above when !repeating_p.  */
@@ -11065,7 +11052,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       unsigned vec_idx = (SLP_TREE_LANE_PERMUTATION (node)[0].second
 			  / SLP_TREE_LANES (node));
       unsigned vec_num = SLP_TREE_LANES (child) / SLP_TREE_LANES (node);
-      for (unsigned i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
+      unsigned nvectors = vect_get_num_copies (vinfo, node);
+      for (unsigned i = 0; i < nvectors; ++i)
 	{
 	  tree def = SLP_TREE_VEC_DEFS (child)[i * vec_num  + vec_idx];
 	  node->push_vec_def (def);
@@ -11406,14 +11394,11 @@ vect_schedule_slp_node (vec_info *vinfo,
       return;
     }
 
-  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
-
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
-  gcc_assert (!SLP_TREE_VECTYPE (node)
-	      || SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
-  if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0)
-    SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
+  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
+  if (SLP_TREE_VECTYPE (node))
+    SLP_TREE_VEC_DEFS (node).create (vect_get_num_copies (vinfo, node));
 
   if (!SLP_TREE_PERMUTE_P (node) && STMT_VINFO_DATA_REF (stmt_info))
     {
@@ -11675,7 +11660,7 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 
   if (instance->kind == slp_inst_kind_ctor)
     {
-      if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
+      if (SLP_TREE_VEC_DEFS (node).length () == 1)
 	{
 	  tree vect_lhs = SLP_TREE_VEC_DEFS (node)[0];
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
@@ -11685,13 +11670,13 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 			       vect_lhs);
 	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
-      else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
+      else
 	{
-	  int nelts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+	  gcc_assert (SLP_TREE_VEC_DEFS (node).length () > 1);
 	  tree child_def;
 	  int j;
 	  vec<constructor_elt, va_gc> *v;
-	  vec_alloc (v, nelts);
+	  vec_alloc (v, SLP_TREE_VEC_DEFS (node).length ());
 
 	  /* A CTOR can handle V16HI composition from VNx8HI so we
 	     do not need to convert vector elements if the types

@@ -330,11 +330,6 @@ struct _slp_tree {
   tree vectype;
   /* Vectorized defs.  */
   vec<tree> vec_defs;
-  /* Number of vector stmts that are created to replace the group of scalar
-     stmts. It is calculated during the transformation phase as the number of
-     scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
-     divided by vector size.  */
-  unsigned int vec_stmts_size;
 
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
@@ -444,7 +439,6 @@ public:
 #define SLP_TREE_SCALAR_OPS(S)                   (S)->ops
 #define SLP_TREE_REF_COUNT(S)                    (S)->refcnt
 #define SLP_TREE_VEC_DEFS(S)                     (S)->vec_defs
-#define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_LANE_PERMUTATION(S)             (S)->lane_permutation
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type

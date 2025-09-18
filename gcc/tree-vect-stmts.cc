@@ -916,7 +916,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
    of the same KIND.  */
 
 static void
-vect_model_simple_cost (vec_info *, int n, slp_tree node,
+vect_model_simple_cost (vec_info *vinfo, int n, slp_tree node,
 			stmt_vector_for_cost *cost_vec,
 			vect_cost_for_stmt kind = vector_stmt)
 {
@@ -924,7 +924,7 @@ vect_model_simple_cost (vec_info *, int n, slp_tree node,
 
   gcc_assert (cost_vec != NULL);
 
-  n *= SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+  n *= vect_get_num_copies (vinfo, node);
 
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
   inside_cost += record_stmt_cost (cost_vec, n, kind, node, 0, vect_body);
@@ -3120,7 +3120,7 @@ vectorizable_bswap (vec_info *vinfo,
       record_stmt_cost (cost_vec,
 			1, vector_stmt, slp_node, 0, vect_prologue);
       record_stmt_cost (cost_vec,
-			SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			vect_get_num_copies (vinfo, slp_node),
 			vec_perm, slp_node, 0, vect_body);
       return true;
     }
@@ -3438,6 +3438,7 @@ vectorizable_call (vec_info *vinfo,
   int len_opno = internal_fn_len_index (cond_len_fn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
+  unsigned int nvectors = vect_get_num_copies (vinfo, slp_node);
   if (cost_vec) /* transformation not required.  */
     {
       for (i = 0; i < nargs; ++i)
@@ -3474,7 +3475,6 @@ vectorizable_call (vec_info *vinfo,
 	    }
 	  else
 	    {
-	      unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	      tree scalar_mask = NULL_TREE;
 	      if (mask_opno >= 0)
 		scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
@@ -3531,7 +3531,7 @@ vectorizable_call (vec_info *vinfo,
       /* Build argument list for the vectorized call.  */
       if (cfn == CFN_GOMP_SIMD_LANE)
 	{
-	  for (i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++i)
+	  for (i = 0; i < nvectors; ++i)
 	    {
 	      /* ???  For multi-lane SLP we'd need to build
 		 { 0, 0, .., 1, 1, ... }.  */
@@ -5390,6 +5390,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  return false;
 	}
       DUMP_VECT_SCOPE ("vectorizable_conversion");
+      unsigned int nvectors = vect_get_num_copies (vinfo, slp_node);
       if (modifier == NONE)
         {
 	  SLP_TREE_TYPE (slp_node) = type_conversion_vec_info_type;
@@ -5400,7 +5401,6 @@ vectorizable_conversion (vec_info *vinfo,
 	{
 	  SLP_TREE_TYPE (slp_node) = type_demotion_vec_info_type;
 	  /* The final packing step produces one vector result per copy.  */
-	  unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  vect_model_promotion_demotion_cost (slp_node, nvectors,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
@@ -5411,9 +5411,8 @@ vectorizable_conversion (vec_info *vinfo,
 	  /* The initial unpacking step produces two vector results
 	     per copy.  MULTI_STEP_CVT is 0 for a single conversion,
 	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
-	  unsigned int nvectors
-	    = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt;
-	  vect_model_promotion_demotion_cost (slp_node, nvectors,
+	  vect_model_promotion_demotion_cost (slp_node,
+					      nvectors >> multi_step_cvt,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
 	}
@@ -5943,7 +5942,7 @@ vectorizable_shift (vec_info *vinfo,
 	 scalar shift operand but code-generation below simply always
 	 takes the first.  */
       if (dt[1] == vect_internal_def
-	  && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+	  && maybe_ne (nunits_out * vect_get_num_copies (vinfo, slp_node),
 		       stmts.length ()))
 	scalar_shift_arg = false;
 
@@ -6102,6 +6101,7 @@ vectorizable_shift (vec_info *vinfo,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
+  unsigned nvectors = vect_get_num_copies (vinfo, slp_node);
   if (scalar_shift_arg && dt[1] != vect_internal_def)
     {
       /* Vector shl and shr insn patterns can be defined with scalar
@@ -6115,15 +6115,14 @@ vectorizable_shift (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "operand 1 using scalar mode.\n");
 	  vec_oprnd1 = op1;
-	  vec_oprnds1.create (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node));
+	  vec_oprnds1.create (nvectors);
 	  vec_oprnds1.quick_push (vec_oprnd1);
-	      /* Store vec_oprnd1 for every vector stmt to be created.
-		 We check during the analysis that all the shift arguments
-		 are the same.
-		 TODO: Allow different constants for different vector
-		 stmts generated for an SLP instance.  */
-	  for (k = 0;
-	       k < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) - 1; k++)
+	  /* Store vec_oprnd1 for every vector stmt to be created.
+	     We check during the analysis that all the shift arguments
+	     are the same.
+	     TODO: Allow different constants for different vector
+	     stmts generated for an SLP instance.  */
+	  for (k = 0; k < nvectors - 1; k++)
 	    vec_oprnds1.quick_push (vec_oprnd1);
 	}
     }
@@ -6141,8 +6140,8 @@ vectorizable_shift (vec_info *vinfo,
 				  gsi);
 	  vec_oprnd1 = vect_init_vector (vinfo, stmt_info, op1, vectype,
 					 gsi);
-	  vec_oprnds1.create (slp_node->vec_stmts_size);
-	  for (k = 0; k < slp_node->vec_stmts_size; k++)
+	  vec_oprnds1.create (nvectors);
+	  for (k = 0; k < nvectors; k++)
 	    vec_oprnds1.quick_push (vec_oprnd1);
 	}
       else if (dt[1] == vect_constant_def)
@@ -6393,7 +6392,7 @@ vectorizable_operation (vec_info *vinfo,
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  */
-  auto vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  auto vec_num = vect_get_num_copies (vinfo, slp_node);
 
   /* Reject attempts to combine mask types with nonmask types, e.g. if
      we have an AND between a (nonmask) boolean loaded from memory and
@@ -6515,7 +6514,7 @@ vectorizable_operation (vec_info *vinfo,
 	     in the prologue and (mis-)costs one of the stmts as
 	     vector stmt.  See below for the actual lowering that will
 	     be applied.  */
-	  unsigned n = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  unsigned n = vect_get_num_copies (vinfo, slp_node);
 	  switch (code)
 	    {
 	    case PLUS_EXPR:
@@ -7855,11 +7854,12 @@ vectorizable_store (vec_info *vinfo,
     }
   else
     vf = 1;
+  vec_num = vect_get_num_copies (vinfo, slp_node);
 
   /* FORNOW.  This restriction should be relaxed.  */
   if (loop
       && nested_in_vect_loop_p (loop, stmt_info)
-      && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
+      && vec_num > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7949,7 +7949,7 @@ vectorizable_store (vec_info *vinfo,
     {
       first_stmt_info = stmt_info;
       first_dr_info = dr_info;
-      group_size = vec_num = 1;
+      group_size = 1;
     }
 
   if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) > 1 && cost_vec)
@@ -8026,9 +8026,6 @@ vectorizable_store (vec_info *vinfo,
 	      || !nested_in_vect_loop_p (loop, stmt_info));
 
   grouped_store = false;
-  /* VEC_NUM is the number of vect stmts to be created for this
-     group.  */
-  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
   gcc_assert (!STMT_VINFO_GROUPED_ACCESS (first_stmt_info)
 	      || (DR_GROUP_FIRST_ELEMENT (first_stmt_info) == first_stmt_info));
@@ -8201,7 +8198,7 @@ vectorizable_store (vec_info *vinfo,
       if (nstores > 1)
 	align = MIN (tree_to_uhwi (TYPE_SIZE_UNIT (ltype)), align);
       ltype = build_aligned_type (ltype, align * BITS_PER_UNIT);
-      int ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      int ncopies = vec_num;
 
       if (!costing_p)
 	{
@@ -8412,7 +8409,7 @@ vectorizable_store (vec_info *vinfo,
       /* For costing some adjacent vector stores, we'd like to cost with
 	 the total number of them once instead of cost each one by one. */
       unsigned int n_adjacent_stores = 0;
-      int ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) / group_size;
+      int ncopies = vec_num / group_size;
       for (j = 0; j < ncopies; j++)
 	{
 	  if (j == 0)
@@ -9398,9 +9395,10 @@ vectorizable_load (vec_info *vinfo,
   else
     vf = 1;
 
+  vec_num = vect_get_num_copies (vinfo, slp_node);
+
   /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop
-      && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
+  if (nested_in_vect_loop && vec_num > 1)
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -9701,7 +9699,7 @@ vectorizable_load (vec_info *vinfo,
 				       vectype, &gsi2);
 	}
       gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
-      for (j = 0; j < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++j)
+      for (j = 0; j < (int) vec_num; ++j)
 	slp_node->push_vec_def (new_stmt);
       return true;
     }
@@ -9896,7 +9894,7 @@ vectorizable_load (vec_info *vinfo,
 	  dr_chain.create (ncopies);
 	}
       else
-	ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	ncopies = vec_num;
 
       unsigned int group_el = 0;
       unsigned HOST_WIDE_INT
@@ -10071,7 +10069,7 @@ vectorizable_load (vec_info *vinfo,
 	/* We do not support grouped accesses in a nested loop,
 	   instead the access is contiguous but it might be
 	   permuted.  No gap adjustment is needed though.  */
-	vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	;
       else if (slp_perm
 	       && (group_size != scalar_lanes
 		   || !multiple_p (nunits, group_size)))
@@ -10085,7 +10083,6 @@ vectorizable_load (vec_info *vinfo,
 	}
       else
 	{
-	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  group_gap_adj = group_size - scalar_lanes;
 	}
 
@@ -10095,10 +10092,9 @@ vectorizable_load (vec_info *vinfo,
     {
       first_stmt_info = stmt_info;
       first_dr_info = dr_info;
-      group_size = vec_num = 1;
+      group_size = 1;
       group_gap_adj = 0;
       ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
     }
 
   vec_loop_masks *loop_masks
@@ -10267,7 +10263,7 @@ vectorizable_load (vec_info *vinfo,
       /* For costing some adjacent vector loads, we'd like to cost with
 	 the total number of them once instead of cost each one by one. */
       unsigned int n_adjacent_loads = 0;
-      int ncopies = slp_node->vec_stmts_size / group_size;
+      int ncopies = vec_num / group_size;
       for (j = 0; j < ncopies; j++)
 	{
 	  if (costing_p)
@@ -11600,7 +11596,7 @@ vectorizable_condition (vec_info *vinfo,
   tree vectype = SLP_TREE_VECTYPE (slp_node);
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
 
-  int vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  int vec_num = vect_get_num_copies (vinfo, slp_node);
 
   cond_expr = gimple_assign_rhs1 (stmt);
   gcc_assert (! COMPARISON_CLASS_P (cond_expr));
@@ -12332,7 +12328,7 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     return false;
 
   machine_mode mode = TYPE_MODE (vectype);
-  int vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  int vec_num = vect_get_num_copies (loop_vinfo, slp_node);
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
