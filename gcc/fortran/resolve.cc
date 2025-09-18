@@ -14613,6 +14613,13 @@ build_init_assign (gfc_symbol *sym, gfc_expr *init)
   gfc_code *init_st;
   gfc_namespace *ns = sym->ns;
 
+  if (sym->attr.function && sym->result == sym
+      && sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+    {
+      gfc_free_expr (init);
+      return;
+    }
+
   /* Search for the function namespace if this is a contained
      function without an explicit result.  */
   if (sym->attr.function && sym == sym->result

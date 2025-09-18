@@ -76,4 +76,5 @@ end module
   end select
 
   deallocate (cz)
+  deallocate (matrix)
 end

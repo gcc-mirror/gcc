@@ -4092,7 +4092,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (c1->tb)
 	{
 	  c2->tb = gfc_get_tbp ();
-	  c2->tb = c1->tb;
+	  *c2->tb = *c1->tb;
 	}
 
       /* The order of declaration of the type_specs might not be the
