@@ -5788,7 +5788,7 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 	      if (cep->value == NULL_TREE)
 		error ("accessing uninitialized member %qD", part);
 	      else
-		error ("accessing %qD member instead of initialized %qD member "
+		error ("accessing %qD member instead of active %qD member "
 		       "in constant expression", part, cep->index);
 	    }
 	  *non_constant_p = true;
