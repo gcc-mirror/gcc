@@ -3563,7 +3563,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      in start_preparsed_function.  This is most important for activating an
      array in a union (c++/121068), but should also help the optimizers.  */
   const bool do_clobber
-    = (std_placement && !*init && flag_lifetime_dse > 1
+    = (std_placement && flag_lifetime_dse > 1
+       && !processing_template_decl
+       && !is_empty_type (elt_type)
+       && !*init
        && (!CLASS_TYPE_P (elt_type)
 	   || type_has_non_user_provided_default_constructor (elt_type)));
 
@@ -4923,7 +4926,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
 
       /* Any elements without explicit initializers get T{}.  */
-      empty_list = true;
+      if (!TREE_CLOBBER_P (init))
+	empty_list = true;
     }
   else if (init && TREE_CODE (init) == STRING_CST)
     {
@@ -5062,7 +5066,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && !TREE_CLOBBER_P (init))
 	    {
 	      if ((complain & tf_error))
 		error_at (loc, "array must be initialized "

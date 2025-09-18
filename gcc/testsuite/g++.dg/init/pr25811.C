@@ -187,7 +187,7 @@ void f11 ()
 
 void f12 ()
 {
-  new A3[1]; // { dg-error "deleted|uninitialized reference member" }
+  new A3[1]; // { dg-error "deleted|uninitialized reference" }
 }
 
 void f13 ()
