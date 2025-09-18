@@ -4715,19 +4715,193 @@
   "dlstp.<dlstp_elemsize>\t%|lr, %0"
   [(set_attr "type" "mve_misc")])
 
+
+;;
 ;; Scalar shifts
-(define_insn "mve_asrl"
+;;
+;; immediate shift amounts have to be in the [1..32] range
+;;
+;; shift amounts stored in a register can be negative, in which case
+;; the shift is reversed (asrl, lsll only)
+;; since RTL expects shift amounts to be unsigned, make sure the
+;; negative case is handled, in case simplify_rtx could optimize:
+;; (set (reg:SI 1) (const_int -5))
+;; (set (reg:DI 2) (ashift:DI (reg:DI 3) (reg:SI 1)))
+;; into:
+;; (set (reg:DI 2) (ashift:DI (reg:DI 3) (const_int -5)))
+
+;; General pattern for asrl
+(define_expand "mve_asrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "")
+	(ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "")
+		     (match_operand:QI 2 "reg_or_int_operand" "")))]
+  "TARGET_HAVE_MVE"
+{
+  rtx amount = operands[2];
+  if (CONST_INT_P (amount))
+    {
+      HOST_WIDE_INT ival = INTVAL (amount);
+
+      if (ival >= 0)
+	/* Right shift.  */
+	emit_insn (gen_mve_asrl_imm (operands[0], operands[1], amount));
+      else
+	/* Left shift.  */
+	emit_insn (gen_mve_lsll_imm (operands[0], operands[1],
+				     GEN_INT (-ival)));
+      DONE;
+    }
+
+  emit_insn (gen_mve_asrl_internal (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+;; immediate shift amount
+;; we have to split the insn if the amount is not in the [1..32] range
+(define_insn_and_split "mve_asrl_imm"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "=r,r")
+	  (ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0,r")
+		       (match_operand:QI 2 "immediate_operand" "Pg,I")))]
+  "TARGET_HAVE_MVE"
+  "asrl%?\\t%Q0, %R1, %2"
+  "&& !satisfies_constraint_Pg (operands[2])"
+  [(clobber (const_int 0))]
+  "
+  rtx amount = operands[2];
+  HOST_WIDE_INT ival = INTVAL (amount);
+
+  /* shift amount in [1..32] is already handled by the Pg constraint.  */
+
+  /* Shift by 0, it is just a move.  */
+  if (ival == 0)
+    {
+      emit_insn (gen_movdi (operands[0], operands[1]));
+      DONE;
+    }
+
+  /* ival < 0 should have already been handled by mve_asrl. */
+  gcc_assert (ival > 32);
+
+  /* Shift amount above immediate range (ival > 32).
+     out_hi gets the sign bit
+     out_lo gets in_hi << (ival - 32) or << 31 if ival >= 64.
+     If ival >= 64, the result is either 0 or -1, depending on the
+     input sign.  */
+  rtx in_hi = gen_highpart (SImode, operands[1]);
+  rtx out_lo = gen_lowpart (SImode, operands[0]);
+  rtx out_hi = gen_highpart (SImode, operands[0]);
+
+  emit_insn (gen_rtx_SET (out_lo,
+			  gen_rtx_fmt_ee (ASHIFTRT,
+					  SImode,
+					  in_hi,
+					  GEN_INT (MIN (ival - 32,
+							31)))));
+  /* Copy sign bit, which is OK even if out_lo == in_hi.  */
+  emit_insn (gen_rtx_SET (out_hi,
+			  gen_rtx_fmt_ee (ASHIFTRT,
+					  SImode,
+					  in_hi,
+					  GEN_INT (31))));
+	DONE;
+  "
+  [(set_attr "predicable" "yes,yes")
+   (set_attr "length" "4,8")])
+
+(define_insn "mve_asrl_internal"
   [(set (match_operand:DI 0 "arm_general_register_operand" "=r")
-	(ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0")
-		     (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+	(if_then_else:DI
+	  (ge:QI (match_operand:QI 2 "arm_general_register_operand" "r")
+		 (const_int 0))
+	  (ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0")
+		       (match_dup 2))
+	  (ashift:DI (match_dup 1) (neg:QI (match_dup 2)))))]
   "TARGET_HAVE_MVE"
   "asrl%?\\t%Q0, %R1, %2"
   [(set_attr "predicable" "yes")])
 
-(define_insn "mve_lsll"
+;; General pattern for lsll
+(define_expand "mve_lsll"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "")
+	(ashift:DI (match_operand:DI 1 "arm_general_register_operand" "")
+		   (match_operand:QI 2 "reg_or_int_operand" "")))]
+  "TARGET_HAVE_MVE"
+{
+  rtx amount = operands[2];
+  if (CONST_INT_P (amount))
+    {
+      HOST_WIDE_INT ival = INTVAL (amount);
+
+      if (ival >= 0)
+	/* Left shift.  */
+	emit_insn (gen_mve_lsll_imm (operands[0], operands[1], amount));
+      else
+	/* Right shift.  */
+	emit_insn (gen_lshrdi3 (operands[0], operands[1],
+                                GEN_INT (-ival)));
+      DONE;
+    }
+
+  emit_insn (gen_mve_lsll_internal (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+;; immediate shift amount
+;; we have to split the insn if the amount is not in the [1..32] range
+(define_insn_and_split "mve_lsll_imm"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "=r,r")
+	  (ashift:DI (match_operand:DI 1 "arm_general_register_operand" "0,r")
+		     (match_operand:QI 2 "immediate_operand" "Pg,I")))]
+  "TARGET_HAVE_MVE"
+  "lsll%?\\t%Q0, %R1, %2"
+  "&& !satisfies_constraint_Pg (operands[2])"
+  [(clobber (const_int 0))]
+  "
+  rtx amount = operands[2];
+  HOST_WIDE_INT ival = INTVAL (amount);
+
+  /* shift amount in [1..32] is already handled by the Pg constraint.  */
+
+  /* Shift by 0, it is just a move.  */
+  if (ival == 0)
+    {
+      emit_insn (gen_movdi (operands[0], operands[1]));
+      DONE;
+    }
+
+  /* Shift amount larger than input, result is 0.  */
+  if (ival >= 64)
+    {
+      emit_insn (gen_movdi (operands[0], const0_rtx));
+      DONE;
+    }
+
+  /* ival < 0 should have already been handled by mve_asrl. */
+  gcc_assert (ival > 32);
+
+  /* Shift amount above immediate range: 32 < ival < 64.  */
+  rtx in_lo = gen_lowpart (SImode, operands[1]);
+  rtx out_lo = gen_lowpart (SImode, operands[0]);
+  rtx out_hi = gen_highpart (SImode, operands[0]);
+  emit_insn (gen_rtx_SET (out_hi,
+			  gen_rtx_fmt_ee (ASHIFT,
+					  SImode,
+					  in_lo,
+					  GEN_INT (ival - 32))));
+  emit_insn (gen_rtx_SET (out_lo, const0_rtx));
+  DONE;
+  "
+  [(set_attr "predicable" "yes,yes")
+   (set_attr "length" "4,8")])
+
+(define_insn "mve_lsll_internal"
   [(set (match_operand:DI 0 "arm_general_register_operand" "=r")
-	(ashift:DI (match_operand:DI 1 "arm_general_register_operand" "0")
-		   (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+        (if_then_else:DI
+	  (ge:QI (match_operand:QI 2 "arm_general_register_operand" "r")
+		 (const_int 0))
+	  (ashift:DI (match_operand:DI 1 "arm_general_register_operand" "0")
+		     (match_dup 2))
+	  (lshiftrt:DI (match_dup 1) (neg:QI (match_dup 2)))))]
   "TARGET_HAVE_MVE"
   "lsll%?\\t%Q0, %R1, %2"
   [(set_attr "predicable" "yes")])
