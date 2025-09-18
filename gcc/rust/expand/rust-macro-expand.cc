@@ -1108,8 +1108,9 @@ MacroExpander::transcribe_rule (
   auto invoc_stream = invoc_token_tree.to_token_stream ();
   auto macro_rule_tokens = transcribe_tree.to_token_stream ();
 
-  auto substitute_context = SubstituteCtx (invoc_stream, macro_rule_tokens,
-					   matched_fragments, definition);
+  auto substitute_context
+    = SubstituteCtx (invoc_stream, macro_rule_tokens, matched_fragments,
+		     definition, invoc_token_tree.get_locus ());
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_context.substitute_tokens ();
 

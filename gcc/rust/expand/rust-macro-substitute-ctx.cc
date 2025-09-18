@@ -40,7 +40,7 @@ SubstituteCtx::substitute_dollar_crate (
   if (*def_crate == current_crate)
     {
       expanded.push_back (std::make_unique<AST::Token> (
-	Rust::Token::make_identifier (UNKNOWN_LOCATION, "crate")));
+	Rust::Token::make_identifier (origin, "crate")));
     }
   else
     {
@@ -49,9 +49,9 @@ SubstituteCtx::substitute_dollar_crate (
       rust_assert (name);
 
       expanded.push_back (std::make_unique<AST::Token> (
-	Rust::Token::make (SCOPE_RESOLUTION, UNKNOWN_LOCATION)));
+	Rust::Token::make (SCOPE_RESOLUTION, origin)));
       expanded.push_back (std::make_unique<AST::Token> (
-	Rust::Token::make_identifier (UNKNOWN_LOCATION, std::string (*name))));
+	Rust::Token::make_identifier (origin, std::string (*name))));
     }
 
   return true;
@@ -237,7 +237,7 @@ SubstituteCtx::substitute_repetition (
 	}
 
       auto substitute_context
-	= SubstituteCtx (input, new_macro, sub_map, definition);
+	= SubstituteCtx (input, new_macro, sub_map, definition, origin);
       auto new_tokens = substitute_context.substitute_tokens ();
 
       // Skip the first repetition, but add the separator to the expanded
