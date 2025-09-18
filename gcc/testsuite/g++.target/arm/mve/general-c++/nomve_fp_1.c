@@ -12,6 +12,6 @@
 void
 f1 (uint8x16_t v)
 {
-  vreinterpretq_f16 (v); /* { dg-error {ACLE function 'void vreinterpretq_f16\(uint8x16_t\)' requires ISA extension 'mve.fp'} } */
+  vreinterpretq_f16 (v); /* { dg-error {ACLE function 'float16x8_t vreinterpretq_f16\(uint8x16_t\)' requires ISA extension 'mve.fp'} } */
   /* { dg-message {note: you can enable mve.fp by using the command-line option '-march', or by using the 'target' attribute or pragma} "" {target *-*-*} .-1 } */
 }

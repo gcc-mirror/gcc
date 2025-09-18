@@ -26,10 +26,8 @@
 #ifndef _GCC_ARM_MVE_TYPES_H
 #define _GCC_ARM_MVE_TYPES_H
 
-#if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 typedef __fp16 float16_t;
 typedef float float32_t;
-#endif
 
 #pragma GCC arm "arm_mve_types.h"
 

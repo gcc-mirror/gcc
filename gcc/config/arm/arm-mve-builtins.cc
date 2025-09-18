@@ -410,8 +410,6 @@ register_builtin_types ()
 #include "arm-mve-builtins.def"
   for (unsigned int i = 0; i < NUM_VECTOR_TYPES; ++i)
     {
-      if (vector_types[i].requires_float && !TARGET_HAVE_MVE_FLOAT)
-	continue;
       tree eltype = scalar_types[i];
       tree vectype;
       if (eltype == boolean_type_node)
@@ -433,18 +431,6 @@ register_builtin_types ()
 static void
 register_vector_type (vector_type_index type)
 {
-
-  /* If the target does not have the mve.fp extension, but the type requires
-     it, then it needs to be assigned a non-dummy type so that functions
-     with those types in their signature can be registered.  This allows for
-     diagnostics about the missing extension, rather than about a missing
-     function definition.  */
-  if (vector_types[type].requires_float && !TARGET_HAVE_MVE_FLOAT)
-    {
-      acle_vector_types[0][type] = void_type_node;
-      return;
-    }
-
   tree vectype = abi_vector_types[type];
   tree id = get_identifier (vector_types[type].acle_name);
   tree decl = build_decl (input_location, TYPE_DECL, id, vectype);
@@ -470,13 +456,7 @@ register_builtin_tuple_types (vector_type_index type)
 {
   const vector_type_info* info = &vector_types[type];
 
-  /* If the target does not have the mve.fp extension, but the type requires
-     it, then it needs to be assigned a non-dummy type so that functions
-     with those types in their signature can be registered.  This allows for
-     diagnostics about the missing extension, rather than about a missing
-     function definition.  */
-  if (scalar_types[type] == boolean_type_node
-      || (info->requires_float && !TARGET_HAVE_MVE_FLOAT))
+  if (scalar_types[type] == boolean_type_node)
     {
       for (unsigned int num_vectors = 2; num_vectors <= 4; num_vectors += 2)
 	acle_vector_types[num_vectors >> 1][type] = void_type_node;
