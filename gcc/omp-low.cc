@@ -14780,6 +14780,8 @@ lower_omp_regimplify_operands_p (tree *tp, int *walk_subtrees,
       lower_omp_regimplify_operands_data *ldata
 	= (lower_omp_regimplify_operands_data *) wi->info;
       tree o = maybe_lookup_decl (t, ldata->ctx);
+      if (o == NULL_TREE)
+	o = maybe_lookup_decl_in_outer_ctx (t, ldata->ctx);
       if (o != t)
 	{
 	  ldata->decls->safe_push (DECL_VALUE_EXPR (*tp));
