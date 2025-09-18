@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-logical-location.h"
 #include "langhooks.h"
 #include "intl.h"
+#include "diagnostics/dumping.h"
 
 using namespace diagnostics::logical_locations;
 
@@ -39,6 +40,13 @@ assert_valid_tree (const_tree node)
 
 /* class tree_logical_location_manager
    : public diagnostics::logical_locations::manager.  */
+
+void
+tree_logical_location_manager::dump (FILE *outfile, int indent) const
+{
+  diagnostics::dumping::emit_heading (outfile, indent,
+				      "tree_logical_location_manager");
+}
 
 const char *
 tree_logical_location_manager::get_short_name (key k) const

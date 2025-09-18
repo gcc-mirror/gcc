@@ -455,6 +455,11 @@ context::dump (FILE *outfile, int indent) const
     m_file_cache->dump (outfile, indent + 4);
   else
     dumping::emit_none (outfile, indent + 4);
+  dumping::emit_heading (outfile, indent + 2, "client data hooks");
+  if (m_client_data_hooks)
+    m_client_data_hooks->dump (outfile, indent + 4);
+  else
+    dumping::emit_none (outfile, indent + 4);
 }
 
 /* Return true if sufficiently severe diagnostics have been seen that
@@ -652,6 +657,18 @@ context::initialize_fixits_change_set ()
   delete m_fixits_change_set;
   gcc_assert (m_file_cache);
   m_fixits_change_set = new changes::change_set (*m_file_cache);
+}
+
+// class client_data_hooks
+
+void
+client_data_hooks::dump (FILE *outfile, int indent) const
+{
+  dumping::emit_heading (outfile, indent, "logical location manager");
+  if (auto mgr = get_logical_location_manager ())
+    mgr->dump (outfile, indent + 2);
+  else
+    dumping::emit_none (outfile, indent + 2);
 }
 
 } // namespace diagnostics

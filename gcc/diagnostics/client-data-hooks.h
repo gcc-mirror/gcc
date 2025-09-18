@@ -36,6 +36,9 @@ class client_data_hooks
  public:
   virtual ~client_data_hooks () {}
 
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
   /* Get version info for this client, or NULL.  */
   virtual const client_version_info *get_any_version_info () const = 0;
 

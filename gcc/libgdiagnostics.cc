@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostics/logical-locations.h"
+#include "diagnostics/dumping.h"
 #include "diagnostics/changes.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
@@ -476,6 +477,12 @@ public:
   key_from_ptr (const diagnostic_logical_location *ptr)
   {
     return key::from_ptr (ptr);
+  }
+
+  void dump (FILE *outfile, int indent) const final override
+  {
+    diagnostics::dumping::emit_heading
+      (outfile, indent, "impl_logical_location_manager");
   }
 
   const char *get_short_name (key k) const final override

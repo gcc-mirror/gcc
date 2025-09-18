@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "selftest.h"
 #include "diagnostics/selftest-logical-locations.h"
+#include "diagnostics/dumping.h"
 
 #if CHECKING_P
 
@@ -36,6 +37,12 @@ test_manager::~test_manager ()
 {
   for (auto iter : m_name_to_item_map)
     delete iter.second;
+}
+
+void
+test_manager::dump (FILE *outfile, int indent) const
+{
+  dumping::emit_heading (outfile, indent, "test_manager");
 }
 
 const char *
