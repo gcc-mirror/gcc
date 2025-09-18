@@ -277,6 +277,8 @@ AARCH64_OPT_EXTENSION("ssve-fp8dot2", SSVE_FP8DOT2, (SME2, FP8), (), (), "smesf8
 
 AARCH64_OPT_EXTENSION("lut", LUT, (SIMD), (), (), "lut")
 
+AARCH64_OPT_EXTENSION ("sme-lutv2", SME_LUTv2, (SME2), (), (), "sme-lutv2")
+
 AARCH64_OPT_EXTENSION("cpa", CPA, (), (), (), "")
 
 #undef AARCH64_OPT_FMV_EXTENSION

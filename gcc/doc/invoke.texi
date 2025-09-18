@@ -22728,6 +22728,8 @@ extension in streaming mode.
 Enable the Floating Point Absolute Maximum/Minimum extension.
 @item lut
 Enable the Lookup Table extension.
+@item sme-lutv2
+Enable the SME Lookup Table v2 (LUTv2) extension.
 @item cpa
 Enable the Checked Pointer Arithmetic instructions.
 @item sve-b16b16

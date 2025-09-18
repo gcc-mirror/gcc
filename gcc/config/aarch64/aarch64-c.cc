@@ -269,6 +269,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_SVE_BF16", pfile);
 
   aarch64_def_or_undef (TARGET_LUT, "__ARM_FEATURE_LUT", pfile);
+  aarch64_def_or_undef (TARGET_SME_LUTv2, "__ARM_FEATURE_SME_LUTv2", pfile);
 
   aarch64_def_or_undef (TARGET_FP8, "__ARM_FEATURE_FP8", pfile);
 
