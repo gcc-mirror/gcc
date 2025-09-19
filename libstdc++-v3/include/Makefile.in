@@ -1897,8 +1897,8 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "$$verbose_assert" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
-	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
-	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
+	    -e '/PACKAGE/s,^,// ,' \
+	    -e '/PACKAGE/!s/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
 	    -e 's/LT_OBJDIR/_GLIBCXX_LT_OBJDIR/g' \
 	    -e 's/STDC_HEADERS/_GLIBCXX_STDC_HEADERS/g' \
