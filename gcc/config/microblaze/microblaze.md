@@ -21,6 +21,7 @@
 
 (include "constraints.md")
 (include "predicates.md")
+(include "iterators.md")
 
 ;;----------------------------------------------------
 ;; Constants
@@ -43,6 +44,10 @@
   (UNSPEC_TLS           106)    ;; jump table
   (UNSPEC_SET_TEXT      107)    ;; set text start
   (UNSPEC_TEXT          108)    ;; data text relative
+  (UNSPECV_CAS_BOOL     201)    ;; compare and swap (bool)
+  (UNSPECV_CAS_VAL      202)    ;; compare and swap (val)
+  (UNSPECV_CAS_MEM      203)    ;; compare and swap (mem)
+  (UNSPECV_ATOMIC_FETCH_OP     204)    ;; atomic fetch op
 ])
 
 (define_c_enum "unspec" [
@@ -79,7 +84,7 @@
 ;; bshift 	Shift operations
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt,trap"
+  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt,trap,atomic"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
