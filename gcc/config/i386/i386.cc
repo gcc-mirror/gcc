@@ -26144,6 +26144,14 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   /* Record number of load/store/gather/scatter in vectorized body.  */
   if (where == vect_body && !m_costing_for_scalar)
     {
+      int scale = 1;
+      if (vectype
+	  && ((GET_MODE_SIZE (TYPE_MODE (vectype)) == 64
+	      && TARGET_AVX512_SPLIT_REGS)
+	      || (GET_MODE_SIZE (TYPE_MODE (vectype)) == 32
+		  && TARGET_AVX256_SPLIT_REGS)))
+	scale = 2;
+
       switch (kind)
 	{
 	  /* Emulated gather/scatter or any scalarization.  */
@@ -26166,7 +26174,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	      /* Handle __builtin_fma.  */
 	      if (gimple_call_combined_fn (stmt_info->stmt) == CFN_FMA)
 		{
-		  m_num_reduc[X86_REDUC_FMA] += count;
+		  m_num_reduc[X86_REDUC_FMA] += count * scale;
 		  break;
 		}
 
@@ -26203,12 +26211,12 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		      && (def = SSA_NAME_DEF_STMT (rhs1), true)
 		      && is_gimple_assign (def)
 		      && gimple_assign_rhs_code (def) == MULT_EXPR)
-		    m_num_reduc[X86_REDUC_FMA] += count;
+		    m_num_reduc[X86_REDUC_FMA] += count * scale;
 		  else if (TREE_CODE (rhs2) == SSA_NAME
 			   && (def = SSA_NAME_DEF_STMT (rhs2), true)
 			   && is_gimple_assign (def)
 			   && gimple_assign_rhs_code (def) == MULT_EXPR)
-		    m_num_reduc[X86_REDUC_FMA] += count;
+		    m_num_reduc[X86_REDUC_FMA] += count * scale;
 		  break;
 
 		  /* Vectorizer lane_reducing_op_p supports DOT_PROX_EXPR,
@@ -26237,7 +26245,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 			     ? TARGET_AVX10_2
 			     : (TARGET_AVXVNNIINT8 || TARGET_AVX10_2));
 		    }
-		  m_num_reduc[X86_REDUC_DOT_PROD] += count;
+		  m_num_reduc[X86_REDUC_DOT_PROD] += count * scale;
 
 		  /* Dislike to do unroll and partial sum for
 		     emulated DOT_PROD_EXPR.  */
@@ -26246,7 +26254,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		  break;
 
 		case SAD_EXPR:
-		  m_num_reduc[X86_REDUC_SAD] += count;
+		  m_num_reduc[X86_REDUC_SAD] += count * scale;
 		  break;
 
 		default:

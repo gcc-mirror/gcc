@@ -1744,7 +1744,7 @@ struct processor_costs znver1_cost = {
 					   FMA/DOT_PROD_EXPR/SAD_EXPR,
 					   it's used to determine unroll
 					   factor in the vectorizer.  */
-  4,					/* Limit how much the autovectorizer
+  1,					/* Limit how much the autovectorizer
 					   may unroll a loop.  */
   znver1_memcpy,
   znver1_memset,
@@ -1918,7 +1918,7 @@ struct processor_costs znver2_cost = {
 					   FMA/DOT_PROD_EXPR/SAD_EXPR,
 					   it's used to determine unroll
 					   factor in the vectorizer.  */
-  4,					/* Limit how much the autovectorizer
+  1,					/* Limit how much the autovectorizer
 					   may unroll a loop.  */
   znver2_memcpy,
   znver2_memset,
