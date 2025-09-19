@@ -82,14 +82,10 @@
 #define vgetq_lane_u64(__a,  __idx) __arm_vgetq_lane_u64(__a,  __idx)
 #define sqrshr(__p0, __p1) __arm_sqrshr(__p0, __p1)
 #define sqshl(__p0, __p1) __arm_sqshl(__p0, __p1)
-#define sqshll(__p0, __p1) __arm_sqshll(__p0, __p1)
 #define srshr(__p0, __p1) __arm_srshr(__p0, __p1)
-#define srshrl(__p0, __p1) __arm_srshrl(__p0, __p1)
 #define uqrshl(__p0, __p1) __arm_uqrshl(__p0, __p1)
 #define uqshl(__p0, __p1) __arm_uqshl(__p0, __p1)
-#define uqshll(__p0, __p1) __arm_uqshll(__p0, __p1)
 #define urshr(__p0, __p1) __arm_urshr(__p0, __p1)
-#define urshrl(__p0, __p1) __arm_urshrl(__p0, __p1)
 #endif
 
 /* For big-endian, GCC's vector indices are reversed within each 64 bits
@@ -238,34 +234,6 @@ __arm_vgetq_lane_u64 (uint64x2_t __a, const int __idx)
 {
   __ARM_CHECK_LANEQ (__a, __idx);
   return __a[__ARM_LANEQ(__a,__idx)];
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_uqshll (uint64_t value, const int shift)
-{
-  return __builtin_mve_uqshll_di (value, shift);
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_urshrl (uint64_t value, const int shift)
-{
-  return __builtin_mve_urshrl_di (value, shift);
-}
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_srshrl (int64_t value, const int shift)
-{
-  return __builtin_mve_srshrl_di (value, shift);
-}
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_sqshll (int64_t value, const int shift)
-{
-  return __builtin_mve_sqshll_di (value, shift);
 }
 
 __extension__ extern __inline uint32_t

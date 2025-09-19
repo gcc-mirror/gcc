@@ -1,0 +1,24 @@
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-add-options arm_v8_1m_mve } */
+
+#include "arm_mve.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int64_t
+foo (int64_t value)
+{
+  return sqshll (value, 33); /* { dg-error {passing 33 to argument 2 of 'sqshll', which expects a value in the range \[1, 32\]} } */
+}
+
+int64_t
+foo1 (int64_t value)
+{
+  return sqshll (value, -1); /* { dg-error {passing -1 to argument 2 of 'sqshll', which expects a value in the range \[1, 32\]} } */
+}
+
+#ifdef __cplusplus
+}
+#endif

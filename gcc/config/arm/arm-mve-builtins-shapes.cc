@@ -1697,6 +1697,29 @@ struct scalar_s64_shift_def : public nonoverloaded_base
 };
 SHAPE (scalar_s64_shift)
 
+/* int64_t foo(int64_t, const int)
+
+   Check that 'shift' is in the [1,32] range.
+
+   Example: sqshll.
+   int64_t [__arm_]sqshll(int64_t value, const int shift)  */
+struct scalar_s64_shift_imm_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "ss64,ss64,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (1, 1, 32);
+  }
+};
+SHAPE (scalar_s64_shift_imm)
+
 /* uint64_t foo(uint64_t, int32_t)
 
    Example: lsll.
@@ -1711,6 +1734,29 @@ struct scalar_u64_shift_def : public nonoverloaded_base
   }
 };
 SHAPE (scalar_u64_shift)
+
+/* uint64_t foo(uint64_t, const int)
+
+   Check that 'shift' is in the [1,32] range.
+
+   Example: uqshll.
+   uint64_t [__arm_]uqshll(uint64_t value, const int shift)  */
+struct scalar_u64_shift_imm_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "su64,su64,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (1, 1, 32);
+  }
+};
+SHAPE (scalar_u64_shift_imm)
 
 /* void vfoo[_t0](<X>_t *, <T0>[xN]_t)
 

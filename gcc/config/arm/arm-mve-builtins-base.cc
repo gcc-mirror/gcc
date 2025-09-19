@@ -1174,8 +1174,12 @@ enum which_scalar_shift {
   ss_LSLL,
   ss_SQRSHRL,
   ss_SQRSHRL_SAT48,
+  ss_SQSHLL,
+  ss_SRSHRL,
   ss_UQRSHLL,
   ss_UQRSHLL_SAT48,
+  ss_UQSHLL,
+  ss_URSHRL
 };
 
 class mve_function_scalar_shift : public function_base
@@ -1213,12 +1217,28 @@ public:
 	code = code_for_mve_sqrshrl_sat_di (SQRSHRL_48);
 	break;
 
+      case ss_SQSHLL:
+	code = CODE_FOR_mve_sqshll_di;
+	break;
+
+      case ss_SRSHRL:
+	code = CODE_FOR_mve_srshrl_di;
+	break;
+
       case ss_UQRSHLL:
 	code = code_for_mve_uqrshll_sat_di (UQRSHLL_64);
 	break;
 
       case ss_UQRSHLL_SAT48:
 	code = code_for_mve_uqrshll_sat_di (UQRSHLL_48);
+	break;
+
+      case ss_UQSHLL:
+	code = CODE_FOR_mve_uqshll_di;
+	break;
+
+      case ss_URSHRL:
+	code = CODE_FOR_mve_urshrl_di;
 	break;
 
       default:
@@ -1419,8 +1439,12 @@ FUNCTION (asrl, mve_function_scalar_shift, (ss_ASRL))
 FUNCTION (lsll, mve_function_scalar_shift, (ss_LSLL))
 FUNCTION (sqrshrl, mve_function_scalar_shift, (ss_SQRSHRL))
 FUNCTION (sqrshrl_sat48, mve_function_scalar_shift, (ss_SQRSHRL_SAT48))
+FUNCTION (sqshll, mve_function_scalar_shift, (ss_SQSHLL))
+FUNCTION (srshrl, mve_function_scalar_shift, (ss_SRSHRL))
 FUNCTION (uqrshll, mve_function_scalar_shift, (ss_UQRSHLL))
 FUNCTION (uqrshll_sat48, mve_function_scalar_shift, (ss_UQRSHLL_SAT48))
+FUNCTION (uqshll, mve_function_scalar_shift, (ss_UQSHLL))
+FUNCTION (urshrl, mve_function_scalar_shift, (ss_URSHRL))
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
