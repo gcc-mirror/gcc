@@ -119,6 +119,14 @@ Standard types
        -
      * - :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`
        -
+     * - :c:data:`GCC_JIT_TYPE_FLOAT16`
+       -
+     * - :c:data:`GCC_JIT_TYPE_FLOAT32`
+       -
+     * - :c:data:`GCC_JIT_TYPE_FLOAT64`
+       -
+     * - :c:data:`GCC_JIT_TYPE_FLOAT128`
+       -
      * - :c:data:`GCC_JIT_TYPE_CONST_CHAR_PTR`
        - C type: ``(const char *)``
      * - :c:data:`GCC_JIT_TYPE_SIZE_T`

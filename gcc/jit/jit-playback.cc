@@ -295,6 +295,39 @@ get_tree_node_for_type (enum gcc_jit_types type_)
       return double_type_node;
     case GCC_JIT_TYPE_LONG_DOUBLE:
       return long_double_type_node;
+    case GCC_JIT_TYPE_FLOAT16:
+      if (float16_type_node == NULL || TYPE_PRECISION (float16_type_node) != 16)
+      {
+	add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		   type_);
+	return NULL;
+      }
+      return float16_type_node;
+    case GCC_JIT_TYPE_FLOAT32:
+      if (float32_type_node == NULL || TYPE_PRECISION (float32_type_node) != 32)
+      {
+	add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		   type_);
+	return NULL;
+      }
+      return float32_type_node;
+    case GCC_JIT_TYPE_FLOAT64:
+      if (float64_type_node == NULL || TYPE_PRECISION (float64_type_node) != 64)
+      {
+	add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		   type_);
+	return NULL;
+      }
+      return float64_type_node;
+    case GCC_JIT_TYPE_FLOAT128:
+      if (float128_type_node == NULL
+	  || TYPE_PRECISION (float128_type_node) != 128)
+      {
+	add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		   type_);
+	return NULL;
+      }
+      return float128_type_node;
 
     case GCC_JIT_TYPE_SIZE_T:
       return size_type_node;

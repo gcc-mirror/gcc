@@ -2662,6 +2662,18 @@ recording::memento_of_get_type::get_size ()
       m = targetm.c.mode_for_floating_type (TI_LONG_DOUBLE_TYPE);
       size = GET_MODE_PRECISION (m).to_constant ();
       break;
+    case GCC_JIT_TYPE_FLOAT16:
+      size = 16;
+      break;
+    case GCC_JIT_TYPE_FLOAT32:
+      size = 32;
+      break;
+    case GCC_JIT_TYPE_FLOAT64:
+      size = 64;
+      break;
+    case GCC_JIT_TYPE_FLOAT128:
+      size = 128;
+      break;
     case GCC_JIT_TYPE_SIZE_T:
       size = MAX_BITS_PER_WORD;
       break;
@@ -2718,6 +2730,10 @@ recording::memento_of_get_type::dereference ()
     case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_FLOAT16:
+    case GCC_JIT_TYPE_FLOAT32:
+    case GCC_JIT_TYPE_FLOAT64:
+    case GCC_JIT_TYPE_FLOAT128:
     case GCC_JIT_TYPE_COMPLEX_FLOAT:
     case GCC_JIT_TYPE_COMPLEX_DOUBLE:
     case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
@@ -2783,6 +2799,10 @@ recording::memento_of_get_type::is_int () const
     case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_FLOAT16:
+    case GCC_JIT_TYPE_FLOAT32:
+    case GCC_JIT_TYPE_FLOAT64:
+    case GCC_JIT_TYPE_FLOAT128:
       return false;
 
     case GCC_JIT_TYPE_CONST_CHAR_PTR:
@@ -2842,6 +2862,10 @@ recording::memento_of_get_type::is_signed () const
     case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_FLOAT16:
+    case GCC_JIT_TYPE_FLOAT32:
+    case GCC_JIT_TYPE_FLOAT64:
+    case GCC_JIT_TYPE_FLOAT128:
 
     case GCC_JIT_TYPE_CONST_CHAR_PTR:
 
@@ -2902,6 +2926,10 @@ recording::memento_of_get_type::is_float () const
     case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_FLOAT16:
+    case GCC_JIT_TYPE_FLOAT32:
+    case GCC_JIT_TYPE_FLOAT64:
+    case GCC_JIT_TYPE_FLOAT128:
       return true;
 
     case GCC_JIT_TYPE_CONST_CHAR_PTR:
@@ -2966,6 +2994,10 @@ recording::memento_of_get_type::is_bool () const
     case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_FLOAT16:
+    case GCC_JIT_TYPE_FLOAT32:
+    case GCC_JIT_TYPE_FLOAT64:
+    case GCC_JIT_TYPE_FLOAT128:
       return false;
 
     case GCC_JIT_TYPE_CONST_CHAR_PTR:
@@ -3043,8 +3075,11 @@ static const char * const get_type_strings[] = {
   "__int32_t",    /* GCC_JIT_TYPE_INT32_T */
   "__int64_t",    /* GCC_JIT_TYPE_INT64_T */
   "__int128_t",   /* GCC_JIT_TYPE_INT128_T */
-
-  "bfloat16", /* GCC_JIT_TYPE_BFLOAT16 */
+  "bfloat16",     /* GCC_JIT_TYPE_BFLOAT16 */
+  "_Float16",     /* GCC_JIT_TYPE_FLOAT16 */
+  "_Float32",     /* GCC_JIT_TYPE_FLOAT32 */
+  "_Float64",     /* GCC_JIT_TYPE_FLOAT64 */
+  "__float128",   /* GCC_JIT_TYPE_FLOAT128 */
 };
 
 /* Implementation of recording::memento::make_debug_string for
@@ -3091,6 +3126,10 @@ static const char * const get_type_enum_strings[] = {
   "GCC_JIT_TYPE_INT64_T",
   "GCC_JIT_TYPE_INT128_T",
   "GCC_JIT_TYPE_BFLOAT16",
+  "GCC_JIT_TYPE_FLOAT16",
+  "GCC_JIT_TYPE_FLOAT32",
+  "GCC_JIT_TYPE_FLOAT64",
+  "GCC_JIT_TYPE_FLOAT128",
 };
 
 void

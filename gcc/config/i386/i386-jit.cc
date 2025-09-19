@@ -65,6 +65,18 @@ ix86_jit_register_target_info (void)
     jit_target_add_supported_target_dependent_type (GCC_JIT_TYPE_INT128_T);
   }
 
+  if (float16_type_node != NULL && TYPE_PRECISION (float16_type_node) == 16)
+    jit_target_add_supported_target_dependent_type (GCC_JIT_TYPE_FLOAT16);
+
+  if (float32_type_node != NULL && TYPE_PRECISION (float32_type_node) == 32)
+    jit_target_add_supported_target_dependent_type (GCC_JIT_TYPE_FLOAT32);
+
+  if (float64_type_node != NULL && TYPE_PRECISION (float64_type_node) == 64)
+    jit_target_add_supported_target_dependent_type (GCC_JIT_TYPE_FLOAT64);
+
+  if (float128_type_node != NULL && TYPE_PRECISION (float128_type_node) == 128)
+    jit_target_add_supported_target_dependent_type (GCC_JIT_TYPE_FLOAT128);
+
 #define ADD_TARGET_INFO jit_add_target_info
 #include "i386-rust-and-jit.inc"
 #undef ADD_TARGET_INFO

@@ -404,6 +404,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-sized-float.c */
+#define create_code create_code_sized_float
+#define verify_code verify_code_sized_float
+#include "test-sized-float.c"
+#undef create_code
+#undef verify_code
+
 /* test-target-builtins.c: This can't be in the testcases array as it
    is target-specific.  */
 
@@ -638,6 +645,9 @@ const struct testcase testcases[] = {
   {"sizeof",
    create_code_sizeof,
    verify_code_sizeof},
+  {"sized-float",
+   create_code_sized_float,
+   verify_code_sized_float},
   {"string_literal",
    create_code_string_literal,
    verify_code_string_literal},
