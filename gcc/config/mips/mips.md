@@ -6041,16 +6041,29 @@
   "wsbh\t%0,%1"
   [(set_attr "type" "shift")])
 
-(define_insn_and_split "bswapsi2"
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+    (bswap:SI (match_operand:SI 1 "register_operand" "d")))]
+  "ISA_HAS_WSBW || (ISA_HAS_WSBH && ISA_HAS_ROR)"
+{
+  if (ISA_HAS_WSBW) {
+    emit_insn (gen_wsbwsi2 (operands[0], operands[1]));
+  }
+  else
+  {
+    rtx tmp = gen_reg_rtx (SImode);
+    emit_insn (gen_wsbh (tmp, operands[1]));
+    emit_insn (gen_rotrsi3 (operands[0], tmp, GEN_INT(16)));
+  }
+  DONE;
+})
+
+(define_insn "wsbwsi2"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(bswap:SI (match_operand:SI 1 "register_operand" "d")))]
-  "ISA_HAS_WSBH && ISA_HAS_ROR"
-  "#"
-  "&& 1"
-  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_WSBH))
-   (set (match_dup 0) (rotatert:SI (match_dup 0) (const_int 16)))]
-  ""
-  [(set_attr "insn_count" "2")])
+  "ISA_HAS_WSBW"
+  "wsbw\t%0,%1"
+  [(set_attr "type" "shift")])
 
 (define_insn_and_split "bswapdi2"
   [(set (match_operand:DI 0 "register_operand" "=d")

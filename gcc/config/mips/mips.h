@@ -1263,6 +1263,9 @@ struct mips_cpu_info {
 #define ISA_HAS_WSBH		((mips_isa_rev >= 2 && !TARGET_MIPS16)  \
 				  || TARGET_ALLEGREX)
 
+/* Similar to WSBH but for 32 bit words (byte swap within a word). */
+#define ISA_HAS_WSBW		(TARGET_ALLEGREX)
+
 /* ISA has data prefetch instructions.  This controls use of 'pref'.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
 				  || TARGET_LOONGSON_2EF		\
