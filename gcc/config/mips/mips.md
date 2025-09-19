@@ -1795,9 +1795,12 @@
    (set_attr "mode"	"SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(eq_attr "alternative" "1,2")
-                  (const_string "yes")]
-              (const_string "no")))])
+       (cond [(eq_attr "alternative" "1")
+              (const_string "yes")
+              (and (eq_attr "alternative" "2")
+                   (match_test "ISA_HAS_MUL3"))
+              (const_string "yes")]
+           (const_string "no")))])
 
 ;; The same idea applies here.  The middle alternative needs one less
 ;; clobber than the final alternative, so we add "*?" as a counterweight.
@@ -2041,9 +2044,12 @@
    (set_attr "mode"     "SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(eq_attr "alternative" "1,2")
-                  (const_string "yes")]
-              (const_string "no")))])
+        (cond [(eq_attr "alternative" "1")
+               (const_string "yes")
+               (and (eq_attr "alternative" "2")
+                    (match_test "ISA_HAS_MUL3"))
+               (const_string "yes")]
+           (const_string "no")))])
 
 ;; Split *mul_sub_si if both the source and destination accumulator
 ;; values are GPRs.
