@@ -664,7 +664,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       deque<_Tp, _Alloc>::
       _M_emplace_aux(iterator __pos, _Args&&... __args)
       {
-	value_type __x_copy(std::forward<_Args>(__args)...); // XXX copy
+	// We should construct this temporary while the deque is
+	// in its current state in case something in __args...
+	// depends on that state before shuffling elements around.
+	_Temporary_value __tmp(this, std::forward<_Args>(__args)...);
 #else
     typename deque<_Tp, _Alloc>::iterator
       deque<_Tp, _Alloc>::
@@ -695,7 +698,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __pos = this->_M_impl._M_start + __index;
 	    _GLIBCXX_MOVE_BACKWARD3(__pos, __back2, __back1);
 	  }
-	*__pos = _GLIBCXX_MOVE(__x_copy);
+#if __cplusplus >= 201103L
+	*__pos = std::move(__tmp._M_val());
+#else
+	*__pos = __x_copy;
+#endif
 	return __pos;
       }
 
