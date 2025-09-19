@@ -5730,6 +5730,168 @@ xtensa_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 namespace
 {
 
+/* Cheap full_rtx_costs derivative for concise handling of insn sequence
+   costs.  */
+
+struct xt_full_rtx_costs : public full_rtx_costs
+{
+  inline xt_full_rtx_costs ()
+  {
+    init_costs_to_zero (this);
+  }
+
+  /* "Less-than" cost comparison.  */
+  inline bool operator< (xt_full_rtx_costs &rhs)
+  {
+    return costs_lt_p (this, &rhs, !optimize_size);
+  }
+
+  /* Accumulate the costs of a specified insn.  */
+  xt_full_rtx_costs &operator+= (rtx_insn *insn)
+  {
+    speed += xtensa_insn_cost (insn, true);
+    size += xtensa_insn_cost (insn, false);
+    return *this;
+  }
+
+  /* Create a new instance from the specified insn sequence.  */
+  explicit xt_full_rtx_costs (rtx_insn *seq)
+    : xt_full_rtx_costs ()
+  {
+    for (; seq; seq = NEXT_INSN (seq))
+      *this += seq;
+  }
+
+  /* superior/inferior parts of the costs.  */
+  inline int major ()
+  {
+    return optimize_size ? size : speed;
+  }
+  inline int minor ()
+  {
+    return optimize_size ? speed : size;
+  }
+};
+
+/* Optimize assignment of negatively-scaled (up to the minus 15th power
+   of two) signed 12-bit integer immediate values to hardware floating-
+   point registers.  For example, 0.12005615234375f is exactly equal to
+   (1967.f / (1 << 14)), so we can emit such as:
+	movi	a9, 1967
+	float.s	f0, a9, 14
+   if such conversion reduces costs.  */
+
+static bool
+FPreg_neg_scaled_simm12b_1 (const REAL_VALUE_TYPE *rval,
+			    HOST_WIDE_INT &v, int &scale)
+{
+  REAL_VALUE_TYPE r;
+  int shift;
+
+  /* Non-zero finite values can only be accepted.  */
+  if (! real_isfinite (rval) || rval->cl == rvc_zero)
+    return false;
+
+  /* Check whether the value multiplied by 32768 is an exact integer and
+     the result after truncating the trailing '0' bits fits into a signed
+     12-bit.  */
+  real_ldexp (&r, rval, 15);
+  if (! real_isinteger (&r, &v)
+      || ! xtensa_simm12b (v >>= (shift = MIN (ctz_hwi (v), 15))))
+    return false;
+
+  scale = shift - 15;
+  return true;
+}
+
+static bool
+FPreg_neg_scaled_simm12b (rtx_insn *insn)
+{
+  rtx pat, dest, src, pat_1, dest_1, note, dest_2, pat_2;
+  HOST_WIDE_INT v;
+  int scale;
+  rtx_insn *next, *last, *seq;
+  REAL_VALUE_TYPE r;
+
+  /* It matches RTL expressions of the following format:
+	(set (reg:SF gpr) (const_double:SF cst))
+	(set (reg:SF fpr) (reg:SF gpr))
+		REG_DEAD (reg:SF gpr)
+     where cst is a negatively-scaled signed 12-bit integer immediate
+     value.  */
+  if (TARGET_HARD_FLOAT && !TARGET_CONST16
+      && GET_CODE (pat = PATTERN (insn)) == SET
+      && REG_P (dest = SET_DEST (pat)) && GP_REG_P (REGNO (dest))
+      && GET_MODE (dest) == SFmode
+      && CONST_DOUBLE_P (src = avoid_constant_pool_reference (SET_SRC (pat)))
+      && GET_MODE (src) == SFmode
+      && FPreg_neg_scaled_simm12b_1 (CONST_DOUBLE_REAL_VALUE (src),
+				     v, scale)
+      && (next = next_nonnote_nondebug_insn (insn))
+      && NONJUMP_INSN_P (next)
+      && GET_CODE (pat_1 = PATTERN (next)) == SET
+      && REG_P (dest_1 = SET_DEST (pat_1)) && FP_REG_P (REGNO (dest_1))
+      && GET_MODE (dest_1) == SFmode
+      && rtx_equal_p (SET_SRC (pat_1), dest)
+      && (note = find_reg_note (next, REG_DEAD, dest)))
+    {
+      /* Estimate the costs of two matching insns.  */
+      xt_full_rtx_costs costs;
+      costs += insn, costs += next;
+
+      /* Prepare alternative insns and estimate their costs.  */
+      start_sequence ();
+      emit_insn (gen_rtx_SET (dest_2 = gen_rtx_REG (SImode, REGNO (dest)),
+			      GEN_INT (v)));
+      pat_2 = gen_rtx_FLOAT (SFmode, dest_2);
+      if (scale < 0)
+	{
+	  real_ldexp (&r, &dconst1, scale);
+	  pat_2 = gen_rtx_MULT (SFmode, pat_2,
+				const_double_from_real_value (r, SFmode));
+	}
+      last = emit_insn (gen_rtx_SET (dest_1, pat_2));
+      xt_full_rtx_costs costs_1 (seq = end_sequence ());
+
+      /* If the alternative is more cost effective, it replaces the original
+	 insns.  */
+      if (costs_1 < costs)
+	{
+	  if (dump_file)
+	    {
+	      fputs ("FPreg_neg_scaled_simm12b: ", dump_file);
+	      dump_value_slim (dump_file, src, 0);
+	      fprintf (dump_file,
+		       "f = (" HOST_WIDE_INT_PRINT_DEC ".f/(1<<%d))\n",
+		       v, -scale);
+	      dump_insn_slim (dump_file, insn);
+	      dump_insn_slim (dump_file, next);
+	    }
+	  remove_reg_equal_equiv_notes (insn);
+	  validate_change (insn, &PATTERN (insn),
+			   PATTERN (seq), 0);
+	  remove_reg_equal_equiv_notes (next);
+	  remove_note (next, note);
+	  validate_change (next, &PATTERN (next),
+			   PATTERN (last), 0);
+	  add_reg_note (next, REG_EQUIV, src);
+	  add_reg_note (next, REG_DEAD, dest_2);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file,
+		       "FPreg_neg_scaled_simm12b: costs (%d,%d) -> (%d,%d)\n",
+		       costs.major (), costs.minor (),
+		       costs_1.major (), costs_1.minor ());
+	      dump_insn_slim (dump_file, insn);
+	      dump_insn_slim (dump_file, next);
+	    }
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Replace the source of [SH]Imode allocation whose value does not fit
    into signed 12 bits with a reference to litpool entry.  */
 
@@ -5791,11 +5953,19 @@ static void
 do_largeconst (void)
 {
   bool replacing_required = !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS;
+  bool optimize_enabled = optimize && !optimize_debug;
   rtx_insn *insn;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (NONJUMP_INSN_P (insn))
       {
+	/* Optimize assignment of negatively scaled (up to the minus
+	   15th power of two) signed 12-bit immediate values to hardware
+	   floating-point registers.  */
+	if (optimize_enabled
+	    && FPreg_neg_scaled_simm12b (insn))
+	  continue;
+
 	/* Replace the source of [SH]Imode allocation whose value does not
 	   fit into signed 12 bits with a reference to litpool entry.  */
 	if (replacing_required)
