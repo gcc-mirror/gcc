@@ -2121,20 +2121,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	    first = e;
 	  else if (BB_VISITED (e->dest))
 	    worklist.quick_push (e);
-	  else if (0 && !(e->flags & EDGE_DFS_BACK))
-	    {
-	      /* When our reverse iteration order does not match up with
-		 a forward DFS which can in happen with unfortunate
-		 choices of fake edges to exits from infinite loops, we
-		 have to avoid intermangling two ANTIC iterations by
-		 using ANTIC_IN computed in the previous iteration.
-		 As we cannot easily do this stabilize the iteration by
-		 not allowing a MAX set on such edge initially.  */
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "ANTIC_IN is uncomputed on non-DFS_BACK "
-			 "%d->%d\n", e->src->index, e->dest->index);
-	      worklist.quick_push (e);
-	    }
 	  else
 	    {
 	      /* Unvisited successors get their ANTIC_IN replaced by the
