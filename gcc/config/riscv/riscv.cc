@@ -8109,14 +8109,7 @@ riscv_compute_frame_info (void)
       /* Only use save/restore routines if they don't alter the stack size.  */
       if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
           && !riscv_avoid_save_libcall ())
-	{
-	  /* Libcall saves/restores 3 registers at once, so we need to
-	     allocate 12 bytes for callee-saved register.  */
-	  if (TARGET_RVE)
-	    x_save_size = 3 * UNITS_PER_WORD;
-
-	  frame->save_libcall_adjustment = x_save_size;
-	}
+        frame->save_libcall_adjustment = x_save_size;
 
       if (!riscv_avoid_multi_push (frame))
 	{

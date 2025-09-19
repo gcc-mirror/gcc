@@ -298,9 +298,8 @@ FUNC_END (__riscv_restore_0)
 #else
 
 #ifdef __riscv_abi_rve
+
 FUNC_BEGIN(__riscv_save_2)
-FUNC_BEGIN(__riscv_save_1)
-FUNC_BEGIN(__riscv_save_0)
   .cfi_startproc
   # __riscv_save_* routine use t0/x5 as return address
   .cfi_return_column 5
@@ -316,21 +315,56 @@ FUNC_BEGIN(__riscv_save_0)
   jr t0
   .cfi_endproc
 FUNC_END(__riscv_save_2)
+
+FUNC_BEGIN(__riscv_save_1)
+  .cfi_startproc
+  # __riscv_save_* routine use t0/x5 as return address
+  .cfi_return_column 5
+  addi sp, sp, -8
+  .cfi_def_cfa_offset 8
+  sw s0, 0(sp)
+  .cfi_offset 8, -8
+  sw ra, 4(sp)
+  .cfi_offset 1, -4
+  SET_LPAD
+  jr t0
+  .cfi_endproc
 FUNC_END(__riscv_save_1)
+
+FUNC_BEGIN(__riscv_save_0)
+  .cfi_startproc
+  # __riscv_save_* routine use t0/x5 as return address
+  .cfi_return_column 5
+  addi sp, sp, -4
+  .cfi_def_cfa_offset 4
+  sw ra, 0(sp)
+  .cfi_offset 1, -4
+  SET_LPAD
+  jr t0
+  .cfi_endproc
 FUNC_END(__riscv_save_0)
 
 FUNC_BEGIN(__riscv_restore_2)
-FUNC_BEGIN(__riscv_restore_1)
-FUNC_BEGIN(__riscv_restore_0)
   .cfi_startproc
-  .cfi_def_cfa_offset 14
+  .cfi_def_cfa_offset 12
   lw s1, 0(sp)
   .cfi_restore 9
-  lw s0, 4(sp)
+  addi sp, sp, 4
+
+FUNC_BEGIN(__riscv_restore_1)
+  .cfi_restore 9
+  .cfi_def_cfa_offset 8
+  lw s0, 0(sp)
   .cfi_restore 8
-  lw ra, 8(sp)
+  addi sp, sp, 4
+
+FUNC_BEGIN(__riscv_restore_0)
+  .cfi_restore 8
+  .cfi_restore 9
+  .cfi_def_cfa_offset 4
+  lw ra, 0(sp)
   .cfi_restore 1
-  addi sp, sp, 12
+  addi sp, sp, 4
   .cfi_def_cfa_offset 0
   ret
   .cfi_endproc
