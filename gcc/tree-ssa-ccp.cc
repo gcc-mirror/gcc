@@ -4242,6 +4242,9 @@ pass_fold_builtins::execute (function *fun)
   basic_block bb;
   unsigned int todoflags = 0;
 
+  /* Set last full fold prop if not already set. */
+  fun->curr_properties |= PROP_last_full_fold;
+
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator i;
@@ -4280,12 +4283,6 @@ pass_fold_builtins::execute (function *fun)
 	      tree result = NULL_TREE;
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
-		case BUILT_IN_CONSTANT_P:
-		  /* Resolve __builtin_constant_p.  If it hasn't been
-		     folded to integer_one_node by now, it's fairly
-		     certain that the value simply isn't constant.  */
-		  result = integer_zero_node;
-		  break;
 
 		case BUILT_IN_ASSUME_ALIGNED:
 		  /* Remove __builtin_assume_aligned.  */

@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "tree-pass.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -5206,6 +5207,33 @@ gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Fold __builtin_constant_p builtin.  */
+
+static bool
+gimple_fold_builtin_constant_p (gimple_stmt_iterator *gsi)
+{
+  gcall *call = as_a<gcall*>(gsi_stmt (*gsi));
+
+  if (gimple_call_num_args (call) != 1)
+    return false;
+
+  tree arg = gimple_call_arg (call, 0);
+  tree result = fold_builtin_constant_p (arg);
+
+  /* Resolve __builtin_constant_p.  If it hasn't been
+     folded to integer_one_node by now, it's fairly
+     certain that the value simply isn't constant.  */
+  if (!result
+      && (cfun->curr_properties & PROP_last_full_fold))
+    result = integer_zero_node;
+
+  if (!result)
+    return false;
+
+  gimplify_and_update_call_from_tree (gsi, result);
+  return true;
+}
+
 /* Fold the non-target builtin at *GSI and return whether any simplification
    was made.  */
 
@@ -5374,6 +5402,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     case BUILT_IN_CLEAR_PADDING:
       return gimple_fold_builtin_clear_padding (gsi);
+
+    case BUILT_IN_CONSTANT_P:
+      return gimple_fold_builtin_constant_p (gsi);
 
     default:;
     }

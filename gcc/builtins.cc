@@ -156,7 +156,6 @@ static rtx expand_builtin_stack_address ();
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static rtx expand_builtin_expect_with_probability (tree, rtx);
-static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
@@ -9150,7 +9149,7 @@ builtin_mathfn_code (const_tree t)
 /* Fold a call to __builtin_constant_p, if we know its argument ARG will
    evaluate to a constant.  */
 
-static tree
+tree
 fold_builtin_constant_p (tree arg)
 {
   /* We return 1 for a numeric type that's known to be a constant
