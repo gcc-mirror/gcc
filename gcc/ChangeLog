@@ -1,3 +1,12 @@
+2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX512_MOVE_BY_PIECES):
+	Remove SPR/GNR/DMR.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
 2025-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
