@@ -204,6 +204,10 @@ static rtx xtensa_delegitimize_address (rtx);
 static reg_class_t xtensa_ira_change_pseudo_allocno_class (int, reg_class_t,
 							   reg_class_t);
 static HARD_REG_SET xtensa_zero_call_used_regs (HARD_REG_SET);
+static rtx_insn *xtensa_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+				       vec<machine_mode> &, vec<const char *> &,
+				       vec<rtx> &, vec<rtx> &, HARD_REG_SET &,
+				       location_t);
 
 
 
@@ -376,6 +380,9 @@ static HARD_REG_SET xtensa_zero_call_used_regs (HARD_REG_SET);
 
 #undef TARGET_ZERO_CALL_USED_REGS
 #define TARGET_ZERO_CALL_USED_REGS xtensa_zero_call_used_regs
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST xtensa_md_asm_adjust
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5646,6 +5653,65 @@ xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
     }
 
   return selected_regs;
+}
+
+/* Implement TARGET_MD_ASM_ADJUST.
+
+   If either TARGET_CONST16 or TARGET_AUTO_LITPOOLS is enabled, the 'g'-
+   constraint (based on general_operand()) accepts any integer constant,
+   but if neither it limits within signed 12 bit by
+   TARGET_LEGITIMATE_CONSTANT_P().
+   This behavior is not reasonable and can be addressed by prepending an
+   'n'-constraint to the 'g' during the RTL generation, if necessary.  */
+
+static rtx_insn *
+xtensa_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
+		      vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		      vec<machine_mode> &input_modes ATTRIBUTE_UNUSED,
+		      vec<const char *> &constraints,
+		      vec<rtx> &uses ATTRIBUTE_UNUSED,
+		      vec<rtx> &clobbers ATTRIBUTE_UNUSED,
+		      HARD_REG_SET &clobbered_regs ATTRIBUTE_UNUSED,
+		      location_t loc ATTRIBUTE_UNUSED)
+{
+  size_t n, l;
+  const char *p;
+  int c;
+  char *modified, *q;
+
+  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS)
+    for (auto &constraint : constraints)
+      {
+	/* Count the number of 'g'-constraints in each constraint string.  */
+	for (n = 0, p = constraint; (c = *p); p += CONSTRAINT_LEN (c, p))
+	  if (c == 'g')
+	    ++n;
+	if (n == 0)
+	  continue;
+
+	/* If the constraint string contains 'g'-constraints, then each
+	   'g' is prefixed with an 'n'-constraint to form a new constraint
+	   string.  */
+	n += strlen (constraint);
+	modified = (char *)ggc_alloc_atomic (n + 1);
+	for (p = constraint, q = modified; (c = *p); )
+	  if (c == 'g')
+	    q[0] = 'n', q[1] = 'g', ++p, q += 2;
+	  else
+	    if ((l = CONSTRAINT_LEN (c, p)) > 1)
+	      memcpy (q, p, l), p += l, q += l;
+	    else
+	      *q++ = *p++;
+	*q = '\0';
+	if (dump_file)
+	  fprintf (dump_file,
+		   "xtensa_md_asm_adjust: "
+		   "The constraint \"%s\" contains 'g's, so modify it to "
+		   "\"%s\".\n", constraint, modified);
+	constraint = modified;
+      }
+
+  return NULL;
 }
 
 #include "gt-xtensa.h"
