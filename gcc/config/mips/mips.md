@@ -7651,6 +7651,27 @@
   DONE;
 })
 
+;; Min and max.
+
+(define_insn "sminsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (smin:SI (match_operand:SI 1 "register_operand" "d")
+                 (match_operand:SI 2 "register_operand" "d")))]
+  "ISA_HAS_MIN_MAX"
+  "min\t%0,%1,%2"
+  [(set_attr "type"    "arith")
+   (set_attr "mode"    "SI")])
+
+(define_insn "smaxsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (smax:SI (match_operand:SI 1 "register_operand" "d")
+                 (match_operand:SI 2 "register_operand" "d")))]
+  "ISA_HAS_MIN_MAX"
+  "max\t%0,%1,%2"
+  [(set_attr "type"    "arith")
+   (set_attr "mode"    "SI")])
+
+
 (define_expand "speculation_barrier"
   [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
   ""

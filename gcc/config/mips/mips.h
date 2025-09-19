@@ -1255,6 +1255,9 @@ struct mips_cpu_info {
 				  || TARGET_SMARTMIPS)			\
 				 && !TARGET_MIPS16)
 
+/* ISA has the "min" and "max" instructions (signed min/max). */
+#define ISA_HAS_MIN_MAX		(TARGET_ALLEGREX)
+
 /* ISA has the WSBH (word swap bytes within halfwords) instruction.
    64-bit targets also provide DSBH and DSHD.  */
 #define ISA_HAS_WSBH		((mips_isa_rev >= 2 && !TARGET_MIPS16)  \
