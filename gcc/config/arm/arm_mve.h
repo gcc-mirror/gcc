@@ -44,97 +44,12 @@
 #pragma GCC arm "arm_mve.h" false
 #endif
 
-#ifndef __ARM_MVE_PRESERVE_USER_NAMESPACE
-#define vuninitializedq(__v) __arm_vuninitializedq(__v)
-
-
-#define vuninitializedq_u8(void) __arm_vuninitializedq_u8(void)
-#define vuninitializedq_u16(void) __arm_vuninitializedq_u16(void)
-#define vuninitializedq_u32(void) __arm_vuninitializedq_u32(void)
-#define vuninitializedq_u64(void) __arm_vuninitializedq_u64(void)
-#define vuninitializedq_s8(void) __arm_vuninitializedq_s8(void)
-#define vuninitializedq_s16(void) __arm_vuninitializedq_s16(void)
-#define vuninitializedq_s32(void) __arm_vuninitializedq_s32(void)
-#define vuninitializedq_s64(void) __arm_vuninitializedq_s64(void)
-#define vuninitializedq_f16(void) __arm_vuninitializedq_f16(void)
-#define vuninitializedq_f32(void) __arm_vuninitializedq_f32(void)
-#endif
 
 
 #ifdef __cplusplus
 
 
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint8x16_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u8 ();
-}
 
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u16 ();
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u32 ();
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint64x2_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u64 ();
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int8x16_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s8 ();
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s16 ();
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s32 ();
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int64x2_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s64 ();
-}
-
-#if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (float16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_f16 ();
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (float32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_f32 ();
-}
-#endif /* __ARM_FEATURE_MVE & 2 (MVE floating point)  */
 
 #else
 enum {
@@ -370,36 +285,6 @@ extern void *__ARM_undef;
 #define __ARM_mve_coerce_f32_ptr(param, type) \
     _Generic(param, type: param, const type: param, default: _Generic (param, float*: param, default: *(type *)__ARM_undef))
 #endif
-
-#if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
-
-#define __arm_vuninitializedq(p0) ({ __typeof(p0) __p0 = (p0); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
-  int (*)[__ARM_mve_type_int8x16_t]: __arm_vuninitializedq_s8 (), \
-  int (*)[__ARM_mve_type_int16x8_t]: __arm_vuninitializedq_s16 (), \
-  int (*)[__ARM_mve_type_int32x4_t]: __arm_vuninitializedq_s32 (), \
-  int (*)[__ARM_mve_type_int64x2_t]: __arm_vuninitializedq_s64 (), \
-  int (*)[__ARM_mve_type_uint8x16_t]: __arm_vuninitializedq_u8 (), \
-  int (*)[__ARM_mve_type_uint16x8_t]: __arm_vuninitializedq_u16 (), \
-  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vuninitializedq_u32 (), \
-  int (*)[__ARM_mve_type_uint64x2_t]: __arm_vuninitializedq_u64 (), \
-  int (*)[__ARM_mve_type_float16x8_t]: __arm_vuninitializedq_f16 (), \
-  int (*)[__ARM_mve_type_float32x4_t]: __arm_vuninitializedq_f32 ());})
-
-#else /* MVE Integer.  */
-
-#define __arm_vuninitializedq(p0) ({ __typeof(p0) __p0 = (p0); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
-  int (*)[__ARM_mve_type_int8x16_t]: __arm_vuninitializedq_s8 (), \
-  int (*)[__ARM_mve_type_int16x8_t]: __arm_vuninitializedq_s16 (), \
-  int (*)[__ARM_mve_type_int32x4_t]: __arm_vuninitializedq_s32 (), \
-  int (*)[__ARM_mve_type_int64x2_t]: __arm_vuninitializedq_s64 (), \
-  int (*)[__ARM_mve_type_uint8x16_t]: __arm_vuninitializedq_u8 (), \
-  int (*)[__ARM_mve_type_uint16x8_t]: __arm_vuninitializedq_u16 (), \
-  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vuninitializedq_u32 (), \
-  int (*)[__ARM_mve_type_uint64x2_t]: __arm_vuninitializedq_u64 ());})
-
-#endif /* MVE Integer.  */
 
 #endif /* __cplusplus  */
 #endif /* __ARM_FEATURE_MVE  */

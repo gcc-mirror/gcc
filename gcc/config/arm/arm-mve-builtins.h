@@ -94,6 +94,13 @@ const unsigned int CP_RAISE_FP_EXCEPTIONS = 1U << 1;
 const unsigned int CP_READ_MEMORY = 1U << 2;
 const unsigned int CP_WRITE_MEMORY = 1U << 3;
 
+/* Flags that describe which forms of an intrinsic to generate: non-overloaded
+   and/or overloaded ones.  In general we want both, but for vuninitialized the
+   two forms have different signatures and we need to generate them
+   separately.  */
+const unsigned int NONOVERLOADED_FORM = 1U << 0;
+const unsigned int OVERLOADED_FORM = 1U << 1;
+
 /* Enumerates the MVE predicate and (data) vector types, together called
    "vector types" for brevity.  */
 enum vector_type_index
@@ -311,7 +318,7 @@ public:
   ~function_builder ();
 
   void add_unique_function (const function_instance &, tree,
-			    vec<tree> &, bool, bool, bool);
+			    vec<tree> &, bool, bool, bool, unsigned int);
   void add_overloaded_function (const function_instance &, bool, bool);
   void add_overloaded_functions (const function_group_info &,
 				 mode_suffix_index, bool);
@@ -383,6 +390,9 @@ public:
   tree resolve_to (mode_suffix_index,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   type_suffix_index = NUM_TYPE_SUFFIXES);
+  tree pop_and_resolve_to (mode_suffix_index,
+			   type_suffix_index = NUM_TYPE_SUFFIXES,
+			   type_suffix_index = NUM_TYPE_SUFFIXES);
 
   type_suffix_index infer_pointer_type (unsigned int);
   type_suffix_index infer_vector_or_tuple_type (unsigned int, unsigned int);

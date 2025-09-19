@@ -29,7 +29,8 @@ namespace arm_mve
 
      Also:
 
-     - "inherent" means that the function takes no arguments.  */
+     - "inherent" means that the function takes no arguments, except in its
+       overloaded form.  */
 
   namespace shapes
   {

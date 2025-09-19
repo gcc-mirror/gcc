@@ -249,7 +249,8 @@ static void
 build_one (function_builder &b, const char *signature,
 	   const function_group_info &group, mode_suffix_index mode_suffix_id,
 	   unsigned int ti, unsigned int pi, bool preserve_user_namespace,
-	   bool force_direct_overloads)
+	   bool force_direct_overloads,
+	   unsigned int which_overload = NONOVERLOADED_FORM | OVERLOADED_FORM)
 {
   /* Current functions take at most five arguments.  Match
      parse_signature parameter below.  */
@@ -261,7 +262,7 @@ build_one (function_builder &b, const char *signature,
   apply_predication (instance, return_type, argument_types);
   b.add_unique_function (instance, return_type, argument_types,
 			 preserve_user_namespace, group.requires_float,
-			 force_direct_overloads);
+			 force_direct_overloads, which_overload);
 }
 
 /* Add a function instance for every type and predicate combination in
@@ -1509,18 +1510,51 @@ struct getq_lane_def : public overloaded_base<0>
 SHAPE (getq_lane)
 
 /* <T0>[xN]_t vfoo_t0().
+   <T0>[xN]_t vfoo(<T0>_t).
 
    Example: vuninitializedq.
    int8x16_t [__arm_]vuninitializedq_s8(void)
    int8x16_t [__arm_]vuninitializedq(int8x16_t t)  */
-struct inherent_def : public nonoverloaded_base
+struct inherent_def : public overloaded_base<0>
 {
   void
   build (function_builder &b, const function_group_info &group,
 	 bool preserve_user_namespace) const override
   {
-    build_all (b, "t0", group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+
+    /* Overloaded and non-overloaded forms have different signatures, so call
+       build_one with either OVERLOADED_FORM or NONOVERLOADED_FORM.  */
+    unsigned int pi = 0;
+    bool force_direct_overloads = false;
+    for (unsigned int ti = 0;
+	 ti == 0 || group.types[ti][0] != NUM_TYPE_SUFFIXES; ++ti)
+      {
+	/* For int8x16_t [__arm_]vuninitializedq(int8x16_t t), generate only
+	   the overloaded form, i.e. without type suffix.  */
+	build_one (b, "t0,t0", group, MODE_none, ti, pi,
+		   preserve_user_namespace, force_direct_overloads,
+		   OVERLOADED_FORM);
+	/* For int8x16_t [__arm_]vuninitializedq_s8(void), generate only the
+	   non-overloaded form, i.e. with type suffix.  */
+	build_one (b, "t0", group, MODE_none, ti, pi,
+		   preserve_user_namespace, force_direct_overloads,
+		   NONOVERLOADED_FORM);
+      }
   }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    type_suffix_index type;
+    if (!r.check_num_arguments (1)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* We need to pop the useless argument for the non-overloaded function.  */
+    return r.pop_and_resolve_to (r.mode_suffix_id, type);
+  }
+
 };
 SHAPE (inherent)
 
