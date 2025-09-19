@@ -1294,10 +1294,9 @@ optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
    and/or memcpy (&b, &a, sizeof (a)); instead of b = a;  */
 
 static void
-optimize_aggr_zeroprop (gimple_stmt_iterator *gsip, bool full_walk)
+optimize_aggr_zeroprop (gimple *stmt, bool full_walk)
 {
   ao_ref read;
-  gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
     return;
 
@@ -1730,7 +1729,7 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
    into
    DEST = SRC;
    DEST2 = SRC;
-   GSIP is the first statement and SRC is the common
+   STMT is the first statement and SRC is the common
    between the statements.
 
    Also optimizes:
@@ -1742,9 +1741,8 @@ optimize_agr_copyprop_arg (gimple *defstmt, gcall *call,
 
 */
 static void
-optimize_agr_copyprop (gimple_stmt_iterator *gsip)
+optimize_agr_copyprop (gimple *stmt)
 {
-  gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
     return;
 
@@ -2168,7 +2166,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 	{
 	  /* Try to prop the zeroing/value of the memset to memcpy
 	     if the dest is an address and the value is a constant. */
-	  optimize_aggr_zeroprop (gsi_p, full_walk);
+	  optimize_aggr_zeroprop (stmt2, full_walk);
 	}
       return simplify_builtin_memcpy_memset (gsi_p, as_a<gcall*>(stmt2));
 
@@ -5312,9 +5310,9 @@ pass_forwprop::execute (function *fun)
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
 		    if (gimple_store_p (stmt))
 		      {
-			optimize_aggr_zeroprop (&gsi, full_walk);
+			optimize_aggr_zeroprop (stmt, full_walk);
 			if (gimple_assign_load_p (stmt))
-			  optimize_agr_copyprop (&gsi);
+			  optimize_agr_copyprop (stmt);
 		      }
 		    else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		      changed |= forward_propagate_into_comparison (&gsi);
