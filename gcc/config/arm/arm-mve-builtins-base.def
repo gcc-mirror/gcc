@@ -20,6 +20,8 @@
 #define REQUIRES_FLOAT false
 DEF_MVE_FUNCTION (asrl, scalar_s64_shift, none, none)
 DEF_MVE_FUNCTION (lsll, scalar_u64_shift, none, none)
+DEF_MVE_FUNCTION (uqrshll, scalar_u64_shift, none, none)
+DEF_MVE_FUNCTION (uqrshll_sat48, scalar_u64_shift, none, none)
 DEF_MVE_FUNCTION (vabavq, binary_acca_int32, all_integer, p_or_none)
 DEF_MVE_FUNCTION (vabdq, binary, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vabsq, unary, all_signed, mx_or_none)

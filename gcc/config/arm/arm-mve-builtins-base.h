@@ -25,6 +25,8 @@ namespace functions {
 
 extern const function_base *const asrl;
 extern const function_base *const lsll;
+extern const function_base *const uqrshll;
+extern const function_base *const uqrshll_sat48;
 extern const function_base *const vabavq;
 extern const function_base *const vabdq;
 extern const function_base *const vabsq;

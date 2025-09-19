@@ -88,8 +88,6 @@
 #define srshr(__p0, __p1) __arm_srshr(__p0, __p1)
 #define srshrl(__p0, __p1) __arm_srshrl(__p0, __p1)
 #define uqrshl(__p0, __p1) __arm_uqrshl(__p0, __p1)
-#define uqrshll(__p0, __p1) __arm_uqrshll(__p0, __p1)
-#define uqrshll_sat48(__p0, __p1) __arm_uqrshll_sat48(__p0, __p1)
 #define uqshl(__p0, __p1) __arm_uqshl(__p0, __p1)
 #define uqshll(__p0, __p1) __arm_uqshll(__p0, __p1)
 #define urshr(__p0, __p1) __arm_urshr(__p0, __p1)
@@ -242,20 +240,6 @@ __arm_vgetq_lane_u64 (uint64x2_t __a, const int __idx)
 {
   __ARM_CHECK_LANEQ (__a, __idx);
   return __a[__ARM_LANEQ(__a,__idx)];
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_uqrshll (uint64_t value, int32_t shift)
-{
-  return __builtin_mve_uqrshll_sat64_di (value, shift);
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_uqrshll_sat48 (uint64_t value, int32_t shift)
-{
-  return __builtin_mve_uqrshll_sat48_di (value, shift);
 }
 
 __extension__ extern __inline int64_t

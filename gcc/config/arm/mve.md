@@ -4278,7 +4278,7 @@
 ;;
 ;; [uqrshll_di]
 ;;
-(define_insn "mve_uqrshll_sat<supf>_di"
+(define_insn "@mve_uqrshll_sat<supf>_di"
   [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
 	(unspec:DI [(match_operand:DI 1 "arm_low_register_operand" "0")
 		    (match_operand:SI 2 "register_operand" "r")]
