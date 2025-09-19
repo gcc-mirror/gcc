@@ -1861,6 +1861,14 @@ ftms = {
 };
 
 ftms = {
+  name = start_lifetime_as;
+  values = {
+    v =  202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = string_contains;
   values = {
     v = 202011;
@@ -2114,14 +2122,6 @@ ftms = {
     v = 1; // TODO 202411;
     cxxmin = 26;
     extra_cond = "__cpp_constexpr_exceptions >= 202411L";
-  };
-};
-
-ftms = {
-  name = start_lifetime_as;
-  values = {
-    v =  202207;
-    cxxmin = 23;
   };
 };
 

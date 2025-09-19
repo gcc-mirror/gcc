@@ -2078,6 +2078,16 @@
 #endif /* !defined(__cpp_lib_stacktrace) && defined(__glibcxx_want_stacktrace) */
 #undef __glibcxx_want_stacktrace
 
+#if !defined(__cpp_lib_start_lifetime_as)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_start_lifetime_as 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime_as)
+#   define __cpp_lib_start_lifetime_as 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_start_lifetime_as) && defined(__glibcxx_want_start_lifetime_as) */
+#undef __glibcxx_want_start_lifetime_as
+
 #if !defined(__cpp_lib_string_contains)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_contains 202011L
@@ -2371,15 +2381,5 @@
 # endif
 #endif /* !defined(__cpp_lib_constexpr_exceptions) && defined(__glibcxx_want_constexpr_exceptions) */
 #undef __glibcxx_want_constexpr_exceptions
-
-#if !defined(__cpp_lib_start_lifetime_as)
-# if (__cplusplus >= 202100L)
-#  define __glibcxx_start_lifetime_as 202207L
-#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime_as)
-#   define __cpp_lib_start_lifetime_as 202207L
-#  endif
-# endif
-#endif /* !defined(__cpp_lib_start_lifetime_as) && defined(__glibcxx_want_start_lifetime_as) */
-#undef __glibcxx_want_start_lifetime_as
 
 #undef __glibcxx_want_all
