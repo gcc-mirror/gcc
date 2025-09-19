@@ -1,3 +1,148 @@
+2025-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/client-data-hooks.h (client_data_hooks::dump): New.
+	* diagnostics/context.cc (context::dump): Dump
+	m_client_data_hooks.
+	(client_data_hooks::dump): New.
+	* diagnostics/logical-locations.h
+	(logical_locations::manager::dump): New.
+	* diagnostics/selftest-logical-locations.cc: Include
+	"diagnostics/dumping.h".
+	(test_manager::dump): New.
+	* diagnostics/selftest-logical-locations.h (test_manager::dump):
+	New decl.
+	* libgdiagnostics.cc: Include "diagnostics/dumping.h".
+	(impl_logical_location_manager::dump): New.
+	* tree-logical-location.cc: Include "diagnostics/dumping.h".
+	(tree_logical_location_manager::dump): New.
+	* tree-logical-location.h (tree_logical_location_manager::dump):
+	New decl.
+
+2025-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/paths-output.cc: Update for conversion of
+	location_aspect to enum class.
+	* diagnostics/source-printing.cc: Likewise.
+	* input.cc: Likewise.
+	* input.h: Likewise.
+
+2025-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/buffering.cc: Drop include of "diagnostic.h".
+	* diagnostics/buffering.h: Likewise.
+	* diagnostics/context.h (diagnostics::metadata): Add forward decl.
+	* diagnostics/html-sink.cc: Drop include of "diagnostic.h".
+	* diagnostics/lazy-paths.cc: Likewise.
+	* diagnostics/macro-unwinding.cc: Likewise.
+	* diagnostics/macro-unwinding.h (diagnostics:diagnostic_info): Add
+	forward decl.
+	* diagnostics/option-classifier.h: Include
+	"diagnostics/option-id.h" and "diagnostics/kinds.h".
+	(diagnostics:diagnostic_info): Add forward decl.
+	* diagnostics/output-spec.cc: Drop include of "diagnostic.h".
+	* diagnostics/paths-output.cc: Likewise.
+	* diagnostics/paths.cc: Likewise.
+	* diagnostics/sarif-sink.cc: Likewise.
+	* diagnostics/selftest-context.cc: Likewise.
+	* diagnostics/selftest-paths.cc: Likewise.
+	* diagnostics/source-printing-options.h: Include
+	"rich-location.h".
+	* diagnostics/text-sink.cc: Drop include of "diagnostic.h".
+
+2025-09-18  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/121894
+	* tree-sra.cc (scan_function): Set grp_assignment_write to 1 when
+	specially handle call to .DEFERRED_INIT.
+
+2025-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/121910
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul):
+	Return RVV_M8 when estimated lmul is too large.
+
+2025-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121977
+	* omp-low.cc (lower_omp_regimplify_operands_p): If maybe_lookup_decl
+	returns NULL, use maybe_lookup_decl_in_outer_ctx as fallback.
+
+2025-09-18  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_write_zt<SVE_FULL:mode>): New insn.
+	(aarch64_sme_lut_zt): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_type): New type format "%T".
+	(struct luti_lane_zt_base): New function shape.
+	(SHAPE): Likewise.
+	(struct write_zt_def): Likewise.
+	(struct write_lane_zt_def): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: New function shape.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (class svluti_zt_impl): New function expander.
+	(class svwrite_zt_impl): Likewise.
+	(class svwrite_lane_zt_impl): Likewise.
+	(FUNCTION): Likewise
+	* config/aarch64/aarch64-sve-builtins-sme.def (svwrite_zt): New function shape.
+	(svwrite_lane_zt): Likewise.
+	(svluti4_zt): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.h: New function base.
+	* config/aarch64/aarch64-sve-builtins.h: Mention the arrays of function_group_info by name.
+
+2025-09-18  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Conditonally define
+	`__ARM_FEATURE_SME_LUTv2" macro.
+	* config/aarch64/aarch64-option-extensions.def (AARCH64_OPT_EXTENSION("sme-lutv2")): New
+	optional architecture extension.
+	* config/aarch64/aarch64.h (TARGET_SME_LUTv2): New macro.
+	* doc/invoke.texi: Document `+sme-lutv2` flag.
+
+2025-09-18  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add pattern for SAT_MUL form 5.
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Try match pattern for IOR.
+
+2025-09-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (update_counts_for_self_gen_clones): Do not update
+	call frequency for local profiles.
+
+2025-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87615
+	* tree-ssa-sccvn.cc (vn_nary_op_insert_into): When inserting
+	a new predicate or location into an existing predicate list
+	make sure to not exceed 8 locations.  Avoid copying things
+	when we later eventually throw them away.
+	(vn_nary_op_insert_pieces_predicated): Avoid expensive check
+	when not checking.
+	(dominated_by_p_w_unex): Apply the limit on a single successors
+	predecessor count consistently.
+
+2025-09-18  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/121922
+	* omp-general.cc (omp_dynamic_cond): Use 'unshare_expr' for
+	the user condition.
+
+2025-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121720
+	* tree-ssa-pre.cc (bitmap_set_subtract_expressions): Add
+	flag to tell whether we should copy instead of prune the
+	value set.
+	(compute_antic_aux): Remove intersection of ANTIC_IN with
+	the old solution.  When subtracting TMP_GEN from
+	ANTIC_OUT do not prune the value set when MAX was involved
+	in the ANTIC_OUT computation.
+
+2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX512_MOVE_BY_PIECES):
+	Remove SPR/GNR/DMR.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
 2025-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* sarif-replay.cc (set_defaults): Initialize

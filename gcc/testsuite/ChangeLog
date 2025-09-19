@@ -1,3 +1,92 @@
+2025-09-18  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c2y-anon-init-1.c, gcc.dg/c2y-incomplete-2.c:
+	gcc.dg/c2y-linkage-1.c, gcc.dg/c2y-linkage-2.c,
+	gcc.dg/c2y-linkage-3.c, gcc.dg/c2y-linkage-4.c,
+	gcc.dg/c2y-static-assert-1.c: New tests.
+	* gcc.dg/c2y-linkage-1.c: New file.
+	* gcc.dg/c2y-linkage-2.c: New file.
+	* gcc.dg/c2y-linkage-3.c: New file.
+	* gcc.dg/c2y-linkage-4.c: New file.
+	* gcc.dg/c2y-static-assert-1.c: New file.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/constexpr-98122.C: Adjust diagnostic.
+	* g++.dg/cpp26/constexpr-new6a.C: New test.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/analyzer/pr97116.C: Adjust diagnostic.
+	* g++.dg/warn/Warray-bounds-20.C: Likewise.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/pr25811.C: Tweak diagnostic.
+	* g++.dg/warn/Warray-bounds-12.C: Likewise.
+	* g++.dg/warn/Warray-bounds-13.C: Likewise.
+	* g++.dg/cpp26/constexpr-new6.C: New test.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wmismatched-new-delete-2.C: Remove xfail.
+
+2025-09-18  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/121894
+	* g++.dg/opt/auto-init-sra-pr121894.C: New test.
+
+2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114815
+	* gfortran.dg/pdt_3.f03: Add missing deallocation of 'matrix'.
+	* gfortran.dg/pdt_17.f03: Change dg-error text.
+	* gfortran.dg/pdt_47.f03: New test.
+
+2025-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/121910
+	* gcc.target/riscv/rvv/autovec/pr121910.c: New file.
+
+2025-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121977
+	* g++.dg/gomp/pr121977.C: New test.
+
+2025-09-18  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/svluti4_zt_1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/svwrite_lane_zt_1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/svwrite_zt_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/svluti4_zt_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/svwrite_lane_zt_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/svwrite_zt_1.c: New test.
+
+2025-09-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-6-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u8-from-u128.c: New test.
+
+2025-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121720
+	* gcc.dg/tree-ssa/ssa-pre-36.c: New testcase.
+
+2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memcpy-18.c: Use -mtune=znver5
+	instead of -mtune=sapphirerapids.
+	* gcc.target/i386/pieces-memcpy-21.c: Ditto.
+	* gcc.target/i386/pieces-memset-46.c: Ditto.
+	* gcc.target/i386/pieces-memset-49.c: Ditto.
+
 2025-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/analyzer/unique_ptr-1.C: Rename to...

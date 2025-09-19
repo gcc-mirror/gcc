@@ -1,3 +1,31 @@
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_component_reference): Clarify diagnostic.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_new_1): Clobber classes.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (get_or_insert_ctor_field): -2 means don't insert.
+	(cxx_eval_component_reference): Handle finding void_node.
+	(cxx_eval_store_expression): Don't represent initial clobber
+	unless we need to activate a union member.
+	(cxx_eval_statement_list): Don't ask for a void prvalue.
+	(cxx_eval_loop_expr): The expr is discarded-value.
+	(cxx_eval_constant_expression): A loose clobber is non-constant.
+	Handle getting void_node instead of a real result.
+	(potential_constant_expression_1): A local temp is
+	potentially-constant.
+	* init.cc (build_new_1): Don't clobber empty types or
+	in a template.
+	(build_vec_init): Fix clobber handling.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_new_1): Append alloc_node to checking COND_EXPR.
+
 2025-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/121966

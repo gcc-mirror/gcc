@@ -1,3 +1,15 @@
+2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114815
+	* decl.cc (gfc_get_pdt_instance): Copy the contents of 'tb' and
+	not the pointer.
+	* primary.cc (gfc_match_rvalue): If there is only one actual
+	argument list, use if for the type spec parameter values. If
+	this fails try the default type specification values and use
+	the actual arguments for the component values.
+	* resolve.cc (build_init_assign): Don't initialize implicit PDT
+	function results.
+
 2025-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.cc (optimize_namespace): Handle

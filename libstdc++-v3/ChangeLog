@@ -1,3 +1,16 @@
+2025-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106658
+	* include/bits/version.def: Implement C++23 P2590R2 - Explicit
+	lifetime management.
+	(start_lifetime_as): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory (std::start_lifetime_as,
+	std::start_lifetime_as_array): New function templates.
+	* src/c++23/std.cc.in (std::start_lifetime_as,
+	std::start_lifetime_as_array): Export.
+	* testsuite/std/memory/start_lifetime_as/start_lifetime_as.cc: New test.
+
 2025-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/111861

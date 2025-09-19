@@ -1,3 +1,9 @@
+2025-09-18  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/121922
+	* testsuite/libgomp.c-c++-common/declare-variant-1.c: New test.
+
 2025-09-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR libgomp/119857
