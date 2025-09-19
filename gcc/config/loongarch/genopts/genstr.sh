@@ -125,6 +125,9 @@ main() {
 	evolution_c)
             awk -v header_p=0 -f gen-evolution.awk isa-evolution.in
             ;;
+	evolution_def)
+            awk -v header_p=2 -f gen-evolution.awk isa-evolution.in
+            ;;
 	header)
             gen_defines
             ;;

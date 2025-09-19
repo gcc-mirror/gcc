@@ -4897,6 +4897,50 @@ But the following method cannot perform 128-bit vectorization.
 $ gcc test.c -o test.s -O2 -mlasx -mno-lasx
 @end smallexample
 
+@cindex @code{recipe} function attribute, LoongArch
+@item recipe
+@itemx no-recipe
+@code{recipe} indicates that frecipe.@{s/d@} and frsqrt.@{s/d@}instruction generation
+is allowed (not allowed) when compiling the function.  The behavior is same as for
+the command-line option
+@option{-mrecipe} and @option{-mno-recipe}.
+
+@cindex @code{div32} function attribute, LoongArch
+@item div32
+@itemx no-div32
+@code{div32} determines whether div.w[u] and mod.w[u] instructions on 64-bit machines
+are evaluated based only on the lower 32 bits of the input registers.
+@option{-mdiv32} and @option{-mno-div32}.
+
+@cindex @code{lam-bh} function attribute, LoongArch
+@item lam-bh
+@itemx no-lam-bh
+@code{lam-bh} indicates that am@{swap/add@}[_db].@{b/h@} instruction generation
+is allowed (not allowed) when compiling the function.  The behavior is same as for
+the command-line option
+@option{-mlam-bh} and @option{-mno-lam-bh}.
+
+@cindex @code{lamcas} function attribute, LoongArch
+@item lamcas
+@itemx no-lamcas
+@code{lamcas} indicates that amcas[_db].@{b/h/w/d@} instruction generation
+is allowed (not allowed) when compiling the function.  The behavior is same as for
+the command-line option
+@option{-mlamcas} and @option{-mno-lamcas}.
+
+@cindex @code{scq} function attribute, LoongArch
+@item scq
+@itemx no-scq
+@code{scq} indicates that sc.q instruction generation is allowed (not allowed) when
+compiling the function.  The behavior is same as for the command-line option
+@option{-mscq} and @option{-mno-scq}.
+
+@cindex @code{ld-seq-sa} function attribute, LoongArch
+@item ld-seq-sa
+@itemx no-ld-seq-sa
+@code{ld-seq-sa} indicates that whether need load-load barries (dbar 0x700)
+@option{-mld-seq-sa} and @option{-mno-ld-seq-sa}.
+
 @end table
 
 @node M32C Function Attributes

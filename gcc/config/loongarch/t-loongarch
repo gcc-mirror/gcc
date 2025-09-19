@@ -103,8 +103,11 @@ s-loongarch-evolution: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(srcdir)/config/loongarch/genopts/gen-evolution.awk
 	$(SHELL) $< evolution_h > tmp-isa-evo.h
 	$(SHELL) $< evolution_c > tmp-isa-evo.cc
+	$(SHELL) $< evolution_def > tmp-isa-evo.def
 	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.h \
 	    $(srcdir)/config/loongarch/loongarch-evolution.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.cc \
 	    $(srcdir)/config/loongarch/loongarch-evolution.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.def \
+	    $(srcdir)/config/loongarch/loongarch-evol-attr.def
 	$(STAMP) $@

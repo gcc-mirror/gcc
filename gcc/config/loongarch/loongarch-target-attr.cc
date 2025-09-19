@@ -52,28 +52,59 @@ enum loongarch_attr_opt_type
 struct loongarch_attribute_info
 {
   const char *name;
+  unsigned int opt_mask;
   enum loongarch_attr_opt_type attr_type;
-  bool allow_neg;
   enum opt_code opt_num;
+  bool allow_neg;
 };
+
+/* Construct a loongarch_attributes from the given arguments.
+
+   OPTS is the name of the compilation option after the "-m" string.
+
+   OPTNUM is the opt_code corresponding to the compilation option.
+
+   OPTMASK is the mask corresponding to the mutation option.  If the
+   compilation option does not have a corresponding mask, pass 0.
+ */
+#define LARCH_ATTR_MASK(OPTS, OPTNUM, OPTMASK)	      \
+  {						      \
+    OPTS, OPTMASK, loongarch_attr_mask, OPTNUM, true  \
+  },
+
+#define LARCH_ATTR_ENUM(OPTS, OPTNUM, OPTMASK)	      \
+  {						      \
+    OPTS, OPTMASK, loongarch_attr_enum, OPTNUM, false \
+  },
+
+#define LARCH_ATTR_BOOL(OPTS, OPTNUM, OPTMASK)	      \
+  {						      \
+    OPTS, OPTMASK, loongarch_attr_bool, OPTNUM, true  \
+  },
+
 /* The target attributes that we support.  */
 
 static const struct loongarch_attribute_info loongarch_attributes[] =
 {
-  { "strict-align", loongarch_attr_mask, true, OPT_mstrict_align },
-  { "cmodel", loongarch_attr_enum, false, OPT_mcmodel_ },
-  { "arch", loongarch_attr_enum, false, OPT_march_ },
-  { "tune", loongarch_attr_enum, false, OPT_mtune_ },
-  { "lsx", loongarch_attr_bool, true, OPT_mlsx },
-  { "lasx", loongarch_attr_bool, true, OPT_mlasx },
-  { NULL, loongarch_attr_bool, false, OPT____ }
+  LARCH_ATTR_MASK ("strict-align", OPT_mstrict_align, MASK_STRICT_ALIGN)
+  LARCH_ATTR_ENUM ("cmodel", OPT_mcmodel_, 0)
+  LARCH_ATTR_ENUM ("arch", OPT_march_, 0)
+  LARCH_ATTR_ENUM ("tune", OPT_mtune_, 0)
+  LARCH_ATTR_BOOL ("lsx", OPT_mlsx, 0)
+  LARCH_ATTR_BOOL ("lasx", OPT_mlasx, 0)
+#include "loongarch-evol-attr.def"
+  { NULL, 0, loongarch_attr_bool, OPT____, false }
 };
+#undef LARCH_ATTR_MASK
+#undef LARCH_ATTR_ENUM
+#undef LARCH_ATTR_BOOL
 
-bool
+static void
 loongarch_handle_option (struct gcc_options *opts,
 			 struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 			 const struct cl_decoded_option *decoded,
-			 location_t loc ATTRIBUTE_UNUSED)
+			 location_t loc ATTRIBUTE_UNUSED,
+			 unsigned int opt_mask ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
   int val = decoded->value;
@@ -82,14 +113,14 @@ loongarch_handle_option (struct gcc_options *opts,
     {
     case OPT_mstrict_align:
       if (val)
-	opts->x_target_flags |= MASK_STRICT_ALIGN;
+	opts->x_target_flags |= opt_mask;
       else
-	opts->x_target_flags &= ~MASK_STRICT_ALIGN;
-      return true;
+	opts->x_target_flags &= ~opt_mask;
+      break;
 
     case OPT_mcmodel_:
       opts->x_la_opt_cmodel = val;
-      return true;
+      break;
 
     case OPT_march_:
       opts->x_la_opt_cpu_arch = val;
@@ -100,7 +131,7 @@ loongarch_handle_option (struct gcc_options *opts,
       opts->x_la_opt_simd = M_OPT_UNSET;
       opts->x_la_opt_fpu = M_OPT_UNSET;
       opts->x_la_isa_evolution = 0;
-      return true;
+      break;
 
     case OPT_mtune_:
       opts->x_la_opt_cpu_tune = val;
@@ -111,21 +142,10 @@ loongarch_handle_option (struct gcc_options *opts,
       opts->x_str_align_functions = NULL;
       opts->x_str_align_loops = NULL;
       opts->x_str_align_jumps = NULL;
-      return true;
-
-    case OPT_mlsx:
-      opts->x_la_opt_simd = val ? (la_opt_simd == ISA_EXT_SIMD_LASX
-	? ISA_EXT_SIMD_LASX : ISA_EXT_SIMD_LSX) : ISA_EXT_NONE;
-      return true;
-
-    case OPT_mlasx:
-      opts->x_la_opt_simd = val ? ISA_EXT_SIMD_LASX
-	: (la_opt_simd == ISA_EXT_SIMD_LASX || la_opt_simd == ISA_EXT_SIMD_LSX
-	   ? ISA_EXT_SIMD_LSX : ISA_EXT_NONE);
-      return true;
+      break;
 
     default:
-      return true;
+      gcc_unreachable ();
     }
 }
 
@@ -196,7 +216,8 @@ loongarch_process_one_target_attr (char *arg_str, location_t loc)
 	      decoded.value = !invert;
 
 	      loongarch_handle_option (&global_options, &global_options_set,
-				       &decoded, input_location);
+				       &decoded, input_location,
+				       p_attr->opt_mask);
 	      break;
 	    }
 
@@ -222,7 +243,8 @@ loongarch_process_one_target_attr (char *arg_str, location_t loc)
 	      if (valid)
 		loongarch_handle_option (&global_options,
 					 &global_options_set,
-					 &decoded, input_location);
+					 &decoded, input_location,
+					 p_attr->opt_mask);
 	      else
 		error_at (loc, "pragma or attribute %<target(\"%s=%s\")%> is "
 			  "not valid", str_to_check, arg);
@@ -236,8 +258,34 @@ loongarch_process_one_target_attr (char *arg_str, location_t loc)
 
 	      generate_option (p_attr->opt_num, NULL, !invert,
 			       CL_TARGET, &decoded);
-	      loongarch_handle_option (&global_options, &global_options_set,
-				       &decoded, input_location);
+	      switch (decoded.opt_index)
+		{
+		case OPT_mlsx:
+		  global_options.x_la_opt_simd
+		    = decoded.value
+		    ? (la_opt_simd == ISA_EXT_SIMD_LASX
+		       ? ISA_EXT_SIMD_LASX : ISA_EXT_SIMD_LSX)
+		    : ISA_EXT_NONE;
+		  break;
+
+		case OPT_mlasx:
+		  global_options.x_la_opt_simd
+		    = decoded.value
+		    ? ISA_EXT_SIMD_LASX
+		    : (la_opt_simd == ISA_EXT_SIMD_LASX
+		       || la_opt_simd == ISA_EXT_SIMD_LSX
+		       ? ISA_EXT_SIMD_LSX : ISA_EXT_NONE);
+		  break;
+
+		default:
+		    {
+		      if (decoded.value)
+			global_options.x_la_isa_evolution |= p_attr->opt_mask;
+		      else
+			global_options.x_la_isa_evolution &= ~p_attr->opt_mask;
+		      global_options_set.x_la_isa_evolution |= p_attr->opt_mask;
+		    }
+		}
 	      break;
 	    }
 	default:
