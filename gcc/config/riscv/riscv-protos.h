@@ -207,6 +207,7 @@ rtl_opt_pass * make_pass_avlprop (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vector_permconst (gcc::context *ctxt);
+rtl_opt_pass * make_pass_bclr_lowest_set_bit (gcc::context *ctxt);
 
 
 /* Routines implemented in riscv-string.c.  */

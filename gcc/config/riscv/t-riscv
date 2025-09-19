@@ -131,6 +131,11 @@ riscv-d.o: $(srcdir)/config/riscv/riscv-d.cc \
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+riscv-bclr-lowest-set-bit.o: $(srcdir)/config/riscv/riscv-bclr-lowest-set-bit.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TARGET_H)
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TARGET_H)
 	$(COMPILE) $<
