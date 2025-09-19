@@ -1544,9 +1544,6 @@ public:
   stmt_vec_info next_element;
   /* The size of the group.  */
   unsigned int size;
-  /* For stores, number of stores from this group seen. We vectorize the last
-     one.  */
-  unsigned int store_count;
   /* For loads only, the gap from the previous load. For consecutive loads, GAP
      is 1.  */
   unsigned int gap;
@@ -1710,8 +1707,6 @@ struct gather_scatter_info {
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->next_element)
 #define DR_GROUP_SIZE(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->size)
-#define DR_GROUP_STORE_COUNT(S) \
-  (gcc_checking_assert ((S)->dr_aux.dr), (S)->store_count)
 #define DR_GROUP_GAP(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
 

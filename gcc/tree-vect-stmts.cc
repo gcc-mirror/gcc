@@ -12773,21 +12773,9 @@ vect_transform_stmt (vec_info *vinfo,
       break;
 
     case store_vec_info_type:
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && !slp_node
-	  && (++DR_GROUP_STORE_COUNT (DR_GROUP_FIRST_ELEMENT (stmt_info))
-	      < DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info))))
-	/* In case of interleaving, the whole chain is vectorized when the
-	   last store in the chain is reached.  Store stmts before the last
-	   one are skipped, and there vec_stmt_info shouldn't be freed
-	   meanwhile.  */
-	;
-      else
-	{
-	  done = vectorizable_store (vinfo, stmt_info, gsi, slp_node, NULL);
-	  gcc_assert (done);
-	  is_store = true;
-	}
+      done = vectorizable_store (vinfo, stmt_info, gsi, slp_node, NULL);
+      gcc_assert (done);
+      is_store = true;
       break;
 
     case condition_vec_info_type:
