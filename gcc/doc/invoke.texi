@@ -29935,6 +29935,7 @@ The processor names are:
 @samp{vr4100}, @samp{vr4111}, @samp{vr4120}, @samp{vr4130}, @samp{vr4300},
 @samp{vr5000}, @samp{vr5400}, @samp{vr5500},
 @samp{xlr} and @samp{xlp}.
+@samp{allegrex},
 The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.

@@ -291,6 +291,7 @@ struct mips_cpu_info {
 #define ISA_MIPS64R6		    (mips_isa == MIPS_ISA_MIPS64R6)
 
 /* Architecture target defines.  */
+#define TARGET_ALLEGREX             (mips_arch == PROCESSOR_ALLEGREX)
 #define TARGET_LOONGSON_2E          (mips_arch == PROCESSOR_LOONGSON_2E)
 #define TARGET_LOONGSON_2F          (mips_arch == PROCESSOR_LOONGSON_2F)
 #define TARGET_LOONGSON_2EF         (TARGET_LOONGSON_2E || TARGET_LOONGSON_2F)
@@ -326,6 +327,7 @@ struct mips_cpu_info {
 				     || mips_tune == PROCESSOR_74KF2_1	\
 				     || mips_tune == PROCESSOR_74KF1_1  \
 				     || mips_tune == PROCESSOR_74KF3_2)
+#define TUNE_ALLEGREX		    (mips_tune == PROCESSOR_ALLEGREX)
 #define TUNE_LOONGSON_2EF           (mips_tune == PROCESSOR_LOONGSON_2E	\
 				     || mips_tune == PROCESSOR_LOONGSON_2F)
 #define TUNE_GS464		    (mips_tune == PROCESSOR_GS464)
@@ -1091,12 +1093,14 @@ struct mips_cpu_info {
 /* ISA has the integer conditional move instructions introduced in mips4 and
    ST Loongson 2E/2F.  */
 #define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE			\
+				 || TARGET_ALLEGREX			\
 				 || TARGET_MIPS5900			\
 				 || ISA_HAS_MIPS16E2			\
 				 || TARGET_LOONGSON_2EF)
 
 /* ISA has LDC1 and SDC1.  */
 #define ISA_HAS_LDC1_SDC1	(!ISA_MIPS1				\
+				 && !TARGET_ALLEGREX			\
 				 && !TARGET_MIPS5900			\
 				 && !TARGET_MIPS16)
 
@@ -1135,11 +1139,13 @@ struct mips_cpu_info {
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
+				 && !TARGET_ALLEGREX                    \
 				 && !TARGET_MIPS16)
 
 /* ISA has conditional trap with immediate instructions.  */
 #define ISA_HAS_COND_TRAPI	(!ISA_MIPS1				\
 				 && mips_isa_rev <= 5			\
+				 && !TARGET_ALLEGREX                    \
 				 && !TARGET_MIPS16)
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
@@ -1199,7 +1205,8 @@ struct mips_cpu_info {
 #define ISA_HAS_IEEE_754_2008	(mips_isa_rev >= 2)
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
-#define ISA_HAS_CLZ_CLO		(mips_isa_rev >= 1 && !TARGET_MIPS16)
+#define ISA_HAS_CLZ_CLO		((mips_isa_rev >= 1 && !TARGET_MIPS16)   \
+				  || TARGET_ALLEGREX)
 
 /* ISA has count trailing zeroes/ones instruction.  */
 #define ISA_HAS_CTZ_CTO		(TARGET_LOONGSON_EXT2)
@@ -1241,6 +1248,7 @@ struct mips_cpu_info {
 
 /* ISA has the "ror" (rotate right) instructions.  */
 #define ISA_HAS_ROR		((mips_isa_rev >= 2			\
+				  || TARGET_ALLEGREX			\
 				  || TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\
 				  || TARGET_SR71K			\
@@ -1249,7 +1257,8 @@ struct mips_cpu_info {
 
 /* ISA has the WSBH (word swap bytes within halfwords) instruction.
    64-bit targets also provide DSBH and DSHD.  */
-#define ISA_HAS_WSBH		(mips_isa_rev >= 2 && !TARGET_MIPS16)
+#define ISA_HAS_WSBH		((mips_isa_rev >= 2 && !TARGET_MIPS16)  \
+				  || TARGET_ALLEGREX)
 
 /* ISA has data prefetch instructions.  This controls use of 'pref'.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
@@ -1282,11 +1291,13 @@ struct mips_cpu_info {
 #define ISA_HAS_TRUNC_W		(!ISA_MIPS1)
 
 /* ISA includes the MIPS32r2 seb and seh instructions.  */
-#define ISA_HAS_SEB_SEH		(mips_isa_rev >= 2 && !TARGET_MIPS16)
+#define ISA_HAS_SEB_SEH		((mips_isa_rev >= 2 && !TARGET_MIPS16)  \
+				  || TARGET_ALLEGREX)
 
 /* ISA includes the MIPS32/64 rev 2 ext and ins instructions.  */
 #define ISA_HAS_EXT_INS		((mips_isa_rev >= 2 && !TARGET_MIPS16)	\
-				 || ISA_HAS_MIPS16E2)
+				 || ISA_HAS_MIPS16E2 \
+				 || TARGET_ALLEGREX)
 
 /* ISA has instructions for accessing top part of 64-bit fp regs.  */
 #define ISA_HAS_MXHC1		(!TARGET_FLOAT32	\
@@ -1330,6 +1341,7 @@ struct mips_cpu_info {
 
 /* Likewise mtc1 and mfc1.  */
 #define ISA_HAS_XFER_DELAY	(mips_isa <= MIPS_ISA_MIPS3	\
+				 && !TARGET_ALLEGREX		\
 				 && !TARGET_MIPS5900		\
 				 && !TARGET_LOONGSON_2EF)
 
@@ -1351,6 +1363,7 @@ struct mips_cpu_info {
    earlier-ISA CPUs for which CPU documentation declares that the
    instructions are really interlocked.  */
 #define ISA_HAS_HILO_INTERLOCKS	(mips_isa_rev >= 1			\
+				 || TARGET_ALLEGREX 			\
 				 || TARGET_MIPS5500			\
 				 || TARGET_MIPS5900			\
 				 || TARGET_LOONGSON_2EF)

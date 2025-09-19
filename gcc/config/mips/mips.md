@@ -72,6 +72,7 @@
   m5100
   i6400
   p6600
+  allegrex
 ])
 
 (define_c_enum "unspec" [
@@ -835,9 +836,11 @@
 ;; conditional-move-type condition is needed.
 (define_mode_iterator MOVECC [SI (DI "TARGET_64BIT")
                               (CC "TARGET_HARD_FLOAT
+				   && !TARGET_ALLEGREX
 				   && !TARGET_LOONGSON_2EF
 				   && !TARGET_MIPS5900")
                               (CCE "TARGET_HARD_FLOAT
+				   && !TARGET_ALLEGREX
 				   && !TARGET_LOONGSON_2EF
 				   && !TARGET_MIPS5900")])
 
