@@ -42,7 +42,6 @@
 #include <bits/ranges_base.h> // borrowed_iterator_t, __detail::__container_compatible_range
 #include <bits/ranges_util.h> // subrange
 #include <bits/ranges_uninitialized.h>
-#include <bits/refwrap.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_algo.h> // rotate
@@ -1343,7 +1342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __osz = __cont.size();
       const auto __end = __cont.end();
       auto __removed = std::__remove_if(__cont.begin(), __end,
-					std::ref(__pred));
+					std::move(__pred));
       if (__removed != __end)
 	{
 	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
@@ -1357,20 +1356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm, typename _Up = _Tp>
     constexpr  size_t
     erase(inplace_vector<_Tp, _Nm>& __cont, const _Up& __value)
-    {
-      using namespace __gnu_cxx;
-      const auto __osz = __cont.size();
-      const auto __end = __cont.end();
-      auto __removed = std::__remove_if(__cont.begin(), __end,
-					__ops::__equal_to(__value));
-      if (__removed != __end)
-	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
-	  return __osz - __cont.size();
-	}
-      return 0;
-    }
+    { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
