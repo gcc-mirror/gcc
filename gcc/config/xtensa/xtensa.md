@@ -1268,7 +1268,7 @@
   [(set (match_operand:DI 0 "register_operand")
 	(match_operand:DI 1 "const_int_operand"))]
   "!TARGET_CONST16
-   && ! xtensa_split1_finished_p ()"
+   && ! xtensa_postreload_completed_p ()"
   [(set (match_dup 0)
 	(match_dup 1))
    (set (match_dup 2)
@@ -1311,18 +1311,6 @@
      [*A, *r; wsr  , 3] wsr\t%1, ACCLO
   }
   [(set_attr "mode" "SI")])
-
-(define_split
-  [(set (match_operand:SHI 0 "register_operand")
-	(match_operand:SHI 1 "const_int_operand"))]
-  "!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
-   && ! xtensa_split1_finished_p ()
-   && ! xtensa_simm12b (INTVAL (operands[1]))"
-  [(set (match_dup 0)
-	(match_dup 1))]
-{
-  operands[1] = force_const_mem (<MODE>mode, operands[1]);
-})
 
 (define_split
   [(set (match_operand:SHI 0 "register_operand")

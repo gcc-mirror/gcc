@@ -58,7 +58,7 @@ extern char *xtensa_emit_call (int, rtx *);
 extern char *xtensa_emit_sibcall (int, rtx *);
 extern bool xtensa_tls_referenced_p (rtx);
 extern enum rtx_code xtensa_shlrd_which_direction (rtx, rtx);
-extern bool xtensa_split1_finished_p (void);
+extern bool xtensa_postreload_completed_p (void);
 extern void xtensa_split_DI_reg_imm (rtx *);
 extern char *xtensa_bswapsi2_output (rtx_insn *, const char *);
 
@@ -82,5 +82,6 @@ extern void xtensa_adjust_reg_alloc_order (void);
 extern enum reg_class xtensa_regno_to_class (int regno);
 extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
 extern const char **xtensa_get_config_strings (void);
+extern rtl_opt_pass *make_pass_xtensa_largeconst (gcc::context *);
 
 #endif /* !__XTENSA_PROTOS_H__ */

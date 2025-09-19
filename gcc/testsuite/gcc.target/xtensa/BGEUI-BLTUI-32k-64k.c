@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O0 -fdump-rtl-expand" } */
 
 extern void foo(void);
 
@@ -15,5 +15,6 @@ void BLTUI_test(unsigned int a)
     foo();
 }
 
+/* { dg-final { scan-rtl-dump-times "ubtrue" 2 "expand" } } */
 /* { dg-final { scan-assembler-times "bgeui" 1 } } */
 /* { dg-final { scan-assembler-times "bltui" 1 } } */

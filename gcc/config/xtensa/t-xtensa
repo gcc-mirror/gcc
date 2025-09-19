@@ -23,3 +23,5 @@ $(out_object_file): gt-xtensa.h
 xtensa-dynconfig.o: $(srcdir)/config/xtensa/xtensa-dynconfig.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+PASSES_EXTRA += $(srcdir)/config/xtensa/xtensa-passes.def

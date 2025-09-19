@@ -111,6 +111,7 @@ struct GTY(()) machine_function
   rtx last_logues_a9_content;
   HARD_REG_SET eliminated_callee_saved;
   hash_map<rtx, int> *litpool_usage;
+  bool postreload_completed;
 };
 
 static void xtensa_option_override (void);
@@ -1342,7 +1343,7 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
   rtx src = operands[1];
 
   if (CONSTANT_P (src)
-      && (! CONST_INT_P (src) || ! xtensa_simm12b (INTVAL (src))))
+      && ! (CONST_INT_P (src) && xtensa_simm12b (INTVAL (src))))
     {
       rtx dst = operands[0];
 
@@ -1366,8 +1367,8 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	  return 1;
 	}
 
-      if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16
-	  && ! (CONST_INT_P (src) && can_create_pseudo_p ()))
+      if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+	  && (! CONST_INT_P (src) || xtensa_postreload_completed_p ()))
 	{
 	  src = force_const_mem (SImode, src);
 	  operands[1] = src;
@@ -2623,12 +2624,12 @@ xtensa_shlrd_which_direction (rtx op0, rtx op1)
 }
 
 
-/* Return true after "split1" pass has been finished.  */
+/* Return true after "postreload" pass has been completed.  */
 
 bool
-xtensa_split1_finished_p (void)
+xtensa_postreload_completed_p (void)
 {
-  return cfun && (cfun->curr_properties & PROP_rtl_split_insns);
+  return cfun && cfun->machine->postreload_completed;
 }
 
 
@@ -5143,7 +5144,8 @@ static bool
 xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   if (CONST_INT_P (x))
-    return TARGET_AUTO_LITPOOLS || TARGET_CONST16
+    return TARGET_CONST16 || TARGET_AUTO_LITPOOLS
+	   || ! xtensa_postreload_completed_p ()
 	   || xtensa_simm12b (INTVAL (x));
 
   return !xtensa_tls_referenced_p (x);
@@ -5712,6 +5714,179 @@ xtensa_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
       }
 
   return NULL;
+}
+
+/* Machine-specific pass in order to replace all assignments of large
+   integer constants (i.e., that do not fit into the immediate field which
+   can hold signed 12 bits) with other legitimate forms, specifically,
+   references to literal pool entries, when neither TARGET_CONST16 nor
+   TARGET_AUTO_LITPOOLS is enabled.
+
+   This pass also serves as a place to provide other optimizations, for
+   example, converting constants that are too large to fit into their
+   immediate fields into other representations that are more efficient
+   from a particular point of view.  */
+
+namespace
+{
+
+/* Replace the source of [SH]Imode allocation whose value does not fit
+   into signed 12 bits with a reference to litpool entry.  */
+
+static bool
+litpool_set_src_1 (rtx_insn *insn, rtx set, bool in_group)
+{
+  rtx dest, src;
+  enum machine_mode mode;
+
+  if (REG_P (dest = SET_DEST (set))
+      && ((mode = GET_MODE (dest)) == SImode || mode == HImode)
+      && CONST_INT_P (src = SET_SRC (set))
+      && ! xtensa_simm12b (INTVAL (src)))
+    {
+      remove_reg_equal_equiv_notes (insn);
+      validate_change (insn, &SET_SRC (set),
+		       force_const_mem (mode, src), in_group);
+      add_reg_note (insn, REG_EQUIV, copy_rtx (src));
+      return true;
+    }
+
+  return false;
+}
+
+static bool
+litpool_set_src (rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  int i;
+  bool changed;
+
+  switch (GET_CODE (pat))
+    {
+    case SET:
+      return litpool_set_src_1 (insn, pat, 0);
+
+    /* There should be no assignments within PARALLEL in this target,
+       but just to be sure.  */
+    case PARALLEL:
+      changed = false;
+      for (i = 0; i < XVECLEN (pat, 0); ++i)
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+	    && litpool_set_src_1 (insn, XVECEXP (pat, 0, i), 1))
+	  changed = true;
+      if (changed)
+	apply_change_group ();
+      return changed;
+
+    default:
+      return false;
+    }
+}
+
+/* Replace all occurrences of large immediate values in assignment sources
+   that were permitted for convenience with their legitimate forms, or
+   more efficient representations if possible.  */
+
+static void
+do_largeconst (void)
+{
+  bool replacing_required = !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS;
+  rtx_insn *insn;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (NONJUMP_INSN_P (insn))
+      {
+	/* Replace the source of [SH]Imode allocation whose value does not
+	   fit into signed 12 bits with a reference to litpool entry.  */
+	if (replacing_required)
+	  litpool_set_src (insn);
+      }
+}
+
+/* Convert assignments for large constants.  */
+
+static unsigned int
+rest_of_handle_largeconst (void)
+{
+  /* Until this flag becomes true, all RTL expressions that assign integer
+     (not symbol nor floating-point) constants to [SH]Imode registers are
+     allowed regardless of the values' bit width or configurations of
+     TARGET_CONST16 and TARGET_AUTO_LITPOOLS.  This trick avoids some of
+     the problems that can arise from blindly following the result of
+     TARGET_LEGITIMATE_CONSTANT_P() either directly or via general/
+     immediate_operands().
+
+     For example, the "cbranchsi4" MD expansion pattern in this target has
+     "nonmemory_operand" predicate specified for operand 2, which is
+     reasonable for most RISC machines where only registers or small set of
+     constants can be compared.  Incidentally, the Xtensa ISA has branch
+     instructions that perform GEU/LTU comparisons with 32768 or 65536, but
+     such constants are previously not accepted by "nonmemory_operand"
+     because the predicate is internally constrained to "immediate_operand"
+     which is essentially TARGET_LEGITIMATE_CONSTANT_P().  It would not be
+     impossible to describe a peculiar predicate or condition in the pattern
+     to get around this, but it would be "elephant" (inelegant).
+     Fortunately, this issue will be salvaged at higher optimization levels
+     in subsequent RTL instruction combination pass, but these instructions
+     are suppose to be emitted properly without any optimization.
+
+     Also, there are not a few cases where optimizers only accept bare
+     CONST_INTs and do not consider that references to pooled constants
+     are semantically equivalent to bare ones.  A good example of this is
+     a certain constant anchoring optimization performed in the postreload
+     pass, which requires anchoring constants to be bare, not pooled.
+
+     In any case, once postreload is complete, the trick described above
+     is no longer needed, so such assignments must now be all converted
+     back to references to literal pool entries (the original legitimate
+     form) if neither TARGET_CONST16 nor TARGET_AUTO_LITPOOLS is enabled.
+     See the function do_largeconst() called below.  */
+  cfun->machine->postreload_completed = true;
+
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+  df_note_add_problem ();
+  df_analyze ();
+
+  /* Do the process.  */
+  do_largeconst ();
+
+  return 0;
+}
+
+const pass_data pass_data_xtensa_largeconst =
+{
+  RTL_PASS, /* type */
+  "xt_largeconst", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_xtensa_largeconst : public rtl_opt_pass
+{
+public:
+  pass_xtensa_largeconst (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_xtensa_largeconst, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_largeconst ();
+  }
+
+};  // class pass_xtensa_largeconst
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_xtensa_largeconst (gcc::context *ctxt)
+{
+  return new pass_xtensa_largeconst (ctxt);
 }
 
 #include "gt-xtensa.h"

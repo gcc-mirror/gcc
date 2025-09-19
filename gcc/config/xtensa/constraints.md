@@ -121,7 +121,8 @@
  (ior (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
 	   (match_test "TARGET_AUTO_LITPOOLS"))
       (and (match_code "const_int")
-	   (match_test "! xtensa_split1_finished_p ()"))))
+	   (match_test "!TARGET_CONST16
+			&& ! xtensa_postreload_completed_p ()"))))
 
 ;; Memory constraints.
 
