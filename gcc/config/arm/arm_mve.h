@@ -95,8 +95,6 @@
 #define uqshll(__p0, __p1) __arm_uqshll(__p0, __p1)
 #define urshr(__p0, __p1) __arm_urshr(__p0, __p1)
 #define urshrl(__p0, __p1) __arm_urshrl(__p0, __p1)
-#define lsll(__p0, __p1) __arm_lsll(__p0, __p1)
-#define asrl(__p0, __p1) __arm_asrl(__p0, __p1)
 #endif
 
 /* For big-endian, GCC's vector indices are reversed within each 64 bits
@@ -252,20 +250,6 @@ __arm_vgetq_lane_u64 (uint64x2_t __a, const int __idx)
 {
   __ARM_CHECK_LANEQ (__a, __idx);
   return __a[__ARM_LANEQ(__a,__idx)];
-}
-
-__extension__ extern __inline  uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_lsll (uint64_t value, int32_t shift)
-{
-  return (value << shift);
-}
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_asrl (int64_t value, int32_t shift)
-{
-  return (value >> shift);
 }
 
 __extension__ extern __inline uint64_t

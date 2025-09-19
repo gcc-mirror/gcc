@@ -1167,6 +1167,48 @@ public:
   }
 };
 
+
+/* Map the function directly to the appropriate scalar shift builtin.  */
+enum which_scalar_shift {
+  ss_ASRL,
+  ss_LSLL,
+};
+
+class mve_function_scalar_shift : public function_base
+{
+public:
+  CONSTEXPR mve_function_scalar_shift (enum which_scalar_shift shl)
+    : m_scalar_shift (shl)
+  {}
+
+  /* Which scalar_shift builtin to map.  */
+  enum which_scalar_shift m_scalar_shift;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+
+    switch (m_scalar_shift)
+      {
+      case ss_ASRL:
+	e.args[1] = simplify_gen_subreg (QImode, e.args[1], SImode, 0);
+	code = CODE_FOR_mve_asrl;
+	break;
+
+      case ss_LSLL:
+	e.args[1] = simplify_gen_subreg (QImode, e.args[1], SImode, 0);
+	code = CODE_FOR_mve_lsll;
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    return e.use_unpred_insn (code);
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -1334,6 +1376,8 @@ namespace arm_mve {
    (-1, -1, UNSPEC##_F,							\
     -1, -1, UNSPEC##_P_F))
 
+FUNCTION (asrl, mve_function_scalar_shift, (ss_ASRL))
+FUNCTION (lsll, mve_function_scalar_shift, (ss_LSLL))
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
