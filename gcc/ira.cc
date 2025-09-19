@@ -4233,12 +4233,14 @@ setup_reg_equiv (void)
 			    && REGNO (SET_SRC (set)) == (unsigned int) i);
 		x = SET_DEST (set);
 	      }
-	    if (! function_invariant_p (x)
+	    /* If PIC is enabled and the equiv is not a LEGITIMATE_PIC_OPERAND,
+	       we can't use it.  */
+	    if (! CONSTANT_P (x)
 		|| ! flag_pic
 		/* A function invariant is often CONSTANT_P but may
 		   include a register.  We promise to only pass
 		   CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
-		|| (CONSTANT_P (x) && LEGITIMATE_PIC_OPERAND_P (x)))
+		|| LEGITIMATE_PIC_OPERAND_P (x))
 	      {
 		/* It can happen that a REG_EQUIV note contains a MEM
 		   that is not a legitimate memory operand.  As later
