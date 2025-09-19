@@ -50,12 +50,11 @@ struct GTY (()) struct_constructor
   /* Constructor_fields, the list of fields belonging to
      constructor_type.  Used by SET and RECORD constructors.  */
   tree GTY ((skip (""))) constructor_fields;
-  /* Constructor_element_list, the list of constants used by SET and
-     RECORD constructors.  */
-  tree GTY ((skip (""))) constructor_element_list;
-  /* Constructor_elements, used by an ARRAY initializer all elements
-     are held in reverse order.  */
+  /* Constructor_elements, used by an ARRAY, RECORD and SET initializer
+     all elements are held in reverse order.  */
   vec<constructor_elt, va_gc> *constructor_elements;
+  /* The next byte_index to be used when adding set bytes to an array.  */
+  int byte_index;
   /* Level, the next level down in the constructor stack.  */
   struct struct_constructor *level;
 };
@@ -243,8 +242,9 @@ m2type_BuildEndArrayType (tree arraytype, tree elementtype, tree indextype,
     return gm2_finish_build_array_type (arraytype, ptr_type_node, indextype,
                                         type);
   else
-    return gm2_finish_build_array_type (
-        arraytype, m2tree_skip_type_decl (elementtype), indextype, type);
+    return gm2_finish_build_array_type (arraytype,
+       m2tree_skip_type_decl (elementtype),
+       indextype, type);
 }
 
 /* gm2_build_array_type returns a type which is an array indexed by
@@ -330,7 +330,8 @@ static tree
 build_m2_type_node_by_array (tree arrayType, tree low, tree high, int fetype)
 {
   return gm2_build_array_type (arrayType,
-                               m2type_BuildArrayIndexType (low, high), fetype);
+                               m2type_BuildArrayIndexType (low, high),
+			       fetype);
 }
 
 /* build_m2_word16_type_node build an ISO 16 bit word as an ARRAY
@@ -891,6 +892,17 @@ m2type_GetBooleanType (void)
 #else /* !USE_BOOLEAN  */
   return integer_type_node;
 #endif /* !USE_BOOLEAN  */
+}
+
+/* GetBooleanEnumList return a list containing boolean fields true and false.  */
+
+tree
+m2type_GetBooleanEnumList (location_t location)
+{
+  tree list = NULL;
+  m2type_BuildEnumerator (location, "TRUE", m2type_GetBooleanTrue (), &list);
+  m2type_BuildEnumerator (location, "FALSE", m2type_GetBooleanTrue (), &list);
+  return list;
 }
 
 /* GetCardinalAddressType returns the internal data type for
@@ -1892,7 +1904,7 @@ m2type_GetDefaultType (location_t location, char *name, tree type)
 }
 
 /* IsGccRealType return true if type is a GCC realtype.  */
-  
+
 static
 bool
 IsGccRealType (tree type)
@@ -1935,7 +1947,7 @@ m2type_GetMinFrom (location_t location, tree type)
   return TYPE_MIN_VALUE (m2tree_skip_type_decl (type));
 }
 
-static      
+static
 tree
 do_max_real (tree type)
 {
@@ -2201,7 +2213,7 @@ gm2_build_enumerator (location_t location, tree name, tree value)
    enumvalues, list.  It returns a copy of the value.  */
 
 tree
-m2type_BuildEnumerator (location_t location, char *name, tree value,
+m2type_BuildEnumerator (location_t location, const char *name, tree value,
                         tree *enumvalues)
 {
   tree id = get_identifier (name);
@@ -2274,8 +2286,8 @@ pop_constructor (struct struct_constructor *p)
   top_constructor = top_constructor->level;
 }
 
-/* BuildStartSetConstructor starts to create a set constant.
-   Remember that type is really a record type.  */
+/* BuildStartSetConstructor starts to create a wide set constant.
+   A wide set type will be implemented as an array type (array [0..max] OF BYTE).  */
 
 void *
 m2type_BuildStartSetConstructor (tree type)
@@ -2285,36 +2297,32 @@ m2type_BuildStartSetConstructor (tree type)
   type = m2tree_skip_type_decl (type);
   layout_type (type);
   p->constructor_type = type;
-  p->constructor_fields = TYPE_FIELDS (type);
-  p->constructor_element_list = NULL_TREE;
+  p->constructor_fields = TREE_TYPE (type);
+  p->byte_index = 0;
   vec_alloc (p->constructor_elements, 1);
   return (void *)p;
 }
 
-/* BuildSetConstructorElement adds, value, to the
-   constructor_element_list.  */
+/* BuildSetConstructorElement adds value to the constructor_elements.  */
 
 void
-m2type_BuildSetConstructorElement (void *p, tree value)
+m2type_BuildSetConstructorElement (location_t location, void *p, tree value)
 {
   struct struct_constructor *c = (struct struct_constructor *)p;
+  constructor_elt celt;
 
-  if (value == NULL_TREE)
+  if (c->constructor_fields == NULL_TREE)
     {
-      internal_error ("set type cannot be initialized with a %qs",
-		      "NULL_TREE");
+      internal_error ("set type must be initialized");
       return;
     }
 
-  if (c->constructor_fields == NULL)
-    {
-      internal_error ("set type does not take another integer value");
-      return;
-    }
-
-  c->constructor_element_list
-      = tree_cons (c->constructor_fields, value, c->constructor_element_list);
-  c->constructor_fields = TREE_CHAIN (c->constructor_fields);
+  value = m2convert_BuildConvert (location, c->constructor_fields,
+				  value, FALSE);
+  celt.index = m2decl_BuildIntegerConstant (c->byte_index);
+  celt.value = value;
+  c->byte_index++;
+  vec_safe_push (c->constructor_elements, celt);
 }
 
 /* BuildEndSetConstructor finishes building a set constant.  */
@@ -2322,24 +2330,13 @@ m2type_BuildSetConstructorElement (void *p, tree value)
 tree
 m2type_BuildEndSetConstructor (void *p)
 {
-  tree constructor;
-  tree link;
   struct struct_constructor *c = (struct struct_constructor *)p;
+  tree constructor =
+    build_constructor (c->constructor_type, c->constructor_elements);
 
-  for (link = c->constructor_element_list; link; link = TREE_CHAIN (link))
-    {
-      tree field = TREE_PURPOSE (link);
-      DECL_SIZE (field) = bitsize_int (SET_WORD_SIZE);
-      DECL_BIT_FIELD (field) = 1;
-    }
-
-  constructor = build_constructor_from_list (
-      c->constructor_type, nreverse (c->constructor_element_list));
-  TREE_CONSTANT (constructor) = 1;
-  TREE_STATIC (constructor) = 1;
-
+  TREE_CONSTANT (constructor) = true;
+  TREE_STATIC (constructor) = true;
   pop_constructor (c);
-
   return constructor;
 }
 
@@ -2355,10 +2352,29 @@ m2type_BuildStartRecordConstructor (tree type)
   layout_type (type);
   p->constructor_type = type;
   p->constructor_fields = TYPE_FIELDS (type);
-  p->constructor_element_list = NULL_TREE;
   vec_alloc (p->constructor_elements, 1);
   return (void *)p;
 }
+
+/* build_record_constructor build and return a record constructor of type
+   record_type from the ordered values in vals.  */
+
+static
+tree
+build_record_constructor (tree record_type, vec<constructor_elt, va_gc> *vals)
+{
+  tree field_init;
+  unsigned int i;
+  vec<constructor_elt, va_gc> *v = NULL;
+  tree field_type = first_field (record_type);
+  FOR_EACH_CONSTRUCTOR_VALUE (vals, i, field_init)
+    {
+      CONSTRUCTOR_APPEND_ELT (v, field_type, field_init);
+      field_type = DECL_CHAIN (field_type);
+    }
+  return build_constructor (record_type, v);
+}
+
 
 /* BuildEndRecordConstructor returns a tree containing the record
    compound literal.  */
@@ -2367,23 +2383,32 @@ tree
 m2type_BuildEndRecordConstructor (void *p)
 {
   struct struct_constructor *c = (struct struct_constructor *)p;
-  tree constructor = build_constructor_from_list (
-      c->constructor_type, nreverse (c->constructor_element_list));
-  TREE_CONSTANT (constructor) = 1;
-  TREE_STATIC (constructor) = 1;
-
+  tree constructor = build_record_constructor (c->constructor_type,
+					       c->constructor_elements);
+  TREE_CONSTANT (constructor) = true;
+  TREE_STATIC (constructor) = true;
   pop_constructor (c);
-
   return constructor;
 }
 
 /* BuildRecordConstructorElement adds, value, to the
-   constructor_element_list.  */
+   constructor_elements.  */
 
 void
 m2type_BuildRecordConstructorElement (void *p, tree value)
 {
-  m2type_BuildSetConstructorElement (p, value);
+  struct struct_constructor *c = (struct struct_constructor *)p;
+  constructor_elt celt;
+
+  if (c->constructor_fields == NULL_TREE)
+    {
+      internal_error ("record type must be initialized");
+      return;
+    }
+  celt.index = m2decl_BuildIntegerConstant (c->byte_index);
+  celt.value = value;
+  c->byte_index++;
+  vec_safe_push (c->constructor_elements, celt);
 }
 
 /* BuildStartArrayConstructor initializes an array compound
@@ -2398,7 +2423,6 @@ m2type_BuildStartArrayConstructor (tree type)
   layout_type (type);
   p->constructor_type = type;
   p->constructor_fields = TREE_TYPE (type);
-  p->constructor_element_list = NULL_TREE;
   vec_alloc (p->constructor_elements, 1);
   return (void *)p;
 }
@@ -2416,14 +2440,12 @@ m2type_BuildEndArrayConstructor (void *p)
       = build_constructor (c->constructor_type, c->constructor_elements);
   TREE_CONSTANT (constructor) = true;
   TREE_STATIC (constructor) = true;
-
   pop_constructor (c);
-
   return constructor;
 }
 
 /* BuildArrayConstructorElement adds, value, to the
-   constructor_element_list.  */
+   constructor_elements.  */
 
 void
 m2type_BuildArrayConstructorElement (void *p, tree value, tree indice)

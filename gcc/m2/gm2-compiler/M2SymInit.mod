@@ -155,11 +155,16 @@ BEGIN
    printf (" initialized\n") ;
    IF (desc^.type # NulSym) AND IsRecord (desc^.type)
    THEN
-      i := 1 ;
-      n := Indexing.HighIndice (desc^.rec.fieldDesc) ;
-      WHILE i <= n DO
-         PrintSymInit (Indexing.GetIndice (desc^.rec.fieldDesc, i)) ;
-         INC (i)
+      IF desc^.rec.fieldDesc = NIL
+      THEN
+         printf (" record field descriptor has not been initialized yet\n") ;
+      ELSE
+         i := 1 ;
+         n := Indexing.HighIndice (desc^.rec.fieldDesc) ;
+         WHILE i <= n DO
+            PrintSymInit (Indexing.GetIndice (desc^.rec.fieldDesc, i)) ;
+            INC (i)
+         END
       END
    END
 END PrintSymInit ;

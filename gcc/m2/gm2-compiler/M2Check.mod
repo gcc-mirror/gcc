@@ -34,6 +34,7 @@ IMPLEMENTATION MODULE M2Check ;
 
 FROM M2System IMPORT IsSystemType, IsGenericSystemType, IsSameSize, IsComplexN ;
 FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsComparisonCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType, Char ;
+FROM M2Bitset IMPORT Bitset ;
 FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, KillIndex, HighIndice, LowIndice, IncludeIndiceIntoIndex, ForeachIndiceInIndexDo ;
 FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
 
@@ -456,7 +457,23 @@ END checkUnbounded ;
 
 
 (*
-   checkArrayTypeEquivalence - check array and unbounded array type equivalence.
+   checkGenericUnboundedTyped - return TRUE if we have a match for
+                                an unbounded generic type and a typed object
+                                which is not a Z, R or C type.
+*)
+
+PROCEDURE checkGenericUnboundedTyped (unbounded, typed: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN (IsUnbounded (unbounded) AND
+           IsGenericSystemType (GetDType (unbounded)) AND
+           ((NOT IsZRCType (typed)) OR
+            IsTyped (typed) AND (NOT IsZRCType (GetDType (typed)))))
+END checkGenericUnboundedTyped ;
+
+
+(*
+   checkArrayTypeEquivalence - check array and unbounded array type
+                               equivalence.
 *)
 
 PROCEDURE checkArrayTypeEquivalence (result: status; tinfo: tInfo;
@@ -476,6 +493,12 @@ BEGIN
       THEN
          result := checkSubrange (result, tinfo, getSType (lSub), getSType (rSub))
       END
+   ELSIF checkGenericUnboundedTyped (left, right) OR
+         checkGenericUnboundedTyped (right, left)
+   THEN
+      (* ARRAY OF BYTE (or WORD or LOC etc will be compatible with any typed
+         non ZRC type.  *)
+      RETURN true
    ELSIF IsUnbounded (left) AND (IsArray (right) OR IsUnbounded (right))
    THEN
       IF IsGenericSystemType (getSType (left)) OR IsGenericSystemType (getSType (right))

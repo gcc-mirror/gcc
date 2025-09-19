@@ -1961,6 +1961,22 @@ m2pp_binary_function (pretty *s, tree t, const char *funcname)
   m2pp_print (s, ")");
 }
 
+static void
+m2pp_shiftrotate_expr (pretty *s, tree t, const char *op)
+{
+  tree left = TREE_OPERAND (t, 0);
+  tree right = TREE_OPERAND (t, 1);
+  m2pp_print (s, "(");
+  m2pp_expression (s, left);
+  m2pp_print (s, ")");
+  m2pp_needspace (s);
+  m2pp_print (s, op);
+  m2pp_needspace (s);
+  m2pp_print (s, "(");
+  m2pp_expression (s, right);
+  m2pp_print (s, ")");
+}
+
 /* m2pp_simple_expression handle GCC expression tree.  */
 
 static void
@@ -2116,6 +2132,12 @@ m2pp_simple_expression (pretty *s, tree t)
       break;
     case TRUTH_ORIF_EXPR:
       m2pp_truth_expr (s, t, "OR");
+      break;
+    case LSHIFT_EXPR:
+      m2pp_shiftrotate_expr (s, t, "<<");
+      break;
+    case RSHIFT_EXPR:
+      m2pp_shiftrotate_expr (s, t, ">>");
       break;
     case LROTATE_EXPR:
       m2pp_binary_function (s, t, "LROTATE");

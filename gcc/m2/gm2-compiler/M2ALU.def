@@ -35,52 +35,6 @@ FROM NameKey IMPORT Name ;
 FROM M2GCCDeclare IMPORT WalkAction, IsAction ;
 FROM gcctypes IMPORT tree ;
 
-EXPORT QUALIFIED PtrToValue,
-                 InitValue,
-                 IsValueTypeNone,
-                 IsValueTypeInteger,
-                 IsValueTypeReal,
-                 IsValueTypeComplex,
-                 IsValueTypeSet,
-                 IsValueTypeConstructor,
-                 IsValueTypeArray,
-                 IsValueTypeRecord,
-                 PopInto, PushFrom,
-                 PushIntegerTree, PopIntegerTree,
-                 PushSetTree, PopSetTree,
-                 PushRealTree, PopRealTree,
-                 PushComplexTree, PopComplexTree,
-                 PopConstructorTree,
-                 PopChar,
-                 PushCard,
-                 PushInt,
-                 PushChar,
-                 PushString,
-                 PushTypeOfTree,
-                 CoerseLongRealToCard,
-                 ConvertRealToInt,
-                 ConvertToInt,
-                 ConvertToType,
-                 GetSetValueType,
-                 IsSolved, IsValueConst,
-                 PutConstructorSolved, EvaluateValue, TryEvaluateValue,
-
-                 IsNulSet, IsGenericNulSet, PushNulSet, AddBitRange, AddBit, SubBit,
-      	       	 SetOr, SetAnd, SetIn,
-                 SetDifference, SetSymmetricDifference,
-                 SetNegate, SetShift, SetRotate,
-
-                 Addn, Multn, Sub,
-                 DivFloor, ModFloor, DivTrunc, ModTrunc,
-                 Equ, NotEqu, Less, Gre, LessEqu, GreEqu,
-                 GetValue, GetRange,  ConstructSetConstant, BuildRange,
-                 IsConstructorDependants, WalkConstructorDependants,
-                 AddField, AddElements,
-
-                 PushEmptyConstructor, PushEmptyArray, PushEmptyRecord,
-                 ChangeToConstructor,
-
-                 IsValueAndTreeKnown, CheckOrResetOverflow ;
 
 TYPE
    PtrToValue ;
@@ -91,6 +45,13 @@ TYPE
 *)
 
 PROCEDURE InitValue () : PtrToValue ;
+
+
+(*
+   KillValue - deconstructor for value.  value is set to NIL upon return.
+*)
+
+PROCEDURE KillValue (VAR value: PtrToValue) ;
 
 
 (*
@@ -208,8 +169,7 @@ PROCEDURE PopComplexTree () : tree ;
                  type (sym). Bit 0 maps onto MIN(sym).
 *)
 
-PROCEDURE PushSetTree (tokenno: CARDINAL;
-                       t: tree; sym: CARDINAL) ;
+PROCEDURE PushSetTree (tokenno: CARDINAL; value: tree; sym: CARDINAL) ;
 
 
 (*
@@ -828,8 +788,8 @@ PROCEDURE GetRange (v: PtrToValue; n: CARDINAL; VAR low, high: CARDINAL) : BOOLE
 
 
 (*
-   ConstructSetConstant - builds a struct of integers which represents the
-                          set const, sym.
+   ConstructSetConstant - builds an array of BYTE which represents the
+                          set const symbol.
 *)
 
 PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;

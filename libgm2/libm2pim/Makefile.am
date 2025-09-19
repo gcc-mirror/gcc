@@ -99,6 +99,8 @@ toolexeclib_LTLIBRARIES = libm2pim.la
 M2MODS = ASCII.mod IO.mod \
        Args.mod M2RTS.mod \
        M2Dependent.mod \
+       M2Diagnostic.mod \
+       M2WIDESET.mod \
        Assertion.mod NumberIO.mod \
        Break.mod SYSTEM.mod \
        CmdArgs.mod Scan.mod \
@@ -142,8 +144,10 @@ M2DEFS = Args.def   ASCII.def \
          LegacyReal.def  libc.def \
          libm.def  LMathLib0.def \
          M2Dependent.def \
+         M2Diagnostic.def \
          M2EXCEPTION.def \
          M2RTS.def \
+         M2WIDESET.def \
          MathLib0.def  MemUtils.def \
          NumberIO.def  PushBackInput.def \
          RTExceptions.def  RTint.def \

@@ -681,6 +681,7 @@ GM2-LIBS-BOOT-DEFS = \
    IO.def \
    Indexing.def \
    M2Dependent.def \
+   M2Diagnostic.def \
    M2EXCEPTION.def \
    M2RTS.def \
    NumberIO.def \
@@ -690,6 +691,7 @@ GM2-LIBS-BOOT-DEFS = \
    SEnvironment.def \
    SFIO.def \
    SYSTEM.def \
+   Selective.def \
    Scan.def \
    StdIO.def \
    Storage.def \
@@ -726,6 +728,7 @@ GM2-LIBS-BOOT-MODS = \
    IO.mod \
    Indexing.mod \
    M2Dependent.mod \
+   M2Diagnostic.mod \
    M2EXCEPTION.mod \
    M2RTS.mod \
    NumberIO.mod \
@@ -747,6 +750,7 @@ GM2-LIBS-BOOT-MODS = \
 # found in gm2-libs-ch.
 
 GM2-LIBS-BOOT-C = \
+   Selective.c \
    StdIO.c \
    SysExceptions.c \
    choosetemp.c \
@@ -954,6 +958,7 @@ GM2-LIBS-DEFS = \
    LMathLib0.def \
    LegacyReal.def \
    M2Dependent.def \
+   M2Diagnostic.def \
    M2EXCEPTION.def \
    M2RTS.def \
    MathLib0.def \
@@ -968,6 +973,7 @@ GM2-LIBS-DEFS = \
    SMathLib0.def \
    SYSTEM.def \
    Scan.def \
+   Selective.def \
    StdIO.def \
    Storage.def \
    StrCase.def \
@@ -1006,6 +1012,7 @@ GM2-LIBS-MODS = \
    LMathLib0.mod \
    LegacyReal.mod \
    M2Dependent.mod \
+   M2Diagnostic.mod \
    M2EXCEPTION.mod \
    M2RTS.mod \
    MathLib0.mod \
@@ -1246,6 +1253,7 @@ MC-LIB-DEFS = \
    FpuIO.def \
    IO.def \
    M2Dependent.def \
+   M2Diagnostic.def \
    M2EXCEPTION.def \
    M2RTS.def \
    MemUtils.def \
@@ -1293,6 +1301,7 @@ MC-LIB-MODS = \
    FpuIO.mod \
    IO.mod \
    M2Dependent.mod \
+   M2Diagnostic.mod \
    M2EXCEPTION.mod \
    M2RTS.mod \
    MemUtils.mod \
@@ -1556,6 +1565,12 @@ m2/gm2-libs-boot/SysStorage.o: $(srcdir)/m2/gm2-libs/SysStorage.mod $(MCDEPS) $(
 	$(COMPILER) $(CM2DEP) -DIN_GCC -c $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) \
           -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) \
           m2/gm2-libs-boot/SysStorage.c -o m2/gm2-libs-boot/SysStorage.o
+	$(POSTCOMPILE)
+
+m2/gm2-libs-boot/Selective.o: $(srcdir)/m2/gm2-libs-ch/Selective.c \
+                                  m2/gm2-libs-boot/$(SRC_PREFIX)Selective.h m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -1873,6 +1888,7 @@ BUILD-PGE-O = \
    m2/pge-boot/GIO.o \
    m2/pge-boot/GLists.o \
    m2/pge-boot/GM2Dependent.o \
+   m2/pge-boot/GM2Diagnostic.o \
    m2/pge-boot/GM2EXCEPTION.o \
    m2/pge-boot/GM2RTS.o \
    m2/pge-boot/GNameKey.o \
@@ -1882,9 +1898,11 @@ BUILD-PGE-O = \
    m2/pge-boot/GPushBackInput.o \
    m2/pge-boot/GRTExceptions.o \
    m2/pge-boot/GSFIO.o \
+   m2/pge-boot/GSelective.o \
    m2/pge-boot/GStdIO.o \
    m2/pge-boot/GStorage.o \
    m2/pge-boot/GStrCase.o \
+   m2/pge-boot/GStringConvert.o \
    m2/pge-boot/GStrIO.o \
    m2/pge-boot/GStrLib.o \
    m2/pge-boot/GSymbolKey.o \
@@ -1896,6 +1914,8 @@ BUILD-PGE-O = \
    m2/pge-boot/Gtermios.o \
    m2/pge-boot/GSysExceptions.o \
    m2/pge-boot/Gabort.o \
+   m2/pge-boot/Gdtoa.o \
+   m2/pge-boot/Gldtoa.o \
    m2/pge-boot/Gmcrts.o \
    m2/pge-boot/main.o
 

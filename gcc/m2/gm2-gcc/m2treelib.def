@@ -79,14 +79,6 @@ PROCEDURE get_field_no (type: tree; op: tree; is_const: BOOLEAN; fieldNo: CARDIN
 
 
 (*
-    get_rvalue - returns the rvalue of t. The, type, is the object type to be
-                 copied upon indirection.
-*)
-
-PROCEDURE get_rvalue (location: location_t; t: tree; type: tree; is_lvalue: BOOLEAN) : tree ;
-
-
-(*
     DoCall - build a call tree arranging the parameter list as a vector.
 *)
 
@@ -103,6 +95,13 @@ PROCEDURE build_modify_expr (location: location_t; des: tree; modifycode: tree_c
 *)
 
 PROCEDURE do_jump_if_bit (location: location_t; code: tree_code; word: tree; bit: tree; label: ADDRESS) ;
+
+
+(*
+   nCount - return the number of trees chained.
+*)
+
+PROCEDURE nCount (t: tree) : INTEGER ;
 
 
 END m2treelib.

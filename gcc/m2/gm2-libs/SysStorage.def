@@ -28,7 +28,9 @@ DEFINITION MODULE SysStorage ;
 
 (*  Provides dynamic allocation for the system components.
     This allows the application to use the traditional Storage module
-    which can be handled differently.  *)
+    which can be handled differently.
+    ALLOCATE and DEALLOCATE will call M2Diagnostic to adjust the
+    global tracking of the application heap.  *)
 
 FROM SYSTEM IMPORT ADDRESS ;
 EXPORT QUALIFIED ALLOCATE, DEALLOCATE, REALLOCATE, Available, Init ;
@@ -56,6 +58,11 @@ PROCEDURE DEALLOCATE (VAR a: ADDRESS ; size: CARDINAL) ;
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 *)
 
 PROCEDURE REALLOCATE (VAR a: ADDRESS; size: CARDINAL) ;

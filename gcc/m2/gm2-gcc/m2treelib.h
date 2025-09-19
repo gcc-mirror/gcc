@@ -41,8 +41,6 @@ EXTERN tree m2treelib_DoCall2 (location_t location, tree rettype, tree funcptr,
                                tree arg0, tree arg1);
 EXTERN tree m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr,
                                tree arg0, tree arg1, tree arg2);
-EXTERN tree m2treelib_get_rvalue (location_t location, tree t, tree type,
-                                  bool is_lvalue);
 EXTERN tree m2treelib_get_field_no (tree type, tree op, bool is_const,
                                     unsigned int fieldNo);
 EXTERN tree m2treelib_get_set_value (location_t location, tree p, tree field,
@@ -61,6 +59,7 @@ EXTERN tree m2treelib_get_set_field_des (location_t location, tree p,
 
 EXTERN tree add_stmt (location_t location, tree t);
 EXTERN tree build_stmt (location_t loc, enum tree_code code, ...);
+EXTERN int m2treelib_nCount (tree t);
 
 #undef EXTERN
 #endif /* m2treelib_h.  */

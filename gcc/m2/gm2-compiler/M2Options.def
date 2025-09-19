@@ -55,9 +55,10 @@ VAR
    StyleChecking,                (* -Wstudents checks for common student errs*)
    UnboundedByReference,         (* -funbounded-by-reference                 *)
    VerboseUnbounded,             (* -Wverbose-unbounded                      *)
-   OptimizeUncalledProcedures,   (* -Ouncalled removes uncalled procedures   *)
-   OptimizeBasicBlock,           (* -Obb create basic blocks and optimize.   *)
-   OptimizeCommonSubExpressions, (* -Ocse optimize common subexpressions     *)
+   OptimizeUncalledProcedures,   (* Removes uncalled procedures?             *)
+   OptimizeBasicBlock,           (* Create basic blocks and optimize?        *)
+   OptimizeCommonSubExpressions, (* Optimize common subexpressions?          *)
+   OptimizeSets,                 (* TRUE if -On when n>0.  False for -Os.    *)
    WholeProgram,                 (* -fwhole-program optimization.            *)
    NilChecking,                  (* -fnil makes compiler test for pointer    *)
                                  (* NIL.                                     *)
@@ -115,6 +116,7 @@ VAR
    SharedFlag,                   (* -fshared indicating this module needs    *)
                                  (* the shared library version of the        *)
                                  (* scaffold.                                *)
+   TimeReport, MemReport,        (* -ftime-report and -fmem-report values.   *)
    ForcedLocation,
    GenerateStatementNote,
    Optimizing,
@@ -1163,6 +1165,34 @@ PROCEDURE SetFileOffsetBits (value: BOOLEAN; bits: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE GetFileOffsetBits () : CARDINAL ;
+
+
+(*
+   SetMemReport - set MemReport to value.
+*)
+
+PROCEDURE SetMemReport (value: BOOLEAN) ;
+
+
+(*
+   SetTimeReport - set TimeReport to value.
+*)
+
+PROCEDURE SetTimeReport (value: BOOLEAN) ;
+
+
+(*
+   SetWideset - set the Wideset flag to value.
+*)
+
+PROCEDURE SetWideset (value: BOOLEAN) ;
+
+
+(*
+   GetWideset - return the Wideset flag value.
+*)
+
+PROCEDURE GetWideset () : BOOLEAN ;
 
 
 (*

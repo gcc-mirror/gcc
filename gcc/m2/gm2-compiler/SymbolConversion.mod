@@ -39,7 +39,7 @@ FROM SYSTEM IMPORT ADDRESS ;
 
 CONST
    USEPOISON = TRUE ;
-   GGCPOISON = 0A5A5A5A5H ;   (* poisoned memory contains this code *)
+   GGCPOISON = 0A5A5A5A5H ;   (* Poisoned memory contains this code.  *)
 
 TYPE
    PtrToCardinal = POINTER TO CARDINAL ;
@@ -47,6 +47,38 @@ TYPE
 VAR
    mod2gcc       : Index ;
    PoisonedSymbol: ADDRESS ;
+   BookSym       : CARDINAL ;     (* Allows interactive debugging.    *)
+
+
+(*
+   gdbhook - a debugger convenience hook.
+*)
+
+PROCEDURE gdbhook ;
+END gdbhook ;
+
+
+(*
+   BreakWhenSymBooked - to be called interactively by gdb.
+*)
+
+PROCEDURE BreakWhenSymBooked (sym: CARDINAL) ;
+BEGIN
+   BookSym := sym
+END BreakWhenSymBooked ;
+
+
+(*
+   CheckBook - if sym = BookSym then call gdbhook.
+*)
+
+PROCEDURE CheckBook (sym: CARDINAL) ;
+BEGIN
+   IF sym = BookSym
+   THEN
+      gdbhook
+   END
+END CheckBook ;
 
 
 (*
@@ -117,6 +149,7 @@ VAR
    old: tree ;
    t  : PtrToCardinal ;
 BEGIN
+   CheckBook (sym) ;
    IF gcc=GetErrorNode()
    THEN
       InternalError ('error node generated during symbol conversion')
@@ -258,6 +291,18 @@ END Poison ;
 
 PROCEDURE Init ;
 BEGIN
+   BreakWhenSymBooked (NulSym) ;  (* Disable the intereactive sym watch.  *)
+   (* To examine when a symbol is double booked run cc1gm2 from gdb
+      and set a break point on gdbhook.
+      (gdb) break gdbhook
+      (gdb) run
+      Now below interactively call BreakWhenSymBooked with the symbol
+      under investigation.  *)
+   gdbhook ;
+   (* Now is the time to interactively call gdb, for example:
+      (gdb) print BreakWhenSymBooked (1234)
+      (gdb) cont
+      and you will arrive at gdbhook when this symbol is booked.  *)
    mod2gcc := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
    ALLOCATE (PoisonedSymbol, 1)
 END Init ;

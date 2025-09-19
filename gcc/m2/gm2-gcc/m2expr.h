@@ -40,11 +40,6 @@ EXTERN char m2expr_CSTIntToChar (tree t);
 EXTERN char *m2expr_CSTIntToString (tree t);
 EXTERN bool m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
 				 widest_int &wval, bool issueError);
-EXTERN void m2expr_BuildBinaryForeachWordDo (
-    location_t location, tree type, tree op1, tree op2, tree op3,
-    tree (*binop) (location_t, tree, tree, bool), bool is_op1lvalue,
-    bool is_op2lvalue, bool is_op3lvalue, bool is_op1const, bool is_op2const,
-    bool is_op3const);
 EXTERN tree m2expr_BuildCmplx (location_t location, tree type, tree real,
                                tree imag);
 EXTERN tree m2expr_BuildIm (tree op1);
@@ -65,25 +60,6 @@ EXTERN void m2expr_BuildIfNotInRangeGoto (location_t location, tree var,
                                           tree low, tree high, char *label);
 EXTERN void m2expr_BuildIfInRangeGoto (location_t location, tree var, tree low,
                                        tree high, char *label);
-EXTERN void m2expr_BuildForeachWordInSetDoIfExpr (
-    location_t location, tree type, tree op1, tree op2, bool is_op1lvalue,
-    bool is_op2lvalue, bool is_op1const, bool is_op2const,
-    tree (*expr) (location_t, tree, tree), char *label);
-EXTERN void m2expr_BuildIfNotVarInVar (location_t location, tree type,
-                                       tree varset, tree varel, bool is_lvalue,
-                                       tree low, tree high ATTRIBUTE_UNUSED,
-                                       char *label);
-EXTERN void m2expr_BuildIfVarInVar (location_t location, tree type,
-                                    tree varset, tree varel, bool is_lvalue,
-                                    tree low, tree high ATTRIBUTE_UNUSED,
-                                    char *label);
-EXTERN void m2expr_BuildIfNotConstInVar (location_t location, tree type,
-                                         tree varset, tree constel,
-                                         bool is_lvalue, int fieldno,
-                                         char *label);
-EXTERN void m2expr_BuildIfConstInVar (location_t location, tree type,
-                                      tree varset, tree constel, bool is_lvalue,
-                                      int fieldno, char *label);
 EXTERN tree m2expr_BuildIsNotSubset (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildIsSubset (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildIsNotSuperset (location_t location, tree op1,
@@ -97,16 +73,11 @@ EXTERN tree m2expr_BuildLessThanOrEqual (location_t location, tree op1,
                                          tree op2);
 EXTERN tree m2expr_BuildGreaterThan (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildLessThan (location_t location, tree op1, tree op2);
-EXTERN tree m2expr_BuildLogicalDifference (location_t location, tree op1,
-                                           tree op2, bool needconvert);
-EXTERN tree m2expr_BuildSymmetricDifference (location_t location, tree op1,
-                                             tree op2, bool needconvert);
-EXTERN tree m2expr_BuildLogicalAnd (location_t location, tree op1, tree op2,
-                                    bool needconvert);
-EXTERN tree m2expr_BuildLogicalOr (location_t location, tree op1, tree op2,
-                                   bool needconvert);
-EXTERN tree m2expr_BuildLogicalOrAddress (location_t location, tree op1,
-                                          tree op2, bool needconvert);
+EXTERN tree m2expr_BuildLogicalDifference (location_t location, tree op1, tree op2);
+EXTERN tree m2expr_BuildSymmetricDifference (location_t location, tree op1, tree op2);
+EXTERN tree m2expr_BuildLogicalAnd (location_t location, tree op1, tree op2);
+EXTERN tree m2expr_BuildLogicalOr (location_t location, tree op1, tree op2);
+EXTERN tree m2expr_BuildLogicalOrAddress (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildOffset (location_t location, tree record, tree field,
                                 bool needconvert ATTRIBUTE_UNUSED);
 EXTERN tree m2expr_BuildOffset1 (location_t location, tree field,
@@ -115,8 +86,7 @@ EXTERN tree m2expr_BuildAddr (location_t location, tree op1, bool needconvert);
 EXTERN tree m2expr_BuildSize (location_t location, tree op1,
                               bool needconvert ATTRIBUTE_UNUSED);
 EXTERN tree m2expr_BuildTBitSize (location_t location, tree type);
-EXTERN tree m2expr_BuildSetNegate (location_t location, tree op1,
-                                   bool needconvert);
+EXTERN tree m2expr_BuildSetNegate (location_t location, tree value);
 EXTERN tree m2expr_BuildNegate (location_t location, tree op1,
                                 bool needconvert);
 EXTERN tree m2expr_BuildNegateCheck (location_t location, tree arg,
@@ -224,6 +194,7 @@ EXTERN tree m2expr_GetWordZero (location_t location);
 EXTERN tree m2expr_GetWordOne (location_t location);
 EXTERN tree m2expr_GetPointerZero (location_t location);
 EXTERN tree m2expr_GetPointerOne (location_t location);
+EXTERN tree m2expr_GetBitsetZero (location_t location);
 
 EXTERN int m2expr_CompareTrees (tree e1, tree e2);
 EXTERN tree m2expr_build_unary_op (location_t location ATTRIBUTE_UNUSED,
@@ -246,6 +217,10 @@ EXTERN tree m2expr_calcNbits (location_t location, tree min, tree max);
 EXTERN bool m2expr_OverflowZType (location_t location, const char *str,
 				  unsigned int base, bool issueError);
 EXTERN tree m2expr_BuildSystemTBitSize (location_t location, tree type);
+EXTERN tree m2expr_GetRValue (location_t location, tree expr, tree type, bool islvalue);
+EXTERN tree m2expr_BuildIfInSet (location_t location, tree set, tree bit);
+EXTERN tree m2expr_BuildIfNotInSet (location_t location, tree set, tree bit);
+
 EXTERN void m2expr_init (location_t location);
 
 #undef EXTERN

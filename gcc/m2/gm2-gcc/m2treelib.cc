@@ -45,7 +45,7 @@ m2treelib_do_jump_if_bit (location_t location, enum tree_code code, tree word,
 {
   word = m2convert_ToWord (location, word);
   bit = m2convert_ToWord (location, bit);
-  m2statement_DoJump (
+  m2statement_IfExprJump (
       location,
       m2expr_build_binary_op (
           location, code,
@@ -55,7 +55,7 @@ m2treelib_do_jump_if_bit (location_t location, enum tree_code code, tree word,
                                FALSE),
               FALSE),
           m2expr_GetWordZero (location), FALSE),
-      NULL, label);
+      label);
 }
 
 /* build_modify_expr - taken from c-typeck.cc and heavily pruned.
@@ -147,8 +147,8 @@ m2treelib_build_modify_expr (location_t location, tree des,
 
 /* nCount - return the number of trees chained on, t.  */
 
-static int
-nCount (tree t)
+int
+m2treelib_nCount (tree t)
 {
   int i = 0;
 
@@ -167,7 +167,7 @@ tree
 m2treelib_DoCall (location_t location, tree rettype, tree funcptr,
                   tree param_list)
 {
-  int n = nCount (param_list);
+  int n = m2treelib_nCount (param_list);
   tree *argarray = XALLOCAVEC (tree, n);
   tree l = param_list;
   int i;
@@ -227,18 +227,6 @@ m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr, tree arg0,
   argarray[1] = arg1;
   argarray[2] = arg2;
   return build_call_array_loc (location, rettype, funcptr, 3, argarray);
-}
-
-/* get_rvalue - returns the rvalue of t.  The, type, is the object
-   type to be copied upon indirection.  */
-
-tree
-m2treelib_get_rvalue (location_t location, tree t, tree type, bool is_lvalue)
-{
-  if (is_lvalue)
-    return m2expr_BuildIndirect (location, t, type);
-  else
-    return t;
 }
 
 /* get_field_no - returns the field no for, op.  The, op, is either a

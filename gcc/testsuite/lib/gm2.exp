@@ -633,6 +633,7 @@ proc gm2_init_minx { dialect paths args } {
     gm2_link_lib "m2min"
     lappend args -fno-exceptions
     lappend args -fno-libs=-
+    lappend args -fno-wideset
     gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args}
 }
 

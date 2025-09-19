@@ -206,6 +206,10 @@ fm2-whole-program
 Modula-2
 compile all implementation modules and program module at once
 
+fmem-report
+Modula-2
+; Documented in c.opt
+
 fmod=
 Modula-2 Joined
 recognize the specified suffix as implementation and module filenames
@@ -290,6 +294,10 @@ fswig
 Modula-2
 create a swig interface file for the module
 
+ftime-report
+Modula-2
+; Documented in c.opt
+
 funbounded-by-reference
 Modula-2
 optimize non var unbounded parameters by passing it by reference, providing it is not written to within the callee procedure.
@@ -301,6 +309,10 @@ orders the initialization/finalizations for scaffold-static or force linking of 
 fversion
 Modula-2
 ; Documented in common.opt
+
+fwideset
+Modula-2
+link against the module M2WIDESET to perform the wideset operator, the negative version of this option will generate a warning if this module is required
 
 fwholediv
 Modula-2

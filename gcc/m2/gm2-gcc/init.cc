@@ -107,6 +107,7 @@ EXTERN void _M2_M2SSA_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2SymInit_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2StateCheck_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_P3Build_init (int argc, char *argv[], char *envp[]);
+EXTERN void _M2_M2Diagnostic_init (int argc, char *argv[], char *envp[]);
 EXTERN void exit (int);
 EXTERN void M2Comp_compile (const char *filename);
 EXTERN void RTExceptions_DefaultErrorCatch (void);
@@ -126,6 +127,7 @@ init_FrontEndInit (void)
   _M2_M2Dependent_init (0, NULL, NULL);
   _M2_M2RTS_init (0, NULL, NULL);
   _M2_SysExceptions_init (0, NULL, NULL);
+  _M2_M2Diagnostic_init (0, NULL, NULL);
   _M2_DynamicStrings_init (0, NULL, NULL);
   _M2_Assertion_init (0, NULL, NULL);
   _M2_FormatStrings_init (0, NULL, NULL);

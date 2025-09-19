@@ -78,6 +78,8 @@ FROM M2SSA IMPORT DiscoverSSA ;
 FROM m2pp IMPORT CreateDumpGimple, CloseDumpGimple ;
 FROM DynamicStrings IMPORT String, KillString ;
 
+IMPORT M2Diagnostic ;
+
 
 CONST
    MaxOptimTimes   = 10 ;   (* upper limit of no of times we run through all optimization *)
@@ -119,10 +121,10 @@ END Percent ;
 
 
 (*
-   OptimizationAnalysis - displays some simple front end optimization statistics.
+   ResourceAnalysis - displays resource analysis relating to the front end.
 *)
 
-PROCEDURE OptimizationAnalysis ;
+PROCEDURE ResourceAnalysis ;
 VAR
    value: CARDINAL ;
 BEGIN
@@ -146,7 +148,7 @@ BEGIN
       FlushBuffer (StdOut)
    END ;
    DumpQuadruples ('after all front end optimization\n')
-END OptimizationAnalysis ;
+END ResourceAnalysis ;
 
 
 (*
@@ -293,7 +295,7 @@ BEGIN
    qprintf0 ('        gcc trees given to the gcc backend\n') ;
    EndGlobalContext ;
 
-   OptimizationAnalysis
+   ResourceAnalysis
 END Code ;
 
 

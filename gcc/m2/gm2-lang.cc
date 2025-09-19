@@ -692,6 +692,12 @@ gm2_langhook_handle_option (
     case OPT_fgen_module_list_:
       M2Options_SetGenModuleList (value, arg);
       return 1;
+    case OPT_fmem_report:
+      M2Options_SetMemReport (value);
+      return 1;
+    case OPT_ftime_report:
+      M2Options_SetTimeReport (value);
+      return 1;
     case OPT_fnil:
       M2Options_SetNilCheck (value);
       return 1;
@@ -915,6 +921,11 @@ gm2_langhook_handle_option (
     case OPT_fm2_whole_program:
       M2Options_SetWholeProgram (value);
       return 1;
+      break;
+    case OPT_fwideset:
+      M2Options_SetWideset (value);
+      return 1;
+      break;
 #ifdef OPT_mabi_ibmlongdouble
     case OPT_mabi_ibmlongdouble:
       M2Options_SetIBMLongDouble (value);

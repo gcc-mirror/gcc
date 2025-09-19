@@ -158,11 +158,12 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo IO.lo Args.lo M2RTS.lo \
-@BUILD_PIMLIB_TRUE@	M2Dependent.lo Assertion.lo NumberIO.lo \
-@BUILD_PIMLIB_TRUE@	Break.lo SYSTEM.lo CmdArgs.lo Scan.lo \
-@BUILD_PIMLIB_TRUE@	StrCase.lo FIO.lo StrIO.lo StrLib.lo \
-@BUILD_PIMLIB_TRUE@	TimeString.lo Environment.lo FpuIO.lo \
-@BUILD_PIMLIB_TRUE@	Debug.lo SysStorage.lo Storage.lo StdIO.lo \
+@BUILD_PIMLIB_TRUE@	M2Dependent.lo M2Diagnostic.lo M2WIDESET.lo \
+@BUILD_PIMLIB_TRUE@	Assertion.lo NumberIO.lo Break.lo SYSTEM.lo \
+@BUILD_PIMLIB_TRUE@	CmdArgs.lo Scan.lo StrCase.lo FIO.lo \
+@BUILD_PIMLIB_TRUE@	StrIO.lo StrLib.lo TimeString.lo \
+@BUILD_PIMLIB_TRUE@	Environment.lo FpuIO.lo Debug.lo \
+@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo StdIO.lo \
 @BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
 @BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
 @BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
@@ -478,6 +479,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@M2MODS = ASCII.mod IO.mod \
 @BUILD_PIMLIB_TRUE@       Args.mod M2RTS.mod \
 @BUILD_PIMLIB_TRUE@       M2Dependent.mod \
+@BUILD_PIMLIB_TRUE@       M2Diagnostic.mod \
+@BUILD_PIMLIB_TRUE@       M2WIDESET.mod \
 @BUILD_PIMLIB_TRUE@       Assertion.mod NumberIO.mod \
 @BUILD_PIMLIB_TRUE@       Break.mod SYSTEM.mod \
 @BUILD_PIMLIB_TRUE@       CmdArgs.mod Scan.mod \
@@ -521,8 +524,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         LegacyReal.def  libc.def \
 @BUILD_PIMLIB_TRUE@         libm.def  LMathLib0.def \
 @BUILD_PIMLIB_TRUE@         M2Dependent.def \
+@BUILD_PIMLIB_TRUE@         M2Diagnostic.def \
 @BUILD_PIMLIB_TRUE@         M2EXCEPTION.def \
 @BUILD_PIMLIB_TRUE@         M2RTS.def \
+@BUILD_PIMLIB_TRUE@         M2WIDESET.def \
 @BUILD_PIMLIB_TRUE@         MathLib0.def  MemUtils.def \
 @BUILD_PIMLIB_TRUE@         NumberIO.def  PushBackInput.def \
 @BUILD_PIMLIB_TRUE@         RTExceptions.def  RTint.def \

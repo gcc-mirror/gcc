@@ -581,6 +581,41 @@ PROCEDURE MakeSet (tok: CARDINAL; SetName: Name) : CARDINAL ;
 
 
 (*
+   GetSetArray - return the set array for a large set.
+*)
+
+PROCEDURE GetSetArray (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutSetArray - places array into the setarray field.
+*)
+
+PROCEDURE PutSetArray (Sym: CARDINAL; array: CARDINAL) ;
+
+
+(*
+   MakeSetArray - create an ARRAY simpletype OF BOOLEAN.
+*)
+
+PROCEDURE MakeSetArray (token: CARDINAL; subrangetype: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutSetInWord - set the SetInWord boolean to value.
+*)
+
+PROCEDURE PutSetInWord (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   GetSetInWord - return SetInWord.
+*)
+
+PROCEDURE GetSetInWord (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    MakeArray - makes an Array symbol with name ArrayName.
 *)
 
@@ -3494,6 +3529,22 @@ PROCEDURE GetProcedureKindDesc (kind: ProcedureKind) : String ;
 
 PROCEDURE GetNthParamAnyClosest (sym: CARDINAL; ParamNo: CARDINAL;
                                  currentmodule: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsConstVar - returns TRUE if sym is a const var.  This is a
+                constant which might be assigned to TRUE or FALSE
+                depending upon the result of the quad stack control flow.
+                Typically used in CONST foo = (a AND b) or similar.
+                This symbol will only be assigned once with a value, but
+                will appear more than once as a designator to an assignment
+                in the quad table.  However as the quad table is reduced
+                only one assignment will remain.  If after reducing quads
+                two or more assignments remain, then there is an error
+                as sym should not have been declared a constant.
+*)
+
+PROCEDURE IsConstVar (sym: CARDINAL) : BOOLEAN ;
 
 
 END SymbolTable.

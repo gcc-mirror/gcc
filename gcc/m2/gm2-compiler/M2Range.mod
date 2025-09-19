@@ -1978,7 +1978,7 @@ BEGIN
       IF NOT reportedError (r)
       THEN
          MetaErrorT2 (tokenNo,
-                      'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
+                      'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1dv}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
                       des, expr)
       END ;
       setReported (r)
@@ -2047,7 +2047,7 @@ BEGIN
          ELSE
             MetaErrorT2 (tokenNo,
                          'assignment designator {%1Ea} {%1ta:of type {%1ta}}' +
-                         ' {%1d:is a {%1d}} and expression {%2a}' +
+                         ' {%1d:is a {%1dv}} and expression {%2a}' +
                          ' {%2tad:of type {%2tad}} are incompatible',
                          des, expr)
          END ;

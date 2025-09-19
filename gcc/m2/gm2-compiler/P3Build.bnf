@@ -1041,7 +1041,8 @@ SilentExpList := SilentConstExpression { "," SilentConstExpression } =:
 
 -- end of the Silent constant rules
 
-SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType
+         =:
 
 PointerType := "POINTER" "TO"
                               Type

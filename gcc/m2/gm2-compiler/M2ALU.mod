@@ -52,7 +52,7 @@ FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaErrorStringT0,
 
 FROM SymbolTable IMPORT NulSym, IsEnumeration, IsSubrange, IsValueSolved, PushValue,
                         ForeachFieldEnumerationDo, MakeTemporary, PutVar, PopValue, GetType,
-                        MakeConstLit, GetArraySubscript,
+                        MakeConstLit, GetArraySubscript, GetSetInWord,
                         IsSet, SkipType, IsRecord, IsArray, IsConst, IsConstructor,
                         IsConstString, SkipTypeAndSubrange, GetDeclaredMod,
                         GetSubrange, GetSymName, GetNth, GetString, GetStringLength,
@@ -70,7 +70,7 @@ FROM m2expr IMPORT BuildAdd, BuildSub, BuildMult,
                    GetWordOne, GetCardinalZero, TreeOverflow, RemoveOverflow,
                    GetCstInteger ;
 
-FROM m2decl IMPORT GetBitsPerBitset, BuildIntegerConstant, BuildConstLiteralNumber ;
+FROM m2decl IMPORT GetBitsPerUnit, GetBitsPerBitset, BuildIntegerConstant, BuildConstLiteralNumber ;
 FROM m2misc IMPORT DebugTree ;
 
 FROM m2type IMPORT RealToTree, Constructor, GetIntegerType, GetLongRealType,
@@ -80,11 +80,16 @@ FROM m2type IMPORT RealToTree, Constructor, GetIntegerType, GetLongRealType,
                    BuildArrayConstructorElement, BuildStartArrayConstructor, BuildEndArrayConstructor,
                    GetM2CharType ;
 
-FROM m2convert IMPORT ConvertConstantAndCheck, ToWord, ToInteger, ToCardinal, ToBitset ;
+FROM m2convert IMPORT ConvertConstantAndCheck, ToWord, ToInteger, ToCardinal,
+                      ToBitset, ToLoc, ToPIMByte, BuildConvert ;
+
 FROM m2block IMPORT RememberConstant ;
 
 FROM m2expr IMPORT GetPointerZero, GetIntegerZero, GetIntegerOne,
                    CompareTrees, FoldAndStrip, AreRealOrComplexConstantsEqual, AreConstantsEqual ;
+
+FROM M2Diagnostic IMPORT Diagnostic, InitMemDiagnostic, MemIncr, MemSet ;
+
 
 
 TYPE
@@ -150,6 +155,9 @@ VAR
    EnumerationField: CARDINAL ;
    CurrentTokenNo  : CARDINAL ;
    (* WatchedValue    : PtrToValue ;  *)
+   StackMemDiag    : Diagnostic ;   (* Contains memory related statistics *)
+   RangeMemDiag    : Diagnostic ;   (* Contains memory related statistics *)
+
 
 
 (*
@@ -162,7 +170,9 @@ VAR
 BEGIN
    IF FreeList=NIL
    THEN
-      NEW (v)
+      NEW (v) ;
+      MemIncr (StackMemDiag, 1, 1) ;
+      MemIncr (StackMemDiag, 2, SIZE (v^))
    ELSE
       v := FreeList ;
       FreeList := FreeList^.next
@@ -203,7 +213,9 @@ BEGIN
       IF v=NIL
       THEN
          InternalError ('out of memory error')
-      END
+      END ;
+      MemIncr (RangeMemDiag, 1, 1) ;
+      MemIncr (RangeMemDiag, 2, SIZE (v^))
    ELSE
       v := RangeFreeList ;
       RangeFreeList := RangeFreeList^.next
@@ -488,6 +500,17 @@ BEGIN
       RETURN( v )
    END
 END InitValue ;
+
+
+(*
+   KillValue - deconstructor for value.  value is set to NIL upon return.
+*)
+
+PROCEDURE KillValue (VAR value: PtrToValue) ;
+BEGIN
+   Dispose (value) ;
+   value := NIL
+END KillValue ;
 
 
 (*
@@ -818,49 +841,48 @@ END PopComplexTree ;
 
 (*
    PushSetTree - pushes a gcc tree onto the ALU stack.
-                 The tree, t, is expected to contain a
-                 word value. It is converted into a set
-                 type (sym). Bit 0 maps onto MIN(sym).
+                 The tree value is expected to contain a
+                 word sized or less value.  It is converted into a set
+                 type (sym). Bit 0 maps onto MIN (sym).
 *)
 
 PROCEDURE PushSetTree (tokenno: CARDINAL;
-                       t: tree; sym: CARDINAL) ;
+                       value: tree; sym: CARDINAL) ;
 VAR
-   v: PtrToValue ;
-   c,
-   i: INTEGER ;
-   r: listOfRange ;
-   l: location_t ;
+   newVal: PtrToValue ;
+   c, i  : INTEGER ;
+   range : listOfRange ;
+   loc   : location_t ;
 BEGIN
-   l := TokenToLocation(tokenno) ;
-   r := NIL ;
+   loc := TokenToLocation (tokenno) ;
+   range := NIL ;
    i := 0 ;
-   WHILE (i<GetBitsPerBitset()) AND
-         (CompareTrees(GetIntegerZero(l), t)#0) DO
-      IF CompareTrees(GetIntegerOne(l),
-                      BuildLogicalAnd(l, t, GetIntegerOne(l), FALSE))=0
+   WHILE (i < GetBitsPerBitset ()) AND
+         (CompareTrees (GetIntegerZero (loc), value) # 0) DO
+      IF CompareTrees (GetIntegerOne (loc),
+                       BuildLogicalAnd (loc, value, GetIntegerOne (loc))) = 0
       THEN
-         PushCard(i) ;
-         c := Val(tokenno, SkipType(sym), PopIntegerTree()) ;
-         DeclareConstant(tokenno, c) ;
-         r := AddRange(r, c, c)
+         PushCard (i) ;
+         c := Val (tokenno, SkipType (sym), PopIntegerTree ()) ;
+         DeclareConstant (tokenno, c) ;
+         range := AddRange (range, c, c)
       END ;
-      t := BuildLSR(l, t, GetIntegerOne(l), FALSE) ;
-      INC(i)
+      value := BuildLSR (loc, value, GetIntegerOne (loc), FALSE) ;
+      INC (i)
    END ;
-   SortElements(tokenno, r) ;
-   CombineElements(tokenno, r) ;
-   v := New() ;
-   WITH v^ DO
-      location        := l ;
+   SortElements (tokenno, range) ;
+   CombineElements (tokenno, range) ;
+   newVal := New () ;
+   WITH newVal^ DO
+      location        := loc ;
       type            := set ;
       constructorType := sym ;
       areAllConstants := FALSE ;
       solved          := FALSE ;
-      setValue        := r
+      setValue        := range
    END ;
-   Eval(tokenno, v) ;
-   Push(v)
+   Eval (tokenno, newVal) ;
+   Push (newVal)
 END PushSetTree ;
 
 
@@ -1391,7 +1413,6 @@ BEGIN
    END ;
    Push(v)
 END ConvertToType ;
-
 
 
 (*
@@ -4397,70 +4418,6 @@ END GetRange ;
 
 
 (*
-   BuildStructBitset - v is the PtrToValue.
-                       low and high are the limits of the subrange.
-*)
-
-PROCEDURE BuildStructBitset (tokenno: CARDINAL; v: PtrToValue; low, high: tree) : tree ;
-VAR
-   BitsInSet : tree ;
-   bpw       : CARDINAL ;
-   cons      : Constructor ;
-BEGIN
-   PushIntegerTree(low) ;
-   ConvertToInt ;
-   low := PopIntegerTree() ;
-   PushIntegerTree(high) ;
-   ConvertToInt ;
-   high := PopIntegerTree() ;
-   bpw  := GetBitsPerBitset() ;
-
-   PushIntegerTree(high) ;
-   PushIntegerTree(low) ;
-   Sub ;
-   PushCard(1) ;
-   Addn ;
-   BitsInSet := PopIntegerTree() ;
-
-   cons := BuildStartSetConstructor(Mod2Gcc(v^.constructorType)) ;
-
-   PushIntegerTree(BitsInSet) ;
-   PushCard(0) ;
-   WHILE Gre(tokenno) DO
-      PushIntegerTree(BitsInSet) ;
-      PushCard(bpw-1) ;
-      IF GreEqu(tokenno)
-      THEN
-         PushIntegerTree(low) ;
-         PushCard(bpw-1) ;
-         Addn ;
-
-         BuildSetConstructorElement(cons, BuildBitset(tokenno, v, low, PopIntegerTree())) ;
-
-         PushIntegerTree(low) ;
-         PushCard(bpw) ;
-         Addn ;
-         low := PopIntegerTree() ;
-         PushIntegerTree(BitsInSet) ;
-         PushCard(bpw) ;
-         Sub ;
-         BitsInSet := PopIntegerTree()
-      ELSE
-         (* printf2('range is %a..%a\n', GetSymName(low), GetSymName(high)) ; *)
-
-         BuildSetConstructorElement(cons, BuildBitset(tokenno, v, low, high)) ;
-
-         PushCard(0) ;
-         BitsInSet := PopIntegerTree()
-      END ;
-      PushIntegerTree(BitsInSet) ;
-      PushCard(0)
-   END ;
-   RETURN( BuildEndSetConstructor(cons) )
-END BuildStructBitset ;
-
-
-(*
    ConstructLargeOrSmallSet - generates a constant representing the set value of the symbol, sym.
                               We manufacture the constant by using a initialization
                               structure of cardinals.
@@ -4469,35 +4426,98 @@ END BuildStructBitset ;
 *)
 
 PROCEDURE ConstructLargeOrSmallSet (tokenno: CARDINAL; v: PtrToValue; low, high: CARDINAL) : tree ;
+VAR
+   settype: CARDINAL ;
 BEGIN
-   PushValue(high) ;
-   ConvertToInt ;
-   PushValue(low) ;
-   ConvertToInt ;
-   Sub ;
-   PushCard(GetBitsPerBitset()) ;
-   IF Less(tokenno)
+   Assert (v^.constructorType # NulSym) ;
+   settype := SkipType (v^.constructorType) ;
+   Assert (IsSet (settype)) ;
+   IF GetSetInWord (settype)
    THEN
-      (* small set *)
-      RETURN( BuildBitset(tokenno, v, Mod2Gcc(low), Mod2Gcc(high)) )
+      (* Narrow set.  *)
+      RETURN BuildConvert (TokenToLocation (tokenno),
+                           Mod2Gcc (settype),
+                           BuildBitset (tokenno, v, Mod2Gcc (low), Mod2Gcc (high)),
+                           FALSE)
    ELSE
-      (* large set *)
-      RETURN( BuildStructBitset(tokenno, v, Mod2Gcc(low), Mod2Gcc(high)) )
+      (* Wide set.  *)
+      RETURN BuildArrayByteset (tokenno, v, Mod2Gcc (low), Mod2Gcc (high))
    END
 END ConstructLargeOrSmallSet ;
 
 
 (*
-   ConstructSetConstant - builds a struct of integers which represents the
-                          set const as defined by, v.
+   BuildArrayByteset - v is the PtrToValue.
+                       low and high are the limits of the subrange.
+*)
+
+PROCEDURE BuildArrayByteset (tokenno: CARDINAL; v: PtrToValue; low, high: tree) : tree ;
+VAR
+   location   : location_t ;
+   BitsInSet  : tree ;
+   BitsPerByte: CARDINAL ;
+   cons       : Constructor ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   PushIntegerTree (low) ;
+   ConvertToInt ;
+   low := PopIntegerTree () ;
+   PushIntegerTree (high) ;
+   ConvertToInt ;
+   high := PopIntegerTree () ;
+   BitsPerByte := GetBitsPerUnit () ;
+
+   PushIntegerTree (high) ;
+   PushIntegerTree (low) ;
+   Sub ;
+   PushCard (1) ;
+   Addn ;
+   BitsInSet := PopIntegerTree () ;
+
+   cons := BuildStartSetConstructor (Mod2Gcc (v^.constructorType)) ;
+
+   PushIntegerTree (BitsInSet) ;
+   PushCard (0) ;
+   WHILE Gre (tokenno) DO
+      PushIntegerTree (BitsInSet) ;
+      PushCard (BitsPerByte - 1) ;
+      IF GreEqu (tokenno)
+      THEN
+         PushIntegerTree (low) ;
+         PushCard (BitsPerByte - 1) ;
+         Addn ;
+         BuildSetConstructorElement (location,
+                                     cons, BuildByte (tokenno, v, low, PopIntegerTree ())) ;
+         PushIntegerTree (low) ;
+         PushCard (BitsPerByte) ;
+         Addn ;
+         low := PopIntegerTree () ;
+         PushIntegerTree (BitsInSet) ;
+         PushCard (BitsPerByte) ;
+         Sub ;
+         BitsInSet := PopIntegerTree ()
+      ELSE
+         BuildSetConstructorElement (location,
+                                     cons, BuildByte (tokenno, v, low, high)) ;
+         PushCard (0) ;
+         BitsInSet := PopIntegerTree ()
+      END ;
+      PushIntegerTree (BitsInSet) ;
+      PushCard (0)
+   END ;
+   RETURN BuildEndSetConstructor (cons)
+END BuildArrayByteset ;
+
+
+(*
+   ConstructSetConstant - builds an array of bytes which represents the
+                          set const as defined by v.
 *)
 
 PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;
 VAR
    n1, n2   : Name ;
-   gccsym   : tree ;
-   baseType,
-   high, low: CARDINAL ;
+   baseType: CARDINAL ;
 BEGIN
    WITH v^ DO
       IF constructorType=NulSym
@@ -4511,14 +4531,7 @@ BEGIN
             n2 := GetSymName(baseType) ;
             printf2('ConstructSetConstant of type %a and baseType %a\n', n1, n2)
          END ;
-         IF IsSubrange(baseType)
-         THEN
-            GetSubrange(baseType, high, low) ;
-            gccsym := ConstructLargeOrSmallSet(tokenno, v, low, high)
-         ELSE
-            gccsym := ConstructLargeOrSmallSet(tokenno, v, GetTypeMin(baseType), GetTypeMax(baseType))
-         END ;
-         RETURN( gccsym )
+         RETURN ConstructLargeOrSmallSet (tokenno, v, GetTypeMin (baseType), GetTypeMax (baseType))
       END
    END
 END ConstructSetConstant ;
@@ -5074,7 +5087,7 @@ BEGIN
       THEN
          t := BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE)
       ELSE
-         t := BuildLogicalOr(location, t, BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE), FALSE)
+         t := BuildLogicalOr (location, t, BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE))
       END ;
       PushIntegerTree(i) ;
       PushIntegerTree(GetIntegerOne(location)) ;
@@ -5083,7 +5096,7 @@ BEGIN
       PushIntegerTree(i) ;
       PushIntegerTree(e2) ;
    UNTIL Gre(tokenno) ;
-   RETURN( t )
+   RETURN t
 END BuildRange ;
 
 
@@ -5115,12 +5128,48 @@ BEGIN
       THEN
          tl := ToCardinal(location, SubTree(MaxTree(tokenno, tl, low), low)) ;
          th := ToCardinal(location, SubTree(MinTree(tokenno, th, high), low)) ;
-         t := BuildLogicalOr(location, t, BuildRange(tokenno, tl, th), FALSE)
+         t := BuildLogicalOr(location, t, BuildRange(tokenno, tl, th))
       END ;
       INC(n)
    END ;
    RETURN( ToBitset(location, t) )
 END BuildBitset ;
+
+
+(*
+   BuildByte - given a set v construct the bitmask for its
+               constant value which lie in the range low..high.
+*)
+
+PROCEDURE BuildByte (tokenno: CARDINAL;
+                     v: PtrToValue; low, high: tree) : tree ;
+VAR
+   tl, th,
+   t       : tree ;
+   n       : CARDINAL ;
+   r1, r2  : CARDINAL ;
+   location: location_t ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   low := ToInteger (location, low) ;
+   high := ToInteger (location, high) ;
+   n := 1 ;
+   t := GetCardinalZero (location) ;
+   WHILE GetRange (v, n, r1, r2) DO
+      PushValue (r1) ;
+      tl := ToInteger (location, PopIntegerTree ()) ;
+      PushValue (r2) ;
+      th := ToInteger (location, PopIntegerTree ()) ;
+      IF IsIntersectionTree (tokenno, tl, th, low, high)
+      THEN
+         tl := ToCardinal (location, SubTree (MaxTree (tokenno, tl, low), low)) ;
+         th := ToCardinal (location, SubTree (MinTree (tokenno, th, high), low)) ;
+         t := BuildLogicalOr (location, t, BuildRange (tokenno, tl, th))
+      END ;
+      INC(n)
+   END ;
+   RETURN ToPIMByte (location, t)
+END BuildByte ;
 
 
 (*
@@ -5309,7 +5358,15 @@ BEGIN
    TopOfStack      := NIL ;
    RangeFreeList   := NIL ;
    FieldFreeList   := NIL ;
-   ElementFreeList := NIL
+   ElementFreeList := NIL ;
+   StackMemDiag
+      := InitMemDiagnostic
+            ('M2ALU:Stack',
+            '{0N} total symbols {1d} consuming {2M} ram {0M} ({2P})') ;
+   RangeMemDiag
+      := InitMemDiagnostic
+            ('M2ALU:Range',
+            '{0N} total symbols {1d} consuming {2M} ram {0M} ({2P})')
 END Init ;
 
 

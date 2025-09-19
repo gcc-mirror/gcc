@@ -43,6 +43,7 @@ FROM M2Options IMPORT GenerateDebugging, GenerateLineDebug, Iso, Optimizing, Who
                       ScaffoldStatic, GetRuntimeModuleOverride ;
 
 FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
+FROM FormatStrings IMPORT Sprintf1 ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
@@ -52,6 +53,7 @@ FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, Unkn
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
 FROM M2LangDump IMPORT GetDumpFile ;
+FROM M2Diagnostic IMPORT Diagnostic, InitTimeDiagnostic, EnterDiagnostic, ExitDiagnostic ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3,
                      fprintf0, fprintf1, fprintf2, fprintf3 ;
@@ -84,6 +86,7 @@ FROM SymbolTable IMPORT NulSym,
       	       	     	GetSubrange, PutSubrange, GetArraySubscript,
       	       	     	NoOfParamAny, GetNthParamAny,
                         PushValue, PopValue, PopSize,
+                        IsProcedureAnyNoReturn,
                         IsTemporary, IsUnbounded, IsPartialUnbounded,
                         IsEnumeration, IsVar,
       	       	     	IsSubrange, IsPointer, IsRecord, IsArray,
@@ -121,10 +124,11 @@ FROM SymbolTable IMPORT NulSym,
                         GetAlignment, IsDeclaredPacked, PutDeclaredPacked,
                         GetDefaultRecordFieldAlignment, IsDeclaredPackedResolved,
                         GetPackedEquivalent,
+                        GetSetArray, PutSetInWord,
                         GetParameterShadowVar,
                         GetUnboundedRecordType,
                         GetModuleCtors, GetProcedureProcType,
-                        MakeSubrange, MakeConstVar, MakeConstLit,
+                        MakeSubrange, MakeConstVar, MakeConstLit, MakeSetArray, PutSetArray,
                         PutConst,
 			ForeachOAFamily, GetOAFamily,
                         IsModuleWithinProcedure, IsVariableSSA,
@@ -194,7 +198,7 @@ FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, 
                    BuildSetType, BuildEndVarient, BuildEndArrayType, InitFunctionTypeParameters,
                    BuildProcTypeParameterDeclaration, DeclareKnownType,
                    ValueOutOfTypeRange, ExceedsTypeRange,
-                   GetMaxFrom, GetMinFrom ;
+                   GetMaxFrom, GetMinFrom, GetBooleanEnumList ;
 
 FROM m2convert IMPORT BuildConvert ;
 
@@ -260,6 +264,8 @@ VAR
    action              : IsAction ;
    ConstantResolved,
    enumDeps            : BOOLEAN ;
+   tempset             : CARDINAL ; (* Count of the number of set     *)
+                                    (* arrays created.                *)
 
 
 (* *************************************************** *)
@@ -666,7 +672,7 @@ END GetEnumList ;
 
 PROCEDURE PutEnumList (sym: CARDINAL; enumlist: tree) ;
 BEGIN
-   PutIndice(EnumerationIndex, sym, enumlist)
+   PutIndice (EnumerationIndex, sym, enumlist)
 END PutEnumList ;
 
 
@@ -729,17 +735,17 @@ END DoStartDeclaration ;
 
 PROCEDURE ArrayComponentsDeclared (sym: CARDINAL) : BOOLEAN ;
 VAR
-   Subscript      : CARDINAL ;
+   Subscript      ,
    Type, High, Low: CARDINAL ;
 BEGIN
-   Subscript := GetArraySubscript(sym) ;
-   Assert(IsSubscript(Subscript)) ;
-   Type := GetDType(Subscript) ;
-   Low := GetTypeMin(Type) ;
-   High := GetTypeMax(Type) ;
-   RETURN( IsFullyDeclared(Type) AND
-           IsFullyDeclared(Low) AND
-           IsFullyDeclared(High) )
+   Subscript := GetArraySubscript (sym) ;
+   Assert (IsSubscript (Subscript)) ;
+   Type := GetDType (Subscript) ;
+   Low := GetTypeMin (Type) ;
+   High := GetTypeMax (Type) ;
+   RETURN( IsFullyDeclared (Type) AND
+           IsFullyDeclared (Low) AND
+           IsFullyDeclared (High) )
 END ArrayComponentsDeclared ;
 
 
@@ -815,11 +821,11 @@ END CanDeclareRecord ;
 
 PROCEDURE FinishDeclareRecord (sym: CARDINAL) ;
 BEGIN
-   DeclareTypeConstFully(sym) ;
-   WatchRemoveList(sym, heldbyalignment) ;
-   WatchRemoveList(sym, finishedalignment) ;
-   WatchRemoveList(sym, todolist) ;
-   WatchIncludeList(sym, fullydeclared)
+   DeclareTypeConstFully (sym) ;
+   WatchRemoveList (sym, heldbyalignment) ;
+   WatchRemoveList (sym, finishedalignment) ;
+   WatchRemoveList (sym, todolist) ;
+   WatchIncludeList (sym, fullydeclared)
 END FinishDeclareRecord ;
 
 
@@ -912,8 +918,14 @@ END CanDeclareArrayAsNil ;
 *)
 
 PROCEDURE DeclareArrayAsNil (sym: CARDINAL) ;
+VAR
+   tokenno    : CARDINAL ;
+   typeOfArray: CARDINAL ;
 BEGIN
-   PreAddModGcc(sym, BuildStartArrayType(BuildIndex(GetDeclaredMod(sym), sym), NIL, GetDType(sym))) ;
+   typeOfArray := GetDType(sym) ;
+   tokenno := GetDeclaredMod (sym) ;
+   PreAddModGcc(sym, BuildStartArrayType (BuildIndex (tokenno, sym, FALSE),
+                                          NIL, typeOfArray)) ;
    WatchIncludeList(sym, niltypedarrays)
 END DeclareArrayAsNil ;
 
@@ -1040,9 +1052,9 @@ BEGIN
    ELSIF IsArray(sym)
    THEN
       RETURN( IsArrayDependants(sym, q) )
-   ELSIF IsProcType(sym)
+   ELSIF IsProcType (sym)
    THEN
-      RETURN( IsProcTypeDependants(sym, q) )
+      RETURN( IsProcTypeDependants (sym, q) )
    ELSIF IsUnbounded(sym)
    THEN
       RETURN( IsUnboundedDependants(sym, q) )
@@ -1100,7 +1112,7 @@ END IsFullyDeclared ;
 
 PROCEDURE AllDependantsFullyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( IsTypeQ(sym, IsFullyDeclared) )
+   RETURN( IsTypeQ (sym, IsFullyDeclared) )
 END AllDependantsFullyDeclared ;
 
 
@@ -1111,7 +1123,7 @@ END AllDependantsFullyDeclared ;
 
 PROCEDURE NotAllDependantsFullyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( NOT IsTypeQ(sym, IsFullyDeclared) )
+   RETURN( NOT IsTypeQ (sym, IsFullyDeclared) )
 END NotAllDependantsFullyDeclared ;
 
 
@@ -1132,7 +1144,7 @@ END IsPartiallyDeclared ;
 
 PROCEDURE AllDependantsPartiallyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( IsTypeQ(sym, IsPartiallyDeclared) )
+   RETURN( IsTypeQ (sym, IsPartiallyDeclared) )
 END AllDependantsPartiallyDeclared ;
 
 
@@ -1143,7 +1155,7 @@ END AllDependantsPartiallyDeclared ;
 
 PROCEDURE NotAllDependantsPartiallyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( NOT IsTypeQ(sym, IsPartiallyDeclared) )
+   RETURN( NOT IsTypeQ (sym, IsPartiallyDeclared) )
 END NotAllDependantsPartiallyDeclared ;
 
 
@@ -1165,7 +1177,7 @@ END IsPartiallyOrFullyDeclared ;
 
 PROCEDURE AllDependantsPartiallyOrFullyDeclared (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( IsTypeQ(sym, IsPartiallyOrFullyDeclared) )
+   RETURN( IsTypeQ (sym, IsPartiallyOrFullyDeclared) )
 END AllDependantsPartiallyOrFullyDeclared ;
 
 
@@ -1208,8 +1220,8 @@ END TypeConstDependantsFullyDeclared ;
 
 PROCEDURE CanBeDeclaredViaPartialDependants (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( (IsPointer(sym) OR IsProcType(sym)) AND
-           AllDependantsPartiallyOrFullyDeclared(sym) )
+   RETURN( (IsPointer (sym) OR IsProcType (sym)) AND
+           AllDependantsPartiallyOrFullyDeclared (sym) )
 END CanBeDeclaredViaPartialDependants ;
 
 
@@ -1262,7 +1274,8 @@ BEGIN
          WatchIncludeList(sym, fullydeclared) ;
          WatchRemoveList(sym, partiallydeclared) ;
          WatchRemoveList(sym, todolist)
-      ELSE
+      ELSIF NOT IsFullyDeclared (sym)
+      THEN
          t := TypeConstFullyDeclared(sym) ;
          IF t#NIL
          THEN
@@ -1301,6 +1314,105 @@ END DeclareTypeFromPartial ;
 
 
 (*
+   CanCreateSetArray - return true if we need to create a set array.
+                       All sets will have a set array created even
+                       if it is not required.
+*)
+
+PROCEDURE CanCreateSetArray (sym: CARDINAL) : BOOLEAN ;
+VAR
+   setarray: CARDINAL ;
+BEGIN
+   IF IsSet (sym) AND CanCreateSet (sym)
+   THEN
+      setarray := GetSetArray (sym) ;
+      IF setarray = NulSym
+      THEN
+         RETURN TRUE
+      ELSE
+         (* Set array already exists, this can occur if the set is a base type
+            (bitset for example).
+             So we just move the symbol to the correct state.  *)
+         WatchRemoveList (sym, todolist) ;
+         WatchIncludeList (sym, finishedsetarray) ;
+         (* WatchIncludeList (setarray, todolist)  *)
+      END
+   END ;
+   RETURN FALSE
+END CanCreateSetArray ;
+
+
+(*
+   CreateSetArray - declare the set array for a set type.
+*)
+
+PROCEDURE CreateSetArray (set: CARDINAL) ;
+VAR
+   type, array,
+   high, low  : CARDINAL ;
+BEGIN
+   type := GetSType (set) ;
+   low  := GetTypeMin (type) ;
+   high := GetTypeMax (type) ;
+   DeclareConstant (GetDeclaredMod (set), high) ;
+   DeclareConstant (GetDeclaredMod (set), low) ;
+   array := DeclareSetArray (set, low, high) ;
+   PutSetArray (set, array) ;
+   WatchRemoveList (set, todolist) ;
+   WatchIncludeList (set, finishedsetarray) ;
+   (* WatchIncludeList (array, todolist)  *)
+END CreateSetArray ;
+
+
+(*
+   CanCreateSet - returns TRUE if the set can be created.
+                  All dependents of sym have been declared to GCC.
+*)
+
+PROCEDURE CanCreateSet (set: CARDINAL) : BOOLEAN ;
+VAR
+   type, low, high: CARDINAL ;
+BEGIN
+   type := GetSType (set) ;
+   IF NOT GccKnowsAbout (type)
+   THEN
+      RETURN FALSE
+   END ;
+   low  := GetTypeMin (type) ;
+   high := GetTypeMax (type) ;
+   IF NOT GccKnowsAbout (low)
+   THEN
+      RETURN FALSE
+   END ;
+   IF NOT GccKnowsAbout (high)
+   THEN
+      RETURN FALSE
+   END ;
+   RETURN TRUE
+END CanCreateSet ;
+
+
+(*
+   CreateSet -
+*)
+
+PROCEDURE CreateSet (set: CARDINAL) ;
+VAR
+   gccset: tree ;
+BEGIN
+   gccset := DeclareSet (set) ;
+   IF gccset = NIL
+   THEN
+      InternalError ('expecting to be able to create a gcc type')
+   ELSE
+      AddModGcc (set, gccset) ;
+      WatchIncludeList (set, fullydeclared) ;
+      WatchRemoveList (set, finishedsetarray)
+   END
+END CreateSet ;
+
+
+(*
    CanBeDeclaredPartiallyViaPartialDependants - returns TRUE if, sym,
                                                 can be partially declared via
                                                 another partially declared type.
@@ -1308,7 +1420,7 @@ END DeclareTypeFromPartial ;
 
 PROCEDURE CanBeDeclaredPartiallyViaPartialDependants (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( IsType(sym) AND AllDependantsPartiallyDeclared(sym) )
+   RETURN( IsType (sym) AND AllDependantsPartiallyDeclared (sym) )
 END CanBeDeclaredPartiallyViaPartialDependants ;
 
 
@@ -1339,7 +1451,8 @@ TYPE
    Rule = (norule, partialtype, arraynil, pointernilarray, arraypartial,
            pointerfully, recordkind, recordfully, typeconstfully,
            pointerfrompartial, typefrompartial, partialfrompartial,
-           partialtofully, circulartodo, circularpartial, circularniltyped) ;
+           partialtofully, circulartodo, circularpartial, circularniltyped,
+           setarraynul, setfully) ;
 
 VAR
    bodyp          : WalkAction ;
@@ -1361,22 +1474,24 @@ BEGIN
    THEN
       CASE bodyr OF
 
-      norule            :  printf0('norule') |
-      partialtype       :  printf0('partialtype') |
-      arraynil          :  printf0('arraynil') |
-      pointernilarray   :  printf0('pointernilarray') |
-      arraypartial      :  printf0('arraypartial') |
-      pointerfully      :  printf0('pointerfully') |
-      recordkind        :  printf0('recordkind') |
-      recordfully       :  printf0('recordfully') |
-      typeconstfully    :  printf0('typeconstfully') |
-      pointerfrompartial:  printf0('pointerfrompartial') |
-      typefrompartial   :  printf0('typefrompartial') |
-      partialfrompartial:  printf0('partialfrompartial') |
-      partialtofully    :  printf0('partialtofully') |
-      circulartodo      :  printf0('circulartodo') |
-      circularpartial   :  printf0('circularpartial') |
-      circularniltyped  :  printf0('circularniltyped')
+      norule            :  printf0 ('norule') |
+      partialtype       :  printf0 ('partialtype') |
+      arraynil          :  printf0 ('arraynil') |
+      pointernilarray   :  printf0 ('pointernilarray') |
+      arraypartial      :  printf0 ('arraypartial') |
+      pointerfully      :  printf0 ('pointerfully') |
+      recordkind        :  printf0 ('recordkind') |
+      recordfully       :  printf0 ('recordfully') |
+      typeconstfully    :  printf0 ('typeconstfully') |
+      pointerfrompartial:  printf0 ('pointerfrompartial') |
+      typefrompartial   :  printf0 ('typefrompartial') |
+      partialfrompartial:  printf0 ('partialfrompartial') |
+      partialtofully    :  printf0 ('partialtofully') |
+      circulartodo      :  printf0 ('circulartodo') |
+      circularpartial   :  printf0 ('circularpartial') |
+      circularniltyped  :  printf0 ('circularniltyped') |
+      setarraynul       :  printf0 ('setarraynul') |
+      setfully          :  printf0 ('setfully')
 
       ELSE
          InternalError ('unknown rule')
@@ -1450,6 +1565,7 @@ VAR
    finished: BOOLEAN ;
    copy    : Group ;
 BEGIN
+   EnterDiagnostic (DeclaredOutstandingTypesDiag) ;
    copy := NIL ;
    finished := FALSE ;
    REPEAT
@@ -1468,6 +1584,20 @@ BEGIN
                             DeclareTypePartially)
       THEN
          (* continue looping *)
+      ELSIF ForeachTryDeclare (todolist,
+                               setarraynul,
+                               CanCreateSetArray,
+                               CreateSetArray)
+      THEN
+         (* Populates the finishedsetarray list with each set seen.  *)
+         (* Continue looping.  *)
+      ELSIF ForeachTryDeclare (finishedsetarray,
+                               setfully,
+                               CanCreateSet,
+                               CreateSet)
+      THEN
+         (* Populates the fullydeclared list with each set.  *)
+         (* Continue looping.  *)
       ELSIF ForeachTryDeclare (todolist,
                                arraynil,
                                CanDeclareArrayAsNil,
@@ -1553,6 +1683,7 @@ BEGIN
       THEN
       END
    END ;
+   ExitDiagnostic (DeclaredOutstandingTypesDiag) ;
    RETURN NoOfElementsInSet (GlobalGroup^.ToDoList) = 0
 END DeclaredOutstandingTypes ;
 
@@ -1565,18 +1696,18 @@ END DeclaredOutstandingTypes ;
 
 PROCEDURE CompleteDeclarationOf (sym: CARDINAL) : tree ;
 BEGIN
-   IF IsArray(sym)
+   IF IsArray (sym)
    THEN
-      RETURN( DeclareArray(sym) )
-   ELSIF IsProcType(sym)
+      RETURN( DeclareArray (sym) )
+   ELSIF IsProcType (sym)
    THEN
-      RETURN( DeclareProcType(sym) )
-   ELSIF IsRecordField(sym)
+      RETURN( DeclareProcType (sym) )
+   ELSIF IsRecordField (sym)
    THEN
-      RETURN( DeclareRecordField(sym) )
-   ELSIF IsPointer(sym)
+      RETURN( DeclareRecordField (sym) )
+   ELSIF IsPointer (sym)
    THEN
-      RETURN( DeclarePointer(sym) )
+      RETURN( DeclarePointer (sym) )
    ELSE
       RETURN( NIL )
    END
@@ -1593,26 +1724,27 @@ VAR
    t       : tree ;
    location: location_t ;
 BEGIN
-   IF GetSType(sym)=NulSym
+   IF GetSType (sym) = NulSym
    THEN
-      MetaError1('base type {%1Ua} not understood', sym) ;
+      MetaError1 ('base type {%1Ua} not understood', sym) ;
       InternalError ('base type should have been declared')
    ELSE
-      IF GetSymName(sym)=NulName
+      IF GetSymName (sym) = NulName
       THEN
-         RETURN( tree(Mod2Gcc(GetSType(sym))) )
+         RETURN( tree (Mod2Gcc (GetSType (sym))) )
       ELSE
-         location := TokenToLocation(GetDeclaredMod(sym)) ;
-         IF GccKnowsAbout(sym)
+         location := TokenToLocation (GetDeclaredMod (sym)) ;
+         IF GccKnowsAbout (sym)
          THEN
-            t := Mod2Gcc(sym)
+            t := Mod2Gcc (sym)
          ELSE
-            (* not partially declared therefore start it *)
-            t := BuildStartType(location,
-                                KeyToCharStar(GetFullSymName(sym)), Mod2Gcc(GetSType(sym)))
+            (* Not partially declared therefore start it.  *)
+            t := BuildStartType (location,
+                                 KeyToCharStar (GetFullSymName (sym)),
+                                 Mod2Gcc (GetSType (sym)))
          END ;
-         t := BuildEndType(location, t) ;  (* now finish it *)
-         RETURN( t )
+         t := BuildEndType (location, t) ;  (* Now finish it.  *)
+         RETURN t
       END
    END
 END DeclareType ;
@@ -2183,9 +2315,9 @@ BEGIN
    ELSIF IsArray(sym)
    THEN
       WalkArrayDependants(sym, p)
-   ELSIF IsProcType(sym)
+   ELSIF IsProcType (sym)
    THEN
-      WalkProcTypeDependants(sym, p)
+      WalkProcTypeDependants (sym, p)
    ELSIF IsUnbounded(sym)
    THEN
       WalkUnboundedDependants(sym, p)
@@ -2235,11 +2367,11 @@ END TraverseDependantsInner ;
 
 PROCEDURE TraverseDependants (sym: WORD) ;
 BEGIN
-   IF VisitedList=NIL
+   IF VisitedList = NIL
    THEN
-      VisitedList := InitSet(1) ;
-      TraverseDependantsInner(sym) ;
-      VisitedList := KillSet(VisitedList)
+      VisitedList := InitSet (1) ;
+      TraverseDependantsInner (sym) ;
+      VisitedList := KillSet (VisitedList)
    ELSE
       InternalError ('recursive call to TraverseDependants caught')
    END
@@ -2247,7 +2379,20 @@ END TraverseDependants ;
 
 
 (*
-   WalkTypeInfo - walks type, sym, and its dependants.
+   WalkUnbounded -
+*)
+
+PROCEDURE WalkUnbounded (sym: WORD) ;
+BEGIN
+   Assert (IsUnbounded (sym)) ;
+   TraverseDependants (sym) ;
+   WalkTypeInfo (GetUnboundedRecordType (sym)) ;
+   WalkTypeInfo (GetSType (sym))
+END WalkUnbounded ;
+
+
+(*
+   WalkTypeInfo - walks type sym and its dependants.
 *)
 
 PROCEDURE WalkTypeInfo (sym: WORD) ;
@@ -2255,16 +2400,25 @@ BEGIN
    IF IsVarient(sym)
    THEN
       InternalError ('why have we reached here?')
-   ELSIF IsVar(sym)
+   ELSIF IsVar (sym)
    THEN
-      WalkTypeInfo(GetSType(sym)) ;
-      IF GetVarBackEndType(sym)#NulSym
+      WalkTypeInfo (GetSType (sym)) ;
+      IF GetVarBackEndType (sym) # NulSym
       THEN
-         WalkTypeInfo(GetVarBackEndType(sym))
+         WalkTypeInfo (GetVarBackEndType (sym))
       END
-   ELSIF IsAModula2Type(sym)
+   ELSIF IsUnbounded (sym)
    THEN
-      TraverseDependants(sym)
+      WalkUnbounded (sym)
+   ELSIF IsAModula2Type (sym)
+   THEN
+      TraverseDependants (sym)
+   ELSIF IsProcedure (sym)
+   THEN
+      WalkProcedureDependants (sym, WalkTypeInfo)
+   ELSIF IsProcType (sym)
+   THEN
+      WalkProcTypeDependants (sym, WalkTypeInfo)
    END
 END WalkTypeInfo ;
 
@@ -2341,7 +2495,7 @@ END WalkUnboundedProcedureParameters ;
 
 PROCEDURE WalkTypesInProcedure (sym: WORD) ;
 BEGIN
-   ForeachLocalSymDo(sym, TraverseDependants)
+   ForeachLocalSymDo (sym, TraverseDependants)
 END WalkTypesInProcedure ;
 
 
@@ -2358,9 +2512,9 @@ BEGIN
       n := GetSymName(sym) ;
       printf1('Declaring types in MODULE %a\n', n)
    END ;
-   ForeachLocalSymDo(sym, WalkTypeInfo) ;
-   ForeachLocalSymDo(sym, WalkUnboundedProcedureParameters) ;
-   ForeachInnerModuleDo(sym, WalkTypesInModule)
+   ForeachLocalSymDo (sym, WalkTypeInfo) ;
+   ForeachLocalSymDo (sym, WalkUnboundedProcedureParameters) ;
+   ForeachInnerModuleDo (sym, WalkTypesInModule)
 END WalkTypesInModule ;
 
 
@@ -2375,12 +2529,12 @@ VAR
    final: BOOLEAN ;
 BEGIN
    final := TRUE ;
-   IF NOT q(GetSType(sym))
+   IF NOT q (GetSType (sym))
    THEN
       final := FALSE
    END ;
-   align := GetAlignment(sym) ;
-   IF (align#NulSym) AND (NOT q(align))
+   align := GetAlignment (sym) ;
+   IF (align # NulSym) AND (NOT q (align))
    THEN
       final := FALSE
    END ;
@@ -2494,7 +2648,7 @@ END IsExternalToWholeProgram ;
    DeclareProcedureToGccWholeProgram -
 *)
 
-PROCEDURE DeclareProcedureToGccWholeProgram (Sym: CARDINAL) ;
+PROCEDURE DeclareProcedureToGccWholeProgram (ProcedureSym: CARDINAL) ;
 VAR
    returnType,
    GccParam  : tree ;
@@ -2505,19 +2659,20 @@ VAR
    begin, end,
    location  : location_t ;
 BEGIN
-   IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym))
+   Assert (IsProcedure (ProcedureSym)) ;
+   IF (NOT GccKnowsAbout(ProcedureSym)) AND (NOT IsPseudoProcFunc(ProcedureSym))
    THEN
-      BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParamAny (Sym) ;
+      BuildStartFunctionDeclaration(UsesVarArgs(ProcedureSym)) ;
+      p := NoOfParamAny (ProcedureSym) ;
       i := p ;
       WHILE i>0 DO
          (* note we dont use GetNthParamAny as we want the parameter that is seen by the procedure block
             remember that this is treated exactly the same as a variable, just its position on
             the activation record is special (ie a parameter)
          *)
-         Variable := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Variable)) ;
-         IF IsUnboundedParamAny (Sym, i)
+         Variable := GetNth (ProcedureSym, i) ;
+         location := TokenToLocation (GetDeclaredMod (Variable)) ;
+         IF IsUnboundedParamAny (ProcedureSym, i)
          THEN
             GccParam := BuildParameterDeclaration(location,
                                                   KeyToCharStar(GetSymName(Variable)),
@@ -2527,34 +2682,34 @@ BEGIN
             GccParam := BuildParameterDeclaration(location,
                                                   KeyToCharStar(GetSymName(Variable)),
                                                   Mod2Gcc(GetLType(Variable)),
-                                                  IsVarParamAny (Sym, i))
+                                                  IsVarParamAny (ProcedureSym, i))
          END ;
          PreAddModGcc(Variable, GccParam) ;
          WatchRemoveList(Variable, todolist) ;
          WatchIncludeList(Variable, fullydeclared) ;
          DEC(i)
       END ;
-      GetProcedureBeginEnd(Sym, b, e) ;
+      GetProcedureBeginEnd(ProcedureSym, b, e) ;
       begin := TokenToLocation(b) ;
       end := TokenToLocation(e) ;
-      scope := GetScope(Sym) ;
+      scope := GetScope(ProcedureSym) ;
       PushBinding(scope) ;
-      IF GetSType(Sym)=NulSym
+      IF GetSType(ProcedureSym)=NulSym
       THEN
          returnType := NIL
       ELSE
-         returnType := Mod2Gcc(GetSType(Sym))
+         returnType := Mod2Gcc(GetSType(ProcedureSym))
       END ;
-      PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
-                                                    KeyToCharStar(GetFullSymName(Sym)),
-                                                    returnType,
-                                                    IsExternalToWholeProgram(Sym),
-                                                    IsProcedureGccNested(Sym),
-                                                    IsExported(GetModuleWhereDeclared(Sym), Sym),
-                                                    IsProcedureAnyNoReturn(Sym))) ;
+      PreAddModGcc(ProcedureSym, BuildEndFunctionDeclaration(begin, end,
+                                                             KeyToCharStar(GetFullSymName(ProcedureSym)),
+                                                             returnType,
+                                                             IsExternalToWholeProgram(ProcedureSym),
+                                                             IsProcedureGccNested(ProcedureSym),
+                                                             IsExported(GetModuleWhereDeclared(ProcedureSym), ProcedureSym),
+                                                             IsProcedureAnyNoReturn(ProcedureSym))) ;
       PopBinding(scope) ;
-      WatchRemoveList(Sym, todolist) ;
-      WatchIncludeList(Sym, fullydeclared)
+      WatchRemoveList(ProcedureSym, todolist) ;
+      WatchIncludeList(ProcedureSym, fullydeclared)
    END
 END DeclareProcedureToGccWholeProgram ;
 
@@ -2563,7 +2718,7 @@ END DeclareProcedureToGccWholeProgram ;
    DeclareProcedureToGccSeparateProgram -
 *)
 
-PROCEDURE DeclareProcedureToGccSeparateProgram (Sym: CARDINAL) ;
+PROCEDURE DeclareProcedureToGccSeparateProgram (ProcedureSym: CARDINAL) ;
 VAR
    returnType,
    GccParam  : tree ;
@@ -2575,64 +2730,76 @@ VAR
    location  : location_t ;
    tok       : CARDINAL ;
 BEGIN
-   tok := GetDeclaredMod(Sym) ;
-   IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym)) AND
-      (IsEffectivelyImported(GetMainModule(), Sym) OR
-       (GetModuleWhereDeclared (Sym) = GetMainModule()) OR
-       IsNeededAtRunTime (tok, Sym) OR
-       IsImported (GetBaseModule (), Sym) OR
-       IsExported(GetModuleWhereDeclared (Sym), Sym) OR
-       IsExtern (Sym))
+   Assert (IsProcedure (ProcedureSym)) ;
+   tok := GetDeclaredMod (ProcedureSym) ;
+   IF (NOT GccKnowsAbout (ProcedureSym)) AND (NOT IsPseudoProcFunc (ProcedureSym)) AND
+      (IsEffectivelyImported (GetMainModule (), ProcedureSym) OR
+       (GetModuleWhereDeclared (ProcedureSym) = GetMainModule ()) OR
+       IsNeededAtRunTime (tok, ProcedureSym) OR
+       IsImported (GetBaseModule (), ProcedureSym) OR
+       IsExported(GetModuleWhereDeclared (ProcedureSym), ProcedureSym) OR
+       IsExtern (ProcedureSym))
    THEN
-      BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParamAny (Sym) ;
+      BuildStartFunctionDeclaration (UsesVarArgs (ProcedureSym)) ;
+      p := NoOfParamAny (ProcedureSym) ;
       i := p ;
-      WHILE i>0 DO
+      WHILE i > 0 DO
          (* Note we dont use GetNthParamAny as we want the parameter that is seen by
             the procedure block remember that this is treated exactly the same as
             a variable, just its position on the activation record is special (ie
             a parameter).  *)
-         Variable := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Variable)) ;
-         IF IsUnboundedParamAny (Sym, i)
+         Variable := GetNth (ProcedureSym, i) ;
+         location := TokenToLocation (GetDeclaredMod (Variable)) ;
+         IF GetSType (Variable) = NulSym
          THEN
-            GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Variable)),
-                                                  Mod2Gcc(GetLType(Variable)),
-                                                  FALSE)
-         ELSE
-            GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Variable)),
-                                                  Mod2Gcc(GetLType(Variable)),
-                                                  IsVarParamAny (Sym, i))
+            MetaError1 ('internal error: the type of parameter {%1Ead} is nulsym', Variable) ;
+            FlushErrors
          END ;
-         PreAddModGcc(Variable, GccParam) ;
-         WatchRemoveList(Variable, todolist) ;
-         WatchIncludeList(Variable, fullydeclared) ;
-         DEC(i)
+         IF Mod2Gcc (GetSType (Variable)) = NIL
+         THEN
+            MetaError2 ('internal error: the type of parameter {%1Ead} in procedure {%2ad} has not been declared to GCC', Variable, ProcedureSym) ;
+            FlushErrors ;
+            Assert (AllDependantsFullyDeclared (ProcedureSym))
+         END ;
+         IF IsUnboundedParamAny (ProcedureSym, i)
+         THEN
+            GccParam := BuildParameterDeclaration (location,
+                                                   KeyToCharStar (GetSymName (Variable)),
+                                                   Mod2Gcc (GetLType (Variable)),
+                                                   FALSE)
+         ELSE
+            GccParam := BuildParameterDeclaration (location,
+                                                   KeyToCharStar (GetSymName (Variable)),
+                                                   Mod2Gcc (GetLType (Variable)),
+                                                   IsVarParamAny (ProcedureSym, i))
+         END ;
+         PreAddModGcc (Variable, GccParam) ;
+         WatchRemoveList (Variable, todolist) ;
+         WatchIncludeList (Variable, fullydeclared) ;
+         DEC (i)
       END ;
-      GetProcedureBeginEnd(Sym, b, e) ;
-      begin := TokenToLocation(b) ;
-      end := TokenToLocation(e) ;
-      scope := GetScope(Sym) ;
-      PushBinding(scope) ;
-      IF GetSType(Sym)=NulSym
+      GetProcedureBeginEnd (ProcedureSym, b, e) ;
+      begin := TokenToLocation (b) ;
+      end := TokenToLocation (e) ;
+      scope := GetScope (ProcedureSym) ;
+      PushBinding (scope) ;
+      IF GetSType (ProcedureSym) = NulSym
       THEN
          returnType := NIL
       ELSE
-         returnType := Mod2Gcc(GetSType(Sym))
+         returnType := Mod2Gcc (GetSType (ProcedureSym))
       END ;
-      PreAddModGcc (Sym, BuildEndFunctionDeclaration (begin, end,
-                                                      KeyToCharStar (GetFullSymName (Sym)),
-                                                      returnType,
-                                                      IsExternal (Sym),  (* Extern relative to the main module.  *)
-                                                      IsProcedureGccNested (Sym),
-                                                      (* Exported from the module where it was declared.  *)
-                                                      IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym),
-                                                      IsProcedureAnyNoReturn(Sym))) ;
-      PopBinding(scope) ;
-      WatchRemoveList(Sym, todolist) ;
-      WatchIncludeList(Sym, fullydeclared)
+      PreAddModGcc (ProcedureSym, BuildEndFunctionDeclaration (begin, end,
+                                                               KeyToCharStar (GetFullSymName (ProcedureSym)),
+                                                               returnType,
+                                                               IsExternal (ProcedureSym),  (* Extern relative to the main module.  *)
+                                                               IsProcedureGccNested (ProcedureSym),
+                                                               (* Exported from the module where it was declared.  *)
+                                                               IsExported (GetModuleWhereDeclared (ProcedureSym), ProcedureSym) OR IsExtern (ProcedureSym),
+                                                               IsProcedureAnyNoReturn (ProcedureSym))) ;
+      PopBinding (scope) ;
+      WatchRemoveList (ProcedureSym, todolist) ;
+      WatchIncludeList (ProcedureSym, fullydeclared)
    END
 END DeclareProcedureToGccSeparateProgram ;
 
@@ -2741,6 +2908,7 @@ BEGIN
    THEN
       DisplayQuadRange (scope, start, end)
    END ;
+   EnterDiagnostic (DeclareTypesConstantsProceduresInRangeDiag) ;
    loop := 0 ;
    copy := NIL ;
    sb := InitScopeBlock (scope) ;
@@ -2772,7 +2940,8 @@ BEGIN
    KillGroup (copy) ;
    bb := InitBasicBlocks (sb) ;
    KillBasicBlocks (bb) ;
-   KillScopeBlock (sb)
+   KillScopeBlock (sb) ;
+   ExitDiagnostic (DeclareTypesConstantsProceduresInRangeDiag)
 END DeclareTypesConstantsProceduresInRange ;
 
 
@@ -2839,6 +3008,7 @@ BEGIN
    THEN
       printf0 ("declaring types constants in: ") ; PrintTerse (scope)
    END ;
+   EnterDiagnostic (DeclareTypesConstantsProceduresDiag) ;
    copy := NIL ;
    sb := InitScopeBlock (scope) ;
    PushBinding (scope) ;
@@ -2848,7 +3018,8 @@ BEGIN
    UNTIL EqualGroup (copy, GlobalGroup) ;
    KillGroup (copy) ;
    PopBinding (scope) ;
-   KillScopeBlock (sb)
+   KillScopeBlock (sb) ;
+   ExitDiagnostic (DeclareTypesConstantsProceduresDiag)
 END DeclareTypesConstantsProcedures ;
 
 
@@ -2902,16 +3073,16 @@ END DeclareModuleInit ;
 
 PROCEDURE StartDeclareProcedureScope (scope: CARDINAL) ;
 BEGIN
-   WalkTypesInProcedure(scope) ;
-   DeclareProcedure(scope) ;
-   ForeachInnerModuleDo(scope, WalkTypesInModule) ;
+   WalkTypesInProcedure (scope) ;
+   DeclareProcedure (scope) ;
+   ForeachInnerModuleDo (scope, WalkTypesInModule) ;
    DeclareTypesConstantsProcedures (scope) ;
-   ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
-   DeclareLocalVariables(scope) ;
-   ForeachInnerModuleDo(scope, DeclareModuleVariables) ;
-   AssertAllTypesDeclared(scope) ;
-   ForeachProcedureDo(scope, DeclareProcedure) ;
-   ForeachInnerModuleDo(scope, StartDeclareScope)
+   ForeachInnerModuleDo (scope, DeclareTypesConstantsProcedures) ;
+   DeclareLocalVariables (scope) ;
+   ForeachInnerModuleDo (scope, DeclareModuleVariables) ;
+   AssertAllTypesDeclared (scope) ;
+   ForeachProcedureDo (scope, DeclareProcedure) ;
+   ForeachInnerModuleDo (scope, StartDeclareScope)
 END StartDeclareProcedureScope ;
 
 
@@ -3122,20 +3293,20 @@ END PreAddModGcc ;
 PROCEDURE DeclareDefaultType (sym: CARDINAL; name: ARRAY OF CHAR; gcctype: tree) ;
 VAR
    t        : tree ;
+   array,
    high, low: CARDINAL ;
    location : location_t ;
 BEGIN
-   (* DeclareDefaultType will declare a new identifier as a type of, gcctype, if it has not already been
-      declared by gccgm2.c *)
+   (* DeclareDefaultType will declare a new identifier as a type of gcctype
+      if it has not already been declared.  *)
    location := BuiltinsLocation () ;
    t := GetDefaultType(location, KeyToCharStar(MakeKey(name)), gcctype) ;
-   AddModGcc(sym, t) ;
-   IncludeElementIntoSet(GlobalGroup^.FullyDeclared, sym) ;
-   WalkAssociatedUnbounded(sym, TraverseDependants) ;
-   (*
-      this is very simplistic and assumes that the caller only uses Subranges, Sets and GCC types.
-      We need to declare any constants with the types so that AllDependantsFullyDeclared works.
-   *)
+   AddModGcc (sym, t) ;
+   IncludeElementIntoSet (GlobalGroup^.FullyDeclared, sym) ;
+   WalkAssociatedUnbounded (sym, TraverseDependants) ;
+   (* This is very simplistic and assumes that the caller only uses Subranges,
+      Sets and GCC types.  We need to declare any constants with the types so
+      that AllDependantsFullyDeclared works.  *)
    IF IsSubrange(sym)
    THEN
       GetSubrange(sym, high, low) ;
@@ -3147,17 +3318,20 @@ BEGIN
       THEN
          IF NOT GccKnowsAbout(GetSType(sym))
          THEN
-            (* only true for internal types of course *)
+            (* Only true for internal types of course.  *)
             InternalError ('subrange type within the set type must be declared before the set type')
          END ;
          GetSubrange(GetSType(sym), high, low) ;
          DeclareConstant(GetDeclaredMod(sym), high) ;
-         DeclareConstant(GetDeclaredMod(sym), low)
+         DeclareConstant(GetDeclaredMod(sym), low) ;
+         array := DeclareSetArray (sym, low, high) ;
+         (* IncludeElementIntoSet (FullyDeclared, array) ; *)
+         PutSetArray (sym, array)
       ELSIF IsEnumeration(GetSType(sym))
       THEN
          IF NOT GccKnowsAbout(GetSType(sym))
          THEN
-            (* only true for internal types of course *)
+            (* Only true for internal types of course.  *)
             InternalError ('enumeration type within the set type must be declared before the set type')
          END
       END
@@ -3473,7 +3647,7 @@ BEGIN
               We do not add an extra pointer if this is the case.
       *)
       varType := SkipType (GetVarBackEndType (var)) ;
-      IF varType=NulSym
+      IF varType = NulSym
       THEN
          (* We have not explicity told back end the type, so build it.  *)
          varType := GetSType (var) ;
@@ -3590,7 +3764,7 @@ BEGIN
       INC (n) ;
       Variable := GetNth (ModSym, n)
    END ;
-   ForeachInnerModuleDo(ModSym, DeclareGlobalVariablesWholeProgram)
+   ForeachInnerModuleDo (ModSym, DeclareGlobalVariablesWholeProgram)
 END DeclareGlobalVariablesWholeProgram ;
 
 
@@ -4002,7 +4176,8 @@ PROCEDURE PrintAlignment (sym: CARDINAL) ;
 VAR
    align: CARDINAL ;
 BEGIN
-   IF IsRecord(sym) OR IsType(sym) OR IsRecordField(sym) OR IsPointer(sym) OR IsArray(sym)
+   IF IsRecord(sym) OR IsType(sym) OR IsRecordField(sym) OR
+      IsPointer(sym) OR IsArray(sym)
    THEN
       align := GetAlignment(sym) ;
       IF align#NulSym
@@ -4164,7 +4339,7 @@ BEGIN
    PrintDeclared (sym) ;
    fprintf0 (GetDumpFile (), '\n') ;
    FOR kind := MIN (ProcedureKind) TO MAX (ProcedureKind) DO
-      fprintf0 (GetDumpFile (), 'parameters ') ;
+      fprintf0 (GetDumpFile (), ' parameters ') ;
       PrintKind (kind) ;
       IF GetProcedureParametersDefined (sym, kind)
       THEN
@@ -4269,6 +4444,19 @@ BEGIN
       fprintf0 (GetDumpFile (), 'is not currently known')
    END
 END PrintString ;
+
+
+(*
+   PrintKnown -
+*)
+
+PROCEDURE PrintKnown (sym: CARDINAL) ;
+BEGIN
+   IF GccKnowsAbout (sym)
+   THEN
+      printf0 ("[gcc]")
+   END
+END PrintKnown ;
 
 
 (*
@@ -4870,9 +5058,9 @@ VAR
 BEGIN
    location := TokenToLocation(GetDeclaredMod(sym)) ;
    Assert(IsSet(sym)) ;
-   type := GetDType(sym) ;
-   low := GetTypeMin(type) ;
-   high := GetTypeMax(type) ;
+   type := GetDType(sym) ;   (* Was GetSType.  *)
+   low := GetTypeMin (type) ;
+   high := GetTypeMax (type) ;
    highLimit := BuildSub(location, Mod2Gcc(high), Mod2Gcc(low), FALSE) ;
    (* --fixme-- we need to check that low <= WORDLENGTH.  *)
    highLimit := BuildLSL(location, GetIntegerOne(location), highLimit, FALSE) ;
@@ -4918,7 +5106,7 @@ BEGIN
    location := TokenToLocation(GetDeclaredMod(sym)) ;
    gccenum := BuildStartEnumeration(location, KeyToCharStar(GetFullSymName(sym)), TRUE) ;
    ForeachLocalSymDo(sym, DeclarePackedFieldEnumeration) ;
-   enumlist := GetEnumList(equiv) ;
+   enumlist := GetEnumList (equiv) ;
    gccenum := BuildEndEnumeration(location, gccenum, enumlist) ;
    AddModGcc(equiv, gccenum)
 END DeclarePackedEnumeration ;
@@ -5247,11 +5435,12 @@ END DeclareUnbounded ;
    BuildIndex -
 *)
 
-PROCEDURE BuildIndex (tokenno: CARDINAL; array: CARDINAL) : tree ;
+PROCEDURE BuildIndex (tokenno: CARDINAL; array: CARDINAL; isset: BOOLEAN) : tree ;
 VAR
    Subscript: CARDINAL ;
    Type,
    High, Low: CARDINAL ;
+   indexType,
    n,
    low, high: tree ;
    location : location_t ;
@@ -5272,18 +5461,25 @@ BEGIN
       n := BuildConvert (location, GetIntegerType (), BuildSub (location, high, low, FALSE), FALSE) ;
       IF TreeOverflow(n) OR ValueOutOfTypeRange (GetIntegerType (), n)
       THEN
-         MetaError3('implementation restriction, array is too large {%1EDM}, the range {%2ad}..{%3ad} exceeds the integer range',
-                    array, Low, High) ;
-         RETURN BuildArrayIndexType (GetIntegerZero (location), GetIntegerZero (location))
+         IF isset
+         THEN
+            MetaError3('implementation restriction, set is too large {%1EDM}, the range {%2ad}..{%3ad} exceeds the integer range',
+                       array, Low, High)
+         ELSE
+            MetaError3('implementation restriction, array is too large {%1EDM}, the range {%2ad}..{%3ad} exceeds the integer range',
+                       array, Low, High)
+         END ;
+         indexType := BuildArrayIndexType (GetIntegerZero (location), GetIntegerZero (location))
       ELSE
          PutArrayLarge (array) ;
-	 RETURN BuildArrayIndexType (GetIntegerZero (location), n)
+	 indexType := BuildArrayIndexType (GetIntegerZero (location), n)
       END
    ELSE
       low := BuildConvert (location, GetIntegerType (), low, FALSE) ;
       high := BuildConvert (location, GetIntegerType (), high, FALSE) ;
-      RETURN BuildArrayIndexType (low, high)
-   END
+      indexType := BuildArrayIndexType (low, high)
+   END ;
+   RETURN indexType
 END BuildIndex ;
 
 
@@ -5307,24 +5503,24 @@ BEGIN
    location := TokenToLocation(tokenno) ;
 
    Subscript := GetArraySubscript(Sym) ;
-   typeOfArray := GetDType(Sym) ;
+   typeOfArray := GetDType (Sym) ;
    GccArray := Mod2Gcc(typeOfArray) ;
-   GccIndex := BuildIndex(tokenno, Sym) ;
+   GccIndex := BuildIndex (tokenno, Sym, FALSE) ;
 
-   IF GccKnowsAbout(Sym)
+   IF GccKnowsAbout (Sym)
    THEN
-      ArrayType := Mod2Gcc(Sym)
+      ArrayType := Mod2Gcc (Sym)
    ELSE
-      ArrayType := BuildStartArrayType(GccIndex, GccArray, typeOfArray) ;
-      PreAddModGcc(Sym, ArrayType)
+      ArrayType := BuildStartArrayType (GccIndex, GccArray, typeOfArray) ;
+      PreAddModGcc (Sym, ArrayType)
    END ;
 
-   PreAddModGcc(Subscript, GccArray) ;       (* we save the type of this array as the subscript *)
-   PushIntegerTree(BuildSize(location, GccArray, FALSE)) ;  (* and the size of this array so far *)
-   PopSize(Subscript) ;
+   PreAddModGcc (Subscript, GccArray) ;       (* we save the type of this array as the subscript *)
+   PushIntegerTree (BuildSize (location, GccArray, FALSE)) ;  (* and the size of this array so far *)
+   PopSize (Subscript) ;
 
-   GccArray := BuildEndArrayType(ArrayType, GccArray, GccIndex, typeOfArray) ;
-   Assert(GccArray=ArrayType) ;
+   GccArray := BuildEndArrayType (ArrayType, GccArray, GccIndex, typeOfArray) ;
+   Assert (GccArray = ArrayType) ;
 
    RETURN( GccArray )
 END DeclareArray ;
@@ -5408,13 +5604,13 @@ PROCEDURE GetTypeMin (type: CARDINAL) : CARDINAL ;
 VAR
    min, max: CARDINAL ;
 BEGIN
-   IF IsSubrange(type)
+   IF IsSubrange (type)
    THEN
-      GetSubrange(type, max, min) ;
+      GetSubrange (type, max, min) ;
       RETURN( min )
    ELSIF IsSet(type)
    THEN
-      RETURN( GetTypeMin(GetSType(type)) )
+      RETURN( GetTypeMin (GetSType (type)) )
    ELSIF IsEnumeration(type)
    THEN
       MinEnumerationField := NulSym ;
@@ -5423,18 +5619,18 @@ BEGIN
       RETURN( MinEnumerationField )
    ELSIF IsBaseType(type)
    THEN
-      GetBaseTypeMinMax(type, min, max) ;
+      GetBaseTypeMinMax (type, min, max) ;
       RETURN( min )
-   ELSIF IsSystemType(type)
+   ELSIF IsSystemType (type)
    THEN
-      GetSystemTypeMinMax(type, min, max) ;
+      GetSystemTypeMinMax (type, min, max) ;
       RETURN( min )
-   ELSIF GetSType(type)=NulSym
+   ELSIF GetSType (type) = NulSym
    THEN
-      MetaError1('unable to obtain the MIN value for type {%1as}', type) ;
+      MetaError1 ('unable to obtain the MIN value for type {%1as}', type) ;
       RETURN NulSym
    ELSE
-      RETURN( GetTypeMin(GetSType(type)) )
+      RETURN( GetTypeMin (GetSType (type)) )
    END
 END GetTypeMin ;
 
@@ -5447,33 +5643,33 @@ PROCEDURE GetTypeMax (type: CARDINAL) : CARDINAL ;
 VAR
    min, max: CARDINAL ;
 BEGIN
-   IF IsSubrange(type)
+   IF IsSubrange (type)
    THEN
-      GetSubrange(type, max, min) ;
+      GetSubrange (type, max, min) ;
       RETURN( max )
-   ELSIF IsSet(type)
+   ELSIF IsSet (type)
    THEN
-      RETURN( GetTypeMax(GetSType(type)) )
-   ELSIF IsEnumeration(type)
+      RETURN( GetTypeMax (GetSType (type)) )
+   ELSIF IsEnumeration (type)
    THEN
       MinEnumerationField := NulSym ;
       MaxEnumerationField := NulSym ;
       ForeachLocalSymDo (type, FindMinMaxEnum) ;
       RETURN( MaxEnumerationField )
-   ELSIF IsBaseType(type)
+   ELSIF IsBaseType (type)
    THEN
-      GetBaseTypeMinMax(type, min, max) ;
+      GetBaseTypeMinMax (type, min, max) ;
       RETURN( max )
-   ELSIF IsSystemType(type)
+   ELSIF IsSystemType (type)
    THEN
-      GetSystemTypeMinMax(type, min, max) ;
+      GetSystemTypeMinMax (type, min, max) ;
       RETURN( max )
-   ELSIF GetSType(type)=NulSym
+   ELSIF GetSType (type) = NulSym
    THEN
-      MetaError1('unable to obtain the MAX value for type {%1as}', type) ;
+      MetaError1 ('unable to obtain the MAX value for type {%1as}', type) ;
       RETURN NulSym
    ELSE
-      RETURN( GetTypeMax(GetSType(type)) )
+      RETURN( GetTypeMax (GetSType (type)) )
    END
 END GetTypeMax ;
 
@@ -5495,101 +5691,33 @@ END PushNoOfBits ;
 
 
 (*
-   DeclareLargeSet - n is the name of the set.
-                     type is the subrange type (or simple type)
-                     low and high are the limits of the subrange.
+   DeclareSetArrayOrBitSet - works out whether the set will exceed SIZE (BITSET).
+                             If it does we manufacture a set using:
+
+                             settype = ARRAY [0..totalBits DIV SIZE (BITSET)] OF BITSET ;
+
+                             When GCC supports dwarf5 set types this code should be revised.
+                             If the set will fit into a WORD then we call gccgm2 directly.
 *)
 
-PROCEDURE DeclareLargeSet (n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
-VAR
-   lowtree,
-   hightree,
-   BitsInSet,
-   RecordType,
-   GccField,
-   FieldList : tree ;
-   bpw       : CARDINAL ;
-   location  : location_t ;
-BEGIN
-   location   := TokenToLocation(GetDeclaredMod(type)) ;
-   bpw        := GetBitsPerBitset() ;
-   PushValue(low) ;
-   lowtree    := PopIntegerTree() ;
-   PushValue(high) ;
-   hightree   := PopIntegerTree() ;
-   FieldList  := tree(NIL) ;
-   RecordType := BuildStartRecord(location, KeyToCharStar(n)) ;  (* no problem with recursive types here *)
-   PushNoOfBits(type, low, high) ;
-   PushCard(1) ;
-   Addn ;
-   BitsInSet := PopIntegerTree() ;
-   PushIntegerTree(BitsInSet) ;
-   PushCard(0) ;
-   WHILE Gre(GetDeclaredMod(type)) DO
-      PushIntegerTree(BitsInSet) ;
-      PushCard(bpw-1) ;
-      IF GreEqu(GetDeclaredMod(type))
-      THEN
-         PushIntegerTree(lowtree) ;
-         PushCard(bpw-1) ;
-         Addn ;
-         GccField := BuildFieldRecord(location, NIL, BuildSetType(location, NIL, Mod2Gcc(type), lowtree, PopIntegerTree(), FALSE)) ;
-         PushIntegerTree(lowtree) ;
-         PushCard(bpw) ;
-         Addn ;
-         lowtree := PopIntegerTree() ;
-         PushIntegerTree(BitsInSet) ;
-         PushCard(bpw) ;
-         Sub ;
-         BitsInSet := PopIntegerTree()
-      ELSE
-         (* printf2('range is %a..%a\n', GetSymName(low), GetSymName(high)) ; *)
-         GccField := BuildFieldRecord(location, NIL, BuildSetType(location, NIL, Mod2Gcc(type), lowtree, hightree, FALSE)) ;
-         PushCard(0) ;
-         BitsInSet := PopIntegerTree()
-      END ;
-      FieldList := ChainOn(FieldList, GccField) ;
-      PushIntegerTree(BitsInSet) ;
-      PushCard(0)
-   END ;
-   RETURN( BuildEndRecord(location, RecordType, FieldList, FALSE) )
-END DeclareLargeSet ;
-
-
-(*
-   DeclareLargeOrSmallSet - works out whether the set will exceed TSIZE(WORD). If it does
-                            we manufacture a set using:
-
-                            settype = RECORD
-                                         w1: SET OF [...]
-                                         w2: SET OF [...]
-                                      END
-
-                            We do this as GCC and GDB (stabs) only knows about WORD sized sets.
-                            If the set will fit into a WORD then we call gccgm2 directly.
-*)
-
-PROCEDURE DeclareLargeOrSmallSet (sym: CARDINAL;
-                                  n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
+PROCEDURE DeclareSetArrayOrBitSet (sym: CARDINAL;
+                                   n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
 VAR
    location: location_t ;
-   packed  : BOOLEAN ;
 BEGIN
-   PushNoOfBits(type, low, high) ;
-   PushCard(GetBitsPerBitset()) ;
-   packed := IsSetPacked (sym) ;
-   IF Less(GetDeclaredMod(type))
+   PushNoOfBits (type, low, high) ;
+   PushCard (GetBitsPerBitset()) ;
+   location := TokenToLocation (GetDeclaredMod (sym)) ;
+   IF Less (GetDeclaredMod (type))
    THEN
-      location := TokenToLocation(GetDeclaredMod(sym)) ;
-      (* small set *)
-      (* PutSetSmall(sym) ; *)
-      RETURN BuildSetType (location, KeyToCharStar(n),
-                           Mod2Gcc(type), Mod2Gcc(low), Mod2Gcc(high), packed)
+      PutSetInWord (sym, TRUE) ;
+      RETURN BuildSetType (location, KeyToCharStar (n),
+                           Mod2Gcc (type), Mod2Gcc (low), Mod2Gcc (high), TRUE)
    ELSE
-      (* PutSetLarge(sym) ; *)
-      RETURN DeclareLargeSet (n, type, low, high)   (* --fixme-- finish packed here as well.  *)
+      PutSetInWord (sym, FALSE) ;
+      RETURN DeclareArray (GetSetArray (sym))
    END
-END DeclareLargeOrSmallSet ;
+END DeclareSetArrayOrBitSet ;
 
 
 (*
@@ -5602,15 +5730,17 @@ VAR
    type,
    high, low: CARDINAL ;
 BEGIN
-   type := GetDType(sym) ;
-   IF IsSubrange(type)
+   type := GetSType (sym) ;
+   IF IsSubrange (type)
    THEN
-      GetSubrange(type, high, low) ;
-      gccsym := DeclareLargeOrSmallSet(sym, GetFullSymName(sym), GetSType(type), low, high)
+      GetSubrange (type, high, low) ;
+      gccsym := DeclareSetArrayOrBitSet (sym, GetFullSymName (sym),
+                                         GetSType (type), low, high)
    ELSE
-      gccsym := DeclareLargeOrSmallSet(sym, GetFullSymName(sym), type, GetTypeMin(type), GetTypeMax(type))
+      gccsym := DeclareSetArrayOrBitSet (sym, GetFullSymName (sym),
+                                         type, GetTypeMin (type), GetTypeMax (type))
    END ;
-   RETURN( gccsym )
+   RETURN gccsym
 END DeclareSet ;
 
 
@@ -5696,19 +5826,19 @@ BEGIN
       t := DeclareVarient(sym)
    ELSIF IsPointer(sym)
    THEN
-      t := CheckAlignment(DeclarePointer(sym), sym)
+      t := CheckAlignment (DeclarePointer (sym), sym)
    ELSIF IsUnbounded(sym)
    THEN
       t := DeclareUnbounded(sym)
    ELSIF IsArray(sym)
    THEN
-      t := CheckAlignment(DeclareArray(sym), sym)
+      t := CheckAlignment (DeclareArray (sym), sym)
    ELSIF IsProcType(sym)
    THEN
       t := DeclareProcType(sym)
    ELSIF IsSet(sym)
    THEN
-      t := DeclareSet(sym)
+      t := CheckAlignment (DeclareSet (sym), sym)
    ELSIF IsConst(sym)
    THEN
       IF IsConstructor(sym)
@@ -5981,11 +6111,17 @@ PROCEDURE WalkPointerDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
    align: CARDINAL ;
 BEGIN
-   p(GetSType(sym)) ;
-   align := GetAlignment(sym) ;
-   IF align#NulSym
+   IF GetSType (sym) = NulSym
    THEN
-      p(align)
+      MetaError1 ('pointer type {%1Ua} is unresolved', sym) ;
+      InternalError ('pointer type should have been declared')
+   ELSE
+      p (GetSType (sym)) ;
+      align := GetAlignment (sym) ;
+      IF align # NulSym
+      THEN
+         p (align)
+      END
    END
 END WalkPointerDependants ;
 
@@ -6321,7 +6457,7 @@ END WalkVarientFieldDependants ;
 PROCEDURE IsArrayDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
    result   : BOOLEAN ;
-   align    : CARDINAL ;
+   align,
    subscript: CARDINAL ;
    high, low: CARDINAL ;
    type     : CARDINAL ;
@@ -6329,7 +6465,6 @@ BEGIN
    result := TRUE ;
    Assert(IsArray(sym)) ;
    type := GetSType(sym) ;
-
    IF NOT q(type)
    THEN
       result := FALSE
@@ -6339,11 +6474,11 @@ BEGIN
    THEN
       Assert(IsSubscript(subscript)) ;
       type := GetSType(subscript) ;
-      IF NOT q(type)
+      IF NOT q (type)
       THEN
          result := FALSE
       END ;
-      type := SkipType(type) ;
+      type := SkipType (type) ;
       (* the array might be declared as ARRAY type OF foo *)
       low  := GetTypeMin(type) ;
       high := GetTypeMax(type) ;
@@ -6355,8 +6490,8 @@ BEGIN
       THEN
          result := FALSE
       END ;
-      align := GetAlignment(sym) ;
-      IF (align#NulSym) AND (NOT q(align))
+      align := GetAlignment (sym) ;
+      IF (align#NulSym) AND (NOT q (align))
       THEN
          result := FALSE
       END
@@ -6371,7 +6506,7 @@ END IsArrayDependants ;
 
 PROCEDURE WalkArrayDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
-   align    : CARDINAL ;
+   align,
    subscript: CARDINAL ;
    high, low: CARDINAL ;
    type     : CARDINAL ;
@@ -6385,19 +6520,60 @@ BEGIN
       Assert(IsSubscript(subscript)) ;
       type := GetSType(subscript) ;
       p(type) ;
+      align := GetAlignment (sym) ;
+      IF align#NulSym
+      THEN
+         p(align)
+      END ;
       type := SkipType(type) ;
       (* the array might be declared as ARRAY type OF foo *)
       low  := GetTypeMin(type) ;
       high := GetTypeMax(type) ;
       p(low) ;
-      p(high) ;
-      align := GetAlignment (sym) ;
-      IF align#NulSym
-      THEN
-         p(align)
-      END
+      p(high)
    END
 END WalkArrayDependants ;
+
+
+(*
+   DeclareSetArray -
+*)
+
+PROCEDURE DeclareSetArray (sym, low, high: CARDINAL) : CARDINAL ;
+VAR
+   tok     : CARDINAL ;
+   subrange,
+   highbyte: CARDINAL ;
+   bytes   : tree ;
+   name    : Name ;
+BEGIN
+   tok := GetDeclaredMod (sym) ;
+   PushValue (high) ;
+   ConvertToInt ;
+   PushValue (low) ;
+   ConvertToInt ;
+   Sub ;
+   PushCard (8) ;
+   DivTrunc ;
+   bytes := PopIntegerTree () ;
+   subrange := MakeSubrange (tok, NulName) ;
+   INC (tempset) ;
+   name := makekey (string (Sprintf1 (Mark (InitString('_Tset%d')), tempset))) ;
+   highbyte := MakeConstVar (tok, name) ;
+   PutConst (highbyte, Cardinal) ;
+   AddModGcc (highbyte, bytes) ;
+   PushValue (high) ;
+   ConvertToInt ;
+   PushValue (low) ;
+   ConvertToInt ;
+   Sub ;
+   PushCard (GetBitsPerBitset ()) ;
+   PutSetInWord (sym, Less (tok)) ;
+   DeclareConstFully (highbyte) ;
+   PutSubrange (subrange,
+                MakeConstLit (tok, MakeKey ('0'), Cardinal), highbyte, Cardinal) ;
+   RETURN MakeSetArray (tok, subrange)
+END DeclareSetArray ;
 
 
 (*
@@ -6407,26 +6583,31 @@ END WalkArrayDependants ;
 
 PROCEDURE IsSetDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
-   result         : BOOLEAN ;
-   type, low, high: CARDINAL ;
+   result                : BOOLEAN ;
+   type, low, high, array: CARDINAL ;
 BEGIN
    result := TRUE ;
-   Assert(IsSet(sym)) ;
+   Assert (IsSet (sym)) ;
 
-   type := GetDType(sym) ;
-   IF NOT q(type)
+   type := GetDType (sym) ;
+   IF NOT q (type)
    THEN
       result := FALSE
    END ;
-   low  := GetTypeMin(type) ;
-   high := GetTypeMax(type) ;
-   IF NOT q(low)
+   low  := GetTypeMin (type) ;
+   high := GetTypeMax (type) ;
+   IF NOT q (low)
    THEN
       result := FALSE
    END ;
-   IF NOT q(high)
+   IF NOT q (high)
    THEN
       result := FALSE
+   END ;
+   array := GetSetArray (sym) ;
+   IF array = NulSym
+   THEN
+      result := FALSE ;
    END ;
    RETURN( result )
 END IsSetDependants ;
@@ -6438,7 +6619,7 @@ END IsSetDependants ;
 
 PROCEDURE WalkSetDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
-   type, low, high: CARDINAL ;
+   type, low, high, array: CARDINAL ;
 BEGIN
    Assert(IsSet(sym)) ;
 
@@ -6447,7 +6628,12 @@ BEGIN
    low  := GetTypeMin(type) ;
    p(low) ;
    high := GetTypeMax(type) ;
-   p(high)
+   p(high) ;
+   array := GetSetArray (sym) ;
+   IF array # NulSym
+   THEN
+      p (array)
+   END
 END WalkSetDependants ;
 
 
@@ -6524,19 +6710,19 @@ VAR
    result    : BOOLEAN ;
 BEGIN
    result := TRUE ;
-   Assert(IsProcedure(sym)) ;
+   Assert (IsProcedure (sym)) ;
    i := 1 ;
-   ReturnType := GetSType(sym) ;
-   WHILE GetNth(sym, i)#NulSym DO
-      son := GetNth(sym, i) ;
-      type := GetSType(son) ;
-      IF NOT q(type)
+   ReturnType := GetSType (sym) ;
+   WHILE GetNth (sym, i) # NulSym DO
+      son := GetNth (sym, i) ;
+      type := GetSType (son) ;
+      IF NOT q (type)
       THEN
          result := FALSE
       END ;
-      INC(i)
+      INC (i)
    END ;
-   IF (ReturnType=NulSym) OR q(ReturnType)
+   IF (ReturnType = NulSym) OR q (ReturnType)
    THEN
       RETURN( result )
    ELSE
@@ -6555,25 +6741,25 @@ VAR
    type,
    ReturnType: CARDINAL ;
 BEGIN
-   Assert(IsProcedure(sym)) ;
+   Assert (IsProcedure (sym)) ;
    i := 1 ;
-   ReturnType := GetSType(sym) ;
-   WHILE GetNth(sym, i)#NulSym DO
-      son := GetNth(sym, i) ;
-      type := GetSType(son) ;
-      p(type) ;
-      INC(i)
+   ReturnType := GetSType (sym) ;
+   WHILE GetNth (sym, i) # NulSym DO
+      son := GetNth (sym, i) ;
+      type := GetSType (son) ;
+      p (type) ;
+      INC (i)
    END ;
-   IF ReturnType#NulSym
+   IF ReturnType # NulSym
    THEN
-      p(ReturnType)
+      p (ReturnType)
    END
 END WalkProcedureDependants ;
 
 
 (*
    IsUnboundedDependants - returns TRUE if the symbol, sym,
-                           q(dependants) all return TRUE.
+                           q (dependants) all return TRUE.
 *)
 
 PROCEDURE IsUnboundedDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
@@ -6581,15 +6767,15 @@ VAR
    result: BOOLEAN ;
 BEGIN
    result := TRUE ;
-   IF NOT q(GetUnboundedRecordType(sym))
+   IF NOT q (GetUnboundedRecordType (sym))
    THEN
       result := FALSE
    END ;
-   IF NOT q(Cardinal)
+   IF NOT q (Cardinal)
    THEN
       result := FALSE
    END ;
-   IF NOT q(GetSType(sym))
+   IF NOT q (GetSType (sym))
    THEN
       result := FALSE
    END ;
@@ -6603,9 +6789,9 @@ END IsUnboundedDependants ;
 
 PROCEDURE WalkUnboundedDependants (sym: CARDINAL; p: WalkAction) ;
 BEGIN
-   p(GetUnboundedRecordType(sym)) ;
-   p(Cardinal) ;
-   p(GetSType(sym))
+   p (GetUnboundedRecordType (sym)) ;
+   p (Cardinal) ;
+   p (GetSType (sym))
 END WalkUnboundedDependants ;
 
 
@@ -6644,15 +6830,15 @@ VAR
    align: CARDINAL ;
    type : CARDINAL ;
 BEGIN
-   type := GetSType(sym) ;
-   IF type#NulSym
+   type := GetSType (sym) ;
+   IF type # NulSym
    THEN
-      p(type)
+      p (type)
    END ;
-   align := GetAlignment(sym) ;
-   IF align#NulSym
+   align := GetAlignment (sym) ;
+   IF align # NulSym
    THEN
-      p(align)
+      p (align)
    END
 END WalkTypeDependants ;
 
@@ -6664,9 +6850,9 @@ END WalkTypeDependants ;
 
 PROCEDURE PoisonSymbols (sym: CARDINAL) ;
 BEGIN
-   IF IsProcedure(sym)
+   IF IsProcedure (sym)
    THEN
-      ForeachLocalSymDo(sym, Poison)
+      ForeachLocalSymDo (sym, Poison)
    END
 END PoisonSymbols ;
 
@@ -6677,7 +6863,7 @@ END PoisonSymbols ;
 
 PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: tree) ;
 BEGIN
-   DeclareConstantFromTree(sym, RememberConstant(t))
+   DeclareConstantFromTree (sym, RememberConstant (t))
 END ConstantKnownAndUsed ;
 
 
@@ -6692,14 +6878,31 @@ BEGIN
 END InitDeclarations ;
 
 
+VAR
+   DeclaredOutstandingTypesDiag,
+   DeclareTypesConstantsProceduresDiag,
+   DeclareTypesConstantsProceduresInRangeDiag: Diagnostic ;
 BEGIN
+   DeclaredOutstandingTypesDiag
+      := InitTimeDiagnostic
+            ('M2GCCDeclare:DeclaredOutstandingTypes',
+            '{1N} called {1C} times consuming {1T} ({1P})') ;
+   DeclareTypesConstantsProceduresInRangeDiag
+      := InitTimeDiagnostic
+            ('M2GCCDeclare:DeclareTypesConstantsProceduresInRangeDiag',
+            '{1N} called {1C} times consuming {1T} ({1P})') ;
+   DeclareTypesConstantsProceduresDiag
+   := InitTimeDiagnostic
+            ('M2GCCDeclare:DeclareTypesConstantsProceduresDiag',
+            '{1N} called {1C} times consuming {1T} ({1P})') ;
    FreeGroup := NIL ;
    GlobalGroup := InitGroup () ;
+   ChainedList := InitSet (1) ;
    ErrorDepList := InitSet (1) ;
-   ChainedList := InitSet(1) ;
-   WatchList := InitSet(1) ;
+   WatchList := InitSet (1) ;
    VisitedList := NIL ;
-   EnumerationIndex := InitIndex(1) ;
+   EnumerationIndex := InitIndex (1) ;
    HaveInitDefaultTypes := FALSE ;
-   recursionCaught := FALSE
+   recursionCaught := FALSE ;
+   tempset := 0
 END M2GCCDeclare.

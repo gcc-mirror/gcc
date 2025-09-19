@@ -31,6 +31,7 @@ FROM NumberIO IMPORT WriteCard ;
 FROM StrLib IMPORT StrLen ;
 FROM libc IMPORT strlen ;
 FROM ASCII IMPORT nul ;
+(* FROM M2Diagnostic IMPORT Diagnostic, InitMemDiagnostic, MemIncr, MemDecr, MemSet ; *)
 
 
 TYPE
@@ -50,6 +51,10 @@ VAR
    BinaryTree: NameNode ;
    KeyIndex  : Index ;
    LastIndice: CARDINAL ;
+(*
+   NameKeyTreeMemDiag,
+   NameKeyWordMemDiag: Diagnostic ;
+*)
 
 
 (*
@@ -144,11 +149,19 @@ BEGIN
       IF result=less
       THEN
          NEW(child) ;
-         father^.Left := child
+         father^.Left := child ;
+         (*
+         MemIncr (NameKeyTreeMemDiag, 1, 1) ;
+         MemIncr (NameKeyTreeMemDiag, 2, SIZE (child^))
+         *)
       ELSIF result=greater
       THEN
          NEW(child) ;
-         father^.Right := child
+         father^.Right := child ;
+         (*
+         MemIncr (NameKeyTreeMemDiag, 1, 1) ;
+         MemIncr (NameKeyTreeMemDiag, 2, SIZE (child^))
+         *)
       END ;
       WITH child^ DO
          Right := NIL ;
@@ -161,7 +174,11 @@ BEGIN
       k := LastIndice
    ELSE
       DEALLOCATE(n, higha+1) ;
-      k := child^.Key
+      k := child^.Key ;
+      (*
+      MemDecr (NameKeyWordMemDiag, 1, 1) ;
+      MemDecr (NameKeyWordMemDiag, 2, higha + 1)
+      *)
    END ;
    RETURN( k )
 END DoMakeKey ;
@@ -182,9 +199,13 @@ VAR
 BEGIN
    higha := StrLen(a) ;
    ALLOCATE(p, higha+1) ;
+   (*
+   MemIncr (NameKeyWordMemDiag, 1, 1) ;
+   MemIncr (NameKeyWordMemDiag, 2, higha + 1) ;
+   *)
    IF p=NIL
    THEN
-      HALT      (* out of memory error *)
+      HALT  (* Out of memory error.  *)
    ELSE
       n := p ;
       i := 0 ;
@@ -194,7 +215,6 @@ BEGIN
          INC(p)
       END ;
       p^ := nul ;
-
       RETURN( DoMakeKey(n, higha) )
    END
 END MakeKey ;
@@ -223,7 +243,7 @@ BEGIN
       ALLOCATE(p, higha+1) ;
       IF p=NIL
       THEN
-         HALT      (* out of memory error *)
+         HALT  (* Out of memory error.  *)
       ELSE
          n  := p ;
          pa := a ;
@@ -413,8 +433,18 @@ END CharKey ;
 
 
 BEGIN
+(*
+   NameKeyWordMemDiag
+      := InitMemDiagnostic
+            ('NameKey:Words',
+            '{0N} total words {1d} consuming {2M} ({2P})') ;
+   NameKeyTreeMemDiag
+      := InitMemDiagnostic
+            ('NameKey:Tree',
+            '{0N} total tree nodes {1d} consuming {2M} ({2P})') ;
+*)
    LastIndice := 0 ;
    KeyIndex := InitIndex(1) ;
    NEW(BinaryTree) ;
-   BinaryTree^.Left := NIL
+   BinaryTree^.Left := NIL ;
 END NameKey.

@@ -168,6 +168,10 @@ EXTERN char *M2Options_GetM2DumpFilter (void);
 EXTERN void M2Options_SetM2DebugTraceFilter (bool value, const char *arg);
 EXTERN bool M2Options_SetM2Dump (bool value, const char *arg);
 EXTERN bool M2Options_GetDumpGimple (void);
+EXTERN void M2Options_SetTimeReport (bool value);
+EXTERN void M2Options_SetMemReport (bool value);
+EXTERN void M2Options_SetWideset (bool value);
+EXTERN bool M2Options_GetWideset (void);
 EXTERN void M2Options_SetStrictTypeAssignment (bool value);
 EXTERN void M2Options_SetStrictTypeReason (bool value);
 

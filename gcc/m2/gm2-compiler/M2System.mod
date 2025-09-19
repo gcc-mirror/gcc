@@ -509,8 +509,8 @@ END IsPseudoSystemFunction ;
 PROCEDURE IsPseudoSystemFunctionConstExpression (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN(
-          (sym=Size) OR (sym=TSize) OR (sym=Rotate) OR (sym=Shift) OR
-          (Iso AND ((sym=Cast) OR (sym=MakeAdr)))
+          (sym=Size) OR (sym=TSize) OR (sym=TBitSize) OR (sym=Rotate) OR (sym=Shift) OR
+          (Iso AND ((sym=Cast) OR (sym=MakeAdr) OR (sym=TBitSize)))
          )
 END IsPseudoSystemFunctionConstExpression ;
 
