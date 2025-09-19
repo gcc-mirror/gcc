@@ -1991,6 +1991,10 @@ public:
 
   /* Expected frequency of executions within the function.  */
   sreal sreal_frequency ();
+
+  /* Expected frequency of executions within the function.
+     If edge is speculative, sum all its indirect targets.  */
+  sreal combined_sreal_frequency ();
 private:
   /* Unique id of the edge.  */
   int m_uid;
