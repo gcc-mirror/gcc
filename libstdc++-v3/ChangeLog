@@ -1,3 +1,17 @@
+2025-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/bind/dangling_ref.cc: Compile with
+	-Wsystem-headers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/lwg4148.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc:
+	Likewise.
+
 2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

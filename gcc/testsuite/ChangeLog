@@ -1,3 +1,14 @@
+2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memcpy-18.c: Use -mtune=znver5
+	instead of -mtune=sapphirerapids.
+	* gcc.target/i386/pieces-memcpy-21.c: Ditto.
+	* gcc.target/i386/pieces-memset-46.c: Ditto.
+	* gcc.target/i386/pieces-memset-49.c: Ditto.
+
 2025-09-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
