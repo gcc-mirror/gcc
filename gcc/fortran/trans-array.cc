@@ -10903,7 +10903,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      if (c_expr)
 		{
 		  gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_add_modify (&fnblock, comp, tse.expr);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		}
 	    }
 	  else if (c->initializer && !c->attr.pdt_string && !c->attr.pdt_array
@@ -10914,7 +10916,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      gfc_expr *c_expr;
 	      c_expr = c->initializer;
 	      gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+	      gfc_add_block_to_block (&fnblock, &tse.pre);
 	      gfc_add_modify (&fnblock, comp, tse.expr);
+	      gfc_add_block_to_block (&fnblock, &tse.post);
 	    }
 
 	  if (c->attr.pdt_string)
@@ -10934,7 +10938,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  strlen = fold_build3_loc (input_location, COMPONENT_REF,
 					    TREE_TYPE (strlen),
 					    decl, strlen, NULL_TREE);
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_add_modify (&fnblock, strlen, tse.expr);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  c->ts.u.cl->backend_decl = strlen;
 		}
 	      gfc_free_expr (e);
@@ -10981,17 +10987,21 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
 		  gfc_free_expr (e);
 		  lower = tse.expr;
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_conv_descriptor_lbound_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  lower);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  e = gfc_copy_expr (c->as->upper[i]);
 		  gfc_insert_parameter_exprs (e, pdt_param_list);
 		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
 		  gfc_free_expr (e);
 		  upper = tse.expr;
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_conv_descriptor_ubound_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  upper);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  gfc_conv_descriptor_stride_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  size);
