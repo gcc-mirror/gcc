@@ -3260,29 +3260,12 @@ optimize_unreachable (gimple_stmt_iterator i)
 
   if (flag_sanitize & SANITIZE_UNREACHABLE)
     return false;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      stmt = gsi_stmt (gsi);
-
-      if (is_gimple_debug (stmt))
-       continue;
-
-      if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
-	{
-	  /* Verify we do not need to preserve the label.  */
-	  if (FORCED_LABEL (gimple_label_label (label_stmt)))
-	    return false;
-
-	  continue;
-	}
-
-      /* Only handle the case that __builtin_unreachable is the first statement
-	 in the block.  We rely on DCE to remove stmts without side-effects
-	 before __builtin_unreachable.  */
-      if (gsi_stmt (gsi) != gsi_stmt (i))
-        return false;
-    }
+  gsi = gsi_start_nondebug_after_labels_bb (bb);
+  /* Only handle the case that __builtin_unreachable is the first
+     statement in the block.  We rely on DCE to remove stmts
+     without side-effects before __builtin_unreachable.  */
+  if (*gsi != *i)
+    return false;
 
   ret = false;
   FOR_EACH_EDGE (e, ei, bb->preds)
