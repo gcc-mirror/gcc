@@ -10369,6 +10369,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
 	  && REG_P (SET_DEST (prev_set))
 	  && REG_P (SET_DEST (curr_set))
+	  && REG_P (XEXP (SET_SRC (curr_set), 0))
 	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == curr_dest_regno
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
@@ -10397,6 +10398,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
 	  && REG_P (SET_DEST (prev_set))
 	  && REG_P (SET_DEST (curr_set))
+	  && REG_P (XEXP (SET_SRC (curr_set), 0))
 	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == curr_dest_regno
 	  && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
 	  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
@@ -10420,6 +10422,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 
       if (MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
+	  && REG_P (XEXP (SET_SRC (curr_set), 0))
 	  && REG_P (XEXP (SET_SRC (curr_set), 0))
 	  && REGNO (XEXP (SET_SRC (curr_set), 0)) == prev_dest_regno
 	  && GET_CODE (SET_SRC (prev_set)) == PLUS
@@ -10481,6 +10484,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       if (MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS
+	  && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
 	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
 	{
 	  if (riscv_set_is_add (prev_set))
@@ -10539,8 +10543,8 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && MEM_P (XEXP (SET_SRC (curr_set), 0))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == PLUS
-	  && REG_P (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0),0))
-	  && (REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0),0))
+	  && REG_P (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
+	  && (REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
 	      == prev_dest_regno))
 	{
 	  if (riscv_set_is_adduw (prev_set))
@@ -10672,6 +10676,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS
+	  && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
 	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
 	{
 	  if (dump_file)
@@ -10683,6 +10688,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && MEM_P (SET_SRC (curr_set))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == LO_SUM
+	  && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
 	  && REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == prev_dest_regno)
 	{
 	  if (dump_file)
@@ -10696,6 +10702,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && MEM_P (XEXP (SET_SRC (curr_set), 0))
 	  && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
 	  && (GET_CODE (XEXP (XEXP (SET_SRC (curr_set), 0), 0)) == LO_SUM
+	      && REG_P (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
 	      && (REGNO (XEXP (XEXP (XEXP (SET_SRC (curr_set), 0), 0), 0))
 		  == prev_dest_regno)))
 	{
