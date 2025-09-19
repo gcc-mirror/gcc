@@ -81,8 +81,6 @@
 #define vgetq_lane_u32(__a,  __idx) __arm_vgetq_lane_u32(__a,  __idx)
 #define vgetq_lane_u64(__a,  __idx) __arm_vgetq_lane_u64(__a,  __idx)
 #define sqrshr(__p0, __p1) __arm_sqrshr(__p0, __p1)
-#define sqrshrl(__p0, __p1) __arm_sqrshrl(__p0, __p1)
-#define sqrshrl_sat48(__p0, __p1) __arm_sqrshrl_sat48(__p0, __p1)
 #define sqshl(__p0, __p1) __arm_sqshl(__p0, __p1)
 #define sqshll(__p0, __p1) __arm_sqshll(__p0, __p1)
 #define srshr(__p0, __p1) __arm_srshr(__p0, __p1)
@@ -240,20 +238,6 @@ __arm_vgetq_lane_u64 (uint64x2_t __a, const int __idx)
 {
   __ARM_CHECK_LANEQ (__a, __idx);
   return __a[__ARM_LANEQ(__a,__idx)];
-}
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_sqrshrl (int64_t value, int32_t shift)
-{
-  return __builtin_mve_sqrshrl_sat64_di (value, shift);
-}
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_sqrshrl_sat48 (int64_t value, int32_t shift)
-{
-  return __builtin_mve_sqrshrl_sat48_di (value, shift);
 }
 
 __extension__ extern __inline uint64_t

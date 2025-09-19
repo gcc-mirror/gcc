@@ -1172,6 +1172,8 @@ public:
 enum which_scalar_shift {
   ss_ASRL,
   ss_LSLL,
+  ss_SQRSHRL,
+  ss_SQRSHRL_SAT48,
   ss_UQRSHLL,
   ss_UQRSHLL_SAT48,
 };
@@ -1201,6 +1203,14 @@ public:
       case ss_LSLL:
 	e.args[1] = simplify_gen_subreg (QImode, e.args[1], SImode, 0);
 	code = CODE_FOR_mve_lsll;
+	break;
+
+      case ss_SQRSHRL:
+	code = code_for_mve_sqrshrl_sat_di (SQRSHRL_64);
+	break;
+
+      case ss_SQRSHRL_SAT48:
+	code = code_for_mve_sqrshrl_sat_di (SQRSHRL_48);
 	break;
 
       case ss_UQRSHLL:
@@ -1407,6 +1417,8 @@ namespace arm_mve {
 
 FUNCTION (asrl, mve_function_scalar_shift, (ss_ASRL))
 FUNCTION (lsll, mve_function_scalar_shift, (ss_LSLL))
+FUNCTION (sqrshrl, mve_function_scalar_shift, (ss_SQRSHRL))
+FUNCTION (sqrshrl_sat48, mve_function_scalar_shift, (ss_SQRSHRL_SAT48))
 FUNCTION (uqrshll, mve_function_scalar_shift, (ss_UQRSHLL))
 FUNCTION (uqrshll_sat48, mve_function_scalar_shift, (ss_UQRSHLL_SAT48))
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
