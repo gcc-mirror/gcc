@@ -1842,7 +1842,15 @@ simplify_builtin_memcmp (gimple_stmt_iterator *gsi_p, gcall *stmt)
 	  return true;
 	}
     }
-  return false;
+
+  /* Replace memcmp with memcmp_eq if the above fails. */
+  if (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)) == BUILT_IN_MEMCMP_EQ)
+    return false;
+  if (!(cfun->curr_properties & (PROP_last_full_fold)))
+    return false;
+  gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
+  update_stmt (stmt);
+  return true;
 }
 
 /* Optimizes builtin memchrs for small constant sizes with a const string.
