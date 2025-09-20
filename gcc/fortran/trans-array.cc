@@ -8912,6 +8912,19 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 					  gfc_rank_cst[dim], stride);
 	}
 
+      /* For deferred-length character we need to take the dynamic length
+	 into account for the dataptr offset.  */
+      if (expr->ts.type == BT_CHARACTER
+	  && expr->ts.deferred
+	  && expr->ts.u.cl->backend_decl
+	  && VAR_P (expr->ts.u.cl->backend_decl))
+	{
+	  tree base_type = TREE_TYPE (base);
+	  base = fold_build2_loc (input_location, MULT_EXPR, base_type, base,
+				  fold_convert (base_type,
+						expr->ts.u.cl->backend_decl));
+	}
+
       for (n = loop.dimen; n < loop.dimen + codim; n++)
 	{
 	  from = loop.from[n];
