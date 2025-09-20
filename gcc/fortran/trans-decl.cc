@@ -4831,6 +4831,23 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
     }
 
+  sym = (proc_sym->attr.function
+	 && proc_sym != proc_sym->result) ? proc_sym->result : NULL;
+
+  if (sym && !sym->attr.allocatable && !sym->attr.pointer
+      && sym->ts.type == BT_DERIVED
+      && sym->ts.u.derived
+      && !gfc_has_default_initializer (sym->ts.u.derived)
+      && sym->ts.u.derived->attr.pdt_type)
+    {
+      gfc_init_block (&tmpblock);
+      tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
+				   sym->backend_decl,
+				   sym->as ? sym->as->rank : 0,
+				   sym->param_list);
+      gfc_add_expr_to_block (&tmpblock, tmp);
+      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
+    }
 
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
      should be done here so that the offsets and lbounds of arrays
