@@ -2341,6 +2341,7 @@ public:
     EK_PARTIAL,		/* A partial specialization.  */
     EK_USING,		/* A using declaration (at namespace scope).  */
     EK_NAMESPACE,	/* A namespace.  */
+    EK_TU_LOCAL,	/* A TU-local decl for ADL.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
     EK_EXPLICIT_HWM,
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
@@ -2351,6 +2352,8 @@ public:
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
+  static_assert (EK_EXPLICIT_HWM < (1u << EK_BITS),
+		 "not enough bits reserved for entity_kind");
 
 private:
   /* Placement of bit fields in discriminator.  */
@@ -2375,7 +2378,10 @@ private:
        awkward.  */
     DB_TYPE_SPEC_BIT,		/* Specialization in the type table.  */
     DB_FRIEND_SPEC_BIT,		/* An instantiated template friend.  */
+    DB_HWM,
   };
+  static_assert (DB_HWM <= sizeof(discriminator) * CHAR_BIT,
+		 "not enough bits in discriminator");
 
 public:
   /* The first slot is special for EK_SPECIALIZATIONS it is a
@@ -2700,7 +2706,9 @@ depset::entity_kind_name () const
   /* Same order as entity_kind.  */
   static const char *const names[] =
     {"decl", "specialization", "partial", "using",
-     "namespace", "redirect", "binding"};
+     "namespace", "tu-local", "redirect", "binding"};
+  static_assert (ARRAY_SIZE (names) == EK_EXPLICIT_HWM + 1,
+		 "names must have an entry for every explicit entity_kind");
   entity_kind kind = get_entity_kind ();
   gcc_checking_assert (kind < ARRAY_SIZE (names));
   return names[kind];
@@ -9986,6 +9994,16 @@ trees_out::find_tu_local_decl (tree t)
   return cp_walk_tree_without_duplicates (&t, walker, this);
 }
 
+/* Get the name for TU-local decl T to be used in diagnostics.  */
+
+static tree
+name_for_tu_local_decl (tree t)
+{
+  int flags = (TFF_SCOPE | TFF_DECL_SPECIFIERS);
+  const char *str = decl_as_string (t, flags);
+  return get_identifier (str);
+}
+
 /* Stream out tree node T.  We automatically create local back
    references, which is essentially a single pass lisp
    self-referential structure pretty-printer.  */
@@ -10030,8 +10048,7 @@ trees_out::tree_node (tree t)
 		&& dump ("Writing TU-local entity:%d %C:%N",
 			 tag, TREE_CODE (t), t);
 	    }
-	  /* TODO: Get a more descriptive name?  */
-	  tree_node (DECL_NAME (local_decl));
+	  tree_node (name_for_tu_local_decl (local_decl));
 	  if (state)
 	    state->write_location (*this, DECL_SOURCE_LOCATION (local_decl));
 	  goto done;
@@ -14194,6 +14211,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   gcc_checking_assert (!is_key_order ());
   if (ek == EK_USING)
     gcc_checking_assert (TREE_CODE (decl) == OVERLOAD);
+  if (ek == EK_TU_LOCAL)
+    gcc_checking_assert (DECL_DECLARES_FUNCTION_P (decl));
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     /* The template should have copied these from its result decl.  */
@@ -14394,7 +14413,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   dump (dumper::DEPEND)
     && dump ("%s on %s %C:%N found",
 	     ek == EK_REDIRECT ? "Redirect"
-	     : for_binding ? "Binding" : "Dependency",
+	     : (for_binding || ek == EK_TU_LOCAL) ? "Binding"
+	     : "Dependency",
 	     dep->entity_kind_name (), TREE_CODE (decl), decl);
 
   return dep;
@@ -14565,9 +14585,21 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	   than trying to clear out bindings after the fact.  */
 	return false;
 
+      bool internal_decl = false;
       if (!header_module_p () && data->hash->is_tu_local_entity (decl))
-	/* Ignore TU-local entitites.  */
-	return false;
+	{
+	  /* A TU-local entity.  For ADL we still need to create bindings
+	     for internal-linkage functions attached to a named module.  */
+	  if (DECL_DECLARES_FUNCTION_P (inner)
+	      && DECL_LANG_SPECIFIC (inner)
+	      && DECL_MODULE_ATTACH_P (inner))
+	    {
+	      gcc_checking_assert (!DECL_MODULE_EXPORT_P (inner));
+	      internal_decl = true;
+	    }
+	  else
+	    return false;
+	}
 
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)
@@ -14662,8 +14694,13 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	    OVL_EXPORT_P (decl) = true;
 	}
 
-      depset *dep = data->hash->make_dependency
-	(decl, flags & WMB_Using ? EK_USING : EK_FOR_BINDING);
+      entity_kind ek = EK_FOR_BINDING;
+      if (internal_decl)
+	ek = EK_TU_LOCAL;
+      else if (flags & WMB_Using)
+	ek = EK_USING;
+
+      depset *dep = data->hash->make_dependency (decl, ek);
       if (flags & WMB_Hidden)
 	dep->set_hidden_binding ();
       data->binding->deps.safe_push (dep);
@@ -15114,9 +15151,12 @@ depset::hash::find_dependencies (module_state *module)
 	      walker.begin ();
 	      if (current->get_entity_kind () == EK_USING)
 		walker.tree_node (OVL_FUNCTION (decl));
+	      else if (current->get_entity_kind () == EK_TU_LOCAL)
+		/* We only stream its name and location.  */
+		module->note_location (DECL_SOURCE_LOCATION (decl));
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
-	      else if (item->get_entity_kind () == EK_NAMESPACE)
+	      else if (current->get_entity_kind () == EK_NAMESPACE)
 		{
 		  module->note_location (DECL_SOURCE_LOCATION (decl));
 		  add_namespace_context (current, CP_DECL_CONTEXT (decl));
@@ -15230,6 +15270,12 @@ binding_cmp (const void *a_, const void *b_)
       gcc_checking_assert (!(a_implicit && b_implicit));
       return a_implicit ? -1 : +1;  /* Implicit first.  */
     }
+
+  /* TU-local before non-TU-local.  */
+  bool a_internal = a->get_entity_kind () == depset::EK_TU_LOCAL;
+  bool b_internal = b->get_entity_kind () == depset::EK_TU_LOCAL;
+  if (a_internal != b_internal)
+    return a_internal ? -1 : +1;  /* Internal first.  */
 
   /* Hidden before non-hidden.  */
   bool a_hidden = a->is_hidden ();
@@ -15565,12 +15611,15 @@ sort_cluster (depset::hash *original, depset *scc[], unsigned size)
 	      use_lwm--;
 	      break;
 	    }
-	  /* We must have copied a using, so move it too.  */
+	  /* We must have copied a using or TU-local, so move it too.  */
 	  dep = scc[ix];
-	  gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING);
+	  gcc_checking_assert
+	    (dep->get_entity_kind () == depset::EK_USING
+	     || dep->get_entity_kind () == depset::EK_TU_LOCAL);
 	  /* FALLTHROUGH  */
 
 	case depset::EK_USING:
+	case depset::EK_TU_LOCAL:
 	  if (--use_lwm != ix)
 	    {
 	      scc[ix] = scc[use_lwm];
@@ -16570,6 +16619,7 @@ enum ct_bind_flags
   cbf_export = 0x1,	/* An exported decl.  */
   cbf_hidden = 0x2,	/* A hidden (friend) decl.  */
   cbf_using = 0x4,	/* A using decl.  */
+  cbf_internal = 0x8,	/* A TU-local decl.  */
 };
 
 /* DEP belongs to a different cluster, seed it to prevent
@@ -16641,7 +16691,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		gcc_checking_assert (dep->is_import ()
 				     || TREE_VISITED (dep->get_entity ())
 				     || (dep->get_entity_kind ()
-					 == depset::EK_USING));
+					 == depset::EK_USING)
+				     || (dep->get_entity_kind ()
+					 == depset::EK_TU_LOCAL));
 	      }
 	  }
 	  break;
@@ -16654,6 +16706,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* FALLTHROUGH  */
 
 	case depset::EK_USING:
+	case depset::EK_TU_LOCAL:
 	  gcc_checking_assert (!b->is_import ()
 			       && !b->is_unreached ());
 	  dump (dumper::CLUSTER)
@@ -16726,7 +16779,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		depset *dep = b->deps[jx];
 		tree bound = dep->get_entity ();
 		unsigned flags = 0;
-		if (dep->get_entity_kind () == depset::EK_USING)
+		if (dep->get_entity_kind () == depset::EK_TU_LOCAL)
+		  flags |= cbf_internal;
+		else if (dep->get_entity_kind () == depset::EK_USING)
 		  {
 		    tree ovl = bound;
 		    bound = OVL_FUNCTION (bound);
@@ -16752,7 +16807,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		gcc_checking_assert (DECL_P (bound));
 
 		sec.i (flags);
-		sec.tree_node (bound);
+		if (flags & cbf_internal)
+		  {
+		    sec.tree_node (name_for_tu_local_decl (bound));
+		    write_location (sec, DECL_SOURCE_LOCATION (bound));
+		  }
+		else
+		  sec.tree_node (bound);
 	      }
 
 	    /* Terminate the list.  */
@@ -16761,6 +16822,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_USING:
+	case depset::EK_TU_LOCAL:
 	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			   TREE_CODE (decl), decl);
 	  break;
@@ -16878,6 +16940,7 @@ module_state::read_cluster (unsigned snum)
 	    tree name = sec.tree_node ();
 	    tree decls = NULL_TREE;
 	    tree visible = NULL_TREE;
+	    tree internal = NULL_TREE;
 	    tree type = NULL_TREE;
 	    bool dedup = false;
 	    bool global_p = is_header ();
@@ -16893,6 +16956,23 @@ module_state::read_cluster (unsigned snum)
 		if ((flags & cbf_hidden)
 		    && (flags & (cbf_using | cbf_export)))
 		  sec.set_overrun ();
+		if ((flags & cbf_internal)
+		    && flags != cbf_internal)
+		  sec.set_overrun ();
+
+		if (flags & cbf_internal)
+		  {
+		    tree name = sec.tree_node ();
+		    location_t loc = read_location (sec);
+		    if (sec.get_overrun ())
+		      break;
+
+		    tree decl = make_node (TU_LOCAL_ENTITY);
+		    TU_LOCAL_ENTITY_NAME (decl) = name;
+		    TU_LOCAL_ENTITY_LOCATION (decl) = loc;
+		    internal = tree_cons (NULL_TREE, decl, internal);
+		    continue;
+		  }
 
 		tree decl = sec.tree_node ();
 		if (sec.get_overrun ())
@@ -16987,7 +17067,7 @@ module_state::read_cluster (unsigned snum)
 		  }
 	      }
 
-	    if (!decls)
+	    if (!decls && !internal)
 	      sec.set_overrun ();
 
 	    if (sec.get_overrun ())
@@ -16996,7 +17076,7 @@ module_state::read_cluster (unsigned snum)
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod, global_p,
 				     is_module () || is_partition (),
-				     decls, type, visible))
+				     decls, type, visible, internal))
 	      sec.set_overrun ();
 	  }
 	  break;

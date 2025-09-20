@@ -272,7 +272,7 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
--Wno-template-id-cdtor  -Wtemplate-names-tu-local
+-Wno-template-id-cdtor  -Wtemplate-names-tu-local -Wno-external-tu-local
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile}
 
@@ -4758,6 +4758,32 @@ This warning attempts to detect cases where this might occur.
 The presence of an explicit instantiation silences the warning.
 
 This flag is enabled by @option{-Wextra}.
+
+@opindex Wexternal-tu-local
+@opindex Wno-external-tu-local
+@item -Wno-external-tu-local
+Warn when naming a TU-local entity outside of the translation unit it
+was declared in.  Such declarations will be ignored during name lookup.
+This can occur when performing ADL from a template declared in the same
+TU as the internal function:
+
+@smallexample
+export module M;
+template <typename T> void foo(T t) @{
+  bar(t);
+@}
+struct S @{@} s;
+static void bar(S) @{@}  // internal linkage
+
+// instantiating foo(s) from outside this TU can see ::bar,
+// but naming it there is ill-formed.
+@end smallexample
+
+This can be worked around by making @code{bar} attached to the global
+module, using @code{extern "C++"}.
+
+This warning is enabled by default, and is upgraded to an error by
+@option{-pedantic-errors}.
 
 @opindex Wterminate
 @opindex Wno-terminate

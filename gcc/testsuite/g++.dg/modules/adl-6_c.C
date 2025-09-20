@@ -1,5 +1,5 @@
 // PR c++/117658
-// { dg-additional-options "-fmodules" }
+// { dg-additional-options "-fmodules -Wno-error=external-tu-local" }
 
 import N;
 
@@ -22,7 +22,8 @@ void test() {
 
   apply_err(x);  // error: R::g has internal linkage and cannot be used outside N
   // { dg-message "here" "" { target *-*-* } .-1 }
-  // { dg-error "'g'" "" { target *-*-* } 0 }
+  // { dg-warning "lookup of 'R::g'" "" { target *-*-* } 0 }
+  // { dg-error "'g' was not declared" "" { target *-*-* } 0 }
 
   auto y = make_Y();
   f(y);  // OK, I::B::f and I::A::Y have matching innermost non-inline namespace

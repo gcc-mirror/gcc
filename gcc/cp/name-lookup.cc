@@ -353,6 +353,8 @@ append_imported_binding_slot (tree *slot, tree name, unsigned ix)
 
       tree new_vec = make_binding_vec (name, want);
       BINDING_VECTOR_NUM_CLUSTERS (new_vec) = have + 1;
+      BINDING_VECTOR_INTERNAL_DECLS (new_vec)
+	= BINDING_VECTOR_INTERNAL_DECLS (*slot);
       BINDING_VECTOR_GLOBAL_DUPS_P (new_vec)
 	= BINDING_VECTOR_GLOBAL_DUPS_P (*slot);
       BINDING_VECTOR_PARTITION_DUPS_P (new_vec)
@@ -1304,10 +1306,34 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports,
 		      }
 
 		    /* For lookups on the instantiation path we can see any
-		       module-linkage declaration; otherwise we should only
-		       see exported decls.  */
+		       declarations visible at any point on the path;
+		       otherwise we should only see exported decls.  */
 		    if (on_inst_path)
-		      bind = STAT_DECL (bind);
+		      {
+			/* If there are any internal functions visible, naming
+			   them outside that module is ill-formed.  */
+			auto_diagnostic_group d;
+			if (MODULE_BINDING_INTERNAL_DECLS_P (bind)
+			    && pedwarn (input_location, OPT_Wexternal_tu_local,
+					"overload set for argument-dependent "
+					"lookup of %<%D::%D%> in module %qs "
+					"contains TU-local entities",
+					scope, name, module_name (mod, false)))
+			  {
+			    tree *tu_locals
+			      = BINDING_VECTOR_INTERNAL_DECLS (val)->get (mod);
+			    gcc_checking_assert (tu_locals && *tu_locals);
+			    for (tree t = *tu_locals; t; t = TREE_CHAIN (t))
+			      {
+				tree decl = TREE_VALUE (t);
+				inform (TU_LOCAL_ENTITY_LOCATION (decl),
+					"ignoring %qD declared here "
+					"with internal linkage",
+					TU_LOCAL_ENTITY_NAME (decl));
+			      }
+			  }
+			bind = STAT_DECL (bind);
+		      }
 		    else
 		      bind = STAT_VISIBLE (bind);
 		  }
@@ -4427,18 +4453,21 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 /* An import of MODULE is binding NS::NAME.  There should be no
    existing binding for >= MODULE.  GLOBAL_P indicates whether the
    bindings include global module entities.  PARTITION_P is true if
-   it is part of the current module. VALUE and TYPE are the value
-   and type bindings. VISIBLE are the value bindings being exported.  */
+   it is part of the current module.  VALUE and TYPE are the value
+   and type bindings.  VISIBLE are the value bindings being exported.
+   INTERNAL is a TREE_LIST of any TU-local names visible for ADL.  */
 
 bool
 set_module_binding (tree ns, tree name, unsigned mod, bool global_p,
-		    bool partition_p, tree value, tree type, tree visible)
+		    bool partition_p, tree value, tree type, tree visible,
+		    tree internal)
 {
-  if (!value)
+  if (!value && !internal)
     /* Bogus BMIs could give rise to nothing to bind.  */
     return false;
 
-  gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
+  gcc_assert (!value
+	      || TREE_CODE (value) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (value));
   gcc_checking_assert (mod);
 
@@ -4450,13 +4479,24 @@ set_module_binding (tree ns, tree name, unsigned mod, bool global_p,
     return false;
 
   tree bind = value;
-  if (type || visible != bind || partition_p || global_p)
+  if (type || visible != bind || internal || partition_p || global_p)
     {
       bind = stat_hack (bind, type);
       STAT_VISIBLE (bind) = visible;
       if ((partition_p && TREE_PUBLIC (ns))
 	  || (type && DECL_MODULE_EXPORT_P (type)))
 	STAT_TYPE_VISIBLE_P (bind) = true;
+    }
+
+  /* If this has internal declarations, track them for diagnostics.  */
+  if (internal)
+    {
+      if (!BINDING_VECTOR_INTERNAL_DECLS (*slot))
+	BINDING_VECTOR_INTERNAL_DECLS (*slot)
+	  = module_tree_map_t::create_ggc ();
+      bool existed = BINDING_VECTOR_INTERNAL_DECLS (*slot)->put (mod, internal);
+      gcc_checking_assert (!existed);
+      MODULE_BINDING_INTERNAL_DECLS_P (bind) = true;
     }
 
   /* Note if this is this-module and/or global binding.  */

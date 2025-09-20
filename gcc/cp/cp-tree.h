@@ -1856,7 +1856,8 @@ struct GTY(()) tree_tu_local_entity {
   location_t loc;
 };
 
-/* The name of a translation-unit-local entity.  */
+/* The human-readable name of a translation-unit-local entity as
+   an IDENTIFIER_NODE.  */
 #define TU_LOCAL_ENTITY_NAME(NODE) \
   (((struct tree_tu_local_entity *)TU_LOCAL_ENTITY_CHECK (NODE))->name)
 

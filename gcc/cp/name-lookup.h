@@ -142,15 +142,23 @@ struct GTY(()) binding_cluster
 #define BINDING_VECTOR_CLUSTER(NODE,IX) \
   (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->vec[IX])
 
+struct module_tree_map_traits
+  : simple_hashmap_traits<int_hash<unsigned, 0>, tree> {};
+typedef hash_map<unsigned, tree, module_tree_map_traits> module_tree_map_t;
+
 struct GTY(()) tree_binding_vec {
   struct tree_base base;
   tree name;
+  module_tree_map_t *internal_decls;
   binding_cluster GTY((length ("%h.base.u.dependence_info.base"))) vec[1];
 };
 
 /* The name of a module vector.  */
 #define BINDING_VECTOR_NAME(NODE) \
   (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->name)
+/* A collection of internal functions for ADL in this binding.  */
+#define BINDING_VECTOR_INTERNAL_DECLS(NODE) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->internal_decls)
 
 /* tree_binding_vec does uses  base.u.dependence_info.base field for
    length.  It does not have lang_flag etc available!  */
@@ -165,6 +173,11 @@ struct GTY(()) tree_binding_vec {
    entity.  */
 #define BINDING_VECTOR_PARTITION_DUPS_P(NODE) \
   (BINDING_VECTOR_CHECK (NODE)->base.volatile_flag)
+
+/* True if the binding slot has internal-linkage functions that should
+   cause ADL to error.  */
+#define MODULE_BINDING_INTERNAL_DECLS_P(NODE) \
+  (OVERLOAD_CHECK (NODE)->base.private_flag)
 
 /* These two flags indicate the provenence of the bindings on this
    particular vector slot.  We can of course determine this from slot
@@ -491,7 +504,8 @@ extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				bool global_p, bool partition_p,
-				tree value, tree type, tree visible);
+				tree value, tree type, tree visible,
+				tree internal);
 extern void add_module_namespace_decl (tree ns, tree decl);
 
 enum WMB_Flags
