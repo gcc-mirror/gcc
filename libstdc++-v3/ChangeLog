@@ -1,3 +1,33 @@
+2025-09-19  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119744
+	* include/bits/version.def: Redefine __cpp_lib_bind_front etc.
+	* include/bits/version.h: Ditto.
+	* include/std/functional: Add new bind_front etc. overloads
+	* testsuite/20_util/function_objects/bind_back/1.cc:
+	Check plumbing better
+	* testsuite/20_util/function_objects/bind_back/nttp.cc: New test.
+	* testsuite/20_util/function_objects/bind_back/nttp_neg.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/1.cc:
+	Check plumbing better
+	* testsuite/20_util/function_objects/bind_front/nttp.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/nttp_neg.cc: New test.
+	* testsuite/20_util/function_objects/not_fn/nttp.cc: New test.
+	* testsuite/20_util/function_objects/not_fn/nttp_neg.cc: New test.
+	* testsuite/20_util/headers/functional/synopsis.cc: New decls.
+
+2025-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h: Remove unused <iomanip> header.
+	(operator<<): Constrain overload for chrono::local_time.
+	* testsuite/std/time/clock/local/io.cc: Check constraints.
+
+2025-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (start_lifetime_as): Move adjacent to
+	other C++23 macros.
+	* include/bits/version.h: Regenerate.
+
 2025-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106658

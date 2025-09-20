@@ -1,3 +1,228 @@
+2025-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (create_var_decl): Add LINKONCE_FLAG boolean
+	parameter.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Adjust calls to
+	create_var_decl and create_subprog_decl.
+	(elaborate_expression_1): Likewise.
+	* gcc-interface/trans.cc (gigi): Likewise.
+	(build_raise_check): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(create_temporary): Likewise.
+	(Exception_Handler_to_gnu): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(use_alias_for_thunk_p): Return false for a one-only target.
+	* gcc-interface/utils.cc (maybe_pad_type): Adjust call to
+	create_var_decl.
+	(create_var_decl): Add LINKONCE_FLAG boolean parameter.
+	(create_subprog_decl): Likewise.
+
+2025-09-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_EXTENDED_POINTER_P): New.
+	(TYPE_IS_EXTENDED_POINTER_P): New.
+	(TYPE_EXTENDED_UNCONSTRAINED_ARRAY): New.
+	(SET_TYPE_EXTENDED_UNCONSTRAINED_ARRAY): New.
+	(TYPE_DUMMY_EXT_POINTER_TO): New.
+	(SET_TYPE_DUMMY_EXT_POINTER_TO): New.
+	* gcc-interface/decl.cc (get_extended_unconstrained_array): New.
+	(gnat_to_gnu_entity): Handle extended access type.
+	(get_unpadded_extended_type): New.
+	(gnat_to_gnu_component_type): Handle extended access type.
+	(build_template_type): New.
+	(gnat_to_gnu_field): Handle extended access type.
+	(validate_size): Likewise.
+	(set_rm_size): Likewise.
+	(copy_and_substitute_in_layout): Likewise.
+	(rm_size): Likewise.
+	* gcc-interface/gigi.h (get_unpadded_extended_type): New.
+	(build_template_type): New.
+	(build_dummy_unc_pointer_types_ext): New.
+	(finish_extended_pointer_type): New.
+	(build_unc_object_type_from_ptr): Rename first parameter.
+	* gcc-interface/misc.cc (gnat_print_type): Handle extended access type.
+	* gcc-interface/trans.cc (Identifier_to_gnu): Likewise.
+	(Attribute_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.cc (convert_to_fat_pointer): Assert if converting an
+	extended pointer.
+	(build_dummy_unc_pointer_types_ext): New.
+	(finish_extended_pointer_type): New.
+	(finish_record_type): Handle extended access type.
+	(build_unc_object_type_from_ptr): Likewise.
+	(convert_to_extended_pointer): New.
+	(convert): Handle extended access type.
+	(gnat_pushdecl): Likewise.
+	(maybe_pad_type): Likewise.
+	* gcc-interface/utils2.cc (build_unary_op): Likewise.
+	(build_binary_op): Likewise.
+	(build_allocator): Likewise.
+	(gnat_save_expr): Likewise.
+	(gnat_protect_expr): Likewise.
+	(gnat_stabilize_reference_1): Likewise.
+
+2025-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Bail out if the prefix
+	has Void_Type.
+
+2025-09-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb (Analyze_User_Defined_Binary_Op): Remove declare block.
+
+2025-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst (Structural Generic
+	Instantiation): New entry
+	* einfo.ads (Is_Link_Once): New flag defined in entities.
+	* sinfo.ads (Is_Structural): New flag defined in instantiations.
+	* gen_il-fields.ads (Opt_Field_Enum): Add Is_Link_Once and
+	Is_Structural.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Add Is_Link_Once
+	semantic flag.
+	* gen_il-gen-gen_nodes.adb (N_Generic_Instantiation): Move up
+	Parent_Spec field and add Is_Structural semantic flag.
+	* frontend.adb: Add with clause for Sem_Ch12.
+	(Frontend): After analysis is complete and bodies are instantiated,
+	call Sem_Ch12.Mark_Link_Once on the declarations of the main unit.
+	* par.adb (P_Qualified_Simple_Name): Delete.
+	(P_Qualified_Simple_Name_Resync): Likewise
+	(P_Exception_Name): New function declaration.
+	(P_Label_Name): Likewise.
+	(P_Loop_Name): Likewise.
+	(P_Generic_Unit_Name): Likewise.
+	(P_Library_Unit_Name): Likewise.
+	(P_Package_Name): Likewise.
+	(P_Parent_Unit_Name): Likewise.
+	(P_Subtype_Name): Likewise.
+	(P_Subtype_Name_Resync): Likewise.
+	* par-ch3.adb (P_Subtype_Mark_Resync): Replace call to
+	P_Qualified_Simple_Name_Resync by P_Subtype_Name_Resync.
+	(P_Identifier_Declarations): Replace call to
+	P_Qualified_Simple_Name_Resync by P_Exception_Name.
+	(P_Derived_Type_Def_Or_Private_Ext_Decl): Replace call to
+	P_Qualified_Simple_Name by P_Subtype_Name.
+	(P_Interface_Type_Definition): Replace calls to
+	P_Qualified_Simple_Name by P_Subtype_Name.
+	* par-ch4.adb (P_Reduction_Attribute_Reference): Move around and
+	change name of parameter.
+	(P_Name): Document new grammar rule and make a couple of tweaks.
+	(P_Exception_Name): New function.
+	(P_Label_Name): Likewise.
+	(P_Loop_Name): Likewise.
+	(P_Generic_Unit_Name): Likewise.
+	(P_Library_Unit_Name): Likewise.
+	(P_Package_Name): Likewise.
+	(P_Parent_Unit_Name): Likewise.
+	(P_Subtype_Name): Likewise.
+	(P_Subtype_Name_Resync): Likewise.
+	(P_Qualified_Simple_Name): Rename into...
+	(P_Simple_Name): ...this.
+	(P_Qualified_Simple_Name_Resync): Rename into...
+	(P_Simple_Name_Resync): ...this.  Accept left parenthesis and
+	dot as name extensions.
+	(P_Allocator): Replace call to P_Qualified_Simple_Name_Resync
+	by P_Subtype_Name_Resync.
+	* par-ch5.adb (P_Goto_Statement): Replace call to
+	P_Qualified_Simple_Name by P_Label_Name.
+	(Parse_Loop_Flow_Statement): Replace call to
+	P_Qualified_Simple_Name by P_Loop_Name.
+	* par-ch6.adb (P_Subprogram): Replace call to
+	P_Qualified_Simple_Name by P_Generic_Unit_Name.
+	* par-ch7.adb (P_Package): Replace calls to
+	P_Qualified_Simple_Name by P_Package_Name and P_Generic_Unit_Name.
+	* par-ch8.adb (P_Use_Package_Clause): Replace calls to
+	P_Qualified_Simple_Name by P_Package_Name.
+	* par-ch9.adb (P_Task): Replace call to
+	P_Qualified_Simple_Name by P_Subtype_Name.
+	(P_Protected): Likewise.
+	* par-ch10.adb (P_Context_Clause): Replace call to
+	P_Qualified_Simple_Name by P_Library_Unit_Name.
+	(P_Subunit): Replace call to P_Qualified_Simple_Name by
+	P_Parent_Unit_Name.
+	* par-ch12.adb (P_Generic): Replace call to
+	P_Qualified_Simple_Name by P_Generic_Unit_Name.
+	(P_Formal_Derived_Type_Definition): Replace call to
+	P_Qualified_Simple_Name by P_Subtype_Name.
+	(P_Formal_Package_Declaration): Replace call to
+	P_Qualified_Simple_Name by P_Generic_Unit_Name.
+	* sem_ch4.adb: Add with and use clauses for Sem_Ch12.
+	(Analyze_Call): Accept implicit instantiations with -gnatX0.
+	(Analyze_Indexed_Component_Form): Likewise.
+	* sem_ch8.adb (Analyze_Use_Package): Add guard before inserting
+	a with clause automatically when there is a use clause.
+	(Check_In_Previous_With_Clause): Retrieve original names.
+	(Check_Library_Unit_Renaming): Deal with structural instances.
+	(End_Use_Type): Minor tweak.
+	* sem_ch10.adb (Analyze_With_Clause): Remove useless test and
+	call Defining_Entity_Of_Instance.
+	* sem_ch12.ads (Build_Structural_Instantiation): New function.
+	(Mark_Link_Once): New procedure.
+	* sem_ch12.adb: Add with and use clauses for Exp_Dbug.
+	(Analyze_Associations): Add support for structural instantiations.
+	(Analyze_Package_Instantiation): Likewise.
+	(Analyze_Subprogram_Instantiation): Likewise.
+	(Analyze_Structural_Associations): New procedure.
+	(Need_Subprogram_Instance_Body): Return True for instantiation is
+	in the auxiliary declarations of the main unit.
+	(Build_Structural_Instantiation): New function.
+	(Mark_Link_Once): New procedure.
+	* sem_util.ads (Add_Local_Declaration): New procedure.
+	(Defining_Entity_Of_Instance): New function.
+	* sem_util.adb (Add_Local_Declaration): New procedure.
+	(Defining_Entity_Of_Instance): New function.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-19  Ronan Desplanques  <desplanques@adacore.com>
+
+	* aspects.ads: Fix comment.
+
+2025-09-19  Ronan Desplanques  <desplanques@adacore.com>
+
+	* aspects.ads: Remove comment.
+
+2025-09-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/s-putima.ads (Ext_Access_Pointer): New.
+	(Put_Image_Extended_Access_Pointer): New.
+	* libgnat/s-putima.adb (Ext_Acc_Instance): New.
+	(Put_Image_Extended_Access_Pointer): New.
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Set value for
+	RE_Put_Image_Extended_Access_Pointer.
+	* exp_put_image.adb (Build_Elementary_Put_Image_Call): Handle extended
+	access.
+
+2025-09-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* fe.h (Is_Extended_Access_Type): Add C bindings.
+	* sem_util.ads (Is_Extended_Access_Type): Add comment that any
+	change to the function must take care of the C binding.
+
+2025-09-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* layout.adb (Layout_Type): Adjust comment and code extended
+	accesses.
+
+2025-09-19  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Add_Tag): Remove superfluous statements.
+
+2025-09-19  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Interunit_Ref_OK): Treat a subunit like a body.
+	(Build_And_Insert_Type_Attr_Subp): When climbing up the
+	tree, go from an N_Subunit node to its stub (instead of to the
+	subunit's N_Compilation_Unit node).
+
+2025-09-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): In the case of a VADS-specific
+	size attribute, only fold to the object size when the Esize field
+	is known.
+
 2025-09-16  Ronan Desplanques  <desplanques@adacore.com>
 
 	* exp_strm.ads (Get_Primitives): New function.

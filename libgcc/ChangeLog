@@ -1,3 +1,8 @@
+2025-09-19  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/save-restore.S: Only save/restore the registers
+	which are really used for ILP32E/LP64.
+
 2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/libgcc-eabi.ver: Add __pruabi_softmpyi and

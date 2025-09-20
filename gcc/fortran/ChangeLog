@@ -1,3 +1,10 @@
+2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-array.cc (structure_alloc_comps): Add the pre and post
+	blocks to 'fnblock' for all the evaluations of parameterized
+	expressions in PDT component allocatation.
+
 2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/114815

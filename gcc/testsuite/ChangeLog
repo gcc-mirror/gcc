@@ -1,3 +1,74 @@
+2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* gfortran.dg/pdt_48.f03: New test.
+
+2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/errors/fail/testbit2.mod: Rewrite.
+	* gm2/iso/run/pass/shift4.mod: Rewrite adding more internal
+	tests.
+	* gm2/iso/run/pass/testsystem.mod (FindFirstElement): Add
+	bounds check.
+	* gm2/sets/run/pass/multisetrotate4.mod: Add more runtime
+	error messages.
+	* gm2/sets/run/pass/simplepacked.mod (testpset): Correct
+	setname.
+	* lib/gm2.exp (gm2_init_minx): Add -fno-wideset.
+	* gm2/iso/run/pass/assigncons.mod: New test.
+	* gm2/iso/run/pass/constructor3.mod: New test.
+	* gm2/iso/run/pass/proc_test.mod: New test.
+	* gm2/iso/run/pass/simplelarge2.mod: New test.
+	* gm2/iso/run/pass/simplelarge3.mod: New test.
+	* gm2/iso/run/pass/simplelarge4.mod: New test.
+	* gm2/pimlib/wideset/run/pass/bitset.mod: New test.
+	* gm2/pimlib/wideset/run/pass/bitset2.mod: New test.
+	* gm2/pimlib/wideset/run/pass/colorset.mod: New test.
+	* gm2/pimlib/wideset/run/pass/colorset2.mod: New test.
+	* gm2/pimlib/wideset/run/pass/colorset3.mod: New test.
+	* gm2/pimlib/wideset/run/pass/highbit.mod: New test.
+	* gm2/pimlib/wideset/run/pass/highbit2.mod: New test.
+	* gm2/sets/run/pass/multisetrotate5.mod: New test.
+	* gm2/sets/run/pass/setcard.mod: New test.
+	* gm2/sets/run/pass/setincl.mod: New test.
+
+2025-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121983
+	* gcc.target/riscv/pr121983.c: New test.
+
+2025-09-19  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/shuffle-slide-run.h:
+	New test.
+	* gcc.target/riscv/rvv/autovec/shuffle-slidedown-run.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/shuffle-slideup-run.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slide.h:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slidedown-1.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slidedown-2.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slidedown-perm.h:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slideup-1.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slideup-2.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slideup-perm.h:
+	Likewise.
+
+2025-09-19  Jim Lin  <jim@andestech.com>
+
+	* gcc.target/riscv/save-restore-cfi-3.c: New test.
+	* gcc.target/riscv/pr120811.c: New file.
+
+2025-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/bclr-lowest-set-bit-1.c: New test.
+
 2025-09-18  Joseph Myers  <josmyers@redhat.com>
 
 	* gcc.dg/c2y-anon-init-1.c, gcc.dg/c2y-incomplete-2.c:

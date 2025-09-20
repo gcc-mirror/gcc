@@ -1,3 +1,148 @@
+2025-09-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* ira.cc (setup_reg_equiv): Retain function invariant
+	equivalences.
+
+2025-09-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (optimize_aggr_zeroprop): Take gimple*
+	instead of iterator.
+	(optimize_agr_copyprop): Likewise.
+	(simplify_builtin_call): Update call to optimize_aggr_zeroprop.
+	(pass_forwprop::execute): Update calls to optimize_aggr_zeroprop
+	and optimize_agr_copyprop.
+
+2025-09-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (optimize_aggr_zeroprop_1): Change return type
+	to void.
+	(optimize_aggr_zeroprop): Likewise.
+	(optimize_agr_copyprop_1): Likewise.
+	(optimize_agr_copyprop_arg): Likewise.
+	(optimize_agr_copyprop): Likewise.
+	(simplify_builtin_call): Handle update of the return type
+	of optimize_aggr_zeroprop.
+	(pass_forwprop::execute): Likewise and optimize_agr_copyprop.
+
+2025-09-19  Michael Eager  <eager@eagercon.com>
+
+	PR target/118280
+	* config/microblaze/iterators.md: New.
+	* config/microblaze/microblaze-protos.h: Add
+	microblaze_subword_address.
+	* config/microblaze/microblaze.cc: Ditto.
+	* config/microblaze/microblaze.md: constants: Add UNSPECV_CAS_BOOL,
+	UNSPECV_CAS_MEM, UNSPECV_CAS_VAL, UNSPECV_ATOMIC_FETCH_OP
+	type: add atomic
+	* config/microblaze/sync.md: Add atomic_fetch_<atomic_optab>si
+	atomic_test_and_set
+
+2025-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.cc (estimate_edge_devirt_benefit): Handle speculative
+	edges correctly.
+	(estimate_edge_size_and_time): Even when not collecting hints,
+	devirtualization affects function size.
+	(estimate_calls_size_and_time): Do not use tables when devirtualization
+	is possible.
+
+2025-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.cc (cgraph_edge::make_direct): Do not ICE when there are
+	multiple speculations to comptaible targets
+	(cgraph_edge::combined_sreal_frequency): New member function.
+	* cgraph.h (cgraph_edge::combined_sreal_frequency): Declare.
+	* ipa-cp.cc (devirtualization_time_bonus): Return sreal; consider
+	profile.
+	(estimate_local_effects): Likewise.
+
+2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121856
+	* doc/gm2.texi (Compiler options): New item -fwideset.
+
+2025-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/121983
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Make sure
+	object is a REG before asking for its REGNO.  Fix a trivial
+	whitespace nit.
+
+2025-09-19  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc
+	(shuffle_slide_patterns): Cover more permutations.
+
+2025-09-19  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/riscv.cc (riscv_compute_frame_info): Remove the
+	dedicated calculation for RVE.
+
+2025-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config.gcc (riscv*); Add riscv-bclr-lowest-set-bit.o to extra_objs.
+	* config/riscv/riscv-bclr-lowest-set-bit.cc: New file.
+	* config/riscv/riscv-passes.def: Add new pass after combine.
+	* config/riscv/riscv-protos.h (make_pass_bclr_lowest_set_bit): Add
+	prototype.
+	* config/riscv/t-riscv: Add rules to build riscv-bclr-lowest-set-bit.o.
+
+2025-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.cc (compute_antic_aux): Remove dead code.
+
+2025-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::store_count): Remove.
+	(DR_GROUP_STORE_COUNT): Likewise.
+	* tree-vect-stmts.cc (vect_transform_stmt): Remove non-SLP
+	path.
+
+2025-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_num_copies): Remove unused
+	overload.  Remove defaulted vectype argument and always
+	use the vector type of the SLP node.
+	* tree-vect-loop.cc (vect_reduction_update_partial_vector_usage):
+	Adjust.
+	(vectorizable_lane_reducing): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_nonlinear_induction): Likewise.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Likewise.
+
+2025-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vec_stmts_size): Remove.
+	(SLP_TREE_NUMBER_OF_VEC_STMTS): Likewise.
+	* tree-vect-loop.cc (vectorizable_reduction): Adjust.
+	(vect_transform_cycle_phi): Likewise.
+	(vect_transform_lc_phi): Likewise.
+	(vectorizable_recurr): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Do not set
+	SLP_TREE_NUMBER_OF_VEC_STMTS.
+	(vect_slp_analyze_node_operations_1): Likewise.
+	(vect_slp_analyze_node_operations): Likewise.
+	(vect_prologue_cost_for_slp): Adjust.
+	(vect_create_constant_vectors): Likewise.
+	(vect_get_slp_vect_def): Likewise.
+	(vect_transform_slp_perm_load_1): Likewise.
+	(vectorizable_slp_permutation_1): Likewise.
+	(vect_schedule_slp_node): Likewise.
+	(vectorize_slp_instance_root_stmt): Likewise.
+	* tree-vect-stmts.cc (vect_model_simple_cost): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_early_exit): Likewise.
+
 2025-09-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostics/client-data-hooks.h (client_data_hooks::dump): New.
