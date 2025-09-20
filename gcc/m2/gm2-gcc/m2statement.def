@@ -31,7 +31,7 @@ FROM SYSTEM IMPORT ADDRESS ;
    IfExprJump - if expr then jump to the label.
 *)
 
-PROCEDURE IfExprJump (location: location_t; exp: tree; label: ADDRESS) ;
+PROCEDURE IfExprJump (location: location_t; exp: tree; label: CharStar) ;
 
 
 (*

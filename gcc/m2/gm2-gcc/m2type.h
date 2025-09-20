@@ -183,7 +183,7 @@ EXTERN tree m2type_BuildStartEnumeration (location_t location, char *name,
                                           bool ispacked);
 EXTERN tree m2type_BuildEndEnumeration (location_t location, tree enumtype,
                                         tree enumvalues);
-EXTERN tree m2type_BuildEnumerator (location_t location, const char *name,
+EXTERN tree m2type_BuildEnumerator (location_t location, char *name,
                                     tree value, tree *enumvalues);
 EXTERN tree m2type_BuildPointerType (tree totype);
 EXTERN tree m2type_BuildConstPointerType (tree totype);

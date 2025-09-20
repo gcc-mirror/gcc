@@ -2455,7 +2455,7 @@ BEGIN
                tmp := BuildLSL (location, tmp, bits, FALSE)
             END ;
             bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
-            val := BuildLogicalOrAddress (location, val, tmp, FALSE)
+            val := BuildLogicalOrAddress (location, val, tmp)
          END
       END ;
       SubQuad (n) ;
@@ -2548,7 +2548,7 @@ BEGIN
                   tmp := BuildLSL (location, tmp, bits, FALSE)
                END ;
 	       bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
-               val := BuildLogicalOrAddress (location, val, tmp, FALSE)
+               val := BuildLogicalOrAddress (location, val, tmp)
             END
          END ;
          SubQuad (n) ;
@@ -5762,6 +5762,7 @@ PROCEDURE FromM2WIDESETImport (tokenno: CARDINAL; name: Name) : CARDINAL ;
 VAR
    sym, module: CARDINAL ;
 BEGIN
+   sym := NulSym ;
    IF GetWideset ()
    THEN
       module := MakeDefinitionSource (tokenno, MakeKey ("M2WIDESET")) ;

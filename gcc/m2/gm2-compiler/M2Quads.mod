@@ -3836,7 +3836,7 @@ END BuildAssignConstant ;
                             A variable maybe an L value so it will require dereferencing.
 *)
 
-PROCEDURE BuildAssignmentBoolean (becomesTokNo: CARDINAL; checkTypes, checkOverflow: BOOLEAN;
+PROCEDURE BuildAssignmentBoolean (becomesTokNo: CARDINAL; checkOverflow: BOOLEAN;
                                   t, f: CARDINAL; Des: CARDINAL; destok: CARDINAL) ;
 BEGIN
       PutVarConditional (Des, TRUE) ;  (* Des will contain the result of a boolean relop.  *)
@@ -3885,7 +3885,7 @@ BEGIN
       PopTtok (Des, destok) ;
       IF IsVar (Des) OR IsConstVar (Des)
       THEN
-         BuildAssignmentBoolean (becomesTokNo, checkTypes, checkOverflow,
+         BuildAssignmentBoolean (becomesTokNo, checkOverflow,
                                  t, f, Des, destok)
       ELSE
          MetaErrorT1 (destok, 'expecting the designator {%1Ead} to be a constant or a variable and not a {%1dv}', Des)

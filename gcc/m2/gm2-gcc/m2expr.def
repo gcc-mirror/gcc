@@ -417,7 +417,7 @@ PROCEDURE BuildOffset (location: location_t; record: tree; field: tree; needconv
     BuildLogicalOrAddress - build a logical or expressions and return the tree.
 *)
 
-PROCEDURE BuildLogicalOrAddress (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildLogicalOrAddress (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
