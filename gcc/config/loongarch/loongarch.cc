@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -11597,6 +11598,41 @@ loongarch_get_function_versions_dispatcher (void *decl)
   return dispatch_decl;
 }
 
+/* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
+   suffixes.  */
+
+tree
+loongarch_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    {
+      std::string name = IDENTIFIER_POINTER (id) + std::string (".");
+      tree target_attr = lookup_attribute ("target_version",
+					   DECL_ATTRIBUTES (decl));
+
+      if (target_attr == NULL_TREE)
+	{
+	  name += "default";
+	  return get_identifier (name.c_str ());
+	}
+
+      const char *version_string
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (target_attr)));
+
+      /* Replace non-alphanumeric characters with underscores as the suffix.  */
+      for (const char *c = version_string; *c; c++)
+	name += ISALNUM (*c) == 0 ? '_' : *c;
+
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	SET_DECL_RTL (decl, NULL);
+
+      id = get_identifier (name.c_str ());
+    }
+  return id;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11891,6 +11927,10 @@ loongarch_get_function_versions_dispatcher (void *decl)
 #undef TARGET_GET_FUNCTION_VERSIONS_DISPATCHER
 #define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER \
   loongarch_get_function_versions_dispatcher
+
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME \
+  loongarch_mangle_decl_assembler_name
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
