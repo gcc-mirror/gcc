@@ -1742,8 +1742,8 @@ compare_lambda_sig (tree fn_a, tree fn_b)
       || fn_b == error_mark_node)
     return false;
 
-  for (tree args_a = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_a))),
-	 args_b = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_b)));
+  for (tree args_a = FUNCTION_FIRST_USER_PARMTYPE (fn_a),
+	 args_b = FUNCTION_FIRST_USER_PARMTYPE (fn_b);
        args_a || args_b;
        args_a = TREE_CHAIN (args_a), args_b = TREE_CHAIN (args_b))
     {
