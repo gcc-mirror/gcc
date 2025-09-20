@@ -548,6 +548,10 @@ The maximum number of instructions to consider to find accurate live register in
 Common Joined UInteger Var(param_max_dse_active_local_stores) Init(5000) Param Optimization
 Maximum number of active local stores in RTL dead store elimination.
 
+-param=max-devirt-targets=
+Common Joined UInteger Var(param_max_devirt_targets) Init(3) Param Optimization
+Maximum number of targets to devirutalize.
+
 -param=max-early-inliner-iterations=
 Common Joined UInteger Var(param_early_inliner_max_iterations) Init(1) Param Optimization
 The maximum number of nested indirect inlining performed by early inliner.

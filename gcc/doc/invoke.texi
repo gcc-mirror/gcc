@@ -16312,6 +16312,10 @@ aggressive optimization, increasing the compilation time.  This parameter
 should be removed when the delay slot code is rewritten to maintain the
 control-flow graph.
 
+@item max-devirt-targets
+This limits number of function a virtual call may be speculatively
+devirtualized to using static analysis (without profile feedback).
+
 @item max-gcse-memory
 The approximate maximum amount of memory in @code{kB} that can be allocated in
 order to perform the global common subexpression elimination
