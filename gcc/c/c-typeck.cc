@@ -2512,6 +2512,8 @@ really_atomic_lvalue (tree expr)
     return false;
   if (!TYPE_ATOMIC (TREE_TYPE (expr)))
     return false;
+  if (!COMPLETE_TYPE_P (TREE_TYPE (expr)))
+    return false;
   if (!lvalue_p (expr))
     return false;
 
@@ -2607,7 +2609,9 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
 
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
-  if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
+  if (!VOID_TYPE_P (TREE_TYPE (exp.value))
+      || (flag_isoc2y
+	  && TYPE_QUALS (TREE_TYPE (exp.value)) != TYPE_UNQUALIFIED))
     exp.value = require_complete_type (loc, exp.value);
   if (for_init || !RECORD_OR_UNION_TYPE_P (TREE_TYPE (exp.value)))
     {
