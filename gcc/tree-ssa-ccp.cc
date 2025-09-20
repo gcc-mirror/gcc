@@ -4284,11 +4284,6 @@ pass_fold_builtins::execute (function *fun)
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
 
-		case BUILT_IN_ASSUME_ALIGNED:
-		  /* Remove __builtin_assume_aligned.  */
-		  result = gimple_call_arg (stmt, 0);
-		  break;
-
 		case BUILT_IN_STACK_RESTORE:
 		  result = optimize_stack_restore (i);
 		  if (result)

@@ -5234,6 +5234,24 @@ gimple_fold_builtin_constant_p (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Fold __builtin_assume_aligned builtin.  */
+
+static bool
+gimple_fold_builtin_assume_aligned (gimple_stmt_iterator *gsi)
+{
+  if (!(cfun->curr_properties & PROP_last_full_fold))
+    return false;
+
+  gcall *call = as_a<gcall*>(gsi_stmt (*gsi));
+
+  if (gimple_call_num_args (call) < 2)
+    return false;
+
+  gimplify_and_update_call_from_tree (gsi, gimple_call_arg (call, 0));
+
+  return true;
+}
+
 /* Fold the non-target builtin at *GSI and return whether any simplification
    was made.  */
 
@@ -5405,6 +5423,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     case BUILT_IN_CONSTANT_P:
       return gimple_fold_builtin_constant_p (gsi);
+
+    case BUILT_IN_ASSUME_ALIGNED:
+      return gimple_fold_builtin_assume_aligned (gsi);
 
     default:;
     }
