@@ -1,3 +1,16 @@
+2025-09-20  Michael Eager  <eager@eagercon.com>
+
+	PR target/118280
+	* config/microblaze/iterators.md: New.
+	* config/microblaze/microblaze-protos.h: Add
+	microblaze_subword_address.
+	* config/microblaze/microblaze.cc: Ditto.
+	* config/microblaze/microblaze.md: constants: Add UNSPECV_CAS_BOOL,
+	UNSPECV_CAS_MEM, UNSPECV_CAS_VAL, UNSPECV_ATOMIC_FETCH_OP
+	type: add atomic
+	* config/microblaze/sync.md: Add atomic_fetch_<atomic_optab>si
+	atomic_test_and_set
+
 2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
 
 	Backported from master:
