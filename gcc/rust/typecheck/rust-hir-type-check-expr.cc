@@ -1096,11 +1096,13 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	context->insert_type (elems.get_num_copies_expr ().get_mappings (),
 			      expected_ty);
 
-	unify_site (
+	auto result = unify_site (
 	  expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (expected_ty),
 	  TyTy::TyWithLocation (capacity_expr_ty,
 				elems.get_num_copies_expr ().get_locus ()),
 	  expr.get_locus ());
+	if (result->is<TyTy::ErrorType> ())
+	  return;
 
 	capacity_expr = &elems.get_num_copies_expr ();
 	capacity_type = expected_ty;
