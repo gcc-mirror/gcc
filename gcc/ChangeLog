@@ -1,3 +1,10 @@
+2025-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (--param max-devirt-targets) Document.
+	* ipa-devirt.cc (ipa_devirt): Implement muti-target
+	devirtualization.
+	* params.opt (max-devirt-targets): New parameter.
+
 2025-09-19  Alexandre Oliva  <oliva@adacore.com>
 
 	* ira.cc (setup_reg_equiv): Retain function invariant

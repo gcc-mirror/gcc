@@ -1,3 +1,10 @@
+2025-09-20  Joseph Myers  <josmyers@redhat.com>
+
+	* c-typeck.cc (really_atomic_lvalue): Return false for incomplete
+	types.
+	(convert_lvalue_to_rvalue): Call require_complete_type for
+	qualified void for C2y.
+
 2025-09-17  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_parse_gimple_body): Initialize

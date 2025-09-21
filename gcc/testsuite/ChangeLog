@@ -1,3 +1,24 @@
+2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* g++.dg/cpp2a/concepts-placeholder15.C: New test.
+
+2025-09-20  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/119048
+	* g++.dg/cpp23/static-operator-call8.C: New test.
+
+2025-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-2.C: Update template.
+	* g++.dg/ipa/devirt-42.C: Update template.
+	* g++.dg/lto/devirt-2_0.C: Update template.
+
+2025-09-20  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c11-atomic-6.c, gcc.dg/c23-incomplete-1.c,
+	gcc.dg/c2y-incomplete-3.c: New tests.
+
 2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83746

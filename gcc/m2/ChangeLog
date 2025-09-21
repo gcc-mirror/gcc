@@ -1,3 +1,21 @@
+2025-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122009
+	* gm2-compiler/M2GenGCC.mod (FromM2WIDESETImport): Assign
+	sym to NulSym.
+	(CodeMakeAdr): Remove fourth parameter to BuildLogicalOrAddress.
+	(FoldMakeAdr): Ditto.
+	* gm2-compiler/M2Quads.mod (BuildAssignmentBoolean): Remove
+	unused parameter checkTypes.
+	(doBuildAssignment): Remove checkTypes parameter when calling
+	BuildAssignmentBoolean.
+	* gm2-gcc/m2expr.def (BuildLogicalOrAddress): Remove
+	needconvert parameter.
+	* gm2-gcc/m2statement.def (IfExprJump): Change label type
+	to CharStar.
+	* gm2-gcc/m2type.cc (m2type_BuildEnumerator): Remove const.
+	* gm2-gcc/m2type.h (m2type_BuildEnumerator): Ditto.
+
 2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121856

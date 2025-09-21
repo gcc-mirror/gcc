@@ -1,3 +1,15 @@
+2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* pt.cc (any_template_parm_r) <case TEMPLATE_TYPE_PARM>:
+	Don't walk TREE_TYPE.
+
+2025-09-20  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/119048
+	* lambda.cc (compare_lambda_sig): Only skip first parameter for
+	object members.
+
 2025-09-18  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (cxx_eval_component_reference): Clarify diagnostic.

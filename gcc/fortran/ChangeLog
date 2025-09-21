@@ -1,3 +1,11 @@
+2025-09-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-decl.cc (gfc_trans_deferred_vars): If a procedure with
+	an non-allocatable, non-pointer explicit PDT result has no
+	default initializer, the parameterized components should be
+	allocated.
+
 2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83746
