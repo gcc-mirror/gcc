@@ -3157,8 +3157,16 @@ cgraph_edge::maybe_hot_p (sreal scale)
 
   /* If reliable IPA count is available, just use it.  */
   profile_count c = count.ipa ();
-  if (c.reliable_p ())
+  if (c.reliable_p ()
+      || (c.quality () == AFDO && c.nonzero_p ()))
     return maybe_hot_count_p (NULL, c * scale);
+
+  /* In auto-FDO, count 0 may lead to hot code in case the
+     call is simply not called often enough to receive some samples.  */
+  if ((c.quality () == AFDO
+       || count.quality () == GUESSED_GLOBAL0_ADJUSTED)
+      && callee && callee->count.quality () == AFDO)
+    return maybe_hot_count_p (NULL, c.force_nonzero () * scale);
 
   /* See if we can determine hotness using caller frequency.  */
   if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
