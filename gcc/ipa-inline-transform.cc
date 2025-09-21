@@ -142,12 +142,14 @@ master_clone_with_noninline_clones_p (struct cgraph_node *node)
    DUPLICATE is used for bookkeeping on whether we are actually creating new
    clones or re-using node originally representing out-of-line function call.
    By default the offline copy is removed, when it appears dead after inlining.
-   UPDATE_ORIGINAL prevents this transformation.
+   KEEP_OFFLINE_COPY prevents this transformation.
+   If UPDATE_ORIGINAL is set, clones profile is subtracted from the offline version.
    If OVERALL_SIZE is non-NULL, the size is updated to reflect the
    transformation.  */
 
 void
 clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
+		     bool keep_offline_copy,
 		     bool update_original, int *overall_size)
 {
   struct cgraph_node *inlining_into;
@@ -167,7 +169,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       if (!e->callee->callers->next_caller
 	  /* Recursive inlining never wants the master clone to
 	     be overwritten.  */
-	  && update_original
+	  && !keep_offline_copy
 	  && can_remove_node_now_p (e->callee, e)
 	  /* We cannot overwrite a master clone with non-inline clones
 	     until after these clones are materialized.  */
@@ -228,7 +230,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     {
       next = e->next_callee;
       if (!e->inline_failed)
-        clone_inlined_nodes (e, duplicate, update_original, overall_size);
+        clone_inlined_nodes (e, duplicate, keep_offline_copy,
+			     update_original, overall_size);
     }
 }
 
@@ -306,7 +309,8 @@ mark_all_inlined_calls_cdtor (cgraph_node *node)
 
 
 /* Mark edge E as inlined and update callgraph accordingly.  UPDATE_ORIGINAL
-   specify whether profile of original function should be updated.  If any new
+   specify whether profile of original function should be updated and whether
+   offline copy should be removed if unnecesary.  If any new
    indirect edges are discovered in the process, add them to NEW_EDGES, unless
    it is NULL. If UPDATE_OVERALL_SUMMARY is false, do not bother to recompute overall
    size of caller after inlining. Caller is required to eventually do it via
@@ -328,6 +332,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   bool comdat_local = e->callee->comdat_local_p ();
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   bool new_edges_found = false;
+  bool keep_offline_copy = !update_original;
 
   int estimated_growth = 0;
   if (! update_overall_summary)
@@ -378,6 +383,29 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	  to->count.dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
+    }
+  /* Do sanity checking of the profile and in case of inconsistencies do not
+     update profile of original.  This reduces the chances that inlining
+     turns callee cold while in reality it is still hot.  */
+  if (!(callee->count.ipa ().force_nonzero () == callee->count.ipa ()))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Callee count is 0; not updating callee profile\n");
+      update_original = false;
+    }
+  else if (e->count.ipa ().quality () == AFDO
+	   && !(e->count.ipa ().force_nonzero () == e->count.ipa ()))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Edge count is AFDO 0; not updating callee profile\n");
+      update_original = false;
+    }
+  if (e->count.ipa () > callee->count.ipa ().apply_scale (9, 8))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Calee count is too small (profile is inconsistent);"
+		 " not updating callee profile\n");
+      update_original = false;
     }
   if (to->thunk)
     {
@@ -530,7 +558,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	}
     }
 
-  clone_inlined_nodes (e, true, update_original, overall_size);
+  clone_inlined_nodes (e, true, keep_offline_copy,
+		       update_original, overall_size);
 
   gcc_assert (curr->callee->inlined_to == to);
 

@@ -1860,7 +1860,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	    false, vNULL, true, NULL, NULL, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
-	      clone_inlined_nodes (e, true, false, NULL);
+	      clone_inlined_nodes (e, true, true, false, NULL);
 	  curr->redirect_callee (master_clone);
 	  if (edge_growth_cache != NULL)
 	    edge_growth_cache->remove (curr);
