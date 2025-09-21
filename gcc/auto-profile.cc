@@ -2627,7 +2627,7 @@ autofdo_source_profile::read ()
      bigger than sum_max eventually.  */
   if (afdo_profile_info->sum_max)
     afdo_count_scale
-      = MAX (((gcov_type)1 << (profile_count::n_bits / 2))
+      = MAX (((gcov_type)1 << (profile_count::n_bits - 10))
 	     / afdo_profile_info->sum_max, 1);
   afdo_profile_info->cutoff *= afdo_count_scale;
   afdo_hot_bb_threshod
