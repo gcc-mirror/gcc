@@ -26,18 +26,36 @@
 
 namespace chr = std::chrono;
 
+template <typename Clock>
 void
 test01()
 {
-  chr::system_clock::time_point begin = chr::system_clock::now();
+  typename Clock::time_point begin = Clock::now();
   chr::microseconds ms(500);
 
-  std::this_thread::sleep_until(chr::system_clock::now() + ms);
+  std::this_thread::sleep_until(Clock::now() + ms);
 
-  VERIFY( (chr::system_clock::now() - begin) >= ms );
+  VERIFY( (Clock::now() - begin) >= ms );
+}
+
+template <typename Clock>
+void
+test_negative()
+{
+  typename Clock::time_point begin = Clock::now();
+
+  typename Clock::time_point tp(-chr::hours(8));
+  std::this_thread::sleep_until(tp);
+
+  // That should have completed immediately, but be generous because we don't
+  // want spurious failures on busy machines.
+  VERIFY( (Clock::now() - begin) < chr::seconds(10) );
 }
 
 int main()
 {
-  test01();
+  test01<chr::steady_clock>();
+  test01<chr::system_clock>();
+  test_negative<chr::steady_clock>();
+  test_negative<chr::system_clock>();
 }

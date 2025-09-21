@@ -37,7 +37,20 @@ test01()
   VERIFY( (chr::system_clock::now() - begin) >= ms );
 }
 
+void
+test_negative()
+{
+  chr::system_clock::time_point begin = chr::system_clock::now();
+
+  std::this_thread::sleep_for(-chr::hours(8));
+
+  // That should have completed immediately, but be generous because we don't
+  // want spurious failures on busy machines.
+  VERIFY( (chr::system_clock::now() - begin) < chr::seconds(10) );
+}
+
 int main()
 {
   test01();
+  test_negative();
 }
