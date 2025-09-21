@@ -515,6 +515,9 @@ gfc_post_options (const char **pfilename)
   if (flag_frontend_optimize == -1)
     flag_frontend_optimize = optimize && !optimize_debug;
 
+  if (flag_external_blas64 && !flag_frontend_optimize)
+    gfc_fatal_error ("-ffrontend-optimize required for -fexternal-blas64");
+
   /* Same for front end loop interchange.  */
 
   if (flag_frontend_loop_interchange == -1)

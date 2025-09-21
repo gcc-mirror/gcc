@@ -2027,7 +2027,8 @@ limit (see @option{-fblas-matmul-limit}).  This may be profitable if an
 optimized vendor BLAS library is available.  The BLAS library has
 to be specified at link time.  This option specifies a BLAS library
 with integer arguments of @code{KIND=8} (64 bits). It cannot be used
-together with @option{-fexternal-blas}.
+together with @option{-fexternal-blas}, and requires a 64-bit system.
+This option also requires @option{-ffrontend-optimize}.
 
 @opindex fblas-matmul-limit
 @item -fblas-matmul-limit=@var{n}

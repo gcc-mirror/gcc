@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-ffrontend-optimize -fexternal-blas64 -fdump-tree-original" }
+! { dg-require-effective-target lp64 }
 ! PR 121161 - option for 64-bit BLAS for MATMUL.
 ! Check this by making sure there is no KIND=4 integer.
 subroutine foo(a,b,c,n)

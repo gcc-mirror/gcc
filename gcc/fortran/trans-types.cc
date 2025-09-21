@@ -800,6 +800,9 @@ gfc_init_kinds (void)
 
   gfc_index_integer_kind = get_int_kind_from_name (PTRDIFF_TYPE);
 
+  if (flag_external_blas64 && gfc_index_integer_kind != gfc_integer_8_kind)
+    gfc_fatal_error ("-fexternal-blas64 requires a 64-bit system");
+
   /* Pick a kind the same size as the C "int" type.  */
   gfc_c_int_kind = INT_TYPE_SIZE / 8;
 
