@@ -990,6 +990,7 @@ cgraph_node::create_version_clone (tree new_decl,
 	  version.  */
        e->redirect_callee (new_version);
      }
+   new_version->calls_comdat_local = new_version->check_calls_comdat_local_p ();
 
    dump_callgraph_transformation (this, new_version, suffix);
 
