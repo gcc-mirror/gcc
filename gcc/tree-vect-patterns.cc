@@ -3882,6 +3882,10 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 	goto use_rotate;
     }
 
+  /* We may not use a reduction operand twice.  */
+  if (vect_is_reduction (stmt_vinfo))
+    return NULL;
+
   tree utype = unsigned_type_for (type);
   tree uvectype = get_vectype_for_scalar_type (vinfo, utype);
   if (!uvectype)
