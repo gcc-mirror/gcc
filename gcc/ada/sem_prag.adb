@@ -10699,6 +10699,9 @@ package body Sem_Prag is
             --  the External_Name). For exceptions, the External_Name is the
             --  name of the RTTI structure.
 
+            --  Do not call Set_Is_Imported as that would disable the output
+            --  of the needed exception data structures.
+
             --  ??? Emit an error if pragma Import/Export_Exception is present
 
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then

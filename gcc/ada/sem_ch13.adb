@@ -2372,7 +2372,13 @@ package body Sem_Ch13 is
                then
                   if A_Id = Aspect_Import then
                      Set_Has_Completion (E);
-                     Set_Is_Imported (E);
+
+                     --  Do not set Is_Imported on Exceptions, similarly
+                     --  to Sem_Prag.Process_Import_Or_Interface.
+
+                     if Ekind (E) /= E_Exception then
+                        Set_Is_Imported (E);
+                     end if;
 
                      --  An imported object cannot be explicitly initialized
 
