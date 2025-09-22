@@ -315,7 +315,7 @@ test_sadd16 (int16x2_t a, int16x2_t b)
   return __sadd16 (a, b);
 }
 
-/* { dg-final { scan-assembler-times "\tsadd8\t...?, ...?, ...?" 1 } } */
+/* { dg-final { scan-assembler-times "\tsadd16\t...?, ...?, ...?" 1 } } */
 
 int16x2_t
 test_sasx (int16x2_t a, int16x2_t b)

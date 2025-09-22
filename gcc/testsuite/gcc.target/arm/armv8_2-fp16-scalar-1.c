@@ -164,16 +164,16 @@ UNOP_TEST (vrnda)
 /* { dg-final { scan-assembler-times {vrinta\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 
 UNOP_TEST (vrndm)
-/* { dg-final { scan-assembler-times {vrinta\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vrintm\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 
 UNOP_TEST (vrndn)
-/* { dg-final { scan-assembler-times {vrinta\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vrintn\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 
 UNOP_TEST (vrndp)
-/* { dg-final { scan-assembler-times {vrinta\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vrintp\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 
 UNOP_TEST (vrndx)
-/* { dg-final { scan-assembler-times {vrinta\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vrintx\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 
 UNOP_TEST (vsqrt)
 /* { dg-final { scan-assembler-times {vsqrt\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
