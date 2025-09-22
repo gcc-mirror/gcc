@@ -2622,6 +2622,12 @@ vn_nary_simplify (vn_nary_op_t nary)
 		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
   tree res = vn_nary_build_or_lookup_1 (&op, false, true);
+  /* Do not update *NARY with a simplified result that contains abnormals.
+     This matches what maybe_push_res_to_seq does when requesting insertion.  */
+  for (unsigned i = 0; i < op.num_ops; ++i)
+    if (TREE_CODE (op.ops[i]) == SSA_NAME
+	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op.ops[i]))
+      return res;
   if (op.code.is_tree_code ()
       && op.num_ops <= nary->length
       && (tree_code) op.code != CONSTRUCTOR)
