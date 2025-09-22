@@ -149,7 +149,7 @@ escaped_general_categories = {
     "Cc", "Cf", "Cs", "Co", "Cn",
 }
 
-# Extract General_Category and detrmine if it should be escaped
+# Extract General_Category and determine if it should be escaped
 # for all code points.
 for line in open("DerivedGeneralCategory.txt", "r"):
     # Example lines:
