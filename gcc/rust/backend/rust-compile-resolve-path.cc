@@ -97,8 +97,11 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 
   // this can only be for discriminant variants the others are built up
   // using call-expr or struct-init
-  rust_assert (variant->get_variant_type ()
-	       == TyTy::VariantDef::VariantType::NUM);
+  if (variant->get_variant_type () != TyTy::VariantDef::VariantType::NUM)
+    {
+      rust_error_at (expr_locus, "variant expected constructor call");
+      return error_mark_node;
+    }
 
   // we need the actual gcc type
   tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
