@@ -281,6 +281,129 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif // C++17
 
+#if __glibcxx_start_lifetime_as >= 202207L // C++ >= 23
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline _Tp*
+    start_lifetime_as(void* __p) noexcept
+    {
+#if __glibcxx_is_implicit_lifetime >= 202302L
+      static_assert(is_implicit_lifetime_v<_Tp>);
+#endif
+      auto __q = reinterpret_cast<_Tp*>(__p);
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__q)
+			   : "0" (__q), "m" (*__q));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline const _Tp*
+    start_lifetime_as(const void* __p) noexcept
+    {
+#if __glibcxx_is_implicit_lifetime >= 202302L
+      static_assert(is_implicit_lifetime_v<_Tp>);
+#endif
+      auto __q = reinterpret_cast<const _Tp*>(__p);
+      auto __r = reinterpret_cast<_Tp*>(const_cast<void*>(__p));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__r)
+			   : "0" (__q), "m" (*__q));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline volatile _Tp*
+    start_lifetime_as(volatile void* __p) noexcept
+    {
+#if __glibcxx_is_implicit_lifetime >= 202302L
+      static_assert(is_implicit_lifetime_v<_Tp>);
+#endif
+      auto __q = reinterpret_cast<volatile _Tp*>(__p);
+      auto __r = reinterpret_cast<_Tp*>(const_cast<void*>(__p));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__r)
+			   : "0" (__q), "m" (*__q));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline const volatile _Tp*
+    start_lifetime_as(const volatile void* __p) noexcept
+    {
+#if __glibcxx_is_implicit_lifetime >= 202302L
+      static_assert(is_implicit_lifetime_v<_Tp>);
+#endif
+      auto __q = reinterpret_cast<const volatile _Tp*>(__p);
+      auto __r = reinterpret_cast<_Tp*>(const_cast<void*>(__p));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__r)
+			   : "0" (__q), "m" (*__q));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline _Tp*
+    start_lifetime_as_array(void* __p, size_t __n) noexcept
+    {
+      auto __q = reinterpret_cast<_Tp*>(__p);
+      if (!__n)
+	return __q;
+      auto __r = (__extension__ reinterpret_cast<_Tp(*)[__n]>(__p));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__r)
+			   : "0" (__q), "m" (*__r));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline const _Tp*
+    start_lifetime_as_array(const void* __p, size_t __n) noexcept
+    {
+      auto __q = reinterpret_cast<const _Tp*>(__p);
+      if (!__n)
+	return __q;
+      auto __r = (__extension__ reinterpret_cast<const _Tp(*)[__n]>(__p));
+      auto __s = (__extension__
+		  reinterpret_cast<_Tp(*)[__n]>(const_cast<void*>(__p)));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__s)
+			   : "0" (__q), "m" (*__r));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline volatile _Tp*
+    start_lifetime_as_array(volatile void* __p, size_t __n) noexcept
+    {
+      auto __q = reinterpret_cast<volatile _Tp*>(__p);
+      if (!__n)
+	return __q;
+      auto __r = (__extension__ reinterpret_cast<volatile _Tp(*)[__n]>(__p));
+      auto __s = (__extension__
+		  reinterpret_cast<_Tp(*)[__n]>(const_cast<void*>(__p)));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__s)
+			   : "0" (__q), "m" (*__r));
+      return __q;
+    }
+
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline const volatile _Tp*
+    start_lifetime_as_array(const volatile void* __p, size_t __n) noexcept
+    {
+      auto __q = reinterpret_cast<const volatile _Tp*>(__p);
+      if (!__n)
+	return __q;
+      auto __r = (__extension__ reinterpret_cast<const volatile _Tp(*)[__n]>(__p));
+      auto __s = (__extension__
+		  reinterpret_cast<_Tp(*)[__n]>(const_cast<void*>(__p)));
+      __asm__ __volatile__("" : "=g" (__q), "=m" (*__s)
+			   : "0" (__q), "m" (*__r));
+      return __q;
+    }
+#endif // C++23
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
