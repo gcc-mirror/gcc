@@ -53,15 +53,19 @@ namespace __gnu_debug
    * assertion statement because, e.g., we are in a constructor.
   */
   template<typename _InputIterator>
-    inline _InputIterator
+    _GLIBCXX20_CONSTEXPR inline _InputIterator
     __check_valid_range(const _InputIterator& __first,
 			const _InputIterator& __last,
 			const char* __file,
 			unsigned int __line,
 			const char* __function)
     {
-      __glibcxx_check_valid_range_at(__first, __last,
-				     __file, __line, __function);
+      if (!std::__is_constant_evaluated())
+	{
+	  __glibcxx_check_valid_range_at(__first, __last,
+					 __file, __line, __function);
+	}
+
       return __first;
     }
 

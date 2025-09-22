@@ -1,0 +1,691 @@
+// Debugging inplace_vector implementation -*- C++ -*-
+
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file debug/inplace_vector
+ *  This file is a GNU debug extension to the Standard C++ Library.
+ */
+
+#ifndef _GLIBCXX_DEBUG_INPLACE_VECTOR
+#define _GLIBCXX_DEBUG_INPLACE_VECTOR 1
+
+#ifdef _GLIBCXX_SYSHDR
+#pragma GCC system_header
+#endif
+
+#include <debug/debug.h>
+
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, size_t _Nm> class inplace_vector;
+} } // namespace std::__debug
+
+#include <inplace_vector>
+
+#ifdef __glibcxx_inplace_vector // C++ >= 26
+
+#include <debug/safe_sequence.h>
+#include <debug/safe_iterator.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace __debug
+{
+  /// Class std::inplace_vector with safety/checking/debug instrumentation.
+  template<typename _Tp, size_t _Nm>
+    class inplace_vector
+    : public __gnu_debug::_Safe_sequence<inplace_vector<_Tp, _Nm>>
+    , public _GLIBCXX_STD_C::inplace_vector<_Tp, _Nm>
+    {
+      using _Base = _GLIBCXX_STD_C::inplace_vector<_Tp, _Nm>;
+      using _Base_iterator = typename _Base::iterator;
+      using _Base_const_iterator = typename _Base::const_iterator;
+      using _Equal = __gnu_debug::_Equal_to<_Base_const_iterator>;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
+    public:
+      // types:
+      using value_type = _Base::value_type;
+      using pointer = _Base::pointer;
+      using const_pointer = _Base::const_pointer;
+      using reference = _Base::reference;
+      using const_reference = _Base::const_reference;
+      using size_type = _Base::size_type;
+      using difference_type = _Base::difference_type;
+      using iterator
+	= __gnu_debug::_Safe_iterator<_Base_iterator, inplace_vector>;
+      using const_iterator
+	= __gnu_debug::_Safe_iterator<_Base_const_iterator, inplace_vector>;
+      using reverse_iterator       = std::reverse_iterator<iterator>;
+      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+      constexpr
+      inplace_vector() noexcept = default;
+
+      constexpr explicit
+      inplace_vector(size_type __n)
+      : _Base(__n) { }
+
+      constexpr
+      inplace_vector(size_type __n, const _Tp& __value)
+	: _Base(__n, __value) { }
+
+      template<__any_input_iterator _InputIterator>
+	constexpr
+	inplace_vector(_InputIterator __first, _InputIterator __last)
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
+		__gnu_debug::__base(__last)) { }
+
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr
+	inplace_vector(from_range_t, _Rg&& __rg)
+	  : _Base(from_range_t{}, std::forward<_Rg>(__rg)) { }
+
+      constexpr
+      inplace_vector(initializer_list<_Tp> __il)
+      : _Base(__il) { }
+
+      inplace_vector(const inplace_vector&) = default;
+      inplace_vector(inplace_vector&&) = default;
+      ~inplace_vector() = default;
+
+      inplace_vector&
+      operator=(const inplace_vector&) = default;
+
+      inplace_vector&
+      operator=(inplace_vector&&) = default;
+
+      constexpr inplace_vector&
+      operator=(initializer_list<_Tp> __il)
+      {
+	_Base::operator=(__il);
+	this->_M_invalidate_all();
+	return *this;
+      }
+
+      template<__any_input_iterator _InputIterator>
+	constexpr void
+	assign(_InputIterator __first, _InputIterator __last)
+	{
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
+
+	  const auto __size = size();
+	  const auto __end = _Base::end();
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::assign(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::assign(__first, __last);
+
+	  if (size() < __size)
+	    _M_invalidate_after_nth(size());
+	  else if (size() > __size)
+	    this->_M_invalidate_if(_Equal(__end));
+	}
+
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr void
+	assign_range(_Rg&& __rg)
+	{
+	  _Base::assign_range(std::forward<_Rg>(__rg));
+	  this->_M_invalidate_all();
+	}
+
+      constexpr void
+      assign(size_type __n, const _Tp& __u)
+      {
+	_Base::assign(__n, __u);
+	this->_M_invalidate_all();
+      }
+
+      constexpr void
+      assign(initializer_list<_Tp> __il)
+      {
+	_Base::assign(__il);
+	this->_M_invalidate_all();
+      }
+
+      // iterators
+      [[nodiscard]]
+      constexpr iterator
+      begin() noexcept
+      { return { _Base::begin(), this }; }
+
+      [[nodiscard]]
+      constexpr const_iterator
+      begin() const noexcept
+      { return { _Base::begin(), this }; }
+
+      [[nodiscard]]
+      constexpr iterator
+      end() noexcept
+      { return { _Base::end(), this }; }
+
+      [[nodiscard]]
+      constexpr const_iterator
+      end() const noexcept
+      { return { _Base::end(), this }; }
+
+      [[nodiscard]]
+      constexpr reverse_iterator
+      rbegin() noexcept
+      { return reverse_iterator(end()); }
+
+      [[nodiscard]]
+      constexpr const_reverse_iterator
+      rbegin() const noexcept
+      { return const_reverse_iterator(end()); }
+
+      [[nodiscard]]
+      constexpr reverse_iterator
+      rend() noexcept { return reverse_iterator(begin()); }
+
+      [[nodiscard]]
+      constexpr const_reverse_iterator
+      rend() const noexcept { return const_reverse_iterator(begin()); }
+
+      [[nodiscard]]
+      constexpr const_iterator
+      cbegin() const noexcept
+      { return { _Base::cbegin(), this }; }
+
+      [[nodiscard]]
+      constexpr const_iterator
+      cend() const noexcept
+      { return { _Base::cend(), this }; }
+
+      [[nodiscard]]
+      constexpr const_reverse_iterator
+      crbegin() const noexcept { return rbegin(); }
+
+      [[nodiscard]]
+      constexpr const_reverse_iterator
+      crend() const noexcept { return rend(); }
+
+      using _Base::empty;
+      using _Base::size;
+      using _Base::max_size;
+      using _Base::capacity;
+
+      constexpr void
+      resize(size_type __n)
+      {
+	_Base::resize(__n);
+	_M_invalidate_after_nth(__n);
+      }
+
+      constexpr void
+      resize(size_type __n, const _Tp& __c)
+      {
+	_Base::resize(__n, __c);
+	_M_invalidate_after_nth(__n);
+      }
+
+      using _Base::reserve;
+      using _Base::shrink_to_fit;
+
+      // element access
+      [[nodiscard]]
+      constexpr reference
+      operator[](size_type __n)
+      {
+	__glibcxx_check_subscript(__n);
+	return _Base::operator[](__n);
+      }
+
+      [[nodiscard]]
+      constexpr const_reference
+      operator[](size_type __n) const
+      {
+	__glibcxx_check_subscript(__n);
+	return _Base::operator[](__n);
+      }
+
+      using _Base::at;
+
+      [[nodiscard]]
+      constexpr reference
+      front()
+      {
+	__glibcxx_check_nonempty();
+	return data()[0];
+      }
+
+      [[nodiscard]]
+      constexpr const_reference
+      front() const
+      {
+	__glibcxx_check_nonempty();
+	return data()[0];
+      }
+
+      [[nodiscard]]
+      constexpr reference
+      back()
+      {
+	__glibcxx_check_nonempty();
+	return data()[size() - 1];
+      }
+
+      [[nodiscard]]
+      constexpr const_reference
+      back() const
+      {
+	__glibcxx_check_nonempty();
+	return data()[size() - 1];
+      }
+
+      using _Base::data;
+
+      template<typename... _Args>
+	constexpr _Tp&
+	emplace_back(_Args&&... __args)
+	{
+	  const auto __end = _Base::cend();
+	  _Tp& __res =  _Base::emplace_back(std::forward<_Args>(__args)...);
+	  this->_M_invalidate_if(_Equal(__end));
+	  return __res;
+	}
+
+      constexpr _Tp&
+      push_back(const _Tp& __x)
+      { return emplace_back(__x); }
+
+      constexpr _Tp&
+      push_back(_Tp&& __x)
+      { return emplace_back(std::move(__x)); }
+
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr void
+	append_range(_Rg&& __rg)
+	{
+	  const auto __size = size();
+	  const auto __end = _Base::cend();
+	  _Base::append_range(__rg);
+	  if (size() != __size)
+	    this->_M_invalidate_if(_Equal(__end));
+	}
+
+      constexpr void
+      pop_back()
+      {
+	__glibcxx_check_nonempty();
+	_M_invalidate_after_nth(_Base::size() - 1);
+	_Base::pop_back();
+      }
+
+      template<typename... _Args>
+	constexpr _Tp*
+	try_emplace_back(_Args&&... __args)
+	{
+	  auto __end = _Base::cend();
+	  _Tp* __res = _Base::try_emplace_back(std::forward<_Args>(__args)...);
+
+	  if (__res)
+	    this->_M_invalidate_if(_Equal(__end));
+
+	  return __res;
+	}
+
+      constexpr _Tp*
+      try_push_back(const _Tp& __x)
+      {
+	const auto __end = _Base::cend();
+	_Tp* __res = _Base::try_push_back(__x);
+
+	if (__res)
+	  this->_M_invalidate_if(_Equal(__end));
+
+	return __res;
+      }
+
+      constexpr _Tp*
+      try_push_back(_Tp&& __x)
+      {
+	const auto __end = _Base::cend();
+	_Tp* __res = _Base::try_push_back(std::move(__x));
+
+	if (__res)
+	  this->_M_invalidate_if(_Equal(__end));
+
+	return __res;
+      }
+
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr ranges::borrowed_iterator_t<_Rg>
+	try_append_range(_Rg&& __rg)
+	{
+	  const auto __size = size();
+	  const auto __end = _Base::cend();
+	  auto __res = _Base::try_append_range(__rg);
+	  if (size() != __size)
+	    this->_M_invalidate_if(_Equal(__end));
+
+	  return __res;
+	}
+
+      template<typename... _Args>
+	constexpr _Tp&
+	unchecked_emplace_back(_Args&&... __args)
+	{
+	  const auto __end = _Base::cend();
+	  _Tp& __res =
+	    _Base::unchecked_emplace_back(std::forward<_Args>(__args)...);
+
+	  this->_M_invalidate_if(_Equal(__end));
+
+	  return __res;
+	}
+
+      constexpr _Tp&
+      unchecked_push_back(const _Tp& __x)
+      { return unchecked_emplace_back(__x); }
+
+      constexpr _Tp&
+      unchecked_push_back(_Tp&& __x)
+      { return unchecked_emplace_back(std::move(__x)); }
+
+      template<typename... _Args>
+	constexpr iterator
+	emplace(const_iterator __position, _Args&&... __args)
+	{
+	  if (std::is_constant_evaluated())
+	    return iterator(_Base::emplace(__position.base(),
+					   std::forward<_Args>(__args)...),
+			    this);
+
+	  __glibcxx_check_insert(__position);
+	  const difference_type __offset = __position.base() - _Base::cbegin();
+	  _Base_iterator __res = _Base::emplace(__position.base(),
+						std::forward<_Args>(__args)...);
+	  _M_invalidate_after_nth(__offset);
+	  return { __res, this };
+	}
+
+      constexpr iterator
+      insert(const_iterator __position, const _Tp& __x)
+      { return emplace(__position, __x); }
+
+      constexpr iterator
+      insert(const_iterator __position, _Tp&& __x)
+      { return emplace(__position, std::move(__x)); }
+
+      constexpr iterator
+      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      {
+	if (std::is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __n, __x), this);
+
+	  __glibcxx_check_insert(__position);
+	const difference_type __offset = __position.base() - _Base::cbegin();
+	_Base_iterator __res = _Base::insert(__position.base(), __n, __x);
+	_M_invalidate_after_nth(__offset);
+	return { __res, this };
+      }
+
+      template<__any_input_iterator _InputIterator>
+	constexpr iterator
+	insert(const_iterator __position, _InputIterator __first,
+	       _InputIterator __last)
+	{
+	  if (std::is_constant_evaluated())
+	    return iterator(_Base::insert(__position.base(),
+					  __gnu_debug::__unsafe(__first),
+					  __gnu_debug::__unsafe(__last)), this);
+
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
+
+	  const difference_type __offset = __position.base() - _Base::cbegin();
+	  _Base_iterator __res;
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    __res = _Base::insert(__position.base(),
+				  __gnu_debug::__unsafe(__first),
+				  __gnu_debug::__unsafe(__last));
+	  else
+	    __res = _Base::insert(__position.base(), __first, __last);
+
+	  _M_invalidate_after_nth(__offset);
+	  return { __res, this };
+	}
+
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr iterator
+	insert_range(const_iterator __position, _Rg&& __rg)
+	{
+	  const auto __size = size();
+	  const difference_type __offset = __position.base() - _Base::cbegin();
+	  auto __res = _Base::insert_range(__position.base(), __rg);
+	  if (size() > __size)
+	    this->_M_invalidate_after_nth(__offset);
+
+	  return iterator(__res, this);
+	}
+
+      constexpr iterator
+      insert(const_iterator __position, initializer_list<_Tp> __il)
+      {
+	if (std::is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __il), this);
+
+	__glibcxx_check_insert(__position);
+	const auto __size = size();
+	difference_type __offset = __position.base() - _Base::begin();
+	_Base_iterator __res = _Base::insert(__position.base(), __il);
+	if (size() > __size)
+	  this->_M_invalidate_after_nth(__offset);
+	return iterator(__res, this);
+      }
+
+      constexpr iterator
+      erase(const_iterator __position)
+      {
+	if (std::is_constant_evaluated())
+	  return iterator(_Base::erase(__position.base()), this);
+
+	__glibcxx_check_erase(__position);
+	difference_type __offset = __position.base() - _Base::cbegin();
+	_Base_iterator __res = _Base::erase(__position.base());
+	this->_M_invalidate_after_nth(__offset);
+	return iterator(__res, this);
+      }
+
+      constexpr iterator
+      erase(const_iterator __first, const_iterator __last)
+      {
+	if (std::is_constant_evaluated())
+	  return iterator(_Base::erase(__first.base(), __last.base()),
+			  this);
+
+	__glibcxx_check_erase_range(__first, __last);
+
+	if (__first.base() != __last.base())
+	  {
+	    difference_type __offset = __first.base() - _Base::cbegin();
+	    _Base_iterator __res = _Base::erase(__first.base(),
+						__last.base());
+	    this->_M_invalidate_after_nth(__offset);
+	    return { __res, this };
+	  }
+	else
+	  return { _Base::begin() + (__first.base() - _Base::cbegin()), this };
+      }
+
+      constexpr void
+      swap(inplace_vector& __x)
+      noexcept(is_nothrow_swappable_v<_Tp> && is_nothrow_move_constructible_v<_Tp>)
+      {
+	this->_M_invalidate_all();
+	__x._M_invalidate_all();
+	_Base::swap(__x);
+      }
+
+      constexpr void
+      clear() noexcept
+      {
+	_Base::clear();
+	this->_M_invalidate_all();
+      }
+
+      constexpr friend bool
+      operator==(const inplace_vector& __x, const inplace_vector& __y)
+      { return __x._M_base() == __y._M_base(); }
+
+      constexpr friend auto
+      operator<=>(const inplace_vector& __x, const inplace_vector& __y)
+      requires requires (const _Tp __t) {
+	{ __t < __t } -> __detail::__boolean_testable;
+      }
+      { return __x._M_base() <=> __y._M_base(); }
+
+      constexpr friend void
+      swap(inplace_vector& __x, inplace_vector& __y)
+      noexcept( noexcept(__x.swap(__y)) )
+      { __x.swap(__y); }
+
+    private:
+      constexpr _Base&
+      _M_base() noexcept { return *this; }
+
+      constexpr const _Base&
+      _M_base() const noexcept { return *this; }
+
+      constexpr void
+      _M_invalidate_after_nth(difference_type __n) noexcept
+      {
+	using _After_nth
+	  = __gnu_debug::_After_nth_from<_Base_const_iterator>;
+	this->_M_invalidate_if(_After_nth(__n, _Base::cbegin()));
+      }
+    };
+
+  // specialization for zero capacity, that is required to be trivally copyable
+  // and empty regardless of _Tp.
+  template<typename _Tp>
+    class inplace_vector<_Tp, 0>
+    : public _GLIBCXX_STD_C::inplace_vector<_Tp, 0>
+    {
+      using _Base = _GLIBCXX_STD_C::inplace_vector<_Tp, 0>;
+
+    public:
+      // types:
+      using value_type = _Base::value_type;
+      using pointer = _Base::pointer;
+      using const_pointer = _Base::const_pointer;
+      using reference = _Base::reference;
+      using const_reference = _Base::const_reference;
+      using size_type = _Base::size_type;
+      using difference_type = _Base::difference_type;
+      using iterator = _Base::iterator;
+      using const_iterator = _Base::const_iterator;
+      using reverse_iterator = _Base::reverse_iterator;
+      using const_reverse_iterator = _Base::const_reverse_iterator;
+
+      inplace_vector() = default;
+
+      constexpr explicit
+      inplace_vector(size_type __n) : _Base(__n) { }
+
+      constexpr
+      inplace_vector(size_type __n, const _Tp& __value)
+	: _Base(__n, __value) { }
+
+      template<__any_input_iterator _InputIterator>
+	constexpr
+	inplace_vector(_InputIterator __first, _InputIterator __last)
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
+		__gnu_debug::__base(__last)) { }
+
+      template <__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr
+	inplace_vector(from_range_t, _Rg&& __rg)
+	  : _Base(from_range_t{}, std::forward<_Rg>(__rg)) { }
+
+      constexpr
+      inplace_vector(initializer_list<_Tp> __il)
+	: _Base(__il) { }
+
+      inplace_vector(const inplace_vector&) = default;
+      inplace_vector(inplace_vector&&) = default;
+
+      constexpr
+      ~inplace_vector() = default;
+
+      inplace_vector&
+      operator=(const inplace_vector&) = default;
+
+      inplace_vector&
+      operator=(inplace_vector&&) = default;
+
+      constexpr inplace_vector&
+      operator=(initializer_list<_Tp> __il)
+      {
+	_Base::operator=(__il);
+	return *this;
+      }
+
+      constexpr void
+      swap(inplace_vector& __x)
+      noexcept
+      { }
+    };
+} // namespace __debug
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Tp, size_t _Nm, typename _Predicate>
+    constexpr size_t
+    erase_if(__debug::inplace_vector<_Tp, _Nm>& __cont, _Predicate __pred)
+    {
+      if constexpr (_Nm != 0)
+	{
+	  _GLIBCXX_STD_C::inplace_vector<_Tp, _Nm>& __ucont = __cont;
+	  const auto __osz = __cont.size();
+	  const auto __end = __ucont.end();
+	  auto __removed = std::__remove_if(__ucont.begin(), __end,
+					    std::move(__pred));
+	  if (__removed != __end)
+	    {
+	      __cont.erase(__niter_wrap(__cont.cbegin(), __removed),
+			   __cont.cend());
+	      return __osz - __cont.size();
+	    }
+	}
+
+      return 0;
+    }
+
+  template<typename _Tp, size_t _Nm, typename _Up = _Tp>
+    constexpr size_t
+    erase(__debug::inplace_vector<_Tp, _Nm>& __cont, const _Up& __value)
+    { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // __glibcxx_inplace_vector
+#endif // _GLIBCXX_DEBUG_INPLACE_VECTOR

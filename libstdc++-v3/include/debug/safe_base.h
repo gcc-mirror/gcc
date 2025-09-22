@@ -254,11 +254,29 @@ namespace __gnu_debug
     /** Notify all iterators that reference this sequence that the
 	sequence is being destroyed. */
     _GLIBCXX20_CONSTEXPR
-    ~_Safe_sequence_base()
+    ~_Safe_sequence_base() _GLIBCXX_NOEXCEPT
     {
       if (!std::__is_constant_evaluated())
 	this->_M_detach_all();
     }
+
+    // Copy assignment invalidate all iterators.
+    _GLIBCXX20_CONSTEXPR _Safe_sequence_base&
+    operator=(const _Safe_sequence_base&) _GLIBCXX_NOEXCEPT
+    {
+      _M_invalidate_all();
+      return *this;
+    }
+
+#if __cplusplus >= 201103L
+    _GLIBCXX20_CONSTEXPR _Safe_sequence_base&
+    operator=(_Safe_sequence_base&& __x) noexcept
+    {
+      _M_invalidate_all();
+      __x._M_invalidate_all();
+      return *this;
+    }
+#endif
 
     /** Detach all iterators, leaving them singular. */
     void
@@ -292,7 +310,7 @@ namespace __gnu_debug
     _M_get_mutex() const _GLIBCXX_USE_NOEXCEPT;
 
     /** Invalidates all iterators. */
-    void
+    _GLIBCXX20_CONSTEXPR void
     _M_invalidate_all() const
     { if (++_M_version == 0) _M_version = 1; }
 

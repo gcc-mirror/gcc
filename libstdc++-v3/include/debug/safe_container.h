@@ -86,17 +86,22 @@ namespace __gnu_debug
       { }
 #endif
 
-      // Copy assignment invalidate all iterators.
-      _GLIBCXX20_CONSTEXPR
+#if __cplusplus < 201103L
       _Safe_container&
-      operator=(const _Safe_container&) _GLIBCXX_NOEXCEPT
+      operator=(const _Safe_container& __x)
       {
-	if (!std::__is_constant_evaluated())
-	  this->_M_invalidate_all();
+	_Base::operator=(__x);
 	return *this;
       }
 
-#if __cplusplus >= 201103L
+      void
+      _M_swap(const _Safe_container& __x) const throw()
+      { _Base::_M_swap(__x); }
+#else
+      _GLIBCXX20_CONSTEXPR
+      _Safe_container&
+      operator=(const _Safe_container&) noexcept = default;
+
       _GLIBCXX20_CONSTEXPR
       _Safe_container&
       operator=(_Safe_container&& __x) noexcept
@@ -146,10 +151,6 @@ namespace __gnu_debug
 
 	_M_swap_base(__x);
       }
-#else
-      void
-      _M_swap(const _Safe_container& __x) const throw()
-      { _Base::_M_swap(__x); }
 #endif
     };
 

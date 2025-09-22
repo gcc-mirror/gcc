@@ -1114,21 +1114,31 @@ namespace __gnu_debug
 
   /** Safe iterators know how to check if they form a valid range. */
   template<typename _Iterator, typename _Sequence, typename _Category>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __valid_range(const _Safe_iterator<_Iterator, _Sequence,
 				       _Category>& __first,
 		  const _Safe_iterator<_Iterator, _Sequence,
 				       _Category>& __last,
 		  typename _Distance_traits<_Iterator>::__type& __dist)
-    { return __first._M_valid_range(__last, __dist); }
+    {
+      if (std::__is_constant_evaluated())
+	return true;
+
+      return __first._M_valid_range(__last, __dist);
+    }
 
   template<typename _Iterator, typename _Sequence, typename _Category>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __valid_range(const _Safe_iterator<_Iterator, _Sequence,
 				       _Category>& __first,
 		  const _Safe_iterator<_Iterator, _Sequence,
 				       _Category>& __last)
     {
+      if (std::__is_constant_evaluated())
+	return true;
+
       typename _Distance_traits<_Iterator>::__type __dist;
       return __first._M_valid_range(__last, __dist);
     }

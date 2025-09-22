@@ -971,6 +971,7 @@ debug_headers = \
 	${debug_srcdir}/forward_list \
 	${debug_srcdir}/functions.h \
 	${debug_srcdir}/helper_functions.h \
+	${debug_srcdir}/inplace_vector \
 	${debug_srcdir}/list \
 	${debug_srcdir}/map \
 	${debug_srcdir}/macros.h \

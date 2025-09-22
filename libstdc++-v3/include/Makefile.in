@@ -1308,6 +1308,7 @@ debug_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/functions.h \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/helper_functions.h \
+@GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/inplace_vector \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/list \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/map \
 @GLIBCXX_HOSTED_TRUE@	${debug_srcdir}/macros.h \

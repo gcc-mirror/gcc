@@ -72,12 +72,14 @@ static_assert(!std::is_nothrow_copy_constructible_v<std::inplace_vector<N<false,
 static_assert(std::is_nothrow_copy_constructible_v<std::inplace_vector<D, 2>>);
 static_assert(!std::is_nothrow_copy_constructible_v<std::inplace_vector<U, 2>>);
 
+#if !_GLIBCXX_DEBUG
 static_assert(std::is_trivially_copy_constructible_v<std::inplace_vector<int, 2>>);
 static_assert(!std::is_trivially_copy_constructible_v<std::inplace_vector<X, 2>>);
 static_assert(!std::is_trivially_copy_constructible_v<std::inplace_vector<N<true, true>, 2>>);
 // is_trivially_copy_constructible_v checks destructor
 static_assert(!std::is_trivially_copy_constructible_v<std::inplace_vector<D, 2>>);
 static_assert(std::is_trivially_copy_constructible_v<std::inplace_vector<U, 2>>);
+#endif
 
 static_assert(std::is_copy_assignable_v<std::inplace_vector<int, 2>>);
 static_assert(std::is_copy_assignable_v<std::inplace_vector<X, 2>>);
@@ -96,6 +98,7 @@ static_assert(!std::is_nothrow_copy_assignable_v<std::inplace_vector<N<false, fa
 static_assert(std::is_nothrow_copy_assignable_v<std::inplace_vector<D, 2>>);
 static_assert(!std::is_nothrow_copy_assignable_v<std::inplace_vector<U, 2>>);
 
+#if !_GLIBCXX_DEBUG
 // conditional noexcept here is libstdc++ extension,
 static_assert(std::is_trivially_copy_assignable_v<std::inplace_vector<int, 2>>);
 static_assert(!std::is_trivially_copy_assignable_v<std::inplace_vector<X, 2>>);
@@ -103,6 +106,7 @@ static_assert(!std::is_trivially_copy_assignable_v<std::inplace_vector<N<true, t
 // destructor is not trivial
 static_assert(!std::is_trivially_copy_assignable_v<std::inplace_vector<D, 2>>);
 static_assert(std::is_trivially_copy_assignable_v<std::inplace_vector<U, 2>>);
+#endif
 
 static_assert(std::is_nothrow_copy_constructible_v<std::inplace_vector<int, 0>>);
 static_assert(std::is_nothrow_copy_constructible_v<std::inplace_vector<X, 0>>);

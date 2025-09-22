@@ -35,7 +35,7 @@
 #define __glibcxx_want_inplace_vector
 #include <bits/version.h>
 
-#ifdef __glibcxx_inplace_vector // C++ >= 26 
+#ifdef __glibcxx_inplace_vector // C++ >= 26
 #include <compare>
 #include <initializer_list>
 #include <bits/range_access.h>
@@ -49,6 +49,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   // [indirect], class template indirect
   template<typename _Tp, size_t _Nm>
@@ -1329,32 +1330,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
     };
 
+_GLIBCXX_END_NAMESPACE_CONTAINER
+
   template<typename _Tp, size_t _Nm, typename _Predicate>
     constexpr size_t
-    erase_if(inplace_vector<_Tp, _Nm>& __cont, _Predicate __pred)
+    erase_if(_GLIBCXX_STD_C::inplace_vector<_Tp, _Nm>& __cont,
+	     _Predicate __pred)
     {
-      using namespace __gnu_cxx;
-      const auto __osz = __cont.size();
-      const auto __end = __cont.end();
-      auto __removed = std::__remove_if(__cont.begin(), __end,
-					std::move(__pred));
-      if (__removed != __end)
+      if constexpr (_Nm != 0)
 	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
-	  return __osz - __cont.size();
+	  const auto __osz = __cont.size();
+	  const auto __end = __cont.end();
+	  auto __removed = std::__remove_if(__cont.begin(), __end,
+					    std::move(__pred));
+	  if (__removed != __end)
+	    {
+	      __cont.erase(__removed, __end);
+	      return __osz - __cont.size();
+	    }
 	}
+
       return 0;
     }
 
-
   template<typename _Tp, size_t _Nm, typename _Up = _Tp>
     constexpr  size_t
-    erase(inplace_vector<_Tp, _Nm>& __cont, const _Up& __value)
+    erase(_GLIBCXX_STD_C::inplace_vector<_Tp, _Nm>& __cont, const _Up& __value)
     { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/inplace_vector>
+#endif
 
 #endif // __glibcxx_inplace_vector
 #endif // _GLIBCXX_INPLACE_VECTOR

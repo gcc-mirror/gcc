@@ -24,7 +24,7 @@ struct U
 };
 
 // n5008 inplace.vector.overview says for inplace_vector<T, 0>
-// provides trivial copy/move/default cosntructpr regardless of T
+// provides trivial copy/move/default constructor regardless of T
 struct Z
 {
   constexpr Z(int) {}
@@ -52,11 +52,13 @@ static_assert(!std::is_trivially_default_constructible_v<std::inplace_vector<N, 
 static_assert(!std::is_trivially_default_constructible_v<std::inplace_vector<D, 2>>);
 static_assert(!std::is_trivially_default_constructible_v<std::inplace_vector<U, 2>>);
 
+#if !_GLIBCXX_DEBUG
 static_assert(std::is_trivially_destructible_v<std::inplace_vector<int, 2>>);
 static_assert(std::is_trivially_destructible_v<std::inplace_vector<X, 2>>);
 static_assert(std::is_trivially_destructible_v<std::inplace_vector<N, 2>>);
 static_assert(!std::is_trivially_destructible_v<std::inplace_vector<D, 2>>);
 static_assert(std::is_trivially_destructible_v<std::inplace_vector<U, 2>>);
+#endif
 
 static_assert(std::is_nothrow_default_constructible_v<std::inplace_vector<int, 0>>);
 static_assert(std::is_nothrow_default_constructible_v<std::inplace_vector<X, 0>>);

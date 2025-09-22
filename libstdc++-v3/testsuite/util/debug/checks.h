@@ -19,10 +19,12 @@
 #include <vector>
 #include <deque>
 #include <list>
+#include <inplace_vector>
 #ifndef _GLIBCXX_DEBUG
 #  include <debug/vector>
 #  include <debug/deque>
 #  include <debug/list>
+#  include <debug/inplace_vector>
 #endif
 #include <testsuite_hooks.h>
 
@@ -88,10 +90,11 @@ namespace __gnu_test
     void
     check_assign1()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -116,10 +119,11 @@ namespace __gnu_test
     void
     check_assign2()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -170,10 +174,11 @@ namespace __gnu_test
     void
     check_construct1()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -193,10 +198,11 @@ namespace __gnu_test
     void
     check_construct2()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -267,6 +273,13 @@ namespace __gnu_test
     : InsertRangeHelperAux<std::list<_Tp1, _Tp2> >
     { };
 
+#ifdef __glibcxx_inplace_vector // C++ >= 26
+  template<typename _Tp, size_t _Nm>
+    struct InsertRangeHelper<std::inplace_vector<_Tp, _Nm> >
+    : InsertRangeHelperAux<std::inplace_vector<_Tp, _Nm> >
+    { };
+#endif
+
 #ifndef _GLIBCXX_DEBUG
   template <typename _Tp1, typename _Tp2>
     struct InsertRangeHelper<__gnu_debug::vector<_Tp1, _Tp2> >
@@ -282,16 +295,24 @@ namespace __gnu_test
     struct InsertRangeHelper<__gnu_debug::list<_Tp1, _Tp2> >
     : InsertRangeHelperAux<__gnu_debug::list<_Tp1, _Tp2> >
     { };
+
+# ifdef __glibcxx_inplace_vector // C++ >= 26
+  template<typename _Tp, size_t _Nm>
+    struct InsertRangeHelper<__gnu_debug::inplace_vector<_Tp, _Nm> >
+    : InsertRangeHelperAux<__gnu_debug::inplace_vector<_Tp, _Nm> >
+    { };
+# endif
 #endif
 
   template<typename _Tp>
     void
     check_insert1()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -315,10 +336,11 @@ namespace __gnu_test
     void
     check_insert2()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::vector<val_type> vector_type;
+      typedef _GLIBCXX_STD_C::vector<val_type> vector_type;
 
       generate_unique<val_type> gu;
 
@@ -369,10 +391,11 @@ namespace __gnu_test
     void
     check_insert4()
     {
+      using namespace std;
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      typedef std::list<val_type> list_type;
+      typedef _GLIBCXX_STD_C::list<val_type> list_type;
 
       generate_unique<val_type> gu;
 
