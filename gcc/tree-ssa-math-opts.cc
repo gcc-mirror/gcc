@@ -1642,12 +1642,24 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
 	{
 	  tree cast_rhs = gimple_assign_rhs1 (def);
-	  unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (cast_rhs));
+	  tree cast_rhs_type = TREE_TYPE (cast_rhs);
+	  tree val_type = TREE_TYPE (val);
+
+	  bool unsigned_p = TYPE_UNSIGNED (type);
+	  bool unsigned_rhs_p = TYPE_UNSIGNED (cast_rhs_type);
+	  bool unsigned_val_p = TYPE_UNSIGNED (val_type);
+
+	  unsigned rhs_prec = TYPE_PRECISION (cast_rhs_type);
 	  unsigned type_prec = TYPE_PRECISION (type);
-	  unsigned val_prec = TYPE_PRECISION (TREE_TYPE (val));
+	  unsigned val_prec = TYPE_PRECISION (val_type);
 
 	  if (type_prec >= rhs_prec && val_prec >= rhs_prec)
-	    rhs = cast_rhs;
+	    {
+	      /* Aka any sign extend from small to big size */
+	      if (!((val_prec > rhs_prec && !unsigned_val_p && !unsigned_rhs_p)
+		  || (type_prec > val_prec && !unsigned_p && !unsigned_val_p)))
+		rhs = rhs;
+	    }
 	}
     }
 
