@@ -282,6 +282,12 @@
   "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
 
 ;; Vector integer division
+(define_insn_reservation "tt_ascalon_d8_vec_idiv_byte" 16
+  (and (eq_attr "tune" "tt_ascalon_d8")
+       (eq_attr "type" "vidiv")
+       (eq_attr "sew" "8"))
+  "tt_ascalon_d8_decode,(tt_ascalon_d8_vec0*3 | tt_ascalon_d8_vec1*3)")
+
 (define_insn_reservation "tt_ascalon_d8_vec_idiv_half" 16
   (and (eq_attr "tune" "tt_ascalon_d8")
        (eq_attr "type" "vidiv")
