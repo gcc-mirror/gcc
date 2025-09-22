@@ -3091,7 +3091,12 @@ make_pass_ccp (gcc::context *ctxt)
    if there is another __builtin_stack_restore in the same basic
    block and no calls or ASM_EXPRs are in between, or if this block's
    only outgoing edge is to EXIT_BLOCK and there are no calls or
-   ASM_EXPRs after this __builtin_stack_restore.  */
+   ASM_EXPRs after this __builtin_stack_restore.
+   Note restore right before a noreturn function is not needed.
+   And skip some cheap calls that will most likely become an instruction.
+   Restoring the stack before a call is important to be able to keep
+   stack usage down so that call does not run out of stack.  */
+
 
 static tree
 optimize_stack_restore (gimple_stmt_iterator i)
@@ -3111,26 +3116,43 @@ optimize_stack_restore (gimple_stmt_iterator i)
   for (gsi_next (&i); !gsi_end_p (i); gsi_next (&i))
     {
       stmt = gsi_stmt (i);
-      if (gimple_code (stmt) == GIMPLE_ASM)
+      if (is_a<gasm*> (stmt))
 	return NULL_TREE;
-      if (gimple_code (stmt) != GIMPLE_CALL)
+      gcall *call = dyn_cast<gcall*>(stmt);
+      if (!call)
 	continue;
 
-      callee = gimple_call_fndecl (stmt);
+      /* We can remove the restore in front of noreturn
+	 calls.  Since the restore will happen either
+	 via an unwind/longjmp or not at all. */
+      if (gimple_call_noreturn_p (call))
+	break;
+
+      /* Internal calls are ok, to bypass
+	 check first since fndecl will be null. */
+      if (gimple_call_internal_p (call))
+	continue;
+
+      callee = gimple_call_fndecl (call);
+      /* Non-builtin calls are not ok. */
       if (!callee
-	  || !fndecl_built_in_p (callee, BUILT_IN_NORMAL)
-	  /* All regular builtins are ok, just obviously not alloca.  */
-	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee))
-	  /* Do not remove stack updates before strub leave.  */
-	  || fndecl_built_in_p (callee, BUILT_IN___STRUB_LEAVE))
+	  || !fndecl_built_in_p (callee))
+	return NULL_TREE;
+
+      /* Do not remove stack updates before strub leave.  */
+      if (fndecl_built_in_p (callee, BUILT_IN___STRUB_LEAVE)
+	  /* Alloca calls are not ok either. */
+	  || fndecl_builtin_alloc_p (callee))
 	return NULL_TREE;
 
       if (fndecl_built_in_p (callee, BUILT_IN_STACK_RESTORE))
 	goto second_stack_restore;
-    }
 
-  if (!gsi_end_p (i))
-    return NULL_TREE;
+      /* If not a simple or inexpensive builtin, then it is not ok either. */
+      if (!is_simple_builtin (callee)
+	  && !is_inexpensive_builtin (callee))
+	return NULL_TREE;
+    }
 
   /* Allow one successor of the exit block, or zero successors.  */
   switch (EDGE_COUNT (bb->succs))

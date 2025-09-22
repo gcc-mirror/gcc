@@ -7005,6 +7005,15 @@ fndecl_built_in_p (const_tree node, built_in_function name1, F... names)
 					name1, names...));
 }
 
+/* Returns true if the function decl NODE is an alloca. */
+inline bool
+fndecl_builtin_alloc_p (const_tree node)
+{
+  if (!fndecl_built_in_p (node, BUILT_IN_NORMAL))
+    return false;
+  return ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (node));
+}
+
 /* A struct for encapsulating location information about an operator
    and the operation built from it.
 
