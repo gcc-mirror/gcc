@@ -1,3 +1,31 @@
+2025-09-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-ccp.cc (optimize_unreachable): Don't check for forced labels.
+
+2025-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphclones.cc (cgraph_node::create_version_clone): Recompute
+	calls_comdat_local
+
+2025-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.cc (cgraph_edge::maybe_hot_p): For AFDO profiles force
+	count to be non-zero.
+
+2025-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* auto-profile.cc (autofdo_source_profile::read): Scale profile up to
+	profile_count::n_bits - 10.
+
+2025-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.cc (clone_inlined_nodes): Add KEEP_OFFLINE_COPY
+	parameter.
+	(inline_call): Sanity check profile and if it is clearly broken do
+	not subtract profile from original function.
+	* ipa-inline.cc (recursive_inlining): Update.
+	* ipa-inline.h (clone_inlined_nodes): Update.
+
 2025-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (--param max-devirt-targets) Document.

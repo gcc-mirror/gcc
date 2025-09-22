@@ -1,3 +1,25 @@
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109010
+	* st.cc (gfc_free_statement): Also free components expr3 and expr4.
+
+2025-09-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/121161
+	* invoke.texi: Mention that -ffrontend-optimize is required
+	for -fexternal-blas64.
+	* options.cc (gfc_post_options): Fatal error if -fexternal-blas64
+	is specified without -ffrontend-optimize.
+	* trans-types.cc (gfc_init_kinds): Fatal error if -fexternal-blas64
+	is specified on a system which does not have 64-bit ptrdiff_t.
+
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108581
+	* trans-array.cc (gfc_conv_expr_descriptor): Take the dynamic
+	string length into account when deriving the dataptr offset for
+	a deferred-length character array.
+
 2025-09-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83746
