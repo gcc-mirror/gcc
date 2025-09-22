@@ -823,6 +823,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						      __detail::__synth3way);
       }
 
+      // [inplace.vector.special], specialized algorithms
       constexpr friend void
       swap(inplace_vector& __x, inplace_vector& __y)
       noexcept(is_nothrow_swappable_v<_Tp> && is_nothrow_move_constructible_v<_Tp>)
@@ -907,13 +908,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
-  // [inplace.vector.special], specialized algorithms
-  template<typename _Tp, size_t _Nm>
-    constexpr void
-    swap(inplace_vector<_Tp, _Nm>& __x, inplace_vector<_Tp, _Nm>& __y)
-    noexcept(noexcept(__x.swap(__y)))
-    { __x.swap(__y); }
-
   // specialization for zero capacity, that is required to be trivally copyable
   // and empty regardless of _Tp.
   template<typename _Tp>
@@ -992,6 +986,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__il.size() != 0)
 	  __throw_bad_alloc();
+	return *this;
       }
 
       template<__any_input_iterator _InputIterator>
