@@ -1219,17 +1219,17 @@ public:
   /* If this is an epilogue loop the DR advancement applied.  */
   tree drs_advanced_by;
 
-  /* The controlling loop IV for the current loop when vectorizing.  This IV
-     controls the natural exits of the loop.  */
-  edge vec_loop_iv_exit;
+  /* The controlling loop exit for the current loop when vectorizing.
+     For counted loops, this IV controls the natural exits of the loop.  */
+  edge vec_loop_main_exit;
 
-  /* The controlling loop IV for the epilogue loop when vectorizing.  This IV
-     controls the natural exits of the loop.  */
-  edge vec_epilogue_loop_iv_exit;
+  /* The controlling loop exit for the epilogue loop when vectorizing.
+     For counted loops, this IV controls the natural exits of the loop.  */
+  edge vec_epilogue_loop_main_exit;
 
-  /* The controlling loop IV for the scalar loop being vectorized.  This IV
-     controls the natural exits of the loop.  */
-  edge scalar_loop_iv_exit;
+  /* The controlling loop exit for the scalar loop being vectorized.
+     For counted loops, this IV controls the natural exits of the loop.  */
+  edge scalar_loop_main_exit;
 
   /* Used to store the list of stores needing to be moved if doing early
      break vectorization as they would violate the scalar loop semantics if
@@ -1256,9 +1256,9 @@ public:
 
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)                 (L)->loop
-#define LOOP_VINFO_IV_EXIT(L)              (L)->vec_loop_iv_exit
-#define LOOP_VINFO_EPILOGUE_IV_EXIT(L)     (L)->vec_epilogue_loop_iv_exit
-#define LOOP_VINFO_SCALAR_IV_EXIT(L)       (L)->scalar_loop_iv_exit
+#define LOOP_VINFO_MAIN_EXIT(L)              (L)->vec_loop_main_exit
+#define LOOP_VINFO_EPILOGUE_MAIN_EXIT(L)     (L)->vec_epilogue_loop_main_exit
+#define LOOP_VINFO_SCALAR_MAIN_EXIT(L)       (L)->scalar_loop_main_exit
 #define LOOP_VINFO_BBS(L)                  (L)->bbs
 #define LOOP_VINFO_NBBS(L)                 (L)->nbbs
 #define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
@@ -1313,7 +1313,7 @@ public:
 #define LOOP_VINFO_EARLY_BREAKS(L)         (L)->early_breaks
 #define LOOP_VINFO_EARLY_BRK_STORES(L)     (L)->early_break_stores
 #define LOOP_VINFO_EARLY_BREAKS_VECT_PEELED(L)  \
-  ((single_pred ((L)->loop->latch) != (L)->vec_loop_iv_exit->src) \
+  ((single_pred ((L)->loop->latch) != (L)->vec_loop_main_exit->src) \
    || LOOP_VINFO_NITERS_UNCOUNTED_P (L))
 #define LOOP_VINFO_EARLY_BREAKS_LIVE_IVS(L)  \
   (L)->early_break_live_ivs
