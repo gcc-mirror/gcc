@@ -843,7 +843,7 @@ class StructPatternElements
   // bool has_struct_pattern_fields;
   std::vector<std::unique_ptr<StructPatternField>> fields;
 
-  bool has_struct_pattern_etc;
+  bool has_rest_pattern;
   std::vector<Attribute> struct_pattern_etc_attrs;
   // StructPatternEtc etc;
 
@@ -859,29 +859,29 @@ public:
    * no etc). */
   bool is_empty () const
   {
-    return !has_struct_pattern_fields () && !has_struct_pattern_etc;
+    return !has_struct_pattern_fields () && !has_rest_pattern;
   }
 
-  bool has_etc () const { return has_struct_pattern_etc; }
+  bool has_rest () const { return has_rest_pattern; }
 
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField>> fields,
     std::vector<Attribute> etc_attrs)
-    : fields (std::move (fields)), has_struct_pattern_etc (true),
+    : fields (std::move (fields)), has_rest_pattern (true),
       struct_pattern_etc_attrs (std::move (etc_attrs))
   {}
 
   // Constructor for StructPatternElements with no StructPatternEtc
   StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField>> fields)
-    : fields (std::move (fields)), has_struct_pattern_etc (false),
+    : fields (std::move (fields)), has_rest_pattern (false),
       struct_pattern_etc_attrs ()
   {}
 
   // Copy constructor with vector clone
   StructPatternElements (StructPatternElements const &other)
-    : has_struct_pattern_etc (other.has_struct_pattern_etc),
+    : has_rest_pattern (other.has_rest_pattern),
       struct_pattern_etc_attrs (other.struct_pattern_etc_attrs)
   {
     fields.reserve (other.fields.size ());
@@ -893,7 +893,7 @@ public:
   StructPatternElements &operator= (StructPatternElements const &other)
   {
     struct_pattern_etc_attrs = other.struct_pattern_etc_attrs;
-    has_struct_pattern_etc = other.has_struct_pattern_etc;
+    has_rest_pattern = other.has_rest_pattern;
 
     fields.clear ();
     fields.reserve (other.fields.size ());
@@ -938,7 +938,7 @@ public:
 
   void strip_etc ()
   {
-    has_struct_pattern_etc = false;
+    has_rest_pattern = false;
     struct_pattern_etc_attrs.clear ();
     struct_pattern_etc_attrs.shrink_to_fit ();
   }

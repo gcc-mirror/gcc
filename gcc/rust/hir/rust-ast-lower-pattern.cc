@@ -121,7 +121,6 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
     = ASTLowerPathInExpression::translate (pattern.get_path ());
 
   auto &raw_elems = pattern.get_struct_pattern_elems ();
-  rust_assert (!raw_elems.has_etc ());
 
   std::vector<std::unique_ptr<HIR::StructPatternField>> fields;
   for (auto &field : raw_elems.get_struct_pattern_fields ())
@@ -204,7 +203,8 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  HIR::StructPatternElements elems (std::move (fields));
+  HIR::StructPatternElements elems (
+    std::move (fields), pattern.get_struct_pattern_elems ().has_rest ());
   translated = new HIR::StructPattern (mapping, *path, std::move (elems));
 }
 

@@ -186,8 +186,8 @@ StructPatternElements::as_string () const
 	str += "\n   " + field->as_string ();
     }
 
-  str += "\n  Etc: ";
-  if (has_struct_pattern_etc)
+  str += "\n  Has rest: ";
+  if (has_rest_pattern)
     str += "true";
   else
     str += "false";

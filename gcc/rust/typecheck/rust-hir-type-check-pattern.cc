@@ -407,7 +407,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       // Expects enum struct or struct struct.
       // error[E0027]: pattern does not mention fields `x`, `y`
       // error[E0026]: variant `Foo::D` does not have a field named `b`
-      if (named_fields.size () != variant->num_fields ())
+      if (!pattern.get_struct_pattern_elems ().has_rest ()
+	  && named_fields.size () != variant->num_fields ())
 	{
 	  std::map<std::string, bool> missing_names;
 

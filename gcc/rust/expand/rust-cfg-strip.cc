@@ -2349,7 +2349,7 @@ CfgStrip::visit (AST::StructPattern &pattern)
   maybe_strip_pointer_allow_strip (elems.get_struct_pattern_fields ());
 
   // assuming you can strip the ".." part
-  if (elems.has_etc ())
+  if (elems.has_rest ())
     {
       expand_cfg_attrs (elems.get_etc_outer_attrs ());
       if (fails_cfg_with_expand (elems.get_etc_outer_attrs ()))

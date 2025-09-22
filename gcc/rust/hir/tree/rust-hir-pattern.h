@@ -683,6 +683,7 @@ protected:
 class StructPatternElements
 {
   std::vector<std::unique_ptr<StructPatternField>> fields;
+  bool has_rest_pattern;
 
 public:
   // Returns whether there are any struct pattern fields
@@ -692,10 +693,18 @@ public:
    * no etc). */
   bool is_empty () const { return !has_struct_pattern_fields (); }
 
+  bool has_rest () const { return has_rest_pattern; }
+
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField>> fields)
-    : fields (std::move (fields))
+    : fields (std::move (fields)), has_rest_pattern (false)
+  {}
+
+  StructPatternElements (
+    std::vector<std::unique_ptr<StructPatternField>> fields,
+    bool has_rest_pattern)
+    : fields (std::move (fields)), has_rest_pattern (has_rest_pattern)
   {}
 
   // Copy constructor with vector clone
@@ -703,7 +712,8 @@ public:
   {
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
-      fields.push_back (e->clone_struct_pattern_field ());
+      fields.emplace_back (e->clone_struct_pattern_field ());
+    has_rest_pattern = other.has_rest_pattern;
   }
 
   // Overloaded assignment operator with vector clone
@@ -712,8 +722,8 @@ public:
     fields.clear ();
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
-      fields.push_back (e->clone_struct_pattern_field ());
-
+      fields.emplace_back (e->clone_struct_pattern_field ());
+    has_rest_pattern = other.has_rest_pattern;
     return *this;
   }
 

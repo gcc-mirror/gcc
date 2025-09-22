@@ -2620,7 +2620,7 @@ TokenCollector::visit (StructPattern &pattern)
   if (elems.has_struct_pattern_fields ())
     {
       visit_items_joined_by_separator (elems.get_struct_pattern_fields ());
-      if (elems.has_etc ())
+      if (elems.has_rest ())
 	{
 	  push (Rust::Token::make (COMMA, UNDEF_LOCATION));
 	  visit_items_as_lines (elems.get_etc_outer_attrs ());

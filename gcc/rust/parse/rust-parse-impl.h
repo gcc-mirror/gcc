@@ -11430,7 +11430,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_elems ()
   std::vector<std::unique_ptr<AST::StructPatternField>> fields;
 
   AST::AttrVec etc_attrs;
-  bool has_etc = false;
+  bool has_rest = false;
 
   // try parsing struct pattern fields
   const_TokenPtr t = lexer.peek_token ();
@@ -11443,7 +11443,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_elems ()
 	{
 	  lexer.skip_token ();
 	  etc_attrs = std::move (outer_attrs);
-	  has_etc = true;
+	  has_rest = true;
 	  break;
 	}
 
@@ -11468,7 +11468,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_elems ()
       t = lexer.peek_token ();
     }
 
-  if (has_etc)
+  if (has_rest)
     return AST::StructPatternElements (std::move (fields),
 				       std::move (etc_attrs));
   else
