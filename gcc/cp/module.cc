@@ -8144,7 +8144,14 @@ trees_in::install_entity (tree decl)
   if (!DECL_LANG_SPECIFIC (not_tmpl)
       || !DECL_MODULE_ENTITY_P (not_tmpl))
     {
-      retrofit_lang_decl (not_tmpl);
+      /* We don't want to use retrofit_lang_decl directly so that we aren't
+	 affected by the language state when we load in.  */
+      if (!DECL_LANG_SPECIFIC (not_tmpl))
+	{
+	  maybe_add_lang_decl_raw (not_tmpl, false);
+	  gcc_checking_assert (!VAR_OR_FUNCTION_DECL_P (not_tmpl));
+	  SET_DECL_LANGUAGE (not_tmpl, lang_cplusplus);
+	}
       DECL_MODULE_ENTITY_P (not_tmpl) = true;
 
       /* Insert into the entity hash (it cannot already be there).  */
@@ -12320,7 +12327,15 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
   // FIXME: do more precise errors at point of mismatch
   const char *mismatch_msg = nullptr;
-  if (TREE_CODE (d_inner) == FUNCTION_DECL)
+
+  if (VAR_OR_FUNCTION_DECL_P (d_inner)
+      && DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
+    {
+      mismatch_msg = G_("conflicting language linkage for imported "
+			"declaration %#qD");
+      goto mismatch;
+    }
+  else if (TREE_CODE (d_inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
       tree d_ret = fndecl_declared_return_type (decl);
@@ -12336,13 +12351,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
       tree e_type = TREE_TYPE (e_inner);
       tree d_type = TREE_TYPE (d_inner);
-
-      if (DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
-	{
-	  mismatch_msg = G_("conflicting language linkage for imported "
-			    "declaration %#qD");
-	  goto mismatch;
-	}
 
       for (tree e_args = TYPE_ARG_TYPES (e_type),
 	     d_args = TYPE_ARG_TYPES (d_type);
@@ -21151,7 +21159,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
     // FIXME: Should we be checking this in more places on the scope chain?
     return true;
 
-  module_state *old_mod = this_module ();
+  module_state *old_mod = get_primary (this_module ());
   module_state *new_mod = old_mod;
 
   tree old_origin = get_originating_module_decl (decl);
@@ -21161,7 +21169,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
   if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
     {
       unsigned index = import_entity_index (old_origin);
-      old_mod = import_entity_module (index);
+      old_mod = get_primary (import_entity_module (index));
     }
 
   bool newdecl_attached_p = module_attach_p ();
@@ -21174,7 +21182,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
       if (DECL_LANG_SPECIFIC (new_inner) && DECL_MODULE_IMPORT_P (new_inner))
 	{
 	  unsigned index = import_entity_index (new_origin);
-	  new_mod = import_entity_module (index);
+	  new_mod = get_primary (import_entity_module (index));
 	}
     }
 
@@ -21185,8 +21193,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
 	/* Both are GM entities, OK.  */
 	return true;
 
-      if (new_mod == old_mod
-	  || (new_mod && get_primary (new_mod) == get_primary (old_mod)))
+      if (new_mod == old_mod)
 	/* Both attached to same named module, OK.  */
 	return true;
     }
