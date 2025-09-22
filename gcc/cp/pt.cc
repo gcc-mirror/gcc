@@ -30493,6 +30493,18 @@ make_constrained_decltype_auto (tree con, tree args)
   return make_constrained_placeholder_type (type, con, args);
 }
 
+/* Create an "auto..." type-specifier.  */
+
+tree
+make_auto_pack ()
+{
+  tree type = make_auto_1 (auto_identifier, false);
+  TEMPLATE_TYPE_PARAMETER_PACK (type) = true;
+  /* Our canonical type depends on being a pack.  */
+  TYPE_CANONICAL (type) = canonical_type_parameter (type);
+  return type;
+}
+
 /* Returns true if the placeholder type constraint T has any dependent
    (explicit) template arguments.  */
 
