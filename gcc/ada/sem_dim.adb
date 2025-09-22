@@ -1273,7 +1273,9 @@ package body Sem_Dim is
 
          --  Get the expression from the component
 
-         if Nkind (Comp) = N_Component_Association then
+         if Nkind (Comp) in N_Component_Association
+                          | N_Iterated_Component_Association
+         then
             Expr := Expression (Comp);
          else
             Expr := Comp;
