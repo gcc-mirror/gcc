@@ -3175,14 +3175,16 @@ optimize_stack_restore (gimple_stmt_iterator i)
 /* If va_list type is a simple pointer and nothing special is needed,
    optimize __builtin_va_start (&ap, 0) into ap = __builtin_next_arg (0),
    __builtin_va_end (&ap) out as NOP and __builtin_va_copy into a simple
-   pointer assignment.  */
+   pointer assignment.  Returns true if a change happened.  */
 
-static tree
-optimize_stdarg_builtin (gimple *call)
+static bool
+optimize_stdarg_builtin (gimple_stmt_iterator *gsi, gimple *call)
 {
   tree callee, lhs, rhs, cfun_va_list;
   bool va_list_simple_ptr;
   location_t loc = gimple_location (call);
+  gimple *nstmt0, *nstmt;
+  tree tlhs, oldvdef, newvdef;
 
   callee = gimple_call_fndecl (call);
 
@@ -3197,48 +3199,90 @@ optimize_stdarg_builtin (gimple *call)
       if (!va_list_simple_ptr
 	  || targetm.expand_builtin_va_start != NULL
 	  || !builtin_decl_explicit_p (BUILT_IN_NEXT_ARG))
-	return NULL_TREE;
+	return false;
 
       if (gimple_call_num_args (call) != 2)
-	return NULL_TREE;
+	return false;
 
       lhs = gimple_call_arg (call, 0);
       if (!POINTER_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
 	     != TYPE_MAIN_VARIANT (cfun_va_list))
-	return NULL_TREE;
+	return false;
+      /* Create `tlhs = __builtin_next_arg(0);`. */
+      tlhs = make_ssa_name (cfun_va_list);
+      nstmt0 = gimple_build_call (builtin_decl_explicit (BUILT_IN_NEXT_ARG), 1, integer_zero_node);
+      lhs = fold_build2 (MEM_REF, cfun_va_list, lhs, build_zero_cst (TREE_TYPE (lhs)));
+      gimple_call_set_lhs (nstmt0, tlhs);
+      gimple_set_location (nstmt0, loc);
+      gimple_move_vops (nstmt0, call);
+      gsi_replace (gsi, nstmt0, false);
+      oldvdef = gimple_vdef (nstmt0);
+      newvdef = make_ssa_name (gimple_vop (cfun), nstmt0);
+      gimple_set_vdef (nstmt0, newvdef);
 
-      lhs = build_fold_indirect_ref_loc (loc, lhs);
-      rhs = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_NEXT_ARG),
-                             1, integer_zero_node);
-      rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
-      return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
+      /* Create `*lhs = tlhs;`.  */
+      nstmt = gimple_build_assign (lhs, tlhs);
+      gimple_set_location (nstmt, loc);
+      gimple_set_vuse (nstmt, newvdef);
+      gimple_set_vdef (nstmt, oldvdef);
+      SSA_NAME_DEF_STMT (oldvdef) = nstmt;
+      gsi_insert_after (gsi, nstmt, GSI_NEW_STMT);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Simplified\n  ");
+	  print_gimple_stmt (dump_file, call, 0, dump_flags);
+	  fprintf (dump_file, "into\n  ");
+	  print_gimple_stmt (dump_file, nstmt0, 0, dump_flags);
+	  fprintf (dump_file, "  ");
+	  print_gimple_stmt (dump_file, nstmt, 0, dump_flags);
+	}
+      return true;
 
     case BUILT_IN_VA_COPY:
       if (!va_list_simple_ptr)
-	return NULL_TREE;
+	return false;
 
       if (gimple_call_num_args (call) != 2)
-	return NULL_TREE;
+	return false;
 
       lhs = gimple_call_arg (call, 0);
       if (!POINTER_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
 	     != TYPE_MAIN_VARIANT (cfun_va_list))
-	return NULL_TREE;
-
-      lhs = build_fold_indirect_ref_loc (loc, lhs);
+	return false;
       rhs = gimple_call_arg (call, 1);
       if (TYPE_MAIN_VARIANT (TREE_TYPE (rhs))
 	  != TYPE_MAIN_VARIANT (cfun_va_list))
-	return NULL_TREE;
+	return false;
 
-      rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
-      return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
+      lhs = fold_build2 (MEM_REF, cfun_va_list, lhs, build_zero_cst (TREE_TYPE (lhs)));
+      nstmt = gimple_build_assign (lhs, rhs);
+      gimple_set_location (nstmt, loc);
+      gimple_move_vops (nstmt, call);
+      gsi_replace (gsi, nstmt, false);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Simplified\n  ");
+	  print_gimple_stmt (dump_file, call, 0, dump_flags);
+	  fprintf (dump_file, "into\n  ");
+	  print_gimple_stmt (dump_file, nstmt, 0, dump_flags);
+	}
+      return true;
 
     case BUILT_IN_VA_END:
       /* No effect, so the statement will be deleted.  */
-      return integer_zero_node;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removed\n  ");
+	  print_gimple_stmt (dump_file, call, 0, dump_flags);
+	}
+      unlink_stmt_vdef (call);
+      release_defs (call);
+      gsi_replace (gsi, gimple_build_nop (), true);
+      return true;
 
     default:
       gcc_unreachable ();
@@ -4426,7 +4470,8 @@ pass_fold_builtins::execute (function *fun)
 		case BUILT_IN_VA_END:
 		case BUILT_IN_VA_COPY:
 		  /* These shouldn't be folded before pass_stdarg.  */
-		  result = optimize_stdarg_builtin (stmt);
+		  if (optimize_stdarg_builtin (&i, stmt))
+		    todoflags |= TODO_update_address_taken;
 		  break;
 
 		default:;
