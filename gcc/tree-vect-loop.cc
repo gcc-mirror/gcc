@@ -923,7 +923,11 @@ vect_min_prec_for_max_niters (loop_vec_info loop_vinfo, unsigned int factor)
 
   /* Get the maximum number of iterations that is representable
      in the counter type.  */
-  tree ni_type = TREE_TYPE (LOOP_VINFO_NITERSM1 (loop_vinfo));
+  tree ni_type;
+  if (!LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    ni_type = TREE_TYPE (LOOP_VINFO_NITERSM1 (loop_vinfo));
+  else
+    ni_type = sizetype;
   widest_int max_ni = wi::to_widest (TYPE_MAX_VALUE (ni_type)) + 1;
 
   /* Get a more refined estimate for the number of iterations.  */
@@ -10399,6 +10403,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 static bool
 loop_niters_no_overflow (loop_vec_info loop_vinfo)
 {
+  gcc_assert (!LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo));
+
   /* Constant case.  */
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
@@ -11056,6 +11062,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   bool check_profitability = false;
   unsigned int th;
   bool flat = maybe_flat_loop_profile (loop);
+  bool uncounted_p = LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo);
 
   DUMP_VECT_SCOPE ("vec_transform_loop");
 
@@ -11117,9 +11124,10 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   tree niters = vect_build_loop_niters (loop_vinfo);
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
   tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
-  bool niters_no_overflow = loop_niters_no_overflow (loop_vinfo);
   tree advance;
   drs_init_vec orig_drs_init;
+  bool niters_no_overflow = uncounted_p ? false /* Not known.  */
+					: loop_niters_no_overflow (loop_vinfo);
 
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,

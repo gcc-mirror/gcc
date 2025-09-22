@@ -2550,7 +2550,10 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 {
   dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   tree var;
-  tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
+  tree niters_type
+    = LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo) ? sizetype
+						 : TREE_TYPE (LOOP_VINFO_NITERS
+							      (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
   stmt_vec_info stmt_info = dr_info->stmt;
@@ -2729,6 +2732,8 @@ vect_prepare_for_masked_peels (loop_vec_info loop_vinfo)
 tree
 vect_build_loop_niters (loop_vec_info loop_vinfo, bool *new_var_p)
 {
+  if (LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    return NULL_TREE;
   tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
   if (TREE_CODE (ni) == INTEGER_CST)
     return ni;
@@ -2830,7 +2835,8 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
 			     bool niters_no_overflow)
 {
   tree ni_minus_gap, var;
-  tree niters_vector, step_vector, type = TREE_TYPE (niters);
+  tree niters_vector, step_vector;
+  tree type = niters ? TREE_TYPE (niters) : sizetype;
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
 
@@ -3174,7 +3180,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 		 tree *advance)
 {
   edge e, guard_e;
-  tree type = TREE_TYPE (niters), guard_cond;
+  tree type = niters ? TREE_TYPE (niters) : sizetype;
+  tree guard_cond;
   basic_block guard_bb, guard_to;
   profile_probability prob_prolog, prob_vector, prob_epilog;
   int estimated_vf;

@@ -1263,6 +1263,8 @@ public:
 #define LOOP_VINFO_NBBS(L)                 (L)->nbbs
 #define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
 #define LOOP_VINFO_NITERS(L)               (L)->num_iters
+#define LOOP_VINFO_NITERS_UNCOUNTED_P(L)   (LOOP_VINFO_NITERS (L) \
+					    == chrec_dont_know)
 /* Since LOOP_VINFO_NITERS and LOOP_VINFO_NITERSM1 can change after
    prologue peeling retain total unchanged scalar loop iterations for
    cost model.  */
