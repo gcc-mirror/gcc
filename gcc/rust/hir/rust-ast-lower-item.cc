@@ -418,10 +418,39 @@ ASTLoweringItem::visit (AST::Function &function)
   std::vector<HIR::FunctionParam> function_params;
   function_params.reserve (function.get_function_params ().size ());
 
+  auto crate_num = mappings.get_current_crate ();
   for (auto &p : function.get_function_params ())
     {
-      if (p->is_variadic () || p->is_self ())
+      if (p->is_variadic ())
 	continue;
+      if (p->is_self ())
+	{
+	  rich_location r (line_table, p->get_locus ());
+	  r.add_range (function.get_locus ());
+	  rust_error_at (
+	    r, "%<self%> parameter is only allowed in associated functions");
+
+	  // rustc creates a synthetic regular fn-param here pointing to a
+	  // generic Self as far as i can see but that seems over the top for
+	  // now.
+	  //
+	  // see this example (invalid code):
+	  //
+	  // pub trait X {
+	  //   fn x() {
+	  //     fn f(&mut self) {}
+	  //     f();
+	  //   }
+	  // }
+	  //
+	  // without a synthetic param we wont get the number of args error as
+	  // well but i think this is fine for now.
+	  //
+	  // problem is what we make the param type to become...
+
+	  continue;
+	}
+
       auto param = static_cast<AST::FunctionParam &> (*p);
 
       auto translated_pattern = std::unique_ptr<HIR::Pattern> (
@@ -445,7 +474,6 @@ ASTLoweringItem::visit (AST::Function &function)
       ASTLoweringBlock::translate (*function.get_definition ().value (),
 				   &terminated));
 
-  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
