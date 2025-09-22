@@ -2044,9 +2044,15 @@ package body Sem_Ch12 is
       is
       begin
          for Index in Gen_Assocs.Assocs'Range loop
-            if Defining_Entity (Gen_Assocs.Assocs (Index).An_Formal) = F then
-               return Index;
-            end if;
+            declare
+               An_F : constant Node_Id := Gen_Assocs.Assocs (Index).An_Formal;
+            begin
+               if Nkind (An_F) not in N_Use_Package_Clause | N_Use_Type_Clause
+                 and then Defining_Entity (An_F) = F
+               then
+                  return Index;
+               end if;
+            end;
          end loop;
 
          raise Program_Error; -- it must be present
