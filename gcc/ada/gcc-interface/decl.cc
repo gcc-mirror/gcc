@@ -5310,6 +5310,10 @@ get_extended_unconstrained_array (Entity_Id gnat_entity, tree gnu_type)
   gcc_assert (Is_Array_Type (gnat_entity)
 	      && TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
 
+
+  if (Ekind (gnat_entity) == E_Array_Subtype)
+    return get_extended_unconstrained_array (Etype (gnat_entity), gnu_type);
+
   tree gnu_extended_type = TYPE_EXTENDED_UNCONSTRAINED_ARRAY (gnu_type);
 
   /* Building the extended type is achieved by translating the array type
