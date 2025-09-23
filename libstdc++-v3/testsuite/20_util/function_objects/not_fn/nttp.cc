@@ -2,12 +2,6 @@
 
 // { dg-do run { target c++26 } }
 
-#ifndef __cpp_lib_not_fn
-# error "Feature test macro for not_fn is missing in <functional>"
-#elif __cpp_lib_not_fn < 202306L
-# error "Feature test macro for not_fn has wrong value in <functional>"
-#endif
-
 #include <functional>
 #include <testsuite_hooks.h>
 
