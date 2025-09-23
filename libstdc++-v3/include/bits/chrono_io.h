@@ -2958,7 +2958,6 @@ namespace __format
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::utc_time<_Duration>, _CharT>
-    : __format::__formatter_chrono<_CharT>
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
@@ -3003,7 +3002,6 @@ namespace __format
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::tai_time<_Duration>, _CharT>
-    : __format::__formatter_chrono<_CharT>
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
@@ -3039,7 +3037,6 @@ namespace __format
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::gps_time<_Duration>, _CharT>
-    : __format::__formatter_chrono<_CharT>
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
