@@ -559,282 +559,281 @@ namespace __format
       __formatter_chrono(_ChronoSpec<_CharT> __spec) noexcept
       : _M_spec(__spec)
       { }
+	
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      _M_parse(basic_format_parse_context<_CharT>& __pc, _ChronoParts __parts,
+	       const _ChronoSpec<_CharT>& __def)
+      {
+	auto __first = __pc.begin();
+	auto __last = __pc.end();
 
-      template<typename _ParseContext>
-	constexpr typename _ParseContext::iterator
-	_M_parse(_ParseContext& __pc, _ChronoParts __parts,
-		 const _ChronoSpec<_CharT>& __def)
-	{
-	  auto __first = __pc.begin();
-	  auto __last = __pc.end();
+	_ChronoSpec<_CharT> __spec = __def;
 
-	  _ChronoSpec<_CharT> __spec = __def;
+	auto __finalize = [this, &__spec, &__def] {
+	  using enum _ChronoParts;
+	  _ChronoParts __checked
+	    = __spec._M_debug ? _YearMonthDay|_IndexedWeekday
+			      : _Month|_Weekday;
+	  // n.b. for calendar types __def._M_needed contains only parts
+	  // copied from the input, remaining ones are computed, and thus ok
+	  __spec._M_needs_ok_check
+	     = __spec._M_needs(__def._M_needed & __checked);
+	  _M_spec = __spec;
+	};
 
-	  auto __finalize = [this, &__spec, &__def] {
-	    using enum _ChronoParts;
-	    _ChronoParts __checked
-	      = __spec._M_debug ? _YearMonthDay|_IndexedWeekday
-				: _Month|_Weekday;
-	    // n.b. for calendar types __def._M_needed contains only parts
-	    // copied from the input, remaining ones are computed, and thus ok
-	    __spec._M_needs_ok_check
-	      = __spec._M_needs(__def._M_needed & __checked);
-	    _M_spec = __spec;
-	  };
-
-	  auto __finished = [&] {
-	    if (__first == __last || *__first == '}')
-	      {
-		__finalize();
-		return true;
-	      }
-	    return false;
-	  };
-
-	  if (__finished())
-	    return __first;
-
-	  __first = __spec._M_parse_fill_and_align(__first, __last);
-	  if (__finished())
-	    return __first;
-
-	  __first = __spec._M_parse_width(__first, __last, __pc);
-	  if (__finished())
-	    return __first;
-
-	  if (*__first == '.')
+	auto __finished = [&] {
+	  if (__first == __last || *__first == '}')
 	    {
-	      if ((__parts & _ChronoParts::_EpochUnits) == 0
-		  || !__spec._M_floating_point_rep)
-		__throw_format_error("format error: invalid precision for duration");
-
-	      // Precision is allowed, but value is ignored.
-	      __first = _Spec<_CharT>()._M_parse_precision(__first, __last, __pc);
-	      // Still inditate that there was user supplied precision.
-	      __spec._M_prec_kind = _WP_value;
-	     if (__finished())
-	       return __first;
+	      __finalize();
+	      return true;
 	    }
+	  return false;
+	};
 
-	  __spec._M_localized = false;
-	  __first = __spec._M_parse_locale(__first, __last);
-	  if (__finished())
-	    return __first;
+	if (__finished())
+	  return __first;
 
-	  // Everything up to the end of the string or the first '}' is a
-	  // chrono-specs string. Check it is valid.
+	__first = __spec._M_parse_fill_and_align(__first, __last);
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_width(__first, __last, __pc);
+	if (__finished())
+	  return __first;
+
+	if (*__first == '.')
 	  {
-	    __string_view __str(__first, __last - __first);
-	    auto __end = __str.find('}');
-	    if (__end != __str.npos)
-	      {
-		__str.remove_suffix(__str.length() - __end);
-		__last = __first + __end;
-	      }
-	    if (__str.find('{') != __str.npos)
-	      __throw_format_error("chrono format error: '{' in chrono-specs");
+	    if ((__parts & _ChronoParts::_EpochUnits) == 0
+		  || !__spec._M_floating_point_rep)
+	      __throw_format_error("format error: invalid precision for duration");
+
+	    // Precision is allowed, but value is ignored.
+	    __first = _Spec<_CharT>()._M_parse_precision(__first, __last, __pc);
+	    // Still inditate that there was user supplied precision.
+	    __spec._M_prec_kind = _WP_value;
+	    if (__finished())
+	      return __first;
 	  }
 
-	  // Parse chrono-specs in [first,last), checking each conversion-spec
-	  // against __parts (so fail for %Y if no year in parts).
-	  // Save range in __spec._M_chrono_specs.
-	  __spec._M_debug = false;
-	  __spec._M_locale_specific = false;
-	  __spec._M_needed = _ChronoParts::_None;
-	  __spec._M_chrono_specs = __string_view();
+	__spec._M_localized = false;
+	__first = __spec._M_parse_locale(__first, __last);
+	if (__finished())
+	  return __first;
 
-	  const auto __chrono_specs = __first++; // Skip leading '%'
-	  if (*__chrono_specs != '%')
-	    __throw_format_error("chrono format error: no '%' at start of "
-				 "chrono-specs");
-
-	  _CharT __mod{};
-	  bool __conv = true;
-	  while (__first != __last)
+	// Everything up to the end of the string or the first '}' is a
+	// chrono-specs string. Check it is valid.
+	{
+	  __string_view __str(__first, __last - __first);
+	  auto __end = __str.find('}');
+	  if (__end != __str.npos)
 	    {
-	      enum _Mods { _Mod_none, _Mod_E, _Mod_O, _Mod_E_O };
-	      _Mods __allowed_mods = _Mod_none;
+	      __str.remove_suffix(__str.length() - __end);
+	      __last = __first + __end;
+	    }
+	  if (__str.find('{') != __str.npos)
+	    __throw_format_error("chrono format error: '{' in chrono-specs");
+	}
 
-	      _ChronoParts __needed = _ChronoParts::_None;
-	      bool __locale_specific = false;
+	// Parse chrono-specs in [first,last), checking each conversion-spec
+	// against __parts (so fail for %Y if no year in parts).
+	// Save range in __spec._M_chrono_specs.
+	__spec._M_debug = false;
+	__spec._M_locale_specific = false;
+	__spec._M_needed = _ChronoParts::_None;
+	__spec._M_chrono_specs = __string_view();
 
-	      _CharT __c = *__first++;
-	      switch (__c)
-		{
-		using enum _ChronoParts;
-		case 'a':
-		case 'A':
-		  __needed = _Weekday;
-		  __locale_specific = true;
-		  break;
-		case 'b':
-		case 'h':
-		case 'B':
-		  __needed = _Month;
-		  __locale_specific = true;
-		  break;
-		case 'c':
-		  __needed = _Date|_HoursMinutesSeconds;
-		  __allowed_mods = _Mod_E;
-		  __locale_specific = true;
-		  break;
-		case 'C':
-		  __needed = _Year;
-		  __allowed_mods = _Mod_E;
-		  break;
-		case 'd':
-		case 'e':
-		  __needed = _Day;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'D':
-		case 'F':
-		  __needed = _YearMonthDay;
-		  break;
-		case 'g':
-		case 'G':
-		case 'V':
-		  __needed = _LocalDays|_Year|_DayOfYear|_Weekday;
-		  break;
-		case 'H':
-		case 'I':
-		  __needed = _HoursMinutesSeconds;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'j':
-		  __needed = __parts & _DayOfYear;
-		  // If we do not know day-of-year then we must have a duration,
-		  // which is to be formatted as decimal number of days.
-		  if (__needed == _None)
-		    __needed = _HoursMinutesSeconds;
-		  break;
-		case 'm':
-		  __needed = _Month;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'M':
-		  __needed = _HoursMinutesSeconds;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'p':
-		case 'r':
-		  __locale_specific = true;
-		  [[fallthrough]];
-		case 'R':
-		  __needed = _HoursMinutesSeconds;
-		  break;
-		case 'T':
-		  __needed = _TimeOfDay;
-		  break;
-		case 'q':
-		  __needed = _UnitSuffix;
-		  break;
-		case 'Q':
-		  __needed = _EpochUnits;
-		  break;
-		case 'S':
-		  __needed = _TimeOfDay;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'u':
-		case 'w':
-		  __needed = _Weekday;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'U':
-		case 'W':
-		  __needed = _DayOfYear|_Weekday;
-		  __allowed_mods = _Mod_O;
-		  break;
-		case 'x':
-		  __needed = _Date;
-		  __locale_specific = true;
-		  __allowed_mods = _Mod_E;
-		  break;
-		case 'X':
-		  __needed = _HoursMinutesSeconds;
-		  __locale_specific = true;
-		  __allowed_mods = _Mod_E;
-		  break;
-		case 'y':
-		  __needed = _Year;
-		  __allowed_mods = _Mod_E_O;
-		  break;
-		case 'Y':
-		  __needed = _Year;
-		  __allowed_mods = _Mod_E;
-		  break;
-		case 'z':
-		  __needed = _ZoneOffset;
-		  __allowed_mods = _Mod_E_O;
-		  break;
-		case 'Z':
-		  __needed = _ZoneAbbrev;
-		  break;
-		case 'n':
-		case 't':
-		case '%':
-		  break;
-		case 'O':
-		case 'E':
-		  if (__mod) [[unlikely]]
-		    {
-		      __allowed_mods = _Mod_none;
-		      break;
-		    }
-		  __mod = __c;
-		  continue;
-		default:
-		  __throw_format_error("chrono format error: invalid "
-				       " specifier in chrono-specs");
-		}
+	const auto __chrono_specs = __first++; // Skip leading '%'
+	if (*__chrono_specs != '%')
+	  __throw_format_error("chrono format error: no '%' at start of "
+			       "chrono-specs");
 
-	      if ((__mod == 'E' && !(__allowed_mods & _Mod_E))
-		    || (__mod == 'O' && !(__allowed_mods & _Mod_O)))
-		__throw_format_error("chrono format error: invalid "
-				     " modifier in chrono-specs");
-	      if (__mod && __c != 'z')
+	_CharT __mod{};
+	bool __conv = true;
+	while (__first != __last)
+	  {
+	    enum _Mods { _Mod_none, _Mod_E, _Mod_O, _Mod_E_O };
+	    _Mods __allowed_mods = _Mod_none;
+
+	    _ChronoParts __needed = _ChronoParts::_None;
+	    bool __locale_specific = false;
+
+	    _CharT __c = *__first++;
+	    switch (__c)
+	      {
+	      using enum _ChronoParts;
+	      case 'a':
+	      case 'A':
+		__needed = _Weekday;
 		__locale_specific = true;
-	      __mod = _CharT();
-
-	      // localized formats do not include subseconds
-	      if (__locale_specific)
-		__needed -= _ChronoParts::_Subseconds;
-
-	      if ((__parts & __needed) != __needed)
-		__throw_format_error("chrono format error: format argument "
-				     "does not contain the information "
-				     "required by the chrono-specs");
-	      __spec._M_needed |= __needed;
-	      __spec._M_locale_specific |= __locale_specific;
-
-	      // Scan for next '%', ignoring literal-chars before it.
-	      size_t __pos = __string_view(__first, __last - __first).find('%');
-	      if (__pos == 0)
-		++__first;
-	      else
-		{
-		  if (__pos == __string_view::npos)
-		    {
-		      __first = __last;
-		      __conv = false;
-		    }
-		  else
-		    __first += __pos + 1;
-		}
+		break;
+	      case 'b':
+	      case 'h':
+	      case 'B':
+		__needed = _Month;
+		__locale_specific = true;
+		break;
+	      case 'c':
+		__needed = _Date|_HoursMinutesSeconds;
+		__allowed_mods = _Mod_E;
+		__locale_specific = true;
+		break;
+	      case 'C':
+		__needed = _Year;
+		__allowed_mods = _Mod_E;
+		break;
+	      case 'd':
+	      case 'e':
+		__needed = _Day;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'D':
+	      case 'F':
+		__needed = _YearMonthDay;
+		break;
+	      case 'g':
+	      case 'G':
+	      case 'V':
+		__needed = _LocalDays|_Year|_DayOfYear|_Weekday;
+		break;
+	      case 'H':
+	      case 'I':
+		__needed = _HoursMinutesSeconds;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'j':
+		__needed = __parts & _DayOfYear;
+		// If we do not know day-of-year then we must have a duration,
+		// which is to be formatted as decimal number of days.
+		if (__needed == _None)
+		  __needed = _HoursMinutesSeconds;
+		break;
+	      case 'm':
+		__needed = _Month;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'M':
+		__needed = _HoursMinutesSeconds;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'p':
+	      case 'r':
+		__locale_specific = true;
+		[[fallthrough]];
+	      case 'R':
+		__needed = _HoursMinutesSeconds;
+		break;
+	      case 'T':
+		__needed = _TimeOfDay;
+		break;
+	      case 'q':
+		__needed = _UnitSuffix;
+		break;
+	      case 'Q':
+		__needed = _EpochUnits;
+		break;
+	      case 'S':
+		__needed = _TimeOfDay;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'u':
+	      case 'w':
+		__needed = _Weekday;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'U':
+	      case 'W':
+		__needed = _DayOfYear|_Weekday;
+		__allowed_mods = _Mod_O;
+		break;
+	      case 'x':
+		__needed = _Date;
+		__locale_specific = true;
+		__allowed_mods = _Mod_E;
+		break;
+	      case 'X':
+		__needed = _HoursMinutesSeconds;
+		__locale_specific = true;
+		__allowed_mods = _Mod_E;
+		break;
+	      case 'y':
+		__needed = _Year;
+		__allowed_mods = _Mod_E_O;
+		break;
+	      case 'Y':
+		__needed = _Year;
+		__allowed_mods = _Mod_E;
+		break;
+	      case 'z':
+		__needed = _ZoneOffset;
+		__allowed_mods = _Mod_E_O;
+		break;
+	      case 'Z':
+		__needed = _ZoneAbbrev;
+		break;
+	      case 'n':
+	      case 't':
+	      case '%':
+		break;
+	      case 'O':
+	      case 'E':
+		if (__mod) [[unlikely]]
+		  {
+		    __allowed_mods = _Mod_none;
+		    break;
+		  }
+		__mod = __c;
+		continue;
+	      default:
+		__throw_format_error("chrono format error: invalid specifier "
+				     "in chrono-specs");
 	    }
 
-	  // Check for a '%' conversion-spec without a type.
-	  if (__conv || __mod != _CharT())
-	    __throw_format_error("chrono format error: unescaped '%' in "
-				 "chrono-specs");
+	    if ((__mod == 'E' && !(__allowed_mods & _Mod_E))
+		   || (__mod == 'O' && !(__allowed_mods & _Mod_O)))
+	      __throw_format_error("chrono format error: invalid  modifier "
+				   "in chrono-specs");
+	    if (__mod && __c != 'z')
+	      __locale_specific = true;
+	    __mod = _CharT();
 
-	  __spec._M_chrono_specs
-	    = __string_view(__chrono_specs, __first - __chrono_specs);
+	    // localized formats do not include subseconds
+	    if (__locale_specific)
+	      __needed -= _ChronoParts::_Subseconds;
 
-	  __finalize();
-	  return __first;
-	}
+	    if ((__parts & __needed) != __needed)
+	      __throw_format_error("chrono format error: format argument does "
+				   "not contain the information required by the "
+				   "chrono-specs");
+	    __spec._M_needed |= __needed;
+	    __spec._M_locale_specific |= __locale_specific;
+
+	    // Scan for next '%', ignoring literal-chars before it.
+	    size_t __pos = __string_view(__first, __last - __first).find('%');
+	    if (__pos == 0)
+	      ++__first;
+	    else
+	      {
+		if (__pos == __string_view::npos)
+		  {
+		    __first = __last;
+		    __conv = false;
+		  }
+		else
+		  __first += __pos + 1;
+	      }
+	  }
+
+	// Check for a '%' conversion-spec without a type.
+	if (__conv || __mod != _CharT())
+	  __throw_format_error("chrono format error: unescaped '%' in "
+			       "chrono-specs");
+
+	__spec._M_chrono_specs
+	  = __string_view(__chrono_specs, __first - __chrono_specs);
+
+	__finalize();
+	return __first;
+      }
 
       // pre: !_M_spec._M_chrono_specs.empty()
       template<typename _FormatContext>
@@ -868,7 +867,6 @@ namespace __format
 	  _M_format_to(__t, __sink.out(), __fc);
 	  return __sink._M_finish(_M_spec._M_align, _M_spec._M_fill);
 	}
-
 
       _ChronoSpec<_CharT> _M_spec;
 
@@ -1934,10 +1932,10 @@ namespace __format
       using __formatter_chrono<_CharT>::__formatter_chrono;
       using __formatter_chrono<_CharT>::_M_spec;
 
-      template<typename _Duration, typename _ParseContext>
-	constexpr typename _ParseContext::iterator
-	_M_parse(_ParseContext& __pc, _ChronoParts __parts,
-		 const _ChronoSpec<_CharT>& __def = {})
+      template<typename _Duration>
+	constexpr typename basic_format_parse_context<_CharT>::iterator
+	_M_parse(basic_format_parse_context<_CharT>& __pc, _ChronoParts __parts,
+		 const _ChronoSpec<_CharT>& __def)
 	{
 	  using _Rep = typename _Duration::rep;
 	  using enum _ChronoParts;
