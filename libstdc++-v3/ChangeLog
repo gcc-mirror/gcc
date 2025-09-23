@@ -1,3 +1,23 @@
+2025-09-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h(__formatter_chrono::_M_parse): Update
+	needed flags for %g, %G, %V, %U, %W.
+	(__formatter_chrono::_M_format_to): Change how %V is handled.
+	(__formatter_chrono::_M_g_G): Merged into _M_g_G_V.
+	(__formatter_chrono::_M_g_G_V): Reworked from _M_g_G.
+	(__formatter_chrono::_M_U_V_W): Changed into _M_U_V.
+	(__formatter_chrono::_M_U_W): Reworked implementation.
+	* testsuite/std/time/year_month_day/io.cc: New tests.
+
+2025-09-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/106658
+	* include/bits/stl_construct.h (std::start_lifetime_as_array)
+	(std::start_lifetime_as): Moved from std/memory, with update
+	to guard macros.
+	* include/std/memory (std::start_lifetime_as_array)
+	(std::start_lifetime_as): Moved to bits/stl_construct.h.
+
 2025-09-19  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/119744

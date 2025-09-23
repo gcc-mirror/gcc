@@ -1,3 +1,50 @@
+2025-09-22  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/121982
+	* gcc.target/riscv/pr121982.c: New test.
+
+2025-09-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122015
+	* g++.dg/modules/lambda-11.h: New test.
+	* g++.dg/modules/lambda-11_a.H: New test.
+	* g++.dg/modules/lambda-11_b.C: New test.
+
+2025-09-22  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/122021
+	* gcc.target/i386/pr122021-0.c: New test.
+
+2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122016
+	* gcc.dg/torture/pr122016.c: New testcase.
+
+2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122023
+	* gcc.dg/vect/pr122023.c: New testcase.
+
+2025-09-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/116205
+	* gcc.target/pru/mabi-ti-1.c: Adjust diagnostic location.
+	* gcc.target/pru/mabi-ti-2.c: Ditto.
+	* gcc.target/pru/mabi-ti-3.c: Ditto.
+	* gcc.target/pru/mabi-ti-5.c: Ditto.
+	* gcc.target/pru/mabi-ti-6.c: Ditto.
+	* gcc.target/pru/mabi-ti-7.c: Adjust diagnostic locations and
+	add global variables for checking.
+	* gcc.target/pru/mabi-ti-11.c: New test.
+	* gcc.target/pru/mabi-ti-12.c: New test.
+	* gcc.target/pru/mabi-ti-8.c: New test.
+	* gcc.target/pru/mabi-ti-9.c: New test.
+
+2025-09-22  Steve Kargl  <pault@gcc.gnu.org>
+
+	PR fortran/103508
+	* gfortran.dg/pr103508.f90: New test.
+
 2025-09-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* gcc.dg/builtin-unreachable-7.c: New test.

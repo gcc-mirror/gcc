@@ -1,3 +1,9 @@
+2025-09-22  Steve Kargl  <pault@gcc.gnu.org>
+
+	PR fortran/103508
+	* decl.cc (gfc_match_end): Remove only the current partial
+	rather than removing the entire sibling chain.
+
 2025-09-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109010

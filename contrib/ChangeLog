@@ -1,3 +1,9 @@
+2025-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Update comment at the
+	top of the file to mention DerivedGeneralCategory.txt
+	prerequisite.
+
 2025-09-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* uninclude: Add `lib/gcc/<anything>/include`.

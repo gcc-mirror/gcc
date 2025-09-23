@@ -1,3 +1,7 @@
+2025-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* .editorconfig: New file.
+
 2025-09-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* MAINTAINERS (Reviewers): Add myself for the aarch64 port.

@@ -1,3 +1,10 @@
+2025-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/121968
+	* sem_ch12.adb (Associations.Find_Assoc): Add guard for clauses.
+	* sem_dim.adb (Analyze_Dimension_Array_Aggregate): Add test for
+	N_Iterated_Component_Association nodes.
+
 2025-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (create_var_decl): Add LINKONCE_FLAG boolean

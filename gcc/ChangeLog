@@ -1,3 +1,64 @@
+2025-09-22  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/121982
+	* config/riscv/tt-ascalon-d8.md (tt_ascalon_d8_vec_idiv_byte): New
+	define_insn_reservation.
+
+2025-09-22  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* builtins.cc (fold_builtin_constant_p): Make non-static.
+	* builtins.h (fold_builtin_constant_p): New declaration.
+	* gimple-fold.cc (gimple_fold_builtin_constant_p): New function.
+	(gimple_fold_builtin): Call gimple_fold_builtin_constant_p
+	for BUILT_IN_CONSTANT_P.
+	* tree-ssa-ccp.cc (pass_fold_builtins::execute): Set PROP_last_full_fold
+	on curr_properties. Remove handling of BUILT_IN_CONSTANT_P.
+
+2025-09-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/libgdiagnostics/index.rst: Drop broken reference to
+	`modindex`.
+
+2025-09-22  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/122021
+	* tree-ssa-math-opts.cc (build_and_insert_cast): Add sign-extend
+	check before prop.
+
+2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122016
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Do not use the
+	simplified expression when it references abnormals.
+
+2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122023
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Disable
+	for rotates.
+
+2025-09-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/116205
+	* config/pru/pru-passes.cc (class pass_pru_tiabi_check): Make
+	this an IPA pass.
+	(chkp_type_has_function_pointer): Remove.
+	(check_type_tiabi_compatibility): New function.
+	(chk_function_decl): Rename.
+	(check_function_decl): Simplify.
+	(check_op_callback): Rework to use
+	check_type_tiabi_compatibility.
+	(pass_pru_tiabi_check::execute): Rework to scan all symbols and
+	gimple contents of all defined functions.
+	* config/pru/pru-passes.def (INSERT_PASS_AFTER): Move after
+	pass_ipa_auto_profile_offline.
+	* config/pru/pru-protos.h (make_pru_tiabi_check): New
+	declaration to mark as IPA pass.
+	(make_pru_minrt_check): Specify it is making a gimple pass.
+	* doc/invoke.texi: Document that bit-fields are now rejected for
+	TI ABI.
+
 2025-09-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* tree-ssa-ccp.cc (optimize_unreachable): Don't check for forced labels.
