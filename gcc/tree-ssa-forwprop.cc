@@ -5463,6 +5463,11 @@ pass_forwprop::execute (function *fun)
 	      if (fold_stmt (&gsi, fwprop_ssa_val, simple_dce_worklist))
 		{
 		  changed = true;
+		  /* There is no updating of the address
+		     taken after the last forwprop so update
+		     the addresses when a folding happened. */
+		  if (last_p)
+		    todoflags |= TODO_update_address_taken;
 		  stmt = gsi_stmt (gsi);
 		  /* Cleanup the CFG if we simplified a condition to
 		     true or false.  */
