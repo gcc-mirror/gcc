@@ -1929,6 +1929,24 @@ namespace __format
 	  return __res;
 	};
 
+      template<typename _Duration>
+	static consteval
+	_ChronoSpec<_CharT>
+	_S_spec_for_tp()
+	{
+	  using enum _ChronoParts;
+	  // streaming of local_time is defined in terms of sys_time
+	  constexpr bool __stream_insertable =
+	    requires (basic_ostream<_CharT>& __os, chrono::sys_time<_Duration> __t)
+	      { __os << __t; };
+	  if constexpr (!__stream_insertable)
+	    return _S_spec_for<_Duration>(_None);
+	  else if constexpr (is_convertible_v<_Duration, chrono::days>)
+	    return _S_spec_for<_Duration>(_Date);
+	  else
+	    return _S_spec_for<_Duration>(_DateTime);
+	}
+
       using __formatter_chrono<_CharT>::__formatter_chrono;
       using __formatter_chrono<_CharT>::_M_spec;
 
@@ -2912,12 +2930,12 @@ namespace __format
       parse(basic_format_parse_context<_CharT>& __pc)
       {
 	using enum __format::_ChronoParts;
-	auto __next
+	auto __res
 	  = _M_f.template _M_parse<_Duration>(__pc, _ZonedDateTime, __defSpec);
-	if constexpr (!__stream_insertable)
+	if constexpr (__defSpec._M_chrono_specs.empty())
 	  if (_M_f._M_spec._M_chrono_specs.empty())
 	    __format::__invalid_chrono_spec(); // chrono-specs can't be empty
-	return __next;
+	return __res;
      }
 
      template<typename _Out>
@@ -2935,21 +2953,8 @@ namespace __format
        }
 
     private:
-      static constexpr bool __stream_insertable
-	= requires (basic_ostream<_CharT>& __os,
-		    chrono::sys_time<_Duration> __t) { __os << __t; };
-
-      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
-	{
-	  using enum __format::_ChronoParts;
-	  __format::_ChronoParts __needed = _DateTime;
-	  if constexpr (!__stream_insertable)
-	    __needed = _None;
-	  else if constexpr (is_convertible_v<_Duration, chrono::days>)
-	    __needed = _Date;
-	  return __format::__formatter_duration<_CharT>::
-		   template _S_spec_for<_Duration>(__needed);
-	}();
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec =
+	__format::__formatter_duration<_CharT>::template _S_spec_for_tp<_Duration>();
 
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
@@ -3110,7 +3115,12 @@ namespace __format
       parse(basic_format_parse_context<_CharT>& __pc)
       {
 	using enum __format::_ChronoParts;
-	return _M_f.template _M_parse<_Duration>(__pc, _DateTime, __defSpec);
+	auto __res
+	  = _M_f.template _M_parse<_Duration>(__pc, _DateTime, __defSpec);
+	if constexpr (__defSpec._M_chrono_specs.empty())
+	  if (_M_f._M_spec._M_chrono_specs.empty())
+	    __format::__invalid_chrono_spec(); // chrono-specs can't be empty
+	return __res;
       }
 
       template<typename _Out>
@@ -3126,15 +3136,8 @@ namespace __format
 	}
 
     private:
-      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
-	{
-	  using enum __format::_ChronoParts;
-	  __format::_ChronoParts __needed = _DateTime;
-	  if constexpr (is_convertible_v<_Duration, chrono::days>)
-	    __needed = _Date;
-	  return __format::__formatter_duration<_CharT>::
-		   template _S_spec_for<_Duration>(__needed);
-	}();
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec =
+	__format::__formatter_duration<_CharT>::template _S_spec_for_tp<_Duration>();
 
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
