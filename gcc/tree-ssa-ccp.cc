@@ -3202,58 +3202,6 @@ optimize_stdarg_builtin (gimple_stmt_iterator *gsi, gimple *call)
     }
 }
 
-/* Attemp to make the block of __builtin_unreachable I unreachable by changing
-   the incoming jumps.  Return true if at least one jump was changed.  */
-
-static bool
-optimize_unreachable (gimple_stmt_iterator i)
-{
-  basic_block bb = gsi_bb (i);
-  gimple_stmt_iterator gsi;
-  gimple *stmt;
-  edge_iterator ei;
-  edge e;
-  bool ret;
-
-  if (flag_sanitize & SANITIZE_UNREACHABLE)
-    return false;
-  gsi = gsi_start_nondebug_after_labels_bb (bb);
-  /* Only handle the case that __builtin_unreachable is the first
-     statement in the block.  We rely on DCE to remove stmts
-     without side-effects before __builtin_unreachable.  */
-  if (*gsi != *i)
-    return false;
-
-  ret = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      gsi = gsi_last_bb (e->src);
-      if (gsi_end_p (gsi))
-	continue;
-
-      stmt = gsi_stmt (gsi);
-      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-	{
-	  if (e->flags & EDGE_TRUE_VALUE)
-	    gimple_cond_make_false (cond_stmt);
-	  else if (e->flags & EDGE_FALSE_VALUE)
-	    gimple_cond_make_true (cond_stmt);
-	  else
-	    gcc_unreachable ();
-	  update_stmt (cond_stmt);
-	}
-      else
-	{
-	  /* Todo: handle other cases.  Note that unreachable switch case
-	     statements have already been removed.  */
-	  continue;
-	}
-
-      ret = true;
-    }
-
-  return ret;
-}
 
 /* Convert
    _1 = __atomic_fetch_or_* (ptr_6, 1, _3);
@@ -4235,12 +4183,6 @@ pass_fold_builtins::execute (function *fun)
 	      tree result = NULL_TREE;
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
-
-		case BUILT_IN_UNREACHABLE:
-		  if (optimize_unreachable (i))
-		    cfg_changed = true;
-		  break;
-
 		case BUILT_IN_ATOMIC_ADD_FETCH_1:
 		case BUILT_IN_ATOMIC_ADD_FETCH_2:
 		case BUILT_IN_ATOMIC_ADD_FETCH_4:

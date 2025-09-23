@@ -4906,6 +4906,49 @@ public:
   bool m_full_walk = false;
 }; // class pass_forwprop
 
+/* Attemp to make the BB block of __builtin_unreachable unreachable by changing
+   the incoming jumps.  Return true if at least one jump was changed.  */
+
+static bool
+optimize_unreachable (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+  gimple *stmt;
+  edge_iterator ei;
+  edge e;
+  bool ret;
+
+  ret = false;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      gsi = gsi_last_bb (e->src);
+      if (gsi_end_p (gsi))
+	continue;
+
+      stmt = gsi_stmt (gsi);
+      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+	{
+	  if (e->flags & EDGE_TRUE_VALUE)
+	    gimple_cond_make_false (cond_stmt);
+	  else if (e->flags & EDGE_FALSE_VALUE)
+	    gimple_cond_make_true (cond_stmt);
+	  else
+	    gcc_unreachable ();
+	  update_stmt (cond_stmt);
+	}
+      else
+	{
+	  /* Todo: handle other cases.  Note that unreachable switch case
+	     statements have already been removed.  */
+	  continue;
+	}
+
+      ret = true;
+    }
+
+  return ret;
+}
+
 unsigned int
 pass_forwprop::execute (function *fun)
 {
@@ -4972,6 +5015,21 @@ pass_forwprop::execute (function *fun)
 	}
       if (!any)
 	continue;
+
+      /* Remove conditions that go directly to unreachable when this is the last forwprop.  */
+      if (last_p
+	  && !(flag_sanitize & SANITIZE_UNREACHABLE))
+	{
+	  gimple_stmt_iterator gsi;
+	  gsi = gsi_start_nondebug_after_labels_bb (bb);
+	  if (!gsi_end_p (gsi)
+	      && gimple_call_builtin_p (*gsi, BUILT_IN_UNREACHABLE)
+	      && optimize_unreachable (bb))
+	    {
+	      cfg_changed = true;
+	      continue;
+	    }
+	}
 
       /* Record degenerate PHIs in the lattice.  */
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
