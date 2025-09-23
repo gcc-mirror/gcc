@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "backtrace.h"
 #include "xml.h"
+#include "intl.h"
 
 namespace diagnostics {
 
@@ -948,6 +949,8 @@ private:
 				      int start_line,
 				      int end_line,
 				      const content_renderer *r) const;
+  std::unique_ptr<sarif_message>
+  make_message_describing_fix_it_hint (const fixit_hint &hint) const;
   std::unique_ptr<sarif_fix>
   make_fix_object (const rich_location &rich_loc);
   std::unique_ptr<sarif_artifact_change>
@@ -3747,6 +3750,65 @@ maybe_make_artifact_content_object (const char *filename,
   return artifact_content_obj;
 }
 
+/* Attempt to generate a "message" object describing a fix-it hint,
+   or null if there was a problem.  */
+
+std::unique_ptr<sarif_message>
+sarif_builder::
+make_message_describing_fix_it_hint (const fixit_hint &hint) const
+{
+  pretty_printer pp;
+  if (hint.insertion_p ())
+    pp_printf (&pp, G_("Insert %qs"), hint.get_string ());
+  else
+    {
+      /* Try to get prior content.  */
+      expanded_location start = expand_location (hint.get_start_loc ());
+      expanded_location next_loc = expand_location (hint.get_next_loc ());
+      if (start.file != next_loc.file)
+	return nullptr;
+      if (start.line != next_loc.line)
+	return nullptr;
+      if (start.column == 0)
+	return nullptr;
+      if (next_loc.column == 0)
+	return nullptr;
+
+      const int start_offset = start.column - 1;
+      const int next_offset = next_loc.column - 1;
+      if (next_offset <= start_offset)
+	return nullptr;
+
+      size_t victim_len = next_offset - start_offset;
+
+      char_span existing_line = get_context ()
+	.get_file_cache ()
+	.get_source_line (start.file, start.line);
+      if (!existing_line)
+	return nullptr;
+
+      label_text existing_text
+	= label_text::take (existing_line.subspan (start_offset,
+						   victim_len).xstrdup ());
+
+      if (hint.deletion_p ())
+	{
+	  // Removal
+	  pp_printf (&pp, G_("Delete %qs"),
+		     existing_text.get ());
+	}
+      else
+	{
+	  // Replacement
+	  gcc_assert (hint.replacement_p ());
+	  pp_printf (&pp, G_("Replace %qs with %qs"),
+		     existing_text.get (),
+		     hint.get_string ());
+	}
+    }
+  return make_message_object (pp_formatted_text (&pp));
+}
+
 /* Make a "fix" object (SARIF v2.1.0 section 3.55) for RICHLOC.  */
 
 std::unique_ptr<sarif_fix>
@@ -3761,6 +3823,18 @@ sarif_builder::make_fix_object (const rich_location &richloc)
     (make_artifact_change_object (richloc));
   fix_obj->set<json::array> ("artifactChanges",
 			     std::move (artifact_change_arr));
+
+  // 3.55.2 "description" property
+  /* Attempt to generate a description.  We can only do this
+     if there was a single hint.  */
+  if (richloc.get_num_fixit_hints () == 1)
+    {
+      const fixit_hint *hint = richloc.get_fixit_hint (0);
+      gcc_assert (hint);
+      if (auto desc_msg = make_message_describing_fix_it_hint (*hint))
+	fix_obj->set<sarif_message> ("description",
+				     std::move (desc_msg));
+    }
 
   return fix_obj;
 }

@@ -642,6 +642,8 @@ class fixit_hint
   size_t get_length () const { return m_len; }
 
   bool insertion_p () const { return m_start == m_next_loc; }
+  bool deletion_p () const { return m_len == 0; }
+  bool replacement_p () const { return m_len > 0 && m_start != m_next_loc; }
 
   bool ends_with_newline_p () const;
 
