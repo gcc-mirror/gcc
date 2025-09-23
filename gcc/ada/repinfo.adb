@@ -283,6 +283,64 @@ package body Repinfo is
       return U >= Uint_0;
    end Is_Static_SO_Ref;
 
+   -----------
+   -- Visit --
+   -----------
+
+   procedure Visit (Expr : Node_Ref_Or_Val) is
+   begin
+      pragma Assert (Present (Expr));
+      if Expr >= 0 then
+         Visit_Constant (Expr);
+         return;
+      end if;
+
+      declare
+         Node : Exp_Node renames Rep_Table.Table (-UI_To_Int (Expr));
+      begin
+         case Node.Expr is
+            when Cond_Expr =>
+               Visit_Cond_Expr (Node.Op1, Node.Op2, Node.Op3);
+
+            when Plus_Expr
+                 | Minus_Expr
+                 | Mult_Expr
+                 | Trunc_Div_Expr
+                 | Ceil_Div_Expr
+                 | Floor_Div_Expr
+                 | Trunc_Mod_Expr
+                 | Ceil_Mod_Expr
+                 | Floor_Mod_Expr
+                 | Exact_Div_Expr
+                 | Min_Expr
+                 | Max_Expr
+                 | Truth_And_Expr
+                 | Truth_Or_Expr
+                 | Truth_Xor_Expr
+                 | Lt_Expr
+                 | Le_Expr
+                 | Gt_Expr
+                 | Ge_Expr
+                 | Eq_Expr
+                 | Ne_Expr
+                 | Bit_And_Expr
+              =>
+               Visit_Binop (Node.Expr, Node.Op1, Node.Op2);
+
+            when Negate_Expr
+                 | Abs_Expr
+                 | Truth_Not_Expr =>
+               Visit_Unop (Node.Expr, Node.Op1);
+
+            when Discrim_Val =>
+               Visit_Discriminant (Node.Op1);
+
+            when Dynamic_Val =>
+               Visit_Variable (Node.Op1);
+         end case;
+      end;
+   end Visit;
+
    ---------
    -- lgx --
    ---------
@@ -581,189 +639,177 @@ package body Repinfo is
 
    procedure List_GCC_Expression (U : Node_Ref_Or_Val) is
 
-      procedure Print_Expr (Val : Node_Ref_Or_Val);
-      --  Internal recursive procedure to print expression
+      procedure Unop (Code : TCode; Op : Node_Ref_Or_Val);
+      procedure Binop (Code : TCode; Lhs : Node_Ref_Or_Val;
+                      Rhs : Node_Ref_Or_Val);
+      procedure Cond_Expr (Test : Node_Ref_Or_Val;
+                          Lhs : Node_Ref_Or_Val;
+                          Rhs : Node_Ref_Or_Val);
+      procedure Const (Val : Node_Ref_Or_Val);
+      procedure Discriminant (Val : Node_Ref_Or_Val);
+      procedure Variable (Val : Node_Ref_Or_Val);
 
-      ----------------
-      -- Print_Expr --
-      ----------------
+      procedure Print_It is new Visit (Visit_Unop => Unop,
+                                       Visit_Binop => Binop,
+                                       Visit_Cond_Expr => Cond_Expr,
+                                       Visit_Constant => Const,
+                                       Visit_Discriminant => Discriminant,
+                                       Visit_Variable => Variable);
 
-      procedure Print_Expr (Val : Node_Ref_Or_Val) is
+      procedure Unop (Code : TCode; Op : Node_Ref_Or_Val) is
+         procedure Emit (S : String);
+         procedure Emit (S : String) is
+         begin
+            if List_Representation_Info_To_JSON then
+               Write_Str ("{ ""code"": """);
+               if S (S'Last) = ' ' then
+                  Write_Str (S (S'First .. S'Last - 1));
+               else
+                  Write_Str (S);
+               end if;
+               Write_Str (""", ""operands"": [ ");
+               Print_It (Op);
+               Write_Str (" ] }");
+            else
+               Write_Str (S);
+               Print_It (Op);
+            end if;
+         end Emit;
       begin
-         if Val >= 0 then
-            UI_Write (Val, Decimal);
+         case Code is
+            when Negate_Expr =>
+               Emit ("-");
+            when Abs_Expr =>
+               Emit ("abs ");
+            when Truth_Not_Expr =>
+               Emit ("not ");
+            when Discrim_Val =>
+               Emit ("#");
+            when Dynamic_Val =>
+               Emit ("var");
+            when others =>
+               Emit ("ERROR");
+         end case;
+      end Unop;
 
+      procedure Binop (Code : TCode; Lhs : Node_Ref_Or_Val;
+                      Rhs : Node_Ref_Or_Val)
+      is
+         procedure Emit (S : String);
+         procedure Emit (S : String) is
+         begin
+            if List_Representation_Info_To_JSON then
+               Write_Str ("{ ""code"": """);
+               Write_Str (S (S'First + 1 .. S'Last - 1));
+               Write_Str (""", ""operands"": [ ");
+               Print_It (Lhs);
+               Write_Str (", ");
+               Print_It (Rhs);
+               Write_Str (" ] }");
+            else
+               Write_Char ('(');
+               Print_It (Lhs);
+               Write_Str (S);
+               Print_It (Rhs);
+               Write_Char (')');
+            end if;
+         end Emit;
+
+      begin
+         case Code is
+            when Plus_Expr =>
+               Emit (" + ");
+            when Minus_Expr =>
+               Emit (" - ");
+            when Mult_Expr =>
+               Emit (" * ");
+            when Trunc_Div_Expr =>
+               Emit (" /t ");
+            when Ceil_Div_Expr =>
+               Emit (" /c ");
+            when Floor_Div_Expr =>
+               Emit (" /f ");
+            when Trunc_Mod_Expr =>
+               Emit (" modt ");
+            when Ceil_Mod_Expr =>
+               Emit (" modc ");
+            when Floor_Mod_Expr =>
+               Emit (" modf ");
+            when Exact_Div_Expr =>
+               Emit (" /e ");
+            when Min_Expr =>
+               Emit (" min ");
+            when Max_Expr =>
+               Emit (" max ");
+            when Truth_And_Expr =>
+               Emit (" and ");
+            when Truth_Or_Expr =>
+               Emit (" or ");
+            when Truth_Xor_Expr =>
+               Emit (" xor ");
+            when Lt_Expr =>
+               Emit (" < ");
+            when Le_Expr =>
+               Emit (" <= ");
+            when Gt_Expr =>
+               Emit (" > ");
+            when Ge_Expr =>
+               Emit (" >= ");
+            when Eq_Expr =>
+               Emit (" == ");
+            when Ne_Expr =>
+               Emit (" != ");
+            when Bit_And_Expr =>
+               Emit (" & ");
+            when others =>
+               Emit ("ERROR");
+         end case;
+      end Binop;
+
+      procedure Cond_Expr (Test : Node_Ref_Or_Val;
+                           Lhs : Node_Ref_Or_Val;
+                           Rhs : Node_Ref_Or_Val) is
+      begin
+         if List_Representation_Info_To_JSON then
+            Write_Str ("{ ""code"": ""?<>""");
+            Write_Str (", ""operands"": [ ");
+            Print_It (Test);
+            Write_Str (", ");
+            Print_It (Lhs);
+            Write_Str (", ");
+            Print_It (Rhs);
+            Write_Str (" ] }");
          else
-            declare
-               Node : Exp_Node renames Rep_Table.Table (-UI_To_Int (Val));
-
-               procedure Unop (S : String);
-               --  Output text for unary operator with S being operator name
-
-               procedure Binop (S : String);
-               --  Output text for binary operator with S being operator name
-
-               ----------
-               -- Unop --
-               ----------
-
-               procedure Unop (S : String) is
-               begin
-                  if List_Representation_Info_To_JSON then
-                     Write_Str ("{ ""code"": """);
-                     if S (S'Last) = ' ' then
-                        Write_Str (S (S'First .. S'Last - 1));
-                     else
-                        Write_Str (S);
-                     end if;
-                     Write_Str (""", ""operands"": [ ");
-                     Print_Expr (Node.Op1);
-                     Write_Str (" ] }");
-                  else
-                     Write_Str (S);
-                     Print_Expr (Node.Op1);
-                  end if;
-               end Unop;
-
-               -----------
-               -- Binop --
-               -----------
-
-               procedure Binop (S : String) is
-               begin
-                  if List_Representation_Info_To_JSON then
-                     Write_Str ("{ ""code"": """);
-                     Write_Str (S (S'First + 1 .. S'Last - 1));
-                     Write_Str (""", ""operands"": [ ");
-                     Print_Expr (Node.Op1);
-                     Write_Str (", ");
-                     Print_Expr (Node.Op2);
-                     Write_Str (" ] }");
-                  else
-                     Write_Char ('(');
-                     Print_Expr (Node.Op1);
-                     Write_Str (S);
-                     Print_Expr (Node.Op2);
-                     Write_Char (')');
-                  end if;
-               end Binop;
-
-            --  Start of processing for Print_Expr
-
-            begin
-               case Node.Expr is
-                  when Cond_Expr =>
-                     if List_Representation_Info_To_JSON then
-                        Write_Str ("{ ""code"": ""?<>""");
-                        Write_Str (", ""operands"": [ ");
-                        Print_Expr (Node.Op1);
-                        Write_Str (", ");
-                        Print_Expr (Node.Op2);
-                        Write_Str (", ");
-                        Print_Expr (Node.Op3);
-                        Write_Str (" ] }");
-                     else
-                        Write_Str ("(if ");
-                        Print_Expr (Node.Op1);
-                        Write_Str (" then ");
-                        Print_Expr (Node.Op2);
-                        Write_Str (" else ");
-                        Print_Expr (Node.Op3);
-                        Write_Str (")");
-                     end if;
-
-                  when Plus_Expr =>
-                     Binop (" + ");
-
-                  when Minus_Expr =>
-                     Binop (" - ");
-
-                  when Mult_Expr =>
-                     Binop (" * ");
-
-                  when Trunc_Div_Expr =>
-                     Binop (" /t ");
-
-                  when Ceil_Div_Expr =>
-                     Binop (" /c ");
-
-                  when Floor_Div_Expr =>
-                     Binop (" /f ");
-
-                  when Trunc_Mod_Expr =>
-                     Binop (" modt ");
-
-                  when Ceil_Mod_Expr =>
-                     Binop (" modc ");
-
-                  when Floor_Mod_Expr =>
-                     Binop (" modf ");
-
-                  when Exact_Div_Expr =>
-                     Binop (" /e ");
-
-                  when Negate_Expr =>
-                     Unop ("-");
-
-                  when Min_Expr =>
-                     Binop (" min ");
-
-                  when Max_Expr =>
-                     Binop (" max ");
-
-                  when Abs_Expr =>
-                     Unop ("abs ");
-
-                  when Truth_And_Expr =>
-                     Binop (" and ");
-
-                  when Truth_Or_Expr =>
-                     Binop (" or ");
-
-                  when Truth_Xor_Expr =>
-                     Binop (" xor ");
-
-                  when Truth_Not_Expr =>
-                     Unop ("not ");
-
-                  when Lt_Expr =>
-                     Binop (" < ");
-
-                  when Le_Expr =>
-                     Binop (" <= ");
-
-                  when Gt_Expr =>
-                     Binop (" > ");
-
-                  when Ge_Expr =>
-                     Binop (" >= ");
-
-                  when Eq_Expr =>
-                     Binop (" == ");
-
-                  when Ne_Expr =>
-                     Binop (" != ");
-
-                  when Bit_And_Expr =>
-                     Binop (" & ");
-
-                  when Discrim_Val =>
-                     Unop ("#");
-
-                  when Dynamic_Val =>
-                     Unop ("var");
-               end case;
-            end;
+            Write_Str ("(if ");
+            Print_It (Test);
+            Write_Str (" then ");
+            Print_It (Lhs);
+            Write_Str (" else ");
+            Print_It (Rhs);
+            Write_Str (")");
          end if;
-      end Print_Expr;
+      end Cond_Expr;
 
-   --  Start of processing for List_GCC_Expression
+      procedure Const (Val : Node_Ref_Or_Val) is
+      begin
+         UI_Write (Val, Decimal);
+      end Const;
+
+      procedure Discriminant (Val : Node_Ref_Or_Val) is
+      begin
+         Unop (Discrim_Val, Val);
+      end Discriminant;
+
+      procedure Variable (Val : Node_Ref_Or_Val) is
+      begin
+         Unop (Dynamic_Val, Val);
+      end Variable;
 
    begin
       if No (U) then
          Write_Unknown_Val;
       else
-         Print_Expr (U);
+         Print_It (U);
       end if;
    end List_GCC_Expression;
 
