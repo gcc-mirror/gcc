@@ -538,14 +538,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __skip_first_arg<_Ret(*)(_Arg, _Args...) noexcept(_Noex)>
       { using type = _Ret(_Args...) noexcept(_Noex); };
 
+    // Returns a function pointer to signature to be used with function_ref, or void.
     template<typename _Fn, typename _Tr>
       consteval auto
       __deduce_funcref()
       {
 	if constexpr (is_member_object_pointer_v<_Fn>)
-	  // TODO Consider reporting issue to make this noexcept
-	  return static_cast<invoke_result_t<_Fn, _Tr>(*)()>(nullptr);
-	else
+	  {
+	    if constexpr (is_invocable_v<_Fn, _Tr>)
+	      // TODO Consider reporting issue to make this noexcept
+	      return static_cast<invoke_result_t<_Fn, _Tr>(*)()>(nullptr);
+	  }
+	else if constexpr (requires { typename __skip_first_arg<_Fn>::type; })
 	  return static_cast<__skip_first_arg<_Fn>::type*>(nullptr);
       }
   } // namespace __polyfunc
@@ -562,11 +566,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     requires is_function_v<_Fn>
     function_ref(nontype_t<__f>) -> function_ref<_Fn>;
 
-  template<auto __f, typename _Tp, class _Fn = decltype(__f)>
-    requires is_member_pointer_v<_Fn> || is_function_v<remove_pointer_t<_Fn>>
+  template<auto __f, typename _Tp,
+	   typename _SignaturePtr =
+	     decltype(__polyfunc::__deduce_funcref<decltype(__f), _Tp&>())>
+    requires (!is_void_v<_SignaturePtr>)
     function_ref(nontype_t<__f>, _Tp&&)
-      -> function_ref<
-	   remove_pointer_t<decltype(__polyfunc::__deduce_funcref<_Fn, _Tp&>())>>;
+      -> function_ref<remove_pointer_t<_SignaturePtr>>;
 
 #endif // __glibcxx_function_ref
 
