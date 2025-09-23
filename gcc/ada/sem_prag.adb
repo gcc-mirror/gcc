@@ -28770,6 +28770,17 @@ package body Sem_Prag is
                         OK  : Boolean;
                         Chr : Character;
 
+                        function Enclose_Ending_Space
+                           (Raw_Str : String) return String
+                        is (if Raw_Str (Raw_Str'Last) = ' '
+                              then '"' & Raw_Str & '"'
+                              else Raw_Str);
+                        function Enclose_Ending_Space
+                           (Raw_Chr : Character) return String
+                        is (Enclose_Ending_Space ((1 => Raw_Chr)));
+                        --  This function ensures that no error message ends
+                        --  with a space, in case we enclose it within quotes.
+
                      begin
                         J := 1;
                         while J <= Len loop
@@ -28801,7 +28812,8 @@ package body Sem_Prag is
                                  if not Set_Warning_Switch ('.', Chr) then
                                     Error_Pragma_Arg
                                       ("invalid warning switch character "
-                                       & '.' & Chr, Arg1);
+                                       & Enclose_Ending_Space ('.' & Chr),
+                                       Arg1);
                                  end if;
 
                               --  Non-Dot case
@@ -28812,7 +28824,8 @@ package body Sem_Prag is
 
                               if not OK then
                                  Error_Pragma_Arg
-                                   ("invalid warning switch character " & Chr,
+                                   ("invalid warning switch character "
+                                    & Enclose_Ending_Space (Chr),
                                     Arg1);
                               end if;
 
