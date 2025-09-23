@@ -597,13 +597,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __res;
       }
 
-    template<typename _Extents,
-             typename _IndexType = typename _Extents::index_type>
+    template<typename _IndexType>
       consteval _IndexType
-      __static_quotient(_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>
-						    ::__max)
+      __static_quotient(std::span<const size_t> __sta_exts,
+	_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>::__max)
       {
-	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
 	for (auto __factor : __sta_exts)
 	  {
 	    if (__factor != dynamic_extent)
@@ -612,6 +610,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      break;
 	  }
 	return __nom;
+      }
+
+    template<typename _Extents,
+	     typename _IndexType = typename _Extents::index_type>
+      requires __is_extents<_Extents>
+      consteval _IndexType
+      __static_quotient(_IndexType __nom
+			  = __gnu_cxx::__int_traits<_IndexType>::__max)
+      {
+	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
+	return __static_quotient<_IndexType>(__sta_exts, __nom);
       }
 
     template<typename _Extents>
