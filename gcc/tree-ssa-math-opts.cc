@@ -1658,7 +1658,7 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 	      /* Aka any sign extend from small to big size */
 	      if (!((val_prec > rhs_prec && !unsigned_val_p && !unsigned_rhs_p)
 		  || (type_prec > val_prec && !unsigned_p && !unsigned_val_p)))
-		rhs = rhs;
+		rhs = cast_rhs;
 	    }
 	}
     }
