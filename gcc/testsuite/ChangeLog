@@ -191,7 +191,7 @@
 
 2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/114815
+	PR fortran/121948
 	* gfortran.dg/pdt_3.f03: Add missing deallocation of 'matrix'.
 	* gfortran.dg/pdt_17.f03: Change dg-error text.
 	* gfortran.dg/pdt_47.f03: New test.

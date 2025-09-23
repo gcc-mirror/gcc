@@ -43,7 +43,7 @@
 
 2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/114815
+	PR fortran/121948
 	* decl.cc (gfc_get_pdt_instance): Copy the contents of 'tb' and
 	not the pointer.
 	* primary.cc (gfc_match_rvalue): If there is only one actual
