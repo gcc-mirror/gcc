@@ -1906,6 +1906,9 @@ package body Exp_Attr is
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id;
       --  Return a small integer type appropriate for the enumeration type
 
+      function Get_Array_Stream_Item_Type (Typ : Entity_Id) return Entity_Id;
+      --  For non-scalar types return the first subtype of Typ.
+
       procedure Rewrite_Attribute_Proc_Call (Pname : Entity_Id);
       --  Rewrites an attribute for Read, Write, Output, or Put_Image with a
       --  call to the appropriate TSS procedure. Pname is the entity for the
@@ -2065,6 +2068,19 @@ package body Exp_Attr is
 
          return Small_Integer_Type_For (Siz, Uns => Is_Unsigned_Type (Typ));
       end Get_Integer_Type;
+
+      --------------------------------
+      -- Get_Array_Stream_Item_Type --
+      --------------------------------
+
+      function Get_Array_Stream_Item_Type (Typ : Entity_Id) return Entity_Id is
+         First_Sub_Typ : constant Entity_Id := First_Subtype (Typ);
+      begin
+         if Is_Private_Type (First_Sub_Typ) then
+            return Typ;
+         end if;
+         return First_Sub_Typ;
+      end Get_Array_Stream_Item_Type;
 
       ---------------------------------
       -- Rewrite_Attribute_Proc_Call --
@@ -4482,6 +4498,7 @@ package body Exp_Attr is
          P_Type  : constant Entity_Id := Entity (Pref);
          B_Type  : constant Entity_Id := Base_Type (P_Type);
          U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+         I_Type  : Entity_Id := P_Type;
          Strm    : constant Node_Id   := First (Exprs);
          Fname   : Entity_Id;
          Decl    : Node_Id;
@@ -4633,8 +4650,9 @@ package body Exp_Attr is
                     new Build_And_Insert_Type_Attr_Subp
                           (Build_Array_Input_Function);
                begin
+                  I_Type := Get_Array_Stream_Item_Type (U_Type);
                   Build_And_Insert_Array_Input_Func
-                    (Typ      => Full_Base (U_Type),
+                    (Typ      => I_Type,
                      Decl     => Decl,
                      Subp     => Fname,
                      Attr_Ref => N);
@@ -4784,8 +4802,13 @@ package body Exp_Attr is
                 Relocate_Node (Strm)));
 
          Set_Controlling_Argument (Call, Cntrl);
-         Rewrite (N, Unchecked_Convert_To (P_Type, Call));
-         Analyze_And_Resolve (N, P_Type);
+         if Is_Private_Type (P_Type) or else Is_Class_Wide_Type (P_Type) then
+            Rewrite (N, Unchecked_Convert_To (P_Type, Call));
+            Analyze_And_Resolve (N, P_Type);
+         else
+            Rewrite (N, Call);
+            Analyze_And_Resolve (N, I_Type);
+         end if;
 
          if Nkind (Parent (N)) = N_Object_Declaration then
             Freeze_Stream_Subprogram (Fname);
@@ -5818,7 +5841,7 @@ package body Exp_Attr is
                           (Build_Array_Output_Procedure);
                begin
                   Build_And_Insert_Array_Output_Proc
-                    (Typ      => Full_Base (U_Type),
+                    (Typ      => Get_Array_Stream_Item_Type (U_Type),
                      Decl     => Decl,
                      Subp     => Pname,
                      Attr_Ref => N);
@@ -6295,10 +6318,10 @@ package body Exp_Attr is
 
                   begin
                      Build_And_Insert_Array_Put_Image_Proc
-                       (Typ      => U_Type,
+                       (Typ      => Get_Array_Stream_Item_Type (U_Type),
                         Decl     => Decl,
-                           Subp     => Pname,
-                           Attr_Ref => N);
+                        Subp     => Pname,
+                        Attr_Ref => N);
                   end;
 
                   Cached_Attribute_Ops.Put_Image_Map.Set (U_Type, Pname);
@@ -6746,7 +6769,7 @@ package body Exp_Attr is
                           (Build_Array_Read_Procedure);
                begin
                   Build_And_Insert_Array_Read_Proc
-                    (Typ      => Full_Base (U_Type),
+                    (Typ      => Get_Array_Stream_Item_Type (U_Type),
                      Decl     => Decl,
                      Subp     => Pname,
                      Attr_Ref => N);
@@ -8461,7 +8484,7 @@ package body Exp_Attr is
                           (Build_Array_Write_Procedure);
                begin
                   Build_And_Insert_Array_Write_Proc
-                    (Typ      => Full_Base (U_Type),
+                    (Typ      => Get_Array_Stream_Item_Type (U_Type),
                      Decl     => Decl,
                      Subp     => Pname,
                      Attr_Ref => N);
