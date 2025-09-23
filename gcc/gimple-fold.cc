@@ -5886,6 +5886,12 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       tree overflow = NULL_TREE;
       switch (gimple_call_internal_fn (stmt))
 	{
+	case IFN_ASSUME:
+	  /* Remove .ASSUME calls during the last fold since it is no
+	     longer needed.  */
+	  if (cfun->curr_properties & PROP_last_full_fold)
+	    replace_call_with_value (gsi, NULL_TREE);
+	  break;
 	case IFN_BUILTIN_EXPECT:
 	  result = fold_builtin_expect (gimple_location (stmt),
 					gimple_call_arg (stmt, 0),

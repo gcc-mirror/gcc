@@ -4278,9 +4278,34 @@ pass_fold_builtins::execute (function *fun)
 
 	  callee = gimple_call_fndecl (stmt);
 	  if (!callee
-	      && gimple_call_internal_p (stmt, IFN_ASSUME))
+	      && gimple_call_internal_p (stmt))
 	    {
-	      gsi_remove (&i, true);
+	      if (!fold_stmt (&i))
+		{
+		  gsi_next (&i);
+		  continue;
+		}
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Simplified\n  ");
+		  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+		}
+
+	      old_stmt = stmt;
+	      stmt = gsi_stmt (i);
+	      update_stmt (stmt);
+
+	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt)
+		  && gimple_purge_dead_eh_edges (bb))
+		cfg_changed = true;
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "to\n  ");
+		  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+		  fprintf (dump_file, "\n");
+		}
+	      gsi_next (&i);
 	      continue;
 	    }
 	  if (!callee || !fndecl_built_in_p (callee, BUILT_IN_NORMAL))
