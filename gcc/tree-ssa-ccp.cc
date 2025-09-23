@@ -4065,85 +4065,45 @@ pass_fold_builtins::execute (function *fun)
 	      tree result = NULL_TREE;
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
-		case BUILT_IN_ATOMIC_ADD_FETCH_1:
-		case BUILT_IN_ATOMIC_ADD_FETCH_2:
-		case BUILT_IN_ATOMIC_ADD_FETCH_4:
-		case BUILT_IN_ATOMIC_ADD_FETCH_8:
-		case BUILT_IN_ATOMIC_ADD_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_ADD_FETCH_CMP_0,
-						  true);
-		  break;
-		case BUILT_IN_SYNC_ADD_AND_FETCH_1:
-		case BUILT_IN_SYNC_ADD_AND_FETCH_2:
-		case BUILT_IN_SYNC_ADD_AND_FETCH_4:
-		case BUILT_IN_SYNC_ADD_AND_FETCH_8:
-		case BUILT_IN_SYNC_ADD_AND_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_ADD_FETCH_CMP_0,
-						  false);
-		  break;
-
-		case BUILT_IN_ATOMIC_SUB_FETCH_1:
-		case BUILT_IN_ATOMIC_SUB_FETCH_2:
-		case BUILT_IN_ATOMIC_SUB_FETCH_4:
-		case BUILT_IN_ATOMIC_SUB_FETCH_8:
-		case BUILT_IN_ATOMIC_SUB_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_SUB_FETCH_CMP_0,
-						  true);
-		  break;
-		case BUILT_IN_SYNC_SUB_AND_FETCH_1:
-		case BUILT_IN_SYNC_SUB_AND_FETCH_2:
-		case BUILT_IN_SYNC_SUB_AND_FETCH_4:
-		case BUILT_IN_SYNC_SUB_AND_FETCH_8:
-		case BUILT_IN_SYNC_SUB_AND_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_SUB_FETCH_CMP_0,
-						  false);
+#define CASE_ATOMIC(NAME) 			\
+		case BUILT_IN_##NAME##_1:	\
+		case BUILT_IN_##NAME##_2:	\
+		case BUILT_IN_##NAME##_4:	\
+		case BUILT_IN_##NAME##_8:	\
+		case BUILT_IN_##NAME##_16
+#define CASE_ATOMIC_CMP0(ATOMIC, SYNC) 				\
+		CASE_ATOMIC(ATOMIC_##ATOMIC):			\
+		  optimize_atomic_op_fetch_cmp_0 (&i,		\
+						  IFN_ATOMIC_##ATOMIC##_CMP_0, \
+						  true);	\
+		  break;					\
+		CASE_ATOMIC(SYNC_##SYNC):			\
+		  optimize_atomic_op_fetch_cmp_0 (&i,		\
+						  IFN_ATOMIC_##ATOMIC##_CMP_0, \
+						  false);	\
 		  break;
 
-		case BUILT_IN_ATOMIC_FETCH_OR_1:
-		case BUILT_IN_ATOMIC_FETCH_OR_2:
-		case BUILT_IN_ATOMIC_FETCH_OR_4:
-		case BUILT_IN_ATOMIC_FETCH_OR_8:
-		case BUILT_IN_ATOMIC_FETCH_OR_16:
-		  optimize_atomic_bit_test_and (&i,
-						IFN_ATOMIC_BIT_TEST_AND_SET,
-						true, false);
-		  break;
-		case BUILT_IN_SYNC_FETCH_AND_OR_1:
-		case BUILT_IN_SYNC_FETCH_AND_OR_2:
-		case BUILT_IN_SYNC_FETCH_AND_OR_4:
-		case BUILT_IN_SYNC_FETCH_AND_OR_8:
-		case BUILT_IN_SYNC_FETCH_AND_OR_16:
-		  optimize_atomic_bit_test_and (&i,
-						IFN_ATOMIC_BIT_TEST_AND_SET,
-						false, false);
-		  break;
 
-		case BUILT_IN_ATOMIC_FETCH_XOR_1:
-		case BUILT_IN_ATOMIC_FETCH_XOR_2:
-		case BUILT_IN_ATOMIC_FETCH_XOR_4:
-		case BUILT_IN_ATOMIC_FETCH_XOR_8:
-		case BUILT_IN_ATOMIC_FETCH_XOR_16:
-		  optimize_atomic_bit_test_and
-			(&i, IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT, true, false);
+		CASE_ATOMIC_CMP0(ADD_FETCH, ADD_AND_FETCH)
+		CASE_ATOMIC_CMP0(SUB_FETCH, SUB_AND_FETCH)
+		CASE_ATOMIC_CMP0(AND_FETCH, AND_AND_FETCH)
+		CASE_ATOMIC_CMP0(OR_FETCH, OR_AND_FETCH)
+#define CASE_ATOMIC_BIT_TEST_AND(ATOMIC, SYNC, FN, AFTER) 			\
+		CASE_ATOMIC(ATOMIC_##ATOMIC):					\
+		  optimize_atomic_bit_test_and (&i,				\
+						IFN_ATOMIC_BIT_TEST_AND_##FN,	\
+						true, AFTER);			\
+		  break;							\
+		CASE_ATOMIC(SYNC_##SYNC):					\
+		  optimize_atomic_bit_test_and (&i,				\
+						IFN_ATOMIC_BIT_TEST_AND_##FN, 	\
+						false, AFTER);			\
 		  break;
-		case BUILT_IN_SYNC_FETCH_AND_XOR_1:
-		case BUILT_IN_SYNC_FETCH_AND_XOR_2:
-		case BUILT_IN_SYNC_FETCH_AND_XOR_4:
-		case BUILT_IN_SYNC_FETCH_AND_XOR_8:
-		case BUILT_IN_SYNC_FETCH_AND_XOR_16:
-		  optimize_atomic_bit_test_and
-			(&i, IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT, false, false);
-		  break;
+		CASE_ATOMIC_BIT_TEST_AND(FETCH_OR,  FETCH_AND_OR,  SET, false)
+		CASE_ATOMIC_BIT_TEST_AND(FETCH_XOR, FETCH_AND_XOR, COMPLEMENT, false)
+		CASE_ATOMIC_BIT_TEST_AND(FETCH_AND, FETCH_AND_AND, RESET, false)
 
-		case BUILT_IN_ATOMIC_XOR_FETCH_1:
-		case BUILT_IN_ATOMIC_XOR_FETCH_2:
-		case BUILT_IN_ATOMIC_XOR_FETCH_4:
-		case BUILT_IN_ATOMIC_XOR_FETCH_8:
-		case BUILT_IN_ATOMIC_XOR_FETCH_16:
+		CASE_ATOMIC(ATOMIC_XOR_FETCH):
 		  if (optimize_atomic_bit_test_and
 			(&i, IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT, true, true))
 		    break;
@@ -4151,73 +4111,12 @@ pass_fold_builtins::execute (function *fun)
 						  IFN_ATOMIC_XOR_FETCH_CMP_0,
 						  true);
 		  break;
-		case BUILT_IN_SYNC_XOR_AND_FETCH_1:
-		case BUILT_IN_SYNC_XOR_AND_FETCH_2:
-		case BUILT_IN_SYNC_XOR_AND_FETCH_4:
-		case BUILT_IN_SYNC_XOR_AND_FETCH_8:
-		case BUILT_IN_SYNC_XOR_AND_FETCH_16:
+		CASE_ATOMIC(SYNC_XOR_AND_FETCH):
 		  if (optimize_atomic_bit_test_and
 			(&i, IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT, false, true))
 		    break;
 		  optimize_atomic_op_fetch_cmp_0 (&i,
 						  IFN_ATOMIC_XOR_FETCH_CMP_0,
-						  false);
-		  break;
-
-		case BUILT_IN_ATOMIC_FETCH_AND_1:
-		case BUILT_IN_ATOMIC_FETCH_AND_2:
-		case BUILT_IN_ATOMIC_FETCH_AND_4:
-		case BUILT_IN_ATOMIC_FETCH_AND_8:
-		case BUILT_IN_ATOMIC_FETCH_AND_16:
-		  optimize_atomic_bit_test_and (&i,
-						IFN_ATOMIC_BIT_TEST_AND_RESET,
-						true, false);
-		  break;
-		case BUILT_IN_SYNC_FETCH_AND_AND_1:
-		case BUILT_IN_SYNC_FETCH_AND_AND_2:
-		case BUILT_IN_SYNC_FETCH_AND_AND_4:
-		case BUILT_IN_SYNC_FETCH_AND_AND_8:
-		case BUILT_IN_SYNC_FETCH_AND_AND_16:
-		  optimize_atomic_bit_test_and (&i,
-						IFN_ATOMIC_BIT_TEST_AND_RESET,
-						false, false);
-		  break;
-
-		case BUILT_IN_ATOMIC_AND_FETCH_1:
-		case BUILT_IN_ATOMIC_AND_FETCH_2:
-		case BUILT_IN_ATOMIC_AND_FETCH_4:
-		case BUILT_IN_ATOMIC_AND_FETCH_8:
-		case BUILT_IN_ATOMIC_AND_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_AND_FETCH_CMP_0,
-						  true);
-		  break;
-		case BUILT_IN_SYNC_AND_AND_FETCH_1:
-		case BUILT_IN_SYNC_AND_AND_FETCH_2:
-		case BUILT_IN_SYNC_AND_AND_FETCH_4:
-		case BUILT_IN_SYNC_AND_AND_FETCH_8:
-		case BUILT_IN_SYNC_AND_AND_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_AND_FETCH_CMP_0,
-						  false);
-		  break;
-
-		case BUILT_IN_ATOMIC_OR_FETCH_1:
-		case BUILT_IN_ATOMIC_OR_FETCH_2:
-		case BUILT_IN_ATOMIC_OR_FETCH_4:
-		case BUILT_IN_ATOMIC_OR_FETCH_8:
-		case BUILT_IN_ATOMIC_OR_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_OR_FETCH_CMP_0,
-						  true);
-		  break;
-		case BUILT_IN_SYNC_OR_AND_FETCH_1:
-		case BUILT_IN_SYNC_OR_AND_FETCH_2:
-		case BUILT_IN_SYNC_OR_AND_FETCH_4:
-		case BUILT_IN_SYNC_OR_AND_FETCH_8:
-		case BUILT_IN_SYNC_OR_AND_FETCH_16:
-		  optimize_atomic_op_fetch_cmp_0 (&i,
-						  IFN_ATOMIC_OR_FETCH_CMP_0,
 						  false);
 		  break;
 
