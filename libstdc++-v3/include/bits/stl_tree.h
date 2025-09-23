@@ -1400,7 +1400,7 @@ namespace __rb_tree
 	  // Enforce this here with a user-friendly message.
 	  static_assert(
 	    __is_invocable<const _Compare&, const _Key&, const _Key&>::value,
-	    "comparison object must be invocable with two arguments of key type"
+	    "comparison object must be invocable with arguments of key_type"
 	  );
 #endif
 	  return _M_impl._M_key_compare(__k1, __k2);
@@ -1539,9 +1539,17 @@ namespace __rb_tree
       _M_lower_bound(_Base_ptr __x, _Base_ptr __y,
 		     const _Key& __k) const;
 
+      template <typename _Kt>
+	_Base_ptr
+	_M_lower_bound_tr(_Base_ptr __x, _Base_ptr __y, const _Kt& __k) const;
+
       _Base_ptr
       _M_upper_bound(_Base_ptr __x, _Base_ptr __y,
 		     const _Key& __k) const;
+
+      template <typename _Kt>
+	_Base_ptr
+	_M_upper_bound_tr(_Base_ptr __x, _Base_ptr __y, const _Kt& __k) const;
 
     public:
       // allocation/deallocation
@@ -1849,6 +1857,10 @@ namespace __rb_tree
 
       size_type
       erase(const key_type& __x);
+
+      template <typename _Kt>
+	size_type
+	_M_erase_tr(const _Kt& __x);
 
       size_type
       _M_erase_unique(const key_type& __x);
@@ -2197,6 +2209,17 @@ namespace __rb_tree
 	  __nh = extract(const_iterator(__pos));
 	return __nh;
       }
+
+      template <typename _Kt>
+	node_type
+	_M_extract_tr(const _Kt& __k)
+	{
+	  node_type __nh;
+	  auto __pos = _M_find_tr(__k);
+	  if (__pos != end())
+	    __nh = extract(const_iterator(__pos));
+	  return __nh;
+	}
 
       template<typename _Compare2>
 	using _Compatible_tree
@@ -2613,6 +2636,21 @@ namespace __rb_tree
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
+	typename _Compare, typename _Alloc>
+    template <typename _Kt>
+      typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::_Base_ptr
+      _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+      _M_lower_bound_tr(_Base_ptr __x, _Base_ptr __y, const _Kt& __k) const
+      {
+	while (__x)
+	  if (!_M_key_compare(_S_key(__x), __k))
+	    __y = __x, __x = _S_left(__x);
+	  else
+	    __x = _S_right(__x);
+	return __y;
+      }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue,
 		      _Compare, _Alloc>::_Base_ptr
@@ -2627,6 +2665,21 @@ namespace __rb_tree
 	  __x = _S_right(__x);
       return __y;
     }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+	   typename _Compare, typename _Alloc>
+    template <typename _Kt>
+      typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::_Base_ptr
+      _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+      _M_upper_bound_tr(_Base_ptr __x, _Base_ptr __y, const _Kt& __k) const
+      {
+	while (__x)
+	  if (_M_key_compare(__k, _S_key(__x)))
+	    __y = __x, __x = _S_left(__x);
+	  else
+	    __x = _S_right(__x);
+	return __y;
+      }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
@@ -3144,6 +3197,19 @@ namespace __rb_tree
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
+    template <typename _Kt>
+      typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type
+      _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+      _M_erase_tr(const _Kt& __x)
+      {
+	pair<iterator, iterator> __p = _M_equal_range_tr(__x);
+	const size_type __old_size = size();
+	_M_erase_aux(__p.first, __p.second);
+	return __old_size - size();
+      }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+	   typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_erase_unique(const _Key& __x)
@@ -3248,6 +3314,13 @@ namespace __rb_tree
       { return __tree._M_impl; }
     };
 #endif // C++17
+
+#ifdef __cpp_concepts
+template <typename _Kt, typename _Container>
+  concept __heterogeneous_tree_key =
+    __transparent_comparator<typename _Container::key_compare> &&
+    __heterogeneous_key<_Kt, _Container>;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

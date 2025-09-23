@@ -1801,6 +1801,16 @@
 #endif /* !defined(__cpp_lib_invoke_r) */
 #undef __glibcxx_want_invoke_r
 
+#if !defined(__cpp_lib_associative_heterogeneous_erasure)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_associative_heterogeneous_erasure 202110L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_associative_heterogeneous_erasure)
+#   define __cpp_lib_associative_heterogeneous_erasure 202110L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_associative_heterogeneous_erasure) */
+#undef __glibcxx_want_associative_heterogeneous_erasure
+
 #if !defined(__cpp_lib_is_scoped_enum)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_is_scoped_enum 202011L

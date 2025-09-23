@@ -853,7 +853,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Find the node before the one matching the criteria.
       __node_base_ptr
-      _M_find_before_node(size_type, const key_type&, __hash_code) const;
+      _M_find_before_node(
+	size_type __bkt, const key_type& __k, __hash_code __code) const
+      { return _M_find_before_node_tr<key_type>(__bkt, __k, __code); }
 
       template<typename _Kt>
 	__node_base_ptr
@@ -902,8 +904,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The _M_before pointer might point to _M_before_begin, so must not be
       // cast to __node_ptr, and it must not be used to modify *_M_before
       // except in non-const member functions, such as erase.
+
       __location_type
-      _M_locate(const key_type& __k) const;
+      _M_locate(const key_type& __k) const
+      { return _M_locate_tr<key_type>(__k); }
+
+      template <typename _Kt>
+	__location_type
+	_M_locate_tr(const _Kt& __k) const;
 
       __node_ptr
       _M_find_node(size_type __bkt, const key_type& __key,
@@ -1015,6 +1023,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       iterator
       _M_erase(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n);
+
+      size_type
+      _M_erase_some(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n);
 
       template<typename _InputIterator>
 	void
@@ -1163,6 +1174,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type
       erase(const key_type& __k);
 
+      template <typename _Kt>
+	size_type
+	_M_erase_tr(const _Kt& __k);
+
       iterator
       erase(const_iterator, const_iterator);
 
@@ -1274,14 +1289,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Extract a node.
       node_type
       extract(const _Key& __k)
-      {
-	node_type __nh;
-	__hash_code __code = this->_M_hash_code(__k);
-	std::size_t __bkt = _M_bucket_index(__code);
-	if (__node_base_ptr __prev_node = _M_find_before_node(__bkt, __k, __code))
-	  __nh = _M_extract_node(__bkt, __prev_node);
-	return __nh;
-      }
+      { return _M_extract_tr<_Key>(__k); }
+
+      template <typename _Kt>
+	node_type
+	_M_extract_tr(const _Kt& __k)
+	{
+	  node_type __nh;
+	  __hash_code __code = this->_M_hash_code_tr(__k);
+	  std::size_t __bkt = _M_bucket_index(__code);
+	  if (__node_base_ptr __prev_node =
+	      _M_find_before_node_tr(__bkt, __k, __code))
+	    __nh = _M_extract_node(__bkt, __prev_node);
+	  return __nh;
+	}
 
       /// Merge from another container of the same type.
       void
@@ -2198,35 +2219,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_find_before_node(size_type __bkt, const key_type& __k,
-			__hash_code __code) const
-    -> __node_base_ptr
-    {
-      __node_base_ptr __prev_p = _M_buckets[__bkt];
-      if (!__prev_p)
-	return nullptr;
-
-      for (__node_ptr __p = static_cast<__node_ptr>(__prev_p->_M_nxt);;
-	   __p = __p->_M_next())
-	{
-	  if (this->_M_equals(__k, __code, *__p))
-	    return __prev_p;
-
-	  if (__builtin_expect (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt, 0))
-	    break;
-	  __prev_p = __p;
-	}
-
-      return nullptr;
-    }
-
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
     template<typename _Kt>
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
@@ -2245,7 +2237,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (this->_M_equals_tr(__k, __code, *__p))
 	      return __prev_p;
 
-	    if (__builtin_expect (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt, 0))
+	    if (__builtin_expect (
+		  !__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt, 0))
 	      break;
 	    __prev_p = __p;
 	  }
@@ -2257,37 +2250,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    inline auto
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_locate(const key_type& __k) const
-    -> __location_type
-    {
-      __location_type __loc;
-      const auto __size = size();
+    template <typename _Kt>
+      inline auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_locate_tr(const _Kt& __k) const
+	-> __location_type
+      {
+	__location_type __loc;
+	const auto __size = size();
 
-      if (__size <= __small_size_threshold())
-	{
-	  __loc._M_before = pointer_traits<__node_base_ptr>::
-	       pointer_to(const_cast<__node_base&>(_M_before_begin));
-	  while (__loc._M_before->_M_nxt)
-	    {
-	      if (this->_M_key_equals(__k, *__loc._M_node()))
-		return __loc;
-	      __loc._M_before = __loc._M_before->_M_nxt;
-	    }
-	  __loc._M_before = nullptr; // Didn't find it.
-	}
+	if (__size <= __small_size_threshold())
+	  {
+	    __loc._M_before = pointer_traits<__node_base_ptr>::
+		 pointer_to(const_cast<__node_base&>(_M_before_begin));
+	    while (__loc._M_before->_M_nxt)
+	      {
+		if (this->_M_key_equals_tr(__k, *__loc._M_node()))
+		  return __loc;
+		__loc._M_before = __loc._M_before->_M_nxt;
+	      }
+	    __loc._M_before = nullptr; // Didn't find it.
+	  }
 
-      __loc._M_hash_code = this->_M_hash_code(__k);
-      __loc._M_bucket_index = _M_bucket_index(__loc._M_hash_code);
+	__loc._M_hash_code = this->_M_hash_code_tr(__k);
+	__loc._M_bucket_index = _M_bucket_index(__loc._M_hash_code);
 
-      if (__size > __small_size_threshold())
-	__loc._M_before = _M_find_before_node(__loc._M_bucket_index, __k,
-					      __loc._M_hash_code);
+	if (__size > __small_size_threshold())
+	  __loc._M_before = _M_find_before_node_tr(
+	    __loc._M_bucket_index, __k, __loc._M_hash_code);
 
-      return __loc;
-    }
+	return __loc;
+      }
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -2598,6 +2592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -2617,47 +2612,87 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __bkt = __loc._M_bucket_index;
       if (__bkt == size_type(-1))
 	__bkt = _M_bucket_index(*__n);
-
       if constexpr (__unique_keys::value)
 	{
 	  _M_erase(__bkt, __prev_n, __n);
 	  return 1;
 	}
       else
-	{
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 526. Is it undefined if a function in the standard changes
-	  // in parameters?
-	  // We use one loop to find all matching nodes and another to
-	  // deallocate them so that the key stays valid during the first loop.
-	  // It might be invalidated indirectly when destroying nodes.
-	  __node_ptr __n_last = __n->_M_next();
-	  while (__n_last && this->_M_node_equals(*__n, *__n_last))
-	    __n_last = __n_last->_M_next();
-
-	  std::size_t __n_last_bkt
-	    = __n_last ? _M_bucket_index(*__n_last) : __bkt;
-
-	  // Deallocate nodes.
-	  size_type __result = 0;
-	  do
-	    {
-	      __node_ptr __p = __n->_M_next();
-	      this->_M_deallocate_node(__n);
-	      __n = __p;
-	      ++__result;
-	    }
-	  while (__n != __n_last);
-
-	  _M_element_count -= __result;
-	  if (__prev_n == _M_buckets[__bkt])
-	    _M_remove_bucket_begin(__bkt, __n_last, __n_last_bkt);
-	  else if (__n_last_bkt != __bkt)
-	    _M_buckets[__n_last_bkt] = __prev_n;
-	  __prev_n->_M_nxt = __n_last;
-	  return __result;
-	}
+	return _M_erase_some(__bkt, __prev_n, __n);
     }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    auto
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+    _M_erase_some(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n)
+      -> size_type
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 526. Is it undefined if a function in the standard changes
+      // in parameters?
+      // We use one loop to find all matching nodes and another to
+      // deallocate them so that the key stays valid during the first loop.
+      // It might be invalidated indirectly when destroying nodes.
+      __node_ptr __n_last = __n->_M_next();
+      while (__n_last && this->_M_node_equals(*__n, *__n_last))
+	__n_last = __n_last->_M_next();
+
+      std::size_t __n_last_bkt
+	= __n_last ? _M_bucket_index(*__n_last) : __bkt;
+
+      // Deallocate nodes.
+      size_type __result = 0;
+      do
+	{
+	  __node_ptr __p = __n->_M_next();
+	  this->_M_deallocate_node(__n);
+	  __n = __p;
+	  ++__result;
+	}
+      while (__n != __n_last);
+
+      _M_element_count -= __result;
+      if (__prev_n == _M_buckets[__bkt])
+	_M_remove_bucket_begin(__bkt, __n_last, __n_last_bkt);
+      else if (__n_last_bkt != __bkt)
+	_M_buckets[__n_last_bkt] = __prev_n;
+      __prev_n->_M_nxt = __n_last;
+      return __result;
+    }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template <typename _Kt>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_erase_tr(const _Kt& __k)
+	-> size_type
+      {
+	auto __loc = _M_locate_tr(__k);
+	if (!__loc)
+	  return 0;
+
+	__node_base_ptr __prev_n = __loc._M_before;
+	__node_ptr __n = __loc._M_node();
+	auto __bkt = __loc._M_bucket_index;
+	if (__bkt == size_type(-1))
+	  __bkt = _M_bucket_index(*__n);
+	if constexpr (__unique_keys::value)
+	  {
+	    _M_erase(__bkt, __prev_n, __n);
+	    return 1;
+	  }
+	else
+	  return _M_erase_some(__bkt, __prev_n, __n);
+      }
+
 #pragma GCC diagnostic pop
 
   template<typename _Key, typename _Value, typename _Alloc,
@@ -2975,6 +3010,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Hash>
     using _RequireNotAllocatorOrIntegral
       = __enable_if_t<!__or_<is_integral<_Hash>, __is_allocator<_Hash>>::value>;
+#endif
+
+#ifdef __cpp_concepts
+template <typename _Kt, typename _Container>
+  concept __heterogeneous_hash_key =
+    __transparent_comparator<typename _Container::hasher> &&
+    __transparent_comparator<typename _Container::key_equal> &&
+    __heterogeneous_key<_Kt, _Container>;
 #endif
 
 /// @endcond

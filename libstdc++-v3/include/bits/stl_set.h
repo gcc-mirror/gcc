@@ -63,6 +63,7 @@
 #if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 #endif
+// #include <bits/stl_tree.h>  // done in std/set
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -639,6 +640,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       extract(const key_type& __x)
       { return _M_t.extract(__x); }
 
+#ifdef __glibcxx_associative_heterogeneous_erasure // C++23
+      template <__heterogeneous_tree_key<set> _Kt>
+	node_type
+	extract(_Kt&& __key)
+	{ return _M_t._M_extract_tr(__key); }
+#endif
+
       /// Re-insert an extracted node.
       insert_return_type
       insert(node_type&& __nh)
@@ -729,6 +737,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       erase(const key_type& __x)
       { return _M_t._M_erase_unique(__x); }
+
+#ifdef __glibcxx_associative_heterogeneous_erasure // C++23
+      // Note that for some types _Kt this may erase more than
+      // one element, such as if _Kt::operator< checks only part
+      // of the key.
+      template <__heterogeneous_tree_key<set> _Kt>
+	size_type
+	erase(_Kt&& __key)
+	{ return _M_t._M_erase_tr(__key); }
+#endif
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

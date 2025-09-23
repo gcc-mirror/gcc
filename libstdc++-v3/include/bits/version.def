@@ -1634,6 +1634,14 @@ ftms = {
 };
 
 ftms = {
+  name = associative_heterogeneous_erasure;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = is_scoped_enum;
   values = {
     v = 202011;
