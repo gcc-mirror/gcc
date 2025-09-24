@@ -14359,10 +14359,10 @@ Note that @option{-flive-patching} is not supported with link-time optimization
 @opindex fisolate-erroneous-paths-dereference
 @item -fisolate-erroneous-paths-dereference
 Detect paths that trigger erroneous or undefined behavior due to
-dereferencing a null pointer.  Isolate those paths from the main control
-flow and turn the statement with erroneous or undefined behavior into a trap.
-This flag is enabled by default at @option{-O2} and higher and depends on
-@option{-fdelete-null-pointer-checks} also being enabled.
+dereferencing a null pointer (with @option{-fdelete-null-pointer-checks}
+enabled) or a division by zero.  Isolate those paths from the main control
+flow and turn the statement with erroneous or undefined behavior into a
+trap.  This flag is enabled by default at @option{-O2} and higher.
 
 @opindex fisolate-erroneous-paths-attribute
 @item -fisolate-erroneous-paths-attribute
