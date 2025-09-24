@@ -4614,6 +4614,26 @@
     FAIL;
 })
 
+; Split (A<<1) | (A>=0) into a rotate + xor. Using two’s-complement identities:
+; (A>=0) == ((A >> (W-1)) ^ 1) and (A<<1) | (A>>(W-1)) == ROL1 (A), so the whole
+; expression equals ROL1 (A) ^ 1.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+     (ior:X
+       (ashift:X (match_operand:X 1 "register_operand")
+		  (const_int 1))
+		(ge:X (match_dup 1) (const_int 0))))]
+  "TARGET_ZBB"
+  [(set (match_dup 0)
+       (rotatert:X (match_dup 1) (match_operand 2 "const_int_operand")))
+   (set (match_dup 0)
+       (xor:X (match_dup 0) (const_int 1)))]
+  {
+    HOST_WIDE_INT rotval;
+    rotval = GET_MODE_BITSIZE (GET_MODE (operands[1])).to_constant () - 1;
+    operands[2] = GEN_INT (rotval);
+  })
+
 (define_insn "*large_load_address"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (match_operand 1 "pcrel_symbol_operand" "")))]
