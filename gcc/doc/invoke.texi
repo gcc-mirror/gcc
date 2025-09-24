@@ -592,7 +592,8 @@ Objective-C and Objective-C++ Dialects}.
 -fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects
 -ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style}
 -ffinite-loops
--fforward-propagate  -ffp-contract=@var{style}  -ffunction-sections
+-fforward-propagate  -ffp-contract=@var{style}  -ffp-int-builtin-inexact
+-ffunction-sections
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
@@ -616,7 +617,7 @@ Objective-C and Objective-C++ Dialects}.
 -flto-incremental-cache-size=@var{n} -fmalloc-dce -fmerge-all-constants
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves
 -fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg
--fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse
+-fno-defer-pop  -fno-function-cse
 -fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock
 -fno-sched-spec  -fno-signed-zeros
@@ -13289,6 +13290,24 @@ different statements.
 The default is @option{-ffp-contract=off} for C in a standards compliant mode
 (@option{-std=c11} or similar), @option{-ffp-contract=fast} otherwise.
 
+@opindex ffp-int-builtin-inexact
+@item -ffp-int-builtin-inexact
+Allow the built-in functions @code{ceil}, @code{floor},
+@code{round} and @code{trunc}, and their @code{float} and @code{long
+double} variants, to generate code that raises the ``inexact''
+floating-point exception for noninteger arguments.  ISO C99 and C11
+allow these functions to raise the ``inexact'' exception, but ISO/IEC
+TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
+ISO C23, does not allow these functions to do so.
+
+The default is @option{-fno-fp-int-builtin-inexact}, disallowing the
+exception to be raised, unless C17 or an earlier C standard is selected.
+This option does nothing unless @option{-ftrapping-math} is in effect.
+
+Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
+generate a call to a library function then the ``inexact'' exception
+may be raised if the library implementation does not follow TS 18661.
+
 @opindex fomit-frame-pointer
 @item -fomit-frame-pointer
 Omit the frame pointer in functions that don't need one.  This avoids the
@@ -15894,25 +15913,6 @@ The default is @option{-fno-signaling-nans}.
 
 This option is experimental and does not currently guarantee to
 disable all GCC optimizations that affect signaling NaN behavior.
-
-@opindex fno-fp-int-builtin-inexact
-@opindex ffp-int-builtin-inexact
-@item -fno-fp-int-builtin-inexact
-Do not allow the built-in functions @code{ceil}, @code{floor},
-@code{round} and @code{trunc}, and their @code{float} and @code{long
-double} variants, to generate code that raises the ``inexact''
-floating-point exception for noninteger arguments.  ISO C99 and C11
-allow these functions to raise the ``inexact'' exception, but ISO/IEC
-TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
-ISO C23, does not allow these functions to do so.
-
-The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised, unless C23 or a later C standard is selected.
-This option does nothing unless @option{-ftrapping-math} is in effect.
-
-Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
-generate a call to a library function then the ``inexact'' exception
-may be raised if the library implementation does not follow TS 18661.
 
 @opindex fsingle-precision-constant
 @item -fsingle-precision-constant
