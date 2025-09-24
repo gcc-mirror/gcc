@@ -3516,7 +3516,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 				   __gnu_cxx::__ops::__iter_comp_iter(__pred));
     }
 
-#if __cplusplus > 201103L
+#if __glibcxx_robust_nonmodifying_seq_ops // C++ >= 14
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _ForwardIterator1, typename _ForwardIterator2,
@@ -3635,7 +3635,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       return std::__is_permutation(__first1, __last1, __first2, __last2,
 				   __gnu_cxx::__ops::__iter_comp_iter(__pred));
     }
-#endif // C++14
+#endif // __glibcxx_robust_nonmodifying_seq_ops
 
 #ifdef  __glibcxx_clamp // C++ >= 17
   /**
@@ -5828,7 +5828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 #endif // C++11
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 201402L // C++17 std::sample and C++14 experimental::sample
   /// Reservoir sampling algorithm.
   template<typename _InputIterator, typename _RandomAccessIterator,
            typename _Size, typename _UniformRandomBitGenerator>

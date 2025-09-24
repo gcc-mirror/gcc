@@ -2090,7 +2090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return _GLIBCXX_STD_A::__mismatch(__first1, __last1, __first2, __last2,
 			     __gnu_cxx::__ops::__iter_comp_iter(__binary_pred));
     }
-#endif
+#endif // __glibcxx_robust_nonmodifying_seq_ops
 
 _GLIBCXX_END_NAMESPACE_ALGO
 
