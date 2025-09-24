@@ -2134,41 +2134,26 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	  && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	{
-	  if (SLP_TREE_LANES (slp_node) == 1)
-	    {
-	      *memory_access_type = VMAT_ELEMENTWISE;
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "single-element interleaving not supported "
-				 "for not adjacent vector loads, using "
-				 "elementwise access\n");
-	    }
-	  else
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "single-element interleaving not supported "
-				 "for not adjacent vector loads\n");
-	      return false;
-	    }
+	  *memory_access_type = VMAT_ELEMENTWISE;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "single-element interleaving not supported "
+			     "for not adjacent vector loads, using "
+			     "elementwise access\n");
 	}
 
-      /* For single-element interleaving also fall back to elementwise
-	 access in case we did not lower a permutation and cannot
-	 code generate it.  */
+      /* Also fall back to elementwise access in case we did not lower a
+	 permutation and cannot code generate it.  */
       if (loop_vinfo
-	  && single_element_p
-	  && SLP_TREE_LANES (slp_node) == 1
-	  && (*memory_access_type == VMAT_CONTIGUOUS
-	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	  && *memory_access_type != VMAT_ELEMENTWISE
 	  && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	  && !perm_ok)
 	{
 	  *memory_access_type = VMAT_ELEMENTWISE;
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "single-element interleaving permutation not "
-			     "supported, using elementwise access\n");
+			     "permutation not supported, using elementwise "
+			     "access\n");
 	}
 
       overrun_p = (loop_vinfo && gap != 0
@@ -2498,9 +2483,9 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
      traditional behavior until that can be fixed.  */
   if (*memory_access_type == VMAT_ELEMENTWISE
       && !STMT_VINFO_STRIDED_P (first_stmt_info)
-      && !(stmt_info == DR_GROUP_FIRST_ELEMENT (stmt_info)
-	   && !DR_GROUP_NEXT_ELEMENT (stmt_info)
-	   && !pow2p_hwi (DR_GROUP_SIZE (stmt_info))))
+      && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	   && single_element_p
+	   && !pow2p_hwi (group_size)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -9485,11 +9470,11 @@ vectorizable_load (vec_info *vinfo,
   /* ???  The following checks should really be part of
      get_load_store_type.  */
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
-      && !((memory_access_type == VMAT_ELEMENTWISE
-	    || mat_gather_scatter_p (memory_access_type))
-	   && SLP_TREE_LANES (slp_node) == 1
-	   && (!grouped_load
-	       || !DR_GROUP_NEXT_ELEMENT (first_stmt_info))))
+      && !(memory_access_type == VMAT_ELEMENTWISE
+	   || (mat_gather_scatter_p (memory_access_type)
+	       && SLP_TREE_LANES (slp_node) == 1
+	       && (!grouped_load
+		   || !DR_GROUP_NEXT_ELEMENT (first_stmt_info)))))
     {
       slp_perm = true;
 
@@ -9732,28 +9717,24 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
 	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
+	  ref_type = get_group_alias_ptr_type (first_stmt_info);
 	}
       else
 	{
 	  first_stmt_info = stmt_info;
 	  first_dr_info = dr_info;
-	}
-
-      if (grouped_load && memory_access_type == VMAT_STRIDED_SLP)
-	{
-	  group_size = DR_GROUP_SIZE (first_stmt_info);
-	  ref_type = get_group_alias_ptr_type (first_stmt_info);
-	}
-      else
-	{
-	  if (grouped_load)
-	    cst_offset
-	      = (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)))
-		 * vect_get_place_in_interleaving_chain (stmt_info,
-							 first_stmt_info));
-	  group_size = 1;
 	  ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
 	}
+
+      if (grouped_load)
+	{
+	  if (memory_access_type == VMAT_STRIDED_SLP)
+	    group_size = DR_GROUP_SIZE (first_stmt_info);
+	  else /* VMAT_ELEMENTWISE */
+	    group_size = SLP_TREE_LANES (slp_node);
+	}
+      else
+	group_size = 1;
 
       if (!costing_p)
 	{
@@ -9892,6 +9873,7 @@ vectorizable_load (vec_info *vinfo,
       int ncopies;
       if (slp_perm)
 	{
+	  gcc_assert (memory_access_type != VMAT_ELEMENTWISE);
 	  /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
 	     variable VF.  */
 	  unsigned int const_vf = vf.to_constant ();
@@ -9927,8 +9909,13 @@ vectorizable_load (vec_info *vinfo,
 						     slp_node, 0, vect_body);
 		  continue;
 		}
+	      unsigned int load_el = group_el;
+	      /* For elementwise accesses apply a load permutation directly.  */
+	      if (memory_access_type == VMAT_ELEMENTWISE
+		  && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+		load_el = SLP_TREE_LOAD_PERMUTATION (slp_node)[group_el];
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
-					     group_el * elsz + cst_offset);
+					     load_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
 	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 	      new_temp = make_ssa_name (ltype);
