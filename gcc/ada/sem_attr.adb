@@ -6161,7 +6161,26 @@ package body Sem_Attr is
 
             Analyze (E1);
             Analyze (E2);
-            Set_Etype (N, Etype (E2));
+
+            --  The type of the reduction is quickly resolved if it can be
+            --  inferred definitely from its actuals. In case the reduction is
+            --  not the rhs of an assignment, its type may be used before the
+            --  attribute resolution and thus crash the compiler; so we try to
+            --  resolve it here as much as possible.
+
+            --  Note a crash may still occur if both E1 and E2 are overloaded
+            --  and the reduction is not the rhs of an assignment ???
+
+            if not Is_Overloaded (E2) then
+               Set_Etype (N, Etype (E2));
+
+            elsif not Is_Overloaded (E1)
+              and then E1 in N_Entity_Id
+              and then Present (First_Formal (E1))
+              and then Present (Next_Formal (First_Formal (E1)))
+            then
+               Set_Etype (N, Etype (Next_Formal (First_Formal (E1))));
+            end if;
          end;
 
       ----------
@@ -12701,82 +12720,447 @@ package body Sem_Attr is
 
          when Attribute_Reduce =>
             declare
-               Reducer_Subp_Name : constant Node_Id := First (Expressions (N));
-               Init_Value_Exp    : constant Node_Id :=
-                 Next (Reducer_Subp_Name);
-               Op : Entity_Id := Empty;
+               Reducer_N : constant Node_Id := First (Expressions (N));
+               Reducer_E : Entity_Id;
 
-               Index : Interp_Index;
-               It    : Interp;
+               Init_Value_Expr : constant Node_Id := Next (Reducer_N);
+               Accum_Typ       : Entity_Id := Typ;
+               Value_Typ       : Entity_Id := Empty;
 
-               function Proper_Op
-                 (Op     : Entity_Id;
-                  Strict : Boolean := False) return Boolean;
-               --  Is Op a suitable reducer subprogram?
-               --  Strict indicates whether ops found in Standard should be
-               --  considered even if Typ is not a predefined type.
+               function Get_Value_Subtype return Entity_Id;
+               --  If non-ambiguous, this function sets the reducer's entity
+               --  and returns the value subtype of the expression inside the
+               --  array aggregate.
 
-               ---------------
-               -- Proper_Op --
-               ---------------
+               function Is_Reducer_Subprogram
+                 (E : Entity_Id;
+                  Check_Value_Subtype : Boolean := True) return Boolean;
+               --  This function checks whether E is a proper reducer
+               --  subprogram. If Check_Value_Subtype is true then the second
+               --  formal of E is matched against Value_Typ.
 
-               function Proper_Op
-                 (Op     : Entity_Id;
-                  Strict : Boolean := False) return Boolean
+               function Make_Array_Type
+                 (Index, Value : Entity_Id) return Entity_Id;
+               --  This function returs a simple array type to resolve the
+               --  array aggregate.
+
+               -----------------------
+               -- Get_Value_Subtype --
+               -----------------------
+
+               function Get_Value_Subtype return Entity_Id is
+                  Loop_Var, Init_Var           : Entity_Id;
+                  Reducer_Call, Copy_Aggr_Expr : Node_Id;
+                  Copy_Reducer_N               : constant Node_Id :=
+                    Copy_Separate_Tree (Reducer_N);
+
+                  procedure Error_Mixed_Function_Procedure_Reducers;
+                  --  This procedure emits an error message with all possible
+                  --  interpretations of the reducer subprogram when there is
+                  --  a mix of functions and procedures. Note that, this is
+                  --  only a potential ambiguity but we cannot resolve it in a
+                  --  definitive way as there is no construct that accepts both
+                  --  functions and procedures together.
+
+                  function Reducer_Call_Statement_Kind return Entity_Kind;
+                  --  This function returns the kind of a call statement able
+                  --  to contain a reducer call. If all the candidate
+                  --  interpretation subprograms that can be reducers agree on
+                  --  the same subprogram type, meaning that they are all
+                  --  procedures or all function/operators, then this function
+                  --  returns either E_Procedure or E_Function respectively.
+
+                  ---------------------------------------------
+                  -- Error_Mixed_Function_Procedure_Reducers --
+                  ---------------------------------------------
+
+                  procedure Error_Mixed_Function_Procedure_Reducers is
+                     First_Time : Boolean := True;
+                     I          : Interp_Index;
+                     It         : Interp;
+                  begin
+                     Get_First_Interp (Reducer_N, I, It);
+                     while Present (It.Nam) loop
+                        if Is_Reducer_Subprogram (It.Nam,
+                                                  Check_Value_Subtype => False)
+                        then
+                           --  It may be the case that no interpretation
+                           --  matches the proper reducer profile, in this case
+                           --  we avoid emitting the error here.
+
+                           if First_Time then
+                              Error_Msg_N
+                                ("potential ambiguous reducer subprogram " &
+                                 "(cannot resolve&)",
+                                 Reducer_N);
+                              First_Time := False;
+                           end if;
+
+                           if Ekind (It.Nam) = E_Function then
+                              Error_Msg_Sloc := Sloc (It.Nam);
+                              Error_Msg_N
+                                ("\\possible function interpretation#!",
+                                 Reducer_N);
+                           else
+                              Error_Msg_Sloc := Sloc (It.Nam);
+                              Error_Msg_N
+                                ("\\possible procedure interpretation#!",
+                                 Reducer_N);
+                           end if;
+                        end if;
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                     if First_Time then
+                        Error_Msg_N ("no suitable reducer subprogram found",
+                                     Reducer_N);
+                     end if;
+                  end Error_Mixed_Function_Procedure_Reducers;
+
+                  ---------------------------------
+                  -- Reducer_Call_Statement_Kind --
+                  ---------------------------------
+
+                  function Reducer_Call_Statement_Kind return Entity_Kind is
+                     Kind : Entity_Kind := E_Void;
+                     I    : Interp_Index;
+                     It   : Interp;
+                  begin
+                     if not Is_Overloaded (Reducer_N) then
+                        return Ekind (Entity (Reducer_N));
+                     end if;
+
+                     Get_First_Interp (Reducer_N, I, It);
+                     while Present (It.Nam) loop
+                        if Is_Reducer_Subprogram (It.Nam,
+                                                  Check_Value_Subtype => False)
+                        then
+                           case Kind is
+                              --  First matching interpretation sets the kind
+                              when E_Void =>
+                                 if Ekind (It.Nam)
+                                   not in E_Procedure | E_Function | E_Operator
+                                 then
+                                    return E_Void;
+                                 end if;
+                                 Kind := Ekind (It.Nam);
+
+                              --  Subsequent matching interpretations must
+                              --  agree on the same kind.
+                              when E_Procedure =>
+                                 if Ekind (It.Nam) /= E_Procedure then
+                                    return E_Void;
+                                 end if;
+
+                              --  Functions and Operators match the same call
+                              --  statement.
+                              when E_Function | E_Operator =>
+                                 if Ekind (It.Nam)
+                                   not in E_Function | E_Operator
+                                 then
+                                    return E_Void;
+                                 end if;
+
+                              when others =>
+                                 return E_Void;
+                           end case;
+                        end if;
+                        Get_Next_Interp (I, It);
+                     end loop;
+                     return Kind;
+                  end Reducer_Call_Statement_Kind;
+
+               --  Start of processing for Get_Value_Subtype
+
+               begin
+                  --  In case the reducer is not overloaded, check directly
+                  --  its second formal for the value subtype.
+
+                  if not Is_Overloaded (Reducer_N) then
+                     if Is_Reducer_Subprogram (Entity (Reducer_N),
+                                               Check_Value_Subtype => False)
+                     then
+                        return Etype (Next_Formal
+                                       (First_Formal (Entity (Reducer_N))));
+
+                     --  Return any type to signal the caller that no proper
+                     --  reducer subprogram was found.
+
+                     else
+                        return Any_Type;
+                     end if;
+                  end if;
+
+                  --  RM 4.5.10(11/5): the reducer subprogram is required to be
+                  --  subtype conformant with one of the following profiles:
+
+                  --  function Reducer
+                  --    (Accum : Accum_Subtype;
+                  --     Value : Value_Subtype) return Accum_Subtype;
+
+                  --  Or
+
+                  --  procedure Reducer
+                  --    (Accum : in out Accum_Subtype;
+                  --     Value : in Value_Subtype);
+
+                  --  The Value_Subtype is the type of the expression of the
+                  --  array aggregate, or its equivalent expansion in case of P
+                  --  being an iterable container. Thus, given the expression N
+                  --  as:
+
+                  --  [for I in|of It => Expr (I)]'Reduce (Reducer, Init);
+
+                  --  To find whether there are no suitable interpretations, or
+                  --  too many, for the combination of reducer and expression
+                  --  we resolve the following call:
+
+                  --    Reducer (Init_Var, Expr (I))
+
+                  --  Where the context is augmented with the iteration
+                  --  variable I of the right type, and Init_Var of type
+                  --  Accum_Subtype. If the Reducer has both procedure and
+                  --  function interpretations with the proper reducer profile
+                  --  an ambiguity error is emitted. Note that, this could be a
+                  --  false positive as the two may coexist without ambiguity
+                  --  but a more complex resolution is needed for that.
+
+                  --  If the call above resolves correctly, we have a single,
+                  --  non-ambiguous, reduction expression. Note that, we still
+                  --  need to check whether Reducer has a subtype conformant
+                  --  profile, eg. the resolved reducer may have a different
+                  --  number of formals with default expressions.
+
+                  declare
+                     Dummy_Loop, Iter_Spec, Aggr_Expr : Node_Id;
+                  begin
+                     --  We start by preanalyzing the following loop to obtain
+                     --  the type of the iteration variable Loop_Var:
+
+                     --    for I in|of It loop
+                     --      null;
+                     --    end loop;
+
+                     if Nkind (P) = N_Aggregate then
+                        declare
+                           Stream, Stream_It : Node_Id;
+                        begin
+                           Stream := First (Component_Associations (P));
+                           Stream_It := Iterator_Specification (Stream);
+                           Aggr_Expr := Expression (Stream);
+
+                           --  Case [for I of It => Aggr_Expr]
+
+                           if Nkind (Stream) = N_Iterated_Component_Association
+                             and then Present (Stream_It)
+                             and then Of_Present (Stream_It)
+                           then
+                              Iter_Spec :=
+                                Make_Iteration_Scheme (Loc,
+                                  Iterator_Specification =>
+                                    Relocate_Node (Stream_It));
+                              Loop_Var :=
+                                Defining_Identifier
+                                  (Iterator_Specification (Iter_Spec));
+
+                           --  Case [for I in Range => Aggr_Expr]
+
+                           else
+                              Iter_Spec :=
+                                Make_Iteration_Scheme (Loc,
+                                  Loop_Parameter_Specification =>
+                                    Make_Loop_Parameter_Specification  (Loc,
+                                      Defining_Identifier =>
+                                        Defining_Identifier
+                                          (Copy_Separate_Tree (Stream)),
+                                      Discrete_Subtype_Definition =>
+                                        Relocate_Node (First (Discrete_Choices
+                                                               (Stream)))));
+                              Loop_Var :=
+                                Defining_Identifier
+                                  (Loop_Parameter_Specification (Iter_Spec));
+                           end if;
+                        end;
+
+                     --  Case of prefix name
+
+                     else
+                        Loop_Var := Make_Temporary (Loc, 'I');
+                        Aggr_Expr := Make_Identifier (Loc, Chars (Loop_Var));
+                        Iter_Spec := Make_Iteration_Scheme (Loc,
+                          Iterator_Specification =>
+                            Make_Iterator_Specification (Loc,
+                              Defining_Identifier => Loop_Var,
+                              Of_Present          => True,
+                              Name                => P));
+                     end if;
+
+                     Dummy_Loop := Make_Loop_Statement (Loc,
+                                     Iteration_Scheme => Iter_Spec);
+                     Preanalyze (Dummy_Loop);
+
+                     --  The preanalysis of the loop sets the type of the
+                     --  iteration variable. It may happen that another loop
+                     --  variable is created in the preanalysis, in case the
+                     --  right one is found at its next entity.
+
+                     if Etype (Loop_Var) = Any_Type then
+                        Loop_Var := Next_Entity (Loop_Var);
+                     end if;
+                     pragma Assert (Present (Etype (Loop_Var)));
+                     pragma Assert (Etype (Loop_Var) /= Any_Type);
+
+                     Copy_Aggr_Expr := Copy_Separate_Tree (Aggr_Expr);
+                  end;
+
+                  --  Instead of directly using the initialization expression,
+                  --  which would require a full copy to be used in another
+                  --  list, we just setup a variable Init_Var of the same type.
+
+                  declare
+                     Init_E : constant Entity_Id := Make_Temporary (Loc, 'B');
+                  begin
+                     Set_Etype (Init_E, Accum_Typ);
+                     Mutate_Ekind (Init_E, E_Variable);
+
+                     Init_Var := Make_Identifier (Loc, Chars (Init_E));
+                     Set_Entity (Init_Var, Init_E);
+                  end;
+
+                  case Reducer_Call_Statement_Kind is
+                     when E_Procedure =>
+                        Reducer_Call :=
+                          Make_Procedure_Call_Statement (Sloc (Reducer_N),
+                            Name => Copy_Reducer_N,
+                            Parameter_Associations =>
+                              New_List (Init_Var, Copy_Aggr_Expr));
+
+                     when E_Function | E_Operator =>
+                        Reducer_Call :=
+                          Make_Function_Call (Sloc (Reducer_N),
+                            Name => Copy_Reducer_N,
+                            Parameter_Associations =>
+                              New_List (Init_Var, Copy_Aggr_Expr));
+                        Set_Etype (Reducer_Call, Accum_Typ);
+
+                     when others =>
+                        Error_Mixed_Function_Procedure_Reducers;
+                        return Empty;
+                  end case;
+
+                  --  To resolve Reducer_Call we augment the context with the
+                  --  initialization and iteration (which may hide homonyms)
+                  --  variables. Specifically, we need to restore the
+                  --  visibility of the iteration variable since the analysis
+                  --  of the dummy loop above hides it on exit.
+
+                  declare
+                     Save_Homonym : constant Entity_Id :=
+                       Get_Name_Entity_Id (Chars (Loop_Var));
+                  begin
+                     Set_Current_Entity (Init_Var);
+                     Set_Current_Entity (Loop_Var);
+                     Set_Is_Immediately_Visible (Loop_Var);
+                     Set_Is_Not_Self_Hidden (Loop_Var);
+
+                     Push_Scope (Scope (Loop_Var));
+                     Preanalyze_And_Resolve (Reducer_Call);
+                     Pop_Scope;
+
+                     Set_Name_Entity_Id (Chars (Loop_Var), Save_Homonym);
+                     Set_Name_Entity_Id (Chars (Init_Var), Empty);
+                  end;
+
+                  --  In case resolution failed, the error message is too
+                  --  generic and can be improved with additional context.
+
+                  if Error_Posted (Reducer_Call) then
+                     Error_Msg_N ("\\no suitable reducer subprogram found",
+                                  Reducer_Call);
+
+                  --  Resolution succeeded so far
+
+                  elsif not Is_Overloaded (Reducer_Call) then
+                     pragma Assert (Present (Entity (Copy_Reducer_N)));
+                     pragma Assert (Present (Etype (Copy_Aggr_Expr)));
+
+                     --  Set the correct reducer entity and then return the
+                     --  value subtype.
+
+                     Set_Entity (Reducer_N, Entity (Copy_Reducer_N));
+                     return Etype (Copy_Aggr_Expr);
+                  end if;
+                  return Empty;
+               end Get_Value_Subtype;
+
+               ---------------------------
+               -- Is_Reducer_Subprogram --
+               ---------------------------
+
+               function Is_Reducer_Subprogram
+                 (E : Entity_Id;
+                  Check_Value_Subtype : Boolean := True) return Boolean
                is
                   F1, F2 : Entity_Id;
                begin
-                  F1 := First_Formal (Op);
-                  if No (F1) then
+                  F1 := First_Formal (E);
+                  if No (F1)
+                    or else not Covers (Accum_Typ, Etype (F1))
+                  then
                      return False;
                   else
                      F2 := Next_Formal (F1);
                      if No (F2)
                        or else Present (Next_Formal (F2))
+                       or else (Check_Value_Subtype
+                                 and then not Covers (Value_Typ,
+                                                      Etype (F2)))
                      then
                         return False;
 
-                     elsif Ekind (Op) = E_Procedure then
+                     elsif Ekind (E) = E_Procedure then
                         return Ekind (F1) = E_In_Out_Parameter
-                          and then Covers (Typ, Etype (F1));
+                          and then Ekind (F2) = E_In_Parameter;
 
-                     elsif Covers (Typ, Etype (Op)) then
+                     elsif Covers (Accum_Typ, Etype (E)) then
                         return True;
 
-                     elsif Ekind (Op) = E_Operator
-                       and then Scope (Op) = Standard_Standard
-                       and then not Strict
+                     elsif Ekind (E) = E_Operator
+                       and then Scope (E) = Standard_Standard
                      then
                         --  Nonassociative ops like division are unlikely to
                         --  come up in practice, but they are legal.
 
-                        case Any_Operator_Name'(Chars (Op)) is
+                        case Any_Operator_Name'(Chars (E)) is
                            when Name_Op_Add
-                             | Name_Op_Subtract
-                             | Name_Op_Multiply
-                             | Name_Op_Divide
-                             | Name_Op_Expon
+                              | Name_Op_Subtract
+                              | Name_Op_Multiply
+                              | Name_Op_Divide
+                              | Name_Op_Expon
                            =>
-                              return Is_Numeric_Type (Typ);
+                              return Is_Numeric_Type (Accum_Typ);
 
                            when Name_Op_Mod | Name_Op_Rem =>
-                              return Is_Numeric_Type (Typ)
-                                and then Is_Discrete_Type (Typ);
+                              return Is_Numeric_Type (Accum_Typ)
+                                and then Is_Discrete_Type (Accum_Typ);
 
                            when Name_Op_And | Name_Op_Or | Name_Op_Xor =>
                               --  No Boolean array operators in Standard
-                              return Is_Boolean_Type (Typ)
-                                or else Is_Modular_Integer_Type (Typ);
+                              return Is_Modular_Integer_Type (Accum_Typ)
+                                or else Is_Boolean_Type (Accum_Typ);
 
                            when Name_Op_Concat =>
-                              return Is_Array_Type (Typ)
-                                and then Number_Dimensions (Typ) = 1;
+                              return Is_Array_Type (Accum_Typ)
+                                and then Number_Dimensions (Accum_Typ) = 1;
 
-                           when Name_Op_Eq | Name_Op_Ne
-                             | Name_Op_Lt | Name_Op_Le
-                             | Name_Op_Gt | Name_Op_Ge
+                           when Name_Op_Eq
+                              | Name_Op_Ne
+                              | Name_Op_Lt
+                              | Name_Op_Le
+                              | Name_Op_Gt
+                              | Name_Op_Ge
                            =>
-                              return Is_Boolean_Type (Typ);
+                              return Is_Boolean_Type (Accum_Typ);
 
                            when Name_Op_Abs | Name_Op_Not =>
                               --  unary ops were already handled
@@ -12788,46 +13172,157 @@ package body Sem_Attr is
                         return False;
                      end if;
                   end if;
-               end Proper_Op;
+               end Is_Reducer_Subprogram;
+
+               ---------------------
+               -- Make_Array_Type --
+               ---------------------
+
+               function Make_Array_Type
+                 (Index, Value : Entity_Id) return Entity_Id
+               is
+                  Array_Type : constant Entity_Id := Make_Temporary (Loc, 'A');
+                  Range_N    : constant Node_Id :=
+                    Make_Range (Loc,
+                      Low_Bound  => Type_Low_Bound (Index),
+                      High_Bound => Type_High_Bound (Index));
+               begin
+                  Set_In_List (Range_N);
+                  Set_Etype (Range_N, Index);
+
+                  Set_Etype (Array_Type, Array_Type);
+                  Set_Scope (Array_Type, Find_Enclosing_Scope (N));
+                  Mutate_Ekind (Array_Type, E_Array_Type);
+                  Set_Component_Type (Array_Type, Value);
+                  Set_First_Index (Array_Type, Range_N);
+
+                  return Array_Type;
+               end Make_Array_Type;
 
             begin
-               --  First try to resolve the reducer and then, if this succeeds,
-               --  resolve the initial value.  This nicely deals with confused
-               --  programmers who swap the two items.
-
-               if Is_Overloaded (Reducer_Subp_Name) then
-                  Outer :
-                  for Retry in Boolean loop
-                     Get_First_Interp (Reducer_Subp_Name, Index, It);
-                     while Present (It.Nam) loop
-                        if Proper_Op (It.Nam, Strict => not Retry) then
-                           Op := It.Nam;
-                           Set_Entity (Reducer_Subp_Name, Op);
-                           exit Outer;
-                        end if;
-
-                        Get_Next_Interp (Index, It);
-                     end loop;
-                  end loop Outer;
-
-               elsif Nkind (Reducer_Subp_Name) = N_Attribute_Reference
-                 and then (Attribute_Name (Reducer_Subp_Name) = Name_Max
-                   or else Attribute_Name (Reducer_Subp_Name) = Name_Min)
-               then
-                  Op := Reducer_Subp_Name;
-
-               elsif Is_Entity_Name (Reducer_Subp_Name)
-                 and then Proper_Op (Entity (Reducer_Subp_Name))
-               then
-                  Op := Entity (Reducer_Subp_Name);
-                  Set_Etype (N, Typ);
+               if Error_Posted (N) then
+                  return;
                end if;
 
-               if No (Op) then
-                  Error_Msg_N ("no suitable reducer subprogram found",
-                    Reducer_Subp_Name);
+               --  If the Accum_Typ is an unconstrained array then a
+               --  Constraint_Error will be raised at runtime as most
+               --  computations will change its length type during the
+               --  reduction execution, RM 4.5.10(25/5). For instance, this is
+               --  the case with: [...]'Reduce ("&", ...). When the expression
+               --  yields non-empty strings, the reduction repeatedly executes
+               --  the following assignment:
+               --    Acc := Expr (I) & Acc;
+               --  which will raise a Constraint_Error since the number of
+               --  elements is increasing.
+
+               if not Is_Numeric_Type (Base_Type (Accum_Typ))
+                 and then not Is_Constrained (Accum_Typ)
+               then
+                  declare
+                     Discard : Node_Id;
+                     pragma Unreferenced (Discard);
+                  begin
+                     Discard := Compile_Time_Constraint_Error
+                                  (Reducer_N,
+                                   "potential length mismatch!!??",
+                                   Accum_Typ);
+                     return;
+                  end;
+               end if;
+
+               --  If no error has been posted and the accumulation type is
+               --  constrained, then the resolution of the reducer can start.
+
+               if Nkind (Reducer_N) = N_Attribute_Reference then
+                  if Attribute_Name (Reducer_N) in Name_Max | Name_Min then
+                     Value_Typ := Etype (Reducer_N);
+                     Reducer_E := Reducer_N;
+                  else
+                     Error_Msg_N ("only Min and Max attributes are allowed " &
+                                  "as reducers",
+                                  Reducer_N);
+                     return;
+                  end if;
+
+               elsif not Is_Entity_Name (Reducer_N) then
+                  Error_Msg_N ("reducer must be a subprogram, an operator, " &
+                               "or an attribute",
+                               Reducer_N);
+
+                  --  If the reducer has no entity, but the initial expression
+                  --  does, then they have most likely been swapped.
+
+                  if Nkind (Init_Value_Expr) = N_Attribute_Reference
+                    or else Is_Entity_Name (Init_Value_Expr)
+                  then
+                     Error_Msg_N ("\\possible swap of reducer and initial " &
+                                  "value!",
+                                  Reducer_N);
+                  end if;
+                  return;
+
                else
-                  Resolve (Init_Value_Exp, Typ);
+                  Value_Typ := Get_Value_Subtype;
+                  Reducer_E := Entity (Reducer_N);
+
+                  --  Stop in case of no suitable interpretation or ambiguous
+                  --  expression, an error has already been posted.
+
+                  if No (Value_Typ) then
+                     return;
+
+                  elsif not Is_Reducer_Subprogram (Reducer_E) then
+                     Error_Msg_N ("no suitable reducer subprogram found",
+                                  Reducer_N);
+                     return;
+                  end if;
+               end if;
+
+               --  After resolving the reducer, determine the correct
+               --  Accum_Subtype: if the reducer is an attribute (Min or Max),
+               --  then the prefix type is the accumulation type.
+
+               if Nkind (Reducer_E) = N_Attribute_Reference then
+                  Accum_Typ := Etype (Prefix (Reducer_E));
+
+               --  If an operator from standard, then the type of its first
+               --  formal woudl be Any_Type, in this case we make sure we don't
+               --  use an universal type to avoid resolution problems later on.
+
+               elsif Ekind (Reducer_E) = E_Operator
+                 or else Scope (Reducer_E) = Standard_Standard
+               then
+                  if Accum_Typ = Universal_Integer then
+                     Accum_Typ := Standard_Integer;
+                  elsif Accum_Typ = Universal_Real then
+                     Accum_Typ := Standard_Float;
+                  end if;
+
+               --  Otherwise, the Accum_Subtype is the subtype of the first
+               --  formal of the reducer subprogram RM 4.5.10(19/5).
+
+               else
+                  Accum_Typ := Etype (First_Formal (Reducer_E));
+               end if;
+               Set_Etype (N, Accum_Typ);
+
+               --  Accumulation type must be nonlimited, RM 4.5.10(8/5)
+
+               if Is_Limited_Type (Accum_Typ) then
+                  Error_Msg_N
+                    ("accumulated subtype of Reduce must be nonlimited", N);
+               end if;
+
+               --  Complete the resolution of the reduction expression by
+               --  resolving the initial expression and array aggregate.
+
+               Resolve (Init_Value_Expr, Accum_Typ);
+               if Nkind (P) = N_Aggregate then
+                  Resolve_Aggregate (P,
+                    Make_Array_Type (Index => Standard_Positive,
+                                     Value => Value_Typ));
+               else
+                  Resolve (P);
                end if;
             end;
 

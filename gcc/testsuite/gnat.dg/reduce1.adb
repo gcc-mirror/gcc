@@ -7,8 +7,7 @@ procedure Reduce1 is
 
   A: Arr := (2, 87);
 
-  B: Positive := A'Reduce (1, Positive'Max); -- { dg-error "no suitable" }
-
+  B: Positive := A'Reduce (1, Positive'Max); --  { dg-error "reducer must be a subprogram, an operator, or an attribute|possible swap of reducer and initial value" }
 begin
   null;
 end;

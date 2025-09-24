@@ -6594,15 +6594,14 @@ package body Exp_Attr is
             E2  : constant Node_Id   := Next (E1);
             Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
 
-            Accum_Typ : Entity_Id := Empty;
+            Accum_Typ : constant Entity_Id := Etype (N);
             New_Loop  : Node_Id;
 
             function Build_Stat (Comp : Node_Id) return Node_Id;
             --  The reducer can be a function, a procedure whose first
             --  parameter is in-out, or an attribute that is a function,
             --  which (for now) can only be Min/Max. This subprogram
-            --  builds the corresponding computation for the generated loop
-            --  and retrieves the accumulator type as per RM 4.5.10(19/5).
+            --  builds the corresponding computation for the generated loop.
 
             ----------------
             -- Build_Stat --
@@ -6613,7 +6612,6 @@ package body Exp_Attr is
 
             begin
                if Nkind (E1) = N_Attribute_Reference then
-                  Accum_Typ := Base_Type (Entity (Prefix (E1)));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Attribute_Reference (Loc,
@@ -6624,7 +6622,6 @@ package body Exp_Attr is
                                 Comp)));
 
                elsif Ekind (Entity (E1)) = E_Procedure then
-                  Accum_Typ := Etype (First_Formal (Entity (E1)));
                   Stat := Make_Procedure_Call_Statement (Loc,
                             Name => New_Occurrence_Of (Entity (E1), Loc),
                                Parameter_Associations => New_List (
@@ -6632,7 +6629,6 @@ package body Exp_Attr is
                                  Comp));
 
                else
-                  Accum_Typ := Etype (Entity (E1));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Function_Call (Loc,
@@ -6640,28 +6636,6 @@ package body Exp_Attr is
                               Parameter_Associations => New_List (
                                 New_Occurrence_Of (Bnn, Loc),
                                 Comp)));
-               end if;
-
-               --  Try to cope if E1 is wrong because it is an overloaded
-               --  subprogram that happens to be the first candidate
-               --  on a homonym chain, but that resolution candidate turns
-               --  out to be the wrong one.
-               --  This workaround usually gets the right type, but it can
-               --  yield the wrong subtype of that type.
-
-               if Base_Type (Accum_Typ) /= Base_Type (Etype (N)) then
-                  Accum_Typ := Etype (N);
-               end if;
-
-               --  Try to cope with wrong E1 when Etype (N) doesn't help
-               if Is_Universal_Numeric_Type (Accum_Typ) then
-                  if Is_Array_Type (Etype (Prefix (N))) then
-                     Accum_Typ := Component_Type (Etype (Prefix (N)));
-                  else
-                     --  Further hackery can be added here when there is a
-                     --  demonstrated need.
-                     null;
-                  end if;
                end if;
 
                return Stat;

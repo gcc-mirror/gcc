@@ -7753,6 +7753,11 @@ package body Sem_Res is
       Decl  : Node_Id;
       Local : Entity_Id := Empty;
 
+      Save_Hidden_Map : constant Elist_Id := New_Elmt_List;
+      --  Stores the map of identifiers, and corresponding entities, that
+      --  temporarily loose visibility due to homonym declarations in the
+      --  current declare expression.
+
       function Replace_Local (N  : Node_Id) return Traverse_Result;
       --  Use a tree traversal to replace each occurrence of the name of
       --  a local object declared in the construct, with the corresponding
@@ -7817,6 +7822,19 @@ package body Sem_Res is
                   Next (D);
                end loop;
             end;
+
+            --  Homonyms of the new local declaration are saved to be restored
+            --  after the resolution of the declare block's expression.
+
+            Append_Elmt (Local, Save_Hidden_Map);
+            Append_Elmt (Get_Name_Entity_Id (Chars (Local)), Save_Hidden_Map);
+
+            --  Update the references to local in the name table and make them
+            --  immediately visible to be available within the expression.
+
+            Set_Current_Entity (Local);
+            Set_Is_Immediately_Visible (Local);
+            Set_Is_Not_Self_Hidden (Local);
          end if;
 
          Next (Decl);
@@ -7832,6 +7850,20 @@ package body Sem_Res is
 
       Resolve (Expr, Typ);
       Check_Unset_Reference (Expr);
+
+      --  Restore any hidden entity homonyms to a local one
+
+      declare
+         Cursor : Elmt_Id := First_Elmt (Save_Hidden_Map);
+         Name : Name_Id;
+      begin
+         while Present (Cursor) loop
+            Name := Chars (Node (Cursor));
+            Next_Elmt (Cursor);
+            Set_Name_Entity_Id (Name, Node (Cursor));
+            Next_Elmt (Cursor);
+         end loop;
+      end;
    end Resolve_Declare_Expression;
 
    -----------------------------------
