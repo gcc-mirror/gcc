@@ -1968,6 +1968,25 @@ check_interface0 (gfc_interface *p, const char *interface_name)
   psave = p;
   for (; p; p = p->next)
     {
+      if (p->sym->attr.vtab)
+	{
+	  bool found = false;
+	  gfc_component *c = p->sym->ts.u.derived->components;
+	  for (; c; c = c->next)
+	    {
+	      if (c->name[0] == '_')
+		continue;
+	      /* This check seems to be as much as can sensibly be done here.
+		 If there is more than one proc_pointer components, resolution
+		 of the call will select the right one.  */
+	      if (c->attr.proc_pointer && c->ts.interface
+		  && (c->attr.subroutine || c->attr.function))
+		found = true;
+	    }
+	  if (found)
+	    continue;
+	}
+
       /* Make sure all symbols in the interface have been defined as
 	 functions or subroutines.  */
       if (((!p->sym->attr.function && !p->sym->attr.subroutine)
