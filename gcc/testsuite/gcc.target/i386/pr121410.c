@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64 -mavx512f -mstore-max=128" } */
+/* { dg-options "-O2 -march=x86-64 -mavx512f -mmove-max=128" } */
 
 extern unsigned _BitInt(3719) a;
 extern _BitInt(465) g;

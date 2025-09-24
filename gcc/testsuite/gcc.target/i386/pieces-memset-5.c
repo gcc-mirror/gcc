@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx2 -mavx -mtune-ctrl=avx256_store_by_pieces" } */
+/* { dg-options "-O2 -mno-avx2 -mavx -mtune-ctrl=avx256_move_by_pieces" } */
 
 extern char *dst;
 
