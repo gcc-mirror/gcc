@@ -22330,7 +22330,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  if (r == NULL_TREE && TREE_CODE (t) == PARM_DECL)
 	    {
 	      /* We get here for a use of 'this' in an NSDMI.  */
-	      if (DECL_NAME (t) == this_identifier && current_class_ptr)
+	      if (DECL_NAME (t) == this_identifier && current_class_ptr
+		  && !LAMBDA_TYPE_P (TREE_TYPE (TREE_TYPE (current_class_ptr))))
 		RETURN (current_class_ptr);
 
 	      /* Parameters of non-templates map to themselves (e.g. in
