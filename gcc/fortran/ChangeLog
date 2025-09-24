@@ -1,3 +1,11 @@
+2025-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* resolve.cc (was_declared): Add subroutine attribute.
+
 2025-08-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
