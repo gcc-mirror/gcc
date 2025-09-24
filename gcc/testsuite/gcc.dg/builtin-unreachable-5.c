@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab1" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 int
 foo (int a)
@@ -16,7 +16,7 @@ foo (int a)
   return a > 0;
 }
 
-/* { dg-final { scan-tree-dump-times "if \\(" 0 "fab1" } } */
-/* { dg-final { scan-tree-dump-times "goto" 0 "fab1" } } */
-/* { dg-final { scan-tree-dump-times "L1:" 0 "fab1" } } */
-/* { dg-final { scan-tree-dump-times "__builtin_unreachable" 0 "fab1" } } */
+/* { dg-final { scan-tree-dump-times "if \\(" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "goto" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "L1:" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_unreachable" 0 "optimized" } } */

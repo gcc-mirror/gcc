@@ -447,7 +447,6 @@ extern gimple_opt_pass *make_pass_warn_access (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_warn_printf (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_warn_recursion (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_post_ipa_warn (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_stdarg (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_early_warn_uninitialized (gcc::context *ctxt);

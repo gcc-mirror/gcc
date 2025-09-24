@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-fab1" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 /* Check that we fold strlen of equally long strings, and that we do not
    fail to terminate when there is a nontrivial cycle in the corresponding
@@ -32,4 +32,4 @@ middle:
 }
 
 /* There should be no calls to strlen.  */
-/* { dg-final { scan-tree-dump-times "strlen" 0 "fab1"} } */
+/* { dg-final { scan-tree-dump-times "strlen" 0 "optimized"} } */

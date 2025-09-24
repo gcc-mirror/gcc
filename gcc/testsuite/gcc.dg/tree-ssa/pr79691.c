@@ -34,4 +34,4 @@ int f4 (int i)
 
 /* { dg-final { scan-tree-dump-times "sprintf" 1 "optimized" } }
    { dg-final { scan-tree-dump-times "snprintf" 1 "optimized" } }
-   { dg-final { scan-tree-dump " = 9;" "optimized" } } */
+   { dg-final { scan-tree-dump "return 9;" "optimized" } } */

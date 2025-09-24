@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab1" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 typedef struct { int i; } FILE;
 FILE *fp;
@@ -29,12 +29,12 @@ void test (void)
   vi9 = 0;
 }
 
-/* { dg-final { scan-tree-dump "vi0.*fwrite.*\"hello\".*1, 5, fp.*vi1" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi1.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi2" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi2.*fputc.*fp.*vi3" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi4.*fwrite.*\"hello\".*1, 5, fp.*vi5" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi5.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi6" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi6.*fputc.*fp.*vi7" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi7.*fputc.*fp.*vi8" "fab1"} } */
-/* { dg-final { scan-tree-dump "vi8.*fprintf.*fp.*\"%d%d\".*vi9" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi0.*fwrite.*\"hello\".*1, 5, fp.*vi1" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi1.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi2" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi2.*fputc.*fp.*vi3" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi4.*fwrite.*\"hello\".*1, 5, fp.*vi5" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi5.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi6" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi6.*fputc.*fp.*vi7" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi7.*fputc.*fp.*vi8" "optimized"} } */
+/* { dg-final { scan-tree-dump "vi8.*fprintf.*fp.*\"%d%d\".*vi9" "optimized"} } */
