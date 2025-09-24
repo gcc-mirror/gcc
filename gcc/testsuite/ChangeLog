@@ -1,3 +1,21 @@
+2025-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* gfortran.dg/pr89092.f90: New test.
+
+2025-09-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-09-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122015
+	* g++.dg/modules/lambda-11.h: New test.
+	* g++.dg/modules/lambda-11_a.H: New test.
+	* g++.dg/modules/lambda-11_b.C: New test.
+
 2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
 
 	Backported from master:
