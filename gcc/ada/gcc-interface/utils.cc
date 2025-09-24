@@ -5343,10 +5343,20 @@ convert (tree type, tree expr)
 	   && !type_annotate_only)
     {
       tree child_etype = etype;
+      /* Loop through the nested _Parent fields until we find one with either
+	 directly the right type (simple record case), or only the right size
+	 (discriminated record case), and extract it to be the new expression.
+	 Note that build_component_ref will automatically build the chain of
+	 COMPONENT_REFs in the case where it is not the immediate parent.  */
       do {
 	tree field = TYPE_FIELDS (child_etype);
-	if (DECL_NAME (field) == parent_name_id && TREE_TYPE (field) == type)
-	  return build_component_ref (expr, field, false);
+	if (DECL_NAME (field) == parent_name_id)
+	  {
+	    if (TREE_TYPE (field) == type)
+	      return build_component_ref (expr, field, false);
+	    if (operand_equal_p (DECL_SIZE (field), TYPE_SIZE (type), 0))
+	      return convert (type, build_component_ref (expr, field, false));
+         }
 	child_etype = TREE_TYPE (field);
       } while (TREE_CODE (child_etype) == RECORD_TYPE);
     }
