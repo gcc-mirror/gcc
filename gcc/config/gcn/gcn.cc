@@ -5368,26 +5368,18 @@ gcn_preferred_vector_alignment (const_tree type)
 
 static bool
 gcn_vectorize_support_vector_misalignment (machine_mode ARG_UNUSED (mode),
-					   const_tree type, int misalignment,
+					   const_tree ARG_UNUSED (type),
+					   int ARG_UNUSED (misalignment),
 					   bool is_packed,
-					   bool is_gather_scatter)
+					   bool ARG_UNUSED (is_gather_scatter))
 {
-  if (is_gather_scatter)
-    return true;
-
-  if (is_packed)
-    return false;
-
-  /* If the misalignment is unknown, we should be able to handle the access
-     so long as it is not to a member of a packed data structure.  */
-  if (misalignment == -1)
-    return true;
-
-  /* Return true if the misalignment is a multiple of the natural alignment
-     of the vector's element type.  This is probably always going to be
-     true in practice, since we've already established that this isn't a
-     packed access.  */
-  return misalignment % TYPE_ALIGN_UNIT (type) == 0;
+  /* All Flat and Global load instructions support arbitrary alignment, so
+     the types and such are irrelevant (Buffer instructions are not used).  */
+ 
+  /* Disallow packed accesses because expand attempts to take scalar subregs of
+     vector registers, which is nonsense.
+     Testcase: gfortran.dg/recursive_alloc_comp_4.f08   */
+  return !is_packed;
 }
 
 /* Implement TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE.
