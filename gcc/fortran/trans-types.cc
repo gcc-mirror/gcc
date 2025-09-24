@@ -1132,6 +1132,7 @@ gfc_init_types (void)
     {
       type = gfc_build_uint_type (gfc_character_kinds[index].bit_size);
       type = build_qualified_type (type, TYPE_UNQUALIFIED);
+      TYPE_STRING_FLAG (type) = 1;
       snprintf (name_buf, sizeof(name_buf), "character(kind=%d)",
 		gfc_character_kinds[index].kind);
       PUSH_TYPE (name_buf, type);

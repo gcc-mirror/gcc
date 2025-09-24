@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! PR fortran/108581 - issues with rank-2 deferred-length character arrays
+! PR fortran/121939 - ICE in gfc_conv_string_parameter
 
 program p
   call pr108581
@@ -79,8 +80,8 @@ subroutine test2
   allocate (a, source = reshape (str1,[1,size(str1)]))
   allocate (b, source = reshape (str1,[1,size(str1)]))
   allocate (c, source = reshape (str4,[1,size(str4)]))
-! allocate (d, source=c)        ! ICE, tracked as pr121939
-  d => c
+  allocate (d, source = c)      ! fixed with pr121939
+! d => c
   ! Positive non-unit stride
   s0 = concat (str1(1::2))
   write(s1,'(4A)') a(1,1::2)
@@ -124,13 +125,14 @@ subroutine test2
   if (s2 /= s0) stop 26
   if (s3 /= s0) stop 27
   if (s4 /= s0) stop 28
-  deallocate (a,b,c)
+  deallocate (a,b,c,d)
 
   ! More complex cases with shape=[2,4]
   allocate (e, source = reshape (str2,[2,size(str2,2)]))
   allocate (f, source = reshape (str2,[2,size(str2,2)]))
   allocate (g, source = reshape (str5,[2,size(str5,2)]))
-  h => g
+  allocate (h, source = reshape (str5,[2,size(str5,2)])) ! fixed with pr121939
+! h => g
   s0 = concat (str2(1,3:1:-2))
   write(s1,'(4A)') e(1,3:1:-2)
   write(s2,'(4A)') f(1,3:1:-2)
@@ -220,7 +222,7 @@ subroutine test2
   if (s2 /= s0) stop 66
   if (s3 /= s0) stop 67
   if (s4 /= s0) stop 68
-  deallocate (e,f,g)
+  deallocate (e,f,g,h)
 
 contains
 
