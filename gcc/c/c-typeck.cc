@@ -2531,6 +2531,8 @@ really_atomic_lvalue (tree expr)
 	return false;
       expr = TREE_OPERAND (expr, 0);
     }
+  if (TREE_CODE (expr) == COMPOUND_LITERAL_EXPR)
+    expr = COMPOUND_LITERAL_EXPR_DECL (expr);
   if (DECL_P (expr) && C_DECL_REGISTER (expr))
     return false;
   return true;
