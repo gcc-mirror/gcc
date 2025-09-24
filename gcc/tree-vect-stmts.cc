@@ -2507,6 +2507,11 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			 "not falling back to elementwise accesses\n");
       return false;
     }
+
+  /* For BB vectorization build up the vector from existing scalar defs.  */
+  if (!loop_vinfo && *memory_access_type == VMAT_ELEMENTWISE)
+    return false;
+
   return true;
 }
 
