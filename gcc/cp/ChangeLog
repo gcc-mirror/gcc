@@ -1,3 +1,44 @@
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* class.cc (resolve_address_of_overloaded_function): Updated to use
+	dijoint_versions_decls instead of common_function_version hook.
+	* decl.cc (decls_match): Refacture to use disjoint_version_decls and
+	to pass through conflicting_version argument.
+	(maybe_version_functions): Updated to use
+	disjoint_version_decls instead of common_function_version hook.
+	(duplicate_decls): Add logic to handle conflicting unmergable decls
+	and improve diagnostics for conflicting versions.
+	* decl2.cc (check_classfn): Updated to use
+	disjoint_version_decls instead of common_function_version hook.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* cxx-pretty-print.h (pp_cxx_function_target_version): New macro.
+	(pp_cxx_function_target_clones): Ditto.
+	(pp_cxx_maybe_whitespace): Ditto.
+	* error.cc (dump_function_decl): Add printing of target_clone and
+	target_version in decl diagnostics.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118313
+	* call.cc (add_candidates): Change to not resolve non-default versions
+	in target_version semantics.
+	* class.cc (resolve_address_of_overloaded_function): Ditto.
+	* cp-gimplify.cc (cp_genericize_r): Change logic to not apply for
+	target_version semantics.
+	* decl.cc (maybe_mark_function_versioned): Remove static.
+	* cp-tree.h (maybe_mark_function_versioned): New function.
+	* decl2.cc (cplus_decl_attributes ): Change to mark and therefore
+	mangle all target_version decls in target_version semantics.
+	* typeck.cc (cp_build_function_call_vec): Add error for calling
+	unresolvable non-default node in target_version semantics.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* decl.cc (maybe_mark_function_versioned): Change to insert function version
+	and therefore record assembler name.
+
 2025-09-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122015

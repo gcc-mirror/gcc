@@ -1,3 +1,130 @@
+2025-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/121986
+	* gcc.dg/sarif-output/extra-semicolon.c: New test.
+	* gcc.dg/sarif-output/extra-semicolon.py: New test.
+	* gcc.dg/sarif-output/missing-semicolon.py: Verify the description
+	of the insertion fix-it hint.
+	* libgdiagnostics.dg/test-fix-it-hint-c.py: Verify the description
+	of the replacement fix-it hint.
+
+2025-09-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/acle/simd32.c (test_sadd16): Scan for sadd16.
+	* gcc.target/arm/armv8_2-fp16-neon-1.c (vcgtz, 128-bit): Scan for vcgt.
+	* gcc.target/arm/armv8_2-fp16-neon-2.c (vcgtz, 128-bit): Scan for vcgt.
+	(vmul, vmul N): Use check function bodies to avoid ambiguity.
+	* gcc.target/arm/armv8_2-fp16-scalar-1.c (vrndm): Scan for vrintm.
+	(vrndn): Scan for vrintn.
+	(vrndp): Scan for vrintp.
+	(vrndx): Scan for vrintx.
+	* gcc.target/arm/asm-flag-1.c: Scan for movlt.
+	* gcc.target/arm/csneg.c: Convert to check-function-bodies.
+	* gcc.target/arm/mve/dlstp-compile-asm-2.c (test10): Fix comment that caused test9 scan
+	to be run twice.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_f16.c: Convert to check-function-bodies.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u8.c: Likewise.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-1.C: Remove option.
+	* g++.target/aarch64/mv-and-mvc-error1.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc-error2.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc-error3.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc1.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc2.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc3.C: Ditto.
+	* g++.target/aarch64/mv-and-mvc4.C: Ditto.
+	* g++.target/aarch64/mv-error1.C: Ditto.
+	* g++.target/aarch64/mv-error2.C: Ditto.
+	* g++.target/aarch64/mv-error3.C: Ditto.
+	* g++.target/aarch64/mv-error4.C: Ditto.
+	* g++.target/aarch64/mv-error5.C: Ditto.
+	* g++.target/aarch64/mv-error6.C: Ditto.
+	* g++.target/aarch64/mv-error7.C: Ditto.
+	* g++.target/aarch64/mv-error8.C: Ditto.
+	* g++.target/aarch64/mv-pragma.C: Ditto.
+	* g++.target/aarch64/mv-symbols1.C: Ditto.
+	* g++.target/aarch64/mv-symbols10.C: Ditto.
+	* g++.target/aarch64/mv-symbols11.C: Ditto.
+	* g++.target/aarch64/mv-symbols12.C: Ditto.
+	* g++.target/aarch64/mv-symbols13.C: Ditto.
+	* g++.target/aarch64/mv-symbols2.C: Ditto.
+	* g++.target/aarch64/mv-symbols3.C: Ditto.
+	* g++.target/aarch64/mv-symbols4.C: Ditto.
+	* g++.target/aarch64/mv-symbols5.C: Ditto.
+	* g++.target/aarch64/mv-symbols6.C: Ditto.
+	* g++.target/aarch64/mv-symbols7.C: Ditto.
+	* g++.target/aarch64/mv-symbols8.C: Ditto.
+	* g++.target/aarch64/mv-symbols9.C: Ditto.
+	* g++.target/aarch64/mvc-error1.C: Ditto.
+	* g++.target/aarch64/mvc-error2.C: Ditto.
+	* g++.target/aarch64/mvc-symbols1.C: Ditto.
+	* g++.target/aarch64/mvc-symbols2.C: Ditto.
+	* g++.target/aarch64/mvc-symbols3.C: Ditto.
+	* g++.target/aarch64/mvc-symbols4.C: Ditto.
+	* g++.target/aarch64/mv-warning1.C: Removed.
+	* g++.target/aarch64/mvc-warning1.C: Removed.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-and-mvc-error1.C: New test.
+	* g++.target/aarch64/mv-and-mvc-error2.C: New test.
+	* g++.target/aarch64/mv-and-mvc-error3.C: New test.
+	* g++.target/aarch64/mv-error1.C: New test.
+	* g++.target/aarch64/mv-error2.C: New test.
+	* g++.target/aarch64/mv-error3.C: New test.
+	* g++.target/aarch64/mv-error4.C: New test.
+	* g++.target/aarch64/mv-error5.C: New test.
+	* g++.target/aarch64/mv-error6.C: New test.
+	* g++.target/aarch64/mv-error7.C: New test.
+	* g++.target/aarch64/mv-error8.C: New test.
+	* g++.target/aarch64/mvc-error1.C: New test.
+	* g++.target/aarch64/mvc-error2.C: New test.
+	* g++.target/aarch64/mvc-warning1.C: Modified test.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-and-mvc1.C: New test.
+	* g++.target/aarch64/mv-and-mvc2.C: New test.
+	* g++.target/aarch64/mv-and-mvc3.C: New test.
+	* g++.target/aarch64/mv-and-mvc4.C: New test.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-1.C: Change for target_version semantics.
+	* g++.target/aarch64/mv-symbols2.C: Ditto.
+	* g++.target/aarch64/mv-symbols3.C: Ditto.
+	* g++.target/aarch64/mv-symbols4.C: Ditto.
+	* g++.target/aarch64/mv-symbols5.C: Ditto.
+	* g++.target/aarch64/mvc-symbols3.C: Ditto.
+	* g++.target/riscv/mv-symbols2.C: Ditto.
+	* g++.target/riscv/mv-symbols3.C: Ditto.
+	* g++.target/riscv/mv-symbols4.C: Ditto.
+	* g++.target/riscv/mv-symbols5.C: Ditto.
+	* g++.target/riscv/mvc-symbols3.C: Ditto.
+	* g++.target/aarch64/mv-symbols10.C: New test.
+	* g++.target/aarch64/mv-symbols11.C: New test.
+	* g++.target/aarch64/mv-symbols12.C: New test.
+	* g++.target/aarch64/mv-symbols13.C: New test.
+	* g++.target/aarch64/mv-symbols6.C: New test.
+	* g++.target/aarch64/mv-symbols7.C: New test.
+	* g++.target/aarch64/mv-symbols8.C: New test.
+	* g++.target/aarch64/mv-symbols9.C: New test.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/i386/mv-symbols1.C: Update x86 FMV mangling.
+	* g++.target/i386/mv-symbols3.C: Ditto.
+	* g++.target/i386/mv-symbols4.C: Ditto.
+	* g++.target/i386/mv-symbols5.C: Ditto.
+
 2025-09-22  Peter Bergner  <bergner@tenstorrent.com>
 
 	PR target/121982

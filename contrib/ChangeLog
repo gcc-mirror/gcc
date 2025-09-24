@@ -1,3 +1,7 @@
+2025-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Fix comment type.
+
 2025-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/gen_libstdcxx_unicode_data.py: Update comment at the

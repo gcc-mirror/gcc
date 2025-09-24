@@ -1,3 +1,20 @@
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-attribs.cc: Add support for target_version and target_clone mixing.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-pretty-print.cc (pp_c_function_target_version): New function.
+	(pp_c_function_target_clones): New function.
+	(pp_c_maybe_whitespace): Move to c-pretty-print.h.
+	* c-pretty-print.h (pp_c_function_target_version): New function.
+	(pp_c_function_target_clones): New function.
+	(pp_c_maybe_whitespace): Moved here from c-pretty-print.cc.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-attribs.cc (handle_target_clones_attribute): Update to use new hook.
+
 2025-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121544

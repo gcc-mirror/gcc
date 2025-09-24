@@ -1,3 +1,194 @@
+2025-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/121986
+	* diagnostics/sarif-sink.cc: Include "intl.h".
+	(sarif_builder::make_message_describing_fix_it_hint): New.
+	(sarif_builder::make_fix_object): Attempt to auto-generate a
+	description for fix-it hints.
+
+2025-09-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/121810
+	* config/arm/mve.md (mve_mov<mode>): Move the Ui constraint
+	and pool_range attributes to the final alternative.  Fix
+	the forward range value and correctly name the negative
+	range.
+
+2025-09-23  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/122031
+	* tree-ssa-math-opts.cc (build_and_insert_cast): Fix the typo
+	of self assignment.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_process_target_version_attr):
+	Remove warning.
+	* config/aarch64/aarch64.opt: Mark -Wno-experimental-fmv-target
+	deprecated.
+	* doc/invoke.texi: Ditto.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* attribs.cc (is_function_default_version): Update to handle
+	target_clones.
+	* cgraph.h (FOR_EACH_FUNCTION_REMOVABLE): New macro.
+	* multiple_target.cc (expand_target_clones): Update logic to delete
+	empty target_clones and modify diagnostic.
+	(ipa_target_clone): Update to use FOR_EACH_FUNCTION_REMOVABLE.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* attribs.h (common_function_versions): Removed.
+	* attribs.cc (common_function_versions): Removed.
+	* config/aarch64/aarch64.cc (aarch64_common_function_versions): Removed.
+	(aarch64_same_function_versions): New function to check if two version
+	strings imply the same version.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Removed.
+	(TARGET_OPTION_SAME_FUNCTION_VERSIONS): New macro.
+	* config/i386/i386.cc (TARGET_OPTION_FUNCTION_VERSIONS): Removed.
+	* config/rs6000/rs6000.cc (TARGET_OPTION_FUNCTION_VERSIONS): Removed.
+	* config/riscv/riscv.cc (riscv_same_function_versions):  New function
+	to check if two version strings imply the same version.
+	(riscv_common_function_versions): Removed.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Removed.
+	(TARGET_OPTION_SAME_FUNCTION_VERSIONS): New macro.
+	* doc/tm.texi: Regenerated.
+	* target.def: Remove common_version hook and add same_function_version
+	hook.
+	* doc/tm.texi.in: Ditto.
+	* tree.cc (distinct_version_decls): New function.
+	(mergeable_version_decls): Ditto.
+	* tree.h (distinct_version_decls): New function.
+	(mergeable_version_decls): Ditto.
+	* hooks.h (hook_stringslice_stringslice_unreachable): New function.
+	* hooks.cc (hook_stringslice_stringslice_unreachable): New function.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118313
+	* cgraph.cc (delete_function_version): Made public static member of
+	cgraph_node.
+	* cgraph.h (delete_function_version): Ditto.
+	* cgraphunit.cc (analyze_functions): Add logic for target version
+	dependencies.
+	* ipa.cc (symbol_table::remove_unreachable_nodes): Ditto.
+	* multiple_target.cc (create_dispatcher_calls): Change to support
+	target version semantics.
+	(ipa_target_clone): Change to dispatch all function sets in
+	target_version semantics, and to have early and late pass.
+	(expand_target_clones): Add logic for cases of target_clones with no
+	defaults.
+	(is_simple_target_clones_case): New function.
+	(class pass_target_clone): New parameter for early or late pass.
+	* config/aarch64/aarch64.cc: (aarch64_get_function_versions_dispatcher):
+	Refactor with the assumption that the DECL node will be default.
+	* config/riscv/riscv.cc: (riscv_get_function_versions_dispatcher):
+	Refactor with the assumption that the DECL node will be default.
+	* passes.def: Split target_clones pass into early and late version.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118339
+	* target.def: Add check_target_clone_version hook.
+	* tree.cc (get_clone_attr_versions): Add filter argument.
+	(get_clone_versions): Add filter argument.
+	* tree.h (get_clone_attr_versions): Add filter.
+	(get_clone_versions): Add filter argument.
+	* config/aarch64/aarch64.cc (aarch64_check_target_clone_version):
+	New function
+	(TARGET_CHECK_TARGET_CLONE_VERSION): New define.
+	* config/riscv/riscv.cc (riscv_check_target_clone_version):
+	New function.
+	(TARGET_CHECK_TARGET_CLONE_VERSION): New define.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add documentation for new hook.
+	* hooks.h (hook_stringslice_locationtptr_true): New function.
+	* hooks.cc (hook_stringslice_locationtptr_true): New function.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/riscv/riscv-protos.h (riscv_process_target_version_str): New function..
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_attr): Refactor to take
+	string_slice.
+	(riscv_process_target_version_str): New function.
+	* config/riscv/riscv.cc (parse_features_for_version): Refactor to take
+	string_slice.
+	(riscv_compare_version_priority): Ditto.
+	(dispatch_function_versions): Change to pass location.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* attribs.cc (make_dispatcher_decl): Move duplicated cgraph logic into
+	this function and change to use targetm.mangle_decl_assembler_name for
+	mangling.
+	* cgraph.cc (cgraph_node::insert_new_function_version): Record
+	assembler_name.
+	* cgraph.h (struct cgraph_function_version_info): Add assembler_name.
+	(struct cgraph_node): Add dispatcher_resolver_function and
+	is_target_clone.
+	* config/aarch64/aarch64.cc (aarch64_parse_fmv_features): Change to
+	support string_slice.
+	(aarch64_process_target_version_attr): Ditto.
+	(get_feature_mask_for_version): Ditto.
+	(aarch64_mangle_decl_assembler_name): Add logic for mangling dispatched
+	symbol and resolver.
+	(get_suffixed_assembler_name): Removed.
+	(make_resolver_func): Refactor to use
+	aarch64_mangle_decl_assembler_name for mangling.
+	(aarch64_generate_version_dispatcher_body): Remove remangling.
+	(aarch64_get_function_versions_dispatcher): Refactor to remove
+	duplicated cgraph logic.
+	* config/i386/i386-features.cc
+	(ix86_mangle_function_version_assembler_name): Refactor to use
+	clone_identifier and to mangle default.
+	(ix86_mangle_decl_assembler_name): Add logic for mangling dispatched
+	symbol and resolver.
+	(ix86_get_function_versions_dispatcher): Remove duplicated cgraph
+	logic.
+	(make_resolver_func): Refactor to use ix86_mangle_decl_assembler_name
+	for mangling.
+	* config/riscv/riscv.cc (riscv_mangle_decl_assembler_name): Add logic
+	for FMV mangling.
+	(get_suffixed_assembler_name): Removed.
+	(make_resolver_func): Refactor to use riscv_mangle_decl_assembler_name
+	for mangling.
+	(riscv_generate_version_dispatcher_body): Remove unnecessary remangling.
+	(riscv_get_function_versions_dispatcher): Remove duplicated cgraph
+	logic.
+	* config/rs6000/rs6000.cc (rs6000_mangle_decl_assembler_name): New
+	function.
+	(rs6000_get_function_versions_dispatcher): Remove duplicated cgraph
+	logic.
+	(make_resolver_func): Refactor to use rs6000_mangle_decl_assembler_name
+	for mangling.
+	(rs6000_mangle_function_version_assembler_name): New function.
+	* multiple_target.cc (create_dispatcher_calls): Remove mangling code.
+	(get_attr_str): Removed.
+	(separate_attrs): Ditto.
+	(is_valid_asm_symbol): Removed.
+	(create_new_asm_name): Ditto.
+	(expand_target_clones): Refactor to use
+	targetm.mangle_decl_assembler_name for mangling and be more general.
+	* tree.cc (get_target_clone_attr_len): Removed.
+	* tree.h (get_target_clone_attr_len): Removed.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* cgraph.h (clone_identifier): New function.
+	* cgraphclones.cc (clone_identifier): New function.
+	(clone_function_name): Refactored to use clone_identifier.
+	(is_valid_asm_symbol): New helper function.
+
+2025-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121994
+	* config/i386/x86-tune-costs.h (znver2_cost): Set
+	vect_unroll_limit to 1.
+	(znver1_cost): Ditto.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Adjust count number for	{AVX256,AVX512}_SPLIT_REGS.
+
 2025-09-22  Peter Bergner  <bergner@tenstorrent.com>
 
 	PR target/121982

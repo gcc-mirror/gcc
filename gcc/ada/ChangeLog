@@ -1,3 +1,101 @@
+2025-09-23  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Prepend_Constructor_Procedure_Prologue):
+	Push/Pop the procedure scope, so that temps created herein
+	get the right Scope.
+
+2025-09-23  Jose Ruiz  <ruiz@adacore.com>
+
+	* libgnarl/s-stusta.adb (Report_Impl): Export a copy of
+	the current stack usage while holding the runtime lock.
+	(Report_For_Task): Do not compute stack usage for a task
+	that has not yet initialized its stack with the expected
+	pattern.
+	(Report_For_Task): The Stack_Analyzer object for the
+	environment task is not part of its ATCB. For the rest of
+	the tasks wait until we have initialized the stack pattern
+	before computing stack usage.
+	(Report_All_Tasks, Get_All_Tasks_Usage,
+	Get_Current_Task_Usage): Adapt to the new interface from
+	Report_Impl. Take into account that Result_Array can be
+	null. When we don't store stack results for a task we
+	need to compute it when requested.
+	(Print): Handle the case when we don't know the stack
+	usage to be reported.
+	* libgnat/s-stausa.adb (Initialize): For the environment
+	task, approximate the stack origin with the topmost
+	stack address that is known.
+	* libgnat/s-stausa.ads: Clarify comments.
+
+2025-09-23  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_util.adb (Ultimate_Prefix): Clean-up the loop condition by using
+	Has_prefix instead of an explicit list of node kinds.
+
+2025-09-23  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_ch10.adb (Install_Siblings): Fix condition to emit warning.
+
+2025-09-23  Viljar Indus  <indus@adacore.com>
+
+	* sem_case.adb (Is_Case_Choice_Pattern): Return False for allocators.
+
+2025-09-23  Douglas B Rupp  <rupp@adacore.com>
+
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads (Linker_Options):
+	Remove pragma for RTP specs.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+
+2025-09-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add doc
+	for addition of -gnateG options b, c, and e.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Add doc for "-e" optionn
+	on gnatprep and integrated preprocessing. Add doc for addition of
+	-gnateG options b, c, and e.
+	* gprep.adb (Scan_Command_Line): Add 'e' to the list of allowed switch
+	letters in the string passed to GNAT.Command_Line.Getopt. Set the flag
+	Opt.Empty_Comment_Deleted_Lines to True when the "-e" switch is found.
+	(Usage): Output a switch description for the "-e" switch.
+	* opt.ads: Add new flag variable Empty_Comment_Deleted_Lines. Add
+	"GNAT" to the "GNATPREP" comment line for Comment_Deleted_Lines.
+	* prep.adb (Output_Line): Add handling for Empty_Comment_Deleted_Lines,
+	outputting comment lines consisting of "--!" for lines that are removed
+	in the preprocessed source file when Empty_Comment_Deleted_Lines is True.
+	* prepcomp.adb (Preproc_Data): Add Empty_Comments component (defaulting
+	to False).
+	(No_Preproc_Data): Add association for Empty_Comments component.
+	(Parse_Preprocessing_Data_File): Add handling for new switch -e.
+	(Prepare_To_Preprocess): Add logic for setting the new option
+	Empty_Comment_Deleted_Lines (and making it the default for
+	integrated preprocessing in the absence of other switches).
+	* switch-c.adb (Scan_Front_End_Switches): Add support adding a single
+	character 'b', 'c', 'e' to the "-gnateG" switch, to select any of the
+	three options for replacing deleted lines in preprocessing output file.
+	* usage.adb: Update usage info for -gnateG, to reflect the option of
+	appending b, c, or e to the switch.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Print finally statements, if
+	present.
+
+2025-09-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Partially_Initialized_Type): Return False
+	for record types with no components.
+
+2025-09-23  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst: Document the
+	Extended_Access aspect.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
 2025-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121968

@@ -1,3 +1,8 @@
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-objc-common.cc (c_tree_printer): Add printing of target_clone and
+	target_version in decl diagnostics.
+
 2025-09-20  Joseph Myers  <josmyers@redhat.com>
 
 	* c-typeck.cc (really_atomic_lvalue): Return false for incomplete

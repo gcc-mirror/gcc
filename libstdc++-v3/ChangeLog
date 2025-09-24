@@ -1,3 +1,112 @@
+2025-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h: Include <bits/ios_base.h> instead of
+	<iomanip>. Change preprocessor checks to use internal feature
+	test macro.
+	(philox_engine): Reword doxygen comments. Use typename instead
+	of class in template parameter lists. Reformat and adjust
+	whitespace.
+	(philox_engine::_If_seed_seq): Replace alias template with
+	__is_seed_seq variable template.
+	(philox_engine::philox_engine(result_type)): Define inline.
+	(philox_engine::seed(result_type), philox_engine::set_counter)
+	(philox_engine::operator(), philox_engine::discard): Likewise.
+	(operator==): Define as defaulted.
+	(operator<<): Reuse widened char.
+	* include/bits/random.tcc: Reformat and adjust whitespace.
+	(philox_engine::_M_philox): Use std::array copy constructor and
+	std::array::fill instead of looping.
+	* testsuite/26_numerics/random/philox4x32.cc: Gate test on
+	feature test macro. Add static_assert to check typedef.
+	* testsuite/26_numerics/random/philox4x64.cc: Likewise.
+	* testsuite/26_numerics/random/philox_engine/cons/copy.cc: Add
+	VERIFY assertions to check copies are equal. Test different
+	seeds.
+	* testsuite/26_numerics/random/philox_engine/cons/default.cc:
+	Add VERIFY assertions to check construction results.
+	* testsuite/26_numerics/random/philox_engine/cons/seed.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/operators/equal.cc:
+	Also test inequality.
+	* testsuite/26_numerics/random/philox_engine/operators/serialize.cc:
+	Remove redundant include and return.
+	* testsuite/26_numerics/random/philox_engine/requirements/constants.cc:
+	Check values of all constants.
+	* testsuite/26_numerics/random/philox_engine/requirements/typedefs.cc:
+	Check typedefs are correct.
+	* testsuite/26_numerics/random/philox_engine/cons/119794.cc:
+	Removed.
+	* testsuite/26_numerics/random/philox_engine/cons/seed_seq.cc:
+	Removed.
+	* testsuite/26_numerics/random/philox_engine/operators/inequal.cc:
+	Removed.
+	* testsuite/26_numerics/random/philox_engine/requirements/constexpr_data.cc:
+	Removed.
+	* testsuite/26_numerics/random/philox_engine/requirements/constexpr_functions.cc:
+	Removed.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2025-09-23  1nfocalypse  <1nfocalypse@protonmail.com>
+
+	PR libstdc++/119794
+	* include/bits/random.h (philox_engine): Define.
+	* include/bits/random.tcc (philox_engine): Define member
+	functions.
+	* include/bits/version.def (philox_engine): New macro.
+	* include/bits/version.h: Regenerated.
+	* include/std/random: Define __glibcxx_want_philox_engine and
+	include <bits/version.h>.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+	* testsuite/26_numerics/random/philox4x32.cc: New test.
+	* testsuite/26_numerics/random/philox4x64.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/cons/119794.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/cons/copy.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/cons/default.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/cons/seed.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/cons/seed_seq.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/operators/equal.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/operators/inequal.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/operators/serialize.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/requirements/constants.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/requirements/constexpr_data.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/requirements/constexpr_functions.cc: New test.
+	* testsuite/26_numerics/random/philox_engine/requirements/typedefs.cc: New test.
+
+2025-09-23  Ben Wu  <soggysocks206@gmail.com>
+
+	PR libstdc++/118087
+	* include/bits/deque.tcc: Use _Temporary_value in
+	_M_emplace_aux.
+	* include/bits/stl_deque.h: Introduce _Temporary_value.
+	* testsuite/23_containers/deque/modifiers/emplace/118087.cc:
+	New test.
+
+2025-09-23  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121940
+	* include/bits/funcwrap.h (__polyfunc::__deduce_funcref): Return void
+	for ill-formed constructs.
+	(function_ref(nontype_t<__f>, _Tp&&)): Constrain on __deduce_funcref
+	producing non-void results.
+	* testsuite/20_util/function_ref/deduction.cc: Negative tests.
+
+2025-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79147
+	* include/Makefile.am (c++config.h): Adjust sed command to
+	comment out all PACKAGE_XXX macros and to avoid adjusting
+	PACKAGE_VERSION twice.
+	* include/Makefile.in: Regenerate.
+
+2025-09-23  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (formatter<chrono::utc_time, _CharT>):
+	(formatter<chrono::gps_time<_Duration>, _CharT>)
+	(formatter<chrono::tai_time<_Duration>, _CharT): Remove
+	__formatter_chrono base class.
+
 2025-09-22  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/bits/chrono_io.h(__formatter_chrono::_M_parse): Update
