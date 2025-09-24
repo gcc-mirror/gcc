@@ -70,9 +70,4 @@ package Fmap is
    procedure Reset_Tables;
    --  Initialize all the internal data structures
 
-   procedure Add_Forbidden_File_Name (Name : File_Name_Type);
-   --  Indicate that a source file name is forbidden. This is used when there
-   --  are excluded sources in projects (attributes Excluded_Source_Files or
-   --  Locally_Removed_Files).
-
 end Fmap;

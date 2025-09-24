@@ -106,23 +106,6 @@ package body Fmap is
 
    Last_In_Table : Int := 0;
 
-   package Forbidden_Names is new GNAT.HTable.Simple_HTable (
-     Header_Num => Header_Num,
-     Element    => Boolean,
-     No_Element => False,
-     Key        => File_Name_Type,
-     Hash       => Hash,
-     Equal      => "=");
-
-   -----------------------------
-   -- Add_Forbidden_File_Name --
-   -----------------------------
-
-   procedure Add_Forbidden_File_Name (Name : File_Name_Type) is
-   begin
-      Forbidden_Names.Set (Name, True);
-   end Add_Forbidden_File_Name;
-
    ---------------------
    -- Add_To_File_Map --
    ---------------------
@@ -401,10 +384,6 @@ package body Fmap is
       Index : Int := No_Entry;
 
    begin
-      if Forbidden_Names.Get (File) then
-         return Error_File_Name;
-      end if;
-
       Index := File_Hash_Table.Get (File);
 
       if Index = No_Entry then
@@ -424,7 +403,6 @@ package body Fmap is
       Path_Mapping.Init;
       Unit_Hash_Table.Reset;
       File_Hash_Table.Reset;
-      Forbidden_Names.Reset;
       Last_In_Table := 0;
    end Reset_Tables;
 
