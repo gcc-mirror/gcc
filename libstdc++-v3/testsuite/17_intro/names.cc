@@ -280,6 +280,8 @@
 // <sys/ucontext.h> defines fpreg_t::d and fpreg_t::f
 #undef d
 #undef f
+// <asm/types.h> defines __vector128::u
+#undef u
 #endif
 
 #if defined (__linux__) && defined (__sparc__)
