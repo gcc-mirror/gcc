@@ -5246,6 +5246,15 @@ package body Sem_Ch3 is
         and then Nkind (E) = N_Aggregate
       then
          Act_T := Etype (E);
+
+      elsif Needs_Construction (T)
+        and then not Has_Init_Expression (N)
+        and then not Has_Default_Constructor (T)
+        and then not Suppress_Initialization (Id)
+        and then Comes_From_Source (N)
+      then
+         Error_Msg_NE ("no default constructor for&",
+                       Object_Definition (N), T);
       end if;
 
       --  Check No_Wide_Characters restriction

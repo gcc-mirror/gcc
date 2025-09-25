@@ -1019,6 +1019,16 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    package Ch13 is
       function P_Representation_Clause                return Node_Id;
 
+      function P_Attribute_Designators
+        (Initial_Prefix : Node_Id) return Node_Id;
+      --  This procedure parses trailing apostrophes and attribute designators,
+      --  i.e., the "'b'c..." suffix in "a'b'c...". "a" must have already been
+      --  parsed into Initial_Prefix and the scan pointer must be pointing
+      --  right past "a". If no apostrophe is found we just return
+      --  Initial_Prefix, otherwise the return value is a chain of
+      --  N_Attribute_Reference nodes, nested via the Prefix field and ending
+      --  with Initial_Prefix.
+
       function Aspect_Specifications_Present
         (Strict : Boolean := Ada_Version < Ada_2012) return Boolean;
       --  This function tests whether the next keyword is WITH followed by

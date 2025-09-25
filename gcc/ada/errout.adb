@@ -163,8 +163,8 @@ package body Errout is
    procedure Set_Msg_Node (Node : Node_Id);
    --  Add the sequence of characters for the name associated with the given
    --  node to the current message. For N_Designator, N_Selected_Component,
-   --  N_Defining_Program_Unit_Name, and N_Expanded_Name, the Prefix is
-   --  included as well.
+   --  N_Defining_Program_Unit_Name, N_Expanded_Name, and N_Attribute_Reference
+   --  the Prefix is included as well.
 
    procedure Set_Posted (N : Node_Id);
    --  Sets the Error_Posted flag on the given node, and all its parents that
@@ -3799,6 +3799,29 @@ package body Errout is
             Set_Msg_Char ('.');
             Set_Msg_Node (Selector_Name (Node));
             return;
+
+         when N_Attribute_Reference =>
+            Set_Msg_Node (Prefix (Node));
+            Set_Msg_Char (''');
+            Get_Unqualified_Decoded_Name_String (Attribute_Name (Node));
+            Adjust_Name_Case (Global_Name_Buffer, Sloc (Node));
+            Set_Msg_Name_Buffer;
+            return;
+
+         when N_Defining_Identifier =>
+
+            --  Handle direct attribute definitions
+
+            if Parent_Kind (Node) in N_Subprogram_Specification
+              and then Original_Node (Parent (Node)) /= Parent (Node)
+              and then Nkind (Defining_Unit_Name
+                               (Original_Node (Parent (Node))))
+                         = N_Attribute_Reference
+            then
+               Set_Msg_Node
+                 (Defining_Unit_Name (Original_Node (Parent (Node))));
+               return;
+            end if;
 
          when others =>
             null;

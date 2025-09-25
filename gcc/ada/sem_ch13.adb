@@ -5041,16 +5041,6 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Implicit_Dereference;
                   goto Continue;
 
-               when Aspect_Constructor =>
-                  if not All_Extensions_Allowed then
-                     Error_Msg_Name_1 := Nam;
-                     Error_Msg_GNAT_Extension ("aspect %", Loc);
-                     goto Continue;
-                  end if;
-
-                  Set_Constructor_Name (E, Expr);
-                  Set_Needs_Construction (E);
-
                --  Dimension
 
                when Aspect_Dimension =>
@@ -11753,8 +11743,7 @@ package body Sem_Ch13 is
       --  name, so we need to verify that one of these interpretations is
       --  the one available at the freeze point.
 
-      elsif A_Id in Aspect_Constructor
-                  | Aspect_Destructor
+      elsif A_Id in Aspect_Destructor
                   | Aspect_Input
                   | Aspect_Output
                   | Aspect_Read
@@ -12050,8 +12039,7 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Constructor
-            | Aspect_Input
+         when Aspect_Input
             | Aspect_Output
             | Aspect_Put_Image
             | Aspect_Read
@@ -17355,9 +17343,6 @@ package body Sem_Ch13 is
                   when Aspect_Invariant
                      | Aspect_Predicate_Failure
                   =>
-                     null;
-
-                  when Aspect_Constructor =>
                      null;
 
                   when Aspect_Dynamic_Predicate

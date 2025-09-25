@@ -5270,9 +5270,94 @@ package body Sem_Ch6 is
    --  both subprogram bodies and subprogram declarations (specs).
 
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id is
+      procedure Analyze_Direct_Attribute_Definition (Designator : Entity_Id);
+      --  This procedure checks whether the direct attribute definition for N
+      --  is correct for the given attribute name, and analyzes it.
+
       function Is_Invariant_Procedure_Or_Body (E : Entity_Id) return Boolean;
       --  Determine whether entity E denotes the spec or body of an invariant
       --  procedure.
+
+      -----------------------------------------
+      -- Analyze_Direct_Attribute_Definition --
+      -----------------------------------------
+
+      procedure Analyze_Direct_Attribute_Definition (Designator : Entity_Id) is
+         Att_N    : constant Node_Id := Original_Node (N);
+         Prefix_E : constant Entity_Id :=
+           Get_Name_Entity_Id (Chars (Prefix (Defining_Unit_Name (Att_N))));
+         Att_Name : constant Name_Id :=
+           Attribute_Name (Defining_Unit_Name (Att_N));
+      begin
+         pragma Assert (N /= Att_N);
+
+         if not Is_Direct_Attribute_Definition_Name (Att_Name) then
+            Error_Msg_Name_1 := Att_Name;
+            Error_Msg_N
+              ("direct definition syntax not supported for attribute%",
+               Designator);
+         end if;
+
+         --  Handle each kind of attribute separately
+
+         case Att_Name is
+
+            when Name_Constructor =>
+               Error_Msg_Name_1 := Att_Name;
+
+               --  No further action required in a subprogram body
+
+               if Parent_Kind (N) not in N_Subprogram_Declaration then
+                  return;
+
+               elsif No (Prefix_E) or else not Is_Type (Prefix_E) then
+                  Error_Msg_N
+                    ("prefix& of attribute% must be a type",
+                     Prefix (Defining_Unit_Name (Att_N)));
+
+               elsif Ekind (Designator) /= E_Procedure then
+                  Error_Msg_N
+                    ("attribute% can only be specified to a procedure", N);
+
+               elsif No (First_Formal (Designator))
+                 or else Etype (First_Formal (Designator)) /= Prefix_E
+                 or else Ekind (First_Formal (Designator))
+                         /= E_In_Out_Parameter
+               then
+                  declare
+                     Problem : constant Source_Ptr :=
+                       (if No (First_Formal (Designator))
+                        then Sloc (N)
+                        else Sloc (First_Formal (Designator)));
+                  begin
+                     Error_Msg_Node_1 := Defining_Unit_Name (Att_N);
+                     Error_Msg_Node_2 := Prefix_E;
+                     Error_Msg
+                       ("& must have a first IN OUT formal of type&", Problem);
+                  end;
+
+               elsif Is_Frozen (Prefix_E)
+                 or else Current_Scope /= Scope (Prefix_E)
+               then
+                  Error_Msg_Sloc := Sloc (Freeze_Node (Prefix_E));
+                  Error_Msg_N
+                    ("& must be defined before freezing#", Designator);
+
+               elsif Parent_Kind (Enclosing_Package_Or_Subprogram (Designator))
+                       /= N_Package_Specification
+               then
+                  Error_Msg_N
+                    ("& is required to be a primitive operation", Designator);
+
+               else
+                  Set_Needs_Construction (Prefix_E);
+               end if;
+
+            when others =>
+               null;
+
+         end case;
+      end Analyze_Direct_Attribute_Definition;
 
       ------------------------------------
       -- Is_Invariant_Procedure_Or_Body --
@@ -5416,89 +5501,6 @@ package body Sem_Ch6 is
 
          End_Scope;
 
-         --  Register the subprogram in a Constructor_List when it is a valid
-         --  constructor.
-
-         if All_Extensions_Allowed
-           and then Present (First_Formal (Designator))
-         then
-
-            declare
-               First_Form_Type : constant Entity_Id :=
-                 Etype (First_Formal (Designator));
-
-               Construct : Elmt_Id;
-            begin
-               --  Valid constructors have a "controlling" formal of a type
-               --  with the Constructor aspect specified. Additionally, the
-               --  subprogram name must match value described by the aspect.
-
-               --  Additionally, constructor declarations must exist within the
-               --  same scope as the type declaration and before the type is
-               --  frozen.
-
-               --  For example:
-               --
-               --     type Foo is null record with Constructor => Bar;
-               --
-               --     procedure Bar (Self : in out Foo);
-               --
-
-               if Present (Constructor_Name (First_Form_Type))
-                 and then Current_Scope = Scope (First_Form_Type)
-                 and then Chars (Constructor_Name (First_Form_Type))
-                            = Chars (Designator)
-                 and then Ekind (Designator) = E_Procedure
-                 and then Nkind (Parent (N)) = N_Subprogram_Declaration
-               then
-                  --  If the constructor list is empty than we don't have to
-                  --  look for duplicates - we simply create the list and
-                  --  add it.
-
-                  if No (Constructor_List (First_Form_Type)) then
-                     Set_Constructor_List
-                       (First_Form_Type, New_Elmt_List (Designator));
-
-                  --  Otherwise, we need to check the constructor hasen't
-                  --  already been added (e.g. a specification and body) and
-                  --  that there isn't a constructor with the same number of
-                  --  type of formals.
-
-                  --  NOTE: The Constructor_List is sorted by the number of
-                  --  parameters.
-
-                  else
-                     Construct := First_Elmt
-                                    (Constructor_List (First_Form_Type));
-
-                     --  Skip over constructors with less than the number of
-                     --  parameters than Designator ???
-
-                     --  Loop through the constructors looking for ones which
-                     --  "match."
-
-                     Outter : loop
-
-                        --  When we are at the end of the constructor list we
-                        --  know there are no matches, so it is safe to add.
-
-                        if No (Construct) then
-                           Append_Elmt
-                             (Designator,
-                              Constructor_List (First_Form_Type));
-                           exit Outter;
-                        end if;
-
-                        --  Loop through the formals and check the formals
-                        --  match on type ???
-
-                        Next_Elmt (Construct);
-                     end loop Outter;
-                  end if;
-               end if;
-            end;
-         end if;
-
       --  The subprogram scope is pushed and popped around the processing of
       --  the return type for consistency with call above to Process_Formals
       --  (which itself can call Analyze_Return_Type), and to ensure that any
@@ -5509,6 +5511,12 @@ package body Sem_Ch6 is
          Push_Scope (Designator);
          Analyze_Return_Type (N);
          End_Scope;
+      end if;
+
+      --  Handle subprogram specification directly referencing an attribute
+
+      if Is_Direct_Attribute_Subp_Spec (N) then
+         Analyze_Direct_Attribute_Definition (Designator);
       end if;
 
       --  Function case

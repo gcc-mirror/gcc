@@ -5165,7 +5165,8 @@ package body Exp_Attr is
                  Make_Selected_Component (Loc,
                    Prefix        => New_Occurrence_Of (Result_Id, Loc),
                    Selector_Name => Make_Identifier (Loc,
-                                      Chars (Constructor_Name (Typ))));
+                                      Direct_Attribute_Definition_Name
+                                        (Typ, Name_Constructor)));
             begin
                Set_Is_Prefixed_Call (Proc_Name);
 
@@ -8600,6 +8601,7 @@ package body Exp_Attr is
          | Attribute_Bit_Order
          | Attribute_Class
          | Attribute_Compiler_Version
+         | Attribute_Constructor
          | Attribute_Default_Bit_Order
          | Attribute_Default_Scalar_Storage_Order
          | Attribute_Definite

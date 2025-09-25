@@ -632,6 +632,77 @@ package body Ch13 is
       return Aspects;
    end Get_Aspect_Specifications;
 
+   -----------------------------
+   -- P_Attribute_Designators --
+   -----------------------------
+
+   function P_Attribute_Designators (Initial_Prefix : Node_Id) return Node_Id
+   is
+      Accumulator  : Node_Id := Initial_Prefix;
+      Designator   : Name_Id;
+   begin
+      while Token = Tok_Apostrophe loop
+
+         Scan; -- past apostrophe
+
+         Designator := No_Name;
+
+         if Token = Tok_Identifier then
+            Designator := Token_Name;
+
+            --  Note that the parser must complain in case of an internal
+            --  attribute name that comes from source since internal names are
+            --  meant to be used only by the compiler.
+
+            if not Is_Attribute_Name (Designator)
+              and then (not Is_Internal_Attribute_Name (Designator)
+                        or else Comes_From_Source (Token_Node))
+            then
+               Signal_Bad_Attribute;
+            end if;
+
+            if Style_Check then
+               Style.Check_Attribute_Name (False);
+            end if;
+
+         --  Here for case of attribute designator is not an identifier
+
+         else
+            if Token = Tok_Delta then
+               Designator := Name_Delta;
+
+            elsif Token = Tok_Digits then
+               Designator := Name_Digits;
+
+            elsif Token = Tok_Access then
+               Designator := Name_Access;
+
+            else
+               Error_Msg_AP ("attribute designator expected");
+               raise Error_Resync;
+            end if;
+
+            if Style_Check then
+               Style.Check_Attribute_Name (True);
+            end if;
+         end if;
+
+         --  Here we have an OK attribute scanned, and the corresponding
+         --  Attribute identifier node is stored in Designator.
+
+         declare
+            Temp : constant Node_Id := Accumulator;
+         begin
+            Accumulator := New_Node (N_Attribute_Reference, Prev_Token_Ptr);
+            Set_Prefix (Accumulator, Temp);
+         end;
+         Set_Attribute_Name (Accumulator, Designator);
+         Scan;
+      end loop;
+
+      return Accumulator;
+   end P_Attribute_Designators;
+
    --------------------------------------------
    -- 13.1  Representation Clause (also I.7) --
    --------------------------------------------
@@ -674,8 +745,6 @@ package body Ch13 is
    function P_Representation_Clause return Node_Id is
       For_Loc         : Source_Ptr;
       Name_Node       : Node_Id;
-      Prefix_Node     : Node_Id;
-      Attr_Name       : Name_Id;
       Identifier_Node : Node_Id;
       Rep_Clause_Node : Node_Id;
       Expr_Node       : Node_Id;
@@ -693,8 +762,7 @@ package body Ch13 is
       --  Check case of qualified name to give good error message
 
       if Token = Tok_Dot then
-         Error_Msg_SC
-            ("representation clause requires simple name!");
+         Error_Msg_SC ("representation clause requires simple name!");
 
          loop
             exit when Token /= Tok_Dot;
@@ -706,80 +774,28 @@ package body Ch13 is
       --  Attribute Definition Clause
 
       if Token = Tok_Apostrophe then
+         Name_Node := P_Attribute_Designators (Identifier_Node);
 
-         --  Allow local names of the form a'b'.... This enables
-         --  us to parse class-wide streams attributes correctly.
+         --  Check for Address clause which needs to be marked for use in
+         --  optimizing performance of Exp_Util.Following_Address_Clause.
 
-         Name_Node := Identifier_Node;
-         while Token = Tok_Apostrophe loop
+         declare
+            Cursor : Node_Id := Name_Node;
+         begin
+            while Nkind (Prefix (Cursor)) = N_Attribute_Reference loop
+               Cursor := Prefix (Cursor);
+            end loop;
 
-            Scan; -- past apostrophe
-
-            Identifier_Node := Token_Node;
-            Attr_Name := No_Name;
-
-            if Token = Tok_Identifier then
-               Attr_Name := Token_Name;
-
-               --  Note that the parser must complain in case of an internal
-               --  attribute name that comes from source since internal names
-               --  are meant to be used only by the compiler.
-
-               if not Is_Attribute_Name (Attr_Name)
-                 and then (not Is_Internal_Attribute_Name (Attr_Name)
-                            or else Comes_From_Source (Token_Node))
-               then
-                  Signal_Bad_Attribute;
-               end if;
-
-               if Style_Check then
-                  Style.Check_Attribute_Name (False);
-               end if;
-
-            --  Here for case of attribute designator is not an identifier
-
-            else
-               if Token = Tok_Delta then
-                  Attr_Name := Name_Delta;
-
-               elsif Token = Tok_Digits then
-                  Attr_Name := Name_Digits;
-
-               elsif Token = Tok_Access then
-                  Attr_Name := Name_Access;
-
-               else
-                  Error_Msg_AP ("attribute designator expected");
-                  raise Error_Resync;
-               end if;
-
-               if Style_Check then
-                  Style.Check_Attribute_Name (True);
-               end if;
-            end if;
-
-            --  Here we have an OK attribute scanned, and the corresponding
-            --  Attribute identifier node is stored in Ident_Node.
-
-            Prefix_Node := Name_Node;
-            Name_Node := New_Node (N_Attribute_Reference, Prev_Token_Ptr);
-            Set_Prefix (Name_Node, Prefix_Node);
-            Set_Attribute_Name (Name_Node, Attr_Name);
-            Scan;
-
-            --  Check for Address clause which needs to be marked for use in
-            --  optimizing performance of Exp_Util.Following_Address_Clause.
-
-            if Attr_Name = Name_Address
-              and then Nkind (Prefix_Node) = N_Identifier
+            if Attribute_Name (Cursor) = Name_Address
+              and then Nkind (Prefix (Cursor)) = N_Identifier
             then
-               Set_Name_Table_Boolean1 (Chars (Prefix_Node), True);
+               Set_Name_Table_Boolean1 (Chars (Prefix (Cursor)), True);
             end if;
-         end loop;
+         end;
 
          Rep_Clause_Node := New_Node (N_Attribute_Definition_Clause, For_Loc);
-         Set_Name (Rep_Clause_Node, Prefix_Node);
-         Set_Chars (Rep_Clause_Node, Attr_Name);
+         Set_Name (Rep_Clause_Node, Prefix (Name_Node));
+         Set_Chars (Rep_Clause_Node, Attribute_Name (Name_Node));
          T_Use;
 
          Expr_Node := P_Expression_No_Right_Paren;

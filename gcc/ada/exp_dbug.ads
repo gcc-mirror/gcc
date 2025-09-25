@@ -193,6 +193,25 @@ package Exp_Dbug is
       --    extra__messages__Oeq__2
 
       ----------------------------------
+      -- Direct Attribute Definitions --
+      ----------------------------------
+
+      --  Direct attribute definitions are subprogram declarations where the
+      --  subprogram name is an attribute reference, eg.:
+      --    procedure T'Constructor (Self...
+      --  defines a constructor. The above rules applied to direct attribute
+      --  definitions would result in names with quotation marks, which are
+      --  typically hard to deal with down the chain. To avoid this problem,
+      --  names of such definitions are encoded with as:
+
+      --    'D' Prefix_Name '_' Attribute_Name "_Att"
+
+      --  For instance, the constructor above is encoded as Dt_constructor_Att.
+
+      --  Note that, attribute reference with multiple attributes are not
+      --  supported yet ???
+
+      ----------------------------------
       -- Resolving Other Name Clashes --
       ----------------------------------
 

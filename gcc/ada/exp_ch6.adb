@@ -6250,9 +6250,9 @@ package body Exp_Ch6 is
       procedure Prepend_Constructor_Procedure_Prologue
         (Spec_Id : Entity_Id; Body_Id : Entity_Id; L : List_Id);
       --  If N is the body of a constructor procedure (that is, a procedure
-      --  named in a Constructor aspect specification for the type of the
-      --  procedure's first parameter), then prepend and analyze the
-      --  associated initialization code for that parameter.
+      --  named T'Constructor where T is the type of the procedure's first
+      --  parameter), then prepend and analyze the associated initialization
+      --  code for that parameter.
       --  This has nothing to do with CPP constructors.
 
       ----------------
@@ -6339,16 +6339,10 @@ package body Exp_Ch6 is
          function First_Param_Type return Entity_Id is
            (Implementation_Base_Type (Etype (First_Formal (Spec_Id))));
 
-         Is_Constructor_Procedure : constant Boolean :=
-           Nkind (Specification (N)) = N_Procedure_Specification
-             and then Present (First_Formal (Spec_Id))
-             and then Present (Constructor_Name (First_Param_Type))
-             and then Chars (Spec_Id) = Chars (Constructor_Name
-                                                 (First_Param_Type))
-             and then Ekind (First_Formal (Spec_Id)) = E_In_Out_Parameter
-             and then Scope (Spec_Id) = Scope (First_Param_Type);
       begin
-         if not Is_Constructor_Procedure then
+         if not (Nkind (Specification (N)) = N_Procedure_Specification
+                  and then Is_Constructor_Procedure (Spec_Id))
+         then
             return; -- the usual case
          end if;
 
@@ -6539,7 +6533,8 @@ package body Exp_Ch6 is
                           Attribute_Name => Name_Super),
                       Selector_Name =>
                         Make_Identifier (Loc,
-                          Chars (Constructor_Name (Parent_Type))));
+                          Direct_Attribute_Definition_Name
+                            (Parent_Type, Name_Constructor)));
                begin
                   Set_Is_Prefixed_Call (Proc_Name);
 

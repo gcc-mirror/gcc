@@ -412,6 +412,15 @@ package body Snames is
       end if;
    end Is_Convention_Name;
 
+   -----------------------------------------
+   -- Is_Direct_Attribute_Definition_Name --
+   -----------------------------------------
+
+   function Is_Direct_Attribute_Definition_Name (N : Name_Id) return Boolean is
+   begin
+      return Is_Attribute_Name (N) and then N = Name_Constructor;
+   end Is_Direct_Attribute_Definition_Name;
+
    ------------------------------
    -- Is_Entity_Attribute_Name --
    ------------------------------

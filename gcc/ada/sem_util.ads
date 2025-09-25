@@ -569,6 +569,10 @@ package Sem_Util is
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
    --  False).
 
+   function Direct_Attribute_Definition_Name
+     (Prefix : Entity_Id; Att_Name : Name_Id) return Name_Id;
+   --  Returns the name used for entities of direct attribute definitions.
+
    procedure Copy_Assertion_Policy_Attributes (New_Prag, Old_Prag : Node_Id);
    --  Copy Is_Checked, Is_Ignored and Ghost_Assertion_Level attributes from
    --  Old_Node.
@@ -673,10 +677,6 @@ package Sem_Util is
    --  True if Typ is a class-wide type or requires finalization actions. Same
    --  as Needs_Finalization except with pragma Restrictions (No_Finalization),
    --  in which case we know that class-wide objects do not need finalization.
-
-   function Default_Constructor (Typ : Entity_Id) return Entity_Id;
-   --  Determine the default constructor (e.g. the constructor with only one
-   --  formal parameter) for a given type Typ.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
@@ -1407,6 +1407,9 @@ package Sem_Util is
    function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
    --  Simple predicate to test for defaulted discriminants
 
+   function Has_Default_Constructor (Typ : Entity_Id) return Boolean;
+   --  Determine whether Typ has a constructor with only one formal parameter.
+
    function Has_Denormals (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports denormal numbers.
    --  Returns False if E is not a floating-point type.
@@ -1880,6 +1883,10 @@ package Sem_Util is
    function Is_Attribute_Result (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Result
 
+   function Is_Direct_Attribute_Subp_Spec (N : Node_Id) return Boolean;
+   --  Determine whether N denotes a direct attribute definition subprogram
+   --  specification node.
+
    function Is_Attribute_Update (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Update
 
@@ -1913,6 +1920,10 @@ package Sem_Util is
    --  bound is a compile-time known value, or a constant entity, or an
    --  enumeration literal, or an expression composed of constant-bound
    --  subexpressions which are evaluated by means of standard operators.
+
+   function Is_Constructor_Procedure (Subp : Entity_Id) return Boolean;
+   --  Returns True if Subp's name directly references an attribute, has a
+   --  first in out formal that needs construction within the same scope.
 
    function Is_Container_Element (Exp : Node_Id) return Boolean;
    --  This routine recognizes expressions that denote an element of one of
@@ -2972,9 +2983,6 @@ package Sem_Util is
    --
    --  WARNING: this routine should be used in debugging scenarios such as
    --  tracking down undefined symbols as it is fairly low level.
-
-   function Parameter_Count (Subp : Entity_Id) return Nat;
-   --  Return the number of parameters for a given subprogram Subp.
 
    function Param_Entity (N : Node_Id) return Entity_Id;
    --  Given an expression N, determines if the expression is a reference

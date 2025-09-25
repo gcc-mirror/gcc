@@ -3185,8 +3185,8 @@ package body Exp_Ch3 is
          if Parent_Subtype_Renaming_Discrims then
             Append_List_To (Body_Stmts, Build_Init_Call_Thru (Parameters));
 
-         elsif Present (Constructor_Name (Rec_Type)) then
-            if Present (Default_Constructor (Rec_Type)) then
+         elsif Needs_Construction (Rec_Type) then
+            if Has_Default_Constructor (Rec_Type) then
                --  The 'Make attribute reference (with no arguments) will
                --  generate a call to the one-parameter constructor procedure.
 
@@ -3810,8 +3810,8 @@ package body Exp_Ch3 is
                --  Expand components with constructors to have the 'Make
                --  attribute.
 
-               elsif Present (Constructor_Name (Typ))
-                 and then Present (Default_Constructor (Typ))
+               elsif Needs_Construction (Typ)
+                 and then Has_Default_Constructor (Typ)
                then
                   Set_Expression (Decl,
                     Make_Attribute_Reference (Loc,
@@ -4560,7 +4560,7 @@ package body Exp_Ch3 is
          --     since the call is generated, there had better be a routine
          --     at the other end of the call, even if it does nothing).
 
-         --  10. The type has a specified Constructor aspect.
+         --  10. The type needs construction with constructors.
 
          --  Note: the reason we exclude the CPP_Class case is because in this
          --  case the initialization is performed by the C++ constructors, and
@@ -4577,7 +4577,7 @@ package body Exp_Ch3 is
            or else Is_Tagged_Type (Rec_Id)
            or else Is_Concurrent_Record_Type (Rec_Id)
            or else Has_Task (Rec_Id)
-           or else Present (Constructor_Name (Rec_Id))
+           or else Needs_Construction (Rec_Id)
          then
             return True;
          end if;
@@ -7587,8 +7587,8 @@ package body Exp_Ch3 is
 
       if No (Expr)
         and then Constant_Present (N)
-        and then (No (Constructor_Name (Typ))
-                   or else No (Default_Constructor (Typ)))
+        and then (not Needs_Construction (Typ)
+                   or else not Has_Default_Constructor (Typ))
       then
          return;
       end if;
@@ -7619,8 +7619,8 @@ package body Exp_Ch3 is
 
       if Comes_From_Source (N)
         and then No (Expr)
-        and then Present (Constructor_Name (Typ))
-        and then Present (Default_Constructor (Typ))
+        and then Needs_Construction (Typ)
+        and then Has_Default_Constructor (Typ)
       then
          Expr := Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Make,

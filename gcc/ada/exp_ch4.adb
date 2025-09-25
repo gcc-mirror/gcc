@@ -4498,7 +4498,7 @@ package body Exp_Ch4 is
       --  Here we set no initialization on types with constructors since we
       --  generate initialization for the separately.
 
-      if Present (Constructor_Name (Directly_Designated_Type (PtrT)))
+      if Needs_Construction (Directly_Designated_Type (PtrT))
         and then Nkind (Expression (N)) = N_Identifier
       then
          Set_No_Initialization (N, False);

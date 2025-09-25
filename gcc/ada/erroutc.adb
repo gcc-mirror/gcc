@@ -1579,6 +1579,46 @@ package body Erroutc is
    ----------------------------
 
    procedure Set_Msg_Insertion_Name is
+      procedure Replace_With_Attribute_Definition;
+      --  This procedure handles direct attribute definition names of the form:
+      --    'D' Prefix_Name "_" Attribute_Name "_Att"
+      --  Specifically, it replace the current Namet.Global_Name_Buffer with an
+      --  all lowercase string of the prefix, and a tick attribute; at this
+      --  stage there is no way to recognize more than an ending attribute ???
+      --
+      --  Note that, at this point, it is not possible to restore the original
+      --  casing thus lowercase is default.a
+
+      procedure Replace_With_Attribute_Definition is
+         First   : constant Integer := 2;
+         Last    : constant Integer := Name_Len - 4;
+         Att_Buf : Bounded_String (Max_Length => Name_Len - 7);
+      begin
+         Until_Tick :
+         for J in First .. Last loop
+
+            --  J could be at the position separating the prefix from the
+            --  attribute name.
+
+            if Name_Buffer (J) = '_' then
+               Att_Buf.Length := 0;
+               Append (Att_Buf, Name_Buffer (J + 1 .. Last));
+               Set_Casing (Att_Buf, All_Lower_Case);
+               if Is_Direct_Attribute_Definition_Name (Name_Find (Att_Buf))
+               then
+                  Name_Buffer (J) := ''';
+                  exit Until_Tick;
+               end if;
+            end if;
+         end loop Until_Tick;
+
+         --  Remove prefix 'D' and suffix "_Att"
+
+         Name_Buffer (1 .. Last - 1) := Name_Buffer (2 .. Last);
+         Name_Len := Last - 1;
+         Set_Casing (All_Lower_Case);
+      end Replace_With_Attribute_Definition;
+
    begin
       if Error_Msg_Name_1 = No_Name then
          null;
@@ -1624,7 +1664,14 @@ package body Erroutc is
          --  Else output with surrounding quotes in proper casing mode
 
          else
-            Set_Casing (Identifier_Casing (Flag_Source));
+            if Name_Buffer (1) = 'D'
+              and then Name_Buffer (Name_Len - 3 .. Name_Len) = "_Att"
+            then
+               Replace_With_Attribute_Definition;
+            else
+               Set_Casing (Identifier_Casing (Flag_Source));
+            end if;
+
             Set_Msg_Quote;
             Set_Msg_Name_Buffer;
             Set_Msg_Quote;

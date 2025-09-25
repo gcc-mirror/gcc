@@ -474,8 +474,6 @@ package Gen_IL.Fields is
       Component_Clause,
       Component_Size,
       Component_Type,
-      Constructor_List,
-      Constructor_Name,
       Continue_Mark,
       Contract,
       Contract_Wrapper,

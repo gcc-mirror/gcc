@@ -4914,11 +4914,10 @@ package body Exp_Aggr is
       --  IP procedure.
 
       if Has_Default_Init_Comps (N)
-        or else Present (Constructor_Name (Ctyp))
+        or else Needs_Construction (Ctyp)
         or else (Is_Access_Type (Ctyp)
-                  and then Present
-                             (Constructor_Name
-                               (Directly_Designated_Type (Ctyp))))
+                  and then Needs_Construction
+                             (Directly_Designated_Type (Ctyp)))
       then
          return;
       end if;

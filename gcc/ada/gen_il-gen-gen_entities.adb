@@ -455,8 +455,6 @@ begin -- Gen_IL.Gen.Gen_Entities
             Pre => "Ekind (Base_Type (N)) in Access_Subprogram_Kind"),
         Sm (Class_Wide_Equivalent_Type, Node_Id),
         Sm (Class_Wide_Type, Node_Id),
-        Sm (Constructor_List, Elist_Id),
-        Sm (Constructor_Name, Node_Id),
         Sm (Contract, Node_Id),
         Sm (Current_Use_Clause, Node_Id),
         Sm (Derived_Type_Link, Node_Id),

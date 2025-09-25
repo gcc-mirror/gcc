@@ -156,12 +156,12 @@ package body Endh is
    function Same_Label (Label1, Label2 : Node_Id) return Boolean;
    --  This function compares the two names associated with the given nodes.
    --  If they are both simple (i.e. have Chars fields), then they have to
-   --  be the same name. Otherwise they must both be N_Selected_Component
-   --  nodes, referring to the same set of names, or Label1 is an N_Designator
-   --  referring to the same set of names as the N_Defining_Program_Unit_Name
-   --  in Label2. Any other combination returns False. This routine is used
-   --  to compare the End_Labl scanned from the End line with the saved label
-   --  value in the scope stack.
+   --  be the same name. If they are both N_Selected_Component or
+   --  N_Attribute_Reference nodes, they must refer to the same set of names.
+   --  Otherwise, Label1 must be a N_Designator referring to the same set of
+   --  names as the N_Defining_Program_Unit_Name in Label2. Any other
+   --  combination returns False. This routine is used to compare the End_Labl
+   --  scanned from the End line with the saved label value in the scope stack.
 
    ---------------
    -- Check_End --
@@ -270,6 +270,16 @@ package body Endh is
                end if;
 
                End_Labl := P_Designator;
+
+               --  Case of direct attribute definition
+
+               if Token = Tok_Apostrophe then
+                  Error_Msg_GNAT_Extension
+                    ("direct attribute definition", Token_Ptr);
+
+                  End_Labl := P_Attribute_Designators (End_Labl);
+               end if;
+
                End_Labl_Present := True;
 
                --  We have now scanned out a name. Here is where we do a check
@@ -1358,6 +1368,12 @@ package body Endh is
       then
          return Same_Label (Prefix (Label1), Prefix (Label2)) and then
            Same_Label (Selector_Name (Label1), Selector_Name (Label2));
+
+      elsif Nkind (Label1) = N_Attribute_Reference
+        and then Nkind (Label2) = N_Attribute_Reference
+      then
+         return Same_Label (Prefix (Label1), Prefix (Label2)) and then
+           Attribute_Name (Label1) = Attribute_Name (Label2);
 
       elsif Nkind (Label1) = N_Designator
         and then Nkind (Label2) = N_Defining_Program_Unit_Name

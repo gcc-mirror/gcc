@@ -1585,11 +1585,11 @@ package Einfo is
 --       type derivation.
 
 --    Has_Delayed_Aspects
---      Defined in all entities. Set if the Rep_Item chain for the entity has
---      one or more N_Aspect_Definition nodes chained which are not to be
---      evaluated till the freeze point. The aspect definition expression
---      clause has been preanalyzed to get visibility at the point of use,
---      but no other action has been taken.
+--       Defined in all entities. Set if the Rep_Item chain for the entity has
+--       one or more N_Aspect_Definition nodes chained which are not to be
+--       evaluated till the freeze point. The aspect definition expression
+--       clause has been preanalyzed to get visibility at the point of use,
+--       but no other action has been taken.
 
 --    Has_Delayed_Freeze
 --       Defined in all entities. Set to indicate that an explicit freeze
@@ -3706,6 +3706,11 @@ package Einfo is
 --       preelaborable initialization at freeze time (this has to be deferred
 --       to the freeze point because of the rule about overriding Initialize).
 
+--    Needs_Construction
+--       Defined in all type and subtype entities. Set only for record type
+--       entities for which at least one ancestor has specified a constructor
+--       through the 'Constructor direct attribute definition.
+
 --    Needs_Debug_Info
 --       Defined in all entities. Set if the entity requires normal debugging
 --       information to be generated. This is true of all entities that have
@@ -5130,6 +5135,7 @@ package Einfo is
    --    May_Inherit_Delayed_Rep_Aspects
    --    Must_Be_On_Byte_Boundary
    --    Must_Have_Preelab_Init
+   --    Needs_Construction
    --    Optimize_Alignment_Space
    --    Optimize_Alignment_Time
    --    Partial_View_Has_Unknown_Discr

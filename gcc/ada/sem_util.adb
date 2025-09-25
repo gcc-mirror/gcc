@@ -6332,6 +6332,26 @@ package body Sem_Util is
    end Conditional_Delay;
 
    --------------------------------------
+   -- Direct_Attribute_Definition_Name --
+   --------------------------------------
+
+   function Direct_Attribute_Definition_Name
+     (Prefix : Entity_Id; Att_Name : Name_Id) return Name_Id is
+   begin
+      if Nkind (Prefix) = N_Attribute_Reference then
+         Error_Msg_N ("attribute streams not supported in "
+                      & "direct attribute definitions",
+                      Prefix);
+      end if;
+
+      pragma Assert (Is_Attribute_Name (Att_Name));
+      return New_External_Name
+               (Related_Id => Chars (Prefix),
+                Suffix => "_" & Get_Name_String (Att_Name) & "_Att",
+                Prefix => 'D');
+   end Direct_Attribute_Definition_Name;
+
+   --------------------------------------
    -- Copy_Assertion_Policy_Attributes --
    --------------------------------------
 
@@ -6831,30 +6851,6 @@ package body Sem_Util is
    begin
       return Is_Class_Wide_Type (Typ) or else Needs_Finalization (Typ);
    end CW_Or_Needs_Finalization;
-
-   -------------------------
-   -- Default_Constructor --
-   -------------------------
-
-   function Default_Constructor (Typ : Entity_Id) return Entity_Id is
-      Construct : Elmt_Id;
-   begin
-      pragma Assert (Is_Type (Typ));
-      if No (Constructor_Name (Typ)) or else No (Constructor_List (Typ)) then
-         return Empty;
-      end if;
-
-      Construct := First_Elmt (Constructor_List (Typ));
-      while Present (Construct) loop
-         if Parameter_Count (Elists.Node (Construct)) = 1 then
-            return Elists.Node (Construct);
-         end if;
-
-         Next_Elmt (Construct);
-      end loop;
-
-      return Empty;
-   end Default_Constructor;
 
    ---------------------
    -- Defining_Entity --
@@ -11850,6 +11846,35 @@ package body Sem_Util is
                            (First_Discriminant (Typ)));
    end Has_Defaulted_Discriminants;
 
+   -----------------------------
+   -- Has_Default_Constructor --
+   -----------------------------
+
+   function Has_Default_Constructor (Typ : Entity_Id) return Boolean is
+      Cursor : Entity_Id;
+   begin
+      pragma Assert (Is_Type (Typ));
+      if not Needs_Construction (Typ) then
+         return False;
+      end if;
+
+      --  Iterate through all homonyms to find the default constructor
+
+      Cursor := Get_Name_Entity_Id
+                  (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
+      while Present (Cursor) loop
+         if Is_Constructor_Procedure (Cursor)
+           and then No (Next_Formal (First_Formal (Cursor)))
+         then
+            return True;
+         end if;
+
+         Cursor := Homonym (Cursor);
+      end loop;
+
+      return False;
+   end Has_Default_Constructor;
+
    -------------------
    -- Has_Denormals --
    -------------------
@@ -16249,6 +16274,17 @@ package body Sem_Util is
         and then Attribute_Name (N) = Name_Result;
    end Is_Attribute_Result;
 
+   -----------------------------------
+   -- Is_Direct_Attribute_Subp_Spec --
+   -----------------------------------
+
+   function Is_Direct_Attribute_Subp_Spec (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) in N_Subprogram_Specification
+        and then Nkind (Defining_Unit_Name (Original_Node (N)))
+                   = N_Attribute_Reference;
+   end Is_Direct_Attribute_Subp_Spec;
+
    -------------------------
    -- Is_Attribute_Update --
    -------------------------
@@ -16683,6 +16719,28 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Constant_Bound;
+
+   ------------------------------
+   -- Is_Constructor_Procedure --
+   ------------------------------
+
+   function Is_Constructor_Procedure (Subp : Entity_Id) return Boolean is
+      First_Param : Entity_Id;
+   begin
+      if not (Present (First_Formal (Subp))
+                and then Ekind (First_Formal (Subp)) = E_In_Out_Parameter
+                and then Is_Direct_Attribute_Subp_Spec (Parent (Subp))
+                and then Attribute_Name (Defining_Unit_Name
+                                          (Original_Node (Parent (Subp))))
+                           = Name_Constructor)
+      then
+         return False;
+      end if;
+
+      First_Param := Implementation_Base_Type (Etype (First_Formal (Subp)));
+      return Scope (Subp) = Scope (First_Param)
+        and then Needs_Construction (First_Param);
+   end Is_Constructor_Procedure;
 
    ---------------------------
    --  Is_Container_Element --
@@ -26669,24 +26727,6 @@ package body Sem_Util is
       return Empty;
    end Param_Entity;
 
-   ---------------------
-   -- Parameter_Count --
-   ---------------------
-
-   function Parameter_Count (Subp : Entity_Id) return Nat is
-      Result : Nat := 0;
-      Param  : Entity_Id;
-   begin
-      Param := First_Entity (Subp);
-      while Present (Param) loop
-         Result := Result + 1;
-
-         Param := Next_Entity (Param);
-      end loop;
-
-      return Result;
-   end Parameter_Count;
-
    ----------------------
    -- Policy_In_Effect --
    ----------------------
@@ -27097,6 +27137,11 @@ package body Sem_Util is
       --  the case where Ent is a child unit. This procedure generates an
       --  appropriate cross-reference entry. E is the corresponding entity.
 
+      procedure Get_Attribute_Reference_Name_String (N : Node_Id);
+      --  This procedure append to the Global_Name_Buffer the decoded string
+      --  name of the attribute reference N, including apostrophes and multiple
+      --  prefixes.
+
       -------------------------
       -- Generate_Parent_Ref --
       -------------------------
@@ -27117,6 +27162,21 @@ package body Sem_Util is
             end if;
          end if;
       end Generate_Parent_Ref;
+
+      -----------------------------------------
+      -- Get_Attribute_Reference_Name_String --
+      -----------------------------------------
+
+      procedure Get_Attribute_Reference_Name_String (N : Node_Id) is
+      begin
+         if Nkind (N) /= N_Attribute_Reference then
+            Get_Decoded_Name_String (Chars (N));
+         else
+            Get_Attribute_Reference_Name_String (Prefix (N));
+            Append (Global_Name_Buffer, ''');
+            Get_Decoded_Name_String (Attribute_Name (N));
+         end if;
+      end Get_Attribute_Reference_Name_String;
 
    --  Start of processing for Process_End_Label
 
@@ -27198,9 +27258,12 @@ package body Sem_Util is
       --  If the end label is not for the given entity, then either we have
       --  some previous error, or this is a generic instantiation for which
       --  we do not need to make a cross-reference in this case anyway. In
-      --  either case we simply ignore the call.
+      --  either case we simply ignore the call. Matching label for direct
+      --  attribute definitions are checked elsewhere.
 
-      if Chars (Ent) /= Chars (Endl) then
+      if Nkind (Endl) /= N_Attribute_Reference
+        and then Chars (Ent) /= Chars (Endl)
+      then
          return;
       end if;
 
@@ -27227,7 +27290,7 @@ package body Sem_Util is
          --  mean the semicolon immediately following the label). This is
          --  done for the sake of the 'e' or 't' entry generated below.
 
-         Get_Decoded_Name_String (Chars (Endl));
+         Get_Attribute_Reference_Name_String (Endl);
          Set_Sloc (Endl, Sloc (Endl) + Source_Ptr (Name_Len));
       end if;
 

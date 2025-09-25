@@ -3957,6 +3957,13 @@ package body Sem_Attr is
          Error_Attr_P
            ("prefix of % attribute must be object of discriminated type");
 
+      -----------------
+      -- Constructor --
+      -----------------
+
+      when Attribute_Constructor =>
+         Error_Attr_P ("attribute% can only be used to define constructors");
+
       ---------------
       -- Copy_Sign --
       ---------------
@@ -5180,11 +5187,16 @@ package body Sem_Attr is
          Expr : Entity_Id;
       begin
          if not All_Extensions_Allowed then
-            Error_Msg_GNAT_Extension ("Make attribute", Loc);
+            Error_Msg_GNAT_Extension ("attribute %", Loc);
             return;
          end if;
 
+         Check_Type;
          Set_Etype (N, Etype (P));
+
+         if not Needs_Construction (Entity (P)) then
+            Error_Msg_NE ("no available constructor for&", N, Entity (P));
+         end if;
 
          if Present (Expressions (N)) then
             Expr := First (Expressions (N));
@@ -5197,6 +5209,9 @@ package body Sem_Attr is
 
                Next (Expr);
             end loop;
+
+         elsif not Has_Default_Constructor (Entity (P)) then
+            Error_Msg_NE ("no default constructor for&", N, Entity (P));
          end if;
       end;
 
@@ -11144,6 +11159,7 @@ package body Sem_Attr is
          | Attribute_Class
          | Attribute_Code_Address
          | Attribute_Compiler_Version
+         | Attribute_Constructor
          | Attribute_Count
          | Attribute_Default_Bit_Order
          | Attribute_Default_Scalar_Storage_Order

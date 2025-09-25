@@ -128,7 +128,8 @@ package body Ch6 is
 
    --  This routine scans out a subprogram declaration, subprogram body,
    --  subprogram renaming declaration or subprogram generic instantiation.
-   --  It also handles the new Ada 2012 expression function form
+   --  It also handles the new Ada 2012 expression function form, and the GNAT
+   --  extension for direct attribute definition.
 
    --  SUBPROGRAM_DECLARATION ::=
    --    SUBPROGRAM_SPECIFICATION
@@ -141,6 +142,9 @@ package body Ch6 is
    --  SUBPROGRAM_SPECIFICATION ::=
    --      procedure DEFINING_PROGRAM_UNIT_NAME PARAMETER_PROFILE
    --    | function DEFINING_DESIGNATOR PARAMETER_AND_RESULT_PROFILE
+   --    | procedure LOCAL_NAME'ATTRIBUTE_DESIGNATOR PARAMETER_PROFILE
+   --    | function LOCAL_NAME'ATTRIBUTE_DESIGNATOR
+   --        PARAMETER_AND_RESULT_PROFILE
 
    --  PARAMETER_PROFILE ::= [FORMAL_PART]
 
@@ -190,6 +194,13 @@ package body Ch6 is
       function Contains_Import_Aspect (Aspects : List_Id) return Boolean;
       --  Return True if Aspects contains an Import aspect.
 
+      procedure Rewrite_Entity_If_Direct_Attribute_Def
+        (Name : Node_Id; Spec : Node_Id);
+      --  In case of direct attribute definitions this procedure rewrites the
+      --  defining unit name of the specification node with a new entity. It is
+      --  essential to maintain the information that the original node comes
+      --  from a direct attribute definition.
+
       ----------------------------
       -- Contains_Import_Aspect --
       ----------------------------
@@ -207,6 +218,39 @@ package body Ch6 is
 
          return False;
       end Contains_Import_Aspect;
+
+      --------------------------------------------
+      -- Rewrite_Entity_If_Direct_Attribute_Def --
+      --------------------------------------------
+
+      procedure Rewrite_Entity_If_Direct_Attribute_Def
+        (Name : Node_Id; Spec : Node_Id)
+      is
+         New_Entity, Copy_Spec : Node_Id;
+      begin
+         if Nkind (Name) = N_Attribute_Reference
+           and then Is_Direct_Attribute_Definition_Name (Attribute_Name (Name))
+         then
+            --  Note that, this workaround is needed to retain the info that
+            --  the current subprogram comes from a direct attribute
+            --  definition. Otherwise, we would need to add an entity flag
+            --  Is_Constructor. Currently this flag already exists and could be
+            --  misleading as it refer to CPP constructors ???
+
+            Copy_Spec := New_Copy (Spec);
+
+            New_Entity := Make_Defining_Identifier (Sloc (Name),
+              Direct_Attribute_Definition_Name
+                (Prefix (Name), Attribute_Name (Name)));
+            Set_Comes_From_Source (New_Entity);
+            Set_Parent (New_Entity, Copy_Spec);
+
+            Set_Defining_Unit_Name (Copy_Spec, New_Entity);
+            Rewrite (Spec, Copy_Spec);
+         end if;
+      end Rewrite_Entity_If_Direct_Attribute_Def;
+
+      --  Local variables
 
       Specification_Node : Node_Id;
       Name_Node          : Node_Id;
@@ -231,6 +275,8 @@ package body Ch6 is
 
       Is_Overriding  : Boolean := False;
       Not_Overriding : Boolean := False;
+
+   --  Start of processing for P_Subprogram
 
    begin
       --  Set up scope stack entry. Note that the Labl field will be set later
@@ -343,11 +389,19 @@ package body Ch6 is
          Name_Node := P_Defining_Program_Unit_Name;
       end if;
 
+      --  Deal with direct attribute definition in subprogram specification
+
+      if Token = Tok_Apostrophe then
+         Error_Msg_GNAT_Extension ("direct attribute definition", Token_Ptr);
+
+         Name_Node := P_Attribute_Designators (Name_Node);
+      end if;
+
       Scopes (Scope.Last).Labl := Name_Node;
       Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not
-      --  have a subprogram specification as part of whatever we are parsing
+      --  have a subprogram specification as part of whatever we are parsing.
 
       if Token = Tok_Is then
          Save_Scan_State (Scan_State); -- at the IS
@@ -940,6 +994,9 @@ package body Ch6 is
                   Parse_Decls_Begin_End (Body_Node);
                end if;
 
+               Rewrite_Entity_If_Direct_Attribute_Def
+                 (Name_Node, Specification_Node);
+
                return Body_Node;
             end Scan_Body_Or_Expression_Function;
          end if;
@@ -951,6 +1008,9 @@ package body Ch6 is
            New_Node (N_Subprogram_Declaration, Sloc (Specification_Node));
          Set_Specification (Decl_Node, Specification_Node);
          Aspects := Get_Aspect_Specifications (Semicolon => False);
+
+         Rewrite_Entity_If_Direct_Attribute_Def
+           (Name_Node, Specification_Node);
 
          --  Aspects may be present on a subprogram body. The source parsed
          --  so far is that of its specification. Go parse the body and attach
