@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __normalize(_InputIterator __first, _InputIterator __last,
 		  _OutputIterator __result, const _Tp& __factor)
       {
-	for (; __first != __last; ++__first, ++__result)
+	for (; __first != __last; ++__first, (void) ++__result)
 	  *__result = *__first / __factor;
 	return __result;
       }
@@ -3075,7 +3075,7 @@ namespace __detail
 		 _InputIteratorW __wbegin)
       : _M_int(), _M_den(), _M_cp(), _M_m()
       {
-	for (; __bbegin != __bend; ++__bbegin, ++__wbegin)
+	for (; __bbegin != __bend; ++__bbegin, (void) ++__wbegin)
 	  {
 	    _M_int.push_back(*__bbegin);
 	    _M_den.push_back(*__wbegin);
