@@ -10136,7 +10136,7 @@ void h (char *s)
 @opindex Wno-date-time
 @item -Wdate-time
 Warn when macros @code{__TIME__}, @code{__DATE__} or @code{__TIMESTAMP__}
-are encountered as they might prevent bit-wise-identical reproducible
+are encountered as they might prevent bitwise-identical reproducible
 compilations.
 
 @opindex Wempty-body
@@ -10376,7 +10376,7 @@ enabled by default.
 @item -Wlogical-op
 Warn about suspicious uses of logical operators in expressions.
 This includes using logical operators in contexts where a
-bit-wise operator is likely to be expected.  Also warns when
+bitwise operator is likely to be expected.  Also warns when
 the operands of a logical operator are the same:
 @smallexample
 extern int a;

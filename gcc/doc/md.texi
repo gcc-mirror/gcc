@@ -5330,7 +5330,7 @@ The split is possible in this case if:
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
 predicate in operand 1 which is a signed vector comparison with operands of
-mode @var{m} in operands 2 and 3.  Predicate is computed by element-wise
+mode @var{m} in operands 2 and 3.  Predicate is computed by elementwise
 evaluation of the vector comparison with a truth value of all-ones and a false
 value of all-zeros.
 
