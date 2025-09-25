@@ -16529,9 +16529,9 @@ result of the comparison is a vector of the same width and number of
 elements as the comparison operands with a signed integral element
 type.
 
-Vectors are compared element-wise producing 0 when comparison is false
-and -1 (constant of the appropriate type where all bits are set)
-otherwise. Consider the following example.
+Vectors are compared element-wise producing 0 when the comparison is false
+and -1 (a constant of the appropriate type where all bits are set)
+otherwise. Consider the following example:
 
 @smallexample
 typedef int v4si __attribute__ ((vector_size (16)));
