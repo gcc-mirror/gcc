@@ -1,3 +1,142 @@
+2025-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* g++.dg/cpp2a/concepts-placeholder15.C: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121977
+	* g++.dg/gomp/pr121977.C: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/lto.exp (lto-execute-1): Search for _1.* etc. files
+	only with a list of known extensions.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121828
+	* gcc.dg/bitint-126.c: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121831
+	* g++.dg/lto/pr121831_0.C: New test.
+	* g++.dg/lto/pr121831_1.C: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/118567
+	* gcc.target/powerpc/vsx-vectorize-9.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-10.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-11.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-12.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-13.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-14.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-15.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-16.c: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/118567
+	* gcc.target/powerpc/vsx-vectorize-1.c: Remove includes, checking
+	part of main1 and main.
+	* gcc.target/powerpc/vsx-vectorize-2.c: Remove includes, replace
+	bar definition with declaration, remove main.
+	* gcc.target/powerpc/vsx-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-5.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-6.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-7.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-8.c: Likewise.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121453
+	* gcc.dg/gomp/pr121453.c: New test.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121524
+	* g++.dg/cpp0x/gen-attrs-89.C: New test.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122016
+	* gcc.dg/torture/pr122016.c: New testcase.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121870
+	* g++.dg/torture/pr121870.C: New testcase.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107997
+	PR tree-optimization/121844
+	* gcc.dg/torture/pr121844.c: New testcase.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121659
+	* gcc.dg/vect/pr121659.c: New testcase.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121370
+	* gcc.dg/torture/pr121370.c: New testcase.
+
+2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122019
+	* g++.dg/modules/lang-4_a.C: New test.
+	* g++.dg/modules/lang-4_b.C: New test.
+
 2025-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

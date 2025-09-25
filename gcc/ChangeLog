@@ -1,3 +1,114 @@
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121977
+	* omp-low.cc (lower_omp_regimplify_operands_p): If maybe_lookup_decl
+	returns NULL, use maybe_lookup_decl_in_outer_ctx as fallback.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wimplicit-fallthrough=): Document that also C23
+	provides a standard way to suppress the warning with [[fallthrough]];.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121828
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For REALPART_EXPR
+	consumed by store in the same bb and with REALPART_EXPR from
+	optimizable_arith_overflow, don't add REALPART_EXPR lhs to
+	the m_names bitmap only if the cast from IMAGPART_EXPR doesn't
+	appear in between the REALPART_EXPR and the store.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121831
+	* expr.cc (raw_data_cst_read_str): New function.
+	(store_constructor) <case ARRAY_TYPE>: Handle RAW_DATA_CST.
+
+2025-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/121453
+	* omp-expand.cc (expand_omp_for_init_counts): Clear fd->loop.n2
+	before first zero count check if zero_iter1_bb is non-NULL upon
+	entry and fd->loop.n2 has not been written yet.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122016
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Do not use the
+	simplified expression when it references abnormals.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121870
+	* tree-ssa-propagate.cc
+	(substitute_and_fold_engine::substitute_and_fold): Skip
+	removed stmts from noreturn fixup.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107997
+	PR tree-optimization/121844
+	* tree-ssa-loop-ivopts.cc (allow_ip_end_pos_p): Do not allow
+	IP_END for latches ending with a control stmt.
+	(create_new_iv): Do not split the latch edge, instead assert
+	that's not necessary.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121659
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Do not allow
+	matching up comparison operators by swapping if that would
+	disturb STMT_VINFO_REDUC_IDX.  Make sure to only
+	actually mark operands for swapping when there was a
+	mismatch and we're not processing the first stmt.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121527
+	* tree-sra.cc (build_access_from_expr_1): Do not strip an
+	outer VIEW_CONVERT_EXPR as it's relevant for the size of
+	the access.
+	(get_access_for_expr): Likewise.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121370
+	* tree-scalar-evolution.cc (scev_dfs::add_to_evolution_1):
+	Avoid UB integer overflow in accumulating CHREC_RIGHT.
+
 2025-09-20  Michael Eager  <eager@eagercon.com>
 
 	PR target/118280
