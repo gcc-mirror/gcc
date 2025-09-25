@@ -8149,7 +8149,6 @@ trees_in::install_entity (tree decl)
       if (!DECL_LANG_SPECIFIC (not_tmpl))
 	{
 	  maybe_add_lang_decl_raw (not_tmpl, false);
-	  gcc_checking_assert (!VAR_OR_FUNCTION_DECL_P (not_tmpl));
 	  SET_DECL_LANGUAGE (not_tmpl, lang_cplusplus);
 	}
       DECL_MODULE_ENTITY_P (not_tmpl) = true;
