@@ -1,3 +1,39 @@
+2025-09-24  Luc Grosheintz  <luc.grosheintz@gmail.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/20_util/function_objects/not_fn/nttp.cc: Move
+	test of feature testing macro to version.cc
+	* testsuite/20_util/function_objects/not_fn/version.cc: New test.
+
+2025-09-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_duration::_S_spec_for_tp):
+	Extracted from defition of formatter<sys_time>::__defSpec.
+	(formatter<chrono::sys_time<_Duration>, _CharT>::parse): Simplify
+	condition in if contexpr.
+	(formatter<chrono::sys_time<_Duration>, _CharT>::__stream_insertable):
+	Remove.
+	(formatter<chrono::sys_time<_Duration>, _CharT>::__defSpec)
+	(formatter<chrono::local_time<_Duration>, _CharT>::__defSpec):
+	Compute using __formatter_duration::_S_spec_for_tp.
+	(forrmatter<chrono::sys_time<_Duration>, _CharT>::parse): Check if
+	parse _M_chrono_spec
+	* testsuite/std/time/format/empty_spec.cc: Extend tests for floating
+	point and other non-streamable durations (years).
+
+2025-09-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_parse):
+	Replace _ParseContext with basic_format_parse_context<_CharT> and
+	make it non-template.
+	(__formatter_duration::_M_parse): Replace _ParseContext with
+	basic_format_parse_context<_CharT> and remove unused default
+	argument.
+
+2025-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/17_intro/names.cc: Undefine 'u' on s390*-linux.
+
 2025-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h: Include <bits/ios_base.h> instead of

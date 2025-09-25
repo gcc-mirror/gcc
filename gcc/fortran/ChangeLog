@@ -1,3 +1,17 @@
+2025-09-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/122046
+	* symbol.cc (gfc_get_procedure_ns): Try to find the namespace
+	among the list of contained namespaces before returning the
+	value from the formal_ns field.
+
+2025-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): If a vtable is found in the
+	interface list, check that it is either a subroutine or a
+	function. Let resolve.cc do any further checking.
+
 2025-09-22  Steve Kargl  <pault@gcc.gnu.org>
 
 	PR fortran/103508

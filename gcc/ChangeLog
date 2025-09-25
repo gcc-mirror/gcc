@@ -1,3 +1,123 @@
+2025-09-24  Dusan Stojkovic  <Dusan.Stojkovic@rt-rk.com>
+
+	PR target/121778
+	* config/riscv/riscv.md: Add define_split pattern.
+
+2025-09-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* gimple-fold.cc (gimple_fold_builtin_assume_aligned): New function.
+	(gimple_fold_builtin): Call gimple_fold_builtin_assume_aligned
+	for BUILT_IN_ASSUME_ALIGNED.
+	* tree-ssa-ccp.cc (pass_fold_builtins::execute): Remove handling
+	of BUILT_IN_ASSUME_ALIGNED.
+
+2025-09-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.md: Include neoversev2.md.
+	* config/aarch64/tuning_models/neoversev2.h: Enable dispatch
+	scheduling and add dispatch constraints.
+	* config/aarch64/neoversev2.md: New file and new instruction attribute
+	neoversev2_dispatch.
+
+2025-09-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config.gcc: Add aarch64-sched-dispatch.o to extra_objs.
+	* config/aarch64/aarch64-protos.h (struct tune_params): New
+	field for dispatch scheduling.
+	(struct dispatch_constraint_info): New struct for dispatch scheduling.
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNING_OPTION): New flag to enable dispatch scheduling.
+	* config/aarch64/aarch64.cc (TARGET_SCHED_DISPATCH): Implement
+	target hook.
+	(TARGET_SCHED_DISPATCH_DO): Likewise.
+	(aarch64_override_options_internal): Add check for definition of
+	dispatch constraints if dispatch-scheduling tune flag is set.
+	* config/aarch64/t-aarch64: Add aarch64-sched-dispatch.o.
+	* config/aarch64/tuning_models/a64fx.h: Initialize fields for
+	dispatch scheduling in tune_params.
+	* config/aarch64/tuning_models/ampere1.h: Likewise.
+	* config/aarch64/tuning_models/ampere1a.h: Likewise.
+	* config/aarch64/tuning_models/ampere1b.h: Likewise.
+	* config/aarch64/tuning_models/cortexa35.h: Likewise.
+	* config/aarch64/tuning_models/cortexa53.h: Likewise.
+	* config/aarch64/tuning_models/cortexa57.h: Likewise.
+	* config/aarch64/tuning_models/cortexa72.h: Likewise.
+	* config/aarch64/tuning_models/cortexa73.h: Likewise.
+	* config/aarch64/tuning_models/cortexx925.h: Likewise.
+	* config/aarch64/tuning_models/emag.h: Likewise.
+	* config/aarch64/tuning_models/exynosm1.h: Likewise.
+	* config/aarch64/tuning_models/fujitsu_monaka.h: Likewise.
+	* config/aarch64/tuning_models/generic.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Likewise.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Likewise.
+	* config/aarch64/tuning_models/neoversen1.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+	* config/aarch64/tuning_models/olympus.h: Likewise.
+	* config/aarch64/tuning_models/qdf24xx.h: Likewise.
+	* config/aarch64/tuning_models/saphira.h: Likewise.
+	* config/aarch64/tuning_models/thunderx.h: Likewise.
+	* config/aarch64/tuning_models/thunderx2t99.h: Likewise.
+	* config/aarch64/tuning_models/thunderx3t110.h: Likewise.
+	* config/aarch64/tuning_models/thunderxt88.h: Likewise.
+	* config/aarch64/tuning_models/tsv110.h: Likewise.
+	* config/aarch64/tuning_models/xgene1.h: Likewise.
+	* config/aarch64/aarch64-sched-dispatch.cc: New file for
+	dispatch scheduling for aarch64.
+	* config/aarch64/aarch64-sched-dispatch.h: New header file.
+
+2025-09-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md: Annotate instructions with
+	attribute sve_type.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+	* config/aarch64/aarch64.md (sve_type): New attribute sve_type.
+	* config/aarch64/iterators.md (sve_type_unspec): New int attribute.
+	(sve_type_int): New code attribute.
+	(sve_type_fp): New int attribute.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116816
+	* tree-vect-stmts.cc (get_load_store_type): Allow multi-lane
+	single-element interleaving to fall back to VMAT_ELEMENTWISE.
+	Fall back to VMAT_ELEMENTWISE when we cannot handle a load
+	permutation.
+	(vectorizable_load): Do not check a load permutation
+	for VMAT_ELEMENTWISE.  Handle grouped loads with
+	VMAT_ELEMENTWISE and directly apply a load permutation.
+
+2025-09-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_load_store_type): Explicitly fail
+	when we end up with VMAT_ELEMENTWISE for BB vectorization.
+
+2025-09-24  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/122040
+	* doc/invoke.texi (-fisolate-erroneous-paths-dereference):
+	Mention it also turns division by zero into a trap in addition
+	to null dereference.
+
+2025-09-24  Xi Ruoyao  <xry111@xry111.site>
+
+	PR middle-end/66462
+	* config/loongarch/loongarch.md (FCLASS_MASK): Add 3.
+	(fclass_optab): Assign isnan for 3.
+	(<FCLASS_MASK:fclass_optab><ANYF:mode>2): If FCLASS_MASK is 3,
+	only enable when -fsignaling-nans.
+
+2025-09-24  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add pattern of mult and reuse the widen-mul
+	by for keyword.
+
 2025-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostics/121986

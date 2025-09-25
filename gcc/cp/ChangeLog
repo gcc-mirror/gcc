@@ -1,3 +1,13 @@
+2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122019
+	* module.cc (trees_in::install_entity): Don't be affected by
+	global language linkage state.
+	(trees_in::is_matching_decl): Check mismatching language linkage
+	for variables too.
+	(module_may_redeclare): Report the correct module name for
+	partitions and implementation units.
+
 2025-09-23  Alfie Richards  <alfie.richards@arm.com>
 
 	* class.cc (resolve_address_of_overloaded_function): Updated to use

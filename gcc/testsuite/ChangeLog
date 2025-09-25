@@ -1,3 +1,60 @@
+2025-09-24  Dusan Stojkovic  <Dusan.Stojkovic@rt-rk.com>
+
+	PR target/121778
+	* gcc.target/riscv/pr121778-1.c: New test.
+	* gcc.target/riscv/pr121778-2.c: New test.
+
+2025-09-24  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-complit-9.c: New test.
+
+2025-09-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/122046
+	* gfortran.dg/submodule_34.f90: New test.
+
+2025-09-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* c-c++-common/ubsan/align-5.c: Update as __builtin_assume_aligned
+	is no longer taked into account.
+	* c-c++-common/ubsan/align-5a.c: New test.
+
+2025-09-24  Xi Ruoyao  <xry111@xry111.site>
+
+	PR middle-end/66462
+	* gcc.target/loongarch/fclass-compile.c: Update test.
+	* gcc.target/loongarch/fclass-run.c: Likewise.
+
+2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122019
+	* g++.dg/modules/lang-4_a.C: New test.
+	* g++.dg/modules/lang-4_b.C: New test.
+
+2025-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* gfortran.dg/pr87908.f90: New test.
+
+2025-09-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_u_mul-6-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u16-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u32-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u8-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-6-u8-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-6-u8-from-u64.c: New test.
+
 2025-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostics/121986
