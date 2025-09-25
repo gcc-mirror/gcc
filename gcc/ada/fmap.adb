@@ -58,7 +58,7 @@ package body Fmap is
    package File_Mapping is new Table.Table (
      Table_Component_Type => Mapping,
      Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
+     Table_Low_Bound      => 1,
      Table_Initial        => 1_000,
      Table_Increment      => 1_000,
      Table_Name           => "Fmap.File_Mapping");
@@ -67,7 +67,7 @@ package body Fmap is
    package Path_Mapping is new Table.Table (
      Table_Component_Type => Mapping,
      Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
+     Table_Low_Bound      => 1,
      Table_Initial        => 1_000,
      Table_Increment      => 1_000,
      Table_Name           => "Fmap.Path_Mapping");
@@ -121,19 +121,15 @@ package body Fmap is
       if Unit_Entry = No_Entry or else
         File_Mapping.Table (Unit_Entry).Fname /= File_Name
       then
-         File_Mapping.Increment_Last;
+         File_Mapping.Append ((Uname => Unit_Name, Fname => File_Name));
          Unit_Hash_Table.Set (Unit_Name, File_Mapping.Last);
-         File_Mapping.Table (File_Mapping.Last) :=
-           (Uname => Unit_Name, Fname => File_Name);
       end if;
 
       if File_Entry = No_Entry or else
         Path_Mapping.Table (File_Entry).Fname /= Path_Name
       then
-         Path_Mapping.Increment_Last;
+         Path_Mapping.Append ((Uname => Unit_Name, Fname => Path_Name));
          File_Hash_Table.Set (File_Name, Path_Mapping.Last);
-         Path_Mapping.Table (Path_Mapping.Last) :=
-           (Uname => Unit_Name, Fname => Path_Name);
       end if;
    end Add_To_File_Map;
 
