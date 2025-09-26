@@ -450,9 +450,7 @@ public:
       else
 	{
 	  gcc_checking_assert (other.m_val);
-	  ret.m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
-				 other.m_val),
-			   max_probability);
+	  ret.m_val = RDIV ((uint64_t)m_val * max_probability, other.m_val);
 	}
       ret.set_quality (MIN (MIN (quality (), other.quality ()), ADJUSTED));
       return ret;
@@ -480,9 +478,7 @@ public:
 	  else
 	    {
 	      gcc_checking_assert (other.m_val);
-	      m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
-				 other.m_val),
-			   max_probability);
+	      m_val = RDIV ((uint64_t)m_val * max_probability, other.m_val);
 	    }
 	  set_quality (MIN (MIN (quality (), other.quality ()), ADJUSTED));
 	}
@@ -576,9 +572,8 @@ public:
       gcc_checking_assert (den.m_val);
 
       profile_probability ret;
-      uint64_t val;
-      safe_scale_64bit (m_val, num.m_val, den.m_val, &val);
-      ret.m_val = MIN (val, max_probability);
+      ret.m_val = MIN (RDIV ((uint64_t)m_val * num.m_val, den.m_val),
+		       max_probability);
       ret.set_quality (MIN (MIN (MIN (quality (), ADJUSTED),
 			    num.quality ()), den.quality ()));
       return ret;
@@ -1331,8 +1326,14 @@ public:
 	  return ret;
 	}
       else
-	ret.m_val = RDIV (m_val * profile_probability::max_probability,
-			  overall.m_val);
+	{
+	  gcc_checking_assert (overall.m_val);
+	  uint64_t tmp;
+	  safe_scale_64bit (m_val, profile_probability::max_probability,
+			    overall.m_val, &tmp);
+	  gcc_checking_assert (tmp <= profile_probability::max_probability);
+	  ret.m_val = tmp;
+	}
       ret.set_quality (MIN (MAX (MIN (m_quality, overall.m_quality),
 				 GUESSED), ADJUSTED));
       return ret;
