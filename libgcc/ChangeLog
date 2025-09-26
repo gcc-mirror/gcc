@@ -1,3 +1,7 @@
+2025-09-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/sync-libfuncs.c (atomic_store_8): Fix asm.
+
 2025-09-19  Jim Lin  <jim@andestech.com>
 
 	* config/riscv/save-restore.S: Only save/restore the registers

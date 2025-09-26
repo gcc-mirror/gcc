@@ -1,3 +1,20 @@
+2025-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Warning Options): Use "bitwise" over
+	"bit-wise".
+	* doc/extend.texi (Vector Extensions): Use "elementwise"
+	over "element-wise".
+	* doc/md.texi (Standard Names): Ditto.
+
+2025-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Vector Extensions): Fix grammar.
+
+2025-09-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/invoke.texi (-ffp-int-builtin-inexact): Reword to match
+	the default value with the default C standard.
+
 2025-09-24  Dusan Stojkovic  <Dusan.Stojkovic@rt-rk.com>
 
 	PR target/121778

@@ -1,3 +1,10 @@
+2025-09-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122015
+	PR c++/122019
+	* module.cc (trees_in::install_entity): Remove incorrect
+	assertion.
+
 2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122019

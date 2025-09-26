@@ -1,3 +1,9 @@
+2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* trans-types.cc (gfc_init_types): Set string flag for all
+	character types.
+
 2025-09-24  Mikael Morin  <morin-mikael@orange.fr>
 
 	PR fortran/122046

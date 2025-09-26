@@ -1,3 +1,9 @@
+2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* gfortran.dg/deferred_character_39.f90: Disable temporary
+	workaround for character(kind=4) deferred-length bug.
+
 2025-09-24  Dusan Stojkovic  <Dusan.Stojkovic@rt-rk.com>
 
 	PR target/121778

@@ -1,3 +1,32 @@
+2025-09-25  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__static_quotient): New overload.
+
+2025-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h: Check robust_nonmodifying_seq_ops
+	feature test macro instead of checking __cplusplus value. Add
+	comment to another __cplusplus check.
+	* include/bits/stl_algobase.h: Add comment to #endif.
+
+2025-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79147
+	PR libstdc++/103650
+	* include/Makefile.am (c++config.h): Adjust sed command to
+	comment out STDC_HEADERS macro.
+	* include/Makefile.in: Regenerate.
+
+2025-09-25  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/layouts/empty.cc: Fix indent.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc
+	(test_stride_1d): Fix test.
+	(test_stride_2d): Rewrite using a struct.
+	(test_stride_3d): Ditto.
+	(has_static_is_exhaustive): New concept.
+	(test_mapping_properties): Update test.
+
 2025-09-24  Luc Grosheintz  <luc.grosheintz@gmail.com>
 	    Tomasz Kamiński  <tkaminsk@redhat.com>
 
