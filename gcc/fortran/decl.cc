@@ -3857,7 +3857,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   /* The symbol for the parameter in the template f2k_namespace.  */
   gfc_symbol *param;
   /* The hoped for instance of the PDT.  */
-  gfc_symbol *instance;
+  gfc_symbol *instance = NULL;
   /* The list of parameters appearing in the PDT declaration.  */
   gfc_formal_arglist *type_param_name_list;
   /* Used to store the parameter specification list during recursive calls.  */
@@ -4037,6 +4037,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  goto error_return;
 	}
 
+      kind_value = 0;
       gfc_extract_int (kind_expr, &kind_value);
       sprintf (name + strlen (name), "_%d", kind_value);
 

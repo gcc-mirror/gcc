@@ -4067,7 +4067,7 @@ gfc_match_rvalue (gfc_expr **result)
 	{
 	  gfc_symtree *pdt_st;
 	  gfc_symbol *pdt_sym;
-	  gfc_actual_arglist *ctr_arglist, *tmp;
+	  gfc_actual_arglist *ctr_arglist = NULL, *tmp;
 	  gfc_component *c;
 
 	  /* Obtain the template.  */
@@ -4088,7 +4088,7 @@ gfc_match_rvalue (gfc_expr **result)
 		 first argument list and return the parameter list in
 		 ctr_arglist.  */
 	      m = gfc_get_pdt_instance (actual_arglist, &pdt_sym, &ctr_arglist);
-	      if (m != MATCH_YES)
+	      if (m != MATCH_YES || !ctr_arglist)
 		{
 		  if (ctr_arglist)
 		    gfc_free_actual_arglist (ctr_arglist);
