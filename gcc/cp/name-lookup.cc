@@ -3882,7 +3882,7 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	  }
       }
 
-  if (TREE_PUBLIC (scope) && TREE_PUBLIC (STRIP_TEMPLATE (decl))
+  if (TREE_PUBLIC (scope)
       /* Namespaces are dealt with specially in
 	 make_namespace_finish.  */
       && !(TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl)))

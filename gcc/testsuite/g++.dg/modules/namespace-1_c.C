@@ -1,13 +1,7 @@
 // { dg-additional-options "-fmodules-ts" }
-// The indirect import of frob, with namespaces impl and ompl doesn't
-// affect us.
-static int impl;
+
+static int impl;  // IF but no diagnostic required: impl@Frob not reachable from here
+
 import Frink;
 
-static int ompl;
-
-void corge (int x)
-{
-  impl = x;
-  ompl = frab (x);
-}
+static int ompl;  // { dg-error "different kind" }
