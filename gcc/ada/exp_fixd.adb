@@ -595,7 +595,8 @@ package body Exp_Fixd is
              Defining_Identifier => Dnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression          => Build_Multiply (N, Y, Z)));
+             Expression          =>
+               Build_Conversion (N, QR_Typ, Build_Multiply (N, Y, Z))));
 
          Quo :=
            Build_Divide (N,
@@ -656,8 +657,8 @@ package body Exp_Fixd is
 
    function Build_Multiply (N : Node_Id; L, R : Node_Id) return Node_Id is
       Loc         : constant Source_Ptr := Sloc (N);
-      Left_Type   : constant Entity_Id  := Etype (L);
-      Right_Type  : constant Entity_Id  := Etype (R);
+      Left_Type   : constant Entity_Id  := Base_Type (Etype (L));
+      Right_Type  : constant Entity_Id  := Base_Type (Etype (R));
       Left_Size   : Int;
       Right_Size  : Int;
       Result_Type : Entity_Id;
@@ -746,8 +747,8 @@ package body Exp_Fixd is
 
    function Build_Rem (N : Node_Id; L, R : Node_Id) return Node_Id is
       Loc         : constant Source_Ptr := Sloc (N);
-      Left_Type   : constant Entity_Id  := Etype (L);
-      Right_Type  : constant Entity_Id  := Etype (R);
+      Left_Type   : constant Entity_Id  := Base_Type (Etype (L));
+      Right_Type  : constant Entity_Id  := Base_Type (Etype (R));
       Result_Type : Entity_Id;
       Rnode       : Node_Id;
 
@@ -959,7 +960,8 @@ package body Exp_Fixd is
              Defining_Identifier => Nnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression          => Build_Multiply (N, X, Y)),
+             Expression          =>
+               Build_Conversion (N, QR_Typ, Build_Multiply (N, X, Y))),
 
            Make_Object_Declaration (Loc,
              Defining_Identifier => Dnn,
