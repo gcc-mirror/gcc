@@ -3181,6 +3181,8 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 	changed = true;
       }
     else if (is_bb_annotated (bb, *annotated_bb)
+	     /* We do not want to consider 0 (afdo) > 0 (precise)  */
+	     && total_known_count.nonzero_p ()
 	     && bb->count < total_known_count)
       {
 	if (dump_file)
