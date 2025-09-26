@@ -10132,6 +10132,10 @@ static int constructor_zeroinit;
 /* 1 if this constructor should have padding bits zeroed (C23 {}.  */
 static bool constructor_zero_padding_bits;
 
+/* 1 if this constructor is a braced scalar initializer (further nested levels
+   of braces are an error).  */
+static bool constructor_braced_scalar;
+
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -10203,6 +10207,7 @@ struct constructor_stack
   char incremental;
   char designated;
   bool zero_padding_bits;
+  bool braced_scalar;
   int designator_depth;
 };
 
@@ -10379,6 +10384,7 @@ really_start_incremental_init (tree type)
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
   p->zero_padding_bits = constructor_zero_padding_bits;
+  p->braced_scalar = constructor_braced_scalar;
   p->designator_depth = designator_depth;
   p->next = 0;
   constructor_stack = p;
@@ -10394,6 +10400,7 @@ really_start_incremental_init (tree type)
   constructor_designated = 0;
   constructor_zero_padding_bits = false;
   constructor_zeroinit = 1;
+  constructor_braced_scalar = false;
   designator_depth = 0;
   designator_erroneous = 0;
 
@@ -10453,6 +10460,7 @@ really_start_incremental_init (tree type)
       /* Handle the case of int x = {5}; */
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
+      constructor_braced_scalar = true;
     }
 }
 
@@ -10529,6 +10537,7 @@ push_init_level (location_t loc, int implicit,
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
   p->zero_padding_bits = constructor_zero_padding_bits;
+  p->braced_scalar = constructor_braced_scalar;
   p->designator_depth = designator_depth;
   p->next = constructor_stack;
   p->range_stack = 0;
@@ -10546,6 +10555,7 @@ push_init_level (location_t loc, int implicit,
   /* If the upper initializer has padding bits zeroed, that includes
      all nested initializers as well.  */
   constructor_zero_padding_bits = p->zero_padding_bits;
+  constructor_braced_scalar = false;
   constructor_pending_elts = 0;
   if (!implicit)
     {
@@ -10664,7 +10674,15 @@ push_init_level (location_t loc, int implicit,
   else
     {
       if (constructor_type != error_mark_node)
-	warning_init (input_location, 0, "braces around scalar initializer");
+	{
+	  if (p->braced_scalar)
+	    permerror_init (input_location, 0,
+			    "braces around scalar initializer");
+	  else
+	    warning_init (input_location, 0,
+			  "braces around scalar initializer");
+	  constructor_braced_scalar = true;
+	}
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -10886,6 +10904,7 @@ pop_init_level (location_t loc, int implicit,
   constructor_incremental = p->incremental;
   constructor_designated = p->designated;
   constructor_zero_padding_bits = p->zero_padding_bits;
+  constructor_braced_scalar = p->braced_scalar;
   designator_depth = p->designator_depth;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
