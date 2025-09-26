@@ -96,6 +96,22 @@ package body System.Task_Primitives.Operations is
    Unblocked_Signal_Mask : aliased sigset_t;
    --  The set of signals that should unblocked in all tasks
 
+   Default_Signal_Mask : aliased sigset_t;
+   --  Default signal mask, used to restore signal mask after thread creation
+
+   Default_Signal_Mask_Initialized : Boolean := False;
+   --  Allow to not enable default signals if the default signal mask failed to
+   --  initialize.
+
+   procedure Disable_Signals;
+   --  Disable signals before calling pthread_create to avoid a potential
+   --  memory leak on QNX.
+
+   procedure Enable_Signals;
+   --  Enable signals after pthread_create and in the created task. Since the
+   --  created task inherits the disabled signals from the parent they have to
+   --  be enabled for each task separately.
+
    --  The followings are internal configuration constants needed
 
    Next_Serial_Number : Task_Serial_Number := 100;
@@ -654,6 +670,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
+      Enable_Signals;
       Self_ID.Common.LL.LWP := lwp_self;
 
       Specific.Set (Self_ID);
@@ -765,17 +782,6 @@ package body System.Task_Primitives.Operations is
 
       function Thread_Body_Access is new
         Ada.Unchecked_Conversion (System.Address, Thread_Body);
-
-      function Disable_Signals return Interfaces.C.int with
-        Import,
-        Convention    => C,
-        External_Name => "__gnat_disable_signals";
-
-      function Enable_Signals return Interfaces.C.int with
-        Import,
-        Convention    => C,
-        External_Name => "__gnat_enable_signals";
-
    begin
       Adjusted_Stack_Size :=
          Interfaces.C.size_t (Stack_Size + Alternate_Stack_Size);
@@ -862,19 +868,16 @@ package body System.Task_Primitives.Operations is
       --  Restricted.Stages is used). One can verify that by inspecting the
       --  Task_Wrapper procedures.
 
-      Result := Disable_Signals;
-      pragma Assert (Result = 0);
+      Disable_Signals;
       Result := pthread_create
         (T.Common.LL.Thread'Access,
          Attributes'Access,
          Thread_Body_Access (Wrapper),
          To_Address (T));
       pragma Assert (Result = 0 or else Result = EAGAIN);
+      Enable_Signals;
 
       Succeeded := Result = 0;
-
-      Result := Enable_Signals;
-      pragma Assert (Result = 0);
 
       Result := pthread_attr_destroy (Attributes'Access);
       pragma Assert (Result = 0);
@@ -1292,6 +1295,10 @@ package body System.Task_Primitives.Operations is
          end if;
       end loop;
 
+      Result := pthread_sigmask
+         (SIG_SETMASK, null, Default_Signal_Mask'Access);
+      Default_Signal_Mask_Initialized := Result = 0;
+
       --  Initialize the lock used to synchronize chain of all ATCBs
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
@@ -1377,5 +1384,57 @@ package body System.Task_Primitives.Operations is
          Thread_Ctl_Ext (Pid, Get_Thread_Id (T), NTO_TCTL_RUNMASK, Runmask);
       pragma Assert (Result = 0);
    end Set_Task_Affinity;
+
+   ---------------------
+   -- Disable_Signals --
+   ---------------------
+
+   procedure Disable_Signals
+   is
+      Set    : aliased sigset_t;
+      Result : Interfaces.C.int;
+   begin
+      --  If the default signal mask is not initialized there is no point in
+      --  disabling signals since we can't enable them again. Not enabling them
+      --  might impact the runtimes functionality so we rather accept the
+      --  possible memory leak.
+      if not Default_Signal_Mask_Initialized then
+         return;
+      end if;
+
+      --  If any of the operations of setting up the signal mask fails we abort
+      --  disabling the signals. The function to enable the signals doesn't
+      --  need to care about this. It will simply restore the default signal
+      --  mask if it was successfully initialized. If the signals are not
+      --  disabled this is a no-op.
+      Result := sigemptyset (Set'Access);
+      if Result /= 0 then
+         return;
+      end if;
+      for S in SIGHUP .. SIGXFSZ loop
+         Result := sigaddset (Set'Access, Signal (S));
+         if Result /= 0 then
+            return;
+         end if;
+      end loop;
+      Result := pthread_sigmask (SIG_BLOCK, Set'Access, null);
+      pragma Assert (Result = 0);
+   end Disable_Signals;
+
+   --------------------
+   -- Enable_Signals --
+   --------------------
+
+   procedure Enable_Signals
+   is
+      Result : Interfaces.C.int;
+   begin
+      if not Default_Signal_Mask_Initialized then
+         return;
+      end if;
+      Result := pthread_sigmask
+         (SIG_SETMASK, Default_Signal_Mask'Access, null);
+      pragma Assert (Result = 0);
+   end Enable_Signals;
 
 end System.Task_Primitives.Operations;
