@@ -16,17 +16,18 @@ contains
     integer :: c
     c=max(a,b)
   end function diy_max
-                
+
   function add(a,b) result(c)
     type(vec(k=*)), intent(in) :: a,b
     type(vec(k=max(a%k,b%k))) :: c      ! Fails
     !type(vec(k=diy_max(a%k,b%k))) :: c ! Worked with diy_max
     !type(vec(k=a%k+b%k)) :: c          ! Worked with +
-    
+
     c%foo(1:a%k)=a%foo
+    c%foo(a%k+1:) = 0
     c%foo(1:b%k)=c%foo(1:b%k)+b%foo
 
-    if (c%k /= 5) stop 1 
+    if (c%k /= 5) stop 1
   end function add
 end module pdt_m
 
