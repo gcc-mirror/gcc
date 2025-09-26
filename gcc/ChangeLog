@@ -1,3 +1,21 @@
+2025-09-25  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-09-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* match.pd: Add type check to reduc(ctor) pattern.
+
+2025-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-09-18  Tobias Burnus  <tburnus@baylibre.com>
+		    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/121922
+	* omp-general.cc (omp_dynamic_cond): Use 'unshare_expr' for
+	the user condition.
+
 2025-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

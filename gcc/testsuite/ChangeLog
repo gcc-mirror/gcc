@@ -1,3 +1,11 @@
+2025-09-25  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-09-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* gcc.target/aarch64/torture/pr121772.c: New test.
+
 2025-09-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
