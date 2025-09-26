@@ -540,7 +540,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-Wbad-function-cast -Wdeprecated-non-prototype -Wfree-labels
 -Wmissing-declarations -Wmissing-parameter-name -Wmissing-parameter-type
 -Wdeclaration-missing-parameter-type -Wmissing-prototypes
--Wmissing-variable-declarations -Wnested-externs -Wold-style-declaration
+-Wmissing-variable-declarations
+-Wmultiple-parameter-fwd-decl-lists
+-Wnested-externs -Wold-style-declaration
 -Wold-style-definition -Wstrict-prototypes -Wtraditional
 -Wtraditional-conversion -Wdeclaration-after-statement -Wpointer-sign}
 
@@ -6683,6 +6685,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wmissing-parameter-name @r{(C/ObjC only)}
 -Wmissing-parameter-type @r{(C/ObjC only)}
 -Wold-style-declaration @r{(C/ObjC only)}
+-Wmultiple-parameter-fwd-decl-lists @r{(C/ObjC only)}
 -Woverride-init @r{(C/ObjC only)}
 -Wredundant-move @r{(C++ and Objective-C++ only)}
 -Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
@@ -10535,6 +10538,13 @@ even if there is a previous prototype.  A definition using @samp{()}
 is not considered an old-style definition in C23 mode, because it is
 equivalent to @samp{(void)} in that case, but is considered an
 old-style definition for older standards.
+
+@opindex Wmultiple-parameter-fwd-decl-lists
+@opindex Wno-multiple-parameter-fwd-decl-lists
+@item -Wmultiple-parameter-fwd-decl-lists @r{(C and Objective-C only)}
+Warn if more than one list of forward declarations of parameters
+appears in a function prototype.
+This warning is also enabled by @option{-Wextra}.
 
 @opindex Wdeprecated-non-prototype
 @opindex Wno-deprecated-non-prototype

@@ -670,16 +670,21 @@ tester (int len; char data[len][len], int len)
 @end smallexample
 
 @cindex parameter forward declaration
-The @samp{int len} before the semicolon is a @dfn{parameter forward
-declaration}, and it serves the purpose of making the name @code{len}
-known when the declaration of @code{data} is parsed.
+The @samp{int len} before the semicolon
+is a @dfn{parameter forward declaration},
+and it serves the purpose of making the name @code{len} known
+when the declaration of @code{data} is parsed.
 
-You can write any number of such parameter forward declarations in the
-parameter list.  They can be separated by commas or semicolons, but the
-last one must end with a semicolon, which is followed by the ``real''
-parameter declarations.  Each forward declaration must match a ``real''
-declaration in parameter name and data type.  ISO C99 does not support
-parameter forward declarations.
+Lists of parameter forward declarations are terminated by semicolons,
+and parameter forward declarations are separated within such lists by commas,
+just like in the regular list of parameter declarations.
+
+You can write any number of lists of parameter forward declaration,
+but using more than one is unnecessary.
+The last semicolon is followed by the list of parameter declarations.
+Each parameter forward declaration must match
+a parameter declaration in parameter name and data type.
+ISO C99 does not support parameter forward declarations.
 
 @node Zero Length
 @subsection Arrays of Length Zero

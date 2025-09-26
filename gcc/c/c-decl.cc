@@ -504,10 +504,8 @@ struct GTY((chain_next ("%h.outer"))) c_scope {
      if these appears in a function definition.  */
   BOOL_BITFIELD had_vla_unspec : 1;
 
-  /* True if we already complained about forward parameter decls
-     in this scope.  This prevents double warnings on
-     foo (int a; int b; ...)  */
-  BOOL_BITFIELD warned_forward_parm_decls : 1;
+  /* True if we parsed a list of forward parameter decls in this scope.  */
+  BOOL_BITFIELD had_forward_parm_decls : 1;
 
   /* True if this is the outermost block scope of a function body.
      This scope contains the parameters, the local variables declared
@@ -6269,12 +6267,14 @@ mark_forward_parm_decls (void)
 {
   struct c_binding *b;
 
-  if (pedantic && !current_scope->warned_forward_parm_decls)
-    {
-      pedwarn (input_location, OPT_Wpedantic,
-	       "ISO C forbids forward parameter declarations");
-      current_scope->warned_forward_parm_decls = true;
-    }
+  if (current_scope->had_forward_parm_decls)
+    warning_at (input_location, OPT_Wmultiple_parameter_fwd_decl_lists,
+		"more than one list of forward declarations of parameters");
+  if (pedantic && !current_scope->had_forward_parm_decls)
+    pedwarn (input_location, OPT_Wpedantic,
+	     "ISO C forbids forward parameter declarations");
+
+  current_scope->had_forward_parm_decls = true;
 
   for (b = current_scope->bindings; b; b = b->prev)
     if (TREE_CODE (b->decl) == PARM_DECL)
