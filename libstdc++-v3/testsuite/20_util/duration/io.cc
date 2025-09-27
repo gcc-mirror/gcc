@@ -193,8 +193,8 @@ test_parse()
 {
   using namespace std::chrono;
   seconds s;
-  milliseconds ms;
-  microseconds us;
+  milliseconds ms{};
+  microseconds us{};
 
   std::istringstream is("   2023-07-24 13:05");
   VERIFY( is >> parse(" %Y-%m-%d %H:%M", s) );
@@ -289,13 +289,13 @@ test_parse()
 
   is.clear();
   is.str("0.5");
-  std::chrono::duration<double> ds;
+  std::chrono::duration<double> ds{};
   VERIFY( is >> parse("%S", ds) );
   VERIFY( ds == 0.5s );
 
   is.clear();
   is.str("0.125");
-  std::chrono::duration<double, std::milli> dms;
+  std::chrono::duration<double, std::milli> dms{};
   VERIFY( is >> parse("%S", dms) );
   VERIFY( dms == 0.125s );
 }

@@ -13,8 +13,8 @@ test_pr114244()
 {
   using namespace std::chrono;
   seconds s;
-  milliseconds ms;
-  microseconds us;
+  milliseconds ms{};
+  microseconds us{};
 
   std::istringstream is;
 
