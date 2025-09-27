@@ -381,7 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       const difference_type __back_capacity
 	= (this->_M_impl._M_finish._M_last - this->_M_impl._M_finish._M_cur);
-      if (__front_capacity + __back_capacity < _S_buffer_size())
+      if (size_type(__front_capacity + __back_capacity) < _S_buffer_size())
 	return false;
 
       return std::__shrink_to_fit_aux<deque>::_S_do_it(*this);

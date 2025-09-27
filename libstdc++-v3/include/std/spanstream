@@ -152,7 +152,7 @@ template<typename _CharT, typename _Traits>
 
       if (__way == ios_base::beg)
 	{
-	  if (0 <= __off && __off <= _M_buf.size())
+	  if (0 <= __off && (size_t)__off <= _M_buf.size())
 	    {
 	      if (__which & ios_base::in)
 		this->setg(this->eback(), this->eback() + __off, this->egptr());
@@ -188,7 +188,7 @@ template<typename _CharT, typename _Traits>
 	  if (__builtin_add_overflow(__base, __off, &__off)) [[unlikely]]
 	    return __ret;
 
-	  if (__off < 0 || __off > _M_buf.size()) [[unlikely]]
+	  if (__off < 0 || (size_t)__off > _M_buf.size()) [[unlikely]]
 	    return __ret;
 
 	  if (__which & ios_base::in)
