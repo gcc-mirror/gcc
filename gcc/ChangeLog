@@ -1,3 +1,37 @@
+2025-09-26  Alejandro Colomar  <alx@kernel.org>
+
+	* doc/extend.texi: Clarify documentation about lists of
+	parameter forward declarations, and mention that more than one
+	of them are unnecessary.
+	* doc/invoke.texi: Document the new
+	-Wmultiple-parameter-fwd-decl-lists.
+
+2025-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_propagate_edge): Fix handling of precize 0
+	counts.
+
+2025-09-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc
+	(gcn_vectorize_support_vector_misalignment): Allow any alignment, as
+	long as it's not packed.
+
+2025-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (profile_probability::operator/): Do not cap
+	twice.
+	(profile_probability::operator/=): Likewise.
+	(profile_probability::apply_scale): Do not watch for overflow.
+	(profile_count::probability_in): Watch overflow.
+
+2025-09-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/121875
+	* config/loongarch/loongarch.cc
+	(loongarch_can_inline_p): New function.
+	(TARGET_CAN_INLINE_P): Define.
+
 2025-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Warning Options): Use "bitwise" over

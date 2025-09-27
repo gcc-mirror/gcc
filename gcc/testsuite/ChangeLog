@@ -1,3 +1,27 @@
+2025-09-26  Alejandro Colomar  <alx@kernel.org>
+
+	* gcc.dg/Wmultiple-parameter-fwd-decl-lists.c: New test.
+
+2025-09-26  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pdt_48.f03:
+
+2025-09-26  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/88642
+	* gcc.dg/c2y-init-1.c: New test.
+
+2025-09-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/121875
+	* gcc.target/loongarch/can_inline_1.c: New test.
+	* gcc.target/loongarch/can_inline_2.c: New test.
+	* gcc.target/loongarch/can_inline_3.c: New test.
+	* gcc.target/loongarch/can_inline_4.c: New test.
+	* gcc.target/loongarch/can_inline_5.c: New test.
+	* gcc.target/loongarch/can_inline_6.c: New test.
+	* gcc.target/loongarch/pr121875.c: New test.
+
 2025-09-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121939

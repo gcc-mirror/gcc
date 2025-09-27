@@ -1,3 +1,7 @@
+2025-09-26  Alejandro Colomar  <alx@kernel.org>
+
+	* c.opt: Add -Wmultiple-parameter-fwd-decl-lists
+
 2025-09-23  Alfie Richards  <alfie.richards@arm.com>
 
 	* c-attribs.cc: Add support for target_version and target_clone mixing.

@@ -1,3 +1,22 @@
+2025-09-26  Alejandro Colomar  <alx@kernel.org>
+
+	* c-decl.cc (c_scope): Rename {warned > had}_forward_parm_decls.
+	(mark_forward_parm_decls): Add
+	-Wmultiple-parameter-fwd-decl-lists.
+
+2025-09-26  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/88642
+	* c-typeck.cc (constructor_braced_scalar): New variable.
+	(struct constructor_stack): Add braced_scalar field.
+	(really_start_incremental_init): Handle constructor_braced_scalar
+	and braced_scalar field.
+	(push_init_level): Handle constructor_braced_scalar and
+	braced_scalar field.  Give permerror rather than warning for
+	nested braces around scalar initializer.
+	(pop_init_level): Handle constructor_braced_scalar and
+	braced_scalar field.
+
 2025-09-24  Joseph Myers  <josmyers@redhat.com>
 
 	* c-typeck.cc (really_atomic_lvalue): For a COMPOUND_LITERAL_EXPR,

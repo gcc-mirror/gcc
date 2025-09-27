@@ -1,3 +1,79 @@
+2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__search, __is_permutation):
+	Reuse predicate instead of creating a new one each time.
+	* include/bits/stl_algo.h (__is_permutation): Likewise.
+
+2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/deque (erase_if): Move predicate instead of
+	wrapping with std::ref.
+	(erase): Forward to erase_if.
+	* include/std/inplace_vector (erase_if, erase): Likewise.
+	* include/std/string (erase_if, erase): Likewise.
+	* include/std/vector (erase_if, erase): Likewise.
+
+2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/predefined_ops.h (equal_to, less): Define aliases
+	for std::equal_to<void> and std::less<void>.
+	(bind1st, bind2nd, not1, __equal_to): New object generator
+	functions for adapting predicates.
+	(__iter_less_iter, __iter_less_val, __iter_comp_val)
+	(__val_less_iter, __val_comp_iter, __iter_equal_to_iter)
+	(__iter_equal_to_val, __iter_comp_iter, __negate): Remove all
+	object generator functions and the class templates they return.
+	* include/bits/stl_algo.h (__move_median_to_first, __find_if_not)
+	(__find_if_not_n, __search_n_aux, find_end, find_if_not)
+	(__remove_copy_if, remove_copy, remove_copy_if, remove)
+	(remove_if, __adjacent_find, __unique, unique, __unique_copy)
+	(__unique_copy_1, __stable_partition_adaptive, stable_partition)
+	(__heap_select, __partial_sort_copy, partial_sort_copy)
+	(__unguarded_linear_insert, __insertion_sort)
+	(__unguarded_insertion_sort, __unguarded_partition)
+	(lower_bound, __upper_bound, upper_bound, __equal_range)
+	(equal_range, binary_search, __move_merge_adaptive)
+	(__move_merge_adaptive_backward, __merge_adaptive_resize)
+	(__merge_without_buffer, inplace_merge, __move_merge)
+	(__includes, includes, __next_permutation, next_permutation)
+	(__prev_permutation, prev_permutation, __replace_copy_if)
+	(replace_copy, replace_copy_if, __is_sorted_until)
+	(is_sorted_until, __minmax_element, minmax_element, minmax)
+	(is_permutation, __is_permutation, find, find_if, adjacent_find)
+	(count, count_if, search, search_n, unique_copy, partial_sort)
+	(nth_element, sort, __merge, merge, stable_sort, __set_union)
+	(set_union, __set_intersection, set_intersection)
+	(__set_difference, set_difference, __set_symmetric_difference)
+	(set_symmetric_difference, __min_element, min_element)
+	(__max_element, max_element, min, max): Use direct predicates
+	instead of __iter_equal_to_iter, __iter_comp_iter, and
+	__iter_less_iter, __negate etc. Dereference iterators when
+	invoking predicates.
+	* include/bits/stl_algobase.h (__lexicographical_compare_impl)
+	(__lexicographical_compare::__lc, __lower_bound, lower_bound)
+	(lexicographical_compare, __mismatch, mismatch, __find_if)
+	(__count_if, __remove_if, __search, __is_permutation)
+	(is_permutation, search): Likewise.
+	* include/bits/stl_function.h (equal_to<void>, less<void>):
+	Define transparent comparison functions for C++98 and C++11.
+	* include/bits/stl_heap.h (__is_heap_until, __is_heap)
+	(__push_heap, push_heap, __adjust_heap, pop_heap, make_heap)
+	(sort_heap, is_heap_until, is_heap): Likewise.
+	* include/std/deque (erase_if): Remove call to __pred_iter.
+	(erase): Replace __iter_equals_val with __equal_to.
+	* include/std/inplace_vector (erase_if, erase): Likewise.
+	* include/std/string (erase_if, erase): Likewise.
+	* include/std/vector (erase_if, erase): Likewise.
+
+2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122062
+	* include/bits/random.tcc (__detail::__normalize): Use void cast
+	for operands of comma operator.
+	(piecewise_linear_distribution): Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/122062.cc:
+	New test.
+
 2025-09-25  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* include/std/mdspan (__static_quotient): New overload.
