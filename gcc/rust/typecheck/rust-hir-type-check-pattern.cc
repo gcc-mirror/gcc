@@ -299,7 +299,30 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 
   // error[E0532]: expected tuple struct or tuple variant, found struct
   // variant `Foo::D`
-  if (variant->get_variant_type () != TyTy::VariantDef::VariantType::STRUCT)
+  bool error_E0532 = false;
+  if (variant->get_variant_type () == TyTy::VariantDef::VariantType::TUPLE)
+    {
+      // Tuple structs can still be matched with struct patterns via index
+      // numbers e.g. Foo {0: a, .., 3: b}, so check whether the fields are of
+      // type TUPLE_PAT. Throw E0532 if not.
+      auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
+      for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
+	{
+	  if (field->get_item_type ()
+	      != HIR::StructPatternField::ItemType::TUPLE_PAT)
+	    {
+	      error_E0532 = true;
+	      break;
+	    }
+	}
+    }
+  else if (variant->get_variant_type ()
+	   != TyTy::VariantDef::VariantType::STRUCT)
+    {
+      error_E0532 = true;
+    }
+
+  if (error_E0532)
     {
       std::string variant_type
 	= TyTy::VariantDef::variant_type_string (variant->get_variant_type ());
@@ -508,7 +531,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
 				     min_size_required);
-	    // TODO attempt to continue to do typechecking even after wrong size
+	    // TODO attempt to continue to do typechecking even after wrong
+	    // size
 	    break;
 	  }
 
@@ -680,10 +704,11 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 
 	      if (cap_wi < pattern_min_cap)
 		{
-		  rust_error_at (
-		    pattern.get_locus (), ErrorCode::E0528,
-		    "pattern requires at least %lu elements but array has %lu",
-		    (unsigned long) pattern_min_cap, (unsigned long) cap_wi);
+		  rust_error_at (pattern.get_locus (), ErrorCode::E0528,
+				 "pattern requires at least %lu elements but "
+				 "array has %lu",
+				 (unsigned long) pattern_min_cap,
+				 (unsigned long) cap_wi);
 		  break;
 		}
 	    }

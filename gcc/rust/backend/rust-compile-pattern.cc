@@ -885,8 +885,9 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
       rust_assert (ok);
     }
 
-  rust_assert (variant->get_variant_type ()
-	       == TyTy::VariantDef::VariantType::STRUCT);
+  rust_assert (
+    variant->get_variant_type () == TyTy::VariantDef::VariantType::STRUCT
+    || variant->get_variant_type () == TyTy::VariantDef::VariantType::TUPLE);
 
   auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
   for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())

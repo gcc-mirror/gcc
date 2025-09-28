@@ -2519,9 +2519,28 @@ StructPatternField::as_string () const
        * just the body */
       for (const auto &attr : outer_attrs)
 	{
-	  str += "\n  " + attr.as_string ();
+	  str += "\n    " + attr.as_string ();
 	}
     }
+
+  str += "\n   item type: ";
+  switch (get_item_type ())
+    {
+    case ItemType::TUPLE_PAT:
+      str += "TUPLE_PAT";
+      break;
+    case ItemType::IDENT_PAT:
+      str += "IDENT_PAT";
+      break;
+    case ItemType::IDENT:
+      str += "IDENT";
+      break;
+    default:
+      str += "UNKNOWN";
+      break;
+    }
+
+  str += "\n   mapping: " + mappings.as_string ();
 
   return str;
 }
