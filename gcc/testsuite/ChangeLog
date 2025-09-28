@@ -1,3 +1,48 @@
+2025-09-27  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/mips16e2.c: Use isa_rev=2 instead of >=2.
+	* gcc.target/mips/mips16e2-cache.c: Ditto.
+	* gcc.target/mips/mips16e2-cmov.c: Ditto.
+	* gcc.target/mips/mips16e2-gp.c: Ditto.
+
+2025-09-27  ChengLulu  <chenglulu@loongson.cn>
+
+	PR target/99217
+	* gcc.target/mips/pr99217.c: New test.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	* g++.dg/cpp2a/concepts-conv4.C: New test.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121854
+	* g++.dg/cpp23/explicit-obj-lambda19.C: New test.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122048
+	* g++.dg/cpp1y/lambda-generic-this6.C: New test.
+
+2025-09-27  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-cache.c: Use isa_rev>=2 instead of
+	-mips32r2 and remove -mips16 option.
+	* gcc.target/mips/mips16e2-cmov.c: Add isa_rev>=2 and remove
+	-mips16 option.
+	* gcc.target/mips/mips16e2-gp.c: Same as above.
+	* gcc.target/mips/mips16e2.c: Same as above.
+
+2025-09-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* gfortran.dg/pr87908.f90: Delete.
+
+2025-09-27  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips-msubf.c: New tests for MIPSr6.
+
 2025-09-26  Alejandro Colomar  <alx@kernel.org>
 
 	* gcc.dg/Wmultiple-parameter-fwd-decl-lists.c: New test.

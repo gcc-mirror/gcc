@@ -1,3 +1,8 @@
+2025-09-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): Revert changes.
+
 2025-09-26  Harald Anlauf  <anlauf@gcc.gnu.org>
 
 	PR fortran/122002

@@ -1,3 +1,61 @@
+2025-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/allocator_traits/members/allocate_hint.cc:
+	Value-initialize variables to avoid -Wmaybe-uninitialized
+	warning.
+	* testsuite/20_util/allocator_traits/members/allocate_hint_nonpod.cc:
+	Likewise.
+	* testsuite/20_util/duration/114244.cc: Likewise.
+	* testsuite/20_util/duration/io.cc: Likewise.
+
+2025-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/deque.tcc (deque::_M_shrink_to_fit): Cast
+	difference_type to size_type to avoid -Wsign-compare warning.
+	* include/std/spanstream (basic_spanbuf::seekoff): Cast
+	streamoff to size_t to avoid -Wsign-compare warning.
+
+2025-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Fix assignment used instead of equality comparison.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoull.cc:
+	Likewise.
+	* testsuite/23_containers/map/cons/from_range.cc: Fix is_equal
+	function and expected value of comparison functions after
+	construction.
+	* testsuite/23_containers/multimap/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/set/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc: Fix
+	is_equal functions.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/from_range.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/from_range.cc:
+	Likewise.
+	* testsuite/25_algorithms/minmax/constrained.cc: Fix assignment
+	used instead of equality comparison.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/1.cc:
+	Likewise.
+
 2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (__search, __is_permutation):

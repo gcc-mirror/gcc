@@ -1,3 +1,14 @@
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	* pt.cc (convert_template_argument): Also force IMPLICIT_CONV_EXPR
+	if the argument is value-dependent.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122048
+	* pt.cc (tsubst_expr): Don't use a lambda current_class_ptr.
+
 2025-09-25  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122015
