@@ -3653,7 +3653,7 @@ package body Sem_Ch12 is
                                Instantiating => True);
 
             begin
-               Generic_Renamings.Set_Last (-1);
+               Generic_Renamings.Clear;
                Generic_Renamings_HTable.Reset;
                Instantiation_Node := N;
 
@@ -5014,7 +5014,7 @@ package body Sem_Ch12 is
       --  inherited from formal packages of parent units, and these are
       --  constructed when the parents are installed.
 
-      Generic_Renamings.Set_Last (-1);
+      Generic_Renamings.Clear;
       Generic_Renamings_HTable.Reset;
 
       --  Except for an abbreviated instance created to check a formal package,
@@ -6979,7 +6979,7 @@ package body Sem_Ch12 is
 
          --  Initialize renamings map, for error checking
 
-         Generic_Renamings.Set_Last (-1);
+         Generic_Renamings.Clear;
          Generic_Renamings_HTable.Reset;
 
          Create_Instantiation_Source (N, Gen_Unit, S_Adjustment);
@@ -7254,7 +7254,7 @@ package body Sem_Ch12 is
          Restore_Hidden_Primitives (Vis_Prims_List);
          Restore_Env;
          Env_Installed := False;
-         Generic_Renamings.Set_Last (-1);
+         Generic_Renamings.Clear;
          Generic_Renamings_HTable.Reset;
       end if;
 
@@ -19355,8 +19355,10 @@ package body Sem_Ch12 is
       --------------------
 
       function Save_And_Reset return Context is
+         First : constant Integer := Integer (Generic_Renamings.First);
+         Last  : constant Integer := Integer (Generic_Renamings.Last);
       begin
-         return Result : Context (0 .. Integer (Generic_Renamings.Last)) do
+         return Result : Context (First .. Last) do
             for Index in Result'Range loop
                declare
                   Indexed_Assoc : Assoc renames Generic_Renamings.Table

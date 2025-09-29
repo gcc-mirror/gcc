@@ -204,6 +204,13 @@ package Table is
       --  to Index. Item will replace any value already present in the table
       --  at this position.
 
+      procedure Clear;
+      --  Resets Last to its initial value, making the table have no elements.
+      --  No memory deallocation is performed.
+
+      function Is_Empty return Boolean;
+      --  Returns whether the table is empty
+
       type Saved_Table is private;
       --  Type used for Save/Restore subprograms
 

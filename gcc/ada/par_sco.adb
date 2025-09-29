@@ -2888,8 +2888,7 @@ package body Par_SCO is
             end;
          end loop;
 
-         --  Clear the pending decisions list
-         Pending_Decisions.Set_Last (0);
+         Pending_Decisions.Clear;
       end Process_Pending_Decisions;
 
       -----------------------------

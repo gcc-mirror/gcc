@@ -2766,14 +2766,14 @@ package body Atree is
       --  it is global and hence a tree traversal with parents must be finished
       --  before the next tree traversal with parents starts.
 
-      pragma Assert (Parents_Stack.Last = 0);
-      Parents_Stack.Set_Last (0);
+      pragma Assert (Parents_Stack.Is_Empty);
+      Parents_Stack.Clear;
 
       Parents_Stack.Append (Parent (Node));
       Result := Traverse (Node);
       Parents_Stack.Decrement_Last;
 
-      pragma Assert (Parents_Stack.Last = 0);
+      pragma Assert (Parents_Stack.Is_Empty);
 
       return Result;
    end Traverse_Func_With_Parent;

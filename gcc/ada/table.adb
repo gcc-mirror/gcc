@@ -130,7 +130,7 @@ package body Table is
 
       begin
          Locked   := False;
-         Last_Val := Min - 1;
+         Clear;
          Max      := Min + (Table_Initial * Table_Factor) - 1;
          Length   := Max - Min + 1;
 
@@ -371,6 +371,24 @@ package body Table is
             Table (Index) := Item;
          end if;
       end Set_Item;
+
+      -----------
+      -- Clear --
+      -----------
+
+      procedure Clear is
+      begin
+         Last_Val := Min - 1;
+      end Clear;
+
+      --------------
+      -- Is_Empty --
+      --------------
+
+      function Is_Empty return Boolean is
+      begin
+         return Last_Val = Min - 1;
+      end Is_Empty;
 
       --------------
       -- Set_Last --

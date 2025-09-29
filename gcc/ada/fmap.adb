@@ -191,8 +191,8 @@ package body Fmap is
       begin
          Unit_Hash_Table.Reset;
          File_Hash_Table.Reset;
-         Path_Mapping.Set_Last (0);
-         File_Mapping.Set_Last (0);
+         Path_Mapping.Clear;
+         File_Mapping.Clear;
          Last_In_Table := 0;
       end Empty_Tables;
 

@@ -17469,7 +17469,7 @@ package body Sem_Elab is
       --  Stuff that happens only at the outer level
 
       if No (Outer_Scope) then
-         Elab_Visited.Set_Last (0);
+         Elab_Visited.Clear;
 
          --  Nothing to do if current scope is Standard (this is a bit odd, but
          --  it happens in the case of generic instantiations).
