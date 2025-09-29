@@ -3328,11 +3328,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
      because we have asserted that there are enough scalar iterations to enter
      the main loop, so this skip is not necessary.  When we are versioning then
      we only add such a skip if we have chosen to vectorize the epilogue.  */
-  bool skip_vector = (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-		      ? maybe_lt (LOOP_VINFO_INT_NITERS (loop_vinfo),
-				  bound_prolog + bound_epilog)
-		      : (!LOOP_VINFO_USE_VERSIONING_WITHOUT_PEELING (loop_vinfo)
-			 || vect_epilogues));
+  bool skip_vector = false;
+  if (!uncounted_p)
+    skip_vector = (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+		   ? maybe_lt (LOOP_VINFO_INT_NITERS (loop_vinfo),
+			       bound_prolog + bound_epilog)
+		   : (!LOOP_VINFO_USE_VERSIONING_WITHOUT_PEELING (loop_vinfo)
+		      || vect_epilogues));
 
   /* Epilog loop must be executed if the number of iterations for epilog
      loop is known at compile time, otherwise we need to add a check at
@@ -4220,13 +4222,14 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   tree version_simd_if_cond
     = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
   unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
+  bool uncounted_p = LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo);
 
-  if (vect_apply_runtime_profitability_check_p (loop_vinfo)
+  if (!uncounted_p && vect_apply_runtime_profitability_check_p (loop_vinfo)
       && !ordered_p (th, versioning_threshold))
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
 					    th - 1));
-  if (maybe_ne (versioning_threshold, 0U))
+  if (!uncounted_p && maybe_ne (versioning_threshold, 0U))
     {
       tree expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			       build_int_cst (TREE_TYPE (scalar_loop_iters),
