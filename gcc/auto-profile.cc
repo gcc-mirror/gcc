@@ -136,6 +136,24 @@ maybe_hot_afdo_count_p (profile_count count)
   return count.ipa ().to_gcov_type () >= afdo_hot_bb_threshod;
 }
 
+/* Return true if location of STMT may be expressed by debug info.  */
+
+static bool
+stmt_loc_used_by_debug_info (gimple *stmt)
+{
+  /* Only inline_entry and gimple_bind's locations
+     are not output into debug output.  */
+  if (is_gimple_debug (stmt))
+    return gimple_debug_begin_stmt_p (stmt);
+  if (gimple_code (stmt) == GIMPLE_LABEL
+      || gimple_code (stmt) == GIMPLE_NOP
+      || gimple_code (stmt) == GIMPLE_PREDICT)
+    return false;
+  if (gimple_clobber_p (stmt))
+    return false;
+  return true;
+}
+
 namespace autofdo
 {
 
@@ -2417,6 +2435,7 @@ bool
 autofdo_source_profile::get_count_info (gimple *stmt, count_info *info,
 					cgraph_node *node) const
 {
+  gcc_checking_assert (stmt_loc_used_by_debug_info (stmt));
   return get_count_info (gimple_location (stmt), info, node);
 }
 
@@ -2967,7 +2986,7 @@ afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
     {
       count_info info;
       gimple *stmt = gsi_stmt (gsi);
-      if (gimple_clobber_p (stmt))
+      if (!stmt_loc_used_by_debug_info (stmt))
 	continue;
       if (afdo_source_profile->get_count_info (stmt, &info))
 	{
@@ -4135,8 +4154,10 @@ afdo_vpt_for_early_inline (cgraph_node *node)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  autofdo::count_info info;
 	  gimple *stmt = gsi_stmt (gsi);
+	  if (!stmt_loc_used_by_debug_info (stmt))
+	    continue;
+	  autofdo::count_info info;
 	  if (autofdo::afdo_source_profile->get_count_info (stmt, &info, node))
 	    bb_count = MAX (bb_count, info.count);
 	}
