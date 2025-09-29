@@ -373,7 +373,7 @@ template<>
 
 #if __cplusplus > 202302L
 template<typename Layout>
-  requires is_left_padded<Layout>
+  requires is_left_padded<Layout> || is_right_padded<Layout>
   struct TestStride2D<Layout>
   {
     static constexpr void
@@ -457,7 +457,7 @@ template<>
 
 #if __cplusplus > 202302L
 template<typename Layout>
-  requires is_left_padded<Layout>
+  requires is_left_padded<Layout> || is_right_padded<Layout>
   struct TestStride3D<Layout>
   {
     static constexpr void
@@ -701,6 +701,7 @@ main()
   test_all<std::layout_stride>();
 #if __cplusplus > 202302L
   test_padded_all<std::layout_left_padded>();
+  test_padded_all<std::layout_right_padded>();
 #endif
 
   test_has_op_eq<std::layout_right, std::layout_left, false>();
@@ -708,6 +709,7 @@ main()
   test_has_op_eq<std::layout_left, std::layout_stride, true>();
 #if __cplusplus > 202302L
   test_padded_has_op_eq<std::layout_left_padded>();
+  test_padded_has_op_eq<std::layout_right_padded>();
 #endif
 
   test_has_op_eq_peculiar();

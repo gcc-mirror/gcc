@@ -469,6 +469,7 @@ main()
   test_all<std::layout_right>();
 #if __cplusplus > 202302L
   test_padded_all<std::layout_left_padded>();
+  test_padded_all<std::layout_right_padded>();
 #endif
 
   from_left_or_right::test_all<std::layout_left, std::layout_right>();

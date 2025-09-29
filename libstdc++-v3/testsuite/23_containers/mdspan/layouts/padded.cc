@@ -668,6 +668,10 @@ main()
   test_all<std::layout_left_padded>();
   static_assert(test_all<std::layout_left_padded>());
 
+  test_all<std::layout_right_padded>();
+  static_assert(test_all<std::layout_right_padded>());
+
   test_from_pad_all<std::layout_left_padded>();
+  test_from_pad_all<std::layout_right_padded>();
   return 0;
 }

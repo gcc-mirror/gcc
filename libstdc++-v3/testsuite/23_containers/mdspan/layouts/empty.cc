@@ -142,6 +142,7 @@ main()
   static_assert(test_all<std::layout_stride>());
 #if __cplusplus > 202302L
   static_assert(test_padded_all<std::layout_left_padded>());
+  static_assert(test_padded_all<std::layout_right_padded>());
 #endif
   return 0;
 }

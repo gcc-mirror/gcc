@@ -15,6 +15,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_extens_representable_sta<std::layout_left_padded>()); // { dg-error "from here" }
+static_assert(test_from_extens_representable_sta<std::layout_right_padded>()); // { dg-error "from here" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -28,6 +29,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_extents_representable_padded_size<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_extents_representable_padded_size<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -40,6 +42,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_extents_representable_stride<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_extents_representable_stride<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -51,6 +54,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_pad_representable_stride<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_pad_representable_stride<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -62,6 +66,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_pad_representable_padded_size<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_pad_representable_padded_size<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -76,6 +81,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_left<std::layout_left_padded>()); // { dg-error "required from here" }
+static_assert(test_from_left<std::layout_right_padded>()); // { dg-error "required from here" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -90,6 +96,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_left_bad_runtime_stride<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_left_bad_runtime_stride<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -103,6 +110,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_left_representable_extents<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_left_representable_extents<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout, size_t PaddingValue>
   constexpr bool
@@ -116,6 +124,8 @@ template<template<size_t> typename Layout, size_t PaddingValue>
   }
 static_assert(test_pad_overflow<std::layout_left_padded, 1>());   // { dg-error "expansion of" }
 static_assert(test_pad_overflow<std::layout_left_padded, dyn>()); // { dg-error "expansion of" }
+static_assert(test_pad_overflow<std::layout_right_padded, 1>());   // { dg-error "expansion of" }
+static_assert(test_pad_overflow<std::layout_right_padded, dyn>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout, size_t PaddingValue>
   constexpr bool
@@ -128,6 +138,8 @@ template<template<size_t> typename Layout, size_t PaddingValue>
   }
 static_assert(test_from_pad_negative<std::layout_left_padded, 1>());   // { dg-error "expansion of" }
 static_assert(test_from_pad_negative<std::layout_left_padded, dyn>()); // { dg-error "expansion of" }
+static_assert(test_from_pad_negative<std::layout_right_padded, 1>());   // { dg-error "expansion of" }
+static_assert(test_from_pad_negative<std::layout_right_padded, dyn>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout, size_t Pad>
   constexpr bool
@@ -142,6 +154,8 @@ template<template<size_t> typename Layout, size_t Pad>
   }
 static_assert(test_static_pad_same<std::layout_left_padded, 1>()); // { dg-error "expansion of" }
 static_assert(test_static_pad_same<std::layout_left_padded, 3>()); // { dg-error "expansion of" }
+static_assert(test_static_pad_same<std::layout_right_padded, 1>()); // { dg-error "expansion of" }
+static_assert(test_static_pad_same<std::layout_right_padded, 3>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -156,6 +170,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_stride_wrong_stride0<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_stride_wrong_stride0<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -170,6 +185,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_stride_wrong_stride1<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_stride_wrong_stride1<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -184,6 +200,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_stride_wrong_stride2<std::layout_left_padded>());
+static_assert(test_from_stride_wrong_stride2<std::layout_right_padded>());
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -200,6 +217,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_stride_oversized<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_stride_oversized<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -213,6 +231,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_samepad_dyn<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_samepad_dyn<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -226,6 +245,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_samepad_sta<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_samepad_sta<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -240,6 +260,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_from_samepad_oversized<std::layout_left_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_samepad_oversized<std::layout_right_padded>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout, size_t RunId>
   constexpr bool
@@ -278,6 +299,10 @@ static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 0>()); // { d
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 1>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 2>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 3>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 0>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 1>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 2>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 3>()); // { dg-error "expansion of" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -290,6 +315,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_statically_bad_padding_value1<std::layout_left_padded>()); // { dg-error "required from" }
+static_assert(test_statically_bad_padding_value1<std::layout_right_padded>()); // { dg-error "required from" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -301,6 +327,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_statically_bad_padding_value2<std::layout_left_padded>()); // { dg-error "required from" }
+static_assert(test_statically_bad_padding_value2<std::layout_right_padded>()); // { dg-error "required from" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -312,6 +339,7 @@ template<template<size_t> typename Layout>
     return true;
   }
 static_assert(test_statically_oversized<std::layout_left_padded>()); // { dg-error "from here" }
+static_assert(test_statically_oversized<std::layout_right_padded>()); // { dg-error "from here" }
 
 // { dg-prune-output "padding_value must be representable as index_type" }
 // { dg-prune-output "non-constant condition for static assertion" }
