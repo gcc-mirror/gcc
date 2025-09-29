@@ -1,3 +1,31 @@
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121616
+	* primary.cc (gfc_variable_attr): Properly set dimension attribute
+	from a component ref.
+
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* trans-types.cc (gfc_init_types): Set string flag for all
+	character types.
+
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108581
+	* trans-array.cc (gfc_conv_expr_descriptor): Take the dynamic
+	string length into account when deriving the dataptr offset for
+	a deferred-length character array.
+
 2025-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

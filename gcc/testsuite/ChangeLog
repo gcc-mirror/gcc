@@ -1,3 +1,28 @@
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121616
+	* gfortran.dg/alloc_comp_assign_17.f90: New test.
+
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* gfortran.dg/deferred_character_39.f90: Disable temporary
+	workaround for character(kind=4) deferred-length bug.
+
+2025-09-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108581
+	* gfortran.dg/deferred_character_39.f90: New test.
+
 2025-09-26  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
