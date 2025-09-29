@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 29, 2025
+GNAT Reference Manual , Oct 17, 2025
 
 AdaCore
 
@@ -33627,7 +33627,7 @@ historical compatibility purposes.
 @section PolyORB
 
 
-AWS is a deprecated product. It will be baselined with the GNAT Pro
+PolyORB is a deprecated product. It will be baselined with the GNAT Pro
 release 28. After this release, there will be no new versions of this
 product. Contact your sales representative or send a message to
 @email{sales@@adacore.com} to get recommendations for replacements.
