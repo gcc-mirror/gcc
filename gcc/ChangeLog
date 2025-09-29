@@ -1,3 +1,29 @@
+2025-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/121970
+	* config/i386/i386-options.cc (ix86_target_string): Remove
+	store_max.
+	(ix86_debug_options): Ditto.
+	(ix86_function_specific_print): Ditto.
+	(ix86_valid_target_attribute_tree): Ditto.
+	(ix86_option_override_internal): Ditto.
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Ditto.
+	* config/i386/i386-options.h (ix86_target_string): Ditto.
+	* config/i386/i386.h (MOVE_MAX): Ditto.
+	(STORE_MAX_PIECES): Set by move_max.
+	* config/i386/i386.opt: Deprecate mmove-max=.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_STORE_BY_PIECES):
+	Removed.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
+2025-09-28  Peter Damianov  <peter0x44@disroot.org>
+
+	* pretty-print.cc (decode_utf8_char): Move forward declaration.
+	(mingw_utf8_str_to_utf16_str): New function to convert UTF-8 to UTF-16.
+	(is_console_handle): New function to detect Windows console handles.
+	(write_all): Add UTF-8 to UTF-16 conversion for console output,
+	falling back to WriteFile for ASCII strings and regular files.
+
 2025-09-27  ChengLulu  <chenglulu@loongson.cn>
 
 	PR target/99217

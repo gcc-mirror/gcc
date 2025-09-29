@@ -1,3 +1,36 @@
+2025-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memcmp-2.c: Remove mstore-max.
+	* gcc.target/i386/pieces-memcpy-19.c: Ditto.
+	* gcc.target/i386/pieces-memcpy-20.c: Ditto.
+	* gcc.target/i386/pr104610.c: Ditto.
+	* gcc.target/i386/pieces-memset-47.c: Scan warning for
+	mstore-max deprecation.
+	* gcc.target/i386/pieces-memset-48.c: Change mstore-max to mmove-max.
+	* gcc.target/i386/pr121410.c: Ditto.
+	* gcc.target/i386/pieces-memset-11.c: Change
+	avx256_store_by_pieces to avx256_move_by_pieces.
+	* gcc.target/i386/pieces-memset-14.c: Ditto.
+	* gcc.target/i386/pieces-memset-2.c: Ditto.
+	* gcc.target/i386/pieces-memset-20.c: Ditto.
+	* gcc.target/i386/pieces-memset-23.c: Ditto.
+	* gcc.target/i386/pieces-memset-29.c: Ditto.
+	* gcc.target/i386/pieces-memset-30.c: Ditto.
+	* gcc.target/i386/pieces-memset-33.c: Ditto.
+	* gcc.target/i386/pieces-memset-34.c: Ditto.
+	* gcc.target/i386/pieces-memset-37.c: Ditto.
+	* gcc.target/i386/pieces-memset-44.c: Ditto.
+	* gcc.target/i386/pieces-memset-5.c: Ditto.
+	* gcc.target/i386/pr100865-10a.c: Ditto.
+	* gcc.target/i386/pr100865-4a.c: Ditto.
+	* gcc.target/i386/pr90773-20.c: Ditto.
+	* gcc.target/i386/pr90773-21.c: Ditto.
+	* gcc.target/i386/pr90773-22.c: Ditto.
+	* gcc.target/i386/pr90773-23.c: Ditto.
+	* g++.target/i386/pr80566-1.C: Ditto.
+	* gcc.target/i386/pieces-memset-45.c: Change
+	avx512_store_by_pieces to avx512_move_by_pieces.
+
 2025-09-27  YunQiang Su  <syq@gcc.gnu.org>
 
 	* gcc.target/mips/mips16e2.c: Use isa_rev=2 instead of >=2.
