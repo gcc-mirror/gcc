@@ -2,6 +2,7 @@
 #include <mdspan>
 
 #include "../int_like.h"
+#include "padded_traits.h"
 #include <cstdint>
 #include <testsuite_hooks.h>
 
@@ -370,6 +371,37 @@ template<>
     }
   };
 
+#if __cplusplus > 202302L
+template<typename Layout>
+  requires is_left_padded<Layout>
+  struct TestStride2D<Layout>
+  {
+    static constexpr void
+    run()
+    {
+      using Traits = LayoutTraits<DeducePaddingSide::from_typename<Layout>()>;
+      using Extents = typename Traits::extents_type<std::extents<int, 3, 5>>;
+      using Mapping = typename Layout::mapping<Extents>;
+      constexpr size_t padding_value = Mapping::padding_value;
+
+      Mapping m;
+      size_t effective_pad = (padding_value == 0 || padding_value == dyn)
+	? size_t(1) : padding_value;
+
+      constexpr auto i0 = is_left_padded<Layout> ? 0 : 1;
+      VERIFY(m.stride(i0) == 1);
+
+      // The next multiple of padding_value, that's greater or equal
+      // to exts.extent(0) is the unique value in the range:
+      //   [exts.extent(0), exts.extent(0) + padding_value)
+      // that is divisible by padding_value.
+      auto stride = Traits::padded_stride(m);
+      VERIFY((stride % effective_pad) == 0);
+      VERIFY(3 <= stride && std::cmp_less(stride, 3 + effective_pad));
+    }
+  };
+#endif
+
 template<typename Layout>
   constexpr void
   test_stride_2d()
@@ -423,6 +455,40 @@ template<>
     }
   };
 
+#if __cplusplus > 202302L
+template<typename Layout>
+  requires is_left_padded<Layout>
+  struct TestStride3D<Layout>
+  {
+    static constexpr void
+    run()
+    {
+      using Traits = LayoutTraits<DeducePaddingSide::from_typename<Layout>()>;
+      using Extents = typename Traits::extents_type<std::extents<int, 3, 5, 7>>;
+      using Mapping = typename Layout::mapping<Extents>;
+      constexpr size_t padding_value = Mapping::padding_value;
+
+      Mapping m;
+      size_t effective_pad = (padding_value == 0 || padding_value == dyn)
+	? size_t(1) : padding_value;
+
+      constexpr auto i0 = is_left_padded<Layout> ? 0 : 2;
+      VERIFY(m.stride(i0) == 1);
+
+      // The next multiple of padding_value, that's greater or equal
+      // to exts.extent(0) is the unique value in the range:
+      //   [exts.extent(0), exts.extent(0) + padding_value)
+      // that is divisible by padding_value.
+      auto stride = Traits::padded_stride(m);
+      VERIFY((stride % effective_pad) == 0);
+      VERIFY(3 <= stride && std::cmp_less(stride, 3 + effective_pad));
+
+      constexpr auto i2 = is_left_padded<Layout> ? 2 : 0;
+      VERIFY(stride * 5 == m.stride(i2));
+    }
+  };
+#endif
+
 template<typename Layout>
   constexpr void
   test_stride_3d()
@@ -451,7 +517,8 @@ template<typename Layout>
   test_has_stride_0d()
   {
     using Mapping = typename Layout::mapping<std::extents<int>>;
-    constexpr bool expected = std::is_same_v<Layout, std::layout_stride>;
+    constexpr bool expected = !(std::is_same_v<Layout, std::layout_left>
+       || std::is_same_v<Layout, std::layout_right>);
     static_assert(has_stride<Mapping> == expected);
   }
 
@@ -595,16 +662,54 @@ template<typename Layout>
     test_has_op_eq<Layout, Layout, true>();
   }
 
+#if __cplusplus > 202302L
+template<template<size_t> typename Layout>
+  constexpr bool
+  test_padded_all()
+  {
+    test_all<Layout<0>>();
+    test_all<Layout<1>>();
+    test_all<Layout<2>>();
+    test_all<Layout<5>>();
+    test_all<Layout<dyn>>();
+    return true;
+  }
+
+template<template<size_t> typename Layout>
+  constexpr bool
+  test_padded_has_op_eq()
+  {
+    using Traits = LayoutTraits<DeducePaddingSide::from_template<Layout>()>;
+    test_has_op_eq<typename Traits::layout_same, Layout<0>, false>();
+    test_has_op_eq<typename Traits::layout_same, Layout<6>, false>();
+    test_has_op_eq<typename Traits::layout_same, Layout<dyn>, false>();
+    // The next one looks strange, because it's neither. Somehow, the
+    // conversion rules seem to be playing a critical role again.
+    // test_has_op_eq<typename Traits::layout_other, Layout<0>, false>();
+
+    test_has_op_eq<Layout<2>, Layout<6>, true>();
+    test_has_op_eq<Layout<2>, Layout<dyn>, true>();
+    return true;
+  }
+#endif
+
 int
 main()
 {
   test_all<std::layout_left>();
   test_all<std::layout_right>();
   test_all<std::layout_stride>();
+#if __cplusplus > 202302L
+  test_padded_all<std::layout_left_padded>();
+#endif
 
   test_has_op_eq<std::layout_right, std::layout_left, false>();
   test_has_op_eq<std::layout_right, std::layout_stride, true>();
   test_has_op_eq<std::layout_left, std::layout_stride, true>();
+#if __cplusplus > 202302L
+  test_padded_has_op_eq<std::layout_left_padded>();
+#endif
+
   test_has_op_eq_peculiar();
   return 0;
 }

@@ -71,6 +71,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+    template<typename _IndexType, typename _OIndexType>
+      constexpr _IndexType
+      __index_type_cast(_OIndexType&& __other)
+      {
+	if constexpr (std::is_integral_v<_OIndexType>)
+	  {
+	    __glibcxx_assert(cmp_less_equal(__other,
+		__gnu_cxx::__int_traits<_IndexType>::__max));
+	    if constexpr (std::is_signed_v<_OIndexType>)
+	      __glibcxx_assert(__other >= 0);
+	    return std::move(__other);
+	  }
+	else
+	  {
+	    auto __ret = static_cast<_IndexType>(std::move(__other));
+	    if constexpr (std::is_signed_v<_IndexType>)
+	      __glibcxx_assert(__ret >= 0);
+	    return __ret;
+	  }
+      }
+
     template<array _Extents>
       class _StaticExtents
       {
@@ -260,6 +281,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const array<size_t, _Extents::rank()>&
       __static_extents() noexcept
       { return _Extents::_Storage::_S_static_extents(); }
+
+    template<typename _Extents>
+      constexpr span<const size_t>
+      __static_extents(size_t __begin, size_t __end) noexcept
+      {
+	const auto& __sta_exts = __static_extents<_Extents>();
+	return span<const size_t>(__sta_exts.data() + __begin, __end - __begin);
+      }
 
     // Pre-compute: \prod_{i = 0}^r _Extents[i], for r = 0,..., n (exclusive)
     template<array _Extents>
@@ -478,6 +507,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Preconditions: _r < _Extents::rank()
     template<typename _Extents>
       constexpr typename _Extents::index_type
+      __fwd_prod(const _Extents& __exts, size_t __begin, size_t __end) noexcept
+      {
+	size_t __sta_prod = [__begin, __end] {
+	  span<const size_t> __sta_exts = __static_extents<_Extents>(__begin, __end);
+	  size_t __ret = 1;
+	  for(auto __ext : __sta_exts)
+	    if (__ext != dynamic_extent)
+	      __ret *= __ext;
+	  return __ret;
+	}();
+	return __extents_prod(__exts, __sta_prod, __begin, __end);
+      }
+
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
       __fwd_prod(const _Extents& __exts, size_t __r) noexcept
       {
 	constexpr size_t __rank = _Extents::rank();
@@ -566,6 +610,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Extents>
       class mapping;
   };
+
+#ifdef __glibcxx_padded_layouts
+  template<size_t _PaddingValue>
+    struct layout_left_padded
+    {
+      template<typename _Extents>
+	class mapping;
+    };
+
+  template<size_t _PaddingValue>
+    struct layout_right_padded
+    {
+      template<typename _Extents>
+	class mapping;
+    };
+#endif
 
   namespace __mdspan
   {
@@ -669,10 +729,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>,
 		  _Mapping>;
 
+    template<template<size_t> typename _Layout, typename _Mapping>
+      concept __padded_mapping_of = __mapping_of<
+	_Layout<_Mapping::padding_value>, _Mapping>;
+
+#ifdef __glibcxx_padded_layouts
+    template<typename _Mapping>
+      constexpr bool __is_left_padded_mapping = __padded_mapping_of<
+	layout_left_padded, _Mapping>;
+
+    template<typename _Mapping>
+      constexpr bool __is_right_padded_mapping = __padded_mapping_of<
+	layout_right_padded, _Mapping>;
+#endif
+
+    template<typename _PaddedMapping>
+      consteval size_t
+      __get_static_stride()
+      { return _PaddedMapping::_PaddedStorage::_S_static_stride; }
+
     template<typename _Mapping>
       concept __standardized_mapping = __mapping_of<layout_left, _Mapping>
 				       || __mapping_of<layout_right, _Mapping>
-				       || __mapping_of<layout_stride, _Mapping>;
+				       || __mapping_of<layout_stride, _Mapping>
+#ifdef __glibcxx_padded_layouts
+				       || __is_left_padded_mapping<_Mapping>
+				       || __is_right_padded_mapping<_Mapping>
+#endif
+				       ;
 
     // A tag type to create internal ctors.
     class __internal_ctor
@@ -725,6 +809,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ __glibcxx_assert(*this == __other); }
+
+#if __glibcxx_padded_layouts
+      template<typename _LeftpadMapping>
+	requires __mdspan::__is_left_padded_mapping<_LeftpadMapping>
+		 && is_constructible_v<extents_type,
+				       typename _LeftpadMapping::extents_type>
+	constexpr
+	explicit(!is_convertible_v<typename _LeftpadMapping::extents_type,
+				   extents_type>)
+	mapping(const _LeftpadMapping& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{
+	  constexpr size_t __ostride_sta = __mdspan::__get_static_stride<
+	    _LeftpadMapping>();
+
+	  if constexpr (extents_type::rank() > 1)
+	    {
+	      if constexpr (extents_type::static_extent(0) != dynamic_extent
+			    && __ostride_sta != dynamic_extent)
+		static_assert(extents_type::static_extent(0) == __ostride_sta);
+	      else
+		__glibcxx_assert(__other.stride(1)
+		    == __other.extents().extent(0));
+	    }
+	}
+#endif // __glibcxx_padded_layouts
 
       constexpr mapping&
       operator=(const mapping&) noexcept = default;
@@ -1173,6 +1283,550 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] _Strides _M_strides;
     };
 
+#ifdef __glibcxx_padded_layouts
+  namespace __mdspan
+  {
+    constexpr size_t
+    __least_multiple(size_t __x, size_t __y)
+    {
+      if (__x <= 1)
+	return __y;
+      return (__y / __x + (__y % __x != 0)) * __x ;
+    }
+
+    template<typename _IndexType>
+    constexpr bool
+    __is_representable_least_multiple(size_t __x, size_t __y)
+    {
+      constexpr auto __y_max = __gnu_cxx::__int_traits<_IndexType>::__max;
+      if(std::cmp_greater(__y, __y_max))
+	return false;
+
+      if(__x <= 1)
+	return true;
+
+      auto __max_delta = __y_max - static_cast<_IndexType>(__y);
+      auto __y_mod_x = __y % __x;
+      auto __delta = (__y_mod_x == 0) ? size_t(0) : (__x - __y_mod_x);
+      return std::cmp_less_equal(__delta, __max_delta);
+    }
+
+    template<typename _Extents, size_t _PaddingValue, typename _LayoutTraits,
+	     size_t _Rank = _Extents::rank()>
+      concept __valid_static_stride = (_Extents::rank() <= 1)
+	|| (_PaddingValue == dynamic_extent)
+	|| (_Extents::static_extent(_LayoutTraits::_S_ext_idx) == dynamic_extent)
+	|| (__is_representable_least_multiple<size_t>(
+	    _PaddingValue, _Extents::static_extent(_LayoutTraits::_S_ext_idx)));
+
+    template<size_t _PaddedStride, typename _Extents,
+	     typename _LayoutTraits>
+      consteval bool
+      __is_representable_padded_size()
+      {
+	using _IndexType = typename _Extents::index_type;
+	auto __sta_exts = __static_extents<_Extents>(
+	  _LayoutTraits::_S_unpad_begin, _LayoutTraits::_S_unpad_end);
+	size_t __max = __gnu_cxx::__int_traits<_IndexType>::__max;
+	return __static_quotient(__sta_exts, __max / _PaddedStride) != 0;
+      }
+
+    template<typename _Extents, size_t _PaddedStride, typename _LayoutTraits,
+	     size_t _Rank = _Extents::rank()>
+      concept __valid_padded_size = (_Rank <= 1)
+	|| (_PaddedStride == dynamic_extent)
+	|| (!__all_static(__static_extents<_Extents>()))
+	|| (__contains_zero(__static_extents<_Extents>()))
+	|| (__is_representable_padded_size<_PaddedStride, _Extents,
+					   _LayoutTraits>());
+
+    template<typename _Extents, typename _Stride, typename... _Indices>
+      constexpr typename _Extents::index_type
+      __linear_index_leftpad(const _Extents& __exts, _Stride __stride,
+			     _Indices... __indices)
+      {
+	// i0 + stride*(i1 + extents.extent(1)*...)
+	using _IndexType = typename _Extents::index_type;
+	_IndexType __res = 0;
+	if constexpr (sizeof...(__indices) > 0)
+	  {
+	    _IndexType __mult = 1;
+
+	    auto __update_rest = [&, __pos = 1u](_IndexType __idx) mutable
+	      {
+		__res += __idx * __mult;
+		__mult *= __exts.extent(__pos);
+		++__pos;
+	      };
+
+	    auto __update = [&](_IndexType __idx, auto... __rest)
+	      {
+		__res += __idx;
+		__mult = __stride.extent(0);
+		(__update_rest(__rest), ...);
+	      };
+	    __update(__indices...);
+	  }
+	return __res;
+      }
+
+    template<size_t _Rank>
+      struct _LeftPaddedLayoutTraits
+      {
+	using _LayoutSame = layout_left;
+	using _LayoutOther = layout_right;
+
+	constexpr static const size_t _S_ext_idx = 0;
+	constexpr static const size_t _S_stride_idx = 1;
+	constexpr static const size_t _S_unpad_begin = 1;
+	constexpr static const size_t _S_unpad_end = _Rank;
+
+	template<typename _IndexType, size_t _StaticStride, size_t..._Extents>
+	  constexpr static auto _S_make_padded_extent(
+	    extents<_IndexType, _StaticStride> __stride,
+	    const extents<_IndexType, _Extents...>& __exts)
+	  {
+	    auto __impl = [&]<size_t... _Is>(integer_sequence<size_t, _Is...>)
+	    {
+	      return extents<_IndexType, _StaticStride,
+			     (_Extents...[_Is + 1])...>{
+		__stride.extent(0), __exts.extent(_Is + 1)...};
+	    };
+	    return __impl(make_index_sequence<sizeof...(_Extents) - 1>());
+	  }
+      };
+
+    template<size_t _PaddingValue, typename _Extents, typename _LayoutTraits>
+      class _PaddedStorage
+      {
+	using _LayoutSame = typename _LayoutTraits::_LayoutSame;
+
+      public:
+	using _IndexType = typename _Extents::index_type;
+	constexpr static size_t _S_rank = _Extents::rank();
+
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4372. Weaken Mandates: for dynamic padding values in padded layouts
+	static_assert((_PaddingValue == dynamic_extent)
+	    || (cmp_less_equal(_PaddingValue,
+			       __gnu_cxx::__int_traits<_IndexType>::__max)),
+	  "padding_value must be representable as index_type");
+
+	static_assert(__representable_size<_Extents, _IndexType>,
+	  "The size of extents_type must be representable as index_type");
+
+	static_assert(__valid_static_stride<_Extents, _PaddingValue,
+					    _LayoutTraits>,
+	  "The padded stride must be representable as size_t");
+
+	static constexpr size_t _S_static_stride = [] consteval
+	{
+	  constexpr size_t __rank = _Extents::rank();
+	  if constexpr (__rank <= 1)
+	    return 0;
+	  else
+	    {
+	      constexpr size_t __ext_idx = _LayoutTraits::_S_ext_idx;
+	      constexpr size_t __sta_ext = _Extents::static_extent(__ext_idx);
+	      if constexpr (__sta_ext == 0)
+		return size_t(0);
+	      else if constexpr (_PaddingValue == dynamic_extent
+		  || __sta_ext == dynamic_extent)
+		return dynamic_extent;
+	      else
+		return __least_multiple(_PaddingValue, __sta_ext);
+	    }
+	}();
+
+	static_assert(_S_static_stride == dynamic_extent
+	  || cmp_less_equal(_S_static_stride,
+			    __gnu_cxx::__int_traits<_IndexType>::__max),
+	  "Padded stride must be representable as index_type");
+
+	static_assert(__valid_padded_size<_Extents, _S_static_stride,
+					  _LayoutTraits>);
+
+	constexpr
+	_PaddedStorage() noexcept
+	{
+	  if constexpr (_S_rank > 1)
+	    if constexpr (_S_static_stride == dynamic_extent
+			  && _S_static_padextent() != dynamic_extent)
+	      _M_stride = _Stride{_S_static_padextent()};
+	}
+
+	constexpr explicit
+	_PaddedStorage(const _Extents& __exts)
+	: _M_extents(__exts)
+	{
+	  if constexpr (!__all_static(__static_extents<_Extents>()))
+	    __glibcxx_assert(__is_representable_extents(_M_extents));
+
+	  if constexpr (_S_rank > 1)
+	    {
+	      _IndexType __stride;
+	      if constexpr (_PaddingValue == dynamic_extent)
+		__stride = _M_padextent();
+	      else if constexpr (_S_static_padextent() != dynamic_extent)
+		return;
+	      else
+		{
+		  __glibcxx_assert(
+		      __is_representable_least_multiple<_IndexType>(
+			_PaddingValue, _M_padextent()));
+
+		  __stride = static_cast<_IndexType>(
+		    __least_multiple(_PaddingValue, _M_padextent()));
+
+		  __glibcxx_assert(__is_representable_extents(
+		      _LayoutTraits::_S_make_padded_extent(
+			std::dextents<_IndexType, 1>{__stride},
+			_M_extents)));
+		}
+	      _M_stride = _Stride{__stride};
+	    }
+	}
+
+	constexpr explicit
+	_PaddedStorage(const _Extents& __exts, _IndexType __pad)
+	: _M_extents(__exts)
+	{
+	  if constexpr (_PaddingValue != dynamic_extent)
+	    __glibcxx_assert(cmp_equal(_PaddingValue, __pad));
+	  if constexpr (_S_rank > 1 && _S_static_stride == dynamic_extent)
+	    {
+	      __glibcxx_assert(
+		__is_representable_least_multiple<_IndexType>(
+		  __pad, _M_padextent()));
+
+	      _M_stride = _Stride{static_cast<_IndexType>(
+		__least_multiple(__pad, _M_padextent()))};
+
+	      __glibcxx_assert(__is_representable_extents(
+		_LayoutTraits::_S_make_padded_extent(
+		  _M_stride, _M_extents)));
+	    }
+	}
+
+	template<typename _OExtents>
+	  constexpr explicit
+	  _PaddedStorage(const typename _LayoutSame::mapping<_OExtents>&
+			 __other)
+	  : _PaddedStorage(_Extents(__other.extents()))
+	  {
+	    constexpr size_t __stride_idx = _LayoutTraits::_S_stride_idx;
+	    constexpr size_t __ext_idx = _LayoutTraits::_S_ext_idx;
+	    if constexpr (_S_rank > 1 && _PaddingValue != dynamic_extent)
+	      {
+		static_assert(_S_static_stride == dynamic_extent
+		    || _OExtents::static_extent(__ext_idx) == dynamic_extent
+		    || _S_static_stride == _OExtents::static_extent(__ext_idx),
+		  "The padded stride must be compatible with other");
+
+		if constexpr (_S_static_stride == dynamic_extent
+		    || _OExtents::static_extent(__stride_idx) == dynamic_extent)
+		  __glibcxx_assert(std::cmp_equal(_M_padstride(),
+						  _M_padextent()));
+	      }
+	  }
+
+	template<typename _OExtents>
+	  constexpr explicit
+	  _PaddedStorage(const typename layout_stride::mapping<_OExtents>&
+			 __other)
+	  : _M_extents(__other.extents())
+	  {
+	    __glibcxx_assert(cmp_less_equal(__other.required_span_size(),
+					    __gnu_cxx::__int_traits<_IndexType>
+						     ::__max));
+
+	    constexpr size_t __stride_idx = _LayoutTraits::_S_stride_idx;
+	    if constexpr (_S_rank > 1)
+	      {
+		if constexpr (_PaddingValue != dynamic_extent)
+		  __glibcxx_assert(cmp_equal(__other.stride(__stride_idx),
+					     _M_calc_padstride())
+		    && "The padded stride must be compatible with other");
+		if constexpr (_S_static_stride == dynamic_extent)
+		  _M_stride = _Stride{__other.stride(__stride_idx)};
+	      }
+	  }
+
+	template<typename _SamePaddedMapping>
+	  constexpr explicit
+	  _PaddedStorage(_LayoutTraits::_LayoutSame,
+			 const _SamePaddedMapping& __other)
+	  : _M_extents(__other.extents())
+	  {
+	    if constexpr (_S_rank > 1)
+	      {
+		static_assert(_PaddingValue == dynamic_extent
+		    || _SamePaddedMapping::padding_value  == dynamic_extent
+		    || _PaddingValue == _SamePaddedMapping::padding_value,
+		  "If neither PaddingValue is dynamic_extent, then they must "
+		  "be equal");
+
+		constexpr size_t __stride_idx = _LayoutTraits::_S_stride_idx;
+		if constexpr (_PaddingValue != dynamic_extent)
+		  __glibcxx_assert(cmp_equal(__other.stride(__stride_idx),
+					     _M_calc_padstride())
+		    && "The padded stride must be compatible with other");
+		if constexpr (_S_static_stride == dynamic_extent)
+		  _M_stride = _Stride{__other.stride(__stride_idx)};
+	      }
+	    __glibcxx_assert(cmp_less_equal(__other.required_span_size(),
+		__gnu_cxx::__int_traits<_IndexType>::__max));
+	  }
+
+	template<typename _OtherPaddedMapping>
+	  constexpr explicit
+	  _PaddedStorage(_LayoutTraits::_LayoutOther,
+			 const _OtherPaddedMapping& __other) noexcept
+	  : _M_extents(__other.extents())
+	  {
+	    __glibcxx_assert(cmp_less_equal(__other.required_span_size(),
+		__gnu_cxx::__int_traits<_IndexType>::__max));
+	  }
+
+	static constexpr bool
+	_M_is_always_exhaustive() noexcept
+	{
+	  if constexpr (_S_rank <= 1)
+	    return true;
+	  else
+	    return _S_static_padextent() != dynamic_extent
+		   && _S_static_stride != dynamic_extent
+		   && _S_static_padextent() == _S_static_stride;
+	}
+
+	constexpr bool
+	_M_is_exhaustive() const noexcept
+	{
+	  if constexpr (_M_is_always_exhaustive())
+	    return true;
+	  else
+	    return cmp_equal(_M_padextent(), _M_padstride());
+	}
+
+	constexpr static size_t
+	_S_static_padextent() noexcept
+	{ return _Extents::static_extent(_LayoutTraits::_S_ext_idx); }
+
+	constexpr _IndexType
+	_M_padextent() const noexcept
+	{ return _M_extents.extent(_LayoutTraits::_S_ext_idx); }
+
+	constexpr _IndexType
+	_M_calc_padstride() const noexcept
+	{
+	  if constexpr (_S_static_stride != dynamic_extent)
+	    return _S_static_stride;
+	  else if constexpr (_PaddingValue != dynamic_extent)
+	    return __least_multiple(_PaddingValue, _M_padextent());
+	  else
+	    return _M_padextent();
+	}
+
+	constexpr _IndexType
+	_M_padstride() const noexcept
+	{ return _M_stride.extent(0); }
+
+	constexpr _IndexType
+	_M_required_span_size() const noexcept
+	{
+	  if constexpr (_S_rank == 0)
+	    return 1;
+	  else if (__mdspan::__empty(_M_extents))
+	    return 0;
+	  else
+	    {
+	      size_t __stride = static_cast<size_t>(_M_padstride());
+	      size_t __prod_rest = __mdspan::__fwd_prod(_M_extents,
+		_LayoutTraits::_S_unpad_begin, _LayoutTraits::_S_unpad_end);
+	      size_t __delta = _M_padstride() - _M_padextent();
+	      return static_cast<_IndexType>(__stride * __prod_rest - __delta);
+	    }
+	}
+
+	template<typename _SamePaddedMapping>
+	  constexpr bool
+	  _M_equal(const _SamePaddedMapping& __other) const noexcept
+	  {
+	    return _M_extents == __other.extents()
+	      && (_S_rank < 2
+		|| cmp_equal(_M_stride.extent(0),
+			     __other.stride(_LayoutTraits::_S_stride_idx)));
+	  }
+
+	using _Stride = std::extents<_IndexType, _S_static_stride>;
+	[[no_unique_address]] _Stride _M_stride;
+	[[no_unique_address]] _Extents _M_extents;
+      };
+  }
+
+  template<size_t _PaddingValue>
+    template<typename _Extents>
+      class layout_left_padded<_PaddingValue>::mapping
+      {
+      public:
+	static constexpr size_t padding_value = _PaddingValue;
+
+	using extents_type = _Extents;
+	using index_type = typename extents_type::index_type;
+	using size_type = typename extents_type::size_type;
+	using rank_type = typename extents_type::rank_type;
+	using layout_type = layout_left_padded<padding_value>;
+
+      private:
+	static constexpr size_t _S_rank = extents_type::rank();
+	using _PaddedStorage = __mdspan::_PaddedStorage<_PaddingValue,
+	      _Extents, __mdspan::_LeftPaddedLayoutTraits<_S_rank>>;
+	[[no_unique_address]] _PaddedStorage _M_storage;
+
+	consteval friend size_t
+	__mdspan::__get_static_stride<mapping>();
+
+	constexpr index_type
+	_M_extent(size_t __r) const noexcept
+	{ return _M_storage._M_extents.extent(__r); }
+
+	constexpr index_type
+	_M_padstride() const noexcept
+	{ return _M_storage._M_stride.extent(0); }
+
+      public:
+	constexpr
+	mapping() noexcept
+	{ }
+
+	constexpr
+	mapping(const mapping&) noexcept = default;
+
+	constexpr
+	mapping(const extents_type& __exts)
+	: _M_storage(__exts)
+	{ }
+
+	template<__mdspan::__valid_index_type<index_type> _OIndexType>
+	  constexpr mapping(const extents_type& __exts, _OIndexType __pad)
+	  : _M_storage(__exts,
+	      __mdspan::__index_type_cast<index_type>(std::move(__pad)))
+	  { }
+
+	template<typename _OExtents>
+	  requires is_constructible_v<extents_type, _OExtents>
+	  constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
+	  mapping(const layout_left::mapping<_OExtents>& __other)
+	  : _M_storage(__other)
+	  { }
+
+	template<typename _OExtents>
+	  requires is_constructible_v<_OExtents, extents_type>
+	  constexpr explicit(_OExtents::rank() > 0)
+	  mapping(const typename layout_stride::mapping<_OExtents>& __other)
+	  : _M_storage(__other)
+	  { __glibcxx_assert(*this == __other); }
+
+	template<typename _LeftpadMapping>
+	  requires __mdspan::__is_left_padded_mapping<_LeftpadMapping>
+	      && is_constructible_v<extents_type,
+				    typename _LeftpadMapping::extents_type>
+	  constexpr explicit(_S_rank > 1 && (padding_value != dynamic_extent
+		|| _LeftpadMapping::padding_value == dynamic_extent))
+	  mapping(const _LeftpadMapping& __other)
+	  : _M_storage(layout_left{}, __other)
+	  { }
+
+	template<typename _RightPaddedMapping>
+	  requires (__mdspan::__is_right_padded_mapping<_RightPaddedMapping>
+	      || __mdspan::__mapping_of<layout_right, _RightPaddedMapping>)
+	    && (_S_rank <= 1)
+	    && is_constructible_v<extents_type,
+				  typename _RightPaddedMapping::extents_type>
+	  constexpr explicit(!is_convertible_v<
+	      typename _RightPaddedMapping::extents_type, extents_type>)
+	  mapping(const _RightPaddedMapping& __other) noexcept
+	  : _M_storage(layout_right{}, __other)
+	  { }
+
+	constexpr mapping&
+	operator=(const mapping&) noexcept = default;
+
+	constexpr const extents_type&
+	extents() const noexcept { return _M_storage._M_extents; }
+
+	constexpr array<index_type, _S_rank>
+	strides() const noexcept
+	{
+	  array<index_type, _S_rank> __ret;
+	  if constexpr (_S_rank > 0)
+	    __ret[0] = 1;
+	  if constexpr (_S_rank > 1)
+	    __ret[1] = _M_padstride();
+	  if constexpr (_S_rank > 2)
+	    for(size_t __i = 2; __i < _S_rank; ++__i)
+	      __ret[__i] = __ret[__i - 1] * _M_extent(__i - 1);
+	  return __ret;
+	}
+
+	constexpr index_type
+	required_span_size() const noexcept
+	{ return _M_storage._M_required_span_size(); }
+
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4314. Missing move in mdspan layout mapping::operator()
+	template<__mdspan::__valid_index_type<index_type>... _Indices>
+	  requires (sizeof...(_Indices) == _S_rank)
+	  constexpr index_type
+	  operator()(_Indices... __indices) const noexcept
+	  {
+	    return __mdspan::__linear_index_leftpad(
+	      extents(), _M_storage._M_stride,
+	      static_cast<index_type>(std::move(__indices))...);
+	  }
+
+	static constexpr bool
+	is_always_exhaustive() noexcept
+	{ return _PaddedStorage::_M_is_always_exhaustive(); }
+
+	constexpr bool
+	is_exhaustive() noexcept
+	{ return _M_storage._M_is_exhaustive(); }
+
+	static constexpr bool
+	is_always_unique() noexcept { return true; }
+
+	static constexpr bool
+	is_always_strided() noexcept { return true; }
+
+	static constexpr bool
+	is_unique() noexcept { return true; }
+
+	static constexpr bool
+	is_strided() noexcept { return true; }
+
+	constexpr index_type
+	stride(rank_type __r) const noexcept
+	{
+	  __glibcxx_assert(__r < _S_rank);
+	  if (__r == 0)
+	    return 1;
+	  else
+	    return static_cast<index_type>(
+	      static_cast<size_t>(_M_padstride()) *
+	      static_cast<size_t>(__mdspan::__fwd_prod(extents(), 1, __r)));
+	}
+
+	template<typename _LeftpadMapping>
+	  requires(__mdspan::__is_left_padded_mapping<_LeftpadMapping>
+		   && _LeftpadMapping::extents_type::rank() == _S_rank)
+	  friend constexpr bool
+	  operator==(const mapping& __self, const _LeftpadMapping& __other)
+	  noexcept
+	  { return __self._M_storage._M_equal(__other); }
+      };
+#endif // __glibcxx_padded_layouts
+
   template<typename _ElementType>
     struct default_accessor
     {
@@ -1370,7 +2024,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mdspan(data_handle_type __handle, const mapping_type& __mapping,
 	     const accessor_type& __accessor)
       : _M_accessor(__accessor), _M_mapping(__mapping),
-        _M_handle(std::move(__handle))
+	_M_handle(std::move(__handle))
       { }
 
       template<typename _OElementType, typename _OExtents, typename _OLayout,

@@ -46,3 +46,4 @@ auto b6 = B<6, std::layout_stride, std::layout_left>();   // { dg-error "require
 auto b7 = B<7, std::layout_stride, std::layout_stride>(); // { dg-error "required from" }
 
 // { dg-prune-output "must be representable as index_type" }
+// { dg-prune-output "static assertion failed" }

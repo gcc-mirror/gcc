@@ -35,7 +35,8 @@ template<typename Layout, typename Int>
   {
     constexpr Int n1 = std::numeric_limits<Int>::max();
     constexpr size_t n2 = std::dynamic_extent - 1;
-    constexpr size_t n = std::cmp_less(n1, n2) ? size_t(n1) : n2;
+    // Allow some room for padding.
+    constexpr size_t n = (std::cmp_less(n1, n2) ? size_t(n1) : n2) - 4;
 
     verify_all(typename Layout::mapping<std::extents<Int, n, n, 0, n, n>>{});
     verify_all(typename Layout::mapping<std::extents<Int, 0, n, n, n>>{});
@@ -73,7 +74,8 @@ template<typename Layout, typename Int>
   {
     constexpr Int n1 = std::numeric_limits<Int>::max();
     constexpr size_t n2 = std::dynamic_extent - 1;
-    constexpr Int n = std::cmp_less(n1, n2) ? n1 : Int(n2);
+    // Allow some room for padding.
+    constexpr Int n = (std::cmp_less(n1, n2) ? n1 : Int(n2)) - 4;
 
     verify_all(make_mapping<Layout>(
 	std::extents<Int, dyn, dyn, 0, dyn, dyn>{n, n, n, n}));
@@ -121,11 +123,25 @@ template<typename Layout>
     return true;
   }
 
+template<template<size_t> typename Layout>
+  constexpr bool
+  test_padded_all()
+  {
+    static_assert(test_all<Layout<0>>());
+    static_assert(test_all<Layout<1>>());
+    static_assert(test_all<Layout<2>>());
+    static_assert(test_all<Layout<dyn>>());
+    return true;
+  }
+
 int
 main()
 {
   static_assert(test_all<std::layout_left>());
   static_assert(test_all<std::layout_right>());
   static_assert(test_all<std::layout_stride>());
+#if __cplusplus > 202302L
+  static_assert(test_padded_all<std::layout_left_padded>());
+#endif
   return 0;
 }

@@ -1193,6 +1193,15 @@
 #endif /* !defined(__cpp_lib_aligned_accessor) && defined(__glibcxx_want_aligned_accessor) */
 #undef __glibcxx_want_aligned_accessor
 
+#if !defined(__cpp_lib_padded_layouts)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_padded_layouts 1L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_padded_layouts)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_padded_layouts) && defined(__glibcxx_want_padded_layouts) */
+#undef __glibcxx_want_padded_layouts
+
 #if !defined(__cpp_lib_ssize)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_ssize 201902L
