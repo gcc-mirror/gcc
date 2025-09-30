@@ -42,7 +42,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/output-spec.h"
 
 /* A namespace for handling the DSL of the arguments of
-   -fdiagnostics-add-output= and -fdiagnostics-set-output=.  */
+   -fdiagnostics-add-output= and -fdiagnostics-set-output=
+   which look like:
+     SCHEME[:KEY=VALUE(,KEY=VALUE)*]
+   We call this an output spec.  */
 
 namespace diagnostics {
 namespace output_spec {
@@ -50,6 +53,12 @@ namespace output_spec {
 class scheme_handler;
 
 /* Decls.  */
+
+/* A class for the result of the first stage of parsing an output spec,
+   where values are represented as untyped strings.
+   The scheme might not exist.
+   The keys have not been validated against the scheme.
+   The values have not been validated against their keys.  */
 
 struct scheme_name_and_params
 {
@@ -158,23 +167,50 @@ private:
 class text_scheme_handler : public scheme_handler
 {
 public:
+  struct decoded_args
+  {
+    bool m_show_color;
+    bool m_show_nesting;
+    bool m_show_locations_in_nesting;
+    bool m_show_levels;
+  };
+
   text_scheme_handler () : scheme_handler ("text") {}
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostics::context &dc,
 	     const scheme_name_and_params &scheme_and_kvs) const final override;
+
+  bool
+  decode_kv (const context &ctxt,
+	     const std::string &key,
+	     const std::string &value,
+	     decoded_args &out_opts) const;
 };
 
 class sarif_scheme_handler : public scheme_handler
 {
 public:
+  struct decoded_args
+  {
+    label_text m_filename;
+    enum sarif_serialization_kind m_serialization_kind;
+    sarif_generation_options m_generation_opts;
+  };
+
   sarif_scheme_handler () : scheme_handler ("sarif") {}
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostics::context &dc,
 	     const scheme_name_and_params &scheme_and_kvs) const final override;
+
+  bool
+  decode_kv (const context &ctxt,
+	     const std::string &key,
+	     const std::string &value,
+	     decoded_args &out_opts) const;
 
 private:
   static std::unique_ptr<sarif_serialization_format>
@@ -184,12 +220,24 @@ private:
 class html_scheme_handler : public scheme_handler
 {
 public:
+  struct decoded_args
+  {
+    label_text m_filename;
+    html_generation_options m_html_gen_opts;
+  };
+
   html_scheme_handler () : scheme_handler ("experimental-html") {}
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostics::context &dc,
 	     const scheme_name_and_params &scheme_and_kvs) const final override;
+
+  bool
+  decode_kv (const context &ctxt,
+	     const std::string &key,
+	     const std::string &value,
+	     decoded_args &opts_out) const;
 };
 
 /* struct context.  */
@@ -353,56 +401,51 @@ text_scheme_handler::make_sink (const context &ctxt,
 				diagnostics::context &dc,
 				const scheme_name_and_params &scheme_and_kvs) const
 {
-  bool show_color = pp_show_color (dc.get_reference_printer ());
-  bool show_nesting = true;
-  bool show_locations_in_nesting = true;
-  bool show_levels = false;
+  decoded_args opts;
+  opts.m_show_color = pp_show_color (dc.get_reference_printer ());
+  opts.m_show_nesting = true;
+  opts.m_show_locations_in_nesting = true;
+  opts.m_show_levels = false;
   for (auto& iter : scheme_and_kvs.m_kvs)
     {
       const std::string &key = iter.first;
       const std::string &value = iter.second;
-      if (key == "color")
-	{
-	  if (!parse_bool_value (ctxt, key, value, show_color))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 show_nesting))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting-locations")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 show_locations_in_nesting))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting-levels")
-	{
-	  if (!parse_bool_value (ctxt, key, value, show_levels))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("color");
-      known_keys.safe_push ("show-nesting");
-      known_keys.safe_push ("show-nesting-locations");
-      known_keys.safe_push ("show-nesting-levels");
-      ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
-      return nullptr;
+      if (!decode_kv (ctxt, key, value, opts))
+	return nullptr;
     }
 
   auto sink = std::make_unique<diagnostics::text_sink> (dc);
-  sink->set_show_nesting (show_nesting);
-  sink->set_show_locations_in_nesting (show_locations_in_nesting);
-  sink->set_show_nesting_levels (show_levels);
+  sink->set_show_nesting (opts.m_show_nesting);
+  sink->set_show_locations_in_nesting (opts.m_show_locations_in_nesting);
+  sink->set_show_nesting_levels (opts.m_show_levels);
+  // FIXME: what about show_color?
   return sink;
+}
+
+bool
+text_scheme_handler::decode_kv (const context &ctxt,
+				const std::string &key,
+				const std::string &value,
+				decoded_args &opts_out) const
+{
+  if (key == "color")
+    return parse_bool_value (ctxt, key, value, opts_out.m_show_color);
+  if (key == "show-nesting")
+    return parse_bool_value (ctxt, key, value, opts_out.m_show_nesting);
+  if (key == "show-nesting-locations")
+    return parse_bool_value (ctxt, key, value,
+			     opts_out.m_show_locations_in_nesting);
+  if (key == "show-nesting-levels")
+    return parse_bool_value (ctxt, key, value, opts_out.m_show_levels);
+
+  /* Key not found.  */
+  auto_vec<const char *> known_keys;
+  known_keys.safe_push ("color");
+  known_keys.safe_push ("show-nesting");
+  known_keys.safe_push ("show-nesting-locations");
+  known_keys.safe_push ("show-nesting-levels");
+  ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
+  return false;
 }
 
 /* class sarif_scheme_handler : public scheme_handler.  */
@@ -413,69 +456,20 @@ make_sink (const context &ctxt,
 	   diagnostics::context &dc,
 	   const scheme_name_and_params &scheme_and_kvs) const
 {
-  label_text filename;
-  enum sarif_serialization_kind serialization_kind
-    = sarif_serialization_kind::json;
-  sarif_generation_options sarif_gen_opts;
+  decoded_args opts;
+  opts.m_serialization_kind = sarif_serialization_kind::json;
+
   for (auto& iter : scheme_and_kvs.m_kvs)
     {
       const std::string &key = iter.first;
       const std::string &value = iter.second;
-      if (key == "file")
-	{
-	  filename = label_text::take (xstrdup (value.c_str ()));
-	  continue;
-	}
-      if (key == "serialization")
-	{
-	  static const std::array<std::pair<const char *, enum sarif_serialization_kind>,
-				  (size_t)sarif_serialization_kind::num_values> value_names
-	    {{{"json", sarif_serialization_kind::json}}};
-
-	  if (!parse_enum_value<enum sarif_serialization_kind>
-		 (ctxt,
-		  key, value,
-		  value_names,
-		  serialization_kind))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "version")
-	{
-	  static const std::array<std::pair<const char *, enum sarif_version>,
-				  (size_t)sarif_version::num_versions> value_names
-	    {{{"2.1", sarif_version::v2_1_0},
-	      {"2.2-prerelease", sarif_version::v2_2_prerelease_2024_08_08}}};
-
-	    if (!parse_enum_value<enum sarif_version>
-		   (ctxt,
-		    key, value,
-		    value_names,
-		    sarif_gen_opts.m_version))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "state-graphs")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 sarif_gen_opts.m_state_graph))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("file");
-      known_keys.safe_push ("serialization");
-      known_keys.safe_push ("state-graphs");
-      known_keys.safe_push ("version");
-      ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
-      return nullptr;
+      if (!decode_kv (ctxt, key, value, opts))
+	return nullptr;
     }
 
   output_file output_file_;
-  if (filename.get ())
-    output_file_ = ctxt.open_output_file (std::move (filename));
+  if (opts.m_filename.get ())
+    output_file_ = ctxt.open_output_file (std::move (opts.m_filename));
   else
     // Default filename
     {
@@ -491,19 +485,69 @@ make_sink (const context &ctxt,
 	= open_sarif_output_file (dc,
 				  ctxt.get_affected_location_mgr (),
 				  basename,
-				  serialization_kind);
+				  opts.m_serialization_kind);
     }
   if (!output_file_)
     return nullptr;
 
-  auto serialization_obj = make_sarif_serialization_object (serialization_kind);
+  auto serialization_obj
+    = make_sarif_serialization_object (opts.m_serialization_kind);
 
   auto sink = make_sarif_sink (dc,
 			       *ctxt.get_affected_location_mgr (),
 			       std::move (serialization_obj),
-			       sarif_gen_opts,
+			       opts.m_generation_opts,
 			       std::move (output_file_));
+
   return sink;
+}
+
+bool
+sarif_scheme_handler::decode_kv (const context &ctxt,
+				 const std::string &key,
+				 const std::string &value,
+				 decoded_args &opts_out) const
+{
+  if (key == "file")
+    {
+      opts_out.m_filename = label_text::take (xstrdup (value.c_str ()));
+      return true;
+    }
+  if (key == "serialization")
+    {
+      static const std::array<std::pair<const char *, enum sarif_serialization_kind>,
+			      (size_t)sarif_serialization_kind::num_values> value_names
+	{{{"json", sarif_serialization_kind::json}}};
+      return parse_enum_value<enum sarif_serialization_kind>
+	(ctxt,
+	 key, value,
+	 value_names,
+	 opts_out.m_serialization_kind);
+    }
+  if (key == "version")
+    {
+      static const std::array<std::pair<const char *, enum sarif_version>,
+			      (size_t)sarif_version::num_versions> value_names
+	{{{"2.1", sarif_version::v2_1_0},
+	  {"2.2-prerelease", sarif_version::v2_2_prerelease_2024_08_08}}};
+      return parse_enum_value<enum sarif_version>
+	(ctxt,
+	 key, value,
+	 value_names,
+	 opts_out.m_generation_opts.m_version);
+    }
+  if (key == "state-graphs")
+    return parse_bool_value (ctxt, key, value,
+			     opts_out.m_generation_opts.m_state_graph);
+
+  /* Key not found.  */
+  auto_vec<const char *> known_keys;
+  known_keys.safe_push ("file");
+  known_keys.safe_push ("serialization");
+  known_keys.safe_push ("state-graphs");
+  known_keys.safe_push ("version");
+  ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
+  return false;
 }
 
 std::unique_ptr<sarif_serialization_format>
@@ -528,68 +572,18 @@ make_sink (const context &ctxt,
 	   diagnostics::context &dc,
 	   const scheme_name_and_params &scheme_and_kvs) const
 {
-  label_text filename;
-  html_generation_options html_gen_opts;
+  decoded_args opts;
   for (auto& iter : scheme_and_kvs.m_kvs)
     {
       const std::string &key = iter.first;
       const std::string &value = iter.second;
-      if (key == "css")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 html_gen_opts.m_css))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "file")
-	{
-	  filename = label_text::take (xstrdup (value.c_str ()));
-	  continue;
-	}
-      if (key == "javascript")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 html_gen_opts.m_javascript))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 html_gen_opts.m_show_state_diagrams))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams-dot-src")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 html_gen_opts.m_show_state_diagrams_dot_src))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams-sarif")
-	{
-	  if (!parse_bool_value (ctxt, key, value,
-				 html_gen_opts.m_show_state_diagrams_sarif))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("css");
-      known_keys.safe_push ("file");
-      known_keys.safe_push ("javascript");
-      known_keys.safe_push ("show-state-diagrams");
-      known_keys.safe_push ("show-state-diagram-dot-src");
-      known_keys.safe_push ("show-state-diagram-sarif");
-      ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
-      return nullptr;
+      if (!decode_kv (ctxt, key, value, opts))
+	return nullptr;
     }
 
   output_file output_file_;
-  if (filename.get ())
-    output_file_ = ctxt.open_output_file (std::move (filename));
+  if (opts.m_filename.get ())
+    output_file_ = ctxt.open_output_file (std::move (opts.m_filename));
   else
     // Default filename
     {
@@ -612,9 +606,49 @@ make_sink (const context &ctxt,
 
   auto sink = make_html_sink (dc,
 			      *ctxt.get_affected_location_mgr (),
-			      html_gen_opts,
+			      opts.m_html_gen_opts,
 			      std::move (output_file_));
   return sink;
+}
+
+bool
+html_scheme_handler::decode_kv (const context &ctxt,
+				const std::string &key,
+				const std::string &value,
+				decoded_args &opts_out) const
+{
+  if (key == "css")
+    return parse_bool_value (ctxt, key, value, opts_out.m_html_gen_opts.m_css);
+  if (key == "file")
+    {
+      opts_out.m_filename = label_text::take (xstrdup (value.c_str ()));
+      return true;
+    }
+  if (key == "javascript")
+    return parse_bool_value (ctxt, key, value,
+			     opts_out.m_html_gen_opts.m_javascript);
+  if (key == "show-state-diagrams")
+    return parse_bool_value (ctxt, key, value,
+			     opts_out.m_html_gen_opts.m_show_state_diagrams);
+  if (key == "show-state-diagrams-dot-src")
+    return parse_bool_value
+      (ctxt, key, value,
+       opts_out.m_html_gen_opts.m_show_state_diagrams_dot_src);
+  if (key == "show-state-diagrams-sarif")
+    return parse_bool_value
+      (ctxt, key, value,
+       opts_out.m_html_gen_opts.m_show_state_diagrams_sarif);
+
+  /* Key not found.  */
+  auto_vec<const char *> known_keys;
+  known_keys.safe_push ("css");
+  known_keys.safe_push ("file");
+  known_keys.safe_push ("javascript");
+  known_keys.safe_push ("show-state-diagrams");
+  known_keys.safe_push ("show-state-diagram-dot-src");
+  known_keys.safe_push ("show-state-diagram-sarif");
+  ctxt.report_unknown_key (key, get_scheme_name (), known_keys);
+  return false;
 }
 
 } // namespace output_spec
