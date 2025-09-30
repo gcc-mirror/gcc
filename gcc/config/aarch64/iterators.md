@@ -65,6 +65,10 @@
 ;; Iterator for all 16-bit scalar floating point modes (HF, BF)
 (define_mode_iterator HFBF [HF BF])
 
+;; Iterator for all integer modes (up to 64-bit) plus all General Purpose
+;; Floating-point registers (32- and 64-bit modes).
+(define_mode_iterator ALLI_GPF [ALLI GPF])
+
 ;; Iterator for all scalar floating point modes suitable for moving, including
 ;; special BF type and decimal floating point types (HF, SF, DF, TF, BF,
 ;; SD, DD and TD)
