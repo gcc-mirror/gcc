@@ -1023,8 +1023,26 @@
     case 1:
       {
 	rtx elt0 = CONST_VECTOR_ELT (operands[2], 0);
-	unsigned HOST_WIDE_INT val = ~UINTVAL (elt0);
-	operands[2] = loongarch_gen_const_int_vector (<MODE>mode, val & (-val));
+	unsigned HOST_WIDE_INT val;
+	if (GET_MODE_CLASS (<MODE>mode) == MODE_VECTOR_FLOAT)
+	  {
+	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (elt0);
+	  if (GET_MODE (elt0) == DFmode)
+	    {
+	      long tmp[2];
+	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0]);
+	    }
+	  else
+	    {
+	      long tmp;
+	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp);
+	    }
+	  }
+	else
+	  val = ~UINTVAL (elt0);
+	operands[2] = loongarch_gen_const_int_vector (<VIMODE>mode, val & (-val));
 	return "<x>vbitclri.%v0\t%<wu>0,%<wu>1,%V2";
       }
     case 2:
