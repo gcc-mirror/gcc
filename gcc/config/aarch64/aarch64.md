@@ -4829,15 +4829,21 @@
 			  (match_operand:GPF 3 "register_operand")))]
   ""
   {
-    rtx ccreg;
     enum rtx_code code = GET_CODE (operands[1]);
-
     if (code == UNEQ || code == LTGT)
       FAIL;
 
-    ccreg = aarch64_gen_compare_reg (code, XEXP (operands[1], 0),
-				  XEXP (operands[1], 1));
-    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+    rtx ccreg = XEXP (operands[1], 0);
+    enum machine_mode ccmode = GET_MODE (ccreg);
+    if (GET_MODE_CLASS (ccmode) == MODE_CC)
+      gcc_assert (XEXP (operands[1], 1) == const0_rtx);
+    else if (ccmode == QImode || ccmode == HImode)
+      FAIL;
+    else
+      {
+	ccreg = aarch64_gen_compare_reg (code, ccreg, XEXP (operands[1], 1));
+	operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+      }
   }
 )
 
@@ -4848,15 +4854,21 @@
 			  (match_operand:GPF 3 "register_operand")))]
   ""
   {
-    rtx ccreg;
     enum rtx_code code = GET_CODE (operands[1]);
-
     if (code == UNEQ || code == LTGT)
       FAIL;
 
-    ccreg = aarch64_gen_compare_reg (code, XEXP (operands[1], 0),
-				  XEXP (operands[1], 1));
-    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+    rtx ccreg = XEXP (operands[1], 0);
+    enum machine_mode ccmode = GET_MODE (ccreg);
+    if (GET_MODE_CLASS (ccmode) == MODE_CC)
+      gcc_assert (XEXP (operands[1], 1) == const0_rtx);
+    else if (ccmode == QImode || ccmode == HImode)
+      FAIL;
+    else
+      {
+	ccreg = aarch64_gen_compare_reg (code, ccreg, XEXP (operands[1], 1));
+	operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+      }
   }
 )
 
@@ -4867,15 +4879,21 @@
 			  (match_operand:GPI 3 "register_operand")))]
   ""
   {
-    rtx ccreg;
     enum rtx_code code = GET_CODE (operands[1]);
-
     if (code == UNEQ || code == LTGT)
       FAIL;
 
-    ccreg = aarch64_gen_compare_reg (code, XEXP (operands[1], 0),
-				      XEXP (operands[1], 1));
-    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+    rtx ccreg = XEXP (operands[1], 0);
+    enum machine_mode ccmode = GET_MODE (ccreg);
+    if (GET_MODE_CLASS (ccmode) == MODE_CC)
+      gcc_assert (XEXP (operands[1], 1) == const0_rtx);
+    else if (ccmode == QImode || ccmode == HImode)
+      FAIL;
+    else
+      {
+	ccreg = aarch64_gen_compare_reg (code, ccreg, XEXP (operands[1], 1));
+	operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+      }
   }
 )
 
