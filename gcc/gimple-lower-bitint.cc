@@ -105,7 +105,7 @@ bitint_precision_kind (int prec)
   bitint_big_endian = info.big_endian;
   bitint_extended = info.extended;
   if (!large_min_prec
-      && GET_MODE_PRECISION (limb_mode) < MAX_FIXED_MODE_SIZE)
+      && GET_MODE_PRECISION (limb_mode) <= MAX_FIXED_MODE_SIZE)
     large_min_prec = MAX_FIXED_MODE_SIZE + 1;
   if (!limb_prec)
     limb_prec = GET_MODE_PRECISION (limb_mode);
@@ -125,9 +125,9 @@ bitint_precision_kind (int prec)
 	mid_min_prec = prec;
       return bitint_prec_middle;
     }
-  if (large_min_prec && prec <= large_min_prec)
-    return bitint_prec_large;
-  return bitint_prec_huge;
+  if (huge_min_prec && prec >= huge_min_prec)
+    return bitint_prec_huge;
+  return bitint_prec_large;
 }
 
 /* Same for a TYPE.  */
