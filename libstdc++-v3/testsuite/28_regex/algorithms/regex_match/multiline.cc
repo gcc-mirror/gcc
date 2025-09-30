@@ -27,11 +27,11 @@ test01()
   VERIFY(std::regex_search("x\nab\nx", ml));
 
   ml.assign("a$\n^b$\n^c", ECMAScript|__multiline);
-  VERIFY( ml.flags() == ECMAScript|__multiline );
+  VERIFY( ml.flags() == (ECMAScript|__multiline) );
   VERIFY( regex_search("a\nb\nc", ml) );
 
   ml.assign("a$\n^b$\n^c", ECMAScript|__multiline|icase);
-  VERIFY( ml.flags() == ECMAScript|__multiline|icase );
+  VERIFY( ml.flags() == (ECMAScript|__multiline|icase) );
   VERIFY( regex_search("A\nB\nC", ml) );
 }
 

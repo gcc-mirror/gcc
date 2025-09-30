@@ -226,7 +226,7 @@ test01()
   format = L"%e";
   ret = tget.get(iter(iss), end, iss, err, &time,
 		 format.data(), format.data()+format.size());
-  VERIFY( err == ios_base::failbit|ios_base::eofbit );
+  VERIFY( err == (ios_base::failbit|ios_base::eofbit) );
   VERIFY( ret == end );
 
   iss.str(L"35");
