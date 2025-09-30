@@ -1,3 +1,56 @@
+2025-09-29  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/implementation_advice.rst: PolyORB
+	* doc/gnat_rm/implementation_defined_characteristics.rst: PolyORB
+	* doc/gnat_rm/implementation_defined_pragmas.rst: ASIS
+	* doc/gnat_rm/obsolescent_features.rst: PolyORB
+	* doc/gnat_rm/specialized_needs_annexes.rst: PolyORB
+	* doc/gnat_rm/the_gnat_library.rst: PolyORB
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: ASIS
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-09-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition): Handle contracts on
+	generic formal subprograms like on declarations of access-to-subprogram
+	types.
+
+2025-09-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Attribute_Constrained_Static_Value): Special case
+	stand-alone objects for GNATprove.
+
+2025-09-29  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Fix error message.
+
+2025-09-29  Javier Miranda  <miranda@adacore.com>
+
+	* aspects.adb (Get_Aspect_Id): Return No_Aspect for Unsigned_Base_Range
+	name.
+	* sem_prag.adb (Analyze_Pragma): Disable pragma Unsigned_Base_Range.
+	* par-ch4.adb (Scan_Apostrophe): Disable attribute Unsigned_Base_Range.
+	* doc/gnat_rm/gnat_language_extensions.rst: Remove documentation
+	of aspect unsigned base range.
+	* gnat_rm.texi: Regenerate.
+
+2025-09-29  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch6.adb (Validate_Subprogram_Calls): Do not Check_Calls in CodePeer_Mode.
+	(Check_Calls): Remove CodePeer_Mode special case.
+
+2025-09-29  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: update
+	rules for pragmas affected by assertion levels.
+	* gnat_rm.texi: Regenerate.
+
+2025-09-29  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Procedure_Call_Policies): Update the check
+	between the levels of the argument and the call.
+
 2025-09-23  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Prepend_Constructor_Procedure_Prologue):

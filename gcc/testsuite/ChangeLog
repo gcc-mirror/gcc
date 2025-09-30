@@ -1,3 +1,7 @@
+2025-09-29  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	* gcc.target/mips/pr99217-2.c: New test.
+
 2025-09-28  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pieces-memcmp-2.c: Remove mstore-max.
