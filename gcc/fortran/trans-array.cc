@@ -9446,6 +9446,15 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 
 	  gfc_add_expr_to_block (&se->pre, tmp);
 	}
+      else if (pass_optional && full_array_var && sym->as && sym->as->rank != 0)
+	{
+	  /* Perform calculation of bounds and strides of optional array dummy
+	     only if the argument is present.  */
+	  tmp = build3_v (COND_EXPR, gfc_conv_expr_present (sym),
+			  gfc_finish_block (&se->pre),
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
     }
 
   /* Deallocate the allocatable components of structures that are
