@@ -278,14 +278,14 @@ range_from_loop_direction (irange &r, tree type,
     r.set_varying (type);
   else if (dir == EV_DIR_GROWS)
     {
-      if (wi::gt_p (begin.lower_bound (), end.upper_bound (), sign))
+      if (wi::ge_p (begin.lower_bound (), end.upper_bound (), sign))
 	r.set_varying (type);
       else
 	r = int_range<1> (type, begin.lower_bound (), end.upper_bound ());
     }
   else
     {
-      if (wi::gt_p (end.lower_bound (), begin.upper_bound (), sign))
+      if (wi::ge_p (end.lower_bound (), begin.upper_bound (), sign))
 	r.set_varying (type);
       else
 	r = int_range<1> (type, end.lower_bound (), begin.upper_bound ());
