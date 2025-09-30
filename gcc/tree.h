@@ -5960,7 +5960,7 @@ tree_code_for_canonical_type_merging (enum tree_code code)
   return code;
 }
 
-/* Return ture if get_alias_set care about TYPE_CANONICAL of given type.
+/* Return true if get_alias_set care about TYPE_CANONICAL of given type.
    We don't define the types for pointers, arrays and vectors.  The reason is
    that pointers are handled specially: ptr_type_node accesses conflict with
    accesses to all other pointers.  This is done by alias.cc.

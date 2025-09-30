@@ -1672,7 +1672,7 @@ ipa_param_body_adjustments
    in ADJUSTMENTS.  FNDECL designates the new function clone which is being
    modified.  OLD_FNDECL is the function of which FNDECL is a clone (and which
    at the time of invocation still share DECL_ARGUMENTS).  ID is the
-   copy_body_data structure driving the wholy body copying process.  VARS is a
+   copy_body_data structure driving the whole body copying process.  VARS is a
    pointer to the head of the list of new local variables, TREE_MAP is the map
    that drives tree substitution in the cloning process.  */
 

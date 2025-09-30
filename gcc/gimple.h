@@ -1545,7 +1545,7 @@ extern size_t const gimple_ops_offset_[];
 extern enum gimple_statement_structure_enum const gss_for_code_[];
 
 /* This variable holds the currently expanded gimple statement for purposes
-   of comminucating the profile info to the builtin expanders.  */
+   of communicating the profile info to the builtin expanders.  */
 extern gimple *currently_expanding_gimple_stmt;
 
 size_t gimple_size (enum gimple_code code, unsigned num_ops = 0);

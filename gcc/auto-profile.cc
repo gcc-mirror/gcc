@@ -100,7 +100,7 @@ along with GCC; see the file COPYING3.  If not see
      significantly form one inline instance to another and from the
      offline version.
 
-     This is controlled by -fauto-profile-inlinig and is independent
+     This is controlled by -fauto-profile-inlining and is independent
      of -fearly-inlining.
 
    Phase 4: In AFDO pass.
@@ -128,7 +128,7 @@ along with GCC; see the file COPYING3.  If not see
    considered cols.  */
 gcov_type afdo_hot_bb_threshod = -1;
 
-/* Return ture if COUNT is possiby hot.  */
+/* Return true if COUNT is possibly hot.  */
 bool
 maybe_hot_afdo_count_p (profile_count count)
 {
@@ -372,7 +372,7 @@ public:
     removed_icall_target_ = true;
   }
 
-  /* Reutrn true if function is removed from indir target list.  */
+  /* Return true if function is removed from indir target list.  */
   bool
   removed_icall_target ()
   {
@@ -506,7 +506,7 @@ private:
      to it.  */
   bool realized_;
 
-  /* Ture if function is in worklist for merging/offlining.  */
+  /* True if function is in worklist for merging/offlining.  */
   bool in_worklist_;
 
   /* Pointer to outer function instance or NULL if this
@@ -1090,7 +1090,7 @@ function_instance::merge (function_instance *other,
 }
 
 /* Make inline function FN offline.
-   If tolevel function of same name already exists, then merge profiles.
+   If toplevel function of same name already exists, then merge profiles.
    Otherwise turn FN toplevel.  Return true if new toplevel function
    was introduced.
    If new toplevel functions are created and NEW_FUNCTIONS != NULL,
@@ -1641,7 +1641,7 @@ function_instance::match (cgraph_node *node,
   unsigned int start_location = get_combined_location
     (DECL_STRUCT_FUNCTION (node->decl)->function_start_locus, node->decl);
   /* When outputting code to builtins location we use line number 0.
-     craeate_gcov is stupid and hapilly computes offsets across files.
+     create_gcov is stupid and happily computes offsets across files.
      Silently ignore it.  */
   unsigned int zero_location
 	  = ((unsigned)(1-DECL_SOURCE_LINE (node->decl))) << 16;
@@ -2093,11 +2093,11 @@ autofdo_source_profile::offline_external_functions ()
 	seen.add (iter.first);
     }
 
-  /* Now process all tolevel (offline) function instances.
+  /* Now process all toplevel (offline) function instances.
 
      If instance has no definition in this translation unit,
      first offline all inlined functions which are defined here
-     (so we do not lose porfile due to cross-module inlining
+     (so we do not lose profile due to cross-module inlining
      done by link-time optimizers).
 
      If instance has a definition, look into all inlined functions
@@ -2697,7 +2697,7 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
       if (s == NULL)
 	{
 	  /* afdo inliner extends the stack by last entry with unknown
-	     location while chekcing if function was inlined during train run.
+	     location while checking if function was inlined during train run.
 	     We do not want to print diagnostics about every function
 	     which is not inlined.  */
 	  if (s && dump_enabled_p () && stack[i].location != UNKNOWN_LOCATION)
@@ -3441,7 +3441,7 @@ cmp (const void *a, const void *b)
   return 0;
 }
 
-/* To scalle a connected component of graph we collect desired scales of
+/* To scale a connected component of graph we collect desired scales of
    basic blocks on the boundary and then compute a robust average.  */
 
 struct scale

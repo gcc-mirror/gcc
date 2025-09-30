@@ -1801,7 +1801,7 @@ add_type_duplicate (odr_type val, tree type)
      before we can pass them to odr_types_equivalent_p (PR lto/83121).  */
   if (lto_location_cache::current_cache)
     lto_location_cache::current_cache->apply_location_cache ();
-  /* As a special case we stream mangles names of integer types so we can see
+  /* As a special case we stream mangled names of integer types so we can see
      if they are believed to be same even though they have different
      representation.  Avoid bogus warning on mismatches in these.  */
   if (TREE_CODE (type) != INTEGER_TYPE

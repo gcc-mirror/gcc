@@ -130,7 +130,7 @@ struct ipa_cst_ref_desc
   /* Linked list of duplicates created when call graph edges are cloned.  */
   struct ipa_cst_ref_desc *next_duplicate;
   /* Number of references in IPA structures, IPA_UNDESCRIBED_USE if the value
-     if out of control.  */
+     is out of control.  */
   int refcount;
 };
 

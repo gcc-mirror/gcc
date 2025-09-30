@@ -1280,7 +1280,8 @@ build_stack_save_restore (gcall **save, gcall **restore)
 			 1, tmp_var);
 }
 
-/* Generate IFN_ASAN_MARK call that poisons shadow of a for DECL variable.  */
+/* Generate IFN_ASAN_MARK call that poisons shadow memory of the DECL
+   variable.  */
 
 static tree
 build_asan_poison_call_expr (tree decl)

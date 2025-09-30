@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 struct ssaexpand SA;
 
 /* This variable holds the currently expanded gimple statement for purposes
-   of comminucating the profile info to the builtin expanders.  */
+   of communicating the profile info to the builtin expanders.  */
 gimple *currently_expanding_gimple_stmt;
 
 static rtx expand_debug_expr (tree);
@@ -834,8 +834,8 @@ add_scope_conflicts_2 (vars_ssa_cache &cache, tree name,
 {
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  /* Querry the cache for the mapping of addresses that are referendd by
-     ssa name NAME. Querrying it will fill in it.  */
+  /* Query the cache for the mapping of addresses that are referenced by
+     ssa name NAME.  Querying it will fill in it.  */
   bitmap_iterator bi;
   unsigned i;
   const_bitmap bmap = cache (name);

@@ -625,7 +625,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
   return edge != NULL;
 }
 
-/* Return ture if NODE contains hot calls.  */
+/* Return true if NODE contains hot calls.  */
 
 bool
 contains_hot_call_p (struct cgraph_node *node)

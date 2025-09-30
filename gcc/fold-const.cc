@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
   @@ This would also make life easier when this technology is used
   @@ for cross-compilers.  */
 
-/* The entry points in this file are fold, size_int_wide and size_binop.
+/* The entry points in this file are fold, size_int and size_binop.
 
    fold takes a tree as argument and returns a simplified tree.
 
