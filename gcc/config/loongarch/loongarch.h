@@ -1293,3 +1293,5 @@ struct GTY (()) machine_function
 
 #define TARGET_EXPLICIT_RELOCS \
   (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
+
+#define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
