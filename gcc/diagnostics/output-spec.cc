@@ -418,7 +418,7 @@ text_scheme_handler::make_sink (const context &ctxt,
   sink->set_show_nesting (opts.m_show_nesting);
   sink->set_show_locations_in_nesting (opts.m_show_locations_in_nesting);
   sink->set_show_nesting_levels (opts.m_show_levels);
-  // FIXME: what about show_color?
+  pp_show_color (sink->get_printer ()) = opts.m_show_color;
   return sink;
 }
 
