@@ -2094,6 +2094,12 @@ maybe_mark_function_versioned (tree decl)
 {
   if (!DECL_FUNCTION_VERSIONED (decl))
     {
+      /* Check if the name of the function has been overridden.  */
+      if (DECL_ASSEMBLER_NAME_SET_P (decl)
+	  && IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))[0] == '*')
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "cannot use function multiversioning on a renamed function");
+
       /* We need to insert function version now to make sure the correct
 	 pre-mangled assembler name is recorded.  */
       cgraph_node *node = cgraph_node::get_create (decl);

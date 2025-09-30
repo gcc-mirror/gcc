@@ -27776,6 +27776,13 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
       clauses[0].type = CPP_EOF;
       return;
     }
+  if (DECL_FUNCTION_VERSIONED (fndecl))
+    {
+      error_at (DECL_SOURCE_LOCATION (fndecl),
+		"%<#pragma omp declare %s%> cannot be used with function "
+		"multi-versioning", kind);
+      return;
+    }
 
   if (parms == NULL_TREE)
     parms = DECL_ARGUMENTS (fndecl);
