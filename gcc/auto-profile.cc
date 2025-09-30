@@ -1371,10 +1371,13 @@ function_instance::match (cgraph_node *node,
 	  gphi *phi = gpi.phi ();
 	  inline_stack stack;
 
+	  /* We do not assign discriminators to PHI nodes.
+	     In case we every start using them, we wil need to
+	     update tree-cfg.cc::assign_discriminators.  */
+	  gcc_assert (gimple_location (phi) == UNKNOWN_LOCATION);
 	  get_inline_stack_in_node (gimple_location (phi), &stack, node);
 	  count_info *info = lookup_count (gimple_location (phi), stack, node);
-	  if (info)
-	    counts.add (info);
+	  gcc_assert (!info);
 	  dump_stmt (phi, info, NULL, stack);
 	  counts.add (info);
 	  for (edge e : bb->succs)
