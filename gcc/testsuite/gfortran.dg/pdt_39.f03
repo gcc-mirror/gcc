@@ -49,7 +49,7 @@ contains
   subroutine geta_r8(a_lhs, t_rhs)
     real(r8), allocatable, intent(out) :: a_lhs(:,:)
     class(mat_t(k=r8,c=*,r=*)), intent(in) :: t_rhs
-    a_lhs = t_rhs%m_a
+    a_lhs = t_rhs%m_a                   ! Leaks 152 bytes in 2 blocks
     return 
   end subroutine geta_r8
  
@@ -94,7 +94,7 @@ program p
   if (mat_r4%c /= N) stop 2
   if (mat_r4%r /= M) stop 3
   mat_r4 = reshape( [ (real(i, kind=mat_r4%k), i=1,N*M) ], [ N, M ] )
-  a_r4 = mat_r4
+  a_r4 = mat_r4                         ! Leaks 24 bytes in 1 block.
   if (int (sum (a_r4)) /= 21) stop 4
   N = 4
   M = 4

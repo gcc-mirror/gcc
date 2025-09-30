@@ -2093,7 +2093,7 @@ enum ab_attribute
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
   AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
-  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
+  AB_PDT_COMP, AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
   AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
   AB_OACC_ROUTINE_NOHOST,
@@ -2172,6 +2172,7 @@ static const mstring attr_bits[] =
     minit ("PDT_TEMPLATE", AB_PDT_TEMPLATE),
     minit ("PDT_ARRAY", AB_PDT_ARRAY),
     minit ("PDT_STRING", AB_PDT_STRING),
+    minit ("PDT_COMP", AB_PDT_COMP),
     minit ("OACC_ROUTINE_LOP_GANG", AB_OACC_ROUTINE_LOP_GANG),
     minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
     minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
@@ -2404,6 +2405,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PDT_LEN, attr_bits);
       if (attr->pdt_type)
 	MIO_NAME (ab_attribute) (AB_PDT_TYPE, attr_bits);
+      if (attr->pdt_comp)
+	MIO_NAME (ab_attribute) (AB_PDT_COMP , attr_bits);
       if (attr->pdt_template)
 	MIO_NAME (ab_attribute) (AB_PDT_TEMPLATE, attr_bits);
       if (attr->pdt_array)
@@ -2680,6 +2683,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_PDT_TYPE:
 	      attr->pdt_type = 1;
+	      break;
+	    case AB_PDT_COMP:
+	      attr->pdt_comp = 1;
 	      break;
 	    case AB_PDT_TEMPLATE:
 	      attr->pdt_template = 1;

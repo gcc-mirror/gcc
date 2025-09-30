@@ -16663,6 +16663,26 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
+  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pdt_template
+      && !sym->attr.pdt_type && !sym->attr.pdt_template
+      && !(gfc_get_derived_super_type (sym)
+	   && (gfc_get_derived_super_type (sym)->attr.pdt_type
+	       ||  gfc_get_derived_super_type (sym)->attr.pdt_template)))
+    {
+      gfc_actual_arglist *type_spec_list;
+      if (gfc_get_pdt_instance (c->param_list, &c->ts.u.derived,
+				&type_spec_list)
+	  != MATCH_YES)
+	return false;
+      gfc_free_actual_arglist (c->param_list);
+      c->param_list = type_spec_list;
+      if (!sym->attr.pdt_type)
+	sym->attr.pdt_comp = 1;
+    }
+  else if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pdt_type
+	   && !sym->attr.pdt_type)
+    sym->attr.pdt_comp = 1;
+
   if (c->attr.proc_pointer && c->ts.interface)
     {
       gfc_symbol *ifc = c->ts.interface;
@@ -16863,16 +16883,16 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     }
 
   if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
-        && !c->ts.deferred)
+      && !c->ts.deferred)
     {
-     if (c->ts.u.cl->length == NULL
-         || (!resolve_charlen(c->ts.u.cl))
-         || !gfc_is_constant_expr (c->ts.u.cl->length))
-       {
-         gfc_error ("Character length of component %qs needs to "
-                    "be a constant specification expression at %L",
-                    c->name,
-                    c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
+      if (c->ts.u.cl->length == NULL
+	  || (!resolve_charlen(c->ts.u.cl))
+	  || !gfc_is_constant_expr (c->ts.u.cl->length))
+	{
+	  gfc_error ("Character length of component %qs needs to "
+		     "be a constant specification expression at %L",
+		     c->name,
+		     c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
          return false;
        }
 
@@ -16894,8 +16914,8 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       && !c->attr.pointer && !c->attr.allocatable)
     {
       gfc_error ("Character component %qs of %qs at %L with deferred "
-                 "length must be a POINTER or ALLOCATABLE",
-                 c->name, sym->name, &c->loc);
+		 "length must be a POINTER or ALLOCATABLE",
+		 c->name, sym->name, &c->loc);
       return false;
     }
 
@@ -16910,14 +16930,14 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       sprintf (name, "_%s_length", c->name);
       strlen = gfc_find_component (sym, name, true, true, NULL);
       if (strlen == NULL)
-        {
-          if (!gfc_add_component (sym, name, &strlen))
-            return false;
-          strlen->ts.type = BT_INTEGER;
-          strlen->ts.kind = gfc_charlen_int_kind;
-          strlen->attr.access = ACCESS_PRIVATE;
-          strlen->attr.artificial = 1;
-        }
+	{
+	  if (!gfc_add_component (sym, name, &strlen))
+	    return false;
+	  strlen->ts.type = BT_INTEGER;
+	  strlen->ts.kind = gfc_charlen_int_kind;
+	  strlen->attr.access = ACCESS_PRIVATE;
+	  strlen->attr.artificial = 1;
+	}
     }
 
   if (c->ts.type == BT_DERIVED
@@ -16927,27 +16947,27 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       && !c->ts.u.derived->attr.use_assoc
       && !gfc_check_symbol_access (c->ts.u.derived)
       && !gfc_notify_std (GFC_STD_F2003, "the component %qs is a "
-                          "PRIVATE type and cannot be a component of "
-                          "%qs, which is PUBLIC at %L", c->name,
-                          sym->name, &sym->declared_at))
+			  "PRIVATE type and cannot be a component of "
+			  "%qs, which is PUBLIC at %L", c->name,
+			  sym->name, &sym->declared_at))
     return false;
 
   if ((sym->attr.sequence || sym->attr.is_bind_c) && c->ts.type == BT_CLASS)
     {
       gfc_error ("Polymorphic component %s at %L in SEQUENCE or BIND(C) "
-                 "type %s", c->name, &c->loc, sym->name);
+		 "type %s", c->name, &c->loc, sym->name);
       return false;
     }
 
   if (sym->attr.sequence)
     {
       if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.sequence == 0)
-        {
+	{
           gfc_error ("Component %s of SEQUENCE type declared at %L does "
-                     "not have the SEQUENCE attribute",
-                     c->ts.u.derived->name, &sym->declared_at);
-          return false;
-        }
+		     "not have the SEQUENCE attribute",
+		     c->ts.u.derived->name, &sym->declared_at);
+	  return false;
+	}
     }
 
   if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.generic)
@@ -16955,7 +16975,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   else if (c->ts.type == BT_CLASS && c->attr.class_ok
            && CLASS_DATA (c)->ts.u.derived->attr.generic)
     CLASS_DATA (c)->ts.u.derived
-                    = gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
+		= gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
 
   /* If an allocatable component derived type is of the same type as
      the enclosing derived type, we need a vtable generating so that
@@ -16968,10 +16988,10 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
      derived type list; even in formal namespaces, where derived type
      pointer components might not have been declared.  */
   if (c->ts.type == BT_DERIVED
-        && c->ts.u.derived
-        && c->ts.u.derived->components
-        && c->attr.pointer
-        && sym != c->ts.u.derived)
+      && c->ts.u.derived
+      && c->ts.u.derived->components
+      && c->attr.pointer
+      && sym != c->ts.u.derived)
     add_dt_to_dt_list (c->ts.u.derived);
 
   if (c->as && c->as->type != AS_DEFERRED
@@ -16979,8 +16999,8 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     return false;
 
   if (!gfc_resolve_array_spec (c->as,
-                               !(c->attr.pointer || c->attr.proc_pointer
-                                 || c->attr.allocatable)))
+			       !(c->attr.pointer || c->attr.proc_pointer
+				 || c->attr.allocatable)))
     return false;
 
   if (c->initializer && !sym->attr.vtype

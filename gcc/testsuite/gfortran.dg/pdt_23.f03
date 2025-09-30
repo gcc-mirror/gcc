@@ -30,4 +30,5 @@ program p
    buffer = "lmn"
    read (buffer, *) x    ! PDT IO was incorrect (PRs 84143/84432).
    if (x%c .ne. 'lmn') STOP 5
+!   if (allocated (x)) deallocate (x) ! Used to seg fault - invalid memory reference.
 end

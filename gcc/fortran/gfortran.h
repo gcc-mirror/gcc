@@ -1033,7 +1033,7 @@ typedef struct
   /* These are the attributes required for parameterized derived
      types.  */
   unsigned pdt_kind:1, pdt_len:1, pdt_type:1, pdt_template:1,
-	   pdt_array:1, pdt_string:1;
+	   pdt_array:1, pdt_string:1, pdt_comp:1;
 
   /* This is omp_{out,in,priv,orig} artificial variable in
      !$OMP DECLARE REDUCTION.  */

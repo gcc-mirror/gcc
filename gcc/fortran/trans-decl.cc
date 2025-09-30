@@ -1688,6 +1688,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && !(sym->attr.use_assoc || sym->attr.dummy))
     gfc_defer_symbol_init (sym);
 
+  if ((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_comp)
+      && gfc_current_ns == sym->ns
+      && !(sym->attr.use_assoc || sym->attr.dummy))
+    gfc_defer_symbol_init (sym);
+
   /* Dummy PDT 'len' parameters should be checked when they are explicit.  */
   if ((sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
       && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
@@ -4921,7 +4926,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
       if (sym->ts.type == BT_DERIVED
 	  && sym->ts.u.derived
-	  && sym->ts.u.derived->attr.pdt_type)
+	  && (sym->ts.u.derived->attr.pdt_type || sym->ts.u.derived->attr.pdt_comp))
 	{
 	  is_pdt_type = true;
 	  gfc_init_block (&tmpblock);

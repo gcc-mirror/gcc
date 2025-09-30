@@ -22,4 +22,5 @@
 
    if (bar%x%ell /= parm) stop 1    ! Then these component references failed in
    if (bar%x%i /= 2 * parm) stop 2  ! translation.
+   deallocate (foo, bar%x)
 end

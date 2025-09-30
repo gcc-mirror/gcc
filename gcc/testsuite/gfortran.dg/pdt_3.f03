@@ -32,7 +32,6 @@ end module
     type (mytype (b=s*2)) :: mat2
   end type x
 
-  real, allocatable :: matrix (:,:)
   type(thytype(ftype, 4, 4)) :: w
   type(x(ftype,ftype,256)) :: q
   class(mytype(ftype, :)), allocatable :: cz
@@ -54,10 +53,9 @@ end module
   if (size (q%mat2%d) .ne. 4*mat_dim**2) STOP 10
 
 ! Now check some basic OOP with PDTs
-  matrix = w%d
 
-! TODO - for some reason, using w%d directly in the source causes a seg fault.
-  allocate (cz, source = mytype(ftype, d_dim)( 0, matrix))
+! Using w%d directly in the source used to cause a seg fault.
+  allocate (cz, source = mytype(ftype, d_dim)( 0, w%d))  ! Leaks 64 bytes in 1 block.
   select type (cz)
     type is (mytype(ftype, *))
       if (int (sum (cz%d)) .ne. 136) STOP 11
@@ -76,5 +74,4 @@ end module
   end select
 
   deallocate (cz)
-  deallocate (matrix)
 end
