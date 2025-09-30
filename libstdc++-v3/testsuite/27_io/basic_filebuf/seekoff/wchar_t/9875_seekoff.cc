@@ -66,7 +66,7 @@ protected:
   
   virtual int
   do_length(std::mbstate_t&, const char* from, const char* end,
-	    std::size_t max)
+	    std::size_t max) const
   {
     std::size_t len = (end - from) / sizeof(wchar_t);
     return std::min(len, max) * sizeof(wchar_t);
