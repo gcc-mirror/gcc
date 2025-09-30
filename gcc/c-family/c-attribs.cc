@@ -194,6 +194,9 @@ static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int
 static tree handle_btf_decl_tag_attribute (tree *, tree, tree, int, bool *);
 static tree handle_btf_type_tag_attribute (tree *, tree, tree, int, bool *);
 
+static tree handle_suppress_coverage_attribute (tree *, tree, tree, int,
+						bool *);
+
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
   { name, function, type, variable }
@@ -644,6 +647,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_special_var_sec_attribute, attr_section_exclusions },
   { "access",		      1, 3, false, true, true, false,
 			      handle_access_attribute, NULL },
+  { "suppress_coverage",       0, 0, true, false, false, false,
+			      handle_suppress_coverage_attribute, NULL },
   /* Attributes used by Objective-C.  */
   { "NSObject",		      0, 0, true, false, false, false,
 			      handle_nsobject_attribute, NULL },
@@ -5487,6 +5492,22 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     warning (OPT_Wattributes, "%qE attribute ignored", name);
 
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Handle the "suppress_coverge" attribute.  We don't really do anything here,
+   just check later if it is set.  */
+static tree
+handle_suppress_coverage_attribute (tree *node, tree name,
+				    tree ARG_UNUSED (args),
+				    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

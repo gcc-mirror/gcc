@@ -2815,6 +2815,19 @@ positional initialization will result in future breakage.
 GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
 
+@cindex @code{suppress_coverage}
+@item suppress_coverage
+This attribute applies to functions.
+
+The @code{suppress_coverage} attribute results in GCC not considering the
+function or its lines, arcs, conditions, or paths towards the total
+count.  This attribute does nothing unless coverage is enabled,
+e.g. with @option{--coverage} or @option{-fpath-coverage}.  This is useful
+to suppress coverage for functions that are uninteresting or impractical to
+cover.  If coverage is suppressed with this attribute then GCC will not
+instrument for MC/DC @option{-fcondition-coverage} or prime path
+coverage @option{-fpath-coverage}.
+
 @atindex @code{error}
 @atindex @code{warning}
 @cindex functions that are supposed to be optimized away
@@ -10138,6 +10151,7 @@ option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
 * Structure-Layout Pragmas::
 * Weak Pragmas::
 * Diagnostic Pragmas::
+* Coverage Pragmas::
 * Visibility Pragmas::
 * Push/Pop Macro Pragmas::
 * Function Specific Option Pragmas::
@@ -10599,6 +10613,90 @@ This is just like @samp{pragma GCC error} except that a warning
 message is issued instead of an error message.  Unless
 @option{-Werror} is in effect, in which case this pragma will generate
 an error as well.
+
+@end table
+
+@node Coverage Pragmas
+@subsection Coverage Pragmas
+
+@table @code
+@cindex pragma, suppress_coverage
+@item #pragma GCC suppress_coverage begin
+@itemx #pragma GCC suppress_coverage end
+The lines of code between the @code{begin} and @code{end} will not be
+considered towards any coverage.  This is independent of the code
+structure, and @code{end} may appear in a different scope than the
+corresponding @code{begin}.
+
+This pragma is useful to suppress coverage for code that is unreachable yet
+counts towards coverage and pollutes the report, which is a common
+problem with defensive code or when asserting invariants and properties.
+This attribute does nothing unless coverage is enabled, e.g. with
+@option{--coverage} or @option{-fpath-coverage}.
+
+A @code{end} without a @code{begin}, or a @code{begin} when another is
+already in effect, will generate a warning.  A @code{begin} without a
+matching @code{end} will suppress the rest of the file.
+
+@smallexample
+  #pragma GCC suppress_coverage begin
+  if (cond)
+    @{
+      /* Coverage is disbled for all statements in this block.  */
+      foo ();
+    @}
+  else
+    @{
+  #pragma GCC suppress_coverage end
+      /* Coverage is restored.  */
+      bar ();
+    @}
+
+  /* Counts towards coverage.  */
+  int a = 42;
+
+#pragma GCC suppress_coverage begin
+  @{
+    /* Does not count towards coverage.  */
+    bar (&a);
+    ...
+  @}
+@end smallexample
+
+Asserts introduce a branch, and the goal of asserting invariants is that
+the assert should not trigger, which would leave the assertion-failure
+branch uncovered.  These branches should not be taken (or cannot, in
+some cases), and would make full coverage impossible, yet clearly
+contribute to correctness.  By suppressing coverage for asserts we can
+fix this problem.
+
+@smallexample
+#define REQUIRE(pred, msg) do @{ \
+  _Pragma ("GCC suppress_coverage begin") \
+     assert (((void)msg, pred)); \
+  _Pragma ("GCC suppress_coverage end") \
+  @} while (0)
+
+double div (double x, double y)
+@{
+  /* gcov reports that this function has no branches.  */
+  REQUIRE (y != 0, "division by zero");
+  return x / y;
+@}
+@end smallexample
+
+@samp{pragma GCC suppress_coverage} can suppress expressions like the
+condition in @code{if} statements:
+
+@smallexample
+#pragma GCC suppress_coverage begin
+if (x < y) // Does not count towards coverage.
+#pragma GCC suppress_coverage end
+  @{
+    /* Counts towards coverage.  */
+    foo ();
+  @}
+@end smallexample
 
 @end table
 

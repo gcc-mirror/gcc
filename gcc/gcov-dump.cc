@@ -41,6 +41,7 @@ static void tag_arcs (const char *, unsigned, int, unsigned);
 static void tag_conditions (const char *, unsigned, int, unsigned);
 static void tag_paths (const char *, unsigned, int, unsigned);
 static void tag_lines (const char *, unsigned, int, unsigned);
+static void tag_suppress (const char *, unsigned, int, unsigned);
 static void tag_counters (const char *, unsigned, int, unsigned);
 static void tag_summary (const char *, unsigned, int, unsigned);
 extern int main (int, char **);
@@ -82,6 +83,7 @@ static const tag_format_t tag_table[] =
   {GCOV_TAG_CONDS, "CONDITIONS", tag_conditions},
   {GCOV_TAG_PATHS, "PATHS", tag_paths},
   {GCOV_TAG_LINES, "LINES", tag_lines},
+  {GCOV_TAG_SUPPRESS, "SUPPRESS", tag_suppress},
   {GCOV_TAG_OBJECT_SUMMARY, "OBJECT_SUMMARY", tag_summary},
   {0, NULL, NULL}
 };
@@ -469,6 +471,26 @@ tag_lines (const char *filename ATTRIBUTE_UNUSED,
 	      printf ("%s`%s'", sep, source);
 	      sep = ":";
 	    }
+	}
+    }
+}
+
+static void
+tag_suppress (const char *filename ATTRIBUTE_UNUSED,
+	      unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED,
+	      unsigned depth)
+{
+  if (flag_dump_contents)
+    {
+      unsigned nblocks = GCOV_TAG_SUPPRESS_NUM (length);
+      printf (" %u blocks suppressed", nblocks);
+      for (unsigned i = 0; i != nblocks; ++i)
+	{
+	  gcov_position_t position = gcov_position ();
+	  unsigned blockno = gcov_read_unsigned ();
+	  printf ("\n");
+	  print_prefix (filename, depth, position);
+	  printf (VALUE_PADDING_PREFIX "block %u", blockno);
 	}
     }
 }

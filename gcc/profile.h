@@ -81,4 +81,11 @@ extern struct gcov_summary *profile_info, *gcov_profile_info;
    -fcondition-coverage -fpath-coverage.  */
 extern bool coverage_instrumentation_p ();
 
+/* For #pragma GCC suppress_coverage begin/end.  */
+extern bool in_pragma_suppress_coverage_p (gimple*, bool);
+extern bool location_in_pragma_suppress_coverage_p (location_t);
+extern bool coverage_suppressed_p (basic_block);
+extern void suppress_coverage (basic_block);
+extern void suppress_coverage_unset (basic_block);
+
 #endif /* PROFILE_H */

@@ -133,6 +133,7 @@ static bool gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
 static bool verify_gimple_transaction (gtransaction *);
 static bool call_can_make_abnormal_goto (gimple *);
+static bool gimple_empty_block_p (basic_block);
 
 /* Flowgraph optimization and cleanup.  */
 static void gimple_merge_blocks (basic_block, basic_block);
@@ -492,6 +493,7 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
   gimple *prev_stmt = NULL;
   bool start_new_block = true;
   bool first_stmt_of_seq = true;
+  bool suppress_coverage_p = false;
 
   while (!gsi_end_p (i))
     {
@@ -510,6 +512,13 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
       if (stmt && is_gimple_call (stmt))
 	gimple_call_initialize_ctrl_altering (stmt);
 
+      suppress_coverage_p = in_pragma_suppress_coverage_p (stmt,
+							   suppress_coverage_p);
+      if (suppress_coverage_p && !coverage_suppressed_p (bb))
+	start_new_block = true;
+      else if (!suppress_coverage_p && coverage_suppressed_p (bb))
+	start_new_block = true;
+
       /* If the statement starts a new basic block or if we have determined
 	 in a previous pass that we need to create a new block for STMT, do
 	 so now.  */
@@ -518,6 +527,7 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 	  if (!first_stmt_of_seq)
 	    gsi_split_seq_before (&i, &seq);
 	  bb = create_basic_block (seq, bb);
+
 	  start_new_block = false;
 	  prev_stmt = NULL;
 	}
@@ -525,6 +535,9 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
       /* Now add STMT to BB and create the subgraphs for special statement
 	 codes.  */
       gimple_set_bb (stmt, bb);
+
+      if (suppress_coverage_p)
+	suppress_coverage (bb);
 
       /* If STMT is a basic block terminator, set START_NEW_BLOCK for the
 	 next iteration.  */
@@ -620,6 +633,44 @@ make_blocks (gimple_seq seq)
 	     there isn't anything else to move after it.  */
 	  label = gsi_none ();
 	}
+    }
+
+  /* If the function decl itself is in a #pragma GCC suppress_coverage block we
+     insert a nop with the same location as the function so that we're
+     guaranteed that the first block gets coverage suppressed and the function
+     entry isn't counted.
+
+     #pragma GCC suppress_coverage begin
+     int foo (args) // count = suppressed
+     {
+     #pragma GCC suppress_coverage end
+       ...
+     }
+
+     If it isn't and the first stmt is suppressed we insert a nop to ensure that
+     the function entry is counted, but the first (real) stmt is not:
+
+     int foo (args) // count = 1
+     {
+     #pragma GCC suppress_coverage begin
+       bar (); // count = suppressed
+     #pragma GCC suppress_coverage end
+       ...
+     }
+
+     gimple_can_merge_blocks_p is aware of specific instruction.  */
+  gimple_stmt_iterator gsi = gsi_start (seq);
+  const location_t decl_loc = DECL_SOURCE_LOCATION (cfun->decl);
+  if (location_in_pragma_suppress_coverage_p (decl_loc))
+    {
+      gimple *nop = gimple_build_nop ();
+      gimple_set_location (nop, decl_loc);
+      gsi_insert_seq_before (&gsi, nop, GSI_NEW_STMT);
+    }
+  else if (*gsi && in_pragma_suppress_coverage_p (*gsi, false))
+    {
+      gimple *nop = gimple_build_nop ();
+      gsi_insert_seq_before (&gsi, nop, GSI_NEW_STMT);
     }
 
   make_blocks_1 (seq, ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -1827,6 +1878,25 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
+  /* Check if the compiler-inserted nop should block merges.  */
+  if (stmt && gimple_nop_p (stmt)
+      && gimple_location (stmt) == DECL_SOURCE_LOCATION (cfun->decl)
+      && coverage_suppressed_p (a) && !coverage_suppressed_p (b))
+    return false;
+
+  /* We cannot merge blocks if one has suppressed coverage and the other hasn't.
+     The exception is when the merge-into block is empty AND is the one with
+     coverage suppressed.  This can happen for code like this:
+
+     while (cond)
+       #pragma GCC suppress_coverage begin
+       foo ();
+       #pragma GCC suppress_coverage end
+  */
+  if (coverage_suppressed_p (a) != coverage_suppressed_p (b)
+      && !(coverage_suppressed_p (a) && gimple_empty_block_p (a)))
+      return false;
+
   /* Examine the labels at the beginning of B.  */
   for (gimple_stmt_iterator gsi = gsi_start_bb (b); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -1975,6 +2045,10 @@ gimple_merge_blocks (basic_block a, basic_block b)
 {
   gimple_stmt_iterator last, gsi;
   gphi_iterator psi;
+
+  if (coverage_suppressed_p (a) && !coverage_suppressed_p (b)
+      && gimple_empty_block_p (a))
+    suppress_coverage_unset (a);
 
   if (dump_file)
     fprintf (dump_file, "Merging blocks %d and %d\n", a->index, b->index);
@@ -2893,6 +2967,8 @@ gimple_split_edge (edge edge_in)
 
   new_bb = create_empty_bb (after_bb);
   new_bb->count = edge_in->count ();
+  if (coverage_suppressed_p (after_bb))
+    suppress_coverage (new_bb);
 
   /* We want to avoid re-allocating PHIs when we first
      add the fallthru edge from new_bb to dest but we also
@@ -6279,6 +6355,8 @@ gimple_split_block (basic_block bb, void *stmt)
   edge_iterator ei;
 
   new_bb = create_empty_bb (bb);
+  if (coverage_suppressed_p (bb))
+    suppress_coverage (new_bb);
 
   /* Redirect the outgoing edges.  */
   new_bb->succs = bb->succs;
@@ -6435,6 +6513,8 @@ gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
   gimple_stmt_iterator gsi_tgt;
 
   new_bb = create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  if (coverage_suppressed_p (bb))
+    suppress_coverage (new_bb);
 
   /* Copy the PHI nodes.  We ignore PHI node arguments here because
      the incoming edges have not been setup yet.  */
@@ -9478,6 +9558,8 @@ insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond,
 
   /* Create conditionally executed block.  */
   new_bb = create_empty_bb (bb);
+  if (coverage_suppressed_p (bb))
+    suppress_coverage (new_bb);
   edge e = make_edge (bb, new_bb, EDGE_TRUE_VALUE);
   e->probability = prob;
   new_bb->count = e->count ();

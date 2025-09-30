@@ -228,7 +228,8 @@ path  4 not covered: lines 8 8(false) 11(true) 11 13(false) 16 17
 
 This means to cover path 2 you must run lines 8, 11, 13, 14, and 17,
 evaluating the decision at 8 false and the decisions at 11 and 13 to
-@code{false}.
+@code{false}.  @code{<line>(suppress)} means that @code{<line>} is the
+last line before a sequence of suppressed statements.
 
 @item --prime-paths-source [=@var{type}]
 Write path coverage to the output file, and write path summary info to
@@ -671,7 +672,8 @@ containing no code.  Unexecuted lines are marked @samp{#####} or
 non-exceptional paths or only exceptional paths such as C++ exception
 handlers, respectively. Given the @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
-is reachable via non-exceptional or exceptional paths.
+is reachable via non-exceptional or exceptional paths.  Suppressed lines
+are marked with @samp{#}.
 Executed basic blocks having a statement with zero @var{execution_count}
 end with @samp{*} character and are colored with magenta color with
 the @option{-k} option.  This functionality is not supported in Ada.
@@ -1176,6 +1178,82 @@ In this mode, every missing path is expanded using the lines and
 decisions like @option{--prime-paths-source} but printed on a single
 line.  This mode provides a good overview over the paths and for
 tracking how different tests and inputs exercises the code.
+
+Coverage can be suppressed by using
+@code{#pragma GCC suppress_coverage}.  The code within @code{begin} and
+@code{end} will not contribute to coverage totals.  This is very useful
+for unreachable or hard-to-reach code, precondition asserts/contracts,
+or other code that is noise in the coverage report.  Suppressed lines
+are annotated with @samp{#} in the @var{execution_count} column.
+
+@smallexample
+$ gcov -t tmp
+        -:    0:Source:tmp.c
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:
+        -:    4:int
+        1:    5:main (void)
+        -:    6:@{
+        -:    7:  int i, total;
+        1:    8:  total = 0;
+        -:    9:
+       11:   10:  for (i = 0; i < 10; i++)
+       10:   11:    total += i;
+        -:   12:
+        -:   13:#pragma GCC suppress_coverage begin
+        #:   14:  if (i < 0)
+        #:   15:    abort ();
+        -:   16:#pragma GCC suppress_coverage end
+        -:   17:
+       1*:   18:  int v = total > 100 ? 1 : 2;
+        -:   19:
+       1*:   20:  if (total != 45 && v == 1)
+    #####:   21:    printf ("Failure\n");
+        -:   22:  else
+        1:   23:    printf ("Success\n");
+        1:   24:  return 0;
+        -:   25:@}
+@end smallexample
+
+New prime paths are computed when code is suppressed by merging the
+suppressed code into a superblocks, and considering any path through the
+superblock as coverage.  This is an example where a full if-then-else is
+suppressed.  Path 4 is @code{total > 100} is followed by any path
+through the @samp{(suppressed)} segment to the @code{return 0}.
+
+@smallexample
+$ gcov -t --prime-paths-source tmp
+path 4 not covered:
+BB  3:             10:  for (i = 0; i < 10; i++)
+BB  3:             11:    total += i;
+BB  4: (false)     10:  for (i = 0; i < 10; i++)
+BB  5: (true)      13:  int v = total > 100 ? 1 : 2;
+BB  6: (suppress)  13:  int v = total > 100 ? 1 : 2;
+BB 12:             21:  return 0;
+
+        1:    5:main (void)
+        -:    6:@{
+        -:    7:  int i, total;
+        1:    8:  total = 0;
+        -:    9:
+       11:   10:  for (i = 0; i < 10; i++)
+       10:   11:    total += i;
+        -:   12:
+       1*:   13:  int v = total > 100 ? 1 : 2;
+        -:   14:
+        -:   15:#pragma GCC suppress_coverage begin
+        #:   16:  if (total != 45 && v == 1)
+        #:   17:    printf ("Failure\n");
+        -:   18:  else
+        #:   19:    printf ("Success\n");
+        -:   20:#pragma GCC suppress_coverage end
+        1:   21:  return 0;
+        -:   22:@}
+@end smallexample
 
 The execution counts are cumulative.  If the example program were
 executed again without removing the @file{.gcda} file, the count for the

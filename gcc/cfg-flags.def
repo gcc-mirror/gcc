@@ -93,6 +93,9 @@ DEF_BASIC_BLOCK_FLAG(VISITED, 13)
    demand, and is available after calling compute_transaction_bits().  */
 DEF_BASIC_BLOCK_FLAG(IN_TRANSACTION, 14)
 
+/* Set on blocks that are in #pragma GCC suppress_coverage blocks.  */
+DEF_BASIC_BLOCK_FLAG(COVERAGE_SUPPRESSED, 15)
+
 #endif
 
 #ifdef DEF_EDGE_FLAG

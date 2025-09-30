@@ -1041,6 +1041,43 @@ handle_pragma_diagnostic_early_pp (cpp_reader *)
   handle_pragma_diagnostic_impl<true, true> ();
 }
 
+/* Parse #pragma GCC suppress_coverage begin|end to stop lines from contributing
+   towards (missing) coverage.  */
+static void
+handle_pragma_suppress_coverage (cpp_reader*)
+{
+  tree x;
+  location_t loc;
+  auto token = pragma_lex (&x);
+  enum { bad, begin, end } action = bad;
+
+  if (token == CPP_NAME)
+    {
+      const char *op = IDENTIFIER_POINTER (x);
+      if (!strcmp (op, "begin"))
+	action = begin;
+      else if (!strcmp (op, "end"))
+	action = end;
+    }
+
+  if (bad == action)
+    GCC_BAD ("%<#pragma GCC suppress_coverage%> must be followed by %<begin%> "
+	     "or %<end%>");
+  else if (end == action)
+    {
+      if (!suppress_coverage_end (input_location))
+	GCC_BAD ("no matching begin for %<#pragma GCC suppress_coverage end%>");
+    }
+  else
+    {
+      if (!suppress_coverage_begin (input_location))
+	GCC_BAD ("%<#pragma GCC suppress_coverage begin%> "
+		 "was already in effect, ignored");
+    }
+  if (pragma_lex (&x, &loc) != CPP_EOF)
+    GCC_BAD_AT (loc, "junk at end of %<#pragma GCC suppress_coverage%>");
+}
+
 /*  Parse #pragma GCC target (xxx) to set target specific options.  */
 static void
 handle_pragma_target(cpp_reader *)
@@ -1837,6 +1874,8 @@ init_pragma (void)
   c_register_pragma (0, "weak", handle_pragma_weak);
 
   c_register_pragma ("GCC", "visibility", handle_pragma_visibility);
+  c_register_pragma ("GCC", "suppress_coverage",
+		     handle_pragma_suppress_coverage);
 
   if (flag_preprocess_only)
     c_register_pragma_with_early_handler ("GCC", "diagnostic",
