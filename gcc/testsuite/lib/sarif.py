@@ -1,6 +1,5 @@
 import json
 import os
-import xml.etree.ElementTree as ET
 
 def sarif_from_env():
     # return parsed JSON content a SARIF_PATH file
