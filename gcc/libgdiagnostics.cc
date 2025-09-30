@@ -2481,9 +2481,10 @@ struct spec_context : public diagnostics::output_spec::context
 {
 public:
   spec_context (const char *option_name,
+		const char *unparsed_spec,
 		diagnostic_manager &affected_mgr,
 		diagnostic_manager &control_mgr)
-  : context (option_name, affected_mgr.get_line_table ()),
+  : context (option_name, unparsed_spec, affected_mgr.get_line_table ()),
     m_control_mgr (control_mgr)
   {}
 
@@ -2519,8 +2520,8 @@ diagnostic_manager_add_sink_from_spec (diagnostic_manager *affected_mgr,
   FAIL_IF_NULL (spec);
   FAIL_IF_NULL (control_mgr);
 
-  spec_context ctxt (option_name, *affected_mgr, *control_mgr);
-  auto inner_sink = ctxt.parse_and_make_sink (spec, affected_mgr->get_dc ());
+  spec_context ctxt (option_name, spec, *affected_mgr, *control_mgr);
+  auto inner_sink = ctxt.parse_and_make_sink (affected_mgr->get_dc ());
   if (!inner_sink)
     return -1;
   affected_mgr->get_dc ().add_sink (std::move (inner_sink));

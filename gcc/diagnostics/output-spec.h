@@ -34,22 +34,19 @@ class context
 {
  public:
   std::unique_ptr<sink>
-  parse_and_make_sink (const char *,
-		       diagnostics::context &dc);
+  parse_and_make_sink (diagnostics::context &dc);
 
   void
   report_error (const char *gmsgid, ...) const
     ATTRIBUTE_GCC_DIAG(2,3);
 
   void
-  report_unknown_key (const char *unparsed_arg,
-		      const std::string &key,
+  report_unknown_key (const std::string &key,
 		      const std::string &scheme_name,
 		      auto_vec<const char *> &known_keys) const;
 
   void
-  report_missing_key (const char *unparsed_arg,
-		      const std::string &key,
+  report_missing_key (const std::string &key,
 		      const std::string &scheme_name,
 		      const char *metavar) const;
 
@@ -58,6 +55,9 @@ class context
 
   const char *
   get_option_name () const { return m_option_name; }
+
+  const char *
+  get_unparsed_spec () const { return m_unparsed_spec;  }
 
   line_maps *
   get_affected_location_mgr () const { return m_affected_location_mgr; }
@@ -72,13 +72,20 @@ class context
 
 protected:
   context (const char *option_name,
+	   const char *unparsed_spec,
 	   line_maps *affected_location_mgr)
   : m_option_name (option_name),
+    m_unparsed_spec (unparsed_spec),
     m_affected_location_mgr (affected_location_mgr)
   {
   }
 
+  // e.g. "-fdiagnostics-add-output="
   const char *m_option_name;
+
+  // e.g. "scheme:foo=bar,key=value"
+  const char *m_unparsed_spec;
+
   line_maps *m_affected_location_mgr;
 };
 
@@ -91,8 +98,9 @@ public:
 		   line_maps *affected_location_mgr,
 		   line_maps *control_location_mgr,
 		   location_t loc,
-		   const char *option_name)
-  : context (option_name, affected_location_mgr),
+		   const char *option_name,
+		   const char *unparsed_spec)
+  : context (option_name, unparsed_spec, affected_location_mgr),
     m_dc (dc),
     m_control_location_mgr (control_location_mgr),
     m_loc (loc)
