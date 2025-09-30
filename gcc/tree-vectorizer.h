@@ -1313,7 +1313,8 @@ public:
 #define LOOP_VINFO_EARLY_BREAKS(L)         (L)->early_breaks
 #define LOOP_VINFO_EARLY_BRK_STORES(L)     (L)->early_break_stores
 #define LOOP_VINFO_EARLY_BREAKS_VECT_PEELED(L)  \
-  (single_pred ((L)->loop->latch) != (L)->vec_loop_iv_exit->src)
+  ((single_pred ((L)->loop->latch) != (L)->vec_loop_iv_exit->src) \
+   || LOOP_VINFO_NITERS_UNCOUNTED_P (L))
 #define LOOP_VINFO_EARLY_BREAKS_LIVE_IVS(L)  \
   (L)->early_break_live_ivs
 #define LOOP_VINFO_EARLY_BRK_DEST_BB(L)    (L)->early_break_dest_bb

@@ -1653,9 +1653,12 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
       STMT_VINFO_DEF_TYPE (loop_cond_info) = vect_condition_def;
     }
 
-  for (unsigned i = 1; i < info->conds.length (); i ++)
-    LOOP_VINFO_LOOP_CONDS (loop_vinfo).safe_push (info->conds[i]);
-  LOOP_VINFO_LOOP_IV_COND (loop_vinfo) = info->conds[0];
+  unsigned cond_id = 0;
+  if (!LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+      LOOP_VINFO_LOOP_IV_COND (loop_vinfo) = info->conds[cond_id++];
+
+  for (; cond_id < info->conds.length (); cond_id ++)
+    LOOP_VINFO_LOOP_CONDS (loop_vinfo).safe_push (info->conds[cond_id]);
 
   LOOP_VINFO_IV_EXIT (loop_vinfo) = info->loop_exit;
 
