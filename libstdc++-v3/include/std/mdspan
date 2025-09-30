@@ -77,11 +77,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if constexpr (std::is_integral_v<_OIndexType>)
 	  {
-	    __glibcxx_assert(cmp_less_equal(__other,
-		__gnu_cxx::__int_traits<_IndexType>::__max));
+	    constexpr _IndexType __index_type_max
+	      = __gnu_cxx::__int_traits<_IndexType>::__max;
+	    constexpr _OIndexType __oindex_type_max
+	      = __gnu_cxx::__int_traits<_OIndexType>::__max;
+
+	    if constexpr (__index_type_max < __oindex_type_max)
+	      __glibcxx_assert(cmp_less_equal(__other, __index_type_max));
+
 	    if constexpr (std::is_signed_v<_OIndexType>)
 	      __glibcxx_assert(__other >= 0);
-	    return std::move(__other);
+	    return static_cast<_IndexType>(__other);
 	  }
 	else
 	  {
@@ -821,8 +827,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	mapping(const _LeftpadMapping& __other) noexcept
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{
-	  constexpr size_t __ostride_sta = __mdspan::__get_static_stride<
-	    _LeftpadMapping>();
+	  constexpr size_t __ostride_sta
+	    = __mdspan::__get_static_stride<_LeftpadMapping>();
 
 	  if constexpr (extents_type::rank() > 1)
 	    {
@@ -981,7 +987,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RightPaddedMapping>
 	requires __mdspan::__is_right_padded_mapping<_RightPaddedMapping>
 		 && is_constructible_v<extents_type,
-				       typename _RightPaddedMapping::extents_type>
+		      typename _RightPaddedMapping::extents_type>
 	constexpr
 	explicit(!is_convertible_v<typename _RightPaddedMapping::extents_type,
 				   extents_type>)
@@ -989,8 +995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{
 	  constexpr size_t __rank = extents_type::rank();
-	  constexpr size_t __ostride_sta = __mdspan::__get_static_stride<
-	    _RightPaddedMapping>();
+	  constexpr size_t __ostride_sta
+	    = __mdspan::__get_static_stride<_RightPaddedMapping>();
 
 	  if constexpr (__rank > 1)
 	    {
@@ -1441,7 +1447,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr static const size_t _S_unpad_end = _Rank;
 
 	template<typename _IndexType, size_t _StaticStride, size_t..._Extents>
-	  constexpr static auto _S_make_padded_extent(
+	  constexpr static auto
+	  _S_make_padded_extent(
 	    extents<_IndexType, _StaticStride> __stride,
 	    const extents<_IndexType, _Extents...>& __exts)
 	  {
@@ -1467,7 +1474,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr static size_t _S_unpad_end = _Rank - 1;
 
 	template<typename _IndexType, size_t _StaticStride, size_t..._Extents>
-	  constexpr static auto _S_make_padded_extent(
+	  constexpr static auto
+	  _S_make_padded_extent(
 	    extents<_IndexType, _StaticStride> __stride,
 	    const extents<_IndexType, _Extents...>& __exts)
 	  {
@@ -1792,7 +1800,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 	template<__mdspan::__valid_index_type<index_type> _OIndexType>
-	  constexpr mapping(const extents_type& __exts, _OIndexType __pad)
+	  constexpr
+	  mapping(const extents_type& __exts, _OIndexType __pad)
 	  : _M_storage(__exts,
 	      __mdspan::__index_type_cast<index_type>(std::move(__pad)))
 	  { }
@@ -1881,10 +1890,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	is_always_unique() noexcept { return true; }
 
 	static constexpr bool
-	is_always_strided() noexcept { return true; }
+	is_unique() noexcept { return true; }
 
 	static constexpr bool
-	is_unique() noexcept { return true; }
+	is_always_strided() noexcept { return true; }
 
 	static constexpr bool
 	is_strided() noexcept { return true; }
@@ -1952,7 +1961,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 	template<__mdspan::__valid_index_type<index_type> _OIndexType>
-	  constexpr mapping(const extents_type& __exts, _OIndexType __pad)
+	  constexpr
+	  mapping(const extents_type& __exts, _OIndexType __pad)
 	  : _M_storage(__exts,
 	      __mdspan::__index_type_cast<index_type>(std::move(__pad)))
 	  { }
@@ -2040,10 +2050,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	is_always_unique() noexcept { return true; }
 
 	static constexpr bool
-	is_always_strided() noexcept { return true; }
+	is_unique() noexcept { return true; }
 
 	static constexpr bool
-	is_unique() noexcept { return true; }
+	is_always_strided() noexcept { return true; }
 
 	static constexpr bool
 	is_strided() noexcept { return true; }

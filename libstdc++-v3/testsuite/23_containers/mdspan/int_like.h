@@ -15,7 +15,7 @@ template<CustomIndexKind Kind>
   public:
     explicit
     CustomIndexType(int i)
-    : _M_i(i)
+    : value(i)
     { }
 
     CustomIndexType() = delete;
@@ -31,25 +31,25 @@ template<CustomIndexKind Kind>
     constexpr
     operator int() const noexcept
     requires (Kind == CustomIndexKind::Const)
-    { return _M_i; }
+    { return value; }
 
     constexpr
     operator int() const
     requires (Kind == CustomIndexKind::Throwing)
-    { return _M_i; }
+    { return value; }
 
     constexpr
     operator int() noexcept
     requires (Kind == CustomIndexKind::Mutating)
-    { return _M_i; }
+    { return value; }
 
     constexpr
     operator int() && noexcept
     requires (Kind == CustomIndexKind::RValue)
-    { return _M_i; }
+    { return value; }
 
   private:
-    int _M_i;
+    int value;
   };
 
 using IntLike = CustomIndexType<CustomIndexKind::Const>;
