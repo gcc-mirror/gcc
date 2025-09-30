@@ -236,6 +236,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
   /**
    *  @brief Copies the range [first,last) into result.
    *  @param  __first  An input iterator.
@@ -427,6 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
 #if __glibcxx_raw_memory_algorithms >= 202411L // >= C++26
       if consteval {
 	return std::__do_uninit_fill(__first, __last, __x);
@@ -529,6 +531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
    // _GLIBCXX_RESOLVE_LIB_DEFECTS
    // DR 1339. uninitialized_fill_n should return the end of its range
   /**
