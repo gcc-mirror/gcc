@@ -316,7 +316,11 @@ ipa_profile_generate_summary (void)
 			      count = all;
 			    }
 			  speculative_call_target item (
-			    val, GCOV_COMPUTE_SCALE (count, all));
+			    val,
+			    profile_count::from_gcov_type (count)
+			      .probability_in
+				(profile_count::from_gcov_type (all))
+				 .to_reg_br_prob_base ());
 			  csum->speculative_call_targets.safe_push (item);
 			}
 
