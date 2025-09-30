@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 namespace diagnostics {
 namespace output_spec {
 
+class scheme_handler;
+
 /* Decls.  */
 
 struct scheme_name_and_params
@@ -62,84 +64,6 @@ struct scheme_name_and_params
 class output_factory
 {
 public:
-  class scheme_handler
-  {
-  public:
-    scheme_handler (std::string scheme_name)
-    : m_scheme_name (std::move (scheme_name))
-    {}
-    virtual ~scheme_handler () {}
-
-    const std::string &get_scheme_name () const { return m_scheme_name; }
-
-    virtual std::unique_ptr<sink>
-    make_sink (const context &ctxt,
-	       diagnostics::context &dc,
-	       const scheme_name_and_params &scheme_and_kvs) const = 0;
-
-  protected:
-    bool
-    parse_bool_value (const context &ctxt,
-		      const std::string &key,
-		      const std::string &value,
-		      bool &out) const
-    {
-      if (value == "yes")
-	{
-	  out = true;
-	  return true;
-	}
-      else if (value == "no")
-	{
-	  out = false;
-	  return true;
-	}
-      else
-	{
-	  ctxt.report_error
-	    ("%<%s%s%>:"
-	     " unexpected value %qs for key %qs; expected %qs or %qs",
-	     ctxt.get_option_name (), ctxt.get_unparsed_spec (),
-	     value.c_str (),
-	     key.c_str (),
-	     "yes", "no");
-
-	  return false;
-	}
-    }
-    template <typename EnumType, size_t NumValues>
-    bool
-    parse_enum_value (const context &ctxt,
-		      const std::string &key,
-		      const std::string &value,
-		      const std::array<std::pair<const char *, EnumType>, NumValues> &value_names,
-		      EnumType &out) const
-    {
-      for (auto &iter : value_names)
-	if (value == iter.first)
-	  {
-	    out = iter.second;
-	    return true;
-	  }
-
-      auto_vec<const char *> known_values;
-      for (auto iter : value_names)
-	known_values.safe_push (iter.first);
-      pp_markup::comma_separated_quoted_strings e (known_values);
-      ctxt.report_error
-	("%<%s%s%>:"
-	 " unexpected value %qs for key %qs; known values: %e",
-	 ctxt.get_option_name (), ctxt.get_unparsed_spec (),
-	 value.c_str (),
-	 key.c_str (),
-	 &e);
-      return false;
-    }
-
-  private:
-    const std::string m_scheme_name;
-  };
-
   output_factory ();
 
   std::unique_ptr<sink>
@@ -153,7 +77,85 @@ private:
   std::vector<std::unique_ptr<scheme_handler>> m_scheme_handlers;
 };
 
-class text_scheme_handler : public output_factory::scheme_handler
+class scheme_handler
+{
+public:
+  scheme_handler (std::string scheme_name)
+    : m_scheme_name (std::move (scheme_name))
+  {}
+  virtual ~scheme_handler () {}
+
+  const std::string &get_scheme_name () const { return m_scheme_name; }
+
+  virtual std::unique_ptr<sink>
+  make_sink (const context &ctxt,
+	     diagnostics::context &dc,
+	     const scheme_name_and_params &scheme_and_kvs) const = 0;
+
+protected:
+  bool
+  parse_bool_value (const context &ctxt,
+		    const std::string &key,
+		    const std::string &value,
+		    bool &out) const
+  {
+    if (value == "yes")
+      {
+	out = true;
+	return true;
+      }
+    else if (value == "no")
+      {
+	out = false;
+	return true;
+      }
+    else
+      {
+	ctxt.report_error
+	  ("%<%s%s%>:"
+	   " unexpected value %qs for key %qs; expected %qs or %qs",
+	   ctxt.get_option_name (), ctxt.get_unparsed_spec (),
+	   value.c_str (),
+	   key.c_str (),
+	   "yes", "no");
+
+	return false;
+      }
+    }
+  template <typename EnumType, size_t NumValues>
+  bool
+  parse_enum_value (const context &ctxt,
+		    const std::string &key,
+		    const std::string &value,
+		    const std::array<std::pair<const char *, EnumType>, NumValues> &value_names,
+		    EnumType &out) const
+  {
+    for (auto &iter : value_names)
+      if (value == iter.first)
+	{
+	  out = iter.second;
+	  return true;
+	}
+
+    auto_vec<const char *> known_values;
+    for (auto iter : value_names)
+      known_values.safe_push (iter.first);
+    pp_markup::comma_separated_quoted_strings e (known_values);
+    ctxt.report_error
+      ("%<%s%s%>:"
+       " unexpected value %qs for key %qs; known values: %e",
+       ctxt.get_option_name (), ctxt.get_unparsed_spec (),
+       value.c_str (),
+       key.c_str (),
+       &e);
+    return false;
+  }
+
+private:
+  const std::string m_scheme_name;
+};
+
+class text_scheme_handler : public scheme_handler
 {
 public:
   text_scheme_handler () : scheme_handler ("text") {}
@@ -164,7 +166,7 @@ public:
 	     const scheme_name_and_params &scheme_and_kvs) const final override;
 };
 
-class sarif_scheme_handler : public output_factory::scheme_handler
+class sarif_scheme_handler : public scheme_handler
 {
 public:
   sarif_scheme_handler () : scheme_handler ("sarif") {}
@@ -179,7 +181,7 @@ private:
   make_sarif_serialization_object (enum sarif_serialization_kind);
 };
 
-class html_scheme_handler : public output_factory::scheme_handler
+class html_scheme_handler : public scheme_handler
 {
 public:
   html_scheme_handler () : scheme_handler ("experimental-html") {}
@@ -302,7 +304,7 @@ context::parse_and_make_sink (diagnostics::context &dc)
   return factory.make_sink (*this, dc, *parsed_arg);
 }
 
-/* class output_factory::scheme_handler.  */
+/* class scheme_handler.  */
 
 /* class output_factory.  */
 
@@ -313,7 +315,7 @@ output_factory::output_factory ()
   m_scheme_handlers.push_back (std::make_unique<html_scheme_handler> ());
 }
 
-const output_factory::scheme_handler *
+const scheme_handler *
 output_factory::get_scheme_handler (const std::string &scheme_name)
 {
   for (auto &iter : m_scheme_handlers)
@@ -344,7 +346,7 @@ output_factory::make_sink (const context &ctxt,
   return scheme_handler->make_sink (ctxt, dc, scheme_and_kvs);
 }
 
-/* class text_scheme_handler : public output_factory::scheme_handler.  */
+/* class text_scheme_handler : public scheme_handler.  */
 
 std::unique_ptr<sink>
 text_scheme_handler::make_sink (const context &ctxt,
@@ -403,7 +405,7 @@ text_scheme_handler::make_sink (const context &ctxt,
   return sink;
 }
 
-/* class sarif_scheme_handler : public output_factory::scheme_handler.  */
+/* class sarif_scheme_handler : public scheme_handler.  */
 
 std::unique_ptr<sink>
 sarif_scheme_handler::
@@ -518,7 +520,7 @@ make_sarif_serialization_object (enum sarif_serialization_kind kind)
     }
 }
 
-/* class html_scheme_handler : public output_factory::scheme_handler.  */
+/* class html_scheme_handler : public scheme_handler.  */
 
 std::unique_ptr<sink>
 html_scheme_handler::
