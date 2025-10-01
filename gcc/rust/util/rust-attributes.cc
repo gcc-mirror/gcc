@@ -240,8 +240,8 @@ check_doc_attribute (const AST::Attribute &attribute)
     {
       rust_error_at (
 	attribute.get_locus (),
-	// FIXME: Improve error message here. Rustc has a very good one
-	"%<#[doc]%> cannot be an empty attribute");
+	"valid forms for the attribute are "
+	"%<#[doc(hidden|inline|...)]%> and %<#[doc = \" string \"]%>");
       return;
     }
 
@@ -826,6 +826,7 @@ void
 AttributeChecker::visit (AST::Trait &trait)
 {
   check_proc_macro_non_function (trait.get_outer_attrs ());
+  check_attributes (trait.get_outer_attrs ());
 }
 
 void
