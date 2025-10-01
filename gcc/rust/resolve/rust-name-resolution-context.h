@@ -592,25 +592,27 @@ public:
     // If it fails, switch to std prelude resolution if it exists
     if (prelude && !resolved)
       {
+	std::vector<Error> ignore_errors = {};
+
 	// TODO: Factor this with the above
 	switch (ns)
 	  {
 	  case Namespace::Values:
 	    return values.resolve_path (segments, mode,
 					insert_segment_resolution,
-					collect_errors, *prelude);
+					ignore_errors, *prelude);
 	  case Namespace::Types:
 	    return types.resolve_path (segments, mode,
-				       insert_segment_resolution,
-				       collect_errors, *prelude);
+				       insert_segment_resolution, ignore_errors,
+				       *prelude);
 	  case Namespace::Macros:
 	    return macros.resolve_path (segments, mode,
 					insert_segment_resolution,
-					collect_errors, *prelude);
+					ignore_errors, *prelude);
 	  case Namespace::Labels:
 	    return labels.resolve_path (segments, mode,
 					insert_segment_resolution,
-					collect_errors, *prelude);
+					ignore_errors, *prelude);
 	  default:
 	    rust_unreachable ();
 	  }
