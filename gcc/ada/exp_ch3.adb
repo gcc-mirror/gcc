@@ -8286,6 +8286,16 @@ package body Exp_Ch3 is
                   Set_Must_Not_Freeze (Id_Ref);
                   Set_Assignment_OK (Id_Ref);
 
+                  --  Avoid separating an object declaration from
+                  --  its representation clauses.
+
+                  while Present (Next (Init_After))
+                    and then Nkind (Next (Init_After)) in
+                               N_Attribute_Definition_Clause
+                  loop
+                     Init_After := Next (Init_After);
+                  end loop;
+
                   Insert_Actions_After (Init_After,
                     Build_Initialization_Call (N, Id_Ref, Typ,
                       Constructor_Ref => Expr));
