@@ -1218,13 +1218,13 @@
 ;; Reversed CRC 8, 16, 32 for TARGET_64
 (define_expand "crc_rev<ANYI1:mode><ANYI:mode>4"
 	;; return value (calculated CRC)
-  [(set (match_operand:ANYI 0 "register_operand" "=r")
+  [(set (match_operand:ANYI 0 "register_operand")
 		      ;; initial CRC
-	(unspec:ANYI [(match_operand:ANYI 1 "register_operand" "r")
+	(unspec:ANYI [(match_operand:ANYI 1 "register_operand")
 		      ;; data
-		      (match_operand:ANYI1 2 "register_operand" "r")
+		      (match_operand:ANYI1 2 "register_operand")
 		      ;; polynomial without leading 1
-		      (match_operand:ANYI 3)]
+		      (match_operand:ANYI 3 "const_int_operand")]
 		      UNSPEC_CRC_REV))]
   /* We don't support the case when data's size is bigger than CRC's size.  */
   "<ANYI:MODE>mode >= <ANYI1:MODE>mode"
@@ -1258,13 +1258,13 @@
 ;; CRC 8, 16, (32 for TARGET_64)
 (define_expand "crc<SUBX1:mode><SUBX:mode>4"
 	;; return value (calculated CRC)
-  [(set (match_operand:SUBX 0 "register_operand" "=r")
+  [(set (match_operand:SUBX 0 "register_operand")
 		      ;; initial CRC
-	(unspec:SUBX [(match_operand:SUBX 1 "register_operand" "r")
+	(unspec:SUBX [(match_operand:SUBX 1 "register_operand")
 		      ;; data
-		      (match_operand:SUBX1 2 "register_operand" "r")
+		      (match_operand:SUBX1 2 "register_operand")
 		      ;; polynomial without leading 1
-		      (match_operand:SUBX 3)]
+		      (match_operand:SUBX 3 "const_int_operand")]
 		      UNSPEC_CRC))]
   /* We don't support the case when data's size is bigger than CRC's size.  */
   "(TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
