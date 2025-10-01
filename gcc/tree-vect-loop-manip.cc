@@ -3187,6 +3187,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   int estimated_vf;
   int prolog_peeling = 0;
   bool vect_epilogues = loop_vinfo->epilogue_vinfo != NULL;
+  bool uncounted_p = LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo);
 
   if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
     prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
@@ -3580,29 +3581,33 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  bb_before_epilog = loop_preheader_edge (epilog)->src;
 	}
 
-      /* If loop is peeled for non-zero constant times, now niters refers to
-	 orig_niters - prolog_peeling, it won't overflow even the orig_niters
-	 overflows.  */
-      niters_no_overflow |= (prolog_peeling > 0);
-      vect_gen_vector_loop_niters (loop_vinfo, niters,
-				   niters_vector, step_vector,
-				   niters_no_overflow);
-      if (!integer_onep (*step_vector))
+      if (!uncounted_p)
 	{
-	  /* On exit from the loop we will have an easy way of calcalating
-	     NITERS_VECTOR / STEP * STEP.  Install a dummy definition
-	     until then.  */
-	  niters_vector_mult_vf = make_ssa_name (TREE_TYPE (*niters_vector));
-	  SSA_NAME_DEF_STMT (niters_vector_mult_vf) = gimple_build_nop ();
-	  *niters_vector_mult_vf_var = niters_vector_mult_vf;
+	  /* If loop is peeled for non-zero constant times, now niters refers to
+	     orig_niters - prolog_peeling, it won't overflow even the
+	     orig_niters overflows.  */
+	  niters_no_overflow |= (prolog_peeling > 0);
+	  vect_gen_vector_loop_niters (loop_vinfo, niters,
+				       niters_vector, step_vector,
+				       niters_no_overflow);
+	  if (!integer_onep (*step_vector))
+	    {
+	      /* On exit from the loop we will have an easy way of calcalating
+		 NITERS_VECTOR / STEP * STEP.  Install a dummy definition
+		 until then.  */
+	      niters_vector_mult_vf
+		= make_ssa_name (TREE_TYPE (*niters_vector));
+	      SSA_NAME_DEF_STMT (niters_vector_mult_vf) = gimple_build_nop ();
+	      *niters_vector_mult_vf_var = niters_vector_mult_vf;
+	    }
+	  else
+	    vect_gen_vector_loop_niters_mult_vf (loop_vinfo, *niters_vector,
+						 &niters_vector_mult_vf);
+	  /* Update IVs of original loop as if they were advanced by
+	     niters_vector_mult_vf steps.  */
+	  gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
+	  update_e = skip_vector ? e : loop_preheader_edge (epilog);
 	}
-      else
-	vect_gen_vector_loop_niters_mult_vf (loop_vinfo, *niters_vector,
-					     &niters_vector_mult_vf);
-      /* Update IVs of original loop as if they were advanced by
-	 niters_vector_mult_vf steps.  */
-      gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
-      update_e = skip_vector ? e : loop_preheader_edge (epilog);
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	update_e = single_succ_edge (LOOP_VINFO_MAIN_EXIT (loop_vinfo)->dest);
 
@@ -3669,22 +3674,29 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       tree vector_iters_vf = niters_vector_mult_vf;
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
-	  tree scal_iv_ty = signed_type_for (TREE_TYPE (vector_iters_vf));
+	  tree vector_iters_vf_type = uncounted_p ? sizetype
+						  : TREE_TYPE (vector_iters_vf);
+	  tree scal_iv_ty = signed_type_for (vector_iters_vf_type);
 	  tree tmp_niters_vf = make_ssa_name (scal_iv_ty);
-	  basic_block exit_bb = NULL;
 
-	  /* Identify the early exit merge block.  I wish we had stored this.  */
-	  for (auto e : get_loop_exit_edges (loop))
-	    if (e != LOOP_VINFO_IV_EXIT (loop_vinfo))
-	      {
-		exit_bb = e->dest;
-		break;
-	      }
+	  if (!(LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo)
+		&& get_loop_exit_edges (loop).length () == 1))
+	  {
+	    basic_block exit_bb = NULL;
+	    edge update_e = NULL;
 
-	  edge update_e = single_succ_edge (exit_bb);
-	  vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
-					    update_e, true);
-
+	    /* Identify the early exit merge block.  I wish we had stored
+	       this.  */
+	    for (auto e : get_loop_exit_edges (loop))
+	      if (e != LOOP_VINFO_MAIN_EXIT (loop_vinfo))
+		{
+		  exit_bb = e->dest;
+		  update_e = single_succ_edge (exit_bb);
+		  break;
+		}
+	    vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
+					      update_e, true);
+	  }
 	  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
 	    vector_iters_vf = tmp_niters_vf;
 

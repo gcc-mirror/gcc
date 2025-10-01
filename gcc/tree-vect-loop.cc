@@ -11163,7 +11163,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
       LOOP_VINFO_SCALAR_MAIN_EXIT (loop_vinfo)->dest->count = preheader->count;
     }
 
-  if (niters_vector == NULL_TREE)
+  if (niters_vector == NULL_TREE && !uncounted_p)
     {
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
@@ -11289,13 +11289,17 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	}
     }
 
-  /* The vectorization factor is always > 1, so if we use an IV increment of 1.
-     a zero NITERS becomes a nonzero NITERS_VECTOR.  */
-  if (integer_onep (step_vector))
-    niters_no_overflow = true;
-  vect_set_loop_condition (loop, LOOP_VINFO_MAIN_EXIT (loop_vinfo), loop_vinfo,
-			   niters_vector, step_vector, niters_vector_mult_vf,
-			   !niters_no_overflow);
+  if (!uncounted_p)
+    {
+      /* The vectorization factor is always > 1, so if we use an IV increment of
+	 1.  A zero NITERS becomes a nonzero NITERS_VECTOR.  */
+      if (integer_onep (step_vector))
+	niters_no_overflow = true;
+
+      vect_set_loop_condition (loop, LOOP_VINFO_MAIN_EXIT (loop_vinfo),
+			       loop_vinfo, niters_vector, step_vector,
+			       niters_vector_mult_vf, !niters_no_overflow);
+    }
 
   unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
 
