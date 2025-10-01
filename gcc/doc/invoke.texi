@@ -16245,6 +16245,11 @@ In each case, the @var{value} is an integer.  The following choices
 of @var{name} are recognized for all targets:
 
 @table @gcctabopt
+@item auto-profile-bbs
+If non-zero and used together with @option{-fauto-profile}, the auto-profile
+will be used to determine basic block profile.  If zero, then only function
+level profile will be read.
+
 @item phiopt-factor-max-stmts-live
 When factoring statements out of if/then/else, this is the max # of statements
 after the defining statement to be allow to extend the lifetime of a name

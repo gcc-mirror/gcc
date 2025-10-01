@@ -3514,6 +3514,109 @@ scale_bbs (const vec <basic_block> &bbs, sreal scale)
       }
 }
 
+/* Determine scaling factor by taking robust average of SCALES
+   and taking into account limits.
+   MAX_COUNT is maximal guessed count to be scaled while MAC_COUNT_IN_FN
+   is maximal count in function determined by auto-fdo.  */
+
+sreal
+determine_scale (vec <scale> *scales, profile_count max_count,
+		 profile_count max_count_in_fn)
+{
+  scales->qsort (cmp);
+
+  uint64_t overall_weight = 0;
+  for (scale &e : *scales)
+    overall_weight += e.weight;
+
+  uint64_t cummulated = 0, weight_sum = 0;
+  sreal scale_sum = 0;
+  for (scale &e : *scales)
+    {
+      uint64_t prev = cummulated;
+      cummulated += e.weight;
+      if (cummulated >= overall_weight / 4
+	  && prev <= 3 * overall_weight / 4)
+	{
+	  scale_sum += e.scale * e.weight;
+	  weight_sum += e.weight;
+	  if (dump_file)
+	    fprintf (dump_file, "    accounting scale %.16f, weight %" PRId64 "\n",
+		     e.scale.to_double (), e.weight);
+	}
+      else if (dump_file)
+	fprintf (dump_file, "    ignoring scale %.16f, weight %" PRId64 "\n",
+		 e.scale.to_double (), e.weight);
+     }
+  sreal scale = scale_sum / (sreal)weight_sum;
+
+  /* Avoid scaled regions to have very large counts.
+     Otherwise they may dominate ipa-profile's histogram computing cutoff
+     of hot basic blocks.  */
+  if (max_count * scale > max_count_in_fn.guessed_local ().apply_scale (128, 1))
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Scaling by %.16f produces max count ",
+		   scale.to_double ());
+	  (max_count * scale).dump (dump_file);
+	  fprintf (dump_file, " that exceeds max count in fn ");
+	  max_count_in_fn.dump (dump_file);
+	  fprintf (dump_file, "; capping\n");
+	}
+      scale = max_count_in_fn.guessed_local ().to_sreal_scale (max_count);
+    }
+  return scale;
+}
+
+/* Scale profile of the whole function to approximately match auto-profile.  */
+
+bool
+scale_bb_profile ()
+{
+  const function_instance *s
+      = afdo_source_profile->get_function_instance_by_decl
+	  (current_function_decl);
+
+  /* In the first pass only store non-zero counts.  */
+  gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
+  hash_set <basic_block> zero_bbs;
+  auto_vec <basic_block, 20> bbs (n_basic_blocks_for_fn (cfun));
+  auto_vec <scale, 20> scales;
+  basic_block bb;
+  profile_count max_count = profile_count::zero ();
+  profile_count max_count_in_fn = profile_count::zero ();
+  bbs.quick_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  bbs.quick_push (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  if (head_count > 0)
+    {
+      profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+      max_count = entry_count;
+      update_count_by_afdo_count (&entry_count, head_count);
+      max_count_in_fn = entry_count;
+      add_scale (&scales, entry_count, ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+    }
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      profile_count cnt = bb->count;
+      bbs.safe_push (bb);
+      max_count = max_count.max (bb->count);
+      if (afdo_set_bb_count (bb, zero_bbs))
+	{
+	  std::swap (cnt, bb->count);
+	  max_count_in_fn = max_count_in_fn.max (cnt);
+	  add_scale (&scales, cnt, bb->count);
+	}
+    }
+  if (scales.length ())
+    {
+      sreal scale = determine_scale (&scales, max_count, max_count_in_fn);
+      scale_bbs (bbs, scale);
+      return true;
+    }
+  return false;
+}
+
 /* In case given basic block was fully optimized out, AutoFDO
    will have no data about it.  In this case try to preserve static profile.
    Identify connected components (in undirected form of CFG) which has
@@ -3723,47 +3826,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	   continue;
 	 }
        gcc_checking_assert (scales.length ());
-       scales.qsort (cmp);
-
-       uint64_t overall_weight = 0;
-       for (scale &e : scales)
-	 overall_weight += e.weight;
-
-       uint64_t cummulated = 0, weight_sum = 0;
-       sreal scale_sum = 0;
-       for (scale &e : scales)
-	 {
-	   uint64_t prev = cummulated;
-	   cummulated += e.weight;
-	   if (cummulated >= overall_weight / 4
-	       && prev <= 3 * overall_weight / 4)
-	     {
-	       scale_sum += e.scale * e.weight;
-	       weight_sum += e.weight;
-	       if (dump_file)
-		 fprintf (dump_file, "    accounting scale %.16f, weight %" PRId64 "\n",
-			  e.scale.to_double (), e.weight);
-	     }
-	   else if (dump_file)
-	     fprintf (dump_file, "    ignoring scale %.16f, weight %" PRId64 "\n",
-		      e.scale.to_double (), e.weight);
-	  }
-       sreal scale = scale_sum / (sreal)weight_sum;
-
-       /* Avoid scaled regions to have very large counts.
-	  Otherwise they may dominate ipa-profile's histogram computing cutoff
-	  of hot basic blocks.  */
-       if (max_count * scale > max_count_in_fn.guessed_local ())
-	 {
-	   if (dump_file)
-	     {
-	       fprintf (dump_file, "Scaling by %.16f produces max count ",
-			scale.to_double ());
-	       (max_count * scale).dump (dump_file);
-	       fprintf (dump_file, " that exceeds max count in fn; capping\n");
-	     }
-	   scale = max_count_in_fn.guessed_local ().to_sreal_scale (max_count);
-	 }
+       sreal scale = determine_scale (&scales, max_count, max_count_in_fn);
        scale_bbs (bbs, scale);
      }
 }
@@ -3913,21 +3976,30 @@ afdo_annotate_cfg (void)
       s->dump (dump_file);
       fprintf (dump_file, "\n");
     }
-
-  /* In the first pass only store non-zero counts.  */
-  gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
-  bool profile_found = head_count > 0;
+  bool profile_found = false;
   hash_set <basic_block> zero_bbs;
-  FOR_EACH_BB_FN (bb, cfun)
+  gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
+
+  if (!param_auto_profile_bbs)
     {
-      if (afdo_set_bb_count (bb, zero_bbs))
+      if (scale_bb_profile ())
+	return;
+    }
+  else
+    {
+      /* In the first pass only store non-zero counts.  */
+      profile_found = head_count > 0;
+      FOR_EACH_BB_FN (bb, cfun)
 	{
-	  if (bb->count.quality () == AFDO)
+	  if (afdo_set_bb_count (bb, zero_bbs))
 	    {
-	      gcc_assert (bb->count.nonzero_p ());
-	      profile_found = true;
+	      if (bb->count.quality () == AFDO)
+		{
+		  gcc_assert (bb->count.nonzero_p ());
+		  profile_found = true;
+		}
+	      set_bb_annotated (bb, &annotated_bb);
 	    }
-	  set_bb_annotated (bb, &annotated_bb);
 	}
     }
   /* Exit without clobbering static profile if there was no
