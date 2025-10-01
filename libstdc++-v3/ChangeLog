@@ -1,3 +1,11 @@
+2025-09-30  François Dumont  <frs.dumont@gmail.com>
+
+	* include/std/inplace_vector:
+	(std::swap(inplace_vector<>&, inplace_vector<>&)): Remove the duplicated
+	implementation at std namespace level. Keep the friend inline one.
+	(inplace_vector<Tp, 0>::assign(initializer_list<>)): Add missing return
+	statement.
+
 2025-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/allocator_traits/members/allocate_hint.cc:

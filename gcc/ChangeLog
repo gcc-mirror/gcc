@@ -1,3 +1,111 @@
+2025-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc (text_scheme_handler::make_sink): Use
+	the value of the "color" to determine if the sink's printer is
+	colorized.
+
+2025-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc: Add comments.  Introduce a
+	"struct decoded_args" within each scheme_handler subclass,
+	and split out per-scheme key-value parsing from each make_sink
+	implementation into new per-scheme decode_kv member functions.
+
+2025-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc: Move class scheme_handler out from
+	inside class output_factory.
+
+2025-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc: Rename "parsed_arg" to
+	"scheme_and_kvs" throughout.  Rename "unparsed_arg" to
+	"unparsed_spec" throughout, and make a member of
+	output_spec::context rather than passing it around.
+	* diagnostics/output-spec.h: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* opts-diagnostic.cc: Likewise.
+
+2025-09-30  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_functions_b_resolvable_from_a): New
+	function.
+	(TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A): New define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add documentation for
+	TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A.
+	* multiple_target.cc (redirect_to_specific_clone): Add new optimisation
+	logic.
+	(ipa_target_clone): Remove check for TARGET_HAS_FMV_TARGET_ATTRIBUTE.
+	* target.def: Document new hook..
+	* attribs.cc: (functions_b_resolvable_from_a) New function.
+	* attribs.h: (functions_b_resolvable_from_a) New function.
+
+2025-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* auto-profile.h (maybe_hot_afdo_count_p): Fix comment typos,
+	possiby -> possibly and ture -> true.
+	* gimplify.cc (build_asan_poison_call_expr): Change "of a for"
+	to "memory of the" in a comment.
+	* ipa-devirt.cc (add_type_duplicate): Fix comment typo,
+	mangles -> mangled.
+	* auto-profile.cc: Fix comment typo, -fauto-profile-inlinig
+	-> -fauto-profile-inlining.
+	(maybe_hot_afdo_count_p): Fix comment typos, possiby -> possibly
+	and ture -> true.
+	(function_instance::removed_icall_target): Fix comment typo,
+	Reutrn -> Return.
+	(function_instance::in_worklist_): Fix comment typo, Ture -> True.
+	(function_instance::offline): Fix comment typo, tolevel -> toplevel.
+	(function_instance::match): Fix comment typo, craeate_gcov ->
+	create_gcov.
+	(autofdo_source_profile::offline_external_functions): Fix comment
+	typos, tolevel -> toplevel and porfile -> profile.
+	(autofdo_source_profile::get_function_instance_by_inline_stack): Fix
+	comment typo, chekcing -> checking.
+	(struct scale): Fix comment typo, scalle -> scale.
+	* gimple.h (currently_expanding_gimple_stmt): Fix comment typo,
+	comminucating -> communicating.
+	* tree.h (canonical_type_used_p): Fix comment typo, ture -> true.
+	* tree-ssa-alias.cc (types_equal_for_same_type_for_tbaa_p): Likewise.
+	* ipa-profile.cc (contains_hot_call_p): Likewise.
+	* cfgexpand.cc (add_scope_conflicts_2): Fix comment typos,
+	Querry -> Query, referendd -> referenced and Querrying -> Querying.
+	* ipa-param-manipulation.cc (currently_expanding_gimple_stmt): Fix
+	comment typo, comminucating -> communicating.
+	* ipa-prop.cc (ipa_cst_ref_desc::refcount): Fix comment typo,
+	if -> is.
+	* tree-if-conv.cc (version_loop_for_if_conversion): Fix comment typos,
+	porfile -> profile and confistency -> consistency.
+	* fold-const.cc: Change size_int_wide in comment to size_int as
+	size_int_wide doesn't exit for 21 years.
+
+2025-09-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::match): Sanity check
+	that gimple PHI has no location.
+	* tree-cfg.cc (assign_discriminators): Also remap locations
+	of gimple PHI arguments.
+
+2025-09-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* basic-block.h (GCOV_COMPUTE_SCALE): Remove.
+	* ipa-profile.cc (ipa_profile_generate_summary): Use
+	profile-count scaling.
+	* sched-rgn.cc (compute_trg_info): Likewise.
+
+2025-09-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (stmt_loc_used_by_debug_info): New function.
+	(autofdo_source_profile::get_count_info): Use it.
+	(afdo_set_bb_count): Likewise.
+	(afdo_vpt_for_early_inline): Likewise.
+
+2025-09-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gimple-lower-bitint.cc (bitint_precision_kind): Fix inconsistency in
+	results between first and consecutive calls to this function.
+
 2025-09-28  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/121970

@@ -1,3 +1,9 @@
+2025-09-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/t-softfp: Don't use softfp_wrap for bitint functions.
+	(softfp_cflags): New parameter that is passed to the building of bitint
+	functions.
+
 2025-09-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/sync-libfuncs.c (atomic_store_8): Fix asm.

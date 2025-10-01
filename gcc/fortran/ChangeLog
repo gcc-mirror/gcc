@@ -1,3 +1,18 @@
+2025-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102241
+	* gfortran.h: Add symbol attribute 'pdt_comp'.
+	* module.cc : Add 'pdt_comp' to 'ab_attribute' and 'attr_bits'.
+	(mio_symbol_attribute): Set 'pdt_comp'.
+	* resolve.cc (resolve_component): If a PDT component is found
+	in a non-PDT type, generate the PDT instance, if necessary, and
+	set the 'pdt_comp' attribute. Fix some whitespace issues.
+	* trans-decl.cc (gfc_get_symbol_decl, gfc_trans_deferred_vars):
+	If 'pdt_comp' set, initialize the PDT components.
+	* trans-stmt.cc (gfc_trans_deallocate): Verify that a typespec
+	parameter list is available for PDT components of ordinary
+	derived types.
+
 2025-09-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87908

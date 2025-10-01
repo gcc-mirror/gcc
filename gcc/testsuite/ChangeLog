@@ -1,3 +1,44 @@
+2025-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/sarif.py: Remove import of ET.
+
+2025-09-30  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/fmv-selection1.C: New test.
+	* g++.target/aarch64/fmv-selection2.C: New test.
+	* g++.target/aarch64/fmv-selection3.C: New test.
+	* g++.target/aarch64/fmv-selection4.C: New test.
+	* g++.target/aarch64/fmv-selection5.C: New test.
+	* g++.target/aarch64/fmv-selection6.C: New test.
+	* g++.target/aarch64/fmv-selection7.C: New test.
+
+2025-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s1244.c (s1244): Fix comment typo,
+	ture -> true.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2244.c (s2244): Likewise.
+
+2025-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/reduce1.adb: New test.
+
+2025-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105380
+	PR fortran/102241
+	* gfortran.dg/pdt_49.f03: New test.
+	* gfortran.dg/pdt_11.f03: Deallocate 'o_fdef'.
+	* gfortran.dg/pdt_15.f03: Reinstate final 'pop_8' and update
+	the tree dump counts.
+	* gfortran.dg/pdt_20.f03: Deallocate 'x'.
+	* gfortran.dg/pdt_23.f03: Deallocate 'x'.
+	* gfortran.dg/pdt_3.f03: Eliminate the temporary 'matrix' and
+	use w%d directly in the allocation. Change the TODO comment and
+	comment on memory leak in allocation.
+	* gfortran.dg/pdt_39.f03: Comments on memory leaks.
+	* gfortran.dg/pdt_40.f03: Deallocate 'foo' and bar%x.
+	* gfortran.dg/pdt_50.f03: New test.
+
 2025-09-29  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
 
 	* gcc.target/mips/pr99217-2.c: New test.

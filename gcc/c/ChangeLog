@@ -1,3 +1,9 @@
+2025-09-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR target/121933
+	* c-typeck.cc (mark_decl_used): Set DECL_NONLOCAL
+	only for VAR_DECL, FUNC_DECL, PARM_DECL.
+
 2025-09-26  Alejandro Colomar  <alx@kernel.org>
 
 	* c-decl.cc (c_scope): Rename {warned > had}_forward_parm_decls.
