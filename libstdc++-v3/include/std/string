@@ -95,8 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   typename _Predicate>
-    _GLIBCXX20_CONSTEXPR
-    inline typename basic_string<_CharT, _Traits, _Alloc>::size_type
+    constexpr typename basic_string<_CharT, _Traits, _Alloc>::size_type
     erase_if(basic_string<_CharT, _Traits, _Alloc>& __cont, _Predicate __pred)
     {
       using namespace __gnu_cxx;
@@ -110,8 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   typename _Up _GLIBCXX26_DEF_VAL_T(_CharT)>
-    _GLIBCXX20_CONSTEXPR
-    inline typename basic_string<_CharT, _Traits, _Alloc>::size_type
+    constexpr typename basic_string<_CharT, _Traits, _Alloc>::size_type
     erase(basic_string<_CharT, _Traits, _Alloc>& __cont, const _Up& __value)
     { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
