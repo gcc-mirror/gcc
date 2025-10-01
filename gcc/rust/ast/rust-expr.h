@@ -298,7 +298,11 @@ public:
   //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
   //  now.
   // Maybe we will figure out when we really need the location in the future.
-  location_t get_locus () const override { return UNKNOWN_LOCATION; }
+  location_t get_locus () const override
+  {
+    rust_unreachable ();
+    return UNKNOWN_LOCATION;
+  }
 
   void accept_vis (ASTVisitor &vis) override;
 
