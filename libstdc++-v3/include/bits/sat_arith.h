@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __z;
       if constexpr (is_unsigned_v<_Tp>)
 	return __gnu_cxx::__int_traits<_Tp>::__max;
-      else if (__x < 0 != __y < 0)
+      else if ((__x < 0) != (__y < 0))
 	return __gnu_cxx::__int_traits<_Tp>::__min;
       else
 	return __gnu_cxx::__int_traits<_Tp>::__max;
