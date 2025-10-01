@@ -817,6 +817,15 @@ merge_blocks (basic_block a, basic_block b)
   if (!cfg_hooks->merge_blocks)
     internal_error ("%s does not support merge_blocks", cfg_hooks->name);
 
+  /* Pick the more reliable count.  If both qualities agrees, pick the larger
+     one since turning mistakely hot code to cold is more harmful.  */
+  if (a->count.initialized_p ())
+    a->count = b->count;
+  else if (a->count.quality () < b->count.quality ())
+    a->count = b->count;
+  else if (a->count.quality () == b->count.quality ())
+    a->count = a->count.max (b->count);
+
   cfg_hooks->merge_blocks (a, b);
 
   if (current_loops != NULL)
