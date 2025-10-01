@@ -12613,8 +12613,12 @@ package body Exp_Util is
       --  Local variables
 
       Loc          : constant Source_Ptr      := Sloc (Exp);
-      Exp_Type     : constant Entity_Id       := Etype (Exp);
       Svg_Suppress : constant Suppress_Record := Scope_Suppress;
+      Typ          : constant Entity_Id       := Etype (Exp);
+      Und_Typ      : constant Entity_Id       :=
+        (if Present (Typ) then Underlying_Type (Typ) else Typ);
+      --  The underlying type that drives part of the processing
+
       Def_Id       : Entity_Id;
       E            : Node_Id;
       New_Exp      : Node_Id;
@@ -12640,8 +12644,9 @@ package body Exp_Util is
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      elsif No (Exp_Type)
-        or else Ekind (Exp_Type) = E_Access_Attribute_Type
+      elsif No (Typ)
+        or else No (Und_Typ)
+        or else Ekind (Und_Typ) = E_Access_Attribute_Type
       then
          return;
 
@@ -12690,12 +12695,12 @@ package body Exp_Util is
       --  anyway, see below). Also do it if we have a volatile reference and
       --  Name_Req is not set (see comments for Side_Effect_Free).
 
-      elsif (Is_Elementary_Type (Exp_Type)
-              or else (Is_Record_Type (Exp_Type)
-                        and then Known_Static_RM_Size (Exp_Type)
-                        and then RM_Size (Exp_Type) <= System_Max_Integer_Size
-                        and then not Has_Discriminants (Exp_Type)
-                        and then not Is_By_Reference_Type (Exp_Type)))
+      elsif (Is_Elementary_Type (Und_Typ)
+              or else (Is_Record_Type (Und_Typ)
+                        and then Known_Static_RM_Size (Und_Typ)
+                        and then RM_Size (Und_Typ) <= System_Max_Integer_Size
+                        and then not Has_Discriminants (Und_Typ)
+                        and then not Is_By_Reference_Type (Und_Typ)))
         and then (Variable_Ref
                    or else (not Is_Name_Reference (Exp)
                              and then Nkind (Exp) /= N_Type_Conversion)
@@ -12703,7 +12708,7 @@ package body Exp_Util is
                              and then Is_Volatile_Reference (Exp)))
       then
          Def_Id := Build_Temporary (Loc, 'R', Exp);
-         Set_Etype (Def_Id, Exp_Type);
+         Set_Etype (Def_Id, Typ);
          Res := New_Occurrence_Of (Def_Id, Loc);
 
          --  If the expression is a packed reference, it must be reanalyzed and
@@ -12719,7 +12724,7 @@ package body Exp_Util is
          end if;
 
          --  Generate:
-         --    Rnn : Exp_Type renames Expr;
+         --    Rnn : Typ renames Expr;
 
          --  In GNATprove mode, we prefer to use renamings for intermediate
          --  variables to definition of constants, due to the implicit move
@@ -12730,22 +12735,22 @@ package body Exp_Util is
          if Renaming_Req
            or else (GNATprove_Mode
                      and then Is_Object_Reference (Exp)
-                     and then not Is_Scalar_Type (Exp_Type))
+                     and then not Is_Scalar_Type (Und_Typ))
          then
             E :=
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
+                Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                => Relocate_Node (Exp));
 
          --  Generate:
-         --    Rnn : constant Exp_Type := Expr;
+         --    Rnn : constant Typ := Expr;
 
          else
             E :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
                 Constant_Present    => True,
                 Expression          => Relocate_Node (Exp));
 
@@ -12801,7 +12806,7 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Unchecked_Type_Conversion
         and then not Safe_Unchecked_Type_Conversion (Exp)
       then
-         if CW_Or_Needs_Finalization (Exp_Type) then
+         if CW_Or_Needs_Finalization (Und_Typ) then
 
             --  Use a renaming to capture the expression, rather than create
             --  a controlled temporary.
@@ -12812,18 +12817,18 @@ package body Exp_Util is
             Insert_Action (Exp,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
+                Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                => Relocate_Node (Exp)));
 
          else
             Def_Id := Build_Temporary (Loc, 'R', Exp);
-            Set_Etype (Def_Id, Exp_Type);
+            Set_Etype (Def_Id, Typ);
             Res    := New_Occurrence_Of (Def_Id, Loc);
 
             E :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
                 Constant_Present    => not Is_Variable (Exp),
                 Expression          => Relocate_Node (Exp));
 
@@ -12853,7 +12858,7 @@ package body Exp_Util is
           --  type and we do not have Name_Req set true (see comments for
           --  Side_Effect_Free).
 
-          and then (Name_Req or else not Treat_As_Volatile (Exp_Type)))
+          and then (Name_Req or else not Treat_As_Volatile (Und_Typ)))
       then
          Def_Id := Build_Temporary (Loc, 'R', Exp);
          Res := New_Occurrence_Of (Def_Id, Loc);
@@ -12861,7 +12866,7 @@ package body Exp_Util is
          Insert_Action (Exp,
            Make_Object_Renaming_Declaration (Loc,
              Defining_Identifier => Def_Id,
-             Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
+             Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
              Name                => Relocate_Node (Exp)));
 
       --  Avoid generating a variable-sized temporary, by generating the
@@ -12871,7 +12876,7 @@ package body Exp_Util is
 
       elsif Nkind (Exp) = N_Selected_Component
         and then Nkind (Prefix (Exp)) = N_Function_Call
-        and then Is_Array_Type (Exp_Type)
+        and then Is_Array_Type (Und_Typ)
       then
          Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);
          goto Leave;
@@ -12890,9 +12895,9 @@ package body Exp_Util is
          --  to the object in the latter case.
 
          if Nkind (Exp) = N_Function_Call
-           and then (Is_Build_In_Place_Result_Type (Exp_Type)
+           and then (Is_Build_In_Place_Result_Type (Und_Typ)
                       or else
-                     Is_Constr_Array_Subt_Of_Unc_With_Controlled (Exp_Type))
+                     Is_Constr_Array_Subt_Of_Unc_With_Controlled (Und_Typ))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
            and then not Is_Expression_Of_Func_Return (Exp)
          then
@@ -12904,11 +12909,11 @@ package body Exp_Util is
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Obj,
-                   Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc),
                    Expression          => Relocate_Node (Exp));
 
                Insert_Action (Exp, Decl);
-               Set_Etype (Obj, Exp_Type);
+               Set_Etype (Obj, Typ);
                Rewrite (Exp, New_Occurrence_Of (Obj, Loc));
                goto Leave;
             end;
@@ -12924,7 +12929,7 @@ package body Exp_Util is
 
          if GNATprove_Mode then
             Res := New_Occurrence_Of (Def_Id, Loc);
-            Ref_Type := Exp_Type;
+            Ref_Type := Typ;
 
          --  Regular expansion utilizing an access type and 'reference
 
@@ -12934,7 +12939,7 @@ package body Exp_Util is
                 Prefix => New_Occurrence_Of (Def_Id, Loc));
 
             --  Generate:
-            --    type Ann is access all <Exp_Type>;
+            --    type Ann is access all Typ;
 
             Ref_Type := Make_Temporary (Loc, 'A');
 
@@ -12944,8 +12949,7 @@ package body Exp_Util is
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
                     All_Present        => True,
-                    Subtype_Indication =>
-                      New_Occurrence_Of (Exp_Type, Loc)));
+                    Subtype_Indication => New_Occurrence_Of (Typ, Loc)));
 
             Insert_Action (Exp, Ptr_Typ_Decl);
          end if;
@@ -12974,16 +12978,16 @@ package body Exp_Util is
 
                if not Analyzed (Exp)
                  and then Nkind (Exp) = N_Aggregate
-                 and then (Is_Array_Type (Exp_Type)
-                           or else Has_Discriminants (Exp_Type))
-                 and then Is_Constrained (Exp_Type)
+                 and then (Is_Array_Type (Und_Typ)
+                            or else Has_Discriminants (Und_Typ))
+                 and then Is_Constrained (Und_Typ)
                then
                   --  Do not suppress checks associated with the qualified
                   --  expression we are about to introduce (unless those
                   --  checks were already suppressed when Remove_Side_Effects
                   --  was called).
 
-                  if Is_Array_Type (Exp_Type) then
+                  if Is_Array_Type (Und_Typ) then
                      Scope_Suppress.Suppress (Length_Check) :=
                        Svg_Suppress.Suppress (Length_Check);
                   else
@@ -12991,9 +12995,10 @@ package body Exp_Util is
                        Svg_Suppress.Suppress (Discriminant_Check);
                   end if;
 
-                  E := Make_Qualified_Expression (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Exp_Type, Loc),
-                         Expression => E);
+                  E :=
+                    Make_Qualified_Expression (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                      Expression   => E);
                end if;
 
                New_Exp := Make_Reference (Loc, E);
@@ -13041,7 +13046,7 @@ package body Exp_Util is
       --  Finally rewrite the original expression and we are done
 
       Rewrite (Exp, Res);
-      Analyze_And_Resolve (Exp, Exp_Type);
+      Analyze_And_Resolve (Exp, Typ);
 
    <<Leave>>
       Scope_Suppress := Svg_Suppress;
