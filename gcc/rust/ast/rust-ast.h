@@ -1777,7 +1777,7 @@ public:
     return std::unique_ptr<TraitItem> (clone_associated_item_impl ());
   }
 
-  NodeId get_node_id () const { return node_id; }
+  NodeId get_node_id () const override { return node_id; }
   location_t get_locus () const override { return locus; }
 };
 

@@ -1255,7 +1255,7 @@ public:
   TraitBound *to_trait_bound (bool in_parens) const override;
 
   location_t get_locus () const override final { return locus; }
-  NodeId get_node_id () const { return node_id; }
+  NodeId get_node_id () const override { return node_id; }
 
   void mark_for_strip () override {}
   bool is_marked_for_strip () const override { return false; }
