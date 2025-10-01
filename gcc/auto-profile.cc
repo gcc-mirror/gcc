@@ -2972,6 +2972,48 @@ update_count_by_afdo_count (profile_count *count, profile_count c)
     *count = c;
 }
 
+/* Try to determine unscaled count of edge E.
+   Return -1 if nothing is known.  */
+
+static gcov_type
+afdo_unscaled_edge_count (edge e)
+{
+  gcov_type max_count = -1;
+  basic_block bb_succ = e->dest;
+  count_info info;
+  if (afdo_source_profile->get_count_info (e->goto_locus, &info))
+    {
+      if (info.count > max_count)
+	max_count = info.count;
+      if (dump_file && info.count)
+	{
+	  fprintf (dump_file,
+		   "  goto location of edge %i->%i with count %" PRIu64"\n",
+		   e->src->index, e->dest->index, (int64_t)info.count);
+	}
+    }
+  for (gphi_iterator gpi = gsi_start_phis (bb_succ);
+       !gsi_end_p (gpi); gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      location_t phi_loc
+	= gimple_phi_arg_location_from_edge (phi, e);
+      if (afdo_source_profile->get_count_info (phi_loc, &info))
+	{
+	  if (info.count > max_count)
+	    max_count = info.count;
+	  if (dump_file && info.count)
+	    {
+	      fprintf (dump_file,
+		       "  phi op of edge %i->%i with count %" PRIu64": ",
+		       e->src->index, e->dest->index, (int64_t)info.count);
+	      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+	    }
+	}
+    }
+  return max_count;
+}
+
 /* For a given BB, set its execution count. Attach value profile if a stmt
    is not in PROMOTED, because we only want to promote an indirect call once.
    Return TRUE if BB is annotated.  */
@@ -2980,8 +3022,7 @@ static bool
 afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
 {
   gimple_stmt_iterator gsi;
-  gcov_type max_count = 0;
-  bool has_annotated = false;
+  gcov_type max_count = -1;
   if (dump_file)
     fprintf (dump_file, " Looking up AFDO count of bb %i\n", bb->index);
 
@@ -3001,7 +3042,6 @@ afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
 		       (int64_t)info.count);
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    }
-	  has_annotated = true;
 	  gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
 	  /* TODO; if inlined early and indirect call was not optimized out,
 	     we will end up speculating again.  Early inliner should remove
@@ -3012,44 +3052,11 @@ afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
 	}
     }
 
-  if (!has_annotated)
-    {
-      /* For an empty BB with all debug stmt which assigne a value with
-	 constant, check successors PHIs corresponding to the block and
-	 use those counts.  */
-      edge tmp_e;
-      edge_iterator tmp_ei;
-      FOR_EACH_EDGE (tmp_e, tmp_ei, bb->succs)
-	{
-	  basic_block bb_succ = tmp_e->dest;
-	  for (gphi_iterator gpi = gsi_start_phis (bb_succ);
-	       !gsi_end_p (gpi);
-	       gsi_next (&gpi))
-	    {
-	      gphi *phi = gpi.phi ();
-	      location_t phi_loc
-		= gimple_phi_arg_location_from_edge (phi, tmp_e);
-	      count_info info;
-	      if (afdo_source_profile->get_count_info (phi_loc, &info)
-		  && info.count != 0)
-		{
-		  if (info.count > max_count)
-		    max_count = info.count;
-		  if (dump_file && info.count)
-		    {
-		      fprintf (dump_file,
-			       "  phi op in BB %i with count %" PRIu64": ",
-			       bb_succ->index, (int64_t)info.count);
-		      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
-		    }
-		  has_annotated = true;
-		}
-	    }
-	}
+  if (max_count == -1 && single_succ_p (bb))
+    max_count = afdo_unscaled_edge_count (single_succ_edge (bb));
 
-      if (!has_annotated)
-	return false;
-    }
+  if (max_count == -1)
+    return false;
 
   if (max_count)
     {
@@ -3778,6 +3785,30 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 	{
 	  gcc_assert (e->aux == NULL);
 	  e->aux = new edge_info ();
+	  gcov_type c = afdo_unscaled_edge_count (e);
+	  if (c == 0 && e->count () == profile_count::zero ())
+	    {
+	      AFDO_EINFO (e)->set_count (profile_count::zero ());
+	      if (dump_file)
+		fprintf (dump_file,
+			 "  Annotating edge %i->%i with count 0;"
+			 " static profile aggress",
+			 e->src->index, e->dest->index);
+	    }
+	  else if (c > 0)
+	    {
+	      AFDO_EINFO (e)->set_count
+	       	(profile_count::from_gcov_type
+		   (c * autofdo::afdo_count_scale).afdo ());
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "  Annotating edge %i->%i with count ",
+			   e->src->index, e->dest->index);
+		  AFDO_EINFO (e)->get_count ().dump (dump_file);
+		  fprintf (dump_file, "\n");
+		}
+	    }
 	}
     }
 
