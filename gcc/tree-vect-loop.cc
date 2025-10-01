@@ -7187,7 +7187,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     return false;
 
   /* Do not try to vectorize bit-precision reductions.  */
-  if (!type_has_mode_precision_p (op.type))
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && !type_has_mode_precision_p (op.type)
+      && op.code != BIT_AND_EXPR
+      && op.code != BIT_IOR_EXPR
+      && op.code != BIT_XOR_EXPR)
     return false;
 
   /* Lane-reducing ops also never can be used in a SLP reduction group
