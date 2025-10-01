@@ -852,7 +852,7 @@ unlikely_executed_stmt_p (gimple *stmt)
      heuristics.  */
   if (gimple_bb (stmt)->count.reliable_p ()
       && gimple_bb (stmt)->count.nonzero_p ())
-    return gimple_bb (stmt)->count == profile_count::zero ();
+    return false;
   /* NORETURN attribute alone is not strong enough: exit() may be quite
      likely executed once during program run.  */
   if (gimple_call_fntype (stmt)
@@ -4521,6 +4521,9 @@ rebuild_frequencies (void)
       && (!uninitialized_count_found || uninitialized_probablity_found)
       && !cfun->cfg->count_max.very_large_p ())
     {
+      /* Propagating zero counts should be safe and may
+	 help hot/cold splitting.  */
+      determine_unlikely_bbs ();
       if (dump_file)
 	fprintf (dump_file, "Profile is consistent\n");
       return;
@@ -4545,6 +4548,9 @@ rebuild_frequencies (void)
      for a given run, we would only propagate the error further.  */
   if (feedback_found && !uninitialized_count_found)
     {
+      /* Propagating zero counts should be safe and may
+	 help hot/cold splitting.  */
+      determine_unlikely_bbs ();
       if (dump_file)
 	fprintf (dump_file,
 	    "Profile is inconsistent but read from profile feedback;"
