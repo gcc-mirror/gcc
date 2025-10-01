@@ -50,7 +50,7 @@ using __gnu_test::propagating_allocator;
 using __gnu_test::tracker_allocator;
 using Counter = __gnu_test::tracker_allocator_counter;
 
-constexpr void
+void
 verifyNoAllocations()
 {
   VERIFY( Counter::get_allocation_count() == 0 );
@@ -60,7 +60,7 @@ verifyNoAllocations()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_ctor()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -105,7 +105,7 @@ test_ctor()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_assign()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -201,7 +201,7 @@ test_assign()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_swap()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -254,7 +254,7 @@ test_swap()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_valueless()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -317,7 +317,7 @@ test_valueless()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_all()
 {
   test_ctor<Propagate>();
@@ -330,10 +330,4 @@ int main()
 {
   test_all<true>();
   test_all<false>();
-
-  static_assert([] {
-    test_all<true>();
-    test_all<false>();
-    return true;
-  });
 }

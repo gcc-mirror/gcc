@@ -78,5 +78,5 @@ int main()
     test_relops();
     test_comp_with_t();
     return true;
-  });
+  }());
 }

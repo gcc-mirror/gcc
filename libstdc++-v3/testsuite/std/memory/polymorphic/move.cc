@@ -48,7 +48,7 @@ using Counter = __gnu_test::tracker_allocator_counter;
 using Polymorphic = std::polymorphic<Base, tracker_allocator<Base>>;
 const Polymorphic val(std::in_place_type<Derived>, 1, 2, 3);
 
-constexpr void
+void
 verifyNoAllocations()
 {
   VERIFY( Counter::get_allocation_count() == 0 );
@@ -57,7 +57,7 @@ verifyNoAllocations()
   VERIFY( Counter::get_destruct_count() == 0 );
 }
 
-constexpr void
+void
 test_ctor()
 {
   std::optional<Polymorphic> src;
@@ -78,7 +78,7 @@ test_ctor()
   verifyNoAllocations();
 }
 
-constexpr void
+void
 test_assign()
 {
   std::optional<Polymorphic> src;
@@ -105,7 +105,7 @@ test_assign()
   verifyNoAllocations();
 }
 
-constexpr void
+void
 test_swap()
 {
   const Polymorphic val1(std::in_place_type<Derived>, 1, 2, 3);
@@ -128,7 +128,7 @@ test_swap()
   verifyNoAllocations();
 }
 
-constexpr void
+void
 test_valueless()
 {
   auto e = [] {
@@ -158,20 +158,75 @@ test_valueless()
 }
 
 constexpr void
-test_all()
+test_constexpr()
+{
+  using Polymorphic = std::polymorphic<Base, __gnu_test::uneq_allocator<Base>>;
+  const Polymorphic val(std::in_place_type<Derived>, 1, 2, 3);
+
+  std::optional<Polymorphic> src;
+  auto make = [&src, &val] -> Polymorphic&& {
+    src.emplace(val);
+    return std::move(*src);
+  };
+
+  Polymorphic i1(make());
+  VERIFY( src->valueless_after_move() );
+  VERIFY( *i1 == *val );
+
+  Polymorphic i2(std::allocator_arg, {}, make());
+  VERIFY( src->valueless_after_move() );
+  VERIFY( *i2 == *val );
+
+  i1 = make();
+  VERIFY( src->valueless_after_move() );
+  VERIFY( *i1 == *val );
+
+  auto(std::move(i1));
+  i1 = make();
+  VERIFY( *i1 == *val );
+  VERIFY( src->valueless_after_move() );
+
+  const Polymorphic val1(std::in_place_type<Derived>, 1, 2, 3);
+  const Polymorphic val2(std::in_place_type<Derived>, 2, 4, 6);
+
+  Polymorphic s1(val1);
+  Polymorphic s2(val2);
+  s1.swap(s2);
+  VERIFY( *s2 == *val1 );
+  VERIFY( *s1 == *val2 );
+
+  auto(std::move(s1));
+  s1.swap(s2);
+  VERIFY( *s1 == *val1 );
+  VERIFY( s2.valueless_after_move() );
+
+  auto e = [] {
+    Polymorphic res(std::in_place_type<Derived>);
+    auto(std::move(res));
+    return res;
+  };
+
+  Polymorphic e1(e());
+  VERIFY( e1.valueless_after_move() );
+
+  Polymorphic e2(std::allocator_arg, {}, e());
+  VERIFY( e2.valueless_after_move() );
+
+  Polymorphic e3(val);
+  e3 = e();
+  e3 = e();
+}
+
+int main()
 {
   test_ctor();
   test_assign();
   test_swap();
   test_valueless();
-}
-
-int main()
-{
-  test_all();
+  test_constexpr();
 
   static_assert([] {
-    test_all();
+    test_constexpr();
     return true;
-  });
+  }());
 }

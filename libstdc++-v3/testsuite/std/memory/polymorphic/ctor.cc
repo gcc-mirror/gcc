@@ -45,6 +45,9 @@ test_default_ctor()
   std::polymorphic<Obj, default_init_allocator<Obj>> i2(std::allocator_arg, a);
   VERIFY( i2.get_allocator() == a );
 
+  if (std::is_constant_evaluated())
+    return;
+
   // Object is constructed using allocator-aware constructor.
   std::polymorphic<std::vector<int, UneqAlloc>, ScopedAlloc>
     i3(std::allocator_arg, ScopedAlloc(11, 22));
@@ -75,6 +78,9 @@ test_forwarding_ctor()
 
   std::polymorphic<Obj> i5({1, {'2', '3'}});
   verify(i5);
+
+  if (std::is_constant_evaluated())
+    return;
 
   std::vector<int, UneqAlloc> v{1, 2, 3, 4, 5};
   // Object is constructed using allocator-aware constructor.
@@ -151,6 +157,9 @@ test_inplace_ctor()
   VERIFY( i10->at(2) == 3 );
   VERIFY( i10->get_allocator().get_personality() == 42 );
 
+  if (std::is_constant_evaluated())
+    return;
+
   std::polymorphic<std::vector<int, UneqAlloc>, ScopedAlloc>
     i14(std::allocator_arg, ScopedAlloc(11, 22),
 	std::in_place_type<std::vector<int, UneqAlloc>>);
@@ -186,5 +195,5 @@ int main()
     test_forwarding_ctor();
     test_inplace_ctor();
     return true;
-  });
+  }());
 }

@@ -216,7 +216,7 @@ namespace __gnu_test
       }
 
       // Implement swap for underlying allocators that might need it.
-      friend inline void
+      friend void
       swap(tracker_allocator& a, tracker_allocator& b)
       {
 	using std::swap;
@@ -310,10 +310,6 @@ namespace __gnu_test
     {
       typedef __gnu_cxx::__alloc_traits<Alloc> AllocTraits;
 
-      Alloc& base() { return *this; }
-      const Alloc& base() const  { return *this; }
-      void swap_base(Alloc& b) { using std::swap; swap(b, this->base()); }
-
     public:
       typedef typename check_consistent_alloc_value_type<Tp, Alloc>::value_type
 	value_type;
@@ -332,9 +328,11 @@ namespace __gnu_test
 		typename AllocTraits::template rebind<Tp1>::other> other;
 	};
 
+      _GLIBCXX_CONSTEXPR
       uneq_allocator() _GLIBCXX_USE_NOEXCEPT
       : personality(0) { }
 
+      _GLIBCXX_CONSTEXPR
       uneq_allocator(int person) _GLIBCXX_USE_NOEXCEPT
       : personality(person) { }
 
@@ -344,20 +342,22 @@ namespace __gnu_test
 #endif
 
       template<typename Tp1>
+	_GLIBCXX_CONSTEXPR
 	uneq_allocator(const uneq_allocator<Tp1,
 		       typename AllocTraits::template rebind<Tp1>::other>& b)
 	_GLIBCXX_USE_NOEXCEPT
 	: personality(b.get_personality()) { }
 
-      ~uneq_allocator() _GLIBCXX_USE_NOEXCEPT
-      { }
+      _GLIBCXX_CONSTEXPR int get_personality() const { return personality; }
 
-      int get_personality() const { return personality; }
-
+      _GLIBCXX20_CONSTEXPR
       pointer
       allocate(size_type n, const void* = 0)
       {
 	pointer p = AllocTraits::allocate(*this, n);
+
+	if (std::__is_constant_evaluated())
+	  return p;
 
 	try
 	  {
@@ -373,19 +373,24 @@ namespace __gnu_test
 	return p;
       }
 
+      _GLIBCXX14_CONSTEXPR
       void
       deallocate(pointer p, size_type n)
       {
 	VERIFY( p );
 
-	map_type::iterator it = get_map().find(reinterpret_cast<void*>(p));
-	VERIFY( it != get_map().end() );
+	if (!std::__is_constant_evaluated())
+	  {
+	    map_type::iterator it = get_map().find(reinterpret_cast<void*>(p));
+	    VERIFY( it != get_map().end() );
 
-	// Enforce requirements in Table 32 about deallocation vs
-	// allocator equality.
-	VERIFY( it->second == personality );
+	    // Enforce requirements in Table 32 about deallocation vs
+	    // allocator equality.
+	    VERIFY( it->second == personality );
 
-	get_map().erase(it);
+	    get_map().erase(it);
+	  }
+
 	AllocTraits::deallocate(*this, p, n);
       }
 
@@ -406,22 +411,23 @@ namespace __gnu_test
 
     private:
       // ... yet swappable!
-      friend inline void
+      friend _GLIBCXX_CONSTEXPR void
       swap(uneq_allocator& a, uneq_allocator& b)
       {
 	std::swap(a.personality, b.personality);
-	a.swap_base(b);
+	using std::swap;
+	swap(static_cast<Alloc&>(a), static_cast<Alloc&>(b));
       }
 
       template<typename Tp1>
-	friend inline bool
+	friend _GLIBCXX_CONSTEXPR bool
 	operator==(const uneq_allocator& a,
 		   const uneq_allocator<Tp1,
 		   typename AllocTraits::template rebind<Tp1>::other>& b)
 	{ return a.personality == b.get_personality(); }
 
       template<typename Tp1>
-	friend inline bool
+	friend _GLIBCXX_CONSTEXPR bool
 	operator!=(const uneq_allocator& a,
 		   const uneq_allocator<Tp1,
 		   typename AllocTraits::template rebind<Tp1>::other>& b)
@@ -438,9 +444,12 @@ namespace __gnu_test
       typedef __gnu_cxx::__alloc_traits<Alloc> AllocTraits;
 
       typedef uneq_allocator<Tp, Alloc> base_alloc;
-      base_alloc& base() { return *this; }
-      const base_alloc& base() const  { return *this; }
-      void swap_base(base_alloc& b) { swap(b, this->base()); }
+      _GLIBCXX14_CONSTEXPR void
+      swap_base(base_alloc& b)
+      {
+	using std::swap;
+	swap(b, static_cast<base_alloc&>(*this));
+      }
 
       typedef std::integral_constant<bool, Propagate> trait_type;
 
@@ -454,11 +463,13 @@ namespace __gnu_test
 		typename AllocTraits::template rebind<Up>::other> other;
 	};
 
+      constexpr
       propagating_allocator(int i) noexcept
       : base_alloc(i)
       { }
 
       template<typename Up>
+	constexpr
 	propagating_allocator(const propagating_allocator<Up, Propagate,
 			      typename AllocTraits::template rebind<Up>::other>& a)
 	noexcept
@@ -469,6 +480,7 @@ namespace __gnu_test
 
       propagating_allocator(const propagating_allocator&) noexcept = default;
 
+      _GLIBCXX14_CONSTEXPR
       propagating_allocator&
       operator=(const propagating_allocator& a) noexcept
       {
@@ -478,6 +490,7 @@ namespace __gnu_test
       }
 
       template<bool P2>
+	_GLIBCXX14_CONSTEXPR
 	propagating_allocator&
 	operator=(const propagating_allocator<Tp, P2, Alloc>& a) noexcept
   	{
@@ -487,11 +500,13 @@ namespace __gnu_test
   	}
 
       // postcondition: LWG2593 a.get_personality() un-changed.
+      constexpr
       propagating_allocator(propagating_allocator&& a) noexcept
-      : base_alloc(std::move(a.base()))
+      : base_alloc(static_cast<base_alloc&&>(a))
       { }
 
       // postcondition: LWG2593 a.get_personality() un-changed
+      _GLIBCXX14_CONSTEXPR
       propagating_allocator&
       operator=(propagating_allocator&& a) noexcept
       {
@@ -503,7 +518,8 @@ namespace __gnu_test
       typedef trait_type propagate_on_container_move_assignment;
       typedef trait_type propagate_on_container_swap;
 
-      propagating_allocator select_on_container_copy_construction() const
+      constexpr propagating_allocator
+      select_on_container_copy_construction() const
       { return Propagate ? *this : propagating_allocator(); }
     };
 
@@ -551,11 +567,11 @@ namespace __gnu_test
 	  : state(a.state)
         { }
 
-      constexpr T*
+      _GLIBCXX14_CONSTEXPR T*
       allocate(std::size_t n)
       { return std::allocator<T>().allocate(n); }
 
-      constexpr void
+      _GLIBCXX14_CONSTEXPR void
       deallocate(T* p, std::size_t n)
       { std::allocator<T>().deallocate(p, n); }
 
@@ -581,7 +597,7 @@ namespace __gnu_test
       ExplicitConsAlloc() { }
 
       template<typename Up>
-        explicit
+        explicit _GLIBCXX_CONSTEXPR
         ExplicitConsAlloc(const ExplicitConsAlloc<Up>&) { }
 
       template<typename Up>
@@ -600,6 +616,7 @@ namespace __gnu_test
       CustomPointerAlloc() = default;
 
       template<typename Up>
+	constexpr
         CustomPointerAlloc(const CustomPointerAlloc<Up>&) { }
 
       template<typename Up>
@@ -611,9 +628,11 @@ namespace __gnu_test
       typedef Ptr<void>		void_pointer;
       typedef Ptr<const void>	const_void_pointer;
 
+      _GLIBCXX14_CONSTEXPR
       pointer allocate(std::size_t n, const_void_pointer = {})
       { return pointer(std::allocator<Tp>::allocate(n)); }
 
+      _GLIBCXX14_CONSTEXPR
       void deallocate(pointer p, std::size_t n)
       { std::allocator<Tp>::deallocate(std::addressof(*p), n); }
     };
@@ -631,16 +650,16 @@ namespace __gnu_test
 
       explicit operator bool() const noexcept { return value != nullptr; }
 
-      friend inline bool
+      friend constexpr bool
       operator==(NullablePointer lhs, NullablePointer rhs) noexcept
       { return lhs.value == rhs.value; }
 
-      friend inline bool
+      friend constexpr bool
       operator!=(NullablePointer lhs, NullablePointer rhs) noexcept
       { return lhs.value != rhs.value; }
 
     protected:
-      explicit NullablePointer(Ptr p) noexcept : value(p) { }
+      constexpr explicit NullablePointer(Ptr p) noexcept : value(p) { }
       Ptr value;
     };
 
@@ -649,16 +668,16 @@ namespace __gnu_test
     struct NullablePointer<void>
     {
       NullablePointer() = default;
-      NullablePointer(std::nullptr_t) noexcept { }
-      explicit NullablePointer(const volatile void*) noexcept { }
+      constexpr NullablePointer(std::nullptr_t) noexcept { }
+      constexpr explicit NullablePointer(const volatile void*) noexcept { }
 
-      explicit operator bool() const noexcept { return false; }
+      constexpr explicit operator bool() const noexcept { return false; }
 
-      friend inline bool
+      friend constexpr bool
       operator==(NullablePointer, NullablePointer) noexcept
       { return true; }
 
-      friend inline bool
+      friend constexpr bool
       operator!=(NullablePointer, NullablePointer) noexcept
       { return false; }
     };

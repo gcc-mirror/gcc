@@ -58,6 +58,9 @@ test_default_ctor()
   std::indirect<Obj, default_init_allocator<Obj>> i2(std::allocator_arg, a);
   VERIFY( i2.get_allocator() == a );
 
+  if (std::is_constant_evaluated())
+    return;
+
   // Object is constructed using allocator-aware constructor.
   std::indirect<std::vector<int, UneqAlloc>, ScopedAlloc>
     i3(std::allocator_arg, ScopedAlloc(11, 22));
@@ -92,6 +95,9 @@ test_forwarding_ctor()
   // Aggregate parens init
   std::indirect<Obj> i6(7);
   VERIFY( i6->i == 7 );
+
+  if (std::is_constant_evaluated())
+    return;
 
   std::vector<int, UneqAlloc> v{1, 2, 3, 4, 5};
   // Object is constructed using allocator-aware constructor.
@@ -165,6 +171,9 @@ test_inplace_ctor()
   VERIFY( i10->at(2) == 3 );
   VERIFY( i10->get_allocator().get_personality() == 42 );
 
+  if (std::is_constant_evaluated())
+    return;
+
   std::indirect<std::vector<int, UneqAlloc>, ScopedAlloc>
     i14(std::allocator_arg, ScopedAlloc(11, 22),
 	std::in_place);
@@ -200,5 +209,5 @@ int main()
     test_forwarding_ctor();
     test_inplace_ctor();
     return true;
-  });
+  }());
 }

@@ -14,7 +14,7 @@ using Vector = std::vector<int>;
 using Indirect = std::indirect<Vector, tracker_allocator<Vector>>;
 const Indirect src(std::in_place, {1, 2, 3});
 
-constexpr void
+void
 test_ctor()
 {
   Counter::reset();
@@ -36,7 +36,7 @@ test_ctor()
   VERIFY( Counter::get_destruct_count() == 0 );
 }
 
-constexpr void
+void
 test_assign()
 {
   Indirect i1;
@@ -62,7 +62,7 @@ test_assign()
   VERIFY( Counter::get_destruct_count() == 0 );
 }
 
-constexpr void
+void
 test_valueless()
 {
   Indirect e;
@@ -103,19 +103,54 @@ test_valueless()
 }
 
 constexpr void
-test_all()
+test_constexpr()
 {
-  test_ctor();
-  test_assign();
-  test_valueless();
+  using Alloc = __gnu_test::uneq_allocator<Vector>;
+  using Indirect = std::indirect<Vector, Alloc>;
+  const Indirect src(std::in_place, {1, 2, 3});
+
+  Indirect i1(src);
+  VERIFY( *i1 == *src );
+  VERIFY( &*i1 != &*src );
+  VERIFY( i1.get_allocator() == Alloc{} );
+
+  Indirect i2(std::allocator_arg, Alloc{2}, src);
+  VERIFY( *i2 == *src );
+  VERIFY( &*i2 != &*src );
+  VERIFY( i2.get_allocator() == Alloc{2} );
+
+  Indirect i3(std::allocator_arg, Alloc{3});
+  i3 = src;
+  VERIFY( *i3 == *src );
+  VERIFY( &*i3 != &*src );
+  VERIFY( i3.get_allocator() == Alloc{3} );
+
+  Indirect e;
+  auto(std::move(e));
+  VERIFY( e.valueless_after_move() );
+
+  Indirect e1(e);
+  VERIFY( e1.valueless_after_move() );
+
+  Indirect e2(std::allocator_arg, {}, e);
+  VERIFY( e2.valueless_after_move() );
+
+  i3 = e;
+  VERIFY( i3.valueless_after_move() );
+
+  i3 = e;
+  VERIFY( i3.valueless_after_move() );
 }
 
 int main()
 {
-  test_all();
+  test_ctor();
+  test_assign();
+  test_valueless();
+  test_constexpr();
 
   static_assert([] {
-    test_all();
+    test_constexpr();
     return true;
-  });
+  }());
 }

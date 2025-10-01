@@ -13,7 +13,7 @@ using __gnu_test::tracker_allocator;
 using Counter = __gnu_test::tracker_allocator_counter;
 
 template<bool Propagate>
-constexpr void
+void
 test_ctor()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -59,7 +59,7 @@ test_ctor()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_assign()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -144,7 +144,7 @@ test_assign()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_valueless()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -219,10 +219,4 @@ int main()
 {
   test_all<true>();
   test_all<false>();
-
-  static_assert([] {
-    test_all<true>();
-    test_all<false>();
-    return true;
-  });
 }

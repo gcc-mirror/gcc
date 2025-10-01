@@ -126,6 +126,9 @@ test_forwarding_ctor()
   VERIFY( *i4 == src );
   VERIFY( i4->get_personality() == -2 );
 
+  if (std::is_constant_evaluated())
+    return;
+
   const VecDerived<int, UneqAlloc> v{1, 2, 3, 4, 5};
   // Object is constructed using allocator-aware constructor.
   std::polymorphic<Base, ScopedAlloc>
@@ -183,6 +186,9 @@ test_inplace_ctor()
   VERIFY( *i7 == il  );
   VERIFY( i7->get_personality() == 42 );
 
+  if (std::is_constant_evaluated())
+    return;
+
   std::polymorphic<Base, ScopedAlloc>
     i8(std::allocator_arg, ScopedAlloc(11, 22),
 	std::in_place_type<VecDerived<int, UneqAlloc>>);
@@ -216,5 +222,5 @@ int main()
     test_forwarding_ctor();
     test_inplace_ctor();
     return true;
-  });
+  }());
 }

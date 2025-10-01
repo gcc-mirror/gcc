@@ -9,16 +9,16 @@
 #include <testsuite_allocator.h>
 
 struct Base {
-  friend constexpr
+  friend
   bool operator==(const Base& lhs, const Base& rhs)
   { return lhs.eq(rhs); }
 
-  virtual constexpr int
+  virtual int
   get_alloc_personality() const
   { return -1; }
 
 private:
-  constexpr virtual bool
+  virtual bool
   eq(const Base& other) const = 0;
 };
 
@@ -29,13 +29,13 @@ struct VecDerived : Base, std::vector<T, Allocator>
 
   using VecBase::VecBase;
 
-  constexpr int
+  int
   get_alloc_personality() const override
   { return this->get_allocator().get_personality(); }
 
 private:
 
-  constexpr bool
+  bool
   eq(const Base& other) const override
   { 
     if (auto op = dynamic_cast<const VecDerived*>(&other))
@@ -50,7 +50,7 @@ using __gnu_test::tracker_allocator;
 using Counter = __gnu_test::tracker_allocator_counter;
 
 template<bool Propagate>
-constexpr void
+void
 test_ctor()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -96,7 +96,7 @@ test_ctor()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_assign()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -185,7 +185,7 @@ test_assign()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_valueless()
 {
   using PropAlloc = propagating_allocator<int, Propagate>;
@@ -249,7 +249,7 @@ test_valueless()
 }
 
 template<bool Propagate>
-constexpr void
+void
 test_all()
 {
   test_ctor<Propagate>();
@@ -261,10 +261,4 @@ int main()
 {
   test_all<true>();
   test_all<false>();
-
-  static_assert([] {
-    test_all<true>();
-    test_all<false>();
-    return true;
-  });
 }

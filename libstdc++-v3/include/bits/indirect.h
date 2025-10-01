@@ -263,7 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_reset(__ptr);
 
 	if constexpr (__pocma)
-	  _M_alloc = __other._M_alloc;
+	  _M_alloc = std::move(__other._M_alloc);
 
 	return *this;
       }
@@ -736,7 +736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_reset(__ptr);
 
 	if constexpr (__pocma)
-	  _M_alloc = __other._M_alloc;
+	  _M_alloc = std::move(__other._M_alloc);
 
 	return *this;
       }
