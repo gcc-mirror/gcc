@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	if (__pos > this->size())
 	  __throw_out_of_range_fmt(__N("%s: __pos (which is %zu) > "
 				       "this->size() (which is %zu)"),
-				   __s, __pos, this->size());
+				   __s, (size_t)__pos, (size_t)this->size());
 	return __pos;
       }
 
