@@ -63,7 +63,7 @@ ldtoa_strtold (void *s, bool *error)
 }
 
 char *
-ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
+ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
