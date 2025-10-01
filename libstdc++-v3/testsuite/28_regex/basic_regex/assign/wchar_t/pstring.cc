@@ -23,6 +23,7 @@
 // [28.8.3] class template basic_regex assign()
 
 #include <regex>
+#include <cwchar>
 
 // Tests assign operation from a Pascal-style counted-string.  
 void test01()
@@ -31,7 +32,7 @@ void test01()
 
   const wchar_t cs[] = L"aab";
   test_type re;
-  re.assign(cs, sizeof(cs)-1, std::regex_constants::basic);
+  re.assign(cs, std::wcslen(cs), std::regex_constants::basic);
 }
 
 int
