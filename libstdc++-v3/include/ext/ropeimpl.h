@@ -1355,7 +1355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    case __detail::_S_substringfn:
 	      {
 		_RopeFunction* __f = (_RopeFunction*)__r;
-		_CharT __result;
+		_CharT __result = _CharT();
 
 		(*(__f->_M_fn))(__i, 1, &__result);
 		return __result;
