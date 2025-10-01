@@ -85,7 +85,7 @@ DO_ARITH_OPS (int64_t, -, minus)
 /* { dg-final { scan-assembler-not {\tadd\tz[0-9]+\.d, z[0-9]+\.d, #-1\n} } } */
 /* { dg-final { scan-assembler-times {\tsub\tz[0-9]+\.d, z[0-9]+\.d, #1\n} 1 } } */
 
-/* { dg-final { scan-assembler-not {\tsub\tz[0-9]+\.b, z[0-9]+\.b, #1\n} } } */
+/* Asserted above { scan-assembler-not {\tsub\tz[0-9]+\.b, z[0-9]+\.b, #1\n} } */
 /* { dg-final { scan-assembler-not {\tsub\tz[0-9]+\.b, z[0-9]+\.b, #5\n} } } */
 /* { dg-final { scan-assembler-not {\tsub\tz[0-9]+\.b, z[0-9]+\.b, #255\n} } } */
 /* { dg-final { scan-assembler-not {\tsub\tz[0-9]+\.b, z[0-9]+\.b, #256\n} } } */

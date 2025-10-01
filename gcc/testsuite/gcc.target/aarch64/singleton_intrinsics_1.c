@@ -298,7 +298,7 @@ test_vrsra_n_s64 (int64x1_t a, int64x1_t b)
   return vrsra_n_s64 (a, b, 3);
 }
 
-/* { dg-final { scan-assembler-times "\\tsrsra\\td\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "\\tursra\\td\[0-9\]+" 1 } } */
 
 uint64x1_t
 test_vrsra_n_u64 (uint64x1_t a, uint64x1_t b)

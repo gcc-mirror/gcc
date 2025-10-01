@@ -55,7 +55,7 @@ CALLEE (s8, svint8_t)
 CALLEE (u8, svuint8_t)
 
 /*
-** callee_u8:
+** callee_mf8:
 ** (
 **	ld1	({v.*}), \[x0\]
 **	st1	\1, \[x8\]

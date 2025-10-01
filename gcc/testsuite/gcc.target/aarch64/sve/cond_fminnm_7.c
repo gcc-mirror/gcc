@@ -21,8 +21,8 @@
 /* { dg-final { scan-assembler-times {\tfminnm\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-7], z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-7], z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-7], z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-7], z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d, p[0-7], z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 
 /* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
 /* { dg-final { scan-assembler-not {\tmov\tz} } } */

@@ -175,8 +175,8 @@ tst2 (unsigned x, unsigned y)
 int
 tst3 (unsigned x, unsigned y)
 {
-  /* { dg-final { scan-assembler "tst\tw\[0-9\]+, w\[0-9\]+, ror 20\n" } } */
-  return ((unsigned long)x & ROR (y, 20)) == 0;
+  /* { dg-final { scan-assembler "tst\tw\[0-9\]+, w\[0-9\]+, ror 21\n" } } */
+  return ((unsigned long)x & ROR (y, 21)) == 0;
 }
 
 int
@@ -189,15 +189,15 @@ bics1 (unsigned x, unsigned y)
 int
 bics2 (unsigned x, unsigned y)
 {
-  /* { dg-final { scan-assembler "bics\twzr, w\[0-9\]+, w\[0-9\]+, ror 21\n" } } */
-  return (x & ~ROR (y, 21)) == 0;
+  /* { dg-final { scan-assembler "bics\twzr, w\[0-9\]+, w\[0-9\]+, ror 22\n" } } */
+  return (x & ~ROR (y, 22)) == 0;
 }
 
 int
 bics3 (unsigned x, unsigned y)
 {
-  /* { dg-final { scan-assembler "bics\twzr, w\[0-9\]+, w\[0-9\]+, ror 21\n" } } */
-  return (x & (unsigned long)~ROR (y, 21)) == 0;
+  /* { dg-final { scan-assembler "bics\twzr, w\[0-9\]+, w\[0-9\]+, ror 23\n" } } */
+  return (x & (unsigned long)~ROR (y, 23)) == 0;
 }
 
 /* { dg-final { scan-assembler-not "cmp" } } */

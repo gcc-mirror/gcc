@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=armv8-a -O2" } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_acle.h>
 
@@ -38,23 +39,27 @@ prefetch_for_read_write (void *a)
   __pldx (PST, SLC, KEEP, a);
   __pldx (PST, SLC, STRM, a);
 }
-
-/* { dg-final { scan-assembler "prfm\tPLDL1KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDL1STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDL2KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDL2STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDL3KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDL3STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDSLCKEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLDSLCSTRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL1KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL1STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL2KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL2STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL3KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTL3STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTSLCKEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPSTSLCSTRM, \\\[x\[0-9\]+\\\]" } } */
+/*
+** prefetch_for_read_write:
+** ...
+**	prfm\tPLDL1KEEP, \[x[0-9]+\]
+**	prfm\tPLDL1STRM, \[x[0-9]+\]
+**	prfm\tPLDL2KEEP, \[x[0-9]+\]
+**	prfm\tPLDL2STRM, \[x[0-9]+\]
+**	prfm\tPLDL3KEEP, \[x[0-9]+\]
+**	prfm\tPLDL3STRM, \[x[0-9]+\]
+**	prfm\tPLDSLCKEEP, \[x[0-9]+\]
+**	prfm\tPLDSLCSTRM, \[x[0-9]+\]
+**	prfm\tPSTL1KEEP, \[x[0-9]+\]
+**	prfm\tPSTL1STRM, \[x[0-9]+\]
+**	prfm\tPSTL2KEEP, \[x[0-9]+\]
+**	prfm\tPSTL2STRM, \[x[0-9]+\]
+**	prfm\tPSTL3KEEP, \[x[0-9]+\]
+**	prfm\tPSTL3STRM, \[x[0-9]+\]
+**	prfm\tPSTSLCKEEP, \[x[0-9]+\]
+**	prfm\tPSTSLCSTRM, \[x[0-9]+\]
+** ...
+*/
 
 void
 prefetch_simple (void *a)
@@ -62,9 +67,13 @@ prefetch_simple (void *a)
   __pld (a);
   __pli (a);
 }
-
-/* { dg-final { scan-assembler "prfm\tPLDL1KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL1KEEP, \\\[x\[0-9\]+\\\]" } } */
+/*
+** prefetch_simple:
+** ...
+**	prfm\tPLDL1KEEP, \[x[0-9]+\]
+**	prfm\tPLIL1KEEP, \[x[0-9]+\]
+** ...
+*/
 
 void
 prefetch_instructions (void *a)
@@ -78,13 +87,16 @@ prefetch_instructions (void *a)
   __plix (SLC, KEEP, a);
   __plix (SLC, STRM, a);
 }
-
-/* { dg-final { scan-assembler "prfm\tPLIL1KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL1STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL2KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL2STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL3KEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLIL3STRM, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLISLCKEEP, \\\[x\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "prfm\tPLISLCSTRM, \\\[x\[0-9\]+\\\]" } } */
-
+/*
+** prefetch_instructions:
+** ...
+**	prfm\tPLIL1KEEP, \[x[0-9]+\]
+**	prfm\tPLIL1STRM, \[x[0-9]+\]
+**	prfm\tPLIL2KEEP, \[x[0-9]+\]
+**	prfm\tPLIL2STRM, \[x[0-9]+\]
+**	prfm\tPLIL3KEEP, \[x[0-9]+\]
+**	prfm\tPLIL3STRM, \[x[0-9]+\]
+**	prfm\tPLISLCKEEP, \[x[0-9]+\]
+**	prfm\tPLISLCSTRM, \[x[0-9]+\]
+** ...
+*/

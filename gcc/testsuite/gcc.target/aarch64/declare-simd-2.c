@@ -51,11 +51,10 @@ void f05 (short a, short *b, short c)
   *b += a + c;
 }
 
-/* { dg-final { scan-assembler {_ZGVnN4ul2v_f05:} } } */
-/* { dg-final { scan-assembler {_ZGVnN4ul2v_f05:} } } */
+/* { dg-final { scan-assembler {_ZGVnM4ul2v_f05:} } } */
 /* { dg-final { scan-assembler {_ZGVnM8ul2v_f05:} } } */
-/* { dg-final { scan-assembler {_ZGVnM8ul2v_f05:} } } */
+/* { dg-final { scan-assembler {_ZGVnN4ul2v_f05:} } } */
+/* { dg-final { scan-assembler {_ZGVnN8ul2v_f05:} } } */
 #ifdef __cplusplus
 }
 #endif
-

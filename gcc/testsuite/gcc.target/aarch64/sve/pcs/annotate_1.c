@@ -96,7 +96,6 @@ svfloat64x4_t ret_f64x4 (void) { return svundef4_f64 (); }
 
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s8x3\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s16x3\n} } } */
-/* { dg-final { scan-assembler {\t\.variant_pcs\tret_s16x3\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s32x3\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s64x3\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_u8x3\n} } } */

@@ -68,8 +68,8 @@
 /* { dg-final { scan-assembler-times {ssubl2\t} 3} } */
 /* { dg-final { scan-assembler-times {usubl2\t} 3} } */
 
-/* { dg-final { scan-assembler-times {sabdl2\t} 3} } */
-/* { dg-final { scan-assembler-times {uabdl2\t} 3} } */
+/* { dg-final { scan-assembler-times {sabal2\t} 3} } */
+/* { dg-final { scan-assembler-times {uabal2\t} 3} } */
 
 /* { dg-final { scan-assembler-times {saddw2\t} 3} } */
 /* { dg-final { scan-assembler-times {uaddw2\t} 3} } */

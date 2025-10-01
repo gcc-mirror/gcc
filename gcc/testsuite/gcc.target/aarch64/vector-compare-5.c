@@ -53,15 +53,13 @@ n (v4i *x, v4i const *y, v4i *z, v4i *t)
 }
 
 
+/* { dg-final { scan-tree-dump-times "\\s*\\*tD\\.\\d+\\s*=\\s*\\{\\s*-1(?:,\\s*-1){3}\\s*\\}\\s*;" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "\\s*\\*tD\\.\\d+\\s*=\\s*\\{\\s*0(?:,\\s*0){3}\\s*\\}\\s*;" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "\\s*\\*zD\\.\\d+\\s*=\\s*\\{\\s*-1(?:,\\s*-1){3}\\s*\\}\\s*;" 2 "original" } } */
+
 /* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*>=\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*;" "original" } } */
 /* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*==\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
 /* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*<\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*;" "original" } } */
 /* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*<=\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*;" "original" } } */
 /* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*!=\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
 /* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*VEC_COND_EXPR\\s*<\\s*\\*xD\\.\\d+\\s*>=\\s*VIEW_CONVERT_EXPR<v4iD\\.\\d+>\\(\\*yD\\.\\d+\\)\\s*,\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*,\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*>\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*zD\\.\\d+\\s*=\\s*\\{\\s*-1(,\\s*-1){3}\\s*\\}\\s*;" "original" } } */
-/* { dg-final { scan-tree-dump ".*\\*tD\\.\\d+\\s*=\\s*\\{\\s*0(,\\s*0){3}\\s*\\}\\s*;" "original" } } */

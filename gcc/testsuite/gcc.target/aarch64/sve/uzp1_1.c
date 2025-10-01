@@ -32,9 +32,6 @@ UZP1 (vnx8hf,  ((vnx8hi) { 0, 2, 4, 6, 8, 10, 12, 14,
 			   16, 18, 20, 22, 24, 26, 28, 30 }));
 
 /* { dg-final { scan-assembler-not {\ttbl\t} } } */
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
 
 /* { dg-final { scan-assembler-times {\tuzp1\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tuzp1\tz[0-9]+\.s, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */

@@ -913,7 +913,7 @@ test_vrsrad_n_s64 (int64_t a, int64_t b)
   return vrsrad_n_s64 (a, b, 3);
 }
 
-/* { dg-final { scan-assembler-times "\\tsrsra\\td\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "\\tursra\\td\[0-9\]+" 1 } } */
 
 uint64_t
 test_vrsrad_n_u64 (uint64_t a, uint64_t b)

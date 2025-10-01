@@ -30,6 +30,6 @@ void f(char *out)
 /* { dg-final { scan-assembler "cset.*, hi" } } */
 /* { dg-final { scan-assembler "cset.*, ls" } } */
 /* { dg-final { scan-assembler "cset.*, ge" } } */
-/* { dg-final { scan-assembler "cset.*, ls" } } */
+/* { dg-final { scan-assembler "cset.*, lt" } } */
 /* { dg-final { scan-assembler "cset.*, gt" } } */
 /* { dg-final { scan-assembler "cset.*, le" } } */

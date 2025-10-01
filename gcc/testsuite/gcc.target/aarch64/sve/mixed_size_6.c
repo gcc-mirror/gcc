@@ -39,9 +39,9 @@ f3 (uint64_t *restrict ptr1, uint32_t *restrict ptr2, uint32_t start)
 }
 
 /* { dg-final { scan-assembler {\tindex\tz[0-9]+\.d, x[0-9]+, #1\n} } } */
-/* { dg-final { scan-assembler {\tindex\tz[0-9]+\.d, x[0-9]+, #1\n} } } */
+/* { dg-final { scan-assembler {\tindex\tz[0-9]+\.d, x[0-9]+, #2\n} } } */
 /* { dg-final { scan-assembler {\tindex\tz[0-9]+\.d, x[0-9]+, #4\n} } } */
 
 /* { dg-final { scan-assembler-not {\tindex\tz[0-9]+\.d, w[0-9]+, #1\n} } } */
-/* { dg-final { scan-assembler-not {\tindex\tz[0-9]+\.d, w[0-9]+, #1\n} } } */
+/* { dg-final { scan-assembler-not {\tindex\tz[0-9]+\.d, w[0-9]+, #2\n} } } */
 /* { dg-final { scan-assembler-not {\tindex\tz[0-9]+\.d, w[0-9]+, #4\n} } } */

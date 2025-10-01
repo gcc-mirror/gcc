@@ -107,7 +107,7 @@ CONS4_FN (1, double);
 CONS4_FN (2, double);
 
 /*
-** cons2_8_double:
+** cons4_4_double:
 **	...
 **	stp	q[0-9]+, .*
 **	ret
@@ -115,7 +115,7 @@ CONS4_FN (2, double);
 CONS4_FN (4, double);
 
 /*
-** cons2_8_double:
+** cons4_8_double:
 **	...
 **	stp	q[0-9]+, .*
 **	ret

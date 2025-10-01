@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-inline -save-temps" } */
-
+/* { dg-final { check-function-bodies "**" "" "" } } */
 extern void abort ();
 
 #define force_simd_di(v) asm volatile ("mov %d0, %1.d[0]" :"=w" (v) :"w" (v) :)
@@ -23,8 +23,13 @@ test_lshift_left_sisd_di (UInt64x1 b, UInt64x1 c)
   force_simd_di (a);
   return a;
 }
-/* { dg-final { scan-assembler "shl\td\[0-9\]+,\ d\[0-9\]+,\ 8" } } */
-/* { dg-final { scan-assembler "ushl\td\[0-9\]+,\ d\[0-9\]+,\ d\[0-9\]+" } } */
+/*
+** test_lshift_left_sisd_di:
+** ...
+**	shl\t(d[0-9]+), d[0-9]+, 8
+**	ushl\td[0-9]+, \1, d[0-9]+
+** ...
+*/
 
 UInt32x1
 test_lshift_left_sisd_si (UInt32x1 b, UInt32x1 c)
@@ -38,8 +43,13 @@ test_lshift_left_sisd_si (UInt32x1 b, UInt32x1 c)
   force_simd_si (a);
   return a;
 }
-/* { dg-final { scan-assembler "shl\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 4" } } */
-/* "ushl\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ v\[0-9\]+\.2s" (counted later) */
+/*
+** test_lshift_left_sisd_si:
+** ...
+**	shl\t(v[0-9]+\.2s), v[0-9]+\.2s, 4
+**	ushl\tv[0-9]+\.2s, \1, v[0-9]+\.2s
+** ...
+*/
 
 UInt64x1
 test_lshift_right_sisd_di (UInt64x1 b, UInt64x1 c)
@@ -53,9 +63,14 @@ test_lshift_right_sisd_di (UInt64x1 b, UInt64x1 c)
   force_simd_di (a);
   return a;
 }
-/* { dg-final { scan-assembler "ushr\td\[0-9\]+,\ d\[0-9\]+,\ 8" } } */
-/* "neg\td\[0-9\]+,\ d\[0-9\]+" (counted later) */
-/* { dg-final { scan-assembler "ushl\td\[0-9\]+,\ d\[0-9\]+,\ d\[0-9\]+" } } */
+/*
+** test_lshift_right_sisd_di:
+** ...
+**	ushr\t(d[0-9]+), d[0-9]+, 8
+**	neg\t(d[0-9]+), d[0-9]+
+**	ushl\td[0-9]+, \1, \2
+** ...
+*/
 
 UInt64x1
 test_lshift_right_sisd_si (UInt32x1 b, UInt32x1 c)
@@ -69,9 +84,14 @@ test_lshift_right_sisd_si (UInt32x1 b, UInt32x1 c)
   force_simd_si (a);
   return a;
 }
-/* { dg-final { scan-assembler "ushr\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 4" } } */
-/* "neg\td\[0-9\]+,\ d\[0-9\]+" (counted later) */
-/* { dg-final { scan-assembler-times "ushl\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ v\[0-9\]+\.2s" 2 } } */
+/*
+** test_lshift_right_sisd_si:
+** ...
+**	ushr\t(v[0-9]+\.2s), v[0-9]+\.2s, 4
+**	neg\td([0-9]+), d[0-9]+
+**	ushl\tv[0-9]+\.2s, \1, v\2\.2s
+** ...
+*/
 
 Int64x1
 test_ashift_right_sisd_di (Int64x1 b, Int64x1 c)
@@ -85,9 +105,14 @@ test_ashift_right_sisd_di (Int64x1 b, Int64x1 c)
   force_simd_di (a);
   return a;
 }
-/* { dg-final { scan-assembler "sshr\td\[0-9\]+,\ d\[0-9\]+,\ 8" } } */
-/* "neg\td\[0-9\]+,\ d\[0-9\]+" (counted later) */
-/* { dg-final { scan-assembler "sshl\td\[0-9\]+,\ d\[0-9\]+,\ d\[0-9\]+" } } */
+/*
+** test_ashift_right_sisd_di:
+** ...
+**	sshr\t(d[0-9]+), d[0-9]+, 8
+**	neg\t(d[0-9]+), d[0-9]+
+**	sshl\td[0-9]+, \1, \2
+** ...
+*/
 
 Int32x1
 test_ashift_right_sisd_si (Int32x1 b, Int32x1 c)
@@ -101,10 +126,14 @@ test_ashift_right_sisd_si (Int32x1 b, Int32x1 c)
   force_simd_si (a);
   return a;
 }
-/* { dg-final { scan-assembler "sshr\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 4" } } */
-/* { dg-final { scan-assembler-times "neg\td\[0-9\]+,\ d\[0-9\]+" 4 } } */
-/* { dg-final { scan-assembler "sshl\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ v\[0-9\]+\.2s" } } */
-
+/*
+** test_ashift_right_sisd_si:
+** ...
+**	sshr\t(v[0-9]+\.2s), v[0-9]+\.2s, 4
+**	neg\td([0-9]+), d[0-9]+
+**	sshl\tv[0-9]+\.2s, \1, v\2\.2s
+** ...
+*/
 
 /* The following are to make sure if the integer instructions lsl/lsr/asr are
    generated in non-vector scenarios */
@@ -118,8 +147,12 @@ test_lshift_left_int_di (UInt64x1 b, UInt64x1 c)
   a = a << c;
   return a;
 }
-/* { dg-final { scan-assembler "lsl\tx\[0-9\]+,\ x\[0-9\]+,\ 8" } } */
-/* { dg-final { scan-assembler "lsl\tx\[0-9\]+,\ x\[0-9\]+,\ x\[0-9\]+" } } */
+/*
+** test_lshift_left_int_di:
+**	lsl\t(x[0-9]+), x0, 8
+**	lsl\tx0, \1, x1
+**	ret
+*/
 
 UInt32x1
 test_lshift_left_int_si (UInt32x1 b, UInt32x1 c)
@@ -130,8 +163,12 @@ test_lshift_left_int_si (UInt32x1 b, UInt32x1 c)
   a = a << c;
   return a;
 }
-/* { dg-final { scan-assembler "lsl\tw\[0-9\]+,\ w\[0-9\]+,\ 4" } } */
-/* { dg-final { scan-assembler "lsl\tw\[0-9\]+,\ w\[0-9\]+,\ w\[0-9\]+" } } */
+/*
+** test_lshift_left_int_si:
+**	lsl\t(w[0-9]+), w0, 4
+**	lsl\tw0, \1, w1
+**	ret
+*/
 
 UInt64x1
 test_lshift_right_int_di (UInt64x1 b, UInt64x1 c)
@@ -142,8 +179,12 @@ test_lshift_right_int_di (UInt64x1 b, UInt64x1 c)
   a = a >> c;
   return a;
 }
-/* { dg-final { scan-assembler "lsr\tx\[0-9\]+,\ x\[0-9\]+,\ 8" } } */
-/* { dg-final { scan-assembler "lsr\tx\[0-9\]+,\ x\[0-9\]+,\ x\[0-9\]+" } } */
+/*
+** test_lshift_right_int_di:
+**	lsr\t(x[0-9]+), x0, 8
+**	lsr\tx0, \1, x1
+**	ret
+*/
 
 UInt32x1
 test_lshift_right_int_si (UInt32x1 b, UInt32x1 c)
@@ -154,8 +195,12 @@ test_lshift_right_int_si (UInt32x1 b, UInt32x1 c)
   a = a >> c;
   return a;
 }
-/* { dg-final { scan-assembler "lsr\tw\[0-9\]+,\ w\[0-9\]+,\ 4" } } */
-/* { dg-final { scan-assembler "lsr\tw\[0-9\]+,\ w\[0-9\]+,\ w\[0-9\]+" } } */
+/*
+** test_lshift_right_int_si:
+**	lsr\t(w[0-9]+), w0, 4
+**	lsr\tw0, \1, w1
+**	ret
+*/
 
 Int64x1
 test_ashift_right_int_di (Int64x1 b, Int64x1 c)
@@ -166,8 +211,12 @@ test_ashift_right_int_di (Int64x1 b, Int64x1 c)
   a = a >> c;
   return a;
 }
-/* { dg-final { scan-assembler "asr\tx\[0-9\]+,\ x\[0-9\]+,\ 8" } } */
-/* { dg-final { scan-assembler "asr\tx\[0-9\]+,\ x\[0-9\]+,\ x\[0-9\]+" } } */
+/*
+** test_ashift_right_int_di:
+**	asr\t(x[0-9]+), x0, 8
+**	asr\tx0, \1, x1
+**	ret
+*/
 
 Int32x1
 test_ashift_right_int_si (Int32x1 b, Int32x1 c)
@@ -178,8 +227,12 @@ test_ashift_right_int_si (Int32x1 b, Int32x1 c)
   a = a >> c;
   return a;
 }
-/* { dg-final { scan-assembler "asr\tw\[0-9\]+,\ w\[0-9\]+,\ 4" } } */
-/* { dg-final { scan-assembler "asr\tw\[0-9\]+,\ w\[0-9\]+,\ w\[0-9\]+" } } */
+/*
+** test_ashift_right_int_si:
+**	asr\t(w[0-9]+), w0, 4
+**	asr\tw0, \1, w1
+**	ret
+*/
 
 #define CHECK(var,val) \
 do                     \
@@ -225,4 +278,3 @@ main ()
 
   return 0;
 }
-
