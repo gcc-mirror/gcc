@@ -2049,8 +2049,12 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block, bool clean_traps)
      the bitmap_find_leader way to see if there's still an expression
      for it.  For some ratio of to be removed values and number of
      values/expressions in the set this might be faster than rebuilding
-     the value-set.  */
-  if (any_removed)
+     the value-set.
+     Note when there's a MAX solution on one edge (clean_traps) do not
+     prune values as we need to consider the resulting expression set MAX
+     as well.  This avoids a later growing ANTIC_IN value-set during
+     iteration, when the explicitly represented expression set grows. */
+  if (any_removed && !clean_traps)
     {
       bitmap_clear (&set->values);
       FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
