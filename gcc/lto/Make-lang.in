@@ -26,18 +26,15 @@ LTO_DUMP_INSTALL_NAME := $(shell echo lto-dump|sed '$(program_transform_name)')
 # The LTO-specific object files inclued in $(LTO_EXE).
 LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-common.o
 lto_OBJS = $(LTO_OBJS)
+lto_FDAS = lto1.fda
 LTO_DUMP_OBJS = lto/lto-lang.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-dump.o lto/lto-common.o
 lto_dump_OBJS = $(LTO_DUMP_OBJS)
 
-# this is only useful in a LTO bootstrap, but this does not work right
-# now. Should reenable after this is fixed, but only when LTO bootstrap
-# is enabled.
-
-#ifeq ($(if $(wildcard ../stage_current),$(shell cat \
-#  ../stage_current)),stageautofeedback)
-#$(LTO_OBJS): CFLAGS += -fauto-profile=lto1.fda
-#$(LTO_OBJS): lto1.fda
-#endif
+ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+  ../stage_current)),stageautofeedback)
+$(LTO_OBJS): CFLAGS += -fauto-profile=lto1.fda
+$(LTO_OBJS): lto1.fda
+endif
 
 # Rules
 
@@ -118,7 +115,7 @@ create_fdas_for_lto1: ../stage1-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=lto1_$$component_in_prev.fda; \
-	    $(CREATE_GCOV) -binary ../stage1-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
 	  fi; \
 	done;
 
@@ -128,7 +125,7 @@ create_fdas_for_lto1: ../stage1-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=lto1_$$component_in_prev_target.fda; \
-	    $(CREATE_GCOV) -binary ../prev-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	    $(CREATE_GCOV) -binary ../prev-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
 	  fi; \
 	done;
 

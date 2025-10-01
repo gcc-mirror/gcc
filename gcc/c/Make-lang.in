@@ -58,6 +58,7 @@ C_AND_OBJC_OBJS = attribs.o c/c-errors.o c/c-decl.o c/c-typeck.o \
 # Language-specific object files for C.
 C_OBJS = c/c-lang.o c-family/stub-objc.o $(C_AND_OBJC_OBJS)
 c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
+c_FDAS = cc1.fda
 
 # Use strict warnings for this front end.
 c-warn = $(STRICT_WARN)
@@ -101,7 +102,7 @@ create_fdas_for_cc1: ../stage1-gcc/cc1$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=cc1_$$component_in_prev.fda; \
-	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
 	  fi; \
 	done;
 
@@ -111,7 +112,7 @@ create_fdas_for_cc1: ../stage1-gcc/cc1$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=cc1_$$component_in_prev_target.fda; \
-	    $(CREATE_GCOV) -binary ../prev-gcc/cc1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	    $(CREATE_GCOV) -binary ../prev-gcc/cc1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
 	  fi; \
 	done;
 
