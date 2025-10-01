@@ -309,7 +309,7 @@ test_modifiers()
   is >> parse("%5M", min);
   VERIFY( is.eof() && is.fail() );
 
-  std::chrono::seconds s;
+  std::chrono::seconds s{};
   is.clear();
   is.str("000000000012345");
   is >> parse("%12S", s); // Read more than 10 digits to check overflow logic.
