@@ -4128,6 +4128,12 @@ AttrInputMetaItemContainer::separate_cfg_attrs () const
 
   for (auto it = items.begin () + 1; it != items.end (); ++it)
     {
+      if ((*it)->get_kind () == MetaItemInner::Kind::MetaItem
+	  && static_cast<MetaItem &> (**it).get_item_kind ()
+	       == MetaItem::ItemKind::PathExpr
+	  && !static_cast<MetaItemPathExpr &> (**it).get_expr ().is_literal ())
+	continue;
+
       Attribute attr = (*it)->to_attribute ();
       if (attr.is_empty ())
 	{

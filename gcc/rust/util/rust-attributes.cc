@@ -435,9 +435,9 @@ AttributeChecker::visit (AST::MetaItemPathExpr &attribute)
 {
   if (!attribute.get_expr ().is_literal ())
     {
-      rust_error_at (attribute.get_locus (),
+      rust_error_at (attribute.get_expr ().get_locus (),
 		     "malformed %<path%> attribute input");
-      rust_inform (attribute.get_locus (),
+      rust_inform (attribute.get_expr ().get_locus (),
 		   "must be of the form: %<#[path = \"file\"]%>");
     }
 }
