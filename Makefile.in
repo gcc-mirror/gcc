@@ -3,7 +3,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2023
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 #   Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
@@ -144,8 +144,7 @@ BASE_EXPORTS = \
 	M4="$(M4)"; export M4; \
 	SED="$(SED)"; export SED; \
 	AWK="$(AWK)"; export AWK; \
-	MAKEINFO="$(MAKEINFO)"; export MAKEINFO; \
-	GUILE="$(GUILE)"; export GUILE;
+	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
 
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the build system.
@@ -459,8 +458,6 @@ GM2FLAGS = $(CFLAGS)
 CRAB1_LIBS = @CRAB1_LIBS@
 
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-
-GUILE = guile
 
 # Pass additional PGO and LTO compiler options to the PGO build.
 BUILD_CFLAGS = $(PGO_BUILD_CFLAGS) $(PGO_BUILD_LTO_CFLAGS)
@@ -891,7 +888,6 @@ BASE_FLAGS_TO_PASS = \
 	"GNATMAKE=$(GNATMAKE)" \
 	"GDC=$(GDC)" \
 	"GDCFLAGS=$(GDCFLAGS)" \
-	"GUILE=$(GUILE)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
@@ -68682,16 +68678,16 @@ install-strip-ld: maybe-install-strip-bfd
 install-strip-ld: maybe-install-strip-libctf
 install-bfd: maybe-install-libsframe
 install-strip-bfd: maybe-install-strip-libsframe
-configure-opcodes: configure-bfd
-configure-stage1-opcodes: configure-stage1-bfd
-configure-stage2-opcodes: configure-stage2-bfd
-configure-stage3-opcodes: configure-stage3-bfd
-configure-stage4-opcodes: configure-stage4-bfd
-configure-stageprofile-opcodes: configure-stageprofile-bfd
-configure-stagetrain-opcodes: configure-stagetrain-bfd
-configure-stagefeedback-opcodes: configure-stagefeedback-bfd
-configure-stageautoprofile-opcodes: configure-stageautoprofile-bfd
-configure-stageautofeedback-opcodes: configure-stageautofeedback-bfd
+configure-opcodes: all-bfd
+configure-stage1-opcodes: all-stage1-bfd
+configure-stage2-opcodes: all-stage2-bfd
+configure-stage3-opcodes: all-stage3-bfd
+configure-stage4-opcodes: all-stage4-bfd
+configure-stageprofile-opcodes: all-stageprofile-bfd
+configure-stagetrain-opcodes: all-stagetrain-bfd
+configure-stagefeedback-opcodes: all-stagefeedback-bfd
+configure-stageautoprofile-opcodes: all-stageautoprofile-bfd
+configure-stageautofeedback-opcodes: all-stageautofeedback-bfd
 install-opcodes: maybe-install-bfd
 install-strip-opcodes: maybe-install-strip-bfd
 configure-gas: maybe-configure-gettext
@@ -68756,6 +68752,16 @@ configure-stagetrain-ld: maybe-configure-stagetrain-gettext
 configure-stagefeedback-ld: maybe-configure-stagefeedback-gettext
 configure-stageautoprofile-ld: maybe-configure-stageautoprofile-gettext
 configure-stageautofeedback-ld: maybe-configure-stageautofeedback-gettext
+configure-ld: maybe-all-bfd
+configure-stage1-ld: maybe-all-stage1-bfd
+configure-stage2-ld: maybe-all-stage2-bfd
+configure-stage3-ld: maybe-all-stage3-bfd
+configure-stage4-ld: maybe-all-stage4-bfd
+configure-stageprofile-ld: maybe-all-stageprofile-bfd
+configure-stagetrain-ld: maybe-all-stagetrain-bfd
+configure-stagefeedback-ld: maybe-all-stagefeedback-bfd
+configure-stageautoprofile-ld: maybe-all-stageautoprofile-bfd
+configure-stageautofeedback-ld: maybe-all-stageautofeedback-bfd
 all-ld: maybe-all-libiberty
 all-stage1-ld: maybe-all-stage1-libiberty
 all-stage2-ld: maybe-all-stage2-libiberty
@@ -68766,16 +68772,6 @@ all-stagetrain-ld: maybe-all-stagetrain-libiberty
 all-stagefeedback-ld: maybe-all-stagefeedback-libiberty
 all-stageautoprofile-ld: maybe-all-stageautoprofile-libiberty
 all-stageautofeedback-ld: maybe-all-stageautofeedback-libiberty
-all-ld: maybe-all-bfd
-all-stage1-ld: maybe-all-stage1-bfd
-all-stage2-ld: maybe-all-stage2-bfd
-all-stage3-ld: maybe-all-stage3-bfd
-all-stage4-ld: maybe-all-stage4-bfd
-all-stageprofile-ld: maybe-all-stageprofile-bfd
-all-stagetrain-ld: maybe-all-stagetrain-bfd
-all-stagefeedback-ld: maybe-all-stagefeedback-bfd
-all-stageautoprofile-ld: maybe-all-stageautoprofile-bfd
-all-stageautofeedback-ld: maybe-all-stageautofeedback-bfd
 all-ld: maybe-all-opcodes
 all-stage1-ld: maybe-all-stage1-opcodes
 all-stage2-ld: maybe-all-stage2-opcodes
@@ -69249,7 +69245,9 @@ all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-libdecnumber
 all-gdb: maybe-all-libctf
 all-gdb: maybe-all-libbacktrace
+configure-gdbserver: maybe-all-libiconv
 all-gdbserver: maybe-all-libiberty
+all-gdbserver: maybe-all-libiconv
 configure-gdbsupport: maybe-configure-gettext
 all-gdbsupport: maybe-all-gettext
 configure-gprof: maybe-configure-gettext

@@ -7,7 +7,7 @@ if test -n "${with_target_subdir}"; then
   AM_ENABLE_MULTILIB(, ..)
 fi
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 # This works around an automake problem.
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"

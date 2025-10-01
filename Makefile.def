@@ -313,7 +313,6 @@ flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
 flags_to_pass = { flag= GDC ; };
 flags_to_pass = { flag= GDCFLAGS ; };
-flags_to_pass = { flag= GUILE ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };
@@ -463,9 +462,11 @@ dependencies = { module=all-gdb; on=all-libbacktrace; };
 
 // Host modules specific to gdbserver.
 dependencies = { module=configure-gdbserver; on=all-gnulib; };
+dependencies = { module=configure-gdbserver; on=all-libiconv; };
 dependencies = { module=all-gdbserver; on=all-gdbsupport; };
 dependencies = { module=all-gdbserver; on=all-gnulib; };
 dependencies = { module=all-gdbserver; on=all-libiberty; };
+dependencies = { module=all-gdbserver; on=all-libiconv; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };
@@ -524,7 +525,7 @@ dependencies = { module=install-bfd; on=install-libsframe; };
 dependencies = { module=install-strip-bfd; on=install-strip-libsframe; };
 
 // libopcodes depends on libbfd
-dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
+dependencies = { module=configure-opcodes; on=all-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
@@ -550,8 +551,8 @@ dependencies = { module=install-gprofng; on=install-opcodes; };
 dependencies = { module=install-gprofng; on=install-bfd; };
 
 dependencies = { module=configure-ld; on=configure-gettext; };
+dependencies = { module=configure-ld; on=all-bfd; };
 dependencies = { module=all-ld; on=all-libiberty; };
-dependencies = { module=all-ld; on=all-bfd; };
 dependencies = { module=all-ld; on=all-opcodes; };
 dependencies = { module=all-ld; on=all-build-bison; };
 dependencies = { module=all-ld; on=all-build-flex; };

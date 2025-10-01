@@ -10,7 +10,7 @@ dnl Defines and AC_SUBSTs lt_host_flags
 
 
 AC_DEFUN([ACX_LT_HOST_FLAGS], [
-AC_REQUIRE([AC_CANONICAL_SYSTEM])
+AC_REQUIRE([AC_CANONICAL_HOST])
 
 case $host in
   *-cygwin* | *-mingw*)

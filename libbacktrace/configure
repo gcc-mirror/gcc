@@ -2739,7 +2739,6 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
-
 target_alias=${target_alias-$host_alias}
 
 # Expand $ac_aux_dir to an absolute path.
@@ -11636,7 +11635,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11639 "configure"
+#line 11638 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11742,7 +11741,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11745 "configure"
+#line 11744 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -37,7 +37,8 @@ if test -n "${with_target_subdir}"; then
   AM_ENABLE_MULTILIB(, ..)
 fi
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
 
 AC_USE_SYSTEM_EXTENSIONS
