@@ -3902,24 +3902,41 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 	  }
 	if (!all_known || !total_count.nonzero_p ())
 	  continue;
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "Total count of bb %i is ", bb->index);
+	    total_count.dump (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
 
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  if (AFDO_EINFO (e)->is_annotated ())
 	    {
+	      profile_count cnt = AFDO_EINFO (e)->get_count ();
 	      /* If probability is 1, preserve reliable static prediction
 		 (This is, for example the case of single fallthru edge
 		  or single fallthru plus unlikely EH edge.)  */
-	      if (AFDO_EINFO (e)->get_count () == total_count
+	      if (cnt == total_count
 		  && e->probability == profile_probability::always ())
 		;
-	      else if (AFDO_EINFO (e)->get_count ().nonzero_p ())
+	      else if (cnt.nonzero_p ())
 		e->probability
-		  = AFDO_EINFO (e)->get_count ().probability_in (total_count);
+		  = cnt.probability_in (total_count);
 	      /* If probability is zero, preserve reliable static
 		 prediction.  */
 	      else if (e->probability.nonzero_p ()
 		       || e->probability.quality () == GUESSED)
 		e->probability = profile_probability::never ().afdo ();
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "  probability of edge %i->%i"
+			   " with count ",
+			   e->src->index, e->dest->index);
+		  cnt.dump (dump_file);
+		  fprintf (dump_file, " set to ");
+		  e->probability.dump (dump_file);
+		  fprintf (dump_file, "\n");
+		}
 	    }
       }
   afdo_adjust_guessed_profile (annotated_bb);
