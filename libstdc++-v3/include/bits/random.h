@@ -1778,7 +1778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	explicit
 	philox_engine(result_type __value)
-	: _M_x{}, _M_y{}, _M_k{}, _M_i(__n - 1)
+	: _M_x{}, _M_k{}, _M_y{}, _M_i(__n - 1)
 	{ _M_k[0] = __value & max(); }
 
 	/** @brief seed sequence constructor for %philox_engine
