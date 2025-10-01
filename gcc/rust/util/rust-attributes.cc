@@ -326,6 +326,20 @@ check_proc_macro_non_root (AST::AttrVec attributes, location_t loc)
 void
 AttributeChecker::check_attribute (const AST::Attribute &attribute)
 {
+  if (!attribute.empty_input ())
+    {
+      const auto &attr_input = attribute.get_attr_input ();
+      auto type = attr_input.get_attr_input_type ();
+      if (type == AST::AttrInput::AttrInputType::TOKEN_TREE)
+	{
+	  const auto &option = static_cast<const AST::DelimTokenTree &> (
+	    attribute.get_attr_input ());
+	  std::unique_ptr<AST::AttrInputMetaItemContainer> meta_item (
+	    option.parse_to_meta_item ());
+	  AST::DefaultASTVisitor::visit (meta_item);
+	}
+    }
+
   BuiltinAttrDefinition result;
 
   // This checker does not check non-builtin attributes
@@ -352,10 +366,6 @@ AttributeChecker::visit (AST::Token &)
 
 void
 AttributeChecker::visit (AST::DelimTokenTree &)
-{}
-
-void
-AttributeChecker::visit (AST::AttrInputMetaItemContainer &)
 {}
 
 void
@@ -421,8 +431,16 @@ AttributeChecker::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemPathExpr &)
-{}
+AttributeChecker::visit (AST::MetaItemPathExpr &attribute)
+{
+  if (!attribute.get_expr ().is_literal ())
+    {
+      rust_error_at (attribute.get_locus (),
+		     "malformed %<path%> attribute input");
+      rust_inform (attribute.get_locus (),
+		   "must be of the form: %<#[path = \"file\"]%>");
+    }
+}
 
 void
 AttributeChecker::visit (AST::BorrowExpr &)
@@ -648,6 +666,7 @@ AttributeChecker::visit (AST::TypeBoundWhereClauseItem &)
 void
 AttributeChecker::visit (AST::Module &module)
 {
+  check_attributes (module.get_outer_attrs ());
   check_proc_macro_non_function (module.get_outer_attrs ());
   for (auto &item : module.get_items ())
     {
@@ -860,10 +879,6 @@ AttributeChecker::visit (AST::MacroInvocation &)
 
 void
 AttributeChecker::visit (AST::MetaItemPath &)
-{}
-
-void
-AttributeChecker::visit (AST::MetaItemSeq &)
 {}
 
 void

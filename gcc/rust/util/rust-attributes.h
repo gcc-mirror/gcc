@@ -112,7 +112,6 @@ private:
   void visit (AST::Crate &crate) override;
   void visit (AST::Token &tok) override;
   void visit (AST::DelimTokenTree &delim_tok_tree) override;
-  void visit (AST::AttrInputMetaItemContainer &input) override;
   void visit (AST::IdentifierExpr &ident_expr) override;
   void visit (AST::Lifetime &lifetime) override;
   void visit (AST::LifetimeParam &lifetime_param) override;
@@ -220,7 +219,6 @@ private:
   void visit (AST::MacroRulesDefinition &rules_def) override;
   void visit (AST::MacroInvocation &macro_invoc) override;
   void visit (AST::MetaItemPath &meta_item) override;
-  void visit (AST::MetaItemSeq &meta_item) override;
   void visit (AST::MetaWord &meta_item) override;
   void visit (AST::MetaNameValueStr &meta_item) override;
   void visit (AST::MetaListPaths &meta_item) override;
