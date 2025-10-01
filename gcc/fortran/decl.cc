@@ -4076,6 +4076,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
   /* Start building the new instance of the parameterized type.  */
   gfc_copy_attr (&instance->attr, &pdt->attr, &pdt->declared_at);
+  if (pdt->attr.use_assoc)
+    instance->module = pdt->module;
   instance->attr.pdt_template = 0;
   instance->attr.pdt_type = 1;
   instance->declared_at = gfc_current_locus;
