@@ -1,3 +1,7 @@
+2025-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/reduce1.adb: New test.
+
 2025-09-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

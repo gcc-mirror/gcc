@@ -1,3 +1,9 @@
+2025-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117517
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Reduce>: Try to
+	resolve the reducer first.  Fix casing of error message.
+
 2025-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/121968
