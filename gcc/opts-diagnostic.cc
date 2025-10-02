@@ -49,12 +49,13 @@ public:
 		    location_t loc,
 		    const char *option_name,
 		    const char *option_value)
-  : dc_spec_context (dc,
+  : dc_spec_context (option_name,
+		     option_value,
+		     nullptr,
 		     location_mgr,
+		     dc,
 		     location_mgr,
-		     loc,
-		     option_name,
-		     option_value),
+		     loc),
     m_opts (opts)
   {}
 

@@ -2484,7 +2484,8 @@ public:
 		const char *unparsed_spec,
 		diagnostic_manager &affected_mgr,
 		diagnostic_manager &control_mgr)
-  : context (option_name, unparsed_spec, affected_mgr.get_line_table ()),
+  : context (option_name, unparsed_spec, nullptr,
+	     affected_mgr.get_line_table ()),
     m_control_mgr (control_mgr)
   {}
 
