@@ -819,7 +819,7 @@ merge_blocks (basic_block a, basic_block b)
 
   /* Pick the more reliable count.  If both qualities agrees, pick the larger
      one since turning mistakely hot code to cold is more harmful.  */
-  if (a->count.initialized_p ())
+  if (!a->count.initialized_p ())
     a->count = b->count;
   else if (a->count.quality () < b->count.quality ())
     a->count = b->count;
